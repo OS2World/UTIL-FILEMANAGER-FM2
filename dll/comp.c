@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Compare directories
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	16 Oct 02 MK - Baseline
+		04 Nov 03 SHL - Force window refresh after subdir toggle
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -1696,6 +1711,10 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         case COMP_INCLUDESUBDIRS:
           switch(SHORT2FROMMP(mp1)) {
             case BN_CLICKED:
+              cmp = INSTDATA(hwnd);
+	      if (cmp)
+                *cmp->rightlist = 0;
+              PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
               PostMsg(hwnd,UM_SETDIR,MPVOID,MPVOID);
               break;
           }
