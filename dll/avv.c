@@ -3,12 +3,16 @@
 
   $Id$
 
+  archiver.bb2 editor
+
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004 Steven H.Levine
 
   Archive containers
 
-  Revisions	31 Jul 04 SHL - ArcReviewDlgProc: correct nameis... decodes
+  Revisions	31 Jul 04 SHL ArcReviewDlgProc: correct nameis... decodes
+  		01 Aug 04 SHL Localize functions
+  		01 Aug 04 SHL Rework fixup usage
 
 ***********************************************************************/
 
@@ -28,14 +32,23 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(AVV,EditArchiverData,assign,reassign_from_window)
+#pragma alloc_text(AVV,EditArchiverData,xstrdup,xstrdup_from_window)
 #pragma alloc_text(AVV,get_int_from_window,get_int2_from_window)
 #pragma alloc_text(AVV,get_long_from_window,get_int3_from_window)
 #pragma alloc_text(AVV,get_int4_from_window)
 
+static PSZ checkfile(PSZ file,INT *error);
+static ULONG checkfile2(PSZ file,INT *error);
+static PSZ checksayfile(HWND hwnd,PSZ file,INT *error);
+static INT check_archiver (HWND hwnd,ARC_TYPE *info);
+static INT get_int_from_window (HWND hwnd,USHORT id);
+static LONG get_long_from_window (HWND hwnd,USHORT id);
+static PSZ nonull(PSZ a);
+static PSZ xstrdup(PSZ pszDest,PSZ pszSrc);
+static PSZ xstrdup_from_window(HWND hwnd,USHORT id,PSZ pszDest);
 
-APIRET EditArchiverData (HWND hwnd,DIRCNRDATA *arc) {
-
+APIRET EditArchiverData(HWND hwnd,DIRCNRDATA *arc)
+{
   ARCDUMP ad;
   FILE   *fp;
   HFILE   oldstdout,newstdout;
@@ -100,8 +113,8 @@ APIRET EditArchiverData (HWND hwnd,DIRCNRDATA *arc) {
 }
 
 
-CHAR * assign (CHAR *a,CHAR *b) {
-
+static PSZ xstrdup(PSZ a,PSZ b)
+{
   if(a)
     free(a);
   if(b &&
@@ -113,21 +126,21 @@ CHAR * assign (CHAR *a,CHAR *b) {
 }
 
 
-CHAR * reassign_from_window (HWND hwnd,USHORT id,char *a) {
-
-  char s[257] = "";
+static PSZ xstrdup_from_window(HWND hwnd,USHORT id,PSZ pszDest)
+{
+  char sz[257] = "";
 
   WinQueryDlgItemText(hwnd,
                       id,
                       255,
-                      s);
-  a = assign(a,s);
-  return a;
+                      sz);
+  pszDest = xstrdup(pszDest,sz);
+  return pszDest;
 }
 
 
-INT get_int_from_window (HWND hwnd,USHORT id) {
-
+static INT get_int_from_window(HWND hwnd,USHORT id)
+{
   char s[257] = "";
 
   WinQueryDlgItemText(hwnd,id,255,s);
@@ -135,8 +148,8 @@ INT get_int_from_window (HWND hwnd,USHORT id) {
 }
 
 
-INT get_int2_from_window (HWND hwnd,USHORT id) {
-
+static INT get_int2_from_window(HWND hwnd,USHORT id)
+{
   char s[257] = "",*p;
 
   WinQueryDlgItemText(hwnd,id,255,s);
@@ -147,8 +160,8 @@ INT get_int2_from_window (HWND hwnd,USHORT id) {
 }
 
 
-INT get_int3_from_window (HWND hwnd,USHORT id) {
-
+INT get_int3_from_window (HWND hwnd,USHORT id)
+{
   char s[257] = "",*p;
 
   WinQueryDlgItemText(hwnd,id,255,s);
@@ -163,8 +176,8 @@ INT get_int3_from_window (HWND hwnd,USHORT id) {
 }
 
 
-INT get_int4_from_window (HWND hwnd,USHORT id) {
-
+INT get_int4_from_window (HWND hwnd,USHORT id)
+{
   char s[257] = "",*p;
 
   WinQueryDlgItemText(hwnd,id,255,s);
@@ -183,8 +196,8 @@ INT get_int4_from_window (HWND hwnd,USHORT id) {
 }
 
 
-LONG get_long_from_window (HWND hwnd,USHORT id) {
-
+LONG get_long_from_window (HWND hwnd,USHORT id)
+{
   char s[257] = "";
 
   WinQueryDlgItemText(hwnd,id,255,s);
@@ -194,16 +207,18 @@ LONG get_long_from_window (HWND hwnd,USHORT id) {
 
 #pragma alloc_text (AVV2,nonull,rewrite_archiverbb2,checkfile,checkfile2)
 
-CHAR * nonull (CHAR *a) {
+// nonull - convert NULL pointer to empty string
 
-  if(!a)
-    return NullStr;
-  return a;
+static PSZ nonull(PSZ psz)
+{
+  if(!psz)
+    psz = NullStr;
+  return psz;
 }
 
 
-VOID rewrite_archiverbb2 (CHAR *archiverbb2) {
-
+VOID rewrite_archiverbb2 (PSZ archiverbb2)
+{
   FILE        *fp;
   INT         counter = 0;
   ARC_TYPE    *info;
@@ -273,7 +288,7 @@ VOID rewrite_archiverbb2 (CHAR *archiverbb2) {
               "%s\n%s\n%s\n%d\n%d\n%d,%d\n%d\n%d,%lu,%lu,%lu\n",
               fixup(info->signature,
                     s,
-                    255,
+                    sizeof(s),
                     strlen(info->signature)),
               nonull(info->startlist),
               nonull(info->endlist),
@@ -294,8 +309,8 @@ VOID rewrite_archiverbb2 (CHAR *archiverbb2) {
 }
 
 
-CHAR * checkfile (CHAR *file,INT *error) {
-
+static PSZ  checkfile(PSZ file,INT *error)
+{
   CHAR  *p,*pp = NULL;
   INT   ret;
   ULONG apptype;
@@ -334,8 +349,8 @@ CHAR * checkfile (CHAR *file,INT *error) {
 }
 
 
-ULONG checkfile2 (CHAR *file,INT *error) {
-
+static ULONG checkfile2 (PSZ file,INT *error)
+{
   CHAR  *p,*pp = NULL;
   INT   ret;
   ULONG apptype = 0L;
@@ -375,9 +390,10 @@ ULONG checkfile2 (CHAR *file,INT *error) {
 
 #pragma alloc_text (AVV3,checksayfile,check_archiver,ArcReviewDlgProc)
 
-CHAR *checksayfile (HWND hwnd,CHAR *file,INT *error) {
-
-  CHAR *p,*pp = NULL;
+static PSZ checksayfile (HWND hwnd,PSZ file,INT *error)
+{
+  PSZ p;
+  PSZ pp = NULL;
 
   p = checkfile(file,error);
   if(*error) {
@@ -420,11 +436,11 @@ CHAR *checksayfile (HWND hwnd,CHAR *file,INT *error) {
 }
 
 
-INT check_archiver (HWND hwnd,ARC_TYPE *info) {
-
+static INT check_archiver(HWND hwnd,ARC_TYPE *info)
+{
   BOOL fStart = FALSE,fEnd = FALSE,fNpos = FALSE;
   INT  List = 0,Create = 0,Extract = 0;
-  static CHAR *aerrors[3];
+  static PSZ aerrors[3];
 
   aerrors[0] = GetPString(IDS_STARTLISTEMPTYTEXT);
   aerrors[1] = GetPString(IDS_ENDLISTEMPTYTEXT);
@@ -480,11 +496,11 @@ INT check_archiver (HWND hwnd,ARC_TYPE *info) {
 }
 
 
-MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
-  ARCDUMP        *admp;
-  static CHAR    s[258];
-  SHORT          sSelect;
+MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
+  ARCDUMP       *admp;
+  CHAR    	s[256];
+  SHORT         sSelect;
 
   if(msg != WM_INITDLG)
     admp = (ARCDUMP *)WinQueryWindowPtr(hwnd,0);
@@ -496,91 +512,100 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         WinDismissDlg(hwnd,0);
         return 0;
       }
+
       WinSetWindowPtr(hwnd,0,mp2);
+
+      WinSendDlgItemMsg(hwnd,
+                        AD_LISTBOX,
+                        LM_DELETEALL,
+                        MPVOID,
+                        MPVOID);
+      for(sSelect = AD_ID;sSelect < AD_ADDWPATHS + 1;sSelect++)
       {
-        WinSendDlgItemMsg(hwnd,
-                          AD_LISTBOX,
-                          LM_DELETEALL,
-                          MPVOID,
+	WinSendDlgItemMsg(hwnd,
+                          sSelect,
+                          EM_SETTEXTLIMIT,
+                          MPFROM2SHORT(sizeof(s) - 1,0),
                           MPVOID);
-        for(sSelect = AD_ID;sSelect < AD_ADDWPATHS + 1;sSelect++)
-          WinSendDlgItemMsg(hwnd,
-                            sSelect,
-                            EM_SETTEXTLIMIT,
-                            MPFROM2SHORT(255,0),
-                            MPVOID);
-        if(admp->info->id)
-          WinSetDlgItemText(hwnd,
-                            AD_ID,
-                            admp->info->id);
-        if(admp->info->ext)
-          WinSetDlgItemText(hwnd,
-                            AD_EXT,
-                            admp->info->ext);
-        sprintf(s,
-                "%ld",
-                admp->info->file_offset);
-        WinSetDlgItemText(hwnd,
-                          AD_SIGPOS,
-                          s);
-        if(admp->info->signature)
-          WinSetDlgItemText(hwnd,
-                            AD_SIG,
-                            fixup(admp->info->signature,
-                                  s,
-                                  255,
-                                  strlen(admp->info->signature)));
-        if(admp->info->startlist)
-          WinSetDlgItemText(hwnd,
-                            AD_STARTLIST,
-                            admp->info->startlist);
-        if(admp->info->endlist)
-          WinSetDlgItemText(hwnd,
-                            AD_ENDLIST,
-                            admp->info->endlist);
-        if(admp->info->list)
-          WinSetDlgItemText(hwnd,
-                            AD_LIST,
-                            admp->info->list);
-        sprintf(s,
-                "%d,%d,%d,%d",
-                admp->info->fnpos,
-                admp->info->nameislast,
-                admp->info->nameisnext,
-                admp->info->nameisfirst);
-        WinSetDlgItemText(hwnd,AD_FNAMEPOS,s);
-        sprintf(s,"%d",admp->info->osizepos);
-        WinSetDlgItemText(hwnd,AD_OLDSZ,s);
-        sprintf(s,"%d",admp->info->nsizepos);
-        WinSetDlgItemText(hwnd,AD_NEWSZ,s);
-        sprintf(s,"%d,%d",admp->info->fdpos,admp->info->datetype);
-        WinSetDlgItemText(hwnd,AD_DATEPOS,s);
-        sprintf(s,"%d",admp->info->fdflds);
-        WinSetDlgItemText(hwnd,AD_NUMDATEFLDS,s);
-        if(admp->info->extract)
-          WinSetDlgItemText(hwnd,AD_EXTRACT,admp->info->extract);
-        if(admp->info->exwdirs)
-          WinSetDlgItemText(hwnd,AD_WDIRS,admp->info->exwdirs);
-        if(admp->info->test)
-          WinSetDlgItemText(hwnd,AD_TEST,admp->info->test);
-        if(admp->info->create)
-          WinSetDlgItemText(hwnd,AD_ADD,admp->info->create);
-        if(admp->info->move)
-          WinSetDlgItemText(hwnd,AD_MOVE,admp->info->move);
-        if(admp->info->delete)
-          WinSetDlgItemText(hwnd,AD_DELETE,admp->info->delete);
-        if(admp->info->createrecurse)
-          WinSetDlgItemText(hwnd,AD_ADDRECURSE,admp->info->createrecurse);
-        if(admp->info->createwdirs)
-          WinSetDlgItemText(hwnd,AD_ADDWPATHS,admp->info->createwdirs);
-        if(admp->info->movewdirs)
-          WinSetDlgItemText(hwnd,AD_MOVEWPATHS,admp->info->movewdirs);
       }
+      if (admp->info->id) {
+        WinSetDlgItemText(hwnd,
+                          AD_ID,
+                          admp->info->id);
+      }
+      if (admp->info->ext) {
+        WinSetDlgItemText(hwnd,
+                          AD_EXT,
+                          admp->info->ext);
+      }
+      sprintf(s,
+              "%ld",
+              admp->info->file_offset);
+      WinSetDlgItemText(hwnd,
+                        AD_SIGPOS,
+                        s);
+      if (admp->info->signature) {
+        WinSetDlgItemText(hwnd,
+                          AD_SIG,
+                          fixup(admp->info->signature,
+                                s,
+                                sizeof(s),
+                                strlen(admp->info->signature)));
+      }
+      if (admp->info->startlist) {
+        WinSetDlgItemText(hwnd,
+                          AD_STARTLIST,
+                          admp->info->startlist);
+      }
+      if (admp->info->endlist) {
+        WinSetDlgItemText(hwnd,
+                          AD_ENDLIST,
+                          admp->info->endlist);
+      }
+      if (admp->info->list) {
+        WinSetDlgItemText(hwnd,
+                          AD_LIST,
+                          admp->info->list);
+      }
+      sprintf(s,
+              "%d,%d,%d,%d",
+              admp->info->fnpos,
+              admp->info->nameislast,
+              admp->info->nameisnext,
+              admp->info->nameisfirst);
+      WinSetDlgItemText(hwnd,AD_FNAMEPOS,s);
+      sprintf(s,"%d",admp->info->osizepos);
+      WinSetDlgItemText(hwnd,AD_OLDSZ,s);
+      sprintf(s,"%d",admp->info->nsizepos);
+      WinSetDlgItemText(hwnd,AD_NEWSZ,s);
+      sprintf(s,"%d,%d",admp->info->fdpos,admp->info->datetype);
+      WinSetDlgItemText(hwnd,AD_DATEPOS,s);
+      sprintf(s,"%d",admp->info->fdflds);
+      WinSetDlgItemText(hwnd,AD_NUMDATEFLDS,s);
+      if(admp->info->extract)
+        WinSetDlgItemText(hwnd,AD_EXTRACT,admp->info->extract);
+      if(admp->info->exwdirs)
+        WinSetDlgItemText(hwnd,AD_WDIRS,admp->info->exwdirs);
+      if(admp->info->test)
+        WinSetDlgItemText(hwnd,AD_TEST,admp->info->test);
+      if(admp->info->create)
+        WinSetDlgItemText(hwnd,AD_ADD,admp->info->create);
+      if(admp->info->move)
+        WinSetDlgItemText(hwnd,AD_MOVE,admp->info->move);
+      if(admp->info->delete)
+        WinSetDlgItemText(hwnd,AD_DELETE,admp->info->delete);
+      if(admp->info->createrecurse)
+        WinSetDlgItemText(hwnd,AD_ADDRECURSE,admp->info->createrecurse);
+      if(admp->info->createwdirs)
+        WinSetDlgItemText(hwnd,AD_ADDWPATHS,admp->info->createwdirs);
+      if(admp->info->movewdirs)
+        WinSetDlgItemText(hwnd,AD_MOVEWPATHS,admp->info->movewdirs);
+
       PostMsg(hwnd,
               UM_SETUP,
               MPVOID,
               MPVOID);
-      break;
+      break;				// WM_INITDLG
 
 
     case UM_SETUP:
@@ -598,7 +623,7 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         }
         else {
           while(!feof(fp)) {
-            if(!fgets(s,256,fp)) break;
+            if(!fgets(s,sizeof(s),fp)) break;
             stripcr(s);
             WinSendDlgItemMsg(hwnd,
                               AD_LISTBOX,
@@ -653,7 +678,8 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   MPFROMP(s));
                 if(*s) {
 
-                  char *p,*pp;
+                  PSZ p;
+		  PSZ pp;
 
                   p = s;
                   for(sSelect = 0;sSelect < 10;sSelect++) {
@@ -889,9 +915,9 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                      GetPString(IDS_NEEDENTRYTEXT));
             else {
 
-              CHAR *p;
+              PSZ p;
 
-              p = lstrip(tempargs);
+              lstrip(tempargs);
               p = strchr(tempargs,' ');
               if(p)
                 *p = 0;
@@ -920,23 +946,23 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           return 0;
 
         case DID_OK:
-          admp->info->startlist = reassign_from_window(hwnd,AD_STARTLIST,admp->info->startlist);
-          admp->info->endlist = reassign_from_window(hwnd,AD_ENDLIST,admp->info->endlist);
-          admp->info->id = reassign_from_window(hwnd,AD_ID,admp->info->id);
-          admp->info->create = reassign_from_window(hwnd,AD_ADD,admp->info->create);
-          admp->info->createwdirs = reassign_from_window(hwnd,AD_ADDWPATHS,admp->info->createwdirs);
-          admp->info->createrecurse = reassign_from_window(hwnd,AD_ADDRECURSE,admp->info->createrecurse);
-          admp->info->movewdirs = reassign_from_window(hwnd,AD_MOVEWPATHS,admp->info->movewdirs);
-          admp->info->move = reassign_from_window(hwnd,AD_MOVE,admp->info->move);
-          admp->info->delete = reassign_from_window(hwnd,AD_DELETE,admp->info->delete);
-          admp->info->test = reassign_from_window(hwnd,AD_TEST,admp->info->test);
-          admp->info->extract = reassign_from_window(hwnd,AD_EXTRACT,admp->info->extract);
-          admp->info->exwdirs = reassign_from_window(hwnd,AD_WDIRS,admp->info->exwdirs);
-          admp->info->ext = reassign_from_window(hwnd,AD_EXT,admp->info->ext);
-          literal(reassign_from_window(hwnd,
+          admp->info->startlist = xstrdup_from_window(hwnd,AD_STARTLIST,admp->info->startlist);
+          admp->info->endlist = xstrdup_from_window(hwnd,AD_ENDLIST,admp->info->endlist);
+          admp->info->id = xstrdup_from_window(hwnd,AD_ID,admp->info->id);
+          admp->info->create = xstrdup_from_window(hwnd,AD_ADD,admp->info->create);
+          admp->info->createwdirs = xstrdup_from_window(hwnd,AD_ADDWPATHS,admp->info->createwdirs);
+          admp->info->createrecurse = xstrdup_from_window(hwnd,AD_ADDRECURSE,admp->info->createrecurse);
+          admp->info->movewdirs = xstrdup_from_window(hwnd,AD_MOVEWPATHS,admp->info->movewdirs);
+          admp->info->move = xstrdup_from_window(hwnd,AD_MOVE,admp->info->move);
+          admp->info->delete = xstrdup_from_window(hwnd,AD_DELETE,admp->info->delete);
+          admp->info->test = xstrdup_from_window(hwnd,AD_TEST,admp->info->test);
+          admp->info->extract = xstrdup_from_window(hwnd,AD_EXTRACT,admp->info->extract);
+          admp->info->exwdirs = xstrdup_from_window(hwnd,AD_WDIRS,admp->info->exwdirs);
+          admp->info->ext = xstrdup_from_window(hwnd,AD_EXT,admp->info->ext);
+          literal(xstrdup_from_window(hwnd,
                                        AD_SIG,
                                        admp->info->signature));
-          admp->info->list = reassign_from_window(hwnd,
+          admp->info->list = xstrdup_from_window(hwnd,
                                                   AD_LIST,
                                                   admp->info->list);
           admp->info->file_offset = get_long_from_window(hwnd,AD_SIGPOS);
@@ -962,7 +988,7 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                        NullStr) ==
                MBID_YES) {
 
-              CHAR *ab2;
+              PSZ ab2;
 
               ab2 = searchpath(GetPString(IDS_ARCHIVERBB2));
               rewrite_archiverbb2(ab2);
