@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Edit archiver definitions
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2004 Steven H.Levine
+.*
+.* Revisions	31 Jul 04 SHL - Rework file name position description
+.*
+.***********************************************************************
+.*
 :h1 res=90200 name=PANEL_ARCLIST.Archive Container
 :i1 id=aboutArchiveListing.Archive Container
 Archive Container windows presents you with a list of an archive's
@@ -291,15 +304,21 @@ this number is negative, FM/2 looks from the end of the file instead of
 the beginning.
 :p.
 :hp2.F(ile)Name Pos(ition):ehp2.  This field tells FM/2 which field on
-the line of an archive listing is the filename.  Fields are numbered
-from 0. This field must be present and correct for FM/2 to get the right
-filenames from the archive listing.  A -1 in this field tells FM/2 to
-use the :hp2.last:ehp2. field in the archive listing line for the
-filename.  You can optionally follow this number with a comma and
-another number that indicates if the name is the last position
-:hp1.if:ehp1. the first number is not -1.  A 1 means yes, the name is in
-the last position.  A 0 means that it is not.  This allows FM/2 to
-handle archive member names containing spaces for some archive types.
+the line of an archive listing is the file name.
+Archive listing fields are numbered from 0.
+The file name position item consists of 4 subfields separated by commas.
+All subfields must be present and correct for FM/2 to get the right
+file names from the archive listing.
+The first is the field number.
+The second is a flag which is set to 1 to indicate that the file
+name is the last field on the line.
+This allows unquoted archive member names to contain spaces
+The third is a flag which is set to 1 to indicate that the file name starts
+at the second character of the field.
+This allows files that are surrounded by unusual bracketing characters.
+The fourth is a flag which is set to 1 to indicate the the file name
+stands alone at the first field in the listing line and
+the file details are on the next line.
 :p.
 To understand what "field on the line of an archive listing" means,
 think of a text line as being broken up into tokens, or words, separated
