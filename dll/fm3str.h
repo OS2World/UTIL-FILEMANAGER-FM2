@@ -1,7 +1,7 @@
 #define VERMAJORBREAK                                         3
 #define VERMINORBREAK                                         02
 
-#define IDS_NUMSTRS                                           991
+#define IDS_NUMSTRS                                           992
 
 #define IDS_OPENBUTTONHELP                                    0
 #define IDS_OPENDROPHELP                                      1
