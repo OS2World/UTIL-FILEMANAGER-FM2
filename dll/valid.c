@@ -9,8 +9,8 @@
   Copyright (c) 2002 Steven H.Levine
 
   Revisions	23 Nov 02 SHL - RootName: rework for sanity
-  		27 Nov 02 SHL - MakeFullName: correct typo
-
+ 		27 Nov 02 SHL - MakeFullName: correct typo
+		11 Jun 03 SHL - Add JFS and FAT32 support
 
 ***********************************************************************/
 
@@ -167,90 +167,109 @@ BOOL ParentIsDesktop (HWND hwnd,HWND hwndParent) {
 }
 
 
-INT CheckDrive (CHAR Drive, CHAR *FileSystem, ULONG *type) {
-
+INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
+{
   CHAR        Path[3],*Buffer = NULL,*pfsn = NULL,*pfsd = NULL;
   ULONG       Size,Status,action,LengthIn,LengthOut;
   HFILE       Handle;
   BYTE        Command = 0,NonRemovable;
   PFSQBUFFER2 pfsq;
 
-  if(FileSystem)
-    *FileSystem = 0;
-  if(type)
-    *type = 0;
+  if (pszFileSystem)
+    *pszFileSystem = 0;
+  if (pulType)
+    *pulType = 0;
 
   if(DosAllocMem((PVOID)&Buffer,4096,
                  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE)) {
     DosBeep(50,50);
-    return -1;
+    return -1;				// Say failed
   }
 
-  Path[0] = Drive;
+  Path[0] = chDrive;
   Path[1] = ':';
   Path[2] = 0;
   Size = 4096;
   DosError(FERR_DISABLEHARDERR);
   Status = DosQueryFSAttach(Path, 0, FSAIL_QUERYNAME,
                             (PFSQBUFFER2)Buffer, &Size);
-  if(Status) {   /* can't get any info at all */
+  if (Status)
+  {
+    /* can't get any info at all */
     DosFreeMem(Buffer);
     DosError(FERR_DISABLEHARDERR);
-    return -1;
+    return -1;				// Say failed
   }
 
   pfsq = (PFSQBUFFER2)Buffer;
   pfsn = pfsq->szName + pfsq->cbName + 1;
   pfsd = pfsn + pfsq->cbFSDName + 1;
 
-  if(FileSystem) {
-    strncpy(FileSystem, pfsn, CCHMAXPATH);
-    FileSystem[CCHMAXPATH - 1] = 0;
+  if (pszFileSystem)
+  {
+    strncpy(pszFileSystem, pfsn, CCHMAXPATH);
+    pszFileSystem[CCHMAXPATH - 1] = 0;
   }
 
-  if(type && !strcmp(pfsn,CDFS))
-    (*type) |= (DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE);
+  if (pulType && !strcmp(pfsn,CDFS))
+    *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
 
-  if(((PFSQBUFFER2)Buffer)->iType == FSAT_REMOTEDRV) {
-    if(type)
-      (*type) |= DRIVE_REMOTE;
-    if(type && !strcmp(pfsn,CBSIFS)) {
-      (*type) |= DRIVE_ZIPSTREAM;
-      (*type) &= (~DRIVE_REMOTE);
-      (*type) |= DRIVE_NOLONGNAMES;
-      if(pfsq->cbFSAData) {
-
+  if (((PFSQBUFFER2)Buffer)->iType == FSAT_REMOTEDRV)
+  {
+    if (pulType)
+      *pulType |= DRIVE_REMOTE;
+    if (pulType && !strcmp(pfsn,CBSIFS))
+    {
+      *pulType |= DRIVE_ZIPSTREAM;
+      *pulType &= ~DRIVE_REMOTE;
+      *pulType |= DRIVE_NOLONGNAMES;
+      if (pfsq->cbFSAData)
+      {
         ULONG FType;
 
-        if(CheckDrive(*pfsd,NULL,&FType) != -1) {
-          if(FType & DRIVE_REMOVABLE)
-            (*type) |= DRIVE_REMOVABLE;
-          if(!(FType & DRIVE_NOLONGNAMES))
-            (*type) &= (~DRIVE_NOLONGNAMES);
+        if (CheckDrive(*pfsd,NULL,&FType) != -1)
+	{
+          if (FType & DRIVE_REMOVABLE)
+            *pulType |= DRIVE_REMOVABLE;
+          if (~FType & DRIVE_NOLONGNAMES)
+            *pulType &= ~DRIVE_NOLONGNAMES;
         }
       }
     }
-    if(type && (!strcmp(pfsn,HPFS) || !strcmp(pfsn,HPFS386)))
-      (*type) &= (~DRIVE_NOLONGNAMES);
+    if (pulType &&
+        (!strcmp(pfsn,HPFS) ||
+         !strcmp(pfsn,JFS) ||
+         !strcmp(pfsn,FAT32) ||
+         !strcmp(pfsn,HPFS386)))
+    {
+      *pulType &= ~DRIVE_NOLONGNAMES;
+    }
     DosFreeMem(Buffer);
-    return 0;  /* assume remotes are non-removable */
+    return 0;  				// Say non-removable
   }
 
-  if(strcmp(pfsn,HPFS) && strcmp(pfsn,CDFS) && strcmp(pfsn,HPFS386)) {
-    if(type)
-      (*type) |= DRIVE_NOLONGNAMES;
+  // Local drive
+  if (strcmp(pfsn,HPFS) &&
+      strcmp(pfsn,JFS) &&
+      strcmp(pfsn,CDFS) &&
+      strcmp(pfsn,FAT32) &&
+      strcmp(pfsn,HPFS386))
+  {
+    if(pulType)
+      (*pulType) |= DRIVE_NOLONGNAMES;
   }
 
   DosError(FERR_DISABLEHARDERR);
   Status = DosOpen(Path, &Handle, &action, 0, 0, FILE_OPEN,
                    OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
                    OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
-  if(Status) {
+  if(Status)
+  {
     DosError(FERR_DISABLEHARDERR);
-    if(type)
-      (*type) |= DRIVE_REMOVABLE;
+    if (pulType)
+      *pulType |= DRIVE_REMOVABLE;	// Assume removable if can not access
     DosFreeMem(Buffer);
-    return(1);  /* assume inaccessible local drives are removable */
+    return 1;				// Say removable
   }
   LengthIn = sizeof(Command);
   LengthOut = sizeof(NonRemovable);
@@ -259,10 +278,10 @@ INT CheckDrive (CHAR Drive, CHAR *FileSystem, ULONG *type) {
   DosDevIOCtl(Handle, 8, 0x20,&Command, sizeof(Command), &LengthIn,
               &NonRemovable, sizeof(NonRemovable), &LengthOut);
   DosClose(Handle);
-  if(!NonRemovable && type)
-    (*type) |= DRIVE_REMOVABLE;
+  if (!NonRemovable && pulType)
+    *pulType |= DRIVE_REMOVABLE;
   DosFreeMem(Buffer);
-  return (NonRemovable) ? 0 : 1;
+  return NonRemovable ? 0 : 1;
 }
 
 
@@ -531,8 +550,8 @@ VOID ArgDriveFlags (INT argc,CHAR **argv) {
 }
 
 
-VOID DriveFlagsOne (INT x) {
-
+VOID DriveFlagsOne (INT x)
+{
   INT         removable;
   CHAR        szDrive[] = " :\\",FileSystem[CCHMAXPATH];
   ULONG       drvtype;
@@ -545,9 +564,10 @@ VOID DriveFlagsOne (INT x) {
   driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
                     DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
                     DRIVE_INCLUDEFILES | DRIVE_SLOW);
-  if(removable != -1) {
-
-    struct {
+  if(removable != -1)
+  {
+    struct
+    {
       ULONG serial;
       CHAR  volumelength;
       CHAR  volumelabel[CCHMAXPATH];
@@ -565,10 +585,14 @@ VOID DriveFlagsOne (INT x) {
                                         DRIVE_REMOVABLE : 0);
   if(drvtype & DRIVE_REMOTE)
     driveflags[x] |= DRIVE_REMOTE;
-  if(strcmp(FileSystem,HPFS) &&
-     strcmp(FileSystem,HPFS386) &&
-     strcmp(FileSystem,CDFS))
+  if (strcmp(FileSystem,HPFS) &&
+      strcmp(FileSystem,JFS) &&
+      strcmp(FileSystem,CDFS) &&
+      strcmp(FileSystem,FAT32) &&
+      strcmp(FileSystem,HPFS386))
+  {
     driveflags[x] |= DRIVE_NOLONGNAMES;
+  }
   if(!strcmp(FileSystem,CDFS)) {
     removable = 1;
     driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |

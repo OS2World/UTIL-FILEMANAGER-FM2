@@ -6,10 +6,11 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2003 Steven H.Levine
 
   Revisions	12 Sep 02 SHL - Rework symbols to understand code
 		08 Feb 03 SHL - DropHelp: calc EA size consistently
+		11 Jun 03 SHL - Add JFS and FAT32 support
 
 ***********************************************************************/
 
@@ -970,22 +971,27 @@ ULONG FillTreeCnr (HWND hwndCnr,HWND hwndParent) {
                                                DRIVE_REMOVABLE : 0);
             if(drvtype & DRIVE_REMOTE)
               driveflags[x] |= DRIVE_REMOTE;
-            if(strcmp(FileSystem,HPFS) &&
-               strcmp(FileSystem,HPFS386) &&
-               strcmp(FileSystem,CDFS))
+            if (strcmp(FileSystem,HPFS) &&
+                strcmp(FileSystem,JFS) &&
+                strcmp(FileSystem,CDFS) &&
+                strcmp(FileSystem,FAT32) &&
+                strcmp(FileSystem,HPFS386))
+	    {
               driveflags[x] |= DRIVE_NOLONGNAMES;
+	    }
             if(!strcmp(FileSystem,CDFS)) {
               removable = 1;
-              driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
-                                DRIVE_CDROM);
+              driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
+                                DRIVE_CDROM;
             }
-            else if(!stricmp(FileSystem,CBSIFS)) {
+            else if(!stricmp(FileSystem,CBSIFS))
+	    {
               driveflags[x] |= DRIVE_ZIPSTREAM;
-              driveflags[x] &= (~DRIVE_REMOTE);
+              driveflags[x] &= ~DRIVE_REMOTE;
               if(drvtype & DRIVE_REMOVABLE)
                 driveflags[x] |= DRIVE_REMOVABLE;
               if(!(drvtype & DRIVE_NOLONGNAMES))
-                driveflags[x] &= (~DRIVE_NOLONGNAMES);
+                driveflags[x] &= ~DRIVE_NOLONGNAMES;
             }
 
             pci->rc.flRecordAttr |= CRA_RECORDREADONLY;

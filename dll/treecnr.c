@@ -6,9 +6,10 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2003 Steven H.Levine
 
   Revisions	16 Oct 02 SHL - Handle large partitions
+		11 Jun 03 SHL - Add JFS and FAT32 support
 
 ***********************************************************************/
 
@@ -1834,8 +1835,8 @@ KbdRetry:
             break;
 
           case CN_ENTER:
-            if(mp2) {
-            
+            if(mp2)
+	    {
               PCNRITEM pci = (PCNRITEM)((PNOTIFYRECORDENTER)mp2)->pRecord;
 
               PostMsg(hwnd,UM_ENTER,MPFROMP(pci),MPVOID);
@@ -2040,9 +2041,14 @@ KbdRetry:
                   driveflags[x] |= (DRIVE_REMOVABLE |
                                     DRIVE_NOTWRITEABLE |
                                     DRIVE_CDROM);
-                if(strcmp(FileSystem,HPFS) && strcmp(FileSystem,CDFS) &&
-                   strcmp(FileSystem,HPFS386))
+                if (strcmp(FileSystem,HPFS) &&
+		    strcmp(FileSystem,JFS) &&
+		    strcmp(FileSystem,CDFS) &&
+		    strcmp(FileSystem,FAT32) &&
+                    strcmp(FileSystem,HPFS386))
+		{
                   driveflags[x] |= DRIVE_NOLONGNAMES;
+		}
                 if(!strcmp(FileSystem,CBSIFS)) {
                   driveflags[x] |= DRIVE_ZIPSTREAM;
                   driveflags[x] &= (~DRIVE_REMOTE);

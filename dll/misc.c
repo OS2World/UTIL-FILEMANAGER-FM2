@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Misc support functions
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	11 Jun 03 SHL - Add JFS and FAT32 support
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -297,8 +311,8 @@ BOOL AdjustCnrColVis (HWND hwndCnr,CHAR *title,BOOL visible,BOOL toggle) {
 }
 
 
-BOOL AdjustCnrColRO (HWND hwndCnr,CHAR *title,BOOL readonly,BOOL toggle) {
-
+BOOL AdjustCnrColRO (HWND hwndCnr,CHAR *title,BOOL readonly,BOOL toggle)
+{
   PFIELDINFO pfi;
 
   pfi = (PFIELDINFO)WinSendMsg(hwndCnr,
@@ -339,19 +353,28 @@ VOID AdjustCnrColsForFSType (HWND hwndCnr,CHAR *directory,
     return;
   x = CheckDrive(toupper(*directory),FileSystem,NULL);
   if(x != -1) {
-    if(!stricmp(FileSystem,HPFS) || !stricmp(FileSystem,HPFS386)) {
+    if (!stricmp(FileSystem,HPFS) ||
+        !stricmp(FileSystem,JFS) ||
+        !stricmp(FileSystem,CDFS) ||
+        !stricmp(FileSystem,FAT32) ||
+        !stricmp(FileSystem,HPFS386))
+    {
       showem = TRUE;
       showemA = TRUE;
     }
-    else if(!strcmp(FileSystem,CDFS)) {
+    else if (!strcmp(FileSystem,CDFS))
+    {
       showem = TRUE;
       showemA = FALSE;
     }
     else
       showem = showemA = FALSE;
   }
-  else  /* assume FAT */
+  else
+  {
+    /* assume FAT */
     showem = showemA = FALSE;
+  }
   bool = (dcd) ? &dcd->detailsladate : &detailsladate;
   AdjustCnrColVis(hwndCnr,GetPString(IDS_LADATE),
                   (*bool) ? showemA : FALSE,FALSE);

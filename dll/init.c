@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2002 Steven H.Levine
 
   Revisions	11 Jun 02 SHL - Add CheckVersion
+		11 Jun 03 SHL - Add JFS and FAT32 support
 
 ***********************************************************************/
 
@@ -217,7 +218,9 @@ unsigned long _System _DLL_InitTerm (unsigned long hModule,
       SUBJECT = ".SUBJECT";
       LONGNAME = ".LONGNAME";
       HPFS = "HPFS";
+      JFS = "JFS";
       CDFS = "CDFS";
+      FAT32 = "FAT32";
       HPFS386 = "HPFS386";
       CBSIFS = "CBSIFS";
       /* end of strings */

@@ -6,9 +6,10 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2003 Steven H.Levine
 
   Revisions	12 Feb 03 SHL - Add CBLIST_TO_EASIZE
+		11 Jun 03 SHL - Add JFS and FAT32 support
 
 ***********************************************************************/
 
@@ -1236,7 +1237,7 @@ DATADEF CHAR     *DEBUG_STRING,*FM3Str,*FM2Str,*NullStr,*Default,*Settings,
                  *DRM_OS2FILE,*DRM_FM2ARCMEMBER,*DRF_FM2ARCHIVE,
                  *DRMDRFLIST,*DRMDRFOS2FILE,*DRMDRFFM2ARC,
                  *DRM_FM2INIRECORD,*DRF_FM2INI,*SUBJECT,*LONGNAME,
-                 *HPFS,*HPFS386,*CDFS,*CBSIFS,*WPProgram,*FM3Folder,*FM3Tools;
+                 *HPFS,*JFS,*CDFS,*FAT32,*HPFS386,*CBSIFS,*WPProgram,*FM3Folder,*FM3Tools;
 DATADEF RGB2      RGBGREY,RGBBLACK;
 DATADEF CHAR      archiverbb2[CCHMAXPATH],StopPrinting,profile[CCHMAXPATH];
 DATADEF CHAR      appname[12],realappname[12];
