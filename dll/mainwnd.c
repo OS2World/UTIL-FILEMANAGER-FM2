@@ -142,27 +142,27 @@ MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1, MPARAM mp2) 
 				CHAR s[8] = " :\\OS2";
 				ULONG bd;
 
-        if(DosQuerySysInfo(QSV_BOOT_DRIVE,
-                           QSV_BOOT_DRIVE,
-                           (PVOID)&bd,
-                           (ULONG)sizeof(ULONG)))
-					bd = 3L;
-				*s = (CHAR)bd + '@';
-        WinSendMsg(hwndMain,
-                   UM_SETDIR,
-                   MPFROMP(s),
-                   MPFROMLONG(1L));
-				if(!mp1) {
-					s[3] = 0;
-          WinSendMsg(hwndMain,
-                     UM_SETDIR,
-                     MPFROMP(s),
-                     MPVOID);
-				}
-        PostMsg(MainObjectHwnd,
-                UM_RESTORE,
-                MPFROMLONG(1L),
-                MPFROMLONG(1L));
+                                if(DosQuerySysInfo(QSV_BOOT_DRIVE,
+                                                   QSV_BOOT_DRIVE,
+                                                   (PVOID)&bd,
+                                                   (ULONG)sizeof(ULONG)))
+					                        bd = 3L;
+				                        *s = (CHAR)bd + '@';
+                                WinSendMsg(hwndMain,
+                                           UM_SETDIR,
+                                           MPFROMP(s),
+                                           MPFROMLONG(1L));
+				                        if(!mp1) {
+					                        s[3] = 0;
+                                  WinSendMsg(hwndMain,
+                                             UM_SETDIR,
+                                             MPFROMP(s),
+                                             MPVOID);
+				                        }
+                                PostMsg(MainObjectHwnd,
+                                        UM_RESTORE,
+                                        MPFROMLONG(1L),
+                                        MPFROMLONG(1L));
 			}
 			return 0;
 
@@ -219,11 +219,11 @@ VOID MakeMainObjWin (VOID *args) {
 		hmq2 = WinCreateMsgQueue(hab2,128);
 		if(hmq2) {
 			DosError(FERR_DISABLEHARDERR);
-      WinRegisterClass(hab2,
-                       GetPString(IDS_WCOBJECTWINDOW),
-                       MainObjectWndProc,
-                       0,
-                       sizeof(PVOID));
+                        WinRegisterClass(hab2,
+					 GetPString(IDS_WCOBJECTWINDOW),
+                                         MainObjectWndProc,
+                                         0,
+                         sizeof(PVOID));
 			MainObjectHwnd = WinCreateWindow(HWND_OBJECT,
                                        GetPString(IDS_WCOBJECTWINDOW),
 																			 (PSZ)NULL,
@@ -233,8 +233,8 @@ VOID MakeMainObjWin (VOID *args) {
                                        0L,
                                        0L,
                                        0L,
-																			 HWND_TOP,
-																			 OBJ_FRAME,
+				       HWND_TOP,
+				       OBJ_FRAME,
                                        NULL,
                                        NULL);
 			if(MainObjectHwnd) {
@@ -335,12 +335,12 @@ HWND TopWindowName (HWND hwndParent,HWND exclude,CHAR *ret) {
          (INT)pci == -1) {
 				hwndC = hwndTree;
 				pci = (PCNRITEM)WinSendMsg(WinWindowFromID(WinWindowFromID(
-                                                                   hwndTree,
-                                                                   FID_CLIENT),
-                                                   TREE_CNR),
-																	 CM_QUERYRECORDEMPHASIS,
-																	 MPFROMLONG(CMA_FIRST),
-																	 MPFROMSHORT(CRA_CURSORED));
+                                                                               hwndTree,
+                                                                               FID_CLIENT),
+                                                                               TREE_CNR),
+							   CM_QUERYRECORDEMPHASIS,
+							   MPFROMLONG(CMA_FIRST),
+							   MPFROMSHORT(CRA_CURSORED));
 			}
       if(pci &&
          (INT)pci != -1) {
@@ -377,41 +377,46 @@ ULONG CountDirCnrs (HWND hwndParent) {
 
 HWND FindDirCnrByName (CHAR *directory,BOOL restore) {
 
-	HENUM			henum;
-	HWND			hwndF = (HWND)0,hwndC,hwndDir;
-	CHAR			retstr[CCHMAXPATH];
+  HENUM			henum;
+  HWND			hwndF = (HWND)0,hwndC,hwndDir;
+  CHAR			retstr[CCHMAXPATH];
 
-	if(hwndMain) {
-		henum = WinBeginEnumWindows(hwndMain);
-		while((hwndF = WinGetNextWindow(henum)) != NULLHANDLE) {
-			hwndC = WinWindowFromID(hwndF,FID_CLIENT);
-			if(hwndC) {
-				hwndDir = WinWindowFromID(hwndC,DIR_CNR);
-				if(hwndDir) {
-					*retstr = 0;
+  if(hwndMain)
+  {
+    henum = WinBeginEnumWindows(hwndMain);
+    while((hwndF = WinGetNextWindow(henum)) != NULLHANDLE)
+    {
+      hwndC = WinWindowFromID(hwndF,FID_CLIENT);
+      if(hwndC)
+      {
+	hwndDir = WinWindowFromID(hwndC,DIR_CNR);
+	if(hwndDir)
+	{
+	  *retstr = 0;
           WinSendMsg(hwndC,
-                     UM_CONTAINERDIR,
+		     UM_CONTAINERDIR,
                      MPFROMP(retstr),
                      MPVOID);
           if(*retstr &&
-             !stricmp(retstr,directory)) {
-						if(restore)
+             !stricmp(retstr,directory))
+	  {
+	    if(restore)
               WinSetWindowPos(hwndF,
-                              HWND_TOP,
-                              0,
-                              0,
-                              0,
-                              0,
-                              SWP_RESTORE | SWP_SHOW |
-															SWP_ACTIVATE | SWP_ZORDER);
-						break;
-					}
-				}
-			}
-		}
-		WinEndEnumWindows(henum);
-	}
-	return hwndF;
+                          HWND_TOP,
+                          0,
+                          0,
+                          0,
+                          0,
+                          SWP_RESTORE | SWP_SHOW |
+			  SWP_ACTIVATE | SWP_ZORDER);
+	    break;
+          }
+        }
+      }
+    }
+    WinEndEnumWindows(henum);
+  }
+  return hwndF;
 }
 
 
@@ -596,23 +601,23 @@ MRESULT EXPENTRY DropDownListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 				switch(id) {
 					case MAIN_CMDLIST:
 						WinPostMsg(WinWindowFromID(WinQueryWindow(WinQueryWindow(hwnd,
-                                                                     QW_PARENT),
-                                                      QW_PARENT),
-                                       FID_CLIENT),
-                       WM_COMMAND,
-                       MPFROM2SHORT(IDM_EDITCOMMANDS,0),
-                       MPVOID);
+                                                                                     QW_PARENT),
+                                                                                      QW_PARENT),
+                                                                                     FID_CLIENT),
+                                                                           WM_COMMAND,
+                                                                           MPFROM2SHORT(IDM_EDITCOMMANDS,0),
+                                                                           MPVOID);
 						break;
 					case MAIN_USERLIST:
 					case MAIN_SETUPLIST:
 						hwndMenu = WinLoadMenu(HWND_DESKTOP,FM3ModHandle,id);
 						if(hwndMenu)
 							PopupMenu(hwnd,
-                        WinWindowFromID(WinQueryWindow(WinQueryWindow(hwnd,
-                                                                      QW_PARENT),
-                                                       QW_PARENT),
-                                        FID_CLIENT),
-												hwndMenu);
+                                                          WinWindowFromID(WinQueryWindow(WinQueryWindow(hwnd,
+                                                                                                        QW_PARENT),
+                                                                                                        QW_PARENT),
+                                                                                                        FID_CLIENT),
+						       hwndMenu);
 						break;
 					default:
 						ret = FALSE;
@@ -1170,7 +1175,7 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 						strcpy(s,tool->help);
 						if(tool->flags & T_DROPABLE)
-              strcat(s,GetPString(IDS_DROPONMETEXT));
+                                                strcat(s,GetPString(IDS_DROPONMETEXT));
 						MakeBubble(hwnd,FALSE,s);
 					}
 				}
@@ -1183,8 +1188,8 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 					if(hwndHelp)
             WinSendMsg(hwndHelp,
                        HM_DISPLAY_HELP,
-											 MPFROM2SHORT(HELP_TOOLBAR,0),
-											 MPFROMSHORT(HM_RESOURCEID));
+		       MPFROM2SHORT(HELP_TOOLBAR,0),
+		       MPFROMSHORT(HM_RESOURCEID));
 					break;
 
 				case IDM_HIDEANYTOOL:		/* hide any tool */
@@ -1434,8 +1439,8 @@ VOID BuildTools (HWND hwndT,BOOL resize) {
         hwndTool = WinCreateWindow(hwndT,
                                    GetPString(IDS_WCTOOLBUTTONS),
                                    s,
-																	 BS_NOPOINTERFOCUS |
-																	 BS_BITMAP | BS_PUSHBUTTON,
+				   BS_NOPOINTERFOCUS |
+				   BS_BITMAP | BS_PUSHBUTTON,
                                    ctrlxpos,
                                    14,
                                    32,
@@ -1460,8 +1465,8 @@ VOID BuildTools (HWND hwndT,BOOL resize) {
           hwndTool = WinCreateWindow(hwndT,
                                      GetPString(IDS_WCTOOLBUTTONS),
                                      NullStr,
-																		 BS_NOPOINTERFOCUS |
-																		 BS_BITMAP | BS_PUSHBUTTON,
+				     BS_NOPOINTERFOCUS |
+				     BS_BITMAP | BS_PUSHBUTTON,
                                      ctrlxpos,
                                      14,
                                      32,
@@ -1481,9 +1486,9 @@ VOID BuildTools (HWND hwndT,BOOL resize) {
 		if(!hwndTool) {
       WinCreateWindow(hwndT,
                       GetPString(IDS_WCTOOLBUTTONS),
-											(!tool->text && tool->id >= IDM_COMMANDSTART &&
-											 tool->id < IDM_QUICKTOOLSTART) ?
-											 command_title(tool->id - IDM_COMMANDSTART) :
+				 (!tool->text && tool->id >= IDM_COMMANDSTART &&
+				 tool->id < IDM_QUICKTOOLSTART) ?
+				 command_title(tool->id - IDM_COMMANDSTART) :
                        tool->text,
                        BS_NOPOINTERFOCUS | BS_PUSHBUTTON,
                        ctrlxpos,
