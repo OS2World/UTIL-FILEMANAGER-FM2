@@ -1111,4 +1111,7 @@ New stuff's at the bottom.  This list isn't necessarily comprehensive.
  o Avoid spurious filldir errors for large drives
    Will still get get math errors for >4GB directories
 
+3.02g:
+ o Update removable drive support to work for USB MSD
+
 $Id$
