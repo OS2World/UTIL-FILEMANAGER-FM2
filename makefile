@@ -1,4 +1,11 @@
-# makefile
+# makefile - build fm/2
+# $Id$
+
+# Revisions:	21 Nov 03 SHL - Comments
+
+# Environment:
+
+#   DEBUG	0 = release build, 1 = debug build
 
 BASE = fm3
 
@@ -20,9 +27,8 @@ $(BASE).res: $(BASE).rc \
 $(BASE).obj: $(BASE).c \
      $(BASE).h dll\version.h
 
-MAK: *.MAK
+MAK: *.mak
   !$(MAKE) /NOLOGO /f $?
-
 
 !INCLUDE makefile_post.mk
 
