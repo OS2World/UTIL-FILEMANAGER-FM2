@@ -1,3 +1,16 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  		01 Aug 04 SHL - Rework fixup usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_DOS
@@ -663,7 +676,7 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               WinSendDlgItemMsg(hwnd,IAF_LISTBOX,LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(sSelect,CCHMAXPATH),
                                 MPFROMP(s));
-              lstrip(rstrip(s));
+              bstrip(s);
               if(*s) {
                 fp = _fsopen(s,"r",SH_DENYWR);
                 if(fp) {
@@ -691,7 +704,7 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 IAF_SAVENAME,
                                 CCHMAXPATH,
                                 filename);
-            lstrip(rstrip(filename));
+            bstrip(filename);
             if(*filename) {
               p = strchr(filename,'.');
               if(p) {
@@ -736,7 +749,7 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               WinSendDlgItemMsg(hwnd,IAF_LISTBOX,LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(sSelect,CCHMAXPATH),
                                 MPFROMP(s));
-              lstrip(rstrip(s));
+              bstrip(s);
               if(*s) {
                 unlinkf(s);
                 WinSendDlgItemMsg(hwnd,IAF_LISTBOX,LM_DELETEITEM,
@@ -846,7 +859,7 @@ MRESULT EXPENTRY IntraIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 INII_NEWAPP,
                                 CCHMAXPATH,
                                 inirec->app2);
-            lstrip(rstrip(inirec->app2));
+            bstrip(inirec->app2);
             if(!*inirec->app2) {
               DosBeep(50,100);
               break;
@@ -856,7 +869,7 @@ MRESULT EXPENTRY IntraIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   INII_NEWKEY,
                                   CCHMAXPATH,
                                   inirec->key2);
-              lstrip(rstrip(inirec->key2));
+              bstrip(inirec->key2);
               if(!*inirec->key2) {
                 DosBeep(50,100);
                 break;
@@ -1359,8 +1372,10 @@ MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             p = malloc(inidata->datalen * 2);
             if(p) {
               memset(p,0,inidata->datalen * 2);
-                fixup(inidata->data,p,inidata->datalen * 2,
-                      inidata->datalen);
+              fixup(inidata->data,
+	            p,
+		    inidata->datalen * 2,
+                    inidata->datalen);
               WinSetDlgItemText(hwnd,IAD_DATA,p);
               free(p);
             }
@@ -1410,11 +1425,11 @@ MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             *applname = 0;
             WinQueryDlgItemText(hwnd,IAD_APPNAME,CCHMAXPATH,applname);
-            lstrip(rstrip(applname));
+            bstrip(applname);
             if(*applname) {
               *s = 0;
               WinQueryDlgItemText(hwnd,IAD_KEYNAME,CCHMAXPATH,s);
-              lstrip(rstrip(s));
+              bstrip(s);
               if(*s) {
                 appchanged = (BOOL)WinSendDlgItemMsg(hwnd,IAD_APPNAME,
                                                      EM_QUERYCHANGED,
@@ -1431,7 +1446,7 @@ MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 }
                 *s = 0;
                 WinQueryDlgItemText(hwnd,IAD_DATA,CCHMAXPATH,s);
-                lstrip(rstrip(s));
+                bstrip(s);
                 WinEnableWindow(WinWindowFromID(hwnd,DID_OK),(*s != 0));
               }
               else
@@ -1459,11 +1474,11 @@ MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             inidata->isbinary = WinQueryButtonCheckstate(hwnd,IAD_ISBINARY);
             *applname = 0;
             WinQueryDlgItemText(hwnd,IAD_APPNAME,CCHMAXPATH,applname);
-            lstrip(rstrip(applname));
+            bstrip(applname);
             if(*applname) {
               *keyname = 0;
               WinQueryDlgItemText(hwnd,IAD_KEYNAME,CCHMAXPATH,keyname);
-              lstrip(rstrip(keyname));
+              bstrip(keyname);
               if(*keyname) {
                 *data = 0;
                 WinQueryDlgItemText(hwnd,IAD_DATA,CCHMAXPATH,data);
@@ -2448,7 +2463,8 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                              FM3ModHandle,
                              STR_FRAME,
                              &sip)) {
-                  if(!*rstrip(tofind)) {
+                  rstrip(tofind);
+                  if (!*tofind) {
                     DosBeep(50,100);
                     break;
                   }
