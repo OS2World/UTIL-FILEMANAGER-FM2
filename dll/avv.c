@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Archive containers
+
+  Revisions	31 Jul 04 SHL - ArcReviewDlgProc: correct nameis... decodes
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -932,9 +946,9 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           admp->info->datetype = get_int2_from_window(hwnd,AD_DATEPOS);
           admp->info->fdflds = get_int_from_window(hwnd,AD_NUMDATEFLDS);
           admp->info->fnpos = get_int_from_window(hwnd,AD_FNAMEPOS);
-          admp->info->nameislast = (get_int2_from_window(hwnd,AD_NAMEISLAST)) ? TRUE : FALSE;
-          admp->info->nameisnext = (get_int3_from_window(hwnd,AD_NAMEISLAST)) ? TRUE : FALSE;
-          admp->info->nameisfirst = (get_int4_from_window(hwnd,AD_NAMEISLAST)) ? TRUE : FALSE;
+          admp->info->nameislast = (get_int2_from_window(hwnd,AD_FNAMEPOS)) ? TRUE : FALSE;
+          admp->info->nameisnext = (get_int3_from_window(hwnd,AD_FNAMEPOS)) ? TRUE : FALSE;
+          admp->info->nameisfirst = (get_int4_from_window(hwnd,AD_FNAMEPOS)) ? TRUE : FALSE;
           {
             INT ret;
 
