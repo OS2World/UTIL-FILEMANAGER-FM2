@@ -1,0 +1,7 @@
+NAME           DATABAR      WINDOWAPI
+
+NEWFILES
+
+DESCRIPTION   'FM/3 Databar miniapp copyright (c) 1993-98 by M. Kimes'
+PROTMODE
+STACKSIZE     65536

@@ -1,0 +1,7 @@
+NAME           INI      WINDOWAPI
+
+NEWFILES
+
+DESCRIPTION   'FM/3 INI miniapp copyright (c) 1993-98 by M. Kimes'
+PROTMODE
+STACKSIZE     288416

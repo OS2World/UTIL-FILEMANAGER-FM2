@@ -1,0 +1,34 @@
+@echo off
+rem
+rem first run chkdsk/f to make sure the drive's clean
+rem
+
+CHKDSK %1 /F
+
+rem
+rem suggestions:
+rem
+rem -i for idle priority (not with DOS programs running)
+rem -o for "optimize without asking"
+rem -p in low memory situations
+rem
+rem since fatopt returns the percentage of fragmented files when run in
+rem report-only mode (-r), you could set this command file up to only
+rem run to optimize when a report run indicated that fragmentation was
+rem above a certain percentage...
+rem
+
+rem
+rem This notice is just so users know what's going on and can change it...
+rem
+ECHO This is FATOPT.CMD, which you can customize to use any FAT optimizing
+ECHO program you like.
+
+FATOPT.EXE %1
+
+rem
+rem if there's an error or user abort, pause the display so the user
+rem can see what's happened.
+rem
+
+IF ERRORLEVEL == 1 PAUSE

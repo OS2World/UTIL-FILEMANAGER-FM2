@@ -1,0 +1,63 @@
+;
+;This file contains some utility definitions for the FM/2 toolbar.
+;
+;
+Archive Files/Directories
+Archive
+1
+1029
+;
+Extract From Archives
+Extract
+1
+1030
+;
+Kill Process
+KillPrc
+0
+2003
+;
+Undelete Files
+Undel
+0
+2004
+;
+Instant Command File
+Instant
+0
+2006
+;
+OS/2 Command Line
+OS/2
+0
+2007
+;
+Collect Files/Directories
+Collect
+0
+1011
+;
+Seek and scan files
+SeekScan
+0
+1047
+;
+See all files
+SeeAll
+8
+1067
+;
+Command toolbox
+Cmds
+0
+4900
+;
+Sort toolbox
+Sort
+0
+4902
+;
+Select toolbox
+Select
+0
+4903

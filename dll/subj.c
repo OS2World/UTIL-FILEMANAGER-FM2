@@ -1,0 +1,136 @@
+#define INCL_WIN
+#define INCL_DOS
+#define INCL_DOSERRORS
+
+#include <os2.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include "fm3dll.h"
+#include "fm3dlg.h"
+#include "fm3str.h"
+
+#pragma alloc_text(FMINPUT,Subject)
+
+
+INT Subject (HWND hwnd,CHAR *filename) {
+
+  APIRET        rc;
+  EAOP2         eaop;
+  PGEA2LIST     pgealist;
+  PFEA2LIST     pfealist;
+  PGEA2         pgea;
+  PFEA2         pfea;
+  CHAR         *value,subject[42],oldsubject[42];
+  STRINGINPARMS sip;
+  INT           ret = 0;
+
+  *subject = 0;
+  pgealist = malloc(sizeof(GEA2LIST) + 64);
+  if(pgealist) {
+    memset(pgealist,0,sizeof(GEA2LIST) + 64);
+    pgea = &pgealist->list[0];
+    strcpy(pgea->szName,SUBJECT);
+    pgea->cbName = strlen(pgea->szName);
+    pgea->oNextEntryOffset = 0L;
+    pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
+    pfealist = malloc(1024);
+    if(pfealist) {
+      memset(pfealist,0,1024);
+      pfealist->cbList = 1024;
+      eaop.fpGEA2List = pgealist;
+      eaop.fpFEA2List = pfealist;
+      eaop.oError = 0L;
+      rc = DosQueryPathInfo(filename,FIL_QUERYEASFROMLIST,
+                            (PVOID)&eaop,
+                            (ULONG)sizeof(EAOP2));
+      free(pgealist);
+      if(!rc) {
+        pfea = &eaop.fpFEA2List->list[0];
+        value = pfea->szName + pfea->cbName + 1;
+        value[pfea->cbValue] = 0;
+        if(*(USHORT *)value == EAT_ASCII)
+          strncpy(subject,value + (sizeof(USHORT) * 2),39);
+        subject[39] = 0;
+      }
+      free(pfealist);
+      if(rc == ERROR_SHARING_VIOLATION || rc == ERROR_ACCESS_DENIED) {
+        saymsg(MB_CANCEL,
+               hwnd,
+               GetPString(IDS_OOPSTEXT),
+               GetPString(IDS_EASBUSYTEXT),
+               filename);
+        return 2;
+      }
+      else if(rc) {
+        DosBeep(50,100);
+        return 2;
+      }
+    }
+  }
+  memset(&sip,0,sizeof(sip));
+  strcpy(oldsubject,subject);
+  sip.help = GetPString(IDS_SUBJECTINPUTHELPTEXT);
+  sip.ret = subject;
+  sip.prompt = GetPString(IDS_SUBJECTINPUTPROMPTTEXT);
+  sip.inputlen = 40;
+  sip.title = filename;
+  if(WinDlgBox(HWND_DESKTOP,hwnd,InputDlgProc,FM3ModHandle,STR_FRAME,&sip)
+     && isalpha(*filename) &&
+     !(driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE)) {
+    subject[39] = 0;
+    lstrip(rstrip(subject));
+    if(strcmp(oldsubject,subject)) {
+
+      ULONG    ealen;
+      USHORT   len;
+      CHAR    *eaval;
+
+      len = strlen(subject);
+      if(len)
+        ealen = sizeof(FEA2LIST) + 9 + len + 4;
+      else
+        ealen = sizeof(FEALIST) + 9;
+      if(!DosAllocMem((PPVOID)&pfealist,ealen + 1L,
+                       OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE)) {
+        memset(pfealist,0,ealen + 1);
+        pfealist->cbList = ealen;
+        pfealist->list[0].oNextEntryOffset = 0L;
+        pfealist->list[0].fEA = 0;
+        pfealist->list[0].cbName = 8;
+        strcpy(pfealist->list[0].szName,SUBJECT);
+        if(len) {
+          eaval = pfealist->list[0].szName + 9;
+          *(USHORT *)eaval = (USHORT)EAT_ASCII;
+          eaval += sizeof(USHORT);
+          *(USHORT *)eaval = (USHORT)len;
+          eaval += sizeof(USHORT);
+          memcpy(eaval,subject,len);
+          pfealist->list[0].cbValue = len + (sizeof(USHORT) * 2);
+        }
+        else
+          pfealist->list[0].cbValue = 0;
+        eaop.fpGEA2List = (PGEA2LIST)0;
+        eaop.fpFEA2List = pfealist;
+        eaop.oError = 0L;
+        rc = DosSetPathInfo(filename,FIL_QUERYEASIZE,(PVOID)&eaop,
+                            (ULONG)sizeof(EAOP2),DSPI_WRTTHRU);
+        DosFreeMem(pfealist);
+        if(rc)
+          Dos_Error(MB_ENTER,
+                    rc,
+                    HWND_DESKTOP,
+                    __FILE__,
+                    __LINE__,
+                    GetPString(IDS_ERRORSETTINGSUBJECTTEXT),
+                    filename);
+        else
+          ret = 1;
+      }
+      else
+        DosBeep(250,100);
+    }
+  }
+  return ret;
+}

@@ -1,0 +1,7 @@
+NAME           VIEWINFS      WINDOWAPI
+
+NEWFILES
+
+DESCRIPTION   'FM/3 View all .INFs miniapp copyright (c) 1993-98 by M. Kimes'
+PROTMODE
+STACKSIZE     122840

@@ -1,0 +1,7 @@
+NAME           FM3      WINDOWAPI
+
+NEWFILES
+
+DESCRIPTION   'F(ile) M(anager)/3 copyright (c) 1993-98 by M. Kimes'
+PROTMODE
+STACKSIZE     655360

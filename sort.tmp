@@ -1,0 +1,58 @@
+;
+;This file contains some sorting definitions for the FM/2 toolbar.
+;
+;
+Filter Container
+Filter
+8
+5001
+;
+Sort by filename
+Name
+0
+3005
+;
+Sort by size
+Size
+0
+3006
+;
+Sort by EA size
+EAsz
+0
+3007
+;
+Sort by first extension
+1st
+0
+3008
+;
+Sort by last extension
+Last
+0
+3009
+;
+Sort by lastwrite date
+Date
+0
+3010
+;
+Reverse sort
+Rev
+8
+3015
+;
+Command toolbox
+Cmds
+0
+4900
+;
+Utility toolbox
+Utils
+0
+4901
+;
+Select toolbox
+Select
+0
+4903

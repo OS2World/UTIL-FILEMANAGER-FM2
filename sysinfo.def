@@ -1,0 +1,7 @@
+NAME           SYSINFO    WINDOWAPI
+
+NEWFILES
+
+DESCRIPTION   'FM/3 Sysinfo miniapp copyright (c) 1993-98 by M. Kimes'
+PROTMODE
+STACKSIZE     188416

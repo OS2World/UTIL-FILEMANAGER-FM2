@@ -1,0 +1,21 @@
+#include <os2.h>
+#include "dll\fm3dll.h"
+#include "dirsize.h"
+
+DEFAULTICON                 icons\DIRSIZE.ICO
+
+RCINCLUDE dirsize.dlg
+
+BITMAP  MAIN_TRASHCAN       bitmaps\TRASH.BMP
+
+BITMAP DIR_FRAME            bitmaps\FILE.BMP
+BITMAP DIR_FOLDERICON       bitmaps\PMAP.BMP
+BITMAP 65534                bitmaps\EMPTY.BMP
+BITMAP IDM_DELETE           bitmaps\DELETE.BMP
+BITMAP IDM_EXTRACT          bitmaps\EXTRACT.BMP
+BITMAP IDM_PRINT            bitmaps\PRINT.BMP
+BITMAP IDM_PERMDELETE       bitmaps\PERMDEL.BMP
+BITMAP IDM_FINDFIRST        bitmaps\FINDFRST.BMP
+BITMAP IDM_FINDNEXT         bitmaps\FINDNEXT.BMP
+BITMAP IDM_FINDPREV         bitmaps\FINDPREV.BMP
+

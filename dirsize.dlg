@@ -1,0 +1,41 @@
+DLGINCLUDE 1 "dirsize.h"
+
+DLGTEMPLATE DIRSIZE_FRAME LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "FM/2:  Directory sizes", DIRSIZE_FRAME, 12, 6, 254, 128, 
+            WS_VISIBLE, FCF_TITLEBAR
+    BEGIN
+        GROUPBOX        "", -1, 34, 28, 57, 82, NOT WS_GROUP
+        CTEXT           "Select a drive to display size information on, then"
+                        " click Show.", -1, 38, 34, 49, 65, DT_WORDBREAK | 
+                        NOT WS_GROUP
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        LISTBOX         DIRSIZE_LISTBOX, 2, 2, 30, 124, WS_GROUP
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+        DEFPUSHBUTTON   "Show", DID_OK, 44, 110, 40, 14, BS_NOPOINTERFOCUS | 
+                        WS_GROUP
+        PUSHBUTTON      "Close", DID_CANCEL, 44, 2, 40, 14, 
+                        BS_NOPOINTERFOCUS
+        LTEXT           "Label:", DIRSIZE_LABEL, 96, 114, 152, 8, DT_VCENTER
+        LTEXT           "Unit size:", DIRSIZE_UNITSIZE, 96, 102, 152, 8, 
+                        DT_VCENTER
+        LTEXT           "Units free:", DIRSIZE_UNITSFREE, 96, 90, 152, 8, 
+                        DT_VCENTER
+        LTEXT           "Units used:", DIRSIZE_UNITSUSED, 96, 78, 152, 8, 
+                        DT_VCENTER
+        LTEXT           "Bytes free:", DIRSIZE_BYTESFREE, 96, 66, 152, 8, 
+                        DT_VCENTER
+        LTEXT           "Bytes used:", DIRSIZE_BYTESUSED, 96, 54, 152, 8, 
+                        DT_VCENTER
+        LTEXT           "Local drive", DIRSIZE_LOCAL, 96, 42, 152, 8, 
+                        DT_VCENTER
+        LTEXT           "IFS:", DIRSIZE_IFS, 96, 30, 152, 8, DT_VCENTER
+        LTEXT           "Percent used:", DIRSIZE_PERCENT, 96, 18, 152, 8, 
+                        DT_VCENTER
+        CONTROL         "", DIRSIZE_SLIDER, 96, 2, 152, 14, WC_SLIDER, 
+                        SLS_HORIZONTAL | SLS_CENTER | SLS_READONLY | 
+                        SLS_RIBBONSTRIP | SLS_HOMELEFT | SLS_PRIMARYSCALE1 | 
+                        WS_GROUP | WS_TABSTOP | WS_VISIBLE
+                        CTLDATA 12, 0, 101, 0, 0, 0
+    END
+END

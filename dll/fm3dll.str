@@ -1,0 +1,991 @@
+Click this button to open a Directory\rContainer for the highlighted directory\rin the Drive Tree below.  Or click B2 to\rWalk to a directory to open.  Or drop an\robject here to open its directory.
+Dropping here will open a Directory container for the item.
+Click this button to set FM/2's window\rsize to an "ideal" size.
+This control indicates how\rmany background threads\rare currently active.\rB1 = show list of active threads\rB2 = close list of active threads\rB3 or chord = FM/2 open windows dialog
+B1 = Open new directory\rB2 = Change directories\rB3 = Tile child windows
+B1 = Toggle quicklists\rB2 = Toggle toolbar\rB3 = Toggle drive buttons\r
+This window shows the current\ritem's attributes.\rClick to change date\rand/or attributes.
+This window shows the current\ritem's date and time.\rClick to get detailed\rinformation on item.
+This window shows the current\ritem's name.\rClick to rename.
+Click me for a\rmini command line.
+Pick a command to run from the list or B2 to edit commands.
+Pick a name from the state list or get a popup menu.
+Pick a directory from the list or get a popup menu.
+Pick a drive from the list.
+Pick a toolbox from the list.
+Dropping here will add the directory to the list.
+You're dragging %lu object(s) over the toolbar.
+<New directory>
+Common directories
+Toolboxes
+States
+Commands
+ Drive Tree
+ %lu Drives
+k free
+<Attr>
+Swapfile:
+DT:
+Filter:
+<All>
+ Dragging root directory...
+ Dragging directory...
+ Dragging file...
+ Drive is invalid -- rescan if required.
+Error!
+Can't start %s %s
+                      FM/2 is free software from Mark Kimes.
+Freely redistributable.  Code available.
+ You are here --> x
+WinCreateWindow failed: %s
+Memory allocation failure!?!
+\r(You can drop on me.
+Dropping here will copy or move to this drive.
+~Ideal size
+Hi~de menu
+Unh~ide Menu
+Hide
+Delete
+Edit
+10.System Proportional
+WC_OBJECTWINDOW
+WC_BUBBLE
+8.Helv
+6.Helv
+WC_TOOLBUTTONS
+WC_DRIVEBUTTONS
+/HELP
+FM/2_Temp
+8.Times New Roman
+Detach Request
+This window tells you how many objects\rand how many bytes are in the container.\rYou can drag me (this dir), or drag onto\rme (into this dir).
+This window tells you how many objects\rand how many bytes are selected.\rDrag me and you drag this directory.\rDrop on me and you drop into this\rdirectory (this is container whitespace).\rB1 = Select menu\rB2 = Compare select menu
+Click to change view type.
+Click to change sort type.
+Click to change filter.
+Click this button to maximize or restore\rthis directory container.
+This is the "Folder button."\rB1 = Move back one directory in tree (to parent)\rB2 = Menu or previous directory (as configured)\rB3 or chord = Rescan directory\rDrop on me to change directory
+Dropping here can change the directory into which the container "looks."
+Scanning...
+FM/2:  Select filter
+FM/2:  Deselect filter
+ Size:  %s bytes%s%s%s
+Enter the name of the file to create in this directory.
+Filename to create:
+FM/2:  Create new file
+Couldn't create "%s"
+Can't access draginfo.\rThis help function broken by Warp, sorry -- complain to IBM.
+Drop help
+You were dragging %lu object%s.\r\rYou had %s%sobject %s%stargetted.\r\rThe action requested was %s.
+no
+Copy
+Move
+Link
+ Dragging file system object(s)...
+ [Rescan suggested]
+Dri~ves...
+WC_DIRCONTAINER
+WC_DIRSTATUS
+WC_TREECONTAINER
+WC_TREEOPENBUTTON
+WC_TREESTATUS
+WC_MAINWND
+WC_MAINWND2
+/OPEN
+/CLOSE
+/SAVE
+/NOSAVE
+/KEEP
+/NOKEEP
+/FILTER
+                                            FM/2 mini-command line help
+Type "/OPEN path" to open a new Directory Container.\r\rType "/CLOSE path" to close a Directory Container.\r\rType "/FILTER filter" to filter a Directory Container.\r\rType "/KEEP" or "/NOKEEP" to set the type of cmd window (autoclose or not).\r\rType "/SAVE" or "/NOSAVE" to save (or not) cmd lines between sessions.\r\r[Up arrow] or [down arrow] or [+] button for listbox of previous command lines, then [Delete] to remove one or [Enter] to reuse.\r\rOr type a command to be executed (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line.
+WC_AUTOVIEW
+WC_LED
+8.Helv.Bold
+4.System VIO
+10.System VIO
+10.System Monospaced
+                           FM/2 is free software from Mark Kimes.
+Use freely.  Code available.
+This window shows you how many objects\rand how many bytes are selected.\rDrop on me to collect objects.\rClick me for the select menu.
+This window shows you how many objects\rand how many bytes are in the Collector.\rDrop on me to collect objects.
+Collecting...
+File "%s" may not be a list.\r
+Continue to try to Collect from it?
+Seek & scan in progress.
+ Collector
+WC_COLLECTOR
+FM/2:  Collector
+WC_COLSTATUS
+WC_STATUS
+WC_TOOLBACK
+WC_DRIVEBACK
+  **Archiver report:\n\n\n
+Say what?
+The archive you were viewing (%s) has become inaccessible.  Possible reasons:\r\r1. It's been erased.\r  a. If you were viewing it as a subarchive, you may have closed the parent archive.\r\r2. Something else has it open and is denying access.\r\r3. File system glitch (horrors) -- unlikely.
+Shame, shame, shame...
+Probably bunged-up archiver information.
+An error occured when trying to obtain information from the archiver about %s.  Errors noted (bad start-of-list can cause all):%s%s%s
+  *Start-of-list string not found.
+  *No file lines found.
+  *End-of-list string not found.
+Compr~essed size
+~Date
+This window tells you how many objects\rand how many bytes are in the container.\rDrop on me to drop into archive.
+This window tells you how many objects\rand how many bytes are selected.\rDrop on me to drop into archive.\rClick me for select menu.
+Click to change view type.\r(Not yet implemented)
+Click to change extract directory\r(or enter a new directory into the\rentry field at the bottom of the\rwindow).  Or drop on me.
+Dropping here can change the extract directory.
+You have elected to %s the object%s above from archive "%s".  Unhighlight any objects which you do not wish to %s.
+delete
+refresh
+The following member%s of archive "%s" exist%s in the extract directory "%s".  Unhighlight any you do not want to replace existing files.
+FM/2:  Execute archive file
+FM/2:  Virus scan archive
+Filename
+Old size
+New size
+Date/time
+Date
+Time
+Warning:
+It's a good idea to specify the drive.
+Dropping here will copy the objects into the archive "%s".  If an object by the same name already exists in the archive, it'll be overwritten.
+ Dragging archive member(s)...
+ Dragging archive file...
+WC_ARCCONTAINER
+WC_ARCSTATUS
+Click Help for detailed info.
+Recently used dirs
+This is the 'current' directory -- type in a new one.
+This is a list of recently used directories.
+This is a list of user-defined directories -- Add, Delete or double-click one.
+This is a list of drives.  Double-click one to switch to it.
+This is a list of directories.  Double-click one to 'walk' into it.
+FM/2:  Select a directory -- copy target
+FM/2:  Select a directory -- move target
+FM/2:  Select a directory -- extract
+FM/2: select directories to compare
+FM/2: set directories
+DUPE: Reading files
+SCAN: Searching
+Inserting...
+DUPE:  Sorting...
+DUPE:  Comparing...
+DUPE: Checked %lu of %lu
+Help
+Enter the desired text, then click Okay.
+Pick codepage:
+Click the Help button for more info.
+This is the name of the archive file.
+This is the command that will be sent to the archiver.
+These are filemasks that will be sent to the archiver.
+FM/2: Show archiver help screen
+Dropping here can change the extract directory.
+<Various>
+This is the directory to which files will be extracted.
+Compare "%s"
+ to "%s"...
+The files are different sizes.
+%lu bytes vs. %lu bytes
+Files don't match.
+Comparing...
+Read error after offset %lu (%08lx)
+Files appear to match.
+I wonder why...DOAH!
+Complete.
+Matched read error after offset %lu (%08lx)
+Odd error.
+Mismatch @ offset %lu (%08lx)
+Can't open "%s"
+Silliness alert
+You're trying to compare an object to itself.
+Move of "%s" to "%s" failed.
+Copy of "%s" to "%s" failed.
+Larger
+Smaller
+Newer
+Older
+LName
+LA Date
+LA Time
+Cr Date
+Cr Time
+Hold -- building lists...
+Hold -- filling containers...
+Ready (filtered).
+Ready.
+Hold -- reading disk...
+Hold -- deleting...
+Hold -- moving...
+Hold -- copying...
+Hold -- ???...
+Hold -- deselecting...
+Hold -- inverting...
+Hold -- selecting...
+Dropping here can set the command line.
+FM/2:  Executing an Association
+<Unknown DOS process>
+<Unknown process>
+Argh
+Couldn't run PSTAT.EXE /C\n
+Redirection error
+I choked.
+Is an English version of PSTAT.EXE available on your PATH?
+DosQProcStat failed -- can't list processes.
+DosKillProcess failed.
+Sorry, can't seem to show that process.
+Kill Process:
+Select a process to kill, then click the Kill button to kill the process or Show to attempt to show it.  Click Cancel to exit without doing anything.  Note this requires an English version of PSTAT.EXE to be on your PATH (if not using DosQProcStat).\r\rBe careful with this.
+DosQueryPathInfo failed on "%s".  You might want to exclude the drive on the command line with /%c (see READ.ME).%s
+  Is the drive formatted using a file system that OS/2 understands?
+  Is the drive properly formatted and network software properly installed?
+All highlighted files will be affected (CTRL-click to deselect).
+The year for the file's new date.
+The month for the file's new date.
+The day for the file's new date.
+The hour for the file's new time.
+The minute for the file's new time.
+The second for the file's new time.
+~Readonly
+~System
+~Hidden
+~Archived
+on
+off
+unchanged
+Uh, yo ... hello, anybody home?
+You might find it advantageous to check the Use Date checkbox or ungrey one of the attribute checkboxes so I'd have something to do...
+<Unknown/Unusable>
+<Unusable>
+No info to save!
+Note:
+Saving new ARCHIVER.BB2 to default directory.
+Error checking archiver
+Program "%s" not found.
+"%s" doesn't appear to be executable.
+OS/2 choked trying to determine the application type for "%s".
+Start list empty!\r
+End list empty.\r
+Name field probably bogus.\r
+<Can't open file>
+<Not applicable>
+The text (if applicable) that your archiver produced.
+Bzzzzt.
+I need something in that field first (but thank you very much for playing).
+Oops.
+Select text from listbox first.
+Warnings:
+EA name already exists.
+EA name is reserved.
+Wrong type for EA name.
+Fake
+No EAs.
+These are the files you can look at -- pick one.
+These are the EA types this object contains -- pick one.
+This is the EA's data -- change it if you like.
+Mayday!
+\r\rWould you like help on UNDELETE?
+FM/2: Undelete files drive %c:
+Uh oh
+Couldn't start thread.
+Undelete:
+Select files to undelete, then click the Okay button.  Click Cancel to exit without doing anything.  Change the mask in the entry field if desired, or select another drive from the dropdown listbox.\r\rNote this requires UNDELETE.COM to be on your PATH (it is in the default installation) and the UNDELETE environment variable to be set for the drive in CONFIG.SYS.  Type HELP UNDELETE at a command line for more information.
+The %s file has been marked ReadOnly -- please correct.
+FM/2:  Help
+WC_MLEEDITOR
+WC_INIEDITOR
+WC_SEEALL
+WC_NEWVIEW
+WC_SEESTATUS
+WC_VIEWSTATUS
+FM/2:  See all files
+ <Untitled>
+ Internal Viewer
+FM/2 Viewer
+WC_ERRORWND
+WC_MINITIME
+WC_DATABAR
+archive
+Error #%lu accessing "%s"
+ -- Empty or open removable drive?
+ -- CD-ROM drive with music disk?
+ -- media is write protected.
+ -- drive is locked by another process.
+ -- Empty diskette drive?
+ -- Unformatted diskette in diskette drive?
+ -- Phantom diskette drive (try excluding it with /%c)?
+ -- diskette is write protected.
+ -- diskette is locked by another process.
+No begin line in "%s"
+Can't open "%s" for "%s"
+Silly error
+Sort of a waste of time unless you pick something more than that to merge...
+Enter the name to use for a folder object that will contain the other objects to be created.  The subfolder will be placed in the folder you specified.  You can move it elsewhere from there if desired.  Click Okay when complete, or Cancel to abort.  Leave blank if you don't want a subfolder to be created.
+Name for new folder to contain objects:
+FM/2: Folder name for new objects
+Folder "%s" creation failed.
+System configuration error:
+Environment variable %s is not set.  This variable should be set in CONFIG.SYS to point to all directories containing %s files.
+No files found.
+FM/2:  View HELP files
+\r\rModule: %s\nLinenumber: %d\rOS/2 error:%s
+                                  Error Message Information
+\r\rModule: %s\nLinenumber: %d\rOS/2 error: %d\rClass: %s\rAction: %s\rLocation: %s\r
+                                  OS/2 Error Message Information
+Out of resource
+Temporary situation
+Authorization failed
+Internal error
+Device hardware failure
+System failure
+Probable application failure
+Item not located
+Bad format for call/data
+Resource or data locked
+Incorrect media, CRC check
+Action already taken or done
+Unclassified
+Cannot perform requested action
+Timeout
+Error in file "Error.c"
+Unknown
+Retry immediately
+Delay and retry
+Bad user input - get new values
+Terminate in an orderly manner
+Terminate immediately
+Ignore error
+Retry after user intervention
+Error in file "Error.c"
+Unknown
+Unknown
+Random access device such as a disk
+Network
+Serial device
+Memory
+Error in file "Error.c"
+Unknown
+Click me to go to a\rspecific line number.
+Click me to go to a\rspecific offset.
+Click me to toggle hex/text view,\ror drag me.
+ Searching...
+ No matching text found.
+ Building list of selected lines...
+ Saving to clipboard...
+ Appending to clipboard...
+ Writing to file...
+Can't open "%s" for write.
+ No lines selected...
+ Formatting...
+Error reading "%s"
+File "%s" is zero length.
+ Loading...
+Normal cursored background
+Selected cursored background
+Normal background
+Selected background
+Normal foreground
+Found foreground
+Selected foreground
+Selected found foreground
+http: background
+http: foreground
+ftp: foreground
+ftp: background
+FM/2: 'Viewer' colors
+Normal cursored background
+Selected cursored background
+Normal background
+Selected background
+Selected foreground
+Normal foreground
+Readonly foreground
+System/Hidden foreground
+FM/2: 'See all files' colors
+Foreground
+Background
+FM/2: 'Editor' colors
+byte
+line
+ No lines to display
+ Working...
+ Line:\32
+ selected)
+ found)
+ Offset:\32
+ <Untitled>
+Enter the # of the line to which you want to jump.\r\rClick Okay when complete, or Cancel to abort.
+Enter the byte offset from the start of the file to which you want to jump.\r\rClick Okay when complete, or Cancel to abort.
+FM/2: Jump to line
+FM/2: Jump to offset
+Jump to %s #(%lu-%lu)?
+offset
+Jan
+Feb
+Mar
+Apr
+May
+Jun
+Jul
+Aug
+Sep
+Oct
+Nov
+Dec
+A string identifying this archive type, for humans.
+The command that causes your archiver to add files.
+The command that causes your archiver to move files.
+The usual extension of this type of archive.
+The command that causes your archiver to extract files.
+The command that causes your archiver to extract files w/ dirs.
+The signature of this archive type (see help).
+The command that causes your archiver to list archive contents.
+The command that causes your archiver to test archives.
+The command that causes your archiver to add files w/ dirs.
+The command that causes your archiver to move files w/ dirs.
+The command that causes your archiver to add files w/ dirs/recursion.
+The command that causes your archiver to delete files.
+The position of the archive signature in an archive.
+The field of filenames in an archive listing.
+The field of uncompressed sizes in an archive listing.
+The number of fields in a date in a listing.
+The first field of dates in an archive listing, date type.
+The field of compressed sizes in an archiver listing.
+The string that comes before files in a listing.
+The string that comes after files in a listing.
+Changes recorded in memory.
+Rewrite ARCHIVER.BB2 file?%s
+\r\r(Not recommended; errors present)
+ARCHIVER.BB2
+Hint:  CTRL-click to deselect an item.
+Select an action to perform.
+This is the target for the action.
+Enter new target filename
+Change
+Possible error
+File "%s" may not be a list.\rContinue to try to select from it?
+ Compare selections require two or more Directory Containers to be open.
+ Building lists...
+Can't read EAs of "%s" right now; something else has access to it.
+Enter a description for this object (up to 40 characters).  This is the same "Subject" that's shown in a WPS object's notebook on the first File page (the standard .SUBJECT EA).  Click Okay when complete, or Cancel to abort.
+Description of object:
+Error setting .SUBJECT EA on object "%s"
+len = %lu line = %lu pos = %lu offset = %lu
+ Internal Viewer/Editor
+Undo
+ keystroke(s)\t^u
+ cut to clipboard\t^u
+ clear selection\t^u
+ paste from clipboard\t^u
+Redo
+System Monospaced
+File has changed.  Save changes?
+File has changed.  Load new file over it?
+Enter the # of pixels on which you want tabstops located.\r\rClick Okay when complete, or Cancel to abort.
+Tabstops every # pixels?
+FM/2: Set visual tabstops
+Enter the # spaces to which you want tabs expanded.  Enter 0 if you want real tabs when saving.\r\rClick Okay when complete, or Cancel to abort.
+Expand tabs to # spaces?
+FM/2: Set tabstop space equivalants
+About This Thing
+FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 by M. Kimes\r(Barebones Software)\rAll Rights Reserved
+LAN Error report
+Your LAN is broken -- it's returning files when directories are requested.  Compensating, but expect a slowdown.\r\rNote:  FM/2 is not responsible for fixing broken LANs.  Contact your LAN supplier and advise them that your LAN does not properly respond to DosFindFirst requests with MUST_HAVE_DIRECTORY set.  If your LAN supplier would like more information on their bug, have them contact me at one of the addresses in the READ.ME file.\r\rClick No to stop this notice from showing again for awhile.
+Don't forget
+To notify your LAN supplier of their bug.  I can't guarantee FM/2 to work properly with broken FSDs.  If you are a user on a LAN, ask your system administrator to report the bug to the LAN supplier for you.
+FM/2 found no subdirs in first %lu entries for %c:
+  OS/2 returned error #%lu searching %s
+FSD Error report
+The %s file system driver for drive %c: is broken.  Files were returned when requesting that only directories be returned.  Please report this error to IBM (or whoever wrote the broken FSD in question) and tell them that their FSD does not respond properly to DosFindFirst requests with MUST_HAVE_DIRECTORY set.\r\rClick No to stop this notice from showing again for awhile.
+Don't forget
+To notify the FSD supplier of their bug.  I can't guarantee FM/2 to work properly with broken FSDs.  If the FSD supplier needs more information, please give them the addresses from the READ.ME file so they can get in touch with me.
+Record insert failed.
+Record allocate failure.
+FM/2 found no subdirs in first %lu entries for drive %c:%s
+.  You may need to set the Remote Bug toggle in FM/2's internal Settings notebook.
+local
+remote
+Loading... %d
+Text contains NULs.  Replace with spaces?
+I hear and obey...
+File load cancelled per user request.
+Write error...
+Enter a search string%s
+ and optional replace string.
+"%s" not found.
+Replace with "%s"?
+Nope
+Drive %c: is %s.
+being ignored.
+invalid.
+not writeable.
+Confirm:
+Directory "%s" doesn't exist.  Create it?
+Creation of "%s" failed.
+"%s" exists and isn't a directory.
+Enter the pathname of the directory that you'd like to create.  This pathname can be several layers deep if desired; FM/2 will create any layers as required.  Click Okay when ready to create directory, or Cancel to abort.
+Pathname for new directory:
+FM/2:  Create directory
+Name "%s" contains wildcards or is a file or is a root directory or other dumb stuff -- try again.
+Click the Help button for detailed info.
+Click a drive to switch to it.
+Enter a filename or a mask, then press [Enter].
+Double-click a directory to switch to it.
+Double-click a filename to use it.
+Enter filename to insert
+Insert
+Enter filename to load
+Load
+Enter filename
+Okay
+%s exists but is not a normal file.
+%s is 0-length.
+%s doesn't exist.
+Create new file?
+FM/2: Enter export filename
+%s exists.  Erase?
+FM/2:  Rearrange tools
+FM/2:  Edit tool
+This is the quick help text.
+This is the button text.
+This is the button ID -- click Help for list.
+Duplicate
+That ID already has a tool.
+FM/2: Pick tool to %0.81s
+FM/2:  Load Toolbox
+OS/2 can't find directory "%s"?
+There are no more directories under there...
+PM limit encountered
+Listbox is full.  No more filenames can be added.
+FM/2: Instant command file (path: %s)
+/* Instant CMD file via FM/2 -- REXX */
+Instant Command:
+You are actually writing a command (batch) file that will be run once and then delete itself. The file will begin in directory "%s%s" and the line "DEL %s%sFMTMP%d.CMD" will be added at the end to clean up (so don't use EXIT). It will be run in a windowed command session, and can contain anything you'd normally put into a command file.  (Note this takes the default directory from the currently selected Tree directory object.)\r\rView OS/2 Command Help?
+437 USA
+850 Multilingual
+852 Latin 2
+857 Turkish
+860 Portuguese
+861 Iceland
+863 French-Canadian
+865 Nordic
+866 Russian OS/2
+878 Russian KOI8-R
+932 Japan
+934 Korea
+936 China
+938 Taiwan
+942 Japan SAA
+944 Korea SAA
+946 China SAA
+948 Taiwan SAA
+949 Korea KS
+950 Taiwan (Big 5)
+1004 DTP/Win
+1251 Russian Win
+1381 China GB
+0
+DosStartSession failed to run "%s %s"
+DosExecPgm bombed.
+We are all Books of Blood.
+"Is THIS your card?"
+I'm a victim of coicumstance!
+"Abbot!  ABBOT!!"
+Neils was Bohring.
+"You gonna eat that?"
+"'YOU CAN GO NOW,' said a voice."
+"Sometimes we forget to blink."
+"He's in hell with his neck broken."
+"Then the geek bit off his head."
+"I was a Teenage Toadsucker"
+"Whatever's in him rustles as it leaves."
+"The scream alone is worth it."
+0
+Italic
+Outline
+Bold
+Underscore
+Strikeout
+FM/2: Set font
+FM/2: Set Viewer Font
+Application name "%s" exists in target INI file "%s".  Overwrite?
+Application name "%s" and key name "%s" exist in target INI file "%s".  Overwrite?
+Delete moved data from source INI file "%s"?
+%ld byte%s
+The name under which to save this mask list.
+Files containing mask lists.
+Masks (one per line) of applnames to include/exclude.
+Filtering...
+(Was "%s")
+FM/2:  Rename application
+FM/2:  Copy application
+FM/2:  Rename keyword
+FM/2:  Copy keyword
+Requested user profile "%s" can't be opened.
+Requested system profile "%s" can't be opened.
+PrfReset failed.
+FM/2:  Swap OS/2 INIs
+PrfQueryProfile failed.
+Success!
+FM/2:  Edit INI entry
+Data appears to be binary.  The edit control does not support binary data directly.  The data is probably not human-editable, but you can use \\-encoding if you know what you're doing.  WARNING:  Clicking Okay or pressing [Enter] can result in data loss.  Press [Escape] to avoid possible loss!
+App/keyname pair already exists in the INI file.
+Applications:
+Keywords:
+Data bytes:
+ Internal INI Viewer
+Can't open "%s" as an OS/2 INI file.\rNote:  If you receive a WIN 1302 error, it indicates that the INI file is corrupt.
+Do you want to delete keyname "%s"?
+Do you want to delete application "%s"?
+FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 by M. Kimes\r(Barebones Software)\rAll Rights Reserved
+5.System VIO
+FM/2: INI "%s"
+Enter the characters to find.\r\rInput is case insensitive.  Leading\rspaces are not stripped.  Find\rnexts are made after the current\ritem, find firsts always start at\rthe top.  Beep means no (more)\rmatches.
+String to find:
+FM/2:  Find INI string
+  Mem:\32
+Wipe all lines
+Delete highlighted line
+"/HELP"
+Close listbox
+"/OPEN "
+"/CLOSE "
+"/FILTER "
+Toggle "/KEEP"
+Toggle "/SAVE"
+Can't find this file.
+Must be run through command processor (i.e. "CMD.EXE /C ...")
+OS/2 says:  Not a directly executable type.
+Acceptable apptype
+DOS
+Windows Real
+Windows Prot
+Windows Enh
+PM
+Bound
+VIO
+Full Screen
+32-Bit
+Unknown/default
+Select a command line (press [Delete] to get rid of one)...
+Text:
+ of drive
+file
+FM/2: Directory sizes "%s"
+%sk free  %sk total  %sk used on drive
+??k free  ??k total  ??k used
+Printer not ready.
+Printing a list of files.
+Printing "%s"
+FM/2 Print
+Ready to print even pages of "%s" -- are you?
+Unable to reopen %s for printing.
+Printed "%s"
+List of files printed.
+(FM/2 twiddling thumbs)
+Nothing printable selected.
+FM/2 drop help
+OS/2 won't let me query EA "%s" from "%s" because it can't get read/write access to it.  That means the object is in use by another program or OS/2, or is a running program itself.
+OS/2 won't let me assign EA "%s" on object "%s" because it can't get read/write access to it.  The object might be in use by another process or OS/2, or might itself be a running program.
+Error setting EA "%s" on object "%s" offset %ld
+Error querying EA "%s"
+%s%s%s%s%s%s\rNote that only the List, Create and Extract commands were checked.
+List exe not found!  Are path and filename right?\r
+OS/2 bombed checking list exe.\r
+Bad list exe!\r
+No list exe given!\r
+Create exe not found.\r
+OS/2 bombed checking create exe.\r
+Bad create exe.\r
+No create exe given.\r
+Extract exe not found!\r
+OS/2 bombed checking extract exe.\r
+Bad extract exe!\r
+No extract exe given!\r
+[Dir]/32
+(Doesn't exist)
+%s data (%u bytes)
+Text
+EA reference
+Multi-value single-type data (%u entr%s, %u bytes)
+y
+ies
+Multi-value multi-type data (%u entr%s, %u bytes%s)
+, all text
+, mixed types
+Binary data (%u bytes)
+Bitmap data (%u bytes)
+Metafile data (%u bytes)
+Icon data (%u bytes)
+ASN1 data (%u bytes)
+Unknown datatype 0x%04x (%u bytes)
+FM/2 Databar
+free
+Sun
+Mon
+Tue
+Wed
+Thu
+Fri
+Sat
+Swap:
+Mem:\32
+Procs:\32
+Thrds:\32
+Tasks:\32
+Elapsed:\32
+day
+FM/2:  Tree filter
+You have disabled the ability to select more than one object at a time in Directory Containers, the Collector and Archive Containers.  If that's not what you intended, return to the Settings notebook's DirCnrs page and correct the mistake.
+
+
+
+FM/2:  Default DirCnr filter
+FM/2:  Default Collector filter
+Don't forget...
+The System Menu contains the command to unhide the pulldown menu.
+~DirCnrs
+Directory Container controls
+Dir~View
+Default Directory Container view settings
+Dir~Sort
+Default Directory Container sort settings
+~ColView
+Collector Container view settings
+C~olSort
+Collector Container sort settings
+~Archiver
+Archive Container controls
+~Tree
+Drive Tree controls
+Tr~eeSort
+Drive Tree view and sort controls
+Vie~wers
+Default viewers and related controls
+Com~pare
+Comparison controls
+~Monolithic
+Monolithic FM/2 controls
+~General
+General controls
+Sca~nning
+Scanning controls
+~Quick
+Quick configuration options
+Ahem...
+Sorta silly to try to merge just one file, eh?
+Merging "%s" to "%s".
+Merge of "%s" to "%s" complete.
+Merge error
+Can't open "%s" for output.
+Can't open "%s" for input.
+UUDecoding "%s".
+UUDecode of "%s" complete.
+UUDecode of "%s" aborted.
+That drive is not writeable; can't be a target.
+Renaming
+Moving
+Copying
+Rename
+Renamed
+Moved
+Copied
+to\32
+Fitting...
+Couldn't fit...
+Disk is full
+Please insert another disk.
+of
+failed
+WPS Move
+WPS Copy
+are
+is
+FM/2:  Execute do-it-yourself command line
+Making objects...
+Made objects...
+You have elected to %sdelete the object%s above.
+  %u of the objects %s %sdirector%s.
+  I smell %u possible system director%s!
+  %u Readonly file%s %s present.
+  %u file%s marked Hidden and/or System %s present.
+  Unhighlight any objects which you do not wish to delete.
+permanently\32
+a\32
+Deleting "%s"...
+*Delete of "%s" failed:  Error %lu\n
+Delete of "%s" failed
+Deleted "%s"...
+ %s operation%s %s%s %s complete.
+Removable
+Not writeable
+Ignore
+CD-ROM
+No longnames
+Remote
+Boot
+Invalid
+NoPrescan
+Zipstream
+NoLoadIcons
+NoLoadSubjs
+NoLoadLongnames
+Slow
+InclFiles
+FM/2: Drive info "%c:"
+unit
+%lu bytes/sector, %lu sector%s/unit
+ Can't query volume info drive %c:
+ Can't query allocation info drive %c:
+ Drive %c: inaccessible.  Flags:  %s
+Dropping here can change the icon of the object.
+FM/2: Drive flags (drive %c:)
+%lub + %lub EAs = %lub (%luk) total
+PATH DPATH LIBPATH HELP BOOKSHELF LIB INCLUDE LOCPATH SMINCLUDE LPATH CODELPATH
+%%Environment%%
+You must check at least one criterion or Cancel the operation.
+FM/2:  Trouble...
+Can't load help.%s
+  I'll continue, but you should find FM3.HLP and place it into FM/2's working directory.
+
+
+                        EXE/DLL Mismatch warning!
+The EXE file you're running is of a newer version than the DLL.  Please re-extract _all_ the files from the distribution archive so that FM/2 can run properly (overwrite existing files while unpacking, and be sure that no parts of FM/2 are running while you unpack).
+
+Check your system clock.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fatal Error:
+
+Version:
+FM/2 Lite
+
+
+
+
+
+
+Source is a %s.\32\32
+directory
+Sorry
+Can't start comparison thread.
+Warning: Can't access source.\32\32
+Target exists and is a %s.\32\32
+Click Overwrite or enter new target name.
+Enter new target name.
+same date
+same size
+  **Source is %s and %s.**
+"%s" was moved to "%s"
+"%s" already exists as a %s -- try again.
+*%s of "%s" to "%s" failed:  Error %lu\n
+ Dupe checking #%lu of %lu
+ Sorting...
+selected
+ (Filtered)
+No files%s
+Curr:
+ Dragging selected files...
+Double-click a drive to add a mask for it.
+Masks may be selected, added or deleted.
+The mask(s) to filter files we look for.
+Text for which we'll search in files.
+A minimum size files must have.
+A maximum size files must have.
+Maximum age in days of files.
+Minimum age in days of files.
+LA Date
+LA Time
+Cr Date
+Cr Time
+Longname
+Attr
+Icon
+LW Date
+LW Time
+EA
+Size
+Filename
+Status
+Subject
+FirstX
+LastX
+EASize
+CSize
+Path
+None
+Name
+Tree
+Detail
+Text
+-Mini
+Date
+Dropping here can set the command line.
+FM/2:  Executing a Command
+<Unknown>
+Attach request
+Detach request
+Unable to start NET USE
+Detach of "%s" from "%s" failed.
+Attach of "%s" to "%s" failed.
+There are attach and/or detach requests pending -- you can use the window list to examine them.
+;format for this archiver.bb2 file (each entry has 21 lines):\n;\n; 1st line:  ID of archiver (like ARC, LHARC, PKZIP, etc.; human consumption)\n; 2nd line:  normal extension for archives (like ZIP, ARC, LZH; note no period)\n; 3rd line:  offset into file to signature\n; 4th line:  list command\n; 5th line:  extract command\n; 6th line:  extract w/ directories command\n; 7th line:  test archive command\n; 8th line:  add/create command\n; 9th line:  add/create w/ paths command\n;10th line:  add/create & recurse command\n;11th line:  move command\n;12th line:  move w/ paths command\n;13th line:  delete command\n;14th line:  signature (case sensitive, leading spaces count!)\n;15th line:  startlist string\n;16th line:  endlist string\n;17th line:  old size position  (all positions 0-based, -1 = not available)\n;18th line:  new size position\n;19th line:  file date position,date type (see below)\n;20th line:  number of positions in dates (for \"03 June 92\" would be 3)\n;21st line:  file name position (absolutely required, of course, -1 = last)[,name is last (1 = TRUE, n/a w/ -1 pos)[,name is next line (1 = TRUE)]]\n;\n;Refer to the ARCHIVER.BB2 that came with FM/2 for more details.\n;\n;date types supported:\n;--------------------\n;no date sorting avail.        0\n;02-08-96  23:55:32            1\n; 8 Feb 96 23:55:32            2\n; 8 Feb 96  11:55p             3\n;96-02-08 23:55:32             4\n;\n;a semicolon denotes a comment.  they may appear at any point *except*\n;within the 21 lines of an archiver entry.\n;everything on the line after the semicolon is ignored.\n;\n
+; Entry #%d
+; FM/2 user-defined directories file, one full path per line\n
+; FM/2 save-to-list pattern file, one pattern per line\n
+; FM/2 -- remote resource (UNC) file, one per line\n
+; FM/2 filter mask file, one mask set per line\n
+; FM/2 commands file -- 3 lines: title, cmd line, flags\n
+; FM/2 command line file, one per line\n
+; FM/2 associations file -- 5 lines: mask, cmd line, sig, offset, flags\n;  For OS/2 associations only, uncomment following 5 lines:\n;*\n;<>\n;\n;0\n;0\n
+;\n;This file contains definitions for an FM/2 toolbox.\n;FM/2 saved this file as \"%s\".\n;\n;Each tool button has four lines that describe it.  The first line is\n;the help for the button.  The second line is the text for the button\n;(internally defined tools have icons, and the text is ignored).  The\n;third line is a number indicating flags associated with the button.\n;A flag value of 1 means the button is dropable, 4 means invisible,\n;32 means use user-provided icon only (named <ID>.bmp).\n;The fourth line is the ID of the button (for internal commands only).\n;Note Commands begin at ID 4000, so a button with ID 4000 would cause\n;the first Command to be run and ID 4001 would run the second.\n;4900 marks the first \"quick toolbox change\" item, and you can\n;have up to 50 of them (these buttons load other toolboxes, see\n;online help).;\n
+ [%c:  \"%s\"  SN: %08lx%s]
+; FM/2 seek and scan mask file, one mask set per line\n
+Record fill-in failed %d
+Record insert failed
+Record allocation failed
+Record fill-in failed %d
+Record insert failed
+DosQCurDisk failed
+Allocate failed.
+2.System VIO
+FM/2:  Makearc\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32
+Usage:\r\rMAKEARC <file or directory to archive>\r
+Unable to load FM3RES.DLL
+FM3RES.DLL is %s.\r\r%lu %lu\r\r%lu %lu\r\r%lu
+older version than FM3DLL.DLL.
+invalid.
+unloadable.
+Recent dirs (%s)
+opened
+all
+FM/2:  Walk to Target directory%s%s%s
+Clear Target directory?
+Do you want to clear the Target directory (in other words, have no preset Target directory)?
+5.Helv
+Target:\32
+                        FM/2 startup suggestion:\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32
+Based on what I've seen while scanning your drives, I would like to suggest the following Parameters for your FM/2 program object (explanation:  each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see READ.ME), and the '%%*' on the end just enables drag-and-drop to the program object%s):\r\r"%s"\r\rWould you like me to automagically place this in the Parameters field of the FM/2 program objects (note:  existing Parameters will be replaced)?
+ -- this includes one or more drives you had excluded, by the way
+~Bubbles
+Bubble help settings
+ (to Target directory)

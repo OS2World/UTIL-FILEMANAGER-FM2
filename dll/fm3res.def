@@ -1,0 +1,11 @@
+ LIBRARY FM3RES
+
+ DESCRIPTION 'FM/3 Runtime Resource DLL copyright (c) 1998 by M. Kimes'
+
+ EXETYPE OS2
+ PROTMODE
+
+ DATA LOADONCALL SHARED
+ CODE LOADONCALL
+
+ EXPORTS  ResVersion                        @1     NONAME

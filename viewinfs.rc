@@ -1,0 +1,4 @@
+#include <os2.h>
+#include "dll\fm3dlg.h"
+
+DEFAULTICON       icons\VIEWINFS.ICO

@@ -1,0 +1,7 @@
+NAME           GLOBAL        WINDOWAPI
+
+NEWFILES
+
+DESCRIPTION   'FM/3 Global miniapp copyright (c) 1993-98 by M. Kimes'
+PROTMODE
+STACKSIZE     388416

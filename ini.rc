@@ -1,0 +1,5 @@
+#include <os2.h>
+#include "dll\fm3dll.h"
+
+DEFAULTICON                 icons\INI.ICO
+BITMAP         DIR_FRAME    bitmaps\FILE.BMP

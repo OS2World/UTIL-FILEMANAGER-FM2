@@ -1,0 +1,57 @@
+;
+;This file contains some selecting definitions for the FM/2 toolbar.
+;
+;
+Select All
++All
+0
+10006
+;
+Select Files
++Files
+0
+10008
+;
+Select Mask
++Mask
+8
+10012
+;
+Deselect All
+-All
+0
+10007
+Deselect Dirs
+-Dirs
+0
+10011
+;
+Deselect Mask
+-Mask
+8
+10013
+;
+Invert selections
+Invert
+0
+10014
+;
+Reselect
+Reslct
+8
+10027
+;
+Sort toolbox
+Sort
+0
+4902
+;
+Utility toolbox
+Utils
+0
+4901
+;
+Commands toolbox
+Cmds
+0
+4900

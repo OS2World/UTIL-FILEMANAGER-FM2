@@ -1,0 +1,20 @@
+@echo off
+rem
+rem Recommendations:  hpfsopt -i %1 for idle priority
+rem note:  idle is not a good idea if DOS programs are running...
+rem
+
+rem
+rem This notice is just so users know what's going on and can change it...
+rem
+ECHO This is HPFSOPT.CMD, which you can customize to use any HPFS
+ECHO optimizing program you like.
+
+HPFSOPT.EXE %1
+
+rem
+rem if there was an error or user abort, pause the display so the
+rem user can see what's happened.
+rem
+
+IF ERRORLEVEL == 1 PAUSE
