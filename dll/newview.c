@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  New internal viewer
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2003 Steven H.Levine
+
+  Revisions	01 Dec 03 SHL - Comments
+  		02 Dec 03 SHL - Correct WM_VSCROLL math
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -97,8 +112,8 @@ static BOOL   IgnoreHTTP    = FALSE;
 static FATTRS Fattrs;
 
 
-MRESULT EXPENTRY UrlDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY UrlDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   URLDATA *urld;
 
   switch(msg) {
@@ -230,8 +245,8 @@ MRESULT EXPENTRY UrlDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-static ULONG NumLines (RECTL *rcl,VIEWDATA *ad) {
-
+static ULONG NumLines (RECTL *rcl,VIEWDATA *ad)
+{
   ULONG numlines;
 
   numlines = (rcl->yTop - rcl->yBottom) / ad->lMaxHeight;
@@ -243,8 +258,8 @@ static ULONG NumLines (RECTL *rcl,VIEWDATA *ad) {
 }
 
 
-static CHAR **BuildAList (HWND hwnd) {
-
+static CHAR **BuildAList (HWND hwnd)
+{
   VIEWDATA      *ad = WinQueryWindowPtr(hwnd,0);
   register ULONG x,y,z = 0;
   ULONG          width;
@@ -324,8 +339,8 @@ static CHAR **BuildAList (HWND hwnd) {
 }
 
 
-static CHAR **BuildAList2 (HWND hwnd) {
-
+static CHAR **BuildAList2 (HWND hwnd)
+{
   VIEWDATA      *ad = WinQueryWindowPtr(hwnd,0);
   CHAR         **list = NULL,s[SEARCHSTRINGLEN];
   SHORT          x,z;
@@ -350,8 +365,8 @@ static CHAR **BuildAList2 (HWND hwnd) {
 }
 
 
-MRESULT EXPENTRY ViewStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ViewStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_CREATE:
       return CommonTextProc(hwnd,msg,mp1,mp2);
@@ -530,8 +545,8 @@ MRESULT EXPENTRY ViewStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-static VOID FreeViewerMem (HWND hwnd) {
-
+static VOID FreeViewerMem (HWND hwnd)
+{
   VIEWDATA *ad = WinQueryWindowPtr(hwnd,0);
 
   if(ad) {
@@ -550,8 +565,8 @@ static VOID FreeViewerMem (HWND hwnd) {
 }
 
 
-static HPS InitWindow (HWND hwnd) {
-
+static HPS InitWindow (HWND hwnd)
+{
   VIEWDATA     *ad = WinQueryWindowPtr(hwnd,0);
   HPS          hps = (HPS)0;
   SIZEL        sizel;
@@ -608,8 +623,8 @@ static HPS InitWindow (HWND hwnd) {
 
 
 static VOID PaintLine (HWND hwnd,HPS hps,ULONG whichline,ULONG topline,
-                       RECTL *Rectl) {
-
+                       RECTL *Rectl)
+{
   VIEWDATA       *ad = WinQueryWindowPtr(hwnd,0);
   POINTL          ptl;
   ULONG           width;
@@ -798,8 +813,8 @@ static VOID PaintLine (HWND hwnd,HPS hps,ULONG whichline,ULONG topline,
 }
 
 
-static VOID Search (VOID *args) {
-
+static VOID Search (VOID *args)
+{
   HWND           hwnd = (HWND)args;
   HAB            hab2;
   HMQ            hmq2;
@@ -951,8 +966,8 @@ static VOID Search (VOID *args) {
 }
 
 
-static VOID Clipboard (VOID *args) {
-
+static VOID Clipboard (VOID *args)
+{
   HWND hwnd = (HWND)args;
   HAB       hab2;
   HMQ       hmq2;
@@ -1049,8 +1064,8 @@ static VOID Clipboard (VOID *args) {
 }
 
 
-static VOID ReLine (VOID *args) {
-
+static VOID ReLine (VOID *args)
+{
   HWND hwnd = (HWND)args;
   HAB       hab2;
   HMQ       hmq2;
@@ -1224,8 +1239,8 @@ static VOID ReLine (VOID *args) {
 }
 
 
-static VOID LoadFile (VOID *args) {
-
+static VOID LoadFile (VOID *args)
+{
   HWND      hwnd = (HWND)args;
   HAB       hab2;
   HMQ       hmq2;
@@ -1334,8 +1349,8 @@ static VOID LoadFile (VOID *args) {
 }
 
 
-MRESULT EXPENTRY ViewFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ViewFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
 
   switch(msg) {
@@ -1497,8 +1512,8 @@ MRESULT EXPENTRY ViewFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY FindStrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY FindStrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   VIEWDATA *ad;
 
   switch(msg) {
@@ -1600,8 +1615,8 @@ MRESULT EXPENTRY FindStrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY ViewWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
-
+MRESULT EXPENTRY ViewWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+{
   VIEWDATA *ad = WinQueryWindowPtr(hwnd,0);
 
   switch (msg) {
@@ -2759,7 +2774,7 @@ NoAdd:
               if(ad->topline > 1) {
                 ad->topline -= numlines;
                 if(ad->topline > ad->numlines ||
-                   ad->topline > (ad->numlines + 1) - numlines)
+                   ad->topline + numlines > (ad->numlines + 1))
                   ad->topline = 1;
                 if(ad->cursored > ad->topline + numlines)
                   ad->cursored = ad->topline + numlines;
@@ -2769,13 +2784,13 @@ NoAdd:
               }
               break;
             case SB_PAGEDOWN:
-              if(ad->topline <= ad->numlines - numlines) {
+              if(ad->topline + numlines <= ad->numlines) {
                 ad->topline += numlines;
-                if(ad->topline > (ad->numlines + 1) - numlines)
+                if (ad->topline + numlines > ad->numlines + 1)
                   ad->topline = (ad->numlines + 1) - numlines;
                 if(ad->cursored < ad->topline)
                   ad->cursored = ad->topline;
-                if(ad->cursored > (ad->topline + numlines) - 1)
+                if (ad->cursored + 1 > ad->topline + numlines)
                   ad->cursored = (ad->topline + numlines) - 1;
                 if(ad->cursored > ad->numlines)
                   ad->cursored = ad->numlines;
@@ -2783,14 +2798,14 @@ NoAdd:
               }
               break;
             case SB_LINEDOWN:
-              if(ad->topline <= ad->numlines - numlines) {
+              if (ad->topline + numlines <= ad->numlines) {
 
                 RECTL Rectl,iRectl;
 
                 ad->topline++;
                 if(ad->cursored < ad->topline)
                   ad->cursored = ad->topline;
-                else if(ad->cursored > (ad->topline + numlines) - 1)
+                else if (ad->cursored + 1 > ad->topline + numlines)
                   ad->cursored = (ad->topline + numlines) - 1;
                 if(ad->cursored > ad->numlines)
                   ad->cursored = ad->numlines;
@@ -2828,7 +2843,7 @@ NoAdd:
                 ad->topline--;
                 if(ad->cursored < ad->topline)
                   ad->cursored = ad->topline;
-                else if(ad->cursored > (ad->topline + numlines) - 1)
+                else if (ad->cursored + 1 > ad->topline + numlines)
                   ad->cursored = (ad->topline + numlines) - 1;
                 if(ad->cursored > ad->numlines)
                   ad->cursored = ad->numlines;
@@ -2866,7 +2881,7 @@ NoAdd:
               if((SHORT1FROMMP(mp2) >= 1) ||
                  (SHORT1FROMMP(mp2)) <= ad->numlines) {
                 ad->topline = (ULONG)SHORT1FROMMP(mp2) * ad->multiplier;
-                if(ad->topline > (ad->numlines + 1) - numlines)
+                if (ad->topline + numlines > ad->numlines + 1)
                   ad->topline = (ad->numlines + 1) - numlines;
                 if(!ad->topline)
                   ad->topline = 1;
@@ -3880,8 +3895,8 @@ NoAdd:
 
 
 HWND StartViewer (HWND hwndParent,USHORT flags,CHAR *filename,
-                  HWND hwndRestore) {
-
+                  HWND hwndRestore)
+{
   HWND          hwndFrame = (HWND)0,hwndClient;
   VIEWDATA     *ad;
   ULONG         FrameFlags = FCF_TITLEBAR    | FCF_SYSMENU     |
@@ -4036,4 +4051,3 @@ HWND StartViewer (HWND hwndParent,USHORT flags,CHAR *filename,
   }
   return hwndFrame;
 }
-
