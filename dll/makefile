@@ -1,38 +1,44 @@
-DEBUG=0
+
 BASE=fm3dll
 BASERES=fm3res
 
 .SUFFIXES: .c .rc .ipf
 
-{.}.c.obj:
-!IF $(DEBUG)
-  ICC.EXE /Kb+ /Ti+ /W3 /Sm /Sp4 /Ss /C /Mp /Gm+ /Gs- /G3 /O- /Q+ /Ge- .\$*.c
-!ELSE
-  ICC.EXE /Gf+ /Gi- /Kp+ /Kx+ /Kb+ /W3 /Sm /Sp4 /Ss /C /Mp /Gm+ /Gs- /O- /Q+ /G3 /Gt- /Ge- .\$*.c
+LINK = ilink
+RC = rc
+
+!IFNDEF DEBUG
+DEBUG = 0
 !ENDIF
 
+CFLAGS =  /G5 /Ge- /Gm+ /Gs- /Gt- /Mp /O- /Q+ /Sp4 /Ss /Ti+ /W3
+CFLAGSR = /G5 /Ge- /Gm+ /Gs+ /O+ /Rn /Ss /W3
+
 !IF $(DEBUG)
-LFLAGS = /NOI /ALIGN:2 /EXEPACK /CODEVIEW /M /NOE /BASE:0x20000 /SEG:1024
+LFLAGS = /DE /ALIGN:4 /EXEPACK:2 /NOI /MAP /NOE
 !ELSE
-LFLAGS = /NOL /NOI /ALIGN:2 /EXEPACK:2 /PACKD /PACKC /M /NOE /BASE:0x20000 /SEG:1024
+LFLAGS = /ALIGN:4 /EXEPACK /MAP /NOI /NOE
 !ENDIF
+
+.c.obj:
+  $(CC) $(CFLAGS) /C $*.c
 
 OFILES= mainwnd.obj dircnrs.obj valid.obj filldir.obj saymsg.obj error.obj\
-        treecnr.obj presparm.obj misc.obj init.obj copyf.obj strips.obj\
-        flesh.obj dirs.obj srchpath.obj avl.obj literal.obj stristr.obj\
-        mkdir.obj avv.obj systemf.obj cmdline.obj chklist.obj makelist.obj\
-        inis.obj eas.obj getnames.obj subj.obj dirsize.obj input.obj\
-        select.obj fonts.obj codepage.obj mle.obj viewer.obj saveclip.obj
+	treecnr.obj presparm.obj misc.obj init.obj copyf.obj strips.obj\
+	flesh.obj dirs.obj srchpath.obj avl.obj literal.obj stristr.obj\
+	mkdir.obj avv.obj systemf.obj cmdline.obj chklist.obj makelist.obj\
+	inis.obj eas.obj getnames.obj subj.obj dirsize.obj input.obj\
+	select.obj fonts.obj codepage.obj mle.obj viewer.obj saveclip.obj
 OFILES2=walkem.obj archive.obj extract.obj filter.obj assoc.obj draglist.obj\
-        droplist.obj shadow.obj arccnrs.obj printer.obj attribs.obj rename.obj\
-        comp.obj findrec.obj update.obj info.obj fsopen.obj seticon.obj\
-        objcnr.obj tools.obj sortcnr.obj collect.obj grep.obj command.obj\
-        killproc.obj undel.obj instant.obj objwin.obj sysinfo.obj key.obj\
-        notify.obj winlist.obj viewinf.obj defview.obj
+	droplist.obj shadow.obj arccnrs.obj printer.obj attribs.obj rename.obj\
+	comp.obj findrec.obj update.obj info.obj fsopen.obj seticon.obj\
+	objcnr.obj tools.obj sortcnr.obj collect.obj grep.obj command.obj\
+	killproc.obj undel.obj instant.obj objwin.obj sysinfo.obj key.obj\
+	notify.obj winlist.obj viewinf.obj defview.obj
 OFILES3=notebook.obj commafmt.obj seeall.obj autoview.obj delims.obj\
-        menu.obj worker.obj datamin.obj fm2cmd.obj newview.obj colors.obj\
-        uudecode.obj loadbmp.obj mainwnd2.obj remap.obj timer.obj grep2.obj\
-        common.obj string.obj
+	menu.obj worker.obj datamin.obj fm2cmd.obj newview.obj colors.obj\
+	uudecode.obj loadbmp.obj mainwnd2.obj remap.obj timer.obj grep2.obj\
+	common.obj string.obj
 
 LFILES=$(OFILES:.obj=)
 LFILES2=$(OFILES2:.obj=)
@@ -48,17 +54,16 @@ ALL: FM3DLL.DLL \
      fm3res.str
 
 $(BASE).dll: $(OFILES) $(OFILES2) $(OFILES3) $(BASE).def
-    @REM @<<FM3.@0
-    $(LFLAGS)+
-    $(LFILES)+
-    $(LFILES2)+
-    $(LFILES3)
-    $(BASE).dll
-
-
-    $(BASE).def;
+    @REM @<<$(BASE).@0
+    $(LFLAGS)
+    /OUT:$@
+    $(OFILES)
+    $(OFILES2)
+    $(OFILES3)
+    $(BASE).def
 <<
-    link386 @FM3.@0
+    @rem type $(BASE).@0
+    $(LINK) @$(BASE).@0
 
 $(BASE).lib: $(BASE).dll $(BASE).def
     IMPLIB $(BASE).lib $(BASE).def
@@ -72,24 +77,23 @@ internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
   compile2 mkstr.c
   cd..
 
-$(BASERES).obj: $(BASERES).c  version.h
-  icc /C /Ss /Ge- /W3 /Kb+ /Rn /O+ $(BASERES).c
+$(BASERES).obj: $(BASERES).c version.h
+  $(CC) $(CFLAGSR) /C $(BASERES).c
 
 $(BASERES).res: $*.rc $*.dlg fm3dlg.h
-    rc -w2 -r $*
+  $(RC) -r $*
 
 $(BASERES).DLL: $(BASERES).RES $(BASERES).OBJ $(BASERES).DEF
-    @REM @<<FM3R.@0
-    $(LFLAGS)+
+    @REM @<<$(BASERES).@0
+    $(LFLAGS)
+    /OUT:$@
     $(BASERES).obj
-    $(BASERES).dll
-
-
-    $(BASERES).def;
+    $(BASERES).def
 <<
-    link386 @FM3R.@0
-    rc -x2 $(BASERES).res $(BASERES).dll
-    ea /d /e:.ICON /V $(BASERES).dll
+    type $(BASERES).@0
+    $(LINK) @$(BASERES).@0
+    $(RC) -x2 $(BASERES).res $(BASERES).dll
+    :: SHL ea /d /e:.ICON /V $(BASERES).dll
 
 $(BASERES).lib: $(BASERES).dll $(BASERES).def
     IMPLIB $(BASERES).lib $(BASERES).def
