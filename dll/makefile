@@ -1,3 +1,7 @@
+# $Id$
+# Make fm/2 dlls, help files, string tables and resource kit
+
+# 22 May 03 SHL - Correct dependencies for icons
 
 BASE=fm3dll
 BASERES=fm3res
@@ -80,7 +84,7 @@ internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
 $(BASERES).obj: $(BASERES).c version.h
   $(CC) $(CFLAGSR) /C $(BASERES).c
 
-$(BASERES).res: $*.rc $*.dlg fm3dlg.h
+$(BASERES).res: $*.rc $*.dlg fm3dlg.h icons\*.ico
   $(RC) -r $*
 
 $(BASERES).DLL: $(BASERES).RES $(BASERES).OBJ $(BASERES).DEF
@@ -98,7 +102,7 @@ $(BASERES).DLL: $(BASERES).RES $(BASERES).OBJ $(BASERES).DEF
 $(BASERES).lib: $(BASERES).dll $(BASERES).def
     IMPLIB $(BASERES).lib $(BASERES).def
 
-$(BASERES).str: $(BASE).STR fm3str.h version.h
+$(BASERES).str: $(BASE).STR fm3str.h version.h icons\*.ico
     internal\mkstr
     copy $(BASERES).str ../v
     cd..\reskit
