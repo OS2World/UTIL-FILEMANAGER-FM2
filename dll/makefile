@@ -1,7 +1,7 @@
 # $Id$
 # Make fm/2 dlls, help files, string tables and resource kit
 
-# 22 May 03 SHL - Correct dependencies for icons
+# Revisions:	May 03 SHL - Correct dependencies for icons
 
 BASE=fm3dll
 BASERES=fm3res
