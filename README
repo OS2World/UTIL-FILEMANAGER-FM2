@@ -20,6 +20,20 @@ previous versions.  It explains command line syntaxes (parameters in a
 program object) and how to get the program(s) running.  The online help
 tells you how to actually use FM/2.  I'll try to keep this brief.
 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 
 FM/2 3.x installation instructions:
 ==================================
@@ -258,12 +272,25 @@ get around this problem (or upgrade your version of OS/2).
 Don't drag files over Netscape -- it will lock up if files (not WPS
 objects; there's a subtle difference) are dragged over it.
 
-Known problems/shortcomings
-=========================== 
+Known problems/shortcomings:
+===========================
 
- - There must be some
+ - FM/2 does not properly report sizes of some files with long name
+   resident on Win95/NT drives.
 
-About FM/2
+ - File List Container fails to fill after drive change SYS0039 error.
+
+ - Tree switching on Focus/Directory Change appears to be slower than 
+   expected.
+
+ - Access to LS120 and FAT32 drives slower than expected
+
+ - Icon display in Directory Container does not always match WPS icons
+
+ - Spurious WPS Objects Handles created during some operations
+
+
+About FM/2:
 ==========
 
 FM/2 was originally written by:
@@ -275,7 +302,7 @@ He has kindly allowed me to take over maintenance and support of FM/2 and to
 release the program under the GNU GPL license.  I'm sure he would appreciate 
 a Thank You note for his generosity.
 
-Support
+Support:
 =======
 
 Please address support questions and enhancement requests to:
@@ -287,4 +314,4 @@ I also monitor most of the comp.os.os2.apps newsgroup.
 
 Thanks and enjoy.
 
-$ID$
+$Id$
