@@ -6,10 +6,11 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2003 Steven H.Levine
+  Copyright (c) 2001, 2004 Steven H.Levine
 
   Revisions	12 Feb 03 SHL - Add CBLIST_TO_EASIZE
 		11 Jun 03 SHL - Add JFS and FAT32 support
+		06 Jan 04 SHL - Drop hundfmt
 
 ***********************************************************************/
 
@@ -1077,7 +1078,6 @@ MRESULT EXPENTRY CfgDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 
 /* commafmt.c */
 size_t commafmt(char *buf,int bufsize,long N);
-size_t hundfmt (char *buf,int bufsize,unsigned long N);
 
 /* autoview.c */
 BOOL WriteEA (HWND hwnd,CHAR *filename,CHAR *eaname,USHORT type,CHAR *data);
