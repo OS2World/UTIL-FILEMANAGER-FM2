@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  System Interfaces
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	21 Nov 03 SHL - Comments
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_WINERRORS
 #define INCL_DOS
@@ -20,8 +34,8 @@
 
 /* quick and dirty program launcher for OS/2 2.x */
 
-
-BOOL ShowSession (HWND hwnd,PID pid) {
+BOOL ShowSession (HWND hwnd,PID pid)
+{
 
 	HSWITCH hswitch;
 	SWCNTRL swctl;
@@ -35,7 +49,7 @@ BOOL ShowSession (HWND hwnd,PID pid) {
 				rc = WinSwitchToProgram(hswitch);
       if(!rc)
         return TRUE;
-// else saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Failed: %lu/%lx",rc,rc);
+      // else saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Failed: %lu/%lx",rc,rc);
 
 		}
 	}
@@ -44,7 +58,8 @@ BOOL ShowSession (HWND hwnd,PID pid) {
 
 
 int ExecOnList (HWND hwnd, char *command, int flags, char *tpath,
-                char **list,char *prompt) {
+                char **list,char *prompt)
+{
 
 	/* executes the command once for all files in list */
 
@@ -57,19 +72,6 @@ int ExecOnList (HWND hwnd, char *command, int flags, char *tpath,
 		return -1;
   *listfile = 0;
   lstrip(rstrip(command));
-
-/*
-  if(*command == '\"') {
-		memmove(command,command + 1,strlen(command));
-		if(!*command)
-			return -1;
-    p = strchr(command,'\"');
-    if(p)
-      memmove(p,p + 1,strlen(p));
-    if(!*command)
-      return -1;
-  }
-*/
 
   *path = 0;
   if(tpath && *tpath)
@@ -585,7 +587,8 @@ BreakOut:
 
 
 int runemf2 (int type,HWND hwnd,char *directory,char *environment,
-             char *formatstring,...) {
+             char *formatstring,...)
+{
 
 	/* example:
 	 *
@@ -1086,7 +1089,8 @@ ObjectInterrupt:
 
 
 HAPP Exec (HWND hwndNotify,BOOL child,char *startdir,char *env,
-           PROGTYPE *progt,ULONG fl,char *formatstring,...) {
+           PROGTYPE *progt,ULONG fl,char *formatstring,...)
+{
 
   PROGDETAILS    pgd;
   register char *p;
