@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Directory sizes
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002 Steven H.Levine
+.*
+.* Revisions	21 Nov 03 SHL - Rework percentage description
+.*
+.***********************************************************************
+.*
 :h2 res=95200 name=PANEL_DIRSIZE.Total size of directories
 :i1 id=aboutTotals.Total size of directories
 This dialog's container contains a breakdown of disk usage for a
@@ -7,27 +20,28 @@ by running the :hp1.Dir Sizes:ehp1. program object from the FM/2 Tools
 subfolder created by INSTALL.
 :p.
 The container displays a tree view of a directory and all its
-subdirectories.  :hp1.Expand:ehp1. and :hp1.Collapse:ehp1. buttons allow
+subdirectories sorted by space used.
+:hp1.Expand:ehp1. and :hp1.Collapse:ehp1. buttons allow
 you to quickly open and close branches of the tree.  After the container
 has completely filled, each record displays the object's name and four
 numbers, as in&colon.
-:p.
 :lines.
   ADIR  4096k + 8192k = 12288k (8.24%)
 :elines.
 :p.
-The first number is the percentage of the used space this directory
-contains, in relation to the total used space on the drive.  The first
-number is the number of kilobytes occupied by the directory and any
-files and subdirectories it contains.  The second number indicates the
-total number of kilobytes occupied by all subdirectories and their files
-and subdirectories.  The third number is the total of the first and
-second (addition performed on byte count before rounding to kilobytes).
-The percentage in parentheses is the percentage of the space used by the
-tree that this directory contains of the entire tree displayed.  A graph
-appears below the line displaying a "picture" of this percentage.
-:p.
-FM/2 also color-codes the text describing the directory.  Black text
+The first number is the number of kilobytes occupied by the directory and 
+any files and subdirectories it contains. The second number indicates the 
+total number of kilobytes occupied by all subdirectories and any files and 
+subdirectories they contain. The third number is the total of the first and second 
+(addition performed in kilobytes). The
+percentage displayed for the first (parent) directory
+is the percentage of the used space the directory tree contains, 
+in relation to the total used space on the drive. The percentages displayed
+for the other directories are 
+the percentage of the used space the directory tree contains, in relation 
+to the entire displayed tree. A graph appears below the line displaying a 
+"picture" of this percentage.
+:p. FM/2 also color-codes the text describing the directory.  Black text
 indicates that something is below the directory.  Blue text indicates
 that nothing is below the directory (note there may be subdirectories,
 but they are empty).  Grey text indicates that the directory is totally
@@ -41,10 +55,9 @@ The totals reflect the size of files and extended attributes.  Due to
 minimum allocation units on the disk, more space may be physically
 allocated than is accounted for in the totals.  The text field just
 above the pushbuttons gives you stats that _do_ take allocation units
-into account, for the entire drive.  Also be aware that directories
-containing more than 0 bytes but less than 1024 bytes will be displayed
-as containing 1k (1 kilobyte, equal to 1024 bytes) so that you know that
-a 0k figure denotes a directory with a truly 0 byte count.
+into account, for the entire drive.  The actual byte counts
+are rounded up to the next kilobyte for display.
+The 0k figure denotes a directory with a truly 0 byte count.
 :p.
 You can double-click a directory to open it so you can see its files.
 :p.
