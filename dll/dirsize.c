@@ -59,7 +59,7 @@ SHORT APIENTRY SortSizeCnr (PMINIRECORDCORE p1,PMINIRECORDCORE p2,
 static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
                          CHAR *stopflag,BOOL top)
 {
-  CHAR           maskstr[CCHMAXPATH],*endpath;
+  CHAR           maskstr[CCHMAXPATH],*pEndMask;
   register char *p,*sp,*pp;
   ULONG          nm,totalbytes = 0L,subbytes = 0L,temp;
   HDIR           hdir;
@@ -74,7 +74,7 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
   strcpy(maskstr,filename);
   if(maskstr[strlen(maskstr) - 1] != '\\')
     strcat(maskstr,"\\");
-  endpath = &maskstr[strlen(maskstr)];
+  pEndMask = &maskstr[strlen(maskstr)];	// Point after last \
   strcat(maskstr,"*");
 //printf("%s\n",maskstr);
   hdir = HDIR_CREATE;
@@ -94,7 +94,8 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.
    */
-  if((!rc && (ffb->attrFile & FILE_DIRECTORY)) || strlen(filename) < 4) {
+  if((!rc && (ffb->attrFile & FILE_DIRECTORY)) || strlen(filename) < 4)
+  {
     if(*stopflag) {
       free(ffb);
       return -1L;
@@ -115,7 +116,8 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
     *pciP->szDispAttr = *pciP->Longname = *pciP->subject = 0;
     pciP->attrFile = 0L;
   }
-  else {
+  else
+  {
     free(ffb);
     Dos_Error(MB_ENTER,
               rc,
@@ -167,53 +169,62 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
     return -1L;
   }
   hdir = HDIR_CREATE;
-  nm = /* FilesToGet; */ 1L;
+  nm = 1L;
 //printf("FIND2\n");
   rc = DosFindFirst(maskstr,&hdir,
                     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-                    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,ffb,
-                    sizeof(FILEFINDBUF4) /* * FilesToGet */,
-                    &nm,FIL_QUERYEASIZE);
-  if(!rc) {
-
+                    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
+		    ffb,
+                    sizeof(FILEFINDBUF4),
+                    &nm,
+		    FIL_QUERYEASIZE);
+  if(!rc)
+  {
     register PBYTE fb = (PBYTE)ffb;
     FILEFINDBUF4  *pffbFile;
     ULONG          x;
 
-    while(!rc) {
+    while(!rc)
+    {
       priority_normal();
       //printf("Found %lu\n",nm);
-      for(x = 0L;x < nm;x++) {
+      for(x = 0L;x < nm;x++)
+      {
         pffbFile = (FILEFINDBUF4 *)fb;
         //printf("%s\n",pffbFile->achName);
         //fflush(stdout);
-        if((*pffbFile->achName != '.' || (pffbFile->achName[1] &&
-           pffbFile->achName[1] != '.')) ||
-           !(pffbFile->attrFile & FILE_DIRECTORY)) {
+	// Total size skipping . and ..
+        if((*pffbFile->achName != '.' ||
+	   (pffbFile->achName[1] && pffbFile->achName[1] != '.')) ||
+           !(pffbFile->attrFile & FILE_DIRECTORY))
+        {
             totalbytes += pffbFile->cbFile +
                           CBLIST_TO_EASIZE(pffbFile->cbList);
           if(!(pffbFile->attrFile & FILE_DIRECTORY))
-            pciP->attrFile++;
+            pciP->attrFile++;		// Bump file count
           if(*stopflag)
             break;
           if(pffbFile->attrFile & FILE_DIRECTORY) {
-            strcpy(endpath,pffbFile->achName);
+	    // Recurse into subdir
+            strcpy(pEndMask,pffbFile->achName);	// Append dirname to base dirname
             if(!*stopflag)
+	    {
               temp = ProcessDir(hwndCnr,maskstr,pciP,stopflag,FALSE);
-            if(temp != (ULONG)-1L)
-              subbytes += temp;
+              if(temp != (ULONG)-1L)
+                subbytes += temp;
+	    }
           }
         }
         if(!pffbFile->oNextEntryOffset)
           break;
         fb += pffbFile->oNextEntryOffset;
-      }
+      } // for matches
       if(*stopflag)
         break;
       DosSleep(0L);
-      nm = /* FilesToGet; */ 1L;
-      rc = DosFindNext(hdir,ffb,sizeof(FILEFINDBUF4) /* * FilesToGet */,&nm);
-    }
+      nm = 1L;	/* FilesToGet */ 
+      rc = DosFindNext(hdir,ffb,sizeof(FILEFINDBUF4) ,&nm);
+    } // while more found
     DosFindClose(hdir);
     priority_normal();
   }
@@ -227,8 +238,8 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
 
 
 VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONG totalbytes,
-                     CHAR *stopflag,BOOL isroot) {
-
+                     CHAR *stopflag,BOOL isroot)
+{
   PCNRITEM pci = pciParent;
   SHORT    attrib = CMA_FIRSTCHILD;
 
@@ -347,8 +358,8 @@ static VOID PrintToFile (HWND hwndCnr,ULONG indent,PCNRITEM pciParent,
 }
 
 
-static VOID FillCnrs (VOID *args) {
-
+static VOID FillCnrs (VOID *args)
+{
   HAB           hab;
   HMQ           hmq;
   DIRSIZE      *dirsize = (DIRSIZE *)args;
@@ -361,7 +372,7 @@ static VOID FillCnrs (VOID *args) {
 
   DosError(FERR_DISABLEHARDERR);
 
-//  priority_normal();
+  // priority_normal();
   hab = WinInitialize(0);
   if(hab) {
     hmq = WinCreateMsgQueue(hab,0);
@@ -386,8 +397,8 @@ static VOID FillCnrs (VOID *args) {
 }
 
 
-MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   TEMP *data;
 
   switch(msg) {
