@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2002 Steven H.Levine
 
   Revisions	16 Oct 02 SHL - Comments
+		18 Oct 02 SHL - MassAction:Archive - force extension so file found
 
 ***********************************************************************/
 
@@ -1290,10 +1291,11 @@ VOID MassAction (VOID *args) {
             case IDM_ARCHIVEM:
             case IDM_ARCHIVE:
               {
-                DIRCNRDATA     ad;
-                CHAR           szBuffer[1025];
-                ARC_TYPE      *info = NULL;
-                register INT   x;
+                DIRCNRDATA     	ad;
+                CHAR            szBuffer[1025];
+                ARC_TYPE        *info = NULL;
+		char		*pch;
+                register INT   	x;
 
                 memset(&ad,0,sizeof(DIRCNRDATA));
                 strcpy(ad.arcname,wk->li->targetpath);
@@ -1345,6 +1347,17 @@ VOID MassAction (VOID *args) {
                    !*ad.arcname ||
                    !*ad.command) /* we blew it */
                   break;
+		// Provide extension so containers work
+		pch = strrchr(ad.arcname, '\\');
+		if (pch)
+		  pch = strrchr(pch, '.');
+		else
+		  pch = strrchr(ad.arcname, '.');
+		if (!pch && ad.info -> ext)
+		{
+		  strcat(ad.arcname, ".");
+		  strcat(ad.arcname, ad.info -> ext);
+		}
                 /* build the sucker */
                 strcpy(szBuffer,ad.command);
                 strcat(szBuffer," ");
