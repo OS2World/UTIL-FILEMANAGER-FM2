@@ -72,17 +72,17 @@
          stdout                                       @64     NONAME
          _CRT_init                                    @65     NONAME
          _CheckIfMem                                  @66     NONAME
-         _EXE_Exception                               @67     NONAME
+; SHL         _EXE_Exception                               @67     NONAME
          _Exception                                   @68     NONAME
          _Flush                                       @69     NONAME
          _Fmprs                                       @70     NONAME
          _Fnprs                                       @71     NONAME
          _GetErrMsg                                   @72     NONAME
          _InitBuf                                     @73     NONAME
-         _Lib_excpt                                   @74     NONAME
+; SHL         _Lib_excpt                                   @74     NONAME
          _PrintErrMsg                                 @75     NONAME
-         _ReleaseSem                                  @76     NONAME
-         _RequestSem                                  @77     NONAME
+; SHL         _ReleaseSem                                  @76     NONAME
+; SHL         _RequestSem                                  @77     NONAME
          __EDC3216                                    @78     NONAME
          __EDCThunkProlog                             @79     NONAME
          __dofmto                                     @80     NONAME
@@ -126,7 +126,7 @@
          _setupenv                                    @118    NONAME
          _terminate                                   @119    NONAME
          _test_handle                                 @120    NONAME
-         _tmemory_sem                                 @121    NONAME
+; SHL         _tmemory_sem                                 @121    NONAME
          _tzset                                       @122    NONAME
          _ultoa                                       @123    NONAME
          _y0                                          @124    NONAME
@@ -153,7 +153,7 @@
          fgetc                                        @145    NONAME
          fgetpos                                      @146    NONAME
          fgets                                        @147    NONAME
-         flushall                                     @148    NONAME
+; SHL         flushall                                     @148    NONAME
          fopen                                        @149    NONAME
          fprintf                                      @150    NONAME
          fputc                                        @151    NONAME
