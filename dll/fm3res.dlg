@@ -1,4 +1,17 @@
 
+/***********************************************************************
+
+  $Id$
+
+  Dialog templaces
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	08 Feb 03 SHL - Enable SYS_FRAME
+
+***********************************************************************/
+
 DLGTEMPLATE MSK_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
     DIALOG  "FM/2: Filter", MSK_FRAME, -35, -103, 190, 210, FS_MOUSEALIGN, 
@@ -910,10 +923,9 @@ BEGIN
     END
 END
 
-#ifdef NEVER
 DLGTEMPLATE SYS_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "FM/2:  System Info", SYS_FRAME, 12, 6, 316, 156, NOT 
+    DIALOG  "FM/2:  System Info", SYS_FRAME, 20, 24, 316, 156, NOT 
             FS_DLGBORDER | WS_VISIBLE, FCF_SYSMENU | FCF_TITLEBAR | 
             FCF_MINBUTTON | FCF_MAXBUTTON | FCF_TASKLIST | FCF_SIZEBORDER
     BEGIN
@@ -923,7 +935,6 @@ BEGIN
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 2, 52, 14, BS_NOPOINTERFOCUS
     END
 END
-#endif
 
 DLGTEMPLATE ABT_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN

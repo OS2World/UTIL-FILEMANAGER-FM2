@@ -1,4 +1,18 @@
 
+/***********************************************************************
+
+  $Id$
+
+  Command resources
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	08 Feb 03 SHL - Enable SYS_FRAME
+
+***********************************************************************/
+
+
 #include <os2.h>
 
 #include "fm3dll2.h"
@@ -20,9 +34,7 @@ ICON        DIRSIZE_ICON        icons\DIRSIZE.ICO
 ICON        NOTE_FRAME          icons\THRDNOTE.ICO
 ICON        KILL_FRAME          icons\KILLPROC.ICO
 ICON        UNDEL_FRAME         icons\UNDEL.ICO
-#ifdef NEVER
 ICON        SYS_FRAME           icons\SYSINFO.ICO
-#endif
 ICON        EA_FRAME            icons\EAS.ICO
 ICON        VINF_FRAME          icons\VIEWINFS.ICO
 
