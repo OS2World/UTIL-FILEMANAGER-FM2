@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Common definitions
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	12 Feb 03 SHL - Add CBLIST_TO_EASIZE
+
+***********************************************************************/
+
 #ifdef DEFINE_GLOBALS
   #pragma data_seg(GLOBAL1)
 #endif
@@ -307,6 +321,8 @@ typedef struct {
 
 #define ARCFLAGS_REALDIR    0x00000001
 #define ARCFLAGS_PSEUDODIR  0x00000002
+
+#define CBLIST_TO_EASIZE(cb) ((cb) > 4 ? (cb) / 2 : 0)	// FILEFINDBUF4.cbList to logical EA size
 
 typedef struct _CNRITEM {             /* CONTAINER RECORD STRUCTURE */
   MINIRECORDCORE rc;                  /* Base information */
