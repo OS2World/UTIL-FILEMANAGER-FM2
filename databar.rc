@@ -1,8 +1,22 @@
+
+/***********************************************************************
+
+  $Id$
+
+  databar resources
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	15 Oct 02 MK - Baseline
+            04 Nov 03 SHL - Drop extra default icon
+
+***********************************************************************/
+
 #include <os2.h>
 #include "dll\fm3dll.h"
 
 DEFAULTICON                 icons\DATABAR.ICO
-ICON    1                   icons\FM3.ICO
 
 BITMAP 65534                bitmaps\EMPTY.BMP
 BITMAP DIR_FOLDERICON       bitmaps\PMAP.BMP
