@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copy functions
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	14 Sep 02 SHL - Drop obsolete debug code
+		14 Oct 02 SHL - Drop obsolete debug code
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
@@ -240,9 +255,10 @@ CHAR *GetLongName (CHAR *oldname,CHAR *longname) {
 
 BOOL ZapLongName (char *filename) {
 
-saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Zapped longname.");
-  return WriteLongName(filename,
-                       "");
+#ifdef DEBUG
+  saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Zapped longname.");	// fixme to be gone
+#endif
+  return WriteLongName(filename, "");
 }
 
 
@@ -435,13 +451,14 @@ APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...) {
      !*oldname ||
      !*fullnewname)  /* bad string args */
     return (APIRET)-1;
+
   DosError(FERR_DISABLEHARDERR);
   if(DosQueryPathInfo(oldname,
                       FIL_STANDARD,
                       &st,
                       sizeof(FILESTATUS3)))
-    /* no source */
-    return (APIRET)-2;
+    return (APIRET)-2;	/* no source */
+
   AdjustWildcardName(oldname,
                      fullnewname);
   MakeFullName(oldname);
@@ -463,14 +480,19 @@ APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...) {
     /* did root name change? */
     p = RootName(oldname);
     pp = RootName(fullnewname);
-    saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"oldname: %s\rnewname: %s",oldname,fullnewname);
     if(stricmp(p,
                pp))
+    {
+#ifdef DEBUG
+      saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"oldname: %s\rnewname: %s",oldname,fullnewname);	// fixme to be gone
+#endif
       zaplong = TRUE;
+    }
   }
 
   DosError(FERR_DISABLEHARDERR);
-  switch(type) {
+  switch(type)
+  {
     case WPSMOVE:
       {
         HOBJECT hobjsrc;
