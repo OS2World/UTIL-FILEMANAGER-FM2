@@ -1,3 +1,19 @@
+
+/***********************************************************************
+
+  $Id$
+
+  File name manipulation routines
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2002 Steven H.Levine
+
+  Revisions	23 Nov 02 SHL - RootName: rework for sanity
+  		27 Nov 02 SHL - MakeFullName: correct typo
+
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -29,9 +45,8 @@ APIRET MakeFullName (char *filename) {
                         FIL_QUERYFULLNAME,
                         fullname,
                         sizeof(fullname));
-  if(rc)
-    strcpy(filename,
-           fullname);
+  if(!rc)
+    strcpy(filename, fullname);		// Use actual name
   return rc;
 }
 
@@ -39,6 +54,9 @@ APIRET MakeFullName (char *filename) {
 char *RootName (char *filename) {
 
   char *p = NULL,*pp;
+
+  // Return filename, strip path parts
+  // Return empty string when filename ends with \
 
   if(filename) {
     p = strrchr(filename,'\\');
@@ -55,10 +73,6 @@ char *RootName (char *filename) {
     p = filename;
   else                    /* skip past backslash */
     p++;
-  if(p &&
-     !*p &&
-     p == filename + 3)   /* is root */
-    p--;
   return p;
 }
 
