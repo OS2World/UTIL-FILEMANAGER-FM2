@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Minimized data bar
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	14 Sep 02 SHL - Handle large partitions
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -606,6 +620,8 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         CHAR        s[90],tpm[38],*kfree,path[] = " :",
                    *szBuf = NULL,*FSystem = NULL;
         ULONG       freebytes,percentfree,wasx,size;
+	 ULONG       cbPerUnit;
+	 UINT	      cShift;
         HPS         hps = (HPS)mp2;
         FSALLOCATE  fsa;
         HWND        hwndTemp;
@@ -626,17 +642,25 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                              FSIL_ALLOC,
                              &fsa,
                              sizeof(FSALLOCATE))) {
-            freebytes = fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector);
-            if(freebytes >= (1024 * 1024)) {
-              freebytes /= (1024 * 1024);
+	     // Scale to avoid overflow on large drives
+	     cbPerUnit = fsa.cSectorUnit * fsa.cbSector;
+	     for (cShift = 0; cbPerUnit && ~cbPerUnit & 1 && cShift < 20; cShift++)
+	       cbPerUnit >>= 1;
+            freebytes = fsa.cUnitAvail * cbPerUnit;		// Scaled by cShift
+            if (freebytes >= (1024 * 1024) >> cShift) {
+              freebytes /= (1024 * 1024) >> cShift;
               kfree = "mb";
             }
-            else if(freebytes >= 1024) {
+            else if (freebytes << cShift >= 1024) {
+              freebytes <<= cShift;
               freebytes /= 1024;
               kfree = "kb";
             }
             else
+	     {
+		freebytes <<= cShift;
               kfree = "b";
+	     }
             percentfree = (fsa.cUnit && fsa.cUnitAvail) ?
                           (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
             commafmt(tpm,sizeof(tpm),freebytes);
