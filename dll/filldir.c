@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Fill Directory Tree Containers
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	12 Sep 02 SHL - Minor edits
+
+***********************************************************************/
+
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -38,7 +53,8 @@ HPOINTER IDFile (ULONG cmp) {
 
 ULONG FillInRecordFromFFB (HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
                            const PFILEFINDBUF4 pffb,const BOOL partial,
-                           DIRCNRDATA *dcd) {
+                           DIRCNRDATA *dcd)
+{
 
   /* fill in a container record from a FILEFINDBUF4 structure */
 
@@ -272,7 +288,8 @@ ULONG FillInRecordFromFFB (HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
 ULONG FillInRecordFromFSA (HWND hwndCnr,PCNRITEM pci,const PSZ pszFileName,
                            const PFILESTATUS4 pfsa4,
                            const BOOL partial,
-                           DIRCNRDATA *dcd) {
+                           DIRCNRDATA *dcd)
+{
 
   HPOINTER       hptr;
   CHAR           attrstring[] = "RHS\0DA",cmps[] = ".xxx";
@@ -485,7 +502,8 @@ ULONG FillInRecordFromFSA (HWND hwndCnr,PCNRITEM pci,const PSZ pszFileName,
 ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                         const CHAR *szDirBase, const BOOL filestoo,
                         const BOOL recurse,const BOOL partial,
-                        CHAR *stopflag,DIRCNRDATA *dcd,ULONG *foundany) {
+                        CHAR *stopflag,DIRCNRDATA *dcd,ULONG *foundany)
+{
 
   /* put all the directories (and files if filestoo is TRUE) from a
    * directory into the container.  recurse through subdirectories if
@@ -629,6 +647,18 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                                    CM_INSERTRECORD,
                                    MPFROMP(pciFirst),
                                    MPFROMP(&ri))) {
+
+		      { // SHL
+		        CHAR sz[80];
+		        sprintf(sz, "rc = %d", rc);
+                        WinMessageBox(HWND_DESKTOP,	/* Parent window */
+                                      HWND_DESKTOP,	/* Owner window */
+                                      sz,		/* Message */
+                                      "Debug",		/* Title bar message */
+                                      0,		/* Message identifier */
+                                      MB_ENTER | MB_ICONEXCLAMATION | MB_MOVEABLE);
+		      } // SHL
+
                       General_Error(WinQueryAnchorBlock(hwndCnr),
                                     HWND_DESKTOP,
                                     __FILE__,
@@ -752,6 +782,18 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
               WinSetFocus(HWND_DESKTOP,hwndCnr);
               if(!WinSendMsg(hwndCnr,CM_INSERTRECORD,
                              MPFROMP(pciFirst),MPFROMP(&ri))) {
+
+	        { // SHL
+		  CHAR sz[80];
+		  sprintf(sz, "rc = %d", rc);
+	          WinMessageBox(HWND_DESKTOP,		/* Parent window */
+                                HWND_DESKTOP,		/* Owner window */
+                                sz,			/* Message */
+                                "Debug",		/* Title bar message */
+                                0,			/* Message identifier */
+                                MB_ENTER | MB_ICONEXCLAMATION | MB_MOVEABLE);
+	        } // SHL
+
                 General_Error(WinQueryAnchorBlock(hwndCnr),
                               HWND_DESKTOP,
                               __FILE__,
