@@ -490,7 +490,7 @@ Enter the # spaces to which you want tabs expanded.  Enter 0 if you want real ta
 Expand tabs to # spaces?
 FM/2: Set tabstop space equivalants
 About This Thing
-FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 by M. Kimes\r(Barebones Software)\rAll Rights Reserved
+FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2003 Steven Levine and Associates, Inc.\rAll Rights Reserved
 LAN Error report
 Your LAN is broken -- it's returning files when directories are requested.  Compensating, but expect a slowdown.\r\rNote:  FM/2 is not responsible for fixing broken LANs.  Contact your LAN supplier and advise them that your LAN does not properly respond to DosFindFirst requests with MUST_HAVE_DIRECTORY set.  If your LAN supplier would like more information on their bug, have them contact me at one of the addresses in the READ.ME file.\r\rClick No to stop this notice from showing again for awhile.
 Don't forget
@@ -639,7 +639,7 @@ Data bytes:
 Can't open "%s" as an OS/2 INI file.\rNote:  If you receive a WIN 1302 error, it indicates that the INI file is corrupt.
 Do you want to delete keyname "%s"?
 Do you want to delete application "%s"?
-FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 by M. Kimes\r(Barebones Software)\rAll Rights Reserved
+FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2003 Steven Levine and Associates, Inc.\rAll Rights Reserved
 5.System VIO
 FM/2: INI "%s"
 Enter the characters to find.\r\rInput is case insensitive.  Leading\rspaces are not stripped.  Find\rnexts are made after the current\ritem, find firsts always start at\rthe top.  Beep means no (more)\rmatches.
@@ -960,7 +960,7 @@ There are attach and/or detach requests pending -- you can use the window list t
 ;\n;This file contains definitions for an FM/2 toolbox.\n;FM/2 saved this file as \"%s\".\n;\n;Each tool button has four lines that describe it.  The first line is\n;the help for the button.  The second line is the text for the button\n;(internally defined tools have icons, and the text is ignored).  The\n;third line is a number indicating flags associated with the button.\n;A flag value of 1 means the button is dropable, 4 means invisible,\n;32 means use user-provided icon only (named <ID>.bmp).\n;The fourth line is the ID of the button (for internal commands only).\n;Note Commands begin at ID 4000, so a button with ID 4000 would cause\n;the first Command to be run and ID 4001 would run the second.\n;4900 marks the first \"quick toolbox change\" item, and you can\n;have up to 50 of them (these buttons load other toolboxes, see\n;online help).;\n
  [%c:  \"%s\"  SN: %08lx%s]
 ; FM/2 seek and scan mask file, one mask set per line\n
-Record fill-in failed %d
+Record fill-in failed %lu
 Record insert failed
 Record allocation failed
 Record fill-in failed %d
@@ -989,3 +989,4 @@ Based on what I've seen while scanning your drives, I would like to suggest the 
 ~Bubbles
 Bubble help settings
  (to Target directory)
+$Id$
