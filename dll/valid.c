@@ -12,6 +12,7 @@
 		27 Nov 02 SHL - MakeFullName: correct typo
 		11 Jun 03 SHL - Add JFS and FAT32 support
 		15 Jun 04 SHL - Implement Jim Read's removable logic
+		31 Jul 04 SHL - Comments
 
 ***********************************************************************/
 
@@ -170,6 +171,12 @@ BOOL ParentIsDesktop (HWND hwnd,HWND hwndParent)
   return ret;
 }
 
+/* CheckDrive
+ * @param chDrive drive letter
+ * @param pszFileSystem pointer to buffer to return file system type or NULL
+ * @param pulType pointer to long word to return drive flags or NULL
+ * @returns removability flag, 1 = removable, 0 = not removable, -1 = error
+ */
 
 INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
 {
@@ -219,9 +226,15 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   DosError(FERR_DISABLEHARDERR);
   ulrc = DosQueryFSAttach(szPath, 0, FSAIL_QUERYNAME,
 			  (PFSQBUFFER2)pvBuffer, &clBufferSize);
+# define CD_DEBUG 0
+
   if (ulrc)
   {
     /* can't get any info at all */
+#   ifdef CD_DEBUG
+    fprintf(stderr, "DosQueryFSAttach %s returned %ul\n",
+	    szPath, ulrc);
+#   endif
     DosFreeMem(pvBuffer);
     DosError(FERR_DISABLEHARDERR);
     return -1;				// Say failed
