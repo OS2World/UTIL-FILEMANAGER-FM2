@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Collector
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	15 Oct 02 MK - Baseline
+		10 Jan 04 SHL - Avoid -1L byte counts
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -32,8 +47,8 @@ MRESULT EXPENTRY CollectorFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 }
 
 
-MRESULT EXPENTRY CollectorTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CollectorTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static BOOL   emphasized      = FALSE;
   static HWND   hwndButtonPopup = (HWND)0;
   static ULONG  timestamp       = ULONG_MAX;
@@ -559,8 +574,8 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
     case UM_COLLECT:
       DosError(FERR_DISABLEHARDERR);
       dcd = WinQueryWindowPtr(hwnd,0);
-      if(dcd) {
-
+      if (dcd)
+      {
         LISTINFO    *li = (LISTINFO *)mp1;
         INT          x;
         FILEFINDBUF4 fb4;
@@ -569,6 +584,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
         PCNRITEM     pci,pciFirst,pciT,pciP = NULL;
         RECORDINSERT ri;
         ULONG        ulMaxFiles;
+	ULONG	     totalbytes;
         CHAR         fullname[CCHMAXPATH];
 
         WinSetWindowText(WinWindowFromID(dcd->hwndClient,
@@ -609,10 +625,15 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
                 DosFindClose(hdir);
                 priority_normal();
                 *fb4.achName = 0;
-                dcd->totalbytes += FillInRecordFromFFB(dcd->hwndCnr,pci,
-                                                       fullname,
-                                                       &fb4,FALSE,
-                                                       dcd);
+                totalbytes = FillInRecordFromFFB(dcd->hwndCnr,pci,
+                                                 fullname,
+                                                 &fb4,FALSE,
+                                                 dcd);
+		if (totalbytes != -1) {
+		  dcd->totalbytes += totalbytes;
+		  if (dcd->totalbytes == -1)
+		    dcd->totalbytes--;		// fixme for real someday
+		}
                 pciP = pci;
                 pci = (PCNRITEM)pci->rc.preccNextRecord;
               }
