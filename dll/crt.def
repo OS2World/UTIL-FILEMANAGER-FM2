@@ -94,7 +94,7 @@ EXPORTS
    _setupenv
    _terminate                ; ****
    _test_handle
-   _tmemory_sem
+; SHL  _tmemory_sem
    _tzset
    _ultoa
    _y0
