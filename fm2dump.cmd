@@ -14,11 +14,12 @@
 
 :: Revisions	22 Oct 02 SHL - Baseline
 ::		02 Dec 03 SHL - Comments and usage help
+::		12 Apr 04 SHL - Rework settings
 
 setlocal
 
 :: Edit this to point to existing directory on drive with sufficient free space
-set D=j:\tmp\dumpsx
+set D=j:\tmp\dumps
 
 :: Try to validate
 dir %D%\nul >nul 2>&1
@@ -40,19 +41,18 @@ goto Help
 :Reset
 echo on
 :: Reset to defaults
-procdump reset /l
-@if errorlevel 1 pause
-procdump reset /pid:all
-@if errorlevel 1 pause
-:: Turn on dump facility - set dump directory
-procdump on /l:%d%
+procdump reset /f /l
 @if errorlevel 1 pause
 
 :: Configure dump settings for fm/2
 
 :Configure
 
-procdump set /proc:%P% /pd:summ,sysfs,private,instance,shared,syssem,sysio /pc:0 /pu
+:: Turn on dump facility - set dump directory
+procdump on /l:%d%
+@if errorlevel 1 pause
+:: Configure fm/2 dump
+procdump set /proc:%P% /pd:instance,private,sem,shared,summ,sysfs,sysio,sysvm /pc:0
 @if errorlevel 1 pause
 :: Check
 procdump query
@@ -80,7 +80,7 @@ echo Dump facility turned off
 goto end
 
 :BadDir
-  echo %D% does not exist.  Check set D= statement
+  echo %D% does not exist - check set D= statement
   goto end
 
 ::=== Help: Show usage help ===
