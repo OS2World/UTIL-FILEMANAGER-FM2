@@ -9,6 +9,7 @@
   Archive containers
 
   Revisions	11 Jun 02 SHL - Ensure archive name not garbage
+  		22 May 03 SHL - ArcObjWndProc: fix UM_RESCAN now that we understand it
 
 ***********************************************************************/
 
@@ -1286,16 +1287,10 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
        */
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd) {
-        char *s;			// SHL
         if(mp1)
-	{
-          strcpy(dcd->arcname,(CHAR *)mp1);
-	  s = dcd->arcname;			// SHL
-	}
-	else
-	  s = "** Unknown **";			// SHL
+          strcpy(dcd->arcname,(CHAR *)mp1);	// Update name on request
         WinSetWindowText(dcd->hwndFrame,"AV/2");
-        WinSetWindowText(WinWindowFromID(dcd->hwndFrame,FID_TITLEBAR),s);
+        WinSetWindowText(WinWindowFromID(dcd->hwndFrame,FID_TITLEBAR),dcd->arcname);
         dcd->totalbytes = dcd->totalfiles =
           dcd->selectedfiles = dcd->selectedbytes = 0;
         WinSetDlgItemText(dcd->hwndClient,DIR_TOTALS,"0");
