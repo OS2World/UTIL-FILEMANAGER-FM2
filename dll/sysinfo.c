@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  System Info Display
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2002, 2003 Steven H.Levine
+
+  Revisions	16 Oct 02 SHL - Baseline
+  		08 Feb 03 SHL - Enable display
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -11,8 +26,6 @@
 #pragma data_seg(DATA1)
 #pragma alloc_text(SYSINFO,SysInfoDlgProc,RunRmview)
 
-
-#ifdef NEVER
 
 VOID RunRmview (VOID *arg) {
 
@@ -85,12 +98,9 @@ Abort:
   DosForceDelete("$RMVIEW.#$#");
 }
 
-#endif
+MRESULT EXPENTRY SysInfoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
 
-
-MRESULT EXPENTRY SysInfoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
-#ifdef NEVER
   static HWND     me = (HWND)0;
   static LONG     ypos = 0;
   static HPOINTER hptrIcon = (HPOINTER)0;
@@ -313,8 +323,8 @@ MRESULT EXPENTRY SysInfoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             switch(x) {
               case SV_CXBYTEALIGN:
               case SV_CYBYTEALIGN:
-              case SV_CYMOTION:
-              case SV_CXMOTION:
+              case SV_CYMOTIONSTART:
+              case SV_CXMOTIONSTART:
               case SV_CYDBLCLK:
               case SV_CXDBLCLK:
               case SV_CYPOINTER:
@@ -431,7 +441,9 @@ MRESULT EXPENTRY SysInfoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           }
         }
       }
+#     ifdef NEVER	// fixme
       _beginthread(RunRmview,NULL,65536,(PVOID)hwnd);
+#     endif
       break;
 
     case WM_ADJUSTWINDOWPOS:
@@ -471,8 +483,6 @@ MRESULT EXPENTRY SysInfoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         }
         break;
   }
-
-#endif
 
   return WinDefDlgProc(hwnd,msg,mp1,mp2);
 }
