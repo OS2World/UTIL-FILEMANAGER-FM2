@@ -1,5 +1,5 @@
 
-/* $ID$ */
+/* $Id$ */
 
 #define INCL_DOS
 #define INCL_WIN
