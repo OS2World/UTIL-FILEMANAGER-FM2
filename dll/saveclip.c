@@ -9,6 +9,8 @@
   Copyright (c) 2003 Steven H.Levine
 
   Revisions	12 Feb 03 SHL - SaveListDlgProc: standardize EA math
+		01 Aug 04 SHL - Rework lstrip/rstrip usage
+  		01 Aug 04 SHL - Rework fixup usage
 
 ***********************************************************************/
 
@@ -165,7 +167,8 @@ CHAR **ListFromClipboardHab (HAB hab) {
       text = strdup(p);
     WinCloseClipbrd(hab);
     if(text) {
-      pp = lstrip(rstrip(text));
+      bstrip(text);
+      pp = text;
       p = strchr(pp,'\r');
       if(!p)
         p = strchr(pp,'\n');
@@ -245,7 +248,7 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
           fixup(pattern,
                 temp,
-                161,
+                sizeof(temp),
                 strlen(pattern));
           WinSetDlgItemText(hwnd,
                             SAV_PATTERN,
@@ -440,7 +443,7 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                 SAV_FILENAME,
                                 CCHMAXPATH,
                                 savename);
-            lstrip(rstrip(savename));
+            bstrip(savename);
             if(!*savename) {
               WinEnableWindow(hwnd,TRUE);
               DosBeep(100,100);
@@ -642,7 +645,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
         {
           CHAR temp[162];
 
-          fixup(pattern,temp,161,strlen(pattern));
+          fixup(pattern,temp,sizeof(temp),strlen(pattern));
           WinSetDlgItemText(hwnd,SAV_PATTERN,temp);
         }
         {
@@ -838,7 +841,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                                 SAV_FILENAME,
                                 CCHMAXPATH,
                                 savename);
-            lstrip(rstrip(savename));
+            bstrip(savename);
             if(!*savename) {
               WinEnableWindow(hwnd,TRUE);
               DosBeep(100,100);
