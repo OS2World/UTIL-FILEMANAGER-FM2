@@ -260,7 +260,8 @@ BOOL IsArcThere (HWND hwnd, CHAR *arcname) {
 
 
 INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
-                ULONG *totalbytes) {
+                ULONG *totalbytes)
+{
 
   FILE         *fp;
   HFILE         oldstdout,newstdout;
