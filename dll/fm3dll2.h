@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Global definitions
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	15 Oct 02 MK - Baseline
+		04 Nov 03 SHL - Drop obsoletes
+
+***********************************************************************/
+
 #define COLR_WHITE          0
 #define COLR_BLACK          1
 #define COLR_BLUE           2
@@ -82,8 +97,7 @@
 #define ID_STICK52          14
 #define ID_TIMER2           15
 #define ID_TIMER3           16
-#define ID_PLUS             17
-#define ID_MINUS            18
+
 #define ID_TIMER4           19
 #define ID_TIMER5           20
 #define ID_TIMER6           21
