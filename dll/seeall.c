@@ -210,8 +210,8 @@ static ULONG NumLines (RECTL *rcl,ALLDATA *ad) {
 }
 
 
-MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case UM_MASSACTION:
       {
@@ -766,6 +766,7 @@ Retry:
                                                FIL_QUERYEASIZE,
                                                &fs4,sizeof(fs4)) &&
                              !(fs4.attrFile & FILE_DIRECTORY) &&
+			     // fixme to use CBLIST_TO_EASIZE?
                              fs4.cbFile + fs4.cbList <= clFreeBytes) {
 			    // Swap with failing item
                             ptr = list[x];
