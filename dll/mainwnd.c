@@ -883,10 +883,10 @@ VOID MakeBubble (HWND hwnd,BOOL above,CHAR *help) {
 				sy = 0;
 		}
 		WinSetWindowPos(hwndBubble,HWND_TOP,sx,sy,
-										tptl.x + 14,
-										tptl.y + 12,
-										SWP_DEACTIVATE | SWP_SHOW | SWP_ZORDER |
-										SWP_MOVE | SWP_SIZE);
+				tptl.x + 14,
+				tptl.y + 12,
+				SWP_DEACTIVATE | SWP_SHOW | SWP_ZORDER |
+				SWP_MOVE | SWP_SIZE);
 	}
 }
 
