@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Main window
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005 Steven H.Levine
+
+  Revisions	10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -246,6 +260,7 @@ MRESULT EXPENTRY DropListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           WinSendDlgItemMsg(hwnd,DND_LISTBOX,LM_SELECTITEM,
                             MPFROM2SHORT(x,0),MPFROMSHORT(TRUE));
         }
+	WinSendDlgItemMsg(hwnd,DND_TARGET,EM_SETTEXTLIMIT, (MPARAM)CCHMAXPATH,(MPARAM)0);
         PostMsg(hwnd,UM_UNDO,MPVOID,MPVOID);
       }
       else
