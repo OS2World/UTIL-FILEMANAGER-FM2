@@ -16,12 +16,14 @@
 		06 Jan 04 SHL - v3.02f: dirsize applet large drives
 		10 Jan 04 SHL - v3.02f: filldir: avoid spurious error reports
 		11 Mar 04 SHL - v3.02g: valid::CheckDrive: debug removable detect
+		26 Jul 04 SHL - v3.02h: valid::CheckDrive: debug invisible FAT32
+		31 Jul 04 SHL - v3.02h: avv::ArcReviewDlgProc: correct filename flags updates
 
 ***********************************************************************/
 
 #define VERMAJOR       3
 #define VERMINOR       02
-#define VERREALMINOR   "g"		// SHL
+#define VERREALMINOR   "h"		// SHL
 
 #define APPNAME         "FM2"
 
