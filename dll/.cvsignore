@@ -1,0 +1,8 @@
+*.@0
+*.dll
+*.lib
+*.map
+*.res
+ctags.*
+tmp.err
+tmp.nf

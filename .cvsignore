@@ -1,0 +1,11 @@
+*.@0
+*.map
+*.res
+ctags.*
+project*.cpe
+setenv.cmd
+Ship*
+test
+testutil
+tmp.err
+tmp.nf
