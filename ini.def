@@ -4,4 +4,4 @@ NEWFILES
 
 DESCRIPTION   'FM/3 INI miniapp copyright (c) 1993-98 by M. Kimes'
 PROTMODE
-STACKSIZE     288416
+STACKSIZE     0x60000

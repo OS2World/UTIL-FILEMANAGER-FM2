@@ -4,4 +4,4 @@ NEWFILES
 
 DESCRIPTION   'FM/3 Kill Process miniapp copyright (c) 1993-98 by M. Kimes'
 PROTMODE
-STACKSIZE     188416
+STACKSIZE     0x50000
