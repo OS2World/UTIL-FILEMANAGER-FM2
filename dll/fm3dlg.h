@@ -1,4 +1,4 @@
-#include "\fm3\dll\fm3hlp.h"
+#include "fm3hlp.h"			/* SHL */
 
 #define MSK_FRAME 											20100
 #define MSK_LISTBOX 										20101

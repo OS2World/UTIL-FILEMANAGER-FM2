@@ -94,7 +94,7 @@
                                  FILE_HIDDEN | FILE_READONLY | FILE_SYSTEM)
 #define LISTTEMPROOT            "$FM2LI$T."
 
-#include "\fm3\dll\fm3dll2.h"
+#include "fm3dll2.h"			// SHL
 
 #define UM_PAINT            (WM_USER)
 #define UM_SETUP            (WM_USER + 1)
