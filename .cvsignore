@@ -7,5 +7,4 @@ setenv.cmd
 Ship*
 test
 testutil
-tmp.err
-tmp.nf
+tmp.*
