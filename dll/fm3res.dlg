@@ -1,3 +1,4 @@
+
 DLGTEMPLATE MSK_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
     DIALOG  "FM/2: Filter", MSK_FRAME, -35, -103, 190, 210, FS_MOUSEALIGN, 
@@ -309,7 +310,7 @@ BEGIN
     DIALOG  "FM/2: Check List", CHECK_FRAME, -32, -12, 312, 176, 
             FS_MOUSEALIGN | WS_VISIBLE, FCF_TITLEBAR
     BEGIN
-        CONTROL         -2, CHECK_BITMAP, 204, 4, 21, 16, WC_STATIC, 
+        CONTROL         65534 /* -2 */, CHECK_BITMAP, 204, 4, 21, 16, WC_STATIC, 
                         SS_BITMAP | WS_GROUP | WS_VISIBLE
         CTEXT           "(Hint:  CTRL-click to unhilite an item.)", 
                         CHECK_HELP, 7, 164, 299, 8, DT_VCENTER
@@ -776,7 +777,7 @@ BEGIN
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        CONTROL         -2, ADDBTN_BMP, 181, 37, 21, 16, WC_STATIC, 
+        CONTROL         65534 /* -2 */, ADDBTN_BMP, 181, 37, 21, 16, WC_STATIC, 
                         SS_BITMAP | WS_GROUP | WS_VISIBLE
     END
 END
@@ -2622,3 +2623,4 @@ BEGIN
         PUSHBUTTON      "~Undo", IDM_UNDO, 48, 4, 40, 14, BS_NOPOINTERFOCUS
     END
 END
+
