@@ -127,6 +127,9 @@ Menu->Toggles in the online help) for that invocation.
 You can specify the name of an alternate INI file with "-<inifilename>"
 -- for example, "-C:\FM2\MYINI.INI".
 
+You can also specify the INI file location with the environment variable 
+FM2INI -- for example:  SET FM2INI=C:\FM2\MYINI.INI.
+
 How to get started using FM/2:
 -----------------------------
 Please read the following sections in the online help when you start
