@@ -1,7 +1,12 @@
+# dll\makefile - build fm/2 dlls, help files, string tables and resource kit
 # $Id$
-# Make fm/2 dlls, help files, string tables and resource kit
 
-# Revisions:	May 03 SHL - Correct dependencies for icons
+# Revisions:	22 May 03 SHL - Correct icon dependencies
+#		21 Nov 03 SHL - Correct ipf dependents
+
+# Environment:
+
+#   DEBUG	0 = release build, 1 = debug build
 
 BASE=fm3dll
 BASERES=fm3res
@@ -104,12 +109,12 @@ $(BASERES).lib: $(BASERES).dll $(BASERES).def
 
 $(BASERES).str: $(BASE).STR fm3str.h version.h icons\*.ico
     internal\mkstr
-    copy $(BASERES).str ../v
-    cd..\reskit
+    copy $(BASERES).str .. /v
+    cd ..\reskit
     makekit
     cd..\dll
 
-ipf\FM3.hlp: ipf\FM3.ipf
+ipf\FM3.hlp: ipf\*.ipf
     cd ipf
     ipfc /CODEPAGE=850 fm3.ipf
     cd..
