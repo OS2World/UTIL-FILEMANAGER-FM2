@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Initialization
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	11 Jun 02 SHL - Add CheckVersion
+
+***********************************************************************/
+
 #define DEFINE_GLOBALS 1
 
 #define INCL_DOS
@@ -1342,4 +1356,22 @@ HWND StartFM3 (HAB hab,INT argc,CHAR **argv) {
             MPFROMP(argv));
   }
   return hwndFrame;
+}
+
+// SHL added - fixme
+
+int CheckVersion (int vermajor,int verminor) {
+
+  int ret = 0;
+
+#if 0
+  if(vermajor && verminor) {
+    *vermajor = VERMAJOR;
+    *verminor = VERMINOR;
+    ret = 1;
+  }
+#endif
+  ret = 1;
+
+  return ret;
 }
