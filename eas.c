@@ -1,3 +1,6 @@
+
+/* $ID$ */
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -44,9 +47,12 @@ int main (int argc,char *argv[]) {
           list[0] = fullname;
           list[1] = NULL;
         }
-        WinDlgBox(HWND_DESKTOP,HWND_DESKTOP,
-                  DisplayEAsProc,FM3ModHandle,
-                  EA_FRAME,(PVOID)list);
+        WinDlgBox(HWND_DESKTOP,
+		  HWND_DESKTOP,
+		  DisplayEAsProc,
+		  FM3ModHandle,
+		  EA_FRAME,
+		  (PVOID)list);
       }
 Abort:
       WinDestroyMsgQueue(hmq);
