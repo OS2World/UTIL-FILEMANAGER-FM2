@@ -1,6 +1,19 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Command formatting tools
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	06 Jan 04 SHL - Drop hundfmt, clean commafmt
+
+***********************************************************************/
+
 /*
 **  COMMAFMT.C
-**
 **  Public domain by Bob Stout
 **
 **  Notes:  1. Use static buffer to eliminate error checks on buffer overflow
@@ -19,52 +32,58 @@
 #include <string.h>
 
 size_t commafmt(char   *buf,            /* Buffer for formatted string  */
-                int     bufsize,        /* Size of buffer               */
-                long    N)              /* Number to convert            */
+		int     bufsize,        /* Size of buffer               */
+		long    N)              /* Number to convert            */
 {
-        int len = 1, posn = 1, sign = 1;
-        char *ptr = buf + bufsize - 1;
+	int len = 1;
+	int posn = 1;
+	int sign = 1;
 
-        if (2 > bufsize)
-        {
+	char *ptr = buf + bufsize - 1;
+
+	if (bufsize < 2)
+	{
 ABORT:          *buf = 0;
-                return 0;
-        }
+		return 0;
+	}
 
-        *ptr-- = 0;
-        --bufsize;
-        if (0L > N)
-        {
-                sign = -1;
-                N = -N;
-        }
+	*ptr-- = 0;
+	--bufsize;
+	if (N < 0)
+	{
+		sign = -1;
+		N = -N;
+	}
 
-        for ( ; len <= bufsize; ++len, ++posn)
-        {
-                *ptr-- = (char)((N % 10L) + '0');
-                if (0L == (N /= 10L))
-                        break;
-                if (0 == (posn % 3))
-                {
-                        *ptr-- = ',';
-                        ++len;
-                }
-                if (len >= bufsize)
-                        goto ABORT;
-        }
+	for ( ; len <= bufsize; ++len, ++posn)
+	{
+		*ptr-- = (char)((N % 10L) + '0');
+		N /= 10;
+		if (!N)
+			break;
+		if (posn % 3 == 0)
+		{
+			*ptr-- = ',';
+			++len;
+		}
+		if (len >= bufsize)
+			goto ABORT;
+	}
 
-        if (0 > sign)
-        {
-                if (0 == bufsize)
-                        goto ABORT;
-                *ptr-- = '-';
-                ++len;
-        }
+	if (sign < 0)
+	{
+		if (bufsize == 0)
+			goto ABORT;
+		*ptr-- = '-';
+		++len;
+	}
 
-        strcpy(buf, ++ptr);
-        return (size_t)len;
+	strcpy(buf, ++ptr);		// Left align
+	return len;
 }
 
+
+#if 0 // fixme
 
 size_t hundfmt (char *buf,int bufsize,unsigned long N) {
 
@@ -90,3 +109,5 @@ size_t hundfmt (char *buf,int bufsize,unsigned long N) {
   *p = 0;
   return p - buf;
 }
+
+#endif 0 // fixme
