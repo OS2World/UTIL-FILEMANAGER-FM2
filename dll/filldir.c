@@ -8,7 +8,7 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2002 Steven H.Levine
 
-  Revisions	12 Sep 02 SHL - Minor edits
+  Revisions	12 Sep 02 SHL - Rework symbols to understand code
 
 ***********************************************************************/
 
@@ -186,10 +186,12 @@ ULONG FillInRecordFromFFB (HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
       hptr = (HPOINTER)0;
   }
   else {
-    if(!fNoIconsFiles && (!isalpha(*pci->szFileName) ||
+    if (!fNoIconsFiles && (!isalpha(*pci->szFileName) ||
        !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADICONS)))
       hptr = WinLoadFileIcon(pci->szFileName, FALSE);
-    else {
+    else
+      hptr = (HPOINTER)0;
+    if (!hptr || hptr == WinQuerySysPointer(HWND_DESKTOP,SPTR_FILE,FALSE)) {
       p = strrchr(pci->szFileName,'.');
       if(p && !p[4]) {
         cmps[1] = toupper(p[1]);
@@ -510,9 +512,9 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
    * recurse is TRUE.
    */
 
-  PSZ            szFileSpec;
+  PSZ            pszFileSpec;
   INT            t;
-  PFILEFINDBUF4  pffb,*ppffb,pffbFile,pfTotal = NULL,pfTemp;
+  PFILEFINDBUF4  paffbFound,*papffbSelected,pffbFile,paffbTotal = NULL,paffbTemp;
   HDIR           hdir = HDIR_CREATE;
   ULONG          ulMaxFiles,ulExtraBytes,ulM = 1L,ulTotal = 0L;
   LONG           numbytes,totalbytes,returnbytes = 0L;
@@ -520,7 +522,7 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
   APIRET         rc;
   PCNRITEM       pci,pciFirst,pcit;
   RECORDINSERT   ri;
-  register PBYTE fb,tb;
+  register PBYTE pByte,pByte2;
 
   if(foundany)
     (*foundany) = 0L;
@@ -544,24 +546,24 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
     ulM = min(ulM,(65535 / sizeof(FILEFINDBUF4)));
 
   ulMaxFiles = ulM;
-  szFileSpec = malloc(CCHMAXPATH + 2);
-  pffb = malloc((ulM + 1L) * sizeof(FILEFINDBUF4));
-  ppffb = malloc((ulM + 1L) * sizeof(PFILEFINDBUF4));
-  if(pffb && ppffb && szFileSpec) {
+  pszFileSpec = malloc(CCHMAXPATH + 2);
+  paffbFound = malloc((ulM + 1L) * sizeof(FILEFINDBUF4));
+  papffbSelected = malloc((ulM + 1L) * sizeof(PFILEFINDBUF4));
+  if(paffbFound && papffbSelected && pszFileSpec) {
     t = strlen(szDirBase);
-    memcpy(szFileSpec,szDirBase,t + 1);
-    pchEndPath = szFileSpec + t;
+    memcpy(pszFileSpec,szDirBase,t + 1);
+    pchEndPath = pszFileSpec + t;
     if(*(pchEndPath - 1) != '\\') {
       memcpy(pchEndPath,"\\",2);
       pchEndPath++;
     }
     memcpy(pchEndPath,"*",2);
     DosError(FERR_DISABLEHARDERR);
-    rc = DosFindFirst(szFileSpec, &hdir,
+    rc = DosFindFirst(pszFileSpec, &hdir,
                       FILE_NORMAL | ((filestoo) ? FILE_DIRECTORY :
                       MUST_HAVE_DIRECTORY) | FILE_READONLY |
                       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-                      pffb, ulM * sizeof(FILEFINDBUF4),
+                      paffbFound, ulM * sizeof(FILEFINDBUF4),
                       &ulMaxFiles, FIL_QUERYEASIZE);
     priority_normal();
     *pchEndPath = 0;
@@ -579,10 +581,10 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
 
           if(stopflag && *stopflag)
             goto Abort;
-          fb = (PBYTE)pffb;
+          pByte = (PBYTE)paffbFound;
           x = 0L;
           while(x < ulMaxFiles) {
-            pffbFile = (PFILEFINDBUF4)fb;
+            pffbFile = (PFILEFINDBUF4)pByte;
             if(!*pffbFile->achName ||
                (!filestoo && !(pffbFile->attrFile & FILE_DIRECTORY)) ||
                (((pffbFile->attrFile & FILE_DIRECTORY) &&
@@ -591,12 +593,12 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                  !pffbFile->achName[2]))))
               ulMaxFiles--;
             else
-              ppffb[x++] = pffbFile;
+              papffbSelected[x++] = pffbFile;
             if(!pffbFile->oNextEntryOffset) {
               ulMaxFiles = x;
               break;
             }
-            fb += pffbFile->oNextEntryOffset;
+            pByte += pffbFile->oNextEntryOffset;
           }
           if(ulMaxFiles) {
             if(stopflag && *stopflag)
@@ -612,8 +614,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                 pci = pciFirst;
                 totalbytes = 0L;
                 for(i = 0; i < ulMaxFiles; i++) {
-                  pffbFile = ppffb[i];
-                  numbytes = FillInRecordFromFFB(hwndCnr,pci,szFileSpec,
+                  pffbFile = papffbSelected[i];
+                  numbytes = FillInRecordFromFFB(hwndCnr,pci,pszFileSpec,
                                                  pffbFile,partial,dcd);
                   if(numbytes > -1L) {
                     pci = (PCNRITEM)pci->rc.preccNextRecord;
@@ -695,12 +697,12 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
               }
             }
             else {
-              pfTemp = realloc(pfTotal,sizeof(FILEFINDBUF4) *
+              paffbTemp = realloc(paffbTotal,sizeof(FILEFINDBUF4) *
                                        (ulMaxFiles + ulTotal));
-              if(pfTemp) {
-                pfTotal = pfTemp;
+              if(paffbTemp) {
+                paffbTotal = paffbTemp;
                 for(x = 0;x < ulMaxFiles;x++)
-                  pfTotal[x + ulTotal] = *ppffb[x];
+                  paffbTotal[x + ulTotal] = *papffbSelected[x];
                 ulTotal += ulMaxFiles;
               }
               else {
@@ -717,7 +719,7 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
             goto Abort;
         ulMaxFiles = ulM;
         DosError(FERR_DISABLEHARDERR);
-        rc = DosFindNext(hdir, pffb, ulM * sizeof(FILEFINDBUF4),
+        rc = DosFindNext(hdir, paffbFound, ulM * sizeof(FILEFINDBUF4),
                          &ulMaxFiles);
         priority_normal();
         if(rc)
@@ -725,16 +727,16 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
       }
       DosFindClose(hdir);
 
-      if(pffb || ppffb) {
-        if(pffb)
-          free(pffb);
-        if(ppffb)
-          free(ppffb);
-        ppffb = NULL;
-        pffb = NULL;
+      if(paffbFound || papffbSelected) {
+        if(paffbFound)
+          free(paffbFound);
+        if(papffbSelected)
+          free(papffbSelected);
+        papffbSelected = NULL;
+        paffbFound = NULL;
       }
 
-      if(ulTotal && pfTotal) {
+      if(ulTotal && paffbTotal) {
         if(stopflag && *stopflag)
           goto Abort;
         pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
@@ -746,10 +748,10 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
 
           pci = pciFirst;
           totalbytes = 0L;
-          tb = (PBYTE)pfTotal;
+          pByte2 = (PBYTE)paffbTotal;
           for(i = 0; i < ulTotal; i++) {
-            pffbFile = (PFILEFINDBUF4)tb;
-            numbytes = FillInRecordFromFFB(hwndCnr,pci,szFileSpec,
+            pffbFile = (PFILEFINDBUF4)pByte2;
+            numbytes = FillInRecordFromFFB(hwndCnr,pci,pszFileSpec,
                                            pffbFile,partial,dcd);
             if(numbytes > -1L) {
               pci = (PCNRITEM)pci->rc.preccNextRecord;
@@ -764,7 +766,7 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                             hwndCnr);
               ulTotal--;
             }
-            tb += sizeof(FILEFINDBUF4);
+            pByte2 += sizeof(FILEFINDBUF4);
           }
           if(ulTotal) {
             memset(&ri,0,sizeof(RECORDINSERT));
@@ -834,15 +836,15 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                  MPFROM2SHORT(0,CMA_ERASE));
   }
 Abort:
-  if(pfTotal || ppffb || pffb || szFileSpec) {
-    if(pfTotal)
-      free(pfTotal);
-    if(szFileSpec)
-      free(szFileSpec);
-    if(pffb)
-      free(pffb);
-    if(ppffb)
-      free(ppffb);
+  if(paffbTotal || papffbSelected || paffbFound || pszFileSpec) {
+    if(paffbTotal)
+      free(paffbTotal);
+    if(pszFileSpec)
+      free(pszFileSpec);
+    if(paffbFound)
+      free(paffbFound);
+    if(papffbSelected)
+      free(papffbSelected);
   }
   if(recurse) {
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
