@@ -1,6 +1,5 @@
 New stuff's at the bottom.  This list isn't necessarily comprehensive.
 
-
 2.00:
 
  o A whole new look for FM/2 -- the same thing, only more so.  Some
@@ -1079,3 +1078,37 @@ New stuff's at the bottom.  This list isn't necessarily comprehensive.
 
 3.01:
  o Added another archiver date type for user Jans-Peter Otto.
+
+3.02:
+ o First open source release.
+
+3.02a:
+ o Replace corrupted remote.ico.
+ o Correct archive name display
+
+3.02b:
+ o Add JFS and FAT32 support
+
+3.02c:
+ o Correct broken assignments
+ o Force Compare Directories window refresh on subdir toggle
+
+3.02d:
+ o Clean up icon usage
+ o Add missing refresh after compare subdir toggle
+ o Try to avoid playing non-MM files when use MMOS2 enabled
+ o Rework directory sizes for large drives
+ o Correct Show All Files requests from Tree View context menu
+ o Correct resource strings
+
+
+3.02e:
+ o More see all files fixes
+ o Correct internal viewer WM_VSCROLL logic (amouse)
+
+3.02f:
+ o Add large drive support the dirsize applet startup screen
+ o Avoid spurious filldir errors for large drives
+   Will still get get math errors for >4GB directories
+
+$Id$
