@@ -6,9 +6,11 @@
   Misc support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2004 Steven H.Levine
 
   Revisions	11 Jun 03 SHL - Add JFS and FAT32 support
+		01 Aug 04 SHL - Rework lstrip/rstrip usage
+		01 Aug 04 SHL - LoadLibPath: avoid buffer overflow
 
 ***********************************************************************/
 
@@ -709,7 +711,7 @@ MRESULT CnrDirectEdit (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             p = strchr(subject,'\r');
             if(p)
               *p = 0;
-            lstrip(rstrip(subject));
+            bstrip(subject);
             WinSetWindowText(hwndMLE,subject);
             len = strlen(subject);
             if(len)
@@ -786,7 +788,7 @@ MRESULT CnrDirectEdit (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             p = strchr(szData,'\r');
             if(p)
               *p = 0;
-            lstrip(rstrip(szData));
+            bstrip(szData);
             if(IsFullName(szData)) {
               if(DosQueryPathInfo(szData,
                                   FIL_QUERYFULLNAME,
@@ -1983,9 +1985,8 @@ VOID LoadLibPath (CHAR *str,LONG len) {
       while(!feof(fp)) {
         if(!fgets(var,8192,fp))
           break;
-        var[8192] = 0;
-        stripcr(var);
-        lstrip(rstrip(var));
+        var[8191] = 0;
+        bstripcr(var);
         if(!strnicmp(var,"LIBPATH=",8)) {
           memmove(var,var + 8,strlen(var + 8) + 1);
           lstrip(var);
