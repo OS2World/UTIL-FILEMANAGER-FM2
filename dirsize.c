@@ -203,6 +203,7 @@ int main (int argc,char *argv[]) {
   HMQ         hmq;
   static CHAR fullname[CCHMAXPATH];
   INT         x;
+  ULONG       rcl;
 
   DosError(FERR_DISABLEHARDERR);
   *fullname = 0;
@@ -229,19 +230,21 @@ int main (int argc,char *argv[]) {
     if(hmq) {
       if(InitFM3DLL(hab,argc,argv)) {
         if(!*fullname)
-          WinDlgBox(HWND_DESKTOP,
-                    HWND_DESKTOP,
-                    DirMainProc,
-                    0,
-                    DIRSIZE_FRAME,
-                    NULL);
+          rcl = WinDlgBox(HWND_DESKTOP,
+                          HWND_DESKTOP,
+                          DirMainProc,
+                          0,
+                          DIRSIZE_FRAME,
+                          NULL);
         else
-          WinDlgBox(HWND_DESKTOP,
-                    HWND_DESKTOP,
-                    DirSizeProc,
-                    FM3ModHandle,
-                    DSZ_FRAME,
-                    fullname);
+          rcl = WinDlgBox(HWND_DESKTOP,
+                          HWND_DESKTOP,
+                          DirSizeProc,
+                          FM3ModHandle,
+                          DSZ_FRAME,
+                          fullname);
+        if (rcl == DID_ERROR)
+	  rcl = WinGetLastError(hab);
       }
       WinDestroyMsgQueue(hmq);
     }
