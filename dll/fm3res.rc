@@ -9,6 +9,7 @@
   Copyright (c) 2003 Steven H.Levine
 
   Revisions	08 Feb 03 SHL - Enable SYS_FRAME
+            04 Nov 03 SHL - Drop obsoletes
 
 ***********************************************************************/
 
@@ -78,8 +79,6 @@ ICON        ID_STICK32          icons\STICK32.ICO
 ICON        ID_STICK42          icons\STICK42.ICO
 ICON        ID_STICK52          icons\STICK52.ICO
 
-ICON        ID_PLUS             icons\PLUS.ICO
-ICON        ID_MINUS            icons\MINUS.ICO
 
 ACCELTABLE INI_FRAME
 {
