@@ -1,43 +1,29 @@
-DEBUG = 0
+# makefile
 
-!IF $(DEBUG)
-LFLAGS = /NOI /PMTYPE:PM /ALIGN:2 /EXEPACK /CODEVIEW /M /BASE:0x10000 /STACK:65536 /NOD
-!ELSE
-LFLAGS = /NOI /PMTYPE:PM /ALIGN:2 /EXEPACK:2 /M /BASE:0x10000 /STACK:65536 /NOD /RUNFROMVDM /PACKC /PACKD
-!ENDIF
+BASE = fm3
 
-.SUFFIXES: .c .rc .ipf
+!INCLUDE makefile_pre.mk
 
-ALL: fm3.EXE \
-     fm3.res
+ALL: DLL $(BASE) MAK
 
-fm3.res: fm3.rc \
-     fm3.h
+DLL:
+  cd dll
+  $(MAKE) /nologo $(MAKEFLAGS)
+  cd ..
 
-fm3.obj: fm3.c \
-     fm3.h dll\version.h
+$(BASE): $(BASE).EXE \
+     $(BASE).res
 
-fm3.exe:  \
-  fm3.res \
-  fm3.OBJ
-   @REM @<<fm3.@0
-     $(LFLAGS)+
-     fm3.OBJ
-     fm3.exe
-     nul.map
-     dde4mbso.lib dll\fm3dll.lib os2386.lib
-     fm3.def;
-<<
-   LINK386.EXE @fm3.@0
-   RC -x2 fm3.RES fm3.exe
+$(BASE).res: $(BASE).rc \
+     $(BASE).h
 
-{.}.rc.res:
-   RC -r .\$*.RC
+$(BASE).obj: $(BASE).c \
+     $(BASE).h dll\version.h
 
-{.}.c.obj:
-!IF $(DEBUG)
-     ICC.EXE /Kb /Ti+ /W3 /Sm /Sp4 /Ss /C /Mp /Gm+ /Gs- /G3 /O- /Q+ /Gd+ .\$*.c
-!ELSE
-     ICC.EXE /Gf+ /Kb /W3 /Sm /Sp4 /Ss /C /Mp /Gm+ /Gs- /O+ /Q+ /G3 /Gt- /Gd+ .\$*.c
-!ENDIF
+MAK: *.MAK
+  !$(MAKE) /NOLOGO /f $?
 
+
+!INCLUDE makefile_post.mk
+
+# The end
