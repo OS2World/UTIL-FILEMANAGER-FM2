@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Main window
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	11 Jun 02 SHL - Drop obsolete xor code
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_WINHELP
@@ -14,7 +28,7 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
-#include "xor.h"
+// #include "xor.h"	// SHL
 
 #pragma data_seg(DATA1)
 #pragma alloc_text(MISC8,SetToggleChecks,FindDirCnrByName,TopWindow)
@@ -38,8 +52,8 @@
 #pragma alloc_text(MAINOBJ,MainObjectWndProc,MakeMainObjWin)
 
 extern TOOL  *toolhead;
-USHORT				firsttool = 0;
-static char  *xrc = XORSTR;
+
+USHORT firsttool = 0;
 
 
 MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
