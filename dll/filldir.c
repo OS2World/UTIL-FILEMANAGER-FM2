@@ -6,11 +6,12 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2003 Steven H.Levine
+  Copyright (c) 2001, 2004 Steven H.Levine
 
   Revisions	12 Sep 02 SHL - Rework symbols to understand code
 		08 Feb 03 SHL - DropHelp: calc EA size consistently
 		11 Jun 03 SHL - Add JFS and FAT32 support
+		10 Jan 04 SHL - ProcessDirectory: avoid most large drive failures
 
 ***********************************************************************/
 
@@ -32,8 +33,8 @@
 #pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr)
 
 
-HPOINTER IDFile (ULONG cmp) {
-
+HPOINTER IDFile (ULONG cmp)
+{
   HPOINTER hptr;
 
   hptr = (HPOINTER)0;
@@ -522,8 +523,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
   INT            t;
   PFILEFINDBUF4  paffbFound,*papffbSelected,pffbFile,paffbTotal = NULL,paffbTemp;
   HDIR           hdir = HDIR_CREATE;
-  ULONG          ulMaxFiles,ulExtraBytes,ulM = 1L,ulTotal = 0L;
-  LONG           numbytes,totalbytes,returnbytes = 0L;
+  ULONG          ulMaxFiles,ulExtraBytes,ulM = 1,ulTotal = 0L;
+  ULONG          numbytes,totalbytes,returnbytes = 0L;
   PCH            pchEndPath;
   APIRET         rc;
   PCNRITEM       pci,pciFirst,pcit;
@@ -538,7 +539,7 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
 //    else
 //      ulExtraBytes = EXTRA_RECORD_BYTES2;
     if((driveflags[toupper(*szDirBase) - 'A'] & DRIVE_REMOTE) && fRemoteBug)
-      ulM = 1L;                         /* file system gets confused */
+      ulM = 1;                         	/* file system gets confused */
     else if(driveflags[toupper(*szDirBase) - 'A'] & DRIVE_ZIPSTREAM)
       ulM = min(FilesToGet,225);        /* anything more is wasted */
     else
@@ -553,8 +554,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
 
   ulMaxFiles = ulM;
   pszFileSpec = malloc(CCHMAXPATH + 2);
-  paffbFound = malloc((ulM + 1L) * sizeof(FILEFINDBUF4));
-  papffbSelected = malloc((ulM + 1L) * sizeof(PFILEFINDBUF4));
+  paffbFound = malloc((ulM + 1) * sizeof(FILEFINDBUF4));
+  papffbSelected = malloc((ulM + 1) * sizeof(PFILEFINDBUF4));
   if(paffbFound && papffbSelected && pszFileSpec) {
     t = strlen(szDirBase);
     memcpy(pszFileSpec,szDirBase,t + 1);
@@ -623,9 +624,12 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                   pffbFile = papffbSelected[i];
                   numbytes = FillInRecordFromFFB(hwndCnr,pci,pszFileSpec,
                                                  pffbFile,partial,dcd);
-                  if(numbytes > -1L) {
+                  if(numbytes != -1) {
                     pci = (PCNRITEM)pci->rc.preccNextRecord;
                     totalbytes += numbytes;
+		    if (totalbytes == -1)
+		      totalbytes--;		// fixme for real someday
+
                   }
                   else {
                     General_Error(WinQueryAnchorBlock(hwndCnr),HWND_DESKTOP,
@@ -648,7 +652,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                   if(!WinSendMsg(hwndCnr,
                                  CM_INSERTRECORD,
                                  MPFROMP(pciFirst),
-                                 MPFROMP(&ri))) {
+                                 MPFROMP(&ri)))
+		  {
                     DosSleep(100L);
                     WinSetFocus(HWND_DESKTOP,hwndCnr);
                     if(!WinSendMsg(hwndCnr,
@@ -672,7 +677,7 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                                     __FILE__,
                                     __LINE__,
                                     GetPString(IDS_FILLDIRERR2TEXT));
-                      totalbytes = -1L;
+                      totalbytes = -1;
                       if(WinIsWindow((HAB)0,hwndCnr)) {
                         pci = pciFirst;
                         while(pci) {
@@ -694,10 +699,12 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                               __FILE__,
                               __LINE__,
                               GetPString(IDS_FILLDIRERR3TEXT));
-                totalbytes = -1L;
+                totalbytes = -1;
               }
-              if(totalbytes > -1L) {
+              if(totalbytes != -1) {
                 returnbytes += totalbytes;
+		if (returnbytes == -1)
+		  returnbytes--;	// fixme for real someday
                 if(foundany)
                   (*foundany) += ulMaxFiles;
               }
@@ -759,9 +766,11 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
             pffbFile = (PFILEFINDBUF4)pByte2;
             numbytes = FillInRecordFromFFB(hwndCnr,pci,pszFileSpec,
                                            pffbFile,partial,dcd);
-            if(numbytes > -1L) {
+            if (numbytes != -1) {
               pci = (PCNRITEM)pci->rc.preccNextRecord;
               totalbytes += numbytes;
+	      if (totalbytes == -1)
+		totalbytes--;		// fixme for real someday
             }
             else {
               General_Error(WinQueryAnchorBlock(hwndCnr),
@@ -789,8 +798,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
               DosSleep(100L);
               WinSetFocus(HWND_DESKTOP,hwndCnr);
               if(!WinSendMsg(hwndCnr,CM_INSERTRECORD,
-                             MPFROMP(pciFirst),MPFROMP(&ri))) {
-
+                             MPFROMP(pciFirst),MPFROMP(&ri)))
+              {
 	        { // SHL
 		  CHAR sz[80];
 		  sprintf(sz, "rc = %d", rc);
@@ -807,7 +816,7 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                               __FILE__,
                               __LINE__,
                               GetPString(IDS_FILLDIRERR5TEXT));
-                totalbytes = -1L;
+                totalbytes = -1;
                 if(WinIsWindow((HAB)0,hwndCnr)) {
                   pci = pciFirst;
                   while(pci) {
@@ -827,10 +836,12 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                         __FILE__,
                         __LINE__,
                         GetPString(IDS_FILLDIRERR3TEXT));
-          totalbytes = -1L;
+          totalbytes = -1;
         }
-        if(totalbytes > -1L) {
+        if(totalbytes != -1) {
           returnbytes += totalbytes;
+	  if (returnbytes == -1)
+	    returnbytes--;		// fixme for real someday
           if(foundany)
             (*foundany) += ulMaxFiles;
         }
@@ -867,8 +878,8 @@ Abort:
 }
 
 
-ULONG FillDirCnr (HWND hwndCnr,CHAR *directory,DIRCNRDATA *dcd) {
-
+ULONG FillDirCnr (HWND hwndCnr,CHAR *directory,DIRCNRDATA *dcd)
+{
   ULONG ret;
 
   ret = ProcessDirectory(hwndCnr,(PCNRITEM)NULL,directory,TRUE,FALSE,TRUE,
@@ -878,8 +889,8 @@ ULONG FillDirCnr (HWND hwndCnr,CHAR *directory,DIRCNRDATA *dcd) {
 }
 
 
-ULONG FillTreeCnr (HWND hwndCnr,HWND hwndParent) {
-
+ULONG FillTreeCnr (HWND hwndCnr,HWND hwndParent)
+{
   ULONG       ulDriveNum,ulDriveMap,numtoinsert = 0L,drvtype;
   PCNRITEM    pci,pciFirst = NULL,pciNext,pciParent = NULL;
   INT         x,removable;
@@ -1421,6 +1432,6 @@ SkipBadRec:
     }
   }
   didonce = TRUE;
-  return 0L;
+  return 0;
 }
 
