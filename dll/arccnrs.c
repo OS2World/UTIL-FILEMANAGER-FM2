@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes'
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+
+  Archive containers
+
+  Revisions	11 Jun 02 SHL - Ensure archive name not garbage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
@@ -273,7 +288,8 @@ INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
 ReTry:
 
 #ifdef DEBUG
-if(info && info->id) WinSetWindowText(WinQueryWindow(WinQueryWindow(hwndCnr,QW_PARENT),QW_PARENT),info->id);
+  if (info && info->id)
+    WinSetWindowText(WinQueryWindow(WinQueryWindow(hwndCnr,QW_PARENT),QW_PARENT),info->id);
 #endif
 
   tinfo = NULL;
@@ -483,15 +499,15 @@ if(info && info->id) WinSetWindowText(WinQueryWindow(WinQueryWindow(hwndCnr,QW_P
             PARCITEM     pai;
 
 #ifdef DEBUG
-saymsg(MB_ENTER,hwndCnr,DEBUG_STRING,
-       "fname: %s\r\rpp: %s\r\rp: %s\r\rlonename: %s\r\rhighest: %ld\r\rx: %ld\r\rfdate: %s",
-       (fname) ? fname : "NULL",
-       (pp) ? pp : "NULL",
-       (p) ? p : "NULL",
-       lonename,
-       highest,
-       x,
-       (fdate) ? fdate : "NULL");
+            saymsg(MB_ENTER,hwndCnr,DEBUG_STRING,
+                   "fname: %s\r\rpp: %s\r\rp: %s\r\rlonename: %s\r\rhighest: %ld\r\rx: %ld\r\rfdate: %s",
+                   (fname) ? fname : "NULL",
+                   (pp) ? pp : "NULL",
+                   (p) ? p : "NULL",
+                   lonename,
+                   highest,
+                   x,
+                   (fdate) ? fdate : "NULL");
 #endif
 
             pai = WinSendMsg(hwndCnr,
@@ -1270,8 +1286,14 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
        */
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd) {
+        char *s;			// SHL
         if(mp1)
+	{
           strcpy(dcd->arcname,(CHAR *)mp1);
+	  s = dcd->arcname;			// SHL
+	}
+	else
+	  s = "** Unknown **";			// SHL
         WinSetWindowText(dcd->hwndFrame,"AV/2");
         WinSetWindowText(WinWindowFromID(dcd->hwndFrame,FID_TITLEBAR),s);
         dcd->totalbytes = dcd->totalfiles =
