@@ -1,566 +1,506 @@
-New stuff's at the bottom.  This list isn't necessarily comprehensive.
+New stuff's at the top.  This list isn't necessarily comprehensive.
 
-2.00:
+3.02h:
+ o Add debug support to troubleshoot invisible FAT32 drive
+ o Correct archiver.bb2 editing
 
- o A whole new look for FM/2 -- the same thing, only more so.  Some
-   things were enhanced, some dropped, some replaced or superceded.
-   Still, if you used 1.x you should feel at home.
+3.02g:
+ o Update removable drive support to work for USB MSD
 
-[lazy bum skipped a few...]
+3.02f:
+ o Add large drive support the dirsize applet startup screen
+ o Avoid spurious filldir errors for large drives
+   Will still get get math errors for >4GB directories
 
-2.06:
+3.02e:
+ o More see all files fixes
+ o Correct internal viewer WM_VSCROLL logic (amouse)
 
- o In the Collector's Seek-and-scan dialog, the All HDs button now skips
-   removable drives (like CD-ROMs) for convenience.
- o Quick tree works around the OS/2 DosFindFirst bug that prevents FAT
-   root drives from being found.
- o Added "separator" attribute for tool buttons -- causes a small amount
-   of space to be added after the button with the attribute, for
-   appearance (grouping of buttons).
- o Added ability to turn on titles below bitmap buttons in toolbar (it'll
-   have to be short and sweet) and grouped all toolbar toggles under a
-   Toolbar conditional cascade submenu.
+3.02d:
+ o Clean up icon usage
+ o Add missing refresh after compare subdir toggle
+ o Try to avoid playing non-MM files when use MMOS2 enabled
+ o Rework directory sizes for large drives
+ o Correct Show All Files requests from Tree View context menu
+ o Correct resource strings
 
-2.07:
+3.02c:
+ o Correct broken assignments
+ o Force Compare Directories window refresh on subdir toggle
 
- o Added "View Bookshelf" and "View Helpfiles" utilities.
- o Fixed bug in Quick Tree added while fixing the last one...
- o VTree now saves its size and position on desktop (Ron Gawer wanted
-   that).  VDir doesn't, as you can have several of them open at once
-   and it would be somewhat irritating to have them all on top of each
-   other.
+3.02b:
+ o Add JFS and FAT32 support
 
-2.08:
+3.02a:
+ o Replace corrupted remote.ico.
+ o Correct archive name display
 
- o Added "must have" attributes to Filter.
- o Fixed Undelete dialog so selecting a new drive from the combobox
-   causes the listbox to be refreshed for that drive, and so a missing
-   DELETE environment variable for the selected drive doesn't cause the
-   dialog to abort unless you select Cancel in the information box (so
-   you can pick a different drive).
- o Added limited optional logging for some simple but critical
-   operations (copy, move, rename, delete).
- o Documented "start minimized" command line argument.
- o Added "don't save/restore state of dir windows this time" command
-   line argument.
+3.02:
+ o First open source release.
 
-2.09:
+3.01:
+ o Added another archiver date type for user Jans-Peter Otto.
 
- o Changed things so the little notification box doesn't steal the
-   focus when it comes up.  Duh.
- o Added "Backup Profile", "Change System Profiles" and "Replace System
-   Profiles" to the INI viewer.
- o Fixed some glitches in new mask "must have" attribute processing.
- o Found and fixed bug in Collector's Seek & Scan that could cause FM/2
-   to trap.
- o Added a Settings notebook containing global toggles and such.
-   Slower than the menus, but Ron Hester asked for it, and I allus do
-   what Ron says...
- o Return of the weirding ... but that'd be telling.
- o Added optional split status line.
+3.00d:
+ o FM/2 Lite remembers if a directory pane was maximized when it
+   closed now (duh -- should have all along, I just forgot).
 
-2.10:
+3.00c:
+ o More minor bug fixes.
 
- o Added Undo buttons to Settings notebook pages.
- o Fixed bug wherein Save state of dir windows toggle was ignored.
- o Put in some comma formatting to prevent an untimely death.
- o Fixed bug wherein Doubleclick Opens toggle was ignored.
- o Added a couple more Settings pages.
- o Made appropriate Settings pages available to standalone modules.
- o Tweaked a few menus for a more consistent appearance.
+3.00b:
+ o Fix two minor bugs reported by users.
 
-2.11:
+3.00:
+ o Most of the text in FM/2 is now accessible from outside the source
+   code files, meaning translations to other languages should now be
+   possible without much problem.  A resource translation kit is offered
+   free-of-charge to registered users.  This required some additional
+   files (FM3RES.DLL and FM3RES.STR), but FM3DLL.DLL becomes (at least)
+   correspondingly smaller.
+ o Jazzed up Autoview a bit.
+ o Removed a bug that sneaked in during code optimization detected by
+   a user where archive members couldn't be dragged.  Then optimized
+   some more, thus tempting fate.
+ o Improved FM/2's internal window selection from menus.
+ o The status button in Directory Containers that shows the selected
+   number of files and bytes now displays a select menu when clicked.
+ o Drive buttons will now show free space on drives as bubble help
+   except for CD-ROM drives, diskette drives A: and B:, and drives
+   marked as "slow" in the drive flags dialog.  I also made the buttons
+   a little bigger, and they'll "stack" if required due to insufficient
+   width.
+ o Removed System Information applet from FM/2 -- OS/2 seems to have
+   this stuff built-in now.
+ o Moved MakeArc into the FM/2 Utilities package.
+ o You can now add selected environment variables that list directories
+   (like PATH, LIBPATH and DPATH) to the Drive Tree with a toggle in
+   the internal Settings notebook on the Tree page.  Cool.
+ o You can now set a default Target directory for menu and accelerator
+   key copy and move operations, and choose to confirm (and perhaps
+   change) that directory on each operation, or accept it without
+   confirmation.
+ o FM/2 will now make program object Parameters suggestions the first
+   time it's run (no FM3.INI exists) if you should exclude any drives,
+   and will even set the Parameters for you if you like.
+ o Yet more tweaking that no one will ever notice...
 
- o Fixed odd bug in second status line in Directory Containers.
- o Fixed rename buglet that caused rename from menu/button to
-   give funny default drive.
- o Added drag and drop to INI Viewer to allow moving and copying
-   data between different INI files.
- o Added FM2PLAY.EXE to allow playing multimedia files (via MMPM/2)
-   from FM/2 easily.  Usage:  FM2PLAY.EXE <file> [<file> <file...>].
-   There's a menu item for it.
- o Added "associat.txt" containing recommended associations for use
-   with FM/2.  Please send your ideas for this list.
- o Enhanced the Bookshelf Viewer.
+2.67:
+ o Jazzed up the mini-command line a bit.
+ o Command lines for the Execute dialog and mini-command line are now
+   saved separately (the former in CMDLINES.DAT, the latter in
+   CMDMINI.DAT, same format).  You can save, or not, either type for
+   recall.
 
-2.12:
+2.66:
+ o Increased duration of error window to 5 seconds from 3 (click it to
+   make it vanish early), changed background color to white and text
+   color to dark red, surrounded with red rectangle to make it stand out
+   more.  Also gave it a distinctive sound.  (This is the error window
+   you get if you do something like try to open the diskette drive when
+   there's no diskette inserted.)
+ o Killed bug reported by Paulo Mario where FM/2 could crash (suddenly
+   exit) after moving a file and overwriting an existing file.
+ o Reworked Databar a bit.
+ o For the adventurous among you, try holding Shift or Ctrl while
+   clicking that second status window in a Directory Container...
 
- o AV/2 will now ignore an association if it contains the string
-   "AV2.EXE" in the command line (meaning it might call itself).
- o Fixed "Lowercase name" bug.
- o Worked over the context menus again, added a couple more
-   accelerator keys.
- o Hooked Help button in Child Window dialog to some help.
+2.65:
+ o You can drag an object onto the Drive tree's Open button now, and
+   a Directory Container for that object will be opened.
+ o Long-overdue code cleanup begins...
+ o Fixed bug in FM/2 Lite where it was sorta paying attention to the
+   "bottom buttons" setting in FM/2 when it should ignore it.
+ o Played with FM/2's default settings for new users -- some of the
+   best stuff was turned off by default!
+ o Changed the behavior of the Rename dialog somewhat per user
+   suggestion.  "Overwrite if target older or same," "Overwrite if
+   target newer" and "Don't ask again" checkboxes now allow you to
+   selectively skip being asked about naming conflicts for the rest of
+   an operation.  Note that clicking the "Okay" button honors these
+   choices, but the "Overwrite" button overrides them for that one file
+   (an overwrite _will_ be performed).
 
-2.13:
+2.64:
+ o Made Window->Tile a cascade menu with Tile as the default, but you
+   can also set Autotile and Tile backwards toggles (renamed Tile
+   horizontal) there.
+ o More help file work.
+ o Tweaking of a few things no one will ever notice, except perhaps
+   as a feeling of more smoothness in a few places.
+ o Added "Leave all attrs" button to Attributes dialog to make
+   "touching" files easier.
 
- o Added ability to set type of selection used in some containers (in
-   the Settings Notebook on the "Windows" page).
- o Selecting "Settings Notebook" in the FM3.EXE monolithic app, even
-   from container context menus, will always bring up a full settings
-   notebook.
- o Slightly reduced memory usage for HPFS drives (ah, another reason
-   to use HPFS...).
- o Fixed bug in SetIcon.
- o Did some more work on FM2PLAY.EXE to make it more eye-appealing and
-   maybe a bit more functional.
- o Shortened tasklist title for registered users.
+2.63:
+ o Fixed bug in UNDEL.EXE pointed out by a user.
+ o Added "Double-click" topic to Tutorial section of help.  Did you know
+   that you can make FM/2 do something different when you double-click
+   an object?  Other miscellaneous work on the help file.
+ o Moved "Create shadows" command under "Copy" cascade in menus where no
+   separate "Create objects" cascade is available and a "Copy" cascade
+   is available.
+ o Made the way menus appear on new View and Sort buttons more
+   attractive (IMHO).
+ o Bubble help won't appear if the window isn't active now (oversight).
+ o To make it easier to parse the saved output from a Directory sizes
+   window, directory names containing spaces are now surrounded by quote
+   marks.
+ o Related:  Put SEEHELP.EXE into FM2UTILS.ZIP for those who have
+   versions of OS/2 with VIEW.EXEs that won't read .HLP files directly.
+   You can read the FM/2 help file directly using this program on such
+   systems:  "SEEHELP FM3.HLP".
 
-2.14:
+2.62:
+ o Added /SAVE and /NOSAVE to mini-command line options for a user.
 
- o FM/2 will now detect that a CD-ROM drive which didn't have a disk in
-   it or had a music disk in it when FM/2 was started is a CD-ROM drive
-   when accessed later with a data disk in it, and change the icon
-   accordingly.  This also applies to hard drives that were locked when
-   FM/2 started, by happy coincidence, and should work on other
-   removable media drives.
- o Hints given in error popup for some access errors (for example, when
-   clicking on an empty diskette drive).
- o Install.cmd will not change the parameters field of objects that it
-   creates if the File Manager/2 folder already existed.  It will still
-   update the paths.
- o VTree honors drive exclusions like it should have in the first place.
- o VTree will delete a directory if the Shredder refuses for some reason.
- o Added VTree->WPS folder toggle.
- o Shortened VTree tasklist title for registered users.
- o FM/2 will attempt to fit smaller files onto diskettes when a larger
-   file in the list to be moved/copied won't fit before prompting you to
-   change diskettes due to a disk full condition.
- o Help for toolbar buttons shows up when mouse passes over them --
-   figured out how to implement without excessive message passing (IOW,
-   to my satisfaction).
+2.61:
+ o Added new buttons to Directory Container, Archive Containers and the
+   Collector that allow you to set sort, filter and view.  Removed
+   filter button from bottom of screen (no longer needed).  Revised
+   window layouts help to show modified layouts.
+ o More newuser-friendly junk (more bubble help, etc.).
+ o Added Find first/next to INI viewer.  Listbox command will work in
+   is bordered in red.
+ o Just a BTW -- there's a new IMAGE.EXE (the FM/2 image viewer utility)
+   in FM2UTILS.ZIP, available free-of-charge at
+   http://www.bmtmicro.com/catalog/fm2
+   I put some stuff in it that I needed for making pictures for the help
+   files.
 
-2.15:
+2.60:
+ o Fast internal viewer can start configured editor from menu (Ctrl + e
+   accelerator) per user request.  Remember, to edit files in an
+   archive, you must still use Files->Refresh to cause selected files to
+   be refreshed in the archive.
+ o Added a bit more bubble help (remember, you can turn bubble help on
+   and off (somewhat selectively) in the internal Settings notebook).
 
- o Added "Collect list in file(s)" command.
- o Added "Collect from a list file" command.
- o Added "Select List" command.
- o System VIO fonts have been renamed, jumping between "System" and
-   "System VIO", a couple of times now.  To top it off, when the name
-   changes, the sizes do, too (i.e. 7.System == 5.System VIO, more or
-   less).  Warp is now GA and uses "System VIO" again, so I've changed
-   it back to that.  If some fonts don't look right on your 2.11 system,
-   I'm sorry, but I'm trying to hit a moving target.  Don't shoot me,
-   I'm just the piano player.
- o Did some other stuff, but forgot to write it down and have now
-   forgotten what it was.  Old age is hell.
+2.59:
+ o Rename dialog will now specifically tell you if the source file is
+   newer, older or same date as target and smaller, larger or same size
+   if there's a conflict with an existing target file, per user request.
 
-2.16:
+2.58:
+ o Added ability to create a new directory and switch to it in the
+   common directories user list (select <New directory>).  Revised
+   help to reflect this.
+ o Holding down Shift while selecting a state name will prevent FM/2
+   from closing windows already open now (per user request).  An
+   automatic retile of all windows is then performed.
 
- o Added "Update objects" command.
- o Added "Optimize" command.  Be sure to read the online help on this
-   one (under "Context Menus").
- o Added toolbar changing buttons (buttons that automatically load a
-   new toolbox into the toolbar).  See comments in online help under
-   "Toolbar->Add Tool."
- o Hmmm...Warp has broken the DM_DROPHELP message within an application
-   -- the passed DRAGINFO structure is inaccessible (apparently already
-   deallocated).  An appropriate error message will be displayed, and
-   the code's still there so that when IBM fixes it it'll automagically
-   start working again.
+2.57:
+ o Added ability to sort by subject per user request (wouldn't it be
+   nice if Netscape put where we got downloaded files from in an EA?  Or
+   let you drag a file over it without locking up the system?).
 
-2.17:
+2.56:
+ o Added ability to use exclusion masks in the Seek and Scan dialog
+   per Harry Travis' request.  Also added Append checkbox.
 
- o Optimized for speed:  Quick trees, tree sizes.
- o Dug the names of the new color palettes out of Warp's INI files.
-   Under 2.x both color palette commands (one new) load the same object.
-   Under Warp they load the two different palette objects available.
- o Added swapfile/memory watch when Drive Tree is active window in FM/2.
- o Added HPFSOPT.EXE program to optimize HPFS drives.
+2.55:
+ o Fixed bug reported by Ralph Alvy -- "Append" checkbox being ignored
+   in Save to listfile dialog, FM/2 always appended to listfile.
 
-2.18:
+2.54:
+ o Small tweaks.
+ o I don't do Compuserve anymore.  Reach me via the net, or just go to
+   FM/2's web page at http://www.bmtmicro.com/catalog/fm2
 
- o Added ability to use the undocumented DosQProcStat API in the Process
-   Killer.  While this will enable the Process Killer to work without an
-   English version of PSTAT.EXE being present, DosQProcStat is an API
-   subject to change by IBM, so beware.
- o Added FATOPT.EXE program to optimize FAT drives.  THIS IS A BETA
-   PROGRAM AND USES LOW-LEVEL DRIVE ACCESS -- BACK UP BEFORE USING!
- o Tweaked the online help, adding more hypertext links and detail.
+2.53:
+ o Added Commands user dropdown list for picking commands to run on
+   selected files more quickly and easily.
+ o Removed "#" character from AV/2 temporary directory -- WebEx and
+   Netscape were choking on it (a).
+ o Allow disabling FM/2's custom file dialog so you can use MSE's
+   instead, if you like (the toggle's on the General page).  (What's
+   MSE?  Look at http://www.bmtmicro.com/catalog/mse) (a).
+ o Added support for PKZIP 2.50 (b).
 
-2.19:
+2.52:
+ o When the FM/2 main window is resized and a Directory Container is
+   maximized within it, it will remain maximized.
+ o Modified AV/2 and ARCHIVER.BB2 so that RAR v2's woefully NIH
+   listings can be read.  Would it just _kill_ you archiver authors to
+   get together and come up with some sort of easily parsed listing
+   standard, then stick to it?  Please?
+ o FM/2 will now show the current decryption keyword for extra programs
+   like DBFVIEW and FMT from the About box.
 
- o Added "Ideal size" System Menu command and titlebar button -- an
-   alternative to maximizing.
- o More work on help file hypertext links using suggestions from a
-   registered user.  Added a labelled bitmap showing the layout of FM/2
-   windows.
- o Worked around weird bugs in Sizes and deleting toolbar buttons that
-   shouldn't be bugs but nonetheless cause problems on some machines.
- o Added some one-line help fields to some dialogs to guide the user
-   along.
- o Added the "Close" checkbox to the Edit Associations dialog, to allow
-   executing an association to shut down FM/2 (or a VDir window, mainly
-   for use by folks using FM/2 to replace the Drives objects).
- o Added "Start Minimized" and "Start Maximized" buttons to the Windows
-   page of the Settings notebook.  FM/2 starts normal size then adjusts
-   (that lets it size all its windows right first, and gives you something
-   to return to from the maximized state).
+2.51:
+ o Tweaked image viewer initial sizing algorithm to better handle very
+   small bitmaps at more nearly correct perspectives.
+ o Added "No folder menu" toggle to internal Settings notebook by
+   user request.
+ o Put floppy letters back into drives userlist dropdown due to
+   user request.
+ o Made image viewer a separate executable due to a memory leak in
+   OS/2's MMPM/2 (mmio) under Merlin beta and some Warp 3 fixpack
+   configurations -- closing the application frees the memory, but
+   nothing else will, so a small, fast, separate application "fixes" the
+   problem (or, if you prefer, "OS/2 bug").  Like FM2PLAY.EXE, this
+   IMAGE.EXE file will now be in the FM/2 Utilities package (FM2UTL.ZIP
+   on CI$ or FM2UTILS.ZIP on the internet).  You'll probably want to
+   remove any old IMAGE.CMD file built by previous FM/2 installs.
+ o Added ability to view and manipulate files in archives containing
+   spaces in the filename for archivers that provide information in a
+   particular way (see ARCHIVER.BB2 -- ZIP and LZH archives are set up
+   this way).  Other folks who use ARCHIVER.BB2 should take a look at
+   the updated documentation to see how to take advantage of this, but
+   it's backward-compatible, so old versions of those programs will
+   still work correctly with this change.
+ o Removed SEEHELP.EXE -- Warp has the ability to view help files using
+   VIEW.EXE which comes with the OS.
+ o Added "WPS Move" and "WPS Copy" commands.
+ o I no longer accept registrations via direct mail.  Registrations are
+   available through BMT Micro or CIS' SWREG only (BMT recommended --
+   see REGISTER.TXT).  I just got too much snail mail and couldn't keep
+   up with all of it.
 
-2.20:
+2.50b:
+ o Added ability to convert an image file to another format from the
+   image viewer window.
+ o All supported multimedia types are now "played" automatically on
+   double-click unless you have an FM/2 Association set for them.
 
- o Fixed stupid bug that made FM/2 freak out on restart if you turned the
-   toolbar off and left it off (duh).
- o Move-drag onto archives allowed now (if you have the archiver for that
-   archive type configured to allow moving files, of course).
- o Fixed bug in longname<->shortname conversion (FAT<->HPFS).
- o Found a nasty way to get Warp's printer objects to recognize FM/2's
-   D&D.
- o Extract dialog can be told to remember its settings (extract directory,
-   masks, "with directories") distinctly from those set in Archive
-   Containers.
- o Added a few pictures to the online help for extreme novices.
- o Added new "Compare Select" submenu with commands that can make
-   selections based on comparing unfiltered files in all open Directory
-   Containers.  Powerful stuff.
- o Added "Hide objects" command (selective individual object filtering).
- o Fixed bug -- drag to toolbar quit working when toolbar code rewritten.
- o Slight modification to ARCHIVER.BB2 -- -1 for filename position means
-   to use the last "field" of an archive listing for the filename.
- o FM/2 is compiled with optimization turned off now -- caught it
-   generating bad code in the new Compare Select module and don't trust
-   it (again).
+2.50a:
+ o Added "Run Viewer as child session" toggle -- if used, any open
+   viewers will close when FM/2 closes.
+ o Added "Env" button to Seek and scan dialog (for searching through
+   directories listed in environment variables).
+ o Added "No sort" option to Collector sorting.
+ o FM/2 will now offer to remove old registration when started after
+   registration has expired, making it easy to enter updated
+   registration information.
+ o Directory Containers can now be switched into Tree View.  See also
+   new "Stay in Tree View" toggle.
+ o B2 on Directory Container Folder buttons pulls up an abbreviated
+   popup menu.
+ o Bugfix:  The Autoview window wouldn't let you enter Comments on an
+   object that didn't already have them (duh).
+ o FM/2 now taps into MMPM/2 to display image files, instead of GBM.  To
+   activate FM/2's "internal" image file viewing, be sure to remove any
+   Associations for MMPM/2-supported image file types (JPG, TIF, BMP,
+   PCX, GIF, etc.) using FM/2's Config->Edit Associations command.
 
-2.21:
-
- o Shift and CTRL modifiers for double-clicking objects in Drive Tree,
-   Directory Containers and Collector implemented.  Shift causes new
-   FM/2 window to open (directories; direct to View for files), CTRL
-   causes default WPS open.
- o More stuff in the help file (sheesh -- this has gotta stop).  The
-   online help should now make a rather complete manual when printed
-   together with the READ.ME file (see READ.ME for suggestions).
- o INSTALL now makes an object for the online help so that it can be
-   viewed without starting FM/2 (using SEEHELP.EXE, included).
- o Added Filter "Always show directories" toggle.
- o Ideal size button supports a psuedo-restore operation, allowing
-   toggling between two sizes (mine and yours).
- o Other stuff I forget.
-
-2.22:
-
- o Additional detail and options are presented when FM/2 can't figure
-   out how to list the contents of an archive (ARCHIVER.BB2
-   misconfigured or archive bad) via new dialog.  This should make
-   determining what the archive problem is much easier when the
-   inevitable problem arises.
- o Added duplicate file finder to Seek-and-Scan dialog.  Finds files
-   with same name and/or size and filedate.
-
-2.23:
-
- o Enhancements to potential dupe finder per user requests and other
-   stuff I thunk up all by my lonesome.
- o Placed "Seek and scan" on the Utility pulldown.  All it does is
-   start the Collector and post it a WM_COMMAND message as though you'd
-   clicked Seek and scan on its context menu.  Maybe even folks who
-   don't read the help can find it now (who knows?).
-
-2.24:
-
- o Added "Remote bug" toggle since network FSD developers can't seem to
-   consistently produce working DosFindFirst/Next code to save their
-   lives.
- o Undelete enhancements.
-
-2.25:
- o Added "Edit" and "Refresh" to Archive Containers per user request.
- o Added Drag and drop dialog and corresponding toggle per user request.
-
-2.26:
- o Fixed stupid new bug in moving files from HPFS->FAT with long
-   filenames.
- o Fixed bug in RemoteBug fix that conflicted with another fix for
-   remote FSD bugs.  I'm getting sick of working around remote FSD
-   bugs -- think I'll just let the LAN folks fix _their_ stuff from
-   now on...
- o Made titlebar of Drive Tree containers respond to request for context
-   menu as if it were container whitespace per user request.
- o Added "Min on dir open" toggle -- a more elegant solution to a taste
-   thing (IMHO) than a user requested feature.
- o Chord on status windows brings up window dialog like it does on
-   client window whitespace.
- o Added "Append to clipboard" command to internal viewer/editor's
-   Edit menu.
- o Moved "Write block" command out of Edit->Blocks submenu of internal
-   viewer/editor to the main Edit submenu as "Copy to file" so it's
-   accessible in readonly (viewing) mode while I was at it.
- o Added informational tweaking to viewer/editor's Edit->Undo menu
-   command.
- o Added "Walk" button to Seek and scan dialog.
- o Added special FM/2 Association command line "<>" to indicate that the
-   default WPS view should be opened for matching files.
-
-2.27:
- o Added "Move & rename" and "Copy & rename" commands per user request.
-   This extends into the drag and drop dialog (said dialog is now on by
-   default, BTW).
- o Many tiny tweaks that no one will ever notice (for instance,
-   filenames containing "&" are now quoted on command lines where they
-   weren't before).
- o Added EXAMPLE.CMD to archive as an example of how REXX scripts can
-   manipulate files listed in listfiles created by FM/2.  This allows
-   Commands to circumvent the apx. 1000 character limit of OS/2 command
-   lines.
- o Made notification window look more homogenous.
-
-2.28:
- o Added optional user directory list dropdown box on main window
-   (maintenance of the list is still performed in the Walk Directories
-   dialog).
- o Added Drives submenu on Drive Tree's views context menu -- select a
-   drive from it and the tree scrolls to show it and makes it the
-   current object.
- o Restricted filename quoting in command lines to absolute essentials
-   -- some programs are broken and choke on quoted filenames.  We
-   absolutely cannot have LIST choking if it can be avoided.
- o Double-clicking a directory in the Drive Tree container will cause an
-   existing Directory Container looking into that directory, if one
-   exists, to come to the foreground rather than opening a new one; if
-   the existing window is minimized, it'll be restored. Ditto for new
-   userlist dropdown.
- o FM/2 can now launch Windows apps seamless -- maybe.  Sheesh, I'd
-   use a DOS app first...
-
-2.29:
- o Added "Topic" entry field in Bookshelf Viewer dialog.
- o Added "Quick arc find" toggle in Settings notebook; can speed up
-   drag and drop operations on floppy/network drives.
- o Worked around PM bug in custom frame controls.
- o Added "Directory Container state" saving and restoring in a dropdown
-   list (turned on with "Toggle quicklists" under Config menu).
- o Fixed drag and drop bug (couldn't move, duh).  Smartened up drag and
-   drop while I was at it; no sense offering options not really
-   available due to media type (i.e. can't copy to a CD-ROM).
- o Added "Launch" button to drag and drop dialog.
- o Added quick-help for dropdown lists (in status box 2).
- o Added ability to drop onto userlist dropdown to add a directory.
-   Also added popup maintenance menu (add and delete directories to/from
-   list).
-
-2.30:
- o I forget.
-
-2.31:
- o Added "Minimize to databar" toggle, also accessible as a standalone
-   miniapp.
- o Tree remembers directories, once expanded.
- o An individual drive may now be rescanned in the Drive Tree (related
-   to the above).
- o More keyboard shortcuts for the rodently challenged.
- o Drag from recessed text fields in Directory and Archive Containers
-   now possible (drags the directory or archive, respectively).
- o Default Commands command (Do it yourself) added.
- o Extract path can now be assigned "*" meaning "use directory in which
-   the archive resides."
- o More menu compaction (well, you think of a term for it).
- o New "See all files" window (still under construction, but already
-   much faster and very functional, without the standard listbox
-   limitation of 32767 maximum items).  Loads, sorts and displays
-   15,792 files from two local fixed drives in 18 seconds on my
-   486/66DX2 with normal (for me, of course) background load.
- o Fixed buglet in Archive Container status display.
- o More user suggestions implemented.
-
-2.32:
- o See all files window fleshed out.
- o Added "Viewer outside," "Arcboxes outside," "INI viewer outside" and
-   "Collector outside" toggles to Toggles2 page of internal Settings
-   notebook.
- o Added "Save" button to Directory Sizes dialog
- o Sort type can now be changed in Details view by holding ALT and
-   clicking the title of the field to sort on (assuming titles are
-   turned on and the field is one for which sorting is available,
-   of course).
- o Added toggle to allow user to select default delete type.
- o Added "toolbox" dropdown to user lists.
- o Added sample toolboxes to archive.
- o Info and EA dialogs now include listbox, lets you scroll through all
-   objects instead of popping up for each selected object.  EAS.EXE
-   mini-app inherits this; now accepts multiple filenames.
- o Check list dialogs now allow calling up the Info dialog for files in
-   the list.
-
-2.33:
- o Added new internal viewer -- loads files at least five times faster
-   than the old viewer (which is still available via a toggle in the
-   internal Settings notebook).
- o See all files window retains settings, is a bit slicker.
- o Fixed bug -- rename box came up for each file moved/copied.
- o Fixed bug -- FM/2 didn't start right with toolbar turned off.  Weird.
- o Worked around Warp bug -- PM locks up if you select a codepage that
-   hasn't been prepared.  This should be ignored as in previous versions
-   of OS/2, but crashes the system instead (sheesh).
- o Warp apparently still has a 64k limit to what the clipboard can hold.
-   While I could limit what you send to the clipboard, this is (hopefully)
-   one of those limits which will vanish with further updates to OS/2
-   itself, so I'll just caution you about it.
- o Colors are adjustable in See all files windows.
- o Several fonts are available in See all files windows (all fixed width).
- o See all files window allows entering multiple keys to find a file if
-   the keys are entered within one second of each other.
- o System info command made somewhat more human-readable.
-
-2.34:
- o Added "Tile backwards" toggle, but don't use it (it's a DOS-think
-   knee-jerk thing to do).
- o Viewer won't "restore" the container that called it when it closes if
-   the container is maximized.
- o Filtering speeded up when Autoview window is open.
- o Show a little patch of color beside color names in Colors dialogs.
- o Added "Folder after extract" toggle.
- o Added ^F3 close monolithic app toggle (command id 1111 if anyone's
-   interested).
- o More commands in INI viewer (rename, copy appname/keyname) and
-   enhanced existing Add/Edit INI record commands.
- o Changed method of storing a few things so that they're both easily
-   human editable (for power users) and so they allow me to
-   "preconfigure" some things (for new users).  If you're upgrading from
-   previous versions, there's a CONVERT.EXE that'll copy your old
-   settings to the appropriate format and get rid of old baggage.
- o Added "Userlist switches" toggle to internal Settings notebook.
- o Added "%r/%R" to metastrings.
- o Added "Extract" to drag and drop dialog.
- o Height of autoview window can be changed.
- o More info displayed in drive info dialog.
- o INSTALL is a bit smarter.
- o Added two new buttons on status line -- different behaviors depending on
-   whether you click with B1 or B2 and the shift state.
-
-2.35:
- o Performance tuning.
- o Implemented "minor" user suggestions.
- o Added "Recent Dirs" toggle -- automatically adds temporary
-   directories to UserList as you change directories.  You can make them
-   permanent by Adding them as usual.
- o FM/2 may handle DOS archivers now (actually, it does -- I tested with
-   ARJ); however, you'll have to set them up for yourself and I won't
-   support them.  Don't forget that DOS archivers don't support EAs.
-   AVOID WHENEVER POSSIBLE OR YOU'LL GET BURNED.
- o If you have GBM.DLL on your LIBPATH or in the FM/2 directory, FM/2
-   will use it to display GBM-supported raster file types when they're
-   double-clicked.  GBM currently supports most OS/2 and Windows
-   bitmaps, .GIF, .PCX, .TIF, .TGA, .IFF, .VID, .PGM, .KPS, .IAX, .XBM,
-   .SPR, and .PSE files.  And it's free.
- o Changed some icons around for a fresher look, added some for display
-   when you aren't loading icons from disk (for scanning speed).
- o Added "Settings" button to Info dialog.
-
-2.36:
- o Added "Rename existing" button to Rename dialog -- allows you to
-   rename (move) an existing target file system object out of the way
-   before moving or copying another file system object to that name.
- o Fixed "obscure" bug (reporting user's words :-) causing FM/2 to
-   enter a loop when "Views" cascade was selected from the action
-   bar menu when an internal Archive Container was the current window.
- o Tutorial section added to online help.
- o When a bitmapped graphic file is viewed, the window is sized to fit
-   on the screen even when the image is larger than the screen.
-   Proportion is maintained for the initial window positioning.  You can
-   stretch the size of the window.  The bitmap is scaled to fit. GBM is,
-   of course, still required to directly view images in FM/2.
- o Changed toolbar button help to "bubble" style, added toggle to disable.
- o Added Directory Compare (DirCmp:) field to Files/Dirs page of internal
-   Settings notebook.
- o Added %d and %D metastrings for Commands.
- o Percentages in Directory Sizes dialog more accurate (to nearest
-   thousandth).
- o "Include subdirectories" toggle in Directory Compare dialog.
- o Fixed bug in 2.35a's INSTALL.CMD.  Can you say "duh?"  Apparently I can.
- o As usual, many little things no one will notice.
-
-2.37:
- o Added "Autoview comments" notebook toggle (page 2) and Config menu
-   items for same.  You can have FM/2 autoview file contents _or_
-   .COMMENTS EAs -- handy for looking at files that were downloaded by
-   a package that puts the file description in that EA.  You can also
-   get to that EA on the third page of a WPS object's File page or via
-   FM/2's Edit EAs dialog, BTW.
- o CTRL + Shift + B1 doubleclick opens an object's WPS Settings notebook.
- o You can now link-drag a root directory (drive) from the Drive Tree.
-   For cryin' out loud, BE CAREFUL!
- o Credit card registrations via BMT Micro are now available.
- o Directory Containers can now have independent sorts if you DON'T use
-   the "Immediate Updates" toggle.  When you set a sort (or filter) in
-   the internal Settings notebook, you're setting a default for
-   subsequently created Directory Containers.  When you set a sort (or
-   filter) using the popup menu of a Directory Container, you're
-   changing only that container.  States will now also save the type of
-   view (Icon, Details, etc.), sort and filter settings for each open
-   Directory Container.
-
-2.38:
- o Walk Directories dialog will now display non-writeable drives unless
-   the directory selection is for an action that requires writing to the
-   selected directory (for example, copy or move, set extract directory,
-   etc.).
- o Filtering in Drive Tree now available, per user request.  NOTE:
-   filtering is performed _after_ expansion; therefore, it is possible
-   for the Tree to "lie" to you until you expand a branch (i.e. indicate
-   that other directories are available, but remove the "+/-" when you
-   attempt to expand the branch.  If it's important for you to know what
-   the entire tree of a drive looks like with filtering applied, use the
-   Expand/Collapse->Expand command from the Files menu or a popup.  You
-   can thereafter collapse and expand the tree as desired.  Tricks can
-   be played with the filter mask; for instance, "/C:\OS2*;/C:\MMOS2*;
-   /C:\TCPIP*;*" will exclude some system directories on drive C: and
-   show everything else.
- o Got rid of the annoying (to me, anyway) extra refresh when the
-   "Immediate Updates" toggle is not used (more cheating).
- o Windows will now be created with the WS_ANIMATE style if "Animate"
-   toggle on internal Settings notebook's Windows page is checked.  Of
-   course, system animation must still be turned on to see any effect.
- o Keyboard input of "standard" characters now performs a text search
-   to find the closest matching file system object in the container.
-   You can get the old (OS/2 default) behavior (move to nearest object
-   starting with the pressed letter) by holding down the shift key.
- o When a background task that FM/2 is waiting on takes more than about
-   two seconds to complete its job, FM/2 will switch it to the
-   foreground.  This means that if an archive is encrypted (passworded),
-   you'll get the oportunity to enter a password without having to
-   resort to the Window List to manually bring the window to the
-   foreground.
-
-2.39:
- o Fixed weird bug -- apparently IBM changed the behavior of
-   MLM_QUERYFORMATTEXTLENGTH in Warp.  This change may only take effect
-   at FP10+ levels.
- o Added Open Directory Container button to Drive Tree titlebar -- only
-   shows up when FM/2 is run as a monolithic app.
- o Added "Directory" attributes to Filter dialog per user request --
-   lets you exclude directories from Directory Containers, or show only
-   directories.  NOTE:  if you are upgrading, you may need to go into
-   the Filter and turn on the Directory attribute -- it's on by default
-   for new installations.  Use the internal Settings notebook to
-   activate the Filter dialog (DirView and ColView pages) by setting the
-   focus to the Filter: entryfield, so that the "general" filter is
-   changed.
- o Help file improvements (a neverending saga).
-
-2.40:
- o Added "All" button to Filter dialog.
- o Added more optional buttons to main window.
- o Added %u/%U metastrings.
- o Added hex/ASCII + drag-me window to bottom of new internal text
+2.50:
+ o Added a horizontal scrollbar to Global files viewer.
+ o Added line wrap (and thus horizontal scrollbar) to fast internal
    viewer.
- o Added %! metastring.
- o Added default archiver setting.
- o PM uses several ALT + F? accelerators to control frame windows.
-   However, this applies to the current frame window, which can be
-   within the main FM/2 window when run monolithically.  Add Ctrl to
-   these accelerators to affect the main window in that case.  I don't
-   change the system menu text to reflect this as it may be in a foreign
-   language, and I'm an ignorant, ugly one-language American.
- o Added "Separate parameters" toggle.
- o Added "Treetop on expand" toggle.
- o Windows pulldown now lists external FM/2 windows, as does a submenu
-   on the container popup in VTree, VDir and AV/2 windows.
- o Fixed some minor bugs in Commands menu generation.
- o Fixed bug in Collector -- unshifted double-click didn't work on
-   directories.
- o VDirs, external Archive Containers and Viewers now retain their last
-   set window size -- position is still determined by the Shell (PM).
- o Lots of little tweaks no one but me will ever notice.
+ o Added WWW and FTP component launching to internal viewers per
+   user request.  BTW, testpm.exe from the FM/2 Utilities is handy for
+   deciphering the arguments to FTPPM.EXE, which are a bit bizaare and
+   undocumented.  Just rename FTPPM.EXE to FTPPM.BAK, copy TESTPM.EXE
+   to FTPPM.EXE in the same directory, open the FTP object's Settings
+   notebook, then open the FTP object's program and compare the
+   results.
+ o Added optional blue/yellow LEDs which can be used in place of the
+   default red/green thread LED bitmaps.
+ o Added a toggle to make the databar boring for those who can't stand
+   too much excitement (I have users who are easily worn out :-).  Also
+   added file system type to end of string on user request.
+ o Execute dialog will try to remind you why you called it up in case
+   you fall asleep after double-clicking the mouse and awake confused.
+   It could happen.
+ o Couple of more small workarounds for Merlin beta bugs.
+ o Changed the way the toolbar displays help to eliminate capturing
+   the mouse (kludge, OS/2 should have a WM_MOUSELEAVING message).
+ o Added mini-toolbar to fast internal viewer.
+ o Note new internet address.
+ o Price reduction for commercial registrations.
+ o SET environment variable DOS_SHELL in CONFIG.SYS if you want to use
+   an alternate command processor in DOS sessions (for example,
+   SET DOS_SHELL=C:\4DOS\4DOS.EXE).
+ o Remap command now uses NET USE, enhancements (like it works, for
+   one :-).
+ o Added Miscellaneous->Detach (Ctrl + H) command to Drive Tree drive
+   popup to detach local drives from remote resources.
+ o Updated FM2PLAY.EXE (in FM2UTL.ZIP on CIS, FM2UTILS.ZIP elsewhere),
+   including more controls and ability to load list of files from a
+   listfile.  FM/2 will use this listfile method when playing more
+   multimedia files than will fit on a command line using the
+   View->Multimedia (Ctrl + l) command.  OS/2 command lines are
+   limited to about 1000 characters, if you're interested.
+ o Lots of other little tweaks and improvements -- some you might
+   even notice.
+
+2.49:
+ o More cosmetic tweaking -- for example, changing status line or bottom
+   button text font will now result in resizing of control to match new
+   font.  BTW, if you set ugly fonts or colors and want the defaults
+   back, one way to do it completely is to delete the window position
+   entry in OS2.INI and start from scratch...
+ o Work around for nasty bug in Merlin beta Voice Manager.
+ o Remap drives command added -- untested at this time, as I have no
+   LAN.  If you try it and it doesn't work, please report the error
+   code displayed.  If it works, let me know that, too.
+ o Fixed bug in Merge code.
+ o Added mini-toolbars to Archive Containers and the Collector (visible
+   only if you have the toolbar in FM/2 turned on, of course).
+ o A couple of other little things folks asked for -- I forget.
+
+2.48a:
+ o Lots of cosmetic stuff (for example, check out the Databar).
+ o Additional help, partitioned Context menu help into smaller "chunks."
+ o Added Find button to Archive dialog.
+ o More Merlin preparations.
+ o Added UserDirs dropdown to standard OS/2 file dialogs used by FM/2.
+ o Added Duplicates command to Global file viewer.
+ o More (subtle) tweaking of Seek and Scan dialog.
+ o Anybody else notice how the competition is trying (in vain) to
+   copy FM/2, but having a great deal of trouble keeping up with
+   the Joneses?  :-)
+
+2.48:
+ o Ideal size button logic adjusted so it will work as might be expected
+   with Merlin's new Warpcenter.
+ o Logic for sizing of titlebar buttons adjusted so they look better
+   under Merlin.
+ o Fixed bug in EA editor's MLE control -- an apparent change in the way
+   Warp handles the MLM_QUERYFORMATTEXTLENGTH with an overlong length
+   parameter has changed, resulting in the MLE not being cleared properly.
+ o Autoviewing file comments (.COMMENTS EA) now displays the comments in
+   an MLE rather than static text control, allowing editing.  Moving the
+   focus from the MLE after making a change saves the new EA.  Note:  if
+   a .COMMENTS EA is damaged, FM/2 won't let you edit it in this window
+   for safety (maybe some strange program wanted it that way).  You can
+   fix it in the EA viewer (Ctrl + Shift + E) if you know it's an anomoly.
+   Use the Ctrl + Tab accelerator key to switch focus to the Autoview
+   MLE if you're keyboarding.  FM/2 supports .COMMENTS EAs up to 32767
+   characters in length.  Each line of the MLE (newline, not wrap)
+   creates a separate EAT_ASCII value, in case you care and know what
+   the heck I'm talking about...  BTW, GCP downloads automatically fill
+   in the .COMMENTS and .SUBJECT EAs for you if so configured, though
+   it seems to save the .COMMENTS EA in a weird (different from the
+   WPS) format -- but it's readable.
+ o You can use command line switch -<ininame> to start FM/2 with a
+   different INI file (i.e. "FM3.EXE -C:\MYINI.INI").  This means
+   that different users can set up FM/2 to taste and use separate
+   FM/2 objects to start their "version" of the program on the same
+   machine.
+ o FM/2 will try to remind you why the Walk directories dialog was
+   invoked, per forgetful, worn-out user request.  :-)
+ o Keys help added per user request.
+
+2.47:
+ o Added "View->As archive" context menu option per user request.
+ o Added maximize/restore button to "FM/2 Lite" Directory Containers.
+ o Added Autoview window to "FM/2 Lite."
+ o Added "View archive" button to Archive List Error window.
+ o Fixed bug -- Ctrl + F7 not bringing up context menu with Sort
+   submenu selected.
+ o Jazzed up direct renaming of files and directories.
+ o Jazzed up Seek and Scan dialog per user request.
+ o AV/2 will now accept wildcarded filenames and view the first matching
+   file in whatever manner seems most appropriate.
+ o Delete key deletes files, Ctrl + Delete is permanent delete, Shift +
+   Delete is save to clipboard, Ctrl + Insert is make directory, Ctrl +
+   Pageup is parent directory, Ctrl + Pagedown is previous directory,
+   Ctrl + Home is root directory.  Obviously, not all these keystrokes
+   are meaningful in all windows (for instance, parent directory doesn't
+   do anything in the Collector).  These new shortcut keys are in
+   addition to existing accelerators.  Applicable windows (see previous
+   caveat): Directory Containers, Drive Tree, Archive Containers,
+   Collector, Global files windows.  Per user request.  These are not
+   "real" accelerator keys as they tend to bleed through and mess with
+   normal interactions (even these bleed through here and there, but
+   it's benign), but hopefully you'll never notice the difference.
+ o In "FM/2 Lite," you can direct-edit the title of a Directory
+   Container to change directories.
+ o Install now accepts /UNATTENDED argument to run without asking any
+   questions.
+
+2.46:
+ o Fixed drive button bug.
+ o Added "FM/2 Lite" (or whatever you want to call it), a new
+   "personality" for FM/2 intended for those who can't deal with
+   the real thing.
+
+2.45:
+ o When selecting or deselecting by mask, you can specify a text string
+   to be used.  First the file is tested against the mask(s), then
+   tested to see if it contains the text (if any is specified).
+ o Fixed bug -- context menus quit working after a Directory Container
+   was closed.
+ o Added Makearc module, mainly for access from NTree.
+ o Fixed bug -- "case sensitive" flag was being reversed for Seek and
+   Scan.
+
+2.44:
+ o "Thread busy" LED added per user request.
+ o Toolbar buttons now allow you to use different bitmaps of your own
+   design.  Notes:  using user-defined bitmaps in the toolbar can slow
+   loading of FM/2 slightly, but probably not noticably unless you
+   replace all of them.  Request a context menu on a toolbar button and
+   pick "Edit button" to get the dialog where you tell FM/2 to use a
+   user-defined bitmap.
+ o External Archive Containers, Collector, VTree and VDirs now have
+   their own pulldown menu for Files and Views (the shadow menus) and
+   Help for easy keyboard access and/or novice users.
+ o Command lines executed through the command line dialog are remembered
+   for possible later retrieval.
+ o Directory sizes dialog reworked (prettier, sizeable).  DIRSIZE.EXE
+   program provided for accessing this function directly (object placed
+   in FM/2 Tools subfolder by INSTALL.CMD).
+
+2.43:
+ o Added optional drivebar per user request.
+ o Added Lock and Unlock commands for removable drives.
+ o Added UUDecode command and Merge command (yep, got another internet
+   connection, finally).
+ o When presented with a list of objects in a dialog (as in the Edit EAs
+   or Attributes dialogs), double-clicking a file object will bring up
+   the configured viewer with the file loaded.  This is just a quick
+   view purely for convenience; no attempt is made to view the file as
+   an archive or check Associations.  You can double-click it in the
+   Directory Container if you need to go that far.
+ o Added "Thread notes" window -- if you don't like it, minimize it and
+   it should stay that way.  When a thread does something that takes
+   awhile, like copying a file, it tells you when it starts and when
+   it finishes.
+ o Under Warp, FM/2 will now query the active desktop in a documented
+   manner when asked to create objects.  There is no reliable method
+   under older OS/2 versions.
+ o Improved FM/2's built-in printing somewhat.  Still not as good as
+   printing from the appropriate application, of course.
+ o Confirmation lists will now display a bitmap representing the command
+   to be executed on the dialog, where applicable, as a quick visual
+   reminder.
+ o When switching a Directory Container to the parent, FM/2 will
+   make the vacated directory's object the current object.
+
+2.42:
+ o More threading in strategic spots to make response when moving around
+   really slow drives (like ZIP and EZ drives) snappier.  The drivers
+   for these drives need a bit more work, developers -- think "cache,"
+   especially for things like providing the label and usage info.  When
+   it's slower than the floppy drives, some work needs to be done, eh?
+ o Edit->Drive flags dialog now available from a drive (root dir) object
+   in the Drive Tree -- lets you set flags you used to _have_ to set
+   from the command line (and a couple of new ones).  You can still set
+   flags from the command line as an override.
+ o Files can be included in the Drive Tree display on a per-drive basis
+   if you can actually think of a reason to do it (I can't, but someone
+   asked).  If you do find a use for it, tell me what the heck it is.
+ o See all files can be invoked on directory (folder) objects
+   (Miscellaneous->Show all files) or the directory into which a
+   Directory Container looks.
+ o See all files window and Collector now have new "Move and preserve"
+   and "Copy and preserve" commands to move or copy objects while
+   preserving their directory relationship (see online help for
+   examples).
+ o Double-clicking on an empty part of the Drive Tree now invokes the
+   Make Directory command.  Double-clicking on an empty part of a
+   Directory Container opens its WPS folder.
+ o Target of a drag and drop operation can be changed from the FM/2
+   drag and drop dialog (if you're using the dialog, of course).
+ o Improved directory comparison dialog (no, it's still no PMDirMatch
+   and never will be, and yes, you can still tell FM/2 to use PMDirMatch
+   instead of the internal).
+ o Added Utilities->Compare directories command.
+ o Sorting an Archive Container by date is now possible, at least for
+   some archive types.  See ARCHIVER.BB2 for details.  You can also
+   Alt-B1 click the titles of sortable fields in Archive Containers now
+   to change the sort type (just like you can in a Directory Container).
 
 2.41:
  o VTree now runs Directory Containers (VDirs) as part of its process,
@@ -615,503 +555,546 @@ New stuff's at the bottom.  This list isn't necessarily comprehensive.
    to give it a try -- tell me what you think.  If upgrading, delete the
    old FM/2 folder before running Install again.).
 
-2.42:
- o More threading in strategic spots to make response when moving around
-   really slow drives (like ZIP and EZ drives) snappier.  The drivers
-   for these drives need a bit more work, developers -- think "cache,"
-   especially for things like providing the label and usage info.  When
-   it's slower than the floppy drives, some work needs to be done, eh?
- o Edit->Drive flags dialog now available from a drive (root dir) object
-   in the Drive Tree -- lets you set flags you used to _have_ to set
-   from the command line (and a couple of new ones).  You can still set
-   flags from the command line as an override.
- o Files can be included in the Drive Tree display on a per-drive basis
-   if you can actually think of a reason to do it (I can't, but someone
-   asked).  If you do find a use for it, tell me what the heck it is.
- o See all files can be invoked on directory (folder) objects
-   (Miscellaneous->Show all files) or the directory into which a
-   Directory Container looks.
- o See all files window and Collector now have new "Move and preserve"
-   and "Copy and preserve" commands to move or copy objects while
-   preserving their directory relationship (see online help for
-   examples).
- o Double-clicking on an empty part of the Drive Tree now invokes the
-   Make Directory command.  Double-clicking on an empty part of a
-   Directory Container opens its WPS folder.
- o Target of a drag and drop operation can be changed from the FM/2
-   drag and drop dialog (if you're using the dialog, of course).
- o Improved directory comparison dialog (no, it's still no PMDirMatch
-   and never will be, and yes, you can still tell FM/2 to use PMDirMatch
-   instead of the internal).
- o Added Utilities->Compare directories command.
- o Sorting an Archive Container by date is now possible, at least for
-   some archive types.  See ARCHIVER.BB2 for details.  You can also
-   Alt-B1 click the titles of sortable fields in Archive Containers now
-   to change the sort type (just like you can in a Directory Container).
-
-2.43:
- o Added optional drivebar per user request.
- o Added Lock and Unlock commands for removable drives.
- o Added UUDecode command and Merge command (yep, got another internet
-   connection, finally).
- o When presented with a list of objects in a dialog (as in the Edit EAs
-   or Attributes dialogs), double-clicking a file object will bring up
-   the configured viewer with the file loaded.  This is just a quick
-   view purely for convenience; no attempt is made to view the file as
-   an archive or check Associations.  You can double-click it in the
-   Directory Container if you need to go that far.
- o Added "Thread notes" window -- if you don't like it, minimize it and
-   it should stay that way.  When a thread does something that takes
-   awhile, like copying a file, it tells you when it starts and when
-   it finishes.
- o Under Warp, FM/2 will now query the active desktop in a documented
-   manner when asked to create objects.  There is no reliable method
-   under older OS/2 versions.
- o Improved FM/2's built-in printing somewhat.  Still not as good as
-   printing from the appropriate application, of course.
- o Confirmation lists will now display a bitmap representing the command
-   to be executed on the dialog, where applicable, as a quick visual
-   reminder.
- o When switching a Directory Container to the parent, FM/2 will
-   make the vacated directory's object the current object.
-
-2.44:
- o "Thread busy" LED added per user request.
- o Toolbar buttons now allow you to use different bitmaps of your own
-   design.  Notes:  using user-defined bitmaps in the toolbar can slow
-   loading of FM/2 slightly, but probably not noticably unless you
-   replace all of them.  Request a context menu on a toolbar button and
-   pick "Edit button" to get the dialog where you tell FM/2 to use a
-   user-defined bitmap.
- o External Archive Containers, Collector, VTree and VDirs now have
-   their own pulldown menu for Files and Views (the shadow menus) and
-   Help for easy keyboard access and/or novice users.
- o Command lines executed through the command line dialog are remembered
-   for possible later retrieval.
- o Directory sizes dialog reworked (prettier, sizeable).  DIRSIZE.EXE
-   program provided for accessing this function directly (object placed
-   in FM/2 Tools subfolder by INSTALL.CMD).
-
-2.45:
- o When selecting or deselecting by mask, you can specify a text string
-   to be used.  First the file is tested against the mask(s), then
-   tested to see if it contains the text (if any is specified).
- o Fixed bug -- context menus quit working after a Directory Container
-   was closed.
- o Added Makearc module, mainly for access from NTree.
- o Fixed bug -- "case sensitive" flag was being reversed for Seek and
-   Scan.
-
-2.46:
- o Fixed drive button bug.
- o Added "FM/2 Lite" (or whatever you want to call it), a new
-   "personality" for FM/2 intended for those who can't deal with
-   the real thing.
-
-2.47:
- o Added "View->As archive" context menu option per user request.
- o Added maximize/restore button to "FM/2 Lite" Directory Containers.
- o Added Autoview window to "FM/2 Lite."
- o Added "View archive" button to Archive List Error window.
- o Fixed bug -- Ctrl + F7 not bringing up context menu with Sort
-   submenu selected.
- o Jazzed up direct renaming of files and directories.
- o Jazzed up Seek and Scan dialog per user request.
- o AV/2 will now accept wildcarded filenames and view the first matching
-   file in whatever manner seems most appropriate.
- o Delete key deletes files, Ctrl + Delete is permanent delete, Shift +
-   Delete is save to clipboard, Ctrl + Insert is make directory, Ctrl +
-   Pageup is parent directory, Ctrl + Pagedown is previous directory,
-   Ctrl + Home is root directory.  Obviously, not all these keystrokes
-   are meaningful in all windows (for instance, parent directory doesn't
-   do anything in the Collector).  These new shortcut keys are in
-   addition to existing accelerators.  Applicable windows (see previous
-   caveat): Directory Containers, Drive Tree, Archive Containers,
-   Collector, Global files windows.  Per user request.  These are not
-   "real" accelerator keys as they tend to bleed through and mess with
-   normal interactions (even these bleed through here and there, but
-   it's benign), but hopefully you'll never notice the difference.
- o In "FM/2 Lite," you can direct-edit the title of a Directory
-   Container to change directories.
- o Install now accepts /UNATTENDED argument to run without asking any
-   questions.
-
-2.48:
- o Ideal size button logic adjusted so it will work as might be expected
-   with Merlin's new Warpcenter.
- o Logic for sizing of titlebar buttons adjusted so they look better
-   under Merlin.
- o Fixed bug in EA editor's MLE control -- an apparent change in the way
-   Warp handles the MLM_QUERYFORMATTEXTLENGTH with an overlong length
-   parameter has changed, resulting in the MLE not being cleared properly.
- o Autoviewing file comments (.COMMENTS EA) now displays the comments in
-   an MLE rather than static text control, allowing editing.  Moving the
-   focus from the MLE after making a change saves the new EA.  Note:  if
-   a .COMMENTS EA is damaged, FM/2 won't let you edit it in this window
-   for safety (maybe some strange program wanted it that way).  You can
-   fix it in the EA viewer (Ctrl + Shift + E) if you know it's an anomoly.
-   Use the Ctrl + Tab accelerator key to switch focus to the Autoview
-   MLE if you're keyboarding.  FM/2 supports .COMMENTS EAs up to 32767
-   characters in length.  Each line of the MLE (newline, not wrap)
-   creates a separate EAT_ASCII value, in case you care and know what
-   the heck I'm talking about...  BTW, GCP downloads automatically fill
-   in the .COMMENTS and .SUBJECT EAs for you if so configured, though
-   it seems to save the .COMMENTS EA in a weird (different from the
-   WPS) format -- but it's readable.
- o You can use command line switch -<ininame> to start FM/2 with a
-   different INI file (i.e. "FM3.EXE -C:\MYINI.INI").  This means
-   that different users can set up FM/2 to taste and use separate
-   FM/2 objects to start their "version" of the program on the same
-   machine.
- o FM/2 will try to remind you why the Walk directories dialog was
-   invoked, per forgetful, worn-out user request.  :-)
- o Keys help added per user request.
-
-2.48a:
- o Lots of cosmetic stuff (for example, check out the Databar).
- o Additional help, partitioned Context menu help into smaller "chunks."
- o Added Find button to Archive dialog.
- o More Merlin preparations.
- o Added UserDirs dropdown to standard OS/2 file dialogs used by FM/2.
- o Added Duplicates command to Global file viewer.
- o More (subtle) tweaking of Seek and Scan dialog.
- o Anybody else notice how the competition is trying (in vain) to
-   copy FM/2, but having a great deal of trouble keeping up with
-   the Joneses?  :-)
-
-2.49:
- o More cosmetic tweaking -- for example, changing status line or bottom
-   button text font will now result in resizing of control to match new
-   font.  BTW, if you set ugly fonts or colors and want the defaults
-   back, one way to do it completely is to delete the window position
-   entry in OS2.INI and start from scratch...
- o Work around for nasty bug in Merlin beta Voice Manager.
- o Remap drives command added -- untested at this time, as I have no
-   LAN.  If you try it and it doesn't work, please report the error
-   code displayed.  If it works, let me know that, too.
- o Fixed bug in Merge code.
- o Added mini-toolbars to Archive Containers and the Collector (visible
-   only if you have the toolbar in FM/2 turned on, of course).
- o A couple of other little things folks asked for -- I forget.
-
-2.50:
- o Added a horizontal scrollbar to Global files viewer.
- o Added line wrap (and thus horizontal scrollbar) to fast internal
+2.40:
+ o Added "All" button to Filter dialog.
+ o Added more optional buttons to main window.
+ o Added %u/%U metastrings.
+ o Added hex/ASCII + drag-me window to bottom of new internal text
    viewer.
- o Added WWW and FTP component launching to internal viewers per
-   user request.  BTW, testpm.exe from the FM/2 Utilities is handy for
-   deciphering the arguments to FTPPM.EXE, which are a bit bizaare and
-   undocumented.  Just rename FTPPM.EXE to FTPPM.BAK, copy TESTPM.EXE
-   to FTPPM.EXE in the same directory, open the FTP object's Settings
-   notebook, then open the FTP object's program and compare the
-   results.
- o Added optional blue/yellow LEDs which can be used in place of the
-   default red/green thread LED bitmaps.
- o Added a toggle to make the databar boring for those who can't stand
-   too much excitement (I have users who are easily worn out :-).  Also
-   added file system type to end of string on user request.
- o Execute dialog will try to remind you why you called it up in case
-   you fall asleep after double-clicking the mouse and awake confused.
-   It could happen.
- o Couple of more small workarounds for Merlin beta bugs.
- o Changed the way the toolbar displays help to eliminate capturing
-   the mouse (kludge, OS/2 should have a WM_MOUSELEAVING message).
- o Added mini-toolbar to fast internal viewer.
- o Note new internet address.
- o Price reduction for commercial registrations.
- o SET environment variable DOS_SHELL in CONFIG.SYS if you want to use
-   an alternate command processor in DOS sessions (for example,
-   SET DOS_SHELL=C:\4DOS\4DOS.EXE).
- o Remap command now uses NET USE, enhancements (like it works, for
-   one :-).
- o Added Miscellaneous->Detach (Ctrl + H) command to Drive Tree drive
-   popup to detach local drives from remote resources.
- o Updated FM2PLAY.EXE (in FM2UTL.ZIP on CIS, FM2UTILS.ZIP elsewhere),
-   including more controls and ability to load list of files from a
-   listfile.  FM/2 will use this listfile method when playing more
-   multimedia files than will fit on a command line using the
-   View->Multimedia (Ctrl + l) command.  OS/2 command lines are
-   limited to about 1000 characters, if you're interested.
- o Lots of other little tweaks and improvements -- some you might
-   even notice.
+ o Added %! metastring.
+ o Added default archiver setting.
+ o PM uses several ALT + F? accelerators to control frame windows.
+   However, this applies to the current frame window, which can be
+   within the main FM/2 window when run monolithically.  Add Ctrl to
+   these accelerators to affect the main window in that case.  I don't
+   change the system menu text to reflect this as it may be in a foreign
+   language, and I'm an ignorant, ugly one-language American.
+ o Added "Separate parameters" toggle.
+ o Added "Treetop on expand" toggle.
+ o Windows pulldown now lists external FM/2 windows, as does a submenu
+   on the container popup in VTree, VDir and AV/2 windows.
+ o Fixed some minor bugs in Commands menu generation.
+ o Fixed bug in Collector -- unshifted double-click didn't work on
+   directories.
+ o VDirs, external Archive Containers and Viewers now retain their last
+   set window size -- position is still determined by the Shell (PM).
+ o Lots of little tweaks no one but me will ever notice.
 
-2.50a:
- o Added "Run Viewer as child session" toggle -- if used, any open
-   viewers will close when FM/2 closes.
- o Added "Env" button to Seek and scan dialog (for searching through
-   directories listed in environment variables).
- o Added "No sort" option to Collector sorting.
- o FM/2 will now offer to remove old registration when started after
-   registration has expired, making it easy to enter updated
-   registration information.
- o Directory Containers can now be switched into Tree View.  See also
-   new "Stay in Tree View" toggle.
- o B2 on Directory Container Folder buttons pulls up an abbreviated
-   popup menu.
- o Bugfix:  The Autoview window wouldn't let you enter Comments on an
-   object that didn't already have them (duh).
- o FM/2 now taps into MMPM/2 to display image files, instead of GBM.  To
-   activate FM/2's "internal" image file viewing, be sure to remove any
-   Associations for MMPM/2-supported image file types (JPG, TIF, BMP,
-   PCX, GIF, etc.) using FM/2's Config->Edit Associations command.
+2.39:
+ o Fixed weird bug -- apparently IBM changed the behavior of
+   MLM_QUERYFORMATTEXTLENGTH in Warp.  This change may only take effect
+   at FP10+ levels.
+ o Added Open Directory Container button to Drive Tree titlebar -- only
+   shows up when FM/2 is run as a monolithic app.
+ o Added "Directory" attributes to Filter dialog per user request --
+   lets you exclude directories from Directory Containers, or show only
+   directories.  NOTE:  if you are upgrading, you may need to go into
+   the Filter and turn on the Directory attribute -- it's on by default
+   for new installations.  Use the internal Settings notebook to
+   activate the Filter dialog (DirView and ColView pages) by setting the
+   focus to the Filter: entryfield, so that the "general" filter is
+   changed.
+ o Help file improvements (a neverending saga).
 
-2.50b:
- o Added ability to convert an image file to another format from the
-   image viewer window.
- o All supported multimedia types are now "played" automatically on
-   double-click unless you have an FM/2 Association set for them.
+2.38:
+ o Walk Directories dialog will now display non-writeable drives unless
+   the directory selection is for an action that requires writing to the
+   selected directory (for example, copy or move, set extract directory,
+   etc.).
+ o Filtering in Drive Tree now available, per user request.  NOTE:
+   filtering is performed _after_ expansion; therefore, it is possible
+   for the Tree to "lie" to you until you expand a branch (i.e. indicate
+   that other directories are available, but remove the "+/-" when you
+   attempt to expand the branch.  If it's important for you to know what
+   the entire tree of a drive looks like with filtering applied, use the
+   Expand/Collapse->Expand command from the Files menu or a popup.  You
+   can thereafter collapse and expand the tree as desired.  Tricks can
+   be played with the filter mask; for instance, "/C:\OS2*;/C:\MMOS2*;
+   /C:\TCPIP*;*" will exclude some system directories on drive C: and
+   show everything else.
+ o Got rid of the annoying (to me, anyway) extra refresh when the
+   "Immediate Updates" toggle is not used (more cheating).
+ o Windows will now be created with the WS_ANIMATE style if "Animate"
+   toggle on internal Settings notebook's Windows page is checked.  Of
+   course, system animation must still be turned on to see any effect.
+ o Keyboard input of "standard" characters now performs a text search
+   to find the closest matching file system object in the container.
+   You can get the old (OS/2 default) behavior (move to nearest object
+   starting with the pressed letter) by holding down the shift key.
+ o When a background task that FM/2 is waiting on takes more than about
+   two seconds to complete its job, FM/2 will switch it to the
+   foreground.  This means that if an archive is encrypted (passworded),
+   you'll get the oportunity to enter a password without having to
+   resort to the Window List to manually bring the window to the
+   foreground.
 
-2.51:
- o Tweaked image viewer initial sizing algorithm to better handle very
-   small bitmaps at more nearly correct perspectives.
- o Added "No folder menu" toggle to internal Settings notebook by
-   user request.
- o Put floppy letters back into drives userlist dropdown due to
-   user request.
- o Made image viewer a separate executable due to a memory leak in
-   OS/2's MMPM/2 (mmio) under Merlin beta and some Warp 3 fixpack
-   configurations -- closing the application frees the memory, but
-   nothing else will, so a small, fast, separate application "fixes" the
-   problem (or, if you prefer, "OS/2 bug").  Like FM2PLAY.EXE, this
-   IMAGE.EXE file will now be in the FM/2 Utilities package (FM2UTL.ZIP
-   on CI$ or FM2UTILS.ZIP on the internet).  You'll probably want to
-   remove any old IMAGE.CMD file built by previous FM/2 installs.
- o Added ability to view and manipulate files in archives containing
-   spaces in the filename for archivers that provide information in a
-   particular way (see ARCHIVER.BB2 -- ZIP and LZH archives are set up
-   this way).  Other folks who use ARCHIVER.BB2 should take a look at
-   the updated documentation to see how to take advantage of this, but
-   it's backward-compatible, so old versions of those programs will
-   still work correctly with this change.
- o Removed SEEHELP.EXE -- Warp has the ability to view help files using
-   VIEW.EXE which comes with the OS.
- o Added "WPS Move" and "WPS Copy" commands.
- o I no longer accept registrations via direct mail.  Registrations are
-   available through BMT Micro or CIS' SWREG only (BMT recommended --
-   see REGISTER.TXT).  I just got too much snail mail and couldn't keep
-   up with all of it.
+2.37:
+ o Added "Autoview comments" notebook toggle (page 2) and Config menu
+   items for same.  You can have FM/2 autoview file contents _or_
+   .COMMENTS EAs -- handy for looking at files that were downloaded by
+   a package that puts the file description in that EA.  You can also
+   get to that EA on the third page of a WPS object's File page or via
+   FM/2's Edit EAs dialog, BTW.
+ o CTRL + Shift + B1 doubleclick opens an object's WPS Settings notebook.
+ o You can now link-drag a root directory (drive) from the Drive Tree.
+   For cryin' out loud, BE CAREFUL!
+ o Credit card registrations via BMT Micro are now available.
+ o Directory Containers can now have independent sorts if you DON'T use
+   the "Immediate Updates" toggle.  When you set a sort (or filter) in
+   the internal Settings notebook, you're setting a default for
+   subsequently created Directory Containers.  When you set a sort (or
+   filter) using the popup menu of a Directory Container, you're
+   changing only that container.  States will now also save the type of
+   view (Icon, Details, etc.), sort and filter settings for each open
+   Directory Container.
 
-2.52:
- o When the FM/2 main window is resized and a Directory Container is
-   maximized within it, it will remain maximized.
- o Modified AV/2 and ARCHIVER.BB2 so that RAR v2's woefully NIH
-   listings can be read.  Would it just _kill_ you archiver authors to
-   get together and come up with some sort of easily parsed listing
-   standard, then stick to it?  Please?
- o FM/2 will now show the current decryption keyword for extra programs
-   like DBFVIEW and FMT from the About box.
+2.36:
+ o Added "Rename existing" button to Rename dialog -- allows you to
+   rename (move) an existing target file system object out of the way
+   before moving or copying another file system object to that name.
+ o Fixed "obscure" bug (reporting user's words :-) causing FM/2 to
+   enter a loop when "Views" cascade was selected from the action
+   bar menu when an internal Archive Container was the current window.
+ o Tutorial section added to online help.
+ o When a bitmapped graphic file is viewed, the window is sized to fit
+   on the screen even when the image is larger than the screen.
+   Proportion is maintained for the initial window positioning.  You can
+   stretch the size of the window.  The bitmap is scaled to fit. GBM is,
+   of course, still required to directly view images in FM/2.
+ o Changed toolbar button help to "bubble" style, added toggle to disable.
+ o Added Directory Compare (DirCmp:) field to Files/Dirs page of internal
+   Settings notebook.
+ o Added %d and %D metastrings for Commands.
+ o Percentages in Directory Sizes dialog more accurate (to nearest
+   thousandth).
+ o "Include subdirectories" toggle in Directory Compare dialog.
+ o Fixed bug in 2.35a's INSTALL.CMD.  Can you say "duh?"  Apparently I can.
+ o As usual, many little things no one will notice.
 
-2.53:
- o Added Commands user dropdown list for picking commands to run on
-   selected files more quickly and easily.
- o Removed "#" character from AV/2 temporary directory -- WebEx and
-   Netscape were choking on it (a).
- o Allow disabling FM/2's custom file dialog so you can use MSE's
-   instead, if you like (the toggle's on the General page).  (What's
-   MSE?  Look at http://www.bmtmicro.com/catalog/mse) (a).
- o Added support for PKZIP 2.50 (b).
+2.35:
+ o Performance tuning.
+ o Implemented "minor" user suggestions.
+ o Added "Recent Dirs" toggle -- automatically adds temporary
+   directories to UserList as you change directories.  You can make them
+   permanent by Adding them as usual.
+ o FM/2 may handle DOS archivers now (actually, it does -- I tested with
+   ARJ); however, you'll have to set them up for yourself and I won't
+   support them.  Don't forget that DOS archivers don't support EAs.
+   AVOID WHENEVER POSSIBLE OR YOU'LL GET BURNED.
+ o If you have GBM.DLL on your LIBPATH or in the FM/2 directory, FM/2
+   will use it to display GBM-supported raster file types when they're
+   double-clicked.  GBM currently supports most OS/2 and Windows
+   bitmaps, .GIF, .PCX, .TIF, .TGA, .IFF, .VID, .PGM, .KPS, .IAX, .XBM,
+   .SPR, and .PSE files.  And it's free.
+ o Changed some icons around for a fresher look, added some for display
+   when you aren't loading icons from disk (for scanning speed).
+ o Added "Settings" button to Info dialog.
 
-2.54:
- o Small tweaks.
- o I don't do Compuserve anymore.  Reach me via the net, or just go to
-   FM/2's web page at http://www.bmtmicro.com/catalog/fm2
+2.34:
+ o Added "Tile backwards" toggle, but don't use it (it's a DOS-think
+   knee-jerk thing to do).
+ o Viewer won't "restore" the container that called it when it closes if
+   the container is maximized.
+ o Filtering speeded up when Autoview window is open.
+ o Show a little patch of color beside color names in Colors dialogs.
+ o Added "Folder after extract" toggle.
+ o Added ^F3 close monolithic app toggle (command id 1111 if anyone's
+   interested).
+ o More commands in INI viewer (rename, copy appname/keyname) and
+   enhanced existing Add/Edit INI record commands.
+ o Changed method of storing a few things so that they're both easily
+   human editable (for power users) and so they allow me to
+   "preconfigure" some things (for new users).  If you're upgrading from
+   previous versions, there's a CONVERT.EXE that'll copy your old
+   settings to the appropriate format and get rid of old baggage.
+ o Added "Userlist switches" toggle to internal Settings notebook.
+ o Added "%r/%R" to metastrings.
+ o Added "Extract" to drag and drop dialog.
+ o Height of autoview window can be changed.
+ o More info displayed in drive info dialog.
+ o INSTALL is a bit smarter.
+ o Added two new buttons on status line -- different behaviors depending on
+   whether you click with B1 or B2 and the shift state.
 
-2.55:
- o Fixed bug reported by Ralph Alvy -- "Append" checkbox being ignored
-   in Save to listfile dialog, FM/2 always appended to listfile.
+2.33:
+ o Added new internal viewer -- loads files at least five times faster
+   than the old viewer (which is still available via a toggle in the
+   internal Settings notebook).
+ o See all files window retains settings, is a bit slicker.
+ o Fixed bug -- rename box came up for each file moved/copied.
+ o Fixed bug -- FM/2 didn't start right with toolbar turned off.  Weird.
+ o Worked around Warp bug -- PM locks up if you select a codepage that
+   hasn't been prepared.  This should be ignored as in previous versions
+   of OS/2, but crashes the system instead (sheesh).
+ o Warp apparently still has a 64k limit to what the clipboard can hold.
+   While I could limit what you send to the clipboard, this is (hopefully)
+   one of those limits which will vanish with further updates to OS/2
+   itself, so I'll just caution you about it.
+ o Colors are adjustable in See all files windows.
+ o Several fonts are available in See all files windows (all fixed width).
+ o See all files window allows entering multiple keys to find a file if
+   the keys are entered within one second of each other.
+ o System info command made somewhat more human-readable.
 
-2.56:
- o Added ability to use exclusion masks in the Seek and Scan dialog
-   per Harry Travis' request.  Also added Append checkbox.
+2.32:
+ o See all files window fleshed out.
+ o Added "Viewer outside," "Arcboxes outside," "INI viewer outside" and
+   "Collector outside" toggles to Toggles2 page of internal Settings
+   notebook.
+ o Added "Save" button to Directory Sizes dialog
+ o Sort type can now be changed in Details view by holding ALT and
+   clicking the title of the field to sort on (assuming titles are
+   turned on and the field is one for which sorting is available,
+   of course).
+ o Added toggle to allow user to select default delete type.
+ o Added "toolbox" dropdown to user lists.
+ o Added sample toolboxes to archive.
+ o Info and EA dialogs now include listbox, lets you scroll through all
+   objects instead of popping up for each selected object.  EAS.EXE
+   mini-app inherits this; now accepts multiple filenames.
+ o Check list dialogs now allow calling up the Info dialog for files in
+   the list.
 
-2.57:
- o Added ability to sort by subject per user request (wouldn't it be
-   nice if Netscape put where we got downloaded files from in an EA?  Or
-   let you drag a file over it without locking up the system?).
+2.31:
+ o Added "Minimize to databar" toggle, also accessible as a standalone
+   miniapp.
+ o Tree remembers directories, once expanded.
+ o An individual drive may now be rescanned in the Drive Tree (related
+   to the above).
+ o More keyboard shortcuts for the rodently challenged.
+ o Drag from recessed text fields in Directory and Archive Containers
+   now possible (drags the directory or archive, respectively).
+ o Default Commands command (Do it yourself) added.
+ o Extract path can now be assigned "*" meaning "use directory in which
+   the archive resides."
+ o More menu compaction (well, you think of a term for it).
+ o New "See all files" window (still under construction, but already
+   much faster and very functional, without the standard listbox
+   limitation of 32767 maximum items).  Loads, sorts and displays
+   15,792 files from two local fixed drives in 18 seconds on my
+   486/66DX2 with normal (for me, of course) background load.
+ o Fixed buglet in Archive Container status display.
+ o More user suggestions implemented.
 
-2.58:
- o Added ability to create a new directory and switch to it in the
-   common directories user list (select <New directory>).  Revised
-   help to reflect this.
- o Holding down Shift while selecting a state name will prevent FM/2
-   from closing windows already open now (per user request).  An
-   automatic retile of all windows is then performed.
+2.30:
+ o I forget.
 
-2.59:
- o Rename dialog will now specifically tell you if the source file is
-   newer, older or same date as target and smaller, larger or same size
-   if there's a conflict with an existing target file, per user request.
+2.29:
+ o Added "Topic" entry field in Bookshelf Viewer dialog.
+ o Added "Quick arc find" toggle in Settings notebook; can speed up
+   drag and drop operations on floppy/network drives.
+ o Worked around PM bug in custom frame controls.
+ o Added "Directory Container state" saving and restoring in a dropdown
+   list (turned on with "Toggle quicklists" under Config menu).
+ o Fixed drag and drop bug (couldn't move, duh).  Smartened up drag and
+   drop while I was at it; no sense offering options not really
+   available due to media type (i.e. can't copy to a CD-ROM).
+ o Added "Launch" button to drag and drop dialog.
+ o Added quick-help for dropdown lists (in status box 2).
+ o Added ability to drop onto userlist dropdown to add a directory.
+   Also added popup maintenance menu (add and delete directories to/from
+   list).
 
-2.60:
- o Fast internal viewer can start configured editor from menu (Ctrl + e
-   accelerator) per user request.  Remember, to edit files in an
-   archive, you must still use Files->Refresh to cause selected files to
-   be refreshed in the archive.
- o Added a bit more bubble help (remember, you can turn bubble help on
-   and off (somewhat selectively) in the internal Settings notebook).
+2.28:
+ o Added optional user directory list dropdown box on main window
+   (maintenance of the list is still performed in the Walk Directories
+   dialog).
+ o Added Drives submenu on Drive Tree's views context menu -- select a
+   drive from it and the tree scrolls to show it and makes it the
+   current object.
+ o Restricted filename quoting in command lines to absolute essentials
+   -- some programs are broken and choke on quoted filenames.  We
+   absolutely cannot have LIST choking if it can be avoided.
+ o Double-clicking a directory in the Drive Tree container will cause an
+   existing Directory Container looking into that directory, if one
+   exists, to come to the foreground rather than opening a new one; if
+   the existing window is minimized, it'll be restored. Ditto for new
+   userlist dropdown.
+ o FM/2 can now launch Windows apps seamless -- maybe.  Sheesh, I'd
+   use a DOS app first...
 
-2.61:
- o Added new buttons to Directory Container, Archive Containers and the
-   Collector that allow you to set sort, filter and view.  Removed
-   filter button from bottom of screen (no longer needed).  Revised
-   window layouts help to show modified layouts.
- o More newuser-friendly junk (more bubble help, etc.).
- o Added Find first/next to INI viewer.  Listbox command will work in
-   is bordered in red.
- o Just a BTW -- there's a new IMAGE.EXE (the FM/2 image viewer utility)
-   in FM2UTILS.ZIP, available free-of-charge at
-   http://www.bmtmicro.com/catalog/fm2
-   I put some stuff in it that I needed for making pictures for the help
-   files.
+2.27:
+ o Added "Move & rename" and "Copy & rename" commands per user request.
+   This extends into the drag and drop dialog (said dialog is now on by
+   default, BTW).
+ o Many tiny tweaks that no one will ever notice (for instance,
+   filenames containing "&" are now quoted on command lines where they
+   weren't before).
+ o Added EXAMPLE.CMD to archive as an example of how REXX scripts can
+   manipulate files listed in listfiles created by FM/2.  This allows
+   Commands to circumvent the apx. 1000 character limit of OS/2 command
+   lines.
+ o Made notification window look more homogenous.
 
-2.62:
- o Added /SAVE and /NOSAVE to mini-command line options for a user.
+2.26:
+ o Fixed stupid new bug in moving files from HPFS->FAT with long
+   filenames.
+ o Fixed bug in RemoteBug fix that conflicted with another fix for
+   remote FSD bugs.  I'm getting sick of working around remote FSD
+   bugs -- think I'll just let the LAN folks fix _their_ stuff from
+   now on...
+ o Made titlebar of Drive Tree containers respond to request for context
+   menu as if it were container whitespace per user request.
+ o Added "Min on dir open" toggle -- a more elegant solution to a taste
+   thing (IMHO) than a user requested feature.
+ o Chord on status windows brings up window dialog like it does on
+   client window whitespace.
+ o Added "Append to clipboard" command to internal viewer/editor's
+   Edit menu.
+ o Moved "Write block" command out of Edit->Blocks submenu of internal
+   viewer/editor to the main Edit submenu as "Copy to file" so it's
+   accessible in readonly (viewing) mode while I was at it.
+ o Added informational tweaking to viewer/editor's Edit->Undo menu
+   command.
+ o Added "Walk" button to Seek and scan dialog.
+ o Added special FM/2 Association command line "<>" to indicate that the
+   default WPS view should be opened for matching files.
 
-2.63:
- o Fixed bug in UNDEL.EXE pointed out by a user.
- o Added "Double-click" topic to Tutorial section of help.  Did you know
-   that you can make FM/2 do something different when you double-click
-   an object?  Other miscellaneous work on the help file.
- o Moved "Create shadows" command under "Copy" cascade in menus where no
-   separate "Create objects" cascade is available and a "Copy" cascade
-   is available.
- o Made the way menus appear on new View and Sort buttons more
-   attractive (IMHO).
- o Bubble help won't appear if the window isn't active now (oversight).
- o To make it easier to parse the saved output from a Directory sizes
-   window, directory names containing spaces are now surrounded by quote
-   marks.
- o Related:  Put SEEHELP.EXE into FM2UTILS.ZIP for those who have
-   versions of OS/2 with VIEW.EXEs that won't read .HLP files directly.
-   You can read the FM/2 help file directly using this program on such
-   systems:  "SEEHELP FM3.HLP".
+2.25:
+ o Added "Edit" and "Refresh" to Archive Containers per user request.
+ o Added Drag and drop dialog and corresponding toggle per user request.
 
-2.64:
- o Made Window->Tile a cascade menu with Tile as the default, but you
-   can also set Autotile and Tile backwards toggles (renamed Tile
-   horizontal) there.
- o More help file work.
- o Tweaking of a few things no one will ever notice, except perhaps
-   as a feeling of more smoothness in a few places.
- o Added "Leave all attrs" button to Attributes dialog to make
-   "touching" files easier.
+2.24:
+ o Added "Remote bug" toggle since network FSD developers can't seem to
+   consistently produce working DosFindFirst/Next code to save their
+   lives.
+ o Undelete enhancements.
 
-2.65:
- o You can drag an object onto the Drive tree's Open button now, and
-   a Directory Container for that object will be opened.
- o Long-overdue code cleanup begins...
- o Fixed bug in FM/2 Lite where it was sorta paying attention to the
-   "bottom buttons" setting in FM/2 when it should ignore it.
- o Played with FM/2's default settings for new users -- some of the
-   best stuff was turned off by default!
- o Changed the behavior of the Rename dialog somewhat per user
-   suggestion.  "Overwrite if target older or same," "Overwrite if
-   target newer" and "Don't ask again" checkboxes now allow you to
-   selectively skip being asked about naming conflicts for the rest of
-   an operation.  Note that clicking the "Okay" button honors these
-   choices, but the "Overwrite" button overrides them for that one file
-   (an overwrite _will_ be performed).
+2.23:
+ o Enhancements to potential dupe finder per user requests and other
+   stuff I thunk up all by my lonesome.
+ o Placed "Seek and scan" on the Utility pulldown.  All it does is
+   start the Collector and post it a WM_COMMAND message as though you'd
+   clicked Seek and scan on its context menu.  Maybe even folks who
+   don't read the help can find it now (who knows?).
 
-2.66:
- o Increased duration of error window to 5 seconds from 3 (click it to
-   make it vanish early), changed background color to white and text
-   color to dark red, surrounded with red rectangle to make it stand out
-   more.  Also gave it a distinctive sound.  (This is the error window
-   you get if you do something like try to open the diskette drive when
-   there's no diskette inserted.)
- o Killed bug reported by Paulo Mario where FM/2 could crash (suddenly
-   exit) after moving a file and overwriting an existing file.
- o Reworked Databar a bit.
- o For the adventurous among you, try holding Shift or Ctrl while
-   clicking that second status window in a Directory Container...
+2.22:
+ o Additional detail and options are presented when FM/2 can't figure
+   out how to list the contents of an archive (ARCHIVER.BB2
+   misconfigured or archive bad) via new dialog.  This should make
+   determining what the archive problem is much easier when the
+   inevitable problem arises.
+ o Added duplicate file finder to Seek-and-Scan dialog.  Finds files
+   with same name and/or size and filedate.
 
-2.67:
- o Jazzed up the mini-command line a bit.
- o Command lines for the Execute dialog and mini-command line are now
-   saved separately (the former in CMDLINES.DAT, the latter in
-   CMDMINI.DAT, same format).  You can save, or not, either type for
-   recall.
+2.21:
+ o Shift and CTRL modifiers for double-clicking objects in Drive Tree,
+   Directory Containers and Collector implemented.  Shift causes new
+   FM/2 window to open (directories; direct to View for files), CTRL
+   causes default WPS open.
+ o More stuff in the help file (sheesh -- this has gotta stop).  The
+   online help should now make a rather complete manual when printed
+   together with the READ.ME file (see READ.ME for suggestions).
+ o INSTALL now makes an object for the online help so that it can be
+   viewed without starting FM/2 (using SEEHELP.EXE, included).
+ o Added Filter "Always show directories" toggle.
+ o Ideal size button supports a psuedo-restore operation, allowing
+   toggling between two sizes (mine and yours).
+ o Other stuff I forget.
 
-3.00:
- o Most of the text in FM/2 is now accessible from outside the source
-   code files, meaning translations to other languages should now be
-   possible without much problem.  A resource translation kit is offered
-   free-of-charge to registered users.  This required some additional
-   files (FM3RES.DLL and FM3RES.STR), but FM3DLL.DLL becomes (at least)
-   correspondingly smaller.
- o Jazzed up Autoview a bit.
- o Removed a bug that sneaked in during code optimization detected by
-   a user where archive members couldn't be dragged.  Then optimized
-   some more, thus tempting fate.
- o Improved FM/2's internal window selection from menus.
- o The status button in Directory Containers that shows the selected
-   number of files and bytes now displays a select menu when clicked.
- o Drive buttons will now show free space on drives as bubble help
-   except for CD-ROM drives, diskette drives A: and B:, and drives
-   marked as "slow" in the drive flags dialog.  I also made the buttons
-   a little bigger, and they'll "stack" if required due to insufficient
-   width.
- o Removed System Information applet from FM/2 -- OS/2 seems to have
-   this stuff built-in now.
- o Moved MakeArc into the FM/2 Utilities package.
- o You can now add selected environment variables that list directories
-   (like PATH, LIBPATH and DPATH) to the Drive Tree with a toggle in
-   the internal Settings notebook on the Tree page.  Cool.
- o You can now set a default Target directory for menu and accelerator
-   key copy and move operations, and choose to confirm (and perhaps
-   change) that directory on each operation, or accept it without
-   confirmation.
- o FM/2 will now make program object Parameters suggestions the first
-   time it's run (no FM3.INI exists) if you should exclude any drives,
-   and will even set the Parameters for you if you like.
- o Yet more tweaking that no one will ever notice...
+2.20:
+ o Fixed stupid bug that made FM/2 freak out on restart if you turned the
+   toolbar off and left it off (duh).
+ o Move-drag onto archives allowed now (if you have the archiver for that
+   archive type configured to allow moving files, of course).
+ o Fixed bug in longname<->shortname conversion (FAT<->HPFS).
+ o Found a nasty way to get Warp's printer objects to recognize FM/2's
+   D&D.
+ o Extract dialog can be told to remember its settings (extract directory,
+   masks, "with directories") distinctly from those set in Archive
+   Containers.
+ o Added a few pictures to the online help for extreme novices.
+ o Added new "Compare Select" submenu with commands that can make
+   selections based on comparing unfiltered files in all open Directory
+   Containers.  Powerful stuff.
+ o Added "Hide objects" command (selective individual object filtering).
+ o Fixed bug -- drag to toolbar quit working when toolbar code rewritten.
+ o Slight modification to ARCHIVER.BB2 -- -1 for filename position means
+   to use the last "field" of an archive listing for the filename.
+ o FM/2 is compiled with optimization turned off now -- caught it
+   generating bad code in the new Compare Select module and don't trust
+   it (again).
 
-3.00b:
- o Fix two minor bugs reported by users.
+2.19:
+ o Added "Ideal size" System Menu command and titlebar button -- an
+   alternative to maximizing.
+ o More work on help file hypertext links using suggestions from a
+   registered user.  Added a labelled bitmap showing the layout of FM/2
+   windows.
+ o Worked around weird bugs in Sizes and deleting toolbar buttons that
+   shouldn't be bugs but nonetheless cause problems on some machines.
+ o Added some one-line help fields to some dialogs to guide the user
+   along.
+ o Added the "Close" checkbox to the Edit Associations dialog, to allow
+   executing an association to shut down FM/2 (or a VDir window, mainly
+   for use by folks using FM/2 to replace the Drives objects).
+ o Added "Start Minimized" and "Start Maximized" buttons to the Windows
+   page of the Settings notebook.  FM/2 starts normal size then adjusts
+   (that lets it size all its windows right first, and gives you something
+   to return to from the maximized state).
 
-3.00c:
- o More minor bug fixes.
+2.18:
+ o Added ability to use the undocumented DosQProcStat API in the Process
+   Killer.  While this will enable the Process Killer to work without an
+   English version of PSTAT.EXE being present, DosQProcStat is an API
+   subject to change by IBM, so beware.
+ o Added FATOPT.EXE program to optimize FAT drives.  THIS IS A BETA
+   PROGRAM AND USES LOW-LEVEL DRIVE ACCESS -- BACK UP BEFORE USING!
+ o Tweaked the online help, adding more hypertext links and detail.
 
-3.00d:
- o FM/2 Lite remembers if a directory pane was maximized when it
-   closed now (duh -- should have all along, I just forgot).
+2.17:
+ o Optimized for speed:  Quick trees, tree sizes.
+ o Dug the names of the new color palettes out of Warp's INI files.
+   Under 2.x both color palette commands (one new) load the same object.
+   Under Warp they load the two different palette objects available.
+ o Added swapfile/memory watch when Drive Tree is active window in FM/2.
+ o Added HPFSOPT.EXE program to optimize HPFS drives.
 
-3.01:
- o Added another archiver date type for user Jans-Peter Otto.
+2.16:
+ o Added "Update objects" command.
+ o Added "Optimize" command.  Be sure to read the online help on this
+   one (under "Context Menus").
+ o Added toolbar changing buttons (buttons that automatically load a
+   new toolbox into the toolbar).  See comments in online help under
+   "Toolbar->Add Tool."
+ o Hmmm...Warp has broken the DM_DROPHELP message within an application
+   -- the passed DRAGINFO structure is inaccessible (apparently already
+   deallocated).  An appropriate error message will be displayed, and
+   the code's still there so that when IBM fixes it it'll automagically
+   start working again.
 
-3.02:
- o First open source release.
+2.15:
+ o Added "Collect list in file(s)" command.
+ o Added "Collect from a list file" command.
+ o Added "Select List" command.
+ o System VIO fonts have been renamed, jumping between "System" and
+   "System VIO", a couple of times now.  To top it off, when the name
+   changes, the sizes do, too (i.e. 7.System == 5.System VIO, more or
+   less).  Warp is now GA and uses "System VIO" again, so I've changed
+   it back to that.  If some fonts don't look right on your 2.11 system,
+   I'm sorry, but I'm trying to hit a moving target.  Don't shoot me,
+   I'm just the piano player.
+ o Did some other stuff, but forgot to write it down and have now
+   forgotten what it was.  Old age is hell.
 
-3.02a:
- o Replace corrupted remote.ico.
- o Correct archive name display
+2.14:
+ o FM/2 will now detect that a CD-ROM drive which didn't have a disk in
+   it or had a music disk in it when FM/2 was started is a CD-ROM drive
+   when accessed later with a data disk in it, and change the icon
+   accordingly.  This also applies to hard drives that were locked when
+   FM/2 started, by happy coincidence, and should work on other
+   removable media drives.
+ o Hints given in error popup for some access errors (for example, when
+   clicking on an empty diskette drive).
+ o Install.cmd will not change the parameters field of objects that it
+   creates if the File Manager/2 folder already existed.  It will still
+   update the paths.
+ o VTree honors drive exclusions like it should have in the first place.
+ o VTree will delete a directory if the Shredder refuses for some reason.
+ o Added VTree->WPS folder toggle.
+ o Shortened VTree tasklist title for registered users.
+ o FM/2 will attempt to fit smaller files onto diskettes when a larger
+   file in the list to be moved/copied won't fit before prompting you to
+   change diskettes due to a disk full condition.
+ o Help for toolbar buttons shows up when mouse passes over them --
+   figured out how to implement without excessive message passing (IOW,
+   to my satisfaction).
 
-3.02b:
- o Add JFS and FAT32 support
+2.13:
+ o Added ability to set type of selection used in some containers (in
+   the Settings Notebook on the "Windows" page).
+ o Selecting "Settings Notebook" in the FM3.EXE monolithic app, even
+   from container context menus, will always bring up a full settings
+   notebook.
+ o Slightly reduced memory usage for HPFS drives (ah, another reason
+   to use HPFS...).
+ o Fixed bug in SetIcon.
+ o Did some more work on FM2PLAY.EXE to make it more eye-appealing and
+   maybe a bit more functional.
+ o Shortened tasklist title for registered users.
 
-3.02c:
- o Correct broken assignments
- o Force Compare Directories window refresh on subdir toggle
+2.12:
+ o AV/2 will now ignore an association if it contains the string
+   "AV2.EXE" in the command line (meaning it might call itself).
+ o Fixed "Lowercase name" bug.
+ o Worked over the context menus again, added a couple more
+   accelerator keys.
+ o Hooked Help button in Child Window dialog to some help.
 
-3.02d:
- o Clean up icon usage
- o Add missing refresh after compare subdir toggle
- o Try to avoid playing non-MM files when use MMOS2 enabled
- o Rework directory sizes for large drives
- o Correct Show All Files requests from Tree View context menu
- o Correct resource strings
+2.11:
+ o Fixed odd bug in second status line in Directory Containers.
+ o Fixed rename buglet that caused rename from menu/button to
+   give funny default drive.
+ o Added drag and drop to INI Viewer to allow moving and copying
+   data between different INI files.
+ o Added FM2PLAY.EXE to allow playing multimedia files (via MMPM/2)
+   from FM/2 easily.  Usage:  FM2PLAY.EXE <file> [<file> <file...>].
+   There's a menu item for it.
+ o Added "associat.txt" containing recommended associations for use
+   with FM/2.  Please send your ideas for this list.
+ o Enhanced the Bookshelf Viewer.
 
+2.10:
+ o Added Undo buttons to Settings notebook pages.
+ o Fixed bug wherein Save state of dir windows toggle was ignored.
+ o Put in some comma formatting to prevent an untimely death.
+ o Fixed bug wherein Doubleclick Opens toggle was ignored.
+ o Added a couple more Settings pages.
+ o Made appropriate Settings pages available to standalone modules.
+ o Tweaked a few menus for a more consistent appearance.
 
-3.02e:
- o More see all files fixes
- o Correct internal viewer WM_VSCROLL logic (amouse)
+2.09:
+ o Changed things so the little notification box doesn't steal the
+   focus when it comes up.  Duh.
+ o Added "Backup Profile", "Change System Profiles" and "Replace System
+   Profiles" to the INI viewer.
+ o Fixed some glitches in new mask "must have" attribute processing.
+ o Found and fixed bug in Collector's Seek & Scan that could cause FM/2
+   to trap.
+ o Added a Settings notebook containing global toggles and such.
+   Slower than the menus, but Ron Hester asked for it, and I allus do
+   what Ron says...
+ o Return of the weirding ... but that'd be telling.
+ o Added optional split status line.
 
-3.02f:
- o Add large drive support the dirsize applet startup screen
- o Avoid spurious filldir errors for large drives
-   Will still get get math errors for >4GB directories
+2.08:
+ o Added "must have" attributes to Filter.
+ o Fixed Undelete dialog so selecting a new drive from the combobox
+   causes the listbox to be refreshed for that drive, and so a missing
+   DELETE environment variable for the selected drive doesn't cause the
+   dialog to abort unless you select Cancel in the information box (so
+   you can pick a different drive).
+ o Added limited optional logging for some simple but critical
+   operations (copy, move, rename, delete).
+ o Documented "start minimized" command line argument.
+ o Added "don't save/restore state of dir windows this time" command
+   line argument.
 
-3.02g:
- o Update removable drive support to work for USB MSD
+2.07:
+ o Added "View Bookshelf" and "View Helpfiles" utilities.
+ o Fixed bug in Quick Tree added while fixing the last one...
+ o VTree now saves its size and position on desktop (Ron Gawer wanted
+   that).  VDir doesn't, as you can have several of them open at once
+   and it would be somewhat irritating to have them all on top of each
+   other.
+
+2.06:
+ o In the Collector's Seek-and-scan dialog, the All HDs button now skips
+   removable drives (like CD-ROMs) for convenience.
+ o Quick tree works around the OS/2 DosFindFirst bug that prevents FAT
+   root drives from being found.
+ o Added "separator" attribute for tool buttons -- causes a small amount
+   of space to be added after the button with the attribute, for
+   appearance (grouping of buttons).
+ o Added ability to turn on titles below bitmap buttons in toolbar (it'll
+   have to be short and sweet) and grouped all toolbar toggles under a
+   Toolbar conditional cascade submenu.
+
+[lazy bum skipped a few...]
+
+2.00:
+ o A whole new look for FM/2 -- the same thing, only more so.  Some
+   things were enhanced, some dropped, some replaced or superceded.
+   Still, if you used 1.x you should feel at home.
 
 $Id$
