@@ -6,10 +6,11 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2004 Steven H.Levine
 
-  Revisions	08 Feb 03 SHL - Enable SYS_FRAME
-            04 Nov 03 SHL - Drop obsoletes
+  Revisions	08 Feb 03 SHL Enable SYS_FRAME
+            04 Nov 03 SHL Drop obsoletes
+            01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
 
 ***********************************************************************/
 
@@ -39,16 +40,16 @@ ICON        SYS_FRAME           icons\SYSINFO.ICO
 ICON        EA_FRAME            icons\EAS.ICO
 ICON        VINF_FRAME          icons\VIEWINFS.ICO
 
-ICON        SKULL0              "icons\SKULL0.ICO"
-ICON        SKULL1              "icons\SKULL1.ICO"
-ICON        SKULL2              "icons\SKULL2.ICO"
-ICON        SKULL3              "icons\SKULL3.ICO"
-ICON        SKULL4              "icons\SKULL4.ICO"
-ICON        SKULL5              "icons\SKULL5.ICO"
-ICON        SKULL6              "icons\SKULL6.ICO"
-ICON        SKULL7              "icons\SKULL7.ICO"
-ICON        SKULL8              "icons\SKULL8.ICO"
-ICON        SKULL9              "icons\SKULL9.ICO"
+ICON        SKULL0_ICON         icons\SKULL0.ICO
+ICON        SKULL1_ICON         icons\SKULL1.ICO
+ICON        SKULL2_ICON         icons\SKULL2.ICO
+ICON        SKULL3_ICON         icons\SKULL3.ICO
+ICON        SKULL4_ICON         icons\SKULL4.ICO
+ICON        SKULL5_ICON         icons\SKULL5.ICO
+ICON        SKULL6_ICON         icons\SKULL6.ICO
+ICON        SKULL7_ICON         icons\SKULL7.ICO
+ICON        SKULL8_ICON         icons\SKULL8.ICO
+ICON        SKULL9_ICON         icons\SKULL9.ICO
 
 ICON        REMOVABLE_ICON      icons\REMOVABL.ICO
 ICON        CDROM_ICON          icons\CDROM.ICO

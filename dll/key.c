@@ -1,16 +1,28 @@
-/*
- * About dialog
- */
+
+/***********************************************************************
+
+  $Id$
+
+  About dialogs
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H. Levine
+
+  Revisions	01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
+
+***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -19,15 +31,13 @@
 #pragma data_seg(DATA1)
 #pragma alloc_text(ABOUT,AboutDlgProc,AuthorDlgProc)
 
-
-MRESULT EXPENTRY AuthorDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AuthorDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   return WinDefDlgProc(hwnd,msg,mp1,mp2);
 }
 
-
-MRESULT EXPENTRY AboutDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AboutDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   SWP         swp;
   static HAB  hab = 0;
   BOOL        no = FALSE;
@@ -102,16 +112,16 @@ MRESULT EXPENTRY AboutDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                           MPVOID,
                                           MPVOID);
         if(hbm) {
-          sk0 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL0);
-          sk1 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL1);
-          sk2 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL2);
-          sk3 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL3);
-          sk4 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL4);
-          sk5 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL5);
-          sk6 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL6);
-          sk7 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL7);
-          sk8 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL8);
-          sk9 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL9);
+          sk0 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL0_ICON);
+          sk1 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL1_ICON);
+          sk2 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL2_ICON);
+          sk3 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL3_ICON);
+          sk4 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL4_ICON);
+          sk5 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL5_ICON);
+          sk6 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL6_ICON);
+          sk7 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL7_ICON);
+          sk8 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL8_ICON);
+          sk9 = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,SKULL9_ICON);
           if(sk0 && sk1 && sk2 && sk3 && sk4 && sk5 && sk6 && sk7 &&
              sk8 && sk9) {
             WinShowWindow(WinWindowFromID(hwnd,ABT_ICON),FALSE);

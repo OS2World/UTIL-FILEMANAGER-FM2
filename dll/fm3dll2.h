@@ -6,10 +6,11 @@
   Global definitions
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2004 Steven H.Levine
 
-  Revisions	15 Oct 02 MK - Baseline
-		04 Nov 03 SHL - Drop obsoletes
+  Revisions	15 Oct 02 MK Baseline
+		04 Nov 03 SHL Drop obsoletes
+		01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
 
 ***********************************************************************/
 
@@ -154,16 +155,16 @@
 #define ARC_EXTRACTDIR      502
 #define ARCOBJ_FRAME        600
 
-#define SKULL0              690
-#define SKULL1              691
-#define SKULL2              692
-#define SKULL3              693
-#define SKULL4              694
-#define SKULL5              695
-#define SKULL6              696
-#define SKULL7              697
-#define SKULL8              698
-#define SKULL9              699
+#define SKULL0_ICON         690
+#define SKULL1_ICON         691
+#define SKULL2_ICON         692
+#define SKULL3_ICON         693
+#define SKULL4_ICON         694
+#define SKULL5_ICON         695
+#define SKULL6_ICON         696
+#define SKULL7_ICON         697
+#define SKULL8_ICON         698
+#define SKULL9_ICON         699
 
 #define INI_FRAME           700
 #define INI_APPLIST         701
