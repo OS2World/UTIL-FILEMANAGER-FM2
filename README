@@ -258,3 +258,33 @@ get around this problem (or upgrade your version of OS/2).
 Don't drag files over Netscape -- it will lock up if files (not WPS
 objects; there's a subtle difference) are dragged over it.
 
+Known problems/shortcomings
+=========================== 
+
+ - There must be some
+
+About FM/2
+==========
+
+FM/2 was originally written by:
+
+  Mark Kimes
+  <hectorplasmic@worldnet.att.net>
+
+He has kindly allowed me to take over maintenance and support of FM/2 and to 
+release the program under the GNU GPL license.  I'm sure he would appreciate 
+a Thank You note for his generosity.
+
+Support
+=======
+
+Please address support questions and enhancement requests to:
+
+  Steven H. Levine
+  steve53@earthlink.net
+
+I also monitor most of the comp.os.os2.apps newsgroup.
+
+Thanks and enjoy.
+
+$ID$
