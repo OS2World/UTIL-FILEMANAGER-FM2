@@ -301,7 +301,7 @@ PK\x03\x04
 2
 4,1
 2
-7,0,0,0
+7,1
 ;
 ;This entry is for ZIP 1.9/UNZIP 5.0 (available in 32-bit versions)
 ;ZIP/UNZIP should work with PKZIP 2.04 files.  Saves EAs well.  Won't
