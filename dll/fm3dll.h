@@ -8,9 +8,11 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2004 Steven H.Levine
 
-  Revisions	12 Feb 03 SHL - Add CBLIST_TO_EASIZE
-		11 Jun 03 SHL - Add JFS and FAT32 support
-		06 Jan 04 SHL - Drop hundfmt
+  Revisions	12 Feb 03 SHL Add CBLIST_TO_EASIZE
+		11 Jun 03 SHL Add JFS and FAT32 support
+		06 Jan 04 SHL Drop hundfmt
+		01 Aug 04 SHL Optimze strippers
+		01 Aug 04 SHL Drop avv local functions
 
 ***********************************************************************/
 
@@ -546,9 +548,9 @@ BOOL UnFlesh       (HWND hwndCnr,PCNRITEM pciParent);
 APIRET saymsg       (APIRET type,HWND hwnd,CHAR *title,CHAR *string,...);
 
 /* error.c */
-VOID General_Error  (HAB hab,HWND hwnd, PSZ ErrModule,LONG ErrLine,
+VOID General_Error  (HAB hab,HWND hwndOwner, PSZ ErrModule,LONG ErrLine,
                      CHAR *s,...);
-INT Dos_Error       (INT type,ULONG Error,HWND hwnd, PSZ ErrModule,
+INT Dos_Error       (INT type,ULONG Error,HWND hwndOwner, PSZ ErrModule,
                      LONG ErrLine,CHAR *s,...);
 
 /* valid.c */
@@ -700,11 +702,15 @@ APIRET save_dir (CHAR *curdir);
 APIRET switch_to (CHAR *s);
 
 /* strips.c */
-char * strip_lead_char (char *strip,char *a);
-char * strip_trail_char (char *strip,char *a);
+void strip_lead_char (char *pszStripChars,char *pszSrc);
+void strip_trail_char (char *pszStripChars,char *pszSrc);
 #define lstrip(s)         strip_lead_char(" \t",(s))
 #define rstrip(s)         strip_trail_char(" \t",(s))
 #define stripcr(s)        strip_trail_char("\r\n",(s))
+// Strip leading and trailing white
+#define bstrip(s)         (strip_lead_char(" \t",(s)),strip_trail_char(" \t",(s)))
+// Strip leading and trailing white and trail cr/nl
+#define bstripcr(s)       (strip_lead_char(" \t",(s)),strip_trail_char("\r\n \t",(s)))
 
 /* delims.c */
 char * skip_delim (char *a,register char *delim);
@@ -738,9 +744,9 @@ CHAR * searchapath (CHAR *path,CHAR *filename);
 CHAR * searchpath (CHAR *filename);
 
 /* literal.c */
-INT literal (CHAR *fsource);
-INT wildcard (const CHAR *fstra,const CHAR *fcarda,const BOOL notfile);
-CHAR * fixup (const CHAR *orig,CHAR *dest,const INT maxlen,const INT datalen);
+UINT literal(PSZ pszBuf);
+BOOL wildcard(const PSZ pszBuf,const PSZ pszWildCard,const BOOL fNotFileSpec);
+PSZ fixup (const PCH pachInBuf, PSZ pszOutBuf, const UINT cBufBytes, const UINT cInBytes);
 
 /* stristr.c */
 CHAR * stristr (const CHAR *t, const CHAR *s);
@@ -756,16 +762,7 @@ INT load_archivers (VOID);
 BOOL ArcDateTime (CHAR *dt,INT type,CDATE *cdate,CTIME *ctime);
 
 /* avv.c */
-CHAR * assign (CHAR *a,CHAR *b);
-CHAR * reassign_from_window (HWND hwnd,USHORT id,char *a);
-INT get_int_from_window (HWND hwnd,USHORT id);
-LONG get_long_from_window (HWND hwnd,USHORT id);
-CHAR * nonull (CHAR *a);
-VOID rewrite_archiverbb2 (CHAR *archiverbb2);
-CHAR * checkfile (CHAR *file,INT *error);
-ULONG checkfile2 (CHAR *file,INT *error);
-CHAR *checksayfile (HWND hwnd,CHAR *file,INT *error);
-INT check_archiver (HWND hwnd,ARC_TYPE *info);
+VOID rewrite_archiverbb2(CHAR *archiverbb2);
 MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 APIRET EditArchiverData (HWND hwnd,DIRCNRDATA *arc);
 
