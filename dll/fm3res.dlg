@@ -3,12 +3,13 @@
 
   $Id$
 
-  Dialog templaces
+  Dialog templates
 
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2003 Steven H.Levine
 
-  Revisions	08 Feb 03 SHL - Enable SYS_FRAME
+  Revisions 08 Feb 03 SHL - Enable SYS_FRAME
+            25 Nov 03 SHL - Rework ABT_FRAME
 
 ***********************************************************************/
 
@@ -945,14 +946,18 @@ BEGIN
         ICON            DID_OK, ABT_ICON, 79, 113, 21, 16, WS_GROUP
         ICON            5, ABT_STICK1, 57, 113, 21, 16
         ICON            10, ABT_STICK2, 101, 113, 21, 16
-        CTEXT           "FM/2 (File Manager/2)", ABT_PROGNAME, 12, 96, 164, 
+        CTEXT           "FM/2 (File Manager/2)", ABT_PROGNAME, 10, 92, 164, 
                         8, DT_VCENTER
-        CTEXT           "copyright (c) 1993-98", -1, 12, 87, 164, 8,
+        CTEXT           "copyright (c) 1993-98", -1, 10, 84, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "by M. Kimes (Barebones Software)", -1, 12, 77, 164, 
-                        8, DT_VCENTER | NOT WS_GROUP
-        CTEXT           "All rights reserved", -1, 12, 68, 164, 8, 
+        CTEXT           "M. Kimes (Barebones Software)", -1, 10, 76, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
+        CTEXT           "All rights reserved", -1, 10, 68, 164, 8, 
+                        DT_VCENTER | NOT WS_GROUP
+        CTEXT           "copyright (c) 1998, 2003", -1, 10, 60, 164, 8, 
+                        DT_VCENTER | NOT WS_GROUP
+        CTEXT           "Steven Levine and Associates, Inc.", -1, 10, 52, 
+                        164, 8, DT_VCENTER | NOT WS_GROUP
         DEFPUSHBUTTON   "", ABT_VERSION, 6, 6, 177, 14, WS_GROUP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00300000L
     END
