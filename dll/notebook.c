@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Configuration notebook
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -175,7 +189,7 @@ MRESULT EXPENTRY CfgADlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       PrfWriteProfileString(fmprof,appname,"DefArc",szDefArc);
       WinQueryDlgItemText(hwnd,CFGA_VIRUS,CCHMAXPATH,virus);
       virus[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(virus));
+      bstrip(virus);
       if(!*virus)
         strcpy(virus,"OS2SCAN.EXE %p /SUB /A");
       WinQueryDlgItemText(hwnd,
@@ -183,7 +197,7 @@ MRESULT EXPENTRY CfgADlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           CCHMAXPATH,
                           extractpath);
       extractpath[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(extractpath));
+      bstrip(extractpath);
       if(*extractpath) {
         if(strcmp(extractpath,"*")) {
 
@@ -430,22 +444,22 @@ MRESULT EXPENTRY CfgVDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     case WM_CLOSE:
       WinQueryDlgItemText(hwnd,CFGV_VIEWER,CCHMAXPATH,viewer);
       viewer[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(viewer));
+      bstrip(viewer);
       WinQueryDlgItemText(hwnd,CFGV_EDITOR,CCHMAXPATH,editor);
       editor[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(editor));
+      bstrip(editor);
       WinQueryDlgItemText(hwnd,CFGV_BINVIEW,CCHMAXPATH,binview);
       binview[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(binview));
+      bstrip(binview);
       WinQueryDlgItemText(hwnd,CFGV_BINED,CCHMAXPATH,bined);
       bined[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(bined));
+      bstrip(bined);
       WinQueryDlgItemText(hwnd,CFGV_FTPRUN,CCHMAXPATH,ftprun);
       ftprun[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(ftprun));
+      bstrip(ftprun);
       WinQueryDlgItemText(hwnd,CFGV_HTTPRUN,CCHMAXPATH,httprun);
       httprun[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(httprun));
+      bstrip(httprun);
       PrfWriteProfileString(fmprof,appname,"Viewer",viewer);
       PrfWriteProfileString(fmprof,appname,"Editor",editor);
       PrfWriteProfileString(fmprof,appname,"BinView",binview);
@@ -1088,7 +1102,7 @@ MRESULT EXPENTRY CfgCDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           CCHMAXPATH,
                           dircompare);
       dircompare[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(dircompare));
+      bstrip(dircompare);
       PrfWriteProfileString(fmprof,
                             appname,
                             "DirCompare",
@@ -1098,7 +1112,7 @@ MRESULT EXPENTRY CfgCDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           CCHMAXPATH,
                           compare);
       compare[CCHMAXPATH - 1] = 0;
-      lstrip(rstrip(compare));
+      bstrip(compare);
       PrfWriteProfileString(fmprof,
                             appname,
                             "Compare",

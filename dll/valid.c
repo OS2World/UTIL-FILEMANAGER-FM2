@@ -13,6 +13,7 @@
 		11 Jun 03 SHL - Add JFS and FAT32 support
 		15 Jun 04 SHL - Implement Jim Read's removable logic
 		31 Jul 04 SHL - Comments
+		01 Aug 04 SHL - Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -817,7 +818,7 @@ CHAR * assign_ignores (CHAR *s)
   }
   if(!pp[1])
     *pp = 0;
-  lstrip(rstrip(s));
+  bstrip(s);
   return s;
 }
 

@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -50,8 +62,7 @@ VOID load_cmdlines (BOOL big) {
       if(!fgets(s,sizeof(s),fp))
         break;
       s[sizeof(s) - 1] = 0;
-      stripcr(s);
-      lstrip(rstrip(s));
+      bstripcr(s);
       if(*s && *s != ';') {
         info = malloc(sizeof(LINKCLS));
         if(info) {
@@ -582,7 +593,7 @@ MRESULT EXPENTRY CmdLineDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     MPFROM2SHORT(x,
                                                  sizeof(cmdline)),
                                     MPFROMP(cmdline));
-                  lstrip(rstrip(cmdline));
+                  bstrip(cmdline);
                   if(*cmdline) {
                     WinSetDlgItemText(hwnd,
                                       EXEC_CL,
@@ -632,7 +643,7 @@ MRESULT EXPENTRY CmdLineDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(x,sizeof(cmdline)),
                                 MPFROMP(cmdline));
-              lstrip(rstrip(cmdline));
+              bstrip(cmdline);
               if(*cmdline) {
                 if(remove_cmdline(cmdline,TRUE) && fSaveBigCmds) {
                   save_cmdlines(TRUE);
@@ -828,7 +839,7 @@ MRESULT EXPENTRY CmdLine2DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   WinSendDlgItemMsg(hwnd,EXEC2_LISTBOX,LM_QUERYITEMTEXT,
                                     MPFROM2SHORT(x,1000),
                                     MPFROMP(cmdline));
-                  lstrip(rstrip(cmdline));
+                  bstrip(cmdline);
                   if(*cmdline)
                     WinDismissDlg(hwnd,1);
                 }
@@ -905,7 +916,7 @@ MRESULT EXPENTRY CmdLine2DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(x,sizeof(cmdline)),
                                 MPFROMP(cmdline));
-              lstrip(rstrip(cmdline));
+              bstrip(cmdline);
               if(*cmdline) {
                 if(remove_cmdline(cmdline,FALSE) && fSaveMiniCmds) {
                   save_cmdlines(FALSE);

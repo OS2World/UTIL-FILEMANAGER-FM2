@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -126,8 +138,7 @@ VOID load_associations (VOID) {
       if(!fgets(mask,CCHMAXPATH + 24,fp))
         break;
       mask[CCHMAXPATH] = 0;
-      stripcr(mask);
-      lstrip(rstrip(mask));
+      bstripcr(mask);
       if(!*mask || *mask == ';')
         continue;
       if(!fgets(cl,1024,fp) ||
@@ -139,14 +150,10 @@ VOID load_associations (VOID) {
       sig[CCHMAXPATH] = 0;
       offset[34] = 0;
       flags[34] = 0;
-      stripcr(cl);
-      stripcr(sig);
-      stripcr(offset);
-      stripcr(flags);
-      lstrip(rstrip(cl));
-      lstrip(rstrip(sig));
-      lstrip(rstrip(offset));
-      lstrip(rstrip(flags));
+      bstripcr(cl);
+      bstripcr(sig);
+      bstripcr(offset);
+      bstripcr(flags);
       if(!*cl)
         continue;
       info = malloc(sizeof(LINKASSOC));
@@ -671,8 +678,8 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               WinQueryDlgItemText(hwnd,ASS_OFFSET,sizeof(dummy),dummy);
               temp.offset = atol(dummy);
             }
-            lstrip(rstrip(temp.mask));
-            lstrip(rstrip(temp.cl));
+            bstrip(temp.mask);
+            bstrip(temp.cl);
             if(WinQueryButtonCheckstate(hwnd,ASS_DEFAULT))
               temp.flags = 0;
             else if(WinQueryButtonCheckstate(hwnd,ASS_FULLSCREEN))
@@ -696,8 +703,7 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
               *s = 0;
               WinQueryDlgItemText(hwnd,ASS_ENVIRON,1000,s);
-              stripcr(s);
-              lstrip(rstrip(s));
+              bstripcr(s);
               if(*s)
                 PrfWriteProfileString(fmprof,FM3Str,temp.cl,s);
               sprintf(s,"%-12s \x1a %-24s %s%s%s",temp.mask,
@@ -741,7 +747,7 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               WinQueryDlgItemText(hwnd,ASS_OFFSET,sizeof(dummy),dummy);
               temp.offset = atol(dummy);
             }
-            lstrip(rstrip(temp.mask));
+            bstrip(temp.mask);
             PrfWriteProfileData(fmprof,
                                 FM3Str,
                                 temp.mask,

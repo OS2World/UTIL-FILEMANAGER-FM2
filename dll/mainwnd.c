@@ -6,10 +6,11 @@
   Main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2004 Steven H.Levine
 
   Revisions	11 Jun 02 SHL - Drop obsolete xor code
 		16 Oct 02 SHL - Handle large partitions
+		01 Aug 04 SHL - Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -681,7 +682,7 @@ MRESULT EXPENTRY DropDownListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 				*path = 0;
 				WinQueryWindowText(hwnd,CCHMAXPATH,path);
-				lstrip(rstrip(path));
+				bstrip(path);
 // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Dragging: %s",path);
 				if(*path && !IsRoot(path))
 					DragOne(hwnd,(HWND)0,path,FALSE);
@@ -1649,7 +1650,7 @@ MRESULT EXPENTRY CommandLineProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 				strcat(cl," /C ");
 				len = strlen(cl);
 				WinQueryWindowText(hwnd,1000 - len,cl + len);
-				lstrip(rstrip(cl + len));
+				bstrip(cl + len);
 				if(strlen(cl) > len) {
           WinSendMsg(WinQueryWindow(hwnd,QW_PARENT),
                      UM_SETUP,
@@ -1658,7 +1659,7 @@ MRESULT EXPENTRY CommandLineProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           WinQueryWindowText(hwndStatus,
                              CCHMAXPATH,
                              directory);
-					lstrip(rstrip(directory));
+					bstrip(directory);
 					if(*directory && (IsRoot(directory) || !IsFile(directory))) {
 						if(!FM2Command(directory,cl + len)) {
 							hwndCnr = TopWindow(hwndMain,(HWND)0);
@@ -4690,7 +4691,7 @@ MRESULT EXPENTRY MainWMCommand (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         WinQueryWindowText(hwndUserlist,
                            CCHMAXPATH,
                            temp);
-        lstrip(rstrip(temp));
+        bstrip(temp);
         if(*temp &&
            !DosQueryPathInfo(temp,
                              FIL_QUERYFULLNAME,
@@ -4728,7 +4729,7 @@ MRESULT EXPENTRY MainWMCommand (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         *name = 0;
         WinQueryWindowText(hwndStatelist,13,name);
-        lstrip(rstrip(name));
+        bstrip(name);
         if(*name) {
           if(SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
             if(SaveDirCnrState(hwnd,name)) {
@@ -6500,7 +6501,7 @@ MRESULT EXPENTRY MainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 								WinQueryWindowText(WinWindowFromID(hwndUL,CBID_EDIT),
 																	 ((SHORT1FROMMP(mp1) == MAIN_USERLIST) ?
 																		CCHMAXPATH : 13),path);
-								lstrip(rstrip(path));
+								bstrip(path);
 								if(*path) {
 									if(SHORT1FROMMP(mp1) == MAIN_USERLIST) {
 										if(!strcmp(path,GetPString(IDS_NEWDIRECTORYTEXT))) {

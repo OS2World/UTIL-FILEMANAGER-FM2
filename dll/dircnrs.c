@@ -6,9 +6,10 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2004 Steven H.Levine
 
-  Revisions	16 Oct 02 SHL - Handle large partitions
+  Revisions	16 Oct 02 SHL Handle large partitions
+		01 Aug 04 SHL Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -1167,6 +1168,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 MRESULT EXPENTRY DirCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
+  ULONG ulrc;
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,0);
 
   switch(msg) {
@@ -1938,63 +1940,68 @@ KbdRetry:
               strcpy(filename,"NEWFILE.TXT");
               sip.ret = filename;
               sip.title = GetPString(IDS_CREATETITLETEXT);
-              if(WinDlgBox(HWND_DESKTOP,hwnd,InputDlgProc,FM3ModHandle,
-                           STR_FRAME,&sip) && *(lstrip(rstrip(sip.ret)))) {
+              if (WinDlgBox(HWND_DESKTOP,hwnd,InputDlgProc,FM3ModHandle,
+                           STR_FRAME,&sip))
+	     {
+                bstrip(sip.ret);
+                if (*sip.ret)
+		{
 
-                CHAR      newfile[CCHMAXPATH];
-                FILE     *fp;
-                INT       test;
-                PCNRITEM  pci;
+                  CHAR      newfile[CCHMAXPATH];
+                  FILE     *fp;
+                  INT       test;
+                  PCNRITEM  pci;
 
-                strcpy(newfile,dcd->directory);
-                if(newfile[strlen(newfile) - 1] != '\\')
-                  strcat(newfile,"\\");
-                strcat(newfile,sip.ret);
-                test = IsFile(newfile);
-                if(test != 1)
-                  fp = fopen(newfile,"w");
-                if(test == 1 || fp) {
-                  if(fp) {
-                    WinSendMsg(hwnd,
-                               UM_UPDATERECORD,
-                               MPFROMP(newfile),
-                               MPVOID);
-                    fclose(fp);
-                  }
-                  if(*editor) {
+                  strcpy(newfile,dcd->directory);
+                  if(newfile[strlen(newfile) - 1] != '\\')
+                    strcat(newfile,"\\");
+                  strcat(newfile,sip.ret);
+                  test = IsFile(newfile);
+                  if(test != 1)
+                    fp = fopen(newfile,"w");
+                  if(test == 1 || fp) {
+                    if(fp) {
+                      WinSendMsg(hwnd,
+                                 UM_UPDATERECORD,
+                                 MPFROMP(newfile),
+                                 MPVOID);
+                      fclose(fp);
+                    }
+                    if(*editor) {
 
-                    CHAR *dummy[2];
+                      CHAR *dummy[2];
 
-                    dummy[0] = newfile;
-                    dummy[1] = NULL;
-                    ExecOnList(hwnd,
-                               editor,
-                               WINDOWED | SEPARATE,
-                               NULL,
-                               dummy,
-                               NULL);
+                      dummy[0] = newfile;
+                      dummy[1] = NULL;
+                      ExecOnList(hwnd,
+                                 editor,
+                                 WINDOWED | SEPARATE,
+                                 NULL,
+                                 dummy,
+                                 NULL);
+                    }
+                    else
+                      StartMLEEditor(dcd->hwndParent,
+                                     4,
+                                     newfile,
+                                     dcd->hwndFrame);
+                    pci = FindCnrRecord(hwnd,
+                                        newfile,
+                                        NULL,
+                                        TRUE,
+                                        FALSE,
+                                        TRUE);
+                    if(pci && (INT)pci != -1)
+                      /* make sure that record shows in viewport */
+                      ShowCnrRecord(hwnd,(PMINIRECORDCORE)pci);
                   }
                   else
-                    StartMLEEditor(dcd->hwndParent,
-                                   4,
-                                   newfile,
-                                   dcd->hwndFrame);
-                  pci = FindCnrRecord(hwnd,
-                                      newfile,
-                                      NULL,
-                                      TRUE,
-                                      FALSE,
-                                      TRUE);
-                  if(pci && (INT)pci != -1)
-                    /* make sure that record shows in viewport */
-                    ShowCnrRecord(hwnd,(PMINIRECORDCORE)pci);
+                    saymsg(MB_ENTER,
+                           hwnd,
+                           GetPString(IDS_ERRORTEXT),
+                           GetPString(IDS_CREATEERRORTEXT),
+                           newfile);
                 }
-                else
-                  saymsg(MB_ENTER,
-                         hwnd,
-                         GetPString(IDS_ERRORTEXT),
-                         GetPString(IDS_CREATEERRORTEXT),
-                         newfile);
               }
             }
             break;
@@ -3400,7 +3407,7 @@ KbdRetry:
                 p = strchr(szData,'\r');
                 if(p)
                   *p = 0;
-                lstrip(rstrip(szData));
+                bstrip(szData);
                 if(*szData) {
                   if(!DosQueryPathInfo(szData,
                                        FIL_QUERYFULLNAME,

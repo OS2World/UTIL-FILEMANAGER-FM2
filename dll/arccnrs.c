@@ -3,13 +3,14 @@
 
   $Id$
 
-  Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
-
   Archive containers
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2004 Steven H.Levine
 
   Revisions	11 Jun 02 SHL - Ensure archive name not garbage
   		22 May 03 SHL - ArcObjWndProc: fix UM_RESCAN now that we understand it
+		01 Aug 04 SHL - Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -396,7 +397,7 @@ ReTry:
           gotend = TRUE;
         else {    /* add to container */
           fname = NULL;
-          lstrip(rstrip(s));
+          bstrip(s);
           if(info->nameisfirst) {
             strncpy(lonename,s,CCHMAXPATH + 2);
             lonename[CCHMAXPATH + 1] = 0;
@@ -404,8 +405,7 @@ ReTry:
             if(!fgets(s,CCHMAXPATH * 2,fp))
               break;
             s[(CCHMAXPATH * 2) - 1] = 0;
-            stripcr(s);
-            lstrip(rstrip(s));
+            bstripcr(s);
             if(*fname == '\"') {
               memmove(fname,fname + 1,strlen(fname) + 1);
               p = strchr(fname,'\"');
@@ -490,8 +490,7 @@ ReTry:
             if(!fgets(lonename,CCHMAXPATH + 2,fp))
               break;
             lonename[CCHMAXPATH + 1] = 0;
-            stripcr(lonename);
-            lstrip(rstrip(lonename));
+            bstripcr(lonename);
             fname = lonename;
           }
           if(fname && *fname) {
@@ -1273,9 +1272,9 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       if(dcd) {
         /* set unique id */
         WinSetWindowUShort(hwnd,QWS_ID,ARCOBJ_FRAME + (ARC_FRAME - dcd->id));
-        dcd->hwndObject = hwnd;
+        dcd->hwndObject = hwnd;		// pass back hwnd
         if(ParentIsDesktop(hwnd,dcd->hwndParent))
-          DosSleep(250L);
+          DosSleep(250L);		// Avoid race?
       }
       else
         PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
@@ -2452,7 +2451,7 @@ KbdRetry:
                             ARC_EXTRACTDIR,
                             CCHMAXPATH,
                             s);
-        lstrip(rstrip(s));
+        bstrip(s);
         MakeFullName(s);
         if(*s) {
           while((p = strchr(s,'/')) != NULL)

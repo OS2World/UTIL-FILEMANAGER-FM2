@@ -6,10 +6,11 @@
   System Interfaces
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2004 Steven H.Levine
 
   Revisions	21 Nov 03 SHL - Comments
   		31 Jul 04 SHL - Indent -i2
+		01 Aug 04 SHL - Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -73,7 +74,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
   if (!command || !*command)
     return -1;
   *listfile = 0;
-  lstrip(rstrip(command));
+  bstrip(command);
 
   *path = 0;
   if (tpath && *tpath)

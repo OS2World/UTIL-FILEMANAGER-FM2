@@ -1,8 +1,16 @@
-/**************************************************************************/
-/*                  MLE text editor/viewer source code                    */
-/*                   copyright (c) 1993-97 by M. Kimes                    */
-/*                        All rights reserved                             */
-/**************************************************************************/
+
+/***********************************************************************
+
+  $Id$
+
+  MLE text editor/viewer
+
+  Copyright (c) 1993-97 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
 
 /* MLE support functions */
 
@@ -159,8 +167,7 @@ VOID MLEinternet (HWND h,BOOL ftp) {
         if(len > oldlen)
           len--;
         temp[len] = 0;
-        stripcr(temp);
-        lstrip(rstrip(temp));
+        bstripcr(temp);
         if(*temp) {
           if(ftp && *ftprun)
             runemf2(SEPARATE | WINDOWED,

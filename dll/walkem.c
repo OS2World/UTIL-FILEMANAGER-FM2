@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -135,8 +147,7 @@ VOID load_udirs (VOID) {
       if(!fgets(s,CCHMAXPATH + 24,fp))
         break;
       s[CCHMAXPATH] = 0;
-      stripcr(s);
-      lstrip(rstrip(s));
+      bstripcr(s);
       if(*s && *s != ';') {
         info = malloc(sizeof(LINKDIRS));
         if(info) {
@@ -859,7 +870,7 @@ MRESULT EXPENTRY WalkDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             HDIR         hDir;
             APIRET       rc;
 
-            lstrip(rstrip(szBuffer));
+            bstrip(szBuffer);
             if(*szBuffer) {
               strcpy(szBuff,wa->szCurrentPath);
               if(szBuff[strlen(szBuff) - 1] != '\\')
@@ -916,7 +927,7 @@ MRESULT EXPENTRY WalkDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           WALK_PATH,
                           CCHMAXPATH,
                           szBuff);
-      lstrip(rstrip(szBuff));
+      bstrip(szBuff);
       while((p = strchr(szBuff,'/')) != NULL)
         *p = '\\';
       while(strlen(szBuff) > 3 &&
@@ -945,7 +956,7 @@ MRESULT EXPENTRY WalkDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                               WALK_PATH,
                               CCHMAXPATH,
                               szBuff);
-          lstrip(rstrip(szBuff));
+          bstrip(szBuff);
           while((p = strchr(szBuff,'/')) != NULL)
             *p = '\\';
           if(*szBuff &&
@@ -968,7 +979,7 @@ MRESULT EXPENTRY WalkDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         case WALK_DELETE:
           *szBuff = 0;
           WinQueryDlgItemText(hwnd,WALK_PATH,CCHMAXPATH,szBuff);
-          lstrip(rstrip(szBuff));
+          bstrip(szBuff);
           while((p = strchr(szBuff,'/')) != NULL)
             *p = '\\';
           if(*szBuff &&
@@ -1300,7 +1311,7 @@ MRESULT EXPENTRY WalkTwoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             HDIR         hDir;
             APIRET       rc;
 
-            lstrip(rstrip(szBuffer));
+            bstrip(szBuffer);
             if(*szBuffer) {
               strcpy(szBuff,wa->szCurrentPath1);
               if(szBuff[strlen(szBuff) - 1] != '\\')
@@ -1369,7 +1380,7 @@ MRESULT EXPENTRY WalkTwoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             HDIR         hDir;
             APIRET       rc;
 
-            lstrip(rstrip(szBuffer));
+            bstrip(szBuffer);
             if(*szBuffer) {
               strcpy(szBuff,wa->szCurrentPath2);
               if(szBuff[strlen(szBuff) - 1] != '\\')
@@ -1419,7 +1430,7 @@ MRESULT EXPENTRY WalkTwoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           WALK_PATH,
                           CCHMAXPATH,
                           szBuff);
-      lstrip(rstrip(szBuff));
+      bstrip(szBuff);
       while((p = strchr(szBuff,'/')) != NULL)
         *p = '\\';
       while(strlen(szBuff) > 3 &&
@@ -1445,7 +1456,7 @@ MRESULT EXPENTRY WalkTwoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           WALK2_PATH,
                           CCHMAXPATH,
                           szBuff);
-      lstrip(rstrip(szBuff));
+      bstrip(szBuff);
       while((p = strchr(szBuff,'/')) != NULL)
         *p = '\\';
       while(strlen(szBuff) > 3 &&

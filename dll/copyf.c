@@ -6,12 +6,13 @@
   Copy functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2004 Steven H.Levine
 
-  Revisions	14 Sep 02 SHL - Drop obsolete debug code
-		14 Oct 02 SHL - Drop obsolete debug code
-		10 Nov 02 SHL - docopyf - don't forget to terminate longname
-					  optimize longname logic
+  Revisions	14 Sep 02 SHL Drop obsolete debug code
+		14 Oct 02 SHL Drop obsolete debug code
+		10 Nov 02 SHL docopyf - don't forget to terminate longname
+					optimize longname logic
+		01 Aug 04 SHL Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -287,7 +288,7 @@ BOOL WriteLongName (CHAR *filename,CHAR *longname) {
     memmove(longname,
             p + 1,
             strlen(p + 1) + 1);
-  lstrip(rstrip(longname));
+  bstrip(longname);
   len = strlen(longname);
   if(len)
     ealen = sizeof(FEA2LIST) + 10 + len + 4;

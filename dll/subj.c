@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -80,7 +92,7 @@ INT Subject (HWND hwnd,CHAR *filename) {
      && isalpha(*filename) &&
      !(driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE)) {
     subject[39] = 0;
-    lstrip(rstrip(subject));
+    bstrip(subject);
     if(strcmp(oldsubject,subject)) {
 
       ULONG    ealen;

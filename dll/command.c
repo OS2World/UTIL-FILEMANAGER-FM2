@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -316,8 +328,7 @@ VOID load_commands (VOID) {
       if(!fgets(title,100,fp))
         break;
       title[34] = 0;
-      stripcr(title);
-      lstrip(rstrip(title));
+      bstripcr(title);
       if(!*title || *title == ';')
         continue;
       if(!fgets(cl,1024,fp) ||
@@ -325,10 +336,8 @@ VOID load_commands (VOID) {
         break;                       /* error! */
       cl[1000] = 0;
       flags[34] = 0;
-      stripcr(cl);
-      stripcr(flags);
-      lstrip(rstrip(cl));
-      lstrip(rstrip(flags));
+      bstripcr(cl);
+      bstripcr(flags);
       if(!*cl)
         continue;
       info = malloc(sizeof(LINKCMDS));
@@ -652,7 +661,7 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 CMD_CL,
                                 sizeof(temp.cl),
                                 temp.cl);
-            lstrip(rstrip(temp.cl));
+            bstrip(temp.cl);
             WinQueryDlgItemText(hwnd,CMD_TITLE,sizeof(temp.title),temp.title);
             if(WinQueryButtonCheckstate(hwnd,CMD_DEFAULT))
               temp.flags = 0;
@@ -680,8 +689,7 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     CMD_ENVIRON,
                                     1000,
                                     env);
-                stripcr(env);
-                lstrip(rstrip(env));
+                bstripcr(env);
                 if(*env)
                   PrfWriteProfileString(fmprof,
                                         FM3Str,
@@ -717,7 +725,7 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             CHAR temp[34];
 
             WinQueryDlgItemText(hwnd,CMD_TITLE,34,temp);
-            lstrip(rstrip(temp));
+            bstrip(temp);
             if(kill_command(temp)) {
               x = (SHORT)WinSendDlgItemMsg(hwnd,
                                            CMD_LISTBOX,

@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -538,7 +550,7 @@ MRESULT EXPENTRY PrintDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   (PVOID)&prnspacing,
                                   sizeof(prnspacing));
               WinQueryDlgItemText(hwnd,PRN_PRINTER,sizeof(printer),printer);
-              lstrip(rstrip(printer));
+              bstrip(printer);
               if(!*printer)
                 strcpy(printer,"PRN");
               WinSetDlgItemText(hwnd,PRN_PRINTER,printer);

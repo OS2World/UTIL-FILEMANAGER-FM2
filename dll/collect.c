@@ -6,10 +6,11 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2004 Steven H.Levine
 
-  Revisions	15 Oct 02 MK - Baseline
-		10 Jan 04 SHL - Avoid -1L byte counts
+  Revisions	15 Oct 02 MK Baseline
+		10 Jan 04 SHL Avoid -1L byte counts
+		01 Aug 04 SHL Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -696,8 +697,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
             if(!fgets(fullname,1024,fp))
               break;
             fullname[1023] = 0;
-            stripcr(fullname);
-            lstrip(rstrip(fullname));
+            bstripcr(fullname);
             if(*fullname == '\"') {
               memmove(fullname,fullname + 1,strlen(fullname) + 1);
               lstrip(fullname);

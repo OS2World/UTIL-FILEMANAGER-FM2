@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -104,6 +116,7 @@ MRESULT EXPENTRY InstantDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 lstrip(bat);
                 while(strlen(bat) && bat[strlen(bat) - 1] == '\n' ||
                       bat[strlen(bat) - 1] == ' ') {
+		  // fixme to understand
                   stripcr(bat);
                   rstrip(bat);
                   stripcr(bat);

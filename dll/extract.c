@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 
@@ -262,7 +274,7 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             fRemember = WinQueryButtonCheckstate(hwnd,EXT_REMEMBER);
             *s = 0;
             WinQueryDlgItemText(hwnd,EXT_DIRECTORY,CCHMAXPATH,s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(*s) {
               if(!SetDir(WinQueryWindow(WinQueryWindow(hwnd,QW_PARENT),
                          QW_OWNER),hwnd,s,0)) {

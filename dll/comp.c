@@ -6,10 +6,11 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2004 Steven H.Levine
 
-  Revisions	16 Oct 02 MK - Baseline
-		04 Nov 03 SHL - Force window refresh after subdir toggle
+  Revisions	16 Oct 02 MK Baseline
+		04 Nov 03 SHL Force window refresh after subdir toggle
+		01 Aug 04 SHL Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -819,7 +820,7 @@ static VOID FillCnrs (VOID *args) {
             if(!fgets(str,sizeof(str) - 1,fp))
               break;
             str[sizeof(str) - 1] = 0;
-            lstrip(rstrip(str));
+            bstrip(str);
             p = str;
             if(*p == '\"') {
               p++;
@@ -859,7 +860,7 @@ static VOID FillCnrs (VOID *args) {
               if(!fgets(str,sizeof(str) - 1,fp))
                 break;
               str[sizeof(str) - 1] = 0;
-              lstrip(rstrip(str));
+              bstrip(str);
               p = str;
               if(*p == '\"') {
                 p++;
@@ -1849,7 +1850,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   p = strchr(szData,'\r');
                   if(p)
                     *p = 0;
-                  lstrip(rstrip(szData));
+                  bstrip(szData);
                   if(*szData) {
                     if(!DosQueryPathInfo(szData,
                                          FIL_QUERYFULLNAME,

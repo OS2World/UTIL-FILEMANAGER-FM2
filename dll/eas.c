@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -100,7 +112,7 @@ MRESULT EXPENTRY AddEAProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             *s = 0;
             WinQueryDlgItemText(hwnd,EAC_NAME,255,s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(!*s)
               WinDismissDlg(hwnd,0);
             else {

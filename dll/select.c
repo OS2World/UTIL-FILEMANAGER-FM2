@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -90,8 +102,7 @@ VOID SelectList (HWND hwndCnr,BOOL partial,BOOL deselect,BOOL clearfirst,
         if(!fgets(input,1024,fp))
           break;
         input[1023] = 0;
-        stripcr(input);
-        lstrip(rstrip(input));
+        bstripcr(input);
         if(*input == '\"') {
           memmove(input,input + 1,strlen(input) + 1);
           lstrip(input);

@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 /* offset 107:  title of INF file */
 
 #define INCL_DOS
@@ -70,7 +82,7 @@ Repeat:
             strcat(holdenv,";");
           p = strtok(holdenv,";");
           while(p) {
-            lstrip(rstrip(p));
+            bstrip(p);
             if(*p) {
 
               CHAR         mask[CCHMAXPATH],*enddir,text[CCHMAXPATH * 2];
@@ -110,7 +122,7 @@ Repeat:
                       fseek(fp,107L,SEEK_SET);
                       fread(title,1,CCHMAXPATH - 2,fp);
                       title[CCHMAXPATH - 3] = 0;
-                      lstrip(rstrip(title));
+                      bstrip(title);
                       fclose(fp);
                     }
                     p = strchr(ffb.achName,'.');
@@ -333,7 +345,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     VINF_ENTRY,
                                     CCHMAXPATH,
                                     szBuffer);
-                lstrip(rstrip(szBuffer));
+                bstrip(szBuffer);
                 sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
                                                    VINF_LISTBOX,
                                                    LM_SEARCHSTRING,
@@ -526,7 +538,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 VINF_ENTRY,
                                 1000,
                                 szBuffer);
-            lstrip(rstrip(szBuffer));
+            bstrip(szBuffer);
             PrfWriteProfileData(fmprof,
                                 FM3Str,
                                 key,
@@ -568,7 +580,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 if(!p)
                   break;
                 p++;
-                  lstrip(rstrip(p));
+                  bstrip(p);
                 if(*p)
                   ViewHelp(p);
                 else
@@ -593,7 +605,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   p = strchr(text,'>');
                   if(p) {
                     p++;
-                    lstrip(rstrip(p));
+                    bstrip(p);
                     if(*p) {
                       if(notfirst)
                         fprintf(fp,"+");
@@ -612,7 +624,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     VINF_TOPIC,
                                     CCHMAXPATH * 2,
                                     text);
-                lstrip(rstrip(text));
+                bstrip(text);
                 fprintf(fp,
                         "\nVIEW FM2REF%s%s\nDEL %s\n",
                         (*text) ? " " : NullStr,

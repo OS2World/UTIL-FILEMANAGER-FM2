@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  archiver.bb2 loader and utilities
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 
@@ -133,9 +147,7 @@ INT load_archivers (VOID) {
   p = strchr(s,';');
   if(p)
     *p = 0;
-  stripcr(s);
-  lstrip(s);
-  rstrip(s);
+  bstripcr(s);
   if(*s)
     numlines = atoi(s);
   if(!*s || numlines < NUMLINES)
@@ -145,10 +157,8 @@ INT load_archivers (VOID) {
       break;
     p = strchr(s,';');
     if(p)
-      *p = 0;
-    stripcr(s);
-    lstrip(s);
-    rstrip(s);
+      *p = 0;				// Chop comment
+    bstripcr(s);
     if(*s) {
       info = malloc(sizeof(ARC_TYPE));
       if(!info)
@@ -163,9 +173,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->ext = strdup(s);
       else
@@ -181,9 +189,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->list = strdup(s);
       else
@@ -195,9 +201,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->extract = strdup(s);
       else
@@ -207,9 +211,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->exwdirs = strdup(s);
       else
@@ -219,9 +221,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->test = strdup(s);
       else
@@ -231,9 +231,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->create = strdup(s);
       else
@@ -242,10 +240,8 @@ INT load_archivers (VOID) {
         break;
       p = strchr(s,';');
       if(p)
-        *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+        *p = 0;				// Chop comment
+      bstripcr(s);
       if(*s)
         info->createwdirs = strdup(s);
       else
@@ -255,9 +251,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->createrecurse = strdup(s);
       else
@@ -267,9 +261,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->move = strdup(s);
       else
@@ -279,9 +271,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       if(*s)
         info->movewdirs = strdup(s);
       else
@@ -291,9 +281,7 @@ INT load_archivers (VOID) {
       p = strchr(s,';');
       if(p)
         *p = 0;
-      stripcr(s);
-      lstrip(s);
-      rstrip(s);
+      bstripcr(s);
       info->delete = strdup(s);
       if(!fgets(s,256,handle))
         break;

@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Archive create/update dialog procedure
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 
@@ -15,8 +29,8 @@
 #pragma alloc_text(FMARCHIVE,ArchiveDlgProc)
 
 
-MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   DIRCNRDATA  *arcdata = NULL;
 
   switch(msg) {
@@ -184,7 +198,7 @@ MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             *s = 0;
             WinQueryDlgItemText(hwnd,ARCH_ARCNAME,CCHMAXPATH,s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(*s) {
               if(DosQueryPathInfo(s,
                                   FIL_QUERYFULLNAME,
@@ -229,7 +243,7 @@ MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             *s = 0;
             WinQueryDlgItemText(hwnd,ARCH_ARCNAME,CCHMAXPATH,s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(DosQueryPathInfo(s,
                                 FIL_QUERYFULLNAME,
                                 arcname,
@@ -257,7 +271,7 @@ MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             *s = 0;
             WinQueryDlgItemText(hwnd,ARCH_COMMAND,256,s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(*s) {
               p = strchr(s,' ');
               if(p)

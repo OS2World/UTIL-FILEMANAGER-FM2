@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  String strippers
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #include <os2.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,31 +19,30 @@
 
 #pragma alloc_text(MISC8,strip_trail_char,strip_lead_char)
 
+void strip_trail_char (char *pszStripChars,char *pszSrc) {
 
-char * strip_trail_char (char *strip,char *a) {
+  char *psz;
 
-  register char *p;
-
-  if(a && *a && strip && *strip) {
-    p = &a[strlen(a) - 1];
-    while (*a && strchr(strip,*p) != NULL) {
-      *p = 0;
-      p--;
+  if(pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
+    psz = pszSrc + strlen(pszSrc) - 1;
+    // while not empty and tail char in strip list
+    while (*pszSrc && strchr(pszStripChars,*psz) != NULL) {
+      *psz = 0;
+      psz--;
     }
   }
-  return a;
 }
 
-char * strip_lead_char (char *strip,char *a) {
+void strip_lead_char (char *pszStripChars,char *pszSrc) {
 
-  register char *p = a;
+  char *psz = pszSrc;
 
-  if(a && *a && strip && *strip) {
-    while(*p && strchr(strip,*p) != NULL)
-      p++;
-    if(p != a)
-      memmove(a,p,strlen(p) + 1);
+  if(pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
+    // while lead char in strip list
+    while(*psz && strchr(pszStripChars,*psz) != NULL)
+      psz++;
+    if(psz != pszSrc)
+      memmove(pszSrc,psz,strlen(psz) + 1);
   }
-  return a;
 }
 

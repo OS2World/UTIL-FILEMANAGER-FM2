@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 
@@ -114,8 +126,7 @@ VOID load_masks (VOID) {
       if(!fgets(s,sizeof(s),fp))
         break;
       s[sizeof(s) - 1] = 0;
-      stripcr(s);
-      lstrip(rstrip(s));
+      bstripcr(s);
       if(*s && *s != ';') {
         info = malloc(sizeof(LINKMASKS));
         if(info) {
@@ -567,7 +578,7 @@ MRESULT EXPENTRY PickMaskDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 CCHMAXPATH,
                                 test);
             test[CCHMAXPATH - 1] = 0;
-            lstrip(rstrip(test));
+            bstrip(test);
             if(SHORT1FROMMP(mp1) == DID_OK) {
               mask->attrFile = (WinQueryButtonCheckstate(hwnd,MSK_SYSTEM) * FILE_SYSTEM) |
                                (WinQueryButtonCheckstate(hwnd,MSK_HIDDEN) * FILE_HIDDEN) |

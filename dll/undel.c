@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOSERRORS
 #define INCL_DOS
 #define INCL_WIN
@@ -88,8 +100,7 @@ VOID FillUndelList (VOID *arg) {
         strset(s,0);
         if(!fgets(s,CCHMAXPATH + 2,fp))
           break;
-        stripcr(s);
-        lstrip(rstrip(s));
+        bstripcr(s);
         if(*s) {
           if(!strnicmp(s,"SYS3194: ",9)) {
 
@@ -200,7 +211,7 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                               UNDEL_ENTRY,
                               sizeof(undelinfo->path),
                               undelinfo->path);
-          lstrip(rstrip(undelinfo->path));
+          bstrip(undelinfo->path);
           MakeFullName(undelinfo->path);
           undelinfo->inclsubdirs = WinQueryButtonCheckstate(hwnd,
                                                             UNDEL_SUBDIRS);

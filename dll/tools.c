@@ -1,7 +1,16 @@
-/**************************************************************************/
-/* Toolbar support routines for FM/2                                      */
-/* copyright (c) 1994-97 by M. Kimes -- all rights reserved               */
-/**************************************************************************/
+
+/***********************************************************************
+
+  $Id$
+
+  Toolbar support routines for FM/2
+
+  Copyright (c) 1994-97 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
@@ -50,8 +59,7 @@ VOID load_quicktools (VOID) {
       if(!fgets(s,CCHMAXPATH + 2,fp))
         break;
       s[CCHMAXPATH - 1] = 0;
-      stripcr(s);
-      lstrip(rstrip(s));
+      bstripcr(s);
       if(*s && *s != ';') {
         quicktool[x] = strdup(s);
         if(quicktool[x])

@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -350,7 +362,7 @@ MRESULT EXPENTRY RenameProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 REN_TARGET,
                                 CCHMAXPATH,
                                 mv->target);
-            lstrip(rstrip(mv->target));
+            bstrip(mv->target);
             mr = WinSendMsg(hwnd,
                             UM_RESCAN,
                             MPVOID,

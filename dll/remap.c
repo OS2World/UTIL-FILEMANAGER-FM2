@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_DOS
 
@@ -57,8 +69,7 @@ VOID load_resources (VOID) {
       if(!fgets(s,sizeof(s),fp))
         break;
       s[sizeof(s) - 1] = 0;
-      stripcr(s);
-      lstrip(rstrip(s));
+      bstripcr(s);
       if(*s && *s != ';') {
         info = malloc(sizeof(LINKRES));
         if(info) {
@@ -486,7 +497,7 @@ info->failedonce = TRUE;
                                 LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(x,sizeof(resource)),
                                 MPFROMP(resource));
-              lstrip(rstrip(resource));
+              bstrip(resource);
               if(*resource) {
                 if(remove_resource(resource)) {
                   save_resources();
@@ -540,7 +551,7 @@ info->failedonce = TRUE;
                                 MAP_ATTACHTO,
                                 sizeof(s),
                                 s);
-            lstrip(rstrip(s));
+            bstrip(s);
             x = (SHORT)WinSendDlgItemMsg(hwnd,
                                          MAP_DETACHLIST,
                                          LM_QUERYSELECTION,
@@ -670,7 +681,7 @@ info->failedonce = TRUE;
                                 MAP_ATTACHTO,
                                 sizeof(s),
                                 s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(*s) {
               x = (SHORT)WinSendDlgItemMsg(hwnd,
                                            MAP_ATTACHLIST,

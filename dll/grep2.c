@@ -1,3 +1,15 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -92,7 +104,7 @@ MRESULT EXPENTRY EnvDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     LM_QUERYITEMTEXT,
                                     MPFROM2SHORT(sSelect,CCHMAXPATH),
                                     MPFROMP(s));
-                  lstrip(rstrip(s));
+                  bstrip(s);
                   if(*s)
                     WinSetDlgItemText(hwnd,
                                       ENV_NAME,
@@ -124,7 +136,7 @@ MRESULT EXPENTRY EnvDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   ENV_NAME,
                                   CCHMAXPATH,
                                   p);
-              lstrip(rstrip(p));
+              bstrip(p);
               if(*p) {
                 strcpy(lastenv,p);
                 WinDismissDlg(hwnd,1);
@@ -245,8 +257,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           while(!feof(fp)) {
             if(!fgets(s,8192 + 4,fp))
               break;
-            stripcr(s);
-            lstrip(rstrip(s));
+            bstripcr(s);
             if(*s && *s != ';')
               WinSendDlgItemMsg(hwnd,
                                 GREP_LISTBOX,
@@ -308,7 +319,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     GREP_MASK,
                                     8192,
                                     s);
-                lstrip(rstrip(s));
+                bstrip(s);
                 p = strrchr(s,'\\');
                 if(p)
                   strcpy(simple,p);
@@ -401,7 +412,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                         GREP_MASK,
                                         8192,
                                         s);
-                    lstrip(rstrip(s));
+                    bstrip(s);
                     if(*s && strlen(s) < 8190 && s[strlen(s) - 1] != ';')
                       strcat(s,";");
                   }
@@ -410,7 +421,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     LM_QUERYITEMTEXT,
                                     MPFROM2SHORT(sSelect,8192 - strlen(s)),
                                     MPFROMP(s + strlen(s)));
-                  lstrip(rstrip(s));
+                  bstrip(s);
                   if(*s)
                     WinSetDlgItemText(hwnd,
                                       GREP_MASK,
@@ -517,13 +528,16 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             LONG          len;
 
             *path = 0;
-            if(!WinDlgBox(HWND_DESKTOP,
-                          hwnd,
-                          EnvDlgProc,
-                          FM3ModHandle,
-                          ENV_FRAME,
-                          path) ||
-               !*(lstrip(rstrip(path))))
+            if (!WinDlgBox(HWND_DESKTOP,
+                           hwnd,
+                           EnvDlgProc,
+                           FM3ModHandle,
+                           ENV_FRAME,
+                           path)) {
+              break;
+	    }
+            bstrip(path);
+            if (!*path)
               break;
             if(!stricmp(path,"LIBPATH"))
               LoadLibPath(env,8192);
@@ -533,14 +547,14 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 break;
               strcpy(env,p);
             }
-            lstrip(rstrip(env));
+            bstrip(env);
             if(!*env)
               break;
             WinQueryDlgItemText(hwnd,
                                 GREP_MASK,
                                 8192,
                                 s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(strlen(s) > 8192 - 5) {
               DosBeep(50,100);
               break;
@@ -564,7 +578,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               t = strchr(path,';');
               if(t)
                 *t = 0;
-              lstrip(rstrip(path));
+              bstrip(path);
               if(isalpha(*path) && path[1] == ':' && path[2] == '\\') {
                 if(strlen(s) > (8192 - len) - (strlen(path) + 1)) {
                   WinSetDlgItemText(hwnd,
@@ -613,7 +627,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 GREP_MASK,
                                 8192,
                                 s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(strlen(s) > 8192 - 5) {
               DosBeep(50,100);
               break;
@@ -682,7 +696,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 GREP_MASK,
                                 8192,
                                 s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(*s) {
               sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
                                                  GREP_LISTBOX,
@@ -941,7 +955,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 GREP_MASK,
                                 8192,
                                 str);
-            lstrip(rstrip(str));
+            bstrip(str);
             if(!*str) {
               DosBeep(50,100);
               WinSetFocus(HWND_DESKTOP,
@@ -1090,7 +1104,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     LM_QUERYITEMTEXT,
                                     MPFROM2SHORT(x,8192),
                                     MPFROMP(s));
-                  lstrip(rstrip(s));
+                  bstrip(s);
                   if(*s)
                     fprintf(fp,"%s\n",s);
                 }

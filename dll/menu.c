@@ -1,7 +1,16 @@
-/**************************************************************************/
-/* Custom menu support routines for FM/2                                  */
-/* copyright (c) 1996 by M. Kimes -- all rights reserved                  */
-/**************************************************************************/
+
+/***********************************************************************
+
+  $Id$
+
+  Custom menu support routines for FM/2
+
+  Copyright (c) 1996-98 M. Kimes
+  Copyright (c) 2004 Steven H.Levine
+
+  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+
+***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
@@ -82,8 +91,7 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu) {
       if(!fgets(s,256,fp))
         break;
       lines++;
-      stripcr(s);
-      lstrip(rstrip(s));
+      bstripcr(s);
       if(!*s || *s == ';')
         continue;
       if(tokenize(s,3,tokens) == 3 && (USHORT)atoi(tokens[1])) {

@@ -6,10 +6,11 @@
   Info window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2004 Steven H.Levine
 
   Revisions	16 Oct 02 SHL - Handle large partitions
 		12 Feb 03 SHL - FileInfoProc: standardize EA math
+		01 Aug 04 SHL - Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -311,7 +312,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 INFO_LABEL,
                                 CCHMAXPATHCOMP,
                                 s);
-            lstrip(rstrip(s));
+            bstrip(s);
             if(*s) {
               struct {
                 ULONG serial;
