@@ -3,6 +3,7 @@
 
 # Revisions:	22 May 03 SHL - Correct icon dependencies
 #		21 Nov 03 SHL - Correct ipf dependents
+#		26 Jul 04 SHL - Correct CFLAGSR
 
 # Environment:
 
@@ -21,7 +22,8 @@ DEBUG = 0
 !ENDIF
 
 CFLAGS =  /G5 /Ge- /Gm+ /Gs- /Gt- /Mp /O- /Q+ /Sp4 /Ss /Ti+ /W3
-CFLAGSR = /G5 /Ge- /Gm+ /Gs+ /O+ /Rn /Ss /W3
+# for fm3res only
+CFLAGSR = /G5 /Ge- /Gs+ /O+ /Rn /Ss /W3
 
 !IF $(DEBUG)
 LFLAGS = /DE /ALIGN:4 /EXEPACK:2 /NOI /MAP /NOE
