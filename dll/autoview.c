@@ -1,3 +1,19 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Auto view
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	12 Sep 02 SHL - AutoObjProc: catch buff2 overflows
+		25 Oct 02 SHL - CreateHexDump: catch buffer overflow
+
+***********************************************************************/
+
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -191,56 +207,62 @@ BOOL PutComments (HWND hwnd,CHAR *filename,CHAR *comments) {
 }
 
 
-ULONG CreateHexDump (CHAR *value,ULONG cbValue,CHAR *ret,ULONG retlen,
-                     ULONG startval,BOOL longlead) {
+ULONG CreateHexDump (CHAR *pchInBuf,ULONG cbInBuf,
+		     CHAR *pchOutBuf,ULONG cbOutBuf,
+                     ULONG cOffset,BOOL fLongAddr)
+{
+  register CHAR  *pchIn,*pchReset,*pchOut;
+  register ULONG  ibIn = 0,ibIn2,ibInFill;
+  ULONG cbOutLine = 6 + (fLongAddr ? 4 : 0) + 16 * 3 + 1 + 16 + 1;
 
-  register CHAR  *p,*pp,*a;
-  register ULONG  x = 0,y,z;
-
-  if(value && cbValue && ret && retlen) {
-    pp = p = value;
-    a = ret;
-    if(startval)
-      *a++ = '\n';
-    while(x < cbValue && a - ret < retlen) {
-      y = x;
-      if(longlead)
-        sprintf(a,"%08lx  ",x + startval);
+  if(pchInBuf && cbInBuf && pchOutBuf && cbOutBuf) {
+    pchIn = pchInBuf;
+    pchOut = pchOutBuf;
+    if(cOffset)
+      *pchOut++ = '\n';
+    while (ibIn < cbInBuf) {
+      if (pchOut - pchOutBuf + cbOutLine >= cbOutBuf) {
+        saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"hex buf ovf");
+	break;
+      }
+      pchReset = pchIn;
+      ibIn2 = ibIn;
+      if(fLongAddr)
+        sprintf(pchOut,"%08lx  ",ibIn + cOffset);
       else
-        sprintf(a,"%04lx  ",x + startval);
-      a += (6 + (startval != 0L) + ((longlead != 0L) * 4));
+        sprintf(pchOut,"%04lx  ",ibIn + cOffset);
+      pchOut += 6 + (fLongAddr ? 4 : 0);
       do {
-        sprintf(a,"%02hx ",*p);
-        a += 3;
-        p++;
-        x++;
-      } while(x < cbValue && (x % 16));
-      if(x % 16) {
-        z = x;
-        while(z % 16) {
-          *a++ = ' ';
-          *a++ = ' ';
-          *a++ = ' ';
-          z++;
+        sprintf(pchOut,"%02hx ",*pchIn);
+        pchOut += 3;
+        pchIn++;
+        ibIn++;
+      } while(ibIn < cbInBuf && (ibIn % 16));
+      if(ibIn % 16) {
+        ibInFill = ibIn;
+        while(ibInFill % 16) {
+          *pchOut++ = ' ';
+          *pchOut++ = ' ';
+          *pchOut++ = ' ';
+          ibInFill++;
         }
       }
-      *a++ = ' ';
-      p = pp;
+      *pchOut++ = ' ';
+      pchIn = pchReset;
       do {
-        if(*p && *p != '\n' && *p != '\r' && *p != '\t' && *p != '\x1a')
-          *a++ = *p++;
+        if(*pchIn && *pchIn != '\n' && *pchIn != '\r' && *pchIn != '\t' && *pchIn != '\x1a')
+          *pchOut++ = *pchIn++;
         else {
-          *a++ = '.';
-          p++;
+          *pchOut++ = '.';
+          pchIn++;
         }
-        y++;
-      } while(y < x);
-      if(x < cbValue)
-        *a++ = '\n';
-      pp = p;
-    }
-    *a = 0;
-    return (ULONG)(a - ret);
+        ibIn2++;
+      } while(ibIn2 < ibIn);
+      if(ibIn < cbInBuf)
+        *pchOut++ = '\n';
+    } // while ibIn
+    *pchOut = 0;
+    return (ULONG)(pchOut - pchOutBuf);
   }
   return 0L;
 }
@@ -264,8 +286,8 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             if(IsFile((CHAR *)mp1) == 1) {
 
               HFILE     handle;
-              ULONG     action,olen,len,l;
-              CHAR     *buff,*buff2,*p,buffer[80];
+              ULONG     action,olen,ibufflen,obufflen,l;
+              CHAR     *ibuff,*obuff,*p,buffer[80];
               ARC_TYPE *info;
 
               if(!DosOpen((CHAR *)mp1,
@@ -278,25 +300,24 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           OPEN_FLAGS_RANDOMSEQUENTIAL | OPEN_SHARE_DENYNONE |
                           OPEN_ACCESS_READONLY,
                           0L)) {
-                len = (AutoviewHeight < 96) ?
-                  512 :
-                  3072;
-                buff = malloc(len + 2);
-                if(buff) {
-                  buff2 = malloc((AutoviewHeight < 96) ?
-                    2049 :
-                    9217);
-                  if(buff2) {
-                    *buff2 = 0;
+                ibufflen = (AutoviewHeight < 96) ? 512 : 3072;
+                ibuff = malloc(ibufflen + 2);
+                if(ibuff) {
+		  // Depends on CreateHexDump line width
+                  obufflen = (ibufflen / 16) * (6 + 3 * 16 + 1 + 16 + 1) + 80;
+                  obuff = malloc(obufflen + 1);
+                  if(obuff) {
+                    *obuff = 0;
                     if(!DosRead(handle,
-                                buff,
-                                len,
-                                &len) &&
-                       len) {
-                      buff[len] = 0;
-                      p = buff2;
-                      if(IsBinary(buff,len)) {
-                        olen = len;
+                                ibuff,
+                                ibufflen,
+                                &ibufflen) &&
+                       ibufflen) {
+                      ibuff[ibufflen] = 0;
+                      p = obuff;
+                      if(IsBinary(ibuff,ibufflen)) {
+                        olen = ibufflen;
+			// Check archive
                         if(!loadedarcs)
                           load_archivers();
                         info = arcsighead;
@@ -309,12 +330,12 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                 (info->file_offset >= 0L) ?
                                                  FILE_BEGIN :
                                                  FILE_END,
-                                                &len)) {
+                                                &ibufflen)) {
                               if(!DosRead(handle,
                                           buffer,
                                           l,
-                                          &len) &&
-                                 len == l) {
+                                          &ibufflen) &&
+                                 ibufflen == l) {
                                 if(!memcmp(info->signature,
                                            buffer,
                                            l))
@@ -331,23 +352,23 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     GetPString(IDS_ARCHIVETEXT));
                           p += strlen(p);
                         }
-                        CreateHexDump(buff,
-                                      olen,
-                                      p,
-                                      ((AutoviewHeight < 96) ? 2048 : 9216) -
-                                       (p - buff2),
-                                      0,FALSE);
+                        CreateHexDump(ibuff,		// Input buffer
+                                      olen,		// Input buffer size
+                                      p,		// Output buffer
+                                      obufflen - (p - obuff),	// Output buffer size
+                                      0,		// Address offest
+				      FALSE);		// Short addresses
                       }
                       else {
-
+			// Text file
                         register CHAR *src,*dest;
                         CHAR          *endsrc;
 
-                        src = buff;
-                        dest = buff2;
-                        endsrc = buff + len;
+                        src = ibuff;
+                        dest = obuff;
+                        endsrc = ibuff + ibufflen;
                         while(src < endsrc) {
-                          if(dest == buff2 && (*src == '\t' || *src == ' ' ||
+                          if(dest == obuff && (*src == '\t' || *src == ' ' ||
                              *src == '\r' || *src == '\n')) {
                             src++;
                           }
@@ -369,15 +390,17 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                             src++;
                             dest++;
                           }
-                        }
+                        } // while
                         *dest = 0;
+			if (dest - obuff >= obufflen)
+                          saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"obuff ovf");
                       }
-                      if(*buff2)
-                        WinSetWindowText(hwndAutoview,buff2);
+                      if(*obuff)
+                        WinSetWindowText(hwndAutoview,obuff);
                     }
-                    free(buff2);
+                    free(obuff);
                   }
-                  free(buff);
+                  free(ibuff);
                 }
                 DosClose(handle);
               }
@@ -387,7 +410,7 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               static FILEFINDBUF4 ffb[130];
               static char         fullname[CCHMAXPATH + 4];
               HDIR                hdir = HDIR_CREATE;
-              ULONG               x,nm,ml,mc;
+              ULONG               x,nm,ml,mc,bufflen;
               PBYTE               fb;
               PFILEFINDBUF4       pffbFile;
               char               *buff,*p;
@@ -423,7 +446,8 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   fb += pffbFile->oNextEntryOffset;
                   x++;
                 }
-                buff = malloc((CCHMAXPATHCOMP + 42) * nm);
+                bufflen = (CCHMAXPATHCOMP + 42) * nm;
+                buff = malloc(bufflen);
                 if(buff) {
                   p = buff;
                   *p = 0;
@@ -469,7 +493,9 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                       break;
                     fb += pffbFile->oNextEntryOffset;
                     x++;
-                  }
+                  } // while
+		  if (p - buff >= bufflen)
+                    saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"buff ovf");
                   if(*buff)
                     WinSetWindowText(hwndAutoview,buff);
                   free(buff);
@@ -552,7 +578,12 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           data += sizeof(USHORT);
                           len = *(USHORT *)data;
                           data += sizeof(USHORT);
-                        }
+                        } // while
+		        if (p - buff >= 65536) {
+                          saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"eabuff ovf");
+			  buff[65535] = 0;	// Try to stay alive
+			  break;
+		        }
                         WinSetWindowText(hwndAutoMLE,buff);
                         free(buff);
                       }
