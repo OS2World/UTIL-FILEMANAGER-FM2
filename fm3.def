@@ -1,7 +1,8 @@
-NAME           FM3      WINDOWAPI
+
+NAME FM3 WINDOWAPI
 
 NEWFILES
 
-DESCRIPTION   'F(ile) M(anager)/3 copyright (c) 1993-98 by M. Kimes'
+DESCRIPTION '@#SLAInc:3.02f#@##1## 01/06/2004 12:00:00      SLAMain::EN:US:4:U:@@F(ile) M(anager)/3 Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2004 Steven Levine and Associates, Inc.'
 PROTMODE
-STACKSIZE     655360
+STACKSIZE   655360
