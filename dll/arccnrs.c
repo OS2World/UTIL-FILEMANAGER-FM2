@@ -1191,7 +1191,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 CCHMAXPATH,filename);
           filename[len] = 0;
           if(!strnicmp(filename,"OS2FILE,",8)) {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"RMF = \"%s\"",filename);
+            // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"RMF = \"%s\"",filename);
             pdt->fsReply = DMFL_RENDERRETRY;
             return (MRESULT)FALSE;
           }
@@ -1204,7 +1204,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             return (MRESULT)TRUE;
           }
           else {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"No render-to name given.");
+            // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"No render-to name given.");
             pdt->fsReply = DMFL_RENDERRETRY;
             return (MRESULT)FALSE;
           }
@@ -1239,7 +1239,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 p++;
               *p = 0;
             }
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%s %s %s\r[%s]",dcd->info->extract,dcd->arcname,membername,construct);
+            // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%s %s %s\r[%s]",dcd->info->extract,dcd->arcname,membername,construct);
             runemf2(SEPARATE | WINDOWED | WAIT |
                     ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)) |
                     WAIT,dcd->hwndClient,construct,NULL,"%s %s%s%s %s%s%s",
