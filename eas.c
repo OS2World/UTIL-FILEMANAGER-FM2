@@ -1,5 +1,20 @@
 
-/* $Id$ */
+/***********************************************************************
+
+  $Id$
+
+  EA viewer applet
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2002 Steven H.Levine
+
+  Revisions	16 Oct 02 SHL - Reformat
+		08 Feb 03 SHL - Free list with free() since we don't
+				allocate list contents
+
+***********************************************************************/
+
+
 
 #define INCL_DOS
 #define INCL_WIN
@@ -14,7 +29,8 @@
 #include "dll\fm3dlg.h"
 
 
-int main (int argc,char *argv[]) {
+int main (int argc,char *argv[])
+{
 
   HAB         hab;
   HMQ         hmq;
@@ -59,7 +75,8 @@ Abort:
     }
     WinTerminate(hab);
   }
-  FreeList(list);
+  if (list)
+    free(list);
   return 0;
 }
 
