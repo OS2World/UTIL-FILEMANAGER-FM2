@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Update Container record/list
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	12 Feb 03 SHL - Standardize EA math
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -13,7 +27,8 @@
 
 
 PCNRITEM UpdateCnrRecord (HWND hwndCnr,CHAR *filename,BOOL partial,
-                          DIRCNRDATA *dcd) {
+                          DIRCNRDATA *dcd)
+{
 
   PCNRITEM      pci;
   FILEFINDBUF4  ffb;
@@ -90,7 +105,7 @@ Update:
       if((!fForceUpper && !fForceLower &&
          strcmp(pci->szFileName,filename)) ||
          pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
-         pci->easize != ((ffb.cbList > 4L) ? (ffb.cbList / 2) : 0L) ||
+         pci->easize != CBLIST_TO_EASIZE(ffb.cbList) ||
          pci->date.day != ffb.fdateLastWrite.day ||
          pci->date.month != ffb.fdateLastWrite.month ||
          pci->date.year != ffb.fdateLastWrite.year + 1980 ||
@@ -407,7 +422,8 @@ Update:
 
 
 BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
-                    DIRCNRDATA *dcd) {
+                    DIRCNRDATA *dcd)
+{
 
   PCNRITEM      pci,*pciList = NULL;
   FILEFINDBUF4  ffb;
@@ -487,7 +503,7 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
         if((!fForceUpper && !fForceLower &&
            strcmp(pci->szFileName,filename[x])) ||
            pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
-           pci->easize != ((ffb.cbList > 4L) ? (ffb.cbList / 2) : 0L) ||
+           pci->easize != CBLIST_TO_EASIZE(ffb.cbList) ||
            pci->date.day != ffb.fdateLastWrite.day ||
            pci->date.month != ffb.fdateLastWrite.month ||
            pci->date.year != ffb.fdateLastWrite.year + 1980 ||

@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2002 Steven H.Levine
 
   Revisions	16 Oct 02 SHL - Handle large partitions
+		12 Feb 03 SHL - FileInfoProc: standardize EA math
 
 ***********************************************************************/
 
@@ -777,14 +778,12 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                               FLE_LASTACCESS,
                               s);
           }
-          if(fs.cbList == 4L)   /* OS/2 artifact */
-            fs.cbList = 0L;
           sprintf(s,
                   GetPString(IDS_SIZEINCLEASTEXT),
                   fs.cbFile,
-                  fs.cbList,
-                  fs.cbFile + fs.cbList,
-                  (fs.cbFile + fs.cbList) / 1024);
+                  CBLIST_TO_EASIZE(fs.cbList),
+                  fs.cbFile + CBLIST_TO_EASIZE(fs.cbList),
+                  (fs.cbFile + CBLIST_TO_EASIZE(fs.cbList)) / 1024);
           WinSetDlgItemText(hwnd,
                             FLE_SIZES,
                             s);
@@ -872,8 +871,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             WinShowWindow(WinWindowFromID(hwnd,FLE_ICON),
                           TRUE);
           }
-          WinShowWindow(WinWindowFromID(hwnd,FLE_EAS),
-                        (fs.cbList > 4));
+          WinShowWindow(WinWindowFromID(hwnd,FLE_EAS), fs.cbList > 4);
           if(!(fs.attrFile & FILE_DIRECTORY)) {
             WinEnableWindow(WinWindowFromID(hwnd,FLE_READABLE),TRUE);
             WinEnableWindow(WinWindowFromID(hwnd,FLE_WRITEABLE),TRUE);

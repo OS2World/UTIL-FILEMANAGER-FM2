@@ -1,3 +1,16 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Make file lists
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	12 Feb 03 SHL - AddToFileList: standardize EA math
+
+***********************************************************************/
 #define INCL_DOS
 #define INCL_WIN
 
@@ -80,7 +93,8 @@ VOID FreeList (CHAR **list) {
 
 
 INT AddToFileList (CHAR *string,FILEFINDBUF4 *ffb4,FILELIST ***list,
-                   INT *numfiles,INT *numalloced) {
+                   INT *numfiles,INT *numalloced)
+{
 
   FILELIST **test;
 
@@ -103,7 +117,7 @@ INT AddToFileList (CHAR *string,FILEFINDBUF4 *ffb4,FILELIST ***list,
     (*list)[*numfiles]->crdate = ffb4->fdateCreation;
     (*list)[*numfiles]->crtime = ffb4->ftimeCreation;
     (*list)[*numfiles]->cbFile = ffb4->cbFile;
-    (*list)[*numfiles]->easize = (ffb4->cbList > 4L) ? (ffb4->cbList / 2): 0L;
+    (*list)[*numfiles]->easize = CBLIST_TO_EASIZE(ffb4->cbList);
     strcpy((*list)[*numfiles]->fname,string);
     (*numfiles)++;
     (*list)[*numfiles] = NULL;

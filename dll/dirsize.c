@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2002 Steven H.Levine
 
   Revisions	16 Oct 02 SHL - Handle large partitions
+		12 Feb 03 SHL - Use CBLIST_TO_EASIZE
 
 ***********************************************************************/
 
@@ -56,8 +57,8 @@ SHORT APIENTRY SortSizeCnr (PMINIRECORDCORE p1,PMINIRECORDCORE p2,
 
 
 static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
-                         CHAR *stopflag,BOOL top) {
-
+                         CHAR *stopflag,BOOL top)
+{
   CHAR           maskstr[CCHMAXPATH],*endpath;
   register char *p,*sp,*pp;
   ULONG          nm,totalbytes = 0L,subbytes = 0L,temp;
@@ -106,7 +107,7 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
       return -1L;
     }
     if(!rc)
-      totalbytes = ffb->cbFile + (ffb->cbList > 4L) ? (ffb->cbList / 2) : 0L;
+      totalbytes = ffb->cbFile + CBLIST_TO_EASIZE(ffb->cbList);
     else
       DosError(FERR_DISABLEHARDERR);
     pciP->pszLongname = pciP->szFileName;
@@ -189,9 +190,8 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
         if((*pffbFile->achName != '.' || (pffbFile->achName[1] &&
            pffbFile->achName[1] != '.')) ||
            !(pffbFile->attrFile & FILE_DIRECTORY)) {
-            totalbytes += (pffbFile->cbFile +
-                          ((pffbFile->cbList > 4L) ?
-                            (pffbFile->cbList / 2) : 0L));
+            totalbytes += pffbFile->cbFile +
+                          CBLIST_TO_EASIZE(pffbFile->cbList);
           if(!(pffbFile->attrFile & FILE_DIRECTORY))
             pciP->attrFile++;
           if(*stopflag)

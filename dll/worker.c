@@ -845,6 +845,7 @@ Retry:
                                                    &fs4,
                                                    sizeof(fs4)) &&
                                  !(fs4.attrFile & FILE_DIRECTORY) &&
+				 // fixme to use CBLIST_TO_EASIZE?
                                  fs4.cbFile + fs4.cbList <= clFreeBytes) {
 			        // Swap with failing item
                                 ptr = wk->li->list[x];

@@ -1,3 +1,19 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Fill Directory Tree Containers
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	22 Nov 02 SHL - Baseline
+		08 Feb 03 SHL - DropHelp: calc EA size consistently
+
+***********************************************************************/
+
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -245,6 +261,7 @@ LISTINFO * DoFileDrop (HWND hwndCnr, CHAR *directory, BOOL arcfilesok,
   pDItem = DrgQueryDragitemPtr(pDInfo,0L);
   if(Operation == DO_MOVE &&
      !(pDItem->fsSupportedOps & DO_MOVEABLE)) {
+    saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"forcing DO_COPY");	// SHL
     DosBeep(50,100);
     Operation = DO_COPY;
   }
@@ -374,8 +391,7 @@ Okay:
                              FIL_QUERYEASIZE,
                              &fsa4,
                              sizeof(fsa4)))
-          cbFile[numfiles] = fsa4.cbFile + ((fsa4.cbList > 4L) ?
-                                            fsa4.cbList : 0L);
+          cbFile[numfiles] = fsa4.cbFile + CBLIST_TO_EASIZE(fsa4.cbList);
       }
       ulitemID[numfiles] = pDItem->ulItemID;
       files[numfiles] = strdup(szFrom);

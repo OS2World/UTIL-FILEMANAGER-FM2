@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2002 Steven H.Levine
 
   Revisions	12 Sep 02 SHL - Rework symbols to understand code
+		08 Feb 03 SHL - DropHelp: calc EA size consistently
 
 ***********************************************************************/
 
@@ -81,7 +82,8 @@ ULONG FillInRecordFromFFB (HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
     memcpy(p,pffb->achName,pffb->cchName + 1);
   }
   /* load the object's Subject, if required */
-  if(pffb->cbList > 4L && dcd && fLoadSubject &&
+  if(pffb->cbList > 4L &&
+     dcd && fLoadSubject &&
      (isalpha(*pci->szFileName) &&
       !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADSUBJS))) {
 
@@ -126,7 +128,8 @@ ULONG FillInRecordFromFFB (HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
   pci->pszSubject = pci->subject;
   /* load the object's longname */
   *pci->Longname = 0;
-  if(pffb->cbList > 4L && dcd && fLoadLongnames &&
+  if(pffb->cbList > 4L &&
+     dcd && fLoadLongnames &&
      (isalpha(*pci->szFileName) &&
       (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLONGNAMES) &&
       !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADLONGS))) {
@@ -249,7 +252,7 @@ ULONG FillInRecordFromFFB (HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
   pci->crtime.seconds = pffb->ftimeCreation.twosecs * 2;
   pci->crtime.minutes = pffb->ftimeCreation.minutes;
   pci->crtime.hours   = pffb->ftimeCreation.hours;
-  pci->easize         = (pffb->cbList > 4L) ? (pffb->cbList / 2) : 0L;
+  pci->easize         = CBLIST_TO_EASIZE(pffb->cbList);
   pci->cbFile         = pffb->cbFile;
   pci->attrFile       = pffb->attrFile;
   /* build attribute string for display */
@@ -304,7 +307,8 @@ ULONG FillInRecordFromFSA (HWND hwndCnr,PCNRITEM pci,const PSZ pszFileName,
   pci->hwndCnr = hwndCnr;
   strcpy(pci->szFileName,pszFileName);
   /* load the object's Subject, if required */
-  if(pfsa4->cbList > 4L && dcd && fLoadSubject &&
+  if(pfsa4->cbList > 4L &&
+     dcd && fLoadSubject &&
      (!isalpha(*pci->szFileName) ||
       !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADSUBJS))) {
 
@@ -349,11 +353,12 @@ ULONG FillInRecordFromFSA (HWND hwndCnr,PCNRITEM pci,const PSZ pszFileName,
   }
   pci->pszSubject = pci->subject;
   *pci->Longname = 0;
-  if(pfsa4->cbList > 4L && dcd && fLoadLongnames &&
+  if(pfsa4->cbList > 4L &&
+     dcd && fLoadLongnames &&
      (!isalpha(*pci->szFileName) ||
       ((driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLONGNAMES) &&
-      !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADLONGS)))) {
-
+      !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADLONGS))))
+  {
     APIRET    rc;
     EAOP2     eaop;
     PGEA2LIST pgealist;
@@ -465,7 +470,7 @@ ULONG FillInRecordFromFSA (HWND hwndCnr,PCNRITEM pci,const PSZ pszFileName,
   pci->crtime.seconds = pfsa4->ftimeCreation.twosecs * 2;
   pci->crtime.minutes = pfsa4->ftimeCreation.minutes;
   pci->crtime.hours   = pfsa4->ftimeCreation.hours;
-  pci->easize         = (pfsa4->cbList > 4L) ? (pfsa4->cbList / 2) : 0L;
+  pci->easize         = CBLIST_TO_EASIZE(pfsa4->cbList);
   pci->cbFile         = pfsa4->cbFile;
   pci->attrFile       = pfsa4->attrFile;
   y = 0;

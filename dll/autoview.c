@@ -10,6 +10,7 @@
 
   Revisions	12 Sep 02 SHL - AutoObjProc: catch buff2 overflows
 		25 Oct 02 SHL - CreateHexDump: catch buffer overflow
+		12 Feb 03 SHL - AutoObjProc: standardize EA math
 
 ***********************************************************************/
 
@@ -268,7 +269,8 @@ ULONG CreateHexDump (CHAR *pchInBuf,ULONG cbInBuf,
 }
 
 
-MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
+MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
 
   switch(msg) {
     case UM_LOADFILE:
@@ -470,9 +472,7 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                               ml,
                               pffbFile->achName,
                               pffbFile->cbFile +
-                               ((pffbFile->cbList > 4) ?
-                                pffbFile->cbList / 2 :
-                                0),
+                               CBLIST_TO_EASIZE(pffbFile->cbList),
                               ((pffbFile->attrFile & FILE_READONLY) != 0) ?
                                "R" : "-",
                               ((pffbFile->attrFile & FILE_ARCHIVED) != 0) ?

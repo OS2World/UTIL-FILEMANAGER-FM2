@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Save file list to clipboard
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003 Steven H.Levine
+
+  Revisions	12 Feb 03 SHL - SaveListDlgProc: standardize EA math
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -179,8 +193,8 @@ CHAR **ListFromClipboardHab (HAB hab) {
 
 #pragma alloc_text(SAVELIST,SaveListDlgProc,SaveAllListDlgProc)
 
-MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   HWND  hwndCnr;
   CHAR  savename[CCHMAXPATH] = "",pattern[81];
 
@@ -857,8 +871,8 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                                    &ffb4,sizeof(ffb4),&nm,
                                    FIL_QUERYEASIZE)) {
                     /* load the object's Subject, if required */
-                    if(ffb4.cbList > 4L) {
-
+                    if(ffb4.cbList > 4L)
+		    {
                       APIRET    rc;
                       EAOP2     eaop;
                       PGEA2LIST pgealist;
@@ -874,7 +888,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                         strcpy(pgea->szName,SUBJECT);
                         pgea->cbName = strlen(pgea->szName);
                         pgea->oNextEntryOffset = 0L;
-                        pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
+                        pgealist->cbList = sizeof(GEA2LIST) + pgea->cbName;
                         pfealist = malloc(1024);
                         if(pfealist) {
                           memset(pfealist,0,1024);
@@ -901,8 +915,8 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                       }
                     }
                     /* load the object's longname */
-                    if(ffb4.cbList > 4L) {
-
+                    if(ffb4.cbList > 4L)
+		    {
                       APIRET    rc;
                       EAOP2     eaop;
                       PGEA2LIST pgealist;
@@ -918,7 +932,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                         strcpy(pgea->szName,LONGNAME);
                         pgea->cbName = strlen(pgea->szName);
                         pgea->oNextEntryOffset = 0L;
-                        pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
+                        pgealist->cbList = sizeof(GEA2LIST) + pgea->cbName;
                         pfealist = malloc(1024);
                         if(pfealist) {
                           memset(pfealist,0,1024);
@@ -963,10 +977,10 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                             fprintf(fp,"%lu",ffb4.cbFile);
                             break;
                           case 'E':
-                            fprintf(fp,"%-5u",ffb4.cbList);
+                            fprintf(fp,"%-5u",CBLIST_TO_EASIZE(ffb4.cbList));
                             break;
                           case 'e':
-                            fprintf(fp,"%u",ffb4.cbList);
+                            fprintf(fp,"%u",CBLIST_TO_EASIZE(ffb4.cbList));
                             break;
                           case 'd':
                           case 'D':

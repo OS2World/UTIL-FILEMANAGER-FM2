@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Info window
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	12 Feb 03 SHL - insert_grepfile: standardize EA math
+		12 Feb 03 SHL - doonefile: standardize EA math
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -37,8 +52,8 @@ static VOID  FreeDupes       (GREP *g);
 static INT monthdays[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
 
 
-ULONG SecsSince1980 (FDATE *date,FTIME *time) {
-
+ULONG SecsSince1980 (FDATE *date,FTIME *time)
+{
   ULONG        total = 0L;
   register int x;
 
@@ -207,8 +222,8 @@ static BOOL match (CHAR *string,CHAR *patterns,BOOL absolute,BOOL ignore,
 }
 
 
-VOID dogrep (VOID *arg) {
-
+VOID dogrep (VOID *arg)
+{
   HAB           ghab;
   HMQ           ghmq;
   GREP          grep;
@@ -359,8 +374,8 @@ ShutDownThread:  /* kill pm connection, end thread */
 }
 
 
-static BOOL IsExcluded (char *name,char **fle,int numfls) {
-
+static BOOL IsExcluded (char *name,char **fle,int numfls)
+{
   register int x;
   char        *n;
 
@@ -438,8 +453,8 @@ static VOID doallsubdirs (GREP *grep,CHAR *searchPath,BOOL recursing,
 }
 
 
-static INT domatchingfiles (GREP *grep,CHAR *path,char **fle,int numfls) {
-
+static INT domatchingfiles (GREP *grep,CHAR *path,char **fle,int numfls)
+{
   /* process all matching files in a directory */
 
   PFILEFINDBUF4  findBuffer = malloc(grep->FilesToGet * sizeof(FILEFINDBUF4));
@@ -529,8 +544,8 @@ static INT domatchingfiles (GREP *grep,CHAR *path,char **fle,int numfls) {
 #pragma alloc_text(GREP,insert_grepfile,doonefile,doinsertion,freegreplist)
 
 
-static VOID freegreplist (GREP *grep) {
-
+static VOID freegreplist (GREP *grep)
+{
   register INT x;
 
   if(grep) {
@@ -552,8 +567,8 @@ static VOID freegreplist (GREP *grep) {
 }
 
 
-static BOOL doinsertion (GREP *grep) {
-
+static BOOL doinsertion (GREP *grep)
+{
   RECORDINSERT ri;
   DIRCNRDATA  *dcd;
   PCNRITEM     pci,pciFirst;
@@ -613,8 +628,8 @@ static BOOL doinsertion (GREP *grep) {
 }
 
 
-static BOOL insert_grepfile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f) {
-
+static BOOL insert_grepfile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
+{
   CHAR        *p,szDirectory[CCHMAXPATH];
 
   if(WinIsWindow(grep->ghab,grep->hwndFiles)) {
@@ -648,7 +663,7 @@ static BOOL insert_grepfile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f) {
         free(grep->insertffb[grep->toinsert]);
         return FALSE;
       }
-      grep->insertedbytes += (f->cbFile + ((f->cbList > 4L) ? f->cbList : 0L));
+      grep->insertedbytes += f->cbFile + CBLIST_TO_EASIZE(f->cbList);
       grep->toinsert++;
       if(grep->toinsert == grep->FilesToGet)
         return doinsertion(grep);
@@ -661,8 +676,8 @@ static BOOL insert_grepfile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f) {
 }
 
 
-static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f) {
-
+static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
+{
   /* process a single file */
 
   CHAR           *input;
@@ -680,11 +695,8 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f) {
     BOOL  keep = TRUE;
     ULONG adjsize;
 
-    adjsize = f->cbFile + ((grep->searchEAs) ?
-                           ((f->cbList > 4L) ?
-                            0L :
-                            f->cbList) :
-                           0L);
+    adjsize = f->cbFile +
+              (grep->searchEAs ? CBLIST_TO_EASIZE(f->cbList) : 0);
     if(grep->greaterthan) {
       if(adjsize < grep->greaterthan)
         keep = FALSE;
@@ -963,8 +975,8 @@ static LONG cr3tab[] = {    /* CRC polynomial 0xEDB88320 */
 };
 
 
-LONG CRCBlock (register CHAR *str, register INT blklen, register LONG crc) {
-
+LONG CRCBlock (register CHAR *str, register INT blklen, register LONG crc)
+{
   while (blklen--) {
     crc = cr3tab[((INT) crc ^ *str) & 0xff] ^ ((crc >> 8) & 0x00FFFFFF);
     str++;
@@ -973,8 +985,8 @@ LONG CRCBlock (register CHAR *str, register INT blklen, register LONG crc) {
 }
 
 
-LONG CRCFile (CHAR *filename,INT *error) {
-
+LONG CRCFile (CHAR *filename,INT *error)
+{
   LONG CRC = -1L,len;
   FILE *fp;
   CHAR *buffer;
@@ -1005,8 +1017,8 @@ LONG CRCFile (CHAR *filename,INT *error) {
 }
 
 
-static VOID FreeDupes (GREP *g) {
-
+static VOID FreeDupes (GREP *g)
+{
   DUPES *i,*next;
 
   i = g->dupehead;
@@ -1026,8 +1038,8 @@ static VOID FreeDupes (GREP *g) {
 }
 
 
-int comparenamesq (const void *v1,const void *v2) {
-
+int comparenamesq (const void *v1,const void *v2)
+{
   DUPES *d1 = *(DUPES **)v1;
   DUPES *d2 = *(DUPES **)v2;
   CHAR  *p1,*p2;
@@ -1046,8 +1058,8 @@ int comparenamesq (const void *v1,const void *v2) {
 }
 
 
-int comparenamesqe (const void *v1,const void *v2) {
-
+int comparenamesqe (const void *v1,const void *v2)
+{
   DUPES *d1 = *(DUPES **)v1;
   DUPES *d2 = *(DUPES **)v2;
   CHAR  *p1,*p2,*p1e,*p2e,e1,e2;
@@ -1082,8 +1094,8 @@ int comparenamesqe (const void *v1,const void *v2) {
 }
 
 
-int comparesizesq (const void *v1,const void *v2) {
-
+int comparesizesq (const void *v1,const void *v2)
+{
   DUPES *d1 = *(DUPES **)v1;
   DUPES *d2 = *(DUPES **)v2;
 
@@ -1091,8 +1103,8 @@ int comparesizesq (const void *v1,const void *v2) {
 }
 
 
-int comparenamesb (const void *v1,const void *v2) {
-
+int comparenamesb (const void *v1,const void *v2)
+{
   DUPES *d1 = (DUPES *)v1;
   DUPES *d2 = *(DUPES **)v2;
   CHAR  *p1,*p2;
@@ -1111,8 +1123,8 @@ int comparenamesb (const void *v1,const void *v2) {
 }
 
 
-int comparenamesbe (const void *v1,const void *v2) {
-
+int comparenamesbe (const void *v1,const void *v2)
+{
   DUPES *d1 = (DUPES *)v1;
   DUPES *d2 = *(DUPES **)v2;
   CHAR  *p1,*p2,*p1e,*p2e,e1,e2;
@@ -1147,8 +1159,8 @@ int comparenamesbe (const void *v1,const void *v2) {
 }
 
 
-int comparesizesb (const void *v1,const void *v2) {
-
+int comparesizesb (const void *v1,const void *v2)
+{
   DUPES *d1 = (DUPES *)v1;
   DUPES *d2 = *(DUPES **)v2;
 
@@ -1156,8 +1168,8 @@ int comparesizesb (const void *v1,const void *v2) {
 }
 
 
-static VOID FillDupes (GREP *g) {
-
+static VOID FillDupes (GREP *g)
+{
   DUPES         *c,*i,**r;
   register CHAR *pc,*pi;
   CHAR         **list = NULL;
@@ -1491,8 +1503,8 @@ BreakOut:
 }
 
 
-static BOOL InsertDupe (GREP *g,CHAR *dir,FILEFINDBUF4 *f) {
-
+static BOOL InsertDupe (GREP *g,CHAR *dir,FILEFINDBUF4 *f)
+{
   DUPES *info;
 
   if(*dir) {
@@ -1522,4 +1534,3 @@ static BOOL InsertDupe (GREP *g,CHAR *dir,FILEFINDBUF4 *f) {
   }
   return TRUE;
 }
-
