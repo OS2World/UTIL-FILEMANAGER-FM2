@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Tree containers
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	16 Oct 02 SHL - Handle large partitions
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -695,8 +709,8 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                    sizeof(FSALLOCATE))) {
                   strcpy(fbytes,"  ");
                   commafmt(fbytes + 2,sizeof(fbytes) - 4,
-                           (fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector)) /
-                            1024L);
+                           (ULONG)(((float)fsa.cUnitAvail *
+			     (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
                   strcat(fbytes,
                          GetPString(IDS_KFREETEXT));
                 }

@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  See all matching files
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	16 Oct 02 SHL - Handle large partitions
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
@@ -732,7 +746,7 @@ Retry:
                      !(fs4.attrFile & FILE_DIRECTORY)) {
 
                     FSALLOCATE  fsa;
-                    ULONG       totalsize;
+                    ULONG       clFreeBytes;
                     CHAR       *ptr;
                     INT         cntr;
 
@@ -741,16 +755,19 @@ Retry:
                     DosError(FERR_DISABLEHARDERR);
                     if(!DosQueryFSInfo(toupper(*newname) - '@',
                        FSIL_ALLOC,&fsa,sizeof(FSALLOCATE))) {
-                      totalsize = fsa.cUnitAvail * fsa.cSectorUnit *
-                                  fsa.cbSector;
-                      if(totalsize) {
+		      // Assume <2GB since file did not fit
+                      clFreeBytes = fsa.cUnitAvail * fsa.cSectorUnit *
+                                    fsa.cbSector;
+                      if(clFreeBytes) {
+			// Find item that will fit in available space
                         for(cntr = x + 1;list[cntr];cntr++) {
                           DosError(FERR_DISABLEHARDERR);
                           if(!DosQueryPathInfo(list[cntr],
                                                FIL_QUERYEASIZE,
                                                &fs4,sizeof(fs4)) &&
                              !(fs4.attrFile & FILE_DIRECTORY) &&
-                             fs4.cbFile + fs4.cbList <= totalsize) {
+                             fs4.cbFile + fs4.cbList <= clFreeBytes) {
+			    // Swap with failing item
                             ptr = list[x];
                             list[x] = list[cntr];
                             list[cntr] = ptr;

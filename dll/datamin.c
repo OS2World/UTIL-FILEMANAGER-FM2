@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2002 Steven H.Levine
 
   Revisions	14 Sep 02 SHL - Handle large partitions
+		16 Oct 02 SHL - Handle large partitions better
 
 ***********************************************************************/
 
@@ -617,11 +618,10 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case UM_PAINT:
       {
-        CHAR        s[90],tpm[38],*kfree,path[] = " :",
+        CHAR        s[90],szFreeQty[38],*pszFreeUM,path[] = " :",
                    *szBuf = NULL,*FSystem = NULL;
-        ULONG       freebytes,percentfree,wasx,size;
-	 ULONG       cbPerUnit;
-	 UINT	      cShift;
+        float       fltFreeQty;
+        ULONG       percentfree,wasx,size;
         HPS         hps = (HPS)mp2;
         FSALLOCATE  fsa;
         HWND        hwndTemp;
@@ -636,34 +636,28 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             return 0;
           if(!WinQueryWindowPos(hwndTemp,&swp))
             return 0;
-          *tpm = 0;
+          *szFreeQty = 0;
           DosError(FERR_DISABLEHARDERR);
           if(!DosQueryFSInfo((id - MINI_DRIVEA) + 1,
                              FSIL_ALLOC,
                              &fsa,
                              sizeof(FSALLOCATE))) {
-	     // Scale to avoid overflow on large drives
-	     cbPerUnit = fsa.cSectorUnit * fsa.cbSector;
-	     for (cShift = 0; cbPerUnit && ~cbPerUnit & 1 && cShift < 20; cShift++)
-	       cbPerUnit >>= 1;
-            freebytes = fsa.cUnitAvail * cbPerUnit;		// Scaled by cShift
-            if (freebytes >= (1024 * 1024) >> cShift) {
-              freebytes /= (1024 * 1024) >> cShift;
-              kfree = "mb";
+            fltFreeQty = (float)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector);
+            if (fltFreeQty >= (1024 * 1024)) {
+              fltFreeQty /= (1024 * 1024);
+              pszFreeUM = "mb";
             }
-            else if (freebytes << cShift >= 1024) {
-              freebytes <<= cShift;
-              freebytes /= 1024;
-              kfree = "kb";
+            else if (fltFreeQty >= 1024) {
+              fltFreeQty /= 1024;
+              pszFreeUM = "kb";
             }
             else
-	     {
-		freebytes <<= cShift;
-              kfree = "b";
-	     }
+	    {
+              pszFreeUM = "b";
+	    }
             percentfree = (fsa.cUnit && fsa.cUnitAvail) ?
-                          (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
-            commafmt(tpm,sizeof(tpm),freebytes);
+                            (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
+            commafmt(szFreeQty,sizeof(szFreeQty),(ULONG)fltFreeQty);
             *path = (CHAR)(id - MINI_DRIVEA) + 'A';
             if(!DosAllocMem((PVOID)&szBuf,
                             4096,
@@ -686,8 +680,8 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             sprintf(s,
                     " %s %s%s (%lu%%) %s%s%s%s",
                     path,
-                    tpm,
-                    kfree,
+                    szFreeQty,
+                    pszFreeUM,
                     percentfree,
                     GetPString(IDS_FREETEXT),
                     (FSystem) ? " [" : NullStr,
@@ -869,11 +863,12 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case UM_SETUP2:
       {
-        CHAR         s[134],tm[38],tpm[38],*tmk,*tpmk;
-        FILEFINDBUF3 ffb;
-        ULONG        nm = 1L;
-        HDIR         hdir =  HDIR_CREATE;
-        FSALLOCATE   fsa;
+        CHAR		s[134],szFileQty[38],szFreeQty[38],*pszFileUM,*pszFreeUM;
+        FILEFINDBUF3	ffb;
+        ULONG 		nm = 1L;
+	float		fltFreeQty;
+        HDIR		hdir = HDIR_CREATE;
+        FSALLOCATE	fsa;
 
         if(*SwapperDat) {
           DosError(FERR_DISABLEHARDERR);
@@ -882,43 +877,43 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                            &ffb,sizeof(ffb),&nm,FIL_STANDARD)) {
             priority_bumped();
             DosFindClose(hdir);
-            *tm = *tpm = 0;
+            *szFileQty = *szFreeQty = 0;
             DosError(FERR_DISABLEHARDERR);
             if(!DosQueryFSInfo(toupper(*SwapperDat) - '@',FSIL_ALLOC,
                                &fsa,sizeof(FSALLOCATE))) {
-              nm = fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector);
-              if(nm > 1024 * 1024) {
-                tpmk = "mb";
-                commafmt(tpm,sizeof(tpm),nm / (1024 * 1024));
+              fltFreeQty = fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector);
+              if(fltFreeQty > 1024 * 1024) {
+                pszFreeUM = "mb";
+                fltFreeQty /= (1024 * 1024);
               }
-              else if(nm > 1024) {
-                tpmk = "kb";
-                commafmt(tpm,sizeof(tpm),nm / 1024);
+              else if(fltFreeQty > 1024) {
+                pszFreeUM = "kb";
+                fltFreeQty /= 1024;
               }
               else {
-                tpmk = "b";
-                commafmt(tpm,sizeof(tpm),nm);
+                pszFreeUM = "b";
               }
+              commafmt(szFreeQty,sizeof(szFreeQty),(ULONG)fltFreeQty);
             }
             if(ffb.cbFile > 1024 * 1024) {
-              tmk = "mb";
-              commafmt(tm,sizeof(tm),ffb.cbFile / (1024 * 1024));
+              pszFileUM = "mb";
+              commafmt(szFileQty,sizeof(szFileQty),ffb.cbFile / (1024 * 1024));
             }
             else if(ffb.cbFile > 1024) {
-              tmk = "kb";
-              commafmt(tm,sizeof(tm),ffb.cbFile / 1024);
+              pszFileUM = "kb";
+              commafmt(szFileQty,sizeof(szFileQty),ffb.cbFile / 1024);
             }
             else {
-              tmk = "b";
-              commafmt(tm,sizeof(tm),ffb.cbFile);
+              pszFileUM = "b";
+              commafmt(szFileQty,sizeof(szFileQty),ffb.cbFile);
             }
             sprintf(s," %s %s%s%s%s%s",
                     GetPString(IDS_SWAPTITLETEXT),
-                    tm,
-                    tmk,
-                    (*tpm) ? "/" : NullStr,
-                    tpm,
-                    (*tpm) ? tpmk : NullStr);
+                    szFileQty,
+                    pszFileUM,
+                    (*szFreeQty) ? "/" : NullStr,
+                    szFreeQty,
+                    (*szFreeQty) ? pszFreeUM : NullStr);
             WinSetDlgItemText(hwnd,
                               MINI_SWAP,
                               s);
@@ -929,12 +924,12 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case UM_SETUP3:
       {
-        CHAR  s[134],tm[38],tpm[38],*tpmk,*tmk;
+        CHAR  s[134],tm[38],szQty[38],*pszUM,*tmk;
         ULONG amem = 0;
 
         if(!DosQuerySysInfo(QSV_TOTAVAILMEM,QSV_TOTAVAILMEM,
                             (PVOID)&amem,(ULONG)sizeof(amem))) {
-          *tm = *tpm = 0;
+          *tm = *szQty = 0;
           if(amem > 1024 * 1024) {
             tmk = "mb";
             commafmt(tm,sizeof(tm),amem / (1024 * 1024));
@@ -949,23 +944,23 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           }
           if(!Dos16MemAvail(&amem)) {
             if(amem > 1024 * 1024) {
-              tpmk = "mb";
-              commafmt(tpm,sizeof(tpm),amem / (1024 * 1024));
+              pszUM = "mb";
+              commafmt(szQty,sizeof(szQty),amem / (1024 * 1024));
             }
             else if(amem > 1024) {
-              tpmk = "kb";
-              commafmt(tpm,sizeof(tpm),amem / 1024);
+              pszUM = "kb";
+              commafmt(szQty,sizeof(szQty),amem / 1024);
             }
             else {
-              tpmk = "b";
-              commafmt(tpm,sizeof(tpm),amem);
+              pszUM = "b";
+              commafmt(szQty,sizeof(szQty),amem);
             }
           }
           sprintf(s," %s%s%s%s%s%s",
                   GetPString(IDS_MEMTITLETEXT),
-                  tpm,
-                  (*tpm) ? tpmk : NullStr,
-                  (*tpm) ? "/" : NullStr,
+                  szQty,
+                  (*szQty) ? pszUM : NullStr,
+                  (*szQty) ? "/" : NullStr,
                   tm,
                   tmk);
           WinSetDlgItemText(hwnd,
@@ -993,7 +988,7 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case UM_SETUP5:
       {
-        CHAR s[134],tm[38],tpm[38];
+        CHAR s[134],tm[38],szQty[38];
 
         if(fUseQProcStat && !noqproc) {
 
@@ -1017,13 +1012,13 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 }
                 ppi = (PPROCESSINFO)(ppi->ptiFirst + ppi->usThreadCount);
               }
-              *tpm = *tm = 0;
-              commafmt(tpm,sizeof(tpm),numprocs);
+              *szQty = *tm = 0;
+              commafmt(szQty,sizeof(szQty),numprocs);
               commafmt(tm,sizeof(tm),numthreads);
               sprintf(s,
                       " %s%s  %s%s",
                       GetPString(IDS_PROCSTITLETEXT),
-                      tpm,
+                      szQty,
                       GetPString(IDS_THRDSTITLETEXT),
                       tm);
               WinSetDlgItemText(hwnd,
@@ -1036,13 +1031,13 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           }
         }
         else {
-          *tpm = 0;
-          commafmt(tpm,sizeof(tpm),
+          *szQty = 0;
+          commafmt(szQty,sizeof(szQty),
                    WinQuerySwitchList(WinQueryAnchorBlock(hwnd),(PSWBLOCK)0,0));
           sprintf(s,
                   " %s%s",
                   GetPString(IDS_TASKSTITLETEXT),
-                  tpm);
+                  szQty);
           WinSetDlgItemText(hwnd,
                             MINI_PROC,
                             s);

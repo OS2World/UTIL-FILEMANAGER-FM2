@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Worker thread
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	16 Oct 02 SHL - Comments
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_DOSERRORS
@@ -688,14 +702,13 @@ Retry:
                     }
                     existed = (IsFile(newname) != -1);
                     isnewer = IsNewer(wk->li->list[x],newname);
-/*
-{
-static char temp[CCHMAXPATH * 3];
-
-sprintf(temp,"Target: %s\rSource: %s\rOverold: %lu\rOvernew: %lu\rIsNewer: %lu\rExisted: %lu",newname,wk->li->list[x],overold,overnew,isnewer,existed);
-saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
-}
-*/
+                    /*
+                    {
+                      char temp[CCHMAXPATH * 3];
+                      sprintf(temp,"Target: %s\rSource: %s\rOverold: %lu\rOvernew: %lu\rIsNewer: %lu\rExisted: %lu",newname,wk->li->list[x],overold,overnew,isnewer,existed);
+                      saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
+                    }
+                    */
                     if(existed &&
                        wk->li->type != IDM_RENAME &&
                        dontask) {
@@ -809,7 +822,7 @@ saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
                          !(fs4.attrFile & FILE_DIRECTORY)) {
 
                         FSALLOCATE  fsa;
-                        ULONG       totalsize;
+                        ULONG       clFreeBytes;
                         CHAR       *ptr;
                         INT         cntr;
 
@@ -819,9 +832,11 @@ saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
                                            FSIL_ALLOC,
                                            &fsa,
                                            sizeof(FSALLOCATE))) {
-                          totalsize = fsa.cUnitAvail * fsa.cSectorUnit *
+			  // Assume <2GB since file did not fit
+                          clFreeBytes = fsa.cUnitAvail * fsa.cSectorUnit *
                                       fsa.cbSector;
-                          if(totalsize) {
+                          if(clFreeBytes) {
+			    // Find item that will fit in available space
                             for(cntr = x + 1;wk->li->list[cntr];cntr++) {
                               DosError(FERR_DISABLEHARDERR);
                               if(!DosQueryPathInfo(wk->li->list[cntr],
@@ -829,7 +844,8 @@ saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
                                                    &fs4,
                                                    sizeof(fs4)) &&
                                  !(fs4.attrFile & FILE_DIRECTORY) &&
-                                 fs4.cbFile + fs4.cbList <= totalsize) {
+                                 fs4.cbFile + fs4.cbList <= clFreeBytes) {
+			        // Swap with failing item
                                 ptr = wk->li->list[x];
                                 wk->li->list[x] = wk->li->list[cntr];
                                 wk->li->list[cntr] = ptr;

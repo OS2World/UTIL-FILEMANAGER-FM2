@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Info window
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	16 Oct 02 SHL - Handle large partitions
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -172,9 +186,10 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   INFO_SERIAL,
                                   s);
                 sprintf(s,
-                        "%lu mb, %lu kb, %lu %s%s",((fsa.cUnit *
-                        (fsa.cSectorUnit * fsa.cbSector)) / 1024L) / 1024L,
-                        (fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector)) / 1024L,
+                        "%lu mb, %lu kb, %lu %s%s",
+			(ULONG)(((float)fsa.cUnit *
+                          (fsa.cSectorUnit * fsa.cbSector)) / (1024L * 1024L)),
+                        (ULONG)(((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector)) / 1024L),
                         fsa.cUnit,
                         GetPString(IDS_UNITTEXT),
                         &"s"[fsa.cUnit == 1L]);
@@ -183,8 +198,9 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   s);
                 sprintf(s,
                         "%lu mb, %lu kb, %lu %s%s",
-                        ((fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector)) / 1024L) / 1024L,
-                        (fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector)) / 1024L,
+                        (ULONG)(((float)fsa.cUnitAvail *
+			  (fsa.cSectorUnit * fsa.cbSector)) / (1024L * 1024L)),
+                        (ULONG)(((float)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector)) / 1024L),
                         fsa.cUnitAvail,
                         GetPString(IDS_UNITTEXT),
                         &"s"[fsa.cUnitAvail == 1L]);
@@ -974,7 +990,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   }
   return WinDefDlgProc(hwnd,msg,mp1,mp2);
 }
- 
+
 
 MRESULT EXPENTRY SetDrvProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 

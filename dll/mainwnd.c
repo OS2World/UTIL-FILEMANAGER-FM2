@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2002 Steven H.Levine
 
   Revisions	11 Jun 02 SHL - Drop obsolete xor code
+		16 Oct 02 SHL - Handle large partitions
 
 ***********************************************************************/
 
@@ -56,8 +57,7 @@ extern TOOL  *toolhead;
 USHORT firsttool = 0;
 
 
-MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
-																		MPARAM mp2) {
+MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1, MPARAM mp2) {
 
 	switch(msg) {
 		case UM_SETUP:
@@ -95,36 +95,36 @@ MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
              !WinQueryCapture(HWND_DESKTOP)) {
 
           FSALLOCATE fsa;
-          CHAR        s[90],tpm[38],*kfree;
-          ULONG       freebytes,percentfree;
+          CHAR        s[90],szQty[38],*pszUM;
+          ULONG       ulPctFree;
+          float       fltFreeQty;
 
           if(!DosQueryFSInfo((d - 'A') + 1,
                              FSIL_ALLOC,
                              &fsa,
                              sizeof(FSALLOCATE))) {
-            freebytes = fsa.cUnitAvail *
-                         (fsa.cSectorUnit * fsa.cbSector);
-            if(freebytes >= (1024 * 1024)) {
-              freebytes /= (1024 * 1024);
-              kfree = "mb";
+            fltFreeQty = (float)fsa.cUnitAvail *
+			   (fsa.cSectorUnit * fsa.cbSector);
+            if(fltFreeQty >= (1024 * 1024)) {
+              fltFreeQty /= (1024 * 1024);
+              pszUM = "mb";
             }
-            else if(freebytes >= 1024) {
-              freebytes /= 1024;
-              kfree = "kb";
+            else if(fltFreeQty >= 1024) {
+              fltFreeQty /= 1024;
+              pszUM = "kb";
             }
             else
-              kfree = "b";
-            percentfree = (fsa.cUnit && fsa.cUnitAvail) ?
-                           (fsa.cUnitAvail * 100) / fsa.cUnit :
-                           0;
-            commafmt(tpm,
-                     sizeof(tpm),
-                     freebytes);
+              pszUM = "b";
+            ulPctFree = (fsa.cUnit && fsa.cUnitAvail) ?
+                          (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
+            commafmt(szQty,
+                     sizeof(szQty),
+                     (ULONG)fltFreeQty);
             sprintf(s,
                     "%s%s (%lu%%) free",
-                    tpm,
-                    kfree,
-                    percentfree);
+                    szQty,
+                    pszUM,
+                    ulPctFree);
           }
           if((!hwndBubble ||
               WinQueryWindowULong(hwndBubble,0) != hwndB) &&
@@ -209,8 +209,8 @@ MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
 VOID MakeMainObjWin (VOID *args) {
 
-	HAB 				hab2;
-	HMQ 				hmq2;
+	HAB				hab2;
+	HMQ				hmq2;
 	QMSG				qmsg2;
 
 	priority_bumped();
@@ -288,8 +288,8 @@ HWND TopWindow (HWND hwndParent,HWND exclude) {
 
 HWND TopWindowName (HWND hwndParent,HWND exclude,CHAR *ret) {
 
-	HENUM 		henum;
-	HWND			hwndC = (HWND)0,hwndDir,hwndClient;
+	HENUM		henum;
+	HWND		hwndC = (HWND)0,hwndDir,hwndClient;
 	USHORT		id;
 	PCNRITEM	pci = NULL;
 
@@ -377,9 +377,9 @@ ULONG CountDirCnrs (HWND hwndParent) {
 
 HWND FindDirCnrByName (CHAR *directory,BOOL restore) {
 
-	HENUM 			henum;
-	HWND				hwndF = (HWND)0,hwndC,hwndDir;
-	CHAR				retstr[CCHMAXPATH];
+	HENUM			henum;
+	HWND			hwndF = (HWND)0,hwndC,hwndDir;
+	CHAR			retstr[CCHMAXPATH];
 
 	if(hwndMain) {
 		henum = WinBeginEnumWindows(hwndMain);
@@ -455,12 +455,12 @@ VOID SetToggleChecks (HWND hwndMenu) {
 
 VOID ResizeTools (HWND hwnd) {
 
-	register ULONG butx = 18L;
-	INT 					 attrib = SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_ZORDER | SWP_NOREDRAW,
-								 noattrib;
-	register TOOL *tool,*starttool;
-	SWP 					*swp;
-	register ULONG numtools,x;
+	register ULONG	butx = 18L;
+	INT		attrib = SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_ZORDER | SWP_NOREDRAW,
+			noattrib;
+	register TOOL	*tool,*starttool;
+	SWP		*swp;
+	register ULONG	numtools,x;
 
 	if(!fToolbar)
 		return;
@@ -564,10 +564,10 @@ VOID ResizeTools (HWND hwnd) {
 
 MRESULT EXPENTRY DropDownListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-	PFNWP 				oldproc = (PFNWP)INSTDATA(hwnd);
-	static HWND 	hwndMenu = (HWND)0;
-	USHORT				id;
-	static BOOL 	emphasized = FALSE;
+	PFNWP		oldproc = (PFNWP)INSTDATA(hwnd);
+	static HWND	hwndMenu = (HWND)0;
+	USHORT		id;
+	static BOOL	emphasized = FALSE;
 
 	switch(msg) {
 		case WM_MOUSEMOVE:
@@ -814,11 +814,11 @@ VOID MakeBubble (HWND hwnd,BOOL above,CHAR *help) {
                                NULL);
 	if(hwndBubble) {
 
-		HPS 		 hps;
-		POINTL	 aptl[TXTBOX_COUNT],ptl,tptl;
-		LONG		 lxScreen,sx,sy,extra = 0,lyScreen;
-		char		*p,*pp,*wp;
-		SWP 		 swp;
+		HPS	hps;
+		POINTL	aptl[TXTBOX_COUNT],ptl,tptl;
+		LONG	lxScreen,sx,sy,extra = 0,lyScreen;
+		char	*p,*pp,*wp;
+		SWP	swp;
 
 		WinQueryWindowPos(hwnd,&swp);
 		lyScreen = WinQuerySysValue(HWND_DESKTOP,SV_CYSCREEN);
@@ -920,11 +920,11 @@ MRESULT EXPENTRY BubbleProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 		case WM_PAINT:
 			{
-				HPS 		hps;
-				SWP 		swp;
+				HPS	hps;
+				SWP	swp;
 				POINTL	ptl,aptl[TXTBOX_COUNT];
-				CHAR	 *s,*p,*pp,*wp;
-				ULONG 	extra,tlen,y;
+				CHAR	*s,*p,*pp,*wp;
+				ULONG	extra,tlen,y;
 
         hps = WinBeginPaint(hwnd,(HPS)0,NULL);
 				if(hps) {
@@ -1147,9 +1147,9 @@ MRESULT EXPENTRY LEDProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-	USHORT				 id;
-	register TOOL *tool;
-	static HWND 	 hwndMenu = (HWND)0;
+	USHORT		id;
+	register TOOL	*tool;
+	static HWND	hwndMenu = (HWND)0;
 
 	switch(msg) {
 		case WM_BUTTON1DOWN:
@@ -1187,8 +1187,8 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 											 MPFROMSHORT(HM_RESOURCEID));
 					break;
 
-				case IDM_HIDEANYTOOL: 		 /* hide any tool */
-				case IDM_HIDETOOL:				 /* hide tool */
+				case IDM_HIDEANYTOOL:		/* hide any tool */
+				case IDM_HIDETOOL:		/* hide tool */
 					if(SHORT1FROMMP(mp1) == IDM_HIDETOOL)
 						id = WinQueryWindowUShort(hwnd,QWS_ID);
 					else
@@ -1205,7 +1205,7 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 					}
 					break;
 
-				case IDM_SHOWTOOLS: 	/* show all tools */
+				case IDM_SHOWTOOLS:	/* show all tools */
 					tool = toolhead;
 					while(tool) {
 						tool->flags &= (~T_INVISIBLE);
@@ -1214,8 +1214,8 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 					}
 					break;
 
-				case IDM_DELETEANYTOOL: 	/* delete any button */
-				case IDM_DELETETOOL:			/* delete button */
+				case IDM_DELETEANYTOOL:		/* delete any button */
+				case IDM_DELETETOOL:		/* delete button */
 					if(SHORT1FROMMP(mp1) == IDM_DELETETOOL)
 						id = WinQueryWindowUShort(hwnd,QWS_ID);
 					else
@@ -1227,8 +1227,8 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 											 MPFROM2SHORT(id,0),MPVOID);
 					return 0;
 
-				case IDM_EDITANYTOOL: 	 /* edit any button */
-				case IDM_EDITTOOL:			 /* edit button */
+				case IDM_EDITANYTOOL:		/* edit any button */
+				case IDM_EDITTOOL:		/* edit button */
 					if(SHORT1FROMMP(mp1) == IDM_EDITTOOL)
 						id = WinQueryWindowUShort(hwnd,QWS_ID);
 					else
@@ -1248,7 +1248,7 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 					}
 					break;
 
-				case IDM_ADDTOOL: 			/* add tool */
+				case IDM_ADDTOOL:		/* add tool */
 					id = (USHORT)WinDlgBox(HWND_DESKTOP,hwnd,AddToolProc,FM3ModHandle,
 																 ADDBTN_FRAME,MPVOID);
 					if(id && id != (USHORT)-1)
@@ -1305,35 +1305,35 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 		case DM_DRAGOVER:
 			{
-				PDRAGINFO pDInfo; 											 /* Pointer to DRAGINFO 	*/
+				PDRAGINFO pDInfo;		/* Pointer to DRAGINFO */
 
-				pDInfo = (PDRAGINFO)mp1;								 /* Get DRAGINFO pointer	*/
-				DrgAccessDraginfo(pDInfo);							 /* Access DRAGINFO 			*/
+				pDInfo = (PDRAGINFO)mp1;	/* Get DRAGINFO pointer	*/
+				DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
 				id = WinQueryWindowUShort(hwnd,QWS_ID);
 				tool = find_tool(id);
 				if(!tool) {
 					DrgFreeDraginfo(pDInfo);
-					return(MRFROM2SHORT(DOR_NEVERDROP,0));		 /* Drop not valid				*/
+					return(MRFROM2SHORT(DOR_NEVERDROP,0));		 /* Drop not valid  */
 				}
 				if(!(tool->flags & T_DROPABLE)) {
 					DrgFreeDraginfo(pDInfo);
-					return(MRFROM2SHORT(DOR_NEVERDROP,0));		 /* Drop not valid				*/
+					return(MRFROM2SHORT(DOR_NEVERDROP,0));		 /* Drop not valid  */
 				}
 				{
-					PDRAGITEM pDItem; 											 /* Pointer to DRAGITEM 	*/
+					PDRAGITEM pDItem;				 /* Pointer to DRAGITEM */
 
-					pDItem = DrgQueryDragitemPtr(pDInfo,		 /* Access DRAGITEM 			*/
-																			 0);				 /* Index to DRAGITEM 		*/
-					if(DrgVerifyRMF(pDItem, 								 /* Check valid rendering */
-                          DRM_OS2FILE,             /* mechanisms and data   */
-													NULL)) {								 /* formats 							*/
+					pDItem = DrgQueryDragitemPtr(pDInfo,		/* Access DRAGITEM */
+								     0);		/* Index to DRAGITEM */
+					if(DrgVerifyRMF(pDItem, 			/* Check valid rendering */
+                                                        DRM_OS2FILE,             	/* mechanisms and data   */
+							NULL)) {			/* formats */
 						if(!(tool->flags & T_EMPHASIZED)) {
 							tool->flags |= T_EMPHASIZED;
 							DrawTargetEmphasis(hwnd,((tool->flags & T_EMPHASIZED) != 0));
 							DrgFreeDraginfo(pDInfo);
 						}
-						return(MRFROM2SHORT(DOR_DROP, 				 /* Return okay to drop 	*/
-																DO_MOVE));				 /* Move operation valid	*/
+						return(MRFROM2SHORT(DOR_DROP, 		/* Return okay to drop 	*/
+						       DO_MOVE));			/* Move operation valid	*/
 					}
 					DrgFreeDraginfo(pDInfo);
 				}
@@ -1408,11 +1408,11 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 VOID BuildTools (HWND hwndT,BOOL resize) {
 
-	register TOOL 	 *tool;
-  register ULONG    ctrlxpos = 18L;
-	CHAR							s[33];
-	HENUM 						henum;
-	HWND							hwndTool;
+	register TOOL	*tool;
+	register ULONG  ctrlxpos = 18L;
+	CHAR		s[33];
+	HENUM		henum;
+	HWND		hwndTool;
 
 	henum = WinBeginEnumWindows(hwndT);
 	while((hwndTool = WinGetNextWindow(henum)) != NULLHANDLE)
@@ -1447,7 +1447,7 @@ VOID BuildTools (HWND hwndT,BOOL resize) {
                                    NULL);
 			if(!hwndTool) {
 
-				HBITMAP 	hbm;
+				HBITMAP	hbm;
 
 				hbm = LoadBitmapFromFileNum(tool->id);
 				if(hbm) {
@@ -1560,8 +1560,8 @@ VOID BuildTools (HWND hwndT,BOOL resize) {
 
 MRESULT EXPENTRY CommandLineProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-	PFNWP 			oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
-	static BOOL lbup = FALSE;
+	PFNWP		oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+	static BOOL	lbup = FALSE;
 
 	switch(msg) {
 		case UM_FOCUSME:
@@ -1635,12 +1635,12 @@ MRESULT EXPENTRY CommandLineProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 		case UM_OPENWINDOWFORME:
 			{
 				static char directory[CCHMAXPATH],cl[1000];
-        char      **list = NULL;
-				ULONG 			len;
-				HWND				hwndCnr;
+                                char	**list = NULL;
+	                        ULONG	len;
+	                        HWND	hwndCnr;
 
 				*directory = *cl = 0;
-        strcpy(cl,GetCmdSpec(FALSE));
+                                strcpy(cl,GetCmdSpec(FALSE));
 				strcat(cl," /C ");
 				len = strlen(cl);
 				WinQueryWindowText(hwnd,1000 - len,cl + len);
@@ -2037,7 +2037,7 @@ MRESULT EXPENTRY DriveProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 				CNRDRAGINFO cnd;
 				LISTINFO	 *li;
-				ULONG 			action = UM_ACTION;
+				ULONG		action = UM_ACTION;
 
 
 				if(emphasized) {

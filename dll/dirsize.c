@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Directory size
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2001, 2002 Steven H.Levine
+
+  Revisions	16 Oct 02 SHL - Handle large partitions
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
@@ -84,7 +98,7 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
       free(ffb);
       return -1L;
     }
-//printf("CM_ALLOCRECORD\n");
+    //printf("CM_ALLOCRECORD\n");
     pciP = WinSendMsg(hwndCnr,CM_ALLOCRECORD,MPFROMLONG(EXTRA_RECORD_BYTES2),
                       MPFROMLONG(1L));
     if(!pciP) {
@@ -167,11 +181,11 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
 
     while(!rc) {
       priority_normal();
-//printf("Found %lu\n",nm);
+      //printf("Found %lu\n",nm);
       for(x = 0L;x < nm;x++) {
         pffbFile = (FILEFINDBUF4 *)fb;
-//printf("%s\n",pffbFile->achName);
-//fflush(stdout);
+        //printf("%s\n",pffbFile->achName);
+        //fflush(stdout);
         if((*pffbFile->achName != '.' || (pffbFile->achName[1] &&
            pffbFile->achName[1] != '.')) ||
            !(pffbFile->attrFile & FILE_DIRECTORY)) {
@@ -221,9 +235,9 @@ VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONG totalbytes,
   if(pci) {
 
     CHAR           tf[80],tb[80],tt[80],br[80];
-    register CHAR *p;
-    register ULONG cntr,x;
-    double         cntra = 0.0;
+    register CHAR	*p;
+    register ULONG	cntr,x;
+    float		cntra = 0.0;
 
     commafmt(tf,sizeof(tf),(pci->cbFile > 0L && pci->cbFile < 1024L) ? 1L :
              pci->cbFile / 1024L);
@@ -238,14 +252,12 @@ VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONG totalbytes,
         rc = DosQueryFSInfo(toupper(*pci->szFileName) - '@',FSIL_ALLOC,&fsa,
                             sizeof(FSALLOCATE));
         if(!rc)
-          cntra = ((totalbytes * 100.0) /
-                    ((double)fsa.cUnit *
-                     ((double)fsa.cSectorUnit * fsa.cbSector)));
+          cntra = (totalbytes * 100.0) /
+                    ((float)fsa.cUnit *	(fsa.cSectorUnit * fsa.cbSector));
         pci->Longname[1] = 1;
       }
       else
-        cntra = ((((double)pci->cbFile + pci->easize) * 100.0) /
-                          (double)totalbytes);
+        cntra = (((float)pci->cbFile + pci->easize) * 100.0) / totalbytes;
       cntr = (ULONG)cntra / 2;
       p = br;
       for(x = 0;x < cntr;x++) {
@@ -448,12 +460,15 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             CHAR s[132],tf[80],tb[80],tu[80];
 
-            commafmt(tf,sizeof(tf),(fsa.cUnitAvail * (fsa.cSectorUnit *
-                     fsa.cbSector)) / 1024L);
-            commafmt(tb,sizeof(tb),(fsa.cUnit * (fsa.cSectorUnit *
-                     fsa.cbSector)) / 1024L);
-            commafmt(tu,sizeof(tu),((fsa.cUnit - fsa.cUnitAvail) *
-                     (fsa.cSectorUnit * fsa.cbSector)) / 1024L);
+            commafmt(tf,sizeof(tf),
+	             (ULONG)(((float)fsa.cUnitAvail *
+		       (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
+            commafmt(tb,sizeof(tb),
+	             (ULONG)(((float)fsa.cUnit *
+		       (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
+            commafmt(tu,sizeof(tu),
+	             (ULONG)(((float)(fsa.cUnit - fsa.cUnitAvail) *
+                       (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
             sprintf(s,
                     GetPString(IDS_FREESPACETEXT),
                     tf,
