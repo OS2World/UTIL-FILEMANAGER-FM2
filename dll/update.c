@@ -9,6 +9,7 @@
   Copyright (c) 2003 Steven H.Levine
 
   Revisions	12 Feb 03 SHL - Standardize EA math
+		10 Jan 04 SHL - Add some intermin large drive error avoidance
 
 ***********************************************************************/
 
@@ -213,9 +214,12 @@ Update:
                         CM_INSERTRECORD,
                         MPFROMP(pci),
                         MPFROMP(&ri)) &&
-             totalbytes != (ULONG)-1L &&
-             totalbytes) {
+             totalbytes != -1 &&
+             totalbytes)
+	  {
             dcd->totalbytes += totalbytes;
+            if (dcd->totalbytes == -1)
+              dcd->totalbytes--;
             PostMsg(hwndCnr,
                     UM_RESCAN,
                     MPVOID,
@@ -252,15 +256,14 @@ Update:
               if(pci) {
 
                 RECORDINSERT ri;
-                ULONG        totalbytes;
 
                 *ffb.achName = 0;
-                totalbytes = FillInRecordFromFFB(hwndCnr,
-                                                 pci,
-                                                 filename,
-                                                 &ffb,
-                                                 partial,
-                                                 dcd);
+                FillInRecordFromFFB(hwndCnr,
+                                    pci,
+                                    filename,
+                                    &ffb,
+                                    partial,
+                                    dcd);
                 if(strlen(pci->szFileName) < 4) {
                   *pci->szFileName = toupper(*pci->szFileName);
                   if(isalpha(*pci->szFileName) && toupper(*pci->szFileName) > 'B') {
@@ -364,10 +367,14 @@ Update:
                         CM_INSERTRECORD,
                         MPFROMP(pci),
                         MPFROMP(&ri)) &&
-             totalbytes != (ULONG)-1L &&
-             totalbytes) {
-            if(dcd->type == DIR_FRAME)
+             totalbytes != -1 &&
+             totalbytes)
+	  {
+            if (dcd->type == DIR_FRAME) {
               dcd->totalbytes += totalbytes;
+              if (dcd->totalbytes == -1)
+                dcd->totalbytes--;	// fixme for real someday
+	    }
             Stubby(hwndCnr,pci);
           }
         }
@@ -395,7 +402,7 @@ Update:
                  MPFROM2SHORT(FALSE,
                               CRA_SELECTED));
     if(dcd->type == DIR_FRAME)
-      dcd->totalbytes -= (pci->cbFile + pci->easize);
+      dcd->totalbytes -= pci->cbFile + pci->easize;
     WinSendMsg(hwndCnr,
                CM_REMOVERECORD,
                MPFROMP(&pci),
@@ -597,9 +604,12 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                           CM_INSERTRECORD,
                           MPFROMP(pci),
                           MPFROMP(&ri))) {
-              if(totalbytes != (ULONG)-1L &&
-                 totalbytes) {
+              if (totalbytes != -1 &&
+                  totalbytes)
+	    {
                 dcd->totalbytes += totalbytes;
+                if (dcd->totalbytes == -1)
+                  dcd->totalbytes--;	// fixme for real someday
                 numremain++;
               }
               repos = TRUE;
@@ -677,10 +687,15 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                                 CM_INSERTRECORD,
                                 MPFROMP(pci),
                                 MPFROMP(&ri))) {
-                    if(totalbytes != (ULONG)-1L && totalbytes) {
+                    if (totalbytes != -1 &&
+		        totalbytes)
+		    {
                       numremain++;
-                      if(dcd->type == DIR_FRAME)
+                      if(dcd->type == DIR_FRAME) {
                         dcd->totalbytes += totalbytes;
+                        if (dcd->totalbytes == -1)
+                          dcd->totalbytes--;	// fixme for real someday
+		      }
                     }
                     repos = TRUE;
                   }
@@ -743,10 +758,15 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                             CM_INSERTRECORD,
                             MPFROMP(pci),
                             MPFROMP(&ri))) {
-                if(totalbytes != (ULONG)-1L && totalbytes) {
+                if (totalbytes != -1 &&
+		    totalbytes)
+		{
                   numremain++;
-                  if(dcd->type == DIR_FRAME)
+                  if (dcd->type == DIR_FRAME) {
                     dcd->totalbytes += totalbytes;
+                    if (dcd->totalbytes == -1)
+                      dcd->totalbytes--;	// fixme for real someday
+		  }
                 }
                 repos = TRUE;
                 Stubby(hwndCnr,pci);
