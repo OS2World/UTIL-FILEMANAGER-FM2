@@ -217,7 +217,7 @@ objects":elink.. The current object is the one on which commands act (it
 has the dotted outline around it).  If the current object is also
 highlighted, all highlighted objects will be affected.
 :p.
-:artwork name='\fm3\bitmaps\rename.bmp' align=center.
+:artwork name='..\..\bitmaps\rename.bmp' align=center.
 :hp1.Renaming file system objects&colon.:ehp1.
 The simplest way to rename a file system object is to point at it with
 the mouse pointer, hold down the ALT key, and click the text of its name.
@@ -237,7 +237,7 @@ res=91800.toolbar:elink. to allow overwriting.
 If you'd like more detail, go to the :link reftype=hd
 res=99810.Rename:elink. tutorial.
 .br
-:artwork name='\fm3\bitmaps\mover.bmp' align=center.
+:artwork name='..\..\bitmaps\mover.bmp' align=center.
 :hp1.Moving file system objects&colon.:ehp1.
 .br
 There are several ways to move a file system object.  The best and most
@@ -279,7 +279,7 @@ directory.
 If you'd like more detail, go to the :link reftype=hd
 res=99820.Move:elink. tutorial.
 .br
-:artwork name='\fm3\bitmaps\copier.bmp' align=center.
+:artwork name='..\..\bitmaps\copier.bmp' align=center.
 :hp1.Copying file system objects&colon.:ehp1.
 .br
 The procedure for copying file system objects is very similar to that
@@ -298,7 +298,7 @@ and Ctrl + c is the accelerator key.
 If you'd like more detail, go to the :link reftype=hd
 res=99830.Copy:elink. tutorial.
 .br
-:artwork name='\fm3\bitmaps\linkdrag.bmp' align=center.
+:artwork name='..\..\bitmaps\linkdrag.bmp' align=center.
 :hp1.Comparing file system objects&colon.:ehp1.
 There is one other type of drag and drop operation called a "link drag."
 To link drag, hold down the Ctrl and Shift keys while dragging.

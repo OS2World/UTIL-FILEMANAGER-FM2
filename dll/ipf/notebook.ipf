@@ -372,7 +372,7 @@ res=90400.Associations:elink. feature.
 :h3 res=98400 name=PANEL_COMPPAGE.Compare page
 :i1 id=aboutCOMPP.Compare page
 
-:artwork name='\fm3\bitmaps\linkdrag.bmp' align=left.
+:artwork name='..\..\bitmaps\linkdrag.bmp' align=left.
 This page contains controls related to comparing objects.
 :p.
 The :hp6.Compare:ehp6. field gives a program that FM/2 will run when

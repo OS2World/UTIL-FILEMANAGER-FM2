@@ -1,6 +1,6 @@
 :h2 res=91400 name=PANEL_RENAME.Renaming
 :i1 id=aboutRenaming.Renaming
-:artwork name='\fm3\bitmaps\rename.bmp' align=center.
+:artwork name='..\..\bitmaps\rename.bmp' align=center.
 When you rename a file sytem object other than by :link reftype=hd
 res=98200.Direct Editing:elink., or a naming conflict arises, you get
 the Rename dialog.  Note that not all the controls discussed appear for

@@ -1,7 +1,7 @@
 :h2 res=90900 name=PANEL_DRVINFO.Drive Info
 :i1 id=aboutDriveInfo.Drive Info
 
-:artwork name='\fm3\bitmaps\info.bmp' align=center.
+:artwork name='..\..\bitmaps\info.bmp' align=center.
 FM/2 will show you information about the drive from which you chose the
 :hp1.Info:ehp1. command in a context menu.
 :p.
@@ -29,7 +29,7 @@ flags:elink. command.
 :h2 res=95700 name=PANEL_INFO.Object Information
 :i1 id=aboutInfo.Object Information
 
-:artwork name='\fm3\bitmaps\info.bmp' align=center.
+:artwork name='..\..\bitmaps\info.bmp' align=center.
 This comprehensive dialog tells you just about everything there is to
 know about file system objects.  If information is being displayed for
 more than one object, the objects may be scrolled through in the listbox

@@ -1,6 +1,6 @@
 :h1 res=91900 name=PANEL_FOLDERBUTTON.Folder Button
 :i1 id=aboutFolderButton.Folder Button
-:artwork name='\fm3\bitmaps\pmap.bmp' align=center.
+:artwork name='..\..\bitmaps\pmap.bmp' align=center.
 Folder buttons appear on directory and archive containers at the top
 center of the window (below the title bar).  They provide several
 shortcuts for their containers.

@@ -76,7 +76,7 @@ not over any of the objects that it contains.
 
 :h2 res=99810 name=PANEL_TRENAME.Rename tutorial
 :i1 id=aboutRenameTutorial.Rename Tutorial
-:artwork name='\fm3\bitmaps\rename.bmp' align=left.
+:artwork name='..\..\bitmaps\rename.bmp' align=left.
 Please select a method to learn about&colon.
 :p.
 :link reftype=hd res=99811.Direct editing:elink.
@@ -132,7 +132,7 @@ you can enter a new name for the object.
 
 :h2 res=99820 name=PANEL_TMOVE.Move tutorial
 :i1 id=aboutMoveTutorial.Move Tutorial
-:artwork name='\fm3\bitmaps\mover.bmp' align=left.
+:artwork name='..\..\bitmaps\mover.bmp' align=left.
 Please select a method to learn about&colon.
 :p.
 :link reftype=hd res=99821.Direct editing:elink.
@@ -182,7 +182,7 @@ for the move operation.
 
 :h2 res=99830 name=PANEL_TCOPY.Copy tutorial
 :i1 id=aboutCopyTutorial.Copy Tutorial
-:artwork name='\fm3\bitmaps\copier.bmp' align=left.
+:artwork name='..\..\bitmaps\copier.bmp' align=left.
 Please select a method to learn about&colon.
 :p.
 :link reftype=hd res=99832.Drag and drop:elink.
@@ -230,7 +230,7 @@ you to specify a new name for the new, "cloned" copy of the object.
 
 :h2 res=99840 name=PANEL_TCOMPARE.Compare tutorial
 :i1 id=aboutCompareTutorial.Compare Tutorial
-:artwork name='\fm3\bitmaps\linkdrag.bmp' align=left.
+:artwork name='..\..\bitmaps\linkdrag.bmp' align=left.
 To compare file system objects, link-drag one object onto another.
 :p.
 A link drag is initiated by placing the mouse cursor on the object to
@@ -246,7 +246,7 @@ used if you leave the entry there blank.
 
 :h2 res=99850 name=PANEL_TVIEW.View tutorial
 :i1 id=aboutViewTutorial.View Tutorial
-:artwork name='\fm3\bitmaps\view.bmp' align=left.
+:artwork name='..\..\bitmaps\view.bmp' align=left.
 Viewing files can be as simple as double-clicking their objects.  FM/2
 will attempt to do to the object what should "logically" be done, which,
 in the case of text files, archives and the like, is to view them.  If
@@ -306,8 +306,8 @@ cascade menu, and is the default.
 
 :h2 res=99870 name=PANEL_TDELETE.Delete tutorial
 :i1 id=aboutDeleteTutorial.Delete Tutorial
-:artwork name='\fm3\bitmaps\delete.bmp' align=left.
-:artwork name='\fm3\bitmaps\permdel.bmp' align=left.
+:artwork name='..\..\bitmaps\delete.bmp' align=left.
+:artwork name='..\..\bitmaps\permdel.bmp' align=left.
 There are two styles of deleting under FM/2 -- a "regular" delete, that
 leaves the objects capable of being undeleted using OS/2's UNDELETE
 command or FM/2's Undelete Utility, and a "permanent" delete that does
@@ -337,7 +337,7 @@ keys are case sensitive) performs a permanent delete.
 
 :h2 res=99880 name=PANEL_TMKDIR.Make directory tutorial
 :i1 id=aboutMkdirTutorial.Make Directory Tutorial
-:artwork name='\fm3\bitmaps\mkdir.bmp' align=left.
+:artwork name='..\..\bitmaps\mkdir.bmp' align=left.
 To create a directory, use FM/2's Make Directory command.
 :p.
 You can pick this command from the :hp1.Files:ehp1. menu or a
@@ -364,7 +364,7 @@ and open its Directory container simultaneously.
 
 :h2 res=99890 name=PANEL_TARCHIVE.Create archive tutorial
 :i1 id=aboutArchiveTutorial.Create Archive Tutorial
-:artwork name='\fm3\bitmaps\archive.bmp' align=left.
+:artwork name='..\..\bitmaps\archive.bmp' align=left.
 To create a new archive, select the file system objects you want in the
 archive, then select :hp1.Archive:ehp1. from the :hp1.Files:ehp1. menu
 or a :hp1.context:ehp1. menu, or click the Archive toolbar button.
@@ -390,7 +390,7 @@ the archive object) and then dragging the objects to be added onto the
 
 :h2 res=99900 name=PANEL_TEXTRACT.Extract from archive tutorial
 :i1 id=aboutExtractTutorial.Extract from Archive Tutorial
-:artwork name='\fm3\bitmaps\extract.bmp' align=left.
+:artwork name='..\..\bitmaps\extract.bmp' align=left.
 To extract from an archive, first place the dotted cursor on the file
 (make it the :hp1.current object:ehp1.), then select the
 :hp1.Extract:ehp1. command from the :hp1.Files:ehp1. menu or a context

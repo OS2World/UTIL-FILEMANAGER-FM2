@@ -1,7 +1,7 @@
 :h2 res=99100 name=PANEL_SELECTION.Selection
 :i1 id=aboutSelection.Selection
-:artwork name='\fm3\bitmaps\select.bmp' align=center.
-:artwork name='\fm3\bitmaps\deselect.bmp' align=center.
+:artwork name='..\..\bitmaps\select.bmp' align=center.
+:artwork name='..\..\bitmaps\deselect.bmp' align=center.
 The Ctrl + F8 accelerator calls up the Select menu for a given
 container. You can also, of course, get to it with the mouse via the
 :hp1.Views:ehp1. menu.

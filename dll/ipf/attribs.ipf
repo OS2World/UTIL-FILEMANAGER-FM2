@@ -1,6 +1,6 @@
 :h2 res=95900 name=PANEL_ATTRIBSLIST.Attributes
 :i1 id=aboutAttribsList.Attributes
-:artwork name='\fm3\bitmaps\attrlist.bmp' align=center.
+:artwork name='..\..\bitmaps\attrlist.bmp' align=center.
 This dialog allows you to set the attributes and (optionally) date and
 time of all objects in a selected group from one popup dialog.  The
 dialog presents you with spinboxes to change the date and time (defaults

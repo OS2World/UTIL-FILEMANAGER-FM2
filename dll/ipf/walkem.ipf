@@ -1,7 +1,7 @@
 :h1 res=91500 name=PANEL_WALKEM.Walk Directories
 :i1 id=aboutWalkem.Walk Directories
 
-:artwork name='\fm3\bitmaps\walk.bmp' align=center.
+:artwork name='..\..\bitmaps\walk.bmp' align=center.
 This dialog lets you pick a directory by "walking" through the
 directory structure of your drives.  It also lets you save and
 recall user-defined directories.

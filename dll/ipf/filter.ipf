@@ -1,6 +1,6 @@
 :h2 res=93400 name=PANEL_FILTER.Filter container
 :i1 id=aboutFilter.Filter container
-:artwork name='\fm3\bitmaps\filter.bmp' align=center.
+:artwork name='..\..\bitmaps\filter.bmp' align=center.
 This dialog allows you to filter what's shown in a container.  A
 filemask or filemasks can be used to filter, and so can file attributes
 (except for archive listings where attributes are not applicable).  In

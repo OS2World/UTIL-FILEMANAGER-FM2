@@ -1,6 +1,6 @@
 :h2 res=90400 name=PANEL_ASSOC.Associations
 :i1 id=aboutAssociations.Associations
-:artwork name='\fm3\bitmaps\assoc.bmp' align=center.
+:artwork name='..\..\bitmaps\assoc.bmp' align=center.
 (Note&colon.  if you're wondering why FM/2 has Associations separate
 from OS/2's, see the :link reftype=hd res=90401.Why separate
 Associations?:elink. topic.  Also note that you can :link reftype=hd

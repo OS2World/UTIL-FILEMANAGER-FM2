@@ -66,7 +66,7 @@ RESOURCE.DAT).
 :h2 res=92500 name=PANEL_UNDELETE.Undelete Files
 :i1 id=aboutUndelete.Undelete Files
 
-:artwork name='\fm3\bitmaps\undelete.bmp' align=center.
+:artwork name='..\..\bitmaps\undelete.bmp' align=center.
 This leads to a dialog that interfaces with UNDELETE.COM to allow you to
 undelete files.  The drive that will be operated on is determined by the
 highlighted object in the directory tree.  This dialog filters out files
@@ -82,7 +82,7 @@ control.  This is provided only for convenience.
 
 :h2 res=92600 name=PANEL_KILLPROC.Kill Processes
 :i1 id=aboutKillProc.Kill Processes
-:artwork name='\fm3\bitmaps\killproc.bmp' align=center.
+:artwork name='..\..\bitmaps\killproc.bmp' align=center.
 This leads to a dialog that allows you to kill most renegade processes.
 If you run into a window that just won't close, or one that hides itself
 but doesn't quite go away, this may let you kill the hung process.
@@ -101,7 +101,7 @@ notice, possibly causing the Process Killer to fail and/or trap.
 
 :h2 res=92700 name=PANEL_INSTANT.Instant Batch File
 :i1 id=aboutInstant.Instant Batch File
-:artwork name='\fm3\bitmaps\instant.bmp' align=center.
+:artwork name='..\..\bitmaps\instant.bmp' align=center.
 This leads to a dialog that lets you quickly hack together a batch
 (command) file and run it (the currently highlighted tree directory will
 be its default directory).  The command file isn't saved; think of it as
@@ -110,7 +110,7 @@ at a time (for instance, when several tests must be made).
 
 :h2 res=92800 name=PANEL_COMMANDLINE.Command Line
 :i1 id=aboutCommandLine.Command Line
-:artwork name='\fm3\bitmaps\cmdline.bmp' align=center.
+:artwork name='..\..\bitmaps\cmdline.bmp' align=center.
 This brings up a windowed OS/2 command line.  F9 is the accelerator key
 for this command.
 :p.

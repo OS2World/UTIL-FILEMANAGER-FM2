@@ -1,6 +1,6 @@
 :h2 res=90100 name=PANEL_COLLECTOR.Collector
 :i1 id=aboutCollector.Collector
-:artwork name='\fm3\bitmaps\collect.bmp' align=center.
+:artwork name='..\..\bitmaps\collect.bmp' align=center.
 The :hp1.Collector:ehp1. is a temporary place to hold objects that you
 want to manipulate later; it allows you to temporarily group objects
 regardless of where they're physically stored in the file system.  No

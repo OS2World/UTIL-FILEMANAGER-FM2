@@ -1,7 +1,7 @@
 :h2 res=95300 name=PANEL_INIS.INI Viewer
 :i1 id=aboutINIS.INI Viewer
 
-:artwork name='\fm3\bitmaps\ini.bmp' align=center.
+:artwork name='..\..\bitmaps\ini.bmp' align=center.
 INI files are a form of data file that OS/2 provides to applications and
 utilizes itself.  This viewer allows you to take a peek inside them.
 :p.

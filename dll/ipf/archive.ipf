@@ -1,6 +1,6 @@
 :h2 res=91000 name=PANEL_EXTRACT.Extract from archives
 :i1 id=aboutExtract.Extract from archives
-:artwork name='\fm3\bitmaps\extract.bmp' align=center.
+:artwork name='..\..\bitmaps\extract.bmp' align=center.
 To extract from an archive, select the archive(s), then select
 :hp1.Extract:ehp1. from a context menu.
 :p.
@@ -38,7 +38,7 @@ use "*.pkt".  If in doubt, use both.
 
 :h2 res=90300 name=PANEL_ARCHIVE.Build an archive
 :i1 id=aboutArchive.Build an archive
-:artwork name='\fm3\bitmaps\archive.bmp' align=center.
+:artwork name='..\..\bitmaps\archive.bmp' align=center.
 To build an archive, select some files, then select :hp1.Archive:ehp1.
 from a context menu.  You can add files to an existing archive by
 link-dragging them onto the archive object, or dragging them onto an

@@ -1,6 +1,6 @@
 :h2 res=95000 name=PANEL_EAS.Extended Attributes
 :i1 id=aboutEAs.Extended Attributes
-:artwork name='\fm3\bitmaps\ea.bmp' align=center.
+:artwork name='..\..\bitmaps\ea.bmp' align=center.
 This dialog allows you to view and edit text Extended Attributes (EAs)
 for an object.  Binary EAs may be viewed but not edited.  You'd have to
 be the sort who enjoys programming on a hex keypad to :hp2.want:ehp2. to

@@ -48,7 +48,7 @@ instance, since they're read-only drives.)
 :p.
 These context menus are shadows of the :link reftype=hd
 res=93300.Files:elink. pulldown menu.
-:artwork name='\fm3\bitmaps\view.bmp' align=center.
+:artwork name='..\..\bitmaps\view.bmp' align=center.
 The :hp6.View:ehp6. conditional cascade submenu allows you to view the
 current object.  Since this is a conditional cascade submenu, you can
 click on the button to get a list of choices or click elsewhere to get
@@ -68,7 +68,7 @@ the internal if none is configured.
 binary data, using the :link reftype=hd res=97000.configured binary
 viewer:elink. or the internal if none is configured.  Binary data is
 usually viewed as a :link reftype=hd res=98800.hex dump:elink..
-:artwork name='\fm3\bitmaps\info.bmp' align=center.
+:artwork name='..\..\bitmaps\info.bmp' align=center.
 :hp6.Information:ehp6. brings up a dialog telling you everything you
 ever wanted to know about file system objects but were afraid to ask.
 If you select this from a drive object (root directory) in the Drive
@@ -86,7 +86,7 @@ ICONEDIT program, or find them pre-drawn in several collections of icons
 and pointers freely available on BBSes.  This is the default command for
 the Files->View conditional cascade submenu when the current object is a
 directory.
-:artwork name='\fm3\bitmaps\playmm.bmp' align=center.
+:artwork name='..\..\bitmaps\playmm.bmp' align=center.
 :hp6.Multimedia:ehp6. attempts to play the objects via MMPM/2 using
 FM2PLAY.EXE (from the FM/2 Utilities collection, distributed separately
 in FM2UTILS.ZIP).  Obviously, the objects must be multimedia objects
@@ -107,7 +107,7 @@ rescan for special situations).
 container) until you rescan, use the :link reftype=hd res=93400.Filter
 dialog:elink. or switch directories.
 :p.
-:artwork name='\fm3\bitmaps\edit.bmp' align=center.
+:artwork name='..\..\bitmaps\edit.bmp' align=center.
 The :hp6.Edit:ehp6. conditional cascade submenu allows you to edit the
 current object.  Since this is a conditional cascade submenu, you can
 click on the button to get a list of choices or click elsewhere to get a
@@ -128,11 +128,11 @@ binary data, using the :link reftype=hd res=97000.configured binary
 editor:elink..  Binary data is usually edited as a :link reftype=hd
 res=98800.hex dump:elink..  No default binary editor is provided at
 this time, but that may change.
-:artwork name='\fm3\bitmaps\ea.bmp' align=center.
+:artwork name='..\..\bitmaps\ea.bmp' align=center.
 :hp6.:link reftype=hd res=95000.Extended Attributes:elink.:ehp6. allows
 you to view an object's extended attributes (EAs) and to edit and add
 text attributes.
-:artwork name='\fm3\bitmaps\attrlist.bmp' align=center.
+:artwork name='..\..\bitmaps\attrlist.bmp' align=center.
 :hp6.:link reftype=hd res=95900.Attributes:elink.:ehp6. leads to a
 dialog that sets objects' attributes and (optionally) date/time. This is
 the default for the Files->Edit conditional cascade submenu when a
@@ -142,13 +142,13 @@ directory is the current object.
 makes use of the same EA (.SUBJECT) that the WPS uses for object
 descriptions -- you can see and edit it on the File page of an object's
 Settings notebook.
-:artwork name='\fm3\bitmaps\rename.bmp' align=center.
+:artwork name='..\..\bitmaps\rename.bmp' align=center.
 :hp6.:link reftype=hd res=91400.Rename:elink.:ehp6. allows you to rename
 objects.  You are notified of conflicts as they occur.  An easier method
 for renaming one object is to point at its text, hold down the ALT key,
 and click mouse button one; however, this command allows you to use
 wildcards when renaming if you desire.
-:artwork name='\fm3\bitmaps\delete.bmp' align=center.
+:artwork name='..\..\bitmaps\delete.bmp' align=center.
 :hp6.Delete:ehp6. deletes objects.  If the :link reftype=hd
 res=92400.Confirm Delete:elink. toggle is on or one or more directories
 are among the selected objects, you get a dialog showing the selected
@@ -156,7 +156,7 @@ objects and asking you to confirm that you really meant what you said.
 In that dialog you have a chance to remove some of the objects.  If you
 have Undelete enabled for the drive on which the objects reside, they
 may be recoverable.
-:artwork name='\fm3\bitmaps\permdel.bmp' align=center.
+:artwork name='..\..\bitmaps\permdel.bmp' align=center.
 :hp6.Permanent Delete:ehp6. deletes objects as above, but they will not
 be recoverable (which may make the deletion faster).  It should be noted
 that when deleting directory objects, the file objects within the
@@ -167,7 +167,7 @@ this Permanent Delete command :hp1.and:ehp1. have Undelete enabled (type
 :link reftype=launch object='CMD.EXE' data='/C HELP UNDELETE'.HELP
 UNDELETE:elink. at a command line for more information on enabling
 Undelete).
-:artwork name='\fm3\bitmaps\print.bmp' align=center.
+:artwork name='..\..\bitmaps\print.bmp' align=center.
 :link reftype=hd res=99985.:hp6.Print:ehp6.:elink. prints text files.
 It'd be a good idea to have a printer to which to print, and have
 configured it first, before trying to use this.  If using the standard
@@ -177,8 +177,8 @@ for eternity awaiting access to a nonexistent or inaccessible device.
 Actually, if using the standard WPS, it's recommended that you simply
 drag files to the printer object and drop them instead of using this
 command.
-:artwork name='\fm3\bitmaps\mover.bmp' align=center.
-:artwork name='\fm3\bitmaps\copier.bmp' align=center.
+:artwork name='..\..\bitmaps\mover.bmp' align=center.
+:artwork name='..\..\bitmaps\copier.bmp' align=center.
 :hp6.Move and Copy:ehp6. move or copy objects.  :hp2.:link reftype=hd
 res=90000.Drag and drop:elink. is recommended over using the menu
 commands for moving and copying.:ehp2. When using the menu commands, the
@@ -218,15 +218,15 @@ example, when moving a directory containing a program suite to
 maintain the link between program objects and the program executables
 in the directory.
 
-:artwork name='\fm3\bitmaps\shadow.bmp' align=center.
-:artwork name='\fm3\bitmaps\object.bmp' align=center.
+:artwork name='..\..\bitmaps\shadow.bmp' align=center.
+:artwork name='..\..\bitmaps\object.bmp' align=center.
 :hp6.:link reftype=hd res=93600.Shadow:elink.:ehp6. builds WPS shadow
 objects on your desktop (or other selected folder) for selected
 object(s).  You can also create :hp6.Real Objects:ehp6. (except for
 directories, for which you can only create shadow objects).  Both these
 options (where applicable) are in a conditional cascade submenu called
 :hp6.Create Objects:ehp6., with Shadows as the default command.
-:artwork name='\fm3\bitmaps\opend.bmp' align=center.
+:artwork name='..\..\bitmaps\opend.bmp' align=center.
 The :hp6.Open:ehp6. conditional cascade submenu allows you to open an
 object's Settings notebook, open directories as WPS Folders, or open a
 new FM/2 Directory Container window for directories (the default for
@@ -236,28 +236,28 @@ a file's Default view will honor any OS/2 associations that you have
 setup.  Remember that F6 or Ctrl + double-click opens an object's
 default WPS view, and Ctrl + Shift + double-click opens an object's
 WPS Settings notebook.
-:artwork name='\fm3\bitmaps\archive.bmp' align=center.
+:artwork name='..\..\bitmaps\archive.bmp' align=center.
 :hp6.:link reftype=hd res=90300.Archive:elink.:ehp6. allows you to build
 an archive containing the selected object(s).
-:artwork name='\fm3\bitmaps\extract.bmp' align=center.
+:artwork name='..\..\bitmaps\extract.bmp' align=center.
 :hp6.:link reftype=hd res=91000.Extract:elink.:ehp6. allows you to
 extract files from selected archives.
 :p.
 :hp6.UUDecode:ehp6. decodes files that were encoded with UUEncode, a
 common protocol on the Internet.  Files created by UUDecoding are
 appended if they already exist.
-:artwork name='\fm3\bitmaps\saveclip.bmp' align=center.
+:artwork name='..\..\bitmaps\saveclip.bmp' align=center.
 :hp6.Save to clipboard:ehp6. allows you to save selected objects to the
 clipboard as a text list, one per line.  This is a good way to transfer
 selections of files to other programs; for instance, you might copy a
 list of files to the clipboard and feed it to a terminal program to send
 the files over a modem or network.
-:artwork name='\fm3\bitmaps\savelist.bmp' align=center.
+:artwork name='..\..\bitmaps\savelist.bmp' align=center.
 :hp6.:link reftype=hd res=96000.Save to list file:elink.:ehp6. lets you
 save selected objects as a list to a text file.  Lists can include file
 sizes, subjects, etc.
 :p.
-:artwork name='\fm3\bitmaps\collect.bmp' align=center.
+:artwork name='..\..\bitmaps\collect.bmp' align=center.
 :hp6.Collect File(s):ehp6. calls up the :link reftype=hd
 res=90100.Collector:elink. and places the selected files and directories
 into it.  You can also open the Collector and drag things into it.
@@ -307,7 +307,7 @@ items change the current container only.  Use the internal :link
 reftype=hd res=94600.Settings notebook:elink. to change the default for
 subsequently created containers.
 
-:artwork name='\fm3\bitmaps\rescan.bmp' align=center.
+:artwork name='..\..\bitmaps\rescan.bmp' align=center.
 :hp6.Rescan:ehp6. rescans the directory associated with a container, or
 the drive from the current object down in a tree container.  FM/2 tries
 very hard to keep all its windows up to date, but things outside FM/2
@@ -338,7 +338,7 @@ to resort itself (although the change will affect all future rescans,
 resorts and insertions in that type of container).  This command lets
 you resort a container so that the new sort type is reflected in the
 display.
-:artwork name='\fm3\bitmaps\filter.bmp' align=center.
+:artwork name='..\..\bitmaps\filter.bmp' align=center.
 :hp6.:link reftype=hd res=93400.Filter:elink.:ehp6. leads to a dialog
 that lets you set filemasks and attributes for objects to include in the
 container's display.  Note:  For Directory Containers, this sets the
@@ -352,7 +352,7 @@ directory.
 :hp6.Previous Directory:ehp6. returns the container to the last
 directory. This is sort of like a one-step "undo" when you switch
 a container to look at a different directory.
-:artwork name='\fm3\bitmaps\walk.bmp' align=center.
+:artwork name='..\..\bitmaps\walk.bmp' align=center.
 :hp6.:link reftype=hd res=91500.Walk Directories:elink.:ehp6. leads to a
 dialog that lets you walk through your directory structures, or recall
 user-defined directories.
@@ -361,8 +361,8 @@ user-defined directories.
 and in the container menu of Directory Containers.  It invokes the
 :link reftype=hd res=98500.See all files:elink. window and shows all
 the files in the directory and all its subdirectories.
-:artwork name='\fm3\bitmaps\select.bmp' align=center.
-:artwork name='\fm3\bitmaps\deselect.bmp' align=center.
+:artwork name='..\..\bitmaps\select.bmp' align=center.
+:artwork name='..\..\bitmaps\deselect.bmp' align=center.
 The :hp6.:link reftype=hd res=99100.Select:elink.:ehp6. submenu gives
 you many ways to highlight and unhighlight objects in a container.  This
 lets you quickly build sophisticated selection sets of objects upon
@@ -426,7 +426,7 @@ system or programs (including FM/2).
 :hp8.Formatting a disk will destroy any information already on the
 disk.:ehp8. This is available only in context menus requested on drives
 (root directories).
-:artwork name='\fm3\bitmaps\mkdir.bmp' align=center.
+:artwork name='..\..\bitmaps\mkdir.bmp' align=center.
 :hp6.Make Directory:ehp6. allows you to create new directories.  The
 name of the directory where you requested the context menu is filled in
 as a starting point for convenience.  Directories may be created many
@@ -456,7 +456,7 @@ object.
 
 :h2 res=96000 name=PANEL_SAVETOLIST.Save list to file
 :i1 id=aboutSaveToList.Save list to file
-:artwork name='\fm3\bitmaps\savelist.bmp' align=center.
+:artwork name='..\..\bitmaps\savelist.bmp' align=center.
 
 This command allows you to save the list of selected files to a disk file
 (or to a printer; enter PRN for the file name to which to save the list).

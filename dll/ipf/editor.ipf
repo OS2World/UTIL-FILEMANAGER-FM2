@@ -1,7 +1,7 @@
 :h1 res=99300 name=PANEL_NEWVIEWER.Internal Viewer
 :i1 id=aboutNewViewer.Internal Viewer
 
-:artwork name='\fm3\bitmaps\view.bmp' align=center.
+:artwork name='..\..\bitmaps\view.bmp' align=center.
 The internal viewer is used to view files unless you have an external
 viewing program defined in the internal Settings notebook's :link
 reftype=hd res=92200.Viewers page:elink., or the :hp2.Fast internal
@@ -63,8 +63,8 @@ notebook.
 :h2 res=93900 name=PANEL_EDITOR.Internal Viewer/Editor
 :i1 id=aboutEditor.Internal Viewer/Editor
 
-:artwork name='\fm3\bitmaps\edit.bmp' align=center.
-:artwork name='\fm3\bitmaps\view.bmp' align=center.
+:artwork name='..\..\bitmaps\edit.bmp' align=center.
+:artwork name='..\..\bitmaps\view.bmp' align=center.
 The internal viewer/editor is an extremely simplistic MLE window.  It is
 :hp2.strongly:ehp2. recommended that you replace it with a better one
 via the :link reftype=hd res=94600.Settings Notebook:elink.'s :hp1.:link

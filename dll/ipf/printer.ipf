@@ -1,6 +1,6 @@
 :h2 res=99985 name=PANEL_PRINTER.Print files
 :i1 id=aboutPrinter.Print files
-:artwork name='\fm3\bitmaps\print.bmp' align=center.
+:artwork name='..\..\bitmaps\print.bmp' align=center.
 
 This dialog, which appears before a selected group of one or more files
 is to be printed, lets you finalize your selection and set the parameters

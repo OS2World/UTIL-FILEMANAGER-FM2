@@ -1,6 +1,6 @@
 :h2 res=90700 name=PANEL_COMMAND.Editing Commands
 :i1 id=aboutCommands.Editing Commands
-:artwork name='\fm3\bitmaps\command.bmp' align=center.
+:artwork name='..\..\bitmaps\command.bmp' align=center.
 This dialog allows you to edit the commands that are available in the
 Commands submenu.  There is always a :hp1.Do it yourself:ehp1. command
 in the Commands submenu, and it is the default for the conditional

@@ -1,6 +1,6 @@
 :h2 res=93600 name=PANEL_SHADOW.Shadow
 :i1 id=aboutShadow.Shadow
-:artwork name='\fm3\bitmaps\shadow.bmp' align=center.
+:artwork name='..\..\bitmaps\shadow.bmp' align=center.
 FM/2 has the ability to create shadows of objects on your WPS desktop
 (or in other WPS folders).  To create shadows, select objects in an FM/2
 window, then select :hp1.Shadow:ehp1. from a context menu or the Files
@@ -14,7 +14,7 @@ move the shadows or folder elsewhere after that.
 
 :h2 res=91700 name=PANEL_OBJECTS.Real Objects
 :i1 id=aboutObjects.Real Objects
-:artwork name='\fm3\bitmaps\object.bmp' align=center.
+:artwork name='..\..\bitmaps\object.bmp' align=center.
 FM/2 has the ability to create objects on your WPS desktop (or in other
 WPS folders).  To create objects, select objects in an FM/2 window, then
 select :hp1.Real Objects:ehp1. from a context menu or the Files pulldown
