@@ -6,10 +6,11 @@
   System Info Display
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2002, 2003 Steven H.Levine
+  Copyright (c) 2002, 2004 Steven H.Levine
 
   Revisions	16 Oct 02 SHL - Baseline
   		08 Feb 03 SHL - Enable display
+		01 Aug 04 SHL - RunRmview: avoid buffer overflow
 
 ***********************************************************************/
 
@@ -77,7 +78,7 @@ VOID RunRmview (VOID *arg) {
         strset(s,0);
         if(!fgets(s,2048,fp))
           break;
-        s[2048] = 0;
+        s[2047] = 0;
         stripcr(s);
         rstrip(s);
         p = s;
