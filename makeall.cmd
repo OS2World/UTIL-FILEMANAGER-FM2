@@ -1,5 +1,7 @@
 cd dll
-i nmake
+nmake
+if errorlevel 1 cancel
 cd ..
-i nmake
-for %d in (*.mak) do i nmake /f %d
+nmake
+if errorlevel 1 cancel
+for %d in (*.mak) do nmake /f %d
