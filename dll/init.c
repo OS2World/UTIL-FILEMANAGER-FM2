@@ -6,10 +6,11 @@
   Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2003 Steven H.Levine
 
   Revisions	11 Jun 02 SHL - Add CheckVersion
 		11 Jun 03 SHL - Add JFS and FAT32 support
+		25 Nov 03 SHL - InitFM3DLL: correct strings error mesage
 
 ***********************************************************************/
 
@@ -365,7 +366,7 @@ BOOL InitFM3DLL (HAB hab,int argc,char **argv) {
     saymsg(MB_ENTER,
            HWND_DESKTOP,
            "Error",
-           "\"%s\" isn't in right format, at least "
+           "FM3RES.STR isn't in right format, at least "
            "for this version of FM/2.");
     return FALSE;
   }
