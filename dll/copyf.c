@@ -10,6 +10,8 @@
 
   Revisions	14 Sep 02 SHL - Drop obsolete debug code
 		14 Oct 02 SHL - Drop obsolete debug code
+		10 Nov 02 SHL - docopyf - don't forget to terminate longname
+					  optimize longname logic
 
 ***********************************************************************/
 
@@ -438,7 +440,7 @@ APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...) {
   BOOL        diskchange = FALSE,zaplong = FALSE;
   va_list     ap;
 
-  *fullnewname = *longname = *shortname = *dir = 0;
+  *fullnewname = *shortname = *dir = 0;
 
   va_start(ap,
            newname);
@@ -465,29 +467,26 @@ APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...) {
   MakeFullName(fullnewname);
   olddisk = toupper(*oldname);        /* source drive */
   newdisk = toupper(*fullnewname);    /* destination drive */
-  GetLongName(oldname,
-              longname);
-  if(*longname) {
-    if(!(driveflags[toupper(*oldname) - 'A'] & DRIVE_NOLONGNAMES))
-      *longname = 0;
-    else {
+  if(!(driveflags[toupper(*oldname) - 'A'] & DRIVE_NOLONGNAMES))
+    *longname = 0;
+  else
+  {
+    GetLongName(oldname, longname);
+    if(*longname) {
       p = RootName(longname);
       if(p != longname)
-        memmove(longname,
-                p,
-                strlen(p));
+        memmove(longname, p, strlen(p) + 1);
     }
-    /* did root name change? */
-    p = RootName(oldname);
-    pp = RootName(fullnewname);
-    if(stricmp(p,
-               pp))
-    {
+  }
+  /* If root name changed make sure longname EA goes away */
+  p = RootName(oldname);
+  pp = RootName(fullnewname);
+  if(stricmp(p, pp))
+  {
 #ifdef DEBUG
-      saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"oldname: %s\rnewname: %s",oldname,fullnewname);	// fixme to be gone
+    saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"oldname: %s\rnewname: %s",oldname,fullnewname);	// fixme to be gone
 #endif
-      zaplong = TRUE;
-    }
+    zaplong = TRUE;
   }
 
   DosError(FERR_DISABLEHARDERR);
