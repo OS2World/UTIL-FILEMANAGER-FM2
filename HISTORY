@@ -1,6 +1,7 @@
 New stuff's at the top.  This list isn't necessarily comprehensive.
 
 3.02h:
+ o Show full target path in Drag/Drop dialogs
  o Add debug support to troubleshoot invisible FAT32 drive
  o Correct archiver.bb2 editing
 
