@@ -3,9 +3,8 @@
 
   $Id$
 
-  Copyright (c) 1993-98 M. Kimes'
+  Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2002 Steven H.Levine
-
 
   Archive containers
 
