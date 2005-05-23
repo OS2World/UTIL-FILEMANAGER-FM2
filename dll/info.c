@@ -8,9 +8,9 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2005 Steven H.Levine
 
-  16 Oct 02 SHL - Handle large partitions
-  12 Feb 03 SHL - FileInfoProc: standardize EA math
-  01 Aug 04 SHL - Rework lstrip/rstrip usage
+  16 Oct 02 SHL Handle large partitions
+  12 Feb 03 SHL FileInfoProc: standardize EA math
+  01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
