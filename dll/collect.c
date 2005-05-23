@@ -6,11 +6,12 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2004 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H.Levine
 
-  Revisions	15 Oct 02 MK Baseline
-		10 Jan 04 SHL Avoid -1L byte counts
-		01 Aug 04 SHL Rework lstrip/rstrip usage
+  15 Oct 02 MK Baseline
+  10 Jan 04 SHL Avoid -1L byte counts
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -225,7 +226,7 @@ MenuAbort:
 
         if(fOtherHelp) {
           if((!hwndBubble ||
-              WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+              WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
              !WinQueryCapture(HWND_DESKTOP)) {
             switch(id) {
               case DIR_SELECTED:
@@ -506,7 +507,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
       return MRFROMLONG(DRR_TARGET);
 
     case UM_UPDATERECORDLIST:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd && mp1) {
 
         INT    numentries = 0;
@@ -520,7 +521,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
       return 0;
 
     case UM_SETUP:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         /* set unique id */
         WinSetWindowUShort(hwnd,QWS_ID,COLLECTOROBJ_FRAME +
@@ -574,7 +575,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
     case UM_COLLECT:
       DosError(FERR_DISABLEHARDERR);
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (dcd)
       {
         LISTINFO    *li = (LISTINFO *)mp1;
@@ -681,7 +682,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
       return 0;
 
     case UM_COLLECTFROMFILE:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd && mp1) {
 
         FILESTATUS4  fs4;
@@ -769,7 +770,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
       return 0;
 
     case UM_SELECT:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         switch(SHORT1FROMMP(mp1)) {
           case IDM_SELECTLIST:
@@ -870,7 +871,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
     case UM_MASSACTION:
       if(mp1) {
 
-        dcd = WinQueryWindowPtr(hwnd,0);
+        dcd = WinQueryWindowPtr(hwnd,QWL_USER);
         if(dcd) {
 
           WORKER *wk;
@@ -899,7 +900,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
     case UM_ACTION:
       if(mp1) {
 
-        dcd = WinQueryWindowPtr(hwnd,0);
+        dcd = WinQueryWindowPtr(hwnd,QWL_USER);
         if(dcd) {
 
           WORKER *wk;
@@ -930,7 +931,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
       break;
 
     case WM_DESTROY:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 
         INT x = 0;
@@ -953,7 +954,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
 MRESULT EXPENTRY CollectorCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,0);
+  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
   INT         tempsortFlags;
 
   switch(msg) {
@@ -2854,7 +2855,7 @@ HWND StartCollector (HWND hwndParent,INT flags) {
                                      NULL);
       if(dcd->hwndCnr) {
         Collector = dcd->hwndCnr;
-        WinSetWindowPtr(dcd->hwndCnr,0,(PVOID)dcd);
+        WinSetWindowPtr(dcd->hwndCnr,QWL_USER,(PVOID)dcd);
         WinSetWindowText(hwndFrame,
                          GetPString(IDS_COLLECTORTITLETEXT));
         if(FrameFlags & FCF_MENU) {

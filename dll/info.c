@@ -6,11 +6,12 @@
   Info window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2004 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	16 Oct 02 SHL - Handle large partitions
-		12 Feb 03 SHL - FileInfoProc: standardize EA math
-		01 Aug 04 SHL - Rework lstrip/rstrip usage
+  16 Oct 02 SHL - Handle large partitions
+  12 Feb 03 SHL - FileInfoProc: standardize EA math
+  01 Aug 04 SHL - Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -85,7 +86,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         ULONG type;
 
         filename = (CHAR *)mp2;
-        WinSetWindowPtr(hwnd,0,(PVOID)filename);
+        WinSetWindowPtr(hwnd,QWL_USER,(PVOID)filename);
         WinSendDlgItemMsg(hwnd,
                           INFO_LABEL,
                           EM_SETTEXTLIMIT,
@@ -366,7 +367,7 @@ MRESULT EXPENTRY IconProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   ICONSTUF   *is;
   static BOOL emphasized = FALSE;
 
-  is = (ICONSTUF *)WinQueryWindowPtr(hwnd,0);
+  is = (ICONSTUF *)WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
     case DM_DRAGOVER:
@@ -537,7 +538,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       memset(is,0,sizeof(ICONSTUF));
       is->list = (CHAR **)mp2;
       is->size = sizeof(ICONSTUF);
-      WinSetWindowPtr(hwnd,0,is);
+      WinSetWindowPtr(hwnd,QWL_USER,is);
       {
         USHORT ids[] = {FLE_SIZES,FLE_SLACK,FLE_LASTWRITE,FLE_CREATE,
                         FLE_LASTACCESS,0};
@@ -587,7 +588,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         case FLE_HIDDEN:
           switch(SHORT2FROMMP(mp1)) {
             case BN_CLICKED:
-              is = WinQueryWindowPtr(hwnd,0);
+              is = WinQueryWindowPtr(hwnd,QWL_USER);
               if(is && *is->filename) {
 
                 LISTINFO li;
@@ -622,7 +623,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           switch(SHORT2FROMMP(mp1)) {
             case LN_ENTER:
             case LN_SELECT:
-              is = WinQueryWindowPtr(hwnd,0);
+              is = WinQueryWindowPtr(hwnd,QWL_USER);
               if(is) {
 
                 SHORT sSelect;
@@ -689,7 +690,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       WinCheckButton(hwnd,FLE_PHYSDRV,FALSE);
       WinCheckButton(hwnd,FLE_VIRTDRV,FALSE);
       WinCheckButton(hwnd,FLE_PROTDLL,FALSE);
-      is = WinQueryWindowPtr(hwnd,0);
+      is = WinQueryWindowPtr(hwnd,QWL_USER);
       if(is && *is->filename) {
 
         CHAR         s[97];
@@ -941,7 +942,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     case WM_COMMAND:
       switch(SHORT1FROMMP(mp1)) {
         case DID_OK:
-          is = WinQueryWindowPtr(hwnd,0);
+          is = WinQueryWindowPtr(hwnd,QWL_USER);
           WinDismissDlg(hwnd,(is && is->madechanges) ? 2 : 1);
           break;
         case IDM_HELP:
@@ -952,14 +953,14 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                        MPFROMSHORT(HM_RESOURCEID));
           break;
         case FLE_SETTINGS:
-          is = WinQueryWindowPtr(hwnd,0);
+          is = WinQueryWindowPtr(hwnd,QWL_USER);
           if(is && *is->filename)
             OpenObject(is->filename,
                        Settings,
                        hwnd);
           break;
         case FLE_EAS:
-          is = WinQueryWindowPtr(hwnd,0);
+          is = WinQueryWindowPtr(hwnd,QWL_USER);
           if(is && *is->filename) {
 
             CHAR *list[2];
@@ -975,14 +976,14 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           }
           break;
         case DID_CANCEL:
-          is = WinQueryWindowPtr(hwnd,0);
+          is = WinQueryWindowPtr(hwnd,QWL_USER);
           WinDismissDlg(hwnd,(is && is->madechanges) ? 2 : 0);
           break;
       }
       return 0;
 
     case WM_DESTROY:
-      is = WinQueryWindowPtr(hwnd,0);
+      is = WinQueryWindowPtr(hwnd,QWL_USER);
       if(is)
         free(is);
       break;
@@ -1028,7 +1029,7 @@ MRESULT EXPENTRY SetDrvProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case UM_UNDO:
       {
-        ULONG drive = WinQueryWindowULong(hwnd,0);
+        ULONG drive = WinQueryWindowULong(hwnd,QWL_USER);
 
         WinCheckButton(hwnd,DVS_REMOVABLE,
                        ((driveflags[drive] & DRIVE_REMOVABLE) != 0));
@@ -1070,7 +1071,7 @@ MRESULT EXPENTRY SetDrvProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       switch(SHORT1FROMMP(mp1)) {
         case DID_OK:
           {
-            ULONG drive = WinQueryWindowULong(hwnd,0);
+            ULONG drive = WinQueryWindowULong(hwnd,QWL_USER);
 
             if(WinQueryButtonCheckstate(hwnd,DVS_NOPRESCAN))
               driveflags[drive] |= DRIVE_NOPRESCAN;

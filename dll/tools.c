@@ -6,9 +6,10 @@
   Toolbar support routines for FM/2
 
   Copyright (c) 1994-97 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -601,7 +602,7 @@ MRESULT EXPENTRY AddToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
   switch(msg) {
     case WM_INITDLG:
-      WinSetWindowPtr(hwnd,0,mp2);
+      WinSetWindowPtr(hwnd,QWL_USER,mp2);
       if(mp2) {
         WinSetWindowText(hwnd,GetPString(IDS_EDITTOOLTEXT));
         WinSendDlgItemMsg(hwnd,ADDBTN_ID,EM_SETREADONLY,
@@ -955,9 +956,9 @@ MRESULT EXPENTRY ToolIODlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   switch(msg) {
     case WM_INITDLG:
       if(mp2)
-        WinSetWindowULong(hwnd,0,TRUE);
+        WinSetWindowULong(hwnd,QWL_USER,TRUE);
       else {
-        WinSetWindowULong(hwnd,0,FALSE);
+        WinSetWindowULong(hwnd,QWL_USER,FALSE);
         WinSetWindowText(hwnd,
                          GetPString(IDS_LOADTOOLBOXTITLETEXT));
       }
@@ -1078,7 +1079,7 @@ MRESULT EXPENTRY ToolIODlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_OK:
           {
-            BOOL saving = WinQueryWindowULong(hwnd,0);
+            BOOL saving = WinQueryWindowULong(hwnd,QWL_USER);
             CHAR temptools[CCHMAXPATH];
 
             strcpy(temptools,lasttoolbox);

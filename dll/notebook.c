@@ -6,9 +6,10 @@
   Configuration notebook
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -113,7 +114,7 @@ MRESULT EXPENTRY CfgADlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -277,7 +278,7 @@ MRESULT EXPENTRY CfgSDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -396,7 +397,7 @@ MRESULT EXPENTRY CfgVDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -514,7 +515,7 @@ MRESULT EXPENTRY CfgBDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),
                   msg,
                   mp1,
                   mp2);
@@ -674,7 +675,7 @@ MRESULT EXPENTRY CfgTSDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -790,7 +791,7 @@ MRESULT EXPENTRY CfgTDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -912,7 +913,7 @@ MRESULT EXPENTRY CfgGDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -1058,7 +1059,7 @@ MRESULT EXPENTRY CfgCDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -1153,7 +1154,7 @@ MRESULT EXPENTRY CfgDDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -1320,7 +1321,7 @@ MRESULT EXPENTRY CfgMDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -1456,7 +1457,7 @@ MRESULT EXPENTRY CfgMDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                               "SeparateParms",
                               (PVOID)&fSeparateParms,
                               sizeof(BOOL));
-          WinSendMsg((HWND)WinQueryWindowULong(hwnd,0),
+          WinSendMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),
                      UM_UNDO,
                      MPVOID,
                      MPVOID);
@@ -1578,7 +1579,7 @@ MRESULT EXPENTRY Cfg5DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -1761,7 +1762,7 @@ MRESULT EXPENTRY Cfg6DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -1921,7 +1922,7 @@ MRESULT EXPENTRY Cfg7DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -2086,7 +2087,7 @@ MRESULT EXPENTRY Cfg8DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           break;
 
         case IDM_HELP:
@@ -2625,7 +2626,7 @@ MRESULT EXPENTRY Cfg9DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           fExternalCollector = TRUE;
           fExternalINIs = TRUE;
           fUserListSwitches = TRUE;
-          WinSendMsg((HWND)WinQueryWindowULong(hwnd,0),UM_UNDO,MPVOID,MPVOID);
+          WinSendMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),UM_UNDO,MPVOID,MPVOID);
           if(hwndTree) {
 
             CNRINFO cnri;
@@ -2721,7 +2722,7 @@ MRESULT EXPENTRY Cfg9DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           fExternalCollector = TRUE;
           fExternalINIs = TRUE;
           fUserListSwitches = TRUE;
-          WinSendMsg((HWND)WinQueryWindowULong(hwnd,0),UM_UNDO,MPVOID,MPVOID);
+          WinSendMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),UM_UNDO,MPVOID,MPVOID);
           if(hwndTree) {
 
             CNRINFO cnri;
@@ -2765,7 +2766,7 @@ MRESULT EXPENTRY Cfg9DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case DID_CANCEL:
         case DID_OK:
-          PostMsg((HWND)WinQueryWindowULong(hwnd,0),msg,mp1,mp2);
+          PostMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),msg,mp1,mp2);
           return 0;
 
         default:
@@ -2832,7 +2833,7 @@ MRESULT EXPENTRY Cfg9DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   MPVOID);
         }
       }
-      WinSendMsg((HWND)WinQueryWindowULong(hwnd,0),
+      WinSendMsg((HWND)WinQueryWindowULong(hwnd,QWL_USER),
                  UM_UNDO,
                  MPVOID,
                  MPVOID);

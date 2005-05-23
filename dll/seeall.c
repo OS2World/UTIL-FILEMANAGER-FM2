@@ -6,11 +6,12 @@
   See all matching files
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	16 Oct 02 SHL - Handle large partitions
-		25 Nov 03 SHL - StartSeeAll: avoid forgetting startpath
-		06 Dec 03 SHL - StartSeeAll: correct malloc arg oops
+  16 Oct 02 SHL Handle large partitions
+  25 Nov 03 SHL StartSeeAll: avoid forgetting startpath
+  06 Dec 03 SHL StartSeeAll: correct malloc arg oops
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -219,7 +220,7 @@ MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       {
 	CHAR         **files = NULL,**list = (CHAR **)mp2,path[CCHMAXPATH];
 	INT            numfiles = 0,numalloc = 0,plen = 0;
-	HWND           hwndFrame = WinQueryWindowULong(hwnd,0);
+	HWND           hwndFrame = WinQueryWindowULong(hwnd,QWL_USER);
 	CHAR           message[CCHMAXPATH * 2],wildname[CCHMAXPATH];
 	register INT   x;
 	register CHAR *p,*pp;
@@ -1259,7 +1260,7 @@ static VOID MakeSeeObj (VOID *args) {
 				  NULL);
 	if(hwndObj) {
 	  ad->hwndObj = hwndObj;
-	  WinSetWindowULong(hwndObj,0,ad->hwndFrame);
+	  WinSetWindowULong(hwndObj,QWL_USER,ad->hwndFrame);
 	  priority_normal();
 	  while(WinGetMsg(hab2,&qmsg2,(HWND)0,0,0))
 	    WinDispatchMsg(hab2,&qmsg2);
@@ -1284,7 +1285,7 @@ static VOID SelectMask (HWND hwnd,BOOL deselect)
   register ULONG x,y,z;
   ULONG		 ul;
   BOOL           ret;
-  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
 
   memset(&mask,0,sizeof(mask));
   mask.fNoAttribs = FALSE;
@@ -1411,7 +1412,7 @@ static VOID CollectList (HWND hwnd,CHAR **list) {
 
 static VOID FreeAllFilesList (HWND hwnd) {
 
-  ALLDATA       *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x;
 
   if(ad->afhead && ad->affiles) {
@@ -1433,7 +1434,7 @@ static VOID FreeAllFilesList (HWND hwnd) {
 
 static CHAR ** BuildAList (HWND hwnd) {
 
-  ALLDATA       *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,y,z = 0;
   CHAR         **list = NULL;
   INT            numfiles = 0,numalloc = 0,error;
@@ -1460,7 +1461,7 @@ static BOOL Mark (HWND hwnd,INT command,CHAR **list)
 {
   /* Marks only unfiltered files */
 
-  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,y,z;
   ULONG		ul;
   BOOL          ret = TRUE;
@@ -1531,7 +1532,7 @@ static BOOL MarkList (HWND hwnd,INT command,CHAR **list)
 {
   /* Marks files whether filtered or not */
 
-  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,z;
   ULONG		ul;
   BOOL          ret = TRUE;
@@ -1601,7 +1602,7 @@ static BOOL UpdateList (HWND hwnd,CHAR **list) {
 
   /* Updates files in the list */
 
-  ALLDATA       *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,z;
   BOOL           ret,didone = FALSE;
   FILEFINDBUF3   ffb;
@@ -1794,7 +1795,7 @@ static int comparedates (const void *v1,const void *v2) {
 
 static VOID ReSort (HWND hwnd) {
 
-  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,y;
   ULONG		ul;
 
@@ -1830,7 +1831,7 @@ VOID FindDupes (VOID *args) {
   HWND           hwnd = (HWND)args;
   HAB            hab2 = (HAB)0;
   HMQ            hmq2 = (HMQ)0;
-  ALLDATA       *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
   if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
     priority_normal();
@@ -1946,7 +1947,7 @@ static VOID FilterList (HWND hwnd) {
 
   register ULONG x,z;
   BOOL           ret;
-  ALLDATA       *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   CHAR          *p;
 
   if(ad->cursored <= ad->afifiles) {
@@ -2023,7 +2024,7 @@ static VOID FilterList (HWND hwnd) {
 
 static ULONG RemoveDeleted (HWND hwnd) {
 
-  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   ULONG         oldaffiles = pAD->affiles;
   register ULONG x,y;
   ULONG		ul;
@@ -2072,7 +2073,7 @@ static ULONG RemoveDeleted (HWND hwnd) {
 
 static VOID DoADir (HWND hwnd,CHAR *pathname) {
 
-  ALLDATA       *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   CHAR          *filename,*enddir;
   FILEFINDBUF3  *pffb,*ffb;
   HDIR           hdir = HDIR_CREATE;
@@ -2183,7 +2184,7 @@ static VOID FindAll (VOID *args) {
   HWND      hwnd = (HWND)args;
   HAB       hab2 = (HAB)0;
   HMQ       hmq2 = (HMQ)0;
-  ALLDATA  *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA  *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
   if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
     priority_normal();
@@ -2252,7 +2253,7 @@ MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 	ALLDATA *ad;
 
 	ad = (ALLDATA *)mp2;
-	WinSetWindowPtr(hwnd,0,mp2);
+	WinSetWindowPtr(hwnd,QWL_USER,mp2);
 	DosError(FERR_DISABLEHARDERR);
 	if(!DosQCurDisk(&ulDriveNum,&ulDriveMap)) {
 	  for(x = 2L;x < 26L && !ad->stopflag;x++) {
@@ -2295,7 +2296,7 @@ MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 	    INT       x;
 	    SHORT     sSelect;
 	    CHAR      filename[3];
-	    ALLDATA  *ad = WinQueryWindowPtr(hwnd,0);
+	    ALLDATA  *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
 	    memset(ad->drvsflags,0,sizeof(ad->drvsflags));
 	    sSelect = (SHORT)WinSendDlgItemMsg(hwnd,DRVS_LISTBOX,
@@ -2342,7 +2343,7 @@ MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 static HPS InitWindow (HWND hwnd) {
 
-  ALLDATA     *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA     *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   HPS          hps = (HPS)0;
   SIZEL        sizel;
   FONTMETRICS  FontMetrics;
@@ -2397,7 +2398,7 @@ static HPS InitWindow (HWND hwnd) {
 static VOID PaintLine (HWND hwnd,HPS hps,ULONG whichfile,ULONG topfile,
 		       RECTL *Rectl) {
 
-  ALLDATA *ad = WinQueryWindowPtr(hwnd,0);
+  ALLDATA *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   POINTL   ptl;
   CHAR     szBuff[CCHMAXPATH + 80];
   ULONG    len,y;
@@ -2498,7 +2499,7 @@ MRESULT EXPENTRY SeeStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 MRESULT EXPENTRY SeeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+  PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
     case WM_BUTTON1UP:
@@ -2586,13 +2587,13 @@ MRESULT EXPENTRY SeeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 
-  ALLDATA *pAD = WinQueryWindowPtr(hwnd,0);
+  ALLDATA *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   ULONG   ul;
 
   switch (msg) {
     case WM_CREATE:
       // fprintf(stderr,"Seeall: WM_CREATE\n");
-      WinSetWindowPtr(hwnd,0,NULL);
+      WinSetWindowPtr(hwnd,QWL_USER,NULL);
       pAD = malloc(sizeof(ALLDATA));
       if(pAD) {
 	memset(pAD,0,sizeof(ALLDATA));
@@ -2602,7 +2603,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 			    FILE_SYSTEM   | FILE_ARCHIVED;
 	pAD->mask.fNoDirs = TRUE;
 	*(pAD->mask.prompt) = 0;
-	WinSetWindowPtr(hwnd,0,(PVOID)pAD);
+	WinSetWindowPtr(hwnd,QWL_USER,(PVOID)pAD);
 	pAD->compare = comparenames;
 	if(Firsttime) {
 
@@ -2724,7 +2725,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	      oldproc = WinSubclassWindow(WinQueryWindow(hwnd,QW_PARENT),
 					  (PFNWP)SeeFrameWndProc);
 	      if(oldproc)
-		WinSetWindowPtr(WinQueryWindow(hwnd,QW_PARENT),0,
+		WinSetWindowPtr(WinQueryWindow(hwnd,QW_PARENT),QWL_USER,
 				(PVOID)oldproc);
 	    }
 	    break;

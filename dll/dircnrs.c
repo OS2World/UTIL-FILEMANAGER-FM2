@@ -6,10 +6,11 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2004 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	16 Oct 02 SHL Handle large partitions
-		01 Aug 04 SHL Rework lstrip/rstrip usage
+  16 Oct 02 SHL Handle large partitions
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -298,7 +299,7 @@ MenuAbort:
 
         if(fOtherHelp) {
           if((!hwndBubble ||
-              WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+              WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
              !WinQueryCapture(HWND_DESKTOP)) {
             switch(id) {
               case DIR_TOTALS:
@@ -491,7 +492,7 @@ MRESULT EXPENTRY DirClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
         DIRCNRDATA *dcd;
 
         *(CHAR *)mp1 = 0;
-        dcd = WinQueryWindowPtr(WinWindowFromID(hwnd,DIR_CNR),0);
+        dcd = WinQueryWindowPtr(WinWindowFromID(hwnd,DIR_CNR),QWL_USER);
         if(dcd)
           strcpy((CHAR *)mp1,dcd->directory);
         return MRFROMLONG(TRUE);
@@ -659,7 +660,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return MRFROMLONG(DRR_TARGET);
 
     case UM_UPDATERECORDLIST:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd && mp1) {
 
         INT    numentries = 0;
@@ -677,7 +678,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_SETUP:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         /* set unique id */
         WinSetWindowUShort(hwnd,
@@ -692,7 +693,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_RESCAN2:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 
         FSALLOCATE fsa;
@@ -733,7 +734,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_FLESH:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 
         PCNRITEM pci,pciC;
@@ -766,7 +767,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       /*
        * populate container
        */
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         DosEnterCritSec();
          if(dcd->stopflag)
@@ -951,7 +952,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_SELECT:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         switch(SHORT1FROMMP(mp1)) {
           case IDM_SELECTBOTH:
@@ -1078,7 +1079,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     case UM_MASSACTION:
       if(mp1) {
 
-        dcd = WinQueryWindowPtr(hwnd,0);
+        dcd = WinQueryWindowPtr(hwnd,QWL_USER);
         if(dcd) {
 
           WORKER *wk;
@@ -1107,7 +1108,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     case UM_ACTION:
       if(mp1) {
 
-        dcd = WinQueryWindowPtr(hwnd,0);
+        dcd = WinQueryWindowPtr(hwnd,QWL_USER);
         if(dcd) {
 
           WORKER *wk;
@@ -1138,7 +1139,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case WM_DESTROY:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         if(dcd->hwndRestore)
           WinSetWindowPos(dcd->hwndRestore,
@@ -1169,7 +1170,7 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 MRESULT EXPENTRY DirCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
   ULONG ulrc;
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,0);
+  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
     case DM_PRINTOBJECT:
@@ -3904,7 +3905,7 @@ HWND StartDirCnr (HWND hwndParent,CHAR *directory,HWND hwndRestore,
                                        NULL,
                                        NULL);
         if(dcd->hwndCnr) {
-          WinSetWindowPtr(dcd->hwndCnr,0,(PVOID)dcd);
+          WinSetWindowPtr(dcd->hwndCnr,QWL_USER,(PVOID)dcd);
           dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
                                            (PFNWP)DirCnrWndProc);
           {

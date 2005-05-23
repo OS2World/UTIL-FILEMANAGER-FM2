@@ -6,11 +6,12 @@
   Auto view
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	12 Sep 02 SHL - AutoObjProc: catch buff2 overflows
-		25 Oct 02 SHL - CreateHexDump: catch buffer overflow
-		12 Feb 03 SHL - AutoObjProc: standardize EA math
+  12 Sep 02 SHL AutoObjProc: catch buff2 overflows
+  25 Oct 02 SHL CreateHexDump: catch buffer overflow
+  12 Feb 03 SHL AutoObjProc: standardize EA math
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -649,7 +650,7 @@ VOID MakeAutoWin (VOID *args) {
                                     NULL,
                                     NULL);
       if(hwndAutoObj) {
-        WinSetWindowULong(hwndAutoObj,0,hwndParent);
+        WinSetWindowULong(hwndAutoObj,QWL_USER,hwndParent);
         priority_normal();
         while(WinGetMsg(hab2,&qmsg2,(HWND)0,0,0))
           WinDispatchMsg(hab2,&qmsg2);

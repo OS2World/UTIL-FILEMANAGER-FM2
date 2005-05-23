@@ -6,11 +6,12 @@
   Archive containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2004 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	11 Jun 02 SHL - Ensure archive name not garbage
-  		22 May 03 SHL - ArcObjWndProc: fix UM_RESCAN now that we understand it
-		01 Aug 04 SHL - Rework lstrip/rstrip usage
+  11 Jun 02 SHL Ensure archive name not garbage
+  22 May 03 SHL ArcObjWndProc: fix UM_RESCAN now that we understand it
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -53,7 +54,7 @@ MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         WinDismissDlg(hwnd,0);
       else {
         ad = (ARCDUMP *)mp2;
-        WinSetWindowPtr(hwnd,0,ad);
+        WinSetWindowPtr(hwnd,QWL_USER,ad);
         if(ad->errmsg)
           WinSetDlgItemText(hwnd,
                             ARCERR_TEXT,
@@ -86,14 +87,14 @@ MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
 
         case DID_OK:
-          ad = WinQueryWindowPtr(hwnd,0);
+          ad = WinQueryWindowPtr(hwnd,QWL_USER);
           WinDlgBox(HWND_DESKTOP,hwnd,ArcReviewDlgProc,FM3ModHandle,
                     AD_FRAME,MPFROMP(ad));
           WinDismissDlg(hwnd,0);
           break;
 
         case ARCERR_VIEW:
-          ad = WinQueryWindowPtr(hwnd,0);
+          ad = WinQueryWindowPtr(hwnd,QWL_USER);
           {
             CHAR *list[2];
 
@@ -117,7 +118,7 @@ MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
 
         case ARCERR_TEST:
-          ad = WinQueryWindowPtr(hwnd,0);
+          ad = WinQueryWindowPtr(hwnd,QWL_USER);
           runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
                   hwnd,NULL,NULL,"%s %s%s%s",ad->info->test,
                   ((needs_quoting(ad->arcname)) ? "\"" : NullStr),
@@ -811,7 +812,7 @@ MenuAbort:
 
         if(fOtherHelp) {
           if((!hwndBubble ||
-              WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+              WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
              !WinQueryCapture(HWND_DESKTOP)) {
             switch(id) {
               case DIR_TOTALS:
@@ -1171,7 +1172,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return (MRESULT)TRUE;
 
     case DM_RENDER:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd && dcd->info && dcd->info->extract && dcd->arcname) {
 
         PDRAGTRANSFER  pdt = (PDRAGTRANSFER)mp1;
@@ -1216,7 +1217,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         PDRAGTRANSFER  pdt = (PDRAGTRANSFER)mp1;
         USHORT         usRes = DMFL_RENDERFAIL;
 
-        dcd = WinQueryWindowPtr(hwnd,0);
+        dcd = WinQueryWindowPtr(hwnd,QWL_USER);
         if(dcd && dcd->info && dcd->info->extract && dcd->arcname) {
 
           CHAR          *filename = (CHAR *)mp2,*p;
@@ -1268,7 +1269,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_SETUP:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         /* set unique id */
         WinSetWindowUShort(hwnd,QWS_ID,ARCOBJ_FRAME + (ARC_FRAME - dcd->id));
@@ -1284,7 +1285,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       /*
        * populate container
        */
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         if(mp1)
           strcpy(dcd->arcname,(CHAR *)mp1);	// Update name on request
@@ -1326,7 +1327,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_SELECT:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         switch(SHORT1FROMMP(mp1)) {
           case IDM_SELECTALL:
@@ -1369,7 +1370,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_ENTER:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 
         CHAR   *s = (CHAR *)mp1,*p,*pp,filename[CCHMAXPATH];
@@ -1426,7 +1427,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case UM_ACTION:
       DosError(FERR_DISABLEHARDERR);
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 
         LISTINFO    *li = (LISTINFO *)mp1;
@@ -1962,7 +1963,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case WM_DESTROY:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         if(*dcd->workdir) {
           DosSleep(33L);
@@ -1976,7 +1977,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         FreeList(dcd->lastselection);
         WinSendMsg(dcd->hwndCnr,UM_CLOSE,MPVOID,MPVOID);
         free(dcd);
-        WinSetWindowPtr(dcd->hwndCnr,0,NULL);
+        WinSetWindowPtr(dcd->hwndCnr,QWL_USER,NULL);
       }
       if(!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
         WinSendMsg((HWND)0,WM_QUIT,MPVOID,MPVOID);
@@ -1988,7 +1989,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 MRESULT EXPENTRY ArcCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,0);
+  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
     case DM_PRINTOBJECT:
@@ -3478,7 +3479,7 @@ DosBeep(50,100);
                      MPVOID,
                      MPVOID);
       }
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(!dcd ||
          (!dcd->dontclose &&
           !dcd->amextracted &&

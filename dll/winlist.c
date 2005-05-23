@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Window List Dialog
+
+  Copyright (c) 1993-97 M. Kimes
+  Copyright (c) 2005 Steven H.Levine
+
+  23 May 05 SHL Use QWL_USER
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -13,9 +27,8 @@
 #pragma data_seg(DATA1)
 #pragma alloc_text(WINLIST,WindowList,WinListDlgProc)
 
-
-MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static HWND Me = (HWND)0;
   SHORT       sSelect;
 
@@ -34,7 +47,7 @@ MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         CHAR   wtext[CCHMAXPATH + 1];
 
         Me = hwnd;
-        WinSetWindowULong(hwnd,0,*(HWND *)mp2);
+        WinSetWindowULong(hwnd,QWL_USER,*(HWND *)mp2);
         henum = WinBeginEnumWindows(*(HWND *)mp2);
         while((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
           id = WinQueryWindowUShort(hwndChild,QWS_ID);
@@ -166,7 +179,7 @@ MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         case WLIST_CLOSE:
         case DID_OK:
           {
-            HWND hwndActive = (HWND)WinQueryWindowULong(hwnd,0);
+            HWND hwndActive = (HWND)WinQueryWindowULong(hwnd,QWL_USER);
 
             hwndActive = WinQueryActiveWindow(hwndActive);
             sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
@@ -191,7 +204,7 @@ MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 if(SHORT1FROMMP(mp1) == DID_OK) {
                   if(!(swp.fl & SWP_MINIMIZE) &&
                      (swp.cx == 0 || swp.cy == 0)) {
-                    GetNextWindowPos((HWND)WinQueryWindowULong(hwnd,0),&swp,
+                    GetNextWindowPos((HWND)WinQueryWindowULong(hwnd,QWL_USER),&swp,
                                      NULL,NULL);
                     WinSetWindowPos(HwndC,HWND_TOP,swp.x,swp.y,swp.cx,swp.cy,
                                     SWP_MOVE   | SWP_SIZE     | SWP_SHOW |
@@ -252,8 +265,8 @@ MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID WindowList (HWND hwnd) {
-
+VOID WindowList (HWND hwnd)
+{
   WinDlgBox(HWND_DESKTOP,HWND_DESKTOP,WinListDlgProc,FM3ModHandle,WLIST_FRAME,
             MPFROMP(&hwnd));
 }

@@ -6,11 +6,12 @@
   Main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2004 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	11 Jun 02 SHL - Drop obsolete xor code
-		16 Oct 02 SHL - Handle large partitions
-		01 Aug 04 SHL - Rework lstrip/rstrip usage
+  11 Jun 02 SHL Drop obsolete xor code
+  16 Oct 02 SHL Handle large partitions
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -92,7 +93,7 @@ MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1, MPARAM mp2) 
            !(driveflags[d - 'A'] & (DRIVE_CDROM | DRIVE_INVALID |
                                     DRIVE_SLOW)) &&
            (!hwndBubble ||
-              WinQueryWindowULong(hwndBubble,0) != hwndB) &&
+              WinQueryWindowULong(hwndBubble,QWL_USER) != hwndB) &&
              !WinQueryCapture(HWND_DESKTOP)) {
 
           FSALLOCATE fsa;
@@ -128,7 +129,7 @@ MRESULT EXPENTRY MainObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1, MPARAM mp2) 
                     ulPctFree);
           }
           if((!hwndBubble ||
-              WinQueryWindowULong(hwndBubble,0) != hwndB) &&
+              WinQueryWindowULong(hwndBubble,QWL_USER) != hwndB) &&
              !WinQueryCapture(HWND_DESKTOP))
           WinSendMsg(hwndB,
                        UM_SETUP6,
@@ -239,7 +240,7 @@ VOID MakeMainObjWin (VOID *args) {
                                        NULL,
                                        NULL);
 			if(MainObjectHwnd) {
-				WinSetWindowPtr(MainObjectHwnd,0,args);
+				WinSetWindowPtr(MainObjectHwnd,QWL_USER,args);
 				while(WinGetMsg(hab2,&qmsg2,(HWND)0,0,0))
 					WinDispatchMsg(hab2,&qmsg2);
 				WinDestroyWindow(MainObjectHwnd);
@@ -769,7 +770,7 @@ void BubbleHelp (HWND hwnd,BOOL other,BOOL drive,BOOL above,char *help) {
       (other && fOtherHelp) ||
       (!other && !drive && fToolbarHelp))) {
     if((!hwndBubble ||
-        WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+        WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
        !WinQueryCapture(HWND_DESKTOP))
       MakeBubble(hwnd,
                  above,
@@ -829,7 +830,7 @@ VOID MakeBubble (HWND hwnd,BOOL above,CHAR *help) {
 		WinQueryWindowPos(hwnd,&swp);
 		lyScreen = WinQuerySysValue(HWND_DESKTOP,SV_CYSCREEN);
 		lxScreen = WinQuerySysValue(HWND_DESKTOP,SV_CXSCREEN);
-		WinSetWindowULong(hwndBubble,0,hwnd);
+		WinSetWindowULong(hwndBubble,QWL_USER,hwnd);
     SetPresParams(hwndBubble,
                   NULL,
                   NULL,
@@ -918,7 +919,7 @@ MRESULT EXPENTRY BubbleProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 				WinQueryPointerPos(HWND_DESKTOP,&ptl);
 				if(WinWindowFromPoint(HWND_DESKTOP,&ptl,TRUE) !=
-					 WinQueryWindowULong(hwnd,0) ||
+					 WinQueryWindowULong(hwnd,QWL_USER) ||
 					 !WinIsWindowVisible(hwnd))
           WinDestroyWindow(hwnd);
 			}
@@ -1166,7 +1167,7 @@ MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 		case WM_MOUSEMOVE:
 			if(fToolbarHelp) {
-				if((!hwndBubble || WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+				if((!hwndBubble || WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
 					 !WinQueryCapture(HWND_DESKTOP)) {
 					id = WinQueryWindowUShort(hwnd,QWS_ID);
 					tool = find_tool(id);
@@ -1566,7 +1567,7 @@ VOID BuildTools (HWND hwndT,BOOL resize) {
 
 MRESULT EXPENTRY CommandLineProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-	PFNWP		oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+	PFNWP		oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
 	static BOOL	lbup = FALSE;
 
 	switch(msg) {
@@ -1834,7 +1835,7 @@ MRESULT EXPENTRY DriveProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     case WM_MOUSEMOVE:
       if(fDrivebarHelp &&
          (!hwndBubble ||
-          WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+          WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
          !WinQueryCapture(HWND_DESKTOP)) {
         id = WinQueryWindowUShort(hwnd,QWS_ID);
         if(helpid != id) {
@@ -1853,7 +1854,7 @@ MRESULT EXPENTRY DriveProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       if(helpid == WinQueryWindowUShort(hwnd,QWS_ID)) {
         if((char *)mp1 &&
            (!hwndBubble ||
-            WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+            WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
            !WinQueryCapture(HWND_DESKTOP)) {
 
           RECTL  rcl;
@@ -2442,7 +2443,7 @@ MRESULT EXPENTRY StatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         char  *s = NULL;
 
 				if(fOtherHelp) {
-					if((!hwndBubble || WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+					if((!hwndBubble || WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
 						 !WinQueryCapture(HWND_DESKTOP)) {
 						switch(id) {
 							case IDM_ATTRS:
@@ -3036,7 +3037,7 @@ BOOL SaveDirCnrState (HWND hwndClient,CHAR *name) {
                                 s,
                                 (PVOID)&swp,
                                 sizeof(SWP));
-						dcd = WinQueryWindowPtr(WinWindowFromID(hwndC,DIR_CNR),0);
+						dcd = WinQueryWindowPtr(WinWindowFromID(hwndC,DIR_CNR),QWL_USER);
 						if(dcd) {
               sprintf(s,"%s%sDirCnrSort.%lu",(name) ? name : NullStr,(name) ? "." : NullStr,
 											numsaves);
@@ -3846,7 +3847,7 @@ MRESULT EXPENTRY ChildFrameButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
 		case WM_MOUSEMOVE:
 			if(fOtherHelp) {
-				if((!hwndBubble || WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+				if((!hwndBubble || WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
 					 !WinQueryCapture(HWND_DESKTOP)) {
 					id = WinQueryWindowUShort(hwnd,QWS_ID);
 					switch(id) {
@@ -3995,7 +3996,7 @@ MRESULT EXPENTRY ChildFrameButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
 MRESULT EXPENTRY MainFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  PFNWP        oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+  PFNWP        oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
 	static ULONG aheight = 0L;
 
 	switch(msg) {
@@ -4567,8 +4568,8 @@ MRESULT EXPENTRY MainFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY MainWMCommand (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY MainWMCommand (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   SetShiftState();
   switch(SHORT1FROMMP(mp1)) {
     case IDM_SETTARGET:
@@ -5099,7 +5100,7 @@ MRESULT EXPENTRY MainWMCommand (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       goto AutoChange;
 
     case IDM_AUTOVIEW:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),SHORT1FROMMP(mp1),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),SHORT1FROMMP(mp1),
                    &fAutoView,TRUE,"AutoView");
 AutoChange:
       PostMsg(WinQueryWindow(hwnd,QW_PARENT),WM_UPDATEFRAME,
@@ -5134,7 +5135,7 @@ AutoChange:
       break;
 
     case IDM_TEXTTOOLS:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),SHORT1FROMMP(mp1),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),SHORT1FROMMP(mp1),
                    &fTextTools,TRUE,"TextTools");
       BuildTools(hwndToolback,TRUE);
       PostMsg(WinQueryWindow(hwnd,QW_PARENT),WM_UPDATEFRAME,
@@ -5142,7 +5143,7 @@ AutoChange:
       break;
 
     case IDM_TOOLTITLES:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),SHORT1FROMMP(mp1),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),SHORT1FROMMP(mp1),
                    &fToolTitles,TRUE,"ToolTitles");
       BuildTools(hwndToolback,TRUE);
       PostMsg(WinQueryWindow(hwnd,QW_PARENT),WM_UPDATEFRAME,
@@ -5153,7 +5154,7 @@ AutoChange:
       {
         HWND   hwndMenu;
 
-        hwndMenu = WinQueryWindowULong(hwnd,0);
+        hwndMenu = WinQueryWindowULong(hwnd,QWL_USER);
         MenuInvisible = (MenuInvisible) ? FALSE : TRUE;
         if(MenuInvisible) {
           WinSetParent(hwndMenu,HWND_OBJECT,FALSE);
@@ -5238,7 +5239,7 @@ AutoChange:
       break;
 
     case IDM_TOOLBAR:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),
                    IDM_TOOLSUBMENU,
                    &fToolbar,
                    TRUE,
@@ -5260,7 +5261,7 @@ AutoChange:
       break;
 
     case IDM_DRIVEBAR:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),
                    IDM_DRIVEBAR,
                    &fDrivebar,
                    TRUE,
@@ -5279,7 +5280,7 @@ AutoChange:
       break;
 
     case IDM_USERLIST:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),
                    SHORT1FROMMP(mp1),
                    &fUserComboBox,
                    TRUE,
@@ -5311,7 +5312,7 @@ AutoChange:
       WinSetWindowText(hwndName,NullStr);
       WinSetWindowText(hwndDate,NullStr);
       WinSetWindowText(hwndAttr,NullStr);
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),
                    SHORT1FROMMP(mp1),
                    &fMoreButtons,
                    TRUE,
@@ -5344,14 +5345,14 @@ AutoChange:
         WinQueryWindowPos(hwnd,&swp);
         WinSetWindowPos(hwndTree,HWND_TOP,0,swp.cy - swpT.cy,0,0,SWP_MOVE);
       }
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),SHORT1FROMMP(mp1),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),SHORT1FROMMP(mp1),
                    &fFreeTree,TRUE,"FreeTree");
       if(fAutoTile)
         TileChildren(hwnd,TRUE);
       break;
 
     case IDM_AUTOTILE:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),
                    SHORT1FROMMP(mp1),
                    &fAutoTile,
                    TRUE,
@@ -5361,7 +5362,7 @@ AutoChange:
       break;
 
     case IDM_TILEBACKWARDS:
-      SetMenuCheck(WinQueryWindowULong(hwnd,0),
+      SetMenuCheck(WinQueryWindowULong(hwnd,QWL_USER),
                    SHORT1FROMMP(mp1),
                    &fTileBackwards,
                    TRUE,
@@ -5415,7 +5416,7 @@ AutoChange:
       break;
 
     default:
-      if(!SwitchCommand((HWND)WinQueryWindowULong(hwnd,0),
+      if(!SwitchCommand((HWND)WinQueryWindowULong(hwnd,QWL_USER),
                         SHORT1FROMMP(mp1))) {
         if(SHORT1FROMMP(mp1) >= IDM_COMMANDSTART &&
            SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART) {
@@ -5780,7 +5781,7 @@ MRESULT EXPENTRY MainWMOnce (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         oldproc = WinSubclassWindow(hwndDrivelist,
                                     (PFNWP)DropDownListProc);
         if(oldproc)
-          WinSetWindowPtr(hwndDrivelist,0,(PVOID)oldproc);
+          WinSetWindowPtr(hwndDrivelist,QWL_USER,(PVOID)oldproc);
         oldproc = WinSubclassWindow(hwndButtonlist,
                                     (PFNWP)DropDownListProc);
         if(oldproc)
@@ -6218,7 +6219,7 @@ MRESULT EXPENTRY MainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 		case WM_INITMENU:
 			switch(SHORT1FROMMP(mp1)) {
 				case IDM_CONFIGMENU:
-					SetToggleChecks((HWND)WinQueryWindowULong(hwnd,0));
+					SetToggleChecks((HWND)WinQueryWindowULong(hwnd,QWL_USER));
 					break;
 
 				case IDM_WINDOWSMENU:
@@ -6230,7 +6231,7 @@ MRESULT EXPENTRY MainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             HWND     hwndMenu,hwndSubMenu;
 						MENUITEM mi;
 
-						hwndMenu = WinQueryWindowULong(hwnd,0);
+						hwndMenu = WinQueryWindowULong(hwnd,QWL_USER);
 						memset(&mi,0,sizeof(mi));
 						mi.iPosition = MIT_END;
 						mi.afStyle = MIS_TEXT;

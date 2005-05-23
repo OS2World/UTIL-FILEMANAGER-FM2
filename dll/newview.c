@@ -6,10 +6,11 @@
   New internal viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2003 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	01 Dec 03 SHL - Comments
-  		02 Dec 03 SHL - Correct WM_VSCROLL math
+  01 Dec 03 SHL Comments
+  02 Dec 03 SHL Correct WM_VSCROLL math
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -123,7 +124,7 @@ MRESULT EXPENTRY UrlDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         CHAR *p,*e,*pp;
         SHORT count;
 
-        WinSetWindowPtr(hwnd,0,mp2);
+        WinSetWindowPtr(hwnd,QWL_USER,mp2);
         urld = mp2;
         e = urld->line + urld->len + 1;
         p = urld->line;
@@ -202,7 +203,7 @@ MRESULT EXPENTRY UrlDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           {
             SHORT select;
 
-            urld = WinQueryWindowPtr(hwnd,0);
+            urld = WinQueryWindowPtr(hwnd,QWL_USER);
             if(urld) {
               select = (SHORT)WinSendDlgItemMsg(hwnd,URL_LISTBOX,
                                                 LM_QUERYSELECTION,
@@ -260,7 +261,7 @@ static ULONG NumLines (RECTL *rcl,VIEWDATA *ad)
 
 static CHAR **BuildAList (HWND hwnd)
 {
-  VIEWDATA      *ad = WinQueryWindowPtr(hwnd,0);
+  VIEWDATA      *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,y,z = 0;
   ULONG          width;
   RECTL          Rectl;
@@ -341,7 +342,7 @@ static CHAR **BuildAList (HWND hwnd)
 
 static CHAR **BuildAList2 (HWND hwnd)
 {
-  VIEWDATA      *ad = WinQueryWindowPtr(hwnd,0);
+  VIEWDATA      *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   CHAR         **list = NULL,s[SEARCHSTRINGLEN];
   SHORT          x,z;
   INT            numlines = 0,numalloc = 0;
@@ -376,7 +377,7 @@ MRESULT EXPENTRY ViewStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         USHORT id   = WinQueryWindowUShort(hwnd,QWS_ID);
 
         if(fOtherHelp) {
-          if((!hwndBubble || WinQueryWindowULong(hwndBubble,0) != hwnd) &&
+          if((!hwndBubble || WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
              !WinQueryCapture(HWND_DESKTOP)) {
 
             char  *s = NULL;
@@ -547,7 +548,7 @@ MRESULT EXPENTRY ViewStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 static VOID FreeViewerMem (HWND hwnd)
 {
-  VIEWDATA *ad = WinQueryWindowPtr(hwnd,0);
+  VIEWDATA *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
   if(ad) {
     ad->selected = ad->textsize = ad->numlines = ad->numalloc = 0;
@@ -567,7 +568,7 @@ static VOID FreeViewerMem (HWND hwnd)
 
 static HPS InitWindow (HWND hwnd)
 {
-  VIEWDATA     *ad = WinQueryWindowPtr(hwnd,0);
+  VIEWDATA     *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   HPS          hps = (HPS)0;
   SIZEL        sizel;
   FONTMETRICS  FontMetrics;
@@ -625,7 +626,7 @@ static HPS InitWindow (HWND hwnd)
 static VOID PaintLine (HWND hwnd,HPS hps,ULONG whichline,ULONG topline,
                        RECTL *Rectl)
 {
-  VIEWDATA       *ad = WinQueryWindowPtr(hwnd,0);
+  VIEWDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   POINTL          ptl;
   ULONG           width;
   register CHAR  *p,*e;
@@ -831,7 +832,7 @@ static VOID Search (VOID *args)
     hmq2 = WinCreateMsgQueue(hab2,0);
     if(hmq2) {
       WinCancelShutdown(hmq2,TRUE);
-      ad = WinQueryWindowPtr(hwnd,0);
+      ad = WinQueryWindowPtr(hwnd,QWL_USER);
       if(ad) {
         if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
           markwith = VF_FOUND | ((ad->alsoselect) ? VF_SELECTED : 0);
@@ -983,7 +984,7 @@ static VOID Clipboard (VOID *args)
     hmq2 = WinCreateMsgQueue(hab2,0);
     if(hmq2) {
       WinCancelShutdown(hmq2,TRUE);
-      ad = WinQueryWindowPtr(hwnd,0);
+      ad = WinQueryWindowPtr(hwnd,QWL_USER);
       if(ad) {
         if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
           cmd = ad->cliptype;
@@ -1081,7 +1082,7 @@ static VOID ReLine (VOID *args)
     hmq2 = WinCreateMsgQueue(hab2,0);
     if(hmq2) {
       WinCancelShutdown(hmq2,TRUE);
-      ad = WinQueryWindowPtr(hwnd,0);
+      ad = WinQueryWindowPtr(hwnd,QWL_USER);
       if(ad) {
         ad->relining = TRUE;
         if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
@@ -1255,7 +1256,7 @@ static VOID LoadFile (VOID *args)
     hmq2 = WinCreateMsgQueue(hab2,0);
     if(hmq2) {
       WinCancelShutdown(hmq2,TRUE);
-      ad = WinQueryWindowPtr(hwnd,0);
+      ad = WinQueryWindowPtr(hwnd,QWL_USER);
       if(ad) {
         if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
           ad->busy++;
@@ -1351,7 +1352,7 @@ static VOID LoadFile (VOID *args)
 
 MRESULT EXPENTRY ViewFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+  PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
     case WM_CHAR:
@@ -1524,8 +1525,8 @@ MRESULT EXPENTRY FindStrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
         HWND hwndClient = *(HWND *)mp2;
 
-        WinSetWindowULong(hwnd,0,(ULONG)hwndClient);
-        ad = (VIEWDATA *)WinQueryWindowPtr(hwndClient,0);
+        WinSetWindowULong(hwnd,QWL_USER,(ULONG)hwndClient);
+        ad = (VIEWDATA *)WinQueryWindowPtr(hwndClient,QWL_USER);
         MLEsetwrap(WinWindowFromID(hwnd,NEWFIND_MLE),FALSE);
         MLEsetlimit(WinWindowFromID(hwnd,NEWFIND_MLE),SEARCHSTRINGLEN);
         MLEsetformat(WinWindowFromID(hwnd,NEWFIND_MLE),MLFIE_NOTRANS);
@@ -1556,9 +1557,9 @@ MRESULT EXPENTRY FindStrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             CHAR  s[SEARCHSTRINGLEN];
             IPT   here = 0;
             ULONG len;
-            HWND  hwndClient = WinQueryWindowULong(hwnd,0);
+            HWND  hwndClient = WinQueryWindowULong(hwnd,QWL_USER);
 
-            ad = (VIEWDATA *)WinQueryWindowPtr(hwndClient,0);
+            ad = (VIEWDATA *)WinQueryWindowPtr(hwndClient,QWL_USER);
             memset(s,0,SEARCHSTRINGLEN);
             WinSendMsg(WinWindowFromID(hwnd,NEWFIND_MLE),
                        MLM_SETIMPORTEXPORT,
@@ -1617,7 +1618,7 @@ MRESULT EXPENTRY FindStrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 MRESULT EXPENTRY ViewWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  VIEWDATA *ad = WinQueryWindowPtr(hwnd,0);
+  VIEWDATA *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch (msg) {
     case WM_CREATE:
@@ -1783,7 +1784,7 @@ MRESULT EXPENTRY ViewWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
             oldproc = WinSubclassWindow(ad->hwndFrame,(PFNWP)ViewFrameWndProc);
             if(oldproc)
-                WinSetWindowPtr(ad->hwndFrame,0,(PVOID)oldproc);
+                WinSetWindowPtr(ad->hwndFrame,QWL_USER,(PVOID)oldproc);
             ad->hps = InitWindow(hwnd);
             if(_beginthread(LoadFile,NULL,524288,(PVOID)hwnd) != -1) {
               WinSendMsg(hwnd,UM_SETUP5,MPVOID,MPVOID);
@@ -3866,7 +3867,7 @@ NoAdd:
           hwndRestore = ad->hwndRestore;
           dontclose = ((ad->flags & 4) != 0) ? TRUE : FALSE;
           FreeViewerMem(hwnd);
-          WinSetWindowPtr(hwnd,0,NULL);
+          WinSetWindowPtr(hwnd,QWL_USER,NULL);
           free(ad);
         }
         if(hwndRestore && hwndRestore != HWND_DESKTOP) {
@@ -3948,7 +3949,7 @@ HWND StartViewer (HWND hwndParent,USHORT flags,CHAR *filename,
       ad->flags = flags;
       if(ad->flags & 16)
         ad->hex = TRUE;
-      WinSetWindowPtr(hwndClient,0,(PVOID)ad);
+      WinSetWindowPtr(hwndClient,QWL_USER,(PVOID)ad);
       if(Firsttime) {
 
         ULONG size;
@@ -4003,7 +4004,7 @@ HWND StartViewer (HWND hwndParent,USHORT flags,CHAR *filename,
       ad->ignorehttp = IgnoreHTTP;
       ad->ignoreftp = IgnoreFTP;
       memcpy(ad->colors,Colors,sizeof(LONG) * COLORS_MAX);
-      WinSetWindowPtr(hwndClient,0,(PVOID)ad);
+      WinSetWindowPtr(hwndClient,QWL_USER,(PVOID)ad);
       if(WinSendMsg(hwndClient,UM_SETUP,MPVOID,MPVOID)) {
 //        DosSleep(64L);
         if(!(FrameFlags & FCF_TASKLIST) && !(flags & 2)) {

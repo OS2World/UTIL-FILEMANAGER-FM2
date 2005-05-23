@@ -6,10 +6,11 @@
   Minimized data bar
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	14 Sep 02 SHL - Handle large partitions
-		16 Oct 02 SHL - Handle large partitions better
+  14 Sep 02 SHL Handle large partitions
+  16 Oct 02 SHL Handle large partitions better
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -252,7 +253,7 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case UM_RESTORE:
-      WinSetWindowPtr(hwnd,0,mp1);
+      WinSetWindowPtr(hwnd,QWL_USER,mp1);
       return 0;
 
     case UM_SETUP:
@@ -1108,7 +1109,7 @@ MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         SWP   swp;
         ULONG fl = SWP_SHOW | SWP_ZORDER | SWP_ACTIVATE,ofl;
 
-        ofl = WinQueryWindowULong(hwnd,0);
+        ofl = WinQueryWindowULong(hwnd,QWL_USER);
         WinQueryWindowPos(WinQueryWindow(hwndMain,QW_PARENT),&swp);
         if(swp.fl & SWP_MINIMIZE)
           fl |= ((ofl & SWP_MAXIMIZE) ? SWP_MAXIMIZE : SWP_RESTORE);

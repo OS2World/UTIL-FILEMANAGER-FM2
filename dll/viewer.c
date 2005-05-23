@@ -1,8 +1,16 @@
-/**************************************************************************/
-/*                  MLE text editor/viewer source code                    */
-/*                   copyright (c) 1993-97 by M. Kimes                  */
-/*                        All rights reserved                             */
-/**************************************************************************/
+
+/***********************************************************************
+
+  $Id$
+
+  MLE text editor/viewer
+
+  Copyright (c) 1993-97 M. Kimes
+  Copyright (c) 2005 Steven H.Levine
+
+  23 May 05 SHL Use QWL_USER
+
+***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
@@ -143,7 +151,7 @@ HWND StartMLEEditor (HWND hwndClient,INT flags,CHAR *filename,
                       SWP_ACTIVATE);
     }
     MLEsetreadonly(hwndMLE,((flags & 1) != 0));
-    WinSetWindowPtr(hwnd,0,(PVOID)vw);
+    WinSetWindowPtr(hwnd,QWL_USER,(PVOID)vw);
     if(!PostMsg(hwnd,
                 UM_SETUP,
                 MPVOID,
@@ -159,7 +167,7 @@ HWND StartMLEEditor (HWND hwndClient,INT flags,CHAR *filename,
 
 MRESULT EXPENTRY MLESubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  PFNWP       oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+  PFNWP       oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
   XMLEWNDPTR *vw;
 
   switch(msg) {
@@ -169,7 +177,7 @@ MRESULT EXPENTRY MLESubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case WM_CHAR:
-      vw = WinQueryWindowPtr(WinQueryWindow(hwnd,QW_PARENT),0);
+      vw = WinQueryWindowPtr(WinQueryWindow(hwnd,QW_PARENT),QWL_USER);
       if(vw && vw->size == sizeof(XMLEWNDPTR) && vw->hex == 1) {
         if(!MLEgetreadonly(hwnd)) {
           WinSetSysValue(HWND_DESKTOP,SV_INSERTMODE,FALSE);
@@ -248,7 +256,7 @@ MRESULT EXPENTRY MLESubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case WM_MENUEND:
-      vw = WinQueryWindowPtr(WinQueryWindow(hwnd,QW_PARENT),0);
+      vw = WinQueryWindowPtr(WinQueryWindow(hwnd,QW_PARENT),QWL_USER);
       if(vw && vw->size == sizeof(XMLEWNDPTR)) {
         if(vw->hwndPopupMenu == (HWND)mp2) {
           WinDestroyWindow(vw->hwndPopupMenu);
@@ -258,7 +266,7 @@ MRESULT EXPENTRY MLESubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case WM_CONTEXTMENU:
-      vw = WinQueryWindowPtr(WinQueryWindow(hwnd,QW_PARENT),0);
+      vw = WinQueryWindowPtr(WinQueryWindow(hwnd,QW_PARENT),QWL_USER);
       if(vw && vw->size == sizeof(XMLEWNDPTR)) {
         if(!vw->hwndPopupMenu)
           vw->hwndPopupMenu = WinLoadMenu(HWND_DESKTOP,FM3ModHandle,MLE_POPUP);
@@ -300,7 +308,7 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
   if(msg != WM_CREATE &&
      msg != UM_SETUP)
-    vw = (XMLEWNDPTR *)WinQueryWindowPtr(hwnd,0);
+    vw = (XMLEWNDPTR *)WinQueryWindowPtr(hwnd,QWL_USER);
   else
     vw = NULL;
 
@@ -376,7 +384,7 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case UM_SETUP2:
-      vw = WinQueryWindowPtr(hwnd,0);
+      vw = WinQueryWindowPtr(hwnd,QWL_USER);
       if(vw) {
 
         CHAR s[CCHMAXPATH + 8];
@@ -416,7 +424,7 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case UM_SETUP:
-      vw = WinQueryWindowPtr(hwnd,0);
+      vw = WinQueryWindowPtr(hwnd,QWL_USER);
       if(vw) {
         vw->hab = WinQueryAnchorBlock(hwnd);
         WinSendMsg(hwnd,UM_SETUP2,MPVOID,MPVOID);
@@ -1404,7 +1412,7 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           if(vw->accel)
             WinDestroyAccelTable(vw->accel);
           dontclose = vw->dontclose;
-          WinSetWindowPtr(hwnd,0,NULL);
+          WinSetWindowPtr(hwnd,QWL_USER,NULL);
           if(vw->hwndRestore) {
 
             ULONG fl = SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER;

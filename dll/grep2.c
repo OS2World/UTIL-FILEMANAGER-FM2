@@ -4,9 +4,10 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  23 May 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -41,7 +42,7 @@ MRESULT EXPENTRY EnvDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   switch(msg) {
     case WM_INITDLG:
       if(mp2) {
-        WinSetWindowPtr(hwnd,0,mp2);
+        WinSetWindowPtr(hwnd,QWL_USER,mp2);
         *(CHAR *)mp2 = 0;
         {
           char *p,*pp,temp[CCHMAXPATH];
@@ -129,7 +130,7 @@ MRESULT EXPENTRY EnvDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
         case DID_OK:
           {
-            CHAR *p = WinQueryWindowPtr(hwnd,0);
+            CHAR *p = WinQueryWindowPtr(hwnd,QWL_USER);
 
             if(p) {
               WinQueryDlgItemText(hwnd,
@@ -179,7 +180,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         WinDismissDlg(hwnd,0);
         break;
       }
-      WinSetWindowULong(hwnd,0,*(HWND *)mp2);
+      WinSetWindowULong(hwnd,QWL_USER,*(HWND *)mp2);
       WinSendDlgItemMsg(hwnd,
                         GREP_MASK,
                         EM_SETTEXTLIMIT,
@@ -888,7 +889,7 @@ MRESULT EXPENTRY GrepDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
 
         case DID_OK:
-          hwndCollect = WinQueryWindowULong(hwnd,0);
+          hwndCollect = WinQueryWindowULong(hwnd,QWL_USER);
           if(!hwndCollect)
             DosBeep(50,100);
           else {
