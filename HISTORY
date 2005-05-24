@@ -1,4 +1,8 @@
-New stuff's at the top.  This list isn't necessarily comprehensive.
+New stuff's at the top.  This list is not necessarily complete.
+
+3.02i:
+ o Rework Databar to avoid delays for inaccessible volumes
+ o Continue work on large file support
 
 3.02h:
  o Show full target path in Drag/Drop dialogs
