@@ -6,13 +6,14 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2004 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
   Revisions	12 Feb 03 SHL Add CBLIST_TO_EASIZE
 		11 Jun 03 SHL Add JFS and FAT32 support
 		06 Jan 04 SHL Drop hundfmt
 		01 Aug 04 SHL Optimze strippers
 		01 Aug 04 SHL Drop avv local functions
+		23 May 05 SHL Split datamin to datamin.h
 
 ***********************************************************************/
 
@@ -1089,11 +1090,6 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu);
 /* worker.c */
 VOID MassAction (VOID *args);
 VOID Action (VOID *args);
-
-/* datamin.c */
-MRESULT EXPENTRY MiniTimeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-HWND CreateDataBar (HWND hwndParent,ULONG fl);
 
 /* fm2cmd.c */
 BOOL FM2Command (CHAR *directory,CHAR *command);
