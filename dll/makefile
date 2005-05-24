@@ -1,9 +1,10 @@
 # dll\makefile - build fm/2 dlls, help files, string tables and resource kit
 # $Id$
 
-# Revisions:	22 May 03 SHL - Correct icon dependencies
-#		21 Nov 03 SHL - Correct ipf dependents
-#		26 Jul 04 SHL - Correct CFLAGSR
+# 22 May 03 SHL Correct icon dependencies
+# 21 Nov 03 SHL Correct ipf dependents
+# 26 Jul 04 SHL Correct CFLAGSR
+# 23 May 05 SHL Drop saymsg
 
 # Environment:
 
@@ -34,7 +35,7 @@ LFLAGS = /ALIGN:4 /EXEPACK /MAP /NOI /NOE
 .c.obj:
   $(CC) $(CFLAGS) /C $*.c
 
-OFILES= mainwnd.obj dircnrs.obj valid.obj filldir.obj saymsg.obj error.obj\
+OFILES= mainwnd.obj dircnrs.obj valid.obj filldir.obj error.obj\
 	treecnr.obj presparm.obj misc.obj init.obj copyf.obj strips.obj\
 	flesh.obj dirs.obj srchpath.obj avl.obj literal.obj stristr.obj\
 	mkdir.obj avv.obj systemf.obj cmdline.obj chklist.obj makelist.obj\
