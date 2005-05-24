@@ -6,9 +6,10 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	12 Aug 04 SHL Comments
+  12 Aug 04 SHL Comments
+  23 May 05 SHL Move saymsg here
 
 ***********************************************************************/
 
@@ -26,9 +27,7 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(FMINPUT,General_Error,Dos_Error)
-
-// fixme to have MiscError instead of saymsg
+#pragma alloc_text(FMINPUT,General_Error,Dos_Error,saymsg)
 
 // fixme to be Win_Error
 // fixme to pass hwndError rather hab
@@ -155,4 +154,34 @@ INT Dos_Error(INT type,ULONG Error,HWND hwndOwner, PSZ ErrModule,
                          type | MB_ICONEXCLAMATION | MB_MOVEABLE);
   }
   return MBID_ENTER;
+}
+
+
+// fixme to have Misc_Error instead of saymsg
+
+APIRET saymsg (APIRET type,HWND hwnd,CHAR *title,CHAR *string,...)
+{
+  CHAR        *buffer;
+  va_list     ap;
+  APIRET      ret;
+
+  buffer = malloc(4096);
+  if(!buffer) {
+    WinMessageBox(HWND_DESKTOP,
+                  HWND_DESKTOP,
+                  GetPString(IDS_OUTOFMEMORY),
+                  title,
+                  0,
+                  MB_ENTER);
+    return -1;
+  }
+  va_start(ap,string);
+  vsprintf(buffer,string,ap);
+  va_end(ap);
+  if(!hwnd)
+    hwnd = HWND_DESKTOP;
+  ret = WinMessageBox(HWND_DESKTOP,hwnd,buffer,title,
+                      0,type | MB_MOVEABLE);
+  free(buffer);
+  return ret;
 }
