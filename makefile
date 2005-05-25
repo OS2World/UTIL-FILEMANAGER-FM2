@@ -1,7 +1,8 @@
 # makefile - build fm/2
 # $Id$
 
-# Revisions:	21 Nov 03 SHL - Comments
+# 21 Nov 03 SHL Comments
+# 24 May 05 SHL Add clean and cleanobj target
 
 # Environment:
 
@@ -29,6 +30,22 @@ $(BASE).obj: $(BASE).c \
 
 MAK: *.mak
   !$(MAKE) /NOLOGO /f $?
+
+cleanobj:
+  cd dll
+  $(MAKE) /nologo $(MAKEFLAGS) cleanobj
+  cd ..
+  -del *.obj
+
+clean:
+  cd dll
+  $(MAKE) /nologo $(MAKEFLAGS) clean
+  cd ..
+  -del *.exe
+  -del *.map
+  -del *.obj
+  -del *.res
+  -del fm3res.str
 
 !INCLUDE makefile_post.mk
 
