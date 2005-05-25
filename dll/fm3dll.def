@@ -9,7 +9,7 @@
           FindSwapperDat                              @2      NONAME
           StartFM3                                    @3      NONAME
           saymsg                                      @4      NONAME
-          General_Error                               @5      NONAME
+          Win_Error                                   @5      NONAME
           IsRoot                                      @6      NONAME
           IsFile                                      @7      NONAME
           MakeValidDir                                @8      NONAME
