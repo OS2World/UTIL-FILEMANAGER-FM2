@@ -6,15 +6,15 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2004 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	12 Sep 02 SHL - Rework symbols to understand code
-		08 Feb 03 SHL - DropHelp: calc EA size consistently
-		11 Jun 03 SHL - Add JFS and FAT32 support
-		10 Jan 04 SHL - ProcessDirectory: avoid most large drive failures
+  12 Sep 02 SHL Rework symbols to understand code
+  08 Feb 03 SHL DropHelp: calc EA size consistently
+  11 Jun 03 SHL Add JFS and FAT32 support
+  10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
+  24 May 05 SHL Rework Win_Error usage
 
 ***********************************************************************/
-
 
 #define INCL_DOS
 #define INCL_WIN
@@ -632,10 +632,9 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
 
                   }
                   else {
-                    General_Error(WinQueryAnchorBlock(hwndCnr),HWND_DESKTOP,
-                                  __FILE__,__LINE__,
-                                  GetPString(IDS_FILLDIRERR1TEXT),
-                                  hwndCnr);
+                    Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                              GetPString(IDS_FILLDIRERR1TEXT),
+                              hwndCnr);
                     ulMaxFiles--;
                   }
                 }
@@ -672,11 +671,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                                       MB_ENTER | MB_ICONEXCLAMATION | MB_MOVEABLE);
 		      } // SHL
 
-                      General_Error(WinQueryAnchorBlock(hwndCnr),
-                                    HWND_DESKTOP,
-                                    __FILE__,
-                                    __LINE__,
-                                    GetPString(IDS_FILLDIRERR2TEXT));
+                      Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                                GetPString(IDS_FILLDIRERR2TEXT));
                       totalbytes = -1;
                       if(WinIsWindow((HAB)0,hwndCnr)) {
                         pci = pciFirst;
@@ -694,11 +690,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                 }
               }
               else {
-                General_Error(WinQueryAnchorBlock(hwndCnr),
-                              HWND_DESKTOP,
-                              __FILE__,
-                              __LINE__,
-                              GetPString(IDS_FILLDIRERR3TEXT));
+                Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                          GetPString(IDS_FILLDIRERR3TEXT));
                 totalbytes = -1;
               }
               if(totalbytes != -1) {
@@ -773,12 +766,9 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
 		totalbytes--;		// fixme for real someday
             }
             else {
-              General_Error(WinQueryAnchorBlock(hwndCnr),
-                            HWND_DESKTOP,
-                            __FILE__,
-                            __LINE__,
-                            GetPString(IDS_FILLDIRERR4TEXT),
-                            hwndCnr);
+              Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                        GetPString(IDS_FILLDIRERR4TEXT),
+                        hwndCnr);
               ulTotal--;
             }
             pByte2 += sizeof(FILEFINDBUF4);
@@ -811,11 +801,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
                                 MB_ENTER | MB_ICONEXCLAMATION | MB_MOVEABLE);
 	        } // SHL
 
-                General_Error(WinQueryAnchorBlock(hwndCnr),
-                              HWND_DESKTOP,
-                              __FILE__,
-                              __LINE__,
-                              GetPString(IDS_FILLDIRERR5TEXT));
+                Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                          GetPString(IDS_FILLDIRERR5TEXT));
                 totalbytes = -1;
                 if(WinIsWindow((HAB)0,hwndCnr)) {
                   pci = pciFirst;
@@ -831,11 +818,8 @@ ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
           }
         }
         else {
-          General_Error(WinQueryAnchorBlock(hwndCnr),
-                        HWND_DESKTOP,
-                        __FILE__,
-                        __LINE__,
-                        GetPString(IDS_FILLDIRERR3TEXT));
+          Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                    GetPString(IDS_FILLDIRERR3TEXT));
           totalbytes = -1;
         }
         if(totalbytes != -1) {
@@ -1116,11 +1100,8 @@ ULONG FillTreeCnr (HWND hwndCnr,HWND hwndParent)
                      CM_INSERTRECORD,
                      MPFROMP(pciFirst),
                      MPFROMP(&ri)))
-        General_Error(WinQueryAnchorBlock(hwndCnr),
-                      hwndCnr,
-                      __FILE__,
-                      __LINE__,
-                      GetPString(IDS_FILLDIRERR5TEXT));
+        Win_Error(hwndCnr,hwndCnr,__FILE__,__LINE__,
+                  GetPString(IDS_FILLDIRERR5TEXT));
     }
     /* move cursor onto the default drive rather than the first drive */
     if(!fSwitchTree) {
@@ -1219,11 +1200,8 @@ ULONG FillTreeCnr (HWND hwndCnr,HWND hwndParent)
                                CM_INSERTRECORD,
                                MPFROMP(pci),
                                MPFROMP(&ri))) {
-                  General_Error(WinQueryAnchorBlock(hwndCnr),
-                                hwndCnr,
-                                __FILE__,
-                                __LINE__,
-                                GetPString(IDS_FILLDIRERR5TEXT));
+                  Win_Error(hwndCnr,hwndCnr,__FILE__,__LINE__,
+                            GetPString(IDS_FILLDIRERR5TEXT));
                   WinSendMsg(hwndCnr,
                              CM_FREERECORD,
                              MPFROMP(&pci),
@@ -1330,11 +1308,8 @@ SkipBadRec:
 
   }
   else {
-    General_Error(WinQueryAnchorBlock(hwndCnr),
-                  hwndCnr,
-                  __FILE__,
-                  __LINE__,
-                  GetPString(IDS_FILLDIRERR7TEXT));
+    Win_Error(hwndCnr,hwndCnr,__FILE__,__LINE__,
+              GetPString(IDS_FILLDIRERR7TEXT));
     exit(0);
   }
   if(!drivesbuilt && hwndMain)

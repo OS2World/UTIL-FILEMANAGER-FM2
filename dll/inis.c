@@ -4,10 +4,11 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
-  		01 Aug 04 SHL - Rework fixup usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework fixup usage
+  24 May 05 SHL Rework Win_Error usage
 
 ***********************************************************************/
 
@@ -22,6 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -989,11 +991,8 @@ MRESULT EXPENTRY ChangeIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             if(PrfReset(WinQueryAnchorBlock(hwnd),&prfp))
               WinDismissDlg(hwnd,1);
             else
-              General_Error(WinQueryAnchorBlock(hwnd),
-                            hwnd,
-                            __FILE__,
-                            __LINE__,
-                            GetPString(IDS_INIPRFRESETFAILEDTEXT));
+              Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                        GetPString(IDS_INIPRFRESETFAILEDTEXT));
           }
           break;
 
@@ -1102,11 +1101,8 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             prfp.pszUserName = (PSZ)olduserini;
             prfp.pszSysName = (PSZ)oldsysini;
             if(!PrfQueryProfile(WinQueryAnchorBlock(hwnd),&prfp)) {
-              General_Error(WinQueryAnchorBlock(hwnd),
-                            hwnd,
-                            __FILE__,
-                            __LINE__,
-                            GetPString(IDS_INIQUERYPRFFAILEDTEXT));
+              Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                        GetPString(IDS_INIQUERYPRFFAILEDTEXT));
               break;
             }
             WinQueryDlgItemText(hwnd,
@@ -1270,11 +1266,8 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               prfp.pszUserName = (PSZ)olduserini;
               prfp.pszSysName = (PSZ)oldsysini;
               if(!PrfReset(WinQueryAnchorBlock(hwnd),&prfp))
-                General_Error(WinQueryAnchorBlock(hwnd),
-                              hwnd,
-                              __FILE__,
-                              __LINE__,
-                              GetPString(IDS_INIPRFRESETFAILEDTEXT));
+                Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                          GetPString(IDS_INIPRFRESETFAILEDTEXT));
               else {
                 Notify(GetPString(IDS_SUCCESSTEXT));
                 unlinkf(tempuserini);
@@ -1283,11 +1276,8 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               WinDismissDlg(hwnd,1);
             }
             else
-              General_Error(WinQueryAnchorBlock(hwnd),
-                            hwnd,
-                            __FILE__,
-                            __LINE__,
-                            GetPString(IDS_INIPRFRESETFAILEDTEXT));
+              Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                        GetPString(IDS_INIPRFRESETFAILEDTEXT));
           }
           break;
 
@@ -2838,12 +2828,9 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                              inidata->hini);
               }
               else
-                General_Error(WinQueryAnchorBlock(hwnd),
-                              hwnd,
-                              __FILE__,
-                              __LINE__,
-                              GetPString(IDS_INICANTOPENINITEXT),
-                              filename);
+                Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                          GetPString(IDS_INICANTOPENINITEXT),
+                          filename);
             }
           }
           break;

@@ -8,12 +8,13 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	12 Feb 03 SHL Add CBLIST_TO_EASIZE
-		11 Jun 03 SHL Add JFS and FAT32 support
-		06 Jan 04 SHL Drop hundfmt
-		01 Aug 04 SHL Optimze strippers
-		01 Aug 04 SHL Drop avv local functions
-		23 May 05 SHL Split datamin to datamin.h
+  12 Feb 03 SHL Add CBLIST_TO_EASIZE
+  11 Jun 03 SHL Add JFS and FAT32 support
+  06 Jan 04 SHL Drop hundfmt
+  01 Aug 04 SHL Optimze strippers
+  01 Aug 04 SHL Drop avv local functions
+  23 May 05 SHL Split datamin to datamin.h
+  24 May 05 SHL Rework Win_Error usage
 
 ***********************************************************************/
 
@@ -545,14 +546,12 @@ BOOL Flesh         (HWND hwndCnr,PCNRITEM pciParent);
 BOOL FleshEnv      (HWND hwndCnr,PCNRITEM pciParent);
 BOOL UnFlesh       (HWND hwndCnr,PCNRITEM pciParent);
 
-/* saymsg.c */
-APIRET saymsg       (APIRET type,HWND hwnd,CHAR *title,CHAR *string,...);
-
 /* error.c */
-VOID General_Error  (HAB hab,HWND hwndOwner, PSZ ErrModule,LONG ErrLine,
-                     CHAR *s,...);
-INT Dos_Error       (INT type,ULONG Error,HWND hwndOwner, PSZ ErrModule,
-                     LONG ErrLine,CHAR *s,...);
+VOID Win_Error	   (HWND hwndErr,HWND hwndOwner,
+                    PSZ pszFileName,ULONG ulLineNo,CHAR *pszFmt,...);
+INT Dos_Error      (ULONG mb_type,ULONG ulRC,HWND hwndOwner,
+                    PSZ pszFileName,ULONG ulLineNo,CHAR *pszFmt,...);
+APIRET saymsg      (ULONG mb_type,HWND hwnd,CHAR *pszTitle,CHAR *pszFmt,...);
 
 /* valid.c */
 INT CheckDrive        (CHAR Drive, CHAR *FileSystem, ULONG *type);
@@ -564,12 +563,12 @@ INT IsFile            (CHAR *filename);
 BOOL IsFullName       (CHAR *filename);
 BOOL IsValidDir       (CHAR *test);
 BOOL IsValidDrive     (CHAR drive);
-CHAR * MakeValidDir   (CHAR *path);
+CHAR *MakeValidDir    (CHAR *path);
 BOOL IsExecutable     (CHAR *filename);
 VOID FillInDriveFlags (VOID *dummy);
 VOID DriveFlagsOne    (INT x);
 VOID ArgDriveFlags    (INT argc,CHAR **argv);
-CHAR * assign_ignores (CHAR *s);
+CHAR *assign_ignores  (CHAR *s);
 BOOL needs_quoting    (CHAR *f);
 BOOL IsBinary         (CHAR *str,ULONG len);
 BOOL TestBinary       (CHAR *filename);
@@ -577,7 +576,7 @@ BOOL ParentIsDesktop  (HWND hwnd,HWND hwndParent);
 BOOL IsDesktop        (HAB hab,HWND hwnd);
 char *IsVowel         (char a);
 VOID GetDesktopName   (CHAR *objectpath,ULONG size);
-char * RootName       (char *filename);
+char *RootName        (char *filename);
 APIRET MakeFullName   (char *filename);
 
 /* misc.c */
@@ -714,8 +713,8 @@ void strip_trail_char (char *pszStripChars,char *pszSrc);
 #define bstripcr(s)       (strip_lead_char(" \t",(s)),strip_trail_char("\r\n \t",(s)))
 
 /* delims.c */
-char * skip_delim (char *a,register char *delim);
-char * to_delim (char *a,register char *delim);
+char *skip_delim (char *a,register char *delim);
+char *to_delim (char *a,register char *delim);
 
 /* copyf.c */
 BOOL AdjustWildcardName (CHAR *oldname,CHAR *newname);
@@ -740,9 +739,9 @@ BOOL   PMMkDir (HWND hwnd,CHAR *filename,BOOL copy);
 void   SetTargetDir (HWND hwnd,BOOL justshow);
 
 /* srchpath.c */
-CHAR * first_path (CHAR *path,CHAR *ret);
-CHAR * searchapath (CHAR *path,CHAR *filename);
-CHAR * searchpath (CHAR *filename);
+CHAR *first_path (CHAR *path,CHAR *ret);
+CHAR *searchapath (CHAR *path,CHAR *filename);
+CHAR *searchpath (CHAR *filename);
 
 /* literal.c */
 UINT literal(PSZ pszBuf);
@@ -750,11 +749,11 @@ BOOL wildcard(const PSZ pszBuf,const PSZ pszWildCard,const BOOL fNotFileSpec);
 PSZ fixup (const PCH pachInBuf, PSZ pszOutBuf, const UINT cBufBytes, const UINT cInBytes);
 
 /* stristr.c */
-CHAR * stristr (const CHAR *t, const CHAR *s);
-CHAR * strnistr (register CHAR *t, CHAR *s, LONG len);
-CHAR * strnstr (register CHAR *t, CHAR *s, LONG len);
-CHAR * findstring (CHAR *findthis, ULONG lenthis, CHAR *findin,
-                   ULONG lenin, BOOL insensitive);
+CHAR *stristr (const CHAR *t, const CHAR *s);
+CHAR *strnistr (register CHAR *t, CHAR *s, LONG len);
+CHAR *strnstr (register CHAR *t, CHAR *s, LONG len);
+CHAR *findstring (CHAR *findthis, ULONG lenthis, CHAR *findin,
+                  ULONG lenin, BOOL insensitive);
 
 /* avl.c */
 ARC_TYPE * quick_find_type (CHAR *filespec,ARC_TYPE *topsig);

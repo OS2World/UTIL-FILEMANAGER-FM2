@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Kill a process
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005 Steven H.Levine
+
+  24 May 05 SHL Rework Win_Error usage
+
+***********************************************************************/
+
 #define INCL_DOSERRORS
 #define INCL_DOS
 #define INCL_WIN
@@ -159,11 +173,8 @@ VOID FillKillList (VOID *arg) {
     }
   }
   else {
-    General_Error((HAB)0,
-                  HWND_DESKTOP,
-                  __FILE__,
-                  __LINE__,
-                  GetPString(IDS_REDIRECTERRORTEXT));
+    Win_Error(NULLHANDLE,HWND_DESKTOP,__FILE__,__LINE__,
+              GetPString(IDS_REDIRECTERRORTEXT));
     goto Abort;
   }
   fp = fopen(s,"r");

@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Flesh
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005 Steven H.Levine
+
+  24 May 05 SHL Rework Win_Error usage
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
@@ -8,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3str.h"
 
@@ -471,11 +486,8 @@ Interruptus:
                             MPFROMP(&ri)))
                 ret = TRUE;
               else {
-                General_Error(WinQueryAnchorBlock(hwndCnr),
-                              HWND_DESKTOP,
-                              __FILE__,
-                              __LINE__,
-                              GetPString(IDS_RECORDINSERTFAILEDTEXT));
+                Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                          GetPString(IDS_RECORDINSERTFAILEDTEXT));
                 WinSendMsg(hwndCnr,
                            CM_FREERECORD,
                            MPFROMP(&pci),
@@ -488,11 +500,8 @@ Interruptus:
 // WinSetWindowText(hwndStatus2,NullStr);
         }
         else
-          General_Error(WinQueryAnchorBlock(hwndCnr),
-                        HWND_DESKTOP,
-                        __FILE__,
-                        __LINE__,
-                        GetPString(IDS_RECORDALLOCFAILEDTEXT));
+          Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                    GetPString(IDS_RECORDALLOCFAILEDTEXT));
       }
       else if(toupper(*str) > 'B' && str[1] == ':' && str[2] == '\\' &&
               !str[3]) {

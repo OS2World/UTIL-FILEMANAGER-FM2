@@ -4,9 +4,10 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  24 May 05 SHL Rework Win_Error usage
 
 ***********************************************************************/
 
@@ -85,11 +86,8 @@ VOID FillUndelList (VOID *arg) {
       fclose(fp);
     }
     else {
-      General_Error((HAB)0,
-                    hwnd,
-                    __FILE__,
-                    __LINE__,
-                    GetPString(IDS_REDIRECTERRORTEXT));
+      Win_Error(NULLHANDLE,hwnd,__FILE__,__LINE__,
+                GetPString(IDS_REDIRECTERRORTEXT));
       killme = TRUE;
       goto Abort;
     }

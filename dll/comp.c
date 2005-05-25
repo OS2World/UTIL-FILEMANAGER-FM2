@@ -6,11 +6,12 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2004 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H.Levine
 
-  Revisions	16 Oct 02 MK Baseline
-		04 Nov 03 SHL Force window refresh after subdir toggle
-		01 Aug 04 SHL Rework lstrip/rstrip usage
+  16 Oct 02 MK Baseline
+  04 Nov 03 SHL Force window refresh after subdir toggle
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  24 May 05 SHL Rework Win_Error usage
 
 ***********************************************************************/
 
@@ -286,12 +287,8 @@ MRESULT EXPENTRY CFileDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                         NULL,
                         65536,
                         (PVOID)fc) == -1) {
-          General_Error(WinQueryAnchorBlock(hwnd),
-                        hwnd,
-                        __FILE__,
-                        __LINE__,
-                        "%s",
-                        GetPString(IDS_CANTCOMPARETEXT));
+          Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                    GetPString(IDS_CANTCOMPARETEXT));
           WinDismissDlg(hwnd,0);
         }
       }

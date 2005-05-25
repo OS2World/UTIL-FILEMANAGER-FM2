@@ -11,6 +11,7 @@
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
+  24 May 05 SHL Rework Win_Error usage
 
 ***********************************************************************/
 
@@ -3064,12 +3065,8 @@ KbdRetry:
               pci = (PCNRITEM)((PCNRDRAGINFO)mp2)->pRecord;
               pDInfo = (PDRAGINFO)((PCNRDRAGINFO)mp2)->pDragInfo;
               if(!DrgAccessDraginfo(pDInfo)) {
-                  General_Error(WinQueryAnchorBlock(hwnd),
-                              hwnd,
-                              __FILE__,
-                              __LINE__,
-                              "%s",
-                              GetPString(IDS_DROPERRORTEXT));
+                  Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                            GetPString(IDS_DROPERRORTEXT));
                 break;
               }
               numitems = DrgQueryDragitemCount(pDInfo);
