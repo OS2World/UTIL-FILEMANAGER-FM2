@@ -5,6 +5,9 @@
 # 21 Nov 03 SHL Correct ipf dependents
 # 26 Jul 04 SHL Correct CFLAGSR
 # 23 May 05 SHL Drop saymsg
+# 24 May 05 SHL Add clean and cleanobj targets
+
+# Warning - missing many *.h dependencies
 
 # Environment:
 
@@ -125,4 +128,16 @@ ipf\FM3.hlp: ipf\*.ipf
 avv.obj:      version.h
 key.obj:      version.h
 misc.c:       version.h
+
+cleanobj:
+  -del *.obj
+
+clean:
+  -del *.dll
+  -del *.lib
+  -del *.map
+  -del *.obj
+  -del *.res
+  -del fm3res.str
+
 
