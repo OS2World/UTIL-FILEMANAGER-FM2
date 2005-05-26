@@ -6,7 +6,7 @@
   Version labels
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion VERREALMINOR
   11 Jun 03 SHL v3.02b: add JFS and FAT32 support
@@ -20,6 +20,7 @@
   31 Jul 04 SHL v3.02h: avv::ArcReviewDlgProc: correct filename flags updates
   10 Jan 05 SHL v3.02h: Allow DND_TARGET to hold CCHMAXPATH
   23 May 05 SHL v3.02i: Avoid datamin delays
+  25 May 05 SHL v3.02i: Rework large file/drive support
 
 ***********************************************************************/
 
