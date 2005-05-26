@@ -6,10 +6,12 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2003 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
-  Revisions	16 Oct 02 SHL - Handle large partitions
-		11 Jun 03 SHL - Add JFS and FAT32 support
+  16 Oct 02 SHL Handle large partitions
+  11 Jun 03 SHL Add JFS and FAT32 support
+  25 May 05 SHL Rename comnam to szCommonName and fix typo
+  25 May 05 SHL Use ULONGLONG and CommaFmtULL
 
 ***********************************************************************/
 
@@ -17,13 +19,15 @@
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_DOSERRORS
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -550,8 +554,8 @@ MRESULT EXPENTRY TreeClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 }
 
 
-MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   DIRCNRDATA *dcd;
 
   switch(msg) {
@@ -677,7 +681,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           CHAR  volumelength;
           CHAR  volumelabel[CCHMAXPATH];
         }          volser;
-        CHAR       fbytes[81];
+        CHAR       szBuf[81];
         CNRINFO    cnri;
 
         strcpy(s,GetPString(IDS_TREETEXT));
@@ -708,21 +712,21 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                    FSIL_ALLOC,
                                    &fsa,
                                    sizeof(FSALLOCATE))) {
-                  strcpy(fbytes,"  ");
-                  commafmt(fbytes + 2,sizeof(fbytes) - 4,
-                           (ULONG)(((float)fsa.cUnitAvail *
-			     (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
-                  strcat(fbytes,
+                  strcpy(szBuf,"  ");
+                  CommaFmtULL(szBuf + 2,sizeof(szBuf) - 4,
+                              (ULONGLONG)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector),
+			      'K');
+                  strcat(szBuf,
                          GetPString(IDS_KFREETEXT));
                 }
                 else
-                  *fbytes = 0;
+                  *szBuf = 0;
                 driveserial[toupper(*pci->szFileName) - 'A'] = volser.serial;
                 sprintf(&s[strlen(s)],
                         GetPString(IDS_TREESTATUSSTARTTEXT),
                         toupper(*pci->szFileName),
                         volser.volumelabel,
-                        volser.serial,fbytes);
+                        volser.serial,szBuf);
                 if(!fMoreButtons) {
                   if(*dcd->mask.szMask ||
                      (dcd->mask.attrFile != ALLATTRS ||
@@ -984,26 +988,26 @@ MRESULT EXPENTRY TreeCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           case '\r':
           case '\n':
             dcd->lasttime = 0;
-            *dcd->comnam = 0;
+            *dcd->szCommonName = 0;
             break;
           default:
             thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
             if(thistime > dcd->lasttime + 1250)
-              *dcd->comnam = 0;
+              *dcd->szCommonName = 0;
             dcd->lasttime = thistime;
-            if(SHORT1FROMMP(mp2) == ' ' && !dcd->comnam)
+            if(SHORT1FROMMP(mp2) == ' ' && !*dcd->szCommonName)
               break;
 KbdRetry:
-            len = strlen(dcd->comnam);
+            len = strlen(dcd->szCommonName);
             if(len >= CCHMAXPATH - 1) {
-              *dcd->comnam = 0;
+              *dcd->szCommonName = 0;
               len = 0;
             }
-            dcd->comnam[len] = toupper(SHORT1FROMMP(mp2));
-            dcd->comnam[len + 1] = 0;
+            dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
+            dcd->szCommonName[len + 1] = 0;
             memset(&srch,0,sizeof(SEARCHSTRING));
             srch.cb = (ULONG)sizeof(SEARCHSTRING);
-            srch.pszSearch = (PSZ)dcd->comnam;
+            srch.pszSearch = (PSZ)dcd->szCommonName;
             srch.fsPrefix = TRUE;
             srch.fsCaseSensitive = FALSE;
             srch.usView = CV_ICON;
@@ -1024,10 +1028,10 @@ KbdRetry:
             }
             else {
               if(SHORT1FROMMP(mp2) == ' ') {
-                dcd->comnam[len] = 0;
+                dcd->szCommonName[len] = 0;
                 break;
               }
-              *dcd->comnam = 0;
+              *dcd->szCommonName = 0;
               dcd->lasttime = 0;
               if(len)           // retry as first letter if no match
                 goto KbdRetry;
@@ -1072,14 +1076,11 @@ KbdRetry:
                                 QSV_TOTAVAILMEM,
                                 (PVOID)&amem,
                                 (ULONG)sizeof(amem))) {
-              commafmt(tpm,sizeof(tpm),amem / 1024L);
-              strcat(tpm,"k");
+              CommaFmtULL(tpm,sizeof(tpm),amem,'K');
             }
-            if(!Dos16MemAvail(&amem)) {
-              commafmt(tm,sizeof(tm),amem / 1024L);
-              strcat(tm,"k");
-            }
-            commafmt(tb,sizeof(tb),ffb.cbFile / 1024L);
+            if(!Dos16MemAvail(&amem))
+              CommaFmtULL(tm,sizeof(tm),amem,'K');
+            CommaFmtULL(tb,sizeof(tb),ffb.cbFile,'K');
             sprintf(s," %s %sk%s%s%s%s",
                     GetPString(IDS_SWAPFILETEXT),
                     tb,
