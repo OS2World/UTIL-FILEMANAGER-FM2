@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Object containers
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005 Steven H. Levine
+
+  24 May 05 SHL Rework for CNRITEM.szSubject
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -71,10 +85,10 @@ static VOID ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
     }
     strcpy(pciP->szFileName,filename);
     pciP->pszDispAttr = pciP->szDispAttr;
-    pciP->pszSubject = pciP->subject;
-    pciP->pszLongname = pciP->Longname;
+    pciP->pszSubject = pciP->szSubject;
+    pciP->pszLongname = pciP->szLongname;
     pciP->pszDispAttr = pciP->szDispAttr;
-    *pciP->szDispAttr = *pciP->Longname = *pciP->subject = 0;
+    *pciP->szDispAttr = *pciP->szLongname = *pciP->szSubject = 0;
     if(strlen(filename) < 4)
       pciP->pszFileName = pciP->szFileName;
     else {

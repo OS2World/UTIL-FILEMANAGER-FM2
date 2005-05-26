@@ -6,11 +6,12 @@
   Save file list to clipboard
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2005 Steven H. Levine
 
-  Revisions	12 Feb 03 SHL - SaveListDlgProc: standardize EA math
-		01 Aug 04 SHL - Rework lstrip/rstrip usage
-  		01 Aug 04 SHL - Rework fixup usage
+  12 Feb 03 SHL SaveListDlgProc: standardize EA math
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework fixup usage
+  24 May 05 SHL Rework for CNRITEM.szSubject
 
 ***********************************************************************/
 
@@ -485,10 +486,10 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                         p++;
                         switch(*p) {
                           case 's':
-                            fputs(pci->subject,fp);
+                            fputs(pci->szSubject,fp);
                             break;
                           case 'S':
-                            fprintf(fp,"%-40s",pci->subject);
+                            fprintf(fp,"%-40s",pci->szSubject);
                             break;
                           case 'Z':
                             fprintf(fp,"%-13lu",pci->cbFile);
@@ -519,12 +520,12 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                     pci->time.seconds);
                             break;
                           case 'l':
-                            fputs(pci->Longname,fp);
+                            fputs(pci->szLongname,fp);
                             break;
                           case 'L':
                             fprintf(fp,
                                     "%-40s",
-                                    pci->Longname);
+                                    pci->szLongname);
                             break;
                           case 'F':
                           case 'f':
