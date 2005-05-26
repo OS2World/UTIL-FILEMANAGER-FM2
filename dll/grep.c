@@ -6,22 +6,26 @@
   Info window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
-  Revisions	12 Feb 03 SHL - insert_grepfile: standardize EA math
-		12 Feb 03 SHL - doonefile: standardize EA math
+  12 Feb 03 SHL insert_grepfile: standardize EA math
+  12 Feb 03 SHL doonefile: standardize EA math
+  25 May 05 SHL Rework for ULONGLONG
+  25 May 05 SHL Rework for FillInRecordFromFFB
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3str.h"
 #include "grep.h"
@@ -590,6 +594,7 @@ static BOOL doinsertion (GREP *grep)
     pciFirst = pci;
     dcd = INSTDATA(grep->hwndFiles);
     for(x = 0; grep->insertffb[x]; x++) {
+      ULONGLONG ullBytes;
       FillInRecordFromFFB(grep->hwndFiles,
                           pci,
                           grep->dir[x],
@@ -611,7 +616,7 @@ static BOOL doinsertion (GREP *grep)
                MPFROMP(&ri));
     if(dcd) {
       DosEnterCritSec();
-       dcd->totalbytes += grep->insertedbytes;
+       dcd->ullTotalBytes += grep->insertedbytes;
       DosExitCritSec();
     }
     if(grep->toinsert == grep->FilesToGet)
