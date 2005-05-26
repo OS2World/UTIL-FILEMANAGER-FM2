@@ -6,12 +6,13 @@
   See all matching files
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   25 Nov 03 SHL StartSeeAll: avoid forgetting startpath
   06 Dec 03 SHL StartSeeAll: correct malloc arg oops
   23 May 05 SHL Use QWL_USER
+  25 May 05 SHL Use ULONGLONG and CommaFmtULL
 
 ***********************************************************************/
 
@@ -19,13 +20,15 @@
 #define INCL_DOSERRORS
 #define INCL_WIN
 #define INCL_GPI
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <process.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -37,7 +40,7 @@
 #pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark,MarkList)
 #pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList)
 #pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObj,FindDupes,DupeDlgProc)
-#pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAll,AFDrvsWndProc)
+#pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAllThread,AFDrvsWndProc)
 #pragma alloc_text(SEEALL3,StartSeeAll)
 
 typedef struct {
@@ -89,22 +92,48 @@ typedef FNSORT *PFNSORT;
 typedef struct {
   USHORT    size;
   USHORT    dupeflags;
-  ALLFILES *afhead,**afindex;
-  ULONG     affiles,afalloc,afFilesToGet,longest,longestw,
-	    topfile,cursored,selected,ulSelectedKB, ulSelectedBytes,afifiles,
-	    lastselected,lastdirection,multiplier,lasttime;
-  CHAR      stopflag,drvsflags[26],lasttarget[CCHMAXPATH],
-	    comnam[CCHMAXPATH],findpath[CCHMAXPATH];
-  LONG      lMaxAscender,lMaxDescender,lMaxHeight,maxx,horzscroll;
-  BOOL      fullnames,invertsort,mousecaptured;
-  HMTX      ScanSem;
-  HWND      hvscroll,hhscroll,hwndMenu,hwndObj,hwndClient,hwndPopup,
-	    hwndStatus,hwndFrame;
+  ALLFILES  *afhead;
+  ALLFILES  **afindex;
+  ULONG     affiles;
+  ULONG	    afalloc;
+  ULONG	    afFilesToGet;
+  ULONG	    longest;
+  ULONG	    longestw;
+  ULONG	    topfile;
+  ULONG	    cursored;
+  ULONG	    selected;
+  ULONGLONG    ullSelectedBytes;
+  ULONG	    afifiles;
+  ULONG	    lastselected;
+  ULONG	    lastdirection;
+  ULONG	    multiplier;
+  ULONG	    lasttime;
+  CHAR      stopflag;
+  CHAR	    abDrvFlags[26];
+  CHAR	    szCommonName[CCHMAXPATH];
+  CHAR	    szFindPath[CCHMAXPATH];
+  LONG      lMaxAscender;
+  LONG	    lMaxDescender;
+  LONG	    lMaxHeight;
+  LONG	    maxx;
+  LONG	    horzscroll;
+  BOOL      fullnames;
+  BOOL	    invertsort;
+  BOOL	    mousecaptured;
+  HMTX      hmtxScan;
+  HWND      hvscroll;
+  HWND	    hhscroll;
+  HWND	    hwndMenu;
+  HWND	    hwndObj;
+  HWND	    hwndClient;
+  HWND	    hwndPopup;
+  HWND	    hwndStatus;
+  HWND	    hwndFrame;
   HPS       hps;
-  PFNSORT   compare;
+  PFNSORT   pfnCompare;
   MASK      mask;
   FATTRS    fattrs;
-  LONG      colors[8];
+  LONG      aulColors[8];
   BOOL      killme;
 } ALLDATA;
 
@@ -117,9 +146,10 @@ static FATTRS Fattrs;
 extern LONG CRCFile (CHAR *filename,INT *error);
 
 
-MRESULT EXPENTRY DupeDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
-  switch(msg) {
+MRESULT EXPENTRY DupeDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
+  switch (msg)
+  {
     case WM_INITDLG:
       {
 	USHORT flags = SHORT1FROMMP(mp2);
@@ -200,8 +230,8 @@ MRESULT EXPENTRY DupeDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-static ULONG NumLines (RECTL *rcl,ALLDATA *ad) {
-
+static ULONG NumLines (RECTL *rcl,ALLDATA *ad)
+{
   ULONG numlines;
 
   numlines = (rcl->yTop - rcl->yBottom) / ad->lMaxHeight;
@@ -215,7 +245,8 @@ static ULONG NumLines (RECTL *rcl,ALLDATA *ad) {
 
 MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  switch(msg) {
+  switch (msg)
+  {
     case UM_MASSACTION:
       {
 	CHAR         **files = NULL,**list = (CHAR **)mp2,path[CCHMAXPATH];
@@ -1226,19 +1257,22 @@ Abort:
 }
 
 
-static VOID MakeSeeObj (VOID *args) {
-
+static VOID MakeSeeObj (VOID *args)
+{
   HAB      hab2;
   HMQ      hmq2;
   HWND     hwndObj;
   ALLDATA *ad = (ALLDATA *)args;
   QMSG     qmsg2;
 
-  if(ad) {
+  if (ad)
+  {
     hab2 = WinInitialize(0);
-    if(hab2) {
+    if(hab2)
+    {
       hmq2 = WinCreateMsgQueue(hab2,256);
-      if(hmq2) {
+      if(hmq2)
+      {
 	DosError(FERR_DISABLEHARDERR);
 	WinRegisterClass(hab2,
 			 GetPString(IDS_WCOBJECTWINDOW),
@@ -1283,7 +1317,6 @@ static VOID SelectMask (HWND hwnd,BOOL deselect)
 {
   MASK           mask;
   register ULONG x,y,z;
-  ULONG		 ul;
   BOOL           ret;
   ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
 
@@ -1356,18 +1389,14 @@ static VOID SelectMask (HWND hwnd,BOOL deselect)
 	if (deselect) {
 	  if (pAD->afindex[y]->flags & AF_SELECTED) {
 	    pAD->selected--;
-	    ul = pAD->afindex[y]->cbFile;
-	    pAD->ulSelectedKB -= ul >> 10;
-	    pAD->ulSelectedBytes -= ul & 0x3ff;
+	    pAD->ullSelectedBytes -= pAD->afindex[y]->cbFile;
 	    pAD->afindex[y]->flags &= ~AF_SELECTED;
 	  }
 	}
 	else {
 	  if (~pAD->afindex[y]->flags & AF_SELECTED) {
 	    pAD->selected++;
-	    ul = pAD->afindex[y]->cbFile;
-	    pAD->ulSelectedKB += ul >> 10;
-	    pAD->ulSelectedBytes += ul & 0x3ff;
+	    pAD->ullSelectedBytes += pAD->afindex[y]->cbFile;
 	    pAD->afindex[y]->flags |= AF_SELECTED;
 	  }
 	}
@@ -1377,9 +1406,10 @@ static VOID SelectMask (HWND hwnd,BOOL deselect)
 }
 
 
-static VOID CollectList (HWND hwnd,CHAR **list) {
-
-  if(!Collector) {
+static VOID CollectList (HWND hwnd,CHAR **list)
+{
+  if (!Collector)
+  {
     if(hwndMain && !fExternalCollector && !strcmp(realappname,FM3Str)) {
 
       HWND hwndC;
@@ -1410,8 +1440,8 @@ static VOID CollectList (HWND hwnd,CHAR **list) {
 }
 
 
-static VOID FreeAllFilesList (HWND hwnd) {
-
+static VOID FreeAllFilesList (HWND hwnd)
+{
   ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x;
 
@@ -1432,12 +1462,16 @@ static VOID FreeAllFilesList (HWND hwnd) {
 }
 
 
-static CHAR ** BuildAList (HWND hwnd) {
-
-  ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
-  register ULONG x,y,z = 0;
-  CHAR         **list = NULL;
-  INT            numfiles = 0,numalloc = 0,error;
+static CHAR ** BuildAList (HWND hwnd)
+{
+  ALLDATA     *ad = WinQueryWindowPtr(hwnd,QWL_USER);
+  ULONG       x;
+  ULONG       y;
+  ULONG       z = 0;
+  CHAR      **list = NULL;
+  INT         numfiles = 0;
+  INT	      numalloc = 0;
+  INT         error;
 
   if(ad->selected) {
     for(x = 0;x < ad->afifiles;x++) {
@@ -1463,7 +1497,6 @@ static BOOL Mark (HWND hwnd,INT command,CHAR **list)
 
   ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,y,z;
-  ULONG		ul;
   BOOL          ret = TRUE;
   BOOL		didone = FALSE;
 
@@ -1483,34 +1516,26 @@ static BOOL Mark (HWND hwnd,INT command,CHAR **list)
       if (command == AFM_UNMARK) {
 	if (pAD->afindex[y]->flags & AF_SELECTED) {
 	  pAD->selected--;
-	  ul = pAD->afindex[y]->cbFile;
-	  pAD->ulSelectedKB -= ul >> 10;
-	  pAD->ulSelectedBytes -= ul & 0x3ff;
+	  pAD->ullSelectedBytes -= pAD->afindex[y]->cbFile;
 	  pAD->afindex[y]->flags &= ~AF_SELECTED;
 	}
       }
       else if (command == AFM_MARK) {
 	if (~pAD->afindex[y]->flags & AF_SELECTED) {
 	  pAD->selected++;
-	  ul = pAD->afindex[y]->cbFile;
-	  pAD->ulSelectedKB += ul >> 10;;
-	  pAD->ulSelectedBytes += ul & 0x3ff;
+	  pAD->ullSelectedBytes += pAD->afindex[y]->cbFile;
 	  pAD->afindex[y]->flags |= AF_SELECTED;
 	}
       }
       else if (command == AFM_INVERT) {
 	if (pAD->afindex[y]->flags & AF_SELECTED) {
 	  pAD->selected--;
-	  ul = pAD->afindex[y]->cbFile;
-	  pAD->ulSelectedKB -= ul >> 10;
-	  pAD->ulSelectedBytes -= ul & 0x3ff;
+	  pAD->ullSelectedBytes -= pAD->afindex[y]->cbFile;
 	  pAD->afindex[y]->flags &= ~AF_SELECTED;
 	}
 	else {
 	  pAD->selected++;
-	  ul = pAD->afindex[y]->cbFile;
-	  pAD->ulSelectedKB += ul >> 10;
-	  pAD->ulSelectedBytes += ul & 0x3ff;
+	  pAD->ullSelectedBytes += pAD->afindex[y]->cbFile;
 	  pAD->afindex[y]->flags |= AF_SELECTED;
 	}
       }
@@ -1534,7 +1559,6 @@ static BOOL MarkList (HWND hwnd,INT command,CHAR **list)
 
   ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,z;
-  ULONG		ul;
   BOOL          ret = TRUE;
   BOOL		didone = FALSE;
 
@@ -1553,34 +1577,26 @@ static BOOL MarkList (HWND hwnd,INT command,CHAR **list)
       if (command == AFM_UNMARK) {
 	if (pAD->afhead[x].flags & AF_SELECTED) {
 	  pAD->selected--;
-	  ul = pAD->afhead[x].cbFile;
-	  pAD->ulSelectedKB -= ul >> 10;
-	  pAD->ulSelectedBytes -= ul & 0x3ff;
+	  pAD->ullSelectedBytes -= pAD->afhead[x].cbFile;
 	  pAD->afhead[x].flags &= ~AF_SELECTED;
 	}
       }
       else if (command == AFM_MARK) {
 	if (~pAD->afhead[x].flags & AF_SELECTED) {
 	  pAD->selected++;
-	  ul = pAD->afhead[x].cbFile;
-	  pAD->ulSelectedKB += ul >> 10;
-	  pAD->ulSelectedBytes += ul & 0x3ff;
+	  pAD->ullSelectedBytes += pAD->afhead[x].cbFile;
 	  pAD->afhead[x].flags |= AF_SELECTED;
 	}
       }
       else if (command == AFM_INVERT) {
 	if (pAD->afhead[x].flags & AF_SELECTED) {
 	  pAD->selected--;
-	  ul = pAD->afhead[x].cbFile;
-	  pAD->ulSelectedKB -= ul >> 10;
-	  pAD->ulSelectedBytes -= ul & 0x3ff;
+	  pAD->ullSelectedBytes -= pAD->afhead[x].cbFile;
 	  pAD->afhead[x].flags &= ~AF_SELECTED;
 	}
 	else {
 	  pAD->selected++;
-	  ul = pAD->afhead[x].cbFile;
-	  pAD->ulSelectedKB += ul >> 10;
-	  pAD->ulSelectedBytes += ul & 0x3ff;
+	  pAD->ullSelectedBytes += pAD->afhead[x].cbFile;
 	  pAD->afhead[x].flags |= AF_SELECTED;
 	}
       }
@@ -1598,8 +1614,8 @@ static BOOL MarkList (HWND hwnd,INT command,CHAR **list)
 }
 
 
-static BOOL UpdateList (HWND hwnd,CHAR **list) {
-
+static BOOL UpdateList (HWND hwnd,CHAR **list)
+{
   /* Updates files in the list */
 
   ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
@@ -1639,7 +1655,7 @@ static BOOL UpdateList (HWND hwnd,CHAR **list) {
 	else
 	  ad->afhead[x].flags |= AF_DELETED;
       }
-      else if(isalpha(*list[z]) && ad->drvsflags[toupper(*list[z]) - 'A']) {
+      else if(isalpha(*list[z]) && ad->abDrvFlags[toupper(*list[z]) - 'A']) {
 	didone = TRUE;
 	hdir = HDIR_CREATE;
 	nm = 1L;
@@ -1661,14 +1677,14 @@ static BOOL UpdateList (HWND hwnd,CHAR **list) {
 		if(templ)
 		  ad->afindex = templ;
 		else {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
+                  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
 		  ad->stopflag = 1;
 		  break;
 		}
 		ad->afalloc++;
 	      }
 	      else {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
+                // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
 		ad->stopflag = 1;
 		break;
 	      }
@@ -1694,7 +1710,7 @@ static BOOL UpdateList (HWND hwnd,CHAR **list) {
 	      ad->affiles++;
 	    }
 	    else {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Strdup failed.");
+              // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Strdup failed.");
 	      ad->stopflag = 1;
 	      break;
 	    }
@@ -1707,8 +1723,8 @@ static BOOL UpdateList (HWND hwnd,CHAR **list) {
 }
 
 
-static int comparefullnames (const void *v1,const void *v2) {
-
+static int comparefullnames (const void *v1,const void *v2)
+{
   ALLFILES *d1 = *(ALLFILES **)v1;
   ALLFILES *d2 = *(ALLFILES **)v2;
   int       ret;
@@ -1718,8 +1734,8 @@ static int comparefullnames (const void *v1,const void *v2) {
 }
 
 
-static int comparenames (const void *v1,const void *v2) {
-
+static int comparenames (const void *v1,const void *v2)
+{
   ALLFILES *d1 = *(ALLFILES **)v1;
   ALLFILES *d2 = *(ALLFILES **)v2;
   int       ret;
@@ -1731,8 +1747,8 @@ static int comparenames (const void *v1,const void *v2) {
 }
 
 
-static int compareexts (const void *v1,const void *v2) {
-
+static int compareexts (const void *v1,const void *v2)
+{
   ALLFILES *d1 = *(ALLFILES **)v1;
   ALLFILES *d2 = *(ALLFILES **)v2;
   register CHAR *p1,*p2;
@@ -1755,8 +1771,8 @@ static int compareexts (const void *v1,const void *v2) {
 }
 
 
-static int comparesizes (const void *v1,const void *v2) {
-
+static int comparesizes (const void *v1,const void *v2)
+{
   ALLFILES *d1 = *(ALLFILES **)v1;
   ALLFILES *d2 = *(ALLFILES **)v2;
   int       ret;
@@ -1768,8 +1784,8 @@ static int comparesizes (const void *v1,const void *v2) {
 }
 
 
-static int comparedates (const void *v1,const void *v2) {
-
+static int comparedates (const void *v1,const void *v2)
+{
   ALLFILES *d1 = *(ALLFILES **)v1;
   ALLFILES *d2 = *(ALLFILES **)v2;
   int ret;
@@ -1793,37 +1809,33 @@ static int comparedates (const void *v1,const void *v2) {
 }
 
 
-static VOID ReSort (HWND hwnd) {
-
+static VOID ReSort (HWND hwnd)
+{
   ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   register ULONG x,y;
-  ULONG		ul;
 
   pAD->selected = 0;
-  pAD->ulSelectedKB = 0;
-  pAD->ulSelectedBytes = 0;
+  pAD->ullSelectedBytes = 0;
   for (x = 0,y = 0;x < pAD->affiles;x++) {
     if(!(pAD->afhead[x].flags & (AF_DELETED | AF_FILTERED))) {
       if (pAD->afhead[x].flags & AF_SELECTED) {
 	pAD->selected++;
-	ul = pAD->afhead[x].cbFile;
-	pAD->ulSelectedKB += ul >> 10;
-	pAD->ulSelectedBytes += ul & 0x3ff;
+	pAD->ullSelectedBytes += pAD->afhead[x].cbFile;
       }
       pAD->afindex[y++] = &(pAD->afhead[x]);
     }
   } // for x
   pAD->afifiles = y;
   PostMsg(hwnd,UM_SETUP3,MPVOID,MPVOID);
-  if(!pAD->stopflag && pAD->compare && pAD->afifiles) {
+  if(!pAD->stopflag && pAD->pfnCompare && pAD->afifiles) {
     WinSendMsg(hwnd,UM_RESCAN,MPFROMLONG(1L),MPVOID);
-    qsort(pAD->afindex,pAD->afifiles,sizeof(ALLFILES *),pAD->compare);
+    qsort(pAD->afindex,pAD->afifiles,sizeof(ALLFILES *),pAD->pfnCompare);
   }
 }
 
 
-VOID FindDupes (VOID *args) {
-
+VOID FindDupes (VOID *args)
+{
   register ULONG x,z;
   register CHAR *px,*pz;
   CHAR           s[80];
@@ -1833,7 +1845,7 @@ VOID FindDupes (VOID *args) {
   HMQ            hmq2 = (HMQ)0;
   ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
-  if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
+  if(!DosRequestMutexSem(ad->hmtxScan,SEM_INDEFINITE_WAIT)) {
     priority_normal();
     hab2 = WinInitialize(0);
     if(hab2) {
@@ -1933,7 +1945,7 @@ SkipNonDupe:
       }
     }
     PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
-    DosReleaseMutexSem(ad->ScanSem);
+    DosReleaseMutexSem(ad->hmtxScan);
   }
   PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
   if(hmq2)
@@ -1943,8 +1955,8 @@ SkipNonDupe:
 }
 
 
-static VOID FilterList (HWND hwnd) {
-
+static VOID FilterList (HWND hwnd)
+{
   register ULONG x,z;
   BOOL           ret;
   ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
@@ -2022,12 +2034,11 @@ static VOID FilterList (HWND hwnd) {
 }
 
 
-static ULONG RemoveDeleted (HWND hwnd) {
-
+static ULONG RemoveDeleted (HWND hwnd)
+{
   ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
   ULONG         oldaffiles = pAD->affiles;
   register ULONG x,y;
-  ULONG		ul;
 
   for (x = 0;x < pAD->affiles;x++) {
     if (pAD->afhead[x].flags & AF_DELETED) {
@@ -2037,9 +2048,7 @@ static ULONG RemoveDeleted (HWND hwnd) {
 	if (pAD->afhead[y].flags & AF_SELECTED &&
 	    ~pAD->afhead[y].flags & AF_FILTERED) {
 	  pAD->selected--;
-	  ul = pAD->afhead[y].cbFile;
-	  pAD->ulSelectedKB -= ul >> 10;
-	  pAD->ulSelectedBytes -= ul & 0x3ff;
+	  pAD->ullSelectedBytes -= pAD->afhead[y].cbFile;
 	}
 	free(pAD->afhead[y].fullname);
       }
@@ -2071,8 +2080,8 @@ static ULONG RemoveDeleted (HWND hwnd) {
 }
 
 
-static VOID DoADir (HWND hwnd,CHAR *pathname) {
-
+static VOID DoADir (HWND hwnd,CHAR *pathname)
+{
   ALLDATA       *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   CHAR          *filename,*enddir;
   FILEFINDBUF3  *pffb,*ffb;
@@ -2083,7 +2092,7 @@ static VOID DoADir (HWND hwnd,CHAR *pathname) {
 
   filename = malloc(CCHMAXPATH);
   if(!filename) {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Malloc filename failed.");
+    // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Malloc filename failed.");
     return;
   }
   uL = ad->afFilesToGet;
@@ -2094,7 +2103,7 @@ static VOID DoADir (HWND hwnd,CHAR *pathname) {
   pffb = malloc(sizeof(FILEFINDBUF3) * uL);
   if(!pffb) {
     free(filename);
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Malloc pffb failed.");
+    // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Malloc pffb failed.");
     return;
   }
   nm = uL;
@@ -2139,7 +2148,7 @@ static VOID DoADir (HWND hwnd,CHAR *pathname) {
 	      ad->afalloc += 1000;
 	    }
 	    else {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
+              // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
 	      ad->stopflag = 1;
 	      break;
 	    }
@@ -2160,7 +2169,7 @@ static VOID DoADir (HWND hwnd,CHAR *pathname) {
 	      ad->longestw = ffb->cchName + (enddir - filename);
 	  }
 	  else {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Strdup failed.");
+            // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Strdup failed.");
 	    ad->stopflag = 1;
 	    break;
 	  }
@@ -2177,8 +2186,8 @@ static VOID DoADir (HWND hwnd,CHAR *pathname) {
 }
 
 
-static VOID FindAll (VOID *args) {
-
+static VOID FindAllThread (VOID *args)
+{
   ULONG     ulDriveNum,ulDriveMap,x;
   CHAR      startname[] = " :\\";
   HWND      hwnd = (HWND)args;
@@ -2186,19 +2195,24 @@ static VOID FindAll (VOID *args) {
   HMQ       hmq2 = (HMQ)0;
   ALLDATA  *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
-  if(!DosRequestMutexSem(ad->ScanSem,SEM_INDEFINITE_WAIT)) {
+  if(!DosRequestMutexSem(ad->hmtxScan,SEM_INDEFINITE_WAIT))
+  {
     priority_normal();
     hab2 = WinInitialize(0);
-    if(hab2) {
+    if(hab2)
+    {
       hmq2 = WinCreateMsgQueue(hab2,0);
-      if(hmq2) {
+      if(hmq2)
+      {
 	WinCancelShutdown(hmq2,TRUE);
 	ad->afFilesToGet = min(FilesToGet,128);
-	if(!*ad->findpath) {
+	if(!*ad->szFindPath) {
 	  DosError(FERR_DISABLEHARDERR);
-	  if(!DosQCurDisk(&ulDriveNum,&ulDriveMap)) {
-	    for(x = 2L;x < 26L && !ad->stopflag;x++) {
-	      if((ulDriveMap & (1L << x)) && ad->drvsflags[x]) {
+	  if(!DosQCurDisk(&ulDriveNum,&ulDriveMap))
+	  {
+	    for(x = 2L;x < 26L && !ad->stopflag;x++)
+	    {
+	      if((ulDriveMap & (1L << x)) && ad->abDrvFlags[x]) {
 		*startname = (CHAR)(x + 'A');
 		DoADir(hwnd,startname);
 		PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
@@ -2208,7 +2222,7 @@ static VOID FindAll (VOID *args) {
 	  }
 	}
 	else
-	  DoADir(hwnd,ad->findpath);
+	  DoADir(hwnd,ad->szFindPath);
 	DosPostEventSem(CompactSem);
       }
     }
@@ -2231,7 +2245,7 @@ static VOID FindAll (VOID *args) {
       PostMsg(hwnd,UM_RESCAN,MPFROMLONG(1L),MPVOID);
       ReSort(hwnd);
     }
-    DosReleaseMutexSem(ad->ScanSem);
+    DosReleaseMutexSem(ad->hmtxScan);
   }
   PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
   if(hmq2)
@@ -2241,9 +2255,10 @@ static VOID FindAll (VOID *args) {
 }
 
 
-MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
-  switch(msg) {
+MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
+  switch (msg)
+  {
     case WM_INITDLG:
       if(mp2) {
 
@@ -2264,7 +2279,7 @@ MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 						   LM_INSERTITEM,
 						   MPFROM2SHORT(LIT_END,0),
 						   MPFROMP(startname));
-		if(sSelect >= 0 && ad->drvsflags[x])
+		if(sSelect >= 0 && ad->abDrvFlags[x])
 		  WinSendDlgItemMsg(hwnd,DRVS_LISTBOX,LM_SELECTITEM,
 				    MPFROM2SHORT(sSelect,0),
 				    MPFROMLONG(TRUE));
@@ -2298,7 +2313,7 @@ MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 	    CHAR      filename[3];
 	    ALLDATA  *ad = WinQueryWindowPtr(hwnd,QWL_USER);
 
-	    memset(ad->drvsflags,0,sizeof(ad->drvsflags));
+	    memset(ad->abDrvFlags,0,sizeof(ad->abDrvFlags));
 	    sSelect = (SHORT)WinSendDlgItemMsg(hwnd,DRVS_LISTBOX,
 					       LM_QUERYSELECTION,
 					       MPFROM2SHORT(LIT_FIRST,0),
@@ -2308,14 +2323,14 @@ MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 	      if(WinSendDlgItemMsg(hwnd,DRVS_LISTBOX,LM_QUERYITEMTEXT,
 				   MPFROM2SHORT(sSelect,2),
 				   MPFROMP(filename)) && *filename)
-		ad->drvsflags[*filename - 'A'] = 1;
+		ad->abDrvFlags[*filename - 'A'] = 1;
 	      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,DRVS_LISTBOX,
 						 LM_QUERYSELECTION,
 						 MPFROM2SHORT(sSelect,0),
 						 MPVOID);
 	    }
 	    for(x = 2L;x < 26L;x++) {
-	      if(ad->drvsflags[x]) {
+	      if(ad->abDrvFlags[x]) {
 		WinDismissDlg(hwnd,1);
 		return 0;
 	      }
@@ -2341,8 +2356,8 @@ MRESULT EXPENTRY AFDrvsWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-static HPS InitWindow (HWND hwnd) {
-
+static HPS InitWindow (HWND hwnd)
+{
   ALLDATA     *ad = WinQueryWindowPtr(hwnd,QWL_USER);
   HPS          hps = (HPS)0;
   SIZEL        sizel;
@@ -2456,8 +2471,8 @@ static VOID PaintLine (HWND hwnd,HPS hps,ULONG whichfile,ULONG topfile,
 }
 
 
-MRESULT EXPENTRY SeeStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY SeeStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_CREATE:
       return CommonTextProc(hwnd,msg,mp1,mp2);
@@ -2497,8 +2512,8 @@ MRESULT EXPENTRY SeeStatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY SeeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY SeeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
@@ -2585,10 +2600,9 @@ MRESULT EXPENTRY SeeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
-
+MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+{
   ALLDATA *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
-  ULONG   ul;
 
   switch (msg) {
     case WM_CREATE:
@@ -2604,7 +2618,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	pAD->mask.fNoDirs = TRUE;
 	*(pAD->mask.prompt) = 0;
 	WinSetWindowPtr(hwnd,QWL_USER,(PVOID)pAD);
-	pAD->compare = comparenames;
+	pAD->pfnCompare = comparenames;
 	if(Firsttime) {
 
 	  ULONG  size;
@@ -2656,22 +2670,22 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	}
 	switch(SortType) {
 	  case IDM_SORTEASIZE:
-	    pAD->compare = (PFNSORT)NULL;
+	    pAD->pfnCompare = (PFNSORT)NULL;
 	    break;
 	  case IDM_SORTNAME:
-	    pAD->compare = comparefullnames;
+	    pAD->pfnCompare = comparefullnames;
 	    break;
 	  case IDM_SORTFILENAME:
-	    pAD->compare = comparenames;
+	    pAD->pfnCompare = comparenames;
 	    break;
 	  case IDM_SORTSIZE:
-	    pAD->compare = comparesizes;
+	    pAD->pfnCompare = comparesizes;
 	    break;
 	  case IDM_SORTLWDATE:
-	    pAD->compare = comparedates;
+	    pAD->pfnCompare = comparedates;
 	    break;
 	  case IDM_SORTFIRST:
-	    pAD->compare = compareexts;
+	    pAD->pfnCompare = compareexts;
 	    break;
 	}
 	pAD->invertsort = SortReverse;
@@ -2680,7 +2694,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	pAD->stopflag   = 0;
 	pAD->cursored   = pAD->topfile = 1;
 	pAD->fattrs.usCodePage = Codepage;
-	memcpy(pAD->colors,Colors,sizeof(LONG) * COLORS_MAX);
+	memcpy(pAD->aulColors,Colors,sizeof(LONG) * COLORS_MAX);
 	pAD->hwndMenu   = WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
 					 FID_MENU);
 	SetConditionalCascade(pAD->hwndMenu,IDM_DELETESUBMENU,
@@ -2704,7 +2718,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 				       FID_HORZSCROLL);
 	pAD->multiplier = 1;
 	if(_beginthread(MakeSeeObj,NULL,122880,(PVOID)pAD) != -1) {
-	  if(!DosCreateMutexSem(NULL,&pAD->ScanSem,0L,FALSE)) {
+	  if(!DosCreateMutexSem(NULL,&pAD->hmtxScan,0L,FALSE)) {
 	    pAD->hwndStatus = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
 					      GetPString(IDS_WCSEESTATUS),
 					      NullStr,
@@ -2739,7 +2753,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
       // fprintf(stderr,"Seeall: UM_SETUP5\n");
       if(pAD) {
 	if(mp1 && *((CHAR *)mp1))
-	  strcpy(pAD->findpath,(CHAR *)mp1);
+	  strcpy(pAD->szFindPath,(CHAR *)mp1);
 	else {
 	  if(!WinDlgBox(HWND_DESKTOP,hwnd,AFDrvsWndProc,
 			FM3ModHandle,DRVS_FRAME,(PVOID)pAD)) {
@@ -2747,7 +2761,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	    return 0;
 	  }
 	}
-	if(_beginthread(FindAll,NULL,524288,(PVOID)hwnd) == -1)
+	if(_beginthread(FindAllThread,NULL,524288,(PVOID)hwnd) == -1)
 	  PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
 	else {
 	  DosSleep(100L);
@@ -2764,7 +2778,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 
 	APIRET rc;
 
-	rc = DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN);
+	rc = DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN);
 	if(!rc) {
 	  WinSetPointer(HWND_DESKTOP,hptrBusy);
 	  if(UpdateList(hwnd,mp1)) {
@@ -2773,7 +2787,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	    ReSort(hwnd);
 	    WinInvalidateRect(hwnd,NULL,FALSE);
 	  }
-	  DosReleaseMutexSem(pAD->ScanSem);
+	  DosReleaseMutexSem(pAD->hmtxScan);
 	  WinSetPointer(HWND_DESKTOP,hptrArrow);
 	}
       }
@@ -2789,11 +2803,11 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 
 	strcpy(s,
 	       GetPString(IDS_SEEALLTITLETEXT));
-	if(!*pAD->findpath) {
+	if(!*pAD->szFindPath) {
 	  DosError(FERR_DISABLEHARDERR);
 	  if(!DosQCurDisk(&ulDriveNum,&ulDriveMap)) {
 	    for(x = 2L;x < 26L && !pAD->stopflag;x++) {
-	      if((ulDriveMap & (1L << x)) && pAD->drvsflags[x]) {
+	      if((ulDriveMap & (1L << x)) && pAD->abDrvFlags[x]) {
 		sprintf(&s[strlen(s)],
 			"%s%c:",
 			(once) ? ", " : " (",
@@ -2807,7 +2821,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	}
 	else {
 	  strcat(s," (");
-	  strcat(s,pAD->findpath);
+	  strcat(s,pAD->szFindPath);
 	  strcat(s,")");
 	}
 	WinSetWindowText(WinQueryWindow(hwnd,QW_PARENT),s);
@@ -2854,7 +2868,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
       return 0;
 
     case UM_SETUP4:
-// fprintf(stderr,"Seeall: UM_SETUP4\n");
+      // fprintf(stderr,"Seeall: UM_SETUP4\n");
       if(pAD)
 	pAD->killme = TRUE;
       else
@@ -2864,15 +2878,14 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
     case UM_RESCAN:
       // fprintf(stderr,"Seeall: UM_RESCAN\n");
       if(pAD && !pAD->stopflag) {
-	if(DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
-
+	if (DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN))
+	{
 	  CHAR s[CCHMAXPATH + 80],tm[34];
 
 	  if(mp1) {
 	    strcpy(s,
 		   GetPString(IDS_SORTINGTEXT));
 	    if(pAD->afifiles) {
-	      *tm = 0;
 	      commafmt(tm,sizeof(tm),pAD->afifiles);
 	      strcat(s,tm);
 	    }
@@ -2881,7 +2894,6 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	    strcpy(s,
 		   GetPString(IDS_WORKINGTEXT));
 	    if(pAD->affiles) {
-	      *tm = 0;
 	      commafmt(tm,sizeof(tm),pAD->affiles);
 	      strcat(s,tm);
 	    }
@@ -2892,8 +2904,8 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	  }
 	  WinSetWindowText(pAD->hwndStatus,s);
 	}
-	else {
-
+	else
+	{
 	  CHAR  s[(CCHMAXPATH * 2) + 80],tm[34],ts[34],tb[34];
 	  ULONG y;
 
@@ -2901,7 +2913,6 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	    strcpy(s,
 		   GetPString(IDS_SORTINGTEXT));
 	    if(pAD->afifiles) {
-	      *tm = 0;
 	      commafmt(tm,sizeof(tm),pAD->afifiles);
 	      strcat(s,tm);
 	    }
@@ -2910,28 +2921,15 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	      strcat(s,(CHAR *)mp2);
 	    }
 	  }
-	  else if(pAD->afifiles) {
+	  else if(pAD->afifiles)
+	  {
 	    y = (pAD->invertsort) ? (pAD->afifiles - 1) - (pAD->cursored - 1) :
 				   pAD->cursored - 1;
-	    *tm = *ts = *tb = 0;
 	    commafmt(tm,sizeof(tm),pAD->afifiles);
 	    commafmt(ts,sizeof(ts),pAD->selected);
-
-	    // Normalize
-	    ul = pAD->ulSelectedBytes;
-	    if ((long)ul > 0) {
-	      pAD->ulSelectedKB += ul >> 10;
-	      pAD->ulSelectedBytes = ul & 0x3ff;
-	    }
-	    else if ((long)ul < 0) {
-	      ul = -ul;
-	      pAD->ulSelectedKB -= (ul >> 10) + 1;
-	      pAD->ulSelectedBytes = 1024 - (ul & 0x3ff);
-	    }
-
-	    commafmt(tb,sizeof(tb),pAD->ulSelectedKB);
+	    CommaFmtULL(tb,sizeof(tb),pAD->ullSelectedBytes,' ');
 	    sprintf(s,
-		    " %s %s%s%s  %s %s (%sk)  %s %s",
+		    " %s %s%s%s  %s %s (%s)  %s %s",
 		    tm,
 		    GetPString(IDS_FILETEXT),
 		    &"s"[pAD->afifiles == 1],
@@ -2957,13 +2955,13 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 		      GetPString(IDS_FILTEREDTEXT) :
 		      NullStr);
 	  WinSetWindowText(pAD->hwndStatus,s);
-	  DosReleaseMutexSem(pAD->ScanSem);
+	  DosReleaseMutexSem(pAD->hmtxScan);
 	}
       }
       return 0;
 
     case UM_SETUP:
-// fprintf(stderr,"Seeall: UM_SETUP\n");
+      // fprintf(stderr,"Seeall: UM_SETUP\n");
       if(pAD) {
 	WinSendMsg(pAD->hvscroll,SBM_SETTHUMBSIZE,MPFROM2SHORT(1,1),
 		   MPVOID);
@@ -2988,7 +2986,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	if(numlines) {
 	  if(SHORT1FROMMP(mp1) & KC_VIRTUALKEY) {
 	    pAD->lasttime = 0;
-	    *pAD->comnam = 0;
+	    *pAD->szCommonName = 0;
 	    switch(SHORT2FROMMP(mp2)) {
 	      case VK_DELETE:
 		if((shiftstate & KC_CTRL) == KC_CTRL)
@@ -3120,32 +3118,32 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 					((pAD->cursored) - pAD->topfile))) - 1),
 			   MPFROM2SHORT(0,0));
 		pAD->lasttime = 0;
-		*pAD->comnam = 0;
+		*pAD->szCommonName = 0;
 		break;
 	      default:
 		thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
 		if(thistime > pAD->lasttime + 1000)
-		  *pAD->comnam = 0;
+		  *pAD->szCommonName = 0;
 		pAD->lasttime = thistime;
 KbdRetry:
-		len = strlen(pAD->comnam);
+		len = strlen(pAD->szCommonName);
 		if(len >= CCHMAXPATH - 1) {
-		  *pAD->comnam = 0;
+		  *pAD->szCommonName = 0;
 		  len = 0;
 		}
-		pAD->comnam[len] = toupper(SHORT1FROMMP(mp2));
-		pAD->comnam[len + 1] = 0;
+		pAD->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
+		pAD->szCommonName[len + 1] = 0;
 		for(x = pAD->cursored - (len > 0);x < pAD->afifiles;x++) {
 		  y = (pAD->invertsort) ? (pAD->afifiles - 1) - x : x;
 		  if(pAD->fullnames) {
-		    if(!strnicmp(pAD->afindex[y]->fullname,pAD->comnam,
+		    if(!strnicmp(pAD->afindex[y]->fullname,pAD->szCommonName,
 				 len + 1)) {
 		      found = TRUE;
 		      break;
 		    }
 		  }
 		  else {
-		    if(!strnicmp(pAD->afindex[y]->filename,pAD->comnam,
+		    if(!strnicmp(pAD->afindex[y]->filename,pAD->szCommonName,
 				 len + 1)) {
 		      found = TRUE;
 		      break;
@@ -3156,14 +3154,14 @@ KbdRetry:
 		  for(x = 0;x < pAD->cursored - (len > 0);x++) {
 		    y = (pAD->invertsort) ? (pAD->afifiles - 1) - x : x;
 		    if(pAD->fullnames) {
-		      if(!strnicmp(pAD->afindex[y]->fullname,pAD->comnam,
+		      if(!strnicmp(pAD->afindex[y]->fullname,pAD->szCommonName,
 				   len + 1)) {
 			found = TRUE;
 			break;
 		      }
 		    }
 		    else {
-		      if(!strnicmp(pAD->afindex[y]->filename,pAD->comnam,
+		      if(!strnicmp(pAD->afindex[y]->filename,pAD->szCommonName,
 				   len + 1)) {
 			found = TRUE;
 			break;
@@ -3192,7 +3190,7 @@ KbdRetry:
 		  }
 		}
 		else {
-		  *pAD->comnam = 0;
+		  *pAD->szCommonName = 0;
 		  pAD->lasttime = 0;
 		  if(len)           // retry as first letter if no match
 		    goto KbdRetry;
@@ -3235,12 +3233,12 @@ KbdRetry:
 
     case WM_BUTTON1MOTIONSTART:
       if(pAD && !pAD->stopflag &&
-	 !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	 !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 	pAD->mousecaptured = TRUE;
 	pAD->lastselected = (ULONG)-1;
 	pAD->lastdirection = 0;
 	WinSetCapture(HWND_DESKTOP,hwnd);
-	DosReleaseMutexSem(pAD->ScanSem);
+	DosReleaseMutexSem(pAD->hmtxScan);
 	WinSendMsg(hwnd,WM_BUTTON1CLICK,mp1,MPFROM2SHORT(TRUE,0));
       }
       break;
@@ -3289,16 +3287,12 @@ KbdRetry:
 		if (pAD->afindex[y]->flags & AF_SELECTED) {
 		  pAD->afindex[y]->flags &= ~AF_SELECTED;
 		  pAD->selected--;
-		  ul = pAD->afindex[y]->cbFile;
-		  pAD->ulSelectedKB -= ul >> 10;
-		  pAD->ulSelectedBytes -= ul & 0x3ff;
+		  pAD->ullSelectedBytes -= pAD->afindex[y]->cbFile;
 		}
 		else {
 		  pAD->afindex[y]->flags |= AF_SELECTED;
 		  pAD->selected++;
-		  ul = pAD->afindex[y]->cbFile;
-		  pAD->ulSelectedKB += ul >> 10;
-		  pAD->ulSelectedBytes += ul & 0x3ff;
+		  pAD->ullSelectedBytes += pAD->afindex[y]->cbFile;
 		}
 		PaintLine(hwnd,pAD->hps,x,pAD->topfile,&Rectl);
 	      }
@@ -3355,7 +3349,7 @@ KbdRetry:
     case WM_BUTTON1DBLCLK:
       shiftstate = (SHORT2FROMMP(mp2) & (KC_SHIFT | KC_ALT | KC_CTRL));
       if(pAD && !pAD->stopflag &&
-	 !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	 !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 
 	ULONG   numlines,whichfile,y,wascursored;
 	RECTL   Rectl;
@@ -3385,16 +3379,12 @@ KbdRetry:
 		if(pAD->afindex[y]->flags & AF_SELECTED) {
 		  pAD->afindex[y]->flags &= ~AF_SELECTED;
 		  pAD->selected--;
-		  ul = pAD->afindex[y]->cbFile;
-		  pAD->ulSelectedKB -= ul >> 10;
-		  pAD->ulSelectedBytes -= ul & 0x3ff;
+		  pAD->ullSelectedBytes -= pAD->afindex[y]->cbFile;
 		}
 		else {
 		  pAD->afindex[y]->flags |= AF_SELECTED;
 		  pAD->selected++;
-		  ul = pAD->afindex[y]->cbFile;
-		  pAD->ulSelectedKB += ul >> 10;
-		  pAD->ulSelectedBytes += ul & 0x3ff;
+		  pAD->ullSelectedBytes += pAD->afindex[y]->cbFile;
 		}
 		PaintLine(hwnd,pAD->hps,whichfile,pAD->topfile,&Rectl);
 		PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
@@ -3416,7 +3406,7 @@ KbdRetry:
 			      pAD->afindex[y]->fullname);
 	  }
 	}
-	DosReleaseMutexSem(pAD->ScanSem);
+	DosReleaseMutexSem(pAD->hmtxScan);
       }
       break;
 
@@ -3458,7 +3448,7 @@ KbdRetry:
 
 	  APIRET rc;
 
-	  rc = DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN);
+	  rc = DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN);
 	  WinEnableMenuItem(pAD->hwndPopup,IDM_EAS,(rc == 0 &&
 						   pAD->selected != 0));
 	  WinEnableMenuItem(pAD->hwndPopup,IDM_UUDECODE,(rc == 0 &&
@@ -3512,7 +3502,7 @@ KbdRetry:
 	  WinEnableMenuItem(pAD->hwndPopup,IDM_FILTER,(rc == 0 &&
 						      pAD->affiles != 0));
 	  if(!rc)
-	    DosReleaseMutexSem(pAD->ScanSem);
+	    DosReleaseMutexSem(pAD->hmtxScan);
 	  if(WinPopupMenu(hwnd,hwnd,pAD->hwndPopup,SHORT1FROMMP(mp1),
 			  SHORT2FROMMP(mp1),0,
 			  PU_HCONSTRAIN | PU_VCONSTRAIN |
@@ -3548,7 +3538,7 @@ KbdRetry:
       return 0;
 
     case WM_PAINT:
-// fprintf(stderr,"Seeall: WM_PAINT\n");
+      // fprintf(stderr,"Seeall: WM_PAINT\n");
       if(pAD) {
 
 	HPS       hpsp;
@@ -3562,7 +3552,7 @@ KbdRetry:
 	hpsp = WinBeginPaint(hwnd,pAD->hps,&Rectl);
 	WinFillRect(hpsp,&Rectl,standardcolors[Colors[COLORS_NORMALBACK]]);
 	if(!pAD->stopflag &&
-	   !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	   !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 	  WinQueryWindowRect(hwnd,&Rectl);
 	  numlines = NumLines(&Rectl,pAD);
 	  if(pAD->afifiles && numlines) {
@@ -3663,7 +3653,7 @@ KbdRetry:
 	      }
 	    }
 	  }
-	  DosReleaseMutexSem(pAD->ScanSem);
+	  DosReleaseMutexSem(pAD->hmtxScan);
 	}
 	WinEndPaint(hpsp);
 	PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
@@ -3736,7 +3726,7 @@ KbdRetry:
     case WM_VSCROLL:
 // fprintf(stderr,"Seeall: WM_VSCROLL\n");
       if(pAD && !pAD->stopflag &&
-	 !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	 !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 
 	ULONG numlines,wascursored;
 	RECTL rcl;
@@ -3833,7 +3823,7 @@ KbdRetry:
 		  iRectl.yTop -= ((numlines * pAD->lMaxHeight) +
 				  pAD->lMaxDescender);
 		  WinFillRect(pAD->hps,&iRectl,
-			      standardcolors[pAD->colors[COLORS_NORMALBACK]]);
+			      standardcolors[pAD->aulColors[COLORS_NORMALBACK]]);
 		  PaintLine(hwnd,pAD->hps,pAD->topfile - 1,pAD->topfile,&Rectl);
 		  if(pAD->cursored != pAD->topfile)
 		    PaintLine(hwnd,pAD->hps,pAD->cursored - 1,pAD->topfile,&Rectl);
@@ -3876,7 +3866,7 @@ KbdRetry:
 	    }
 	  }
 	}
-	DosReleaseMutexSem(pAD->ScanSem);
+	DosReleaseMutexSem(pAD->hmtxScan);
       }
       break;
 
@@ -3887,7 +3877,7 @@ KbdRetry:
 	    {
 	      APIRET rc;
 
-	      rc = DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN);
+	      rc = DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN);
 	      WinEnableMenuItem((HWND)mp2,IDM_DUPES,(rc == 0));
 	      WinEnableMenuItem((HWND)mp2,IDM_COLLECT,(rc == 0 &&
 						       pAD->selected != 0));
@@ -3930,7 +3920,7 @@ KbdRetry:
 	      WinEnableMenuItem((HWND)mp2,IDM_OBJECTSUBMENU,(rc == 0 &&
 							     pAD->selected != 0));
 	      if(!rc)
-		DosReleaseMutexSem(pAD->ScanSem);
+		DosReleaseMutexSem(pAD->hmtxScan);
 	    }
 	    break;
 
@@ -3938,7 +3928,7 @@ KbdRetry:
 	    {
 	      APIRET rc;
 
-	      rc = DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN);
+	      rc = DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN);
 	      WinEnableMenuItem((HWND)mp2,IDM_SELECTALL,(rc == 0 &&
 							 pAD->afifiles != 0 &&
 							 (pAD->afifiles !=
@@ -3958,7 +3948,7 @@ KbdRetry:
 	      WinEnableMenuItem((HWND)mp2,IDM_INVERT,(rc == 0 &&
 						      pAD->afifiles != 0));
 	      if(!rc)
-		DosReleaseMutexSem(pAD->ScanSem);
+		DosReleaseMutexSem(pAD->hmtxScan);
 	    }
 	    break;
 
@@ -3966,7 +3956,7 @@ KbdRetry:
 	    {
 	      APIRET rc;
 
-	      rc = DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN);
+	      rc = DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN);
 	      WinEnableMenuItem((HWND)mp2,IDM_SORTNAME,(rc == 0));
 	      WinEnableMenuItem((HWND)mp2,IDM_SORTEASIZE,(rc == 0));
 	      WinEnableMenuItem((HWND)mp2,IDM_SORTSIZE,(rc == 0));
@@ -3974,33 +3964,33 @@ KbdRetry:
 	      WinEnableMenuItem((HWND)mp2,IDM_SORTFILENAME,(rc == 0));
 	      WinEnableMenuItem((HWND)mp2,IDM_SORTFIRST,(rc == 0));
 	      if(!rc)
-		DosReleaseMutexSem(pAD->ScanSem);
+		DosReleaseMutexSem(pAD->hmtxScan);
 	    }
 	    WinCheckMenuItem((HWND)mp2,IDM_SORTNAME,
-			     (pAD->compare == comparefullnames));
+			     (pAD->pfnCompare == comparefullnames));
 	    WinCheckMenuItem((HWND)mp2,IDM_SORTEASIZE,
-			     (pAD->compare == (PFNSORT)NULL));
+			     (pAD->pfnCompare == (PFNSORT)NULL));
 	    WinCheckMenuItem((HWND)mp2,IDM_SORTSIZE,
-			     (pAD->compare == comparesizes));
+			     (pAD->pfnCompare == comparesizes));
 	    WinCheckMenuItem((HWND)mp2,IDM_SORTLWDATE,
-			     (pAD->compare == comparedates));
+			     (pAD->pfnCompare == comparedates));
 	    WinCheckMenuItem((HWND)mp2,IDM_SORTFILENAME,
-			     (pAD->compare == comparenames));
+			     (pAD->pfnCompare == comparenames));
 	    WinCheckMenuItem((HWND)mp2,IDM_SORTREVERSE,pAD->invertsort);
 	    WinCheckMenuItem((HWND)mp2,IDM_SORTFIRST,
-			     (pAD->compare == compareexts));
+			     (pAD->pfnCompare == compareexts));
 	    break;
 
 	  case IDM_VIEWSMENU:
 	    {
 	      APIRET rc;
 
-	      rc = DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN);
+	      rc = DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN);
 	      WinEnableMenuItem((HWND)mp2,IDM_RESCAN,(rc == 0));
 	      WinEnableMenuItem((HWND)mp2,IDM_FILTER,(rc == 0 &&
 						      pAD->affiles != 0));
 	      if(!rc)
-		DosReleaseMutexSem(pAD->ScanSem);
+		DosReleaseMutexSem(pAD->hmtxScan);
 	    }
 	    WinCheckMenuItem((HWND)mp2,IDM_SHOWLNAMES,pAD->fullnames);
 	    break;
@@ -4018,7 +4008,7 @@ KbdRetry:
 
 	case IDM_DUPES:
 	  if(!pAD->stopflag &&
-	     !DosRequestMutexSem(pAD->ScanSem,
+	     !DosRequestMutexSem(pAD->hmtxScan,
 				 SEM_IMMEDIATE_RETURN)) {
 	    pAD->dupeflags = (USHORT)WinDlgBox(HWND_DESKTOP,
 					      hwnd,
@@ -4033,7 +4023,7 @@ KbdRetry:
 			      (PVOID)hwnd) == -1)
 		DosBeep(50,100);
 	    }
-	    DosReleaseMutexSem(pAD->ScanSem);
+	    DosReleaseMutexSem(pAD->hmtxScan);
 	  }
 	  break;
 
@@ -4045,12 +4035,12 @@ KbdRetry:
 	    memset(&co,0,sizeof(co));
 	    co.size = sizeof(co);
 	    co.numcolors = COLORS_MAX;
-	    co.colors = pAD->colors;
+	    co.colors = pAD->aulColors;
 	    co.descriptions = IDS_SACOLORS1TEXT;
 	    co.origs = temp;
 	    co.prompt = IDS_SACOLORSPROMPTTEXT;
 	    memcpy(temp,
-		   pAD->colors,
+		   pAD->aulColors,
 		   sizeof(LONG) * COLORS_MAX);
 	    if(WinDlgBox(HWND_DESKTOP,
 			 hwnd,
@@ -4059,12 +4049,12 @@ KbdRetry:
 			 COLOR_FRAME,
 			 (PVOID)&co)) {
 	      memcpy(Colors,
-		     pAD->colors,
+		     pAD->aulColors,
 		     sizeof(LONG) * COLORS_MAX);
 	      PrfWriteProfileData(fmprof,
 				  appname,
 				  "Seeall.Colors",
-				  &pAD->colors,
+				  &pAD->aulColors,
 				  sizeof(LONG) * COLORS_MAX);
 	      WinInvalidateRect(hwnd,
 				NULL,
@@ -4142,7 +4132,7 @@ KbdRetry:
 	case IDM_SORTLWDATE:
 	case IDM_SORTFIRST:
 	  if(!pAD->stopflag &&
-	     !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	     !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 	    {
 	      USHORT dummy = SHORT1FROMMP(mp1);
 
@@ -4157,61 +4147,61 @@ KbdRetry:
 	    WinSendMsg(hwnd,UM_RESCAN,MPFROMLONG(1L),MPVOID);
 	    switch(SHORT1FROMMP(mp1)) {
 	      case IDM_SORTEASIZE:
-		pAD->compare = (PFNSORT)NULL;
+		pAD->pfnCompare = (PFNSORT)NULL;
 		ReSort(hwnd);
 		break;
 
 	      case IDM_SORTNAME:
-		pAD->compare = comparefullnames;
+		pAD->pfnCompare = comparefullnames;
 		ReSort(hwnd);
 		break;
 
 	      case IDM_SORTFILENAME:
-		pAD->compare = comparenames;
+		pAD->pfnCompare = comparenames;
 		ReSort(hwnd);
 		break;
 
 	      case IDM_SORTSIZE:
-		pAD->compare = comparesizes;
+		pAD->pfnCompare = comparesizes;
 		ReSort(hwnd);
 		break;
 
 	      case IDM_SORTLWDATE:
-		pAD->compare = comparedates;
+		pAD->pfnCompare = comparedates;
 		ReSort(hwnd);
 		break;
 
 	      case IDM_SORTFIRST:
-		pAD->compare = compareexts;
+		pAD->pfnCompare = compareexts;
 		ReSort(hwnd);
 		break;
 	    }
 	    WinSetPointer(HWND_DESKTOP,hptrArrow);
-	    DosReleaseMutexSem(pAD->ScanSem);
+	    DosReleaseMutexSem(pAD->hmtxScan);
 	    WinInvalidateRect(hwnd,NULL,FALSE);
 	  }
 	  break;
 
 	case IDM_FILTER:
 	  if(!pAD->stopflag &&
-	     !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	     !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 	    FilterList(hwnd);
-	    DosReleaseMutexSem(pAD->ScanSem);
+	    DosReleaseMutexSem(pAD->hmtxScan);
 	  }
 	  break;
 
 	case IDM_RESCAN:
 	  if(!pAD->stopflag &&
-	     !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	     !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 
 	    CHAR tempflags[26];
 
-	    memcpy(tempflags,pAD->drvsflags,sizeof(tempflags));
+	    memcpy(tempflags,pAD->abDrvFlags,sizeof(tempflags));
 	    if(!WinDlgBox(HWND_DESKTOP,hwnd,AFDrvsWndProc,FM3ModHandle,
 			  DRVS_FRAME,(PVOID)pAD)) {
-	      memcpy(pAD->drvsflags,tempflags,sizeof(tempflags));
-	      *pAD->findpath = 0;
-	      DosReleaseMutexSem(pAD->ScanSem);
+	      memcpy(pAD->abDrvFlags,tempflags,sizeof(tempflags));
+	      *pAD->szFindPath = 0;
+	      DosReleaseMutexSem(pAD->hmtxScan);
 	      break;
 	    }
 	    WinSendMsg(pAD->hhscroll,SBM_SETTHUMBSIZE,MPFROM2SHORT(1,1),
@@ -4221,13 +4211,12 @@ KbdRetry:
 	    pAD->topfile = 1;
 	    pAD->cursored = 1;
 	    pAD->selected = 0;
-	    pAD->ulSelectedKB = 0;
-	    pAD->ulSelectedBytes = 0;
+	    pAD->ullSelectedBytes = 0;
 	    pAD->maxx = pAD->horzscroll = 0;
 	    FreeAllFilesList(hwnd);
 	    pAD->stopflag = 0;
-	    if(_beginthread(FindAll,NULL,524288,(PVOID)hwnd) != -1) {
-	      DosReleaseMutexSem(pAD->ScanSem);
+	    if(_beginthread(FindAllThread,NULL,524288,(PVOID)hwnd) != -1) {
+	      DosReleaseMutexSem(pAD->hmtxScan);
 	      DosSleep(100);
 	      WinInvalidateRect(hwnd,NULL,FALSE);
 	      PostMsg(hwnd,UM_SETUP2,MPVOID,MPVOID);
@@ -4236,7 +4225,7 @@ KbdRetry:
 	    else {
 	      DosBeep(250,100);
 	      WinDestroyWindow(WinQueryWindow(hwnd,QW_PARENT));
-	      DosReleaseMutexSem(pAD->ScanSem);
+	      DosReleaseMutexSem(pAD->hmtxScan);
 	    }
 	  }
 	  break;
@@ -4275,7 +4264,7 @@ KbdRetry:
 	case IDM_OPENSETTINGS:
 	case IDM_OPENDEFAULT:
 	  if(!pAD->stopflag &&
-	     !DosRequestMutexSem(pAD->ScanSem,SEM_IMMEDIATE_RETURN)) {
+	     !DosRequestMutexSem(pAD->hmtxScan,SEM_IMMEDIATE_RETURN)) {
 	    switch(SHORT1FROMMP(mp1)) {
 	      case IDM_SELECTALL:
 	      case IDM_DESELECTALL:
@@ -4395,7 +4384,7 @@ KbdRetry:
 		}
 		break;
 	    }
-	    DosReleaseMutexSem(pAD->ScanSem);
+	    DosReleaseMutexSem(pAD->hmtxScan);
 	  }
 	  else if(SHORT1FROMMP(mp1) == IDM_COLLECTOR) {
 	    DosSleep(100L);
@@ -4433,9 +4422,9 @@ KbdRetry:
 // fprintf(stderr,"Seeall: WM_DESTROY\n");
       if(pAD) {
 	pAD->stopflag = 1;
-	if(pAD->ScanSem) {
-	  DosRequestMutexSem(pAD->ScanSem,15000L);
-	  DosCloseMutexSem(pAD->ScanSem);
+	if(pAD->hmtxScan) {
+	  DosRequestMutexSem(pAD->hmtxScan,15000L);
+	  DosCloseMutexSem(pAD->hmtxScan);
 	}
 	if(pAD->hwndPopup)
 	  WinDestroyWindow(pAD->hwndPopup);
@@ -4479,7 +4468,6 @@ HWND StartSeeAll (HWND hwndParent,
 		  BOOL standalone,	// called by applet
 		  CHAR *pszStartPath)	// pathname or NULL
 {
-
   HWND          hwndFrame = (HWND)0,hwndClient;
   ULONG         FrameFlags = FCF_TITLEBAR    | FCF_SYSMENU     |
 			     FCF_SIZEBORDER  | FCF_MINMAX      |
@@ -4500,11 +4488,13 @@ HWND StartSeeAll (HWND hwndParent,
 				 &hwndClient);
   if(hwndFrame) {
     static CHAR      *pszDir;
-    if(standalone) {
-      if(!PostMsg(WinWindowFromID(hwndFrame,FID_CLIENT),
-		  UM_SETUP4,
-		  MPVOID,
-		  MPVOID)) {
+    if (standalone)
+    {
+      if (!PostMsg(WinWindowFromID(hwndFrame,FID_CLIENT),
+		   UM_SETUP4,
+		   MPVOID,
+		   MPVOID)) 
+      {
 	PostMsg((HWND)0,
 		WM_QUIT,
 		MPVOID,
@@ -4512,7 +4502,8 @@ HWND StartSeeAll (HWND hwndParent,
 	return (HWND)0;
       }
     }
-    if (pszStartPath) {
+    if (pszStartPath)
+    {
       // Needs to be static for other thread
       if (!pszDir)
 	  pszDir = malloc(CCHMAXPATH);

@@ -6,25 +6,28 @@
   Info window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL FileInfoProc: standardize EA math
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
+  25 May 05 SHL Use ULONGLONG and CommaFmtULL
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -74,19 +77,23 @@ CHAR *FlagMsg (CHAR drive,CHAR *buffer) {
 }
 
 
-MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
+MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
+  CHAR *pszFileName;
+  CHAR	szMB[20];
+  CHAR	szKB[20];
+  CHAR	szUnits[20];
 
-  CHAR *filename;
-
-  switch(msg) {
+  switch(msg)
+  {
     case WM_INITDLG:
       if(mp2) {
 
         CHAR  s[CCHMAXPATH * 2];
         ULONG type;
 
-        filename = (CHAR *)mp2;
-        WinSetWindowPtr(hwnd,QWL_USER,(PVOID)filename);
+        pszFileName = (CHAR *)mp2;
+        WinSetWindowPtr(hwnd,QWL_USER,(PVOID)pszFileName);
         WinSendDlgItemMsg(hwnd,
                           INFO_LABEL,
                           EM_SETTEXTLIMIT,
@@ -102,7 +109,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           SLM_SETSLIDERINFO,
                           MPFROM2SHORT(SMA_SLIDERARMDIMENSIONS,0),
                           MPFROM2SHORT(0,0));
-        if(driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE) {
+        if(driveflags[toupper(*pszFileName) - 'A'] & DRIVE_NOTWRITEABLE) {
           WinSendDlgItemMsg(hwnd,
                             INFO_LABEL,
                             EM_SETREADONLY,
@@ -111,16 +118,16 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           WinSetFocus(HWND_DESKTOP,
                       WinWindowFromID(hwnd,DID_OK));
         }
-        if(IsFullName(filename)) {
+        if(IsFullName(pszFileName)) {
 
           CHAR FileSystem[CCHMAXPATH * 2];
 
           sprintf(FileSystem,
                   GetPString(IDS_DRIVEINFOTITLETEXT),
-                  toupper(*filename));
+                  toupper(*pszFileName));
           WinSetWindowText(hwnd,
                            FileSystem);
-          if(CheckDrive(toupper(*filename),
+          if(CheckDrive(toupper(*pszFileName),
                         FileSystem,
                         &type) != -1) {
 
@@ -133,7 +140,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               APIRET      rc;
               PFSQBUFFER2 pfsq;
 
-              Path[0] = toupper(*filename);
+              Path[0] = toupper(*pszFileName);
               Path[1] = ':';
               Path[2] = 0;
               Size = sizeof(s);
@@ -147,7 +154,8 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 pfsq = (PFSQBUFFER2)s;
                 pfsn = pfsq->szName + pfsq->cbName + 1;
                 pfsd = pfsn + pfsq->cbFSDName + 1;
-                if(pfsq->cbFSAData && pfsd && *pfsd) {
+                if(pfsq->cbFSAData && pfsd && *pfsd)
+		{
                   sprintf(s,
                           " (%s)",
                           pfsd);
@@ -159,7 +167,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             }
 
             DosError(FERR_DISABLEHARDERR);
-            if(!DosQueryFSInfo(toupper(*filename) - '@',
+            if(!DosQueryFSInfo(toupper(*pszFileName) - '@',
                FSIL_ALLOC,&fsa,sizeof(FSALLOCATE))) {
 
               struct {
@@ -171,7 +179,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
               memset(&volser,0,sizeof(volser));
               DosError(FERR_DISABLEHARDERR);
-              if(!DosQueryFSInfo(toupper(*filename) - '@',
+              if(!DosQueryFSInfo(toupper(*pszFileName) - '@',
                                  FSIL_VOLSER,
                                  &volser,
                                  (ULONG)sizeof(volser))) {
@@ -185,26 +193,40 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                         "%lx",
                         volser.
                         serial);
-                WinSetDlgItemText(hwnd,
-                                  INFO_SERIAL,
-                                  s);
+                WinSetDlgItemText(hwnd,	INFO_SERIAL, s);
+
+                CommaFmtULL(szMB,sizeof(szMB),
+			    (ULONGLONG)fsa.cUnit *
+                             (fsa.cSectorUnit * fsa.cbSector),
+			    'M');
+                CommaFmtULL(szKB,sizeof(szKB),
+			    (ULONGLONG)fsa.cUnit *
+                             (fsa.cSectorUnit * fsa.cbSector),
+			    'K');
+                CommaFmtULL(szUnits,sizeof(szUnits),
+			    (ULONGLONG)fsa.cUnit,
+			    ' ');
                 sprintf(s,
-                        "%lu mb, %lu kb, %lu %s%s",
-			(ULONG)(((float)fsa.cUnit *
-                          (fsa.cSectorUnit * fsa.cbSector)) / (1024L * 1024L)),
-                        (ULONG)(((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector)) / 1024L),
-                        fsa.cUnit,
+                        "%s, %s, %s %s%s",
+			szMB,szKB,szUnits,
                         GetPString(IDS_UNITTEXT),
-                        &"s"[fsa.cUnit == 1L]);
-                WinSetDlgItemText(hwnd,
-                                  INFO_TOTAL,
-                                  s);
+                        &"s"[fsa.cUnit == 1L]);		// hack cough
+                WinSetDlgItemText(hwnd,INFO_TOTAL,s);
+
+                CommaFmtULL(szMB,sizeof(szMB),
+			    (ULONGLONG)fsa.cUnitAvail *
+                             (fsa.cSectorUnit * fsa.cbSector),
+			    'M');
+                CommaFmtULL(szKB,sizeof(szKB),
+			    (ULONGLONG)fsa.cUnitAvail *
+                             (fsa.cSectorUnit * fsa.cbSector),
+			    'K');
+                CommaFmtULL(szUnits,sizeof(szUnits),
+			    (ULONGLONG)fsa.cUnitAvail,
+			    ' ');
                 sprintf(s,
-                        "%lu mb, %lu kb, %lu %s%s",
-                        (ULONG)(((float)fsa.cUnitAvail *
-			  (fsa.cSectorUnit * fsa.cbSector)) / (1024L * 1024L)),
-                        (ULONG)(((float)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector)) / 1024L),
-                        fsa.cUnitAvail,
+                        "%s, %s, %s %s%s",
+			szMB,szKB,szUnits,
                         GetPString(IDS_UNITTEXT),
                         &"s"[fsa.cUnitAvail == 1L]);
                 WinSetDlgItemText(hwnd,
@@ -218,7 +240,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 WinSetDlgItemText(hwnd,
                                   INFO_ALLOCUNITS,
                                   s);
-                FlagMsg(*filename,s);
+                FlagMsg(*pszFileName,s);
                 WinSetDlgItemText(hwnd,
                                   INFO_FLAGS,
                                   s);
@@ -254,7 +276,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               else {
                 sprintf(FileSystem,
                         GetPString(IDS_CANTQUERYVOLTEXT),
-                        toupper(*filename));
+                        toupper(*pszFileName));
                 Notify(FileSystem);
                 WinDismissDlg(hwnd,0);
               }
@@ -262,16 +284,16 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             else {
               sprintf(FileSystem,
                       GetPString(IDS_CANTQUERYALLOCTEXT),
-                      toupper(*filename));
+                      toupper(*pszFileName));
               Notify(FileSystem);
               WinDismissDlg(hwnd,0);
             }
           }
           else {
-            FlagMsg(*filename,s);
+            FlagMsg(*pszFileName,s);
             sprintf(FileSystem,
                     GetPString(IDS_DRIVEINACCESSIBLETEXT),
-                    toupper(*filename),
+                    toupper(*pszFileName),
                     s);
             Notify(FileSystem);
             WinDismissDlg(hwnd,0);
@@ -303,8 +325,8 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
 
         case DID_OK:
-          filename = INSTDATA(hwnd);
-          if(!(driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE)) {
+          pszFileName = INSTDATA(hwnd);
+          if(!(driveflags[toupper(*pszFileName) - 'A'] & DRIVE_NOTWRITEABLE)) {
 
             CHAR s[CCHMAXPATHCOMP + 3];
 
@@ -323,7 +345,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
               memset(&volser,0,sizeof(volser));
               DosError(FERR_DISABLEHARDERR);
-              if(!DosQueryFSInfo(toupper(*filename) - '@',
+              if(!DosQueryFSInfo(toupper(*pszFileName) - '@',
                                  FSIL_VOLSER,
                                  &volser,
                                  (ULONG)sizeof(volser)) &&
@@ -331,7 +353,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 memmove(s + 1,s,strlen(s) + 1);
                 *s = strlen(s + 1);
                 DosError(FERR_DISABLEHARDERR);
-                if(DosSetFSInfo(toupper(*filename) - '@',
+                if(DosSetFSInfo(toupper(*pszFileName) - '@',
                                 2L,
                                 (PVOID)s,
                                 (ULONG)sizeof(s)))
@@ -353,7 +375,7 @@ typedef struct {
   USHORT dummy;
   PFNWP  oldproc;
   HWND   lasthwndMenu;
-  CHAR   filename[CCHMAXPATH];
+  CHAR   szFileName[CCHMAXPATH];
   CHAR **list;
   BOOL   madechanges;
 } ICONSTUF;
@@ -362,8 +384,8 @@ typedef struct {
  * subclass routine to allow changing a program's icon
  */
 
-MRESULT EXPENTRY IconProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY IconProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   ICONSTUF   *is;
   static BOOL emphasized = FALSE;
 
@@ -411,16 +433,16 @@ MRESULT EXPENTRY IconProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           ici.cb = sizeof(ICONINFO);
           ici.fFormat = ICON_FILE;
           ici.pszFileName = szFrom;
-          if(!WinSetFileIcon((PSZ)is->filename,
+          if(!WinSetFileIcon((PSZ)is->szFileName,
                              (PICONINFO)&ici)) {
             ici.fFormat = ICON_CLEAR;
-            WinSetFileIcon((PSZ)is->filename,
+            WinSetFileIcon((PSZ)is->szFileName,
                            (PICONINFO)&ici);
           }
-          hptr = WinLoadFileIcon(is->filename,
+          hptr = WinLoadFileIcon(is->szFileName,
                                  FALSE);
           if(!hptr)
-            hptr = (!IsFile(is->filename)) ?
+            hptr = (!IsFile(is->szFileName)) ?
                     hptrDir :
                     hptrFile;
           if(is && is->oldproc) {
@@ -472,7 +494,7 @@ MRESULT EXPENTRY IconProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                        FM3ModHandle,
                                        FLE_FRAME);
         if(is->lasthwndMenu) {
-          p = strrchr(is->filename,'.');
+          p = strrchr(is->szFileName,'.');
           if(!p ||
              (stricmp(p,".ICO") &&
               stricmp(p,".PTR")))
@@ -497,7 +519,7 @@ MRESULT EXPENTRY IconProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                     FM3ModHandle,
                     SETICON_FRAME,
                     (PVOID)((SHORT1FROMMP(mp1) == IDM_SELECTALL) ?
-                     is->filename :
+                     is->szFileName :
                      NULL));
         break;
       }
@@ -589,13 +611,13 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           switch(SHORT2FROMMP(mp1)) {
             case BN_CLICKED:
               is = WinQueryWindowPtr(hwnd,QWL_USER);
-              if(is && *is->filename) {
+              if(is && *is->szFileName) {
 
                 LISTINFO li;
                 INT      numfiles = 0,numalloc = 0;
 
                 memset(&li,0,sizeof(LISTINFO));
-                if(!AddToList(is->filename,
+                if(!AddToList(is->szFileName,
                               &li.list,
                               &numfiles,
                               &numalloc)) {
@@ -634,13 +656,13 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                    MPFROMSHORT(LIT_FIRST),
                                                    MPVOID);
                 if(sSelect >= 0) {
-                  *is->filename = 0;
+                  *is->szFileName = 0;
                   WinSendDlgItemMsg(hwnd,
                                     FLE_NAME,
                                     LM_QUERYITEMTEXT,
                                     MPFROM2SHORT(sSelect,CCHMAXPATH),
-                                    MPFROMP(is->filename));
-                  if(*is->filename) {
+                                    MPFROMP(is->szFileName));
+                  if(*is->szFileName) {
                     if(SHORT2FROMMP(mp1) == LN_SELECT)
                       WinSendMsg(hwnd,
                                  UM_SETDIR,
@@ -652,7 +674,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   (HWND)0,
                                   NULL,
                                   32,
-                                  is->filename);
+                                  is->szFileName);
                   }
                 }
               }
@@ -691,7 +713,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       WinCheckButton(hwnd,FLE_VIRTDRV,FALSE);
       WinCheckButton(hwnd,FLE_PROTDLL,FALSE);
       is = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(is && *is->filename) {
+      if(is && *is->szFileName) {
 
         CHAR         s[97];
         FILEFINDBUF4 fs;
@@ -702,7 +724,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         ARC_TYPE    *info;
 
         DosError(FERR_DISABLEHARDERR);
-        if(DosFindFirst(is->filename,
+        if(DosFindFirst(is->szFileName,
                         &hdir,
                         FILE_NORMAL | FILE_ARCHIVED |
                         FILE_DIRECTORY | FILE_READONLY | FILE_HIDDEN |
@@ -811,7 +833,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                          FLE_SYSTEM,
                          ((fs.attrFile & FILE_SYSTEM) != 0));
           DosError(FERR_DISABLEHARDERR);
-          if(!DosQueryAppType(is->filename,&apptype)) {
+          if(!DosQueryAppType(is->szFileName,&apptype)) {
             WinEnableWindow(WinWindowFromID(hwnd,FLE_OS2FS),TRUE);
             WinEnableWindow(WinWindowFromID(hwnd,FLE_OS2WIN),TRUE);
             WinEnableWindow(WinWindowFromID(hwnd,FLE_OS2PM),TRUE);
@@ -860,7 +882,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             WinEnableWindow(WinWindowFromID(hwnd,FLE_VIRTDRV),FALSE);
             WinEnableWindow(WinWindowFromID(hwnd,FLE_PROTDLL),FALSE);
           }
-          hptr = WinLoadFileIcon(is->filename,
+          hptr = WinLoadFileIcon(is->szFileName,
                                  FALSE);
           WinShowWindow(WinWindowFromID(hwnd,FLE_ICON),
                                         FALSE);
@@ -880,7 +902,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             WinEnableWindow(WinWindowFromID(hwnd,FLE_OPEN),TRUE);
             WinEnableWindow(WinWindowFromID(hwnd,FLE_ISARCHIVE),TRUE);
             WinEnableWindow(WinWindowFromID(hwnd,FLE_BINARY),TRUE);
-            fp = _fsopen(is->filename,"rb",SH_DENYNO);
+            fp = _fsopen(is->szFileName,"rb",SH_DENYNO);
             if(fp) {
 
               char   buff[512];
@@ -898,7 +920,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               WinCheckButton(hwnd,
                              FLE_READABLE,
                              TRUE);
-              info = find_type(is->filename,NULL);
+              info = find_type(is->szFileName,NULL);
               if(info) {
                 WinCheckButton(hwnd,
                                FLE_ISARCHIVE,
@@ -917,12 +939,12 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                              FLE_BINARY,
                              2);
             }
-            fp = _fsopen(is->filename,"ab",SH_DENYNO);
+            fp = _fsopen(is->szFileName,"ab",SH_DENYNO);
             if(fp) {
               WinCheckButton(hwnd,FLE_WRITEABLE,TRUE);
               fclose(fp);
             }
-            fp = _fsopen(is->filename,"rb",SH_DENYRW);
+            fp = _fsopen(is->szFileName,"rb",SH_DENYRW);
             if(!fp)
               WinCheckButton(hwnd,FLE_OPEN,TRUE);
             else
@@ -954,18 +976,18 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
         case FLE_SETTINGS:
           is = WinQueryWindowPtr(hwnd,QWL_USER);
-          if(is && *is->filename)
-            OpenObject(is->filename,
+          if(is && *is->szFileName)
+            OpenObject(is->szFileName,
                        Settings,
                        hwnd);
           break;
         case FLE_EAS:
           is = WinQueryWindowPtr(hwnd,QWL_USER);
-          if(is && *is->filename) {
+          if(is && *is->szFileName) {
 
             CHAR *list[2];
 
-            list[0] = is->filename;
+            list[0] = is->szFileName;
             list[1] = NULL;
             WinDlgBox(HWND_DESKTOP,
                       hwnd,

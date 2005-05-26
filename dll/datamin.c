@@ -6,12 +6,13 @@
   Minimized data bar
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
   14 Sep 02 SHL Handle large partitions
   16 Oct 02 SHL Handle large partitions better
   23 May 05 SHL Use QWL_USER
   23 May 05 SHL Avoid delays for inaccessible drives
+  25 May 05 SHL Use ULONGLONG and CommaFmtULL
 
 ***********************************************************************/
 
@@ -19,8 +20,9 @@
 #define INCL_DOSERRORS
 #define INCL_WIN
 #define INCL_GPI
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -723,10 +725,9 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       CHAR s[90];
       CHAR szFreeQty[38];
-      CHAR *pszFreeUM;
       CHAR szDrvLtr[] = " :";
       CHAR *pszFSystem;
-      float fltFreeQty;
+      ULONGLONG ullFreeQty;
       ULONG ulPercentFree;
       ULONG wasx;
       HPS hps = (HPS) mp2;
@@ -747,33 +748,20 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	pDM = WinQueryWindowPtr(hwndChild, QWL_DATAMIN_PTR);
 	if (!pDM || pDM -> qfsi_rc)
 	{
-	  fltFreeQty = 0;
-	  pszFreeUM = "";
+	  ullFreeQty = 0;
 	  ulPercentFree = 0;
 	}
 	else
 	{
-	  fltFreeQty = (float) pDM -> fsa.cUnitAvail *
+	  ullFreeQty = (ULONGLONG)pDM -> fsa.cUnitAvail *
 		       (pDM -> fsa.cSectorUnit * pDM -> fsa.cbSector);
-	  if (fltFreeQty >= (1024 * 1024))
-	  {
-	    fltFreeQty /= (1024 * 1024);
-	    pszFreeUM = "mb";
-	  }
-	  else if (fltFreeQty >= 1024)
-	  {
-	    fltFreeQty /= 1024;
-	    pszFreeUM = "kb";
-	  }
-	  else
-	    pszFreeUM = "b";
 
 	  ulPercentFree = (pDM -> fsa.cUnit && pDM -> fsa.cUnitAvail) ?
 			  (pDM -> fsa.cUnitAvail * 100) / pDM -> fsa.cUnit :
 			  0;
 	}
 
-	commafmt(szFreeQty, sizeof(szFreeQty), (ULONG)fltFreeQty);
+	CommaFmtULL(szFreeQty, sizeof(szFreeQty), ullFreeQty,' ');
 	*szDrvLtr = (CHAR)(id - MINI_DRIVEA) + 'A';
 
 	if (!pDM || pDM -> qfsi_rc || pDM -> qfsa_rc)
@@ -785,10 +773,9 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pszFSystem[15] = 0;
 	}
 	sprintf(s,
-		" %s %s%s (%lu%%) %s [%s]",
+		" %s %s (%lu%%) %s [%s]",
 		szDrvLtr,
 		szFreeQty,
-		pszFreeUM,
 		ulPercentFree,
 		GetPString(IDS_FREETEXT),
 		pszFSystem);
@@ -977,7 +964,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR s[134], szFileQty[38], szFreeQty[38], *pszFileUM, *pszFreeUM;
       FILEFINDBUF3 ffb;
       ULONG nm = 1L;
-      float fltFreeQty;
+      ULONGLONG ullFreeQty;
       HDIR hdir = HDIR_CREATE;
       FSALLOCATE fsa;
 
@@ -990,53 +977,23 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  priority_bumped();
 	  DosFindClose(hdir);
-	  *szFileQty = *szFreeQty = 0;
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQueryFSInfo(toupper(*SwapperDat) - '@', FSIL_ALLOC,
 			      &fsa, sizeof(FSALLOCATE)))
 	  {
-	    fltFreeQty = fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector);
-	    if (fltFreeQty > 1024 * 1024)
-	    {
-	      pszFreeUM = "mb";
-	      fltFreeQty /= (1024 * 1024);
-	    }
-	    else if (fltFreeQty > 1024)
-	    {
-	      pszFreeUM = "kb";
-	      fltFreeQty /= 1024;
-	    }
-	    else
-	    {
-	      pszFreeUM = "b";
-	    }
-	    commafmt(szFreeQty, sizeof(szFreeQty), (ULONG) fltFreeQty);
-	  }
-	  if (ffb.cbFile > 1024 * 1024)
-	  {
-	    pszFileUM = "mb";
-	    commafmt(szFileQty, sizeof(szFileQty), ffb.cbFile / (1024 * 1024));
-	  }
-	  else if (ffb.cbFile > 1024)
-	  {
-	    pszFileUM = "kb";
-	    commafmt(szFileQty, sizeof(szFileQty), ffb.cbFile / 1024);
+	    ullFreeQty = (ULONGLONG)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector);
+	    CommaFmtULL(szFreeQty, sizeof(szFreeQty), ullFreeQty,' ');
 	  }
 	  else
-	  {
-	    pszFileUM = "b";
-	    commafmt(szFileQty, sizeof(szFileQty), ffb.cbFile);
-	  }
-	  sprintf(s, " %s %s%s%s%s%s",
+	    *szFreeQty = 0;
+
+	  CommaFmtULL(szFileQty, sizeof(szFileQty), ffb.cbFile,' ');
+	  sprintf(s, " %s %s%s%s",
 		  GetPString(IDS_SWAPTITLETEXT),
 		  szFileQty,
-		  pszFileUM,
-		  (*szFreeQty) ? "/" : NullStr,
-		  szFreeQty,
-		  (*szFreeQty) ? pszFreeUM : NullStr);
-	  WinSetDlgItemText(hwnd,
-			    MINI_SWAP,
-			    s);
+		  *szFreeQty ? "/" : NullStr,
+		  szFreeQty);
+	  WinSetDlgItemText(hwnd,MINI_SWAP,s);
 	}
       }
     }
@@ -1044,53 +1001,22 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP3:			// Memory utilization
     {
-      CHAR s[134], tm[38], szQty[38], *pszUM, *tmk;
+      CHAR s[134], tm[38], szQty[38];
       ULONG amem = 0;
 
       if (!DosQuerySysInfo(QSV_TOTAVAILMEM, QSV_TOTAVAILMEM,
 			   (PVOID) & amem, (ULONG) sizeof(amem)))
       {
-	*tm = *szQty = 0;
-	if (amem > 1024 * 1024)
-	{
-	  tmk = "mb";
-	  commafmt(tm, sizeof(tm), amem / (1024 * 1024));
-	}
-	else if (amem > 1024)
-	{
-	  tmk = "kb";
-	  commafmt(tm, sizeof(tm), amem / 1024);
-	}
-	else
-	{
-	  tmk = "b";
-	  commafmt(tm, sizeof(tm), amem);
-	}
+	CommaFmtUL(tm, sizeof(tm), amem,'M');
 	if (!Dos16MemAvail(&amem))
-	{
-	  if (amem > 1024 * 1024)
-	  {
-	    pszUM = "mb";
-	    commafmt(szQty, sizeof(szQty), amem / (1024 * 1024));
-	  }
-	  else if (amem > 1024)
-	  {
-	    pszUM = "kb";
-	    commafmt(szQty, sizeof(szQty), amem / 1024);
-	  }
-	  else
-	  {
-	    pszUM = "b";
-	    commafmt(szQty, sizeof(szQty), amem);
-	  }
-	}
-	sprintf(s, " %s%s%s%s%s%s",
+	  CommaFmtUL(szQty, sizeof(szQty), amem,'M');
+	else
+	  *szQty = 0;
+	sprintf(s, " %s%s%s%s",
 		GetPString(IDS_MEMTITLETEXT),
 		szQty,
-		(*szQty) ? pszUM : NullStr,
 		(*szQty) ? "/" : NullStr,
-		tm,
-		tmk);
+		tm);
 	WinSetDlgItemText(hwnd,
 			  MINI_MEM,
 			  s);
@@ -1128,7 +1054,6 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      ppi = (PPROCESSINFO) (ppi -> ptiFirst + ppi -> usThreadCount);
 	    }
-	    *szQty = *tm = 0;
 	    commafmt(szQty, sizeof(szQty), numprocs);
 	    commafmt(tm, sizeof(tm), numthreads);
 	    sprintf(s,
@@ -1148,7 +1073,6 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else
       {
-	*szQty = 0;
 	commafmt(szQty, sizeof(szQty),
 	    WinQuerySwitchList(WinQueryAnchorBlock(hwnd), (PSWBLOCK) 0, 0));
 	sprintf(s,

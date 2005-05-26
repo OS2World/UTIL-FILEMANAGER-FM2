@@ -6,13 +6,14 @@
   Main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
   23 May 05 SHL Use datamin.h
+  25 May 05 SHL Use ULONGLONG and CommaFmtULL
 
 ***********************************************************************/
 
@@ -20,8 +21,9 @@
 #define INCL_WIN
 #define INCL_WINHELP
 #define INCL_GPI
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -101,38 +103,25 @@ MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 
 	FSALLOCATE fsa;
-	CHAR s[90], szQty[38], *pszUM;
+	CHAR s[90], szQty[38];
 	ULONG ulPctFree;
-	float fltFreeQty;
+	ULONGLONG ullFreeQty;
 
 	if (!DosQueryFSInfo((d - 'A') + 1,
 			    FSIL_ALLOC,
 			    &fsa,
 			    sizeof(FSALLOCATE)))
 	{
-	  fltFreeQty = (float) fsa.cUnitAvail *
+	  ullFreeQty = (ULONGLONG)fsa.cUnitAvail *
 	    (fsa.cSectorUnit * fsa.cbSector);
-	  if (fltFreeQty >= (1024 * 1024))
-	  {
-	    fltFreeQty /= (1024 * 1024);
-	    pszUM = "mb";
-	  }
-	  else if (fltFreeQty >= 1024)
-	  {
-	    fltFreeQty /= 1024;
-	    pszUM = "kb";
-	  }
-	  else
-	    pszUM = "b";
 	  ulPctFree = (fsa.cUnit && fsa.cUnitAvail) ?
 	    (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
-	  commafmt(szQty,
-		   sizeof(szQty),
-		   (ULONG) fltFreeQty);
+	  CommaFmtULL(szQty,
+		      sizeof(szQty),
+		      ullFreeQty,' ');
 	  sprintf(s,
-		  "%s%s (%lu%%) free",
+		  "%s (%lu%%) free",
 		  szQty,
-		  pszUM,
 		  ulPctFree);
 	}
 	if ((!hwndBubble ||
