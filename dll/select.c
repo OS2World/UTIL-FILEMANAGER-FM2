@@ -4,20 +4,23 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H. Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  25 May 05 SHL Rework for ULONGLONG
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3str.h"
 
@@ -444,7 +447,7 @@ VOID MarkAll (HWND hwndCnr,BOOL quitit,BOOL target,BOOL source) {
 }
 
 
-VOID RemoveAll (HWND hwndCnr,ULONG *totalbytes,ULONG *totalfiles) {
+VOID RemoveAll (HWND hwndCnr,ULONGLONG *pullTotalBytes,ULONG *pulTotalFiles) {
 
   PCNRITEM pci;
   INT      attribute = CRA_CURSORED;
@@ -459,12 +462,13 @@ VOID RemoveAll (HWND hwndCnr,ULONG *totalbytes,ULONG *totalfiles) {
     }
   }
   while(pci && (INT)pci != -1) {
-    if(!(pci->rc.flRecordAttr & CRA_FILTERED)) {
+    if (!(pci->rc.flRecordAttr & CRA_FILTERED))
+    {
       didone = TRUE;
-      if(totalfiles)
-        *totalfiles--;
-      if(totalbytes)
-        *totalbytes -= (pci->cbFile + pci->easize);
+      if (pulTotalFiles)
+        *pulTotalFiles--;
+      if (pullTotalBytes)
+        *pullTotalBytes -= (pci->cbFile + pci->easize);
       WinSendMsg(hwndCnr,CM_SETRECORDEMPHASIS,MPFROMP(pci),
                  MPFROM2SHORT(0,CRA_SELECTED));
       if(fSyncUpdates)
