@@ -2,7 +2,9 @@ New stuff's at the top.  This list is not necessarily complete.
 
 3.02i:
  o Rework Databar to avoid delays for inaccessible volumes
- o Continue work on large file support
+ o Lots of work on large file support
+ o Switch to VAC 3.65
+ o Correct name parsing in collector and archive containers
 
 3.02h:
  o Show full target path in Drag/Drop dialogs
