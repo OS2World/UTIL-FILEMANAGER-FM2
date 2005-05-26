@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
