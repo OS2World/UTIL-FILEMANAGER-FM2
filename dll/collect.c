@@ -6,13 +6,15 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2005 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H. Levine
 
   15 Oct 02 MK Baseline
   10 Jan 04 SHL Avoid -1L byte counts
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
   24 May 05 SHL Rework Win_Error usage
+  25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  25 May 05 SHL Rework for FillInRecordFromFFB
 
 ***********************************************************************/
 
@@ -20,8 +22,9 @@
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_DOSERRORS
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +33,7 @@
 #include <time.h>
 #include <share.h>
 #include <limits.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -52,6 +56,8 @@ MRESULT EXPENTRY CollectorFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
 MRESULT EXPENTRY CollectorTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
+  LONGLONG ullBytes;
+
   static BOOL   emphasized      = FALSE;
   static HWND   hwndButtonPopup = (HWND)0;
   static ULONG  timestamp       = ULONG_MAX;
@@ -587,7 +593,7 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
         PCNRITEM     pci,pciFirst,pciT,pciP = NULL;
         RECORDINSERT ri;
         ULONG        ulMaxFiles;
-	ULONG	     totalbytes;
+	ULONGLONG    ullTotalBytes;
         CHAR         fullname[CCHMAXPATH];
 
         WinSetWindowText(WinWindowFromID(dcd->hwndClient,
@@ -628,15 +634,13 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
                 DosFindClose(hdir);
                 priority_normal();
                 *fb4.achName = 0;
-                totalbytes = FillInRecordFromFFB(dcd->hwndCnr,pci,
-                                                 fullname,
-                                                 &fb4,FALSE,
-                                                 dcd);
-		if (totalbytes != -1) {
-		  dcd->totalbytes += totalbytes;
-		  if (dcd->totalbytes == -1)
-		    dcd->totalbytes--;		// fixme for real someday
-		}
+                ullTotalBytes = FillInRecordFromFFB(dcd->hwndCnr,
+					            pci,
+                                                    fullname,
+                                                    &fb4,
+					            FALSE,
+                                                    dcd);
+		dcd->ullTotalBytes += ullTotalBytes;
                 pciP = pci;
                 pci = (PCNRITEM)pci->rc.preccNextRecord;
               }
@@ -732,8 +736,9 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
                                CM_ALLOCRECORD,
                                MPFROMLONG(EXTRA_RECORD_BYTES),
                                MPFROMLONG(1L));
-              if(pci) {
-                dcd->totalbytes += FillInRecordFromFSA(dcd->hwndCnr,pci,
+              if (pci)
+	      {
+                dcd->ullTotalBytes += FillInRecordFromFSA(dcd->hwndCnr,pci,
                                                        fullname,
                                                        &fs4,FALSE,dcd);
                 memset(&ri, 0, sizeof(RECORDINSERT));
@@ -953,8 +958,8 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 }
 
 
-MRESULT EXPENTRY CollectorCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CollectorCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
   INT         tempsortFlags;
 
@@ -999,26 +1004,26 @@ MRESULT EXPENTRY CollectorCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           case '\r':
           case '\n':
             dcd->lasttime = 0;
-            *dcd->comnam = 0;
+            *dcd->szCommonName = 0;
             break;
           default:
             thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
             if(thistime > dcd->lasttime + 1250)
-              *dcd->comnam = 0;
+              *dcd->szCommonName = 0;
             dcd->lasttime = thistime;
-            if(SHORT1FROMMP(mp2) == ' ' && !dcd->comnam)
+            if(SHORT1FROMMP(mp2) == ' ' && !dcd->szCommonName)
               break;
 KbdRetry:
-            len = strlen(dcd->comnam);
+            len = strlen(dcd->szCommonName);
             if(len >= CCHMAXPATH - 1) {
-              *dcd->comnam = 0;
+              *dcd->szCommonName = 0;
               len = 0;
             }
-            dcd->comnam[len] = toupper(SHORT1FROMMP(mp2));
-            dcd->comnam[len + 1] = 0;
+            dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
+            dcd->szCommonName[len + 1] = 0;
             memset(&srch,0,sizeof(SEARCHSTRING));
             srch.cb = (ULONG)sizeof(SEARCHSTRING);
-            srch.pszSearch = (PSZ)dcd->comnam;
+            srch.pszSearch = (PSZ)dcd->szCommonName;
             srch.fsPrefix = TRUE;
             srch.fsCaseSensitive = FALSE;
             srch.usView = CV_ICON;
@@ -1029,7 +1034,7 @@ KbdRetry:
               USHORT          attrib = CRA_CURSORED;
 
               /* make found item current item */
-              if(!stricmp(pci->pszFileName,dcd->comnam))
+              if(!stricmp(pci->pszFileName,dcd->szCommonName))
                 attrib |= CRA_SELECTED;
               WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPFROMP(pci),
                          MPFROM2SHORT(TRUE,attrib));
@@ -1039,10 +1044,10 @@ KbdRetry:
             }
             else {
               if(SHORT1FROMMP(mp2) == ' ') {
-                dcd->comnam[len] = 0;
+                dcd->szCommonName[len] = 0;
                 break;
               }
-              *dcd->comnam = 0;
+              *dcd->szCommonName = 0;
               dcd->lasttime = 0;
               if(len)           // retry as first letter if no match
                 goto KbdRetry;
@@ -1165,19 +1170,15 @@ KbdRetry:
                    MPFROMLONG(sizeof(CNRINFO)));
         dcd->totalfiles = cnri.cRecords;
         commafmt(tf,sizeof(tf),dcd->totalfiles);
-        if(dcd->totalbytes > 1024)
-          commafmt(tb,sizeof(tb),dcd->totalbytes / 1024L);
-        else
-          commafmt(tb,sizeof(tb),dcd->totalbytes);
-        sprintf(s,"%s / %s%s",tf,tb,(dcd->totalbytes > 1024) ? "k" : "b");
+        CommaFmtULL(tb,sizeof(tb),dcd->ullTotalBytes,' ');
+        sprintf(s,"%s / %s",tf,tb);
         WinSetDlgItemText(dcd->hwndClient,DIR_TOTALS,s);
+
         commafmt(tf,sizeof(tf),dcd->selectedfiles);
-        if(dcd->selectedbytes > 1024)
-          commafmt(tb,sizeof(tb),dcd->selectedbytes / 1024L);
-        else
-          commafmt(tb,sizeof(tb),dcd->selectedbytes);
-        sprintf(s,"%s / %s%s",tf,tb,(dcd->selectedbytes > 1024) ? "k" : "b");
+        CommaFmtULL(tb,sizeof(tb),dcd->selectedbytes,' ');
+        sprintf(s,"%s / %s",tf,tb);
         WinSetDlgItemText(dcd->hwndClient,DIR_SELECTED,s);
+
         if(hwndStatus &&
            dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
           if(hwndMain) {
@@ -1221,22 +1222,25 @@ KbdRetry:
                 else
                   p = pci->pszFileName;
               }
-              commafmt(tb,sizeof(tb),pci->cbFile + pci->easize);
+              CommaFmtULL(tb,sizeof(tb),pci->cbFile + pci->easize,' ');
               if(!fMoreButtons)
-                sprintf(s," %sb  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
+	      {
+                sprintf(s," %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
                         tb,pci->date.year,pci->date.month,
                         pci->date.day,pci->time.hours,pci->time.minutes,
                         pci->time.seconds,pci->pszDispAttr,p);
-              else {
-                *tf = 0;
+	      }
+              else
+	      {
                 if(pci->cbFile + pci->easize > 1024)
-                  commafmt(tf,sizeof(tf),
-                           (pci->cbFile + pci->easize) / 1024);
+                  CommaFmtULL(tf,sizeof(tf),pci->cbFile + pci->easize, 'K');
+		else
+                  *tf = 0;
                 sprintf(s,GetPString(IDS_STATUSSIZETEXT),
                         tb,
-                        (*tf) ? " (" : NullStr,
+                        *tf ? " (" : NullStr,
                         tf,
-                        (*tf) ? "k)" : NullStr);
+                        *tf ? ")" : NullStr);
               }
               WinSetWindowText(hwndStatus2,s);
             }
@@ -1754,7 +1758,7 @@ KbdRetry:
                       MPVOID);
             dcd->suspendview = 1;
             RemoveAll(hwnd,
-                      &dcd->totalbytes,
+                      &dcd->ullTotalBytes,
                       &dcd->totalfiles);
             dcd->suspendview = 0;
             PostMsg(hwnd,
@@ -1777,7 +1781,7 @@ KbdRetry:
                            CM_REMOVERECORD,
                            MPVOID,
                            MPFROM2SHORT(0,CMA_FREE | CMA_INVALIDATE));
-                dcd->totalbytes = dcd->selectedbytes = dcd->selectedfiles =
+                dcd->ullTotalBytes = dcd->selectedbytes = dcd->selectedfiles =
                   dcd->totalfiles = 0L;
                 PostMsg(hwnd,
                         UM_RESCAN,
@@ -2568,14 +2572,11 @@ KbdRetry:
                   dcd->selectedbytes -= (pci->cbFile + pci->easize);
                   dcd->selectedfiles--;
                 }
-                if(!dcd->suspendview) {
+                if(!dcd->suspendview)
+		{
                   commafmt(tf,sizeof(tf),dcd->selectedfiles);
-                  if(dcd->selectedbytes > 1024)
-                    commafmt(tb,sizeof(tb),dcd->selectedbytes / 1024L);
-                  else
-                    commafmt(tb,sizeof(tb),dcd->selectedbytes);
-                  sprintf(s,"%s / %s%s",tf,tb,
-                          (dcd->selectedbytes > 1024) ? "k" : "b");
+                  CommaFmtULL(tb,sizeof(tb),dcd->selectedbytes,' ');
+                  sprintf(s,"%s / %s",tf,tb);
                   WinSetDlgItemText(dcd->hwndClient,DIR_SELECTED,s);
                 }
               }
@@ -2598,23 +2599,24 @@ KbdRetry:
                         else
                           p = pci->pszFileName;
                       }
-                      commafmt(tb,sizeof(tb),pci->cbFile + pci->easize);
+                      CommaFmtULL(tb,sizeof(tb),pci->cbFile + pci->easize,' ');
                       if(!fMoreButtons)
-                        sprintf(s," %sb  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
+                        sprintf(s," %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
                                 tb,pci->date.year,
                                 pci->date.month,pci->date.day,pci->time.hours,
                                 pci->time.minutes,pci->time.seconds,
                                 pci->pszDispAttr,p);
-                      else {
-                        *tf = 0;
-                        if(pci->cbFile + pci->easize > 1024)
-                          commafmt(tf,sizeof(tf),
-                                   (pci->cbFile + pci->easize) / 1024);
+                      else
+		      {
+                        if (pci->cbFile + pci->easize > 1024)
+                          CommaFmtULL(tf,sizeof(tf),pci->cbFile + pci->easize, ' ');
+			else
+                          *tf = 0;
                         sprintf(s,GetPString(IDS_STATUSSIZETEXT),
                                 tb,
-                                (*tf) ? " (" : NullStr,
+                                *tf ? " (" : NullStr,
                                 tf,
-                                (*tf) ? "k)" : NullStr);
+                                *tf ? ")" : NullStr);
                       }
                       WinSetWindowText(hwndStatus2,s);
                     }
@@ -2777,8 +2779,8 @@ KbdRetry:
 }
 
 
-HWND StartCollector (HWND hwndParent,INT flags) {
-
+HWND StartCollector (HWND hwndParent,INT flags)
+{
   HWND          hwndFrame = (HWND)0,hwndClient;
   ULONG         FrameFlags = FCF_TITLEBAR   | FCF_SYSMENU     |
                              FCF_SIZEBORDER | FCF_MINMAX      |
