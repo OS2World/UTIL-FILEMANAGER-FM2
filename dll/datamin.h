@@ -6,7 +6,7 @@
   Minimized data bar interface
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H.Levine
+  Copyright (c) 2005 Steven H. Levine
 
   23 May 05 SHL Pull from fm3dll.h
 

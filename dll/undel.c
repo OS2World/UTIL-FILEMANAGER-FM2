@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   24 May 05 SHL Rework Win_Error usage

@@ -6,11 +6,11 @@
   Misc support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2004 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H. Levine
 
-  Revisions	11 Jun 03 SHL - Add JFS and FAT32 support
-		01 Aug 04 SHL - Rework lstrip/rstrip usage
-		01 Aug 04 SHL - LoadLibPath: avoid buffer overflow
+  11 Jun 03 SHL Add JFS and FAT32 support
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  01 Aug 04 SHL LoadLibPath: avoid buffer overflow
 
 ***********************************************************************/
 
@@ -641,8 +641,8 @@ BOOL SetCnrCols (HWND hwndCnr,BOOL compare) {
 }
 
 
-MRESULT CnrDirectEdit (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT CnrDirectEdit (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(SHORT2FROMMP(mp1)) {
     case CN_BEGINEDIT:
       if(mp2) {
@@ -698,22 +698,22 @@ MRESULT CnrDirectEdit (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             APIRET    rc;
             EAOP2     eaop;
             PFEA2LIST pfealist = NULL;
-            CHAR      subject[256];
+            CHAR      szSubject[256];
             ULONG     ealen;
             USHORT    len;
             CHAR     *eaval;
 
-            WinQueryWindowText(hwndMLE,40,subject);
-            subject[39] = 0;
-            p = strchr(subject,'\n');
+            WinQueryWindowText(hwndMLE,40,szSubject);
+            szSubject[39] = 0;
+            p = strchr(szSubject,'\n');
             if(p)
               *p = 0;
-            p = strchr(subject,'\r');
+            p = strchr(szSubject,'\r');
             if(p)
               *p = 0;
-            bstrip(subject);
-            WinSetWindowText(hwndMLE,subject);
-            len = strlen(subject);
+            bstrip(szSubject);
+            WinSetWindowText(hwndMLE,szSubject);
+            len = strlen(szSubject);
             if(len)
               ealen = sizeof(FEA2LIST) + 9 + len + 4;
             else
@@ -733,7 +733,7 @@ MRESULT CnrDirectEdit (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 eaval += sizeof(USHORT);
                 *(USHORT *)eaval = (USHORT)len;
                 eaval += sizeof(USHORT);
-                memcpy(eaval,subject,len);
+                memcpy(eaval,szSubject,len);
                 pfealist->list[0].cbValue = len + (sizeof(USHORT) * 2);
               }
               else

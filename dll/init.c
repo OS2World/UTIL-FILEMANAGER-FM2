@@ -6,7 +6,7 @@
   Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion
   11 Jun 03 SHL Add JFS and FAT32 support

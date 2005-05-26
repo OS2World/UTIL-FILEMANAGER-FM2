@@ -6,7 +6,7 @@
   Kill a process
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H.Levine
+  Copyright (c) 2005 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
 
