@@ -6,25 +6,29 @@
   Directory sizes
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
-  Revisions	16 Oct 02 SHL - Handle large partitions
-		12 Feb 03 SHL - Use CBLIST_TO_EASIZE
-		21 Nov 03 SHL - Avoid VAC \ after // bug (wierd)
-		21 Nov 03 SHL - Correct minor typos
-		21 Nov 03 SHL - Total drives >4GB better
+  16 Oct 02 SHL Handle large partitions
+  12 Feb 03 SHL Use CBLIST_TO_EASIZE
+  21 Nov 03 SHL Avoid VAC \ after // bug (wierd)
+  21 Nov 03 SHL Correct minor typos
+  21 Nov 03 SHL Total drives >4GB better
+  24 May 05 SHL Rework for CNRITEM.szSubject
+  25 May 05 SHL Use ULONGLONG and CommaFmtULL
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -59,8 +63,10 @@ static SHORT APIENTRY SortSizeCnr (PMINIRECORDCORE p1,PMINIRECORDCORE p2,
 }
 
 
-static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
-			 CHAR *pchStopFlag,BOOL top, BOOL *pfIsKB)
+static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
+                       PCNRITEM pciParent,
+		       CHAR *pchStopFlag,BOOL top,
+		       PULONGLONG pullTotalBytes)
 {
   CHAR           maskstr[CCHMAXPATH];
   CHAR           *pEndMask;
@@ -68,20 +74,21 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
   register char  *sp;
   register char  *pp;
   ULONG          nm;
-  ULONG		 ulCurDirKB = 0L;
-  ULONG		 ulCurDirBytes = 0L;
-  ULONG		 ulSubDirKB = 0L;
-  ULONG		 ulSubDirBytes = 0L;
-  ULONG		 ulTotal;
+  ULONGLONG	 ullCurDirBytes = 0;
+  ULONGLONG	 ullSubDirBytes = 0;
+  ULONGLONG	 ull;
   HDIR           hdir;
   FILEFINDBUF4   *pFFB;
   APIRET         rc;
   RECORDINSERT   ri;
   PCNRITEM       pCI;
 
+  // fixme to report errors
+  *pullTotalBytes = 0;		// In case we fail
+
   pFFB = malloc(sizeof(FILEFINDBUF4) /* * FilesToGet */);
   if(!pFFB)
-    return -1L;
+    return FALSE;
   strcpy(maskstr,pszFileName);
   if(maskstr[strlen(maskstr) - 1] != '\\')
     strcat(maskstr,"\\");
@@ -107,30 +114,28 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.
    */
-  if((!rc && (pFFB->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4)
+  if ((!rc && (pFFB->attrFile & FILE_DIRECTORY)) ||
+      strlen(pszFileName) < 4)
   {
-    if(*pchStopFlag) {
+    if (*pchStopFlag) {
       free(pFFB);
-      return -1L;
+      return FALSE;
     }
-    //printf("CM_ALLOCRECORD\n");
     pCI = WinSendMsg(hwndCnr,CM_ALLOCRECORD,MPFROMLONG(EXTRA_RECORD_BYTES2),
-		      MPFROMLONG(1L));
-    if(!pCI) {
+		     MPFROMLONG(1L));
+    if (!pCI) {
       free(pFFB);
-      return -1L;
+      return FALSE;
     }
     if(!rc) {
-      ulCurDirKB = pFFB->cbFile >> 10;
-      ulCurDirBytes = pFFB->cbFile & 0x3ff;
-      ulCurDirKB += CBLIST_TO_EASIZE(pFFB->cbList) >> 10;
-      ulCurDirBytes += CBLIST_TO_EASIZE(pFFB->cbList) & 0x3ff;
+      ullCurDirBytes = pFFB->cbFile;
+      ullCurDirBytes += CBLIST_TO_EASIZE(pFFB->cbList);
     }
     else
       DosError(FERR_DISABLEHARDERR);
     pCI->pszLongname = pCI->szFileName;
     pCI->rc.hptrIcon = hptrDir;
-    *pCI->szDispAttr = *pCI->Longname = *pCI->subject = 0;
+    *pCI->szDispAttr = *pCI->szLongname = *pCI->szSubject = 0;
     pCI->attrFile = 0L;
   }
   else
@@ -143,7 +148,7 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
 	      __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT),
 	      pszFileName);
-    return -1L;
+    return FALSE;
   }
 
   if(strlen(pszFileName) < 4 || top)
@@ -183,7 +188,7 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
   if(!WinSendMsg(hwndCnr,CM_INSERTRECORD,MPFROMP(pCI),MPFROMP(&ri))) {
     //printf("Insert failed\n");
     free(pFFB);
-    return -1L;
+    return FALSE;
   }
   hdir = HDIR_CREATE;
   nm = 1L;
@@ -215,10 +220,8 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
 	   (pffbFile->achName[1] && pffbFile->achName[1] != '.')) ||
 	   !(pffbFile->attrFile & FILE_DIRECTORY))
 	{
-	  ulCurDirKB += pffbFile->cbFile >> 10;
-	  ulCurDirBytes += pffbFile->cbFile & 0x3ff;
-	  ulCurDirKB += CBLIST_TO_EASIZE(pffbFile->cbList) >> 10;
-	  ulCurDirBytes += CBLIST_TO_EASIZE(pffbFile->cbList) & 0x3ff;
+	  ullCurDirBytes += pffbFile->cbFile;
+	  ullCurDirBytes += CBLIST_TO_EASIZE(pffbFile->cbList) & 0x3ff;
 
 	  if(!(pffbFile->attrFile & FILE_DIRECTORY))
 	    pCI->attrFile++;		// Bump file count
@@ -229,17 +232,8 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
 	    strcpy(pEndMask,pffbFile->achName);	// Append dirname to base dirname
 	    if(!*pchStopFlag)
 	    {
-	      BOOL fIsKB;
-	      ulTotal = ProcessDir(hwndCnr,maskstr,pCI,pchStopFlag,FALSE, &fIsKB);
-	      if(ulTotal != (ULONG)-1L) {
-		if (fIsKB)
-		  ulSubDirKB += ulTotal;
-		else {
-		  ulSubDirKB += (ulTotal >> 10);
-		  // Assume we can delay propagating to KB
-		  ulSubDirBytes += (ulTotal & 0x3ff);
-		}
-	      }
+	      ProcessDir(hwndCnr,maskstr,pCI,pchStopFlag,FALSE,&ull);
+	      ullSubDirBytes += ull;
 	    }
 	  }
 	}
@@ -259,38 +253,17 @@ static ULONG ProcessDir (HWND hwndCnr,CHAR *pszFileName,PCNRITEM pciParent,
 
   free(pFFB);
 
-  // Propage carry
-  ulCurDirKB += ulCurDirBytes >> 10;
-  ulCurDirBytes &= 0x3ff;
-  if (ulCurDirBytes)
-    ulCurDirKB++;
-
-  ulSubDirKB += ulSubDirBytes >> 10;
-  ulSubDirBytes &= 0x3ff;
-  if (ulSubDirBytes)
-    ulSubDirKB++;
-
-  pCI->cbFile = ulCurDirKB;
-  pCI->easize = ulSubDirKB;
+  pCI->cbFile = ullCurDirBytes;
+  pCI->easize = ullSubDirBytes;	// hack fixme
   WinSendMsg(hwndCnr,CM_INVALIDATERECORD,MPFROMP(&pCI),
 	     MPFROM2SHORT(1,CMA_ERASE | CMA_TEXTCHANGED));
 
-  ulTotal = ulCurDirKB + ulSubDirKB
-	    + (ulCurDirBytes >> 10) + (ulSubDirBytes >> 10);
-  if (ulTotal >= 1L << 21) {
-    *pfIsKB = TRUE;
-  }
-  else {
-    *pfIsKB = FALSE;
-    ulTotal = (ulCurDirKB << 10) + (ulSubDirKB << 10)
-	      + ulCurDirBytes + ulSubDirBytes;
-  }
-
-  return ulTotal;
+  *pullTotalBytes = ullCurDirBytes + ullSubDirBytes;
+  return TRUE;
 }
 
 
-static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONG ulTotalKB,
+static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONGLONG ullTotalBytes,
 		     CHAR *pchStopFlag,BOOL isroot)
 {
   PCNRITEM pCI = pciParent;
@@ -299,37 +272,37 @@ static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONG ulTotalKB,
   if(pCI) {
 
     float       fltPct = 0.0;
-    CHAR	szCurDirKB[80];
-    CHAR        szSubDirKB[80];
-    CHAR        szAllDirKB[80];
+    CHAR	szCurDir[80];
+    CHAR        szSubDir[80];
+    CHAR        szAllDir[80];
     CHAR        szBar[80];
 
-    // cbFile = currect directory usage in KB
-    // easize = subdirectory usage in KB
-    commafmt(szCurDirKB,sizeof(szCurDirKB),pCI->cbFile);
+    // cbFile = currect directory usage in bytes
+    // easize = subdirectory usage in bytes
+    CommaFmtULL(szCurDir,sizeof(szCurDir),pCI->cbFile,'K');
     *szBar = 0;
 
-    if(ulTotalKB) {
-
+    if (ullTotalBytes)
+    {
       register UINT  cBar;
 
-      if(isroot) {
-
+      if(isroot)
+      {
 	FSALLOCATE fsa;
 	APIRET     rc;
 
 	memset(&fsa,0,sizeof(fsa));
 	rc = DosQueryFSInfo(toupper(*pCI->szFileName) - '@',FSIL_ALLOC,&fsa,
 			    sizeof(FSALLOCATE));
-	if(!rc)
+	if (!rc)
 	{
-	  fltPct = (ulTotalKB * 100.0) /
-		    ((float)fsa.cUnit *	(fsa.cSectorUnit * fsa.cbSector) / 1024);
+	  fltPct = (ullTotalBytes * 100.0) /
+		    ((float)fsa.cUnit *	(fsa.cSectorUnit * fsa.cbSector));
 	}
-	pCI->Longname[1] = 1;	// Flag root
+	pCI->szLongname[1] = 1;	// Flag root - hack cough
       }
       else
-	fltPct = (((float)pCI->cbFile + pCI->easize) * 100.0) / ulTotalKB;
+	fltPct = (((float)pCI->cbFile + pCI->easize) * 100.0) / ullTotalBytes;
 
       cBar = (UINT)fltPct / 2;
       if (cBar)
@@ -344,15 +317,15 @@ static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONG ulTotalKB,
     }
 
     pCI->flags = (ULONG)fltPct;
-    commafmt(szSubDirKB,sizeof(szSubDirKB),pCI->easize);
-    commafmt(szAllDirKB,sizeof(szAllDirKB),pCI->cbFile + pCI->easize);
+    CommaFmtULL(szSubDir,sizeof(szSubDir),pCI->easize,'M');
+    CommaFmtULL(szAllDir,sizeof(szAllDir),pCI->cbFile + pCI->easize,'M');
     sprintf(&pCI->szFileName[strlen(pCI->szFileName)],
-	    "  %sk + %sk = %sk (%.02lf%%%s)\r%s",
-	    szCurDirKB,
-	    szSubDirKB,
-	    szAllDirKB,
+	    "  %s + %s = %s (%.02lf%%%s)\r%s",
+	    szCurDir,
+	    szSubDir,
+	    szAllDir,
 	    fltPct,
-	    (isroot) ? GetPString(IDS_OFDRIVETEXT) : NullStr,
+	    isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr,
 	    szBar);
     WinSendMsg(hwndCnr,
 	       CM_INVALIDATERECORD,
@@ -367,7 +340,7 @@ static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONG ulTotalKB,
   while(pCI && (INT)pCI != -1) {
     if(*pchStopFlag)
       break;
-    FillInRecSizes(hwndCnr,pCI,ulTotalKB,pchStopFlag,isroot);
+    FillInRecSizes(hwndCnr,pCI,ullTotalBytes,pchStopFlag,isroot);
     isroot = FALSE;
     pCI = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPFROMP(pCI),
 			       MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
@@ -418,7 +391,8 @@ static VOID FillCnrThread (VOID *args)
   HMQ           hmq;
   DIRSIZE       *dirsize = (DIRSIZE *)args;
   HWND          hwndCnr;
-  ULONG         ulTotal;
+  ULONGLONG     ull;
+  BOOL		ok;
 
   if(!dirsize)
     return;
@@ -428,18 +402,17 @@ static VOID FillCnrThread (VOID *args)
 
   // priority_normal();
   hab = WinInitialize(0);
-  if(hab) {
+  if(hab)
+  {
     hmq = WinCreateMsgQueue(hab,0);
-    if(hmq) {
-    BOOL fIsKB;
+    if(hmq)
+    {
       WinCancelShutdown(hmq,TRUE);
-      ulTotal = ProcessDir(hwndCnr,dirsize->pszFileName,
-			      (PCNRITEM)NULL,dirsize->pchStopFlag,TRUE, &fIsKB);
+      ProcessDir(hwndCnr,dirsize->pszFileName,
+		 (PCNRITEM)NULL,dirsize->pchStopFlag,TRUE,&ull);
       DosPostEventSem(CompactSem);
       WinEnableWindowUpdate(hwndCnr,FALSE);
-      if (!fIsKB)
-	ulTotal = (ulTotal >> 10) + (ulTotal & 0x3ff ? 1 : 0);
-      FillInRecSizes(hwndCnr,NULL,ulTotal,dirsize->pchStopFlag,TRUE);
+      FillInRecSizes(hwndCnr,NULL,ull,dirsize->pchStopFlag,TRUE);
       WinEnableWindowUpdate(hwndCnr,TRUE);
       WinSendMsg(hwndCnr,CM_INVALIDATERECORD,MPVOID,
 		 MPFROM2SHORT(0,CMA_ERASE | CMA_TEXTCHANGED));
@@ -524,19 +497,20 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	  memset(&fsa,0,sizeof(fsa));
 	  rc = DosQueryFSInfo(toupper(*pTemp->dirname) - '@',FSIL_ALLOC,&fsa,
 			      sizeof(FSALLOCATE));
-	  if(!rc) {
+	  if (!rc)
+	  {
 
 	    CHAR s[132],tf[80],tb[80],tu[80];
 
-	    commafmt(tf,sizeof(tf),
-		     (ULONG)(((float)fsa.cUnitAvail *
-		       (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
-	    commafmt(tb,sizeof(tb),
-		     (ULONG)(((float)fsa.cUnit *
-		       (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
-	    commafmt(tu,sizeof(tu),
-		     (ULONG)(((float)(fsa.cUnit - fsa.cUnitAvail) *
-		       (fsa.cSectorUnit * fsa.cbSector)) / 1024L));
+	    CommaFmtULL(tf,sizeof(tf),
+		        (ULONGLONG)fsa.cUnitAvail *
+		        (fsa.cSectorUnit * fsa.cbSector),'M');
+	    CommaFmtULL(tb,sizeof(tb),
+		        (ULONGLONG)fsa.cUnit *
+		        (fsa.cSectorUnit * fsa.cbSector),'M');
+	    CommaFmtULL(tu,sizeof(tu),
+		        (ULONGLONG)(fsa.cUnit - fsa.cUnitAvail) *
+		         (fsa.cSectorUnit * fsa.cbSector),'M');
 	    sprintf(s,
 		    GetPString(IDS_FREESPACETEXT),
 		    tf,
@@ -575,7 +549,8 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORDEMPHASIS,
 				MPFROMLONG(CMA_FIRST),
 				MPFROMSHORT(CRA_CURSORED));
-	if(pci && (INT)pci != -1) {
+	if (pci && (INT)pci != -1)
+	{
 	  commafmt(tb,sizeof(tb),pci->attrFile);
 	  sprintf(s,
 		  "%s %s%s",
@@ -632,9 +607,9 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	      p = strchr(pci->szFileName,'\r');
 	      if(p) {
 		/* draw text */
-		if(!pci->cbFile)  /* no size */
+		if (!pci->cbFile)  /* no size */
 		  GpiSetColor(oi->hps,CLR_DARKGRAY);
-		else if(!pci->easize) /* no size below */
+		else if (!pci->easize) /* no size below */
 		  GpiSetColor(oi->hps,CLR_DARKBLUE);
 		else
 		  GpiSetColor(oi->hps,CLR_BLACK);
@@ -704,7 +679,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 		/* fill box with graph bar, flags is integer % */
 		if(pci->flags) {
-		  if(pci->Longname[1] == 1) /* is root record */
+		  if(pci->szLongname[1] == 1) /* is root record */
 		    GpiSetColor(oi->hps,CLR_DARKGREEN);
 		  else
 		    GpiSetColor(oi->hps,CLR_RED);
@@ -716,7 +691,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 		  GpiBox(oi->hps,DRO_OUTLINEFILL,&ptl,0,0);
 
 		  /* draw highlights and shadows on graph */
-		  if(pci->Longname[1] == 1)
+		  if(pci->szLongname[1] == 1)
 		    GpiSetColor(oi->hps,CLR_GREEN);
 		  else
 		    GpiSetColor(oi->hps,CLR_PALEGRAY);
@@ -733,7 +708,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 		  }
 		  ptl.x = oi->rclItem.xLeft + pci->flags;
 		  GpiLine(oi->hps,&ptl);
-		  if(pci->Longname[1] != 1) {
+		  if(pci->szLongname[1] != 1) {
 		    GpiSetColor(oi->hps,CLR_DARKRED);
 		    ptl.x = oi->rclItem.xLeft + 2;
 		    ptl.y = oi->rclItem.yBottom + 3;
