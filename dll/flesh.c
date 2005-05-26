@@ -6,9 +6,10 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H.Levine
+  Copyright (c) 2005 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
+  25 May 05 SHL Rework for ProcessDirectory
 
 ***********************************************************************/
 
@@ -166,11 +167,11 @@ BOOL FleshEnv (HWND hwndCnr,PCNRITEM pciParent) {
 }
 
 
-BOOL Flesh (HWND hwndCnr,PCNRITEM pciParent) {
+BOOL Flesh(HWND hwndCnr,PCNRITEM pciParent)
+{
 
   PCNRITEM    pciL;
   DIRCNRDATA *dcd;
-  ULONG       foundany;
   BOOL        includefiles = fFilesInTree;
 
   if(!pciParent || (INT)pciParent == -1 || !hwndCnr)
@@ -180,16 +181,19 @@ BOOL Flesh (HWND hwndCnr,PCNRITEM pciParent) {
                               MPFROMP(pciParent),
                               MPFROM2SHORT(CMA_FIRSTCHILD,
                                            CMA_ITEMORDER));
-  if(!pciL || !*pciL->szFileName) {
-    if(pciL && (INT)pciL != -1)
+  if (!pciL || !*pciL->szFileName)
+  {
+    if (pciL && (INT)pciL != -1)
+    {
       WinSendMsg(hwndCnr,
                  CM_REMOVERECORD,
                  MPFROMP(&pciL),
                  MPFROM2SHORT(1,CMA_FREE));
+    }
     dcd = INSTDATA(hwndCnr);
-    if(dcd && dcd->size != sizeof(DIRCNRDATA))
+    if (dcd && dcd->size != sizeof(DIRCNRDATA))
       dcd = NULL;
-    if(driveflags[toupper(*pciParent->szFileName) - 'A'] & DRIVE_INCLUDEFILES)
+    if (driveflags[toupper(*pciParent->szFileName) - 'A'] & DRIVE_INCLUDEFILES)
       includefiles = TRUE;
     ProcessDirectory(hwndCnr,
                      pciParent,
@@ -199,7 +203,8 @@ BOOL Flesh (HWND hwndCnr,PCNRITEM pciParent) {
                      TRUE,
                      NULL,
                      dcd,
-                     &foundany);
+                     NULL,
+		     NULL);
   }
   return TRUE;
 }
