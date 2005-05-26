@@ -6,26 +6,30 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2005 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H. Levine
 
   16 Oct 02 MK Baseline
   04 Nov 03 SHL Force window refresh after subdir toggle
   01 Aug 04 SHL Rework lstrip/rstrip usage
   24 May 05 SHL Rework Win_Error usage
+  24 May 05 SHL Rework for CNRITEM.szSubject
+  25 May 05 SHL Rework with ULONGLONG
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
 #include <io.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -43,8 +47,8 @@ typedef struct {
 } SNAPSTUFF;
 
 
-void SnapShot (char *path,FILE *fp,BOOL recurse) {
-
+void SnapShot (char *path,FILE *fp,BOOL recurse)
+{
   FILEFINDBUF4 *fb;
   char         *mask,*enddir;
   HDIR          hdir = HDIR_CREATE;
@@ -471,7 +475,7 @@ static VOID ActionCnr (VOID *args) {
                 pciO->crtime     = pci->crtime;
                 pciO->cbFile     = pci->cbFile;
                 pciO->easize     = pci->easize;
-                *pciO->subject   = 0;
+                *pciO->szSubject = 0;
                 *pci->szFileName = 0;
                 pci->pszFileName = pci->szFileName;
                 pci->flags = 0;
@@ -542,7 +546,7 @@ static VOID ActionCnr (VOID *args) {
                 pciO->crtime     = pci->crtime;
                 pciO->cbFile     = pci->cbFile;
                 pciO->easize     = pci->easize;
-                *pci->subject    = 0;
+                *pci->szSubject  = 0;
                 pci->flags       = CNRITEM_EXISTS;
                 WinSendMsg(hwndCnrS,CM_INVALIDATERECORD,MPFROMP(&pci),
                            MPFROM2SHORT(1,CMA_ERASE | CMA_TEXTCHANGED));
@@ -998,23 +1002,23 @@ static VOID FillCnrs (VOID *args) {
           pcir->pszFileName = pcir->szFileName;
           pcir->rc.pszIcon = pcir->pszFileName;
           pcir->rc.hptrIcon = (HPOINTER)0;
-          pcir->pszSubject = pcir->subject;
-          pcir->pszLongname = pcir->Longname;
+          pcir->pszSubject = pcir->szSubject;
+          pcir->pszLongname = pcir->szLongname;
           pcir->pszDispAttr = pcir->szDispAttr;
           pcil->hwndCnr = hwndLeft;
           pcil->pszFileName = pcil->szFileName;
           pcil->rc.pszIcon = pcil->pszFileName;
           pcil->rc.hptrIcon = (HPOINTER)0;
           pcil->pszDispAttr = pcil->szDispAttr;
-          pcil->pszSubject = pcil->subject;
-          pcil->pszLongname = pcil->Longname;
+          pcil->pszSubject = pcil->szSubject;
+          pcil->pszLongname = pcil->szLongname;
           if((filesl && filesl[l]) && (filesr && filesr[r])) {
             x = stricmp(filesl[l]->fname,filesr[r]->fname);
             if(!x) {
               sprintf(pcil->szFileName,"%s%s%s",cmp->leftdir,
                       (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
                       NullStr : "\\",filesl[l]->fname);
-//              pcil->rc.hptrIcon    = hptrFile;
+              // pcil->rc.hptrIcon    = hptrFile;
               pcil->pszFileName    = pcil->szFileName + lenl;
               pcil->attrFile       = filesl[l]->attrFile;
               y = 0;
@@ -1083,7 +1087,7 @@ static VOID FillCnrs (VOID *args) {
               pcir->crtime.hours   = filesr[r]->crtime.hours;
               pcil->flags |= CNRITEM_EXISTS;
               pcir->flags |= CNRITEM_EXISTS;
-              cl = pcil->subject;
+              cl = pcil->szSubject;
               if(pcil->cbFile + pcil->easize >
                  pcir->cbFile + pcir->easize) {
                 pcil->flags |= CNRITEM_LARGER;
@@ -1112,7 +1116,7 @@ static VOID FillCnrs (VOID *args) {
                  (pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE) {
                 pcil->flags |= CNRITEM_NEWER;
                 pcir->flags |= CNRITEM_OLDER;
-                if(cl != pcil->subject) {
+                if(cl != pcil->szSubject) {
                   strcpy(cl,", ");
                   cl += 2;
                 }
@@ -1134,7 +1138,7 @@ static VOID FillCnrs (VOID *args) {
                       FALSE) {
                 pcil->flags |= CNRITEM_OLDER;
                 pcir->flags |= CNRITEM_NEWER;
-                if(cl != pcil->subject) {
+                if(cl != pcil->szSubject) {
                   strcpy(cl,", ");
                   cl += 2;
                 }
