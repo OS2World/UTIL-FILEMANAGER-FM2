@@ -6,31 +6,33 @@
   Update Container record/list
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H. Levine
 
-  Revisions	12 Feb 03 SHL - Standardize EA math
-		10 Jan 04 SHL - Add some intermin large drive error avoidance
+  12 Feb 03 SHL Standardize EA math
+  10 Jan 04 SHL Add some intermin large drive error avoidance
+  25 May 05 SHL Rework for ULONGLONG
+  25 May 05 SHL Rework for FillInRecordFromFFB
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
+#define INCL_LONGLONG
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 
 #pragma alloc_text(UPDATECNR,UpdateCnrRecord,UpdateCnrList)
 
-
 PCNRITEM UpdateCnrRecord (HWND hwndCnr,CHAR *filename,BOOL partial,
                           DIRCNRDATA *dcd)
 {
-
   PCNRITEM      pci;
   FILEFINDBUF4  ffb;
   HDIR          hDir = HDIR_CREATE;
@@ -172,7 +174,7 @@ Update:
       if(dcd->type == DIR_FRAME) {
 
         RECORDINSERT ri;
-        ULONG        totalbytes;
+        ULONGLONG ullTotalBytes;
 
         pci = WinSendMsg(hwndCnr,
                          CM_ALLOCRECORD,
@@ -180,12 +182,12 @@ Update:
                          MPFROMLONG(1L));
         if(pci) {
           *ffb.achName = 0;
-          totalbytes = FillInRecordFromFFB(hwndCnr,
-                                           pci,
-                                           filename,
-                                           &ffb,
-                                           partial,
-                                           dcd);
+          ullTotalBytes = FillInRecordFromFFB(hwndCnr,
+                                              pci,
+                                              filename,
+                                              &ffb,
+                                              partial,
+                                              dcd);
           if(strlen(pci->szFileName) < 4) {
             *pci->szFileName = toupper(*pci->szFileName);
             if(isalpha(*pci->szFileName) &&
@@ -210,16 +212,13 @@ Update:
           ri.zOrder             = (USHORT)CMA_TOP;
           ri.cRecordsInsert     = 1L;
           ri.fInvalidateRecord  = TRUE;
-          if(WinSendMsg(hwndCnr,
+          if (WinSendMsg(hwndCnr,
                         CM_INSERTRECORD,
                         MPFROMP(pci),
                         MPFROMP(&ri)) &&
-             totalbytes != -1 &&
-             totalbytes)
+              ullTotalBytes)
 	  {
-            dcd->totalbytes += totalbytes;
-            if (dcd->totalbytes == -1)
-              dcd->totalbytes--;
+            dcd->ullTotalBytes += ullTotalBytes;
             PostMsg(hwndCnr,
                     UM_RESCAN,
                     MPVOID,
@@ -330,15 +329,16 @@ Update:
         if(pci) {
 
           RECORDINSERT ri;
-          ULONG        totalbytes;
+          ULONGLONG ullTotalBytes;
+	  BOOL rc;
 
           *ffb.achName = 0;
-          totalbytes = FillInRecordFromFFB(hwndCnr,
-                                           pci,
-                                           filename,
-                                           &ffb,
-                                           partial,
-                                           dcd);
+          ullTotalBytes = FillInRecordFromFFB(hwndCnr,
+	  				      pci,	
+                                              filename,
+                                              &ffb,
+                                              partial,
+                                              dcd);
           if(strlen(pci->szFileName) < 4) {
             *pci->szFileName = toupper(*pci->szFileName);
             if(isalpha(*pci->szFileName) &&
@@ -367,13 +367,10 @@ Update:
                         CM_INSERTRECORD,
                         MPFROMP(pci),
                         MPFROMP(&ri)) &&
-             totalbytes != -1 &&
-             totalbytes)
+             ullTotalBytes)
 	  {
             if (dcd->type == DIR_FRAME) {
-              dcd->totalbytes += totalbytes;
-              if (dcd->totalbytes == -1)
-                dcd->totalbytes--;	// fixme for real someday
+              dcd->ullTotalBytes += ullTotalBytes;
 	    }
             Stubby(hwndCnr,pci);
           }
@@ -402,7 +399,7 @@ Update:
                  MPFROM2SHORT(FALSE,
                               CRA_SELECTED));
     if(dcd->type == DIR_FRAME)
-      dcd->totalbytes -= pci->cbFile + pci->easize;
+      dcd->ullTotalBytes -= pci->cbFile + pci->easize;
     WinSendMsg(hwndCnr,
                CM_REMOVERECORD,
                MPFROMP(&pci),
@@ -427,17 +424,19 @@ Update:
 }
 
 
-
 BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                     DIRCNRDATA *dcd)
 {
-
   PCNRITEM      pci,*pciList = NULL;
   FILEFINDBUF4  ffb;
   HDIR          hDir;
   ULONG         nm = 1L;
-  register INT  x,numlist = 0,numremain;
-  BOOL          repos = FALSE,needtosort = FALSE,ret = FALSE;
+  INT           x;
+  INT           numlist = 0;
+  INT           numremain;
+  BOOL          repos = FALSE;
+  BOOL          needtosort = FALSE;
+  BOOL          ret = FALSE;
   APIRET        status;
 
   if(!dcd)
@@ -506,23 +505,27 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                           partial,
                           FALSE,
                           TRUE);
-      if(pci) {     /* update record? */
-        if((!fForceUpper && !fForceLower &&
-           strcmp(pci->szFileName,filename[x])) ||
-           pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
-           pci->easize != CBLIST_TO_EASIZE(ffb.cbList) ||
-           pci->date.day != ffb.fdateLastWrite.day ||
-           pci->date.month != ffb.fdateLastWrite.month ||
-           pci->date.year != ffb.fdateLastWrite.year + 1980 ||
-           pci->time.seconds != ffb.ftimeLastWrite.twosecs * 2 ||
-           pci->time.minutes != ffb.ftimeLastWrite.minutes ||
-           pci->time.hours != ffb.ftimeLastWrite.hours ||
-           pci->ladate.day != ffb.fdateLastAccess.day ||
-           pci->ladate.month != ffb.fdateLastAccess.month ||
-           pci->ladate.year != ffb.fdateLastAccess.year + 1980 ||
-           pci->latime.seconds != ffb.ftimeLastAccess.twosecs * 2 ||
-           pci->latime.minutes != ffb.ftimeLastAccess.minutes ||
-           pci->latime.hours != ffb.ftimeLastAccess.hours) { /* changed; update */
+      if (pci)
+      {
+        /* update record? */
+        if ((!fForceUpper && !fForceLower &&
+             strcmp(pci->szFileName,filename[x])) ||
+            pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
+            pci->easize != CBLIST_TO_EASIZE(ffb.cbList) ||
+            pci->date.day != ffb.fdateLastWrite.day ||
+            pci->date.month != ffb.fdateLastWrite.month ||
+            pci->date.year != ffb.fdateLastWrite.year + 1980 ||
+            pci->time.seconds != ffb.ftimeLastWrite.twosecs * 2 ||
+            pci->time.minutes != ffb.ftimeLastWrite.minutes ||
+            pci->time.hours != ffb.ftimeLastWrite.hours ||
+            pci->ladate.day != ffb.fdateLastAccess.day ||
+            pci->ladate.month != ffb.fdateLastAccess.month ||
+            pci->ladate.year != ffb.fdateLastAccess.year + 1980 ||
+            pci->latime.seconds != ffb.ftimeLastAccess.twosecs * 2 ||
+            pci->latime.minutes != ffb.ftimeLastAccess.minutes ||
+            pci->latime.hours != ffb.ftimeLastAccess.hours)
+	{
+	  /* changed; update */
           pciList[numlist++] = pci;
           *ffb.achName = 0;
           ffb.cchName = 0;
@@ -532,11 +535,13 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                               &ffb,
                               partial,
                               dcd);
-          if(IsRoot(pci->szFileName)) {
+          if (IsRoot(pci->szFileName))
+	  {
             *pci->szFileName = toupper(*pci->szFileName);
-            if(isalpha(*pci->szFileName) &&
-               toupper(*pci->szFileName) > 'B') {
-              if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
+            if (isalpha(*pci->szFileName) &&
+                toupper(*pci->szFileName) > 'B')
+	    {
+              if (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
                 pci->rc.hptrIcon = hptrCDROM;
               else
                 pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
@@ -556,26 +561,29 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                                   CRA_SELECTED | CRA_CURSORED));
         }
       }
-      else {        /* add record */
+      else
+      {
+        /* add record */
         needtosort = TRUE;
-        if(dcd->type == DIR_FRAME) {
-
+        if (dcd->type == DIR_FRAME)
+	{
           RECORDINSERT ri;
-          ULONG        totalbytes;
+          ULONGLONG ullTotalBytes;
 
           pci = WinSendMsg(hwndCnr,
                            CM_ALLOCRECORD,
                            MPFROMLONG(EXTRA_RECORD_BYTES),
                            MPFROMLONG(1L));
-          if(pci) {
+          if (pci)
+	  {
             ret = TRUE;
             *ffb.achName = 0;
-            totalbytes = FillInRecordFromFFB(hwndCnr,
-                                             pci,
-                                             filename[x],
-                                             &ffb,
-                                             partial,
-                                             dcd);
+            ullTotalBytes = FillInRecordFromFFB(hwndCnr,
+                                                pci,
+                                                filename[x],
+                                                &ffb,
+                                                partial,
+                                                dcd);
             if(strlen(pci->szFileName) < 4) {
               *pci->szFileName = toupper(*pci->szFileName);
               if(isalpha(*pci->szFileName) &&
@@ -600,16 +608,14 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
             ri.zOrder             = (USHORT)CMA_TOP;
             ri.cRecordsInsert     = 1L;
             ri.fInvalidateRecord  = FALSE;
-            if(WinSendMsg(hwndCnr,
-                          CM_INSERTRECORD,
-                          MPFROMP(pci),
-                          MPFROMP(&ri))) {
-              if (totalbytes != -1 &&
-                  totalbytes)
+            if (WinSendMsg(hwndCnr,
+                           CM_INSERTRECORD,
+                           MPFROMP(pci),
+                           MPFROMP(&ri)))
 	    {
-                dcd->totalbytes += totalbytes;
-                if (dcd->totalbytes == -1)
-                  dcd->totalbytes--;	// fixme for real someday
+              if (ullTotalBytes)
+	      {
+                dcd->ullTotalBytes += ullTotalBytes;
                 numremain++;
               }
               repos = TRUE;
@@ -623,8 +629,9 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                          MPFROMSHORT(1));
           }
         }
-        else if(ffb.attrFile & FILE_DIRECTORY) {  /* check all parts and insert as required */
-
+        else if (ffb.attrFile & FILE_DIRECTORY)
+	{
+	  /* check all parts and insert as required */
           CHAR    *p,temp;
           PCNRITEM pciParent = NULL,pciT;
 
@@ -649,16 +656,16 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                 if(pci) {
 
                   RECORDINSERT ri;
-                  ULONG        totalbytes;
+                  ULONGLONG ullTotalBytes;
 
                   ret = TRUE;
                   *ffb.achName = 0;
-                  totalbytes = FillInRecordFromFFB(hwndCnr,
-                                                   pci,
-                                                   filename[x],
-                                                   &ffb,
-                                                   partial,
-                                                   dcd);
+                  ullTotalBytes = FillInRecordFromFFB(hwndCnr,
+                                                      pci,
+                                                      filename[x],
+                                                      &ffb,
+                                                      partial,
+                                                      dcd);
                   if(strlen(pci->szFileName) < 4) {
                     *pci->szFileName = toupper(*pci->szFileName);
                     if(isalpha(*pci->szFileName) &&
@@ -687,15 +694,11 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                                 CM_INSERTRECORD,
                                 MPFROMP(pci),
                                 MPFROMP(&ri))) {
-                    if (totalbytes != -1 &&
-		        totalbytes)
+                    if (ullTotalBytes)
 		    {
                       numremain++;
-                      if(dcd->type == DIR_FRAME) {
-                        dcd->totalbytes += totalbytes;
-                        if (dcd->totalbytes == -1)
-                          dcd->totalbytes--;	// fixme for real someday
-		      }
+                      if (dcd->type == DIR_FRAME)
+                        dcd->ullTotalBytes += ullTotalBytes;
                     }
                     repos = TRUE;
                   }
@@ -720,16 +723,17 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
             if(pci) {
 
               RECORDINSERT ri;
-              ULONG        totalbytes;
+              ULONG  ullTotalBytes;
+	      BOOL rc;
 
               ret = TRUE;
               *ffb.achName = 0;
-              totalbytes = FillInRecordFromFFB(hwndCnr,
-                                               pci,
-                                               filename[x],
-                                               &ffb,
-                                               partial,
-                                               dcd);
+              ullTotalBytes = FillInRecordFromFFB(hwndCnr,
+                                                  pci,
+                                                  filename[x],
+                                                  &ffb,
+                                                  partial,
+                                                  dcd);
               if(strlen(pci->szFileName) < 4) {
                 *pci->szFileName = toupper(*pci->szFileName);
                 if(isalpha(*pci->szFileName) &&
@@ -758,15 +762,11 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                             CM_INSERTRECORD,
                             MPFROMP(pci),
                             MPFROMP(&ri))) {
-                if (totalbytes != -1 &&
-		    totalbytes)
+                if (ullTotalBytes)
 		{
                   numremain++;
-                  if (dcd->type == DIR_FRAME) {
-                    dcd->totalbytes += totalbytes;
-                    if (dcd->totalbytes == -1)
-                      dcd->totalbytes--;	// fixme for real someday
-		  }
+                  if (dcd->type == DIR_FRAME)
+                    dcd->ullTotalBytes += ullTotalBytes;
                 }
                 repos = TRUE;
                 Stubby(hwndCnr,pci);
@@ -781,13 +781,15 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
         }
       }
     }
-    else if((pci = FindCnrRecord(hwndCnr,
-                                 filename[x],
-                                 (PCNRITEM)NULL,
-                                 partial,
-                                 FALSE,
-                                 TRUE)) !=  NULL &&
-            (INT)pci != -1 && !IsRoot(pci->szFileName)) {
+    else if ((pci = FindCnrRecord(hwndCnr,
+                                  filename[x],
+                                  (PCNRITEM)NULL,
+                                  partial,
+                                  FALSE,
+                                  TRUE)) !=  NULL &&
+             (INT)pci != -1 &&
+	     !IsRoot(pci->szFileName))
+    {
       /* file doesn't exist; delete record */
       if(pci->rc.flRecordAttr & CRA_SELECTED)
         WinSendMsg(hwndCnr,
@@ -795,22 +797,20 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                    MPFROMP(pci),
                    MPFROM2SHORT(FALSE,
                                 CRA_SELECTED));
-      if(dcd->type == DIR_FRAME)
-        dcd->totalbytes -= (pci->cbFile + pci->easize);
-      if(WinSendMsg(hwndCnr,
-                    CM_REMOVERECORD,
-                    MPFROMP(&pci),
-                    MPFROM2SHORT(1,
-                                 CMA_FREE |
-                                  ((numremain == 1) ?
-                                   CMA_INVALIDATE : 0)))) {
+      if (dcd->type == DIR_FRAME)
+        dcd->ullTotalBytes -= (pci->cbFile + pci->easize);
+      if (WinSendMsg(hwndCnr,
+                     CM_REMOVERECORD,
+                     MPFROMP(&pci),
+                     MPFROM2SHORT(1, CMA_FREE | (numremain == 1 ? CMA_INVALIDATE : 0))))
+      {
         numremain--;
         repos = TRUE;
       }
     }
   }
-  if(repos || (pciList && numlist)) {
-
+  if (repos || (pciList && numlist))
+  {
     QUERYRECORDRECT qrr;
     RECTL           rCnr,rCItem;
 
@@ -818,7 +818,8 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                      CM_QUERYRECORDEMPHASIS,
                      MPFROMLONG(CMA_FIRST),
                      MPFROMLONG(CRA_CURSORED));
-    if(pci && (INT)pci != -1) {
+    if (pci && (INT)pci != -1)
+    {
       memset(&qrr, 0, sizeof(QUERYRECORDRECT));
       qrr.cb = sizeof(QUERYRECORDRECT);
       qrr.pRecord = (PRECORDCORE) pci;
@@ -831,13 +832,15 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
         qrr.cb = 0;
     }
     if(pciList && numlist && !repos)
+    {
       WinSendMsg(hwndCnr,
                  CM_INVALIDATERECORD,
                  MPFROMP(pciList),
-                 MPFROM2SHORT(numlist,((repos) ?
-                                       CMA_NOREPOSITION :
-                                       CMA_REPOSITION | CMA_ERASE)));
-    if(repos)
+                 MPFROM2SHORT(numlist,
+		              (repos ? CMA_NOREPOSITION :
+			               CMA_REPOSITION | CMA_ERASE)));
+    }
+    if (repos)
       WinSendMsg(hwndCnr,
                  CM_INVALIDATERECORD,
                  MPVOID,
@@ -865,4 +868,3 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
   }
   return ret;
 }
-
