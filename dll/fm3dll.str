@@ -22,7 +22,7 @@ States
 Commands
  Drive Tree
  %lu Drives
-k free
+ free
 <Attr>
 Swapfile:
 DT:
@@ -69,7 +69,7 @@ Dropping here can change the directory into which the container "looks."
 Scanning...
 FM/2:  Select filter
 FM/2:  Deselect filter
- Size:  %s bytes%s%s%s
+ Size:  %s%s%s%s
 Enter the name of the file to create in this directory.
 Filename to create:
 FM/2:  Create new file
@@ -674,8 +674,8 @@ Text:
  of drive
 file
 FM/2: Directory sizes "%s"
-%sk free  %sk total  %sk used on drive
-??k free  ??k total  ??k used
+%s free  %s total  %s used on drive
+?? free  ?? total  ?? used
 Printer not ready.
 Printing a list of files.
 Printing "%s"
