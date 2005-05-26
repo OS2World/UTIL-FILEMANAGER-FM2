@@ -6,7 +6,7 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H. Levine
 
   12 Feb 03 SHL Add CBLIST_TO_EASIZE
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -15,8 +15,20 @@
   01 Aug 04 SHL Drop avv local functions
   23 May 05 SHL Split datamin to datamin.h
   24 May 05 SHL Rework Win_Error usage
+  25 May 05 SHL Require VAC 3.65
+  25 May 05 SHL Rename comnam to szCommonName
+  25 May 05 SHL Rework for FillInRecordFromFFB
+  25 May 05 SHL Add CommaFmtULL CommaFmtUL
 
 ***********************************************************************/
+
+#if __IBMC__ != 430
+#error VAC365 required for long long support
+#endif
+
+#if !defined(_LONG_LONG)
+#error Long long support not enabled
+#endif
 
 #ifdef DEFINE_GLOBALS
   #pragma data_seg(GLOBAL1)
@@ -333,11 +345,11 @@ typedef struct {
 typedef struct _CNRITEM {             /* CONTAINER RECORD STRUCTURE */
   MINIRECORDCORE rc;                  /* Base information */
   HWND           hwndCnr;             /* The container holding this record */
-  PSZ            pszFileName;         /* Pointer to file name */
-  CHAR           szFileName[CCHMAXPATH]; /* File name */
-  CHAR           subject[40];         /* subject string */
-  CHAR          *pszSubject;          /* pointer to subject string */
-  CHAR          *pszDispAttr;         /* Pointer to attrib string */
+  PSZ            pszFileName;         // Points to szFileName  - required by CFA_STRING
+  CHAR           szFileName[CCHMAXPATH]; // Path name - fixme to rename
+  CHAR           szSubject[40];       /* Subject string */
+  CHAR          *pszSubject;          // Points szSubject - required by CFA_STRING
+  CHAR          *pszDispAttr;         // Points to szDispAttr - required by CFA_STRING
   CDATE          date;                /* Last write date of file */
   CTIME          time;                /* Last write time of file */
   CDATE          ladate;              /* Last access date of file */
@@ -345,12 +357,12 @@ typedef struct _CNRITEM {             /* CONTAINER RECORD STRUCTURE */
   CDATE          crdate;              /* Creation date of file */
   CTIME          crtime;              /* Creation time of file */
   CHAR           szDispAttr[6];       /* Attrib string for details display */
-  CHAR          *pszLongname;
-  ULONG          cbFile;              /* File size */
-  ULONG          easize;              /* Size of EAs */
+  CHAR          *pszLongname;	      // Points to szLongName - required by CFA_STRING
+  ULONGLONG      cbFile;              /* File size */
+  ULONGLONG      easize;              // Size of EAs - dirsize uses this - hack cough
   ULONG          attrFile;            /* Attributes of this file */
   ULONG          flags;
-  CHAR           Longname[1];
+  CHAR           szLongname[1];	      // Holds .LONGNAME EA or root flag
 } CNRITEM, *PCNRITEM;
 
 typedef struct _ARCITEM {             // ARCHIVE CONTAINER RECORD STRUCTURE
@@ -449,7 +461,10 @@ typedef struct DIRCNRDATA {
   PFNWP     oldproc;
   CHAR      font[CCHMAXPATH];
   MASK      mask;
-  ULONG     totalbytes,selectedbytes,selectedfiles,totalfiles;
+  ULONGLONG ullTotalBytes;
+  ULONGLONG selectedbytes;
+  ULONG	    selectedfiles;
+  ULONG	    totalfiles;
   BOOL      cnremphasized;
   BOOL      dontclose;
   ARC_TYPE *info;
@@ -471,7 +486,7 @@ typedef struct DIRCNRDATA {
   CHAR    **lastselection;
   USHORT    shiftstate;
   USHORT    suspendview;
-  CHAR      comnam[CCHMAXPATH];
+  CHAR      szCommonName[CCHMAXPATH];
   ULONG     lasttime;
   BOOL      arcfilled;
   HMTX      filling;
@@ -526,19 +541,21 @@ BOOL InitFM3DLL (HAB hab,int argc,char **argv);
 HWND StartFM3 (HAB hab,INT argc,CHAR **argv);
 
 /* filldir.c */
-ULONG FillDirCnr   (HWND hwndCnr,CHAR *directory,DIRCNRDATA *dcd);
-ULONG FillTreeCnr  (HWND hwndCnr,HWND hwndParent);
-ULONG ProcessDirectory (const HWND hwndCnr, const PCNRITEM pciParent,
-                        const CHAR *szDirBase, const BOOL filestoo,
-                        const BOOL recurse,const BOOL partial,
-                        CHAR *stopflag,DIRCNRDATA *dcd,ULONG *foundany);
-ULONG FillInRecordFromFFB (HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
-                           const PFILEFINDBUF4 pffb,const BOOL partial,
-                           DIRCNRDATA *dcd);
-ULONG FillInRecordFromFSA (HWND hwndCnr,PCNRITEM pci,const PSZ pszFileName,
-                                   const PFILESTATUS4 pfsa4,
-                                   const BOOL partial,DIRCNRDATA *dcd);
-
+VOID FillDirCnr(HWND hwndCnr,CHAR *pszDirectory,DIRCNRDATA *pdcd,
+                PULONGLONG pullBytes);
+VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent);
+VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
+                      const CHAR *szDirBase, const BOOL filestoo,
+                      const BOOL recurse,const BOOL partial,
+                      CHAR *stopflag,DIRCNRDATA *pdcd,
+		      PULONG pullTotalFiles,
+		      PULONGLONG pullTotalBytes);
+ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
+                              const PFILEFINDBUF4 pffb,const BOOL partial,
+                              DIRCNRDATA *pdcd);
+ULONGLONG FillInRecordFromFSA (HWND hwndCnr,PCNRITEM pci,const PSZ pszFileName,
+                               const PFILESTATUS4 pfsa4,
+                               const BOOL partial,DIRCNRDATA *pdcd);
 
 /* flesh.c */
 BOOL Stubby        (HWND hwndCnr,PCNRITEM pciParent);
@@ -854,7 +871,7 @@ VOID DeselectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,CHAR *text,
                   BOOL arc);
 VOID Deselect (HWND hwndCnr);
 VOID HideAll (HWND hwndCnr);
-VOID RemoveAll (HWND hwndCnr,ULONG *totalbytes,ULONG *totalfiles);
+VOID RemoveAll (HWND hwndCnr,ULONGLONG *ullTotalBytes,ULONG *totalfiles);
 VOID MarkAll (HWND hwndCnr,BOOL quitit,BOOL target,BOOL source);
 VOID SetMask (CHAR *str,MASK *mask);
 VOID ExpandAll (HWND hwndCnr,BOOL expand,PCNRITEM pciParent);
@@ -1074,7 +1091,11 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 MRESULT EXPENTRY CfgDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 
 /* commafmt.c */
-size_t commafmt(char *buf,int bufsize,long N);
+size_t commafmt(PSZ pszBuf,UINT cBufSize,LONG lNumber);
+size_t CommaFmtUL(char *pszBuf,UINT cBufSize,ULONG ullNumber,
+		  CHAR chPreferred);
+size_t CommaFmtULL(char *pszBuf,UINT cBufSize,ULONGLONG ullNumber,
+		   CHAR chPreferred);
 
 /* autoview.c */
 BOOL WriteEA (HWND hwnd,CHAR *filename,CHAR *eaname,USHORT type,CHAR *data);
