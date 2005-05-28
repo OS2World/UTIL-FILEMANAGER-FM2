@@ -19,6 +19,7 @@
   25 May 05 SHL Rename comnam to szCommonName
   25 May 05 SHL Rework for FillInRecordFromFFB
   25 May 05 SHL Add CommaFmtULL CommaFmtUL
+  28 May 05 SHL Drop local functions
 
 ***********************************************************************/
 
@@ -346,7 +347,7 @@ typedef struct _CNRITEM {             /* CONTAINER RECORD STRUCTURE */
   MINIRECORDCORE rc;                  /* Base information */
   HWND           hwndCnr;             /* The container holding this record */
   PSZ            pszFileName;         // Points to szFileName  - required by CFA_STRING
-  CHAR           szFileName[CCHMAXPATH]; // Path name - fixme to rename
+  CHAR           szFileName[CCHMAXPATH]; // Path name - fixme to rename to szPathName?
   CHAR           szSubject[40];       /* Subject string */
   CHAR          *pszSubject;          // Points szSubject - required by CFA_STRING
   CHAR          *pszDispAttr;         // Points to szDispAttr - required by CFA_STRING
@@ -663,18 +664,12 @@ MRESULT EXPENTRY DriveBackProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 MRESULT EXPENTRY ChildButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 MRESULT EXPENTRY DriveProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 MRESULT EXPENTRY BubbleProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-VOID NextChild (HWND hwndClient,BOOL previous);
 BOOL SaveDirCnrState (HWND hwndClient,CHAR *name);
-BOOL RestoreDirCnrState (HWND hwndClient,CHAR *name,BOOL noview);
-BOOL CloseDirCnrChildren (HWND hwndClient);
 MRESULT EXPENTRY LEDProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 MRESULT EXPENTRY StatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-VOID ResizeChildren (HWND hwndClient,SHORT oldcx,SHORT oldcy,SHORT newcx,
-                     SHORT newcy);
 VOID BuildDrives (HWND hwndT);
 VOID ResizeDrives (HWND hwndT,long xwidth);
 BOOL CloseChildren (HWND hwndClient);
-VOID ResizeTools (HWND hwnd);
 VOID BuildTools (HWND hwndT,BOOL resize);
 void BubbleHelp (HWND hwnd,BOOL other,BOOL data,BOOL above,char *help);
 VOID MakeBubble (HWND hwnd,BOOL above,CHAR *help);
