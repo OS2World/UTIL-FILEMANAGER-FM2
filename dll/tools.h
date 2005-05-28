@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  tools interface
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005 Steven H. Levine
+
+  26 May 05 SHL Localize toolhead
+
+***********************************************************************/
+
 typedef struct TOOL {
   CHAR        *help;
   CHAR        *text;
@@ -12,6 +26,8 @@ typedef struct TOOL {
 #define T_SEPARATOR   0x00000008
 #define T_TEXT        0x00000010
 #define T_MYICON      0x00000020
+
+extern TOOL *toolhead;
 
 VOID   load_quicktools (VOID);
 VOID   save_quicktools (VOID);
