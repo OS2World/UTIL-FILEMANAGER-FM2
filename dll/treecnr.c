@@ -12,6 +12,7 @@
   11 Jun 03 SHL Add JFS and FAT32 support
   25 May 05 SHL Rename comnam to szCommonName and fix typo
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  26 May 05 SHL More large file formatting updates
 
 ***********************************************************************/
 
@@ -56,44 +57,44 @@ MRESULT EXPENTRY OpenButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   switch(msg) {
     case WM_CREATE:
       {
-        MRESULT rc;
+	MRESULT rc;
 
-        rc = PFNWPButton(hwnd,msg,mp1,mp2);
-        WinSetPresParam(hwnd,PP_FONTNAMESIZE,
-                        strlen(GetPString(IDS_8TIMESNEWROMANTEXT)) + 1,
-                        (PVOID)GetPString(IDS_8TIMESNEWROMANTEXT));
-        return rc;
+	rc = PFNWPButton(hwnd,msg,mp1,mp2);
+	WinSetPresParam(hwnd,PP_FONTNAMESIZE,
+			strlen(GetPString(IDS_8TIMESNEWROMANTEXT)) + 1,
+			(PVOID)GetPString(IDS_8TIMESNEWROMANTEXT));
+	return rc;
       }
 
     case WM_MOUSEMOVE:
       BubbleHelp(hwnd,
-                 TRUE,
-                 FALSE,
-                 TRUE,
-                 GetPString(IDS_OPENBUTTONHELP));
+		 TRUE,
+		 FALSE,
+		 TRUE,
+		 GetPString(IDS_OPENBUTTONHELP));
       break;
 
     case WM_CONTEXTMENU:
       PostMsg(WinQueryWindow(hwnd,QW_PARENT),
-              WM_COMMAND,
-              MPFROM2SHORT(IDM_OPENWALK,0),
-              MPVOID);
+	      WM_COMMAND,
+	      MPFROM2SHORT(IDM_OPENWALK,0),
+	      MPVOID);
       return 0;
 
     case DM_DRAGOVER:
       if(!emphasized) {
-        emphasized = TRUE;
-        EmphasizeButton(hwnd,emphasized);
+	emphasized = TRUE;
+	EmphasizeButton(hwnd,emphasized);
       }
       if(AcceptOneDrop(mp1,mp2))
-        return MRFROM2SHORT(DOR_DROP,
-                            DO_MOVE);
+	return MRFROM2SHORT(DOR_DROP,
+			    DO_MOVE);
       return MRFROM2SHORT(DOR_NEVERDROP,0);
 
     case DM_DRAGLEAVE:
       if(emphasized) {
-        emphasized = FALSE;
-        EmphasizeButton(hwnd,emphasized);
+	emphasized = FALSE;
+	EmphasizeButton(hwnd,emphasized);
       }
       break;
 
@@ -103,19 +104,19 @@ MRESULT EXPENTRY OpenButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case DM_DROP:
       {
-        char szFrom[CCHMAXPATH + 2];
+	char szFrom[CCHMAXPATH + 2];
 
-        if(emphasized) {
-          emphasized = FALSE;
-          EmphasizeButton(hwnd,emphasized);
-        }
-        if(GetOneDrop(mp1,mp2,szFrom,sizeof(szFrom))) {
-          MakeValidDir(szFrom);
-          WinSendMsg(WinQueryWindow(hwnd,QW_PARENT),
-                     UM_OPENWINDOWFORME,
-                     MPFROMP(szFrom),
-                     MPVOID);
-        }
+	if(emphasized) {
+	  emphasized = FALSE;
+	  EmphasizeButton(hwnd,emphasized);
+	}
+	if(GetOneDrop(mp1,mp2,szFrom,sizeof(szFrom))) {
+	  MakeValidDir(szFrom);
+	  WinSendMsg(WinQueryWindow(hwnd,QW_PARENT),
+		     UM_OPENWINDOWFORME,
+		     MPFROMP(szFrom),
+		     MPVOID);
+	}
       }
       return 0;
 
@@ -135,9 +136,9 @@ VOID ShowTreeRec (HWND hwndCnr,CHAR *dirname,BOOL collapsefirst,BOOL maketop) {
 
   /* is it already the current record? */
   pci = WinSendMsg(hwndCnr,
-                   CM_QUERYRECORDEMPHASIS,
-                   MPFROMLONG(CMA_FIRST),
-                   MPFROMSHORT(CRA_CURSORED));
+		   CM_QUERYRECORDEMPHASIS,
+		   MPFROMLONG(CMA_FIRST),
+		   MPFROMSHORT(CRA_CURSORED));
   if(pci &&
      (INT)pci != -1 &&
      !stricmp(pci->szFileName,dirname)) {
@@ -146,11 +147,11 @@ VOID ShowTreeRec (HWND hwndCnr,CHAR *dirname,BOOL collapsefirst,BOOL maketop) {
   }
   WinEnableWindowUpdate(hwndCnr,FALSE);
   pci = FindCnrRecord(hwndCnr,
-                      dirname,
-                      NULL,
-                      TRUE,
-                      FALSE,
-                      TRUE);
+		      dirname,
+		      NULL,
+		      TRUE,
+		      FALSE,
+		      TRUE);
   if(!pci || (INT)pci == -1) {
     *szDir   = *dirname;
     szDir[1] = ':';
@@ -159,86 +160,86 @@ VOID ShowTreeRec (HWND hwndCnr,CHAR *dirname,BOOL collapsefirst,BOOL maketop) {
     p = szDir + 3;
     for(;;) {
       pciP = FindCnrRecord(hwndCnr,
-                           szDir,
-                           NULL,
-                           TRUE,
-                           FALSE,
-                           TRUE);
+			   szDir,
+			   NULL,
+			   TRUE,
+			   FALSE,
+			   TRUE);
       if(pciP &&
-         (INT)pciP != -1) {
-        if(!stricmp(dirname,pciP->szFileName))
-          break;
-        if(!(pciP->rc.flRecordAttr & CRA_EXPANDED))
-          WinSendMsg(hwndCnr,
-                     CM_EXPANDTREE,
-                     MPFROMP(pciP),
-                     MPVOID);
-        strcpy(szDir,dirname);
-        if(p - szDir >= strlen(szDir))
-          break;
-        p = strchr(p,'\\');
-        if(p) {
-          *p = 0;
-          p++;
-        }
-        else
-          break;
+	 (INT)pciP != -1) {
+	if(!stricmp(dirname,pciP->szFileName))
+	  break;
+	if(!(pciP->rc.flRecordAttr & CRA_EXPANDED))
+	  WinSendMsg(hwndCnr,
+		     CM_EXPANDTREE,
+		     MPFROMP(pciP),
+		     MPVOID);
+	strcpy(szDir,dirname);
+	if(p - szDir >= strlen(szDir))
+	  break;
+	p = strchr(p,'\\');
+	if(p) {
+	  *p = 0;
+	  p++;
+	}
+	else
+	  break;
       }
       else
-        break;
+	break;
       DosSleep(0L);
     }
     pci = FindCnrRecord(hwndCnr,
-                        dirname,
-                        NULL,
-                        TRUE,
-                        FALSE,
-                        TRUE);
+			dirname,
+			NULL,
+			TRUE,
+			FALSE,
+			TRUE);
   }
   if(pci &&
      (INT)pci != -1) {
     if(!(pci->rc.flRecordAttr & CRA_CURSORED)) {
       if(collapsefirst) {
-        /* collapse top level of all branches */
-        pciP = WinSendMsg(hwndCnr,
-                          CM_QUERYRECORD,
-                          MPVOID,
-                          MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
-        while(pciP && (INT)pciP != -1) {
-          if(toupper(*pciP->szFileName) == toupper(*dirname))
-            /* collapse all levels if branch is our drive */
-            ExpandAll(hwndCnr,
-                      FALSE,
-                      pciP);
-          else if(pciP->rc.flRecordAttr & CRA_EXPANDED)
-            WinSendMsg(hwndCnr,
-                       CM_COLLAPSETREE,
-                       MPFROMP(pciP),
-                       MPVOID);
-          pciP = WinSendMsg(hwndCnr,
-                            CM_QUERYRECORD,
-                            MPFROMP(pciP),
-                            MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
-        }
+	/* collapse top level of all branches */
+	pciP = WinSendMsg(hwndCnr,
+			  CM_QUERYRECORD,
+			  MPVOID,
+			  MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
+	while(pciP && (INT)pciP != -1) {
+	  if(toupper(*pciP->szFileName) == toupper(*dirname))
+	    /* collapse all levels if branch is our drive */
+	    ExpandAll(hwndCnr,
+		      FALSE,
+		      pciP);
+	  else if(pciP->rc.flRecordAttr & CRA_EXPANDED)
+	    WinSendMsg(hwndCnr,
+		       CM_COLLAPSETREE,
+		       MPFROMP(pciP),
+		       MPVOID);
+	  pciP = WinSendMsg(hwndCnr,
+			    CM_QUERYRECORD,
+			    MPFROMP(pciP),
+			    MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
+	}
       }
       /* expand all parent branches */
       pciToSelect = pci;
       for(;;) {
-        pciP = WinSendMsg(hwndCnr,
-                          CM_QUERYRECORD,
-                          MPFROMP(pciToSelect),
-                          MPFROM2SHORT(CMA_PARENT,CMA_ITEMORDER));
-        if(pciP && (INT)pciP != -1) {
-          if(!(pciP->rc.flRecordAttr & CRA_EXPANDED))
-            WinSendMsg(hwndCnr,
-                       CM_EXPANDTREE,
-                       MPFROMP(pciP),
-                       MPVOID);
-          pciToSelect = pciP;
-        }
-        else
-          break;
-        DosSleep(0L);
+	pciP = WinSendMsg(hwndCnr,
+			  CM_QUERYRECORD,
+			  MPFROMP(pciToSelect),
+			  MPFROM2SHORT(CMA_PARENT,CMA_ITEMORDER));
+	if(pciP && (INT)pciP != -1) {
+	  if(!(pciP->rc.flRecordAttr & CRA_EXPANDED))
+	    WinSendMsg(hwndCnr,
+		       CM_EXPANDTREE,
+		       MPFROMP(pciP),
+		       MPVOID);
+	  pciToSelect = pciP;
+	}
+	else
+	  break;
+	DosSleep(0L);
       }
     }
     /* make record visible */
@@ -246,22 +247,22 @@ MakeTop:
     pciToSelect = pci;
     if(pciToSelect && (INT)pciToSelect != -1) {
       if(fTopDir || maketop)
-        ShowCnrRecord(hwndCnr,
-                      (PMINIRECORDCORE)pciToSelect);
+	ShowCnrRecord(hwndCnr,
+		      (PMINIRECORDCORE)pciToSelect);
       if(fSwitchTreeExpand &&
-         !(pciToSelect->rc.flRecordAttr & CRA_EXPANDED))
-        WinSendMsg(hwndCnr,
-                   CM_EXPANDTREE,
-                   MPFROMP(pciToSelect),
-                   MPVOID);
+	 !(pciToSelect->rc.flRecordAttr & CRA_EXPANDED))
+	WinSendMsg(hwndCnr,
+		   CM_EXPANDTREE,
+		   MPFROMP(pciToSelect),
+		   MPVOID);
       if(quickbail) {
-        WinEnableWindowUpdate(hwndCnr,TRUE);
-        return;
+	WinEnableWindowUpdate(hwndCnr,TRUE);
+	return;
       }
       WinSendMsg(hwndCnr,
-                 CM_SETRECORDEMPHASIS,
-                 MPFROMP(pciToSelect),
-                 MPFROM2SHORT(TRUE,CRA_SELECTED | CRA_CURSORED));
+		 CM_SETRECORDEMPHASIS,
+		 MPFROMP(pciToSelect),
+		 MPFROM2SHORT(TRUE,CRA_SELECTED | CRA_CURSORED));
     }
   }
   WinEnableWindowUpdate(hwndCnr,TRUE);
@@ -275,9 +276,9 @@ MRESULT EXPENTRY TreeTitleWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   switch(msg) {
     case WM_CONTEXTMENU:
       return WinSendMsg(WinQueryWindow(hwnd,QW_PARENT),
-                        UM_CONTEXTMENU,
-                        mp1,
-                        mp2);
+			UM_CONTEXTMENU,
+			mp1,
+			mp2);
   }
   return oldproc(hwnd,msg,mp1,mp2);
 }
@@ -295,15 +296,15 @@ MRESULT EXPENTRY TreeStatProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case WM_PAINT:
       {
-        MRESULT mr = PFNWPStatic(hwnd,msg,mp1,mp2);
+	MRESULT mr = PFNWPStatic(hwnd,msg,mp1,mp2);
 
-        PaintRecessedWindow(hwnd,(HPS)0,FALSE,FALSE);
-        return mr;
+	PaintRecessedWindow(hwnd,(HPS)0,FALSE,FALSE);
+	return mr;
       }
 
     case WM_SETFOCUS:
       if(mp2)
-        PostMsg(hwnd,UM_FOCUSME,MPVOID,MPVOID);
+	PostMsg(hwnd,UM_FOCUSME,MPVOID,MPVOID);
       break;
 
     case UM_FOCUSME:
@@ -323,125 +324,125 @@ MRESULT EXPENTRY TreeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case WM_ADJUSTWINDOWPOS:
       {
-        SWP *pswp;
+	SWP *pswp;
 
-        pswp = (SWP *)mp1;
-        if(ParentIsDesktop(hwnd,(HWND)0)) {
-          if(pswp->fl & (SWP_HIDE | SWP_MINIMIZE))
-            HideNote();
-        }
+	pswp = (SWP *)mp1;
+	if(ParentIsDesktop(hwnd,(HWND)0)) {
+	  if(pswp->fl & (SWP_HIDE | SWP_MINIMIZE))
+	    HideNote();
+	}
       }
       break;
 
     case WM_TRACKFRAME:
       if(!fFreeTree && !ParentIsDesktop(hwnd,(HWND)0)) {
-        switch(SHORT1FROMMP(mp1) & TF_MOVE) {
-          case TF_MOVE:
-          case TF_LEFT:
-          case TF_TOP:
-          case (TF_LEFT | TF_BOTTOM):
-          case (TF_LEFT | TF_TOP):
-            {
-              SWP swp;
+	switch(SHORT1FROMMP(mp1) & TF_MOVE) {
+	  case TF_MOVE:
+	  case TF_LEFT:
+	  case TF_TOP:
+	  case (TF_LEFT | TF_BOTTOM):
+	  case (TF_LEFT | TF_TOP):
+	    {
+	      SWP swp;
 
-              WinQueryWindowPos(hwnd,&swp);
-              if(!(swp.fl & SWP_ACTIVATE))
-                WinSetWindowPos(hwnd,HWND_TOP,0,0,0,0,
-                                SWP_ZORDER | SWP_ACTIVATE);
-            }
-            return 0;
-        }
+	      WinQueryWindowPos(hwnd,&swp);
+	      if(!(swp.fl & SWP_ACTIVATE))
+		WinSetWindowPos(hwnd,HWND_TOP,0,0,0,0,
+				SWP_ZORDER | SWP_ACTIVATE);
+	    }
+	    return 0;
+	}
       }
       break;
 
     case WM_CALCFRAMERECT:
       if(*(ULONG *)realappname != FM3UL) {
 
-        MRESULT mr;
-        PRECTL  prectl;
+	MRESULT mr;
+	PRECTL  prectl;
 
-        mr = CommonFrameWndProc(TREE_CNR,hwnd,msg,mp1,mp2);
+	mr = CommonFrameWndProc(TREE_CNR,hwnd,msg,mp1,mp2);
 
-        /*
-         * Calculate the position of the client rectangle.
-         * Otherwise,  we'll see a lot of redraw when we move the
-         * client during WM_FORMATFRAME.
-         */
+	/*
+	 * Calculate the position of the client rectangle.
+	 * Otherwise,  we'll see a lot of redraw when we move the
+	 * client during WM_FORMATFRAME.
+	 */
 
-        if(mr && mp2) {
-          prectl = (PRECTL)mp1;
-          prectl->yTop -= 22;
-        }
-        return mr;
+	if(mr && mp2) {
+	  prectl = (PRECTL)mp1;
+	  prectl->yTop -= 22;
+	}
+	return mr;
       }
       break;
 
     case WM_FORMATFRAME:
       {
-        SHORT sCount;
-        PSWP  pswp,pswpClient,pswpNew;
+	SHORT sCount;
+	PSWP  pswp,pswpClient,pswpNew;
 
-        sCount = (SHORT)CommonFrameWndProc(TREE_CNR,hwnd,msg,mp1,mp2);
+	sCount = (SHORT)CommonFrameWndProc(TREE_CNR,hwnd,msg,mp1,mp2);
 
-        /*
-         * Reformat the frame to "squeeze" the client
-         */
+	/*
+	 * Reformat the frame to "squeeze" the client
+	 */
 
-        pswp = (PSWP)mp1;
-        {
-          SHORT x;
+	pswp = (PSWP)mp1;
+	{
+	  SHORT x;
 
-          for(x = 0;x < sCount;x++) {
-            if(WinQueryWindowUShort(pswp->hwnd,QWS_ID) == FID_CLIENT) {
-              pswpClient = pswp;
-              break;
-            }
-            pswp++;
-          }
-        }
-        pswpNew = (PSWP)mp1 + sCount;
-        *pswpNew = *pswpClient;
-        pswpNew->hwnd = WinWindowFromID(hwnd,MAIN_STATUS);
-        if(*(ULONG *)realappname == FM3UL) {
+	  for(x = 0;x < sCount;x++) {
+	    if(WinQueryWindowUShort(pswp->hwnd,QWS_ID) == FID_CLIENT) {
+	      pswpClient = pswp;
+	      break;
+	    }
+	    pswp++;
+	  }
+	}
+	pswpNew = (PSWP)mp1 + sCount;
+	*pswpNew = *pswpClient;
+	pswpNew->hwnd = WinWindowFromID(hwnd,MAIN_STATUS);
+	if(*(ULONG *)realappname == FM3UL) {
 
-          PSWP  pswpTitlebar = (PSWP)0,pswpMinbutton = (PSWP)0;
-          SHORT x;
+	  PSWP  pswpTitlebar = (PSWP)0,pswpMinbutton = (PSWP)0;
+	  SHORT x;
 
-          pswpNew->hwnd = WinWindowFromID(hwnd,IDM_OPENWINDOW);
-          pswp = (PSWP)mp1;
-          for(x = 0;x < sCount;x++) {
-            if(WinQueryWindowUShort(pswp->hwnd,QWS_ID) == FID_TITLEBAR)
-              pswpTitlebar = pswp;
-            else if(WinQueryWindowUShort(pswp->hwnd,QWS_ID) == FID_MINMAX)
-              pswpMinbutton = pswp;
-            if(pswpTitlebar && pswpMinbutton)
-              break;
-            pswp++;
-          }
-          pswpNew->cy = pswpMinbutton->cy + 3;
-          pswpNew->cx = min(pswpNew->cy,(pswpMinbutton->cx / 2) + 3);
-          pswpTitlebar->cx -= (pswpNew->cx + 1);
-          pswpNew->x = pswpTitlebar->x + pswpTitlebar->cx;
-          pswpNew->y = pswpMinbutton->y - 1;
-        }
-        else {
-          pswpNew->x = pswpClient->x + 3;
-          pswpNew->y = (pswpClient->y + pswpClient->cy) - 20;
-          pswpNew->cx = pswpClient->cx - 6;
-          pswpNew->cy = 18;
-          pswpClient->cy -= 22;
-        }
-        sCount++;
-        return MRFROMSHORT(sCount);
+	  pswpNew->hwnd = WinWindowFromID(hwnd,IDM_OPENWINDOW);
+	  pswp = (PSWP)mp1;
+	  for(x = 0;x < sCount;x++) {
+	    if(WinQueryWindowUShort(pswp->hwnd,QWS_ID) == FID_TITLEBAR)
+	      pswpTitlebar = pswp;
+	    else if(WinQueryWindowUShort(pswp->hwnd,QWS_ID) == FID_MINMAX)
+	      pswpMinbutton = pswp;
+	    if(pswpTitlebar && pswpMinbutton)
+	      break;
+	    pswp++;
+	  }
+	  pswpNew->cy = pswpMinbutton->cy + 3;
+	  pswpNew->cx = min(pswpNew->cy,(pswpMinbutton->cx / 2) + 3);
+	  pswpTitlebar->cx -= (pswpNew->cx + 1);
+	  pswpNew->x = pswpTitlebar->x + pswpTitlebar->cx;
+	  pswpNew->y = pswpMinbutton->y - 1;
+	}
+	else {
+	  pswpNew->x = pswpClient->x + 3;
+	  pswpNew->y = (pswpClient->y + pswpClient->cy) - 20;
+	  pswpNew->cx = pswpClient->cx - 6;
+	  pswpNew->cy = 18;
+	  pswpClient->cy -= 22;
+	}
+	sCount++;
+	return MRFROMSHORT(sCount);
       }
 
     case WM_QUERYFRAMECTLCOUNT:
       {
-        SHORT sCount;
+	SHORT sCount;
 
-        sCount = (SHORT)CommonFrameWndProc(TREE_CNR,hwnd,msg,mp1,mp2);
-        sCount++;
-        return MRFROMSHORT(sCount);
+	sCount = (SHORT)CommonFrameWndProc(TREE_CNR,hwnd,msg,mp1,mp2);
+	sCount++;
+	return MRFROMSHORT(sCount);
       }
   }
   return CommonFrameWndProc(TREE_CNR,hwnd,msg,mp1,mp2);
@@ -449,16 +450,16 @@ MRESULT EXPENTRY TreeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 
 MRESULT EXPENTRY TreeClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
-                                    MPARAM mp2) {
+				    MPARAM mp2) {
 
   switch(msg) {
     case UM_CONTAINERHWND:
       return MRFROMLONG(WinWindowFromID(hwnd,
-                                        TREE_CNR));
+					TREE_CNR));
 
     case UM_VIEWSMENU:
       return MRFROMLONG(CheckMenu(&TreeCnrMenu,
-                                  TREECNR_POPUP));
+				  TREECNR_POPUP));
 
     case UM_TIMER:
     case UM_ACTION:
@@ -479,75 +480,75 @@ MRESULT EXPENTRY TreeClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
     case UM_COMMAND:
     case WM_COMMAND:
       return WinSendMsg(WinWindowFromID(hwnd,TREE_CNR),
-                        msg,
-                        mp1,
-                        mp2);
+			msg,
+			mp1,
+			mp2);
 
     case WM_PSETFOCUS:
     case WM_SETFOCUS:
       if(mp2)
-        PostMsg(hwnd,
-                UM_FOCUSME,
-                MPVOID,
-                MPVOID);
+	PostMsg(hwnd,
+		UM_FOCUSME,
+		MPVOID,
+		MPVOID);
       break;
 
     case UM_FOCUSME:
       WinSetFocus(HWND_DESKTOP,
-                  WinWindowFromID(hwnd,TREE_CNR));
+		  WinWindowFromID(hwnd,TREE_CNR));
       break;
 
     case WM_ERASEBACKGROUND:
       WinFillRect((HPS)mp1,
-                  (PRECTL)mp2,
-                  0x00d0d0d0);
+		  (PRECTL)mp2,
+		  0x00d0d0d0);
       return 0;
 
     case WM_PAINT:
       {
-        HPS    hps;
-        RECTL  rcl;
+	HPS    hps;
+	RECTL  rcl;
 
-        hps = WinBeginPaint(hwnd,
-                            (HPS)0,
-                            NULL);
-        if(hps) {
-          WinQueryWindowRect(hwnd,
-                             &rcl);
-          WinFillRect(hps,
-                      &rcl,
-                      CLR_PALEGRAY);
-          PaintRecessedWindow(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
-                                              MAIN_STATUS),
-                              hps,
-                              FALSE,
-                              FALSE);
-          WinEndPaint(hps);
-        }
+	hps = WinBeginPaint(hwnd,
+			    (HPS)0,
+			    NULL);
+	if(hps) {
+	  WinQueryWindowRect(hwnd,
+			     &rcl);
+	  WinFillRect(hps,
+		      &rcl,
+		      CLR_PALEGRAY);
+	  PaintRecessedWindow(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
+					      MAIN_STATUS),
+			      hps,
+			      FALSE,
+			      FALSE);
+	  WinEndPaint(hps);
+	}
       }
       break;
 
     case WM_SIZE:
       WinSetWindowPos(WinWindowFromID(hwnd,TREE_CNR),
-                      HWND_TOP,
-                      0,
-                      0,
-                      SHORT1FROMMP(mp2),
-                      SHORT2FROMMP(mp2),
-                      SWP_SHOW | SWP_MOVE | SWP_SIZE);
+		      HWND_TOP,
+		      0,
+		      0,
+		      SHORT1FROMMP(mp2),
+		      SHORT2FROMMP(mp2),
+		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
       if(hwndMain)
-        PostMsg(hwndMain,
-                UM_SIZE,
-                MPVOID,
-                MPVOID);
+	PostMsg(hwndMain,
+		UM_SIZE,
+		MPVOID,
+		MPVOID);
       break;
 
     case WM_CONTEXTMENU:
     case UM_CONTEXTMENU:
       PostMsg(WinWindowFromID(hwnd,TREE_CNR),
-              WM_CONTROL,
-              MPFROM2SHORT(TREE_CNR,CN_CONTEXTMENU),
-              MPVOID);
+	      WM_CONTROL,
+	      MPFROM2SHORT(TREE_CNR,CN_CONTEXTMENU),
+	      MPVOID);
       return 0;
   }
   return WinDefWindowProc(hwnd,msg,mp1,mp2);
@@ -558,35 +559,37 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   DIRCNRDATA *dcd;
 
-  switch(msg) {
+  switch(msg)
+  {
     case WM_CREATE:
       break;
 
     case UM_SHOWME:
-      if(mp1) {
-        dcd = INSTDATA(hwnd);
-        if(dcd) {
+      if(mp1)
+      {
+	dcd = INSTDATA(hwnd);
+	if(dcd)
+	{
+	  BOOL tempsusp,tempfollow,temptop;
 
-          BOOL tempsusp,tempfollow,temptop;
-
-          tempsusp = dcd->suspendview;
-          dcd->suspendview = TRUE;
-          tempfollow = fFollowTree;
-          fFollowTree = FALSE;
-          if(mp2) {
-            temptop = fTopDir;
-            fTopDir = TRUE;
-          }
-          ShowTreeRec(dcd->hwndCnr,
-                      (CHAR *)mp1,
-                      fCollapseFirst,
-                      TRUE);
-          dcd->suspendview = tempsusp;
-          fFollowTree = tempfollow;
-          if(mp2)
-            fTopDir = temptop;
-        }
-        free((CHAR *)mp1);
+	  tempsusp = dcd->suspendview;
+	  dcd->suspendview = TRUE;
+	  tempfollow = fFollowTree;
+	  fFollowTree = FALSE;
+	  if(mp2) {
+	    temptop = fTopDir;
+	    fTopDir = TRUE;
+	  }
+	  ShowTreeRec(dcd->hwndCnr,
+		      (CHAR *)mp1,
+		      fCollapseFirst,
+		      TRUE);
+	  dcd->suspendview = tempsusp;
+	  fFollowTree = tempfollow;
+	  if(mp2)
+	    fTopDir = temptop;
+	}
+	free((CHAR *)mp1);
       }
       return 0;
 
@@ -597,28 +600,28 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       dcd = INSTDATA(hwnd);
       if(fFM2Deletes && dcd) {
 
-        LISTINFO    *li;
-        CNRDRAGINFO cni;
+	LISTINFO    *li;
+	CNRDRAGINFO cni;
 
-        cni.pRecord = NULL;
-        cni.pDragInfo = (PDRAGINFO)mp1;
-        li = DoFileDrop(dcd->hwndCnr,
-                        dcd->directory,
-                        FALSE,
-                        MPVOID,
-                        MPFROMP(&cni));
-        if(li) {
-          li->type = ((fDefaultDeletePerm) ?
-                       IDM_PERMDELETE :
-                       IDM_DELETE);
-          if(!PostMsg(hwnd,
-                      UM_MASSACTION,
-                      MPFROMP(li),
-                      MPVOID))
-            FreeListInfo(li);
-          else
-            return MRFROMLONG(DRR_SOURCE);
-        }
+	cni.pRecord = NULL;
+	cni.pDragInfo = (PDRAGINFO)mp1;
+	li = DoFileDrop(dcd->hwndCnr,
+			dcd->directory,
+			FALSE,
+			MPVOID,
+			MPFROMP(&cni));
+	if(li) {
+	  li->type = ((fDefaultDeletePerm) ?
+		       IDM_PERMDELETE :
+		       IDM_DELETE);
+	  if(!PostMsg(hwnd,
+		      UM_MASSACTION,
+		      MPFROMP(li),
+		      MPVOID))
+	    FreeListInfo(li);
+	  else
+	    return MRFROMLONG(DRR_SOURCE);
+	}
       }
       return MRFROMLONG(DRR_TARGET);
 
@@ -626,17 +629,17 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd) {
 
-        BOOL tempsusp = dcd->suspendview;
+	BOOL tempsusp = dcd->suspendview;
 
-        dcd->suspendview = TRUE;
-        ExpandAll(dcd->hwndCnr,
-                  (SHORT1FROMMP(mp1) == IDM_EXPAND),
-                  (PCNRITEM)mp2);
-        dcd->suspendview = tempsusp;
-        PostMsg(dcd->hwndCnr,
-                UM_FILTER,
-                MPVOID,
-                MPVOID);
+	dcd->suspendview = TRUE;
+	ExpandAll(dcd->hwndCnr,
+		  (SHORT1FROMMP(mp1) == IDM_EXPAND),
+		  (PCNRITEM)mp2);
+	dcd->suspendview = tempsusp;
+	PostMsg(dcd->hwndCnr,
+		UM_FILTER,
+		MPVOID,
+		MPVOID);
       }
       return 0;
 
@@ -644,115 +647,125 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd && mp1) {
 
-        INT    numentries = 0;
-        CHAR **list = (CHAR **)mp1;
+	INT    numentries = 0;
+	CHAR **list = (CHAR **)mp1;
 
-        while(list[numentries])
-          numentries++;
-        if(numentries)
-          UpdateCnrList(dcd->hwndCnr,
-                        list,
-                        numentries,
-                        TRUE,
-                        dcd);
+	while(list[numentries])
+	  numentries++;
+	if(numentries)
+	  UpdateCnrList(dcd->hwndCnr,
+			list,
+			numentries,
+			TRUE,
+			dcd);
       }
       return 0;
 
     case UM_SETUP:
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd) {
-        dcd->hwndObject = hwnd;
-        if(ParentIsDesktop(hwnd,dcd->hwndParent))
-          DosSleep(250L);
+	dcd->hwndObject = hwnd;
+	if(ParentIsDesktop(hwnd,dcd->hwndParent))
+	  DosSleep(250L);
       }
       return 0;
 
     case UM_RESCAN2:
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd &&
-         hwndStatus &&
-         dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
+	 hwndStatus &&
+	 dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 
-        CHAR      s[CCHMAXPATH * 2];
-        PCNRITEM   pci = (PCNRITEM)mp1;
-        FSALLOCATE fsa;
-        struct {
-          ULONG serial;
-          CHAR  volumelength;
-          CHAR  volumelabel[CCHMAXPATH];
-        }          volser;
-        CHAR       szBuf[81];
-        CNRINFO    cnri;
+	CHAR      s[CCHMAXPATH * 2];
+	PCNRITEM   pci = (PCNRITEM)mp1;
+	FSALLOCATE fsa;
+	struct
+	{
+	  ULONG serial;
+	  CHAR  volumelength;
+	  CHAR  volumelabel[CCHMAXPATH];
+	}          volser;
+	CHAR       tb[64];
+	CHAR       szFree[64];
+	CNRINFO    cnri;
 
-        strcpy(s,GetPString(IDS_TREETEXT));
-        memset(&cnri,0,sizeof(CNRINFO));
-        cnri.cb = sizeof(CNRINFO);
-        WinSendMsg(dcd->hwndCnr,
-                   CM_QUERYCNRINFO,
-                   MPFROMP(&cnri),
-                   MPFROMLONG(sizeof(CNRINFO)));
-        if(cnri.cRecords) {
-
-          sprintf(s,
-                  GetPString(IDS_NUMDRIVESTEXT),
-                  cnri.cRecords);
-          if(pci) {
-            if(!(driveflags[toupper(*pci->szFileName) - 'A'] &
-                 DRIVE_REMOVABLE) ||
-               driveserial[toupper(*pci->szFileName) - 'A'] != -1) {
-             memset(&volser,0,sizeof(volser));
-              DosError(FERR_DISABLEHARDERR);
-              if(!DosQueryFSInfo(toupper(*pci->szFileName) - '@',
-                                 FSIL_VOLSER,
-                                 &volser,
-                                 (ULONG)sizeof(volser)) &&
-                 dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-                DosError(FERR_DISABLEHARDERR);
-                if(!DosQueryFSInfo(toupper(*pci->szFileName) - '@',
-                                   FSIL_ALLOC,
-                                   &fsa,
-                                   sizeof(FSALLOCATE))) {
-                  strcpy(szBuf,"  ");
-                  CommaFmtULL(szBuf + 2,sizeof(szBuf) - 4,
-                              (ULONGLONG)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector),
-			      'K');
-                  strcat(szBuf,
-                         GetPString(IDS_KFREETEXT));
-                }
-                else
-                  *szBuf = 0;
-                driveserial[toupper(*pci->szFileName) - 'A'] = volser.serial;
-                sprintf(&s[strlen(s)],
-                        GetPString(IDS_TREESTATUSSTARTTEXT),
-                        toupper(*pci->szFileName),
-                        volser.volumelabel,
-                        volser.serial,szBuf);
-                if(!fMoreButtons) {
-                  if(*dcd->mask.szMask ||
-                     (dcd->mask.attrFile != ALLATTRS ||
-                      ((fFilesInTree ||
-                        (driveflags[toupper(*pci->szFileName)] &
-                         DRIVE_INCLUDEFILES)) ?
-                       dcd->mask.antiattr :
-                       (dcd->mask.antiattr &&
-                        dcd->mask.antiattr != FILE_DIRECTORY))))
-                    sprintf(&s[strlen(s)],
-                            " (%s)",
-                            (*dcd->mask.szMask) ?
-                             dcd->mask.szMask :
-                             GetPString(IDS_ATTRTEXT));
-                }
-              }
-            }
-            else {  /* find root record and strip it */
-              pci = FindParentRecord(dcd->hwndCnr,pci);
-              driveserial[toupper(*pci->szFileName) - 'A'] = -1;
-              UnFlesh(dcd->hwndCnr,pci);
-            }
-          }
-        }
-        if(dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
-          WinSetWindowText(hwndStatus,s);
+	strcpy(s,GetPString(IDS_TREETEXT));
+	memset(&cnri,0,sizeof(CNRINFO));
+	cnri.cb = sizeof(CNRINFO);
+	WinSendMsg(dcd->hwndCnr,
+		   CM_QUERYCNRINFO,
+		   MPFROMP(&cnri),
+		   MPFROMLONG(sizeof(CNRINFO)));
+	if (cnri.cRecords)
+	{
+	  sprintf(s,
+		  GetPString(IDS_NUMDRIVESTEXT),
+		  cnri.cRecords);
+	  if (pci)
+	  {
+	    if (!(driveflags[toupper(*pci->szFileName) - 'A'] &
+		  DRIVE_REMOVABLE) ||
+	       driveserial[toupper(*pci->szFileName) - 'A'] != -1)
+	    {
+	      memset(&volser,0,sizeof(volser));
+	      DosError(FERR_DISABLEHARDERR);
+	      if (!DosQueryFSInfo(toupper(*pci->szFileName) - '@',
+				  FSIL_VOLSER,
+				  &volser,
+				  (ULONG)sizeof(volser)) &&
+		 dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
+	      {
+		DosError(FERR_DISABLEHARDERR);
+		if (!DosQueryFSInfo(toupper(*pci->szFileName) - '@',
+				    FSIL_ALLOC,
+				    &fsa,
+				    sizeof(FSALLOCATE)))
+		{
+		  CommaFmtULL(tb,sizeof(tb),
+			      (ULONGLONG)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector),
+			      'M');
+		  sprintf(szFree, "  %s %s",
+			 tb,GetPString(IDS_FREETEXT));
+		}
+		else
+		  *szFree = 0;
+		driveserial[toupper(*pci->szFileName) - 'A'] = volser.serial;
+		sprintf(&s[strlen(s)],
+			GetPString(IDS_TREESTATUSSTARTTEXT),
+			toupper(*pci->szFileName),
+			volser.volumelabel,
+			volser.serial,szFree);
+		if (!fMoreButtons)
+		{
+		  if (*dcd->mask.szMask ||
+		      (dcd->mask.attrFile != ALLATTRS ||
+		       ((fFilesInTree ||
+			 (driveflags[toupper(*pci->szFileName)] &
+			  DRIVE_INCLUDEFILES)) ?
+			    dcd->mask.antiattr :
+			   (dcd->mask.antiattr &&
+			    dcd->mask.antiattr != FILE_DIRECTORY))))
+		  {
+		    sprintf (&s[strlen(s)],
+			     " (%s)",
+			     (*dcd->mask.szMask) ?
+			      dcd->mask.szMask :
+			      GetPString(IDS_ATTRTEXT));
+		  }
+		}
+	      }
+	    }
+	    else
+	    {
+	      /* find root record and strip it */
+	      pci = FindParentRecord(dcd->hwndCnr,pci);
+	      driveserial[toupper(*pci->szFileName) - 'A'] = -1;
+	      UnFlesh(dcd->hwndCnr,pci);
+	    }
+	  }
+	}
+	if (dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
+	  WinSetWindowText(hwndStatus,s);
       }
       return 0;
 
@@ -762,135 +775,135 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
        */
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd) {
-        WinSendMsg(dcd->hwndCnr,
-                   CM_REMOVERECORD,
-                   MPVOID,
-                   MPFROM2SHORT(0,CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
-        WinSendMsg(dcd->hwndCnr,
-                   CM_SCROLLWINDOW,
-                   MPFROMSHORT(CMA_VERTICAL),
-                   MPFROMLONG(-1));
-        WinSendMsg(dcd->hwndCnr,
-                   CM_SCROLLWINDOW,
-                   MPFROMSHORT(CMA_HORIZONTAL),
-                   MPFROMLONG(-1));
-        FillTreeCnr(dcd->hwndCnr,
-                    dcd->hwndParent);
-        if(fOkayMinimize) {
-          PostMsg(dcd->hwndCnr,
-                  UM_MINIMIZE,
-                  MPVOID,
-                  MPVOID);
-          fOkayMinimize = FALSE;
-        }
-        WinSendMsg(dcd->hwndCnr,
-                   CM_INVALIDATERECORD,
-                   MPVOID,
-                   MPFROM2SHORT(0,CMA_ERASE | CMA_REPOSITION));
-        PostMsg(dcd->hwndCnr,
-                UM_RESCAN,
-                MPVOID,
-                MPVOID);
+	WinSendMsg(dcd->hwndCnr,
+		   CM_REMOVERECORD,
+		   MPVOID,
+		   MPFROM2SHORT(0,CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
+	WinSendMsg(dcd->hwndCnr,
+		   CM_SCROLLWINDOW,
+		   MPFROMSHORT(CMA_VERTICAL),
+		   MPFROMLONG(-1));
+	WinSendMsg(dcd->hwndCnr,
+		   CM_SCROLLWINDOW,
+		   MPFROMSHORT(CMA_HORIZONTAL),
+		   MPFROMLONG(-1));
+	FillTreeCnr(dcd->hwndCnr,
+		    dcd->hwndParent);
+	if(fOkayMinimize) {
+	  PostMsg(dcd->hwndCnr,
+		  UM_MINIMIZE,
+		  MPVOID,
+		  MPVOID);
+	  fOkayMinimize = FALSE;
+	}
+	WinSendMsg(dcd->hwndCnr,
+		   CM_INVALIDATERECORD,
+		   MPVOID,
+		   MPFROM2SHORT(0,CMA_ERASE | CMA_REPOSITION));
+	PostMsg(dcd->hwndCnr,
+		UM_RESCAN,
+		MPVOID,
+		MPVOID);
       }
       return 0;
 
     case UM_COMMAND:
       if(mp1) {
 
-        LISTINFO *li = (LISTINFO *)mp1;
+	LISTINFO *li = (LISTINFO *)mp1;
 
-        switch(li->type) {
-          case IDM_DOITYOURSELF:
-          case IDM_APPENDTOCLIP:
-          case IDM_SAVETOCLIP:
-          case IDM_ARCHIVE:
-          case IDM_VIEW:
-          case IDM_EDIT:
-          case IDM_OBJECT:
-          case IDM_SHADOW:
-          case IDM_SHADOW2:
-          case IDM_PRINT:
-          case IDM_ATTRS:
-          case IDM_DELETE:
-          case IDM_PERMDELETE:
-            if(PostMsg(hwnd,
-                       UM_MASSACTION,
-                       mp1,
-                       mp2))
-              return (MRESULT)TRUE;
-          default:
-            if(PostMsg(hwnd,
-                       UM_ACTION,
-                       mp1,
-                       mp2))
-              return (MRESULT)TRUE;
-        }
+	switch(li->type) {
+	  case IDM_DOITYOURSELF:
+	  case IDM_APPENDTOCLIP:
+	  case IDM_SAVETOCLIP:
+	  case IDM_ARCHIVE:
+	  case IDM_VIEW:
+	  case IDM_EDIT:
+	  case IDM_OBJECT:
+	  case IDM_SHADOW:
+	  case IDM_SHADOW2:
+	  case IDM_PRINT:
+	  case IDM_ATTRS:
+	  case IDM_DELETE:
+	  case IDM_PERMDELETE:
+	    if(PostMsg(hwnd,
+		       UM_MASSACTION,
+		       mp1,
+		       mp2))
+	      return (MRESULT)TRUE;
+	  default:
+	    if(PostMsg(hwnd,
+		       UM_ACTION,
+		       mp1,
+		       mp2))
+	      return (MRESULT)TRUE;
+	}
       }
       return 0;
 
     case UM_MASSACTION:
       if(mp1) {
 
-        dcd = WinQueryWindowPtr(hwnd,0);
-        if(dcd) {
+	dcd = WinQueryWindowPtr(hwnd,0);
+	if(dcd) {
 
-          WORKER *wk;
+	  WORKER *wk;
 
-          wk = malloc(sizeof(WORKER));
-          if(wk) {
-            memset(wk,0,sizeof(WORKER));
-            wk->size = sizeof(WORKER);
-            wk->hwndCnr = dcd->hwndCnr;
-            wk->hwndParent = dcd->hwndParent;
-            wk->hwndFrame = dcd->hwndFrame;
-            wk->hwndClient = dcd->hwndClient;
-            wk->li = (LISTINFO *)mp1;
-            strcpy(wk->directory,dcd->directory);
-            if(_beginthread(MassAction,
-                            NULL,
-                            122880,
-                            (PVOID)wk) ==
-               -1) {
-              free(wk);
-              FreeListInfo((LISTINFO *)mp1);
-            }
-          }
-          else
-            FreeListInfo((LISTINFO *)mp1);
-        }
+	  wk = malloc(sizeof(WORKER));
+	  if(wk) {
+	    memset(wk,0,sizeof(WORKER));
+	    wk->size = sizeof(WORKER);
+	    wk->hwndCnr = dcd->hwndCnr;
+	    wk->hwndParent = dcd->hwndParent;
+	    wk->hwndFrame = dcd->hwndFrame;
+	    wk->hwndClient = dcd->hwndClient;
+	    wk->li = (LISTINFO *)mp1;
+	    strcpy(wk->directory,dcd->directory);
+	    if(_beginthread(MassAction,
+			    NULL,
+			    122880,
+			    (PVOID)wk) ==
+	       -1) {
+	      free(wk);
+	      FreeListInfo((LISTINFO *)mp1);
+	    }
+	  }
+	  else
+	    FreeListInfo((LISTINFO *)mp1);
+	}
       }
       return 0;
 
     case UM_ACTION:
       if(mp1) {
 
-        dcd = WinQueryWindowPtr(hwnd,0);
-        if(dcd) {
+	dcd = WinQueryWindowPtr(hwnd,0);
+	if(dcd) {
 
-          WORKER *wk;
+	  WORKER *wk;
 
-          wk = malloc(sizeof(WORKER));
-          if(wk) {
-            memset(wk,0,sizeof(WORKER));
-            wk->size = sizeof(WORKER);
-            wk->hwndCnr = dcd->hwndCnr;
-            wk->hwndParent = dcd->hwndParent;
-            wk->hwndFrame = dcd->hwndFrame;
-            wk->hwndClient = dcd->hwndClient;
-            wk->li = (LISTINFO *)mp1;
-            strcpy(wk->directory,dcd->directory);
-            if(_beginthread(Action,
-                            NULL,
-                            122880,
-                            (PVOID)wk) ==
-               -1) {
-              free(wk);
-              FreeListInfo((LISTINFO *)mp1);
-            }
-          }
-          else
-            FreeListInfo((LISTINFO *)mp1);
-        }
+	  wk = malloc(sizeof(WORKER));
+	  if(wk) {
+	    memset(wk,0,sizeof(WORKER));
+	    wk->size = sizeof(WORKER);
+	    wk->hwndCnr = dcd->hwndCnr;
+	    wk->hwndParent = dcd->hwndParent;
+	    wk->hwndFrame = dcd->hwndFrame;
+	    wk->hwndClient = dcd->hwndClient;
+	    wk->li = (LISTINFO *)mp1;
+	    strcpy(wk->directory,dcd->directory);
+	    if(_beginthread(Action,
+			    NULL,
+			    122880,
+			    (PVOID)wk) ==
+	       -1) {
+	      free(wk);
+	      FreeListInfo((LISTINFO *)mp1);
+	    }
+	  }
+	  else
+	    FreeListInfo((LISTINFO *)mp1);
+	}
       }
       return 0;
 
@@ -902,21 +915,21 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       hwndTree = (HWND)0;
       dcd = WinQueryWindowPtr(hwnd,0);
       if(dcd) {
-        WinSendMsg(dcd->hwndCnr,
-                   UM_CLOSE,
-                   MPFROMLONG(dcd->dontclose != FALSE),
-                   MPVOID);
-        free(dcd);
+	WinSendMsg(dcd->hwndCnr,
+		   UM_CLOSE,
+		   MPFROMLONG(dcd->dontclose != FALSE),
+		   MPVOID);
+	free(dcd);
       }
       DosPostEventSem(CompactSem);
       if(!PostMsg((HWND)0,
-                  WM_QUIT,
-                  MPVOID,
-                  MPVOID))
-        WinSendMsg((HWND)0,
-                   WM_QUIT,
-                   MPVOID,
-                   MPVOID);
+		  WM_QUIT,
+		  MPVOID,
+		  MPVOID))
+	WinSendMsg((HWND)0,
+		   WM_QUIT,
+		   MPVOID,
+		   MPVOID);
       break;
   }
   return WinDefWindowProc(hwnd,msg,mp1,mp2);
@@ -934,110 +947,110 @@ MRESULT EXPENTRY TreeCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case DM_DISCARDOBJECT:
       if(dcd)
-        return WinSendMsg(dcd->hwndObject,
-                          msg,
-                          mp1,
-                          mp2);
+	return WinSendMsg(dcd->hwndObject,
+			  msg,
+			  mp1,
+			  mp2);
       else
-        return MRFROMLONG(DRR_TARGET);
+	return MRFROMLONG(DRR_TARGET);
 
     case WM_CHAR:
       shiftstate = (SHORT1FROMMP(mp1) & (KC_SHIFT | KC_ALT | KC_CTRL));
       if(SHORT1FROMMP(mp1) & KC_KEYUP)
-        return (MRESULT)TRUE;
+	return (MRESULT)TRUE;
       if(SHORT1FROMMP(mp1) & KC_VIRTUALKEY) {
-        switch(SHORT2FROMMP(mp2)) {
-          case VK_INSERT:
-            if((shiftstate & KC_CTRL) == KC_CTRL)
-              PostMsg(hwnd,
-                      WM_COMMAND,
-                      MPFROM2SHORT(IDM_MKDIR,0),
-                      MPVOID);
-            break;
-          case VK_DELETE:
-            if((shiftstate & KC_CTRL) == KC_CTRL)
-              PostMsg(hwnd,
-                      WM_COMMAND,
-                      MPFROM2SHORT(IDM_PERMDELETE,0),
-                      MPVOID);
-            else if((shiftstate & KC_SHIFT) == KC_SHIFT)
-              PostMsg(hwnd,
-                      WM_COMMAND,
-                      MPFROM2SHORT(IDM_SAVETOCLIP,0),
-                      MPVOID);
-            else
-              PostMsg(hwnd,
-                      WM_COMMAND,
-                      MPFROM2SHORT(IDM_DELETE,0),
-                      MPVOID);
-            break;
-        }
+	switch(SHORT2FROMMP(mp2)) {
+	  case VK_INSERT:
+	    if((shiftstate & KC_CTRL) == KC_CTRL)
+	      PostMsg(hwnd,
+		      WM_COMMAND,
+		      MPFROM2SHORT(IDM_MKDIR,0),
+		      MPVOID);
+	    break;
+	  case VK_DELETE:
+	    if((shiftstate & KC_CTRL) == KC_CTRL)
+	      PostMsg(hwnd,
+		      WM_COMMAND,
+		      MPFROM2SHORT(IDM_PERMDELETE,0),
+		      MPVOID);
+	    else if((shiftstate & KC_SHIFT) == KC_SHIFT)
+	      PostMsg(hwnd,
+		      WM_COMMAND,
+		      MPFROM2SHORT(IDM_SAVETOCLIP,0),
+		      MPVOID);
+	    else
+	      PostMsg(hwnd,
+		      WM_COMMAND,
+		      MPFROM2SHORT(IDM_DELETE,0),
+		      MPVOID);
+	    break;
+	}
       }
       if(shiftstate || fNoSearch)
-        break;
+	break;
       if(SHORT1FROMMP(mp1) & KC_CHAR) {
 
-        ULONG        thistime,len;
-        SEARCHSTRING srch;
-        PCNRITEM     pci;
+	ULONG        thistime,len;
+	SEARCHSTRING srch;
+	PCNRITEM     pci;
 
-        if(!dcd)
-          break;
-        switch(SHORT1FROMMP(mp2)) {
-          case '\x1b':
-          case '\r':
-          case '\n':
-            dcd->lasttime = 0;
-            *dcd->szCommonName = 0;
-            break;
-          default:
-            thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
-            if(thistime > dcd->lasttime + 1250)
-              *dcd->szCommonName = 0;
-            dcd->lasttime = thistime;
-            if(SHORT1FROMMP(mp2) == ' ' && !*dcd->szCommonName)
-              break;
+	if(!dcd)
+	  break;
+	switch(SHORT1FROMMP(mp2)) {
+	  case '\x1b':
+	  case '\r':
+	  case '\n':
+	    dcd->lasttime = 0;
+	    *dcd->szCommonName = 0;
+	    break;
+	  default:
+	    thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
+	    if(thistime > dcd->lasttime + 1250)
+	      *dcd->szCommonName = 0;
+	    dcd->lasttime = thistime;
+	    if(SHORT1FROMMP(mp2) == ' ' && !*dcd->szCommonName)
+	      break;
 KbdRetry:
-            len = strlen(dcd->szCommonName);
-            if(len >= CCHMAXPATH - 1) {
-              *dcd->szCommonName = 0;
-              len = 0;
-            }
-            dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
-            dcd->szCommonName[len + 1] = 0;
-            memset(&srch,0,sizeof(SEARCHSTRING));
-            srch.cb = (ULONG)sizeof(SEARCHSTRING);
-            srch.pszSearch = (PSZ)dcd->szCommonName;
-            srch.fsPrefix = TRUE;
-            srch.fsCaseSensitive = FALSE;
-            srch.usView = CV_ICON;
-            pci = WinSendMsg(hwnd,
-                             CM_SEARCHSTRING,
-                             MPFROMP(&srch),
-                             MPFROMLONG(CMA_FIRST));
-            if(pci && (INT)pci != -1) {
-              /* make found item current item */
-              WinSendMsg(hwnd,
-                         CM_SETRECORDEMPHASIS,
-                         MPFROMP(pci),
-                         MPFROM2SHORT(TRUE,CRA_CURSORED));
-              /* make sure that record shows in viewport */
-              ShowCnrRecord(hwnd,
-                            (PMINIRECORDCORE)pci);
-              return (MRESULT)TRUE;
-            }
-            else {
-              if(SHORT1FROMMP(mp2) == ' ') {
-                dcd->szCommonName[len] = 0;
-                break;
-              }
-              *dcd->szCommonName = 0;
-              dcd->lasttime = 0;
-              if(len)           // retry as first letter if no match
-                goto KbdRetry;
-            }
-            break;
-        }
+	    len = strlen(dcd->szCommonName);
+	    if(len >= CCHMAXPATH - 1) {
+	      *dcd->szCommonName = 0;
+	      len = 0;
+	    }
+	    dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
+	    dcd->szCommonName[len + 1] = 0;
+	    memset(&srch,0,sizeof(SEARCHSTRING));
+	    srch.cb = (ULONG)sizeof(SEARCHSTRING);
+	    srch.pszSearch = (PSZ)dcd->szCommonName;
+	    srch.fsPrefix = TRUE;
+	    srch.fsCaseSensitive = FALSE;
+	    srch.usView = CV_ICON;
+	    pci = WinSendMsg(hwnd,
+			     CM_SEARCHSTRING,
+			     MPFROMP(&srch),
+			     MPFROMLONG(CMA_FIRST));
+	    if(pci && (INT)pci != -1) {
+	      /* make found item current item */
+	      WinSendMsg(hwnd,
+			 CM_SETRECORDEMPHASIS,
+			 MPFROMP(pci),
+			 MPFROM2SHORT(TRUE,CRA_CURSORED));
+	      /* make sure that record shows in viewport */
+	      ShowCnrRecord(hwnd,
+			    (PMINIRECORDCORE)pci);
+	      return (MRESULT)TRUE;
+	    }
+	    else {
+	      if(SHORT1FROMMP(mp2) == ' ') {
+		dcd->szCommonName[len] = 0;
+		break;
+	      }
+	      *dcd->szCommonName = 0;
+	      dcd->lasttime = 0;
+	      if(len)           // retry as first letter if no match
+		goto KbdRetry;
+	    }
+	    break;
+	}
       }
       break;
 
@@ -1050,377 +1063,382 @@ KbdRetry:
 
     case UM_TIMER:
       if(dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent) &&
-         hwndStatus2) {
+	 hwndStatus2)
+      {
+	FILEFINDBUF3 ffb;
+	ULONG        nm = 1L;
+	HDIR         hdir =  HDIR_CREATE;
 
-        FILEFINDBUF3 ffb;
-        ULONG        nm = 1L;
-        HDIR         hdir =  HDIR_CREATE;
+	if(*SwapperDat)
+	{
+	  if (!DosFindFirst(SwapperDat,
+			    &hdir,
+			    FILE_NORMAL | FILE_HIDDEN |
+			    FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
+			    &ffb,
+			    sizeof(ffb),
+			    &nm,
+			    FIL_STANDARD))
+	  {
+	    CHAR  tb[39],tm[39],tpm[39],s[163];
+	    ULONG amem;
 
-        if(*SwapperDat) {
-          if(!DosFindFirst(SwapperDat,
-                           &hdir,
-                           FILE_NORMAL | FILE_HIDDEN |
-                           FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
-                           &ffb,
-                           sizeof(ffb),
-                           &nm,
-                           FIL_STANDARD)) {
-
-            CHAR  tb[39],tm[39],tpm[39],s[163];
-            ULONG amem = 0;
-
-            priority_bumped();
-            DosFindClose(hdir);
-            *tm = *tpm = 0;
-            if(!DosQuerySysInfo(QSV_TOTAVAILMEM,
-                                QSV_TOTAVAILMEM,
-                                (PVOID)&amem,
-                                (ULONG)sizeof(amem))) {
-              CommaFmtULL(tpm,sizeof(tpm),amem,'K');
-            }
-            if(!Dos16MemAvail(&amem))
-              CommaFmtULL(tm,sizeof(tm),amem,'K');
-            CommaFmtULL(tb,sizeof(tb),ffb.cbFile,'K');
-            sprintf(s," %s %sk%s%s%s%s",
-                    GetPString(IDS_SWAPFILETEXT),
-                    tb,
-                    (*tm) ? GetPString(IDS_TREEMEMTEXT) : NullStr,
-                    tm,
-                    (*tpm) ? "/" : NullStr,
-                    tpm);
-            WinSetWindowText(hwndStatus2,s);
-          }
-          else
-            WinSetWindowText(hwndStatus2,NullStr);
-        }
-        else
-          WinSetWindowText(hwndStatus2,NullStr);
+	    priority_bumped();
+	    DosFindClose(hdir);
+	    if (!DosQuerySysInfo(QSV_TOTAVAILMEM,
+				 QSV_TOTAVAILMEM,
+				 (PVOID)&amem,
+				 sizeof(amem)))
+	    {
+	      CommaFmtULL(tpm,sizeof(tpm),amem,'M');
+	    }
+	    else
+	      *tpm = 0;
+	    if (!Dos16MemAvail(&amem))
+	      CommaFmtULL(tm,sizeof(tm),amem,'M');
+	    else
+	      *tm = 0;
+	    CommaFmtULL(tb,sizeof(tb),ffb.cbFile,'M');
+	    sprintf(s," %s %s%s%s%s%s",
+		    GetPString(IDS_SWAPFILETEXT),
+		    tb,
+		    *tm ? GetPString(IDS_TREEMEMTEXT) : NullStr,
+		    tm,
+		    *tpm ? "/" : NullStr,
+		    tpm);
+	    WinSetWindowText(hwndStatus2,s);
+	  }
+	  else
+	    WinSetWindowText(hwndStatus2,NullStr);
+	}
+	else
+	  WinSetWindowText(hwndStatus2,NullStr);
       }
       if(msg == UM_TIMER)
-        return 0;
+	return 0;
       break;
 
     case WM_PRESPARAMCHANGED:
       PresParamChanged(hwnd,
-                       "TreeCnr",
-                       mp1,
-                       mp2);
+		       "TreeCnr",
+		       mp1,
+		       mp2);
       break;
 
     case UM_FILESMENU:
       {
-        PCNRITEM pci;
-        HWND     menuHwnd = (HWND)0;
+	PCNRITEM pci;
+	HWND     menuHwnd = (HWND)0;
 
-        pci = (PCNRITEM)CurrentRecord(hwnd);
-        if(pci && (INT)pci != -1) {
-          if(IsRoot(pci->szFileName))
-            menuHwnd = CheckMenu(&TreeMenu,
-                                 TREE_POPUP);
-          else {
-            menuHwnd = CheckMenu(&DirMenu,
-                                 DIR_POPUP);
+	pci = (PCNRITEM)CurrentRecord(hwnd);
+	if(pci && (INT)pci != -1) {
+	  if(IsRoot(pci->szFileName))
+	    menuHwnd = CheckMenu(&TreeMenu,
+				 TREE_POPUP);
+	  else {
+	    menuHwnd = CheckMenu(&DirMenu,
+				 DIR_POPUP);
 //            WinEnableMenuItem(DirMenu,
 //                              IDM_TREE,
 //                              FALSE);
-          }
-          if(!(pci->attrFile & FILE_DIRECTORY))
-            menuHwnd = CheckMenu(&FileMenu,
-                                 FILE_POPUP);
-        }
-        return MRFROMLONG(menuHwnd);
+	  }
+	  if(!(pci->attrFile & FILE_DIRECTORY))
+	    menuHwnd = CheckMenu(&FileMenu,
+				 FILE_POPUP);
+	}
+	return MRFROMLONG(menuHwnd);
       }
 
     case UM_COMPARE:
       if(dcd && mp1 && mp2) {
 
-        COMPARE *cmp;
-        CHAR    *leftdir = (CHAR *)mp1,*rightdir = (CHAR *)mp2;
+	COMPARE *cmp;
+	CHAR    *leftdir = (CHAR *)mp1,*rightdir = (CHAR *)mp2;
 
-        if(!IsFile(leftdir) &&
-           !IsFile(rightdir)) {
-          cmp = malloc(sizeof(COMPARE));
-          if(cmp) {
-            memset(cmp,0,sizeof(COMPARE));
-            cmp->size = sizeof(COMPARE);
-            strcpy(cmp->leftdir,leftdir);
-            strcpy(cmp->rightdir,rightdir);
-            cmp->hwndParent = dcd->hwndParent;
-            cmp->dcd.hwndParent = dcd->hwndParent;
-            WinDlgBox(HWND_DESKTOP,
-                      HWND_DESKTOP,
-                      CompareDlgProc,
-                      FM3ModHandle,
-                      COMP_FRAME,
-                      MPFROMP(cmp));
-          }
-        }
+	if(!IsFile(leftdir) &&
+	   !IsFile(rightdir)) {
+	  cmp = malloc(sizeof(COMPARE));
+	  if(cmp) {
+	    memset(cmp,0,sizeof(COMPARE));
+	    cmp->size = sizeof(COMPARE);
+	    strcpy(cmp->leftdir,leftdir);
+	    strcpy(cmp->rightdir,rightdir);
+	    cmp->hwndParent = dcd->hwndParent;
+	    cmp->dcd.hwndParent = dcd->hwndParent;
+	    WinDlgBox(HWND_DESKTOP,
+		      HWND_DESKTOP,
+		      CompareDlgProc,
+		      FM3ModHandle,
+		      COMP_FRAME,
+		      MPFROMP(cmp));
+	  }
+	}
       }
       return 0;
 
     case UM_UPDATERECORDLIST:
       if(dcd && mp1)
-        WinSendMsg(dcd->hwndObject,
-                   msg,
-                   mp1,
-                   mp2);
+	WinSendMsg(dcd->hwndObject,
+		   msg,
+		   mp1,
+		   mp2);
       return 0;
 
     case UM_UPDATERECORD:
       if(dcd && mp1) {
 
-        CHAR *filename;
+	CHAR *filename;
 
-        filename = mp1;
-        if(filename)
-          UpdateCnrRecord(hwnd,
-                          filename,
-                          TRUE,
-                          dcd);
+	filename = mp1;
+	if(filename)
+	  UpdateCnrRecord(hwnd,
+			  filename,
+			  TRUE,
+			  dcd);
       }
       return 0;
 
     case WM_SETFOCUS:
       if(dcd && hwndStatus && mp2) {
-        WinSendMsg(hwnd,
-                   UM_RESCAN,
-                   MPVOID,
-                   MPVOID);
-        if(hwndMain)
-          PostMsg(hwndMain,
-                  UM_ADVISEFOCUS,
-                  MPFROMLONG(dcd->hwndFrame),
-                  MPVOID);
+	WinSendMsg(hwnd,
+		   UM_RESCAN,
+		   MPVOID,
+		   MPVOID);
+	if(hwndMain)
+	  PostMsg(hwndMain,
+		  UM_ADVISEFOCUS,
+		  MPFROMLONG(dcd->hwndFrame),
+		  MPVOID);
       }
       break;
 
     case UM_RESCAN:
       if(dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-        /*
-         * put name of our window on status line
-         */
+	/*
+	 * put name of our window on status line
+	 */
 
-        PCNRITEM  pci = NULL;
-        CHAR      str[CCHMAXPATH + 6];
+	PCNRITEM  pci = NULL;
+	CHAR      str[CCHMAXPATH + 6];
 
-        if(fAutoView && hwndMain) {
-          pci = WinSendMsg(hwnd,
-                           CM_QUERYRECORDEMPHASIS,
-                           MPFROMLONG(CMA_FIRST),
-                           MPFROMSHORT(CRA_CURSORED));
-          if(pci && (INT)pci != -1 && fComments &&
-             !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_SLOW))
-            WinSendMsg(hwndMain,
-                       UM_LOADFILE,
-                       MPFROMP(pci->szFileName),
-                       MPVOID);
-          else
-            WinSendMsg(hwndMain,
-                       UM_LOADFILE,
-                       MPVOID,
-                       MPVOID);
-        }
-        if(!fAutoView ||
-           !hwndMain)
-          pci = (PCNRITEM)WinSendMsg(hwnd,
-                                     CM_QUERYRECORDEMPHASIS,
-                                     MPFROMLONG(CMA_FIRST),
-                                     MPFROMSHORT(CRA_CURSORED));
-        if((INT)pci == -1)
-          pci = NULL;
-        if(pci) {
-          if(*(ULONG *)realappname == FM3UL) {
-            sprintf(str,
-                    "%s %s",
-                    GetPString(IDS_DTTEXT),
-                    pci->szFileName);
-            WinSetWindowText(dcd->hwndFrame,
-                             str);
-            WinSetWindowText(WinWindowFromID(dcd->hwndFrame,FID_TITLEBAR),
-                             str);
-          }
-          else
-            WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
-                                             MAIN_STATUS),
-                             pci->szFileName);
-          if(fMoreButtons && hwndName) {
-            WinSetWindowText(hwndName,
-                             pci->szFileName);
-            sprintf(str,
-                    "%04u/%02u/%02u %02u:%02u:%02u",
-                    pci->date.year,
-                    pci->date.month,
-                    pci->date.day,
-                    pci->time.hours,
-                    pci->time.minutes,
-                    pci->time.seconds);
-            WinSetWindowText(hwndDate,
-                             str);
-            WinSetWindowText(hwndAttr,
-                             pci->pszDispAttr);
-          }
-        }
-        PostMsg(dcd->hwndObject,
-                UM_RESCAN2,
-                MPFROMP(pci),
-                MPVOID);
-        if(hwndStatus2)
-          PostMsg(hwnd,
-                  UM_TIMER,
-                  MPVOID,
-                  MPVOID);
+	if(fAutoView && hwndMain) {
+	  pci = WinSendMsg(hwnd,
+			   CM_QUERYRECORDEMPHASIS,
+			   MPFROMLONG(CMA_FIRST),
+			   MPFROMSHORT(CRA_CURSORED));
+	  if(pci && (INT)pci != -1 && fComments &&
+	     !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_SLOW))
+	    WinSendMsg(hwndMain,
+		       UM_LOADFILE,
+		       MPFROMP(pci->szFileName),
+		       MPVOID);
+	  else
+	    WinSendMsg(hwndMain,
+		       UM_LOADFILE,
+		       MPVOID,
+		       MPVOID);
+	}
+	if(!fAutoView ||
+	   !hwndMain)
+	  pci = (PCNRITEM)WinSendMsg(hwnd,
+				     CM_QUERYRECORDEMPHASIS,
+				     MPFROMLONG(CMA_FIRST),
+				     MPFROMSHORT(CRA_CURSORED));
+	if((INT)pci == -1)
+	  pci = NULL;
+	if(pci) {
+	  if(*(ULONG *)realappname == FM3UL) {
+	    sprintf(str,
+		    "%s %s",
+		    GetPString(IDS_DTTEXT),
+		    pci->szFileName);
+	    WinSetWindowText(dcd->hwndFrame,
+			     str);
+	    WinSetWindowText(WinWindowFromID(dcd->hwndFrame,FID_TITLEBAR),
+			     str);
+	  }
+	  else
+	    WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
+					     MAIN_STATUS),
+			     pci->szFileName);
+	  if(fMoreButtons && hwndName) {
+	    WinSetWindowText(hwndName,
+			     pci->szFileName);
+	    sprintf(str,
+		    "%04u/%02u/%02u %02u:%02u:%02u",
+		    pci->date.year,
+		    pci->date.month,
+		    pci->date.day,
+		    pci->time.hours,
+		    pci->time.minutes,
+		    pci->time.seconds);
+	    WinSetWindowText(hwndDate,
+			     str);
+	    WinSetWindowText(hwndAttr,
+			     pci->pszDispAttr);
+	  }
+	}
+	PostMsg(dcd->hwndObject,
+		UM_RESCAN2,
+		MPFROMP(pci),
+		MPVOID);
+	if(hwndStatus2)
+	  PostMsg(hwnd,
+		  UM_TIMER,
+		  MPVOID,
+		  MPVOID);
       }
       return 0;
 
     case UM_SETUP2:
       {
-        PCNRITEM pci = (PCNRITEM)mp1;
+	PCNRITEM pci = (PCNRITEM)mp1;
 
-        if(pci)
-          NotifyError(pci->szFileName,
-                      (ULONG)mp2);
+	if(pci)
+	  NotifyError(pci->szFileName,
+		      (ULONG)mp2);
       }
       return 0;
 
     case UM_SETUP:
       if(dcd) {
-        if(!dcd->hwndObject) {
-          /*
-           * first time through -- set things up
-           */
+	if(!dcd->hwndObject) {
+	  /*
+	   * first time through -- set things up
+	   */
 
-          CNRINFO cnri;
+	  CNRINFO cnri;
 
-          RestorePresParams(hwnd,"TreeCnr");
-          memset(&cnri,0,sizeof(CNRINFO));
-          cnri.cb = sizeof(CNRINFO);
-          WinSendMsg(hwnd,
-                     CM_QUERYCNRINFO,
-                     MPFROMP(&cnri),
-                     MPFROMLONG(sizeof(CNRINFO)));
-          cnri.cyLineSpacing = 0;
-          cnri.cxTreeIndent = 12L;
-          cnri.pSortRecord = (PVOID)SortTreeCnr;
-          cnri.flWindowAttr &= (~(CV_NAME | CV_DETAIL | CV_TEXT));
-          cnri.flWindowAttr |= (CV_TREE | CA_TREELINE | CV_ICON | CV_MINI);
-          {
-            ULONG size = sizeof(ULONG);
+	  RestorePresParams(hwnd,"TreeCnr");
+	  memset(&cnri,0,sizeof(CNRINFO));
+	  cnri.cb = sizeof(CNRINFO);
+	  WinSendMsg(hwnd,
+		     CM_QUERYCNRINFO,
+		     MPFROMP(&cnri),
+		     MPFROMLONG(sizeof(CNRINFO)));
+	  cnri.cyLineSpacing = 0;
+	  cnri.cxTreeIndent = 12L;
+	  cnri.pSortRecord = (PVOID)SortTreeCnr;
+	  cnri.flWindowAttr &= (~(CV_NAME | CV_DETAIL | CV_TEXT));
+	  cnri.flWindowAttr |= (CV_TREE | CA_TREELINE | CV_ICON | CV_MINI);
+	  {
+	    ULONG size = sizeof(ULONG);
 
-            PrfQueryProfileData(fmprof,
-                                appname,
-                                "TreeflWindowAttr",
-                                (PVOID)&cnri.flWindowAttr,
-                                &size);
-            size = sizeof(MASK);
-            *dcd->mask.prompt = 0;
-            if(!*dcd->mask.szMask && !dcd->mask.attrFile) {
-              if(PrfQueryProfileSize(fmprof,
-                                     appname,
-                                     "TreeFilter",
-                                     &size) &&
-                size) {
-                PrfQueryProfileData(fmprof,
-                                    appname,
-                                    "TreeFilter",
-                                    &dcd->mask,
-                                    &size);
-                SetMask(dcd->mask.szMask,
-                        &dcd->mask);
-              }
-              else
-                dcd->mask.attrFile = (FILE_READONLY | FILE_NORMAL |
-                                      FILE_ARCHIVED | FILE_DIRECTORY |
-                                      FILE_HIDDEN   | FILE_SYSTEM);
-            }
-            dcd->mask.attrFile |= FILE_DIRECTORY;
-          }
-          cnri.flWindowAttr &= (~(CA_MIXEDTARGETEMPH | CA_ORDEREDTARGETEMPH));
-          cnri.flWindowAttr |= CV_FLOW;
-          dcd->flWindowAttr = cnri.flWindowAttr;
-          WinSendMsg(hwnd,
-                     CM_SETCNRINFO,
-                     MPFROMP(&cnri),
-                     MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
-                                CMA_CXTREEINDENT | CMA_PSORTRECORD));
+	    PrfQueryProfileData(fmprof,
+				appname,
+				"TreeflWindowAttr",
+				(PVOID)&cnri.flWindowAttr,
+				&size);
+	    size = sizeof(MASK);
+	    *dcd->mask.prompt = 0;
+	    if(!*dcd->mask.szMask && !dcd->mask.attrFile) {
+	      if(PrfQueryProfileSize(fmprof,
+				     appname,
+				     "TreeFilter",
+				     &size) &&
+		size) {
+		PrfQueryProfileData(fmprof,
+				    appname,
+				    "TreeFilter",
+				    &dcd->mask,
+				    &size);
+		SetMask(dcd->mask.szMask,
+			&dcd->mask);
+	      }
+	      else
+		dcd->mask.attrFile = (FILE_READONLY | FILE_NORMAL |
+				      FILE_ARCHIVED | FILE_DIRECTORY |
+				      FILE_HIDDEN   | FILE_SYSTEM);
+	    }
+	    dcd->mask.attrFile |= FILE_DIRECTORY;
+	  }
+	  cnri.flWindowAttr &= (~(CA_MIXEDTARGETEMPH | CA_ORDEREDTARGETEMPH));
+	  cnri.flWindowAttr |= CV_FLOW;
+	  dcd->flWindowAttr = cnri.flWindowAttr;
+	  WinSendMsg(hwnd,
+		     CM_SETCNRINFO,
+		     MPFROMP(&cnri),
+		     MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
+				CMA_CXTREEINDENT | CMA_PSORTRECORD));
 //                                CMA_TREEICON));
-          if(_beginthread(MakeObjWin,
-                          NULL,
-                          327680,
-                          (PVOID)dcd) ==
-             -1) {
-            PostMsg(hwnd,
-                    WM_CLOSE,
-                    MPVOID,
-                    MPVOID);
-            return 0;
-          }
-          else
-            DosSleep(1L);
-        }
+	  if(_beginthread(MakeObjWin,
+			  NULL,
+			  327680,
+			  (PVOID)dcd) ==
+	     -1) {
+	    PostMsg(hwnd,
+		    WM_CLOSE,
+		    MPVOID,
+		    MPVOID);
+	    return 0;
+	  }
+	  else
+	    DosSleep(1L);
+	}
       }
       else {
-        PostMsg(hwnd,
-                WM_CLOSE,
-                MPVOID,
-                MPVOID);
-        return 0;
+	PostMsg(hwnd,
+		WM_CLOSE,
+		MPVOID,
+		MPVOID);
+	return 0;
       }
       return 0;
 
     case WM_BUTTON3CLICK:
     case WM_CHORD:
       {
-        PCNRITEM          pci = NULL;
-        QUERYRECFROMRECT  pqr;
-        NOTIFYRECORDENTER nr;
-        BOOL              tbool = fDCOpens;
-        RECTL             rectl;
-        POINTL            ptl;
+	PCNRITEM          pci = NULL;
+	QUERYRECFROMRECT  pqr;
+	NOTIFYRECORDENTER nr;
+	BOOL              tbool = fDCOpens;
+	RECTL             rectl;
+	POINTL            ptl;
 
-        shiftstate = (SHORT2FROMMP(mp2) & (KC_SHIFT | KC_ALT | KC_CTRL));
-        if(msg == WM_CHORD) {
-          if(!WinQueryPointerPos(HWND_DESKTOP,
-                                 &ptl))
-            break;
-          WinMapWindowPoints(HWND_DESKTOP,
-                             hwnd,
-                             &ptl,
-                             1L);
-        }
-        else {
-          ptl.x = SHORT1FROMMP(mp1);
-          ptl.y = SHORT2FROMMP(mp1);
-        }
-        memset(&rectl,0,sizeof(rectl));
-        memset(&pqr,0,sizeof(pqr));
-        pqr.cb = sizeof(pqr);
-        pqr.rect.xLeft = ptl.x - 1;
-        pqr.rect.xRight = ptl.x + 1;
-        pqr.rect.yTop = ptl.y + 1;
-        pqr.rect.yBottom = ptl.y - 1;
-        pqr.fsSearch = CMA_PARTIAL;
-        pci = (PCNRITEM)WinSendMsg(hwnd,
-                                   CM_QUERYRECORDFROMRECT,
-                                   MPFROMLONG(CMA_FIRST),
-                                   MPFROMP(&pqr));
-        if(pci && (INT)pci != -1) {
-          memset(&nr,0,sizeof(nr));
-          nr.hwndCnr = hwnd;
-          nr.pRecord = (PRECORDCORE)pci;
-          fDCOpens = TRUE;
-          WinSendMsg(hwnd,
-                     WM_CONTROL,
-                     MPFROM2SHORT(WinQueryWindowUShort(hwnd,
-                                                       QWS_ID),
-                                  CN_ENTER),
-                     MPFROMP(&nr));
-          PostMsg(hwnd,
-                  UM_RESTOREDC,
-                  MPFROMLONG(tbool),
-                  MPVOID);
-        }
-        else
-          DosBeep(50,100);
+	shiftstate = (SHORT2FROMMP(mp2) & (KC_SHIFT | KC_ALT | KC_CTRL));
+	if(msg == WM_CHORD) {
+	  if(!WinQueryPointerPos(HWND_DESKTOP,
+				 &ptl))
+	    break;
+	  WinMapWindowPoints(HWND_DESKTOP,
+			     hwnd,
+			     &ptl,
+			     1L);
+	}
+	else {
+	  ptl.x = SHORT1FROMMP(mp1);
+	  ptl.y = SHORT2FROMMP(mp1);
+	}
+	memset(&rectl,0,sizeof(rectl));
+	memset(&pqr,0,sizeof(pqr));
+	pqr.cb = sizeof(pqr);
+	pqr.rect.xLeft = ptl.x - 1;
+	pqr.rect.xRight = ptl.x + 1;
+	pqr.rect.yTop = ptl.y + 1;
+	pqr.rect.yBottom = ptl.y - 1;
+	pqr.fsSearch = CMA_PARTIAL;
+	pci = (PCNRITEM)WinSendMsg(hwnd,
+				   CM_QUERYRECORDFROMRECT,
+				   MPFROMLONG(CMA_FIRST),
+				   MPFROMP(&pqr));
+	if(pci && (INT)pci != -1) {
+	  memset(&nr,0,sizeof(nr));
+	  nr.hwndCnr = hwnd;
+	  nr.pRecord = (PRECORDCORE)pci;
+	  fDCOpens = TRUE;
+	  WinSendMsg(hwnd,
+		     WM_CONTROL,
+		     MPFROM2SHORT(WinQueryWindowUShort(hwnd,
+						       QWS_ID),
+				  CN_ENTER),
+		     MPFROMP(&nr));
+	  PostMsg(hwnd,
+		  UM_RESTOREDC,
+		  MPFROMLONG(tbool),
+		  MPVOID);
+	}
+	else
+	  DosBeep(50,100);
       }
       break;
 
@@ -1431,1007 +1449,1007 @@ KbdRetry:
     case WM_CONTROL:
       DosError(FERR_DISABLEHARDERR);
       if(dcd) {
-        switch(SHORT2FROMMP(mp1)) {
-          case CN_BEGINEDIT:
-          case CN_REALLOCPSZ:
-          case CN_ENDEDIT:
-            {
-              MRESULT mre;
-
-              mre = CnrDirectEdit(hwnd,
-                                  msg,
-                                  mp1,
-                                  mp2);
-              if(mre != (MRESULT)-1)
-                return mre;
-            }
-            break;
-
-          case CN_DRAGLEAVE:
-            if(mp2) {
-
-              PDRAGINFO pDInfo;
-
-              pDInfo = ((PCNRDRAGINFO)mp2)->pDragInfo;
-              DrgAccessDraginfo(pDInfo);
-              DrgFreeDraginfo(pDInfo);
-            }
-            return 0;
-
-          case CN_DRAGAFTER:
-          case CN_DRAGOVER:
-            if(mp2) {
-
-              PDRAGITEM pDItem;
-              PDRAGINFO pDInfo;
-              PCNRITEM  pci;
-              USHORT    uso;
-
-              pDInfo = ((PCNRDRAGINFO)mp2)->pDragInfo;
-              DrgAccessDraginfo(pDInfo);
-              pci = (PCNRITEM)((PCNRDRAGINFO)mp2)->pRecord;
-              if((INT)pci == -1)
-                pci = NULL;
-              if(pci &&
-                 (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODROP))) {
-                DrgFreeDraginfo(pDInfo);
-                return MRFROM2SHORT(DOR_NODROP,0);
-              }
-              if(!pDInfo) {
-                DrgFreeDraginfo(pDInfo);
-                return MRFROM2SHORT(DOR_NODROP,0);
-              }
-              if(!WinIsWindowEnabled(dcd->hwndFrame)) {
-                DrgFreeDraginfo(pDInfo);
-                return MRFROM2SHORT(DOR_NODROP,0);
-              }
-              if(pci) {
-                uso = pDInfo->usOperation;
-                if(uso == DO_DEFAULT)
-                  uso = (fCopyDefault) ? DO_COPY : DO_MOVE;
-                if(!(pci->attrFile & FILE_DIRECTORY)) {
-                  if(uso != DO_LINK &&
-                     uso != DO_COPY &&
-                     uso != DO_MOVE) {
-                    DrgFreeDraginfo(pDInfo);
-                    return(MRFROM2SHORT(DOR_NODROP,0));
-                  }
-                  if(uso != DO_LINK &&
-                     !(driveflags[toupper(*pci->szFileName) - 'A'] &
-                       DRIVE_NOTWRITEABLE)) {
-
-                    ARC_TYPE *info;
-
-                    if(!fQuickArcFind &&
-                       !(driveflags[toupper(*pci->szFileName) - 'A'] &
-                         DRIVE_SLOW))
-                      info = find_type(pci->szFileName,NULL);
-                    else
-                      info = quick_find_type(pci->szFileName,NULL);
-                    if(!info || ((uso == DO_MOVE && !info->move) ||
-                       (uso == DO_COPY && !info->create)))  {
-                      DrgFreeDraginfo(pDInfo);
-                      return(MRFROM2SHORT(DOR_NODROP,0));
-                    }
-                  }
-                }
-              }
-              pDItem = DrgQueryDragitemPtr(pDInfo,   /* Access DRAGITEM       */
-                                           0);       /* Index to DRAGITEM     */
-              if(DrgVerifyRMF(pDItem,                /* Check valid rendering */
-                              DRM_OS2FILE,           /* mechanisms and data   */
-                              NULL) ||
-                  DrgVerifyRMF(pDItem,DRM_FM2ARCMEMBER,
-                               DRF_FM2ARCHIVE)) {    /* formats               */
-                DrgFreeDraginfo(pDInfo);             /* Free DRAGINFO         */
-                if(!pci || (INT)pci == -1)
-                  return MRFROM2SHORT(DOR_DROP,DO_MOVE);
-                if(driveflags[toupper(*pci->szFileName) - 'A'] &
-                   DRIVE_NOTWRITEABLE)
-                  return MRFROM2SHORT(DOR_DROP,DO_LINK);
-                if(toupper(*pci->szFileName) < 'C')
-                  return MRFROM2SHORT(DOR_DROP,DO_COPY);
-                return MRFROM2SHORT(DOR_DROP,     /* Return okay to drop   */
-                                    ((fCopyDefault) ?
-                                    DO_COPY :
-                                    DO_MOVE));
-              }
-              DrgFreeDraginfo(pDInfo);            /* Free DRAGINFO         */
-            }
-            return MRFROM2SHORT(DOR_NODROP,0);    /* Drop not valid        */
-
-          case CN_INITDRAG:
-            {
-              PCNRDRAGINIT pcd = (PCNRDRAGINIT)mp2;
-              PCNRITEM     pci;
-
-              if(pcd) {
-                pci = (PCNRITEM)pcd->pRecord;
-                if(!pci || (INT)pci == -1 ||
-                   (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODRAG))) {
-                  DosBeep(50,100);
-                  break;
-                }
-                if(hwndStatus2)
-                  WinSetWindowText(hwndStatus2,(IsRoot(pci->szFileName)) ?
-                                   GetPString(IDS_DRAGROOTTEXT) :
-                                   (pci->attrFile & FILE_DIRECTORY) ?
-                                   GetPString(IDS_DRAGDIRTEXT) :
-                                   GetPString(IDS_DRAGFILETEXT));
-                DoFileDrag(hwnd,
-                           dcd->hwndObject,
-                           mp2,
-                           NULL,
-                           NULL,
-                           TRUE);
-                if(hwndStatus2)
-                  PostMsg(hwnd,
-                          UM_RESCAN,
-                          MPVOID,
-                          MPVOID);
-              }
-            }
-            return 0;
-
-          case CN_DROP:
-            {
-              LISTINFO *li;
-              ULONG     action = UM_ACTION;
-
-              li = DoFileDrop(hwnd,
-                              NULL,
-                              TRUE,
-                              mp1,
-                              mp2);
-              if(li) {
-                if(!*li->targetpath) {
-                  if(li->list[0])
-                    PMMkDir(dcd->hwndParent,
-                            li->list[0],
-                            FALSE);
-                  FreeListInfo(li);
-                  return 0;
-                }
-                if(li->list &&
-                   li->list[0] &&
-                   IsRoot(li->list[0]))
-                  li->type = DO_LINK;
-                else if(fDragndropDlg &&
-                        (!*li->arcname || !li->info)) {
-
-                  CHECKLIST    cl;
-
-                  memset(&cl,0,sizeof(cl));
-                  cl.size = sizeof(cl);
-                  cl.flags = li->type;
-                  cl.list = li->list;
-                  cl.cmd = li->type;
-                  cl.prompt = li->targetpath;
-                  li->type = WinDlgBox(HWND_DESKTOP,
-                                       dcd->hwndParent,
-                                       DropListProc,
-                                       FM3ModHandle,
-                                       DND_FRAME,
-                                       MPFROMP(&cl));
-                  if(!li->type) {
-                    FreeListInfo(li);
-                    return 0;
-                  }
-                  li->list = cl.list;
-                  if(!li->list || !li->list[0]) {
-                    FreeListInfo(li);
-                    return 0;
-                  }
-                }
-                switch(li->type) {
-                  case DO_LINK:
-                    if(fLinkSetsIcon) {
-                      li->type = IDM_SETICON;
-                      action = UM_MASSACTION;
-                    }
-                    else
-                      li->type = IDM_COMPARE;
-                    break;
-                  case DND_EXTRACT:
-                    if(*li->targetpath &&
-                       !IsFile(li->targetpath))
-                      li->type = IDM_EXTRACT;
-                    break;
-                  case DND_MOVE:
-                    li->type = IDM_MOVE;
-                    if(*li->targetpath &&
-                       IsFile(li->targetpath) == 1) {
-                      action = UM_MASSACTION;
-                      li->type = IDM_ARCHIVEM;
-                    }
-                    break;
-                  case DND_WILDMOVE:
-                    li->type = IDM_WILDMOVE;
-                    if(*li->targetpath &&
-                       IsFile(li->targetpath) == 1) {
-                      action = UM_MASSACTION;
-                      li->type = IDM_ARCHIVEM;
-                    }
-                    break;
-                  case DND_OBJECT:
-                    li->type = IDM_OBJECT;
-                    action = UM_MASSACTION;
-                    break;
-                  case DND_SHADOW:
-                    li->type = IDM_SHADOW;
-                    action = UM_MASSACTION;
-                    break;
-                  case DND_COMPARE:
-                    li->type = IDM_COMPARE;
-                    break;
-                  case DND_SETICON:
-                    action = UM_MASSACTION;
-                    li->type = IDM_SETICON;
-                    break;
-                  case DND_COPY:
-                    li->type = IDM_COPY;
-                    if(*li->targetpath &&
-                       IsFile(li->targetpath) == 1) {
-                      action = UM_MASSACTION;
-                      li->type = IDM_ARCHIVE;
-                    }
-                    break;
-                  case DND_WILDCOPY:
-                    li->type = IDM_WILDCOPY;
-                    if(*li->targetpath &&
-                       IsFile(li->targetpath) == 1) {
-                      action = UM_MASSACTION;
-                      li->type = IDM_ARCHIVE;
-                    }
-                    break;
-                  default:
-                    if(*li->arcname && li->info) {
-                      action = UM_MASSACTION;
-                      li->type = (li->type == DO_MOVE) ?
-                                  IDM_FAKEEXTRACTM :
-                                  IDM_FAKEEXTRACT;
-                    }
-                    else if(*li->targetpath &&
-                            IsFile(li->targetpath) == 1) {
-                      action = UM_MASSACTION;
-                      li->type = (li->type == DO_MOVE) ?
-                                  IDM_ARCHIVEM :
-                                  IDM_ARCHIVE;
-                    }
-                    else
-                      li->type = (li->type == DO_MOVE) ?
-                                  IDM_MOVE :
-                                  IDM_COPY;
-                    break;
-                }
-                if(!li->list || !li->list[0])
-                  FreeListInfo(li);
-                else if(!PostMsg(dcd->hwndObject,
-                                 action,
-                                 MPFROMP(li),
-                                 MPVOID))
-                  FreeListInfo(li);
-                else {
-
-                  USHORT usop = 0;
-
-                  switch(li->type) {
-                    case IDM_COPY:
-                    case IDM_WILDCOPY:
-                      usop = DO_COPY;
-                      break;
-                    case IDM_MOVE:
-                    case IDM_WILDMOVE:
-                    case IDM_ARCHIVEM:
-                      usop = DO_MOVE;
-                      break;
-                  }
-                  if(usop)
-                    return MRFROM2SHORT(DOR_DROP,usop);
-                }
-              }
-            }
-            return 0;
-
-          case CN_EMPHASIS:
-            if(!fDummy) {
-
-              PNOTIFYRECORDEMPHASIS pre = mp2;
-
-              if(pre->fEmphasisMask & CRA_SELECTED) {
-                if(pre->pRecord->flRecordAttr & CRA_SELECTED) {
-                  if(((PCNRITEM)(pre->pRecord))->attrFile & FILE_DIRECTORY) {
-                    PostMsg(hwnd,
-                            UM_RESCAN,
-                            MPVOID,
-                            MPVOID);
-                    if(fFollowTree &&
-                       !(driveflags[toupper(*((PCNRITEM)pre->pRecord)->szFileName) - 'A'] &
-                         DRIVE_INVALID)) {
-                      if(!LastDir &&
-                         !ParentIsDesktop(hwnd,dcd->hwndParent))
-                        LastDir = FindDirCnr(dcd->hwndParent);
-                      if(LastDir) {
-
-                        NOTIFYRECORDENTER pri;
-                        BOOL              tbool = fDCOpens;
-
-                        fDCOpens = FALSE;
-                        memset(&pri,0,sizeof(pri));
-                        pri.hwndCnr = hwnd;
-                        pri.fKey = FALSE;
-                        pri.pRecord = pre->pRecord;
-                        WinSendMsg(hwnd,
-                                   WM_CONTROL,
-                                   MPFROM2SHORT(SHORT1FROMMP(mp1),
-                                                CN_ENTER),
-                                   MPFROMP(&pri));
-                        fDCOpens = tbool;
-                      }
-                    }
-                    if(*(ULONG *)realappname != FM3UL)
-                      WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
-                                                       MAIN_STATUS),
-                                       ((PCNRITEM)(pre->pRecord))->szFileName);
-                  }
-                }
-              }
-            }
-            break;
-
-          case CN_CONTEXTMENU:
-            {
-              PCNRITEM pci = (PCNRITEM)mp2;
-              BOOL     wasFollowing;
-
-              DosEnterCritSec();
-               wasFollowing = fFollowTree;
-               fFollowTree = FALSE;
-              DosExitCritSec();
-              if(pci && (INT)pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
-                WinSendMsg(hwnd,
-                           CM_SETRECORDEMPHASIS,
-                           MPFROMP(pci),
-                           MPFROM2SHORT(TRUE,CRA_CURSORED));
-                MarkAll(hwnd,
-                        FALSE,
-                        FALSE,
-                        TRUE);
-                if(!(pci->attrFile & FILE_DIRECTORY))
-                  dcd->hwndLastMenu = CheckMenu(&FileMenu,FILE_POPUP);
-                else if(!IsRoot(pci->szFileName))
-                  dcd->hwndLastMenu = CheckMenu(&DirMenu,DIR_POPUP);
-                else
-                  dcd->hwndLastMenu = CheckMenu(&TreeMenu,TREE_POPUP);
-              }
-              else {
-                dcd->hwndLastMenu = CheckMenu(&TreeCnrMenu,TREECNR_POPUP);
-                if(dcd->hwndLastMenu && !dcd->cnremphasized) {
-                  WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPVOID,
-                             MPFROM2SHORT(TRUE,CRA_SOURCE));
-                  dcd->cnremphasized = TRUE;
-                }
-              }
-              if(dcd->hwndLastMenu) {
-                if(dcd->hwndLastMenu == DirMenu)
-                  WinEnableMenuItem(DirMenu,IDM_TREE,FALSE);
-                if(dcd->hwndLastMenu == TreeCnrMenu) {
-                  if(dcd->flWindowAttr & CV_MINI)
-                    WinCheckMenuItem(dcd->hwndLastMenu,IDM_MINIICONS,TRUE);
-                }
-                if(!PopupMenu(hwnd,hwnd,dcd->hwndLastMenu)) {
-                  if(dcd->cnremphasized) {
-                    WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPVOID,
-                               MPFROM2SHORT(FALSE,CRA_SOURCE));
-                    dcd->cnremphasized = FALSE;
-                  }
-                  if(dcd->hwndLastMenu != TreeCnrMenu)
-                    MarkAll(hwnd,TRUE,FALSE,TRUE);
-                }
-              }
-              DosEnterCritSec();
-               fFollowTree = wasFollowing;
-              DosExitCritSec();
-            }
-            break;
-
-          case CN_ENTER:
-            if(mp2)
+	switch(SHORT2FROMMP(mp1)) {
+	  case CN_BEGINEDIT:
+	  case CN_REALLOCPSZ:
+	  case CN_ENDEDIT:
 	    {
-              PCNRITEM pci = (PCNRITEM)((PNOTIFYRECORDENTER)mp2)->pRecord;
+	      MRESULT mre;
 
-              PostMsg(hwnd,UM_ENTER,MPFROMP(pci),MPVOID);
-            }
-            break;
+	      mre = CnrDirectEdit(hwnd,
+				  msg,
+				  mp1,
+				  mp2);
+	      if(mre != (MRESULT)-1)
+		return mre;
+	    }
+	    break;
 
-          case CN_COLLAPSETREE:
-          case CN_EXPANDTREE:
-            {
-              PCNRITEM pci = (PCNRITEM)mp2;
+	  case CN_DRAGLEAVE:
+	    if(mp2) {
 
-              if(pci && (INT)pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
-                if(driveflags[toupper(*pci->szFileName) - 'A'] &
-                   DRIVE_REMOVABLE) {
+	      PDRAGINFO pDInfo;
 
-                  struct {
-                    ULONG serial;
-                    CHAR  volumelength;
-                    CHAR  volumelabel[CCHMAXPATH];
-                  }         volser;
+	      pDInfo = ((PCNRDRAGINFO)mp2)->pDragInfo;
+	      DrgAccessDraginfo(pDInfo);
+	      DrgFreeDraginfo(pDInfo);
+	    }
+	    return 0;
 
-                  memset(&volser,0,sizeof(volser));
-                  DosError(FERR_DISABLEHARDERR);
-                  if(!DosQueryFSInfo(toupper(*pci->szFileName) - '@',
-                                     FSIL_VOLSER,&volser,
-                                     (ULONG)sizeof(volser))) {
-                    if(SHORT2FROMMP(mp1) == CN_COLLAPSETREE &&
-                       !volser.serial ||
-                       driveserial[toupper(*pci->szFileName) - 'A'] !=
-                         volser.serial)
-                      UnFlesh(hwnd,pci);
-                    if(SHORT2FROMMP(mp1) != CN_COLLAPSETREE ||
-                       (!volser.serial ||
-                        driveserial[toupper(*pci->szFileName) - 'A'] !=
-                          volser.serial)) {
-                      if(Flesh(hwnd,pci) &&
-                         SHORT2FROMMP(mp1) == CN_EXPANDTREE &&
-                         !dcd->suspendview && fTopDir)
-                        PostMsg(hwnd,UM_TOPDIR,MPFROMP(pci),MPVOID);
-                    }
-                    driveserial[toupper(*pci->szFileName) - 'A'] =
-                      volser.serial;
-                  }
-                  else {
-                    driveserial[toupper(*pci->szFileName) - 'A'] = -1;
-                    UnFlesh(hwnd,pci);
-                    PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
-                    DosBeep(250,100);
-                  }
-                }
-                else if(SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-                  if(Flesh(hwnd,pci) && !dcd->suspendview && fTopDir)
-                    PostMsg(hwnd,UM_TOPDIR,MPFROMP(pci),MPVOID);
-                }
-                if(SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview)
-                  WinSendMsg(hwnd,UM_FILTER,MPVOID,MPVOID);
-              }
-            }
-            break;
-        }
+	  case CN_DRAGAFTER:
+	  case CN_DRAGOVER:
+	    if(mp2) {
+
+	      PDRAGITEM pDItem;
+	      PDRAGINFO pDInfo;
+	      PCNRITEM  pci;
+	      USHORT    uso;
+
+	      pDInfo = ((PCNRDRAGINFO)mp2)->pDragInfo;
+	      DrgAccessDraginfo(pDInfo);
+	      pci = (PCNRITEM)((PCNRDRAGINFO)mp2)->pRecord;
+	      if((INT)pci == -1)
+		pci = NULL;
+	      if(pci &&
+		 (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODROP))) {
+		DrgFreeDraginfo(pDInfo);
+		return MRFROM2SHORT(DOR_NODROP,0);
+	      }
+	      if(!pDInfo) {
+		DrgFreeDraginfo(pDInfo);
+		return MRFROM2SHORT(DOR_NODROP,0);
+	      }
+	      if(!WinIsWindowEnabled(dcd->hwndFrame)) {
+		DrgFreeDraginfo(pDInfo);
+		return MRFROM2SHORT(DOR_NODROP,0);
+	      }
+	      if(pci) {
+		uso = pDInfo->usOperation;
+		if(uso == DO_DEFAULT)
+		  uso = (fCopyDefault) ? DO_COPY : DO_MOVE;
+		if(!(pci->attrFile & FILE_DIRECTORY)) {
+		  if(uso != DO_LINK &&
+		     uso != DO_COPY &&
+		     uso != DO_MOVE) {
+		    DrgFreeDraginfo(pDInfo);
+		    return(MRFROM2SHORT(DOR_NODROP,0));
+		  }
+		  if(uso != DO_LINK &&
+		     !(driveflags[toupper(*pci->szFileName) - 'A'] &
+		       DRIVE_NOTWRITEABLE)) {
+
+		    ARC_TYPE *info;
+
+		    if(!fQuickArcFind &&
+		       !(driveflags[toupper(*pci->szFileName) - 'A'] &
+			 DRIVE_SLOW))
+		      info = find_type(pci->szFileName,NULL);
+		    else
+		      info = quick_find_type(pci->szFileName,NULL);
+		    if(!info || ((uso == DO_MOVE && !info->move) ||
+		       (uso == DO_COPY && !info->create)))  {
+		      DrgFreeDraginfo(pDInfo);
+		      return(MRFROM2SHORT(DOR_NODROP,0));
+		    }
+		  }
+		}
+	      }
+	      pDItem = DrgQueryDragitemPtr(pDInfo,   /* Access DRAGITEM       */
+					   0);       /* Index to DRAGITEM     */
+	      if(DrgVerifyRMF(pDItem,                /* Check valid rendering */
+			      DRM_OS2FILE,           /* mechanisms and data   */
+			      NULL) ||
+		  DrgVerifyRMF(pDItem,DRM_FM2ARCMEMBER,
+			       DRF_FM2ARCHIVE)) {    /* formats               */
+		DrgFreeDraginfo(pDInfo);             /* Free DRAGINFO         */
+		if(!pci || (INT)pci == -1)
+		  return MRFROM2SHORT(DOR_DROP,DO_MOVE);
+		if(driveflags[toupper(*pci->szFileName) - 'A'] &
+		   DRIVE_NOTWRITEABLE)
+		  return MRFROM2SHORT(DOR_DROP,DO_LINK);
+		if(toupper(*pci->szFileName) < 'C')
+		  return MRFROM2SHORT(DOR_DROP,DO_COPY);
+		return MRFROM2SHORT(DOR_DROP,     /* Return okay to drop   */
+				    ((fCopyDefault) ?
+				    DO_COPY :
+				    DO_MOVE));
+	      }
+	      DrgFreeDraginfo(pDInfo);            /* Free DRAGINFO         */
+	    }
+	    return MRFROM2SHORT(DOR_NODROP,0);    /* Drop not valid        */
+
+	  case CN_INITDRAG:
+	    {
+	      PCNRDRAGINIT pcd = (PCNRDRAGINIT)mp2;
+	      PCNRITEM     pci;
+
+	      if(pcd) {
+		pci = (PCNRITEM)pcd->pRecord;
+		if(!pci || (INT)pci == -1 ||
+		   (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODRAG))) {
+		  DosBeep(50,100);
+		  break;
+		}
+		if(hwndStatus2)
+		  WinSetWindowText(hwndStatus2,(IsRoot(pci->szFileName)) ?
+				   GetPString(IDS_DRAGROOTTEXT) :
+				   (pci->attrFile & FILE_DIRECTORY) ?
+				   GetPString(IDS_DRAGDIRTEXT) :
+				   GetPString(IDS_DRAGFILETEXT));
+		DoFileDrag(hwnd,
+			   dcd->hwndObject,
+			   mp2,
+			   NULL,
+			   NULL,
+			   TRUE);
+		if(hwndStatus2)
+		  PostMsg(hwnd,
+			  UM_RESCAN,
+			  MPVOID,
+			  MPVOID);
+	      }
+	    }
+	    return 0;
+
+	  case CN_DROP:
+	    {
+	      LISTINFO *li;
+	      ULONG     action = UM_ACTION;
+
+	      li = DoFileDrop(hwnd,
+			      NULL,
+			      TRUE,
+			      mp1,
+			      mp2);
+	      if(li) {
+		if(!*li->targetpath) {
+		  if(li->list[0])
+		    PMMkDir(dcd->hwndParent,
+			    li->list[0],
+			    FALSE);
+		  FreeListInfo(li);
+		  return 0;
+		}
+		if(li->list &&
+		   li->list[0] &&
+		   IsRoot(li->list[0]))
+		  li->type = DO_LINK;
+		else if(fDragndropDlg &&
+			(!*li->arcname || !li->info)) {
+
+		  CHECKLIST    cl;
+
+		  memset(&cl,0,sizeof(cl));
+		  cl.size = sizeof(cl);
+		  cl.flags = li->type;
+		  cl.list = li->list;
+		  cl.cmd = li->type;
+		  cl.prompt = li->targetpath;
+		  li->type = WinDlgBox(HWND_DESKTOP,
+				       dcd->hwndParent,
+				       DropListProc,
+				       FM3ModHandle,
+				       DND_FRAME,
+				       MPFROMP(&cl));
+		  if(!li->type) {
+		    FreeListInfo(li);
+		    return 0;
+		  }
+		  li->list = cl.list;
+		  if(!li->list || !li->list[0]) {
+		    FreeListInfo(li);
+		    return 0;
+		  }
+		}
+		switch(li->type) {
+		  case DO_LINK:
+		    if(fLinkSetsIcon) {
+		      li->type = IDM_SETICON;
+		      action = UM_MASSACTION;
+		    }
+		    else
+		      li->type = IDM_COMPARE;
+		    break;
+		  case DND_EXTRACT:
+		    if(*li->targetpath &&
+		       !IsFile(li->targetpath))
+		      li->type = IDM_EXTRACT;
+		    break;
+		  case DND_MOVE:
+		    li->type = IDM_MOVE;
+		    if(*li->targetpath &&
+		       IsFile(li->targetpath) == 1) {
+		      action = UM_MASSACTION;
+		      li->type = IDM_ARCHIVEM;
+		    }
+		    break;
+		  case DND_WILDMOVE:
+		    li->type = IDM_WILDMOVE;
+		    if(*li->targetpath &&
+		       IsFile(li->targetpath) == 1) {
+		      action = UM_MASSACTION;
+		      li->type = IDM_ARCHIVEM;
+		    }
+		    break;
+		  case DND_OBJECT:
+		    li->type = IDM_OBJECT;
+		    action = UM_MASSACTION;
+		    break;
+		  case DND_SHADOW:
+		    li->type = IDM_SHADOW;
+		    action = UM_MASSACTION;
+		    break;
+		  case DND_COMPARE:
+		    li->type = IDM_COMPARE;
+		    break;
+		  case DND_SETICON:
+		    action = UM_MASSACTION;
+		    li->type = IDM_SETICON;
+		    break;
+		  case DND_COPY:
+		    li->type = IDM_COPY;
+		    if(*li->targetpath &&
+		       IsFile(li->targetpath) == 1) {
+		      action = UM_MASSACTION;
+		      li->type = IDM_ARCHIVE;
+		    }
+		    break;
+		  case DND_WILDCOPY:
+		    li->type = IDM_WILDCOPY;
+		    if(*li->targetpath &&
+		       IsFile(li->targetpath) == 1) {
+		      action = UM_MASSACTION;
+		      li->type = IDM_ARCHIVE;
+		    }
+		    break;
+		  default:
+		    if(*li->arcname && li->info) {
+		      action = UM_MASSACTION;
+		      li->type = (li->type == DO_MOVE) ?
+				  IDM_FAKEEXTRACTM :
+				  IDM_FAKEEXTRACT;
+		    }
+		    else if(*li->targetpath &&
+			    IsFile(li->targetpath) == 1) {
+		      action = UM_MASSACTION;
+		      li->type = (li->type == DO_MOVE) ?
+				  IDM_ARCHIVEM :
+				  IDM_ARCHIVE;
+		    }
+		    else
+		      li->type = (li->type == DO_MOVE) ?
+				  IDM_MOVE :
+				  IDM_COPY;
+		    break;
+		}
+		if(!li->list || !li->list[0])
+		  FreeListInfo(li);
+		else if(!PostMsg(dcd->hwndObject,
+				 action,
+				 MPFROMP(li),
+				 MPVOID))
+		  FreeListInfo(li);
+		else {
+
+		  USHORT usop = 0;
+
+		  switch(li->type) {
+		    case IDM_COPY:
+		    case IDM_WILDCOPY:
+		      usop = DO_COPY;
+		      break;
+		    case IDM_MOVE:
+		    case IDM_WILDMOVE:
+		    case IDM_ARCHIVEM:
+		      usop = DO_MOVE;
+		      break;
+		  }
+		  if(usop)
+		    return MRFROM2SHORT(DOR_DROP,usop);
+		}
+	      }
+	    }
+	    return 0;
+
+	  case CN_EMPHASIS:
+	    if(!fDummy) {
+
+	      PNOTIFYRECORDEMPHASIS pre = mp2;
+
+	      if(pre->fEmphasisMask & CRA_SELECTED) {
+		if(pre->pRecord->flRecordAttr & CRA_SELECTED) {
+		  if(((PCNRITEM)(pre->pRecord))->attrFile & FILE_DIRECTORY) {
+		    PostMsg(hwnd,
+			    UM_RESCAN,
+			    MPVOID,
+			    MPVOID);
+		    if(fFollowTree &&
+		       !(driveflags[toupper(*((PCNRITEM)pre->pRecord)->szFileName) - 'A'] &
+			 DRIVE_INVALID)) {
+		      if(!LastDir &&
+			 !ParentIsDesktop(hwnd,dcd->hwndParent))
+			LastDir = FindDirCnr(dcd->hwndParent);
+		      if(LastDir) {
+
+			NOTIFYRECORDENTER pri;
+			BOOL              tbool = fDCOpens;
+
+			fDCOpens = FALSE;
+			memset(&pri,0,sizeof(pri));
+			pri.hwndCnr = hwnd;
+			pri.fKey = FALSE;
+			pri.pRecord = pre->pRecord;
+			WinSendMsg(hwnd,
+				   WM_CONTROL,
+				   MPFROM2SHORT(SHORT1FROMMP(mp1),
+						CN_ENTER),
+				   MPFROMP(&pri));
+			fDCOpens = tbool;
+		      }
+		    }
+		    if(*(ULONG *)realappname != FM3UL)
+		      WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
+						       MAIN_STATUS),
+				       ((PCNRITEM)(pre->pRecord))->szFileName);
+		  }
+		}
+	      }
+	    }
+	    break;
+
+	  case CN_CONTEXTMENU:
+	    {
+	      PCNRITEM pci = (PCNRITEM)mp2;
+	      BOOL     wasFollowing;
+
+	      DosEnterCritSec();
+	       wasFollowing = fFollowTree;
+	       fFollowTree = FALSE;
+	      DosExitCritSec();
+	      if(pci && (INT)pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
+		WinSendMsg(hwnd,
+			   CM_SETRECORDEMPHASIS,
+			   MPFROMP(pci),
+			   MPFROM2SHORT(TRUE,CRA_CURSORED));
+		MarkAll(hwnd,
+			FALSE,
+			FALSE,
+			TRUE);
+		if(!(pci->attrFile & FILE_DIRECTORY))
+		  dcd->hwndLastMenu = CheckMenu(&FileMenu,FILE_POPUP);
+		else if(!IsRoot(pci->szFileName))
+		  dcd->hwndLastMenu = CheckMenu(&DirMenu,DIR_POPUP);
+		else
+		  dcd->hwndLastMenu = CheckMenu(&TreeMenu,TREE_POPUP);
+	      }
+	      else {
+		dcd->hwndLastMenu = CheckMenu(&TreeCnrMenu,TREECNR_POPUP);
+		if(dcd->hwndLastMenu && !dcd->cnremphasized) {
+		  WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPVOID,
+			     MPFROM2SHORT(TRUE,CRA_SOURCE));
+		  dcd->cnremphasized = TRUE;
+		}
+	      }
+	      if(dcd->hwndLastMenu) {
+		if(dcd->hwndLastMenu == DirMenu)
+		  WinEnableMenuItem(DirMenu,IDM_TREE,FALSE);
+		if(dcd->hwndLastMenu == TreeCnrMenu) {
+		  if(dcd->flWindowAttr & CV_MINI)
+		    WinCheckMenuItem(dcd->hwndLastMenu,IDM_MINIICONS,TRUE);
+		}
+		if(!PopupMenu(hwnd,hwnd,dcd->hwndLastMenu)) {
+		  if(dcd->cnremphasized) {
+		    WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPVOID,
+			       MPFROM2SHORT(FALSE,CRA_SOURCE));
+		    dcd->cnremphasized = FALSE;
+		  }
+		  if(dcd->hwndLastMenu != TreeCnrMenu)
+		    MarkAll(hwnd,TRUE,FALSE,TRUE);
+		}
+	      }
+	      DosEnterCritSec();
+	       fFollowTree = wasFollowing;
+	      DosExitCritSec();
+	    }
+	    break;
+
+	  case CN_ENTER:
+	    if(mp2)
+	    {
+	      PCNRITEM pci = (PCNRITEM)((PNOTIFYRECORDENTER)mp2)->pRecord;
+
+	      PostMsg(hwnd,UM_ENTER,MPFROMP(pci),MPVOID);
+	    }
+	    break;
+
+	  case CN_COLLAPSETREE:
+	  case CN_EXPANDTREE:
+	    {
+	      PCNRITEM pci = (PCNRITEM)mp2;
+
+	      if(pci && (INT)pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
+		if(driveflags[toupper(*pci->szFileName) - 'A'] &
+		   DRIVE_REMOVABLE) {
+
+		  struct {
+		    ULONG serial;
+		    CHAR  volumelength;
+		    CHAR  volumelabel[CCHMAXPATH];
+		  }         volser;
+
+		  memset(&volser,0,sizeof(volser));
+		  DosError(FERR_DISABLEHARDERR);
+		  if(!DosQueryFSInfo(toupper(*pci->szFileName) - '@',
+				     FSIL_VOLSER,&volser,
+				     (ULONG)sizeof(volser))) {
+		    if(SHORT2FROMMP(mp1) == CN_COLLAPSETREE &&
+		       !volser.serial ||
+		       driveserial[toupper(*pci->szFileName) - 'A'] !=
+			 volser.serial)
+		      UnFlesh(hwnd,pci);
+		    if(SHORT2FROMMP(mp1) != CN_COLLAPSETREE ||
+		       (!volser.serial ||
+			driveserial[toupper(*pci->szFileName) - 'A'] !=
+			  volser.serial)) {
+		      if(Flesh(hwnd,pci) &&
+			 SHORT2FROMMP(mp1) == CN_EXPANDTREE &&
+			 !dcd->suspendview && fTopDir)
+			PostMsg(hwnd,UM_TOPDIR,MPFROMP(pci),MPVOID);
+		    }
+		    driveserial[toupper(*pci->szFileName) - 'A'] =
+		      volser.serial;
+		  }
+		  else {
+		    driveserial[toupper(*pci->szFileName) - 'A'] = -1;
+		    UnFlesh(hwnd,pci);
+		    PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
+		    DosBeep(250,100);
+		  }
+		}
+		else if(SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
+		  if(Flesh(hwnd,pci) && !dcd->suspendview && fTopDir)
+		    PostMsg(hwnd,UM_TOPDIR,MPFROMP(pci),MPVOID);
+		}
+		if(SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview)
+		  WinSendMsg(hwnd,UM_FILTER,MPVOID,MPVOID);
+	      }
+	    }
+	    break;
+	}
       }
       return 0;
 
     case UM_ACTION:
       if(mp1) {
 
-        LISTINFO *li = mp1;
-        ULONG     action = (ULONG)mp2;
+	LISTINFO *li = mp1;
+	ULONG     action = (ULONG)mp2;
 
-        if(!li->list || !li->list[0] ||
-           !PostMsg(dcd->hwndObject,
-                    action,
-                    MPFROMP(li),
-                    MPVOID))
-          FreeListInfo(li);
+	if(!li->list || !li->list[0] ||
+	   !PostMsg(dcd->hwndObject,
+		    action,
+		    MPFROMP(li),
+		    MPVOID))
+	  FreeListInfo(li);
       }
       return 0;
 
     case UM_SHOWME:
       if(mp1 && dcd) {
 
-        CHAR *dir;
+	CHAR *dir;
 
-        dir = strdup((CHAR *)mp1);
-        if(dir) {
-          if(!PostMsg(dcd->hwndObject,
-                      UM_SHOWME,
-                      MPFROMP(dir),
-                      MPVOID))
-            free(dir);
-        }
+	dir = strdup((CHAR *)mp1);
+	if(dir) {
+	  if(!PostMsg(dcd->hwndObject,
+		      UM_SHOWME,
+		      MPFROMP(dir),
+		      MPVOID))
+	    free(dir);
+	}
       }
       return 0;
 
     case UM_TOPDIR:
       if(mp1) {
 
-        PCNRITEM pci = (PCNRITEM)mp1;
+	PCNRITEM pci = (PCNRITEM)mp1;
 
-        ShowCnrRecord(hwnd,
-                      (PMINIRECORDCORE)pci);
+	ShowCnrRecord(hwnd,
+		      (PMINIRECORDCORE)pci);
       }
       return 0;
 
     case UM_ENTER:
       {
-        FILEFINDBUF3 ffb;
-        HDIR         hDir = HDIR_CREATE;
-        ULONG        nm = 1L;
-        APIRET       status;
-        BOOL         IsOk = FALSE;
-        ULONG        ulDriveNum,ulDriveMap;
-        PCNRITEM     pciP,pciL,pci;
-        ULONG        fl = SWP_ACTIVATE;
+	FILEFINDBUF3 ffb;
+	HDIR         hDir = HDIR_CREATE;
+	ULONG        nm = 1L;
+	APIRET       status;
+	BOOL         IsOk = FALSE;
+	ULONG        ulDriveNum,ulDriveMap;
+	PCNRITEM     pciP,pciL,pci;
+	ULONG        fl = SWP_ACTIVATE;
 
-        if(fFollowTree)
-          fl = 0;
-        SetShiftState();
-        pci = (PCNRITEM)mp1;
-        if(pci &&
-           (INT)pci != -1 &&
-           !(pci->rc.flRecordAttr & CRA_INUSE) &&
-           !(pci->flags & RECFLAGS_ENV) &&
-           IsFullName(pci->szFileName)) {
-          if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_INVALID) {
-            DosBeep(50,100);
-            if(hwndStatus)
-              WinSetWindowText(hwndStatus,
-                               GetPString(IDS_RESCANSUGTEXT));
-            return 0;
-          }
-          DosError(FERR_DISABLEHARDERR);
-          if(!DosQCurDisk(&ulDriveNum,&ulDriveMap)) {
-            if(!(ulDriveMap & 1L << (toupper(*pci->szFileName) - 'A'))) {
-              pciL = pciP = pci;
-              for(;;) {
-                pciP = WinSendMsg(hwnd,
-                                  CM_QUERYRECORD,
-                                  MPFROMP(pciL),
-                                  MPFROM2SHORT(CMA_PARENT,CMA_ITEMORDER));
-                if(pciP && (INT)pciP != -1)
-                  pciL = pciP;
-                else {
-                  pciP = pciL;
-                  break;
-                }
-              }
-              WinSendMsg(hwnd,
-                         CM_REMOVERECORD,
-                         MPFROMP(&pciP),
-                         MPFROM2SHORT(1,CMA_FREE | CMA_INVALIDATE));
-              return 0;
-            }
-          }
-          if(driveflags[toupper(*pci->szFileName) - 'A'] &
-             (DRIVE_REMOVABLE | DRIVE_NOPRESCAN)) {
+	if(fFollowTree)
+	  fl = 0;
+	SetShiftState();
+	pci = (PCNRITEM)mp1;
+	if(pci &&
+	   (INT)pci != -1 &&
+	   !(pci->rc.flRecordAttr & CRA_INUSE) &&
+	   !(pci->flags & RECFLAGS_ENV) &&
+	   IsFullName(pci->szFileName)) {
+	  if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_INVALID) {
+	    DosBeep(50,100);
+	    if(hwndStatus)
+	      WinSetWindowText(hwndStatus,
+			       GetPString(IDS_RESCANSUGTEXT));
+	    return 0;
+	  }
+	  DosError(FERR_DISABLEHARDERR);
+	  if(!DosQCurDisk(&ulDriveNum,&ulDriveMap)) {
+	    if(!(ulDriveMap & 1L << (toupper(*pci->szFileName) - 'A'))) {
+	      pciL = pciP = pci;
+	      for(;;) {
+		pciP = WinSendMsg(hwnd,
+				  CM_QUERYRECORD,
+				  MPFROMP(pciL),
+				  MPFROM2SHORT(CMA_PARENT,CMA_ITEMORDER));
+		if(pciP && (INT)pciP != -1)
+		  pciL = pciP;
+		else {
+		  pciP = pciL;
+		  break;
+		}
+	      }
+	      WinSendMsg(hwnd,
+			 CM_REMOVERECORD,
+			 MPFROMP(&pciP),
+			 MPFROM2SHORT(1,CMA_FREE | CMA_INVALIDATE));
+	      return 0;
+	    }
+	  }
+	  if(driveflags[toupper(*pci->szFileName) - 'A'] &
+	     (DRIVE_REMOVABLE | DRIVE_NOPRESCAN)) {
 
-            struct {
-              ULONG serial;
-              CHAR  volumelength;
-              CHAR  volumelabel[CCHMAXPATH];
-            } volser;
+	    struct {
+	      ULONG serial;
+	      CHAR  volumelength;
+	      CHAR  volumelabel[CCHMAXPATH];
+	    } volser;
 
-            pciL = pciP = pci;
-            for(;;) {
-              pciP = WinSendMsg(hwnd,
-                                CM_QUERYRECORD,
-                                MPFROMP(pciL),
-                                MPFROM2SHORT(CMA_PARENT,CMA_ITEMORDER));
-              if(pciP && (INT)pciP != -1)
-                pciL = pciP;
-              else {
-                pciP = pciL;
-                break;
-              }
-            }
-            if((driveflags[toupper(*pci->szFileName) - 'A'] &
-               DRIVE_NOPRESCAN) ||
-               (toupper(*pci->szFileName) > 'B' &&
-                !(driveflags[toupper(*pci->szFileName) - 'A'] &
-                  DRIVE_CDROM))) {
+	    pciL = pciP = pci;
+	    for(;;) {
+	      pciP = WinSendMsg(hwnd,
+				CM_QUERYRECORD,
+				MPFROMP(pciL),
+				MPFROM2SHORT(CMA_PARENT,CMA_ITEMORDER));
+	      if(pciP && (INT)pciP != -1)
+		pciL = pciP;
+	      else {
+		pciP = pciL;
+		break;
+	      }
+	    }
+	    if((driveflags[toupper(*pci->szFileName) - 'A'] &
+	       DRIVE_NOPRESCAN) ||
+	       (toupper(*pci->szFileName) > 'B' &&
+		!(driveflags[toupper(*pci->szFileName) - 'A'] &
+		  DRIVE_CDROM))) {
 
-              INT      removable,
-                       x = (INT)(toupper(*pci->szFileName) - 'A');
-              ULONG    drvtype;
-              CHAR     FileSystem[CCHMAXPATH];
+	      INT      removable,
+		       x = (INT)(toupper(*pci->szFileName) - 'A');
+	      ULONG    drvtype;
+	      CHAR     FileSystem[CCHMAXPATH];
 
-              DosError(FERR_DISABLEHARDERR);
-              removable = CheckDrive(toupper(*pciP->szFileName),
-                                     FileSystem,
-                                     &drvtype);
-              if(removable != -1) {
-                driveflags[x] &= (DRIVE_IGNORE      | DRIVE_NOPRESCAN |
-                                  DRIVE_NOLOADICONS | DRIVE_NOLOADSUBJS |
-                                  DRIVE_NOLOADLONGS | DRIVE_INCLUDEFILES |
-                                  DRIVE_SLOW);
-                if(removable == 1)
-                  driveflags[x] |= DRIVE_REMOVABLE;
-                if(drvtype & DRIVE_REMOTE)
-                  driveflags[x] |= DRIVE_REMOTE;
-                if(!strcmp(FileSystem,CDFS))
-                  driveflags[x] |= (DRIVE_REMOVABLE |
-                                    DRIVE_NOTWRITEABLE |
-                                    DRIVE_CDROM);
-                if (strcmp(FileSystem,HPFS) &&
+	      DosError(FERR_DISABLEHARDERR);
+	      removable = CheckDrive(toupper(*pciP->szFileName),
+				     FileSystem,
+				     &drvtype);
+	      if(removable != -1) {
+		driveflags[x] &= (DRIVE_IGNORE      | DRIVE_NOPRESCAN |
+				  DRIVE_NOLOADICONS | DRIVE_NOLOADSUBJS |
+				  DRIVE_NOLOADLONGS | DRIVE_INCLUDEFILES |
+				  DRIVE_SLOW);
+		if(removable == 1)
+		  driveflags[x] |= DRIVE_REMOVABLE;
+		if(drvtype & DRIVE_REMOTE)
+		  driveflags[x] |= DRIVE_REMOTE;
+		if(!strcmp(FileSystem,CDFS))
+		  driveflags[x] |= (DRIVE_REMOVABLE |
+				    DRIVE_NOTWRITEABLE |
+				    DRIVE_CDROM);
+		if (strcmp(FileSystem,HPFS) &&
 		    strcmp(FileSystem,JFS) &&
 		    strcmp(FileSystem,CDFS) &&
 		    strcmp(FileSystem,FAT32) &&
-                    strcmp(FileSystem,HPFS386))
+		    strcmp(FileSystem,HPFS386))
 		{
-                  driveflags[x] |= DRIVE_NOLONGNAMES;
+		  driveflags[x] |= DRIVE_NOLONGNAMES;
 		}
-                if(!strcmp(FileSystem,CBSIFS)) {
-                  driveflags[x] |= DRIVE_ZIPSTREAM;
-                  driveflags[x] &= (~DRIVE_REMOTE);
-                }
-                if(driveflags[x] & DRIVE_CDROM)
-                  pciP->rc.hptrIcon = hptrCDROM;
-                else
-                  pciP->rc.hptrIcon = (driveflags[x] & DRIVE_REMOVABLE) ?
-                                       hptrRemovable :
-                                       (driveflags[x] & DRIVE_REMOTE) ?
-                                       hptrRemote : hptrDrive;
-                WinSendMsg(hwnd,
-                           CM_INVALIDATERECORD,
-                           MPFROMP(&pciP),
-                           MPFROM2SHORT(1,CMA_ERASE | CMA_REPOSITION));
-                if(hwndMain)
-                  PostMsg(hwndMain,
-                          UM_BUILDDRIVES,
-                          MPVOID,
-                          MPVOID);
-              }
-            }
-            memset(&volser,0,sizeof(volser));
-            DosError(FERR_DISABLEHARDERR);
-            status = DosQueryFSInfo(toupper(*pci->szFileName) - '@',
-                                    FSIL_VOLSER,&volser,
-                                    (ULONG)sizeof(volser));
-            if(!status) {
-              if(!volser.serial ||
-                 driveserial[toupper(*pci->szFileName) - 'A'] !=
-                   volser.serial) {
-                UnFlesh(hwnd,pciP);
-                Flesh(hwnd,pciP);
-                driveserial[toupper(*pci->szFileName) - 'A'] =
-                  volser.serial;
-              }
-              pciL = WinSendMsg(hwnd,
-                                CM_QUERYRECORD,
-                                MPFROMP(pciP),
-                                MPFROM2SHORT(CMA_FIRSTCHILD,
-                                             CMA_ITEMORDER));
-              if(!pciL)
-                Flesh(hwnd,pciP);
-            }
-            else {
-              driveserial[toupper(*pci->szFileName) - 'A'] = -1;
-              UnFlesh(hwnd,
-                      pci);
-              PostMsg(hwnd,
-                      UM_RESCAN,
-                      MPVOID,
-                      MPVOID);
-              PostMsg(hwnd,
-                      UM_SETUP2,
-                      MPFROMP(pci),
-                      MPFROMLONG(status));
-              return 0;
-            }
-          }
-          status = 0;
-          IsOk = (IsRoot(pci->szFileName) &&
-                  IsValidDrive(toupper(*pci->szFileName)));
-          if(!IsOk) {
-            DosError(FERR_DISABLEHARDERR);
-            status = DosFindFirst(pci->szFileName,&hDir,
-                                  FILE_NORMAL   | FILE_DIRECTORY |
-                                  FILE_ARCHIVED | FILE_READONLY  |
-                                  FILE_HIDDEN   | FILE_SYSTEM,
-                                  &ffb,sizeof(ffb),&nm,
-                                  FIL_STANDARD);
-            priority_bumped();
-          }
-          if(!status) {
-            if(!IsOk)
-              DosFindClose(hDir);
-            if(IsOk ||
-               (ffb.attrFile & FILE_DIRECTORY)) {
-              if((shiftstate & (KC_CTRL | KC_ALT)) ==
-                 (KC_CTRL | KC_ALT)) {
-                PostMsg(hwnd,
-                        WM_COMMAND,
-                        MPFROM2SHORT(IDM_SHOWALLFILES,0),
-                        MPVOID);
-                return 0;
-              }
-              if((shiftstate & (KC_CTRL | KC_SHIFT)) ==
-                 (KC_CTRL | KC_SHIFT)) {
-                OpenObject(pci->szFileName,
-                           Settings,
-                           dcd->hwndFrame);
-                return 0;
-              }
-              if(!(shiftstate & (KC_CTRL | KC_SHIFT))) {
-                if(!ParentIsDesktop(hwnd,dcd->hwndParent)) {
-                  if(FindDirCnrByName(pci->szFileName,
-                                      TRUE))
-                    return 0;
-                }
-              }
-              if((shiftstate & KC_CTRL) ||
-                 (!(shiftstate & KC_SHIFT) &&
-                  ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                  fVTreeOpensWPS)) {
+		if(!strcmp(FileSystem,CBSIFS)) {
+		  driveflags[x] |= DRIVE_ZIPSTREAM;
+		  driveflags[x] &= (~DRIVE_REMOTE);
+		}
+		if(driveflags[x] & DRIVE_CDROM)
+		  pciP->rc.hptrIcon = hptrCDROM;
+		else
+		  pciP->rc.hptrIcon = (driveflags[x] & DRIVE_REMOVABLE) ?
+				       hptrRemovable :
+				       (driveflags[x] & DRIVE_REMOTE) ?
+				       hptrRemote : hptrDrive;
+		WinSendMsg(hwnd,
+			   CM_INVALIDATERECORD,
+			   MPFROMP(&pciP),
+			   MPFROM2SHORT(1,CMA_ERASE | CMA_REPOSITION));
+		if(hwndMain)
+		  PostMsg(hwndMain,
+			  UM_BUILDDRIVES,
+			  MPVOID,
+			  MPVOID);
+	      }
+	    }
+	    memset(&volser,0,sizeof(volser));
+	    DosError(FERR_DISABLEHARDERR);
+	    status = DosQueryFSInfo(toupper(*pci->szFileName) - '@',
+				    FSIL_VOLSER,&volser,
+				    (ULONG)sizeof(volser));
+	    if(!status) {
+	      if(!volser.serial ||
+		 driveserial[toupper(*pci->szFileName) - 'A'] !=
+		   volser.serial) {
+		UnFlesh(hwnd,pciP);
+		Flesh(hwnd,pciP);
+		driveserial[toupper(*pci->szFileName) - 'A'] =
+		  volser.serial;
+	      }
+	      pciL = WinSendMsg(hwnd,
+				CM_QUERYRECORD,
+				MPFROMP(pciP),
+				MPFROM2SHORT(CMA_FIRSTCHILD,
+					     CMA_ITEMORDER));
+	      if(!pciL)
+		Flesh(hwnd,pciP);
+	    }
+	    else {
+	      driveserial[toupper(*pci->szFileName) - 'A'] = -1;
+	      UnFlesh(hwnd,
+		      pci);
+	      PostMsg(hwnd,
+		      UM_RESCAN,
+		      MPVOID,
+		      MPVOID);
+	      PostMsg(hwnd,
+		      UM_SETUP2,
+		      MPFROMP(pci),
+		      MPFROMLONG(status));
+	      return 0;
+	    }
+	  }
+	  status = 0;
+	  IsOk = (IsRoot(pci->szFileName) &&
+		  IsValidDrive(toupper(*pci->szFileName)));
+	  if(!IsOk) {
+	    DosError(FERR_DISABLEHARDERR);
+	    status = DosFindFirst(pci->szFileName,&hDir,
+				  FILE_NORMAL   | FILE_DIRECTORY |
+				  FILE_ARCHIVED | FILE_READONLY  |
+				  FILE_HIDDEN   | FILE_SYSTEM,
+				  &ffb,sizeof(ffb),&nm,
+				  FIL_STANDARD);
+	    priority_bumped();
+	  }
+	  if(!status) {
+	    if(!IsOk)
+	      DosFindClose(hDir);
+	    if(IsOk ||
+	       (ffb.attrFile & FILE_DIRECTORY)) {
+	      if((shiftstate & (KC_CTRL | KC_ALT)) ==
+		 (KC_CTRL | KC_ALT)) {
+		PostMsg(hwnd,
+			WM_COMMAND,
+			MPFROM2SHORT(IDM_SHOWALLFILES,0),
+			MPVOID);
+		return 0;
+	      }
+	      if((shiftstate & (KC_CTRL | KC_SHIFT)) ==
+		 (KC_CTRL | KC_SHIFT)) {
+		OpenObject(pci->szFileName,
+			   Settings,
+			   dcd->hwndFrame);
+		return 0;
+	      }
+	      if(!(shiftstate & (KC_CTRL | KC_SHIFT))) {
+		if(!ParentIsDesktop(hwnd,dcd->hwndParent)) {
+		  if(FindDirCnrByName(pci->szFileName,
+				      TRUE))
+		    return 0;
+		}
+	      }
+	      if((shiftstate & KC_CTRL) ||
+		 (!(shiftstate & KC_SHIFT) &&
+		  ParentIsDesktop(hwnd,dcd->hwndParent) &&
+		  fVTreeOpensWPS)) {
 
-                ULONG size = sizeof(ULONG),flWindowAttr = CV_ICON;
-                CHAR  s[33];
+		ULONG size = sizeof(ULONG),flWindowAttr = CV_ICON;
+		CHAR  s[33];
 
-                strcpy(s,"ICON");
-                PrfQueryProfileData(fmprof,
-                                    appname,
-                                    "DirflWindowAttr",
-                                    (PVOID)&flWindowAttr,
-                                    &size);
-                if(flWindowAttr & CV_DETAIL) {
-                  if(IsRoot(pci->szFileName))
-                    strcpy(s,"TREE");
-                  else
-                    strcpy(s,"DETAILS");
-                }
-                OpenObject(pci->szFileName,
-                           s,
-                           dcd->hwndFrame);
-                return 0;
-              }
-              if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                 !fDCOpens &&
-                 !LastDir &&
-                 !(shiftstate & KC_SHIFT))
-                LastDir = FindDirCnr(dcd->hwndParent);
-              if(LastDir &&
-                 !fDCOpens &&
-                 !(shiftstate & KC_SHIFT)) {
-                WinSendMsg(LastDir,
-                           UM_SETDIR,
-                           MPFROMP(pci->szFileName),
-                           MPVOID);
-                WinSetWindowPos(WinQueryWindow(WinQueryWindow(LastDir,
-                                                              QW_PARENT),
-                                               QW_PARENT),
-                                HWND_TOP,
-                                0,
-                                0,
-                                0,
-                                0,
-                                SWP_ZORDER | fl);
-              }
-              else
-                OpenDirCnr(hwnd,
-                           dcd->hwndParent,
-                           dcd->hwndFrame,
-                           FALSE,
-                           pci->szFileName);
-            }
-            else {
-              if(!(driveflags[toupper(*pci->szFileName) - 'A'] &
-                   DRIVE_INCLUDEFILES))
-                WinSendMsg(hwnd,
-                           CM_REMOVERECORD,
-                           MPFROMP(&pci),
-                           MPFROM2SHORT(1,CMA_FREE | CMA_INVALIDATE));
-              else {
+		strcpy(s,"ICON");
+		PrfQueryProfileData(fmprof,
+				    appname,
+				    "DirflWindowAttr",
+				    (PVOID)&flWindowAttr,
+				    &size);
+		if(flWindowAttr & CV_DETAIL) {
+		  if(IsRoot(pci->szFileName))
+		    strcpy(s,"TREE");
+		  else
+		    strcpy(s,"DETAILS");
+		}
+		OpenObject(pci->szFileName,
+			   s,
+			   dcd->hwndFrame);
+		return 0;
+	      }
+	      if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
+		 !fDCOpens &&
+		 !LastDir &&
+		 !(shiftstate & KC_SHIFT))
+		LastDir = FindDirCnr(dcd->hwndParent);
+	      if(LastDir &&
+		 !fDCOpens &&
+		 !(shiftstate & KC_SHIFT)) {
+		WinSendMsg(LastDir,
+			   UM_SETDIR,
+			   MPFROMP(pci->szFileName),
+			   MPVOID);
+		WinSetWindowPos(WinQueryWindow(WinQueryWindow(LastDir,
+							      QW_PARENT),
+					       QW_PARENT),
+				HWND_TOP,
+				0,
+				0,
+				0,
+				0,
+				SWP_ZORDER | fl);
+	      }
+	      else
+		OpenDirCnr(hwnd,
+			   dcd->hwndParent,
+			   dcd->hwndFrame,
+			   FALSE,
+			   pci->szFileName);
+	    }
+	    else {
+	      if(!(driveflags[toupper(*pci->szFileName) - 'A'] &
+		   DRIVE_INCLUDEFILES))
+		WinSendMsg(hwnd,
+			   CM_REMOVERECORD,
+			   MPFROMP(&pci),
+			   MPFROM2SHORT(1,CMA_FREE | CMA_INVALIDATE));
+	      else {
 
-                SWP swp;
+		SWP swp;
 
-                WinQueryWindowPos(dcd->hwndFrame,&swp);
-                DefaultViewKeys(hwnd,
-                                dcd->hwndFrame,
-                                dcd->hwndParent,
-                                &swp,
-                                pci->szFileName);
-              }
-            }
-          }
-          else {
-            if(!IsRoot(pci->szFileName)) {
-              NotifyError(pci->szFileName,status);
-              WinSendMsg(hwnd,
-                         CM_REMOVERECORD,
-                         MPFROMP(&pci),
-                         MPFROM2SHORT(1,CMA_FREE | CMA_INVALIDATE));
-            }
-          }
-        }
-        else if(!pci)
-          PostMsg(hwnd,
-                  WM_COMMAND,
-                  MPFROM2SHORT(IDM_MKDIR,0),
-                  MPVOID);
-        if(fFollowTree)
-          WinSetFocus(HWND_DESKTOP,hwnd);
+		WinQueryWindowPos(dcd->hwndFrame,&swp);
+		DefaultViewKeys(hwnd,
+				dcd->hwndFrame,
+				dcd->hwndParent,
+				&swp,
+				pci->szFileName);
+	      }
+	    }
+	  }
+	  else {
+	    if(!IsRoot(pci->szFileName)) {
+	      NotifyError(pci->szFileName,status);
+	      WinSendMsg(hwnd,
+			 CM_REMOVERECORD,
+			 MPFROMP(&pci),
+			 MPFROM2SHORT(1,CMA_FREE | CMA_INVALIDATE));
+	    }
+	  }
+	}
+	else if(!pci)
+	  PostMsg(hwnd,
+		  WM_COMMAND,
+		  MPFROM2SHORT(IDM_MKDIR,0),
+		  MPVOID);
+	if(fFollowTree)
+	  WinSetFocus(HWND_DESKTOP,hwnd);
       }
       return 0;
 
     case WM_MENUEND:
       if(dcd) {
 
-        HWND hwndMenu = (HWND)mp2;
+	HWND hwndMenu = (HWND)mp2;
 
-        if(hwndMenu == TreeCnrMenu || hwndMenu == TreeMenu ||
-           hwndMenu == DirMenu) {
-          MarkAll(hwnd,TRUE,FALSE,TRUE);
-          if(dcd->cnremphasized) {
-            WinSendMsg(hwnd,
-                       CM_SETRECORDEMPHASIS,
-                       MPVOID,
-                       MPFROM2SHORT(FALSE,CRA_SOURCE));
-            dcd->cnremphasized = FALSE;
-          }
-        }
+	if(hwndMenu == TreeCnrMenu || hwndMenu == TreeMenu ||
+	   hwndMenu == DirMenu) {
+	  MarkAll(hwnd,TRUE,FALSE,TRUE);
+	  if(dcd->cnremphasized) {
+	    WinSendMsg(hwnd,
+		       CM_SETRECORDEMPHASIS,
+		       MPVOID,
+		       MPFROM2SHORT(FALSE,CRA_SOURCE));
+	    dcd->cnremphasized = FALSE;
+	  }
+	}
       }
       break;
 
     case UM_OPENWINDOWFORME:
       if(dcd) {
-        if(mp1 &&
-           !IsFile((CHAR *)mp1))
-          OpenDirCnr(hwnd,
-                     dcd->hwndParent,
-                     dcd->hwndFrame,
-                     FALSE,
-                     (char *)mp1);
+	if(mp1 &&
+	   !IsFile((CHAR *)mp1))
+	  OpenDirCnr(hwnd,
+		     dcd->hwndParent,
+		     dcd->hwndFrame,
+		     FALSE,
+		     (char *)mp1);
       }
       return 0;
 
     case MM_PORTHOLEINIT:
       if(dcd) {
-        switch(SHORT1FROMMP(mp1)) {
-          case 0:
-          case 1:
-            {
-              ULONG wmsg;
+	switch(SHORT1FROMMP(mp1)) {
+	  case 0:
+	  case 1:
+	    {
+	      ULONG wmsg;
 
-              wmsg = ((SHORT1FROMMP(mp1) == 0) ?
-                       UM_FILESMENU :
-                       UM_VIEWSMENU);
-              PortholeInit((HWND)WinSendMsg(dcd->hwndClient,
-                                            wmsg,
-                                            MPVOID,
-                                            MPVOID),
-                           mp1,
-                           mp2);
-            }
-            break;
-        }
+	      wmsg = ((SHORT1FROMMP(mp1) == 0) ?
+		       UM_FILESMENU :
+		       UM_VIEWSMENU);
+	      PortholeInit((HWND)WinSendMsg(dcd->hwndClient,
+					    wmsg,
+					    MPVOID,
+					    MPVOID),
+			   mp1,
+			   mp2);
+	    }
+	    break;
+	}
       }
       break;
 
     case UM_INITMENU:
     case WM_INITMENU:
       if(dcd) {
-        switch(SHORT1FROMMP(mp1)) {
-          case IDM_FILESMENU:
-            {
-              PCNRITEM pci;
+	switch(SHORT1FROMMP(mp1)) {
+	  case IDM_FILESMENU:
+	    {
+	      PCNRITEM pci;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1) {
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_UPDATE,
-                                  (pci->flags & RECFLAGS_UNDERENV) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_EXPANDSUBMENU,
-                                  (pci->flags & RECFLAGS_UNDERENV) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_EXPAND,
-                                  (pci->flags & RECFLAGS_UNDERENV) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_COLLAPSE,
-                                  (pci->flags & RECFLAGS_UNDERENV) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_DELETE,
-                                  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_PERMDELETE,
-                                  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_DELETESUBMENU,
-                                  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_MOVEMENU,
-                                  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_RENAME,
-                                  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_DETACH,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) != 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_EJECT,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1) {
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_UPDATE,
+				  (pci->flags & RECFLAGS_UNDERENV) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_EXPANDSUBMENU,
+				  (pci->flags & RECFLAGS_UNDERENV) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_EXPAND,
+				  (pci->flags & RECFLAGS_UNDERENV) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_COLLAPSE,
+				  (pci->flags & RECFLAGS_UNDERENV) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_DELETE,
+				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_PERMDELETE,
+				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_DELETESUBMENU,
+				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_MOVEMENU,
+				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_RENAME,
+				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_DETACH,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) != 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_EJECT,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
 /*
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_CLOSETRAY,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM) != 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_CLOSETRAY,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM) != 0);
 */
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_LOCK,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_UNLOCK,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_OPTIMIZE,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_FORMAT,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_CHKDSK,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_MKDIR,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_UNDELETE,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-                WinEnableMenuItem((HWND)mp2,
-                                  IDM_ATTRS,
-                                  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-              }
-            }
-            break;
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_LOCK,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_UNLOCK,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_OPTIMIZE,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_FORMAT,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_CHKDSK,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_MKDIR,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_UNDELETE,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+		WinEnableMenuItem((HWND)mp2,
+				  IDM_ATTRS,
+				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+	      }
+	    }
+	    break;
 
-          case IDM_VIEWSMENU:
-            WinCheckMenuItem((HWND)mp2,
-                             IDM_MINIICONS,
-                             ((dcd->flWindowAttr & CV_MINI) != 0));
-            WinEnableMenuItem((HWND)mp2,
-                              IDM_RESELECT,
-                              FALSE);
-            break;
+	  case IDM_VIEWSMENU:
+	    WinCheckMenuItem((HWND)mp2,
+			     IDM_MINIICONS,
+			     ((dcd->flWindowAttr & CV_MINI) != 0));
+	    WinEnableMenuItem((HWND)mp2,
+			      IDM_RESELECT,
+			      FALSE);
+	    break;
 
-          case IDM_COMMANDSMENU:
-            SetupCommandMenu((HWND)mp2,hwnd);
-            break;
+	  case IDM_COMMANDSMENU:
+	    SetupCommandMenu((HWND)mp2,hwnd);
+	    break;
 
-          case IDM_SORTSUBMENU:
-            SetSortChecks((HWND)mp2,TreesortFlags);
-            break;
+	  case IDM_SORTSUBMENU:
+	    SetSortChecks((HWND)mp2,TreesortFlags);
+	    break;
 
-          case IDM_WINDOWSMENU:
-            SetupWinList((HWND)mp2,
-                         (hwndMain) ? hwndMain : (HWND)0,
-                         dcd->hwndFrame);
-            break;
-        }
-        dcd->hwndLastMenu = (HWND)mp2;
+	  case IDM_WINDOWSMENU:
+	    SetupWinList((HWND)mp2,
+			 (hwndMain) ? hwndMain : (HWND)0,
+			 dcd->hwndFrame);
+	    break;
+	}
+	dcd->hwndLastMenu = (HWND)mp2;
       }
       if(msg == WM_INITMENU)
-        break;
+	break;
       return 0;
 
     case UM_COMMAND:
       if(mp1) {
-        if(dcd) {
-          if(!PostMsg(dcd->hwndObject,UM_COMMAND,mp1,mp2)) {
-            FreeListInfo((LISTINFO *)mp1);
-            DosBeep(50,100);
-          }
-          else
-            return (MRESULT)TRUE;
-        }
-        else
-          FreeListInfo((LISTINFO *)mp1);
+	if(dcd) {
+	  if(!PostMsg(dcd->hwndObject,UM_COMMAND,mp1,mp2)) {
+	    FreeListInfo((LISTINFO *)mp1);
+	    DosBeep(50,100);
+	  }
+	  else
+	    return (MRESULT)TRUE;
+	}
+	else
+	  FreeListInfo((LISTINFO *)mp1);
       }
       return 0;
 
     case UM_LOADFILE:
       if(dcd && mp2) {
 
-        HWND ret;
+	HWND ret;
 
-        ret = StartMLEEditor(dcd->hwndParent,(INT)mp1,(CHAR *)mp2,
-                             dcd->hwndFrame);
-        if(mp2)
-          free((CHAR *)mp2);
-        return MRFROMLONG(ret);
+	ret = StartMLEEditor(dcd->hwndParent,(INT)mp1,(CHAR *)mp2,
+			     dcd->hwndFrame);
+	if(mp2)
+	  free((CHAR *)mp2);
+	return MRFROMLONG(ret);
       }
       return 0;
 
@@ -2441,806 +2459,806 @@ KbdRetry:
 
     case UM_NOTIFY:
       if(mp2)
-        Notify((CHAR *)mp2);
+	Notify((CHAR *)mp2);
       return 0;
 
     case UM_FILTER:
       if(dcd) {
 
-        BOOL tempsusp = dcd->suspendview;
+	BOOL tempsusp = dcd->suspendview;
 
-        if(mp1) {
-          DosEnterCritSec();
-           SetMask((CHAR *)mp1,&dcd->mask);
-          DosExitCritSec();
-        }
-        dcd->suspendview = TRUE;
-        dcd->mask.attrFile |= FILE_DIRECTORY;
-        WinSendMsg(hwnd,CM_FILTER,MPFROMP(Filter),MPFROMP(&dcd->mask));
-        dcd->suspendview = tempsusp;
-        PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
+	if(mp1) {
+	  DosEnterCritSec();
+	   SetMask((CHAR *)mp1,&dcd->mask);
+	  DosExitCritSec();
+	}
+	dcd->suspendview = TRUE;
+	dcd->mask.attrFile |= FILE_DIRECTORY;
+	WinSendMsg(hwnd,CM_FILTER,MPFROMP(Filter),MPFROMP(&dcd->mask));
+	dcd->suspendview = tempsusp;
+	PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
       }
       return 0;
 
     case UM_DRIVECMD:
       if(mp1)
-        ShowTreeRec(hwnd,(CHAR *)mp1,FALSE,TRUE);
+	ShowTreeRec(hwnd,(CHAR *)mp1,FALSE,TRUE);
       return 0;
 
     case WM_APPTERMINATENOTIFY:
       {
-        APPNOTIFY *info;
-        PCNRITEM   pci;
-        CHAR       s[] = " :\\";
+	APPNOTIFY *info;
+	PCNRITEM   pci;
+	CHAR       s[] = " :\\";
 
-        if(!mp2) {
-          if(hwndMain)
-            PostMsg(hwndMain,
-                    UM_BUILDDRIVES,
-                    MPVOID,
-                    MPVOID);
-        }
-        info = apphead;
-        while(info) {
-          if(info->happ == (HAPP)mp1) {
-            *s = info->device;
-            pci = FindCnrRecord(hwnd,
-                                s,
-                                NULL,
-                                FALSE,
-                                FALSE,
-                                TRUE);
-            if(pci && (INT)pci != -1) {
-              driveserial[info->device - 'A'] = -1;
-              DriveFlagsOne(info->device - 'A');
-              if(driveflags[info->device - 'A'] &
-                 (DRIVE_INVALID | DRIVE_IGNORE))
-                WinSendMsg(hwnd,
-                           CM_REMOVERECORD,
-                           MPFROMP(&pci),
-                           MPFROM2SHORT(1,CMA_FREE));
-              else
-                Flesh(hwnd,pci);
-            }
-            if(info->prev)
-              info->prev->next = info->next;
-            if(info->next)
-              info->next->prev = info->prev;
-            if(apphead == info)
-              apphead = info->next;
-            if(apptail == info)
-              apptail = info->prev;
-            free(info);
-            break;
-          }
-          info = info->next;
-        }
+	if(!mp2) {
+	  if(hwndMain)
+	    PostMsg(hwndMain,
+		    UM_BUILDDRIVES,
+		    MPVOID,
+		    MPVOID);
+	}
+	info = apphead;
+	while(info) {
+	  if(info->happ == (HAPP)mp1) {
+	    *s = info->device;
+	    pci = FindCnrRecord(hwnd,
+				s,
+				NULL,
+				FALSE,
+				FALSE,
+				TRUE);
+	    if(pci && (INT)pci != -1) {
+	      driveserial[info->device - 'A'] = -1;
+	      DriveFlagsOne(info->device - 'A');
+	      if(driveflags[info->device - 'A'] &
+		 (DRIVE_INVALID | DRIVE_IGNORE))
+		WinSendMsg(hwnd,
+			   CM_REMOVERECORD,
+			   MPFROMP(&pci),
+			   MPFROM2SHORT(1,CMA_FREE));
+	      else
+		Flesh(hwnd,pci);
+	    }
+	    if(info->prev)
+	      info->prev->next = info->next;
+	    if(info->next)
+	      info->next->prev = info->prev;
+	    if(apphead == info)
+	      apphead = info->next;
+	    if(apptail == info)
+	      apptail = info->prev;
+	    free(info);
+	    break;
+	  }
+	  info = info->next;
+	}
       }
       break;
 
     case WM_COMMAND:
       DosError(FERR_DISABLEHARDERR);
       if(dcd) {
-        if(SwitchCommand(dcd->hwndLastMenu,
-                   SHORT1FROMMP(mp1)))
-          return 0;
-        switch(SHORT1FROMMP(mp1)) {
-          case IDM_SETTARGET:
-            SetTargetDir(hwnd,FALSE);
-            break;
+	if(SwitchCommand(dcd->hwndLastMenu,
+		   SHORT1FROMMP(mp1)))
+	  return 0;
+	switch(SHORT1FROMMP(mp1)) {
+	  case IDM_SETTARGET:
+	    SetTargetDir(hwnd,FALSE);
+	    break;
 
-          case IDM_DETACH:
-            {
-              CHAR        d[3] = " :";
-              PCNRITEM    pci;
-              PROGDETAILS pgd;
-              CHAR        params[368],*p;
-              HAPP        happ;
+	  case IDM_DETACH:
+	    {
+	      CHAR        d[3] = " :";
+	      PCNRITEM    pci;
+	      PROGDETAILS pgd;
+	      CHAR        params[368],*p;
+	      HAPP        happ;
 
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1 && isalpha(*pci->szFileName)) {
-                *d = toupper(*pci->szFileName);
-                p = GetCmdSpec(FALSE);
-                memset(&pgd,0,sizeof(pgd));
-                pgd.Length = sizeof(pgd);
-                pgd.progt.progc = PROG_WINDOWABLEVIO;
-                pgd.progt.fbVisible = SHE_VISIBLE;
-                pgd.pszTitle = GetPString(IDS_DETACHREQUESTTEXT);
-                pgd.pszExecutable = p;
-                pgd.pszParameters = params;
-                pgd.pszStartupDir = NULL;
-                pgd.pszIcon = NULL;
-                pgd.pszEnvironment = NULL;
-                pgd.swpInitial.hwndInsertBehind = HWND_TOP;
-                pgd.swpInitial.hwnd = hwnd;
-                pgd.swpInitial.fl = SWP_SHOW | SWP_ACTIVATE;
-                sprintf(params,"/C NET USE %s /D",d);
-                happ = WinStartApp(hwnd,&pgd,pgd.pszParameters,
-                                   NULL,SAF_MAXIMIZED);
-                if(happ) {
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1 && isalpha(*pci->szFileName)) {
+		*d = toupper(*pci->szFileName);
+		p = GetCmdSpec(FALSE);
+		memset(&pgd,0,sizeof(pgd));
+		pgd.Length = sizeof(pgd);
+		pgd.progt.progc = PROG_WINDOWABLEVIO;
+		pgd.progt.fbVisible = SHE_VISIBLE;
+		pgd.pszTitle = GetPString(IDS_DETACHREQUESTTEXT);
+		pgd.pszExecutable = p;
+		pgd.pszParameters = params;
+		pgd.pszStartupDir = NULL;
+		pgd.pszIcon = NULL;
+		pgd.pszEnvironment = NULL;
+		pgd.swpInitial.hwndInsertBehind = HWND_TOP;
+		pgd.swpInitial.hwnd = hwnd;
+		pgd.swpInitial.fl = SWP_SHOW | SWP_ACTIVATE;
+		sprintf(params,"/C NET USE %s /D",d);
+		happ = WinStartApp(hwnd,&pgd,pgd.pszParameters,
+				   NULL,SAF_MAXIMIZED);
+		if(happ) {
 
-                  APPNOTIFY *info;
+		  APPNOTIFY *info;
 
-                  info = malloc(sizeof(APPNOTIFY));
-                  if(info) {
-                    memset(info,0,sizeof(APPNOTIFY));
-                    info->happ = happ;
-                    info->device = *d;
-                    if(!apphead)
-                      apphead = info;
-                    else {
-                      apptail->next = info;
-                      info->prev = apptail;
-                    }
-                    apptail = info;
-                  }
-                }
-                else
-                  saymsg(MB_CANCEL | MB_ICONEXCLAMATION,hwnd,
-                         GetPString(IDS_ERRORTEXT),
-                         GetPString(IDS_CANTSTARTTEXT),
-                         p,params);
-              }
-            }
-            break;
+		  info = malloc(sizeof(APPNOTIFY));
+		  if(info) {
+		    memset(info,0,sizeof(APPNOTIFY));
+		    info->happ = happ;
+		    info->device = *d;
+		    if(!apphead)
+		      apphead = info;
+		    else {
+		      apptail->next = info;
+		      info->prev = apptail;
+		    }
+		    apptail = info;
+		  }
+		}
+		else
+		  saymsg(MB_CANCEL | MB_ICONEXCLAMATION,hwnd,
+			 GetPString(IDS_ERRORTEXT),
+			 GetPString(IDS_CANTSTARTTEXT),
+			 p,params);
+	      }
+	    }
+	    break;
 
-          case IDM_REMAP:
-            WinDlgBox(HWND_DESKTOP,hwnd,RemapDlgProc,
-                      FM3ModHandle,MAP_FRAME,NULL);
-            break;
+	  case IDM_REMAP:
+	    WinDlgBox(HWND_DESKTOP,hwnd,RemapDlgProc,
+		      FM3ModHandle,MAP_FRAME,NULL);
+	    break;
 
-          case IDM_CONTEXTMENU:
-            {
-              PCNRITEM pci;
+	  case IDM_CONTEXTMENU:
+	    {
+	      PCNRITEM pci;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              PostMsg(hwnd,WM_CONTROL,MPFROM2SHORT(DIR_CNR,CN_CONTEXTMENU),
-                      MPFROMP(pci));
-            }
-            break;
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      PostMsg(hwnd,WM_CONTROL,MPFROM2SHORT(DIR_CNR,CN_CONTEXTMENU),
+		      MPFROMP(pci));
+	    }
+	    break;
 
-          case IDM_FINDINTREE:
-            {
-              CHAR     dir[CCHMAXPATH];
-              PCNRITEM pci;
+	  case IDM_FINDINTREE:
+	    {
+	      CHAR     dir[CCHMAXPATH];
+	      PCNRITEM pci;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1) {
-                strcpy(dir,pci->szFileName);
-                MakeValidDir(dir);
-              }
-              else
-                save_dir2(dir);
-              if(WinDlgBox(HWND_DESKTOP,dcd->hwndParent,
-                           WalkAllDlgProc,
-                           FM3ModHandle,WALK_FRAME,
-                           MPFROMP(dir)) && *dir)
-                WinSendMsg(hwnd,UM_SHOWME,MPFROMP(dir),MPFROMLONG(1L));
-            }
-            break;
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1) {
+		strcpy(dir,pci->szFileName);
+		MakeValidDir(dir);
+	      }
+	      else
+		save_dir2(dir);
+	      if(WinDlgBox(HWND_DESKTOP,dcd->hwndParent,
+			   WalkAllDlgProc,
+			   FM3ModHandle,WALK_FRAME,
+			   MPFROMP(dir)) && *dir)
+		WinSendMsg(hwnd,UM_SHOWME,MPFROMP(dir),MPFROMLONG(1L));
+	    }
+	    break;
 
-          case IDM_BEGINEDIT:
-            OpenEdit(hwnd);
-            break;
+	  case IDM_BEGINEDIT:
+	    OpenEdit(hwnd);
+	    break;
 
-          case IDM_ENDEDIT:
-            WinSendMsg(hwnd,
-                       CM_CLOSEEDIT,
-                       MPVOID,
-                       MPVOID);
-            break;
+	  case IDM_ENDEDIT:
+	    WinSendMsg(hwnd,
+		       CM_CLOSEEDIT,
+		       MPVOID,
+		       MPVOID);
+	    break;
 
-          case IDM_FILTER:
-            {
-              BOOL     empty = FALSE;
-              PCNRITEM pci;
+	  case IDM_FILTER:
+	    {
+	      BOOL     empty = FALSE;
+	      PCNRITEM pci;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(!*dcd->mask.szMask)
-                empty = TRUE;
-              dcd->mask.fIsTree = TRUE;
-              *dcd->mask.prompt = 0;
-              if(pci && (INT)pci != -1)
-                dcd->mask.fFilesIncluded = ((driveflags[toupper(*pci->szFileName) - 'A'] &
-                                             DRIVE_INCLUDEFILES) != 0);
-              else
-                dcd->mask.fFilesIncluded = FALSE;
-              if(WinDlgBox(HWND_DESKTOP,hwnd,PickMaskDlgProc,
-                           FM3ModHandle,MSK_FRAME,MPFROMP(&dcd->mask)))
-                WinSendMsg(hwnd,UM_FILTER,MPVOID,MPVOID);
-              else if(empty)
-                *dcd->mask.szMask = 0;
-              PrfWriteProfileData(fmprof,appname,"TreeFilter",&dcd->mask,
-                                  sizeof(MASK));
-            }
-            break;
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(!*dcd->mask.szMask)
+		empty = TRUE;
+	      dcd->mask.fIsTree = TRUE;
+	      *dcd->mask.prompt = 0;
+	      if(pci && (INT)pci != -1)
+		dcd->mask.fFilesIncluded = ((driveflags[toupper(*pci->szFileName) - 'A'] &
+					     DRIVE_INCLUDEFILES) != 0);
+	      else
+		dcd->mask.fFilesIncluded = FALSE;
+	      if(WinDlgBox(HWND_DESKTOP,hwnd,PickMaskDlgProc,
+			   FM3ModHandle,MSK_FRAME,MPFROMP(&dcd->mask)))
+		WinSendMsg(hwnd,UM_FILTER,MPVOID,MPVOID);
+	      else if(empty)
+		*dcd->mask.szMask = 0;
+	      PrfWriteProfileData(fmprof,appname,"TreeFilter",&dcd->mask,
+				  sizeof(MASK));
+	    }
+	    break;
 
-          case IDM_SHOWSORT:
-            QuickPopup(hwnd,dcd,CheckMenu(&TreeCnrMenu,TREECNR_POPUP),
-                       IDM_SORTSUBMENU);
-            break;
+	  case IDM_SHOWSORT:
+	    QuickPopup(hwnd,dcd,CheckMenu(&TreeCnrMenu,TREECNR_POPUP),
+		       IDM_SORTSUBMENU);
+	    break;
 
-          case IDM_SHOWSELECT:
-            QuickPopup(hwnd,dcd,CheckMenu(&TreeCnrMenu,TREECNR_POPUP),
-                       IDM_SELECTSUBMENU);
-            break;
+	  case IDM_SHOWSELECT:
+	    QuickPopup(hwnd,dcd,CheckMenu(&TreeCnrMenu,TREECNR_POPUP),
+		       IDM_SELECTSUBMENU);
+	    break;
 
-          case IDM_NOTEBOOK:
-            if(!ParentIsDesktop(dcd->hwndParent,dcd->hwndParent))
-              PostMsg(dcd->hwndParent,msg,mp1,mp2);
-            else
-              WinDlgBox(HWND_DESKTOP,hwnd,CfgDlgProc,FM3ModHandle,
-                        CFG_FRAME,(PVOID)"Tree");
-            break;
+	  case IDM_NOTEBOOK:
+	    if(!ParentIsDesktop(dcd->hwndParent,dcd->hwndParent))
+	      PostMsg(dcd->hwndParent,msg,mp1,mp2);
+	    else
+	      WinDlgBox(HWND_DESKTOP,hwnd,CfgDlgProc,FM3ModHandle,
+			CFG_FRAME,(PVOID)"Tree");
+	    break;
 
-          case IDM_WALKDIR:
-          case IDM_OPENWALK:
-            {
-              CHAR     newpath[CCHMAXPATH];
-              PCNRITEM pci;
+	  case IDM_WALKDIR:
+	  case IDM_OPENWALK:
+	    {
+	      CHAR     newpath[CCHMAXPATH];
+	      PCNRITEM pci;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1) {
-                strcpy(newpath,pci->szFileName);
-                MakeValidDir(newpath);
-              }
-              else
-                save_dir2(newpath);
-              if(!WinDlgBox(HWND_DESKTOP,dcd->hwndParent,WalkAllDlgProc,
-                            FM3ModHandle,WALK_FRAME,
-                            MPFROMP(newpath)) || !*newpath)
-                break;
-              WinSendMsg(hwnd,UM_OPENWINDOWFORME,MPFROMP(newpath),MPVOID);
-            }
-            break;
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1) {
+		strcpy(newpath,pci->szFileName);
+		MakeValidDir(newpath);
+	      }
+	      else
+		save_dir2(newpath);
+	      if(!WinDlgBox(HWND_DESKTOP,dcd->hwndParent,WalkAllDlgProc,
+			    FM3ModHandle,WALK_FRAME,
+			    MPFROMP(newpath)) || !*newpath)
+		break;
+	      WinSendMsg(hwnd,UM_OPENWINDOWFORME,MPFROMP(newpath),MPVOID);
+	    }
+	    break;
 
-          case IDM_HELP:
-            if(hwndHelp) {
-              if(!ParentIsDesktop(dcd->hwndFrame,dcd->hwndParent))
-                PostMsg(dcd->hwndParent,UM_COMMAND,mp1,mp2);
-              else
-                WinSendMsg(hwndHelp,HM_HELP_CONTENTS,MPVOID,MPVOID);
-            }
-            break;
+	  case IDM_HELP:
+	    if(hwndHelp) {
+	      if(!ParentIsDesktop(dcd->hwndFrame,dcd->hwndParent))
+		PostMsg(dcd->hwndParent,UM_COMMAND,mp1,mp2);
+	      else
+		WinSendMsg(hwndHelp,HM_HELP_CONTENTS,MPVOID,MPVOID);
+	    }
+	    break;
 
-          case IDM_PARTITION:
-            runemf2(SEPARATE | WINDOWED,HWND_DESKTOP,NULL,NULL,
-                    "%s","FDISKPM.EXE");
-            break;
+	  case IDM_PARTITION:
+	    runemf2(SEPARATE | WINDOWED,HWND_DESKTOP,NULL,NULL,
+		    "%s","FDISKPM.EXE");
+	    break;
 
-          case IDM_SORTNAME:
-          case IDM_SORTFILENAME:
-          case IDM_SORTSIZE:
-          case IDM_SORTEASIZE:
-          case IDM_SORTFIRST:
-          case IDM_SORTLAST:
-          case IDM_SORTLWDATE:
-          case IDM_SORTLADATE:
-          case IDM_SORTCRDATE:
-            TreesortFlags &= (SORT_REVERSE | SORT_DIRSFIRST | SORT_DIRSLAST);
-          case IDM_SORTDIRSFIRST:
-          case IDM_SORTDIRSLAST:
-          case IDM_SORTREVERSE:
-            switch(SHORT1FROMMP(mp1)) {
-              case IDM_SORTFILENAME:
-                TreesortFlags |= SORT_FILENAME;
-                break;
-              case IDM_SORTSIZE:
-                TreesortFlags |= SORT_SIZE;
-                break;
-              case IDM_SORTEASIZE:
-                TreesortFlags |= SORT_EASIZE;
-                break;
-              case IDM_SORTFIRST:
-                TreesortFlags |= SORT_FIRSTEXTENSION;
-                break;
-              case IDM_SORTLAST:
-                TreesortFlags |= SORT_LASTEXTENSION;
-                break;
-              case IDM_SORTLWDATE:
-                TreesortFlags |= SORT_LWDATE;
-                break;
-              case IDM_SORTLADATE:
-                TreesortFlags |= SORT_LADATE;
-                break;
-              case IDM_SORTCRDATE:
-                TreesortFlags |= SORT_CRDATE;
-                break;
-              case IDM_SORTDIRSFIRST:
-                if(TreesortFlags & SORT_DIRSFIRST)
-                  TreesortFlags &= (~SORT_DIRSFIRST);
-                else {
-                  TreesortFlags |= SORT_DIRSFIRST;
-                  TreesortFlags &= (~SORT_DIRSLAST);
-                }
-                break;
-              case IDM_SORTDIRSLAST:
-                if(TreesortFlags & SORT_DIRSLAST)
-                  TreesortFlags &= (~SORT_DIRSLAST);
-                else {
-                  TreesortFlags |= SORT_DIRSLAST;
-                  TreesortFlags &= (~SORT_DIRSFIRST);
-                }
-                break;
-              case IDM_SORTREVERSE:
-                if(TreesortFlags & SORT_REVERSE)
-                  TreesortFlags &= (~SORT_REVERSE);
-                else
-                  TreesortFlags |= SORT_REVERSE;
-                break;
-            }
-            PrfWriteProfileData(fmprof,appname,"TreeSort",&TreesortFlags,
-                                sizeof(INT));
-            WinSendMsg(hwnd,CM_SORTRECORD,MPFROMP(SortTreeCnr),MPVOID);
-            break;
+	  case IDM_SORTNAME:
+	  case IDM_SORTFILENAME:
+	  case IDM_SORTSIZE:
+	  case IDM_SORTEASIZE:
+	  case IDM_SORTFIRST:
+	  case IDM_SORTLAST:
+	  case IDM_SORTLWDATE:
+	  case IDM_SORTLADATE:
+	  case IDM_SORTCRDATE:
+	    TreesortFlags &= (SORT_REVERSE | SORT_DIRSFIRST | SORT_DIRSLAST);
+	  case IDM_SORTDIRSFIRST:
+	  case IDM_SORTDIRSLAST:
+	  case IDM_SORTREVERSE:
+	    switch(SHORT1FROMMP(mp1)) {
+	      case IDM_SORTFILENAME:
+		TreesortFlags |= SORT_FILENAME;
+		break;
+	      case IDM_SORTSIZE:
+		TreesortFlags |= SORT_SIZE;
+		break;
+	      case IDM_SORTEASIZE:
+		TreesortFlags |= SORT_EASIZE;
+		break;
+	      case IDM_SORTFIRST:
+		TreesortFlags |= SORT_FIRSTEXTENSION;
+		break;
+	      case IDM_SORTLAST:
+		TreesortFlags |= SORT_LASTEXTENSION;
+		break;
+	      case IDM_SORTLWDATE:
+		TreesortFlags |= SORT_LWDATE;
+		break;
+	      case IDM_SORTLADATE:
+		TreesortFlags |= SORT_LADATE;
+		break;
+	      case IDM_SORTCRDATE:
+		TreesortFlags |= SORT_CRDATE;
+		break;
+	      case IDM_SORTDIRSFIRST:
+		if(TreesortFlags & SORT_DIRSFIRST)
+		  TreesortFlags &= (~SORT_DIRSFIRST);
+		else {
+		  TreesortFlags |= SORT_DIRSFIRST;
+		  TreesortFlags &= (~SORT_DIRSLAST);
+		}
+		break;
+	      case IDM_SORTDIRSLAST:
+		if(TreesortFlags & SORT_DIRSLAST)
+		  TreesortFlags &= (~SORT_DIRSLAST);
+		else {
+		  TreesortFlags |= SORT_DIRSLAST;
+		  TreesortFlags &= (~SORT_DIRSFIRST);
+		}
+		break;
+	      case IDM_SORTREVERSE:
+		if(TreesortFlags & SORT_REVERSE)
+		  TreesortFlags &= (~SORT_REVERSE);
+		else
+		  TreesortFlags |= SORT_REVERSE;
+		break;
+	    }
+	    PrfWriteProfileData(fmprof,appname,"TreeSort",&TreesortFlags,
+				sizeof(INT));
+	    WinSendMsg(hwnd,CM_SORTRECORD,MPFROMP(SortTreeCnr),MPVOID);
+	    break;
 
-          case IDM_COLLECT:
-            if(!Collector) {
+	  case IDM_COLLECT:
+	    if(!Collector) {
 
-              HWND hwndC;
-              SWP  swp;
+	      HWND hwndC;
+	      SWP  swp;
 
-              if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                 !fAutoTile &&
-                 (!fExternalCollector &&
-                  *(ULONG *)realappname == FM3UL))
-                GetNextWindowPos(dcd->hwndParent,
-                                 &swp,
-                                 NULL,
-                                 NULL);
-              hwndC = StartCollector((fExternalCollector ||
-                                      *(ULONG *)realappname != FM3UL) ?
-                                     HWND_DESKTOP :
-                                     dcd->hwndParent,
-                                     4);
-              if(hwndC) {
-                if(!ParentIsDesktop(hwnd,
-                                    dcd->hwndParent) &&
-                   !fAutoTile &&
-                   (!fExternalCollector &&
-                    *(ULONG *)realappname == FM3UL))
-                  WinSetWindowPos(hwndC,
-                                  HWND_TOP,
-                                  swp.x,
-                                  swp.y,
-                                  swp.cx,
-                                  swp.cy,
-                                  SWP_MOVE | SWP_SIZE |
-                                  SWP_SHOW | SWP_ZORDER);
-                else if(!ParentIsDesktop(hwnd,
-                                         dcd->hwndParent) &&
-                        fAutoTile &&
-                        *(ULONG *)realappname == FM3UL)
-                  TileChildren(dcd->hwndParent,
-                               TRUE);
-              }
-              WinSetWindowPos(hwndC,
-                              HWND_TOP,
-                              0,
-                              0,
-                              0,
-                              0,
-                              SWP_ACTIVATE);
-              DosSleep(250L);
-            }
-            else
-              StartCollector(dcd->hwndParent,
-                             4);
-            PostMsg(hwnd,
-                    WM_COMMAND,
-                    MPFROM2SHORT(IDM_COLLECTOR,0),
-                    MPVOID);
-            break;
+	      if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
+		 !fAutoTile &&
+		 (!fExternalCollector &&
+		  *(ULONG *)realappname == FM3UL))
+		GetNextWindowPos(dcd->hwndParent,
+				 &swp,
+				 NULL,
+				 NULL);
+	      hwndC = StartCollector((fExternalCollector ||
+				      *(ULONG *)realappname != FM3UL) ?
+				     HWND_DESKTOP :
+				     dcd->hwndParent,
+				     4);
+	      if(hwndC) {
+		if(!ParentIsDesktop(hwnd,
+				    dcd->hwndParent) &&
+		   !fAutoTile &&
+		   (!fExternalCollector &&
+		    *(ULONG *)realappname == FM3UL))
+		  WinSetWindowPos(hwndC,
+				  HWND_TOP,
+				  swp.x,
+				  swp.y,
+				  swp.cx,
+				  swp.cy,
+				  SWP_MOVE | SWP_SIZE |
+				  SWP_SHOW | SWP_ZORDER);
+		else if(!ParentIsDesktop(hwnd,
+					 dcd->hwndParent) &&
+			fAutoTile &&
+			*(ULONG *)realappname == FM3UL)
+		  TileChildren(dcd->hwndParent,
+			       TRUE);
+	      }
+	      WinSetWindowPos(hwndC,
+			      HWND_TOP,
+			      0,
+			      0,
+			      0,
+			      0,
+			      SWP_ACTIVATE);
+	      DosSleep(250L);
+	    }
+	    else
+	      StartCollector(dcd->hwndParent,
+			     4);
+	    PostMsg(hwnd,
+		    WM_COMMAND,
+		    MPFROM2SHORT(IDM_COLLECTOR,0),
+		    MPVOID);
+	    break;
 
-          case IDM_COLLECTOR:
-            DosSleep(64L);
-            {
-              CHAR **list;
+	  case IDM_COLLECTOR:
+	    DosSleep(64L);
+	    {
+	      CHAR **list;
 
-              list = BuildList(hwnd);
-              if(list) {
-                if(Collector) {
-                  if(!PostMsg(Collector,WM_COMMAND,
-                                 MPFROM2SHORT(IDM_COLLECTOR,0),
-                                 MPFROMP(list)))
-                    FreeList(list);
-                }
-                else
-                  FreeList(list);
-              }
-            }
-            break;
+	      list = BuildList(hwnd);
+	      if(list) {
+		if(Collector) {
+		  if(!PostMsg(Collector,WM_COMMAND,
+				 MPFROM2SHORT(IDM_COLLECTOR,0),
+				 MPFROMP(list)))
+		    FreeList(list);
+		}
+		else
+		  FreeList(list);
+	      }
+	    }
+	    break;
 
-          case IDM_COLLAPSEALL:
-            WinSendMsg(hwnd,
-                       CM_COLLAPSETREE,
-                       MPVOID,
-                       MPVOID);
-            break;
+	  case IDM_COLLAPSEALL:
+	    WinSendMsg(hwnd,
+		       CM_COLLAPSETREE,
+		       MPVOID,
+		       MPVOID);
+	    break;
 
-          case IDM_COLLAPSE:
-          case IDM_EXPAND:
-            {
-              PCNRITEM pci = NULL;
+	  case IDM_COLLAPSE:
+	  case IDM_EXPAND:
+	    {
+	      PCNRITEM pci = NULL;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1) {
-                if(pci->flags & RECFLAGS_UNDERENV)
-                  break;
-                PostMsg(dcd->hwndObject,
-                        UM_EXPAND,
-                        mp1,
-                        MPFROMP(pci));
-              }
-            }
-            break;
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1) {
+		if(pci->flags & RECFLAGS_UNDERENV)
+		  break;
+		PostMsg(dcd->hwndObject,
+			UM_EXPAND,
+			mp1,
+			MPFROMP(pci));
+	      }
+	    }
+	    break;
 
-          case IDM_UPDATE:
-            {
-              PCNRITEM pci = NULL;
+	  case IDM_UPDATE:
+	    {
+	      PCNRITEM pci = NULL;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1) {
-                if(pci->attrFile & FILE_DIRECTORY) {
-                  if(pci->flags & RECFLAGS_UNDERENV)
-                    break;
-                  UnFlesh(hwnd,pci);
-                  if(driveflags[toupper(*pci->szFileName) - 'A'] & (DRIVE_INVALID |
-                                      DRIVE_NOPRESCAN)) {
-                    driveflags[toupper(*pci->szFileName) - 'A'] &= (DRIVE_IGNORE |
-                                      DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
-                                      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS);
-                    DriveFlagsOne(toupper(*pci->szFileName) - 'A');
-                    if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_INVALID)
-                      pci->rc.hptrIcon = hptrDunno;
-                    else {
-                      if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
-                        pci->rc.hptrIcon = hptrCDROM;
-                      else
-                        pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
-                                            hptrRemovable :
-                                            (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) ?
-                                            hptrRemote :
-                                            (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_ZIPSTREAM) ?
-                                            hptrZipstrm : hptrDrive;
-                    }
-                    WinSendMsg(hwnd,
-                               CM_INVALIDATERECORD,
-                               MPFROMP(&pci),
-                               MPFROM2SHORT(1,CMA_ERASE | CMA_REPOSITION));
-                    if(hwndMain)
-                      PostMsg(hwndMain,
-                              UM_BUILDDRIVES,
-                              MPVOID,
-                              MPVOID);
-                  }
-                  if(!(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_INVALID))
-                    Flesh(hwnd,pci);
-                }
-                else {
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1) {
+		if(pci->attrFile & FILE_DIRECTORY) {
+		  if(pci->flags & RECFLAGS_UNDERENV)
+		    break;
+		  UnFlesh(hwnd,pci);
+		  if(driveflags[toupper(*pci->szFileName) - 'A'] & (DRIVE_INVALID |
+				      DRIVE_NOPRESCAN)) {
+		    driveflags[toupper(*pci->szFileName) - 'A'] &= (DRIVE_IGNORE |
+				      DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
+				      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS);
+		    DriveFlagsOne(toupper(*pci->szFileName) - 'A');
+		    if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_INVALID)
+		      pci->rc.hptrIcon = hptrDunno;
+		    else {
+		      if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
+			pci->rc.hptrIcon = hptrCDROM;
+		      else
+			pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
+					    hptrRemovable :
+					    (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) ?
+					    hptrRemote :
+					    (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_ZIPSTREAM) ?
+					    hptrZipstrm : hptrDrive;
+		    }
+		    WinSendMsg(hwnd,
+			       CM_INVALIDATERECORD,
+			       MPFROMP(&pci),
+			       MPFROM2SHORT(1,CMA_ERASE | CMA_REPOSITION));
+		    if(hwndMain)
+		      PostMsg(hwndMain,
+			      UM_BUILDDRIVES,
+			      MPVOID,
+			      MPVOID);
+		  }
+		  if(!(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_INVALID))
+		    Flesh(hwnd,pci);
+		}
+		else {
 
-                }
-              }
-            }
-            break;
+		}
+	      }
+	    }
+	    break;
 
-          case IDM_RESCAN:
-            PostMsg(dcd->hwndObject,
-                    UM_RESCAN,
-                    MPVOID,
-                    MPVOID);
-            break;
+	  case IDM_RESCAN:
+	    PostMsg(dcd->hwndObject,
+		    UM_RESCAN,
+		    MPVOID,
+		    MPVOID);
+	    break;
 
-          case IDM_RESORT:
-            WinSendMsg(hwnd,
-                       CM_SORTRECORD,
-                       MPFROMP(SortTreeCnr),
-                       MPVOID);
-            break;
+	  case IDM_RESORT:
+	    WinSendMsg(hwnd,
+		       CM_SORTRECORD,
+		       MPFROMP(SortTreeCnr),
+		       MPVOID);
+	    break;
 
-          case IDM_TEXT:
-          case IDM_MINIICONS:
-            {
-              CNRINFO cnri;
+	  case IDM_TEXT:
+	  case IDM_MINIICONS:
+	    {
+	      CNRINFO cnri;
 
-              memset(&cnri,0,sizeof(CNRINFO));
-              cnri.cb = sizeof(CNRINFO);
-              WinSendMsg(hwnd,
-                         CM_QUERYCNRINFO,
-                         MPFROMP(&cnri),
-                         MPFROMLONG(sizeof(CNRINFO)));
-              if(SHORT1FROMMP(mp1) == IDM_MINIICONS) {
-                if(cnri.flWindowAttr & CV_MINI)
-                  cnri.flWindowAttr &= (~CV_MINI);
-                else
-                  cnri.flWindowAttr |= CV_MINI;
-              }
-              else {
-                if(cnri.flWindowAttr & CV_TEXT) {
-                  cnri.flWindowAttr &= (~CV_TEXT);
-                  cnri.flWindowAttr |= CV_ICON;
-                }
-                else {
-                  cnri.flWindowAttr &= (~CV_ICON);
-                  cnri.flWindowAttr |= CV_TEXT;
-                }
-              }
-              dcd->flWindowAttr = cnri.flWindowAttr;
-              PrfWriteProfileData(fmprof,
-                                  appname,
-                                  "TreeflWindowAttr",
-                                  &cnri.flWindowAttr,
-                                  sizeof(ULONG));
-              WinSendMsg(hwnd,
-                         CM_SETCNRINFO,
-                         MPFROMP(&cnri),
-                         MPFROMLONG(CMA_FLWINDOWATTR | CMA_TREEICON |
-                                    CMA_SLTREEBITMAPORICON));
-            }
-            break;
+	      memset(&cnri,0,sizeof(CNRINFO));
+	      cnri.cb = sizeof(CNRINFO);
+	      WinSendMsg(hwnd,
+			 CM_QUERYCNRINFO,
+			 MPFROMP(&cnri),
+			 MPFROMLONG(sizeof(CNRINFO)));
+	      if(SHORT1FROMMP(mp1) == IDM_MINIICONS) {
+		if(cnri.flWindowAttr & CV_MINI)
+		  cnri.flWindowAttr &= (~CV_MINI);
+		else
+		  cnri.flWindowAttr |= CV_MINI;
+	      }
+	      else {
+		if(cnri.flWindowAttr & CV_TEXT) {
+		  cnri.flWindowAttr &= (~CV_TEXT);
+		  cnri.flWindowAttr |= CV_ICON;
+		}
+		else {
+		  cnri.flWindowAttr &= (~CV_ICON);
+		  cnri.flWindowAttr |= CV_TEXT;
+		}
+	      }
+	      dcd->flWindowAttr = cnri.flWindowAttr;
+	      PrfWriteProfileData(fmprof,
+				  appname,
+				  "TreeflWindowAttr",
+				  &cnri.flWindowAttr,
+				  sizeof(ULONG));
+	      WinSendMsg(hwnd,
+			 CM_SETCNRINFO,
+			 MPFROMP(&cnri),
+			 MPFROMLONG(CMA_FLWINDOWATTR | CMA_TREEICON |
+				    CMA_SLTREEBITMAPORICON));
+	    }
+	    break;
 
-          case IDM_SIZES:
-          case IDM_DRVFLAGS:
-          case IDM_SHOWALLFILES:
-          case IDM_UNDELETE:
-          case IDM_OPTIMIZE:
-          case IDM_CHKDSK:
-          case IDM_FORMAT:
-          case IDM_MKDIR:
-          case IDM_LOCK:
-          case IDM_UNLOCK:
-          case IDM_EJECT:
-          case IDM_CLOSETRAY:
-            {
-              PCNRITEM pci;
+	  case IDM_SIZES:
+	  case IDM_DRVFLAGS:
+	  case IDM_SHOWALLFILES:
+	  case IDM_UNDELETE:
+	  case IDM_OPTIMIZE:
+	  case IDM_CHKDSK:
+	  case IDM_FORMAT:
+	  case IDM_MKDIR:
+	  case IDM_LOCK:
+	  case IDM_UNLOCK:
+	  case IDM_EJECT:
+	  case IDM_CLOSETRAY:
+	    {
+	      PCNRITEM pci;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1)
-                CommonDriveCmd(hwnd,
-                               pci->szFileName,
-                               SHORT1FROMMP(mp1));
-            }
-            break;
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1)
+		CommonDriveCmd(hwnd,
+			       pci->szFileName,
+			       SHORT1FROMMP(mp1));
+	    }
+	    break;
 
-          case IDM_SAVETOLIST:
-            WinDlgBox(HWND_DESKTOP,
-                      hwnd,
-                      SaveListDlgProc,
-                      FM3ModHandle,
-                      SAV_FRAME,
-                      MPFROMP(&hwnd));
-            break;
+	  case IDM_SAVETOLIST:
+	    WinDlgBox(HWND_DESKTOP,
+		      hwnd,
+		      SaveListDlgProc,
+		      FM3ModHandle,
+		      SAV_FRAME,
+		      MPFROMP(&hwnd));
+	    break;
 
-          case IDM_DELETE:
-          case IDM_PERMDELETE:
-          case IDM_MOVE:
-          case IDM_WPSMOVE:
-          case IDM_WILDMOVE:
-          case IDM_RENAME:
-            {
-              PCNRITEM pci;
+	  case IDM_DELETE:
+	  case IDM_PERMDELETE:
+	  case IDM_MOVE:
+	  case IDM_WPSMOVE:
+	  case IDM_WILDMOVE:
+	  case IDM_RENAME:
+	    {
+	      PCNRITEM pci;
 
-              pci = (PCNRITEM)CurrentRecord(hwnd);
-              if(pci && (INT)pci != -1) {
-                if(pci->flags & RECFLAGS_UNDERENV)
-                  break;
-              }
-            }
-            /* else intentional fallthru */
-          case IDM_ATTRS:
-          case IDM_INFO:
-          case IDM_COPY:
-          case IDM_WPSCOPY:
-          case IDM_WILDCOPY:
-          case IDM_DOITYOURSELF:
-          case IDM_OPENWINDOW:
-          case IDM_OPENSETTINGS:
-          case IDM_OPENDEFAULT:
-          case IDM_OPENICON:
-          case IDM_OPENDETAILS:
-          case IDM_OPENTREE:
-          case IDM_SHADOW:
-          case IDM_SHADOW2:
-          case IDM_COMPARE:
-          case IDM_VIEW:
-          case IDM_VIEWTEXT:
-          case IDM_VIEWBINARY:
-          case IDM_EDIT:
-          case IDM_EDITTEXT:
-          case IDM_EDITBINARY:
-          case IDM_EAS:
-          case IDM_SUBJECT:
-          case IDM_APPENDTOCLIP:
-          case IDM_SAVETOCLIP:
-          case IDM_ARCHIVE:
-          case IDM_MCIPLAY:
-          case IDM_UUDECODE:
-            {
-              LISTINFO *li;
-              ULONG     action = UM_ACTION;
+	      pci = (PCNRITEM)CurrentRecord(hwnd);
+	      if(pci && (INT)pci != -1) {
+		if(pci->flags & RECFLAGS_UNDERENV)
+		  break;
+	      }
+	    }
+	    /* else intentional fallthru */
+	  case IDM_ATTRS:
+	  case IDM_INFO:
+	  case IDM_COPY:
+	  case IDM_WPSCOPY:
+	  case IDM_WILDCOPY:
+	  case IDM_DOITYOURSELF:
+	  case IDM_OPENWINDOW:
+	  case IDM_OPENSETTINGS:
+	  case IDM_OPENDEFAULT:
+	  case IDM_OPENICON:
+	  case IDM_OPENDETAILS:
+	  case IDM_OPENTREE:
+	  case IDM_SHADOW:
+	  case IDM_SHADOW2:
+	  case IDM_COMPARE:
+	  case IDM_VIEW:
+	  case IDM_VIEWTEXT:
+	  case IDM_VIEWBINARY:
+	  case IDM_EDIT:
+	  case IDM_EDITTEXT:
+	  case IDM_EDITBINARY:
+	  case IDM_EAS:
+	  case IDM_SUBJECT:
+	  case IDM_APPENDTOCLIP:
+	  case IDM_SAVETOCLIP:
+	  case IDM_ARCHIVE:
+	  case IDM_MCIPLAY:
+	  case IDM_UUDECODE:
+	    {
+	      LISTINFO *li;
+	      ULONG     action = UM_ACTION;
 
-              li = malloc(sizeof(LISTINFO));
-              if(li) {
-                memset(li,0,sizeof(LISTINFO));
-                li->type = SHORT1FROMMP(mp1);
-                li->hwnd = hwnd;
-                li->list = BuildList(hwnd);
-                if(!li->list || !li->list[0]) {
-                  free(li);
-                  break;
-                }
-                if(IsRoot(li->list[0])) {
-                  switch(SHORT1FROMMP(mp1)) {
-                    case IDM_MOVE:
-                    case IDM_COPY:
-                    case IDM_WILDCOPY:
-                    case IDM_WILDMOVE:
-                    case IDM_WPSMOVE:
-                    case IDM_WPSCOPY:
-                    case IDM_RENAME:
-                    case IDM_DELETE:
-                    case IDM_PERMDELETE:
-                      mp1 = MPFROM2SHORT(IDM_INFO,SHORT2FROMMP(mp1));
-                      li->type = IDM_INFO;
-                      break;
-                  }
-                }
-                switch(SHORT1FROMMP(mp1)) {
-                  case IDM_APPENDTOCLIP:
-                  case IDM_SAVETOCLIP:
-                  case IDM_ARCHIVE:
-                  case IDM_DELETE:
-                  case IDM_PERMDELETE:
-                  case IDM_ATTRS:
-                  case IDM_SHADOW:
-                  case IDM_SHADOW2:
-                  case IDM_DOITYOURSELF:
-                  case IDM_EAS:
-                  case IDM_VIEW:
-                  case IDM_VIEWTEXT:
-                  case IDM_VIEWBINARY:
-                  case IDM_EDIT:
-                  case IDM_EDITTEXT:
-                  case IDM_EDITBINARY:
-                  case IDM_MCIPLAY:
-                    action = UM_MASSACTION;
-                    break;
-                }
-                if(SHORT1FROMMP(mp1) == IDM_SHADOW ||
-                   SHORT1FROMMP(mp1) == IDM_SHADOW2)
-                  *li->targetpath = 0;
-                if(!PostMsg(dcd->hwndObject,action,MPFROMP(li),MPVOID)) {
-                  FreeListInfo(li);
-                  DosBeep(50,100);
-                }
-              }
-            }
-            break;
+	      li = malloc(sizeof(LISTINFO));
+	      if(li) {
+		memset(li,0,sizeof(LISTINFO));
+		li->type = SHORT1FROMMP(mp1);
+		li->hwnd = hwnd;
+		li->list = BuildList(hwnd);
+		if(!li->list || !li->list[0]) {
+		  free(li);
+		  break;
+		}
+		if(IsRoot(li->list[0])) {
+		  switch(SHORT1FROMMP(mp1)) {
+		    case IDM_MOVE:
+		    case IDM_COPY:
+		    case IDM_WILDCOPY:
+		    case IDM_WILDMOVE:
+		    case IDM_WPSMOVE:
+		    case IDM_WPSCOPY:
+		    case IDM_RENAME:
+		    case IDM_DELETE:
+		    case IDM_PERMDELETE:
+		      mp1 = MPFROM2SHORT(IDM_INFO,SHORT2FROMMP(mp1));
+		      li->type = IDM_INFO;
+		      break;
+		  }
+		}
+		switch(SHORT1FROMMP(mp1)) {
+		  case IDM_APPENDTOCLIP:
+		  case IDM_SAVETOCLIP:
+		  case IDM_ARCHIVE:
+		  case IDM_DELETE:
+		  case IDM_PERMDELETE:
+		  case IDM_ATTRS:
+		  case IDM_SHADOW:
+		  case IDM_SHADOW2:
+		  case IDM_DOITYOURSELF:
+		  case IDM_EAS:
+		  case IDM_VIEW:
+		  case IDM_VIEWTEXT:
+		  case IDM_VIEWBINARY:
+		  case IDM_EDIT:
+		  case IDM_EDITTEXT:
+		  case IDM_EDITBINARY:
+		  case IDM_MCIPLAY:
+		    action = UM_MASSACTION;
+		    break;
+		}
+		if(SHORT1FROMMP(mp1) == IDM_SHADOW ||
+		   SHORT1FROMMP(mp1) == IDM_SHADOW2)
+		  *li->targetpath = 0;
+		if(!PostMsg(dcd->hwndObject,action,MPFROMP(li),MPVOID)) {
+		  FreeListInfo(li);
+		  DosBeep(50,100);
+		}
+	      }
+	    }
+	    break;
 
-          default:
-            if(SHORT1FROMMP(mp1) >= IDM_COMMANDSTART &&
-               SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART) {
+	  default:
+	    if(SHORT1FROMMP(mp1) >= IDM_COMMANDSTART &&
+	       SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART) {
 
-              INT  x;
+	      INT  x;
 
-              if(!cmdloaded)
-                load_commands();
-              x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
-              if(x >= 0) {
-                x++;
-                RunCommand(hwnd,x);
-                if(fUnHilite)
-                  UnHilite(hwnd,TRUE,&dcd->lastselection);
-              }
-            }
-            break;
-        }
+	      if(!cmdloaded)
+		load_commands();
+	      x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
+	      if(x >= 0) {
+		x++;
+		RunCommand(hwnd,x);
+		if(fUnHilite)
+		  UnHilite(hwnd,TRUE,&dcd->lastselection);
+	      }
+	    }
+	    break;
+	}
       }
       return 0;
 
     case WM_SAVEAPPLICATION:
       if(dcd && !ParentIsDesktop(hwnd,dcd->hwndParent)) {
 
-        SWP swp,swpP;
-        INT ratio;
+	SWP swp,swpP;
+	INT ratio;
 
-        WinQueryWindowPos(dcd->hwndFrame,&swp);
-        if(!(swp.fl & (SWP_MINIMIZE | SWP_MAXIMIZE | SWP_HIDE))) {
-          WinQueryWindowPos(dcd->hwndParent,&swpP);
-          ratio = (swpP.cx * 100) / swp.cx;
-          if(ratio > 0)
-            PrfWriteProfileData(fmprof,appname,"TreeWindowRatio",
-                                &ratio,sizeof(INT));
-        }
+	WinQueryWindowPos(dcd->hwndFrame,&swp);
+	if(!(swp.fl & (SWP_MINIMIZE | SWP_MAXIMIZE | SWP_HIDE))) {
+	  WinQueryWindowPos(dcd->hwndParent,&swpP);
+	  ratio = (swpP.cx * 100) / swp.cx;
+	  if(ratio > 0)
+	    PrfWriteProfileData(fmprof,appname,"TreeWindowRatio",
+				&ratio,sizeof(INT));
+	}
       }
       else if(dcd && ParentIsDesktop(hwnd,dcd->hwndParent)) {
 
-        SWP swp;
+	SWP swp;
 
-        WinQueryWindowPos(dcd->hwndFrame,&swp);
-        if(!(swp.fl & (SWP_HIDE | SWP_MINIMIZE | SWP_MAXIMIZE)))
-          WinStoreWindowPos(FM2Str,"VTreeWindowPos",dcd->hwndFrame);
+	WinQueryWindowPos(dcd->hwndFrame,&swp);
+	if(!(swp.fl & (SWP_HIDE | SWP_MINIMIZE | SWP_MAXIMIZE)))
+	  WinStoreWindowPos(FM2Str,"VTreeWindowPos",dcd->hwndFrame);
       }
       break;
 
     case UM_MINIMIZE:
       if(dcd && hwndMain) {
-        fOkayMinimize = TRUE;
-        if(dcd->hwndObject && !fDummy) {
-          DosSleep(100L);
-          if(!fDummy) {
-            fOkayMinimize = FALSE;
-            WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain,QW_PARENT) :
-                             dcd->hwndFrame),HWND_TOP,0,0,0,0,SWP_MINIMIZE |
-                             SWP_DEACTIVATE);
-          }
-        }
+	fOkayMinimize = TRUE;
+	if(dcd->hwndObject && !fDummy) {
+	  DosSleep(100L);
+	  if(!fDummy) {
+	    fOkayMinimize = FALSE;
+	    WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain,QW_PARENT) :
+			     dcd->hwndFrame),HWND_TOP,0,0,0,0,SWP_MINIMIZE |
+			     SWP_DEACTIVATE);
+	  }
+	}
       }
       return 0;
 
     case UM_MAXIMIZE:
       if(dcd || hwndMain)
-        WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain,QW_PARENT) :
-                         dcd->hwndFrame),HWND_TOP,0,0,0,0,SWP_MAXIMIZE |
-                         SWP_SHOW);
+	WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain,QW_PARENT) :
+			 dcd->hwndFrame),HWND_TOP,0,0,0,0,SWP_MAXIMIZE |
+			 SWP_SHOW);
       return 0;
 
     case UM_CLOSE:
       {
-        HWND hwndParent = WinQueryWindow(WinQueryWindow(WinQueryWindow(hwnd,
-                                         QW_PARENT),QW_PARENT),QW_PARENT);
+	HWND hwndParent = WinQueryWindow(WinQueryWindow(WinQueryWindow(hwnd,
+					 QW_PARENT),QW_PARENT),QW_PARENT);
 
-        if(!mp1) {
-          if(!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
-            WinSendMsg((HWND)0,WM_QUIT,MPVOID,MPVOID);
-          if(hwndParent && !ParentIsDesktop(hwnd,hwndParent))
-            WinDestroyWindow(hwndParent);
-        }
-        else
-          WinDestroyWindow(WinQueryWindow(WinQueryWindow(hwnd,QW_PARENT),
-                           QW_PARENT));
+	if(!mp1) {
+	  if(!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
+	    WinSendMsg((HWND)0,WM_QUIT,MPVOID,MPVOID);
+	  if(hwndParent && !ParentIsDesktop(hwnd,hwndParent))
+	    WinDestroyWindow(hwndParent);
+	}
+	else
+	  WinDestroyWindow(WinQueryWindow(WinQueryWindow(hwnd,QW_PARENT),
+			   QW_PARENT));
       }
       return 0;
 
     case WM_CLOSE:
       WinSendMsg(hwnd,WM_SAVEAPPLICATION,MPVOID,MPVOID);
       if(dcd)
-        dcd->stopflag++;
+	dcd->stopflag++;
       if(dcd && dcd->hwndObject) {
-        /* kill object window */
-        if(!PostMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID))
-          WinSendMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID);
+	/* kill object window */
+	if(!PostMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID))
+	  WinSendMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID);
       }
       else
-        WinSendMsg(hwnd,UM_CLOSE,MPFROMLONG(1L),MPVOID);
+	WinSendMsg(hwnd,UM_CLOSE,MPFROMLONG(1L),MPVOID);
       return 0;
 
     case WM_DESTROY:
       if(TreeCnrMenu)
-        WinDestroyWindow(TreeCnrMenu);
+	WinDestroyWindow(TreeCnrMenu);
       if(DirMenu)
-        WinDestroyWindow(DirMenu);
+	WinDestroyWindow(DirMenu);
       if(FileMenu)
-        WinDestroyWindow(FileMenu);
+	WinDestroyWindow(FileMenu);
       TreeCnrMenu = FileMenu = DirMenu = (HWND)0;
       EmptyCnr(hwnd);
       if(apphead) {
 
-        APPNOTIFY *info,*next;
+	APPNOTIFY *info,*next;
 
-        info = apphead;
-        while(info) {
-          next = info->next;
-          free(info);
-          info = next;
-        }
-        apphead = apptail = NULL;
+	info = apphead;
+	while(info) {
+	  next = info->next;
+	  free(info);
+	  info = next;
+	}
+	apphead = apptail = NULL;
       }
       break;
   }
   return (dcd && dcd->oldproc) ? dcd->oldproc(hwnd,msg,mp1,mp2) :
-                                 PFNWPCnr(hwnd,msg,mp1,mp2);
+				 PFNWPCnr(hwnd,msg,mp1,mp2);
 }
 
 
@@ -3253,9 +3271,9 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
 
   HWND          hwndFrame = (HWND)0,hwndClient;
   ULONG         FrameFlags = FCF_TITLEBAR   | FCF_SYSMENU     |
-                             FCF_SIZEBORDER | FCF_MINMAX      |
-                             FCF_ICON       | FCF_NOBYTEALIGN |
-                             FCF_ACCELTABLE;
+			     FCF_SIZEBORDER | FCF_MINMAX      |
+			     FCF_ICON       | FCF_NOBYTEALIGN |
+			     FCF_ACCELTABLE;
   DIRCNRDATA   *dcd;
 
   if(!hwndParent)
@@ -3264,16 +3282,16 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
     FrameFlags |= (FCF_TASKLIST | FCF_MENU);
   if(flags & 2)
     FrameFlags &= (~(FCF_TITLEBAR | FCF_SYSMENU | FCF_SIZEBORDER |
-                     FCF_MINMAX   | FCF_ICON));
+		     FCF_MINMAX   | FCF_ICON));
   hwndFrame = WinCreateStdWindow(hwndParent,
-                                 WS_VISIBLE,
-                                 &FrameFlags,
-                                 GetPString(IDS_WCTREECONTAINER),
-                                 NULL,
-                                 WS_VISIBLE | fwsAnimate,
-                                 FM3ModHandle,
-                                 TREE_FRAME,
-                                 &hwndClient);
+				 WS_VISIBLE,
+				 &FrameFlags,
+				 GetPString(IDS_WCTREECONTAINER),
+				 NULL,
+				 WS_VISIBLE | fwsAnimate,
+				 FM3ModHandle,
+				 TREE_FRAME,
+				 &hwndClient);
   if(hwndFrame && hwndClient) {
     dcd = malloc(sizeof(DIRCNRDATA));
     if(dcd) {
@@ -3282,39 +3300,39 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
 
       WinQueryWindowPos(hwndFrame,&swp);
       if(*(ULONG *)realappname == FM3UL)
-        WinCreateWindow(hwndFrame,
-                        GetPString(IDS_WCTREEOPENBUTTON),
-                        "O",
-                        WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
-                        ((swp.cx - WinQuerySysValue(HWND_DESKTOP,SV_CXMINMAXBUTTON)) -
-                         WinQuerySysValue(HWND_DESKTOP,SV_CXMINMAXBUTTON) / 2) -
-                         WinQuerySysValue(HWND_DESKTOP,SV_CXSIZEBORDER),
-                        (swp.cy - WinQuerySysValue(HWND_DESKTOP,SV_CYMINMAXBUTTON)) -
-                         WinQuerySysValue(HWND_DESKTOP,SV_CYSIZEBORDER),
-                        WinQuerySysValue(HWND_DESKTOP,SV_CXMINMAXBUTTON) / 2,
-                        WinQuerySysValue(HWND_DESKTOP,SV_CYMINMAXBUTTON),
-                        hwndFrame,
-                        HWND_TOP,
-                        IDM_OPENWINDOW,
-                        NULL,
-                        NULL);
+	WinCreateWindow(hwndFrame,
+			GetPString(IDS_WCTREEOPENBUTTON),
+			"O",
+			WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
+			((swp.cx - WinQuerySysValue(HWND_DESKTOP,SV_CXMINMAXBUTTON)) -
+			 WinQuerySysValue(HWND_DESKTOP,SV_CXMINMAXBUTTON) / 2) -
+			 WinQuerySysValue(HWND_DESKTOP,SV_CXSIZEBORDER),
+			(swp.cy - WinQuerySysValue(HWND_DESKTOP,SV_CYMINMAXBUTTON)) -
+			 WinQuerySysValue(HWND_DESKTOP,SV_CYSIZEBORDER),
+			WinQuerySysValue(HWND_DESKTOP,SV_CXMINMAXBUTTON) / 2,
+			WinQuerySysValue(HWND_DESKTOP,SV_CYMINMAXBUTTON),
+			hwndFrame,
+			HWND_TOP,
+			IDM_OPENWINDOW,
+			NULL,
+			NULL);
       else
-        WinCreateWindow(hwndFrame,
-                        GetPString(IDS_WCTREESTATUS),
-                        GetPString(IDS_YOUAREHERETEXT),
-                        WS_VISIBLE | SS_TEXT | DT_LEFT | DT_VCENTER,
-                        swp.x + 4 + WinQuerySysValue(HWND_DESKTOP,
-                                                     SV_CXSIZEBORDER),
-                        swp.cy - (22 + WinQuerySysValue(HWND_DESKTOP,
-                                                        SV_CYSIZEBORDER)),
-                        (swp.cx  - 8) - (WinQuerySysValue(HWND_DESKTOP,
-                                              SV_CXSIZEBORDER) * 2),
-                        22,
-                        hwndFrame,
-                        HWND_TOP,
-                        MAIN_STATUS,
-                        NULL,
-                        NULL);
+	WinCreateWindow(hwndFrame,
+			GetPString(IDS_WCTREESTATUS),
+			GetPString(IDS_YOUAREHERETEXT),
+			WS_VISIBLE | SS_TEXT | DT_LEFT | DT_VCENTER,
+			swp.x + 4 + WinQuerySysValue(HWND_DESKTOP,
+						     SV_CXSIZEBORDER),
+			swp.cy - (22 + WinQuerySysValue(HWND_DESKTOP,
+							SV_CYSIZEBORDER)),
+			(swp.cx  - 8) - (WinQuerySysValue(HWND_DESKTOP,
+					      SV_CXSIZEBORDER) * 2),
+			22,
+			hwndFrame,
+			HWND_TOP,
+			MAIN_STATUS,
+			NULL,
+			NULL);
       memset(dcd,0,sizeof(DIRCNRDATA));
       dcd->size = sizeof(DIRCNRDATA);
       dcd->type = TREE_FRAME;
@@ -3323,53 +3341,53 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
       dcd->hwndClient = hwndClient;
       dcd->hwndFrame  = hwndFrame;
       {
-        PFNWP oldproc;
+	PFNWP oldproc;
 
-        oldproc = WinSubclassWindow(hwndFrame,(PFNWP)TreeFrameWndProc);
-        WinSetWindowPtr(hwndFrame,0,(PVOID)oldproc);
-        oldproc = WinSubclassWindow(WinWindowFromID(hwndFrame,FID_TITLEBAR),
-                                    (PFNWP)TreeTitleWndProc);
-        WinSetWindowPtr(WinWindowFromID(hwndFrame,FID_TITLEBAR),0,
-                        (PVOID)oldproc);
+	oldproc = WinSubclassWindow(hwndFrame,(PFNWP)TreeFrameWndProc);
+	WinSetWindowPtr(hwndFrame,0,(PVOID)oldproc);
+	oldproc = WinSubclassWindow(WinWindowFromID(hwndFrame,FID_TITLEBAR),
+				    (PFNWP)TreeTitleWndProc);
+	WinSetWindowPtr(WinWindowFromID(hwndFrame,FID_TITLEBAR),0,
+			(PVOID)oldproc);
       }
       dcd->hwndCnr = WinCreateWindow(hwndClient,
-                                     WC_CONTAINER,
-                                     NULL,
-                                     CCS_AUTOPOSITION | CCS_MINIICONS |
-                                     CCS_MINIRECORDCORE | WS_VISIBLE,
-                                     0,
-                                     0,
-                                     0,
-                                     0,
-                                     hwndClient,
-                                     HWND_TOP,
-                                     (ULONG)TREE_CNR,
-                                     NULL,
-                                     NULL);
+				     WC_CONTAINER,
+				     NULL,
+				     CCS_AUTOPOSITION | CCS_MINIICONS |
+				     CCS_MINIRECORDCORE | WS_VISIBLE,
+				     0,
+				     0,
+				     0,
+				     0,
+				     hwndClient,
+				     HWND_TOP,
+				     (ULONG)TREE_CNR,
+				     NULL,
+				     NULL);
       if(dcd->hwndCnr) {
-        WinSetWindowPtr(dcd->hwndCnr,0,(PVOID)dcd);
-        if(ParentIsDesktop(hwndFrame,hwndParent)) {
-          WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),"VTree");
-          FixSwitchList(hwndFrame,"VTree");
-        }
-        else {
-          WinSetWindowText(hwndFrame,GetPString(IDS_TREETEXT));
-          WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),
-                           GetPString(IDS_TREETEXT));
-        }
-        dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,(PFNWP)TreeCnrWndProc);
-        if(!PostMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID))
-          WinSendMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID);
+	WinSetWindowPtr(dcd->hwndCnr,0,(PVOID)dcd);
+	if(ParentIsDesktop(hwndFrame,hwndParent)) {
+	  WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),"VTree");
+	  FixSwitchList(hwndFrame,"VTree");
+	}
+	else {
+	  WinSetWindowText(hwndFrame,GetPString(IDS_TREETEXT));
+	  WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),
+			   GetPString(IDS_TREETEXT));
+	}
+	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,(PFNWP)TreeCnrWndProc);
+	if(!PostMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID))
+	  WinSendMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID);
       }
       else {
-        PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
-        free(dcd);
-        hwndFrame = (HWND)0;
+	PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+	free(dcd);
+	hwndFrame = (HWND)0;
       }
     }
     else {
       saymsg(MB_ENTER,hwndParent,DEBUG_STRING,
-             GetPString(IDS_OUTOFMEMORY));
+	     GetPString(IDS_OUTOFMEMORY));
       PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
       hwndFrame = (HWND)0;
     }

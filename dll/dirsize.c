@@ -15,6 +15,7 @@
   21 Nov 03 SHL Total drives >4GB better
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  26 May 05 SHL More large file formatting updates
 
 ***********************************************************************/
 
@@ -254,7 +255,7 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
   free(pFFB);
 
   pCI->cbFile = ullCurDirBytes;
-  pCI->easize = ullSubDirBytes;	// hack fixme
+  pCI->easize = ullSubDirBytes;	// hack cough
   WinSendMsg(hwndCnr,CM_INVALIDATERECORD,MPFROMP(&pCI),
 	     MPFROM2SHORT(1,CMA_ERASE | CMA_TEXTCHANGED));
 
@@ -317,8 +318,8 @@ static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONGLONG ullTotalBy
     }
 
     pCI->flags = (ULONG)fltPct;
-    CommaFmtULL(szSubDir,sizeof(szSubDir),pCI->easize,'M');
-    CommaFmtULL(szAllDir,sizeof(szAllDir),pCI->cbFile + pCI->easize,'M');
+    CommaFmtULL(szSubDir,sizeof(szSubDir),pCI->easize,'K');
+    CommaFmtULL(szAllDir,sizeof(szAllDir),pCI->cbFile + pCI->easize,'K');
     sprintf(&pCI->szFileName[strlen(pCI->szFileName)],
 	    "  %s + %s = %s (%.02lf%%%s)\r%s",
 	    szCurDir,
