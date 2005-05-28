@@ -17,6 +17,7 @@
   25 May 05 SHL Rework for ULONGLONG
   25 May 05 SHL Rework FillInRecordFromFFB
   25 May 05 SHL Rework FillTreeCnr
+  28 May 05 SHL Drop stale debug code
 
 ***********************************************************************/
 
@@ -649,153 +650,129 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
          * only directories should appear (only a few
          * network file systems exhibit such a problem).
          */
-        {
-          register ULONG x;
+        register ULONG x;
 
+        if (stopflag && *stopflag)
+          goto Abort;
+        pByte = (PBYTE)paffbFound;
+        for (x = 0;;x < ulFileCnt)
+	{
+          pffbFile = (PFILEFINDBUF4)pByte;
+          if (!*pffbFile->achName ||
+              (!filestoo && !(pffbFile->attrFile & FILE_DIRECTORY)) ||
+              (((pffbFile->attrFile & FILE_DIRECTORY) &&
+                pffbFile->achName[0] == '.') &&
+               (!pffbFile->achName[1] || (pffbFile->achName[1] == '.' &&
+                !pffbFile->achName[2]))))
+	  {
+            ulFileCnt--;
+	  }
+          else
+            papffbSelected[x++] = pffbFile;
+          if (!pffbFile->oNextEntryOffset)
+	  {
+            ulFileCnt = x;
+            break;
+          }
+          pByte += pffbFile->oNextEntryOffset;
+        }
+        if (ulFileCnt)
+	{
           if (stopflag && *stopflag)
             goto Abort;
-          pByte = (PBYTE)paffbFound;
-          x = 0L;
-          while (x < ulFileCnt)
+          if (fSyncUpdates)
 	  {
-            pffbFile = (PFILEFINDBUF4)pByte;
-            if (!*pffbFile->achName ||
-                (!filestoo && !(pffbFile->attrFile & FILE_DIRECTORY)) ||
-                (((pffbFile->attrFile & FILE_DIRECTORY) &&
-                  pffbFile->achName[0] == '.') &&
-                 (!pffbFile->achName[1] || (pffbFile->achName[1] == '.' &&
-                  !pffbFile->achName[2]))))
+            pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
+                                  MPFROMLONG(ulExtraBytes),
+                                  MPFROMLONG(ulFileCnt));
+            if (pciFirst)
 	    {
-              ulFileCnt--;
-	    }
-            else
-              papffbSelected[x++] = pffbFile;
-            if (!pffbFile->oNextEntryOffset)
-	    {
-              ulFileCnt = x;
-              break;
-            }
-            pByte += pffbFile->oNextEntryOffset;
-          }
-          if (ulFileCnt)
-	  {
-            if (stopflag && *stopflag)
-              goto Abort;
-            if (fSyncUpdates)
-	    {
-              pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
-                                    MPFROMLONG(ulExtraBytes),
-                                    MPFROMLONG(ulFileCnt));
-              if (pciFirst)
-	      {
-                register INT   i;
+              register INT   i;
 
-                pci = pciFirst;
-                ullTotalBytes = 0;
-                for(i = 0; i < ulFileCnt; i++) {
-                  pffbFile = papffbSelected[i];
-                  ullBytes = FillInRecordFromFFB(hwndCnr,pci,pszFileSpec,
-                                           pffbFile,partial,dcd);
-                  if (rc)
-		  {
-                    pci = (PCNRITEM)pci->rc.preccNextRecord;
-                    ullTotalBytes += ullBytes;
-                  }
-                  else
-		  {
-                    Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-                              GetPString(IDS_FILLDIRERR1TEXT),
-                              hwndCnr);
-                    ulFileCnt--;
-                  }
-                }
-                if (ulFileCnt)
+              pci = pciFirst;
+              ullTotalBytes = 0;
+              for(i = 0; i < ulFileCnt; i++) {
+                pffbFile = papffbSelected[i];
+                ullBytes = FillInRecordFromFFB(hwndCnr,pci,pszFileSpec,
+                                         pffbFile,partial,dcd);
+                pci = (PCNRITEM)pci->rc.preccNextRecord;
+                ullTotalBytes += ullBytes;
+              }
+              if (ulFileCnt)
+	      {
+                memset(&ri,0,sizeof(RECORDINSERT));
+                ri.cb                 = sizeof(RECORDINSERT);
+                ri.pRecordOrder       = (PRECORDCORE) CMA_END;
+                ri.pRecordParent      = (PRECORDCORE) pciParent;
+                ri.zOrder             = (ULONG) CMA_TOP;
+                ri.cRecordsInsert     = ulFileCnt;
+                ri.fInvalidateRecord  = (!fSyncUpdates && dcd &&
+                                         dcd->type == DIR_FRAME) ?
+                                          FALSE : TRUE;
+                if (!WinSendMsg(hwndCnr,
+                                CM_INSERTRECORD,
+                                MPFROMP(pciFirst),
+                                MPFROMP(&ri)))
 		{
-                  memset(&ri,0,sizeof(RECORDINSERT));
-                  ri.cb                 = sizeof(RECORDINSERT);
-                  ri.pRecordOrder       = (PRECORDCORE) CMA_END;
-                  ri.pRecordParent      = (PRECORDCORE) pciParent;
-                  ri.zOrder             = (ULONG) CMA_TOP;
-                  ri.cRecordsInsert     = ulFileCnt;
-                  ri.fInvalidateRecord  = (!fSyncUpdates && dcd &&
-                                           dcd->type == DIR_FRAME) ?
-                                            FALSE : TRUE;
+                  DosSleep(100L);
+                  WinSetFocus(HWND_DESKTOP,hwndCnr);
                   if (!WinSendMsg(hwndCnr,
                                   CM_INSERTRECORD,
                                   MPFROMP(pciFirst),
                                   MPFROMP(&ri)))
 		  {
-                    DosSleep(100L);
-                    WinSetFocus(HWND_DESKTOP,hwndCnr);
-                    if (!WinSendMsg(hwndCnr,
-                                    CM_INSERTRECORD,
-                                    MPFROMP(pciFirst),
-                                    MPFROMP(&ri))) {
-
-		      { // SHL
-		        CHAR sz[80];
-		        sprintf(sz, "rc = %d", rc);
-                        WinMessageBox(HWND_DESKTOP,	/* Parent window */
-                                      HWND_DESKTOP,	/* Owner window */
-                                      sz,		/* Message */
-                                      "Debug",		/* Title bar message */
-                                      0,		/* Message identifier */
-                                      MB_ENTER | MB_ICONEXCLAMATION | MB_MOVEABLE);
-		      } // SHL
-
-                      Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-                                GetPString(IDS_FILLDIRERR2TEXT));
-                      ok = FALSE;
-                      ullTotalBytes = 0;
-                      if (WinIsWindow((HAB)0,hwndCnr))
+                    Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                              GetPString(IDS_FILLDIRERR2TEXT));
+                    ok = FALSE;
+                    ullTotalBytes = 0;
+                    if (WinIsWindow((HAB)0,hwndCnr))
+		    {
+                      pci = pciFirst;
+                      while (pci)
 		      {
-                        pci = pciFirst;
-                        while (pci)
-			{
-                          pcit = (PCNRITEM)pci->rc.preccNextRecord;
-                          WinSendMsg(hwndCnr,
-                                     CM_FREERECORD,
-                                     MPFROMP(&pci),
-                                     MPFROMSHORT(1));
-                          pci = pcit;
-                        }
+                        pcit = (PCNRITEM)pci->rc.preccNextRecord;
+                        WinSendMsg(hwndCnr,
+                                   CM_FREERECORD,
+                                   MPFROMP(&pci),
+                                   MPFROMSHORT(1));
+                        pci = pcit;
                       }
                     }
                   }
                 }
               }
-              else
-	      {
-                Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-                          GetPString(IDS_FILLDIRERR3TEXT));
-                ok = FALSE;
-                ullTotalBytes = 0;
-              }
-              if (ok)
-	      {
-                ullReturnBytes += ullTotalBytes;
-                ulReturnFiles += ulFileCnt;
-              }
             }
             else
 	    {
-              paffbTemp = realloc(paffbTotal,sizeof(FILEFINDBUF4) *
-                                       (ulFileCnt + ulTotal));
-              if (paffbTemp)
-	      {
-                paffbTotal = paffbTemp;
-                for(x = 0;x < ulFileCnt;x++)
-                  paffbTotal[x + ulTotal] = *papffbSelected[x];
-                ulTotal += ulFileCnt;
-              }
-              else
-	      {
-                saymsg(MB_ENTER,
-                       HWND_DESKTOP,
-                       GetPString(IDS_ERRORTEXT),
-                       GetPString(IDS_OUTOFMEMORY));
-                break;
-              }
+              Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                        GetPString(IDS_FILLDIRERR3TEXT));
+              ok = FALSE;
+              ullTotalBytes = 0;
+            }
+            if (ok)
+	    {
+              ullReturnBytes += ullTotalBytes;
+              ulReturnFiles += ulFileCnt;
+            }
+          }
+          else
+	  {
+            paffbTemp = realloc(paffbTotal,sizeof(FILEFINDBUF4) *
+                                     (ulFileCnt + ulTotal));
+            if (paffbTemp)
+	    {
+              paffbTotal = paffbTemp;
+              for(x = 0;x < ulFileCnt;x++)
+                paffbTotal[x + ulTotal] = *papffbSelected[x];
+              ulTotal += ulFileCnt;
+            }
+            else
+	    {
+              saymsg(MB_ENTER,
+                     HWND_DESKTOP,
+                     GetPString(IDS_ERRORTEXT),
+                     GetPString(IDS_OUTOFMEMORY));
+              break;
             }
           }
         }
@@ -865,17 +842,6 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
               if (!WinSendMsg(hwndCnr,CM_INSERTRECORD,
                              MPFROMP(pciFirst),MPFROMP(&ri)))
               {
-	        { // SHL
-		  CHAR sz[80];
-		  sprintf(sz, "rc = %d", rc);
-	          WinMessageBox(HWND_DESKTOP,		/* Parent window */
-                                HWND_DESKTOP,		/* Owner window */
-                                sz,			/* Message */
-                                "Debug",		/* Title bar message */
-                                0,			/* Message identifier */
-                                MB_ENTER | MB_ICONEXCLAMATION | MB_MOVEABLE);
-	        } // SHL
-
                 Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
                           GetPString(IDS_FILLDIRERR5TEXT));
                 ok = FALSE;
