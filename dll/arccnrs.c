@@ -48,11 +48,12 @@
 INT arcsortFlags = 0;
 
 
-MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   ARCDUMP *ad;
 
-  switch(msg) {
+  switch (msg)
+  {
     case WM_INITDLG:
       if(!mp2)
         WinDismissDlg(hwnd,0);
@@ -136,8 +137,8 @@ MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-SHORT APIENTRY ArcSort (PMINIRECORDCORE p1,PMINIRECORDCORE p2,PVOID pStorage) {
-
+SHORT APIENTRY ArcSort (PMINIRECORDCORE p1,PMINIRECORDCORE p2,PVOID pStorage)
+{
   PARCITEM    p = (PARCITEM)p1,pp = (PARCITEM)p2;
   DIRCNRDATA *dcd = (DIRCNRDATA *)pStorage;
   SHORT       ret = 0;
@@ -208,8 +209,8 @@ SHORT APIENTRY ArcSort (PMINIRECORDCORE p1,PMINIRECORDCORE p2,PVOID pStorage) {
 }
 
 
-INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg) {
-
+INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg)
+{
   DIRCNRDATA   *dcd = (DIRCNRDATA *)arg;
   PARCITEM      r;
   register INT  x;
@@ -244,14 +245,14 @@ INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg) {
 }
 
 
-MRESULT EXPENTRY ArcFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ArcFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   return CommonFrameWndProc(ARC_CNR,hwnd,msg,mp1,mp2);
 }
 
 
-BOOL IsArcThere (HWND hwnd, CHAR *arcname) {
-
+BOOL IsArcThere (HWND hwnd, CHAR *arcname)
+{
   if(arcname) {
     if(IsFile(arcname) != 1) {
       saymsg(MB_CANCEL,hwnd,
@@ -637,8 +638,8 @@ ReTry:
 }
 
 
-MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static BOOL   emphasized      = FALSE;
   static HWND   hwndButtonPopup = (HWND)0;
   static ULONG  timestamp       = ULONG_MAX;
@@ -1132,8 +1133,8 @@ MRESULT EXPENTRY ArcClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 }
 
 
-MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   DIRCNRDATA *dcd;
 
   switch(msg) {
@@ -1991,8 +1992,8 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY ArcCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ArcCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
