@@ -12,6 +12,7 @@
   11 Jun 03 SHL Add JFS and FAT32 support
   25 Nov 03 SHL InitFM3DLL: correct strings error mesage
   23 May 05 SHL Use datamin.h
+  26 May 05 SHL Comments
 
 ***********************************************************************/
 
@@ -669,19 +670,19 @@ BOOL InitFM3DLL (HAB hab,int argc,char **argv) {
   /* a couple of default window procs so we don't have to look them up later */
   if(WinQueryClassInfo(hab,WC_CONTAINER,&clinfo))
     PFNWPCnr = clinfo.pfnWindowProc;
-// saymsg(MB_ENTER,HWND_DESKTOP,"Container flags:","%08lx",clinfo.flClassStyle);
+  // saymsg(MB_ENTER,HWND_DESKTOP,"Container flags:","%08lx",clinfo.flClassStyle);
   if(WinQueryClassInfo(hab,WC_FRAME,&clinfo))
     PFNWPFrame = clinfo.pfnWindowProc;
-// saymsg(MB_ENTER,HWND_DESKTOP,"Frame flags:","%08lx",clinfo.flClassStyle);
+  // saymsg(MB_ENTER,HWND_DESKTOP,"Frame flags:","%08lx",clinfo.flClassStyle);
   if(WinQueryClassInfo(hab,WC_BUTTON,&clinfo))
     PFNWPButton = clinfo.pfnWindowProc;
-// saymsg(MB_ENTER,HWND_DESKTOP,"Button flags:","%08lx",clinfo.flClassStyle);
+  // saymsg(MB_ENTER,HWND_DESKTOP,"Button flags:","%08lx",clinfo.flClassStyle);
   if(WinQueryClassInfo(hab,WC_STATIC,&clinfo))
     PFNWPStatic = clinfo.pfnWindowProc;
-// saymsg(MB_ENTER,HWND_DESKTOP,"Static flags:","%08lx",clinfo.flClassStyle);
+  // saymsg(MB_ENTER,HWND_DESKTOP,"Static flags:","%08lx",clinfo.flClassStyle);
   if(WinQueryClassInfo(hab,WC_MLE,&clinfo))
     PFNWPMLE = clinfo.pfnWindowProc;
-// saymsg(MB_ENTER,HWND_DESKTOP,"MLE flags:","%08lx",clinfo.flClassStyle);
+  // saymsg(MB_ENTER,HWND_DESKTOP,"MLE flags:","%08lx",clinfo.flClassStyle);
   if(!PFNWPCnr || !PFNWPFrame || !PFNWPButton || !PFNWPStatic || !PFNWPMLE) {
       DosBeep(50,100);
       DosSleep(10);
@@ -1365,20 +1366,20 @@ HWND StartFM3 (HAB hab,INT argc,CHAR **argv) {
   return hwndFrame;
 }
 
-// SHL added - fixme
-
 int CheckVersion (int vermajor,int verminor) {
 
-  int ret = 0;
+  int ok = 0;
+
+  // fixme to do useful check - was missing in base source
 
 #if 0
   if(vermajor && verminor) {
     *vermajor = VERMAJOR;
     *verminor = VERMINOR;
-    ret = 1;
+    ok = 1;
   }
 #endif
-  ret = 1;
+  ok = 1;
 
-  return ret;
+  return ok;
 }

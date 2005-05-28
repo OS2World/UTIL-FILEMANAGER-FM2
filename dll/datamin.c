@@ -1234,7 +1234,7 @@ static VOID dataminThread (VOID *pv)
     }
   }
 
-  // fixme to complain
+  // fixme to report errors
   hab = WinInitialize(0);
   if (hab == NULLHANDLE)
     busy = FALSE;

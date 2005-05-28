@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Index for fm3dll.str (source) fm3res.str (compiled)
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2002, 2005 Steven H. Levine
+
+  21 May 04 SHL Adjust IDS_NUMSTRS
+  26 May 05 SHL Comments
+
+***********************************************************************/
+
 #define VERMAJORBREAK                                         3
 #define VERMINORBREAK                                         02
 
@@ -27,7 +42,7 @@
 #define IDS_COMMANDSTEXT                                      21
 #define IDS_TREETEXT                                          22
 #define IDS_NUMDRIVESTEXT                                     23
-#define IDS_KFREETEXT                                         24
+#define IDS_FREETEXT                                          24
 #define IDS_ATTRTEXT                                          25
 #define IDS_SWAPFILETEXT                                      26
 #define IDS_DTTEXT                                            27
@@ -724,7 +739,7 @@
 #define IDS_ASN1BYTESTEXT                                     721
 #define IDS_UNKNOWNBYTESTEXT                                  722
 #define IDS_DATABARTITLETEXT                                  723
-#define IDS_FREETEXT                                          724
+#define IDS_FREETEXT2                                         724   // available
 #define IDS_SUNDAY                                            725
 #define IDS_MONDAY                                            726
 #define IDS_TUESDAY                                           727
