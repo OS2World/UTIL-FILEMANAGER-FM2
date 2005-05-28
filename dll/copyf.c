@@ -6,13 +6,14 @@
   Copy functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2004 Steven H.Levine
+  Copyright (c) 2001, 2005 Steven H.Levine
 
-  Revisions	14 Sep 02 SHL Drop obsolete debug code
-		14 Oct 02 SHL Drop obsolete debug code
-		10 Nov 02 SHL docopyf - don't forget to terminate longname
-					optimize longname logic
-		01 Aug 04 SHL Rework lstrip/rstrip usage
+  14 Sep 02 SHL Drop obsolete debug code
+  14 Oct 02 SHL Drop obsolete debug code
+  10 Nov 02 SHL docopyf - don't forget to terminate longname
+  			optimize longname logic
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  28 May 05 SHL Drop debug code
 
 ***********************************************************************/
 
@@ -258,9 +259,6 @@ CHAR *GetLongName (CHAR *oldname,CHAR *longname) {
 
 BOOL ZapLongName (char *filename) {
 
-#ifdef DEBUG
-  saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Zapped longname.");	// fixme to be gone
-#endif
   return WriteLongName(filename, "");
 }
 
@@ -484,9 +482,6 @@ APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...) {
   pp = RootName(fullnewname);
   if(stricmp(p, pp))
   {
-#ifdef DEBUG
-    saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"oldname: %s\rnewname: %s",oldname,fullnewname);	// fixme to be gone
-#endif
     zaplong = TRUE;
   }
 
