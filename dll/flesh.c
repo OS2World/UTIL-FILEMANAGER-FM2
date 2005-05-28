@@ -10,6 +10,7 @@
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
+  28 May 05 SHL Clean with reading code
 
 ***********************************************************************/
 
@@ -31,8 +32,8 @@
 #pragma alloc_text(FLESH,Flesh,FleshEnv,Unflesh,Stubby)
 
 
-BOOL FleshEnv (HWND hwndCnr,PCNRITEM pciParent) {
-
+BOOL FleshEnv (HWND hwndCnr,PCNRITEM pciParent)
+{
   PCNRITEM    pciL;
   DIRCNRDATA *dcd;
   CHAR        path[CCHMAXPATH + 12],
@@ -169,7 +170,6 @@ BOOL FleshEnv (HWND hwndCnr,PCNRITEM pciParent) {
 
 BOOL Flesh(HWND hwndCnr,PCNRITEM pciParent)
 {
-
   PCNRITEM    pciL;
   DIRCNRDATA *dcd;
   BOOL        includefiles = fFilesInTree;
@@ -210,20 +210,22 @@ BOOL Flesh(HWND hwndCnr,PCNRITEM pciParent)
 }
 
 
-BOOL UnFlesh (HWND hwndCnr,PCNRITEM pciParent) {
-
+BOOL UnFlesh (HWND hwndCnr,PCNRITEM pciParent)
+{
   BOOL     ret = FALSE;
   PCNRITEM pciL;
 
-  if(!pciParent || !hwndCnr)
+  if (!pciParent || !hwndCnr)
     return FALSE;
-  for(;;) {
+  for (;;)
+  {
     pciL = (PCNRITEM)WinSendMsg(hwndCnr,
                                 CM_QUERYRECORD,
                                 MPFROMP(pciParent),
                                 MPFROM2SHORT(CMA_FIRSTCHILD,
                                              CMA_ITEMORDER));
-    if(pciL && (INT)pciL != -1) {
+    if (pciL && (INT)pciL != -1)
+    {
       ret = TRUE;
       WinSendMsg(hwndCnr,
                  CM_REMOVERECORD,
@@ -233,19 +235,21 @@ BOOL UnFlesh (HWND hwndCnr,PCNRITEM pciParent) {
     else
       break;
   }
-  if(ret)
+  if (ret)
+  {
     WinSendMsg(hwndCnr,
                CM_INVALIDATERECORD,
                MPFROMP(&pciParent),
                MPFROM2SHORT(1,
                             CMA_ERASE | CMA_REPOSITION));
+  }
   return ret;
 }
 
 #define DDEPTH 16
 
-BOOL Stubby (HWND hwndCnr,PCNRITEM pciParent) {
-
+BOOL Stubby (HWND hwndCnr,PCNRITEM pciParent)
+{
   /*
    * this code is full of workarounds for screwed up LANs.
    * let's hope all the current LAN programmers fall into
@@ -539,4 +543,3 @@ None:
   DosError(FERR_DISABLEHARDERR);
   return ret;
 }
-
