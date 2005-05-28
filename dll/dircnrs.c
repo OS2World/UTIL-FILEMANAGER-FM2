@@ -13,6 +13,7 @@
   23 May 05 SHL Use QWL_USER
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  26 May 05 SHL More large file formatting updates
 
 ***********************************************************************/
 
@@ -700,25 +701,29 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       if(dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 
         FSALLOCATE fsa;
-        CHAR       s[CCHMAXPATH * 2],tf[81],tb[81],szBuf[81];
+        CHAR s[CCHMAXPATH * 2];
+	CHAR tf[64];
+	CHAR tb[64];
+	CHAR szFree[64];
 
         DosError(FERR_DISABLEHARDERR);
         if(!DosQueryFSInfo(toupper(*dcd->directory) - '@',
-           FSIL_ALLOC,&fsa,sizeof(FSALLOCATE))) {
-          strcpy(szBuf,"  {");
-          CommaFmtULL(szBuf + 3,sizeof(szBuf) - 5,
+           FSIL_ALLOC,&fsa,sizeof(FSALLOCATE)))
+	{
+          CommaFmtULL(tb,sizeof(tb),
                       (ULONGLONG)fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector),
 		      'K');
-          strcat(szBuf,GetPString(IDS_KFREETEXT));
-          strcat(szBuf,"}");
+          sprintf(szFree,"  {%s %s}",
+		  tb,GetPString(IDS_FREETEXT));
         }
         else
-          *szBuf = 0;
+          *szFree = 0;
         commafmt(tf,sizeof(tf),dcd->totalfiles);
         CommaFmtULL(tb,sizeof(tb),dcd->ullTotalBytes,' ');
-        if(!fMoreButtons)
-          sprintf(s," [%s / %sb]%s%s%s%s %s",tf,tb,
-                  szBuf,
+        if (!fMoreButtons)
+	{
+          sprintf(s," [%s / %s]%s%s%s%s %s",
+	          tf,tb,szFree,
                   (*dcd->mask.szMask || dcd->mask.antiattr ||
                    dcd->mask.attrFile != ALLATTRS) ? "  (" : NullStr,
                   (*dcd->mask.szMask) ? dcd->mask.szMask :
@@ -728,10 +733,13 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   (*dcd->mask.szMask || dcd->mask.antiattr ||
                    dcd->mask.attrFile != ALLATTRS) ? ")" : NullStr,
                   dcd->directory);
+	}
         else
-          sprintf(s," [%s / %sb]%s %s",tf,tb,szBuf,
-                  dcd->directory);
-        if(dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
+	{
+          sprintf(s," [%s / %s]%s %s",
+	          tf,tb,szFree,dcd->directory);
+	}
+        if (dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
           WinSetWindowText(hwndStatus,s);
       }
       return 0;
@@ -1535,7 +1543,7 @@ KbdRetry:
                 CommaFmtULL(tb,sizeof(tb),pci->cbFile + pci->easize,' ');
                 if(!fMoreButtons)
                   sprintf(s,
-                          " %sb  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
+                          " %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
                           tb,
                           pci->date.year,
                           pci->date.month,
@@ -3498,7 +3506,7 @@ KbdRetry:
                       CommaFmtULL(tb,sizeof(tb),pci->cbFile + pci->easize,' ');
                       if(!fMoreButtons)
 		      {
-                        sprintf(s," %sb  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
+                        sprintf(s," %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
                                 tb,pci->date.year,
                                 pci->date.month,pci->date.day,pci->time.hours,
                                 pci->time.minutes,pci->time.seconds,
