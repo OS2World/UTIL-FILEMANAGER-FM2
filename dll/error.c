@@ -13,6 +13,7 @@
   24 May 05 SHL Rename General_Error to more accurate Win_Error
   24 May 05 SHL Rename saymsg to more accurate Misc_Error
   24 May 05 SHL Rework Win_Error args and clean up logic
+  27 May 05 SHL Rework to use common showMsg
 
 ***********************************************************************/
 
@@ -30,41 +31,41 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(FMINPUT,Win_Error,Dos_Error,saymsg)
+#pragma alloc_text(FMINPUT,Win_Error,Dos_Error,saymsg,showMsg)
 
-// fixme to pass hwndError rather hab
+static APIRET showMsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszMsg);
 
 //== Win_Error: report Win...() error ===
 
 VOID Win_Error(HWND hwndErr, HWND hwndOwner, PSZ pszFileName, ULONG ulLineNo, CHAR *pszFmt,...)
 {
-  PERRINFO pErrInfoBlk;		/* Pointer to ERRINFO structure that is filled
+  PERRINFO pErrInfoBlk;		/* Pointer to ERRINFO structure filled
 				   by WinGetErrorInfo */
-  PSZ pszOffset;		/* Pointer to the current error message returned
+  PSZ pszOffset;		/* Pointer to current error message returned
 				   by WinGetErrorInfo */
-  CHAR szErrBuffer[4096];	/* The error message that is displayed to
-				   the user via WinMessageBox */
+  CHAR szMsg[4096];
   PSZ psz;
   HAB hab;
   va_list va;
 
   if (hwndErr == NULLHANDLE)
-    hab = (HAB) 0;
+    hab = (HAB)0;
   else
     hab = WinQueryAnchorBlock(hwndErr);
 
   // Format callers message
   va_start(va, pszFmt);
-  vsprintf(szErrBuffer, pszFmt, va);
+  vsprintf(szMsg, pszFmt, va);
   va_end(va);
 
   // Append file name and line number
-  sprintf(szErrBuffer + strlen(szErrBuffer),
+  sprintf(szMsg + strlen(szMsg),
 	  GetPString(IDS_GENERR1TEXT),
 	  pszFileName, ulLineNo, "  ");
 
-  /* Get last PM error for the current thread */
+  // Get last PM error for the current thread
   pErrInfoBlk = WinGetErrorInfo(hab);
+  // fixme to report
   if (pErrInfoBlk != NULL)
   {
     if (!hwndOwner)
@@ -76,20 +77,18 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PSZ pszFileName, ULONG ulLineNo, CH
     /* Address error message in array of messages and
        append error message to source code linenumber
      */
-    psz = szErrBuffer + strlen(szErrBuffer);
+    psz = szMsg + strlen(szMsg);
     sprintf(psz, "#0x%04x  \"", ERRORIDERROR(pErrInfoBlk -> idError));
     psz += strlen(psz);
-    strcpy(psz, ((PSZ) pErrInfoBlk) + *(PSHORT) pszOffset);
+    strcpy(psz, ((PSZ)pErrInfoBlk) + *(PSHORT)pszOffset);
     psz += strlen(psz);
     strcpy(psz, "\"");
-    WinFreeErrorInfo(pErrInfoBlk);	/* Free resource segment */
+    WinFreeErrorInfo(pErrInfoBlk);	// Free resource segment
 
-    WinMessageBox(HWND_DESKTOP,		/* Parent */
-		  hwndOwner,		/* Owner */
-		  szErrBuffer,		/* Formatted message */
-		  GetPString(IDS_GENERR2TEXT),	/* Titlebar message */
-		  0,			/* Message identifier */
-		  MB_ENTER | MB_ICONEXCLAMATION | MB_MOVEABLE);
+    showMsg(MB_ENTER | MB_ICONEXCLAMATION,
+	    hwndOwner,
+	    GetPString(IDS_GENERR2TEXT),	// Titlebar message
+	    szMsg);			// Formatted message
   }
 
 } // Win_Error
@@ -99,12 +98,10 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PSZ pszFileName, ULONG ulLineNo, CH
 INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PSZ pszFileName,
 	      ULONG ulLineNo, CHAR *pszFmt,...)
 {
-  CHAR szMsgBuffer[4096];	/* The whole error message that
-				   is displayed to
-				   the user via WinMessageBox */
-  ULONG Class = 17;		/* Error class - fixme to not init? */
-  ULONG action = 9;		/* Error action */
-  ULONG Locus = 7;		/* Error location */
+  CHAR szMsg[4096];
+  ULONG Class = 17;			// Error class - fixme to not init?
+  ULONG action = 9;			// Error action
+  ULONG Locus = 7;			// Error location
   ULONG ulMsgLen;
   CHAR *pszMsgStart;
   CHAR *psz;
@@ -113,17 +110,14 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PSZ pszFileName,
   if (!ulRC)
     return MBID_ENTER;			// Should not have been called
 
-  if (!hwndOwner)
-    hwndOwner = HWND_DESKTOP;
-
   // Format caller's message
   va_start(va, pszFmt);
-  vsprintf(szMsgBuffer, pszFmt, va);
+  vsprintf(szMsg, pszFmt, va);
   va_end(va);
 
   DosErrClass(ulRC, &Class, &action, &Locus);
 
-  sprintf(szMsgBuffer + strlen(szMsgBuffer),
+  sprintf(szMsg + strlen(szMsg),
 	  GetPString(IDS_DOSERR1TEXT),
 	  pszFileName,
 	  ulLineNo,
@@ -131,15 +125,16 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PSZ pszFileName,
 	  GetPString(IDS_ERRCLASS1TEXT + (Class - 1)),
 	  GetPString(IDS_ERRACTION1TEXT + (action - 1)),
 	  GetPString(IDS_ERRLOCUS1TEXT + (Locus - 1)));
-  pszMsgStart = szMsgBuffer + strlen(szMsgBuffer) + 1;
+  pszMsgStart = szMsg + strlen(szMsg) + 1;
   // Get message leaving space for NL separator
-  if (!DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, "OSO001.MSG", &ulMsgLen) ||
-      !DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, "OSO001H.MSG", &ulMsgLen))
+  if (!DosGetMessage(NULL, 0L, (PCHAR)pszMsgStart + 1, 1024, ulRC, "OSO001.MSG", &ulMsgLen) ||
+      !DosGetMessage(NULL, 0L, (PCHAR)pszMsgStart + 1, 1024, ulRC, "OSO001H.MSG", &ulMsgLen))
   {
     // Got message
     pszMsgStart[ulMsgLen + 1] = 0;	// Terminate
-    *(pszMsgStart - 1) = '\n';	// Stuff NL before message text
+    *(pszMsgStart - 1) = '\n';		// Stuff NL before message text
     *pszMsgStart = '\"';		// Prefix message text with quote
+
     psz = pszMsgStart + ulMsgLen;	// Point at last char
     // Chop trailing NL CR TAB
     while (*psz &&
@@ -164,31 +159,47 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PSZ pszFileName,
     }
   }
 
-  return WinMessageBox(HWND_DESKTOP,	/* Parent */
-		       hwndOwner,	/* Owner */
-		       szMsgBuffer,	/* Formatted message */
-		       GetPString(IDS_DOSERR2TEXT),	/* Title bar text */
-		       0,		/* Message identifier */
-		       mb_type | MB_ICONEXCLAMATION | MB_MOVEABLE);
+  return showMsg(mb_type | MB_ICONEXCLAMATION,
+		 hwndOwner,
+		 GetPString(IDS_DOSERR2TEXT),	// Title
+		 szMsg);
 
 } // Dos_Error
 
-// fixme to be Misc_Error instead of saymsg
+// fixme to be rename to Misc_Error
 
 //=== saymsg: report misc error ===
 
 APIRET saymsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszFmt,...)
 {
-  CHAR szBuffer[4096];
+  CHAR szMsg[4096];
   va_list va;
 
   va_start(va, pszFmt);
-  vsprintf(szBuffer, pszFmt, va);
+  vsprintf(szMsg, pszFmt, va);
   va_end(va);
+
+  return showMsg(mb_type,
+		 hwnd,
+		 pszTitle,
+		 szMsg);
+} // saymsg
+
+//=== showMsg: report misc error ===
+
+static APIRET showMsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszMsg)
+{
+  fputs(pszMsg, stderr);
+  fputc('\n', stderr);
+  fflush(stderr);
 
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  return WinMessageBox(HWND_DESKTOP, hwnd, szBuffer, pszTitle,
-		       0, mb_type | MB_MOVEABLE);
-} // saymsg
+  return WinMessageBox(HWND_DESKTOP,	// Parent
+		       hwnd,		// Owner
+		       pszMsg,
+		       pszTitle,
+		       0,		// help id
+		       mb_type | MB_MOVEABLE);
+} // showMsg
