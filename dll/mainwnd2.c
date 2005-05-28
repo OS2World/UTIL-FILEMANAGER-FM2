@@ -3,12 +3,13 @@
 
   $Id$
 
-  Main window
+  fm/4 main window
 
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2005 Steven H. Levine
 
   23 May 05 SHL Use datamin.h
+  26 May 05 SHL Comments and localize code
 
 ***********************************************************************/
 
@@ -38,18 +39,14 @@ typedef struct
   HWND hwndCurr;
   HWND hwndLastDir;
   HWND hwndMax;
-}
-PERSON1DATA;
-
-extern TOOL *toolhead;
+} PERSON1DATA;
 
 #pragma alloc_text(PERSON11,MainFrameWndProc2,MainWndProc2)
 #pragma alloc_text(PERSON12,StartFM32,MainWMOnce2)
 #pragma alloc_text(PERSON13,MainWMCommand2)
 
-MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
 
   switch (msg)
@@ -379,9 +376,8 @@ MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PFNWPFrame(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   PERSON1DATA *pd;
 
   SetShiftState();
@@ -799,9 +795,8 @@ MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return 0;
 }
 
-MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   PERSON1DATA *pd;
 
   switch (msg)
@@ -1245,7 +1240,6 @@ MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   PERSON1DATA *pd;
 
   switch (msg)
@@ -1661,7 +1655,6 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
 {
-
   HWND hwndFrame, hwndClient;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
   FCF_SIZEBORDER | FCF_MINMAX |

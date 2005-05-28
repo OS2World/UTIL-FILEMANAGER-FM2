@@ -3,7 +3,7 @@
 
   $Id$
 
-  Main window
+  fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2005 Steven H. Levine
@@ -14,6 +14,7 @@
   23 May 05 SHL Use QWL_USER
   23 May 05 SHL Use datamin.h
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  26 May 05 SHL Comments and localize code
 
 ***********************************************************************/
 
@@ -58,13 +59,13 @@
 #pragma alloc_text(BUBBLE,MakeBubble,BubbleProc,BubbleHelp)
 #pragma alloc_text(MAINOBJ,MainObjectWndProc,MakeMainObjWin)
 
-extern TOOL *toolhead;
+static USHORT firsttool = 0;
 
-USHORT firsttool = 0;
+static BOOL CloseDirCnrChildren (HWND hwndClient);
+static BOOL RestoreDirCnrState (HWND hwndClient,CHAR *name,BOOL noview);
 
-MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case UM_SETUP:
@@ -210,7 +211,6 @@ MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 VOID MakeMainObjWin(VOID * args)
 {
-
   HAB hab2;
   HMQ hmq2;
   QMSG qmsg2;
@@ -254,9 +254,8 @@ VOID MakeMainObjWin(VOID * args)
   }
 }
 
-MRESULT EXPENTRY IdealButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY IdealButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case WM_MOUSEMOVE:
@@ -272,7 +271,6 @@ MRESULT EXPENTRY IdealButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 HWND TopWindow(HWND hwndParent, HWND exclude)
 {
-
   HENUM henum;
   HWND hwndC = (HWND) 0;
   USHORT id;
@@ -296,7 +294,6 @@ HWND TopWindow(HWND hwndParent, HWND exclude)
 
 HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 {
-
   HENUM henum;
   HWND hwndC = (HWND) 0, hwndDir, hwndClient;
   USHORT id;
@@ -376,7 +373,6 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 
 ULONG CountDirCnrs(HWND hwndParent)
 {
-
   HENUM henum;
   HWND hwndF = (HWND) 0, hwndC, hwndDir;
   ULONG ret = 0;
@@ -398,7 +394,6 @@ ULONG CountDirCnrs(HWND hwndParent)
 
 HWND FindDirCnrByName(CHAR * directory, BOOL restore)
 {
-
   HENUM henum;
   HWND hwndF = (HWND) 0, hwndC, hwndDir;
   CHAR retstr[CCHMAXPATH];
@@ -441,9 +436,8 @@ HWND FindDirCnrByName(CHAR * directory, BOOL restore)
   return hwndF;
 }
 
-VOID SetToggleChecks(HWND hwndMenu)
+static VOID SetToggleChecks(HWND hwndMenu)
 {
-
   WinCheckMenuItem(hwndMenu,
 		   IDM_TEXTTOOLS,
 		   fTextTools);
@@ -479,9 +473,8 @@ VOID SetToggleChecks(HWND hwndMenu)
 		   fTileBackwards);
 }
 
-VOID ResizeTools(HWND hwnd)
+static VOID ResizeTools(HWND hwnd)
 {
-
   register ULONG butx = 18L;
   INT attrib = SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_ZORDER | SWP_NOREDRAW,
       noattrib;
@@ -600,9 +593,8 @@ VOID ResizeTools(HWND hwnd)
   WinInvalidateRect(hwnd, NULL, TRUE);
 }
 
-MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   PFNWP oldproc = (PFNWP) INSTDATA(hwnd);
   static HWND hwndMenu = (HWND) 0;
   USHORT id;
@@ -812,7 +804,6 @@ MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 void BubbleHelp(HWND hwnd, BOOL other, BOOL drive, BOOL above, char *help)
 {
-
   if (help && *help &&
       ((drive && fDrivebarHelp) ||
        (other && fOtherHelp) ||
@@ -829,7 +820,6 @@ void BubbleHelp(HWND hwnd, BOOL other, BOOL drive, BOOL above, char *help)
 
 VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
 {
-
   if (!hwnd || !help || !*help)
     return;
 
@@ -951,7 +941,6 @@ VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
 
 MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case WM_SETFOCUS:
@@ -1095,7 +1084,6 @@ MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case WM_CREATE:
@@ -1224,7 +1212,6 @@ MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   USHORT id;
   register TOOL *tool;
   static HWND hwndMenu = (HWND) 0;
@@ -1403,12 +1390,12 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!tool)
       {
 	DrgFreeDraginfo(pDInfo);
-	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid  */
+	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid */
       }
       if (!(tool -> flags & T_DROPABLE))
       {
 	DrgFreeDraginfo(pDInfo);
-	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid  */
+	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid */
       }
       {
 	PDRAGITEM pDItem;	/* Pointer to DRAGITEM */
@@ -1416,7 +1403,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
 				     0);	/* Index to DRAGITEM */
 	if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			 DRM_OS2FILE,	/* mechanisms and data   */
+			 DRM_OS2FILE,	/* mechanisms and data */
 			 NULL))
 	{				/* formats */
 	  if (!(tool -> flags & T_EMPHASIZED))
@@ -1431,7 +1418,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	DrgFreeDraginfo(pDInfo);
       }
     }
-    return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid                              */
+    return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid */
 
   case DM_DROPHELP:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
@@ -1507,7 +1494,6 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 VOID BuildTools(HWND hwndT, BOOL resize)
 {
-
   register TOOL *tool;
   register ULONG ctrlxpos = 18L;
   CHAR s[33];
@@ -1664,9 +1650,8 @@ VOID BuildTools(HWND hwndT, BOOL resize)
     ResizeTools(hwndT);
 }
 
-MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
   static BOOL lbup = FALSE;
 
@@ -1837,7 +1822,6 @@ MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case WM_CREATE:
@@ -1937,7 +1921,6 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   USHORT id;
   static CHAR dv[4];
   static BOOL emphasized = FALSE;
@@ -2360,7 +2343,6 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 VOID BuildDrives(HWND hwndT)
 {
-
   register ULONG x, y = 0;
   ULONG ulDriveNum, ulDriveMap, iconid;
   CHAR s[8];
@@ -2462,7 +2444,6 @@ VOID BuildDrives(HWND hwndT)
 
 VOID ResizeDrives(HWND hwndT, long xwidth)
 {
-
   register ULONG ctrlxpos = 2, ctrlypos = 0, ctrlxsize;
   HENUM henum;
   HWND hwndB;
@@ -2510,7 +2491,6 @@ VOID ResizeDrives(HWND hwndT, long xwidth)
 
 MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   static HWND hwndE = (HWND) 0, hwndB = (HWND) 0;
   static CHAR lastcmd[1024] = "";
 
@@ -2863,7 +2843,6 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case WM_CREATE:
@@ -2973,9 +2952,8 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
-VOID AdjustSizeOfClient(PSWP pswp, PRECTL prectl)
+static VOID AdjustSizeOfClient(PSWP pswp, PRECTL prectl)
 {
-
   SWP swp;
   RECTL rectl;
 
@@ -3004,7 +2982,6 @@ VOID AdjustSizeOfClient(PSWP pswp, PRECTL prectl)
 
 VOID FillClient(HWND hwndClient, PSWP pswp, PRECTL prectl, BOOL avoidtree)
 {
-
   ULONG adjust;
 
   adjust = WinQuerySysValue(HWND_DESKTOP, SV_CYICON);
@@ -3028,9 +3005,8 @@ VOID FillClient(HWND hwndClient, PSWP pswp, PRECTL prectl, BOOL avoidtree)
   }
 }
 
-VOID MoveChildrenAwayFromTree(HWND hwndClient)
+static VOID MoveChildrenAwayFromTree(HWND hwndClient)
 {
-
   SWP swpC, swpT, swp;
   USHORT id;
   HWND hwndChild;
@@ -3065,9 +3041,8 @@ VOID MoveChildrenAwayFromTree(HWND hwndClient)
   WinEndEnumWindows(henum);
 }
 
-VOID ArrangeIcons(HWND hwndClient)
+static VOID ArrangeIcons(HWND hwndClient)
 {
-
   HENUM henum;
   HWND hwndChild;
   SWP swp;
@@ -3087,9 +3062,8 @@ VOID ArrangeIcons(HWND hwndClient)
   WinEndEnumWindows(henum);
 }
 
-VOID NextChild(HWND hwndClient, BOOL previous)
+static VOID NextChild(HWND hwndClient, BOOL previous)
 {
-
   HENUM henum;
   HWND hwndActive, hwndNext, hwndPrev = (HWND) 0;
   BOOL next = FALSE, once = FALSE;
@@ -3146,7 +3120,6 @@ VOID NextChild(HWND hwndClient, BOOL previous)
 
 BOOL CloseChildren(HWND hwndClient)
 {
-
   HENUM henum;
   HWND hwndChild;
   BOOL ret = FALSE;
@@ -3178,7 +3151,6 @@ BOOL CloseChildren(HWND hwndClient)
 
 BOOL CloseDirCnrChildren(HWND hwndClient)
 {
-
   /* returns TRUE if a directory container window was told to close */
 
   HENUM henum;
@@ -3213,7 +3185,6 @@ BOOL CloseDirCnrChildren(HWND hwndClient)
 
 BOOL SaveDirCnrState(HWND hwndClient, CHAR * name)
 {
-
   /* returns TRUE if any directory container windows existed */
 
   HENUM henum;
@@ -3307,9 +3278,8 @@ BOOL SaveDirCnrState(HWND hwndClient, CHAR * name)
   return ret;
 }
 
-VOID TransformSwp(PSWP pswp, double xtrans, double ytrans)
+static VOID TransformSwp(PSWP pswp, double xtrans, double ytrans)
 {
-
   SWP swp;
   HWND hwnd;
 
@@ -3347,9 +3317,8 @@ VOID TransformSwp(PSWP pswp, double xtrans, double ytrans)
   }
 }
 
-BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
+static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 {
-
   /* returns TRUE if a directory container was opened */
 
   CHAR s[120], tdir[CCHMAXPATH];
@@ -3665,9 +3634,8 @@ BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
   return ret;
 }
 
-ULONG CountChildren(HWND hwndClient, ULONG * ulNumMinChildren)
+static ULONG CountChildren(HWND hwndClient, ULONG * ulNumMinChildren)
 {
-
   HENUM henum;
   HWND hwndChild;
   SWP swp;
@@ -3697,7 +3665,6 @@ ULONG CountChildren(HWND hwndClient, ULONG * ulNumMinChildren)
 VOID GetNextWindowPos(HWND hwndClient, PSWP pswp, ULONG * ulCntR,
 		      ULONG * ulNumMinChildrenR)
 {
-
   register ULONG ulCnt;
   ULONG ulNumMinChildren;
   RECTL Rectl;
@@ -3743,9 +3710,8 @@ VOID GetNextWindowPos(HWND hwndClient, PSWP pswp, ULONG * ulCntR,
   pswp -> y = (Rectl.yTop - pswp -> cy - ((ulCnt % ulWindowsPerStack) * ulYDiff));
 }
 
-VOID CascadeChildren(HWND hwndClient)
+static VOID CascadeChildren(HWND hwndClient)
 {
-
   ULONG ulCnt = 0L, ulNumMinChildren;
   HWND hwndChild;
   HENUM henum;
@@ -3798,7 +3764,6 @@ VOID CascadeChildren(HWND hwndClient)
 
 VOID TileChildren(HWND hwndClient, BOOL absolute)
 {
-
   register ULONG ulChildCnt, ulSquare, ulNumRows, ulNumCols, ulExtraCols,
       ulWidth, ulHeight;
   ULONG ulNumMinChildren;
@@ -3968,7 +3933,7 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
   fNoTileUpdate = FALSE;
 }
 
-VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy, SHORT newcx,
+static VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy, SHORT newcx,
 		    SHORT newcy)
 {
   /*
@@ -4078,9 +4043,8 @@ VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy, SHORT newcx,
   }
 }
 
-VOID MinResChildren(HWND hwndClient, ULONG cmd)
+static VOID MinResChildren(HWND hwndClient, ULONG cmd)
 {
-
   HENUM henum;
   HWND hwndChild;
 
@@ -4100,10 +4064,13 @@ VOID MinResChildren(HWND hwndClient, ULONG cmd)
   }
 }
 
-MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				      MPARAM mp2)
-{
+//=== ChildFrameButtonProc: subclass handler for WALKBUTTON and QUICKBUTTON windows ===
 
+static MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd,
+					     ULONG msg,
+					     MPARAM mp1,
+					     MPARAM mp2)
+{
   USHORT id;
   static BOOL emphasized = FALSE;
 
@@ -4205,7 +4172,7 @@ MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  break;
 	}
 	break;
-      }
+      } // switch id
       if (cmd)
 	PostMsg(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), FID_CLIENT),
 		WM_COMMAND,
@@ -4276,9 +4243,8 @@ MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd, ULONG msg, MPARAM mp1,
   return PFNWPButton(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
   static ULONG aheight = 0L;
 
@@ -4352,7 +4318,7 @@ MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       /*
        * Calculate the position of the client rectangle.
-       * Otherwise,  we'll see a lot of redraw when we move the
+       * Otherwise, we'll see a lot of redraw when we move the
        * client during WM_FORMATFRAME.
        */
 
@@ -5862,9 +5828,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return 0;
 }
 
-MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case WM_CREATE:
@@ -6459,7 +6424,6 @@ MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   switch (msg)
   {
   case WM_CREATE:
