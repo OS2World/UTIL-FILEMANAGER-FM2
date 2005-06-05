@@ -4,9 +4,10 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -319,7 +320,8 @@ MRESULT EXPENTRY CmdLineDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       WinSendDlgItemMsg(hwnd,EXEC_CL,EM_SETTEXTLIMIT,
                         MPFROM2SHORT(1000,0),MPVOID);
       WinSetDlgItemText(hwnd,EXEC_CL,ex->commandline);
-      WinSetWindowPtr(WinWindowFromID(hwnd,EXEC_LISTBOX),0,
+      WinSetWindowPtr(WinWindowFromID(hwnd,EXEC_LISTBOX),
+                      QWL_USER,
                       (PVOID)WinSubclassWindow(WinWindowFromID(hwnd,
                                                EXEC_LISTBOX),
                                                (PFNWP)CmdListSubProc));
@@ -792,12 +794,14 @@ MRESULT EXPENTRY CmdLine2DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         USHORT ids[] = {IDM_HELP,EXEC2_CLR,EXEC2_DEL,EXEC2_KEEP,EXEC2_SAVE,
                         EXEC2_OPEN,EXEC2_CLOSE,EXEC2_FILTER,DID_CANCEL,0};
 
-        WinSetWindowPtr(WinWindowFromID(hwnd,EXEC2_LISTBOX),0,
+        WinSetWindowPtr(WinWindowFromID(hwnd,EXEC2_LISTBOX),
+	                QWL_USER,
                         (PVOID)WinSubclassWindow(WinWindowFromID(hwnd,
                                                  EXEC2_LISTBOX),
                                                  (PFNWP)CmdListSubProc));
         for(x = 0;ids[x];x++)
-          WinSetWindowPtr(WinWindowFromID(hwnd,ids[x]),0,
+          WinSetWindowPtr(WinWindowFromID(hwnd,ids[x]),
+	                  QWL_USER,
                           (PVOID)WinSubclassWindow(WinWindowFromID(hwnd,
                                                    ids[x]),
                                                    (PFNWP)CmdBtnSubProc));

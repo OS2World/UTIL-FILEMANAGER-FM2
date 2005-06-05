@@ -6,7 +6,7 @@
   MLE text editor/viewer
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2005 Steven H.Levine
+  Copyright (c) 2005 Steven H. Levine
 
   23 May 05 SHL Use QWL_USER
 
@@ -336,7 +336,7 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     (PFNWP)MLESubProc);
         if(oldproc)
           WinSetWindowPtr(WinWindowFromID(hwnd,MLE_MLE),
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
       }
       break;

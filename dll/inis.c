@@ -9,6 +9,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   01 Aug 04 SHL Rework fixup usage
   24 May 05 SHL Rework Win_Error usage
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -1924,19 +1925,19 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     (PFNWP)IniLBSubProc);
         if(oldproc)
           WinSetWindowPtr(WinWindowFromID(hwnd,INI_APPLIST),
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
         oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_KEYLIST),
                                     (PFNWP)IniLBSubProc);
         if(oldproc)
           WinSetWindowPtr(WinWindowFromID(hwnd,INI_KEYLIST),
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
         oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_DATALIST),
                                     (PFNWP)IniLBSubProc2);
         if(oldproc)
           WinSetWindowPtr(WinWindowFromID(hwnd,INI_DATALIST),
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
       }
       break;

@@ -15,6 +15,7 @@
   23 May 05 SHL Use datamin.h
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   26 May 05 SHL Comments and localize code
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -2769,7 +2770,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				     (PFNWP) CommandLineProc);
 	if (oldproce)
 	  WinSetWindowPtr(hwndE,
-			  0,
+			  QWL_USER,
 			  (PVOID) oldproce);
 	PostMsg(hwndE,
 		UM_FOCUSME,
@@ -3486,7 +3487,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 	    if (hwndC)
 	    {
 	      dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR),
-				      0);
+				      QWL_USER);
 	      if (dcd)
 	      {
 		size = sizeof(INT);
@@ -5103,6 +5104,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (swp.x == swpD.x && swp.y == swpD.y &&
 	  swp.cx == swpD.cx &&
 	  swp.cy == swpD.cy &&
+	  // fixme to be #defined someday
 	  WinQueryWindowUShort(hwnd, QWL_USER + 10) &&
 	  WinQueryWindowUShort(hwnd, QWL_USER + 14))
       {
@@ -5871,7 +5873,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  (PFNWP) MainFrameWndProc);
       if (oldproc)
 	WinSetWindowPtr(WinQueryWindow(hwnd, QW_PARENT),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       CommonCreateMainChildren(hwnd, &swp);
 
@@ -6066,49 +6068,49 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(hwndUserlist, CBID_EDIT),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(WinWindowFromID(hwndCmdlist, CBID_EDIT),
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(hwndCmdlist, CBID_EDIT),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(WinWindowFromID(hwndButtonlist, CBID_EDIT),
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(hwndButtonlist, CBID_EDIT),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(WinWindowFromID(hwndStatelist, CBID_EDIT),
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(hwndStatelist, CBID_EDIT),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(WinWindowFromID(hwndDrivelist, CBID_EDIT),
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(hwndDrivelist, CBID_EDIT),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(hwndUserlist,
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(hwndUserlist,
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(hwndCmdlist,
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(hwndCmdlist,
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(hwndStatelist,
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(hwndStatelist,
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(hwndDrivelist,
 				  (PFNWP) DropDownListProc);
@@ -6118,7 +6120,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  (PFNWP) DropDownListProc);
       if (oldproc)
 	WinSetWindowPtr(hwndButtonlist,
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(WinWindowFromID(WinQueryWindow(hwnd,
 								 QW_PARENT),
@@ -6127,7 +6129,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					IDM_USERLIST),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       oldproc = WinSubclassWindow(WinWindowFromID(WinQueryWindow(hwnd,
 								 QW_PARENT),
@@ -6136,7 +6138,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					IDM_OPENWALK),
-			0,
+			QWL_USER,
 			(PVOID) oldproc);
       {
 	HWND hwndSysMenu, hwndSysSubMenu, hwndMenu;
@@ -6160,7 +6162,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      IDM_TILEMENU,
 			      IDM_TILE);
 	WinSetWindowULong(hwnd,
-			  0,
+			  QWL_USER,
 			  (ULONG) hwndMenu);
 	memset(&mi, 0, sizeof(mi));
 	memset(&mit, 0, sizeof(mit));

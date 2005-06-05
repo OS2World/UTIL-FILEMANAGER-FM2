@@ -14,6 +14,7 @@
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   26 May 05 SHL More large file formatting updates
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -74,8 +75,8 @@ MRESULT EXPENTRY DirTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
            SHORT1FROMMP(mp1) < IDM_DETAILSSETUP) {
           dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
                                                   QW_PARENT),
-                                  DIR_CNR),
-                                  0);
+                                                  DIR_CNR),
+                                  QWL_USER);
           if(dcd)
             SetDetailsSwitches(hwndButtonPopup,
                                dcd);
@@ -134,8 +135,8 @@ MRESULT EXPENTRY DirTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                    id);
                 dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
                                                         QW_PARENT),
-                                        DIR_CNR),
-                                        0);
+                                                        DIR_CNR),
+                                        QWL_USER);
                 if(id == DIR_SORT) { /* don't have sort pathname in dirs */
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
@@ -3770,10 +3771,10 @@ KbdRetry:
                     MPVOID)) {
           if(dcd->hwndObject)
             WinSetWindowPtr(dcd->hwndObject,
-                            0,
+                            QWL_USER,
                             NULL);
           WinSetWindowPtr(hwnd,
-                          0,
+                          QWL_USER,
                           NULL);
           if(dcd->hwndRestore)
             WinSetWindowPos(dcd->hwndRestore,
@@ -3890,7 +3891,7 @@ HWND StartDirCnr (HWND hwndParent,CHAR *directory,HWND hwndRestore,
           oldproc = WinSubclassWindow(hwndFrame,
                                       (PFNWP)DirFrameWndProc);
           WinSetWindowPtr(hwndFrame,
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
         }
         dcd->hwndCnr = WinCreateWindow(hwndClient,

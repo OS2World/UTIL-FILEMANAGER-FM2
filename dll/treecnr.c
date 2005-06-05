@@ -13,6 +13,7 @@
   25 May 05 SHL Rename comnam to szCommonName and fix typo
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   26 May 05 SHL More large file formatting updates
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -3347,7 +3348,8 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
 	WinSetWindowPtr(hwndFrame,0,(PVOID)oldproc);
 	oldproc = WinSubclassWindow(WinWindowFromID(hwndFrame,FID_TITLEBAR),
 				    (PFNWP)TreeTitleWndProc);
-	WinSetWindowPtr(WinWindowFromID(hwndFrame,FID_TITLEBAR),0,
+	WinSetWindowPtr(WinWindowFromID(hwndFrame,FID_TITLEBAR),
+	                QWL_USER,
 			(PVOID)oldproc);
       }
       dcd->hwndCnr = WinCreateWindow(hwndClient,

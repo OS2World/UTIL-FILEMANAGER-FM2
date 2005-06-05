@@ -4,23 +4,25 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2004, 2005 Steven H. Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -475,7 +477,7 @@ MRESULT EXPENTRY WalkDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     (PFNWP)TextSubProc);
         if(oldproc)
           WinSetWindowPtr(WinWindowFromID(hwnd,WALK_PATH),
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
         WinSendDlgItemMsg(WinWindowFromID(hwnd,WALK_RECENT),
                           CBID_EDIT,
@@ -1167,13 +1169,13 @@ MRESULT EXPENTRY WalkTwoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     (PFNWP)TextSubProc);
         if(oldproc)
           WinSetWindowPtr(WinWindowFromID(hwnd,WALK_PATH),
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
         oldproc = WinSubclassWindow(WinWindowFromID(hwnd,WALK2_PATH),
                                     (PFNWP)TextSubProc);
         if(oldproc)
           WinSetWindowPtr(WinWindowFromID(hwnd,WALK2_PATH),
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
       }
       if(!*wa->szCurrentPath1)

@@ -13,6 +13,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -596,7 +597,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                         NULL);
       }
       WinSetWindowPtr(WinWindowFromID(hwnd,FLE_ICON),
-                      0,
+                      QWL_USER,
                       (PVOID)is);
       is->oldproc = WinSubclassWindow(WinWindowFromID(hwnd,FLE_ICON),
                                       IconProc);
@@ -1025,7 +1026,7 @@ MRESULT EXPENTRY SetDrvProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         CHAR s[80];
 
         WinSetWindowULong(hwnd,
-                          0,
+                          QWL_USER,
                           (toupper(*(CHAR *)mp2) - 'A'));
         sprintf(s,
                 GetPString(IDS_DRIVEFLAGSTITLETEXT),

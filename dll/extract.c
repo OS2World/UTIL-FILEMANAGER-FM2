@@ -4,9 +4,10 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H. Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -90,7 +91,8 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         oldproc = WinSubclassWindow(WinWindowFromID(hwnd,EXT_DIRECTORY),
                                     (PFNWP)ExtractTextProc);
         if(oldproc)
-          WinSetWindowPtr(WinWindowFromID(hwnd,EXT_DIRECTORY),0,
+          WinSetWindowPtr(WinWindowFromID(hwnd,EXT_DIRECTORY),
+	                  QWL_USER,
                           (PVOID)oldproc);
         PrfQueryProfileData(fmprof,FM3Str,"RememberExt",
                             (PVOID)&fRemember,&size);

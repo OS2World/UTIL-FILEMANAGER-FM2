@@ -15,6 +15,7 @@
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   25 May 05 SHL Rework for FillInRecordFromFFB
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -106,8 +107,8 @@ MRESULT EXPENTRY CollectorTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                    id);
                 dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
                                                         QW_PARENT),
-                                        COLLECTOR_CNR),
-                                        0);
+                                                        COLLECTOR_CNR),
+                                        QWL_USER);
                 if(id == DIR_VIEW) {
                   if(dcd) {
                     SetViewMenu(hwndButtonPopup,
@@ -217,8 +218,8 @@ MenuAbort:
            SHORT1FROMMP(mp1) < IDM_DETAILSSETUP) {
           dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
                                                   QW_PARENT),
-                                  COLLECTOR_CNR),
-                                  0);
+                                                  COLLECTOR_CNR),
+                                  QWL_USER);
           if(dcd)
             SetDetailsSwitches(hwndButtonPopup,
                                dcd);
@@ -531,8 +532,9 @@ MRESULT EXPENTRY CollectorObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
         /* set unique id */
-        WinSetWindowUShort(hwnd,QWS_ID,COLLECTOROBJ_FRAME +
-                           (COLLECTOR_FRAME - dcd->id));
+        WinSetWindowUShort(hwnd,
+	                   QWS_ID,
+			   COLLECTOROBJ_FRAME +	(COLLECTOR_FRAME - dcd->id));
         dcd->hwndObject = hwnd;
         if(ParentIsDesktop(hwnd,dcd->hwndParent))
           DosSleep(250L);
@@ -2835,7 +2837,7 @@ HWND StartCollector (HWND hwndParent,INT flags)
         oldproc = WinSubclassWindow(hwndFrame,
                                     (PFNWP)CollectorFrameWndProc);
         WinSetWindowPtr(hwndFrame,
-                        0,
+                        QWL_USER,
                         (PVOID)oldproc);
       }
       dcd->hwndCnr = WinCreateWindow(hwndClient,

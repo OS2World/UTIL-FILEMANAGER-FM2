@@ -13,6 +13,7 @@
   06 Dec 03 SHL StartSeeAll: correct malloc arg oops
   23 May 05 SHL Use QWL_USER
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -2739,7 +2740,8 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      oldproc = WinSubclassWindow(WinQueryWindow(hwnd,QW_PARENT),
 					  (PFNWP)SeeFrameWndProc);
 	      if(oldproc)
-		WinSetWindowPtr(WinQueryWindow(hwnd,QW_PARENT),QWL_USER,
+		WinSetWindowPtr(WinQueryWindow(hwnd,QW_PARENT),
+		                QWL_USER,
 				(PVOID)oldproc);
 	    }
 	    break;
