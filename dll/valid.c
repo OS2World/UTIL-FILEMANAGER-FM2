@@ -6,14 +6,15 @@
   File name manipulation routines
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2002, 2004 Steven H.Levine
+  Copyright (c) 2002, 2005 Steven H.Levine
 
-  Revisions	23 Nov 02 SHL - RootName: rework for sanity
-		27 Nov 02 SHL - MakeFullName: correct typo
-		11 Jun 03 SHL - Add JFS and FAT32 support
-		15 Jun 04 SHL - Implement Jim Read's removable logic
-		31 Jul 04 SHL - Comments
-		01 Aug 04 SHL - Rework lstrip/rstrip usage
+  23 Nov 02 SHL RootName: rework for sanity
+  27 Nov 02 SHL MakeFullName: correct typo
+  11 Jun 03 SHL Add JFS and FAT32 support
+  15 Jun 04 SHL Implement Jim Read's removable logic
+  31 Jul 04 SHL Comments
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  03 Jun 05 SHL Drop CD_DEBUG logic
 
 ***********************************************************************/
 
@@ -227,15 +228,9 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   DosError(FERR_DISABLEHARDERR);
   ulrc = DosQueryFSAttach(szPath, 0, FSAIL_QUERYNAME,
 			  (PFSQBUFFER2)pvBuffer, &clBufferSize);
-# define CD_DEBUG 0
-
   if (ulrc)
   {
     /* can't get any info at all */
-#   ifdef CD_DEBUG
-    fprintf(stderr, "DosQueryFSAttach %s returned %ul\n",
-	    szPath, ulrc);
-#   endif
     DosFreeMem(pvBuffer);
     DosError(FERR_DISABLEHARDERR);
     return -1;				// Say failed
