@@ -6,10 +6,11 @@
   Dialog templates
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H. Levine
 
-  Revisions 08 Feb 03 SHL - Enable SYS_FRAME
-            25 Nov 03 SHL - Rework ABT_FRAME
+  08 Feb 03 SHL Enable SYS_FRAME
+  25 Nov 03 SHL Rework ABT_FRAME
+  04 Jun 05 SHL CFG_FRAME - add cancel
 
 ***********************************************************************/
 
@@ -1292,6 +1293,7 @@ BEGIN
                         WS_GROUP | WS_TABSTOP | WS_VISIBLE
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Cancel", DID_CANCEL, 54, 4, 40, 14, BS_NOPOINTERFOCUS
     END
 END
 
