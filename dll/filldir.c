@@ -18,6 +18,7 @@
   25 May 05 SHL Rework FillInRecordFromFFB
   25 May 05 SHL Rework FillTreeCnr
   28 May 05 SHL Drop stale debug code
+  05 Jun 05 SHL Comments
 
 ***********************************************************************/
 
@@ -115,7 +116,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,SUBJECT);
       pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0L;
+      pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
       pfealist = malloc(1532);
       if (pfealist)
@@ -124,7 +125,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
         pfealist->cbList = 1024;
         eaop.fpGEA2List = pgealist;
         eaop.fpFEA2List = pfealist;
-        eaop.oError = 0L;
+        eaop.oError = 0;
         rc = DosQueryPathInfo(pci->szFileName,FIL_QUERYEASFROMLIST,
                               (PVOID)&eaop,(ULONG)sizeof(EAOP2));
         if (!rc) {
@@ -164,7 +165,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,LONGNAME);
       pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0L;
+      pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
       pfealist = malloc(1532);
       if (pfealist) {
@@ -172,7 +173,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
         pfealist->cbList = 1024;
         eaop.fpGEA2List = pgealist;
         eaop.fpFEA2List = pfealist;
-        eaop.oError = 0L;
+        eaop.oError = 0;
         rc = DosQueryPathInfo(pci->szFileName,FIL_QUERYEASFROMLIST,
                               (PVOID)&eaop,(ULONG)sizeof(EAOP2));
         if (!rc)
@@ -369,7 +370,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,SUBJECT);
       pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0L;
+      pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
       pfealist = malloc(1532);
       if (pfealist) {
@@ -377,7 +378,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
         pfealist->cbList = 1024;
         eaop.fpGEA2List = pgealist;
         eaop.fpFEA2List = pfealist;
-        eaop.oError = 0L;
+        eaop.oError = 0;
         rc = DosQueryPathInfo(pci->szFileName,FIL_QUERYEASFROMLIST,
                               (PVOID)&eaop,
                               (ULONG)sizeof(EAOP2));
@@ -417,7 +418,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,LONGNAME);
       pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0L;
+      pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
       pfealist = malloc(1532);
       if (pfealist) {
@@ -425,7 +426,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
         pfealist->cbList = 1024;
         eaop.fpGEA2List = pgealist;
         eaop.fpFEA2List = pfealist;
-        eaop.oError = 0L;
+        eaop.oError = 0;
         rc = DosQueryPathInfo(pci->szFileName,FIL_QUERYEASFROMLIST,
                               (PVOID)&eaop,(ULONG)sizeof(EAOP2));
         if (!rc) {
@@ -581,7 +582,7 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
   ULONG          ulFileCnt;
   ULONG          ulExtraBytes;
   ULONG          ulM = 1;
-  ULONG          ulTotal = 0L;
+  ULONG          ulTotal = 0;
   ULONGLONG      ullBytes;
   ULONGLONG      ullTotalBytes;
   ULONG          ulReturnFiles = 0;
@@ -714,7 +715,7 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
                                 MPFROMP(pciFirst),
                                 MPFROMP(&ri)))
 		{
-                  DosSleep(100L);
+                  DosSleep(100);
                   WinSetFocus(HWND_DESKTOP,hwndCnr);
                   if (!WinSendMsg(hwndCnr,
                                   CM_INSERTRECORD,
@@ -837,7 +838,7 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
             if (!WinSendMsg(hwndCnr,CM_INSERTRECORD,
                             MPFROMP(pciFirst),MPFROMP(&ri)))
 	    {
-              DosSleep(100L);
+              DosSleep(100);
               WinSetFocus(HWND_DESKTOP,hwndCnr);
               if (!WinSendMsg(hwndCnr,CM_INSERTRECORD,
                              MPFROMP(pciFirst),MPFROMP(&ri)))
@@ -936,7 +937,7 @@ VOID FillDirCnr(HWND hwndCnr,
 
 VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 {
-  ULONG       ulDriveNum,ulDriveMap,numtoinsert = 0L,drvtype;
+  ULONG       ulDriveNum,ulDriveMap,numtoinsert = 0,drvtype;
   PCNRITEM    pci,pciFirst = NULL,pciNext,pciParent = NULL;
   INT         x,removable;
   CHAR        szDrive[] = " :\\",FileSystem[CCHMAXPATH],suggest[32];
