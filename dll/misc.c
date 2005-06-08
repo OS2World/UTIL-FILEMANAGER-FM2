@@ -11,6 +11,7 @@
   11 Jun 03 SHL Add JFS and FAT32 support
   01 Aug 04 SHL Rework lstrip/rstrip usage
   01 Aug 04 SHL LoadLibPath: avoid buffer overflow
+  07 Jun 05 SHL Drop obsoletes
 
 ***********************************************************************/
 
@@ -28,7 +29,6 @@
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
-#include "version.h"
 
 #pragma data_seg(DATA1)
 #pragma alloc_text(ONCE,SetSysMenu)
