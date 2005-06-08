@@ -8,6 +8,8 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Indent -i2
+  06 Jun 05 SHL Rework DisplayEAsProc for VAC3.65 compat
+  06 Jun 05 SHL Drop unused variables
 
 ***********************************************************************/
 
@@ -522,8 +524,10 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (*s)
 	      {
 
-		USHORT len, codepage, num, type;
-		CHAR *data, last = '\n', *linefeed = "\n";
+		USHORT len, num, type;
+		CHAR *data;
+		CHAR last = '\n';
+		const CHAR *linefeed = "\n";
 		BOOL alltext;
 		IPT pos = 0L;
 
@@ -571,8 +575,6 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      break;
 		    case EAT_MVST:
 		      MLEclearall(WinWindowFromID(hwnd, EA_MLE));
-		      codepage = *(USHORT *) (info -> value +
-					      sizeof(USHORT));
 		      num = *(USHORT *) (info -> value +
 					 (sizeof(USHORT) * 2));
 		      type = *(USHORT *) (info -> value +
@@ -647,8 +649,6 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      break;
 		    case EAT_MVMT:
 		      MLEclearall(WinWindowFromID(hwnd, EA_MLE));
-		      codepage = *(USHORT *) (info -> value +
-					      sizeof(USHORT));
 		      num = *(USHORT *) (info -> value +
 					 (sizeof(USHORT) * 2));
 		      data = info -> value + (sizeof(USHORT) * 3);
