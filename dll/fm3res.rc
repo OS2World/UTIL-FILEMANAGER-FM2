@@ -6,19 +6,18 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2004 Steven H.Levine
+  Copyright (c) 2003, 2005 Steven H. Levine
 
-  Revisions	08 Feb 03 SHL Enable SYS_FRAME
-            04 Nov 03 SHL Drop obsoletes
-            01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
+  08 Feb 03 SHL Enable SYS_FRAME
+  04 Nov 03 SHL Drop obsoletes
+  01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
+  07 Jun 05 SHL Comments
 
 ***********************************************************************/
-
 
 #include <os2.h>
 
 #include "fm3dll2.h"
-
 #include "fm3dlg.h"
 
 ICON        MAIN_FRAME          icons\FM3.ICO
@@ -2162,4 +2161,3 @@ HELPSUBTABLE ID_HELPSUBTABLE
 rcinclude fm3res.dlg
 
 /* The end */
-
