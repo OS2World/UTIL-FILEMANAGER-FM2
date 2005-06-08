@@ -11,6 +11,7 @@
   16 Oct 02 SHL - Comments
   18 Oct 02 SHL - MassAction:Archive - force extension so file found
   06 Jun 05 SHL - Indent -i2
+  06 Jun 05 SHL - Rework Action for VAC3.65 compat
 
 ***********************************************************************/
 
@@ -1001,8 +1002,8 @@ VOID Action(VOID * args)
 			       MPFROMP(wk -> li -> list[x]));
 		  else
 		  {
-
-		    CHAR *d1 = "\"", *d2 = "\"";
+		    CHAR d1[] = "\"";
+		    CHAR d2[] = "\"";
 
 		    if (!needs_quoting(wk -> li -> targetpath))
 		      *d1 = 0;
