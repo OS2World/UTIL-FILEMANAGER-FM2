@@ -8,7 +8,10 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
-  06 Jun 05 SHL indent -i2
+  06 Jun 05 SHL Indent -i2
+  06 Jun 05 SHL Rework for VAC3.65 compat, lose excess statics
+
+  fixme for more excess locals to be gone
 
 ***********************************************************************/
 
@@ -16,8 +19,8 @@
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_DOSERRORS
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +29,7 @@
 #include <time.h>
 #include <share.h>
 #include <limits.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -37,6 +41,11 @@
 
 MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+  SHORT sSelect;
+  CHAR *p;
+  CHAR s[CCHMAXPATH];
+  CHAR szPath[CCHMAXPATH];
+
   static CHAR lastenv[CCHMAXPATH] = "DPATH";
 
   switch (msg)
@@ -45,30 +54,29 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2)
     {
       WinSetWindowPtr(hwnd, QWL_USER, mp2);
-      *(CHAR *) mp2 = 0;
+      *(CHAR *)mp2 = 0;
       {
 	CHAR *p;
 	CHAR *pp;
-	CHAR temp[CCHMAXPATH];
 
 	p = GetPString(IDS_ENVVARNAMES);
 	while (*p == ' ')
 	  p++;
 	while (*p)
 	{
-	  *temp = 0;
-	  pp = temp;
+	  *szPath = 0;
+	  pp = szPath;
 	  while (*p && *p != ' ')
 	    *pp++ = *p++;
 	  *pp = 0;
 	  while (*p == ' ')
 	    p++;
-	  if (*temp)
+	  if (*szPath)
 	    WinSendDlgItemMsg(hwnd,
 			      ENV_LISTBOX,
 			      LM_INSERTITEM,
 			      MPFROM2SHORT(LIT_END, 0),
-			      MPFROMP(temp));
+			      MPFROMP(szPath));
 	}
       }
       WinSendDlgItemMsg(hwnd,
@@ -97,14 +105,11 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
       case LN_SELECT:
 	{
-	  SHORT sSelect;
-	  CHAR s[CCHMAXPATH];
-
-	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-					      ENV_LISTBOX,
-					      LM_QUERYSELECTION,
-					      MPFROMSHORT(LIT_FIRST),
-					      MPVOID);
+	  sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
+					     ENV_LISTBOX,
+					     LM_QUERYSELECTION,
+					     MPFROMSHORT(LIT_FIRST),
+					     MPVOID);
 	  if (sSelect >= 0)
 	  {
 	    *s = 0;
@@ -138,27 +143,24 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     case DID_OK:
+      p = WinQueryWindowPtr(hwnd, QWL_USER);
+      if (p)
       {
-	CHAR *p = WinQueryWindowPtr(hwnd, QWL_USER);
-
-	if (p)
+	WinQueryDlgItemText(hwnd,
+			    ENV_NAME,
+			    CCHMAXPATH,
+			    p);
+	bstrip(p);
+	if (*p)
 	{
-	  WinQueryDlgItemText(hwnd,
-			      ENV_NAME,
-			      CCHMAXPATH,
-			      p);
-	  bstrip(p);
-	  if (*p)
-	  {
-	    strcpy(lastenv, p);
-	    WinDismissDlg(hwnd, 1);
-	  }
-	  else
-	  {
-	    DosBeep(250, 100);
-	    WinSetFocus(HWND_DESKTOP,
-			WinWindowFromID(hwnd, ENV_NAME));
-	  }
+	  strcpy(lastenv, p);
+	  WinDismissDlg(hwnd, 1);
+	}
+	else
+	{
+	  DosBeep(250, 100);
+	  WinSetFocus(HWND_DESKTOP,
+		      WinWindowFromID(hwnd, ENV_NAME));
 	}
       }
       break;
@@ -179,6 +181,14 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   HWND hwndCollect;
   HWND hwndMLE = WinWindowFromID(hwnd, GREP_SEARCH);
+  FILE *fp;
+  ULONG ul;
+  LONG lLen;
+  SHORT sSelect;
+  CHAR *p;
+  CHAR s[8192 + 14];
+  CHAR simple[8192];
+  CHAR path[CCHMAXPATH];
 
   static CHAR lastmask[8192] = "*";
   static CHAR lasttext[4096] = "";
@@ -254,47 +264,42 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, GREP_SEARCHEAS, searchEAs);
     WinCheckButton(hwnd, GREP_SEARCHFILES, searchFiles);
     WinCheckButton(hwnd, GREP_FINDIFANY, findifany);
-    {
-      CHAR s[35];
 
-      sprintf(s, "%lu", greater);
-      WinSetDlgItemText(hwnd, GREP_GREATER, s);
-      sprintf(s, "%lu", lesser);
-      WinSetDlgItemText(hwnd, GREP_LESSER, s);
-      sprintf(s, "%u", newer);
-      WinSetDlgItemText(hwnd, GREP_NEWER, s);
-      sprintf(s, "%u", older);
-      WinSetDlgItemText(hwnd, GREP_OLDER, s);
-    }
+    sprintf(s, "%lu", greater);
+    WinSetDlgItemText(hwnd, GREP_GREATER, s);
+    sprintf(s, "%lu", lesser);
+    WinSetDlgItemText(hwnd, GREP_LESSER, s);
+    sprintf(s, "%u", newer);
+    WinSetDlgItemText(hwnd, GREP_NEWER, s);
+    sprintf(s, "%u", older);
+    WinSetDlgItemText(hwnd, GREP_OLDER, s);
+
     WinEnableWindow(WinWindowFromID(hwnd, GREP_IGNOREEXTDUPES), FALSE);
     WinEnableWindow(WinWindowFromID(hwnd, GREP_CRCDUPES), FALSE);
     WinEnableWindow(WinWindowFromID(hwnd, GREP_NOSIZEDUPES), FALSE);
-    {
-      FILE *fp;
-      static CHAR s[8192 + 14];
 
-      save_dir2(s);
-      if (s[strlen(s) - 1] != '\\')
-	strcat(s, "\\");
-      strcat(s, "GREPMASK.DAT");
-      fp = _fsopen(s, "r", SH_DENYWR);
-      if (fp)
+    save_dir2(s);
+    if (s[strlen(s) - 1] != '\\')
+      strcat(s, "\\");
+    strcat(s, "GREPMASK.DAT");
+    fp = _fsopen(s, "r", SH_DENYWR);
+    if (fp)
+    {
+      while (!feof(fp))
       {
-	while (!feof(fp))
-	{
-	  if (!fgets(s, 8192 + 4, fp))
-	    break;
-	  bstripcr(s);
-	  if (*s && *s != ';')
-	    WinSendDlgItemMsg(hwnd,
-			      GREP_LISTBOX,
-			      LM_INSERTITEM,
-			      MPFROM2SHORT(LIT_SORTASCENDING, 0),
-			      MPFROMP(s));
-	}
-	fclose(fp);
+	if (!fgets(s, 8192 + 4, fp))
+	  break;
+	bstripcr(s);
+	if (*s && *s != ';')
+	  WinSendDlgItemMsg(hwnd,
+			    GREP_LISTBOX,
+			    LM_INSERTITEM,
+			    MPFROM2SHORT(LIT_SORTASCENDING, 0),
+			    MPFROMP(s));
       }
+      fclose(fp);
     }
+
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, GREP_DRIVELIST),
 		    (HWND) 0,
@@ -339,79 +344,72 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  GetPString(IDS_2CLICKADDDRVMASKTEXT));
 	break;
       case LN_ENTER:
+	WinQueryDlgItemText(hwnd,
+			    GREP_MASK,
+			    8192,
+			    s);
+	bstrip(s);
+	p = strrchr(s, '\\');
+	if (p)
+	  strcpy(simple, p);
+	else if (*s)
 	{
-	  SHORT sSelect;
-	  static CHAR s[8192];
-	  static CHAR simple[8192];
-	  static CHAR *p;
-	  LONG len;
+	  strcpy(simple, "\\");
+	  strcat(simple, s);
+	  *s = 0;
+	}
+	else
+	  strcpy(simple, "\\*");
+	if (simple[strlen(simple) - 1] == ';')
+	  simple[strlen(simple) - 1] = 0;
+	lLen = strlen(simple) + 1;
+	if (strlen(s) > 8192 - lLen)
+	{
+	  DosBeep(250, 100);
+	  WinSetDlgItemText(hwnd,
+			    GREP_MASK,
+			    s);
+	  break;
+	}
 
-	  WinQueryDlgItemText(hwnd,
-			      GREP_MASK,
-			      8192,
-			      s);
-	  bstrip(s);
-	  p = strrchr(s, '\\');
-	  if (p)
-	    strcpy(simple, p);
-	  else if (*s)
+	sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
+					   GREP_DRIVELIST,
+					   LM_QUERYSELECTION,
+					   MPFROMSHORT(LIT_FIRST),
+					   MPVOID);
+	if (sSelect >= 0)
+	{
+	  if (*s && s[strlen(s) - 1] != ';')
+	    strcat(s, ";");
+	  WinSendDlgItemMsg(hwnd,
+			    GREP_DRIVELIST,
+			    LM_QUERYITEMTEXT,
+			    MPFROM2SHORT(sSelect,
+					 (8192 - strlen(s)) - lLen),
+			    MPFROMP(&s[strlen(s)]));
+	  rstrip(s);
+	  if (*s)
 	  {
-	    strcpy(simple, "\\");
-	    strcat(simple, s);
-	    *s = 0;
-	  }
-	  else
-	    strcpy(simple, "\\*");
-	  if (simple[strlen(simple) - 1] == ';')
-	    simple[strlen(simple) - 1] = 0;
-	  len = strlen(simple) + 1;
-	  if (strlen(s) > 8192 - len)
-	  {
-	    DosBeep(250, 100);
+	    strcat(s, simple);
 	    WinSetDlgItemText(hwnd,
 			      GREP_MASK,
 			      s);
-	    break;
-	  }
-
-	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-					      GREP_DRIVELIST,
-					      LM_QUERYSELECTION,
-					      MPFROMSHORT(LIT_FIRST),
-					      MPVOID);
-	  if (sSelect >= 0)
-	  {
-	    if (*s && s[strlen(s) - 1] != ';')
-	      strcat(s, ";");
 	    WinSendDlgItemMsg(hwnd,
-			      GREP_DRIVELIST,
-			      LM_QUERYITEMTEXT,
-			      MPFROM2SHORT(sSelect,
-					   (8192 - strlen(s)) - len),
-			      MPFROMP(&s[strlen(s)]));
-	    rstrip(s);
-	    if (*s)
-	    {
-	      strcat(s, simple);
-	      WinSetDlgItemText(hwnd,
-				GREP_MASK,
-				s);
-	      WinSendDlgItemMsg(hwnd,
-				GREP_MASK,
-				EM_SETSEL,
-				MPFROM2SHORT(strlen(s) - (len + 1),
-					     strlen(s)),
-				MPVOID);
-	      PostMsg(hwnd,
-		      UM_FOCUSME,
-		      MPFROMLONG(WinWindowFromID(hwnd, GREP_MASK)),
-		      MPVOID);
-	    }
+			      GREP_MASK,
+			      EM_SETSEL,
+			      MPFROM2SHORT(strlen(s) - (lLen + 1),
+					   strlen(s)),
+			      MPVOID);
+	    PostMsg(hwnd,
+		    UM_FOCUSME,
+		    MPFROMLONG(WinWindowFromID(hwnd, GREP_MASK)),
+		    MPVOID);
 	  }
 	}
-	break;
-      }
+	break; // LN_ENTER
+      } // switch
       break;
+
     case GREP_LISTBOX:
       switch (SHORT2FROMMP(mp1))
       {
@@ -433,17 +431,14 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	     WinQueryButtonCheckstate(hwnd, GREP_APPEND)))
 	  break;
 	{
-	  SHORT sSelect;
-	  static CHAR s[8192];
-
-	  *s = 0;
-	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-					      GREP_LISTBOX,
-					      LM_QUERYSELECTION,
-					      MPFROMSHORT(LIT_FIRST),
-					      MPVOID);
+	  sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
+					     GREP_LISTBOX,
+					     LM_QUERYSELECTION,
+					     MPFROMSHORT(LIT_FIRST),
+					     MPVOID);
 	  if (sSelect >= 0)
 	  {
+	    *s = 0;
 	    if (WinQueryButtonCheckstate(hwnd, GREP_APPEND))
 	    {
 	      WinQueryDlgItemText(hwnd,
@@ -469,6 +464,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       }
       break;
+
     case GREP_MASK:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
@@ -561,14 +557,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
     case GREP_ENV:
       {
-	CHAR path[CCHMAXPATH];
-	CHAR *p;
 	CHAR *t;
-
-	static CHAR s[8192];
-	static CHAR simple[8192];
-	static CHAR env[8192];
-	LONG len;
+	CHAR env[8192];
 
 	*path = 0;
 	if (!WinDlgBox(HWND_DESKTOP,
@@ -616,7 +606,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *s = 0;
 	if (simple[strlen(simple) - 1] == ';')
 	  simple[strlen(simple) - 1] = 0;
-	len = strlen(simple) + 1;
+	lLen = strlen(simple) + 1;
 	p = env;
 	while (p && *p)
 	{
@@ -628,7 +618,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  bstrip(path);
 	  if (isalpha(*path) && path[1] == ':' && path[2] == '\\')
 	  {
-	    if (strlen(s) > (8192 - len) - (strlen(path) + 1))
+	    if (strlen(s) > (8192 - lLen) - (strlen(path) + 1))
 	    {
 	      WinSetDlgItemText(hwnd,
 				GREP_MASK,
@@ -640,10 +630,10 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (*s)
 		strcat(s, ";");
 	      strcat(s, path);
-	      len += strlen(path);
+	      lLen += strlen(path);
 	      if (s[strlen(s) - 1] != '\\')
 	      {
-		len++;
+		lLen++;
 		strcat(s, "\\");
 	      }
 	      rstrip(s);
@@ -656,7 +646,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		WinSendDlgItemMsg(hwnd,
 				  GREP_MASK,
 				  EM_SETSEL,
-				  MPFROM2SHORT(strlen(s) - (len - 1),
+				  MPFROM2SHORT(strlen(s) - (lLen - 1),
 					       strlen(s)),
 				  MPVOID);
 	      }
@@ -670,204 +660,165 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case GREP_WALK:
+      WinQueryDlgItemText(hwnd,
+			  GREP_MASK,
+			  8192,
+			  s);
+      bstrip(s);
+      if (strlen(s) > 8192 - 5)
       {
-	CHAR path[CCHMAXPATH];
-	CHAR *p;
-	LONG len;
-
-	static CHAR s[8192];
-	static CHAR simple[8192];
-
-	WinQueryDlgItemText(hwnd,
-			    GREP_MASK,
-			    8192,
-			    s);
-	bstrip(s);
-	if (strlen(s) > 8192 - 5)
+	DosBeep(50, 100);
+	break;
+      }
+      *path = 0;
+      if (WinDlgBox(HWND_DESKTOP,
+		    hwnd,
+		    WalkAllDlgProc,
+		    FM3ModHandle,
+		    WALK_FRAME,
+		    MPFROMP(path)) &&
+	  *path)
+      {
+	p = strrchr(s, '\\');
+	if (p)
+	  strcpy(simple, p + 1);
+	else if (*s)
+	  strcpy(simple, s);
+	else
+	  strcpy(simple, "*");
+	if (!p)
+	  *s = 0;
+	if (simple[strlen(simple) - 1] == ';')
+	  simple[strlen(simple) - 1] = 0;
+	lLen = strlen(simple) + 1;
+	if (strlen(s) > (8192 - lLen) - (strlen(path) + 1))
 	{
-	  DosBeep(50, 100);
+	  DosBeep(250, 100);
+	  WinSetDlgItemText(hwnd,
+			    GREP_MASK,
+			    s);
 	  break;
 	}
-	*path = 0;
-	if (WinDlgBox(HWND_DESKTOP,
-		      hwnd,
-		      WalkAllDlgProc,
-		      FM3ModHandle,
-		      WALK_FRAME,
-		      MPFROMP(path)) &&
-	    *path)
+	if (!*s || (*s && s[strlen(s) - 1] != ';'))
 	{
-	  p = strrchr(s, '\\');
-	  if (p)
-	    strcpy(simple, p + 1);
-	  else if (*s)
-	    strcpy(simple, s);
-	  else
-	    strcpy(simple, "*");
-	  if (!p)
-	    *s = 0;
-	  if (simple[strlen(simple) - 1] == ';')
-	    simple[strlen(simple) - 1] = 0;
-	  len = strlen(simple) + 1;
-	  if (strlen(s) > (8192 - len) - (strlen(path) + 1))
+	  if (*s)
+	    strcat(s, ";");
+	  strcat(s, path);
+	  lLen += strlen(path);
+	  if (s[strlen(s) - 1] != '\\')
 	  {
-	    DosBeep(250, 100);
+	    lLen++;
+	    strcat(s, "\\");
+	  }
+	  rstrip(s);
+	  if (*s)
+	  {
+	    strcat(s, simple);
 	    WinSetDlgItemText(hwnd,
 			      GREP_MASK,
 			      s);
-	    break;
-	  }
-	  if (!*s || (*s && s[strlen(s) - 1] != ';'))
-	  {
-	    if (*s)
-	      strcat(s, ";");
-	    strcat(s, path);
-	    len += strlen(path);
-	    if (s[strlen(s) - 1] != '\\')
-	    {
-	      len++;
-	      strcat(s, "\\");
-	    }
-	    rstrip(s);
-	    if (*s)
-	    {
-	      strcat(s, simple);
-	      WinSetDlgItemText(hwnd,
-				GREP_MASK,
-				s);
-	      WinSendDlgItemMsg(hwnd,
-				GREP_MASK,
-				EM_SETSEL,
-				MPFROM2SHORT(strlen(s) - (len - 1),
-					     strlen(s)),
-				MPVOID);
-	    }
+	    WinSendDlgItemMsg(hwnd,
+			      GREP_MASK,
+			      EM_SETSEL,
+			      MPFROM2SHORT(strlen(s) - (lLen - 1),
+					   strlen(s)),
+			      MPVOID);
 	  }
 	}
       }
       break;
 
     case GREP_ADD:
+      *s = 0;
+      WinQueryDlgItemText(hwnd,
+			  GREP_MASK,
+			  8192,
+			  s);
+      bstrip(s);
+      if (*s)
       {
-	SHORT sSelect;
-
-	static CHAR s[8192];
-
-	*s = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_MASK,
-			    8192,
-			    s);
-	bstrip(s);
-	if (*s)
-	{
-	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-					      GREP_LISTBOX,
-					      LM_SEARCHSTRING,
-					      MPFROM2SHORT(0, LIT_FIRST),
-					      MPFROMP(s));
-	  if (sSelect < 0)
-	  {
-	    WinSendDlgItemMsg(hwnd,
-			      GREP_LISTBOX,
-			      LM_INSERTITEM,
-			      MPFROM2SHORT(LIT_SORTASCENDING, 0),
-			      MPFROMP(s));
-	    changed = TRUE;
-	  }
-	}
-      }
-      break;
-
-    case GREP_DELETE:
-      {
-	SHORT sSelect;
-
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    GREP_LISTBOX,
-					    LM_QUERYSELECTION,
-					    MPFROMSHORT(LIT_FIRST),
-					    MPVOID);
-	if (sSelect >= 0)
+					    LM_SEARCHSTRING,
+					    MPFROM2SHORT(0, LIT_FIRST),
+					    MPFROMP(s));
+	if (sSelect < 0)
 	{
 	  WinSendDlgItemMsg(hwnd,
 			    GREP_LISTBOX,
-			    LM_DELETEITEM,
-			    MPFROM2SHORT(sSelect, 0),
-			    MPVOID);
+			    LM_INSERTITEM,
+			    MPFROM2SHORT(LIT_SORTASCENDING, 0),
+			    MPFROMP(s));
 	  changed = TRUE;
 	}
       }
       break;
 
-    case GREP_OM:
+    case GREP_DELETE:
+      sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					  GREP_LISTBOX,
+					  LM_QUERYSELECTION,
+					  MPFROMSHORT(LIT_FIRST),
+					  MPVOID);
+      if (sSelect >= 0)
       {
-	CHAR str[81];
-	UINT temp;
-
-	*str = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_OLDER,
-			    34,
-			    str);
-	temp = atoi(str) * 30L;
-	sprintf(str, "%u", temp);
-	WinSetDlgItemText(hwnd,
-			  GREP_OLDER,
-			  str);
+	WinSendDlgItemMsg(hwnd,
+			  GREP_LISTBOX,
+			  LM_DELETEITEM,
+			  MPFROM2SHORT(sSelect, 0),
+			  MPVOID);
+	changed = TRUE;
       }
+      break;
+
+    case GREP_OM:
+      *s = 0;
+      WinQueryDlgItemText(hwnd,
+			  GREP_OLDER,
+			  34,
+			  s);
+      ul = atoi(s) * 30L;
+      sprintf(s, "%lu", ul);
+      WinSetDlgItemText(hwnd,
+			GREP_OLDER,
+			s);
       break;
 
     case GREP_NM:
-      {
-	CHAR str[81];
-	UINT temp;
-
-	*str = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_NEWER,
-			    34,
-			    str);
-	temp = atoi(str) * 30L;
-	sprintf(str, "%u", temp);
-	WinSetDlgItemText(hwnd,
+      *s = 0;
+      WinQueryDlgItemText(hwnd,
 			  GREP_NEWER,
-			  str);
-      }
+			  34,
+			  s);
+      ul = atoi(s) * 30L;
+      sprintf(s, "%lu", ul);
+      WinSetDlgItemText(hwnd,
+			GREP_NEWER,
+			s);
       break;
 
     case GREP_GK:
-      {
-	CHAR str[81];
-	ULONG temp;
-
-	*str = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_GREATER,
-			    34,
-			    str);
-	temp = atol(str) * 1024L;
-	sprintf(str, "%lu", temp);
-	WinSetDlgItemText(hwnd, GREP_GREATER, str);
-      }
+      *s = 0;
+      WinQueryDlgItemText(hwnd,
+			  GREP_GREATER,
+			  34,
+			  s);
+      ul = atol(s) * 1024L;
+      sprintf(s, "%lu", ul);
+      WinSetDlgItemText(hwnd, GREP_GREATER, s);
       break;
 
     case GREP_LK:
-      {
-	CHAR str[81];
-	ULONG temp;
-
-	*str = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_LESSER,
-			    34,
-			    str);
-	temp = atol(str) * 1024L;
-	sprintf(str, "%lu", temp);
-	WinSetDlgItemText(hwnd,
+      *s = 0;
+      WinQueryDlgItemText(hwnd,
 			  GREP_LESSER,
-			  str);
-      }
+			  34,
+			  s);
+      ul = atol(s) * 1024L;
+      sprintf(s, "%lu", ul);
+      WinSetDlgItemText(hwnd,
+			GREP_LESSER,
+			s);
       break;
 
     case DID_CANCEL:
@@ -886,38 +837,36 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case GREP_REMOTEHDS:
     case GREP_ALLHDS:
       {
-	CHAR *p;
-	CHAR *szDrive = " :\\";
+	CHAR szDrive[] = " :\\";
 	ULONG ulDriveNum;
 	ULONG ulDriveMap;
 	INT x;
 	BOOL incl;
 
-	static CHAR str[8192];
-	static CHAR new[8192];
+	CHAR new[8192];
 
-	*str = *new = 0;
+	*s = 0;
 	WinQueryDlgItemText(hwnd,
 			    GREP_MASK,
 			    8192,
-			    str);
-	str[8192 - 1] = 0;
-	p = strchr(str, ';');
+			    s);
+	s[8192 - 1] = 0;
+	p = strchr(s, ';');
 	if (p)
 	  *p = 0;
-	p = strrchr(str, '\\');
+	p = strrchr(s, '\\');
 	if (!p)
-	  p = strrchr(str, '/');
+	  p = strrchr(s, '/');
 	if (!p)
-	  p = strrchr(str, ':');
+	  p = strrchr(s, ':');
 	if (p)
-	  strcpy(str, p + 1);
-	if (!*str)
-	  strcpy(str, "*");
-	*new = 0;
+	  strcpy(s, p + 1);
+	if (!*s)
+	  strcpy(s, "*");
 	DosError(FERR_DISABLEHARDERR);
 	DosQCurDisk(&ulDriveNum,
 		    &ulDriveMap);
+	*new = 0;
 	for (x = 2; x < 26; x++)
 	{
 	  if (ulDriveMap & (1L << x))
@@ -944,13 +893,13 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  if (incl)
 	  {
-	    if (strlen(new) + strlen(str) + 5 < 8192 - 1)
+	    if (strlen(new) + strlen(s) + 5 < 8192 - 1)
 	    {
 	      if (*new)
 		strcat(new, ";");
 	      *szDrive = x + 'A';
 	      strcat(new, szDrive);
-	      strcat(new, str);
+	      strcat(new, s);
 	    }
 	  }
 	}
@@ -967,18 +916,15 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	DosBeep(50, 100);
       else
       {
-	CHAR *str;
+	static GREP g;		// Passed to thread
 
-	static GREP g;
-
-	str = malloc(8192 + 512);
-	if (!str)
+	p = malloc(8192 + 512);
+	if (!p)
 	{
 	  DosBeep(50, 100);
 	  break;
 	}
 	memset(&g, 0, sizeof(GREP));
-	*str = 0;
 	g.size = sizeof(GREP);
 	if (WinQueryButtonCheckstate(hwnd, GREP_RECURSE))
 	  recurse = TRUE;
@@ -1027,86 +973,85 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else
 	    g.ignoreextdupes = FALSE;
 	}
-	*str = 0;
+	*p = 0;
 	WinQueryDlgItemText(hwnd,
 			    GREP_MASK,
 			    8192,
-			    str);
-	bstrip(str);
-	if (!*str)
+			    p);
+	bstrip(p);
+	if (!*p)
 	{
 	  DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP,
 		      WinWindowFromID(hwnd, GREP_MASK));
-	  free(str);
+	  free(p);
 	  break;
 	}
-	strcpy(g.tosearch, str);
-	strcpy(lastmask, str);
-	*str = 0;
+	strcpy(g.tosearch, p);
+	strcpy(lastmask, p);
+	*p = 0;
 	WinQueryWindowText(hwndMLE,
 			   4096,
-			   str);
-	strcpy(lasttext, str);
+			   p);
+	strcpy(lasttext, p);
 	{
-	  CHAR *p;
-	  CHAR *pp;
+	  CHAR *pszFrom;
+	  CHAR *pszTo;
 	  ULONG matched = 0;
 
-	  pp = g.searchPattern;
-	  p = str;
-	  while (*p)
+	  pszTo = g.searchPattern;
+	  pszFrom = p;
+	  while (*pszFrom)
 	  {
-	    if (*p == '\r')
+	    if (*pszFrom == '\r')
 	    {
-	      p++;
+	      pszFrom++;
 	      continue;
 	    }
-	    if (*p == '\n')
+	    if (*pszFrom == '\n')
 	    {
-	      if (*(p + 1))
+	      if (*(pszFrom + 1))
 		matched++;
-	      *pp = 0;
+	      *pszTo = 0;
 	    }
 	    else
-	      *pp = *p;
-	    pp++;
-	    p++;
+	      *pszTo = *pszFrom;
+	    pszTo++;
+	    pszFrom++;
 	  }
 	  if (*g.searchPattern)
 	    matched++;
-	  *pp = 0;
-	  pp++;
-	  *pp = 0;
+	  *pszTo++ = 0;
+	  *pszTo = 0;
 	  g.numlines = matched;
 	  g.matched = malloc(g.numlines);
 	  if (!g.matched)
 	    g.numlines = 0;
 	}
-	*str = 0;
+	*p = 0;
 	WinQueryDlgItemText(hwnd,
 			    GREP_GREATER,
 			    34,
-			    str);
-	greater = atol(str);
-	*str = 0;
+			    p);
+	greater = atol(p);
+	*p = 0;
 	WinQueryDlgItemText(hwnd,
 			    GREP_LESSER,
 			    34,
-			    str);
-	lesser = atol(str);
-	*str = 0;
+			    p);
+	lesser = atol(p);
+	*p = 0;
 	WinQueryDlgItemText(hwnd,
 			    GREP_NEWER,
 			    34,
-			    str);
-	newer = atoi(str);
-	*str = 0;
+			    p);
+	newer = atoi(p);
+	*p = 0;
 	WinQueryDlgItemText(hwnd,
 			    GREP_OLDER,
 			    34,
-			    str);
-	older = atoi(str);
+			    p);
+	older = atoi(p);
 	if (older || newer)
 	{
 	  FDATE fdate;
@@ -1152,24 +1097,20 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	g.attrFile = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.attrFile;
 	g.antiattr = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.antiattr;
 	g.stopflag = &((DIRCNRDATA *) INSTDATA(hwndCollect)) -> stopflag;
-	if (_beginthread(dogrep, NULL, 524280, (PVOID) & g) == -1)
+	if (_beginthread(dogrep, NULL, 524280, (PVOID)&g) == -1)
 	{
-	  free(str);
+	  free(p);
 	  DosBeep(50, 100);
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
 	else
-	  DosSleep(128L);
-	free(str);
+	  DosSleep(128);
+	free(p);
       }
       if (changed)
       {
-	FILE *fp;
-	SHORT sSelect;
 	SHORT x;
-
-	static CHAR s[8192 + 14];
 
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    GREP_LISTBOX,
