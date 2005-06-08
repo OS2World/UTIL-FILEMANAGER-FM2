@@ -17,6 +17,7 @@
   25 May 05 SHL Rework for FillInRecordFromFFB
   05 Jun 05 SHL Use QWL_USER
   06 Jun 05 SHL Indent -i2
+  06 Jun 05 SHL Make savedSortFlags static to avoid referencing garbage
 
 ***********************************************************************/
 
@@ -56,7 +57,7 @@ MRESULT EXPENTRY CollectorFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  LONGLONG ullBytes;
+  DIRCNRDATA *dcd;
 
   static BOOL emphasized = FALSE;
   static HWND hwndButtonPopup = (HWND) 0;
@@ -82,7 +83,6 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  POINTL ptl = {0, 0};
 	  SWP swp;
-	  DIRCNRDATA *dcd;
 
 	  if (hwndButtonPopup)
 	    WinDestroyWindow(hwndButtonPopup);
@@ -509,6 +509,7 @@ MRESULT EXPENTRY CollectorClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				     MPARAM mp2)
 {
+  ULONG size;
   DIRCNRDATA *dcd;
 
   switch (msg)
@@ -630,7 +631,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				       DIR_SELECTED),
 		       GetPString(IDS_COLLECTINGTEXT));
       for (x = 0; li -> list[x]; x++)
+      {
 	;
+      }
       ulMaxFiles = x;
       if (ulMaxFiles)
       {
@@ -827,7 +830,6 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_SELECTLIST:
 	{
 	  CHAR filename[CCHMAXPATH], *p, *pp;
-	  ULONG size;
 
 	  strcpy(filename, "*.LST");
 	  size = CCHMAXPATH;
@@ -1012,7 +1014,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
-  INT tempsortFlags;
+  ULONG size;
+
+  static INT savedSortFlags;
 
   switch (msg)
   {
@@ -1078,8 +1082,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	dcd -> szCommonName[len] = toupper(SHORT1FROMMP(mp2));
 	dcd -> szCommonName[len + 1] = 0;
 	memset(&srch, 0, sizeof(SEARCHSTRING));
-	srch.cb = (ULONG) sizeof(SEARCHSTRING);
-	srch.pszSearch = (PSZ) dcd -> szCommonName;
+	srch.cb = sizeof(SEARCHSTRING);
+	srch.pszSearch = dcd -> szCommonName;
 	srch.fsPrefix = TRUE;
 	srch.fsCaseSensitive = FALSE;
 	srch.usView = CV_ICON;
@@ -1420,8 +1424,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	cnri.pSortRecord = (PVOID) SortCollectorCnr;
 
 	{
-	  ULONG size = sizeof(ULONG);
-
+	  size = sizeof(ULONG);
 	  PrfQueryProfileData(fmprof, appname, "CollectorflWindowAttr",
 			      (PVOID) & cnri.flWindowAttr, &size);
 	  size = sizeof(MASK);
@@ -1449,18 +1452,17 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
 	SetCnrCols(hwnd, FALSE);
 	AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
-	{				/* fix splitbar for collector container */
-	  ULONG size;
 
+	/* fix splitbar for collector container */
+	cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 32;
+	size = sizeof(LONG);
+	PrfQueryProfileData(fmprof, appname, "CollectorCnrSplitBar",
+			    &cnri.xVertSplitbar, &size);
+	if (cnri.xVertSplitbar <= 0)
 	  cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 32;
-	  size = sizeof(LONG);
-	  PrfQueryProfileData(fmprof, appname, "CollectorCnrSplitBar",
-			      &cnri.xVertSplitbar, &size);
-	  if (cnri.xVertSplitbar <= 0)
-	    cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 32;
-	  WinSendMsg(hwnd, CM_SETCNRINFO, MPFROMP(&cnri),
-		     MPFROMLONG(CMA_XVERTSPLITBAR));
-	}
+	WinSendMsg(hwnd, CM_SETCNRINFO, MPFROMP(&cnri),
+		   MPFROMLONG(CMA_XVERTSPLITBAR));
+
 	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1)
 	{
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1694,7 +1696,6 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       case IDM_COLLECTSELECT:
 	{
 	  CHAR filename[CCHMAXPATH], *p, *pp;
-	  ULONG size;
 
 	  strcpy(filename, "*.LST");
 	  size = CCHMAXPATH;
@@ -1756,7 +1757,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       case IDM_SORTLADATE:
       case IDM_SORTCRDATE:
       case IDM_SORTSUBJECT:
-	tempsortFlags = CollectorsortFlags;
+	savedSortFlags = CollectorsortFlags;
 	CollectorsortFlags &= (SORT_REVERSE | SORT_DIRSFIRST | SORT_DIRSLAST);
       case IDM_SORTDIRSFIRST:
       case IDM_SORTDIRSLAST:
@@ -1770,7 +1771,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  CollectorsortFlags |= SORT_NOSORT;
 	  break;
 	case IDM_SORTSMARTNAME:
-	  if (!(tempsortFlags & SORT_FILENAME))
+	  if (~savedSortFlags & SORT_FILENAME)
 	    CollectorsortFlags |= SORT_FILENAME;
 	  break;
 	case IDM_SORTFILENAME:
@@ -1989,8 +1990,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  if (WinDlgBox(HWND_DESKTOP, hwnd, PickMaskDlgProc,
 			FM3ModHandle, MSK_FRAME, MPFROMP(&dcd -> mask)))
 	  {
-	    PrfWriteProfileData(fmprof, appname, "CollectorFilter", &dcd -> mask,
-				sizeof(MASK));
+	    size = sizeof(MASK);
+	    PrfWriteProfileData(fmprof, appname, "CollectorFilter",
+	                        &dcd -> mask, size);
 	    dcd -> suspendview = 1;
 	    WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd -> mask));
 	    dcd -> suspendview = 0;
@@ -2954,14 +2956,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 HWND StartCollector(HWND hwndParent, INT flags)
 {
-  HWND hwndFrame = (HWND) 0, hwndClient;
+  HWND hwndFrame = (HWND) 0;
+  HWND hwndClient;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
-  FCF_SIZEBORDER | FCF_MINMAX |
-  FCF_ICON | FCF_NOBYTEALIGN |
-  FCF_ACCELTABLE;
+                     FCF_SIZEBORDER | FCF_MINMAX |
+                     FCF_ICON | FCF_NOBYTEALIGN |
+                     FCF_ACCELTABLE;
   USHORT id;
-  static USHORT idinc = 0;
   DIRCNRDATA *dcd;
+
+  static USHORT idinc = 0;
 
   if (ParentIsDesktop(hwndParent, hwndParent))
     FrameFlags |= (FCF_TASKLIST | FCF_SHELLPOSITION | FCF_MENU);
