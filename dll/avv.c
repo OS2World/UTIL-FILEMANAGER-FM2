@@ -6,13 +6,14 @@
   archiver.bb2 editor
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H.Levine
 
   Archive containers
 
-  Revisions	31 Jul 04 SHL ArcReviewDlgProc: correct nameis... decodes
-  		01 Aug 04 SHL Localize functions
-  		01 Aug 04 SHL Rework fixup usage
+  31 Jul 04 SHL ArcReviewDlgProc: correct nameis... decodes
+  01 Aug 04 SHL Localize functions
+  01 Aug 04 SHL Rework fixup usage
+  06 Jun 05 SHL Drop unused
 
 ***********************************************************************/
 
@@ -38,8 +39,6 @@
 #pragma alloc_text(AVV,get_int4_from_window)
 
 static PSZ checkfile(PSZ file,INT *error);
-static ULONG checkfile2(PSZ file,INT *error);
-static PSZ checksayfile(HWND hwnd,PSZ file,INT *error);
 static INT check_archiver (HWND hwnd,ARC_TYPE *info);
 static INT get_int_from_window (HWND hwnd,USHORT id);
 static LONG get_long_from_window (HWND hwnd,USHORT id);
@@ -205,7 +204,7 @@ LONG get_long_from_window (HWND hwnd,USHORT id)
 }
 
 
-#pragma alloc_text (AVV2,nonull,rewrite_archiverbb2,checkfile,checkfile2)
+#pragma alloc_text (AVV2,nonull,rewrite_archiverbb2,checkfile)
 
 // nonull - convert NULL pointer to empty string
 
@@ -348,93 +347,7 @@ static PSZ  checkfile(PSZ file,INT *error)
   return p;
 }
 
-
-static ULONG checkfile2 (PSZ file,INT *error)
-{
-  CHAR  *p,*pp = NULL;
-  INT   ret;
-  ULONG apptype = 0L;
-
-  if(!file || !*file) {
-    *error = 3;
-    return apptype;
-  }
-  pp = strchr(file,' ');
-  if(pp)
-    *pp = 0;
-  p = searchpath(file);
-  if(!p || !*p)
-    *error = 1;
-  else {
-    ret = (INT)DosQAppType(p,&apptype);
-    if(ret)
-      *error = -1;
-    else {
-      apptype &= (~FAPPTYP_32BIT);
-      if(!apptype ||
-         (apptype == FAPPTYP_NOTWINDOWCOMPAT) ||
-         (apptype == FAPPTYP_WINDOWCOMPAT) ||
-         (apptype & FAPPTYP_BOUND) ||
-         (apptype & FAPPTYP_WINDOWAPI) ||
-         (apptype & FAPPTYP_DOS)) {
-        *error = 0;
-      }
-      else
-        *error = 2;
-    }
-  }
-  if(pp)
-    *pp = ' ';
-  return apptype;
-}
-
-#pragma alloc_text (AVV3,checksayfile,check_archiver,ArcReviewDlgProc)
-
-static PSZ checksayfile (HWND hwnd,PSZ file,INT *error)
-{
-  PSZ p;
-  PSZ pp = NULL;
-
-  p = checkfile(file,error);
-  if(*error) {
-    if(p)
-      pp = strchr(p,' ');
-    if(pp)
-      *pp = 0;
-    switch(*error) {
-      case 1:
-        saymsg(MB_ENTER | MB_ICONEXCLAMATION,
-               hwnd,
-               GetPString(IDS_ERRORCHKARCTEXT),
-               GetPString(IDS_PROGNOTFOUNDTEXT),
-               (p && *p) ? p : file);
-        break;
-
-      case 2:
-        saymsg(MB_ENTER | MB_ICONEXCLAMATION,
-               hwnd,
-               GetPString(IDS_ERRORCHKARCTEXT),
-               GetPString(IDS_PROGNOTEXECTEXT),
-               (p && *p) ? p : file);
-        break;
-
-      case -1:
-        saymsg(MB_ENTER | MB_ICONEXCLAMATION,
-               hwnd,
-               GetPString(IDS_ERRORCHKARCTEXT),
-               GetPString(IDS_OS2CHOKECHKTEXT),
-               (p && *p) ? p : file);
-        break;
-
-      default:
-        break;
-    }
-    if(pp)
-      *pp = ' ';
-  }
-  return p;
-}
-
+#pragma alloc_text (AVV3,check_archiver,ArcReviewDlgProc)
 
 static INT check_archiver(HWND hwnd,ARC_TYPE *info)
 {

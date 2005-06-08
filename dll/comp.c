@@ -14,6 +14,7 @@
   24 May 05 SHL Rework Win_Error usage
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Rework with ULONGLONG
+  06 Jun 05 SHL Drop unused
 
 ***********************************************************************/
 
@@ -34,7 +35,7 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-#pragma alloc_text(COMPAREDIR,FillCnrs,FillDirList,CompNames,CompNames2)
+#pragma alloc_text(COMPAREDIR,FillCnrs,FillDirList,CompNames)
 #pragma alloc_text(COMPAREDIR1,CompareDlgProc)
 #pragma alloc_text(COMPAREDIR2,SelectCnrs,ActionCnr)
 #pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFiles)
@@ -721,26 +722,6 @@ static int CompNames (const void *n1,const void *n2) {
   FILELIST *fl2 = *(FILELIST **)n2;
 
   return stricmp(fl1->fname,fl2->fname);
-}
-
-
-static int CompNames2 (const void *n1,const void *n2) {
-
-  FILELIST      *fl1 = *(FILELIST **)n1;
-  FILELIST      *fl2 = *(FILELIST **)n2;
-  register CHAR *p1,*p2;
-
-  p1 = strrchr(fl1->fname,'\\');
-  if(p1)
-    p1++;
-  else
-    p1 = fl1->fname;
-  p2 = strrchr(fl2->fname,'\\');
-  if(p2)
-    p2++;
-  else
-    p2 = fl2->fname;
-  return stricmp(p1,p2);
 }
 
 

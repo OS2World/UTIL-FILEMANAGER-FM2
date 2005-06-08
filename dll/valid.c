@@ -472,7 +472,7 @@ BOOL IsValidDrive (CHAR drive)
 
 CHAR * MakeValidDir (CHAR *path)
 {
-  CHAR           fullname[CCHMAXPATH],drive;
+  CHAR           drive;
   register CHAR *p;
   FILESTATUS3    fs;
   APIRET         status;
