@@ -12,6 +12,7 @@
   12 Feb 03 SHL doonefile: standardize EA math
   25 May 05 SHL Rework for ULONGLONG
   25 May 05 SHL Rework for FillInRecordFromFFB
+  06 Jun 05 SHL Drop unused code
 
 ***********************************************************************/
 
@@ -594,7 +595,6 @@ static BOOL doinsertion (GREP *grep)
     pciFirst = pci;
     dcd = INSTDATA(grep->hwndFiles);
     for(x = 0; grep->insertffb[x]; x++) {
-      ULONGLONG ullBytes;
       FillInRecordFromFFB(grep->hwndFiles,
                           pci,
                           grep->dir[x],
@@ -740,7 +740,7 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
   if(grep->searchEAs) {
 
     HOLDFEA *head,*info;
-    USHORT  codepage,num,type,len;
+    USHORT  type,len;
     BOOL    alltext;
     CHAR    *data,temp;
 
@@ -763,8 +763,6 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
             }
             break;
           case EAT_MVST:
-            codepage = *(USHORT *)(info->value + sizeof(USHORT));
-            num = *(USHORT *)(info->value + (sizeof(USHORT) * 2));
             type = *(USHORT *)(info->value + (sizeof(USHORT) * 3));
             if(type == EAT_ASCII) {
               data = info->value + (sizeof(USHORT) * 4);
@@ -796,8 +794,6 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
             }
             break;
           case EAT_MVMT:
-            codepage = *(USHORT *)(info->value + sizeof(USHORT));
-            num = *(USHORT *)(info->value + (sizeof(USHORT) * 2));
             data = info->value + (sizeof(USHORT) * 3);
             type = *(USHORT *)data;
             data += sizeof(USHORT);

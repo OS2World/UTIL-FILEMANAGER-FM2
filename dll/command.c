@@ -4,9 +4,10 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2005 Steven H. Levine
 
-  Revisions	01 Aug 04 SHL Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  06 Jun 05 SHL Drop unused code
 
 ***********************************************************************/
 
@@ -759,7 +760,6 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 VOID RunCommand (HWND hwnd,INT cx) {
 
-  static CHAR  stop = 0;
   INT          x;
   CHAR       **list;
   LINKCMDS    *info;
@@ -778,7 +778,6 @@ VOID RunCommand (HWND hwnd,INT cx) {
   if(info) {
 
     INT   flags;
-    BOOL  dieafter = FALSE;
 
     x--;
     flags = info->flags;
@@ -788,10 +787,7 @@ VOID RunCommand (HWND hwnd,INT cx) {
       flags |= SEPARATEKEEP;
     else
       flags |= SEPARATE;
-    flags &= (~KEEP);
-    if(flags & DIEAFTER)
-      dieafter = TRUE;
-    flags &= (~DIEAFTER);
+    flags &= ~(KEEP | DIEAFTER);
     if((flags & ONCE) && list && list[0]) {
 
       CHAR  *fakelist[2];

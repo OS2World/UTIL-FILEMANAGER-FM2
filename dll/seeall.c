@@ -14,6 +14,7 @@
   23 May 05 SHL Use QWL_USER
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   05 Jun 05 SHL Use QWL_USER
+  06 Jun 05 SHL Drop unused code
 
 ***********************************************************************/
 
@@ -38,7 +39,7 @@
 #pragma alloc_text(SEEALL,comparefullnames,comparenames,comparesizes)
 #pragma alloc_text(SEEALL,comparedates,compareexts,SeeStatusProc)
 #pragma alloc_text(SEEALL,InitWindow,PaintLine,SeeAllWndProc)
-#pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark,MarkList)
+#pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark)
 #pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList)
 #pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObj,FindDupes,DupeDlgProc)
 #pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAllThread,AFDrvsWndProc)
@@ -1547,67 +1548,6 @@ static BOOL Mark (HWND hwnd,INT command,CHAR **list)
       else if(command == AFM_FILTER) {
 	if (pAD->afindex[y]->flags & AF_SELECTED)
 	  pAD->afindex[y]->flags |= AF_FILTERED;
-      }
-    }
-  } // for x
-  return didone;
-}
-
-
-static BOOL MarkList (HWND hwnd,INT command,CHAR **list)
-{
-  /* Marks files whether filtered or not */
-
-  ALLDATA       *pAD = WinQueryWindowPtr(hwnd,QWL_USER);
-  register ULONG x,z;
-  BOOL          ret = TRUE;
-  BOOL		didone = FALSE;
-
-  for(x = 0;x < pAD->affiles;x++) {
-    if(list) {
-      ret = FALSE;
-      for(z = 0;list[z];z++) {
-	if(!stricmp(list[z],pAD->afhead[x].fullname)) {
-	  ret = TRUE;
-	  break;
-	}
-      }
-    }
-    if(ret) {
-      didone = TRUE;
-      if (command == AFM_UNMARK) {
-	if (pAD->afhead[x].flags & AF_SELECTED) {
-	  pAD->selected--;
-	  pAD->ullSelectedBytes -= pAD->afhead[x].cbFile;
-	  pAD->afhead[x].flags &= ~AF_SELECTED;
-	}
-      }
-      else if (command == AFM_MARK) {
-	if (~pAD->afhead[x].flags & AF_SELECTED) {
-	  pAD->selected++;
-	  pAD->ullSelectedBytes += pAD->afhead[x].cbFile;
-	  pAD->afhead[x].flags |= AF_SELECTED;
-	}
-      }
-      else if (command == AFM_INVERT) {
-	if (pAD->afhead[x].flags & AF_SELECTED) {
-	  pAD->selected--;
-	  pAD->ullSelectedBytes -= pAD->afhead[x].cbFile;
-	  pAD->afhead[x].flags &= ~AF_SELECTED;
-	}
-	else {
-	  pAD->selected++;
-	  pAD->ullSelectedBytes += pAD->afhead[x].cbFile;
-	  pAD->afhead[x].flags |= AF_SELECTED;
-	}
-      }
-      else if (command == AFM_MARKDELETED) {
-	if (pAD->afhead[x].flags & AF_SELECTED)
-	  pAD->afhead[x].flags |= AF_DELETED;
-      }
-      else if (command == AFM_FILTER) {
-	if (pAD->afhead[x].flags & AF_SELECTED)
-	  pAD->afhead[x].flags |= AF_FILTERED;
       }
     }
   } // for x

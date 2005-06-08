@@ -9,6 +9,7 @@
   Copyright (c) 2005 Steven H. Levine
 
   06 Jun 05 SHL Indent -i2
+  06 Jun 05 SHL Drop unused code
 
 ***********************************************************************/
 
@@ -110,20 +111,11 @@ int UUD(char *filename, CHAR * dest)
     return ret;
   }
 
-//  chmod(dest,mode);
-
   ret = 1;
-  if (decode(in, out))
-  {
-//    saymsg(MB_ENTER,HWND_DESKTOP,"UUD error","File \"%s\" is short.",filename);
-    //    ret = -1;
-  }
-  if (!fgets(buf, sizeof(buf), in) || strcmp(buf, "end\n"))
-  {
-//    saymsg(MB_ENTER,HWND_DESKTOP,"UUD error","No end line or garbage at end of \"%s\"",
-    //           filename);
-    //    ret = -1;
-  }
+  decode(in, out);
+
+  fgets(buf, sizeof(buf), in);
+
   fclose(in);
   fclose(out);
   return ret;
@@ -166,10 +158,10 @@ static BOOL decode(FILE * in, FILE * out)
  */
 static void outdec(char *p, FILE * f, int n)
 {
-  int c1, c2, c3;
+  INT c1, c2, c3;
 
-  c1 = DEC(*p) << 2 | DEC(p[1]) >> 4;
-  c2 = DEC(p[1]) << 4 | DEC(p[2]) >> 2;
+  c1 = DEC(*p) << 2 | (UINT)DEC(p[1]) >> 4;
+  c2 = DEC(p[1]) << 4 | (UINT)DEC(p[2]) >> 2;
   c3 = DEC(p[2]) << 6 | DEC(p[3]);
   if (n >= 1)
     putc(c1, f);

@@ -12,6 +12,7 @@
   10 Jan 04 SHL Add some intermin large drive error avoidance
   25 May 05 SHL Rework for ULONGLONG
   25 May 05 SHL Rework for FillInRecordFromFFB
+  06 Jun 05 SHL Drop unused code
 
 ***********************************************************************/
 
@@ -39,7 +40,6 @@ PCNRITEM UpdateCnrRecord (HWND hwndCnr,CHAR *filename,BOOL partial,
   ULONG         nm = 1L;
   ULONG         oldemphasis = 0;
   APIRET        status;
-  BOOL          needtosort = FALSE;
 #ifdef DEBUG
   BOOL existed=FALSE,updated=FALSE,added=FALSE,deleted=FALSE,found=FALSE;
 #endif
@@ -170,7 +170,6 @@ Update:
 #ifdef DEBUG
       added=TRUE;
 #endif
-      needtosort = TRUE;
       if(dcd->type == DIR_FRAME) {
 
         RECORDINSERT ri;
@@ -330,7 +329,6 @@ Update:
 
           RECORDINSERT ri;
           ULONGLONG ullTotalBytes;
-	  BOOL rc;
 
           *ffb.achName = 0;
           ullTotalBytes = FillInRecordFromFFB(hwndCnr,
@@ -435,7 +433,6 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
   INT           numlist = 0;
   INT           numremain;
   BOOL          repos = FALSE;
-  BOOL          needtosort = FALSE;
   BOOL          ret = FALSE;
   APIRET        status;
 
@@ -564,7 +561,6 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
       else
       {
         /* add record */
-        needtosort = TRUE;
         if (dcd->type == DIR_FRAME)
 	{
           RECORDINSERT ri;
@@ -723,8 +719,7 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
             if(pci) {
 
               RECORDINSERT ri;
-              ULONG  ullTotalBytes;
-	      BOOL rc;
+              ULONGLONG ullTotalBytes;
 
               ret = TRUE;
               *ffb.achName = 0;

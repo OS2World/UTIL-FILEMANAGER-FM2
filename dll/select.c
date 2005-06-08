@@ -8,6 +8,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   25 May 05 SHL Rework for ULONGLONG
+  06 Jun 05 SHL Drop unused code
 
 ***********************************************************************/
 
@@ -87,9 +88,6 @@ VOID SelectList (HWND hwndCnr,BOOL partial,BOOL deselect,BOOL clearfirst,
                                 CRA_SELECTED));
         foundone = TRUE;
       }
-    }
-    if(!foundone && !partial) {
-
     }
     if(!foundone)
       DosBeep(250,50);
@@ -566,25 +564,8 @@ VOID InvertAll (HWND hwndCnr) {
 }
 
 
-#pragma alloc_text (SELECT3,SpecialSelect,CompNames,CompNamesB)
+#pragma alloc_text (SELECT3,SpecialSelect)
 #pragma alloc_text(SELECT4,FreeCnrs,SpecialSelect2,CompSSNames,CompSSNamesB)
-
-
-static int CompNamesB (const void *s1,const void *s2) {
-
-  PCNRITEM pci = *(PCNRITEM *)s2;
-
-  return stricmp((CHAR *)s1,pci->pszFileName);
-}
-
-
-static int CompNames (const void *s1,const void *s2) {
-
-  PCNRITEM pci1 = *(PCNRITEM *)s1;
-  PCNRITEM pci2 = *(PCNRITEM *)s2;
-
-  return stricmp(pci1->pszFileName,pci2->pszFileName);
-}
 
 
 VOID SpecialSelect (HWND hwndCnrS,HWND hwndCnrD,INT action,BOOL reset) {

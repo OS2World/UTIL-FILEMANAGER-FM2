@@ -13,6 +13,7 @@
   23 May 05 SHL Use QWL_USER
   23 May 05 SHL Avoid delays for inaccessible drives
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  06 Jun 05 SHL Drop unused code
 
 ***********************************************************************/
 
@@ -961,7 +962,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP2:
     {
-      CHAR s[134], szFileQty[38], szFreeQty[38], *pszFileUM, *pszFreeUM;
+      CHAR s[134], szFileQty[38], szFreeQty[38];
       FILEFINDBUF3 ffb;
       ULONG nm = 1L;
       ULONGLONG ullFreeQty;
