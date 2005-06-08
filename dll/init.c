@@ -14,6 +14,7 @@
   23 May 05 SHL Use datamin.h
   26 May 05 SHL Comments
   06 Jun 05 SHL indent -i2
+  06 Jun 05 SHL Rework FindSwapperDat for VAC3.65 compat
 
 ***********************************************************************/
 
@@ -49,19 +50,24 @@ extern void _CRT_term(void);
 
 /*
    extern HMODULE FM3ResHandle;
-   extern ULONG   RVMajor,RVMinor;
+   extern ULONG RVMajor,RVMinor;
  */
 
 VOID FindSwapperDat(VOID)
 {
-  CHAR *filename = "C:\\CONFIG.SYS", input[8192], *p, *pp;
+  CHAR filename[] = "C:\\CONFIG.SYS";
+  CHAR input[8192];
+  CHAR *p;
+  CHAR *pp;
   FILE *fp;
   FILEFINDBUF3 ffb;
-  ULONG nm = 1L, size = sizeof(SwapperDat);
+  ULONG nm;
+  ULONG size = sizeof(SwapperDat);
   HDIR hdir = HDIR_CREATE;
-  APIRET rc = 1L;
+  APIRET rc = 1;
 
   *SwapperDat = 0;
+  // Check already known
   PrfQueryProfileData(fmprof,
 		      FM3Str,
 		      "SwapperDat",
@@ -69,6 +75,7 @@ VOID FindSwapperDat(VOID)
 		      &size);
   if (*SwapperDat)
   {
+    nm = 1;
     rc = DosFindFirst(SwapperDat,
 		      &hdir,
 		      FILE_NORMAL | FILE_ARCHIVED |
@@ -85,20 +92,23 @@ VOID FindSwapperDat(VOID)
       {
 	fclose(fp);
 	*SwapperDat = 0;
-	rc = 1L;
+	rc = 1;			// Force config.sys scan
       }
     }
     else
       *SwapperDat = 0;
   }
+  // If not defined in INI or INI wrong, scan config.sys for SWAPPATH statement
   if (rc)
   {
     if (DosQuerySysInfo(QSV_BOOT_DRIVE,
 			QSV_BOOT_DRIVE,
-			(PVOID) & nm,
+			(PVOID)&nm,
 			(ULONG) sizeof(ULONG)))
-      nm = 3L;
-    *filename = (CHAR) nm + '@';
+    {
+      nm = 3;		// Assume drive C:
+    }
+    *filename = (CHAR)nm + '@';
     fp = _fsopen(filename, "r", SH_DENYNO);
     if (fp)
     {
@@ -143,7 +153,7 @@ VOID FindSwapperDat(VOID)
 		strcat(SwapperDat, "\\");
 	      strcat(SwapperDat, "SWAPPER.DAT");
 	      hdir = HDIR_CREATE;
-	      nm = 1L;
+	      nm = 1;
 	      if (!DosFindFirst(SwapperDat,
 				&hdir,
 				FILE_NORMAL | FILE_ARCHIVED |
@@ -164,8 +174,8 @@ VOID FindSwapperDat(VOID)
 	      break;
 	    }
 	  }
-	}
-      }
+	} // if SWAPPATH
+      } // while
       fclose(fp);
     }
   }
@@ -174,6 +184,10 @@ VOID FindSwapperDat(VOID)
 unsigned long _System _DLL_InitTerm(unsigned long hModule,
 				    unsigned long ulFlag)
 {
+  CHAR *env;
+  CHAR stringfile[CCHMAXPATH];
+  FILESTATUS3 fsa;
+  APIRET rc;
 
   switch (ulFlag)
   {
@@ -181,41 +195,34 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     if (_CRT_init() == -1)
       return 0UL;
     FM3DllHandle = hModule;
+    strcpy(stringfile, "FM3RES.STR");
+    env = getenv("FM3INI");
+    if (env)
     {
-      char *env, stringfile[CCHMAXPATH];
-
-      strcpy(stringfile, "FM3RES.STR");
-      env = getenv("FM3INI");
-      if (env)
+      DosError(FERR_DISABLEHARDERR);
+      rc = DosQueryPathInfo(env,
+			    FIL_STANDARD,
+			    &fsa,
+			    (ULONG) sizeof(fsa));
+      if (!rc)
       {
-
-	FILESTATUS3 fsa;
-	APIRET rc;
-
-	DosError(FERR_DISABLEHARDERR);
-	rc = DosQueryPathInfo(env,
-			      FIL_STANDARD,
-			      &fsa,
-			      (ULONG) sizeof(fsa));
-	if (!rc)
+	if (fsa.attrFile & FILE_DIRECTORY)
 	{
-	  if (fsa.attrFile & FILE_DIRECTORY)
-	  {
-	    strcpy(stringfile, env);
-	    if (stringfile[strlen(stringfile) - 1] != '\\')
-	      strcat(stringfile, "\\");
-	    strcat(stringfile, "FM3RES.STR");
-	    DosError(FERR_DISABLEHARDERR);
-	    if (DosQueryPathInfo(stringfile,
-				 FIL_STANDARD,
-				 &fsa,
-				 sizeof(fsa)))
-	      strcpy(stringfile, "FM3RES.STR");
-	  }
+	  strcpy(stringfile, env);
+	  if (stringfile[strlen(stringfile) - 1] != '\\')
+	    strcat(stringfile, "\\");
+	  strcat(stringfile, "FM3RES.STR");
+	  DosError(FERR_DISABLEHARDERR);
+	  if (DosQueryPathInfo(stringfile,
+			       FIL_STANDARD,
+			       &fsa,
+			       sizeof(fsa)))
+	    strcpy(stringfile, "FM3RES.STR");
 	}
       }
-      LoadStrings(stringfile);
     }
+    LoadStrings(stringfile);
+
     DosError(FERR_DISABLEHARDERR);
     /* strings here to prevent multiple occurences in DLL */
     FM2Str = "FM/2";
@@ -248,7 +255,7 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     memset(&RGBBLACK, 0, sizeof(RGB2));
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = 204;
     RGBGREY.fcOptions = 0;
-    FM3UL = *(ULONG *) FM3Str;
+    FM3UL = *(ULONG *)FM3Str;
     DEBUG_STRING = "Debug -- please report to author";
     break;
   case 1:
@@ -388,7 +395,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
    */
 
   CLASSINFO clinfo;
-  BOOL okay = FALSE;
+  APIRET rc;
+  APIRET rcl = 1;
+  APIRET rcq = 1;
+  PFN pfnResVersion = (PFN)NULL;
+  ULONG RVMajor = 0;
+  ULONG RVMinor = 0;
+  ULONG ret = 0;
+  FILESTATUS3 fsa;
+  CHAR *env;
+  CHAR dllfile[CCHMAXPATH];
+  ULONG size;
 
   if (!StringsLoaded())
   {
@@ -401,92 +418,85 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     return FALSE;
   }
 
-  {					/* Load resource DLL FM3RES.DLL */
-    APIRET rcl = 1, rcq = 1;
-    PFN pfnResVersion = (PFN) NULL;
-    ULONG RVMajor = 0, RVMinor = 0, ret = 0;
-    char *env, dllfile[CCHMAXPATH];
+  strcpy(dllfile, "FM3RES");
+  env = getenv("FM3INI");
+  if (env)
+  {
+    FILESTATUS3 fsa;
+    APIRET rc;
 
-    strcpy(dllfile, "FM3RES");
-    env = getenv("FM3INI");
-    if (env)
+    DosError(FERR_DISABLEHARDERR);
+    rc = DosQueryPathInfo(env,
+			  FIL_STANDARD,
+			  &fsa,
+			  (ULONG) sizeof(fsa));
+    if (!rc)
     {
-
-      FILESTATUS3 fsa;
-      APIRET rc;
-
-      DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(env,
-			    FIL_STANDARD,
-			    &fsa,
-			    (ULONG) sizeof(fsa));
-      if (!rc)
+      if (fsa.attrFile & FILE_DIRECTORY)
       {
-	if (fsa.attrFile & FILE_DIRECTORY)
-	{
-	  strcpy(dllfile, env);
-	  if (dllfile[strlen(dllfile) - 1] != '\\')
-	    strcat(dllfile, "\\");
-	  strcat(dllfile, "FM3RES");
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo(dllfile,
-			       FIL_STANDARD,
-			       &fsa,
-			       sizeof(fsa)))
-	    strcpy(dllfile, "FM3RES");
-	}
+	strcpy(dllfile, env);
+	if (dllfile[strlen(dllfile) - 1] != '\\')
+	  strcat(dllfile, "\\");
+	strcat(dllfile, "FM3RES");
+	DosError(FERR_DISABLEHARDERR);
+	if (DosQueryPathInfo(dllfile,
+			     FIL_STANDARD,
+			     &fsa,
+			     sizeof(fsa)))
+	  strcpy(dllfile, "FM3RES");
       }
     }
-    rcl = DosLoadModule(NULL,
-			0,
-			dllfile,
-			&FM3ModHandle);
-    if (!rcl)
-    {
-      if (DosExitList(EXLST_ADD,
-		      DeInitFM3DLL))
-	DosBeep(500, 100);
-      rcq = DosQueryProcAddr(FM3ModHandle,
-			     1,
-			     "ResVersion",
-			     &pfnResVersion);
-      if (!rcq)
-	ret = pfnResVersion(&RVMajor, &RVMinor);
-    }
-    else
-    {
-      saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-	     HWND_DESKTOP,
-	     GetPString(IDS_ERRORTEXT),
-	     GetPString(IDS_FM3RESERROR1TEXT));
-      return FALSE;
-    }
-    if (RVMajor < VERMAJOR ||
-	(RVMajor == VERMAJOR && RVMinor < VERMINOR))
-    {
-      DosBeep(50, 100);
-      saymsg(MB_ENTER,
-	     HWND_DESKTOP,
-	     GetPString(IDS_ERRORTEXT),
-	     GetPString(IDS_FM3RESERROR2TEXT),
-	     (!rcq) ?
+  }
+  rcl = DosLoadModule(NULL,
+		      0,
+		      dllfile,
+		      &FM3ModHandle);
+  if (!rcl)
+  {
+    if (DosExitList(EXLST_ADD,
+		    DeInitFM3DLL))
+      DosBeep(500, 100);
+    rcq = DosQueryProcAddr(FM3ModHandle,
+			   1,
+			   "ResVersion",
+			   &pfnResVersion);
+    if (!rcq)
+      ret = pfnResVersion(&RVMajor, &RVMinor);
+  }
+  else
+  {
+    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	   HWND_DESKTOP,
+	   GetPString(IDS_ERRORTEXT),
+	   GetPString(IDS_FM3RESERROR1TEXT));
+    return FALSE;
+  }
+  if (RVMajor < VERMAJOR ||
+      (RVMajor == VERMAJOR && RVMinor < VERMINOR))
+  {
+    DosBeep(50, 100);
+    saymsg(MB_ENTER,
+	   HWND_DESKTOP,
+	   GetPString(IDS_ERRORTEXT),
+	   GetPString(IDS_FM3RESERROR2TEXT),
+	   !rcq ?
 	     GetPString(IDS_FM3RESERROR3TEXT) :
-	     (!rcl) ?
-	     GetPString(IDS_FM3RESERROR4TEXT) :
-	     GetPString(IDS_FM3RESERROR5TEXT),
-	     RVMajor,
-	     RVMinor,
-	     rcl,
-	     rcq,
-	     ret);
-      return FALSE;
-    }
+	     !rcl ?
+	       GetPString(IDS_FM3RESERROR4TEXT) :
+	       GetPString(IDS_FM3RESERROR5TEXT),
+	   RVMajor,
+	   RVMinor,
+	   rcl,
+	   rcq,
+	   ret);
+    return FALSE;
   }
 
   ArgDriveFlags(argc, argv);
   FillInDriveFlags(NULL);
 
-  {					/* try to ensure that FM/2 Utilities are available */
+  {
+    /* try to ensure that FM/2 Utilities are available */
     CHAR curpath[CCHMAXPATH + 8], *env;
     FILESTATUS3 fs3;
 
@@ -560,18 +570,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     return FALSE;
   }
 
-  {					/* are we the workplace? */
-    CHAR *env;
-
-    env = getenv("WORKPLACE__PROCESS");
-    if (!env || stricmp(env, "NO"))
-      fWorkPlace = TRUE;
-  }
+  /* are we the workplace? */
+  env = getenv("WORKPLACE__PROCESS");
+  if (!env || stricmp(env, "NO"))
+    fWorkPlace = TRUE;
 
   if ((!strchr(profile, '\\') && !strchr(profile, ':')) ||
       !(fmprof = PrfOpenProfile((HAB) 0, profile)))
   {
-
     /* figure out where to put INI file... */
     CHAR *env, inipath[CCHMAXPATH];
 
@@ -583,10 +589,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     env = getenv("FM3INI");
     if (env)
     {
-
-      FILESTATUS3 fsa;
-      APIRET rc;
-
       strcpy(inipath, env);
       DosError(FERR_DISABLEHARDERR);
       rc = DosQueryPathInfo(inipath,
@@ -610,36 +612,35 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	env = profile;
       strcpy(inipath, env);
     }
+
     /* in some odd cases the INI file can get set to readonly status */
     /* here we test it and reset the readonly bit if necessary */
+    if (!*inipath)
+      strcpy(inipath, profile);
+    DosError(FERR_DISABLEHARDERR);
+    if (!DosQueryPathInfo(inipath, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)))
     {
-      FILESTATUS3 fsa;
-
-      if (!*inipath)
-	strcpy(inipath, profile);
-      DosError(FERR_DISABLEHARDERR);
-      if (!DosQueryPathInfo(inipath, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)))
+      fIniExisted = TRUE;
+      if (fsa.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM))
       {
-	fIniExisted = TRUE;
-	if (fsa.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM))
-	{
-	  fsa.attrFile &= (~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM));
-	  if (DosSetPathInfo(inipath, FIL_STANDARD, (PVOID) & fsa,
-			     (ULONG) sizeof(fsa), 0L))
-	    saymsg(MB_ENTER,
-		   HWND_DESKTOP,
-		   GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_INIREADONLYTEXT),
-		   inipath);
-	}
+	fsa.attrFile &= (~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM));
+	if (DosSetPathInfo(inipath, FIL_STANDARD, (PVOID) & fsa,
+			   (ULONG) sizeof(fsa), 0L))
+	  saymsg(MB_ENTER,
+		 HWND_DESKTOP,
+		 GetPString(IDS_ERRORTEXT),
+		 GetPString(IDS_INIREADONLYTEXT),
+		 inipath);
       }
     }
+
     fmprof = PrfOpenProfile((HAB) 0, inipath);
     if (!fmprof)
     {
       strcpy(inipath, "FM3.INI");
       fmprof = PrfOpenProfile((HAB) 0, inipath);
     }
+
     if (!fmprof)
     {
       DosBeep(50, 100);
@@ -653,18 +654,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   FindSwapperDat();
 
-  {
-    ULONG size = sizeof(BOOL);
-
-    PrfQueryProfileData(fmprof,
-			FM3Str,
-			"SeparateParms",
-			(PVOID) & fSeparateParms,
-			&size);
-    if (!fSeparateParms)
-      strcpy(appname,
-	     FM3Str);
-  }
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      FM3Str,
+		      "SeparateParms",
+		      (PVOID) & fSeparateParms,
+		      &size);
+  if (!fSeparateParms)
+    strcpy(appname, FM3Str);
 
   /* start help */
   memset(&hini, 0, sizeof(HELPINIT));
@@ -681,14 +678,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   hwndHelp = WinCreateHelpInstance(hab, &hini);
   if (!hwndHelp)
   {
-
-    CHAR *env;
-    static CHAR helppath[CCHMAXPATH];
+    static CHAR helppath[CCHMAXPATH];	// fixme to be local?
 
     env = getenv("FM3INI");
     if (env)
     {
-
       FILESTATUS3 fsa;
       APIRET rc;
 
@@ -888,7 +882,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		   sizeof(PVOID));
 
   /*
-   * set some defaults (note:  everything else automatically initialized
+   * set some defaults (note: everything else automatically initialized
    * to 0)
    */
   detailssize = detailsea = detailslwdate = detailslwtime = detailsattr =
@@ -914,383 +908,377 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   prntabspaces = 8;
   CollectorsortFlags = sortFlags = SORT_DIRSFIRST;
 
-  /*
-   * load preferences from profile (INI) file
-   */
+  // load preferences from profile (INI) file
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "ShowTarget",
+		      (PVOID) & fShowTarget,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "CheckMM",
+		      (PVOID) & fCheckMM,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "ChangeTarget",
+		      (PVOID) & fChangeTarget,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "ConfirmTarget",
+		      (PVOID) & fConfirmTarget,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      FM3Str,
+		      "CustomFileDlg",
+		      (PVOID) & fCustomFileDlg,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      FM3Str,
+		      "SaveMiniCmds",
+		      (PVOID) & fSaveMiniCmds,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "SaveBigCmds",
+		      (PVOID) & fSaveBigCmds,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "NoFoldMenu",
+		      (PVOID) & fNoFoldMenu,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      FM3Str,
+		      "ThreadNotes",
+		      (PVOID) & fThreadNotes,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnpagenums", (PVOID) & prnpagenums, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnalt", (PVOID) & prnalt, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnformat", (PVOID) & prnformat, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnformfeedbefore",
+		      (PVOID) & prnformfeedbefore, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      FM3Str,
+		      "Prnformfeedafter",
+		      (PVOID) & prnformfeedafter,
+		      &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prntabspaces",
+		      (PVOID) & prntabspaces, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnwidth", (PVOID) & prnwidth, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnlength", (PVOID) & prnlength, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prntmargin", (PVOID) & prntmargin, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnbmargin", (PVOID) & prnbmargin, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnlmargin", (PVOID) & prnlmargin, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnrmargin", (PVOID) & prnrmargin, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnspacing", (PVOID) & prnspacing, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "NoDead", (PVOID) & fNoDead, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "NoFinger", (PVOID) & fNoFinger, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SwitchTree", (PVOID) & fSwitchTree,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SwitchTreeExpand",
+		      (PVOID) & fSwitchTreeExpand, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SwitchTreeOnFocus",
+		      (PVOID) & fSwitchTreeOnFocus, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "CollapseFirst",
+		      (PVOID) & fCollapseFirst, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "FilesInTree",
+		      (PVOID) & fFilesInTree, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "TopDir", (PVOID) & fTopDir, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "LookInDir", (PVOID) & fLookInDir, &size);
+  PrfQueryProfileString(fmprof, appname, "DefArc", NULL, szDefArc, sizeof(szDefArc));
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "AutoviewHeight",
+		      (PVOID) & AutoviewHeight, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "KeepCmdLine", (PVOID) & fKeepCmdLine, &size);
+  if (strcmp(realappname, "FM/4"))
   {
-    ULONG size;
-
     size = sizeof(BOOL);
     PrfQueryProfileData(fmprof,
-			appname,
-			"ShowTarget",
-			(PVOID) & fShowTarget,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"CheckMM",
-			(PVOID) & fCheckMM,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"ChangeTarget",
-			(PVOID) & fChangeTarget,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"ConfirmTarget",
-			(PVOID) & fConfirmTarget,
+			FM3Str,
+			"MoreButtons",
+			(PVOID) & fMoreButtons,
 			&size);
     size = sizeof(BOOL);
     PrfQueryProfileData(fmprof,
 			FM3Str,
-			"CustomFileDlg",
-			(PVOID) & fCustomFileDlg,
+			"Drivebar",
+			(PVOID) & fDrivebar,
 			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			FM3Str,
-			"SaveMiniCmds",
-			(PVOID) & fSaveMiniCmds,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"SaveBigCmds",
-			(PVOID) & fSaveBigCmds,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"NoFoldMenu",
-			(PVOID) & fNoFoldMenu,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			FM3Str,
-			"ThreadNotes",
-			(PVOID) & fThreadNotes,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnpagenums", (PVOID) & prnpagenums, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnalt", (PVOID) & prnalt, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnformat", (PVOID) & prnformat, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnformfeedbefore",
-			(PVOID) & prnformfeedbefore, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			FM3Str,
-			"Prnformfeedafter",
-			(PVOID) & prnformfeedafter,
-			&size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prntabspaces",
-			(PVOID) & prntabspaces, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnwidth", (PVOID) & prnwidth, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnlength", (PVOID) & prnlength, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prntmargin", (PVOID) & prntmargin, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnbmargin", (PVOID) & prnbmargin, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnlmargin", (PVOID) & prnlmargin, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnrmargin", (PVOID) & prnrmargin, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "Prnspacing", (PVOID) & prnspacing, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "NoDead", (PVOID) & fNoDead, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "NoFinger", (PVOID) & fNoFinger, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "SwitchTree", (PVOID) & fSwitchTree,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "SwitchTreeExpand",
-			(PVOID) & fSwitchTreeExpand, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "SwitchTreeOnFocus",
-			(PVOID) & fSwitchTreeOnFocus, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "CollapseFirst",
-			(PVOID) & fCollapseFirst, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "FilesInTree",
-			(PVOID) & fFilesInTree, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "TopDir", (PVOID) & fTopDir, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "LookInDir", (PVOID) & fLookInDir, &size);
-    PrfQueryProfileString(fmprof, appname, "DefArc", NULL, szDefArc, sizeof(szDefArc));
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "AutoviewHeight",
-			(PVOID) & AutoviewHeight, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "KeepCmdLine", (PVOID) & fKeepCmdLine, &size);
-    if (strcmp(realappname, "FM/4"))
-    {
-      size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof,
-			  FM3Str,
-			  "MoreButtons",
-			  (PVOID) & fMoreButtons,
-			  &size);
-      size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof,
-			  FM3Str,
-			  "Drivebar",
-			  (PVOID) & fDrivebar,
-			  &size);
-    }
-    else
-      fDrivebar = fMoreButtons = TRUE;
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"NoSearch",
-			(PVOID) & fNoSearch,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"GuessType",
-			(PVOID) & fGuessType,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"ViewChild",
-			(PVOID) & fViewChild,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"ShowEnv",
-			(PVOID) & fShowEnv,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"LeaveTree",
-			(PVOID) & fLeaveTree,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "Comments", (PVOID) & fComments, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, appname, "WS_ANIMATE", (PVOID) & fwsAnimate, &size);
-    if (fwsAnimate)
-      fwsAnimate = WS_ANIMATE;
-    size = sizeof(ULONG);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "SelectedAlways",
-			(PVOID) & fSelectedAlways, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "ToolbarHelp", (PVOID) & fToolbarHelp, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "OtherHelp", (PVOID) & fOtherHelp, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "DrivebarHelp", (PVOID) & fDrivebarHelp, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"AutoAddDirs",
-			(PVOID) & fAutoAddDirs,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"AutoAddAllDirs",
-			(PVOID) & fAutoAddAllDirs,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "UserListSwitches",
-			(PVOID) & fUserListSwitches, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "UseNewViewer",
-			(PVOID) & fUseNewViewer, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "DefaultDeletePerm",
-			(PVOID) & fDefaultDeletePerm, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "ExternalINIs",
-			(PVOID) & fExternalINIs, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "ExternalCollector",
-			(PVOID) & fExternalCollector, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "ExternalArcboxes",
-			(PVOID) & fExternalArcboxes, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "ExternalViewer",
-			(PVOID) & fExternalViewer, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "UseQProcStat",
-			(PVOID) & fUseQProcStat, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "DataMin", (PVOID) & fDataMin, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "DataToFore", (PVOID) & fDataToFore, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "DataShowDrives",
-			(PVOID) & fDataShowDrives, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "DataInclRemote",
-			(PVOID) & fDataInclRemote, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "SplitStatus", (PVOID) & fSplitStatus, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "FolderAfterExtract",
-			(PVOID) & fFolderAfterExtract, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "DullDatabar", (PVOID) & fDullMin, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "BlueLED", (PVOID) & fBlueLED, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "ConfirmDelete", (PVOID) & fConfirmDelete, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "SaveState", (PVOID) & fSaveState, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "SyncUpdates", (PVOID) & fSyncUpdates, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "LoadSubject", (PVOID) & fLoadSubject, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "UnHilite", (PVOID) & fUnHilite, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "TileBackwards", (PVOID) & fTileBackwards,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "LoadLongname", (PVOID) & fLoadLongnames, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "VerifyWrites", (PVOID) & fVerify, &size);
-    DosSetVerify(fVerify);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "DontMoveMouse", (PVOID) & fDontMoveMouse, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "NoIconsFiles", (PVOID) & fNoIconsFiles, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "NoIconsDirs", (PVOID) & fNoIconsDirs, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "ForceUpper", (PVOID) & fForceUpper, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "ForceLower", (PVOID) & fForceLower, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "TextTools", (PVOID) & fTextTools, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "ToolTitles", (PVOID) & fToolTitles, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "DoubleClickOpens", (PVOID) & fDCOpens, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "LinkSetsIcon", (PVOID) & fLinkSetsIcon, &size);
-    size = sizeof(INT);
-    PrfQueryProfileData(fmprof, appname, "Sort", (PVOID) & sortFlags, &size);
-    size = sizeof(INT);
-    PrfQueryProfileData(fmprof, appname, "TreeSort", (PVOID) & TreesortFlags, &size);
-    size = sizeof(INT);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"CollectorSort",
-			(PVOID) & CollectorsortFlags,
-			&size);
-    size = sizeof(targetdir);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"Targetdir",
-			(PVOID) targetdir,
-			&size);
-    if (!IsValidDir(targetdir))
-      *targetdir = 0;
-    size = sizeof(extractpath);
-    PrfQueryProfileData(fmprof,
-			appname,
-			"ExtractPath",
-			(PVOID) extractpath,
-			&size);
-    if (!IsValidDir(extractpath))
-      *extractpath = 0;
-    size = sizeof(printer);
-    PrfQueryProfileData(fmprof, appname, "Printer", (PVOID) printer, &size);
-    size = sizeof(dircompare);
-    PrfQueryProfileData(fmprof, appname, "DirCompare", (PVOID) dircompare, &size);
-    size = sizeof(viewer);
-    PrfQueryProfileData(fmprof, appname, "Viewer", (PVOID) viewer, &size);
-    size = sizeof(editor);
-    PrfQueryProfileData(fmprof, appname, "Editor", (PVOID) editor, &size);
-    size = sizeof(binview);
-    PrfQueryProfileData(fmprof, appname, "BinView", (PVOID) binview, &size);
-    size = sizeof(bined);
-    PrfQueryProfileData(fmprof, appname, "BinEd", (PVOID) bined, &size);
-    size = sizeof(compare);
-    PrfQueryProfileData(fmprof, appname, "Compare", (PVOID) compare, &size);
-    size = sizeof(virus);
-    PrfQueryProfileData(fmprof, appname, "Virus", (PVOID) virus, &size);
-    size = sizeof(ftprun);
-    PrfQueryProfileData(fmprof, appname, "FTPRun", (PVOID) ftprun, &size);
-    if (!*ftprun && !size)
-      strcpy(ftprun, "ftppm.exe");
-    size = sizeof(httprun);
-    PrfQueryProfileData(fmprof, appname, "HTTPRun", (PVOID) httprun, &size);
-    if (!*httprun && !size)
-      strcpy(httprun, "explore.exe -q");
-    size = sizeof(lasttoolbox);
-    PrfQueryProfileData(fmprof, FM3Str, "LastToolBox", (PVOID) lasttoolbox, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "FollowTree", (PVOID) & fFollowTree, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "StartMaximized", (PVOID) & fStartMaximized, &size);
-    if (!fStartMaximized)
-    {
-      size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, appname, "StartMinimized", (PVOID) & fStartMinimized, &size);
-    }
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "DefaultCopy", (PVOID) & fCopyDefault, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "IdleCopy", (PVOID) & fRealIdle, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "ArcStuffVisible",
-			(PVOID) & fArcStuffVisible, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "NoTreeGap", (PVOID) & fNoTreeGap, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "VTreeOpensWPS", (PVOID) & fVTreeOpensWPS,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "RemoteBug", (PVOID) & fRemoteBug, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "Drag&DropDlg", (PVOID) & fDragndropDlg,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "UserComboBox", (PVOID) & fUserComboBox,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "MinDirOnOpen", (PVOID) & fMinOnOpen,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, appname, "QuickArcFind", (PVOID) & fQuickArcFind,
-			&size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "NoRemovableScan", (PVOID) & fNoRemovableScan,
-			&size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, FM3Str, "NoBrokenNotify", (PVOID) & NoBrokenNotify,
-			&size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, appname, "ContainerType", (PVOID) & ulCnrType, &size);
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, appname, "FilesToGet", (PVOID) & FilesToGet, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "AutoView", (PVOID) & fAutoView, &size);
-    size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "FM2Deletes", (PVOID) & fFM2Deletes, &size);
   }
+  else
+    fDrivebar = fMoreButtons = TRUE;
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "NoSearch",
+		      (PVOID) & fNoSearch,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "GuessType",
+		      (PVOID) & fGuessType,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "ViewChild",
+		      (PVOID) & fViewChild,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "ShowEnv",
+		      (PVOID) & fShowEnv,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "LeaveTree",
+		      (PVOID) & fLeaveTree,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "Comments", (PVOID) & fComments, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, appname, "WS_ANIMATE", (PVOID) & fwsAnimate, &size);
+  if (fwsAnimate)
+    fwsAnimate = WS_ANIMATE;
+  size = sizeof(ULONG);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SelectedAlways",
+		      (PVOID) & fSelectedAlways, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ToolbarHelp", (PVOID) & fToolbarHelp, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "OtherHelp", (PVOID) & fOtherHelp, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "DrivebarHelp", (PVOID) & fDrivebarHelp, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "AutoAddDirs",
+		      (PVOID) & fAutoAddDirs,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "AutoAddAllDirs",
+		      (PVOID) & fAutoAddAllDirs,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "UserListSwitches",
+		      (PVOID) & fUserListSwitches, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "UseNewViewer",
+		      (PVOID) & fUseNewViewer, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DefaultDeletePerm",
+		      (PVOID) & fDefaultDeletePerm, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalINIs",
+		      (PVOID) & fExternalINIs, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalCollector",
+		      (PVOID) & fExternalCollector, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalArcboxes",
+		      (PVOID) & fExternalArcboxes, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalViewer",
+		      (PVOID) & fExternalViewer, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "UseQProcStat",
+		      (PVOID) & fUseQProcStat, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "DataMin", (PVOID) & fDataMin, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DataToFore", (PVOID) & fDataToFore, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DataShowDrives",
+		      (PVOID) & fDataShowDrives, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DataInclRemote",
+		      (PVOID) & fDataInclRemote, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "SplitStatus", (PVOID) & fSplitStatus, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "FolderAfterExtract",
+		      (PVOID) & fFolderAfterExtract, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "DullDatabar", (PVOID) & fDullMin, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "BlueLED", (PVOID) & fBlueLED, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "ConfirmDelete", (PVOID) & fConfirmDelete, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "SaveState", (PVOID) & fSaveState, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SyncUpdates", (PVOID) & fSyncUpdates, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "LoadSubject", (PVOID) & fLoadSubject, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "UnHilite", (PVOID) & fUnHilite, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "TileBackwards", (PVOID) & fTileBackwards,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "LoadLongname", (PVOID) & fLoadLongnames, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "VerifyWrites", (PVOID) & fVerify, &size);
+  DosSetVerify(fVerify);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DontMoveMouse", (PVOID) & fDontMoveMouse, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "NoIconsFiles", (PVOID) & fNoIconsFiles, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "NoIconsDirs", (PVOID) & fNoIconsDirs, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "ForceUpper", (PVOID) & fForceUpper, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "ForceLower", (PVOID) & fForceLower, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "TextTools", (PVOID) & fTextTools, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ToolTitles", (PVOID) & fToolTitles, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DoubleClickOpens", (PVOID) & fDCOpens, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "LinkSetsIcon", (PVOID) & fLinkSetsIcon, &size);
+  size = sizeof(INT);
+  PrfQueryProfileData(fmprof, appname, "Sort", (PVOID) & sortFlags, &size);
+  size = sizeof(INT);
+  PrfQueryProfileData(fmprof, appname, "TreeSort", (PVOID) & TreesortFlags, &size);
+  size = sizeof(INT);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "CollectorSort",
+		      (PVOID) & CollectorsortFlags,
+		      &size);
+  size = sizeof(targetdir);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "Targetdir",
+		      (PVOID) targetdir,
+		      &size);
+  if (!IsValidDir(targetdir))
+    *targetdir = 0;
+  size = sizeof(extractpath);
+  PrfQueryProfileData(fmprof,
+		      appname,
+		      "ExtractPath",
+		      (PVOID) extractpath,
+		      &size);
+  if (!IsValidDir(extractpath))
+    *extractpath = 0;
+  size = sizeof(printer);
+  PrfQueryProfileData(fmprof, appname, "Printer", (PVOID) printer, &size);
+  size = sizeof(dircompare);
+  PrfQueryProfileData(fmprof, appname, "DirCompare", (PVOID) dircompare, &size);
+  size = sizeof(viewer);
+  PrfQueryProfileData(fmprof, appname, "Viewer", (PVOID) viewer, &size);
+  size = sizeof(editor);
+  PrfQueryProfileData(fmprof, appname, "Editor", (PVOID) editor, &size);
+  size = sizeof(binview);
+  PrfQueryProfileData(fmprof, appname, "BinView", (PVOID) binview, &size);
+  size = sizeof(bined);
+  PrfQueryProfileData(fmprof, appname, "BinEd", (PVOID) bined, &size);
+  size = sizeof(compare);
+  PrfQueryProfileData(fmprof, appname, "Compare", (PVOID) compare, &size);
+  size = sizeof(virus);
+  PrfQueryProfileData(fmprof, appname, "Virus", (PVOID) virus, &size);
+  size = sizeof(ftprun);
+  PrfQueryProfileData(fmprof, appname, "FTPRun", (PVOID) ftprun, &size);
+  if (!*ftprun && !size)
+    strcpy(ftprun, "ftppm.exe");
+  size = sizeof(httprun);
+  PrfQueryProfileData(fmprof, appname, "HTTPRun", (PVOID) httprun, &size);
+  if (!*httprun && !size)
+    strcpy(httprun, "explore.exe -q");
+  size = sizeof(lasttoolbox);
+  PrfQueryProfileData(fmprof, FM3Str, "LastToolBox", (PVOID) lasttoolbox, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "FollowTree", (PVOID) & fFollowTree, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "StartMaximized", (PVOID) & fStartMaximized, &size);
+  if (!fStartMaximized)
+  {
+    size = sizeof(BOOL);
+    PrfQueryProfileData(fmprof, appname, "StartMinimized", (PVOID) & fStartMinimized, &size);
+  }
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DefaultCopy", (PVOID) & fCopyDefault, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "IdleCopy", (PVOID) & fRealIdle, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "ArcStuffVisible",
+		      (PVOID) & fArcStuffVisible, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "NoTreeGap", (PVOID) & fNoTreeGap, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "VTreeOpensWPS", (PVOID) & fVTreeOpensWPS,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "RemoteBug", (PVOID) & fRemoteBug, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "Drag&DropDlg", (PVOID) & fDragndropDlg,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "UserComboBox", (PVOID) & fUserComboBox,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "MinDirOnOpen", (PVOID) & fMinOnOpen,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "QuickArcFind", (PVOID) & fQuickArcFind,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "NoRemovableScan", (PVOID) & fNoRemovableScan,
+		      &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, FM3Str, "NoBrokenNotify", (PVOID) & NoBrokenNotify,
+		      &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, appname, "ContainerType", (PVOID) & ulCnrType, &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, appname, "FilesToGet", (PVOID) & FilesToGet, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "AutoView", (PVOID) & fAutoView, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "FM2Deletes", (PVOID) & fFM2Deletes, &size);
 
   /* load pointers and icons we use */
   hptrArrow = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE);
@@ -1319,9 +1307,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   hptrEnv = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ENV_ICON);
   hptrZipstrm = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ZIPSTREAM_ICON);
 
-  /*
-   * set up color array used by seeall.c and newview.c color dialog
-   */
+  // set up color array used by seeall.c and newview.c color dialog
+
   standardcolors[0] = CLR_WHITE;
   standardcolors[1] = CLR_BLACK;
   standardcolors[2] = CLR_BLUE;
@@ -1344,29 +1331,27 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
 HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
 {
-  HWND hwndFrame, hwndClient;
+  HWND hwndFrame;
+  HWND hwndClient;
+  UINT x;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
-  FCF_SIZEBORDER | FCF_MINMAX |
-  FCF_ACCELTABLE | FCF_MENU |
-  FCF_ICON | FCF_TASKLIST |
-  FCF_NOBYTEALIGN;
+		     FCF_SIZEBORDER | FCF_MINMAX |
+		     FCF_ACCELTABLE | FCF_MENU |
+		     FCF_ICON | FCF_TASKLIST |
+		     FCF_NOBYTEALIGN;
 
+  for (x = 1; x < argc; x++)
   {
-    INT x;
-
-    for (x = 1; x < argc; x++)
+    if (*argv[x] == '~' && !argv[x][1])
+      fReminimize = TRUE;
+    if (*argv[x] == '+' && !argv[x][1])
+      fLogFile = TRUE;
+    if (*argv[x] == '-')
     {
-      if (*argv[x] == '~' && !argv[x][1])
-	fReminimize = TRUE;
-      if (*argv[x] == '+' && !argv[x][1])
-	fLogFile = TRUE;
-      if (*argv[x] == '-')
-      {
-	if (!argv[x][1])
-	  fNoSaveState = TRUE;
-	else
-	  strcpy(profile, &argv[x][1]);
-      }
+      if (!argv[x][1])
+	fNoSaveState = TRUE;
+      else
+	strcpy(profile, &argv[x][1]);
     }
   }
 
