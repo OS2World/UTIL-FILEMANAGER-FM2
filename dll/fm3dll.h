@@ -20,6 +20,7 @@
   25 May 05 SHL Rework for FillInRecordFromFFB
   25 May 05 SHL Add CommaFmtULL CommaFmtUL
   28 May 05 SHL Drop local functions
+  06 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -116,7 +117,7 @@
 
 #define NUMLINES                21
 #define CON_COLS                6
-#define INSTDATA(h)             WinQueryWindowPtr(h,0)
+#define INSTDATA(h)             WinQueryWindowPtr(h,QWL_USER)
 #define DIR_SPLITBAR_OFFSET     18 * 12 /* Pixel offset of details splitbar */
 #define CONTAINER_COLUMNS       13      /* Number of columns in details view */
 #define RGBFROMPARTS(r,g,b)     (((r) * 65536) + ((g) * 256) + (b))
