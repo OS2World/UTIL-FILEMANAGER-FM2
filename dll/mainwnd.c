@@ -16,6 +16,7 @@
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   26 May 05 SHL Comments and localize code
   05 Jun 05 SHL Use QWL_USER
+  06 Jun 05 SHL Rework MainWMCommand for VAC3.65 compat
 
 ***********************************************************************/
 
@@ -62,8 +63,8 @@
 
 static USHORT firsttool = 0;
 
-static BOOL CloseDirCnrChildren (HWND hwndClient);
-static BOOL RestoreDirCnrState (HWND hwndClient,CHAR *name,BOOL noview);
+static BOOL CloseDirCnrChildren(HWND hwndClient);
+static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview);
 
 static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -120,7 +121,7 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPAR
 	    (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
 	  CommaFmtULL(szQty,
 		      sizeof(szQty),
-		      ullFreeQty,' ');
+		      ullFreeQty, ' ');
 	  sprintf(s,
 		  "%s (%lu%%) free",
 		  szQty,
@@ -3791,7 +3792,9 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
   for (ulSquare = 2;
        ulSquare * ulSquare <= ulChildCnt;
        ulSquare++)
+  {
     ;
+  }
   if (!fTileBackwards)
   {
     ulNumCols = ulSquare - 1L;
@@ -3935,7 +3938,7 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
 }
 
 static VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy, SHORT newcx,
-		    SHORT newcy)
+			   SHORT newcy)
 {
   /*
    * resize all children of the client to maintain their proportional
@@ -4173,12 +4176,15 @@ static MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd,
 	  break;
 	}
 	break;
-      } // switch id
+      }	// switch id
+
       if (cmd)
+      {
 	PostMsg(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), FID_CLIENT),
 		WM_COMMAND,
 		MPFROM2SHORT(cmd, 0),
 		MPVOID);
+      }
     }
     break;
 
@@ -4931,7 +4937,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	{
 
-	  CHAR *d1 = "\"", *d2 = "\"";
+	  CHAR d1[] = "\"";
+	  CHAR d2[] = "\"";
 
 	  if (!needs_quoting(wa.szCurrentPath1))
 	    *d1 = 0;
@@ -5104,7 +5111,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (swp.x == swpD.x && swp.y == swpD.y &&
 	  swp.cx == swpD.cx &&
 	  swp.cy == swpD.cy &&
-	  // fixme to be #defined someday
+      // fixme to be #defined someday
 	  WinQueryWindowUShort(hwnd, QWL_USER + 10) &&
 	  WinQueryWindowUShort(hwnd, QWL_USER + 14))
       {
@@ -6179,7 +6186,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	hwndSysSubMenu = mit.hwndSubMenu;
 	mi.iPosition = MIT_END;
 	mi.afStyle = MIS_SEPARATOR;
-	mi.id = -1;
+	mi.id = (USHORT) -1;
 	WinSendMsg(hwndSysSubMenu,
 		   MM_INSERTITEM,
 		   MPFROMP(&mi),
