@@ -16,6 +16,7 @@
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   26 May 05 SHL More large file formatting updates
+  06 Jun 05 SHL Drop obsoletes
 
 ***********************************************************************/
 
@@ -393,7 +394,6 @@ static VOID FillCnrThread (VOID *args)
   DIRSIZE       *dirsize = (DIRSIZE *)args;
   HWND          hwndCnr;
   ULONGLONG     ull;
-  BOOL		ok;
 
   if(!dirsize)
     return;
