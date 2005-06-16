@@ -1,0 +1,54 @@
+
+FM/2 Translation Toolkit
+
+This Toolkit allows you to modify the strings and icons stored in FM3RES.STR
+and FM3RES.DLL.  This allows you to translate FM/2 for other languages and
+to replace FM/2's standard icons and bitmaps.
+
+To use the Toolkit, create a work directory and unzip the reskit.zip to this
+directory.  Be sure to preserve the directory structure in the zip file.  You
+will also need a copy of FM3RES.DLL in the work directory.  Copy this file
+from your FM/2 directory.
+
+Modify the files in the Toolkit as described below and run the COMPILE
+script to rebuild the selected files.
+
+To rebuild FM3RES.DLL, you will need a copy of RC.EXE on your PATH and
+appropriate OS/2 #include files.  RC and the #include files come with the
+OS/2 developer's toolkit and various OS/2 compilers.  See the comments in
+FM3STR.H for remarks about additions and insertions.
+
+When making changes to FM3DLL.STR, FM3RES.RC or FM3RES.DLG, translate the
+_text only_.  Do _not_ reorder, remove or create new lines in FM3DLL.STR.
+Do not modify the odd-looking %%s, %%lu, etc. items in FM3DLL.STR. They are
+used by the formatted print routines.
+
+When replacing icons, make sure you provide an appropriate set of
+resolutions.  When replacing bitmaps, make sure you to size the bitmap to fit
+correctly in place of the original bitmap.
+
+Do not alter any other files.  If you do not follow the above guidelines,
+FM/2 may refuse to run correctly.
+
+To get quick usage help, type
+
+  COMPILE
+
+at the command line.
+
+To rebuild just FM3RES.STR, type
+
+ COMPILE /S
+
+at the command line.
+
+To rebuild both FM3RES.DLL and FM3RES.STR, type
+
+ COMPILE /B
+
+at a command line.
+
+After rebuilding, shut down FM/2 and copy the new files to the FM/2
+program directory and restart FM/2.
+
+$Id$
