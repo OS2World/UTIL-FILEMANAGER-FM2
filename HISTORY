@@ -1,10 +1,20 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.03:
+ o Rework resource kit and reskit readme
+
 3.02i:
  o Rework Databar to avoid delays for inaccessible volumes
  o Lots of work on large file support
  o Switch to VAC 3.65
  o Correct name parsing in collector and archive containers
+ o Output popup error messages to stderr and to screen
+ o Correct archive container initial sort setup
+ o Avoid startup trap in FindSwapperDat (VAC3.65 compat)
+ o Correct reversed warp menu in new viewer
+ o Misc VAC3.65 compat rework
+ o Avoid referencing garbage in collector
+ o Resolve some icon selection inconsistencies
 
 3.02h:
  o Show full target path in Drag/Drop dialogs

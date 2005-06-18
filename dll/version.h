@@ -21,12 +21,14 @@
   10 Jan 05 SHL v3.02h: Allow DND_TARGET to hold CCHMAXPATH
   23 May 05 SHL v3.02i: Avoid datamin delays
   25 May 05 SHL v3.02i: Rework large file/drive support
+  11 Jun 05 SHL v3.02i: filldir: Resolve some icon selection oddities
+  16 Jun 05 SHL v3.03: rework resource kit
 
 ***********************************************************************/
 
 #define VERMAJOR       3
-#define VERMINOR       02
-#define VERREALMINOR   "i"		// SHL
+#define VERMINOR       03
+#define VERREALMINOR   ""		// SHL
 
 #define APPNAME         "FM2"
 
