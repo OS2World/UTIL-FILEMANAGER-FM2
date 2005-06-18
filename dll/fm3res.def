@@ -1,6 +1,6 @@
  LIBRARY FM3RES
 
- DESCRIPTION 'FM/3 Runtime Resource DLL copyright (c) 1998 by M. Kimes'
+ DESCRIPTION '@#SLAInc:3.03#@##1## 06/16/2005 03:03:00      SLAMain::EN:US:4:U:@@FM/3 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2005 Steven Levine and Associates, Inc.'
 
  EXETYPE OS2
  PROTMODE
