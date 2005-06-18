@@ -12,6 +12,7 @@
   02 Dec 03 SHL Correct WM_VSCROLL math
   23 May 05 SHL Use QWL_USER
   06 Jun 05 SHL Indent -i2
+  06 Jun 05 SHL Correct reversed wrap logic
 
 ***********************************************************************/
 
@@ -721,7 +722,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
     }
     if (!ad -> hex)
     {
-      if (!ad -> wrapon)
+      if (ad -> wrapon)
       {
 	width = (Rectl -> xRight - Rectl -> xLeft) / ad -> fattrs.lAveCharWidth;
 	if (width)
@@ -1240,7 +1241,7 @@ static VOID ReLine(VOID * args)
 	      {
 		while (p - ad -> text < ad -> textsize && !ad -> stopflag)
 		{
-		  if (!ad -> wrapon)
+		  if (ad -> wrapon)
 		  {
 		    e = p + (width - 1);
 		    if (e - ad -> text > ad -> textsize)
@@ -2470,7 +2471,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  e = p = ad -> lines[whichline];
 	  while (*e != '\r' && *e != '\n' && e < ad -> text + ad -> textsize)
 	  {
-	    if (!ad -> wrapon && e - p == width)
+	    if (ad -> wrapon && e - p == width)
 	      break;
 	    e++;
 	  }
@@ -4046,7 +4047,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  if (!ad -> busy)
 	  {
-	    ad -> wrapon = (ad -> wrapon) ? FALSE : TRUE;
+	    ad -> wrapon = ad -> wrapon ? FALSE : TRUE;
 	    WrapOn = ad -> wrapon;
 	    PrfWriteProfileData(fmprof, appname, "Viewer.WrapOn",
 				&ad -> wrapon, sizeof(BOOL));
