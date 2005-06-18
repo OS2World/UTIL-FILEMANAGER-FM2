@@ -979,7 +979,7 @@ static LONG cr3tab[] = {    /* CRC polynomial 0xEDB88320 */
 LONG CRCBlock (register CHAR *str, register INT blklen, register LONG crc)
 {
   while (blklen--) {
-    crc = cr3tab[((INT) crc ^ *str) & 0xff] ^ ((crc >> 8) & 0x00FFFFFF);
+    crc = cr3tab[((INT) crc ^ *str) & 0xff] ^ (((ULONG)crc >> 8) & 0x00FFFFFF);
     str++;
   }
   return crc;
