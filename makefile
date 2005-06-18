@@ -3,6 +3,7 @@
 
 # 21 Nov 03 SHL Comments
 # 24 May 05 SHL Add clean and cleanobj target
+# 16 Jun 05 SHL Workaround makeflags wierdness
 
 # Environment:
 
@@ -16,7 +17,7 @@ ALL: DLL $(BASE) MAK
 
 DLL:
   cd dll
-  $(MAKE) /nologo $(MAKEFLAGS)
+  $(MAKE) /nologo /$(MAKEFLAGS)
   cd ..
 
 $(BASE): $(BASE).EXE \
