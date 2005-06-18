@@ -11,6 +11,7 @@
   08 Feb 03 SHL Enable SYS_FRAME
   25 Nov 03 SHL Rework ABT_FRAME
   04 Jun 05 SHL CFG_FRAME - add cancel
+  07 Jun 05 SHL Use copyright symbol
 
 ***********************************************************************/
 
@@ -949,13 +950,13 @@ BEGIN
         ICON            10, ABT_STICK2, 101, 113, 21, 16
         CTEXT           "FM/2 (File Manager/2)", ABT_PROGNAME, 10, 92, 164, 
                         8, DT_VCENTER
-        CTEXT           "copyright (c) 1993-98", -1, 10, 84, 164, 8, 
+        CTEXT           "Copyright ¸ 1993-98", -1, 10, 84, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
         CTEXT           "M. Kimes (Barebones Software)", -1, 10, 76, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
         CTEXT           "All rights reserved", -1, 10, 68, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "copyright (c) 1998, 2003", -1, 10, 60, 164, 8, 
+        CTEXT           "Copyright ¸ 1998, 2005", -1, 10, 60, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
         CTEXT           "Steven Levine and Associates, Inc.", -1, 10, 52, 
                         164, 8, DT_VCENTER | NOT WS_GROUP
