@@ -14,6 +14,9 @@
   23 May 05 SHL Use QWL_USER
   25 May 05 SHL Rename comnam to szCommonName and fix typo
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
+  05 Jun 05 SHL Drop obsolete, localize
+  05 Jun 05 SHL Correct last sort logic
+  05 Jun 05 SHL Use QWL_USER
 
 ***********************************************************************/
 
@@ -45,10 +48,9 @@
 #pragma alloc_text(ARCCNRS,ArcSort,ArcFrameWndProc,IsArcThere,ArcErrProc)
 #pragma alloc_text(STARTUP,StartArcCnr)
 
-INT arcsortFlags = 0;
+static INT DefArcSortFlags;
 
-
-MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+static MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   ARCDUMP *ad;
 
@@ -137,20 +139,34 @@ MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 }
 
 
-SHORT APIENTRY ArcSort (PMINIRECORDCORE p1,PMINIRECORDCORE p2,PVOID pStorage)
+static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID pStorage)
 {
-  PARCITEM    p = (PARCITEM)p1,pp = (PARCITEM)p2;
-  DIRCNRDATA *dcd = (DIRCNRDATA *)pStorage;
+  PARCITEM    pai1 = (PARCITEM)pmrc2;
+  PARCITEM    pai2 = (PARCITEM)pmrc2;
+  DIRCNRDATA *pdcd = (DIRCNRDATA *)pStorage;
   SHORT       ret = 0;
   CHAR       *pext,*ppext;
+  INT	     sortFlags;
 
-  if(dcd)
-    arcsortFlags = dcd->sortFlags;
-  if(arcsortFlags) {
-    switch(arcsortFlags & (~SORT_REVERSE)) {
+  if (!pdcd)
+  {
+    HWND hwndCnr = pai1->hwndCnr;
+    pdcd = (DIRCNRDATA *)WinQueryWindowPtr(hwndCnr,QWL_USER);
+    // fixme debug
+    if (!pdcd)
+    {
+      saymsg(0,NULLHANDLE,"*Debug*","dcd NULL %s %u",__FILE__, __LINE__);
+      return ret;
+    }
+  }
+
+  sortFlags = pdcd->sortFlags;		// Optimize
+
+  if(sortFlags) {
+    switch(sortFlags & (~SORT_REVERSE)) {
       case SORT_FIRSTEXTENSION:
-        pext = strchr(p->szFileName,'.');
-        ppext = strchr(pp->szFileName,'.');
+        pext = strchr(pai1->szFileName,'.');
+        ppext = strchr(pai2->szFileName,'.');
         if(!pext)
           pext = NullStr;
         if(!ppext)
@@ -159,8 +175,8 @@ SHORT APIENTRY ArcSort (PMINIRECORDCORE p1,PMINIRECORDCORE p2,PVOID pStorage)
         break;
 
       case SORT_LASTEXTENSION:
-        pext = strrchr(p->szFileName,'.');
-        ppext = strrchr(pp->szFileName,'.');
+        pext = strrchr(pai1->szFileName,'.');
+        ppext = strrchr(pai2->szFileName,'.');
         if(!pext)
           pext = NullStr;
         if(!ppext)
@@ -169,47 +185,47 @@ SHORT APIENTRY ArcSort (PMINIRECORDCORE p1,PMINIRECORDCORE p2,PVOID pStorage)
         break;
 
       case SORT_LWDATE:
-        ret = (p->date.year < pp->date.year) ? 1 :
-              (p->date.year > pp->date.year) ? -1 :
-              (p->date.month < pp->date.month) ? 1 :
-              (p->date.month > pp->date.month) ? -1 :
-              (p->date.day < pp->date.day) ? 1 :
-              (p->date.day > pp->date.day) ? -1 :
-              (p->time.hours < pp->time.hours) ? 1 :
-              (p->time.hours > pp->time.hours) ? -1 :
-              (p->time.minutes < pp->time.minutes) ? 1 :
-              (p->time.minutes > pp->time.minutes) ? -1 :
-              (p->time.seconds < pp->time.seconds) ? 1 :
-              (p->time.seconds > pp->time.seconds) ? -1 : 0;
+        ret = (pai1->date.year < pai2->date.year) ? 1 :
+              (pai1->date.year > pai2->date.year) ? -1 :
+              (pai1->date.month < pai2->date.month) ? 1 :
+              (pai1->date.month > pai2->date.month) ? -1 :
+              (pai1->date.day < pai2->date.day) ? 1 :
+              (pai1->date.day > pai2->date.day) ? -1 :
+              (pai1->time.hours < pai2->time.hours) ? 1 :
+              (pai1->time.hours > pai2->time.hours) ? -1 :
+              (pai1->time.minutes < pai2->time.minutes) ? 1 :
+              (pai1->time.minutes > pai2->time.minutes) ? -1 :
+              (pai1->time.seconds < pai2->time.seconds) ? 1 :
+              (pai1->time.seconds > pai2->time.seconds) ? -1 : 0;
         break;
 
       case SORT_SIZE:
-        ret = (p->cbFile < pp->cbFile) ? 1 : (p->cbFile == pp->cbFile) ?
+        ret = (pai1->cbFile < pai2->cbFile) ? 1 : (pai1->cbFile == pai2->cbFile) ?
               0 : -1;
         if(!ret)
-          ret = (p->cbComp < pp->cbComp) ? 1 : (p->cbComp == pp->cbComp) ?
+          ret = (pai1->cbComp < pai2->cbComp) ? 1 : (pai1->cbComp == pai2->cbComp) ?
                 0 : -1;
         break;
 
       case SORT_EASIZE:
-        ret = (p->cbComp < pp->cbComp) ? 1 : (p->cbComp == pp->cbComp) ?
+        ret = (pai1->cbComp < pai2->cbComp) ? 1 : (pai1->cbComp == pai2->cbComp) ?
               0 : -1;
         if(!ret)
-          ret = (p->cbFile < pp->cbFile) ? 1 : (p->cbFile == pp->cbFile) ?
+          ret = (pai1->cbFile < pai2->cbFile) ? 1 : (pai1->cbFile == pai2->cbFile) ?
                 0 : -1;
         break;
     }
     if(!ret)
-      ret = (SHORT)stricmp(p->szFileName,pp->szFileName);
-    if(ret && (arcsortFlags & SORT_REVERSE))
+      ret = (SHORT)stricmp(pai1->szFileName,pai2->szFileName);
+    if(ret && (sortFlags & SORT_REVERSE))
       ret = (ret > 0) ? -1 : 1;
     return ret;
   }
-  return (SHORT)stricmp(p->szFileName,pp->szFileName);
+  return (SHORT)stricmp(pai1->szFileName,pai2->szFileName);
 }
 
 
-INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg)
+static INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg)
 {
   DIRCNRDATA   *dcd = (DIRCNRDATA *)arg;
   PARCITEM      r;
@@ -245,13 +261,13 @@ INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg)
 }
 
 
-MRESULT EXPENTRY ArcFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+static MRESULT EXPENTRY ArcFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   return CommonFrameWndProc(ARC_CNR,hwnd,msg,mp1,mp2);
 }
 
 
-BOOL IsArcThere (HWND hwnd, CHAR *arcname)
+static BOOL IsArcThere (HWND hwnd, CHAR *arcname)
 {
   if(arcname) {
     if(IsFile(arcname) != 1) {
@@ -694,8 +710,8 @@ MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                    id);
                 dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
                                                         QW_PARENT),
-                                        ARC_CNR),
-                                        0);
+                                                        ARC_CNR),
+                                        QWL_USER);
                 if(id == DIR_SORT) {
                   if(dcd)
                     SetSortChecks(hwndButtonPopup,
@@ -1138,9 +1154,6 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
   DIRCNRDATA *dcd;
 
   switch(msg) {
-    case WM_CREATE:
-      break;
-
     case DM_PRINTOBJECT:
     case DM_DISCARDOBJECT:
       dcd = INSTDATA(hwnd);
@@ -1992,7 +2005,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 }
 
 
-MRESULT EXPENTRY ArcCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+static MRESULT EXPENTRY ArcCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 
@@ -2432,6 +2445,7 @@ KbdRetry:
                   DIR_SORT),
                   dcd->sortFlags,
                   TRUE);
+	  DefArcSortFlags = dcd->sortFlags;	// Remember for new windows
         }
       }
       else {
@@ -2886,6 +2900,7 @@ KbdRetry:
                                     DIR_SORT),
                     dcd->sortFlags,
                     TRUE);
+	    DefArcSortFlags = dcd->sortFlags;	// Remember for new windows
             break;
 
           case IDM_COLLECTOR:
@@ -3509,8 +3524,8 @@ DosBeep(50,100);
 
 
 HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
-                  ARC_TYPE *sinfo) {
-
+                  ARC_TYPE *sinfo)
+{
   /*
    * bitmapped flags:
    *  1 = am extracted from another archive
@@ -3624,13 +3639,14 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
         dcd->amextracted = ((flags & 1) != 0);
         dcd->dontclose = ((flags & 4) != 0);
         dcd->info = info;
+        dcd->sortFlags = DefArcSortFlags;
         {
           PFNWP oldproc;
 
           oldproc = WinSubclassWindow(hwndFrame,
                                       (PFNWP)ArcFrameWndProc);
           WinSetWindowPtr(hwndFrame,
-                          0,
+                          QWL_USER,
                           (PVOID)oldproc);
         }
         dcd->hwndCnr = WinCreateWindow(hwndClient,
@@ -3650,7 +3666,7 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
                                        NULL);
         if(dcd->hwndCnr) {
           WinSetWindowPtr(dcd->hwndCnr,
-                          0,
+                          QWL_USER,
                           (PVOID)dcd);
           {
             CHAR s[CCHMAXPATH + 8];
@@ -3789,4 +3805,3 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
   }
   return hwndFrame;
 }
-
