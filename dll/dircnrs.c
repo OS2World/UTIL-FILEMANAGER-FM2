@@ -1183,7 +1183,6 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 MRESULT EXPENTRY DirCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  ULONG ulrc;
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
