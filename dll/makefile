@@ -6,12 +6,14 @@
 # 26 Jul 04 SHL Correct CFLAGSR
 # 23 May 05 SHL Drop saymsg
 # 24 May 05 SHL Add clean and cleanobj targets
+# 06 Jun 05 SHL Add warnings enable (WARN)
 
 # Warning - missing many *.h dependencies
 
 # Environment:
 
 #   DEBUG	0 = release build, 1 = debug build
+#   WARN	define for verbose compile time warnings
 
 BASE=fm3dll
 BASERES=fm3res
@@ -25,7 +27,19 @@ RC = rc
 DEBUG = 0
 !ENDIF
 
+!IFNDEF WARN
 CFLAGS =  /G5 /Ge- /Gm+ /Gs- /Gt- /Mp /O- /Q+ /Sp4 /Ss /Ti+ /W3
+!ELSE
+# /Wcnd- suppresses EDC0425
+# /Wuni is easily confused by if statements
+# /Word is too easily confused by PM macros
+# CFLAGSW = /Wcmp /Wcnd- /Wcns /Wcnv- /Weff /Wext- /Wini /Wobs /Wpor /Wpro /Wrea /Wret /Wtrd- /Wuni- /Wuse
+CFLAGSW = /Wcmp /Wcnd- /Wcns /Wcnv- /Weff /Wext- /Wini /Wobs /Wpor /Wpro /Wrea /Wret /Wtrd- /Wuni- /Wuse
+CFLAGS =  /G5 /Ge- /Gm+ /Gs- /Gt- /Mp /O- /Q+ /Sp4 /Ss /Ti+ /W3 $(CFLAGSW)
+!ENDIF
+
+# Enable this for more warnng
+
 # for fm3res only
 CFLAGSR = /G5 /Ge- /Gs+ /O+ /Rn /Ss /W3
 
