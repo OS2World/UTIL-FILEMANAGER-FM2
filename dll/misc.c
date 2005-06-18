@@ -31,7 +31,7 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(ONCE,SetSysMenu)
+#pragma alloc_text(MAINWND5,SetSysMenu)
 #pragma alloc_text(MISC1,BoxWindow,PaintRecessedWindow,PostMsg,PaintSTextWindow)
 #pragma alloc_text(MISC1,FixSwitchList,FindDirCnr,CurrentRecord,SetShiftState,AddToListboxBottom)
 #pragma alloc_text(CNR_MISC1,AdjustCnrColVis,AdjustCnrColsForFSType)
