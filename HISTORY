@@ -2,6 +2,7 @@ New stuff's at the top.  This list is not necessarily complete.
 
 3.03:
  o Rework resource kit and reskit readme
+ o Correct directory sizes sort
 
 3.02i:
  o Rework Databar to avoid delays for inaccessible volumes
@@ -25,7 +26,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Update removable drive support to work for USB MSD
 
 3.02f:
- o Add large drive support the dirsize applet startup screen
+ o Add large drive support to the dirsize applet startup screen
  o Avoid spurious filldir errors for large drives
    Will still get get math errors for >4GB directories
 
