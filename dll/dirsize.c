@@ -17,6 +17,7 @@
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   26 May 05 SHL More large file formatting updates
   06 Jun 05 SHL Drop obsoletes
+  19 Jun 05 SHL More 64-bit math fixes
 
 ***********************************************************************/
 
@@ -57,7 +58,8 @@ typedef struct {
 static SHORT APIENTRY SortSizeCnr (PMINIRECORDCORE p1,PMINIRECORDCORE p2,
 			    PVOID SortFlags)
 {
-  ULONG size1,size2;
+  ULONGLONG size1;
+  ULONGLONG size2;
 
   size1 = ((PCNRITEM)p1)->cbFile + ((PCNRITEM)p1)->easize;
   size2 = ((PCNRITEM)p2)->cbFile + ((PCNRITEM)p2)->easize;
@@ -789,7 +791,8 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 			   pszFileName);
 	      else {
 
-		ULONG size = sizeof(ULONG),flWindowAttr = CV_ICON;
+		ULONG size = sizeof(ULONG);
+		ULONG flWindowAttr = CV_ICON;
 		CHAR  s[33];
 
 		strcpy(s,"ICON");
