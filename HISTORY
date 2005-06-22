@@ -3,6 +3,7 @@ New stuff's at the top.  This list is not necessarily complete.
 3.03:
  o Rework resource kit and reskit readme
  o Correct directory sizes sort
+ o Correct archive sort again
 
 3.02i:
  o Rework Databar to avoid delays for inaccessible volumes
