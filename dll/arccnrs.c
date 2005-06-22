@@ -17,6 +17,7 @@
   05 Jun 05 SHL Drop obsolete, localize
   05 Jun 05 SHL Correct last sort logic
   05 Jun 05 SHL Use QWL_USER
+  22 Jun 05 SHL ArcSort: correct typo in last sort fix
 
 ***********************************************************************/
 
@@ -141,7 +142,7 @@ static MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID pStorage)
 {
-  PARCITEM    pai1 = (PARCITEM)pmrc2;
+  PARCITEM    pai1 = (PARCITEM)pmrc1;
   PARCITEM    pai2 = (PARCITEM)pmrc2;
   DIRCNRDATA *pdcd = (DIRCNRDATA *)pStorage;
   SHORT       ret = 0;
