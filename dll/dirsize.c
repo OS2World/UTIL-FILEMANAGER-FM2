@@ -18,6 +18,7 @@
   26 May 05 SHL More large file formatting updates
   06 Jun 05 SHL Drop obsoletes
   19 Jun 05 SHL More 64-bit math fixes
+  08 Aug 05 SHL Avoid Expand/Collapse hangs while working
 
 ***********************************************************************/
 
@@ -47,12 +48,12 @@ typedef struct {
 } DIRSIZE;
 
 typedef struct {
-  CHAR      dirname[CCHMAXPATH];
-  CHAR      pchStopFlag;
+  CHAR      szDirName[CCHMAXPATH];
+  CHAR      chStopFlag;
   BOOL      dying;
   BOOL      working;
   HPOINTER  hptr;
-} TEMP;
+} tState;
 
 
 static SHORT APIENTRY SortSizeCnr (PMINIRECORDCORE p1,PMINIRECORDCORE p2,
@@ -432,7 +433,10 @@ static VOID FillCnrThread (VOID *args)
 
 MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  TEMP *pTemp;
+  tState *pState;
+  PCNRITEM pci;
+  CHAR szBytes[44];
+  CHAR sz[66];
 
   switch(msg) {
     case WM_INITDLG:
@@ -440,22 +444,22 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	WinDismissDlg(hwnd,0);
 	break;
       }
-      pTemp = malloc(sizeof(TEMP));
-      if(!pTemp) {
+      pState = malloc(sizeof(tState));
+      if(!pState) {
 	WinDismissDlg(hwnd,0);
 	break;
       }
-      memset(pTemp,0,sizeof(TEMP));
-      strcpy(pTemp->dirname,(CHAR *)mp2);
-      WinSetWindowPtr(hwnd,0,(PVOID)pTemp);
-      pTemp->hptr = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,DIRSIZE_ICON);
-      WinDefDlgProc(hwnd,WM_SETICON,MPFROMLONG(pTemp->hptr),MPVOID);
+      memset(pState,0,sizeof(tState));
+      strcpy(pState->szDirName,(CHAR *)mp2);
+      WinSetWindowPtr(hwnd,0,(PVOID)pState);
+      pState->hptr = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,DIRSIZE_ICON);
+      WinDefDlgProc(hwnd,WM_SETICON,MPFROMLONG(pState->hptr),MPVOID);
       {
 	CHAR s[CCHMAXPATH + 81];
 
 	sprintf(s,
 		GetPString(IDS_DIRSIZETITLETEXT),
-		pTemp->dirname);
+		pState->szDirName);
 	WinSetWindowText(hwnd,s);
       }
       {
@@ -466,15 +470,18 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	  WinDismissDlg(hwnd,0);
 	  break;
 	}
-	dirsize->pchStopFlag = (CHAR *)&pTemp->pchStopFlag;
-	dirsize->pszFileName = pTemp->dirname;
+	dirsize->pchStopFlag = (CHAR *)&pState->chStopFlag;
+	dirsize->pszFileName = pState->szDirName;
 	dirsize->hwndCnr = WinWindowFromID(hwnd,DSZ_CNR);
 	if(_beginthread(FillCnrThread,NULL,122880L * 5L,(PVOID)dirsize) == -1) {
 	  free(dirsize);
 	  WinDismissDlg(hwnd,0);
 	  break;
 	}
-	pTemp->working = TRUE;
+	pState->working = TRUE;
+        WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),FALSE);
+        WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),FALSE);
+        WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),FALSE);
       }
       PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
       break;
@@ -495,10 +502,10 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_SETCNRINFO,MPFROMP(&cnri),
 			  MPFROMLONG(CMA_FLWINDOWATTR | CMA_TREEICON |
 				     CMA_LINESPACING | CMA_CXTREEINDENT));
-	pTemp = INSTDATA(hwnd);
-	if(pTemp && isalpha(*pTemp->dirname)) {
+	pState = INSTDATA(hwnd);
+	if(pState && isalpha(*pState->szDirName)) {
 	  memset(&fsa,0,sizeof(fsa));
-	  rc = DosQueryFSInfo(toupper(*pTemp->dirname) - '@',FSIL_ALLOC,&fsa,
+	  rc = DosQueryFSInfo(toupper(*pState->szDirName) - '@',FSIL_ALLOC,&fsa,
 			      sizeof(FSALLOCATE));
 	  if (!rc)
 	  {
@@ -532,37 +539,37 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case UM_CONTAINER_FILLED:
-      pTemp = INSTDATA(hwnd);
-      if(!pTemp || pTemp->dying) {
-	if (pTemp)
-	  pTemp->working = FALSE;
+      pState = INSTDATA(hwnd);
+      if (!pState || pState->dying) {
+	if (pState)
+	  pState->working = FALSE;
 	WinDismissDlg(hwnd,0);
 	return 0;
       }
-      pTemp->working = FALSE;
-      {
-	CHAR     tb[44],s[66];
-	PCNRITEM pci;
+      pState->working = FALSE;
+      WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),TRUE);
+      WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),TRUE);
+      WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),TRUE);
 
-	pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORD,MPVOID,
-				MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
-	if(pci && (INT)pci != -1)
-	  WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_EXPANDTREE,MPFROMP(pci),MPVOID);
-	*s = 0;
-	pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORDEMPHASIS,
-				MPFROMLONG(CMA_FIRST),
-				MPFROMSHORT(CRA_CURSORED));
-	if (pci && (INT)pci != -1)
-	{
-	  commafmt(tb,sizeof(tb),pci->attrFile);
-	  sprintf(s,
-		  "%s %s%s",
-		  tb,
-		  GetPString(IDS_FILETEXT),
-		  &"s"[pci->attrFile == 1]);
-	}
-	WinSetDlgItemText(hwnd,DSZ_NUMFILES,s);
+      pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORD,MPVOID,
+			      MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
+      if(pci && (INT)pci != -1)
+	WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_EXPANDTREE,MPFROMP(pci),MPVOID);
+      *sz = 0;
+      pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORDEMPHASIS,
+			      MPFROMLONG(CMA_FIRST),
+			      MPFROMSHORT(CRA_CURSORED));
+      if (pci && (INT)pci != -1)
+      {
+	commafmt(szBytes,sizeof(szBytes),pci->attrFile);
+	sprintf(sz,
+		"%s %s%s",
+		szBytes,
+		GetPString(IDS_FILETEXT),
+		&"s"[pci->attrFile == 1]);
       }
+      WinSetDlgItemText(hwnd,DSZ_NUMFILES,sz);
+
       WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_SORTRECORD,MPFROMP(SortSizeCnr),
 			MPVOID);
       DosBeep(500,25);
@@ -810,25 +817,23 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	  }
 	  break;
 	case CN_EMPHASIS:
-	  pTemp = INSTDATA(hwnd);
-	  if(pTemp && !pTemp->working && mp2) {
+	  pState = INSTDATA(hwnd);
+	  if(pState && !pState->working && mp2) {
 
 	    PNOTIFYRECORDEMPHASIS pre = mp2;
-	    PCNRITEM              pci;
-	    CHAR                  tb[44],s[66];
 
 	    pci = (PCNRITEM)((pre) ? pre->pRecord : NULL);
 	    if(pci && (pre->fEmphasisMask & CRA_SELECTED) &&
 	       (pci->rc.flRecordAttr & CRA_SELECTED)) {
-	      commafmt(tb,sizeof(tb),pci->attrFile);
-	      sprintf(s,
+	      commafmt(szBytes,sizeof(szBytes),pci->attrFile);
+	      sprintf(sz,
 		      "%s %s%s",
-		      tb,
+		      szBytes,
 		      GetPString(IDS_FILETEXT),
 		      &"s"[pci->attrFile == 1]);
 	      WinSetDlgItemText(hwnd,
 				DSZ_NUMFILES,
-				s);
+				sz);
 	    }
 	  }
 	  break;
@@ -845,22 +850,23 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	  break;
 
 	case DSZ_PRINT:
-	  pTemp = INSTDATA(hwnd);
-	  if(pTemp && !pTemp->working) {
+	  // Save button
+	  pState = INSTDATA(hwnd);
+	  if (pState) {
 
 	    CHAR  pszFileName[CCHMAXPATH];
 	    FILE *fp;
 
 	    save_dir2(pszFileName);
 	    sprintf(&pszFileName[strlen(pszFileName)],"\\%csizes.Rpt",
-		    (pTemp) ? toupper(*pTemp->dirname) : '+');
-	    if(export_filename(hwnd,pszFileName,FALSE) && *pszFileName) {
-	      if(stricmp(pszFileName,"PRN") &&
+		    (pState) ? toupper(*pState->szDirName) : '+');
+	    if (export_filename(hwnd,pszFileName,FALSE) && *pszFileName) {
+	      if (stricmp(pszFileName,"PRN") &&
 		 strnicmp(pszFileName,"\\DEV\\LPT",8) &&
 		 !strchr(pszFileName,'.'))
 		strcat(pszFileName,".RPT");
 	      fp = fopen(pszFileName,"a+");
-	      if(fp) {
+	      if (fp) {
 		WinSetPointer(HWND_DESKTOP,hptrBusy);
 		PrintToFile(WinWindowFromID(hwnd,DSZ_CNR),0,NULL,fp);
 		fclose(fp);
@@ -880,50 +886,64 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 	case DSZ_EXPAND:
 	case DSZ_COLLAPSE:
-	  {
-	    PCNRITEM pci;
-
+	  pState = INSTDATA(hwnd);
+	  if (pState) {
 	    pci = (PCNRITEM)WinSendDlgItemMsg(hwnd,DSZ_CNR,
 					      CM_QUERYRECORDEMPHASIS,
 					      MPFROMLONG(CMA_FIRST),
 					      MPFROMSHORT(CRA_CURSORED));
 	    if(pci)
+	    {
+              WinEnableWindow(WinWindowFromID(hwnd,DID_OK),FALSE);
+              WinEnableWindow(WinWindowFromID(hwnd,IDM_HELP),FALSE);
+              WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),FALSE);
+              WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),FALSE);
+              WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),FALSE);
+              WinEnableWindow(WinWindowFromID(hwnd,DID_CANCEL),FALSE);
+	      // fixme to use thread - too slow on large trees
 	      ExpandAll(WinWindowFromID(hwnd,DSZ_CNR),
 			(SHORT1FROMMP(mp1) == DSZ_EXPAND),pci);
+              WinEnableWindow(WinWindowFromID(hwnd,DID_OK),TRUE);
+              WinEnableWindow(WinWindowFromID(hwnd,IDM_HELP),TRUE);
+              WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),TRUE);
+              WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),TRUE);
+              WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),TRUE);
+              WinEnableWindow(WinWindowFromID(hwnd,DID_CANCEL),TRUE);
+	    }
 	  }
 	  break;
 
 	case DID_OK:
 	case DID_CANCEL:
-	  pTemp = INSTDATA(hwnd);
-	  if(pTemp) {
-	    if(pTemp->working) {
-	      pTemp->dying = TRUE;
-	      pTemp->pchStopFlag = 0xff;
+	  pState = INSTDATA(hwnd);
+	  if (pState) {
+	    if (pState->working) {
+	      pState->dying = TRUE;
+	      pState->chStopFlag = 0xff;
 	      DosBeep(1000,100);
 	    }
 	    else
 	      WinDismissDlg(hwnd,0);
 	  }
 	  break;
-      }
+      } // switch mp1
       return 0;
 
     case WM_CLOSE:
-      pTemp = INSTDATA(hwnd);
-      if(pTemp)
-	pTemp->pchStopFlag = 0xff;
+      pState = INSTDATA(hwnd);
+      if(pState)
+	pState->chStopFlag = 0xff;
       DosSleep(1L);
       break;
 
     case WM_DESTROY:
-      pTemp = INSTDATA(hwnd);
-      if(pTemp) {
-	pTemp->pchStopFlag = 0xff;
-	if(pTemp->hptr)
-	  WinDestroyPointer(pTemp->hptr);
+      pState = INSTDATA(hwnd);
+      if (pState) {
+	pState->chStopFlag = 0xff;
+	if (pState->hptr)
+	  WinDestroyPointer(pState->hptr);
 	DosSleep(33L);
-	free(pTemp);
+	free (pState);		// Let's hope no one is still looking
       }
       DosPostEventSem(CompactSem);
       break;
