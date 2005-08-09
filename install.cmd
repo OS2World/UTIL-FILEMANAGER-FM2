@@ -1,30 +1,28 @@
 /****************************************************************************
  *                        FM/2 installation program                         *
- ****************************************************************************
  *                                                                          *
  * This program creates folders to hold program and data objects,           *
  * then creates program objects for each executable.  It only needs to be   *
  * run once (unless you move the FM/2 directory -- see say notes at end).   *
  * Run this program in the FM/2 directory (where you unpacked the archive). *
  *                                                                          *
- ****************************************************************************
  * Note that if you place the FM/2 Utilities package into a directory named *
  * UTILS off of the FM/2 directory, this install program will create some   *
  * objects for you for some of those programs.                              *
- ****************************************************************************
+ *                                                                          *
  * For unattended installation, call with /UNATTENDED as the first          *
  * argument.                                                                *
- ****************************************************************************
+ *                                                                          *
  * To avoid any WPS associations being set, use the /NOASSOC argument.      *
- ****************************************************************************
  *                                                                          *
- *                        INSTALL /? for usage help.                        *
+ * For usage help, run as INSTALL /?                                        *
  *                                                                          *
+ * $Id$                    *
  ****************************************************************************/
 
 /* Identify ourself */
 
-'@Echo off'
+'@echo off'
 'cls'
 
 say'     ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿'
@@ -520,6 +518,17 @@ do
   end
 end
 'DEL HPFSOPT.TMP 1>NUL 2>NUL'
+rc = stream('JFSOPT.CMD','c','query exists')
+if rc = '' then
+do
+  rc = stream('JFSOPT.TMP','c','query exists')
+  if rc \= '' then
+  do
+    say 'Creating a sample JFSOPT.CMD file for you.'
+    'REN JFSOPT.TMP JFSOPT.CMD 1>NUL 2>NUL'
+  end
+end
+'DEL JFSOPT.TMP 1>NUL 2>NUL'
 rc = stream('FATOPT.CMD','c','query exists')
 if rc = '' then
 do
@@ -1198,8 +1207,7 @@ say 'ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 say '³To move FM/2 to another directory, move the files, delete the FM/2 folder,³'
 say '³then rerun INSTALL.  There is no need to "uninstall" to move FM/2.  See   ³'
 say '³READ.ME for more information.                                             ³'
-say '³To remove FM/2 completely, run UNINSTAL and follow its directions.        ³'
+say '³To remove FM/2 completely, run UNINSTAL and follow the directions.        ³'
 say 'ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ'
 say "I'm done now."
 say ''
-
