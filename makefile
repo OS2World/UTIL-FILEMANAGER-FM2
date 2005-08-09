@@ -1,9 +1,10 @@
-# makefile - build fm/2
+# makefile - build all fm/2 components
 # $Id$
 
-# 21 Nov 03 SHL Comments
 # 24 May 05 SHL Add clean and cleanobj target
 # 16 Jun 05 SHL Workaround makeflags wierdness
+# 18 Jul 05 SHL Add bitmap dependencies
+# 20 Jul 05 SHL Add makeres support
 
 # Environment:
 
@@ -11,26 +12,32 @@
 
 BASE = fm3
 
-!INCLUDE makefile_pre.mk
+!include makefile_pre.mk
 
-ALL: DLL $(BASE) MAK
+all: dll $(BASE) mak
 
-DLL:
+# Only update resources
+res:
+  @echo Updating resources only
+  $(MAKE) /nologo /$(MAKEFLAGS) MAKERES=1
+
+# make DLL components
+
+dll:
   cd dll
   $(MAKE) /nologo /$(MAKEFLAGS)
   cd ..
 
-$(BASE): $(BASE).EXE \
-     $(BASE).res
+$(BASE): $(BASE).exe $(BASE).res
 
-$(BASE).res: $(BASE).rc \
-     $(BASE).h
+$(BASE).res: $(BASE).rc  $(BASE).h bitmaps\*.bmp
 
-$(BASE).obj: $(BASE).c \
-     $(BASE).h dll\version.h
+$(BASE).obj: $(BASE).c $(BASE).h dll\version.h
 
-MAK: *.mak
-  !$(MAKE) /NOLOGO /f $?
+# make EXE compenents
+
+mak: *.mak
+  !$(MAKE) /NOLOGO /$(MAKEFLAGS) /f $?
 
 cleanobj:
   cd dll
@@ -48,6 +55,6 @@ clean:
   -del *.res
   -del fm3res.str
 
-!INCLUDE makefile_post.mk
+!include makefile_post.mk
 
 # The end
