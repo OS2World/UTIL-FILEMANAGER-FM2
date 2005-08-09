@@ -7,7 +7,8 @@
 .* Copyright (c) 1993-98 M. Kimes
 .* Copyright (c) 2002 Steven H.Levine
 .*
-.* Revisions	21 Nov 03 SHL - Rework percentage description
+.* 21 Nov 03 SHL - Rework percentage description
+.* 21 Nov 03 SHL - Warn on Expand/Collapse time
 .*
 .***********************************************************************
 .*
@@ -22,7 +23,8 @@ subfolder created by INSTALL.
 The container displays a tree view of a directory and all its
 subdirectories sorted by space used.
 :hp1.Expand:ehp1. and :hp1.Collapse:ehp1. buttons allow
-you to quickly open and close branches of the tree.  After the container
+you to quickly open and close all the branches of the tree.
+After the container
 has completely filled, each record displays the object's name and four
 numbers, as in&colon.
 :lines.
@@ -41,11 +43,18 @@ for the other directories are
 the percentage of the used space the directory tree contains, in relation 
 to the entire displayed tree. A graph appears below the line displaying a 
 "picture" of this percentage.
-:p. FM/2 also color-codes the text describing the directory.  Black text
+:p.
+FM/2 also color-codes the text describing the directory.  Black text
 indicates that something is below the directory.  Blue text indicates
 that nothing is below the directory (note there may be subdirectories,
 but they are empty).  Grey text indicates that the directory is totally
 empty.
+:p.
+The :hp1.Expand:ehp1. and :hp1.Collapse:ehp1. buttons can take a noticable amount
+of time to process
+for large directory trees since each subdirectory must be processed.
+The elapsed time will be similar to the time taken to draw the initial view.
+Be patient.
 :p.
 The first (parent) item in the tree shows the percentage of the drive
 used by the entire tree.  This is noted in the parentheses containing
