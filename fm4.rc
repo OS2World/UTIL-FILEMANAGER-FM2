@@ -1,9 +1,22 @@
+/***********************************************************************
+
+  $Id$
+
+  fm3 resources
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005 Steven H. Levine
+
+  09 Aug 05 SHL Drop dup icon
+
+***********************************************************************/
+
 #include <os2.h>
+
 #include "fm3.h"
 #include "dll\fm3dll.h"
 
 DEFAULTICON                 icons\FM4.ICO
-ICON    1                   icons\FM4.ICO
 
 BITMAP  MAIN_TRASHCAN       bitmaps\TRASH.BMP
 
