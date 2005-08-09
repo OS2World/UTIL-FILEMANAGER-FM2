@@ -1,15 +1,15 @@
+# $Id$
 
 BASE=dirsize
 
-!INCLUDE makefile_pre.mk
+!include makefile_pre.mk
 
-ALL: $(BASE).EXE \
-     $(BASE).res
+all: $(BASE).exe $(BASE).res
 
-$(BASE).res: $(BASE).rc $(BASE).dlg
+$(BASE).res: dirsize.h dll\fm3dll.h $(BASE).rc $(BASE).dlg
 
 $(BASE).obj: $(BASE).c
 
-!INCLUDE makefile_post.mk
+!include makefile_post.mk
 
 # The end

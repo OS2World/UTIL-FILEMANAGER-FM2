@@ -1,17 +1,17 @@
+# $Id$
 
 BASE=fm4
 
-!INCLUDE makefile_pre.mk
+!include makefile_pre.mk
 
-ALL: $(BASE).EXE \
-     $(BASE).res
+all: $(BASE).exe $(BASE).res
 
-$(BASE).res: $(BASE).rc \
-     $(BASE).h
+$(BASE).res: $(BASE).rc
 
-$(BASE).obj: $(BASE).c \
-     $(BASE).h dll\version.h
+$(BASE).rc: $(BASE).h icons\$(BASE).ico bitmaps\*.bmp
 
-!INCLUDE makefile_post.mk
+$(BASE).obj: $(BASE).c $(BASE).h dll\version.h
+
+!include makefile_post.mk
 
 # The end

@@ -1,16 +1,18 @@
+# $Id$
 
 BASE=sysinfo
 
-!INCLUDE makefile_pre.mk
+!include makefile_pre.mk
 
-ALL: sysinfo.EXE \
-     sysinfo.res
+all: $(BASE).exe $(BASE).res
 
-sysinfo.res: sysinfo.rc
+$(BASE).res: $(BASE).rc
 
-sysinfo.obj: sysinfo.c
+$(BASE).rc: icons\$(BASE).ico
 
-!INCLUDE makefile_post.mk
+$(BASE).obj: $(BASE).c
+
+!include makefile_post.mk
 
 # The end
 

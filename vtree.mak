@@ -1,16 +1,17 @@
-# vtree.mak
+# $Id$
 
 BASE=vtree
 
-!INCLUDE makefile_pre.mk
+!include makefile_pre.mk
 
-ALL: $(BASE).EXE \
-     $(BASE).res
+all: $(BASE).exe $(BASE).res
 
 $(BASE).res: $(BASE).rc
 
+$(BASE).rc: icons\tree.ico bitmaps\*.bmp
+
 $(BASE).obj: $(BASE).c
 
-!INCLUDE makefile_post.mk
+!include makefile_post.mk
 
 # The end
