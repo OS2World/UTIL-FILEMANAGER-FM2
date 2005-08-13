@@ -13,6 +13,7 @@
   01 Aug 04 SHL LoadLibPath: avoid buffer overflow
   07 Jun 05 SHL Drop obsoletes
   24 Jul 05 SHL Beautify
+  24 Jul 05 SHL Correct longname display option
 
 ***********************************************************************/
 
@@ -366,7 +367,10 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory,
 {
     CHAR FileSystem[CCHMAXPATH];
     INT x;
-    BOOL showem, showemA, *bool;
+    BOOL hasCreateDT;
+    BOOL hasAccessDT;
+    BOOL hasLongNames;
+    BOOL *pBool;
 
     if (!directory || !*directory)
 	return;
@@ -375,41 +379,49 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory,
     {
 	if (!stricmp(FileSystem, HPFS) ||
 		!stricmp(FileSystem, JFS) ||
-		!stricmp(FileSystem, CDFS) ||
 		!stricmp(FileSystem, FAT32) ||
 		!stricmp(FileSystem, HPFS386))
 	{
-	    showem = TRUE;
-	    showemA = TRUE;
+	    hasCreateDT = TRUE;
+	    hasAccessDT = TRUE;
+	    hasLongNames = TRUE;
 	}
 	else if (!strcmp(FileSystem, CDFS))
 	{
-	    showem = TRUE;
-	    showemA = FALSE;
+	    hasCreateDT = TRUE;
+	    hasAccessDT = FALSE;
+	    hasLongNames = FALSE;
 	}
 	else
-	    showem = showemA = FALSE;
+	{
+	    // Assume FAT
+	    hasCreateDT = FALSE;
+	    hasAccessDT = FALSE;
+	    hasLongNames = FALSE;
+	}
     }
     else
     {
-	/* assume FAT */
-	showem = showemA = FALSE;
+	// Assume FAT
+	hasCreateDT = FALSE;
+	hasAccessDT = FALSE;
+	hasLongNames = FALSE;
     }
-    bool = (dcd) ? &dcd -> detailsladate : &detailsladate;
+    pBool = (dcd) ? &dcd -> detailsladate : &detailsladate;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LADATE),
-		    (*bool) ? showemA : FALSE, FALSE);
-    bool = (dcd) ? &dcd -> detailslatime : &detailslatime;
+		    (*pBool) ? hasAccessDT : FALSE, FALSE);
+    pBool = (dcd) ? &dcd -> detailslatime : &detailslatime;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LATIME),
-		    (*bool) ? showemA : FALSE, FALSE);
-    bool = (dcd) ? &dcd -> detailscrdate : &detailscrdate;
+		    (*pBool) ? hasAccessDT : FALSE, FALSE);
+    pBool = (dcd) ? &dcd -> detailscrdate : &detailscrdate;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_CRDATE),
-		    (*bool) ? showem : FALSE, FALSE);
-    bool = (dcd) ? &dcd -> detailscrtime : &detailscrtime;
+		    (*pBool) ? hasCreateDT : FALSE, FALSE);
+    pBool = (dcd) ? &dcd -> detailscrtime : &detailscrtime;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_CRTIME),
-		    (*bool) ? showem : FALSE, FALSE);
-    bool = (dcd) ? &dcd -> detailslongname : &detailslongname;
+		    (*pBool) ? hasCreateDT : FALSE, FALSE);
+    pBool = (dcd) ? &dcd -> detailslongname : &detailslongname;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LNAME),
-		    (*bool) ? !showem : FALSE, FALSE);
+		    (*pBool) ? hasLongNames : FALSE, FALSE);
     WinSendMsg(hwndCnr,
 	       CM_INVALIDATEDETAILFIELDINFO,
 	       MPVOID,
