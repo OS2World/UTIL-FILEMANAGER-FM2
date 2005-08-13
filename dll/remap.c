@@ -3,10 +3,11 @@
 
   $Id$
 
-  Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 1993, 1998 M. Kimes
+  Copyright (c) 2004, 2005 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  06 Aug 05 SHL Renames
 
 ***********************************************************************/
 
@@ -800,7 +801,7 @@ info->failedonce = TRUE;
               FillInDriveFlags(NULL);
             if(hwndMain)
               PostMsg(hwndMain,
-                      UM_BUILDDRIVES,
+                      UM_BUILDDRIVEBAR,
                       MPVOID,
                       MPVOID);
           }

@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Common window functions
+
+  Copyright (c) 1993, 1998 M. Kimes
+  Copyright (c) 2001, 2005 Steven H. Levine
+
+  13 Aug 05 SHL Renames
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
@@ -663,8 +677,8 @@ MRESULT EXPENTRY CommonMainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 			}
       return 0;
 
-    case UM_BUILDDRIVES:
-      BuildDrives(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
+    case UM_BUILDDRIVEBAR:
+      BuildDriveBarButtons(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
                   MAIN_DRIVES));
       return 0;
   }

@@ -10,6 +10,7 @@
 
   23 May 05 SHL Use datamin.h
   26 May 05 SHL Comments and localize code
+  06 Aug 05 SHL Renames
 
 ***********************************************************************/
 
@@ -1090,7 +1091,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
 	    MPVOID);
     if (!hwndTree)
       PostMsg(hwnd,
-	      UM_BUILDDRIVES,
+	      UM_BUILDDRIVEBAR,
 	      MPVOID,
 	      MPVOID);
     load_tools(NULL);
@@ -1251,7 +1252,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_THREADUSE:
   case UM_LOADFILE:
-  case UM_BUILDDRIVES:
+  case UM_BUILDDRIVEBAR:
     return CommonMainWndProc(hwnd, msg, mp1, mp2);
 
   case UM_SETUP2:

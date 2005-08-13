@@ -21,6 +21,7 @@
   25 May 05 SHL Add CommaFmtULL CommaFmtUL
   28 May 05 SHL Drop local functions
   06 Jun 05 SHL Use QWL_USER
+  11 Aug 05 SHL Renames
 
 ***********************************************************************/
 
@@ -194,7 +195,7 @@
 #define UM_TOPDIR           (WM_USER + 61)
 #define UM_SHOWME           (WM_USER + 62)
 #define UM_RESCAN2          (WM_USER + 63)
-#define UM_BUILDDRIVES      (WM_USER + 64)
+#define UM_BUILDDRIVEBAR    (WM_USER + 64)
 #define UM_THREADUSE        (WM_USER + 65)
 #define UM_DRIVECMD         (WM_USER + 66)
 #define UM_ADVISEFOCUS      (WM_USER + 67)
@@ -668,7 +669,7 @@ MRESULT EXPENTRY BubbleProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 BOOL SaveDirCnrState (HWND hwndClient,CHAR *name);
 MRESULT EXPENTRY LEDProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 MRESULT EXPENTRY StatusProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-VOID BuildDrives (HWND hwndT);
+VOID BuildDriveBarButtons (HWND hwndT);
 VOID ResizeDrives (HWND hwndT,long xwidth);
 BOOL CloseChildren (HWND hwndClient);
 VOID BuildTools (HWND hwndT,BOOL resize);

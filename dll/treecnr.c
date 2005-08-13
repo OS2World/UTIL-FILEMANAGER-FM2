@@ -14,6 +14,7 @@
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   26 May 05 SHL More large file formatting updates
   05 Jun 05 SHL Use QWL_USER
+  06 Aug 05 SHL Renames
 
 ***********************************************************************/
 
@@ -2086,7 +2087,7 @@ KbdRetry:
 			   MPFROM2SHORT(1,CMA_ERASE | CMA_REPOSITION));
 		if(hwndMain)
 		  PostMsg(hwndMain,
-			  UM_BUILDDRIVES,
+			  UM_BUILDDRIVEBAR,
 			  MPVOID,
 			  MPVOID);
 	      }
@@ -2495,7 +2496,7 @@ KbdRetry:
 	if(!mp2) {
 	  if(hwndMain)
 	    PostMsg(hwndMain,
-		    UM_BUILDDRIVES,
+		    UM_BUILDDRIVEBAR,
 		    MPVOID,
 		    MPVOID);
 	}
@@ -2930,7 +2931,7 @@ KbdRetry:
 			       MPFROM2SHORT(1,CMA_ERASE | CMA_REPOSITION));
 		    if(hwndMain)
 		      PostMsg(hwndMain,
-			      UM_BUILDDRIVES,
+			      UM_BUILDDRIVEBAR,
 			      MPVOID,
 			      MPVOID);
 		  }

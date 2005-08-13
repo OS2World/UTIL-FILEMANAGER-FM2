@@ -21,6 +21,7 @@
   05 Jun 05 SHL Comments
   09 Jun 05 SHL Rework WinLoadFileIcon enables
   09 Jun 05 SHL Rework IDFile
+  13 Aug 05 SHL Renames
 
 ***********************************************************************/
 
@@ -1263,7 +1264,7 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 	driveflags[x] |= DRIVE_INVALID;
     }
     PostMsg(hwndMain,
-	    UM_BUILDDRIVES,
+	    UM_BUILDDRIVEBAR,
 	    MPVOID,
 	    MPVOID);
     drivesbuilt = TRUE;
@@ -1512,7 +1513,7 @@ SkipBadRec:
   }
   if (!drivesbuilt && hwndMain)
     PostMsg(hwndMain,
-	    UM_BUILDDRIVES,
+	    UM_BUILDDRIVEBAR,
 	    MPVOID,
 	    MPVOID);
   DosSleep(33L);
