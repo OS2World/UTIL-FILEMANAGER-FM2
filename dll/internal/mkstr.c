@@ -1,11 +1,27 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Misc support functions
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005 Steven H. Levine
+
+  24 Jul 05 SHL Comments
+
+***********************************************************************/
+
+
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "..\version.h"
 #include "..\fm3str.h"
 
