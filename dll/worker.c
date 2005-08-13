@@ -8,10 +8,11 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2005 Steven H. Levine
 
-  16 Oct 02 SHL - Comments
-  18 Oct 02 SHL - MassAction:Archive - force extension so file found
-  06 Jun 05 SHL - Indent -i2
-  06 Jun 05 SHL - Rework Action for VAC3.65 compat
+  16 Oct 02 SHL Comments
+  18 Oct 02 SHL MassAction:Archive - force extension so file found
+  06 Jun 05 SHL Indent -i2
+  06 Jun 05 SHL Rework Action for VAC3.65 compat
+  27 Jul 05 SHL	IDM_DOITYOURSELF - avoid need to strip in ExecOnList
 
 ***********************************************************************/
 
@@ -1213,7 +1214,7 @@ VOID MassAction(VOID * args)
 
 	  case IDM_DOITYOURSELF:
 	    ExecOnList(wk -> hwndFrame,
-		       " %a",
+		       "%a",
 		       WINDOWED | SEPARATE | PROMPT,
 		       NULL,
 		       wk -> li -> list,
