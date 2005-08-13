@@ -18,6 +18,7 @@
   05 Jun 05 SHL Correct last sort logic
   05 Jun 05 SHL Use QWL_USER
   22 Jun 05 SHL ArcSort: correct typo in last sort fix
+  13 Aug 05 SHL FillArcCnr: optimize
 
 ***********************************************************************/
 
@@ -289,20 +290,22 @@ static INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
 {
 
   FILE         *fp;
-  HFILE         oldstdout,newstdout;
+  HFILE         oldstdout;
+  HFILE		newstdout;
   CHAR          s[CCHMAXPATH * 2],lonename[CCHMAXPATH + 2],
                *nsize,*osize,*fdate,*fname,*p,*pp,arctemp[33];
   BOOL          gotstart = FALSE,gotend = FALSE,wasquote,nomove = FALSE;
   INT           highest = 0,x,counter = 0,numarcfiles = 0;
-  PARCITEM      lastpai = NULL;
-  ARC_TYPE     *info,*tinfo = NULL;
+  PARCITEM      lastpai;
+  ARC_TYPE     *info;
+  ARC_TYPE     *tinfo;
   ULONG         apptype;
 
   if(!arcname || !arcinfo)
     return 0;
   info = *arcinfo;
   if(!info)
-    info = find_type(arcname,arcsighead);
+    info = find_type(arcname,NULL);
     for(x = 0;x < 99;x++) {
       sprintf(arctemp,"%s.%03x",ArcTempRoot,(clock() & 4095L));
       if(IsFile(arctemp) == 1)
@@ -322,7 +325,8 @@ ReTry:
   gotstart = gotend = FALSE;
   lastpai = NULL;
   *pullTotalBytes = 0;
-  if(info && info->list) {
+  if(info && info->list)
+  {
     WinSendMsg(hwndCnr,
                CM_REMOVERECORD,
                MPVOID,
@@ -593,8 +597,8 @@ ReTry:
         }
       }
       fclose(fp);
-      if(!numarcfiles || !gotstart || (!gotend && info->endlist)) {
-
+      if (!numarcfiles || !gotstart || (!gotend && info->endlist))
+      {
         ARCDUMP ad;
 
         tinfo = info;
@@ -631,18 +635,17 @@ ReTry:
                     MPFROMP(&ad));
         }
       }
-      else {
-        if(!nomove && tinfo) {  /* if we got a false hit, move working hit to top */
-          tinfo = info->next;
-          info->next = arcsighead;
-          arcsighead->prev = info;
-          if(tinfo)
-            tinfo->next->prev = info->prev;
-          info->prev->next = tinfo;
-          info->prev = NULL;
-          arcsighead = info;
-          rewrite_archiverbb2(NULL);
-        }
+      else if (!nomove && tinfo) {
+	/* if we got a false hit, move working hit to top */
+        tinfo = info->next;
+        info->next = arcsighead;
+        arcsighead->prev = info;
+        if(tinfo)
+          tinfo->next->prev = info->prev;
+        info->prev->next = tinfo;
+        info->prev = NULL;
+        arcsighead = info;
+        rewrite_archiverbb2(NULL);
       }
     }
     DosError(FERR_DISABLEHARDERR);
