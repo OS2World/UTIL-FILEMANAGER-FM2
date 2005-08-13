@@ -10,6 +10,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   13 Aug 05 SHL Beautify with indent
+  13 Aug 05 SHL find_type: correct no sig exists bypass logic
 
 ***********************************************************************/
 
@@ -60,13 +61,16 @@ ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig)
 ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 {
     HFILE handle;
-    ULONG action, len, l;
+    ULONG action;
+    ULONG len;
+    ULONG l;
     ARC_TYPE *info;
-    CHAR *p, buffer[80];	/* Read buffer for the signatures. */
+    CHAR *p;
+    CHAR buffer[80];
 
     if (!loadedarcs)
 	load_archivers();
-    if (topsig == NULL)
+    if (!topsig)
 	topsig = arcsighead;
     DosError(FERR_DISABLEHARDERR);
     if (DosOpen(filespec,
@@ -83,12 +87,12 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 		OPEN_ACCESS_READONLY,
 		0L))
 	return NULL;
-    info = topsig;			/* start of signatures */
-    while (info)
+    // Scan signatures
+    for (info = topsig; info; info = info -> next)
     {
-	if (!info -> signature ||
-		!*info -> signature)
-	{				/* no signature -- work on extension only */
+	if (!info -> signature || !*info -> signature)
+	{
+	    // No signature -- check extension
 	    p = strrchr(filespec, '.');
 	    if (p)
 	    {
@@ -96,10 +100,12 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 		if (info -> ext &&
 			*(info -> ext) &&
 			!stricmp(p, info -> ext))
-		    break;
+		    break;		// Matched
 	    }
+	    continue;			// Next sig
 	}
-	l = strlen(info -> signature);	/* Get the signature length. */
+	// Try signature match
+	l = strlen(info -> signature);
 	l = min(l, 79);
 	if (!DosChgFilePtr(handle,
 			   abs(info -> file_offset),
@@ -117,11 +123,10 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 		if (!memcmp(info -> signature,
 			    buffer,
 			    l))
-		    break;
+		    break;		// Matched
 	    }
 	}
-	info = info -> next;
-    }
+    } // for
     DosClose(handle);			/* Either way, we're done for now */
     return info;			/* return signature, if any */
 }
