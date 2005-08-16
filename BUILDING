@@ -1,5 +1,5 @@
 
-Building FM/2                               			02 Apr 2003
+Building FM/2                               			14 Aug 2005
 =============
 
 This document explains how to build FM/2 from source.
@@ -8,12 +8,30 @@ This document explains how to build FM/2 from source.
 Tools
 =====
 
-The following tools have been used to build binary distributions:
+The following tools are currently used to build binary distributions:
 
-  IBM VisualAge C++ V3 with FP8
+  IBM VisualAge C++ V3.65 with FP2
   IBM Developers Toolkit v4.5
+  lxlite LX compressor
 
 Older versions of the Toolkit may work.  There are no known special setup requirements.
+
+Not all versions of RC.EXE are created equal.  Currently, the best version to
+use is:
+
+ 12-18-97   6:01         868,000           0  RC.EXE
+
+which reports itself as:
+
+ IBM RC (Resource Compiler) Version 5.00.002 Dec 18 1997
+
+and it is available at:
+
+  <ftp://ftp.software.ibm.com/ps/products/warpzilla/os2tk40rc.zip>
+
+You can get LXLITE.EXE at:
+
+ <http://hobbes.nmsu.edu/cgi-bin/h-search?key=lxlite&pushbutton=Search>
 
 
 Building
@@ -24,7 +42,7 @@ the directory tree.
 
 Build the release version with:
 
-  NMAKE
+  nmake
 
 Build the debug version with:
 
@@ -32,27 +50,31 @@ Build the debug version with:
 
 The build outputs are:
 
-  AV2.EXE
-  DATABAR.EXE
-  DIRSIZE.EXE
-  EAS.EXE
-  FM3.EXE
-  FM4.EXE
-  GLOBAL.EXE
-  INI.EXE
-  KILLPROC.EXE
-  SYSINFO.EXE
-  UNDEL.EXE
-  VCOLLECT.EXE
-  VDIR.EXE
-  VIEWINFS.EXE
-  VTREE.EXE
+  av2.exe
+  databar.exe
+  dirsize.exe
+  eas.exe
+  fm3.exe
+  fm4.exe
+  global.exe
+  ini.exe
+  killproc.exe
+  sysinfo.exe
+  undel.exe
+  vcollect.exe
+  vdir.exe
+  viewinfs.exe
+  vtree.exe
 
-  FM3DLL.DLL
-  FM3RES.DLL
+  dll\fm3dll.dll
+  dll\fm3res.dll
 
-  FM3.HLP
 
+  dll\fm3res.str
+
+  dll\ipf\fm3.hlp
+
+  internal\mkstr.exe
 
 About FM/2
 ==========
@@ -75,8 +97,9 @@ Please address support questions and enhancement requests to:
   Steven H. Levine
   steve53@earthlink.net
 
-I monitor the comp.os.os2.programmer.misc newsgroup and others in the
-comp.os.os2.* hierarchy.
+In addition to the fm2user Yahoo group, I monitor the 
+comp.os.os2.programmer.misc newsgroup and others in the comp.os.os2.* 
+hierarchy.
 
 
 Thanks and enjoy.
