@@ -9,8 +9,23 @@
    General Public License.  The GPL Software License can be found in
    gnugpl2.txt or at http://www.gnu.org/licenses/licenses.html#GPL
 
+   This program creates folders to hold program and data objects,
+   then creates program objects for each executable.  It only needs to be
+   run once (unless you move the FM/2 directory -- see say notes at end).
+   Run this program in the FM/2 directory (where you unpacked the archive).
+
+   If you place the FM/2 Utilities package into a directory named UTILS off    
+   of the FM/2 directory, this install program will create some objects for    
+   you for some of those programs.
+
+   For unattended installation, call with /UNATTENDED argument.
+
+   To avoid any WPS associations being set, use the /NOASSOC argument.
+
+   For usage help, run as INSTALL /?
+
    08 Aug 05 SHL Add JFSOPT support
-   16 Aug 05 SHL Ensure folder icon gets updated
+   16 Aug 05 SHL Ensure folder icon gets updated if folder exists
 
 */
 
