@@ -3,31 +3,33 @@
 
   $Id$
 
-  archiver.bb2 loader and utilities
+  archiver.bb2 search, load, save and date parse
 
-  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 1993, 1998 M. Kimes
   Copyright (c) 2004, 2005 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   13 Aug 05 SHL Beautify with indent
   13 Aug 05 SHL find_type: correct no sig exists bypass logic
+  13 Aug 05 SHL SBoxDlgProc: avoid dereferencing NULL signature
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <share.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-BOOL loadedarcs = FALSE;
+BOOL loadedarcs;
 
 #pragma alloc_text(MISC9,quick_find_type,find_type)
 
@@ -486,8 +488,9 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    test = arcsighead;
 		    while (test && test != temp)
 		    {
-			if (!strcmp(test -> signature, temp -> signature))
-			    goto ContinueHere;
+			if (test -> signature && temp -> signature &&
+			    !strcmp(test -> signature, temp -> signature))
+			    goto ContinueHere;		// Got match
 			test = test -> next;
 		    }
 		}
