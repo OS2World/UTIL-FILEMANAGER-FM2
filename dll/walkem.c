@@ -9,6 +9,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
   13 Aug 05 SHL Run through indent
+  13 Aug 05 SHL remove_udir - avoid corrupting last dirs list
 
 ***********************************************************************/
 
@@ -44,15 +45,13 @@ typedef struct
     BOOL nounwriteable;
     CHAR szCurrentPath[CCHMAXPATH];
     CHAR *szReturnPath;
-}
-WALKER;
+} WALKER;
 
 static CHAR WalkFont[CCHMAXPATH] = "";
 static ULONG WalkFontSize = sizeof(WalkFont);
 
 VOID load_setups(VOID)
 {
-
     ULONG len = sizeof(lastsetups);
 
     memset(lastsetups, 0, len);
@@ -73,7 +72,6 @@ VOID load_setups(VOID)
 
 VOID save_setups(VOID)
 {
-
     if (!loadedsetups)
 	return;
     PrfWriteProfileData(fmprof,
@@ -90,7 +88,6 @@ VOID save_setups(VOID)
 
 BOOL add_setup(CHAR * name)
 {
-
     INT x;
 
     if (!name || !*name)
@@ -111,7 +108,6 @@ BOOL add_setup(CHAR * name)
 
 BOOL remove_setup(CHAR * name)
 {
-
     INT x, y;
 
     if (!name || !*name)
@@ -136,11 +132,11 @@ BOOL remove_setup(CHAR * name)
 
 VOID load_udirs(VOID)
 {
-
     /* load linked list of user directories from USERDIRS.DAT file */
 
     FILE *fp;
-    LINKDIRS *info, *last = NULL;
+    LINKDIRS *info;
+    LINKDIRS *last = NULL;
     CHAR s[CCHMAXPATH + 24];
 
     loadedudirs = TRUE;
@@ -184,7 +180,6 @@ VOID load_udirs(VOID)
 
 VOID save_udirs(VOID)
 {
-
     FILE *fp;
     LINKDIRS *info;
     CHAR s[CCHMAXPATH + 14];
@@ -217,11 +212,14 @@ VOID save_udirs(VOID)
     }
 }
 
+//=== add_udir - add path to user dir list or last used dir list ===
+
 BOOL add_udir(BOOL userdirs, CHAR * inpath)
 {
-
     CHAR path[CCHMAXPATH];
-    LINKDIRS *info, *last = NULL, *temp = NULL;
+    LINKDIRS *info;
+    LINKDIRS *last = NULL;
+    LINKDIRS *temp;
 
     if (inpath &&
 	    *inpath)
@@ -238,14 +236,16 @@ BOOL add_udir(BOOL userdirs, CHAR * inpath)
 	{
 	    if (!loadedudirs)
 		load_udirs();
-	    info = (userdirs) ? udirhead : ldirhead;
+	    // Search user dir list first unless doing last dirs
+	    info = userdirs ? udirhead : ldirhead;
 	    while (info)
 	    {
 		if (!stricmp(info -> path, path))
-		    return FALSE;
-		last = info;
+		    return FALSE;		// Already in list
+		last = info;			// Remember append to location
 		info = info -> next;
 	    }
+	    // Search last dir list unless doing just last dirs
 	    if (!userdirs)
 	    {
 		info = udirhead;
@@ -257,8 +257,10 @@ BOOL add_udir(BOOL userdirs, CHAR * inpath)
 		}
 	    }
 	    else
-	    {				/* if adding manual directory, remove from auto list if present */
+	    {
+	        /* if adding manual directory, remove from auto list if present */
 		info = ldirhead;
+                temp = NULL;
 		while (info)
 		{
 		    if (!stricmp(info -> path, path))
@@ -275,6 +277,7 @@ BOOL add_udir(BOOL userdirs, CHAR * inpath)
 		    info = info -> next;
 		}
 	    }
+	    // Append entry to end of user dirs list
 	    info = malloc(sizeof(LINKDIRS));
 	    if (info)
 	    {
@@ -307,10 +310,12 @@ BOOL add_udir(BOOL userdirs, CHAR * inpath)
     return FALSE;
 }
 
+//=== remove_udir - remove path from user dir list or last directory list ===
+
 BOOL remove_udir(CHAR * path)
 {
-
-    LINKDIRS *info, *last = NULL;
+    LINKDIRS *info;
+    LINKDIRS *last = NULL;
 
     if (path && *path)
     {
@@ -333,7 +338,9 @@ BOOL remove_udir(CHAR * path)
 	    last = info;
 	    info = info -> next;
 	}
+
 	info = ldirhead;
+	last = NULL;
 	while (info)
 	{
 	    if (!stricmp(info -> path, path))
@@ -355,8 +362,8 @@ BOOL remove_udir(CHAR * path)
 
 BOOL remove_ldir(CHAR * path)
 {
-
-    LINKDIRS *info, *last = NULL;
+    LINKDIRS *info;
+    LINKDIRS *last = NULL;
 
     if (path && *path)
     {
@@ -383,7 +390,6 @@ BOOL remove_ldir(CHAR * path)
 VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
 		     BOOL nounwriteable)
 {
-
     /*
      * this function fills one or two list boxes with drive and directory
      * information showing all available drives and all directories off of
@@ -471,7 +477,6 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
 
 MRESULT EXPENTRY TextSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
     PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
 
     switch (msg)
@@ -491,7 +496,6 @@ MRESULT EXPENTRY TextSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
     WALKER *wa;
     CHAR szBuff[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1], *p;
     SHORT sSelect;
@@ -1150,7 +1154,6 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY WalkAllDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
     switch (msg)
     {
     case WM_INITDLG:
@@ -1164,7 +1167,6 @@ MRESULT EXPENTRY WalkAllDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY WalkCopyDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
     switch (msg)
     {
     case WM_INITDLG:
@@ -1180,7 +1182,6 @@ MRESULT EXPENTRY WalkCopyDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY WalkMoveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
     switch (msg)
     {
     case WM_INITDLG:
@@ -1197,7 +1198,6 @@ MRESULT EXPENTRY WalkMoveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY WalkExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				    MPARAM mp2)
 {
-
     switch (msg)
     {
     case WM_INITDLG:
@@ -1214,7 +1214,6 @@ MRESULT EXPENTRY WalkExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY WalkTargetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
 {
-
     switch (msg)
     {
     case WM_INITDLG:
@@ -1244,7 +1243,6 @@ MRESULT EXPENTRY WalkTargetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
     WALK2 *wa;
     CHAR szBuff[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1], *p;
     SHORT sSelect;
@@ -1630,7 +1628,6 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY WalkTwoCmpDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
 {
-
     switch (msg)
     {
     case WM_INITDLG:
@@ -1647,7 +1644,6 @@ MRESULT EXPENTRY WalkTwoCmpDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
 {
-
     switch (msg)
     {
     case WM_INITDLG:
