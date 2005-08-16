@@ -14,6 +14,7 @@
   24 May 05 SHL Rename saymsg to more accurate Misc_Error
   24 May 05 SHL Rework Win_Error args and clean up logic
   27 May 05 SHL Rework to use common showMsg
+  14 Aug 05 SHL showMsg: suppress write to stdout if not error message
 
 ***********************************************************************/
 
@@ -189,9 +190,14 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszFmt,...)
 
 static APIRET showMsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszMsg)
 {
-  fputs(pszMsg, stderr);
-  fputc('\n', stderr);
-  fflush(stderr);
+
+
+  if ((mb_type & (MB_YESNO | MB_YESNOCANCEL)) == 0)
+  {
+    fputs(pszMsg, stderr);
+    fputc('\n', stderr);
+    fflush(stderr);
+  }
 
   if (!hwnd)
     hwnd = HWND_DESKTOP;
