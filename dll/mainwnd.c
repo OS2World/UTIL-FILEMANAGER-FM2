@@ -17,6 +17,7 @@
   26 May 05 SHL Comments and localize code
   05 Jun 05 SHL Use QWL_USER
   06 Jun 05 SHL Rework MainWMCommand for VAC3.65 compat
+  13 Aug 05 SHL Renames and comments
 
 ***********************************************************************/
 
@@ -54,7 +55,7 @@
 #pragma alloc_text(MAINWND3,RestoreDirCnrState,SaveDirCnrState)
 #pragma alloc_text(MAINWND3,CloseDirCnrChildren,TransformSwp)
 #pragma alloc_text(MAINWND3,ResizeTools,BuildTools,CommandLineProc)
-#pragma alloc_text(MAINWND4,DriveProc,DriveBackProc,BuildDrives,ResizeDrives)
+#pragma alloc_text(MAINWND4,DriveProc,DriveBackProc,BuildDriveBarButtons,ResizeDrives)
 #pragma alloc_text(MAINWND4,LEDProc,IdealButtonProc)
 #pragma alloc_text(MAINWND5,MainWMOnce)
 #pragma alloc_text(MAINWND6,MainWMCommand)
@@ -2343,7 +2344,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return PFNWPButton(hwnd, msg, mp1, mp2);
 }
 
-VOID BuildDrives(HWND hwndT)
+VOID BuildDriveBarButtons(HWND hwndT)
 {
   register ULONG x, y = 0;
   ULONG ulDriveNum, ulDriveMap, iconid;
@@ -5602,7 +5603,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    MPFROMLONG(FCF_SIZEBORDER),
 	    MPVOID);
     PostMsg(hwnd,
-	    UM_BUILDDRIVES,
+	    UM_BUILDDRIVEBAR,
 	    MPVOID,
 	    MPVOID);
     break;
@@ -6452,7 +6453,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_LOADFILE:
   case UM_THREADUSE:
-  case UM_BUILDDRIVES:
+  case UM_BUILDDRIVEBAR:
     return CommonMainWndProc(hwnd, msg, mp1, mp2);
 
   case WM_BUTTON1UP:
@@ -6714,13 +6715,14 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendMsg(hwndUserlist, LM_DELETEALL, MPVOID, MPVOID);
     if (fUserComboBox)
     {
-
-      ULONG ulDriveNum, ulDriveMap;
+      ULONG ulDriveNum;
+      ULONG ulDriveMap;
       ULONG ulSearchCount;
       FILEFINDBUF3 findbuf;
       HDIR hDir;
       APIRET rc;
-      LINKDIRS *info, *temp;
+      LINKDIRS *info;
+      LINKDIRS *temp;
 
       if (!loadedudirs)
 	load_udirs();
