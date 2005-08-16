@@ -14,19 +14,22 @@
   01 Aug 04 SHL Localize functions
   01 Aug 04 SHL Rework fixup usage
   06 Jun 05 SHL Drop unused
+  14 Aug 05 SHL rewrite_archiverbb2: avoid dereferencing null signature
+  14 Aug 05 SHL ArcReviewDlgProc: ensure signature allocated
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "version.h"
@@ -221,7 +224,7 @@ VOID rewrite_archiverbb2 (PSZ archiverbb2)
   FILE        *fp;
   INT         counter = 0;
   ARC_TYPE    *info;
-  static CHAR s[258];
+  CHAR        s[258];
   CHAR        *p;
 
   if(!arcsighead) {
@@ -288,7 +291,7 @@ VOID rewrite_archiverbb2 (PSZ archiverbb2)
               fixup(info->signature,
                     s,
                     sizeof(s),
-                    strlen(info->signature)),
+                    info->signature ? strlen(info->signature) : 0),
               nonull(info->startlist),
               nonull(info->endlist),
               info->osizepos,
@@ -409,7 +412,7 @@ static INT check_archiver(HWND hwnd,ARC_TYPE *info)
 }
 
 
-MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   ARCDUMP       *admp;
   CHAR    	s[256];
@@ -872,9 +875,10 @@ MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           admp->info->extract = xstrdup_from_window(hwnd,AD_EXTRACT,admp->info->extract);
           admp->info->exwdirs = xstrdup_from_window(hwnd,AD_WDIRS,admp->info->exwdirs);
           admp->info->ext = xstrdup_from_window(hwnd,AD_EXT,admp->info->ext);
-          literal(xstrdup_from_window(hwnd,
-                                       AD_SIG,
-                                       admp->info->signature));
+	  admp->info->signature = xstrdup_from_window(hwnd,
+                                                      AD_SIG,
+                                                      admp->info->signature);
+          literal(admp->info->signature);
           admp->info->list = xstrdup_from_window(hwnd,
                                                   AD_LIST,
                                                   admp->info->list);
