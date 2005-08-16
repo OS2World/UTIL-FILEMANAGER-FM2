@@ -1,24 +1,18 @@
-/****************************************************************************
- *                        FM/2 installation program                         *
- *                                                                          *
- * This program creates folders to hold program and data objects,           *
- * then creates program objects for each executable.  It only needs to be   *
- * run once (unless you move the FM/2 directory -- see say notes at end).   *
- * Run this program in the FM/2 directory (where you unpacked the archive). *
- *                                                                          *
- * Note that if you place the FM/2 Utilities package into a directory named *
- * UTILS off of the FM/2 directory, this install program will create some   *
- * objects for you for some of those programs.                              *
- *                                                                          *
- * For unattended installation, call with /UNATTENDED as the first          *
- * argument.                                                                *
- *                                                                          *
- * To avoid any WPS associations being set, use the /NOASSOC argument.      *
- *                                                                          *
- * For usage help, run as INSTALL /?                                        *
- *                                                                          *
- * $Id$                    *
- ****************************************************************************/
+/* install - FM/2 installation program
+   $Id$
+
+   Copyright (c) 1993, 1998 M. Kimes
+   Copyright (c) 2002, 2005 Steven Levine and Associates, Inc.
+   All rights reserved.
+
+   This program is free software licensed under the terms of the GNU
+   General Public License.  The GPL Software License can be found in
+   gnugpl2.txt or at http://www.gnu.org/licenses/licenses.html#GPL
+
+   08 Aug 05 SHL Add JFSOPT support
+   16 Aug 05 SHL Ensure folder icon gets updated
+
+*/
 
 /* Identify ourself */
 
@@ -29,36 +23,36 @@ say'     ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿'
 say'     ³                    FM/2 Installation Program                      ³'
 say'     ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ'
 
-assocfilter = ';ASSOCFILTER=*.ZIP,*.ARC,*.LZH,*.ARJ,*.ZOO,*.MO0,READ.ME,README,README.1ST,README.OS2,REGISTER.TXT'
-
 /* check arguments and adjust as required */
 
-parse upper arg dummy1 dummy2
-if dummy1 = '/NOASSOC' then assocfilter = ''
-if dummy2 = '/NOASSOC' then assocfilter = ''
-if assocfilter = '' then say '     /NOASSOC = TRUE'
+assocfilter = ';ASSOCFILTER=*.ZIP,*.ARC,*.LZH,*.ARJ,*.ZOO,*.MO0,READ.ME,README,README.1ST,README.OS2,REGISTER.TXT'
+attended = 1
 
-if dummy1 = '/UNATTENDED' then unattended = ''
-if dummy2 = '/UNATTENDED' then unattended = ''
-if unattended = '' then say '     /UNATTENDED = TRUE'
-
-/* if user asked for usage help, give it */
-
-if dummy1 = '/?' | dummy2 = '/?' then
-do
-  say ''
-  say 'Usage:  INSTALL [/NOASSOC] [/UNATTENDED]'
-  say ''
-  say ' /NOASSOC             don''t set any WPS associations for FM/2 programs.'
-  say ' /UNATTENDED          don''t ask any questions; run without stopping.'
-  say ''
-  say 'Examples:'
-  say ' INSTALL'
-  say ' INSTALL /NOASSOC'
-  say ' INSTALL /UNATTENDED'
-  say ' INSTALL /NOASSOC /UNATTENDED'
-  exit
+parse upper arg tail
+do while tail \= ''
+  parse var tail curarg tail
+  curarg = strip(curarg)
+  /* if user asked for usage help, give it */
+  if curarg = '/?' then do
+    say ''
+    say 'Usage:  INSTALL [/NOASSOC] [/UNATTENDED]'
+    say ''
+    say ' /NOASSOC             don''t set any WPS associations for FM/2 programs.'
+    say ' /UNATTENDED          don''t ask any questions; run without stopping.'
+    say ''
+    say 'Examples:'
+    say ' INSTALL'
+    say ' INSTALL /NOASSOC'
+    say ' INSTALL /UNATTENDED'
+    say ' INSTALL /NOASSOC /UNATTENDED'
+    exit
+  end
+  if curarg = '/NOASSOC' then assocfilter = ''
+  if curarg = '/UNATTENDED' then attended = 0
 end
+
+if assocfilter = '' then say '     /NOASSOC = TRUE'
+if attended = 0 then say '     /UNATTENDED = TRUE'
 
 /* see if we might be in the right directory... */
 
@@ -83,12 +77,11 @@ call SysLoadFuncs
 
 /* give user a chance to hit CTRL-C */
 
-if unattended = 'UNATTENDED' then
-do
+if attended then do
   call charout ,'  Press [Enter] to continue...'
-  dummy = ''
-  do until dummy = '0d'x
-    dummy = SysGetKey('NOECHO')
+  ans = ''
+  do until ans = '0d'x
+    ans = SysGetKey('NOECHO')
   end
   call charout ,'0d1b'x'[K'
 end
@@ -101,7 +94,7 @@ curdir = directory()
 
 say "Creating File Manager/2 folders and objects..."
 
-/* first, create FM/2 folder */
+/* first, try to create FM/2 folder, fail if exists */
 
 title = "File Manager/2"
 classname = 'WPFolder'
@@ -112,45 +105,46 @@ if rc \= '' then setup = setup'ICONFILE='rc';'
 rc = stream('fm2fldr2.ico','c','query exists')
 if rc \= '' then setup = setup'ICONNFILE=1,'rc';'
 setup = setup'OBJECTID=<FM3_Folder>'
-result = SysCreateObject(classname,title,location,setup,f)
+
+created = SysCreateObject(classname,title,location,setup,'f')
+
+if attended then do
+  if \ created then do
+    say
+    say 'The File Manager/2 folder already exists.'
+    call charout ,"Should I update the objects (it's painless)? (Y/N) "
+    ans = ''
+    do forever
+      ans = SysGetKey('NOECHO')
+      parse upper var ans ans
+      if ans = '1b'x then ans = 'N'
+      if ans = '0d'x then ans = 'Y'
+      if ans = 'N' then leave
+      if ans = 'Y' then leave
+      call beep 262,10
+    end
+    call charout ,ans
+    say
+    if ans = 'N' then exit
+  end
+end
+else do
+  /* Unattended */
+  if \ created then
+    say 'Updating objects.'
+end
+
+if \ created then do
+  /* Ensure icons get updated */
+  call SysCreateObject classname,title,location,setup,'u'
+  /* Suppress assoc filter updates */
+  assocfilter = ''
+end
+
 'DEL FM2FLDR.ICO 1>NUL 2>NUL'
 'DEL FM2FLDR2.ICO 1>NUL 2>NUL'
 
-if unattended = 'UNATTENDED' then
-do
-  if result = 0 then
-  do
-    assocfilter = ''
-    existed = ''
-    say ''
-    say 'The File Manager/2 folder already exists.'
-    call charout ,"Should I update the objects (it's painless)? (Y/N) "
-    dummy = ''
-    do forever
-      dummy = SysGetKey('NOECHO')
-      parse upper var dummy dummy
-      if dummy = '1b'x then dummy = 'N'
-      if dummy = '0d'x then dummy = 'Y'
-      if dummy = 'N' then leave
-      if dummy = 'Y' then leave
-      call beep 262,10
-    end
-    call charout ,dummy
-    say ''
-    if dummy = 'N' then exit
-  end
-end
-else
-do
-  if result = 0 then
-  do
-    assocfilter = ''
-    existed = ''
-    say 'Updating objects.'
-  end
-end
-
-/* create objects in appropriate folders */
+/* create objects in appropriate folders, retain settings if folder not created */
 
 rc = stream('fm3.exe','c','query exists')
 if rc \= '' then
@@ -159,9 +153,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Folder>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('fm4.exe','c','query exists')
@@ -171,9 +165,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Folder>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2 LITE>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 /* create toolbox folder in FM/2 folder */
@@ -186,7 +180,7 @@ if rc \= '' then setup = 'ICONFILE='rc';'
 rc = stream('toolbox2.ico','c','query exists')
 if rc \= '' then setup = setup'ICONNFILE=1,'rc';'
 setup = setup'OBJECTID=<FM3_Tools>'
-result = SysCreateObject(classname,title,location,setup,u)
+result = SysCreateObject(classname,title,location,setup,'u')
 'DEL TOOLBOX.ICO 1>NUL 2>NUL'
 'DEL TOOLBOX2.ICO 1>NUL 2>NUL'
 
@@ -200,7 +194,7 @@ if rc \= '' then setup = 'ICONFILE='rc';'
 rc = stream('docs2.ico','c','query exists')
 if rc \= '' then setup = setup'ICONNFILE=1,'rc';'
 setup = setup'OBJECTID=<FM3_Docs>'
-result = SysCreateObject(classname,title,location,setup,u)
+result = SysCreateObject(classname,title,location,setup,'u')
 'DEL DOCS.ICO 1>NUL 2>NUL'
 'DEL DOCS2.ICO 1>NUL 2>NUL'
 
@@ -211,9 +205,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir''assocfilter
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2_AV/2>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('eas.exe','c','query exists')
@@ -223,9 +217,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2_EAVIEW>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('image.exe','c','query exists')
@@ -236,9 +230,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2_IMAGEVIEW>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('dirsize.exe','c','query exists')
@@ -248,9 +242,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2_DIRSIZE>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('ini.exe','c','query exists')
@@ -261,9 +255,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir''assocfilter
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2_INIVIEW>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('viewinfs.exe','c','query exists')
@@ -273,12 +267,12 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_BOOKSHELF>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
   title = "Helpfile Viewer"
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';PARAMETERS=DUMMY;STARTUPDIR='curdir
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('killproc.exe','c','query exists')
@@ -288,7 +282,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';PARAMETERS=%;STARTUPDIR='curdir';OBJECTID=<FM/2_KILLPROC>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('undel.exe','c','query exists')
@@ -298,8 +292,8 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_UNDEL>'
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
-  call SysCreateObject classname,title,location,setup,u
+  if created then setup = setup';PARAMETERS=%*'
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('vtree.exe','c','query exists')
@@ -309,7 +303,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_VTREE>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('vdir.exe','c','query exists')
@@ -319,8 +313,8 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_VDIR>'
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
-  call SysCreateObject classname,title,location,setup,u
+  if created then setup = setup';PARAMETERS=%*'
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('vcollect.exe','c','query exists')
@@ -330,12 +324,12 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_VCOLLECT>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
   title = "Seek and scan"
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';PARAMETERS=**;STARTUPDIR='curdir';OBJECTID=<FM/2_VSEEK>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('global.exe','c','query exists')
@@ -345,7 +339,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_SEEALL>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('databar.exe','c','query exists')
@@ -355,7 +349,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_DATABAR>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('sysinfo.exe','c','query exists')
@@ -366,7 +360,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir';OBJECTID=<FM/2_SYSINFO>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 */
 do
@@ -382,7 +376,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';OBJECTID=<FM/2_FM2PLAY>;PARAMETERS=/! %*'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('makearc.exe','c','query exists')
@@ -393,9 +387,9 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';STARTUPDIR='curdir
-  if existed = 'EXISTED' then setup = setup';PARAMETERS=%*'
+  if created then setup = setup';PARAMETERS=%*'
   setup = setup';OBJECTID=<FM/2_MAKEARC>'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('READ.ME','c','query exists')
@@ -405,7 +399,7 @@ do
   classname = 'WPShadow'
   location = '<FM3_Docs>'
   setup = 'SHADOWID='rc
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('FM3.HLP','c','query exists')
@@ -415,7 +409,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Docs>'
   setup = 'EXENAME='VIEW.EXE';STARTUPDIR='curdir';PARAMETERS='curdir'\FM3.HLP'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('UTILS\MAKEOBJ.CMD','c','query exists')
@@ -425,7 +419,7 @@ do
   classname = 'WPProgram'
   location = '<FM3_Tools>'
   setup = 'EXENAME='rc';PARAMETERS=%*'
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 rc = stream('UTILS\FM2UTILS.DOC','c','query exists')
@@ -435,7 +429,7 @@ do
   classname = 'WPShadow'
   location = '<FM3_Docs>'
   setup = 'SHADOWID='rc
-  call SysCreateObject classname,title,location,setup,u
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 /* create sample customizations for the user so they don't start 'blank' */
@@ -553,20 +547,20 @@ do
       rc = stream('UTILS.TMP','c','query exists')
       if rc \= '' then
       do
-        rc = stream('SORT.TMP','c','query exists')
-        if rc \= '' then
-        do
-          rc = stream('SELECT.TMP','c','query exists')
-          if rc \= '' then
-          do
-            say 'Creating a sample QUICKTLS.DAT file and toolboxes for you.'
-            'REN QUICKTLS.TMP QUICKTLS.DAT 1>NUL 2>NUL'
-            'REN CMDS.TMP CMDS.TLS 1>NUL 2>NUL'
-            'REN UTILS.TMP UTILS.TLS 1>NUL 2>NUL'
-            'REN SORT.TMP SORT.TLS 1>NUL 2>NUL'
-            'REN SELECT.TMP SELECT.TLS 1>NUL 2>NUL'
-          end
-        end
+	rc = stream('SORT.TMP','c','query exists')
+	if rc \= '' then
+	do
+	  rc = stream('SELECT.TMP','c','query exists')
+	  if rc \= '' then
+	  do
+	    say 'Creating a sample QUICKTLS.DAT file and toolboxes for you.'
+	    'REN QUICKTLS.TMP QUICKTLS.DAT 1>NUL 2>NUL'
+	    'REN CMDS.TMP CMDS.TLS 1>NUL 2>NUL'
+	    'REN UTILS.TMP UTILS.TLS 1>NUL 2>NUL'
+	    'REN SORT.TMP SORT.TLS 1>NUL 2>NUL'
+	    'REN SELECT.TMP SELECT.TLS 1>NUL 2>NUL'
+	  end
+	end
       end
     end
   end
@@ -584,8 +578,8 @@ end
  */
 
 'del SETENV.CMD 1>NUL 2>NUL'
-dummy = stream('SETENV.CMD','C','open')
-if dummy = 'READY:' then
+rc = stream('SETENV.CMD','C','open')
+if rc = 'READY:' then
 do
   call lineout 'SETENV.CMD','@ECHO OFF'
   call lineout 'SETENV.CMD','REM'
@@ -614,29 +608,29 @@ end
  * their PATH statement if they don't want to for command line work.
  */
 
-
 rc = stream('SETENV.CMD','c','query exists')
 if rc \= '' then
 do
-  dummy = value('COMSPEC',,'OS2ENVIRONMENT')
-  if dummy = '' then dummy = value('OS2_SHELL',,'OS2ENVIRONMENT')
-  if dummy = '' then dummy = 'CMD.EXE'
+  shell = value('COMSPEC',,'OS2ENVIRONMENT')
+  if shell = '' then shell = value('OS2_SHELL',,'OS2ENVIRONMENT')
+  if shell = '' then shell = 'CMD.EXE'
   title = "FM/2 Utilities command line"
   classname = 'WPProgram'
   location = '<FM3_Tools>'
-  setup = 'EXENAME='dummy';PARAMETERS=/K 'rc';STARTUPDIR=C:\'
-  call SysCreateObject classname,title,location,setup,u
+  setup = 'EXENAME='shell';PARAMETERS=/K 'rc';STARTUPDIR=C:\'
+  call SysCreateObject classname,title,location,setup,'u'
 end
 
 call SysMkDir curdir'\UTILS'
-dummy = directory(curdir'\UTILS')
-if dummy = curdir'\UTILS' then
+if directory(curdir'\UTILS') \= curdir'\UTILS' then
+  say "Couldn't switch to "curdir"\utils"
+else
 do
   'set PATH=%PATH%;'curdir'\utils'
   'move ..\example.cmd 1>NUL 2>NUL'
   'del FM2.CMD 1>NUL 2>NUL'
-  dummy = stream('FM2.CMD','C','open')
-  if dummy = 'READY:' then
+  rc = stream('FM2.CMD','C','open')
+  if rc = 'READY:' then
   do
     say 'Creating an FM2.CMD file.'
     call lineout 'FM2.CMD', "/* FM/2 command file.  Locate in a directory"
@@ -768,8 +762,8 @@ do
     call lineout 'FM2.CMD', "n = endlocal()"
     call stream 'FM2.CMD','C','close'
     'del AV2.CMD 1>NUL 2>NUL'
-    dummy = stream('AV2.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('AV2.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating an AV2.CMD file.'
       call lineout 'AV2.CMD', "@echo off"
@@ -784,8 +778,8 @@ do
     end
     else say "Couldn't create AV2.CMD file."
     'del VDIR.CMD 1>NUL 2>NUL'
-    dummy = stream('VDIR.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('VDIR.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a VDIR.CMD file.'
       call lineout 'VDIR.CMD', "/* VDIR (FM/2) command file.  Locate in a directory"
@@ -815,8 +809,8 @@ do
     end
     else say "Couldn't create VDIR.CMD file."
     'del VTREE.CMD 1>NUL 2>NUL'
-    dummy = stream('VTREE.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('VTREE.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a VTREE.CMD file.'
       call lineout 'VTREE.CMD', "/* VTREE (FM/2) command file.  Locate in a directory"
@@ -830,8 +824,8 @@ do
     end
     else say "Couldn't create VTREE.CMD file."
     'del VCOLLECT.CMD 1>NUL 2>NUL'
-    dummy = stream('VCOLLECT.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('VCOLLECT.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a VCOLLECT.CMD file.'
       call lineout 'VCOLLECT.CMD', "/* VCOLLECT (FM/2) command file.  Locate in a directory"
@@ -909,8 +903,8 @@ do
     end
     else say "Couldn't create VCOLLECT.CMD file."
     'del INI.CMD 1>NUL 2>NUL'
-    dummy = stream('INI.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('INI.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating an INI.CMD file.'
       call lineout 'INI.CMD', "/* INI (FM/2) command file.  Locate in a directory"
@@ -926,8 +920,8 @@ do
     end
     else say "Couldn't create INI.CMD file."
     'del EAS.CMD 1>NUL 2>NUL'
-    dummy = stream('EAS.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('EAS.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating an EAS.CMD file.'
       call lineout 'EAS.CMD', "/* EAS (FM/2) command file.  Locate in a directory"
@@ -1006,8 +1000,8 @@ do
     end
     else say "Couldn't create EAS.CMD file."
     'del DIRSIZE.CMD 1>NUL 2>NUL'
-    dummy = stream('DIRSIZE.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('DIRSIZE.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a DIRSIZE.CMD file.'
       call lineout 'DIRSIZE.CMD', "/* DIRSIZE (FM/2) command file.  Locate in a directory"
@@ -1037,8 +1031,8 @@ do
     end
     else say "Couldn't create DIRSIZE.CMD file."
     'del UNDEL.CMD 1>NUL 2>NUL'
-    dummy = stream('UNDEL.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('UNDEL.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating an UNDEL.CMD file.'
       call lineout 'UNDEL.CMD', "/* UNDEL (FM/2) command file.  Locate in a directory"
@@ -1052,8 +1046,8 @@ do
     end
     else say "Couldn't create UNDEL.CMD file."
     'del KILLPROC.CMD 1>NUL 2>NUL'
-    dummy = stream('KILLPROC.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('KILLPROC.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a KILLPROC.CMD file.'
       call lineout 'KILLPROC.CMD', "/* KILLPROC (FM/2) command file.  Locate in a directory"
@@ -1067,8 +1061,8 @@ do
     end
     else say "Couldn't create KILLPROC.CMD file."
     'del VIEWINFS.CMD 1>NUL 2>NUL'
-    dummy = stream('VIEWINFS.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('VIEWINFS.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a VIEWINFS.CMD file.'
       call lineout 'VIEWINFS.CMD', "/* VIEWINFS (FM/2) command file.  Locate in a directory"
@@ -1082,8 +1076,8 @@ do
     end
     else say "Couldn't create VIEWINFS.CMD file."
     'del VIEWHELP.CMD 1>NUL 2>NUL'
-    dummy = stream('VIEWHELP.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('VIEWHELP.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a VIEWHELP.CMD file.'
       call lineout 'VIEWHELP.CMD', "/* VIEWHELP (FM/2) command file.  Locate in a directory"
@@ -1097,8 +1091,8 @@ do
     end
     else say "Couldn't create VIEWHELP.CMD file."
     'del GLOBAL.CMD 1>NUL 2>NUL'
-    dummy = stream('GLOBAL.CMD','C','open')
-    if dummy = 'READY:' then
+    rc = stream('GLOBAL.CMD','C','open')
+    if rc = 'READY:' then
     do
       say 'Creating a GLOBAL.CMD file.'
       call lineout 'GLOBAL.CMD', "/* GLOBAL (FM/2) command file.  Locate in a directory"
@@ -1179,9 +1173,8 @@ do
     say ""
   end
   else say "Couldn't create FM2.CMD file.  Panic."
-  dummy = directory(curdir)
+  call directory curdir
 end
-else say "Couldn't switch to "curdir"\utils"
 
 /* type the install.dat file to show any critical info/notices */
 
@@ -1190,12 +1183,12 @@ if rc \= '' then
 do
   'type install.dat'
   'DEL INSTALL.DAT 1>NUL 2>NUL'
-  if unattended = 'UNATTENDED' then
+  if attended then
   do
     call charout ,'  Press [Enter] to continue...'
-    dummy = ''
-    do until dummy = '0d'x
-      dummy = SysGetKey('NOECHO')
+    ans = ''
+    do until ans = '0d'x
+      ans = SysGetKey('NOECHO')
     end
     call charout ,'0d1b'x'[K'
   end
