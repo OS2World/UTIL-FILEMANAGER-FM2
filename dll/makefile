@@ -7,6 +7,7 @@
 # 23 May 05 SHL Drop saymsg
 # 24 May 05 SHL Add clean and cleanobj targets
 # 06 Jun 05 SHL Add warnings enable (WARN)
+# 24 Jul 05 SHL Rework resource kit support
 
 # Warning - missing many *.h dependencies
 
@@ -23,11 +24,13 @@ BASERES=fm3res
 LINK = ilink
 RC = rc
 
-!IFNDEF DEBUG
+!ifndef DEBUG
 DEBUG = 0
-!ENDIF
+!endif
 
-!IFNDEF WARN
+# Define WARN for more warnings
+
+!ifndef WARN
 CFLAGS =  /G5 /Ge- /Gm+ /Gs- /Gt- /Mp /O- /Q+ /Sp4 /Ss /Ti+ /W3
 !ELSE
 # /Wcnd- suppresses EDC0425
@@ -36,9 +39,7 @@ CFLAGS =  /G5 /Ge- /Gm+ /Gs- /Gt- /Mp /O- /Q+ /Sp4 /Ss /Ti+ /W3
 # CFLAGSW = /Wcmp /Wcnd- /Wcns /Wcnv- /Weff /Wext- /Wini /Wobs /Wpor /Wpro /Wrea /Wret /Wtrd- /Wuni- /Wuse
 CFLAGSW = /Wcmp /Wcnd- /Wcns /Wcnv- /Weff /Wext- /Wini /Wobs /Wpor /Wpro /Wrea /Wret /Wtrd- /Wuni- /Wuse
 CFLAGS =  /G5 /Ge- /Gm+ /Gs- /Gt- /Mp /O- /Q+ /Sp4 /Ss /Ti+ /W3 $(CFLAGSW)
-!ENDIF
-
-# Enable this for more warnng
+!endif
 
 # for fm3res only
 CFLAGSR = /G5 /Ge- /Gs+ /O+ /Rn /Ss /W3
@@ -47,10 +48,14 @@ CFLAGSR = /G5 /Ge- /Gs+ /O+ /Rn /Ss /W3
 LFLAGS = /DE /ALIGN:4 /EXEPACK:2 /NOI /MAP /NOE
 !ELSE
 LFLAGS = /ALIGN:4 /EXEPACK /MAP /NOI /NOE
-!ENDIF
+!endif
 
+!ifndef MAKERES
 .c.obj:
   $(CC) $(CFLAGS) /C $*.c
+!else
+  # !error "MAKERES mode"
+!endif
 
 OFILES= mainwnd.obj dircnrs.obj valid.obj filldir.obj error.obj\
 	treecnr.obj presparm.obj misc.obj init.obj copyf.obj strips.obj\
@@ -73,29 +78,55 @@ LFILES=$(OFILES:.obj=)
 LFILES2=$(OFILES2:.obj=)
 LFILES3=$(OFILES3:.obj=)
 
-ALL: FM3DLL.DLL \
-     FM3RES.RES \
-     FM3RES.DLL \
-     FM3DLL.LIB \
-     FM3RES.LIB \
-     ipf\FM3.HLP \
+!ifndef MAKERES
+
+all: $(BASE).dll \
+     $(BASERES).res \
+     $(BASERES).dll \
+     $(BASE).lib \
+     $(BASERES).lib \
+     ipf\fm3.hlp \
      internal\mkstr.exe \
      fm3res.str
 
 $(BASE).dll: $(OFILES) $(OFILES2) $(OFILES3) $(BASE).def
-    @REM @<<$(BASE).@0
-    $(LFLAGS)
-    /OUT:$@
-    $(OFILES)
-    $(OFILES2)
-    $(OFILES3)
-    $(BASE).def
+  @$(LINK) @<<$(BASE).lrf
+  $(LFLAGS)
+  /LI
+  /OUT:$@
+  $(OFILES)
+  $(OFILES2)
+  $(OFILES3)
+  $(BASE).def
 <<
-    @rem type $(BASE).@0
-    $(LINK) @$(BASE).@0
+  @rem type $(BASE).lrf
+  bldlevel $@
 
 $(BASE).lib: $(BASE).dll $(BASE).def
-    IMPLIB $(BASE).lib $(BASE).def
+  implib $(BASE).lib $(BASE).def
+
+!else
+
+# Just resources
+
+all: chkexe \
+     $(BASERES).res \
+     $(BASERES).dll \
+     ipf\fm3.hlp \
+     fm3res.str
+
+chkexe:
+  @echo Checking required EXEs
+  if not exist internal\mkstr.exe internal\mkstr.exe
+  lxlite -c:exehdr internal\mkstr.exe >nul
+
+!endif
+
+# Update resources only
+
+res:
+  @echo Updating resources only
+  $(MAKE) /nologo /$(MAKEFLAGS) MAKERES=1
 
 init.c: $(BASE).h version.h
 
@@ -103,50 +134,69 @@ string.c: fm3str.h version.h
 
 internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
   cd internal
-  compile2 mkstr.c
+  $(MAKE) /nologo /$(MAKEFLAGS)
   cd..
 
 $(BASERES).obj: $(BASERES).c version.h
   $(CC) $(CFLAGSR) /C $(BASERES).c
 
-$(BASERES).res: $*.rc $*.dlg fm3dlg.h icons\*.ico
+$(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h icons\*.ico icons\*.ptr
   $(RC) -r $*
 
-$(BASERES).DLL: $(BASERES).RES $(BASERES).OBJ $(BASERES).DEF
-    @REM @<<$(BASERES).@0
-    $(LFLAGS)
-    /OUT:$@
-    $(BASERES).obj
-    $(BASERES).def
+!ifndef MAKERES
+
+$(BASERES).dll: $(BASERES).res $(BASERES).obj $(BASERES).def
+  @REM @<<$(BASERES).@0
+  $(LFLAGS)
+  /OUT:$@
+  $(BASERES).obj
+  $(BASERES).def
 <<
-    type $(BASERES).@0
-    $(LINK) @$(BASERES).@0
-    $(RC) -x2 $(BASERES).res $(BASERES).dll
-    :: SHL ea /d /e:.ICON /V $(BASERES).dll
+  type $(BASERES).@0
+  $(LINK) @$(BASERES).@0
+  $(RC) -x2 $(BASERES).res $@
+  :: SHL ea /d /e:.ICON /V $@
+  bldlevel $@
+
+!else
+
+$(BASERES).dll: $(BASERES).res
+  @if not exist $@ echo $@ missing
+  lxlite $@ /x+ /b-
+  lxlite $@ /c:minstub
+  $(RC) -x2 $(BASERES).res $@
+  lxlite $@ /x- /b-
+  bldlevel $@
+
+!endif
 
 $(BASERES).lib: $(BASERES).dll $(BASERES).def
-    IMPLIB $(BASERES).lib $(BASERES).def
+  implib $(BASERES).lib $(BASERES).def
 
-$(BASERES).str: $(BASE).STR fm3str.h version.h icons\*.ico
-    internal\mkstr
-    copy $(BASERES).str .. /v
-    cd ..\reskit
-    makekit
-    cd..\dll
+$(BASERES).str: $(BASE).str fm3str.h version.h icons\*.ico
+  internal\mkstr
+  copy $(BASERES).str .. /v
 
-ipf\FM3.hlp: ipf\*.ipf
-    cd ipf
-    ipfc /CODEPAGE=850 fm3.ipf
-    cd..
+ipf\FM3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp
+  cd ipf
+  ipfc /CODEPAGE=850 fm3.ipf
+  ren fm3.HLP fm3.hlp
+  cd..
 
 avv.obj:      version.h
 key.obj:      version.h
 misc.c:       version.h
 
 cleanobj:
+  cd internal
+  $(MAKE) /nologo /$(MAKEFLAGS) cleanobj
+  cd..
   -del *.obj
 
 clean:
+  cd internal
+  $(MAKE) /nologo /$(MAKEFLAGS) clean
+  cd..
   -del *.dll
   -del *.lib
   -del *.map
