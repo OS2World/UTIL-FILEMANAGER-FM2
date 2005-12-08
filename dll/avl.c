@@ -12,6 +12,7 @@
   13 Aug 05 SHL Beautify with indent
   13 Aug 05 SHL find_type: correct no sig exists bypass logic
   13 Aug 05 SHL SBoxDlgProc: avoid dereferencing NULL signature
+  18 Aug 05 SHL Comments
 
 ***********************************************************************/
 
@@ -130,7 +131,7 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 	}
     } // for
     DosClose(handle);			/* Either way, we're done for now */
-    return info;			/* return signature, if any */
+    return info;			/* Return signature, if any */
 }
 
 #pragma alloc_text(AVL,load_archivers)
@@ -138,9 +139,12 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 INT load_archivers(VOID)
 {
     FILE *handle;
-    CHAR s[257], *p;
-    ARC_TYPE *info = NULL, *last = NULL;
-    INT numlines = NUMLINES, x;
+    CHAR s[257];
+    CHAR *p;
+    ARC_TYPE *info = NULL;
+    ARC_TYPE *last = NULL;
+    INT numlines = NUMLINES;
+    INT x;
 
     loadedarcs = TRUE;
     DosEnterCritSec();
@@ -155,6 +159,7 @@ INT load_archivers(VOID)
     if (!handle)
 	return -2;
     strcpy(archiverbb2, p);
+    // Get lines per record count
     if (!fgets(s, 256, handle))
     {
 	fclose(handle);
@@ -162,26 +167,29 @@ INT load_archivers(VOID)
     }
     p = strchr(s, ';');
     if (p)
-	*p = 0;
+	*p = 0;				// Chop trailing comment
     bstripcr(s);
     if (*s)
 	numlines = atoi(s);
     if (!*s || numlines < NUMLINES)
 	return -3;
+    // Parse rest
     while (!feof(handle))
     {
 	if (!fgets(s, 256, handle))
-	    break;
+	    break;			// EOF
 	p = strchr(s, ';');
 	if (p)
 	    *p = 0;			// Chop comment
-
 	bstripcr(s);
+	// 1st non-blank line starts definition
+	// fixme to preserve comments
+	// fixme to avoid allocating empty fields
 	if (*s)
 	{
 	    info = malloc(sizeof(ARC_TYPE));
 	    if (!info)
-		break;
+		break;			// fixme to complain
 	    memset(info, 0, sizeof(ARC_TYPE));
 	    if (*s)
 		info -> id = strdup(s);
@@ -380,12 +388,15 @@ INT load_archivers(VOID)
 		    }
 		}
 	    }
+	    // Ignore unknown lines - must be newer file format
 	    for (x = NUMLINES; x < numlines; x++)
 	    {
 		if (!fgets(s, 256, handle))
 		    break;
 	    }
+
 	    info -> next = NULL;
+
 	    if (!arcsighead)
 	    {
 		arcsighead = last = info;
@@ -397,18 +408,18 @@ INT load_archivers(VOID)
 		info -> prev = last;
 		last = info;
 	    }
-	    if (info -> extract &&
-		    !*info -> extract)
+	    if (info -> extract && !*info -> extract)
 	    {
 		free(info -> extract);
 		info -> extract = NULL;
 	    }
-	}
+	} // if got definition
 	info = NULL;
     }
     fclose(handle);
     if (info)
     {
+	// fixme to complain about partial definition
 	if (info -> id)
 	    free(info -> id);
 	if (info -> ext)
@@ -490,7 +501,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    {
 			if (test -> signature && temp -> signature &&
 			    !strcmp(test -> signature, temp -> signature))
-			    goto ContinueHere;		// Got match
+			    goto ContinueHere;	// Got match
 			test = test -> next;
 		    }
 		}
