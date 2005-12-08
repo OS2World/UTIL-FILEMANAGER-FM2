@@ -1,10 +1,5 @@
-*.@0
 *.map
 *.res
-ctags.*
+ctags.tag
 project*.cpe
 setenv.cmd
-Ship*
-test
-testutil
-tmp.*
