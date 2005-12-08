@@ -10,7 +10,8 @@
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
-  28 May 05 SHL Clean with reading code
+  28 May 05 SHL Clean while reading code
+  24 Oct 05 SHL Delete obsolete code
 
 ***********************************************************************/
 
@@ -317,8 +318,6 @@ BOOL Stubby (HWND hwndCnr,PCNRITEM pciParent)
 
   nm = ulM;
 
-// WinSetWindowText(hwndStatus,str);
-
   DosError(FERR_DISABLEHARDERR);
   if(includefiles)
     fl = FILE_DIRECTORY;
@@ -462,8 +461,6 @@ Interruptus:
 
         PCNRITEM pci;
 
-// WinSetWindowText(hwndStatus2,"Found a dir");
-
         pci = WinSendMsg(hwndCnr,
                          CM_ALLOCRECORD,
                          MPFROMLONG(EXTRA_RECORD_BYTES2),
@@ -506,7 +503,6 @@ Interruptus:
           }
           else
             ret = TRUE;
-// WinSetWindowText(hwndStatus2,NullStr);
         }
         else
           Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
