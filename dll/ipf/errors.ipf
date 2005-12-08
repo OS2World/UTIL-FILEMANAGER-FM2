@@ -204,7 +204,7 @@ and what they mean&colon.
         List does not match its size,
         or bad EAs in list.
 256  ERROR_EA_LIST_TOO_LONG
-        FEAList > 64K-1 bytes.
+        EAList > 64K-1 bytes.
 259  ERROR_NO_MORE_ITEMS
         DosQFSAttach ordinal query.
 260  ERROR_SEARCH_STRUC_REUSED
@@ -221,5 +221,8 @@ and what they mean&colon.
 270  ERROR_VOLUME_CHANGED
         Volume changed.
 275  ERROR_EAS_DIDNT_FIT
-        EAS didnt fit.
+        EAS didn't fit.
 :exmp.
+
+Additional information for some error codes can be obtained by typing "Help <Error code &numsign.>" 
+on an OS/2 command line.

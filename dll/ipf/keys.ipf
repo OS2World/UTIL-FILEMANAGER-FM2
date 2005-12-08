@@ -1,9 +1,9 @@
-:h1 res=100005 name=PANEL_KEYS.Keys help
+:h2 res=100005 name=PANEL_KEYS.Keys help
 :i1 id=aboutKeys.Keys help
 
 :hp2.Directory Containers:ehp2.
 .br
-:hp1.Note&colon.:ehp1.  many commands also available in Drive Tree and
+:hp1.Note&colon.:ehp1. many commands also available in Drive Tree and
 Collector windows.
 :parml compact tsize=20 break=none.
 :pt.Ctrl + A
@@ -453,5 +453,5 @@ system menu).
 :hp2.Notes:ehp2.
 :p.
 Remember, :link reftype=hd res=97700.accelerator keys:elink. are case
-sensitive -- Ctrl + r isn't the same thing as Ctrl + R.  The latter is
+sensitive -- Ctrl + r isn't the same thing as Ctrl + R. The latter is
 obtained by holding down both Ctrl and Shift while pressing the "R" key.

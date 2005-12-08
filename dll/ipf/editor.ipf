@@ -2,60 +2,60 @@
 :i1 id=aboutNewViewer.Internal Viewer
 
 :artwork name='..\..\bitmaps\view.bmp' align=center.
+:p.
 The internal viewer is used to view files unless you have an external
 viewing program defined in the internal Settings notebook's :link
 reftype=hd res=92200.Viewers page:elink., or the :hp2.Fast internal
-viewer:ehp2. checkbox :hp1.off:ehp1..  This viewer loads and displays a
+viewer:ehp2. checkbox :hp1.off:ehp1.. This viewer loads and displays a
 one megabyte text file in less than two seconds on a 486/66. The :link
 reftype=hd res=93900."old" viewer:elink. loads large text files
 considerably more slowly, but you might want to use it anyway; your
 choice.
 :p.
 Both :link reftype=hd res=98800.hex:elink. and ASCII (plain text)
-display modes are supported, and a variety of text sizes.  These
+display modes are supported, and a variety of text sizes. These
 controls are under the :hp1.View:ehp1. pulldown submenu.
 :p.
 Selected lines are displayed in reverse video (white text on a black
-background).  The current line has a ">" pointing at it in the left
-margin.  Single selections and swipe selections are supported, as well
+background). The current line has a ">" pointing at it in the left
+margin. Single selections and swipe selections are supported, as well
 as select and deselect all (under the :hp1.Select:ehp1. pulldown
 submenu) and select/deselect all "found" lines (see :hp1.Search:ehp1.
-below).  Keyboard selection is performed with the spacebar, or you can
+below). Keyboard selection is performed with the spacebar, or you can
 hold down the Shift key while moving the cursored selection with the
-arrow keys.  Discontiguous lines can be selected.
+arrow keys. Discontiguous lines can be selected.
 :p.
 If you double-click a line in the viewer window, a listbox appears above
-the text containing that line.  Select (single-click) the line in the
+the text containing that line. Select (single-click) the line in the
 listbox and the viewer window will scroll to that line -- a sort of
-instant bookmarking facility.  To remove a line from this bookmark
-listbox, double-click it in the listbox.  See the :link reftype=hd
+instant bookmarking facility. To remove a line from this bookmark
+listbox, double-click it in the listbox. See the :link reftype=hd
 res=97600.FM/2 window layouts:elink. topic for a picture to help you
 understand this one -- or just try it.
 :p.
 The :hp1.Clipboard:ehp1. pulldown submenu allows you to save selected
-lines to the clipboard or a file.  :hp7.Warning&colon.:ehp7.  Warp
+lines to the clipboard or a file. :hp7.Warning&colon.:ehp7. Warp
 appears to have a 64K limit to the size of text that can be placed in
-the clipboard.  You can also save lines that you've double-clicked into
-the bookmark listbox.  When you write lines to a file, you append to the
+the clipboard. You can also save lines that you've double-clicked into
+the bookmark listbox. When you write lines to a file, you append to the
 file (if it already exists).
 :p.
 When you search for text in the file, you can search for more than one
-"phrase" at a time.  Each line you fill into the MLE on the
-:hp1.Search->Find text:ehp1. dialog is a separate search string.  You
+"phrase" at a time. Each line you fill into the MLE on the
+:hp1.Search->Find text:ehp1. dialog is a separate search string. You
 can also search case sensitively (i.e. 'A' doesn't match 'a'), translate
 C-like :link reftype=hd res=99500.\-encoded characters:elink. (\r = a
 carriage return, for example -- useful when searching binary files),
 and/or select lines as they're found by checking the appropriate
 checkboxes on the Find First dialog. All matching lines are displayed in
-red.  The :hp1.Search->Next found line:ehp1. command moves to the next
+red. The :hp1.Search->Next found line:ehp1. command moves to the next
 highlighted line in the file (from the current position), and
 :hp1.Search->Previous found line:ehp1. moves to the previous highlighted
-line.  Colors are configurable.
+line. Colors are configurable.
 :p.
 If you're looking for more powerful viewing software, you might be
 interested in Michael Schacter's :hp1.Hyperview PM:ehp1. shareware
-program.  Michael can be contacted on Compuserve at user ID 76170,1627,
-and hangs out in the OS2SHARE (library 1 of OS2BVEN) forum. You can
+program. Now orphan ware it can still be found online. You can
 easily set Hyperview up to be used automatically by FM/2 using the :link
 reftype=hd res=92200.Viewers page:elink. of the internal Settings
 notebook.
@@ -65,35 +65,31 @@ notebook.
 
 :artwork name='..\..\bitmaps\edit.bmp' align=center.
 :artwork name='..\..\bitmaps\view.bmp' align=center.
-The internal viewer/editor is an extremely simplistic MLE window.  It is
+:p.
+The internal viewer/editor is an extremely simplistic MLE window. It is
 :hp2.strongly:ehp2. recommended that you replace it with a better one
 via the :link reftype=hd res=94600.Settings Notebook:elink.'s :hp1.:link
-reftype=hd res=92200.Viewers page:elink.:ehp1..  The reasons are
+reftype=hd res=92200.Viewers page:elink.:ehp1.. The reasons are
 simple&colon. a product designed specifically and exclusively for
 editing will generally do a better job, and MLEs tend to be sluggish
 when loading anything larger than about 58K.
 :p.
-Suggestions&colon. EPM (which comes with OS/2), or QEdit for OS/2 (an
-excellent and inexpensive text-mode editor from Semware highly
-recommended, and used, by FM/2's author) or Visual Slickedit by
-Microedge, PM and more powerful (and, of course, more expensive) than
-QEdit, also used by the author.  There are many other editors, freeware,
-shareware and shrinkwrap, available, I simply listed those with which I
-have some familiarity and feel I can recommend as very good software.
+Suggestions&colon. EPM (which comes with OS/2), There are other editors
+available.
 :p.
 There's :link reftype=hd res=99300.another, faster internal viewer (no
 editor):elink. which is used as the default for viewing in FM/2.
 :p.
 The internal viewer/editor creates a window for each file being viewed/
-edited.  The :link reftype=hd res=91100.Windows->Dialog:elink. dialog
+edited. The :link reftype=hd res=91100.Windows->Dialog:elink. dialog
 can be used to quickly close several windows at once or find a
 particular window and bring it to the front.
 :p.
 :hp7.Note:ehp7. that when saving files the editor formats the file so
-that it appears as it does in the MLE.  The appearance of a file can be
+that it appears as it does in the MLE. The appearance of a file can be
 different in the MLE or in the created disk file depending on various
 settings under the editor's :hp1.Config->Format Control:ehp1., notably
-Wrap.  :hp8.Be sure you have these settings right for the way you want
+Wrap. :hp8.Be sure you have these settings right for the way you want
 the resultant file to look.:ehp8.
 :p.
 When the viewer/editor is in readonly (viewing) mode, several menu items
@@ -109,7 +105,7 @@ See also&colon.
 :i1 id=aboutCodePage.Codepages
 
 FM/2 will allow you to change the codepage (character set) in use in the
-internal viewer by selecting a codepage from the listbox.  The codepage
+internal viewer by selecting a codepage from the listbox. The codepage
 must be one of those supported in your CONFIG.SYS (see :link
 reftype=launch object='CMD.EXE' data='/C HELP CODEPAGE'.CODEPAGE:elink.
 in the online OS/2 command reference) or codepage 1004.
@@ -134,7 +130,7 @@ or ASCII, data) for human viewing.
 
 In many areas, FM/2 allows you to use C-style backslash encoding (or
 more properly "escaping") to give constants you normally couldn't enter
-into an entry field or MLE.  There are some differences from standard
+into an entry field or MLE. There are some differences from standard
 C escaping, so pay attention.
 :p.
 The following escapes are permissible&colon.

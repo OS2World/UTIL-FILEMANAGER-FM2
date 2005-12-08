@@ -1,4 +1,4 @@
-:h1 res=100040 name=PANEL_MOUSE.Mouse click help
+:h2 res=100040 name=PANEL_MOUSE.Mouse click help
 :i1 id=aboutMouse.Mouse click help
 
 The following mouse clicks apply to the Drive Tree, Directory Containers
