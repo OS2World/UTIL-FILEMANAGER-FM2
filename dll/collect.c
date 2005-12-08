@@ -18,6 +18,9 @@
   05 Jun 05 SHL Use QWL_USER
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Make savedSortFlags static to avoid referencing garbage
+  24 Oct 05 SHL Sanitize handle references
+  24 Oct 05 SHL CollectorCnrWndProc: avoid excess writes to Status2 window
+  10 Nov 05 SHL CollectorCnrWndProc: correct missing button window updates
 
 ***********************************************************************/
 
@@ -166,7 +169,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    {
 	      CenterOverWindow(hwndButtonPopup);
 	      PaintRecessedWindow(hwnd,
-				  (HPS) 0,
+				  NULLHANDLE,
 				  FALSE,
 				  FALSE);
 	    }
@@ -191,8 +194,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_MENUEND:
     if (hwndButtonPopup == (HWND) mp2)
     {
-      lastid = WinQueryWindowUShort((HWND) mp2,
-				    QWS_ID);
+      lastid = WinQueryWindowUShort((HWND) mp2, QWS_ID);
       WinDestroyWindow(hwndButtonPopup);
       hwndButtonPopup = (HWND) 0;
       DosQuerySysInfo(QSV_MS_COUNT,
@@ -205,7 +207,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DIR_VIEW:
       case DIR_SORT:
 	PaintRecessedWindow(hwnd,
-			    (HPS) 0,
+			    NULLHANDLE,
 			    TRUE,
 			    FALSE);
 	break;
@@ -294,8 +296,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       USHORT id;
 
-      id = WinQueryWindowUShort(hwnd,
-				QWS_ID);
+      id = WinQueryWindowUShort(hwnd, QWS_ID);
       switch (id)
       {
       case DIR_FILTER:
@@ -312,8 +313,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       USHORT id, cmd = 0;
 
-      id = WinQueryWindowUShort(hwnd,
-				QWS_ID);
+      id = WinQueryWindowUShort(hwnd, QWS_ID);
       switch (id)
       {
       case DIR_VIEW:
@@ -424,7 +424,7 @@ MRESULT EXPENTRY CollectorClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       HPS hps;
       RECTL rcl;
 
-      hps = WinBeginPaint(hwnd, (HPS) 0, NULL);
+      hps = WinBeginPaint(hwnd, NULLHANDLE, NULL);
       if (hps)
       {
 	WinQueryWindowRect(hwnd, &rcl);
@@ -488,7 +488,7 @@ MRESULT EXPENTRY CollectorClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		      20,
 		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
     }
-    CommonTextPaint(hwnd, (HPS) 0);
+    CommonTextPaint(hwnd, NULLHANDLE);
     if (msg == UM_SIZE)
     {
       WinSetWindowPos(WinQueryWindow(hwnd, QW_PARENT), HWND_TOP, 0, 0, 0, 0,
@@ -997,6 +997,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       INT x = 0;
 
       dcd -> stopflag = 1;
+      // Allow rescan logic to quiesce
       while (x++ < 10 && dcd -> amextracted)
 	DosSleep(250L);
       WinSendMsg(dcd -> hwndCnr, UM_CLOSE, MPVOID, MPVOID);
@@ -1004,8 +1005,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       free(dcd);
     }
     DosPostEventSem(CompactSem);
-    if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
-      WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+    if (!PostMsg(HWND_DESKTOP, WM_QUIT, MPVOID, MPVOID))
+      WinSendMsg(HWND_DESKTOP, WM_QUIT, MPVOID, MPVOID);
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
@@ -1216,7 +1217,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       }
       if (dcd -> amextracted)
 	WinSetWindowText(hwndStatus2,
-			 GetPString(IDS_INSEEKSCANTEXT));
+			 GetPString(IDS_INSEEKSCANTEXT));	// Say working
       WinSendMsg(hwnd,
 		 UM_RESCAN,
 		 MPVOID,
@@ -1278,6 +1279,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 			   MPFROMSHORT(CRA_CURSORED));
 	if (pci && (INT) pci != -1)
 	{
+	  BOOL fStatus2Used = FALSE;
 	  if (fSplitStatus && hwndStatus2)
 	  {
 	    if (pci -> attrFile & FILE_DIRECTORY)
@@ -1316,6 +1318,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 		      *tf ? ")" : NullStr);
 	    }
 	    WinSetWindowText(hwndStatus2, s);
+	    fStatus2Used = TRUE;
 	  }
 	  if (fMoreButtons)
 	  {
@@ -1327,8 +1330,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	    WinSetWindowText(hwndDate, s);
 	    WinSetWindowText(hwndAttr, pci -> pszDispAttr);
 	  }
-	  if (dcd -> amextracted && hwndStatus2)
-	    WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));
+	  if (dcd -> amextracted && hwndStatus2 && !fStatus2Used)
+	    WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
 	}
 	else
 	{
@@ -1366,7 +1369,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     if (dcd)
     {
       dcd -> stopflag = 0;
-      dcd -> amextracted = FALSE;
+      dcd -> amextracted = FALSE;		// Say not scanning
       if (dcd -> namecanchange)
       {
 	if (!PostMsg(hwnd,
@@ -1408,7 +1411,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 		   MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
 	WinSendMsg(CollectorCnrMenu, MM_SETITEMATTR, MPFROM2SHORT(IDM_GREP, TRUE),
 		   MPFROM2SHORT(MIA_DISABLED, 0));
-	dcd -> amextracted = FALSE;
+	dcd -> amextracted = FALSE;	// Use to indicate scan busy
 	dcd -> stopflag = 0;
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
@@ -1509,7 +1512,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     {
       if (mp1 &&
 	  !IsFile((CHAR *) mp1))
-	OpenDirCnr((HWND) 0,
+	OpenDirCnr(HWND_DESKTOP,
 		   hwndMain,
 		   dcd -> hwndFrame,
 		   FALSE,
@@ -1897,7 +1900,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
       case DID_CANCEL:
 	if (dcd -> amextracted)
-	  dcd -> stopflag = 1;
+	  dcd -> stopflag = 1;		// Request cancel
 	break;
 
       case IDM_COLLECTOR:
@@ -1947,7 +1950,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  if (WinDlgBox(HWND_DESKTOP, hwnd, GrepDlgProc,
 			FM3ModHandle, GREP_FRAME, (PVOID) & hwnd))
 	  {
-	    dcd -> amextracted = TRUE;
+	    dcd -> amextracted = TRUE;	// Collector scan in progress
 	    WinSendMsg(CollectorCnrMenu, MM_SETITEMATTR,
 		       MPFROM2SHORT(DID_CANCEL, TRUE),
 		       MPFROM2SHORT(MIA_DISABLED, 0));
@@ -1958,7 +1961,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  }
 	}
 	else
-	  DosBeep(50, 100);
+	  DosBeep(50, 100);		// Complain about busy
 	break;
 
       case IDM_RESORT:
@@ -2743,9 +2746,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	      WinSetDlgItemText(dcd -> hwndClient, DIR_SELECTED, s);
 	    }
 	  }
-	  else if (!dcd -> suspendview &&
-		   WinQueryActiveWindow(dcd -> hwndParent) ==
-		   dcd -> hwndFrame)
+	  if (!dcd -> suspendview &&
+	      WinQueryActiveWindow(dcd -> hwndParent) == dcd -> hwndFrame)
 	  {
 	    if (pre -> fEmphasisMask & CRA_CURSORED)
 	    {
@@ -2849,7 +2851,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 		else if (shiftstate & KC_CTRL)
 		  OpenObject(pci -> szFileName, Default, dcd -> hwndFrame);
 		else
-		  OpenDirCnr((HWND) 0,
+		  OpenDirCnr(HWND_DESKTOP,
 			     hwndMain,
 			     dcd -> hwndFrame,
 			     FALSE,
@@ -2910,7 +2912,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     return 0;
 
   case UM_FOLDUP:
-    if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
+    if (!PostMsg(HWND_DESKTOP, WM_QUIT, MPVOID, MPVOID))
       DosExit(EXIT_PROCESS, 1);
     return 0;
 
@@ -2920,7 +2922,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       dcd -> namecanchange = TRUE;
       dcd -> stopflag = 1;
       if (dcd -> amextracted)
-	return 0;
+	return 0;		// Can not close yet
     }
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     if (dcd)
