@@ -13,6 +13,7 @@
   25 May 05 SHL Rework for ULONGLONG
   25 May 05 SHL Rework for FillInRecordFromFFB
   06 Jun 05 SHL Drop unused code
+  24 Oct 05 SHL dononefile: do not free EA list twice
 
 ***********************************************************************/
 
@@ -758,7 +759,6 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
                      grep->numlines,
                      grep->matched,
                      !grep->findifany)) {
-              Free_FEAList(head);
               strmatch = TRUE;
             }
             break;
@@ -780,7 +780,6 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
                          grep->numlines,
                          grep->matched,
                          !grep->findifany)) {
-                  Free_FEAList(head);
                   strmatch = TRUE;
                   break;
                 }
@@ -831,7 +830,6 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
                          grep->numlines,
                          grep->matched,
                          !grep->findifany)) {
-                  Free_FEAList(head);
                   strmatch = TRUE;
                   break;
                 }
@@ -850,7 +848,7 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
             break;
         }
         info = info->next;
-      }
+      } // while
       Free_FEAList(head);
       DosSleep(1L);
     }
