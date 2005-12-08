@@ -8,9 +8,6 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2005 Steven H. Levine
 
-  12 Sep 02 SHL Rework symbols to understand code
-  08 Feb 03 SHL DropHelp: calc EA size consistently
-  11 Jun 03 SHL Add JFS and FAT32 support
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
   24 May 05 SHL Rework for CNRITEM.szSubject
@@ -22,6 +19,9 @@
   09 Jun 05 SHL Rework WinLoadFileIcon enables
   09 Jun 05 SHL Rework IDFile
   13 Aug 05 SHL Renames
+  24 Oct 05 SHL FillInRecordFromFFB: correct longname display enable
+  24 Oct 05 SHL FillInRecordFromFSA: correct longname display enable
+  24 Oct 05 SHL Drop obsolete code
 
 ***********************************************************************/
 
@@ -94,27 +94,8 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
 
   if (!hptrPMFile)
   {
-#   if 0 // fixme to be gone
-    for (l = 1; l <= SPTR_CPTR; l++)
-    {
-      hptr3 = WinQuerySysPointer(HWND_DESKTOP,l,FALSE);
-      fprintf(stderr, "0x%08lx SPTR %ld\n", hptr3, l);
-    }
-#   endif // fixme to be gone
     hptrPMFile = WinQuerySysPointer(HWND_DESKTOP,SPTR_FILE,FALSE);
   }
-# if 0 // fixme to be gone
-  else
-  {
-    hptr2 = WinQuerySysPointer(HWND_DESKTOP,SPTR_FILE,FALSE);
-    if (hptr2 != hptrPMFile)
-    {
-      saymsg(0, NULLHANDLE, "*Debug*", "ptr changed from %lx to %lx", hptrPMFile, hptr2);
-      hptrPMFile = hptr2;
-      fprintf(stderr, "0x%08lx SPTR_FILE changed\n", hptrPMFile);
-    }
-  }
-# endif // fixme to be gone
 
   // try to guess WPS default file icon
   hptr2 = (HPOINTER)0;
@@ -147,9 +128,6 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
       {
 	fclose(fp);
 	hptr3 = WinLoadFileIcon(szFileName, FALSE);
-#       if 0  // fixme to be gone
-	fprintf(stderr, "0x%08lx %s\n", hptr3, szFileName);
-#       endif // fixme to be gone
 	unlinkf("%s", szFileName);
 	if (!hptr2)
 	  hptr2 = hptr3;
@@ -248,11 +226,12 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
   pci->pszSubject = pci->szSubject;
   /* load the object's longname */
   *pci->szLongname = 0;
-  if (pffb->cbList > 4L &&
-      dcd && fLoadLongnames &&
-      (isalpha(*pci->szFileName) &&
-       (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLONGNAMES) &&
-       !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADLONGS)))
+  if (fLoadLongnames &&
+      dcd &&
+      pffb->cbList > 4L &&
+      isalpha(*pci->szFileName) &&
+      ~driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLONGNAMES &&
+      ~driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADLONGS)
   {
     APIRET    rc;
     EAOP2     eaop;
@@ -498,12 +477,12 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   }
   pci->pszSubject = pci->szSubject;
   *pci->szLongname = 0;
-  if (pfsa4->cbList > 4L &&
+  if (fLoadLongnames &&
       dcd &&
-      fLoadLongnames &&
-      (!isalpha(*pci->szFileName) ||
-       ((driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLONGNAMES) &&
-       !(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADLONGS))))
+      pfsa4->cbList > 4L &&
+      isalpha(*pci->szFileName) &&
+      ~driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLONGNAMES &&
+      ~driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOLOADLONGS)
   {
     APIRET    rc;
     EAOP2     eaop;
@@ -703,10 +682,7 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 
   if (isalpha(*szDirBase) && szDirBase[1] == ':' && szDirBase[2] == '\\')
   {
-    // if (!(driveflags[toupper(*szDirBase) - 'A'] & DRIVE_NOLONGNAMES))
-      ulExtraBytes = EXTRA_RECORD_BYTES;
-    // else
-    // ulExtraBytes = EXTRA_RECORD_BYTES2;
+    ulExtraBytes = EXTRA_RECORD_BYTES;
     if ((driveflags[toupper(*szDirBase) - 'A'] & DRIVE_REMOTE) && fRemoteBug)
       ulM = 1;		/* file system gets confused */
     else if (driveflags[toupper(*szDirBase) - 'A'] & DRIVE_ZIPSTREAM)
