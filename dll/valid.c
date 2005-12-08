@@ -15,6 +15,7 @@
   31 Jul 04 SHL Comments
   01 Aug 04 SHL Rework lstrip/rstrip usage
   03 Jun 05 SHL Drop CD_DEBUG logic
+  28 Nov 05 SHL MakeValidDir: correct DosQuerySysInfo args
 
 ***********************************************************************/
 
@@ -469,30 +470,31 @@ BOOL IsValidDrive (CHAR drive)
   return (Status == 0);
 }
 
+//=== MakeValidDir() build valid directory name ===
 
-CHAR * MakeValidDir (CHAR *path)
+CHAR *MakeValidDir(CHAR *path)
 {
-  CHAR           drive;
-  register CHAR *p;
-  FILESTATUS3    fs;
-  APIRET         status;
+  ULONG		ulDrv;
+  CHAR		*p;
+  FILESTATUS3   fs;
+  APIRET        rc;
 
-  if(!MakeFullName(path)) {
-    if(IsValidDrive(*path)) {
-      for(;;) {
-	if(IsRoot(path))
+  if (!MakeFullName(path)) {
+    if (IsValidDrive(*path)) {
+      // Passed name is valid - trim to directory
+      for (;;) {
+	if (IsRoot(path))
 	  return path;
 	DosError(FERR_DISABLEHARDERR);
-	status = DosQueryPathInfo(path,
-				  FIL_STANDARD,
-				  &fs,
-				  sizeof(fs));
-	if(!status &&
-	   (fs.attrFile & FILE_DIRECTORY) != 0)
+	rc = DosQueryPathInfo(path,
+			      FIL_STANDARD,
+			      &fs,
+			      sizeof(fs));
+	if (!rc && (fs.attrFile & FILE_DIRECTORY))
 	  return path;
 	p = strrchr(path,'\\');
-	if(p) {
-	  if(p < path + 3)
+	if (p) {
+	  if (p < path + 3)
 	    p++;
 	  *p = 0;
 	}
@@ -501,19 +503,20 @@ CHAR * MakeValidDir (CHAR *path)
       }
     }
   }
+  // Fall back to boot drive
   DosError(FERR_DISABLEHARDERR);
-  if(!DosQuerySysInfo(QSV_BOOT_DRIVE,
-		      QSV_BOOT_DRIVE,
-		      &drive,
-		      1L)) {
-    drive += '@';
-    if(drive < 'C')
-      drive = 'C';
+  if (!DosQuerySysInfo(QSV_BOOT_DRIVE,
+		       QSV_BOOT_DRIVE,
+		       &ulDrv,
+		       sizeof(ulDrv))) {
+    ulDrv += '@';
+    if (ulDrv < 'C')
+      ulDrv = 'C';
     strcpy(path," :\\");
-    *path = drive;
+    *path = (CHAR)ulDrv;
   }
   else
-    save_dir2(path);
+    save_dir2(path);	// Fall back to fm3.ini drive or current dir - should never occur
   return path;
 }
 
