@@ -240,7 +240,7 @@ and Ctrl + c is the accelerator key.
 If you'd like more detail, go to the :link reftype=hd
 res=99830.Copy:elink. tutorial.
 .br
-:artwork name='..\..\bitmaps\linkdrag.bmp' align=center.
+:artwork name='bitmaps\linkdrag.bmp' align=center.
 .br
 :hp1.Comparing file system objects&colon.:ehp1.
 .br

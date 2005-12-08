@@ -1,7 +1,7 @@
 :h2 res=94900 name=PANEL_COMPARE.Compare Directories
 :i1 id=aboutCompare.Compare Directories
 
-:artwork name='..\..\bitmaps\linkdrag.bmp' align=center.
+:artwork name='bitmaps\linkdrag.bmp' align=center.
 :p.
 The :hp1.Compare Directories:ehp1. dialog shows you a comparison
 breakdown of two directories. You can highlight files here and

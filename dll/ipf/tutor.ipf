@@ -248,7 +248,7 @@ you to specify a new name for the new, "cloned" copy of the object.
 :h2 res=99840 name=PANEL_TCOMPARE.Compare tutorial
 :i1 id=aboutCompareTutorial.Compare Tutorial
 :p.
-:artwork name='..\..\bitmaps\linkdrag.bmp' align=left.
+:artwork name='bitmaps\linkdrag.bmp' align=left.
 :p.
 To compare file system objects, link-drag one object onto another.
 :p.
