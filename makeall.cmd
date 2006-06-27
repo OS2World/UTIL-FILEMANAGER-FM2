@@ -1,7 +1,10 @@
+:: $Id$
+
+:: %1 only useful for standard target names
 cd dll
-nmake
+nmake %1
 if errorlevel 1 cancel
 cd ..
-nmake
+nmake %1
 if errorlevel 1 cancel
-for %d in (*.mak) do nmake /f %d
+for %X in (*.mak) do nmake /f %X %1
