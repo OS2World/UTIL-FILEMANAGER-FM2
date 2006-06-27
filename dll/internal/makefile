@@ -27,4 +27,7 @@ clean:
   -del $(BASE).map
   -del $(BASE).obj
 
+cleanobj:
+  -del $(BASE).obj
+
 # The end
