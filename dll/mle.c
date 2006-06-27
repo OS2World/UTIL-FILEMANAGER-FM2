@@ -8,7 +8,8 @@
   Copyright (c) 1993-97 M. Kimes
   Copyright (c) 2004 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  16 Apr 06 SHL MLEexportfile: rework to avoid wrap problems
 
 ***********************************************************************/
 
@@ -38,8 +39,8 @@
         ((c) + (char) 47)) : (c))
 
 
-LONG MLEgetlinetext (HWND h,LONG l,CHAR *buf,INT maxlen) {
-
+LONG MLEgetlinetext (HWND h,LONG l,CHAR *buf,INT maxlen)
+{
   /* get text of line l from MLE */
 
   IPT s,e;
@@ -50,8 +51,8 @@ LONG MLEgetlinetext (HWND h,LONG l,CHAR *buf,INT maxlen) {
 }
 
 
-LONG MLEdeleteline (HWND h,LONG l) {
-
+LONG MLEdeleteline (HWND h,LONG l)
+{
   /* delete line l from MLE */
 
   IPT s,e;
@@ -62,8 +63,8 @@ LONG MLEdeleteline (HWND h,LONG l) {
 }
 
 
-LONG MLEdeletecurline (HWND h) {
-
+LONG MLEdeletecurline (HWND h)
+{
   /* delete current line from MLE */
 
   LONG l;
@@ -73,8 +74,8 @@ LONG MLEdeletecurline (HWND h) {
 }
 
 
-LONG MLEdeletetoeol (HWND h) {
-
+LONG MLEdeletetoeol (HWND h)
+{
   /* delete from cursor pos to end of line */
 
   IPT s,e;
@@ -87,8 +88,8 @@ LONG MLEdeletetoeol (HWND h) {
 #pragma alloc_text(FMMLE,MLEclearall,MLEtextatcursor,MLEtextatpos,MLEsizeofsel)
 
 
-VOID MLEclearall (HWND h) {
-
+VOID MLEclearall (HWND h)
+{
   /* remove all text from MLE */
   LONG len;
 
@@ -98,8 +99,8 @@ VOID MLEclearall (HWND h) {
 }
 
 
-LONG MLEtextatcursor (HWND h,CHAR *buffer,INT buflen) {
-
+LONG MLEtextatcursor (HWND h,CHAR *buffer,INT buflen)
+{
   /* place up to buflen chars of text from cursor pos into buffer
    * return # of chars imported
    */
@@ -111,8 +112,8 @@ LONG MLEtextatcursor (HWND h,CHAR *buffer,INT buflen) {
 }
 
 
-LONG MLEtextatpos (HWND h,IPT i,CHAR *buffer,INT buflen) {
-
+LONG MLEtextatpos (HWND h,IPT i,CHAR *buffer,INT buflen)
+{
   /* place up to buflen chars of text from pos i in buffer
    * return # of chars imported
    */
@@ -125,8 +126,8 @@ LONG MLEtextatpos (HWND h,IPT i,CHAR *buffer,INT buflen) {
 }
 
 
-LONG MLEsizeofsel (HWND h) {
-
+LONG MLEsizeofsel (HWND h)
+{
   /* return length of selected text */
 
   IPT cursor,anchor,test;
@@ -145,8 +146,8 @@ LONG MLEsizeofsel (HWND h) {
 
 #pragma alloc_text(FMMLE3,MLEdoblock,MLEquotepara,MLEinternet)
 
-VOID MLEinternet (HWND h,BOOL ftp) {
-
+VOID MLEinternet (HWND h,BOOL ftp)
+{
   CHAR *temp = NULL;
   IPT   ancpos,curpos,here;
   LONG  len,oldlen;
@@ -195,8 +196,8 @@ VOID MLEinternet (HWND h,BOOL ftp) {
 }
 
 
-BOOL MLEdoblock (HWND h,INT action,CHAR *filename) {
-
+BOOL MLEdoblock (HWND h,INT action,CHAR *filename)
+{
   /* perform action on text in selection */
 
   register CHAR *p;
@@ -384,8 +385,8 @@ BOOL MLEdoblock (HWND h,INT action,CHAR *filename) {
 }
 
 
-BOOL MLEquotepara (HWND h,CHAR *initials,BOOL fQuoteOld) {
-
+BOOL MLEquotepara (HWND h,CHAR *initials,BOOL fQuoteOld)
+{
   LONG num;
   CHAR lineend[2],line[8],*p;
 
@@ -421,8 +422,8 @@ BOOL MLEquotepara (HWND h,CHAR *initials,BOOL fQuoteOld) {
 #pragma alloc_text(FMMLE4,MLEAutoLoad,MLEHexLoad,MLEinsertfile,LoadThread,MLEbackgroundload)
 
 
-BOOL MLEAutoLoad (HWND h,CHAR *filename) {
-
+BOOL MLEAutoLoad (HWND h,CHAR *filename)
+{
   XMLEWNDPTR *vw;
 
   vw = (XMLEWNDPTR *)WinQueryWindowPtr(WinQueryWindow(h,QW_PARENT),0);
@@ -439,8 +440,8 @@ BOOL MLEAutoLoad (HWND h,CHAR *filename) {
 }
 
 
-BOOL MLEHexLoad (HWND h,CHAR *filename) {
-
+BOOL MLEHexLoad (HWND h,CHAR *filename)
+{
   /* insert a file into the current position in the MLE */
 
   HAB         hab;
@@ -580,8 +581,8 @@ BOOL MLEHexLoad (HWND h,CHAR *filename) {
 }
 
 
-BOOL MLEinsertfile (HWND h,CHAR *filename) {
-
+BOOL MLEinsertfile (HWND h,CHAR *filename)
+{
   /* insert a file into the current position in the MLE */
 
   HAB   hab;
@@ -754,8 +755,8 @@ typedef struct {
 } BKGLOAD;
 
 
-VOID LoadThread (VOID *arg) {
-
+VOID LoadThread (VOID *arg)
+{
   BKGLOAD *bkg;
   BOOL     fSuccess;
   HAB      thab;
@@ -818,8 +819,8 @@ INT MLEbackgroundload (HWND hwndReport,ULONG msg,HWND h,CHAR *filename,
 
 #pragma alloc_text(FMMLE5,MLEloadfile,MLEexportfile)
 
-BOOL MLEloadfile (HWND h,CHAR *filename) {
-
+BOOL MLEloadfile (HWND h,CHAR *filename)
+{
   /* load a file into the MLE, getting rid of whatever was already
    * there.  Note this returns without erasing existing text if the
    * file to load does not exist
@@ -840,20 +841,24 @@ BOOL MLEloadfile (HWND h,CHAR *filename) {
 
 
 BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,
-                    BOOL striptraillines,BOOL striptrailspaces) {
-
+                    BOOL striptraillines,BOOL striptrailspaces)
+{
   /* save the MLE contents as a file.  Format the output so that
    * the file is CR/LF terminated as presented in the MLE.
    */
 
-  FILE *fp;
-  CHAR *buffer = NULL,*p;
-  BOOL retn = TRUE;
+  FILE *fp = NULL;
+  CHAR *buffer = NULL;
+  CHAR *p;
+  BOOL ok = TRUE;
   INT  blanklines = 0;
+  BOOL fWrap = MLEgetwrap(h);
 
-// saymsg(MB_ENTER,h,DEBUG_STRING,"len = %ld",MLEgetlen(h));
+  // saymsg(MB_ENTER,h,DEBUG_STRING,"len = %ld",MLEgetlen(h));
   if(!MLEgetlen(h))   /* nothing to save; forget it */
     return TRUE;
+
+  MLEsetwrap(h, FALSE);		// Need wrap off to export MLFIE_NOTRANS
 
   if(striptraillines) {
 
@@ -867,8 +872,12 @@ BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,
       else
         break;
     }
-    if(!MLEgetlen(h))   /* nothing to save; forget it */
+    if(!MLEgetlen(h))
+    {
+      /* nothing to save; forget it */
+      MLEsetwrap(h, fWrap);		// Restore
       return TRUE;
+    }
   }
 
   if(!DosAllocMem((PVOID)&buffer,4096L,
@@ -934,7 +943,7 @@ BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,
           }
         }
         strcat(buffer,"\n");
-//        buffer = translate_out(buffer,4095,h,filename);
+        // buffer = translate_out(buffer,4095,h,filename);
         if(fwrite(buffer,1,strlen(buffer),fp) < 1) {
           saymsg(MB_ENTER,
                  h,
@@ -942,23 +951,29 @@ BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,
                  GetPString(IDS_WRITEERRORTEXT));
           break;
         }
-      }
-      fclose(fp);
+      } // for lines
     }
     else
-      retn = FALSE;
-    DosFreeMem(buffer);
+      ok = FALSE;
   }
   else
-    retn = FALSE;
-  return retn;
+    ok = FALSE;
+
+  MLEsetwrap(h, fWrap);		// Restore
+
+  if (fp)
+    fclose(fp);
+  if (buffer)
+    DosFreeMem(buffer);
+
+  return ok;
 }
 
 
 #pragma alloc_text(FMMLE3,MLEfindfirst,MLEfindnext,SandRDlgProc)
 
-MRESULT EXPENTRY SandRDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY SandRDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   /* initiate search(/replace)s in edit mode */
 
   SRCHPTR *vw;
@@ -1095,8 +1110,8 @@ MRESULT EXPENTRY SandRDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-BOOL MLEfindfirst (HWND hwnd,SRCHPTR *vw) {
-
+BOOL MLEfindfirst (HWND hwnd,SRCHPTR *vw)
+{
   if(MLEsizeofsel(vw->hwndmle) < 256L) {
     MLEgetseltext(vw->hwndmle,vw->search);
     vw->search[255] = 0;
@@ -1108,8 +1123,8 @@ BOOL MLEfindfirst (HWND hwnd,SRCHPTR *vw) {
 }
 
 
-INT MLEfindnext (HWND hwnd,SRCHPTR *vw) {
-
+INT MLEfindnext (HWND hwnd,SRCHPTR *vw)
+{
   if(!*vw->search)
     return -1;
   else {
@@ -1141,4 +1156,3 @@ INT MLEfindnext (HWND hwnd,SRCHPTR *vw) {
   }
   return 0;
 }
-
