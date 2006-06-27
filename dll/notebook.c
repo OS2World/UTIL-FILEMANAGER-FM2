@@ -6,11 +6,12 @@
   Configuration notebook
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
   04 Jun 05 SHL Support Cancel button; make Esc key more consistent
+  29 May 06 SHL Comments
 
 ***********************************************************************/
 
@@ -83,19 +84,19 @@ MRESULT EXPENTRY CfgADlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         case CFGA_DEFARC:
           switch(SHORT2FROMMP(mp1)) {
             case BN_CLICKED:
-              if(WinQueryButtonCheckstate(hwnd,CFGA_DEFARC)) {
+              if (WinQueryButtonCheckstate(hwnd,CFGA_DEFARC)) {
 
-                ARC_TYPE *info = arcsighead;
+                ARC_TYPE *pat = arcsighead;	// Hide dups
 
-                if(!WinDlgBox(HWND_DESKTOP,hwnd,
-                              SBoxDlgProc,FM3ModHandle,ASEL_FRAME,
-                              (PVOID)&info) || !info || !info->id ||
-                              !*info->id) {
+                if (!WinDlgBox(HWND_DESKTOP,hwnd,
+                               SBoxDlgProc,FM3ModHandle,ASEL_FRAME,
+                               (PVOID)&pat) ||
+		    !pat || !pat->id || !*pat->id) {
                   DosBeep(250,100);
                   WinCheckButton(hwnd,CFGA_DEFARC,FALSE);
                 }
                 else
-                  WinSetDlgItemText(hwnd,CFGA_DEFARCNAME,info->id);
+                  WinSetDlgItemText(hwnd,CFGA_DEFARCNAME,pat->id);
               }
               break;
             default:

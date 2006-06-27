@@ -6,7 +6,7 @@
   See all matching files
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   25 Nov 03 SHL StartSeeAll: avoid forgetting startpath
@@ -15,6 +15,7 @@
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   05 Jun 05 SHL Use QWL_USER
   06 Jun 05 SHL Drop unused code
+  29 May 06 SHL Comments
 
 ***********************************************************************/
 
@@ -448,14 +449,15 @@ MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 	      memset(&ad,0,sizeof(ad));
 	      ad.namecanchange = 1;
-	      ad.info = arcsighead;
+	      ad.info = arcsighead;	// Hide dups
 	      if(!WinDlgBox(HWND_DESKTOP,
 			    hwndFrame,
 			    SBoxDlgProc,
 			    FM3ModHandle,
 			    ASEL_FRAME,
 			    (PVOID)&ad.info) ||
-			    !ad.info) { /* we blew it */
+		 !ad.info) {
+		/* we blew it */
 		FreeList(list);
 		break;
 	      }
