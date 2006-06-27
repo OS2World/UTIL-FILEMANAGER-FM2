@@ -6,12 +6,13 @@
   Auto view
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2006 Steven H.Levine
 
   12 Sep 02 SHL AutoObjProc: catch buff2 overflows
   25 Oct 02 SHL CreateHexDump: catch buffer overflow
   12 Feb 03 SHL AutoObjProc: standardize EA math
   23 May 05 SHL Use QWL_USER
+  29 May 06 SHL Sync with archiver.bb2 mods
 
 ***********************************************************************/
 
@@ -37,8 +38,6 @@
 static HWND hwndAutoObj = (HWND)0;
 static CHAR stopflag;
 static CHAR currfile[CCHMAXPATH];
-extern BOOL loadedarcs;
-
 
 BOOL WriteEA (HWND hwnd,CHAR *filename,CHAR *eaname,USHORT type,CHAR *data) {
 
@@ -321,7 +320,7 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                       if(IsBinary(ibuff,ibufflen)) {
                         olen = ibufflen;
 			// Check archive
-                        if(!loadedarcs)
+                        if(!arcsigsloaded)
                           load_archivers();
                         info = arcsighead;
                         while(info) {
