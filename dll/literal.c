@@ -7,11 +7,12 @@
   wildcarding utilities
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
   Archive containers
 
-  Revisions	01 Aug 04 SHL - Rework fixup to avoid overflows
+  01 Aug 04 SHL Rework fixup to avoid overflows
+  16 Jun 06 SHL liternal: comments
 
 ***********************************************************************/
 
@@ -65,6 +66,9 @@ static INT index(const CHAR *s,const CHAR c)
  *    literal(s);
  *
  *    ( s now equals "this is a test of \MSC\CSM")
+ *
+ * Return converted character count
+ * Does not include terminating nul
  */
 
 #define HEX "0123456789ABCDEF"
@@ -175,13 +179,13 @@ UINT literal(PSZ pszBuf)
    } // switch
    iBuf++;
   } // while
-  *pszOut = 0;	/* terminate the string */
+  *pszOut = 0;				/* Always terminate, even if not string */
 
-  cBufBytes = pszOut - pszWork;		/* Calc string length */
+  cBufBytes = pszOut - pszWork;		/* Calc string length excluding terminator */
   memcpy(pszBuf,pszWork,cBufBytes + 1);	/* Overwrite including terminator */
   free(pszWork);
 
-  return cBufBytes;                     /* return string length */
+  return cBufBytes;                     /* Return string length */
 }
 
 /* Check wildcard match
