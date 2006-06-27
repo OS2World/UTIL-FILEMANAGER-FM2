@@ -22,8 +22,8 @@ neatly.
 :hp1.:link reftype=hd res=97500.Dialog:elink.&colon.:ehp1.
 :p.
 Brings up a dialog that lets you minimize, restore or close selected
-child windows. You can also chord the mouse on a blank portion of the
-main client window to call up this dialog.
+child windows. You can also :color fc=default bc=cyan.chord:color fc=default bc=default.
+ the mouse on a blank portion of the main client window to call up this dialog.
 :p.
 :hp1.Restore&colon.:ehp1.
 :p.
@@ -39,7 +39,7 @@ Minimizes child windows.
 :p.
 This dialog lets you minimize, restore or close selected child windows.
 It's accessed via toolbar button, :link reftype=hd
-res=91100.Windows:elink.->Dialog or by chording on a blank portion of
+res=91100.Windows:elink.->Dialog or by :color fc=default bc=cyan.chording:color fc=default bc=default. on a blank portion of
 the main client window.
 :p.
 Highlight the windows on which you want to act, then click the

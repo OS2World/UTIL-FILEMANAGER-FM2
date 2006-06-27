@@ -9,7 +9,7 @@ to be used when printing occurs.
 The listbox at the top of the dialog contains the files that are to be
 printed. You can unhighlight (deselect) any files that you do
 :hp1.not:ehp1. want to print. :hp6.Hint:ehp6.&colon. you might need to
-hold down the Ctrl key while clicking to unhighlight the first file.
+hold down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while clicking to unhighlight the first file.
 :p.
 At the bottom of the dialog you can tell FM/2 whether to use
 :hp1.formatted printing:ehp1., which performs pagination for you, or to

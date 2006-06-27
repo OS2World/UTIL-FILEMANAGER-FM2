@@ -6,452 +6,452 @@
 :hp1.Note&colon.:ehp1. many commands also available in Drive Tree and
 Collector windows.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + A
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.A:color fc=default bc=default.
 :pd.Archive
-:pt.Ctrl + a
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.a:color fc=default bc=default.
 :pd.Change attributes
-:pt.Ctrl + C
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.C:color fc=default bc=default.
 :pd.Collect
-:pt.Ctrl + c
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.c:color fc=default bc=default.
 :pd.Copy
-:pt.Ctrl + D
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.D:color fc=default bc=default.
 :pd.Permanently delete
-:pt.Ctrl + d
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.d:color fc=default bc=default.
 :pd.Delete
-:pt.Ctrl + E
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.E:color fc=default bc=default.
 :pd.Edit extended attributes
-:pt.Ctrl + e
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.e:color fc=default bc=default.
 :pd.Edit file
-:pt.Ctrl + F
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F:color fc=default bc=default.
 :pd.Find directory in Drive Tree
-:pt.Ctrl + f
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.f:color fc=default bc=default.
 :pd.Filter
-:pt.Ctrl + G
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.G:color fc=default bc=default.
 :pd.See all files from cursored directory
-:pt.Ctrl + g
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.g:color fc=default bc=default.
 :pd.See all files from Container directory
-:pt.Ctrl + H
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.H:color fc=default bc=default.
 :pd.Detach a drive from a remote resource (Drive Tree only)
-:pt.Ctrl + i
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.i:color fc=default bc=default.
 :pd.Information
-:pt.Ctrl + l
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.l:color fc=default bc=default.
 :pd.Play multimedia files (via FM2Play.EXE)
-:pt.Ctrl + M
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.M:color fc=default bc=default.
 :pd.Make directory
-:pt.Ctrl + m
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.m:color fc=default bc=default.
 :pd.Move
-:pt.Ctrl + o
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.o:color fc=default bc=default.
 :pd.Open window
-:pt.Ctrl + q
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.q:color fc=default bc=default.
 :pd.Quick tree for current directory
-:pt.Ctrl + Q
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Q:color fc=default bc=default.
 :pd.Quick tree for Container
-:pt.Ctrl + P
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.P:color fc=default bc=default.
 :pd.Previous directory
-:pt.Ctrl + p
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.p:color fc=default bc=default.
 :pd.Print
-:pt.Ctrl + R
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.R:color fc=default bc=default.
 :pd.Rescan
-:pt.Ctrl + r
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.r:color fc=default bc=default.
 :pd.Rename
-:pt.Ctrl + S
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.S:color fc=default bc=default.
 :pd.Save filenames to listfile (catalog)
-:pt.Ctrl + s
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.s:color fc=default bc=default.
 :pd.Subject
-:pt.Ctrl + T
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.T:color fc=default bc=default.
 :pd.Set Target directory
-:pt.Ctrl + U
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.U:color fc=default bc=default.
 :pd.UUdecode files
-:pt.Ctrl + u
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.u:color fc=default bc=default.
 :pd.Update objects
-:pt.Ctrl + v
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.v:color fc=default bc=default.
 :pd.View
-:pt.Ctrl + w
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.w:color fc=default bc=default.
 :pd.Walk to new directory
-:pt.Ctrl + x
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.x:color fc=default bc=default.
 :pd.Extract
-:pt.Ctrl + Z
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Z:color fc=default bc=default.
 :pd.Directory sizes
-:pt.Ctrl + >
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.>:color fc=default bc=default.
 :pd.Previous directory
-:pt.Ctrl + .
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray..:color fc=default bc=default.
 :pd.Parent directory
-:pt.Ctrl + +
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.+:color fc=default bc=default.
 :pd.Deselect mask
-:pt.Ctrl + =
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.=:color fc=default bc=default.
 :pd.Select mask
-:pt.Ctrl + ?
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.?:color fc=default bc=default.
 :pd.Select all directories
-:pt.Ctrl + /
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray./:color fc=default bc=default.
 :pd.Select all files
-:pt.Ctrl + |
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.|:color fc=default bc=default.
 :pd.Select all directories
-:pt.Ctrl + \
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.\:color fc=default bc=default.
 :pd.Deselect all
-:pt.Ctrl + {
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.{:color fc=default bc=default.
 :pd.Append to clipboard
-:pt.Ctrl + [
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.[:color fc=default bc=default.
 :pd.Save to clipboard
-:pt.Ctrl + }
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.}:color fc=default bc=default.
 :pd.Deselect clipboard
-:pt.Ctrl + ]
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.]:color fc=default bc=default.
 :pd.Select clipboard
-:pt.Ctrl + ;
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.;:color fc=default bc=default.
 :pd.Invert selection
-:pt.Ctrl + '
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.':color fc=default bc=default.
 :pd.Reselect
-:pt.Delete
+:pt.:color fc=default bc=palegray.Delete:color fc=default bc=default.
 :pd.Delete
-:pt.Alt + Insert
+:pt.:color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.Insert:color fc=default bc=default.
 :pd.Create a new file
-:pt.F3
+:pt.:color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close window
-:pt.Ctrl + F5
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F5:color fc=default bc=default.
 :pd.Command line
-:pt.F6
+:pt.:color fc=default bc=palegray.F6:color fc=default bc=default.
 :pd.Open default
-:pt.F7
+:pt.:color fc=default bc=palegray.F7:color fc=default bc=default.
 :pd.Open settings
-:pt.Ctrl + F7
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F7:color fc=default bc=default.
 :pd.Show sort submenu
-:pt.Ctrl + F8
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F8:color fc=default bc=default.
 :pd.Show select submenu
-:pt.Ctrl + 1
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.1:color fc=default bc=default.
 :pd.Invoke first configured Command
-:pt.Ctrl + 0
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.0:color fc=default bc=default.
 :pd.Invoke tenth configured Command
-:pt.Ctrl + Shift + 1
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.1:color fc=default bc=default.
 :pd.Invoke eleventh configured Command
-:pt.Ctrl + Shift + 0
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.0:color fc=default bc=default.
 :pd.Invoke twentieth configured Command
 :eparml.
 :p.
 :p.
 :hp2.Specific to Collector:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + g
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.g:color fc=default bc=default.
 :pd.Seek and scan files
-:pt.Escape
+:pt.:color fc=default bc=palegray.Esc:color fc=default bc=default.
 :pd.Stop seek and scan in progress
 :eparml.
 :p.
 :hp2.Archive Containers:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + d
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.d:color fc=default bc=default.
 :pd.Delete
-:pt.Ctrl + E
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.E:color fc=default bc=default.
 :pd.Execute
-:pt.Ctrl + e
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.e:color fc=default bc=default.
 :pd.Edit
-:pt.Ctrl + f
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.f:color fc=default bc=default.
 :pd.Filter
-:pt.Ctrl + i
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.i:color fc=default bc=default.
 :pd.Find
-:pt.Ctrl + l
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.l:color fc=default bc=default.
 :pd.Play multimedia files (via FM2Play.EXE)
-:pt.Ctrl + p
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.p:color fc=default bc=default.
 :pd.Print
-:pt.Ctrl + R
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.R:color fc=default bc=default.
 :pd.Rescan
-:pt.Ctrl + T
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.T:color fc=default bc=default.
 :pd.Test
-:pt.Ctrl + V
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.V:color fc=default bc=default.
 :pd.Virus scan
-:pt.Ctrl + v
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.v:color fc=default bc=default.
 :pd.View
-:pt.Ctrl + w
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.w:color fc=default bc=default.
 :pd.Walk to new extract directory
-:pt.Ctrl + X
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.X:color fc=default bc=default.
 :pd.Extract w/ directories
-:pt.Ctrl + x
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.x:color fc=default bc=default.
 :pd.Extract
-:pt.Ctrl + +
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.+:color fc=default bc=default.
 :pd.Deselect mask
-:pt.Ctrl + =
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.=:color fc=default bc=default.
 :pd.Select mask
-:pt.Ctrl + /
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray./:color fc=default bc=default.
 :pd.Select all
-:pt.Ctrl + \
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.\:color fc=default bc=default.
 :pd.Deselect all
-:pt.Ctrl + ;
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.;:color fc=default bc=default.
 :pd.Invert selection
-:pt.Ctrl + '
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.':color fc=default bc=default.
 :pd.Reselect
-:pt.F3
+:pt.:color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close window
 :eparml.
 :p.
 :hp2.FM/2 monolithic window:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + k
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.k:color fc=default bc=default.
 :pd.Keys help
-:pt.Ctrl + O
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.O:color fc=default bc=default.
 :pd.Walk to new directory, open Container
-:pt.Ctrl + t
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.t:color fc=default bc=default.
 :pd.Tile windows
-:pt.Ctrl + W
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.W:color fc=default bc=default.
 :pd.Window dialog
-:pt.F2
+:pt.:color fc=default bc=palegray.F2:color fc=default bc=default.
 :pd.Collector
-:pt.Ctrl + F3
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close FM/2
-:pt.Ctrl + Shift + F4
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.F4:color fc=default bc=default.
 :pd.Autoview .COMMENTS EA
-:pt.Ctrl + F4
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F4:color fc=default bc=default.
 :pd.Autoview file contents
-:pt.F4
+:pt.:color fc=default bc=palegray.F4:color fc=default bc=default.
 :pd.Toggle autoview window
-:pt.F5
+:pt.:color fc=default bc=palegray.F5:color fc=default bc=default.
 :pd.Command line
-:pt.Ctrl + Shift + F8
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.F8:color fc=default bc=default.
 :pd.Toggle drivebar
-:pt.Ctrl + F8
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F8:color fc=default bc=default.
 :pd.Toggle bottom buttons
-:pt.F8
+:pt.:color fc=default bc=palegray.F8:color fc=default bc=default.
 :pd.Toggle quicklists
-:pt.F9
+:pt.:color fc=default bc=palegray.F9:color fc=default bc=default.
 :pd.OS/2 window
-:pt.Ctrl + F10
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F10:color fc=default bc=default.
 :pd.Begin direct edit
-:pt.Ctrl + F11
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F11:color fc=default bc=default.
 :pd.End direct edit
-:pt.Tab
+:pt.:color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Next frame window
-:pt.Shift + Tab
+:pt.:color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Previous frame window
-:pt.Ctrl + Tab
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Autoview window (if open)
 :eparml.
 :p.
 :hp2.FM/2-Lite monolithic window:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + k
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.k:color fc=default bc=default.
 :pd.Keys help
-:pt.Ctrl + W
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.W:color fc=default bc=default.
 :pd.Change both directories
-:pt.F2
+:pt.:color fc=default bc=palegray.F2:color fc=default bc=default.
 :pd.Collector
-:pt.Ctrl + F3
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close FM/2-Lite
-:pt.Ctrl + Shift + F4
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.F4:color fc=default bc=default.
 :pd.Autoview .COMMENTS EA
-:pt.Ctrl + F4
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F4:color fc=default bc=default.
 :pd.Autoview file contents
-:pt.F4
+:pt.:color fc=default bc=palegray.F4:color fc=default bc=default.
 :pd.Toggle autoview window
-:pt.F5
+:pt.:color fc=default bc=palegray.F5:color fc=default bc=default.
 :pd.Command line
-:pt.Ctrl + Shift + F8
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.F8:color fc=default bc=default.
 :pd.Toggle drivebar
-:pt.Ctrl + F8
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F8:color fc=default bc=default.
 :pd.Toggle bottom buttons
-:pt.F8
+:pt.:color fc=default bc=palegray.F8:color fc=default bc=default.
 :pd.Toggle quicklists
-:pt.F9
+:pt.:color fc=default bc=palegray.F9:color fc=default bc=default.
 :pd.OS/2 window
-:pt.Ctrl + F10
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F10:color fc=default bc=default.
 :pd.Begin direct edit
-:pt.Ctrl + F11
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F11:color fc=default bc=default.
 :pd.End direct edit
-:pt.Tab
+:pt.:color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Next frame window
-:pt.Shift + Tab
+:pt.:color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Previous frame window
-:pt.Ctrl + Tab
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Autoview window (if open)
 :eparml.
 :p.
 :hp2.Fast internal viewer:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + e
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.e:color fc=default bc=default.
 :pd.Edit this file
-:pt.Ctrl + f
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.f:color fc=default bc=default.
 :pd.Find first
-:pt.Ctrl + h
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.h:color fc=default bc=default.
 :pd.Hex mode
-:pt.Ctrl + j
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.j:color fc=default bc=default.
 :pd.Goto line
-:pt.Ctrl + N
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.N:color fc=default bc=default.
 :pd.Next selected line
-:pt.Ctrl + n
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.n:color fc=default bc=default.
 :pd.Find next
-:pt.Ctrl + o
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.o:color fc=default bc=default.
 :pd.Goto offset
-:pt.Ctrl + P
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.P:color fc=default bc=default.
 :pd.Previous selected line
-:pt.Ctrl + p
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.p:color fc=default bc=default.
 :pd.Find previous
-:pt.Ctrl + v
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.v:color fc=default bc=default.
 :pd.View filename at start of line
-:pt.Ctrl + w
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.w:color fc=default bc=default.
 :pd.Write to file
-:pt.Ctrl + /
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray./:color fc=default bc=default.
 :pd.Select all
-:pt.Ctrl + \
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.\:color fc=default bc=default.
 :pd.Deselect all
-:pt.Ctrl + ;
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.;:color fc=default bc=default.
 :pd.Invert selection
-:pt.Ctrl + {
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.{:color fc=default bc=default.
 :pd.Append to clipboard
-:pt.Ctrl + [
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.[:color fc=default bc=default.
 :pd.Save to clipboard
-:pt.Tab
+:pt.:color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Switch to bookmark window (if open)
-:pt.F3 or Esc
+:pt.:color fc=default bc=palegray.F3:color fc=default bc=default. or :color fc=default bc=palegray.Esc:color fc=default bc=default.
 :pd.Close window
-:pt.F11
+:pt.:color fc=default bc=palegray.F11:color fc=default bc=default.
 :pd.Next blank line
-:pt.F12
+:pt.:color fc=default bc=palegray.F12:color fc=default bc=default.
 :pd.Previous blank line
 :eparml.
 :p.
 :hp2.Internal viewer/editor:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + a
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.a:color fc=default bc=default.
 :pd.Append to clipboard
-:pt.Ctrl + c
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.c:color fc=default bc=default.
 :pd.Change filename
-:pt.Ctrl + f
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.f:color fc=default bc=default.
 :pd.Find first
-:pt.Ctrl + I
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.I:color fc=default bc=default.
 :pd.Case insensitive
-:pt.Ctrl + i
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.i:color fc=default bc=default.
 :pd.Insert file
-:pt.Ctrl + j
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.j:color fc=default bc=default.
 :pd.Jump to line
-:pt.Ctrl + n
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.n:color fc=default bc=default.
 :pd.Find next
-:pt.Ctrl + q
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.q:color fc=default bc=default.
 :pd.Quit
-:pt.Ctrl + R
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.R:color fc=default bc=default.
 :pd.Toggle readonly
-:pt.Ctrl + s
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.s:color fc=default bc=default.
 :pd.Save file
-:pt.Ctrl + u
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.u:color fc=default bc=default.
 :pd.Undo
-:pt.Ctrl + W
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.W:color fc=default bc=default.
 :pd.Write block
-:pt.Ctrl + w
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.w:color fc=default bc=default.
 :pd.Toggle wordwrap
-:pt.Ctrl + y
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.y:color fc=default bc=default.
 :pd.Delete line
-:pt.Ctrl + /
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray./:color fc=default bc=default.
 :pd.Select all
-:pt.Ctrl + \
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.\:color fc=default bc=default.
 :pd.Deselect all
-:pt.F2
+:pt.:color fc=default bc=palegray.F2:color fc=default bc=default.
 :pd.Set font
-:pt.F3
+:pt.:color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close window
-:pt.Escape
+:pt.:color fc=default bc=palegray.Esc:color fc=default bc=default.
 :pd.Close window (if viewing)
 :eparml.
 :p.
 :hp2.See all files window:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + A
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.A:color fc=default bc=default.
 :pd.Archive
-:pt.Ctrl + a
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.a:color fc=default bc=default.
 :pd.Change attributes
-:pt.Ctrl + C
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.C:color fc=default bc=default.
 :pd.Collect
-:pt.Ctrl + c
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.c:color fc=default bc=default.
 :pd.Copy
-:pt.Ctrl + D
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.D:color fc=default bc=default.
 :pd.Permanently delete
-:pt.Ctrl + d
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.d:color fc=default bc=default.
 :pd.Delete
-:pt.Ctrl + E
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.E:color fc=default bc=default.
 :pd.Edit extended attributes
-:pt.Ctrl + f
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.f:color fc=default bc=default.
 :pd.Filter
-:pt.Ctrl + i
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.i:color fc=default bc=default.
 :pd.Information
-:pt.Ctrl + m
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.m:color fc=default bc=default.
 :pd.Move
-:pt.Ctrl + p
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.p:color fc=default bc=default.
 :pd.Print
-:pt.Ctrl + R
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.R:color fc=default bc=default.
 :pd.Rescan
-:pt.Ctrl + r
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.r:color fc=default bc=default.
 :pd.Rename
-:pt.Ctrl + S
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.S:color fc=default bc=default.
 :pd.Save names to listfile (catalog)
-:pt.Ctrl + s
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.s:color fc=default bc=default.
 :pd.Subject
-:pt.Ctrl + U
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.U:color fc=default bc=default.
 :pd.UUdecode files
-:pt.Ctrl + x
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.x:color fc=default bc=default.
 :pd.Extract
-:pt.Ctrl + +
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.+:color fc=default bc=default.
 :pd.Deselect mask
-:pt.Ctrl + =
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.=:color fc=default bc=default.
 :pd.Select mask
-:pt.Ctrl + /
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray./:color fc=default bc=default.
 :pd.Select all
-:pt.Ctrl + \
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.\:color fc=default bc=default.
 :pd.Deselect all
-:pt.Ctrl + ;
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.;:color fc=default bc=default.
 :pd.Invert selection
-:pt.Ctrl + {
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.{:color fc=default bc=default.
 :pd.Append to clipboard
-:pt.Ctrl + [
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.[:color fc=default bc=default.
 :pd.Save to clipboard
-:pt.F3
+:pt.:color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close window
-:pt.F6
+:pt.:color fc=default bc=palegray.F6:color fc=default bc=default.
 :pd.Open default
-:pt.F7
+:pt.:color fc=default bc=palegray.F7:color fc=default bc=default.
 :pd.Open settings
 :eparml.
 :p.
 :hp2.INI viewer:ehp2.
 :parml compact tsize=20 break=none.
-:pt.Ctrl + a
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.a:color fc=default bc=default.
 :pd.Add entry
-:pt.Ctrl + C
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.C:color fc=default bc=default.
 :pd.Copy application
-:pt.Ctrl + c
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.c:color fc=default bc=default.
 :pd.Copy keyword
-:pt.Ctrl + D
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.D:color fc=default bc=default.
 :pd.Delete application
-:pt.Ctrl + d
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.d:color fc=default bc=default.
 :pd.Delete keyword
-:pt.Ctrl + e
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.e:color fc=default bc=default.
 :pd.Edit entry
-:pt.Ctrl + F
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F:color fc=default bc=default.
 :pd.Filter
-:pt.Ctrl + f
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.f:color fc=default bc=default.
 :pd.Refresh
-:pt.Ctrl + o
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.o:color fc=default bc=default.
 :pd.Other profile
-:pt.Ctrl + R
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.R:color fc=default bc=default.
 :pd.Rename application
-:pt.Ctrl + r
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.r:color fc=default bc=default.
 :pd.Rename keyword
-:pt.Ctrl + s
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.s:color fc=default bc=default.
 :pd.System profile
-:pt.Ctrl + u
+:pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.u:color fc=default bc=default.
 :pd.User profile
-:pt.F3
+:pt.:color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close window
-:pt.F5
+:pt.:color fc=default bc=palegray.F5:color fc=default bc=default.
 :pd.Find first
-:pt.F6
+:pt.:color fc=default bc=palegray.F6:color fc=default bc=default.
 :pd.Find next
-:pt.Tab
+:pt.:color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Next control window
-:pt.Shift + Tab
+:pt.:color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Previous control window
 :eparml.
 :p.
 :hp2.Miscellaneous:ehp2.
 :p.
-To control the monolithic frame window, use Ctrl + the usual keys (see
+To control the monolithic frame window, use :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + the usual keys (see
 system menu).
 :p.
 :hp2.Notes:ehp2.
 :p.
 Remember, :link reftype=hd res=97700.accelerator keys:elink. are case
-sensitive -- Ctrl + r isn't the same thing as Ctrl + R. The latter is
-obtained by holding down both Ctrl and Shift while pressing the "R" key.
+sensitive -- :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.r:color fc=default bc=default. isn't the same thing as :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.R:color fc=default bc=default.. The latter is
+obtained by holding down both :color fc=default bc=palegray.Ctrl:color fc=default bc=default. and :color fc=default bc=palegray.Shift:color fc=default bc=default. while pressing the ":color fc=default bc=palegray.R:color fc=default bc=default." key.

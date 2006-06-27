@@ -4,7 +4,7 @@
 :artwork name='bitmaps\fm4.bmp' align=center.
 :p.
 "FM/2 Lite" is an alternate "personality" for FM/2. It's invoked from
-the FM4.EXE executable rather than FM3.EXE.
+the :link reftype=hd res=100095.FM4.EXE:elink. executable rather than FM3.EXE.
 :p.
 This personality is a simplified version of the standard FM/2 interface.
 You get two Directory Containers and an optional Drive Tree. You
@@ -24,7 +24,8 @@ doing here?  &colon.-)
 The current window within the main window is surrounded by a red line.
 If the Drive Tree is active and the current window, the Directory
 Container that will be affected by double-clicking a directory in the
-Tree is surrounded by a dark red line. Tab and Shift-Tab can be used
+Tree is surrounded by a dark red line. :color fc=default bc=palegray.Tab:color fc=default bc=default.
+ and :color fc=default bc=palegray.Shift:color fc=default bc=default. -:color fc=default bc=palegray.Tab:color fc=default bc=default. can be used
 to switch between the windows.
 :p.
 Other topics that might be of interest&colon.

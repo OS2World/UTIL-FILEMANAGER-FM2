@@ -16,7 +16,7 @@ datafile types to start when the datafile is selected. For instance, if
 you associate "*&period.ICO" with "ICONEDIT.EXE %a" the icon editor will
 be started with the selected icon file when you double-click an icon. A
 special association command line, "<>", causes FM/2 to open the default
-WPS view of an object. 
+WPS view of an object.
 :p.
 Signatures provide a mechanism to further test a matching file to
 determine that it is the proper type. For example, all OS/2 &period.INF
@@ -97,7 +97,8 @@ and stand to gain considerably.
 :h3 res=90402 name=PANEL_OS2ASSOC.Accessing OS/2's associations
 :i1 id=aboutOS2Associations.Accessing OS/2's associations
 You can access OS/2's associations for a file system object at any time
-by pressing the F6 key or holding down Ctrl while double-clicking the
+by pressing the :color fc=default bc=palegray.F6:color fc=default bc=default.
+ key or holding down :color fc=default bc=palegray.Ctrl:color fc=default bc=default. while double-clicking the
 object. This causes a default WPS open to be performed on the object.
 :p.
 If you want to access OS/2's associations by an unaugmented double-click,

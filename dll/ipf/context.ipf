@@ -5,7 +5,7 @@ menus) are used extensively in FM/2, just as they are in the WPS.
 :p.
 Context menus are requested by placing the mouse pointer over a desired
 object in a container (or over container whitespace) and clicking mouse
-button two (B2, usually the right button).
+button two (:color fc=default bc=cyan.B2:color fc=default bc=default., usually the right button).
 :p.
 Commands that affect the container as a whole are found in context menus
 requested over whitespace (any empty area of the container). Commands
@@ -29,7 +29,7 @@ When a menu command leads to a dialog, the command name is followed by
 dots (i.e. "Attributes..."). In cases where commands have :link
 reftype=hd res=100005.accelerator key equivalents:elink., the :link
 reftype=hd res=97700.accelerator key:elink. is listed after the command
-(i.e. "Info...   Ctrl + i").
+(i.e. "Info...   :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.i:color fc=default bc=default.").
 :p.
 :hp2.See also&colon.:ehp2.
 .br
@@ -45,9 +45,9 @@ reftype=hd res=97700.accelerator key:elink. is listed after the command
 Commands are listed in the order they appear on the file object context
 menu. Some commands apply to file, directory and drive objects. Others apply to
 only one or two types of objects. Items not appearing on the file object menus
-are inserted at the relative point they appear in the directory and/or drive menu. 
-Small icons appear with each entry to indicate which types of objects file :artwork runin name='\bitmaps\file.bmp'. 
-directory :artwork runin name='\bitmaps\fldr.bmp'. and/or drive :artwork runin name='\bitmaps\drive.bmp'. they are associated with. 
+are inserted at the relative point they appear in the directory and/or drive menu.
+Small icons appear with each entry to indicate which types of objects file :artwork runin name='\bitmaps\file.bmp'.
+directory :artwork runin name='\bitmaps\fldr.bmp'. and/or drive :artwork runin name='\bitmaps\drive.bmp'. they are associated with.
 (Note that not all commands are available for all objects on all drives;
 CD-ROM drives obviously wouldn't allow Delete and Move commands, for
 instance, since they're read-only drives. In this case the command(s) are grayed out)
@@ -59,7 +59,7 @@ res=93300.Files:elink. pulldown menu.
 :p.
 :hp6.:link reftype=hd res=91400.Rename:elink.:ehp6. allows you to rename
 objects. You are notified of conflicts as they occur. An easier method
-for renaming one object is to point at its text, hold down the ALT key,
+for renaming one object is to point at its text, hold down the :color fc=default bc=palegray.Alt:color fc=default bc=default. key,
 and click mouse button one; however, this command allows you to use
 wildcards when renaming if you desire.
 :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
@@ -108,7 +108,7 @@ example, when moving a directory containing a program suite to
 maintain the link between program objects and the program executables
 in the directory. :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
 :p.
-:artwork name='..\..\bitmaps\view.bmp' align=center. 
+:artwork name='..\..\bitmaps\view.bmp' align=center.
 :p.
 The :hp6.View:ehp6. conditional cascade submenu allows you to view the
 current object. Since this is a conditional cascade submenu, you can
@@ -121,12 +121,12 @@ res=92200.configured viewer:elink.. This is the default for the
 Files->View conditional cascade submenu when a file is the current
 object. When you select Autoview, FM/2 guesses whether the file is text
 or binary data and views it accordingly.
-:artwork runin name='\bitmaps\file.bmp'. 
+:artwork runin name='\bitmaps\file.bmp'.
 :p.
 :hp6.as text:ehp6. causes FM/2 to view the current file object as text,
 using the :link reftype=hd res=97000.configured text viewer:elink. or
 the internal if none is configured.
-:artwork runin name='\bitmaps\file.bmp'. 
+:artwork runin name='\bitmaps\file.bmp'.
 :p.
 :hp6.as binary:ehp6. causes FM/2 to view the current file object as
 binary data, using the :link reftype=hd res=97000.configured binary
@@ -179,7 +179,7 @@ dialog:elink. or switch directories.
 :artwork name='..\..\bitmaps\playmm.bmp' align=center.
 :p.
 :hp6.Multimedia:ehp6. attempts to play the objects via MMPM/2 using
-FM2PLAY.EXE (from the FM/2 Utilities collection, distributed separately
+FM2PLAY.EXE (from the :link reftype=hd res=100090.FM/2 Utilities collection:elink., distributed separately
 in FM2UTILS.ZIP). Obviously, the objects must be multimedia objects
 (sound files, movies, midi files, etc.) for this to have the desired
 effect, and MMPM/2 must be installed in your system. Note:  for this
@@ -189,6 +189,7 @@ limit of 1000 characters), you must have a version of FM2PLAY.EXE that
 supports the /# command line switch. To test your version of
 FM2PLAY.EXE, run FM2PLAY /? and see if /# is listed as a supported
 switch. If not, upgrade to a new version of the FM/2 Utilities.
+
 :artwork runin name='\bitmaps\file.bmp'.
 :p.
 :artwork name='..\..\bitmaps\edit.bmp' align=center.
@@ -203,7 +204,7 @@ default editing action (noted below).
 res=92200.configured editor:elink.. This is the default for the
 Files->Edit conditional cascade submenu when a file is the current
 object. When you select Autoedit, FM/2 guesses whether the file is text
-or binary data and edits it accordingly. 
+or binary data and edits it accordingly.
 :artwork runin name='\bitmaps\file.bmp'.
 :p.
 :hp6.as text:ehp6. causes FM/2 to edit the current file object as text,
@@ -253,7 +254,7 @@ for eternity awaiting access to a nonexistent or inaccessible device.
 Actually, if using the standard WPS, it's recommended that you simply
 drag files to the printer object and drop them instead of using this
 command. :artwork runin name='\bitmaps\file.bmp'.
-:p. 
+:p.
 :artwork name='..\..\bitmaps\opend.bmp' align=center.
 :p.
 The :hp6.Open:ehp6. conditional cascade submenu allows you to open the
@@ -263,25 +264,25 @@ default open action for files is to either run them (executable files) or open t
 based on their file association. :artwork runin name='\bitmaps\file.bmp'.
 :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
-The :hp6.Settings notebook:ehp6. option opens the object's WPS properties notebooks. 
+The :hp6.Settings notebook:ehp6. option opens the object's WPS properties notebooks.
 :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 Open a directory or drive as a WPS Folder in either :hp6.icon, details or tree:ehp6. view
 :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 Open a new FM/2 window (container; the default for directories and drives).
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.  
+:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 Opening a file's Default view will honor any OS/2 associations that you have
-setup. Remember that F6 or Ctrl + double-click opens an object's
-default WPS view, and Ctrl + Shift + double-click opens an object's
+setup. Remember that :color fc=default bc=palegray.F6:color fc=default bc=default. or :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + double-click opens an object's
+default WPS view, and :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + double-click opens an object's
 WPS Settings notebook.
 :p.
 :artwork name='..\..\bitmaps\object.bmp' align=center.
 :artwork name='..\..\bitmaps\shadow.bmp' align=center.
 :p.
 Next is a conditional cascade submenu called :hp6.Create Objects:ehp6.,
-with Shadows as the default command. Create shadows appears as a 
+with Shadows as the default command. Create shadows appears as a
 a top level menu item on the drives object menu.
 :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
@@ -307,7 +308,7 @@ the files over a modem or network.
 :p.
 :hp6.:link reftype=hd res=96000.Save to list file:elink.:ehp6. lets you
 save selected objects as a list to a text file. Lists can include file
-sizes, subjects, etc. 
+sizes, subjects, etc.
 :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\collect.bmp' align=center.
@@ -369,10 +370,10 @@ very hard to keep all its windows up to date, but things outside FM/2
 can cause changes that FM/2 cannot know about automatically. This
 command will ensure that your display is current.
 :artwork runin name='\bitmaps\drive.bmp'.
-:p. 
+:p.
 :hp6.Expand:ehp6. expands the tree from the point where the context menu
 was requested to the bottom of the branch. This isn't the same as clicking
-the [+] symbol as it expands :hp1.all:ehp1. branches.   
+the [+] symbol as it expands :hp1.all:ehp1. branches.
 :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 :hp6.Collapse:ehp6. collapses the tree from the point where the context
@@ -419,10 +420,11 @@ disk.:ehp8. This is available only in context menus requested on drives
 giving the drive to optimize as a command line argument. Therefore, for
 a FAT drive C&colon. "FATOPT.CMD C&colon." would be run (through the
 command interpreter defined in %COMSPEC% or CMD.EXE if none is defined)
-for an HPFS drive D&colon. "HPFSOPT.CMD D&colon." and for an JFS drive E&colon. "JFSOPT.CMD 
-E&colon.". CMD files are supplied with FM/2 that call utility programs from FM2UTILS.ZIP (a
+for an HPFS drive D&colon. "HPFSOPT.CMD D&colon." and for an JFS drive E&colon. "JFSOPT.CMD
+E&colon.". CMD files are supplied with FM/2 that call utility programs from
+the :link reftype=hd res=100090.FM/2 Utilities collection:elink. (a
 separate collection of free-for-the-using utilities, sometimes named
-FM2UTL.ZIP) or for JFS defragfs.exe supplied with OS2. You may modify these command files as required for your
+FM2UTILS.ZIP) or for JFS defragfs.exe supplied with OS2. You may modify these command files as required for your
 system, even to call other programs than those supplied. Always be sure
 to check the disk before trying to optimize it, and (in the case of the
 FAT optimizer) it's a good idea to back up first. You shouldn't run the
@@ -442,8 +444,8 @@ opens the door of a CD ROM drive).
 :hp6.Unlock:ehp6. unlocks a removable drive.
 :artwork runin name='\bitmaps\drive.bmp'.
 :p.
-:hp6.:link reftype=hd res=90900.Drive Info:elink.:ehp6. is the first menu item on the drives 
-context menu. :artwork runin name='\bitmaps\drive.bmp'. 
+:hp6.:link reftype=hd res=90900.Drive Info:elink.:ehp6. is the first menu item on the drives
+context menu. :artwork runin name='\bitmaps\drive.bmp'.
 
 :h2 res=93710 name=PANEL_CONTEXTCNR.Context menus affecting containers
 :i1 id=aboutContextCnr.Context menus affecting containers
@@ -521,7 +523,7 @@ and in the container menu of Directory Containers. It invokes the
 :link reftype=hd res=98500.See all files:elink. window and shows all
 the files in the directory and all its subdirectories. (on submenu of miscellaneous)
 :p.
-:hp6.Find in drive tree:ehp6. hilites the directory the directory container is 
+:hp6.Find in drive tree:ehp6. hilites the directory the directory container is
 looking into on the drive tree. (on submenu of miscellaneous)
 :p.
 :artwork name='..\..\bitmaps\select.bmp' align=center.
@@ -560,9 +562,9 @@ Finally, FM/2 offers a full set of :hp6.Compare Selection:ehp6. tools
 that let you select and deselect files based on how they compare to
 unfiltered files in all other open Directory Containers (available only
 in Directory Containers). To give you an idea how this might be
-helpful, imagine that you just hit the [Enter] key in the middle of
+helpful, imagine that you just hit the :color fc=default bc=palegray.Enter:color fc=default bc=default. key in the middle of
 typing a copy command, when you were reaching for the backslash key to
-complete a path. Before you realize what's happening and can hit Ctrl-C,
+complete a path. Before you realize what's happening and can hit :color fc=default bc=palegray.Ctrl:color fc=default bc=default.+:color fc=default bc=palegray.C:color fc=default bc=default.,
 you copied fifty files from a data directory to the root directory of
 your boot drive (you shoulda used FM/2! &colon.-). Now you want to get rid of
 them, but you don't want to pick each one. Open the data directory and
@@ -571,7 +573,7 @@ the root directory. You're done.
 :p.
 These powerful selection tools are where a file manager really outshines
 command line file management, so be sure to take a look at them. Note
-that Ctrl + F8 will call up the Select menu for a given container.
+that :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F8:color fc=default bc=default. will call up the Select menu for a given container.
 :p.
 :hp6.:link reftype=hd res=100065.Set Target directory:elink.:ehp6. and
 :hp6.:link reftype=hd res=94600.Settings notebook:elink.:ehp6. are also on this menu.
@@ -585,7 +587,7 @@ This menu lacks the :hp6.view:ehp6. options except for :hp6.mini icons:ehp6. and
 :hp6.select:ehp6., :hp6.filter:ehp6. or the :hp6.miscellaneous submenu:ehp6. items.
 The additional items it contains are described below&colon.
 :p.
-:hp6.Toggle icons:ehp6 turns the icons on and off in the Drive Tree container.
+:hp6.Toggle icons:ehp6. turns the icons on and off in the Drive Tree container.
 :p.
 :hp6.Open Directory Container:ehp6. is used for:link reftype=hd res=98900.Opening a Directory Container:elink.
 :p.
@@ -692,10 +694,13 @@ used in command lines)&colon.
 :pd.percent sign
 :eparml.
 :p.
-Note that you can manipulate list files from REXX. An EXAMPLE.CMD is
-included in the FM/2 archive to show you how it's done. REXX scripts
+Note that you can manipulate list files from REXX. An :link reftype=hd res=100080.
+EXAMPLE.CMD:elink. is included in the FM/2 archive to show you how it's done. REXX scripts
 written in this manner can be effectively used as Commands.
 :p.
+
+.im example.ipf
+
 :h2 res=92500 name=PANEL_UNDELETE.Undelete Files
 :i1 id=aboutUndelete.Undelete Files
 
@@ -705,7 +710,7 @@ This leads to a dialog that interfaces with UNDELETE.COM to allow you to
 undelete files. The drive that will be operated on is determined by the
 highlighted object in the directory tree. This dialog filters out files
 that already exist on the disk. This only works if OS/2's del directories
-have been designated in config.sys. It doesn't interact with "Trashcans"  
+have been designated in config.sys. It doesn't interact with "Trashcans"
 :p.
 The :hp1.Mask:ehp1. entry field lets you set a mask (which can include
 a directory path). You can switch drives using the dropdown listbox.

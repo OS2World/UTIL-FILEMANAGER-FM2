@@ -13,7 +13,9 @@
 :artwork name='bitmaps\fm3.bmp' align=center.
 The best way to use FM/2's help, which is basically a hypertext
 document, is to look at the :hp2.Contents:ehp2. (which you'll get if you
-press Ctrl + F1 at the main window -- it may help you to maximize it
+press :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +
+:color fc=default bc=palegray.F1:color fc=default bc=default.
+ at the main window -- it may help you to maximize it
 within the help window). The Contents view of a help file is something
 like the Table of Contents in a book, with each major topic representing
 a chapter. Some topics have a "+" sign beside them to indicate that
@@ -24,15 +26,16 @@ The help sometimes has hypertext links shown in a different color, like
 the words "Context menu" a few paragraphs below. You can select these
 links to switch to a different topic related to the highlighted word(s).
 In this way you can browse through the help, moving from topic to topic
-as you feel the need for more specific help. The :hp1.Previous:ehp1. button 
+as you feel the need for more specific help. The :hp1.Previous:ehp1. button
  (IBM's view.exe)or the :hp1.Back:ehp1. button (NewView)
-(or the Escape key) will move backwards through the hypertext
+(or the :color fc=default bc=palegray.Esc:color fc=default bc=default.
+key) will move backwards through the hypertext
 links you've followed. Please note that in "NewView" the :hp1.Previous:ehp1.
 and  :hp1.Next:ehp1. buttons navigate up and down the table of contents
 while the :hp1.Back:ehp1. and :hp1.Forward:ehp1. buttons navigate hyperlinks
 :p.
 To find something on a specific topic, click the :hp2.Search:ehp2.
-button at the bottom of the help window and enter some text (IBM's view.exe)  
+button at the bottom of the help window and enter some text (IBM's view.exe)
 or use the search tab (NewView). This might
 be analogous to the index at the back of a book (although the help
 manager also provides an "index" of its own, which is something like the
@@ -42,13 +45,13 @@ opinion).
 A couple of Search examples to give you the feel of the process&colon.
 :p.
 To find out about changing a volume label, enter "Label" as the "Search
-for&colon." text, check the "All sections" checkbox, if present, then press [Enter].
+for&colon." text, check the "All sections" checkbox, if present, then press :color fc=default bc=palegray.Enter:color fc=default bc=default..
 :p.
 To find out how to open a new FM/2 window, enter "Open" as the "Search
-for&colon." text, check the "All sections" checkbox, if present, then press [Enter].
+for&colon." text, check the "All sections" checkbox, if present, then press :color fc=default bc=palegray.Enter:color fc=default bc=default..
 :p.
 If you'd like a printout of any of the topics in the online help, click
-the :hp2.Print:ehp2. button at the bottom ("IBM's" View.exe) or top (NewView.exe) of the help 
+the :hp2.Print:ehp2. button at the bottom ("IBM's" View.exe) or top (NewView.exe) of the help
 window. The :link reftype=hd res=93700.Context menu:elink. help topic would probably be a
 good one to print out. Gives you something to read in the john.
 Remember that you can also use the :hp1.FM/2 Online Help:ehp1. icon in
@@ -68,12 +71,13 @@ res=91300.Terminology:elink. so we'll understand each other a bit
 better. If you're still nervous about OS/2 conventions, try FM/2's
 :link reftype=hd res=99800.Tutorial:elink. section for real hand-holding.
 Get an overview of some important FM/2 windows in the :link reftype=hd
-res=97600.Window layouts:elink. section. Then plunge into the :link
+res=97600.Window layouts:elink. section. If you need help installing check out the
+:link reftype=hd res=100110.installation instructions:elink. Then plunge into the :link
 reftype=hd res=90000.General Help:elink. section to find out how to look
 at, Move, Copy, Rename and Compare files and directories (the basics).
 That will get you started, and we'll give you hints along the way about
-other places you might like to look (like :link reftype=hd
-res=93000.Hints:elink. &colon.-) when you're ready. The previously
+other places you might like to look (like :link reftype=hd res=93000.Hints:elink. &colon.-)
+when you're ready. The previously
 mentioned :link reftype=hd res=93700.Context menus:elink. topic will
 give you an overview of all the commands available in FM/2 (and there
 are a lot of commands you can use).
@@ -90,9 +94,10 @@ notebook and Config menu.
 Command line help is in the :link reftype=launch object='E.EXE'
 data='\FM2\README'.README:elink. file that accompanied the archive,
 since you should have read that before trying to start FM/2. You did,
-didn't you? Note&colon. This link only works if FM/2 is installed 
-to a directory named FM2 on the boot drive. If not go to your FM/2 
-install directory and double-click B1 on the file "README".
+didn't you? Note&colon. This link only works if FM/2 is installed
+to a directory named FM2 on the boot drive. If not go to your FM/2
+install directory and double-click :color fc=default bc=cyan.B1:color fc=default bc=default.
+ on the file "README".
 :p.
 There is one thing you should keep in mind about FM/2. FM/2 is
 extremely powerful and has a lot of features, but :hp6.you don't have to
@@ -116,14 +121,14 @@ FM/2's main purpose is to show you what's on your file system and let you
 sling what's there around.
 :p.
 Here we'll cover the basics. Some familiarity with OS/2's WPS
-(WorkPlace Shell) is assumed. If you need refreshing, review the :link 
-reftype=launch object='View.EXE' data='OS2UG.INF'.OS/2 Desktop Guide:elink. 
+(WorkPlace Shell) is assumed. If you need refreshing, review the :link
+reftype=launch object='View.EXE' data='OS2UG.INF'.OS/2 Desktop Guide:elink.
 It's also assumed that you've already read the :link
 reftype=hd res=93200.How to use FM/2's help:elink. and :link reftype=hd
 res=91300.Terminology:elink. sections. If you feel that you need more
-in-depth help when we're through with this topic, try FM/2's :link 
-reftype=hd res=99800.Tutorial:elink. section. Also review the FM/2 default 
-:link reftype=hd res=100040.Mouse actions:elink. and a list of FM/2 :link reftype=hd  
+in-depth help when we're through with this topic, try FM/2's :link
+reftype=hd res=99800.Tutorial:elink. section. Also review the FM/2 default
+:link reftype=hd res=100040.Mouse actions:elink. and a list of FM/2 :link reftype=hd
 res=100005.Accelerator (shortcut) Keys:elink.
 :p.
 There are several ways to view a directory with FM/2, just as there are
@@ -160,7 +165,9 @@ highlighted, all highlighted objects will be affected.
 :p.
 :hp1.Renaming file system objects&colon.:ehp1.
 The simplest way to rename a file system object is to point at it with
-the mouse pointer, hold down the ALT key, and click the text of its name.
+the mouse pointer, hold down the  :color fc=default bc=palegray.
+Alt:color fc=default bc=default. key, and click :color fc=default bc=cyan.
+B1:color fc=default bc=default. on the text of its name.
 FM/2 produces a mini MLE text entry field where you can type in a new
 name (this is :link reftype=hd res=98200.Direct Editing:elink.). When
 finished, click the object and a rename is performed. Note that you can
@@ -183,9 +190,9 @@ res=99810.Rename:elink. tutorial.
 .br
 There are several ways to move a file system object. The most
 intuitive is :hp2.drag and drop:ehp2.. Using this method, you "grab"
-the file system object by pressing and holding B2 while the mouse
-pointer is over the object, then begin to move the mouse (still holding
-B2). The object's icon should begin to move with the mouse pointer.
+the file system object by pressing and holding :color fc=default bc=cyan.B2:color fc=default bc=default.
+ while the mouse pointer is over the object, then begin to move the mouse (still holding
+:color fc=default bc=cyan.B2:color fc=default bc=default.). The object's icon should begin to move with the mouse pointer.
 "Drag" this icon to where you want to move it (for instance, if you want
 to move a file from C&colon.\ to D&colon.\, drag the file to the Drive
 Tree's D&colon.\ object). When the object is where you want it, release
@@ -197,9 +204,10 @@ you need to drop it on container "whitespace" (a part of the container
 not occupied by an object). For convenience, the two large status
 areas at the top of the container are considered whitespace.
 :p.
-If you get confused when dragging object(s), press the F1 key. This
+If you get confused when dragging object(s), press the :color fc=default bc=palegray.
+F1:color fc=default bc=default. key. This
 will give you some information about what you're doing. Pressing the
-Escape key will abort the drag.
+:color fc=default bc=palegray.Esc :color fc=default bc=default. key will abort the drag.
 :p.
 Note that you can't move a file or directory onto another file (except
 for archive targets), only into a directory (moving into container
@@ -212,8 +220,10 @@ effect).
 :p.
 You could, of course, also select "Move" from the :hp1.:link reftype=hd
 res=93300.Files:elink.:ehp1. menu, a context menu, click the Move
-toolbar button, or type the accelerator key Ctrl + m (hold the control
-key down and type "m"). In this case, you'll get the :link reftype=hd
+toolbar button, or type the accelerator key :color fc=default bc=palegray.Ctrl
+:color fc=default bc=default. + :color fc=default bc=palegray.m :color fc=default bc=default.
+(hold the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key down and type
+:color fc=default bc=palegray.m:color fc=default bc=default.). In this case, you'll get the :link reftype=hd
 res=91500.Walk Directories:elink. dialog where you can enter a target
 directory.
 :p.
@@ -226,8 +236,8 @@ res=99820.Move:elink. tutorial.
 .br
 The procedure for copying file system objects is very similar to that
 for moving them. When you begin to drag the object, and until you
-release it, hold down the control (Ctrl) key. You'll notice that the
-dragged icon is "ghosted" to give visual feedback that a copy, not a
+release it, hold down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key.
+You'll notice that the dragged icon is "ghosted" to give visual feedback that a copy, not a
 move, is being performed. Note that you can copy a file onto an archive
 file as well as into a directory. You can also "clone" a file by dropping
 it into the directory where it already resides -- you'll get a rename
@@ -235,7 +245,8 @@ dialog that will allow you to change the name, creating a file exactly
 like the other with a different name.
 :p.
 As for move above, there is a "Copy" menu item, a toolbar button,
-and Ctrl + c is the accelerator key.
+and :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +
+:color fc=default bc=palegray.c:color fc=default bc=default. is the accelerator key.
 :p.
 If you'd like more detail, go to the :link reftype=hd
 res=99830.Copy:elink. tutorial.
@@ -245,7 +256,8 @@ res=99830.Copy:elink. tutorial.
 :hp1.Comparing file system objects&colon.:ehp1.
 .br
 There is one other type of drag and drop operation called a "link drag."
-To link drag, hold down the Ctrl and Shift keys while dragging.
+To link drag, hold down the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+and  :color fc=default bc=palegray.Shift:color fc=default bc=default.  keys while dragging.
 You'll see a "rubber band line" extend from where you grabbed the icon
 to the mouse pointer as a visual cue. Link dragging is usually used
 within FM/2 to do compare operations (see also :link reftype=hd
@@ -280,6 +292,8 @@ topic. You might also want to look at the :link reftype=hd
 res=98900.Opening a Directory Container:elink., :link reftype=hd
 res=99400.Using quicklists:elink. and :link reftype=hd res=97600.Window
 layout:elink. sections.
+
+.im install.ipf
 
 .im mouse.ipf
 
@@ -323,20 +337,20 @@ res=99400.Using quicklists:elink..
 :p.
 .br
 Here's a Directory Container window in more detail&colon. See
-:link reftype=hd res=98900.Opening a Directory Container:elink. and  
+:link reftype=hd res=98900.Opening a Directory Container:elink. and
 :link reftype=hd res=91900.Folder Button:elink. for more information
 :p.
 :artwork align=left name='bitmaps\dircnr.bmp'.
 :p.
 Here's :link reftype=hd res=100000.FM/2 Lite:elink. with an explanation
 of the things that are unique to it (Note&colon. Alt-click to change
-sort in Details view also works in FM/2). The 
+sort in Details view also works in FM/2). The
 Autoview window has been turned off to unclutter this illustration.
 :p.
 :artwork align=left name='bitmaps\fm4oall.bmp'.
 :p.
 Note that the active window, the window pulldown menu commands will
-effect, is surrounded by a light red border. When the Drive Tree is active as  
+effect, is surrounded by a light red border. When the Drive Tree is active as
 shown above the Directory Container that would change if a
 directory were double-clicked in the Tree is surrounded by a fine darker red
 border. This color coding gives you instant feedback as to what the
@@ -355,7 +369,7 @@ Here's how the window looks if you double-click some lines of text&colon.
 :artwork align=left name='bitmaps\newview2.bmp'.
 .br
 Here we're using the bookmark listbox (which is filled by double-clicking
-some lines of text) to make an index for the document, 
+some lines of text) to make an index for the document,
 enabling us to move from section to section quickly. See the :link
 reftype=hd res=99300.Internal viewer:elink. section for more information.
 
@@ -385,17 +399,21 @@ the Drive Tree.
 :artwork name='bitmaps\openbutt.bmp' align=center.
 :p.
 Other alternatives are to select the :hp1.Open->New FM/2 Window:ehp1.
-command from the :hp1.Files menu:ehp1. with the Drive Tree active, 
+command from the :hp1.Files menu:ehp1. with the Drive Tree active,
 (preferred) a context menu obtained on the directory you want to open
 (remember, you get a context menu by clicking mouse button 2 on an
-object) or the accelerator key Ctrl + o.
+object) or the accelerator key  :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+ + :color fc=default bc=palegray.o:color fc=default bc=default..
 :p.
 :artwork name='bitmaps\openmenu.bmp' align=center.
 :p.
 Yet another alternative is to invoke the :hp1.Utilities->Open Directory
-Container:ehp1. command (Ctrl + O accelerator -- remember, that "O"
-needs to be uppercase, so Shift if necessary). Using this command
-invokes the :link reftype=hd res=91500. Walk Directories:elink. dialog
+Container:ehp1. command (:color fc=default bc=palegray.Ctrl
++ :color fc=default bc=palegray.O:color fc=default bc=default. accelerator
+-- remember, that ":color fc=default bc=palegray.O:color fc=default bc=default."
+needs to be uppercase, so use :color fc=default bc=palegray.Shift:color fc=default bc=default.
+if necessary (:color fc=default bc=palegray.Caps Lock:color fc=default bc=default. off)).
+Using this command invokes the :link reftype=hd res=91500. Walk Directories:elink. dialog
 and lets you pick the directory to open.
 :p.
 :artwork name='bitmaps\openmnu2.bmp' align=center.
@@ -409,8 +427,10 @@ Container for that object's directory.
 :p.
 Finally, if you have the Drivebar on (see the :link reftype=hd
 res=92000.Config menu:elink. topic) and a 3-button mouse, you can click
-B3 (or hold down Ctrl while clicking B2) on one of the drive icons to
-open a Directory Container for that drive (unless one already exists, in
+:color fc=default bc=cyan.B3:color fc=default bc=default.  (or hold down
+:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+while clicking :color fc=default bc=cyan.B2:color fc=default bc=default. )
+on one of the drive icons to open a Directory Container for that drive (unless one already exists, in
 which case it'll be surfaced and activated).
 :p.
 Now, if that's not enough ways to open a Directory Container, I give up --
@@ -427,8 +447,8 @@ double-clicking.
 :p.
 The :hp1.toolbar:ehp1. is a collection of buttons that invoke some of
 the commands in the pulldown or popup menus. Placing the mouse pointer
-on a button and pressing and holding B2 displays brief help for the
-button on the titlebar.
+on a button and pressing and holding :color fc=default bc=cyan.B2:color fc=default bc=default.
+displays brief help for the button on the titlebar.
 :p.
 Some of the buttons will allow objects to be dragged onto them; for
 example, you can drag objects onto the trashcan to delete them. Note
@@ -449,7 +469,8 @@ the toolbar bitmap buttons).
 Toolbar buttons are user-configurable. To change the toolbar, click
 mouse button two (usually the right button) while the mouse pointer is
 over a button to pop up a context menu. You can get the "Load Toolbox"
-dialog by clicking B2 on a blank area of the toolbar, and the "Add
+dialog by clicking :color fc=default bc=cyan.B2:color fc=default bc=default.
+ on a blank area of the toolbar, and the "Add
 Button" dialog by chording on a blank area of the toolbar.
 :p.
 For advanced/curious users&colon. Information on what buttons are in the
@@ -689,7 +710,7 @@ res=91500.Walk Directories dialog:elink.).
 :p.
 .br
 You turn the quicklists on and off using the :hp1.Config->Toggle
-quicklists:ehp1. command (F8 accelerator).
+quicklists:ehp1. command ( :color fc=default bc=palegray.F8:color fc=default bc=default. accelerator).
 :p.
 The first list (starting from the left) contains drives. If you select a
 drive from the list, the Drive Tree scrolls to that drive and makes it the
@@ -723,8 +744,8 @@ more flexible than the way DOS-think file managers do things.
 To "edit" a State, first recall it, then change what you want, then
 delete the State name, then save it again.
 :p.
-Holding down the Shift key while selecting a state name prevents FM/2
-from closing windows that are already open.
+Holding down the  :color fc=default bc=palegray.Shift:color fc=default bc=default.
+ key while selecting a state name prevents FM/2 from closing windows that are already open.
 :p.
 :artwork name='bitmaps\userstat.bmp' align=center.
 :p.
@@ -732,7 +753,7 @@ from closing windows that are already open.
 The third list is the user-defined commands list. User-defined commands
 allow you to extend FM/2 with commands of your own devising. You can
 add, change and delete commands with the :hp1.Config->Edit Commands:ehp1.
-menu item (or click B2 on the list).
+menu item (or click :color fc=default bc=cyan.B2:color fc=default bc=default. on the list).
 :p.
 :artwork name='bitmaps\cmdlist.bmp' align=center.
 :p.
@@ -762,7 +783,8 @@ directories that you visit during a session. You can add them as above
 to make them permanent if you desire.
 :p.
 Selecting the :hp1.<New directory>:ehp1. item from this list allows you
-to create a new directory (same as using the Ctrl + M accelerator key).
+to create a new directory (same as using the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +
+:color fc=default bc=palegray.M:color fc=default bc=default. accelerator key).
 :p.
 The commonly used directory list, in combination with the State list,
 allows you to quickly place FM/2 into precisely the configuration you
@@ -871,8 +893,6 @@ reftype=hd res=93715.menu:elink.s.
 .im term.ipf
 
 .im fm4.ipf
-
-.im errors.ipf
 
 :index.
 :euserdoc.

@@ -10,41 +10,41 @@ Behavior for each type of container is as follows:
 :p.
 :hp1.Directory containers&colon.:ehp1.
 .br
-:hp2.B1&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.&colon.:ehp2.
 .br
 Go to parent directory
 .br
-:hp2.B2&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B2:color fc=default bc=default.&colon.:ehp2.
 Context menu
 .br
-:hp2.B1+Ctrl&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.Ctrl:color fc=default bc=default.&colon.:ehp2.
 .br
 Go to previous directory
 .br
-:hp2.B1+SHIFT&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.SHIFT:color fc=default bc=default.&colon.:ehp2.
 .br
 Walk directories
 .br
-:hp2.B1+ALT&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.ALT:color fc=default bc=default.&colon.:ehp2.
 .br
 Child window dialog
 .br
-:hp2.B3 or Chord&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B3:color fc=default bc=default. or :color fc=default bc=cyan.Chord:color fc=default bc=default.&colon.:ehp2.
 .br
 Rescan directory
 .br
 :p.
 :hp1.Archive containers&colon.:ehp1.
 .br
-:hp2.B1&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.&colon.:ehp2.
 .br
 Walk directories
 .br
-:hp2.B1+ALT&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.Alt:color fc=default bc=default.&colon.:ehp2.
 .br
 Child window dialog
 .br
-:hp2.B3 or Chord&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B3:color fc=default bc=default.:color fc=default bc=cyan.Chord:color fc=default bc=default.&colon.:ehp2.
 .br
 Rescan archive
 :p.

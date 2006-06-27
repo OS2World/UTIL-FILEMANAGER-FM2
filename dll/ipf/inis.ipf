@@ -4,8 +4,8 @@
 :artwork name='..\..\bitmaps\ini.bmp' align=center.
 :p.
 INI files are a type of configuration file that OS/2 provides to applications and
-utilizes itself. This viewer allows you to take a peek inside them and modify 
-them as needed. :hp2.:hp8.Caution:ehp8.:ehp2.Backup the INI file before modifying 
+utilizes itself. This viewer allows you to take a peek inside them and modify
+them as needed. :hp2.:hp8.Caution:ehp8.:ehp2. Backup the INI file before modifying
 it since corruption of an INI file can result in failure of a program including
 the WPS to run.
 :p.

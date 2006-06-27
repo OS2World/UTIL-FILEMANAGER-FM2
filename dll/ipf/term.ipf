@@ -8,18 +8,18 @@ Some definitions&colon.
 :p.
 :hp1.PM:ehp1. = Presentation Manager, OS/2's graphical supersystem
 :p.
-:hp1.B1:ehp1. = Mouse button 1, usually the left button
+:hp1.:color fc=default bc=cyan.B1:color fc=default bc=default.:ehp1. = Mouse button 1, usually the left button
 :p.
-:hp1.B2:ehp1. = Mouse button 2, usually the right button
+:hp1.:color fc=default bc=cyan.B2:color fc=default bc=default.:ehp1. = Mouse button 2, usually the right button
 :p.
-:hp1.B3:ehp1. = Mouse button 3, usually the middle button. Not all mice
+:hp1.:color fc=default bc=cyan.B3:color fc=default bc=default.:ehp1. = Mouse button 3, usually the middle button. Not all mice
 have three buttons. OS/2 will let you redefine the buttons using the
 WPS' Mouse object in the System Setup folder.
 :p.
-:hp1.Chord:ehp1. = Pressing B1 and B2 simultaneously
+:hp1.:color fc=default bc=cyan.Chord:color fc=default bc=default.:ehp1. = Pressing :color fc=default bc=cyan.B1:color fc=default bc=default. and :color fc=default bc=cyan.B2:color fc=default bc=default. simultaneously
 :p.
 :hp1.:link reftype=hd res=97800.Context menu:elink.:ehp1. = a popup menu
-obtained directly on an object of interest by clicking B2 while the
+obtained directly on an object of interest by clicking :color fc=default bc=cyan.B2:color fc=default bc=default. while the
 mouse pointer is over the object. Context menus usually have options
 tailored for the specific object.
 :p.
@@ -29,7 +29,7 @@ title bar is, run the OS/2 tutorial.
 :p.
 :hp1.:link reftype=hd res=97600.System menu:elink.:ehp1. = the icon at
 the top left of most PM main windows. You can close a window by
-double-clicking the System menu icon with B1. Click once and you get a
+double-clicking the System menu icon with :color fc=default bc=cyan.B1:color fc=default bc=default.. Click once and you get a
 menu (called, oddly enough, the system menu).
 :p.
 :hp1.:link reftype=hd res=97700.Conditional cascade menu:elink.:ehp1. =
@@ -39,8 +39,8 @@ the menu item. When the button is clicked, the submenu displays
 clicked, a default action from the submenu is activated. You can see
 which submenu item is the default as it has a checkmark by it. A
 conditional cascade menu generally gives you a default option for a
-command and several related commands; for instance, in an :link
-reftype=hd res=90200.Archive Container:elink., the Extract conditional
+command and several related commands; for instance, in an
+:link reftype=hd res=90200.Archive Container:elink., the Extract conditional
 cascade menu defaults to simply extracting the selected objects, but
 clicking the arrow button reveals several extract options that can be
 selected instead. FM/2 uses conditional cascade menus to keep the menus
@@ -77,23 +77,23 @@ own specialized help available via a Help button.
 :p.
 :hp1.:link reftype=hd res=98200.Direct Editing:elink.:ehp1. = a method
 of changing the text of an object, as when you change the name of an
-object on the WPS by pointing at it, holding down the ALT key and
-clicking the text with B1. FM/2 supports direct editing of file system
+object on the WPS by pointing at it, holding down the :color fc=default bc=palegray.Alt:color fc=default bc=default.
+ key and clicking the text with :color fc=default bc=cyan.B1:color fc=default bc=default.. FM/2 supports direct editing of file system
 object names as well as Subject and Longname fields in Details view.
 :p.
 :hp1.Default action:ehp1. = what happens when you double-click an
-object in a container (or put the cursor on it with the arrow keys
-and press [Enter])  The default action may sometimes be modified by
-the Shift state of the keyboard (if you hold down Shift or Ctrl
-while double-clicking or pressing [Enter]). The :link reftype=hd
-res=90000.General Help:elink. topic explains default actions in detail.
+object in a container (or put the cursor on it with the :color fc=default bc=palegray.arrow:color fc=default bc=default. keys
+and press :color fc=default bc=palegray.Enter:color fc=default bc=default.)  The default action may sometimes be modified by
+the Shift state of the keyboard (if you hold down :color fc=default bc=palegray.Shift:color fc=default bc=default. or :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+while double-clicking or pressing :color fc=default bc=palegray.Enter:color fc=default bc=default.). The
+:link reftype=hd res=90000.General Help:elink. topic explains default actions in detail.
 :p.
 :hp1.:link reftype=hd res=97700.Accelerator keys:elink.:ehp1. = key
 combinations that allow you to quickly give a program a command without
 going through menus or toolbars. For example, FM/2's accelerator key to
-get help is Ctrl + F1. Note that accelerators are case sensitive, so
-that Ctrl + m isn't the same as Ctrl + M -- you'll need to hold down
-the Shift key or set Caps Lock to get the latter.
+get help is :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F1:color fc=default bc=default.. Note that accelerators are case sensitive, so
+that :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.m:color fc=default bc=default. isn't the same as :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.M:color fc=default bc=default. -- you'll need to hold down
+the :color fc=default bc=palegray.Shift:color fc=default bc=default. key or set :color fc=default bc=palegray.Caps Lock:color fc=default bc=default. to get the latter.
 :p.
 :hp1.:link reftype=hd res=97600.Drive Tree:elink.:ehp1. = the special
 window that's always open in FM/2 displaying your drives in "tree"
@@ -188,7 +188,7 @@ it than any other view; it also displays fewer objects for a given space.
 editor. They can (and do) come in all sizes.
 :p.
 :hp1.Container whitespace:ehp1. = an empty part of a container (a part
-without an object on it). 
+without an object on it).
 :p.
 :hp1.Monolithic application:ehp1. = FM/2 as run from the FM/2 program
 object, with the big window containing a Drive tree and Directory
@@ -230,7 +230,8 @@ submenus have arrows that are not buttons; clicking anywhere on one of
 thse items opens the submenu.
 :p.
 Notice that listed beside "FM/2 Window" is the :link reftype=hd
-res=100005.accelerator key:elink. Ctrl + o. This is the command to open
+res=100005.accelerator key:elink. :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+ + :color fc=default bc=palegray.o:color fc=default bc=default.. This is the command to open
 a new FM/2 window, and is the fastest way to input a command.
 :p.
 Here's a picture of a cascade menu and a submenu&colon. note the
@@ -275,10 +276,10 @@ and that mini-icons are used in the Drive Tree container.
 :i1 id=aboutDIRECTEDIT.Direct editing
 :artwork align=left name='bitmaps\direct.bmp'.
 :p.
-An example of direct editing. Press and hold the ALT key while clicking
-the filename in the container with B1. A new name can then be entered
+An example of direct editing. Press and hold the :color fc=default bc=palegray.Alt:color fc=default bc=default. key while clicking
+the filename in the container with :color fc=default bc=cyan.B1:color fc=default bc=default.. A new name can then be entered
 into the small MLE by the object's icon (where the name usually shows),
-and another click of B1 will accept the input, while Escape will abort
+and another click of  :color fc=default bc=cyan.B1:color fc=default bc=default. will accept the input, while :color fc=default bc=palegray.Esc:color fc=default bc=default. will abort
 the operation.
 :p.
 Note that the entire pathname of the object is presented for editing --

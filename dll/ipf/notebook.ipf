@@ -86,7 +86,7 @@ from performing extended searching in containers -- instead, the
 standard OS/2 method is used, where the cursor moves to the nearest
 object starting with the depressed letter and the object is selected.
 Note that you can get this standard effect with this toggle left on by
-pressing the Shift key along with the letter. Container searching
+pressing the :color fc=default bc=palegray.Shift:color fc=default bc=default. key along with the letter. Container searching
 allows you to enter multiple characters which are searched for at the
 start of filenames. The record is made the current (cursored) object.
 If the record matches all the letters typed exactly, it is also
@@ -109,7 +109,7 @@ when you switch the Directory Container to look into a different
 directory. Otherwise, FM/2 switches the Directory Container back to
 the last used view before you put it into Tree View.
 
-The :hp6.No folder menu:ehp6. switch, if checked, causes a B2 click on the
+The :hp6.No folder menu:ehp6. switch, if checked, causes a :color fc=default bc=cyan.B2:color fc=default bc=default. click on the
 folder icon to immediately load the previous directory in the Directory Container.
 Otherwise it results in the folder menu appearing.
 
@@ -256,10 +256,10 @@ archiver windows in the foreground. Normally it runs them in the
 background, minimized, so you'd have to use the task list to pull them
 to the foreground if you want to see them.
 :p.
-The :hp6.A/Virus:ehp6. field allow you to enter the command line 
-(PATH/ANTIVIRUS&period.EXE parameters) for your antivirus software 
+The :hp6.A/Virus:ehp6. field allow you to enter the command line
+(PATH/ANTIVIRUS&period.EXE parameters) for your antivirus software
 This must be done to enable virus checking of archives from FM/2.
-NVCC&period.EXE &percent.p /C is one possible command line option 
+NVCC&period.EXE &percent.p /C is one possible command line option
 if you are using Norman Antivirus.
 :p.
 The :hp6.Ext. Path:ehp6. field, if anything is in it, gives the default
@@ -353,11 +353,11 @@ I/O procedure. Some desktop "enhancement" programs install such buggy
 IOProcs. If you can't get it fixed, at least you can work around it
 (sigh). You can manually put back some of this functionality using
 FM/2's :link reftype=hd res=90400.Associations:elink. feature. If you have
-installed Russel O'Connor's MP3 IOProcs you should uncheck this feature  
+installed Russel O'Connor's MP3 IOProcs you should uncheck this feature
 because it results in many non-multimedia programs being identified as
-multimedia and some multimedia not being identified as such. Use the 
+multimedia and some multimedia not being identified as such. Use the
 :link reftype=hd res=90400.Associations:elink. instead.
-:p.              
+:p.
 The :hp6.Guess view type:ehp6. toggle, if on, causes FM/2 to guess at the
 type of the file being viewed (text or binary) and display it accordingly.
 :p.
@@ -387,8 +387,8 @@ these fields in automatically (see :link reftype=hd
 res=99970.examples:elink. at that topic). Don't forget that you can
 cause FM/2 to automatically use many different types of viewing programs
 based on the type of file using the :link reftype=hd
-res=90400.Associations:elink. feature. 
- 
+res=90400.Associations:elink. feature.
+
 :h4 res=99970 name=PANEL_FIND.Find button
 :i1 id=aboutFINDB.Find button
 
@@ -468,8 +468,8 @@ the main FM/2 monolithic frame window.
 :p.
 The :hp6.Quicklist switches:ehp6. toggle reverses the operation of the
 user directory quicklist control -- if you click an item in the dropdown
-list without holding down Shift, the last used Directory Container
-switches, if you hold down Shift while clicking, a new Directory
+list without holding down :color fc=default bc=palegray.Shift:color fc=default bc=default., the last used Directory Container
+switches, if you hold down :color fc=default bc=palegray.Shift:color fc=default bc=default. while clicking, a new Directory
 Container is opened.
 :p.
 The :hp6.Recent Dirs:ehp6. toggle is a 3-position toggle. If checked,
@@ -575,11 +575,11 @@ a compare of the target with the dropped objects.
 :p.
 If :hp6.Default action Copy:ehp6. is checked, FM/2's windows perform a
 copy rather than move by default (note the highlighting on the mouse
-pointer as your cue). Instead of pressing the Ctrl key to change a drag
-from a move to a copy, you'll need to press the Shift key to change a
+pointer as your cue). Instead of pressing the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key to change a drag
+from a move to a copy, you'll need to press the :color fc=default bc=palegray.Shift:color fc=default bc=default. key to change a
 drag from a copy to a move (don't ask me why). Note that this is the
 opposite of the standard OS/2 behavior, so know what you're doing. I
-remind you that pressing F1 when you have a target in an FM/2 window
+remind you that pressing :color fc=default bc=palegray.F1:color fc=default bc=default. when you have a target in an FM/2 window
 will display some help on what the drag command would have performed.
 :p.
 Someone didn't like the bar graphs on the drivespace controls of the
@@ -603,7 +603,7 @@ default for the Delete context submenu. If this is checked, the default
 is permanent (unrecoverable) deletion.
 :p.
 :hp6.FM/2 deletes dragged items:ehp6. controls whether FM/2 deletes
-dragged items, or the target of the drag (usually the Shredder WPS
+dragged items, or the target of the drag (usually the Trashcan WPS
 object) performs the deletion.
 :p.
 If the :hp6.Confirm target:ehp6. checkbox is checked, as it is by
@@ -637,7 +637,7 @@ being loaded during scans or not, to view and optionally change the
 object description. You can turn this off to increase scanning speed.
 You can also adjust this on a drive-by-drive basis from the command line
 (see the :link reftype=launch object='E.EXE'
-data='\FM2\README'.READ.ME:elink. that came with FM/2).
+data='\FM2\README'.README:elink. that came with FM/2).
 :p.
 If :hp6.Load Longnames:ehp6. is checked, FM/2 loads the .LONGNAME
 extended attribute for non-HPFS drives. This attribute usually contains
@@ -646,7 +646,7 @@ to an HPFS drive. As for Subject, Longnames are only shown in the
 Details view. You can turn this off to marginally increase scanning
 speed. You can also adjust this on a drive-by-drive basis from the
 command line (see the :link reftype=launch object='E.EXE'
-data='\FM2\README'.READ.ME:elink. that came with FM/2).
+data='\FM2\README'.README:elink. that came with FM/2).
 :p.
 If :hp6.Load file icons:ehp6. and/or :hp6.Load directory icons:ehp6. are
 checked, FM/2 will load the icons of objects from the file system;
@@ -654,7 +654,7 @@ otherwise it uses defaults. Although turning these off can speed up
 scanning, it makes for boring containers. This is PM, folks, enjoy the
 bells and whistles! You can also adjust this on a drive-by-drive basis
 from the command line (see the :link reftype=launch object='E.EXE'
-data='\FM2\README'.READ.ME:elink. that came with FM/2) so that you can, for
+data='\FM2\README'.README:elink. that came with FM/2) so that you can, for
 instance, skip reading in icons from very slow drives (CD or floppy, for
 example) and/or from disks containing only DOS programs (DOS programs
 don't normally have special icons associated with them, anyway).

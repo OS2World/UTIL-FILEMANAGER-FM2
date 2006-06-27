@@ -101,9 +101,9 @@ The :hp1.Topic:ehp1. entry field can be used to have the INF file(s)
 searched on entry for a topic of interest (like typing "VIEW inffile
 topic" at a command line).
 :p.
-When you're done with the dialog, press [ESCape] or click
-:hp1.Cancel:ehp1.. Any open .INF files remain open until you close them
-(hint&colon. F3 will close an .INF file).
+When you're done with the dialog, press :color fc=default bc=palegray.Esc:color fc=default bc=default.
+ or click:hp1.Cancel:ehp1.. Any open .INF files remain open until you close them
+(hint&colon. :color fc=default bc=palegray.F3:color fc=default bc=default. will close an .INF file).
 :p.
 Note&colon. this dialog is shared by the :hp2.:link reftype=hd
 res=94850.View Helpfiles:elink.:ehp2. and :hp2.View Bookshelf:ehp2.
@@ -130,9 +130,8 @@ you use the HELP Viewer, FM/2 will remember this input and use it.
 This is an internal addition; your CONFIG.SYS and environment are not
 modified.
 :p.
-When you're done with the dialog, press [ESCape] or click
-:hp1.Cancel:ehp1.. Any open .HLP file will remain open until you close
-it.
+When you're done with the dialog, press :color fc=default bc=palegray.Esc:color fc=default bc=default.
+ or click:hp1.Cancel:ehp1.. Any open .HLP file will remain open until you close it.
 :p.
 Note&colon. this dialog is shared by the :hp2.:link reftype=hd
 res=94800.View Bookshelf:elink.:ehp2. and :hp2.View Helpfiles:ehp2.
@@ -145,9 +144,9 @@ Viewer object in the FM/2 WPS folder or from the command line.)
 :i1 id=aboutCommandLine.Command Lines
 :artwork name='..\..\bitmaps\cmdline.bmp' align=center.
 :p.
-There are three different command line choices. The first 
-brings up a windowed OS/2 command line. F9 is the accelerator key
+There are three different command line choices. The first
+brings up a windowed OS/2 command line. :color fc=default bc=palegray.F9:color fc=default bc=default. is the accelerator key
 for this command. The last two bring up a windowed DOS command line and
-a Win-OS/2 full screen session respectively but only if you have installed DOS and 
+a Win-OS/2 full screen session respectively but only if you have installed DOS and
 Win-OS/2 support.
 

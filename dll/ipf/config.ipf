@@ -18,20 +18,20 @@ select the Views pulldown submenu.
 :p.
 The :link reftype=hd res=94600.Settings notebook:elink. is accessed from
 this menu.
-:p.  
+:p.
 The :link reftype=hd res=100065.Set Target directory:elink. is the next menu
-item and can also be accessed using CTRL+T.
+item and can also be accessed using :color fc=default bc=palegray.Ctrl:color fc=default bc=default.+:color fc=default bc=palegray.T:color fc=default bc=default..
 :p.
 Five menu items to toggle various FM/2 functions on and off are next.
 The first two :link reftype=hd res=91800.Toolbar:elink. and :hp6.Autoview:ehp6.
 have submenus.
 :p.
-The:hp6.Toolbar:ehp6. submenu default is to toggle the toolbar on and off 
+The:hp6.Toolbar:ehp6. submenu default is to toggle the toolbar on and off
 The other two items allow you to make the toolbar text only or you can
-add titles under the toolbar icons. Additional functions to edit the toolbar 
-can be found on the context menu obtained by clicking B2 over a tool icon
+add titles under the toolbar icons. Additional functions to edit the toolbar
+can be found on the context menu obtained by clicking :color fc=default bc=cyan.B2:color fc=default bc=default. over a tool icon
 on the toolbar (see :link reftype=hd res=91800.Toolbar:elink. for more information)
-You can switch between toolbars using the dialog that appears if you click B2 over
+You can switch between toolbars using the dialog that appears if you click :color fc=default bc=cyan.B2:color fc=default bc=default. over
 an area of "white space" on the toolbar or by selecting load toolbox from the previously
 discussed context menu.
 :p.
@@ -46,18 +46,18 @@ be autoviewed -- either the file's .COMMENTS EA or the start of the
 file's contents (similar to the *nix HEAD program). When .COMMENTS EAs
 are being viewed, you can edit them and the changes will be saved when
 you switch the focus from the Autoview window. You can reach this
-editable Autoview window with the Ctrl + Tab hotkey if you are allergic
+editable Autoview window with the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.Tab:color fc=default bc=default. hotkey if you are allergic
 to your mouse.
 :p.
-Clicking the contents Autoview window with B1 causes the file to be
-viewed. Clicking with B3 (or chording with B1 and B2 simultaneously)
+Clicking the contents Autoview window with :color fc=default bc=cyan.B1:color fc=default bc=default. causes the file to be
+viewed. Clicking with :color fc=default bc=cyan.B3:color fc=default bc=default. (or  :color fc=default bc=cyan.chording:color fc=default bc=default. with :color fc=default bc=cyan.B1:color fc=default bc=default. and :color fc=default bc=cyan.B2:color fc=default bc=default. simultaneously)
 causes the extended attributes to be viewed. If viewing .COMMENTS
 rather than contents, you can pick :hp1.View file:ehp1. from the
 context menu.
 :p.
 The :hp6.:link reftype=hd res=99400.Toggle quicklists:elink.:ehp6.
-command causes a set of dropdown listboxes to appear below the toolbar   
-and above other windows. The listboxes include&colon. 
+command causes a set of dropdown listboxes to appear below the toolbar
+and above other windows. The listboxes include&colon.
 .br
 A Drive Finder dropdown listbox.
 ,br
@@ -68,15 +68,15 @@ A Commands dropdown listbox (External command that have been added to FM/2).
 A Directory dropdown listbox (Directory names you've assigned in the
 :link reftype=hd res=91500.Walk Directories:elink. dialog).
 .br
-A Toolboxesdropdown listbox also appears if the :hp6.Toolbar:ehp6. is on. 
+A Toolboxesdropdown listbox also appears if the :hp6.Toolbar:ehp6. is on.
 :p.
 The :hp6.Toggle bottom buttons:ehp6. menu item turns off and on a row of
 buttons that appear just above the status line(s). The buttons display
 the name, date, and attributes of the currently selected object, and the
-filter status of the current container. If clicked with B1, a command
+filter status of the current container. If clicked with :color fc=default bc=cyan.B1:color fc=default bc=default., a command
 is generated (rename, info, edit date/attributes and filter dialog
-respectively). If clicked with B2, a context menu appears (the same one
-you get if you click B2 on the first status line). If clicked with B3,
+respectively). If clicked with :color fc=default bc=cyan.B2:color fc=default bc=default., a context menu appears (the same one
+you get if you click :color fc=default bc=cyan.B2:color fc=default bc=default. on the first status line). If clicked with :color fc=default bc=cyan.B3:color fc=default bc=default.,
 the sort changes for the current container:  filename, last write date,
 file size and reverse sort respectively.
 :p.
@@ -84,12 +84,12 @@ The :hp6.Toggle drivebar:ehp6. menu item turns off and on a bar showing
 all available drives. You can click these drive buttons to find or
 switch to a drive (depending on the active window when the button is
 clicked), drag objects onto the buttons, request a context menu on a
-button for more commands dealing with the drive, or click B3 to open a
+button for more commands dealing with the drive, or click :color fc=default bc=cyan.B3:color fc=default bc=default. to open a
 Directory Container for that window (or surface and activate one that
 already exists).
 :p.
-The menu also provides access to the dialogs for editing 
-:link reftype=hd res=90400.Associations:elink., 
+The menu also provides access to the dialogs for editing
+:link reftype=hd res=90400.Associations:elink.,
 :link reftype=hd res=90700.Commands:elink. and :hp6.Archivers:ehp6.
 (:link reftype=hd res=94200.Edit Archiver Data:elink.)
 :p.
@@ -130,7 +130,7 @@ internal Settings notebook.
 :i1 id=aboutEditArc.Editing Archiver Details
 :p.
 This dialog box, which you can reach from the Config menu, allows you to
-edit the details of an :link reftype=hd res=10015.archiver:elink.. Entry
+edit the details of an :link reftype=hd res=100015.archiver:elink.. Entry
 boxes are present for all the twenty one fields represented in
 ARCHIVER.BB2 (the text file that contains control information about your
 archivers which FM/2 uses to interface with the archivers). It's
@@ -322,6 +322,7 @@ date from any of the formats in the following list&colon.
  2. 8 Feb 96  23&colon.55&colon.32
  3. 8 Feb 96  11&colon.55p
  4. 96-02-08  23&colon.55&colon.32
+ 5. 31-02-98  23&colon.55
 :exmp.
 :p.
 :hp2.NumDateF(ie)lds:ehp2. This field tells FM/2 how many fields comprise

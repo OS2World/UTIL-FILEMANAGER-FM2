@@ -30,7 +30,7 @@ refers to copying files from the archive onto your disk as normal
 files.)  To change the extract directory, enter a new directory into the
 entry field (if it doesn't already exist you'll get an option to create
 it), drag a directory onto the entry field, or click the folder button
-with B1.
+with :color fc=default bc=cyan.B1:color fc=default bc=default..
 :p.
 You can drag files onto the Archive Container's listing to add them to
 the archive, and you can drag files from the archive to an FM/2
@@ -46,7 +46,7 @@ so if you want to extract all the files in a large archive,
 drag to an FM/2 Directory Container window ... well, cheats, to get
 around it.
 :p.
-You can get a context menu in the container by pressing B2.
+You can get a context menu in the container by pressing :color fc=default bc=cyan.B2:color fc=default bc=default..
 :p.
 Following is a discussion of the pull-down menus:
 :p.
@@ -62,7 +62,7 @@ configured editor instead of being viewed. File(s) can then be
 Do not attempt to Refresh files that were stored with pathnames.
 The pathname will either be lost or an additional file without
 pathname will be stored (depending on the :link reftype=hd
-res=10015.archiver:elink.'s behavior).
+res=100015.archiver:elink.'s behavior).
 :p.
 :hp1.Extract:ehp1. causes FM/2 to extract the selected file(s) to the
 extract directory.
@@ -115,13 +115,13 @@ See also&colon.
 .br
 :link reftype=hd res=94200.Editing Archiver Details:elink.
 
-:h2 res=10015 name=PANEL_ARCHIVERS.Archivers
+:h2 res=100015 name=PANEL_ARCHIVERS.Archivers
 :i1 id=aboutArchivers.Archivers
 
 :hp2.Archivers:ehp2. are programs that create files composed of
 (usually) compressed data that represents, and allows recreation of,
 normal (uncompressed) files. These archiver programs are widely used to
-create archive files for downloading from 
+create archive files for downloading from
 the Internet, and to extract from those archive files once downloaded.
 They're also used to create archives locally for backup purposes, as the
 files thus created are smaller than the original files and contain many

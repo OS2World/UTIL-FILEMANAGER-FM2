@@ -3,7 +3,7 @@
 On occasion you may be asked to check a list of objects. You'll be
 presented with a list of highlighted objects in a listbox. To remove an
 object from the list, unhighlight it (:hp6.hint:ehp6.&colon. hold down
-the Ctrl key while clicking to unhighlight a single item). When you've
+the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while clicking to unhighlight a single item). When you've
 got the list the way you want it, click Okay. Click Cancel to abort the
 action.
 :p.
@@ -18,7 +18,7 @@ one, or onto a directory object in the Drive Tree, or onto an object in
 the Collector. You can then pick the action to be performed from the
 buttons below the listbox. You can remove an object from the listbox if
 you've changed your mind about including it in the action (hint: hold
-down the Ctrl key while clicking to unhighlight a single item).
+down the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while clicking to unhighlight a single item).
 :p.
 The :hp1.+Rename:ehp1. toggle causes :hp1.Copy:ehp1. and :hp1.Move:ehp1.
 operations to allow you to change the name of the destination using the

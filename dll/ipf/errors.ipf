@@ -1,4 +1,4 @@
-:h1 res=96700 name=PANEL_OS2ERRORS.OS/2 error list
+:h2 res=96700 name=PANEL_OS2ERRORS.OS/2 error list
 :i1 id=aboutOS2ErrorList.OS/2 error list
 Following are a list of errors you might occasionally see from OS/2,
 and what they mean&colon.
@@ -224,5 +224,5 @@ and what they mean&colon.
         EAS didn't fit.
 :exmp.
 
-Additional information for some error codes can be obtained by typing "Help <Error code &numsign.>" 
+Additional information for some error codes can be obtained by typing "Help <Error code &numsign.>"
 on an OS/2 command line.

@@ -17,13 +17,14 @@ display modes are supported, and a variety of text sizes. These
 controls are under the :hp1.View:ehp1. pulldown submenu.
 :p.
 Selected lines are displayed in reverse video (white text on a black
-background). The current line has a ">" pointing at it in the left
+background). The current line has ">" pointing at it in the left
 margin. Single selections and swipe selections are supported, as well
 as select and deselect all (under the :hp1.Select:ehp1. pulldown
 submenu) and select/deselect all "found" lines (see :hp1.Search:ehp1.
 below). Keyboard selection is performed with the spacebar, or you can
-hold down the Shift key while moving the cursored selection with the
-arrow keys. Discontiguous lines can be selected.
+hold down the :color fc=default bc=palegray.Shift:color fc=default bc=default.
+key while moving the cursored selection with the
+:color fc=default bc=palegray.arrow:color fc=default bc=default. keys. Discontiguous lines can be selected.
 :p.
 If you double-click a line in the viewer window, a listbox appears above
 the text containing that line. Select (single-click) the line in the

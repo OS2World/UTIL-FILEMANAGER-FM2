@@ -20,7 +20,7 @@ or copied to the directory, not into the Collector.
 The Collector allows you to manipulate the files it contains just as you
 would in a main tree or directory window. Context menus are available
 just as they are in a main window. The context menu for the collector
-container obtained by clicking mouse B2 over container whitespace allows clearing the
+container obtained by clicking mouse :color fc=default bc=cyan.B2:color fc=default bc=default. over container whitespace allows clearing the
 container, collecting files from the clipboard (a good way to import a
 selection from some other program that might save a list of files, one
 file per line), and collecting from a list file (a file containing
@@ -54,8 +54,8 @@ current filemask to the listbox for later retrieval or delete a line
 from the listbox if you want to get rid of it. The :hp6.Append:ehp6.
 checkbox allows you to control whether selected masks replace what is
 in the Filemasks entry field, or are appended to the current contents.
-Note that if Append is checked, you must double-click (or press Enter)
-to append the mask; otherwise, it is only necessary to highlight the
+Note that if Append is checked, you must double-click (or press :color fc=default bc=palegray.
+Enter:color fc=default bc=default.) to append the mask; otherwise, it is only necessary to highlight the
 desired mask in the listbox.
 :p.
 The :hp6.Walk:ehp6. button brings up the :link reftype=hd res=91500.Walk
@@ -73,7 +73,7 @@ Note that each line of the MLE is a separate search string. If any of
 the strings are found, FM/2 will consider a match to be made. You can
 enter up to 4096 characters in this MLE, and as many lines as you like
 within that limitation. Note that a "line break," for our purposes
-here, is created when you press [Enter] in the MLE; word wrap is not
+here, is created when you press :color fc=default bc=palegray. Enter:color fc=default bc=default. in the MLE; word wrap is not
 a consideration.
 :p.
 Simple regular expressions are supported. These can be briefly
@@ -186,12 +186,12 @@ and making you wait for it.
 :p.
 :hp9.Quicky instructions for file finding:ehp9.&colon. type a mask into
 the :hp6.Filemasks:ehp6. entry field (for example, "C&colon.\*.BAK") and
-press [Enter].
+press :color fc=default bc=palegray.Enter:color fc=default bc=default..
 :p.
 :hp9.Quicky instructions for dupe finding:ehp9.&colon. type a mask into
 the :hp6.Filemasks:ehp6. entry field, check :hp6.Find Duplicates:ehp6.,
 check :hp6.CRC dupes:ehp6. if you want greater accuracy (and more time
-spent looking), and press [Enter].
+spent looking), and press :color fc=default bc=palegray.Enter:color fc=default bc=default..
 :p.
 See also :link reftype=hd res=98500.See all files:elink..
 
@@ -216,8 +216,9 @@ name.
 
 FM/2 can present a window listing all the files on one or more drives.
 This command is part of the :link reftype=hd res=90100.Collector:elink.,
-and can be accessed from the Utilities menu or the Collector's context menu.   
-Selecting :hp1.Miscellaneous->Show allfiles:ehp1. (Ctrl + S) from a Drive 
+and can be accessed from the Utilities menu or the Collector's context menu.
+Selecting :hp1.Miscellaneous->Show allfiles:ehp1. (:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+ + :color fc=default bc=palegray.S:color fc=default bc=default.) from a Drive
 Tree directory's context menu will also get you here.
 :p.
 After you select the drives to scan from a dialog, FM/2 will scan the
@@ -244,8 +245,9 @@ the left margin. Single selections and swipe selections are supported,
 as well as select and deselect all, and select and deselect based on
 masks and/or attributes.
 :p.
-Keyboard selection is performed with the spacebar, or you can hold down
-the Shift key while moving the cursored selection with the arrow keys.
+Keyboard selection is performed with the :color fc=default bc=palegray.spacebar:color fc=default bc=default.
+, or you can hold down the :color fc=default bc=palegray.Shift:color fc=default bc=default.  key while
+moving the cursored selection with the  :color fc=default bc=palegray.arrow:color fc=default bc=default. keys.
 You can press the first letter of a file (as displayed; if fullnames are
 on, you must type the first letter of the full filename, including path)
 to "find" a file that begins with that letter. In fact, in this window,
@@ -256,7 +258,7 @@ that standard OS/2 controls don't support.
 Double-clicking a file results in a default action as in Directory
 Containers (usually a view of the file). If you need a refresher, check
 the :link reftype=hd res=90000.General Help:elink. topic. The keyboard
-equivalent is the Enter key.
+equivalent is the :color fc=default bc=palegray.Enter:color fc=default bc=default. key.
 :p.
 A large subset of the commands available in Directory Containers is
 available in this window. See the :link reftype=hd res=93700.Context

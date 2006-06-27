@@ -19,7 +19,8 @@ of the container title. You can change both directories simultaneously
 by clicking the :hp6.Dirs:ehp6. button. You can include all the files
 in all subdirectories by checking the :hp6.Include subdirs:ehp6. button.
 :p.
-This dialog is reached by :hp1.link-dropping:ehp1. (Ctrl + Shift held
+This dialog is reached by :hp1.link-dropping:ehp1. (:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+ + :color fc=default bc=palegray.Shift:color fc=default bc=default. held
 down while dragging and dropping) one directory object onto another
 directory object, or by selecting :hp1.Utilities->Compare
 directories:ehp1. from the main window's pulldown menu.
@@ -89,7 +90,7 @@ files (click the :hp1.Identical:ehp1. button), and all the files should
 be selected (to confirm).
 :p.
 If you're looking directory matching features not included in FM/2, you
-might find them in the programs available on Hobbes  
+might find them in the programs available on Hobbes
 http&colon.//hobbes.nmsu.edu/cgi-bin/h-search?key=directory+compare&amp.pushbutton=Search
 You can easily setup FM/2 to use one of these programs automatically using the :link
 reftype=hd res=98400.Compare page:elink. of the internal Settings notebook.

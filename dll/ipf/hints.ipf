@@ -7,10 +7,12 @@ This section contains hints about obscure functions, FM/2 "secrets" and
 other rubbish.
 .br
 :p.
-With most video display drivers, chording a directory in the Drive Tree
-(or clicking the middle button on a three button mouse) will cause FM/2
-to open a new FM/2 Directory Container window for that directory without
-further ado.
+With most video display drivers, :color fc=default bc=cyan.chording:color fc=default bc=default. a directory in the Drive Tree
+(or clicking the :color fc=default bc=cyan.B3:color fc=default bc=default. on a three button mouse) will cause FM/2
+to open a new FM/2 Directory Container window for that directory without further ado.
+:p.
+Want to open FM/2 with various different configurations see :link reftype=hd res=100125.Starting FM/2:elink.
+for command line options.
 :p.
 Want to copy or move some files to a new directory?  Try dragging them
 onto an empty area (whitespace) of the Drive tree. FM/2 will pop up a
@@ -18,7 +20,7 @@ dialog allowing you to specify a name for a new directory into which to
 place the files.
 :p.
 To set the label of a drive, pick :link reftype=hd
-res=90900.Files->Info:elink. (Ctrl + i accelerator) on the root of the
+res=90900.Files->Info:elink. (:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.i:color fc=default bc=default. accelerator) on the root of the
 drive in the Drive Tree container. You'll find :hp1.Format:ehp1. and
 :hp1.Chkdsk:ehp1. in that menu, too, under the :hp1.Miscellaneous:ehp1.
 submenu.
@@ -38,8 +40,8 @@ non-US users, as non-ASCII characters might show up improperly.
 :p.
 To invoke an OS/2 WPS association rather than an FM/2 internal
 association, try Open->Default from a context menu on the file object
-(F6 accelerator) or holding down the Ctrl key while double-clicking the
-object. Alternatively, use <> as the command line for an :link
+(F6 accelerator) or holding down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+ key while double-clicking the object. Alternatively, use <> as the command line for an :link
 reftype=hd res=90400.association:elink. and it'll open the object's
 default WPS view, which will run the program associated with the object
 under the WPS if there is one. Follow the hypertext link in this
@@ -93,8 +95,8 @@ res=90300.Archive:elink. dialog to allow you to add those files to the
 archive without having to first open the archive.
 :p.
 If a Directory Container is in Details view, and if the titles above the
-columns are turned on, you can hold down ALT and click a title to cause
-the container to sort on that field (assuming the field is one of those
+columns are turned on, you can hold down :color fc=default bc=palegray.ALT:color fc=default bc=default.
+ and click a title to cause the container to sort on that field (assuming the field is one of those
 on which FM/2 will sort -- filename, size, EA size, and dates are all
 valid). Works in Archive Containers, too.
 :p.
@@ -112,7 +114,8 @@ specify different printers using LPT? (i.e. LPT1, LPT2, LPT3, etc.).
 :p.
 If nothing shows in a Directory Container, Archive Container, the
 Collector or Drive Tree although you :hp1.know:ehp1. there's something
-in it, check your Filter (Ctrl + f accelerator). The Filter button for
+in it, check your Filter (:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+ + :color fc=default bc=palegray.f:color fc=default bc=default. accelerator). The Filter button for
 the appropriate container will show the current filter status for the
 current container (F&colon.<All> means everything is visible, <Attr>
 means attributes are being used to filter, otherwise you'll see the
@@ -131,19 +134,20 @@ Directory Container is "looking" into. They behave, for drag and drop
 and requesting context menus, like empty container space (whitespace).
 :p.
 To begin a direct edit of the current file's name using the keyboard,
-use Ctrl + F10. To end (complete) the direct edit, use Ctrl + F11. To
-cancel an edit underway, use Escape.
+use :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F10
+:color fc=default bc=default.. To end (complete) the direct edit, use  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.F11:color fc=default bc=default.. To
+cancel an edit underway, use :color fc=default bc=palegray.Esc:color fc=default bc=default..
 :p.
-PM uses several ALT + F? accelerators to control frame windows. However,
+PM uses several :color fc=default bc=palegray.ALT:color fc=default bc=default. + :color fc=default bc=palegray.F?:color fc=default bc=default. accelerators to control frame windows. However,
 this applies to the current frame window, which can be within the main
-FM/2 window when run monolithically. Add Ctrl to these accelerators to
-affect the main window in that case. For example, Ctrl + Alt + F9 will
-minimize the main FM/2 window, while Alt + F9 will minimize whichever
+FM/2 window when run monolithically. Add :color fc=default bc=palegray.Ctrl:color fc=default bc=default. to these accelerators to
+affect the main window in that case. For example, :color fc=default bc=palegray.Ctrl:color fc=default bc=default.  + :color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.F9:color fc=default bc=default. will
+minimize the main FM/2 window, while :color fc=default bc=palegray.Alt:color fc=default bc=default.  + :color fc=default bc=palegray.F9:color fc=default bc=default.  will minimize whichever
 frame window has the focus.
 :p.
 If you have the bottom buttons turned on in FM/2 and have a 3-button
-mouse, clicking the third button (or holding down Ctrl while clicking
-the first button) on them will change your sort type.
+mouse, clicking the  :color fc=default bc=cyan.B3:color fc=default bc=default. (or holding down :color fc=default bc=palegray.Ctrl:color fc=default bc=default.  while clicking
+:color fc=default bc=cyan.B1:color fc=default bc=default.) on them will change your sort type.
 :p.
 Problem with ZIP or EZ drive -- slow scanning&colon. See :link
 reftype=hd res=99980.Edit->Drive flags:elink. command. The problem
@@ -156,10 +160,11 @@ is one of those never-fixed OS/2 bugs. Try :hp1.unchecking:ehp1. the
 Immediate updates toggle in the Settings notebook. This usually works
 around this bug.
 :p.
-To find any directory in the Drive Tree quickly, type Ctrl + Shift + F
+To find any directory in the Drive Tree quickly, type  :color fc=default bc=palegray.Ctrl:color fc=default bc=default.  +
+:color fc=default bc=palegray.Shift:color fc=default bc=default.  +  :color fc=default bc=palegray.F:color fc=default bc=default.
 with the Drive Tree active, then type in the pathname of the directory
 that you want to find. To find the directory of a Directory Container
-in the Drive Tree, type Ctrl + Shift + F with the Directory Container
+in the Drive Tree, type :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.F:color fc=default bc=default. with the Directory Container
 active.
 :p.
 The :link reftype=hd res=90100.Collector:elink. can search for files
@@ -191,13 +196,14 @@ FM/2 crashes when attempting to view a file:  Uncheck :link reftype=hd
 res=92200."Check for multimedia w/ MMPM/2":elink. -- see explanation
 there.
 
-:h2 res=10010 name=PANEL_HINTSCMD.Command lines
+:h2 res=100010 name=PANEL_HINTSCMD.Command lines
 :i1 id=aboutHintsCmd.Command lines
 
 If you want to directly execute a self-extracting archive (or anything
 else, for that matter -- I mention self-extracting archives because FM/2
 will attempt to view them rather than run them when you double-click
-them), press Ctrl + F5. This brings up the :link reftype=hd
+them), press :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.
+F5:color fc=default bc=default.. This brings up the :link reftype=hd
 res=90600.Command line:elink. dialog with the cursored file in the entry
 field.
 :p.
@@ -205,7 +211,7 @@ You can press the [Home] key to move the cursor to the start of the
 entry field and enter the name of a program to run with the file as an
 argument, or just press [Enter] to execute the file.
 :p.
-Alternatively, if running FM/2 monolithically, press F5 to get a
+Alternatively, if running FM/2 monolithically, press :color fc=default bc=palegray.F5:color fc=default bc=default. to get a
 miniature command line at the bottom of the window. Enter any commands
 you'd like here, including :link reftype=hd
 res=100075.metastrings:elink.. Type /HELP in the command line entry
@@ -216,3 +222,15 @@ probably want to set up a :link reftype=hd res=90700.Command:elink.
 for the command line to save time. With a Command, you can even
 execute a command line using an accelerator key -- can't beat that
 for speed.
+
+.im bonusp.ipf
+
+.im fm2util.ipf
+
+.im trouble.ipf
+
+.im errors.ipf
+
+.im resource.ipf
+
+
