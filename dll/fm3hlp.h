@@ -1,3 +1,18 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Help panel indexes
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2006 Steven H.Levine
+
+  16 Oct 02 MK Baseline
+  31 May 06 SHL Add HELP_SELARC
+
+***********************************************************************/
+
 #define HELP_MAIN                   90000
 #define HELP_COLLECT                90100
 #define HELP_ARCLIST                90200
@@ -41,6 +56,7 @@
 #define HELP_EDITOR                 93900
 #define HELP_SAVETOOLS              94000
 #define HELP_OBJECTPATH             94100
+#define HELP_SELARC                 94150
 #define HELP_EDITARC                94200
 #define HELP_ARCFIELDS              94300
 #define HELP_CHANGEBUTTON           94400
@@ -135,4 +151,13 @@
 #define HELP_TARGETDIR             100065
 #define HELP_CFGB                  100070
 #define HELP_METASTRINGS           100075
-
+#define HELP_REXAMPLE            100080
+#define HELP_CRESOURCE           100085
+#define HELP_FM2UTIL                100090
+#define HELP_BPROGRAM             100095
+#define HELP_TROUBLE                100100
+#define HELP_KPROBLEMS            100105
+#define HELP_INSTALL                 100110
+#define HELP_MOVING                   100115
+#define HELP_UNINSTALL              100120
+#define HELP_FIRSTTIME               100125
