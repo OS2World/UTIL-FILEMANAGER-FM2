@@ -18,6 +18,9 @@
   05 Jun 05 SHL Use QWL_USER
   06 Jun 05 SHL Rework MainWMCommand for VAC3.65 compat
   13 Aug 05 SHL Renames and comments
+  08 Dec 05 SHL DriveProc: disable menu items if drive not ready
+  17 Dec 05 SHL DriveProc: correct my stupid
+  29 May 06 SHL IDM_EDITANYARCHIVER: sanitize code
 
 ***********************************************************************/
 
@@ -1925,9 +1928,10 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   USHORT id;
-  static CHAR dv[4];
+  CHAR szDrv[CCHMAXPATH];
+
   static BOOL emphasized = FALSE;
-  static HWND hwndMenu = (HWND) 0;
+  static HWND hwndMenu = NULLHANDLE;
   static USHORT helpid = 0;
 
   switch (msg)
@@ -1996,56 +2000,56 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDestroyWindow(hwndMenu);
     hwndMenu = (HWND) 0;
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    *dv = 0;
+    *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       id + 50),
-		       sizeof(dv),
-		       dv);
-    if (isalpha(*dv))
+		       sizeof(szDrv),
+		       szDrv);
+    if (isalpha(*szDrv))
     {
       hwndMenu = WinLoadMenu(HWND_DESKTOP,
 			     FM3ModHandle,
 			     MAIN_DRIVES);
       if (hwndMenu)
       {
-	if (!(driveflags[toupper(*dv) - 'A'] & DRIVE_REMOTE))
+	BOOL rdy;
+	CHAR chDrv = *szDrv;
+	UINT iDrv;
+	strcpy(szDrv + 2, "\\");
+	MakeValidDir(szDrv);
+	// Disable menus if MakeValidDir changes drive letter
+	rdy = toupper(*szDrv) == toupper(chDrv);
+	iDrv = toupper(*szDrv) - 'A';
+	if (!rdy || ~driveflags[iDrv] & DRIVE_REMOTE)
 	  WinEnableMenuItem(hwndMenu,
 			    IDM_DETACH,
 			    FALSE);
-	if (driveflags[toupper(*dv) - 'A'] & DRIVE_NOTWRITEABLE)
+	if (!rdy || driveflags[iDrv] & DRIVE_NOTWRITEABLE)
 	{
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_MKDIR,
-			    FALSE);
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_FORMAT,
-			    FALSE);
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_OPTIMIZE,
-			    FALSE);
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_UNDELETE,
-			    FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_MKDIR, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_FORMAT, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_OPTIMIZE, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_UNDELETE, FALSE);
 	}
-	if (!(driveflags[toupper(*dv) - 'A'] & DRIVE_REMOVABLE))
+	if (!rdy || ~driveflags[iDrv] & DRIVE_REMOVABLE)
 	{
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_EJECT,
-			    FALSE);
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_LOCK,
-			    FALSE);
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_UNLOCK,
-			    FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_EJECT, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_LOCK, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_UNLOCK, FALSE);
 	}
-	/*
-	   if(!(driveflags[toupper(*dv) - 'A'] & DRIVE_CDROM)) {
-	   WinEnableMenuItem(hwndMenu,
-	   IDM_CLOSETRAY,
-	   FALSE);
-	   }
-	 */
+	if (!rdy)
+	{
+	  WinEnableMenuItem(hwndMenu, IDM_INFO, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_ARCHIVE, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_SIZES, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_SHOWALLFILES, FALSE);
+	  WinEnableMenuItem(hwndMenu, IDM_CHKDSK, FALSE);
+	}
+	/* fixme to be gone?
+	if (!rdy || ~driveflags[iDrv] & DRIVE_CDROM) {
+	  WinEnableMenuItem(hwndMenu, IDM_CLOSETRAY, FALSE);
+	}
+	*/
 	PopupMenu(hwnd,
 		  hwnd,
 		  hwndMenu);
@@ -2061,20 +2065,20 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CHORD:
   case WM_BUTTON3CLICK:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    *dv = 0;
+    *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       id + 50),
-		       sizeof(dv),
-		       dv);
-    if (isalpha(*dv))
+		       sizeof(szDrv),
+		       szDrv);
+    if (isalpha(*szDrv))
     {
-      strcat(dv, "\\");
-      if (!FindDirCnrByName(dv, TRUE))
+      strcat(szDrv, "\\");
+      if (!FindDirCnrByName(szDrv, TRUE))
 	OpenDirCnr((HWND) 0,
 		   hwndMain,
 		   hwndTree,
 		   FALSE,
-		   dv);
+		   szDrv);
     }
     break;
 
@@ -2084,27 +2088,27 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_COMMAND:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    *dv = 0;
+    *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       id + 50),
-		       sizeof(dv),
-		       dv);
-    if (isalpha(*dv))
+		       sizeof(szDrv),
+		       szDrv);
+    if (isalpha(*szDrv))
     {
-      strcat(dv, "\\");
-      CommonDriveCmd(hwnd, dv, SHORT1FROMMP(mp1));
+      strcat(szDrv, "\\");
+      CommonDriveCmd(hwnd, szDrv, SHORT1FROMMP(mp1));
     }
     return 0;
 
   case DM_DRAGOVER:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    *dv = 0;
+    *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       id + 50),
-		       sizeof(dv),
-		       dv);
-    if (isalpha(*dv) &&
-	!(driveflags[toupper(*dv) - 'A'] & DRIVE_NOTWRITEABLE))
+		       sizeof(szDrv),
+		       szDrv);
+    if (isalpha(*szDrv) &&
+	!(driveflags[toupper(*szDrv) - 'A'] & DRIVE_NOTWRITEABLE))
     {
       if (!emphasized)
       {
@@ -2120,13 +2124,13 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case DM_DRAGLEAVE:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    *dv = 0;
+    *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       id + 50),
-		       sizeof(dv),
-		       dv);
-    if (isalpha(*dv) &&
-	!(driveflags[toupper(*dv) - 'A'] & DRIVE_NOTWRITEABLE))
+		       sizeof(szDrv),
+		       szDrv);
+    if (isalpha(*szDrv) &&
+	!(driveflags[toupper(*szDrv) - 'A'] & DRIVE_NOTWRITEABLE))
     {
       if (emphasized)
       {
@@ -2138,11 +2142,11 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case DM_DROPHELP:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    *dv = 0;
+    *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				       id + 50), sizeof(dv), dv);
-    if (isalpha(*dv) &&
-	!(driveflags[toupper(*dv) - 'A'] & DRIVE_NOTWRITEABLE))
+				       id + 50), sizeof(szDrv), szDrv);
+    if (isalpha(*szDrv) &&
+	!(driveflags[toupper(*szDrv) - 'A'] & DRIVE_NOTWRITEABLE))
     {
       DropHelp(mp1, mp2, hwnd, GetPString(IDS_DRIVEDROPHELP));
       return 0;
@@ -2151,13 +2155,13 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case DM_DROP:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    *dv = 0;
+    *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       id + 50),
-		       sizeof(dv),
-		       dv);
-    if (isalpha(*dv) &&
-	!(driveflags[toupper(*dv) - 'A'] & DRIVE_NOTWRITEABLE))
+		       sizeof(szDrv),
+		       szDrv);
+    if (isalpha(*szDrv) &&
+	!(driveflags[toupper(*szDrv) - 'A'] & DRIVE_NOTWRITEABLE))
     {
 
       CNRDRAGINFO cnd;
@@ -2179,7 +2183,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      MPFROMP(&cnd));
       if (li)
       {
-	strcpy(li -> targetpath, dv);
+	strcpy(li -> targetpath, szDrv);
 	strcat(li -> targetpath, "\\");
 	if (li -> list &&
 	    li -> list[0] &&
@@ -5295,12 +5299,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case IDM_EDITANYARCHIVER:
-    {
-      DIRCNRDATA arc;
-
-      memset(&arc, 0, sizeof(DIRCNRDATA));
-      EditArchiverData(hwnd, &arc);
-    }
+    EditArchiverData(hwnd);
     break;
 
   case IDM_ABOUT:
