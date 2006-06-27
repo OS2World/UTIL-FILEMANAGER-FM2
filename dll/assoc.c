@@ -6,7 +6,7 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
 
 ***********************************************************************/
 
@@ -52,7 +52,7 @@ static BOOL       assloaded = FALSE;
 
 MRESULT EXPENTRY AssocTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  PFNWP       oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+  PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
   static BOOL emphasized = FALSE;
 
   switch(msg) {
@@ -493,7 +493,7 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         oldproc = WinSubclassWindow(WinWindowFromID(hwnd,ASS_CL),
                                     (PFNWP)AssocTextProc);
         if(oldproc)
-          WinSetWindowPtr(WinWindowFromID(hwnd,ASS_CL),0,(PVOID)oldproc);
+          WinSetWindowPtr(WinWindowFromID(hwnd,ASS_CL),QWL_USER,(PVOID)oldproc);
       }
       break;
 
