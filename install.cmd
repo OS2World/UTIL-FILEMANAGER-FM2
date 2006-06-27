@@ -24,8 +24,11 @@
 
    For usage help, run as INSTALL /?
 
-   08 Aug 05 SHL Add JFSOPT support
+   08 Aug 05 SHL Support jfsopt.cmd install
    16 Aug 05 SHL Ensure folder icon gets updated if folder exists
+   16 Aug 05 SHL Support tarlist.cmd install
+   18 Aug 05 SHL Support archiver.tmp install
+   08 Dec 05 SHL Drop tarlist.cmd support - now obsolete
 
 */
 
@@ -368,6 +371,7 @@ do
 end
 
 rc = stream('sysinfo.exe','c','query exists')
+/* fixme to be really gone? */
 if rc \= '' then
 /*
 do
@@ -417,6 +421,7 @@ do
   call SysCreateObject classname,title,location,setup,'u'
 end
 
+/* fixme to use newview if installed? */
 rc = stream('FM3.HLP','c','query exists')
 if rc \= '' then
 do
@@ -527,17 +532,9 @@ do
   end
 end
 'DEL HPFSOPT.TMP 1>NUL 2>NUL'
-rc = stream('JFSOPT.CMD','c','query exists')
-if rc = '' then
-do
-  rc = stream('JFSOPT.TMP','c','query exists')
-  if rc \= '' then
-  do
-    say 'Creating a sample JFSOPT.CMD file for you.'
-    'REN JFSOPT.TMP JFSOPT.CMD 1>NUL 2>NUL'
-  end
-end
-'DEL JFSOPT.TMP 1>NUL 2>NUL'
+
+call InstallFile 'JFSOPT.CMD' 'JFSOPT.TMP'
+
 rc = stream('FATOPT.CMD','c','query exists')
 if rc = '' then
 do
@@ -549,6 +546,8 @@ do
   end
 end
 'DEL FATOPT.TMP 1>NUL 2>NUL'
+
+call InstallFile 'ARCHIVER.BB2' 'ARCHIVER.TMP'
 
 rc = stream('QUICKTLS.DAT','c','query exists')
 if rc = '' then
@@ -1219,3 +1218,25 @@ say '쿟o remove FM/2 completely, run UNINSTAL and follow the directions.        
 say '읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸'
 say "I'm done now."
 say ''
+
+exit
+
+/* InstallFile(file, template) install one file from template */
+
+InstallFile: procedure
+
+  parse arg sFile sTemplate
+
+  rc = stream(sFile,'c','query exists')
+  if rc = '' then do
+    rc = stream(sTemplate,'c','query exists')
+    if rc \= '' then do
+      say 'Creating a sample' sFile 'file for you.'
+      'ren' sTemplate sFile '1>nul 2>nul'
+    end
+  end
+  'del' sTemplate '1>nul 2>nul'
+
+  return
+
+  /* end InstallFile */
