@@ -6,11 +6,13 @@
   fm/4 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   23 May 05 SHL Use datamin.h
   26 May 05 SHL Comments and localize code
   06 Aug 05 SHL Renames
+  02 Jan 06 SHL Use QWL_USER more
+  02 Jan 06 SHL Map IDM_WINDOWDLG to match IBM_TWODIRS
 
 ***********************************************************************/
 
@@ -48,7 +50,7 @@ typedef struct
 
 static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg)
   {
@@ -428,8 +430,9 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 	      NULL);
     break;
 
-  case IDM_TWODIRS:
-    pd = WinQueryWindowPtr(hwnd, 4);
+  case IDM_TWODIRS:		// Menu action
+  case IDM_WINDOWDLG:		// Toolbar action
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
     {
 
@@ -475,7 +478,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
     break;
 
   case IDM_COMPARE:
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
     {
 
@@ -615,7 +618,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 
   case IDM_NEXTWINDOW:
   case IDM_PREVWINDOW:
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
     {
 
@@ -834,7 +837,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
     {
       memset(pd, 0, sizeof(PERSON1DATA));
       pd -> size = sizeof(PERSON1DATA);
-      WinSetWindowPtr(hwnd, 4, (PVOID) pd);
+      WinSetWindowPtr(hwnd, QWL_USER + 4, (PVOID)pd);
     }
     {
       SWP swp;
@@ -879,7 +882,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
     break;
 
   case UM_SETUP:
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
     {
 
@@ -949,7 +952,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
       hwndC = WinWindowFromID(pd -> hwndDir1, FID_CLIENT);
       if (hwndC)
       {
-	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), 0);
+	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	if (dcd)
 	{
 	  size = sizeof(INT);
@@ -1009,7 +1012,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
       hwndC = WinWindowFromID(pd -> hwndDir2, FID_CLIENT);
       if (hwndC)
       {
-	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), 0);
+	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	if (dcd)
 	{
 	  size = sizeof(INT);
@@ -1105,7 +1108,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
     WinStoreWindowPos(FM2Str,
 		      "MainWindowPos2",
 		      WinQueryWindow(hwnd, QW_PARENT));
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
     {
 
@@ -1153,7 +1156,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
       hwndC = WinWindowFromID(pd -> hwndDir1, FID_CLIENT);
       if (hwndC)
       {
-	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), 0);
+	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	if (dcd)
 	{
 	  flWindowAttr = dcd -> flWindowAttr;
@@ -1195,7 +1198,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
       hwndC = WinWindowFromID(pd -> hwndDir2, FID_CLIENT);
       if (hwndC)
       {
-	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), 0);
+	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	if (dcd)
 	{
 	  flWindowAttr = dcd -> flWindowAttr;
@@ -1256,7 +1259,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return CommonMainWndProc(hwnd, msg, mp1, mp2);
 
   case UM_SETUP2:
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
     {
       if (mp1)
@@ -1389,7 +1392,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_ADVISEFOCUS:
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (mp1 &&
 	pd &&
 	(HWND) mp1 != pd -> hwndCurr)
@@ -1407,7 +1410,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_MAXIMIZE:
     if (mp1)
     {
-      pd = WinQueryWindowPtr(hwnd, 4);
+      pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
       if (pd)
       {
 	WinSendMsg(hwnd,
@@ -1438,7 +1441,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_DETAILSSETUP:
     case IDM_COMMANDSMENU:
     case IDM_SORTSUBMENU:
-      pd = WinQueryWindowPtr(hwnd, 4);
+      pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
       if (pd)
 	WinSendMsg(pd -> hwndCurr,
 		   UM_INITMENU,
@@ -1487,7 +1490,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_FOCUSME:
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
       WinSetFocus(HWND_DESKTOP,
 		  pd -> hwndCurr);
@@ -1510,7 +1513,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     /* intentional fallthru */
   case WM_SIZE:
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (mp1 &&
 	mp2 &&
 	pd &&
@@ -1638,7 +1641,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     hwndMain = (HWND) 0;
-    pd = WinQueryWindowPtr(hwnd, 4);
+    pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
       free(pd);
     if (!PostMsg((HWND) 0,
