@@ -6,13 +6,14 @@
   Worker thread
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   16 Oct 02 SHL Comments
   18 Oct 02 SHL MassAction:Archive - force extension so file found
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Rework Action for VAC3.65 compat
   27 Jul 05 SHL	IDM_DOITYOURSELF - avoid need to strip in ExecOnList
+  29 May 06 SHL	Comments
 
 ***********************************************************************/
 
@@ -414,19 +415,21 @@ VOID Action(VOID * args)
 		if (IsFile(wk -> li -> list[x]) > 0)
 		{
 
-		  ARC_TYPE *info = NULL;
+		  ARC_TYPE *info = NULL;		// Say calling for editing - fixme to know why?
 
 		  if (WinDlgBox(HWND_DESKTOP,
 				wk -> hwndFrame,
 				SBoxDlgProc,
 				FM3ModHandle,
 				ASEL_FRAME,
-				(PVOID) & info) &&
+				(PVOID)&info) &&
 		      info)
+		  {
 		    WinSendMsg(wk -> hwndCnr,
 			       UM_OPENWINDOWFORME,
 			       MPFROMP(wk -> li -> list[x]),
 			       MPFROMP(info));
+		  }
 		}
 		break;
 
@@ -1408,15 +1411,17 @@ VOID MassAction(VOID * args)
 		ad.fmoving = TRUE;
 	      if (!info)
 	      {
-		ad.info = arcsighead;
+		ad.info = arcsighead;	// Hide dups
 		if (!WinDlgBox(HWND_DESKTOP,
 			       wk -> hwndFrame,
 			       SBoxDlgProc,
 			       FM3ModHandle,
 			       ASEL_FRAME,
-			       (PVOID) & ad.info) ||
-		    !ad.info)		/* we blew it */
-		  break;
+			       (PVOID)&ad.info) ||
+		    !ad.info)
+		{
+		  break;		/* we blew it */
+		}
 	      }
 	      else
 		ad.info = info;
