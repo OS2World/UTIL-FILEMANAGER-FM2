@@ -8,6 +8,7 @@
 # 24 May 05 SHL Add clean and cleanobj targets
 # 06 Jun 05 SHL Add warnings enable (WARN)
 # 24 Jul 05 SHL Rework resource kit support
+# 16 Apr 06 SHL Add lxlite target
 
 # Warning - missing many *.h dependencies
 
@@ -186,6 +187,9 @@ ipf\FM3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp
 avv.obj:      version.h
 key.obj:      version.h
 misc.c:       version.h
+
+lxlite: $(BASE).dll $(BASERES).dll
+  !lxlite /x- /b- $?
 
 cleanobj:
   cd internal

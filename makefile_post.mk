@@ -2,6 +2,7 @@
 # $Id$
 
 # 16 Aug 05 SHL Clean up
+# 16 Apr 06 SHL Add lxlite target
 
 !ifndef MAKERES
 
@@ -28,6 +29,9 @@ $(BASE).exe: $(BASE).res
   bldlevel $@
 
 !endif
+
+lxlite:: $(BASE).exe
+  lxlite /x- /b- $?
 
 clean:
   -del $(BASE).exe

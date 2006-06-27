@@ -5,16 +5,17 @@
 # 16 Jun 05 SHL Workaround makeflags wierdness
 # 18 Jul 05 SHL Add bitmap dependencies
 # 20 Jul 05 SHL Add makeres support
+# 16 Apr 06 SHL Add lxlite target
 
 # Environment:
 
-#   DEBUG	0 = release build, 1 = debug build
+# DEBUG	0 = release build, 1 = debug build
 
 BASE = fm3
 
 !include makefile_pre.mk
 
-all: dll $(BASE) mak
+all: dll $(BASE) allexe
 
 # Only update resources
 res:
@@ -36,8 +37,11 @@ $(BASE).obj: $(BASE).c $(BASE).h dll\version.h
 
 # make EXE compenents
 
-mak: *.mak
-  !$(MAKE) /NOLOGO /$(MAKEFLAGS) /f $?
+allexe: *.mak
+  !$(MAKE) /NOLOGO /f $? /$(MAKEFLAGS)
+
+lxlite:: *.mak
+  !$(MAKE) /NOLOGO /f $? /$(MAKEFLAGS) lxlite
 
 cleanobj:
   cd dll
