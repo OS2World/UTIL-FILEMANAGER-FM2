@@ -1,5 +1,56 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.04 pre10:
+ o Allow non-null terminated archive signatures
+ o Preserve archiver.bbs comments
+
+3.04 pre9:
+ o Add archiver defintion add/delete/move support
+
+3.04 pre8:
+ o Avoid toolbar window list trap (action 9010)
+ o Avoid internal editor file corruption when wrap on
+
+3.04 pre7:
+ o More archiver.bb2 template rework
+ o Correct archiver window date/time suppress logic
+ o Clean up archiver.bb2 loader
+ o Minor makefile corrections
+
+3.04 pre6:
+ o Correct typo in MakeValidDir() - avoid drive button RMB trap
+
+3.04 pre5:
+ o Support archivers with no list headers (tar)
+ o Support archivers that onl extract with directories (tar)
+ o Disable menus for not ready volumes
+ o Correct missing collector view button window updates
+ o Correct fallback logic in MakeValidDir()
+
+3.04 pre4:
+ o Correct longnames display enable
+ o archiver.tmp (archiver.bb2) updated and optimized
+ o Support archiver.tmp install
+
+3.04 pre3:
+ o Support jfsopt.cmd install
+ o Support tarlist.cmd install
+ o Ensure install.cmd updates fm/2 Desktop folder icons
+ o Support empty signatures in archiver.bb2
+
+3.04 pre2:
+ o More icon updates (David's v18)
+ o Avoid user directory edit crash
+ o Avoid crashing if archiver.bb2 entry has no signature
+
+3.04 pre1:
+ o Avoid commands menu do it yourself trap
+ o Correct filesystem type details view column selections
+ o Rework resource kit into standard makefiles
+ o Replace bitmaps and icons (thanks to David Graser and others)
+ o Add JFS optimize support (thanks to Gregg Young)
+ o Avoid Directory Sizes hangs
+
 3.03:
  o Rework resource kit and reskit readme
  o Correct directory sizes sort
@@ -13,7 +64,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Output popup error messages to stderr and to screen
  o Correct archive container initial sort setup
  o Avoid startup trap in FindSwapperDat (VAC3.65 compat)
- o Correct reversed warp menu in new viewer
+ o Correct reversed wrap menu in new viewer
  o Misc VAC3.65 compat rework
  o Avoid referencing garbage in collector
  o Resolve some icon selection inconsistencies
