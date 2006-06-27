@@ -6,7 +6,7 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   12 Feb 03 SHL Add CBLIST_TO_EASIZE
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -22,6 +22,8 @@
   28 May 05 SHL Drop local functions
   06 Jun 05 SHL Use QWL_USER
   11 Aug 05 SHL Renames
+  29 May 06 SHL Rework EditArchiverData
+  16 Jun 06 SHL ARC_TYPE: support non-string signatures
 
 ***********************************************************************/
 
@@ -411,18 +413,19 @@ typedef struct __arc_type__ {
     CHAR    *createwdirs;
     CHAR    *movewdirs;
     CHAR    *delete;
-    CHAR    *signature;
-    CHAR    *startlist;
-    CHAR    *endlist;
-    INT     osizepos;
-    INT     nsizepos;
-    INT     fdpos;
-    INT     fdflds;
-    INT     fnpos;
-    INT     datetype;
-    BOOL    nameislast;
-    BOOL    nameisnext;
-    BOOL    nameisfirst;
+    CHAR    *signature;			// archiver signature
+    CHAR    *startlist;			// omitted means no start marker
+    CHAR    *endlist;			// omitted means next blank line or EOF
+    INT     siglen;			// signature length in bytes
+    INT     osizepos;			// original size position or -1
+    INT     nsizepos;			// compressed size position or -1
+    INT     fdpos;			// file date position or -1
+    INT     fdflds;			// file date element count (typically 3) or -1
+    INT     fnpos;			// file name position or -1 if last
+    INT     datetype;			// date field format
+    BOOL    nameislast;			// name is last item on line
+    BOOL    nameisnext;			// file name is on next line
+    BOOL    nameisfirst;		// file name is first item on line
     struct __arc_type__ *next;
     struct __arc_type__ *prev;
 } ARC_TYPE;
@@ -777,8 +780,8 @@ BOOL ArcDateTime (CHAR *dt,INT type,CDATE *cdate,CTIME *ctime);
 
 /* avv.c */
 VOID rewrite_archiverbb2(CHAR *archiverbb2);
-MRESULT EXPENTRY ArcReviewDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-APIRET EditArchiverData (HWND hwnd,DIRCNRDATA *arc);
+MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
+VOID EditArchiverData(HWND hwnd);
 
 /* systemf.c */
 BOOL ShowSession (HWND hwnd,PID pid);
@@ -1187,6 +1190,8 @@ BOOL StringsLoaded (void);
 #endif
 
 DATADEF ARC_TYPE *arcsighead;
+DATADEF BOOL      arcsigsloaded;
+DATADEF BOOL      arcsigsmodified;
 DATADEF USHORT    nodes,shiftstate;
 DATADEF HEV       CompactSem;
 DATADEF HWND      hwndMain,hwndTree,hwndStatus,hwndStatus2,hwndTrash,
