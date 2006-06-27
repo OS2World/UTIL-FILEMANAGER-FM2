@@ -6,7 +6,7 @@
   Archive containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   11 Jun 02 SHL Ensure archive name not garbage
   22 May 03 SHL ArcObjWndProc: fix UM_RESCAN now that we understand it
@@ -19,6 +19,10 @@
   05 Jun 05 SHL Use QWL_USER
   22 Jun 05 SHL ArcSort: correct typo in last sort fix
   13 Aug 05 SHL FillArcCnr: optimize
+  08 Dec 05 SHL FillArcCnr: allow list start and end markers to be empty (i.e. tar)
+  08 Dec 05 SHL ArcCnrWndProc: suppress IDM_EXTRACT if no simple extract (i.e. tar)
+  30 Dec 05 SHL ArcCnrWndProc: correct date/time column display setup
+  29 May 06 SHL Comments
 
 ***********************************************************************/
 
@@ -286,15 +290,17 @@ static BOOL IsArcThere (HWND hwnd, CHAR *arcname)
 
 
 static INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
-                ULONGLONG *pullTotalBytes)
+                       ULONGLONG *pullTotalBytes)
 {
-
   FILE         *fp;
   HFILE         oldstdout;
   HFILE		newstdout;
   CHAR          s[CCHMAXPATH * 2],lonename[CCHMAXPATH + 2],
                *nsize,*osize,*fdate,*fname,*p,*pp,arctemp[33];
-  BOOL          gotstart = FALSE,gotend = FALSE,wasquote,nomove = FALSE;
+  BOOL          gotstart;
+  BOOL	        gotend;
+  BOOL	        wasquote;
+  BOOL		nomove = FALSE;		// fixme to be gone?
   INT           highest = 0,x,counter = 0,numarcfiles = 0;
   PARCITEM      lastpai;
   ARC_TYPE     *info;
@@ -303,6 +309,7 @@ static INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
 
   if(!arcname || !arcinfo)
     return 0;
+
   info = *arcinfo;
   if(!info)
     info = find_type(arcname,NULL);
@@ -313,6 +320,7 @@ static INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
       else
         break;
     }
+
 ReTry:
 
 #ifdef DEBUG
@@ -347,9 +355,11 @@ ReTry:
              GetPString(IDS_BUNGEDUPTEXT));
     if(info->fnpos == -1)
       highest = 32767;
+
     DosError(FERR_DISABLEHARDERR);
     DosForceDelete(arctemp);
     DosError(FERR_DISABLEHARDERR);
+
     strcpy(s,info->list);
     p = strchr(s,' ');
     if(p)
@@ -407,22 +417,27 @@ ReTry:
         return 0;
       }
     }
+
     DosError(FERR_DISABLEHARDERR);
     fp = _fsopen(arctemp,"r",SH_DENYWR);
+
     if(fp) {
+      gotstart = !info->startlist || !*info->startlist;	// If list has no start marker
+
       while(!feof(fp) && !gotend) {
         if(!fgets(s,CCHMAXPATH * 2,fp))
           break;
         s[(CCHMAXPATH * 2) - 1] = 0;
         stripcr(s);
         if(!gotstart) {
-          if(!strcmp(s,info->startlist))
-          gotstart = TRUE;
+          if (!strcmp(s,info->startlist))
+            gotstart = TRUE;
         }
         else if(info->endlist &&
                 !strcmp(s,info->endlist))
           gotend = TRUE;
-        else {    /* add to container */
+        else {
+	  /* add to container */
           fname = NULL;
           bstrip(s);
           if(info->nameisfirst) {
@@ -595,9 +610,11 @@ ReTry:
             }
           }
         }
-      }
+      } // while !eof
+
       fclose(fp);
-      if (!numarcfiles || !gotstart || (!gotend && info->endlist))
+
+      if (!numarcfiles || !gotstart || (!gotend && info->endlist && *info->endlist))
       {
         ARCDUMP ad;
 
@@ -645,9 +662,9 @@ ReTry:
         info->prev->next = tinfo;
         info->prev = NULL;
         arcsighead = info;
-        rewrite_archiverbb2(NULL);
+        rewrite_archiverbb2(NULL);	// Rewrite with warning
       }
-    }
+    } // if opened
     DosError(FERR_DISABLEHARDERR);
     DosForceDelete(arctemp);
   }
@@ -1034,9 +1051,11 @@ MRESULT EXPENTRY ArcClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
       return MRFROMLONG(WinWindowFromID(hwnd,ARC_CNR));
 
     case UM_VIEWSMENU:
+      // fixme to disble menu items as needed
       return MRFROMLONG(CheckMenu(&ArcCnrMenu,ARCCNR_POPUP));
 
     case UM_FILESMENU:
+      // fixme to disble menu items as needed
       return MRFROMLONG(CheckMenu(&ArcMenu,ARC_POPUP));
 
     case MM_PORTHOLEINIT:
@@ -1867,15 +1886,18 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
                     for(x = 0;li->list[x];x++) {
                       if(IsFile(li->list[x]) == 1) {
-                        info = NULL;
-                        if(WinDlgBox(HWND_DESKTOP,HWND_DESKTOP,
-                                     SBoxDlgProc,FM3ModHandle,ASEL_FRAME,
-                                     (PVOID)&info) && info)
+                        info = NULL;	// Do not hide dups - fixme to know why?
+                        if (WinDlgBox(HWND_DESKTOP,HWND_DESKTOP,
+                                      SBoxDlgProc,FM3ModHandle,ASEL_FRAME,
+                                      (PVOID)&info) &&
+			    info)
+			{
                           StartArcCnr(HWND_DESKTOP,
                                       HWND_DESKTOP,
                                       li->list[x],
                                       4,
                                       info);
+			}
                       }
                     }
                   }
@@ -2168,8 +2190,7 @@ KbdRetry:
     case UM_SETUP2:
       if(dcd &&
          dcd->info) {
-        if(dcd->info->fdpos == -1 ||
-           !dcd->info->datetype)
+        if(dcd->info->fdpos == -1 || !dcd->info->datetype)
           dcd->sortFlags &= (~SORT_LWDATE);
         if(dcd->info->nsizepos == -1)
           dcd->sortFlags &= (~SORT_EASIZE);
@@ -2177,23 +2198,25 @@ KbdRetry:
           dcd->sortFlags &= (~SORT_SIZE);
         AdjustCnrColVis(hwnd,
                         GetPString(IDS_OLDSIZECOLTEXT),
-                        (dcd->info->osizepos != -1),
+                        dcd->info->osizepos != -1,
                         FALSE);
         AdjustCnrColVis(hwnd,
                         GetPString(IDS_NEWSIZECOLTEXT),
-                        (dcd->info->nsizepos != -1),
+                        dcd->info->nsizepos != -1,
                         FALSE);
+	// Display unsullied date/time string if type 0
         AdjustCnrColVis(hwnd,
                         GetPString(IDS_DATETIMECOLTEXT),
-                        (dcd->info->fdpos != -1 && !dcd->info->datetype),
+                        dcd->info->fdpos != -1 && !dcd->info->datetype,
                         FALSE);
+	// Display parsed date/time columns if type specified
         AdjustCnrColVis(hwnd,
                         GetPString(IDS_TIMECOLTEXT),
-                        (dcd->info->fdpos != -1 || dcd->info->datetype),
+                        dcd->info->fdpos != -1 && dcd->info->datetype,
                         FALSE);
         AdjustCnrColVis(hwnd,
                         GetPString(IDS_DATECOLTEXT),
-                        (dcd->info->fdpos != -1 || dcd->info->datetype),
+                        dcd->info->fdpos != -1 && dcd->info->datetype,
                         FALSE);
         WinSendMsg(hwnd,
                    CM_INVALIDATEDETAILFIELDINFO,
@@ -2591,19 +2614,22 @@ KbdRetry:
             if(dcd->info) {
               WinEnableMenuItem((HWND)mp2,
                                 IDM_DELETE,
-                                (dcd->info->delete != NULL));
+                                dcd->info->delete != NULL);
               WinEnableMenuItem((HWND)mp2,
                                 IDM_TEST,
-                                (dcd->info->test != NULL));
+                                dcd->info->test != NULL);
+              WinEnableMenuItem((HWND)mp2,
+                                IDM_EXTRACT,
+                                dcd->info->extract != NULL);
               WinEnableMenuItem((HWND)mp2,
                                 IDM_EXTRACTWDIRS,
-                                (dcd->info->exwdirs != NULL));
+                                dcd->info->exwdirs != NULL);
               WinEnableMenuItem((HWND)mp2,
                                 IDM_ARCEXTRACTWDIRS,
-                                (dcd->info->exwdirs != NULL));
+                                dcd->info->exwdirs != NULL);
               WinEnableMenuItem((HWND)mp2,
                                 IDM_ARCEXTRACTWDIRSEXIT,
-                                (dcd->info->exwdirs != NULL));
+                                dcd->info->exwdirs != NULL);
             }
             break;
 
