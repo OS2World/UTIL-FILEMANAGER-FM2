@@ -15,6 +15,7 @@
   26 May 05 SHL More large file formatting updates
   05 Jun 05 SHL Use QWL_USER
   06 Aug 05 SHL Renames
+  08 Dec 05 SHL TreeCnrWndProc: disable menu items if drive not ready
 
 ***********************************************************************/
 
@@ -273,7 +274,7 @@ MakeTop:
 
 MRESULT EXPENTRY TreeTitleWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
-  PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
+  PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
     case WM_CONTEXTMENU:
@@ -628,7 +629,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return MRFROMLONG(DRR_TARGET);
 
     case UM_EXPAND:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 
 	BOOL tempsusp = dcd->suspendview;
@@ -646,7 +647,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case UM_UPDATERECORDLIST:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd && mp1) {
 
 	INT    numentries = 0;
@@ -664,7 +665,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case UM_SETUP:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 	dcd->hwndObject = hwnd;
 	if(ParentIsDesktop(hwnd,dcd->hwndParent))
@@ -673,7 +674,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case UM_RESCAN2:
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd &&
 	 hwndStatus &&
 	 dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
@@ -775,7 +776,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       /*
        * populate container
        */
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 	WinSendMsg(dcd->hwndCnr,
 		   CM_REMOVERECORD,
@@ -846,7 +847,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_MASSACTION:
       if(mp1) {
 
-	dcd = WinQueryWindowPtr(hwnd,0);
+	dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 	if(dcd) {
 
 	  WORKER *wk;
@@ -879,7 +880,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_ACTION:
       if(mp1) {
 
-	dcd = WinQueryWindowPtr(hwnd,0);
+	dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 	if(dcd) {
 
 	  WORKER *wk;
@@ -915,7 +916,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case WM_DESTROY:
       hwndTree = (HWND)0;
-      dcd = WinQueryWindowPtr(hwnd,0);
+      dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if(dcd) {
 	WinSendMsg(dcd->hwndCnr,
 		   UM_CLOSE,
@@ -938,10 +939,10 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 }
 
 
-MRESULT EXPENTRY TreeCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY TreeCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static APPNOTIFY *apphead = NULL,*apptail = NULL;
-  DIRCNRDATA       *dcd = WinQueryWindowPtr(hwnd,0);
+  DIRCNRDATA       *dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
     case DM_PRINTOBJECT:
@@ -2326,74 +2327,60 @@ KbdRetry:
 	      PCNRITEM pci;
 
 	      pci = (PCNRITEM)CurrentRecord(hwnd);
-	      if(pci && (INT)pci != -1) {
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_UPDATE,
-				  (pci->flags & RECFLAGS_UNDERENV) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_EXPANDSUBMENU,
-				  (pci->flags & RECFLAGS_UNDERENV) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_EXPAND,
-				  (pci->flags & RECFLAGS_UNDERENV) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_COLLAPSE,
-				  (pci->flags & RECFLAGS_UNDERENV) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_DELETE,
-				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_PERMDELETE,
-				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_DELETESUBMENU,
-				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_MOVEMENU,
-				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_RENAME,
-				  ((pci->flags & RECFLAGS_UNDERENV) == 0) &&
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_DETACH,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) != 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_EJECT,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
-/*
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_CLOSETRAY,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM) != 0);
-*/
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_LOCK,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_UNLOCK,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) != 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_OPTIMIZE,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_FORMAT,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_CHKDSK,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_MKDIR,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_UNDELETE,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
-		WinEnableMenuItem((HWND)mp2,
-				  IDM_ATTRS,
-				  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_NOTWRITEABLE) == 0);
+	      if(pci && (INT)pci != -1)
+	      {
+		BOOL rdy;
+		BOOL writeable;
+		BOOL removable;
+		BOOL underenv;
+		CHAR chDrvU;
+                CHAR szDrv[CCHMAXPATH];
+		strcpy(szDrv, pci->szFileName);
+		chDrvU = *pci->szFileName;
+	        chDrvU = toupper(chDrvU);
+	        MakeValidDir(szDrv);
+	        rdy = *szDrv == chDrvU;		// Drive not ready if MakeValidDir changes drive letter
+		removable = rdy && (driveflags[chDrvU - 'A'] & DRIVE_REMOVABLE) != 0;
+		writeable = rdy && !(driveflags[chDrvU - 'A'] & DRIVE_NOTWRITEABLE);
+		underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
+
+		WinEnableMenuItem((HWND)mp2, IDM_INFO, rdy);
+
+		WinEnableMenuItem((HWND)mp2, IDM_ATTRS, writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_EAS, writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_SUBJECT, writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_DRVFLAGS, rdy);	// fixme to allow if not ready
+
+		WinEnableMenuItem((HWND)mp2, IDM_ARCHIVE, rdy);
+
+		WinEnableMenuItem((HWND)mp2, IDM_UPDATE, !underenv);
+		WinEnableMenuItem((HWND)mp2, IDM_EXPANDSUBMENU, !underenv);
+		WinEnableMenuItem((HWND)mp2, IDM_EXPAND, !underenv);
+		WinEnableMenuItem((HWND)mp2, IDM_COLLAPSE, !underenv);
+
+		WinEnableMenuItem((HWND)mp2, IDM_SIZES, rdy);
+		WinEnableMenuItem((HWND)mp2, IDM_MKDIR, writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_SHOWALLFILES, rdy);
+		WinEnableMenuItem((HWND)mp2, IDM_UNDELETE, writeable);
+
+		WinEnableMenuItem((HWND)mp2, IDM_CHKDSK, writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_FORMAT, writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_OPTIMIZE, writeable);
+
+		WinEnableMenuItem((HWND)mp2, IDM_DETACH,
+				  rdy && (driveflags[chDrvU - 'A'] & DRIVE_REMOTE) != 0);
+
+		WinEnableMenuItem((HWND)mp2, IDM_EJECT, removable);
+
+		WinEnableMenuItem((HWND)mp2, IDM_LOCK, removable);
+		WinEnableMenuItem((HWND)mp2, IDM_UNLOCK, removable);
+
+		WinEnableMenuItem((HWND)mp2, IDM_DELETE, !underenv && writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_PERMDELETE, !underenv && writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_DELETESUBMENU, !underenv && writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_MOVEMENU, !underenv && writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_RENAME, !underenv && writeable);
+
 	      }
 	    }
 	    break;
@@ -3346,7 +3333,7 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
 	PFNWP oldproc;
 
 	oldproc = WinSubclassWindow(hwndFrame,(PFNWP)TreeFrameWndProc);
-	WinSetWindowPtr(hwndFrame,0,(PVOID)oldproc);
+	WinSetWindowPtr(hwndFrame,QWL_USER,(PVOID)oldproc);
 	oldproc = WinSubclassWindow(WinWindowFromID(hwndFrame,FID_TITLEBAR),
 				    (PFNWP)TreeTitleWndProc);
 	WinSetWindowPtr(WinWindowFromID(hwndFrame,FID_TITLEBAR),
@@ -3368,7 +3355,7 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
 				     NULL,
 				     NULL);
       if(dcd->hwndCnr) {
-	WinSetWindowPtr(dcd->hwndCnr,0,(PVOID)dcd);
+	WinSetWindowPtr(dcd->hwndCnr,QWL_USER,(PVOID)dcd);
 	if(ParentIsDesktop(hwndFrame,hwndParent)) {
 	  WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),"VTree");
 	  FixSwitchList(hwndFrame,"VTree");
