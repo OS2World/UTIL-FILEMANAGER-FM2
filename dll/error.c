@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
@@ -190,8 +190,6 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszFmt,...)
 
 static APIRET showMsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszMsg)
 {
-
-
   if ((mb_type & (MB_YESNO | MB_YESNOCANCEL)) == 0)
   {
     fputs(pszMsg, stderr);
