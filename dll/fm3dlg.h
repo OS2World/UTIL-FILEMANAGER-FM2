@@ -1,4 +1,20 @@
-#include "fm3hlp.h"			/* SHL */
+
+/***********************************************************************
+
+  $Id$
+
+  Dialog item definesions
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2002, 2006 Steven H.Levine
+
+  15 Oct 02 MK Baseline
+	16 Oct 02 SHL Localize
+	29 May 06 SHL Add Edit Archiver enhancements
+
+***********************************************************************/
+
+#include "fm3hlp.h"
 
 #define MSK_FRAME 											20100
 #define MSK_LISTBOX 										20101
@@ -125,7 +141,13 @@
 #define ARCH_FIND 											20611
 
 #define ASEL_FRAME											20700
-#define ASEL_LISTBOX										20701
+#define ASEL_EDIT_FRAME									20701
+#define ASEL_LISTBOX										20702
+#define ASEL_PB_ADD											20703
+#define ASEL_PB_DELETE									20704
+#define ASEL_PB_UP											20705
+#define ASEL_PB_DOWN										20706
+#define ASEL_PB_REVERT									20707
 
 #define WALK_FRAME											20800
 #define WALK_DIRLIST										20801
