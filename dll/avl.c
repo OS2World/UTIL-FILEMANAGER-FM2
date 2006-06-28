@@ -19,6 +19,7 @@
   29 May 06 SHL SBoxDlgProc: support move, add, delete
   30 May 06 SHL load_archivers: add reload support
   16 Jun 06 SHL load_archivers: support signatures containing 0s
+  26 Jun 06 SHL load_archivers: remember where comments are
 
 ***********************************************************************/
 
@@ -44,7 +45,7 @@ static void fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect);
 
 //=== quick_find_type() ===
 
-ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig)
+ARC_TYPE *quick_find_type(CHAR *filespec, ARC_TYPE *topsig)
 {
   ARC_TYPE *info, *found = NULL;
   CHAR *p;
@@ -154,7 +155,7 @@ static VOID fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect)
     PosOverOkay(hwnd);
 }
 
-ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
+ARC_TYPE *find_type(CHAR *filespec, ARC_TYPE *topsig)
 {
   HFILE handle;
   ULONG action;
@@ -271,19 +272,21 @@ static void free_arc_type(ARC_TYPE *pat)
   }
 }
 
-#pragma alloc_text(AVL,load_archivers, get_archiver_line)
+static UINT cur_line_num;		// Input file line counter
 
-//=== get_archiver_line() read line, strip comments and whitespace ===
+#pragma alloc_text(AVL,load_archivers, get_line_strip_comments, get_line_strip_white)
+
+//=== get_line_strip_comments() read line, strip comments and whitespace ===
 
 #define ARCHIVER_LINE_BYTES	256
 
-static PSZ get_archiver_line(PSZ pszIn, FILE * pf)
+static PSZ get_line_strip_comments(PSZ pszIn, FILE *fp)
 {
-  PSZ psz = fgets(pszIn, ARCHIVER_LINE_BYTES, pf);
+  PSZ psz = fgets(pszIn, ARCHIVER_LINE_BYTES, fp);
   PSZ psz2;
 
-  if (psz)
-  {
+  if (psz) {
+    cur_line_num++;
     psz2 = strchr(pszIn, ';');
     if (psz2)
       *psz2 = 0;			// Chop comment
@@ -293,14 +296,16 @@ static PSZ get_archiver_line(PSZ pszIn, FILE * pf)
   return psz;
 }
 
-//=== get_archiver_line2() read line, strip whitespace ===
+//=== get_line_strip_white() read line, strip whitespace ===
 
-static PSZ get_archiver_line2(PSZ pszIn, FILE * pf)
+static PSZ get_line_strip_white(PSZ pszIn, FILE *fp)
 {
-  PSZ psz = fgets(pszIn, ARCHIVER_LINE_BYTES, pf);
+  PSZ psz = fgets(pszIn, ARCHIVER_LINE_BYTES, fp);
 
-  if (psz)
+  if (psz) {
+    cur_line_num++;
     bstripcr(pszIn);			// Strip lead white and trailing white and CR/LF
+  }
 
   return psz;
 }
@@ -309,14 +314,16 @@ static PSZ get_archiver_line2(PSZ pszIn, FILE * pf)
 
 INT load_archivers(VOID)
 {
-  FILE *handle;
-  CHAR s[ARCHIVER_LINE_BYTES + 1];
-  CHAR *p;
-  ARC_TYPE *pat;
-  ARC_TYPE *patLast;
-  INT numlines = NUMLINES;
+  FILE *fp;
+  CHAR sz[ARCHIVER_LINE_BYTES + 1];
+  CHAR *psz;
+  ARC_TYPE *pat = NULL;
+  ARC_TYPE *patLast = NULL;
+  UINT lines_per_arcsig = LINES_PER_ARCSIG;
+  UINT per_sig_comment_line_num = 0;
   INT i;
 
+  // Free current signatures
   if (arcsighead) {
     for (pat = arcsighead; pat;) {
       patLast = pat;
@@ -327,234 +334,252 @@ INT load_archivers(VOID)
   }
 
   arcsigsmodified = FALSE;
+  arcsigs_header_lines = 0;
+  arcsigs_trailer_line_num = 0;
 
   DosEnterCritSec();
-  p = searchpath(GetPString(IDS_ARCHIVERBB2));
-  if (!p || !*p)
+  psz = searchpath(GetPString(IDS_ARCHIVERBB2));
+  if (!psz || !*psz)
   {
     DosExitCritSec();
     return -1;
   }
-  handle = _fsopen(p, "r", SH_DENYWR);
+  fp = _fsopen(psz, "r", SH_DENYWR);
   DosExitCritSec();
-  if (!handle)
+  if (!fp)
     return -2;
-  strcpy(archiverbb2, p);
-  // Get lines per record count
-  if (!get_archiver_line(s, handle))
+  strcpy(archiverbb2, psz);		// Remember full path
+
+  cur_line_num = 0;
+
+  // Line 1 must contain number of lines per signature definition
+  if (!get_line_strip_comments(sz, fp))
   {
-    fclose(handle);
+    fclose(fp);
     return -3;
   }
-  if (*s)
-    numlines = atoi(s);
-  if (!*s || numlines < NUMLINES)
+  if (*sz)
+    lines_per_arcsig = atoi(sz);
+  if (!*sz || lines_per_arcsig < LINES_PER_ARCSIG)
     return -3;
-  // Parse rest
-  pat = NULL;
-  patLast = NULL;
-  while (!feof(handle))
+
+  // Parse rest of file
+  // 1st non-blank line starts definition
+  // Need to determine header size and start of trailer
+
+  while (!feof(fp))
   {
-    if (!get_archiver_line(s, handle))
-      break;				// EOF
-    // 1st non-blank line starts definition
-    // fixme to preserve comments
+    // If reading header
+    if (!arcsigs_header_lines) {
+      // Reading header - find header size and start of signtures
+      if (!get_line_strip_white(sz, fp))
+	break;				// Unexpected EOF
+      if (stristr(sz, "-- Current Archivers --")) {
+	arcsigs_header_lines = cur_line_num;
+	continue;
+      }
+      if (!*sz || *sz == ';')
+	continue;			//  Header comment or blank line
+      else {
+	// Not a comment, must be start of signatures
+	PSZ psz2 = strchr(sz, ';');
+        if (psz2) {
+          *psz2 = 0;			// Chop trailing comment
+          bstripcr(sz);			// Strip leading white and trailing white and CR/LF
+	}
+        arcsigs_header_lines = cur_line_num - 1;
+      }
+    }
+    else {
+      // Reading defintiions
+      if (!get_line_strip_comments(sz, fp))
+        break;				// EOF
+    }
+
     // fixme to avoid allocating empty fields
 
-    if (*s)
+    // Remember start of per sig comments for next definition
+    if (per_sig_comment_line_num == 0)
+      per_sig_comment_line_num = cur_line_num;
+
+    if (*sz)
     {
+      // At start of defintion
+
       pat = malloc(sizeof(ARC_TYPE));
       if (!pat)
 	break;				// fixme to complain
 
       memset(pat, 0, sizeof(ARC_TYPE));
-      pat -> id = strdup(s);
-      if (!get_archiver_line(s, handle))	// line 2
+      pat -> id = strdup(sz);
 
+      pat -> comment_line_num = per_sig_comment_line_num;
+      pat -> defn_line_num = cur_line_num;
+
+      if (!get_line_strip_comments(sz, fp))	// line 2 - extension
 	break;
-      if (*s)
-	pat -> ext = strdup(s);
+      if (*sz)
+	pat -> ext = strdup(sz);
       else
 	pat -> ext = NULL;
-      if (!get_archiver_line(s, handle))	// line 3
-
+      if (!get_line_strip_comments(sz, fp))	// line 3 - offset to signature
 	break;
-      pat -> file_offset = atol(s);
-      if (!get_archiver_line(s, handle))	// line 4
-
+      pat -> file_offset = atol(sz);
+      if (!get_line_strip_comments(sz, fp))	// line 4 - list command
 	break;
-      if (*s)
-	pat -> list = strdup(s);
+      if (*sz)
+	pat -> list = strdup(sz);
       else
 	pat -> list = NULL;
       if (!pat -> list)
+	break;				// Must have list command - fixme to complain
+      if (!get_line_strip_comments(sz, fp))	// line 5
 	break;
-      if (!get_archiver_line(s, handle))	// line 5
-
-	break;
-      if (*s)
-	pat -> extract = strdup(s);
+      if (*sz)
+	pat -> extract = strdup(sz);
       else
 	pat -> extract = NULL;
-      if (!get_archiver_line(s, handle))	// line 6
-
+      if (!get_line_strip_comments(sz, fp))	// line 6
 	break;
-      if (*s)
-	pat -> exwdirs = strdup(s);
+      if (*sz)
+	pat -> exwdirs = strdup(sz);
       else
 	pat -> exwdirs = NULL;
-      if (!get_archiver_line(s, handle))	// line 7
-
+      if (!get_line_strip_comments(sz, fp))	// line 7
 	break;
-      if (*s)
-	pat -> test = strdup(s);
+      if (*sz)
+	pat -> test = strdup(sz);
       else
 	pat -> test = NULL;
-      if (!get_archiver_line(s, handle))	// line 8
-
+      if (!get_line_strip_comments(sz, fp))	// line 8
 	break;
-      if (*s)
-	pat -> create = strdup(s);
+      if (*sz)
+	pat -> create = strdup(sz);
       else
 	pat -> create = NULL;
-      if (!get_archiver_line(s, handle))	// line 9
-
+      if (!get_line_strip_comments(sz, fp))	// line 9
 	break;
-      if (*s)
-	pat -> createwdirs = strdup(s);
+      if (*sz)
+	pat -> createwdirs = strdup(sz);
       else
 	pat -> createwdirs = NULL;
-      if (!get_archiver_line(s, handle))	// line 10
-
+      if (!get_line_strip_comments(sz, fp))	// line 10
 	break;
-      if (*s)
-	pat -> createrecurse = strdup(s);
+      if (*sz)
+	pat -> createrecurse = strdup(sz);
       else
 	pat -> createrecurse = NULL;
-      if (!get_archiver_line(s, handle))	// line 11
-
+      if (!get_line_strip_comments(sz, fp))	// line 11
 	break;
-      if (*s)
-	pat -> move = strdup(s);
+      if (*sz)
+	pat -> move = strdup(sz);
       else
 	pat -> move = NULL;
-      if (!get_archiver_line(s, handle))	// line 12
-
+      if (!get_line_strip_comments(sz, fp))	// line 12
 	break;
-      if (*s)
-	pat -> movewdirs = strdup(s);
+      if (*sz)
+	pat -> movewdirs = strdup(sz);
       else
 	pat -> movewdirs = NULL;
-      if (!get_archiver_line(s, handle))	// line 13
-
+      if (!get_line_strip_comments(sz, fp))	// line 13
 	break;
-      pat -> delete = strdup(s);
-
-      if (!get_archiver_line2(s, handle))	// line 14
+      if (*sz)
+        pat -> delete = strdup(sz);
+      else
+        pat -> delete = NULL;
+      if (!get_line_strip_white(sz, fp))	// line 14
 	break;
-      i = literal(s);			// Translate \ escapes
+      i = literal(sz);			// Translate \ escapes
       if (i)
       {
 	pat -> siglen = i;
 	pat -> signature = malloc(i);
 	if (!pat -> signature)
 	  break;
-	memcpy(pat -> signature, s, i);	// signature may not be a string
+	memcpy(pat -> signature, sz, i);	// signature may not be a string
       }
       else {
 	pat -> siglen = 0;
 	pat -> signature = NULL;
       }
-      if (!get_archiver_line2(s, handle))	// line 15
-
+      if (!get_line_strip_white(sz, fp))	// line 15
 	break;
-      if (*s)
-	pat -> startlist = strdup(s);
+      if (*sz)
+	pat -> startlist = strdup(sz);
       else
 	pat -> startlist = NULL;
-      if (!get_archiver_line2(s, handle))	// line 16
-
+      if (!get_line_strip_white(sz, fp))	// line 16
 	break;
-      if (*s)
-	pat -> endlist = strdup(s);
+      if (*sz)
+	pat -> endlist = strdup(sz);
       else
 	pat -> endlist = NULL;
-      if (!get_archiver_line(s, handle))	// line 17
-
+      if (!get_line_strip_comments(sz, fp))	// line 17
 	break;
-      pat -> osizepos = atoi(s);
-      if (!get_archiver_line(s, handle))	// line 18
-
+      pat -> osizepos = atoi(sz);
+      if (!get_line_strip_comments(sz, fp))	// line 18
 	break;
-      pat -> nsizepos = atoi(s);
-      if (!get_archiver_line(s, handle))	// line 19
-
+      pat -> nsizepos = atoi(sz);
+      if (!get_line_strip_comments(sz, fp))	// line 19
 	break;
-      pat -> fdpos = atoi(s);
-      p = strchr(s, ',');
-      if (p)
+      pat -> fdpos = atoi(sz);
+      psz = strchr(sz, ',');
+      if (psz)
       {
-	p++;
-	pat -> datetype = atoi(p);
+	psz++;
+	pat -> datetype = atoi(psz);
       }
-      if (!get_archiver_line(s, handle))	// line 20
-
+      if (!get_line_strip_comments(sz, fp))	// line 20
 	break;
-      pat -> fdflds = atoi(s);
-      if (!get_archiver_line(s, handle))	// line 21
-
+      pat -> fdflds = atoi(sz);
+      if (!get_line_strip_comments(sz, fp))	// line 21
 	break;
-      pat -> fnpos = atoi(s);
-      p = strchr(s, ',');
-      if (p)
+      pat -> fnpos = atoi(sz);
+      psz = strchr(sz, ',');
+      if (psz)
       {
-	p++;
-	pat -> nameislast = (BOOL) (*p && atol(p) == 0) ? FALSE : TRUE;
-	p = strchr(p, ',');
-	if (p)
+	psz++;
+	pat -> nameislast = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
+	psz = strchr(psz, ',');
+	if (psz)
 	{
-	  p++;
-	  pat -> nameisnext = (BOOL) (*p && atol(p) == 0) ? FALSE : TRUE;
-	  p = strchr(p, ',');
-	  if (p)
+	  psz++;
+	  pat -> nameisnext = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
+	  psz = strchr(psz, ',');
+	  if (psz)
 	  {
-	    p++;
-	    pat -> nameisfirst = (BOOL) (*p && atol(p) == 0) ? FALSE : TRUE;
+	    psz++;
+	    pat -> nameisfirst = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
 	  }
 	}
       }
       // Ignore unknown lines - must be newer file format
-      for (i = NUMLINES; i < numlines; i++)
+      for (i = LINES_PER_ARCSIG; i < lines_per_arcsig; i++)
       {
-	if (!get_archiver_line(s, handle))
-	  break;
+	if (!get_line_strip_comments(sz, fp))
+	  break;			// Unexpected EOF - fixme to complain
       }
 
-      pat -> next = NULL;
-
+      // Add to list, assume next and prev already NULL
       if (!arcsighead)
-      {
 	arcsighead = patLast = pat;
-	pat -> prev = NULL;
-      }
       else
       {
 	patLast -> next = pat;
 	pat -> prev = patLast;
 	patLast = pat;
       }
-      if (pat -> extract && !*pat -> extract)
-      {
-	free(pat -> extract);
-	pat -> extract = NULL;
-      }
+      pat = NULL;				// Done with this defintion
+
+      arcsigs_trailer_line_num = cur_line_num + 1;	// In case this is last defintion
+      per_sig_comment_line_num = 0;
     } // if got definition
 
-    pat = NULL;
-  } // while lines
-  fclose(handle);
+  } // while more lines
 
-  free_arc_type(pat);
+  fclose(fp);
+
+  free_arc_type(pat);				// In case partial definition in progress
 
   if (!arcsighead)
     return -4;
@@ -1080,7 +1105,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 #pragma alloc_text(ARCCNRS,ArcDateTime)
 
-BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
+BOOL ArcDateTime(CHAR *dt, INT type, CDATE *cdate, CTIME *ctime)
 {
   INT x;
   BOOL ret = FALSE;
