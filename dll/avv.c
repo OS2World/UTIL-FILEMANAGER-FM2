@@ -15,6 +15,7 @@
   14 Aug 05 SHL rewrite_archiverbb2: avoid dereferencing null signature
   14 Aug 05 SHL ArcReviewDlgProc: ensure signature allocated
   29 May 06 SHL EditArchiverData: rework
+  26 Jun 06 SHL rewrite_archiverbb2: include user comments
 
 ***********************************************************************/
 
@@ -176,15 +177,22 @@ static PSZ nonull(PSZ psz)
   return psz;
 }
 
-//=== rewrite_archiverbb2() rewrite archiver.bb2, prompt if arg NULL ===
+//=== rewrite_archiverbb2() rewrite archiver.bb2, prompt if arg NULL, merge comments ===
 
 VOID rewrite_archiverbb2 (PSZ archiverbb2)
 {
-  FILE        *fp;
-  INT         counter = 0;
-  ARC_TYPE    *info;
-  CHAR        s[258];
-  CHAR        *p;
+  FILE	    *fpNew;
+  FILE	    *fpOld = NULL;
+  UINT      entry_num = 0;		// Definition counter
+  UINT	    input_line_num = 0;		// Input file line counter
+  ARC_TYPE  *pat;
+  CHAR      sz[258];
+  CHAR      *psz;
+  BOOL	    needEntryNumber;
+  BOOL	    needReload = FALSE;		// Because line numbers changed
+  time_t    t;
+  struct tm *tm;
+  CHAR	    ch;
 
   arcsigsmodified = FALSE;
 
@@ -203,73 +211,156 @@ VOID rewrite_archiverbb2 (PSZ archiverbb2)
            GetPString(IDS_SAVEARCBB2TEXT));
     archiverbb2 = GetPString(IDS_ARCHIVERBB2);
   }
-  p = strrchr(archiverbb2,'.');   /* save a backup */
-  if (p && !stricmp(p,".BB2")) {
-    strcpy(p,".BAK");
+
+  /* save a backup */
+  psz = strrchr(archiverbb2,'.');
+  if (psz && !stricmp(psz,".BB2")) {
+    strcpy(psz,".BAK");
     DosDelete(archiverbb2);
-    strcpy(s,archiverbb2);
-    strcpy(p,".BB2");
-    DosMove(archiverbb2,s);
+    strcpy(sz,archiverbb2);
+    strcpy(psz,".BB2");
+    DosMove(archiverbb2,sz);
+    fpOld = fopen(sz,"r");		// OK for file not to exist
   }
-  fp = fopen(archiverbb2,"w");
-  if (fp) {
-    fprintf(fp,"%u\n",NUMLINES);
-    fprintf(fp,
-            ";\n; %s file written by FM/2 v%d.%02d\n;\n",
+
+  fpNew = fopen(archiverbb2,"w");
+
+  if (fpNew) {
+
+    fprintf(fpNew,"%u\n",LINES_PER_ARCSIG);
+    t = time(NULL);
+    tm = localtime(&t);
+
+    fprintf(fpNew,
+            ";\n; %s file written by FM/2 v%d.%02d on %u/%u/%u %u:%02u:%02u\n;\n",
             GetPString(IDS_ARCHIVERBB2),
-            VERMAJOR,
-            VERMINOR);
-    fputs(GetPString(IDS_ARCHIVERBB2TEXT),fp);
-    info = arcsighead;
-    while(info) {
-      fprintf(fp,
-              GetPString(IDS_ENTRYCNTRTEXT),
-              ++counter);
-      if(info->id)
-        fprintf(fp,
-                " (%s)\n;\n",
-                info->id);
-      fprintf(fp,
-              "%s\n%s\n%ld\n%s\n",
-              nonull(info->id),
-              nonull(info->ext),
-              info->file_offset,
-              nonull(info->list));
-      fprintf(fp,
-              "%s\n%s\n%s\n%s\n%s\n%s\n",
-              nonull(info->extract),
-              nonull(info->exwdirs),
-              nonull(info->test),
-              nonull(info->create),
-              nonull(info->createwdirs),
-              nonull(info->createrecurse));
-      fprintf(fp,
-              "%s\n%s\n%s\n",
-              nonull(info->move),
-              nonull(info->movewdirs),
-              nonull(info->delete));
-      fprintf(fp,
-              "%s\n%s\n%s\n%d\n%d\n%d,%d\n%d\n%d,%lu,%lu,%lu\n",
-              fixup(info->signature,
-                    s,
-                    sizeof(s),
-                    info->siglen),
-              nonull(info->startlist),
-              nonull(info->endlist),
-              info->osizepos,
-              info->nsizepos,
-              info->fdpos,
-              info->datetype,
-              info->fdflds,
-              info->fnpos,
-              info->nameislast,
-              info->nameisnext,
-              info->nameisfirst);
-      fprintf(fp,";\n");
-      info = info->next;
+            VERMAJOR, VERMINOR,
+	    tm -> tm_mon + 1, tm -> tm_mday, tm -> tm_year + 1900,
+	    tm -> tm_hour, tm -> tm_min, tm -> tm_sec);
+    // Rewrite header if known
+    if (fpOld && arcsigs_header_lines) {
+      needReload = TRUE;
+      while (input_line_num < arcsigs_header_lines) {
+        psz = fgets(sz, sizeof(sz), fpOld);
+	if (!psz)
+	  break;
+        input_line_num++;
+	if (input_line_num == 1)
+	  continue;		// Bypass sig count
+        fputs(sz, fpNew);
+      }
     }
-    fclose(fp);
-  }
+    else {
+      // Write default header
+      fputs(GetPString(IDS_ARCHIVERBB2TEXT),fpNew);
+    }
+    pat = arcsighead;
+    while (pat) {
+      needEntryNumber = TRUE;
+      // Rewrite per sig header comments if any exist
+      if (fpOld && pat -> comment_line_num) {
+        needReload = TRUE;		// fixme to optimize
+	// Definitions reordered - need to rewind
+	if (input_line_num > pat -> comment_line_num) {
+	  fseek(fpOld, 0, SEEK_SET);
+	  input_line_num = 0;
+	}
+        while (input_line_num + 1 < pat -> defn_line_num) {
+          psz = fgets(sz, sizeof(sz), fpOld);
+	  if (!psz)
+	    break;			// Unexpected EOF
+          input_line_num++;
+	  if (input_line_num < pat -> comment_line_num)
+	    continue;
+          if (needEntryNumber && strnicmp(sz, "; Entry #", 9) == 0) {
+            // Rewrite entry count comment
+	    needEntryNumber = FALSE;
+	    for (psz = sz + 9; *psz == ' '; psz++)
+	      ;	// Find non-blank
+	    for (; (ch = *psz) >= '0' && ch <= '9'; psz++)
+	      ; // Find end of entry#
+            fprintf(fpNew,
+                    GetPString(IDS_ENTRYCNTRTEXT),
+                    ++entry_num);
+            fputs(psz, fpNew);
+          }
+	  else {
+            fputs(sz, fpNew);
+	  }
+        }
+      }
+
+      if (needEntryNumber) {
+        fputs(";\n", fpNew);
+        fprintf(fpNew,
+                GetPString(IDS_ENTRYCNTRTEXT),
+                ++entry_num);
+        if(pat->id)
+          fprintf(fpNew, " (%s)", pat->id);
+        fputs("\n;\n", fpNew);
+      }
+
+      fprintf(fpNew,
+              "%s\n%s\n%ld\n%s\n",
+              nonull(pat->id),
+              nonull(pat->ext),
+              pat->file_offset,
+              nonull(pat->list));
+      fprintf(fpNew,
+              "%s\n%s\n%s\n%s\n%s\n%s\n",
+              nonull(pat->extract),
+              nonull(pat->exwdirs),
+              nonull(pat->test),
+              nonull(pat->create),
+              nonull(pat->createwdirs),
+              nonull(pat->createrecurse));
+      fprintf(fpNew,
+              "%s\n%s\n%s\n",
+              nonull(pat->move),
+              nonull(pat->movewdirs),
+              nonull(pat->delete));
+      fprintf(fpNew,
+              "%s\n%s\n%s\n%d\n%d\n%d,%d\n%d\n%d,%lu,%lu,%lu\n",
+              fixup(pat->signature,
+                    sz,
+                    sizeof(sz),
+                    pat->siglen),
+              nonull(pat->startlist),
+              nonull(pat->endlist),
+              pat->osizepos,
+              pat->nsizepos,
+              pat->fdpos,
+              pat->datetype,
+              pat->fdflds,
+              pat->fnpos,
+              pat->nameislast,
+              pat->nameisnext,
+              pat->nameisfirst);
+      pat = pat->next;
+    } // while more sigs
+
+    // Rewrite trailer comments if known
+    if (fpOld && arcsigs_trailer_line_num) {
+      for (;;) {
+        psz = fgets(sz, sizeof(sz), fpOld);
+	if (!psz)
+	  break;
+        input_line_num++;
+	if (input_line_num < arcsigs_trailer_line_num)
+	  continue;		// Bypass sig count
+        fputs(sz, fpNew);
+      }
+    }
+
+    fclose(fpNew);
+
+  } // if fpNew open OK
+
+  if (fpOld)
+    fclose(fpOld);
+
+  if (needReload)
+    load_archivers();			// Resync commend line numbers
 }
 
 static PSZ  checkfile(PSZ file,INT *error)
@@ -377,7 +468,7 @@ static BOOL check_archiver(HWND hwnd,ARC_TYPE *info)
 MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   ARCDUMP       *admp;
-  CHAR    	s[256];
+  CHAR		s[256];
   SHORT         sSelect;
 
   if(msg != WM_INITDLG)
