@@ -24,6 +24,7 @@
   11 Aug 05 SHL Renames
   29 May 06 SHL Rework EditArchiverData
   16 Jun 06 SHL ARC_TYPE: support non-string signatures
+  26 Jun 06 SHL ARC_TYPE: support preserving comments
 
 ***********************************************************************/
 
@@ -118,7 +119,7 @@
  #define DGS_DRAGINPROGRESS         0x0001  /* Standard Drag in Progress. */
  #define DGS_LAZYDRAGINPROGRESS     0x0002  /* Lazy Drag in Progress.     */
 
-#define NUMLINES                21
+#define LINES_PER_ARCSIG        21	// Lines in each archiver.bb2 definition
 #define CON_COLS                6
 #define INSTDATA(h)             WinQueryWindowPtr(h,QWL_USER)
 #define DIR_SPLITBAR_OFFSET     18 * 12 /* Pixel offset of details splitbar */
@@ -400,32 +401,34 @@ typedef struct {
 } FILELIST;
 
 typedef struct __arc_type__ {
-    CHAR    *id;
-    CHAR    *ext;
-    LONG    file_offset;
-    CHAR    *list;
-    CHAR    *extract;
-    CHAR    *exwdirs;
-    CHAR    *test;
-    CHAR    *create;
-    CHAR    *move;
-    CHAR    *createrecurse;
-    CHAR    *createwdirs;
-    CHAR    *movewdirs;
-    CHAR    *delete;
-    CHAR    *signature;			// archiver signature
-    CHAR    *startlist;			// omitted means no start marker
-    CHAR    *endlist;			// omitted means next blank line or EOF
-    INT     siglen;			// signature length in bytes
-    INT     osizepos;			// original size position or -1
-    INT     nsizepos;			// compressed size position or -1
-    INT     fdpos;			// file date position or -1
-    INT     fdflds;			// file date element count (typically 3) or -1
-    INT     fnpos;			// file name position or -1 if last
-    INT     datetype;			// date field format
-    BOOL    nameislast;			// name is last item on line
-    BOOL    nameisnext;			// file name is on next line
-    BOOL    nameisfirst;		// file name is first item on line
+    CHAR    *id;			// User id
+    CHAR    *ext;			// Extension (without leading dot)
+    LONG    file_offset;		// Offset to signature (0..n)
+    CHAR    *list;			// List command
+    CHAR    *extract;			// Extract command
+    CHAR    *exwdirs;			// Extract with directories command
+    CHAR    *test;			// Test command
+    CHAR    *create;			// Create without directories
+    CHAR    *move;			// Move into archive without directories
+    CHAR    *createrecurse;		// Create with recurse and directories
+    CHAR    *createwdirs;		// Create with directories
+    CHAR    *movewdirs;			// Move into archive with directories
+    CHAR    *delete;			// Delete from archive
+    CHAR    *signature;			// Archiver signature
+    CHAR    *startlist;			// Listing start marker (blank means no start marker)
+    CHAR    *endlist;			// Listing end marker (blank means next blank line or EOF)
+    INT     siglen;			// Signature length in bytes
+    INT     osizepos;			// Original file size position (0..n) or -1
+    INT     nsizepos;			// Compressed file size position or -1
+    INT     fdpos;			// File date position or -1
+    INT     fdflds;			// File date element count (typically 3) or -1
+    INT     fnpos;			// File name position or -1 if last
+    INT     datetype;			// Date field format
+    UINT    comment_line_num;		// Comment start in old sig file (1..n), 0 if none
+    UINT    defn_line_num;		// Definition start in old sig file (1..n), 0 if none
+    BOOL    nameislast;			// Name is last item on line
+    BOOL    nameisnext;			// File name is on next line
+    BOOL    nameisfirst;		// File name is first item on line
     struct __arc_type__ *next;
     struct __arc_type__ *prev;
 } ARC_TYPE;
@@ -1192,6 +1195,9 @@ BOOL StringsLoaded (void);
 DATADEF ARC_TYPE *arcsighead;
 DATADEF BOOL      arcsigsloaded;
 DATADEF BOOL      arcsigsmodified;
+DATADEF UINT      arcsigs_header_lines;		// Header comments line count in archiver.bb2
+DATADEF UINT      arcsigs_trailer_line_num;	// Trailer comments start line number (1..n)
+
 DATADEF USHORT    nodes,shiftstate;
 DATADEF HEV       CompactSem;
 DATADEF HWND      hwndMain,hwndTree,hwndStatus,hwndStatus2,hwndTrash,
