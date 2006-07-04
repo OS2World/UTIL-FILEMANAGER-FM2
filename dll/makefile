@@ -9,8 +9,9 @@
 # 06 Jun 05 SHL Add warnings enable (WARN)
 # 24 Jul 05 SHL Rework resource kit support
 # 16 Apr 06 SHL Add lxlite target
+# 28 Jun 06 SHL Add more .h dependencies
 
-# Warning - missing many *.h dependencies
+# Warning - may still be missing some *.h dependencies
 
 # Environment:
 
@@ -184,9 +185,94 @@ ipf\FM3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp
   ren fm3.HLP fm3.hlp
   cd..
 
-avv.obj:      version.h
-key.obj:      version.h
-misc.c:       version.h
+arccnrs.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+archive.c: fm3dll.h fm3dlg.h fm3str.h
+assoc.c: fm3dll.h fm3dlg.h fm3str.h
+attribs.c: fm3dll.h fm3dlg.h fm3str.h
+autoview.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+avl.c: fm3dll.h fm3dlg.h fm3str.h
+avv.c: fm3dll.h fm3dlg.h version.h fm3str.h
+chklist.c: fm3dll.h fm3dlg.h fm3str.h
+cmdline.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+codepage.c: fm3dll.h fm3dlg.h fm3str.h
+collect.c: fm3dll.h fm3dlg.h fm3str.h mle.h grep.h
+colors.c: fm3dll.h fm3dlg.h
+command.c: fm3dll.h fm3dlg.h fm3str.h tools.h
+common.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+comp.c: fm3dll.h fm3dlg.h fm3str.h
+copyf.c: fm3dll.h
+datamin.c: fm3dll.h fm3dlg.h fm3str.h procstat.h datamin.h
+defview.c: fm3dll.h fm3dlg.h
+dircnrs.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+dirs.c: fm3dll.h
+dirsize.c: fm3dll.h fm3dlg.h fm3str.h
+draglist.c: fm3dll.h
+droplist.c: fm3dll.h fm3str.h
+eas.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+error.c: fm3dll.h fm3str.h
+extract.c: fm3dll.h fm3dlg.h fm3str.h
+filldir.c: fm3dll.h fm3str.h
+filter.c: fm3dll.h fm3dlg.h fm3str.h
+findrec.c: fm3dll.h
+flesh.c: fm3dll.h fm3str.h
+fm2cmd.c: fm3dll.h fm3dlg.h fm3str.h
+fm3res.c: version.h
+fonts.c: fm3dll.h fm3str.h
+fsopen.c: fm3dll.h
+getnames.c: fm3dll.h fm3dlg.h fm3str.h
+grep.c: fm3dll.h fm3str.h grep.h
+grep2.c: fm3dll.h fm3dlg.h fm3str.h mle.h grep.h
+info.c: fm3dll.h fm3dlg.h fm3str.h
+inis.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+init.c: fm3dll.h fm3dlg.h datamin.h tools.h fm3str.h version.h
+input.c: fm3dll.h fm3dlg.h fm3str.h
+instant.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+key.c: fm3dll.h fm3dlg.h fm3str.h version.h
+killproc.c: procstat.h fm3dll.h fm3dlg.h fm3str.h
+literal.c: fm3dll.h
+loadbmp.c: fm3dll.h
+mainwnd.c: fm3dll.h fm3dlg.h fm3str.h tools.h
+mainwnd.c: datamin.h fm3dll.h fm3dlg.h fm3str.h tools.h
+mainwnd2.c: datamin.h
+makelist.c: fm3dll.h
+menu.c: fm3dll.h menu.h
+misc.c: fm3dll.h fm3dlg.h fm3str.h
+mkdir.c: fm3dll.h fm3dlg.h fm3str.h
+mle.c: fm3dll.h fm3dlg.h mle.h fm3str.h
+newview.c: fm3dll.h fm3dlg.h fm3str.h
+newview.c: mle.h fm3dll.h fm3dlg.h fm3str.h
+notify.c: fm3dll.h fm3dlg.h fm3str.h
+objcnr.c: fm3dll.h fm3dlg.h fm3str.h
+objwin.c: fm3dll.h fm3dlg.h fm3str.h
+presparm.c: fm3dll.h
+printer.c: fm3dll.h fm3dlg.h fm3str.h
+remap.c: fm3dll.h fm3dlg.h fm3str.h
+rename.c: fm3dll.h fm3dlg.h fm3str.h
+saveclip.c: fm3dll.h fm3dlg.h fm3str.h
+seeall.c: fm3dll.h fm3dlg.h fm3str.h
+select.c: fm3dll.h fm3str.h
+seticon.c: fm3dll.h fm3dlg.h
+shadow.c: fm3dll.h fm3dlg.h fm3str.h
+sortcnr.c: fm3dll.h
+string.c: fm3dll.h fm3str.h version.h
+subj.c: fm3dll.h fm3dlg.h fm3str.h
+sysinfo.c: fm3dll.h fm3dlg.h
+systemf.c: fm3dll.h fm3dlg.h fm3str.h
+timer.c: fm3dll.h fm3str.h
+tools.c: fm3dll.h fm3dlg.h tools.h fm3str.h
+treecnr.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+undel.c: fm3dll.h fm3dlg.h fm3str.h
+update.c: fm3dll.h
+uudecode.c: fm3dll.h fm3dlg.h fm3str.h
+valid.c: fm3dll.h
+viewer.c: fm3dll.h fm3dlg.h fm3str.h mle.h
+viewinf.c: fm3dll.h fm3dlg.h fm3str.h
+walkem.c: fm3dll.h fm3dlg.h fm3str.h
+winlist.c: fm3dll.h fm3dlg.h
+worker.c: fm3dll.h fm3dlg.h fm3str.h
+
+fm3dlg.h: fm3hlp.h
+fm3dll.h: fm3dll2.h
 
 lxlite: $(BASE).dll $(BASERES).dll
   !lxlite /x- /b- $?
