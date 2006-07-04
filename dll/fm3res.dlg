@@ -6,7 +6,7 @@
   Dialog templates
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2005 Steven H. Levine
+  Copyright (c) 2003, 2006 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   25 Nov 03 SHL Rework ABT_FRAME
@@ -989,7 +989,7 @@ BEGIN
                         DT_VCENTER | NOT WS_GROUP
         CTEXT           "All rights reserved", -1, 10, 68, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "Copyright ¸ 1998, 2005", -1, 10, 60, 164, 8, 
+        CTEXT           "Copyright ¸ 1998, 2006", -1, 10, 60, 164, 8, 
                         DT_VCENTER | NOT WS_GROUP
         CTEXT           "Steven Levine and Associates, Inc.", -1, 10, 52, 
                         164, 8, DT_VCENTER | NOT WS_GROUP
