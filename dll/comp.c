@@ -6,7 +6,7 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2005 Steven H. Levine
+  Copyright (c) 2003, 2006 Steven H. Levine
 
   16 Oct 02 MK Baseline
   04 Nov 03 SHL Force window refresh after subdir toggle
@@ -15,6 +15,7 @@
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Rework with ULONGLONG
   06 Jun 05 SHL Drop unused
+  12 Jul 06 SHL Renames and comments 
 
 ***********************************************************************/
 
@@ -35,10 +36,10 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-#pragma alloc_text(COMPAREDIR,FillCnrs,FillDirList,CompNames)
+#pragma alloc_text(COMPAREDIR,FillCnrsThread,FillDirList,CompNames)
 #pragma alloc_text(COMPAREDIR1,CompareDlgProc)
-#pragma alloc_text(COMPAREDIR2,SelectCnrs,ActionCnr)
-#pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFiles)
+#pragma alloc_text(COMPAREDIR2,SelectCnrsThread,ActionCnrThread)
+#pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFilesThread)
 #pragma alloc_text(SNAPSHOT,SnapShot,StartSnap)
 
 typedef struct {
@@ -47,8 +48,9 @@ typedef struct {
   BOOL  recurse;
 } SNAPSTUFF;
 
+//=== SnapShot() Write directory tree to file and recurse if requested ===
 
-void SnapShot (char *path,FILE *fp,BOOL recurse)
+static VOID SnapShot (char *path,FILE *fp,BOOL recurse)
 {
   FILEFINDBUF4 *fb;
   char         *mask,*enddir;
@@ -103,9 +105,10 @@ void SnapShot (char *path,FILE *fp,BOOL recurse)
   }
 }
 
+//=== StartSnap() Write directory tree to snapshot file ===
 
-VOID StartSnap (VOID *dummy) {
-
+static VOID StartSnap (VOID *dummy)
+{
   SNAPSTUFF  *sf = (SNAPSTUFF *)dummy;
   FILE       *fp;
   CHAR       *p;
@@ -134,9 +137,10 @@ VOID StartSnap (VOID *dummy) {
   }
 }
 
+//=== CompareFilesThread() Compare files and update container select flags ===
 
-VOID CompareFiles (VOID *args) {
-
+static VOID CompareFilesThread (VOID *args)
+{
   FCOMPARE fc;
   HAB      hab2;
   HMQ      hmq2;
@@ -260,9 +264,10 @@ VOID CompareFiles (VOID *args) {
   }
 }
 
+//=== CFileDlgProc() Select directories to compare dialog procedure ===
 
-MRESULT EXPENTRY CFileDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CFileDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   FCOMPARE *fc;
 
   switch(msg) {
@@ -288,7 +293,7 @@ MRESULT EXPENTRY CFileDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           WinDismissDlg(hwnd,0);
           break;
         }
-        if(_beginthread(CompareFiles,
+        if(_beginthread(CompareFilesThread,
                         NULL,
                         65536,
                         (PVOID)fc) == -1) {
@@ -331,9 +336,10 @@ MRESULT EXPENTRY CFileDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   return WinDefDlgProc(hwnd,msg,mp1,mp2);
 }
 
+//=== ActionCnrThread() Do requested action on container contents ===
 
-static VOID ActionCnr (VOID *args) {
-
+static VOID ActionCnrThread (VOID *args)
+{
   COMPARE *cmp = (COMPARE *)args;
   HAB      hab;
   HMQ      hmq;
@@ -394,6 +400,7 @@ static VOID ActionCnr (VOID *args) {
       pciO = WinSendMsg(hwndCnrD,CM_QUERYRECORD,MPVOID,
                         MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
       while(pci && (INT)pci != -1 && pciO && (INT)pciO != -1) {
+
         pcin = WinSendMsg(hwndCnrS,CM_QUERYRECORD,MPFROMP(pci),
                           MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
         pciOn = WinSendMsg(hwndCnrD,CM_QUERYRECORD,MPFROMP(pciO),
@@ -570,11 +577,11 @@ static VOID ActionCnr (VOID *args) {
 
             default:
               break;
-          }
+          } // switch
         }
         pci = pcin;
         pciO = pciOn;
-      }
+      } // while
 Abort:
       WinDestroyMsgQueue(hmq);
     }
@@ -585,9 +592,10 @@ Abort:
   free(cmp);
 }
 
+//=== SelectCnrsThread() Update container selection flags thread ===
 
-static VOID SelectCnrs (VOID *args) {
-
+static VOID SelectCnrsThread (VOID *args)
+{
   COMPARE *cmp = (COMPARE *)args;
   HAB      hab;
   HMQ      hmq;
@@ -628,7 +636,6 @@ static VOID SelectCnrs (VOID *args) {
   }
   free(cmp);
 }
-
 
 static VOID FillDirList (CHAR *str,INT skiplen,BOOL recurse,
                          FILELIST ***list,INT *numfiles,INT *numalloc) {
@@ -715,18 +722,20 @@ Abort:
   free(ffb4);
 }
 
+//=== CompNames() Compare names for qsort ===
 
-static int CompNames (const void *n1,const void *n2) {
-
+static int CompNames (const void *n1,const void *n2)
+{
   FILELIST *fl1 = *(FILELIST **)n1;
   FILELIST *fl2 = *(FILELIST **)n2;
 
   return stricmp(fl1->fname,fl2->fname);
 }
 
+//=== FillCnrsThread() Fill left and right containers ===
 
-static VOID FillCnrs (VOID *args) {
-
+static VOID FillCnrsThread (VOID *args)
+{
   COMPARE    *cmp = (COMPARE *)args;
   HAB         hab;
   HMQ         hmq;
@@ -744,14 +753,27 @@ static VOID FillCnrs (VOID *args) {
     hmq = WinCreateMsgQueue(hab,0);
     if(hmq) {
 
-      register INT    x,l,r,y;
-      register ULONG  cntr;
-      FILELIST      **filesl = NULL,**filesr = NULL;
-      INT             numfilesl = 0,numfilesr = 0,numallocl = 0,numallocr = 0,
-                      lenl,lenr,high;
-      PCNRITEM        pcilFirst,pcirFirst,pcil,pcir,pcit;
+      INT             x;
+      INT             l;
+      INT             r;
+      INT             y;
+      ULONG           cntr;
+      FILELIST        **filesl = NULL;
+      FILELIST        **filesr = NULL;
+      INT             numfilesl = 0;
+      INT             numfilesr = 0;
+      INT             numallocl = 0;
+      INT             numallocr = 0;
+      INT             lenl;			// Directory prefix length
+      INT             lenr;
+      UINT            recsNeeded;		// fixme to check ovf
+      PCNRITEM        pcilFirst;
+      PCNRITEM        pcirFirst;
+      PCNRITEM        pcil;
+      PCNRITEM        pcir;
+      PCNRITEM        pcit;
       RECORDINSERT    ri;
-      register CHAR  *cl;
+      CHAR            *pch;
 
       WinCancelShutdown(hmq,TRUE);
       hwndLeft = WinWindowFromID(cmp->hwnd,COMP_LEFTDIR);
@@ -789,8 +811,9 @@ static VOID FillCnrs (VOID *args) {
         FillDirList(cmp->rightdir,lenr,cmp->includesubdirs,
                     &filesr,&numfilesr,&numallocr);
       }
-      else {  /* load snapshot file */
-
+      else
+      {
+        /* use snapshot file */
         FILE        *fp;
         FILEFINDBUF4 fb4;
         CHAR         str[CCHMAXPATH * 2],*p;
@@ -798,13 +821,15 @@ static VOID FillCnrs (VOID *args) {
         memset(&fb4,0,sizeof(fb4));
         fp = fopen(cmp->rightlist,"r");
         if(fp) {
-          while(!feof(fp)) {  /* first get name of directory */
+          while(!feof(fp)) {
+	    /* first get name of directory */
             if(!fgets(str,sizeof(str) - 1,fp))
-              break;
+              break;		// EOF
             str[sizeof(str) - 1] = 0;
             bstrip(str);
             p = str;
             if(*p == '\"') {
+	      /* Quoted */
               p++;
               if(*p && *p != '\"') {
                 p = strchr(p,'\"');
@@ -818,13 +843,13 @@ static VOID FillCnrs (VOID *args) {
                       strlwr(cmp->rightdir);
                     p = cmp->rightdir + (strlen(cmp->rightdir) - 1);
                     if(p - cmp->rightdir > 3 && *p == '\\')
-                      *p = 0;
+                      *p = 0;		// Chop trailing slash
                     break;
                   }
                 }
               }
             }
-          }
+          } // while !EOF
           {
             CNRINFO cnri;
 
@@ -914,57 +939,59 @@ static VOID FillCnrs (VOID *args) {
                   }
                 }
               }
-            }
-          }
+            } // while
+          } // if have rightdir
           fclose(fp);
         }
         else
           DosBeep(50,100);
-      }
+      } // if snapshot file
+
       if(filesr)
         qsort(filesr,numfilesr,sizeof(CHAR *),CompNames);
 
       /* we now have two lists of files, both sorted. */
       /* first, count total number of container entries required */
       l = r = 0;
-      cntr = 0;
+      recsNeeded = 0;
       while((filesl && filesl[l]) || (filesr && filesr[r])) {
         if((filesl && filesl[l]) && (filesr && filesr[r])) {
           x = stricmp(filesl[l]->fname,filesr[r]->fname);
           if(!x) {
-            l++;
+            l++;			// In both
             r++;
           }
           else if(x < 0)
-            l++;
+            l++;			// In left only
           else
-            r++;
+            r++;			// In right only
         }
         else if(filesl && filesl[l])
-          l++;
+          l++;				// In left only
         else    /* filesr && filesr[r] */
-          r++;
-        cntr++; /* keep count of how many entries req'd */
+          r++;				// In right only
+        recsNeeded++; /* keep count of how many entries req'd */
       }
-      high = cntr;
       WinSendMsg(cmp->hwnd,UM_CONTAINERHWND,MPVOID,MPVOID);
       /* now insert records into the containers */
       cntr = 0;
       l = r = 0;
-      if(high) {
+      if(recsNeeded) {
         pcilFirst = WinSendMsg(hwndLeft,
                                CM_ALLOCRECORD,
                                MPFROMLONG(EXTRA_RECORD_BYTES2),
-                               MPFROMLONG(high));
+                               MPFROMLONG(recsNeeded));
         if(!pcilFirst) {
-          high = 0;
+          recsNeeded = 0;
           DosBeep(100,100);
         }
+      }
+      if(recsNeeded) {
         pcirFirst = WinSendMsg(hwndRight,CM_ALLOCRECORD,
                                MPFROMLONG(EXTRA_RECORD_BYTES2),
-                               MPFROMLONG(high));
+                               MPFROMLONG(recsNeeded));
         if(!pcirFirst) {
-          high = 0;
+          recsNeeded = 0;
           DosBeep(100,100);
           pcil = pcilFirst;
           while(pcil) {
@@ -975,7 +1002,7 @@ static VOID FillCnrs (VOID *args) {
           }
         }
       }
-      if(high) {
+      if(recsNeeded) {
         pcil = pcilFirst;
         pcir = pcirFirst;
         while((filesl && filesl[l]) || (filesr && filesr[r])) {
@@ -996,6 +1023,7 @@ static VOID FillCnrs (VOID *args) {
           if((filesl && filesl[l]) && (filesr && filesr[r])) {
             x = stricmp(filesl[l]->fname,filesr[r]->fname);
             if(!x) {
+	      // Same
               sprintf(pcil->szFileName,"%s%s%s",cmp->leftdir,
                       (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
                       NullStr : "\\",filesl[l]->fname);
@@ -1003,10 +1031,11 @@ static VOID FillCnrs (VOID *args) {
               pcil->pszFileName    = pcil->szFileName + lenl;
               pcil->attrFile       = filesl[l]->attrFile;
               y = 0;
-              for(x = 0;x < 6;x++)
+              for(x = 0;x < 6;x++) {
                 if(attrstring[x])
                   pcil->szDispAttr[y++] = (CHAR)((pcil->attrFile & (1 << x)) ?
                                                  attrstring[x] : '-');
+	      }
               pcil->szDispAttr[5]  = 0;
               pcil->cbFile         = filesl[l]->cbFile;
               pcil->easize         = filesl[l]->easize;
@@ -1039,7 +1068,7 @@ static VOID FillCnrs (VOID *args) {
                       NullStr : "\\",filesr[r]->fname);
               pcir->pszFileName    = pcir->szFileName + lenr;
               pcir->attrFile       = filesr[r]->attrFile;
-//              pcir->rc.hptrIcon    = hptrFile;
+              // pcir->rc.hptrIcon    = hptrFile;
               y = 0;
               for(x = 0;x < 6;x++)
                 if(attrstring[x])
@@ -1068,20 +1097,20 @@ static VOID FillCnrs (VOID *args) {
               pcir->crtime.hours   = filesr[r]->crtime.hours;
               pcil->flags |= CNRITEM_EXISTS;
               pcir->flags |= CNRITEM_EXISTS;
-              cl = pcil->szSubject;
+              pch = pcil->szSubject;
               if(pcil->cbFile + pcil->easize >
                  pcir->cbFile + pcir->easize) {
                 pcil->flags |= CNRITEM_LARGER;
                 pcir->flags |= CNRITEM_SMALLER;
-                strcpy(cl,GetPString(IDS_LARGERTEXT));
-                cl += 6;
+                strcpy(pch,GetPString(IDS_LARGERTEXT));
+                pch += 6;
               }
               else if(pcil->cbFile + pcil->easize <
                       pcir->cbFile + pcir->easize) {
                 pcil->flags |= CNRITEM_SMALLER;
                 pcir->flags |= CNRITEM_LARGER;
-                strcpy(cl,GetPString(IDS_SMALLERTEXT));
-                cl += 7;
+                strcpy(pch,GetPString(IDS_SMALLERTEXT));
+                pch += 7;
               }
               if((pcil->date.year > pcir->date.year) ? TRUE :
                  (pcil->date.year < pcir->date.year) ? FALSE :
@@ -1097,12 +1126,12 @@ static VOID FillCnrs (VOID *args) {
                  (pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE) {
                 pcil->flags |= CNRITEM_NEWER;
                 pcir->flags |= CNRITEM_OLDER;
-                if(cl != pcil->szSubject) {
-                  strcpy(cl,", ");
-                  cl += 2;
+                if(pch != pcil->szSubject) {
+                  strcpy(pch,", ");
+                  pch += 2;
                 }
-                strcpy(cl,GetPString(IDS_NEWERTEXT));
-                cl += 5;
+                strcpy(pch,GetPString(IDS_NEWERTEXT));
+                pch += 5;
               }
               else if((pcil->date.year < pcir->date.year) ? TRUE :
                       (pcil->date.year > pcir->date.year) ? FALSE :
@@ -1119,24 +1148,25 @@ static VOID FillCnrs (VOID *args) {
                       FALSE) {
                 pcil->flags |= CNRITEM_OLDER;
                 pcir->flags |= CNRITEM_NEWER;
-                if(cl != pcil->szSubject) {
-                  strcpy(cl,", ");
-                  cl += 2;
+                if(pch != pcil->szSubject) {
+                  strcpy(pch,", ");
+                  pch += 2;
                 }
-                strcpy(cl,GetPString(IDS_OLDERTEXT));
-                cl += 5;
+                strcpy(pch,GetPString(IDS_OLDERTEXT));
+                pch += 5;
               }
-              *cl = 0;
+              *pch = 0;
               r++;
               l++;
             }
             else if(x < 0) {
+	      // Just on left
               sprintf(pcil->szFileName,"%s%s%s",cmp->leftdir,
                       (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
                       NullStr : "\\",filesl[l]->fname);
               pcil->pszFileName = pcil->szFileName + lenl;
               pcil->attrFile       = filesl[l]->attrFile;
-//              pcil->rc.hptrIcon    = hptrFile;
+	      // pcil->rc.hptrIcon    = hptrFile;
               y = 0;
               for(x = 0;x < 6;x++)
                 if(attrstring[x])
@@ -1173,12 +1203,13 @@ static VOID FillCnrs (VOID *args) {
               l++;
             }
             else {
+	      // Just on right
               sprintf(pcir->szFileName,"%s%s%s",cmp->rightdir,
                       (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
                       NullStr : "\\",filesr[r]->fname);
               pcir->pszFileName    = pcir->szFileName + lenr;
               pcir->attrFile       = filesr[r]->attrFile;
-//              pcir->rc.hptrIcon    = hptrFile;
+	      // pcir->rc.hptrIcon    = hptrFile;
               y = 0;
               for(x = 0;x < 6;x++)
                 if(attrstring[x])
@@ -1216,12 +1247,13 @@ static VOID FillCnrs (VOID *args) {
             }
           }
           else if(filesl && filesl[l]) {
+	    // Just on left
             sprintf(pcil->szFileName,"%s%s%s",cmp->leftdir,
                     (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
                     NullStr : "\\",filesl[l]->fname);
             pcil->pszFileName = pcil->szFileName + lenl;
             pcil->attrFile       = filesl[l]->attrFile;
-//            pcil->rc.hptrIcon    = hptrFile;
+	    // pcil->rc.hptrIcon    = hptrFile;
             y = 0;
             for(x = 0;x < 6;x++)
               if(attrstring[x])
@@ -1257,13 +1289,15 @@ static VOID FillCnrs (VOID *args) {
             free(filesl[l]);
             l++;
           }
-          else {  /* filesr && filesr[r] */
+          else {
+	    /* filesr && filesr[r] */
+	    // Just on right
             sprintf(pcir->szFileName,"%s%s%s",cmp->rightdir,
                     (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
                     NullStr : "\\",filesr[r]->fname);
             pcir->pszFileName    = pcir->szFileName + lenr;
             pcir->attrFile       = filesr[r]->attrFile;
-//            pcir->rc.hptrIcon    = hptrFile;
+	    // pcir->rc.hptrIcon    = hptrFile;
             y = 0;
             for(x = 0;x < 6;x++)
               if(attrstring[x])
@@ -1306,9 +1340,9 @@ static VOID FillCnrs (VOID *args) {
           cntr++;
           pcil = (PCNRITEM)pcil->rc.preccNextRecord;
           pcir = (PCNRITEM)pcir->rc.preccNextRecord;
-        }
+        } // while
         if(filesl)
-          free(filesl);
+          free(filesl);			// Free header - have already freed elements
         filesl = NULL;
         if(filesr)
           free(filesr);
@@ -1320,7 +1354,7 @@ static VOID FillCnrs (VOID *args) {
         ri.pRecordOrder       = (PRECORDCORE)CMA_END;
         ri.pRecordParent      = (PRECORDCORE)NULL;
         ri.zOrder             = (ULONG)CMA_TOP;
-        ri.cRecordsInsert     = high;
+        ri.cRecordsInsert     = recsNeeded;
         ri.fInvalidateRecord  = FALSE;
         if(!WinSendMsg(hwndLeft,CM_INSERTRECORD,
                        MPFROMP(pcilFirst),MPFROMP(&ri))) {
@@ -1338,7 +1372,7 @@ static VOID FillCnrs (VOID *args) {
         ri.pRecordOrder       = (PRECORDCORE)CMA_END;
         ri.pRecordParent      = (PRECORDCORE)NULL;
         ri.zOrder             = (ULONG)CMA_TOP;
-        ri.cRecordsInsert     = high;
+        ri.cRecordsInsert     = recsNeeded;
         ri.fInvalidateRecord  = FALSE;
         if(!WinSendMsg(hwndRight,CM_INSERTRECORD,
                        MPFROMP(pcirFirst),MPFROMP(&ri))) {
@@ -1355,14 +1389,14 @@ static VOID FillCnrs (VOID *args) {
         }
         cmp->cmp->totalleft = numfilesl;
         cmp->cmp->totalright = numfilesr;
-      }
+      } // if recsNeeded
       Deselect(hwndLeft);
       Deselect(hwndRight);
       if(!PostMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID))
         WinSendMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
       notified = TRUE;
       if(filesl)
-        FreeList((CHAR **)filesl);
+        FreeList((CHAR **)filesl);	// Must have failed to create container
       if(filesr)
         FreeList((CHAR **)filesr);
       WinDestroyMsgQueue(hmq);
@@ -1382,9 +1416,10 @@ static VOID FillCnrs (VOID *args) {
 #define hwndLeft  (WinWindowFromID(hwnd,COMP_LEFTDIR))
 #define hwndRight (WinWindowFromID(hwnd,COMP_RIGHTDIR))
 
+//=== CompareDlgProc() Compare directories dialog procedure ===
 
-MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   COMPARE        *cmp;
   static HPOINTER hptr = (HPOINTER)0;
 
@@ -1610,7 +1645,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         WinEnableWindow(hwndRight,TRUE);
         WinEnableWindowUpdate(hwndLeft,TRUE);
         WinEnableWindowUpdate(hwndRight,TRUE);
-//        if(!mp1) {
+	// if(!mp1) {
         {
           CHAR s[81];
 
@@ -1639,6 +1674,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         WinEnableWindow(WinWindowFromID(hwnd,IDM_DESELECTBIGGER),TRUE);
         WinEnableWindow(WinWindowFromID(hwnd,IDM_DESELECTSMALLER),TRUE);
         WinEnableWindow(WinWindowFromID(hwnd,IDM_DESELECTALL),TRUE);
+        WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAMECONTENT),TRUE);
         WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTIDENTICAL),TRUE);
         WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAME),TRUE);
         WinEnableWindow(WinWindowFromID(hwnd,IDM_INVERT),TRUE);
@@ -1699,6 +1735,13 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 *cmp->rightlist = 0;
               PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
               PostMsg(hwnd,UM_SETDIR,MPVOID,MPVOID);
+              break;
+          }
+          break;
+        case COMP_HIDENOTSELECTED:
+          switch(SHORT2FROMMP(mp1)) {
+            case BN_CLICKED:
+              WinSendMsg(hwnd,UM_HIDENOTSELECTED,MPVOID,MPVOID);
               break;
           }
           break;
@@ -1936,9 +1979,9 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               break;
           }
-          break;
+          break;			// COMP_RIGHTDIR
       }
-      return 0;
+      return 0;				// WM_CONTROL
 
     case UM_SETDIR:
       cmp = INSTDATA(hwnd);
@@ -1965,7 +2008,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         if(forthread) {
           *forthread = *cmp;
           forthread->cmp = cmp;
-          if(_beginthread(FillCnrs,NULL,122880,(PVOID)forthread) != -1) {
+          if(_beginthread(FillCnrsThread,NULL,122880,(PVOID)forthread) != -1) {
             WinEnableWindowUpdate(hwndLeft,FALSE);
             WinEnableWindowUpdate(hwndRight,FALSE);
             cmp->selleft = cmp->selright = 0;
@@ -2001,6 +2044,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             WinEnableWindow(WinWindowFromID(hwnd,COMP_MOVELEFT),FALSE);
             WinEnableWindow(WinWindowFromID(hwnd,COMP_COPYRIGHT),FALSE);
             WinEnableWindow(WinWindowFromID(hwnd,COMP_MOVERIGHT),FALSE);
+            WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAMECONTENT),FALSE);
             WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTIDENTICAL),FALSE);
             WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAME),FALSE);
             WinEnableWindow(WinWindowFromID(hwnd,IDM_INVERT),FALSE);
@@ -2030,6 +2074,54 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         cmp->dcd.suspendview = 1;
         WinSendMsg(hwndLeft,CM_FILTER,MPFROMP(Filter),MPFROMP(&cmp->dcd.mask));
         WinSendMsg(hwndRight,CM_FILTER,MPFROMP(Filter),MPFROMP(&cmp->dcd.mask));
+        cmp->dcd.suspendview = 0;
+        if(*cmp->dcd.mask.szMask)
+          WinSetDlgItemText(hwnd,COMP_NOTE,
+                            GetPString(IDS_COMPREADYFILTEREDTEXT));
+        else
+          WinSetDlgItemText(hwnd,COMP_NOTE,
+                            GetPString(IDS_COMPREADYTEXT));
+      }
+      return 0;
+
+    case UM_HIDENOTSELECTED:
+      cmp = INSTDATA(hwnd);
+      if(cmp) {
+        USHORT wantHide = WinQueryButtonCheckstate(hwnd,
+                                                   COMP_HIDENOTSELECTED);
+
+        cmp->dcd.suspendview = 1;
+	if (wantHide) {
+	  BOOL needRefresh = FALSE;
+          HWND hwndl = WinWindowFromID(cmp->hwnd,COMP_LEFTDIR);
+          HWND hwndr = WinWindowFromID(cmp->hwnd,COMP_RIGHTDIR);
+          PCNRITEM pcil = WinSendMsg(hwndl,CM_QUERYRECORD,MPVOID,
+                                     MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
+          PCNRITEM pcir = WinSendMsg(hwndr,CM_QUERYRECORD,MPVOID,
+                                     MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
+          while(pcil && (INT)pcil != -1 && pcir && (INT)pcir != -1) {
+	    if (~pcil->rc.flRecordAttr & CRA_SELECTED &&
+	        ~pcir->rc.flRecordAttr & CRA_SELECTED) {
+	      pcil->rc.flRecordAttr |= CRA_FILTERED;
+	      pcir->rc.flRecordAttr |= CRA_FILTERED;
+	      needRefresh = TRUE;
+	    }
+            pcil = WinSendMsg(hwndl,CM_QUERYRECORD,MPFROMP(pcil),
+                              MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
+            pcir = WinSendMsg(hwndr,CM_QUERYRECORD,MPFROMP(pcir),
+                              MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
+          } // while
+	  if (needRefresh) {
+            WinSendMsg(hwndl,CM_INVALIDATERECORD,
+                     MPVOID,MPFROM2SHORT(0,CMA_REPOSITION));
+            WinSendMsg(hwndr,CM_INVALIDATERECORD,
+                     MPVOID,MPFROM2SHORT(0,CMA_REPOSITION));
+	  }
+	}
+	else {
+          WinSendMsg(hwndLeft,CM_FILTER,MPFROMP(Filter),MPFROMP(&cmp->dcd.mask));
+          WinSendMsg(hwndRight,CM_FILTER,MPFROMP(Filter),MPFROMP(&cmp->dcd.mask));
+	}
         cmp->dcd.suspendview = 0;
         if(*cmp->dcd.mask.szMask)
           WinSetDlgItemText(hwnd,COMP_NOTE,
@@ -2246,7 +2338,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               *forthread = *cmp;
               forthread->cmp = cmp;
               forthread->action = SHORT1FROMMP(mp1);
-              if(_beginthread(ActionCnr,NULL,122880,(PVOID)forthread) != -1) {
+              if(_beginthread(ActionCnrThread,NULL,122880,(PVOID)forthread) != -1) {
                 WinEnableWindowUpdate(hwndLeft,FALSE);
                 WinEnableWindowUpdate(hwndRight,FALSE);
                 switch(SHORT1FROMMP(mp1)) {
@@ -2296,6 +2388,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_MOVELEFT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_COPYRIGHT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_MOVERIGHT),FALSE);
+                WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAMECONTENT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTIDENTICAL),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAME),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_INVERT),FALSE);
@@ -2338,8 +2431,9 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         case IDM_DESELECTBOTH:
         case IDM_SELECTBOTH:
         case IDM_SELECTONE:
-        case IDM_SELECTIDENTICAL:
-        case IDM_SELECTSAME:
+        case IDM_SELECTSAMECONTENT:
+        case IDM_SELECTIDENTICAL:		// name, size and time
+        case IDM_SELECTSAME:			// name and size
         case IDM_INVERT:
           cmp = INSTDATA(hwnd);
           if(cmp) {
@@ -2352,7 +2446,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               *forthread = *cmp;
               forthread->cmp = cmp;
               forthread->action = SHORT1FROMMP(mp1);
-              if(_beginthread(SelectCnrs,NULL,65536,(PVOID)forthread) != -1) {
+              if(_beginthread(SelectCnrsThread,NULL,65536,(PVOID)forthread) != -1) {
                 WinEnableWindowUpdate(hwndLeft,FALSE);
                 WinEnableWindowUpdate(hwndRight,FALSE);
                 switch(SHORT1FROMMP(mp1)) {
@@ -2401,17 +2495,11 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_MOVELEFT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_COPYRIGHT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_MOVERIGHT),FALSE);
+                WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAMECONTENT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTIDENTICAL),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_SELECTSAME),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_INVERT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_FILTER),FALSE);
-                switch(SHORT1FROMMP(mp1)) {
-                  case IDM_DESELECTALL:
-                  case IDM_INVERT:
-                    break;
-                  default:
-                    break;
-                }
               }
               else {
                 DosBeep(250,100);
