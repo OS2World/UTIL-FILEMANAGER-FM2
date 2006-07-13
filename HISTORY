@@ -1,5 +1,9 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.04 pre11:
+ o Add hide not selected to Compare Directories
+ o Add compare content to Compare Directories
+
 3.04 pre10:
  o Allow non-null terminated archive signatures
  o Preserve archiver.bbs comments
