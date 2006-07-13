@@ -14,6 +14,7 @@
   07 Jun 05 SHL Use copyright symbol
   28 May 06 SHL Add ASEL_EDIT_FRAME
   30 May 06 SHL Add DLGINCLUDE for dlgedit use
+  05 Jul 06 SHL COMP_FRAME - support hide not selected, compare content
 
 ***********************************************************************/
 
@@ -2119,110 +2120,124 @@ END
 
 DLGTEMPLATE COMP_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "FM/2: Compare directories", COMP_FRAME, 12, 6, 426, 208, NOT 
+    DIALOG  "FM/2: Compare directories", COMP_FRAME, -13, -57, 426, 214, NOT 
             FS_DLGBORDER | FS_SIZEBORDER | WS_VISIBLE | NOT WS_SAVEBITS, 
-            FCF_SYSMENU | FCF_TITLEBAR | FCF_MINBUTTON | FCF_MAXBUTTON |
-            FCF_TASKLIST | FCF_SIZEBORDER
+            FCF_SYSMENU | FCF_TITLEBAR | FCF_MINBUTTON | FCF_MAXBUTTON
     BEGIN
-        GROUPBOX        "", -1, 189, 1, 140, 17, NOT WS_GROUP
-        LTEXT           "Deselect:", -1, 234, 41, 51, 8, NOT WS_GROUP
-        LTEXT           "Select:", -1, 5, 41, 42, 8, NOT WS_GROUP
-        LTEXT           "", COMP_NOTE, 195, 4, 128, 8, NOT WS_GROUP
+        GROUPBOX        "", -1, 189, 7, 137, 17, NOT WS_GROUP
+        LTEXT           "Deselect:", -1, 234, 47, 51, 8, NOT WS_GROUP
+        LTEXT           "Select:", -1, 5, 47, 42, 8, NOT WS_GROUP
+        LTEXT           "", COMP_NOTE, 195, 10, 123, 8, NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        RTEXT           "Total:", COMP_TOTALLEFTHDR, 4, 197, 32, 8, 
+        RTEXT           "Total:", COMP_TOTALLEFTHDR, 4, 203, 32, 8, 
                         DT_VCENTER | NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        RTEXT           "Selected:", COMP_SELLEFTHDR, 129, 197, 23, 8, 
+        RTEXT           "Selected:", COMP_SELLEFTHDR, 129, 203, 23, 8, 
                         DT_VCENTER | NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        LTEXT           "0", COMP_TOTALLEFT, 37, 197, 55, 8, DT_VCENTER | 
+        LTEXT           "0", COMP_TOTALLEFT, 37, 203, 55, 8, DT_VCENTER | 
                         NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        LTEXT           "0", COMP_SELLEFT, 154, 197, 64, 8, DT_VCENTER | NOT 
+        LTEXT           "0", COMP_SELLEFT, 154, 203, 64, 8, DT_VCENTER | NOT 
                         WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        RTEXT           "Total:", COMP_TOTALRIGHTHDR, 228, 197, 32, 8, 
+        RTEXT           "Total:", COMP_TOTALRIGHTHDR, 228, 203, 32, 8, 
                         DT_VCENTER | NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        RTEXT           "Selected:", COMP_SELRIGHTHDR, 327, 197, 23, 8, 
+        RTEXT           "Selected:", COMP_SELRIGHTHDR, 327, 203, 23, 8, 
                         DT_VCENTER | NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        LTEXT           "0", COMP_TOTALRIGHT, 261, 197, 55, 8, DT_VCENTER | 
+        LTEXT           "0", COMP_TOTALRIGHT, 261, 203, 55, 8, DT_VCENTER | 
                         NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        LTEXT           "0", COMP_SELRIGHT, 352, 197, 64, 8, DT_VCENTER | 
+        LTEXT           "0", COMP_SELRIGHT, 352, 203, 64, 8, DT_VCENTER | 
                         NOT WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        LTEXT           "Actions:", -1, 4, 17, 44, 8, DT_VCENTER | NOT 
+        LTEXT           "Actions:", -1, 4, 23, 44, 8, DT_VCENTER | NOT 
                         WS_GROUP
-        CONTROL         "", COMP_LEFTDIR, 4, 52, 216, 143, WC_CONTAINER, 
-                        CCS_EXTENDSEL | CCS_MULTIPLESEL | CCS_MINIRECORDCORE | 
-                        WS_GROUP | WS_TABSTOP | WS_VISIBLE | CCS_MINIICONS
-        CONTROL         "", COMP_RIGHTDIR, 223, 52, 196, 143, WC_CONTAINER, 
-                        CCS_EXTENDSEL | CCS_MULTIPLESEL | CCS_MINIRECORDCORE | 
-                        WS_GROUP | WS_TABSTOP | WS_VISIBLE | CCS_MINIICONS
-        PUSHBUTTON      "Same", 10031, 49, 39, 32, 12, BS_NOPOINTERFOCUS | 
-                        WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "Identical", 10030, 80, 39, 42, 12, 
-                        BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "~Both", 10015, 4, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "On~e", 10016, 35, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "~Larger", 10019, 66, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "~Smaller", 10020, 97, 27, 33, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "~Older", 10018, 129, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "~Newer", 10017, 161, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "Invert", 10014, 193, 39, 38, 12, BS_NOPOINTERFOCUS | 
-                        WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "~All", 10007, 387, 39, 32, 12, BS_NOPOINTERFOCUS | 
-                        WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "Both", 10021, 231, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "One", 10022, 262, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "Lar~ger", 10025, 293, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "S~maller", 10026, 324, 27, 33, 12, 
-                        BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "Ol~der", 10024, 356, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "Ne~wer", 10023, 387, 27, 32, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
-        PUSHBUTTON      "Copy>", COMP_COPYLEFT, 50, 15, 40, 12, 
+        CONTAINER       COMP_LEFTDIR, 4, 58, 216, 143, CCS_EXTENDSEL | 
+                        CCS_MULTIPLESEL | CCS_MINIRECORDCORE | WS_GROUP
+        CONTAINER       COMP_RIGHTDIR, 223, 58, 196, 143, CCS_EXTENDSEL | 
+                        CCS_MULTIPLESEL | CCS_MINIRECORDCORE | WS_GROUP
+        PUSHBUTTON      "Same size", IDM_SELECTSAME, 35, 45, 52, 12, 
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "Move>", COMP_MOVELEFT, 89, 15, 40, 12, 
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Size/time", IDM_SELECTIDENTICAL, 88, 45, 49, 12, 
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Delete", COMP_DELETELEFT, 128, 15, 40, 12, 
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "~Both", IDM_SELECTBOTH, 4, 33, 32, 12, 
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Filter", COMP_FILTER, 192, 16, 40, 12, 
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "On~e", IDM_SELECTONE, 35, 33, 32, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "~Larger", IDM_SELECTBIGGER, 66, 33, 32, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "~Smaller", IDM_SELECTSMALLER, 97, 33, 33, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "~Older", IDM_SELECTOLDER, 129, 33, 32, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "~Newer", IDM_SELECTNEWER, 161, 33, 32, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Invert", IDM_INVERT, 193, 45, 38, 12, 
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "<Copy", COMP_COPYRIGHT, 336, 15, 40, 12, 
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "~All", IDM_DESELECTALL, 387, 45, 32, 12, 
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "<Move", COMP_MOVERIGHT, 297, 15, 40, 12, 
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Both", IDM_DESELECTBOTH, 231, 33, 32, 12, 
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Delete", COMP_DELETERIGHT, 258, 15, 40, 12, 
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "One", IDM_DESELECTONE, 262, 33, 32, 12, 
                         BS_NOPOINTERFOCUS
-        DEFPUSHBUTTON   "Okay", DID_OK, 0, 0, 40, 14, BS_NOPOINTERFOCUS | 
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Lar~ger", IDM_DESELECTBIGGER, 293, 33, 32, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "S~maller", IDM_DESELECTSMALLER, 324, 33, 33, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Ol~der", IDM_DESELECTOLDER, 356, 33, 32, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Ne~wer", IDM_DESELECTNEWER, 387, 33, 32, 12, 
+                        BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Copy>", COMP_COPYLEFT, 50, 21, 40, 12, 
+                        BS_NOPOINTERFOCUS | WS_GROUP
+        PUSHBUTTON      "Move>", COMP_MOVELEFT, 89, 21, 40, 12, 
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Delete", COMP_DELETELEFT, 128, 21, 40, 12, 
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Filter", COMP_FILTER, 192, 22, 40, 12, 
+                        BS_NOPOINTERFOCUS | WS_GROUP
+        PUSHBUTTON      "<Copy", COMP_COPYRIGHT, 336, 21, 40, 12, 
+                        BS_NOPOINTERFOCUS | WS_GROUP
+        PUSHBUTTON      "<Move", COMP_MOVERIGHT, 297, 21, 40, 12, 
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Delete", COMP_DELETERIGHT, 258, 21, 40, 12, 
+                        BS_NOPOINTERFOCUS
+        DEFPUSHBUTTON   "Okay", COLR_BLACK, 0, 6, 40, 14, BS_NOPOINTERFOCUS | 
                         WS_GROUP
-        PUSHBUTTON      "~Help", IDM_HELP, 39, 0, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Collec~t", COMP_COLLECT, 78, 0, 40, 14, 
+        PUSHBUTTON      "~Help", IDM_HELP, 39, 6, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Collec~t", COMP_COLLECT, 78, 6, 40, 14, 
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Dirs", COMP_SETDIRS, 117, 0, 33, 14, 
+        PUSHBUTTON      "Dirs", COMP_SETDIRS, 117, 6, 33, 14, 
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Cancel", DID_CANCEL, 149, 0, 40, 14, 
+        PUSHBUTTON      "Cancel", COLR_BLUE, 149, 6, 40, 14, 
                         BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~Include subdirs", COMP_INCLUDESUBDIRS, 332, 4, 91, 
+        AUTOCHECKBOX    "~Include subdirs", COMP_INCLUDESUBDIRS, 331, 13, 91, 
                         8, BS_NOPOINTERFOCUS | WS_GROUP
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        AUTOCHECKBOX    "~Hide not selected", COMP_HIDENOTSELECTED, 330, 5, 
+                        91, 8, BS_NOPOINTERFOCUS | WS_GROUP
+                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+        PUSHBUTTON      "Content", IDM_SELECTSAMECONTENT, 138, 45, 42, 12, 
+                        BS_NOPOINTERFOCUS
                         PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
     END
 END
