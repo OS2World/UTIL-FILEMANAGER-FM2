@@ -25,6 +25,8 @@
   29 May 06 SHL Rework EditArchiverData
   16 Jun 06 SHL ARC_TYPE: support non-string signatures
   26 Jun 06 SHL ARC_TYPE: support preserving comments
+  28 Jun 06 SHL DIRCNRDATA: drop unused
+  05 Jul 06 SHL Support Hide not selected
 
 ***********************************************************************/
 
@@ -207,6 +209,7 @@
 #define UM_FILLCMDLIST      (WM_USER + 70)
 #define UM_CLICKED          (WM_USER + 71)
 #define UM_CLICKED3         (WM_USER + 72)
+#define UM_HIDENOTSELECTED  (WM_USER + 73)
 
 typedef struct {
   USHORT size;
@@ -484,8 +487,6 @@ typedef struct DIRCNRDATA {
   CHAR      lastfilename[CCHMAXPATH];
   BOOL      namecanchange;
   BOOL      fmoving;
-  INT       ret;
-  HAB       hab;
   BOOL      amextracted;
   INT       lasthelp;
   INT       sortFlags;
@@ -536,10 +537,10 @@ typedef struct COMPARE {
   INT    selright;
   INT    totalleft;
   INT    totalright;
-  CHAR   rightlist[CCHMAXPATH];
+  CHAR   rightlist[CCHMAXPATH];		// Snapshot file name
   BOOL   reset;
   HWND   hwndCalling;
-  struct COMPARE *cmp;
+  struct COMPARE *cmp;			// callers compare defintion
   struct DIRCNRDATA dcd;
 } COMPARE;
 
