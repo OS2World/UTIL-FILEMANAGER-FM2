@@ -4,11 +4,12 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   25 May 05 SHL Rework for ULONGLONG
   06 Jun 05 SHL Drop unused code
+  06 Jul 06 SHL Support compare content (IDM_SELECTSAMECONTENT)
 
 ***********************************************************************/
 
@@ -21,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
+#include <io.h>
 
 #include "fm3dll.h"
 #include "fm3str.h"
@@ -29,9 +31,8 @@
 #pragma alloc_text(SELECT,SelectList)
 #pragma alloc_text(SELECT1,Deselect,HideAll,RemoveAll,ExpandAll,InvertAll)
 
-
-VOID UnHilite (HWND hwndCnr,BOOL all,CHAR ***list) {
-
+VOID UnHilite (HWND hwndCnr,BOOL all,CHAR ***list)
+{
   PCNRITEM pci;
   INT      numfiles = 0,numalloc = 0;
   INT      attribute = CRA_CURSORED;
@@ -60,7 +61,6 @@ VOID UnHilite (HWND hwndCnr,BOOL all,CHAR ***list) {
     }
   }
 }
-
 
 VOID SelectList (HWND hwndCnr,BOOL partial,BOOL deselect,BOOL clearfirst,
                  PCNRITEM pciParent,CHAR *filename,CHAR **list) {
@@ -150,7 +150,6 @@ VOID SelectList (HWND hwndCnr,BOOL partial,BOOL deselect,BOOL clearfirst,
     }
   }
 }
-
 
 VOID SelectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,
                 CHAR *text,BOOL arc) {
@@ -250,9 +249,8 @@ VOID SelectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,
                  MPFROM2SHORT(TRUE,CRA_SELECTED));
     pci = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPFROMP(pci),
                                MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
-  }
+  } // while
 }
-
 
 VOID DeselectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,CHAR *text,
                   BOOL arc) {
@@ -356,9 +354,8 @@ VOID DeselectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,CHAR *text,
   }
 }
 
-
-VOID Deselect (HWND hwndCnr) {
-
+VOID Deselect (HWND hwndCnr)
+{
   PCNRITEM pcil;
 
   pcil = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORDEMPHASIS,
@@ -372,9 +369,10 @@ VOID Deselect (HWND hwndCnr) {
   }
 }
 
+//=== HideAll() Hide all selected records ===
 
-VOID HideAll (HWND hwndCnr) {
-
+VOID HideAll (HWND hwndCnr)
+{
   PCNRITEM pci,pciH;
   INT      attribute = CRA_CURSORED;
   CNRINFO  cnri;
@@ -415,9 +413,8 @@ VOID HideAll (HWND hwndCnr) {
                  MPFROM2SHORT(0,CMA_ERASE | CMA_REPOSITION));
 }
 
-
-VOID MarkAll (HWND hwndCnr,BOOL quitit,BOOL target,BOOL source) {
-
+VOID MarkAll (HWND hwndCnr,BOOL quitit,BOOL target,BOOL source)
+{
   PCNRITEM pci;
   INT      attribute = CRA_CURSORED;
 
@@ -444,9 +441,8 @@ VOID MarkAll (HWND hwndCnr,BOOL quitit,BOOL target,BOOL source) {
   }
 }
 
-
-VOID RemoveAll (HWND hwndCnr,ULONGLONG *pullTotalBytes,ULONG *pulTotalFiles) {
-
+VOID RemoveAll (HWND hwndCnr,ULONGLONG *pullTotalBytes,ULONG *pulTotalFiles)
+{
   PCNRITEM pci;
   INT      attribute = CRA_CURSORED;
   BOOL     didone = FALSE;
@@ -489,9 +485,8 @@ VOID RemoveAll (HWND hwndCnr,ULONGLONG *pullTotalBytes,ULONG *pulTotalFiles) {
                  MPFROM2SHORT(0,CMA_REPOSITION));
 }
 
-
-VOID SetMask (CHAR *str,MASK *mask) {
-
+VOID SetMask (CHAR *str,MASK *mask)
+{
   register INT   x;
   register CHAR *p;
 
@@ -516,9 +511,8 @@ VOID SetMask (CHAR *str,MASK *mask) {
   mask->pszMasks[x] = NULL;
 }
 
-
-VOID ExpandAll (HWND hwndCnr,BOOL expand,PCNRITEM pciParent) {
-
+VOID ExpandAll (HWND hwndCnr,BOOL expand,PCNRITEM pciParent)
+{
   PCNRITEM pci;
 
   if(!pciParent)
@@ -542,9 +536,8 @@ VOID ExpandAll (HWND hwndCnr,BOOL expand,PCNRITEM pciParent) {
   DosSleep(0L);
 }
 
-
-VOID InvertAll (HWND hwndCnr) {
-
+VOID InvertAll (HWND hwndCnr)
+{
   PCNRITEM pci;
 
   pci = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPVOID,
@@ -563,13 +556,11 @@ VOID InvertAll (HWND hwndCnr) {
   }
 }
 
-
 #pragma alloc_text (SELECT3,SpecialSelect)
 #pragma alloc_text(SELECT4,FreeCnrs,SpecialSelect2,CompSSNames,CompSSNamesB)
 
-
-VOID SpecialSelect (HWND hwndCnrS,HWND hwndCnrD,INT action,BOOL reset) {
-
+VOID SpecialSelect (HWND hwndCnrS,HWND hwndCnrD,INT action,BOOL reset)
+{
   PCNRITEM       pciS,pciD,*pciSa = NULL,*pciDa = NULL;
   CNRINFO        cnri;
   BOOL           slow = FALSE;
@@ -785,6 +776,85 @@ Restart:
         else if(!(x % 50))
           DosSleep(0L);
       }
+      break;
+
+    case IDM_SELECTSAMECONTENT:
+      // fixme
+      for (x = 0;x < numS;x++) {
+        if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+            *pciSa[x]->szFileName &&
+            *pciDa[x]->szFileName &&
+            pciSa[x]->flags & CNRITEM_EXISTS &&
+            pciDa[x]->flags & CNRITEM_EXISTS) {
+
+	  FILE *fp1 = NULL;
+	  FILE *fp2 = NULL;
+	  BOOL gotMatch = FALSE;
+	  BOOL gotError = FALSE;
+	  CHAR buf1[1024];
+	  CHAR buf2[1024];
+	  HAB hab = WinQueryAnchorBlock(hwndCnrS);
+
+          fp1 = _fsopen(pciSa[x]->szFileName,"rb",SH_DENYNO);
+          if(!fp1) {
+	    gotError = TRUE;
+	  }
+	  else {
+            fp2 = _fsopen(pciDa[x]->szFileName,"rb",SH_DENYNO);
+            if(!fp2) {
+	      gotError = TRUE;
+	    }
+	    else {
+              size_t len1 = filelength(fileno(fp1));
+              size_t len2 = filelength(fileno(fp2));
+              if (len1 == len2) {
+		setbuf(fp1, NULL);
+		setbuf(fp2, NULL);
+                while (WinIsWindow(hab,hwndCnrS)) {
+                  size_t numread1 = fread(buf1,1,1024,fp1);
+                  size_t numread2 = fread(buf2,1,1024,fp2);
+                  if (!numread1 || !numread2 || numread1 != numread2) {
+		    if (ferror(fp1) || ferror(fp2))
+		      gotError = TRUE;
+		    else if (feof(fp1) && feof(fp2))
+		      gotMatch = TRUE;
+		    break;
+		  }
+                  else if (memcmp(buf1,buf2,numread1))
+                    break;
+                } // while
+              } // same len
+            }
+          }
+
+	  if (fp1)
+	    fclose(fp1);
+
+	  if (fp2)
+	    fclose(fp2);
+
+	  if (gotError) {
+	    // fixme
+            DosBeep(250,100);
+            saymsg(MB_CANCEL,HWND_DESKTOP,
+                   "Compare Content",
+                   "Unexpected error comparing..."
+		  );
+	  }
+	  if (gotMatch) {
+            if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+              WinSendMsg(hwndCnrS,CM_SETRECORDEMPHASIS,MPFROMP(pciSa[x]),
+                         MPFROM2SHORT(TRUE,CRA_SELECTED));
+            if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+              WinSendMsg(hwndCnrD,CM_SETRECORDEMPHASIS,MPFROMP(pciDa[x]),
+                         MPFROM2SHORT(TRUE,CRA_SELECTED));
+	  }
+        }
+        if (!(x % 500))
+          DosSleep(1L);
+        else if (!(x % 50))
+          DosSleep(0L);
+      } // for records
       break;
 
     case IDM_SELECTBOTH:
@@ -1077,7 +1147,6 @@ Restart:
   DosPostEventSem(CompactSem);
 }
 
-
 struct SS {
   PCNRITEM  pci;
   BOOL      unique,
@@ -1094,26 +1163,23 @@ struct Cnr {
   struct SS *ss;
 };
 
-
-static int CompSSNamesB (const void *s1,const void *s2) {
-
+static int CompSSNamesB (const void *s1,const void *s2)
+{
   struct SS *ss2 = (struct SS *)s2;
 
   return stricmp((CHAR *)s1,ss2->pci->pszFileName);
 }
 
-
-static int CompSSNames (const void *s1,const void *s2) {
-
+static int CompSSNames (const void *s1,const void *s2)
+{
   struct SS *ss1 = (struct SS *)s1;
   struct SS *ss2 = (struct SS *)s2;
 
   return stricmp(ss1->pci->pszFileName,ss2->pci->pszFileName);
 }
 
-
-VOID FreeCnrs (struct Cnr *Cnrs,INT numw) {
-
+VOID FreeCnrs (struct Cnr *Cnrs,INT numw)
+{
   register INT z;
 
   for(z = 0;z < numw;z++) {
@@ -1124,9 +1190,8 @@ VOID FreeCnrs (struct Cnr *Cnrs,INT numw) {
   DosPostEventSem(CompactSem);
 }
 
-
-VOID SpecialSelect2 (HWND hwndParent,INT action) {
-
+VOID SpecialSelect2 (HWND hwndParent,INT action)
+{
   PCNRITEM     pci;
   HENUM        henum;
   HWND         hwnd;
