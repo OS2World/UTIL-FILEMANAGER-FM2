@@ -6,22 +6,24 @@
   Archive create/update dialog procedure
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  28 Jun 06 SHL Drop obsoletes
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <share.h>
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -37,7 +39,6 @@ MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case WM_INITDLG:
       WinSetWindowPtr(hwnd,0,mp2);
       arcdata = (DIRCNRDATA *)mp2;
-      arcdata->ret = 0;
       WinSendDlgItemMsg(hwnd,ARCH_ARCNAME,EM_SETTEXTLIMIT,
                         MPFROM2SHORT(CCHMAXPATH,0),MPVOID);
       if(!arcdata->namecanchange) {
@@ -189,7 +190,6 @@ MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       }
       switch(SHORT1FROMMP(mp1)) {
         case DID_CANCEL:
-          arcdata->ret = 0;
           WinDismissDlg(hwnd,0);
           break;
         case DID_OK:
@@ -219,7 +219,6 @@ MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                     s);
                 *arcdata->mask.szMask = 0;
                 strcpy(arcdata->mask.szMask,s);
-                arcdata->ret = 1;
                 WinDismissDlg(hwnd,1);
                 break;
               }
