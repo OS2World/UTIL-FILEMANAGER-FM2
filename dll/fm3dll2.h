@@ -6,11 +6,12 @@
   Global definitions
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2004 Steven H.Levine
+  Copyright (c) 2003, 2006 Steven H.Levine
 
-  Revisions	15 Oct 02 MK Baseline
-		04 Nov 03 SHL Drop obsoletes
-		01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
+  15 Oct 02 MK Baseline
+  04 Nov 03 SHL Drop obsoletes
+  01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
+  06 Jul 06 SHL Add Select Same Content support
 
 ***********************************************************************/
 
@@ -603,6 +604,7 @@
 #define IDM_DESELECTMORE    10035
 #define IDM_HIDEALL         10036
 #define IDM_SELECTCOMPAREMENU 10037
+#define IDM_SELECTSAMECONTENT 10038
 
 #define CHECK_FILES 1
 
