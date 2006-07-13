@@ -11,6 +11,7 @@
   15 Oct 02 MK Baseline
 	16 Oct 02 SHL Localize
 	29 May 06 SHL Add Edit Archiver enhancements
+	05 Jul 06 SHL Add Hide not selected support
 
 ***********************************************************************/
 
@@ -230,6 +231,7 @@
 #define COMP_TOTALRIGHTHDR							21023
 #define COMP_SELRIGHTHDR								21024
 #define COMP_FILTER 										21025
+#define COMP_HIDENOTSELECTED						21026
 
 #define EA_FRAME												21100
 #define EA_LISTBOX											21101
