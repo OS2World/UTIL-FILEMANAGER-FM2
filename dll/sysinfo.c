@@ -6,21 +6,23 @@
   System Info Display
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2002, 2004 Steven H.Levine
+  Copyright (c) 2002, 2006 Steven H.Levine
 
-  Revisions	16 Oct 02 SHL - Baseline
-  		08 Feb 03 SHL - Enable display
-		01 Aug 04 SHL - RunRmview: avoid buffer overflow
+  16 Oct 02 SHL Baseline
+  08 Feb 03 SHL Enable display
+  01 Aug 04 SHL RunRmview: avoid buffer overflow
+  22 Jul 06 SHL Comments
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 
@@ -28,8 +30,8 @@
 #pragma alloc_text(SYSINFO,SysInfoDlgProc,RunRmview)
 
 
-VOID RunRmview (VOID *arg) {
-
+VOID RunRmview (VOID *arg)
+{
   HWND  hwnd = (HWND)arg;
   CHAR  s[2048],*p;
   HAB   thab;
@@ -101,7 +103,6 @@ Abort:
 
 MRESULT EXPENTRY SysInfoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-
   static HWND     me = (HWND)0;
   static LONG     ypos = 0;
   static HPOINTER hptrIcon = (HPOINTER)0;
