@@ -443,9 +443,6 @@ MRESULT EXPENTRY SysInfoDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           }
         }
       }
-#     ifdef NEVER	// fixme
-      _beginthread(RunRmview,NULL,65536,(PVOID)hwnd);
-#     endif
       break;
 
     case WM_ADJUSTWINDOWPOS:
