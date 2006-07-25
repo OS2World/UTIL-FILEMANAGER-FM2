@@ -1,12 +1,27 @@
+
+/***********************************************************************
+
+  $Id$
+
+  External strings file support
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H. Levine
+
+  22 Jul 06 SHL Comments
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <share.h>
 #include <io.h>
+
 #include "fm3dll.h"
 #include "fm3str.h"
 #include "version.h"
@@ -16,22 +31,24 @@
 static char **strs,*str;
 static ULONG  numStr;
 
+//== LoadStrings() load strings from file ==
 
-BOOL LoadStrings (char *filename) {
-
-  /*
-   * Load strings from FM3RES.STR, with some error-checking.
-   * Return TRUE on success, FALSE on error.
-   */
-
-  BOOL           ret = FALSE;
+BOOL LoadStrings (char *filename)
+{
+  BOOL           ok = FALSE;
   ULONG          size,len,totalsize;
   USHORT         vermajor = 0,verminor = 0;
   register char *p;
   register ULONG x;
   FILE          *fp;
+  APIRET        rc;
 
-  if(!filename)
+  /* Load strings from requested file or FM3RES.STR
+   * with some quiet error-checking.
+   * Return TRUE on success, FALSE on error.
+   */
+
+  if (!filename)
     filename = "FM3RES.STR";
   numStr = 0;
   if(str)
@@ -39,10 +56,8 @@ BOOL LoadStrings (char *filename) {
   strs = NULL;
   str = NULL;
 
-  fp = _fsopen(filename,
-               "rb",
-               SH_DENYWR);
-  if(fp) {
+  fp = _fsopen(filename,"rb",SH_DENYWR);
+  if (fp) {
     if(fread(&numStr,
              sizeof(numStr),
              1,
@@ -56,11 +71,9 @@ BOOL LoadStrings (char *filename) {
          verminor >= VERMINORBREAK))) {
       fseek(fp,0,SEEK_END);
       size = ftell(fp) - ((sizeof(ULONG) * 2) + (sizeof(USHORT) * 2));
-      if(size &&
-         size == len) {
+      if (size && size == len) {
         fseek(fp,(sizeof(ULONG) * 2) + (sizeof(USHORT) * 2),SEEK_SET);
-        /*
-         * NOTE:  Make one memory object for both str and strs
+        /* NOTE:  Make one memory object for both str and strs
          * for efficiency.
          */
         totalsize = size + sizeof(ULONG);
@@ -68,9 +81,9 @@ BOOL LoadStrings (char *filename) {
         len = totalsize;
         totalsize += (numStr * sizeof(char *));
         totalsize += 4;
-        if(!DosAllocMem((PPVOID)&str,totalsize,
-                        PAG_COMMIT | PAG_READ | PAG_WRITE) &&
-           str) {
+        rc = DosAllocMem((PPVOID)&str,totalsize,
+                         PAG_COMMIT | PAG_READ | PAG_WRITE);
+	if (!rc && str) {
           strs = (char **)(str + len);
           if(fread(str,1,size,fp) == size) {
             p = str;
@@ -83,20 +96,18 @@ BOOL LoadStrings (char *filename) {
               p++;
             }
             if(x == numStr)
-              ret = TRUE;
+              ok = TRUE;
           }
-          if(ret)
+          if(ok)
             /* set pages to readonly */
-            DosSetMem(str,
-                      totalsize,
-                      PAG_COMMIT | PAG_READ);
+            DosSetMem(str,totalsize,PAG_COMMIT | PAG_READ);
         }
       }
     }
     fclose(fp);
   }
 
-  if(!ret) {
+  if (!ok) {
     numStr = 0;
     if(str)
       DosFreeMem(str);
@@ -104,21 +115,21 @@ BOOL LoadStrings (char *filename) {
     strs = NULL;
   }
 
-  return ret;
+  return ok;
 }
 
 
-char *GetPString (ULONG id) {
+//== GetPString() return a readonly pointer to the requested string in memory ==
 
-  /*
-   * return a readonly pointer to the requested string in memory
-   */
-
-  return (id < numStr && str && strs && strs[id]) ? strs[id] : NullStr;
+char *GetPString (ULONG id)
+{
+  return id < numStr && str && strs && strs[id] ? strs[id] : NullStr;
 }
 
 
-BOOL StringsLoaded (void) {
+//== StringsLoaded() return TRUE is strings loaded
 
-  return (numStr && str && strs);
+BOOL StringsLoaded (void)
+{
+    return numStr && str && strs;
 }
