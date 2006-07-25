@@ -1,20 +1,38 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Desktop shadows
+
+  Copyright (c) 1993-97 M. Kimes
+  Copyright (c) 2006 Steven H. Levine
+
+  22 Jul 06 SHL Check more run time errors
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(SHADOW,CreateProgramObject,CreateDataObject,CreateFolderObject,CreateShadowObject)
 
 HOBJECT CreateProgramObject (CHAR *objtitle,CHAR *location,CHAR *path,
-                             CHAR *cnr) {
-
+                             CHAR *cnr)
+{
   HOBJECT obj = (HOBJECT)0;
   CHAR    *s;
 
@@ -26,8 +44,8 @@ HOBJECT CreateProgramObject (CHAR *objtitle,CHAR *location,CHAR *path,
                          (location) ? location : cnr,
                          CO_FAILIFEXISTS);
   if(obj) {
-    s = malloc(5192);
-    if(s) {
+    s = xmalloc(5192,pszSrcFile,__LINE__);
+    if (s) {
       sprintf(s,
               "EXENAME=%s%s%s%s%s;PARAMETERS=%%*;OBJECTID=<FM2_%s>",
               (path) ? path : "",
@@ -89,8 +107,8 @@ HOBJECT CreateDataObject (CHAR *objtitle,CHAR *location,CHAR *path,
 }
 
 
-HOBJECT CreateFolderObject (CHAR *objtitle,CHAR *cnr) {
-
+HOBJECT CreateFolderObject (CHAR *objtitle,CHAR *cnr)
+{
   HOBJECT obj = (HOBJECT)0;
   CHAR    s[1050];
 
@@ -120,8 +138,8 @@ HOBJECT CreateShadowObject (CHAR *objtitle,CHAR *location,CHAR *path,
 
   if(!cnr)
     return obj;
-  s = malloc(5192);
-  if(s) {
+  s = xmalloc(5192,pszSrcFile,__LINE__);
+  if (s) {
     sprintf(s,
             "SHADOWID=%s%s%s",
             (path) ? path : "",
@@ -170,8 +188,8 @@ HOBJECT CreateShadowObject (CHAR *objtitle,CHAR *location,CHAR *path,
 
 #pragma alloc_text(SHADOW2,MakeShadows,OpenObject)
 
-VOID MakeShadows (HWND hwnd,CHAR **list,ULONG Shadows,CHAR *cnr, CHAR *foldername) {
-
+VOID MakeShadows (HWND hwnd,CHAR **list,ULONG Shadows,CHAR *cnr, CHAR *foldername)
+{
   INT           x = 0;
   CHAR          szBuff[CCHMAXPATH + 8];
   HOBJECT       obj = (HOBJECT)0;
@@ -288,8 +306,8 @@ VOID MakeShadows (HWND hwnd,CHAR **list,ULONG Shadows,CHAR *cnr, CHAR *foldernam
 }
 
 
-VOID OpenObject (CHAR *filename,CHAR *type,HWND hwnd) {
-
+VOID OpenObject (CHAR *filename,CHAR *type,HWND hwnd)
+{
   HOBJECT hWPSObject;
 
   if(!type)
@@ -322,8 +340,8 @@ VOID OpenObject (CHAR *filename,CHAR *type,HWND hwnd) {
 }
 
 
-BOOL RunSeamless (CHAR *exename,CHAR *args,HWND hwnd) {
-
+BOOL RunSeamless (CHAR *exename,CHAR *args,HWND hwnd)
+{
   CHAR settings[1024 + CCHMAXPATH + 80];
   BOOL ret;
 
@@ -349,4 +367,3 @@ BOOL RunSeamless (CHAR *exename,CHAR *args,HWND hwnd) {
                     SWP_ZORDER | SWP_ACTIVATE);
   return ret;
 }
-

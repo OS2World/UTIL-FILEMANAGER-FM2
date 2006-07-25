@@ -13,7 +13,8 @@
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Rework Action for VAC3.65 compat
   27 Jul 05 SHL	IDM_DOITYOURSELF - avoid need to strip in ExecOnList
-  29 May 06 SHL	Comments
+  22 Jul 06 SHL	Comments
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
@@ -36,6 +37,9 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(MASSACTION,MassAction)
 #pragma alloc_text(ACTION,Action)
 #pragma alloc_text(UNDO,FreeUndo,Undo)
@@ -70,14 +74,10 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
     case IDM_COPY:
     case IDM_EXTRACT:
       {
-	li = malloc(sizeof(LISTINFO));
-	if (li)
-	{
-	  memset(li, 0, sizeof(LISTINFO));
-	  wk = malloc(sizeof(WORKER));
-	  if (wk)
-	  {
-	    memset(wk, 0, sizeof(WORKER));
+	li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
+	if (li) {
+	  wk = xmallocz(sizeof(WORKER),pszSrcFile,__LINE__);
+	  if (wk) {
 	    wk -> size = sizeof(WORKER);
 	    wk -> hwndCnr = hwndCnr;
 	    wk -> hwndParent = hwndParent;
@@ -92,11 +92,9 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 	      li -> type = IDM_PERMDELETE;
 	      break;
 	    }
-	    if (_beginthread(MassAction,
-			     NULL,
-			     122880,
-			     (PVOID) wk) == -1)
+	    if (_beginthread(MassAction,NULL,122880,(PVOID) wk) == -1)
 	    {
+              Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      FreeListInfo(wk -> li);
 	      free(wk);
 	    }
@@ -280,7 +278,7 @@ VOID Action(VOID * args)
 		if (Collector)
 		{
 
-		  CHAR *temp = strdup(wk -> li -> list[x]);
+		  CHAR *temp = xstrdup(wk -> li -> list[x],pszSrcFile,__LINE__);
 
 		  if (temp)
 		  {
@@ -322,8 +320,16 @@ VOID Action(VOID * args)
 		    break;
 		  }
 		  in = _fsopen(wk -> li -> list[x], moder, SH_DENYWR);
-		  if (in)
+		  if (!in)
 		  {
+		    if (saymsg(MB_ENTERCANCEL,
+			       HWND_DESKTOP,
+			       GetPString(IDS_MERGEERRORTEXT),
+			       GetPString(IDS_CANTOPENINPUTTEXT),
+			       wk -> li -> list[x]) == MBID_CANCEL)
+		      goto Abort;
+		  }
+		  else {
 		    out = _fsopen(wk -> li -> targetpath, modew, SH_DENYWR);
 		    if (out)
 		    {
@@ -362,15 +368,6 @@ VOID Action(VOID * args)
 		      goto Abort;
 		    }
 		    fclose(in);
-		  }
-		  else
-		  {
-		    if (saymsg(MB_ENTERCANCEL,
-			       HWND_DESKTOP,
-			       GetPString(IDS_MERGEERRORTEXT),
-			       GetPString(IDS_CANTOPENINPUTTEXT),
-			       wk -> li -> list[x]) == MBID_CANCEL)
-		      goto Abort;
 		  }
 		}
 		break;
@@ -946,7 +943,7 @@ VOID Action(VOID * args)
 		      rc = Dos_Error(MB_ENTERCANCEL,
 				     rc,
 				     wk -> hwndFrame,
-				     __FILE__,
+				     pszSrcFile,
 				     __LINE__,
 				     "%s %s \"%s\" %s\"%s\" %s.",
 				     move,
@@ -1101,7 +1098,7 @@ VOID Action(VOID * args)
 		      GetPString(IDS_ISTEXT));
 	      Notify(message);
 	      if (toupper(*wk -> li -> targetpath) < 'C')
-		DosBeep(1000, 25);
+		DosBeep(1000, 25);	// Wake up user
 	      DosSleep(33L);
 	      if (wk -> li -> type == IDM_WPSMOVE ||
 		  wk -> li -> type == IDM_WPSCOPY)
@@ -1239,7 +1236,7 @@ VOID MassAction(VOID * args)
 
 		FILE *fp;
 
-		fp = fopen("$FM2PLAY.$$$", "w");
+		fp = xfopen("$FM2PLAY.$$$", "w",pszSrcFile,__LINE__);
 		if (fp)
 		{
 		  fprintf(fp,
@@ -1338,7 +1335,7 @@ VOID MassAction(VOID * args)
 	      {
 		strcpy(p, wk -> li -> list[x]);
 		free(wk -> li -> list[x]);
-		wk -> li -> list[x] = strdup(szBuffer);
+		wk -> li -> list[x] = xstrdup(szBuffer,pszSrcFile,__LINE__);
 	      }
 	      if (wk -> li -> list[0])
 		Broadcast(hab2,
@@ -1574,7 +1571,7 @@ VOID MassAction(VOID * args)
 		(wk -> li -> type == IDM_VIEWBINARY) ? 16 : 0;
 	      for (x = 0; wk -> li -> list[x]; x++)
 	      {
-		temp = strdup(wk -> li -> list[x]);
+		temp = xstrdup(wk -> li -> list[x],pszSrcFile,__LINE__);
 		if (temp && WinIsWindow(hab2, wk -> hwndCnr))
 		{
 		  if (!PostMsg(wk -> hwndCnr,
@@ -1629,7 +1626,7 @@ VOID MassAction(VOID * args)
 		(wk -> li -> type == IDM_EDITBINARY) ? 16 : 0;
 	      for (x = 0; wk -> li -> list[x]; x++)
 	      {
-		temp = strdup(wk -> li -> list[x]);
+		temp = xstrdup(wk -> li -> list[x],pszSrcFile,__LINE__);
 		if (temp && WinIsWindow(hab2, wk -> hwndCnr))
 		{
 		  if (!PostMsg(wk -> hwndCnr,
@@ -1691,10 +1688,9 @@ VOID MassAction(VOID * args)
 	      if (wk -> li && wk -> li -> list && wk -> li -> list[0])
 	      {
 		strcpy(wk -> li -> targetpath, printer);
-		if (_beginthread(PrintList,
-				 NULL,
-				 65536,
-				 (PVOID) wk -> li) != -1)
+		if (_beginthread(PrintList,NULL,65536,(PVOID) wk -> li) == -1)
+                  Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+		else
 		  wk -> li = NULL;	/* prevent LISTINFO li from being freed */
 	      }
 	    }
@@ -1820,7 +1816,7 @@ VOID MassAction(VOID * args)
 			  GetPString(IDS_ARETEXT) :
 			  GetPString(IDS_ISTEXT));
 		if (ro || hs || sysdir)
-		  DosBeep(300, 100);
+		  DosBeep(300, 100);	// Wake up user
 		strcat(prompt,
 		       GetPString(IDS_DELPROMPT6TEXT));
 		error = WinDlgBox(HWND_DESKTOP,
@@ -1893,7 +1889,7 @@ VOID MassAction(VOID * args)
 		  if (Dos_Error(MB_ENTERCANCEL,
 				error,
 				wk -> hwndFrame,
-				__FILE__,
+				pszSrcFile,
 				__LINE__,
 				GetPString(IDS_DELETEFAILED2TEXT),
 				wk -> li -> list[x]) ==
