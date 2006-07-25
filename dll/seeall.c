@@ -16,6 +16,7 @@
   05 Jun 05 SHL Use QWL_USER
   06 Jun 05 SHL Drop unused code
   29 May 06 SHL Comments
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -37,6 +38,9 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(SEEALL,comparefullnames,comparenames,comparesizes)
 #pragma alloc_text(SEEALL,comparedates,compareexts,SeeStatusProc)
 #pragma alloc_text(SEEALL,InitWindow,PaintLine,SeeAllWndProc)
@@ -205,7 +209,7 @@ MRESULT EXPENTRY DupeDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	      if(WinQueryButtonCheckstate(hwnd,DUPE_CRCS))
 		flags |= (DP_CRCS | DP_SIZES);
 	    }
-	    if(!flags)
+	    if (!flags)
 	      saymsg(MB_ENTER,
 		     hwnd,
 		     GetPString(IDS_ERRORTEXT),
@@ -379,9 +383,8 @@ MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	    {
 	      LISTINFO *li;
 
-	      li = malloc(sizeof(LISTINFO));
-	      if(li) {
-		memset(li,0,sizeof(LISTINFO));
+	      li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
+	      if (li) {
 		li->hwndS = WinWindowFromID(hwndFrame,FID_CLIENT);
 		li->type = IDM_PRINT;
 		li->list = list;
@@ -393,18 +396,13 @@ MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 			     MPFROMP(li))) {
 		  if(li && li->list && li->list[0]) {
 		    strcpy(li->targetpath,printer);
-		    if(_beginthread(PrintList,
-				    NULL,
-				    65536,
-				    (PVOID)li) == -1) {
-		      DosBeep(50,100);
+		    if(_beginthread(PrintList,NULL,65536,(PVOID)li) == -1) {
+                      Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 		      FreeListInfo(li);
 		    }
 		  }
 		}
 	      }
-	      else
-		FreeList(list);
 	    }
 	    break;
 
@@ -841,7 +839,7 @@ Retry:
 		    rc = Dos_Error(MB_ENTERCANCEL,
 				   rc,
 				   hwndFrame,
-				   __FILE__,
+				   pszSrcFile,
 				   __LINE__,
 				   "%s %s \"%s\" %s\"%s\" %s.",
 				   move,
@@ -912,7 +910,9 @@ Retry:
 		 !*ex.arcname ||
 		 !*ex.extractdir)
 		break;
-	      if(!IsFile(ex.extractdir)) {
+	      if (IsFile(ex.extractdir) != 0)
+                Runtime_Error(pszSrcFile, __LINE__, "directory expected");
+	      else {
 		if(needs_quoting(ex.masks) &&
 		   !strchr(ex.masks,'\"') )
 		  maskspaces = TRUE;
@@ -929,13 +929,12 @@ Retry:
 			(*ex.masks) ? ex.masks : "*",
 			(maskspaces) ? "\"" : NullStr);
 	      }
-	      else
-		DosBeep(50,100);
 	    }
-	    if(!PostMsg(WinWindowFromID(hwndFrame,FID_CLIENT),
-			UM_UPDATERECORDLIST,
-			MPFROMP(list),
-			MPVOID))
+	    // fixme to not leak?
+	    if (!PostMsg(WinWindowFromID(hwndFrame,FID_CLIENT),
+			 UM_UPDATERECORDLIST,
+			 MPFROMP(list),
+			 MPVOID))
 	      FreeList(list);
 	    break;
 
@@ -1136,7 +1135,7 @@ Retry:
 		  if(Dos_Error(MB_ENTERCANCEL,
 			       error,
 			       hwndFrame,
-			       __FILE__,
+			       pszSrcFile,
 			       __LINE__,
 			       GetPString(IDS_DELETEFAILED2TEXT),
 			       list[x]) ==
@@ -1611,28 +1610,24 @@ static BOOL UpdateList (HWND hwnd,CHAR **list)
 
 	      ALLFILES *temp,**templ;
 
-	      temp = realloc(ad->afhead,(ad->afalloc + 1) *
-			     sizeof(ALLFILES));
-	      if(temp) {
-		ad->afhead = temp;
-		templ = realloc(ad->afindex,(ad->afalloc + 1) *
-				sizeof(ALLFILES *));
-		if(templ)
-		  ad->afindex = templ;
-		else {
-                  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
-		  ad->stopflag = 1;
-		  break;
-		}
-		ad->afalloc++;
-	      }
-	      else {
-                // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
+	      temp = xrealloc(ad->afhead,(ad->afalloc + 1) * sizeof(ALLFILES),pszSrcFile,__LINE__);
+	      if (!temp) {
 		ad->stopflag = 1;
 		break;
 	      }
+	      else {
+		ad->afhead = temp;
+		templ = xrealloc(ad->afindex,(ad->afalloc + 1) * sizeof(ALLFILES *),pszSrcFile,__LINE__);
+		if (!templ) {
+		  ad->stopflag = 1;
+		  break;
+		}
+		else
+		  ad->afindex = templ;
+		ad->afalloc++;
+	      }
 	    }
-	    ad->afhead[ad->affiles].fullname   = strdup(list[z]);
+	    ad->afhead[ad->affiles].fullname   = xstrdup(list[z],pszSrcFile,__LINE__);
 	    if(ad->afhead[ad->affiles].fullname) {
 	      p = strrchr(ad->afhead[ad->affiles].fullname,'\\');
 	      if(!p)
@@ -2007,13 +2002,13 @@ static ULONG RemoveDeleted (HWND hwnd)
     if(!pAD->affiles)
       FreeAllFilesList(hwnd);
     else {
-      tempa = realloc(pAD->afhead,pAD->affiles * sizeof(ALLFILES));
-      if(tempa) {
+      tempa = xrealloc(pAD->afhead,pAD->affiles * sizeof(ALLFILES),pszSrcFile,__LINE__);
+      if (tempa) {
 	pAD->afhead = tempa;
 	pAD->afalloc = pAD->affiles;
       }
-      templ = realloc(pAD->afindex,pAD->affiles * sizeof(ALLFILES *));
-      if(templ)
+      templ = xrealloc(pAD->afindex,pAD->affiles * sizeof(ALLFILES *),pszSrcFile,__LINE__);
+      if (templ)
 	pAD->afindex = templ;
       DosPostEventSem(CompactSem);
       ReSort(hwnd);
@@ -2033,20 +2028,18 @@ static VOID DoADir (HWND hwnd,CHAR *pathname)
   register ULONG x;
   register PBYTE fb;
 
-  filename = malloc(CCHMAXPATH);
-  if(!filename) {
-    // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Malloc filename failed.");
+  filename = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
+  if(!filename)
     return;
-  }
+
   uL = ad->afFilesToGet;
   if(fRemoteBug && isalpha(*pathname) && pathname[1] == ':' &&
      pathname[2] == '\\' &&
      (driveflags[toupper(*pathname) - 'A'] & DRIVE_REMOTE))
     uL = 1L;
-  pffb = malloc(sizeof(FILEFINDBUF3) * uL);
+  pffb = xmalloc(sizeof(FILEFINDBUF3) * uL,pszSrcFile,__LINE__);
   if(!pffb) {
     free(filename);
-    // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Malloc pffb failed.");
     return;
   }
   nm = uL;
@@ -2082,22 +2075,25 @@ static VOID DoADir (HWND hwnd,CHAR *pathname)
 
 	    ALLFILES *temp;
 
-	    temp = realloc(ad->afhead,(ad->afalloc + 1000) *
-			   sizeof(ALLFILES));
-	    if(temp) {
+	    temp = xrealloc(ad->afhead,(ad->afalloc + 1000) *
+			   sizeof(ALLFILES),pszSrcFile,__LINE__);
+	    if (!temp) {
+	      ad->stopflag = 1;
+	      break;
+	    }
+	    else {
 	      ad->afhead = temp;
 	      if(ad->stopflag)
 		break;
 	      ad->afalloc += 1000;
 	    }
-	    else {
-              // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Realloc failed.");
-	      ad->stopflag = 1;
-	      break;
-	    }
 	  }
-	  ad->afhead[ad->affiles].fullname   = strdup(filename);
-	  if(ad->afhead[ad->affiles].fullname) {
+	  ad->afhead[ad->affiles].fullname   = xstrdup(filename,pszSrcFile,__LINE__);
+	  if (!ad->afhead[ad->affiles].fullname) {
+	    ad->stopflag = 1;
+	    break;
+	  }
+	  else {
 	    ad->afhead[ad->affiles].filename =
 	      ad->afhead[ad->affiles].fullname + (enddir - filename);
 	    ad->afhead[ad->affiles].cbFile   = ffb->cbFile;
@@ -2110,11 +2106,6 @@ static VOID DoADir (HWND hwnd,CHAR *pathname)
 	      ad->longest = ffb->cchName;
 	    if(ad->longestw < ffb->cchName + (enddir - filename))
 	      ad->longestw = ffb->cchName + (enddir - filename);
-	  }
-	  else {
-            // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Strdup failed.");
-	    ad->stopflag = 1;
-	    break;
 	  }
 	}
 	fb += ffb->oNextEntryOffset;
@@ -2173,18 +2164,18 @@ static VOID FindAllThread (VOID *args)
 
       ALLFILES *tempa,**templ;
 
-      tempa = realloc(ad->afhead,sizeof(ALLFILES) * ad->affiles);
-      if(tempa) {
+      tempa = xrealloc(ad->afhead,sizeof(ALLFILES) * ad->affiles,pszSrcFile,__LINE__);
+      if (tempa) {
 	ad->afhead = tempa;
 	ad->afalloc = ad->affiles;
       }
-      templ = realloc(ad->afindex,sizeof(ALLFILES *) * ad->affiles);
-      if(templ)
+      templ = xrealloc(ad->afindex,sizeof(ALLFILES *) * ad->affiles,pszSrcFile,__LINE__);
+      if (templ)
 	ad->afindex = templ;
       DosPostEventSem(CompactSem);
     }
 
-    if(!ad->stopflag) {
+    if (!ad->stopflag) {
       PostMsg(hwnd,UM_RESCAN,MPFROMLONG(1L),MPVOID);
       ReSort(hwnd);
     }
@@ -2551,9 +2542,8 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case WM_CREATE:
       // fprintf(stderr,"Seeall: WM_CREATE\n");
       WinSetWindowPtr(hwnd,QWL_USER,NULL);
-      pAD = malloc(sizeof(ALLDATA));
+      pAD = xmallocz(sizeof(ALLDATA),pszSrcFile,__LINE__);
       if(pAD) {
-	memset(pAD,0,sizeof(ALLDATA));
 	pAD->size = sizeof(ALLDATA);
 	pAD->hwndFrame = WinQueryWindow(hwnd,QW_PARENT);
 	pAD->mask.attrFile = FILE_READONLY | FILE_HIDDEN   |
@@ -2660,8 +2650,10 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	pAD->hhscroll = WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
 				       FID_HORZSCROLL);
 	pAD->multiplier = 1;
-	if(_beginthread(MakeSeeObj,NULL,122880,(PVOID)pAD) != -1) {
-	  if(!DosCreateMutexSem(NULL,&pAD->hmtxScan,0L,FALSE)) {
+	if(_beginthread(MakeSeeObj,NULL,122880,(PVOID)pAD) == -1)
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	else {
+	  if (!DosCreateMutexSem(NULL,&pAD->hmtxScan,0L,FALSE)) {
 	    pAD->hwndStatus = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
 					      GetPString(IDS_WCSEESTATUS),
 					      NullStr,
@@ -2705,8 +2697,10 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    return 0;
 	  }
 	}
-	if(_beginthread(FindAllThread,NULL,524288,(PVOID)hwnd) == -1)
+	if(_beginthread(FindAllThread,NULL,524288,(PVOID)hwnd) == -1) {
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
+	}
 	else {
 	  DosSleep(100L);
 	  PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
@@ -2837,7 +2831,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    strcpy(s,
 		   GetPString(IDS_WORKINGTEXT));
-	    if(pAD->affiles) {
+	    if (pAD->affiles) {
 	      commafmt(tm,sizeof(tm),pAD->affiles);
 	      strcat(s,tm);
 	    }
@@ -3157,7 +3151,9 @@ KbdRetry:
 	CHAR **list;
 
 	list = BuildAList(hwnd);
-	if(list) {
+	if (!list)
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
+	else {
 	  WinSetWindowText(pAD->hwndStatus,
 			   GetPString(IDS_DRAGGINGFILESTEXT));
 	  DragList(hwnd,
@@ -3170,8 +3166,6 @@ KbdRetry:
 		  MPVOID,
 		  MPVOID);
 	}
-	else
-	  DosBeep(50,100);
       }
       break;
 
@@ -3960,12 +3954,9 @@ KbdRetry:
 					      FM3ModHandle,
 					      DUPE_FRAME,
 					      MPFROM2SHORT(pAD->dupeflags,0));
-	    if(pAD->dupeflags) {
-	      if(_beginthread(FindDupes,
-			      NULL,
-			      65536,
-			      (PVOID)hwnd) == -1)
-		DosBeep(50,100);
+	    if (pAD->dupeflags) {
+	      if(_beginthread(FindDupes,NULL,65536,(PVOID)hwnd) == -1)
+                Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    }
 	    DosReleaseMutexSem(pAD->hmtxScan);
 	  }
@@ -4159,17 +4150,17 @@ KbdRetry:
 	    pAD->maxx = pAD->horzscroll = 0;
 	    FreeAllFilesList(hwnd);
 	    pAD->stopflag = 0;
-	    if(_beginthread(FindAllThread,NULL,524288,(PVOID)hwnd) != -1) {
+	    if(_beginthread(FindAllThread,NULL,524288,(PVOID)hwnd) == -1) {
+              Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	      WinDestroyWindow(WinQueryWindow(hwnd,QW_PARENT));
+	      DosReleaseMutexSem(pAD->hmtxScan);
+	    }
+	    else {
 	      DosReleaseMutexSem(pAD->hmtxScan);
 	      DosSleep(100);
 	      WinInvalidateRect(hwnd,NULL,FALSE);
 	      PostMsg(hwnd,UM_SETUP2,MPVOID,MPVOID);
 	      PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
-	    }
-	    else {
-	      DosBeep(250,100);
-	      WinDestroyWindow(WinQueryWindow(hwnd,QW_PARENT));
-	      DosReleaseMutexSem(pAD->hmtxScan);
 	    }
 	  }
 	  break;
@@ -4264,7 +4255,9 @@ KbdRetry:
 		{
 		  CHAR **list = BuildAList(hwnd);
 
-		  if(list) {
+		  if (!list)
+                    Runtime_Error(pszSrcFile, __LINE__, "no data");
+		  else {
 		    switch(SHORT1FROMMP(mp1)) {
 		      case IDM_COLLECT:
 			CollectList(hwnd,list);
@@ -4303,8 +4296,6 @@ KbdRetry:
 		      WinInvalidateRect(hwnd,NULL,FALSE);
 		    }
 		  }
-		  else
-		    DosBeep(50,100);
 		}
 		break;
 
@@ -4437,7 +4428,7 @@ HWND StartSeeAll (HWND hwndParent,
       if (!PostMsg(WinWindowFromID(hwndFrame,FID_CLIENT),
 		   UM_SETUP4,
 		   MPVOID,
-		   MPVOID)) 
+		   MPVOID))
       {
 	PostMsg((HWND)0,
 		WM_QUIT,
@@ -4450,7 +4441,7 @@ HWND StartSeeAll (HWND hwndParent,
     {
       // Needs to be static for other thread
       if (!pszDir)
-	  pszDir = malloc(CCHMAXPATH);
+	  pszDir = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
       if (pszDir) {
 	strcpy(pszDir, pszStartPath);
 	pszStartPath = pszDir;

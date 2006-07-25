@@ -3,31 +3,36 @@
 
   $Id$
 
-  Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Edit .subject EAs
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004, 2006 Steven H.Levine
+
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma alloc_text(FMINPUT,Subject)
 
+static PSZ pszSrcFile = __FILE__;
 
-INT Subject (HWND hwnd,CHAR *filename) {
-
+INT Subject (HWND hwnd,CHAR *filename)
+{
   APIRET        rc;
   EAOP2         eaop;
   PGEA2LIST     pgealist;
@@ -39,17 +44,17 @@ INT Subject (HWND hwnd,CHAR *filename) {
   INT           ret = 0;
 
   *subject = 0;
-  pgealist = malloc(sizeof(GEA2LIST) + 64);
-  if(pgealist) {
-    memset(pgealist,0,sizeof(GEA2LIST) + 64);
+  pgealist = xmallocz(sizeof(GEA2LIST) + 64,pszSrcFile,__LINE__);
+  if (pgealist) {
     pgea = &pgealist->list[0];
     strcpy(pgea->szName,SUBJECT);
     pgea->cbName = strlen(pgea->szName);
     pgea->oNextEntryOffset = 0L;
     pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-    pfealist = malloc(1024);
-    if(pfealist) {
-      memset(pfealist,0,1024);
+    pfealist = xmallocz(1024,pszSrcFile,__LINE__);
+    if(pfealist)
+      free(pgealist);
+    else {
       pfealist->cbList = 1024;
       eaop.fpGEA2List = pgealist;
       eaop.fpFEA2List = pfealist;
@@ -58,7 +63,7 @@ INT Subject (HWND hwnd,CHAR *filename) {
                             (PVOID)&eaop,
                             (ULONG)sizeof(EAOP2));
       free(pgealist);
-      if(!rc) {
+      if (!rc) {
         pfea = &eaop.fpFEA2List->list[0];
         value = pfea->szName + pfea->cbName + 1;
         value[pfea->cbValue] = 0;
@@ -67,17 +72,17 @@ INT Subject (HWND hwnd,CHAR *filename) {
         subject[39] = 0;
       }
       free(pfealist);
-      if(rc == ERROR_SHARING_VIOLATION || rc == ERROR_ACCESS_DENIED) {
+      if (rc == ERROR_SHARING_VIOLATION || rc == ERROR_ACCESS_DENIED) {
         saymsg(MB_CANCEL,
                hwnd,
                GetPString(IDS_OOPSTEXT),
                GetPString(IDS_EASBUSYTEXT),
                filename);
-        return 2;
+        return 2;			// Error
       }
-      else if(rc) {
-        DosBeep(50,100);
-        return 2;
+      else if (rc) {
+        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQueryPathInfo");
+        return 2;			// Error
       }
     }
   }
@@ -88,7 +93,7 @@ INT Subject (HWND hwnd,CHAR *filename) {
   sip.prompt = GetPString(IDS_SUBJECTINPUTPROMPTTEXT);
   sip.inputlen = 40;
   sip.title = filename;
-  if(WinDlgBox(HWND_DESKTOP,hwnd,InputDlgProc,FM3ModHandle,STR_FRAME,&sip)
+  if (WinDlgBox(HWND_DESKTOP,hwnd,InputDlgProc,FM3ModHandle,STR_FRAME,&sip)
      && isalpha(*filename) &&
      !(driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE)) {
     subject[39] = 0;
@@ -100,19 +105,22 @@ INT Subject (HWND hwnd,CHAR *filename) {
       CHAR    *eaval;
 
       len = strlen(subject);
-      if(len)
+      if (len)
         ealen = sizeof(FEA2LIST) + 9 + len + 4;
       else
         ealen = sizeof(FEALIST) + 9;
-      if(!DosAllocMem((PPVOID)&pfealist,ealen + 1L,
-                       OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE)) {
+      rc = DosAllocMem((PPVOID)&pfealist,ealen + 1L,
+                       OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+      if (rc)
+        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+      else {
         memset(pfealist,0,ealen + 1);
         pfealist->cbList = ealen;
         pfealist->list[0].oNextEntryOffset = 0L;
         pfealist->list[0].fEA = 0;
         pfealist->list[0].cbName = 8;
         strcpy(pfealist->list[0].szName,SUBJECT);
-        if(len) {
+        if (len) {
           eaval = pfealist->list[0].szName + 9;
           *(USHORT *)eaval = (USHORT)EAT_ASCII;
           eaval += sizeof(USHORT);
@@ -129,20 +137,14 @@ INT Subject (HWND hwnd,CHAR *filename) {
         rc = DosSetPathInfo(filename,FIL_QUERYEASIZE,(PVOID)&eaop,
                             (ULONG)sizeof(EAOP2),DSPI_WRTTHRU);
         DosFreeMem(pfealist);
-        if(rc)
-          Dos_Error(MB_ENTER,
-                    rc,
-                    HWND_DESKTOP,
-                    __FILE__,
-                    __LINE__,
-                    GetPString(IDS_ERRORSETTINGSUBJECTTEXT),
-                    filename);
+        if (rc) {
+          Dos_Error(MB_ENTER,rc,HWND_DESKTOP,pszSrcFile,__LINE__,
+                    GetPString(IDS_ERRORSETTINGSUBJECTTEXT),filename);
+	}
         else
-          ret = 1;
+          ret = 1;			// OK
       }
-      else
-        DosBeep(250,100);
     }
   }
-  return ret;
+  return ret;				// No change?
 }
