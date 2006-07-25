@@ -6,11 +6,12 @@
   System Interfaces
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2004 Steven H.Levine
+  Copyright (c) 2003, 2006 Steven H.Levine
 
-  Revisions	21 Nov 03 SHL - Comments
-  		31 Jul 04 SHL - Indent -i2
-		01 Aug 04 SHL - Rework lstrip/rstrip usage
+  21 Nov 03 SHL Comments
+  31 Jul 04 SHL Indent -i2
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -18,17 +19,20 @@
 #define INCL_WINERRORS
 #define INCL_DOS
 #define INCL_DOSERRORS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2)
 
@@ -38,7 +42,6 @@
 
 BOOL ShowSession(HWND hwnd, PID pid)
 {
-
   HSWITCH hswitch;
   SWCNTRL swctl;
   ULONG rc;
@@ -63,7 +66,6 @@ BOOL ShowSession(HWND hwnd, PID pid)
 int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	       char **list, char *prompt)
 {
-
   /* executes the command once for all files in list */
 
   char path[CCHMAXPATH], commandline[2048], modpath[CCHMAXPATH], listfile[CCHMAXPATH],
@@ -176,7 +178,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	      strcat(listfile, "\\");
 	    sprintf(&listfile[strlen(listfile)], "%s%03x",
 		    LISTTEMPROOT, (clock() & 4095L));
-	    fp = fopen(listfile, "w");
+	    fp = xfopen(listfile, "w",pszSrcFile,__LINE__);
 	    if (fp)
 	    {
 	      for (x = 0; list[x]; x++)
@@ -666,7 +668,6 @@ BreakOut:
 int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	    char *formatstring,...)
 {
-
   /* example:
 
    * status = runemf2(SEPARATE | WINDOWED,
@@ -712,11 +713,13 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  rc = DosAllocMem((PVOID) & s,
+  rc = DosAllocMem((PVOID)&s,
 		   MAXSTRG,
 		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
-  if (rc)
+  if (rc) {
+    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
     return -1;
+  }
 
   *savedir = 0;
 
@@ -760,10 +763,13 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
       p = strchr(s, '>');
       p++;
       temp = *p;
-      if (temp)
-	rc = DosAllocMem((PVOID) & s2,
+      if (temp) {
+	rc = DosAllocMem((PVOID)&s2,
 			 MAXSTRG * 2,
 			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+	if (rc)
+          Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+      }
       else
 	s2 = NULL;
       *p = 0;
@@ -841,8 +847,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  save_dir2(savedir);
 	  switch_to(directory);
 	}
-	ret = (int) DosQAppType(s,
-				&apptype);
+	ret = (int) DosQAppType(s,&apptype);
 	if (!strchr(s, '\\') &&
 	    !strchr(s, ':') &&
 	    directory &&
@@ -850,7 +855,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  switch_to(savedir);
 	if (ret)
 	{
-	  DosBeep(50, 100);
+          Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,"DosQAppType");
 	  if (s)
 	    DosFreeMem(s);
 	  if (s2)
@@ -862,7 +867,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  if ((apptype & FAPPTYP_DLL) || (apptype & FAPPTYP_VIRTDRV) ||
 	      (apptype & FAPPTYP_PHYSDRV) || (apptype & FAPPTYP_PROTDLL))
 	  {
-	    DosBeep(250, 100);
+            Runtime_Error(pszSrcFile, __LINE__, "unexpected apptype");
 	    if (s)
 	      DosFreeMem(s);
 	    if (s2)
@@ -872,7 +877,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  if ((apptype & FAPPTYP_DOS) || (apptype & FAPPTYP_WINDOWSREAL) ||
 	      (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000))
 	  {
-	    DosBeep(500, 100);
+            Runtime_Error(pszSrcFile, __LINE__, "unexpected apptype");
 	    if (s)
 	      DosFreeMem(s);
 	    if (s2)
@@ -892,13 +897,10 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 			       s, environment, &rt, s);
 	if (directory && *directory)
 	  switch_to(savedir);
-	if (ret)
-	  Dos_Error(MB_ENTER,
-		    ret,
-		    hwnd,
-		    __FILE__,
-		    __LINE__,
+	if (ret) {
+	  Dos_Error(MB_ENTER,ret,hwnd,pszSrcFile,__LINE__,
 		    GetPString(IDS_DOSEXECPGMFAILEDTEXT));
+	}
       }
     }
     else
@@ -909,6 +911,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
       if (rc)
       {
+        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
 	DosFreeMem(s);
 	return -1;
       }
@@ -1140,15 +1143,10 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
       ret = (int) DosStartSession(&start, &sessID, &sessPID);
       if (directory && *directory)
 	switch_to(savedir);
-      if (ret && ret != ERROR_SMG_START_IN_BACKGROUND)
-	Dos_Error(MB_CANCEL | MB_ICONEXCLAMATION,
-		  ret,
-		  hwnd,
-		  __FILE__,
-		  __LINE__,
-		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),
-		  s,
-		  s2);
+      if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
+	Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
+		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),s,s2);
+      }
       else if (type & WAIT)
       {
 	if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
@@ -1156,7 +1154,6 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 
 	if (!hque)
 	{
-
 	  STATUSDATA sd;
 
 	  memset(&sd, 0, sizeof(sd));
@@ -1225,7 +1222,6 @@ ObjectInterrupt:
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	  PROGTYPE * progt, ULONG fl, char *formatstring,...)
 {
-
   PROGDETAILS pgd;
   register char *p;
   char *parameters = NULL, *executable = NULL;
@@ -1237,17 +1233,15 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
   if (child)
     ulOptions |= SAF_STARTCHILDAPP;
 
-  executable = malloc(MAXSTRG);
-  if (executable)
-  {
-    memset(executable, 0, MAXSTRG);
+  executable = xmallocz(MAXSTRG,pszSrcFile,__LINE__);
+  if (executable) {
     va_start(parguments, formatstring);
     vsprintf(executable, formatstring, parguments);
     va_end(parguments);
     strip_lead_char(" \t", executable);
     if (*executable)
     {
-      parameters = malloc(MAXSTRG);
+      parameters = xmalloc(MAXSTRG,pszSrcFile,__LINE__);
       if (parameters)
       {
 	p = executable;
@@ -1287,7 +1281,7 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 
 	  char *temp;
 
-	  temp = malloc(CCHMAXPATH * 2);
+	  temp = xmalloc(CCHMAXPATH * 2,pszSrcFile,__LINE__);
 	  if (temp)
 	  {
 	    if (!stricmp(p, ".BAT"))
