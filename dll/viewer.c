@@ -6,27 +6,32 @@
   MLE text editor/viewer
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   23 May 05 SHL Use QWL_USER
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <io.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(VIEWER,MLEEditorProc,MLESubProc)
 #pragma alloc_text(STARTUP,StartMLEEditor)
 
@@ -65,12 +70,9 @@ HWND StartMLEEditor (HWND hwndClient,INT flags,CHAR *filename,
   if((flags & 1) && fUseNewViewer)
     return StartViewer(hwndClient,(USHORT)flags,filename,hwndRestore);
 
-  vw = malloc(sizeof(XMLEWNDPTR));
-  if(!vw) {
-    DosBeep(50,100);
+  vw = xmallocz(sizeof(XMLEWNDPTR),pszSrcFile,__LINE__);
+  if(!vw)
     return (HWND)0;
-  }
-  memset(vw,0,sizeof(XMLEWNDPTR));
   vw->size = sizeof(XMLEWNDPTR);
   if(flags & 1) {
     if(flags & 8)
@@ -757,11 +759,11 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         return 0;
       }
       switch(SHORT1FROMMP(mp1)) {
-/*
+        /*
         case MLE_PREVIEW:
           preview_text(hwndMLE);
           break;
-*/
+        */
         case MLE_VIEWFTP:
           MLEinternet(hwndMLE,TRUE);
           break;
@@ -870,8 +872,11 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
 
         case MLE_TOGGLEREADONLY:
-          if(!vw->busy && vw->hex != 1) {  /* I dunno why I gotta reset the colors... */
-
+          if (vw->busy || vw->hex == 1) {
+            DosBeep(50,100);
+	  }
+	  else {
+	    /* I dunno why I gotta reset the colors... */
             BOOL ro;
             LONG fColor,bColor;
 
@@ -913,8 +918,6 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                        MPFROMLONG(bColor),
                        MPVOID);
           }
-          else
-            DosBeep(50,100);
           break;
 
         case IDM_RENAME:
@@ -952,26 +955,26 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                  strchr(vw->exportfilename,'*'))
                 break;
             }
-            { /* zero file length instead of unlink (protects EAs from loss) */
+            {
+	      /* zero file length instead of unlink (protects EAs from loss) */
               FILE *fp;
 
-              fp = fopen(vw->exportfilename,"r+");
-              if(fp) {
+              fp = xfopen(vw->exportfilename,"r+",pszSrcFile,__LINE__);
+              if (fp) {
                 oldsize = filelength(fileno(fp));
                 DosSetFileSize(fileno(fp),0L);
                 fclose(fp);
               }
             }
-            if(!MLEexportfile(hwndMLE,
+            if (!MLEexportfile(hwndMLE,
                               vw->exportfilename,
                               vw->ExpandTabs,
                               vw->fStripTrailLines,
                               vw->fStripTrail)) {
               FILE *fp;
-
-              DosBeep(50,100);
-              fp = fopen(vw->exportfilename,"r+");
-              if(fp) {
+              Runtime_Error(pszSrcFile, __LINE__, "MLEexportfile");
+              fp = xfopen(vw->exportfilename,"r+",pszSrcFile,__LINE__);
+              if (fp) {
                 DosSetFileSize(fileno(fp),oldsize);
                 fclose(fp);
               }
@@ -1190,7 +1193,9 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             sip.inputlen = 34;
             sip.title = GetPString(IDS_NVLINEJUMPTITLETEXT);
             numlines = MLEnumlines(hwndMLE);
-            if(numlines) {
+            if(!numlines)
+              DosBeep(50,100);
+	    else {
               sprintf(sip.prompt,
                       GetPString(IDS_NVJUMPTEXT),
                       GetPString(IDS_LINETEXT),
@@ -1202,9 +1207,9 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                         FM3ModHandle,
                         STR_FRAME,
                         &sip);
-              if(*s) {
+              if (*s) {
                 linenum = atol(s);
-                if(linenum > 0 && linenum <= numlines) {
+                if (linenum > 0 && linenum <= numlines) {
                   MLEsettopline(hwndMLE,
                                 MLEstartofline(hwndMLE,
                                                linenum));
@@ -1214,8 +1219,6 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 }
               }
             }
-            else
-              DosBeep(50,100);
           }
           break;
 

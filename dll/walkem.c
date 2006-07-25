@@ -4,12 +4,13 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2004, 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
   13 Aug 05 SHL Run through indent
   13 Aug 05 SHL remove_udir - avoid corrupting last dirs list
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -30,6 +31,9 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(WALKER,FillPathListBox,WalkDlgProc,TextSubProc)
 #pragma alloc_text(WALKER,WalkAllDlgProc,WalkCopyDlgProc)
 #pragma alloc_text(WALKER,WalkMoveDlgProc,WalkExtractDlgProc,WalkTargetDlgProc)
@@ -156,11 +160,12 @@ VOID load_udirs(VOID)
 	    bstripcr(s);
 	    if (*s && *s != ';')
 	    {
-		info = malloc(sizeof(LINKDIRS));
-		if (info)
-		{
-		    info -> path = strdup(s);
-		    if (info -> path)
+		info = xmalloc(sizeof(LINKDIRS),pszSrcFile,__LINE__);
+		if (info) {
+		    info -> path = xstrdup(s,pszSrcFile,__LINE__);
+		    if (!info -> path)
+			free(info);
+		    else
 		    {
 			info -> next = NULL;
 			if (!udirhead)
@@ -169,8 +174,6 @@ VOID load_udirs(VOID)
 			    last -> next = info;
 			last = info;
 		    }
-		    else
-			free(info);
 		}
 	    }
 	}
@@ -193,7 +196,7 @@ VOID save_udirs(VOID)
 	    if (s[strlen(s) - 1] != '\\')
 		strcat(s, "\\");
 	    strcat(s, "USERDIRS.DAT");
-	    fp = fopen(s, "w");
+	    fp = xfopen(s, "w",pszSrcFile,__LINE__);
 	    if (fp)
 	    {
 		fputs(GetPString(IDS_USERDEFDIRSTEXT), fp);
@@ -278,11 +281,13 @@ BOOL add_udir(BOOL userdirs, CHAR * inpath)
 		}
 	    }
 	    // Append entry to end of user dirs list
-	    info = malloc(sizeof(LINKDIRS));
+	    info = xmalloc(sizeof(LINKDIRS),pszSrcFile,__LINE__);
 	    if (info)
 	    {
-		info -> path = strdup(path);
-		if (info -> path)
+		info -> path = xstrdup(path,pszSrcFile,__LINE__);
+		if (!info -> path)
+		    free(info);
+		else
 		{
 		    info -> next = NULL;
 		    if (userdirs)
@@ -302,8 +307,6 @@ BOOL add_udir(BOOL userdirs, CHAR * inpath)
 		    }
 		    return TRUE;
 		}
-		else
-		    free(info);
 	    }
 	}
     }
@@ -510,17 +513,16 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*lastdir = 0;
 	if (!mp2)
 	{
+            Runtime_Error(pszSrcFile, __LINE__, "no data");
 	    WinDismissDlg(hwnd, 0);
 	    break;
 	}
-	wa = malloc(sizeof(WALKER));
+	wa = xmallocz(sizeof(WALKER),pszSrcFile,__LINE__);
 	if (!wa)
 	{
-	    DosBeep(50, 100);
 	    WinDismissDlg(hwnd, 0);
 	    break;
 	}
-	memset(wa, 0, sizeof(WALKER));
 	wa -> size = (USHORT) sizeof(WALKER);
 	WinSetWindowPtr(hwnd, 0, (PVOID) wa);
 	wa -> szReturnPath = (CHAR *) mp2;
@@ -818,8 +820,8 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		HDIR hDir;
 		APIRET rc;
 
-//            *szBuffer = 0;
-		//            WinQueryDlgItemText(hwnd,WALK_RECENT,CCHMAXPATH,szBuffer);
+                // *szBuffer = 0;
+		// WinQueryDlgItemText(hwnd,WALK_RECENT,CCHMAXPATH,szBuffer);
 		if (!*szBuffer)
 		    break;
 		DosError(FERR_DISABLEHARDERR);
@@ -840,7 +842,11 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    findbuf.attrFile = FILE_DIRECTORY;
 		    rc = 0;
 		}
-		if (!rc && (findbuf.attrFile & FILE_DIRECTORY))
+		if (rc)
+                    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosFindFirst");
+		else if (~findbuf.attrFile & FILE_DIRECTORY)
+                    Runtime_Error(pszSrcFile, __LINE__, "not a directory");
+		else
 		{
 		    strcpy(wa -> szCurrentPath, szBuffer);
 		    WinSetDlgItemText(hwnd, WALK_PATH, wa -> szCurrentPath);
@@ -850,8 +856,6 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    WinWindowFromID(hwnd, WALK_DIRLIST),
 				    wa -> szCurrentPath, FALSE);
 		}
-		else
-		    DosBeep(50, 100);
 	    }
 	    else if (SHORT2FROMMP(mp1) == CBN_ENTER)
 		PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(DID_OK, 0), MPVOID);
@@ -891,7 +895,11 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    findbuf.attrFile = FILE_DIRECTORY;
 		    rc = 0;
 		}
-		if (!rc && (findbuf.attrFile & FILE_DIRECTORY))
+		if (rc)
+                    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosFindFirst");
+		else if (~findbuf.attrFile & FILE_DIRECTORY)
+                    Runtime_Error(pszSrcFile, __LINE__, "not a directory");
+		else
 		{
 		    strcpy(wa -> szCurrentPath, szBuffer);
 		    WinSetDlgItemText(hwnd, WALK_PATH, wa -> szCurrentPath);
@@ -900,8 +908,6 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    WinWindowFromID(hwnd, WALK_DIRLIST),
 				    wa -> szCurrentPath, FALSE);
 		}
-		else
-		    DosBeep(50, 100);
 	    }
 	    else if (SHORT2FROMMP(mp1) == LN_ENTER)
 		PostMsg(hwnd,
@@ -1056,9 +1062,9 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    !IsFile(szBuff))
 	    {
 		MakeFullName(szBuff);
-		if (add_udir(TRUE,
-			     szBuff))
-		{
+		if (!add_udir(TRUE, szBuff))
+                    Runtime_Error(pszSrcFile, __LINE__, "add_udir");
+		else {
 		    WinSendDlgItemMsg(hwnd,
 				      WALK_USERLIST,
 				      LM_INSERTITEM,
@@ -1066,8 +1072,6 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      MPFROMP(szBuff));
 		    wa -> changed = 1;
 		}
-		else
-		    DosBeep(50, 100);
 	    }
 	    break;
 

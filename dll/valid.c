@@ -6,7 +6,7 @@
   File name manipulation routines
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2002, 2005 Steven H.Levine
+  Copyright (c) 2002, 2006 Steven H.Levine
 
   23 Nov 02 SHL RootName: rework for sanity
   27 Nov 02 SHL MakeFullName: correct typo
@@ -16,6 +16,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   03 Jun 05 SHL Drop CD_DEBUG logic
   28 Nov 05 SHL MakeValidDir: correct DosQuerySysInfo args
+  22 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -23,14 +24,17 @@
 #define INCL_WIN
 #define INCL_DOSDEVICES		// DosDevIOCtl
 #define INCL_DOSDEVIOCTL	// DosDevIOCtl
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "fm3dll.h"
+#include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(VALID,CheckDrive,IsRoot,IsFile,IsFullName,needsquoting)
 #pragma alloc_text(VALID,IsValidDir,IsValidDrive,MakeValidDir,IsVowel)
@@ -188,7 +192,7 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   CHAR		*pfsn;
   CHAR		*pfsd;
   ULONG		clBufferSize;
-  APIRET	ulrc;
+  APIRET	rc;
   ULONG		ulAction;
   ULONG		clParmBytes;
   ULONG		clDataBytes;
@@ -216,9 +220,9 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
     *pulType = 0;
 
 # define BUFFER_BYTES	4096
-  if(DosAllocMem(&pvBuffer,BUFFER_BYTES,
-		 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE)) {
-    DosBeep(50,50);
+  rc = DosAllocMem(&pvBuffer,BUFFER_BYTES,PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  if (rc) {
+    Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
     return -1;				// Say failed
   }
 
@@ -227,9 +231,9 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   szPath[2] = 0;
   clBufferSize = BUFFER_BYTES;
   DosError(FERR_DISABLEHARDERR);
-  ulrc = DosQueryFSAttach(szPath, 0, FSAIL_QUERYNAME,
+  rc = DosQueryFSAttach(szPath, 0, FSAIL_QUERYNAME,
 			  (PFSQBUFFER2)pvBuffer, &clBufferSize);
-  if (ulrc)
+  if (rc)
   {
     /* can't get any info at all */
     DosFreeMem(pvBuffer);
@@ -296,10 +300,10 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   }
 
   DosError(FERR_DISABLEHARDERR);
-  ulrc = DosOpen(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
+  rc = DosOpen(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
 		 OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
 		 OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
-  if(ulrc)
+  if(rc)
   {
     DosError(FERR_DISABLEHARDERR);
     if (pulType)
@@ -312,7 +316,7 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   clDataBytes = sizeof(NonRemovable);
   NonRemovable = 1;			// Preset as non removable
   DosError(FERR_DISABLEHARDERR);
-  ulrc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE,
+  rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE,
 		     &parmPkt.Cmd,		/*  Address of the command-specific argument list. */
 		     sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
 		     &clParmBytes,		/*  Pointer to the length of parameters. */
@@ -320,13 +324,13 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
 		     sizeof(NonRemovable),	/*  Length, in bytes, of pData. */
 		     &clDataBytes);		/*  Pointer to the length of data. */
 
-  if (!ulrc && NonRemovable) {
+  if (!rc && NonRemovable) {
     // Could be USB so check BPB flags
     clParmBytes = sizeof(parmPkt.Cmd);
     clDataBytes = sizeof(dataPkt);
     memset(&dataPkt, 0xff, sizeof(dataPkt));
     DosError(FERR_DISABLEHARDERR);
-    ulrc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS,
+    rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS,
 		       &parmPkt.Cmd,		/*  Address of the command-specific argument list. */
 		       sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
 		       &clParmBytes,		/*  Pointer to the length of parameters. */
@@ -334,7 +338,7 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
 		       sizeof(dataPkt),		/*  Length, in bytes, of pData. */
 		       &clDataBytes);		/*  Pointer to the length of data. */
 
-    if (!ulrc && (dataPkt.bpb.fsDeviceAttr & BPB_REMOVABLE_MEDIA))
+    if (!rc && (dataPkt.bpb.fsDeviceAttr & BPB_REMOVABLE_MEDIA))
       NonRemovable = 0;
   }
 
@@ -856,7 +860,7 @@ BOOL TestBinary (CHAR *filename)
   HFILE   handle;
   ULONG   ulAction;
   ULONG	  len;
-  APIRET  ulrc;
+  APIRET  rc;
   CHAR    buff[512];
 
   if(filename) {
@@ -866,9 +870,9 @@ BOOL TestBinary (CHAR *filename)
 		OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
 		OPEN_ACCESS_READONLY,0L)) {
       len = 512;
-      ulrc = DosRead(handle,buff,len,&len);
+      rc = DosRead(handle,buff,len,&len);
       DosClose(handle);
-      if(!ulrc && len)
+      if(!rc && len)
 	return IsBinary(buff,len);
     }
   }
@@ -886,42 +890,51 @@ VOID GetDesktopName (CHAR *objectpath,ULONG size)
 {
   PFN     WQDPath;
   HMODULE hmod = 0;
-  APIRET  ulrc;
+  APIRET  rc;
   ULONG   startdrive = 3L;
   CHAR    objerr[CCHMAXPATH];
 
-  if(!objectpath)
+  if (!objectpath) {
+    Runtime_Error(pszSrcFile, __LINE__, "null pointer");
     return;
+  }
   *objectpath = 0;
-  if(OS2ver[0] > 20 || (OS2ver[0] == 20 && OS2ver[1] >= 30)) {
+  if (OS2ver[0] > 20 || (OS2ver[0] == 20 && OS2ver[1] >= 30)) {
     /*
      * if running under warp, we can get the desktop name
      * this way...
      */
-    ulrc = DosLoadModule(objerr,
+    rc = DosLoadModule(objerr,
 			 sizeof(objerr),
 			 "PMWP",
 			 &hmod);
-    if(!ulrc) {
-      ulrc = DosQueryProcAddr(hmod,
+    if(!rc) {
+      rc = DosQueryProcAddr(hmod,
 			      262,
 			      NULL,
 			      &WQDPath);
-      if(!ulrc)
+      if(!rc)
 	WQDPath(objectpath,size);
       DosFreeModule(hmod);
     }
   }
-  if(!*objectpath) {
-    if(!PrfQueryProfileString(HINI_SYSTEMPROFILE,
-			      "FolderWorkareaRunningObjects",
-			      NULL,
-			      "\0",
-			      (PVOID)objectpath,
-			      sizeof(objectpath)))
+  if (!*objectpath) {
+    // Fall back to INI content
+    if (!PrfQueryProfileString(HINI_SYSTEMPROFILE,
+			       "FolderWorkareaRunningObjects",
+			       NULL,
+			       "\0",
+			       (PVOID)objectpath,
+			       sizeof(objectpath))) {
+      Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileString");
       *objectpath = 0;
-    if(!*objectpath || IsFile(objectpath)) {
-      DosBeep(250,10);
+    }
+    else if (!*objectpath || IsFile(objectpath)) {
+      Runtime_Error(pszSrcFile, __LINE__, "bad FolderWorkareaRunningObjects");
+      *objectpath = 0;
+    }
+    if (!*objectpath) {
+      // Fall back - fixme to work for NLS
       DosError(FERR_DISABLEHARDERR);
       DosQuerySysInfo(QSV_BOOT_DRIVE,QSV_BOOT_DRIVE,
 		      (PVOID)&startdrive,(ULONG)sizeof(ULONG));

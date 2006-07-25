@@ -4,28 +4,33 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   24 May 05 SHL Rework Win_Error usage
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOSERRORS
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(UNDELETE,FillUndelList,UndeleteDlgProc)
 
 struct tempstruct {
@@ -35,8 +40,8 @@ struct tempstruct {
 };
 
 
-VOID FillUndelList (VOID *arg) {
-
+VOID FillUndelList (VOID *arg)
+{
   HWND  hwnd;
   CHAR  s[CCHMAXPATH * 2];
   CHAR  *path;
@@ -59,10 +64,16 @@ VOID FillUndelList (VOID *arg) {
   if(thab && thmq) {
     WinSendDlgItemMsg(hwnd,UNDEL_LISTBOX,LM_DELETEALL,MPVOID,MPVOID);
     unlinkf("%s","$UDELETE.#$#");
-    fp = fopen("$UDELETE.#$#","w");
-    if(fp) {
+    fp = xfopen("$UDELETE.#$#","w",pszSrcFile,__LINE__);
+    if (!fp) {
+      Win_Error(NULLHANDLE,hwnd,pszSrcFile,__LINE__,
+                GetPString(IDS_REDIRECTERRORTEXT));
+      killme = TRUE;
+      goto Abort;
+    }
+    else {
       newstdout = -1;
-      if(DosDupHandle(fileno(stdout),&newstdout)) {
+      if (DosDupHandle(fileno(stdout),&newstdout)) {
         saymsg(MB_CANCEL,
                hwnd,
                GetPString(IDS_MAYDAYTEXT),
@@ -85,14 +96,8 @@ VOID FillUndelList (VOID *arg) {
       DosClose(newstdout);
       fclose(fp);
     }
-    else {
-      Win_Error(NULLHANDLE,hwnd,__FILE__,__LINE__,
-                GetPString(IDS_REDIRECTERRORTEXT));
-      killme = TRUE;
-      goto Abort;
-    }
-    fp = fopen("$UDELETE.#$#","r");
-    if(fp) {
+    fp = xfopen("$UDELETE.#$#","r",pszSrcFile,__LINE__);
+    if (fp) {
       fgets(s,CCHMAXPATH + 128,fp);
       while(!feof(fp)) {
         strset(s,0);
@@ -161,8 +166,8 @@ Abort:
 }
 
 
-MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   SHORT           sSelect;
   static BOOL     listdone,changed = FALSE,refresh = FALSE;
   static HPOINTER hptrIcon = (HPOINTER)0;
@@ -171,8 +176,8 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     case WM_INITDLG:
       listdone = TRUE;
       if(!mp2 || !*(CHAR *)mp2) {
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
         WinDismissDlg(hwnd,0);
-        DosBeep(50,100);
         break;
       }
       hptrIcon = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,UNDEL_FRAME);
@@ -201,9 +206,12 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         CHAR               s[CCHMAXPATH];
 
         listdone = FALSE;
-        undelinfo = malloc(sizeof(struct tempstruct));
-        if(undelinfo) {
-          memset(undelinfo,0,sizeof(undelinfo));
+        undelinfo = xmallocz(sizeof(struct tempstruct),pszSrcFile,__LINE__);
+        if (!undelinfo) {
+          listdone = TRUE;
+          WinDismissDlg(hwnd,0);
+	}
+	else {
           undelinfo->hwnd = hwnd;
           WinQueryDlgItemText(hwnd,
                               UNDEL_ENTRY,
@@ -217,28 +225,15 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   GetPString(IDS_UNDELETETITLETEXT),
                   toupper(*undelinfo->path));
           WinSetWindowText(hwnd,s);
-          if(_beginthread(FillUndelList,
-                          NULL,
-                          65536,
-                          (PVOID)undelinfo) != -1)
-            DosSleep(500L);
-          else {
+          if (_beginthread(FillUndelList,NULL,65536,(PVOID)undelinfo) == -1)
+	  {
+            Runtime_Error(pszSrcFile, __LINE__,GetPString(IDS_COULDNTSTARTTHREADTEXT));
             free(undelinfo);
             listdone = TRUE;
-            saymsg(MB_ENTER,
-                   hwnd,
-                   GetPString(IDS_UHOHTEXT),
-                   GetPString(IDS_COULDNTSTARTTHREADTEXT));
             WinDismissDlg(hwnd,0);
-          }
-        }
-        else {
-          listdone = TRUE;
-          saymsg(MB_ENTER,
-                 hwnd,
-                 GetPString(IDS_UHOHTEXT),
-                 GetPString(IDS_OUTOFMEMORY));
-          WinDismissDlg(hwnd,0);
+	  }
+	  else
+            DosSleep(500L);
         }
         refresh = FALSE;
       }
@@ -290,7 +285,7 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case UNDEL_DRIVELIST:
           if(!listdone) {
-            DosBeep(250,50);
+            Runtime_Error(pszSrcFile, __LINE__, "not listdone");
             break;
           }
           switch(SHORT2FROMMP(mp1)) {
@@ -303,7 +298,10 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     UNDEL_DRIVELIST,
                                     3,
                                     s);
-                if(isalpha(*s)) {
+                if (!isalpha(*s)) {
+                  Runtime_Error(pszSrcFile, __LINE__, "no data");
+		}
+		else {
                   drive = toupper(*s);
                   WinQueryDlgItemText(hwnd,
                                       UNDEL_ENTRY,
@@ -330,8 +328,6 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   WinSetDlgItemText(hwnd,UNDEL_ENTRY,s);
                   PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
                 }
-                else
-                  DosBeep(50,100);
               }
               break;
           }
@@ -411,7 +407,10 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       switch(SHORT1FROMMP(mp1)) {
         case UNDEL_DEL:
         case DID_OK:
-          if(!changed && listdone) {
+          if (changed || !listdone) {
+            Runtime_Error(pszSrcFile, __LINE__, "not done");
+	  }
+	  else {
             sSelect = (USHORT)WinSendDlgItemMsg(hwnd,UNDEL_LISTBOX,
                               LM_QUERYSELECTION,MPFROMSHORT(LIT_FIRST),
                               MPVOID);
@@ -421,8 +420,8 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               CHAR   s[CCHMAXPATH + 1];
 
               DosForceDelete("\\FMUNDEL.CMD");
-              fp = fopen("\\FMUNDEL.CMD","w");
-              if(fp) {
+              fp = xfopen("\\FMUNDEL.CMD","w",pszSrcFile,__LINE__);
+              if (fp) {
                 while(sSelect >= 0) {
                   *s = 0;
                   WinSendDlgItemMsg(hwnd,UNDEL_LISTBOX,LM_QUERYITEMTEXT,
@@ -477,15 +476,13 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 s);
             }
           }
-          else
-            DosBeep(50,100);
           break;
 
         case DID_CANCEL:
-          if(listdone)
-            WinDismissDlg(hwnd,0);
+          if (!listdone)
+            Runtime_Error(pszSrcFile, __LINE__, "is busy");
           else
-            DosBeep(100,100);
+            WinDismissDlg(hwnd,0);
           break;
 
         case IDM_HELP:
@@ -498,10 +495,11 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       return 0;
 
     case WM_CLOSE:
-      if(listdone)
-        break;
-      DosBeep(100,100);
-      return 0;
+      if (!listdone) {
+        Runtime_Error(pszSrcFile, __LINE__, "not listdone");
+        return 0;
+      }
+      break;
 
     case WM_DESTROY:
       if(hptrIcon)

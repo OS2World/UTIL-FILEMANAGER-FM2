@@ -3,10 +3,13 @@
 
   $Id$
 
-  Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Launch inf viewer
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004, 2006 Steven H.Levine
+
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -14,18 +17,22 @@
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(VIEWINFS,FillListbox,ViewInfProc)
 
 typedef struct {
@@ -35,8 +42,8 @@ typedef struct {
 } DUMMY;
 
 
-static VOID FillListbox (VOID *args) {
-
+static VOID FillListbox (VOID *args)
+{
   HWND hwnd;
   DUMMY *dummy = (DUMMY *)args;
   HAB  hab2;
@@ -69,13 +76,8 @@ static VOID FillListbox (VOID *args) {
         goto NoEnv;
       }
       else {
-        holdenv = malloc(strlen(env) + 2L);
-        if(!holdenv)
-          saymsg(MB_CANCEL,
-                 hwnd,
-                 GetPString(IDS_ERRORTEXT),
-                 GetPString(IDS_OUTOFMEMORY));
-        else {
+        holdenv = xmalloc(strlen(env) + 2L,pszSrcFile,__LINE__);
+        if (holdenv) {
           strcpy(holdenv,env);
 Repeat:
           if(holdenv[strlen(holdenv) - 1] != ';')
@@ -167,16 +169,14 @@ NoEnv:
                                    key,
                                    &size) &&
                size) {
-              holdenv = malloc(size + 2L);
-              if(holdenv) {
-                if(PrfQueryProfileData(fmprof,
-                                       FM3Str,
-                                       key,
-                                       holdenv,
-                                       &size))
-                  goto Repeat;
-                else
+              holdenv = xmalloc(size + 2L,pszSrcFile,__LINE__);
+              if (holdenv) {
+                if (!PrfQueryProfileData(fmprof,FM3Str,key,holdenv,&size)) {
+                  Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,"PrfQueryProfileData");
                   free(holdenv);
+		}
+                else
+                  goto Repeat;
               }
             }
           }
@@ -191,8 +191,8 @@ NoEnv:
 }
 
 
-MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static HWND     hwndMe = (HWND)0;
   static BOOL     help = FALSE;
   static BOOL     threaddone = TRUE;
@@ -212,7 +212,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         break;
       }
       help = (mp2 != (MPARAM)0);
-      if(help) {
+      if (help) {
 
         SWP swp;
 
@@ -281,26 +281,24 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       {
         DUMMY *d;
 
-        d = malloc(sizeof(DUMMY));
-        if(d) {
-          memset(d,0,sizeof(DUMMY));
+        d = xmallocz(sizeof(DUMMY),pszSrcFile,__LINE__);
+        if (!d) {
+          WinDismissDlg(hwnd,0);
+          return 0;
+	}
+	else {
           d->size = sizeof(DUMMY);
           d->hwnd = hwnd;
-          if(help)
+          if (help)
             d->help = 1;
           if(_beginthread(FillListbox,NULL,65536,(PVOID)d) == -1) {
-            DosBeep(50,100);
+            Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
             free(d);
             WinDismissDlg(hwnd,0);
             return 0;
           }
           WinEnableWindow(WinWindowFromID(hwnd,DID_CANCEL),FALSE);
           threaddone = FALSE;
-        }
-        else {
-          DosBeep(100,100);
-          WinDismissDlg(hwnd,0);
-          return 0;
         }
       }
       return 0;
@@ -477,7 +475,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               else
                 sSelect++;
             }
-#else
+#else // !BUGIFIXED
             for(sSelect = 0;sSelect < sTotal;sSelect++)
               WinSendDlgItemMsg(hwnd,
                                 VINF_LISTBOX,
@@ -523,7 +521,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               else
                 sSelect++;
             }
-#endif
+#endif // BUGFIXED
           }
           break;
 
@@ -531,7 +529,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           {
             CHAR szBuffer[1001],*key = "INFPaths";
 
-            if(help)
+            if (help)
               key = "HLPPaths";
             *szBuffer = 0;
             WinQueryDlgItemText(hwnd,
@@ -568,8 +566,11 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                LM_QUERYSELECTION,
                                                MPFROM2SHORT(LIT_FIRST,0),
                                                MPVOID);
-            if(sSelect >= 0) {
-              if(help) {
+            if (sSelect < 0) {
+                DosBeep(50,100);
+	    }
+	    else {
+              if (help) {
                 *text = 0;
                 WinSendDlgItemMsg(hwnd,
                                   VINF_LISTBOX,
@@ -577,22 +578,24 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   MPFROM2SHORT(sSelect,CCHMAXPATH),
                                   MPFROMP(text));
                 p = strchr(text,'>');
-                if(!p)
+                if(!p) {
+                  DosBeep(50,100);
                   break;
+		}
                 p++;
                   bstrip(p);
-                if(*p)
-                  ViewHelp(p);
+                if (!*p)
+                  DosBeep(50,100);
                 else
-                  DosBeep(250,100);
+                  ViewHelp(p);
                 break;
               }
               save_dir2(filename);
               if(filename[strlen(filename) - 1] != '\\')
                 strcat(filename,"\\");
               strcat(filename,"FM2VINF.CMD");
-              fp = fopen(filename,"w");
-              if(fp) {
+              fp = xfopen(filename,"w",pszSrcFile,__LINE__);
+              if (fp) {
                 fprintf(fp,"@ECHO OFF\nSET FM2REF=");
                 while(sSelect >= 0) {
                   *text = 0;
@@ -618,7 +621,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                      LM_QUERYSELECTION,
                                                      MPFROM2SHORT(sSelect,0),
                                                      MPVOID);
-                }
+                } // while
                 *text = 0;
                 WinQueryDlgItemText(hwnd,
                                     VINF_TOPIC,

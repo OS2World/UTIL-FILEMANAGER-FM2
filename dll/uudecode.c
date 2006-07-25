@@ -6,24 +6,28 @@
   uudecode
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Drop unused code
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 /* prototypes */
 static BOOL decode(FILE * in, FILE * out);
@@ -394,48 +398,43 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      LM_QUERYITEMCOUNT,
 				      MPVOID,
 				      MPVOID);
-	for (y = 0; y < x; y++)
-	{
+	for (y = 0; y < x; y++) {
 	  *szBuffer = 0;
 	  WinSendDlgItemMsg(hwnd,
 			    MRG_LISTBOX,
 			    LM_QUERYITEMTEXT,
 			    MPFROM2SHORT(y, CCHMAXPATH),
 			    MPFROMP(szBuffer));
-	  if (*szBuffer)
-	  {
+	  if (*szBuffer) {
 	    error = AddToList(szBuffer,
 			      &list,
 			      &numfiles,
 			      &numalloc);
-	    if (error)
-	    {
-	      DosBeep(250, 100);
+	    if (error) {
+              Runtime_Error(pszSrcFile, __LINE__, "AddToList");
 	      break;
 	    }
 	  }
 	}
 	if (numfiles && list && numfiles + 1 < numalloc)
 	{
-	  test = realloc(list, sizeof(CHAR *) * (numfiles + 1));
+	  test = xrealloc(list, sizeof(CHAR *) * (numfiles + 1),pszSrcFile,__LINE__);
 	  if (test)
 	    list = test;
 	}
-	if (list && list[0])
-	{
+	if (!list || !list[0]) {
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  break;
+	}
+	else {
 	  FreeList(wk -> li -> list);
 	  wk -> li -> list = list;
-	}
-	else
-	{
-	  DosBeep(50, 100);
-	  break;
 	}
       }
       WinDismissDlg(hwnd, 1);
       break;
-    }
+    } // switch WM_COMMAND mp1
     return 0;
-  }
+  } // switch msg
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
