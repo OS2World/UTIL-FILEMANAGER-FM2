@@ -3,30 +3,35 @@
 
   $Id$
 
-  Toolbar support routines for FM/2
+  Toolbar support routines
 
   Copyright (c) 1994-97 M. Kimes
-  Copyright (c) 2004, 2005 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "tools.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(TOOLS,load_tools,save_tools,add_tool,insert_tool,del_tool,free_tools,swap_tools,load_quicktools,save_quicktools)
 #pragma alloc_text(TOOLS1,ReOrderToolsProc,PickToolProc,AddToolProc,ToolIODlgProc)
 
@@ -55,14 +60,14 @@ VOID load_quicktools (VOID) {
     strcat(s,"\\");
   strcat(s,"QUICKTLS.DAT");
   fp = _fsopen(s,"r",SH_DENYWR);
-  if(fp) {
+  if (fp) {
     while(x < 50 && !feof(fp)) {
       if(!fgets(s,CCHMAXPATH + 2,fp))
         break;
       s[CCHMAXPATH - 1] = 0;
       bstripcr(s);
       if(*s && *s != ';') {
-        quicktool[x] = strdup(s);
+        quicktool[x] = xstrdup(s,pszSrcFile,__LINE__);
         if(quicktool[x])
           x++;
       }
@@ -84,8 +89,8 @@ VOID save_quicktools (VOID) {
   if(s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,"QUICKTLS.DAT");
-  fp = fopen(s,"w");
-  if(fp) {
+  fp = xfopen(s,"w",pszSrcFile,__LINE__);
+  if (fp) {
     for(x = 0;quicktool[x] && x < 50;x++)
       fprintf(fp,"%s\n",quicktool[x]);
     fclose(fp);
@@ -116,7 +121,7 @@ TOOL *load_tools (CHAR *filename) {
     filename = fname;
     strcpy(lasttoolbox,filename);
     fp = _fsopen(filename,"r",SH_DENYWR);
-    if(fp) {
+    if (fp) {
       toolhead = free_tools();
       while(!feof(fp)) {
         do {
@@ -133,16 +138,15 @@ TOOL *load_tools (CHAR *filename) {
           break;
         if(!(USHORT)atoi(idstr))
           continue;
-        info = malloc(sizeof(TOOL));
-        if(info) {
-          memset(info,0,sizeof(TOOL));
+        info = xmallocz(sizeof(TOOL),pszSrcFile,__LINE__);
+        if (info) {
           if(*help) {
             literal(help);
             if(*help)
-              info->help = strdup(help);
+              info->help = xstrdup(help,pszSrcFile,__LINE__);
           }
           if(*text)
-            info->text = strdup(text);
+            info->text = xstrdup(text,pszSrcFile,__LINE__);
           info->flags = (atoi(flagstr) & (~(T_TEXT | T_EMPHASIZED)));
           info->id = (USHORT)atoi(idstr);
           info->next = NULL;
@@ -192,8 +196,8 @@ VOID save_tools (CHAR *filename) {
     unlinkf("%s",filename);
     return;
   }
-  fp = fopen(filename,"w");
-  if(fp) {
+  fp = xfopen(filename,"w",pszSrcFile,__LINE__);
+  if (fp) {
     fprintf(fp,GetPString(IDS_TOOLFILETEXT),filename);
     info = toolhead;
     while(info) {
@@ -776,9 +780,9 @@ MRESULT EXPENTRY AddToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 free(tool->text);
               tool->text = NULL;
               if(*help)
-                tool->help = strdup(help);
+                tool->help = xstrdup(help,pszSrcFile,__LINE__);
               if(*text)
-                tool->text = strdup(text);
+                tool->text = xstrdup(text,pszSrcFile,__LINE__);
               tool->flags = (((dropable) ? T_DROPABLE : 0)  |
                             ((invisible) ? T_INVISIBLE : 0) |
                             ((separator) ? T_SEPARATOR : 0) |
@@ -810,13 +814,12 @@ MRESULT EXPENTRY AddToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               tool = tool->next;
             }
-            tool = malloc(sizeof(TOOL));
-            if(tool) {
-              memset(tool,0,sizeof(TOOL));
+            tool = xmallocz(sizeof(TOOL),pszSrcFile,__LINE__);
+            if (tool) {
               if(*help)
-                tool->help = strdup(help);
+                tool->help = xstrdup(help,pszSrcFile,__LINE__);
               if(*text)
-                tool->text = strdup(text);
+                tool->text = xstrdup(text,pszSrcFile,__LINE__);
               tool->id = (USHORT)atoi(idstr);
               tool->flags = (((dropable) ? T_DROPABLE : 0)  |
                             ((invisible) ? T_INVISIBLE : 0) |
