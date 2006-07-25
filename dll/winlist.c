@@ -6,36 +6,42 @@
   Window List Dialog
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2005 Steven H.Levine
+  Copyright (c) 2005, 2006 Steven H.Levine
 
   23 May 05 SHL Use QWL_USER
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(WINLIST,WindowList,WinListDlgProc)
 
 MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  static HWND Me = (HWND)0;
   SHORT       sSelect;
+
+  static HWND Me = (HWND)0;
 
   switch(msg) {
     case WM_INITDLG:
-      if(Me || !mp2) {
-        if(Me)
+      if (Me || !mp2) {
+        if (Me)
           PostMsg(Me,UM_FOCUSME,MPVOID,MPVOID);
         WinDismissDlg(hwnd,0);
       }
@@ -76,7 +82,8 @@ MRESULT EXPENTRY WinListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4L) *
                    (LONG)sizeof(SWENTRY);
           /* Allocate memory for list */
-          if((pswb = malloc((unsigned)ulSize)) != NULL) {
+          pswb = xmalloc((unsigned)ulSize,pszSrcFile,__LINE__);
+          if (pswb) {
             /* Put the info in the list */
             ulcEntries = WinQuerySwitchList(0,pswb,
                                             ulSize - sizeof(SWENTRY));
