@@ -15,6 +15,8 @@
   24 May 05 SHL Rework Win_Error args and clean up logic
   27 May 05 SHL Rework to use common showMsg
   14 Aug 05 SHL showMsg: suppress write to stdout if not error message
+  13 Jul 06 SHL Add Runtime_Error
+  22 Jul 06 SHL Optimize calling sequences
 
 ***********************************************************************/
 
@@ -34,11 +36,11 @@
 #pragma data_seg(DATA1)
 #pragma alloc_text(FMINPUT,Win_Error,Dos_Error,saymsg,showMsg)
 
-static APIRET showMsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszMsg);
+static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg);
 
 //== Win_Error: report Win...() error ===
 
-VOID Win_Error(HWND hwndErr, HWND hwndOwner, PSZ pszFileName, ULONG ulLineNo, CHAR *pszFmt,...)
+VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, PCSZ pszFmt,...)
 {
   PERRINFO pErrInfoBlk;		/* Pointer to ERRINFO structure filled
 				   by WinGetErrorInfo */
@@ -59,6 +61,9 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PSZ pszFileName, ULONG ulLineNo, CH
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
 
+  if (strchr(szMsg, ' ') == NULL)
+    strcat(szMsg, " failed");			// Assume simple function name
+
   // Append file name and line number
   sprintf(szMsg + strlen(szMsg),
 	  GetPString(IDS_GENERR1TEXT),
@@ -66,9 +71,11 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PSZ pszFileName, ULONG ulLineNo, CH
 
   // Get last PM error for the current thread
   pErrInfoBlk = WinGetErrorInfo(hab);
-  // fixme to report
-  if (pErrInfoBlk != NULL)
-  {
+  if (!pErrInfoBlk) {
+    psz = szMsg + strlen(szMsg);
+    strcpy(psz, " WinGetError failed");
+  }
+  else {
     if (!hwndOwner)
       hwndOwner = HWND_DESKTOP;
     /* Find message offset in array of message offsets
@@ -85,24 +92,24 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PSZ pszFileName, ULONG ulLineNo, CH
     psz += strlen(psz);
     strcpy(psz, "\"");
     WinFreeErrorInfo(pErrInfoBlk);	// Free resource segment
-
-    showMsg(MB_ENTER | MB_ICONEXCLAMATION,
-	    hwndOwner,
-	    GetPString(IDS_GENERR2TEXT),	// Titlebar message
-	    szMsg);			// Formatted message
   }
+
+  showMsg(MB_ENTER | MB_ICONEXCLAMATION,
+	  hwndOwner,
+	  GetPString(IDS_GENERR2TEXT),	// Titlebar message
+	  szMsg);			// Formatted message
 
 } // Win_Error
 
 //== Dos_Error: report Dos...() error ===
 
-INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PSZ pszFileName,
-	      ULONG ulLineNo, CHAR *pszFmt,...)
+INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
+	      ULONG ulLineNo, PCSZ pszFmt,...)
 {
   CHAR szMsg[4096];
-  ULONG Class = 17;			// Error class - fixme to not init?
-  ULONG action = 9;			// Error action
-  ULONG Locus = 7;			// Error location
+  ULONG Class;			// Error class
+  ULONG action;			// Error action
+  ULONG Locus;			// Error location
   ULONG ulMsgLen;
   CHAR *pszMsgStart;
   CHAR *psz;
@@ -115,6 +122,9 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PSZ pszFileName,
   va_start(va, pszFmt);
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
+
+  if (strchr(szMsg, ' ') == NULL)
+    strcat(szMsg, " failed");			// Assume simple function name
 
   DosErrClass(ulRC, &Class, &action, &Locus);
 
@@ -167,11 +177,37 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PSZ pszFileName,
 
 } // Dos_Error
 
+//== Runtime_Error: report runtime library error ===
+
+VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
+{
+  CHAR szMsg[4096];
+  va_list va;
+  PSZ psz;
+
+  // Format caller's message
+  va_start(va, pszFmt);
+  vsprintf(szMsg, pszFmt, va);
+  va_end(va);
+
+  if (strchr(szMsg, ' ') == NULL)
+    strcat(szMsg, " failed");			// Assume simple function name
+
+  sprintf(szMsg + strlen(szMsg),
+	  // GetPString(IDS_DOSERR1TEXT), fixme
+	  "\nModule: %s\nLinenumber: %u",
+	  pszSrcFile,
+	  uSrcLineNo);
+
+  showMsg(MB_ICONEXCLAMATION,HWND_DESKTOP,DEBUG_STRING,szMsg);
+
+} // Runtime_Error
+
 // fixme to be rename to Misc_Error
 
 //=== saymsg: report misc error ===
 
-APIRET saymsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszFmt,...)
+APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt,...)
 {
   CHAR szMsg[4096];
   va_list va;
@@ -188,7 +224,7 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszFmt,...)
 
 //=== showMsg: report misc error ===
 
-static APIRET showMsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszMsg)
+static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg)
 {
   if ((mb_type & (MB_YESNO | MB_YESNOCANCEL)) == 0)
   {
@@ -200,10 +236,12 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, CHAR *pszTitle, CHAR *pszMsg)
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
+  DosBeep(250,100);
+
   return WinMessageBox(HWND_DESKTOP,	// Parent
 		       hwnd,		// Owner
-		       pszMsg,
-		       pszTitle,
+		       (PSZ)pszMsg,
+		       (PSZ)pszTitle,
 		       0,		// help id
 		       mb_type | MB_MOVEABLE);
 } // showMsg
