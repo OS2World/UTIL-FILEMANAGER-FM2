@@ -4,10 +4,11 @@
   $Id$
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2004, 2005 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Aug 05 SHL Renames
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
@@ -26,6 +27,9 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(FMREMAP,RemapDlgProc,load_resources,save_resources)
 #pragma alloc_text(FMREMAP,add_resource,remove_resource,free_resources)
 
@@ -50,8 +54,8 @@ static BOOL     loadedres = FALSE;
 #define MAXNUMRES 200
 
 
-VOID load_resources (VOID) {
-
+VOID load_resources (VOID)
+{
   /* load linked list of resources from RESOURCE.DAT file */
 
   FILE      *fp;
@@ -64,18 +68,20 @@ VOID load_resources (VOID) {
   if(s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,"RESOURCE.DAT");
-  fp = _fsopen(s,"r",SH_DENYWR);
-  if(fp) {
+  fp = xfsopen(s,"r",SH_DENYWR,pszSrcFile,__LINE__);
+  if (fp) {
     while(x < MAXNUMRES && !feof(fp)) {
       if(!fgets(s,sizeof(s),fp))
         break;
       s[sizeof(s) - 1] = 0;
       bstripcr(s);
       if(*s && *s != ';') {
-        info = malloc(sizeof(LINKRES));
-        if(info) {
-          info->res = strdup(s);
-          if(info->res) {
+        info = xmalloc(sizeof(LINKRES),pszSrcFile,__LINE__);
+        if (info) {
+          info->res = xstrdup(s,pszSrcFile,__LINE__);
+          if (!info->res)
+            free(info);
+	  else {
             x++;
             info->next = NULL;
             if(!reshead)
@@ -84,8 +90,6 @@ VOID load_resources (VOID) {
               last->next = info;
             last = info;
           }
-          else
-            free(info);
         }
       }
     }
@@ -94,8 +98,8 @@ VOID load_resources (VOID) {
 }
 
 
-VOID save_resources (VOID) {
-
+VOID save_resources (VOID)
+{
   /* save linked list of resources to RESOURCE.DAT file */
 
   LINKRES *info;
@@ -109,11 +113,11 @@ VOID save_resources (VOID) {
     strcat(s,"\\");
   strcat(s,"RESOURCE.DAT");
   if(reshead) {
-    fp = fopen(s,"w");
-    if(fp) {
+    fp = xfopen(s,"w",pszSrcFile,__LINE__);
+    if (fp) {
       fputs(GetPString(IDS_REMOTEFILETEXT),fp);
       info = reshead;
-      while(info) {
+      while (info) {
         fprintf(fp,
                 "%0.*s\n",
                 CCHMAXPATH,
@@ -128,8 +132,8 @@ VOID save_resources (VOID) {
 }
 
 
-BOOL add_resource (CHAR *res) {
-
+BOOL add_resource (CHAR *res)
+{
   LINKRES *info,*last = NULL;
   INT      x = 0;
 
@@ -145,10 +149,12 @@ BOOL add_resource (CHAR *res) {
     info = info->next;
     x++;
   }
-  info = malloc(sizeof(LINKRES));
+  info = xmalloc(sizeof(LINKRES),pszSrcFile,__LINE__);
   if(info) {
-    info->res = strdup(res);
-    if(info->res) {
+    info->res = xstrdup(res,pszSrcFile,__LINE__);
+    if (!info->res)
+      free(info);
+    else {
       info->next = NULL;
       if(!reshead)
         reshead = info;
@@ -161,15 +167,13 @@ BOOL add_resource (CHAR *res) {
       }
       return TRUE;
     }
-    else
-      free(info);
   }
   return FALSE;
 }
 
 
-BOOL remove_resource (CHAR *res) {
-
+BOOL remove_resource (CHAR *res)
+{
   LINKRES *info,*last = NULL;
 
   if(!res || !*res)
@@ -194,8 +198,8 @@ BOOL remove_resource (CHAR *res) {
 }
 
 
-VOID free_resources (VOID) {
-
+VOID free_resources (VOID)
+{
   LINKRES *info,*next;
 
   info = reshead;
@@ -210,8 +214,8 @@ VOID free_resources (VOID) {
 }
 
 
-MRESULT EXPENTRY RemapDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY RemapDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static BOOL fRemapped;
   static APPNOTIFY *apphead = NULL,*apptail = NULL;
 
@@ -600,9 +604,8 @@ info->failedonce = TRUE;
                         WinSetDlgItemText(hwnd,
                                           MAP_ATTACHTO,
                                           NullStr);
-                        info = malloc(sizeof(APPNOTIFY));
-                        if(info) {
-                          memset(info,0,sizeof(APPNOTIFY));
+                        info = xmallocz(sizeof(APPNOTIFY),pszSrcFile,__LINE__);
+                        if (info) {
                           info->happ = happ;
                           info->attach = FALSE;
                           info->failedonce = FALSE;
@@ -625,14 +628,24 @@ info->failedonce = TRUE;
                                p,
                                params);
                     }
-#ifdef NEVER
+#ifdef NEVER				// fixme to be gone?
                     DosError(FERR_DISABLEHARDERR);
                     rc = DosFSAttach(d,
                                      s,
                                      d,
                                      strlen(d) + 1,
                                      FS_DETACH);
-                    if(!rc) {
+                    if (rc) {
+                      Dos_Error(MB_CANCEL,
+                                rc,
+                                hwnd,
+                                pszSrcFile,
+                                __LINE__,
+                                GetPString(IDS_DETACHFAILEDTEXT),
+                                d,
+                                s);
+		    }
+		    else {
                       fRemapped = TRUE;
                       WinSendDlgItemMsg(hwnd,
                                         MAP_DETACHLIST,
@@ -645,16 +658,7 @@ info->failedonce = TRUE;
                                         MPFROM2SHORT(LIT_SORTASCENDING,0),
                                         MPFROMP(d));
                     }
-                    else
-                      Dos_Error(MB_CANCEL,
-                                rc,
-                                hwnd,
-                                __FILE__,
-                                __LINE__,
-                                GetPString(IDS_DETACHFAILEDTEXT),
-                                d,
-                                s);
-#endif
+#endif					// fixme to be gone?
                     break;
 
                   case MAP_INFO:
@@ -726,9 +730,8 @@ info->failedonce = TRUE;
 
                     APPNOTIFY *info;
 
-                    info = malloc(sizeof(APPNOTIFY));
-                    if(info) {
-                      memset(info,0,sizeof(APPNOTIFY));
+                    info = xmallocz(sizeof(APPNOTIFY),pszSrcFile,__LINE__);
+                    if (info) {
                       info->happ = happ;
                       info->attach = TRUE;
                       info->failedonce = FALSE;
@@ -750,10 +753,20 @@ info->failedonce = TRUE;
                            GetPString(IDS_CANTSTARTTEXT),
                            p,
                            params);
-#ifdef NEVER
+#ifdef NEVER				// fixme to be gone?
                   DosError(FERR_DISABLEHARDERR);
                   rc = DosFSAttach(d,s,s,strlen(s) + 1,FS_ATTACH);
-                  if(!rc) {
+                  if (rc) {
+                    Dos_Error(MB_CANCEL,
+                              rc,
+                              hwnd,
+                              pszSrcFile,
+                              __LINE__,
+                              GetPString(IDS_ATTACHFAILEDTEXT),
+                              s,
+                              d);
+		  }
+		  else {
                     fRemapped = TRUE;
                     WinSendDlgItemMsg(hwnd,
                                       MAP_ATTACHLIST,
@@ -766,16 +779,7 @@ info->failedonce = TRUE;
                                       MPFROM2SHORT(LIT_SORTASCENDING,0),
                                       MPFROMP(d));
                   }
-                  else
-                    Dos_Error(MB_CANCEL,
-                              rc,
-                              hwnd,
-                              __FILE__,
-                              __LINE__,
-                              GetPString(IDS_ATTACHFAILEDTEXT),
-                              s,
-                              d);
-#endif
+#endif					// fixme to be gone?
                 }
               }
             }
