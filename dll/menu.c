@@ -6,31 +6,35 @@
   Custom menu support routines for FM/2
 
   Copyright (c) 1996-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "menu.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(MENU,tokenize,FreeMenuList,AddToMenu)
 
 MENU *menuhead = NULL;
 
-
-INT tokenize (CHAR *str,INT max,CHAR **tokens) {
-
+INT tokenize (CHAR *str,INT max,CHAR **tokens)
+{
   INT   x = 0;
   CHAR *p;
 
@@ -48,7 +52,7 @@ INT tokenize (CHAR *str,INT max,CHAR **tokens) {
         break;
       *p = 0;
       p++;
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"\"%s\"\r\r%d",tokens[x - 1],x);
+      // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"\"%s\"\r\r%d",tokens[x - 1],x);
       if(!*p)
         break;
     }
@@ -57,8 +61,8 @@ INT tokenize (CHAR *str,INT max,CHAR **tokens) {
 }
 
 
-VOID FreeMenuList (MENU *head) {
-
+VOID FreeMenuList (MENU *head)
+{
   MENU *info,*next;
 
   info = head;
@@ -72,8 +76,8 @@ VOID FreeMenuList (MENU *head) {
 }
 
 
-BOOL AddToMenu (CHAR *filename,HWND hwndMenu) {
-
+BOOL AddToMenu (CHAR *filename,HWND hwndMenu)
+{
   FILE *fp;
   CHAR  s[256];
   CHAR *tokens[3];
@@ -81,37 +85,44 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu) {
   MENU *info,*last = NULL;
   BOOL  ret = FALSE;
 
-  if(!hwndMenu)
+  // fixme to complain?
+  if (!hwndMenu) {
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
     return ret;
-  if(!filename)
+  }
+  if (!filename)
     filename = "FM3MENU.DAT";
   fp = _fsopen(filename,"r",SH_DENYWR);
-  if(fp) {
-    while(!feof(fp)) {
-      if(!fgets(s,256,fp))
+  if (!fp) {
+    // else saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Couldn't open %s",filename);
+  }
+  else {
+    while (!feof(fp)) {
+      if (!fgets(s,256,fp))
         break;
       lines++;
       bstripcr(s);
       if(!*s || *s == ';')
         continue;
-      if(tokenize(s,3,tokens) == 3 && (USHORT)atoi(tokens[1])) {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%s\r\r%s\r\r%s",tokens[0],tokens[1],tokens[2]);
-        info = malloc(sizeof(MENU));
-        if(info) {
-          memset(info,0,sizeof(MENU));
+      if (tokenize(s,3,tokens) == 3 && (USHORT)atoi(tokens[1])) {
+        info = xmallocz(sizeof(MENU),pszSrcFile,__LINE__);
+        if (info) {
           info->size = sizeof(MENU);
-          info->text = strdup(tokens[2]);
-          if(info->text) {
-            if(!stricmp(tokens[0],"MENUITEM"))
+          info->text = xstrdup(tokens[2],pszSrcFile,__LINE__);
+          if (!info->text)
+            free(info);
+	  else {
+            if (!stricmp(tokens[0],"MENUITEM"))
               info->cmd = atoi(tokens[1]);
-            else if(!stricmp(tokens[0],"SEPARATOR"))
+            else if (!stricmp(tokens[0],"SEPARATOR"))
               info->type = SEPARATOR;
-            else { /* error! */
+            else {
+	      /* error! */
               free(info->text);
               free(info);
               info = NULL;
             }
-            if(info) {
+            if (info) {
               if(!menuhead)
                 menuhead = info;
               else
@@ -120,28 +131,27 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu) {
               last = info;
             }
           }
-          else
-            free(info);
         }
       }
-      else {  /* error! */
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tokenization failed");
+      else {
+	// fixme to complain?
+        // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tokenization failed");
       }
     }
     fclose(fp);
-    if(menuhead) {
 
+    if (menuhead) {
       MENUITEM mi;
 
       memset(&mi,0,sizeof(mi));
       info = menuhead;
       WinEnableWindow(hwndMenu,FALSE);
-      while(info) {
+      while (info) {
         mi.iPosition = MIT_END;
         mi.id = info->cmd;
         mi.afStyle = (info->type == SEPARATOR) ? MIS_BREAKSEPARATOR : MIS_TEXT;
-        if(WinSendMsg(hwndMenu, MM_INSERTITEM, MPFROMP(&mi),
-                      MPFROMP(info->text)))
+        if (WinSendMsg(hwndMenu, MM_INSERTITEM, MPFROMP(&mi),
+                       MPFROMP(info->text)))
           ret = TRUE;
         info = info->next;
       }
@@ -150,6 +160,5 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu) {
       menuhead = NULL;
     }
   }
-// else saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Couldn't open %s",filename);
   return ret;
 }

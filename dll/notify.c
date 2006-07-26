@@ -1,8 +1,23 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Notifications
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H.Levine
+
+  17 Jul 06 SHL Use Win_Error
+  22 Jul 06 SHL Check more run time errors
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,11 +25,15 @@
 #include <ctype.h>
 #include <time.h>
 #include <stddef.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(NOTIFY,Notify,NotifyWndProc,StartNotify)
 #pragma alloc_text(NOTIFY,NotifyThread,NotifyError)
 #pragma alloc_text(NOTIFY2,AddNote,NoteThread,NoteWndProc)
@@ -22,9 +41,8 @@
 
 static HWND hwndNotify;
 
-
-MRESULT EXPENTRY NotifyWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY NotifyWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static ULONG showing = 0;
 
   switch(msg) {
@@ -38,7 +56,7 @@ MRESULT EXPENTRY NotifyWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           hwnd,
                           ID_TIMER2,
                           5000)) {
-          DosBeep(50,100);
+          Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,"WinStartTimer");
           WinDestroyWindow(hwnd);
         }
         else {
@@ -124,8 +142,8 @@ MRESULT EXPENTRY NotifyWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-HWND DoNotify (char *str) {
-
+HWND DoNotify (char *str)
+{
   char          *p;
   HWND          hwnd = (HWND)0,hwndP;
   LONG          x,y,cx,cy;
@@ -156,7 +174,7 @@ HWND DoNotify (char *str) {
 
     /* pretty-up the note by putting on a leading space */
     if(*str != ' ') {
-      p = malloc(strlen(str) + 2);
+      p = xmalloc(strlen(str) + 2,pszSrcFile,__LINE__);
       if(!p)
         p = str;
       else {
@@ -192,14 +210,14 @@ HWND DoNotify (char *str) {
 }
 
 
-HWND Notify (char *str) {
-
+HWND Notify (char *str)
+{
   return (HWND)WinSendMsg(MainObjectHwnd,UM_NOTIFY,MPFROMP(str),MPVOID);
 }
 
 
-VOID NotifyError (CHAR *filename,APIRET status) {
-
+VOID NotifyError (CHAR *filename,APIRET status)
+{
   CHAR errortext[512];
 
   if(!filename)
@@ -240,8 +258,8 @@ VOID NotifyError (CHAR *filename,APIRET status) {
 }
 
 
-MRESULT EXPENTRY NoteWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY NoteWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static HPOINTER hptrIcon = (HPOINTER)0;
 
   switch(msg) {
@@ -458,8 +476,8 @@ MRESULT EXPENTRY NoteWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID NoteThread (VOID *args) {
-
+VOID NoteThread (VOID *args)
+{
   HAB    hab2;
   HMQ    hmq2;
 
@@ -481,23 +499,17 @@ VOID NoteThread (VOID *args) {
 }
 
 
-BOOL StartNotes (CHAR *note) {
-
-  if(!hwndNotify) {
-    if(_beginthread(NoteThread,
-                    NULL,
-                    65536,
-                    (PVOID)note) != -1)
-      return TRUE;
+VOID StartNotes (CHAR *note)
+{
+  if (!hwndNotify) {
+    if (_beginthread(NoteThread,NULL,65536,(PVOID)note) == -1)
+      Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
   }
-  else
-    return TRUE;
-  return FALSE;
 }
 
 
-BOOL AddNote (CHAR *note) {
-
+BOOL AddNote (CHAR *note)
+{
   CHAR *s,*p;
   BOOL  once = FALSE,ret = FALSE;
 
@@ -548,8 +560,8 @@ BOOL AddNote (CHAR *note) {
 }
 
 
-VOID EndNote (VOID) {
-
+VOID EndNote (VOID)
+{
   if(hwndNotify)
     if(!PostMsg(hwndNotify,
                 WM_CLOSE,
@@ -562,8 +574,8 @@ VOID EndNote (VOID) {
 }
 
 
-VOID ShowNote (VOID) {
-
+VOID ShowNote (VOID)
+{
   if(!hwndNotify)
     StartNotes(NULL);
   if(!hwndNotify)
@@ -580,8 +592,8 @@ VOID ShowNote (VOID) {
 }
 
 
-VOID HideNote (VOID) {
-
+VOID HideNote (VOID)
+{
   if(hwndNotify)
     WinSetWindowPos(hwndNotify,
                     HWND_BOTTOM,

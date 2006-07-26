@@ -1,19 +1,35 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Edit presentation parameters
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H.Levine
+
+  22 Jul 06 SHL Check more run time errors
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(PRESPARAM,CopyPresParams,SetPresParams,IfNoParam)
 #pragma alloc_text(PRESPARAM,PresParamChanged,RestorePresParams)
 #pragma alloc_text(PRESPARAM,StoreWndPresParams)
-
 
 #ifdef NEVER
 /*
@@ -21,15 +37,15 @@
  * the PRESPARAMS structure returned is suitable to be passed as
  * pPresParams ie. WinCreateWindow(,,,,,,,,,,,, PVOID pPresParams)
  */
-VOID StoreWndPresParams (HWND hwnd,CHAR *tagname,HINI prof) {
-
+VOID StoreWndPresParams (HWND hwnd,CHAR *tagname,HINI prof)
+{
   PARAM         *pparam;
   PRESPARAMS    *ppresparams;
 
   if(!tagname || !*tagname || !prof)
     return;
   /* setup memory access */
-  ppresparams = (PRESPARAMS *)malloc(PP_MAXBUF);
+  ppresparams = (PRESPARAMS *)xmalloc(PP_MAXBUF,pszSrcFile,__LINE__);
   if(!ppresparams)
     return;
   ppresparams->cb = 0L;               /* no entries yet */
@@ -321,11 +337,11 @@ VOID StoreWndPresParams (HWND hwnd,CHAR *tagname,HINI prof) {
   free(ppresparams);
 }
 
-#endif
+#endif // NEVER
 
 
-VOID CopyPresParams (HWND target,HWND source) {
-
+VOID CopyPresParams (HWND target,HWND source)
+{
   /*
    * Copy presentation parameters of interest to us from one window
    * to another
@@ -354,8 +370,8 @@ VOID CopyPresParams (HWND target,HWND source) {
 }
 
 
-VOID SetPresParams (HWND hwnd,RGB2 *back,RGB2 *fore,RGB2 *border,CHAR *font) {
-
+VOID SetPresParams (HWND hwnd,RGB2 *back,RGB2 *fore,RGB2 *border,CHAR *font)
+{
   if(font)
     WinSetPresParam(hwnd,
                     PP_FONTNAMESIZE,
@@ -379,8 +395,8 @@ VOID SetPresParams (HWND hwnd,RGB2 *back,RGB2 *fore,RGB2 *border,CHAR *font) {
 }
 
 
-VOID IfNoParam(HWND hwnd,CHAR *keyroot,ULONG size,PVOID attrvalue) {
-
+VOID IfNoParam(HWND hwnd,CHAR *keyroot,ULONG size,PVOID attrvalue)
+{
   ULONG  fsize = 0L;
   CHAR   s[81];
 
@@ -399,9 +415,9 @@ VOID IfNoParam(HWND hwnd,CHAR *keyroot,ULONG size,PVOID attrvalue) {
 }
 
 
-VOID PresParamChanged (HWND hwnd,CHAR *keyroot,MPARAM mp1,MPARAM mp2) {
-
-  ULONG AttrFound,AttrValue[64],cbRetLen;
+VOID PresParamChanged (HWND hwnd,CHAR *keyroot,MPARAM mp1,MPARAM mp2)
+{
+    ULONG AttrFound,AttrValue[64],cbRetLen;
 
   cbRetLen = WinQueryPresParam(hwnd,(ULONG)mp1,0,&AttrFound,
                                (ULONG)sizeof(AttrValue),
@@ -439,9 +455,9 @@ VOID PresParamChanged (HWND hwnd,CHAR *keyroot,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID RestorePresParams (HWND hwnd,CHAR *keyroot) {
-
-  CHAR  s[81];
+VOID RestorePresParams (HWND hwnd,CHAR *keyroot)
+{
+    CHAR  s[81];
   ULONG AttrValue[64],size;
 
   size = sizeof(AttrValue);
