@@ -4,9 +4,10 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -46,12 +47,13 @@ typedef struct LINKASSOC {
 static LINKASSOC *asshead     = NULL,*asstail = NULL;
 static BOOL       assloaded = FALSE;
 
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(ASSOC2,free_commands,load_associations,save_associations)
 #pragma alloc_text(ASSOC2,ExecAssociation,AssocTextProc)
 
-
-MRESULT EXPENTRY AssocTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AssocTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
   static BOOL emphasized = FALSE;
 
@@ -97,8 +99,8 @@ MRESULT EXPENTRY AssocTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID free_associations (VOID) {
-
+VOID free_associations (VOID)
+{
   LINKASSOC *info,*next;
 
   info = asshead;
@@ -115,8 +117,8 @@ VOID free_associations (VOID) {
 }
 
 
-VOID load_associations (VOID) {
-
+VOID load_associations (VOID)
+{
   FILE      *fp;
   LINKASSOC *info;
   CHAR       cl[1024];
@@ -133,7 +135,7 @@ VOID load_associations (VOID) {
     strcat(mask,"\\");
   strcat(mask,"ASSOC.DAT");
   fp = _fsopen(mask,"r",SH_DENYWR);
-  if(fp) {
+  if (fp) {
     while(!feof(fp)) {
       if(!fgets(mask,CCHMAXPATH + 24,fp))
         break;
@@ -156,21 +158,20 @@ VOID load_associations (VOID) {
       bstripcr(flags);
       if(!*cl)
         continue;
-      info = malloc(sizeof(LINKASSOC));
-      if(info) {
-        memset(info,0,sizeof(LINKASSOC));
-        info->cl = strdup(cl);
-        info->mask = strdup(mask);
+      info = xmallocz(sizeof(LINKASSOC),pszSrcFile,__LINE__);
+      if (info) {
+        info->cl = xstrdup(cl,pszSrcFile,__LINE__);
+        info->mask = xstrdup(mask,pszSrcFile,__LINE__);
         if(*sig)
-          info->sig = strdup(sig);
+          info->sig = xstrdup(sig,pszSrcFile,__LINE__);
         info->offset = atol(offset);
         info->flags = atol(flags);
-        if(!info->cl || !info->mask) {
-          if(info->cl)
+        if (!info->cl || !info->mask) {
+          if (info->cl)
             free(info->cl);
-          if(info->mask)
+          if (info->mask)
             free(info->mask);
-          free(info);
+          free (info);
           break;
         }
         if(!asshead)
@@ -187,8 +188,8 @@ VOID load_associations (VOID) {
 }
 
 
-VOID save_associations (VOID) {
-
+VOID save_associations (VOID)
+{
   LINKASSOC *info;
   FILE      *fp;
   CHAR       s[CCHMAXPATH + 14];
@@ -219,8 +220,8 @@ VOID save_associations (VOID) {
   if(s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,"ASSOC.DAT");
-  fp = fopen(s,"w");
-  if(fp) {
+  fp = xfopen(s,"w",pszSrcFile,__LINE__);
+  if (fp) {
     fputs(GetPString(IDS_ASSOCFILETEXT),fp);
     info = asshead;
     while(info) {
@@ -243,8 +244,8 @@ VOID save_associations (VOID) {
 #pragma alloc_text(ASSOC,add_association,kill_association,AssocDlgProc,EditAssociations)
 
 
-LINKASSOC * add_association (ASSOC *addme) {
-
+LINKASSOC * add_association (ASSOC *addme)
+{
   LINKASSOC *info;
 
   if(addme && *addme->cl && *addme->mask) {
@@ -257,13 +258,12 @@ LINKASSOC * add_association (ASSOC *addme) {
       info = info->next;
     }
     if(!info) {
-      info = malloc(sizeof(LINKASSOC));
+      info = xmallocz(sizeof(LINKASSOC),pszSrcFile,__LINE__);
       if(info) {
-        memset(info,0,sizeof(LINKASSOC));
-        info->cl = strdup(addme->cl);
-        info->mask = strdup(addme->mask);
+        info->cl = xstrdup(addme->cl,pszSrcFile,__LINE__);
+        info->mask = xstrdup(addme->mask,pszSrcFile,__LINE__);
         if(*addme->sig)
-          info->sig = strdup(addme->sig);
+          info->sig = xstrdup(addme->sig,pszSrcFile,__LINE__);
         if(addme->offset)
           info->offset = addme->offset;
         if(addme->flags)
@@ -294,8 +294,8 @@ LINKASSOC * add_association (ASSOC *addme) {
 }
 
 
-BOOL kill_association (ASSOC *killme) {
-
+BOOL kill_association (ASSOC *killme)
+{
   LINKASSOC *info;
 
   if(killme && *killme->mask) {
@@ -332,8 +332,8 @@ BOOL kill_association (ASSOC *killme) {
 }
 
 
-INT ExecAssociation (HWND hwnd, CHAR *datafile) {
-
+INT ExecAssociation (HWND hwnd, CHAR *datafile)
+{
   CHAR      *file,sig[CCHMAXPATH],sigl[CCHMAXPATH],mask[CCHMAXPATH],*p;
   FILE      *fp;
   BOOL       didmatch,exclude;
@@ -381,10 +381,8 @@ INT ExecAssociation (HWND hwnd, CHAR *datafile) {
           strcpy(sigl,
                  info->sig);
           literal(sigl);
-          fp = _fsopen(datafile,
-                       "rb",
-                       SH_DENYNO);
-          if(fp) {
+          fp = _fsopen(datafile,"rb",SH_DENYNO);
+          if (fp) {
             if(info->offset < 0L) {
               fseek(fp,
                     0L,
@@ -462,8 +460,8 @@ INT ExecAssociation (HWND hwnd, CHAR *datafile) {
 }
 
 
-MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   LINKASSOC *info;
   SHORT      x;
 
@@ -557,7 +555,7 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                     MPFROMSHORT(x),
                                                     MPVOID);
               if(!info) {
-                DosBeep(50,100);
+                Runtime_Error(pszSrcFile, __LINE__, "Query item handle failed");
                 break;
               }
               WinSetDlgItemText(hwnd,ASS_MASK,info->mask);
@@ -697,7 +695,9 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             if(WinQueryButtonCheckstate(hwnd,ASS_PROMPT))
               temp.flags |= PROMPT;
             info = add_association(&temp);
-            if(info) {
+            if(!info)
+              Runtime_Error(pszSrcFile, __LINE__, "add_association");
+	    else {
 
               CHAR s[1002 + CCHMAXPATH + 6];
 
@@ -729,8 +729,6 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               save_associations();
             }
-            else
-              DosBeep(50,200);
           }
           break;
 
@@ -753,7 +751,9 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                 temp.mask,
                                 NULL,
                                 0L);
-            if(kill_association(&temp)) {
+            if(!kill_association(&temp))
+              Runtime_Error(pszSrcFile, __LINE__, "kill_association");
+	    else {
               x = (SHORT)WinSendDlgItemMsg(hwnd,
                                            ASS_LISTBOX,
                                            LM_QUERYSELECTION,
@@ -771,8 +771,6 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               save_associations();
             }
-            else
-              DosBeep(50,200);
           }
           break;
       }
@@ -782,8 +780,8 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID EditAssociations (HWND hwnd) {
-
+VOID EditAssociations (HWND hwnd)
+{
   static CHAR stop = 0;
 
   if(stop)
@@ -794,4 +792,3 @@ VOID EditAssociations (HWND hwnd) {
   WinDlgBox(HWND_DESKTOP,hwnd,AssocDlgProc,FM3ModHandle,ASS_FRAME,NULL);
   stop = 0;
 }
-

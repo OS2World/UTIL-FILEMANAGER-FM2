@@ -10,6 +10,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   28 Jun 06 SHL Drop obsoletes
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -28,8 +29,9 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-#pragma alloc_text(FMARCHIVE,ArchiveDlgProc)
+static PSZ pszSrcFile = __FILE__;
 
+#pragma alloc_text(FMARCHIVE,ArchiveDlgProc)
 
 MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
@@ -185,7 +187,7 @@ MRESULT EXPENTRY ArchiveDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case WM_COMMAND:
       arcdata = (DIRCNRDATA *)WinQueryWindowPtr(hwnd,0);
       if(!arcdata) {
-        DosBeep(50,100);
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
         return 0;
       }
       switch(SHORT1FROMMP(mp1)) {

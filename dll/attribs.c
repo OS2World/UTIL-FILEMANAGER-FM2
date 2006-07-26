@@ -1,22 +1,38 @@
+
+/***********************************************************************
+
+  $Id$
+
+  attributes editor
+
+  Copyright (c) 1993, 1998 M. Kimes
+  Copyright (c) 2006 Steven H.Levine
+
+  14 Jul 06 SHL Use Runtime_Error
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(ATTRIBS,AttrListDlgProc)
 
-
-MRESULT EXPENTRY AttrListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AttrListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   LISTINFO *li;
 
   switch(msg) {
@@ -278,8 +294,10 @@ MRESULT EXPENTRY AttrListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             USHORT      state;
 
             li = INSTDATA(hwnd);
-            if(!li)
+            if (!li) {
+              Runtime_Error(pszSrcFile, __LINE__, "no data");
               break;
+	    }
             {
               CHAR  szBuffer[CCHMAXPATH + 1];
               INT   numfiles = 0,numalloc = 0,error;
@@ -300,7 +318,7 @@ MRESULT EXPENTRY AttrListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                        DRIVE_NOTWRITEABLE)) {
                     error = AddToList(szBuffer,&li->list,&numfiles,&numalloc);
                     if(error) {
-                      DosBeep(250,100);
+                      Runtime_Error(pszSrcFile, __LINE__, "AddToList");
                       break;
                     }
                   }
@@ -311,7 +329,7 @@ MRESULT EXPENTRY AttrListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
             }
             if(!li->list || !li->list[0]) {
-              DosBeep(250,100);
+              Runtime_Error(pszSrcFile, __LINE__, "list build failed");
               break;
             }
             for(x = 0;li->list[x];x++) {

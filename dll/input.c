@@ -6,9 +6,10 @@
   Input dialog procecedure
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   28 May 05 SHL Use saymsg
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -37,15 +38,17 @@ MRESULT EXPENTRY InputDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case WM_INITDLG:
       if (!mp2)
       {
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
 	WinDismissDlg(hwnd,0);
 	break;
       }
       WinSetWindowPtr(hwnd,0,(PVOID)mp2);
       psip = (STRINGINPARMS *)mp2;
-      if (!(BOOL)WinSendDlgItemMsg(hwnd,STR_INPUT,EM_SETTEXTLIMIT,
-			           MPFROM2SHORT(psip->inputlen,0),MPVOID))
+      if (!WinSendDlgItemMsg(hwnd,STR_INPUT,EM_SETTEXTLIMIT,
+			     MPFROM2SHORT(psip->inputlen,0),MPVOID))
       {
-	DosBeep(50,100);
+        Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                  "setlimit failed");
 	WinDismissDlg(hwnd,0);
 	break;
       }

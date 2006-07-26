@@ -3,52 +3,58 @@
 
   $Id$
 
-  Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Instant command
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004, 2006 Steven H.Levine
+
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(INSTANT,InstantDlgProc)
 
 #define hwndMLE            WinWindowFromID(hwnd,BAT_MLE)
 
 static INT batches = 0;
 
-
-MRESULT EXPENTRY InstantDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY InstantDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   CHAR  *path;
-  APIRET temp;
+  APIRET rc;
   static CHAR *bat = NULL;
   static HWND  myhwnd = (HWND)0;
 
   switch(msg) {
     case WM_INITDLG:
-      if(myhwnd) {
-        DosBeep(250,100);
+      if (myhwnd) {
+        Runtime_Error(pszSrcFile, __LINE__, "busy");
         WinSendMsg(myhwnd,WM_SYSCOMMAND,MPFROM2SHORT(SC_RESTORE,0),MPVOID);
         WinSetActiveWindow(HWND_DESKTOP,myhwnd);
         WinDismissDlg(hwnd,0);
         break;
       }
-      if(!mp2) {
-        DosBeep(50,100);
+      if (!mp2) {
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
         WinDismissDlg(hwnd,0);
         break;
       }
@@ -97,15 +103,17 @@ MRESULT EXPENTRY InstantDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             mem = MLEgetlen(hwndMLE);
             if(mem) {
-              if(DosAllocMem((PVOID)&bat,mem,
-                               PAG_COMMIT | PAG_READ | PAG_WRITE) ||
-                 !bat) {
-                DosBeep(50,100);
+              rc = DosAllocMem((PVOID)&bat,mem,
+                                PAG_COMMIT | PAG_READ | PAG_WRITE);
+              if(rc || !bat) {
+                Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
                 WinDismissDlg(hwnd,0);
                 break;
               }
               tlen = (LONG)WinSendMsg(hwndMLE,MLM_QUERYTEXTLENGTH,MPVOID,MPVOID);
-              if(tlen) {
+              if(!tlen)
+                Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      else {
                 WinSendMsg(hwndMLE,MLM_SETIMPORTEXPORT,
                            MPFROMP(bat),
                            MPFROMLONG(mem));
@@ -122,12 +130,16 @@ MRESULT EXPENTRY InstantDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                   stripcr(bat);
                   rstrip(bat);
                 }
-                if(*bat) {
+                if(!*bat)
+                  Runtime_Error(pszSrcFile, __LINE__, "no data");
+		else {
                   sprintf(s,"%s%sFMTMP%d.CMD",path,
                           (path[strlen(path) - 1] == '\\') ? "" : "\\",
                           batches++);
                   fp = fopen(s,"w");
-                  if(fp) {
+                  if(!fp)
+                    Runtime_Error(pszSrcFile, __LINE__, "fopen");
+		  else {
                     if(!strncmp(bat,"/*",2)) {
                       rexx = "'";
                       fprintf(fp,
@@ -148,14 +160,8 @@ MRESULT EXPENTRY InstantDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                             GetCmdSpec(FALSE),
                             s);
                   }
-                  else
-                    DosBeep(500,100);
                 }
-                else
-                  DosBeep(50,100);
               }
-              else
-                DosBeep(50,100);
             }
           }
           WinDismissDlg(hwnd,0);
@@ -167,21 +173,21 @@ MRESULT EXPENTRY InstantDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case IDM_HELP:
           path = WinQueryWindowPtr(hwnd,0);
-          temp = saymsg(MB_YESNOCANCEL,
+          rc = saymsg(MB_YESNOCANCEL,
                         hwnd,
                         GetPString(IDS_INSTANTHELPTITLETEXT),
                         GetPString(IDS_INSTANTHELPTEXT),
                         path,(strlen(path) < 3) ? "\\" : "",path,
                         (path[strlen(path) - 1] == '\\') ? "" : "\\",
                         batches);
-          if(temp ==  MBID_YES)
+          if(rc ==  MBID_YES)
             runemf2(WINDOWED | INVISIBLE | BACKGROUND,
                     hwnd,
                     NULL,
                     NULL,
                     "%s /C HELP BATCH",
                     GetCmdSpec(FALSE));
-          else if(temp == MBID_CANCEL)
+          else if(rc == MBID_CANCEL)
             WinDismissDlg(hwnd,0);
           break;
       }

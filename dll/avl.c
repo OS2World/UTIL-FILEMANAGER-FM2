@@ -20,6 +20,7 @@
   30 May 06 SHL load_archivers: add reload support
   16 Jun 06 SHL load_archivers: support signatures containing 0s
   26 Jun 06 SHL load_archivers: remember where comments are
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -37,6 +38,8 @@
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(MISC9,quick_find_type,find_type)
 
@@ -406,12 +409,10 @@ INT load_archivers(VOID)
     {
       // At start of defintion
 
-      pat = malloc(sizeof(ARC_TYPE));
+      pat = xmallocz(sizeof(ARC_TYPE),pszSrcFile,__LINE__);
       if (!pat)
-	break;				// fixme to complain
-
-      memset(pat, 0, sizeof(ARC_TYPE));
-      pat -> id = strdup(sz);
+	break;
+      pat -> id = xstrdup(sz,pszSrcFile,__LINE__);
 
       pat -> comment_line_num = per_sig_comment_line_num;
       pat -> defn_line_num = cur_line_num;
@@ -419,7 +420,7 @@ INT load_archivers(VOID)
       if (!get_line_strip_comments(sz, fp))	// line 2 - extension
 	break;
       if (*sz)
-	pat -> ext = strdup(sz);
+	pat -> ext = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> ext = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 3 - offset to signature
@@ -428,7 +429,7 @@ INT load_archivers(VOID)
       if (!get_line_strip_comments(sz, fp))	// line 4 - list command
 	break;
       if (*sz)
-	pat -> list = strdup(sz);
+	pat -> list = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> list = NULL;
       if (!pat -> list)
@@ -436,55 +437,55 @@ INT load_archivers(VOID)
       if (!get_line_strip_comments(sz, fp))	// line 5
 	break;
       if (*sz)
-	pat -> extract = strdup(sz);
+	pat -> extract = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> extract = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 6
 	break;
       if (*sz)
-	pat -> exwdirs = strdup(sz);
+	pat -> exwdirs = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> exwdirs = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 7
 	break;
       if (*sz)
-	pat -> test = strdup(sz);
+	pat -> test = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> test = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 8
 	break;
       if (*sz)
-	pat -> create = strdup(sz);
+	pat -> create = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> create = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 9
 	break;
       if (*sz)
-	pat -> createwdirs = strdup(sz);
+	pat -> createwdirs = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> createwdirs = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 10
 	break;
       if (*sz)
-	pat -> createrecurse = strdup(sz);
+	pat -> createrecurse = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> createrecurse = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 11
 	break;
       if (*sz)
-	pat -> move = strdup(sz);
+	pat -> move = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> move = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 12
 	break;
       if (*sz)
-	pat -> movewdirs = strdup(sz);
+	pat -> movewdirs = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> movewdirs = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 13
 	break;
       if (*sz)
-        pat -> delete = strdup(sz);
+        pat -> delete = xstrdup(sz,pszSrcFile,__LINE__);
       else
         pat -> delete = NULL;
       if (!get_line_strip_white(sz, fp))	// line 14
@@ -493,7 +494,7 @@ INT load_archivers(VOID)
       if (i)
       {
 	pat -> siglen = i;
-	pat -> signature = malloc(i);
+	pat -> signature = xmalloc(i,pszSrcFile,__LINE__);
 	if (!pat -> signature)
 	  break;
 	memcpy(pat -> signature, sz, i);	// signature may not be a string
@@ -505,13 +506,13 @@ INT load_archivers(VOID)
       if (!get_line_strip_white(sz, fp))	// line 15
 	break;
       if (*sz)
-	pat -> startlist = strdup(sz);
+	pat -> startlist = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> startlist = NULL;
       if (!get_line_strip_white(sz, fp))	// line 16
 	break;
       if (*sz)
-	pat -> endlist = strdup(sz);
+	pat -> endlist = xstrdup(sz,pszSrcFile,__LINE__);
       else
 	pat -> endlist = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 17
@@ -589,7 +590,7 @@ INT load_archivers(VOID)
   return 0;
 }
 
-#define TEST_DRAG 0			// fixme to gone
+#define TEST_DRAG 0			// fixme to be gone or to work
 
 #pragma alloc_text(FMARCHIVE,SBoxDlgProc,SDlgListboxSubclassProc)
 
@@ -653,9 +654,8 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
 			     1,		/* One DRAGIMAGE */
 			     VK_ENDDRAG,
 			     NULL);
-	  if (!hwndDrop) {
-	    Win_Error(hwnd,hwnd,__FILE__,__LINE__,"DrgDrag");
-	  }
+	  if (!hwndDrop)
+	    Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,"DrgDrag");
 
 	  DrgFreeDraginfo(pdinfo);
 	  // WinSetWindowPos(hwnd,HWND_TOP,0,0,0,0,SWP_ACTIVATE);
@@ -722,7 +722,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
       DrgAccessDraginfo(pdinfo);
       pditem = DrgQueryDragitemPtr(pdinfo,0);
       if (!pditem)
-	Win_Error(hwnd,hwnd,__FILE__,__LINE__,"DM_DROP");
+	Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,"DM_DROP");
       /* Check valid rendering mechanisms and data */
       ok = DrgVerifyRMF(pditem,DRM_LBOX,NULL) && ~pditem->fsControl & DC_PREPARE;
       if (ok) {
@@ -764,7 +764,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       load_archivers();
     if (!(ARC_TYPE **)mp2)
     {
-      DosBeep(100, 100);
+      Runtime_Error(pszSrcFile, __LINE__, "no data");
       WinDismissDlg(hwnd, 0);
       break;
     }
@@ -803,7 +803,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					MPVOID);
       if (sSelect == LIT_NONE)
       {
-	DosBeep(100, 100);
+        Runtime_Error(pszSrcFile, __LINE__, "list empty");
 	return 0;
       }
       pat = arcsighead;
@@ -837,10 +837,10 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else
       {
+        Runtime_Error(pszSrcFile, __LINE__, "no match");
 	// Refuse to select
 	WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SELECTITEM,
 			  MPFROMSHORT(LIT_NONE), FALSE);
-	DosBeep(100, 100);
 	return 0;
       }
       sLastSelect = sSelect;
@@ -879,9 +879,8 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (sSelect != LIT_NONE) {
 	ARCDUMP ad;
 	memset(&ad,0,sizeof(ARCDUMP));
-	ad.info = malloc(sizeof(ARC_TYPE));
+	ad.info = xmallocz(sizeof(ARC_TYPE),pszSrcFile,__LINE__);
 	if (ad.info) {
-	  memset(ad.info, 0, sizeof(ARC_TYPE));
 	  if (!WinDlgBox(HWND_DESKTOP,
 			 hwnd,
 			 ArcReviewDlgProc,
@@ -898,7 +897,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    if (!pat) {
 	      if (arcsighead)
-		saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u", sSelect, __FILE__, __LINE__);
+		saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u", sSelect, pszSrcFile, __LINE__);
 	      else
 		arcsighead = ad.info;
 	    }
@@ -938,7 +937,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ; // Find self
 
 	if (!pat) {
-	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u",sSelect, __FILE__, __LINE__);
+	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u",sSelect, pszSrcFile, __LINE__);
 	}
 	else {
 	  // Delete current
@@ -979,7 +978,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
 	  ; // Find self
 	if (!pat || !pat->prev) {
-	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u",sSelect, __FILE__, __LINE__);
+	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u",sSelect, pszSrcFile, __LINE__);
 	}
 	else {
 	  ARC_TYPE *patGDad;
@@ -1026,7 +1025,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
 	  ; // Find self
 	if (!pat || !pat->next) {
-	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d/%d at %s::%u",sSelect, sItemCount, __FILE__, __LINE__);
+	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d/%d at %s::%u",sSelect, sItemCount, pszSrcFile, __LINE__);
 	}
 	else {
 	  ARC_TYPE *patDad;
