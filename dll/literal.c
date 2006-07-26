@@ -13,18 +13,22 @@
 
   01 Aug 04 SHL Rework fixup to avoid overflows
   16 Jun 06 SHL liternal: comments
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_OS2
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "fm3dll.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 static INT index(const CHAR *s,const CHAR c);
 
@@ -87,7 +91,7 @@ UINT literal(PSZ pszBuf)
   if(!pszBuf ||	!*pszBuf)
     return 0;
   cBufBytes = strlen(pszBuf) + 1;
-  pszWork = pszOut = malloc(cBufBytes + 1);
+  pszWork = pszOut = xmalloc(cBufBytes + 1,pszSrcFile,__LINE__);
 
   iBuf = 0;                             /* set index to first character */
   while(pszBuf[iBuf]) {

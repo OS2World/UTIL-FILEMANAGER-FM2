@@ -1,20 +1,37 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Load bitmaps
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H.Levine
+
+  22 Jul 06 SHL Check more run time errors
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <share.h>
+
 #include "fm3dll.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(LOADBITMAP,LoadBitmapFromFile,LoadBitmapFromFileNum)
 
 
-HBITMAP LoadBitmapFromFileNum (USHORT id) {
-
-  char s[CCHMAXPATH];
+HBITMAP LoadBitmapFromFileNum (USHORT id)
+{
+    char s[CCHMAXPATH];
 
   save_dir2(s);
   sprintf(s + strlen(s),"\\%u.BMP",id);
@@ -22,19 +39,19 @@ HBITMAP LoadBitmapFromFileNum (USHORT id) {
 }
 
 
-HBITMAP LoadBitmapFromFile (CHAR *pszFileName) {
-
+HBITMAP LoadBitmapFromFile (CHAR *pszFileName)
+{
   HBITMAP                 hBmp = (HBITMAP)0;
   FILE                   *File;
   ULONG                   rc;
   USHORT                  usType = 0;           // #@!!! compiler warnings
   PBITMAPARRAYFILEHEADER2 pbafh2 = NULL;        // (MAM) chng init values to NULL instead of ptr to 0
-  PBITMAPFILEHEADER2      pbfh2  = NULL;                       
-  PBITMAPINFOHEADER2      pbih2  = NULL;                       
-  PBITMAPINFO2            pbmi2  = NULL;                       
-  PBITMAPARRAYFILEHEADER  pbafh  = NULL;                       
-  PBITMAPFILEHEADER       pbfh   = NULL;                       
-  PBITMAPINFOHEADER       pbih   = NULL;                       
+  PBITMAPFILEHEADER2      pbfh2  = NULL;
+  PBITMAPINFOHEADER2      pbih2  = NULL;
+  PBITMAPINFO2            pbmi2  = NULL;
+  PBITMAPARRAYFILEHEADER  pbafh  = NULL;
+  PBITMAPFILEHEADER       pbfh   = NULL;
+  PBITMAPINFOHEADER       pbih   = NULL;
   BOOL                    f2;        // format 1.x or 2.x
   ULONG                   ulOffset;
   PBYTE                   pData  = NULL;
@@ -55,8 +72,7 @@ HBITMAP LoadBitmapFromFile (CHAR *pszFileName) {
 
   /* Next read the bitmap info header........................................*/
   // we allocate enough to hold a complete bitmap array file header
-  pbafh2 = (PBITMAPARRAYFILEHEADER2)malloc(sizeof(*pbafh2) +
-                                             256 * sizeof(RGB2));
+  pbafh2 = xmalloc(sizeof(*pbafh2) + 256 * sizeof(RGB2),pszSrcFile,__LINE__);
   if(!pbafh2)
     goto ExitLoadBMP;
   /* Next we assign pointers to the file header and bitmap info header...*/
@@ -247,7 +263,7 @@ HBITMAP LoadBitmapFromFile (CHAR *pszFileName) {
   else
     ulDataSize = (((pbmi2->cBitCount * pbmi2->cx) + 31) / 32) * 4 *
                   pbmi2->cy * pbmi2->cPlanes;
-  pData = (PBYTE)malloc(ulDataSize);
+  pData = xmalloc(ulDataSize,pszSrcFile,__LINE__);
   if(!pData)
     goto ExitLoadBMP;
   rc = fread(pData, 1, ulDataSize, File);
@@ -262,12 +278,11 @@ HBITMAP LoadBitmapFromFile (CHAR *pszFileName) {
                          pData,pbmi2);
 
 ExitLoadBMP:
-  if(pData)
-    free(pData);
-  if(pbafh2)
-    free(pbafh2);
+
+  xfree(pData);
+  xfree(pbafh2);
   fclose(File);
   WinReleasePS(hPS);
-  return(hBmp);
+  return hBmp;
 }
 
