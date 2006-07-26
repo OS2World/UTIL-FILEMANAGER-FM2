@@ -3,10 +3,13 @@
 
   $Id$
 
-  Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Print file list
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2004, 2006 Steven H.Levine
+
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -26,6 +29,9 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(PRINTER,PrinterReady,SayPrinterReady)
 #pragma alloc_text(PRINTER2,PrintList)
 #pragma alloc_text(PRINTER3,PrintDlgProc)
@@ -33,8 +39,8 @@
 static HMTX PrintSem = 0;
 
 
-BOOL PrinterReady (CHAR *printdevname) {
-
+BOOL PrinterReady (CHAR *printdevname)
+{
   FILE *          printhandle;
   CHAR            param = 0,
                   data = 0;
@@ -45,8 +51,8 @@ BOOL PrinterReady (CHAR *printdevname) {
   if(!fWorkPlace) /* assume spooler is active */
     return TRUE;
   DosError(FERR_DISABLEHARDERR);
-  printhandle = fopen(printdevname,"a+");
-  if(printhandle) {
+  printhandle = xfopen(printdevname,"a+",pszSrcFile,__LINE__);
+  if (printhandle) {
     if(!strnicmp(printdevname,"COM",3) && isdigit(printdevname[3])) {
       fclose(printhandle);
       return TRUE;
@@ -70,8 +76,8 @@ BOOL PrinterReady (CHAR *printdevname) {
 }
 
 
-BOOL SayPrinterReady (HWND hwnd) {
-
+BOOL SayPrinterReady (HWND hwnd)
+{
   if(!hwnd)
     hwnd = HWND_DESKTOP;
   if(!PrinterReady(printer)) {
@@ -85,8 +91,10 @@ BOOL SayPrinterReady (HWND hwnd) {
 }
 
 
-VOID PrintList (VOID *arg) { /* background-print a list of files */
+//=== PrintList - background-print a list of files ===
 
+VOID PrintList (VOID *arg)
+{
   HAB          hab2;
   HMQ          hmq2;
   LISTINFO    *li = (LISTINFO *)arg;
@@ -103,7 +111,7 @@ VOID PrintList (VOID *arg) { /* background-print a list of files */
     goto Abort;
   if(!PrintSem) {
     if(DosCreateMutexSem(NULL,&PrintSem,0,FALSE)) {
-      DosBeep(250,100);
+      Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,"DosCreateMutexSem");
       goto Abort;
     }
   }
@@ -129,11 +137,17 @@ VOID PrintList (VOID *arg) { /* background-print a list of files */
           DosRequestMutexSem(PrintSem,240000L);
           if(StopPrinting)
             break;
-          if(PrinterReady(li->targetpath)) {
+          if (!PrinterReady(li->targetpath))
+            Runtime_Error(pszSrcFile, __LINE__, "printer %s error", li->targetpath);
+	  else {
             fpi = _fsopen(li->list[x],"r",SH_DENYWR);
-            if(fpi) {
+            if (!fpi)
+              Runtime_Error(pszSrcFile, __LINE__, "cannot open %s",li->list[x]);
+	    else {
               fpo = _fsopen(li->targetpath,"a+",SH_DENYRW);
-              if(fpo) {
+              if(!fpo)
+                Runtime_Error(pszSrcFile, __LINE__, "cannot open %s",li->targetpath);
+	      else {
                 sprintf(s,
                         GetPString(IDS_PRINTINGTEXT),
                         li->list[x]);
@@ -297,16 +311,8 @@ Again:
                 }
                 fclose(fpo);
               }
-              else
-                DosBeep(50,100);
               fclose(fpi);
             }
-            else
-              DosBeep(50,100);
-          }
-          else {
-            DosBeep(50,100);
-            DosBeep(250,100);
           }
           DosReleaseMutexSem(PrintSem);
           DosSleep(1L);
@@ -326,8 +332,8 @@ Abort:
 }
 
 
-MRESULT EXPENTRY PrintDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY PrintDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   LISTINFO *li;
 
   switch(msg) {
@@ -387,9 +393,10 @@ MRESULT EXPENTRY PrintDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       }
       WinSetDlgItemText(hwnd,PRN_PRINTER,printer);
       WinSendDlgItemMsg(hwnd,PRN_LISTBOX,LM_DELETEALL,MPVOID,MPVOID);
-      li = WinQueryWindowPtr(hwnd,0);
-      if(li) {
-
+      li = WinQueryWindowPtr(hwnd,QWL_USER);
+      if (!li)
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else {
         INT x;
 
         for(x = 0;li->list[x];x++) {
@@ -437,8 +444,10 @@ MRESULT EXPENTRY PrintDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     case WM_COMMAND:
       switch(SHORT1FROMMP(mp1)) {
         case DID_OK:
-          li = WinQueryWindowPtr(hwnd,0);
-          if(li) {
+          li = WinQueryWindowPtr(hwnd,QWL_USER);
+          if (!li)
+            Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  else {
             prnformat         = WinQueryButtonCheckstate(hwnd,PRN_FORMAT);
             PrfWriteProfileData(fmprof,FM3Str,"Prnformat",
                                 (PVOID)&prnformat,sizeof(prnformat));
@@ -575,7 +584,7 @@ MRESULT EXPENTRY PrintDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     MPFROMP(szBuffer));
                   error = AddToList(szBuffer,&li->list,&numfiles,&numalloc);
                   if(error) {
-                    DosBeep(250,100);
+                    Runtime_Error(pszSrcFile, __LINE__, "AddToList");
                     break;
                   }
                   x = (SHORT)WinSendDlgItemMsg(hwnd,PRN_LISTBOX,

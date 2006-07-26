@@ -12,6 +12,7 @@
   23 May 05 SHL Use QWL_USER
   04 Jun 05 SHL Support Cancel button; make Esc key more consistent
   29 May 06 SHL Comments
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -28,6 +29,9 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(NOTEBOOK,CfgTDlgProc,CfgTSDlgProc,CfgMDlgProc)
 #pragma alloc_text(NOTEBOOK2,CfgADlgProc,CfgSDlgProc,CfgVDlgProc)
 #pragma alloc_text(NOTEBOOK3,CfgDDlgProc,Cfg5DlgProc,Cfg6DlgProc)
@@ -92,7 +96,7 @@ MRESULT EXPENTRY CfgADlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                SBoxDlgProc,FM3ModHandle,ASEL_FRAME,
                                (PVOID)&pat) ||
 		    !pat || !pat->id || !*pat->id) {
-                  DosBeep(250,100);
+                  DosBeep(250,100);	// Complain
                   WinCheckButton(hwnd,CFGA_DEFARC,FALSE);
                 }
                 else
@@ -153,7 +157,7 @@ MRESULT EXPENTRY CfgADlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     WinSetDlgItemText(hwnd,id,filename);
                   break;
                 default:
-                  DosBeep(250,100);
+                  Runtime_Error(pszSrcFile, __LINE__, "bad case");
                   break;
               }
             }
@@ -209,7 +213,7 @@ MRESULT EXPENTRY CfgADlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
           MakeFullName(extractpath);
           if(IsFile(extractpath)) {
-            DosBeep(50,100);
+            Runtime_Error(pszSrcFile, __LINE__, "%s not a directory", extractpath);
             *extractpath = 0;
           }
         }
@@ -442,7 +446,7 @@ MRESULT EXPENTRY CfgVDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     WinSetDlgItemText(hwnd,id,filename);
                   break;
                 default:
-                  DosBeep(250,100);
+                  Runtime_Error(pszSrcFile, __LINE__, "bad case %d", id);
                   break;
               }
             }
@@ -1108,7 +1112,7 @@ MRESULT EXPENTRY CfgCDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   }
                   break;
                 default:
-                  DosBeep(250,100);
+                  Runtime_Error(pszSrcFile, __LINE__, "bad case %d", id);
                   break;
               }
             }
