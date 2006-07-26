@@ -4,25 +4,30 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(FILTER_DATA)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(FILTER,Filter)
 
 #define MAXNUMMASKS 50
@@ -128,9 +133,9 @@ VOID load_masks (VOID) {
       s[sizeof(s) - 1] = 0;
       bstripcr(s);
       if(*s && *s != ';') {
-        info = malloc(sizeof(LINKMASKS));
+        info = xmalloc(sizeof(LINKMASKS),pszSrcFile,__LINE__);
         if(info) {
-          info->mask = strdup(s);
+          info->mask = xstrdup(s,pszSrcFile,__LINE__);
           if(info->mask) {
             info->next = NULL;
             if(!maskhead)
@@ -164,8 +169,8 @@ VOID save_masks (VOID) {
     if(s[strlen(s) - 1] != '\\')
       strcat(s,"\\");
     strcat(s,"FILTERS.DAT");
-    fp = fopen(s,"w");
-    if(fp) {
+    fp = xfopen(s,"w",pszSrcFile,__LINE__);
+    if (fp) {
       fputs(GetPString(IDS_FILTERFILETEXT),fp);
       info = maskhead;
       while(info) {
@@ -196,9 +201,9 @@ VOID add_mask (CHAR *mask) {
     last = info;
     info = info->next;
   }
-  info = malloc(sizeof(LINKMASKS));
+  info = xmalloc(sizeof(LINKMASKS),pszSrcFile,__LINE__);
   if(info) {
-    info->mask = strdup(mask);
+    info->mask = xstrdup(mask,pszSrcFile,__LINE__);
     if(info->mask) {
       info->next = NULL;
       if(!maskhead)
@@ -633,7 +638,7 @@ MRESULT EXPENTRY PickMaskDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 WinDismissDlg(hwnd,1);
               }
               else
-                DosBeep(50,100);
+                DosBeep(50,100);		// MSK_DELETE
             }
           }
           break;

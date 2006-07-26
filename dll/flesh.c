@@ -6,20 +6,21 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2006 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
   28 May 05 SHL Clean while reading code
   24 Oct 05 SHL Delete obsolete code
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,9 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(FLESH,Flesh,FleshEnv,Unflesh,Stubby)
 
 
@@ -59,7 +63,7 @@ BOOL FleshEnv (HWND hwndCnr,PCNRITEM pciParent)
   if(*path) {
     path[strlen(path) - 1] = 0;
     if(!stricmp(path,"LIBPATH")) {
-      var = malloc(65536);
+      var = xmalloc(65536,pszSrcFile,__LINE__);
       if(var)
         LoadLibPath(var,65536);
       env = var;
@@ -175,7 +179,7 @@ BOOL Flesh(HWND hwndCnr,PCNRITEM pciParent)
   DIRCNRDATA *dcd;
   BOOL        includefiles = fFilesInTree;
 
-  if(!pciParent || (INT)pciParent == -1 || !hwndCnr)
+  if (!pciParent || (INT)pciParent == -1 || !hwndCnr)
     return FALSE;
   pciL = (PCNRITEM)WinSendMsg(hwndCnr,
                               CM_QUERYRECORD,
@@ -465,8 +469,11 @@ Interruptus:
                          CM_ALLOCRECORD,
                          MPFROMLONG(EXTRA_RECORD_BYTES2),
                          MPFROMLONG(1L));
-        if(pci) {
-
+        if(!pci) {
+          Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
+                    GetPString(IDS_RECORDALLOCFAILEDTEXT));
+	}
+	else {
           RECORDINSERT ri;
 
           *pci->szFileName = 0;
@@ -485,28 +492,25 @@ Interruptus:
                          MPFROMP(&ri))) {
             DosSleep(100L);
             WinSetFocus(HWND_DESKTOP,hwndCnr);
-            if(WinIsWindow((HAB)0,hwndCnr)) {
-              if(WinSendMsg(hwndCnr,
-                            CM_INSERTRECORD,
-                            MPFROMP(pci),
-                            MPFROMP(&ri)))
-                ret = TRUE;
-              else {
+            if (WinIsWindow((HAB)0,hwndCnr)) {
+              if (!WinSendMsg(hwndCnr,
+                             CM_INSERTRECORD,
+                             MPFROMP(pci),
+                             MPFROMP(&ri))) {
                 Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
                           GetPString(IDS_RECORDINSERTFAILEDTEXT));
                 WinSendMsg(hwndCnr,
                            CM_FREERECORD,
                            MPFROMP(&pci),
                            MPFROMSHORT(1));
-              }
+	      }
+	      else
+                ret = TRUE;
             }
           }
           else
             ret = TRUE;
         }
-        else
-          Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-                    GetPString(IDS_RECORDALLOCFAILEDTEXT));
       }
       else if(toupper(*str) > 'B' && str[1] == ':' && str[2] == '\\' &&
               !str[3]) {
