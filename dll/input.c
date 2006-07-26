@@ -25,6 +25,8 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(FMINPUT,InputDlgProc)
 
 MRESULT EXPENTRY InputDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
@@ -47,7 +49,7 @@ MRESULT EXPENTRY InputDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       if (!WinSendDlgItemMsg(hwnd,STR_INPUT,EM_SETTEXTLIMIT,
 			     MPFROM2SHORT(psip->inputlen,0),MPVOID))
       {
-        Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+        Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,
                   "setlimit failed");
 	WinDismissDlg(hwnd,0);
 	break;
