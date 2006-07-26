@@ -3,10 +3,10 @@
 
   $Id$
 
-  Info window
+  grep tools
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   12 Feb 03 SHL insert_grepfile: standardize EA math
   12 Feb 03 SHL doonefile: standardize EA math
@@ -14,6 +14,7 @@
   25 May 05 SHL Rework for FillInRecordFromFFB
   06 Jun 05 SHL Drop unused code
   24 Oct 05 SHL dononefile: do not free EA list twice
+  22 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -33,6 +34,9 @@
 #include "grep.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(GREP,SecsSince1980,match,mmatch,dogrep)
 #pragma alloc_text(GREP,doallsubdirs,domatchingfiles)
 
@@ -463,7 +467,7 @@ static INT domatchingfiles (GREP *grep,CHAR *path,char **fle,int numfls)
 {
   /* process all matching files in a directory */
 
-  PFILEFINDBUF4  findBuffer = malloc(grep->FilesToGet * sizeof(FILEFINDBUF4));
+  PFILEFINDBUF4  findBuffer;
   PFILEFINDBUF4  pffbFile;
   register PBYTE fb;
   register ULONG x;
@@ -472,6 +476,7 @@ static INT domatchingfiles (GREP *grep,CHAR *path,char **fle,int numfls)
   CHAR           newPath[CCHMAXPATH],*p;
   APIRET         rc;
 
+  findBuffer = xmalloc(grep->FilesToGet * sizeof(FILEFINDBUF4),pszSrcFile,__LINE__);
   if(!findBuffer)
     return 0;
 
@@ -647,24 +652,21 @@ static BOOL insert_grepfile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
         p++;
       *p = 0;
       if(!grep->insertffb) {
-        grep->insertffb = malloc(sizeof(FILEFINDBUF4 *) *
-                                 (grep->FilesToGet + 1));
+        grep->insertffb = xmallocz(sizeof(FILEFINDBUF4 *) *
+                                   (grep->FilesToGet + 1),pszSrcFile,__LINE__);
         if(!grep->insertffb)
           return FALSE;
-        memset(grep->insertffb,0,sizeof(FILEFINDBUF4 *) *
-               (grep->FilesToGet + 1));
-        grep->dir = malloc(sizeof(CHAR *) * (grep->FilesToGet + 1));
+        grep->dir = xmallocz(sizeof(CHAR *) * (grep->FilesToGet + 1),pszSrcFile,__LINE__);
         if(!grep->dir) {
           free(grep->insertffb);
           return FALSE;
         }
-        memset(grep->dir,0,sizeof(CHAR *) * (grep->FilesToGet + 1));
       }
-      grep->insertffb[grep->toinsert] = malloc(sizeof(FILEFINDBUF4));
+      grep->insertffb[grep->toinsert] = xmalloc(sizeof(FILEFINDBUF4),pszSrcFile,__LINE__);
       if(!grep->insertffb[grep->toinsert])
         return FALSE;
       memcpy(grep->insertffb[grep->toinsert],f,sizeof(FILEFINDBUF4));
-      grep->dir[grep->toinsert] = strdup(szDirectory);
+      grep->dir[grep->toinsert] = xstrdup(szDirectory,pszSrcFile,__LINE__);
       if(!grep->dir) {
         free(grep->insertffb[grep->toinsert]);
         return FALSE;
@@ -855,12 +857,11 @@ static BOOL doonefile (GREP *grep,CHAR *filename,FILEFINDBUF4 *f)
   }
 
   if(grep->searchFiles) {
-    input = malloc(65537);
+    input = xmalloc(65537,pszSrcFile,__LINE__);
     if(input) {
-
       LONG len;
-
-      if((inputFile = _fsopen(filename,"rb",SH_DENYNO)) != NULL) {
+      inputFile = _fsopen(filename,"rb",SH_DENYNO);
+      if (inputFile) {
         pos = ftell(inputFile);
         while(!feof(inputFile)) {
           if(pos)
@@ -991,10 +992,14 @@ LONG CRCFile (CHAR *filename,INT *error)
   CHAR *buffer;
 
   *error = 0;
-  buffer = malloc(65535);
-  if(buffer) {
+  buffer = xmalloc(65535,pszSrcFile,__LINE__);
+  if (!buffer)
+    *error = -1;
+  else {
     fp = _fsopen(filename,"rb",SH_DENYNO);
-    if(fp) {
+    if (!fp)
+      *error = -2;
+    else {
       while(!feof(fp)) {
         len = fread(buffer,1,65535,fp);
         if(len && len < 65536L)
@@ -1006,12 +1011,8 @@ LONG CRCFile (CHAR *filename,INT *error)
       fclose(fp);
       DosSleep(1L);
     }
-    else
-      *error = -2;
     free(buffer);
   }
-  else
-    *error = -1;
   return CRC;
 }
 
@@ -1179,18 +1180,18 @@ static VOID FillDupes (GREP *g)
   if(g->CRCdupes)
     cntr = 50;
   i = g->dupehead;
-  while(i) {
+  while (i) {
     x++;
     i = i->next;
   }
-  if(x) {
+  if (x) {
     WinSetWindowText(g->hwndCurFile,
                      GetPString(IDS_GREPDUPESORTINGTEXT));
     DosSleep(1L);
     g->dupenames = malloc(sizeof(DUPES *) * (x + 1));
-    if(!g->nosizedupes)
+    if (!g->nosizedupes)
       g->dupesizes = malloc(sizeof(DUPES *) * (x + 1));
-    if(g->dupenames && (g->nosizedupes || g->dupesizes)) {
+    if (g->dupenames && (g->nosizedupes || g->dupesizes)) {
       i = g->dupehead;
       while(i) {
         g->dupenames[y] = i;
@@ -1200,7 +1201,7 @@ static VOID FillDupes (GREP *g)
         y++;
       }
       g->dupenames[y] = NULL;
-      if(!g->nosizedupes)
+      if (!g->nosizedupes)
         g->dupesizes[y] = NULL;
       DosSleep(1L);
       qsort(g->dupenames,
@@ -1210,7 +1211,7 @@ static VOID FillDupes (GREP *g)
              comparenamesqe :
              comparenamesq));
       DosSleep(1L);
-      if(!g->nosizedupes) {
+      if (!g->nosizedupes) {
         qsort(g->dupesizes,
               x,
               sizeof(DUPES *),
@@ -1379,6 +1380,7 @@ static VOID FillDupes (GREP *g)
       }
     }
     else {
+      // Insufficient memory - fall back
       DosBeep(50,100);
       WinSetWindowText(g->hwndCurFile,
                        GetPString(IDS_GREPDUPECOMPARINGTEXT));
@@ -1460,13 +1462,13 @@ static VOID FillDupes (GREP *g)
                              &list,
                              &numfiles,
                              &numalloced))
-                  goto BreakOut;
+                  goto BreakOut;		// Failed
                 if(!(i->flags & GF_INSERTED)) {
                   if(AddToList(i->name,
                                &list,
                                &numfiles,
                                &numalloced))
-                    goto BreakOut;
+                    goto BreakOut;		// Failed
                 }
                 if(g->sayfiles)
                   WinSetWindowText(g->hwndCurFile,
@@ -1506,30 +1508,30 @@ static BOOL InsertDupe (GREP *g,CHAR *dir,FILEFINDBUF4 *f)
 {
   DUPES *info;
 
-  if(*dir) {
-    info = malloc(sizeof(DUPES));
-    if(info) {
-      memset(info,0,sizeof(DUPES));
-      info->name = strdup(dir);
-      if(info->name) {
+  if (*dir) {
+    info = xmallocz(sizeof(DUPES),pszSrcFile,__LINE__);
+    if (!info)
+      return FALSE;
+    else {
+      info->name = xstrdup(dir,pszSrcFile,__LINE__);
+      if (!info->name) {
+        free(info);
+        return FALSE;
+      }
+      else {
         info->size = f->cbFile;
         info->date = f->fdateLastWrite;
         info->time = f->ftimeLastWrite;
         info->CRC = -1L;
         g->numfiles++;
-        if(!g->dupehead)
+        if (!g->dupehead)
           g->dupehead = info;
-        if(g->dupelast)
+        if (g->dupelast)
           g->dupelast->next = info;
         g->dupelast = info;
         info->next = NULL;
-        return TRUE;
       }
-      else
-        free(info);
     }
-    DosBeep(50,100);
-    return FALSE;
   }
   return TRUE;
 }

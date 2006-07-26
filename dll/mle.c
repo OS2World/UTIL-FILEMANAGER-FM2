@@ -6,28 +6,30 @@
   MLE text editor/viewer
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   16 Apr 06 SHL MLEexportfile: rework to avoid wrap problems
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
-/* MLE support functions */
-
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "mle.h"
 #include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(FMMLE,MLEgetlinetext,MLEdeleteline,MLEdeletecurline,MLEdeletetoeol)
 
@@ -151,20 +153,26 @@ VOID MLEinternet (HWND h,BOOL ftp)
   CHAR *temp = NULL;
   IPT   ancpos,curpos,here;
   LONG  len,oldlen;
+  APIRET rc;
 
   len = MLEsizeofsel(h);
   len = min(2048,len);
   oldlen = len;
-  if(len) {
+  if (len) {
     len++;
-    if(!DosAllocMem((PVOID)&temp,4096,
-                    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE) && temp) {
+    rc = DosAllocMem((PVOID)&temp,4096,
+                     PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+    if (rc || !temp)
+      Dos_Error(MB_CANCEL,rc,h,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+    else {
       ancpos = MLEancpos(h);
       curpos = MLEcurpos(h);
       here = min(curpos,ancpos);
       WinSendMsg(h,MLM_SETIMPORTEXPORT,MPFROMP(temp),MPFROMLONG(len));
       len = (LONG)WinSendMsg(h,MLM_EXPORT,MPFROMP(&here),MPFROMP(&len));
-      if(len > 1) {
+      if (len <= 1)
+        Runtime_Error(pszSrcFile, __LINE__, "len <= 1");
+      else {
         if(len > oldlen)
           len--;
         temp[len] = 0;
@@ -188,8 +196,6 @@ VOID MLEinternet (HWND h,BOOL ftp)
                     temp);
         }
       }
-      else
-        DosBeep(50,100);
       DosFreeMem(temp);
     }
   }
@@ -204,20 +210,18 @@ BOOL MLEdoblock (HWND h,INT action,CHAR *filename)
   CHAR *sel,*temp = NULL;
   IPT  ancpos,curpos,here;
   LONG sellen,oldlen;
+  APIRET rc;
 
   oldlen = MLEsizeofsel(h);
   if(!oldlen)
     return TRUE;
-  sel = malloc((INT)(oldlen + 2));
-  if(!sel) {
-    DosBeep(50,100);
+  sel = xmallocz((size_t)(oldlen + 2),pszSrcFile,__LINE__);
+  if (!sel)
     return FALSE;
-  }
-  memset(sel,0,(INT)(oldlen + 2));
-  if(DosAllocMem((PVOID)&temp,32768L,
-                  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE) ||
-     !temp) {
-    DosBeep(50,100);
+  rc = DosAllocMem((PVOID)&temp,32768L,
+                   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  if (rc || !temp) {
+    Dos_Error(MB_CANCEL,rc,h,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
     free(sel);
     DosPostEventSem(CompactSem);
     return FALSE;
@@ -232,8 +236,8 @@ BOOL MLEdoblock (HWND h,INT action,CHAR *filename)
     sellen = min(oldlen + 1,32701);
     WinSendMsg(h,MLM_SETIMPORTEXPORT,MPFROMP(temp),MPFROMLONG(sellen));
     sellen = (LONG)WinSendMsg(h,MLM_EXPORT,MPFROMP(&here),MPFROMP(&sellen));
-    if(sellen < 1) {
-      DosBeep(50,100);
+    if (sellen < 1) {
+      Runtime_Error(pszSrcFile, __LINE__, "len < 1");
       free(sel);
       DosPostEventSem(CompactSem);
       return FALSE;
@@ -259,14 +263,14 @@ BOOL MLEdoblock (HWND h,INT action,CHAR *filename)
 
         fp = fopen(filename,"a+");
         if(!fp)
-          fp = fopen(filename,"w");
-        if(fp) {
+          fp = xfopen(filename,"w",pszSrcFile,__LINE__);
+        if (fp) {
           fseek(fp,0L,SEEK_END);
           fwrite(sel,1,strlen(sel),fp);
           fclose(fp);
         }
 #ifdef __DEBUG_ALLOC__
-    _heap_check();
+        _heap_check();
 #endif
         DosFreeMem(temp);
         free(sel);
@@ -364,15 +368,15 @@ BOOL MLEdoblock (HWND h,INT action,CHAR *filename)
                               MLM_IMPORT,
                               MPFROMP(&here),
                               MPFROMLONG(sellen));
-    if(!sellen) {
-      DosBeep(50,100);
+    if (!sellen) {
+      Runtime_Error(pszSrcFile, __LINE__, "sellen 0");
       break;
     }
     p += sellen;
     oldlen -= sellen;
     if(oldlen && *p == '\n' /* && *(p - 1) == '\r' */)
       p--;
-  }
+  } // while
   WinSendMsg(h,MLM_SETSEL,MPFROMLONG(ancpos),MPFROMLONG(curpos));
   MLEenable(h);
 #ifdef __DEBUG_ALLOC__
@@ -453,6 +457,7 @@ BOOL MLEHexLoad (HWND h,CHAR *filename)
   HWND        grandpa;
   XMLEWNDPTR *vw;
   HFILE       handle;
+  APIRET      rc;
 
   *titletext = 0;
   hab = WinQueryAnchorBlock(h);
@@ -462,19 +467,29 @@ BOOL MLEHexLoad (HWND h,CHAR *filename)
   grandpa = GrandparentOf(h);
   *titletext = 0;
   WinQueryWindowText(grandpa,512,titletext);
-  if(!DosOpen(filename,&handle,&action,0L,0L,
-              OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-              OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-              OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-              OPEN_ACCESS_READONLY,0L)) {
+  rc = DosOpen(filename,&handle,&action,0L,0L,
+               OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+               OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+               OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+               OPEN_ACCESS_READONLY,0L);
+  if (rc) {
+    ret = FALSE;
+  }
+  else {
     DosChgFilePtr(handle, 0L, FILE_END, &len);
     DosChgFilePtr(handle, 0L, FILE_BEGIN, &action);
-    if(len) {
-      if(!DosAllocMem((PVOID)&hexbuff,50001L,
-                       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE) &&
-         hexbuff) {
-        buffer = malloc(10000);
-        if(buffer) {
+    if (len) {
+      rc = DosAllocMem((PVOID)&hexbuff,50001L,
+                       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+      if (rc || !hexbuff) {
+        Dos_Error(MB_CANCEL,rc,h,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+        ret = FALSE;
+      }
+      else {
+        buffer = xmalloc(10000,pszSrcFile,__LINE__);
+        if (!buffer)
+          ret = FALSE;
+	else {
           MLEclearall(h);
           WinSendMsg(h,MLM_SETIMPORTEXPORT,MPFROMP(hexbuff),
                      MPFROMLONG(50000L));
@@ -539,7 +554,7 @@ BOOL MLEHexLoad (HWND h,CHAR *filename)
                 break;
               }
               sprintf(s,
-                      GetPString(IDS_LOADING2TEXT),
+                      GetPString(IDS_LOADINGMLETEXT),
                       len);
               WinSetWindowText(grandpa,s);
             }
@@ -549,29 +564,13 @@ BOOL MLEHexLoad (HWND h,CHAR *filename)
             ret = FALSE;
           free(buffer);
         }
-        else {
-          saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-                 HWND_DESKTOP,
-                 GetPString(IDS_ARGHTEXT),
-                 GetPString(IDS_OUTOFMEMORY));
-          ret = FALSE;
-        }
         DosFreeMem(hexbuff);
-      }
-      else {
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-               HWND_DESKTOP,
-               GetPString(IDS_ARGHTEXT),
-               GetPString(IDS_OUTOFMEMORY));
-        ret = FALSE;
       }
     }
     if(WinIsWindow(hab,h))
       WinSetWindowText(grandpa,titletext);
     DosClose(handle);
   }
-  else
-    ret = FALSE;
   if(!first) {
     WinEnableWindowUpdate(h,TRUE);
     MLEenable(h);
@@ -581,9 +580,10 @@ BOOL MLEHexLoad (HWND h,CHAR *filename)
 }
 
 
+//== MLEinsertfile() insert a file into the current position in the MLE ==
+
 BOOL MLEinsertfile (HWND h,CHAR *filename)
 {
-  /* insert a file into the current position in the MLE */
 
   HAB   hab;
   FILE *fp;
@@ -608,16 +608,22 @@ BOOL MLEinsertfile (HWND h,CHAR *filename)
                      512,
                      titletext);
   fp = _fsopen(filename,"r",SH_DENYNO);
-  if(fp) {
+  if (!fp)
+    ret = FALSE;
+  else {
     setvbuf(fp,NULL,_IONBF,0);
     fseek(fp,0L,SEEK_END);
     len = (INT)ftell(fp);
     fseek(fp,0L,SEEK_SET);
     if(len && len != -1) {
-      if(!DosAllocMem((PVOID)&buffer,
+      rc = DosAllocMem((PVOID)&buffer,
                        50000L,
-                       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE) &&
-         buffer) {
+                       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+      if (rc || !buffer) {
+        Dos_Error(MB_CANCEL,rc,h,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+        ret = FALSE;
+      }
+      else {
         WinSendMsg(h,
                    MLM_SETIMPORTEXPORT,
                    MPFROMP(buffer),
@@ -715,7 +721,7 @@ BOOL MLEinsertfile (HWND h,CHAR *filename)
               break;
             }
             sprintf(s,
-                    GetPString(IDS_LOADING2TEXT),
+                    GetPString(IDS_LOADINGMLETEXT),
                     len);
             WinSetWindowText(grandpa,s);
           }
@@ -723,20 +729,11 @@ BOOL MLEinsertfile (HWND h,CHAR *filename)
         }
         DosFreeMem(buffer);
       }
-      else {
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-               HWND_DESKTOP,
-               GetPString(IDS_ARGHTEXT),
-               GetPString(IDS_OUTOFMEMORY));
-        ret = FALSE;
-      }
     }
     if(WinIsWindow(hab,h))
       WinSetWindowText(grandpa,titletext);
     fclose(fp);
   }
-  else
-    ret = FALSE;
   if(!first) {
     WinEnableWindowUpdate(h,TRUE);
     MLEenable(h);
@@ -797,24 +794,28 @@ VOID LoadThread (VOID *arg)
 
 
 INT MLEbackgroundload (HWND hwndReport,ULONG msg,HWND h,CHAR *filename,
-                       INT hex) {
-
-  /* load a file into the MLE in the background (via a separate thread) */
+                       INT hex)
+{
+  /* load a file into the MLE in the background (via a separate thread)
+   * return _beginthread status
+   */
 
   BKGLOAD *bkg;
+  INT rc;
 
-  bkg = malloc(sizeof(BKGLOAD));
-  if(bkg) {
-    memset(bkg,0,sizeof(BKGLOAD));
-    bkg->size = sizeof(BKGLOAD);
-    bkg->hex = (USHORT)hex;
-    bkg->hwndReport = hwndReport;
-    bkg->msg = msg;
-    bkg->h = h;
-    strcpy(bkg->filename,filename);
-    return _beginthread(LoadThread,NULL,65536,bkg);
-  }
-  return -1;
+  bkg = xmallocz(sizeof(BKGLOAD),pszSrcFile,__LINE__);
+  if (!bkg)
+    return -1;
+  bkg->size = sizeof(BKGLOAD);
+  bkg->hex = (USHORT)hex;
+  bkg->hwndReport = hwndReport;
+  bkg->msg = msg;
+  bkg->h = h;
+  strcpy(bkg->filename,filename);
+  rc = _beginthread(LoadThread,NULL,65536,bkg);
+  if (rc == -1)
+    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+  return rc;
 }
 
 #pragma alloc_text(FMMLE5,MLEloadfile,MLEexportfile)
@@ -853,6 +854,7 @@ BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,
   BOOL ok = TRUE;
   INT  blanklines = 0;
   BOOL fWrap = MLEgetwrap(h);
+  APIRET rc;
 
   // saymsg(MB_ENTER,h,DEBUG_STRING,"len = %ld",MLEgetlen(h));
   if(!MLEgetlen(h))   /* nothing to save; forget it */
@@ -880,14 +882,20 @@ BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,
     }
   }
 
-  if(!DosAllocMem((PVOID)&buffer,4096L,
-                   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE) &&
-     buffer) {
+  rc = DosAllocMem((PVOID)&buffer,4096L,
+                   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  if (rc || !buffer) {
+    Dos_Error(MB_CANCEL,rc,h,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+    ok = FALSE;
+  }
+  else
+  {
     fp = fopen(filename,"a+");
-    if(!fp)
-      fp = fopen(filename,"w");
-    if(fp) {
-
+    if (!fp)
+      fp = xfopen(filename,"w",pszSrcFile,__LINE__);
+    if (!fp)
+      ok = FALSE;
+    else {
       LONG numlines,ret,len,wl,temp;
       IPT  s;
 
@@ -953,11 +961,7 @@ BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,
         }
       } // for lines
     }
-    else
-      ok = FALSE;
   }
-  else
-    ok = FALSE;
 
   MLEsetwrap(h, fWrap);		// Restore
 

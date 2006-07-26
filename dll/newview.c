@@ -6,21 +6,22 @@
   New internal viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   01 Dec 03 SHL Comments
   02 Dec 03 SHL Correct WM_VSCROLL math
   23 May 05 SHL Use QWL_USER
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Correct reversed wrap logic
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,12 +29,16 @@
 #include <process.h>
 #include <limits.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(NEWVIEW,ViewStatusProc,FreeViewerMem,LoadFile)
 #pragma alloc_text(NEWVIEW,InitWindow,PaintLine,ViewWndProc)
 #pragma alloc_text(NEWVIEW,ViewFrameWndProc,StartViewer,ReLine)
@@ -251,7 +256,7 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      DosBeep(250, 100);
+      Runtime_Error(pszSrcFile, __LINE__, "no data");
       break;
 
     case DID_CANCEL:
@@ -1128,8 +1133,14 @@ static VOID Clipboard(VOID * args)
 		  if (export_filename(hwnd, filename, FALSE))
 		  {
 		    fp = _fsopen(filename, "a+", SH_DENYWR);
-		    if (fp)
-		    {
+		    if (!fp) {
+		      saymsg(MB_CANCEL,
+			     hwnd,
+			     GetPString(IDS_ERRORTEXT),
+			     GetPString(IDS_CANTOPENFORWRITETEXT),
+			     filename);
+		    }
+		    else {
 		      fseek(fp, 0L, SEEK_END);
 		      for (x = 0; list[x]; x++)
 			fprintf(fp,
@@ -1137,12 +1148,6 @@ static VOID Clipboard(VOID * args)
 				list[x]);
 		      fclose(fp);
 		    }
-		    else
-		      saymsg(MB_CANCEL,
-			     hwnd,
-			     GetPString(IDS_ERRORTEXT),
-			     GetPString(IDS_CANTOPENFORWRITETEXT),
-			     filename);
 		  }
 		}
 	      }
@@ -1181,7 +1186,6 @@ static VOID ReLine(VOID * args)
   RECTL Rectl;
   ULONG width, numlines, firstline = 1, cursored = 1;
 
-// DosBeep(50,100);
   priority_normal();
   hab2 = WinInitialize(0);
   if (hab2)
@@ -1280,23 +1284,18 @@ static VOID ReLine(VOID * args)
 
 		    CHAR **temp;
 
-		    temp = realloc(ad -> lines, sizeof(CHAR *) *
-				   (ad -> numalloc + 256));
-		    if (temp)
-		    {
-		      ad -> lines = temp;
-		      ad -> numalloc += 256;
-		    }
-		    else
+		    temp = xrealloc(ad -> lines, sizeof(CHAR *) *
+				   (ad -> numalloc + 256),pszSrcFile,__LINE__);
+		    if (!temp)
 		      break;
+		    ad -> lines = temp;
+		    ad -> numalloc += 256;
 		  }
 		  ad -> lines[ad -> numlines] = p;
 		  ad -> numlines++;
 		  if (ad -> numlines == numlines)
 		  {
-
 		    /* display first page */
-
 		    register INT x;
 
 		    for (x = 0; x < ad -> numlines; x++)
@@ -1326,7 +1325,7 @@ static VOID ReLine(VOID * args)
 
 		CHAR **temp;
 
-		temp = realloc(ad -> lines, sizeof(CHAR *) * ad -> numlines);
+		temp = xrealloc(ad -> lines, sizeof(CHAR *) * ad -> numlines,pszSrcFile,__LINE__);
 		if (temp)
 		{
 		  ad -> lines = temp;
@@ -1342,7 +1341,7 @@ static VOID ReLine(VOID * args)
 	    }
 	    if (ad -> numlines)
 	    {
-	      ad -> markedlines = malloc(ad -> numlines);
+	      ad -> markedlines = xmalloc(ad -> numlines,pszSrcFile,__LINE__);
 	      if (ad -> markedlines)
 	      {
 		memset(ad -> markedlines, 0, ad -> numlines);
@@ -1421,39 +1420,37 @@ static VOID LoadFile(VOID * args)
 			 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
 			 OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
 			 OPEN_ACCESS_READONLY, 0L);
-	    if (!rc)
-	    {
+	    if (rc) {
+	      Dos_Error(MB_CANCEL,
+			rc,
+			hwnd,
+			pszSrcFile,
+			__LINE__,
+			GetPString(IDS_COMPCANTOPENTEXT),
+			ad -> filename);
+	    }
+	    else {
 	      DosChgFilePtr(handle, 0L, FILE_END, &len);
 	      DosChgFilePtr(handle, 0L, FILE_BEGIN, &action);
-	      if (len)
-	      {
-		ad -> text = malloc(len + 2);
+	      if (!len) {
+		saymsg(MB_CANCEL,
+		       hwnd,
+		       GetPString(IDS_ERRORTEXT),
+		       GetPString(IDS_ZEROLENGTHTEXT),
+		       ad -> filename);
+	      }
+	      else {
+		ad -> text = xmalloc(len + 2,pszSrcFile,__LINE__);
 		if (ad -> text)
 		{
 		  *ad -> text = 0;
 		  ad -> text[len] = 0;
-		  if (!DosRead(handle, ad -> text, len, &ad -> textsize))
-		  {
-		    ad -> text[ad -> textsize] = 0;
-		    if (!ad -> hex && !(ad -> flags & (8 | 16)) && ad -> textsize)
-		    {
-
-		      ULONG x;
-
-		      x = min(512, ad -> textsize);
-		      if (fGuessType && IsBinary(ad -> text, x))
-			ad -> hex = TRUE;
-		    }
-		    if (ad -> textsize &&
-		     _beginthread(ReLine, NULL, 524288, (PVOID) hwnd) != -1)
-		      error = FALSE;
-		  }
-		  else
-		  {
+		  rc = DosRead(handle, ad -> text, len, &ad -> textsize);
+		  if (rc) {
 		    Dos_Error(MB_CANCEL,
 			      rc,
 			      hwnd,
-			      __FILE__,
+			      pszSrcFile,
 			      __LINE__,
 			      GetPString(IDS_ERRORREADINGTEXT),
 			      ad -> filename);
@@ -1461,24 +1458,26 @@ static VOID LoadFile(VOID * args)
 		    ad -> text = NULL;
 		    ad -> textsize = 0;
 		  }
+		  else {
+		    ad -> text[ad -> textsize] = 0;
+		    if (!ad -> hex && !(ad -> flags & (8 | 16)) && ad -> textsize)
+		    {
+		      ULONG x;
+		      x = min(512, ad -> textsize);
+		      if (fGuessType && IsBinary(ad -> text, x))
+			ad -> hex = TRUE;
+		    }
+		    if (ad -> textsize) {
+		      if (_beginthread(ReLine, NULL, 524288, (PVOID) hwnd) == -1)
+                        Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+		      else
+		        error = FALSE;
+		    }
+		  }
 		}
 	      }
-	      else
-		saymsg(MB_CANCEL,
-		       hwnd,
-		       GetPString(IDS_ERRORTEXT),
-		       GetPString(IDS_ZEROLENGTHTEXT),
-		       ad -> filename);
 	      DosClose(handle);
 	    }
-	    else
-	      Dos_Error(MB_CANCEL,
-			rc,
-			hwnd,
-			__FILE__,
-			__LINE__,
-			GetPString(IDS_COMPCANTOPENTEXT),
-			ad -> filename);
 	  }
 	  ad -> busy--;
 	  DosReleaseMutexSem(ad -> ScanSem);
@@ -1729,7 +1728,7 @@ MRESULT EXPENTRY FindStrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	s[SEARCHSTRINGLEN - 1] = 0;
 	if (!*s)
 	{
-	  DosBeep(250, 100);
+	  DosBeep(250, 100);		// Complain
 	  break;
 	}
 	strcpy(ad -> searchtext, s);
@@ -1843,8 +1842,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SETUP:
-    if (ad)
-    {
+    if (!ad) {
+      Runtime_Error(pszSrcFile, __LINE__, "no data");
+    }
+    else {
+      CHAR s[CCHMAXPATH + 8];
+      APIRET rc;
       ad -> hwndMenu = WinWindowFromID(ad -> hwndFrame, FID_MENU);
       ad -> hvscroll = WinWindowFromID(ad -> hwndFrame, FID_VERTSCROLL);
       ad -> hhscroll = WinWindowFromID(ad -> hwndFrame, FID_HORZSCROLL);
@@ -1856,18 +1859,17 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 SBM_SETTHUMBSIZE,
 		 MPFROM2SHORT(1, 1),
 		 MPVOID);
-      {
-	CHAR s[CCHMAXPATH + 8];
-
-	sprintf(s,
-		"%s: %s",
-		FM2Str,
-		ad -> filename);
-	WinSetWindowText(ad -> hwndFrame,
-			 s);
-      }
-      if (!DosCreateMutexSem(NULL, &ad -> ScanSem, 0L, FALSE))
-      {
+      sprintf(s,
+	      "%s: %s",
+	      FM2Str,
+	      ad -> filename);
+      WinSetWindowText(ad -> hwndFrame,
+		       s);
+      rc = DosCreateMutexSem(NULL, &ad -> ScanSem, 0L, FALSE);
+      if (rc)
+        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosCreateMutexSem");
+      else {
+	PFNWP oldproc;
 	WinSendMsg(ad -> hvscroll,
 		   SBM_SETSCROLLBAR,
 		   MPFROMSHORT(1),
@@ -1942,23 +1944,20 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					 NEWVIEW_DRAG,
 					 NULL,
 					 NULL);
-	{
-	  PFNWP oldproc;
-
-	  oldproc = WinSubclassWindow(ad -> hwndFrame, (PFNWP) ViewFrameWndProc);
-	  if (oldproc)
-	    WinSetWindowPtr(ad -> hwndFrame, QWL_USER, (PVOID) oldproc);
-	  ad -> hps = InitWindow(hwnd);
-	  if (_beginthread(LoadFile, NULL, 524288, (PVOID) hwnd) != -1)
-	  {
-	    WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
-	    DosSleep(32L);
-	    return (MRESULT) 1;
-	  }
+	oldproc = WinSubclassWindow(ad -> hwndFrame, (PFNWP) ViewFrameWndProc);
+	if (oldproc)
+	  WinSetWindowPtr(ad -> hwndFrame, QWL_USER, (PVOID) oldproc);
+	ad -> hps = InitWindow(hwnd);
+	if (_beginthread(LoadFile, NULL, 524288, (PVOID) hwnd) == -1)
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	else {
+	  WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
+	  DosSleep(32L);
+	  return (MRESULT)1;
 	}
       }
     }
-    DosBeep(250, 100);
+    // Oops
     WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
     return 0;
 
@@ -2086,7 +2085,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  if (_beginthread(ReLine, NULL, 524288, (PVOID) hwnd) == -1)
 	  {
-	    DosBeep(50, 100);
+            Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    DosReleaseMutexSem(ad -> ScanSem);
 	    WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
 	    return 0;
@@ -2490,17 +2489,14 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    USHORT ret;
 	    URLDATA *urld;
 
-	    urld = malloc(sizeof(URLDATA));
-	    if (urld)
-	    {
-	      memset(urld, 0, sizeof(URLDATA));
+	    urld = xmallocz(sizeof(URLDATA),pszSrcFile,__LINE__);
+	    if (urld) {
 	      urld -> size = sizeof(URLDATA);
 	      urld -> line = ad -> lines[whichline];
 	      urld -> len = width;
 	      ret = (USHORT) WinDlgBox(HWND_DESKTOP, hwnd, UrlDlgProc,
 				       FM3ModHandle, URL_FRAME, urld);
-	      switch (ret)
-	      {
+	      switch (ret) {
 	      case 0:
 		free(urld);
 		goto NoAdd;
@@ -2552,12 +2548,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  if (!ad -> hex && ad -> lines)
 	  {
-	    s = malloc(width + 2);
+	    s = xmalloc(width + 2,pszSrcFile,__LINE__);
 	    if (!s)
-	    {
-	      DosBeep(50, 100);
 	      goto NoAdd;
-	    }
 	    strncpy(s, ad -> lines[whichline], width + 1);
 	    s[width + 1] = 0;
 	    p = s;
@@ -2578,12 +2571,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    width = ad -> textsize - (whichline * 16);
 	    width = min(width, 16);
-	    s = malloc(80);
+	    s = xmalloc(80,pszSrcFile,__LINE__);
 	    if (!s)
-	    {
-	      DosBeep(50, 100);
 	      goto NoAdd;
-	    }
 	    sprintf(s, "%08lx ", whichline * 16);
 	    p = s + 9;
 	    for (x = 0; x < width; x++)
@@ -2839,7 +2829,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!ad -> numlines)
       {
 	if (!ad -> text)
-	  DosBeep(250, 100);
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
 	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       }
       else
@@ -3685,7 +3675,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      "Viewer.Searchtext",
 				      (PVOID) ad -> searchtext);
 	      if (_beginthread(Search, NULL, 524288, (PVOID) hwnd) == -1)
-		DosBeep(250, 100);
+                Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    }
 	  }
 	  DosReleaseMutexSem(ad -> ScanSem);
@@ -3972,11 +3962,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!ad -> busy)
 	  {
 	    ad -> cliptype = SHORT1FROMMP(mp1);
-	    if (_beginthread(Clipboard,
-			     NULL,
-			     524288,
-			     (PVOID) hwnd) == -1)
-	      DosBeep(50, 100);
+	    if (_beginthread(Clipboard,NULL,524288,(PVOID) hwnd) == -1)
+              Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  }
 	  DosReleaseMutexSem(ad -> ScanSem);
 	}
@@ -4292,10 +4279,12 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
       WinSendMsg(hwndMenu, MM_DELETEITEM,
 		 MPFROM2SHORT(IDM_SAVETOCLIP, FALSE), MPVOID);
     }
-    ad = malloc(sizeof(VIEWDATA));
-    if (ad)
-    {
-      memset(ad, 0, sizeof(VIEWDATA));
+    ad = xmallocz(sizeof(VIEWDATA),pszSrcFile,__LINE__);
+    if (!ad) {
+      WinDestroyWindow(hwndFrame);
+      hwndFrame = (HWND) 0;
+    }
+    else {
       ad -> size = sizeof(VIEWDATA);
       ad -> stopflag = 0;
       ad -> multiplier = 1;
@@ -4366,14 +4355,13 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
       ad -> ignoreftp = IgnoreFTP;
       memcpy(ad -> colors, Colors, sizeof(LONG) * COLORS_MAX);
       WinSetWindowPtr(hwndClient, QWL_USER, (PVOID) ad);
-      if (WinSendMsg(hwndClient, UM_SETUP, MPVOID, MPVOID))
-      {
-//        DosSleep(64L);
+      if (!WinSendMsg(hwndClient, UM_SETUP, MPVOID, MPVOID))
+	hwndFrame = (HWND)0;
+      else {
+        // DosSleep(64L);
 	if (!(FrameFlags & FCF_TASKLIST) && !(flags & 2))
 	{
-
 	  SWP swp;
-
 	  FillClient(hwndParent, &swp, NULL, FALSE);
 	  WinSetWindowPos(hwndFrame, HWND_TOP, swp.x, swp.y, swp.cx, swp.cy,
 			  SWP_SIZE | SWP_MOVE | SWP_SHOW | SWP_RESTORE |
@@ -4407,13 +4395,6 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
 			  SWP_ACTIVATE);
 	}
       }
-      else
-	hwndFrame = (HWND) 0;
-    }
-    else
-    {
-      WinDestroyWindow(hwndFrame);
-      hwndFrame = (HWND) 0;
     }
   }
   return hwndFrame;

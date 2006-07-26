@@ -4,32 +4,36 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
 #pragma alloc_text(FMEXTRACT,ExtractTextProc,ExtractDlgProc)
 
+static PSZ pszSrcFile = __FILE__;
 
-MRESULT EXPENTRY ExtractTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ExtractTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   PFNWP        oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
   static BOOL  emphasized = FALSE;
 
@@ -75,8 +79,8 @@ MRESULT EXPENTRY ExtractTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   EXTRDATA    *arcdata = NULL;
 
   switch(msg) {
@@ -313,7 +317,7 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
             }
           }
-          DosBeep(50,100);
+          DosBeep(50,100);		// Complain a refuse to quit
           break;
 
         case IDM_HELP:
@@ -346,10 +350,12 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             WinQueryDlgItemText(hwnd,EXT_COMMAND,256,s);
             lstrip(s);
-            if(*s) {
+            if (!*s)
+              Runtime_Error(pszSrcFile, __LINE__, "no command");
+	    else {
               p = strchr(s,' ');
-              if(p)
-                *p = 0;
+              if (p)
+                *p = 0;			// Drop options
               memset(&ex,0,sizeof(EXECARGS));
               ex.commandline = s;
               ex.flags = WINDOWED | SEPARATEKEEP | MAXIMIZED;
@@ -362,15 +368,15 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                            EXEC_FRAME,
                            MPFROMP(&ex)) &&
                  *s)
+	      {
                 runemf2(ex.flags,
                         hwnd,
                         NULL,
                         (*ex.environment) ? ex.environment : NULL ,
                         "%s",
                         s);
+	      }
             }
-            else
-              DosBeep(50,100);
           }
           break;
       }

@@ -6,17 +6,18 @@
   Kill a process
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOSERRORS
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,17 +25,20 @@
 #include <ctype.h>
 #include <process.h>
 #include <limits.h>
+
 #include "procstat.h"
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(KILLPROC,FillKillList,FillKillList2,GetDosPgmName,KillDlgProc)
 
-
-CHAR *GetDosPgmName (PID pid,CHAR *string) {
-
+CHAR *GetDosPgmName (PID pid,CHAR *string)
+{
   HSWITCH hs;
   SWCNTRL swctl;
   PCH     pch;
@@ -63,8 +67,8 @@ CHAR *GetDosPgmName (PID pid,CHAR *string) {
 }
 
 
-VOID FillKillList2 (VOID *arg) {
-
+VOID FillKillList2 (VOID *arg)
+{
   HWND          hwnd = *(HWND *)arg;
   CHAR          s[1036];
   HAB           thab;
@@ -79,10 +83,13 @@ VOID FillKillList2 (VOID *arg) {
   WinCancelShutdown(thmq,TRUE);
 
   WinSendDlgItemMsg(hwnd,KILL_LISTBOX,LM_DELETEALL,MPVOID,MPVOID);
-  if(!DosAllocMem((PVOID)&pbh,USHRT_MAX + 4096,
-                  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE)) {
+  rc = DosAllocMem((PVOID)&pbh,USHRT_MAX + 4096,
+                    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  if (rc)
+    Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+  else {
     rc = DosQProcStatus(pbh,USHRT_MAX);
-    if(!rc) {
+    if (!rc) {
       ppi = pbh->ppi;
       while(ppi->ulEndIndicator != PROCESS_END_INDICATOR ) {
         if(ppi->pid != mypid) {
@@ -99,20 +106,21 @@ VOID FillKillList2 (VOID *arg) {
               else
                 strcat(s,GetPString(IDS_UNKNOWNPROCTEXT));
             }
-            if(WinIsWindow(thab,hwnd))
+            if (WinIsWindow(thab,hwnd)) {
               WinSendDlgItemMsg(hwnd,KILL_LISTBOX,LM_INSERTITEM,
                                 MPFROM2SHORT(LIT_SORTASCENDING,0),
                                              MPFROMP(s));
+	    }
             else
               break;
           }
         }
         ppi = (PPROCESSINFO)(ppi->ptiFirst + ppi->usThreadCount);
-      }
+      } // while
     }
     DosFreeMem(pbh);
   }
-Abort:
+
   if(WinIsWindow(thab,hwnd))
     PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
   WinDestroyMsgQueue(thmq);
@@ -120,8 +128,8 @@ Abort:
 }
 
 
-VOID FillKillList (VOID *arg) {
-
+VOID FillKillList (VOID *arg)
+{
   HWND  hwnd = *(HWND *)arg;
   CHAR  s[1036],progname[1027],*p;
   HAB   thab;
@@ -148,10 +156,16 @@ VOID FillKillList (VOID *arg) {
   strcpy(s,"$PSTAT#$.#$#");
   unlinkf("%s",s);
   fp = fopen(s,"w");
-  if(fp) {
+  if(!fp) {
+    Win_Error(NULLHANDLE,HWND_DESKTOP,__FILE__,__LINE__,
+              GetPString(IDS_REDIRECTERRORTEXT));
+    goto Abort;
+  }
+  else {
     newstdout = -1;
-    if(DosDupHandle(fileno(stdout),&newstdout))
-      DosBeep(50,100);
+    rc = DosDupHandle(fileno(stdout),&newstdout);
+    if (rc)
+      Dos_Error(MB_CANCEL,rc,hwnd,__FILE__,__LINE__,"DosDupHandle");
     oldstdout = fileno(stdout);
     DosDupHandle(fileno(fp),&oldstdout);
     rc = runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
@@ -171,11 +185,6 @@ VOID FillKillList (VOID *arg) {
              GetPString(IDS_CANTRUNPSTATTEXT));
       goto Abort;
     }
-  }
-  else {
-    Win_Error(NULLHANDLE,HWND_DESKTOP,__FILE__,__LINE__,
-              GetPString(IDS_REDIRECTERRORTEXT));
-    goto Abort;
   }
   fp = fopen(s,"r");
   if(fp) {
@@ -224,8 +233,8 @@ Abort:
 }
 
 
-MRESULT EXPENTRY KillDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY KillDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   SHORT           sSelect;
   PID             pid;
   static BOOL     listdone;
@@ -386,13 +395,14 @@ MRESULT EXPENTRY KillDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               if(pid) {
                 if(SHORT1FROMMP(mp1) == DID_OK) {
                   error = DosKillProcess(DKP_PROCESS,pid);
-                  if(error && error != ERROR_INVALID_PROCID)
+                  if(error && error != ERROR_INVALID_PROCID) {
                     Dos_Error(MB_CANCEL,
                               error,
                               hwnd,
                               __FILE__,
                               __LINE__,
                               GetPString(IDS_DOSKILLFAILEDTEXT));
+		  }
                   else
                     WinSendDlgItemMsg(hwnd,
                                       KILL_LISTBOX,
@@ -408,10 +418,10 @@ MRESULT EXPENTRY KillDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           break;
 
         case DID_CANCEL:
-          if(listdone)
+          if(!listdone)
+            Runtime_Error(pszSrcFile, __LINE__, "busy");
+	  else
             WinDismissDlg(hwnd,0);
-          else
-            DosBeep(100,100);
           break;
 
         case IDM_HELP:
@@ -425,7 +435,7 @@ MRESULT EXPENTRY KillDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case WM_CLOSE:
       if(!listdone) {
-        DosBeep(100,100);
+        Runtime_Error(pszSrcFile, __LINE__, "busy");
         return 0;
       }
       break;

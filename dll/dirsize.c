@@ -6,7 +6,7 @@
   Directory sizes
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL Use CBLIST_TO_EASIZE
@@ -19,6 +19,7 @@
   06 Jun 05 SHL Drop obsoletes
   19 Jun 05 SHL More 64-bit math fixes
   08 Aug 05 SHL Avoid Expand/Collapse hangs while working
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -37,9 +38,6 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-#pragma alloc_text(DIRSIZE,ProcessDir,FillCnrThread,DirSizeProc)
-#pragma alloc_text(DIRSIZE2,PrintToFile,FillInRecSizes,SortSizeCnr)
-
 typedef struct {
   CHAR        *pszFileName;
   HWND         hwndCnr;
@@ -55,6 +53,11 @@ typedef struct {
   HPOINTER  hptr;
 } tState;
 
+
+static PSZ pszSrcFile = __FILE__;
+
+#pragma alloc_text(DIRSIZE,ProcessDir,FillCnrThread,DirSizeProc)
+#pragma alloc_text(DIRSIZE2,PrintToFile,FillInRecSizes,SortSizeCnr)
 
 static SHORT APIENTRY SortSizeCnr (PMINIRECORDCORE p1,PMINIRECORDCORE p2,
 			    PVOID SortFlags)
@@ -91,7 +94,7 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
   // fixme to report errors
   *pullTotalBytes = 0;		// In case we fail
 
-  pFFB = malloc(sizeof(FILEFINDBUF4) /* * FilesToGet */);
+  pFFB = xmalloc(sizeof(FILEFINDBUF4),pszSrcFile,__LINE__);
   if(!pFFB)
     return FALSE;
   strcpy(maskstr,pszFileName);
@@ -149,7 +152,7 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
     Dos_Error(MB_ENTER,
 	      rc,
 	      HWND_DESKTOP,
-	      __FILE__,
+	      pszSrcFile,
 	      __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT),
 	      pszFileName);
@@ -444,12 +447,11 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	WinDismissDlg(hwnd,0);
 	break;
       }
-      pState = malloc(sizeof(tState));
+      pState = xmallocz(sizeof(tState),pszSrcFile,__LINE__);
       if(!pState) {
 	WinDismissDlg(hwnd,0);
 	break;
       }
-      memset(pState,0,sizeof(tState));
       strcpy(pState->szDirName,(CHAR *)mp2);
       WinSetWindowPtr(hwnd,0,(PVOID)pState);
       pState->hptr = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,DIRSIZE_ICON);
@@ -465,7 +467,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       {
 	DIRSIZE *dirsize;
 
-	dirsize = malloc(sizeof(DIRSIZE));
+	dirsize = xmalloc(sizeof(DIRSIZE),pszSrcFile,__LINE__);
 	if(!dirsize) {
 	  WinDismissDlg(hwnd,0);
 	  break;
@@ -474,6 +476,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	dirsize->pszFileName = pState->szDirName;
 	dirsize->hwndCnr = WinWindowFromID(hwnd,DSZ_CNR);
 	if(_beginthread(FillCnrThread,NULL,122880L * 5L,(PVOID)dirsize) == -1) {
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  free(dirsize);
 	  WinDismissDlg(hwnd,0);
 	  break;
@@ -572,7 +575,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
       WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_SORTRECORD,MPFROMP(SortSizeCnr),
 			MPVOID);
-      DosBeep(500,25);
+      DosBeep(500,25);			// Wake up user
       return 0;
 
     case WM_ADJUSTWINDOWPOS:
@@ -852,7 +855,9 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	case DSZ_PRINT:
 	  // Save button
 	  pState = INSTDATA(hwnd);
-	  if (pState) {
+	  if (!pState)
+            Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  else {
 
 	    CHAR  pszFileName[CCHMAXPATH];
 	    FILE *fp;
@@ -866,22 +871,21 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 		 !strchr(pszFileName,'.'))
 		strcat(pszFileName,".RPT");
 	      fp = fopen(pszFileName,"a+");
-	      if (fp) {
-		WinSetPointer(HWND_DESKTOP,hptrBusy);
-		PrintToFile(WinWindowFromID(hwnd,DSZ_CNR),0,NULL,fp);
-		fclose(fp);
-		WinSetPointer(HWND_DESKTOP,hptrArrow);
-	      }
-	      else
+	      if (!fp) {
 		saymsg(MB_CANCEL,
 		       hwnd,
 		       GetPString(IDS_ERRORTEXT),
 		       GetPString(IDS_COMPCANTOPENTEXT),
 		       pszFileName);
+	      }
+	      else {
+		WinSetPointer(HWND_DESKTOP,hptrBusy);
+		PrintToFile(WinWindowFromID(hwnd,DSZ_CNR),0,NULL,fp);
+		fclose(fp);
+		WinSetPointer(HWND_DESKTOP,hptrArrow);
+	      }
 	    }
 	  }
-	  else
-	    DosBeep(50,100);
 	  break;
 
 	case DSZ_EXPAND:
@@ -916,11 +920,13 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	case DID_OK:
 	case DID_CANCEL:
 	  pState = INSTDATA(hwnd);
-	  if (pState) {
+	  if (!pState)
+            Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  else {
 	    if (pState->working) {
 	      pState->dying = TRUE;
 	      pState->chStopFlag = 0xff;
-	      DosBeep(1000,100);
+	      DosBeep(1000,100);			// Complain?
 	    }
 	    else
 	      WinDismissDlg(hwnd,0);

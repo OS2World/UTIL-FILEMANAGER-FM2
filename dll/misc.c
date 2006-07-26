@@ -6,7 +6,7 @@
   Misc support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2005 Steven H. Levine
+  Copyright (c) 2003, 2006 Steven H. Levine
 
   11 Jun 03 SHL Add JFS and FAT32 support
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -14,25 +14,30 @@
   07 Jun 05 SHL Drop obsoletes
   24 Jul 05 SHL Beautify
   24 Jul 05 SHL Correct longname display option
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(MAINWND5,SetSysMenu)
 #pragma alloc_text(MISC1,BoxWindow,PaintRecessedWindow,PostMsg,PaintSTextWindow)
 #pragma alloc_text(MISC1,FixSwitchList,FindDirCnr,CurrentRecord,SetShiftState,AddToListboxBottom)
@@ -164,7 +169,7 @@ void PaintSTextWindow(HWND hwnd, HPS hps)
 		    CLR_PALEGRAY);
 	len = WinQueryWindowTextLength(hwnd);
 	if (len)
-	    s = malloc(len + 1);
+	    s = xmalloc(len + 1,pszSrcFile,__LINE__);
 	if (s)
 	{
 	    *s = 0;
@@ -755,10 +760,11 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			ealen = sizeof(FEA2LIST) + 9 + len + 4;
 		    else
 			ealen = sizeof(FEALIST) + 9;
-		    if (!DosAllocMem((PPVOID) & pfealist,
-				     ealen + 64L,
-			      OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE))
-		    {
+		    rc = DosAllocMem((PPVOID) & pfealist,ealen + 64L,
+			             OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+		    if (rc)
+                      Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+		    else {
 			memset(pfealist, 0, ealen + 1);
 			pfealist -> cbList = ealen;
 			pfealist -> list[0].oNextEntryOffset = 0L;
@@ -830,7 +836,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    if (p)
 			*p = 0;
 		    bstrip(szData);
-		    if (IsFullName(szData))
+		    if (!IsFullName(szData))
+                        Runtime_Error(pszSrcFile, __LINE__, "bad name");
+		    else
 		    {
 			if (DosQueryPathInfo(szData,
 					     FIL_QUERYFULLNAME,
@@ -852,15 +860,12 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				DosBeep(50, 100);	/* exists; disallow */
 				return (MRESULT) FALSE;
 			    }
-			    if (!docopyf(MOVE,
-					 szData,
-					 "%s",
-					 testname))
-			    {
-
+			    if (docopyf(MOVE,szData,"%s",testname))
+                                Runtime_Error(pszSrcFile, __LINE__, "docopyf");
+			    else {
 				CHAR *filename;
 
-				filename = strdup(testname);
+				filename = xstrdup(testname,pszSrcFile,__LINE__);
 				if (filename)
 				{
 				    if (!PostMsg(hwnd,
@@ -875,7 +880,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    UM_FIXEDITNAME,
 					    MPFROMLONG(-1),
 					    MPFROMP(pci));
-				    filename = strdup(pci -> szFileName);
+				    filename = xstrdup(pci -> szFileName,pszSrcFile,__LINE__);
 				    if (filename)
 				    {
 					if (!PostMsg(hwnd,
@@ -886,12 +891,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    }
 				}
 			    }
-			    else
-				DosBeep(100, 100);
 			}
 		    }
-		    else
-			DosBeep(250, 100);
 		}
 	    }
 	}
@@ -1446,8 +1447,12 @@ HWND FindDirCnr(HWND hwndParent)
 VOID HeapThread(VOID * dummy)
 {
     ULONG postcount;
+    APIRET rc;
 
-    if (!DosCreateEventSem(NULL, &CompactSem, 0L, FALSE))
+    rc = DosCreateEventSem(NULL, &CompactSem, 0L, FALSE);
+    if (rc)
+        Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,"DosCreateEventSem");
+    else
     {
 	priority_normal();
 	for (;;)
@@ -1457,13 +1462,6 @@ VOID HeapThread(VOID * dummy)
 	    _heapmin();
 	    DosResetEventSem(CompactSem, &postcount);
 	}
-    }
-    else
-    {
-	DosBeep(250, 100);
-	DosBeep(1000, 100);
-	DosBeep(500, 100);
-//    DosExit(EXIT_PROCESS,1);
     }
 }
 
@@ -2077,7 +2075,7 @@ VOID LoadLibPath(CHAR * str, LONG len)
 	    }
 	    *var = 0;
 	}
-	fp = fopen(configsys, "r");
+	fp = xfopen(configsys, "r",pszSrcFile,__LINE__);
 	if (fp)
 	{
 	    while (!feof(fp))
@@ -2117,7 +2115,7 @@ void SaySort(HWND hwnd, INT sortflags, BOOL archive)
 {
     char *s = NULL;
 
-    s = malloc(CCHMAXPATH);
+    s = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
     if (s)
     {
 	sprintf(s, "S:%s%s",
@@ -2142,7 +2140,7 @@ void SayView(HWND hwnd, ULONG flWindowAttr)
 {
     char *s = NULL;
 
-    s = malloc(CCHMAXPATH);
+    s = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
     if (s)
     {
 	sprintf(s, "V:%s%s",
@@ -2162,7 +2160,7 @@ void SayFilter(HWND hwnd, MASK * mask, BOOL archive)
 {
     char *s = NULL;
 
-    s = malloc(CCHMAXPATH * 2);
+    s = xmalloc(CCHMAXPATH * 2,pszSrcFile,__LINE__);
     if (s)
     {
 	sprintf(s, "F:%s%s",
@@ -2302,8 +2300,8 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
 	ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4L) *
 	    (LONG) sizeof(SWENTRY);
 	/* Allocate memory for list */
-	if ((pswb = malloc((unsigned) ulSize)) != NULL)
-	{
+	pswb = xmalloc(ulSize,pszSrcFile,__LINE__);
+	if (pswb) {
 	    /* Put the info in the list */
 	    ulcEntries = WinQuerySwitchList(0, pswb,
 					    ulSize - sizeof(SWENTRY));
