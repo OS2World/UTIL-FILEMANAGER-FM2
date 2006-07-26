@@ -114,7 +114,7 @@ typedef struct _MODINFO
 
 typedef struct _BUFFHEADER
 {
-   	PSUMMARY        psumm;              // SUMMARY section ptr
+    PSUMMARY        psumm;              // SUMMARY section ptr
     PPROCESSINFO    ppi;                // PROCESS section ptr
     PSEMINFO        psi;                // SEM section ptr (add 16 to offset)
     PVOID           pDontKnow1;         //
