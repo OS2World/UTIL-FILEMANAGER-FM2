@@ -6,7 +6,7 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -16,6 +16,7 @@
   26 May 05 SHL More large file formatting updates
   05 Jun 05 SHL Use QWL_USER
   10 Nov 05 SHL Comments
+  13 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -42,6 +43,7 @@
 #pragma alloc_text(DIRCNRS,DirTextProc,DirFrameWndProc)
 #pragma alloc_text(STARTUP,StartDirCnr)
 
+static PSZ pszSrcFile = __FILE__;
 
 MRESULT EXPENTRY DirFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
@@ -1096,9 +1098,10 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
           WORKER *wk;
 
-          wk = malloc(sizeof(WORKER));
-          if(wk) {
-            memset(wk,0,sizeof(WORKER));
+          wk = xmallocz(sizeof(WORKER),pszSrcFile,__LINE__);
+          if (!wk)
+            FreeListInfo((LISTINFO *)mp1);
+	  else {
             wk->size = sizeof(WORKER);
             wk->hwndCnr = dcd->hwndCnr;
             wk->hwndParent = dcd->hwndParent;
@@ -1107,12 +1110,11 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             wk->li = (LISTINFO *)mp1;
             strcpy(wk->directory,dcd->directory);
             if(_beginthread(MassAction,NULL,122880,(PVOID)wk) == -1) {
+              Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
               free(wk);
               FreeListInfo((LISTINFO *)mp1);
             }
           }
-          else
-            FreeListInfo((LISTINFO *)mp1);
         }
       }
       return 0;
@@ -1125,9 +1127,10 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
           WORKER *wk;
 
-          wk = malloc(sizeof(WORKER));
-          if(wk) {
-            memset(wk,0,sizeof(WORKER));
+          wk = xmallocz(sizeof(WORKER),pszSrcFile,__LINE__);
+          if (!wk)
+            FreeListInfo((LISTINFO *)mp1);
+	  else {
             wk->size = sizeof(WORKER);
             wk->hwndCnr = dcd->hwndCnr;
             wk->hwndParent = dcd->hwndParent;
@@ -1136,12 +1139,11 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             wk->li = (LISTINFO *)mp1;
             strcpy(wk->directory,dcd->directory);
             if(_beginthread(Action,NULL,122880,(PVOID)wk) == -1) {
+              Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
               free(wk);
               FreeListInfo((LISTINFO *)mp1);
             }
           }
-          else
-            FreeListInfo((LISTINFO *)mp1);
         }
       }
       return 0;
@@ -1351,9 +1353,8 @@ KbdRetry:
 
         if (!IsFile(leftdir) &&
            !IsFile(rightdir)) {
-          cmp = malloc(sizeof(COMPARE));
+          cmp = xmallocz(sizeof(COMPARE),pszSrcFile,__LINE__);
           if (cmp) {
-            memset(cmp,0,sizeof(COMPARE));
             cmp->size = sizeof(COMPARE);
             strcpy(cmp->leftdir,leftdir);
             strcpy(cmp->rightdir,rightdir);
@@ -1698,14 +1699,9 @@ KbdRetry:
                                NULL,
                                dcd,
                                FALSE);
-          if (_beginthread(MakeObjWin,
-                           NULL,
-                           245760,
-                           (PVOID)dcd) == -1) {
-            PostMsg(hwnd,
-                    WM_CLOSE,
-                    MPVOID,
-                    MPVOID);
+          if (_beginthread(MakeObjWin,NULL,245760,(PVOID)dcd) == -1) {
+            Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+            PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
             return 0;
           }
           else
@@ -1909,8 +1905,8 @@ KbdRetry:
                        mp1,
                        mp2))
 	  {
+	    Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
             FreeListInfo((LISTINFO *)mp1);
-            DosBeep(50,100);
           }
           else
             return (MRESULT)TRUE;
@@ -1971,7 +1967,14 @@ KbdRetry:
                   test = IsFile(newfile);
                   if (test != 1)
                     fp = fopen(newfile,"w");
-                  if (test == 1 || fp) {
+                  if (test != 1 && !fp) {
+                    saymsg(MB_ENTER,
+                           hwnd,
+                           GetPString(IDS_ERRORTEXT),
+                           GetPString(IDS_CREATEERRORTEXT),
+                           newfile);
+		  }
+		  else {
                     if (fp) {
                       WinSendMsg(hwnd,
                                  UM_UPDATERECORD,
@@ -2007,12 +2010,6 @@ KbdRetry:
                       /* make sure that record shows in viewport */
                       ShowCnrRecord(hwnd,(PMINIRECORDCORE)pci);
                   }
-                  else
-                    saymsg(MB_ENTER,
-                           hwnd,
-                           GetPString(IDS_ERRORTEXT),
-                           GetPString(IDS_CREATEERRORTEXT),
-                           newfile);
                 }
               }
             }
@@ -2377,7 +2374,7 @@ KbdRetry:
           case IDM_DESELECTBIGGER:
           case IDM_DESELECTSMALLER:
             if (ParentIsDesktop(hwnd,dcd->hwndParent)) {
-              DosBeep(50,100);
+	      Runtime_Error(pszSrcFile, __LINE__, "ParentIsDesktop unexpected");
               break;
             }
           case IDM_SELECTLIST:
@@ -2779,9 +2776,8 @@ KbdRetry:
               LISTINFO *li;
               ULONG     action = UM_ACTION;
 
-              li = malloc(sizeof(LISTINFO));
+              li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
               if (li) {
-                memset(li,0,sizeof(LISTINFO));
                 li->type = SHORT1FROMMP(mp1);
                 li->hwnd = hwnd;
                 li->list = BuildList(hwnd);
@@ -2863,8 +2859,8 @@ KbdRetry:
                                action,
                                MPFROMP(li),
                                MPVOID)) {
+	            Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
                     FreeListInfo(li);
-                    DosBeep(50,100);
                   }
                   else if (fUnHilite)
                     UnHilite(hwnd,
@@ -2956,14 +2952,34 @@ KbdRetry:
                     ULONG serial;
                     CHAR  volumelength;
                     CHAR  volumelabel[CCHMAXPATH];
-                  }         volser;
+                  } volser;
+		  APIRET rc;
 
                   memset(&volser,0,sizeof(volser));
                   DosError(FERR_DISABLEHARDERR);
-                  if (!DosQueryFSInfo(toupper(*pci->szFileName) - '@',
-                                     FSIL_VOLSER,
-                                     &volser,
-                                     (ULONG)sizeof(volser))) {
+		  // fixme
+                  rc = DosQueryFSInfo(toupper(*pci->szFileName) - '@',
+                                      FSIL_VOLSER,
+                                      &volser,
+                                      sizeof(volser));
+		  if (rc) {
+                    Dos_Error(MB_ENTER,
+                              rc,
+                              HWND_DESKTOP,
+                              pszSrcFile,
+                              __LINE__,
+                              // fixme GetPString(IDS_CANTFINDDIRTEXT),
+                              "Can't find drive %s",
+                              pci->szFileName);
+                    // fixme DosBeep(250,100);
+                    driveserial[toupper(*pci->szFileName) - 'A'] = -1;
+                    UnFlesh(hwnd,pci);
+                    PostMsg(hwnd,
+                            UM_RESCAN,
+                            MPVOID,
+                            MPVOID);
+		  }
+		  else {
                     if (SHORT2FROMMP(mp1) == CN_COLLAPSETREE &&
                        !volser.serial ||
                        driveserial[toupper(*pci->szFileName) - 'A'] !=
@@ -2980,15 +2996,6 @@ KbdRetry:
                     }
                     driveserial[toupper(*pci->szFileName) - 'A'] =
                       volser.serial;
-                  }
-                  else {
-                    driveserial[toupper(*pci->szFileName) - 'A'] = -1;
-                    UnFlesh(hwnd,pci);
-                    PostMsg(hwnd,
-                            UM_RESCAN,
-                            MPVOID,
-                            MPVOID);
-                    DosBeep(250,100);
                   }
                 }
                 else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
@@ -3078,7 +3085,7 @@ KbdRetry:
               pci = (PCNRITEM)((PCNRDRAGINFO)mp2)->pRecord;
               pDInfo = (PDRAGINFO)((PCNRDRAGINFO)mp2)->pDragInfo;
               if (!DrgAccessDraginfo(pDInfo)) {
-                  Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                  Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,
                             GetPString(IDS_DROPERRORTEXT));
                 break;
               }
@@ -3209,7 +3216,7 @@ KbdRetry:
                     wasemphasized = TRUE;
                 }
                 else if (!*dcd->directory || IsRoot(dcd->directory)) {
-                  DosBeep(50,100);
+	          Runtime_Error(pszSrcFile, __LINE__, "directory unexpected");
                   break;
                 }
                 if (hwndStatus2) {
@@ -3451,8 +3458,9 @@ KbdRetry:
             return 0;
 
           case CN_EMPHASIS:
-            if (mp2) {
-
+            if (!mp2)
+	      Runtime_Error(pszSrcFile, __LINE__, "mp2 NULL");
+	    else {
               PNOTIFYRECORDEMPHASIS pre = mp2;
               PCNRITEM              pci;
               CHAR                  s[CCHMAXPATHCOMP + 91],tb[81],tf[81];
@@ -3549,8 +3557,6 @@ KbdRetry:
                 }
               }
             }
-            else
-              DosBeep(2000,100);
             break;
 
           case CN_ENTER:
@@ -3876,9 +3882,12 @@ HWND StartDirCnr (HWND hwndParent,CHAR *directory,HWND hwndRestore,ULONG flags)
       if(idinc > 99)
         idinc = 0;
       WinSetWindowUShort(hwndFrame,QWS_ID,id);
-      dcd = malloc(sizeof(DIRCNRDATA));
-      if(dcd) {
-        memset(dcd,0,sizeof(DIRCNRDATA));
+      dcd = xmallocz(sizeof(DIRCNRDATA),pszSrcFile,__LINE__);
+      if (!dcd) {
+        PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+        hwndFrame = (HWND)0;
+      }
+      else {
         dcd->size = sizeof(DIRCNRDATA);
         dcd->id = id;
         dcd->type = DIR_FRAME;
@@ -3974,13 +3983,6 @@ HWND StartDirCnr (HWND hwndParent,CHAR *directory,HWND hwndRestore,ULONG flags)
           free(dcd);
           hwndFrame = (HWND)0;
         }
-      }
-      else {
-        PostMsg(hwndClient,
-                WM_CLOSE,
-                MPVOID,
-                MPVOID);
-        hwndFrame = (HWND)0;
       }
     }
   }
