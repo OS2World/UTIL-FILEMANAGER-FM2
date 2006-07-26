@@ -6,26 +6,25 @@
   Object containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   24 May 05 SHL Rework for CNRITEM.szSubject
+  13 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
-
-#pragma data_seg(DATA1)
-#pragma alloc_text(OBJCNR,ProcessDir,FillCnrs,ObjCnrDlgProc)
 
 typedef struct {
   CHAR *filename;
@@ -40,12 +39,17 @@ typedef struct {
   BOOL  working;
 } TEMP;
 
-static HWND objcnrwnd = (HWND)0;
+#pragma data_seg(DATA1)
 
+static PSZ pszSrcFile = __FILE__;
 
-static VOID ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
-                        CHAR *stopflag) {
+static HWND objcnrwnd;
 
+#pragma alloc_text(OBJCNR,ProcessDir,FillCnrs,ObjCnrDlgProc)
+
+static VOID ProcessDir(HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
+                       CHAR *stopflag)
+{
   CHAR          maskstr[CCHMAXPATH],*endpath,*p;
   ULONG         nm,ulM;
   HDIR          hdir;
@@ -54,7 +58,7 @@ static VOID ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
   RECORDINSERT  ri;
   PCNRITEM      pciP;
 
-  ffb = malloc(sizeof(FILEFINDBUF3));
+  ffb = xmalloc(sizeof(FILEFINDBUF3),pszSrcFile,__LINE__);
   if(!ffb)
     return;
   strcpy(maskstr,filename);
@@ -111,7 +115,7 @@ static VOID ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
     Dos_Error(MB_ENTER,
               rc,
               HWND_DESKTOP,
-              __FILE__,
+              pszSrcFile,
               __LINE__,
               GetPString(IDS_CANTFINDDIRTEXT),
               filename);
@@ -144,7 +148,7 @@ static VOID ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
   else
     ulM = min(FilesToGet,225);
   if(ulM > 1L) {
-    fft = realloc(ffb, sizeof(FILEFINDBUF3) * ulM);
+    fft = xrealloc(ffb, sizeof(FILEFINDBUF3) * ulM,pszSrcFile,__LINE__);
     if(!fft)
       ulM = 1L;
     else
@@ -190,8 +194,8 @@ static VOID ProcessDir (HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
 }
 
 
-static VOID FillCnrs (VOID *args) {
-
+static VOID FillCnrs (VOID *args)
+{
   HAB           hab;
   HMQ           hmq;
   DIRSIZE      *dirsize = (DIRSIZE *)args;
@@ -219,30 +223,30 @@ static VOID FillCnrs (VOID *args) {
 }
 
 
-MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   TEMP *data;
 
   switch(msg) {
     case WM_INITDLG:
-      if(objcnrwnd || !mp2) {
-        if(objcnrwnd) {
-          WinSetWindowPos(objcnrwnd,HWND_TOP,0,0,0,0,
-                          SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
-          DosBeep(1000,100);
-        }
-        else
-          DosBeep(50,100);
+      if(objcnrwnd) {
+	Runtime_Error(pszSrcFile, __LINE__, "objcnrwnd set");
+        WinSetWindowPos(objcnrwnd,HWND_TOP,0,0,0,0,
+                        SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+        WinDismissDlg(hwnd,0);
+        break;
+      }
+      if(!mp2) {
+	Runtime_Error(pszSrcFile, __LINE__, "mp2 NULL");
         WinDismissDlg(hwnd,0);
         break;
       }
       objcnrwnd = hwnd;
-      data = malloc(sizeof(TEMP));
+      data = xmallocz(sizeof(TEMP),pszSrcFile,__LINE__);
       if(!data) {
         WinDismissDlg(hwnd,0);
         break;
       }
-      memset(data,0,sizeof(TEMP));
       data->dirname = (CHAR *)mp2;
       WinSetWindowPtr(hwnd,0,(PVOID)data);
       if(*data->dirname)
@@ -250,7 +254,7 @@ MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       {
         DIRSIZE *dirsize;
 
-        dirsize = malloc(sizeof(DIRSIZE));
+        dirsize = xmalloc(sizeof(DIRSIZE),pszSrcFile,__LINE__);
         if(!dirsize) {
           WinDismissDlg(hwnd,0);
           break;
@@ -258,7 +262,8 @@ MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         dirsize->stopflag = (CHAR *)&data->stopflag;
         dirsize->filename = data->dirname;
         dirsize->hwndCnr = WinWindowFromID(hwnd,OBJCNR_CNR);
-        if(_beginthread(FillCnrs,NULL,65536 * 8,(PVOID)dirsize) == -1) {
+        if (_beginthread(FillCnrs,NULL,65536 * 8,(PVOID)dirsize) == -1) {
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
           free(dirsize);
           WinDismissDlg(hwnd,0);
           break;
@@ -270,7 +275,7 @@ MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       break;
 
     case UM_SETUP:
-//      WinEnableWindowUpdate(WinWindowFromID(hwnd,OBJCNR_CNR),FALSE);
+      // WinEnableWindowUpdate(WinWindowFromID(hwnd,OBJCNR_CNR),FALSE);
       {
         CNRINFO    cnri;
 
@@ -374,7 +379,7 @@ MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             PCNRITEM pci;
 
             if(data->working) {
-              DosBeep(50,100);
+	      Runtime_Error(pszSrcFile, __LINE__, "working unexpected");
               break;
             }
             if(SHORT1FROMMP(mp1) == OBJCNR_DESKTOP) {
@@ -397,7 +402,7 @@ MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             if(data->working) {
               data->dying = TRUE;
               data->stopflag = 0xff;
-              DosBeep(1000,100);
+	      Runtime_Error(pszSrcFile, __LINE__, "working unexpected");
               break;
             }
             WinDismissDlg(hwnd,0);
