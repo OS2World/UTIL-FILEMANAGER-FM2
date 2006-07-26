@@ -6,15 +6,17 @@
   Index for fm3dll.str (source) fm3res.str (compiled)
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2002, 2005 Steven H. Levine
+  Copyright (c) 2002, 2006 Steven H. Levine
 
   21 May 04 SHL Adjust IDS_NUMSTRS
-  26 May 05 SHL Comments
+  22 Jul 06 SHL Drop unused
 
 ***********************************************************************/
 
 #define VERMAJORBREAK                                         3
 #define VERMINORBREAK                                         02
+
+// Spares are names IDS_SPARE###
 
 #define IDS_NUMSTRS                                           992
 
@@ -304,7 +306,7 @@
 #define IDS_MAYDAYTEXT                                        287
 #define IDS_ASKABOUTUNDELETEHELPTEXT                          288
 #define IDS_UNDELETETITLETEXT                                 289
-#define IDS_UHOHTEXT                                          290
+#define IDS_SPARE_290                                         290
 #define IDS_COULDNTSTARTTHREADTEXT                            291
 #define IDS_UNDELETEHELPTITLETEXT                             292
 #define IDS_UNDELETEHELPTEXT                                  293
@@ -523,7 +525,7 @@
 #define IDS_NOSUBDIRS3TEXT                                    506
 #define IDS_LOCALTEXT                                         507
 #define IDS_REMOTETEXT                                        508
-#define IDS_LOADING2TEXT                                      509
+#define IDS_LOADINGMLETEXT                                    509
 #define IDS_TEXTNULSTEXT                                      510
 #define IDS_OBEYTEXT                                          511
 #define IDS_LOADCANCELLEDTEXT                                 512
@@ -606,20 +608,7 @@
 #define IDS_CODEPAGES24                                       588
 #define IDS_DOSSTARTSESSIONFAILEDTEXT                         589
 #define IDS_DOSEXECPGMFAILEDTEXT                              590
-#define IDS_BLURB1TEXT                                        591
-#define IDS_BLURB2TEXT                                        592
-#define IDS_BLURB3TEXT                                        593
-#define IDS_BLURB4TEXT                                        594
-#define IDS_BLURB5TEXT                                        595
-#define IDS_BLURB6TEXT                                        596
-#define IDS_BLURB7TEXT                                        597
-#define IDS_BLURB8TEXT                                        598
-#define IDS_BLURB9TEXT                                        599
-#define IDS_BLURB10TEXT                                       600
-#define IDS_BLURB11TEXT                                       601
-#define IDS_BLURB12TEXT                                       602
-#define IDS_BLURB13TEXT                                       603
-#define IDS_BLURB14TEXT                                       604
+#define IDS_BLURB1TEXT                                        591	// 591 to 604 used by fonts.c
 #define IDS_ITALICTEXT                                        605
 #define IDS_OUTLINETEXT                                       606
 #define IDS_BOLDTEXT                                          607
@@ -957,13 +946,13 @@
 #define IDS_TOOLFILETEXT                                      959
 #define IDS_TREESTATUSSTARTTEXT                               960
 #define IDS_GREPFILETEXT                                      961
-#define IDS_FILLDIRERR1TEXT                                   962
-#define IDS_FILLDIRERR2TEXT                                   963
-#define IDS_FILLDIRERR3TEXT                                   964
-#define IDS_FILLDIRERR4TEXT                                   965
-#define IDS_FILLDIRERR5TEXT                                   966
-#define IDS_FILLDIRERR6TEXT                                   967
-#define IDS_FILLDIRERR7TEXT                                   968
+#define IDS_SPARE_962                                         962
+#define IDS_FILLDIRINSERRTEXT                                 963
+#define IDS_FILLDIRALLOCERRTEXT                               964
+#define IDS_SPARE_965                                         965
+#define IDS_SPARE_966                                         966
+#define IDS_FILLDIRQCURERRTEXT                                967
+#define IDS_SPARE_968                                         968
 #define IDS_2SYSTEMVIOTEXT                                    969
 #define IDS_MAKEARCTITLETEXT                                  970
 #define IDS_MAKEARCUSAGETEXT                                  971
