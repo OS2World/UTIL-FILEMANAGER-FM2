@@ -13,6 +13,7 @@
   12 Feb 03 SHL AutoObjProc: standardize EA math
   23 May 05 SHL Use QWL_USER
   29 May 06 SHL Sync with archiver.bb2 mods
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
@@ -20,27 +21,31 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(AUTOVIEW,AutoViewProc,CreateHexDump,AutoObjProc)
 #pragma alloc_text(AUTOVIEW2,MakeAutoWin,WriteEA,PutComments)
 
-static HWND hwndAutoObj = (HWND)0;
+static HWND hwndAutoObj;
 static CHAR stopflag;
 static CHAR currfile[CCHMAXPATH];
 
-BOOL WriteEA (HWND hwnd,CHAR *filename,CHAR *eaname,USHORT type,CHAR *data) {
-
+BOOL WriteEA (HWND hwnd,CHAR *filename,CHAR *eaname,USHORT type,CHAR *data)
+{
   /* save an ea to disk */
 
   FEA2LIST *pfealist = NULL;
@@ -87,8 +92,11 @@ BOOL WriteEA (HWND hwnd,CHAR *filename,CHAR *eaname,USHORT type,CHAR *data) {
       return ret;
   }
 
-  if(!DosAllocMem((PPVOID)&pfealist,ealen,PAG_COMMIT | PAG_READ |
-                  PAG_WRITE | OBJ_TILE) && pfealist) {
+  rc = DosAllocMem((PPVOID)&pfealist,ealen,PAG_COMMIT | PAG_READ |
+                   PAG_WRITE | OBJ_TILE);
+  if (rc || !pfealist)
+    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+  else {
     memset(pfealist,0,ealen);
     pfealist->list[0].cbName = strlen(eaname);
     memcpy(pfealist->list[0].szName,eaname,pfealist->list[0].cbName + 1);
@@ -193,8 +201,8 @@ BOOL WriteEA (HWND hwnd,CHAR *filename,CHAR *eaname,USHORT type,CHAR *data) {
 }
 
 
-BOOL PutComments (HWND hwnd,CHAR *filename,CHAR *comments) {
-
+BOOL PutComments (HWND hwnd,CHAR *filename,CHAR *comments)
+{
   register CHAR *p;
 
   if(comments) {  /* check -- is it empty? */
@@ -271,7 +279,6 @@ ULONG CreateHexDump (CHAR *pchInBuf,ULONG cbInBuf,
 
 MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-
   switch(msg) {
     case UM_LOADFILE:
       *currfile = 0;
@@ -303,12 +310,12 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           OPEN_ACCESS_READONLY,
                           0L)) {
                 ibufflen = (AutoviewHeight < 96) ? 512 : 3072;
-                ibuff = malloc(ibufflen + 2);
-                if(ibuff) {
+                ibuff = xmalloc(ibufflen + 2,pszSrcFile,__LINE__);
+                if (ibuff) {
 		  // Depends on CreateHexDump line width
                   obufflen = (ibufflen / 16) * (6 + 3 * 16 + 1 + 16 + 1) + 80;
-                  obuff = malloc(obufflen + 1);
-                  if(obuff) {
+                  obuff = xmalloc(obufflen + 1,pszSrcFile,__LINE__);
+                  if (obuff) {
                     *obuff = 0;
                     if(!DosRead(handle,
                                 ibuff,
@@ -449,8 +456,8 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   x++;
                 }
                 bufflen = (CCHMAXPATHCOMP + 42) * nm;
-                buff = malloc(bufflen);
-                if(buff) {
+                buff = xmalloc(bufflen,pszSrcFile,__LINE__);
+                if (buff) {
                   p = buff;
                   *p = 0;
                   fb = (PBYTE)&ffb;
@@ -517,17 +524,15 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             USHORT        len,type,plen,dlen;
             BOOL          readonly = FALSE;
 
-            pgealist = malloc(sizeof(GEA2LIST) + 64);
-            if(pgealist) {
-              memset(pgealist,0,sizeof(GEA2LIST) + 64);
+            pgealist = xmallocz(sizeof(GEA2LIST) + 64,pszSrcFile,__LINE__);
+            if (pgealist) {
               pgea = &pgealist->list[0];
               strcpy(pgea->szName,".COMMENTS");
               pgea->cbName = strlen(pgea->szName);
               pgea->oNextEntryOffset = 0L;
               pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-              pfealist = malloc(65536);
-              if(pfealist) {
-                memset(pfealist,0,65536);
+              pfealist = xmallocz(65536,pszSrcFile,__LINE__);
+              if (pfealist) {
                 pfealist->cbList = 65536;
                 eaop.fpGEA2List = pgealist;
                 eaop.fpFEA2List = pfealist;
@@ -542,8 +547,8 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     value = pfea->szName + pfea->cbName + 1;
                     value[pfea->cbValue] = 0;
                     if(*(USHORT *)value == EAT_MVMT) {
-                      buff = malloc(65536);
-                      if(buff) {
+                      buff = xmalloc(65536,pszSrcFile,__LINE__);
+                      if (buff) {
                         p = buff;
                         *buff = 0;
                         data = value + (sizeof(USHORT) * 3);
@@ -618,8 +623,8 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 }
 
 
-VOID MakeAutoWin (VOID *args) {
-
+VOID MakeAutoWin (VOID *args)
+{
   HAB         hab2;
   HMQ         hmq2;
   HWND        hwndParent = (HWND)args;
@@ -668,8 +673,8 @@ VOID MakeAutoWin (VOID *args) {
 }
 
 
-MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   USHORT id = WinQueryWindowUShort(hwnd,QWS_ID);
 
   switch(msg) {
@@ -677,15 +682,15 @@ MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       {
         MRESULT mr;
 
-        if(!hwndAutoObj &&
-           _beginthread(MakeAutoWin,
-                        NULL,
-                        65536,
-                        (PVOID)hwnd) == -1)
-          PostMsg(hwnd,
-                  UM_CLOSE,
-                  MPVOID,
-                  MPVOID);
+        if (!hwndAutoObj) {
+	  if (_beginthread(MakeAutoWin,NULL,65536,(PVOID)hwnd) == -1) {
+            Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+            PostMsg(hwnd,
+                    UM_CLOSE,
+                    MPVOID,
+                    MPVOID);
+	  }
+	}
         mr = PFNWPStatic(hwnd,msg,mp1,mp2);
         SetPresParams(hwnd,
                       &RGBGREY,
@@ -790,10 +795,8 @@ MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           if(!mp2 && !AutoMenu) {
             if(*currfile) {
               if(MLEgetchanged(hwnd)) {
-
-                CHAR *ea = malloc(32768);
-
-                if(ea) {
+                CHAR *ea = xmalloc(32768,pszSrcFile,__LINE__);
+                if (ea) {
                   *ea = 0;
                   WinQueryWindowText(hwnd,32767,ea);
                   PutComments(hwnd,
@@ -862,9 +865,9 @@ MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         case IDM_RESCAN:
           if(*currfile) {
 
-            CHAR *cf = strdup(currfile);
+            CHAR *cf = xstrdup(currfile,pszSrcFile,__LINE__);
 
-            if(cf) {
+            if (cf) {
               stopflag++;
               if(!PostMsg(hwndAutoObj,
                           UM_LOADFILE,
@@ -1002,4 +1005,3 @@ MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
     return PFNWPMLE(hwnd,msg,mp1,mp2);
   return PFNWPStatic(hwnd,msg,mp1,mp2);
 }
-
