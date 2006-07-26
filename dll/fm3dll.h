@@ -27,6 +27,8 @@
   26 Jun 06 SHL ARC_TYPE: support preserving comments
   28 Jun 06 SHL DIRCNRDATA: drop unused
   05 Jul 06 SHL Support Hide not selected
+  13 Jul 06 SHL Add Runtime_Error
+  22 Jul 06 SHL Add memory.c functions
 
 ***********************************************************************/
 
@@ -574,11 +576,12 @@ BOOL FleshEnv      (HWND hwndCnr,PCNRITEM pciParent);
 BOOL UnFlesh       (HWND hwndCnr,PCNRITEM pciParent);
 
 /* error.c */
-VOID Win_Error	   (HWND hwndErr,HWND hwndOwner,
-                    PSZ pszFileName,ULONG ulLineNo,CHAR *pszFmt,...);
-INT Dos_Error      (ULONG mb_type,ULONG ulRC,HWND hwndOwner,
-                    PSZ pszFileName,ULONG ulLineNo,CHAR *pszFmt,...);
-APIRET saymsg      (ULONG mb_type,HWND hwnd,CHAR *pszTitle,CHAR *pszFmt,...);
+VOID Win_Error(HWND hwndErr,HWND hwndOwner,
+               PCSZ pszFileName,ULONG ulLineNo,PCSZ pszFmt,...);
+INT Dos_Error(ULONG mb_type,ULONG ulRC,HWND hwndOwner,
+              PCSZ pszFileName,ULONG ulLineNo,PCSZ pszFmt,...);
+VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...);
+APIRET saymsg(ULONG mb_type,HWND hwnd,PCSZ pszTitle,PCSZ pszFmt,...);
 
 /* valid.c */
 INT CheckDrive        (CHAR Drive, CHAR *FileSystem, ULONG *type);
@@ -1079,7 +1082,7 @@ MRESULT EXPENTRY NotifyWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 HWND Notify (char *text);
 HWND DoNotify (char *text);
 VOID NotifyError (CHAR *filename,APIRET error);
-BOOL StartNotes (CHAR *s);
+VOID StartNotes (CHAR *s);
 BOOL AddNote (CHAR *note);
 VOID EndNote (VOID);
 VOID ShowNote (VOID);
@@ -1186,6 +1189,17 @@ HWND OpenDirCnr (HWND hwnd,HWND hwndParent,HWND hwndRestore,
 BOOL LoadStrings (char *filename);
 char *GetPString (ULONG id);
 BOOL StringsLoaded (void);
+
+/* wrappers.c */
+FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile, UINT uiLineNumber);
+FILE *xfsopen(PCSZ pszFileName,PCSZ pszMode,INT fSharemode, PCSZ pszSrcFile, UINT uiLineNumber);
+VOID xfree (PVOID pv);
+PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
+PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
+PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
+PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber);
+
+//=====================================================================
 
 #ifdef DEFINE_GLOBALS
   #define DATADEF
