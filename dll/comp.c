@@ -15,7 +15,8 @@
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Rework with ULONGLONG
   06 Jun 05 SHL Drop unused
-  12 Jul 06 SHL Renames and comments 
+  12 Jul 06 SHL Renames and comments
+  13 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -48,6 +49,8 @@ typedef struct {
   BOOL  recurse;
 } SNAPSTUFF;
 
+static PSZ pszSrcFile = __FILE__;
+
 //=== SnapShot() Write directory tree to file and recurse if requested ===
 
 static VOID SnapShot (char *path,FILE *fp,BOOL recurse)
@@ -57,9 +60,9 @@ static VOID SnapShot (char *path,FILE *fp,BOOL recurse)
   HDIR          hdir = HDIR_CREATE;
   ULONG         nm = 1L;
 
-  fb = malloc(sizeof(FILEFINDBUF4));
+  fb = xmalloc(sizeof(FILEFINDBUF4),pszSrcFile,__LINE__);
   if(fb) {
-    mask = malloc(CCHMAXPATH);
+    mask = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
     if(mask) {
       sprintf(mask,
               "%s%s*",
@@ -126,8 +129,8 @@ static VOID StartSnap (VOID *dummy)
         *p = '\\';
         p++;
       }
-      fp = fopen(sf->filename,"w");
-      if(fp) {
+      fp = xfopen(sf->filename,"w",pszSrcFile,__LINE__);
+      if (fp) {
         fprintf(fp,"\"%s\"\n",sf->dirname);
         SnapShot(sf->dirname,fp,sf->recurse);
         fclose(fp);
@@ -177,9 +180,19 @@ static VOID CompareFilesThread (VOID *args)
         sprintf(s,GetPString(IDS_COMPTOTEXT),fc.file2);
         AddToListboxBottom(fc.hwndList,s);
         fp1 = _fsopen(fc.file1,"rb",SH_DENYNO);
-        if(fp1) {
+        if (!fp1) {
+          sprintf(s,GetPString(IDS_COMPCANTOPENTEXT),fc.file1);
+          AddToListboxBottom(fc.hwndList,s);
+          WinSetWindowText(fc.hwndHelp,GetPString(IDS_ERRORTEXT));
+	}
+	else {
           fp2 = _fsopen(fc.file2,"rb",SH_DENYNO);
-          if(fp2) {
+          if (!fp2) {
+            sprintf(s,GetPString(IDS_COMPCANTOPENTEXT),fc.file2);
+            AddToListboxBottom(fc.hwndList,s);
+            WinSetWindowText(fc.hwndHelp,GetPString(IDS_ERRORTEXT));
+	  }
+	  else {
             len1 = filelength(fileno(fp1));
             len2 = filelength(fileno(fp2));
             if(len1 != len2) {
@@ -245,17 +258,7 @@ static VOID CompareFilesThread (VOID *args)
             }
             fclose(fp2);
           }
-          else {
-            sprintf(s,GetPString(IDS_COMPCANTOPENTEXT),fc.file2);
-            AddToListboxBottom(fc.hwndList,s);
-            WinSetWindowText(fc.hwndHelp,GetPString(IDS_ERRORTEXT));
-          }
           fclose(fp1);
-        }
-        else {
-          sprintf(s,GetPString(IDS_COMPCANTOPENTEXT),fc.file1);
-          AddToListboxBottom(fc.hwndList,s);
-          WinSetWindowText(fc.hwndHelp,GetPString(IDS_ERRORTEXT));
         }
         WinDestroyMsgQueue(hmq2);
       }
@@ -293,12 +296,8 @@ MRESULT EXPENTRY CFileDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           WinDismissDlg(hwnd,0);
           break;
         }
-        if(_beginthread(CompareFilesThread,
-                        NULL,
-                        65536,
-                        (PVOID)fc) == -1) {
-          Win_Error(hwnd,hwnd,__FILE__,__LINE__,
-                    GetPString(IDS_CANTCOMPARETEXT));
+        if (_beginthread(CompareFilesThread,NULL,65536,(PVOID)fc) == -1) {
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
           WinDismissDlg(hwnd,0);
         }
       }
@@ -391,7 +390,7 @@ static VOID ActionCnrThread (VOID *args)
           hwndCnrD = WinWindowFromID(cmp->hwnd,COMP_LEFTDIR);
           break;
         default:
-          DosBeep(250,100);
+	  Runtime_Error(pszSrcFile, __LINE__, "bad case %u", cmp->action);
           goto Abort;
       }
 
@@ -492,11 +491,11 @@ static VOID ActionCnrThread (VOID *args)
                 WinSendMsg(hwndCnrD,CM_INVALIDATERECORD,MPFROMP(&pciO),
                            MPFROM2SHORT(1,CMA_ERASE | CMA_TEXTCHANGED));
               }
-              else if(rc) {
+              else if (rc) {
                 rc = Dos_Error(MB_ENTERCANCEL,
                                rc,
                                HWND_DESKTOP,
-                               __FILE__,
+                               pszSrcFile,
                                __LINE__,
                                GetPString(IDS_COMPMOVEFAILEDTEXT),
                                pci->szFileName,
@@ -526,7 +525,19 @@ static VOID ActionCnrThread (VOID *args)
                   MassMkdir(hwndMain,dirname);
               }
               rc = docopyf(COPY,pci->szFileName,"%s",newname);
-              if(!rc) {
+              if (rc) {
+                rc = Dos_Error(MB_ENTERCANCEL,
+                               rc,
+                               HWND_DESKTOP,
+                               pszSrcFile,
+                               __LINE__,
+                               GetPString(IDS_COMPCOPYFAILEDTEXT),
+                               pci->szFileName,
+                               newname);
+                if(rc == MBID_CANCEL)
+                  pcin = NULL;		 /* cause loop to break */
+	      }
+	      else {
                 WinSendMsg(hwndCnrS,CM_SETRECORDEMPHASIS,MPFROMP(pci),
                            MPFROM2SHORT(FALSE,CRA_SELECTED));
                 if(pciO->rc.flRecordAttr & CRA_SELECTED)
@@ -560,18 +571,6 @@ static VOID ActionCnrThread (VOID *args)
                            MPFROM2SHORT(1,CMA_ERASE | CMA_TEXTCHANGED));
                 WinSendMsg(hwndCnrD,CM_INVALIDATERECORD,MPFROMP(&pciO),
                            MPFROM2SHORT(1,CMA_ERASE | CMA_TEXTCHANGED));
-              }
-              else {
-                rc = Dos_Error(MB_ENTERCANCEL,
-                               rc,
-                               HWND_DESKTOP,
-                               __FILE__,
-                               __LINE__,
-                               GetPString(IDS_COMPCOPYFAILEDTEXT),
-                               pci->szFileName,
-                               newname);
-                if(rc == MBID_CANCEL) /* cause loop to break */
-                  pcin = NULL;
               }
               break;
 
@@ -653,10 +652,10 @@ static VOID FillDirList (CHAR *str,INT skiplen,BOOL recurse,
     return;
   if(!recurse)
     ulM = 128;
-  maskstr = malloc(CCHMAXPATH);
+  maskstr = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
   if(!maskstr)
     return;
-  ffb4 = malloc(sizeof(FILEFINDBUF4) * ulM);
+  ffb4 = xmalloc(sizeof(FILEFINDBUF4) * ulM,pszSrcFile,__LINE__);
   if(!ffb4) {
     free(maskstr);
     return;
@@ -749,10 +748,13 @@ static VOID FillCnrsThread (VOID *args)
   DosError(FERR_DISABLEHARDERR);
 
   hab = WinInitialize(0);
-  if(hab) {
+  if(!hab)
+    Win_Error(NULLHANDLE,NULLHANDLE,pszSrcFile,__LINE__,"WinInitialize");
+  else {
     hmq = WinCreateMsgQueue(hab,0);
-    if(hmq) {
-
+    if(!hmq)
+      Win_Error(NULLHANDLE,NULLHANDLE,pszSrcFile,__LINE__,"WinCreateMsgQueue");
+    else {
       INT             x;
       INT             l;
       INT             r;
@@ -820,7 +822,9 @@ static VOID FillCnrsThread (VOID *args)
 
         memset(&fb4,0,sizeof(fb4));
         fp = fopen(cmp->rightlist,"r");
-        if(fp) {
+        if(!fp)
+	  Runtime_Error(pszSrcFile, __LINE__, "can not open %s (%d)", cmp->rightlist, errno);
+	else {
           while(!feof(fp)) {
 	    /* first get name of directory */
             if(!fgets(str,sizeof(str) - 1,fp))
@@ -943,8 +947,6 @@ static VOID FillCnrsThread (VOID *args)
           } // if have rightdir
           fclose(fp);
         }
-        else
-          DosBeep(50,100);
       } // if snapshot file
 
       if(filesr)
@@ -981,18 +983,18 @@ static VOID FillCnrsThread (VOID *args)
                                CM_ALLOCRECORD,
                                MPFROMLONG(EXTRA_RECORD_BYTES2),
                                MPFROMLONG(recsNeeded));
-        if(!pcilFirst) {
+        if (!pcilFirst) {
+	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed", recsNeeded);
           recsNeeded = 0;
-          DosBeep(100,100);
         }
       }
-      if(recsNeeded) {
+      if (recsNeeded) {
         pcirFirst = WinSendMsg(hwndRight,CM_ALLOCRECORD,
                                MPFROMLONG(EXTRA_RECORD_BYTES2),
                                MPFROMLONG(recsNeeded));
-        if(!pcirFirst) {
+        if (!pcirFirst) {
+	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed", recsNeeded);
           recsNeeded = 0;
-          DosBeep(100,100);
           pcil = pcilFirst;
           while(pcil) {
             pcit = (PCNRITEM)pcil->rc.preccNextRecord;
@@ -1002,7 +1004,7 @@ static VOID FillCnrsThread (VOID *args)
           }
         }
       }
-      if(recsNeeded) {
+      if (recsNeeded) {
         pcil = pcilFirst;
         pcir = pcirFirst;
         while((filesl && filesl[l]) || (filesr && filesr[r])) {
@@ -1057,7 +1059,7 @@ static VOID FillCnrsThread (VOID *args)
               pcil->crtime.seconds = filesl[l]->crtime.twosecs * 2;
               pcil->crtime.minutes = filesl[l]->crtime.minutes;
               pcil->crtime.hours   = filesl[l]->crtime.hours;
-              if(*cmp->dcd.mask.szMask) {
+              if (*cmp->dcd.mask.szMask) {
                 if(!Filter((PMINIRECORDCORE)pcil,(PVOID)&cmp->dcd.mask)) {
                   pcil->rc.flRecordAttr |= CRA_FILTERED;
                   pcir->rc.flRecordAttr |= CRA_FILTERED;
@@ -1193,8 +1195,8 @@ static VOID FillCnrsThread (VOID *args)
               pcil->crtime.seconds = filesl[l]->crtime.twosecs * 2;
               pcil->crtime.minutes = filesl[l]->crtime.minutes;
               pcil->crtime.hours   = filesl[l]->crtime.hours;
-              if(*cmp->dcd.mask.szMask) {
-                if(!Filter((PMINIRECORDCORE)pcil,(PVOID)&cmp->dcd.mask)) {
+              if (*cmp->dcd.mask.szMask) {
+                if (!Filter((PMINIRECORDCORE)pcil,(PVOID)&cmp->dcd.mask)) {
                   pcil->rc.flRecordAttr |= CRA_FILTERED;
                   pcir->rc.flRecordAttr |= CRA_FILTERED;
                 }
@@ -1211,10 +1213,11 @@ static VOID FillCnrsThread (VOID *args)
               pcir->attrFile       = filesr[r]->attrFile;
 	      // pcir->rc.hptrIcon    = hptrFile;
               y = 0;
-              for(x = 0;x < 6;x++)
-                if(attrstring[x])
+              for (x = 0;x < 6;x++) {
+                if (attrstring[x])
                   pcir->szDispAttr[y++] = (CHAR)((pcir->attrFile & (1 << x)) ?
                                                  attrstring[x] : '-');
+	      }
               pcir->szDispAttr[5]  = 0;
               pcir->cbFile         = filesr[r]->cbFile;
               pcir->easize         = filesr[r]->easize;
@@ -1299,10 +1302,11 @@ static VOID FillCnrsThread (VOID *args)
             pcir->attrFile       = filesr[r]->attrFile;
 	    // pcir->rc.hptrIcon    = hptrFile;
             y = 0;
-            for(x = 0;x < 6;x++)
+            for (x = 0;x < 6;x++) {
               if(attrstring[x])
                 pcir->szDispAttr[y++] = (CHAR)((pcir->attrFile & (1 << x)) ?
                                                attrstring[x] : '-');
+	    }
             pcir->szDispAttr[5]  = 0;
             pcir->cbFile         = filesr[r]->cbFile;
             pcir->easize         = filesr[r]->easize;
@@ -1324,8 +1328,8 @@ static VOID FillCnrsThread (VOID *args)
             pcir->crtime.seconds = filesr[r]->crtime.twosecs * 2;
             pcir->crtime.minutes = filesr[r]->crtime.minutes;
             pcir->crtime.hours   = filesr[r]->crtime.hours;
-            if(*cmp->dcd.mask.szMask) {
-              if(!Filter((PMINIRECORDCORE)pcir,(PVOID)&cmp->dcd.mask)) {
+            if (*cmp->dcd.mask.szMask) {
+              if (!Filter((PMINIRECORDCORE)pcir,(PVOID)&cmp->dcd.mask)) {
                 pcir->rc.flRecordAttr |= CRA_FILTERED;
                 pcil->rc.flRecordAttr |= CRA_FILTERED;
               }
@@ -1356,10 +1360,10 @@ static VOID FillCnrsThread (VOID *args)
         ri.zOrder             = (ULONG)CMA_TOP;
         ri.cRecordsInsert     = recsNeeded;
         ri.fInvalidateRecord  = FALSE;
-        if(!WinSendMsg(hwndLeft,CM_INSERTRECORD,
+        if (!WinSendMsg(hwndLeft,CM_INSERTRECORD,
                        MPFROMP(pcilFirst),MPFROMP(&ri))) {
           pcil = pcilFirst;
-          while(pcil) {
+          while (pcil) {
             pcit = (PCNRITEM)pcil->rc.preccNextRecord;
             WinSendMsg(hwndLeft,CM_FREERECORD,
                        MPFROMP(&pcil),MPFROMSHORT(1));
@@ -1374,12 +1378,12 @@ static VOID FillCnrsThread (VOID *args)
         ri.zOrder             = (ULONG)CMA_TOP;
         ri.cRecordsInsert     = recsNeeded;
         ri.fInvalidateRecord  = FALSE;
-        if(!WinSendMsg(hwndRight,CM_INSERTRECORD,
+        if (!WinSendMsg(hwndRight,CM_INSERTRECORD,
                        MPFROMP(pcirFirst),MPFROMP(&ri))) {
           WinSendMsg(hwndLeft,CM_REMOVERECORD,
                      MPVOID,MPFROM2SHORT(0,CMA_FREE | CMA_INVALIDATE));
           pcir = pcirFirst;
-          while(pcir) {
+          while (pcir) {
             pcit = (PCNRITEM)pcir->rc.preccNextRecord;
             WinSendMsg(hwndRight,CM_FREERECORD,
                        MPFROMP(&pcir),MPFROMSHORT(1));
@@ -1392,22 +1396,18 @@ static VOID FillCnrsThread (VOID *args)
       } // if recsNeeded
       Deselect(hwndLeft);
       Deselect(hwndRight);
-      if(!PostMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID))
-        WinSendMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
+      if (!PostMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID))
+        WinSendMsg (cmp->hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
       notified = TRUE;
-      if(filesl)
+      if (filesl)
         FreeList((CHAR **)filesl);	// Must have failed to create container
-      if(filesr)
+      if (filesr)
         FreeList((CHAR **)filesr);
       WinDestroyMsgQueue(hmq);
     }
-    else
-      DosBeep(250,100);
     WinTerminate(hab);
   }
-  else
-    DosBeep(50,100);
-  if(!notified)
+  if (!notified)
     PostMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
   free(cmp);
   DosPostEventSem(CompactSem);
@@ -1421,17 +1421,22 @@ static VOID FillCnrsThread (VOID *args)
 MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   COMPARE        *cmp;
+
   static HPOINTER hptr = (HPOINTER)0;
 
   switch(msg) {
     case WM_INITDLG:
       cmp = (COMPARE *)mp2;
-      if(cmp) {
-        if(!hptr)
+      if (!cmp) {
+	Runtime_Error(pszSrcFile, __LINE__, "no data");
+        WinDismissDlg(hwnd,0);
+      }
+      else {
+        if (!hptr)
           hptr = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,COMPARE_ICON);
         WinDefDlgProc(hwnd,WM_SETICON,MPFROMLONG(hptr),MPVOID);
         cmp->hwnd = hwnd;
-        WinSetWindowPtr(hwnd,0,(PVOID)cmp);
+        WinSetWindowPtr(hwnd,QWL_USER,(PVOID)cmp);
         SetCnrCols(hwndLeft,TRUE);
         SetCnrCols(hwndRight,TRUE);
         WinSendMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
@@ -1451,8 +1456,6 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           GetPString(IDS_8HELVTEXT));
         }
       }
-      else
-        WinDismissDlg(hwnd,0);
       break;
 
     case UM_STRETCH:
@@ -1639,13 +1642,16 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_CONTAINER_FILLED:
       cmp = INSTDATA(hwnd);
-      if(cmp) {
+      if (!cmp) {
+	Runtime_Error(pszSrcFile, __LINE__, "pCompare NULL");
+        WinDismissDlg(hwnd,0);
+      }
+      else {
         cmp->filling = FALSE;
         WinEnableWindow(hwndLeft,TRUE);
         WinEnableWindow(hwndRight,TRUE);
         WinEnableWindowUpdate(hwndLeft,TRUE);
         WinEnableWindowUpdate(hwndRight,TRUE);
-	// if(!mp1) {
         {
           CHAR s[81];
 
@@ -1695,10 +1701,6 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         else
           WinSetDlgItemText(hwnd,COMP_NOTE,
                             GetPString(IDS_COMPREADYTEXT));
-      }
-      else {
-        DosBeep(50,100);
-        WinDismissDlg(hwnd,0);
       }
       break;
 
@@ -1839,53 +1841,58 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                          TRUE);
               break;
 
+	    // fixme to be gone - field edits not allowed
             case CN_BEGINEDIT:
               {
                 PFIELDINFO pfi = ((PCNREDITDATA)mp2)->pFieldInfo;
                 PCNRITEM   pci = (PCNRITEM)((PCNREDITDATA)mp2)->pRecord;
 
-                if(pfi || pci) {
+                if (pfi || pci) {
                   PostMsg(hwnd,
                           CM_CLOSEEDIT,
                           MPVOID,
                           MPVOID);
-                  DosBeep(250,100);
+                  // DosBeep(250,100);		// fixme
+	          Runtime_Error(pszSrcFile, __LINE__, "CN_BEGINEDIT unexpected");
                 }
               }
               break;
 
+	    // fixme to be gone - field edits not allowed
             case CN_REALLOCPSZ:
               cmp = INSTDATA(hwnd);
-              if(cmp) {
-
+              if (!cmp)
+	        Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      else {
                 PFIELDINFO  pfi = ((PCNREDITDATA)mp2)->pFieldInfo;
                 PCNRITEM    pci = (PCNRITEM)((PCNREDITDATA)mp2)->pRecord;
                 HWND        hwndMLE;
                 CHAR        szData[CCHMAXPATH],testname[CCHMAXPATH],*p;
 
-                if(!pci && !pfi) {
+	        Runtime_Error(pszSrcFile, __LINE__, "CN_REALLOCPSZ unexpected");
+                if (!pci && !pfi) {
                   hwndMLE = WinWindowFromID(WinWindowFromID(hwnd,
                                             SHORT1FROMMP(mp1)),CID_MLE);
                   WinQueryWindowText(hwndMLE,
                                      sizeof(szData),
                                      szData);
                   p = strchr(szData,'\n');
-                  if(p)
+                  if (p)
                     *p = 0;
                   p = strchr(szData,'\r');
-                  if(p)
+                  if (p)
                     *p = 0;
                   bstrip(szData);
-                  if(*szData) {
-                    if(!DosQueryPathInfo(szData,
+                  if (*szData) {
+                    if (!DosQueryPathInfo(szData,
                                          FIL_QUERYFULLNAME,
                                          testname,
                                          sizeof(testname))) {
-                      if(!SetDir(cmp->hwndParent,
+                      if (!SetDir(cmp->hwndParent,
                                  hwnd,
                                  testname,
                                  1)) {
-                        if(SHORT1FROMMP(mp1) == COMP_LEFTDIR)
+                        if (SHORT1FROMMP(mp1) == COMP_LEFTDIR)
                           strcpy(cmp->leftdir,testname);
                         else {
                           strcpy(cmp->rightdir,testname);
@@ -2004,11 +2011,18 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         WinSendDlgItemMsg(hwnd,COMP_RIGHTDIR,CM_SETCNRINFO,MPFROMP(&cnri),
                           MPFROMLONG(CMA_CNRTITLE | CMA_FLWINDOWATTR));
         cmp->filling = TRUE;
-        forthread = malloc(sizeof(COMPARE));
-        if(forthread) {
+        forthread = xmalloc(sizeof(COMPARE),pszSrcFile,__LINE__);
+        if(!forthread)
+          WinDismissDlg(hwnd,0);
+	else {
           *forthread = *cmp;
           forthread->cmp = cmp;
-          if(_beginthread(FillCnrsThread,NULL,122880,(PVOID)forthread) != -1) {
+          if (_beginthread(FillCnrsThread,NULL,122880,(PVOID)forthread) == -1) {
+	    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+            WinDismissDlg(hwnd,0);
+            free(forthread);
+	  }
+	  else {
             WinEnableWindowUpdate(hwndLeft,FALSE);
             WinEnableWindowUpdate(hwndRight,FALSE);
             cmp->selleft = cmp->selright = 0;
@@ -2050,15 +2064,6 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             WinEnableWindow(WinWindowFromID(hwnd,IDM_INVERT),FALSE);
             WinEnableWindow(WinWindowFromID(hwnd,COMP_FILTER),FALSE);
           }
-          else {
-            DosBeep(250,100);
-            WinDismissDlg(hwnd,0);
-            free(forthread);
-          }
-        }
-        else {
-          DosBeep(250,100);
-          WinDismissDlg(hwnd,0);
         }
       }
       return 0;
@@ -2279,18 +2284,17 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             strcpy(fullname,"*.PMD");
             if(export_filename(HWND_DESKTOP,fullname,1) && *fullname &&
                !strchr(fullname,'*') && !strchr(fullname,'?')) {
-              sf = malloc(sizeof(SNAPSTUFF));
-              if(sf) {
-                memset(sf,0,sizeof(SNAPSTUFF));
+              sf = xmallocz(sizeof(SNAPSTUFF),pszSrcFile,__LINE__);
+              if (sf) {
                 strcpy(sf->filename,fullname);
                 if(hwndLeft == cmp->hwndCalling)
                   strcpy(sf->dirname,cmp->leftdir);
                 else
                   strcpy(sf->dirname,cmp->rightdir);
                 sf->recurse = cmp->includesubdirs;
-                if(_beginthread(StartSnap,NULL,65536,(PVOID)sf) == -1) {
+                if (_beginthread(StartSnap,NULL,65536,(PVOID)sf) == -1) {
+	          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                   free(sf);
-                  DosBeep(50,100);
                 }
               }
             }
@@ -2333,12 +2337,16 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             COMPARE *forthread;
 
             cmp->filling = TRUE;
-            forthread = malloc(sizeof(COMPARE));
-            if(forthread) {
+            forthread = xmalloc(sizeof(COMPARE),pszSrcFile,__LINE__);
+            if (forthread) {
               *forthread = *cmp;
               forthread->cmp = cmp;
               forthread->action = SHORT1FROMMP(mp1);
-              if(_beginthread(ActionCnrThread,NULL,122880,(PVOID)forthread) != -1) {
+              if (_beginthread(ActionCnrThread,NULL,122880,(PVOID)forthread) == -1) {
+	        Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+                free(forthread);
+	      }
+	      else {
                 WinEnableWindowUpdate(hwndLeft,FALSE);
                 WinEnableWindowUpdate(hwndRight,FALSE);
                 switch(SHORT1FROMMP(mp1)) {
@@ -2394,13 +2402,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_INVERT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_FILTER),FALSE);
               }
-              else {
-                DosBeep(250,100);
-                free(forthread);
-              }
             }
-            else
-              DosBeep(250,100);
           }
           break;
 
@@ -2436,17 +2438,22 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         case IDM_SELECTSAME:			// name and size
         case IDM_INVERT:
           cmp = INSTDATA(hwnd);
-          if(cmp) {
-
+          if (!cmp)
+	      Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  else {
             COMPARE *forthread;
 
             cmp->filling = TRUE;
-            forthread = malloc(sizeof(COMPARE));
-            if(forthread) {
+            forthread = xmalloc(sizeof(COMPARE),pszSrcFile,__LINE__);
+            if (forthread) {
               *forthread = *cmp;
               forthread->cmp = cmp;
               forthread->action = SHORT1FROMMP(mp1);
-              if(_beginthread(SelectCnrsThread,NULL,65536,(PVOID)forthread) != -1) {
+              if (_beginthread(SelectCnrsThread,NULL,65536,(PVOID)forthread) == -1) {
+	        Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+                free(forthread);
+	      }
+	      else {
                 WinEnableWindowUpdate(hwndLeft,FALSE);
                 WinEnableWindowUpdate(hwndRight,FALSE);
                 switch(SHORT1FROMMP(mp1)) {
@@ -2501,13 +2508,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 WinEnableWindow(WinWindowFromID(hwnd,IDM_INVERT),FALSE);
                 WinEnableWindow(WinWindowFromID(hwnd,COMP_FILTER),FALSE);
               }
-              else {
-                DosBeep(250,100);
-                free(forthread);
-              }
             }
-            else
-              DosBeep(250,100);
           }
           break;
 
