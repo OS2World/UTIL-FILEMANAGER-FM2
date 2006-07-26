@@ -4,12 +4,13 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Rework for VAC3.65 compat, lose excess statics
+  17 Jul 06 SHL Use Runtime_Error
 
   fixme for more excess locals to be gone
 
@@ -37,6 +38,9 @@
 #include "grep.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(GREP,GrepDlgProc,EnvDlgProc)
 
 MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -151,16 +155,14 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    CCHMAXPATH,
 			    p);
 	bstrip(p);
-	if (*p)
-	{
-	  strcpy(lastenv, p);
-	  WinDismissDlg(hwnd, 1);
-	}
-	else
-	{
-	  DosBeep(250, 100);
+	if (!*p) {
+	  DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP,
 		      WinWindowFromID(hwnd, ENV_NAME));
+	}
+	else {
+	  strcpy(lastenv, p);
+	  WinDismissDlg(hwnd, 1);
 	}
       }
       break;
@@ -365,7 +367,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	lLen = strlen(simple) + 1;
 	if (strlen(s) > 8192 - lLen)
 	{
-	  DosBeep(250, 100);
+          Runtime_Error(pszSrcFile, __LINE__, "too big");
 	  WinSetDlgItemText(hwnd,
 			    GREP_MASK,
 			    s);
@@ -592,7 +594,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	bstrip(s);
 	if (strlen(s) > 8192 - 5)
 	{
-	  DosBeep(50, 100);
+          Runtime_Error(pszSrcFile, __LINE__, "too big");
 	  break;
 	}
 	p = strrchr(s, '\\');
@@ -667,7 +669,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       bstrip(s);
       if (strlen(s) > 8192 - 5)
       {
-	DosBeep(50, 100);
+        Runtime_Error(pszSrcFile, __LINE__, "too big");
 	break;
       }
       *path = 0;
@@ -693,7 +695,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	lLen = strlen(simple) + 1;
 	if (strlen(s) > (8192 - lLen) - (strlen(path) + 1))
 	{
-	  DosBeep(250, 100);
+          Runtime_Error(pszSrcFile, __LINE__, "too big");
 	  WinSetDlgItemText(hwnd,
 			    GREP_MASK,
 			    s);
@@ -913,17 +915,14 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       hwndCollect = WinQueryWindowULong(hwnd, QWL_USER);
       if (!hwndCollect)
-	DosBeep(50, 100);
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
       else
       {
 	static GREP g;		// Passed to thread
 
-	p = malloc(8192 + 512);
+	p = xmalloc(8192 + 512,pszSrcFile,__LINE__);
 	if (!p)
-	{
-	  DosBeep(50, 100);
 	  break;
-	}
 	memset(&g, 0, sizeof(GREP));
 	g.size = sizeof(GREP);
 	if (WinQueryButtonCheckstate(hwnd, GREP_RECURSE))
@@ -1024,7 +1023,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *pszTo++ = 0;
 	  *pszTo = 0;
 	  g.numlines = matched;
-	  g.matched = malloc(g.numlines);
+	  g.matched = xmalloc(g.numlines,pszSrcFile,__LINE__);
 	  if (!g.matched)
 	    g.numlines = 0;
 	}
@@ -1099,8 +1098,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	g.stopflag = &((DIRCNRDATA *) INSTDATA(hwndCollect)) -> stopflag;
 	if (_beginthread(dogrep, NULL, 524280, (PVOID)&g) == -1)
 	{
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  free(p);
-	  DosBeep(50, 100);
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
@@ -1123,7 +1122,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (s[strlen(s) - 1] != '\\')
 	    strcat(s, "\\");
 	  strcat(s, "GREPMASK.DAT");
-	  fp = fopen(s, "w");
+	  fp = xfopen(s, "w",pszSrcFile,__LINE__);
 	  if (fp)
 	  {
 	    fputs(GetPString(IDS_GREPFILETEXT), fp);

@@ -4,12 +4,13 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   01 Aug 04 SHL Rework fixup usage
   24 May 05 SHL Rework Win_Error usage
   05 Jun 05 SHL Use QWL_USER
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -17,8 +18,8 @@
 #define INCL_GPI
 #define INCL_DOS
 #define INCL_DOSERRORS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,6 +32,9 @@
 #include "mle.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(INIS,EnumAppNames,GetKeyData,EnumKeyNames,AddIniProc,IniProc,BackupIni,ChangeIniProc,SwapIniProc,IniLBSubProc,IniLBSubProc2,CopyIni,CompareIni,IntraIniProc,FilterIniProc)
 #pragma alloc_text(STARTUP,StartIniEditor)
 
@@ -74,8 +78,8 @@ typedef struct {
 } INIREC;
 
 
-VOID CopyIni (VOID *args) {
-
+VOID CopyIni (VOID *args)
+{
   INIREC     *inirec = (INIREC *)args;
   HAB         hab2;
   HMQ         hmq2;
@@ -139,8 +143,8 @@ VOID CopyIni (VOID *args) {
                                      NULL,
                                      (PULONG)&ulSize) &&
                  ulSize) {
-                pDataK = malloc(ulSize);  /* allocate space for keynames */
-                if(pDataK) {
+                pDataK = xmalloc(ulSize,pszSrcFile,__LINE__);	/* allocate space for keynames */
+                if (pDataK) {
                   /* get keynames */
                   if(PrfQueryProfileString(hini2,
                                            (PSZ)inirec->app,
@@ -155,8 +159,8 @@ VOID CopyIni (VOID *args) {
                                              pCurrentK,
                                              (PULONG)&ulSize) &&
                                              ulSize) {
-                        pData = malloc(ulSize);
-                        if(pData) {
+                        pData = xmalloc(ulSize,pszSrcFile,__LINE__);
+                        if (pData) {
                           /* get data */
                           if(PrfQueryProfileData(hini2,inirec->app,
                                                  pCurrentK,
@@ -200,8 +204,8 @@ VOID CopyIni (VOID *args) {
                                      inirec->key,
                                      (PULONG)&ulSize) &&
                                      ulSize) {
-                pData = malloc(ulSize);
-                if(pData) {
+                pData = xmalloc(ulSize,pszSrcFile,__LINE__);
+                if (pData) {
                   /* get data */
                   if(PrfQueryProfileData(hini2,inirec->app,
                                          inirec->key,
@@ -254,8 +258,8 @@ Abort:
 }
 
 
-VOID CompareIni (VOID *args) {
-
+VOID CompareIni (VOID *args)
+{
   INIREC     *inirec = (INIREC *)args;
   HAB         hab2;
   HMQ         hmq2;
@@ -276,8 +280,8 @@ VOID CompareIni (VOID *args) {
 }
 
 
-VOID BackupIni (VOID *args) {
-
+VOID BackupIni (VOID *args)
+{
   PPRFPROFILE prfp = (PPRFPROFILE)args;
   HAB         hab2;
   HMQ         hmq2;
@@ -312,8 +316,8 @@ VOID BackupIni (VOID *args) {
           new = PrfOpenProfile(hab2,prfp->pszSysName);
           if(new) {
             if(PrfQueryProfileSize(orig,NULL,NULL,(PULONG)&ulSize) && ulSize) {
-              pDataA = malloc(ulSize);  /* allocate space for applnames */
-              if(pDataA) {
+              pDataA = xmalloc(ulSize,pszSrcFile,__LINE__);	/* allocate space for applnames */
+              if (pDataA) {
                 /* get applnames */
                 if(PrfQueryProfileString(orig,NULL,NULL,"\0",pDataA,ulSize)) {
                   pCurrentA = pDataA;
@@ -322,8 +326,8 @@ VOID BackupIni (VOID *args) {
                     /* now keynames for this applname */
                     if (PrfQueryProfileSize(orig,(PSZ)pCurrentA,NULL,
                                             (PULONG)&ulSize) && ulSize) {
-                      pDataK = malloc(ulSize);  /* allocate space for keynames */
-                      if(pDataK) {
+                      pDataK = xmalloc(ulSize,pszSrcFile,__LINE__);	/* allocate space for keynames */
+                      if (pDataK) {
                         /* get keynames */
                         if(PrfQueryProfileString(orig,(PSZ)pCurrentA,NULL,
                                                  "\0",pDataK,ulSize)) {
@@ -334,8 +338,8 @@ VOID BackupIni (VOID *args) {
                                                    pCurrentK,
                                                    (PULONG)&ulSize) &&
                                                    ulSize) {
-                              pData = malloc(ulSize);
-                              if(pData) {
+                              pData = xmalloc(ulSize,pszSrcFile,__LINE__);
+                              if (pData) {
                                 /* get data */
                                 if(PrfQueryProfileData(orig,pCurrentA,
                                                        pCurrentK,
@@ -379,51 +383,54 @@ VOID BackupIni (VOID *args) {
 }
 
 
-static BOOL EnumAppNames (HWND hwndList,HINI hini) {
-
+static VOID EnumAppNames (HWND hwndList,HINI hini)
+{
   PVOID pData;
   PBYTE pCurrent;
   ULONG ulSize = 0L;
 
   WinSendMsg(hwndList,LM_DELETEALL,NULL,NULL);
-  if(PrfQueryProfileSize(hini,NULL,NULL,(PULONG)&ulSize) && ulSize) {
-    pData = malloc(ulSize);
-    if(!pData)
-      return TRUE;
-    if(PrfQueryProfileString(hini,NULL,NULL,"\0",pData,ulSize)) {
-      pCurrent = pData;
-      WinEnableWindowUpdate(hwndList,FALSE);
-      while (*pCurrent) {
-        WinSendMsg(hwndList,LM_INSERTITEM,MPFROMSHORT(LIT_SORTASCENDING),
-                    MPFROMP(pCurrent));
-        while(*pCurrent)
+  if (!PrfQueryProfileSize(hini,NULL,NULL,(PULONG)&ulSize))
+    Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileSize");
+  else if (!ulSize)
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
+  else {
+    pData = xmalloc(ulSize,pszSrcFile,__LINE__);
+    if (pData) {
+      if (PrfQueryProfileString(hini,NULL,NULL,"\0",pData,ulSize)) {
+        pCurrent = pData;
+        WinEnableWindowUpdate(hwndList,FALSE);
+        while (*pCurrent) {
+          WinSendMsg(hwndList,LM_INSERTITEM,MPFROMSHORT(LIT_SORTASCENDING),
+                      MPFROMP(pCurrent));
+          while(*pCurrent)
+            pCurrent++;
           pCurrent++;
-        pCurrent++;
+        }
+        WinSendMsg(hwndList,LM_SELECTITEM,MPFROMSHORT(0),MPFROMSHORT(TRUE));
+        WinEnableWindowUpdate(hwndList,TRUE);
       }
-      WinSendMsg(hwndList,LM_SELECTITEM,MPFROMSHORT(0),MPFROMSHORT(TRUE));
-      WinEnableWindowUpdate(hwndList,TRUE);
+      free(pData);
     }
-    free(pData);
-    return TRUE;
   }
-  DosBeep(250,100);
-  return FALSE;
 }
 
 
 static CHAR * GetKeyData (HWND hwndList,HINI hini,PSZ pAppName,
-                          PSZ pKeyName,PULONG datalen) {
-
+                          PSZ pKeyName,PULONG datalen)
+{
   ULONG ulKeySize = 0L;
   PVOID pKeyData = NULL;
 
   *datalen = 0L;
-  if(PrfQueryProfileSize(hini,pAppName,pKeyName,
-                         (PULONG)&ulKeySize)) {
-    pKeyData = malloc(ulKeySize + 1L);
-    if(pKeyData) {
-      if(PrfQueryProfileData(hini,pAppName,pKeyName,
-                             pKeyData,(PULONG)&ulKeySize)) {
+  if(!PrfQueryProfileSize(hini,pAppName,pKeyName,(PULONG)&ulKeySize))
+    Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileSize");
+  else {
+    pKeyData = xmalloc(ulKeySize + 1L,pszSrcFile,__LINE__);
+    if (pKeyData) {
+      if (!PrfQueryProfileData(hini,pAppName,pKeyName,pKeyData,(PULONG)&ulKeySize))
+        Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileData");
+      else {
         HexDump(hwndList,pKeyData,ulKeySize);
         {
           CHAR s[81];
@@ -441,28 +448,30 @@ static CHAR * GetKeyData (HWND hwndList,HINI hini,PSZ pAppName,
       }
     }
   }
-  DosBeep(250,100);
   return NULL;
 }
 
 
-static BOOL EnumKeyNames (HWND hwndList,HINI hini,PSZ pAppName) {
-
+static BOOL EnumKeyNames (HWND hwndList,HINI hini,PSZ pAppName)
+{
   PVOID pData;
   PBYTE pCurrent;
   ULONG ulSize = 0L;
 
   WinSendMsg(hwndList,LM_DELETEALL,NULL,NULL);
-  if(PrfQueryProfileSize(hini,pAppName,NULL,
-                         (PULONG)&ulSize)) {
-    if(!ulSize) {
-      PrfWriteProfileData(hini,pAppName,NULL,"\0",0L);
-      return FALSE;
-    }
-    pData = malloc(ulSize + 1L);
-    if(pData) {
-      if(PrfQueryProfileString(hini,pAppName,NULL,
-                               "\0",pData,ulSize)) {
+  if(!PrfQueryProfileSize(hini,pAppName,NULL,(PULONG)&ulSize))
+    Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileSize");
+  else {
+    if (!ulSize)
+      Runtime_Error(pszSrcFile, __LINE__, "no data");
+    pData = xmalloc(ulSize + 1L,pszSrcFile,__LINE__);
+    if (pData) {
+      if(!PrfQueryProfileString(hini,pAppName,NULL,"\0",pData,ulSize))
+      {
+        Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileString");
+        free(pData);
+      }
+      else {
         pCurrent = pData;
         WinEnableWindowUpdate(hwndList,FALSE);
         while (*pCurrent) {
@@ -474,20 +483,18 @@ static BOOL EnumKeyNames (HWND hwndList,HINI hini,PSZ pAppName) {
         }
         WinSendMsg(hwndList,LM_SELECTITEM,MPFROMSHORT(0),MPFROMSHORT(TRUE));
         WinEnableWindowUpdate(hwndList,TRUE);
+        return TRUE;
       }
-      free(pData);
-      return TRUE;
     }
   }
-  DosBeep(250,100);
   return FALSE;
 }
 
 
 #define hwndMLE WinWindowFromID(hwnd,IAF_MLE)
 
-MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   INIDATA    *inidata;
   static CHAR lasttext[8192] = "";
 
@@ -594,7 +601,11 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             *s = 0;
             WinQueryWindowText(hwndMLE,8192,s);
-            if(*s) {
+            if (!*s) {
+              DosBeep(250,100);
+              break;
+	    }
+	    else {
               strcpy(lasttext,s);
               p = s;
               while(*p) {
@@ -609,15 +620,15 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               p++;
               *p = 0;
             }
-            else {
-              DosBeep(250,100);
-              break;
-            }
             numitems = (SHORT)WinSendMsg(inidata->hwndApp,
                                          LM_QUERYITEMCOUNT,
                                          MPVOID,
                                          MPVOID);
-            if(numitems) {
+            if(!numitems) {
+              DosBeep(250,100);
+              break;
+	    }
+	    else {
               WinSetPointer(HWND_DESKTOP,hptrBusy);
               WinSetDlgItemText(hwnd,
                                 IAF_HELP,
@@ -655,10 +666,6 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               WinSetPointer(HWND_DESKTOP,hptrArrow);
             }
-            else {
-              DosBeep(250,100);
-              break;
-            }
           }
           WinDismissDlg(hwnd,1);
           break;
@@ -674,7 +681,9 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                LM_QUERYSELECTION,
                                                MPFROM2SHORT(LIT_FIRST,0),
                                                MPVOID);
-            if(sSelect >= 0) {
+            if (sSelect < 0)
+              Runtime_Error(pszSrcFile, __LINE__, "no data");
+	    else {
               *s = 0;
               WinSendDlgItemMsg(hwnd,IAF_LISTBOX,LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(sSelect,CCHMAXPATH),
@@ -682,18 +691,14 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               bstrip(s);
               if(*s) {
                 fp = _fsopen(s,"r",SH_DENYWR);
-                if(fp) {
+                if (fp) {
                   len = fread(s,1,8192,fp);
                   s[len] = 0;
                   WinSetWindowText(hwndMLE,s);
                   fclose(fp);
                 }
-                else
-                  DosBeep(250,100);
               }
             }
-            else
-              DosBeep(50,100);
           }
           break;
 
@@ -710,7 +715,7 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             bstrip(filename);
             if(*filename) {
               p = strchr(filename,'.');
-              if(p) {
+              if (p) {
                 strcpy(p,".IST");
                 WinSetDlgItemText(hwnd,
                                   IAF_SAVENAME,
@@ -718,9 +723,11 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               *s = 0;
               WinQueryWindowText(hwndMLE,8192,s);
-              if(*s) {
-                fp = fopen(filename,"w");
-                if(fp) {
+              if (!*s)
+                Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      else {
+                fp = xfopen(filename,"w",pszSrcFile,__LINE__);
+                if (fp) {
                   fwrite(s,1,strlen(s),fp);
                   fclose(fp);
                   WinSendDlgItemMsg(hwnd,
@@ -729,11 +736,7 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                     MPFROMSHORT(LIT_SORTASCENDING),
                                     MPFROMP(filename));
                 }
-                else
-                  DosBeep(250,100);
               }
-              else
-                DosBeep(50,100);
             }
           }
           break;
@@ -779,8 +782,8 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY IntraIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY IntraIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   INIREC *inirec;
 
   switch(msg) {
@@ -900,8 +903,8 @@ MRESULT EXPENTRY IntraIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY ChangeIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ChangeIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       WinSetWindowPtr(hwnd,0,mp2);
@@ -989,11 +992,12 @@ MRESULT EXPENTRY ChangeIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             prfp.cchSysName = strlen(userini);
             prfp.pszUserName = (PSZ)userini;
             prfp.pszSysName = (PSZ)sysini;
-            if(PrfReset(WinQueryAnchorBlock(hwnd),&prfp))
-              WinDismissDlg(hwnd,1);
-            else
+            if (!PrfReset(WinQueryAnchorBlock(hwnd),&prfp)) {
               Win_Error(hwnd,hwnd,__FILE__,__LINE__,
                         GetPString(IDS_INIPRFRESETFAILEDTEXT));
+	    }
+	    else
+              WinDismissDlg(hwnd,1);
           }
           break;
 
@@ -1014,8 +1018,8 @@ MRESULT EXPENTRY ChangeIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       WinSetWindowPtr(hwnd,0,mp2);
@@ -1101,7 +1105,7 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             prfp.cchSysName = CCHMAXPATH;
             prfp.pszUserName = (PSZ)olduserini;
             prfp.pszSysName = (PSZ)oldsysini;
-            if(!PrfQueryProfile(WinQueryAnchorBlock(hwnd),&prfp)) {
+            if (!PrfQueryProfile(WinQueryAnchorBlock(hwnd),&prfp)) {
               Win_Error(hwnd,hwnd,__FILE__,__LINE__,
                         GetPString(IDS_INIQUERYPRFFAILEDTEXT));
               break;
@@ -1145,7 +1149,7 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               strcat(tempuserini,"\\");
             strcat(tempuserini,"TEMPUSER.INI");
             rc = DosCopy(userini,tempuserini,DCPY_EXISTING);
-            if(rc) {
+            if (rc) {
               Dos_Error(MB_CANCEL,
                         rc,
                         hwnd,
@@ -1163,7 +1167,7 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             rc = DosCopy(sysini,
                          tempsysini,
                          DCPY_EXISTING);
-            if(rc) {
+            if (rc) {
               Dos_Error(MB_CANCEL,
                         rc,
                         hwnd,
@@ -1179,7 +1183,11 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             prfp.cchSysName = strlen(tempsysini);
             prfp.pszUserName = (PSZ)tempuserini;
             prfp.pszSysName = (PSZ)tempsysini;
-            if(PrfReset(WinQueryAnchorBlock(hwnd),&prfp)) {
+            if (!PrfReset(WinQueryAnchorBlock(hwnd),&prfp)) {
+              Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                        GetPString(IDS_INIPRFRESETFAILEDTEXT));
+	    }
+	    else {
               /* backup old inis */
               strcpy(tempuserini2,olduserini);
               p = strrchr(tempuserini2,'\\');
@@ -1193,7 +1201,7 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               rc = DosCopy(olduserini,
                            tempuserini2,
                            DCPY_EXISTING);
-              if(rc) {
+              if (rc) {
                 Dos_Error(MB_CANCEL,
                           rc,
                           hwnd,
@@ -1217,7 +1225,7 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               rc = DosCopy(oldsysini,
                            tempsysini2,
                            DCPY_EXISTING);
-              if(rc) {
+              if (rc) {
                 Dos_Error(MB_CANCEL,
                           rc,
                           hwnd,
@@ -1233,7 +1241,7 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               rc = DosCopy(userini,
                            olduserini,
                            DCPY_EXISTING);
-              if(rc) {
+              if (rc) {
                 Dos_Error(MB_CANCEL,
                           rc,
                           hwnd,
@@ -1248,7 +1256,7 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               rc = DosCopy(sysini,
                            oldsysini,
                            DCPY_EXISTING);
-              if(rc) {
+              if (rc) {
                 Dos_Error(MB_CANCEL,
                           rc,
                           hwnd,
@@ -1266,9 +1274,10 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               prfp.cchSysName = strlen(olduserini);
               prfp.pszUserName = (PSZ)olduserini;
               prfp.pszSysName = (PSZ)oldsysini;
-              if(!PrfReset(WinQueryAnchorBlock(hwnd),&prfp))
+              if (!PrfReset(WinQueryAnchorBlock(hwnd),&prfp)) {
                 Win_Error(hwnd,hwnd,__FILE__,__LINE__,
                           GetPString(IDS_INIPRFRESETFAILEDTEXT));
+	      }
               else {
                 Notify(GetPString(IDS_SUCCESSTEXT));
                 unlinkf(tempuserini);
@@ -1276,9 +1285,6 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               WinDismissDlg(hwnd,1);
             }
-            else
-              Win_Error(hwnd,hwnd,__FILE__,__LINE__,
-                        GetPString(IDS_INIPRFRESETFAILEDTEXT));
           }
           break;
 
@@ -1299,8 +1305,8 @@ MRESULT EXPENTRY SwapIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   INIDATA *inidata;
 
   switch(msg) {
@@ -1360,9 +1366,8 @@ MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                       GetPString(IDS_INIBINARYDATASKIPTEXT)) ==
                MBID_CANCEL)
               WinDismissDlg(hwnd,0);
-            p = malloc(inidata->datalen * 2);
-            if(p) {
-              memset(p,0,inidata->datalen * 2);
+            p = xmallocz(inidata->datalen * 2,pszSrcFile,__LINE__);
+            if (p) {
               fixup(inidata->data,
 	            p,
 		    inidata->datalen * 2,
@@ -1458,8 +1463,8 @@ MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             INT  len;
 
             inidata = INSTDATA(hwnd);
-            if(!inidata) {
-              DosBeep(50,100);
+            if (!inidata) {
+              Runtime_Error(pszSrcFile, __LINE__, "no data");
               break;
             }
             inidata->isbinary = WinQueryButtonCheckstate(hwnd,IAD_ISBINARY);
@@ -1511,8 +1516,8 @@ static ULONG    flFrameFlags = FCF_SYSMENU    | FCF_SIZEBORDER | FCF_ICON |
                                FCF_TITLEBAR   | FCF_MINMAX     | FCF_MENU |
                                FCF_ACCELTABLE | FCF_NOBYTEALIGN;
 
-HWND StartIniEditor (HWND hwnd,CHAR *fname,INT flags) {
-
+HWND StartIniEditor (HWND hwnd,CHAR *fname,INT flags)
+{
   /*
    * create an ini editor window
    * bitmapped flags:
@@ -1530,8 +1535,8 @@ HWND StartIniEditor (HWND hwnd,CHAR *fname,INT flags) {
   if(hwnd != HWND_DESKTOP)
     useHab = WinQueryAnchorBlock(hwnd);
   if(fname && *fname) {
-    filename = strdup(fname);
-    if(!filename)
+    filename = xstrdup(fname,pszSrcFile,__LINE__);
+    if (!filename)
       return (HWND)0;
     hINI = PrfOpenProfile(useHab,filename);
     if(!hINI) {
@@ -1596,8 +1601,8 @@ HWND StartIniEditor (HWND hwnd,CHAR *fname,INT flags) {
 }
 
 
-MRESULT EXPENTRY IniLBSubProc (HWND hwnd,ULONG msg,MPARAM  mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY IniLBSubProc (HWND hwnd,ULONG msg,MPARAM  mp1,MPARAM mp2)
+{
   PFNWP       oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
   static HWND hwndPopup = (HWND)0;
 
@@ -1818,8 +1823,8 @@ MRESULT EXPENTRY IniLBSubProc (HWND hwnd,ULONG msg,MPARAM  mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY IniLBSubProc2 (HWND hwnd,ULONG msg,MPARAM  mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY IniLBSubProc2 (HWND hwnd,ULONG msg,MPARAM  mp1,MPARAM mp2)
+{
   PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
 
   switch(msg) {
@@ -1834,19 +1839,18 @@ MRESULT EXPENTRY IniLBSubProc2 (HWND hwnd,ULONG msg,MPARAM  mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   INIDATA *inidata;
   SHORT    sSel;
 
   switch(msg) {
     case WM_CREATE:
-      inidata = malloc(sizeof(INIDATA));
+      inidata = xmallocz(sizeof(INIDATA),pszSrcFile,__LINE__);
       if(!inidata) {
         PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
         break;
       }
-      memset(inidata,0,sizeof(INIDATA));
       inidata->size = sizeof(INIDATA);
       inidata->confirm = TRUE;
       inidata->currid = INI_APPLIST;
@@ -2524,23 +2528,17 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             INIREC *inirec;
 
-            inirec = malloc(sizeof(INIREC));
+            inirec = xmallocz(sizeof(INIREC),pszSrcFile,__LINE__);
             if(inirec) {
-              memset(inirec,0,sizeof(INIREC));
               *inirec = *(INIREC *)mp2;
               inirec->hwndDlg = hwnd;
               inirec->confirm = inidata->confirm;
               strcpy(inirec->filename1,inidata->ininame);
-              if(_beginthread(CopyIni,
-                              NULL,
-                              122880,
-                              (PVOID)inirec) == -1) {
-                DosBeep(250,100);
+              if (_beginthread(CopyIni,NULL,122880,(PVOID)inirec) == -1) {
+                Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                 free(inirec);
               }
             }
-            else
-              DosBeep(50,100);
           }
           break;
 
@@ -2552,16 +2550,13 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             INIREC *inirec;
 
-            inirec = malloc(sizeof(INIREC));
-            if(inirec) {
+            inirec = xmalloc(sizeof(INIREC),pszSrcFile,__LINE__);
+            if (inirec) {
               strcpy(inirec->filename2,(CHAR *)(mp2));
               strcpy(inirec->filename1,inidata->ininame);
               inirec->hwndDlg = hwnd;
-              if(_beginthread(CompareIni,
-                              NULL,
-                              122880,
-                              (PVOID)inirec) == -1) {
-                DosBeep(250,100);
+              if (_beginthread(CompareIni,NULL,122880,(PVOID)inirec) == -1) {
+                Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                 free(inirec);
               }
             }
@@ -2583,9 +2578,8 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           {
             INIREC *inirec;
 
-            inirec = malloc(sizeof(INIREC));
-            if(inirec) {
-              memset(inirec,0,sizeof(INIREC));
+            inirec = xmallocz(sizeof(INIREC),pszSrcFile,__LINE__);
+            if (inirec) {
               inirec->size = sizeof(INIREC);
               inirec->hwndDlg = hwnd;
               inirec->confirm = inidata->confirm;
@@ -2607,16 +2601,11 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 free(inirec);
                 break;
               }
-              if(_beginthread(CopyIni,
-                              NULL,
-                              122880,
-                              (PVOID)inirec) == -1) {
-                DosBeep(250,100);
+              if (_beginthread(CopyIni,NULL,122880,(PVOID)inirec) == -1) {
+                Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                 free(inirec);
               }
             }
-            else
-              DosBeep(50,100);
           }
           break;
 
@@ -2645,36 +2634,29 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
               PPRFPROFILE prfp;
 
-              prfp = malloc(sizeof(PRFPROFILE));
-              if(prfp) {
-                memset(prfp,0,sizeof(PRFPROFILE));
-                prfp->pszUserName = strdup(inidata->ininame);
-                if(prfp->pszUserName) {
+              prfp = xmallocz(sizeof(PRFPROFILE),pszSrcFile,__LINE__);
+              if (prfp) {
+                prfp->pszUserName = xstrdup(inidata->ininame,pszSrcFile,__LINE__);
+                if (!prfp->pszUserName)
+                  free(prfp);
+		else {
                   prfp->cchUserName = strlen(prfp->pszUserName);
-                  prfp->pszSysName = strdup(filename);
-                  if(prfp->pszSysName) {
+                  prfp->pszSysName = xstrdup(filename,pszSrcFile,__LINE__);
+                  if (!prfp->pszSysName) {
+                    free(prfp->pszUserName);
+                    free(prfp);
+		  }
+		  else {
                     prfp->cchSysName = strlen(prfp->pszSysName);
-                    if(_beginthread(BackupIni,
-                                    NULL,
-                                    122880,
-                                    (PVOID)prfp) == -1) {
+                    if (_beginthread(BackupIni,NULL,122880,(PVOID)prfp) == -1) {
+                      Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                       free(prfp->pszSysName);
                       free(prfp->pszUserName);
                       free(prfp);
-                      DosBeep(250,100);
                     }
                     else
                       DosSleep(250L);
                   }
-                  else {
-                    free(prfp->pszUserName);
-                    free(prfp);
-                    DosBeep(250,100);
-                  }
-                }
-                else {
-                  free(prfp);
-                  DosBeep(250,100);
                 }
               }
             }
@@ -2809,7 +2791,12 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                  sizeof(fsa))) {
               hINI = PrfOpenProfile(WinQueryAnchorBlock(hwnd),
                                     filename);
-              if(hINI) {
+              if(!hINI) {
+                Win_Error(hwnd,hwnd,__FILE__,__LINE__,
+                          GetPString(IDS_INICANTOPENINITEXT),
+                          filename);
+	      }
+	      else {
                 if(*inidata->ininame) {
                   if(inidata->hini)
                     PrfCloseProfile(inidata->hini);
@@ -2828,10 +2815,6 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 EnumAppNames(WinWindowFromID(hwnd,INI_APPLIST),
                              inidata->hini);
               }
-              else
-                Win_Error(hwnd,hwnd,__FILE__,__LINE__,
-                          GetPString(IDS_INICANTOPENINITEXT),
-                          filename);
             }
           }
           break;

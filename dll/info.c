@@ -6,7 +6,7 @@
   Info window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL FileInfoProc: standardize EA math
@@ -14,6 +14,7 @@
   23 May 05 SHL Use QWL_USER
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   05 Jun 05 SHL Use QWL_USER
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -34,12 +35,15 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(FMINFO,FileInfoProc,IconProc)
 #pragma alloc_text(FMINFO2,SetDrvProc,DrvInfoProc)
 
 
-CHAR *FlagMsg (CHAR drive,CHAR *buffer) {
-
+CHAR *FlagMsg (CHAR drive,CHAR *buffer)
+{
   ULONG           x;
   BOOL            once = FALSE;
   register CHAR  *p;
@@ -84,6 +88,7 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
   CHAR	szMB[20];
   CHAR	szKB[20];
   CHAR	szUnits[20];
+  APIRET rc;
 
   switch(msg)
   {
@@ -354,11 +359,14 @@ MRESULT EXPENTRY DrvInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 memmove(s + 1,s,strlen(s) + 1);
                 *s = strlen(s + 1);
                 DosError(FERR_DISABLEHARDERR);
-                if(DosSetFSInfo(toupper(*pszFileName) - '@',
-                                2L,
-                                (PVOID)s,
-                                (ULONG)sizeof(s)))
-                  DosBeep(50,100);
+                rc = DosSetFSInfo(toupper(*pszFileName) - '@',
+                                  2L,
+                                  (PVOID)s,
+                                  (ULONG)sizeof(s));
+		if (rc)	{
+                  Dos_Error(MB_CANCEL,rc,hwnd,__FILE__,__LINE__,
+                            "DosSetFSInfo failed");
+		}
               }
             }
           }
@@ -542,8 +550,8 @@ MRESULT EXPENTRY IconProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 }
 
 
-MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   ICONSTUF *is;
 
   switch(msg) {
@@ -552,13 +560,11 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         WinDismissDlg(hwnd,1);
         break;
       }
-      is = malloc(sizeof(ICONSTUF));
-      if(!is) {
-        DosBeep(50,100);
+      is = xmallocz(sizeof(ICONSTUF),pszSrcFile,__LINE__);
+      if (!is) {
         WinDismissDlg(hwnd,1);
         break;
       }
-      memset(is,0,sizeof(ICONSTUF));
       is->list = (CHAR **)mp2;
       is->size = sizeof(ICONSTUF);
       WinSetWindowPtr(hwnd,QWL_USER,is);
@@ -647,7 +653,11 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             case LN_ENTER:
             case LN_SELECT:
               is = WinQueryWindowPtr(hwnd,QWL_USER);
-              if(is) {
+              if (!is) {
+                Runtime_Error(pszSrcFile, __LINE__, "no data");
+                WinDismissDlg(hwnd,1);
+	      }
+	      else {
 
                 SHORT sSelect;
 
@@ -678,10 +688,6 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   is->szFileName);
                   }
                 }
-              }
-              else {
-                DosBeep(50,100);
-                WinDismissDlg(hwnd,1);
               }
               break;
           }
@@ -714,8 +720,7 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       WinCheckButton(hwnd,FLE_VIRTDRV,FALSE);
       WinCheckButton(hwnd,FLE_PROTDLL,FALSE);
       is = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(is && *is->szFileName) {
-
+      if (is && *is->szFileName) {
         CHAR         s[97];
         FILEFINDBUF4 fs;
         HDIR         hdir = HDIR_CREATE;
@@ -725,41 +730,40 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         ARC_TYPE    *info;
 
         DosError(FERR_DISABLEHARDERR);
-        if(DosFindFirst(is->szFileName,
-                        &hdir,
-                        FILE_NORMAL | FILE_ARCHIVED |
-                        FILE_DIRECTORY | FILE_READONLY | FILE_HIDDEN |
-                        FILE_SYSTEM,
-                        &fs,
-                        sizeof(fs),
-                        &apptype,
-                        FIL_QUERYEASIZE)) {
-          DosBeep(250,100);
-          {
-            SHORT sSelect,numitems;
+        if (DosFindFirst(is->szFileName,
+                         &hdir,
+                         FILE_NORMAL | FILE_ARCHIVED |
+                         FILE_DIRECTORY | FILE_READONLY | FILE_HIDDEN |
+                         FILE_SYSTEM,
+                         &fs,
+                         sizeof(fs),
+                         &apptype,
+                         FIL_QUERYEASIZE)) {
+	  // Not found
+          SHORT sSelect,numitems;
 
-            sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-                                               FLE_NAME,
-                                               LM_QUERYSELECTION,
-                                               MPFROMSHORT(LIT_FIRST),
-                                               MPVOID);
-            if(sSelect >= 0) {
-              WinSendDlgItemMsg(hwnd,
-                                FLE_NAME,
-                                LM_DELETEITEM,
-                                MPFROMSHORT(sSelect),
-                                MPVOID);
-              numitems = (SHORT)WinSendDlgItemMsg(hwnd,
-                                                  FLE_NAME,
-                                                  LM_QUERYITEMCOUNT,
-                                                  MPVOID,
-                                                  MPVOID);
-              if(numitems)
-                PostMsg(WinWindowFromID(hwnd,FLE_NAME),
-                        LM_SELECTITEM,
-                        MPFROMSHORT(((sSelect) ? sSelect - 1 : 0)),
-                        MPFROMSHORT(TRUE));
-            }
+          DosBeep(250,100);		// Wake up user
+          sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
+                                             FLE_NAME,
+                                             LM_QUERYSELECTION,
+                                             MPFROMSHORT(LIT_FIRST),
+                                             MPVOID);
+          if (sSelect >= 0) {
+            WinSendDlgItemMsg(hwnd,
+                              FLE_NAME,
+                              LM_DELETEITEM,
+                              MPFROMSHORT(sSelect),
+                              MPVOID);
+            numitems = (SHORT)WinSendDlgItemMsg(hwnd,
+                                                FLE_NAME,
+                                                LM_QUERYITEMCOUNT,
+                                                MPVOID,
+                                                MPVOID);
+            if (numitems)
+              PostMsg(WinWindowFromID(hwnd,FLE_NAME),
+                      LM_SELECTITEM,
+                      MPFROMSHORT(((sSelect) ? sSelect - 1 : 0)),
+                      MPFROMSHORT(TRUE));
           }
         }
         else {
@@ -905,7 +909,6 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             WinEnableWindow(WinWindowFromID(hwnd,FLE_BINARY),TRUE);
             fp = _fsopen(is->szFileName,"rb",SH_DENYNO);
             if(fp) {
-
               char   buff[512];
               ULONG  len;
               APIRET rc;
@@ -941,12 +944,12 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                              2);
             }
             fp = _fsopen(is->szFileName,"ab",SH_DENYNO);
-            if(fp) {
+            if (fp) {
               WinCheckButton(hwnd,FLE_WRITEABLE,TRUE);
               fclose(fp);
             }
             fp = _fsopen(is->szFileName,"rb",SH_DENYRW);
-            if(!fp)
+            if (!fp)
               WinCheckButton(hwnd,FLE_OPEN,TRUE);
             else
               fclose(fp);
@@ -1015,8 +1018,8 @@ MRESULT EXPENTRY FileInfoProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY SetDrvProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY SetDrvProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       if(!mp2 || !isalpha(*(CHAR *)mp2))
