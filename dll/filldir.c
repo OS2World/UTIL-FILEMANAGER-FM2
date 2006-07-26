@@ -6,7 +6,7 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
@@ -22,6 +22,7 @@
   24 Oct 05 SHL FillInRecordFromFFB: correct longname display enable
   24 Oct 05 SHL FillInRecordFromFSA: correct longname display enable
   24 Oct 05 SHL Drop obsolete code
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
@@ -39,6 +40,8 @@
 
 #include "fm3dll.h"
 #include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
 #pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr)
@@ -191,19 +194,15 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
     PFEA2     pfea;
     CHAR      *value;
 
-    pgealist = malloc(sizeof(GEA2LIST) + 32);
-    if (pgealist)
-    {
-      memset(pgealist,0,sizeof(GEA2LIST) + 32);
+    pgealist = xmallocz(sizeof(GEA2LIST) + 32,pszSrcFile,__LINE__);
+    if (pgealist) {
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,SUBJECT);
       pgea->cbName = strlen(pgea->szName);
       pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = malloc(1532);
-      if (pfealist)
-      {
-	memset(pfealist,0,1532);
+      pfealist = xmallocz(1532,pszSrcFile,__LINE__);
+      if (pfealist) {
 	pfealist->cbList = 1024;
 	eaop.fpGEA2List = pgealist;
 	eaop.fpFEA2List = pfealist;
@@ -241,18 +240,15 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,PCNRITEM pci, const PSZ pszDirectory,
     PFEA2     pfea;
     CHAR      *value;
 
-    pgealist = malloc(sizeof(GEA2LIST) + 32);
-    if (pgealist)
-    {
-      memset(pgealist,0,sizeof(GEA2LIST) + 32);
+    pgealist = xmallocz(sizeof(GEA2LIST) + 32,pszSrcFile,__LINE__);
+    if (pgealist) {
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,LONGNAME);
       pgea->cbName = strlen(pgea->szName);
       pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = malloc(1532);
+      pfealist = xmallocz(1532,pszSrcFile,__LINE__);
       if (pfealist) {
-	memset(pfealist,0,1532);
 	pfealist->cbList = 1024;
 	eaop.fpGEA2List = pgealist;
 	eaop.fpFEA2List = pfealist;
@@ -444,17 +440,15 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
     PFEA2     pfea;
     CHAR      *value;
 
-    pgealist = malloc(sizeof(GEA2LIST) + 32);
+    pgealist = xmallocz(sizeof(GEA2LIST) + 32,pszSrcFile,__LINE__);
     if (pgealist) {
-      memset(pgealist,0,sizeof(GEA2LIST) + 32);
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,SUBJECT);
       pgea->cbName = strlen(pgea->szName);
       pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = malloc(1532);
+      pfealist = xmallocz(1532,pszSrcFile,__LINE__);
       if (pfealist) {
-	memset(pfealist,0,1532);
 	pfealist->cbList = 1024;
 	eaop.fpGEA2List = pgealist;
 	eaop.fpFEA2List = pfealist;
@@ -492,17 +486,15 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
     PFEA2     pfea;
     CHAR      *value;
 
-    pgealist = malloc(sizeof(GEA2LIST) + 32);
+    pgealist = xmallocz(sizeof(GEA2LIST) + 32,pszSrcFile,__LINE__);
     if (pgealist) {
-      memset(pgealist,0,sizeof(GEA2LIST) + 32);
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,LONGNAME);
       pgea->cbName = strlen(pgea->szName);
       pgea->oNextEntryOffset = 0;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = malloc(1532);
+      pfealist = xmallocz(1532,pszSrcFile,__LINE__);
       if (pfealist) {
-	memset(pfealist,0,1532);
 	pfealist->cbList = 1024;
 	eaop.fpGEA2List = pgealist;
 	eaop.fpFEA2List = pfealist;
@@ -699,9 +691,9 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
     ulM = min(ulM,(65535 / sizeof(FILEFINDBUF4)));
 
   ulFileCnt = ulM;
-  pszFileSpec = malloc(CCHMAXPATH + 2);
-  paffbFound = malloc((ulM + 1) * sizeof(FILEFINDBUF4));
-  papffbSelected = malloc((ulM + 1) * sizeof(PFILEFINDBUF4));
+  pszFileSpec = xmalloc(CCHMAXPATH + 2,pszSrcFile,__LINE__);
+  paffbFound = xmalloc((ulM + 1) * sizeof(FILEFINDBUF4),pszSrcFile,__LINE__);
+  papffbSelected = xmalloc((ulM + 1) * sizeof(PFILEFINDBUF4),pszSrcFile,__LINE__);
   if (paffbFound && papffbSelected && pszFileSpec) {
     t = strlen(szDirBase);
     memcpy(pszFileSpec,szDirBase,t + 1);
@@ -766,8 +758,13 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 	    pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
 				  MPFROMLONG(ulExtraBytes),
 				  MPFROMLONG(ulFileCnt));
-	    if (pciFirst)
-	    {
+	    if (!pciFirst) {
+	      Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+			GetPString(IDS_FILLDIRALLOCERRTEXT));
+	      ok = FALSE;
+	      ullTotalBytes = 0;
+	    }
+	    else {
 	      register INT   i;
 
 	      pci = pciFirst;
@@ -802,8 +799,8 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 				  MPFROMP(pciFirst),
 				  MPFROMP(&ri)))
 		  {
-		    Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-			      GetPString(IDS_FILLDIRERR2TEXT));
+		    Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+			      GetPString(IDS_FILLDIRINSERRTEXT));
 		    ok = FALSE;
 		    ullTotalBytes = 0;
 		    if (WinIsWindow((HAB)0,hwndCnr))
@@ -823,13 +820,6 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 		}
 	      }
 	    }
-	    else
-	    {
-	      Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-			GetPString(IDS_FILLDIRERR3TEXT));
-	      ok = FALSE;
-	      ullTotalBytes = 0;
-	    }
 	    if (ok)
 	    {
 	      ullReturnBytes += ullTotalBytes;
@@ -838,8 +828,9 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 	  }
 	  else
 	  {
-	    paffbTemp = realloc(paffbTotal,sizeof(FILEFINDBUF4) *
-				     (ulFileCnt + ulTotal));
+	    paffbTemp = xrealloc(paffbTotal,
+	                         sizeof(FILEFINDBUF4) * (ulFileCnt + ulTotal),
+				 pszSrcFile,__LINE__);
 	    if (paffbTemp)
 	    {
 	      paffbTotal = paffbTemp;
@@ -887,8 +878,13 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 	pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
 			      MPFROMLONG(ulExtraBytes),
 			      MPFROMLONG(ulTotal));
-	if (pciFirst)
-	{
+	if (!pciFirst) {
+	  Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+		    GetPString(IDS_FILLDIRALLOCERRTEXT));
+	  ok = FALSE;
+	  ullTotalBytes = 0;
+	}
+	else {
 	  register INT   i;
 
 	  pci = pciFirst;
@@ -923,8 +919,8 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 	      if (!WinSendMsg(hwndCnr,CM_INSERTRECORD,
 			     MPFROMP(pciFirst),MPFROMP(&ri)))
 	      {
-		Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-			  GetPString(IDS_FILLDIRERR5TEXT));
+		Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+			  GetPString(IDS_FILLDIRINSERRTEXT));
 		ok = FALSE;
 		ullTotalBytes = 0;
 		if (WinIsWindow((HAB)0,hwndCnr))
@@ -941,13 +937,6 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 	      }
 	    }
 	  }
-	}
-	else
-	{
-	  Win_Error(hwndCnr,HWND_DESKTOP,__FILE__,__LINE__,
-		    GetPString(IDS_FILLDIRERR3TEXT));
-	  ok = FALSE;
-	  ullTotalBytes = 0;
 	}
 	if (ok)
 	{
@@ -1052,9 +1041,9 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
     Dos_Error(MB_CANCEL,
 	      rc,
 	      HWND_DESKTOP,
-	      __FILE__,
+	      pszSrcFile,
 	      __LINE__,
-	      GetPString(IDS_FILLDIRERR6TEXT));
+	      GetPString(IDS_FILLDIRQCURERRTEXT));
     exit(0);
   }
   for(x = 0;x < 26;x++)
@@ -1065,8 +1054,12 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 			  CM_ALLOCRECORD,
 			  MPFROMLONG(EXTRA_RECORD_BYTES2),
 			  MPFROMLONG((ULONG)numtoinsert));
-  if (pciFirst)
-  {
+  if (!pciFirst) {
+    Win_Error(hwndCnr,hwndCnr,pszSrcFile,__LINE__,
+	      GetPString(IDS_FILLDIRALLOCERRTEXT));
+    exit(0);
+  }
+  else {
     pci = pciFirst;
     for(x = 0;x < 26;x++) {
       if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE))
@@ -1260,8 +1253,8 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 		      CM_INSERTRECORD,
 		      MPFROMP(pciFirst),
 		      MPFROMP(&ri)))
-	Win_Error(hwndCnr,hwndCnr,__FILE__,__LINE__,
-		  GetPString(IDS_FILLDIRERR5TEXT));
+	Win_Error(hwndCnr,hwndCnr,pszSrcFile,__LINE__,
+		  GetPString(IDS_FILLDIRINSERRTEXT));
     }
     /* move cursor onto the default drive rather than the first drive */
     if (!fSwitchTree)
@@ -1367,8 +1360,8 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 				CM_INSERTRECORD,
 				MPFROMP(pci),
 				MPFROMP(&ri))) {
-		  Win_Error(hwndCnr,hwndCnr,__FILE__,__LINE__,
-			    GetPString(IDS_FILLDIRERR5TEXT));
+		  Win_Error(hwndCnr,hwndCnr,pszSrcFile,__LINE__,
+			    GetPString(IDS_FILLDIRINSERRTEXT));
 		  WinSendMsg(hwndCnr,
 			     CM_FREERECORD,
 			     MPFROMP(&pci),
@@ -1480,12 +1473,6 @@ SkipBadRec:
 					      CMA_ITEMORDER));
     }
 
-  }
-  else
-  {
-    Win_Error(hwndCnr,hwndCnr,__FILE__,__LINE__,
-	      GetPString(IDS_FILLDIRERR7TEXT));
-    exit(0);
   }
   if (!drivesbuilt && hwndMain)
     PostMsg(hwndMain,
