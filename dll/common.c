@@ -6,9 +6,10 @@
   Common window functions
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   13 Aug 05 SHL Renames
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
@@ -16,8 +17,8 @@
 #define INCL_DOSERRORS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,12 +28,16 @@
 #include <direct.h>
 #include <share.h>
 #include <limits.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(COMMON,CommonFrameWndProc,CommonTextProc,CommonTextPaint)
 #pragma alloc_text(COMMON1,CommonCreateTextChildren,CommonCreateMainChildren)
 #pragma alloc_text(COMMON2,CommonDriveCmd,CommonTextButton)
@@ -662,7 +667,7 @@ MRESULT EXPENTRY CommonMainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 						if(!mp2 && !stricmp(lastfile,(CHAR *)mp1))
 							return 0;
 						strcpy(lastfile,(CHAR *)mp1);
-						s = strdup(lastfile);
+						s = xstrdup(lastfile,pszSrcFile,__LINE__);
 					}
 					else
 						*lastfile = 0;
@@ -699,7 +704,7 @@ MRESULT EXPENTRY CommonTextButton (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
         return MRFROMLONG(TRUE);
       }
       break;
-      
+
     case WM_BUTTON1DOWN:
     case WM_BUTTON3DOWN:
       if(hwndBubble)
