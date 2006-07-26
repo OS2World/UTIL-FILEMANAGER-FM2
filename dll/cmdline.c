@@ -3,27 +3,33 @@
 
   $Id$
 
+  User defined commands support
+
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H.Levine
+  Copyright (c) 2004, 2006 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(CMDLINE1,CmdLineDlgProc,CmdListSubProc,CmdLine2DlgProc,CmdBtnSubProc)
 #pragma alloc_text(CMDLINE2,save_cmdlines,load_cmdlines,add_cmdline,remove_cmdline,free_cmdlines)
@@ -39,8 +45,8 @@ static LINKCLS *clbig = NULL,*clsmall = NULL;
 static BOOL     loadedbig = FALSE,loadedsmall = FALSE;
 
 
-VOID load_cmdlines (BOOL big) {
-
+VOID load_cmdlines (BOOL big)
+{
   /* load linked list of cmdlines from CMDLINES.DAT file */
 
   FILE      *fp;
@@ -58,41 +64,41 @@ VOID load_cmdlines (BOOL big) {
     strcat(s,"\\");
   strcat(s,(big) ? "CMDLINES.DAT" : "CMDMINI.DAT");
   fp = _fsopen(s,"r",SH_DENYWR);
-  if(fp) {
-    while(x < MAXNUMCLS && !feof(fp)) {
-      if(!fgets(s,sizeof(s),fp))
+  if (fp) {
+    while (x < MAXNUMCLS && !feof(fp)) {
+      if (!fgets(s,sizeof(s),fp))
         break;
       s[sizeof(s) - 1] = 0;
       bstripcr(s);
-      if(*s && *s != ';') {
-        info = malloc(sizeof(LINKCLS));
-        if(info) {
+      if (*s && *s != ';') {
+        info = xmalloc(sizeof(LINKCLS), pszSrcFile, __LINE__);
+        if (info) {
           x++;
-          info->cl = strdup(s);
-          if(info->cl) {
+          info->cl = xstrdup(s, pszSrcFile, __LINE__);
+          if (!info->cl)
+            free(info);
+	  else {
             info->next = NULL;
-            if(!clhead)
+            if (!clhead)
               clhead = info;
             else
               last->next = info;
             last = info;
           }
-          else
-            free(info);
         }
       }
     }
     fclose(fp);
   }
-  if(big)
+  if (big)
     clbig = clhead;
   else
     clsmall = clhead;
 }
 
 
-VOID save_cmdlines (BOOL big) {
-
+VOID save_cmdlines (BOOL big)
+{
   /* save linked list of cmdlines to CMDLINES.DAT file */
 
   LINKCLS *info,*clhead;
@@ -106,9 +112,9 @@ VOID save_cmdlines (BOOL big) {
   if(s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,(big) ? "CMDLINES.DAT" : "CMDMINI.DAT");
-  if(clhead) {
-    fp = fopen(s,"w");
-    if(fp) {
+  if (clhead) {
+    fp = xfopen(s,"w",pszSrcFile,__LINE__);
+    if (fp) {
       fputs(GetPString(IDS_COMMANDFILE2TEXT),fp);
       info = clhead;
       while(info) {
@@ -120,15 +126,15 @@ VOID save_cmdlines (BOOL big) {
   }
   else
     unlink(s);
-  if(big)
+  if (big)
     clbig = clhead;
   else
     clsmall = clhead;
 }
 
 
-BOOL add_cmdline (CHAR *cl,BOOL big) {
-
+BOOL add_cmdline (CHAR *cl,BOOL big)
+{
   LINKCLS *info,*last = NULL,*clhead;
   INT      x = 0;
 
@@ -138,23 +144,25 @@ BOOL add_cmdline (CHAR *cl,BOOL big) {
   if((big && !loadedbig) || (!big && !loadedsmall))
     load_cmdlines(big);
   info = clhead;
-  while(info) {
-    if(!stricmp(info->cl,cl))
+  while (info) {
+    if (!stricmp(info->cl,cl))
       return FALSE;
     last = info;
     info = info->next;
     x++;
   }
-  info = malloc(sizeof(LINKCLS));
-  if(info) {
-    info->cl = strdup(cl);
-    if(info->cl) {
+  info = xmalloc(sizeof(LINKCLS), pszSrcFile, __LINE__);
+  if (info) {
+    info->cl = xstrdup(cl, pszSrcFile, __LINE__);
+    if (!info->cl)
+      free(info);
+    else {
       info->next = NULL;
-      if(!clhead)
+      if (!clhead)
         clhead = info;
       else
         last->next = info;
-      if(x > MAXNUMCLS) {
+      if (x > MAXNUMCLS) {
         info = clhead;
         clhead = clhead->next;
         free(info);
@@ -165,15 +173,13 @@ BOOL add_cmdline (CHAR *cl,BOOL big) {
         clsmall = clhead;
       return TRUE;
     }
-    else
-      free(info);
   }
   return FALSE;
 }
 
 
-BOOL remove_cmdline (CHAR *cl,BOOL big) {
-
+BOOL remove_cmdline (CHAR *cl,BOOL big)
+{
   LINKCLS *info,*last = NULL,*clhead;
 
   if(!cl || !*cl)
@@ -203,8 +209,8 @@ BOOL remove_cmdline (CHAR *cl,BOOL big) {
 }
 
 
-VOID free_cmdlines (BOOL big) {
-
+VOID free_cmdlines (BOOL big)
+{
   LINKCLS *info,*next,*clhead;
 
   clhead = (big) ? clbig : clsmall;
@@ -224,8 +230,8 @@ VOID free_cmdlines (BOOL big) {
 }
 
 
-MRESULT EXPENTRY CmdBtnSubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CmdBtnSubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_MOUSEMOVE:
       {
@@ -273,8 +279,8 @@ MRESULT EXPENTRY CmdBtnSubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY CmdListSubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CmdListSubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
 
   switch(msg) {
@@ -301,8 +307,8 @@ MRESULT EXPENTRY CmdListSubProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY CmdLineDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CmdLineDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   EXECARGS *ex;
 
   switch(msg) {
@@ -780,8 +786,8 @@ MRESULT EXPENTRY CmdLineDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY CmdLine2DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CmdLine2DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       if(!mp2) {
