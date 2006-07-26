@@ -3,34 +3,37 @@
 
   $Id$
 
-  Fill Directory Tree Containers
+  Drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2006 Steven H.Levine
 
-  Revisions	22 Nov 02 SHL - Baseline
-		08 Feb 03 SHL - DropHelp: calc EA size consistently
+  22 Nov 02 SHL Baseline
+  08 Feb 03 SHL DropHelp: calc EA size consistently
+  21 Jul 06 SHL Drop dup code
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
-
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3str.h"
 
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(DROPLIST,DoFileDrop,FullDrgName,TwoDrgNames,GetOneDrop)
 
-
 BOOL TwoDrgNames (PDRAGITEM pDItem,CHAR *buffer1,ULONG buflen1,
-                  char *buffer2,ULONG buflen2) {
-
+                  char *buffer2,ULONG buflen2)
+{
   /*
    * Gets archive name from directory field, file name from file field
    * Returns FALSE on error, TRUE on success.
@@ -88,8 +91,8 @@ BOOL TwoDrgNames (PDRAGITEM pDItem,CHAR *buffer1,ULONG buflen1,
 }
 
 
-BOOL FullDrgName (PDRAGITEM pDItem,CHAR *buffer,ULONG buflen) {
-
+BOOL FullDrgName (PDRAGITEM pDItem,CHAR *buffer,ULONG buflen)
+{
   /*
    * Gets full name of file from a dragged item.
    * Returns FALSE on error, TRUE on success.
@@ -142,8 +145,8 @@ BOOL FullDrgName (PDRAGITEM pDItem,CHAR *buffer,ULONG buflen) {
 }
 
 
-BOOL GetOneDrop (MPARAM mp1,MPARAM mp2,char *buffer,ULONG buflen) {
-
+BOOL GetOneDrop (MPARAM mp1,MPARAM mp2,char *buffer,ULONG buflen)
+{
   PDRAGITEM      pDItem;                       /* DRAGITEM struct ptr   */
   PDRAGINFO      pDInfo;                       /* DRAGINFO struct ptr   */
   ULONG          numitems;
@@ -182,8 +185,8 @@ BOOL GetOneDrop (MPARAM mp1,MPARAM mp2,char *buffer,ULONG buflen) {
 }
 
 
-BOOL AcceptOneDrop (MPARAM mp1,MPARAM mp2) {
-
+BOOL AcceptOneDrop (MPARAM mp1,MPARAM mp2)
+{
   PDRAGITEM pDItem;                        /* Pointer to DRAGITEM   */
   PDRAGINFO pDInfo;                        /* Pointer to DRAGINFO   */
   BOOL      ret = FALSE;
@@ -203,8 +206,8 @@ BOOL AcceptOneDrop (MPARAM mp1,MPARAM mp2) {
 }
 
 
-ULONG FreeDrop (MPARAM mp1,MPARAM mp2) {
-
+ULONG FreeDrop (MPARAM mp1,MPARAM mp2)
+{
   PDRAGINFO pDInfo;
   ULONG     numitems;
 
@@ -219,8 +222,8 @@ ULONG FreeDrop (MPARAM mp1,MPARAM mp2) {
 }
 
 
-void DropHelp (MPARAM mp1,MPARAM mp2,HWND hwnd,char *text) {
-
+void DropHelp (MPARAM mp1,MPARAM mp2,HWND hwnd,char *text)
+{
   ULONG numitems;
 
   numitems = FreeDrop(mp1,mp2);
@@ -262,7 +265,6 @@ LISTINFO * DoFileDrop (HWND hwndCnr, CHAR *directory, BOOL arcfilesok,
   if(Operation == DO_MOVE &&
      !(pDItem->fsSupportedOps & DO_MOVEABLE)) {
     saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"forcing DO_COPY");	// SHL
-    DosBeep(50,100);
     Operation = DO_COPY;
   }
   numitems = DrgQueryDragitemCount(pDInfo);
@@ -369,15 +371,15 @@ Okay:
         ULONG  *ltest;
 
         numalloc += 12;
-        test = realloc(files,numalloc * sizeof(CHAR *));
+        test = xrealloc(files,numalloc * sizeof(CHAR *),pszSrcFile,__LINE__);
         if(!test)
           goto AbortDrop;
         files = test;
-        ltest = realloc(cbFile,numalloc * sizeof(ULONG));
+        ltest = xrealloc(cbFile,numalloc * sizeof(ULONG),pszSrcFile,__LINE__);
         if(!ltest)
           goto AbortDrop;
         cbFile = ltest;
-        ltest = realloc(ulitemID,numalloc * sizeof(ULONG));
+        ltest = xrealloc(ulitemID,numalloc * sizeof(ULONG),pszSrcFile,__LINE__);
         if(!ltest)
           goto AbortDrop;
         ulitemID = ltest;
@@ -394,7 +396,7 @@ Okay:
           cbFile[numfiles] = fsa4.cbFile + CBLIST_TO_EASIZE(fsa4.cbList);
       }
       ulitemID[numfiles] = pDItem->ulItemID;
-      files[numfiles] = strdup(szFrom);
+      files[numfiles] = xstrdup(szFrom,pszSrcFile,__LINE__);
       files[numfiles + 1] = NULL;
       if(!files[numfiles])
         goto AbortDrop;
@@ -419,9 +421,8 @@ AbortDrop:
      files[0] &&
      cbFile &&
      ulitemID) {
-    li = malloc(sizeof(LISTINFO));
+    li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
     if(li) {
-      memset(li,0,sizeof(LISTINFO));
       li->type  = Operation;
       li->hwnd  = hwndCnr;
       li->list  = files;

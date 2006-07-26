@@ -6,7 +6,7 @@
   Minimized data bar
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   14 Sep 02 SHL Handle large partitions
   16 Oct 02 SHL Handle large partitions better
@@ -14,6 +14,7 @@
   23 May 05 SHL Avoid delays for inaccessible drives
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   06 Jun 05 SHL Drop unused code
+  22 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
@@ -37,6 +38,9 @@
 #include "datamin.h"
 
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(DATAMIN,DataDlgProc,MiniTimeProc)
 
 APIRET16 APIENTRY16 Dos16MemAvail(PULONG pulAvailMem);
@@ -57,7 +61,7 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   {
   case WM_CREATE:
     {
-      PVOID pv = malloc(sizeof(tDataMin));
+      PVOID pv = xmalloc(sizeof(tDataMin),pszSrcFile,__LINE__);
       WinSetWindowPtr(hwnd, QWL_DATAMIN_PTR, pv);
     }
     break;
@@ -77,7 +81,7 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    Dos_Error(MB_ENTER,
 		      rc,
 		      HWND_DESKTOP,
-		      __FILE__,
+		      pszSrcFile,
 		      __LINE__,
 		      "Post Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
 		      );
@@ -202,8 +206,7 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case WM_DESTROY:
       {
 	PVOID pv = WinQueryWindowPtr(hwnd, QWL_DATAMIN_PTR);
-	if (pv)
-	  free(pv);
+	xfree(pv);
       }
       break;
   }
@@ -405,21 +408,9 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinShowWindow(WinQueryWindow(hwnd, QW_PARENT),
 		    TRUE);
       if (numdrives) {
-	if (_beginthread(dataminThread,
-			 NULL,
-			 32768,
-			 (PVOID)hwnd) == -1)
-	{
-	  Dos_Error(MB_ENTER,
-		    _doserrno,
-		    HWND_DESKTOP,
-		    __FILE__,
-		    __LINE__,
-		    GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  PostMsg(hwnd,
-		  WM_CLOSE,
-		  MPVOID,
-		  MPVOID);
+	if (_beginthread(dataminThread,NULL,32768,(PVOID)hwnd) == -1) {
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
 	}
       }
       counter = 0;
@@ -587,7 +578,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Dos_Error(MB_ENTER,
 		    rc,
 		    HWND_DESKTOP,
-		    __FILE__,
+		    pszSrcFile,
 		    __LINE__,
 		    "Post Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
 		    );
@@ -1036,12 +1027,17 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	BUFFHEADER *pbh = NULL;
 	MODINFO *pmi;
 	ULONG numprocs = 0, numthreads = 0;
+	APIRET rc;
 
-	if (!DosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE))
+	rc = DosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+			  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+	if (rc)
+          Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+	else
 	{
-	  if (!DosQProcStatus(pbh, USHRT_MAX))
-	  {
+	  if (DosQProcStatus(pbh, USHRT_MAX))
+	    noqproc = TRUE;
+	  else {
 	    ppi = pbh -> ppi;
 	    while (ppi -> ulEndIndicator != PROCESS_END_INDICATOR)
 	    {
@@ -1067,8 +1063,6 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MINI_PROC,
 			      s);
 	  }
-	  else
-	    noqproc = TRUE;
 	  DosFreeMem(pbh);
 	}
       }
@@ -1227,7 +1221,7 @@ static VOID dataminThread (VOID *pv)
       Dos_Error(MB_ENTER,
 		rc,
 		HWND_DESKTOP,
-		__FILE__,
+		pszSrcFile,
 		__LINE__,
 		"Create Semaphore failed"	// GetPString(IDS_CREATESEMFAILED)
 		);
@@ -1309,7 +1303,7 @@ static VOID dataminThread (VOID *pv)
 	Dos_Error(MB_ENTER,
 		  rc,
 		  HWND_DESKTOP,
-		  __FILE__,
+		  pszSrcFile,
 		  __LINE__,
 		  "Wait Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
 		  );
@@ -1321,7 +1315,7 @@ static VOID dataminThread (VOID *pv)
 	Dos_Error(MB_ENTER,
 		  rc,
 		  HWND_DESKTOP,
-		  __FILE__,
+		  pszSrcFile,
 		  __LINE__,
 		  "Reset Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
 		  );
