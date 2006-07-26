@@ -6,13 +6,14 @@
   Update Container record/list
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2005 Steven H. Levine
+  Copyright (c) 2003, 2006 Steven H. Levine
 
   12 Feb 03 SHL Standardize EA math
   10 Jan 04 SHL Add some intermin large drive error avoidance
   25 May 05 SHL Rework for ULONGLONG
   25 May 05 SHL Rework for FillInRecordFromFFB
   06 Jun 05 SHL Drop unused code
+  22 Jul 06 SHL Use wrappers
 
 ***********************************************************************/
 
@@ -28,6 +29,8 @@
 #include <ctype.h>
 
 #include "fm3dll.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(UPDATECNR,UpdateCnrRecord,UpdateCnrList)
 
@@ -332,7 +335,7 @@ Update:
 
           *ffb.achName = 0;
           ullTotalBytes = FillInRecordFromFFB(hwndCnr,
-	  				      pci,	
+					      pci,
                                               filename,
                                               &ffb,
                                               partial,
@@ -438,9 +441,11 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
 
   if(!dcd)
     dcd = INSTDATA(hwndCnr);
-  if(!dcd)
+  if (!dcd) {
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
     return ret;
-  if(!filename || !howmany || !filename[0])
+  }
+  if (!filename || !howmany || !filename[0])
     return ret;
   {
     CNRINFO cnri;
@@ -453,138 +458,93 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                MPFROMLONG(sizeof(CNRINFO)));
     numremain = cnri.cRecords;
   }
-  pciList = malloc(sizeof(PCNRITEM) * howmany);
-  for(x = 0;filename[x] && x < howmany;x++) {
-    if(IsFullName(filename[x])) {
-      if(driveflags[toupper(*filename[x]) - 'A'] & DRIVE_NOTWRITEABLE)
-        /* ignore non-writeable drives */
-        continue;
-    }
-    hDir = HDIR_CREATE;
-    status = DosFindFirst(filename[x],
-                          &hDir,
-                          FILE_NORMAL   | FILE_DIRECTORY |
-                          FILE_ARCHIVED | FILE_READONLY |
-                          FILE_HIDDEN   | FILE_SYSTEM,
-                          &ffb,
-                          sizeof(ffb),
-                          &nm,
-                          FIL_QUERYEASIZE);
-    if(!status) {
-      /* file exists */
-      DosFindClose(hDir);
-//      if(dcd->type == TREE_FRAME && !(ffb.attrFile & FILE_DIRECTORY))
-//        continue;
-      if(dcd->type == DIR_FRAME &&
-         *dcd->directory) {
-
-        CHAR *p,temp;
-
-        p = strrchr(filename[x],'\\');
-        if(p) {
-          if(p < filename[x] + 3)
-            p++;
-          temp = *p;
-          *p = 0;
-          if(stricmp(filename[x],dcd->directory)) {
-            *p = temp;
-            continue;
-          }
-          *p = temp;
-        }
-        else
+  pciList = xmalloc(sizeof(PCNRITEM) * howmany,pszSrcFile,__LINE__);
+  if (pciList) {
+    for (x = 0;filename[x] && x < howmany;x++) {
+      if (IsFullName(filename[x])) {
+        if (driveflags[toupper(*filename[x]) - 'A'] & DRIVE_NOTWRITEABLE)
+          /* ignore non-writeable drives */
           continue;
       }
-      ret = TRUE;
-      pci = FindCnrRecord(hwndCnr,
-                          filename[x],
-                          (PCNRITEM)NULL,
-                          partial,
-                          FALSE,
-                          TRUE);
-      if (pci)
-      {
-        /* update record? */
-        if ((!fForceUpper && !fForceLower &&
-             strcmp(pci->szFileName,filename[x])) ||
-            pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
-            pci->easize != CBLIST_TO_EASIZE(ffb.cbList) ||
-            pci->date.day != ffb.fdateLastWrite.day ||
-            pci->date.month != ffb.fdateLastWrite.month ||
-            pci->date.year != ffb.fdateLastWrite.year + 1980 ||
-            pci->time.seconds != ffb.ftimeLastWrite.twosecs * 2 ||
-            pci->time.minutes != ffb.ftimeLastWrite.minutes ||
-            pci->time.hours != ffb.ftimeLastWrite.hours ||
-            pci->ladate.day != ffb.fdateLastAccess.day ||
-            pci->ladate.month != ffb.fdateLastAccess.month ||
-            pci->ladate.year != ffb.fdateLastAccess.year + 1980 ||
-            pci->latime.seconds != ffb.ftimeLastAccess.twosecs * 2 ||
-            pci->latime.minutes != ffb.ftimeLastAccess.minutes ||
-            pci->latime.hours != ffb.ftimeLastAccess.hours)
-	{
-	  /* changed; update */
-          pciList[numlist++] = pci;
-          *ffb.achName = 0;
-          ffb.cchName = 0;
-          FillInRecordFromFFB(hwndCnr,
-                              pci,
-                              filename[x],
-                              &ffb,
-                              partial,
-                              dcd);
-          if (IsRoot(pci->szFileName))
-	  {
-            *pci->szFileName = toupper(*pci->szFileName);
-            if (isalpha(*pci->szFileName) &&
-                toupper(*pci->szFileName) > 'B')
-	    {
-              if (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
-                pci->rc.hptrIcon = hptrCDROM;
-              else
-                pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
-                                    hptrRemovable :
-                                    (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) ?
-                                    hptrRemote :
-                                    (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_ZIPSTREAM) ?
-                                    hptrZipstrm : hptrDrive;
-            }
-            else
-              pci->rc.hptrIcon = hptrFloppy;
-          }
-          WinSendMsg(hwndCnr,
-                     CM_SETRECORDEMPHASIS,
-                     MPFROMP(pci),
-                     MPFROM2SHORT(FALSE,
-                                  CRA_SELECTED | CRA_CURSORED));
-        }
-      }
-      else
-      {
-        /* add record */
-        if (dcd->type == DIR_FRAME)
-	{
-          RECORDINSERT ri;
-          ULONGLONG ullTotalBytes;
+      hDir = HDIR_CREATE;
+      status = DosFindFirst(filename[x],
+                            &hDir,
+                            FILE_NORMAL   | FILE_DIRECTORY |
+                            FILE_ARCHIVED | FILE_READONLY |
+                            FILE_HIDDEN   | FILE_SYSTEM,
+                            &ffb,
+                            sizeof(ffb),
+                            &nm,
+                            FIL_QUERYEASIZE);
+      if(!status) {
+        /* file exists */
+        DosFindClose(hDir);
+  //      if(dcd->type == TREE_FRAME && !(ffb.attrFile & FILE_DIRECTORY))
+  //        continue;
+        if(dcd->type == DIR_FRAME &&
+           *dcd->directory) {
 
-          pci = WinSendMsg(hwndCnr,
-                           CM_ALLOCRECORD,
-                           MPFROMLONG(EXTRA_RECORD_BYTES),
-                           MPFROMLONG(1L));
-          if (pci)
+          CHAR *p,temp;
+
+          p = strrchr(filename[x],'\\');
+          if(p) {
+            if(p < filename[x] + 3)
+              p++;
+            temp = *p;
+            *p = 0;
+            if(stricmp(filename[x],dcd->directory)) {
+              *p = temp;
+              continue;
+            }
+            *p = temp;
+          }
+          else
+            continue;
+        }
+        ret = TRUE;
+        pci = FindCnrRecord(hwndCnr,
+                            filename[x],
+                            (PCNRITEM)NULL,
+                            partial,
+                            FALSE,
+                            TRUE);
+        if (pci)
+        {
+          /* update record? */
+          if ((!fForceUpper && !fForceLower &&
+               strcmp(pci->szFileName,filename[x])) ||
+              pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
+              pci->easize != CBLIST_TO_EASIZE(ffb.cbList) ||
+              pci->date.day != ffb.fdateLastWrite.day ||
+              pci->date.month != ffb.fdateLastWrite.month ||
+              pci->date.year != ffb.fdateLastWrite.year + 1980 ||
+              pci->time.seconds != ffb.ftimeLastWrite.twosecs * 2 ||
+              pci->time.minutes != ffb.ftimeLastWrite.minutes ||
+              pci->time.hours != ffb.ftimeLastWrite.hours ||
+              pci->ladate.day != ffb.fdateLastAccess.day ||
+              pci->ladate.month != ffb.fdateLastAccess.month ||
+              pci->ladate.year != ffb.fdateLastAccess.year + 1980 ||
+              pci->latime.seconds != ffb.ftimeLastAccess.twosecs * 2 ||
+              pci->latime.minutes != ffb.ftimeLastAccess.minutes ||
+              pci->latime.hours != ffb.ftimeLastAccess.hours)
 	  {
-            ret = TRUE;
+	    /* changed; update */
+            pciList[numlist++] = pci;
             *ffb.achName = 0;
-            ullTotalBytes = FillInRecordFromFFB(hwndCnr,
-                                                pci,
-                                                filename[x],
-                                                &ffb,
-                                                partial,
-                                                dcd);
-            if(strlen(pci->szFileName) < 4) {
+            ffb.cchName = 0;
+            FillInRecordFromFFB(hwndCnr,
+                                pci,
+                                filename[x],
+                                &ffb,
+                                partial,
+                                dcd);
+            if (IsRoot(pci->szFileName))
+	    {
               *pci->szFileName = toupper(*pci->szFileName);
-              if(isalpha(*pci->szFileName) &&
-                 toupper(*pci->szFileName) > 'B') {
-                if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
+              if (isalpha(*pci->szFileName) &&
+                  toupper(*pci->szFileName) > 'B')
+	      {
+                if (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
                   pci->rc.hptrIcon = hptrCDROM;
                 else
                   pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
@@ -597,130 +557,27 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
               else
                 pci->rc.hptrIcon = hptrFloppy;
             }
-            memset(&ri,0,sizeof(RECORDINSERT));
-            ri.cb                 = sizeof(RECORDINSERT);
-            ri.pRecordOrder       = (PRECORDCORE)CMA_END;
-            ri.pRecordParent      = (PRECORDCORE)NULL;
-            ri.zOrder             = (USHORT)CMA_TOP;
-            ri.cRecordsInsert     = 1L;
-            ri.fInvalidateRecord  = FALSE;
-            if (WinSendMsg(hwndCnr,
-                           CM_INSERTRECORD,
-                           MPFROMP(pci),
-                           MPFROMP(&ri)))
-	    {
-              if (ullTotalBytes)
-	      {
-                dcd->ullTotalBytes += ullTotalBytes;
-                numremain++;
-              }
-              repos = TRUE;
-              if(pci->attrFile & FILE_DIRECTORY)
-                Stubby(hwndCnr,pci);
-            }
-            else
-              WinSendMsg(hwndCnr,
-                         CM_FREERECORD,
-                         MPFROMP(&pci),
-                         MPFROMSHORT(1));
+            WinSendMsg(hwndCnr,
+                       CM_SETRECORDEMPHASIS,
+                       MPFROMP(pci),
+                       MPFROM2SHORT(FALSE,
+                                    CRA_SELECTED | CRA_CURSORED));
           }
         }
-        else if (ffb.attrFile & FILE_DIRECTORY)
-	{
-	  /* check all parts and insert as required */
-          CHAR    *p,temp;
-          PCNRITEM pciParent = NULL,pciT;
+        else
+        {
+          /* add record */
+          if (dcd->type == DIR_FRAME)
+	  {
+            RECORDINSERT ri;
+            ULONGLONG ullTotalBytes;
 
-          p = strchr(filename[x],'\\');
-          if(p) {
-            while(p && *p) {
-              if(p < filename[x] + 3)
-                p++;
-              temp = *p;
-              *p = 0;
-              pciT = FindCnrRecord(hwndCnr,
-                                   filename[x],
-                                   NULL,
-                                   partial,
-                                   FALSE,
-                                   TRUE);
-              if(!pciT || (INT)pciT == -1) {
-                pci = WinSendMsg(hwndCnr,
-                                 CM_ALLOCRECORD,
-                                 MPFROMLONG(EXTRA_RECORD_BYTES),
-                                 MPFROMLONG(1L));
-                if(pci) {
-
-                  RECORDINSERT ri;
-                  ULONGLONG ullTotalBytes;
-
-                  ret = TRUE;
-                  *ffb.achName = 0;
-                  ullTotalBytes = FillInRecordFromFFB(hwndCnr,
-                                                      pci,
-                                                      filename[x],
-                                                      &ffb,
-                                                      partial,
-                                                      dcd);
-                  if(strlen(pci->szFileName) < 4) {
-                    *pci->szFileName = toupper(*pci->szFileName);
-                    if(isalpha(*pci->szFileName) &&
-                       toupper(*pci->szFileName) > 'B') {
-                      if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
-                        pci->rc.hptrIcon = hptrCDROM;
-                      else
-                        pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
-                                            hptrRemovable :
-                                            (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) ?
-                                            hptrRemote :
-                                            (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_ZIPSTREAM) ?
-                                            hptrZipstrm : hptrDrive;
-                    }
-                    else
-                      pci->rc.hptrIcon = hptrFloppy;
-                  }
-                  memset(&ri,0,sizeof(RECORDINSERT));
-                  ri.cb                 = sizeof(RECORDINSERT);
-                  ri.pRecordOrder       = (PRECORDCORE)CMA_END;
-                  ri.pRecordParent      = (PRECORDCORE)pciParent;
-                  ri.zOrder             = (USHORT)CMA_TOP;
-                  ri.cRecordsInsert     = 1L;
-                  ri.fInvalidateRecord  = FALSE;
-                  if(WinSendMsg(hwndCnr,
-                                CM_INSERTRECORD,
-                                MPFROMP(pci),
-                                MPFROMP(&ri))) {
-                    if (ullTotalBytes)
-		    {
-                      numremain++;
-                      if (dcd->type == DIR_FRAME)
-                        dcd->ullTotalBytes += ullTotalBytes;
-                    }
-                    repos = TRUE;
-                  }
-                  else
-                    WinSendMsg(hwndCnr,
-                               CM_FREERECORD,
-                               MPFROMP(&pci),
-                               MPFROMSHORT(1));
-                }
-              }
-              else
-                pciParent = pciT;
-              *p = temp;
-              p = strchr(p + ((temp == '\\') ? 1 : 0),'\\');
-            }
-          }
-          {
             pci = WinSendMsg(hwndCnr,
                              CM_ALLOCRECORD,
                              MPFROMLONG(EXTRA_RECORD_BYTES),
                              MPFROMLONG(1L));
-            if(pci) {
-
-              RECORDINSERT ri;
-              ULONGLONG ullTotalBytes;
-
+            if (pci)
+	    {
               ret = TRUE;
               *ffb.achName = 0;
               ullTotalBytes = FillInRecordFromFFB(hwndCnr,
@@ -749,22 +606,23 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
               memset(&ri,0,sizeof(RECORDINSERT));
               ri.cb                 = sizeof(RECORDINSERT);
               ri.pRecordOrder       = (PRECORDCORE)CMA_END;
-              ri.pRecordParent      = (PRECORDCORE)pciParent;
+              ri.pRecordParent      = (PRECORDCORE)NULL;
               ri.zOrder             = (USHORT)CMA_TOP;
               ri.cRecordsInsert     = 1L;
               ri.fInvalidateRecord  = FALSE;
-              if(WinSendMsg(hwndCnr,
-                            CM_INSERTRECORD,
-                            MPFROMP(pci),
-                            MPFROMP(&ri))) {
+              if (WinSendMsg(hwndCnr,
+                             CM_INSERTRECORD,
+                             MPFROMP(pci),
+                             MPFROMP(&ri)))
+	      {
                 if (ullTotalBytes)
-		{
+	        {
+                  dcd->ullTotalBytes += ullTotalBytes;
                   numremain++;
-                  if (dcd->type == DIR_FRAME)
-                    dcd->ullTotalBytes += ullTotalBytes;
                 }
                 repos = TRUE;
-                Stubby(hwndCnr,pci);
+                if(pci->attrFile & FILE_DIRECTORY)
+                  Stubby(hwndCnr,pci);
               }
               else
                 WinSendMsg(hwndCnr,
@@ -773,36 +631,185 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
                            MPFROMSHORT(1));
             }
           }
+          else if (ffb.attrFile & FILE_DIRECTORY)
+	  {
+	    /* check all parts and insert as required */
+            CHAR    *p,temp;
+            PCNRITEM pciParent = NULL,pciT;
+
+            p = strchr(filename[x],'\\');
+            if(p) {
+              while(p && *p) {
+                if(p < filename[x] + 3)
+                  p++;
+                temp = *p;
+                *p = 0;
+                pciT = FindCnrRecord(hwndCnr,
+                                     filename[x],
+                                     NULL,
+                                     partial,
+                                     FALSE,
+                                     TRUE);
+                if(!pciT || (INT)pciT == -1) {
+                  pci = WinSendMsg(hwndCnr,
+                                   CM_ALLOCRECORD,
+                                   MPFROMLONG(EXTRA_RECORD_BYTES),
+                                   MPFROMLONG(1L));
+                  if(pci) {
+
+                    RECORDINSERT ri;
+                    ULONGLONG ullTotalBytes;
+
+                    ret = TRUE;
+                    *ffb.achName = 0;
+                    ullTotalBytes = FillInRecordFromFFB(hwndCnr,
+                                                        pci,
+                                                        filename[x],
+                                                        &ffb,
+                                                        partial,
+                                                        dcd);
+                    if(strlen(pci->szFileName) < 4) {
+                      *pci->szFileName = toupper(*pci->szFileName);
+                      if(isalpha(*pci->szFileName) &&
+                         toupper(*pci->szFileName) > 'B') {
+                        if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
+                          pci->rc.hptrIcon = hptrCDROM;
+                        else
+                          pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
+                                              hptrRemovable :
+                                              (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) ?
+                                              hptrRemote :
+                                              (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_ZIPSTREAM) ?
+                                              hptrZipstrm : hptrDrive;
+                      }
+                      else
+                        pci->rc.hptrIcon = hptrFloppy;
+                    }
+                    memset(&ri,0,sizeof(RECORDINSERT));
+                    ri.cb                 = sizeof(RECORDINSERT);
+                    ri.pRecordOrder       = (PRECORDCORE)CMA_END;
+                    ri.pRecordParent      = (PRECORDCORE)pciParent;
+                    ri.zOrder             = (USHORT)CMA_TOP;
+                    ri.cRecordsInsert     = 1L;
+                    ri.fInvalidateRecord  = FALSE;
+                    if(WinSendMsg(hwndCnr,
+                                  CM_INSERTRECORD,
+                                  MPFROMP(pci),
+                                  MPFROMP(&ri))) {
+                      if (ullTotalBytes)
+		      {
+                        numremain++;
+                        if (dcd->type == DIR_FRAME)
+                          dcd->ullTotalBytes += ullTotalBytes;
+                      }
+                      repos = TRUE;
+                    }
+                    else
+                      WinSendMsg(hwndCnr,
+                                 CM_FREERECORD,
+                                 MPFROMP(&pci),
+                                 MPFROMSHORT(1));
+                  }
+                }
+                else
+                  pciParent = pciT;
+                *p = temp;
+                p = strchr(p + ((temp == '\\') ? 1 : 0),'\\');
+              }
+            }
+            {
+              pci = WinSendMsg(hwndCnr,
+                               CM_ALLOCRECORD,
+                               MPFROMLONG(EXTRA_RECORD_BYTES),
+                               MPFROMLONG(1L));
+              if(pci) {
+
+                RECORDINSERT ri;
+                ULONGLONG ullTotalBytes;
+
+                ret = TRUE;
+                *ffb.achName = 0;
+                ullTotalBytes = FillInRecordFromFFB(hwndCnr,
+                                                    pci,
+                                                    filename[x],
+                                                    &ffb,
+                                                    partial,
+                                                    dcd);
+                if(strlen(pci->szFileName) < 4) {
+                  *pci->szFileName = toupper(*pci->szFileName);
+                  if(isalpha(*pci->szFileName) &&
+                     toupper(*pci->szFileName) > 'B') {
+                    if(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
+                      pci->rc.hptrIcon = hptrCDROM;
+                    else
+                      pci->rc.hptrIcon = (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE) ?
+                                          hptrRemovable :
+                                          (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE) ?
+                                          hptrRemote :
+                                          (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_ZIPSTREAM) ?
+                                          hptrZipstrm : hptrDrive;
+                  }
+                  else
+                    pci->rc.hptrIcon = hptrFloppy;
+                }
+                memset(&ri,0,sizeof(RECORDINSERT));
+                ri.cb                 = sizeof(RECORDINSERT);
+                ri.pRecordOrder       = (PRECORDCORE)CMA_END;
+                ri.pRecordParent      = (PRECORDCORE)pciParent;
+                ri.zOrder             = (USHORT)CMA_TOP;
+                ri.cRecordsInsert     = 1L;
+                ri.fInvalidateRecord  = FALSE;
+                if(WinSendMsg(hwndCnr,
+                              CM_INSERTRECORD,
+                              MPFROMP(pci),
+                              MPFROMP(&ri))) {
+                  if (ullTotalBytes)
+		  {
+                    numremain++;
+                    if (dcd->type == DIR_FRAME)
+                      dcd->ullTotalBytes += ullTotalBytes;
+                  }
+                  repos = TRUE;
+                  Stubby(hwndCnr,pci);
+                }
+                else
+                  WinSendMsg(hwndCnr,
+                             CM_FREERECORD,
+                             MPFROMP(&pci),
+                             MPFROMSHORT(1));
+              }
+            }
+          }
         }
       }
-    }
-    else if ((pci = FindCnrRecord(hwndCnr,
-                                  filename[x],
-                                  (PCNRITEM)NULL,
-                                  partial,
-                                  FALSE,
-                                  TRUE)) !=  NULL &&
-             (INT)pci != -1 &&
-	     !IsRoot(pci->szFileName))
-    {
-      /* file doesn't exist; delete record */
-      if(pci->rc.flRecordAttr & CRA_SELECTED)
-        WinSendMsg(hwndCnr,
-                   CM_SETRECORDEMPHASIS,
-                   MPFROMP(pci),
-                   MPFROM2SHORT(FALSE,
-                                CRA_SELECTED));
-      if (dcd->type == DIR_FRAME)
-        dcd->ullTotalBytes -= (pci->cbFile + pci->easize);
-      if (WinSendMsg(hwndCnr,
-                     CM_REMOVERECORD,
-                     MPFROMP(&pci),
-                     MPFROM2SHORT(1, CMA_FREE | (numremain == 1 ? CMA_INVALIDATE : 0))))
+      else if ((pci = FindCnrRecord(hwndCnr,
+                                    filename[x],
+                                    (PCNRITEM)NULL,
+                                    partial,
+                                    FALSE,
+                                    TRUE)) !=  NULL &&
+               (INT)pci != -1 &&
+	       !IsRoot(pci->szFileName))
       {
-        numremain--;
-        repos = TRUE;
+        /* file doesn't exist; delete record */
+        if(pci->rc.flRecordAttr & CRA_SELECTED)
+          WinSendMsg(hwndCnr,
+                     CM_SETRECORDEMPHASIS,
+                     MPFROMP(pci),
+                     MPFROM2SHORT(FALSE,
+                                  CRA_SELECTED));
+        if (dcd->type == DIR_FRAME)
+          dcd->ullTotalBytes -= (pci->cbFile + pci->easize);
+        if (WinSendMsg(hwndCnr,
+                       CM_REMOVERECORD,
+                       MPFROMP(&pci),
+                       MPFROM2SHORT(1, CMA_FREE | (numremain == 1 ? CMA_INVALIDATE : 0))))
+        {
+          numremain--;
+          repos = TRUE;
+        }
       }
-    }
+    } // for
   }
   if (repos || (pciList && numlist))
   {
@@ -857,7 +864,7 @@ BOOL UpdateCnrList (HWND hwndCnr,CHAR **filename,INT howmany,BOOL partial,
           UM_RESCAN,
           MPVOID,
           MPVOID);
-  if(pciList) {
+  if (pciList) {
     free(pciList);
     DosPostEventSem(CompactSem);
   }
