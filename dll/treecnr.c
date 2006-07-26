@@ -6,7 +6,7 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -16,6 +16,7 @@
   05 Jun 05 SHL Use QWL_USER
   06 Aug 05 SHL Renames
   08 Dec 05 SHL TreeCnrWndProc: disable menu items if drive not ready
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -38,6 +39,9 @@
 #include "mle.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(TREECNR,TreeCnrWndProc,TreeObjWndProc,TreeClientWndProc)
 #pragma alloc_text(TREECNR,TreeFrameWndProc,TreeTitleWndProc,ShowTreeRec)
 #pragma alloc_text(TREECNR,TreeStatProc,OpenButtonProc)
@@ -53,8 +57,8 @@ typedef struct APPNOTIFY {
 } APPNOTIFY;
 
 
-MRESULT EXPENTRY OpenButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY OpenButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static BOOL emphasized = FALSE;
 
   switch(msg) {
@@ -128,8 +132,8 @@ MRESULT EXPENTRY OpenButtonProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID ShowTreeRec (HWND hwndCnr,CHAR *dirname,BOOL collapsefirst,BOOL maketop) {
-
+VOID ShowTreeRec (HWND hwndCnr,CHAR *dirname,BOOL collapsefirst,BOOL maketop)
+{
   /* Find a record in tree view, move it so it shows in container and
      make it the current record */
 
@@ -272,8 +276,8 @@ MakeTop:
 }
 
 
-MRESULT EXPENTRY TreeTitleWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY TreeTitleWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,QWL_USER);
 
   switch(msg) {
@@ -287,8 +291,8 @@ MRESULT EXPENTRY TreeTitleWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY TreeStatProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY TreeStatProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_CREATE:
       return CommonTextProc(hwnd,msg,mp1,mp2);
@@ -318,8 +322,8 @@ MRESULT EXPENTRY TreeStatProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY TreeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY TreeFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case UM_RESCAN:
       PostMsg(WinQueryWindow(hwnd,QW_PARENT),msg,mp1,mp2);
@@ -630,8 +634,9 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_EXPAND:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
-
+      if (!dcd)
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else {
 	BOOL tempsusp = dcd->suspendview;
 
 	dcd->suspendview = TRUE;
@@ -648,8 +653,9 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_UPDATERECORDLIST:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd && mp1) {
-
+      if (!dcd || !mp1)
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else {
 	INT    numentries = 0;
 	CHAR **list = (CHAR **)mp1;
 
@@ -666,7 +672,9 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_SETUP:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
+      if (!dcd)
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else {
 	dcd->hwndObject = hwnd;
 	if(ParentIsDesktop(hwnd,dcd->hwndParent))
 	  DosSleep(250L);
@@ -675,10 +683,11 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_RESCAN2:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd &&
-	 hwndStatus &&
-	 dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-
+      if (!dcd)
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else if (!hwndStatus)
+        Runtime_Error(pszSrcFile, __LINE__, "no window");
+      else if (dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 	CHAR      s[CCHMAXPATH * 2];
 	PCNRITEM   pci = (PCNRITEM)mp1;
 	FSALLOCATE fsa;
@@ -777,7 +786,9 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
        * populate container
        */
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
+      if (!dcd)
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else {
 	WinSendMsg(dcd->hwndCnr,
 		   CM_REMOVERECORD,
 		   MPVOID,
@@ -848,13 +859,15 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       if(mp1) {
 
 	dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-	if(dcd) {
-
+	if (!dcd)
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
+	else {
 	  WORKER *wk;
 
-	  wk = malloc(sizeof(WORKER));
-	  if(wk) {
-	    memset(wk,0,sizeof(WORKER));
+	  wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
+	  if (!wk)
+	    FreeListInfo((LISTINFO *)mp1);
+	  else {
 	    wk->size = sizeof(WORKER);
 	    wk->hwndCnr = dcd->hwndCnr;
 	    wk->hwndParent = dcd->hwndParent;
@@ -862,17 +875,12 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	    wk->hwndClient = dcd->hwndClient;
 	    wk->li = (LISTINFO *)mp1;
 	    strcpy(wk->directory,dcd->directory);
-	    if(_beginthread(MassAction,
-			    NULL,
-			    122880,
-			    (PVOID)wk) ==
-	       -1) {
+	    if (_beginthread(MassAction,NULL,122880,(PVOID)wk) == -1) {
+              Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      free(wk);
 	      FreeListInfo((LISTINFO *)mp1);
 	    }
 	  }
-	  else
-	    FreeListInfo((LISTINFO *)mp1);
 	}
       }
       return 0;
@@ -881,13 +889,15 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       if(mp1) {
 
 	dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-	if(dcd) {
-
+	if (!dcd)
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
+	else {
 	  WORKER *wk;
 
-	  wk = malloc(sizeof(WORKER));
-	  if(wk) {
-	    memset(wk,0,sizeof(WORKER));
+	  wk = xmallocz(sizeof(WORKER), pszSrcFile,__LINE__);
+	  if (!wk)
+	    FreeListInfo((LISTINFO *)mp1);
+	  else {
 	    wk->size = sizeof(WORKER);
 	    wk->hwndCnr = dcd->hwndCnr;
 	    wk->hwndParent = dcd->hwndParent;
@@ -895,17 +905,12 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	    wk->hwndClient = dcd->hwndClient;
 	    wk->li = (LISTINFO *)mp1;
 	    strcpy(wk->directory,dcd->directory);
-	    if(_beginthread(Action,
-			    NULL,
-			    122880,
-			    (PVOID)wk) ==
-	       -1) {
+	    if (_beginthread(Action,NULL,122880,(PVOID)wk) == -1) {
+              Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      free(wk);
 	      FreeListInfo((LISTINFO *)mp1);
 	    }
 	  }
-	  else
-	    FreeListInfo((LISTINFO *)mp1);
 	}
       }
       return 0;
@@ -917,7 +922,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case WM_DESTROY:
       hwndTree = (HWND)0;
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
+      if (dcd) {
 	WinSendMsg(dcd->hwndCnr,
 		   UM_CLOSE,
 		   MPFROMLONG(dcd->dontclose != FALSE),
@@ -1158,11 +1163,9 @@ KbdRetry:
 	COMPARE *cmp;
 	CHAR    *leftdir = (CHAR *)mp1,*rightdir = (CHAR *)mp2;
 
-	if(!IsFile(leftdir) &&
-	   !IsFile(rightdir)) {
-	  cmp = malloc(sizeof(COMPARE));
+	if (!IsFile(leftdir) && !IsFile(rightdir)) {
+	  cmp = xmallocz(sizeof(COMPARE),pszSrcFile,__LINE__);
 	  if(cmp) {
-	    memset(cmp,0,sizeof(COMPARE));
 	    cmp->size = sizeof(COMPARE);
 	    strcpy(cmp->leftdir,leftdir);
 	    strcpy(cmp->rightdir,rightdir);
@@ -1304,7 +1307,12 @@ KbdRetry:
       return 0;
 
     case UM_SETUP:
-      if(dcd) {
+      if (!dcd) {
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+	PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
+	return 0;
+      }
+      else {
 	if(!dcd->hwndObject) {
 	  /*
 	   * first time through -- set things up
@@ -1363,12 +1371,8 @@ KbdRetry:
 		     MPFROMP(&cnri),
 		     MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
 				CMA_CXTREEINDENT | CMA_PSORTRECORD));
-//                                CMA_TREEICON));
-	  if(_beginthread(MakeObjWin,
-			  NULL,
-			  327680,
-			  (PVOID)dcd) ==
-	     -1) {
+	  if (_beginthread(MakeObjWin,NULL,327680,(PVOID)dcd) == -1) {
+            Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    PostMsg(hwnd,
 		    WM_CLOSE,
 		    MPVOID,
@@ -1378,13 +1382,6 @@ KbdRetry:
 	  else
 	    DosSleep(1L);
 	}
-      }
-      else {
-	PostMsg(hwnd,
-		WM_CLOSE,
-		MPVOID,
-		MPVOID);
-	return 0;
       }
       return 0;
 
@@ -1424,7 +1421,9 @@ KbdRetry:
 				   CM_QUERYRECORDFROMRECT,
 				   MPFROMLONG(CMA_FIRST),
 				   MPFROMP(&pqr));
-	if(pci && (INT)pci != -1) {
+	if(!pci || (INT)pci == -1)
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
+	else {
 	  memset(&nr,0,sizeof(nr));
 	  nr.hwndCnr = hwnd;
 	  nr.pRecord = (PRECORDCORE)pci;
@@ -1440,8 +1439,6 @@ KbdRetry:
 		  MPFROMLONG(tbool),
 		  MPVOID);
 	}
-	else
-	  DosBeep(50,100);
       }
       break;
 
@@ -1566,30 +1563,39 @@ KbdRetry:
 	      PCNRDRAGINIT pcd = (PCNRDRAGINIT)mp2;
 	      PCNRITEM     pci;
 
-	      if(pcd) {
+	      if (!pcd) {
+                Runtime_Error(pszSrcFile, __LINE__, "no data");
+	        break;
+	      }
+	      else {
 		pci = (PCNRITEM)pcd->pRecord;
-		if(!pci || (INT)pci == -1 ||
-		   (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODRAG))) {
-		  DosBeep(50,100);
+		if (!pci || (INT)pci == -1) {
+                  Runtime_Error(pszSrcFile, __LINE__, "no data");
 		  break;
 		}
-		if(hwndStatus2)
+		if (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODRAG)) {
+                  Runtime_Error(pszSrcFile, __LINE__, "drag not allowed");
+		  break;
+		}
+		if(hwndStatus2) {
 		  WinSetWindowText(hwndStatus2,(IsRoot(pci->szFileName)) ?
 				   GetPString(IDS_DRAGROOTTEXT) :
 				   (pci->attrFile & FILE_DIRECTORY) ?
 				   GetPString(IDS_DRAGDIRTEXT) :
 				   GetPString(IDS_DRAGFILETEXT));
+		}
 		DoFileDrag(hwnd,
 			   dcd->hwndObject,
 			   mp2,
 			   NULL,
 			   NULL,
 			   TRUE);
-		if(hwndStatus2)
+		if(hwndStatus2) {
 		  PostMsg(hwnd,
 			  UM_RESCAN,
 			  MPVOID,
 			  MPVOID);
+		}
 	      }
 	    }
 	    return 0;
@@ -1918,7 +1924,7 @@ KbdRetry:
 	      }
 	    }
 	    break;
-	}
+	} // switch WM_CONTROL
       }
       return 0;
 
@@ -1939,11 +1945,8 @@ KbdRetry:
 
     case UM_SHOWME:
       if(mp1 && dcd) {
-
-	CHAR *dir;
-
-	dir = strdup((CHAR *)mp1);
-	if(dir) {
+	CHAR *dir = xstrdup((CHAR *)mp1, pszSrcFile, __LINE__);
+	if (dir) {
 	  if(!PostMsg(dcd->hwndObject,
 		      UM_SHOWME,
 		      MPFROMP(dir),
@@ -1991,10 +1994,10 @@ KbdRetry:
 	    return 0;
 	  }
 	  DosError(FERR_DISABLEHARDERR);
-	  if(!DosQCurDisk(&ulDriveNum,&ulDriveMap)) {
-	    if(!(ulDriveMap & 1L << (toupper(*pci->szFileName) - 'A'))) {
+	  if (!DosQCurDisk(&ulDriveNum,&ulDriveMap)) {
+	    if (!(ulDriveMap & 1L << (toupper(*pci->szFileName) - 'A'))) {
 	      pciL = pciP = pci;
-	      for(;;) {
+	      for (;;) {
 		pciP = WinSendMsg(hwnd,
 				  CM_QUERYRECORD,
 				  MPFROMP(pciL),
@@ -2005,7 +2008,7 @@ KbdRetry:
 		  pciP = pciL;
 		  break;
 		}
-	      }
+	      } // for
 	      WinSendMsg(hwnd,
 			 CM_REMOVERECORD,
 			 MPFROMP(&pciP),
@@ -2415,17 +2418,21 @@ KbdRetry:
       return 0;
 
     case UM_COMMAND:
-      if(mp1) {
-	if(dcd) {
-	  if(!PostMsg(dcd->hwndObject,UM_COMMAND,mp1,mp2)) {
+      if (!mp1)
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else {
+	if (!dcd) {
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  FreeListInfo((LISTINFO *)mp1);
+	}
+	else {
+	  if (!PostMsg(dcd->hwndObject,UM_COMMAND,mp1,mp2)) {
+            Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 	    FreeListInfo((LISTINFO *)mp1);
-	    DosBeep(50,100);
 	  }
 	  else
 	    return (MRESULT)TRUE;
 	}
-	else
-	  FreeListInfo((LISTINFO *)mp1);
       }
       return 0;
 
@@ -2565,16 +2572,20 @@ KbdRetry:
 		sprintf(params,"/C NET USE %s /D",d);
 		happ = WinStartApp(hwnd,&pgd,pgd.pszParameters,
 				   NULL,SAF_MAXIMIZED);
-		if(happ) {
-
+		if (!happ) {
+		  saymsg(MB_CANCEL | MB_ICONEXCLAMATION,hwnd,
+			 GetPString(IDS_ERRORTEXT),
+			 GetPString(IDS_CANTSTARTTEXT),
+			 p,params);
+		}
+		else {
 		  APPNOTIFY *info;
 
-		  info = malloc(sizeof(APPNOTIFY));
-		  if(info) {
-		    memset(info,0,sizeof(APPNOTIFY));
+		  info = xmallocz(sizeof(APPNOTIFY), pszSrcFile, __LINE__);
+		  if (info) {
 		    info->happ = happ;
 		    info->device = *d;
-		    if(!apphead)
+		    if (!apphead)
 		      apphead = info;
 		    else {
 		      apptail->next = info;
@@ -2583,11 +2594,6 @@ KbdRetry:
 		    apptail = info;
 		  }
 		}
-		else
-		  saymsg(MB_CANCEL | MB_ICONEXCLAMATION,hwnd,
-			 GetPString(IDS_ERRORTEXT),
-			 GetPString(IDS_CANTSTARTTEXT),
-			 p,params);
 	      }
 	    }
 	    break;
@@ -3067,9 +3073,8 @@ KbdRetry:
 	      LISTINFO *li;
 	      ULONG     action = UM_ACTION;
 
-	      li = malloc(sizeof(LISTINFO));
-	      if(li) {
-		memset(li,0,sizeof(LISTINFO));
+	      li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
+	      if (li) {
 		li->type = SHORT1FROMMP(mp1);
 		li->hwnd = hwnd;
 		li->list = BuildList(hwnd);
@@ -3118,8 +3123,8 @@ KbdRetry:
 		   SHORT1FROMMP(mp1) == IDM_SHADOW2)
 		  *li->targetpath = 0;
 		if(!PostMsg(dcd->hwndObject,action,MPFROMP(li),MPVOID)) {
+                  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 		  FreeListInfo(li);
-		  DosBeep(50,100);
 		}
 	      }
 	    }
@@ -3251,8 +3256,8 @@ KbdRetry:
 }
 
 
-HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
-
+HWND StartTreeCnr (HWND hwndParent,ULONG flags)
+{
   /* bitmapped flags:
    * 0x00000001 = don't close app when window closes
    * 0x00000002 = no frame controls
@@ -3282,11 +3287,14 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
 				 TREE_FRAME,
 				 &hwndClient);
   if(hwndFrame && hwndClient) {
-    dcd = malloc(sizeof(DIRCNRDATA));
-    if(dcd) {
-
+    dcd = xmalloc(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
+    if (!dcd) {
+      Runtime_Error(pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+      PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+      hwndFrame = (HWND)0;
+    }
+    else {
       SWP swp;
-
       WinQueryWindowPos(hwndFrame,&swp);
       if(*(ULONG *)realappname == FM3UL)
 	WinCreateWindow(hwndFrame,
@@ -3374,12 +3382,6 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags) {
 	free(dcd);
 	hwndFrame = (HWND)0;
       }
-    }
-    else {
-      saymsg(MB_ENTER,hwndParent,DEBUG_STRING,
-	     GetPString(IDS_OUTOFMEMORY));
-      PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
-      hwndFrame = (HWND)0;
     }
   }
   return hwndFrame;

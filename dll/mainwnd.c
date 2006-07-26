@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -21,6 +21,7 @@
   08 Dec 05 SHL DriveProc: disable menu items if drive not ready
   17 Dec 05 SHL DriveProc: correct my stupid
   29 May 06 SHL IDM_EDITANYARCHIVER: sanitize code
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -45,6 +46,9 @@
 #include "datamin.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(MISC8,SetToggleChecks,FindDirCnrByName,TopWindow)
 #pragma alloc_text(MISC8,TopWindowName,CountDirCnrs)
 #pragma alloc_text(MAINWND,AdjustSizeOfClient,FillClient,ChildButtonProc)
@@ -498,12 +502,9 @@ static VOID ResizeTools(HWND hwnd)
   for (numtools = 0L; tool; numtools++)
     tool = tool -> next;
   /* allocate swp array for WinSetMultWindowPos */
-  swp = malloc(sizeof(SWP) * (numtools + 2));
-  if (swp)
-  {
-    memset(swp, 0, sizeof(SWP) * (numtools + 2));
-    for (x = 0; x < numtools + 2L; x++)
-    {
+  swp = xmallocz(sizeof(SWP) * (numtools + 2),pszSrcFile,__LINE__);
+  if (swp) {
+    for (x = 0; x < numtools + 2L; x++) {
       swp[x].hwndInsertBehind = HWND_TOP;
       swp[x].fl = attrib;
       swp[x].y = (fToolTitles) ? 14L : 3L;
@@ -1002,12 +1003,10 @@ MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	tlen = WinQueryWindowTextLength(hwnd);
 	if (tlen)
 	{
-	  s = malloc(tlen + 2);
-	  if (s)
-	  {
+	  s = xmalloc(tlen + 2,pszSrcFile,__LINE__);
+	  if (s) {
 	    WinQueryWindowText(hwnd, tlen + 1, s);
-	    if (*s)
-	    {
+	    if (*s) {
 	      p = s;
 	      y = swp.cy - 3;
 	      extra = WinQueryWindowULong(hwnd, QWL_USER + 4);
@@ -4922,10 +4921,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  COMPARE *cmp;
 
-	  cmp = malloc(sizeof(COMPARE));
-	  if (cmp)
-	  {
-	    memset(cmp, 0, sizeof(COMPARE));
+	  cmp = xmallocz(sizeof(COMPARE),pszSrcFile,__LINE__);
+	  if (cmp) {
 	    cmp -> size = sizeof(COMPARE);
 	    strcpy(cmp -> leftdir, wa.szCurrentPath1);
 	    strcpy(cmp -> rightdir, wa.szCurrentPath2);
@@ -5003,8 +5000,9 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	if (SHORT1FROMMP(mp1) == IDM_ADDTOUSERLIST)
 	{
-	  if (add_udir(TRUE, path))
-	  {
+	  if (!add_udir(TRUE, path))
+            Runtime_Error(pszSrcFile, __LINE__, "add_udir");
+	  else {
 	    if (fUdirsChanged)
 	      save_udirs();
 	    WinSendMsg(hwnd,
@@ -5012,19 +5010,16 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPVOID,
 		       MPVOID);
 	  }
-	  else
-	    DosBeep(50, 50);
 	}
 	else
 	{
-	  if (remove_udir(path))
-	  {
+	  if (!remove_udir(path))
+            Runtime_Error(pszSrcFile, __LINE__, "remove_udir");
+	  else {
 	    if (fUdirsChanged)
 	      save_udirs();
 	    WinSendMsg(hwnd, UM_FILLUSERLIST, MPVOID, MPVOID);
 	  }
-	  else
-	    DosBeep(50, 50);
 	}
       }
     }
@@ -5065,9 +5060,11 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    save_setups();
 	  sprintf(s, "%s.NumDirsLastTime", name);
 	  size = sizeof(ULONG);
-	  if (PrfQueryProfileData(fmprof, FM3Str, s, (PVOID) & numsaves,
-				  &size) && size)
-	  {
+	  if (!PrfQueryProfileData(fmprof, FM3Str, s, (PVOID)&numsaves, &size))
+            Win_Error(hwnd,hwnd,__FILE__,__LINE__,"PrfQueryProfileData");
+	  else if (!size)
+            Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  else {
 	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 	    for (x = 0; x < numsaves; x++)
 	    {
@@ -5087,8 +5084,6 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    sprintf(s, "%s.MySizeLastTime", name);
 	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	  }
-	  else
-	    DosBeep(50, 100);
 	  PostMsg(hwnd, UM_FILLSETUPLIST, MPVOID, MPVOID);
 	}
       }
@@ -5764,9 +5759,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    UM_CONTAINERHWND,
 				    MPVOID,
 				    MPVOID);
-	if (!hwndCnr)
-	{
-	  DosBeep(50, 100);
+	if (!hwndCnr) {
+          Runtime_Error(pszSrcFile, __LINE__, "no window");
 	  break;
 	}
 	x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
@@ -5854,15 +5848,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSetWindowUShort(hwnd, QWL_USER + 10, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 12, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 16, 0);
-    if (_beginthread(MakeMainObjWin,
-		     NULL,
-		     245760,
-		     MPVOID) == -1)
-    {
-      PostMsg(hwnd,
-	      WM_CLOSE,
-	      MPVOID,
-	      MPVOID);
+    if (_beginthread(MakeMainObjWin,NULL,245760,MPVOID) == -1) {
+      Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+      PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
       return 0;
     }
     else
@@ -6966,43 +6954,28 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      sprintf(s,
 		      "%s.NumDirsLastTime",
 		      path);
-	      if (PrfQueryProfileData(fmprof,
-				      FM3Str,
-				      s,
-				      (PVOID) & numsaves,
-				      &size) &&
-		  numsaves)
-	      {
+	      if (!PrfQueryProfileData(fmprof,FM3Str,s,(PVOID)&numsaves,&size))
+                Win_Error(hwnd,hwnd,__FILE__,__LINE__,"PrfQueryProfileData");
+	      else if (!numsaves)
+                Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      else {
 		if ((shiftstate & KC_SHIFT) == 0)
-		  PostMsg(MainObjectHwnd,
-			  UM_RESTORE,
-			  MPVOID,
-			  MPFROMLONG(2L));
+		  PostMsg(MainObjectHwnd,UM_RESTORE,MPVOID,MPFROMLONG(2L));
 		{
 		  char *temp;
 
-		  temp = strdup(path);
-		  if (temp)
+		  temp = xstrdup(path,pszSrcFile,__LINE__);
+		  if (!temp)
 		  {
-		    if (!PostMsg(MainObjectHwnd,
-				 UM_RESTORE,
-				 MPFROMP(temp),
-				 MPVOID))
-		      free(temp);
+		    if ((shiftstate & KC_SHIFT) != 0 || fAutoTile)
+		      PostMsg(MainObjectHwnd,UM_RESTORE,MPVOID,MPFROMLONG(1L));
 		  }
-		  else
-		  {
-		    if ((shiftstate & KC_SHIFT) != 0 ||
-			fAutoTile)
-		      PostMsg(MainObjectHwnd,
-			      UM_RESTORE,
-			      MPVOID,
-			      MPFROMLONG(1L));
+		  else {
+		    if (!PostMsg(MainObjectHwnd,UM_RESTORE,MPFROMP(temp),MPVOID))
+		      free(temp);
 		  }
 		}
 	      }
-	      else
-		DosBeep(50, 100);
 	      WinSetWindowText(hwndStatelist,
 			       GetPString(IDS_STATETEXT));
 	    }
@@ -7096,20 +7069,17 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       char *temp;
 
-      temp = strdup(GetPString(IDS_FM2TEMPTEXT));
-      if (temp)
-      {
-	if (!PostMsg(MainObjectHwnd,
-		     UM_RESTORE,
-		     MPFROMP(temp),
-		     MPVOID))
+      temp = xstrdup(GetPString(IDS_FM2TEMPTEXT),pszSrcFile,__LINE__);
+      if (temp) {
+	if (!PostMsg(MainObjectHwnd,UM_RESTORE,MPFROMP(temp),MPVOID))
 	  free(temp);
       }
     }
     return 0;
 
   case UM_SETDIR:
-    if (mp1)				/* mp1 == name of directory to open */
+    /* mp1 == name of directory to open */
+    if (mp1)
       return MRFROMLONG(OpenDirCnr((HWND) 0,
 				   hwndMain,
 				   hwndTree,

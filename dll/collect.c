@@ -6,7 +6,7 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2005 Steven H. Levine
+  Copyright (c) 2003, 2006 Steven H. Levine
 
   15 Oct 02 MK Baseline
   10 Jan 04 SHL Avoid -1L byte counts
@@ -21,6 +21,7 @@
   24 Oct 05 SHL Sanitize handle references
   24 Oct 05 SHL CollectorCnrWndProc: avoid excess writes to Status2 window
   10 Nov 05 SHL CollectorCnrWndProc: correct missing button window updates
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -47,6 +48,9 @@
 #include "grep.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(COLLECTOR,CollectorCnrWndProc,CollectorObjWndProc)
 #pragma alloc_text(COLLECTOR,CollectorClientWndProc,CollectorTextProc)
 #pragma alloc_text(COLLECTOR,CollectorFrameWndProc)
@@ -112,7 +116,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       QWS_ID,
 			       id);
 	    dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
-								 QW_PARENT),
+								   QW_PARENT),
 						    COLLECTOR_CNR),
 				    QWL_USER);
 	    if (id == DIR_VIEW)
@@ -630,18 +634,18 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       WinSetWindowText(WinWindowFromID(dcd -> hwndClient,
 				       DIR_SELECTED),
 		       GetPString(IDS_COLLECTINGTEXT));
-      for (x = 0; li -> list[x]; x++)
-      {
-	;
-      }
-      ulMaxFiles = x;
-      if (ulMaxFiles)
-      {
+      for (ulMaxFiles = 0; li -> list[ulMaxFiles]; ulMaxFiles++)
+	;				// Count
+
+      if (ulMaxFiles) {
 	pci = WinSendMsg(dcd -> hwndCnr, CM_ALLOCRECORD,
 			 MPFROMLONG(EXTRA_RECORD_BYTES),
 			 MPFROMLONG(ulMaxFiles));
-	if (pci)
-	{
+	if (pci) {
+	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed", ulMaxFiles);
+	  break;
+	}
+	else {
 	  pciFirst = pci;
 	  for (x = 0; li -> list[x]; x++)
 	  {
@@ -932,10 +936,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       {
 	WORKER *wk;
 
-	wk = malloc(sizeof(WORKER));
-	if (wk)
-	{
-	  memset(wk, 0, sizeof(WORKER));
+	wk = xmallocz(sizeof(WORKER),pszSrcFile,__LINE__);
+	if (!wk) {
+	  FreeListInfo((LISTINFO *) mp1);
+	}
+	else {
 	  wk -> size = sizeof(WORKER);
 	  wk -> hwndCnr = dcd -> hwndCnr;
 	  wk -> hwndParent = dcd -> hwndParent;
@@ -945,12 +950,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  strcpy(wk -> directory, dcd -> directory);
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1)
 	  {
+            Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
-	else
-	  FreeListInfo((LISTINFO *) mp1);
       }
     }
     return 0;
@@ -963,10 +967,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       {
 	WORKER *wk;
 
-	wk = malloc(sizeof(WORKER));
-	if (wk)
-	{
-	  memset(wk, 0, sizeof(WORKER));
+	wk = xmallocz(sizeof(WORKER),pszSrcFile,__LINE__);
+	if (!wk)
+	  FreeListInfo((LISTINFO *) mp1);
+	else {
 	  wk -> size = sizeof(WORKER);
 	  wk -> hwndCnr = dcd -> hwndCnr;
 	  wk -> hwndParent = dcd -> hwndParent;
@@ -976,12 +980,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  strcpy(wk -> directory, dcd -> directory);
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1)
 	  {
+            Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
-	else
-	  FreeListInfo((LISTINFO *) mp1);
       }
     }
     return 0;
@@ -1157,10 +1160,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
       if (!IsFile(leftdir) && !IsFile(rightdir))
       {
-	cmp = malloc(sizeof(COMPARE));
+	cmp = xmallocz(sizeof(COMPARE),pszSrcFile,__LINE__);
 	if (cmp)
 	{
-	  memset(cmp, 0, sizeof(COMPARE));
 	  cmp -> size = sizeof(COMPARE);
 	  strcpy(cmp -> leftdir, leftdir);
 	  strcpy(cmp -> rightdir, rightdir);
@@ -1349,7 +1351,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     return 0;
 
   case UM_CONTAINER_FILLED:
-    DosBeep(1000, 50);
+    DosBeep(1000, 50);		// fixme to know why beep here
     WinSendMsg(hwnd,
 	       CM_INVALIDATERECORD,
 	       MPVOID,
@@ -1468,6 +1470,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1)
 	{
+          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	  return 0;
 	}
@@ -1583,8 +1586,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       {
 	if (!PostMsg(dcd -> hwndObject, UM_COLLECTFROMFILE, mp1, mp2))
 	{
+          Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 	  free(mp1);
-	  DosBeep(50, 100);
 	}
       }
       else
@@ -1601,8 +1604,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       {
 	if (!PostMsg(dcd -> hwndObject, UM_COMMAND, mp1, mp2))
 	{
+          Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 	  FreeListInfo((LISTINFO *) mp1);
-	  DosBeep(50, 100);
 	}
 	else
 	  return (MRESULT) TRUE;
@@ -1719,7 +1722,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  }
 	  if (insert_filename(hwnd, filename, FALSE, FALSE))
 	  {
-	    p = strdup(filename);
+	    p = xstrdup(filename,pszSrcFile,__LINE__);
 	    if (p)
 	    {
 	      if (!PostMsg(hwnd, UM_COLLECTFROMFILE, MPFROMP(p), MPVOID))
@@ -1837,10 +1840,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	{
 	  LISTINFO *li;
 
-	  li = malloc(sizeof(LISTINFO));
+	  li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
 	  if (li)
 	  {
-	    memset(li, 0, sizeof(LISTINFO));
 	    li -> list = ListFromClipboard(hwnd);
 	    if (!li -> list || !li -> list[0])
 	      FreeListInfo(li);
@@ -1908,10 +1910,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	{
 	  LISTINFO *li;
 
-	  li = malloc(sizeof(LISTINFO));
+	  li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
 	  if (li)
 	  {
-	    memset(li, 0, sizeof(LISTINFO));
 	    li -> list = mp2;
 	    if (!li -> list || !li -> list[0])
 	      FreeListInfo(li);
@@ -1945,7 +1946,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	break;
 
       case IDM_GREP:
-	if (!dcd -> amextracted)
+	if (dcd -> amextracted) {
+	  // fixme to disable?
+          Runtime_Error(pszSrcFile, __LINE__, "busy");
+	}
+	else
 	{
 	  if (WinDlgBox(HWND_DESKTOP, hwnd, GrepDlgProc,
 			FM3ModHandle, GREP_FRAME, (PVOID) & hwnd))
@@ -1960,8 +1965,6 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	  }
 	}
-	else
-	  DosBeep(50, 100);		// Complain about busy
 	break;
 
       case IDM_RESORT:
@@ -2220,10 +2223,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  li = malloc(sizeof(LISTINFO));
+	  li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
 	  if (li)
 	  {
-	    memset(li, 0, sizeof(LISTINFO));
 	    li -> type = SHORT1FROMMP(mp1);
 	    li -> hwnd = hwnd;
 	    li -> list = BuildList(hwnd);
@@ -2262,8 +2264,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	      if (!PostMsg(dcd -> hwndObject, action, MPFROMP(li),
 			   MPVOID))
 	      {
+                Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 		FreeListInfo(li);
-		DosBeep(50, 100);
 	      }
 	      else if (fUnHilite)
 		UnHilite(hwnd, TRUE, &dcd -> lastselection);
@@ -2384,7 +2386,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  pDInfo = ((PCNRDRAGINFO) mp2) -> pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo))
 	  {
-	    Win_Error(hwnd, hwnd, __FILE__, __LINE__,
+	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 		      "%s",
 		      GetPString(IDS_DROPERRORTEXT));
 	    break;
@@ -2999,10 +3001,8 @@ HWND StartCollector(HWND hwndParent, INT flags)
   {
     id = COLLECTOR_FRAME + idinc++;
     WinSetWindowUShort(hwndFrame, QWS_ID, id);
-    dcd = malloc(sizeof(DIRCNRDATA));
-    if (dcd)
-    {
-      memset(dcd, 0, sizeof(DIRCNRDATA));
+    dcd = xmallocz(sizeof(DIRCNRDATA),pszSrcFile,__LINE__);
+    if (dcd) {
       dcd -> size = sizeof(DIRCNRDATA);
       dcd -> id = id;
       dcd -> type = COLLECTOR_FRAME;

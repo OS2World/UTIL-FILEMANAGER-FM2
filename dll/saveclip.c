@@ -6,43 +6,47 @@
   Save file list to clipboard
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   12 Feb 03 SHL SaveListDlgProc: standardize EA math
   01 Aug 04 SHL Rework lstrip/rstrip usage
   01 Aug 04 SHL Rework fixup usage
   24 May 05 SHL Rework for CNRITEM.szSubject
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(FMCLIPBOARDIN,SaveToClip,SaveToClipHab)
 #pragma alloc_text(FMCLIPBOARDOUT,ListToClipboard,ListToClipboardHab)
 #pragma alloc_text(FMCLIPBOARDOUT,ListFromClipboard,ListFromClipboardHab)
 
 
-BOOL SaveToClip (HWND hwnd,CHAR *text,BOOL append) {
-
+BOOL SaveToClip (HWND hwnd,CHAR *text,BOOL append)
+{
   HAB    hab = WinQueryAnchorBlock(hwnd);
 
   return SaveToClipHab(hab,text,append);
 }
 
 
-BOOL SaveToClipHab (HAB hab,CHAR *text,BOOL append) {
-
+BOOL SaveToClipHab (HAB hab,CHAR *text,BOOL append)
+{
   CHAR  *clip = NULL,*hold = NULL,*p;
   ULONG  len;
   BOOL   ret = FALSE;
@@ -92,16 +96,16 @@ BOOL SaveToClipHab (HAB hab,CHAR *text,BOOL append) {
 }
 
 
-VOID ListToClipboard (HWND hwnd,CHAR **list,BOOL append) {
-
+VOID ListToClipboard (HWND hwnd,CHAR **list,BOOL append)
+{
   HAB   hab = WinQueryAnchorBlock(hwnd);
 
   ListToClipboardHab(hab,list,append);
 }
 
 
-VOID ListToClipboardHab (HAB hab,CHAR **list,BOOL append) {
-
+VOID ListToClipboardHab (HAB hab,CHAR **list,BOOL append)
+{
   CHAR *text = NULL,**clip = NULL;
   INT   x;
   ULONG len = 0L;
@@ -149,25 +153,25 @@ VOID ListToClipboardHab (HAB hab,CHAR **list,BOOL append) {
 }
 
 
-CHAR ** ListFromClipboard (HWND hwnd) {
-
+CHAR ** ListFromClipboard (HWND hwnd)
+{
   HAB   hab = WinQueryAnchorBlock(hwnd);
 
   return ListFromClipboardHab(hab);
 }
 
 
-CHAR **ListFromClipboardHab (HAB hab) {
-
+CHAR **ListFromClipboardHab (HAB hab)
+{
   CHAR *p,*pp,*text = NULL,**list = NULL;
   INT   numfiles = 0,numalloced = 0;
 
   if(WinOpenClipbrd(hab)) {
     p = (CHAR *)WinQueryClipbrdData(hab,CF_TEXT);
     if(p && *p)
-      text = strdup(p);
+      text = xstrdup(p,pszSrcFile,__LINE__);
     WinCloseClipbrd(hab);
-    if(text) {
+    if (text) {
       bstrip(text);
       pp = text;
       p = strchr(pp,'\r');
@@ -205,7 +209,7 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
   switch(msg) {
     case WM_INITDLG:
       if(!mp2) {
-        DosBeep(250,100);
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
         WinDismissDlg(hwnd,0);
       }
       else {
@@ -295,8 +299,8 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           if(szBuffer[strlen(szBuffer) - 1] != '\\')
             strcat(szBuffer,"\\");
           strcat(szBuffer,"PATTERNS.DAT");
-          fp = fopen(szBuffer,"w");
-          if(fp) {
+          fp = xfopen(szBuffer,"w",pszSrcFile,__LINE__);
+          if (fp) {
             fputs(GetPString(IDS_LISTPATTERNTEXT),fp);
             for(sSelect = 0;sSelect < sMax;sSelect++) {
               *szBuffer = 0;
@@ -312,8 +316,6 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             }
             fclose(fp);
           }
-          else
-            DosBeep(500,100);
         }
         else if(!sMax) {
           save_dir2(szBuffer);
@@ -470,9 +472,13 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                  MPFROMSHORT(attribute));
               }
             }
-            if(pci && (INT)pci != -1) {
+            if(!pci || (INT)pci == -1)
+              Runtime_Error(pszSrcFile, __LINE__, "no data");
+	    else {
               fp = _fsopen(savename,"r+",SH_DENYWR);
-              if(fp) {
+              if(!fp)
+                Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
+	      else {
                 fseek(fp,0L,SEEK_SET);
                 if(WinQueryButtonCheckstate(hwnd,SAV_APPEND) == 0)
                   DosSetFileSize((HFILE)fileno(fp),0L);
@@ -580,11 +586,7 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 }
                 fclose(fp);
               }
-              else
-                DosBeep(250,100);
             }
-            else
-              DosBeep(100,100);
           }
           WinEnableWindow(hwnd,TRUE);
           WinDismissDlg(hwnd,1);
@@ -605,7 +607,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
   switch(msg) {
     case WM_INITDLG:
       if(!mp2) {
-        DosBeep(250,100);
+        Runtime_Error(pszSrcFile, __LINE__, "no data");
         WinDismissDlg(hwnd,0);
       }
       else {
@@ -692,7 +694,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
           if(szBuffer[strlen(szBuffer) - 1] != '\\')
             strcat(szBuffer,"\\");
           strcat(szBuffer,"PATTERNS.DAT");
-          fp = fopen(szBuffer,"w");
+          fp = xfopen(szBuffer,"w",pszSrcFile,__LINE__);
           if(fp) {
             fputs(GetPString(IDS_LISTPATTERNTEXT),fp);
             for(sSelect = 0;sSelect < sMax;sSelect++) {
@@ -707,8 +709,6 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
             }
             fclose(fp);
           }
-          else
-            DosBeep(500,100);
         }
         else if(!sMax) {
           save_dir2(szBuffer);
@@ -856,9 +856,13 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                                   appname,
                                   "SaveToListName",
                                   savename);
-            if(list && list[0]) {
+            if (!list || !list[0])
+              Runtime_Error(pszSrcFile, __LINE__, "no data");
+	    else {
               fp = _fsopen(savename,"r+",SH_DENYWR);
-              if(fp) {
+              if (!fp)
+                Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
+	      else {
                 fseek(fp,0L,SEEK_SET);
                 if(WinQueryButtonCheckstate(hwnd,SAV_APPEND) == 0)
                   DosSetFileSize((HFILE)fileno(fp),0L);
@@ -885,17 +889,15 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                       PFEA2     pfea;
                       CHAR      *value;
 
-                      pgealist = malloc(sizeof(GEA2LIST) + 64);
-                      if(pgealist) {
-                        memset(pgealist,0,sizeof(GEA2LIST) + 64);
+                      pgealist = xmallocz(sizeof(GEA2LIST) + 64,pszSrcFile,__LINE__);
+                      if (pgealist) {
                         pgea = &pgealist->list[0];
                         strcpy(pgea->szName,SUBJECT);
                         pgea->cbName = strlen(pgea->szName);
                         pgea->oNextEntryOffset = 0L;
                         pgealist->cbList = sizeof(GEA2LIST) + pgea->cbName;
-                        pfealist = malloc(1024);
+                        pfealist = xmallocz(1024,pszSrcFile,__LINE__);
                         if(pfealist) {
-                          memset(pfealist,0,1024);
                           pfealist->cbList = 1024;
                           eaop.fpGEA2List = pgealist;
                           eaop.fpFEA2List = pfealist;
@@ -929,17 +931,15 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                       PFEA2     pfea;
                       CHAR      *value;
 
-                      pgealist = malloc(sizeof(GEA2LIST) + 64);
-                      if(pgealist) {
-                        memset(pgealist,0,sizeof(GEA2LIST) + 64);
+                      pgealist = xmallocz(sizeof(GEA2LIST) + 64,pszSrcFile,__LINE__);
+                      if (pgealist) {
                         pgea = &pgealist->list[0];
                         strcpy(pgea->szName,LONGNAME);
                         pgea->cbName = strlen(pgea->szName);
                         pgea->oNextEntryOffset = 0L;
                         pgealist->cbList = sizeof(GEA2LIST) + pgea->cbName;
-                        pfealist = malloc(1024);
-                        if(pfealist) {
-                          memset(pfealist,0,1024);
+                        pfealist = xmallocz(1024,pszSrcFile,__LINE__);
+                        if (pfealist) {
                           pfealist->cbList = 1024;
                           eaop.fpGEA2List = pgealist;
                           eaop.fpFEA2List = pfealist;
@@ -948,7 +948,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                                                 FIL_QUERYEASFROMLIST,
                                                 (PVOID)&eaop,
                                                 (ULONG)sizeof(EAOP2));
-                          if(!rc) {
+                          if (!rc) {
                             pfea = &eaop.fpFEA2List->list[0];
                             value = pfea->szName + pfea->cbName + 1;
                             value[pfea->cbValue] = 0;
@@ -1063,11 +1063,7 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
                 }
                 fclose(fp);
               }
-              else
-                DosBeep(250,100);
             }
-            else
-              DosBeep(100,100);
           }
           WinEnableWindow(hwnd,TRUE);
           WinDismissDlg(hwnd,1);

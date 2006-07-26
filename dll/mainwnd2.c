@@ -13,14 +13,15 @@
   06 Aug 05 SHL Renames
   02 Jan 06 SHL Use QWL_USER more
   02 Jan 06 SHL Map IDM_WINDOWDLG to match IBM_TWODIRS
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -43,6 +44,8 @@ typedef struct
   HWND hwndLastDir;
   HWND hwndMax;
 } PERSON1DATA;
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(PERSON11,MainFrameWndProc2,MainWndProc2)
 #pragma alloc_text(PERSON12,StartFM32,MainWMOnce2)
@@ -514,10 +517,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 
 	  COMPARE *cmp;
 
-	  cmp = malloc(sizeof(COMPARE));
-	  if (cmp)
-	  {
-	    memset(cmp, 0, sizeof(COMPARE));
+	  cmp = xmallocz(sizeof(COMPARE),pszSrcFile,__LINE__);
+	  if (cmp) {
 	    cmp -> size = sizeof(COMPARE);
 	    strcpy(cmp -> leftdir, wa.szCurrentPath1);
 	    strcpy(cmp -> rightdir, wa.szCurrentPath2);
@@ -730,7 +731,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 				  MPVOID);
       if (!hwndCnr)
       {
-	DosBeep(50, 100);
+        Runtime_Error(pszSrcFile, __LINE__, "no window");
 	break;
       }
       x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
@@ -816,26 +817,18 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
     WinSetWindowUShort(hwnd, QWL_USER + 10, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 12, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 16, 0);
-    if (_beginthread(MakeMainObjWin,
-		     NULL,
-		     245760,
-		     MPVOID) == -1)
-    {
-      PostMsg(hwnd,
-	      WM_CLOSE,
-	      MPVOID,
-	      MPVOID);
+    if (_beginthread(MakeMainObjWin,NULL,245760,MPVOID) == -1) {
+      Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+      PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
       return 0;
     }
     else
       DosSleep(64);
 
-    pd = malloc(sizeof(PERSON1DATA));
+    pd = xmallocz(sizeof(PERSON1DATA),pszSrcFile,__LINE__);
     if (!pd)
       WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
-    else
-    {
-      memset(pd, 0, sizeof(PERSON1DATA));
+    else {
       pd -> size = sizeof(PERSON1DATA);
       WinSetWindowPtr(hwnd, QWL_USER + 4, (PVOID)pd);
     }
