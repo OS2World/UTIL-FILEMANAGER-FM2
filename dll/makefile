@@ -10,6 +10,7 @@
 # 24 Jul 05 SHL Rework resource kit support
 # 16 Apr 06 SHL Add lxlite target
 # 28 Jun 06 SHL Add more .h dependencies
+# 22 Jul 06 SHL Add more .h dependencies
 
 # Warning - may still be missing some *.h dependencies
 
@@ -74,7 +75,7 @@ OFILES2=walkem.obj archive.obj extract.obj filter.obj assoc.obj draglist.obj\
 OFILES3=notebook.obj commafmt.obj seeall.obj autoview.obj delims.obj\
 	menu.obj worker.obj datamin.obj fm2cmd.obj newview.obj colors.obj\
 	uudecode.obj loadbmp.obj mainwnd2.obj remap.obj timer.obj grep2.obj\
-	common.obj string.obj
+	common.obj string.obj wrappers.obj
 
 LFILES=$(OFILES:.obj=)
 LFILES2=$(OFILES2:.obj=)
@@ -200,7 +201,7 @@ colors.c: fm3dll.h fm3dlg.h
 command.c: fm3dll.h fm3dlg.h fm3str.h tools.h
 common.c: fm3dll.h fm3dlg.h fm3str.h mle.h
 comp.c: fm3dll.h fm3dlg.h fm3str.h
-copyf.c: fm3dll.h
+copyf.c: fm3dll.h fm3str.h
 datamin.c: fm3dll.h fm3dlg.h fm3str.h procstat.h datamin.h
 defview.c: fm3dll.h fm3dlg.h
 dircnrs.c: fm3dll.h fm3dlg.h fm3str.h mle.h
@@ -234,7 +235,8 @@ loadbmp.c: fm3dll.h
 mainwnd.c: fm3dll.h fm3dlg.h fm3str.h tools.h
 mainwnd.c: datamin.h fm3dll.h fm3dlg.h fm3str.h tools.h
 mainwnd2.c: datamin.h
-makelist.c: fm3dll.h
+makelist.c: fm3dll.h fm3str.h
+wrappers.c: fm3dll.h fm3str.h
 menu.c: fm3dll.h menu.h
 misc.c: fm3dll.h fm3dlg.h fm3str.h
 mkdir.c: fm3dll.h fm3dlg.h fm3str.h
@@ -264,7 +266,7 @@ treecnr.c: fm3dll.h fm3dlg.h fm3str.h mle.h
 undel.c: fm3dll.h fm3dlg.h fm3str.h
 update.c: fm3dll.h
 uudecode.c: fm3dll.h fm3dlg.h fm3str.h
-valid.c: fm3dll.h
+valid.c: fm3dll.h fm3str.h
 viewer.c: fm3dll.h fm3dlg.h fm3str.h mle.h
 viewinf.c: fm3dll.h fm3dlg.h fm3str.h
 walkem.c: fm3dll.h fm3dlg.h fm3str.h
