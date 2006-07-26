@@ -6,7 +6,7 @@
   Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -15,6 +15,8 @@
   26 May 05 SHL Comments
   06 Jun 05 SHL indent -i2
   06 Jun 05 SHL Rework FindSwapperDat for VAC3.65 compat
+  13 Jul 06 SHL Use Runtime_Error
+  13 Jul 06 SHL Sync with current style
 
 ***********************************************************************/
 
@@ -48,10 +50,7 @@
 extern int _CRT_init(void);
 extern void _CRT_term(void);
 
-/*
-   extern HMODULE FM3ResHandle;
-   extern ULONG RVMajor,RVMinor;
- */
+static PSZ pszSrcFile = __FILE__;
 
 VOID FindSwapperDat(VOID)
 {
@@ -109,7 +108,7 @@ VOID FindSwapperDat(VOID)
       nm = 3;		// Assume drive C:
     }
     *filename = (CHAR)nm + '@';
-    fp = _fsopen(filename, "r", SH_DENYNO);
+    fp = xfsopen(filename, "r", SH_DENYNO,pszSrcFile,__LINE__);
     if (fp)
     {
       while (!feof(fp))
@@ -409,7 +408,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   if (!StringsLoaded())
   {
-    DosBeep(50, 100);
     saymsg(MB_ENTER,
 	   HWND_DESKTOP,
 	   "Error",
@@ -451,19 +449,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		      0,
 		      dllfile,
 		      &FM3ModHandle);
-  if (!rcl)
-  {
-    if (DosExitList(EXLST_ADD,
-		    DeInitFM3DLL))
-      DosBeep(500, 100);
-    rcq = DosQueryProcAddr(FM3ModHandle,
-			   1,
-			   "ResVersion",
-			   &pfnResVersion);
-    if (!rcq)
-      ret = pfnResVersion(&RVMajor, &RVMinor);
-  }
-  else
+  if (rcl)
   {
     saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	   HWND_DESKTOP,
@@ -471,10 +457,28 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	   GetPString(IDS_FM3RESERROR1TEXT));
     return FALSE;
   }
+  else {
+    rc = DosExitList(EXLST_ADD, DeInitFM3DLL);
+    if (rc)
+    {
+      Dos_Error(MB_ENTER,
+                rc,
+                HWND_DESKTOP,
+                pszSrcFile,
+                __LINE__,
+                "DosExitList failed");
+    }
+    rcq = DosQueryProcAddr(FM3ModHandle,
+		           1,
+			   "ResVersion",
+			   &pfnResVersion);
+    if (!rcq)
+      ret = pfnResVersion(&RVMajor, &RVMinor);
+  }
+
   if (RVMajor < VERMAJOR ||
       (RVMajor == VERMAJOR && RVMinor < VERMINOR))
   {
-    DosBeep(50, 100);
     saymsg(MB_ENTER,
 	   HWND_DESKTOP,
 	   GetPString(IDS_ERRORTEXT),
@@ -556,21 +560,15 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   priority_bumped();
 
   /* _heapmin() is done in a separate thread -- start it */
-  if (_beginthread(HeapThread,
-		   NULL,
-		   32768,
-		   NULL) ==
-      -1 ||
-  /* timer messages are sent from a separate thread -- start it */
-      !StartTimer())
-  {
-    DosBeep(50, 100);
-    DosSleep(10);
-    DosBeep(50, 100);
+  if (_beginthread(HeapThread,NULL,32768,NULL) == -1) {
+    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
     return FALSE;
   }
+  /* timer messages are sent from a separate thread -- start it */
+  if (!StartTimer())
+    return FALSE;
 
-  /* are we the workplace? */
+  /* are we the workplace shell? */
   env = getenv("WORKPLACE__PROCESS");
   if (!env || stricmp(env, "NO"))
     fWorkPlace = TRUE;
@@ -643,11 +641,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
     if (!fmprof)
     {
-      DosBeep(50, 100);
-      DosSleep(10);
-      DosBeep(50, 100);
-      DosSleep(10);
-      DosBeep(50, 100);
+      Win_Error(NULLHANDLE,NULLHANDLE,pszSrcFile,__LINE__,
+                "PrfOpenProfile failed");
       return FALSE;
     }
   }
@@ -729,13 +724,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   // saymsg(MB_ENTER,HWND_DESKTOP,"MLE flags:","%08lx",clinfo.flClassStyle);
   if (!PFNWPCnr || !PFNWPFrame || !PFNWPButton || !PFNWPStatic || !PFNWPMLE)
   {
-    DosBeep(50, 100);
-    DosSleep(10);
-    DosBeep(50, 100);
-    DosSleep(10);
-    DosBeep(50, 100);
-    DosSleep(10);
-    DosBeep(50, 100);
+    Runtime_Error(pszSrcFile, __LINE__, "WinQueryClassInfo");
     return FALSE;
   }
 
@@ -1393,12 +1382,9 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
 		      rcl.yTop - rcl.yBottom, fl);
     }
     if (fLogFile)
-      LogFileHandle = _fsopen("FM2.LOG",
-			      "a+",
-			      SH_DENYWR);
+      LogFileHandle = _fsopen("FM2.LOG","a+",SH_DENYWR);
     if (hwndHelp)
-      WinAssociateHelpInstance(hwndHelp,
-			       hwndFrame);
+      WinAssociateHelpInstance(hwndHelp,hwndFrame);
     PostMsg(hwndClient,
 	    UM_SETUP,
 	    MPFROMLONG(argc),
