@@ -4,11 +4,12 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2006 Steven H.Levine
 
-  Archive containers
+  Default file viewer
 
-  Revisions	20 Nov 03 SHL - ShowMultimedia: try to convince fmplay to not play exes (Gregg Young)
+  20 Nov 03 SHL ShowMultimedia: try to convince fmplay to not play exes (Gregg Young)
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -16,15 +17,18 @@
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_MMIOOS2
-
 #include <os2.h>
 #include <os2me.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(DEFVIEW,DefaultView,ShowMultimedia,DefaultViewKeys)
 
@@ -112,8 +116,8 @@ BOOL ShowMultimedia (CHAR *filename)
 
 
 VOID DefaultViewKeys (HWND hwnd,HWND hwndFrame,HWND hwndParent,
-		      SWP *swp,CHAR *filename) {
-
+		      SWP *swp,CHAR *filename)
+{
   if((shiftstate & (KC_CTRL | KC_SHIFT)) ==
      (KC_CTRL | KC_SHIFT))
     DefaultView(hwnd,
@@ -147,8 +151,8 @@ VOID DefaultViewKeys (HWND hwnd,HWND hwndFrame,HWND hwndParent,
 
 
 VOID DefaultView (HWND hwnd,HWND hwndFrame,HWND hwndParent,SWP *swp,
-		  ULONG flags,CHAR *filename) {
-
+		  ULONG flags,CHAR *filename)
+{
   /*
    * bitmapped flags:
    * ---------------
@@ -169,7 +173,7 @@ VOID DefaultView (HWND hwnd,HWND hwndFrame,HWND hwndParent,SWP *swp,
   if(flags & 32) {
     flags &= (~16);
     if(!IsFile(filename)) {
-      DosBeep(50,100);
+      Runtime_Error(pszSrcFile, __LINE__, "%s not found", filename);
       return;
     }
   }

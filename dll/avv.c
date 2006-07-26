@@ -16,6 +16,7 @@
   14 Aug 05 SHL ArcReviewDlgProc: ensure signature allocated
   29 May 06 SHL EditArchiverData: rework
   26 Jun 06 SHL rewrite_archiverbb2: include user comments
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -36,7 +37,10 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(AVV,EditArchiverData,xstrdup,xstrdup_from_window)
+
+static PSZ pszSrcFile = __FILE__;
+
+#pragma alloc_text(AVV,EditArchiverData,free_and_strdup_from_window)
 #pragma alloc_text(AVV,get_int_from_window,get_int2_from_window)
 #pragma alloc_text(AVV,get_long_from_window,get_int3_from_window)
 #pragma alloc_text(AVV,get_int4_from_window)
@@ -46,8 +50,7 @@ static BOOL check_archiver (HWND hwnd,ARC_TYPE *info);
 static INT get_int_from_window (HWND hwnd,USHORT id);
 static LONG get_long_from_window (HWND hwnd,USHORT id);
 static PSZ nonull(PSZ a);
-static PSZ xstrdup(PSZ pszDest,PSZ pszSrc);
-static PSZ xstrdup_from_window(HWND hwnd,USHORT id,PSZ pszDest);
+static PSZ free_and_strdup_from_window(HWND hwnd,USHORT id,PSZ pszDest);
 
 //=== EditArchiverData() Select archiver to edit ===
 
@@ -82,26 +85,21 @@ VOID EditArchiverData(HWND hwnd)
   } // for
 }
 
-static PSZ xstrdup(PSZ a,PSZ b)
-{
-  if (a)
-    free(a);
-  if (b && *b)
-    a = strdup(b);
-  else
-    a = NULL;
-  return a;
-}
-
-static PSZ xstrdup_from_window(HWND hwnd,USHORT id,PSZ pszDest)
+static PSZ free_and_strdup_from_window(HWND hwnd,USHORT id,PSZ pszDest)
 {
   char sz[257] = "";
+
+  if (pszDest)
+    free(pszDest);
 
   WinQueryDlgItemText(hwnd,
                       id,
                       255,
                       sz);
-  pszDest = xstrdup(pszDest,sz);
+  if (*sz)
+    pszDest = xstrdup(sz, pszSrcFile, __LINE__);
+  else
+    pszDest = NULL;
   return pszDest;
 }
 
@@ -633,7 +631,9 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             case LN_ENTER:
               for(sSelect = 0;sSelect < 10;sSelect++)
                 WinSetDlgItemText(hwnd,AD_FLD1 + sSelect,NullStr);
-              if(admp->listname) {
+              if (!admp->listname)
+                Runtime_Error(pszSrcFile, __LINE__, "no listname");
+	      else {
                 sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
                                                    AD_LISTBOX,
                                                    LM_QUERYSELECTION,
@@ -644,11 +644,11 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                   LM_QUERYITEMTEXT,
                                   MPFROM2SHORT(sSelect,255),
                                   MPFROMP(s));
-                if(*s) {
-
+                if(!*s)
+                  Runtime_Error(pszSrcFile, __LINE__, "no text");
+		else {
                   PSZ p;
 		  PSZ pp;
-
                   p = s;
                   for(sSelect = 0;sSelect < 10;sSelect++) {
                     pp = p;
@@ -666,11 +666,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                       pp);
                   }
                 }
-                else
-                  DosBeep(50,100);
               }
-              else
-                DosBeep(50,100);
               break;
 
             case LN_KILLFOCUS:
@@ -915,24 +911,24 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
         case DID_OK:
 	  // fixme to avoid creating empty strings for startlist and endlist
-          admp->info->startlist = xstrdup_from_window(hwnd,AD_STARTLIST,admp->info->startlist);
-          admp->info->endlist = xstrdup_from_window(hwnd,AD_ENDLIST,admp->info->endlist);
-          admp->info->id = xstrdup_from_window(hwnd,AD_ID,admp->info->id);
-          admp->info->create = xstrdup_from_window(hwnd,AD_ADD,admp->info->create);
-          admp->info->createwdirs = xstrdup_from_window(hwnd,AD_ADDWPATHS,admp->info->createwdirs);
-          admp->info->createrecurse = xstrdup_from_window(hwnd,AD_ADDRECURSE,admp->info->createrecurse);
-          admp->info->movewdirs = xstrdup_from_window(hwnd,AD_MOVEWPATHS,admp->info->movewdirs);
-          admp->info->move = xstrdup_from_window(hwnd,AD_MOVE,admp->info->move);
-          admp->info->delete = xstrdup_from_window(hwnd,AD_DELETE,admp->info->delete);
-          admp->info->test = xstrdup_from_window(hwnd,AD_TEST,admp->info->test);
-          admp->info->extract = xstrdup_from_window(hwnd,AD_EXTRACT,admp->info->extract);
-          admp->info->exwdirs = xstrdup_from_window(hwnd,AD_WDIRS,admp->info->exwdirs);
-          admp->info->ext = xstrdup_from_window(hwnd,AD_EXT,admp->info->ext);
-	  admp->info->signature = xstrdup_from_window(hwnd,
+          admp->info->startlist = free_and_strdup_from_window(hwnd,AD_STARTLIST,admp->info->startlist);
+          admp->info->endlist = free_and_strdup_from_window(hwnd,AD_ENDLIST,admp->info->endlist);
+          admp->info->id = free_and_strdup_from_window(hwnd,AD_ID,admp->info->id);
+          admp->info->create = free_and_strdup_from_window(hwnd,AD_ADD,admp->info->create);
+          admp->info->createwdirs = free_and_strdup_from_window(hwnd,AD_ADDWPATHS,admp->info->createwdirs);
+          admp->info->createrecurse = free_and_strdup_from_window(hwnd,AD_ADDRECURSE,admp->info->createrecurse);
+          admp->info->movewdirs = free_and_strdup_from_window(hwnd,AD_MOVEWPATHS,admp->info->movewdirs);
+          admp->info->move = free_and_strdup_from_window(hwnd,AD_MOVE,admp->info->move);
+          admp->info->delete = free_and_strdup_from_window(hwnd,AD_DELETE,admp->info->delete);
+          admp->info->test = free_and_strdup_from_window(hwnd,AD_TEST,admp->info->test);
+          admp->info->extract = free_and_strdup_from_window(hwnd,AD_EXTRACT,admp->info->extract);
+          admp->info->exwdirs = free_and_strdup_from_window(hwnd,AD_WDIRS,admp->info->exwdirs);
+          admp->info->ext = free_and_strdup_from_window(hwnd,AD_EXT,admp->info->ext);
+	  admp->info->signature = free_and_strdup_from_window(hwnd,
                                                       AD_SIG,
                                                       admp->info->signature);
           admp->info->siglen = literal(admp->info->signature);
-          admp->info->list = xstrdup_from_window(hwnd,
+          admp->info->list = free_and_strdup_from_window(hwnd,
                                                   AD_LIST,
                                                   admp->info->list);
           admp->info->file_offset = get_long_from_window(hwnd,AD_SIGPOS);
@@ -976,7 +972,9 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           return 0;
 
         case AD_TOSTART:
-          if(admp->listname) {
+          if(!admp->listname)
+            Runtime_Error(pszSrcFile, __LINE__, "no listname");
+	  else {
             sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
                                                AD_LISTBOX,
                                                LM_QUERYSELECTION,
@@ -998,12 +996,12 @@ BooBoo:
                      GetPString(IDS_OOPSTEXT),
                      GetPString(IDS_SELECTFROMLISTTEXT));
           }
-          else
-            DosBeep(50,100);
           return 0;
 
         case AD_TOEND:
-          if(admp->listname) {
+          if(!admp->listname)
+            Runtime_Error(pszSrcFile, __LINE__, "no listname");
+	  else {
             sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
                                                AD_LISTBOX,
                                                LM_QUERYSELECTION,
@@ -1021,8 +1019,6 @@ BooBoo:
             else
               goto BooBoo;
           }
-          else
-            DosBeep(50,100);
           return 0;
       }
       return 0;

@@ -3,23 +3,27 @@
 
   $Id$
 
+  Custom commands
+
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Drop unused code
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -32,12 +36,15 @@ typedef struct {
 } COMMAND;
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(COMMAND,command_title,free_commands,add_command,kill_command)
 #pragma alloc_text(COMMAND,CommandDlgProc,EditCommands,ReOrderProc,CommandTextProc)
 
 
-MRESULT EXPENTRY CommandTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CommandTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   PFNWP       oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
   static BOOL emphasized = FALSE;
 
@@ -86,8 +93,8 @@ MRESULT EXPENTRY CommandTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY ReOrderProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ReOrderProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       if(!cmdhead) {
@@ -103,13 +110,14 @@ MRESULT EXPENTRY ReOrderProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           x = (SHORT)WinSendDlgItemMsg(hwnd,RE_ADDLISTBOX,LM_INSERTITEM,
                                        MPFROMSHORT(LIT_END),
                                        MPFROMP(info->title));
-          if(x >= 0)
+          if(x < 0) {
+            Runtime_Error(pszSrcFile, __LINE__, "no cmd");
+            WinDismissDlg(hwnd,0);
+	  }
+	  else {
             WinSendDlgItemMsg(hwnd,RE_ADDLISTBOX,LM_SETITEMHANDLE,
                               MPFROMSHORT(x),MPFROMP(info));
-          else {
-            DosBeep(50,100);
-            WinDismissDlg(hwnd,0);
-          }
+	  }
           info = info->next;
         }
       }
@@ -274,8 +282,8 @@ MRESULT EXPENTRY ReOrderProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-CHAR *command_title (INT cx) {
-
+CHAR *command_title (INT cx)
+{
   static CHAR  duh[] = "???";
   LINKCMDS    *info;
   INT          x = 0;
@@ -292,8 +300,8 @@ CHAR *command_title (INT cx) {
 }
 
 
-VOID free_commands (VOID) {
-
+VOID free_commands (VOID)
+{
   LINKCMDS *info,*next;
 
   info = cmdhead;
@@ -308,8 +316,8 @@ VOID free_commands (VOID) {
 }
 
 
-VOID load_commands (VOID) {
-
+VOID load_commands (VOID)
+{
   FILE     *fp;
   LINKCMDS *info;
   CHAR      cl[1024];
@@ -341,11 +349,10 @@ VOID load_commands (VOID) {
       bstripcr(flags);
       if(!*cl)
         continue;
-      info = malloc(sizeof(LINKCMDS));
+      info = xmallocz(sizeof(LINKCMDS),pszSrcFile,__LINE__);
       if(info) {
-        memset(info,0,sizeof(LINKCMDS));
-        info->cl = strdup(cl);
-        info->title = strdup(title);
+        info->cl = xstrdup(cl,pszSrcFile,__LINE__);
+        info->title = xstrdup(title,pszSrcFile,__LINE__);
         info->flags = atol(flags);
         if(!info->cl || !info->title) {
           if(info->cl)
@@ -369,8 +376,8 @@ VOID load_commands (VOID) {
 }
 
 
-VOID save_commands (VOID) {
-
+VOID save_commands (VOID)
+{
   LINKCMDS *info;
   FILE     *fp;
   CHAR      s[CCHMAXPATH + 14];
@@ -382,8 +389,8 @@ VOID save_commands (VOID) {
   if(s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,"COMMANDS.DAT");
-  fp = fopen(s,"w");
-  if(fp) {
+  fp = xfopen(s,"w",pszSrcFile,__LINE__);
+  if (fp) {
     fputs(GetPString(IDS_COMMANDFILETEXT),fp);
     info = cmdhead;
     while(info) {
@@ -399,8 +406,8 @@ VOID save_commands (VOID) {
 }
 
 
-LINKCMDS * add_command (COMMAND *addme) {
-
+LINKCMDS * add_command (COMMAND *addme)
+{
   LINKCMDS *info;
 
   if(addme && *addme->cl && *addme->title) {
@@ -411,11 +418,10 @@ LINKCMDS * add_command (COMMAND *addme) {
       info = info->next;
     }
     if(!info) {
-      info = malloc(sizeof(LINKCMDS));
+      info = xmallocz(sizeof(LINKCMDS),pszSrcFile,__LINE__);
       if(info) {
-        memset(info,0,sizeof(LINKCMDS));
-        info->cl = strdup(addme->cl);
-        info->title = strdup(addme->title);
+        info->cl = xstrdup(addme->cl,pszSrcFile,__LINE__);
+        info->title = xstrdup(addme->title,pszSrcFile,__LINE__);
         if(addme->flags)
           info->flags = addme->flags;
         if(!info->cl || !info->title) {
@@ -442,8 +448,8 @@ LINKCMDS * add_command (COMMAND *addme) {
 }
 
 
-BOOL kill_command (CHAR *killme) {
-
+BOOL kill_command (CHAR *killme)
+{
   LINKCMDS *info;
 
   if(killme && *killme) {
@@ -475,8 +481,8 @@ BOOL kill_command (CHAR *killme) {
 }
 
 
-MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   SHORT     x;
   LINKCMDS *info;
 
@@ -529,7 +535,7 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                    MPFROMSHORT(x),
                                                    MPVOID);
               if(!info) {
-                DosBeep(50,100);
+                Runtime_Error(pszSrcFile, __LINE__, "LM_QUERYITEMHANDLE");
                 break;
               }
               WinSetDlgItemText(hwnd,CMD_CL,info->cl);
@@ -583,7 +589,7 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
         case CMD_REORDER:
           if(!cmdhead || !cmdhead->next) {
-            DosBeep(250,100);
+            Runtime_Error(pszSrcFile, __LINE__, "no cmd");
             break;
           }
           if(WinDlgBox(HWND_DESKTOP,hwnd,ReOrderProc,FM3ModHandle,
@@ -681,7 +687,9 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             if(WinQueryButtonCheckstate(hwnd,CMD_ONCE))
               temp.flags |= ONCE;
             info = add_command(&temp);
-            if(info) {
+            if(!info)
+              Runtime_Error(pszSrcFile, __LINE__, "add_command");
+	    else {
               {
                 CHAR env[1002];
 
@@ -716,8 +724,6 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 save_commands();
               }
             }
-            else
-              DosBeep(50,200);
           }
           break;
 
@@ -727,7 +733,9 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
             WinQueryDlgItemText(hwnd,CMD_TITLE,34,temp);
             bstrip(temp);
-            if(kill_command(temp)) {
+            if (!kill_command(temp))
+              Runtime_Error(pszSrcFile, __LINE__, "kill_command");
+	    else {
               x = (SHORT)WinSendDlgItemMsg(hwnd,
                                            CMD_LISTBOX,
                                            LM_QUERYSELECTION,
@@ -747,8 +755,6 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
               }
               save_commands();
             }
-            else
-              DosBeep(50,200);
           }
           break;
       }
@@ -758,8 +764,8 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID RunCommand (HWND hwnd,INT cx) {
-
+VOID RunCommand (HWND hwnd,INT cx)
+{
   INT          x;
   CHAR       **list;
   LINKCMDS    *info;
@@ -818,8 +824,8 @@ VOID RunCommand (HWND hwnd,INT cx) {
 }
 
 
-VOID EditCommands (HWND hwnd) {
-
+VOID EditCommands (HWND hwnd)
+{
   static CHAR stop = 0;
 
   if(stop)
@@ -835,4 +841,3 @@ VOID EditCommands (HWND hwnd) {
             MPFROMP(&hwnd));
   stop = 0;
 }
-

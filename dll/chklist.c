@@ -3,36 +3,40 @@
 
   $Id$
 
-  Main window
+  Utility windows and mouse positioning
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H.Levine
+  Copyright (c) 2005, 2006 Steven H.Levine
 
-  Revisions	10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
+  10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(CHECKLIST,CheckListProc)
 #pragma alloc_text(DNDLIST,DropListProc)
 #pragma alloc_text(MISC7,PosOverOkay,CenterOverWindow,PopupMenu)
 
-
-VOID CenterOverWindow (HWND hwnd) {
-
+VOID CenterOverWindow (HWND hwnd)
+{
   SWP    swp;
   POINTL ptl;
 
@@ -47,8 +51,8 @@ VOID CenterOverWindow (HWND hwnd) {
 }
 
 
-BOOL PopupMenu (HWND hwndParent,HWND hwndOwner,HWND hwndMenu) {
-
+BOOL PopupMenu (HWND hwndParent,HWND hwndOwner,HWND hwndMenu)
+{
   POINTL ptl;
   BOOL   rc;
 
@@ -65,8 +69,8 @@ BOOL PopupMenu (HWND hwndParent,HWND hwndOwner,HWND hwndMenu) {
 }
 
 
-VOID PosOverOkay (HWND hwnd) {
-
+VOID PosOverOkay (HWND hwnd)
+{
   SWP    swp;
   POINTL ptl;
 
@@ -81,8 +85,8 @@ VOID PosOverOkay (HWND hwnd) {
 }
 
 
-MRESULT EXPENTRY CheckListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CheckListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   CHECKLIST *cl;
 
   switch(msg) {
@@ -206,7 +210,7 @@ MRESULT EXPENTRY CheckListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                 if(*szBuffer) {
                   error = AddToList(szBuffer,&cl->list,&numfiles,&numalloc);
                   if(error) {
-                    DosBeep(250,100);
+                    Runtime_Error(pszSrcFile, __LINE__, "AddToList");
                     break;
                   }
                 }
@@ -231,8 +235,8 @@ MRESULT EXPENTRY CheckListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY DropListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY DropListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   CHECKLIST  *cl;
   static BOOL Shadow = FALSE,Wild = FALSE;
 
@@ -537,8 +541,8 @@ MRESULT EXPENTRY DropListProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                   MPFROMP(szBuffer));
                 if(*szBuffer) {
                   error = AddToList(szBuffer,&cl->list,&numfiles,&numalloc);
-                  if(error) {
-                    DosBeep(250,100);
+                  if (error) {
+                    Runtime_Error(pszSrcFile, __LINE__, "AddToList");
                     break;
                   }
                 }

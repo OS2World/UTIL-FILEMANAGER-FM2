@@ -3,13 +3,16 @@
 
   $Id$
 
+  Display/edit EAs
+
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2005 Steven H. Levine
+  Copyright (c) 2004, 2006 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Rework DisplayEAsProc for VAC3.65 compat
   06 Jun 05 SHL Drop unused variables
+  17 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -29,6 +32,9 @@
 #include "mle.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(EAS,DisplayEAsProc,SaveEA,HexDumpEA,CheckEA,AddEAProc)
 #pragma alloc_text(EAS1,HexDump,GetFileEAs,Free_FEAList)
 
@@ -171,11 +177,14 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    EAOP2 eaop;
 	    ULONG ealen;
 	    CHAR *eaval;
+	    APIRET rc;
 
 	    ealen = sizeof(FEA2LIST) + strlen(s) + 64;
-	    if (!DosAllocMem((PPVOID) & pfealist, ealen + 1L,
-			     OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE))
-	    {
+	    rc = DosAllocMem((PPVOID) & pfealist, ealen + 1L,
+			     OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+	    if (rc)
+              Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+	    else {
 	      memset(pfealist, 0, ealen + 1);
 	      pfealist -> cbList = ealen;
 	      pfealist -> list[0].oNextEntryOffset = 0L;
@@ -321,7 +330,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    eap = malloc(sizeof(EAPROCDATA));
+    eap = xmalloc(sizeof(EAPROCDATA),pszSrcFile,__LINE__);
     if (!eap)
     {
       WinDismissDlg(hwnd, 0);
@@ -840,7 +849,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 	  if (!isalpha(*eap -> filename) ||
-	  (driveflags[toupper(*eap -> filename) - 'A'] & DRIVE_NOTWRITEABLE))
+	      (driveflags[toupper(*eap -> filename) - 'A'] & DRIVE_NOTWRITEABLE))
 	  {
 	    WinEnableWindow(WinWindowFromID(hwnd, EA_CHANGE), FALSE);
 	    WinEnableWindow(WinWindowFromID(hwnd, EA_ADD), FALSE);
@@ -931,7 +940,9 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR *s;
 	USHORT control;
 
-	if (eap -> head && *eap -> filename)
+	if (!eap -> head || !*eap -> filename)
+          Runtime_Error(pszSrcFile, __LINE__, "no data");
+	else
 	{
 	  switch (*(USHORT *) eap -> current -> value)
 	  {
@@ -946,31 +957,29 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    control = EA_MLE;
 	    break;
 	  default:
-	    DosBeep(250, 100);
+            Runtime_Error(pszSrcFile, __LINE__, "unexpected type");
 	    WinShowWindow(WinWindowFromID(hwnd, EA_CHANGE), FALSE);
 	    control = 0;
 	  }
 	  if (control)
 	  {
-	    s = malloc(32768);
-	    if (s)
-	    {
+	    s = xmalloc(32768,pszSrcFile,__LINE__);
+	    if (s) {
 	      *s = 0;
 	      WinQueryDlgItemText(hwnd, control, 32767L, (PCH) s);
-	      if (*s)
-	      {
-
+	      if (!*s)
+                Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      else {
 		PFEA2LIST pfealist;
 
 		pfealist = SaveEA(eap -> filename, eap -> current, s, FALSE);
-		if (pfealist)
-		{
-
+		if (!pfealist)
+                  Runtime_Error(pszSrcFile, __LINE__, "SaveEA");
+		else {
 		  PFEA2 pfea;
 
-		  pfea = malloc(pfealist -> cbList);
-		  if (pfea)
-		  {
+		  pfea = xmalloc(pfealist -> cbList,pszSrcFile,__LINE__);
+		  if (pfea) {
 		    memcpy(pfea, pfealist -> list,
 			   pfealist -> cbList - sizeof(ULONG));
 		    free(eap -> current -> pfea);
@@ -987,19 +996,11 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  }
 		  DosFreeMem(pfealist);
 		}
-		else
-		  DosBeep(250, 100);
 	      }
-	      else
-		DosBeep(500, 100);
 	      free(s);
 	    }
-	    else
-	      DosBeep(100, 100);
 	  }
 	}
-	else
-	  DosBeep(50, 100);
       }
       break;
 
@@ -1013,10 +1014,8 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	APIRET rc;
 	SHORT sSelect;
 
-	pfealist = malloc(sizeof(FEA2LIST) + eap -> current -> cbName + 1);
-	if (pfealist)
-	{
-	  memset(pfealist, 0, sizeof(FEA2LIST) + eap -> current -> cbName + 1);
+	pfealist = xmallocz(sizeof(FEA2LIST) + eap -> current -> cbName + 1,pszSrcFile,__LINE__);
+	if (pfealist) {
 	  pfealist -> cbList = sizeof(FEA2LIST) + eap -> current -> cbName + 1;
 	  pfealist -> list[0].cbName = eap -> current -> cbName;
 	  strcpy(pfealist -> list[0].szName, eap -> current -> name);
@@ -1029,23 +1028,20 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  rc = DosSetPathInfo(eap -> filename, FIL_QUERYEASIZE, (PVOID) & eaop,
 			      (ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
 	  free(pfealist);
-	  if (!rc)
-	  {
+	  if (rc)
+            Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosSetPathInfo");
+	  else {
 	    sSelect = 0;
-	    if (eap -> current == eap -> head)
-	    {
+	    if (eap -> current == eap -> head) {
 	      eap -> head = eap -> head -> next;
 	      free(eap -> current -> pfea);
 	      free(eap -> current);
 	      eap -> current = NULL;
 	    }
-	    else
-	    {
+	    else {
 	      info = eap -> head;
-	      while (info)
-	      {
-		if (info -> next == eap -> current)
-		{
+	      while (info) {
+		if (info -> next == eap -> current) {
 		  sSelect++;
 		  info -> next = eap -> current -> next;
 		  free(eap -> current -> pfea);
@@ -1077,8 +1073,6 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROM2SHORT(sSelect, 0),
 			      MPFROM2SHORT(TRUE, 0));
 	  }
-	  else
-	    DosBeep(50, 100);
 	}
       }
       if (!eap -> head)
@@ -1116,7 +1110,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hptrIcon = (HPOINTER) 0;
     }
     break;
-  }
+  } // switch
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
@@ -1170,8 +1164,11 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
     return (PVOID) pfealist;
   }
 
-  if (!DosAllocMem((PPVOID) & pfealist, ealen,
-		   OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE))
+  rc = DosAllocMem((PPVOID) & pfealist, ealen,
+		   OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+  if (rc)
+    Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+  else
   {
     memset(pfealist, 0, ealen);
     pfealist -> list[0].oNextEntryOffset = 0L;
@@ -1283,18 +1280,6 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
     pfealist -> cbList = 13L + (ULONG) pfealist -> list[0].cbName +
       (ULONG) pfealist -> list[0].cbValue;
 
-/*
-   {
-   FILE *fp;
-
-   fp = fopen("test","wb");
-   if(fp) {
-   fwrite(pfealist,pfealist->cbList,1,fp);
-   fclose(fp);
-   }
-   }
- */
-
     rc = DosSetPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & eaop,
 			(ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
     if (rc)
@@ -1304,23 +1289,25 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
     }
     if (rc && !silentfail)
     {
-      if (rc == ERROR_ACCESS_DENIED || rc == ERROR_SHARING_VIOLATION)
+      if (rc == ERROR_ACCESS_DENIED || rc == ERROR_SHARING_VIOLATION) {
 	saymsg(MB_ENTER,
 	       HWND_DESKTOP,
 	       GetPString(IDS_OOPSTEXT),
 	       GetPString(IDS_CANTWRITEEATEXT),
 	       current -> name,
 	       filename);
-      else
+      }
+      else {
 	Dos_Error(MB_ENTER,
 		  rc,
 		  HWND_DESKTOP,
-		  __FILE__,
+		  pszSrcFile,
 		  __LINE__,
 		  GetPString(IDS_ERRORWRITEEATEXT),
 		  current -> name,
 		  filename,
 		  eaop.oError);
+      }
     }
   }
   return (PVOID) pfealist;
@@ -1358,14 +1345,14 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
       PGEA2 pgea;
       ULONG x = 1L, ecnt = 1L;
 
-      pdena = malloc(65536 + 1024);
+      pdena = xmalloc(65536 + 1024,pszSrcFile,__LINE__);
       if (pdena)
       {
 	while (!DosEnumAttribute(ENUMEA_REFTYPE_FHANDLE, &handle, x, (PVOID) pdena,
 			    (ULONG) 65536L, &ecnt, ENUMEA_LEVEL_NO_VALUE) &&
 	       ecnt)
 	{
-	  pgealist = malloc(64 + pdena -> cbName);
+	  pgealist = xmalloc(64 + pdena -> cbName,pszSrcFile,__LINE__);
 	  if (pgealist)
 	  {
 	    pgealist -> cbList = 64 + pdena -> cbName;
@@ -1373,23 +1360,31 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 	    pgea -> oNextEntryOffset = 0L;
 	    pgea -> cbName = pdena -> cbName;
 	    memcpy(pgea -> szName, pdena -> szName, pdena -> cbName + 1);
-	    pfealist = malloc(64 + pdena -> cbName + pdena -> cbValue);
-	    if (pfealist)
-	    {
-	      memset(pfealist, 0, 64 + pdena -> cbName + pdena -> cbValue);
+	    pfealist = xmallocz(64 + pdena -> cbName + pdena -> cbValue,pszSrcFile,__LINE__);
+	    if (pfealist) {
 	      pfealist -> cbList = 64 + pdena -> cbName + pdena -> cbValue;
 	      eaop.fpGEA2List = pgealist;
 	      eaop.fpFEA2List = pfealist;
 	      eaop.oError = 0L;
-// saymsg(MB_ENTER,HWND_DESKTOP,"Debug1","\"%s\" %ld",pdena->szName,x);
+              // saymsg(MB_ENTER,HWND_DESKTOP,"Debug1","\"%s\" %ld",pdena->szName,x);
 	      rc = DosQueryFileInfo(handle, FIL_QUERYEASFROMLIST, (PVOID) & eaop,
 				    (ULONG) sizeof(EAOP2));
-	      if (!rc)
-	      {
-		info = malloc(sizeof(HOLDFEA));
+	      if (rc) {
+		if (!silentfail) {
+		  Dos_Error(MB_ENTER,
+			    rc,
+			    HWND_DESKTOP,
+			    pszSrcFile,
+			    __LINE__,
+			    GetPString(IDS_ERRORREADEATEXT),
+			    pdena -> szName);
+		}
+	      }
+	      else {
+		info = xmalloc(sizeof(HOLDFEA),pszSrcFile,__LINE__);
 		if (info)
 		{
-		  info -> pfea = malloc(eaop.fpFEA2List -> cbList - sizeof(ULONG));
+		  info -> pfea = xmalloc(eaop.fpFEA2List -> cbList - sizeof(ULONG),pszSrcFile,__LINE__);
 		  memcpy(info -> pfea, eaop.fpFEA2List -> list,
 			 eaop.fpFEA2List -> cbList - sizeof(ULONG));
 		  info -> name = info -> pfea -> szName;
@@ -1404,17 +1399,6 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		    last -> next = info;
 		  last = info;
 		}
-	      }
-	      else
-	      {
-		if (!silentfail)
-		  Dos_Error(MB_ENTER,
-			    rc,
-			    HWND_DESKTOP,
-			    __FILE__,
-			    __LINE__,
-			    GetPString(IDS_ERRORREADEATEXT),
-			    pdena -> szName);
 	      }
 	      free(pfealist);
 	    }
@@ -1443,14 +1427,14 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
       PGEA2 pgea;
       ULONG x = 1L, ecnt = 1L;
 
-      pdena = malloc(65536 + 1024);
+      pdena = xmalloc(65536 + 1024,pszSrcFile,__LINE__);
       if (pdena)
       {
 	while (!DosEnumAttribute(ENUMEA_REFTYPE_PATH, filename, x, (PVOID) pdena,
 			    (ULONG) 65536L, &ecnt, ENUMEA_LEVEL_NO_VALUE) &&
 	       ecnt)
 	{
-	  pgealist = malloc(64 + pdena -> cbName);
+	  pgealist = xmalloc(64 + pdena -> cbName,pszSrcFile,__LINE__);
 	  if (pgealist)
 	  {
 	    pgealist -> cbList = 64 + pdena -> cbName;
@@ -1458,10 +1442,8 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 	    pgea -> oNextEntryOffset = 0L;
 	    pgea -> cbName = pdena -> cbName;
 	    memcpy(pgea -> szName, pdena -> szName, pdena -> cbName + 1);
-	    pfealist = malloc(64 + pdena -> cbName + pdena -> cbValue);
-	    if (pfealist)
-	    {
-	      memset(pfealist, 0, 64 + pdena -> cbName + pdena -> cbValue);
+	    pfealist = xmallocz(64 + pdena -> cbName + pdena -> cbValue,pszSrcFile,__LINE__);
+	    if (pfealist) {
 	      pfealist -> cbList = 64 + pdena -> cbName + pdena -> cbValue;
 	      eaop.fpGEA2List = pgealist;
 	      eaop.fpFEA2List = pfealist;
@@ -1472,10 +1454,10 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 				    (ULONG) sizeof(EAOP2));
 	      if (!rc)
 	      {
-		info = malloc(sizeof(HOLDFEA));
+		info = xmalloc(sizeof(HOLDFEA),pszSrcFile,__LINE__);
 		if (info)
 		{
-		  info -> pfea = malloc(eaop.fpFEA2List -> cbList - sizeof(ULONG));
+		  info -> pfea = xmalloc(eaop.fpFEA2List -> cbList - sizeof(ULONG),pszSrcFile,__LINE__);
 		  memcpy(info -> pfea, eaop.fpFEA2List -> list,
 			 eaop.fpFEA2List -> cbList - sizeof(ULONG));
 		  info -> name = info -> pfea -> szName;
@@ -1512,14 +1494,15 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		      break;
 		    }
 		  }
-		  else
+		  else {
 		    Dos_Error(MB_ENTER,
 			      rc,
 			      HWND_DESKTOP,
-			      __FILE__,
+			      pszSrcFile,
 			      __LINE__,
 			      GetPString(IDS_ERRORREADEATEXT),
 			      pdena -> szName);
+		  }
 		}
 	      }
 	    }

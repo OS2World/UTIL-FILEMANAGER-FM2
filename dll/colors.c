@@ -1,21 +1,38 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Set colors
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H. Levine
+
+  14 Jul 06 SHL Use Runtime_Error
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "fm3dll.h"
-#include "fm3dlg.h"
 #include <ctype.h>
 
+#include "fm3dll.h"
+#include "fm3dlg.h"
+
 #pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
+
 #pragma alloc_text(COLORS,ColorDlgProc)
 
-
-MRESULT EXPENTRY ColorDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ColorDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   COLORS *co;
 
   switch(msg) {
@@ -138,7 +155,7 @@ MRESULT EXPENTRY ColorDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           if(WinQueryButtonCheckstate(hwnd,SHORT1FROMMP(mp1))) {
             co->colors[co->currentcolor] = (LONG)(SHORT1FROMMP(mp1) -
                                                   COLOR_FIRST);
-            DosBeep(1000,1);
+            DosBeep(1000,1);		// fixme to be gone?
           }
           break;
 
@@ -153,13 +170,13 @@ MRESULT EXPENTRY ColorDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                                                    LM_QUERYSELECTION,
                                                    MPFROMSHORT(LIT_FIRST),
                                                    MPVOID);
-                if(sSelect >= 0) {
+                if(sSelect < 0)
+                  Runtime_Error(pszSrcFile, __LINE__, "LM_QUERYSELECTION");
+		else {
                   co->currentcolor = (USHORT)sSelect;
                   WinCheckButton(hwnd,COLOR_FIRST +
                                       co->colors[co->currentcolor],TRUE);
                 }
-                else
-                  DosBeep(250,100);
               }
               break;
           }

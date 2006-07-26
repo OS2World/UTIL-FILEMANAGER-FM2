@@ -1,16 +1,33 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Select code page
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H.Levine
+
+  14 Jul 06 SHL Use Runtime_Error
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(FMCODEPAGE,PickCodePageDlgBox,PickCodepage)
 
@@ -150,7 +167,9 @@ MRESULT EXPENTRY PickCodePageDlgBox (HWND hwnd,ULONG msg,MPARAM mp1,
                                 PICK_INPUT,
                                 257,
                                 s);
-            if(*s) {
+            if(!*s)
+              Runtime_Error(pszSrcFile, __LINE__, "no input");
+	    else {
               for(x = 0;
                   (p = GetPString(IDS_CODEPAGES1 + x)) != NULL;
                   x++) {
@@ -160,8 +179,6 @@ MRESULT EXPENTRY PickCodePageDlgBox (HWND hwnd,ULONG msg,MPARAM mp1,
                 }
               }
             }
-            else
-              DosBeep(50,100);
           }
           break;
 

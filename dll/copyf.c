@@ -6,22 +6,23 @@
   Copy functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H.Levine
+  Copyright (c) 2001, 2006 Steven H.Levine
 
   14 Sep 02 SHL Drop obsolete debug code
   14 Oct 02 SHL Drop obsolete debug code
   10 Nov 02 SHL docopyf - don't forget to terminate longname
-  			optimize longname logic
+		optimize longname logic
   01 Aug 04 SHL Rework lstrip/rstrip usage
   28 May 05 SHL Drop debug code
+  14 Jul 06 SHL Use Runtime_Error
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <io.h>
 #include <string.h>
 #include <stdlib.h>
@@ -29,7 +30,11 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <time.h>
+
 #include "fm3dll.h"
+#include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #ifndef WinMoveObject
   HOBJECT APIENTRY WinMoveObject(HOBJECT hObjectofObject,
@@ -48,8 +53,8 @@
 #pragma alloc_text(UNLINKF,unlinkf,unlink_allf,make_deleteable,wipeallf)
 
 
-char *MakeTempName (char *buffer) {
-
+char *MakeTempName (char *buffer)
+{
   FILESTATUS3 fs3;
   APIRET      rc;
   char       *p,*o;
@@ -90,8 +95,8 @@ Loop:
 }
 
 
-CHAR *TruncName (CHAR *oldname,CHAR *buffer) {
-
+CHAR *TruncName (CHAR *oldname,CHAR *buffer)
+{
   CHAR       *p,*f,*s,*o;
   FILESTATUS3 fs3;
   APIRET      rc;
@@ -187,8 +192,8 @@ Loop:
 }
 
 
-CHAR *GetLongName (CHAR *oldname,CHAR *longname) {
-
+CHAR *GetLongName (CHAR *oldname,CHAR *longname)
+{
   if(!longname)
     return NULL;
   *longname = 0;
@@ -218,17 +223,15 @@ CHAR *GetLongName (CHAR *oldname,CHAR *longname) {
       value++;
       *value = 0;
     }
-    pgealist = malloc(sizeof(GEA2LIST) + 32);
-    if(pgealist) {
-      memset(pgealist,0,sizeof(GEA2LIST) + 32);
+    pgealist = xmallocz(sizeof(GEA2LIST) + 32,pszSrcFile,__LINE__);
+    if (pgealist) {
       pgea = &pgealist->list[0];
       strcpy(pgea->szName,LONGNAME);
       pgea->cbName = strlen(pgea->szName);
       pgea->oNextEntryOffset = 0L;
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = malloc(1536);
-      if(pfealist) {
-        memset(pfealist,0,1024);
+      pfealist = xmallocz(1536,pszSrcFile,__LINE__);
+      if (pfealist) {
         pfealist->cbList = 1024;
         eaop.fpGEA2List = pgealist;
         eaop.fpFEA2List = pfealist;
@@ -257,14 +260,14 @@ CHAR *GetLongName (CHAR *oldname,CHAR *longname) {
 }
 
 
-BOOL ZapLongName (char *filename) {
-
+BOOL ZapLongName (char *filename)
+{
   return WriteLongName(filename, "");
 }
 
 
-BOOL WriteLongName (CHAR *filename,CHAR *longname) {
-
+BOOL WriteLongName (CHAR *filename,CHAR *longname)
+{
   APIRET    rc;
   EAOP2     eaop;
   PFEA2LIST pfealist = NULL;
@@ -292,9 +295,12 @@ BOOL WriteLongName (CHAR *filename,CHAR *longname) {
     ealen = sizeof(FEA2LIST) + 10 + len + 4;
   else
     ealen = sizeof(FEALIST) + 10;
-  if(!DosAllocMem((PPVOID)&pfealist,
-                  ealen + 32L,
-                  OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE)) {
+  rc = DosAllocMem((PPVOID)&pfealist,
+                   ealen + 32L,
+                   OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+  if (rc)
+    Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+  else {
     memset(pfealist,
            0,
            ealen + 1);
@@ -334,8 +340,8 @@ BOOL WriteLongName (CHAR *filename,CHAR *longname) {
 }
 
 
-BOOL AdjustWildcardName (CHAR *oldname,CHAR *newname) {
-
+BOOL AdjustWildcardName (CHAR *oldname,CHAR *newname)
+{
   BOOL ret = FALSE;
 
   /* NOTE:  newname should be CCHMAXPATH chars long! */
@@ -364,8 +370,8 @@ BOOL AdjustWildcardName (CHAR *oldname,CHAR *newname) {
 }
 
 
-CHAR default_disk (VOID) {
-
+CHAR default_disk (VOID)
+{
   ULONG ulDriveNum,ulDriveMap;
 
   DosError(FERR_DISABLEHARDERR);
@@ -376,8 +382,8 @@ CHAR default_disk (VOID) {
 
 #ifdef NEVER
 
-APIRET docopyallf (INT type,CHAR *oldname,CHAR *newname,...) {
-
+APIRET docopyallf (INT type,CHAR *oldname,CHAR *newname,...)
+{
   FILEFINDBUF3 fb;
   ULONG        nm;
   HDIR         hdir;
@@ -420,8 +426,8 @@ APIRET docopyallf (INT type,CHAR *oldname,CHAR *newname,...) {
 #endif
 
 
-APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...) {
-
+APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...)
+{
   /*
    * returns:
    *   0:  success
@@ -765,15 +771,15 @@ APIRET docopyf (INT type,CHAR *oldname,CHAR *newname,...) {
       return ret;
 
     default:  /* shouldn't happen */
-      DosBeep(50,100);
+      Runtime_Error(pszSrcFile, __LINE__, "bad case %u", type);
       break;
   }
   return (APIRET)-3;  /* bad type */
 }
 
 
-INT make_deleteable (CHAR *filename) {
-
+INT make_deleteable (CHAR *filename)
+{
   INT ret = -1;
   FILESTATUS3 fsi;
 
@@ -795,8 +801,8 @@ INT make_deleteable (CHAR *filename) {
 }
 
 
-INT wipeallf (CHAR *string,...) {
-
+INT wipeallf (CHAR *string,...)
+{
   /* unlink everything from directory on down... */
 
   FILEFINDBUF3  *f;
@@ -819,7 +825,7 @@ INT wipeallf (CHAR *string,...) {
     p++;
   }
 
-  str = strdup(s);
+  str = xstrdup(s,pszSrcFile,__LINE__);
   if(!str)
     return -1;
 
@@ -831,9 +837,10 @@ INT wipeallf (CHAR *string,...) {
       p++;
       temp = *p;
       *p = 0;
-      if(IsRoot(str) || !IsFullName(str)) {   /* under no circumstances! */
+      if(IsRoot(str) || !IsFullName(str)) {
+        /* under no circumstances! */
+        Runtime_Error(pszSrcFile, __LINE__, "bad name %s", str);
         free(str);
-        DosBeep(100,250);
         return -1;
       }
       *p = temp;
@@ -855,13 +862,11 @@ INT wipeallf (CHAR *string,...) {
     *s = 0;
   }
 
-  ss = (CHAR *)malloc(CCHMAXPATH);
-  f = (FILEFINDBUF3 *)malloc(sizeof(FILEFINDBUF3));
-  if(!ss || !f) {
-    if(ss)
-      free(ss);
-    if(f)
-      free(f);
+  ss = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
+  f = xmalloc(sizeof(FILEFINDBUF3),pszSrcFile,__LINE__);
+  if (!ss || !f) {
+    xfree(ss);
+    xfree(f);
     free(str);
     return -1;
   }
@@ -914,8 +919,8 @@ INT wipeallf (CHAR *string,...) {
 }
 
 
-INT unlink_allf (CHAR *string,...) {
-
+INT unlink_allf (CHAR *string,...)
+{
   /* wildcard delete */
 
   FILEFINDBUF3 *f;
@@ -937,8 +942,8 @@ INT unlink_allf (CHAR *string,...) {
     p++;
   }
 
-  str = strdup(s);
-  if(!str)
+  str = xstrdup(s,pszSrcFile,__LINE__);
+  if (!str)
     return -1;
 
   p = s;
@@ -952,13 +957,11 @@ INT unlink_allf (CHAR *string,...) {
   else
     *s = 0;
 
-  ss = (CHAR *)malloc(CCHMAXPATH);
-  f = (FILEFINDBUF3 *)malloc(sizeof(FILEFINDBUF3));
-  if(!ss || !f) {
-    if(ss)
-      free(ss);
-    if(f)
-      free(f);
+  ss = xmalloc(CCHMAXPATH,pszSrcFile,__LINE__);
+  f = xmalloc(sizeof(FILEFINDBUF3),pszSrcFile,__LINE__);
+  if (!ss || !f) {
+    xfree(ss);
+    xfree(f);
     free(str);
     return -1;
   }
@@ -990,8 +993,8 @@ INT unlink_allf (CHAR *string,...) {
 }
 
 
-INT unlinkf (CHAR *string,...) {
-
+INT unlinkf (CHAR *string,...)
+{
   CHAR buffer[CCHMAXPATH];
   va_list ap;
 
