@@ -29,6 +29,7 @@
 #include <ctype.h>
 
 #include "fm3dll.h"
+#include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
 
