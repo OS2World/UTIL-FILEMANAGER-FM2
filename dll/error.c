@@ -17,6 +17,7 @@
   14 Aug 05 SHL showMsg: suppress write to stdout if not error message
   13 Jul 06 SHL Add Runtime_Error
   22 Jul 06 SHL Optimize calling sequences
+  26 Jul 06 SHL Add ..._Error2
 
 ***********************************************************************/
 
@@ -101,6 +102,12 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, P
 
 } // Win_Error
 
+VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, UINT idMsg)
+{
+  Win_Error(hwndErr, hwndOwner, pszFileName, ulLineNo, GetPString(idMsg));
+
+} // Win_Error2
+
 //== Dos_Error: report Dos...() error ===
 
 INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
@@ -177,6 +184,15 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
 
 } // Dos_Error
 
+//== Dos_Error2: report Dos...() error ===
+
+INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
+	      ULONG ulLineNo, UINT idMsg)
+{
+  return Dos_Error(mb_type, ulRC, hwndOwner, pszFileName,ulLineNo,
+                    GetPString(idMsg));
+} // Dos_Error2
+
 //== Runtime_Error: report runtime library error ===
 
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
@@ -202,6 +218,12 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
   showMsg(MB_ICONEXCLAMATION,HWND_DESKTOP,DEBUG_STRING,szMsg);
 
 } // Runtime_Error
+
+VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
+{
+  Runtime_Error(pszSrcFile, uSrcLineNo, GetPString(idMsg));
+
+} // Runtime_Error2
 
 // fixme to be rename to Misc_Error
 
