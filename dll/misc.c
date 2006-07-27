@@ -15,6 +15,7 @@
   24 Jul 05 SHL Beautify
   24 Jul 05 SHL Correct longname display option
   17 Jul 06 SHL Use Runtime_Error
+  26 Jul 06 SHL Use chop_at_crnl
 
 ***********************************************************************/
 
@@ -747,12 +748,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 		    WinQueryWindowText(hwndMLE, 40, szSubject);
 		    szSubject[39] = 0;
-		    p = strchr(szSubject, '\n');
-		    if (p)
-			*p = 0;
-		    p = strchr(szSubject, '\r');
-		    if (p)
-			*p = 0;
+		    chop_at_crnl(szSubject);
 		    bstrip(szSubject);
 		    WinSetWindowText(hwndMLE, szSubject);
 		    len = strlen(szSubject);
@@ -808,12 +804,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       sizeof(longname),
 				       longname);
 		    longname[CCHMAXPATHCOMP - 1] = 0;
-		    p = strchr(longname, '\n');
-		    if (p)
-			*p = 0;
-		    p = strchr(longname, '\r');
-		    if (p)
-			*p = 0;
+		    chop_at_crnl(longname);
 		    WinSetWindowText(hwndMLE,
 				     longname);
 		    return (MRESULT) WriteLongName(pci -> szFileName,
@@ -829,12 +820,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    IsRoot(pci -> szFileName))
 			return (MRESULT) FALSE;
 		    /* If the text changed, rename the file system object. */
-		    p = strchr(szData, '\n');
-		    if (p)
-			*p = 0;
-		    p = strchr(szData, '\r');
-		    if (p)
-			*p = 0;
+		    chop_at_crnl(szData);
 		    bstrip(szData);
 		    if (!IsFullName(szData))
                         Runtime_Error(pszSrcFile, __LINE__, "bad name");

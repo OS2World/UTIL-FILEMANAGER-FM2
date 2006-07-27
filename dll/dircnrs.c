@@ -17,6 +17,7 @@
   05 Jun 05 SHL Use QWL_USER
   10 Nov 05 SHL Comments
   13 Jul 06 SHL Use Runtime_Error
+  26 Jul 06 SHL Use chop_at_crnl
 
 ***********************************************************************/
 
@@ -3420,12 +3421,7 @@ KbdRetry:
                 WinQueryWindowText(hwndMLE,
                                    sizeof(szData),
                                    szData);
-                p = strchr(szData,'\n');
-                if (p)
-                  *p = 0;
-                p = strchr(szData,'\r');
-                if (p)
-                  *p = 0;
+		chop_at_crnl(szData);
                 bstrip(szData);
                 if (*szData) {
                   if (!DosQueryPathInfo(szData,
