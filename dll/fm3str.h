@@ -10,6 +10,7 @@
 
   21 May 04 SHL Adjust IDS_NUMSTRS
   22 Jul 06 SHL Drop unused
+  26 Jul 06 SHL Add new
 
 ***********************************************************************/
 
@@ -17,6 +18,7 @@
 #define VERMINORBREAK                                         02
 
 // Spares are names IDS_SPARE###
+// Last string reserved for cvs id
 
 #define IDS_NUMSTRS                                           992
 
@@ -57,7 +59,7 @@
 #define IDS_ERRORTEXT                                         34
 #define IDS_CANTSTARTTEXT                                     35
 #define IDS_YOUAREHERETEXT                                    38
-#define IDS_CREATEFAILED                                      39
+#define IDS_SPARE_39                                          39
 #define IDS_OUTOFMEMORY                                       40
 #define IDS_DROPONMETEXT                                      41
 #define IDS_DRIVEDROPHELP                                     42
@@ -306,7 +308,7 @@
 #define IDS_MAYDAYTEXT                                        287
 #define IDS_ASKABOUTUNDELETEHELPTEXT                          288
 #define IDS_UNDELETETITLETEXT                                 289
-#define IDS_SPARE_290                                         290
+#define IDS_NODATATEXT                                        290
 #define IDS_COULDNTSTARTTHREADTEXT                            291
 #define IDS_UNDELETEHELPTITLETEXT                             292
 #define IDS_UNDELETEHELPTEXT                                  293
@@ -946,13 +948,13 @@
 #define IDS_TOOLFILETEXT                                      959
 #define IDS_TREESTATUSSTARTTEXT                               960
 #define IDS_GREPFILETEXT                                      961
-#define IDS_SPARE_962                                         962
-#define IDS_FILLDIRINSERRTEXT                                 963
-#define IDS_FILLDIRALLOCERRTEXT                               964
-#define IDS_SPARE_965                                         965
-#define IDS_SPARE_966                                         966
+#define IDS_WINCREATEWINDOW                                   962
+#define IDS_CMINSERTERRTEXT                                   963
+#define IDS_CMALLOCRECERRTEXT                                 964
+#define IDS_PRFQUERYPROFILESIZE                               965
+#define IDS_PRFQUERYPROFILEDATA                               966
 #define IDS_FILLDIRQCURERRTEXT                                967
-#define IDS_SPARE_968                                         968
+#define IDS_NOWINDOWTEXT                                      968
 #define IDS_2SYSTEMVIOTEXT                                    969
 #define IDS_MAKEARCTITLETEXT                                  970
 #define IDS_MAKEARCUSAGETEXT                                  971
