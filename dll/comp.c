@@ -17,6 +17,7 @@
   06 Jun 05 SHL Drop unused
   12 Jul 06 SHL Renames and comments
   13 Jul 06 SHL Use Runtime_Error
+  26 Jul 06 SHL Drop unreachable CN_... code
 
 ***********************************************************************/
 
@@ -1841,76 +1842,10 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                          TRUE);
               break;
 
-	    // fixme to be gone - field edits not allowed
             case CN_BEGINEDIT:
-              {
-                PFIELDINFO pfi = ((PCNREDITDATA)mp2)->pFieldInfo;
-                PCNRITEM   pci = (PCNRITEM)((PCNREDITDATA)mp2)->pRecord;
-
-                if (pfi || pci) {
-                  PostMsg(hwnd,
-                          CM_CLOSEEDIT,
-                          MPVOID,
-                          MPVOID);
-                  // DosBeep(250,100);		// fixme
-	          Runtime_Error(pszSrcFile, __LINE__, "CN_BEGINEDIT unexpected");
-                }
-              }
-              break;
-
-	    // fixme to be gone - field edits not allowed
             case CN_REALLOCPSZ:
-              cmp = INSTDATA(hwnd);
-              if (!cmp)
-	        Runtime_Error(pszSrcFile, __LINE__, "no data");
-	      else {
-                PFIELDINFO  pfi = ((PCNREDITDATA)mp2)->pFieldInfo;
-                PCNRITEM    pci = (PCNRITEM)((PCNREDITDATA)mp2)->pRecord;
-                HWND        hwndMLE;
-                CHAR        szData[CCHMAXPATH],testname[CCHMAXPATH],*p;
-
-	        Runtime_Error(pszSrcFile, __LINE__, "CN_REALLOCPSZ unexpected");
-                if (!pci && !pfi) {
-                  hwndMLE = WinWindowFromID(WinWindowFromID(hwnd,
-                                            SHORT1FROMMP(mp1)),CID_MLE);
-                  WinQueryWindowText(hwndMLE,
-                                     sizeof(szData),
-                                     szData);
-                  p = strchr(szData,'\n');
-                  if (p)
-                    *p = 0;
-                  p = strchr(szData,'\r');
-                  if (p)
-                    *p = 0;
-                  bstrip(szData);
-                  if (*szData) {
-                    if (!DosQueryPathInfo(szData,
-                                         FIL_QUERYFULLNAME,
-                                         testname,
-                                         sizeof(testname))) {
-                      if (!SetDir(cmp->hwndParent,
-                                 hwnd,
-                                 testname,
-                                 1)) {
-                        if (SHORT1FROMMP(mp1) == COMP_LEFTDIR)
-                          strcpy(cmp->leftdir,testname);
-                        else {
-                          strcpy(cmp->rightdir,testname);
-                          *cmp->rightlist = 0;
-                        }
-                        PostMsg(hwnd,
-                                UM_SETUP,
-                                MPVOID,
-                                MPVOID);
-                        PostMsg(hwnd,
-                                UM_SETDIR,
-                                MPVOID,
-                                MPVOID);
-                      }
-                    }
-                  }
-                }
-              }
+	      // fixme to be gone - field edits not allowed
+	      Runtime_Error(pszSrcFile, __LINE__, "CN_BEGINEDIT/CN_REALLOCPSZ unexpected");
               break;
 
             case CN_EMPHASIS:
