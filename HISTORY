@@ -1,5 +1,10 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.04 pre12:
+ o Expose internal errors to user rather than just beeping
+ o Check and report more "should not occur" errors
+ o More new icons (thanks David)
+
 3.04 pre11:
  o Add hide not selected to Compare Directories
  o Add compare content to Compare Directories
