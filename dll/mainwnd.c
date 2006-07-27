@@ -251,7 +251,9 @@ VOID MakeMainObjWin(VOID * args)
 				       OBJ_FRAME,
 				       NULL,
 				       NULL);
-      if (MainObjectHwnd)
+      if (!MainObjectHwnd)
+        Win_Error2(HWND_OBJECT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      else
       {
 	WinSetWindowPtr(MainObjectHwnd, QWL_USER, args);
 	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
@@ -867,9 +869,10 @@ VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
 			       MAIN_HELP,
 			       NULL,
 			       NULL);
-  if (hwndBubble)
+  if (!hwndBubble)
+      Win_Error2(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+  else
   {
-
     HPS hps;
     POINTL aptl[TXTBOX_COUNT], ptl, tptl;
     LONG lxScreen, sx, sy, extra = 0, lyScreen;
@@ -1499,8 +1502,8 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 VOID BuildTools(HWND hwndT, BOOL resize)
 {
-  register TOOL *tool;
-  register ULONG ctrlxpos = 18L;
+  TOOL *tool;
+  ULONG ctrlxpos = 18L;
   CHAR s[33];
   HENUM henum;
   HWND hwndTool;
@@ -1521,10 +1524,9 @@ VOID BuildTools(HWND hwndT, BOOL resize)
   while (tool)
   {
     sprintf(s, "#%u", tool -> id);
-    hwndTool = (HWND) 0;
-    if (!fTextTools)
-    {
-      if (!(tool -> flags & T_MYICON))
+    hwndTool = (HWND)0;
+    if (!fTextTools) {
+      if (!(tool -> flags & T_MYICON)) {
 	hwndTool = WinCreateWindow(hwndT,
 				   GetPString(IDS_WCTOOLBUTTONS),
 				   s,
@@ -1539,17 +1541,11 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 				   tool -> id,
 				   NULL,
 				   NULL);
-      if (!hwndTool)
-      {
-
-	HBITMAP hbm;
-
-	hbm = LoadBitmapFromFileNum(tool -> id);
-	if (hbm)
-	{
-
+      }
+      if (!hwndTool) {
+	HBITMAP hbm = LoadBitmapFromFileNum(tool -> id);
+	if (hbm) {
 	  BTNCDATA btc;
-
 	  memset(&btc, 0, sizeof(btc));
 	  btc.cb = sizeof(btc);
 	  btc.hImage = hbm;
@@ -1574,9 +1570,8 @@ VOID BuildTools(HWND hwndT, BOOL resize)
       if (hwndTool)
 	tool -> flags &= (~T_TEXT);
     }
-    if (!hwndTool)
-    {
-      WinCreateWindow(hwndT,
+    if (!hwndTool) {
+      hwndTool = WinCreateWindow(hwndT,
 		      GetPString(IDS_WCTOOLBUTTONS),
 		      (!tool -> text && tool -> id >= IDM_COMMANDSTART &&
 		       tool -> id < IDM_QUICKTOOLSTART) ?
@@ -1592,11 +1587,13 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 		      tool -> id,
 		      NULL,
 		      NULL);
+      if (!hwndTool)
+        Win_Error2(hwndT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
       tool -> flags |= T_TEXT;
     }
     if (fToolTitles && !fTextTools)
     {
-      WinCreateWindow(hwndT,
+      hwndTool = WinCreateWindow(hwndT,
 		      WC_STATIC,
 		      tool -> text,
 		      SS_TEXT | DT_LEFT | DT_VCENTER,
@@ -1609,11 +1606,15 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 		      tool -> id + 25000,
 		      NULL,
 		      NULL);
-      SetPresParams(WinWindowFromID(hwndT, tool -> id + 25000),
-		    &RGBGREY,
-		    &RGBBLACK,
-		    &RGBGREY,
-		    GetPString(IDS_2SYSTEMVIOTEXT));
+      if (!hwndTool)
+        Win_Error2(hwndT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      else {
+        SetPresParams(hwndTool,
+		      &RGBGREY,
+		      &RGBBLACK,
+		      &RGBGREY,
+		      GetPString(IDS_2SYSTEMVIOTEXT));
+      }
     }
     ctrlxpos += ((tool -> flags & T_TEXT) ? 55L : 33L);
     SetPresParams(WinWindowFromID(hwndT, tool -> id),
@@ -1622,8 +1623,9 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 		  NULL,
 		  GetPString(IDS_8HELVTEXT));
     tool = tool -> next;
-  }
-  WinCreateWindow(hwndT,
+  } // while tool
+
+  hwndTool = WinCreateWindow(hwndT,
 		  WC_BUTTON,
 		  "#6010",
 		  BS_NOPOINTERFOCUS |
@@ -1637,7 +1639,9 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 		  IDM_TOOLLEFT,
 		  NULL,
 		  NULL);
-  WinCreateWindow(hwndT,
+  if (!hwndTool)
+    Win_Error2(hwndT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+  hwndTool = WinCreateWindow(hwndT,
 		  WC_BUTTON,
 		  "#6011",
 		  BS_NOPOINTERFOCUS |
@@ -1651,6 +1655,8 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 		  IDM_TOOLRIGHT,
 		  NULL,
 		  NULL);
+  if (!hwndTool)
+    Win_Error2(hwndT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
   if (resize)
     ResizeTools(hwndT);
 }
@@ -2361,12 +2367,10 @@ VOID BuildDriveBarButtons(HWND hwndT)
     WinDestroyWindow(hwndB);
 
   WinEndEnumWindows(henum);
-  if (fDrivebar)
-  {
+  if (fDrivebar) {
     DosError(FERR_DISABLEHARDERR);
     DosQCurDisk(&ulDriveNum, &ulDriveMap);
-    for (x = 0; x < 26; x++)
-    {
+    for (x = 0; x < 26; x++) {
       if ((ulDriveMap & (1L << x)) &&
 	  !(driveflags[x] & DRIVE_IGNORE))
       {
@@ -2399,8 +2403,9 @@ VOID BuildDriveBarButtons(HWND hwndT)
 				y + IDM_DRIVEA,
 				NULL,
 				NULL);
-	if (hwndB)
-	{
+	if (!hwndB)
+          Win_Error2(hwndT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	else {
 	  WinSetWindowPos(hwndB,
 			  HWND_BOTTOM,
 			  0,
@@ -2422,8 +2427,9 @@ VOID BuildDriveBarButtons(HWND hwndT)
 				  y + IDM_DRIVEATEXT,
 				  NULL,
 				  NULL);
-	  if (hwndB)
-	  {
+	  if (!hwndB)
+            Win_Error2(hwndT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	  else {
 	    SetPresParams(hwndB,
 			  &RGBGREY,
 			  &RGBBLACK,
@@ -2440,8 +2446,8 @@ VOID BuildDriveBarButtons(HWND hwndT)
 	  y++;
 	}
       }
-    }
-  }
+    } // for
+  } // if drivebar
   PostMsg(WinQueryWindow(hwndT, QW_PARENT),
 	  WM_UPDATEFRAME,
 	  MPFROMLONG(FCF_SIZEBORDER),
@@ -2738,6 +2744,8 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				COMMAND_BUTTON,
 				NULL,
 				NULL);
+	if (!hwndB)
+          Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
 	hwndE = WinCreateWindow(hwnd,
 				WC_ENTRYFIELD,
 				NULL,
@@ -2751,8 +2759,9 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				COMMAND_LINE,
 				NULL,
 				NULL);
-	if (!hwndE || !hwndB)
-	{
+	if (!hwndE)
+          Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	if (!hwndE || !hwndB) {
 	  PostMsg(hwnd,
 		  UM_RESCAN,
 		  MPVOID,
@@ -5061,9 +5070,9 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  sprintf(s, "%s.NumDirsLastTime", name);
 	  size = sizeof(ULONG);
 	  if (!PrfQueryProfileData(fmprof, FM3Str, s, (PVOID)&numsaves, &size))
-            Win_Error(hwnd,hwnd,__FILE__,__LINE__,"PrfQueryProfileData");
+            Win_Error2(hwnd,hwnd,__FILE__,__LINE__,IDS_PRFQUERYPROFILEDATA);
 	  else if (!size)
-            Runtime_Error(pszSrcFile, __LINE__, "no data");
+            Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	  else {
 	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 	    for (x = 0; x < numsaves; x++)
@@ -5760,7 +5769,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    MPVOID,
 				    MPVOID);
 	if (!hwndCnr) {
-          Runtime_Error(pszSrcFile, __LINE__, "no window");
+          Runtime_Error2(pszSrcFile, __LINE__, IDS_NOWINDOWTEXT);
 	  break;
 	}
 	x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
@@ -5833,16 +5842,20 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  switch (msg)
-  {
-  case WM_CREATE:
-    {
-      TID tid;
+  TID tid;
+  SWP swp;
+  PFNWP oldproc;
+  HWND hwndTmp;
+  HWND hwndFrame;
+  HWND hwndSysMenu, hwndSysSubMenu, hwndMenu;
+  USHORT idSysMenu;
+  MENUITEM mi, mit;
+  ULONG size;
+  BOOL temp = FALSE;
 
-      WinQueryWindowProcess(hwnd,
-			    &mypid,
-			    &tid);
-    }
+  switch (msg) {
+  case WM_CREATE:
+    WinQueryWindowProcess(hwnd,&mypid,&tid);
     hwndMain = hwnd;
     WinSetWindowUShort(hwnd, QWL_USER + 8, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 10, 0);
@@ -5855,418 +5868,376 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     else
       DosSleep(64);
+
+    hwndFrame = WinQueryWindow(hwnd, QW_PARENT);
+
+    /*
+     * create frame children (not client children, frame children)
+     */
+    DosSleep(1L);
+    WinQueryWindowPos(hwndFrame, &swp);
+    oldproc = WinSubclassWindow(hwndFrame,MainFrameWndProc);
+    WinSetWindowPtr(hwndFrame,QWL_USER,(PVOID)oldproc);
+    CommonCreateMainChildren(hwnd, &swp);
+
+    if (!WinCreateWindow(hwndFrame,
+			WC_BUTTON,
+			"I",
+			WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
+			((swp.cx -
+			  WinQuerySysValue(HWND_DESKTOP,
+					   SV_CXMINMAXBUTTON)) -
+			 WinQuerySysValue(HWND_DESKTOP,
+					  SV_CXMINMAXBUTTON) / 2) -
+			WinQuerySysValue(HWND_DESKTOP,
+					 SV_CXSIZEBORDER),
+			(swp.cy - WinQuerySysValue(HWND_DESKTOP,
+						   SV_CYMINMAXBUTTON)) -
+			WinQuerySysValue(HWND_DESKTOP,
+					 SV_CYSIZEBORDER),
+			WinQuerySysValue(HWND_DESKTOP,
+					 SV_CXMINMAXBUTTON) / 2,
+			WinQuerySysValue(HWND_DESKTOP,
+					 SV_CYMINMAXBUTTON),
+			hwnd,
+			HWND_TOP,
+			IDM_IDEALSIZE,
+			NULL,
+			NULL))
     {
-      SWP swp;
-      PFNWP oldproc;
+      Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+    }
+    else {
+      WinSubclassWindow(WinWindowFromID(hwndFrame,IDM_IDEALSIZE),
+			IdealButtonProc);
+      SetPresParams(WinWindowFromID(hwndFrame,
+				    IDM_IDEALSIZE),
+		    NULL,
+		    NULL,
+		    NULL,
+		    GetPString(IDS_10SYSTEMVIOTEXT));
+    }
 
-      /*
-       * create frame children (not client children, frame children)
-       */
-      DosSleep(1L);
-      WinQueryWindowPos(WinQueryWindow(hwnd, QW_PARENT), &swp);
-      oldproc = WinSubclassWindow(WinQueryWindow(hwnd, QW_PARENT),
-				  (PFNWP) MainFrameWndProc);
-      if (oldproc)
-	WinSetWindowPtr(WinQueryWindow(hwnd, QW_PARENT),
-			QWL_USER,
-			(PVOID) oldproc);
-      CommonCreateMainChildren(hwnd, &swp);
+    hwndTmp = WinCreateWindow(hwndFrame,
+		    WC_BUTTON,
+		    "#1019",
+		    WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS |
+		    BS_BITMAP,
+		    swp.cx - 46,
+		    swp.y + 2,
+		    24,
+		    22,
+		    hwnd,
+		    HWND_TOP,
+		    IDM_OPENWALK,
+		    NULL,
+		    NULL);
+    if (!hwndTmp)
+        Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
 
-      if (WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
-			  WC_BUTTON,
-			  "I",
-			  WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
-			  ((swp.cx -
-			    WinQuerySysValue(HWND_DESKTOP,
-					     SV_CXMINMAXBUTTON)) -
-			   WinQuerySysValue(HWND_DESKTOP,
-					    SV_CXMINMAXBUTTON) / 2) -
-			  WinQuerySysValue(HWND_DESKTOP,
-					   SV_CXSIZEBORDER),
-			  (swp.cy - WinQuerySysValue(HWND_DESKTOP,
-						     SV_CYMINMAXBUTTON)) -
-			  WinQuerySysValue(HWND_DESKTOP,
-					   SV_CYSIZEBORDER),
-			  WinQuerySysValue(HWND_DESKTOP,
-					   SV_CXMINMAXBUTTON) / 2,
-			  WinQuerySysValue(HWND_DESKTOP,
-					   SV_CYMINMAXBUTTON),
-			  hwnd,
-			  HWND_TOP,
-			  IDM_IDEALSIZE,
-			  NULL,
-			  NULL))
-      {
-	WinSubclassWindow(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-					  IDM_IDEALSIZE),
-			  (PFNWP) IdealButtonProc);
-	SetPresParams(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				      IDM_IDEALSIZE),
-		      NULL,
-		      NULL,
-		      NULL,
-		      GetPString(IDS_10SYSTEMVIOTEXT));
-      }
+    hwndTmp = WinCreateWindow(hwndFrame,
+		    WC_BUTTON,
+		    "#3062",
+		    WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS |
+		    BS_BITMAP,
+		    swp.cx - 22,
+		    swp.y + 2,
+		    24,
+		    22,
+		    hwnd,
+		    HWND_TOP,
+		    IDM_USERLIST,
+		    NULL,
+		    NULL);
+    if (!hwndTmp)
+        Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
 
-      WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
-		      WC_BUTTON,
-		      "#1019",
-		      WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS |
-		      BS_BITMAP,
-		      swp.cx - 46,
-		      swp.y + 2,
-		      24,
-		      22,
-		      hwnd,
-		      HWND_TOP,
-		      IDM_OPENWALK,
-		      NULL,
-		      NULL);
-      WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
-		      WC_BUTTON,
-		      "#3062",
-		      WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS |
-		      BS_BITMAP,
-		      swp.cx - 22,
-		      swp.y + 2,
-		      24,
-		      22,
-		      hwnd,
-		      HWND_TOP,
-		      IDM_USERLIST,
-		      NULL,
-		      NULL);
-
-      hwndUserlist = WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
-				     WC_COMBOBOX,
-				     (PSZ) NULL,
-				     WS_VISIBLE | CBS_DROPDOWN |
-				     LS_HORZSCROLL,
-				     (swp.x +
-				      WinQuerySysValue(HWND_DESKTOP,
-						    SV_CXSIZEBORDER) + 48L),
-				     (swp.cy -
-				      WinQuerySysValue(HWND_DESKTOP,
-						     SV_CYSIZEBORDER)) - 60,
-				     ((swp.cx -
-				       (WinQuerySysValue(HWND_DESKTOP,
-					      SV_CXSIZEBORDER) * 2)) - 64L),
-				     60L,
-				     WinQueryWindow(hwnd, QW_PARENT),
-				     HWND_TOP,
-				     MAIN_USERLIST,
-				     NULL,
-				     NULL);
-      hwndCmdlist = WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
+    hwndUserlist = WinCreateWindow(hwndFrame,
+				   WC_COMBOBOX,
+				   (PSZ) NULL,
+				   WS_VISIBLE | CBS_DROPDOWN |
+				   LS_HORZSCROLL,
+				   (swp.x +
+				    WinQuerySysValue(HWND_DESKTOP,
+						  SV_CXSIZEBORDER) + 48L),
+				   (swp.cy -
+				    WinQuerySysValue(HWND_DESKTOP,
+						   SV_CYSIZEBORDER)) - 60,
+				   ((swp.cx -
+				     (WinQuerySysValue(HWND_DESKTOP,
+					    SV_CXSIZEBORDER) * 2)) - 64L),
+				   60L,
+				   hwndFrame,
+				   HWND_TOP,
+				   MAIN_USERLIST,
+				   NULL,
+				   NULL);
+    if (!hwndUserlist)
+        Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+    hwndCmdlist = WinCreateWindow(hwndFrame,
+				  WC_COMBOBOX,
+				  (PSZ) NULL,
+				  WS_VISIBLE | CBS_DROPDOWN |
+				  LS_HORZSCROLL,
+				  (swp.x +
+				   WinQuerySysValue(HWND_DESKTOP,
+						  SV_CXSIZEBORDER) + 48L),
+				  (swp.cy -
+				   WinQuerySysValue(HWND_DESKTOP,
+						    SV_CYSIZEBORDER)) - 60,
+				  ((swp.cx -
+				    (WinQuerySysValue(HWND_DESKTOP,
+					    SV_CXSIZEBORDER) * 2)) - 64L),
+				  60L,
+				  hwndFrame,
+				  HWND_TOP,
+				  MAIN_CMDLIST,
+				  NULL,
+				  NULL);
+    if (!hwndCmdlist)
+        Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+    WinSetWindowText(hwndCmdlist,
+		     GetPString(IDS_COMMANDSTEXT));
+    hwndStatelist = WinCreateWindow(hwndFrame,
 				    WC_COMBOBOX,
 				    (PSZ) NULL,
 				    WS_VISIBLE | CBS_DROPDOWN |
 				    LS_HORZSCROLL,
 				    (swp.x +
 				     WinQuerySysValue(HWND_DESKTOP,
-						    SV_CXSIZEBORDER) + 48L),
+						  SV_CXSIZEBORDER) + 48L),
 				    (swp.cy -
 				     WinQuerySysValue(HWND_DESKTOP,
-						      SV_CYSIZEBORDER)) - 60,
+						   SV_CYSIZEBORDER)) - 60,
 				    ((swp.cx -
 				      (WinQuerySysValue(HWND_DESKTOP,
-					      SV_CXSIZEBORDER) * 2)) - 64L),
+					    SV_CXSIZEBORDER) * 2)) - 64L),
 				    60L,
-				    WinQueryWindow(hwnd, QW_PARENT),
+				    hwndFrame,
 				    HWND_TOP,
-				    MAIN_CMDLIST,
+				    MAIN_SETUPLIST,
 				    NULL,
 				    NULL);
-      WinSetWindowText(hwndCmdlist,
-		       GetPString(IDS_COMMANDSTEXT));
-      hwndStatelist = WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
-				      WC_COMBOBOX,
-				      (PSZ) NULL,
-				      WS_VISIBLE | CBS_DROPDOWN |
-				      LS_HORZSCROLL,
-				      (swp.x +
-				       WinQuerySysValue(HWND_DESKTOP,
-						    SV_CXSIZEBORDER) + 48L),
-				      (swp.cy -
-				       WinQuerySysValue(HWND_DESKTOP,
-						     SV_CYSIZEBORDER)) - 60,
-				      ((swp.cx -
-					(WinQuerySysValue(HWND_DESKTOP,
-					      SV_CXSIZEBORDER) * 2)) - 64L),
-				      60L,
-				      WinQueryWindow(hwnd, QW_PARENT),
-				      HWND_TOP,
-				      MAIN_SETUPLIST,
-				      NULL,
-				      NULL);
-      hwndDrivelist = WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
-				      WC_COMBOBOX,
-				      (PSZ) NULL,
-				      WS_VISIBLE | CBS_DROPDOWN,
-				      (swp.x +
-				       WinQuerySysValue(HWND_DESKTOP,
-							SV_CXSIZEBORDER)),
-				      (swp.cy -
-				       WinQuerySysValue(HWND_DESKTOP,
-						     SV_CYSIZEBORDER)) - 60,
-				      48L,
-				      60L,
-				      WinQueryWindow(hwnd, QW_PARENT),
-				      HWND_TOP,
-				      MAIN_DRIVELIST,
-				      NULL,
-				      NULL);
-      SetPresParams(hwndDrivelist,
-		    NULL,
-		    NULL,
-		    NULL,
-		    GetPString(IDS_10SYSTEMMONOTEXT));
-      hwndButtonlist = WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
-				       WC_COMBOBOX,
-				       (PSZ) NULL,
-				       WS_VISIBLE | CBS_DROPDOWN |
-				       LS_HORZSCROLL,
-				       (swp.cx -
-					WinQuerySysValue(HWND_DESKTOP,
-						   SV_CXSIZEBORDER)) - 164L,
-				       (swp.cy -
-					WinQuerySysValue(HWND_DESKTOP,
-						     SV_CYSIZEBORDER)) - 60,
-				       164L,
-				       60L,
-				       WinQueryWindow(hwnd, QW_PARENT),
-				       HWND_TOP,
-				       MAIN_BUTTONLIST,
-				       NULL,
-				       NULL);
-      WinSendMsg(WinWindowFromID(hwndUserlist, CBID_EDIT),
-		 EM_SETTEXTLIMIT,
-		 MPFROM2SHORT(CCHMAXPATH, 0),
-		 MPVOID);
-      WinSendMsg(WinWindowFromID(hwndStatelist, CBID_EDIT),
-		 EM_SETTEXTLIMIT,
-		 MPFROM2SHORT(13, 0),
-		 MPVOID);
-      WinSendMsg(WinWindowFromID(hwndDrivelist, CBID_EDIT),
-		 EM_SETREADONLY,
-		 MPFROM2SHORT(TRUE, 0),
-		 MPVOID);
-      WinSendMsg(WinWindowFromID(hwndButtonlist, CBID_EDIT),
-		 EM_SETREADONLY,
-		 MPFROM2SHORT(TRUE, 0),
-		 MPVOID);
-      WinSendMsg(WinWindowFromID(hwndCmdlist, CBID_EDIT),
-		 EM_SETREADONLY,
-		 MPFROM2SHORT(TRUE, 0),
-		 MPVOID);
-      oldproc = WinSubclassWindow(WinWindowFromID(hwndUserlist, CBID_EDIT),
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(hwndUserlist, CBID_EDIT),
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(WinWindowFromID(hwndCmdlist, CBID_EDIT),
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(hwndCmdlist, CBID_EDIT),
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(WinWindowFromID(hwndButtonlist, CBID_EDIT),
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(hwndButtonlist, CBID_EDIT),
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(WinWindowFromID(hwndStatelist, CBID_EDIT),
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(hwndStatelist, CBID_EDIT),
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(WinWindowFromID(hwndDrivelist, CBID_EDIT),
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(hwndDrivelist, CBID_EDIT),
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(hwndUserlist,
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(hwndUserlist,
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(hwndCmdlist,
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(hwndCmdlist,
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(hwndStatelist,
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(hwndStatelist,
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(hwndDrivelist,
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(hwndDrivelist, QWL_USER, (PVOID) oldproc);
-      oldproc = WinSubclassWindow(hwndButtonlist,
-				  (PFNWP) DropDownListProc);
-      if (oldproc)
-	WinSetWindowPtr(hwndButtonlist,
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(WinWindowFromID(WinQueryWindow(hwnd,
-								 QW_PARENT),
-						  IDM_USERLIST),
-				  (PFNWP) ChildFrameButtonProc);
-      if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-					IDM_USERLIST),
-			QWL_USER,
-			(PVOID) oldproc);
-      oldproc = WinSubclassWindow(WinWindowFromID(WinQueryWindow(hwnd,
-								 QW_PARENT),
-						  IDM_OPENWALK),
-				  (PFNWP) ChildFrameButtonProc);
-      if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-					IDM_OPENWALK),
-			QWL_USER,
-			(PVOID) oldproc);
-      {
-	HWND hwndSysMenu, hwndSysSubMenu, hwndMenu;
-	USHORT idSysMenu;
-	MENUITEM mi, mit;
+    if (!hwndStatelist)
+        Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+    hwndDrivelist = WinCreateWindow(hwndFrame,
+				    WC_COMBOBOX,
+				    (PSZ) NULL,
+				    WS_VISIBLE | CBS_DROPDOWN,
+				    (swp.x +
+				     WinQuerySysValue(HWND_DESKTOP,
+						      SV_CXSIZEBORDER)),
+				    (swp.cy -
+				     WinQuerySysValue(HWND_DESKTOP,
+						   SV_CYSIZEBORDER)) - 60,
+				    48L,
+				    60L,
+				    hwndFrame,
+				    HWND_TOP,
+				    MAIN_DRIVELIST,
+				    NULL,
+				    NULL);
+    if (!hwndDrivelist)
+        Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+    SetPresParams(hwndDrivelist,
+		  NULL,
+		  NULL,
+		  NULL,
+		  GetPString(IDS_10SYSTEMMONOTEXT));
+    hwndButtonlist = WinCreateWindow(hwndFrame,
+				     WC_COMBOBOX,
+				     (PSZ) NULL,
+				     WS_VISIBLE | CBS_DROPDOWN |
+				     LS_HORZSCROLL,
+				     (swp.cx -
+				      WinQuerySysValue(HWND_DESKTOP,
+						 SV_CXSIZEBORDER)) - 164L,
+				     (swp.cy -
+				      WinQuerySysValue(HWND_DESKTOP,
+						   SV_CYSIZEBORDER)) - 60,
+				     164L,
+				     60L,
+				     hwndFrame,
+				     HWND_TOP,
+				     MAIN_BUTTONLIST,
+				     NULL,
+				     NULL);
+    if (!hwndButtonlist)
+      Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+    WinSendMsg(WinWindowFromID(hwndUserlist, CBID_EDIT),
+	       EM_SETTEXTLIMIT,
+	       MPFROM2SHORT(CCHMAXPATH, 0),
+	       MPVOID);
+    WinSendMsg(WinWindowFromID(hwndStatelist, CBID_EDIT),
+	       EM_SETTEXTLIMIT,
+	       MPFROM2SHORT(13, 0),
+	       MPVOID);
+    WinSendMsg(WinWindowFromID(hwndDrivelist, CBID_EDIT),
+	       EM_SETREADONLY,
+	       MPFROM2SHORT(TRUE, 0),
+	       MPVOID);
+    WinSendMsg(WinWindowFromID(hwndButtonlist, CBID_EDIT),
+	       EM_SETREADONLY,
+	       MPFROM2SHORT(TRUE, 0),
+	       MPVOID);
+    WinSendMsg(WinWindowFromID(hwndCmdlist, CBID_EDIT),
+	       EM_SETREADONLY,
+	       MPFROM2SHORT(TRUE, 0),
+	       MPVOID);
 
-	hwndMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				   FID_MENU);
-	WinSendMsg(hwnd,
-		   UM_ADDTOMENU,
-		   MPVOID,
-		   MPVOID);
-	SetToggleChecks(hwndMenu);
-	SetConditionalCascade(hwndMenu,
-			      IDM_TOOLSUBMENU,
-			      IDM_TOOLBAR);
-	SetConditionalCascade(hwndMenu,
-			      IDM_AUTOVIEWSUBMENU,
-			      IDM_AUTOVIEW);
-	SetConditionalCascade(hwndMenu,
-			      IDM_TILEMENU,
-			      IDM_TILE);
-	WinSetWindowULong(hwnd,
-			  QWL_USER,
-			  (ULONG) hwndMenu);
-	memset(&mi, 0, sizeof(mi));
-	memset(&mit, 0, sizeof(mit));
-	hwndSysMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				      FID_SYSMENU);
-	idSysMenu = SHORT1FROMMR(WinSendMsg(hwndSysMenu,
-					    MM_ITEMIDFROMPOSITION,
-					    MPVOID,
-					    MPVOID));
-	WinSendMsg(hwndSysMenu,
-		   MM_QUERYITEM,
-		   MPFROM2SHORT(idSysMenu, 0),
-		   MPFROMP(&mit));
-	hwndSysSubMenu = mit.hwndSubMenu;
-	mi.iPosition = MIT_END;
-	mi.afStyle = MIS_SEPARATOR;
-	mi.id = (USHORT) -1;
-	WinSendMsg(hwndSysSubMenu,
-		   MM_INSERTITEM,
-		   MPFROMP(&mi),
-		   MPFROMP(NULL));
-	mi.afStyle = MIS_TEXT;
-	mi.id = IDM_IDEALSIZE;
-	WinSendMsg(hwndSysSubMenu,
-		   MM_INSERTITEM,
-		   MPFROMP(&mi),
-		   MPFROMP(GetPString(IDS_IDEALMENUTEXT)));
-	mi.afStyle = MIS_TEXT;
-	mi.id = IDM_HIDEMENU;
-	WinSendMsg(hwndSysSubMenu,
-		   MM_INSERTITEM,
-		   MPFROMP(&mi),
-		   MPFROMP(GetPString(IDS_HIDEMENUTEXT)));
-	SetSysMenu(hwndSysMenu);
-      }
-    }
-    {
-      ULONG size;
-      BOOL temp = FALSE;
+    oldproc = WinSubclassWindow(WinWindowFromID(hwndUserlist, CBID_EDIT),
+				DropDownListProc);
+    WinSetWindowPtr(WinWindowFromID(hwndUserlist, CBID_EDIT),
+		    QWL_USER,
+		    (PVOID)oldproc);
+    oldproc = WinSubclassWindow(WinWindowFromID(hwndCmdlist, CBID_EDIT),
+				DropDownListProc);
+    WinSetWindowPtr(WinWindowFromID(hwndCmdlist, CBID_EDIT),
+		    QWL_USER,
+		    (PVOID)oldproc);
+    oldproc = WinSubclassWindow(WinWindowFromID(hwndButtonlist, CBID_EDIT),
+				DropDownListProc);
+    WinSetWindowPtr(WinWindowFromID(hwndButtonlist, CBID_EDIT),
+		    QWL_USER,
+		    (PVOID)oldproc);
+    oldproc = WinSubclassWindow(WinWindowFromID(hwndStatelist, CBID_EDIT),
+				DropDownListProc);
+    WinSetWindowPtr(WinWindowFromID(hwndStatelist, CBID_EDIT),
+		    QWL_USER,
+		    (PVOID)oldproc);
+    oldproc = WinSubclassWindow(WinWindowFromID(hwndDrivelist, CBID_EDIT),
+				DropDownListProc);
+    WinSetWindowPtr(WinWindowFromID(hwndDrivelist, CBID_EDIT),
+		    QWL_USER,
+		    (PVOID)oldproc);
+    oldproc = WinSubclassWindow(hwndUserlist,DropDownListProc);
+    WinSetWindowPtr(hwndUserlist,QWL_USER,(PVOID)oldproc);
+    oldproc = WinSubclassWindow(hwndCmdlist,DropDownListProc);
+    WinSetWindowPtr(hwndCmdlist,QWL_USER,(PVOID)oldproc);
+    oldproc = WinSubclassWindow(hwndStatelist,DropDownListProc);
+    WinSetWindowPtr(hwndStatelist,QWL_USER,(PVOID)oldproc);
+    oldproc = WinSubclassWindow(hwndDrivelist,
+				DropDownListProc);
+    WinSetWindowPtr(hwndDrivelist, QWL_USER, (PVOID) oldproc);
+    oldproc = WinSubclassWindow(hwndButtonlist,DropDownListProc);
+    WinSetWindowPtr(hwndButtonlist,QWL_USER,(PVOID)oldproc);
+    oldproc = WinSubclassWindow(WinWindowFromID(hwndFrame,IDM_USERLIST),
+				ChildFrameButtonProc);
+    WinSetWindowPtr(WinWindowFromID(hwndFrame,IDM_USERLIST),
+		    QWL_USER,
+		    (PVOID)oldproc);
+    oldproc = WinSubclassWindow(WinWindowFromID(hwndFrame,IDM_OPENWALK),
+				ChildFrameButtonProc);
+    WinSetWindowPtr(WinWindowFromID(hwndFrame,IDM_OPENWALK),
+		    QWL_USER,
+		    (PVOID)oldproc);
+    hwndMenu = WinWindowFromID(hwndFrame,FID_MENU);
+    WinSendMsg(hwnd,UM_ADDTOMENU,MPVOID,MPVOID);
+    SetToggleChecks(hwndMenu);
+    SetConditionalCascade(hwndMenu,
+			  IDM_TOOLSUBMENU,
+			  IDM_TOOLBAR);
+    SetConditionalCascade(hwndMenu,
+			  IDM_AUTOVIEWSUBMENU,
+			  IDM_AUTOVIEW);
+    SetConditionalCascade(hwndMenu,
+			  IDM_TILEMENU,
+			  IDM_TILE);
+    WinSetWindowULong(hwnd,QWL_USER,hwndMenu);
+    memset(&mi, 0, sizeof(mi));
+    memset(&mit, 0, sizeof(mit));
+    hwndSysMenu = WinWindowFromID(hwndFrame,FID_SYSMENU);
+    idSysMenu = SHORT1FROMMR(WinSendMsg(hwndSysMenu,
+					MM_ITEMIDFROMPOSITION,
+					MPVOID,
+					MPVOID));
+    WinSendMsg(hwndSysMenu,
+	       MM_QUERYITEM,
+	       MPFROM2SHORT(idSysMenu, 0),
+	       MPFROMP(&mit));
+    hwndSysSubMenu = mit.hwndSubMenu;
+    mi.iPosition = MIT_END;
+    mi.afStyle = MIS_SEPARATOR;
+    mi.id = (USHORT) -1;
+    WinSendMsg(hwndSysSubMenu,
+	       MM_INSERTITEM,
+	       MPFROMP(&mi),
+	       MPFROMP(NULL));
+    mi.afStyle = MIS_TEXT;
+    mi.id = IDM_IDEALSIZE;
+    WinSendMsg(hwndSysSubMenu,
+	       MM_INSERTITEM,
+	       MPFROMP(&mi),
+	       MPFROMP(GetPString(IDS_IDEALMENUTEXT)));
+    mi.afStyle = MIS_TEXT;
+    mi.id = IDM_HIDEMENU;
+    WinSendMsg(hwndSysSubMenu,
+	       MM_INSERTITEM,
+	       MPFROMP(&mi),
+	       MPFROMP(GetPString(IDS_HIDEMENUTEXT)));
+    SetSysMenu(hwndSysMenu);
 
-      size = sizeof(BOOL);
-      if (PrfQueryProfileData(fmprof,
-			      FM3Str,
-			      "MenuInvisible",
-			      (PVOID) & temp,
-			      &size) &&
-	  size &&
-	  temp)
-	WinSendMsg(hwnd,
-		   WM_COMMAND,
-		   MPFROM2SHORT(IDM_HIDEMENU, 0),
-		   MPVOID);
-      size = sizeof(BOOL);
-      if (PrfQueryProfileData(fmprof,
-			      FM3Str,
-			      "FreeTree",
-			      (PVOID) & temp,
-			      &size) &&
-	  size &&
-	  temp)
-	WinSendMsg(hwnd,
-		   WM_COMMAND,
-		   MPFROM2SHORT(IDM_FREETREE, 0),
-		   MPVOID);
-      size = sizeof(BOOL);
-      if (PrfQueryProfileData(fmprof,
-			      FM3Str,
-			      "AutoTile",
-			      (PVOID) & temp,
-			      &size) &&
-	  size &&
-	  !temp)
-	WinSendMsg(hwnd,
-		   WM_COMMAND,
-		   MPFROM2SHORT(IDM_AUTOTILE, 0),
-		   MPVOID);
-      size = sizeof(BOOL);
-      if (PrfQueryProfileData(fmprof,
-			      FM3Str,
-			      "Toolbar",
-			      &temp,
-			      &size) &&
-	  size &&
-	  !temp)
-	WinSendMsg(hwnd,
-		   WM_COMMAND,
-		   MPFROM2SHORT(IDM_TOOLBAR, 0),
-		   MPVOID);
-    }
-    WinSetWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				     FID_TITLEBAR),
-		     "FM/2");
-    FixSwitchList(WinQueryWindow(hwnd, QW_PARENT),
-		  NULL);
-    break;
+    size = sizeof(BOOL);
+    if (PrfQueryProfileData(fmprof,
+		            FM3Str,
+			    "MenuInvisible",
+			    &temp,
+			    &size) &&
+	size &&
+	temp)
+      WinSendMsg(hwnd,
+		 WM_COMMAND,
+		 MPFROM2SHORT(IDM_HIDEMENU, 0),
+		 MPVOID);
+    size = sizeof(BOOL);
+    if (PrfQueryProfileData(fmprof,
+			    FM3Str,
+			    "FreeTree",
+			    &temp,
+			    &size) &&
+	size &&
+	temp)
+      WinSendMsg(hwnd,
+		 WM_COMMAND,
+		 MPFROM2SHORT(IDM_FREETREE, 0),
+		 MPVOID);
+    size = sizeof(BOOL);
+    if (PrfQueryProfileData(fmprof,
+			    FM3Str,
+			    "AutoTile",
+			    &temp,
+			    &size) &&
+	size &&
+	!temp)
+      WinSendMsg(hwnd,
+		 WM_COMMAND,
+		 MPFROM2SHORT(IDM_AUTOTILE, 0),
+		 MPVOID);
+    size = sizeof(BOOL);
+    if (PrfQueryProfileData(fmprof,
+			    FM3Str,
+			    "Toolbar",
+			    &temp,
+			    &size) &&
+	size &&
+	!temp)
+      WinSendMsg(hwnd,
+		 WM_COMMAND,
+		 MPFROM2SHORT(IDM_TOOLBAR, 0),
+		 MPVOID);
+
+    WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),"FM/2");
+    FixSwitchList(hwndFrame,NULL);
+    break; // WM_CREATE
 
   case UM_SETUP:
     /*
      * start up some initial children
      */
     load_tools(NULL);
-    BuildTools(hwndToolback,
-	       TRUE);
-    WinShowWindow(WinQueryWindow(hwnd, QW_PARENT),
-		  TRUE);
-    PostMsg(MainObjectHwnd,
-	    UM_SETUP2,
-	    mp1,
-	    mp2);
+    BuildTools(hwndToolback,TRUE);
+    WinShowWindow(WinQueryWindow(hwnd, QW_PARENT),TRUE);
+    PostMsg(MainObjectHwnd,UM_SETUP2,mp1,mp2);
     return 0;
 
   case UM_SETUP2:
@@ -6323,26 +6294,14 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ResizeTools(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				  MAIN_TOOLS));
     }
-    PostMsg(MainObjectHwnd,
-	    UM_SETUP3,
-	    mp1,
-	    mp2);
+    PostMsg(MainObjectHwnd,UM_SETUP3,mp1,mp2);
     return 0;
 
   case UM_SETUP3:
     /* start remaining child windows */
-    {
-      if (!fNoSaveState &&
-	  fSaveState)
-	PostMsg(MainObjectHwnd,
-		UM_RESTORE,
-		MPVOID,
-		MPVOID);
-      PostMsg(MainObjectHwnd,
-	      UM_SETUP4,
-	      mp1,
-	      mp2);
-    }
+    if (!fNoSaveState && fSaveState)
+      PostMsg(MainObjectHwnd,UM_RESTORE,MPVOID,MPVOID);
+    PostMsg(MainObjectHwnd,UM_SETUP4,mp1,mp2);
     return 0;
 
   case UM_SETUP4:
@@ -6350,8 +6309,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       INT argc = (INT) mp1, x;
       CHAR **argv = (CHAR **) mp2;
 
-      for (x = 1; x < argc; x++)
-      {
+      for (x = 1; x < argc; x++) {
 	if (*argv[x] == '/' || *argv[x] == ';')
 	  continue;
 	if (!IsFile(argv[x]) &&
@@ -6363,31 +6321,16 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     argv[x]);
       }
     }
-    PostMsg(MainObjectHwnd,
-	    UM_SETUP5,
-	    MPVOID,
-	    MPVOID);
+    PostMsg(MainObjectHwnd,UM_SETUP5,MPVOID,MPVOID);
     return 0;
 
   case UM_SETUP5:
     if (fAutoTile)
       TileChildren(hwnd, TRUE);
-    PostMsg(hwnd,
-	    UM_FILLUSERLIST,
-	    MPVOID,
-	    MPVOID);
-    PostMsg(hwnd,
-	    UM_FILLSETUPLIST,
-	    MPVOID,
-	    MPVOID);
-    PostMsg(hwnd,
-	    UM_FILLCMDLIST,
-	    MPVOID,
-	    MPVOID);
-    PostMsg(hwnd,
-	    UM_FILLBUTTONLIST,
-	    MPVOID,
-	    MPVOID);
+    PostMsg(hwnd,UM_FILLUSERLIST,MPVOID,MPVOID);
+    PostMsg(hwnd,UM_FILLSETUPLIST,MPVOID,MPVOID);
+    PostMsg(hwnd,UM_FILLCMDLIST,MPVOID,MPVOID);
+    PostMsg(hwnd,UM_FILLBUTTONLIST,MPVOID,MPVOID);
     {
       HWND hwndActive;
 
@@ -6401,17 +6344,10 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			SWP_ACTIVATE);
     }
-    if (fStartMinimized ||
-	fReminimize)
-      PostMsg(hwndTree,
-	      UM_MINIMIZE,
-	      MPVOID,
-	      MPVOID);
+    if (fStartMinimized || fReminimize)
+      PostMsg(hwndTree,UM_MINIMIZE,MPVOID,MPVOID);
     else if (fStartMaximized)
-      PostMsg(hwndTree,
-	      UM_MAXIMIZE,
-	      MPVOID,
-	      MPVOID);
+      PostMsg(hwndTree,UM_MAXIMIZE,MPVOID,MPVOID);
     fRunning = TRUE;
     return 0;
   }
@@ -6955,9 +6891,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      "%s.NumDirsLastTime",
 		      path);
 	      if (!PrfQueryProfileData(fmprof,FM3Str,s,(PVOID)&numsaves,&size))
-                Win_Error(hwnd,hwnd,__FILE__,__LINE__,"PrfQueryProfileData");
+                Win_Error2(hwnd,hwnd,__FILE__,__LINE__,IDS_PRFQUERYPROFILEDATA);
 	      else if (!numsaves)
-                Runtime_Error(pszSrcFile, __LINE__, "no data");
+                Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	      else {
 		if ((shiftstate & KC_SHIFT) == 0)
 		  PostMsg(MainObjectHwnd,UM_RESTORE,MPVOID,MPFROMLONG(2L));
