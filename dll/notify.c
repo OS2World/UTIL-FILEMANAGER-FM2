@@ -529,7 +529,7 @@ BOOL AddNote (CHAR *note)
           DosSleep(33L);
       }
       if(hwndNotify) {
-        s = malloc(strlen(p) + 14);
+        s = xmalloc(strlen(p) + 14, pszSrcFile, __LINE__);
         if(s) {
           sprintf(s,"%08lx  %s",_threadid,p);
           while(!once) {
