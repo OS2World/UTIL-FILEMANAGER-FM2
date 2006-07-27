@@ -15,6 +15,7 @@
   06 Jun 05 SHL Drop unused code
   24 Oct 05 SHL dononefile: do not free EA list twice
   22 Jul 06 SHL Use Runtime_Error
+  26 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
@@ -1188,9 +1189,9 @@ static VOID FillDupes (GREP *g)
     WinSetWindowText(g->hwndCurFile,
                      GetPString(IDS_GREPDUPESORTINGTEXT));
     DosSleep(1L);
-    g->dupenames = malloc(sizeof(DUPES *) * (x + 1));
+    g->dupenames = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (!g->nosizedupes)
-      g->dupesizes = malloc(sizeof(DUPES *) * (x + 1));
+      g->dupesizes = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (g->dupenames && (g->nosizedupes || g->dupesizes)) {
       i = g->dupehead;
       while(i) {
