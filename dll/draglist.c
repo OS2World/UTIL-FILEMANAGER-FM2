@@ -8,22 +8,25 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2002 Steven H.Levine
 
-  Revisions	16 Oct 02 SHL - DoFileDrag: don't free stack
+  16 Oct 02 SHL DoFileDrag: don't free stack
+  26 Jul 06 SHL Check more run time errors
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "fm3dll.h"
 
-#pragma alloc_text(DRAGLIST,DragOne,DoFileDrag,DragList,PickUp)
+static PSZ pszSrcFile = __FILE__;
 
+#pragma alloc_text(DRAGLIST,DragOne,DoFileDrag,DragList,PickUp)
 
 HWND DragOne (HWND hwndCnr,HWND hwndObj,CHAR *filename,BOOL moveok) {
 
@@ -184,8 +187,8 @@ HWND DoFileDrag (HWND hwndCnr,HWND hwndObj,PCNRDRAGINIT pcd,CHAR *arcfile,
       // Filesystem object
       isdir = ((pci->attrFile & FILE_DIRECTORY) != 0);
       if(ulNumfiles + 2L > numdragalloc) {
-        if(!padiIcon) {
-          padiTest = realloc(padiIcon,sizeof(DRAGIMAGE) * (numdragalloc + 4L));
+        if (!padiIcon) {
+          padiTest = xrealloc(padiIcon,sizeof(DRAGIMAGE) * (numdragalloc + 4L), pszSrcFile, __LINE__);
           if(padiTest)
             padiIcon = padiTest;
           else
@@ -202,17 +205,17 @@ HWND DoFileDrag (HWND hwndCnr,HWND hwndObj,PCNRDRAGINIT pcd,CHAR *arcfile,
           padiIcon[ulNumfiles].cyOffset = 0 + (ulNumfiles * 7);
           ulNumIcon = ulNumfiles + 1;
         }
-        ppTest = realloc(ppDItem,sizeof(DRAGITEM *) * (numdragalloc + 4L));
-        if(ppTest) {
+        ppTest = xrealloc(ppDItem,sizeof(DRAGITEM *) * (numdragalloc + 4L), pszSrcFile, __LINE__);
+        if (ppTest) {
           ppDItem = ppTest;
           numdragalloc += 4L;
         }
         else
           break;
       }
-      ppDItem[ulNumfiles] = malloc(sizeof(DRAGITEM));
-      if(ppDItem[ulNumfiles]) {
-        if(!ulNumIcon) {
+      ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      if (ppDItem[ulNumfiles]) {
+        if (!ulNumIcon) {
           padiIcon[ulNumfiles].cb = sizeof(DRAGIMAGE);
           padiIcon[ulNumfiles].cptl = 0;
           padiIcon[ulNumfiles].hImage = pci->rc.hptrIcon;
@@ -254,16 +257,18 @@ HWND DoFileDrag (HWND hwndCnr,HWND hwndObj,PCNRDRAGINIT pcd,CHAR *arcfile,
     else {
       // Archive object
       if(ulNumfiles + 3L > numdragalloc) {
-        ppTest = realloc(ppDItem,sizeof(DRAGITEM *) * (numdragalloc + 5L));
-        if(ppTest) {
+        ppTest = xrealloc(ppDItem,sizeof(DRAGITEM *) * (numdragalloc + 5L), pszSrcFile, __LINE__);
+        if (!ppTest)
+          break;
+	else {
           ppDItem = ppTest;
           numdragalloc += 5L;
         }
-        else
-          break;
       }
-      ppDItem[ulNumfiles] = malloc(sizeof(DRAGITEM));
-      if(ppDItem[ulNumfiles]) {
+      ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      if (!ppDItem[ulNumfiles])
+        break;
+      else {
         diFakeIcon.hImage = hptrFile;
         memset(ppDItem[ulNumfiles],0,sizeof(DRAGITEM));
         ppDItem[ulNumfiles]->hwndItem = (hwndObj) ? hwndObj : hwndCnr; /* Initialize DRAGITEM   */
@@ -280,8 +285,8 @@ HWND DoFileDrag (HWND hwndCnr,HWND hwndObj,PCNRDRAGINIT pcd,CHAR *arcfile,
           ppDItem[ulNumfiles]->fsControl |= DC_REMOVEABLEMEDIA;
         ppDItem[ulNumfiles]->fsSupportedOps = DO_COPYABLE;
         ulNumfiles++;
-        ppDItem[ulNumfiles] = malloc(sizeof(DRAGITEM));
-        if(ppDItem[ulNumfiles]) {
+        ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+        if (ppDItem[ulNumfiles]) {
           diFakeIcon.hImage = hptrFile;
           memset(ppDItem[ulNumfiles],0,sizeof(DRAGITEM));
           ppDItem[ulNumfiles]->hwndItem = (hwndObj) ? hwndObj : hwndCnr; /* Initialize DRAGITEM   */
@@ -301,8 +306,6 @@ HWND DoFileDrag (HWND hwndCnr,HWND hwndObj,PCNRDRAGINIT pcd,CHAR *arcfile,
         }
         ppDItem[ulNumfiles] = NULL;
       }
-      else
-        break;
     }
     WinSendMsg(hwndCnr,CM_SETRECORDEMPHASIS,MPFROMP(pci),
                MPFROM2SHORT(TRUE,CRA_SOURCE));
@@ -418,12 +421,12 @@ HWND DragList (HWND hwnd,HWND hwndObj,CHAR **list,BOOL moveok) {
       isdir = (IsRoot(list[Select])) ? TRUE :
                ((fs3.attrFile & FILE_DIRECTORY) != 0);
       if(ulNumfiles + 2L > numdragalloc) {
-        if(!padiIcon) {
-          padiTest = realloc(padiIcon,sizeof(DRAGIMAGE) * (numdragalloc + 4L));
-          if(padiTest)
-            padiIcon = padiTest;
-          else
+        if (!padiIcon) {
+          padiTest = xrealloc(padiIcon,sizeof(DRAGIMAGE) * (numdragalloc + 4L), pszSrcFile, __LINE__);
+          if (!padiTest)
             break;
+          else
+            padiIcon = padiTest;
         }
         else if(!ulNumIcon) {
           padiIcon[ulNumfiles].cb = sizeof(DRAGIMAGE);
@@ -436,16 +439,18 @@ HWND DragList (HWND hwnd,HWND hwndObj,CHAR **list,BOOL moveok) {
           padiIcon[ulNumfiles].cyOffset = 0 + (ulNumfiles * 7);
           ulNumIcon = ulNumfiles + 1;
         }
-        ppTest = realloc(ppDItem,sizeof(DRAGITEM *) * (numdragalloc + 4L));
-        if(ppTest) {
+        ppTest = xrealloc(ppDItem,sizeof(DRAGITEM *) * (numdragalloc + 4L), pszSrcFile, __LINE__);
+        if (!ppTest) 
+          break;
+        else {
           ppDItem = ppTest;
           numdragalloc += 4L;
         }
-        else
-          break;
       }
-      ppDItem[ulNumfiles] = malloc(sizeof(DRAGITEM));
-      if(ppDItem[ulNumfiles]) {
+      ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      if (!ppDItem[ulNumfiles])
+        break;
+      else {
         if(!ulNumIcon) {
           padiIcon[ulNumfiles].cb = sizeof(DRAGIMAGE);
           padiIcon[ulNumfiles].cptl = 0;
@@ -478,30 +483,28 @@ HWND DragList (HWND hwnd,HWND hwndObj,CHAR **list,BOOL moveok) {
         ulNumfiles++;
         ppDItem[ulNumfiles] = NULL;
       }
-      else
-        break;
     }
-  }
+  } // for
 
-  if(ulNumfiles) {
+  if (ulNumfiles) {
     pDInfo = DrgAllocDraginfo(ulNumfiles);  /* Allocate DRAGINFO */
-    if(pDInfo) {
-      if((IsFullName(szBuffer) &&
-         (driveflags[toupper(*szBuffer) - 'A'] & DRIVE_NOTWRITEABLE)))
+    if (pDInfo) {
+      if ((IsFullName(szBuffer) &&
+          (driveflags[toupper(*szBuffer) - 'A'] & DRIVE_NOTWRITEABLE)))
         pDInfo->usOperation = DO_COPY;
       else
         pDInfo->usOperation = DO_DEFAULT;
-      if(IsRoot(list[0]))
+      if (IsRoot(list[0]))
         pDInfo->usOperation = DO_LINK;
       pDInfo->hwndSource = (hwndObj) ? hwndObj : hwnd;
       // pDInfo->hwndSource = hwnd;
-      for(Select = 0L;Select < ulNumfiles;Select++) {
+      for (Select = 0L;Select < ulNumfiles;Select++) {
         DrgSetDragitem(pDInfo,            /* Set item in DRAGINFO  */
                        ppDItem[Select],     /* Pointer to DRAGITEM   */
                        sizeof(DRAGITEM),  /* Size of DRAGITEM      */
                        Select);           /* Index of DRAGITEM     */
         free(ppDItem[Select]);
-      }
+      } // for
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
