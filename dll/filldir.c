@@ -759,8 +759,8 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 				  MPFROMLONG(ulExtraBytes),
 				  MPFROMLONG(ulFileCnt));
 	    if (!pciFirst) {
-	      Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
-			GetPString(IDS_FILLDIRALLOCERRTEXT));
+	      Win_Error2(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+			IDS_CMALLOCRECERRTEXT);
 	      ok = FALSE;
 	      ullTotalBytes = 0;
 	    }
@@ -799,8 +799,8 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 				  MPFROMP(pciFirst),
 				  MPFROMP(&ri)))
 		  {
-		    Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
-			      GetPString(IDS_FILLDIRINSERRTEXT));
+		    Win_Error2(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+			       IDS_CMINSERTERRTEXT);
 		    ok = FALSE;
 		    ullTotalBytes = 0;
 		    if (WinIsWindow((HAB)0,hwndCnr))
@@ -879,8 +879,8 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 			      MPFROMLONG(ulExtraBytes),
 			      MPFROMLONG(ulTotal));
 	if (!pciFirst) {
-	  Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
-		    GetPString(IDS_FILLDIRALLOCERRTEXT));
+	  Win_Error2(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+		    IDS_CMALLOCRECERRTEXT);
 	  ok = FALSE;
 	  ullTotalBytes = 0;
 	}
@@ -919,8 +919,8 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 	      if (!WinSendMsg(hwndCnr,CM_INSERTRECORD,
 			     MPFROMP(pciFirst),MPFROMP(&ri)))
 	      {
-		Win_Error(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
-			  GetPString(IDS_FILLDIRINSERRTEXT));
+		Win_Error2(hwndCnr,HWND_DESKTOP,pszSrcFile,__LINE__,
+			  IDS_CMINSERTERRTEXT);
 		ok = FALSE;
 		ullTotalBytes = 0;
 		if (WinIsWindow((HAB)0,hwndCnr))
@@ -1055,8 +1055,7 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 			  MPFROMLONG(EXTRA_RECORD_BYTES2),
 			  MPFROMLONG((ULONG)numtoinsert));
   if (!pciFirst) {
-    Win_Error(hwndCnr,hwndCnr,pszSrcFile,__LINE__,
-	      GetPString(IDS_FILLDIRALLOCERRTEXT));
+    Win_Error2(hwndCnr,hwndCnr,pszSrcFile,__LINE__,IDS_CMALLOCRECERRTEXT);
     exit(0);
   }
   else {
@@ -1253,8 +1252,7 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 		      CM_INSERTRECORD,
 		      MPFROMP(pciFirst),
 		      MPFROMP(&ri)))
-	Win_Error(hwndCnr,hwndCnr,pszSrcFile,__LINE__,
-		  GetPString(IDS_FILLDIRINSERRTEXT));
+	Win_Error2(hwndCnr,hwndCnr,pszSrcFile,__LINE__,IDS_CMINSERTERRTEXT);
     }
     /* move cursor onto the default drive rather than the first drive */
     if (!fSwitchTree)
@@ -1360,12 +1358,8 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 				CM_INSERTRECORD,
 				MPFROMP(pci),
 				MPFROMP(&ri))) {
-		  Win_Error(hwndCnr,hwndCnr,pszSrcFile,__LINE__,
-			    GetPString(IDS_FILLDIRINSERRTEXT));
-		  WinSendMsg(hwndCnr,
-			     CM_FREERECORD,
-			     MPFROMP(&pci),
-			     MPFROMSHORT(1));
+		  Win_Error2(hwndCnr,hwndCnr,pszSrcFile,__LINE__,IDS_CMINSERTERRTEXT);
+		  WinSendMsg(hwndCnr,CM_FREERECORD,MPFROMP(&pci),MPFROMSHORT(1));
 		}
 	      }
 	    }
