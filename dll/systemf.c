@@ -12,6 +12,7 @@
   31 Jul 04 SHL Indent -i2
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
+  26 Jul 06 SHL Use convert_nl_to_nul
 
 ***********************************************************************/
 
@@ -736,11 +737,8 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
     p = &environment[strlen(environment)] + 1;
     *p = 0;
     p = environment;
-    while ((p = strchr(p, '\n')) != NULL)
-    {
-      *p = 0;
-      p++;
-    }
+    while ((p = convert_nl_to_nul(p)) != NULL)
+      ; // loop
   }
 
   if (!*s)
