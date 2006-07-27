@@ -6,7 +6,7 @@
   Version labels
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2005 Steven H. Levine
+  Copyright (c) 2001, 2006 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion VERREALMINOR
   11 Jun 03 SHL v3.02b: add JFS and FAT32 support
@@ -23,12 +23,20 @@
   25 May 05 SHL v3.02i: Rework large file/drive support
   11 Jun 05 SHL v3.02i: filldir: Resolve some icon selection oddities
   16 Jun 05 SHL v3.03: rework resource kit
+  20 Jul 05 SHL v3.04: update standard makefile for resource replacements
+  16 Aug 05 SHL v3.04pre3: release
+  30 Dec 05 SHL v3.04pre7: wip
+  02 Jan 06 SHL v3.04pre8: archiver enhancements
+  29 May 06 SHL v3.04pre9: archiver enhancements
+  16 Jun 06 SHL v3.04pre10: archiver enhancements
+  12 Jul 06 SHL v3.04pre11: hide not selected, compare content
+  13 Jul 06 SHL v3.04pre12: Rework error logic to report rather than beeping
 
 ***********************************************************************/
 
 #define VERMAJOR       3
-#define VERMINOR       03
-#define VERREALMINOR   ""		// SHL
+#define VERMINOR       04
+#define VERREALMINOR   "pre12 " __DATE__ " " __TIME__	// SHL
 
 #define APPNAME         "FM2"
 
