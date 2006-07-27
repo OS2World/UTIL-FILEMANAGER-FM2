@@ -8,7 +8,8 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  01 Aug 04 SHL Rework lstrip/rstrip usage
+  26 Jul 06 SHL Add chop_at_crnl
 
 ***********************************************************************/
 
@@ -17,10 +18,32 @@
 #include <string.h>
 #include <ctype.h>
 
-#pragma alloc_text(MISC8,strip_trail_char,strip_lead_char)
+#pragma alloc_text(MISC8,chop_at_crnl,convert_nl_to_nul,strip_trail_char,strip_lead_char)
 
-void strip_trail_char (char *pszStripChars,char *pszSrc) {
+VOID chop_at_crnl(PSZ pszSrc)
+{
+  // Chop line at CR or NL
+  PSZ psz = strchr(pszSrc, '\r');
+  if (psz)
+    *psz = 0;
+  psz = strchr(pszSrc, '\n');
+  if (psz)
+    *psz = 0;
+}
 
+PSZ convert_nl_to_nul(PSZ pszSrc)
+{
+  // Convert newline to nul, return pointer to next or NULL
+  PSZ psz = strchr(pszSrc, '\n');
+  if (psz) {
+    *psz = 0;
+    psz++;
+  }
+  return psz;
+}
+
+void strip_trail_char (char *pszStripChars,char *pszSrc)
+{
   char *psz;
 
   if(pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
@@ -33,8 +56,8 @@ void strip_trail_char (char *pszStripChars,char *pszSrc) {
   }
 }
 
-void strip_lead_char (char *pszStripChars,char *pszSrc) {
-
+void strip_lead_char (char *pszStripChars,char *pszSrc)
+{
   char *psz = pszSrc;
 
   if(pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
