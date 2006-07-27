@@ -1,11 +1,14 @@
- LIBRARY FM3DLL INITINSTANCE TERMINSTANCE
- DESCRIPTION '@#SLAInc:3.03#@##1## 06/22/2005 03:03:00      SLAMain::EN:US:4:U:@@FM/3 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2005 Steven Levine and Associates, Inc.'
- EXETYPE OS2
- PROTMODE
- DATA MULTIPLE READWRITE LOADONCALL NONSHARED
- CODE LOADONCALL
- IMPORTS DOSQPROCSTATUS=DOSCALLS.154
- EXPORTS  InitFM3DLL                                  @1      NONAME
+; $Id$
+LIBRARY FM3DLL INITINSTANCE TERMINSTANCE
+DESCRIPTION '@#SLAInc:3.04pre12#@##1## 07/26/2006 03:04:00      SLAMain::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2006 Steven Levine and Associates, Inc.'
+EXETYPE OS2
+PROTMODE
+DATA MULTIPLE READWRITE LOADONCALL NONSHARED
+CODE LOADONCALL
+
+IMPORTS DOSQPROCSTATUS=DOSCALLS.154
+
+EXPORTS   InitFM3DLL                                  @1      NONAME
           FindSwapperDat                              @2      NONAME
           StartFM3                                    @3      NONAME
           saymsg                                      @4      NONAME

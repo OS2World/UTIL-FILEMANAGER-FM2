@@ -1,7 +1,6 @@
-NAME           VIEWINFS      WINDOWAPI
-
+; $Id$
+NAME VIEWINFS WINDOWAPI
 NEWFILES
-
-DESCRIPTION   'FM/3 View all .INFs miniapp copyright (c) 1993-98 by M. Kimes'
+DESCRIPTION  '@#SLAInc:3.04pre3#@##1## 08/16/2005 03:04:00      SLAMain::EN:US:0:U:@@FM/2 View INFs MiniApp Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2005 Steven Levine and Associates, Inc.'
 PROTMODE
-STACKSIZE     122840
+STACKSIZE 122840
