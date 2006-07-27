@@ -11,7 +11,7 @@
   16 Oct 02 SHL Baseline
   08 Feb 03 SHL Enable display
   01 Aug 04 SHL RunRmview: avoid buffer overflow
-  22 Jul 06 SHL Comments
+  26 Jul 06 SHL Report open errors
 
 ***********************************************************************/
 
@@ -48,8 +48,10 @@ VOID RunRmview (VOID *arg)
     if(!WinIsWindow(thab,hwnd))
       goto Abort;
     unlinkf("%s","$RMVIEW.#$#");
-    fp = fopen("$RMVIEW.#$#","w");
-    if(fp) {
+    fp = xfopen("$RMVIEW.#$#","w");
+    if (!fp)
+      goto Abort;
+    else {
       newstdout = -1;
       if(DosDupHandle(fileno(stdout),&newstdout)) {
         fclose(fp);
@@ -64,12 +66,10 @@ VOID RunRmview (VOID *arg)
       DosClose(newstdout);
       fclose(fp);
     }
-    else
+    if (!WinIsWindow(thab,hwnd))
       goto Abort;
-    if(!WinIsWindow(thab,hwnd))
-      goto Abort;
-    fp = fopen("$RMVIEW.#$#","r");
-    if(fp) {
+    fp = xfopen("$RMVIEW.#$#","r");
+    if (fp) {
       fgets(s,2048,fp);
       fgets(s,2048,fp);
       if(!feof(fp) && WinIsWindow(thab,hwnd))
