@@ -635,7 +635,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_EXPAND:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (!dcd)
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	BOOL tempsusp = dcd->suspendview;
 
@@ -654,7 +654,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_UPDATERECORDLIST:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (!dcd || !mp1)
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	INT    numentries = 0;
 	CHAR **list = (CHAR **)mp1;
@@ -673,7 +673,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_SETUP:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (!dcd)
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	dcd->hwndObject = hwnd;
 	if(ParentIsDesktop(hwnd,dcd->hwndParent))
@@ -684,9 +684,9 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_RESCAN2:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (!dcd)
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else if (!hwndStatus)
-        Runtime_Error(pszSrcFile, __LINE__, "no window");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NOWINDOWTEXT);
       else if (dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 	CHAR      s[CCHMAXPATH * 2];
 	PCNRITEM   pci = (PCNRITEM)mp1;
@@ -787,7 +787,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
        */
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (!dcd)
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	WinSendMsg(dcd->hwndCnr,
 		   CM_REMOVERECORD,
@@ -860,7 +860,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 	dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 	if (!dcd)
-          Runtime_Error(pszSrcFile, __LINE__, "no data");
+          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	else {
 	  WORKER *wk;
 
@@ -890,7 +890,7 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 	dcd = WinQueryWindowPtr(hwnd,QWL_USER);
 	if (!dcd)
-          Runtime_Error(pszSrcFile, __LINE__, "no data");
+          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	else {
 	  WORKER *wk;
 
@@ -1308,7 +1308,7 @@ KbdRetry:
 
     case UM_SETUP:
       if (!dcd) {
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
 	return 0;
       }
@@ -1422,7 +1422,7 @@ KbdRetry:
 				   MPFROMLONG(CMA_FIRST),
 				   MPFROMP(&pqr));
 	if(!pci || (INT)pci == -1)
-          Runtime_Error(pszSrcFile, __LINE__, "no data");
+          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	else {
 	  memset(&nr,0,sizeof(nr));
 	  nr.hwndCnr = hwnd;
@@ -1564,13 +1564,13 @@ KbdRetry:
 	      PCNRITEM     pci;
 
 	      if (!pcd) {
-                Runtime_Error(pszSrcFile, __LINE__, "no data");
+                Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	        break;
 	      }
 	      else {
 		pci = (PCNRITEM)pcd->pRecord;
 		if (!pci || (INT)pci == -1) {
-                  Runtime_Error(pszSrcFile, __LINE__, "no data");
+                  Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 		  break;
 		}
 		if (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODRAG)) {
@@ -2419,10 +2419,10 @@ KbdRetry:
 
     case UM_COMMAND:
       if (!mp1)
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	if (!dcd) {
-          Runtime_Error(pszSrcFile, __LINE__, "no data");
+          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	  FreeListInfo((LISTINFO *)mp1);
 	}
 	else {
@@ -3296,8 +3296,8 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags)
     else {
       SWP swp;
       WinQueryWindowPos(hwndFrame,&swp);
-      if(*(ULONG *)realappname == FM3UL)
-	WinCreateWindow(hwndFrame,
+      if (*(ULONG *)realappname == FM3UL) {
+	if (!WinCreateWindow(hwndFrame,
 			GetPString(IDS_WCTREEOPENBUTTON),
 			"O",
 			WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
@@ -3312,9 +3312,13 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags)
 			HWND_TOP,
 			IDM_OPENWINDOW,
 			NULL,
-			NULL);
-      else
-	WinCreateWindow(hwndFrame,
+			NULL))
+	{
+	  Win_Error2(hwndFrame,hwndParent,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	}
+      }
+      else {
+	if (!WinCreateWindow(hwndFrame,
 			GetPString(IDS_WCTREESTATUS),
 			GetPString(IDS_YOUAREHERETEXT),
 			WS_VISIBLE | SS_TEXT | DT_LEFT | DT_VCENTER,
@@ -3329,7 +3333,11 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags)
 			HWND_TOP,
 			MAIN_STATUS,
 			NULL,
-			NULL);
+			NULL))
+	{
+	  Win_Error2(hwndFrame,hwndParent,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	}
+      }
       memset(dcd,0,sizeof(DIRCNRDATA));
       dcd->size = sizeof(DIRCNRDATA);
       dcd->type = TREE_FRAME;
@@ -3340,7 +3348,7 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags)
       {
 	PFNWP oldproc;
 
-	oldproc = WinSubclassWindow(hwndFrame,(PFNWP)TreeFrameWndProc);
+	oldproc = WinSubclassWindow(hwndFrame,TreeFrameWndProc);
 	WinSetWindowPtr(hwndFrame,QWL_USER,(PVOID)oldproc);
 	oldproc = WinSubclassWindow(WinWindowFromID(hwndFrame,FID_TITLEBAR),
 				    (PFNWP)TreeTitleWndProc);
@@ -3362,7 +3370,13 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags)
 				     (ULONG)TREE_CNR,
 				     NULL,
 				     NULL);
-      if(dcd->hwndCnr) {
+      if (!dcd->hwndCnr) {
+        Win_Error2(hwndClient,hwndClient,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+	free(dcd);
+	hwndFrame = (HWND)0;
+      }
+      else {
 	WinSetWindowPtr(dcd->hwndCnr,QWL_USER,(PVOID)dcd);
 	if(ParentIsDesktop(hwndFrame,hwndParent)) {
 	  WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),"VTree");
@@ -3373,14 +3387,9 @@ HWND StartTreeCnr (HWND hwndParent,ULONG flags)
 	  WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),
 			   GetPString(IDS_TREETEXT));
 	}
-	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,(PFNWP)TreeCnrWndProc);
+	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,TreeCnrWndProc);
 	if(!PostMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID))
 	  WinSendMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID);
-      }
-      else {
-	PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
-	free(dcd);
-	hwndFrame = (HWND)0;
       }
     }
   }

@@ -3002,7 +3002,12 @@ HWND StartCollector(HWND hwndParent, INT flags)
     id = COLLECTOR_FRAME + idinc++;
     WinSetWindowUShort(hwndFrame, QWS_ID, id);
     dcd = xmallocz(sizeof(DIRCNRDATA),pszSrcFile,__LINE__);
-    if (dcd) {
+    if (!dcd) {
+      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+      hwndFrame = (HWND) 0;
+    }
+    else {
       dcd -> size = sizeof(DIRCNRDATA);
       dcd -> id = id;
       dcd -> type = COLLECTOR_FRAME;
@@ -3035,8 +3040,13 @@ HWND StartCollector(HWND hwndParent, INT flags)
 				       (ULONG) COLLECTOR_CNR,
 				       NULL,
 				       NULL);
-      if (dcd -> hwndCnr)
-      {
+      if (!dcd -> hwndCnr) {
+        Win_Error2(hwndClient,hwndClient,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+	free(dcd);
+	hwndFrame = (HWND) 0;
+      }
+      else {
 	Collector = dcd -> hwndCnr;
 	WinSetWindowPtr(dcd -> hwndCnr, QWL_USER, (PVOID) dcd);
 	WinSetWindowText(hwndFrame,
@@ -3093,23 +3103,6 @@ HWND StartCollector(HWND hwndParent, INT flags)
 		     MPVOID,
 		     MPVOID);
       }
-      else
-      {
-	PostMsg(hwndClient,
-		WM_CLOSE,
-		MPVOID,
-		MPVOID);
-	free(dcd);
-	hwndFrame = (HWND) 0;
-      }
-    }
-    else
-    {
-      PostMsg(hwndClient,
-	      WM_CLOSE,
-	      MPVOID,
-	      MPVOID);
-      hwndFrame = (HWND) 0;
     }
   }
   return hwndFrame;

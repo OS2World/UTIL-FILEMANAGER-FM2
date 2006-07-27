@@ -317,7 +317,7 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
   switch(msg) {
     case WM_CREATE:
       /* create MLE window */
-      WinCreateWindow(hwnd,
+      if (!WinCreateWindow(hwnd,
                       WC_MLE,
                       (PSZ)NULL,
                       MLS_HSCROLL | MLS_VSCROLL | MLS_BORDER |
@@ -330,16 +330,17 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                       HWND_TOP,
                       MLE_MLE,
                       MPVOID,
-                      MPVOID);
+                      MPVOID))
       {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      else {
         PFNWP oldproc;
-
         oldproc = WinSubclassWindow(WinWindowFromID(hwnd,MLE_MLE),
-                                    (PFNWP)MLESubProc);
-        if(oldproc)
-          WinSetWindowPtr(WinWindowFromID(hwnd,MLE_MLE),
-                          QWL_USER,
-                          (PVOID)oldproc);
+                                    MLESubProc);
+        WinSetWindowPtr(WinWindowFromID(hwnd,MLE_MLE),
+                        QWL_USER,
+                        (PVOID)oldproc);
       }
       break;
 

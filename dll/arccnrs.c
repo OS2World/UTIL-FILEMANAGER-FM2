@@ -163,7 +163,7 @@ static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID
     HWND hwndCnr = pai1->hwndCnr;
     pdcd = (DIRCNRDATA *)WinQueryWindowPtr(hwndCnr,QWL_USER);
     if (!pdcd) {
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       return ret;
     }
   }
@@ -337,7 +337,7 @@ ReTry:
   lastpai = NULL;
   *pullTotalBytes = 0;
   if (!info || !info->list)
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
   else {
     WinSendMsg(hwndCnr,
                CM_REMOVERECORD,
@@ -3698,10 +3698,8 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
                                        NULL,
                                        NULL);
         if (!dcd->hwndCnr) {
-          PostMsg(hwndClient,
-                  WM_CLOSE,
-                  MPVOID,
-                  MPVOID);
+          Win_Error2(hwndClient,hwndClient,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+          PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
           free(dcd);
           hwndFrame = (HWND)0;
 	}
@@ -3745,19 +3743,11 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
                      EM_SETTEXTLIMIT,
                      MPFROM2SHORT(CCHMAXPATH,0),
                      MPVOID);
-          WinSetWindowText(dcd->hwndExtract,
-                           dcd->directory);
-          if(!PostMsg(dcd->hwndCnr,
-                      UM_SETUP,
-                      MPVOID,
-                      MPVOID))
-            WinSendMsg(dcd->hwndCnr,
-                       UM_SETUP,
-                       MPVOID,
-                       MPVOID);
-          if(FrameFlags & FCF_MENU) {
-            if(!fToolbar) {
-
+          WinSetWindowText(dcd->hwndExtract,dcd->directory);
+          if(!PostMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID))
+            WinSendMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID);
+          if (FrameFlags & FCF_MENU) {
+            if (!fToolbar) {
               HWND hwndMenu = WinWindowFromID(hwndFrame,FID_MENU);
 
               if(hwndMenu) {

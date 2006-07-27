@@ -1779,8 +1779,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CREATE:
     {
       HWND temphwnd;
+      HWND hwndFrame = WinQueryWindow(hwnd, QW_PARENT);
 
-      temphwnd = WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
+      temphwnd = WinCreateWindow(hwndFrame,
 				 WC_BUTTON,
 				 "<",
 				 WS_VISIBLE |
@@ -1789,16 +1790,20 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 0,
 				 0,
 				 0,
-				 WinQueryWindow(hwnd, QW_PARENT),
+				 hwndFrame,
 				 HWND_TOP,
 				 IDM_PREVBLANKLINE,
 				 NULL,
 				 NULL);
-      WinSetPresParam(temphwnd,
-		      PP_FONTNAMESIZE,
-		      strlen(GetPString(IDS_8HELVTEXT)) + 1,
-		      (PVOID) GetPString(IDS_8HELVTEXT));
-      temphwnd = WinCreateWindow(WinQueryWindow(hwnd, QW_PARENT),
+      if (!temphwnd)
+	Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      else {
+        WinSetPresParam(temphwnd,
+		        PP_FONTNAMESIZE,
+		        strlen(GetPString(IDS_8HELVTEXT)) + 1,
+		        (PVOID) GetPString(IDS_8HELVTEXT));
+      }
+      temphwnd = WinCreateWindow(hwndFrame,
 				 WC_BUTTON,
 				 ">",
 				 WS_VISIBLE |
@@ -1807,15 +1812,19 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 0,
 				 0,
 				 0,
-				 WinQueryWindow(hwnd, QW_PARENT),
+				 hwndFrame,
 				 HWND_TOP,
 				 IDM_NEXTBLANKLINE,
 				 NULL,
 				 NULL);
-      WinSetPresParam(temphwnd,
-		      PP_FONTNAMESIZE,
-		      strlen(GetPString(IDS_8HELVTEXT)) + 1,
-		      (PVOID) GetPString(IDS_8HELVTEXT));
+      if (!temphwnd)
+	Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      else {
+        WinSetPresParam(temphwnd,
+		        PP_FONTNAMESIZE,
+		        strlen(GetPString(IDS_8HELVTEXT)) + 1,
+		        (PVOID)GetPString(IDS_8HELVTEXT));
+      }
       WinStartTimer(WinQueryAnchorBlock(hwnd),
 		    hwnd,
 		    ID_TIMER5,
@@ -1838,41 +1847,31 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SETUP:
-    if (!ad) {
+    if (!ad)
       Runtime_Error(pszSrcFile, __LINE__, "no data");
-    }
     else {
       CHAR s[CCHMAXPATH + 8];
       APIRET rc;
       ad -> hwndMenu = WinWindowFromID(ad -> hwndFrame, FID_MENU);
       ad -> hvscroll = WinWindowFromID(ad -> hwndFrame, FID_VERTSCROLL);
       ad -> hhscroll = WinWindowFromID(ad -> hwndFrame, FID_HORZSCROLL);
-      WinSendMsg(ad -> hhscroll,
-		 SBM_SETTHUMBSIZE,
-		 MPFROM2SHORT(1, 1),
-		 MPVOID);
-      WinSendMsg(ad -> hvscroll,
-		 SBM_SETTHUMBSIZE,
-		 MPFROM2SHORT(1, 1),
-		 MPVOID);
-      sprintf(s,
-	      "%s: %s",
-	      FM2Str,
-	      ad -> filename);
-      WinSetWindowText(ad -> hwndFrame,
-		       s);
+      WinSendMsg(ad -> hhscroll,SBM_SETTHUMBSIZE,MPFROM2SHORT(1, 1),MPVOID);
+      WinSendMsg(ad -> hvscroll,SBM_SETTHUMBSIZE,MPFROM2SHORT(1, 1),MPVOID);
+      sprintf(s,"%s: %s",FM2Str,ad -> filename);
+      WinSetWindowText(ad -> hwndFrame,s);
       rc = DosCreateMutexSem(NULL, &ad -> ScanSem, 0L, FALSE);
       if (rc)
         Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosCreateMutexSem");
       else {
 	PFNWP oldproc;
+	HWND hwndFrame = ad -> hwndFrame;
 	WinSendMsg(ad -> hvscroll,
 		   SBM_SETSCROLLBAR,
 		   MPFROMSHORT(1),
 		   MPFROM2SHORT(1, 1));
 	WinSendMsg(ad -> hhscroll, SBM_SETSCROLLBAR, MPFROMSHORT(1),
 		   MPFROM2SHORT(1, 1));
-	ad -> hwndStatus1 = WinCreateWindow(ad -> hwndFrame,
+	ad -> hwndStatus1 = WinCreateWindow(hwndFrame,
 					    GetPString(IDS_WCVIEWSTATUS),
 					    GetPString(IDS_LOADINGTEXT),
 					    WS_VISIBLE | SS_TEXT |
@@ -1881,12 +1880,15 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    0,
 					    0,
 					    0,
-					    ad -> hwndFrame,
+					    hwndFrame,
 					    HWND_TOP,
 					    NEWVIEW_STATUS1,
 					    NULL,
 					    NULL);
-	ad -> hwndStatus2 = WinCreateWindow(ad -> hwndFrame,
+	if (!ad -> hwndStatus1)
+          Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+	ad -> hwndStatus2 = WinCreateWindow(hwndFrame,
 					    GetPString(IDS_WCVIEWSTATUS),
 					    NULL,
 					    WS_VISIBLE | SS_TEXT |
@@ -1895,12 +1897,15 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    0,
 					    0,
 					    0,
-					    ad -> hwndFrame,
+					    hwndFrame,
 					    HWND_TOP,
 					    NEWVIEW_STATUS2,
 					    NULL,
 					    NULL);
-	ad -> hwndStatus3 = WinCreateWindow(ad -> hwndFrame,
+	if (!ad -> hwndStatus2)
+          Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+	ad -> hwndStatus3 = WinCreateWindow(hwndFrame,
 					    GetPString(IDS_WCVIEWSTATUS),
 					    NULL,
 					    WS_VISIBLE | SS_TEXT |
@@ -1909,12 +1914,15 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    0,
 					    0,
 					    0,
-					    ad -> hwndFrame,
+					    hwndFrame,
 					    HWND_TOP,
 					    NEWVIEW_STATUS3,
 					    NULL,
 					    NULL);
-	ad -> hwndListbox = WinCreateWindow(ad -> hwndFrame,
+	if (!ad -> hwndStatus3)
+          Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+	ad -> hwndListbox = WinCreateWindow(hwndFrame,
 					    WC_LISTBOX,
 					    NULL,
 					    LS_NOADJUSTPOS,
@@ -1922,12 +1930,15 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    0,
 					    0,
 					    0,
-					    ad -> hwndFrame,
+					    hwndFrame,
 					    HWND_TOP,
 					    NEWVIEW_LISTBOX,
 					    NULL,
 					    NULL);
-	ad -> hwndDrag = WinCreateWindow(ad -> hwndFrame,
+	if (!ad -> hwndListbox)
+          Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+	ad -> hwndDrag = WinCreateWindow(hwndFrame,
 					 GetPString(IDS_WCVIEWSTATUS),
 					 "#100",
 					 WS_VISIBLE | SS_BITMAP,
@@ -1935,14 +1946,16 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					 0,
 					 0,
 					 0,
-					 ad -> hwndFrame,
+					 hwndFrame,
 					 HWND_TOP,
 					 NEWVIEW_DRAG,
 					 NULL,
 					 NULL);
-	oldproc = WinSubclassWindow(ad -> hwndFrame, (PFNWP) ViewFrameWndProc);
-	if (oldproc)
-	  WinSetWindowPtr(ad -> hwndFrame, QWL_USER, (PVOID) oldproc);
+	if (!ad -> hwndDrag)
+          Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+	oldproc = WinSubclassWindow(hwndFrame, ViewFrameWndProc);
+	WinSetWindowPtr(hwndFrame, QWL_USER, (PVOID)oldproc);
 	ad -> hps = InitWindow(hwnd);
 	if (_beginthread(LoadFile, NULL, 524288, (PVOID) hwnd) == -1)
           Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));

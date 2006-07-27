@@ -393,7 +393,7 @@ static VOID EnumAppNames (HWND hwndList,HINI hini)
   if (!PrfQueryProfileSize(hini,NULL,NULL,(PULONG)&ulSize))
     Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileSize");
   else if (!ulSize)
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
   else {
     pData = xmalloc(ulSize,pszSrcFile,__LINE__);
     if (pData) {
@@ -463,7 +463,7 @@ static BOOL EnumKeyNames (HWND hwndList,HINI hini,PSZ pAppName)
     Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileSize");
   else {
     if (!ulSize)
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     pData = xmalloc(ulSize + 1L,pszSrcFile,__LINE__);
     if (pData) {
       if(!PrfQueryProfileString(hini,pAppName,NULL,"\0",pData,ulSize))
@@ -682,7 +682,7 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                                MPFROM2SHORT(LIT_FIRST,0),
                                                MPVOID);
             if (sSelect < 0)
-              Runtime_Error(pszSrcFile, __LINE__, "no data");
+              Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	    else {
               *s = 0;
               WinSendDlgItemMsg(hwnd,IAF_LISTBOX,LM_QUERYITEMTEXT,
@@ -724,7 +724,7 @@ MRESULT EXPENTRY FilterIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               *s = 0;
               WinQueryWindowText(hwndMLE,8192,s);
               if (!*s)
-                Runtime_Error(pszSrcFile, __LINE__, "no data");
+                Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	      else {
                 fp = xfopen(filename,"w",pszSrcFile,__LINE__);
                 if (fp) {
@@ -1464,7 +1464,7 @@ MRESULT EXPENTRY AddIniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
             inidata = INSTDATA(hwnd);
             if (!inidata) {
-              Runtime_Error(pszSrcFile, __LINE__, "no data");
+              Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
               break;
             }
             inidata->isbinary = WinQueryButtonCheckstate(hwnd,IAD_ISBINARY);
@@ -1843,6 +1843,7 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   INIDATA *inidata;
   SHORT    sSel;
+  PFNWP oldproc;
 
   switch(msg) {
     case WM_CREATE:
@@ -1859,25 +1860,44 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       inidata->hwndIni = hwnd;
       WinSetWindowPtr(hwnd,0,(PVOID)inidata);
       WinCheckMenuItem(inidata->hwndMenu,INI_CONFIRM,inidata->confirm);
-      WinCreateWindow(hwnd,WC_LISTBOX,(PSZ)NULL,WS_VISIBLE | LS_HORZSCROLL |
+
+      if (!WinCreateWindow(hwnd,WC_LISTBOX,(PSZ)NULL,WS_VISIBLE | LS_HORZSCROLL |
                       LS_NOADJUSTPOS, 0,0,0,0,hwnd,HWND_TOP,
-                      INI_APPLIST,NULL,NULL);
-      WinCreateWindow(hwnd,WC_LISTBOX,(PSZ)NULL,WS_VISIBLE | LS_HORZSCROLL |
+                      INI_APPLIST,NULL,NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,WC_LISTBOX,(PSZ)NULL,WS_VISIBLE | LS_HORZSCROLL |
                       LS_NOADJUSTPOS, 0,0,0,0,hwnd,HWND_TOP,
-                      INI_KEYLIST,NULL,NULL);
-      WinCreateWindow(hwnd,WC_LISTBOX,(PSZ)NULL,WS_VISIBLE | LS_HORZSCROLL |
+                      INI_KEYLIST,NULL,NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,WC_LISTBOX,(PSZ)NULL,WS_VISIBLE | LS_HORZSCROLL |
                       LS_NOADJUSTPOS, 0,0,0,0,hwnd,HWND_TOP,
-                      INI_DATALIST,NULL,NULL);
-      WinCreateWindow(hwnd,WC_STATIC,(PSZ)NULL,WS_VISIBLE | SS_TEXT |
+                      INI_DATALIST,NULL,NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,WC_STATIC,(PSZ)NULL,WS_VISIBLE | SS_TEXT |
                       DT_CENTER | DT_VCENTER,0,0,0,0,hwnd,HWND_TOP,
-                      INI_NUMAPPS,NULL,NULL);
-      WinCreateWindow(hwnd,WC_STATIC,(PSZ)NULL,WS_VISIBLE | SS_TEXT |
+                      INI_NUMAPPS,NULL,NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,WC_STATIC,(PSZ)NULL,WS_VISIBLE | SS_TEXT |
                       DT_CENTER | DT_VCENTER,0,0,0,0,hwnd,HWND_TOP,
-                      INI_NUMKEYS,NULL,NULL);
-      WinCreateWindow(hwnd,WC_STATIC,(PSZ)NULL,WS_VISIBLE | SS_TEXT |
+                      INI_NUMKEYS,NULL,NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,WC_STATIC,(PSZ)NULL,WS_VISIBLE | SS_TEXT |
                       DT_CENTER | DT_VCENTER,0,0,0,0,hwnd,HWND_TOP,
-                      INI_NUMDATA,NULL,NULL);
-      WinCreateWindow(hwnd,
+                      INI_NUMDATA,NULL,NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,
                       WC_STATIC,
                       GetPString(IDS_APPLICATIONSTITLETEXT),
                       WS_VISIBLE | SS_TEXT |
@@ -1890,8 +1910,11 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                       HWND_TOP,
                       INI_APPHDR,
                       NULL,
-                      NULL);
-      WinCreateWindow(hwnd,
+                      NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,
                       WC_STATIC,
                       GetPString(IDS_KEYWORDSTITLETEXT),
                       WS_VISIBLE | SS_TEXT |
@@ -1904,8 +1927,11 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                       HWND_TOP,
                       INI_KEYHDR,
                       NULL,
-                      NULL);
-      WinCreateWindow(hwnd,
+                      NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+      if (!WinCreateWindow(hwnd,
                       WC_STATIC,
                       GetPString(IDS_DATABYTESTITLETEXT),
                       WS_VISIBLE | SS_TEXT |
@@ -1918,32 +1944,30 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                       HWND_TOP,
                       INI_DATAHDR,
                       NULL,
-                      NULL);
+                      NULL))
+      {
+	Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      }
+
       inidata->hwndApp = WinWindowFromID(hwnd,INI_APPLIST);
       inidata->hwndKey = WinWindowFromID(hwnd,INI_KEYLIST);
       inidata->hwndData = WinWindowFromID(hwnd,INI_DATALIST);
-      {
-        PFNWP oldproc;
 
-        oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_APPLIST),
-                                    (PFNWP)IniLBSubProc);
-        if(oldproc)
-          WinSetWindowPtr(WinWindowFromID(hwnd,INI_APPLIST),
-                          QWL_USER,
-                          (PVOID)oldproc);
-        oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_KEYLIST),
-                                    (PFNWP)IniLBSubProc);
-        if(oldproc)
-          WinSetWindowPtr(WinWindowFromID(hwnd,INI_KEYLIST),
-                          QWL_USER,
-                          (PVOID)oldproc);
-        oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_DATALIST),
-                                    (PFNWP)IniLBSubProc2);
-        if(oldproc)
-          WinSetWindowPtr(WinWindowFromID(hwnd,INI_DATALIST),
-                          QWL_USER,
-                          (PVOID)oldproc);
-      }
+      oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_APPLIST),
+                                  IniLBSubProc);
+      WinSetWindowPtr(WinWindowFromID(hwnd,INI_APPLIST),
+                      QWL_USER,
+                      (PVOID)oldproc);
+      oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_KEYLIST),
+                                  IniLBSubProc);
+      WinSetWindowPtr(WinWindowFromID(hwnd,INI_KEYLIST),
+                      QWL_USER,
+                      (PVOID)oldproc);
+      oldproc = WinSubclassWindow(WinWindowFromID(hwnd,INI_DATALIST),
+                                  IniLBSubProc2);
+      WinSetWindowPtr(WinWindowFromID(hwnd,INI_DATALIST),
+                      QWL_USER,
+                      (PVOID)oldproc);
       break;
 
     case UM_FOCUSME:

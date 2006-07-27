@@ -198,6 +198,9 @@ HWND DoNotify (char *str)
                            id++,
                            NULL,
                            NULL);
+    if (!hwndP)
+      Win_Error2(hwndP,hwndP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
     if(p != str)
       free(p);
     if(id > NOTE_MAX)

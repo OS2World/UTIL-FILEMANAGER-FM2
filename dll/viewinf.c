@@ -221,7 +221,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           &swp);
         WinDestroyWindow(WinWindowFromID(hwnd,
                                          VINF_LISTBOX));
-        WinCreateWindow(hwnd,
+        if (!WinCreateWindow(hwnd,
                         WC_LISTBOX,
                         (PSZ)NULL,
                         WS_VISIBLE | LS_HORZSCROLL,
@@ -233,43 +233,32 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                         HWND_TOP,
                         VINF_LISTBOX,
                         NULL,
-                        NULL);
-        WinSetPresParam(WinWindowFromID(hwnd,
-                                        VINF_LISTBOX),
-                        PP_FONTNAMESIZE,
-                        strlen(GetPString(IDS_10SYSTEMMONOTEXT)) + 1,
-                        (PVOID)GetPString(IDS_10SYSTEMMONOTEXT));
+                        NULL))
+        {
+	  Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+        }
+	else {
+          WinSetPresParam(WinWindowFromID(hwnd,VINF_LISTBOX),
+                          PP_FONTNAMESIZE,
+                          strlen(GetPString(IDS_10SYSTEMMONOTEXT)) + 1,
+                          (PVOID)GetPString(IDS_10SYSTEMMONOTEXT));
+	}
         WinSetWindowText(hwnd,
                          GetPString(IDS_VIEWHELPFILESTEXT));
-        WinShowWindow(WinWindowFromID(hwnd,
-                                      VINF_SRCH),
+        WinShowWindow(WinWindowFromID(hwnd,VINF_SRCH),
                       FALSE);
-        WinShowWindow(WinWindowFromID(hwnd,
-                                      VINF_FILTER),
+        WinShowWindow(WinWindowFromID(hwnd,VINF_FILTER),
                       FALSE);
-        WinShowWindow(WinWindowFromID(hwnd,
-                                      VINF_TOPIC),
+        WinShowWindow(WinWindowFromID(hwnd,VINF_TOPIC),
                       FALSE);
-        WinShowWindow(WinWindowFromID(hwnd,
-                                      VINF_TOPICHDR),
+        WinShowWindow(WinWindowFromID(hwnd,VINF_TOPICHDR),
                       FALSE);
       }
-      hptrIcon = WinLoadPointer(HWND_DESKTOP,
-                                FM3ModHandle,
-                                VINF_FRAME);
-      WinDefDlgProc(hwnd,
-                    WM_SETICON,
-                    MPFROMLONG(hptrIcon),
-                    MPVOID);
+      hptrIcon = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,VINF_FRAME);
+      WinDefDlgProc(hwnd,WM_SETICON,MPFROMLONG(hptrIcon),MPVOID);
       hwndMe = hwnd;
-      PostMsg(hwnd,
-              UM_STRETCH,
-              MPVOID,
-              MPVOID);
-      PostMsg(hwnd,
-              UM_RESCAN,
-              MPVOID,
-              MPVOID);
+      PostMsg(hwnd,UM_STRETCH,MPVOID,MPVOID);
+      PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
       break;
 
     case UM_RESCAN:

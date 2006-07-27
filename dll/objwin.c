@@ -1,20 +1,36 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Object windows
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H.Levine
+
+  26 Jul 06 SHL Check more run time errors
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-
 #include <os2.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <stddef.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-#pragma alloc_text(OBJWIN,ObjectWndProc,MakeObjWin)
+static PSZ pszSrcFile = __FILE__;
 
+#pragma alloc_text(OBJWIN,ObjectWndProc,MakeObjWin)
 
 MRESULT EXPENTRY ObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
@@ -67,7 +83,9 @@ VOID MakeObjWin (VOID *args) {
                                    OBJ_FRAME,
                                    NULL,
                                    NULL);
-      if(ObjectHwnd) {
+      if (!ObjectHwnd)
+        Win_Error2(HWND_OBJECT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+      else {
         WinSetWindowPtr(ObjectHwnd,0,args);
         /* initially populate container */
         WinSendMsg(ObjectHwnd,UM_SETUP,MPVOID,MPVOID);

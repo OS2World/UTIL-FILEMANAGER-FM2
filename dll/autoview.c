@@ -653,17 +653,18 @@ VOID MakeAutoWin (VOID *args)
                                     OBJ_FRAME,
                                     NULL,
                                     NULL);
-      if(hwndAutoObj) {
+      if (!hwndAutoObj) {
+        Win_Error2(HWND_OBJECT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+        if(!PostMsg(hwndParent,UM_CLOSE,MPVOID,MPVOID))
+          WinSendMsg(hwndParent,UM_CLOSE,MPVOID,MPVOID);
+      }
+      else {
         WinSetWindowULong(hwndAutoObj,QWL_USER,hwndParent);
         priority_normal();
         while(WinGetMsg(hab2,&qmsg2,(HWND)0,0,0))
           WinDispatchMsg(hab2,&qmsg2);
         WinDestroyWindow(hwndAutoObj);
         hwndAutoObj = (HWND)0;
-      }
-      else {
-        if(!PostMsg(hwndParent,UM_CLOSE,MPVOID,MPVOID))
-          WinSendMsg(hwndParent,UM_CLOSE,MPVOID,MPVOID);
       }
       WinDestroyMsgQueue(hmq2);
     }

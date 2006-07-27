@@ -227,8 +227,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg)
   {
   case WM_CREATE:
-    if (DataHwnd)
-    {
+    if (DataHwnd) {
       WinSetWindowPos(DataHwnd,
 		      HWND_TOP,
 		      0,
@@ -267,7 +266,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       for (c = 0; ids[c]; c++)
       {
-	WinCreateWindow(hwnd,
+	if (!WinCreateWindow(hwnd,
 			GetPString(IDS_WCMINITIME),
 			NullStr,
 			SS_TEXT | DT_CENTER | DT_VCENTER | WS_VISIBLE,
@@ -279,7 +278,10 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			HWND_TOP,
 			ids[c],
 			NULL,
-			NULL);
+			NULL))
+	{
+          Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	}
 	x += (MINI_X + 4);
       }
     }
@@ -340,7 +342,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  if ((ulDriveMap & (1L << c)) && !(driveflags[c] & drivestyle))
 	  {
-	    WinCreateWindow(hwnd,
+	    if (!WinCreateWindow(hwnd,
 			    GetPString(IDS_WCMINITIME),
 			    NullStr,
 			    SS_TEXT | DT_CENTER | DT_VCENTER | WS_VISIBLE,
@@ -352,7 +354,10 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    HWND_TOP,
 			    MINI_DRIVEA + c,
 			    NULL,
-			    NULL);
+			    NULL))
+	    {
+              Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	    }
 	    numdrives++;
 	    x += (MINI_X + 4);
 	    if ((numdrives % 4) == 0)

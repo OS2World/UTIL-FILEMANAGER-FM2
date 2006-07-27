@@ -3918,7 +3918,13 @@ HWND StartDirCnr (HWND hwndParent,CHAR *directory,HWND hwndRestore,ULONG flags)
                                        (ULONG)DIR_CNR,
                                        NULL,
                                        NULL);
-        if(dcd->hwndCnr) {
+        if (!dcd->hwndCnr) {
+          Win_Error2(hwndClient,hwndClient,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+          PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+          free(dcd);
+          hwndFrame = (HWND)0;
+	}
+	else {
           WinSetWindowPtr(dcd->hwndCnr,QWL_USER,(PVOID)dcd);
           dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
                                            (PFNWP)DirCnrWndProc);
@@ -3970,14 +3976,6 @@ HWND StartDirCnr (HWND hwndParent,CHAR *directory,HWND hwndRestore,ULONG flags)
                             SWP_SIZE | SWP_MOVE | SWP_SHOW | SWP_ZORDER |
                             SWP_ACTIVATE);
           }
-        }
-        else {
-          PostMsg(hwndClient,
-                  WM_CLOSE,
-                  MPVOID,
-                  MPVOID);
-          free(dcd);
-          hwndFrame = (HWND)0;
         }
       }
     }

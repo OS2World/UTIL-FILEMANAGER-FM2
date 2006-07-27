@@ -744,8 +744,7 @@ Retry:
 			list[x],
 			GetPString(IDS_TOTEXT),
 			newname);
-		WinSetWindowText(WinWindowFromID(hwndFrame,
-						 SEEALL_STATUS),
+		WinSetWindowText(WinWindowFromID(hwndFrame,SEEALL_STATUS),
 				 message);
 		if(fRealIdle)
 		  priority_idle();
@@ -1295,17 +1294,18 @@ static VOID MakeSeeObj (VOID *args)
 				  SEEALL_OBJ,
 				  NULL,
 				  NULL);
-	if(hwndObj) {
+	if (!hwndObj) {
+	  Win_Error2(HWND_OBJECT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	  if (!PostMsg(ad->hwndClient,WM_CLOSE,MPVOID,MPVOID))
+	    WinSendMsg(ad->hwndClient,WM_CLOSE,MPVOID,MPVOID);
+	}
+	else {
 	  ad->hwndObj = hwndObj;
 	  WinSetWindowULong(hwndObj,QWL_USER,ad->hwndFrame);
 	  priority_normal();
 	  while(WinGetMsg(hab2,&qmsg2,(HWND)0,0,0))
 	    WinDispatchMsg(hab2,&qmsg2);
 	  WinDestroyWindow(hwndObj);
-	}
-	else {
-	  if(!PostMsg(ad->hwndClient,WM_CLOSE,MPVOID,MPVOID))
-	    WinSendMsg(ad->hwndClient,WM_CLOSE,MPVOID,MPVOID);
 	}
 	WinDestroyMsgQueue(hmq2);
       }
@@ -2543,9 +2543,11 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // fprintf(stderr,"Seeall: WM_CREATE\n");
       WinSetWindowPtr(hwnd,QWL_USER,NULL);
       pAD = xmallocz(sizeof(ALLDATA),pszSrcFile,__LINE__);
-      if(pAD) {
+      if (pAD) {
+        HWND hwndFrame;
 	pAD->size = sizeof(ALLDATA);
-	pAD->hwndFrame = WinQueryWindow(hwnd,QW_PARENT);
+        hwndFrame = WinQueryWindow(hwnd,QW_PARENT);
+	pAD->hwndFrame = hwndFrame;
 	pAD->mask.attrFile = FILE_READONLY | FILE_HIDDEN   |
 			    FILE_SYSTEM   | FILE_ARCHIVED;
 	pAD->mask.fNoDirs = TRUE;
@@ -2628,7 +2630,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	pAD->cursored   = pAD->topfile = 1;
 	pAD->fattrs.usCodePage = Codepage;
 	memcpy(pAD->aulColors,Colors,sizeof(LONG) * COLORS_MAX);
-	pAD->hwndMenu   = WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
+	pAD->hwndMenu   = WinWindowFromID(hwndFrame,
 					 FID_MENU);
 	SetConditionalCascade(pAD->hwndMenu,IDM_DELETESUBMENU,
 			      (fDefaultDeletePerm) ?
@@ -2645,16 +2647,16 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	pAD->hwndClient = hwnd;
 	pAD->hps = InitWindow(hwnd);
-	pAD->hvscroll = WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
+	pAD->hvscroll = WinWindowFromID(hwndFrame,
 				       FID_VERTSCROLL);
-	pAD->hhscroll = WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
+	pAD->hhscroll = WinWindowFromID(hwndFrame,
 				       FID_HORZSCROLL);
 	pAD->multiplier = 1;
 	if(_beginthread(MakeSeeObj,NULL,122880,(PVOID)pAD) == -1)
           Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	else {
 	  if (!DosCreateMutexSem(NULL,&pAD->hmtxScan,0L,FALSE)) {
-	    pAD->hwndStatus = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+	    pAD->hwndStatus = WinCreateWindow(hwndFrame,
 					      GetPString(IDS_WCSEESTATUS),
 					      NullStr,
 					      WS_VISIBLE | SS_TEXT |
@@ -2663,20 +2665,18 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					      0,
 					      0,
 					      0,
-					      WinQueryWindow(hwnd,QW_PARENT),
+					      hwndFrame,
 					      HWND_TOP,
 					      SEEALL_STATUS,
 					      NULL,
 					      NULL);
+	    if (!pAD->hwndStatus)
+	      Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	    else
 	    {
 	      PFNWP oldproc;
-
-	      oldproc = WinSubclassWindow(WinQueryWindow(hwnd,QW_PARENT),
-					  (PFNWP)SeeFrameWndProc);
-	      if(oldproc)
-		WinSetWindowPtr(WinQueryWindow(hwnd,QW_PARENT),
-		                QWL_USER,
-				(PVOID)oldproc);
+	      oldproc = WinSubclassWindow(hwndFrame,SeeFrameWndProc);
+	      WinSetWindowPtr(hwndFrame,QWL_USER,(PVOID)oldproc);
 	    }
 	    break;
 	  }

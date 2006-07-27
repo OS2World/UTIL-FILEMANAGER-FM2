@@ -370,7 +370,7 @@ MRESULT EXPENTRY PickMaskDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             WinSetWindowPos(hwnd,HWND_TOP,swpD.x,swpD.y,swpD.cx,
                             swpD.cy,SWP_MOVE);
           }
-          WinCreateWindow(hwnd,
+          if (!WinCreateWindow(hwnd,
                           WC_STATIC,
                           GetPString(IDS_TEXTTITLETEXT),
                           SS_TEXT |
@@ -383,8 +383,11 @@ MRESULT EXPENTRY PickMaskDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           HWND_TOP,
                           65535,
                           NULL,
-                          NULL);
-          WinCreateWindow(hwnd,
+                          NULL))
+	  {
+            Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	  }
+          if (!WinCreateWindow(hwnd,
                           WC_ENTRYFIELD,
                           NULL,
                           ES_AUTOSCROLL |
@@ -397,7 +400,10 @@ MRESULT EXPENTRY PickMaskDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
                           HWND_TOP,
                           MSK_TEXT,
                           NULL,
-                          NULL);
+                          NULL))
+	  {
+            Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	  }
           WinSendDlgItemMsg(hwnd,
                             MSK_TEXT,
                             EM_SETTEXTLIMIT,

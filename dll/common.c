@@ -50,8 +50,8 @@ MRESULT EXPENTRY CommonFrameWndProc (USHORT id,
                                      HWND hwnd,
                                      ULONG msg,
                                      MPARAM mp1,
-                                     MPARAM mp2) {
-
+                                     MPARAM mp2)
+{
   PFNWP oldproc = (PFNWP)WinQueryWindowPtr(hwnd,0);
 
   switch(msg) {
@@ -144,8 +144,8 @@ MRESULT EXPENTRY CommonFrameWndProc (USHORT id,
 MRESULT EXPENTRY CommonTextProc (HWND hwnd,
                                  ULONG msg,
                                  MPARAM mp1,
-                                 MPARAM mp2) {
-
+                                 MPARAM mp2)
+{
   switch(msg) {
     case WM_CREATE:
       {
@@ -171,8 +171,8 @@ MRESULT EXPENTRY CommonTextProc (HWND hwnd,
 }
 
 
-void CommonTextPaint (HWND hwnd,HPS hps) {
-
+void CommonTextPaint (HWND hwnd,HPS hps)
+{
   int x;
   USHORT ids[]   = {DIR_FOLDERICON,DIR_TOTALS,DIR_SELECTED,DIR_VIEW,
                     DIR_FILTER,DIR_SORT,DIR_MAX,0};
@@ -186,14 +186,17 @@ void CommonTextPaint (HWND hwnd,HPS hps) {
 }
 
 
-void CommonCreateTextChildren (HWND hwnd,char *class,USHORT *ids) {
-
+void CommonCreateTextChildren (HWND hwnd,char *class,USHORT *ids)
+{
   int   x;
   CHAR  s[33];
   ULONG attrs;
+  HWND hwndTmp;
 
-  if(!hwnd || !class || !ids)
+  if (!hwnd || !class || !ids) {
+    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     return;
+  }
 
   for(x = 0;ids[x];x++) {
     *s = 0;
@@ -212,14 +215,16 @@ void CommonCreateTextChildren (HWND hwnd,char *class,USHORT *ids) {
         attrs = SS_TEXT | DT_CENTER | DT_VCENTER;
         break;
     }
-    WinCreateWindow(hwnd,class,s,attrs,0,0,0,0,hwnd,
-                    HWND_TOP,ids[x],NULL,NULL);
-  }
+    hwndTmp = WinCreateWindow(hwnd,class,s,attrs,0,0,0,0,hwnd,
+                              HWND_TOP,ids[x],NULL,NULL);
+    if (!hwndTmp)
+      Win_Error2(hwnd,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+  } // for
 }
 
 
-void CommonDriveCmd (HWND hwnd,char *drive,USHORT cmd) {
-
+void CommonDriveCmd (HWND hwnd,char *drive,USHORT cmd)
+{
   char dv[CCHMAXPATH];
 
   if(!drive || !*drive)
@@ -389,9 +394,14 @@ void CommonDriveCmd (HWND hwnd,char *drive,USHORT cmd) {
 }
 
 
-void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
+void CommonCreateMainChildren (HWND hwnd,SWP *swp)
+{
+  HWND hwndFrame = WinQueryWindow(hwnd,QW_PARENT);
+  HWND hwndTmp;
+  PFNWP oldproc;
 
-  hwndStatus = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  // Create a children of frame window
+  hwndStatus = WinCreateWindow(hwndFrame,
                                GetPString(IDS_WCSTATUS),
                                "Status",
                                WS_VISIBLE | SS_TEXT | DT_LEFT |
@@ -406,12 +416,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                                 (WinQuerySysValue(HWND_DESKTOP,
                                                   SV_CXSIZEBORDER) * 2),
                                20,
-                               WinQueryWindow(hwnd,QW_PARENT),
+                               hwndFrame,
                                HWND_TOP,
                                MAIN_STATUS,
                                NULL,
                                NULL);
-  hwndStatus2 = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  if (!hwndStatus)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndStatus2 = WinCreateWindow(hwndFrame,
                                 GetPString(IDS_WCSTATUS),
                                 "Status2",
                                 WS_VISIBLE | SS_TEXT | DT_LEFT |
@@ -426,13 +439,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                                  (WinQuerySysValue(HWND_DESKTOP,
                                                    SV_CXSIZEBORDER) * 2),
                                 20,
-                                WinQueryWindow(hwnd,QW_PARENT),
+                                hwndFrame,
                                 HWND_TOP,
                                 MAIN_STATUS2,
                                 NULL,
                                 NULL);
+  if (!hwndStatus2)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
 
-  hwndAttr = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  hwndAttr = WinCreateWindow(hwndFrame,
                              GetPString(IDS_WCSTATUS),
                              "Attr",
                              WS_VISIBLE | SS_TEXT | DT_CENTER |
@@ -447,12 +462,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                               (WinQuerySysValue(HWND_DESKTOP,
                                                 SV_CXSIZEBORDER) * 2),
                              20,
-                             WinQueryWindow(hwnd,QW_PARENT),
+                             hwndFrame,
                              HWND_TOP,
                              IDM_ATTRS,
                              NULL,
                              NULL);
-  hwndDate = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  if (!hwndAttr)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndDate = WinCreateWindow(hwndFrame,
                              GetPString(IDS_WCSTATUS),
                              "Date",
                              WS_VISIBLE | SS_TEXT | DT_CENTER |
@@ -467,12 +485,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                               (WinQuerySysValue(HWND_DESKTOP,
                                                 SV_CXSIZEBORDER) * 2),
                              20,
-                             WinQueryWindow(hwnd,QW_PARENT),
+                             hwndFrame,
                              HWND_TOP,
                              IDM_INFO,
                              NULL,
                              NULL);
-  hwndName = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  if (!hwndDate)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndName = WinCreateWindow(hwndFrame,
                              GetPString(IDS_WCSTATUS),
                              "Name",
                              WS_VISIBLE | SS_TEXT | DT_LEFT |
@@ -487,13 +508,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                               (WinQuerySysValue(HWND_DESKTOP,
                                                 SV_CXSIZEBORDER) * 2),
                              20,
-                             WinQueryWindow(hwnd,QW_PARENT),
+                             hwndFrame,
                              HWND_TOP,
                              IDM_RENAME,
                              NULL,
                              NULL);
+  if (!hwndName)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
 
-  WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  hwndTmp = WinCreateWindow(hwndFrame,
                   GetPString(IDS_WCTOOLBACK),
                   NullStr,
                   WS_VISIBLE | SS_TEXT | DT_CENTER | DT_VCENTER,
@@ -507,12 +530,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                    (WinQuerySysValue(HWND_DESKTOP,
                                      SV_CXSIZEBORDER) * 2),
                   30,
-                  WinQueryWindow(hwnd,QW_PARENT),
+                  hwndFrame,
                   HWND_TOP,
                   MAIN_TOOLS,
                   NULL,
                   NULL);
-  hwndBack = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  if (!hwndTmp)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndBack = WinCreateWindow(hwndFrame,
                              GetPString(IDS_WCDRIVEBACK),
                              NullStr,
                              WS_VISIBLE | SS_TEXT | DT_RIGHT | DT_BOTTOM,
@@ -526,13 +552,16 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                               (WinQuerySysValue(HWND_DESKTOP,
                                                 SV_CXSIZEBORDER) * 2),
                              30,
-                             WinQueryWindow(hwnd,QW_PARENT),
+                             hwndFrame,
                              HWND_TOP,
                              MAIN_DRIVES,
                              NULL,
                              NULL);
 
-  hwndLED = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  if (!hwndBack)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndLED = WinCreateWindow(hwndFrame,
                             GetPString(IDS_WCLED),
                             "#920",
                             WS_VISIBLE | SS_BITMAP,
@@ -540,12 +569,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                             swp->y,
                             12,
                             12,
-                            WinQueryWindow(hwnd,QW_PARENT),
+                            hwndFrame,
                             HWND_TOP,
                             MAIN_LED,
                             NULL,
                             NULL);
-  hwndLEDHdr = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  if (!hwndLED)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndLEDHdr = WinCreateWindow(hwndFrame,
                                GetPString(IDS_WCLED),
                                "0",
                                WS_VISIBLE | SS_TEXT | DT_VCENTER |
@@ -554,12 +586,15 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                                swp->y + 12,
                                12,
                                12,
-                               WinQueryWindow(hwnd,QW_PARENT),
+                               hwndFrame,
                                HWND_TOP,
                                MAIN_LEDHDR,
                                NULL,
                                NULL);
-  hwndAutoview = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
+  if (!hwndLEDHdr)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndAutoview = WinCreateWindow(hwndFrame,
                                  GetPString(IDS_WCAUTOVIEW),
                                  NullStr,
                                  WS_VISIBLE | SS_TEXT | DT_LEFT |
@@ -574,13 +609,16 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                                   (WinQuerySysValue(HWND_DESKTOP,
                                                     SV_CXSIZEBORDER) * 2),
                                  48,
-                                 WinQueryWindow(hwnd,QW_PARENT),
+                                 hwndFrame,
                                  HWND_TOP,
                                  MAIN_AUTOVIEW,
                                  NULL,
                                  NULL);
-  hwndAutoMLE = WinCreateWindow(WinQueryWindow(hwnd,QW_PARENT),
-//                                GetPString(IDS_WCAUTOVIEW),
+  if (!hwndAutoview)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+
+  hwndAutoMLE = WinCreateWindow(hwndFrame,
+                                // GetPString(IDS_WCAUTOVIEW),
                                 WC_MLE,
                                 NullStr,
                                 WS_VISIBLE | MLS_HSCROLL |
@@ -595,59 +633,52 @@ void CommonCreateMainChildren (HWND hwnd,SWP *swp) {
                                  (WinQuerySysValue(HWND_DESKTOP,
                                                    SV_CXSIZEBORDER) * 2),
                                 48,
-                                WinQueryWindow(hwnd,QW_PARENT),
+                                hwndFrame,
                                 HWND_TOP,
                                 MAIN_AUTOVIEWMLE,
                                 NULL,
                                 NULL);
-  {
-    PFNWP oldproc;
+  if (!hwndAutoMLE)
+    Win_Error2(hwndFrame,hwnd,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
 
-    oldproc = WinSubclassWindow(hwndAutoMLE,(PFNWP)AutoViewProc);
-    WinSetWindowPtr(hwndAutoMLE,0,(PVOID)oldproc);
-    PostMsg(hwndAutoMLE,
-            UM_SETUP,
-            MPVOID,
-            MPVOID);
-  }
+  oldproc = WinSubclassWindow(hwndAutoMLE,AutoViewProc);
+  WinSetWindowPtr(hwndAutoMLE,0,(PVOID)oldproc);
+  PostMsg(hwndAutoMLE,UM_SETUP,MPVOID,MPVOID);
 }
 
-
-MRESULT EXPENTRY CommonMainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CommonMainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case UM_THREADUSE:
-      if(hbmLEDon &&
-         hbmLEDoff) {
-
-				static LONG threaduse = 0;
-				CHAR				ts[33];
+      if (hbmLEDon && hbmLEDoff) {
+	static LONG threaduse = 0;
+	CHAR ts[33];
 
         if(mp1) {
-					threaduse++;
-					if(threaduse == 1)
+	  threaduse++;
+	  if (threaduse == 1)
             WinSendMsg(hwndLED,
                        SM_SETHANDLE,
                        MPFROMLONG(hbmLEDon),
                        MPVOID);
-				}
-				else {
-					threaduse--;
-					if(threaduse <= 0) {
-						threaduse = 0;
+	  }
+	  else {
+	    threaduse--;
+	    if(threaduse <= 0) {
+	      threaduse = 0;
             WinSendMsg(hwndLED,
                        SM_SETHANDLE,
                        MPFROMLONG(hbmLEDoff),
                        MPVOID);
-					}
-				}
+	  }
+	}
         ltoa(threaduse,
              ts,
              10);
         WinSetWindowText(hwndLEDHdr,
                          ts);
-			}
-			return 0;
+      }
+      return 0;
 
     case UM_LOADFILE:
 			{
@@ -691,8 +722,8 @@ MRESULT EXPENTRY CommonMainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY CommonTextButton (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CommonTextButton (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   static HWND  hwndLast = (HWND)0;
   static ULONG lastclick = 0;
 
@@ -806,8 +837,8 @@ MRESULT EXPENTRY CommonTextButton (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY CommonCnrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CommonCnrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd,0);
 
   switch(msg) {
@@ -893,8 +924,8 @@ MRESULT EXPENTRY CommonCnrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
 
 HWND OpenDirCnr (HWND hwnd,HWND hwndParent,HWND hwndRestore,
-                 BOOL noautotile,char *directory) {
-
+                 BOOL noautotile,char *directory)
+{
   SWP  swp;
   HWND hwndDir;
 
