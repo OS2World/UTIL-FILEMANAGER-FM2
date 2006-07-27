@@ -264,7 +264,7 @@ timer.c: fm3dll.h fm3str.h
 tools.c: fm3dll.h fm3dlg.h tools.h fm3str.h
 treecnr.c: fm3dll.h fm3dlg.h fm3str.h mle.h
 undel.c: fm3dll.h fm3dlg.h fm3str.h
-update.c: fm3dll.h
+update.c: fm3dll.h fm3str.h
 uudecode.c: fm3dll.h fm3dlg.h fm3str.h
 valid.c: fm3dll.h fm3str.h
 viewer.c: fm3dll.h fm3dlg.h fm3str.h mle.h
