@@ -24,6 +24,7 @@
   30 Dec 05 SHL ArcCnrWndProc: correct date/time column display setup
   29 May 06 SHL Comments
   14 Jul 06 SHL Use Runtime_Error
+  26 Jul 06 SHL Correct SelectAll usage
 
 ***********************************************************************/
 
@@ -1380,11 +1381,11 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         switch(SHORT1FROMMP(mp1)) {
           case IDM_SELECTALL:
           case IDM_SELECTALLFILES:
-            SelectAll(dcd->hwndCnr,TRUE,TRUE,NULL,NULL,FALSE);
+            SelectAll(dcd->hwndCnr,TRUE,TRUE,NULL,NULL,TRUE);
             break;
           case IDM_DESELECTALL:
           case IDM_DESELECTALLFILES:
-            DeselectAll(dcd->hwndCnr,TRUE,TRUE,NULL,NULL,FALSE);
+            DeselectAll(dcd->hwndCnr,TRUE,TRUE,NULL,NULL,TRUE);
             break;
           case IDM_DESELECTMASK:
           case IDM_SELECTMASK:
