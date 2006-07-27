@@ -731,7 +731,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 				  MPVOID);
       if (!hwndCnr)
       {
-        Runtime_Error(pszSrcFile, __LINE__, "no window");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NOWINDOWTEXT);
 	break;
       }
       x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;

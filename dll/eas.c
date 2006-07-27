@@ -941,7 +941,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	USHORT control;
 
 	if (!eap -> head || !*eap -> filename)
-          Runtime_Error(pszSrcFile, __LINE__, "no data");
+          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	else
 	{
 	  switch (*(USHORT *) eap -> current -> value)
@@ -968,7 +968,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      *s = 0;
 	      WinQueryDlgItemText(hwnd, control, 32767L, (PCH) s);
 	      if (!*s)
-                Runtime_Error(pszSrcFile, __LINE__, "no data");
+                Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	      else {
 		PFEA2LIST pfealist;
 

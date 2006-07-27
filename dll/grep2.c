@@ -915,7 +915,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       hwndCollect = WinQueryWindowULong(hwnd, QWL_USER);
       if (!hwndCollect)
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else
       {
 	static GREP g;		// Passed to thread
