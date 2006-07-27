@@ -37,7 +37,7 @@ Can't start %s %s
                       FM/2 is free software from Mark Kimes.
 Freely redistributable.  Code available.
  You are here --> x
-WinCreateWindow failed: %s
+**Spare 39**
 Memory allocation failed!!!
 \rYou can drop on me!
 Dropping here will copy or move to this drive.
@@ -288,7 +288,7 @@ This is the EA's data -- change it if you like.
 Mayday!
 \r\rWould you like help on UNDELETE?
 FM/2: Undelete files drive %c:
-**SPARE**
+No data
 Could not start thread.
 Undelete:
 Select files to undelete, then click the Okay button.  Click Cancel to exit without doing anything.  Change the mask in the entry field if desired, or select another drive from the dropdown listbox.\r\rNote this requires UNDELETE.COM to be on your PATH (it is in the default installation) and the UNDELETE environment variable to be set for the drive in CONFIG.SYS.  Type HELP UNDELETE at a command line for more information.
@@ -960,13 +960,13 @@ There are attach and/or detach requests pending -- you can use the window list t
 ;\n;This file contains definitions for an FM/2 toolbox.\n;FM/2 saved this file as \"%s\".\n;\n;Each tool button has four lines that describe it.  The first line is\n;the help for the button.  The second line is the text for the button\n;(internally defined tools have icons, and the text is ignored).  The\n;third line is a number indicating flags associated with the button.\n;A flag value of 1 means the button is dropable, 4 means invisible,\n;32 means use user-provided icon only (named <ID>.bmp).\n;The fourth line is the ID of the button (for internal commands only).\n;Note Commands begin at ID 4000, so a button with ID 4000 would cause\n;the first Command to be run and ID 4001 would run the second.\n;4900 marks the first \"quick toolbox change\" item, and you can\n;have up to 50 of them (these buttons load other toolboxes, see\n;online help).;\n
  [%c:  \"%s\"  SN: %08lx%s]
 ; FM/2 seek and scan mask file, one mask set per line\n
-**Spare**
+WinCreateWindow
 Record insert failed
 Record allocation failed
-**Spare**
-**Spare**
+PrfQueryProfileSize
+PrfQueryProfileData
 DosQCurDisk failed
-**Spare**
+No window
 2.System VIO
 FM/2:  Makearc\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32
 Usage:\r\rMAKEARC <file or directory to archive>\r
