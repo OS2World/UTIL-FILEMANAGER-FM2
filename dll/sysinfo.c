@@ -27,8 +27,10 @@
 #include "fm3dlg.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(SYSINFO,SysInfoDlgProc,RunRmview)
 
+static PSZ pszSrcFile = __FILE__;
+
+#pragma alloc_text(SYSINFO,SysInfoDlgProc,RunRmview)
 
 VOID RunRmview (VOID *arg)
 {
@@ -48,7 +50,7 @@ VOID RunRmview (VOID *arg)
     if(!WinIsWindow(thab,hwnd))
       goto Abort;
     unlinkf("%s","$RMVIEW.#$#");
-    fp = xfopen("$RMVIEW.#$#","w");
+    fp = xfopen("$RMVIEW.#$#","w", pszSrcFile, __LINE__);
     if (!fp)
       goto Abort;
     else {
@@ -68,7 +70,7 @@ VOID RunRmview (VOID *arg)
     }
     if (!WinIsWindow(thab,hwnd))
       goto Abort;
-    fp = xfopen("$RMVIEW.#$#","r");
+    fp = xfopen("$RMVIEW.#$#","r",pszSrcFile,__LINE__);
     if (fp) {
       fgets(s,2048,fp);
       fgets(s,2048,fp);
