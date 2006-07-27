@@ -29,6 +29,7 @@
   05 Jul 06 SHL Support Hide not selected
   13 Jul 06 SHL Add Runtime_Error
   22 Jul 06 SHL Add memory.c functions
+  26 Jul 06 SHL Add strips.c functions
 
 ***********************************************************************/
 
@@ -726,6 +727,8 @@ APIRET save_dir (CHAR *curdir);
 APIRET switch_to (CHAR *s);
 
 /* strips.c */
+VOID chop_at_crnl(PSZ pszSrc);
+PSZ convert_nl_to_nul(PSZ pszSrc);
 void strip_lead_char (char *pszStripChars,char *pszSrc);
 void strip_trail_char (char *pszStripChars,char *pszSrc);
 #define lstrip(s)         strip_lead_char(" \t",(s))
