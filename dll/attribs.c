@@ -295,7 +295,7 @@ MRESULT EXPENTRY AttrListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
             li = INSTDATA(hwnd);
             if (!li) {
-              Runtime_Error(pszSrcFile, __LINE__, "no data");
+              Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
               break;
 	    }
             {

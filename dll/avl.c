@@ -764,7 +764,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       load_archivers();
     if (!(ARC_TYPE **)mp2)
     {
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       WinDismissDlg(hwnd, 0);
       break;
     }

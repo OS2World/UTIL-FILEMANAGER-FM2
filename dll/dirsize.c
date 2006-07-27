@@ -856,7 +856,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	  // Save button
 	  pState = INSTDATA(hwnd);
 	  if (!pState)
-            Runtime_Error(pszSrcFile, __LINE__, "no data");
+            Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	  else {
 
 	    CHAR  pszFileName[CCHMAXPATH];
@@ -921,7 +921,7 @@ MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	case DID_CANCEL:
 	  pState = INSTDATA(hwnd);
 	  if (!pState)
-            Runtime_Error(pszSrcFile, __LINE__, "no data");
+            Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	  else {
 	    if (pState->working) {
 	      pState->dying = TRUE;

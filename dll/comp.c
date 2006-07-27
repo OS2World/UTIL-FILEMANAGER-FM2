@@ -1429,7 +1429,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case WM_INITDLG:
       cmp = (COMPARE *)mp2;
       if (!cmp) {
-	Runtime_Error(pszSrcFile, __LINE__, "no data");
+	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
         WinDismissDlg(hwnd,0);
       }
       else {
@@ -2374,7 +2374,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         case IDM_INVERT:
           cmp = INSTDATA(hwnd);
           if (!cmp)
-	      Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	  else {
             COMPARE *forthread;
 
