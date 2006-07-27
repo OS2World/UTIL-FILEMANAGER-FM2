@@ -14,6 +14,7 @@
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Correct reversed wrap logic
   17 Jul 06 SHL Use Runtime_Error
+  26 Jul 06 SHL Use chop_at_crnl and convert_nl_to_nul
 
 ***********************************************************************/
 
@@ -936,12 +937,7 @@ static VOID Search(VOID * args)
 	      while (t && !ad -> stopflag)
 	      {
 		lastline = 1;
-		n = strchr(t, '\n');
-		if (n)
-		{
-		  *n = 0;
-		  n++;
-		}
+		n = convert_nl_to_nul(t);
 		if (*t)
 		{
 		  strcpy(s2, t);
@@ -3522,12 +3518,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	strncpy(line, ad -> lines[ad -> cursored - 1], CCHMAXPATH);
 	line[CCHMAXPATH - 1] = 0;
-	p = strchr(line, '\r');
-	if (p)
-	  *p = 0;
-	p = strchr(line, '\n');
-	if (p)
-	  *p = 0;
+	chop_at_crnl(line);
 	if (*line == '\"')
 	{
 	  memmove(line, line + 1, strlen(line));
