@@ -30,6 +30,7 @@
   13 Jul 06 SHL Add Runtime_Error
   22 Jul 06 SHL Add memory.c functions
   26 Jul 06 SHL Add strips.c functions
+  26 Jul 06 SHL Add more error.c functions
 
 ***********************************************************************/
 
@@ -577,11 +578,15 @@ BOOL FleshEnv      (HWND hwndCnr,PCNRITEM pciParent);
 BOOL UnFlesh       (HWND hwndCnr,PCNRITEM pciParent);
 
 /* error.c */
-VOID Win_Error(HWND hwndErr,HWND hwndOwner,
-               PCSZ pszFileName,ULONG ulLineNo,PCSZ pszFmt,...);
 INT Dos_Error(ULONG mb_type,ULONG ulRC,HWND hwndOwner,
               PCSZ pszFileName,ULONG ulLineNo,PCSZ pszFmt,...);
+INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
+	       ULONG ulLineNo, UINT idMsg);
+VOID Win_Error(HWND hwndErr,HWND hwndOwner,
+               PCSZ pszFileName,ULONG ulLineNo,PCSZ pszFmt,...);
+VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, UINT idMsg);
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...);
+VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg);
 APIRET saymsg(ULONG mb_type,HWND hwnd,PCSZ pszTitle,PCSZ pszFmt,...);
 
 /* valid.c */
