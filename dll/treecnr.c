@@ -685,9 +685,9 @@ MRESULT EXPENTRY TreeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (!dcd)
         Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
-      else if (!hwndStatus)
-        Runtime_Error2(pszSrcFile, __LINE__, IDS_NOWINDOWTEXT);
-      else if (dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
+      // Bypass if not running integrated (i.e if vtree)
+      else if (hwndStatus &&
+               dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 	CHAR      s[CCHMAXPATH * 2];
 	PCNRITEM   pci = (PCNRITEM)mp1;
 	FSALLOCATE fsa;
