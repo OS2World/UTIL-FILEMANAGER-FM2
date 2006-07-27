@@ -1,0 +1,42 @@
+
+Coding Style Guide
+
+Indents
+
+  Start function with { in column 1
+
+  Intent by 2 characters
+
+  Layouts
+
+    if (expr) {
+    }
+    else {
+    }
+
+    while (expr) {
+    }
+
+    for (expr) {
+    }
+
+Memory
+
+ - Check all malloc/realloc/strdup/DosAllocMem calls
+   Use xmalloc in non-time critical code
+   Use xrealloc in non-time critical code
+   Use xstrdup in non-time critical code
+
+ - Use xfree rather than free
+
+Windows
+
+ - Check all WinCreateWindow call
+ - Check QWL_USER pointer data
+
+Beeps
+
+  DosBeep(50,100)               Alert user to failure - must include visual action
+
+
+$Id$
