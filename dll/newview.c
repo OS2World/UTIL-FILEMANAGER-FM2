@@ -511,7 +511,7 @@ MRESULT EXPENTRY ViewStatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  if (ad)
 	    DragOne(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-			      FID_CLIENT), (HWND) 0, ad -> filename, FALSE);
+			      FID_CLIENT), (HWND)0, ad -> filename, FALSE);
 	}
 	break;
       default:
@@ -894,7 +894,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
 
 static VOID Search(VOID * args)
 {
-  HWND hwnd = (HWND) args;
+  HWND hwnd = (HWND)args;
   HAB hab2;
   HMQ hmq2;
   VIEWDATA *ad;
@@ -1066,7 +1066,7 @@ static VOID Search(VOID * args)
 
 static VOID Clipboard(VOID * args)
 {
-  HWND hwnd = (HWND) args;
+  HWND hwnd = (HWND)args;
   HAB hab2;
   HMQ hmq2;
   VIEWDATA *ad;
@@ -1174,7 +1174,7 @@ static VOID Clipboard(VOID * args)
 
 static VOID ReLine(VOID * args)
 {
-  HWND hwnd = (HWND) args;
+  HWND hwnd = (HWND)args;
   HAB hab2;
   HMQ hmq2;
   VIEWDATA *ad;
@@ -1370,7 +1370,7 @@ static VOID ReLine(VOID * args)
 
 static VOID LoadFile(VOID * args)
 {
-  HWND hwnd = (HWND) args;
+  HWND hwnd = (HWND)args;
   HAB hab2;
   HMQ hmq2;
   VIEWDATA *ad;
@@ -1976,7 +1976,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (ad -> hwndFrame ==
 	  WinQueryActiveWindow(WinQueryWindow(ad -> hwndFrame,
 					      QW_PARENT)) &&
-	  !ParentIsDesktop(ad -> hwndFrame, (HWND) 0))
+	  !ParentIsDesktop(ad -> hwndFrame, (HWND)0))
       {
 	if (hwndStatus2)
 	  WinSetWindowText(hwndStatus2,
@@ -2632,10 +2632,10 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_MENUEND:
-    if (ad && ad -> hwndPopup == (HWND) mp2)
+    if (ad && ad -> hwndPopup == (HWND)mp2)
     {
       WinDestroyWindow(ad -> hwndPopup);
-      ad -> hwndPopup = (HWND) 0;
+      ad -> hwndPopup = (HWND)0;
     }
     break;
 
@@ -3187,19 +3187,19 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SHORT sSelect;
 
 	rc = DosRequestMutexSem(ad -> ScanSem, SEM_IMMEDIATE_RETURN);
-	WinEnableMenuItem((HWND) mp2, IDM_SAVETOCLIP, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_SAVETOCLIP, (rc == 0 &&
 						       ad -> selected != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_APPENDTOCLIP, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_APPENDTOCLIP, (rc == 0 &&
 						      ad -> selected != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_SAVETOLIST, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_SAVETOLIST, (rc == 0 &&
 						       ad -> selected != 0));
 	sSelect = (SHORT) WinSendDlgItemMsg(ad -> hwndFrame, NEWVIEW_LISTBOX,
 					 LM_QUERYITEMCOUNT, MPVOID, MPVOID);
-	WinEnableMenuItem((HWND) mp2, IDM_SAVETOCLIP2, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_SAVETOCLIP2, (rc == 0 &&
 							sSelect > 0));
-	WinEnableMenuItem((HWND) mp2, IDM_APPENDTOCLIP2, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_APPENDTOCLIP2, (rc == 0 &&
 							  sSelect > 0));
-	WinEnableMenuItem((HWND) mp2, IDM_SAVETOLIST2, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_SAVETOLIST2, (rc == 0 &&
 							sSelect > 0));
 	if (!rc)
 	  DosReleaseMutexSem(ad -> ScanSem);
@@ -3211,17 +3211,17 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	APIRET rc;
 
 	rc = DosRequestMutexSem(ad -> ScanSem, SEM_IMMEDIATE_RETURN);
-	WinEnableMenuItem((HWND) mp2, IDM_FONTPALETTE, (rc == 0));
-	WinEnableMenuItem((HWND) mp2, IDM_HEXMODE, (rc == 0));
-	WinEnableMenuItem((HWND) mp2, IDM_WRAP, (rc == 0));
-	WinEnableMenuItem((HWND) mp2, IDM_CODEPAGE, (rc == 0));
+	WinEnableMenuItem((HWND)mp2, IDM_FONTPALETTE, (rc == 0));
+	WinEnableMenuItem((HWND)mp2, IDM_HEXMODE, (rc == 0));
+	WinEnableMenuItem((HWND)mp2, IDM_WRAP, (rc == 0));
+	WinEnableMenuItem((HWND)mp2, IDM_CODEPAGE, (rc == 0));
 	if (!rc)
 	  DosReleaseMutexSem(ad -> ScanSem);
       }
-      WinCheckMenuItem((HWND) mp2, IDM_HEXMODE, ad -> hex);
-      WinCheckMenuItem((HWND) mp2, IDM_WRAP, ad -> wrapon);
-      WinCheckMenuItem((HWND) mp2, IDM_IGNOREFTP, ad -> ignoreftp);
-      WinCheckMenuItem((HWND) mp2, IDM_IGNOREHTTP, ad -> ignorehttp);
+      WinCheckMenuItem((HWND)mp2, IDM_HEXMODE, ad -> hex);
+      WinCheckMenuItem((HWND)mp2, IDM_WRAP, ad -> wrapon);
+      WinCheckMenuItem((HWND)mp2, IDM_IGNOREFTP, ad -> ignoreftp);
+      WinCheckMenuItem((HWND)mp2, IDM_IGNOREHTTP, ad -> ignorehttp);
       break;
 
     case IDM_SEARCHMENU:
@@ -3229,26 +3229,26 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	APIRET rc;
 
 	rc = DosRequestMutexSem(ad -> ScanSem, SEM_IMMEDIATE_RETURN);
-	WinEnableMenuItem((HWND) mp2, IDM_FINDFIRST, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_FINDFIRST, (rc == 0 &&
 						      ad -> numlines != 0 &&
 						      ad -> markedlines));
-	WinEnableMenuItem((HWND) mp2, IDM_FINDNEXT, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_FINDNEXT, (rc == 0 &&
 						     ad -> numlines != 0 &&
 						     ad -> markedlines &&
 						     ad -> found != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_FINDPREV, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_FINDPREV, (rc == 0 &&
 						     ad -> numlines != 0 &&
 						     ad -> markedlines &&
 						     ad -> found != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_NEXTBLANKLINE, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_NEXTBLANKLINE, (rc == 0 &&
 						      ad -> numlines != 0 &&
 							  !ad -> hex));
-	WinEnableMenuItem((HWND) mp2, IDM_PREVBLANKLINE, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_PREVBLANKLINE, (rc == 0 &&
 						      ad -> numlines != 0 &&
 							  !ad -> hex));
-	WinEnableMenuItem((HWND) mp2, IDM_GOTOLINE, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_GOTOLINE, (rc == 0 &&
 						     ad -> numlines != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_GOTOOFFSET, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_GOTOOFFSET, (rc == 0 &&
 						       ad -> textsize != 0));
 	if (!rc)
 	  DosReleaseMutexSem(ad -> ScanSem);
@@ -3260,37 +3260,37 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	APIRET rc;
 
 	rc = DosRequestMutexSem(ad -> ScanSem, SEM_IMMEDIATE_RETURN);
-	WinEnableMenuItem((HWND) mp2, IDM_SELECTALL, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_SELECTALL, (rc == 0 &&
 						      ad -> numlines != 0 &&
 						      ad -> markedlines &&
 						      (ad -> selected !=
 						       ad -> numlines ||
 						       !ad -> selected)));
-	WinEnableMenuItem((HWND) mp2, IDM_DESELECTALL, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_DESELECTALL, (rc == 0 &&
 						      ad -> numlines != 0 &&
 							ad -> markedlines &&
 						      ad -> selected != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_DESELECTFOUND, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_DESELECTFOUND, (rc == 0 &&
 						      ad -> numlines != 0 &&
 							ad -> markedlines &&
 						      ad -> selected != 0 &&
 							  ad -> found != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_SELECTFOUND, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_SELECTFOUND, (rc == 0 &&
 						      ad -> numlines != 0 &&
 							ad -> markedlines &&
 							ad -> found != 0 &&
 							(ad -> numlines !=
 							 ad -> selected ||
 							 !ad -> selected)));
-	WinEnableMenuItem((HWND) mp2, IDM_NEXTSELECTED, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_NEXTSELECTED, (rc == 0 &&
 						      ad -> numlines != 0 &&
 							 ad -> markedlines &&
 						      ad -> selected != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_PREVSELECTED, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_PREVSELECTED, (rc == 0 &&
 						      ad -> numlines != 0 &&
 							 ad -> markedlines &&
 						      ad -> selected != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_INVERT, (rc == 0 &&
+	WinEnableMenuItem((HWND)mp2, IDM_INVERT, (rc == 0 &&
 						   ad -> numlines != 0 &&
 						   ad -> markedlines));
 	if (!rc)
@@ -3430,7 +3430,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	StartMLEEditor(ad -> hwndParent, 4, ad -> filename,
 		       ad -> hwndFrame);
-      ad -> hwndRestore = (HWND) 0;
+      ad -> hwndRestore = (HWND)0;
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       break;
 
@@ -4190,7 +4190,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_DESTROY:
     {
       BOOL dontclose = FALSE;
-      HWND hwndRestore = (HWND) 0;
+      HWND hwndRestore = (HWND)0;
 
       WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER5);
       if (ad)
@@ -4232,7 +4232,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ParentIsDesktop(hwnd, WinQueryWindow(WinQueryWindow(hwnd,
 						    QW_PARENT), QW_PARENT)))
       {
-	if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
+	if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
 	  DosExit(EXIT_PROCESS, 1);
       }
     }
@@ -4245,7 +4245,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
 		 HWND hwndRestore)
 {
-  HWND hwndFrame = (HWND) 0, hwndClient;
+  HWND hwndFrame = (HWND)0, hwndClient;
   VIEWDATA *ad;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
   FCF_SIZEBORDER | FCF_MINMAX |
@@ -4286,7 +4286,7 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
     ad = xmallocz(sizeof(VIEWDATA),pszSrcFile,__LINE__);
     if (!ad) {
       WinDestroyWindow(hwndFrame);
-      hwndFrame = (HWND) 0;
+      hwndFrame = (HWND)0;
     }
     else {
       ad -> size = sizeof(VIEWDATA);

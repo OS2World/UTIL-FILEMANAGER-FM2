@@ -110,9 +110,9 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR s[] = " :\\";
 
 	*s = (CHAR) (id - MINI_DRIVEA) + 'A';
-	OpenDirCnr((HWND) 0,
+	OpenDirCnr((HWND)0,
 		   HWND_DESKTOP,
-		   (HWND) 0,
+		   (HWND)0,
 		   FALSE,
 		   s);
 	return MRFROMLONG(1L);
@@ -222,7 +222,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   static ULONG counter;
   static BOOL NoFloat, noqproc = FALSE, Positioned;
-  static HWND hwndMenu = (HWND) 0;
+  static HWND hwndMenu = (HWND)0;
 
   switch (msg)
   {
@@ -307,10 +307,10 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_MENUEND:
     NoFloat = FALSE;
-    if (hwndMenu == (HWND) mp2)
+    if (hwndMenu == (HWND)mp2)
     {
       WinDestroyWindow(hwndMenu);
-      hwndMenu = (HWND) 0;
+      hwndMenu = (HWND)0;
     }
     break;
 
@@ -536,7 +536,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	*path = 0;
 	TopWindowName(hwnd,
-		      (HWND) 0,
+		      (HWND)0,
 		      path);
 	if (SHORT1FROMMP(mp1) == IDM_DOSCOMMANDLINE)
 	  env = GetCmdSpec(TRUE);
@@ -1182,7 +1182,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 HWND CreateDataBar(HWND hwndParent, ULONG fl)
 {
-  HWND hwndClient = (HWND) 0;
+  HWND hwndClient = (HWND)0;
   ULONG FrameFlags = 0;
 
   if (WinCreateStdWindow(hwndParent,

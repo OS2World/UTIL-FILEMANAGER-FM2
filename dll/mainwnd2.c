@@ -570,7 +570,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 	      WM_CLOSE,
 	      MPVOID,
 	      MPVOID);
-      hwndTree = (HWND) 0;
+      hwndTree = (HWND)0;
     }
     else
     {
@@ -586,7 +586,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
       TreeWidth = max(TreeWidth, 80);
     }
     {
-      BOOL dummy = (hwndTree != (HWND) 0);
+      BOOL dummy = (hwndTree != (HWND)0);
 
       PrfWriteProfileData(fmprof,
 			  realappname,
@@ -724,8 +724,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 
       if (!cmdloaded)
 	load_commands();
-      hwndCnr = TopWindow(hwnd, (HWND) 0);
-      hwndCnr = (HWND) WinSendMsg(WinWindowFromID(hwndCnr, FID_CLIENT),
+      hwndCnr = TopWindow(hwnd, (HWND)0);
+      hwndCnr = (HWND)WinSendMsg(WinWindowFromID(hwndCnr, FID_CLIENT),
 				  UM_CONTAINERHWND,
 				  MPVOID,
 				  MPVOID);
@@ -788,7 +788,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 
       HWND hwndActive;
 
-      hwndActive = TopWindow(hwnd, (HWND) 0);
+      hwndActive = TopWindow(hwnd, (HWND)0);
       if (hwndActive)
 	PostMsg(WinWindowFromID(hwndActive, FID_CLIENT),
 		msg,
@@ -926,7 +926,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
       else
 	save_dir(s);
       pd -> hwndLastDir = pd -> hwndCurr = pd -> hwndDir1 =
-	StartDirCnr(hwnd, s, (HWND) 0, 3);
+	StartDirCnr(hwnd, s, (HWND)0, 3);
       size = sizeof(s);
       *s = 0;
       if (PrfQueryProfileData(fmprof,
@@ -938,7 +938,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2
 	MakeValidDir(s);
       else
 	save_dir(s);
-      pd -> hwndDir2 = StartDirCnr(hwnd, s, (HWND) 0, 3);
+      pd -> hwndDir2 = StartDirCnr(hwnd, s, (HWND)0, 3);
       WinSetFocus(HWND_DESKTOP,
 		  pd -> hwndCurr);
 
@@ -1388,11 +1388,11 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (mp1 &&
 	pd &&
-	(HWND) mp1 != pd -> hwndCurr)
+	(HWND)mp1 != pd -> hwndCurr)
     {
-      if ((HWND) mp1 != hwndTree)
-	pd -> hwndLastDir = (HWND) mp1;
-      pd -> hwndCurr = (HWND) mp1;
+      if ((HWND)mp1 != hwndTree)
+	pd -> hwndLastDir = (HWND)mp1;
+      pd -> hwndCurr = (HWND)mp1;
       WinSendMsg(hwnd,
 		 UM_SETUP2,
 		 MPVOID,
@@ -1410,14 +1410,14 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   UM_SETUP2,
 		   MPFROMLONG(1),
 		   MPVOID);
-	if (pd -> hwndMax != (HWND) mp1)
+	if (pd -> hwndMax != (HWND)mp1)
 	{
-	  pd -> hwndMax = (HWND) mp1;
+	  pd -> hwndMax = (HWND)mp1;
 	  WinSetFocus(HWND_DESKTOP,
 		      pd -> hwndMax);
 	}
 	else
-	  pd -> hwndMax = (HWND) 0;
+	  pd -> hwndMax = (HWND)0;
 	PostMsg(hwnd,
 		UM_SIZE,
 		MPVOID,
@@ -1442,32 +1442,32 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   mp2);
       break;
     case IDM_CONFIGMENU:
-      WinCheckMenuItem((HWND) mp2,
+      WinCheckMenuItem((HWND)mp2,
 		       IDM_TOOLSUBMENU,
 		       fToolbar);
-      WinCheckMenuItem((HWND) mp2,
+      WinCheckMenuItem((HWND)mp2,
 		       IDM_AUTOVIEW,
 		       fAutoView);
       break;
     case IDM_TOOLSUBMENU:
-      WinCheckMenuItem((HWND) mp2,
+      WinCheckMenuItem((HWND)mp2,
 		       IDM_TOOLBAR,
 		       fToolbar);
-      WinCheckMenuItem((HWND) mp2,
+      WinCheckMenuItem((HWND)mp2,
 		       IDM_TEXTTOOLS,
 		       fTextTools);
-      WinCheckMenuItem((HWND) mp2,
+      WinCheckMenuItem((HWND)mp2,
 		       IDM_TOOLTITLES,
 		       fToolTitles);
       break;
     case IDM_WINDOWSMENU:
-      WinCheckMenuItem((HWND) mp2,
+      WinCheckMenuItem((HWND)mp2,
 		       IDM_VTREE,
-		       (hwndTree != (HWND) 0));
-      WinCheckMenuItem((HWND) mp2,
+		       (hwndTree != (HWND)0));
+      WinCheckMenuItem((HWND)mp2,
 		       IDM_TILEBACKWARDS,
 		       fTileBackwards);
-      SetupWinList((HWND) mp2,
+      SetupWinList((HWND)mp2,
 		   hwnd,
 		   WinQueryWindow(hwnd, QW_PARENT));
       break;
@@ -1633,18 +1633,12 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-    hwndMain = (HWND) 0;
+    hwndMain = (HWND)0;
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd)
       free(pd);
-    if (!PostMsg((HWND) 0,
-		 WM_QUIT,
-		 MPVOID,
-		 MPVOID))
-      WinSendMsg((HWND) 0,
-		 WM_QUIT,
-		 MPVOID,
-		 MPVOID);
+    if (!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
+      WinSendMsg((HWND)0,WM_QUIT,MPVOID,MPVOID);
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);

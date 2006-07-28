@@ -95,7 +95,7 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPAR
      */
     {
       char dv[3], d;
-      HWND hwndB = (HWND) mp1;
+      HWND hwndB = (HWND)mp1;
       USHORT id;
 
       id = WinQueryWindowUShort(hwndB, QWS_ID);
@@ -212,8 +212,8 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPAR
     return 0;
 
   case WM_DESTROY:
-    if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
-      WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+    if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
+      WinSendMsg((HWND)0, WM_QUIT, MPVOID, MPVOID);
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
@@ -256,7 +256,7 @@ VOID MakeMainObjWin(VOID * args)
       else
       {
 	WinSetWindowPtr(MainObjectHwnd, QWL_USER, args);
-	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
+	while (WinGetMsg(hab2, &qmsg2, (HWND)0, 0, 0))
 	  WinDispatchMsg(hab2, &qmsg2);
 	WinDestroyWindow(MainObjectHwnd);
       }
@@ -284,7 +284,7 @@ static MRESULT EXPENTRY IdealButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM
 HWND TopWindow(HWND hwndParent, HWND exclude)
 {
   HENUM henum;
-  HWND hwndC = (HWND) 0;
+  HWND hwndC = (HWND)0;
   USHORT id;
 
   if (hwndParent)
@@ -307,7 +307,7 @@ HWND TopWindow(HWND hwndParent, HWND exclude)
 HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 {
   HENUM henum;
-  HWND hwndC = (HWND) 0, hwndDir, hwndClient;
+  HWND hwndC = (HWND)0, hwndDir, hwndClient;
   USHORT id;
   PCNRITEM pci = NULL;
 
@@ -386,7 +386,7 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 ULONG CountDirCnrs(HWND hwndParent)
 {
   HENUM henum;
-  HWND hwndF = (HWND) 0, hwndC, hwndDir;
+  HWND hwndF = (HWND)0, hwndC, hwndDir;
   ULONG ret = 0;
 
   henum = WinBeginEnumWindows(hwndParent);
@@ -407,7 +407,7 @@ ULONG CountDirCnrs(HWND hwndParent)
 HWND FindDirCnrByName(CHAR * directory, BOOL restore)
 {
   HENUM henum;
-  HWND hwndF = (HWND) 0, hwndC, hwndDir;
+  HWND hwndF = (HWND)0, hwndC, hwndDir;
   CHAR retstr[CCHMAXPATH];
 
   if (hwndMain)
@@ -605,7 +605,7 @@ static VOID ResizeTools(HWND hwnd)
 static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   PFNWP oldproc = (PFNWP) INSTDATA(hwnd);
-  static HWND hwndMenu = (HWND) 0;
+  static HWND hwndMenu = (HWND)0;
   USHORT id;
   static BOOL emphasized = FALSE;
 
@@ -620,10 +620,10 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARA
     break;
 
   case WM_MENUEND:
-    if (hwndMenu == (HWND) mp2)
+    if (hwndMenu == (HWND)mp2)
     {
       WinDestroyWindow(hwndMenu);
-      hwndMenu = (HWND) 0;
+      hwndMenu = (HWND)0;
     }
     break;
 
@@ -633,7 +633,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARA
 
       if (hwndMenu)
 	WinDestroyWindow(hwndMenu);
-      hwndMenu = (HWND) 0;
+      hwndMenu = (HWND)0;
       id = WinQueryWindowUShort(WinQueryWindow(hwnd, QW_PARENT), QWS_ID);
       switch (id)
       {
@@ -727,7 +727,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARA
       bstrip(path);
 // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Dragging: %s",path);
       if (*path && !IsRoot(path))
-	DragOne(hwnd, (HWND) 0, path, FALSE);
+	DragOne(hwnd, (HWND)0, path, FALSE);
       return 0;
     }
     break;
@@ -804,7 +804,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARA
   case WM_DESTROY:
     if (hwndMenu)
       WinDestroyWindow(hwndMenu);
-    hwndMenu = (HWND) 0;
+    hwndMenu = (HWND)0;
     break;
   }
 
@@ -963,7 +963,7 @@ MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_FOCUSME:
     WinSetFocus(HWND_DESKTOP,
-		(HWND) mp1);
+		(HWND)mp1);
     return 0;
 
   case WM_MOUSEMOVE:
@@ -1084,7 +1084,7 @@ MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-    hwndBubble = (HWND) 0;
+    hwndBubble = (HWND)0;
     break;
   }
   return PFNWPStatic(hwnd, msg, mp1, mp2);
@@ -1177,7 +1177,7 @@ MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_FOCUSME:
     WinSetFocus(HWND_DESKTOP,
-		(HWND) mp1);
+		(HWND)mp1);
     return 0;
 
   case WM_MOUSEMOVE:
@@ -1222,7 +1222,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   USHORT id;
   register TOOL *tool;
-  static HWND hwndMenu = (HWND) 0;
+  static HWND hwndMenu = (HWND)0;
 
   switch (msg)
   {
@@ -1366,10 +1366,10 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_MENUEND:
-    if (hwndMenu == (HWND) mp2)
+    if (hwndMenu == (HWND)mp2)
     {
       WinDestroyWindow(hwndMenu);
-      hwndMenu = (HWND) 0;
+      hwndMenu = (HWND)0;
     }
     break;
 
@@ -1480,7 +1480,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  HWND hwndActive;
 
-	  hwndActive = TopWindow(hwndMain, (HWND) 0);
+	  hwndActive = TopWindow(hwndMain, (HWND)0);
 	  if (hwndActive)
 	  {
 	    if (!WinSendMsg(hwndActive, UM_COMMAND, MPFROMP(li), MPVOID))
@@ -1680,9 +1680,9 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM
       PID pid;
       TID tid;
 
-      if (WinQueryWindowUShort((HWND) mp1, QWS_ID) == COMMAND_BUTTON)
+      if (WinQueryWindowUShort((HWND)mp1, QWS_ID) == COMMAND_BUTTON)
 	break;
-      if (!WinQueryWindowProcess((HWND) mp1, &pid, &tid) ||
+      if (!WinQueryWindowProcess((HWND)mp1, &pid, &tid) ||
 	  pid == mypid)
 	WinDestroyWindow(hwnd);
     }
@@ -1766,7 +1766,7 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM
 	{
 	  if (!FM2Command(directory, cl + len))
 	  {
-	    hwndCnr = TopWindow(hwndMain, (HWND) 0);
+	    hwndCnr = TopWindow(hwndMain, (HWND)0);
 	    if (hwndCnr)
 	    {
 	      hwndCnr = WinWindowFromID(hwndCnr, FID_CLIENT);
@@ -1906,7 +1906,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	dv[1] = ':';
 	dv[2] = '\\';
 	dv[3] = 0;
-	hwndActive = TopWindow(hwnd, (HWND) 0);
+	hwndActive = TopWindow(hwnd, (HWND)0);
 	if (hwndActive)
 	  WinSendMsg(WinWindowFromID(hwndActive, FID_CLIENT),
 		     UM_DRIVECMD,
@@ -1993,17 +1993,17 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_MENUEND:
-    if (hwndMenu == (HWND) mp2)
+    if (hwndMenu == (HWND)mp2)
     {
       WinDestroyWindow(hwndMenu);
-      hwndMenu = (HWND) 0;
+      hwndMenu = (HWND)0;
     }
     break;
 
   case WM_CONTEXTMENU:
     if (hwndMenu)
       WinDestroyWindow(hwndMenu);
-    hwndMenu = (HWND) 0;
+    hwndMenu = (HWND)0;
     id = WinQueryWindowUShort(hwnd, QWS_ID);
     *szDrv = 0;
     WinQueryWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
@@ -2079,7 +2079,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       strcat(szDrv, "\\");
       if (!FindDirCnrByName(szDrv, TRUE))
-	OpenDirCnr((HWND) 0,
+	OpenDirCnr((HWND)0,
 		   hwndMain,
 		   hwndTree,
 		   FALSE,
@@ -2347,7 +2347,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_DESTROY:
     if (hwndMenu)
       WinDestroyWindow(hwndMenu);
-    hwndMenu = (HWND) 0;
+    hwndMenu = (HWND)0;
     break;
   }
   return PFNWPButton(hwnd, msg, mp1, mp2);
@@ -2503,7 +2503,7 @@ VOID ResizeDrives(HWND hwndT, long xwidth)
 
 MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  static HWND hwndE = (HWND) 0, hwndB = (HWND) 0;
+  static HWND hwndE = (HWND)0, hwndB = (HWND)0;
   static CHAR lastcmd[1024] = "";
 
   switch (msg)
@@ -2580,7 +2580,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (hwndB &&
 	WinIsWindow(WinQueryAnchorBlock(hwnd), hwndB))
       WinDestroyWindow(hwndB);
-    hwndE = hwndB = (HWND) 0;
+    hwndE = hwndB = (HWND)0;
     return 0;
 
   case WM_COMMAND:
@@ -2728,7 +2728,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PFNWP oldproce;
 
 	*directory = 0;
-	TopWindowName(hwndMain, (HWND) 0, directory);
+	TopWindowName(hwndMain, (HWND)0, directory);
 	WinQueryWindowPos(hwnd, &swp);
 	hwndB = WinCreateWindow(hwnd,
 				WC_BUTTON,
@@ -3080,7 +3080,7 @@ static VOID ArrangeIcons(HWND hwndClient)
 static VOID NextChild(HWND hwndClient, BOOL previous)
 {
   HENUM henum;
-  HWND hwndActive, hwndNext, hwndPrev = (HWND) 0;
+  HWND hwndActive, hwndNext, hwndPrev = (HWND)0;
   BOOL next = FALSE, once = FALSE;
 
   previous = !previous;
@@ -3490,7 +3490,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 				s,
 				NULL,
 				0L);
-	  hwndDir = (HWND) WinSendMsg(hwndClient,
+	  hwndDir = (HWND)WinSendMsg(hwndClient,
 				      UM_SETDIR,
 				      MPFROMP(tdir),
 				      MPFROMLONG(1L));
@@ -3865,7 +3865,7 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
     HENUM henum;
 
     henum = WinBeginEnumWindows(hwndClient);
-    if ((hwndChild = WinGetNextWindow(henum)) != (HWND) 0)
+    if ((hwndChild = WinGetNextWindow(henum)) != (HWND)0)
     {
 
       ULONG ulCurRow, ulCurCol;
@@ -4246,7 +4246,7 @@ static MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd,
 	if (MakeValidDir(szFrom) &&
 	    !FindDirCnrByName(szFrom, TRUE))
 	{
-	  OpenDirCnr((HWND) 0,
+	  OpenDirCnr((HWND)0,
 		     hwndMain,
 		     hwndTree,
 		     FALSE,
@@ -4912,7 +4912,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else
 	save_dir2(wa.szCurrentPath1);
-      TopWindowName(hwndMain, (HWND) 0, wa.szCurrentPath2);
+      TopWindowName(hwndMain, (HWND)0, wa.szCurrentPath2);
       if (!*wa.szCurrentPath2)
 	strcpy(wa.szCurrentPath2, wa.szCurrentPath1);
       MakeValidDir(wa.szCurrentPath2);
@@ -5151,7 +5151,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case DID_CANCEL:
     {
-      HWND hwndTop = TopWindow(hwndMain, (HWND) 0);
+      HWND hwndTop = TopWindow(hwndMain, (HWND)0);
 
       if (hwndTop)
 	WinSetFocus(HWND_DESKTOP,
@@ -5185,7 +5185,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       char newpath[CCHMAXPATH];
 
       *newpath = 0;
-      TopWindowName(hwnd, (HWND) 0, newpath);
+      TopWindowName(hwnd, (HWND)0, newpath);
       if (WinDlgBox(HWND_DESKTOP,
 		    hwnd,
 		    WalkAllDlgProc,
@@ -5193,7 +5193,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    WALK_FRAME,
 		    MPFROMP(newpath)) &&
 	  *newpath)
-	OpenDirCnr((HWND) 0,
+	OpenDirCnr((HWND)0,
 		   hwndMain,
 		   hwndTree,
 		   FALSE,
@@ -5393,7 +5393,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       INT type = SEPARATE | WINDOWED;
 
       *path = 0;
-      TopWindowName(hwnd, (HWND) 0, path);
+      TopWindowName(hwnd, (HWND)0, path);
       if (SHORT1FROMMP(mp1) == IDM_DOSCOMMANDLINE)
 	env = GetCmdSpec(TRUE);
       else if (SHORT1FROMMP(mp1) != IDM_COMMANDLINE)
@@ -5434,7 +5434,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HWND hwndDir;
       PCNRITEM pci;
 
-      hwndDir = TopWindowName(hwnd, (HWND) 0, s);
+      hwndDir = TopWindowName(hwnd, (HWND)0, s);
       if (hwndDir)
       {
 	hwndDir = WinWindowFromID(hwndDir, FID_CLIENT);
@@ -5654,7 +5654,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       HWND hwndTemp;
 
-      hwndTemp = TopWindow(hwnd, (HWND) 0);
+      hwndTemp = TopWindow(hwnd, (HWND)0);
 
       if (hwndTemp)
       {
@@ -5751,7 +5751,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   default:
-    if (!SwitchCommand((HWND) WinQueryWindowULong(hwnd, QWL_USER),
+    if (!SwitchCommand((HWND)WinQueryWindowULong(hwnd, QWL_USER),
 		       SHORT1FROMMP(mp1)))
     {
       if (SHORT1FROMMP(mp1) >= IDM_COMMANDSTART &&
@@ -5763,8 +5763,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	if (!cmdloaded)
 	  load_commands();
-	hwndCnr = TopWindow(hwnd, (HWND) 0);
-	hwndCnr = (HWND) WinSendMsg(WinWindowFromID(hwndCnr, FID_CLIENT),
+	hwndCnr = TopWindow(hwnd, (HWND)0);
+	hwndCnr = (HWND)WinSendMsg(WinWindowFromID(hwndCnr, FID_CLIENT),
 				    UM_CONTAINERHWND,
 				    MPVOID,
 				    MPVOID);
@@ -5827,7 +5827,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	HWND hwndActive;
 
 	hwndActive = TopWindow(hwnd,
-			       (HWND) 0);
+			       (HWND)0);
 	if (hwndActive)
 	  PostMsg(WinWindowFromID(hwndActive, FID_CLIENT),
 		  WM_COMMAND,
@@ -6314,7 +6314,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  continue;
 	if (!IsFile(argv[x]) &&
 	    !FindDirCnrByName(argv[x], FALSE))
-	  OpenDirCnr((HWND) 0,
+	  OpenDirCnr((HWND)0,
 		     hwndMain,
 		     hwndTree,
 		     TRUE,
@@ -6391,10 +6391,10 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_MENUEND:
-    if ((HWND) mp2 == MainPopupMenu)
+    if ((HWND)mp2 == MainPopupMenu)
     {
       WinDestroyWindow(MainPopupMenu);
-      MainPopupMenu = (HWND) 0;
+      MainPopupMenu = (HWND)0;
     }
     break;
 
@@ -6482,8 +6482,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG wmsg;
 
 	wmsg = (SHORT1FROMMP(mp1) == 0) ? UM_FILESMENU : UM_VIEWSMENU;
-	hwndCurrent = TopWindow(hwnd, (HWND) 0);
-	PortholeInit((HWND) WinSendMsg(WinWindowFromID(hwndCurrent,
+	hwndCurrent = TopWindow(hwnd, (HWND)0);
+	PortholeInit((HWND)WinSendMsg(WinWindowFromID(hwndCurrent,
 						  FID_CLIENT), wmsg, MPVOID,
 				       MPVOID), mp1, mp2);
       }
@@ -6495,7 +6495,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1))
     {
     case IDM_CONFIGMENU:
-      SetToggleChecks((HWND) WinQueryWindowULong(hwnd, QWL_USER));
+      SetToggleChecks((HWND)WinQueryWindowULong(hwnd, QWL_USER));
       break;
 
     case IDM_WINDOWSMENU:
@@ -6526,7 +6526,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	HWND hwndCurrent;
 
-	hwndCurrent = TopWindow(hwnd, (HWND) 0);
+	hwndCurrent = TopWindow(hwnd, (HWND)0);
 	if (hwndCurrent)
 	  WinSendMsg(hwndCurrent, UM_INITMENU, mp1, mp2);
       }
@@ -6848,7 +6848,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    break;
 		  }
 		}
-		OpenDirCnr((HWND) 0,
+		OpenDirCnr((HWND)0,
 			   hwndMain,
 			   hwndTree,
 			   FALSE,
@@ -7016,7 +7016,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETDIR:
     /* mp1 == name of directory to open */
     if (mp1)
-      return MRFROMLONG(OpenDirCnr((HWND) 0,
+      return MRFROMLONG(OpenDirCnr((HWND)0,
 				   hwndMain,
 				   hwndTree,
 				   (BOOL) mp2,
@@ -7024,15 +7024,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-    hwndMain = (HWND) 0;
-    if (!PostMsg((HWND) 0,
-		 WM_QUIT,
-		 MPVOID,
-		 MPVOID))
-      WinSendMsg((HWND) 0,
-		 WM_QUIT,
-		 MPVOID,
-		 MPVOID);
+    hwndMain = (HWND)0;
+    if (!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
+      WinSendMsg((HWND)0,WM_QUIT,MPVOID,MPVOID);
     break;
   }
 

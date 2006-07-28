@@ -1542,7 +1542,7 @@ VOID MassAction(VOID * args)
 	  case IDM_VIEWBINARY:
 	    if (*binview)
 	    {
-	      ExecOnList((HWND) 0,
+	      ExecOnList((HWND)0,
 			 binview,
 			 WINDOWED | SEPARATE,
 			 NULL,
@@ -1554,7 +1554,7 @@ VOID MassAction(VOID * args)
 	  case IDM_VIEWTEXT:
 	  SkipViewing:
 	    if (*viewer)
-	      ExecOnList((HWND) 0, viewer,
+	      ExecOnList((HWND)0, viewer,
 			 WINDOWED | SEPARATE |
 			 ((fViewChild) ? CHILD : 0),
 			 NULL,
@@ -1597,7 +1597,7 @@ VOID MassAction(VOID * args)
 	  case IDM_EDITBINARY:
 	    if (*bined)
 	    {
-	      ExecOnList((HWND) 0,
+	      ExecOnList((HWND)0,
 			 bined,
 			 WINDOWED | SEPARATE,
 			 NULL,
@@ -1609,7 +1609,7 @@ VOID MassAction(VOID * args)
 	  case IDM_EDITTEXT:
 	  SkipEditing:
 	    if (*editor)
-	      ExecOnList((HWND) 0,
+	      ExecOnList((HWND)0,
 			 editor,
 			 WINDOWED | SEPARATE,
 			 NULL,

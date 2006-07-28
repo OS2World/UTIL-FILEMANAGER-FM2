@@ -47,7 +47,7 @@ BOOL ShowSession(HWND hwnd, PID pid)
   SWCNTRL swctl;
   ULONG rc;
 
-  hswitch = WinQuerySwitchHandle((pid) ? (HWND) 0 : hwnd, pid);
+  hswitch = WinQuerySwitchHandle((pid) ? (HWND)0 : hwnd, pid);
   if (hswitch)
   {
     rc = WinQuerySwitchEntry(hswitch, &swctl);

@@ -1437,13 +1437,10 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           }
           free(vw);
         }
-        if(!dontclose &&
-           ParentIsDesktop(hwnd,WinQueryWindow(WinQueryWindow(hwnd,
-                           QW_PARENT),QW_PARENT))) {
-          if(!PostMsg((HWND)0,
-                      WM_QUIT,
-                      MPVOID,
-                      MPVOID))
+        if (!dontclose &&
+            ParentIsDesktop(hwnd,WinQueryWindow(WinQueryWindow(hwnd,
+                            QW_PARENT),QW_PARENT))) {
+          if (!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
             DosExit(EXIT_PROCESS,1);
         }
       }
