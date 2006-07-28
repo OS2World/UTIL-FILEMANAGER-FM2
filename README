@@ -275,6 +275,19 @@ get around this problem (or upgrade your version of OS/2).
 Don't drag files over Netscape -- it will lock up if files (not WPS
 objects; there's a subtle difference) are dragged over it.
 
+If you get a popup dialog that needs to be reported to the maintainer, you 
+can either take a screen shot or you can capture the information from STDERR 
+with
+
+  FM3 2>STDERR.LOG
+
+This technique works for all the FM/2, FM/2 Lite and all the standalone 
+applets.
+
+If you are having trouble with Drag and Drop operations, try the + command 
+line switch described above.  The content of FM2.LOG may be helpful.
+
+
 Known problems/shortcomings:
 ===========================
 
