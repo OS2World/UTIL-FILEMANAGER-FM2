@@ -11,6 +11,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
   22 Jul 06 SHL Check more run time errors
+  29 Jul 06 SHL Use xfgets, xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -62,10 +63,8 @@ VOID load_quicktools (VOID) {
   fp = _fsopen(s,"r",SH_DENYWR);
   if (fp) {
     while(x < 50 && !feof(fp)) {
-      if(!fgets(s,CCHMAXPATH + 2,fp))
+      if(!xfgets_bstripcr(s,CCHMAXPATH + 2,fp,pszSrcFile,__LINE__))
         break;
-      s[CCHMAXPATH - 1] = 0;
-      bstripcr(s);
       if(*s && *s != ';') {
         quicktool[x] = xstrdup(s,pszSrcFile,__LINE__);
         if(quicktool[x])
@@ -101,7 +100,7 @@ VOID save_quicktools (VOID) {
 TOOL *load_tools (CHAR *filename) {
 
   FILE  *fp;
-  CHAR   help[81],text[81],flagstr[81],idstr[81],*fname;
+  CHAR   help[80],text[80],flagstr[80],idstr[80],*fname;
   TOOL  *info;
 
   if(!fToolbar) {
@@ -125,16 +124,16 @@ TOOL *load_tools (CHAR *filename) {
       toolhead = free_tools();
       while(!feof(fp)) {
         do {
-          if(!fgets(help,80,fp))
+          if(!xfgets(help,sizeof(help),fp,pszSrcFile,__LINE__))
             break;
         } while(*help == ';' && !feof(fp));
         stripcr(help);
-        if(!fgets(text,80,fp))
+        if(!xfgets(text,sizeof(text),fp,pszSrcFile,__LINE__))
           break;
         stripcr(text);
-        if(!fgets(flagstr,80,fp))
+        if(!xfgets(flagstr,sizeof(flagstr),fp,pszSrcFile,__LINE__))
           break;
-        if(!fgets(idstr,80,fp))
+        if(!xfgets(idstr,sizeof(idstr),fp,pszSrcFile,__LINE__))
           break;
         if(!(USHORT)atoi(idstr))
           continue;
