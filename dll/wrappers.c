@@ -8,6 +8,7 @@
   Copyright (c) 2006 Steven H.Levine
 
   22 Jul 06 SHL Baseline
+  29 Jul 06 SHL Add xgets_stripped
 
 ***********************************************************************/
 
@@ -22,6 +23,31 @@
 #include "fm3str.h"
 
 #pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc)
+
+PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE *fp, PCSZ pszSrcFile, UINT uiLineNumber)
+{
+  PSZ psz = fgets(pszBuf,cMaxBytes,fp);
+  if (!psz) {
+    if (ferror(fp))
+      Runtime_Error(pszSrcFile, uiLineNumber, "fgets");
+  }
+  else {
+    size_t c = strlen(psz);
+    if (c + 1 > cMaxBytes)
+      Runtime_Error(pszSrcFile, uiLineNumber, "buffer overflow");
+    else if (!c || (psz[c-1] != '\n' && psz[c-1] != '\r'))
+      Runtime_Error(pszSrcFile, uiLineNumber, "missing EOL");
+  }
+  return psz;
+}
+
+PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE *fp, PCSZ pszSrcFile, UINT uiLineNumber)
+{
+  PSZ psz = xfgets(pszBuf,cMaxBytes,fp,pszSrcFile,__LINE__);
+  if (psz)
+    bstripcr(psz);
+  return psz;
+}
 
 FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile, UINT uiLineNumber)
 {
