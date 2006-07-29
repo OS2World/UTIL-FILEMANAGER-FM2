@@ -32,8 +32,8 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(OBJWIN,ObjectWndProc,MakeObjWin)
 
-MRESULT EXPENTRY ObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   DIRCNRDATA *dcd;
 
   dcd = WinQueryWindowPtr(hwnd,0);
@@ -53,8 +53,8 @@ MRESULT EXPENTRY ObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-VOID MakeObjWin (VOID *args) {
-
+VOID MakeObjWin (VOID *args)
+{
   HWND        ObjectHwnd;
   HAB         hab2;
   HMQ         hmq2;
