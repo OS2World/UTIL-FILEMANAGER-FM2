@@ -10,6 +10,7 @@
 
   24 May 05 SHL Rework Win_Error usage
   14 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
@@ -187,13 +188,13 @@ VOID FillKillList (VOID *arg)
     }
   }
   fp = fopen(s,"r");
-  if(fp) {
-    while(!feof(fp)) {
+  if (fp) {
+    while (!feof(fp)) {
       strset(s,0);
-      if(!fgets(s,1025,fp))
+      if (!xfgets(s,1025,fp,pszSrcFile,__LINE__))
         break;
-      if(!foundstart) {
-        if(*s == ' ' && strstr(s,startstring))
+      if (!foundstart) {
+        if (*s == ' ' && strstr(s,startstring))
           foundstart = TRUE;
       }
       else {

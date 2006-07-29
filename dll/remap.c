@@ -9,19 +9,21 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
 #include <share.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -70,12 +72,10 @@ VOID load_resources (VOID)
   strcat(s,"RESOURCE.DAT");
   fp = xfsopen(s,"r",SH_DENYWR,pszSrcFile,__LINE__);
   if (fp) {
-    while(x < MAXNUMRES && !feof(fp)) {
-      if(!fgets(s,sizeof(s),fp))
+    while (x < MAXNUMRES && !feof(fp)) {
+      if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
         break;
-      s[sizeof(s) - 1] = 0;
-      bstripcr(s);
-      if(*s && *s != ';') {
+      if (*s && *s != ';') {
         info = xmalloc(sizeof(LINKRES),pszSrcFile,__LINE__);
         if (info) {
           info->res = xstrdup(s,pszSrcFile,__LINE__);

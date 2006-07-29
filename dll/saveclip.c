@@ -13,6 +13,7 @@
   01 Aug 04 SHL Rework fixup usage
   24 May 05 SHL Rework for CNRITEM.szSubject
   17 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
@@ -269,8 +270,7 @@ MRESULT EXPENTRY SaveListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           strcat(s,"PATTERNS.DAT");
           fp = _fsopen(s,"r",SH_DENYWR);
           if(fp) {
-            while(fgets(s,81,fp)) {
-              s[80] = 0;
+            while(xfgets(s,81,fp,pszSrcFile,__LINE__)) {
               stripcr(s);
               if(*s && *s != ';')
                 WinSendMsg(WinWindowFromID(hwnd,SAV_LISTBOX),LM_INSERTITEM,
@@ -661,10 +661,9 @@ MRESULT EXPENTRY SaveAllListDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,
           strcat(s,"PATTERNS.DAT");
           fp = _fsopen(s,"r",SH_DENYWR);
           if(fp) {
-            while(fgets(s,81,fp)) {
-              s[80] = 0;
+            while (xfgets(s,81,fp,pszSrcFile,__LINE__)) {
               stripcr(s);
-              if(*s && *s != ';')
+              if (*s && *s != ';')
                 WinSendMsg(WinWindowFromID(hwnd,SAV_LISTBOX),LM_INSERTITEM,
                            MPFROM2SHORT(LIT_SORTASCENDING,0),
                            MPFROMP(s));

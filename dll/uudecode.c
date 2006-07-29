@@ -11,6 +11,7 @@
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Drop unused code
   17 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
@@ -62,8 +63,7 @@ int UUD(char *filename, CHAR * dest)
   /* search for header line */
   for (;;)
   {
-    if (!fgets(buf, sizeof(buf), in))
-    {
+    if (!xfgets(buf, sizeof(buf), in,pszSrcFile,__LINE__)) {
       fclose(in);
       saymsg(MB_CANCEL,
 	     HWND_DESKTOP,
@@ -72,7 +72,6 @@ int UUD(char *filename, CHAR * dest)
 	     filename);
       return ret;
     }
-    buf[sizeof(buf) - 1] = 0;
     if (!strncmp(buf, "begin ", 6))
       break;
   }
@@ -118,7 +117,7 @@ int UUD(char *filename, CHAR * dest)
   ret = 1;
   decode(in, out);
 
-  fgets(buf, sizeof(buf), in);
+  xfgets(buf, sizeof(buf), in,pszSrcFile,__LINE__);
 
   fclose(in);
   fclose(out);
@@ -137,9 +136,8 @@ static BOOL decode(FILE * in, FILE * out)
   for (;;)
   {
     /* for each input line */
-    if (!fgets(buf, sizeof(buf), in))
+    if (!xfgets(buf, sizeof(buf), in,pszSrcFile,__LINE__))
       return FALSE;
-    buf[sizeof(buf) - 1] = 0;
     n = DEC(buf[0]);
     if (n <= 0)
       break;

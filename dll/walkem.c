@@ -11,6 +11,7 @@
   13 Aug 05 SHL Run through indent
   13 Aug 05 SHL remove_udir - avoid corrupting last dirs list
   17 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
@@ -154,7 +155,7 @@ VOID load_udirs(VOID)
     {
 	while (!feof(fp))
 	{
-	    if (!fgets(s, CCHMAXPATH + 24, fp))
+	    if (!xfgets(s, CCHMAXPATH + 24, fp,pszSrcFile,__LINE__))
 		break;
 	    s[CCHMAXPATH] = 0;
 	    bstripcr(s);

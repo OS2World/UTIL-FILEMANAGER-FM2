@@ -17,6 +17,7 @@
   06 Jun 05 SHL Rework FindSwapperDat for VAC3.65 compat
   13 Jul 06 SHL Use Runtime_Error
   13 Jul 06 SHL Sync with current style
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
@@ -108,14 +109,12 @@ VOID FindSwapperDat(VOID)
       nm = 3;		// Assume drive C:
     }
     *filename = (CHAR)nm + '@';
-    fp = xfsopen(filename, "r", SH_DENYNO,pszSrcFile,__LINE__);
+    fp = xfsopen(filename, "r", SH_DENYNO, pszSrcFile, __LINE__);
     if (fp)
     {
-      while (!feof(fp))
-      {
-	if (!fgets(input, 8192, fp))
+      while (!feof(fp)) {
+	if (!xfgets(input, sizeof(input), fp,pszSrcFile, __LINE__))
 	  break;
-	input[8191] = 0;
 	lstrip(input);
 	if (!strnicmp(input, "SWAPPATH", 8))
 	{

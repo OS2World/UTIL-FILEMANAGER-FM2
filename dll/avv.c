@@ -17,6 +17,7 @@
   29 May 06 SHL EditArchiverData: rework
   26 Jun 06 SHL rewrite_archiverbb2: include user comments
   14 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
@@ -239,7 +240,7 @@ VOID rewrite_archiverbb2 (PSZ archiverbb2)
     if (fpOld && arcsigs_header_lines) {
       needReload = TRUE;
       while (input_line_num < arcsigs_header_lines) {
-        psz = fgets(sz, sizeof(sz), fpOld);
+        psz = xfgets(sz, sizeof(sz), fpOld, pszSrcFile, __LINE__);
 	if (!psz)
 	  break;
         input_line_num++;
@@ -264,7 +265,7 @@ VOID rewrite_archiverbb2 (PSZ archiverbb2)
 	  input_line_num = 0;
 	}
         while (input_line_num + 1 < pat -> defn_line_num) {
-          psz = fgets(sz, sizeof(sz), fpOld);
+          psz = xfgets(sz, sizeof(sz), fpOld, pszSrcFile, __LINE__);
 	  if (!psz)
 	    break;			// Unexpected EOF
           input_line_num++;
@@ -340,7 +341,7 @@ VOID rewrite_archiverbb2 (PSZ archiverbb2)
     // Rewrite trailer comments if known
     if (fpOld && arcsigs_trailer_line_num) {
       for (;;) {
-        psz = fgets(sz, sizeof(sz), fpOld);
+        psz = xfgets(sz, sizeof(sz), fpOld, pszSrcFile, __LINE__);
 	if (!psz)
 	  break;
         input_line_num++;
@@ -589,7 +590,8 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         }
         else {
           while(!feof(fp)) {
-            if(!fgets(s,sizeof(s),fp)) break;
+            if (!xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__))
+	      break;
             stripcr(s);
             WinSendDlgItemMsg(hwnd,
                               AD_LISTBOX,

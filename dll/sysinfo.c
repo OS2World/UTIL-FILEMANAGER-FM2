@@ -12,6 +12,7 @@
   08 Feb 03 SHL Enable display
   01 Aug 04 SHL RunRmview: avoid buffer overflow
   26 Jul 06 SHL Report open errors
+  29 Jul 06 SHL Use xfgets
 
 ***********************************************************************/
 
@@ -72,17 +73,16 @@ VOID RunRmview (VOID *arg)
       goto Abort;
     fp = xfopen("$RMVIEW.#$#","r",pszSrcFile,__LINE__);
     if (fp) {
-      fgets(s,2048,fp);
-      fgets(s,2048,fp);
+      xfgets(s,sizeof(s),fp,pszSrcFile,__LINE__);
+      xfgets(s,sizeof(s),fp,pszSrcFile,__LINE__);
       if(!feof(fp) && WinIsWindow(thab,hwnd))
         WinSendDlgItemMsg(hwnd,SYS_LISTBOX,LM_INSERTITEM,
                           MPFROM2SHORT(LIT_END,0),
                           MPFROMP(" -= RMView Physical Info =-"));
       while(!feof(fp)) {
         strset(s,0);
-        if(!fgets(s,2048,fp))
+        if(!xfgets(s,sizeof(s),fp,pszSrcFile,__LINE__))
           break;
-        s[2047] = 0;
         stripcr(s);
         rstrip(s);
         p = s;
