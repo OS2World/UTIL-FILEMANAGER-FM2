@@ -6,12 +6,13 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2005 Steven H. Levine
+  Copyright (c) 2003, 2006 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   04 Nov 03 SHL Drop obsoletes
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   07 Jun 05 SHL Comments
+  29 Jul 06 SHL Drop duplicate icons
 
 ***********************************************************************/
 
@@ -20,24 +21,24 @@
 #include "fm3dll2.h"
 #include "fm3dlg.h"
 
-ICON        MAIN_FRAME          icons\FM3.ICO
-ICON        MAIN2_FRAME         icons\FM4.ICO
+ICON        MAIN_FRAME          ..\icons\FM3.ICO
+ICON        MAIN2_FRAME         ..\icons\FM4.ICO
 ICON        DIR_FRAME           icons\DIR.ICO
 ICON        ARC_FRAME           icons\ARCCNR.ICO
-ICON        TREE_FRAME          icons\TREE.ICO
+ICON        TREE_FRAME          ..\icons\TREE.ICO
 ICON        MLE_FRAME           icons\EDITOR.ICO
-ICON        INI_FRAME           icons\INI.ICO
-ICON        COLLECTOR_FRAME     icons\COLLECT.ICO
-ICON        SEEALL_FRAME        icons\GLOBAL.ICO
-ICON        NEWVIEW_FRAME       icons\VIEW3.ICO
+ICON        INI_FRAME           ..\icons\INI.ICO
+ICON        COLLECTOR_FRAME     ..\icons\COLLECT.ICO
+ICON        SEEALL_FRAME        ..\icons\GLOBAL.ICO
+ICON        NEWVIEW_FRAME       ..\icons\VIEW3.ICO
 ICON        COMPARE_ICON        icons\COMPARE.ICO
-ICON        DIRSIZE_ICON        icons\DIRSIZE.ICO
+ICON        DIRSIZE_ICON        ..\icons\DIRSIZE.ICO
 ICON        NOTE_FRAME          icons\THRDNOTE.ICO
-ICON        KILL_FRAME          icons\KILLPROC.ICO
-ICON        UNDEL_FRAME         icons\UNDEL.ICO
-ICON        SYS_FRAME           icons\SYSINFO.ICO
-ICON        EA_FRAME            icons\EAS.ICO
-ICON        VINF_FRAME          icons\VIEWINFS.ICO
+ICON        KILL_FRAME          ..\icons\KILLPROC.ICO
+ICON        UNDEL_FRAME         ..\icons\UNDEL.ICO
+ICON        SYS_FRAME           ..\icons\SYSINFO.ICO
+ICON        EA_FRAME            ..\icons\EAS.ICO
+ICON        VINF_FRAME          ..\icons\VIEWINFS.ICO
 
 ICON        SKULL0_ICON         icons\SKULL0.ICO
 ICON        SKULL1_ICON         icons\SKULL1.ICO
