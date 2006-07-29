@@ -13,6 +13,7 @@
   06 Jun 05 SHL Drop unused code
   06 Jul 06 SHL Support compare content (IDM_SELECTSAMECONTENT)
   13 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -106,10 +107,8 @@ VOID SelectList (HWND hwndCnr,BOOL partial,BOOL deselect,BOOL clearfirst,
     fp = _fsopen(filename,"r",SH_DENYNO);
     if (fp) {
       while (!feof(fp)) {
-        if (!fgets(input,1024,fp))
+        if (!xfgets_bstripcr(input,sizeof(input),fp,pszSrcFile,__LINE__))
           break;
-        input[1023] = 0;
-        bstripcr(input);
         if (*input == '\"') {
           memmove(input,input + 1,strlen(input) + 1);
           lstrip(input);

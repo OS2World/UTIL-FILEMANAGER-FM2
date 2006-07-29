@@ -18,6 +18,7 @@
   12 Jul 06 SHL Renames and comments
   13 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Drop unreachable CN_... code
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -826,12 +827,10 @@ static VOID FillCnrsThread (VOID *args)
         if(!fp)
 	  Runtime_Error(pszSrcFile, __LINE__, "can not open %s (%d)", cmp->rightlist, errno);
 	else {
-          while(!feof(fp)) {
+          while (!feof(fp)) {
 	    /* first get name of directory */
-            if(!fgets(str,sizeof(str) - 1,fp))
+            if (!xfgets_bstripcr(str,sizeof(str),fp,pszSrcFile,__LINE__))
               break;		// EOF
-            str[sizeof(str) - 1] = 0;
-            bstrip(str);
             p = str;
             if(*p == '\"') {
 	      /* Quoted */
@@ -868,11 +867,9 @@ static VOID FillCnrsThread (VOID *args)
           if(*cmp->rightdir) {
             lenr = strlen(cmp->rightdir) +
                      (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\');
-            while(!feof(fp)) {
-              if(!fgets(str,sizeof(str) - 1,fp))
+            while (!feof(fp)) {
+              if (!xfgets_bstripcr(str,sizeof(str),fp,pszSrcFile,__LINE__))
                 break;
-              str[sizeof(str) - 1] = 0;
-              bstrip(str);
               p = str;
               if(*p == '\"') {
                 p++;

@@ -25,6 +25,7 @@
   29 May 06 SHL Comments
   14 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Correct SelectAll usage
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -430,10 +431,8 @@ ReTry:
       gotstart = !info->startlist || !*info->startlist;	// If list has no start marker
 
       while(!feof(fp) && !gotend) {
-        if(!fgets(s,CCHMAXPATH * 2,fp))
+        if(!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
           break;
-        s[(CCHMAXPATH * 2) - 1] = 0;
-        stripcr(s);
         if(!gotstart) {
           if (!strcmp(s,info->startlist))
             gotstart = TRUE;
@@ -449,10 +448,8 @@ ReTry:
             strncpy(lonename,s,CCHMAXPATH + 2);
             lonename[CCHMAXPATH + 1] = 0;
             fname = lonename;
-            if(!fgets(s,CCHMAXPATH * 2,fp))
+            if(!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
               break;
-            s[(CCHMAXPATH * 2) - 1] = 0;
-            bstripcr(s);
             if(*fname == '\"') {
               memmove(fname,fname + 1,strlen(fname) + 1);
               p = strchr(fname,'\"');
@@ -533,14 +530,12 @@ ReTry:
               break;
             }
           }
-          if(info->nameisnext) {
-            if(!fgets(lonename,CCHMAXPATH + 2,fp))
+          if (info->nameisnext) {
+            if (!xfgets_bstripcr(lonename,sizeof(lonename),fp,pszSrcFile,__LINE__))
               break;
-            lonename[CCHMAXPATH + 1] = 0;
-            bstripcr(lonename);
             fname = lonename;
           }
-          if(fname && *fname) {
+          if (fname && *fname) {
 
             RECORDINSERT ri;
             PARCITEM     pai;

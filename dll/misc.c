@@ -3,7 +3,7 @@
 
   $Id$
 
-  Misc support functions
+  Misc GUI support functions
 
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2003, 2006 Steven H. Levine
@@ -17,6 +17,7 @@
   17 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Use chop_at_crnl
   27 Jul 06 SHL Comments, apply indent
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -1815,10 +1816,8 @@ VOID LoadLibPath(CHAR * str, LONG len)
     fp = xfopen(configsys, "r", pszSrcFile, __LINE__);
     if (fp) {
       while (!feof(fp)) {
-	if (!fgets(var, 8192, fp))
+	if (!xfgets_bstripcr(var, sizeof(var), fp,pszSrcFile,__LINE__))
 	  break;
-	var[8191] = 0;
-	bstripcr(var);
 	if (!strnicmp(var, "LIBPATH=", 8)) {
 	  memmove(var, var + 8, strlen(var + 8) + 1);
 	  lstrip(var);

@@ -9,6 +9,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   24 May 05 SHL Rework Win_Error usage
   17 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -98,19 +99,18 @@ VOID FillUndelList (VOID *arg)
     }
     fp = xfopen("$UDELETE.#$#","r",pszSrcFile,__LINE__);
     if (fp) {
-      fgets(s,CCHMAXPATH + 128,fp);
-      while(!feof(fp)) {
+      xfgets(s,sizeof(s),fp,pszSrcFile,__LINE__);	// Skip 1st line
+      while (!feof(fp)) {
         strset(s,0);
-        if(!fgets(s,CCHMAXPATH + 2,fp))
+        if (!xfgets_bstripcr(s,CCHMAXPATH + 2,fp,pszSrcFile,__LINE__))
           break;
-        bstripcr(s);
         if(*s) {
           if(!strnicmp(s,"SYS3194: ",9)) {
 
             APIRET temp;
 
             strcat(s," ");
-            fgets(&s[strlen(s)],(CCHMAXPATH + 128) - strlen(s),fp);
+            xfgets(&s[strlen(s)],CCHMAXPATH + 128 - strlen(s),fp,pszSrcFile,__LINE__);
             fclose(fp);
             s[CCHMAXPATH + 128] = 0;
             stripcr(s);

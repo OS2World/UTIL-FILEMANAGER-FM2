@@ -11,6 +11,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
   22 Jul 06 SHL Check more run time errors
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -66,10 +67,8 @@ VOID load_cmdlines (BOOL big)
   fp = _fsopen(s,"r",SH_DENYWR);
   if (fp) {
     while (x < MAXNUMCLS && !feof(fp)) {
-      if (!fgets(s,sizeof(s),fp))
+      if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
         break;
-      s[sizeof(s) - 1] = 0;
-      bstripcr(s);
       if (*s && *s != ';') {
         info = xmalloc(sizeof(LINKCLS), pszSrcFile, __LINE__);
         if (info) {

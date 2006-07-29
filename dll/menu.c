@@ -10,6 +10,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   22 Jul 06 SHL Check more run time errors
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -98,10 +99,9 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu)
   }
   else {
     while (!feof(fp)) {
-      if (!fgets(s,256,fp))
+      if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
         break;
       lines++;
-      bstripcr(s);
       if(!*s || *s == ';')
         continue;
       if (tokenize(s,3,tokens) == 3 && (USHORT)atoi(tokens[1])) {

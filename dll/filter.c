@@ -8,6 +8,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   22 Jul 06 SHL Check more run time errors
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -127,11 +128,9 @@ VOID load_masks (VOID) {
   strcat(s,"FILTERS.DAT");
   fp = _fsopen(s,"r",SH_DENYWR);
   if(fp) {
-    while(!feof(fp)) {
-      if(!fgets(s,sizeof(s),fp))
+    while (!feof(fp)) {
+      if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
         break;
-      s[sizeof(s) - 1] = 0;
-      bstripcr(s);
       if(*s && *s != ';') {
         info = xmalloc(sizeof(LINKMASKS),pszSrcFile,__LINE__);
         if(info) {

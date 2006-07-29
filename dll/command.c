@@ -11,6 +11,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Drop unused code
   14 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -333,24 +334,25 @@ VOID load_commands (VOID)
   strcat(cl,"COMMANDS.DAT");
   fp = _fsopen(cl,"r",SH_DENYWR);
   if(fp) {
-    while(!feof(fp)) {
-      if(!fgets(title,100,fp))
+    while (!feof(fp)) {
+      if (!xfgets_bstripcr(title,sizeof(title),fp,pszSrcFile,__LINE__))
         break;
-      title[34] = 0;
+      title[34] = 0;			// fixme to know why chopped this way?
       bstripcr(title);
-      if(!*title || *title == ';')
+      if (!*title || *title == ';')
         continue;
-      if(!fgets(cl,1024,fp) ||
-         !fgets(flags,72,fp))
+      if (!xfgets(cl,sizeof(cl),fp,pszSrcFile,__LINE__))
         break;                       /* error! */
-      cl[1000] = 0;
-      flags[34] = 0;
+      if (!xfgets(flags,72,fp,pszSrcFile,__LINE__))
+        break;                       /* error! */
+      cl[1000] = 0;			// fixme to know why chopped this way?
       bstripcr(cl);
+      flags[34] = 0;
       bstripcr(flags);
       if(!*cl)
         continue;
       info = xmallocz(sizeof(LINKCMDS),pszSrcFile,__LINE__);
-      if(info) {
+      if (info) {
         info->cl = xstrdup(cl,pszSrcFile,__LINE__);
         info->title = xstrdup(title,pszSrcFile,__LINE__);
         info->flags = atol(flags);
