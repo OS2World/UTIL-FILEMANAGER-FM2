@@ -50,7 +50,8 @@ static INT index(const CHAR *s,const CHAR c)
     return (INT)(p - s);
 }
 
-/* Translate a string with \ escape tokens to binary equivalent
+/* literal()
+ * Translate a string with \ escape tokens to binary equivalent
  * Translates in place
  *
  * 1.  \x1b translates to CHAR(0x1b)
@@ -71,8 +72,8 @@ static INT index(const CHAR *s,const CHAR c)
  *
  *    ( s now equals "this is a test of \MSC\CSM")
  *
- * Return converted character count
- * Does not include terminating nul
+ * Return converted character count like strlen()
+ * Count does not include terminating nul
  */
 
 #define HEX "0123456789ABCDEF"
