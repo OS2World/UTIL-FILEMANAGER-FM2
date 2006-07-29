@@ -3,6 +3,8 @@
 
   $Id$
 
+  Grep dialog for collector
+
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004, 2006 Steven H. Levine
 
@@ -11,6 +13,8 @@
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Rework for VAC3.65 compat, lose excess statics
   17 Jul 06 SHL Use Runtime_Error
+  28 Jul 06 SHL Avoid 0 length malloc, optimize option checks
+  29 Jul 06 SHL Use xfgets
 
   fixme for more excess locals to be gone
 
@@ -287,24 +291,23 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     fp = _fsopen(s, "r", SH_DENYWR);
     if (fp)
     {
-      while (!feof(fp))
-      {
-	if (!fgets(s, 8192 + 4, fp))
+      while (!feof(fp)) {
+	if (!xfgets_bstripcr(s, 8192 + 4, fp,pszSrcFile,__LINE__))
 	  break;
-	bstripcr(s);
-	if (*s && *s != ';')
+	if (*s && *s != ';') {
 	  WinSendDlgItemMsg(hwnd,
 			    GREP_LISTBOX,
 			    LM_INSERTITEM,
 			    MPFROM2SHORT(LIT_SORTASCENDING, 0),
 			    MPFROMP(s));
+	}
       }
       fclose(fp);
     }
 
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, GREP_DRIVELIST),
-		    (HWND) 0,
+		    (HWND)0,
 		    NULL,
 		    FALSE);
     break;
@@ -318,7 +321,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETDIR:
     PaintRecessedWindow(WinWindowFromID(hwnd, GREP_HELP),
-			(HPS) 0,
+			(HPS)0,
 			FALSE,
 			TRUE);
     return 0;
@@ -326,7 +329,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_FOCUSME:
     /* set focus to window hwnd in mp1 */
     if (mp1)
-      WinSetFocus(HWND_DESKTOP, (HWND) mp1);
+      WinSetFocus(HWND_DESKTOP, (HWND)mp1);
     return 0;
 
   case WM_CONTROL:
@@ -916,8 +919,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hwndCollect = WinQueryWindowULong(hwnd, QWL_USER);
       if (!hwndCollect)
         Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
-      else
-      {
+      else {
 	static GREP g;		// Passed to thread
 
 	p = xmalloc(8192 + 512,pszSrcFile,__LINE__);
@@ -925,73 +927,35 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	memset(&g, 0, sizeof(GREP));
 	g.size = sizeof(GREP);
-	if (WinQueryButtonCheckstate(hwnd, GREP_RECURSE))
-	  recurse = TRUE;
-	else
-	  recurse = FALSE;
-	if (WinQueryButtonCheckstate(hwnd, GREP_ABSOLUTE))
-	  absolute = TRUE;
-	else
-	  absolute = FALSE;
-	if (WinQueryButtonCheckstate(hwnd, GREP_CASE))
-	  sensitive = TRUE;
-	else
-	  sensitive = FALSE;
-	if (WinQueryButtonCheckstate(hwnd, GREP_SAYFILES))
-	  sayfiles = TRUE;
-	else
-	  sayfiles = FALSE;
-	if (WinQueryButtonCheckstate(hwnd, GREP_SEARCHEAS))
-	  searchEAs = TRUE;
-	else
-	  searchEAs = FALSE;
-	if (WinQueryButtonCheckstate(hwnd, GREP_SEARCHFILES))
-	  searchFiles = TRUE;
-	else
-	  searchFiles = FALSE;
-	if (WinQueryButtonCheckstate(hwnd, GREP_FINDIFANY))
-	  findifany = TRUE;
-	else
-	  findifany = FALSE;
-	if (WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES))
-	  g.finddupes = TRUE;
-	else
-	  g.finddupes = FALSE;
-	if (g.finddupes)
-	{
-	  if (WinQueryButtonCheckstate(hwnd, GREP_CRCDUPES))
-	    g.CRCdupes = TRUE;
-	  else
-	    g.CRCdupes = FALSE;
-	  if (WinQueryButtonCheckstate(hwnd, GREP_NOSIZEDUPES))
-	    g.nosizedupes = TRUE;
-	  else
-	    g.nosizedupes = FALSE;
-	  if (WinQueryButtonCheckstate(hwnd, GREP_IGNOREEXTDUPES))
-	    g.ignoreextdupes = TRUE;
-	  else
-	    g.ignoreextdupes = FALSE;
+	recurse = WinQueryButtonCheckstate(hwnd, GREP_RECURSE) != 0;
+	absolute = WinQueryButtonCheckstate(hwnd, GREP_ABSOLUTE) != 0;
+	sensitive = WinQueryButtonCheckstate(hwnd, GREP_CASE) != 0;
+	sayfiles = WinQueryButtonCheckstate(hwnd, GREP_SAYFILES) != 0;
+	searchEAs = WinQueryButtonCheckstate(hwnd, GREP_SEARCHEAS) != 0;
+	searchFiles = WinQueryButtonCheckstate(hwnd, GREP_SEARCHFILES) != 0;
+	findifany = WinQueryButtonCheckstate(hwnd, GREP_FINDIFANY) != 0;
+	g.finddupes = WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES) != 0;
+	if (g.finddupes) {
+	  g.CRCdupes = WinQueryButtonCheckstate(hwnd, GREP_CRCDUPES) != 0;
+	  g.nosizedupes = WinQueryButtonCheckstate(hwnd, GREP_NOSIZEDUPES) != 0;
+	  g.ignoreextdupes = WinQueryButtonCheckstate(hwnd, GREP_IGNOREEXTDUPES) != 0;
 	}
+	// Parse file masks
 	*p = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_MASK,
-			    8192,
-			    p);
+	WinQueryDlgItemText(hwnd,GREP_MASK,8192,p);
 	bstrip(p);
 	if (!*p)
 	{
 	  DosBeep(50, 100);
-	  WinSetFocus(HWND_DESKTOP,
-		      WinWindowFromID(hwnd, GREP_MASK));
+	  WinSetFocus(HWND_DESKTOP,WinWindowFromID(hwnd, GREP_MASK));
 	  free(p);
 	  break;
 	}
 	strcpy(g.tosearch, p);
 	strcpy(lastmask, p);
+	// Parse search strings
 	*p = 0;
-	WinQueryWindowText(hwndMLE,
-			   4096,
-			   p);
+	WinQueryWindowText(hwndMLE,4096,p);
 	strcpy(lasttext, p);
 	{
 	  CHAR *pszFrom;
@@ -1023,36 +987,25 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *pszTo++ = 0;
 	  *pszTo = 0;
 	  g.numlines = matched;
-	  g.matched = xmalloc(g.numlines,pszSrcFile,__LINE__);
-	  if (!g.matched)
-	    g.numlines = 0;
+	  if (matched) {
+	    g.matched = xmalloc(g.numlines,pszSrcFile,__LINE__);
+	    if (!g.matched)
+	      g.numlines = 0;
+	  }
 	}
 	*p = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_GREATER,
-			    34,
-			    p);
+	WinQueryDlgItemText(hwnd,GREP_GREATER,34,p);
 	greater = atol(p);
 	*p = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_LESSER,
-			    34,
-			    p);
+	WinQueryDlgItemText(hwnd,GREP_LESSER,34,p);
 	lesser = atol(p);
 	*p = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_NEWER,
-			    34,
-			    p);
+	WinQueryDlgItemText(hwnd,GREP_NEWER,34,p);
 	newer = atoi(p);
 	*p = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_OLDER,
-			    34,
-			    p);
+	WinQueryDlgItemText(hwnd,GREP_OLDER,34,p);
 	older = atoi(p);
-	if (older || newer)
-	{
+	if (older || newer) {
 	  FDATE fdate;
 	  FTIME ftime;
 	  struct tm tm;
@@ -1066,13 +1019,11 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ftime.hours = tm.tm_hour;
 	  ftime.minutes = tm.tm_min;
 	  ftime.twosecs = tm.tm_sec / 2;
-	  if (older)
-	  {
+	  if (older) {
 	    g.olderthan = SecsSince1980(&fdate, &ftime);
 	    g.olderthan -= (older * (24L * 60L * 60L));
 	  }
-	  if (newer)
-	  {
+	  if (newer) {
 	    g.newerthan = SecsSince1980(&fdate, &ftime);
 	    g.newerthan -= (newer * (24L * 60L * 60L));
 	  }
@@ -1096,8 +1047,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	g.attrFile = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.attrFile;
 	g.antiattr = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.antiattr;
 	g.stopflag = &((DIRCNRDATA *) INSTDATA(hwndCollect)) -> stopflag;
-	if (_beginthread(dogrep, NULL, 524280, (PVOID)&g) == -1)
-	{
+	if (_beginthread(dogrep, NULL, 524280, (PVOID)&g) == -1) {
           Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  free(p);
 	  WinDismissDlg(hwnd, 0);
@@ -1107,27 +1057,22 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosSleep(128);
 	free(p);
       }
-      if (changed)
-      {
+      if (changed) {
 	SHORT x;
-
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    GREP_LISTBOX,
 					    LM_QUERYITEMCOUNT,
 					    MPVOID,
 					    MPVOID);
-	if (sSelect > 0)
-	{
+	if (sSelect > 0) {
 	  save_dir2(s);
 	  if (s[strlen(s) - 1] != '\\')
 	    strcat(s, "\\");
 	  strcat(s, "GREPMASK.DAT");
 	  fp = xfopen(s, "w",pszSrcFile,__LINE__);
-	  if (fp)
-	  {
+	  if (fp) {
 	    fputs(GetPString(IDS_GREPFILETEXT), fp);
-	    for (x = 0; x < sSelect; x++)
-	    {
+	    for (x = 0; x < sSelect; x++) {
 	      *s = 0;
 	      WinSendDlgItemMsg(hwnd,
 				GREP_LISTBOX,
