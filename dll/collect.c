@@ -22,6 +22,8 @@
   24 Oct 05 SHL CollectorCnrWndProc: avoid excess writes to Status2 window
   10 Nov 05 SHL CollectorCnrWndProc: correct missing button window updates
   14 Jul 06 SHL Use Runtime_Error
+  27 Jul 06 SHL Avoid shutdown hang - pre3 typo
+  29 Jul 06 SHL Use xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -67,7 +69,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   DIRCNRDATA *dcd;
 
   static BOOL emphasized = FALSE;
-  static HWND hwndButtonPopup = (HWND) 0;
+  static HWND hwndButtonPopup = (HWND)0;
   static ULONG timestamp = ULONG_MAX;
   static USHORT lastid = 0;
 
@@ -196,11 +198,11 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_MENUEND:
-    if (hwndButtonPopup == (HWND) mp2)
+    if (hwndButtonPopup == (HWND)mp2)
     {
-      lastid = WinQueryWindowUShort((HWND) mp2, QWS_ID);
+      lastid = WinQueryWindowUShort((HWND)mp2, QWS_ID);
       WinDestroyWindow(hwndButtonPopup);
-      hwndButtonPopup = (HWND) 0;
+      hwndButtonPopup = (HWND)0;
       DosQuerySysInfo(QSV_MS_COUNT,
 		      QSV_MS_COUNT,
 		      &timestamp,
@@ -641,7 +643,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	pci = WinSendMsg(dcd -> hwndCnr, CM_ALLOCRECORD,
 			 MPFROMLONG(EXTRA_RECORD_BYTES),
 			 MPFROMLONG(ulMaxFiles));
-	if (pci) {
+	if (!pci) {
 	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed", ulMaxFiles);
 	  break;
 	}
@@ -731,8 +733,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_COLLECTFROMFILE:
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
-    if (dcd && mp1)
-    {
+    if (dcd && mp1) {
       FILESTATUS4 fs4;
       PCNRITEM pci;
       RECORDINSERT ri;
@@ -741,16 +742,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       ULONG errs = 0L;
 
       fp = _fsopen((CHAR *) mp1, "r", SH_DENYNO);
-      if (fp)
-      {
-	while (!feof(fp))
-	{
-	  if (!fgets(fullname, 1024, fp))
+      if (fp) {
+	while (!feof(fp)) {
+	  if (!xfgets_bstripcr(fullname, sizeof(fullname), fp,pszSrcFile, __LINE__))
 	    break;
-	  fullname[1023] = 0;
-	  bstripcr(fullname);
-	  if (*fullname == '\"')
-	  {
+	  if (*fullname == '\"') {
 	    memmove(fullname, fullname + 1, strlen(fullname) + 1);
 	    lstrip(fullname);
 	    p = strchr(fullname, '\"');
@@ -758,8 +754,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      *p = 0;
 	    rstrip(fullname);
 	  }
-	  else
-	  {
+	  else {
 	    p = strchr(fullname, ' ');
 	    if (p)
 	      *p = 0;
@@ -821,8 +816,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	fclose(fp);
       }
     }
-    if (mp1)
-      free(mp1);
+    xfree(mp1);
     return 0;
 
   case UM_SELECT:
@@ -1008,8 +1002,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       free(dcd);
     }
     DosPostEventSem(CompactSem);
-    if (!PostMsg(HWND_DESKTOP, WM_QUIT, MPVOID, MPVOID))
-      WinSendMsg(HWND_DESKTOP, WM_QUIT, MPVOID, MPVOID);
+    if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
+      WinSendMsg((HWND)0, WM_QUIT, MPVOID, MPVOID);
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
@@ -1494,7 +1488,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
   case WM_MENUEND:
     if (dcd)
     {
-      HWND hwndMenu = (HWND) mp2;
+      HWND hwndMenu = (HWND)mp2;
 
       if (hwndMenu == CollectorCnrMenu || hwndMenu == CollectorFileMenu ||
 	  hwndMenu == CollectorDirMenu)
@@ -1541,7 +1535,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  ULONG wmsg;
 
 	  wmsg = (SHORT1FROMMP(mp1) == 0) ? UM_FILESMENU : UM_VIEWSMENU;
-	  PortholeInit((HWND) WinSendMsg(dcd -> hwndClient, wmsg, MPVOID,
+	  PortholeInit((HWND)WinSendMsg(dcd -> hwndClient, wmsg, MPVOID,
 					 MPVOID), mp1, mp2);
 	}
 	break;
@@ -1556,24 +1550,24 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       switch (SHORT1FROMMP(mp1))
       {
       case IDM_VIEWSMENU:
-	SetViewMenu((HWND) mp2, dcd -> flWindowAttr);
-	WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
+	SetViewMenu((HWND)mp2, dcd -> flWindowAttr);
+	WinEnableMenuItem((HWND)mp2, IDM_RESELECT,
 			  (dcd -> lastselection != NULL));
 	break;
 
       case IDM_DETAILSSETUP:
-	SetDetailsSwitches((HWND) mp2, dcd);
+	SetDetailsSwitches((HWND)mp2, dcd);
 	break;
 
       case IDM_COMMANDSMENU:
-	SetupCommandMenu((HWND) mp2, hwnd);
+	SetupCommandMenu((HWND)mp2, hwnd);
 	break;
 
       case IDM_SORTSUBMENU:
-	SetSortChecks((HWND) mp2, CollectorsortFlags);
+	SetSortChecks((HWND)mp2, CollectorsortFlags);
 	break;
       }
-      dcd -> hwndLastMenu = (HWND) mp2;
+      dcd -> hwndLastMenu = (HWND)mp2;
     }
     if (msg == WM_INITMENU)
       break;
@@ -2305,7 +2299,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
   case UM_FILESMENU:
     {
       PCNRITEM pci;
-      HWND menuHwnd = (HWND) 0;
+      HWND menuHwnd = (HWND)0;
 
       pci = (PCNRITEM) CurrentRecord(hwnd);
       if (pci && (INT) pci != -1)
@@ -2914,7 +2908,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     return 0;
 
   case UM_FOLDUP:
-    if (!PostMsg(HWND_DESKTOP, WM_QUIT, MPVOID, MPVOID))
+    if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
       DosExit(EXIT_PROCESS, 1);
     return 0;
 
@@ -2949,8 +2943,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       WinDestroyWindow(CollectorFileMenu);
     if (CollectorCnrMenu)
       WinDestroyWindow(CollectorCnrMenu);
-    CollectorCnrMenu = CollectorFileMenu = CollectorDirMenu = (HWND) 0;
-    Collector = (HWND) 0;
+    CollectorCnrMenu = CollectorFileMenu = CollectorDirMenu = (HWND)0;
+    Collector = (HWND)0;
     EmptyCnr(hwnd);
     break;
   }
@@ -2960,7 +2954,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 HWND StartCollector(HWND hwndParent, INT flags)
 {
-  HWND hwndFrame = (HWND) 0;
+  HWND hwndFrame = (HWND)0;
   HWND hwndClient;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
                      FCF_SIZEBORDER | FCF_MINMAX |
@@ -3005,7 +2999,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
     if (!dcd) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
-      hwndFrame = (HWND) 0;
+      hwndFrame = (HWND)0;
     }
     else {
       dcd -> size = sizeof(DIRCNRDATA);
@@ -3044,7 +3038,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
         Win_Error2(hwndClient,hwndClient,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
 	free(dcd);
-	hwndFrame = (HWND) 0;
+	hwndFrame = (HWND)0;
       }
       else {
 	Collector = dcd -> hwndCnr;
