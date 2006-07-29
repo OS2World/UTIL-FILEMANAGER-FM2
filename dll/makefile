@@ -11,6 +11,7 @@
 # 16 Apr 06 SHL Add lxlite target
 # 28 Jun 06 SHL Add more .h dependencies
 # 22 Jul 06 SHL Add more .h dependencies
+# 29 Jul 06 SHL Reorganize icons
 
 # Warning - may still be missing some *.h dependencies
 
@@ -143,7 +144,7 @@ internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
 $(BASERES).obj: $(BASERES).c version.h
   $(CC) $(CFLAGSR) /C $(BASERES).c
 
-$(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h icons\*.ico icons\*.ptr
+$(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h icons\*.ico ..\icons\*.ico icons\*.ptr
   $(RC) -r $*
 
 !ifndef MAKERES
@@ -176,7 +177,7 @@ $(BASERES).dll: $(BASERES).res
 $(BASERES).lib: $(BASERES).dll $(BASERES).def
   implib $(BASERES).lib $(BASERES).def
 
-$(BASERES).str: $(BASE).str fm3str.h version.h icons\*.ico
+$(BASERES).str: $(BASE).str fm3str.h version.h
   internal\mkstr
   copy $(BASERES).str .. /v
 
