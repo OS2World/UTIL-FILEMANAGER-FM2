@@ -4,6 +4,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Expose internal errors to user rather than just beeping
  o Check and report more "should not occur" errors
  o More new icons (thanks David)
+ o Allow vcollect applet to die on window close
 
 3.04 pre11:
  o Add hide not selected to Compare Directories
