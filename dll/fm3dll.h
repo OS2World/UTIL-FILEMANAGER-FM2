@@ -31,6 +31,7 @@
   22 Jul 06 SHL Add memory.c functions
   26 Jul 06 SHL Add strips.c functions
   26 Jul 06 SHL Add more error.c functions
+  29 Jul 06 SHL Add xfgets, xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -1199,6 +1200,8 @@ char *GetPString (ULONG id);
 BOOL StringsLoaded (void);
 
 /* wrappers.c */
+PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE *fp, PCSZ pszSrcFile, UINT uiLineNumber);
+PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE *fp, PCSZ pszSrcFile, UINT uiLineNumber);
 FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile, UINT uiLineNumber);
 FILE *xfsopen(PCSZ pszFileName,PCSZ pszMode,INT fSharemode, PCSZ pszSrcFile, UINT uiLineNumber);
 VOID xfree (PVOID pv);
