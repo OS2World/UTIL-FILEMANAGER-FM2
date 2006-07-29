@@ -21,6 +21,7 @@
   16 Jun 06 SHL load_archivers: support signatures containing 0s
   26 Jun 06 SHL load_archivers: remember where comments are
   14 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets, xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -285,7 +286,7 @@ static UINT cur_line_num;		// Input file line counter
 
 static PSZ get_line_strip_comments(PSZ pszIn, FILE *fp)
 {
-  PSZ psz = fgets(pszIn, ARCHIVER_LINE_BYTES, fp);
+  PSZ psz = xfgets(pszIn, ARCHIVER_LINE_BYTES, fp, pszSrcFile, __LINE__);
   PSZ psz2;
 
   if (psz) {
@@ -303,12 +304,10 @@ static PSZ get_line_strip_comments(PSZ pszIn, FILE *fp)
 
 static PSZ get_line_strip_white(PSZ pszIn, FILE *fp)
 {
-  PSZ psz = fgets(pszIn, ARCHIVER_LINE_BYTES, fp);
+  PSZ psz = xfgets_bstripcr(pszIn, ARCHIVER_LINE_BYTES, fp, pszSrcFile, __LINE__);
 
-  if (psz) {
+  if (psz)
     cur_line_num++;
-    bstripcr(pszIn);			// Strip lead white and trailing white and CR/LF
-  }
 
   return psz;
 }

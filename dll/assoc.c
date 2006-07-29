@@ -8,6 +8,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   14 Jul 06 SHL Use Runtime_Error
+  29 Jul 06 SHL Use xfgets, xfgets_bstripcr
 
 ***********************************************************************/
 
@@ -137,26 +138,26 @@ VOID load_associations (VOID)
   fp = _fsopen(mask,"r",SH_DENYWR);
   if (fp) {
     while(!feof(fp)) {
-      if(!fgets(mask,CCHMAXPATH + 24,fp))
+      if (!xfgets(mask,sizeof(mask),fp,pszSrcFile,__LINE__))	// fixme why +24?
         break;
       mask[CCHMAXPATH] = 0;
       bstripcr(mask);
       if(!*mask || *mask == ';')
         continue;
-      if(!fgets(cl,1024,fp) ||
-         !fgets(sig,CCHMAXPATH + 24,fp) ||
-         !fgets(offset,72,fp) ||
-         !fgets(flags,72,fp))
+      if(!xfgets(cl,sizeof(cl),fp,pszSrcFile,__LINE__) ||
+         !xfgets(sig,CCHMAXPATH + 24,fp,pszSrcFile,__LINE__) ||
+         !xfgets(offset,sizeof(offset),fp,pszSrcFile,__LINE__) ||
+         !xfgets(flags,sizeof(flags),fp,pszSrcFile,__LINE__))
         break;                       /* error! */
       cl[1000] = 0;
-      sig[CCHMAXPATH] = 0;
-      offset[34] = 0;
-      flags[34] = 0;
       bstripcr(cl);
+      sig[CCHMAXPATH] = 0;
       bstripcr(sig);
+      offset[34] = 0;
       bstripcr(offset);
+      flags[34] = 0;
       bstripcr(flags);
-      if(!*cl)
+      if (!*cl)
         continue;
       info = xmallocz(sizeof(LINKASSOC),pszSrcFile,__LINE__);
       if (info) {
