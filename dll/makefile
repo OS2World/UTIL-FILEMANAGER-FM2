@@ -1,6 +1,9 @@
 # dll\makefile - build fm/2 dlls, help files, string tables and resource kit
 # $Id$
 
+# Copyright (c) 1993-98 M. Kimes
+# Copyright (c) 2002, 2006 Steven H. Levine
+
 # 22 May 03 SHL Correct icon dependencies
 # 21 Nov 03 SHL Correct ipf dependents
 # 26 Jul 04 SHL Correct CFLAGSR
