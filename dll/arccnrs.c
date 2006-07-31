@@ -26,6 +26,7 @@
   14 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Correct SelectAll usage
   29 Jul 06 SHL Use xfgets_bstripcr
+  31 Jul 06 SHL Lower priority for archives with more than 1000 entries
 
 ***********************************************************************/
 
@@ -68,18 +69,16 @@ static MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
   switch (msg)
   {
     case WM_INITDLG:
-      if(!mp2)
+      if (!mp2)
         WinDismissDlg(hwnd,0);
       else {
         ad = (ARCDUMP *)mp2;
         WinSetWindowPtr(hwnd,QWL_USER,ad);
-        if(ad->errmsg)
-          WinSetDlgItemText(hwnd,
-                            ARCERR_TEXT,
-                            ad->errmsg);
-        if(!ad->info->test)
+        if (ad->errmsg)
+          WinSetDlgItemText(hwnd,ARCERR_TEXT,ad->errmsg);
+        if (!ad->info->test)
           WinEnableWindow(WinWindowFromID(hwnd,ARCERR_TEST),FALSE);
-        if(ad->listname) {
+        if (ad->listname) {
           MLEsetlimit(WinWindowFromID(hwnd,ARCERR_MLE),-1L);
           MLEsetformat(WinWindowFromID(hwnd,ARCERR_MLE),MLFIE_NOTRANS);
           MLEsetcurpos(WinWindowFromID(hwnd,ARCERR_MLE),
@@ -98,10 +97,11 @@ static MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           break;
 
         case IDM_HELP:
-          if(hwndHelp)
+          if (hwndHelp) {
             WinSendMsg(hwndHelp,HM_DISPLAY_HELP,
                        MPFROM2SHORT(HELP_ARCERR,0),
                        MPFROMSHORT(HM_RESOURCEID));
+	  }
           break;
 
         case DID_OK:
@@ -118,17 +118,18 @@ static MRESULT EXPENTRY ArcErrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
             list[0] = ad->arcname;
             list[1] = NULL;
-            if(TestBinary(ad->arcname)) {
-              if(*binview)
+            if (TestBinary(ad->arcname)) {
+              if (*binview)
                 ExecOnList((HWND)0,binview,WINDOWED | SEPARATE,NULL,list,NULL);
               else
                 StartMLEEditor(HWND_DESKTOP,16 + 4 + 1,ad->arcname,hwnd);
             }
             else {
-              if(*viewer)
+              if (*viewer) {
                 ExecOnList((HWND)0,viewer,WINDOWED | SEPARATE |
                            ((fViewChild) ? CHILD : 0),
                            NULL,list,NULL);
+	      }
               else
                 StartMLEEditor(HWND_DESKTOP,8 + 4 + 1,ad->arcname,hwnd);
             }
@@ -159,10 +160,9 @@ static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID
   CHAR       *pext,*ppext;
   INT	     sortFlags;
 
-  if (!pdcd)
-  {
+  if (!pdcd) {
     HWND hwndCnr = pai1->hwndCnr;
-    pdcd = (DIRCNRDATA *)WinQueryWindowPtr(hwndCnr,QWL_USER);
+    pdcd = WinQueryWindowPtr(hwndCnr,QWL_USER);
     if (!pdcd) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       return ret;
@@ -171,14 +171,14 @@ static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID
 
   sortFlags = pdcd->sortFlags;		// Optimize
 
-  if(sortFlags) {
+  if (sortFlags) {
     switch(sortFlags & (~SORT_REVERSE)) {
       case SORT_FIRSTEXTENSION:
         pext = strchr(pai1->szFileName,'.');
         ppext = strchr(pai2->szFileName,'.');
-        if(!pext)
+        if (!pext)
           pext = NullStr;
-        if(!ppext)
+        if (!ppext)
           ppext = NullStr;
         ret = stricmp(pext,ppext);
         break;
@@ -186,9 +186,9 @@ static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID
       case SORT_LASTEXTENSION:
         pext = strrchr(pai1->szFileName,'.');
         ppext = strrchr(pai2->szFileName,'.');
-        if(!pext)
+        if (!pext)
           pext = NullStr;
-        if(!ppext)
+        if (!ppext)
           ppext = NullStr;
         ret = stricmp(pext,ppext);
         break;
@@ -211,7 +211,7 @@ static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID
       case SORT_SIZE:
         ret = (pai1->cbFile < pai2->cbFile) ? 1 : (pai1->cbFile == pai2->cbFile) ?
               0 : -1;
-        if(!ret)
+        if (!ret)
           ret = (pai1->cbComp < pai2->cbComp) ? 1 : (pai1->cbComp == pai2->cbComp) ?
                 0 : -1;
         break;
@@ -219,14 +219,14 @@ static SHORT APIENTRY ArcSort (PMINIRECORDCORE pmrc1,PMINIRECORDCORE pmrc2,PVOID
       case SORT_EASIZE:
         ret = (pai1->cbComp < pai2->cbComp) ? 1 : (pai1->cbComp == pai2->cbComp) ?
               0 : -1;
-        if(!ret)
+        if (!ret)
           ret = (pai1->cbFile < pai2->cbFile) ? 1 : (pai1->cbFile == pai2->cbFile) ?
                 0 : -1;
         break;
     }
-    if(!ret)
+    if (!ret)
       ret = (SHORT)stricmp(pai1->szFileName,pai2->szFileName);
-    if(ret && (sortFlags & SORT_REVERSE))
+    if (ret && (sortFlags & SORT_REVERSE))
       ret = (ret > 0) ? -1 : 1;
     return ret;
   }
@@ -241,17 +241,17 @@ static INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg)
   register INT  x;
   INT           ret = FALSE;
 
-  if(dcd && *dcd->mask.szMask) {
+  if (dcd && *dcd->mask.szMask) {
     r = (PARCITEM)rmini;
-    if(dcd->mask.pszMasks[1]) {
+    if (dcd->mask.pszMasks[1]) {
       for(x = 0;dcd->mask.pszMasks[x];x++) {
-        if(*dcd->mask.pszMasks[x]) {
-          if(*dcd->mask.pszMasks[x] != '/') {
-            if(wildcard(r->szFileName,dcd->mask.pszMasks[x],FALSE))
+        if (*dcd->mask.pszMasks[x]) {
+          if (*dcd->mask.pszMasks[x] != '/') {
+            if (wildcard(r->szFileName,dcd->mask.pszMasks[x],FALSE))
               ret = TRUE;
           }
           else {
-            if(wildcard(r->szFileName,dcd->mask.pszMasks[x] + 1,FALSE)) {
+            if (wildcard(r->szFileName,dcd->mask.pszMasks[x] + 1,FALSE)) {
               ret = FALSE;
               break;
             }
@@ -260,7 +260,7 @@ static INT APIENTRY ArcFilter (PMINIRECORDCORE rmini,PVOID arg)
       }
     }
     else {
-      if(wildcard(r->szFileName,dcd->mask.szMask,FALSE))
+      if (wildcard(r->szFileName,dcd->mask.szMask,FALSE))
         ret = TRUE;
     }
   }
@@ -278,8 +278,8 @@ static MRESULT EXPENTRY ArcFrameWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM m
 
 static BOOL IsArcThere (HWND hwnd, CHAR *arcname)
 {
-  if(arcname) {
-    if(IsFile(arcname) != 1) {
+  if (arcname) {
+    if (IsFile(arcname) != 1) {
       saymsg(MB_CANCEL,hwnd,
              GetPString(IDS_SAYWHATTEXT),
              GetPString(IDS_ARCNOTTHERETEXT),
@@ -292,8 +292,10 @@ static BOOL IsArcThere (HWND hwnd, CHAR *arcname)
 }
 
 
-static INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
-                       ULONGLONG *pullTotalBytes)
+//== FillArcCnr() generate archive content list and fill container window ==
+
+static INT FillArcCnr(HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
+                      ULONGLONG *pullTotalBytes)
 {
   FILE         *fp;
   HFILE         oldstdout;
@@ -311,19 +313,19 @@ static INT FillArcCnr (HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
   ULONG         apptype;
   APIRET	rc;
 
-  if(!arcname || !arcinfo)
+  if (!arcname || !arcinfo)
     return 0;
 
   info = *arcinfo;
-  if(!info)
+  if (!info)
     info = find_type(arcname,NULL);
-    for(x = 0;x < 99;x++) {
-      sprintf(arctemp,"%s.%03x",ArcTempRoot,(clock() & 4095L));
-      if(IsFile(arctemp) == 1)
-        DosSleep(rand() % 100);
-      else
-        break;
-    }
+  for(x = 0;x < 99;x++) {
+    sprintf(arctemp,"%s.%03x",ArcTempRoot,(clock() & 4095L));
+    if (IsFile(arctemp) == 1)
+      DosSleep(rand() % 100);
+    else
+      break;
+  }
 
 ReTry:
 
@@ -343,22 +345,22 @@ ReTry:
     WinSendMsg(hwndCnr,
                CM_REMOVERECORD,
                MPVOID,
-               MPFROM2SHORT(0,
-                            CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
+               MPFROM2SHORT(0,CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
     *arcinfo = info;
     highest = info->osizepos;
-    if(info->nsizepos > highest)
+    if (info->nsizepos > highest)
       highest = info->nsizepos;
-    if(info->fdpos > highest)
+    if (info->fdpos > highest)
       highest = info->fdpos;
-    if(info->fnpos > highest)
+    if (info->fnpos > highest)
       highest = info->fnpos;
-    if(highest > 50)
+    if (highest > 50) {
       saymsg(MB_ENTER | MB_ICONEXCLAMATION,HWND_DESKTOP,
              GetPString(IDS_SHAMETEXT),
              "%s",
              GetPString(IDS_BUNGEDUPTEXT));
-    if(info->fnpos == -1)
+    }
+    if (info->fnpos == -1)
       highest = 32767;
 
     DosError(FERR_DISABLEHARDERR);
@@ -367,14 +369,14 @@ ReTry:
 
     strcpy(s,info->list);
     p = strchr(s,' ');
-    if(p)
+    if (p)
       *p = 0;
     DosError(FERR_DISABLEHARDERR);
-    if(!DosQAppType(s,&apptype) &&
-       ((apptype & FAPPTYP_DOS) ||
-        (apptype & FAPPTYP_WINDOWSREAL) ||
-        (apptype & FAPPTYP_WINDOWSPROT) ||
-        (apptype & 0x1000))) {
+    if (!DosQAppType(s,&apptype) &&
+        ((apptype & FAPPTYP_DOS) ||
+         (apptype & FAPPTYP_WINDOWSREAL) ||
+         (apptype & FAPPTYP_WINDOWSPROT) ||
+         (apptype & 0x1000))) {
       p = GetCmdSpec(TRUE);
       runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
               hwndCnr,
@@ -390,7 +392,7 @@ ReTry:
     }
     else {
       fp = xfopen(arctemp,"w",pszSrcFile,__LINE__);
-      if(!fp)
+      if (!fp)
         return 0;
       else {
         newstdout = -1;
@@ -431,29 +433,29 @@ ReTry:
       gotstart = !info->startlist || !*info->startlist;	// If list has no start marker
 
       while(!feof(fp) && !gotend) {
-        if(!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
+        if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
           break;
-        if(!gotstart) {
+        if (!gotstart) {
           if (!strcmp(s,info->startlist))
             gotstart = TRUE;
         }
-        else if(info->endlist &&
-                !strcmp(s,info->endlist))
+        else if (info->endlist &&
+                 !strcmp(s,info->endlist))
           gotend = TRUE;
         else {
 	  /* add to container */
           fname = NULL;
           bstrip(s);
-          if(info->nameisfirst) {
+          if (info->nameisfirst) {
             strncpy(lonename,s,CCHMAXPATH + 2);
             lonename[CCHMAXPATH + 1] = 0;
             fname = lonename;
-            if(!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
+            if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
               break;
-            if(*fname == '\"') {
+            if (*fname == '\"') {
               memmove(fname,fname + 1,strlen(fname) + 1);
               p = strchr(fname,'\"');
-              if(p)
+              if (p)
                 *p = 0;
             }
           }
@@ -464,15 +466,15 @@ ReTry:
             pp = p;
             while(*pp && (*pp == ' ' || *pp == '\t')) /* skip leading */
               pp++;
-            if(!*pp)
+            if (!*pp)
               break;
             wasquote = FALSE;
             p = pp;
             while(*p && (wasquote ||
                          ((x != info->fnpos || !info->nameislast) ?
                           (*p != ' ' && *p != '\t') : TRUE))) {
-              if(*p == '\"') {
-                if(!wasquote) {
+              if (*p == '\"') {
+                if (!wasquote) {
                   wasquote = TRUE;
                   memmove(p,p + 1,strlen(p));
                   while(*p == ' ' || *p == '\t')
@@ -483,25 +485,24 @@ ReTry:
                   break;
                 }
               }
-              else if(*p)
+              else if (*p)
                 p++;
             }
-            if(*p) {
+            if (*p) {
               *p = 0;
               p++;
             }
-            if(x == info->nsizepos)
+            if (x == info->nsizepos)
               nsize = pp;
-            else if(x == info->osizepos)
+            else if (x == info->osizepos)
               osize = pp;
-            else if(x == info->fdpos) {
+            else if (x == info->fdpos) {
               fdate = pp;
-              if(info->fdflds > 1 &&
-                 info->fdflds < 24) {
-
+              if (info->fdflds > 1 &&
+                  info->fdflds < 24) {
                 INT y;
 
-                if(*p) {
+                if (*p) {
                   p--;
                   *p = ' ';
                   for(y = 0;y < info->fdflds - 1;y++) {
@@ -511,21 +512,21 @@ ReTry:
                       p++;
                     x++;
                   }
-                  if(*p) {
+                  if (*p) {
                     *p = 0;
                     p++;
                   }
                 }
               }
             }
-            else if(x == info->fnpos) {
+            else if (x == info->fnpos) {
               fname = pp;
-              if(pp && *pp == '*' && !*(pp + 1))  /* workaround for LH.EXE */
+              if (pp && *pp == '*' && !*(pp + 1))  /* workaround for LH.EXE */
                 fname = NULL;
-              if(info->nameislast)
+              if (info->nameislast)
                 break;
             }
-            else if((!p || !*p) && info->fnpos == -1) {
+            else if ((!p || !*p) && info->fnpos == -1) {
               fname = pp;
               break;
             }
@@ -535,6 +536,7 @@ ReTry:
               break;
             fname = lonename;
           }
+	  // fixme to complain?
           if (fname && *fname) {
 
             RECORDINSERT ri;
@@ -567,11 +569,11 @@ ReTry:
                 fname++;
                 pai->flags = ARCFLAGS_REALDIR;
               }
-              if(fname[strlen(fname) - 1] == '\\' ||
+              if (fname[strlen(fname) - 1] == '\\' ||
                  fname[strlen(fname) - 1] == '/')
                 pai->flags = ARCFLAGS_REALDIR;
               strcpy(pai->szFileName,fname);
-              if(fdate)
+              if (fdate)
                 strcpy(pai->szDate,fdate);
               pai->pszFileName = pai->szFileName;
               pai->rc.pszIcon = pai->pszFileName;
@@ -602,17 +604,19 @@ ReTry:
 	      {
                 *pullTotalBytes += pai->cbFile;
 	      }
-              if(!lastpai)
-                lastpai = pai;
               numarcfiles++;
               if  (!(++counter % 50)) {
+                if (!lastpai)
+                  lastpai = pai;
                 WinSendMsg(hwndCnr,
                            CM_INVALIDATERECORD,
                            lastpai,
-                           MPFROM2SHORT(10,
-                                        CMA_ERASE | CMA_REPOSITION));
+                           MPFROM2SHORT(10,CMA_ERASE | CMA_REPOSITION));
                 lastpai = pai;
               }
+	      // Avoid hogging system if large archive
+	      if (numarcfiles == 1000)
+		  priority_idle();
             }
           }
         }
@@ -622,48 +626,47 @@ ReTry:
 
       if (!numarcfiles || !gotstart || (!gotend && info->endlist && *info->endlist))
       {
+	// Oops
         ARCDUMP ad;
+        CHAR errstr[CCHMAXPATH + 256];
 
+	// Try for alternate archiver
         tinfo = info;
         do {
           tinfo = tinfo->next;
-          if(tinfo)
+          if (tinfo)
             tinfo = find_type(arcname,tinfo);
-          if(tinfo) {
+          if (tinfo) {
             DosError(FERR_DISABLEHARDERR);
             DosForceDelete(arctemp);
             info = tinfo;
             goto ReTry;
           }
         } while(tinfo);
-        DosBeep(750,50);		// fixme to know why?
-        {
-          CHAR errstr[CCHMAXPATH + 256];
-
-          sprintf(errstr,GetPString(IDS_ARCERRORINFOTEXT),
-                  arcname,
-                  (!gotstart) ? GetPString(IDS_NOGOTSTARTTEXT) : NullStr,
-                  (!numarcfiles) ? GetPString(IDS_NOARCFILESFOUNDTEXT) : NullStr,
-                  (!gotend) ? GetPString(IDS_NOENDOFLISTTEXT) : NullStr);
-          memset(&ad,0,sizeof(ARCDUMP));
-          ad.info = info;
-          strcpy(ad.listname,arctemp);
-          strcpy(ad.arcname,arcname);
-          ad.errmsg = errstr;
-          WinDlgBox(HWND_DESKTOP,
-                    hwndCnr,
-                    ArcErrProc,
-                    FM3ModHandle,
-                    ARCERR_FRAME,
-                    MPFROMP(&ad));
-        }
+        DosBeep(750,50);		// wake up user
+        sprintf(errstr,GetPString(IDS_ARCERRORINFOTEXT),
+                arcname,
+                (!gotstart) ? GetPString(IDS_NOGOTSTARTTEXT) : NullStr,
+                (!numarcfiles) ? GetPString(IDS_NOARCFILESFOUNDTEXT) : NullStr,
+                (!gotend) ? GetPString(IDS_NOENDOFLISTTEXT) : NullStr);
+        memset(&ad,0,sizeof(ARCDUMP));
+        ad.info = info;
+        strcpy(ad.listname,arctemp);
+        strcpy(ad.arcname,arcname);
+        ad.errmsg = errstr;
+        WinDlgBox(HWND_DESKTOP,
+                  hwndCnr,
+                  ArcErrProc,
+                  FM3ModHandle,
+                  ARCERR_FRAME,
+                  MPFROMP(&ad));
       }
       else if (!nomove && tinfo) {
 	/* if we got a false hit, move working hit to top */
         tinfo = info->next;
         info->next = arcsighead;
         arcsighead->prev = info;
-        if(tinfo)
+        if (tinfo)
           tinfo->next->prev = info->prev;
         info->prev->next = tinfo;
         info->prev = NULL;
@@ -674,6 +677,9 @@ ReTry:
     DosError(FERR_DISABLEHARDERR);
     DosForceDelete(arctemp);
   }
+
+  if (numarcfiles >= 500)
+    priority_normal();
 
   return numarcfiles;
 }
@@ -712,16 +718,16 @@ MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               SWP         swp;
               DIRCNRDATA *dcd;
 
-              if(hwndButtonPopup)
+              if (hwndButtonPopup)
                 WinDestroyWindow(hwndButtonPopup);
-              if(id == DIR_SELECTED)
+              if (id == DIR_SELECTED)
                 id = DIR_RESTORE;
-              if(id == lastid) {
+              if (id == lastid) {
 
                 ULONG check;
 
                 DosQuerySysInfo(QSV_MS_COUNT,QSV_MS_COUNT,&check,sizeof(check));
-                if(check < timestamp + 500) {
+                if (check < timestamp + 500) {
                   lastid = 0;
                   goto MenuAbort;
                 }
@@ -729,7 +735,7 @@ MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               hwndButtonPopup = WinLoadMenu(HWND_DESKTOP,
                                             FM3ModHandle,
                                             id);
-              if(hwndButtonPopup) {
+              if (hwndButtonPopup) {
                 WinSetWindowUShort(hwndButtonPopup,
                                    QWS_ID,
                                    id);
@@ -737,44 +743,37 @@ MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                                         QW_PARENT),
                                                         ARC_CNR),
                                         QWL_USER);
-                if(id == DIR_SORT) {
-                  if(dcd)
+                if (id == DIR_SORT) {
+                  if (dcd)
                     SetSortChecks(hwndButtonPopup,
                                   dcd->sortFlags);
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
-                             MPFROM2SHORT(IDM_SORTNONE,
-                                          FALSE),
+                             MPFROM2SHORT(IDM_SORTNONE,FALSE),
                              MPVOID);
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
-                             MPFROM2SHORT(IDM_SORTNAME,
-                                          FALSE),
+                             MPFROM2SHORT(IDM_SORTNAME,FALSE),
                              MPVOID);
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
-                             MPFROM2SHORT(IDM_SORTLADATE,
-                                          FALSE),
+                             MPFROM2SHORT(IDM_SORTLADATE,FALSE),
                              MPVOID);
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
-                             MPFROM2SHORT(IDM_SORTCRDATE,
-                                          FALSE),
+                             MPFROM2SHORT(IDM_SORTCRDATE,FALSE),
                              MPVOID);
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
-                             MPFROM2SHORT(IDM_SORTDIRSFIRST,
-                                          FALSE),
+                             MPFROM2SHORT(IDM_SORTDIRSFIRST,FALSE),
                              MPVOID);
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
-                             MPFROM2SHORT(IDM_SORTDIRSLAST,
-                                          FALSE),
+                             MPFROM2SHORT(IDM_SORTDIRSLAST,FALSE),
                              MPVOID);
                   WinSendMsg(hwndButtonPopup,
                              MM_DELETEITEM,
-                             MPFROM2SHORT(IDM_SORTSUBJECT,
-                                          FALSE),
+                             MPFROM2SHORT(IDM_SORTSUBJECT,FALSE),
                              MPVOID);
                   WinSendMsg(hwndButtonPopup,
                              MM_SETITEMTEXT,
@@ -786,7 +785,7 @@ MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                              MPFROMP(GetPString(IDS_DATEMENUTEXT)));
                 }
                 ptl.x = 0;
-                if(WinPopupMenu(HWND_OBJECT,
+                if (WinPopupMenu(HWND_OBJECT,
                                 HWND_OBJECT,
                                 hwndButtonPopup,
                                 -32767,
@@ -802,7 +801,7 @@ MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                     &swp);
                   ptl.y = swp.cy + 2;
                 }
-                if(WinPopupMenu(hwnd,
+                if (WinPopupMenu(hwnd,
                                 hwnd,
                                 hwndButtonPopup,
                                 ptl.x,
@@ -823,19 +822,18 @@ MRESULT EXPENTRY ArcTextProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             PostMsg(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
                                     ARC_CNR),
                     WM_CONTROL,
-                    MPFROM2SHORT(ARC_CNR,
-                                 CN_CONTEXTMENU),
+                    MPFROM2SHORT(ARC_CNR,CN_CONTEXTMENU),
                     MPVOID);
             break;
         }
       }
 MenuAbort:
-      if(msg == UM_CONTEXTMENU)
+      if (msg == UM_CONTEXTMENU)
         return 0;
       break;
 
     case WM_MENUEND:
-      if(hwndButtonPopup == (HWND)mp2) {
+      if (hwndButtonPopup == (HWND)mp2) {
         lastid = WinQueryWindowUShort((HWND)mp2,QWS_ID);
         WinDestroyWindow(hwndButtonPopup);
         hwndButtonPopup = (HWND)0;
@@ -856,8 +854,8 @@ MenuAbort:
         USHORT id   = WinQueryWindowUShort(hwnd,QWS_ID);
         char  *s    = NULL;
 
-        if(fOtherHelp) {
-          if((!hwndBubble ||
+        if (fOtherHelp) {
+          if ((!hwndBubble ||
               WinQueryWindowULong(hwndBubble,QWL_USER) != hwnd) &&
              !WinQueryCapture(HWND_DESKTOP)) {
             switch(id) {
@@ -882,9 +880,9 @@ MenuAbort:
               default:
                 break;
             }
-            if(s)
+            if (s)
               MakeBubble(hwnd,TRUE,s);
-            else if(hwndBubble)
+            else if (hwndBubble)
               WinDestroyWindow(hwndBubble);
           }
         }
@@ -932,7 +930,7 @@ MenuAbort:
                 cmd = IDM_RESCAN;
                 break;
               default:
-                if((SHORT2FROMMP(mp2) & KC_ALT) != 0)
+                if ((SHORT2FROMMP(mp2) & KC_ALT) != 0)
                   cmd = IDM_WINDOWDLG;
                 else
                   cmd = IDM_WALKDIR;
@@ -942,10 +940,7 @@ MenuAbort:
           case DIR_VIEW:
           case DIR_SORT:
           case DIR_SELECTED:
-            PostMsg(hwnd,
-                    UM_CONTEXTMENU,
-                    MPVOID,
-                    MPVOID);
+            PostMsg(hwnd,UM_CONTEXTMENU,MPVOID,MPVOID);
             break;
           case DIR_FILTER:
             cmd = IDM_FILTER;
@@ -953,7 +948,7 @@ MenuAbort:
           default:
             break;
         }
-        if(cmd)
+        if (cmd)
           PostMsg(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
                                   ARC_CNR),
                   WM_COMMAND,
@@ -967,14 +962,14 @@ MenuAbort:
     case DM_DRAGOVER:
     case DM_DRAGLEAVE:
     case DM_DROPHELP:
-      if(msg == DM_DRAGOVER) {
-        if(!emphasized) {
+      if (msg == DM_DRAGOVER) {
+        if (!emphasized) {
           emphasized = TRUE;
           DrawTargetEmphasis(hwnd,emphasized);
         }
       }
-      else if(msg != WM_BEGINDRAG) {
-        if(emphasized) {
+      else if (msg != WM_BEGINDRAG) {
+        if (emphasized) {
           emphasized = FALSE;
           DrawTargetEmphasis(hwnd,emphasized);
         }
@@ -983,7 +978,7 @@ MenuAbort:
         case DIR_FOLDERICON:
           switch(msg) {
             case DM_DRAGOVER:
-              if(AcceptOneDrop(mp1,mp2))
+              if (AcceptOneDrop(mp1,mp2))
                 return MRFROM2SHORT(DOR_DROP,
                                     DO_MOVE);
               return MRFROM2SHORT(DOR_NODROP,0);         /* Drop not valid        */
@@ -997,11 +992,11 @@ MenuAbort:
               {
                 char szFrom[CCHMAXPATH + 2];
 
-                if(emphasized) {
+                if (emphasized) {
                   emphasized = FALSE;
                   DrawTargetEmphasis(hwnd,emphasized);
                 }
-                if(GetOneDrop(mp1,mp2,szFrom,sizeof(szFrom)))
+                if (GetOneDrop(mp1,mp2,szFrom,sizeof(szFrom)))
                   WinSendMsg(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
                                              ARC_CNR),
                              WM_COMMAND,
@@ -1076,7 +1071,7 @@ MRESULT EXPENTRY ArcClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
     case WM_PSETFOCUS:
     case WM_SETFOCUS:
-      if(mp2)
+      if (mp2)
         PostMsg(hwnd,UM_FOCUSME,MPVOID,MPVOID);
       break;
 
@@ -1090,7 +1085,7 @@ MRESULT EXPENTRY ArcClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
         RECTL  rcl;
 
         hps = WinBeginPaint(hwnd,(HPS)0,NULL);
-        if(hps) {
+        if (hps) {
           WinQueryWindowRect(hwnd,&rcl);
           WinFillRect(hps,&rcl,CLR_PALEGRAY);
           CommonTextPaint(hwnd,hps);
@@ -1101,7 +1096,7 @@ MRESULT EXPENTRY ArcClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
 
     case UM_SIZE:
     case WM_SIZE:
-      if(msg == UM_SIZE) {
+      if (msg == UM_SIZE) {
 
         SWP     swp;
 
@@ -1165,7 +1160,7 @@ MRESULT EXPENTRY ArcClientWndProc (HWND hwnd,ULONG msg,MPARAM mp1,
                         SWP_SHOW | SWP_MOVE | SWP_SIZE);
       }
       CommonTextPaint(hwnd,(HPS)0);
-      if(msg == UM_SIZE) {
+      if (msg == UM_SIZE) {
         WinSetWindowPos(WinQueryWindow(hwnd,QW_PARENT),HWND_TOP,0,0,0,0,
                         SWP_SHOW | SWP_ZORDER | SWP_ACTIVATE);
         return 0;
@@ -1185,7 +1180,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case DM_PRINTOBJECT:
     case DM_DISCARDOBJECT:
       dcd = INSTDATA(hwnd);
-      if(dcd) {
+      if (dcd) {
 
         LISTINFO    *li;
         CNRDRAGINFO cni;
@@ -1197,16 +1192,13 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                         FALSE,
                         MPVOID,
                         MPFROMP(&cni));
-        if(li) {
+        if (li) {
           li->type = (msg == DM_DISCARDOBJECT) ?
                       IDM_DELETE :
                       IDM_PRINT;
-          if(!li->list ||
+          if (!li->list ||
              !li->list[0] ||
-             !PostMsg(hwnd,
-                      UM_ACTION,
-                      MPFROMP(li),
-                      MPVOID))
+             !PostMsg(hwnd,UM_ACTION,MPFROMP(li),MPVOID))
             FreeListInfo(li);
           else
             return MRFROMLONG(DRR_SOURCE);
@@ -1219,13 +1211,13 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case DM_RENDER:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd && dcd->info && dcd->info->extract && dcd->arcname) {
+      if (dcd && dcd->info && dcd->info->extract && dcd->arcname) {
 
         PDRAGTRANSFER  pdt = (PDRAGTRANSFER)mp1;
         CHAR           filename[CCHMAXPATH];
         ULONG          len;
 
-        if(pdt->hwndClient && pdt->pditem && pdt->hstrSelectedRMF &&
+        if (pdt->hwndClient && pdt->pditem && pdt->hstrSelectedRMF &&
            pdt->hstrRenderToName)
         {
           if (pdt->usOperation == DO_COPY || pdt->usOperation == DO_MOVE) {
@@ -1239,7 +1231,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               *filename = 0;
               len = DrgQueryStrName(pdt->hstrRenderToName,CCHMAXPATH,filename);
               filename[len] = 0;
-              if(len && *filename) {
+              if (len && *filename) {
                 psz = xstrdup(filename,pszSrcFile,__LINE__);
 	        if (psz) {
                   PostMsg(hwnd,UM_RENDER,MPFROMP(pdt),MPFROMP(psz));
@@ -1262,7 +1254,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         USHORT         usRes = DMFL_RENDERFAIL;
 
         dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-        if(dcd && dcd->info && dcd->info->extract && dcd->arcname) {
+        if (dcd && dcd->info && dcd->info->extract && dcd->arcname) {
 
           CHAR          *filename = (CHAR *)mp2,*p;
           ULONG          len;
@@ -1272,14 +1264,14 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           len = DrgQueryStrName(pdt->pditem->hstrSourceName,
                                 CCHMAXPATH,membername);
           membername[len] = 0;
-          if(*membername && len && filename) {
+          if (*membername && len && filename) {
             unlinkf("%s",filename);
             strcpy(construct,filename);
             p = strrchr(filename,'\\');
-            if(!p)
+            if (!p)
               *construct = 0;
             else {
-              if(p == filename || *(p - 1) == ':')
+              if (p == filename || *(p - 1) == ':')
                 p++;
               *p = 0;
             }
@@ -1294,35 +1286,37 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     (needs_quoting(membername)) ? "\"" : NullStr,
                     membername,
                     (needs_quoting(membername)) ? "\"" : NullStr);
-            if(*construct && construct[strlen(construct) - 1] != '\\')
+            if (*construct && construct[strlen(construct) - 1] != '\\')
               strcat(construct,"\\");
             strcat(construct,membername);
-            if(IsFile(construct) != -1) {
+            if (IsFile(construct) != -1) {
               rename(construct,filename);
               unlinkf("%s",construct);
-              if(IsFile(filename) != -1)
+              if (IsFile(filename) != -1)
                 usRes = DMFL_RENDEROK;
             }
           }
         }
-        if(mp2)
+        if (mp2)
           free((CHAR *)mp2);
         PostMsg(pdt->hwndClient,DM_RENDERCOMPLETE,MPFROMP(pdt),
-                   MPFROM2SHORT(usRes,0));
+                MPFROM2SHORT(usRes,0));
       }
       return 0;
 
     case UM_SETUP:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
+      if (!dcd) {
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+        PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
+      }
+      else {
         /* set unique id */
         WinSetWindowUShort(hwnd,QWS_ID,ARCOBJ_FRAME + (ARC_FRAME - dcd->id));
         dcd->hwndObject = hwnd;		// pass back hwnd
-        if(ParentIsDesktop(hwnd,dcd->hwndParent))
+        if (ParentIsDesktop(hwnd,dcd->hwndParent))
           DosSleep(250);		// Avoid race?
       }
-      else
-        PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
       return 0;
 
     case UM_RESCAN:
@@ -1330,8 +1324,8 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
        * populate container
        */
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
-        if(mp1)
+      if (dcd) {
+        if (mp1)
           strcpy(dcd->arcname,(CHAR *)mp1);	// Update name on request
         WinSetWindowText(dcd->hwndFrame,"AV/2");
         WinSetWindowText(WinWindowFromID(dcd->hwndFrame,FID_TITLEBAR),dcd->arcname);
@@ -1343,25 +1337,13 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                      dcd->arcname,
                                      &dcd->info,
                                      &dcd->ullTotalBytes);
-        if(!dcd->totalfiles)
-          PostMsg(dcd->hwndCnr,
-                  WM_CLOSE,
-                  MPVOID,
-                  MPVOID);
+        if (!dcd->totalfiles)
+          PostMsg(dcd->hwndCnr,WM_CLOSE,MPVOID,MPVOID);
         else {
           dcd->arcfilled = TRUE;
-          if(!PostMsg(dcd->hwndCnr,
-                      UM_RESCAN,
-                      MPVOID,
-                      MPVOID))
-            WinSendMsg(dcd->hwndCnr,
-                       UM_RESCAN,
-                       MPVOID,
-                       MPVOID);
-          PostMsg(dcd->hwndCnr,
-                  UM_SETUP2,
-                  MPVOID,
-                  MPVOID);
+          if (!PostMsg(dcd->hwndCnr,UM_RESCAN,MPVOID,MPVOID))
+            WinSendMsg(dcd->hwndCnr,UM_RESCAN,MPVOID,MPVOID);
+          PostMsg(dcd->hwndCnr,UM_SETUP2,MPVOID,MPVOID);
           WinSendMsg(dcd->hwndCnr,
                      CM_INVALIDATERECORD,
                      MPVOID,
@@ -1372,7 +1354,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_SELECT:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
+      if (dcd) {
         switch(SHORT1FROMMP(mp1)) {
           case IDM_SELECTALL:
           case IDM_SELECTALLFILES:
@@ -1395,11 +1377,11 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                      GetPString((SHORT1FROMMP(mp1) == IDM_SELECTMASK) ?
                                 IDS_SELECTFILTERTEXT :
                                 IDS_DESELECTFILTERTEXT));
-              if(pci && (INT)pci != -1)
+              if (pci && (INT)pci != -1)
                 strcpy(mask.szMask,pci->szFileName);
-              if(WinDlgBox(HWND_DESKTOP,dcd->hwndCnr,PickMaskDlgProc,
+              if (WinDlgBox(HWND_DESKTOP,dcd->hwndCnr,PickMaskDlgProc,
                            FM3ModHandle,MSK_FRAME,MPFROMP(&mask))) {
-                if(SHORT1FROMMP(mp1) == IDM_SELECTMASK)
+                if (SHORT1FROMMP(mp1) == IDM_SELECTMASK)
                   SelectAll(dcd->hwndCnr,TRUE,TRUE,mask.szMask,NULL,FALSE);
                 else
                   DeselectAll(dcd->hwndCnr,TRUE,TRUE,mask.szMask,NULL,FALSE);
@@ -1415,11 +1397,11 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_ENTER:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
+      if (dcd) {
 
         CHAR   *s = (CHAR *)mp1,*p,*pp,filename[CCHMAXPATH];
 
-        if(s) {
+        if (s) {
           if (!dcd->info->extract) {
             Runtime_Error(pszSrcFile, __LINE__, "no extract");
             free(s);
@@ -1437,34 +1419,34 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     s,
                     (needs_quoting(s)) ? "\"" : NullStr);
 
-          if(!dcd->info->exwdirs) {
+          if (!dcd->info->exwdirs) {
             p = s;
             p = strrchr(s,'\\');
             pp = strrchr(s,'/');
-            if(p && pp)
+            if (p && pp)
               p = max(p,pp);
-            else if(!p)
+            else if (!p)
               p = pp;
-            if(p)
+            if (p)
               memmove(s,p + 1,strlen(p + 1));
           }
           sprintf(filename,"%s\\%s",dcd->workdir,s);
           p = filename;
           while(*p) {
-            if(*p == '/')
+            if (*p == '/')
               *p = '\\';
             p++;
           }
           free(s);
-          if(IsFile(filename) == 1)
+          if (IsFile(filename) == 1)
             WinSendMsg(dcd->hwndCnr,UM_ENTER,MPFROMP(filename),MPVOID);
         }
       }
       return 0;
 
     case UM_COMMAND:
-      if(mp1) {
-        if(PostMsg(hwnd,UM_ACTION,mp1,mp2))
+      if (mp1) {
+        if (PostMsg(hwnd,UM_ACTION,mp1,mp2))
           return (MRESULT)TRUE;
       }
       return 0;
@@ -1472,12 +1454,12 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_ACTION:
       DosError(FERR_DISABLEHARDERR);
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
+      if (dcd) {
 
         LISTINFO    *li = (LISTINFO *)mp1;
         register INT x;
 
-        if(li && li->list && li->list[0]) {
+        if (li && li->list && li->list[0]) {
           switch(li->type) {
             case IDM_ARCHIVE:
             case IDM_ARCHIVEM:
@@ -1492,7 +1474,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 ad = *dcd;
                 ad.namecanchange = 0;
                 ad.fmoving = (li->type == IDM_ARCHIVEM);
-                if(!WinDlgBox(HWND_DESKTOP,dcd->hwndClient,
+                if (!WinDlgBox(HWND_DESKTOP,dcd->hwndClient,
                               ArchiveDlgProc,FM3ModHandle,
                               ARCH_FRAME,(PVOID)&ad) ||
                               !*ad.arcname ||
@@ -1501,35 +1483,35 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 /* build the sucker */
                 strcpy(szBuffer,ad.command);
                 strcat(szBuffer," ");
-                if(needs_quoting(ad.arcname))
+                if (needs_quoting(ad.arcname))
                   strcat(szBuffer,"\"");
                 strcat(szBuffer,ad.arcname);
-                if(needs_quoting(ad.arcname))
+                if (needs_quoting(ad.arcname))
                   strcat(szBuffer,"\"");
                 p = &szBuffer[strlen(szBuffer)];
-                if(ad.mask.szMask) {
+                if (ad.mask.szMask) {
                   strcat(szBuffer," ");
-                  if(needs_quoting(ad.mask.szMask))
+                  if (needs_quoting(ad.mask.szMask))
                     strcat(szBuffer,"\"");
                   strcat(szBuffer,ad.mask.szMask);
-                  if(needs_quoting(ad.mask.szMask))
+                  if (needs_quoting(ad.mask.szMask))
                     strcat(szBuffer,"\"");
                 }
                 strcat(szBuffer," ");
                 x = 0;
                 while(li->list[x]) {
-                  if(needs_quoting(li->list[x]))
+                  if (needs_quoting(li->list[x]))
                     strcat(szBuffer,"\"");
                   strcat(szBuffer,li->list[x]);
-                  if(!IsFile(li->list[x])) {
-                    if(szBuffer[strlen(szBuffer) - 1] != '\\')
+                  if (!IsFile(li->list[x])) {
+                    if (szBuffer[strlen(szBuffer) - 1] != '\\')
                       strcat(szBuffer,"\\");
                     strcat(szBuffer,"*");
                   }
-                  if(needs_quoting(li->list[x]))
+                  if (needs_quoting(li->list[x]))
                     strcat(szBuffer,"\"");
                   x++;
-                  if(!li->list[x] || strlen(szBuffer) +
+                  if (!li->list[x] || strlen(szBuffer) +
                      strlen(li->list[x]) + 5 > 1024) {
                     runemf2(SEPARATE | WINDOWED |
                             ((fArcStuffVisible) ? 0 :
@@ -1539,10 +1521,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   }
                   strcat(szBuffer," ");
                 }
-                PostMsg(dcd->hwndCnr,
-                        UM_RESCAN,
-                        MPFROMSHORT(1),
-                        MPVOID);
+                PostMsg(dcd->hwndCnr,UM_RESCAN,MPFROMSHORT(1),MPVOID);
                 Broadcast(WinQueryAnchorBlock(hwnd),
                           hwndMain,
                           UM_UPDATERECORD,
@@ -1564,7 +1543,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 CHECKLIST ck;
                 CHAR      prompt[CCHMAXPATH + 257];
 
-                if(!dcd->info->delete)
+                if (!dcd->info->delete)
                   break;
                 memset(&ck,0,sizeof(ck));
                 ck.size = sizeof(ck);
@@ -1580,14 +1559,14 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                         (li->type == IDM_DELETE) ?
                          GetPString(IDS_DELETELOWERTEXT) :
                          GetPString(IDS_REFRESHLOWERTEXT));
-                if(!WinDlgBox(HWND_DESKTOP,hwnd,CheckListProc,
+                if (!WinDlgBox(HWND_DESKTOP,hwnd,CheckListProc,
                               FM3ModHandle,
                               CHECK_FRAME,MPFROMP(&ck)))
                   break;
                 li->list = ck.list;
-                if(!li->list || !li->list[0])
+                if (!li->list || !li->list[0])
                   break;
-                if(li->type == IDM_DELETE)
+                if (li->type == IDM_DELETE)
                   sprintf(cl,"%s %s%s%s",dcd->info->delete,
                           (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
                           dcd->arcname,
@@ -1603,10 +1582,10 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   for(x = z;li->list[x] &&
                        strlen(cl) + strlen(li->list[x]) < 999;x++) {
                     strcat(cl," ");
-                    if(needs_quoting(li->list[x]))
+                    if (needs_quoting(li->list[x]))
                       strcat(cl,"\"");
                     strcat(cl,li->list[x]);
-                    if(needs_quoting(li->list[x]))
+                    if (needs_quoting(li->list[x]))
                       strcat(cl,"\"");
                   }
                   z = x;
@@ -1615,10 +1594,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           WAIT,hwnd,NullStr,NULL,"%s",cl);
                   *endofit = 0;
                 } while(li->list[x]);
-                PostMsg(dcd->hwndCnr,
-                        UM_RESCAN,
-                        MPFROMSHORT(1),
-                        MPVOID);
+                PostMsg(dcd->hwndCnr,UM_RESCAN,MPFROMSHORT(1),MPVOID);
                 Broadcast(WinQueryAnchorBlock(hwnd),
                           hwndMain,
                           UM_UPDATERECORD,
@@ -1644,7 +1620,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 CHAR cl[1001],*endofit,*ptr;
                 INT  z;
 
-                if((li->type == IDM_EXTRACT && !li->info->extract) ||
+                if ((li->type == IDM_EXTRACT && !li->info->extract) ||
                    ((li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
                     li->type == IDM_VIEWBINARY || li->type == IDM_EDIT ||
                     li->type == IDM_VIEWARCHIVE || li->type == IDM_EDITTEXT ||
@@ -1661,7 +1637,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   Runtime_Error(pszSrcFile, __LINE__, "no cmd for request");
                   break;
                 }
-                if(li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
+                if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
 
                   CHAR        fullname[CCHMAXPATH * 2];
                   CHAR        **exfiles = NULL;
@@ -1673,16 +1649,16 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                             (li->targetpath[strlen(li->targetpath) - 1] == '\\') ?
                             NullStr : "\\",
                             li->list[x]);
-                    if(IsFile(fullname) != -1) {
+                    if (IsFile(fullname) != -1) {
                       AddToList(li->list[x],&exfiles,&numfiles,
                                 &numalloc);
                       li->list = RemoveFromList(li->list,li->list[x]);
-                      if(!li->list)
+                      if (!li->list)
                         break;
                       x--;
                     }
                   }
-                  if(exfiles && numfiles) {
+                  if (exfiles && numfiles) {
 
                     CHECKLIST ckl;
                     CHAR      prompt[(CCHMAXPATH * 2) + 256];
@@ -1698,18 +1674,18 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                             li->arcname,
                             &"s"[numfiles != 1],
                             li->targetpath);
-                    if(!WinDlgBox(HWND_DESKTOP,hwnd,CheckListProc,
+                    if (!WinDlgBox(HWND_DESKTOP,hwnd,CheckListProc,
                                   FM3ModHandle,
                                   CHECK_FRAME,MPFROMP(&ckl))) {
-                      if(ckl.list)
+                      if (ckl.list)
                         FreeList(ckl.list);
                       break;
                     }
-                    else if(ckl.list)
+                    else if (ckl.list)
                       li->list = CombineLists(li->list,ckl.list);
                   }
                 }
-                if(!li->list || !li->list[0])
+                if (!li->list || !li->list[0])
                   break;
                 sprintf(cl,"%s %s%s%s",(li->type == IDM_EXTRACT ||
                         ((li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
@@ -1730,14 +1706,14 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   for(x = z;li->list[x] &&
                        strlen(cl) + strlen(li->list[x]) < 999;x++) {
                     strcat(cl," ");
-                    if(needs_quoting(li->list[x]))
+                    if (needs_quoting(li->list[x]))
                       strcat(cl,"\"");
                     strcat(cl,li->list[x]);
-                    if(needs_quoting(li->list[x]))
+                    if (needs_quoting(li->list[x]))
                       strcat(cl,"\"");
                     ptr = li->list[x];
                     while(*ptr) {
-                      if(*ptr == '/')
+                      if (*ptr == '/')
                         *ptr = '\\';
                       ptr++;
                     }
@@ -1748,7 +1724,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           WAIT,hwnd,li->targetpath,NULL,"%s",cl);
                   *endofit = 0;
                 } while(li->list[x]);
-                if(li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
+                if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
                   /* update windows */
                   for(x = 0;li->list[x];x++) {
 
@@ -1757,14 +1733,14 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     temp = li->list[x];
                     p = temp;
                     while(*p) {
-                      if(*p == '/')
+                      if (*p == '/')
                         *p = '\\';
                       p++;
                     }
                     p = xmalloc(strlen(temp) + strlen(li->targetpath) + 2,pszSrcFile,__LINE__);
                     if (p) {
                       strcpy(p,li->targetpath);
-                      if(p[strlen(p) - 1] != '\\')
+                      if (p[strlen(p) - 1] != '\\')
                         strcat(p,"\\");
                       strcat(p,temp);
                       li->list[x] = p;
@@ -1780,13 +1756,13 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     rc = WinDlgBox(HWND_DESKTOP,dcd->hwndParent,ObjCnrDlgProc,
                                    FM3ModHandle,OBJCNR_FRAME,
                                    MPFROMP(objectpath));
-                    if(rc) {
-                      if(rc > 1)
+                    if (rc) {
+                      if (rc > 1)
                         strcpy(objectpath,"<WP_DESKTOP>");
                       p = NULL;
-                      if(li->arcname) {
+                      if (li->arcname) {
                         p = strrchr(li->arcname,'\\');
-                        if(p)
+                        if (p)
                           p++;
                       }
                       MakeShadows(dcd->hwndParent,li->list,2,objectpath,p);
@@ -1798,18 +1774,18 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                             MPFROMP(li->list),
                             MPVOID);
                 }
-                else if(li->type == IDM_EXEC)
+                else if (li->type == IDM_EXEC)
                   ExecOnList(hwnd,
                              li->runfile,
                              WINDOWED | SEPARATEKEEP | PROMPT,
                              li->targetpath,
                              NULL,
                              GetPString(IDS_EXECARCFILETITLETEXT));
-                else if(li->type == IDM_VIRUSSCAN)
+                else if (li->type == IDM_VIRUSSCAN)
                   ExecOnList(hwnd,virus,PROMPT | WINDOWED | SEPARATEKEEP,
                              li->targetpath,NULL,
                              GetPString(IDS_VIRUSSCANARCHIVETITLETEXT));
-                else if(li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
+                else if (li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
                         li->type == IDM_VIEWBINARY || li->type == IDM_EDIT ||
                         li->type == IDM_EDITTEXT ||
                         li->type == IDM_VIEWARCHIVE ||
@@ -1843,24 +1819,24 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     else
                       free(temp);
                   }
-                  if(li->type == IDM_VIEW || li->type == IDM_EDIT) {
+                  if (li->type == IDM_VIEW || li->type == IDM_EDIT) {
 
                     BOOL isit = TestBinary(li->list[0]);
 
-                    if(isit) {
-                      if(li->type == IDM_VIEW)
+                    if (isit) {
+                      if (li->type == IDM_VIEW)
                         li->type = IDM_VIEWBINARY;
                       else
                         li->type = IDM_EDITBINARY;
                     }
                     else {
-                      if(li->type == IDM_VIEW)
+                      if (li->type == IDM_VIEW)
                         li->type = IDM_VIEWTEXT;
                       else
                         li->type = IDM_EDITTEXT;
                     }
                   }
-                  if(li->type == IDM_MCIPLAY) {
+                  if (li->type == IDM_MCIPLAY) {
 
                     FILE *fp;
 
@@ -1876,19 +1852,19 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                               (fAddUtils) ? "UTILS\\" : NullStr);
                     }
                   }
-                  else if(li->type == IDM_PRINT) {
+                  else if (li->type == IDM_PRINT) {
                     strcpy(li->targetpath,printer);
                     if (_beginthread(PrintList,NULL,65536,(PVOID)li) != -1) {
                       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                       li = NULL;
 		    }
                   }
-                  else if(li->type == IDM_VIEWARCHIVE) {
+                  else if (li->type == IDM_VIEWARCHIVE) {
 
                     ARC_TYPE *info;
 
                     for(x = 0;li->list[x];x++) {
-                      if(IsFile(li->list[x]) == 1) {
+                      if (IsFile(li->list[x]) == 1) {
                         info = NULL;	// Do not hide dups - fixme to know why?
                         if (WinDlgBox(HWND_DESKTOP,HWND_DESKTOP,
                                       SBoxDlgProc,FM3ModHandle,ASEL_FRAME,
@@ -1904,7 +1880,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                       }
                     }
                   }
-                  else if((li->type == IDM_VIEWTEXT && *viewer) ||
+                  else if ((li->type == IDM_VIEWTEXT && *viewer) ||
                           (li->type == IDM_VIEWBINARY && *binview) ||
                           (li->type == IDM_EDITTEXT && *editor) ||
                           (li->type == IDM_EDITBINARY && *bined)) {
@@ -1917,13 +1893,13 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                NULL);
                   }
                   else {
-                    if(li->hwnd) {
+                    if (li->hwnd) {
 
                       ULONG viewtype;
 
                       for(x = 0;li->list[x];x++) {
-                        if(x == 0) {
-                          if(li->type == IDM_VIEWBINARY ||
+                        if (x == 0) {
+                          if (li->type == IDM_VIEWBINARY ||
                              li->type == IDM_EDITBINARY)
                             viewtype = 16;
                           else
@@ -1957,26 +1933,26 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 for(x = 0;li->list[x];x++) {
                   p = li->list[x];
                   while(*p) {
-                    if(*p == '/')
+                    if (*p == '/')
                       *p = '\\';
                     p++;
                   }
                   sprintf(fullname,"%s%s%s",dcd->directory,
                           (dcd->directory[strlen(dcd->directory) - 1] == '\\') ?
                           NullStr : "\\",li->list[x]);
-                  if(IsFile(fullname) != -1)
-                    if(AddToList(fullname,&list2,&numfiles,&numalloced))
+                  if (IsFile(fullname) != -1)
+                    if (AddToList(fullname,&list2,&numfiles,&numalloced))
                       break;
-                  if(strchr(li->list[x],'\\')) {
+                  if (strchr(li->list[x],'\\')) {
                     p = strrchr(li->list[x],'\\');
-                    if(p) {
+                    if (p) {
                       p++;
-                      if(*p) {
+                      if (*p) {
                         sprintf(fullname,"%s%s%s",dcd->directory,
                                 (dcd->directory[strlen(dcd->directory) - 1] == '\\') ?
                                 NullStr : "\\",p);
-                        if(IsFile(fullname) != -1)
-                          if(AddToList(fullname,&list2,&numfiles,&numalloced))
+                        if (IsFile(fullname) != -1)
+                          if (AddToList(fullname,&list2,&numfiles,&numalloced))
                             break;
                       }
                     }
@@ -1988,8 +1964,8 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   WinSendMsg(dcd->hwndCnr,WM_COMMAND,
                              MPFROM2SHORT(IDM_COLLECTOR,0),MPVOID);
                   DosSleep(128L);
-                  if(Collector) {
-                    if(!PostMsg(Collector,WM_COMMAND,
+                  if (Collector) {
+                    if (!PostMsg(Collector,WM_COMMAND,
                                    MPFROM2SHORT(IDM_COLLECTOR,0),
                                    MPFROMP(list2)))
                       FreeList(list2);
@@ -2011,11 +1987,11 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case WM_DESTROY:
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(dcd) {
-        if(*dcd->workdir) {
+      if (dcd) {
+        if (*dcd->workdir) {
           DosSleep(33L);
           wipeallf("%s\\*",dcd->workdir);
-          if(rmdir(dcd->workdir)) {
+          if (rmdir(dcd->workdir)) {
             DosSleep(256L);
             wipeallf("%s\\*",dcd->workdir);
             rmdir(dcd->workdir);
@@ -2026,7 +2002,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         free(dcd);
         WinSetWindowPtr(dcd->hwndCnr,QWL_USER,NULL);
       }
-      if(!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
+      if (!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
         WinSendMsg((HWND)0,WM_QUIT,MPVOID,MPVOID);
       break;
   }
@@ -2041,37 +2017,31 @@ static MRESULT EXPENTRY ArcCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2
   switch(msg) {
     case DM_PRINTOBJECT:
     case DM_DISCARDOBJECT:
-      if(dcd)
-        return WinSendMsg(dcd->hwndObject,
-                          msg,
-                          mp1,
-                          mp2);
+      if (dcd)
+        return WinSendMsg(dcd->hwndObject,msg,mp1,mp2);
       else
         return MRFROMLONG(DRR_TARGET);
 
     case WM_CHAR:
       shiftstate = (SHORT1FROMMP(mp1) & (KC_SHIFT | KC_ALT | KC_CTRL));
-      if(SHORT1FROMMP(mp1) & KC_KEYUP)
+      if (SHORT1FROMMP(mp1) & KC_KEYUP)
         return (MRESULT)TRUE;
-      if(SHORT1FROMMP(mp1) & KC_VIRTUALKEY) {
+      if (SHORT1FROMMP(mp1) & KC_VIRTUALKEY) {
         switch(SHORT2FROMMP(mp2)) {
           case VK_DELETE:
-            PostMsg(hwnd,
-                    WM_COMMAND,
-                    MPFROM2SHORT(IDM_DELETE,0),
-                    MPVOID);
+            PostMsg(hwnd,WM_COMMAND,MPFROM2SHORT(IDM_DELETE,0),MPVOID);
             break;
         }
       }
-      if(shiftstate || fNoSearch)
+      if (shiftstate || fNoSearch)
         break;
-      if(SHORT1FROMMP(mp1) & KC_CHAR) {
+      if (SHORT1FROMMP(mp1) & KC_CHAR) {
 
         ULONG        thistime,len;
         SEARCHSTRING srch;
         PCNRITEM     pci;
 
-        if(!dcd)
+        if (!dcd)
           break;
         switch(SHORT1FROMMP(mp2)) {
           case '\x1b':
@@ -2082,14 +2052,14 @@ static MRESULT EXPENTRY ArcCnrWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2
             break;
           default:
             thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
-            if(thistime > dcd->lasttime + 1250)
+            if (thistime > dcd->lasttime + 1250)
               *dcd->szCommonName = 0;
             dcd->lasttime = thistime;
-            if(SHORT1FROMMP(mp2) == ' ' && !*dcd->szCommonName)
+            if (SHORT1FROMMP(mp2) == ' ' && !*dcd->szCommonName)
               break;
 KbdRetry:
             len = strlen(dcd->szCommonName);
-            if(len >= CCHMAXPATH - 1) {
+            if (len >= CCHMAXPATH - 1) {
               *dcd->szCommonName = 0;
               len = 0;
             }
@@ -2105,12 +2075,12 @@ KbdRetry:
                              CM_SEARCHSTRING,
                              MPFROMP(&srch),
                              MPFROMLONG(CMA_FIRST));
-            if(pci && (INT)pci != -1) {
+            if (pci && (INT)pci != -1) {
 
               USHORT  attrib = CRA_CURSORED;
 
               /* make found item current item */
-              if(!stricmp(pci->pszFileName,dcd->szCommonName))
+              if (!stricmp(pci->pszFileName,dcd->szCommonName))
                 attrib |= CRA_SELECTED;
               WinSendMsg(hwnd,
                          CM_SETRECORDEMPHASIS,
@@ -2121,13 +2091,13 @@ KbdRetry:
               return (MRESULT)TRUE;
             }
             else {
-              if(SHORT1FROMMP(mp2) == ' ') {
+              if (SHORT1FROMMP(mp2) == ' ') {
                 dcd->szCommonName[len] = 0;
                 break;
               }
               *dcd->szCommonName = 0;
               dcd->lasttime = 0;
-              if(len)           // retry as first letter if no match
+              if (len)           // retry as first letter if no match
                 goto KbdRetry;
             }
             break;
@@ -2149,11 +2119,11 @@ KbdRetry:
 
         memset(&cnri,0,sizeof(CNRINFO));
         cnri.cb = sizeof(CNRINFO);
-        if(WinSendMsg(hwnd,
+        if (WinSendMsg(hwnd,
                       CM_QUERYCNRINFO,
                       MPFROMP(&cnri),
                       MPFROMLONG(sizeof(CNRINFO)))) {
-          if(cnri.flWindowAttr & CV_DETAIL)
+          if (cnri.flWindowAttr & CV_DETAIL)
             PrfWriteProfileData(fmprof,
                                 appname,
                                 "ArcCnrSplitBar",
@@ -2169,35 +2139,26 @@ KbdRetry:
 
     case UM_UPDATERECORD:
     case UM_UPDATERECORDLIST:
-      if(dcd &&
-         !IsArcThere(hwnd,dcd->arcname))
-        PostMsg(hwnd,
-                WM_CLOSE,
-                MPVOID,
-                MPVOID);
+      if (dcd && !IsArcThere(hwnd,dcd->arcname))
+        PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
       return 0;
 
     case WM_SETFOCUS:
       /*
        * put name of our window (archive name) on status line
        */
-      if(dcd &&
-         hwndStatus &&
-         mp2)
-        WinSendMsg(hwnd,
-                   UM_RESCAN,
-                   MPVOID,
-                   MPVOID);
+      if (dcd && hwndStatus && mp2)
+        WinSendMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
       break;
 
     case UM_SETUP2:
-      if(dcd &&
+      if (dcd &&
          dcd->info) {
-        if(dcd->info->fdpos == -1 || !dcd->info->datetype)
+        if (dcd->info->fdpos == -1 || !dcd->info->datetype)
           dcd->sortFlags &= (~SORT_LWDATE);
-        if(dcd->info->nsizepos == -1)
+        if (dcd->info->nsizepos == -1)
           dcd->sortFlags &= (~SORT_EASIZE);
-        if(dcd->info->osizepos == -1)
+        if (dcd->info->osizepos == -1)
           dcd->sortFlags &= (~SORT_SIZE);
         AdjustCnrColVis(hwnd,
                         GetPString(IDS_OLDSIZECOLTEXT),
@@ -2221,25 +2182,18 @@ KbdRetry:
                         GetPString(IDS_DATECOLTEXT),
                         dcd->info->fdpos != -1 && dcd->info->datetype,
                         FALSE);
-        WinSendMsg(hwnd,
-                   CM_INVALIDATEDETAILFIELDINFO,
-                   MPVOID,
-                   MPVOID);
+        WinSendMsg(hwnd,CM_INVALIDATEDETAILFIELDINFO,MPVOID,MPVOID);
       }
       return 0;
 
     case UM_RESCAN:
-      if(dcd) {
-
+      if (dcd) {
         CNRINFO  cnri;
         CHAR     s[CCHMAXPATH * 2],tb[81],tf[81];
         PARCITEM pci;
 
-        if(mp1) {
-          PostMsg(dcd->hwndObject,
-                  UM_RESCAN,
-                  MPVOID,
-                  MPVOID);
+        if (mp1) {
+          PostMsg(dcd->hwndObject,UM_RESCAN,MPVOID,MPVOID);
           return 0;
         }
         memset(&cnri,0,sizeof(CNRINFO));
@@ -2258,9 +2212,7 @@ KbdRetry:
 	        tf,
 		*tb ? " / " : NullStr,
 		tb);
-        WinSetDlgItemText(dcd->hwndClient,
-                          DIR_SELECTED,
-                          s);
+        WinSetDlgItemText(dcd->hwndClient,DIR_SELECTED,s);
         commafmt(tf,sizeof(tf),dcd->totalfiles);
         if (dcd->ullTotalBytes)
           CommaFmtULL(tb,sizeof(tb),dcd->ullTotalBytes,'K');
@@ -2270,10 +2222,8 @@ KbdRetry:
 	        tf,
 		*tb ? " / " : NullStr,
 		tb);
-        WinSetDlgItemText(dcd->hwndClient,
-                          DIR_TOTALS,
-                          s);
-        if(hwndStatus &&
+        WinSetDlgItemText(dcd->hwndClient,DIR_TOTALS,s);
+        if (hwndStatus &&
            dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
         {
           sprintf(s," [%s%s%s]%s%s%s  %s",
@@ -2284,13 +2234,13 @@ KbdRetry:
                   (*dcd->mask.szMask) ? dcd->mask.szMask : NullStr,
                   (*dcd->mask.szMask) ? ")" : NullStr,dcd->arcname);
           WinSetWindowText(hwndStatus,s);
-          if(!ParentIsDesktop(hwnd,dcd->hwndParent)) {
+          if (!ParentIsDesktop(hwnd,dcd->hwndParent)) {
             pci = WinSendMsg(hwnd,
                              CM_QUERYRECORDEMPHASIS,
                              MPFROMLONG(CMA_FIRST),
                              MPFROMSHORT(CRA_CURSORED));
-            if(pci && (INT)pci != -1) {
-              if(fSplitStatus && hwndStatus2) {
+            if (pci && (INT)pci != -1) {
+              if (fSplitStatus && hwndStatus2) {
                 if (dcd->ullTotalBytes)
                   CommaFmtULL(tb,sizeof(tb),pci->cbFile,' ');
 		else
@@ -2302,7 +2252,7 @@ KbdRetry:
                         pci->szFileName);
                 WinSetWindowText(hwndStatus2,s);
               }
-              if(fMoreButtons)
+              if (fMoreButtons)
                 WinSetWindowText(hwndName,
                                  pci->szFileName);
             }
@@ -2314,19 +2264,21 @@ KbdRetry:
             WinSetWindowText(hwndAttr,NullStr);
           }
         }
-        if((dcd->arcfilled &&
+        if ((dcd->arcfilled &&
             !dcd->totalfiles) ||
            !IsArcThere(hwnd,dcd->arcname))
-          PostMsg(hwnd,
-                  WM_CLOSE,
-                  MPVOID,
-                  MPVOID);
+          PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
       }
       return 0;
 
     case UM_SETUP:
-      if(dcd) {
-        if(!dcd->hwndObject) {
+      if (!dcd) {
+        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+        PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
+        return 0;
+      }
+      else {
+        if (!dcd->hwndObject) {
           /*
            * first time through -- set things up
            */
@@ -2336,10 +2288,10 @@ KbdRetry:
             APIRET rc;
 
             rc = DosCreateDir(dcd->workdir,0);
-            if(rc) {
-              if(rc == ERROR_ACCESS_DENIED) {
+            if (rc) {
+              if (rc == ERROR_ACCESS_DENIED) {
                 p = strrchr(dcd->workdir,'.');
-                if(p) {
+                if (p) {
                   p++;
                   pp = p;
                   was = strtoul(p,&pp,16);
@@ -2347,12 +2299,12 @@ KbdRetry:
                     was++;
                     sprintf(p,"%03x");
                     rc = DosCreateDir(dcd->workdir,0);
-                    if(!rc || rc != ERROR_ACCESS_DENIED)
+                    if (!rc || rc != ERROR_ACCESS_DENIED)
                       break;
                   }
                 }
               }
-              if(rc)
+              if (rc)
                 PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
               return 0;
             }
@@ -2364,12 +2316,14 @@ KbdRetry:
           {
             PFIELDINFO  pfi, pfiLastLeftCol;
             ULONG       numcols = CON_COLS;
+            CNRINFO cnri;
+            ULONG size;
 
             pfi = WinSendMsg(hwnd,
                              CM_ALLOCDETAILFIELDINFO,
                              MPFROMLONG(numcols),
                              NULL);
-            if(pfi) {
+            if (pfi) {
 
               PFIELDINFO      pfiFirst;
               FIELDINFOINSERT fii;
@@ -2414,48 +2368,37 @@ KbdRetry:
                          CM_INSERTDETAILFIELDINFO,
                          MPFROMP(pfiFirst),
                          MPFROMP(&fii));
-              PostMsg(hwnd,
-                      UM_SETUP2,
-                      MPVOID,
-                      MPVOID);
-              {
-                CNRINFO cnri;
+              PostMsg(hwnd,UM_SETUP2,MPVOID,MPVOID);
 
-                memset(&cnri,0,sizeof(cnri));
-                cnri.cb             = sizeof( CNRINFO );
-                cnri.pFieldInfoLast = pfiLastLeftCol;
-                cnri.xVertSplitbar  = DIR_SPLITBAR_OFFSET + 32;
-                {
-                  ULONG size;
+              memset(&cnri,0,sizeof(cnri));
+              cnri.cb             = sizeof( CNRINFO );
+              cnri.pFieldInfoLast = pfiLastLeftCol;
+              cnri.xVertSplitbar  = DIR_SPLITBAR_OFFSET + 32;
 
-                  size = sizeof(LONG);
-                  PrfQueryProfileData(fmprof,appname,"ArcCnrSplitBar",
-                                      &cnri.xVertSplitbar,&size);
-                  if(cnri.xVertSplitbar <= 0)
-                    cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET + 32;
-                }
-                cnri.flWindowAttr &= (~(CV_ICON | CV_TREE | CV_TEXT |
-                                      CV_NAME));
-                cnri.flWindowAttr |= (CV_DETAIL | CA_DETAILSVIEWTITLES |
-                                      CV_FLOW);
-                cnri.flWindowAttr &= (~(CA_ORDEREDTARGETEMPH |
-                                        CA_MIXEDTARGETEMPH));
-                cnri.pSortRecord = (PVOID)ArcSort;
-                WinSendMsg(hwnd,
-                           CM_SETCNRINFO,
-                           MPFROMP(&cnri),
-                           MPFROMLONG(CMA_PFIELDINFOLAST |
-                                      CMA_XVERTSPLITBAR  |
-                                      CMA_PSORTRECORD    |
-                                      CMA_FLWINDOWATTR));
-              }
+              size = sizeof(LONG);
+              PrfQueryProfileData(fmprof,appname,"ArcCnrSplitBar",
+                                  &cnri.xVertSplitbar,&size);
+              if (cnri.xVertSplitbar <= 0)
+                cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET + 32;
+
+              cnri.flWindowAttr &= (~(CV_ICON | CV_TREE | CV_TEXT |
+                                    CV_NAME));
+              cnri.flWindowAttr |= (CV_DETAIL | CA_DETAILSVIEWTITLES |
+                                    CV_FLOW);
+              cnri.flWindowAttr &= (~(CA_ORDEREDTARGETEMPH |
+                                      CA_MIXEDTARGETEMPH));
+              cnri.pSortRecord = (PVOID)ArcSort;
+              WinSendMsg(hwnd,
+                         CM_SETCNRINFO,
+                         MPFROMP(&cnri),
+                         MPFROMLONG(CMA_PFIELDINFOLAST |
+                                    CMA_XVERTSPLITBAR  |
+                                    CMA_PSORTRECORD    |
+                                    CMA_FLWINDOWATTR));
             }
           }
-          WinSendMsg(hwnd,
-                     CM_SORTRECORD,
-                     MPFROMP(ArcSort),
-                     MPFROMP(dcd));
-          if(_beginthread(MakeObjWin,NULL,245760,(PVOID)dcd) == -1) {
+          WinSendMsg(hwnd,CM_SORTRECORD,MPFROMP(ArcSort),MPFROMP(dcd));
+          if (_beginthread(MakeObjWin,NULL,245760,(PVOID)dcd) == -1) {
             Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
             PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
             return 0;
@@ -2473,17 +2416,10 @@ KbdRetry:
 	  DefArcSortFlags = dcd->sortFlags;	// Remember for new windows
         }
       }
-      else {
-        PostMsg(hwnd,
-                WM_CLOSE,
-                MPVOID,
-                MPVOID);
-        return 0;
-      }
       return 0;
 
     case UM_SETDIR:
-      if(dcd) {
+      if (dcd) {
 
         CHAR        s[CCHMAXPATH],*p;
         ULONG       ret = 0;
@@ -2494,7 +2430,7 @@ KbdRetry:
                             s);
         bstrip(s);
         MakeFullName(s);
-        if(*s) {
+        if (*s) {
           while ((p = strchr(s,'/')) != NULL)
             *p = '\\';
           while (strlen(s) > 3 && s[strlen(s) - 1] == '\\')
@@ -2510,14 +2446,14 @@ KbdRetry:
                 return 0;
               }
             }
-            if(!SetDir(dcd->hwndParent,hwnd,s,0)) {
-              if(stricmp(dcd->directory,s)) {
+            if (!SetDir(dcd->hwndParent,hwnd,s,0)) {
+              if (stricmp(dcd->directory,s)) {
                 DosEnterCritSec();
                  strcpy(lastextractpath,s);
                 DosExitCritSec();
               }
               strcpy(dcd->directory,s);
-              if((!isalpha(*s) || s[1] != ':') && *s != '.')
+              if ((!isalpha(*s) || s[1] != ':') && *s != '.')
                 saymsg(MB_ENTER | MB_ICONASTERISK,
                        hwnd,
                        GetPString(IDS_WARNINGTEXT),
@@ -2535,18 +2471,15 @@ KbdRetry:
       return 0;
 
     case UM_ENTER:
-      if(WinSendMsg(hwnd,
-                    UM_SETDIR,
-                    MPVOID,
-                    MPVOID))
+      if (WinSendMsg(hwnd,UM_SETDIR,MPVOID,MPVOID))
         return 0;
       SetShiftState();
-      if(dcd && (CHAR *)mp1) {
+      if (dcd && (CHAR *)mp1) {
 
         SWP   swp;
         CHAR *filename = mp1;
 
-        if(IsFile(filename) != 1)
+        if (IsFile(filename) != 1)
           return 0;
         WinQueryWindowPos(dcd->hwndFrame,&swp);
         DefaultViewKeys(hwnd,
@@ -2554,7 +2487,7 @@ KbdRetry:
                         dcd->hwndParent,
                         &swp,
                         filename);
-        if(fUnHilite)
+        if (fUnHilite)
           UnHilite(hwnd,
                    FALSE,
                    &dcd->lastselection);
@@ -2562,17 +2495,13 @@ KbdRetry:
       return 0;
 
     case WM_MENUEND:
-      if(dcd) {
+      if (dcd) {
 
         HWND hwndMenu = (HWND)mp2;
 
-        if(hwndMenu == ArcCnrMenu ||
-           hwndMenu == ArcMenu) {
-          MarkAll(hwnd,
-                  TRUE,
-                  FALSE,
-                  TRUE);
-          if(dcd->cnremphasized) {
+        if (hwndMenu == ArcCnrMenu || hwndMenu == ArcMenu) {
+          MarkAll(hwnd,TRUE,FALSE,TRUE);
+          if (dcd->cnremphasized) {
             WinSendMsg(hwnd,
                        CM_SETRECORDEMPHASIS,
                        MPVOID,
@@ -2584,7 +2513,7 @@ KbdRetry:
       break;
 
     case MM_PORTHOLEINIT:
-      if(dcd) {
+      if (dcd) {
         switch(SHORT1FROMMP(mp1)) {
           case 0:
           case 1:
@@ -2606,10 +2535,10 @@ KbdRetry:
 
     case UM_INITMENU:
     case WM_INITMENU:
-      if(dcd) {
+      if (dcd) {
         switch(SHORT1FROMMP(mp1)) {
           case IDM_FILESMENU:
-            if(dcd->info) {
+            if (dcd->info) {
               WinEnableMenuItem((HWND)mp2,
                                 IDM_DELETE,
                                 dcd->info->delete != NULL);
@@ -2641,13 +2570,11 @@ KbdRetry:
             break;
 
           case IDM_COMMANDSMENU:
-            SetupCommandMenu((HWND)mp2,
-                             hwnd);
+            SetupCommandMenu((HWND)mp2,hwnd);
             break;
 
           case IDM_SORTSUBMENU:
-            SetSortChecks((HWND)mp2,
-                          dcd->sortFlags);
+            SetSortChecks((HWND)mp2,dcd->sortFlags);
             break;
 
           case IDM_WINDOWSMENU:
@@ -2661,12 +2588,12 @@ KbdRetry:
         }
         dcd->hwndLastMenu = (HWND)mp2;
       }
-      if(msg == WM_INITMENU)
+      if (msg == WM_INITMENU)
         break;
       return 0;
 
     case UM_LOADFILE:
-      if(dcd && mp2) {
+      if (dcd && mp2) {
 
         HWND ret;
 
@@ -2680,12 +2607,9 @@ KbdRetry:
       return 0;
 
     case UM_COMMAND:
-      if(mp1) {
-        if(dcd) {
-          if(!PostMsg(dcd->hwndObject,
-                      UM_COMMAND,
-                      mp1,
-                      mp2)) {
+      if (mp1) {
+        if (dcd) {
+          if (!PostMsg(dcd->hwndObject,UM_COMMAND,mp1,mp2)) {
             Runtime_Error(pszSrcFile, __LINE__, "post");
             FreeListInfo((LISTINFO *)mp1);
           }
@@ -2698,41 +2622,34 @@ KbdRetry:
       return 0;
 
     case UM_OPENWINDOWFORME:
-      if(dcd) {
-        if(mp1 &&
-           !IsFile((CHAR *)mp1))
+      if (dcd) {
+        if (mp1 && !IsFile((CHAR *)mp1)) {
           OpenDirCnr((HWND)0,
                      hwndMain,
                      dcd->hwndFrame,
                      FALSE,
                      (char *)mp1);
-        else if(mp1 &&
-                IsFile(mp1) == 1)
+	}
+        else if (mp1 && IsFile(mp1) == 1) {
           StartArcCnr(HWND_DESKTOP,
                       dcd->hwndFrame,
                       (CHAR *)mp1,
                       4,
                       (ARC_TYPE *)mp2);
+	}
       }
       return 0;
 
     case WM_COMMAND:
       DosError(FERR_DISABLEHARDERR);
-      if(dcd) {
-        if(SwitchCommand(dcd->hwndLastMenu,
+      if (dcd) {
+        if (SwitchCommand(dcd->hwndLastMenu,
                          SHORT1FROMMP(mp1)))
           return 0;
-        if(WinSendMsg(hwnd,
-                      UM_SETDIR,
-                      MPVOID,
-                      MPVOID))
+        if (WinSendMsg(hwnd,UM_SETDIR,MPVOID,MPVOID))
           return 0;
-        if(!IsArcThere(hwnd,
-                       dcd->arcname)) {
-          PostMsg(hwnd,
-                  WM_CLOSE,
-                  MPVOID,
-                  MPVOID);
+        if (!IsArcThere(hwnd,dcd->arcname)) {
+          PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
           return 0;
         }
         switch(SHORT1FROMMP(mp1)) {
@@ -2747,8 +2664,7 @@ KbdRetry:
               pci = (PCNRITEM)CurrentRecord(hwnd);
               PostMsg(hwnd,
                       WM_CONTROL,
-                      MPFROM2SHORT(ARC_CNR,
-                                   CN_CONTEXTMENU),
+                      MPFROM2SHORT(ARC_CNR,CN_CONTEXTMENU),
                       MPFROMP(pci));
             }
             break;
@@ -2783,11 +2699,8 @@ KbdRetry:
             break;
 
           case IDM_NOTEBOOK:
-            if(!ParentIsDesktop(dcd->hwndParent,dcd->hwndParent))
-              PostMsg(dcd->hwndParent,
-                      msg,
-                      mp1,
-                      mp2);
+            if (!ParentIsDesktop(dcd->hwndParent,dcd->hwndParent))
+              PostMsg(dcd->hwndParent,msg,mp1,mp2);
             else
               WinDlgBox(HWND_DESKTOP,
                         hwnd,
@@ -2806,19 +2719,12 @@ KbdRetry:
                                          dcd->arcname,
                                          &dcd->info,
                                          &dcd->ullTotalBytes);
-            PostMsg(dcd->hwndCnr,
-                    UM_RESCAN,
-                    MPVOID,
-                    MPVOID);
-            PostMsg(dcd->hwndCnr,
-                    UM_SETUP2,
-                    MPVOID,
-                    MPVOID);
+            PostMsg(dcd->hwndCnr,UM_RESCAN,MPVOID,MPVOID);
+            PostMsg(dcd->hwndCnr,UM_SETUP2,MPVOID,MPVOID);
             WinSendMsg(dcd->hwndCnr,
                        CM_INVALIDATERECORD,
                        MPVOID,
-                       MPFROM2SHORT(0,
-                                    CMA_ERASE | CMA_REPOSITION));
+                       MPFROM2SHORT(0,CMA_ERASE | CMA_REPOSITION));
             break;
 
           case IDM_RESELECT:
@@ -2832,7 +2738,7 @@ KbdRetry:
             break;
 
           case IDM_HELP:
-            if(hwndHelp)
+            if (hwndHelp)
               WinSendMsg(hwndHelp,
                          HM_DISPLAY_HELP,
                          MPFROM2SHORT(HELP_ARCLIST,0),
@@ -2840,7 +2746,7 @@ KbdRetry:
             break;
 
           case IDM_WINDOWDLG:
-            if(!ParentIsDesktop(dcd->hwndParent,dcd->hwndFrame))
+            if (!ParentIsDesktop(dcd->hwndParent,dcd->hwndFrame))
               PostMsg(dcd->hwndParent,
                       UM_COMMAND,
                       MPFROM2SHORT(IDM_WINDOWDLG,0),
@@ -2861,24 +2767,20 @@ KbdRetry:
                                          CM_QUERYRECORDEMPHASIS,
                                          MPFROMLONG(CMA_FIRST),
                                          MPFROMSHORT(CRA_CURSORED));
-              if((INT)pci == -1)
+              if ((INT)pci == -1)
                 pci = NULL;
-              if(SHORT1FROMMP(mp1) == IDM_HIDEALL) {
-                if(pci) {
-                  if(!(pci->rc.flRecordAttr & CRA_SELECTED))
+              if (SHORT1FROMMP(mp1) == IDM_HIDEALL) {
+                if (pci) {
+                  if (!(pci->rc.flRecordAttr & CRA_SELECTED))
                     pci->rc.flRecordAttr |= CRA_FILTERED;
                     WinSendMsg(hwnd,
                                CM_INVALIDATERECORD,
                                MPFROMP(&pci),
-                               MPFROM2SHORT(1,
-                                            CMA_ERASE | CMA_REPOSITION));
+                               MPFROM2SHORT(1,CMA_ERASE | CMA_REPOSITION));
                     break;
                 }
               }
-              PostMsg(dcd->hwndObject,
-                      UM_SELECT,
-                      mp1,
-                      MPFROMP(pci));
+              PostMsg(dcd->hwndObject,UM_SELECT,mp1,MPFROMP(pci));
             }
             break;
 
@@ -2914,16 +2816,13 @@ KbdRetry:
                 dcd->sortFlags |= SORT_LWDATE;
                 break;
               case IDM_SORTREVERSE:
-                if(dcd->sortFlags & SORT_REVERSE)
+                if (dcd->sortFlags & SORT_REVERSE)
                   dcd->sortFlags &= (~SORT_REVERSE);
                 else
                   dcd->sortFlags |= SORT_REVERSE;
                 break;
             }
-            WinSendMsg(hwnd,
-                       CM_SORTRECORD,
-                       MPFROMP(ArcSort),
-                       MPFROMP(dcd));
+            WinSendMsg(hwnd,CM_SORTRECORD,MPFROMP(ArcSort),MPFROMP(dcd));
             SaySort(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
                                     DIR_SORT),
                     dcd->sortFlags,
@@ -2932,20 +2831,19 @@ KbdRetry:
             break;
 
           case IDM_COLLECTOR:
-            if(!Collector) {
-
+            if (!Collector) {
               HWND hwndC;
               SWP  swp;
 
-              if(ParentIsDesktop(hwnd,dcd->hwndParent) && !fAutoTile &&
-                 (!fExternalCollector && !strcmp(realappname,FM3Str)))
+              if (ParentIsDesktop(hwnd,dcd->hwndParent) && !fAutoTile &&
+                  (!fExternalCollector && !strcmp(realappname,FM3Str)))
                 GetNextWindowPos(dcd->hwndParent,&swp,NULL,NULL);
               hwndC = StartCollector((fExternalCollector ||
                                       strcmp(realappname,FM3Str)) ?
                                      HWND_DESKTOP : dcd->hwndParent,4);
-              if(hwndC) {
-                if(!ParentIsDesktop(hwnd,dcd->hwndParent) && !fAutoTile &&
-                   (!fExternalCollector && !strcmp(realappname,FM3Str)))
+              if (hwndC) {
+                if (!ParentIsDesktop(hwnd,dcd->hwndParent) && !fAutoTile &&
+                    (!fExternalCollector && !strcmp(realappname,FM3Str)))
                   WinSetWindowPos(hwndC,
                                   HWND_TOP,
                                   swp.x,
@@ -2954,10 +2852,11 @@ KbdRetry:
                                   swp.cy,
                                   SWP_MOVE | SWP_SIZE |
                                   SWP_SHOW | SWP_ZORDER);
-                else if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                        fAutoTile &&
-                        !strcmp(realappname,FM3Str))
+                else if (!ParentIsDesktop(hwnd,dcd->hwndParent) &&
+                         fAutoTile &&
+                         !strcmp(realappname,FM3Str)) {
                   TileChildren(dcd->hwndParent,TRUE);
+	        }
                 WinSetWindowPos(hwndC,
                                 HWND_TOP,
                                 0,
@@ -2974,7 +2873,7 @@ KbdRetry:
 
           case IDM_ARCEXTRACTEXIT:
           case IDM_ARCEXTRACT:
-            if(dcd->info->extract)
+            if (dcd->info->extract)
               runemf2(SEPARATE | WINDOWED |
                       ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)),
                       hwnd,dcd->directory,NULL,"%s %s%s%s",
@@ -2982,16 +2881,13 @@ KbdRetry:
                       (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
                       dcd->arcname,
                       (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
-            if(SHORT1FROMMP(mp1) == IDM_ARCEXTRACTEXIT)
-              PostMsg(hwnd,
-                      WM_CLOSE,
-                      MPVOID,
-                      MPVOID);
+            if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTEXIT)
+              PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
             break;
 
           case IDM_ARCEXTRACTWDIRSEXIT:
           case IDM_ARCEXTRACTWDIRS:
-            if(dcd->info->exwdirs)
+            if (dcd->info->exwdirs)
               runemf2(SEPARATE | WINDOWED |
                       ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)) ,
                       hwnd,dcd->directory,NULL,"%s %s%s%s",
@@ -2999,18 +2895,12 @@ KbdRetry:
                       (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
                       dcd->arcname,
                       (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
-            if(SHORT1FROMMP(mp1) == IDM_ARCEXTRACTWDIRSEXIT)
-              PostMsg(hwnd,
-                      WM_CLOSE,
-                      MPVOID,
-                      MPVOID);
+            if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTWDIRSEXIT)
+              PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
             break;
 
           case IDM_RESORT:
-            WinSendMsg(hwnd,
-                       CM_SORTRECORD,
-                       MPFROMP(ArcSort),
-                       MPFROMP(dcd));
+            WinSendMsg(hwnd,CM_SORTRECORD,MPFROMP(ArcSort),MPFROMP(dcd));
             break;
 
           case IDM_FILTER:
@@ -3018,20 +2908,19 @@ KbdRetry:
               BOOL     empty = FALSE;
               PARCITEM pci;
 
-              if(!*dcd->mask.szMask) {
+              if (!*dcd->mask.szMask) {
                 empty = TRUE;
                 pci = (PARCITEM)CurrentRecord(hwnd);
-                if(pci && strchr(pci->szFileName,'.'))
+                if (pci && strchr(pci->szFileName,'.'))
                   strcpy(dcd->mask.szMask,pci->szFileName);
               }
 
-              if(WinDlgBox(HWND_DESKTOP,hwnd,PickMaskDlgProc,
-                           FM3ModHandle,MSK_FRAME,MPFROMP(&dcd->mask))) {
-                WinSendMsg(hwnd,CM_FILTER,MPFROMP(ArcFilter),
-                           MPFROMP(dcd));
+              if (WinDlgBox(HWND_DESKTOP,hwnd,PickMaskDlgProc,
+                            FM3ModHandle,MSK_FRAME,MPFROMP(&dcd->mask))) {
+                WinSendMsg(hwnd,CM_FILTER,MPFROMP(ArcFilter),MPFROMP(dcd));
                 PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
               }
-              else if(empty)
+              else if (empty)
                 *dcd->mask.szMask = 0;
               SayFilter(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
                         DIR_FILTER),&dcd->mask,TRUE);
@@ -3039,8 +2928,8 @@ KbdRetry:
             break;
 
           case IDM_SWITCH:
-            if(mp2) {
-              if(stricmp(dcd->directory,(CHAR *)mp2)) {
+            if (mp2) {
+              if (stricmp(dcd->directory,(CHAR *)mp2)) {
                 DosEnterCritSec();
                  strcpy(lastextractpath,(CHAR *)mp2);
                  MakeValidDir(lastextractpath);
@@ -3057,13 +2946,13 @@ KbdRetry:
               CHAR newdir[CCHMAXPATH];
 
               strcpy(newdir,dcd->directory);
-              if(!WinDlgBox(HWND_DESKTOP,dcd->hwndParent,WalkExtractDlgProc,
-                            FM3ModHandle,WALK_FRAME,
-                            MPFROMP(newdir)) || !*newdir)
+              if (!WinDlgBox(HWND_DESKTOP,dcd->hwndParent,WalkExtractDlgProc,
+                             FM3ModHandle,WALK_FRAME,
+                             MPFROMP(newdir)) || !*newdir)
                 break;
-              if(stricmp(newdir,dcd->directory)) {
+              if (stricmp(newdir,dcd->directory)) {
                 strcpy(dcd->directory,newdir);
-                if(stricmp(lastextractpath,newdir))
+                if (stricmp(lastextractpath,newdir))
                   strcpy(lastextractpath,newdir);
                 WinSetWindowText(dcd->hwndExtract,dcd->directory);
               }
@@ -3071,7 +2960,7 @@ KbdRetry:
             break;
 
           case IDM_TEST:
-            if(dcd->info->test)
+            if (dcd->info->test)
               runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
                       hwnd,NULL,NULL,"%s %s%s%s",dcd->info->test,
                       (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
@@ -3133,13 +3022,13 @@ KbdRetry:
                 {
                   PARCITEM pai;
 
-                  if(SHORT1FROMMP(mp1) != IDM_EXEC)
+                  if (SHORT1FROMMP(mp1) != IDM_EXEC)
                     pai = (PARCITEM)CurrentRecord(hwnd);
                   else
                     pai = (PARCITEM)WinSendMsg(hwnd,CM_QUERYRECORDEMPHASIS,
                                                MPFROMLONG(CMA_FIRST),
                                                MPFROMSHORT(CRA_CURSORED));
-                  if(pai && (INT)pai != -1)
+                  if (pai && (INT)pai != -1)
                     strcpy(li->runfile,pai->szFileName);
                   else
                     strcpy(li->runfile,li->list[0]);
@@ -3161,13 +3050,12 @@ KbdRetry:
                     strcpy(li->targetpath,dcd->directory);
                     break;
                 }
-                if(li->list) {
-                  if(!PostMsg(dcd->hwndObject,UM_ACTION,MPFROMP(li),
-                                 MPVOID)) {
+                if (li->list) {
+                  if (!PostMsg(dcd->hwndObject,UM_ACTION,MPFROMP(li),MPVOID)) {
                     Runtime_Error(pszSrcFile, __LINE__, "post");
                     FreeListInfo(li);
                   }
-                  else if(fUnHilite && SHORT1FROMMP(mp1) != IDM_EDIT)
+                  else if (fUnHilite && SHORT1FROMMP(mp1) != IDM_EDIT)
                     UnHilite(hwnd,TRUE,&dcd->lastselection);
                 }
                 else
@@ -3181,36 +3069,30 @@ KbdRetry:
 
     case WM_CONTROL:
       DosError(FERR_DISABLEHARDERR);
-      if(dcd) {
+      if (dcd) {
         switch(SHORT2FROMMP(mp1)) {
           case CN_BEGINEDIT:
-            PostMsg(hwnd,
-                    CM_CLOSEEDIT,
-                    MPVOID,
-                    MPVOID);
+            PostMsg(hwnd,CM_CLOSEEDIT,MPVOID,MPVOID);
             break;
 
           case CN_ENDEDIT:
-            if(!((PCNREDITDATA)mp2)->pRecord) {
+            if (!((PCNREDITDATA)mp2)->pRecord) {
 
               PFIELDINFO pfi = ((PCNREDITDATA)mp2)->pFieldInfo;
               USHORT     cmd = 0;
 
-              if(!pfi || pfi->offStruct == FIELDOFFSET(ARCITEM,pszFileName))
+              if (!pfi || pfi->offStruct == FIELDOFFSET(ARCITEM,pszFileName))
                 cmd = IDM_SORTSMARTNAME;
-              else if(pfi->offStruct == FIELDOFFSET(ARCITEM,cbFile))
+              else if (pfi->offStruct == FIELDOFFSET(ARCITEM,cbFile))
                 cmd = IDM_SORTSIZE;
-              else if(pfi->offStruct == FIELDOFFSET(ARCITEM,cbComp))
+              else if (pfi->offStruct == FIELDOFFSET(ARCITEM,cbComp))
                 cmd = IDM_SORTEASIZE;
-              else if(pfi->offStruct == FIELDOFFSET(ARCITEM,date))
+              else if (pfi->offStruct == FIELDOFFSET(ARCITEM,date))
                 cmd = IDM_SORTLWDATE;
-              else if(pfi->offStruct == FIELDOFFSET(ARCITEM,time))
+              else if (pfi->offStruct == FIELDOFFSET(ARCITEM,time))
                 cmd = IDM_SORTLWDATE;
-              if(cmd)
-                PostMsg(hwnd,
-                        WM_COMMAND,
-                        MPFROM2SHORT(cmd,0),
-                        MPVOID);
+              if (cmd)
+                PostMsg(hwnd,WM_COMMAND,MPFROM2SHORT(cmd,0),MPVOID);
             }
             break;
 
@@ -3222,7 +3104,7 @@ KbdRetry:
             return 0;
 
           case CN_DRAGLEAVE:
-            if(mp2) {
+            if (mp2) {
 
               PDRAGINFO pDInfo;
 
@@ -3234,35 +3116,35 @@ KbdRetry:
 
           case CN_DRAGAFTER:
           case CN_DRAGOVER:
-            if(mp2) {
+            if (mp2) {
 
               PDRAGITEM pDItem;                      /* Pointer to DRAGITEM   */
               PDRAGINFO pDInfo;                      /* Pointer to DRAGINFO   */
               PARCITEM  pci;
 
               pci = (PARCITEM)((PCNRDRAGINFO)mp2)->pRecord;
-              if(SHORT1FROMMP(mp1) == CN_DRAGAFTER)
+              if (SHORT1FROMMP(mp1) == CN_DRAGAFTER)
                 pci = NULL;
               pDInfo = ((PCNRDRAGINFO)mp2)->pDragInfo;
               DrgAccessDraginfo(pDInfo);             /* Access DRAGINFO       */
-              if(*dcd->arcname) {
-                if((driveflags[toupper(*dcd->arcname) - 'A'] & DRIVE_NOTWRITEABLE) ||
-                   !dcd->info ||
-                   !dcd->info->create) {
+              if (*dcd->arcname) {
+                if ((driveflags[toupper(*dcd->arcname) - 'A'] & DRIVE_NOTWRITEABLE) ||
+                    !dcd->info ||
+                    !dcd->info->create) {
                   DrgFreeDraginfo(pDInfo);
                   return MRFROM2SHORT(DOR_NEVERDROP,0);
                 }
               }
-              if(pci) {
+              if (pci) {
                 DrgFreeDraginfo(pDInfo);
                 return MRFROM2SHORT(DOR_NODROP,0);
               }
-              pDItem = DrgQueryDragitemPtr(pDInfo,   /* Access DRAGITEM       */
-                                           0);       /* Index to DRAGITEM     */
-              if(DrgVerifyRMF(pDItem,                /* Check valid rendering */
-                              DRM_OS2FILE,           /* mechanisms and data   */
-                              NULL) &&
-                 !(pDItem->fsControl & DC_PREPARE)) {
+              pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM       */
+                                           0);		/* Index to DRAGITEM     */
+              if (DrgVerifyRMF(pDItem,			/* Check valid rendering */
+                               DRM_OS2FILE,		/* mechanisms and data   */
+                               NULL) &&
+                  !(pDItem->fsControl & DC_PREPARE)) {
                 DrgFreeDraginfo(pDInfo);             /* Free DRAGINFO         */
                 return(MRFROM2SHORT(DOR_DROP,        /* Return okay to drop   */
                                     ((fCopyDefault) ?
@@ -3273,45 +3155,46 @@ KbdRetry:
             return(MRFROM2SHORT(DOR_NEVERDROP,0)); /* Drop not valid        */
 
           case CN_INITDRAG:
-            if(mp2) {
+            if (mp2) {
 
               BOOL         wasemphasized = FALSE;
               PCNRDRAGINIT pcd = (PCNRDRAGINIT)mp2;
               PARCITEM  pci;
 
-              if(pcd) {
+              if (pcd) {
                 pci = (PARCITEM)pcd->pRecord;
-                if(pci) {
-                  if(pci->rc.flRecordAttr & CRA_SELECTED)
+                if (pci) {
+                  if (pci->rc.flRecordAttr & CRA_SELECTED)
                     wasemphasized = TRUE;
-                  if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                     fSplitStatus && hwndStatus2)
+                  if (!ParentIsDesktop(hwnd,dcd->hwndParent) &&
+                      fSplitStatus && hwndStatus2)
                     WinSetWindowText(hwndStatus2,
                                      GetPString(IDS_DRAGARCMEMTEXT));
-                  if(DoFileDrag(hwnd,
-                                dcd->hwndObject,
-                                mp2,
-                                dcd->arcname,
-                                NULL,
-                                TRUE)) {
-                    if(fUnHilite && wasemphasized)
+                  if (DoFileDrag(hwnd,
+                                 dcd->hwndObject,
+                                 mp2,
+                                 dcd->arcname,
+                                 NULL,
+                                 TRUE)) {
+                    if (fUnHilite && wasemphasized)
                       UnHilite(hwnd,TRUE,&dcd->lastselection);
                   }
-                  if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                     fSplitStatus && hwndStatus2)
+                  if (!ParentIsDesktop(hwnd,dcd->hwndParent) &&
+                      fSplitStatus && hwndStatus2) {
                     PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
+		  }
                 }
                 else {
-                  if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                     fSplitStatus && hwndStatus2)
+                  if (!ParentIsDesktop(hwnd,dcd->hwndParent) &&
+                      fSplitStatus && hwndStatus2)
                     WinSetWindowText(hwndStatus2,
                                      GetPString(IDS_DRAGARCFILETEXT));
                   DragOne(hwnd,
                           dcd->hwndObject,
                           dcd->arcname,
                           FALSE);
-                  if(!ParentIsDesktop(hwnd,dcd->hwndParent) &&
-                     fSplitStatus && hwndStatus2)
+                  if (!ParentIsDesktop(hwnd,dcd->hwndParent) &&
+                      fSplitStatus && hwndStatus2)
                     PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
                 }
               }
@@ -3319,7 +3202,7 @@ KbdRetry:
             return 0;
 
           case CN_DROP:
-            if(mp2) {
+            if (mp2) {
 
               LISTINFO *li;
 
@@ -3330,17 +3213,14 @@ KbdRetry:
                               mp1,
                               mp2);
               DosBeep(50,100);			// fixme to know why beep?
-              if(li) {
+              if (li) {
                 li->type = (li->type == DO_MOVE) ?
                             IDM_ARCHIVEM :
                             IDM_ARCHIVE;
                 strcpy(li->targetpath,dcd->arcname);
-                if(!li->list ||
-                   !li->list[0] ||
-                   !PostMsg(dcd->hwndObject,
-                            UM_ACTION,
-                            MPFROMP(li),
-                            MPVOID))
+                if (!li->list ||
+                    !li->list[0] ||
+                    !PostMsg(dcd->hwndObject,UM_ACTION,MPFROMP(li),MPVOID))
                   FreeListInfo(li);
               }
             }
@@ -3350,7 +3230,7 @@ KbdRetry:
             {
               PARCITEM pci = (PARCITEM)mp2;
 
-              if(pci) {
+              if (pci) {
                 WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPFROMP(pci),
                            MPFROM2SHORT(TRUE,CRA_CURSORED));
                 MarkAll(hwnd,FALSE,FALSE,TRUE);
@@ -3358,21 +3238,21 @@ KbdRetry:
               }
               else {
                 dcd->hwndLastMenu = CheckMenu(&ArcCnrMenu,ARCCNR_POPUP);
-                if(dcd->hwndLastMenu && !dcd->cnremphasized) {
+                if (dcd->hwndLastMenu && !dcd->cnremphasized) {
                   WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPVOID,
                              MPFROM2SHORT(TRUE,CRA_SOURCE));
                   dcd->cnremphasized = TRUE;
                 }
               }
-              if(dcd->hwndLastMenu) {
-                if(dcd->hwndLastMenu == ArcCnrMenu) {
-                  if(dcd->flWindowAttr & CV_MINI)
+              if (dcd->hwndLastMenu) {
+                if (dcd->hwndLastMenu == ArcCnrMenu) {
+                  if (dcd->flWindowAttr & CV_MINI)
                     WinCheckMenuItem(dcd->hwndLastMenu,IDM_MINIICONS,TRUE);
                 }
                 WinCheckMenuItem(dcd->hwndLastMenu,IDM_FOLDERAFTEREXTRACT,
                                  fFolderAfterExtract);
-                if(!PopupMenu(hwnd,hwnd,dcd->hwndLastMenu)) {
-                  if(dcd->cnremphasized) {
+                if (!PopupMenu(hwnd,hwnd,dcd->hwndLastMenu)) {
+                  if (dcd->cnremphasized) {
                     WinSendMsg(hwnd,CM_SETRECORDEMPHASIS,MPVOID,
                                MPFROM2SHORT(FALSE,CRA_SOURCE));
                     dcd->cnremphasized = TRUE;
@@ -3384,28 +3264,28 @@ KbdRetry:
             break;
 
           case CN_EMPHASIS:
-            if(mp2) {
+            if (mp2) {
 
               PNOTIFYRECORDEMPHASIS pre = mp2;
               PARCITEM              pci;
               CHAR                  s[CCHMAXPATHCOMP + 91],tf[81],tb[81];
 
               pci = (PARCITEM)((pre) ? pre->pRecord : NULL);
-              if(!pci) {
-                if(!ParentIsDesktop(hwnd,dcd->hwndParent)) {
-                  if(hwndStatus2)
+              if (!pci) {
+                if (!ParentIsDesktop(hwnd,dcd->hwndParent)) {
+                  if (hwndStatus2)
                     WinSetWindowText(hwndStatus2,NullStr);
-                  if(fMoreButtons)
+                  if (fMoreButtons)
                     WinSetWindowText(hwndName,NullStr);
                 }
                 break;
               }
-              if(pre->fEmphasisMask & CRA_SELECTED) {
-                if(pci->rc.flRecordAttr & CRA_SELECTED) {
+              if (pre->fEmphasisMask & CRA_SELECTED) {
+                if (pci->rc.flRecordAttr & CRA_SELECTED) {
                   dcd->selectedbytes += pci->cbFile;
                   dcd->selectedfiles++;
                 }
-                else if(dcd->selectedfiles) {
+                else if (dcd->selectedfiles) {
                   dcd->selectedbytes -= pci->cbFile;
                   dcd->selectedfiles--;
                 }
@@ -3420,12 +3300,12 @@ KbdRetry:
 			tb);
                 WinSetDlgItemText(dcd->hwndClient,DIR_SELECTED,s);
               }
-              else if(WinQueryActiveWindow(dcd->hwndParent) ==
-                      dcd->hwndFrame &&
-                      !ParentIsDesktop(hwnd,dcd->hwndParent)) {
-                if(pre->fEmphasisMask & CRA_CURSORED) {
-                  if(pci->rc.flRecordAttr & CRA_CURSORED) {
-                    if(fSplitStatus && hwndStatus2) {
+              else if (WinQueryActiveWindow(dcd->hwndParent) ==
+                       dcd->hwndFrame &&
+                       !ParentIsDesktop(hwnd,dcd->hwndParent)) {
+                if (pre->fEmphasisMask & CRA_CURSORED) {
+                  if (pci->rc.flRecordAttr & CRA_CURSORED) {
+                    if (fSplitStatus && hwndStatus2) {
                       if (dcd->ullTotalBytes)
                         CommaFmtULL(tb,sizeof(tb),pci->cbFile,' ');
 		      else
@@ -3437,7 +3317,7 @@ KbdRetry:
                               pci->szFileName);
                       WinSetWindowText(hwndStatus2,s);
                     }
-                    if(fMoreButtons)
+                    if (fMoreButtons)
                       WinSetWindowText(hwndName,pci->szFileName);
                   }
                 }
@@ -3446,21 +3326,20 @@ KbdRetry:
             break;
 
           case CN_ENTER:
-            if(mp2) {
+            if (mp2) {
 
               PARCITEM pci = (PARCITEM)((PNOTIFYRECORDENTER)mp2)->pRecord;
 
-              if(pci) {
+              if (pci) {
 
                 CHAR *s;
 
-                if((pci->rc.flRecordAttr & CRA_INUSE) ||
-                   (pci->flags & (ARCFLAGS_REALDIR | ARCFLAGS_PSEUDODIR)))
+                if ((pci->rc.flRecordAttr & CRA_INUSE) ||
+                    (pci->flags & (ARCFLAGS_REALDIR | ARCFLAGS_PSEUDODIR)))
                   break;
                 s = xstrdup(pci->szFileName,pszSrcFile,__LINE__);
                 if (s) {
-                  if(!PostMsg(dcd->hwndObject,UM_ENTER,
-                                 MPFROMP(s),MPVOID)) {
+                  if (!PostMsg(dcd->hwndObject,UM_ENTER,MPFROMP(s),MPVOID)) {
                     Runtime_Error(pszSrcFile, __LINE__, "post");
                     free(s);
                   }
@@ -3473,10 +3352,7 @@ KbdRetry:
       return 0;
 
     case UM_FOLDUP:
-      if(!PostMsg((HWND)0,
-                  WM_QUIT,
-                  MPVOID,
-                  MPVOID))
+      if (!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
         DosExit(EXIT_PROCESS,1);
       return 0;
 
@@ -3486,13 +3362,11 @@ KbdRetry:
       return 0;
 
     case WM_SAVEAPPLICATION:
-      if(dcd &&
-         ParentIsDesktop(hwnd,dcd->hwndParent)) {
-
+      if (dcd &&
+          ParentIsDesktop(hwnd,dcd->hwndParent)) {
         SWP swp;
-
         WinQueryWindowPos(dcd->hwndFrame,&swp);
-        if(!(swp.fl & (SWP_HIDE | SWP_MINIMIZE | SWP_MAXIMIZE)))
+        if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE | SWP_MAXIMIZE)))
           PrfWriteProfileData(fmprof,
                               appname,
                               "AV2SizePos",
@@ -3502,42 +3376,27 @@ KbdRetry:
       break;
 
     case WM_CLOSE:
-      WinSendMsg(hwnd,
-                 WM_SAVEAPPLICATION,
-                 MPVOID,
-                 MPVOID);
-      if(dcd)
+      WinSendMsg(hwnd,WM_SAVEAPPLICATION,MPVOID,MPVOID);
+      if (dcd)
         dcd->stopflag++;
-      if(dcd && dcd->hwndObject) {
-        if(!PostMsg(dcd->hwndObject,
-                    WM_CLOSE,
-                    MPVOID,
-                    MPVOID))
-          WinSendMsg(dcd->hwndObject,
-                     WM_CLOSE,
-                     MPVOID,
-                     MPVOID);
+      if (dcd && dcd->hwndObject) {
+        if (!PostMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID))
+          WinSendMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID);
       }
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-      if(!dcd ||
-         (!dcd->dontclose &&
-          !dcd->amextracted &&
-          ParentIsDesktop(hwnd,dcd->hwndParent))) {
-        if(!PostMsg(hwnd,
-                    UM_FOLDUP,
-                    MPVOID,
-                    MPVOID))
-          WinSendMsg(hwnd,
-                     UM_FOLDUP,
-                     MPVOID,
-                     MPVOID);
+      if (!dcd ||
+          (!dcd->dontclose &&
+           !dcd->amextracted &&
+           ParentIsDesktop(hwnd,dcd->hwndParent))) {
+        if (!PostMsg(hwnd,UM_FOLDUP,MPVOID,MPVOID))
+          WinSendMsg(hwnd,UM_FOLDUP,MPVOID,MPVOID);
       }
       return 0;
 
     case WM_DESTROY:
-      if(ArcMenu)
+      if (ArcMenu)
         WinDestroyWindow(ArcMenu);
-      if(ArcCnrMenu)
+      if (ArcCnrMenu)
         WinDestroyWindow(ArcCnrMenu);
       ArcMenu = ArcCnrMenu = (HWND)0;
       EmptyCnr(hwnd);
@@ -3568,27 +3427,27 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
   CHAR          fullname[CCHMAXPATH],*p,temp;
   static USHORT idinc = 0;
 
-  if(!idinc)
+  if (!idinc)
     idinc = (rand() % 256);
-  if(ParentIsDesktop(hwndParent,hwndParent))
+  if (ParentIsDesktop(hwndParent,hwndParent))
     FrameFlags |= (FCF_TASKLIST | FCF_MENU);
-  if(arcname) {
+  if (arcname) {
     DosError(FERR_DISABLEHARDERR);
-    if(DosQueryPathInfo(arcname,
-                        FIL_QUERYFULLNAME,
-                        fullname,
-                        sizeof(fullname)))
+    if (DosQueryPathInfo(arcname,
+                         FIL_QUERYFULLNAME,
+                         fullname,
+                         sizeof(fullname)))
       strcpy(fullname,arcname);
     p = fullname;
     while(*p) {
-      if(*p == '/')
+      if (*p == '/')
         *p = '\\';
       p++;
     }
-    if(!info)
+    if (!info)
       info = find_type(fullname,
                        arcsighead);
-    if(!info)
+    if (!info)
       return hwndFrame;
     hwndFrame = WinCreateStdWindow(hwndParent,
                                    WS_VISIBLE,
@@ -3599,9 +3458,9 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
                                    FM3ModHandle,
                                    ARC_FRAME,
                                    &hwndClient);
-    if(hwndFrame && hwndClient) {
+    if (hwndFrame && hwndClient) {
       id = ARC_FRAME + idinc++;
-      if(idinc > 512)
+      if (idinc > 512)
         idinc = 0;
       WinSetWindowUShort(hwndFrame,QWS_ID,id);
       dcd = xmallocz(sizeof(DIRCNRDATA),pszSrcFile,__LINE__);
@@ -3614,16 +3473,16 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
         dcd->id = id;
         dcd->type = ARC_FRAME;
         save_dir2(dcd->workdir);
-        if(dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
+        if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
           strcat(dcd->workdir,"\\");
         sprintf(dcd->workdir + strlen(dcd->workdir),"%s.%03x",
                 ArcTempRoot,(clock() & 4095));
         strcpy(dcd->arcname,fullname);
-        if(*extractpath) {
-          if(!strcmp(extractpath,"*")) {
+        if (*extractpath) {
+          if (!strcmp(extractpath,"*")) {
             p = strrchr(fullname,'\\');
-            if(p) {
-              if(p < fullname + 3)
+            if (p) {
+              if (p < fullname + 3)
                 p++;
               temp = *p;
               *p = 0;
@@ -3634,31 +3493,30 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
           else
             strcpy(dcd->directory,extractpath);
         }
-        if(!*dcd->directory &&
-           *lastextractpath) {
+        if (!*dcd->directory && *lastextractpath) {
           DosEnterCritSec();
-           strcpy(dcd->directory,lastextractpath);
+          strcpy(dcd->directory,lastextractpath);
           DosExitCritSec();
         }
-        if(!*dcd->directory) {
-          if(!ParentIsDesktop(hwndParent,hwndParent))
+        if (!*dcd->directory) {
+          if (!ParentIsDesktop(hwndParent,hwndParent))
             TopWindowName(hwndParent,
                           hwndCaller,
                           dcd->directory);
-          if(!*dcd->directory) {
+          if (!*dcd->directory) {
             p = strrchr(fullname,'\\');
-            if(p) {
-              if(p < fullname + 3)
+            if (p) {
+              if (p < fullname + 3)
                 p++;
               *p = 0;
               strcpy(dcd->directory,fullname);
             }
           }
         }
-        if(!*dcd->directory ||
-           IsFile(dcd->directory) ||
-           (isalpha(*dcd->directory) &&
-            (driveflags[toupper(*dcd->directory) - 'A'] & DRIVE_NOTWRITEABLE)))
+        if (!*dcd->directory ||
+            IsFile(dcd->directory) ||
+            (isalpha(*dcd->directory) &&
+             (driveflags[toupper(*dcd->directory) - 'A'] & DRIVE_NOTWRITEABLE)))
           save_dir2(dcd->directory);
         dcd->hwndParent = (hwndParent) ? hwndParent :
                                          HWND_DESKTOP;
@@ -3739,13 +3597,13 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
                      MPFROM2SHORT(CCHMAXPATH,0),
                      MPVOID);
           WinSetWindowText(dcd->hwndExtract,dcd->directory);
-          if(!PostMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID))
+          if (!PostMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID))
             WinSendMsg(dcd->hwndCnr,UM_SETUP,MPVOID,MPVOID);
           if (FrameFlags & FCF_MENU) {
             if (!fToolbar) {
               HWND hwndMenu = WinWindowFromID(hwndFrame,FID_MENU);
 
-              if(hwndMenu) {
+              if (hwndMenu) {
                 WinSendMsg(hwndMenu,MM_DELETEITEM,
                            MPFROM2SHORT(IDM_VIEW,FALSE),
                            MPVOID);
@@ -3783,16 +3641,16 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
             LONG  cxScreen,cyScreen;
 
             WinQueryTaskSizePos(WinQueryAnchorBlock(hwndFrame),0,&swp);
-            if(PrfQueryProfileData(fmprof,
+            if (PrfQueryProfileData(fmprof,
                                    appname,
                                    "AV2SizePos",
                                    &swpD,
                                    &size)) {
               cxScreen = WinQuerySysValue(HWND_DESKTOP,SV_CXSCREEN);
               cyScreen = WinQuerySysValue(HWND_DESKTOP,SV_CYSCREEN);
-              if(swp.x + swpD.cx > cxScreen)
+              if (swp.x + swpD.cx > cxScreen)
                 swp.x = cxScreen - swpD.cx;
-              if(swp.y + swpD.cy > cyScreen)
+              if (swp.y + swpD.cy > cyScreen)
                 swp.y = cyScreen - swpD.cy;
               swp.cx = swpD.cx;
               swp.cy = swpD.cy;
