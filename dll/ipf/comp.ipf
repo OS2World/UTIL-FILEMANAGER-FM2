@@ -44,14 +44,15 @@ Several selection/deselection techniques are available via pushbuttons
 to enable you to select files based on their comparison. The pushbuttons
 operate on both containers. You can also select and deselect files in
 the containers manually with the mouse and/or keyboard.
-:hp2.Hint&colon.:ehp2. mouse selection works slightly differently when
-you hold down the Ctrl key while clicking.
+:hp2.Hint&colon.:ehp2. mouse selection of multiple files works slightly differently when you hold down :color fc=default bc=palegray.Ctrl:color fc=default bc=default. while clicking.
 :p.
 :hp2.Brief description of selection/deselection button options&colon.:ehp2.
 :p.
-:hp6.Same:ehp6. All items which match name and size exactly.
+:hp6.Same size:ehp6. All items which match name and size exactly.
 :p.
-:hp6.Identical:ehp6. All items which match name, size and date exactly.
+:hp6.Size/time:ehp6. All items which match name, size and date exactly.
+:p.
+:hp6.Content:ehp6. All items which match name and content exactly.
 :p.
 :hp6.Both:ehp6. All items which are present in both containers (only
 name used as criteria).
@@ -75,6 +76,20 @@ container and are the larger of the pair.
 :p.
 :hp6.Invert:ehp6. Inverts selection state of all items in both containers.
 :p.
+:hp2.Brief description of the remaining options in the dialog box&colon.:ehp2.
+:p.
+:hp6.Actions:ehp6. Provides directional copy and move along with directory specific delete. Filter opens the filter dialog so you can restrict the files viewed to a certain mask (i.e. *.sys)
+:p.
+:hp6.Okay and Cancel:ehp6. Both close the dialog.
+:p.
+:hp6.Collect:ehp6. Copies highlighted files to the collector.
+:p.
+:hp6.Dirs:ehp6. Opens the select directories dialog.
+:p.
+:hp6.Include subdirectories:ehp6. Includes files from all subdirectories in both directory trees for comparison.(this is a toggle which change the display automatically)
+:p.
+:hp6.Hide not selected:ehp6. Includes selected files only on the display.(this is a toggle which change the display automatically)
+:p.
 See also :link reftype=hd res=99100.Selection:elink..
 :p.
 The general procedure for synchronizing two directories (assuming, of
@@ -89,6 +104,10 @@ should now match exactly -- deselect all files and select identical
 files (click the :hp1.Identical:ehp1. button), and all the files should
 be selected (to confirm).
 :p.
+:hp2.Note&colon.:ehp2. You can use multiple combination of the select/deselect buttons however
+they will select you all the files as if an "or" operation not as an "and" operation
+(i.e. selecting larger then selecting newer will highlight all the larger files and then highlight
+all the newer files not just the newer files among the already highlighted)
 If you're looking directory matching features not included in FM/2, you
 might find them in the programs available on Hobbes
 http&colon.//hobbes.nmsu.edu/cgi-bin/h-search?key=directory+compare&amp.pushbutton=Search

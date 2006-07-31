@@ -60,7 +60,7 @@ command causes a set of dropdown listboxes to appear below the toolbar
 and above other windows. The listboxes include&colon.
 .br
 A Drive Finder dropdown listbox.
-,br
+.br
 A States dropdown listbox (Fm/2 configurations you have saved with specific name).
 .br
 A Commands dropdown listbox (External command that have been added to FM/2).
@@ -130,18 +130,33 @@ internal Settings notebook.
 :i1 id=aboutEditArc.Editing Archiver Details
 :p.
 This dialog box, which you can reach from the Config menu, allows you to
-edit the details of an :link reftype=hd res=100015.archiver:elink.. Entry
-boxes are present for all the twenty one fields represented in
-ARCHIVER.BB2 (the text file that contains control information about your
-archivers which FM/2 uses to interface with the archivers). It's
-probably easier for most people to edit ARCHIVER.BB2 directly with a
-text editor.
+the details of your :link reftype=hd res=100015.archiver:elink.. On the right side are a series of buttons to manage your archivers&colon.
+:p.
+:hp1.Up&colon.:ehp1. Moves the highlighted archiver up in the archive list.
+:p.
+:hp1.Down&colon.:ehp1. Moves the highlighted archiver down in the archive list.
+:p.
+:hp1.Add&colon.:ehp1. Add brings up a blank archiver details box so you can define a new archiver type.
+:p.
+:hp1.Delete&colon.:ehp1. Deletes the archiver description of the highlighted archiver.
+:p.
+:hp1.Revert&colon.:ehp1. Revert undoes all changes made during the current session. It will not undo changes once the new ARCHIVER.BB2 has been written.
+:p.
+
+To open the Archiver details box to edit an existing archiver highlight the archiver and select Okay.
+Entry boxes are present for all the twenty one fields represented in ARCHIVER.BB2
+(the text file that contains control information about your archivers,
+which FM/2 uses to interface with the archivers). It's probably as easy for most people to edit
+:link reftype=hd res=100130.ARCHIVER&period.BB2:elink. directly with a text editor.
+The Cancel button will bring up a dialog asking you if you wish to rewrite ARCHIVER.BB2
+select yes if you do. The new file will be written one generation of backup is kept it is
+named Archiver.BAK
 :p.
 :hp1.NOTE&colon.:ehp1. The simplest method to ensure that your archivers
 work properly with FM/2 is to make sure they're in a directory named in
 your PATH= statement, and check the names of the files to make sure they
 match what's on your system (i.e. UNZIP.EXE in both ARCHIVER.BB2 and on
-your hard disk, not UNZIP.EXE in one and UNZIP32.EXE in another).
+your hard disk, not UNZIP.EXE in one and UNZIP32.EXE in another). Alternatively, full path names can be used in ARCHIVER.BB2.
 :p.
 In the event that you attempt to list an archive and FM/2 feels you've
 probably bungled the entry in ARCHIVER.BB2, you'll be given an
@@ -318,12 +333,19 @@ number with a comma and another number that indicates the type of the
 date from any of the formats in the following list&colon.
 .br
 :xmp.
- 1. 02-08-96  23&colon.55&colon.32
- 2. 8 Feb 96  23&colon.55&colon.32
- 3. 8 Feb 96  11&colon.55p
- 4. 96-02-08  23&colon.55&colon.32
- 5. 31-02-98  23&colon.55
+ 0 = No date in data
+ 1 = 02-08-96  23&colon.55&colon.32 mm-dd-yy hh&colon.mm&colon.ss
+ 2 = 8 Feb 96  23&colon.55&colon.32 dd-Mmm-yy hh&colon.mm&colon.ss
+ 3 = 8 Feb 96  11&colon.55p   dd Mmm yy hh&colon.mmA
+ 4 = 96-02-08  23&colon.55&colon.32 yy-mm-dd mm&colon.mm&colon.ss
+ 5 = 31-02-98  23&colon.55    dd-mm-yy hh&colon.mm
 :exmp.
+:p.
+Dash (-) and slash (/) separators are both supported.
+:p.
+Both 2 digit and 4 digit years are supported.
+:p.
+2 digit years slide about 1980.
 :p.
 :hp2.NumDateF(ie)lds:ehp2. This field tells FM/2 how many fields comprise
 the time/datestring.
@@ -357,4 +379,75 @@ date starts in position 2, with 3 parts, and there's no new length
 field (so it'd be -1). Compare that to the archiver entry for
 ARC 5.12mpl in the "stock" ARCHIVER.BB2 and you should get a feel for
 what all those fields mean.
+
+:h4 res=100130 name=PANEL_ARCBB2.ARCHIVER.BB2 Structure
+:i1 id=aboutArcBB2.ArchiverBB2 Structure
+:p.
+The first line in the file is the number of lines/definition in the archiver.bb2 file. It is very important; do not change.  It allows modifications to the
+file format to be transparent to older programs.
+
+Format for this archiver.bb2 file (each entry has 21 lines)&colon.
+:p.
+1st line&colon. archiver id (i.e. ARC, LHARC, PKZIP, etc.) for human consumption
+:p.
+2nd line&colon.  normal extension for archives without period  (i.e ZIP, ARC, LZH)
+:p.
+3rd line&colon.  offset into file to signature (leave blank if no signature)
+:p.
+4th line&colon.  list command
+:p.
+5th line&colon.  extract command
+:p.
+6th line&colon.  extract with directories command
+:p.
+7th line&colon.  test archive command
+:p.
+8th line&colon.  add/create command
+:p.
+9th line&colon.  add/create with paths command
+:p.
+10th line&colon.  add/create and recurse command
+:p.
+11th line&colon.  move command
+:p.
+12th line&colon.  move with paths command
+:p.
+13th line&colon.  delete command
+:p.
+14th line&colon.  signature (case sensitive, leading spaces count!)
+:p.
+15th line&colon.  startlist string
+:p.
+16th line&colon.  endlist string
+:p.
+17th line&colon.  old size position (0-based, -1 = not available)
+:p.
+18th line&colon.  new size position  (0-based, -1 = not available)
+:p.
+19th line&colon.  file date position (0-based, -1 = not available) [,type of date (0 for none)]
+:p.
+20th line&colon.  number of elements in dates (for "03 June 92" would be 3)
+:p.
+21st line&colon.  file name position (absolutely required, of course; -1 = last pos)[,name is last (1 = TRUE, n/a w/ -1 pos)[name is next line (1 = TRUE)[,name is first line, then rest of data (1 = TRUE)]]]
+:p.
+see ZOO entry for example of -1 in file name position
+:p.
+see LH entry for example of name is last
+:p.
+see RAR 2.00 entry for example of name is first
+:p.
+check listings generated by these programs for clarification
+:p.
+A semicolon marks a comment.  They may appear at any point *except*
+within the 21 lines of an archiver definition entry.  Comments are ignored.
+Archiver definition entries that contain numeric values may have trailing comments. Archiver definition lines that contain strings do not support trailing comments.
+:p.
+Blank lines are ignored except within a 21 line archiver definition entry. A blank line with a definition entry will be treats as either an empty string or the number 0, depending on what content is expected for the definition line.
+:p.
+Note that all archiver command strings should include the archiver's parameter to
+prevent it from prompting for input!  Also note that archive types are checked
+in order of their listing in this file.  Finally, this file is set up for
+the archivers I had lying around. If yours are different versions, you may
+have to modify this file.  All archivers are OS/2 (or FAPI) versions.
+DOS archivers may work with FM/2, but it'll be up to you to set them up.
 

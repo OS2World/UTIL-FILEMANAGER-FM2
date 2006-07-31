@@ -32,6 +32,20 @@ entry field (if it doesn't already exist you'll get an option to create
 it), drag a directory onto the entry field, or click the folder button
 with :color fc=default bc=cyan.B1:color fc=default bc=default..
 :p.
+How archiver selection works&colon.
+:p.
+The archive selector scans the known archivers in the order in which they
+are defined.  The selector first tries a signature match, unless this is
+suppressed in the settings.  If there is no signature defined or if
+the signature match is suppressed, the selector checks to see if the file
+extension matches.  The matching entry defines the commands used for the
+various archiving operations and supplies parameters that enable the archiver
+outputs to be parsed. Note&colon. this mean that if you have several archivers of a given type
+(i.e. ARC) defined only the first entry is tried since different archiver file names are sometimes
+use (i.e. arc.exe vs arc2.exe) make sure that the archive description that corresponds to
+the actual archive description you wish to use is listed first.See&colon.:link reftype=hd res=94200.
+Editing Archiver Details:elink.
+:p.
 You can drag files onto the Archive Container's listing to add them to
 the archive, and you can drag files from the archive to an FM/2
 directory window. OS/2's drag and drop "rendering" mechanism would make
@@ -189,3 +203,4 @@ information record in ARCHIVER.BB2. You can View the archive to assure
 yourself that it is, in fact, an archive, and perhaps hunt down the
 signature so you can add it to ARCHIVER.BB2 if it's not a listed archive
 type.
+

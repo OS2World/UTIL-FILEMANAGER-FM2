@@ -37,6 +37,11 @@ not, so, for example, trying to extract "*.PKT" when the file inside the
 archive is "01234567.pkt" will fail to extract the file -- you'd have to
 use "*.pkt". If in doubt, use both or use the -C command line switch to
 force UNZIP to ignore case.
+:p.
+I'm told there's a bug in some versions of 4OS2 that can cause
+a call to an archiver to fail if the archiver has an extension (i.e.
+UNZIP works, UNZIP.EXE doesn't).  If things fail for no apparent reason
+and you're using 4OS2 you might keep it in mind.
 
 :h2 res=90300 name=PANEL_ARCHIVE.Build an archive
 :i1 id=aboutArchive.Build an archive
