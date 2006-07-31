@@ -14,10 +14,11 @@
   06 Jun 05 SHL Drop unused
   14 Aug 05 SHL rewrite_archiverbb2: avoid dereferencing null signature
   14 Aug 05 SHL ArcReviewDlgProc: ensure signature allocated
-  29 May 06 SHL EditArchiverData: rework
+  29 May 06 SHL EditArchiverDefinition: rework
   26 Jun 06 SHL rewrite_archiverbb2: include user comments
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
+  30 Jul 06 SHL Avoid warnings when editing new definition
 
 ***********************************************************************/
 
@@ -41,7 +42,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(AVV,EditArchiverData,free_and_strdup_from_window)
+#pragma alloc_text(AVV,EditArchiverDefinition,free_and_strdup_from_window)
 #pragma alloc_text(AVV,get_int_from_window,get_int2_from_window)
 #pragma alloc_text(AVV,get_long_from_window,get_int3_from_window)
 #pragma alloc_text(AVV,get_int4_from_window)
@@ -53,9 +54,9 @@ static LONG get_long_from_window (HWND hwnd,USHORT id);
 static PSZ nonull(PSZ a);
 static PSZ free_and_strdup_from_window(HWND hwnd,USHORT id,PSZ pszDest);
 
-//=== EditArchiverData() Select archiver to edit ===
+//=== EditArchiverDefinition() Select archiver to edit definition ===
 
-VOID EditArchiverData(HWND hwnd)
+VOID EditArchiverDefinition(HWND hwnd)
 {
   ARCDUMP ad;
   FILE   *fp;
@@ -88,15 +89,10 @@ VOID EditArchiverData(HWND hwnd)
 
 static PSZ free_and_strdup_from_window(HWND hwnd,USHORT id,PSZ pszDest)
 {
-  char sz[257] = "";
+  CHAR sz[256];
 
-  if (pszDest)
-    free(pszDest);
-
-  WinQueryDlgItemText(hwnd,
-                      id,
-                      255,
-                      sz);
+  xfree(pszDest);
+  WinQueryDlgItemText(hwnd,id,sizeof(sz),sz);
   if (*sz)
     pszDest = xstrdup(sz, pszSrcFile, __LINE__);
   else
@@ -106,28 +102,30 @@ static PSZ free_and_strdup_from_window(HWND hwnd,USHORT id,PSZ pszDest)
 
 static INT get_int_from_window(HWND hwnd,USHORT id)
 {
-  char s[257] = "";
+  CHAR s[256];
 
-  WinQueryDlgItemText(hwnd,id,255,s);
+  WinQueryDlgItemText(hwnd,id,sizeof(s),s);
   return atoi(s);
 }
 
 static INT get_int2_from_window(HWND hwnd,USHORT id)
 {
-  char s[257] = "",*p;
+  CHAR s[256];
+  PSZ p;
 
-  WinQueryDlgItemText(hwnd,id,255,s);
+  WinQueryDlgItemText(hwnd,id,sizeof(s),s);
   p = strchr(s,',');
   if(p)
     p++;
-  return (p) ? atoi(p) : 0;
+  return p ? atoi(p) : 0;
 }
 
 INT get_int3_from_window (HWND hwnd,USHORT id)
 {
-  char s[257] = "",*p;
+  CHAR s[256];
+  PSZ p;
 
-  WinQueryDlgItemText(hwnd,id,255,s);
+  WinQueryDlgItemText(hwnd,id,sizeof(s),s);
   p = strchr(s,',');
   if(p) {
     p++;
@@ -135,33 +133,34 @@ INT get_int3_from_window (HWND hwnd,USHORT id)
     if(p)
       p++;
   }
-  return (p) ? atoi(p) : 0;
+  return p ? atoi(p) : 0;
 }
 
 INT get_int4_from_window (HWND hwnd,USHORT id)
 {
-  char s[257] = "",*p;
+  CHAR s[256];
+  PSZ p;
 
-  WinQueryDlgItemText(hwnd,id,255,s);
+  WinQueryDlgItemText(hwnd,id,sizeof(s),s);
   p = strchr(s,',');
-  if(p) {
+  if (p) {
     p++;
     p = strchr(p,',');
-    if(p) {
+    if (p) {
       p++;
       p = strchr(p,',');
-      if(p)
+      if (p)
         p++;
     }
   }
-  return (p) ? atoi(p) : 0;
+  return p ? atoi(p) : 0;
 }
 
 LONG get_long_from_window (HWND hwnd,USHORT id)
 {
-  char s[257] = "";
+  CHAR s[256];
 
-  WinQueryDlgItemText(hwnd,id,255,s);
+  WinQueryDlgItemText(hwnd,id,sizeof(s),s);
   return atol(s);
 }
 
@@ -423,6 +422,8 @@ static BOOL check_archiver(HWND hwnd,ARC_TYPE *info)
   checkfile(info->extract,&badExtract);
   if(!noStart && !noEnd && !badPos && !badList && !badCreate && !badExtract)
     return TRUE;			// OK
+  if (!info->id)
+    return FALSE;			// Assume new if no id
   saymsg(MB_ENTER | MB_ICONASTERISK,
          hwnd,
          GetPString(IDS_WARNINGSTEXT),
@@ -483,11 +484,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
       WinSetWindowPtr(hwnd,QWL_USER,mp2);
 
-      WinSendDlgItemMsg(hwnd,
-                        AD_LISTBOX,
-                        LM_DELETEALL,
-                        MPVOID,
-                        MPVOID);
+      WinSendDlgItemMsg(hwnd,AD_LISTBOX,LM_DELETEALL,MPVOID,MPVOID);
       for(sSelect = AD_ID;sSelect < AD_ADDWPATHS + 1;sSelect++)
       {
 	WinSendDlgItemMsg(hwnd,
@@ -496,22 +493,12 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           MPFROM2SHORT(sizeof(s) - 1,0),
                           MPVOID);
       }
-      if (admp->info->id) {
-        WinSetDlgItemText(hwnd,
-                          AD_ID,
-                          admp->info->id);
-      }
-      if (admp->info->ext) {
-        WinSetDlgItemText(hwnd,
-                          AD_EXT,
-                          admp->info->ext);
-      }
-      sprintf(s,
-              "%ld",
-              admp->info->file_offset);
-      WinSetDlgItemText(hwnd,
-                        AD_SIGPOS,
-                        s);
+      if (admp->info->id)
+        WinSetDlgItemText(hwnd,AD_ID,admp->info->id);
+      if (admp->info->ext)
+        WinSetDlgItemText(hwnd,AD_EXT,admp->info->ext);
+      sprintf(s,"%ld",admp->info->file_offset);
+      WinSetDlgItemText(hwnd,AD_SIGPOS,s);
       if (admp->info->siglen) {
         WinSetDlgItemText(hwnd,
                           AD_SIG,
@@ -520,21 +507,12 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                 sizeof(s),
                                 admp->info->siglen));
       }
-      if (admp->info->startlist) {
-        WinSetDlgItemText(hwnd,
-                          AD_STARTLIST,
-                          admp->info->startlist);
-      }
-      if (admp->info->endlist) {
-        WinSetDlgItemText(hwnd,
-                          AD_ENDLIST,
-                          admp->info->endlist);
-      }
-      if (admp->info->list) {
-        WinSetDlgItemText(hwnd,
-                          AD_LIST,
-                          admp->info->list);
-      }
+      if (admp->info->startlist)
+        WinSetDlgItemText(hwnd,AD_STARTLIST,admp->info->startlist);
+      if (admp->info->endlist)
+        WinSetDlgItemText(hwnd,AD_ENDLIST,admp->info->endlist);
+      if (admp->info->list)
+        WinSetDlgItemText(hwnd,AD_LIST,admp->info->list);
       sprintf(s,
               "%d,%d,%d,%d",
               admp->info->fnpos,
@@ -569,18 +547,13 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       if(admp->info->movewdirs)
         WinSetDlgItemText(hwnd,AD_MOVEWPATHS,admp->info->movewdirs);
 
-      PostMsg(hwnd,
-              UM_SETUP,
-              MPVOID,
-              MPVOID);
+      PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
       break;				// WM_INITDLG
 
     case UM_SETUP:
       if(admp->listname && *admp->listname) {
 
-        FILE *fp;
-
-        fp = fopen(admp->listname,"r");
+        FILE *fp = fopen(admp->listname,"r");
         if(!fp) {
           WinSendDlgItemMsg(hwnd,
                             AD_LISTBOX,
@@ -589,7 +562,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                             MPFROMP(GetPString(IDS_CANTOPENFILETEXT)));
         }
         else {
-          while(!feof(fp)) {
+          while (!feof(fp)) {
             if (!xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__))
 	      break;
             stripcr(s);
@@ -613,10 +586,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case WM_ADJUSTWINDOWPOS:
-      PostMsg(hwnd,
-              UM_SETDIR,
-              MPVOID,
-              MPVOID);
+      PostMsg(hwnd,UM_SETDIR,MPVOID,MPVOID);
       break;
 
     case UM_SETDIR:
@@ -672,9 +642,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               break;
 
             case LN_KILLFOCUS:
-              WinSetDlgItemText(hwnd,
-                                AD_HELP,
-                                NullStr);
+              WinSetDlgItemText(hwnd,AD_HELP,NullStr);
               break;
 
             case LN_SETFOCUS:
@@ -945,10 +913,10 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           admp->info->nameisfirst = (get_int4_from_window(hwnd,AD_FNAMEPOS)) ? TRUE : FALSE;
           {
             INT ok = check_archiver(hwnd,admp->info);
-            if(saymsg(MB_YESNO,
-                      hwnd,
-                      GetPString(IDS_ADCHANGESINMEMTEXT),
-                      GetPString(IDS_ADREWRITETEXT),
+            if (saymsg(MB_YESNO,
+                       hwnd,
+                       GetPString(IDS_ADCHANGESINMEMTEXT),
+                       GetPString(IDS_ADREWRITETEXT),
                       !ok ? GetPString(IDS_NOTRECOMMENDTEXT) : NullStr) ==
                MBID_YES) {
 
