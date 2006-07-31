@@ -242,36 +242,21 @@ static void free_arc_type(ARC_TYPE *pat)
 {
   if (pat)
   {
-    if (pat -> id)
-      free(pat -> id);
-    if (pat -> ext)
-      free(pat -> ext);
-    if (pat -> list)
-      free(pat -> list);
-    if (pat -> extract)
-      free(pat -> extract);
-    if (pat -> create)
-      free(pat -> create);
-    if (pat -> move)
-      free(pat -> move);
-    if (pat -> delete)
-      free(pat -> delete);
-    if (pat -> signature)
-      free(pat -> signature);
-    if (pat -> startlist)
-      free(pat -> startlist);
-    if (pat -> endlist)
-      free(pat -> endlist);
-    if (pat -> exwdirs)
-      free(pat -> exwdirs);
-    if (pat -> test)
-      free(pat -> test);
-    if (pat -> createrecurse)
-      free(pat -> createrecurse);
-    if (pat -> createwdirs)
-      free(pat -> createwdirs);
-    if (pat -> movewdirs)
-      free(pat -> movewdirs);
+    xfree(pat -> id);
+    xfree(pat -> ext);
+    xfree(pat -> list);
+    xfree(pat -> extract);
+    xfree(pat -> create);
+    xfree(pat -> move);
+    xfree(pat -> delete);
+    xfree(pat -> signature);
+    xfree(pat -> startlist);
+    xfree(pat -> endlist);
+    xfree(pat -> exwdirs);
+    xfree(pat -> test);
+    xfree(pat -> createrecurse);
+    xfree(pat -> createwdirs);
+    xfree(pat -> movewdirs);
     free(pat);
   }
 }
