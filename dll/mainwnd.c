@@ -5303,7 +5303,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case IDM_EDITANYARCHIVER:
-    EditArchiverData(hwnd);
+    EditArchiverDefinition(hwnd);
     break;
 
   case IDM_ABOUT:

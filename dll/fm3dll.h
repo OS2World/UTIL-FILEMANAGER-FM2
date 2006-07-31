@@ -22,7 +22,7 @@
   28 May 05 SHL Drop local functions
   06 Jun 05 SHL Use QWL_USER
   11 Aug 05 SHL Renames
-  29 May 06 SHL Rework EditArchiverData
+  29 May 06 SHL Rework EditArchiverDefinition
   16 Jun 06 SHL ARC_TYPE: support non-string signatures
   26 Jun 06 SHL ARC_TYPE: support preserving comments
   28 Jun 06 SHL DIRCNRDATA: drop unused
@@ -797,7 +797,7 @@ BOOL ArcDateTime (CHAR *dt,INT type,CDATE *cdate,CTIME *ctime);
 /* avv.c */
 VOID rewrite_archiverbb2(CHAR *archiverbb2);
 MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-VOID EditArchiverData(HWND hwnd);
+VOID EditArchiverDefinition(HWND hwnd);
 
 /* systemf.c */
 BOOL ShowSession (HWND hwnd,PID pid);
