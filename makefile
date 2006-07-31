@@ -1,11 +1,15 @@
 # makefile - build all fm/2 components
 # $Id$
 
+# Copyright (c) 1993-98 M. Kimes
+# Copyright (c) 2002, 2006 Steven H. Levine
+
 # 24 May 05 SHL Add clean and cleanobj target
 # 16 Jun 05 SHL Workaround makeflags wierdness
 # 18 Jul 05 SHL Add bitmap dependencies
 # 20 Jul 05 SHL Add makeres support
 # 16 Apr 06 SHL Add lxlite target
+# 31 Jul 06 SHL Tweak dependencies
 
 # Environment:
 
@@ -31,7 +35,7 @@ dll:
 
 $(BASE): $(BASE).exe $(BASE).res
 
-$(BASE).res: $(BASE).rc  $(BASE).h bitmaps\*.bmp
+$(BASE).res: $(BASE).rc  $(BASE).h icons\$(BASE).ico bitmaps\*.bmp
 
 $(BASE).obj: $(BASE).c $(BASE).h dll\version.h
 
