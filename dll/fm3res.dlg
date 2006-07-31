@@ -15,6 +15,7 @@
   28 May 06 SHL Add ASEL_EDIT_FRAME
   30 May 06 SHL Add DLGINCLUDE for dlgedit use
   05 Jul 06 SHL COMP_FRAME - support hide not selected, compare content
+  31 Jul 06 SHL Change ASEL_EDIT_FRAME button text
 
 ***********************************************************************/
 
@@ -314,7 +315,7 @@ BEGIN
                         WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
         LISTBOX         ASEL_LISTBOX, 4, 27, 150, 83, WS_GROUP
-        DEFPUSHBUTTON   "Okay", DID_OK, 4, 10, 44, 13, BS_NOPOINTERFOCUS | 
+        DEFPUSHBUTTON   "Edit", DID_OK, 4, 10, 44, 13, BS_NOPOINTERFOCUS | 
                         WS_GROUP
         PUSHBUTTON      "Cancel", DID_CANCEL, 113, 10, 44, 13, 
                         BS_NOPOINTERFOCUS
