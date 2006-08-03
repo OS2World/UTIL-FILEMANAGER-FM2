@@ -1,7 +1,8 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.04 pre12:
- o Open large archive containers at lower priority
+ o Allow quick abort of large archive open
+ o Open large archive containers at idle priority
  o Update archiver usage help (thanks Gregg)
  o Expose internal errors to user rather than just beeping
  o Check and report more "should not occur" errors
