@@ -27,6 +27,7 @@
   26 Jul 06 SHL Correct SelectAll usage
   29 Jul 06 SHL Use xfgets_bstripcr
   31 Jul 06 SHL Lower priority for archives with more than 1000 entries
+  02 Aug 06 SHL Add logic to stop processing large archives
 
 ***********************************************************************/
 
@@ -295,7 +296,7 @@ static BOOL IsArcThere (HWND hwnd, CHAR *arcname)
 //== FillArcCnr() generate archive content list and fill container window ==
 
 static INT FillArcCnr(HWND hwndCnr,CHAR *arcname,ARC_TYPE **arcinfo,
-                      ULONGLONG *pullTotalBytes)
+                      ULONGLONG *pullTotalBytes, volatile PCHAR pStopFlag)
 {
   FILE         *fp;
   HFILE         oldstdout;
@@ -432,7 +433,7 @@ ReTry:
     if (fp) {
       gotstart = !info->startlist || !*info->startlist;	// If list has no start marker
 
-      while(!feof(fp) && !gotend) {
+      while(!feof(fp) && !gotend && !*pStopFlag) {
         if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
           break;
         if (!gotstart) {
@@ -614,9 +615,9 @@ ReTry:
                            MPFROM2SHORT(10,CMA_ERASE | CMA_REPOSITION));
                 lastpai = pai;
               }
-	      // Avoid hogging system if large archive
-	      if (numarcfiles == 1000)
-		  priority_idle();
+	      // Avoid hogging system for large archive
+	      if (numarcfiles == 100)
+	        priority_idle();
             }
           }
         }
@@ -624,7 +625,9 @@ ReTry:
 
       fclose(fp);
 
-      if (!numarcfiles || !gotstart || (!gotend && info->endlist && *info->endlist))
+      if (*pStopFlag)
+        numarcfiles = 0;		// Request close
+      else if (!numarcfiles || !gotstart || (!gotend && info->endlist && *info->endlist))
       {
 	// Oops
         ARCDUMP ad;
@@ -674,11 +677,12 @@ ReTry:
         rewrite_archiverbb2(NULL);	// Rewrite with warning
       }
     } // if opened
+
     DosError(FERR_DISABLEHARDERR);
     DosForceDelete(arctemp);
   }
 
-  if (numarcfiles >= 500)
+  if (numarcfiles)
     priority_normal();
 
   return numarcfiles;
@@ -1336,7 +1340,8 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         dcd->totalfiles = FillArcCnr(dcd->hwndCnr,
                                      dcd->arcname,
                                      &dcd->info,
-                                     &dcd->ullTotalBytes);
+                                     &dcd->ullTotalBytes,
+                                     &dcd->stopflag);
         if (!dcd->totalfiles)
           PostMsg(dcd->hwndCnr,WM_CLOSE,MPVOID,MPVOID);
         else {
@@ -2718,7 +2723,8 @@ KbdRetry:
             dcd->totalfiles = FillArcCnr(dcd->hwndCnr,
                                          dcd->arcname,
                                          &dcd->info,
-                                         &dcd->ullTotalBytes);
+                                         &dcd->ullTotalBytes,
+                                         &dcd->stopflag);
             PostMsg(dcd->hwndCnr,UM_RESCAN,MPVOID,MPVOID);
             PostMsg(dcd->hwndCnr,UM_SETUP2,MPVOID,MPVOID);
             WinSendMsg(dcd->hwndCnr,
