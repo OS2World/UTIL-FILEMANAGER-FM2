@@ -37,7 +37,7 @@
 
 #define VERMAJOR       3
 #define VERMINOR       04
-#define VERREALMINOR   "" __DATE__ " " __TIME__	// SHL
+#define VERREALMINOR   " " __DATE__ " " __TIME__	// SHL
 
 #define APPNAME         "FM2"
 
