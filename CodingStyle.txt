@@ -1,24 +1,95 @@
 
 Coding Style Guide
+==================
+
+Line lengths
+
+  Try to keep lines less than 80 characters.
+
+  Break lines after logical separators
+
+  Vertically align like constructs
 
 Indents
 
-  Start function with { in column 1
+  Place function definition { in column 1
 
-  Intent by 2 characters
+  Place function definition } in column 1
 
-  Layouts
+  Intent nested constructs by 2 characters
 
-    if (expr) {
-    }
-    else {
-    }
+  void func()
+  {
+    stmt
+    if (expr)
+      stmt2
+  }
 
-    while (expr) {
-    }
+Tabs
 
-    for (expr) {
-    }
+  Use only 8 column tabs
+
+Layouts
+
+  if (expr)
+    statement
+
+  // If expr and statement are brief
+  if (expr) statement
+
+  if (expr1) {
+  }
+  else {
+  }
+
+  // If expression must be wrapped
+  // align like constructs vertically
+  if (expr1 &&
+      expr2))
+  {
+  }
+
+  while (expr) {
+  }
+
+  for (expr; expr; expr) {
+  }
+
+  typedef struct {
+
+  } TYPENAME;
+
+Variable definitions
+
+  Define one per line
+
+    INT a;
+    INT b;
+
+  not
+
+    INT a,b;
+
+Spaces
+
+  Separate keywords from leading paren with 1 space
+
+    if (expr) dothis
+
+  No space between function name and leading paren
+  No space between last arg and trailing paren
+
+    func()
+
+  Follow separating commas and semicolons with a space
+
+    x = func(a, c)
+
+  Surround binary operators with a leading and trailing spaces
+
+    x = a + b
+
+  Try to avoid spurious internal and trailing whitespace
 
 Memory
 
@@ -31,12 +102,18 @@ Memory
 
 Windows
 
- - Check all WinCreateWindow call
+ - Check all WinCreateWindow calls
  - Check QWL_USER pointer data
 
-Beeps
+Error notifications
 
-  DosBeep(50,100)               Alert user to failure - must include visual action
+  DosBeep(50,100)       Alert user to operator error
+                        Use only when failure reason is obvious
 
+  saymsg                Alert user to operator error with popup
+
+  Runtime_Error         Report "should not occur" errors
+  Dos_Error
+  Win_Error
 
 $Id$

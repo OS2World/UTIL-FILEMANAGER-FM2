@@ -12,6 +12,16 @@ Select Files
 0
 10008
 ;
+Select Dirs
++Dirs
+0
+10010
+;
+Select List
++List
+0
+10033
+;
 Select Mask
 +Mask
 8
@@ -21,10 +31,16 @@ Deselect All
 -All
 0
 10007
+;
 Deselect Dirs
 -Dirs
 0
 10011
+;
+Deselect Files
+-Files
+0
+10009
 ;
 Deselect Mask
 -Mask
@@ -55,3 +71,5 @@ Commands toolbox
 Cmds
 0
 4900
+;
+; $Id$
