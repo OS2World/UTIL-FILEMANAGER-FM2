@@ -1,5 +1,12 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.05beta01
+ o Integrate John Small's switch list title logic
+ o More great bitmaps from David
+ o Avoid cascading messages when collector file list is a binary file
+ o Rework some error messages
+ o Add unlock.exe to commands template
+
 3.04
  o Recover corrupted finger pointer
  o Allow quick abort of large archive open
