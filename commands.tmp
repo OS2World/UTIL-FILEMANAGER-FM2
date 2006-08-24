@@ -1,5 +1,9 @@
 ; FM/2 commands file -- 3 lines: title, cmd line, flags
 ;
+Unlock exe or dll
+unlock %a
+12288
+;
 Test a Zip file
 unzip.exe -t %a
 12288
