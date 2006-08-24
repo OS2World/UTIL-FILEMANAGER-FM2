@@ -37,7 +37,7 @@ Can't start %s %s
                       FM/2 is free software from Mark Kimes.
 Freely redistributable.  Code available.
  You are here --> x
-**Spare 39**
+Move not allowed - forcing copy
 Memory allocation failed!!!
 \rYou can drop on me!
 Dropping here will copy or move to this drive.
@@ -111,8 +111,8 @@ Use freely.  Code available.
 This window shows you how many objects\rand how many bytes are selected.\rDrop on me to collect objects.\rClick me for the select menu.
 This window shows you how many objects\rand how many bytes are in the Collector.\rDrop on me to collect objects.
 Collecting...
-File "%s" may not be a list.\r
-Continue to try to Collect from it?
+File may not be a list.\r
+Continue to try to Collect from %s?
 Seek & scan in progress.
  Collector
 WC_COLLECTOR
@@ -288,7 +288,7 @@ This is the EA's data -- change it if you like.
 Mayday!
 \r\rWould you like help on UNDELETE?
 FM/2: Undelete files drive %c:
-No data
+No data.
 Could not start thread.
 Undelete:
 Select files to undelete, then click the Okay button.  Click Cancel to exit without doing anything.  Change the mask in the entry field if desired, or select another drive from the dropdown listbox.\r\rNote this requires UNDELETE.COM to be on your PATH (it is in the default installation) and the UNDELETE environment variable to be set for the drive in CONFIG.SYS.  Type HELP UNDELETE at a command line for more information.
@@ -347,7 +347,7 @@ Resource or data locked
 Incorrect media, CRC check
 Action already taken or done
 Unclassified
-Cannot perform requested action
+Can't perform requested action
 Timeout
 Error in file "Error.c"
 Unknown
@@ -588,7 +588,7 @@ You are actually writing a command (batch) file that will be run once and then d
 1381 China GB
 0
 DosStartSession failed to run "%s %s"
-DosExecPgm bombed.
+DosExecPgm failed for %s.
 We are all Books of Blood.
 "Is THIS your card?"
 I'm a victim of coicumstance!
