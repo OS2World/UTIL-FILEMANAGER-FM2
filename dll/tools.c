@@ -12,6 +12,7 @@
   23 May 05 SHL Use QWL_USER
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
+  18 Aug 06 SHL Report more runtime errors
 
 ***********************************************************************/
 
@@ -39,45 +40,51 @@ static PSZ pszSrcFile = __FILE__;
 TOOL *toolhead = NULL;
 
 
-VOID load_quicktools (VOID) {
+//== load_quicktools() build *.tls array ==
 
+VOID load_quicktools(VOID)
+{
   FILE      *fp;
   CHAR       s[CCHMAXPATH + 14];
-  INT        x = 0;
+  INT        x;
 
   qtloaded = TRUE;
-  while(x < 50 && quicktool[x]) {
+  for (x = 0; x < 50 && quicktool[x]; x++) {
     free(quicktool[x]);
     quicktool[x] = NULL;
-    x++;
   }
-  if(!fToolbar) {
+  if (!fToolbar) {
     qtloaded = FALSE;
     return;
   }
-  x = 0;
   save_dir2(s);
-  if(s[strlen(s) - 1] != '\\')
+  if (s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,"QUICKTLS.DAT");
   fp = _fsopen(s,"r",SH_DENYWR);
   if (fp) {
-    while(x < 50 && !feof(fp)) {
-      if(!xfgets_bstripcr(s,CCHMAXPATH + 2,fp,pszSrcFile,__LINE__))
+    x = 0;
+    while (!feof(fp)) {
+      if (!xfgets_bstripcr(s,CCHMAXPATH + 2,fp,pszSrcFile,__LINE__))
         break;
-      if(*s && *s != ';') {
-        quicktool[x] = xstrdup(s,pszSrcFile,__LINE__);
-        if(quicktool[x])
-          x++;
+      if (!*s || *s == ';')
+        continue;
+      if (x >= 50) {
+	Runtime_Error(pszSrcFile, __LINE__, "add");
+	break;
       }
+      quicktool[x] = xstrdup(s,pszSrcFile,__LINE__);
+      if (!quicktool[x])
+        break;
+      x++;
     }
     fclose(fp);
   }
 }
 
 
-VOID save_quicktools (VOID) {
-
+VOID save_quicktools(VOID)
+{
   FILE *fp;
   INT   x = 0;
   CHAR  s[CCHMAXPATH + 14];
@@ -97,8 +104,10 @@ VOID save_quicktools (VOID) {
 }
 
 
-TOOL *load_tools (CHAR *filename) {
+//== load_tools() Build tools list given .tls filename ==
 
+TOOL *load_tools(CHAR *filename)
+{
   FILE  *fp;
   CHAR   help[80],text[80],flagstr[80],idstr[80],*fname;
   TOOL  *info;
@@ -160,8 +169,8 @@ TOOL *load_tools (CHAR *filename) {
 }
 
 
-VOID save_tools (CHAR *filename) {
-
+VOID save_tools(CHAR *filename)
+{
   FILE  *fp;
   CHAR  *fname;
   TOOL  *info;
@@ -219,8 +228,8 @@ VOID save_tools (CHAR *filename) {
 }
 
 
-TOOL *add_tool (TOOL *tool) {
-
+TOOL *add_tool(TOOL *tool)
+{
   TOOL *info;
 
   if(tool) {
@@ -239,8 +248,8 @@ TOOL *add_tool (TOOL *tool) {
 }
 
 
-TOOL *insert_tool (TOOL *tool,TOOL *after) {
-
+TOOL *insert_tool(TOOL *tool,TOOL *after)
+{
   if(tool) {
     if(!toolhead)
       return add_tool(tool);
@@ -259,8 +268,8 @@ TOOL *insert_tool (TOOL *tool,TOOL *after) {
 }
 
 
-TOOL *del_tool (TOOL *tool) {
-
+TOOL *del_tool(TOOL *tool)
+{
   TOOL *info,*prev = NULL;
 
   if(tool) {
@@ -287,8 +296,8 @@ TOOL *del_tool (TOOL *tool) {
 }
 
 
-TOOL *find_tool (USHORT id) {
-
+TOOL *find_tool(USHORT id)
+{
   TOOL *tool;
 
   if(id) {
@@ -303,8 +312,8 @@ TOOL *find_tool (USHORT id) {
 }
 
 
-TOOL *next_tool (TOOL *tool,BOOL skipinvisible) {
-
+TOOL *next_tool(TOOL *tool,BOOL skipinvisible)
+{
   while(tool) {
     if(tool->next && (skipinvisible && (tool->next->flags & T_INVISIBLE)))
       tool = tool->next;
@@ -315,8 +324,8 @@ TOOL *next_tool (TOOL *tool,BOOL skipinvisible) {
 }
 
 
-TOOL *prev_tool (TOOL *tool,BOOL skipinvisible) {
-
+TOOL *prev_tool(TOOL *tool,BOOL skipinvisible)
+{
   TOOL *info;
 
 Again:
@@ -340,8 +349,8 @@ Again:
 }
 
 
-TOOL *swap_tools (TOOL *tool1,TOOL *tool2) {
-
+TOOL *swap_tools(TOOL *tool1,TOOL *tool2)
+{
   TOOL *prev1 = NULL,*prev2 = NULL,*info;
 
   if(tool1 && tool2 && tool1 != tool2) {
@@ -369,8 +378,8 @@ TOOL *swap_tools (TOOL *tool1,TOOL *tool2) {
 }
 
 
-TOOL *free_tools (VOID) {
-
+TOOL *free_tools(VOID)
+{
   TOOL *tool,*next;
 
   tool = toolhead;
@@ -388,9 +397,9 @@ TOOL *free_tools (VOID) {
 }
 
 
-MRESULT EXPENTRY ReOrderToolsProc (HWND hwnd,ULONG msg,MPARAM mp1,
-                                   MPARAM mp2) {
-
+MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
+                                  MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       if(!toolhead || !toolhead->next)
@@ -601,8 +610,8 @@ MRESULT EXPENTRY ReOrderToolsProc (HWND hwnd,ULONG msg,MPARAM mp1,
 }
 
 
-MRESULT EXPENTRY AddToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       WinSetWindowPtr(hwnd,QWL_USER,mp2);
@@ -620,7 +629,6 @@ MRESULT EXPENTRY AddToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       if(!mp2)
         WinCheckButton(hwnd,ADDBTN_VISIBLE,TRUE);
       else {
-
         TOOL *tool = (TOOL *)mp2;
         CHAR  s[33];
 
@@ -880,12 +888,11 @@ MRESULT EXPENTRY AddToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY PickToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY PickToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       if(mp2) {
-
         CHAR s[133];
 
         sprintf(s,
@@ -953,8 +960,8 @@ MRESULT EXPENTRY PickToolProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-MRESULT EXPENTRY ToolIODlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       if(mp2)
@@ -1033,7 +1040,6 @@ MRESULT EXPENTRY ToolIODlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 
     case WM_CONTROL:
       if(SHORT1FROMMP(mp1) == SVBTN_LISTBOX) {
-
         SHORT sSelect;
         CHAR  szBuffer[CCHMAXPATH];
 
