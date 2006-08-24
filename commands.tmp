@@ -64,3 +64,4 @@ Zap all EAs of files (careful!)
 ea.exe /d /y /h /$ /v /#%!
 0
 ;
+; $Id$
