@@ -22,6 +22,7 @@
   17 Dec 05 SHL DriveProc: correct my stupid
   29 May 06 SHL IDM_EDITANYARCHIVER: sanitize code
   17 Jul 06 SHL Use Runtime_Error
+  17 Aug 06 SHL Complain nicer if state name does not exist
 
 ***********************************************************************/
 
@@ -319,7 +320,7 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
       henum = WinBeginEnumWindows(hwndMain);
       while ((hwndC = WinGetNextWindow(henum)) != NULLHANDLE)
       {
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tree = %lu\rExclude = %lu\rFound = %lu",hwndTree,exclude,hwndC);
+        // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tree = %lu\rExclude = %lu\rFound = %lu",hwndTree,exclude,hwndC);
 	if (hwndC != exclude &&
 	    hwndC != hwndTree)
 	{
@@ -348,7 +349,7 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 			       MPVOID))
 		{
 		  MakeValidDir(ret);
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tree = %lu\rExclude = %lu\rFound = %lu\r\"%s\"",hwndTree,exclude,hwndC,ret);
+                  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tree = %lu\rExclude = %lu\rFound = %lu\r\"%s\"",hwndTree,exclude,hwndC,ret);
 		  WinEndEnumWindows(henum);
 		  return hwndC;
 		}
@@ -714,7 +715,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARA
 
   case WM_BEGINDRAG:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%u %s %u",id,(id == CBID_EDIT) ? "TRUE" : "FALSE",WinQueryWindowUShort(WinQueryWindow(hwnd,QW_PARENT),QWS_ID) == MAIN_USERLIST);
+    // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%u %s %u",id,(id == CBID_EDIT) ? "TRUE" : "FALSE",WinQueryWindowUShort(WinQueryWindow(hwnd,QW_PARENT),QWS_ID) == MAIN_USERLIST);
     if (id == CBID_EDIT &&
 	WinQueryWindowUShort(WinQueryWindow(hwnd, QW_PARENT), QWS_ID) ==
 	MAIN_USERLIST)
@@ -725,7 +726,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARA
       *path = 0;
       WinQueryWindowText(hwnd, CCHMAXPATH, path);
       bstrip(path);
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Dragging: %s",path);
+      // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Dragging: %s",path);
       if (*path && !IsRoot(path))
 	DragOne(hwnd, (HWND)0, path, FALSE);
       return 0;
@@ -1453,7 +1454,6 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     tool = find_tool(id);
     if (tool && (tool -> flags & T_DROPABLE) != 0)
     {
-
       LISTINFO *li;
       CNRDRAGINFO cdi;
 
@@ -1463,7 +1463,6 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	tool -> flags &= (~T_EMPHASIZED);
       }
       memset(&cdi, 0, sizeof(cdi));
-      cdi.pRecord = NULL;
       cdi.pDragInfo = mp1;
       li = DoFileDrop(hwnd,
 		      NULL,
@@ -1477,7 +1476,6 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  FreeListInfo(li);
 	else
 	{
-
 	  HWND hwndActive;
 
 	  hwndActive = TopWindow(hwndMain, (HWND)0);
@@ -5044,8 +5042,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       bstrip(name);
       if (*name)
       {
-	if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE)
-	{
+	if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
+	  // Save
 	  if (SaveDirCnrState(hwnd, name))
 	  {
 	    if (add_setup(name))
@@ -5056,12 +5054,10 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      save_setups();
 	    }
 	  }
-	  WinSetWindowText(hwndStatelist,
-			   GetPString(IDS_STATETEXT));
+	  WinSetWindowText(hwndStatelist,GetPString(IDS_STATETEXT));
 	}
-	else
-	{
-
+	else {
+	  // Delete
 	  ULONG numsaves = 0, size, x;
 	  CHAR s[120];
 
@@ -5069,8 +5065,12 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    save_setups();
 	  sprintf(s, "%s.NumDirsLastTime", name);
 	  size = sizeof(ULONG);
-	  if (!PrfQueryProfileData(fmprof, FM3Str, s, (PVOID)&numsaves, &size))
-            Win_Error2(hwnd,hwnd,__FILE__,__LINE__,IDS_PRFQUERYPROFILEDATA);
+	  if (!PrfQueryProfileData(fmprof, FM3Str, s, (PVOID)&numsaves, &size)) {
+            saymsg(MB_ENTER | MB_ICONASTERISK,
+                   hwnd,
+                   GetPString(IDS_WARNINGTEXT),
+                   GetPString(IDS_DOESNTEXISTTEXT), name);
+	  }
 	  else if (!size)
             Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	  else {
