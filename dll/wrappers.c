@@ -9,6 +9,7 @@
 
   22 Jul 06 SHL Baseline
   29 Jul 06 SHL Add xgets_stripped
+  18 Aug 06 SHL Correct Runtime_Error line number report
 
 ***********************************************************************/
 
@@ -43,7 +44,7 @@ PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE *fp, PCSZ pszSrcFile, UINT uiLineN
 
 PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE *fp, PCSZ pszSrcFile, UINT uiLineNumber)
 {
-  PSZ psz = xfgets(pszBuf,cMaxBytes,fp,pszSrcFile,__LINE__);
+  PSZ psz = xfgets(pszBuf,cMaxBytes,fp,pszSrcFile,uiLineNumber);
   if (psz)
     bstripcr(psz);
   return psz;
