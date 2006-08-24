@@ -19,6 +19,7 @@
   13 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Drop unreachable CN_... code
   29 Jul 06 SHL Use xfgets_bstripcr
+  15 Aug 06 SHL Turn off hide not selected on dir change
 
 ***********************************************************************/
 
@@ -306,10 +307,7 @@ MRESULT EXPENTRY CFileDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       break;
 
     case WM_ADJUSTWINDOWPOS:
-      PostMsg(hwnd,
-              UM_SETDIR,
-              MPVOID,
-              MPVOID);
+      PostMsg(hwnd,UM_SETDIR,MPVOID,MPVOID);
       break;
 
     case UM_SETDIR:
@@ -1645,23 +1643,20 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         WinDismissDlg(hwnd,0);
       }
       else {
+        CHAR s[81];
         cmp->filling = FALSE;
         WinEnableWindow(hwndLeft,TRUE);
         WinEnableWindow(hwndRight,TRUE);
         WinEnableWindowUpdate(hwndLeft,TRUE);
         WinEnableWindowUpdate(hwndRight,TRUE);
-        {
-          CHAR s[81];
-
-          sprintf(s," %d",cmp->totalleft);
-          WinSetDlgItemText(hwnd,COMP_TOTALLEFT,s);
-          sprintf(s," %d",cmp->totalright);
-          WinSetDlgItemText(hwnd,COMP_TOTALRIGHT,s);
-          sprintf(s," %d",cmp->selleft);
-          WinSetDlgItemText(hwnd,COMP_SELLEFT,s);
-          sprintf(s," %d",cmp->selright);
-          WinSetDlgItemText(hwnd,COMP_SELRIGHT,s);
-        }
+        sprintf(s," %d",cmp->totalleft);
+        WinSetDlgItemText(hwnd,COMP_TOTALLEFT,s);
+        sprintf(s," %d",cmp->totalright);
+        WinSetDlgItemText(hwnd,COMP_TOTALRIGHT,s);
+        sprintf(s," %d",cmp->selleft);
+        WinSetDlgItemText(hwnd,COMP_SELLEFT,s);
+        sprintf(s," %d",cmp->selright);
+        WinSetDlgItemText(hwnd,COMP_SELRIGHT,s);
         WinEnableWindow(WinWindowFromID(hwnd,DID_OK),TRUE);
         WinEnableWindow(WinWindowFromID(hwnd,DID_CANCEL),TRUE);
         WinEnableWindow(WinWindowFromID(hwnd,COMP_COLLECT),TRUE);
@@ -1942,6 +1937,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         cnri.pszCnrTitle = cmp->rightdir;
         WinSendDlgItemMsg(hwnd,COMP_RIGHTDIR,CM_SETCNRINFO,MPFROMP(&cnri),
                           MPFROMLONG(CMA_CNRTITLE | CMA_FLWINDOWATTR));
+        WinCheckButton(hwnd,COMP_HIDENOTSELECTED,0);
         cmp->filling = TRUE;
         forthread = xmalloc(sizeof(COMPARE),pszSrcFile,__LINE__);
         if(!forthread)
@@ -2002,8 +1998,8 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
     case UM_FILTER:
       cmp = INSTDATA(hwnd);
-      if(cmp) {
-        if(mp1) {
+      if (cmp) {
+        if (mp1) {
           DosEnterCritSec();
            SetMask((CHAR *)mp1,&cmp->dcd.mask);
           DosExitCritSec();
@@ -2012,7 +2008,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         WinSendMsg(hwndLeft,CM_FILTER,MPFROMP(Filter),MPFROMP(&cmp->dcd.mask));
         WinSendMsg(hwndRight,CM_FILTER,MPFROMP(Filter),MPFROMP(&cmp->dcd.mask));
         cmp->dcd.suspendview = 0;
-        if(*cmp->dcd.mask.szMask)
+        if (*cmp->dcd.mask.szMask)
           WinSetDlgItemText(hwnd,COMP_NOTE,
                             GetPString(IDS_COMPREADYFILTEREDTEXT));
         else
@@ -2060,7 +2056,7 @@ MRESULT EXPENTRY CompareDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           WinSendMsg(hwndRight,CM_FILTER,MPFROMP(Filter),MPFROMP(&cmp->dcd.mask));
 	}
         cmp->dcd.suspendview = 0;
-        if(*cmp->dcd.mask.szMask)
+        if (*cmp->dcd.mask.szMask)
           WinSetDlgItemText(hwnd,COMP_NOTE,
                             GetPString(IDS_COMPREADYFILTEREDTEXT));
         else
