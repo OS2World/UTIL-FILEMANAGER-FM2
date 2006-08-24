@@ -14,6 +14,7 @@
   23 May 05 SHL Use QWL_USER
   29 May 06 SHL Sync with archiver.bb2 mods
   22 Jul 06 SHL Check more run time errors
+  15 Aug 06 SHL Use Runtime_Error more
 
 ***********************************************************************/
 
@@ -215,6 +216,7 @@ BOOL PutComments (HWND hwnd,CHAR *filename,CHAR *comments)
   return WriteEA(hwnd,filename,".COMMENTS",EAT_MVMT,comments);
 }
 
+static PSZ pszBufOvfMsg = "Buffer overflow";
 
 ULONG CreateHexDump (CHAR *pchInBuf,ULONG cbInBuf,
 		     CHAR *pchOutBuf,ULONG cbOutBuf,
@@ -231,7 +233,7 @@ ULONG CreateHexDump (CHAR *pchInBuf,ULONG cbInBuf,
       *pchOut++ = '\n';
     while (ibIn < cbInBuf) {
       if (pchOut - pchOutBuf + cbOutLine >= cbOutBuf) {
-        saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"hex buf ovf");
+        Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
 	break;
       }
       pchReset = pchIn;
@@ -402,7 +404,7 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                         } // while
                         *dest = 0;
 			if (dest - obuff >= obufflen)
-                          saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"obuff ovf");
+                          Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
                       }
                       if(*obuff)
                         WinSetWindowText(hwndAutoview,obuff);
@@ -502,7 +504,7 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                     x++;
                   } // while
 		  if (p - buff >= bufflen)
-                    saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"buff ovf");
+                    Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
                   if(*buff)
                     WinSetWindowText(hwndAutoview,buff);
                   free(buff);
@@ -585,7 +587,7 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           data += sizeof(USHORT);
                         } // while
 		        if (p - buff >= 65536) {
-                          saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"eabuff ovf");
+                          Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
 			  buff[65535] = 0;	// Try to stay alive
 			  break;
 		        }
@@ -686,10 +688,7 @@ MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         if (!hwndAutoObj) {
 	  if (_beginthread(MakeAutoWin,NULL,65536,(PVOID)hwnd) == -1) {
             Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            PostMsg(hwnd,
-                    UM_CLOSE,
-                    MPVOID,
-                    MPVOID);
+            PostMsg(hwnd,UM_CLOSE,MPVOID,MPVOID);
 	  }
 	}
         mr = PFNWPStatic(hwnd,msg,mp1,mp2);

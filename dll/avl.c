@@ -22,6 +22,7 @@
   26 Jun 06 SHL load_archivers: remember where comments are
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
+  15 Aug 06 SHL Use Runtime_Error more
 
 ***********************************************************************/
 
@@ -727,6 +728,8 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
 
 //=== SBoxDlgProc() Select archiver to use or edit, supports list reorder too ===
 
+static PSZ pszCantFindMsg = "Can't find item %d";
+
 MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   ARC_TYPE **ppatReturn;		// Where to return selected archiver
@@ -881,7 +884,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    if (!pat) {
 	      if (arcsighead)
-		saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u", sSelect, pszSrcFile, __LINE__);
+                Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
 	      else
 		arcsighead = ad.info;
 	    }
@@ -920,9 +923,8 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
 	  ; // Find self
 
-	if (!pat) {
-	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u",sSelect, pszSrcFile, __LINE__);
-	}
+	if (!pat)
+          Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
 	else {
 	  // Delete current
 	  if (pat->prev) {
@@ -961,9 +963,8 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// Find self - assume all archivers listed since we are editing
 	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
 	  ; // Find self
-	if (!pat || !pat->prev) {
-	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d at %s::%u",sSelect, pszSrcFile, __LINE__);
-	}
+	if (!pat || !pat->prev)
+          Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
 	else {
 	  ARC_TYPE *patGDad;
 	  ARC_TYPE *patDad;
@@ -1008,9 +1009,8 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// Find self - assume all archivers listed since we are editing
 	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
 	  ; // Find self
-	if (!pat || !pat->next) {
-	  saymsg(0,NULLHANDLE,"*Debug*","Can not find self at %d/%d at %s::%u",sSelect, sItemCount, pszSrcFile, __LINE__);
-	}
+	if (!pat || !pat->next) 
+          Runtime_Error(pszSrcFile, __LINE__, "Can't find item %d of %d", sSelect, sItemCount);
 	else {
 	  ARC_TYPE *patDad;
 	  ARC_TYPE *patChild;
