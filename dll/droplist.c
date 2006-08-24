@@ -264,13 +264,13 @@ LISTINFO * DoFileDrop (HWND hwndCnr, CHAR *directory, BOOL arcfilesok,
   pDItem = DrgQueryDragitemPtr(pDInfo,0L);
   if(Operation == DO_MOVE &&
      !(pDItem->fsSupportedOps & DO_MOVEABLE)) {
-    saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"forcing DO_COPY");	// SHL
+    saymsg(MB_ENTER,HWND_DESKTOP,GetPString(IDS_WARNINGTEXT),
+           GetPString(IDS_FORCINGCOPYTEXT));
     Operation = DO_COPY;
   }
   numitems = DrgQueryDragitemCount(pDInfo);
   while(curitem < numitems) {
-    pDItem = DrgQueryDragitemPtr(pDInfo,
-                                 curitem);
+    pDItem = DrgQueryDragitemPtr(pDInfo,curitem);
     if(!pDItem)
       break;
 
@@ -283,8 +283,9 @@ LISTINFO * DoFileDrop (HWND hwndCnr, CHAR *directory, BOOL arcfilesok,
       else if(pDItem->fsSupportedOps & DO_LINKABLE)
         Operation = DO_LINK;
     }
-    else {  /* ignore object if selected command not allowed for it */
-      switch(Operation) {
+    else {
+      /* ignore object if selected command not allowed for it */
+      switch (Operation) {
         case DO_MOVE:
           if(pDItem->fsSupportedOps & DO_MOVEABLE)
             goto Okay;
@@ -298,6 +299,7 @@ LISTINFO * DoFileDrop (HWND hwndCnr, CHAR *directory, BOOL arcfilesok,
             goto Okay;
           break;
       }
+      // Fail request
       DrgSendTransferMsg(pDItem->hwndItem,
                          DM_ENDCONVERSATION,
                          MPFROMLONG(pDItem->ulItemID),

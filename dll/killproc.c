@@ -179,6 +179,7 @@ VOID FillKillList (VOID *arg)
     DosDupHandle(newstdout,&oldstdout);
     DosClose(newstdout);
     fclose(fp);
+    // fixme to be gone?
     if(rc == -1) {
       saymsg(MB_CANCEL,
              hwnd,

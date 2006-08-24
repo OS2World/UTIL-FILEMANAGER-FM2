@@ -18,6 +18,7 @@
   26 Jul 06 SHL Use chop_at_crnl
   27 Jul 06 SHL Comments, apply indent
   29 Jul 06 SHL Use xfgets_bstripcr
+  16 Aug 06 SHL Comments
 
 ***********************************************************************/
 
@@ -815,6 +816,8 @@ VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL enable)
 	     MPFROM2SHORT(MIA_DISABLED, ((enable == FALSE) * MIA_DISABLED)));
 }
 
+//== ViewHelp() invoke view.exe, return TRUE if OK ==
+
 BOOL ViewHelp(CHAR * filename)
 {
   CHAR s[CCHMAXPATH + 81];
@@ -836,6 +839,8 @@ BOOL ViewHelp(CHAR * filename)
 
   return (ret != -1);
 }
+
+//== ExecFile() run file, return 1 if OK 0 if skipped -1 if can't run ==
 
 INT ExecFile(HWND hwnd, CHAR * filename)
 {
@@ -873,9 +878,10 @@ INT ExecFile(HWND hwnd, CHAR * filename)
 		  EXEC_FRAME, &ex);
   if (ret == 1) {
     lastflags = ex.flags;
-    return (runemf2(ex.flags, hwnd, path,
-		    (*ex.environment) ? ex.environment : NULL,
-		    "%s", cl) != -1);
+    return runemf2(ex.flags, hwnd, path,
+		   (*ex.environment) ? ex.environment : NULL,
+		   "%s",
+		   cl) != -1;
   }
   else if (ret != 0)
     return -1;

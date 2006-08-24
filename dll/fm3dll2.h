@@ -12,6 +12,7 @@
   04 Nov 03 SHL Drop obsoletes
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   06 Jul 06 SHL Add Select Same Content support
+  23 Aug 06 SHL Comments
 
 ***********************************************************************/
 
@@ -260,16 +261,16 @@
 #define IDM_INFO            1010
 #define IDM_COLLECT         1011
 #define IDM_OPENSUBMENU     1012
-  #define IDM_OPENSETTINGS  1013
-  #define IDM_OPENICON      1014
-  #define IDM_OPENDETAILS   1015
-  #define IDM_OPENTREE      1016
-  #define IDM_OPENDEFAULT   1017
-  #define IDM_OPENWINDOW    1018
-  #define IDM_OPENWALK      1019
+#define IDM_OPENSETTINGS    1013
+#define IDM_OPENICON        1014
+#define IDM_OPENDETAILS     1015
+#define IDM_OPENTREE        1016
+#define IDM_OPENDEFAULT     1017
+#define IDM_OPENWINDOW      1018
+#define IDM_OPENWALK        1019
 #define IDM_OBJECTSUBMENU   1020
-  #define IDM_SHADOW        1021
-  #define IDM_OBJECT        1022
+#define IDM_SHADOW          1021
+#define IDM_OBJECT          1022
 #define IDM_VIEW            1023
 #define IDM_EDIT            1024
 #define IDM_SUBJECT         1025
@@ -422,41 +423,41 @@
 #define IDM_EDITASSOC       3001
 #define IDM_TOOLBAR         3002
 #define IDM_SORTSUBMENU     3003
- #define IDM_SORTNAME       3004
- #define IDM_SORTFILENAME   3005
- #define IDM_SORTSIZE       3006
- #define IDM_SORTEASIZE     3007
- #define IDM_SORTFIRST      3008
- #define IDM_SORTLAST       3009
- #define IDM_SORTLWDATE     3010
- #define IDM_SORTLADATE     3011
- #define IDM_SORTCRDATE     3012
- #define IDM_SORTDIRSFIRST  3013
- #define IDM_SORTDIRSLAST   3014
- #define IDM_SORTREVERSE    3015
- #define IDM_SORTSMARTNAME  3016
- #define IDM_SORTNONE       3017
- #define IDM_SORTSUBJECT    3018
+#define IDM_SORTNAME        3004
+#define IDM_SORTFILENAME    3005
+#define IDM_SORTSIZE        3006
+#define IDM_SORTEASIZE      3007
+#define IDM_SORTFIRST       3008
+#define IDM_SORTLAST        3009
+#define IDM_SORTLWDATE      3010
+#define IDM_SORTLADATE      3011
+#define IDM_SORTCRDATE      3012
+#define IDM_SORTDIRSFIRST   3013
+#define IDM_SORTDIRSLAST    3014
+#define IDM_SORTREVERSE     3015
+#define IDM_SORTSMARTNAME   3016
+#define IDM_SORTNONE        3017
+#define IDM_SORTSUBJECT     3018
 #define IDM_FONTPALETTE     3020
 #define IDM_COLORPALETTE    3021
 #define IDM_PROGSETUP       3022
 #define IDM_TOGGLESSUBMENU  3033
- #define IDM_FOLLOWTREE     3034
- #define IDM_LOADSUBJECTS   3035
- #define IDM_LOADLONGNAMES  3036
- #define IDM_DONTMOVEMOUSE  3037
- #define IDM_UNHILITE       3038
- #define IDM_CONFIRMDELETE  3039
- #define IDM_SYNCUPDATES    3040
- #define IDM_FORCEUPPER     3041
- #define IDM_FORCELOWER     3042
- #define IDM_VERIFYWRITES   3043
- #define IDM_NOICONSFILES   3044
- #define IDM_NOICONSDIRS    3045
- #define IDM_DCOPENS        3046
- #define IDM_LINKSETSICON   3047
- #define IDM_TEXTTOOLS      3048
- #define IDM_TOOLTITLES     3049
+#define IDM_FOLLOWTREE      3034
+#define IDM_LOADSUBJECTS    3035
+#define IDM_LOADLONGNAMES   3036
+#define IDM_DONTMOVEMOUSE   3037
+#define IDM_UNHILITE        3038
+#define IDM_CONFIRMDELETE   3039
+#define IDM_SYNCUPDATES     3040
+#define IDM_FORCEUPPER      3041
+#define IDM_FORCELOWER      3042
+#define IDM_VERIFYWRITES    3043
+#define IDM_NOICONSFILES    3044
+#define IDM_NOICONSDIRS     3045
+#define IDM_DCOPENS         3046
+#define IDM_LINKSETSICON    3047
+#define IDM_TEXTTOOLS       3048
+#define IDM_TOOLTITLES      3049
 #define IDM_PRINTER         3050
 #define IDM_EDITANYARCHIVER 3051
 #define IDM_SCHEMEPALETTE   3052
@@ -563,8 +564,8 @@
 #define IDM_IDEALSIZE       9011
 #define IDM_SWITCHLIST      9012
 #define IDM_TILEMENU        9013
-#define IDM_WINDOWSTART     9100
-#define IDM_SWITCHSTART     9500
+#define IDM_WINDOWSTART     9100        /* Allow for 499 windows */
+#define IDM_SWITCHSTART     9500        /* Allow for 499 switch entries */
 
 #define IDM_PARENT          10000
 #define IDM_PREVIOUS        10001
@@ -572,6 +573,7 @@
 #define IDM_SWITCH          10003
 #define IDM_COLLAPSE        10004
 #define IDM_EXPAND          10005
+
 #define IDM_SELECTALL       10006
 #define IDM_DESELECTALL     10007
 #define IDM_SELECTALLFILES  10008
@@ -609,39 +611,38 @@
 #define CHECK_FILES 1
 
 #ifndef MM_PORTHOLEINIT
-  #define MM_PORTHOLEINIT   0x01fb
+#  define MM_PORTHOLEINIT   0x01fb
 #endif
 #ifndef MS_POPUP
-  #define MS_POPUP          0x00000010L
+#  define MS_POPUP          0x00000010L
 #endif
 #ifndef CCS_MINIICONS
-  #define CCS_MINIICONS     0x0800
+#  define CCS_MINIICONS     0x0800
 #endif
 #ifndef CRA_SOURCE
-  #define CRA_SOURCE        0x00004000
+#  define CRA_SOURCE        0x00004000
 #endif
 #ifndef CV_EXACTMATCH
-  #define CV_EXACTMATCH     0x10000000
+#  define CV_EXACTMATCH     0x10000000
 #endif
 #ifndef CBN_SETFOCUS
-  #define CBN_SETFOCUS      20
+#  define CBN_SETFOCUS      20
 #endif
 #ifndef CBN_KILLFOCUS
-  #define CBN_KILLFOCUS     21
+#  define CBN_KILLFOCUS     21
 #endif
 #ifndef CN_VERIFYEDIT
-  #define CN_VERIFYEDIT     134
+#  define CN_VERIFYEDIT     134
 #endif
 #ifndef CN_PICKUP
-  #define CN_PICKUP         135
+#  define CN_PICKUP         135
 #endif
 #ifndef CN_DROPNOTIFY
-  #define CN_DROPNOTIFY     136
+#  define CN_DROPNOTIFY     136
 #endif
 #ifndef CN_GRIDRESIZED
-  #define CN_GRIDRESIZED    137
+#  define CN_GRIDRESIZED    137
 #endif
 #ifndef BKS_MERLINSTYLE
-  #define BKS_MERLINSTYLE   0x0800
+#  define BKS_MERLINSTYLE   0x0800
 #endif
-

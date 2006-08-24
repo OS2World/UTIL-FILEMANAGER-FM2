@@ -1,11 +1,26 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Directory containers
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H. Levine
+
+  23 Aug 06 SHL Comments
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
-
 #include <os2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
 #include <ctype.h>
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -15,8 +30,8 @@
 #pragma alloc_text(GETNAMES,insert_filename,export_filename,CustomFileDlg)
 
 
-MRESULT EXPENTRY CustomFileDlg (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
-
+MRESULT EXPENTRY CustomFileDlg(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+{
   switch(msg) {
     case WM_INITDLG:
       if(!loadedudirs)
@@ -210,8 +225,8 @@ MRESULT EXPENTRY CustomFileDlg (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
 }
 
 
-BOOL insert_filename (HWND hwnd,CHAR *filename,INT loadit, BOOL newok) {
-
+BOOL insert_filename(HWND hwnd,CHAR *filename,INT loadit, BOOL newok)
+{
   FILEDLG     fdlg;
   FILESTATUS3 fsa;
   CHAR        drive[3],*pdrive = drive,*p;
@@ -285,7 +300,8 @@ BOOL insert_filename (HWND hwnd,CHAR *filename,INT loadit, BOOL newok) {
                        FIL_STANDARD,
                        &fsa,
                        sizeof(fsa))) {
-    if(fsa.attrFile & FILE_DIRECTORY) {   /* device or directory */
+    if(fsa.attrFile & FILE_DIRECTORY) {
+      /* device or directory */
       saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
              hwnd,
              filename,
@@ -330,8 +346,8 @@ BOOL insert_filename (HWND hwnd,CHAR *filename,INT loadit, BOOL newok) {
 }
 
 
-BOOL export_filename (HWND hwnd,CHAR *filename,INT overwrite) {
-
+BOOL export_filename(HWND hwnd,CHAR *filename,INT overwrite)
+{
   FILEDLG     fdlg;
   FILESTATUS3 fsa;
   CHAR        drive[3],*pdrive = drive,*p;
