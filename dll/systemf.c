@@ -13,6 +13,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Use convert_nl_to_nul
+  15 Aug 06 SHL More error popups
 
 ***********************************************************************/
 
@@ -48,11 +49,9 @@ BOOL ShowSession(HWND hwnd, PID pid)
   ULONG rc;
 
   hswitch = WinQuerySwitchHandle((pid) ? (HWND)0 : hwnd, pid);
-  if (hswitch)
-  {
+  if (hswitch) {
     rc = WinQuerySwitchEntry(hswitch, &swctl);
-    if (!rc)
-    {
+    if (!rc) {
       if (swctl.idProcess == pid && swctl.uchVisibility == SWL_VISIBLE)
 	rc = WinSwitchToProgram(hswitch);
       if (!rc)
@@ -74,16 +73,17 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
   register int x;
   BOOL spaces;
 
-  if (!command || !*command)
+  if (!command || !*command) {
+    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     return -1;
+  }
   *listfile = 0;
   bstrip(command);
 
   *path = 0;
   if (tpath && *tpath)
     strcpy(path, tpath);
-  else if (*command != '<' || !strchr(command, '>'))
-  {
+  else if (*command != '<' || !strchr(command, '>')) {
     strcpy(path, command + (*command == '"'));
     if (*command == '\"')
       p = strchr(path, '\"');
@@ -94,10 +94,8 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
     p = strrchr(path, '\\');
     if (!p)
       p = strrchr(path, ':');
-    if (p)
-    {
-      if (*p == ':')
-      {
+    if (p) {
+      if (*p == ':') {
 	p++;
 	*p = '\\';
 	p++;
@@ -107,17 +105,14 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
     else
       *path = 0;
   }
-  if (!*path)
-  {
+  if (!*path) {
     if (list && list[0])
       strcpy(path, list[0]);
     p = strrchr(path, '\\');
     if (!p)
       p = strrchr(path, ':');
-    if (p)
-    {
-      if (*p == ':')
-      {
+    if (p) {
+      if (*p == ':') {
 	p++;
 	*p = '\\';
 	p++;
@@ -133,10 +128,8 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
   p = strrchr(modpath, '\\');
   if (!p)
     p = strrchr(modpath, ':');
-  if (p)
-  {
-    if (*p == ':')
-    {
+  if (p) {
+    if (*p == ':') {
       p++;
       *p = '\\';
       p++;
@@ -160,18 +153,12 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 
   pp = commandline;
   *commandline = 0;
-  while (*p)
-  {
-    if (*p == '%')
-    {
-      switch (*(p + 1))
-      {
+  while (*p) {
+    if (*p == '%') {
+      switch (*(p + 1)) {
       case '!':			/* write list to file, add filename */
-	if (list)
-	{
-	  if (!*listfile)
-	  {
-
+	if (list) {
+	  if (!*listfile) {
 	    FILE *fp;
 
 	    save_dir2(listfile);
@@ -180,8 +167,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    sprintf(&listfile[strlen(listfile)], "%s%03x",
 		    LISTTEMPROOT, (clock() & 4095L));
 	    fp = xfopen(listfile, "w",pszSrcFile,__LINE__);
-	    if (fp)
-	    {
+	    if (fp) {
 	      for (x = 0; list[x]; x++)
 	      {
 		fputs(list[x], fp);
@@ -201,8 +187,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	{
 	  char *env = GetCmdSpec(FALSE);
 
-	  if (needs_quoting(env) && !strchr(env, '\"'))
-	  {
+	  if (needs_quoting(env) && !strchr(env, '\"')) {
 	    *pp = '\"';
 	    pp++;
 	    spaces = TRUE;
@@ -212,8 +197,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	  strcpy(pp, env);
 	  p += 2;
 	  pp += strlen(env);
-	  if (spaces)
-	  {
+	  if (spaces) {
 	    *pp = '\"';
 	    pp++;
 	  }
@@ -221,8 +205,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	break;
 
       case 't':			/* add Target directory */
-	if (needs_quoting(targetdir) && !strchr(targetdir, '\"'))
-	{
+	if (needs_quoting(targetdir) && !strchr(targetdir, '\"')) {
 	  *pp = '\"';
 	  pp++;
 	  spaces = TRUE;
@@ -232,8 +215,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	strcpy(pp, targetdir);
 	p += 2;
 	pp += strlen(targetdir);
-	if (spaces)
-	{
+	if (spaces) {
 	  *pp = '\"';
 	  pp++;
 	}
@@ -242,9 +224,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
       case '$':			/* add drive letter */
 	if (drive)
 	  *pp = drive;
-	else
-	{
-
+	else {
 	  ULONG ulDriveNum = 3L, ulDriveMap;
 
 	  DosQCurDisk(&ulDriveNum, &ulDriveMap);
@@ -256,30 +236,24 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 
       case 'U':			/* add path of first list component */
       case 'u':
-	if (*modpath)
-	{
-	  if (needs_quoting(modpath) && !strchr(modpath, '\"'))
-	  {
+	if (*modpath) {
+	  if (needs_quoting(modpath) && !strchr(modpath, '\"')) {
 	    spaces = TRUE;
 	    *pp = '\"';
 	    pp++;
 	  }
 	  else
 	    spaces = FALSE;
-	  if (*(p + 1) == 'u')
-	  {
+	  if (*(p + 1) == 'u') {
 	    strcpy(pp, modpath);
 	    pp += strlen(modpath);
 	  }
-	  else
-	  {
+	  else {
 	    strcpy(pp, modpath + 2);
 	    pp += strlen(modpath + 2);
 	  }
-	  if (spaces)
-	  {
-	    if (modpath[strlen(modpath) - 1] == '\\')
-	    {
+	  if (spaces) {
+	    if (modpath[strlen(modpath) - 1] == '\\') {
 	      *pp = '\\';
 	      pp++;
 	    }
@@ -287,14 +261,11 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    pp++;
 	  }
 	}
-	else
-	{
-
+	else {
 	  char temp[CCHMAXPATH];
 
 	  save_dir2(temp);
-	  if (needs_quoting(temp) && !strchr(temp, '\"'))
-	  {
+	  if (needs_quoting(temp) && !strchr(temp, '\"')) {
 	    spaces = TRUE;
 	    *pp = '\"';
 	    pp++;
@@ -303,10 +274,8 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    spaces = FALSE;
 	  strcpy(pp, temp);
 	  pp += strlen(temp);
-	  if (spaces)
-	  {
-	    if (temp[strlen(temp) - 1] == '\\')
-	    {
+	  if (spaces) {
+	    if (temp[strlen(temp) - 1] == '\\') {
 	      *pp = '\\';
 	      pp++;
 	    }
@@ -319,30 +288,24 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 
       case 'P':			/* add path of execution */
       case 'p':
-	if (*path)
-	{
-	  if (needs_quoting(path) && !strchr(path, '\"'))
-	  {
+	if (*path) {
+	  if (needs_quoting(path) && !strchr(path, '\"')) {
 	    spaces = TRUE;
 	    *pp = '\"';
 	    pp++;
 	  }
 	  else
 	    spaces = FALSE;
-	  if (*(p + 1) == 'p')
-	  {
+	  if (*(p + 1) == 'p') {
 	    strcpy(pp, path);
 	    pp += strlen(path);
 	  }
-	  else
-	  {
+	  else {
 	    strcpy(pp, path + 2);
 	    pp += strlen(path + 2);
 	  }
-	  if (spaces)
-	  {
-	    if (path[strlen(path) - 1] == '\\')
-	    {
+	  if (spaces) {
+	    if (path[strlen(path) - 1] == '\\') {
 	      *pp = '\\';
 	      pp++;
 	    }
@@ -350,14 +313,11 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    pp++;
 	  }
 	}
-	else
-	{
-
+	else {
 	  char temp[CCHMAXPATH];
 
 	  save_dir2(temp);
-	  if (needs_quoting(temp) && !strchr(temp, '\"'))
-	  {
+	  if (needs_quoting(temp) && !strchr(temp, '\"')) {
 	    spaces = TRUE;
 	    *pp = '\"';
 	    pp++;
@@ -366,10 +326,8 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    spaces = FALSE;
 	  strcpy(pp, temp);
 	  pp += strlen(temp);
-	  if (spaces)
-	  {
-	    if (temp[strlen(temp) - 1] == '\\')
-	    {
+	  if (spaces) {
+	    if (temp[strlen(temp) - 1] == '\\') {
 	      *pp = '\\';
 	      pp++;
 	    }
@@ -381,9 +339,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	break;
 
       case 'D':
-	if (hwndMain)
-	{
-
+	if (hwndMain) {
 	  PCNRITEM pci;
 
 	  pci = (PCNRITEM) WinSendMsg(WinWindowFromID(WinWindowFromID(
@@ -391,8 +347,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 				      CM_QUERYRECORDEMPHASIS,
 				      MPFROMLONG(CMA_FIRST),
 				      MPFROMSHORT(CRA_CURSORED));
-	  if (pci && (int) pci != -1 && *pci -> szFileName)
-	  {
+	  if (pci && (int) pci != -1 && *pci -> szFileName) {
 	    if (needs_quoting(pci -> szFileName) &&
 		!strchr(pci -> szFileName, '\"'))
 	    {
@@ -404,8 +359,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	      spaces = FALSE;
 	    strcpy(pp, pci -> szFileName);
 	    pp += strlen(pci -> szFileName);
-	    if (spaces)
-	    {
+	    if (spaces) {
 	      *pp = '\"';
 	      pp++;
 	    }
@@ -415,9 +369,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	break;
 
       case 'd':
-	if (hwndMain)
-	{
-
+	if (hwndMain) {
 	  HENUM henum;
 	  char retstr[CCHMAXPATH];
 	  HWND hwndC, hwndDir;
@@ -425,31 +377,23 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	  BOOL first = TRUE;
 
 	  henum = WinBeginEnumWindows(hwndMain);
-	  while ((hwndC = WinGetNextWindow(henum)) != NULLHANDLE)
-	  {
-	    if (hwndC != hwndTree)
-	    {
+	  while ((hwndC = WinGetNextWindow(henum)) != NULLHANDLE) {
+	    if (hwndC != hwndTree) {
 	      id = WinQueryWindowUShort(hwndC, QWS_ID);
-	      if (id)
-	      {
+	      if (id) {
 		hwndDir = WinWindowFromID(hwndC, FID_CLIENT);
-		if (hwndDir)
-		{
+		if (hwndDir) {
 		  hwndDir = WinWindowFromID(hwndDir, DIR_CNR);
-		  if (hwndDir)
-		  {
+		  if (hwndDir) {
 		    *retstr = 0;
 		    WinSendMsg(hwndC, UM_CONTAINERDIR, MPFROMP(retstr), MPVOID);
-		    if (*retstr)
-		    {
-		      if (!first)
-		      {
+		    if (*retstr) {
+		      if (!first) {
 			*pp = ' ';
 			pp++;
 		      }
 		      first = FALSE;
-		      if (needs_quoting(retstr) && !strchr(retstr, '\"'))
-		      {
+		      if (needs_quoting(retstr) && !strchr(retstr, '\"')) {
 			*pp = '\"';
 			pp++;
 			spaces = TRUE;
@@ -458,8 +402,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 			spaces = FALSE;
 		      strcpy(pp, retstr);
 		      pp += strlen(retstr);
-		      if (spaces)
-		      {
+		      if (spaces) {
 			*pp = '\"';
 			pp++;
 		      }
@@ -487,8 +430,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
       case 'f':
       case 'a':
       case 'e':
-	if (list)
-	{
+	if (list) {
 	  for (x = 0; list[x]; x++)
 	  {
 	    file = strrchr(list[x], '\\');
@@ -502,19 +444,16 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    dot = ext;
 	    if (ext)
 	      ext++;
-	    switch (*(p + 1))
-	    {
+	    switch (*(p + 1)) {
 	    case 'R':
 	    case 'r':
 	      if (pp + strlen(list[x]) > commandline + 1250)
 		goto BreakOut;
-	      if (*(p + 1) == 'r')
-	      {
+	      if (*(p + 1) == 'r') {
 		strcpy(pp, list[x]);
 		pp += strlen(list[x]);
 	      }
-	      else
-	      {
+	      else {
 		strcpy(pp, list[x] + 2);
 		pp += strlen(list[x] + 2);
 	      }
@@ -526,8 +465,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 		*dot = 0;
 	      if (pp + strlen(file) > commandline + 1250)
 		goto BreakOut;
-	      if (needs_quoting(file))
-	      {
+	      if (needs_quoting(file)) {
 		spaces = TRUE;
 		*pp = '\"';
 		pp++;
@@ -538,10 +476,8 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	      pp += strlen(file);
 	      if (*(p + 1) == 'F' && dot)
 		*dot = '.';
-	      if (spaces)
-	      {
-		if (*(pp - 1) != '\"')
-		{
+	      if (spaces) {
+		if (*(pp - 1) != '\"') {
 		  *pp = '\"';
 		  pp++;
 		}
@@ -552,28 +488,23 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    case 'a':
 	      if (pp + strlen(list[x]) > commandline + 1250)
 		goto BreakOut;
-	      if (needs_quoting(list[x]) && !strchr(list[x], '\"'))
-	      {
+	      if (needs_quoting(list[x]) && !strchr(list[x], '\"')) {
 		spaces = TRUE;
 		*pp = '\"';
 		pp++;
 	      }
 	      else
 		spaces = FALSE;
-	      if (*(p + 1) == 'a')
-	      {
+	      if (*(p + 1) == 'a') {
 		strcpy(pp, list[x]);
 		pp += strlen(list[x]);
 	      }
-	      else
-	      {
+	      else {
 		strcpy(pp, list[x] + 2);
 		pp += strlen(list[x] + 2);
 	      }
-	      if (spaces)
-	      {
-		if (list[x][strlen(list[x]) - 1] == '\\')
-		{
+	      if (spaces) {
+		if (list[x][strlen(list[x]) - 1] == '\\') {
 		  *pp = '\\';
 		  pp++;
 		}
@@ -583,12 +514,10 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	      break;
 
 	    case 'e':
-	      if (ext)
-	      {
+	      if (ext) {
 		if (pp + strlen(ext) > commandline + 1250)
 		  goto BreakOut;
-		if (needs_quoting(ext))
-		{
+		if (needs_quoting(ext)) {
 		  spaces = TRUE;
 		  *pp = '\"';
 		  pp++;
@@ -597,10 +526,8 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 		  spaces = FALSE;
 		strcpy(pp, ext);
 		pp += strlen(ext);
-		if (spaces)
-		{
-		  if (*(pp - 1) != '\"')
-		  {
+		if (spaces) {
+		  if (*(pp - 1) != '\"') {
 		    *pp = '\"';
 		    pp++;
 		  }
@@ -608,8 +535,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	      }
 	      break;
 	    }
-	    if (list[x + 1])
-	    {
+	    if (list[x + 1]) {
 	      *pp = ' ';
 	      pp++;
 	    }
@@ -625,8 +551,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	break;
       }
     }
-    else
-    {
+    else {
       *pp = *p;
       pp++;
       p++;
@@ -637,7 +562,6 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 BreakOut:
 
   {
-
     EXECARGS ex;
     ULONG size;
     int ret;
@@ -645,8 +569,8 @@ BreakOut:
     memset(&ex, 0, sizeof(EXECARGS));
     size = sizeof(ex.environment) - 1;
     PrfQueryProfileData(fmprof, FM3Str, command, ex.environment, &size);
-    if (flags & PROMPT)
-    {					/* allow editing command line */
+    if (flags & PROMPT) {
+      /* allow editing command line */
       ex.flags = (flags & (~PROMPT));
       ex.commandline = commandline;
       strcpy(ex.path, path);
@@ -665,6 +589,8 @@ BreakOut:
 		   "%s", commandline);
   }
 }
+
+//== runemf2() run requested app, return -1 if problem starting else return rc ==
 
 int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	    char *formatstring,...)
@@ -701,9 +627,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
   BYTE bPriority;
   APIRET rc;
 
-  if (directory &&
-      *directory)
-  {
+  if (directory && *directory) {
     if (!DosQueryPathInfo(directory,
 			  FIL_QUERYFULLNAME,
 			  tempdir,
@@ -732,8 +656,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	   parguments);
   va_end(parguments);
 
-  if (environment)
-  {
+  if (environment) {
     p = &environment[strlen(environment)] + 1;
     *p = 0;
     p = environment;
@@ -741,20 +664,18 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
       ; // loop
   }
 
-  if (!*s)
-  {
+  if (!*s) {
     p = GetCmdSpec(FALSE);
     strcpy(s, p);
-    if (!*s)
+    if (!*s) {
+      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       return -1;
+    }
   }
 
-  if (*s)
-  {
-    if (*s == '<' &&
-	strchr(s, '>'))
-    {					/* is a workplace object */
-
+  if (*s) {
+    if (*s == '<' && strchr(s, '>')) {
+      /* is a workplace object */
       HOBJECT hWPSObject;
       char temp;
 
@@ -774,19 +695,13 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
       /* Find the handle of the WPS object */
       hWPSObject = WinQueryObject(s);
       *p = temp;
-      if (hWPSObject != NULLHANDLE)
-      {
-	if (s2 && *p)
-	{
-	  sprintf(s2,
-		  "OPEN=DEFAULT;PARAMETERS=\"%s\"",
-		  p);
-	  WinSetObjectData(hWPSObject,
-			   s2);
+      if (hWPSObject != NULLHANDLE) {
+	if (s2 && *p) {
+	  sprintf(s2,"OPEN=DEFAULT;PARAMETERS=\"%s\"",p);
+	  WinSetObjectData(hWPSObject,s2);
 	}
 	else
-	  WinSetObjectData(hWPSObject,
-			   "OPEN=DEFAULT");
+	  WinSetObjectData(hWPSObject,"OPEN=DEFAULT");
 	ret = 0;
       }
       goto ObjectInterrupt;
@@ -804,10 +719,8 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	      (*p != ' ' &&
 	       *p != '\t')))
       {
-	if (*p == '\"')
-	{
-	  if (!wasquote)
-	  {
+	if (*p == '\"') {
+	  if (!wasquote) {
 	    wasquote = TRUE;
 	    memmove(p,
 		    p + 1,
@@ -816,8 +729,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 		   *p == '\t')
 	      p++;
 	  }
-	  else
-	  {
+	  else {
 	    memmove(p,
 		    p + 1,
 		    strlen(p));
@@ -827,16 +739,14 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	else
 	  p++;
       }
-      if (*p)
-      {
+      if (*p) {
 	*p = 0;
 	p++;
       }
       else
 	p = s;
       p[strlen(p) + 1] = 0;		/* double-terminate args */
-      if (*s)
-      {
+      if (*s) {
 	if (!strchr(s, '\\') &&
 	    !strchr(s, ':') &&
 	    directory &&
@@ -845,27 +755,26 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  save_dir2(savedir);
 	  switch_to(directory);
 	}
-	ret = (int) DosQAppType(s,&apptype);
+	rc = DosQAppType(s,&apptype);
 	if (!strchr(s, '\\') &&
 	    !strchr(s, ':') &&
 	    directory &&
 	    *directory)
 	  switch_to(savedir);
-	if (ret)
-	{
-          Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,"DosQAppType");
-	  if (s)
-	    DosFreeMem(s);
+	if (rc) {
+	  // fixme to be in fm2dll.str
+          Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", s);
+	  DosFreeMem(s);
 	  if (s2)
 	    DosFreeMem(s2);
 	  return -1;
 	}
-	if (apptype)
-	{
+	if (apptype) {
 	  if ((apptype & FAPPTYP_DLL) || (apptype & FAPPTYP_VIRTDRV) ||
 	      (apptype & FAPPTYP_PHYSDRV) || (apptype & FAPPTYP_PROTDLL))
 	  {
-            Runtime_Error(pszSrcFile, __LINE__, "unexpected apptype");
+	    // fixme to be in fm2dll.str
+            Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, s);
 	    if (s)
 	      DosFreeMem(s);
 	    if (s2)
@@ -875,7 +784,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  if ((apptype & FAPPTYP_DOS) || (apptype & FAPPTYP_WINDOWSREAL) ||
 	      (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000))
 	  {
-            Runtime_Error(pszSrcFile, __LINE__, "unexpected apptype");
+            Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, s);
 	    if (s)
 	      DosFreeMem(s);
 	    if (s2)
@@ -884,12 +793,11 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  }
 	}
 	memset(&rt, 0, sizeof(RESULTCODES));
-	if (directory && *directory)
-	{
+	if (directory && *directory) {
 	  save_dir2(savedir);
 	  switch_to(directory);
 	}
-	ret = (int) DosExecPgm(object, 24L,
+	ret = DosExecPgm(object, 24L,
 		      (ULONG) (((type & 15) == ASYNCHRONOUS) * EXEC_ASYNC) +
 			       (((type & 15) == DETACHED) * EXEC_BACKGROUND),
 			       s, environment, &rt, s);
@@ -897,18 +805,16 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  switch_to(savedir);
 	if (ret) {
 	  Dos_Error(MB_ENTER,ret,hwnd,pszSrcFile,__LINE__,
-		    GetPString(IDS_DOSEXECPGMFAILEDTEXT));
+		    GetPString(IDS_DOSEXECPGMFAILEDTEXT), s);
 	}
       }
     }
-    else
-    {
+    else {
       if (!(type & FULLSCREEN))
 	type |= WINDOWED;
       rc = DosAllocMem((PVOID) & s2, MAXSTRG * 2,
 		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
-      if (rc)
-      {
+      if (rc) {
         Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
 	DosFreeMem(s);
 	return -1;
@@ -918,19 +824,15 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
       strip_lead_char(" \t", s);
       p = s;
       wasquote = FALSE;
-      while (*p && (wasquote || (*p != ' ' && *p != '\t')))
-      {
-	if (*p == '\"')
-	{
-	  if (!wasquote)
-	  {
+      while (*p && (wasquote || (*p != ' ' && *p != '\t'))) {
+	if (*p == '\"') {
+	  if (!wasquote) {
 	    wasquote = TRUE;
 	    memmove(p, p + 1, strlen(p));
 	    while (*p == ' ' || *p == '\t')
 	      p++;
 	  }
-	  else
-	  {
+	  else {
 	    memmove(p, p + 1, strlen(p));
 	    break;
 	  }
@@ -938,8 +840,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	else
 	  p++;
       }
-      if (*p)
-      {
+      if (*p) {
 	*p = 0;
 	p++;
       }
@@ -949,13 +850,10 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	strcpy(s2, p);
 
       p = strrchr(s, '.');
-      if (p)
-      {
-
+      if (p) {
 	char temp[CCHMAXPATH + 1];
 
-	if (!stricmp(p, ".BAT"))
-	{
+	if (!stricmp(p, ".BAT")) {
 	  strcpy(temp, s);
 	  strcpy(s, s2);
 	  strcpy(s2, "/C ");
@@ -964,8 +862,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  strcat(s2, s);
 	  strcpy(s, GetCmdSpec(TRUE));
 	}
-	else if (!stricmp(p, ".CMD"))
-	{
+	else if (!stricmp(p, ".CMD")) {
 	  strcpy(temp, s);
 	  strcpy(s, s2);
 	  strcpy(s2, "/C ");
@@ -989,29 +886,28 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	save_dir2(savedir);
 	switch_to(directory);
       }
-      ret = (int) DosQAppType(s,
-			      &apptype);
+      rc = DosQAppType(s,&apptype);
       if (!strchr(s, '\\') &&
 	  !strchr(s, ':') &&
 	  directory &&
 	  *directory)
 	switch_to(savedir);
-      if (ret)
-      {
-	if (s)
-	  DosFreeMem(s);
+      if (rc) {
+	// fixme to be in fm2dll.str
+        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", s);
+	DosFreeMem(s);
 	if (s2)
 	  DosFreeMem(s2);
 	return -1;
       }
 
-      if (apptype)
-      {
+      if (apptype) {
 	if ((apptype & FAPPTYP_DLL) || (apptype & FAPPTYP_VIRTDRV) ||
 	    (apptype & FAPPTYP_PHYSDRV) || (apptype & FAPPTYP_PROTDLL))
 	{
-	  if (s)
-	    DosFreeMem(s);
+	  // fixme to be in fm2dll.str
+          Runtime_Error(pszSrcFile, __LINE__, "apptype %d unexpected for %s.", s);
+	  DosFreeMem(s);
 	  if (s2)
 	    DosFreeMem(s2);
 	  return -1;
@@ -1031,10 +927,9 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 		DosFreeMem(s);
 	      if (s2)
 		DosFreeMem(s2);
-	      return (ret) ? 0 : -1;
+	      return ret ? 0 : -1;
 	    }
-	    else
-	    {
+	    else {
 	      strcat(s, " ");
 	      strcat(s, s2);
 	      *s2 = 0;
@@ -1046,29 +941,24 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	      strcpy(s, "WINOS2.COM");
 	    }
 	  }
-	  else
-	  {
-	    if (!(type & FULLSCREEN))
-	    {
+	  else {
+	    if (!(type & FULLSCREEN)) {
 	      type |= WINDOWED;
 	      apptype = SSF_TYPE_WINDOWEDVDM;
 	    }
-	    else
-	    {
+	    else {
 	      type &= (~WINDOWED);
 	      apptype = SSF_TYPE_VDM;
 	    }
 	  }
 	}
-	else if (apptype & FAPPTYP_32BIT)
-	{
+	else if (apptype & FAPPTYP_32BIT) {
 	  apptype &= (~FAPPTYP_32BIT);
 	  if (apptype == FAPPTYP_WINDOWAPI)
 	    apptype = SSF_TYPE_PM;
 	  else if (apptype == FAPPTYP_WINDOWCOMPAT)
 	    apptype = SSF_TYPE_WINDOWABLEVIO;
-	  else if (apptype == FAPPTYP_NOTWINDOWCOMPAT)
-	  {
+	  else if (apptype == FAPPTYP_NOTWINDOWCOMPAT) {
 	    apptype = SSF_TYPE_FULLSCREEN;
 	    type &= (~WINDOWED);
 	    type |= FULLSCREEN;
@@ -1080,8 +970,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  apptype = SSF_TYPE_PM;
 	else if (apptype == FAPPTYP_WINDOWCOMPAT)
 	  apptype = SSF_TYPE_WINDOWABLEVIO;
-	else if (apptype == FAPPTYP_NOTWINDOWCOMPAT)
-	{
+	else if (apptype == FAPPTYP_NOTWINDOWCOMPAT) {
 	  type &= (~WINDOWED);
 	  apptype = SSF_TYPE_FULLSCREEN;
 	}
@@ -1096,14 +985,12 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 		  apptype == SSF_TYPE_WINDOWEDVDM))
 	  apptype = SSF_TYPE_VDM;
       }
-      if (apptype == SSF_TYPE_WINDOWEDVDM && (type & SEPARATEKEEP))
-      {
+      if (apptype == SSF_TYPE_WINDOWEDVDM && (type & SEPARATEKEEP)) {
 	type &= (~SEPARATEKEEP);
 	type |= SEPARATE;
       }
 
-      if (type & WAIT)
-      {
+      if (type & WAIT) {
 	if (DosCreateQueue(&hque, QUE_FIFO | QUE_CONVERT_ADDRESS, queue_name))
 	  hque = (HQUEUE) 0;
       }
@@ -1133,25 +1020,22 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 			(SSF_CONTROL_MAXIMIZE * ((type & MAXIMIZED) != 0)) |
 			(SSF_CONTROL_MINIMIZE * ((type & MINIMIZED) != 0)) |
 		       (SSF_CONTROL_INVISIBLE * ((type & INVISIBLE) != 0)));
-      if (directory && *directory)
-      {
+      if (directory && *directory) {
 	save_dir2(savedir);
 	switch_to(directory);
       }
-      ret = (int) DosStartSession(&start, &sessID, &sessPID);
+      ret = DosStartSession(&start, &sessID, &sessPID);
       if (directory && *directory)
 	switch_to(savedir);
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
 	Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
 		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),s,s2);
       }
-      else if (type & WAIT)
-      {
+      else if (type & WAIT) {
 	if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
 	  ShowSession(hwnd, sessPID);
 
-	if (!hque)
-	{
+	if (!hque) {
 	  STATUSDATA sd;
 
 	  memset(&sd, 0, sizeof(sd));
@@ -1167,17 +1051,14 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	      ShowSession(hwnd, sessPID);
 	  }
 	}
-	else
-	{
+	else {
 	  for (ctr = 0;; ctr++)
 	  {
 	    ulLength = sizeof(rq);
 	    rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID) & pusInfo, 0,
 			      DCWW_NOWAIT, &bPriority, 0);
-	    if (rc == ERROR_QUE_EMPTY)
-	    {
-	      if (ctr > 20)
-	      {
+	    if (rc == ERROR_QUE_EMPTY) {
+	      if (ctr > 20) {
 		ShowSession(hwnd, sessPID);
 		ulLength = sizeof(rq);
 		DosReadQueue(hque, &rq, &ulLength, (PPVOID) & pusInfo, 0,
@@ -1186,8 +1067,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	      }
 	      DosSleep(100L);
 	    }
-	    else
-	    {
+	    else {
 	      ulLength = sizeof(rq);
 	      if (rc)
 		DosReadQueue(hque, &rq, &ulLength, (PPVOID) & pusInfo, 0,
@@ -1195,8 +1075,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	      break;
 	    }
 	  }
-	  if (pusInfo)
-	  {
+	  if (pusInfo) {
 	    ret = (!(!pusInfo[1]));
 	    DosFreeMem(pusInfo);
 	  }
@@ -1237,26 +1116,20 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
     vsprintf(executable, formatstring, parguments);
     va_end(parguments);
     strip_lead_char(" \t", executable);
-    if (*executable)
-    {
+    if (*executable) {
       parameters = xmalloc(MAXSTRG,pszSrcFile,__LINE__);
-      if (parameters)
-      {
+      if (parameters) {
 	p = executable;
 	wasquote = FALSE;
-	while (*p && (wasquote || (*p != ' ' && *p != '\t')))
-	{
-	  if (*p == '\"')
-	  {
-	    if (!wasquote)
-	    {
+	while (*p && (wasquote || (*p != ' ' && *p != '\t'))) {
+	  if (*p == '\"') {
+	    if (!wasquote) {
 	      wasquote = TRUE;
 	      memmove(p, p + 1, strlen(p));
 	      while (*p == ' ' || *p == '\t')
 		p++;
 	    }
-	    else
-	    {
+	    else {
 	      memmove(p, p + 1, strlen(p));
 	      break;
 	    }
@@ -1264,8 +1137,7 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	  else
 	    p++;
 	}
-	if (*p)
-	{
+	if (*p) {
 	  *p = 0;
 	  p++;
 	}
@@ -1274,16 +1146,12 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	if (*p)
 	  strcpy(parameters, p);
 
-	if (p && (!stricmp(p, ".BAT") || !stricmp(p, ".CMD")))
-	{
-
+	if (p && (!stricmp(p, ".BAT") || !stricmp(p, ".CMD"))) {
 	  char *temp;
 
 	  temp = xmalloc(CCHMAXPATH * 2,pszSrcFile,__LINE__);
-	  if (temp)
-	  {
-	    if (!stricmp(p, ".BAT"))
-	    {
+	  if (temp) {
+	    if (!stricmp(p, ".BAT")) {
 	      strcpy(temp, executable);
 	      strcpy(executable, parameters);
 	      strcpy(parameters, "/C ");
@@ -1292,8 +1160,7 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	      strcat(parameters, executable);
 	      strcpy(executable, GetCmdSpec(TRUE));
 	    }
-	    else if (!stricmp(p, ".CMD"))
-	    {
+	    else if (!stricmp(p, ".CMD")) {
 	      strcpy(temp, executable);
 	      strcpy(executable, parameters);
 	      strcpy(parameters, "/C ");
