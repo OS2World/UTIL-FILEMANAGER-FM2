@@ -16,6 +16,8 @@
 # 22 Jul 06 SHL Add more .h dependencies
 # 29 Jul 06 SHL Reorganize icons
 # 31 Jul 06 SHL Tweak dependencies
+# 16 Aug 06 SHL Drop 4os2-ism
+# 18 Aug 06 SHL Drop rc -x2 compression - not reliable
 
 # Warning - may still be missing some *.h dependencies
 
@@ -115,7 +117,7 @@ $(BASE).lib: $(BASE).dll $(BASE).def
 
 !else
 
-# Just resources
+# MAKERES mode - build resources only
 
 all: chkexe \
      $(BASERES).res \
@@ -162,17 +164,18 @@ $(BASERES).dll: $(BASERES).res $(BASERES).obj $(BASERES).def
 <<
   type $(BASERES).@0
   $(LINK) @$(BASERES).@0
-  $(RC) -x2 $(BASERES).res $@
-  :: SHL ea /d /e:.ICON /V $@
+  $(RC) $(BASERES).res $@
   bldlevel $@
 
 !else
+
+# MAKERES mode - build resources only
 
 $(BASERES).dll: $(BASERES).res
   @if not exist $@ echo $@ missing
   lxlite $@ /x+ /b-
   lxlite $@ /c:minstub
-  $(RC) -x2 $(BASERES).res $@
+  $(RC) $(BASERES).res $@
   lxlite $@ /x- /b-
   bldlevel $@
 
