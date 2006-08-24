@@ -14,6 +14,7 @@
   06 Jul 06 SHL Support compare content (IDM_SELECTSAMECONTENT)
   13 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets_bstripcr
+  15 Aug 06 SHL Rework SetMask args and logic
 
 ***********************************************************************/
 
@@ -156,7 +157,7 @@ VOID SelectList (HWND hwndCnr,BOOL partial,BOOL deselect,BOOL clearfirst,
   }
 }
 
-VOID SelectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,
+VOID SelectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *maskstr,
                 CHAR *text,BOOL is_arc)
 {
 
@@ -170,8 +171,8 @@ VOID SelectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,
   if (text)
     textlen = strlen(text);
   memset(&Mask,0,sizeof(Mask));
-  if (mask && *mask)
-    SetMask(mask,&Mask);
+  if (maskstr)
+    SetMask(maskstr,&Mask);
   pci = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPVOID,
                              MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
   while ( pci && (INT)pci != -1 ) {
@@ -185,7 +186,7 @@ VOID SelectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,
       }
       else
         markit = TRUE;
-      if (mask && *mask && markit) {
+      if (maskstr && *maskstr && markit) {
         markit = FALSE;
         file = strrchr(pci->szFileName,'\\');
         if (!file)
@@ -257,7 +258,7 @@ VOID SelectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,
   } // while
 }
 
-VOID DeselectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,CHAR *text,
+VOID DeselectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *maskstr,CHAR *text,
                   BOOL is_arc)
 {
   PCNRITEM       pci;
@@ -270,8 +271,8 @@ VOID DeselectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,CHAR *text,
   if (text)
     textlen = strlen(text);
   memset(&Mask,0,sizeof(Mask));
-  if (mask && *mask)
-    SetMask(mask,&Mask);
+  if (maskstr && *maskstr)
+    SetMask(maskstr,&Mask);
   pci = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPVOID,
                              MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
   while ( pci && (INT)pci != -1 ) {
@@ -285,7 +286,7 @@ VOID DeselectAll (HWND hwndCnr,BOOL files,BOOL dirs,CHAR *mask,CHAR *text,
       }
       else
         unmarkit = TRUE;
-      if (mask && *mask && unmarkit) {
+      if (maskstr && *maskstr && unmarkit) {
         unmarkit = FALSE;
         file = strrchr(pci->szFileName,'\\');
         if (!file)
@@ -489,30 +490,30 @@ VOID RemoveAll (HWND hwndCnr,ULONGLONG *pullTotalBytes,ULONG *pulTotalFiles)
                  MPFROM2SHORT(0,CMA_REPOSITION));
 }
 
-VOID SetMask (CHAR *str,MASK *mask)
-{
-  register INT   x;
-  register CHAR *p;
+//== SetMask() Convert mask string to array of pointers to masks ==
 
-  if (str != mask->szMask)
-    strcpy(mask->szMask,str);
-  strcpy(mask->szMaskCopy,mask->szMask);
-  memset(mask->pszMasks,0,sizeof(CHAR *) * 26);
-  p = mask->pszMasks[0] = mask->szMaskCopy;
-  for (x = 1;x < 24;x++) {
+VOID SetMask (PSZ maskstr,MASK *mask)
+{
+  UINT x;
+  PSZ p;
+
+  if (maskstr)
+    strcpy(mask->szMask,maskstr);	// Got new mask string
+  // Build array of pointers
+  p = mask->szMaskCopy;
+  strcpy(p,mask->szMask);
+  // memset(mask->pszMasks,0,sizeof(mask->pszMasks);	// fixme to be gone
+  // Allow up to 25 masks - ignore extras
+  for (x = 0; *p && x < 25; x++) {
+    mask->pszMasks[x] = p;
     while (*p && *p != ';')
-     p++;
+      p++;				// Find separator
     if (*p) {
-      *p = 0;
+      *p = 0;				// Replace ;
       p++;
-      mask->pszMasks[x] = p;
     }
-    else {
-      mask->pszMasks[x] = NULL;
-      break;
-    }
-  }
-  mask->pszMasks[x] = NULL;
+  } // for
+  mask->pszMasks[x] = NULL;		// Mark end
 }
 
 VOID ExpandAll (HWND hwndCnr,BOOL expand,PCNRITEM pciParent)
