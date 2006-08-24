@@ -18,6 +18,7 @@
   10 Nov 05 SHL Comments
   13 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Use chop_at_crnl
+  15 Aug 06 SHL Rework warning message text
 
 ***********************************************************************/
 
@@ -950,17 +951,11 @@ MRESULT EXPENTRY DirObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           case IDM_PERMDELETE:
           case IDM_MCIPLAY:
           case IDM_UPDATE:
-            if(PostMsg(hwnd,
-                       UM_MASSACTION,
-                       mp1,
-                       mp2))
+            if(PostMsg(hwnd,UM_MASSACTION,mp1,mp2))
               return (MRESULT)TRUE;
             break;
           default:
-            if(PostMsg(hwnd,
-                       UM_ACTION,
-                       mp1,
-                       mp2))
+            if(PostMsg(hwnd,UM_ACTION,mp1,mp2))
               return (MRESULT)TRUE;
         }
       }
@@ -3216,8 +3211,15 @@ KbdRetry:
                   else if (pci->rc.flRecordAttr & CRA_SELECTED)
                     wasemphasized = TRUE;
                 }
-                else if (!*dcd->directory || IsRoot(dcd->directory)) {
-	          Runtime_Error(pszSrcFile, __LINE__, "directory unexpected");
+                else if (!*dcd->directory) {
+	          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+                  break;
+                }
+                else if (IsRoot(dcd->directory)) {
+                  saymsg(MB_ENTER,
+                         hwnd,
+                         GetPString(IDS_ERRORTEXT),
+                         "Can not drag root directory");	// fixme to be GetPString
                   break;
                 }
                 if (hwndStatus2) {
