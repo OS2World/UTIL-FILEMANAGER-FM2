@@ -5,9 +5,10 @@
   fm3 resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2006 Steven H. Levine
 
   09 Aug 05 SHL Drop dup icon
+  21 Aug 06 SHL Add select and sort toolbar bitmaps
 
 ***********************************************************************/
 
@@ -33,9 +34,17 @@ BITMAP IDM_TEST             bitmaps\TEST.BMP
 BITMAP IDM_VIRUSSCAN        bitmaps\VIRUS.BMP
 BITMAP IDM_ATTRS            bitmaps\ATTRLIST.BMP
 BITMAP IDM_RENAME           bitmaps\RENAME.BMP
+
+BITMAP IDM_SELECTALL        bitmaps\SELALL.BMP
 BITMAP IDM_SELECTALLFILES   bitmaps\SELECT.BMP
-BITMAP IDM_SELECTALL        bitmaps\SELECT.BMP
+BITMAP IDM_SELECTALLDIRS    bitmaps\SELDIRS.BMP
 BITMAP IDM_DESELECTALL      bitmaps\DESELECT.BMP
+BITMAP IDM_DESELECTALLFILES  bitmaps\DESELFIL.BMP
+BITMAP IDM_DESELECTALLDIRS  bitmaps\DESELDIR.BMP
+BITMAP IDM_SELECTLIST bitmaps\SELLIST.BMP
+BITMAP IDM_INVERT           bitmaps\INVRTSEL.BMP
+BITMAP IDM_RESELECT         bitmaps\RESLCT.BMP
+
 BITMAP IDM_ARCHIVE          bitmaps\ARCHIVE.BMP
 BITMAP IDM_EXTRACT          bitmaps\EXTRACT.BMP
 BITMAP IDM_MOVE             bitmaps\MOVER.BMP
@@ -92,5 +101,13 @@ BITMAP IDM_FINDPREV         bitmaps\FINDPREV.BMP
 BITMAP IDM_SETTARGET        bitmaps\TARGET.BMP
 BITMAP IDM_CLEARCNR         bitmaps\CLEARCNR.BMP
 BITMAP IDM_REMOVE           bitmaps\REMOVOBJ.BMP
+
+BITMAP IDM_SORTFILENAME     bitmaps\SORTNAM.BMP
+BITMAP IDM_SORTSIZE         bitmaps\SORTSIZ.BMP
+BITMAP IDM_SORTEASIZE       bitmaps\SORTEASZ.BMP
+BITMAP IDM_SORTFIRST        bitmaps\SORT1ST.BMP
+BITMAP IDM_SORTLAST         bitmaps\SORTLAST.BMP
+BITMAP IDM_SORTLWDATE       bitmaps\SORTDATE.BMP
+BITMAP IDM_SORTREVERSE      bitmaps\SORTREV.BMP
 
 BITMAP 26102                bitmaps\HECTOR.BMP
