@@ -28,6 +28,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   31 Jul 06 SHL Lower priority for archives with more than 1000 entries
   02 Aug 06 SHL Add logic to stop processing large archives
+  23 Aug 06 SHL Integrate John Small's switch list title logic
 
 ***********************************************************************/
 
@@ -1331,8 +1332,6 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       if (dcd) {
         if (mp1)
           strcpy(dcd->arcname,(CHAR *)mp1);	// Update name on request
-        WinSetWindowText(dcd->hwndFrame,"AV/2");
-        WinSetWindowText(WinWindowFromID(dcd->hwndFrame,FID_TITLEBAR),dcd->arcname);
         dcd->ullTotalBytes = dcd->totalfiles =
           dcd->selectedfiles = dcd->selectedbytes = 0;
         WinSetDlgItemText(dcd->hwndClient,DIR_TOTALS,"0");
@@ -3430,7 +3429,8 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
   USHORT        id;
   DIRCNRDATA   *dcd;
   ARC_TYPE     *info = sinfo;
-  CHAR          fullname[CCHMAXPATH],*p,temp;
+  CHAR          title[MAXNAMEL + 1] = "AV/2 - ";
+  CHAR          fullname[CCHMAXPATH + 8], *p, temp;
   static USHORT idinc = 0;
 
   if (!idinc)
@@ -3455,11 +3455,22 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
                        arcsighead);
     if (!info)
       return hwndFrame;
+    if (strlen(title) + strlen(fullname) > MAXNAMEL)
+    {
+        p = title + strlen(title);
+        strncpy(p, fullname, MAXNAMEL/2 - 5);
+        strcpy(p + MAXNAMEL/2 - 5, "...");
+        strcat(title, fullname + strlen(fullname) - (MAXNAMEL/2 - 5));
+    }
+    else
+    {
+        strcat(title, fullname);
+    }
     hwndFrame = WinCreateStdWindow(hwndParent,
                                    WS_VISIBLE,
                                    &FrameFlags,
                                    GetPString(IDS_WCARCCONTAINER),
-                                   NULL,
+                                   title,
                                    WS_VISIBLE | fwsAnimate,
                                    FM3ModHandle,
                                    ARC_FRAME,
@@ -3566,13 +3577,6 @@ HWND StartArcCnr (HWND hwndParent,HWND hwndCaller,CHAR *arcname,INT flags,
           WinSetWindowPtr(dcd->hwndCnr,
                           QWL_USER,
                           (PVOID)dcd);
-          {
-            CHAR s[CCHMAXPATH + 8];
-
-            sprintf(s,"AV/2: %s",dcd->arcname);
-            WinSetWindowText(hwndFrame,s);
-            WinSetWindowText(WinWindowFromID(hwndFrame,FID_TITLEBAR),s);
-          }
           dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
                                            (PFNWP)ArcCnrWndProc);
           {
