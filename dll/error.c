@@ -18,6 +18,7 @@
   13 Jul 06 SHL Add Runtime_Error
   22 Jul 06 SHL Optimize calling sequences
   26 Jul 06 SHL Add ..._Error2
+  16 Aug 06 SHL Tweak message formatting
 
 ***********************************************************************/
 
@@ -39,7 +40,7 @@
 
 static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg);
 
-//== Win_Error: report Win...() error ===
+//== Win_Error: report Win...() error using passed message string ===
 
 VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, PCSZ pszFmt,...)
 {
@@ -63,7 +64,7 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, P
   va_end(va);
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed");			// Assume simple function name
+    strcat(szMsg, " failed.");			// Assume simple function name
 
   // Append file name and line number
   sprintf(szMsg + strlen(szMsg),
@@ -74,7 +75,7 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, P
   pErrInfoBlk = WinGetErrorInfo(hab);
   if (!pErrInfoBlk) {
     psz = szMsg + strlen(szMsg);
-    strcpy(psz, " WinGetError failed");
+    strcpy(psz, " WinGetError failed.");
   }
   else {
     if (!hwndOwner)
@@ -102,13 +103,15 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, P
 
 } // Win_Error
 
+//== Win_Error2: report Win...() error using passed message id ===
+
 VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, UINT idMsg)
 {
   Win_Error(hwndErr, hwndOwner, pszFileName, ulLineNo, GetPString(idMsg));
 
 } // Win_Error2
 
-//== Dos_Error: report Dos...() error ===
+//== Dos_Error: report Dos...() error using passed message string ===
 
 INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
 	      ULONG ulLineNo, PCSZ pszFmt,...)
@@ -131,7 +134,7 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
   va_end(va);
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed");			// Assume simple function name
+    strcat(szMsg, " failed.");			// Assume simple function name
 
   DosErrClass(ulRC, &Class, &action, &Locus);
 
@@ -184,7 +187,7 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
 
 } // Dos_Error
 
-//== Dos_Error2: report Dos...() error ===
+//== Dos_Error2: report Dos...() error using passed message id ===
 
 INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
 	      ULONG ulLineNo, UINT idMsg)
@@ -193,7 +196,7 @@ INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
                     GetPString(idMsg));
 } // Dos_Error2
 
-//== Runtime_Error: report runtime library error ===
+//== Runtime_Error: report runtime library error using passed message string ===
 
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
 {
@@ -207,7 +210,7 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
   va_end(va);
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed");			// Assume simple function name
+    strcat(szMsg, " failed.");			// Assume simple function name
 
   sprintf(szMsg + strlen(szMsg),
 	  // GetPString(IDS_DOSERR1TEXT), fixme
@@ -219,6 +222,8 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
 
 } // Runtime_Error
 
+//== Runtime_Error2: report runtime library error using passed message id ===
+
 VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 {
   Runtime_Error(pszSrcFile, uSrcLineNo, GetPString(idMsg));
@@ -227,7 +232,7 @@ VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 
 // fixme to be rename to Misc_Error
 
-//=== saymsg: report misc error ===
+//=== saymsg: report misc error using passed message ===
 
 APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt,...)
 {
@@ -238,13 +243,11 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt,...)
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
 
-  return showMsg(mb_type,
-		 hwnd,
-		 pszTitle,
-		 szMsg);
+  return showMsg(mb_type,hwnd,pszTitle,szMsg);
+
 } // saymsg
 
-//=== showMsg: report misc error ===
+//=== showMsg: display error popup ===
 
 static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg)
 {
