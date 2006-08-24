@@ -10,6 +10,7 @@
 
   13 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
+  15 Aug 06 SHL Use Dos_Error
 
 ***********************************************************************/
 
@@ -316,7 +317,8 @@ void CommonDriveCmd (HWND hwnd,char *drive,USHORT cmd)
               toupper(*dv));
       break;
 
-/*
+#if 0 // fixme to be gone?
+
     case IDM_CLOSETRAY:
       if(driveflags[*dv - 'A'] & DRIVE_CDROM) {
 
@@ -337,7 +339,9 @@ void CommonDriveCmd (HWND hwnd,char *drive,USHORT cmd)
                      OPEN_FLAGS_FAIL_ON_ERROR |
                      OPEN_SHARE_DENYNONE,
                      NULL);
-        if(!rc) {
+        if (rc)
+          Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosOpen");
+	else {
           dlen = 0;
           plen = sizeof(parm);
           rc = DosDevIOCtl(hfile,
@@ -350,14 +354,13 @@ void CommonDriveCmd (HWND hwnd,char *drive,USHORT cmd)
                            0,
                            &dlen);
           DosClose(hfile);
-          if(rc)
-            saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"rc2 = %lu",rc);
+          if (rc)
+            Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosDevIOCtl");
         }
-        else
-          saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"rc = %lu",rc);
       }
       break;
-*/
+#endif // fixme to be gone?
+
 
     case IDM_LOCK:
     case IDM_UNLOCK:
