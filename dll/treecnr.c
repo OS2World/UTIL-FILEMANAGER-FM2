@@ -17,6 +17,7 @@
   06 Aug 05 SHL Renames
   08 Dec 05 SHL TreeCnrWndProc: disable menu items if drive not ready
   17 Jul 06 SHL Use Runtime_Error
+  15 Aug 06 SHL Rework SetMask args
 
 ***********************************************************************/
 
@@ -1353,8 +1354,7 @@ KbdRetry:
 				    "TreeFilter",
 				    &dcd->mask,
 				    &size);
-		SetMask(dcd->mask.szMask,
-			&dcd->mask);
+		SetMask(NULL,&dcd->mask);
 	      }
 	      else
 		dcd->mask.attrFile = (FILE_READONLY | FILE_NORMAL |

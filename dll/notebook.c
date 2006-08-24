@@ -13,6 +13,7 @@
   04 Jun 05 SHL Support Cancel button; make Esc key more consistent
   29 May 06 SHL Comments
   17 Jul 06 SHL Use Runtime_Error
+  15 Aug 06 SHL Rework SetMask args
 
 ***********************************************************************/
 
@@ -614,7 +615,7 @@ MRESULT EXPENTRY CfgTSDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         mask.fIsTree = TRUE;
         size = sizeof(MASK);
         if(PrfQueryProfileData(fmprof,appname,"TreeFilter",&mask,&size)) {
-          SetMask(mask.szMask,&mask);
+          SetMask(NULL,&mask);
         }
         if(!mask.attrFile)
           mask.attrFile = (FILE_READONLY | FILE_NORMAL |
@@ -658,7 +659,7 @@ MRESULT EXPENTRY CfgTSDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_SETUP5:
       if(WinDlgBox(HWND_DESKTOP,hwndNotebook,PickMaskDlgProc,
                    FM3ModHandle,MSK_FRAME,MPFROMP(&mask))) {
-        SetMask(mask.szMask,&mask);
+        SetMask(NULL,&mask);
         WinSetDlgItemText(hwnd,CFG5_FILTER,mask.szMask);
       }
       return 0;
@@ -1560,7 +1561,7 @@ MRESULT EXPENTRY Cfg5DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                "DirFilter",
                                &mask,
                                &size))
-          SetMask(mask.szMask,&mask);
+          SetMask(NULL,&mask);
         if(!mask.attrFile)
           mask.attrFile = FILE_DIRECTORY | FILE_ARCHIVED | FILE_HIDDEN |
                           FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
@@ -1575,7 +1576,7 @@ MRESULT EXPENTRY Cfg5DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_SETUP5:
       if(WinDlgBox(HWND_DESKTOP,hwndNotebook,PickMaskDlgProc,
                    FM3ModHandle,MSK_FRAME,MPFROMP(&mask))) {
-        SetMask(mask.szMask,&mask);
+        SetMask(NULL,&mask);
         WinSetDlgItemText(hwnd,CFG5_FILTER,mask.szMask);
       }
       return 0;
@@ -1889,7 +1890,7 @@ MRESULT EXPENTRY Cfg7DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                "CollectorFilter",
                                &mask,
                                &size)) {
-          SetMask(mask.szMask,&mask);
+          SetMask(NULL,&mask);
         }
         if(!mask.attrFile)
           mask.attrFile = FILE_DIRECTORY | FILE_ARCHIVED | FILE_HIDDEN |
@@ -1922,7 +1923,7 @@ MRESULT EXPENTRY Cfg7DlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
     case UM_SETUP5:
       if(WinDlgBox(HWND_DESKTOP,hwndNotebook,PickMaskDlgProc,
                    FM3ModHandle,MSK_FRAME,MPFROMP(&mask))) {
-        SetMask(mask.szMask,&mask);
+        SetMask(NULL,&mask);
         WinSetDlgItemText(hwnd,CFG5_FILTER,mask.szMask);
       }
       return 0;
