@@ -11,6 +11,7 @@
   21 May 04 SHL Adjust IDS_NUMSTRS
   22 Jul 06 SHL Drop unused
   26 Jul 06 SHL Add new
+  15 Aug 06 SHL Add new
 
 ***********************************************************************/
 
@@ -59,7 +60,7 @@
 #define IDS_ERRORTEXT                                         34
 #define IDS_CANTSTARTTEXT                                     35
 #define IDS_YOUAREHERETEXT                                    38
-#define IDS_SPARE_39                                          39
+#define IDS_FORCINGCOPYTEXT                                   39
 #define IDS_OUTOFMEMORY                                       40
 #define IDS_DROPONMETEXT                                      41
 #define IDS_DRIVEDROPHELP                                     42
