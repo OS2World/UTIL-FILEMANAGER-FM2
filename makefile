@@ -10,6 +10,7 @@
 # 20 Jul 05 SHL Add makeres support
 # 16 Apr 06 SHL Add lxlite target
 # 31 Jul 06 SHL Tweak dependencies
+# 26 Aug 06 SHL Add rest of lxlite support
 
 # Environment:
 
@@ -44,8 +45,16 @@ $(BASE).obj: $(BASE).c $(BASE).h dll\version.h
 allexe: *.mak
   !$(MAKE) /NOLOGO /f $? /$(MAKEFLAGS)
 
+# makefile_post.mk contains lxlite target for $(BASE).exe
+# Apply to each *.mak for other exes
 lxlite:: *.mak
   !$(MAKE) /NOLOGO /f $? /$(MAKEFLAGS) lxlite
+
+# Apply to dlls
+lxlite::
+  cd dll
+  $(MAKE) /nologo /$(MAKEFLAGS) lxlite
+  cd ..
 
 cleanobj:
   cd dll
