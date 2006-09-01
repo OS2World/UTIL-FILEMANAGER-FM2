@@ -27,6 +27,11 @@ Select Mask
 8
 10012
 ;
+Select Clipboard
++Clip
+8
+10028
+;
 Deselect All
 -All
 0
@@ -46,6 +51,11 @@ Deselect Mask
 -Mask
 8
 10013
+;
+Deselect Clipboard
+-Clip
+8
+10029
 ;
 Invert selections
 Invert

@@ -32,8 +32,13 @@ Last
 0
 3009
 ;
+Sort by create date
+Cr Date
+0
+3012
+;
 Sort by lastwrite date
-Date
+Lw Date
 0
 3010
 ;
@@ -56,3 +61,5 @@ Select toolbox
 Select
 0
 4903
+;
+; $Id$
