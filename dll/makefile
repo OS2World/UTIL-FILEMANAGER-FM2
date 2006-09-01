@@ -284,6 +284,7 @@ worker.c: fm3dll.h fm3dlg.h fm3str.h
 fm3dlg.h: fm3hlp.h
 fm3dll.h: fm3dll2.h
 
+# Run for each dependent
 lxlite: $(BASE).dll $(BASERES).dll
   !lxlite /x- /b- $?
 
