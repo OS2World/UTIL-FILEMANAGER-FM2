@@ -138,10 +138,11 @@ LIBPATHSTRICT allows you to test the new FM/2 version without shutting down
 the production version.
 
 When you are satisfied with your changes, copy the updated executable files
-to your FM/2 program directory and restart FM/2.  Some files may be locked, so
-use the unlock.exe utility that comes with lxlite to allow the locked files
-to be overwritten.  I recommend adding an unlock item to the commands menus,
-so that you have it available from FM/2.
+to your FM/2 program directory and restart FM/2.  Some of the files may be 
+locked, so use the unlock.exe utility that comes with lxlite to allow these 
+locked files to be overwritten.  The current command menu template includes 
+unlock, so that it can be run from within FM/2. If you don't have it on your 
+commands menu, I recommed you add it.
 
 == Trouble Shooting ==
 
