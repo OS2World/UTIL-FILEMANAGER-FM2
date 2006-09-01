@@ -10,6 +10,7 @@
   06 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets
+  31 Aug 06 SHL Use _fsopen to avoid noise complaints
 
 ***********************************************************************/
 
@@ -70,7 +71,7 @@ VOID load_resources (VOID)
   if(s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,"RESOURCE.DAT");
-  fp = xfsopen(s,"r",SH_DENYWR,pszSrcFile,__LINE__);
+  fp = _fsopen(s,"r",SH_DENYWR);
   if (fp) {
     while (x < MAXNUMRES && !feof(fp)) {
       if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
