@@ -1,5 +1,9 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.05beta03
+ o Add more missing fm3.hlp dependents to makefile
+ o More great bitmaps from David
+
 3.05beta02
  o Disable conflicting menu options while collector busy
  o Integrate John Small's partition format enhancements
