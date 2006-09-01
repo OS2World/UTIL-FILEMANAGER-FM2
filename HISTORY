@@ -1,7 +1,11 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.05beta01
+3.05beta02
+ o Disable conflicting menu options while collector busy
+ o Integrate John Small's partition format enhancements
  o Integrate John Small's switch list title logic
+
+3.05beta01
  o More great bitmaps from David
  o Avoid cascading messages when collector file list is a binary file
  o Rework some error messages

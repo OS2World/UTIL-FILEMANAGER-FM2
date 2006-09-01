@@ -33,6 +33,7 @@
   13 Jul 06 SHL v3.04pre12: Rework error logic to report rather than beeping
   12 Aug 06 SHL v3.04: Release
   23 Aug 06 SHL v3.05beta01: Release
+  31 Aug 06 SHL v3.05beta02: Release
 
 ***********************************************************************/
 
@@ -40,7 +41,7 @@
 #define VERMINOR       05
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-#define VERREALMINOR   "beta01 " __DATE__ " " __TIME__
+#define VERREALMINOR   "beta02 " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 
