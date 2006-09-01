@@ -18,6 +18,7 @@
   08 Dec 05 SHL TreeCnrWndProc: disable menu items if drive not ready
   17 Jul 06 SHL Use Runtime_Error
   15 Aug 06 SHL Rework SetMask args
+  31 Aug 06 JS  Add more partitioning menu items
 
 ***********************************************************************/
 
@@ -2719,8 +2720,23 @@ KbdRetry:
 
 	  case IDM_PARTITION:
 	    runemf2(SEPARATE | WINDOWED,HWND_DESKTOP,NULL,NULL,
-		    "%s","FDISKPM.EXE");
+		    "%s","MINILVM.EXE");
 	    break;
+
+case IDM_PARTITIONDF:
+  runemf2(SEPARATE | WINDOWED,HWND_DESKTOP,NULL,NULL,
+   "%s","DFSOS2.EXE");
+  break;
+
+case IDM_PARTITIONLVMG:
+  runemf2(SEPARATE | WINDOWED,HWND_DESKTOP,NULL,NULL,
+   "%s","LVMGUI.CMD");
+  break;
+
+case IDM_PARTITIONFD:
+  runemf2(SEPARATE | WINDOWED,HWND_DESKTOP,NULL,NULL,
+   "%s","FDISKPM.EXE");
+  break;
 
 	  case IDM_SORTNAME:
 	  case IDM_SORTFILENAME:
