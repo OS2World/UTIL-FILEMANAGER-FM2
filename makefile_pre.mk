@@ -1,6 +1,8 @@
 # makefile_pre.mk - common makefile prefix settings for all makefiles
 # $Id$
 
+# 01 Sep 06 SHL Adjust .res case
+
 LINK = ilink
 
 !ifndef DEBUG
@@ -23,6 +25,7 @@ RCFLAGS = -i dll
 
 .rc.res:
    $(RC) $(RCFLAGS) -r $*.rc
+   ren $*.res $*.res
 
 .c.obj:
   $(CC) $(CFLAGS) /C $*.c
