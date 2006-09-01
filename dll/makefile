@@ -18,6 +18,7 @@
 # 31 Jul 06 SHL Tweak dependencies
 # 16 Aug 06 SHL Drop 4os2-ism
 # 18 Aug 06 SHL Drop rc -x2 compression - not reliable
+# 01 Sep 06 SHL fm3.hlp: add missing dependency on ..\bitmaps
 
 # Warning - may still be missing some *.h dependencies
 
@@ -188,10 +189,10 @@ $(BASERES).str: $(BASE).str fm3str.h version.h
   internal\mkstr
   copy $(BASERES).str .. /v
 
-ipf\FM3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp
+ipf\fm3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp ..\bitmaps\*.bmp
   cd ipf
   ipfc /CODEPAGE=850 fm3.ipf
-  ren fm3.HLP fm3.hlp
+  ren fm3.hlp fm3.hlp
   cd..
 
 arccnrs.c: fm3dll.h fm3dlg.h fm3str.h mle.h
