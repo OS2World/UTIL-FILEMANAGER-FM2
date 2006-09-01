@@ -22,7 +22,7 @@ RCFLAGS = -i dll
 .SUFFIXES: .c .rc .ipf
 
 .rc.res:
-   $(RC) $(RCFLAGS) -r $*.RC
+   $(RC) $(RCFLAGS) -r $*.rc
 
 .c.obj:
   $(CC) $(CFLAGS) /C $*.c
