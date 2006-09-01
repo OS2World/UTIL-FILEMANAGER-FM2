@@ -19,6 +19,7 @@
   27 Jul 06 SHL Comments, apply indent
   29 Jul 06 SHL Use xfgets_bstripcr
   16 Aug 06 SHL Comments
+  31 Aug 06 SHL disable_menuitem: rework args to match name - sheesh
 
 ***********************************************************************/
 
@@ -805,15 +806,17 @@ BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
   }
   WinSendMsg(hwndMenu, MM_SETITEMATTR,
 	     MPFROM2SHORT(id, 1),
-	     MPFROM2SHORT(MIA_CHECKED, MIA_CHECKED * (*bool != 0)));
+	     MPFROM2SHORT(MIA_CHECKED, (*bool ? MIA_CHECKED : 0)));
   return *bool;
 }
 
-VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL enable)
+//== disable_menuitem() disable or enable_menuitem ==
+
+VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL disable)
 {
   WinSendMsg(hwndMenu, MM_SETITEMATTR,
 	     MPFROM2SHORT(id, TRUE),
-	     MPFROM2SHORT(MIA_DISABLED, ((enable == FALSE) * MIA_DISABLED)));
+	     MPFROM2SHORT(MIA_DISABLED, (disable ? MIA_DISABLED : 0)));
 }
 
 //== ViewHelp() invoke view.exe, return TRUE if OK ==
@@ -1636,8 +1639,13 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
 	WinSendMsg(DirCnrMenu, MM_DELETEITEM,
 		   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
     }
-    else if (hwndMenu == &TreeCnrMenu)
+    else if (hwndMenu == &TreeCnrMenu){
       WinSetWindowUShort(TreeCnrMenu, QWS_ID, IDM_VIEWSMENU);
+      SetConditionalCascade(TreeCnrMenu, IDM_PARTITIONSMENU, IDM_PARTITION);
+         if (fWorkPlace)
+      WinSendMsg(TreeCnrMenu, MM_DELETEITEM,
+            MPFROM2SHORT(IDM_PARTITIONSMENU, TRUE), MPVOID);
+    }
     else if (hwndMenu == &ArcCnrMenu) {
       WinSetWindowUShort(ArcCnrMenu, QWS_ID, IDM_VIEWSMENU);
       SetConditionalCascade(ArcCnrMenu, IDM_EXTRACTSUBMENU, IDM_ARCEXTRACT);
