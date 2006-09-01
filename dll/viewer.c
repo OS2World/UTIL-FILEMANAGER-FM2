@@ -10,6 +10,7 @@
 
   23 May 05 SHL Use QWL_USER
   17 Jul 06 SHL Use Runtime_Error
+  31 Aug 06 SHL Sync with disable_menuitem changes
 
 ***********************************************************************/
 
@@ -610,22 +611,22 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
           if(vw->busy || MLEgetreadonly(hwndMLE)) {
             disable_menuitem(vw->hwndMenu,
                              MLE_FILEMENU,
-                             FALSE);
+                             TRUE);
             disable_menuitem(vw->hwndMenu,
                              MLE_CUTCLIP,
-                             FALSE);
+                             TRUE);
             disable_menuitem(vw->hwndMenu,
                              MLE_PASTECLIP,
-                             FALSE);
+                             TRUE);
             disable_menuitem(vw->hwndMenu,
                              MLE_CLEAR,
-                             FALSE);
+                             TRUE);
             disable_menuitem(vw->hwndMenu,
                              MLE_CUTLINE,
-                             FALSE);
+                             TRUE);
             disable_menuitem(vw->hwndMenu,
                              MLE_BLOCKMENU,
-                             FALSE);
+                             TRUE);
           }
           return ret;
         }
@@ -646,22 +647,22 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
       if(!MLEgetreadonly(hwndMLE)) {
         disable_menuitem(vw->hwndMenu,
                          MLE_FILEMENU,
-                         TRUE);
+                         FALSE);
         disable_menuitem(vw->hwndMenu,
                          MLE_CUTCLIP,
-                         TRUE);
+                         FALSE);
         disable_menuitem(vw->hwndMenu,
                          MLE_PASTECLIP,
-                         TRUE);
+                         FALSE);
         disable_menuitem(vw->hwndMenu,
                          MLE_CLEAR,
-                         TRUE);
+                         FALSE);
         disable_menuitem(vw->hwndMenu,
                          MLE_CUTLINE,
-                         TRUE);
+                         FALSE);
         disable_menuitem(vw->hwndMenu,
                          MLE_BLOCKMENU,
-                         TRUE);
+                         FALSE);
       }
       if(mp1) {
         if(mp2) {
@@ -894,22 +895,22 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2) {
             MLEsetreadonly(hwndMLE,ro);
             disable_menuitem(vw->hwndMenu,
                              MLE_FILEMENU,
-                             !ro);
+                             ro);
             disable_menuitem(vw->hwndMenu,
                              MLE_CUTCLIP,
-                             !ro);
+                             ro);
             disable_menuitem(vw->hwndMenu,
                              MLE_PASTECLIP,
-                             !ro);
+                             ro);
             disable_menuitem(vw->hwndMenu,
                              MLE_CLEAR,
-                             !ro);
+                             ro);
             disable_menuitem(vw->hwndMenu,
                              MLE_CUTLINE,
-                             !ro);
+                             ro);
             disable_menuitem(vw->hwndMenu,
                              MLE_BLOCKMENU,
-                             !ro);
+                             ro);
             WinSendMsg(hwndMLE,
                        MLM_SETTEXTCOLOR,
                        MPFROMLONG(fColor),
