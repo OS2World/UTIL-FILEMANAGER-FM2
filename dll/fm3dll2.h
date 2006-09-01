@@ -12,7 +12,7 @@
   04 Nov 03 SHL Drop obsoletes
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   06 Jul 06 SHL Add Select Same Content support
-  23 Aug 06 SHL Comments
+  31 Aug 06 JS  Add partitioning menu items
 
 ***********************************************************************/
 
@@ -404,6 +404,10 @@
 #define IDM_WPSCOPY         1153
 #define IDM_SETTARGET       1154
 #define IDM_CLOSETRAY       1155
+#define IDM_PARTITIONDF       1156
+#define IDM_PARTITIONLVMG   1157
+#define IDM_PARTITIONFD       1158
+
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001
@@ -480,6 +484,8 @@
 #define IDM_AUTOVIEWCOMMENTS 3069
 #define IDM_TILEBACKWARDS   3070
 #define IDM_AUTOVIEWMLE     3071
+#define IDM_PARTITIONSMENU 3072
+
 
 #define IDM_DRIVESMENU      3899
 #define IDM_DRIVEA          3900

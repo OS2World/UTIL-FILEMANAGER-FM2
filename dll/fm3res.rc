@@ -13,6 +13,7 @@
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   07 Jun 05 SHL Comments
   29 Jul 06 SHL Drop duplicate icons
+  31 Aug 06 JS  Add partitioning menu items
 
 ***********************************************************************/
 
@@ -959,7 +960,13 @@ MENU TREECNR_POPUP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "Remap drives...",   IDM_REMAP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
-  MENUITEM "~Partition disks...", IDM_PARTITION
+  SUBMENU "~Partition disks", IDM_PARTITIONSMENU
+BEGIN
+        MENUITEM "~MiniLVM - eCS only" IDM_PARTITION
+        MENUITEM "~DFSee - If installed in System Path"   IDM_PARTITIONDF
+        MENUITEM "~LVMGUI" IDM_PARTITIONLVMG
+        MENUITEM "~FDisk - Do not use on LVM systems" IDM_PARTITIONFD
+END
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU "Windows",            IDM_WINDOWSMENU
   {
