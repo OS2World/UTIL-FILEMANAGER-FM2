@@ -1,6 +1,6 @@
 ;
-;This file contains some utility definitions for the FM/2 toolbar.
-;FM/2 saved this file as "<DRIVE>:\FM2\UTILS.TLS".
+;This file contains definitions for an FM/2 toolbox.
+;FM/2 saved this file as "<DRIVE>:\FM2\FILES.TLS"
 ;
 ;Each tool button has four lines that describe it.  The first line is
 ;the help for the button.
@@ -21,69 +21,124 @@
 ;online help).
 ;
 ;You can use \r in the help string to break the help into multiple lines.
+;;
 ;
-;
-Collect Files/Directories (Ctrl + C)
-Collect
-0
-1011
-;
-See all files
-SeeAll
-0
-1067
-;
-Window Dialog (Ctrl + W)
-Windws
-0
-9010
-;
-Directory Sizes (Ctrl + Z)
-DirSiz
-8
-1031
-;
-View INI Files
-INIs
+Rename Files/Directories (Ctrl + r)
+Rename
 1
-2001
+1005
 ;
-Kill Process
-KillPrc
-0
-2003
+Copy Files/Directories (Ctrl + c)
+Copy
+1
+1002
 ;
-Instant Command File
-Instant
-0
-2006
+WPS Copy Files/Directories
+WPSCopy
+1
+1153
 ;
-INF Bookshelf viewer
-InfBooks
-0
-2010
+Move Files/Directories (Ctrl + m)
+Move
+1
+1001
 ;
-HLP Bookshelf viewer
-HlpBooks
-8
-2011
+WPS Move Files/Directories
+WPSMove
+1
+1152
 ;
-Settings Notebook
-Setngs
-8
-3059
+View Files (Ctrl + v)
+View
+1
+1023
 ;
-Play Multimedia (Ctrl + l)
-Play
-9
-1058
+Edit Files (Ctrl + e)
+Edit
+1
+1024
+;
+Extended Attributes (Ctrl + E)
+EAs
+1
+1008
 ;
 Make Directory (Ctrl + M)
 MakeDir
-8
+0
 1026
 ;
-Seek and Scan for files
+Print Files (Ctrl + p)
+Print
+1
+1007
+;
+Open Default (F6)
+Open
+9
+1017
+;
+Create Objects
+Objects
+1
+1022
+;
+Remove objects
+RemoveObj
+1
+1043
+;
+Object Information (Ctrl + i)
+Info
+1
+1010
+;
+Create Shadow Objects
+Shadows
+9
+1021
+;
+Save List to Clipboard (Ctrl + [)
+SvClip
+1
+1027
+;
+Save List to File (Ctrl + S)
+SvList
+8
+1028
+;
+Archive Files/Directories (Ctrl + A)
+Archive
+1
+1029
+;
+Extract From Archives (Ctrl + x)
+Extract
+1
+1030
+;
+Text to binary decoding (Ctrl + U)
+UUDecode
+9
+1132
+;
+Permanently Delete Files/Directories (Ctrl + D)
+Kill
+0
+1006
+;
+Delete Files/Directories (Ctrl + d)
+Delete
+1
+1004
+;
+Undelete Files
+Undel
+8
+2004
+;
+Seek and scan files
 SeekScan
 0
 1047
@@ -112,6 +167,11 @@ Views toolbox
 Sort
 0
 4901
+;
+Utility toolbox
+Utils
+0
+4902
 ;
 Config toolbox
 Cmds

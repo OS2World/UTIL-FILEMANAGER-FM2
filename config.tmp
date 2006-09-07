@@ -1,6 +1,6 @@
 ;
 ;This file contains some utility definitions for the FM/2 toolbar.
-;FM/2 saved this file as "<DRIVE>:\FM2\UTILS.TLS".
+;FM/2 saved this file as "<DRIVE>:\FM2\CONFIG.TLS".
 ;
 ;Each tool button has four lines that describe it.  The first line is
 ;the help for the button.
@@ -23,67 +23,52 @@
 ;You can use \r in the help string to break the help into multiple lines.
 ;
 ;
-Collect Files/Directories (Ctrl + C)
-Collect
-0
-1011
-;
-See all files
-SeeAll
-0
-1067
-;
-Window Dialog (Ctrl + W)
-Windws
-0
-9010
-;
-Directory Sizes (Ctrl + Z)
-DirSiz
-8
-1031
-;
-View INI Files
-INIs
-1
-2001
-;
-Kill Process
-KillPrc
-0
-2003
-;
-Instant Command File
-Instant
-0
-2006
-;
-INF Bookshelf viewer
-InfBooks
-0
-2010
-;
-HLP Bookshelf viewer
-HlpBooks
-8
-2011
-;
 Settings Notebook
 Setngs
-8
+0
 3059
 ;
-Play Multimedia (Ctrl + l)
-Play
-9
-1058
-;
-Make Directory (Ctrl + M)
-MakeDir
+Set Target Directory (Ctrl + T)
+TargetDir
 8
-1026
+1154
 ;
-Seek and Scan for files
+Filter Container (Ctrl + f)
+Filter
+0
+5001
+;
+Edit Associations
+Assoc
+0
+3001
+;
+Edit Commands
+Cmds
+8
+1048
+;
+Font Palette
+FntPal
+0
+3020
+;
+System Clock
+SysClk
+0
+2009
+;
+Solid Color Palette
+SolPal
+0
+3021
+;
+Hi Color Palette
+MixPal
+8
+3061
+;
+Seek and scan files
 SeekScan
 0
 1047
@@ -113,9 +98,9 @@ Sort
 0
 4901
 ;
-Config toolbox
-Cmds
-8
-4900
+Utility toolbox
+Utils
+0
+4902
 ;
 ; $Id$

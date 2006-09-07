@@ -2,181 +2,32 @@
 ;This file contains definitions for the FM/2 toolbar.
 ;
 ;Each tool button has four lines that describe it.  The first line is
-;the help for the button.  The second line is the text for the button
-;(internally defined tools have icons, and the text is ignored).  The
-;third line is a number indicating flags associated with the button.
-;A flag value of 1 means the button is droppable, 4 means invisible (5 both).
+;the help for the button.
+;
+;The second line is the text for the button (internally defined tools
+;have icons, and the text is ignored).
+;
+;The third line is a number indicating flags associated with the button.
+;A flag value of 0 means the button is non-droppable, 1 means the button
+;is droppable, 4 means invisible (5 both), 8 means non-droppable with a
+:spacer following, and 9 means droppable with a spacer following.
+;
 ;The fourth line is the ID of the button (for internal commands only).
-;Note Commands begin at ID 4001, so a button with ID 4001 would cause
-;the first Command to be run and ID 4002 would run the second, and so on.
+;Note Commands begin at ID 4000, so a button with ID 4000 would cause
+;the first Command to be run and ID 4001 would run the second, and so on.
+;4900 marks the first "quick toolbox change" item, and you can
+;have up to 50 of them (these buttons load other toolboxes, see
+;online help).
+;
 ;You can use \r in the help string to break the help into multiple lines.
 ;
 ;I suggest that you keep a backup copy of this file...
 ;
-Window Dialog
-Windws
-0
-9010
 ;
-View Files
-View
-1
-1023
-;
-Edit Files
-Edit
-1
-1024
-;
-Object Information
-Info
-1
-1010
-;
-Rename Files/Directories
-Rename
-1
-1005
-;
-Delete Files/Directories
-Delete
-1
-1004
-;
-Permanently Delete Files/Directories
-Kill
-1
-1006
-;
-Remove objects
-RemoveObj
-1
-1043
-;
-Set Attributes and Date/Time of Files/Directories
-Attribs
-1
-1009
-;
-Open Default
-Open
-1
-1017
-;
-Walk Directories
-Walk
-0
-10002
-;
-Select All Files
-Select
-0
-10008
-;
-Deselect All
-Desel
-0
-10007
-;
-Archive Files/Directories
+Archive Files/Directories (Ctrl + A)
 Archive
 1
 1029
-;
-Extract From Archives
-Extract
-1
-1030
-;
-Create Objects
-Objects
-1
-1022
-;
-Create Shadow Objects
-Shadows
-1
-1021
-;
-Copy Files/Directories
-Copy
-1
-1002
-;
-Move Files/Directories
-Move
-1
-1001
-;
-Play Multimedia
-Play
-1
-1058
-;
-Kill Process
-KillPrc
-0
-2003
-;
-Undelete Files
-Undel
-0
-2004
-;
-Instant Command File
-Instant
-0
-2006
-;
-OS/2 Command Line
-OS/2
-0
-2007
-;
-Filter Container
-Filter
-0
-5001
-;
-Edit Associations
-Assoc
-0
-3001
-;
-Edit Commands
-Cmds
-0
-1048
-;
-Rescan
-Rescan
-0
-5021
-;
-Print Files
-Print
-1
-1007
-;
-Extended Attributes
-EAs
-1
-1008
-;
-View INI Files
-INIs
-1
-2001
-;
-Save List to Clipboard
-SvClip
-1
-1027
-;
-Save List to File
-SvList
-0
-1028
 ;
 Collect Files/Directories
 Collect
@@ -188,18 +39,309 @@ ColList
 1
 1060
 ;
+Copy Files/Directories (Ctrl + c)
+Copy
+1
+1002
+;
+Create Objects
+Objects
+1
+1022
+;
+Create Shadow Objects
+Shadows
+1
+1021
+;
+Delete Files/Directories (Ctrl + d)
+Delete
+1
+1004
+;
+Deselect All (Ctrl + \)
+Desel
+0
+10007
+;
+Deselect Dirs
+-Dirs
+0
+10011
+;
+Deselect Mask (Ctrl + +)
+-Mask
+0
+10013
+;
+Directory Sizes (Ctrl + Z)
+DirSiz
+0
+1031
+;
+Edit Associations
+Assoc
+0
+3001
+;
+Edit Commands
+Cmds
+0
+1048
+;
+Edit Files (Ctrl + e)
+Edit
+1
+1024
+;
+Exit FM2 (Ctrl + F3)
+Exit
+0
+1111
+;
+Extended Attributes (Ctrl + E)
+EAs
+1
+1008
+;
+Extract From Archives (Ctrl + x)
+Extract
+1
+1030
+;
+Filter Container (Ctrl + f)
+Filter
+0
+5001
+;
+FM/2 Help (Ctrl + k)
+Help
+0
+999
+;
+Font Palette
+FntPal
+0
+3020
+;
+Hi Color Palette
+MixPal
+0
+3061
+;
+HLP Bookself viewer
+HlpBooks
+0
+2011
+;
+Instant Command File
+Instant
+0
+2006
+;
+INF Bookself viewer
+InfBooks
+0
+2010
+;
+Invert selections (Ctrl + ;)
+Invert
+0
+10014
+;
+Kill Process
+KillPrc
+0
+2003
+;
+Make Directory (Ctrl + M)
+MkDir
+0
+1026
+;
+Move Files/Directories (Ctrl + m)
+Move
+1
+1001
+;
+Object Information (Ctrl + i)
+Info
+1
+1010
+;
+Open Default (F6)
+Open
+1
+1017
+;
+OS/2 Command Line
+OS/2
+0
+2007
+;
+Play Multimedia
+Play
+1
+1058
+;
+Permanently Delete Files/Directories (Ctrl + D)
+Kill
+1
+1006
+;
+Print Files (Ctrl + p)
+Print
+1
+1007
+;
+Remove objects
+RemoveObj
+1
+1043
+;
+Rename Files/Directories (Ctrl + r)
+Rename
+1
+1005
+;
+Reselect (Ctrl +  ')
+Reslct
+0
+10027
+;
+Reverse sort
+Rev
+8
+3015
+;
+Save List to Clipboard (Ctrl + [)
+SvClip
+1
+1027
+;
+Save List to File (Ctrl + S)
+SvList
+0
+1028
+;
+See all files
+SeeAll
+0
+1067
+;
+Select All Files (Ctrl + /)
+Select
+0
+10008
+;
 Seek and scan files
 SeekScan
 0
 1047
 ;
-Make Directory
-MkDir
+Select Mask (Ctrl + =)
++Mask
 0
-1026
+10012
 ;
-Set Target Directory
+Set Attributes and Date/Time of Files/Directories
+Attribs
+1
+1009
+;
+Set Target Directory (Ctrl + T)
 TargetDir
 0
 1154
 ;
+Settings Notebook
+Setngs
+0
+3059
+;
+Solid Color Palette
+SolPal
+0
+3021
+;
+Sort by EA size
+EAsz
+0
+3007
+;
+Sort by creation date
+CrDate
+0
+3012
+;
+Sort by filename
+Name
+0
+3005
+;
+Sort by first extension
+1st
+0
+3008
+;
+Sort by last extension
+Last
+0
+3009
+;
+Sort by lastwrite date
+Date
+0
+3010
+;
+Sort by size
+Size
+0
+3006
+;
+System Clock
+SysClk
+0
+2009
+;
+Text to binary decoding (Ctrl + U)
+UUDecode
+1
+1132
+;
+Undelete Files
+Undel
+0
+2004
+;
+Walk Directories (Ctrl + w)
+Walk
+0
+10002
+;
+Window Dialog (Ctrl + W)
+Windws
+0
+9010
+;
+WPS Copy Files/Directories
+WPSCopy
+1
+1153
+;
+WPS Move Files/Directories
+WPSMove
+1
+1152
+;
+View Files (Ctrl + v)
+View
+1
+1023
+;
+View INI Files
+INIs
+1
+2001
+;
+; $Id$

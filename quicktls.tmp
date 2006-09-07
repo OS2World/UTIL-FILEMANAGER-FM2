@@ -5,3 +5,10 @@ cmds.tls
 utils.tls
 sort.tls
 select.tls
+config.tls
+files.tls
+select.tls
+fm3tools.dat
+;
+; $Id$
+

@@ -416,6 +416,19 @@ system or programs (including FM/2). :artwork runin name='\bitmaps\drive.bmp'.
 disk.:ehp8. This is available only in context menus requested on drives
 (root directories). :artwork runin name='\bitmaps\drive.bmp'.
 :p.
+:hp6.Partition Disks:ehp6. has four choices for partitioning tools.
+They are minilvm, DFSee, LVMGUI and FDISKPM.  Any of these
+will allow you to modify the partitions on your hard drives.
+:hp8.Extreme caution should be exercised; read the help!:ehp8.
+:p.
+Minilvm is a partitioning tool which is avalable with eCS and is probably
+the easiest to use for LVM type system. If you choose partition Disks it is the default.
+DFSee is a share ware tool with a much wider range of features but must be obtained
+from Hobbes and installed in the system path to work. LVMGUI is the IBM provided GUI tool for
+Disk management. It is a JAVA based program and earily versions only work with JAVA 1.1.8.
+FDISKPM is the partition management tool for preLVM systems and should not be used
+on LVM based sytems. :artwork runin name='/bitmaps/drive.bmp'.
+:p.
 :hp6.Optimize:ehp6. runs a .CMD file with the name <Filesystem>OPT.CMD,
 giving the drive to optimize as a command line argument. Therefore, for
 a FAT drive C&colon. "FATOPT.CMD C&colon." would be run (through the
@@ -614,10 +627,18 @@ the listbox. Names are added automatically. Up to 200 names can be
 stored in this manner (kept on disk between sessions in a file named
 RESOURCE.DAT).
 :p.
-:hp6.Partitions:ehp6. calls up :link reftype=launch object='CMD.EXE'
-data='/C HELP FDISKPM'.FDISKPM.EXE:elink. to allow you to modify the
-partitions on your hard drives. :hp8.Extreme caution should be
-exercised; read the help!:ehp8.
+:hp6.Partition Disks:ehp6. has four choices for partitioning tools.
+They are minilvm, DFSee, LVMGUI and FDISKPM.  Any of these
+will allow you to modify the partitions on your hard drives.
+:hp8.Extreme caution should be exercised; read the help!:ehp8.
+:p.
+Minilvm is a partitioning tool which is avalable with eCS and is probably
+the easiest to use for LVM type system. If you choose partition Disks it is the default.
+DFSee is a share ware tool with a much wider range of features but must be obtained
+from Hobbes and installed in the system path to work. LVMGUI is the IBM provided GUI tool for
+Disk management. It is a JAVA based program and earily versions only work with JAVA 1.1.8.
+FDISKPM is the partition management tool for preLVM systems and should not be used
+on LVM based sytems.
 :p.
 The :hp6.Drives:ehp6. submenu lets you select a root directory and the
 Drive Tree will scroll to show that directory, and make it the current

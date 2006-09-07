@@ -1,6 +1,6 @@
 ;
 ;This file contains some utility definitions for the FM/2 toolbar.
-;FM/2 saved this file as "<DRIVE>:\FM2\UTILS.TLS".
+;FM/2 saved this file as "<DRIVE>:\FM2\VIEWS.TLS".
 ;
 ;Each tool button has four lines that describe it.  The first line is
 ;the help for the button.
@@ -23,67 +23,117 @@
 ;You can use \r in the help string to break the help into multiple lines.
 ;
 ;
-Collect Files/Directories (Ctrl + C)
-Collect
+Filter Container (Ctrl + f)
+Filter
 0
-1011
+5001
 ;
-See all files
-SeeAll
+Walk Directories (Ctrl + w)
+Walk
 0
-1067
-;
-Window Dialog (Ctrl + W)
-Windws
-0
-9010
-;
-Directory Sizes (Ctrl + Z)
-DirSiz
-8
-1031
-;
-View INI Files
-INIs
-1
-2001
-;
-Kill Process
-KillPrc
-0
-2003
-;
-Instant Command File
-Instant
-0
-2006
-;
-INF Bookshelf viewer
-InfBooks
-0
-2010
-;
-HLP Bookshelf viewer
-HlpBooks
-8
-2011
-;
-Settings Notebook
-Setngs
-8
-3059
-;
-Play Multimedia (Ctrl + l)
-Play
-9
-1058
+10002
 ;
 Make Directory (Ctrl + M)
 MakeDir
 8
 1026
 ;
-Seek and Scan for files
+Sort by filename
+Name
+0
+3005
+;
+Sort by size
+Size
+0
+3006
+;
+Sort by EA size
+EAsz
+0
+3007
+;
+Sort by first extension
+1st
+0
+3008
+;
+Sort by last extension
+Last
+0
+3009
+;
+Sort by lastwrite date
+Date
+0
+3010
+;
+Sort by creation date
+CrDate
+0
+3012
+;
+Reverse sort
+Rev
+8
+3015
+;
+Select All
++All
+0
+10006
+;
+Deselect All (Ctrl + \)
+-All
+0
+10007
+;
+Deselect Dirs
+-Dirs
+0
+10011
+;
+Select Files (Ctrl + /)
++Files
+0
+10008
+;
+Invert selections (Ctrl + ;)
+Invert
+0
+10014
+;
+Reselect (Ctrl +  ')
+Reslct
+8
+10027
+;
+Select Mask (Ctrl + =)
++Mask
+0
+10012
+;
+Deselect Mask (Ctrl + +)
+-Mask
+8
+10013
+;
+Settings Notebook
+Setngs
+0
+3059
+;
+Set Target Directory (Ctrl + T)
+TargetDir
+8
+1154
+;
+Window Dialog (Ctrl + W)
+Windws
+8
+9010
+;
+Seek and scan files
 SeekScan
 0
 1047
@@ -108,10 +158,10 @@ Exit
 8
 1111
 ;
-Views toolbox
-Sort
+Utility toolbox
+Utils
 0
-4901
+4902
 ;
 Config toolbox
 Cmds

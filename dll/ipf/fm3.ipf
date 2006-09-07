@@ -545,7 +545,7 @@ you to use your own bitmap. Bitmaps are named after the :hp1.ID:ehp1.
 of the button -- for example, the bitmap file for ID 1005 would be named
 "1005.bmp". Clicking the :hp1.Edit bmp:ehp1. button will cause ICONEDIT
 to be loaded with the bitmap, ready to edit. (Note that bitmaps should
-be 28 x 28.)
+be 32 x 32.)
 :p.
 The :hp1.ID:ehp1. field identifies the command that is associated with
 this button. See the :link reftype=hd res=96401.Tool IDs:elink. topic.
@@ -590,44 +590,73 @@ res=96401.Tool IDs:elink. topic.
 :xmp.
 ID     Command                                              Droppable?
 ====   =================================================    ==========
+ 999   FM/2 Help                                            N
+1001   Move Files/Directories                               Y
+1002   Copy Files/Directories                               Y
+1004   Delete Files/Directories                             Y
+1005   Rename Files/Directories                             Y
+1006   Permanently Delete Files/Directories                 Y
+1007   Print Files                                          Y
+1008   Extended Attributes                                  Y
+1009   Set Attributes and Date/Time of Files/Directories    Y
+1010   Object Information                                   Y
+1011   Collect Files/Directories                            N
+1017   Open Default                                         Y
+1021   Create Shadow Objects                                Y
+1022   Create Objects                                       Y
 1023   View Files                                           Y
 1024   Edit Files                                           Y
 1026   Make Directory                                       N
-1010   Object Information                                   Y
-1005   Rename Files/Directories                             Y
-1004   Delete Files/Directories                             Y
-1006   Permanently Delete Files/Directories                 Y
-1009   Set Attributes and Date/Time of Files/Directories    Y
-10002  Walk Directories                                     N
-10008  Select All Files                                     N
-10007  Deselect All                                         N
+1027   Save List to Clipboard                               Y
+1028   Save List to File                                    Y
 1029   Archive Files/Directories                            Y
 1030   Extract From Archives                                Y
-1022   Create Objects                                       Y
-1021   Create Shadow Objects                                Y
-1002   Copy Files/Directories                               Y
-1001   Move Files/Directories                               Y
+1031   Directory sizes                                      N
+1043   Remove Objects                                       Y
+1047   Seek and Scan Files                                  N
+1048   Edit Commands                                        N
+1058   Play Multimedia                                      Y
+1060   Collect Files/Directories from list file             Y
+1067   See All Files                                        N
+1111   Exit FM/2                                            N
+1132   UUDecode                                             Y
+1133   Merge                                                Y
+1152   WPS Move Files/Directories                           Y
+1153   WPS Copy Files/Directories                           Y
+1154   Set Target Directory                                 N
+2001   View INI Files                                       Y
 2003   Kill Process                                         N
 2004   Undelete Files                                       N
 2006   Instant Command File                                 N
 2007   OS/2 Command Line                                    N
-5001   Filter Container                                     N
+2009   System Clock                                         N
+2010   INF Bookshelf Viewer                                 N
+2011   HLP Bookshelft Viewer                                N
 3001   Edit Associations                                    N
-1048   Edit Commands                                        N
+3005   Sort by Filename                                     N
+3006   Sort by Size                                         N
+3007   Sort by EA size                                      N
+3008   Sort by 1st Extension                                N
+3009   Sort by Last Extension                               N
+3010   Sort by Last Write Date                              N
+3012   Sort by Creation Date                                N
+3015   Reverse Sort                                         N
+3020   Font Palette                                         N
+3021   Solid Color Palette                                  N
+3059   Settings Notebook                                    N
+3061   Hi Color Palette                                     N
+5001   Filter Container                                     N
 5021   Rescan                                               N
-1007   Print Files                                          Y
-1008   Extended Attributes                                  Y
-2001   View INI Files                                       Y
-1027   Save List to Clipboard                               Y
-1028   Save List to File                                    Y
-1011   Collect Files/Directories                            N
-1060   Collect Files/Directories from list file             Y
-2010   Bookshelf Viewer                                     N
-1017   Open Default                                         Y
-1031   Directory sizes                                      N
-1132   UUDecode                                             Y
-1133   Merge                                                Y
-1111   Exit FM/2                                            N
+9010   Windows Dialog                                       N
+10002  Walk Directories                                     N
+10007  Deselect All                                         N
+10008  Select All Files                                     N
+10011  Deselect Dirs                                        N
+10012  Select Mask                                          N
+10014  Invert selections                                    N
+10027  Reselect                                             N
+10031  Deselect Mask                                        N
+&period...
 4001   First Command                                        Y
 4002   Second Command                                       Y
 &period...
