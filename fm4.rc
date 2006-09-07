@@ -8,8 +8,7 @@
   Copyright (c) 2005, 2006 Steven H. Levine
 
   09 Aug 05 SHL Drop dup icon
-  21 Aug 06 SHL Sync with fm3.rc
-  01 Sep 06 SHL Sync with fm3.rc
+  04 Sep 06 SHL Sync with fm3.rc
 
 ***********************************************************************/
 
@@ -68,6 +67,7 @@ BITMAP IDM_EAS              bitmaps\EA.BMP
 BITMAP IDM_INIVIEWER        bitmaps\INI.BMP
 BITMAP IDM_PERMDELETE       bitmaps\PERMDEL.BMP
 BITMAP IDM_SYSINFO          bitmaps\SYSINFO.BMP
+BITMAP IDM_SYSTEMCLOCK      bitmaps\SYSCLOCK.BMP
 BITMAP IDM_SAVETOCLIP       bitmaps\SAVECLIP.BMP
 BITMAP IDM_HELP             bitmaps\HELP.BMP
 BITMAP IDM_SAVETOLIST       bitmaps\SAVELIST.BMP
@@ -114,5 +114,15 @@ BITMAP IDM_SORTLAST         bitmaps\SORTLAST.BMP
 BITMAP IDM_SORTLWDATE       bitmaps\SORTDATE.BMP
 BITMAP IDM_SORTCRDATE       bitmaps\SORTCDAT.BMP
 BITMAP IDM_SORTREVERSE      bitmaps\SORTREV.BMP
+
+BITMAP IDM_COLORPALETTE     bitmaps\COLORPAL.BMP
+BITMAP IDM_FONTPALETTE      bitmaps\FNTPALET.BMP
+BITMAP IDM_KILLME           bitmaps\KILLME.BMP
+BITMAP IDM_MERGE            bitmaps\MERGE.BMP
+BITMAP IDM_HICOLORPALETTE   bitmaps\HICOLPAL.BMP
+BITMAP IDM_VIEWHELPS        bitmaps\VIEWHELP.BMP
+BITMAP IDM_WPSCOPY          bitmaps\WPSCOPYB.BMP
+BITMAP IDM_WPSMOVE          bitmaps\WPSMOVEB.BMP
+BITMAP IDM_UUDECODE         bitmaps\UDECODE.BMP
 
 BITMAP 26102                bitmaps\HECTOR.BMP
