@@ -10,6 +10,7 @@
 
   24 May 05 SHL Rework for CNRITEM.szSubject
   13 Jul 06 SHL Use Runtime_Error
+  01 Sep 06 SHL Do not complain for normal cancel
 
 ***********************************************************************/
 
@@ -402,7 +403,6 @@ MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             if(data->working) {
               data->dying = TRUE;
               data->stopflag = 0xff;
-	      Runtime_Error(pszSrcFile, __LINE__, "working unexpected");
               break;
             }
             WinDismissDlg(hwnd,0);
