@@ -1,6 +1,6 @@
 ; $Id$
 LIBRARY FM3DLL INITINSTANCE TERMINSTANCE
-DESCRIPTION '@#SLAInc:3.05beta02#@##1## 08/31/2006 03:05:00      SLAMain::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2006 Steven Levine and Associates, Inc.'
+DESCRIPTION '@#SLAInc:3.05beta03#@##1## 09/06/2006 03:05:00      SLAMain::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2006 Steven Levine and Associates, Inc.'
 EXETYPE OS2
 PROTMODE
 DATA MULTIPLE READWRITE LOADONCALL NONSHARED
