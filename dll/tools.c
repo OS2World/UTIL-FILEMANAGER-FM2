@@ -13,6 +13,8 @@
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
   18 Aug 06 SHL Report more runtime errors
+  05 Sep 06 SHL docopyf filename args must be variables
+  05 Sep 06 SHL Sync with standard source formattting
 
 ***********************************************************************/
 
@@ -89,15 +91,15 @@ VOID save_quicktools(VOID)
   INT   x = 0;
   CHAR  s[CCHMAXPATH + 14];
 
-  if(!quicktool[0])
+  if (!quicktool[0])
     return;
   save_dir2(s);
-  if(s[strlen(s) - 1] != '\\')
+  if (s[strlen(s) - 1] != '\\')
     strcat(s,"\\");
   strcat(s,"QUICKTLS.DAT");
   fp = xfopen(s,"w",pszSrcFile,__LINE__);
   if (fp) {
-    for(x = 0;quicktool[x] && x < 50;x++)
+    for (x = 0;quicktool[x] && x < 50;x++)
       fprintf(fp,"%s\n",quicktool[x]);
     fclose(fp);
   }
@@ -112,48 +114,48 @@ TOOL *load_tools(CHAR *filename)
   CHAR   help[80],text[80],flagstr[80],idstr[80],*fname;
   TOOL  *info;
 
-  if(!fToolbar) {
+  if (!fToolbar) {
     toolhead = free_tools();
     return toolhead;
   }
-  if(!filename ||
+  if (!filename ||
      !*filename)
     filename = (*lasttoolbox) ? lasttoolbox : "CMDS.TLS";
-  if(*filename)
+  if (*filename)
     fname = searchpath(filename);
-  if(!fname ||
+  if (!fname ||
      !*fname)
     fname = "FM3TOOLS.DAT";
-  if(fname &&
+  if (fname &&
      *fname) {
     filename = fname;
     strcpy(lasttoolbox,filename);
     fp = _fsopen(filename,"r",SH_DENYWR);
     if (fp) {
       toolhead = free_tools();
-      while(!feof(fp)) {
+      while (!feof(fp)) {
         do {
-          if(!xfgets(help,sizeof(help),fp,pszSrcFile,__LINE__))
+          if (!xfgets(help,sizeof(help),fp,pszSrcFile,__LINE__))
             break;
-        } while(*help == ';' && !feof(fp));
+        } while (*help == ';' && !feof(fp));
         stripcr(help);
-        if(!xfgets(text,sizeof(text),fp,pszSrcFile,__LINE__))
+        if (!xfgets(text,sizeof(text),fp,pszSrcFile,__LINE__))
           break;
         stripcr(text);
-        if(!xfgets(flagstr,sizeof(flagstr),fp,pszSrcFile,__LINE__))
+        if (!xfgets(flagstr,sizeof(flagstr),fp,pszSrcFile,__LINE__))
           break;
-        if(!xfgets(idstr,sizeof(idstr),fp,pszSrcFile,__LINE__))
+        if (!xfgets(idstr,sizeof(idstr),fp,pszSrcFile,__LINE__))
           break;
-        if(!(USHORT)atoi(idstr))
+        if (!(USHORT)atoi(idstr))
           continue;
         info = xmallocz(sizeof(TOOL),pszSrcFile,__LINE__);
         if (info) {
-          if(*help) {
+          if (*help) {
             literal(help);
-            if(*help)
+            if (*help)
               info->help = xstrdup(help,pszSrcFile,__LINE__);
           }
-          if(*text)
+          if (*text)
             info->text = xstrdup(text,pszSrcFile,__LINE__);
           info->flags = (atoi(flagstr) & (~(T_TEXT | T_EMPHASIZED)));
           info->id = (USHORT)atoi(idstr);
@@ -175,32 +177,29 @@ VOID save_tools(CHAR *filename)
   CHAR  *fname;
   TOOL  *info;
 
-  if(!filename)
+  if (!filename)
     filename = lasttoolbox;
-  if(*filename)
+  if (*filename)
     fname = searchpath(filename);
-  if(fname && *fname)
+  if (fname && *fname)
     filename = fname;
   else {
-    if(*lasttoolbox)
+    if (*lasttoolbox)
       filename = lasttoolbox;
     else
       filename = "FM3TOOLS.TLS";
     fname = searchpath(filename);
-    if(fname && *fname)
+    if (fname && *fname)
       filename = fname;
   }
 
-  if(stristr(filename,"FM3TOOLS.DAT"))
+  if (stristr(filename,"FM3TOOLS.DAT"))
     filename = "FM3TOOLS.TLS";
-  if(toolhead && filename && *filename) {
+  if (toolhead && filename && *filename) {
     strcpy(lasttoolbox,filename);
-    PrfWriteProfileString(fmprof,
-                          FM3Str,
-                          "LastToolBox",
-                          filename);
+    PrfWriteProfileString(fmprof,FM3Str,"LastToolBox",filename);
   }
-  if(!toolhead) {
+  if (!toolhead) {
     unlinkf("%s",filename);
     return;
   }
@@ -208,7 +207,7 @@ VOID save_tools(CHAR *filename)
   if (fp) {
     fprintf(fp,GetPString(IDS_TOOLFILETEXT),filename);
     info = toolhead;
-    while(info) {
+    while (info) {
       fprintf(fp,
               "%s\n%s\n%u\n%u\n;\n",
               (info->help) ? info->help : NullStr,
@@ -220,11 +219,8 @@ VOID save_tools(CHAR *filename)
     fclose(fp);
     fToolsChanged = FALSE;
   }
-  if(hwndMain)
-    PostMsg(hwndMain,
-            UM_FILLBUTTONLIST,
-            MPVOID,
-            MPVOID);
+  if (hwndMain)
+    PostMsg(hwndMain,UM_FILLBUTTONLIST,MPVOID,MPVOID);
 }
 
 
@@ -232,13 +228,13 @@ TOOL *add_tool(TOOL *tool)
 {
   TOOL *info;
 
-  if(tool) {
+  if (tool) {
     info = toolhead;
-    if(info) {
-      while(info->next)
+    if (info) {
+      while (info->next)
         info = info->next;
     }
-    if(info)
+    if (info)
       info->next = tool;
     else
       toolhead = tool;
@@ -250,10 +246,10 @@ TOOL *add_tool(TOOL *tool)
 
 TOOL *insert_tool(TOOL *tool,TOOL *after)
 {
-  if(tool) {
-    if(!toolhead)
+  if (tool) {
+    if (!toolhead)
       return add_tool(tool);
-    if(!after) {
+    if (!after) {
       tool->next = toolhead;
       toolhead = tool;
       fToolsChanged = TRUE;
@@ -272,17 +268,17 @@ TOOL *del_tool(TOOL *tool)
 {
   TOOL *info,*prev = NULL;
 
-  if(tool) {
+  if (tool) {
     info = toolhead;
-    while(info) {
-      if(info == tool) {
-        if(info == toolhead)
+    while (info) {
+      if (info == tool) {
+        if (info == toolhead)
           toolhead = info->next;
-        if(prev)
+        if (prev)
           prev->next = info->next;
-        if(info->help)
+        if (info->help)
           free(info->help);
-        if(info->text)
+        if (info->text)
           free(info->text);
         free(info);
         fToolsChanged = TRUE;
@@ -300,10 +296,10 @@ TOOL *find_tool(USHORT id)
 {
   TOOL *tool;
 
-  if(id) {
+  if (id) {
     tool = toolhead;
-    while(tool) {
-      if(id && tool->id == id)
+    while (tool) {
+      if (id && tool->id == id)
         return tool;
       tool = tool->next;
     }
@@ -314,8 +310,8 @@ TOOL *find_tool(USHORT id)
 
 TOOL *next_tool(TOOL *tool,BOOL skipinvisible)
 {
-  while(tool) {
-    if(tool->next && (skipinvisible && (tool->next->flags & T_INVISIBLE)))
+  while (tool) {
+    if (tool->next && (skipinvisible && (tool->next->flags & T_INVISIBLE)))
       tool = tool->next;
     else
       return (tool->next) ? tool->next : toolhead;
@@ -329,17 +325,17 @@ TOOL *prev_tool(TOOL *tool,BOOL skipinvisible)
   TOOL *info;
 
 Again:
-  while(tool) {
+  while (tool) {
     info = toolhead;
-    while(info) {
-      if(info->next == tool) {
-        if(skipinvisible && (info->flags & T_INVISIBLE)) {
+    while (info) {
+      if (info->next == tool) {
+        if (skipinvisible && (info->flags & T_INVISIBLE)) {
           tool = info;
           goto Again;
         }
         return info;
       }
-      if(!info->next && tool == toolhead)
+      if (!info->next && tool == toolhead)
         return info;
       info = info->next;
     }
@@ -353,12 +349,12 @@ TOOL *swap_tools(TOOL *tool1,TOOL *tool2)
 {
   TOOL *prev1 = NULL,*prev2 = NULL,*info;
 
-  if(tool1 && tool2 && tool1 != tool2) {
+  if (tool1 && tool2 && tool1 != tool2) {
     info = toolhead;
-    while(info && !prev1 && !prev2) {
-      if(info->next == tool1)
+    while (info && !prev1 && !prev2) {
+      if (info->next == tool1)
         prev1 = info;
-      else if(info->next == tool2)
+      else if (info->next == tool2)
         prev2 = info;
       info = info->next;
     }
@@ -366,9 +362,9 @@ TOOL *swap_tools(TOOL *tool1,TOOL *tool2)
     tool2 = tool1;
     tool1 = info;
     info = tool2->next;
-    if(prev1)
+    if (prev1)
       prev1->next = tool2;
-    if(prev2)
+    if (prev2)
       prev2->next = tool1;
     tool2->next = tool1->next;
     tool1->next = info;
@@ -383,11 +379,11 @@ TOOL *free_tools(VOID)
   TOOL *tool,*next;
 
   tool = toolhead;
-  while(tool) {
+  while (tool) {
     next = tool->next;
-    if(tool->help)
+    if (tool->help)
       free(tool->help);
-    if(tool->text)
+    if (tool->text)
       free(tool->text);
     free(tool);
     tool = next;
@@ -397,22 +393,20 @@ TOOL *free_tools(VOID)
 }
 
 
-MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
-                                  MPARAM mp2)
+MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  switch(msg) {
+  switch (msg) {
     case WM_INITDLG:
-      if(!toolhead || !toolhead->next)
+      if (!toolhead || !toolhead->next)
         WinDismissDlg(hwnd,0);
-      WinSetWindowText(hwnd,
-                       GetPString(IDS_RETOOLTEXT));
+      WinSetWindowText(hwnd,GetPString(IDS_RETOOLTEXT));
       {
         TOOL  *tool;
         CHAR   s[133];
         SHORT  sSelect;
 
         tool = toolhead;
-        while(tool) {
+        while (tool) {
           sprintf(s,
                   "%-5u  %s",
                   tool->id,
@@ -422,7 +416,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
                                              LM_INSERTITEM,
                                              MPFROMSHORT(LIT_END),
                                              MPFROMP(s));
-          if(sSelect >= 0)
+          if (sSelect >= 0)
             WinSendDlgItemMsg(hwnd,
                               RE_ADDLISTBOX,
                               LM_SETITEMHANDLE,
@@ -437,7 +431,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
       return 0;
 
     case WM_COMMAND:
-      switch(SHORT1FROMMP(mp1)) {
+      switch (SHORT1FROMMP(mp1)) {
         case DID_CANCEL:
           WinDismissDlg(hwnd,0);
           break;
@@ -450,12 +444,12 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
             numitems = (SHORT)WinSendDlgItemMsg(hwnd,RE_REMOVELISTBOX,
                                                 LM_QUERYITEMCOUNT,
                                                 MPVOID,MPVOID);
-            while(numitems) {
+            while (numitems) {
               tool = (TOOL *)WinSendDlgItemMsg(hwnd,RE_REMOVELISTBOX,
                                                LM_QUERYITEMHANDLE,
                                                MPFROMSHORT(sSelect++),MPVOID);
-              if(tool) {
-                if(!thead)
+              if (tool) {
+                if (!thead)
                   thead = tool;
                 else
                   last->next = tool;
@@ -467,13 +461,13 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
             numitems = (SHORT)WinSendDlgItemMsg(hwnd,RE_ADDLISTBOX,
                                                 LM_QUERYITEMCOUNT,
                                                 MPVOID,MPVOID);
-            while(numitems) {
+            while (numitems) {
               tool = (TOOL *)WinSendDlgItemMsg(hwnd,RE_ADDLISTBOX,
                                                LM_QUERYITEMHANDLE,
                                                MPFROMSHORT(sSelect++),
                                                MPVOID);
-              if(tool) {
-                if(!thead)
+              if (tool) {
+                if (!thead)
                   thead = tool;
                 else
                   last->next = tool;
@@ -481,7 +475,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
               }
               numitems--;
             }
-            if(last)
+            if (last)
               last->next = NULL;
             toolhead = thead;
           }
@@ -490,7 +484,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
           break;
 
         case IDM_HELP:
-          if(hwndHelp)
+          if (hwndHelp)
             WinSendMsg(hwndHelp,HM_DISPLAY_HELP,
                        MPFROM2SHORT(HELP_REORDERBUTTONS,0),
                        MPFROMSHORT(HM_RESOURCEID));
@@ -507,13 +501,13 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
                                                 LM_QUERYSELECTION,
                                                 MPFROMSHORT(LIT_FIRST),
                                                 MPVOID);
-            while(sSelect >= 0) {
+            while (sSelect >= 0) {
               tool = (TOOL *)WinSendDlgItemMsg(hwnd,
                                                RE_ADDLISTBOX,
                                                LM_QUERYITEMHANDLE,
                                                MPFROMSHORT(sSelect),
                                                MPVOID);
-              if(tool) {
+              if (tool) {
                 sprintf(s,
                         "%-5u  %s",
                         tool->id,
@@ -523,7 +517,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
                                                     LM_INSERTITEM,
                                                     MPFROM2SHORT(LIT_END,0),
                                                     MPFROMP(s));
-                if(sSelect2 >= 0)
+                if (sSelect2 >= 0)
                   WinSendDlgItemMsg(hwnd,
                                     RE_REMOVELISTBOX,
                                     LM_SETITEMHANDLE,
@@ -561,13 +555,13 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
                                                 LM_QUERYSELECTION,
                                                 MPFROMSHORT(LIT_FIRST),
                                                 MPVOID);
-            while(sSelect >= 0) {
+            while (sSelect >= 0) {
               tool = (TOOL *)WinSendDlgItemMsg(hwnd,
                                                RE_REMOVELISTBOX,
                                                LM_QUERYITEMHANDLE,
                                                MPFROMSHORT(sSelect),
                                                MPVOID);
-              if(tool) {
+              if (tool) {
                 sprintf(s,
                         "%-5u  %s",
                         tool->id,
@@ -577,7 +571,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
                                                     LM_INSERTITEM,
                                                     MPFROM2SHORT(LIT_END,0),
                                                     MPFROMP(s));
-                if(sSelect2 >= 0)
+                if (sSelect2 >= 0)
                   WinSendDlgItemMsg(hwnd,
                                     RE_ADDLISTBOX,
                                     LM_SETITEMHANDLE,
@@ -612,10 +606,10 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd,ULONG msg,MPARAM mp1,
 
 MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  switch(msg) {
+  switch (msg) {
     case WM_INITDLG:
       WinSetWindowPtr(hwnd,QWL_USER,mp2);
-      if(mp2) {
+      if (mp2) {
         WinSetWindowText(hwnd,GetPString(IDS_EDITTOOLTEXT));
         WinSendDlgItemMsg(hwnd,ADDBTN_ID,EM_SETREADONLY,
                           MPFROM2SHORT(TRUE,0),MPVOID);
@@ -626,43 +620,34 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                         MPFROM2SHORT(80,0),MPVOID);
       WinSendDlgItemMsg(hwnd,ADDBTN_ID,EM_SETTEXTLIMIT,
                         MPFROM2SHORT(5,0),MPVOID);
-      if(!mp2)
+      if (!mp2)
         WinCheckButton(hwnd,ADDBTN_VISIBLE,TRUE);
       else {
         TOOL *tool = (TOOL *)mp2;
         CHAR  s[33];
 
-        if(tool->help)
+        if (tool->help)
           WinSetDlgItemText(hwnd,ADDBTN_HELP,tool->help);
-        if(tool->text)
+        if (tool->text)
           WinSetDlgItemText(hwnd,ADDBTN_TEXT,tool->text);
-        if(tool->flags & T_MYICON)
+        if (tool->flags & T_MYICON)
           WinCheckButton(hwnd,ADDBTN_MYICON,TRUE);
         else
           WinEnableWindow(WinWindowFromID(hwnd,ADDBTN_EDITBMP),FALSE);
-        if(tool->flags & T_DROPABLE)
+        if (tool->flags & T_DROPABLE)
           WinCheckButton(hwnd,ADDBTN_DROPABLE,TRUE);
-        if(!(tool->flags & T_INVISIBLE))
+        if (!(tool->flags & T_INVISIBLE))
           WinCheckButton(hwnd,ADDBTN_VISIBLE,TRUE);
-        if(tool->flags & T_SEPARATOR)
+        if (tool->flags & T_SEPARATOR)
           WinCheckButton(hwnd,ADDBTN_SEPARATOR,TRUE);
-        if(tool->flags & T_TEXT)
+        if (tool->flags & T_TEXT)
           WinCheckButton(hwnd,ADDBTN_SHOWTEXT,TRUE);
-        sprintf(s,
-                "%u",
-                tool->id);
-        WinSetDlgItemText(hwnd,
-                          ADDBTN_ID,
-                          s);
-        WinEnableWindow(WinWindowFromID(hwnd,ADDBTN_SHOWTEXT),
-                        FALSE);
+        sprintf(s,"%u",tool->id);
+        WinSetDlgItemText(hwnd,ADDBTN_ID,s);
+        WinEnableWindow(WinWindowFromID(hwnd,ADDBTN_SHOWTEXT),FALSE);
       }
-      WinShowWindow(WinWindowFromID(hwnd,ADDBTN_SHOWTEXT),
-                    FALSE);
-      PostMsg(hwnd,
-              UM_SETUP,
-              MPVOID,
-              MPVOID);
+      WinShowWindow(WinWindowFromID(hwnd,ADDBTN_SHOWTEXT),FALSE);
+      PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
       break;
 
     case WM_ADJUSTWINDOWPOS:
@@ -686,18 +671,18 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         *idstr = 0;
         WinQueryDlgItemText(hwnd,ADDBTN_ID,6,idstr);
         id = atoi(idstr);
-        if(id) {
+        if (id) {
           hps = WinGetPS(WinWindowFromID(hwnd,ADDBTN_BMP));
-          if(!WinQueryButtonCheckstate(hwnd,ADDBTN_MYICON))
+          if (!WinQueryButtonCheckstate(hwnd,ADDBTN_MYICON))
             hbm = GpiLoadBitmap(hps,0,id,28,28);
-          if(!hbm)
+          if (!hbm)
             hbm = LoadBitmapFromFileNum(id);
-          if(hbm) {
+          if (hbm) {
             hbmd = (HBITMAP)WinSendDlgItemMsg(hwnd,ADDBTN_BMP,SM_QUERYHANDLE,
                                               MPVOID,MPVOID);
             hbmdd = (HBITMAP)WinSendDlgItemMsg(hwnd,ADDBTN_BMP,SM_SETHANDLE,
                                                MPFROMLONG(hbm),MPVOID);
-            if(hbmdd && hbmd && hbmd != hbmdd)
+            if (hbmdd && hbmd && hbmd != hbmdd)
               GpiDeleteBitmap(hbmd);
           }
         }
@@ -705,38 +690,29 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case WM_CONTROL:
-      switch(SHORT1FROMMP(mp1)) {
+      switch (SHORT1FROMMP(mp1)) {
         case ADDBTN_HELP:
-          if(SHORT2FROMMP(mp1) == EN_KILLFOCUS)
-            WinSetDlgItemText(hwnd,
-                              ADDBTN_HELPME,
-                              NullStr);
-          if(SHORT2FROMMP(mp1) == EN_SETFOCUS)
+          if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
+            WinSetDlgItemText(hwnd,ADDBTN_HELPME,NullStr);
+          if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
             WinSetDlgItemText(hwnd,ADDBTN_HELPME,
                               GetPString(IDS_ADDTOOLQUICKHELPTEXT));
           break;
 
         case ADDBTN_TEXT:
-          if(SHORT2FROMMP(mp1) == EN_KILLFOCUS)
-            WinSetDlgItemText(hwnd,
-                              ADDBTN_HELPME,
-                              NullStr);
-          if(SHORT2FROMMP(mp1) == EN_SETFOCUS)
+          if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
+            WinSetDlgItemText(hwnd,ADDBTN_HELPME,NullStr);
+          if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
             WinSetDlgItemText(hwnd,ADDBTN_HELPME,
                               GetPString(IDS_ADDTOOLBUTTONTEXT));
           break;
 
         case ADDBTN_ID:
-          if(SHORT2FROMMP(mp1) == EN_KILLFOCUS) {
-            WinSetDlgItemText(hwnd,
-                              ADDBTN_HELPME,
-                              NullStr);
-            PostMsg(hwnd,
-                    UM_SETUP,
-                    MPVOID,
-                    MPVOID);
+          if (SHORT2FROMMP(mp1) == EN_KILLFOCUS) {
+            WinSetDlgItemText(hwnd,ADDBTN_HELPME,NullStr);
+            PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
           }
-          if(SHORT2FROMMP(mp1) == EN_SETFOCUS)
+          if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
             WinSetDlgItemText(hwnd,
                               ADDBTN_HELPME,
                               GetPString(IDS_ADDTOOLBUTTONIDTEXT));
@@ -751,7 +727,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case WM_COMMAND:
-      switch(SHORT1FROMMP(mp1)) {
+      switch (SHORT1FROMMP(mp1)) {
         case DID_OK:
           {
             CHAR  help[81],text[81],idstr[7];
@@ -760,35 +736,35 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
             WinQueryDlgItemText(hwnd,ADDBTN_HELP,80,help);
             WinQueryDlgItemText(hwnd,ADDBTN_TEXT,80,text);
-            if(WinQueryButtonCheckstate(hwnd,ADDBTN_DROPABLE))
+            if (WinQueryButtonCheckstate(hwnd,ADDBTN_DROPABLE))
               dropable = TRUE;
             else
               dropable = FALSE;
             myicon = WinQueryButtonCheckstate(hwnd,ADDBTN_MYICON);
-            if(WinQueryButtonCheckstate(hwnd,ADDBTN_VISIBLE))
+            if (WinQueryButtonCheckstate(hwnd,ADDBTN_VISIBLE))
               invisible = FALSE;
             else
               invisible = TRUE;
-            if(WinQueryButtonCheckstate(hwnd,ADDBTN_SEPARATOR))
+            if (WinQueryButtonCheckstate(hwnd,ADDBTN_SEPARATOR))
               separator = TRUE;
             else
               separator = FALSE;
-            if(WinQueryButtonCheckstate(hwnd,ADDBTN_SHOWTEXT))
+            if (WinQueryButtonCheckstate(hwnd,ADDBTN_SHOWTEXT))
               istext = TRUE;
             else
               istext = FALSE;
             tool = INSTDATA(hwnd);
-            if(tool) {        /* just editing strings... */
+            if (tool) {        /* just editing strings... */
               istext = ((tool->flags & T_TEXT) != 0);
-              if(tool->help)
+              if (tool->help)
                 free(tool->help);
               tool->help = NULL;
-              if(tool->text)
+              if (tool->text)
                 free(tool->text);
               tool->text = NULL;
-              if(*help)
+              if (*help)
                 tool->help = xstrdup(help,pszSrcFile,__LINE__);
-              if(*text)
+              if (*text)
                 tool->text = xstrdup(text,pszSrcFile,__LINE__);
               tool->flags = (((dropable) ? T_DROPABLE : 0)  |
                             ((invisible) ? T_INVISIBLE : 0) |
@@ -801,31 +777,28 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             }
             *idstr = 0;
             WinQueryDlgItemText(hwnd,ADDBTN_ID,6,idstr);
-            if(!(USHORT)atoi(idstr)) {
+            if (!(USHORT)atoi(idstr)) {
               DosBeep(250,100);
               break;
             }
             tool = toolhead;
-            while(tool) {
-              if(tool->id == (USHORT)atoi(idstr) && tool != tool) {
+            while (tool) {
+              if (tool->id == (USHORT)atoi(idstr) && tool != tool) {
                 saymsg(MB_ENTER,
                        hwnd,
                        GetPString(IDS_DUPLICATETEXT),
                        GetPString(IDS_TOOLIDEXISTS));
-                WinSetDlgItemText(hwnd,
-                                  ADDBTN_ID,
-                                  NullStr);
-                WinSetFocus(HWND_DESKTOP,
-                            WinWindowFromID(hwnd,ADDBTN_ID));
+                WinSetDlgItemText(hwnd,ADDBTN_ID,NullStr);
+                WinSetFocus(HWND_DESKTOP,WinWindowFromID(hwnd,ADDBTN_ID));
                 break;
               }
               tool = tool->next;
             }
             tool = xmallocz(sizeof(TOOL),pszSrcFile,__LINE__);
             if (tool) {
-              if(*help)
+              if (*help)
                 tool->help = xstrdup(help,pszSrcFile,__LINE__);
-              if(*text)
+              if (*text)
                 tool->text = xstrdup(text,pszSrcFile,__LINE__);
               tool->id = (USHORT)atoi(idstr);
               tool->flags = (((dropable) ? T_DROPABLE : 0)  |
@@ -849,17 +822,15 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
             *idstr = 0;
             WinQueryDlgItemText(hwnd,ADDBTN_ID,6,idstr);
-            if(!(USHORT)atoi(idstr)) {
+            if (!(USHORT)atoi(idstr)) {
               DosBeep(250,100);
               break;
             }
-            sprintf(filename,
-                    "%u.BMP",
-                    atoi(idstr));
-            if(IsFile(filename) != 1)
-              docopyf(COPY,
-                      "EMPTY.BMP",
-                      filename);
+            sprintf(filename,"%u.BMP",atoi(idstr));
+            if (IsFile(filename) != 1) {
+              CHAR s[CCHMAXPATH] = "EMPTY.BMP";
+              docopyf(COPY, s, filename);
+	    }
             runemf2(SEPARATE | WINDOWED,
                     hwnd,
                     NULL,
@@ -870,8 +841,8 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           break;
 
         case IDM_HELP:
-          if(hwndHelp) {
-            if(INSTDATA(hwnd))
+          if (hwndHelp) {
+            if (INSTDATA(hwnd))
               WinSendMsg(hwndHelp,HM_DISPLAY_HELP,
                          MPFROM2SHORT(HELP_CHANGEBUTTON,0),
                          MPFROMSHORT(HM_RESOURCEID));
@@ -890,9 +861,9 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 MRESULT EXPENTRY PickToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  switch(msg) {
+  switch (msg) {
     case WM_INITDLG:
-      if(mp2) {
+      if (mp2) {
         CHAR s[133];
 
         sprintf(s,
@@ -905,7 +876,7 @@ MRESULT EXPENTRY PickToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         CHAR   s[133];
 
         tool = toolhead;
-        while(tool) {
+        while (tool) {
           sprintf(s,
                   "%-5u  %s",
                   tool->id,
@@ -921,8 +892,8 @@ MRESULT EXPENTRY PickToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       break;
 
     case WM_CONTROL:
-      if(SHORT1FROMMP(mp1) == PICKBTN_LISTBOX) {
-        switch(SHORT2FROMMP(mp1)) {
+      if (SHORT1FROMMP(mp1) == PICKBTN_LISTBOX) {
+        switch (SHORT2FROMMP(mp1)) {
           case LN_ENTER:
             PostMsg(hwnd,WM_COMMAND,MPFROM2SHORT(DID_OK,0),MPVOID);
             break;
@@ -931,7 +902,7 @@ MRESULT EXPENTRY PickToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case WM_COMMAND:
-      switch(SHORT1FROMMP(mp1)) {
+      switch (SHORT1FROMMP(mp1)) {
         case DID_CANCEL:
           WinDismissDlg(hwnd,0);
           break;
@@ -944,11 +915,11 @@ MRESULT EXPENTRY PickToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                                                LM_QUERYSELECTION,
                                                MPFROMSHORT(LIT_FIRST),
                                                MPVOID);
-            if(sSelect >= 0) {
+            if (sSelect >= 0) {
               *s = 0;
               WinSendDlgItemMsg(hwnd,PICKBTN_LISTBOX,LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(sSelect,32),MPFROMP(s));
-              if(*s)
+              if (*s)
                 WinDismissDlg(hwnd,(USHORT)atoi(s));
             }
           }
@@ -962,9 +933,9 @@ MRESULT EXPENTRY PickToolProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
 MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
-  switch(msg) {
+  switch (msg) {
     case WM_INITDLG:
-      if(mp2)
+      if (mp2)
         WinSetWindowULong(hwnd,QWL_USER,TRUE);
       else {
         WinSetWindowULong(hwnd,QWL_USER,FALSE);
@@ -982,13 +953,13 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         ULONG        ulSearchCount,x = 0;
         CHAR        *masks[] = {"*.TLS","FM3TOOLS.DAT",NULL};
 
-        if(mp2)
+        if (mp2)
           masks[1] = NULL;
-        while(masks[x]) {
+        while (masks[x]) {
           hDir = HDIR_CREATE;
           ulSearchCount = 1L;
           DosError(FERR_DISABLEHARDERR);
-          if(!DosFindFirst(masks[x],
+          if (!DosFindFirst(masks[x],
                            &hDir,
                            FILE_ARCHIVED,
                            &findbuf,
@@ -1003,7 +974,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                          MPFROM2SHORT(LIT_SORTASCENDING,0),
                          MPFROMP(findbuf.achName));
               ulSearchCount = 1L;
-            } while(!DosFindNext(hDir,
+            } while (!DosFindNext(hDir,
                                  &findbuf,
                                  sizeof(FILEFINDBUF3),
                                  &ulSearchCount));
@@ -1014,18 +985,14 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         }
         DosError(FERR_DISABLEHARDERR);
       }
-      if(!WinSendDlgItemMsg(hwnd,
+      if (!WinSendDlgItemMsg(hwnd,
                             SVBTN_LISTBOX,
                             LM_QUERYITEMCOUNT,
                             MPVOID,
                             MPVOID)) {
-        WinEnableWindow(WinWindowFromID(hwnd,
-                                        SVBTN_LISTBOX),
+        WinEnableWindow(WinWindowFromID(hwnd,SVBTN_LISTBOX),
                         FALSE);
-        PostMsg(hwnd,
-                UM_SETUP,
-                MPVOID,
-                MPVOID);
+        PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
       }
       WinSetDlgItemText(hwnd,
                         SVBTN_CURRENT,
@@ -1039,22 +1006,22 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case WM_CONTROL:
-      if(SHORT1FROMMP(mp1) == SVBTN_LISTBOX) {
+      if (SHORT1FROMMP(mp1) == SVBTN_LISTBOX) {
         SHORT sSelect;
         CHAR  szBuffer[CCHMAXPATH];
 
-        switch(SHORT2FROMMP(mp1)) {
+        switch (SHORT2FROMMP(mp1)) {
           case LN_SELECT:
             sSelect = (SHORT)WinSendDlgItemMsg(hwnd,SVBTN_LISTBOX,
                                                LM_QUERYSELECTION,
                                                MPFROMSHORT(LIT_FIRST),
                                                MPVOID);
-            if(sSelect >= 0) {
+            if (sSelect >= 0) {
               *szBuffer = 0;
               WinSendDlgItemMsg(hwnd,SVBTN_LISTBOX,LM_QUERYITEMTEXT,
                                 MPFROM2SHORT(sSelect,CCHMAXPATH),
                                 MPFROMP(szBuffer));
-              if(*szBuffer)
+              if (*szBuffer)
                 WinSetDlgItemText(hwnd,SVBTN_ENTRY,szBuffer);
             }
             break;
@@ -1067,10 +1034,10 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       return 0;
 
     case WM_COMMAND:
-      switch(SHORT1FROMMP(mp1)) {
+      switch (SHORT1FROMMP(mp1)) {
         case IDM_HELP:
-          if(hwndHelp) {
-            if(INSTDATA(hwnd))
+          if (hwndHelp) {
+            if (INSTDATA(hwnd))
               WinSendMsg(hwndHelp,HM_DISPLAY_HELP,
                          MPFROM2SHORT(HELP_SAVETOOLS,0),
                          MPFROMSHORT(HM_RESOURCEID));
@@ -1091,22 +1058,22 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             CHAR temptools[CCHMAXPATH];
 
             strcpy(temptools,lasttoolbox);
-            if(fToolsChanged)
+            if (fToolsChanged)
               save_tools(NULL);
             WinQueryDlgItemText(hwnd,
                                 SVBTN_ENTRY,
                                 sizeof(lasttoolbox),
                                 lasttoolbox);
-            if(*lasttoolbox) {
-              if(!strchr(lasttoolbox,'.'))
+            if (*lasttoolbox) {
+              if (!strchr(lasttoolbox,'.'))
                 strcat(lasttoolbox,".TLS");
             }
-            if(saving && *lasttoolbox)
+            if (saving && *lasttoolbox)
               save_tools(NULL);
             else {
-              if(!load_tools(NULL)) {
+              if (!load_tools(NULL)) {
                 strcpy(lasttoolbox,temptools);
-                if(!load_tools(NULL)) {
+                if (!load_tools(NULL)) {
                   *lasttoolbox = 0;
                   load_tools(NULL);
                 }
