@@ -12,6 +12,7 @@
   06 Jun 05 SHL Drop unused code
   17 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
+  01 Sep 06 SHL Back to fgets for now - avoid excess error messages
 
 ***********************************************************************/
 
@@ -50,8 +51,7 @@ int UUD(char *filename, CHAR * dest)
   if (!dest)
     dest = fakedest;
   in = _fsopen(filename, "r", SH_DENYWR);
-  if (!in)
-  {
+  if (!in) {
     saymsg(MB_CANCEL,
 	   HWND_DESKTOP,
 	   GetPString(IDS_ERRORTEXT),
@@ -61,9 +61,8 @@ int UUD(char *filename, CHAR * dest)
   }
 
   /* search for header line */
-  for (;;)
-  {
-    if (!xfgets(buf, sizeof(buf), in,pszSrcFile,__LINE__)) {
+  for (;;) {
+    if (!fgets(buf, sizeof(buf), in)) {
       fclose(in);
       saymsg(MB_CANCEL,
 	     HWND_DESKTOP,
@@ -74,17 +73,17 @@ int UUD(char *filename, CHAR * dest)
     }
     if (!strncmp(buf, "begin ", 6))
       break;
-  }
+  } // for
   *dest = 0;
   sscanf(buf, "begin %o %259s", &mode, dest);
   dest[CCHMAXPATH - 1] = 0;
-  {					/* place dest in same directory as filename by default... */
+  {
+    /* place dest in same directory as filename by default... */
     char build[CCHMAXPATH], *p;
 
     strcpy(build, filename);
     p = strrchr(build, '\\');
-    if (p)
-    {
+    if (p) {
       p++;
       *p = 0;
     }
@@ -94,16 +93,14 @@ int UUD(char *filename, CHAR * dest)
     strcpy(dest, build);
   }
 
-  if (!export_filename(HWND_DESKTOP, dest, FALSE))
-  {
+  if (!export_filename(HWND_DESKTOP, dest, FALSE)) {
     fclose(in);
     return ret;
   }
 
   /* create output file */
   out = _fsopen(dest, "ab+", SH_DENYWR);
-  if (!out)
-  {
+  if (!out) {
     fclose(in);
     saymsg(MB_CANCEL,
 	   HWND_DESKTOP,
@@ -133,8 +130,7 @@ static BOOL decode(FILE * in, FILE * out)
   char *bp;
   int n;
 
-  for (;;)
-  {
+  for (;;) {
     /* for each input line */
     if (!xfgets(buf, sizeof(buf), in,pszSrcFile,__LINE__))
       return FALSE;
@@ -142,8 +138,7 @@ static BOOL decode(FILE * in, FILE * out)
     if (n <= 0)
       break;
     bp = &buf[1];
-    while (n > 0)
-    {
+    while (n > 0) {
       outdec(bp, out, n);
       bp += 4;
       n -= 3;
@@ -180,12 +175,10 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg)
   {
   case WM_INITDLG:
-    if (mp2)
-    {
+    if (mp2) {
       WinSetWindowPtr(hwnd, 0, mp2);
       wk = (WORKER *) mp2;
-      if (wk -> li && wk -> li -> list && wk -> li -> list[0])
-      {
+      if (wk -> li && wk -> li -> list && wk -> li -> list[0]) {
 	WinSendDlgItemMsg(hwnd, MRG_TARGETNAME, EM_SETTEXTLIMIT,
 			  MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
 	PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
@@ -200,9 +193,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_UNDO:
     WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
     wk = WinQueryWindowPtr(hwnd, 0);
-    if (wk)
-    {
-
+    if (wk) {
       INT x, numfiles = 0;
       SHORT start;
       CHAR *p;
@@ -214,10 +205,8 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	start = (p + 1) - wk -> li -> targetpath;
       WinSendDlgItemMsg(hwnd, MRG_TARGETNAME, EM_SETSEL,
 			MPFROM2SHORT(start, CCHMAXPATH), MPVOID);
-      for (x = 0; wk -> li -> list[x]; x++)
-      {
-	if (IsFile(wk -> li -> list[x]) == 1)
-	{
+      for (x = 0; wk -> li -> list[x]; x++) {
+	if (IsFile(wk -> li -> list[x]) == 1) {
 	  numfiles++;
 	  WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_INSERTITEM,
 			    MPFROM2SHORT(LIT_END, 0),
@@ -225,8 +214,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       WinCheckButton(hwnd, MRG_BINARY, (wk -> li -> type == IDM_MERGEBINARY));
-      if (!numfiles)
-      {
+      if (!numfiles) {
 	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	       hwnd,
 	       GetPString(IDS_SILLYERRORTEXT),
@@ -249,8 +237,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  x = (SHORT) WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_QUERYSELECTION,
 					MPFROMSHORT(LIT_FIRST), MPVOID);
-	  if (x >= 0)
-	  {
+	  if (x >= 0) {
 	    *szBuffer = 0;
 	    WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_QUERYITEMTEXT,
 			      MPFROM2SHORT(x, CCHMAXPATH),
@@ -282,14 +269,11 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case MRG_CHANGETARGET:
       wk = WinQueryWindowPtr(hwnd, 0);
-      if (wk)
-      {
-
+      if (wk) {
 	CHAR filename[CCHMAXPATH];
 
 	strcpy(filename, wk -> li -> targetpath);
-	if (export_filename(HWND_DESKTOP, filename, FALSE) && *filename)
-	{
+	if (export_filename(HWND_DESKTOP, filename, FALSE) && *filename) {
 	  strcpy(wk -> li -> targetpath, filename);
 	  WinSetDlgItemText(hwnd, MRG_TARGETNAME, wk -> li -> targetpath);
 	}
@@ -316,14 +300,12 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	x = (SHORT) WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_QUERYSELECTION,
 				      MPFROMSHORT(LIT_FIRST), MPVOID);
-	if (x >= 0)
-	{
+	if (x >= 0) {
 	  *szBuffer = 0;
 	  WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_QUERYITEMTEXT,
 			    MPFROM2SHORT(x, CCHMAXPATH),
 			    MPFROMP(szBuffer));
-	  if (*szBuffer)
-	  {
+	  if (*szBuffer) {
 	    WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_DELETEITEM,
 			      MPFROMSHORT(x), MPVOID);
 	    if (SHORT1FROMMP(mp1) == MRG_TOP)
@@ -352,9 +334,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case DID_OK:
       wk = WinQueryWindowPtr(hwnd, 0);
-      if (wk)
-      {
-
+      if (wk) {
 	BOOL append, binary;
 	CHAR **list = NULL, **test, szBuffer[CCHMAXPATH];
 	INT numfiles = 0, numalloc = 0, error;
@@ -365,8 +345,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MRG_TARGETNAME,
 			    CCHMAXPATH,
 			    szBuffer);
-	if (!*szBuffer)
-	{
+	if (!*szBuffer) {
 	  DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP,
 		      WinWindowFromID(hwnd, MRG_TARGETNAME));
@@ -414,8 +393,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 	}
-	if (numfiles && list && numfiles + 1 < numalloc)
-	{
+	if (numfiles && list && numfiles + 1 < numalloc) {
 	  test = xrealloc(list, sizeof(CHAR *) * (numfiles + 1),pszSrcFile,__LINE__);
 	  if (test)
 	    list = test;
