@@ -13,7 +13,9 @@
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   07 Jun 05 SHL Comments
   29 Jul 06 SHL Drop duplicate icons
-  31 Aug 06 JS  Add partitioning menu items
+  31 Aug 06 GKY Add partitioning menu items
+  01 Sep 06 GKY Add partitioning to files > misc menu
+  01 Sep 06 GKY Add Make Directory to files menu in addition to files > misc
 
 ***********************************************************************/
 
@@ -110,38 +112,38 @@ MENU  INI_FRAME
   SUBMENU "~Files",                               IDM_FILESMENU
   {
     MENUITEM "~Refresh\tCtrl + f",                INI_REFRESH
-    MENUITEM "~User Profile\tCtrl + u",           INI_USERPROFILE
-    MENUITEM "~System Profile\tCtrl + s",         INI_SYSTEMPROFILE
-    MENUITEM "~Other Profile...\tCtrl + o",       INI_OTHERPROFILE
+    MENUITEM "~User profile\tCtrl + u",           INI_USERPROFILE
+    MENUITEM "~System profile\tCtrl + s",         INI_SYSTEMPROFILE
+    MENUITEM "~Other profile...\tCtrl + o",       INI_OTHERPROFILE
   }
   SUBMENU  "~Entries",                            -1
   {
-    MENUITEM "Filter appnames...",                IDM_FILTER
+    MENUITEM "~Filter appnames...",               IDM_FILTER
     MENUITEM "",                                  -1,   MIS_SEPARATOR
-    MENUITEM "~Edit Entry...\tCtrl + e",          INI_EDITENTRY
-    MENUITEM "~Add Entry...\tCtrl + a",           INI_ADDENTRY
+    MENUITEM "~Edit entry...\tCtrl + e",          INI_EDITENTRY
+    MENUITEM "~Add entry...\tCtrl + a",           INI_ADDENTRY
     MENUITEM "",                                  -1,   MIS_SEPARATOR
-    MENUITEM "~Delete Application\tCtrl + D",     INI_DELETEAPP
-    MENUITEM "Delete ~Keyname\tCtrl + d",         INI_DELETEKEY
+    MENUITEM "~Delete application\tCtrl + D",     INI_DELETEAPP
+    MENUITEM "Delete ~keyname\tCtrl + d",         INI_DELETEKEY
     MENUITEM "",                                  -1,   MIS_SEPARATOR
-    MENUITEM "~Rename Application...\tCtrl + R",  INI_RENAMEAPP
-    MENUITEM "Rename Ke~yname...\tCtrl + r",      INI_RENAMEKEY
+    MENUITEM "~Rename application...\tCtrl + R",  INI_RENAMEAPP
+    MENUITEM "Rename ke~yname...\tCtrl + r",      INI_RENAMEKEY
     MENUITEM "",                                  -1,   MIS_SEPARATOR
-    MENUITEM "~Copy Application...\tCtrl + C",    INI_COPYAPP
-    MENUITEM "Copy Key~name...\tCtrl + c",        INI_COPYKEY
+    MENUITEM "~Copy application...\tCtrl + C",    INI_COPYAPP
+    MENUITEM "Copy key~name...\tCtrl + c",        INI_COPYKEY
     MENUITEM "",                                 -1,    MIS_SEPARATOR
     MENUITEM "Find ~first...\tF5",                IDM_FINDFIRST
     MENUITEM "Find ne~xt\tF6",                    IDM_FINDNEXT
   }
   SUBMENU "~Utilities",                           -1
   {
-    MENUITEM "~Backup Profile...",                INI_BACKUPINI
-    MENUITEM "~Change System Profiles...",        INI_CHANGEINI
-    MENUITEM "~Replace System Profiles...",       INI_SWAPINI
+    MENUITEM "~Backup profile...",                INI_BACKUPINI
+    MENUITEM "~Change system profiles...",        INI_CHANGEINI
+    MENUITEM "~Replace system profiles...",       INI_SWAPINI
   }
   SUBMENU "~Config",                              -1
   {
-    MENUITEM "Confirm ~Delete",                   INI_CONFIRM
+    MENUITEM "Confirm ~delete",                   INI_CONFIRM
   }
   SUBMENU "~Help",                                -1
   {
@@ -152,21 +154,21 @@ MENU  INI_FRAME
 
 MENU INI_APPMENU
 {
-  MENUITEM "Filter appnames...",          IDM_FILTER
-  MENUITEM "~Edit Entry...\tCtrl + e",          INI_EDITENTRY
-  MENUITEM "~Add Entry...\tCtrl + a",           INI_ADDENTRY
-  MENUITEM "~Delete Application\tCtrl + D",     INI_DELETEAPP
-  MENUITEM "~Rename Application...\tCtrl + R",  INI_RENAMEAPP
-  MENUITEM "~Copy Application...\tCtrl + C",    INI_COPYAPP
+  MENUITEM "~Filter appnames...",               IDM_FILTER
+  MENUITEM "~Edit dntry...\tCtrl + e",          INI_EDITENTRY
+  MENUITEM "~Add entry...\tCtrl + a",           INI_ADDENTRY
+  MENUITEM "~Delete application\tCtrl + D",     INI_DELETEAPP
+  MENUITEM "~Rename application...\tCtrl + R",  INI_RENAMEAPP
+  MENUITEM "~Copy application...\tCtrl + C",    INI_COPYAPP
 }
 
 MENU INI_KEYMENU
 {
-  MENUITEM "~Edit Entry...\tCtrl + e",          INI_EDITENTRY
-  MENUITEM "~Add Entry...\tCtrl + a",           INI_ADDENTRY
-  MENUITEM "Delete ~Keyname\tCtrl + d",         INI_DELETEKEY
-  MENUITEM "Rename Ke~yname...\tCtrl + r",      INI_RENAMEKEY
-  MENUITEM "Copy Key~name...\tCtrl + c",        INI_COPYKEY
+  MENUITEM "~Edit entry...\tCtrl + e",          INI_EDITENTRY
+  MENUITEM "~Add entry...\tCtrl + a",           INI_ADDENTRY
+  MENUITEM "Delete ~keyname\tCtrl + d",         INI_DELETEKEY
+  MENUITEM "Rename ke~yname...\tCtrl + r",      INI_RENAMEKEY
+  MENUITEM "Copy key~name...\tCtrl + c",        INI_COPYKEY
 }
 
 MENU DEFMENU
@@ -185,28 +187,28 @@ MENU  MAIN_FRAME
   }
   SUBMENU "~Utilities",           IDM_UTILITIESMENU
   {
-    MENUITEM "~Open Directory Container\tCtrl + O",IDM_OPENWALK
+    MENUITEM "~Open directory container\tCtrl + O",IDM_OPENWALK
     MENUITEM "",                  -1,               MIS_SEPARATOR
     MENUITEM "~Collector\tF2",    IDM_COLLECTOR
     MENUITEM "~Seek and scan files",IDM_GREP
     MENUITEM "See ~all files",    IDM_SEEALL
     MENUITEM "Compar~e directories...",IDM_COMPARE
     MENUITEM "",                  -1,               MIS_SEPARATOR
-    MENUITEM "~INI Viewer",       IDM_INIVIEWER
-    MENUITEM "~Kill Processes",   IDM_KILLPROC
+    MENUITEM "~INI viewer",       IDM_INIVIEWER
+    MENUITEM "~Kill processes",   IDM_KILLPROC
     MENUITEM "I~nstant CMD file", IDM_INSTANT
-    MENUITEM "~View Bookshelf",   IDM_VIEWINFS
-    MENUITEM "View ~Helpfiles",   IDM_VIEWHELPS
+    MENUITEM "~View bookshelf",   IDM_VIEWINFS
+    MENUITEM "View ~helpfiles",   IDM_VIEWHELPS
 #ifdef NEVER
-    MENUITEM "System In~formation",IDM_SYSINFO
+    MENUITEM "System in~formation",IDM_SYSINFO
 #endif
     MENUITEM "",                  -1,               MIS_SEPARATOR
     MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
-    MENUITEM "DOS command line",  IDM_DOSCOMMANDLINE
-    MENUITEM "Win-OS/2 full screen",IDM_WINFULLSCREEN
+    MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
+    MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
     MENUITEM "",                  -1,               MIS_SEPARATOR
-    MENUITEM "S~ystem Clock",     IDM_SYSTEMCLOCK
-    MENUITEM "System Setu~p",     IDM_SYSTEMSETUP
+    MENUITEM "S~ystem clock",     IDM_SYSTEMCLOCK
+    MENUITEM "System setu~p",     IDM_SYSTEMSETUP
   }
   SUBMENU "~Config",              IDM_CONFIGMENU
   {
@@ -214,7 +216,7 @@ MENU  MAIN_FRAME
     MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
     SUBMENU "~Toolbar",           IDM_TOOLSUBMENU
     {
-      MENUITEM "~Toggle Toolbar", IDM_TOOLBAR
+      MENUITEM "~Toggle toolbar", IDM_TOOLBAR
       MENUITEM "Te~xt toolbar",   IDM_TEXTTOOLS
       MENUITEM "Toolbar t~itles", IDM_TOOLTITLES
     }
@@ -226,15 +228,15 @@ MENU  MAIN_FRAME
     }
     MENUITEM "Toggle ~quicklists\tF8",IDM_USERLIST
     MENUITEM "Toggle ~bottom buttons\tCtrl + F8",IDM_MOREBUTTONS
-    MENUITEM "Toggle drivebar\tCtrl + Shift + F8",IDM_DRIVEBAR
+    MENUITEM "~Toggle drivebar\tCtrl + Shift + F8",IDM_DRIVEBAR
     MENUITEM "",                  -1,           MIS_SEPARATOR
-    MENUITEM "Edit ~Associations...",IDM_EDITASSOC
-    MENUITEM "Edit ~Commands...", IDM_EDITCOMMANDS
+    MENUITEM "Edit ~associations...",IDM_EDITASSOC
+    MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
     MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
     MENUITEM "",                  -1,           MIS_SEPARATOR
-    MENUITEM "~Font Palette",     IDM_FONTPALETTE
-    MENUITEM "Color ~Palette",    IDM_COLORPALETTE
-    MENUITEM "Hi-~res Color Palette",IDM_HICOLORPALETTE
+    MENUITEM "~Font palette",     IDM_FONTPALETTE
+    MENUITEM "Color ~palette",    IDM_COLORPALETTE
+    MENUITEM "Hi-~res color palette",IDM_HICOLORPALETTE
   }
   SUBMENU "~Windows",             IDM_WINDOWSMENU
   {
@@ -246,7 +248,7 @@ MENU  MAIN_FRAME
       MENUITEM "Tile ~horizontal",IDM_TILEBACKWARDS
     }
     MENUITEM "~Cascade",          IDM_CASCADE
-    MENUITEM "~Arrange Icons",    IDM_ARRANGEICONS
+    MENUITEM "~Arrange icons",    IDM_ARRANGEICONS
     MENUITEM "~Dialog\tCtrl + W", IDM_WINDOWDLG
     MENUITEM "",                  -1,         MIS_SEPARATOR
     MENUITEM "~Restore",          IDM_RESTORE
@@ -279,7 +281,7 @@ MENU  MAIN2_FRAME
     MENUITEM "~Info...\tCtrl + i",      IDM_INFO
     MENUITEM "~Edit\tCtrl + e",         IDM_EDIT
     MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
-    MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+    MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "~Print\tCtrl + p",        IDM_PRINT
     SUBMENU "Comma~nds",                IDM_COMMANDSMENU
     {
@@ -297,44 +299,44 @@ MENU  MAIN2_FRAME
     MENUITEM "",                  -1,                 MIS_SEPARATOR
     SUBMENU  "D~etails Setup",          IDM_DETAILSSETUP
     {
-      MENUITEM "To~ggle Details Titles",IDM_DETAILSTITLES
-      MENUITEM "Show ~Icons",           IDM_SHOWICON      ,,MIA_NODISMISS
-      MENUITEM "Show ~Longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
-      MENUITEM "Show ~Subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+      MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+      MENUITEM "Show ~icons",           IDM_SHOWICON      ,,MIA_NODISMISS
+      MENUITEM "Show ~longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
+      MENUITEM "Show ~subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
       MENUITEM "Show ~EAs",             IDM_SHOWEAS       ,,MIA_NODISMISS
-      MENUITEM "Show Si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
-      MENUITEM "Show ~Attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
-      MENUITEM "Show LW ~Date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
-      MENUITEM "Show LW ~Time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
-      MENUITEM "Show LA Date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
-      MENUITEM "Show LA Time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
-      MENUITEM "Show Cr Date",          IDM_SHOWCRDATE    ,,MIA_NODISMISS
-      MENUITEM "Show Cr Time",          IDM_SHOWCRTIME    ,,MIA_NODISMISS
+      MENUITEM "Show si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
+      MENUITEM "Show ~attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
+      MENUITEM "Show LW ~date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
+      MENUITEM "Show LW ~time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
+      MENUITEM "Show LA date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
+      MENUITEM "Show LA time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
+      MENUITEM "Show create date",      IDM_SHOWCRDATE    ,,MIA_NODISMISS
+      MENUITEM "Show create time",      IDM_SHOWCRTIME    ,,MIA_NODISMISS
     }
-    MENUITEM "~Mini Icons",             IDM_MINIICONS
+    MENUITEM "~Mini icons",             IDM_MINIICONS
     MENUITEM "",                  -1,                 MIS_SEPARATOR
     MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
     MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
     MENUITEM "",                  -1,                 MIS_SEPARATOR
     MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
-    MENUITEM "~Previous Dir\tCtrl + >", IDM_PREVIOUS
+    MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
     MENUITEM "",                  -1,                 MIS_SEPARATOR
     MENUITEM "Si~zes...\tCtrl + Z",   IDM_SIZES
-    MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
+    MENUITEM "~Make ~directory...\tCtrl + M",IDM_MKDIR
     MENUITEM "",                        -1,                 MIS_SEPARATOR
     SUBMENU "Select\tCtrl + F8",        IDM_SELECTSUBMENU
     {
-      MENUITEM "Select ~All",           IDM_SELECTALL
-      MENUITEM "Select All ~Files\tCtrl + /",IDM_SELECTALLFILES
-      MENUITEM "Select All ~Dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
-      MENUITEM "Select ~Mask...\tCtrl + =",IDM_SELECTMASK
+      MENUITEM "Select ~all",           IDM_SELECTALL
+      MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+      MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+      MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
       MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
-      MENUITEM "Select ~List",          IDM_SELECTLIST
+      MENUITEM "Select ~list",          IDM_SELECTLIST
       MENUITEM "",                  -1,               MIS_SEPARATOR
-      MENUITEM "Deselect All\tCtrl + \\", IDM_DESELECTALL
-      MENUITEM "Deselect All Files",    IDM_DESELECTALLFILES
-      MENUITEM "Deselect All Dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
-      MENUITEM "Deselect Mask...\tCtrl + +",IDM_DESELECTMASK
+      MENUITEM "~Deselect all\tCtrl + \\", IDM_DESELECTALL
+      MENUITEM "Deselect all files",    IDM_DESELECTALLFILES
+      MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+      MENUITEM "Deselect mask...\tCtrl + +",IDM_DESELECTMASK
       MENUITEM "Deselect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
       MENUITEM "",                  -1,               MIS_SEPARATOR
       MENUITEM "~Reselect\tCtrl + '",   IDM_RESELECT
@@ -363,16 +365,16 @@ MENU  MAIN2_FRAME
       MENUITEM "~Pathname",       IDM_SORTNAME
       MENUITEM "~Filename",       IDM_SORTFILENAME
       MENUITEM "~Size",           IDM_SORTSIZE
-      MENUITEM "~EA Size",        IDM_SORTEASIZE
-      MENUITEM "F~irst Extension",IDM_SORTFIRST
-      MENUITEM "~Last Extension", IDM_SORTLAST
-      MENUITEM "L~W Date",        IDM_SORTLWDATE
-      MENUITEM "L~A Date",        IDM_SORTLADATE
-      MENUITEM "C~r Date",        IDM_SORTCRDATE
+      MENUITEM "~EA size",        IDM_SORTEASIZE
+      MENUITEM "F~irst extension",IDM_SORTFIRST
+      MENUITEM "~Last extension", IDM_SORTLAST
+      MENUITEM "L~W date",        IDM_SORTLWDATE
+      MENUITEM "L~A date",        IDM_SORTLADATE
+      MENUITEM "C~reate date",    IDM_SORTCRDATE
       MENUITEM "Sub~ject",        IDM_SORTSUBJECT
       MENUITEM "",                -1,                 MIS_SEPARATOR
-      MENUITEM "Dirs First",      IDM_SORTDIRSFIRST
-      MENUITEM "Dirs Last",       IDM_SORTDIRSLAST
+      MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+      MENUITEM "Dirs last",       IDM_SORTDIRSLAST
       MENUITEM "Re~verse",        IDM_SORTREVERSE
     }
     MENUITEM "Res~ort",           IDM_RESORT
@@ -385,13 +387,20 @@ MENU  MAIN2_FRAME
     MENUITEM "~Collector...\tF2", IDM_COLLECTOR
     MENUITEM "~Seek and scan files...",IDM_GREP
     MENUITEM "See ~all files...", IDM_SEEALL
-    MENUITEM "Remap drives...",   IDM_REMAP
+    MENUITEM "~Remap drives...",   IDM_REMAP
+    SUBMENU "~Partition disks", IDM_PARTITIONSMENU
+{
+        MENUITEM "~MiniLVM - eCS only" IDM_PARTITION
+        MENUITEM "~DFSee - If installed in System Path"   IDM_PARTITIONDF
+        MENUITEM "~LVMGUI" IDM_PARTITIONLVMG
+        MENUITEM "~FDisk - Do not use on LVM systems" IDM_PARTITIONFD
+}
     MENUITEM "",                  -1,   MIS_SEPARATOR
     MENUITEM "Compar~e directories...",IDM_COMPARE
     MENUITEM "",                  -1,   MIS_SEPARATOR
     MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
-    MENUITEM "DOS command line",  IDM_DOSCOMMANDLINE
-    MENUITEM "Win-OS/2 full screen",IDM_WINFULLSCREEN
+    MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
+    MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
   }
   SUBMENU "~Config",              IDM_CONFIGMENU
   {
@@ -400,19 +409,19 @@ MENU  MAIN2_FRAME
     MENUITEM "",                  -1,   MIS_SEPARATOR
     SUBMENU "~Toolbar",           IDM_TOOLSUBMENU
     {
-      MENUITEM "~Toggle Toolbar", IDM_TOOLBAR
+      MENUITEM "~Toggle toolbar", IDM_TOOLBAR
       MENUITEM "Te~xt toolbar",   IDM_TEXTTOOLS
       MENUITEM "Toolbar t~itles", IDM_TOOLTITLES
     }
     MENUITEM "Toggle ~autoview window\tF4",IDM_AUTOVIEW
     MENUITEM "",                  -1,   MIS_SEPARATOR
-    MENUITEM "Edit ~Associations...",IDM_EDITASSOC
-    MENUITEM "Edit ~Commands...", IDM_EDITCOMMANDS
+    MENUITEM "Edit ~associations...",IDM_EDITASSOC
+    MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
   }
   SUBMENU "~Windows",             IDM_WINDOWSMENU
   {
     MENUITEM "Tile hori~zontal",  IDM_TILEBACKWARDS
-    MENUITEM "~Drive Tree",       IDM_VTREE
+    MENUITEM "~Drive tree",       IDM_VTREE
   }
   SUBMENU "~Help",                -1
   {
@@ -458,7 +467,7 @@ MENU MAIN_POPUP
     MENUITEM "~Settings notebook...", IDM_NOTEBOOK
     SUBMENU "~Toolbar",               IDM_TOOLSUBMENU
     {
-      MENUITEM "~Toggle Toolbar",     IDM_TOOLBAR
+      MENUITEM "~Toggle toolbar",     IDM_TOOLBAR
       MENUITEM "Te~xt toolbar",       IDM_TEXTTOOLS
       MENUITEM "Toolbar t~itles",     IDM_TOOLTITLES
     }
@@ -470,19 +479,19 @@ MENU MAIN_POPUP
     }
     MENUITEM "Toggle ~quicklists",IDM_USERLIST
     MENUITEM "Toggle ~bottom buttons",IDM_MOREBUTTONS
-    MENUITEM "Edit ~Associations...",IDM_EDITASSOC
-    MENUITEM "Edit ~Commands...", IDM_EDITCOMMANDS
+    MENUITEM "Edit ~associations...",IDM_EDITASSOC
+    MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
     MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
     MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
     MENUITEM "",                  -1,           MIS_SEPARATOR
-    MENUITEM "~Font Palette",     IDM_FONTPALETTE
-    MENUITEM "Color ~Palette",    IDM_COLORPALETTE
-    MENUITEM "Hi-~res Color Palette",IDM_HICOLORPALETTE
+    MENUITEM "~Font palette",     IDM_FONTPALETTE
+    MENUITEM "Color ~palette",    IDM_COLORPALETTE
+    MENUITEM "Hi-~res color palette",IDM_HICOLORPALETTE
     MENUITEM "",                  -1,         MIS_SEPARATOR
-    MENUITEM "Tile windows\tCtrl + t",  IDM_TILE
-    MENUITEM "Cascade windows\tCtrl + C",IDM_CASCADE
-    MENUITEM "Arrange Icons",     IDM_ARRANGEICONS
-    MENUITEM "Window Dialog\tCtrl + W", IDM_WINDOWDLG
+    MENUITEM "~Tile windows\tCtrl + t",  IDM_TILE
+    MENUITEM "~Cascade windows\tCtrl + C",IDM_CASCADE
+    MENUITEM "~Arrange icons",     IDM_ARRANGEICONS
+    MENUITEM "~Window dialog\tCtrl + W", IDM_WINDOWDLG
 }
 
 ACCELTABLE  MAIN_FRAME
@@ -647,17 +656,17 @@ ACCELTABLE  TREE_FRAME
 
 MENU DIR_SELECTED
 {
-  MENUITEM "Select ~All",           IDM_SELECTALL
-  MENUITEM "Select All ~Files\tCtrl + /",IDM_SELECTALLFILES
-  MENUITEM "Select All ~Dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
-  MENUITEM "Select ~Mask...\tCtrl + =",IDM_SELECTMASK
+  MENUITEM "Select ~all",           IDM_SELECTALL
+  MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+  MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+  MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
   MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
-  MENUITEM "Select ~List",          IDM_SELECTLIST
+  MENUITEM "Select ~list",          IDM_SELECTLIST
   MENUITEM "",                  -1,               MIS_SEPARATOR
-  MENUITEM "Deselect All\tCtrl + \\", IDM_DESELECTALL
-  MENUITEM "Deselect All Files",    IDM_DESELECTALLFILES
-  MENUITEM "Deselect All Dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
-  MENUITEM "Deselect Mask...\tCtrl + +",IDM_DESELECTMASK
+  MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+  MENUITEM "Deselect all files",    IDM_DESELECTALLFILES
+  MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+  MENUITEM "Deselect mask...\tCtrl + +",IDM_DESELECTMASK
   MENUITEM "Deselect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
   MENUITEM "",                  -1,               MIS_SEPARATOR
   MENUITEM "~Reselect\tCtrl + '",   IDM_RESELECT
@@ -693,24 +702,24 @@ MENU DIR_VIEW
   MENUITEM "Te~xt view",              IDM_TEXT
   MENUITEM "~Tree view",              IDM_TREEVIEW
   MENUITEM "",                        -1,                 MIS_SEPARATOR
-  SUBMENU  "D~etails Setup",          IDM_DETAILSSETUP
+  SUBMENU  "D~etails setup",          IDM_DETAILSSETUP
   {
-    MENUITEM "To~ggle Details Titles",IDM_DETAILSTITLES
-    MENUITEM "Show ~Icons",           IDM_SHOWICON      ,,MIA_NODISMISS
-    MENUITEM "Show ~Longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
-    MENUITEM "Show ~Subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+    MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+    MENUITEM "Show ~icons",           IDM_SHOWICON      ,,MIA_NODISMISS
+    MENUITEM "Show ~longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
+    MENUITEM "Show ~subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
     MENUITEM "Show ~EAs",             IDM_SHOWEAS       ,,MIA_NODISMISS
-    MENUITEM "Show Si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
-    MENUITEM "Show ~Attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
-    MENUITEM "Show LW ~Date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
-    MENUITEM "Show LW ~Time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
-    MENUITEM "Show LA Date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
-    MENUITEM "Show LA Time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
-    MENUITEM "Show Cr Date",          IDM_SHOWCRDATE    ,,MIA_NODISMISS
-    MENUITEM "Show Cr Time",          IDM_SHOWCRTIME    ,,MIA_NODISMISS
+    MENUITEM "Show si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
+    MENUITEM "Show ~attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
+    MENUITEM "Show LW ~date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
+    MENUITEM "Show LW ~time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
+    MENUITEM "Show LA date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
+    MENUITEM "Show LA time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
+    MENUITEM "Show create date",      IDM_SHOWCRDATE    ,,MIA_NODISMISS
+    MENUITEM "Show create time",      IDM_SHOWCRTIME    ,,MIA_NODISMISS
   }
   MENUITEM "",                       -1,                 MIS_SEPARATOR
-  MENUITEM "~Mini Icons",             IDM_MINIICONS
+  MENUITEM "~Mini icons",             IDM_MINIICONS
 }
 
 MENU DIR_SORT
@@ -719,16 +728,16 @@ MENU DIR_SORT
   MENUITEM "~Pathname",       IDM_SORTNAME
   MENUITEM "~Filename",       IDM_SORTFILENAME
   MENUITEM "~Size",           IDM_SORTSIZE
-  MENUITEM "~EA Size",        IDM_SORTEASIZE
-  MENUITEM "F~irst Extension",IDM_SORTFIRST
-  MENUITEM "~Last Extension", IDM_SORTLAST
-  MENUITEM "LW ~Date",        IDM_SORTLWDATE
-  MENUITEM "L~A Date",        IDM_SORTLADATE
-  MENUITEM "C~r Date",        IDM_SORTCRDATE
+  MENUITEM "~EA size",        IDM_SORTEASIZE
+  MENUITEM "F~irst extension",IDM_SORTFIRST
+  MENUITEM "~Last extension", IDM_SORTLAST
+  MENUITEM "LW ~date",        IDM_SORTLWDATE
+  MENUITEM "L~A date",        IDM_SORTLADATE
+  MENUITEM "C~reate date",    IDM_SORTCRDATE
   MENUITEM "Sub~ject",        IDM_SORTSUBJECT
   MENUITEM "",                -1,                 MIS_SEPARATOR
-  MENUITEM "Dirs First",      IDM_SORTDIRSFIRST
-  MENUITEM "Dirs Last",       IDM_SORTDIRSLAST
+  MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+  MENUITEM "Dirs last",       IDM_SORTDIRSLAST
   MENUITEM "Re~verse",        IDM_SORTREVERSE
   MENUITEM "",                -1,                 MIS_SEPARATOR
   MENUITEM "Res~ort",         IDM_RESORT
@@ -805,10 +814,10 @@ ACCELTABLE  DIR_FRAME
 
 MENU DIR_FOLDERICON
 {
-  MENUITEM "~Previous Dir\tCtrl + >", IDM_PREVIOUS
+  MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
   MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
   MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
-  MENUITEM "~Walk Dirs...\tCtrl + w", IDM_WALKDIR
+  MENUITEM "~Walk dirs...\tCtrl + w", IDM_WALKDIR
 }
 
 MENU DIRCNR_POPUP
@@ -821,30 +830,30 @@ MENU DIRCNR_POPUP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU  "D~etails Setup",          IDM_DETAILSSETUP
   {
-    MENUITEM "To~ggle Details Titles",IDM_DETAILSTITLES
-    MENUITEM "Show ~Icons",           IDM_SHOWICON      ,,MIA_NODISMISS
-    MENUITEM "Show ~Longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
-    MENUITEM "Show ~Subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+    MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+    MENUITEM "Show ~icons",           IDM_SHOWICON      ,,MIA_NODISMISS
+    MENUITEM "Show ~longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
+    MENUITEM "Show ~subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
     MENUITEM "Show ~EAs",             IDM_SHOWEAS       ,,MIA_NODISMISS
-    MENUITEM "Show Si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
-    MENUITEM "Show ~Attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
-    MENUITEM "Show LW ~Date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
-    MENUITEM "Show LW ~Time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
-    MENUITEM "Show LA Date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
-    MENUITEM "Show LA Time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
-    MENUITEM "Show Cr Date",          IDM_SHOWCRDATE    ,,MIA_NODISMISS
-    MENUITEM "Show Cr Time",          IDM_SHOWCRTIME    ,,MIA_NODISMISS
+    MENUITEM "Show si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
+    MENUITEM "Show ~attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
+    MENUITEM "Show LW ~date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
+    MENUITEM "Show LW ~time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
+    MENUITEM "Show LA date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
+    MENUITEM "Show LA time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
+    MENUITEM "Show create date",      IDM_SHOWCRDATE    ,,MIA_NODISMISS
+    MENUITEM "Show create time",      IDM_SHOWCRTIME    ,,MIA_NODISMISS
   }
-  MENUITEM "~Mini Icons",             IDM_MINIICONS
+  MENUITEM "~Mini icons",             IDM_MINIICONS
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
   MENUITEM "Res~ort",                 IDM_RESORT
   MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
-  MENUITEM "~Previous Dir\tCtrl + >", IDM_PREVIOUS
-  MENUITEM "~Walk Dirs...\tCtrl + w", IDM_WALKDIR
-  MENUITEM "~Quick Tree...\tCtrl + Q",IDM_QTREE
+  MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
+  MENUITEM "~Walk dirs...\tCtrl + w", IDM_WALKDIR
+  MENUITEM "~Quick tree...\tCtrl + Q",IDM_QTREE
   SUBMENU  "Open",                    IDM_OPENSUBMENU
   {
     MENUITEM "~Icon",                 IDM_OPENICONME
@@ -856,24 +865,24 @@ MENU DIRCNR_POPUP
   {
     MENUITEM "Si~zes...\tCtrl + Z",   IDM_SIZES
     MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
-    MENUITEM "~Undelete Files...",    IDM_UNDELETESPEC
-    MENUITEM "~Find in Drive Tree\tCtrl + F",IDM_FINDINTREE
+    MENUITEM "~Undelete files...",    IDM_UNDELETESPEC
+    MENUITEM "~Find in drive tree\tCtrl + F",IDM_FINDINTREE
     MENUITEM "~Show all files...\tCtrl + g",IDM_SHOWALLFILESCNR
   }
   MENUITEM "",                        -1,                 MIS_SEPARATOR
   SUBMENU "Select\tCtrl + F8",        IDM_SELECTSUBMENU
   {
-    MENUITEM "Select ~All",           IDM_SELECTALL
-    MENUITEM "Select All ~Files\tCtrl + /",IDM_SELECTALLFILES
-    MENUITEM "Select All ~Dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
-    MENUITEM "Select ~Mask...\tCtrl + =",IDM_SELECTMASK
+    MENUITEM "Select ~all",           IDM_SELECTALL
+    MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+    MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+    MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
     MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
-    MENUITEM "Select ~List",          IDM_SELECTLIST
+    MENUITEM "Select ~list",          IDM_SELECTLIST
     MENUITEM "",                  -1,               MIS_SEPARATOR
-    MENUITEM "Deselect All\tCtrl + \\", IDM_DESELECTALL
-    MENUITEM "Deselect All Files",    IDM_DESELECTALLFILES
-    MENUITEM "Deselect All Dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
-    MENUITEM "Deselect Mask...\tCtrl + +",IDM_DESELECTMASK
+    MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+    MENUITEM "Deselect all files",    IDM_DESELECTALLFILES
+    MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+    MENUITEM "Deselect mask...\tCtrl + +",IDM_DESELECTMASK
     MENUITEM "Deselect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
     MENUITEM "",                  -1,               MIS_SEPARATOR
     MENUITEM "~Reselect\tCtrl + '",   IDM_RESELECT
@@ -903,16 +912,16 @@ MENU DIRCNR_POPUP
     MENUITEM "~Pathname",       IDM_SORTNAME
     MENUITEM "~Filename",       IDM_SORTFILENAME
     MENUITEM "~Size",           IDM_SORTSIZE
-    MENUITEM "~EA Size",        IDM_SORTEASIZE
-    MENUITEM "F~irst Extension",IDM_SORTFIRST
-    MENUITEM "~Last Extension", IDM_SORTLAST
-    MENUITEM "LW ~Date",        IDM_SORTLWDATE
-    MENUITEM "L~A Date",        IDM_SORTLADATE
-    MENUITEM "C~r Date",        IDM_SORTCRDATE
+    MENUITEM "~EA size",        IDM_SORTEASIZE
+    MENUITEM "F~irst extension",IDM_SORTFIRST
+    MENUITEM "~Last extension", IDM_SORTLAST
+    MENUITEM "LW ~date",        IDM_SORTLWDATE
+    MENUITEM "L~A date",        IDM_SORTLADATE
+    MENUITEM "C~reate date",    IDM_SORTCRDATE
     MENUITEM "Sub~ject",        IDM_SORTSUBJECT
     MENUITEM "",                -1,                 MIS_SEPARATOR
-    MENUITEM "Dirs First",      IDM_SORTDIRSFIRST
-    MENUITEM "Dirs Last",       IDM_SORTDIRSLAST
+    MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+    MENUITEM "Dirs last",       IDM_SORTDIRSLAST
     MENUITEM "Re~verse",        IDM_SORTREVERSE
   }
   MENUITEM "",                  -1,                 MIS_SEPARATOR
@@ -926,8 +935,8 @@ MENU DIRCNR_POPUP
 
 MENU TREECNR_POPUP
 {
-  MENUITEM "~Mini Icons",       IDM_MINIICONS
-  MENUITEM "~Toggle Icons",     IDM_TEXT
+  MENUITEM "~Mini icons",       IDM_MINIICONS
+  MENUITEM "~Toggle icons",     IDM_TEXT
   MENUITEM "~Rescan\tCtrl + R",   IDM_RESCAN
   MENUITEM "~Filter...\tCtrl + f",IDM_FILTER
   MENUITEM "Res~ort",           IDM_RESORT
@@ -939,16 +948,16 @@ MENU TREECNR_POPUP
 /*
     MENUITEM "~Size",           IDM_SORTSIZE
 */
-    MENUITEM "~EA Size",        IDM_SORTEASIZE
-    MENUITEM "F~irst Extension",IDM_SORTFIRST
-    MENUITEM "~Last Extension", IDM_SORTLAST
-    MENUITEM "LW ~Date",        IDM_SORTLWDATE
-    MENUITEM "L~A Date",        IDM_SORTLADATE
-    MENUITEM "C~r Date",        IDM_SORTCRDATE
+    MENUITEM "~EA size",        IDM_SORTEASIZE
+    MENUITEM "F~irst extension",IDM_SORTFIRST
+    MENUITEM "~Last extension", IDM_SORTLAST
+    MENUITEM "LW ~date",        IDM_SORTLWDATE
+    MENUITEM "L~A date",        IDM_SORTLADATE
+    MENUITEM "C~reate date",    IDM_SORTCRDATE
     MENUITEM "",                -1,                 MIS_SEPARATOR
 /*
-    MENUITEM "Dirs First",      IDM_SORTDIRSFIRST
-    MENUITEM "Dirs Last",       IDM_SORTDIRSLAST
+    MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+    MENUITEM "Dirs last",       IDM_SORTDIRSLAST
 */
     MENUITEM "Re~verse sort",   IDM_SORTREVERSE
   }
@@ -956,17 +965,17 @@ MENU TREECNR_POPUP
   MENUITEM "~Settings notebook...", IDM_NOTEBOOK
   MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
   MENUITEM "",                  -1,                 MIS_SEPARATOR
-  MENUITEM "Open ~Directory Container...\tCtrl + O",IDM_OPENWALK
+  MENUITEM "~Open ~directory container...\tCtrl + O",IDM_OPENWALK
   MENUITEM "",                  -1,                 MIS_SEPARATOR
-  MENUITEM "Remap drives...",   IDM_REMAP
+  MENUITEM "~Remap drives...",   IDM_REMAP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU "~Partition disks", IDM_PARTITIONSMENU
-BEGIN
+     {
         MENUITEM "~MiniLVM - eCS only" IDM_PARTITION
         MENUITEM "~DFSee - If installed in System Path"   IDM_PARTITIONDF
         MENUITEM "~LVMGUI" IDM_PARTITIONLVMG
         MENUITEM "~FDisk - Do not use on LVM systems" IDM_PARTITIONFD
-END
+      }
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU "Windows",            IDM_WINDOWSMENU
   {
@@ -975,11 +984,11 @@ END
 
 MENU DIR_RESTORE
 {
-  MENUITEM "Select ~All",       IDM_SELECTALL
-  MENUITEM "Select ~Mask...\tCtrl + =",IDM_SELECTMASK
+  MENUITEM "Select ~all",       IDM_SELECTALL
+  MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
   MENUITEM "",                  -1,                   MIS_SEPARATOR
-  MENUITEM "Deselect All\tCtrl + \\", IDM_DESELECTALL
-  MENUITEM "Deselect Mask....Ctrl + +",IDM_DESELECTMASK
+  MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+  MENUITEM "Deselect mask....Ctrl + +",IDM_DESELECTMASK
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   MENUITEM "~Reselect\tCtrl + '",     IDM_RESELECT
   MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
@@ -1005,11 +1014,11 @@ MENU ARCCNR_POPUP
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "Select\tCtrl + F8",    IDM_SELECTSUBMENU
   {
-    MENUITEM "Select ~All",       IDM_SELECTALL
-    MENUITEM "Select ~Mask...\tCtrl + =",IDM_SELECTMASK
+    MENUITEM "Select ~all",       IDM_SELECTALL
+    MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
     MENUITEM "",                  -1,                   MIS_SEPARATOR
-    MENUITEM "Deselect All\tCtrl + \\", IDM_DESELECTALL
-    MENUITEM "Deselect Mask....Ctrl + +",IDM_DESELECTMASK
+    MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+    MENUITEM "Deselect mask....Ctrl + +",IDM_DESELECTMASK
     MENUITEM "",                  -1,                   MIS_SEPARATOR
     MENUITEM "~Reselect\tCtrl + '",     IDM_RESELECT
     MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
@@ -1042,14 +1051,14 @@ MENU FILE_POPUP
     MENUITEM "Copy and ~rename...",   IDM_WILDCOPY
     MENUITEM "Merge...",              IDM_MERGE
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Copy...",           IDM_WPSCOPY
+    MENUITEM "~WPS copy...",           IDM_WPSCOPY
   }
   SUBMENU  "~Move",                   IDM_MOVEMENU
   {
     MENUITEM "~Move...\tCtrl + m",    IDM_MOVE
     MENUITEM "Move and ~rename...",   IDM_WILDMOVE
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Move...",           IDM_WPSMOVE
+    MENUITEM "~WPS move...",           IDM_WPSMOVE
   }
   SUBMENU "~View",              IDM_VIEWSUBMENU
   {
@@ -1072,7 +1081,7 @@ MENU FILE_POPUP
     MENUITEM "as ~binary",      IDM_EDITBINARY
     MENUITEM "",                -1,               MIS_SEPARATOR
     MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
-    MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+    MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s",   IDM_SUBJECT
   }
   MENUITEM "~Print\tCtrl + p",        IDM_PRINT
@@ -1082,7 +1091,7 @@ MENU FILE_POPUP
     MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
   }
   MENUITEM "",                  -1,             MIS_SEPARATOR
-  SUBMENU "Create Objects",     IDM_OBJECTSUBMENU
+  SUBMENU "Create objects",     IDM_OBJECTSUBMENU
   {
     MENUITEM "~Shadows...",     IDM_SHADOW
     MENUITEM "~Real objects...",IDM_OBJECT
@@ -1091,27 +1100,28 @@ MENU FILE_POPUP
   SUBMENU "Save Lists",         IDM_SAVESUBMENU
   {
     MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-    MENUITEM "~Append to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+    MENUITEM "Append to clipboard\tCtrl + {",IDM_APPENDTOCLIP
     MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
   {
-    MENUITEM "~Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
+    MENUITEM "Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
   }
   SUBMENU  "Collect",           IDM_COLLECTMENU
   {
-    MENUITEM "~File(s)\tCtrl + C",IDM_COLLECT
-    MENUITEM "~List in file(s)",IDM_COLLECTFROMFILE
+    MENUITEM "File(s)\tCtrl + C",IDM_COLLECT
+    MENUITEM "List in file(s)",IDM_COLLECTFROMFILE
   }
   MENUITEM "",                  -1,             MIS_SEPARATOR
   MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
   MENUITEM "Extract...\tCtrl + x",IDM_EXTRACT
   MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
     MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
-    MENUITEM "~Permanently Delete\tCtrl + D",IDM_PERMDELETE
+    MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
   }
 }
 
@@ -1123,22 +1133,22 @@ MENU DIR_POPUP
     MENUITEM "~Copy...\tCtrl + c",    IDM_COPY
     MENUITEM "Copy and ~rename...",   IDM_WILDCOPY
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Copy...",           IDM_WPSCOPY
+    MENUITEM "~WPS copy...",           IDM_WPSCOPY
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "Create ~Shadows...",    IDM_SHADOW
+    MENUITEM "Create ~shadows...",    IDM_SHADOW
   }
   SUBMENU  "~Move",                   IDM_MOVEMENU
   {
     MENUITEM "~Move...\tCtrl + m",    IDM_MOVE
     MENUITEM "Move and ~rename...",   IDM_WILDMOVE
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Move...",          IDM_WPSMOVE
+    MENUITEM "~WPS move...",          IDM_WPSMOVE
   }
   SUBMENU "~View",                    IDM_VIEWSUBMENU
   {
     MENUITEM "~Info...\tCtrl + i",    IDM_INFO
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "Quick Tree...\tCtrl + q",IDM_TREE
+    MENUITEM "Quick tree...\tCtrl + q",IDM_TREE
     MENUITEM "",                      -1,           MIS_SEPARATOR
     MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
     MENUITEM "~Hide objects",         IDM_HIDEALL
@@ -1146,7 +1156,7 @@ MENU DIR_POPUP
   SUBMENU "~Edit",              IDM_EDITSUBMENU
   {
     MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
-    MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+    MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
   }
   SUBMENU    "~Open",           IDM_OPENSUBMENU
@@ -1171,10 +1181,11 @@ MENU DIR_POPUP
   MENUITEM "",                  -1,             MIS_SEPARATOR
   MENUITEM "Collect\tCtrl + C",   IDM_COLLECT
   MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
   SUBMENU "Miscellaneous",      IDM_MISCSUBMENU
   {
     MENUITEM "Si~zes...\tCtrl + Z",  IDM_SIZES
-    MENUITEM "Make Directory...\tCtrl + M",IDM_MKDIR
+    MENUITEM "Make directory...\tCtrl + M",IDM_MKDIR
     MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
     MENUITEM "Undelete...",     IDM_UNDELETE
   }
@@ -1182,7 +1193,7 @@ MENU DIR_POPUP
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
     MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
-    MENUITEM "~Permanently Delete\tCtrl + D",IDM_PERMDELETE
+    MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
   }
 }
 
@@ -1192,7 +1203,7 @@ MENU TREE_POPUP
   SUBMENU "~Edit",              IDM_EDITSUBMENU
   {
     MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
-    MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+    MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
     MENUITEM "~Drive flags...",       IDM_DRVFLAGS
   }
@@ -1204,7 +1215,7 @@ MENU TREE_POPUP
     MENUITEM "~Details",        IDM_OPENDETAILS
     MENUITEM "~Tree",           IDM_OPENTREE
   }
-  MENUITEM "Create ~Shadows...",IDM_SHADOW
+  MENUITEM "Create ~shadows...",IDM_SHADOW
   SUBMENU "Save ~Lists",        IDM_SAVESUBMENU
   {
     MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
@@ -1218,6 +1229,7 @@ MENU TREE_POPUP
   MENUITEM "",                  -1,             MIS_SEPARATOR
   MENUITEM "~Collect\tCtrl + C",  IDM_COLLECT
   MENUITEM "~Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
   MENUITEM "~Rescan",           IDM_UPDATE
   SUBMENU  "E~xpand/Collapse",  IDM_EXPANDSUBMENU
   {
@@ -1227,13 +1239,20 @@ MENU TREE_POPUP
   SUBMENU "~Miscellaneous",     IDM_MISCSUBMENU
   {
     MENUITEM "Si~zes...\tCtrl + Z",IDM_SIZES
-    MENUITEM "Make ~Directory...\tCtrl + M",IDM_MKDIR
+    MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
     MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
     MENUITEM "~Undelete...",    IDM_UNDELETE
     MENUITEM "",                -1,       MIS_SEPARATOR
     MENUITEM "~Check disk...",  IDM_CHKDSK
-    MENUITEM "~Format Disk...", IDM_FORMAT
+    MENUITEM "~Format disk...", IDM_FORMAT
     MENUITEM "~Optimize...",    IDM_OPTIMIZE
+    SUBMENU "~Partition disks", IDM_PARTITIONSMENU
+    {
+      MENUITEM "~MiniLVM - eCS only" IDM_PARTITION
+      MENUITEM "~DFSee - If installed in System Path"   IDM_PARTITIONDF
+      MENUITEM "~LVMGUI" IDM_PARTITIONLVMG
+      MENUITEM "~FDisk - Do not use on LVM systems" IDM_PARTITIONFD
+    }
     MENUITEM "",                -1,       MIS_SEPARATOR
     MENUITEM "De~tach\tCtrl + H",IDM_DETACH
     MENUITEM "~Eject",          IDM_EJECT
@@ -1250,12 +1269,12 @@ MENU MAIN_DRIVES
   MENUITEM "~Info...\tCtrl + i",IDM_INFO
   MENUITEM "~Drive flags...", IDM_DRVFLAGS
   MENUITEM "Si~zes...\tCtrl + Z",IDM_SIZES
-  MENUITEM "Make ~Directory...\tCtrl + M",IDM_MKDIR
+  MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
   MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
   MENUITEM "~Undelete...",    IDM_UNDELETE
   MENUITEM "",                -1,       MIS_SEPARATOR
   MENUITEM "~Check disk...",  IDM_CHKDSK
-  MENUITEM "~Format Disk...", IDM_FORMAT
+  MENUITEM "~Format disk...", IDM_FORMAT
   MENUITEM "~Optimize...",    IDM_OPTIMIZE
   MENUITEM "",                -1,       MIS_SEPARATOR
 //  MENUITEM "De~tach",         IDM_DETACH
@@ -1271,20 +1290,20 @@ MENU MAIN_DRIVES
 MENU COMP_CNRMENU
 {
   MENUITEM "Show ~EAs",       IDM_SHOWEAS
-  MENUITEM "Show Si~zes",     IDM_SHOWSIZE
-  MENUITEM "Show ~Attributes",IDM_SHOWATTR
-  MENUITEM "Show LW ~Date",   IDM_SHOWLWDATE
-  MENUITEM "Show LW ~Time",   IDM_SHOWLWTIME
-  MENUITEM "Show ~LA Date",   IDM_SHOWLADATE
-  MENUITEM "Show L~A Time",   IDM_SHOWLATIME
-  MENUITEM "Show ~Cr Date",   IDM_SHOWCRDATE
-  MENUITEM "Show C~r Time",   IDM_SHOWCRTIME
-  MENUITEM "Show ~Status",    IDM_SHOWSUBJECT
+  MENUITEM "Show si~zes",     IDM_SHOWSIZE
+  MENUITEM "Show ~attributes",IDM_SHOWATTR
+  MENUITEM "Show LW ~date",   IDM_SHOWLWDATE
+  MENUITEM "Show LW ~time",   IDM_SHOWLWTIME
+  MENUITEM "Show ~LA date",   IDM_SHOWLADATE
+  MENUITEM "Show L~A time",   IDM_SHOWLATIME
+  MENUITEM "Show ~create date", IDM_SHOWCRDATE
+  MENUITEM "Show c~reate time", IDM_SHOWCRTIME
+  MENUITEM "Show ~status",    IDM_SHOWSUBJECT
   MENUITEM "",                -1,             MIS_SEPARATOR
   MENUITEM "~Filter...",      IDM_FILTER
   MENUITEM "",                -1,             MIS_SEPARATOR
-  MENUITEM "L~oad Listfile",  IDM_LOADLISTFILE
-  MENUITEM "S~ave Listfile",  IDM_SAVELISTFILE
+  MENUITEM "L~oad listfile",  IDM_LOADLISTFILE
+  MENUITEM "S~ave listfile",  IDM_SAVELISTFILE
 }
 
 MENU COMP_MENU {
@@ -1301,7 +1320,7 @@ MENU COLLECTORFILE_POPUP
     MENUITEM "Copy and ~preserve...", IDM_COPYPRESERVE
     MENUITEM "Merge...",              IDM_MERGE
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Copy...",           IDM_WPSCOPY
+    MENUITEM "~WPS oopy...",           IDM_WPSCOPY
   }
   SUBMENU  "~Move",                   IDM_MOVEMENU
   {
@@ -1309,7 +1328,7 @@ MENU COLLECTORFILE_POPUP
     MENUITEM "Move and ~rename...",   IDM_WILDMOVE
     MENUITEM "Move and ~preserve...", IDM_MOVEPRESERVE
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Move...",           IDM_WPSMOVE
+    MENUITEM "~WPS move...",           IDM_WPSMOVE
   }
   SUBMENU "~View",              IDM_VIEWSUBMENU
   {
@@ -1333,7 +1352,7 @@ MENU COLLECTORFILE_POPUP
     MENUITEM "as ~binary",      IDM_EDITBINARY
     MENUITEM "",                -1,               MIS_SEPARATOR
     MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
-    MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+    MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s",   IDM_SUBJECT
   }
   MENUITEM "~Print\tCtrl + p",        IDM_PRINT
@@ -1343,7 +1362,7 @@ MENU COLLECTORFILE_POPUP
     MENUITEM "Default\tF6",     IDM_OPENDEFAULT
     MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
   }
-  SUBMENU "Create Objects",     IDM_OBJECTSUBMENU
+  SUBMENU "Create objects",     IDM_OBJECTSUBMENU
   {
     MENUITEM "~Shadows...",     IDM_SHADOW
     MENUITEM "~Real objects...",IDM_OBJECT
@@ -1368,7 +1387,7 @@ MENU COLLECTORFILE_POPUP
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
     MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
-    MENUITEM "~Permanently Delete\tCtrl + D",IDM_PERMDELETE
+    MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
   }
 }
 
@@ -1380,16 +1399,16 @@ MENU COLLECTORDIR_POPUP
     MENUITEM "~Copy...\tCtrl + c",    IDM_COPY
     MENUITEM "Copy and ~rename...",   IDM_WILDCOPY
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Copy...",          IDM_WPSCOPY
+    MENUITEM "~WPS copy...",          IDM_WPSCOPY
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "Create ~Shadows...",    IDM_SHADOW
+    MENUITEM "Create ~shadows...",    IDM_SHADOW
   }
   SUBMENU  "~Move",             IDM_MOVEMENU
   {
     MENUITEM "~Move...\tCtrl + m",    IDM_MOVE
     MENUITEM "Move and ~rename...",IDM_WILDMOVE
     MENUITEM "",                      -1,           MIS_SEPARATOR
-    MENUITEM "~WPS Move...",           IDM_WPSMOVE
+    MENUITEM "~WPS move...",           IDM_WPSMOVE
   }
   SUBMENU "~View",              IDM_VIEWSUBMENU
   {
@@ -1402,7 +1421,7 @@ MENU COLLECTORDIR_POPUP
   SUBMENU "~Edit",            IDM_EDITSUBMENU
   {
     MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
-    MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+    MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
   }
   SUBMENU    "~Open",           IDM_OPENSUBMENU
@@ -1426,10 +1445,11 @@ MENU COLLECTORDIR_POPUP
   }
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
   SUBMENU  "Miscellaneous",     IDM_MISCSUBMENU
   {
     MENUITEM "Si~zes...\tCtrl + Z",IDM_SIZES
-    MENUITEM "Make Directory...\tCtrl + M",IDM_MKDIR
+    MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
     MENUITEM "Undelete...",     IDM_UNDELETE
     MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
   }
@@ -1437,7 +1457,7 @@ MENU COLLECTORDIR_POPUP
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
     MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
-    MENUITEM "~Permanently Delete\tCtrl + D",IDM_PERMDELETE
+    MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
   }
 }
 
@@ -1450,48 +1470,48 @@ MENU COLLECTORCNR_POPUP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU  "Details Setup",     IDM_DETAILSSETUP
   {
-    MENUITEM "To~ggle Details Titles",IDM_DETAILSTITLES
-    MENUITEM "Show ~Icons",     IDM_SHOWICON      ,,MIA_NODISMISS
-    MENUITEM "Show ~Longnames", IDM_SHOWLNAMES    ,,MIA_NODISMISS
-    MENUITEM "Show ~Subjects",  IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+    MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+    MENUITEM "Show ~icons",     IDM_SHOWICON      ,,MIA_NODISMISS
+    MENUITEM "Show ~longnames", IDM_SHOWLNAMES    ,,MIA_NODISMISS
+    MENUITEM "Show ~subjects",  IDM_SHOWSUBJECT   ,,MIA_NODISMISS
     MENUITEM "Show ~EAs",       IDM_SHOWEAS       ,,MIA_NODISMISS
-    MENUITEM "Show Si~zes",     IDM_SHOWSIZE      ,,MIA_NODISMISS
-    MENUITEM "Show ~Attributes",IDM_SHOWATTR      ,,MIA_NODISMISS
-    MENUITEM "Show LW ~Date",   IDM_SHOWLWDATE    ,,MIA_NODISMISS
-    MENUITEM "Show LW ~Time",   IDM_SHOWLWTIME    ,,MIA_NODISMISS
-    MENUITEM "Show LA Date",    IDM_SHOWLADATE    ,,MIA_NODISMISS
-    MENUITEM "Show LA Time",    IDM_SHOWLATIME    ,,MIA_NODISMISS
-    MENUITEM "Show Cr Date",    IDM_SHOWCRDATE    ,,MIA_NODISMISS
-    MENUITEM "Show Cr Time",    IDM_SHOWCRTIME    ,,MIA_NODISMISS
+    MENUITEM "Show si~zes",     IDM_SHOWSIZE      ,,MIA_NODISMISS
+    MENUITEM "Show ~attributes",IDM_SHOWATTR      ,,MIA_NODISMISS
+    MENUITEM "Show LW ~date",   IDM_SHOWLWDATE    ,,MIA_NODISMISS
+    MENUITEM "Show LW ~time",   IDM_SHOWLWTIME    ,,MIA_NODISMISS
+    MENUITEM "Show LA date",    IDM_SHOWLADATE    ,,MIA_NODISMISS
+    MENUITEM "Show LA time",    IDM_SHOWLATIME    ,,MIA_NODISMISS
+    MENUITEM "Show create date", IDM_SHOWCRDATE    ,,MIA_NODISMISS
+    MENUITEM "Show create time", IDM_SHOWCRTIME    ,,MIA_NODISMISS
   }
-  MENUITEM "Mini Icons",        IDM_MINIICONS
+  MENUITEM "Mini icons",        IDM_MINIICONS
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU  "Collect",           IDM_COLLECTMENU
   {
     MENUITEM "~From ~clipboard",IDM_COLLECTFROMCLIP
-    MENUITEM "From a ~List file",IDM_COLLECTSELECT
+    MENUITEM "From a ~list file",IDM_COLLECTSELECT
   }
   MENUITEM "Clear container",   IDM_CLEARCNR
-  MENUITEM "Seek & Scan\tCtrl + g",   IDM_GREP
-  MENUITEM "Stop Seek & Scan\tEsc",DID_CANCEL
+  MENUITEM "Seek & scan\tCtrl + g",   IDM_GREP
+  MENUITEM "Stop seek & scan\tEsc",DID_CANCEL
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "~See all files...", IDM_SEEALL
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU "Select\tCtrl + F8",    IDM_SELECTSUBMENU
   {
-    MENUITEM "Select ~All",       IDM_SELECTALL
-    MENUITEM "Select All ~Files\tCtrl + /",IDM_SELECTALLFILES
-    MENUITEM "Select All ~Dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
-    MENUITEM "Select ~Mask...\tCtrl + =",IDM_SELECTMASK
+    MENUITEM "Select ~all",       IDM_SELECTALL
+    MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+    MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+    MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
     MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
-    MENUITEM "Select ~List",      IDM_SELECTLIST
+    MENUITEM "Select ~list",      IDM_SELECTLIST
     MENUITEM "",                  -1,               MIS_SEPARATOR
-    MENUITEM "Deselect All\tCtrl + \\", IDM_DESELECTALL
-    MENUITEM "Deselect All Files",IDM_DESELECTALLFILES
-    MENUITEM "Deselect All Dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
-    MENUITEM "Deselect Mask...",  IDM_DESELECTMASK
+    MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+    MENUITEM "Deselect all files",IDM_DESELECTALLFILES
+    MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+    MENUITEM "Deselect mask...",  IDM_DESELECTMASK
     MENUITEM "DeSelect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
     MENUITEM "",                  -1,               MIS_SEPARATOR
     MENUITEM "~Reselect\tCtrl + '",     IDM_RESELECT
@@ -1503,16 +1523,16 @@ MENU COLLECTORCNR_POPUP
     MENUITEM "~Pathname",       IDM_SORTNAME
     MENUITEM "~Filename",       IDM_SORTFILENAME
     MENUITEM "~Size",           IDM_SORTSIZE
-    MENUITEM "~EA Size",        IDM_SORTEASIZE
-    MENUITEM "F~irst Extension",IDM_SORTFIRST
-    MENUITEM "~Last Extension", IDM_SORTLAST
-    MENUITEM "LW ~Date",        IDM_SORTLWDATE
-    MENUITEM "L~A Date",        IDM_SORTLADATE
-    MENUITEM "C~r Date",        IDM_SORTCRDATE
+    MENUITEM "~EA size",        IDM_SORTEASIZE
+    MENUITEM "F~irst extension",IDM_SORTFIRST
+    MENUITEM "~Last extension", IDM_SORTLAST
+    MENUITEM "LW ~date",        IDM_SORTLWDATE
+    MENUITEM "L~A date",        IDM_SORTLADATE
+    MENUITEM "C~r date",        IDM_SORTCRDATE
     MENUITEM "Sub~ject",        IDM_SORTSUBJECT
     MENUITEM "",                -1,                 MIS_SEPARATOR
-    MENUITEM "Dirs First",      IDM_SORTDIRSFIRST
-    MENUITEM "Dirs Last",       IDM_SORTDIRSLAST
+    MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+    MENUITEM "Dirs last",       IDM_SORTDIRSLAST
     MENUITEM "Re~verse",        IDM_SORTREVERSE
   }
   MENUITEM "",                  -1,                 MIS_SEPARATOR
@@ -1609,7 +1629,7 @@ MENU ARC_POPUP
   MENUITEM "Refresh",             IDM_REFRESH
   MENUITEM "",                    -1,                   MIS_SEPARATOR
   MENUITEM "~Test\tCtrl + T",           IDM_TEST
-  MENUITEM "Virus Scan\tCtrl + V",      IDM_VIRUSSCAN
+  MENUITEM "Virus scan\tCtrl + V",      IDM_VIRUSSCAN
   MENUITEM "",                    -1,                   MIS_SEPARATOR
   SUBMENU "~Extract",             IDM_EXTRACTSUBMENU
   {
@@ -1715,8 +1735,8 @@ MENU MLE_FRAME
       MENUITEM "C~lear selection\tDelete",     MLE_CLEAR
       MENUITEM "D~elete line to clipboard\tCtrl + y",  MLE_CUTLINE
       MENUITEM "",                          -1,     MIS_SEPARATOR
-      MENUITEM "~Select All\tCtrl + /",           MLE_SELECTALL
-      MENUITEM "~Deselect All\tCtrl + \\",        MLE_DESELECTALL
+      MENUITEM "~Select all\tCtrl + /",           MLE_SELECTALL
+      MENUITEM "~Deselect all\tCtrl + \\",        MLE_DESELECTALL
       MENUITEM "",                          -1,     MIS_SEPARATOR
       SUBMENU "~Block operations",          MLE_BLOCKMENU
         {
@@ -1739,18 +1759,18 @@ MENU MLE_FRAME
     }
   SUBMENU "~Config",                      -1
     {
-      MENUITEM "Set ~Font...\tF2",        MLE_SETFONT
-      MENUITEM "Set ~Code Page...",       MLE_CODEPAGE
+      MENUITEM "Set ~font...\tF2",        MLE_SETFONT
+      MENUITEM "Set ~code page...",       MLE_CODEPAGE
       MENUITEM "",                        -1,    MIS_SEPARATOR
       SUBMENU  "F~ormat control",         -1
       {
-        MENUITEM "~Tab Width...",         MLE_TAB
-        MENUITEM "~Expand Tabs...",       MLE_EXPANDTABS
+        MENUITEM "~Tab width...",         MLE_TAB
+        MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
         MENUITEM "",                      -1,     MIS_SEPARATOR
-        MENUITEM "~Strip Trailing Blanks",MLE_STRIPTRAILBLANKS
-        MENUITEM "Stri~p Trailing Lines", MLE_STRIPTRAILLINES
+        MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
+        MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
         MENUITEM "",                      -1,     MIS_SEPARATOR
-        MENUITEM "~Wrap On\tCtrl + w",          MLE_TOGWRAP
+        MENUITEM "~Wrap on\tCtrl + w",          MLE_TOGWRAP
       }
       MENUITEM "Co~lors...",              IDM_COLORPALETTE
     }
@@ -1772,8 +1792,8 @@ MENU MLE_POPUP
   MENUITEM "~Paste from clipboard\tShift + Insert",MLE_PASTECLIP
   MENUITEM "C~lear selection\tDelete",     MLE_CLEAR
   MENUITEM "",                          -1,     MIS_SEPARATOR
-  MENUITEM "~Select All\tCtrl + /",           MLE_SELECTALL
-  MENUITEM "~Deselect All\tCtrl + \\",        MLE_DESELECTALL
+  MENUITEM "~Select all\tCtrl + /",           MLE_SELECTALL
+  MENUITEM "~Deselect all\tCtrl + \\",        MLE_DESELECTALL
   MENUITEM "",                          -1,     MIS_SEPARATOR
   SUBMENU "~Block operations",          MLE_BLOCKMENU
     {
@@ -1795,18 +1815,18 @@ MENU MLE_POPUP
     }
   SUBMENU "Config",                      -1
     {
-      MENUITEM "Set ~Font...\tF2",        MLE_SETFONT
-      MENUITEM "Set ~Code Page...",       MLE_CODEPAGE
+      MENUITEM "Set ~font...\tF2",        MLE_SETFONT
+      MENUITEM "Set ~code page...",       MLE_CODEPAGE
       MENUITEM "",                        -1,    MIS_SEPARATOR
       SUBMENU  "F~ormat control",         -1
       {
-        MENUITEM "~Tab Width...",         MLE_TAB
-        MENUITEM "~Expand Tabs...",       MLE_EXPANDTABS
+        MENUITEM "~Tab width...",         MLE_TAB
+        MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
         MENUITEM "",                      -1,     MIS_SEPARATOR
-        MENUITEM "~Strip Trailing Blanks",MLE_STRIPTRAILBLANKS
-        MENUITEM "Stri~p Trailing Lines", MLE_STRIPTRAILLINES
+        MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
+        MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
         MENUITEM "",                      -1,     MIS_SEPARATOR
-        MENUITEM "~Wrap On\tCtrl + w",          MLE_TOGWRAP
+        MENUITEM "~Wrap on\tCtrl + w",          MLE_TOGWRAP
       }
       MENUITEM "Co~lors...",              IDM_COLORPALETTE
     }
@@ -1859,8 +1879,8 @@ MENU ID_BUTTONMENU
   MENUITEM "Edit any button...",      IDM_EDITANYTOOL
   MENUITEM "Reorder buttons...",      IDM_REORDERTOOLS
   MENUITEM "",                        -1,           MIS_SEPARATOR
-  MENUITEM "Save Toolbox...",         IDM_SAVETOOLS
-  MENUITEM "Load Toolbox...",         IDM_LOADTOOLS
+  MENUITEM "Save toolbox...",         IDM_SAVETOOLS
+  MENUITEM "Load toolbox...",         IDM_LOADTOOLS
   MENUITEM "",                        -1,           MIS_SEPARATOR
   MENUITEM "Help",                    IDM_HELP
 }
@@ -1900,7 +1920,7 @@ MENU SEEALL_FRAME
     }
     MENUITEM "Modify selected ~attributes\tCtrl + a",IDM_ATTRS
     MENUITEM "~Info on selected\tCtrl + i", IDM_INFO
-    MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+    MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s",       IDM_SUBJECT
     MENUITEM "~Print selected\tCtrl + p",   IDM_PRINT
     MENUITEM "Archive selected\tCtrl + A",  IDM_ARCHIVE
@@ -1916,7 +1936,7 @@ MENU SEEALL_FRAME
       MENUITEM "Default\tF6",         IDM_OPENDEFAULT
       MENUITEM "~Settings\tF7",       IDM_OPENSETTINGS
     }
-    SUBMENU "Create Objects",         IDM_OBJECTSUBMENU
+    SUBMENU "Create objects",         IDM_OBJECTSUBMENU
     {
       MENUITEM "~Shadows...",         IDM_SHADOW
       MENUITEM "~Real objects...",    IDM_OBJECT
@@ -1933,7 +1953,7 @@ MENU SEEALL_FRAME
   {
     MENUITEM "~Show full names",      IDM_SHOWLNAMES
     MENUITEM "F~ont change...",       IDM_FONTPALETTE
-    MENUITEM "~Codepage",             IDM_CODEPAGE
+    MENUITEM "~Code page",            IDM_CODEPAGE
     MENUITEM "Co~lors...",            IDM_COLORPALETTE
     MENUITEM "~Rescan\tCtrl + R",           IDM_RESCAN
     MENUITEM "",                      -1,               MIS_SEPARATOR
@@ -1977,7 +1997,7 @@ MENU SEEALL_POPUP
   }
   MENUITEM "Modify selected attributes\tCtrl + a",IDM_ATTRS
   MENUITEM "Info on selected\tCtrl + i",  IDM_INFO
-  MENUITEM "E~xtended Attributes...\tCtrl + E",IDM_EAS
+  MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
   MENUITEM "S~ubject...\tCtrl + s",       IDM_SUBJECT
   MENUITEM "~Print selected\tCtrl + p",   IDM_PRINT
   MENUITEM "Archive selected...\tCtrl + A",IDM_ARCHIVE
@@ -1993,7 +2013,7 @@ MENU SEEALL_POPUP
     MENUITEM "Default\tF6",         IDM_OPENDEFAULT
     MENUITEM "~Settings\tF7",       IDM_OPENSETTINGS
   }
-  SUBMENU "Create Objects",         IDM_OBJECTSUBMENU
+  SUBMENU "Create objects",         IDM_OBJECTSUBMENU
   {
     MENUITEM "~Shadows...",         IDM_SHADOW
     MENUITEM "~Real objects...",    IDM_OBJECT
@@ -2053,7 +2073,7 @@ MENU NEWVIEW_FRAME
   SUBMENU "~View",                  IDM_VIEWSMENU
   {
     MENUITEM "~Font change...",     IDM_FONTPALETTE
-    MENUITEM "~Codepage...",        IDM_CODEPAGE
+    MENUITEM "~Code page...",       IDM_CODEPAGE
     MENUITEM "C~olors...",          IDM_COLORPALETTE
     MENUITEM "",                    -1,               MIS_SEPARATOR
     MENUITEM "~Hex mode\tCtrl + h", IDM_HEXMODE
