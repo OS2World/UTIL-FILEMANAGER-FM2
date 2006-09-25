@@ -1,5 +1,11 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.05beta04
+ o Change to standard F1 Help hotkey by Gregg
+ o Association editor enhancements by Gregg
+ o Commands editor enhancements by Gregg
+ o Avoid spurious error popups
+
 3.05beta03
  o Help file updated by David
  o Avoid toolbar bitmap edit exception
