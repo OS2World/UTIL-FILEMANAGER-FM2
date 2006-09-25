@@ -14,7 +14,7 @@
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
   18 Aug 06 SHL Report more runtime errors
   05 Sep 06 SHL docopyf filename args must be variables
-  05 Sep 06 SHL Sync with standard source formattting
+  05 Sep 06 SHL Sync with standard source formatting
 
 ***********************************************************************/
 
