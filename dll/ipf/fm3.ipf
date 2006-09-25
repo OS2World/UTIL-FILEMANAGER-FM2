@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 24 Sep 06 GKY ADD Change to F1 help
+.*
+.***********************************************************************
+.*
 :userdoc.
 :title.File Manager/2 Help File
 :docprof toc=123456.
@@ -13,8 +26,7 @@
 :artwork name='bitmaps\fm3.bmp' align=center.
 The best way to use FM/2's help, which is basically a hypertext
 document, is to look at the :hp2.Contents:ehp2. (which you'll get if you
-press :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +
-:color fc=default bc=palegray.F1:color fc=default bc=default.
+press :color fc=default bc=palegray.F1:color fc=default bc=default.
  at the main window -- it may help you to maximize it
 within the help window). The Contents view of a help file is something
 like the Table of Contents in a book, with each major topic representing
