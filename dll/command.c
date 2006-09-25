@@ -13,6 +13,7 @@
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets_bstripcr
   15 Aug 06 SHL Better can't add message
+  18 Sep 06 GKY Add replace command and update okay to add if changed
 
 ***********************************************************************/
 
@@ -638,7 +639,85 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	  }
 	  break;
 
-	case DID_OK:
+          case DID_OK:
+         {
+            x = (SHORT)WinSendDlgItemMsg(hwnd,
+                                           CMD_LISTBOX,
+                                           LM_QUERYSELECTION,
+                                           MPVOID,
+                                           MPVOID);
+            if(x==LIT_NONE)
+             x = (SHORT) WinSendDlgItemMsg(hwnd,
+                                           CMD_LISTBOX,
+                                          LM_SELECTITEM,
+                                          MPFROMSHORT(0),
+                                          MPFROMSHORT(TRUE));
+            }
+          {
+	    COMMAND temp;
+
+	    memset(&temp,0,sizeof(COMMAND));
+	    WinQueryDlgItemText(hwnd,CMD_CL,sizeof(temp.cl),temp.cl);
+	    bstrip(temp.cl);
+	    WinQueryDlgItemText(hwnd,CMD_TITLE,sizeof(temp.title),temp.title);
+	    if(WinQueryButtonCheckstate(hwnd,CMD_DEFAULT))
+	      temp.flags = 0;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_FULLSCREEN))
+	      temp.flags = FULLSCREEN;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_MINIMIZED))
+	      temp.flags = MINIMIZED;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_MAXIMIZED))
+	      temp.flags = MAXIMIZED;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_INVISIBLE))
+	      temp.flags = INVISIBLE;
+	    if(WinQueryButtonCheckstate(hwnd,CMD_KEEP))
+	      temp.flags |= KEEP;
+	    if(WinQueryButtonCheckstate(hwnd,CMD_PROMPT))
+	      temp.flags |= PROMPT;
+	    if(WinQueryButtonCheckstate(hwnd,CMD_ONCE))
+	      temp.flags |= ONCE;
+	    info = add_command(&temp);
+            if (!info)
+                WinDismissDlg(hwnd,0);
+                /*{
+	     /* saymsg(MB_ENTER,
+		     hwnd,
+		     GetPString(IDS_ERRORTEXT),
+		     // GetPString(IDS_CANTADDCOMMANDTEXT),
+		     "Can't add %s to command list", temp.title);	// fixme to be in fm3dll.str
+	    }  */
+	    else {
+	      CHAR env[1002];
+
+	      *env = 0;
+	      WinQueryDlgItemText(hwnd,CMD_ENVIRON,1000,env);
+	      bstripcr(env);
+	      if (*env) {
+		PrfWriteProfileString(fmprof,
+				      FM3Str,
+				      temp.cl,
+				      env);
+	      }
+	      x = (SHORT)WinSendDlgItemMsg(hwnd,
+					   CMD_LISTBOX,
+					   LM_INSERTITEM,
+					   MPFROM2SHORT(LIT_END,0),
+					   MPFROMP(temp.title));
+	      if(x >= 0) {
+		WinSendDlgItemMsg(hwnd,
+				  CMD_LISTBOX,
+				  LM_SETITEMHANDLE,
+				  MPFROMSHORT(x),
+				  MPFROMP(info));
+		WinSendDlgItemMsg(hwnd,
+				  CMD_LISTBOX,
+				  LM_SELECTITEM,
+				  MPFROMSHORT(x),
+				  MPFROMSHORT(TRUE));
+		save_commands();
+	      }
+	    }
+	  }
 	  x = (SHORT)WinSendDlgItemMsg(hwnd,
 				       CMD_LISTBOX,
 				       LM_QUERYSELECTION,
@@ -689,7 +768,7 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 		     hwnd,
 		     GetPString(IDS_ERRORTEXT),
 		     // GetPString(IDS_CANTADDCOMMANDTEXT),
-		     "Can't add %s to command list", temp.title);	// fixme to be in fm3dll.str
+		     "Can't add %s to command list It has a duplicate title", temp.title);	// fixme to be in fm3dll.str
 	    }
 	    else {
 	      CHAR env[1002];
@@ -752,6 +831,99 @@ MRESULT EXPENTRY CommandDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 				  MPFROMSHORT(FALSE));
 	      }
 	      save_commands();
+	    }
+	  }
+	  break;
+	case CMD_REPLACE:
+	  {
+	    CHAR temp[34];
+
+	    WinQueryDlgItemText(hwnd,CMD_TITLE,34,temp);
+	    bstrip(temp);
+	    if (!kill_command(temp))
+	      Runtime_Error(pszSrcFile, __LINE__, "kill_command");
+	    else {
+	      x = (SHORT)WinSendDlgItemMsg(hwnd,
+					   CMD_LISTBOX,
+					   LM_QUERYSELECTION,
+					   MPFROMSHORT(LIT_FIRST),
+					   MPVOID);
+	      if(x >= 0) {
+		WinSendDlgItemMsg(hwnd,
+				  CMD_LISTBOX,
+				  LM_DELETEITEM,
+				  MPFROMSHORT(x),
+				  MPVOID);
+		WinSendDlgItemMsg(hwnd,
+				  CMD_LISTBOX,
+				  LM_SELECTITEM,
+				  MPFROMSHORT(LIT_NONE),
+				  MPFROMSHORT(FALSE));
+	      }
+	      save_commands();
+	    }
+	  }
+	  {
+	    COMMAND temp;
+
+	    memset(&temp,0,sizeof(COMMAND));
+	    WinQueryDlgItemText(hwnd,CMD_CL,sizeof(temp.cl),temp.cl);
+	    bstrip(temp.cl);
+	    WinQueryDlgItemText(hwnd,CMD_TITLE,sizeof(temp.title),temp.title);
+	    if(WinQueryButtonCheckstate(hwnd,CMD_DEFAULT))
+	      temp.flags = 0;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_FULLSCREEN))
+	      temp.flags = FULLSCREEN;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_MINIMIZED))
+	      temp.flags = MINIMIZED;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_MAXIMIZED))
+	      temp.flags = MAXIMIZED;
+	    else if(WinQueryButtonCheckstate(hwnd,CMD_INVISIBLE))
+	      temp.flags = INVISIBLE;
+	    if(WinQueryButtonCheckstate(hwnd,CMD_KEEP))
+	      temp.flags |= KEEP;
+	    if(WinQueryButtonCheckstate(hwnd,CMD_PROMPT))
+	      temp.flags |= PROMPT;
+	    if(WinQueryButtonCheckstate(hwnd,CMD_ONCE))
+	      temp.flags |= ONCE;
+	    info = add_command(&temp);
+	    if (!info) {
+	      saymsg(MB_ENTER,
+		     hwnd,
+		     GetPString(IDS_ERRORTEXT),
+		     // GetPString(IDS_CANTADDCOMMANDTEXT),
+		     "Can't add %s to command list", temp.title);	// fixme to be in fm3dll.str
+	    }
+	    else {
+	      CHAR env[1002];
+
+	      *env = 0;
+	      WinQueryDlgItemText(hwnd,CMD_ENVIRON,1000,env);
+	      bstripcr(env);
+	      if (*env) {
+		PrfWriteProfileString(fmprof,
+				      FM3Str,
+				      temp.cl,
+				      env);
+	      }
+	      x = (SHORT)WinSendDlgItemMsg(hwnd,
+					   CMD_LISTBOX,
+					   LM_INSERTITEM,
+					   MPFROM2SHORT(LIT_END,0),
+					   MPFROMP(temp.title));
+	      if(x >= 0) {
+		WinSendDlgItemMsg(hwnd,
+				  CMD_LISTBOX,
+				  LM_SETITEMHANDLE,
+				  MPFROMSHORT(x),
+				  MPFROMP(info));
+		WinSendDlgItemMsg(hwnd,
+				  CMD_LISTBOX,
+				  LM_SELECTITEM,
+				  MPFROMSHORT(x),
+				  MPFROMSHORT(TRUE));
+		save_commands();
+	      }
 	    }
 	  }
 	  break;
