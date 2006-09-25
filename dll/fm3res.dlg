@@ -16,6 +16,7 @@
   30 May 06 SHL Add DLGINCLUDE for dlgedit use
   05 Jul 06 SHL COMP_FRAME - support hide not selected, compare content
   31 Jul 06 SHL Change ASEL_EDIT_FRAME button text
+  10 Sep 06 GKY Add ASS_REPLACE ASS-BOTTOM to ASS_FRAME
 
 ***********************************************************************/
 
@@ -482,13 +483,15 @@ BEGIN
         CONTROL         "", ASS_ENVIRON, 4, 18, 214, 35, WC_MLE, MLS_HSCROLL | 
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP | WS_TABSTOP | 
                         WS_VISIBLE
-        DEFPUSHBUTTON   "Okay", DID_OK, 2, 2, 34, 14, BS_NOPOINTERFOCUS | 
+        DEFPUSHBUTTON   "~Okay", DID_OK, 2, 2, 26, 14, BS_NOPOINTERFOCUS | 
                         WS_GROUP
-        PUSHBUTTON      "~Add", ASS_ADD, 38, 2, 34, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "De~l", ASS_DELETE, 73, 2, 34, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Top", ASS_TOP, 108, 2, 34, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Help", IDM_HELP, 144, 2, 34, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Cancel", DID_CANCEL, 179, 2, 40, 14, 
+        PUSHBUTTON      "Add", ASS_ADD, 30, 2, 20, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "De~l", ASS_DELETE, 52, 2, 20, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Replace", ASS_REPLACE, 74, 2, 38, 14, BS_NOPOINTERFOCUS        
+        PUSHBUTTON      "~Top", ASS_TOP, 112, 2, 20, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Last", ASS_BOTTOM, 134, 2, 24, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Help", IDM_HELP, 160, 2, 24, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Cancel", DID_CANCEL, 186, 2, 36, 14, 
                         BS_NOPOINTERFOCUS
     END
 END
@@ -880,14 +883,15 @@ BEGIN
         CONTROL         "", CMD_ENVIRON, 4, 18, 247, 38, WC_MLE, MLS_HSCROLL | 
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP | WS_TABSTOP | 
                         WS_VISIBLE
-        DEFPUSHBUTTON   "Okay", DID_OK, 2, 2, 40, 14, BS_NOPOINTERFOCUS | 
+        DEFPUSHBUTTON   "Okay", DID_OK, 2, 2, 34, 14, BS_NOPOINTERFOCUS | 
                         WS_GROUP
-        PUSHBUTTON      "~Add", CMD_ADD, 44, 2, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "De~l", CMD_DELETE, 87, 2, 38, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Reorder", CMD_REORDER, 127, 2, 38, 14, 
+        PUSHBUTTON      "~Add", CMD_ADD, 38, 2, 34, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "De~l", CMD_DELETE, 74, 2, 32, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Replace", CMD_REPLACE, 108, 2, 34, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Reorder", CMD_REORDER, 144, 2, 34, 14, 
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Help", IDM_HELP, 168, 2, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Cancel", DID_CANCEL, 212, 2, 40, 14, 
+        PUSHBUTTON      "~Help", IDM_HELP, 180, 2, 34, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Cancel", DID_CANCEL, 216, 2, 34, 14, 
                         BS_NOPOINTERFOCUS
     END
 END
