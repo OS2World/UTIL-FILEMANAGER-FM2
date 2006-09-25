@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Association Dialog Usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 18 Sep 06 GKY ADD Command Dialog Enhancement Help
+.*
+.***********************************************************************
+.*
 :h2 res=90700 name=PANEL_COMMAND.Editing Commands
 :i1 id=aboutCommands.Editing Commands
 :artwork name='..\..\bitmaps\command.bmp' align=center.
@@ -17,14 +30,15 @@ res=90600.Editing Commandline:elink., except for :hp1.Each:ehp1., which
 means that the command will be run once for each selected file, and
 :hp1.Prompt:ehp1., which means that the command will display a dialog
 that allows the user to edit the command line before running), then
-click :hp1.Add.:ehp1..
+click :hp1.Add.:ehp1. Clicking Okay will also add a new command provided that the 
+command's title has been changed.
 :p.
 To delete a command, select it in the listbox, then click
 :hp1.Del:ehp1.. You should be aware that the command deleted
 is the one matching the entry field, specifically, the title field.
 :p.
-To change a command, delete it, edit the entry fields, radio buttons and
-checkboxes, then add it.
+To change a command, edit the entry fields, radio buttons and
+checkboxes, then replace it.
 :p.
 The :hp1.Find:ehp1. button brings up a standard OS/2 open dialog that
 you can use to point-and-click at the desired executable file. It's
