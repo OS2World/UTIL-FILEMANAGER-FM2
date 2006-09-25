@@ -1,6 +1,6 @@
 ; $Id$
 LIBRARY FM3RES
-DESCRIPTION '@#SLAInc:3.05beta03#@##1## 09/06/2006 03:04:00      SLAMain::EN:US:0:U:@@FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2006 Steven Levine and Associates, Inc.'
+DESCRIPTION '@#SLAInc:3.05beta04#@##1## 09/24/2006 03:05:00      SLAMain::EN:US:0:U:@@FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2006 Steven Levine and Associates, Inc.'
 EXETYPE OS2
 PROTMODE
 DATA LOADONCALL SHARED
