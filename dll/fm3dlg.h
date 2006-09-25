@@ -9,9 +9,11 @@
   Copyright (c) 2002, 2006 Steven H.Levine
 
   15 Oct 02 MK Baseline
-	16 Oct 02 SHL Localize
-	29 May 06 SHL Add Edit Archiver enhancements
-	05 Jul 06 SHL Add Hide not selected support
+  16 Oct 02 SHL Localize
+  29 May 06 SHL Add Edit Archiver enhancements
+  05 Jul 06 SHL Add Hide not selected support
+  10 Sep 06 GKY Add Assoc enhancements
+  23 Sep 06 GKY Add Commands enhancements
 
 ***********************************************************************/
 
@@ -919,4 +921,6 @@
 #define IMGS_FRAME											27600
 #define IMGS_LISTBOX										27601
 #define IMGS_NAME 											27602
-
+#define ASS_BOTTOM     27602
+#define ASS_REPLACE     27603
+#define CMD_REPLACE     27604
