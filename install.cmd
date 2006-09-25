@@ -29,6 +29,7 @@
    16 Aug 05 SHL Support tarlist.cmd install
    18 Aug 05 SHL Support archiver.tmp install
    08 Dec 05 SHL Drop tarlist.cmd support - now obsolete
+   11 Sep 06 GKY Install new toolbar templates
 
 */
 
@@ -548,6 +549,12 @@ end
 'DEL FATOPT.TMP 1>NUL 2>NUL'
 
 call InstallFile 'ARCHIVER.BB2' 'ARCHIVER.TMP'
+
+call InstallFile 'FM3TOOLS.DAT' 'FM3TOOLS.TMP'
+
+call InstallFile 'CONFIG.TLS' 'CONFIG.TMP'
+call InstallFile 'FILES.TLS' 'FILES.TMP'
+call InstallFile 'VIEWS.TLS' 'VIEWS.TMP'
 
 rc = stream('QUICKTLS.DAT','c','query exists')
 if rc = '' then
@@ -1221,7 +1228,7 @@ say ''
 
 exit
 
-/* InstallFile(file, template) install one file from template */
+/* InstallFile(file, template) install file from template unless file already exists */
 
 InstallFile: procedure
 
