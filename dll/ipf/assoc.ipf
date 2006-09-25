@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Association Dialog Usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 10 Sep 06 GKY ADD Association Dialog Enhancement Help
+.*
+.***********************************************************************
+.*
 :h2 res=90400 name=PANEL_ASSOC.Associations
 :i1 id=aboutAssociations.Associations
 :artwork name='..\..\bitmaps\assoc.bmp' align=center.
@@ -33,17 +46,24 @@ buttons and checkboxes that control session type as desired (these are
 explained in more detail in the help for :link reftype=hd
 res=90600.Editing Commandline:elink. except for :hp1.Prompt:ehp1.,
 which causes a dialog to appear that allows editing the command line
-before it is run), then click :hp1.Add.:ehp1..
+before it is run), then click :hp1.Add:ehp1.. :hp1.Okay:ehp1. also
+adds any changes you have make then closes the dialog. If you wish to close
+without save choose :hp1.Cancel:ehp1.
 :p.
 To delete an association, select it in the listbox, then click
 :hp1.Del:ehp1.. You should be aware that the association deleted is
 the one matching the entry fields, specifically the mask, signature
 and offset fields.
 :p.
-To change an association, delete it, edit the entry fields, radio
-buttons and checkboxes, then add it.
+To replace/change an association, select it in the listbox, make the appropriate changes,
+then click :hp1.Replace:ehp1.. You should be aware that the association replaced is
+the one matching the entry fields, specifically the mask, signature
+and offset fields.
 :p.
 The :hp1.Top:ehp1. button moves the highlighted Association to the top
+of the listbox.
+:p.
+ The :hp1.Last:ehp1. button moves the highlighted Association to the bottom
 of the listbox.
 :p.
 The :hp1.Find:ehp1. button brings up a standard OS/2 open dialog that
