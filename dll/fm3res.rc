@@ -16,6 +16,7 @@
   31 Aug 06 GKY Add partitioning menu items
   01 Sep 06 GKY Add partitioning to files > misc menu
   01 Sep 06 GKY Add Make Directory to files menu in addition to files > misc
+  24 Sep 06 GKY Changed "Help" to F1 only
 
 ***********************************************************************/
 
@@ -86,7 +87,7 @@ ICON        ID_STICK52          icons\STICK52.ICO
 
 ACCELTABLE INI_FRAME
 {
-  VK_F1,       IDM_HELP,          CONTROL,VIRTUALKEY
+  VK_F1,       IDM_HELP,          VIRTUALKEY
   VK_F3,       SC_CLOSE,          SYSCOMMAND,VIRTUALKEY
   VK_F5,       IDM_FINDFIRST,     VIRTUALKEY
   VK_F6,       IDM_FINDNEXT,      VIRTUALKEY
@@ -147,7 +148,7 @@ MENU  INI_FRAME
   }
   SUBMENU "~Help",                                -1
   {
-    MENUITEM "~Help\tCtrl + F1",                  IDM_HELP
+    MENUITEM "~Help\tF1",                  IDM_HELP
     MENUITEM "~About",                            IDM_ABOUT
   }
 }
@@ -257,7 +258,7 @@ MENU  MAIN_FRAME
   }
   SUBMENU "~Help",                -1
   {
-    MENUITEM "~Contents\tCtrl + F1",        IDM_HELPCONTENTS
+    MENUITEM "~Contents\tF1",        IDM_HELPCONTENTS
     MENUITEM "~General help",               IDM_HELPGENERAL
     MENUITEM "~Keys help\t^k",              IDM_HELPKEYS
     MENUITEM "~Mouse help",                 IDM_HELPMOUSE
@@ -322,7 +323,7 @@ MENU  MAIN2_FRAME
     MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
     MENUITEM "",                  -1,                 MIS_SEPARATOR
     MENUITEM "Si~zes...\tCtrl + Z",   IDM_SIZES
-    MENUITEM "~Make ~directory...\tCtrl + M",IDM_MKDIR
+    MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
     MENUITEM "",                        -1,                 MIS_SEPARATOR
     SUBMENU "Select\tCtrl + F8",        IDM_SELECTSUBMENU
     {
@@ -425,7 +426,7 @@ MENU  MAIN2_FRAME
   }
   SUBMENU "~Help",                -1
   {
-    MENUITEM "~Contents\tCtrl + F1",        IDM_HELPCONTENTS
+    MENUITEM "~Contents\tF1",        IDM_HELPCONTENTS
     MENUITEM "~General help",               IDM_HELPGENERAL
     MENUITEM "~Keys help\t^k",              IDM_HELPKEYS
     MENUITEM "~Mouse help",                 IDM_HELPMOUSE
@@ -528,7 +529,7 @@ ACCELTABLE  MAIN_FRAME
   VK_F9,      SC_MINIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
   VK_F10,     SC_MAXIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
   VK_F11,     SC_HIDE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
-  VK_F1,      IDM_HELP,               CONTROL,VIRTUALKEY
+  VK_F1,      IDM_HELP,               VIRTUALKEY
   VK_F2,      IDM_COLLECTOR,          VIRTUALKEY
   VK_F3,      IDM_KILLME,             CONTROL,VIRTUALKEY
   VK_F3,      SC_CLOSE,               SYSCOMMAND,VIRTUALKEY
@@ -582,7 +583,7 @@ ACCELTABLE  MAIN2_FRAME
   VK_F9,      SC_MINIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
   VK_F10,     SC_MAXIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
   VK_F11,     SC_HIDE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
-  VK_F1,      IDM_HELP,               CONTROL,VIRTUALKEY
+  VK_F1,      IDM_HELP,               VIRTUALKEY
   VK_F2,      IDM_COLLECTOR,          VIRTUALKEY
   VK_F3,      IDM_KILLME,             CONTROL,VIRTUALKEY
   VK_F3,      IDM_EXIT,               CONTROL,VIRTUALKEY
@@ -644,7 +645,7 @@ ACCELTABLE  TREE_FRAME
   "+",         IDM_EXPAND,            CONTROL
   "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
   "[",         IDM_SAVETOCLIP,        CONTROL
-  VK_F1,       IDM_HELP,              CONTROL,VIRTUALKEY
+  VK_F1,       IDM_HELP,              VIRTUALKEY
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
   VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
@@ -802,7 +803,7 @@ ACCELTABLE  DIR_FRAME
   "]",         IDM_SELECTCLIP,        CONTROL
   ";",         IDM_INVERT,            CONTROL
   "'",         IDM_RESELECT,          CONTROL
-  VK_F1,       IDM_HELP,              CONTROL,VIRTUALKEY
+  VK_F1,       IDM_HELP,              VIRTUALKEY
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
   VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
@@ -965,7 +966,7 @@ MENU TREECNR_POPUP
   MENUITEM "~Settings notebook...", IDM_NOTEBOOK
   MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
   MENUITEM "",                  -1,                 MIS_SEPARATOR
-  MENUITEM "~Open ~directory container...\tCtrl + O",IDM_OPENWALK
+  MENUITEM "~Open directory container...\tCtrl + O",IDM_OPENWALK
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "~Remap drives...",   IDM_REMAP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
@@ -1490,7 +1491,7 @@ MENU COLLECTORCNR_POPUP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU  "Collect",           IDM_COLLECTMENU
   {
-    MENUITEM "~From ~clipboard",IDM_COLLECTFROMCLIP
+    MENUITEM "From ~clipboard",IDM_COLLECTFROMCLIP
     MENUITEM "From a ~list file",IDM_COLLECTSELECT
   }
   MENUITEM "Clear container",   IDM_CLEARCNR
@@ -1594,7 +1595,7 @@ ACCELTABLE  COLLECTOR_FRAME
   "]",         IDM_SELECTCLIP,        CONTROL
   ";",         IDM_INVERT,            CONTROL
   "'",         IDM_RESELECT,          CONTROL
-  VK_F1,       IDM_HELP,              CONTROL,VIRTUALKEY
+  VK_F1,       IDM_HELP,              VIRTUALKEY
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
   VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
@@ -1688,7 +1689,7 @@ ACCELTABLE  ARC_FRAME
   "'",        IDM_RESELECT,         CONTROL
   VK_TAB,     IDM_NEXTWINDOW,       VIRTUALKEY
   VK_BACKTAB, IDM_PREVWINDOW,       SHIFT,VIRTUALKEY
-  VK_F1,      IDM_HELP,             CONTROL,VIRTUALKEY
+  VK_F1,      IDM_HELP,             VIRTUALKEY
   VK_F3,      SC_CLOSE,             SYSCOMMAND,VIRTUALKEY
   VK_F7,      IDM_SHOWSORT,         CONTROL,VIRTUALKEY
   VK_F8,      IDM_SHOWSELECT,       CONTROL,VIRTUALKEY
@@ -1776,7 +1777,7 @@ MENU MLE_FRAME
     }
     SUBMENU "~Help",                      -1
     {
-      MENUITEM "~Help\tCtrl + F1",              IDM_HELP
+      MENUITEM "~Help\tF1",              IDM_HELP
       MENUITEM "~About",                  MLE_ABOUT
     }
  }
@@ -1852,7 +1853,7 @@ ACCELTABLE MLE_FRAME
    "y",      MLE_CUTLINE,               CONTROL
    "/",      MLE_SELECTALL,             CONTROL
    "\\",     MLE_DESELECTALL,           CONTROL
-   VK_F1,    IDM_HELP,                  CONTROL,VIRTUALKEY
+   VK_F1,    IDM_HELP,                  VIRTUALKEY
    VK_F2,    MLE_SETFONT,               VIRTUALKEY
    VK_F3,    MLE_END,                   VIRTUALKEY
    VK_ESC,   DID_CANCEL,                VIRTUALKEY
@@ -2062,7 +2063,7 @@ ACCELTABLE SEEALL_FRAME
   ";",         IDM_INVERT,            CONTROL
   "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
   "[",         IDM_SAVETOCLIP,        CONTROL
-  VK_F1,       IDM_HELP,              CONTROL,VIRTUALKEY
+  VK_F1,       IDM_HELP,              VIRTUALKEY
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
   VK_F7,       IDM_OPENSETTINGS,      VIRTUALKEY
@@ -2169,7 +2170,7 @@ ACCELTABLE NEWVIEW_FRAME
   "[",         IDM_SAVETOCLIP,        CONTROL
   VK_TAB,      IDM_NEXTWINDOW,        VIRTUALKEY
   VK_BACKTAB,  IDM_PREVWINDOW,        SHIFT,VIRTUALKEY
-  VK_F1,       IDM_HELP,              CONTROL,VIRTUALKEY
+  VK_F1,       IDM_HELP,              VIRTUALKEY
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F6,       IDM_OBJECT,            VIRTUALKEY
   VK_F11,      IDM_NEXTBLANKLINE,     VIRTUALKEY
