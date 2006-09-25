@@ -1,5 +1,5 @@
 
-/***********************************************************************
+/**************************************************************************************
 
   $Id$
 
@@ -9,11 +9,14 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
+  10 Sep 06 GKY Add Move to last, Okay adds if new, Replace Current in Listbox Dialog
 
-***********************************************************************/
+**************************************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_PM
+#define INCL_WINHOOKS
 
 #include <os2.h>
 #include <stdio.h>
@@ -44,6 +47,7 @@ typedef struct LINKASSOC {
   struct LINKASSOC *prev;
   struct LINKASSOC *next;
 } LINKASSOC;
+
 
 static LINKASSOC *asshead     = NULL,*asstail = NULL;
 static BOOL       assloaded = FALSE;
@@ -241,7 +245,6 @@ VOID save_associations (VOID)
   }
 }
 
-
 #pragma alloc_text(ASSOC,add_association,kill_association,AssocDlgProc,EditAssociations)
 
 
@@ -302,8 +305,8 @@ BOOL kill_association (ASSOC *killme)
   if(killme && *killme->mask) {
     info = asshead;
     while(info) {
-      if(!stricmp(info->mask,killme->mask) &&
-         info->offset == killme->offset &&
+        if(!stricmp(info->mask,killme->mask) &&
+           info->offset == killme->offset &&
          (((!info->sig || !*info->sig) && !*killme->sig) ||
           (info->sig && !strcmp(killme->sig,info->sig)))) {
         if(info == asshead) {
@@ -321,7 +324,7 @@ BOOL kill_association (ASSOC *killme)
         }
         free(info->cl);
         free(info->mask);
-        if(info->sig)
+       if(info->sig)
           free(info->sig);
         free(info);
         return TRUE;
@@ -464,7 +467,7 @@ INT ExecAssociation (HWND hwnd, CHAR *datafile)
 MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   LINKASSOC *info;
-  SHORT      x;
+  SHORT      x , y;
 
   switch(msg) {
     case WM_INITDLG:
@@ -636,6 +639,33 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           }
           break;
 
+      case ASS_BOTTOM:
+          x = (SHORT)WinSendDlgItemMsg(hwnd,ASS_LISTBOX,
+                                       LM_QUERYSELECTION,
+                                       MPFROMSHORT(LIT_FIRST),
+                                       MPVOID);
+          if(x >= 0) {
+            info = (LINKASSOC *)WinSendDlgItemMsg(hwnd,ASS_LISTBOX,
+                                                  LM_QUERYITEMHANDLE,
+                                                  MPFROMSHORT(x),
+                                                  MPVOID);
+            if(info) {
+              if(info != asstail) {
+                if(info->next)
+                  info->next->prev = info->prev;
+                if(info->prev)
+                  info->prev->next = info->next;
+                if(info == asshead)
+                  asshead = info->next;
+                info->next = NULL;
+                info->prev = asstail;
+                asstail->next = info;
+                asstail = info;
+                WinSendMsg(hwnd,UM_UNDO,MPVOID,MPVOID);
+              }
+            }
+          }
+          break;
         case ASS_FIND:
           {
             CHAR filename[CCHMAXPATH + 9];
@@ -648,26 +678,22 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           }
           break;
 
-        case DID_OK:
-          WinDismissDlg(hwnd,1);
-          break;
-
-        case DID_CANCEL:
-          WinDismissDlg(hwnd,0);
-          break;
-
-        case IDM_HELP:
-          if(hwndHelp)
-            WinSendMsg(hwndHelp,HM_DISPLAY_HELP,
-                       MPFROM2SHORT(HELP_ASSOC,0),
-                       MPFROMSHORT(HM_RESOURCEID));
-          break;
-
-        case ASS_ADD:
-          {
+      case DID_OK:
+                    {
             ASSOC temp;
-            CHAR  dummy[34];
-
+            CHAR  dummy[34];{
+            x = (SHORT)WinSendDlgItemMsg(hwnd,
+                                           ASS_LISTBOX,
+                                           LM_QUERYSELECTION,
+                                           MPVOID,
+                                           MPVOID);
+            if(x==LIT_NONE)
+             x = (SHORT) WinSendDlgItemMsg(hwnd,
+                                           ASS_LISTBOX,
+                                          LM_SELECTITEM,
+                                          MPFROMSHORT(0),
+                                          MPFROMSHORT(TRUE));
+            }
             memset(&temp,0,sizeof(ASSOC));
             WinQueryDlgItemText(hwnd,ASS_MASK,sizeof(temp.mask),temp.mask);
             WinQueryDlgItemText(hwnd,ASS_CL,sizeof(temp.cl),temp.cl);
@@ -697,7 +723,7 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               temp.flags |= PROMPT;
             info = add_association(&temp);
             if(!info)
-              Runtime_Error(pszSrcFile, __LINE__, "add_association");
+             WinDismissDlg(hwnd,1);/* Runtime_Error(pszSrcFile, __LINE__, "add_association");*/
 	    else {
 
               CHAR s[1002 + CCHMAXPATH + 6];
@@ -731,6 +757,88 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               save_associations();
             }
           }
+          WinDismissDlg(hwnd,1);
+          break;
+
+        case DID_CANCEL:
+          WinDismissDlg(hwnd,0);
+          break;
+
+        case IDM_HELP:
+          if(hwndHelp)
+            WinSendMsg(hwndHelp,HM_DISPLAY_HELP,
+                       MPFROM2SHORT(HELP_ASSOC,0),
+                       MPFROMSHORT(HM_RESOURCEID));
+          break;
+
+        case ASS_ADD:
+        {
+            ASSOC temp;
+            CHAR  dummy[34];
+
+            memset(&temp,0,sizeof(ASSOC));
+            WinQueryDlgItemText(hwnd,ASS_MASK,sizeof(temp.mask),temp.mask);
+            WinQueryDlgItemText(hwnd,ASS_CL,sizeof(temp.cl),temp.cl);
+            WinQueryDlgItemText(hwnd,ASS_SIG,sizeof(temp.sig),temp.sig);
+            rstrip(temp.sig);
+            if(*temp.sig) {
+              WinQueryDlgItemText(hwnd,ASS_OFFSET,sizeof(dummy),dummy);
+              temp.offset = atol(dummy);
+            }
+            bstrip(temp.mask);
+            bstrip(temp.cl);
+            if(WinQueryButtonCheckstate(hwnd,ASS_DEFAULT))
+              temp.flags = 0;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_FULLSCREEN))
+              temp.flags = FULLSCREEN;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_MINIMIZED))
+              temp.flags = MINIMIZED;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_MAXIMIZED))
+              temp.flags = MAXIMIZED;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_INVISIBLE))
+              temp.flags = INVISIBLE;
+            if(WinQueryButtonCheckstate(hwnd,ASS_KEEP))
+              temp.flags |= KEEP;
+            if(WinQueryButtonCheckstate(hwnd,ASS_DIEAFTER))
+              temp.flags |= DIEAFTER;
+            if(WinQueryButtonCheckstate(hwnd,ASS_PROMPT))
+              temp.flags |= PROMPT;
+            info = add_association(&temp);
+            //Add will fail if mask is not changed
+            if(info)
+             {
+
+              CHAR s[1002 + CCHMAXPATH + 6];
+
+              *s = 0;
+              WinQueryDlgItemText(hwnd,ASS_ENVIRON,1000,s);
+              bstripcr(s);
+              if(*s)
+                PrfWriteProfileString(fmprof,FM3Str,temp.cl,s);
+              sprintf(s,"%-12s \x1a %-24s %s%s%s",temp.mask,
+                      temp.cl,(*temp.sig) ?
+                      "[" : NullStr,(*temp.sig) ? temp.sig : NullStr,
+                      (*temp.sig) ? "]" : NullStr);
+              x = (SHORT)WinSendDlgItemMsg(hwnd,
+                                           ASS_LISTBOX,
+                                          LM_INSERTITEM,
+                                           MPFROM2SHORT(LIT_END,0),
+                                           MPFROMP(s));
+              if(x >= 0) {
+                WinSendDlgItemMsg(hwnd,
+                                  ASS_LISTBOX,
+                                  LM_SETITEMHANDLE,
+                                  MPFROMSHORT(x),
+                                  MPFROMP(info));
+                WinSendDlgItemMsg(hwnd,
+                                  ASS_LISTBOX,
+                                  LM_SELECTITEM,
+                                  MPFROMSHORT(x),
+                                  MPFROMSHORT(TRUE));
+              }
+              save_associations();
+            }
+         }
           break;
 
         case ASS_DELETE:
@@ -774,9 +882,126 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             }
           }
           break;
+      case ASS_REPLACE:
+               
+               
+
+                       {
+            ASSOC temp;
+            CHAR  dummy[34];
+
+            y = (SHORT)WinSendDlgItemMsg(hwnd,
+                                           ASS_LISTBOX,
+                                           LM_QUERYSELECTION,
+                                           MPFROMSHORT(LIT_CURSOR),
+                                            MPVOID);
+            memset(&temp,0,sizeof(ASSOC));
+            WinQueryDlgItemText(hwnd,ASS_MASK,sizeof(temp.mask),temp.mask);
+            WinQueryDlgItemText(hwnd,ASS_CL,sizeof(temp.cl),temp.cl);
+            WinQueryDlgItemText(hwnd,ASS_SIG,sizeof(temp.sig),temp.sig);
+            rstrip(temp.sig);
+            if(*temp.sig) {
+              WinQueryDlgItemText(hwnd,ASS_OFFSET,sizeof(dummy),dummy);
+              temp.offset = atol(dummy);
+            }
+            bstrip(temp.mask);
+            bstrip(temp.cl);
+            if(WinQueryButtonCheckstate(hwnd,ASS_DEFAULT))
+              temp.flags = 0;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_FULLSCREEN))
+              temp.flags = FULLSCREEN;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_MINIMIZED))
+              temp.flags = MINIMIZED;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_MAXIMIZED))
+              temp.flags = MAXIMIZED;
+            else if(WinQueryButtonCheckstate(hwnd,ASS_INVISIBLE))
+              temp.flags = INVISIBLE;
+            if(WinQueryButtonCheckstate(hwnd,ASS_KEEP))
+              temp.flags |= KEEP;
+            if(WinQueryButtonCheckstate(hwnd,ASS_DIEAFTER))
+              temp.flags |= DIEAFTER;
+            if(WinQueryButtonCheckstate(hwnd,ASS_PROMPT))
+              temp.flags |= PROMPT;
+            info = add_association(&temp);
+            //Add will fail if mask is not changed
+            if(info)
+             {
+
+              CHAR s[1002 + CCHMAXPATH + 6];
+
+              *s = 0;
+              WinQueryDlgItemText(hwnd,ASS_ENVIRON,1000,s);
+              bstripcr(s);
+              if(*s)
+                PrfWriteProfileString(fmprof,FM3Str,temp.cl,s);
+              sprintf(s,"%-12s \x1a %-24s %s%s%s",temp.mask,
+                      temp.cl,(*temp.sig) ?
+                      "[" : NullStr,(*temp.sig) ? temp.sig : NullStr,
+                      (*temp.sig) ? "]" : NullStr);
+              x = (SHORT)WinSendDlgItemMsg(hwnd,
+                                           ASS_LISTBOX,
+                                          LM_INSERTITEM,
+                                           MPFROM2SHORT(LIT_END,0),
+                                           MPFROMP(s));
+              if(x >= 0) {
+                WinSendDlgItemMsg(hwnd,
+                                  ASS_LISTBOX,
+                                  LM_SETITEMHANDLE,
+                                  MPFROMSHORT(x),
+                                  MPFROMP(info));
+                WinSendDlgItemMsg(hwnd,
+                                  ASS_LISTBOX,
+                                  LM_SELECTITEM,
+                                  MPFROMSHORT(x),
+                                  MPFROMSHORT(TRUE));
+              }
+              save_associations();
+            }
+         }
+          {
+            ASSOC temp;
+            CHAR  dummy[34];
+
+            WinSendDlgItemMsg(hwnd,
+                                  ASS_LISTBOX,
+                                  LM_SELECTITEM,
+                                  MPFROMSHORT(y),
+                                  MPFROMSHORT(TRUE));
+            memset(&temp,0,sizeof(ASSOC));
+            WinQueryDlgItemText(hwnd,ASS_MASK,sizeof(temp.mask),temp.mask);
+            WinQueryDlgItemText(hwnd,ASS_SIG,sizeof(temp.sig),temp.sig);
+            rstrip(temp.sig);
+            if(*temp.sig) {
+              WinQueryDlgItemText(hwnd,ASS_OFFSET,sizeof(dummy),dummy);
+              temp.offset = atol(dummy);
+            }
+            bstrip(temp.mask);
+            PrfWriteProfileData(fmprof,
+                                FM3Str,
+                                temp.mask,
+                                NULL,
+                                0L);
+            if(!kill_association(&temp))
+              Runtime_Error(pszSrcFile, __LINE__, "kill_association");
+	    else {
+              
+              if(y >= 0) {
+                WinSendDlgItemMsg(hwnd,
+                                  ASS_LISTBOX,
+                                  LM_DELETEITEM,
+                                  MPFROMSHORT(y),
+                                  MPVOID);
+                WinSendDlgItemMsg(hwnd,ASS_LISTBOX,LM_SELECTITEM,
+                                  MPFROMSHORT(x-1),
+                                  MPFROMSHORT(TRUE));
+              }
+              save_associations();
+            }
+          }
+          break;
       }
       return 0;
-  }
+   }
   return WinDefDlgProc(hwnd,msg,mp1,mp2);
 }
 
