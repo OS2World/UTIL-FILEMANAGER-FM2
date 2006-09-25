@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Context Menu Usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 01 Sep 06 GKY ADD new partition disks information
+.*
+.***********************************************************************
+.*
 :h1 res=93700 name=PANEL_CONTEXT.Context Menus
 :i1 id=aboutContext.Context Menus
 :link reftype=hd res=97800.Context menus:elink. (also called popup
@@ -427,7 +440,7 @@ DFSee is a share ware tool with a much wider range of features but must be obtai
 from Hobbes and installed in the system path to work. LVMGUI is the IBM provided GUI tool for
 Disk management. It is a JAVA based program and earily versions only work with JAVA 1.1.8.
 FDISKPM is the partition management tool for preLVM systems and should not be used
-on LVM based sytems. :artwork runin name='/bitmaps/drive.bmp'.
+on LVM based sytems. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 :hp6.Optimize:ehp6. runs a .CMD file with the name <Filesystem>OPT.CMD,
 giving the drive to optimize as a command line argument. Therefore, for
