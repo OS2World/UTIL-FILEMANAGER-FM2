@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Term definitions
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 10 Sep 06 GKY Sync with F1 help changes
+.*
+.***********************************************************************
+.*
 :h1 res=91300 name=PANEL_TERMINOLOGY.Terminology
 :i1 id=aboutTerminology.Terminology
 Some definitions&colon.
@@ -91,7 +104,7 @@ while double-clicking or pressing :color fc=default bc=palegray.Enter:color fc=d
 :hp1.:link reftype=hd res=97700.Accelerator keys:elink.:ehp1. = key
 combinations that allow you to quickly give a program a command without
 going through menus or toolbars. For example, FM/2's accelerator key to
-get help is :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F1:color fc=default bc=default.. Note that accelerators are case sensitive, so
+get help is :color fc=default bc=palegray.F1:color fc=default bc=default.. Note that accelerators are case sensitive, so
 that :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.m:color fc=default bc=default. isn't the same as :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.M:color fc=default bc=default. -- you'll need to hold down
 the :color fc=default bc=palegray.Shift:color fc=default bc=default. key or set :color fc=default bc=palegray.Caps Lock:color fc=default bc=default. to get the latter.
 :p.
