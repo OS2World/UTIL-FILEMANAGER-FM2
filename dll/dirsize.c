@@ -20,6 +20,7 @@
   19 Jun 05 SHL More 64-bit math fixes
   08 Aug 05 SHL Avoid Expand/Collapse hangs while working
   17 Jul 06 SHL Use Runtime_Error
+  19 Oct 06 SHL Correct . and .. detect
 
 ***********************************************************************/
 
@@ -224,10 +225,10 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
 	//printf("%s\n",pffbFile->achName);
 	//fflush(stdout);
 	// Total size skipping . and ..
-	if((*pffbFile->achName != '.' ||
-	   (pffbFile->achName[1] && pffbFile->achName[1] != '.')) ||
-	   !(pffbFile->attrFile & FILE_DIRECTORY))
-	{
+	if ((~pffbFile->attrFile & FILE_DIRECTORY) ||
+	    (pffbFile->achName[0] != '.' ||
+	     (pffbFile->achName[1] &&
+	      (pffbFile->achName[1] != '.' || pffbFile->achName[2])))) {
 	  ullCurDirBytes += pffbFile->cbFile;
 	  ullCurDirBytes += CBLIST_TO_EASIZE(pffbFile->cbList) & 0x3ff;
 

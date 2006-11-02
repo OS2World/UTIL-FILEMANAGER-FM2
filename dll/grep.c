@@ -16,6 +16,7 @@
   24 Oct 05 SHL dononefile: do not free EA list twice
   22 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Check more run time errors
+  19 Oct 06 SHL Correct . and .. detect
 
 ***********************************************************************/
 
@@ -442,8 +443,10 @@ static VOID doallsubdirs (GREP *grep,CHAR *searchPath,BOOL recursing,
       priority_normal();
       if(*grep->stopflag)
         break;
-      if(*findBuffer.achName != '.' ||
-         (findBuffer.achName[1] && findBuffer.achName[1] != '.')) {
+      // Skip . and ..
+      if (findBuffer.achName[0] != '.' ||
+          (findBuffer.achName[1] &&
+	   (findBuffer.achName[1] != '.' || findBuffer.achName[2]))) {
         strcpy(p,findBuffer.achName) ;
         if(!grep->anyexcludes || !IsExcluded(searchPath,fle,numfls)) {
           domatchingfiles(grep,searchPath,fle,numfls) ;

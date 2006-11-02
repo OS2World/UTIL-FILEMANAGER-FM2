@@ -17,6 +17,7 @@
   06 Jun 05 SHL Drop unused code
   29 May 06 SHL Comments
   17 Jul 06 SHL Use Runtime_Error
+  19 Oct 06 SHL Correct . and .. detect
 
 ***********************************************************************/
 
@@ -2060,10 +2061,11 @@ static VOID DoADir (HWND hwnd,CHAR *pathname)
       fb = (PBYTE)pffb;
       for(x = 0;x < nm;x++) {
 	ffb = (FILEFINDBUF3 *)fb;
-	if(ffb->attrFile & FILE_DIRECTORY) {
-	  if(*ffb->achName != '.' ||
-	     (ffb->achName[1] &&
-	      ffb->achName[1] != '.')) {
+	if (ffb->attrFile & FILE_DIRECTORY) {
+	  // Skip . and ..
+	  if (ffb->achName[0] != '.' ||
+	      (ffb->achName[1] &&
+	       (ffb->achName[1] != '.' || ffb->achName[2]))) {
 	    strcpy(enddir,ffb->achName);
 	    DoADir(hwnd,filename);
 	  }

@@ -11,6 +11,7 @@
   24 May 05 SHL Rework for CNRITEM.szSubject
   13 Jul 06 SHL Use Runtime_Error
   01 Sep 06 SHL Do not complain for normal cancel
+  19 Oct 06 SHL Correct . and .. detect
 
 ***********************************************************************/
 
@@ -171,9 +172,11 @@ static VOID ProcessDir(HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
         pffbFile = (FILEFINDBUF3 *)fb;
         if(*stopflag)
           break;
-        if((pffbFile->attrFile & FILE_DIRECTORY) &&
-           (*pffbFile->achName != '.' || (pffbFile->achName[1] &&
-            pffbFile->achName[1] != '.'))) {
+        if ((pffbFile->attrFile & FILE_DIRECTORY) &&
+	    // Skip . and ..
+            (pffbFile->achName[0] != '.' ||
+	     (pffbFile->achName[1] &&
+              (pffbFile->achName[1] != '.' || pffbFile->achName[2])))) {
           strcpy(endpath,pffbFile->achName);
           ProcessDir(hwndCnr,maskstr,pciP,stopflag);
         }

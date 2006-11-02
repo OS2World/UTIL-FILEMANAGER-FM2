@@ -20,6 +20,7 @@
   26 Jul 06 SHL Drop unreachable CN_... code
   29 Jul 06 SHL Use xfgets_bstripcr
   15 Aug 06 SHL Turn off hide not selected on dir change
+  19 Oct 06 SHL Correct . and .. detect
 
 ***********************************************************************/
 
@@ -98,9 +99,13 @@ static VOID SnapShot (char *path,FILE *fp,BOOL recurse)
                     fb->ftimeLastWrite.twosecs,
                     fb->attrFile,
                     (fb->cbList > 4L) ? (fb->cbList / 2L) : 0L);
-          else if(recurse && (*fb->achName != '.' ||
-                  (fb->achName[1] && fb->achName[1] != '.')))
+	  // Skip . and ..
+          else if (recurse &&
+		   (fb->achName[0] != '.' ||
+		    (fb->achName[1] &&
+		     (fb->achName[1] != '.' || fb->achName[2])))) {
             SnapShot(mask,fp,recurse);
+          }
           nm = 1L;
         } while(!DosFindNext(hdir,fb,sizeof(FILEFINDBUF4),&nm));
         DosFindClose(hdir);
@@ -687,8 +692,11 @@ static VOID FillDirList (CHAR *str,INT skiplen,BOOL recurse,
       while(x < nm) {
         pffb = (FILEFINDBUF4 *)fb;
         if(pffb->attrFile & FILE_DIRECTORY) {
-          if(recurse && (*pffb->achName != '.' && (pffb->achName[1] &&
-             pffb->achName[1] != '.'))) {
+	  // Skip . and ..
+          if (recurse &&
+	      (pffb->achName[0] != '.' ||
+	       (pffb->achName[1] &&
+	        (pffb->achName[1] != '.' || pffb->achName[2])))) {
             if(fForceUpper)
               strupr(pffb->achName);
             else if(fForceLower)
