@@ -12,6 +12,7 @@
   13 Aug 05 SHL remove_udir - avoid corrupting last dirs list
   17 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
+  20 Oct 06 SHL Correct . .. check
 
 ***********************************************************************/
 
@@ -453,22 +454,22 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
 	{
 	    do
 	    {
-		if (findbuf.attrFile & FILE_DIRECTORY)
-		{
-		    if (strcmp(findbuf.achName, "..") ||
-			    strlen(path) > 3 ||
-			    path[1] != ':')
-		    {
+		if (findbuf.attrFile & FILE_DIRECTORY) {
+		    if (strlen(path) > 3 || path[1] != ':') {
+			// Skip . and .. too
 			if (findbuf.achName[0] != '.' ||
-				findbuf.achName[1])
+			    (findbuf.achName[1] &&
+			     (findbuf.achName[1] != '.' ||
+			      findbuf.achName[2]))) {
 			    WinSendMsg(hwnddir,
 				       LM_INSERTITEM,
 				       MPFROM2SHORT(LIT_SORTASCENDING, 0),
 				       MPFROMP(findbuf.achName));
+                        }
 		    }
 		}
 		ulSearchCount = 1L;
-	    }
+	    } 
 	    while (!DosFindNext(hDir,
 				&findbuf,
 				sizeof(FILEFINDBUF3),
