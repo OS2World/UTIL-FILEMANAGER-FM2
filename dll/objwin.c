@@ -9,6 +9,7 @@
   Copyright (c) 2006 Steven H.Levine
 
   26 Jul 06 SHL Check more run time errors
+  02 Nov 06 SHL Comments
 
 ***********************************************************************/
 
@@ -36,7 +37,7 @@ MRESULT EXPENTRY ObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 {
   DIRCNRDATA *dcd;
 
-  dcd = WinQueryWindowPtr(hwnd,0);
+  dcd = WinQueryWindowPtr(hwnd,QWL_USER);
   if(dcd) {
     switch(dcd->type) {
       case DIR_FRAME:
@@ -86,7 +87,7 @@ VOID MakeObjWin (VOID *args)
       if (!ObjectHwnd)
         Win_Error2(HWND_OBJECT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
       else {
-        WinSetWindowPtr(ObjectHwnd,0,args);
+        WinSetWindowPtr(ObjectHwnd,QWL_USER,args);
         /* initially populate container */
         WinSendMsg(ObjectHwnd,UM_SETUP,MPVOID,MPVOID);
         PostMsg(ObjectHwnd,UM_RESCAN,MPVOID,MPVOID);

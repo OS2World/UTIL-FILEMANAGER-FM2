@@ -29,6 +29,7 @@
   31 Jul 06 SHL Lower priority for archives with more than 1000 entries
   02 Aug 06 SHL Add logic to stop processing large archives
   23 Aug 06 SHL Integrate John Small's switch list title logic
+  02 Nov 06 SHL Comments
 
 ***********************************************************************/
 
@@ -1724,7 +1725,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   }
                   z = x;
                   runemf2(SEPARATE | WINDOWED |
-                          ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)) |
+                          (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)) |
                           WAIT,hwnd,li->targetpath,NULL,"%s",cl);
                   *endofit = 0;
                 } while(li->list[x]);
@@ -2009,7 +2010,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       if (!PostMsg((HWND)0,WM_QUIT,MPVOID,MPVOID))
         WinSendMsg((HWND)0,WM_QUIT,MPVOID,MPVOID);
       break;
-  }
+  } // switch
   return WinDefWindowProc(hwnd,msg,mp1,mp2);
 }
 
@@ -3388,6 +3389,7 @@ KbdRetry:
         if (!PostMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID))
           WinSendMsg(dcd->hwndObject,WM_CLOSE,MPVOID,MPVOID);
       }
+      // In case object window frees dcd
       dcd = WinQueryWindowPtr(hwnd,QWL_USER);
       if (!dcd ||
           (!dcd->dontclose &&
