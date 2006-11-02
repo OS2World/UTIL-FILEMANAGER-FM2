@@ -13,6 +13,7 @@
   28 May 05 SHL Clean while reading code
   24 Oct 05 SHL Delete obsolete code
   22 Jul 06 SHL Check more run time errors
+  19 Oct 06 SHL Stubby - correct . and .. detect
 
 ***********************************************************************/
 
@@ -368,10 +369,12 @@ BOOL Stubby (HWND hwndCnr,PCNRITEM pciParent)
                               sizeof(ULONG));
         }
       }
-      if(*pffb->achName &&
-         (includefiles || (pffb->attrFile & FILE_DIRECTORY)) &&
-         (*pffb->achName != '.' || (pffb->achName[1] &&
-          pffb->achName[1] != '.'))) {
+      if (*pffb->achName &&
+          (includefiles || (pffb->attrFile & FILE_DIRECTORY)) &&
+	  // Skip . and ..
+          (pffb->achName[0] != '.' ||
+	   (pffb->achName[1] &&
+            (pffb->achName[1] != '.' || pffb->achName[2])))) {
         DosFindClose(hDir);
         isadir = TRUE;
         goto Interruptus;
@@ -449,10 +452,11 @@ BOOL Stubby (HWND hwndCnr,PCNRITEM pciParent)
             }
           }
         }
-        if(*pffb->achName &&
-           (includefiles || (pffb->attrFile & FILE_DIRECTORY)) &&
-           (*pffb->achName != '.' || (pffb->achName[1] &&
-            pffb->achName[1] != '.'))) {
+        if (*pffb->achName &&
+            (includefiles || (pffb->attrFile & FILE_DIRECTORY)) &&
+	    // Skip . and ..
+            (pffb->achName[0] != '.' ||
+	     (pffb->achName[1] && (pffb->achName[1] != '.' || pffb->achName[2])))) {
           isadir = TRUE;
           break;
         }
