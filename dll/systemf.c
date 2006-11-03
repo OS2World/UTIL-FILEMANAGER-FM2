@@ -14,6 +14,7 @@
   17 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Use convert_nl_to_nul
   15 Aug 06 SHL More error popups
+  01 Nov 06 SHL runemf2: temp fix for hung windows caused by termq errors
 
 ***********************************************************************/
 
@@ -40,7 +41,7 @@ static PSZ pszSrcFile = __FILE__;
 
 #define MAXSTRG (4096)			/* used to build command line strings */
 
-/* quick and dirty program launcher for OS/2 2.x */
+//== ShowSession() bring session for foreground ==
 
 BOOL ShowSession(HWND hwnd, PID pid)
 {
@@ -48,7 +49,7 @@ BOOL ShowSession(HWND hwnd, PID pid)
   SWCNTRL swctl;
   ULONG rc;
 
-  hswitch = WinQuerySwitchHandle((pid) ? (HWND)0 : hwnd, pid);
+  hswitch = WinQuerySwitchHandle(pid ? (HWND)0 : hwnd, pid);
   if (hswitch) {
     rc = WinQuerySwitchEntry(hswitch, &swctl);
     if (!rc) {
@@ -62,6 +63,8 @@ BOOL ShowSession(HWND hwnd, PID pid)
   }
   return FALSE;
 }
+
+//== ExecOnList() Invoke runemf2 for command and file/directory list ==
 
 int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	       char **list, char *prompt)
@@ -590,7 +593,7 @@ BreakOut:
   }
 }
 
-//== runemf2() run requested app, return -1 if problem starting else return rc ==
+//== runemf2() run requested app, return -1 if problem starting else return app rc ==
 
 int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	    char *formatstring,...)
@@ -615,17 +618,25 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
   va_list parguments;
   int ret = -1;
   RESULTCODES rt;
-  STARTDATA start;
+  STARTDATA sdata;
   REQUESTDATA rq;
-  ULONG sessID, apptype, ulLength, ctr = 0;
+  ULONG ulSessID, apptype, ulLength, ctr = 0;
   PID sessPID;
   BOOL wasquote;
   char *s = NULL, *s2 = NULL, object[32] = "", *p, savedir[CCHMAXPATH];
-  HQUEUE hque = (HQUEUE) 0;
-  char queue_name[] = "\\QUEUES\\FM3WAIT", tempdir[CCHMAXPATH];
-  PUSHORT pusInfo = (PUSHORT) NULL;
+  HQUEUE hque;
+  char szQueueName[] = "\\QUEUES\\FM3WAIT";
+  char tempdir[CCHMAXPATH];
+  typedef struct {
+    USHORT usSessID;
+    USHORT usRC;
+  } TERMINFO;
+
+  TERMINFO *pTermInfo = NULL;
   BYTE bPriority;
   APIRET rc;
+  PIB *ppib;
+  TIB *ptib;
 
   if (directory && *directory) {
     if (!DosQueryPathInfo(directory,
@@ -810,7 +821,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
       }
     }
     else {
-      if (!(type & FULLSCREEN))
+      if (~type & FULLSCREEN)
 	type |= WINDOWED;
       rc = DosAllocMem((PVOID) & s2, MAXSTRG * 2,
 		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
@@ -820,7 +831,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	return -1;
       }
       *s2 = 0;
-      memset(&start, 0, sizeof(STARTDATA));
+      memset(&sdata, 0, sizeof(STARTDATA));
       strip_lead_char(" \t", s);
       p = s;
       wasquote = FALSE;
@@ -981,42 +992,52 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	{
 	  apptype = SSF_TYPE_FULLSCREEN;
 	}
+	// fixme parens?
 	else if (((type & FULLSCREEN) || !(type & WINDOWED) &&
 		  apptype == SSF_TYPE_WINDOWEDVDM))
 	  apptype = SSF_TYPE_VDM;
       }
       if (apptype == SSF_TYPE_WINDOWEDVDM && (type & SEPARATEKEEP)) {
-	type &= (~SEPARATEKEEP);
+	type &= ~SEPARATEKEEP;
 	type |= SEPARATE;
       }
 
+      DosGetInfoBlocks(&ptib, &ppib);
+      fprintf(stderr,"runemf2 ptib %x pgm %s\n",ptib,s);
+
       if (type & WAIT) {
-	if (DosCreateQueue(&hque, QUE_FIFO | QUE_CONVERT_ADDRESS, queue_name))
-	  hque = (HQUEUE) 0;
+	rc = DosCreateQueue(&hque, QUE_FIFO | QUE_CONVERT_ADDRESS, szQueueName);
+	if (rc) {
+	  if (rc != ERROR_QUE_DUPLICATE)
+            Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosCreateQueue");
+	  hque = (HQUEUE)0;		// Try to survive
+	  *szQueueName = 0;		// Try to survive
+	}
+	else
+          fprintf(stderr,"runemf2 ptib %x hque %x created\n",ptib,hque);
       }
-      else
-	*queue_name = 0;
-      start.Length = sizeof(start);
-      start.Related = ((type & WAIT) != 0) ?
-	SSF_RELATED_CHILD :
-	((type & CHILD) != 0) ?
-	SSF_RELATED_CHILD :
-	SSF_RELATED_INDEPENDENT;
-      start.FgBg = ((type & BACKGROUND) != 0) * SSF_FGBG_BACK;
-      start.TraceOpt = SSF_TRACEOPT_NONE;
-      start.PgmTitle = NULL;
-      start.PgmName = s;
-      start.PgmInputs = (*s2) ? s2 : NULL;
-      start.TermQ = (*queue_name) ? queue_name : NULL;
-      start.Environment = environment;
-      start.InheritOpt = SSF_INHERTOPT_PARENT;
-      start.SessionType = (USHORT) apptype;
-      start.ObjectBuffer = object;
-      start.ObjectBuffLen = 31;
-      start.IconFile = NULL;
-      start.PgmHandle = 0L;
-      start.Reserved = 0;
-      start.PgmControl = (USHORT) ((SSF_CONTROL_NOAUTOCLOSE * ((type & 15) == SEPARATEKEEP)) |
+      else {
+	hque = (HQUEUE)0;		// No queue if not waiting
+	*szQueueName = 0;		// No queue if not waiting
+      }
+      sdata.Length = sizeof(sdata);
+      sdata.Related = type & (WAIT | CHILD) ?
+		      SSF_RELATED_CHILD : SSF_RELATED_INDEPENDENT;
+      sdata.FgBg = type & BACKGROUND ? SSF_FGBG_BACK : SSF_FGBG_FORE;
+      sdata.TraceOpt = SSF_TRACEOPT_NONE;
+      sdata.PgmTitle = NULL;
+      sdata.PgmName = s;
+      sdata.PgmInputs = (*s2) ? s2 : NULL;
+      sdata.TermQ = *szQueueName ? szQueueName : NULL;
+      sdata.Environment = environment;
+      sdata.InheritOpt = SSF_INHERTOPT_PARENT;
+      sdata.SessionType = (USHORT)apptype;
+      sdata.ObjectBuffer = object;
+      sdata.ObjectBuffLen = sizeof(object) - 1;
+      sdata.IconFile = NULL;
+      sdata.PgmHandle = 0L;
+      sdata.Reserved = 0;
+      sdata.PgmControl = (USHORT) ((SSF_CONTROL_NOAUTOCLOSE * ((type & 15) == SEPARATEKEEP)) |
 			(SSF_CONTROL_MAXIMIZE * ((type & MAXIMIZED) != 0)) |
 			(SSF_CONTROL_MINIMIZE * ((type & MINIMIZED) != 0)) |
 		       (SSF_CONTROL_INVISIBLE * ((type & INVISIBLE) != 0)));
@@ -1024,7 +1045,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	save_dir2(savedir);
 	switch_to(directory);
       }
-      ret = DosStartSession(&start, &sessID, &sessPID);
+      ret = DosStartSession(&sdata, &ulSessID, &sessPID);
       if (directory && *directory)
 	switch_to(savedir);
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
@@ -1036,6 +1057,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  ShowSession(hwnd, sessPID);
 
 	if (!hque) {
+	  // No queue
 	  STATUSDATA sd;
 
 	  memset(&sd, 0, sizeof(sd));
@@ -1045,41 +1067,59 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  for (ctr = 0;; ctr++)
 	  {
 	    DosSleep(200L);
-	    if (DosSetSession(sessID, &sd))	/* cheap trick */
+	    if (DosSetSession(ulSessID, &sd))	// Check if session gone (i.e. finished)
 	      break;
-	    if (ctr > 10)
-	      ShowSession(hwnd, sessPID);
+	    if (ctr > 10) {
+	      ShowSession(hwnd, sessPID);	// Show every 2 seconds
+	      ctr = 0;
+	    }
 	  }
 	}
 	else {
+	  // This thread owns queue
+          fprintf(stderr,"runemf2 ptib %x hque %x sessID %x sessPID %x\n",ptib,hque,ulSessID,sessPID);
+          fflush(stderr);
 	  for (ctr = 0;; ctr++)
 	  {
-	    ulLength = sizeof(rq);
-	    rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID) & pusInfo, 0,
+	    // ulLength = sizeof(TERMINFO);
+	    // fixme to supply event semaphore or not wait
+	    rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
 			      DCWW_NOWAIT, &bPriority, 0);
 	    if (rc == ERROR_QUE_EMPTY) {
 	      if (ctr > 20) {
 		ShowSession(hwnd, sessPID);
-		ulLength = sizeof(rq);
-		DosReadQueue(hque, &rq, &ulLength, (PPVOID) & pusInfo, 0,
-			     DCWW_WAIT, &bPriority, 0);
+		ulLength = sizeof(TERMINFO);
+		rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
+			          DCWW_WAIT, &bPriority, 0);
 		break;
 	      }
-	      DosSleep(100L);
+	      DosSleep(100);
 	    }
 	    else {
-	      ulLength = sizeof(rq);
-	      if (rc)
-		DosReadQueue(hque, &rq, &ulLength, (PPVOID) & pusInfo, 0,
-			     DCWW_WAIT, &bPriority, 0);
+	      if (rc) {
+		if (rc != ERROR_INVALID_PARAMETER)
+                  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosReadQueue");
+	        // ulLength = sizeof(TERMINFO);
+		rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
+			          DCWW_WAIT, &bPriority, 0);
+	      }
+	      // fixme to be much smarter
+	      if (!rc && pTermInfo && pTermInfo->usSessID != ulSessID) {
+		// fixme to requeue
+	        continue;
+	      }
 	      break;
 	    }
-	  }
-	  if (pusInfo) {
-	    ret = (!(!pusInfo[1]));
-	    DosFreeMem(pusInfo);
+	  } // for
+          fprintf(stderr,"runemf2 ptib %x hque %x rq pid %x ul %d\n",ptib,hque,rq.pid,rq.ulData);
+	  if (pTermInfo) {
+	    ret = !(!pTermInfo->usRC);		// Set TRUE if rc 0
+            fprintf(stderr,"runemf2 ptib %x hque %x terminfo sessId %x rc %d\n",ptib,hque,pTermInfo->usSessID,pTermInfo->usRC);
+	    DosFreeMem(pTermInfo);
 	  }
 	  DosCloseQueue(hque);
+          fprintf(stderr,"runemf2 ptib %x hque %x closed\n",ptib,hque);
+          fflush(stderr);
 	}
       }
       else if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
@@ -1096,13 +1136,15 @@ ObjectInterrupt:
   return ret;
 }
 
+//== Exec() Start application with WinStartApp ==
+
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
-	  PROGTYPE * progt, ULONG fl, char *formatstring,...)
+	  PROGTYPE *progt, ULONG fl, char *formatstring,...)
 {
   PROGDETAILS pgd;
   register char *p;
   char *parameters = NULL, *executable = NULL;
-  HAPP happ = (HAPP) 0;
+  HAPP happ = (HAPP)0;
   ULONG ulOptions = SAF_INSTALLEDCMDLINE;
   BOOL wasquote;
   va_list parguments;
