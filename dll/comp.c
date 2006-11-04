@@ -21,6 +21,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   15 Aug 06 SHL Turn off hide not selected on dir change
   19 Oct 06 SHL Correct . and .. detect
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -167,6 +168,7 @@ static VOID CompareFilesThread (VOID *args)
       hmq2 = WinCreateMsgQueue(hab2,0);
       if(hmq2) {
         WinCancelShutdown(hmq2,TRUE);
+	IncrThreadUsage();
         if(!IsFile(fc.file1) || IsRoot(fc.file1)) {
           p1 = strrchr(fc.file2,'\\');
           if(p1) {
@@ -268,6 +270,7 @@ static VOID CompareFilesThread (VOID *args)
           }
           fclose(fp1);
         }
+	DecrThreadUsage();
         WinDestroyMsgQueue(hmq2);
       }
       WinTerminate(hab2);
@@ -362,6 +365,7 @@ static VOID ActionCnrThread (VOID *args)
     hmq = WinCreateMsgQueue(hab,0);
     if(hmq) {
       WinCancelShutdown(hmq,TRUE);
+      IncrThreadUsage();
       priority_normal();
       switch(cmp->action) {
         case COMP_DELETELEFT:
@@ -589,6 +593,7 @@ static VOID ActionCnrThread (VOID *args)
 Abort:
       WinDestroyMsgQueue(hmq);
     }
+    DecrThreadUsage();
     WinTerminate(hab);
   }
   PostMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPFROMLONG(1L),MPVOID);
@@ -614,6 +619,7 @@ static VOID SelectCnrsThread (VOID *args)
     hmq = WinCreateMsgQueue(hab,0);
     if(hmq) {
       WinCancelShutdown(hmq,TRUE);
+      IncrThreadUsage();
       priority_normal();
       switch(cmp->action) {
         case IDM_INVERT:
@@ -636,6 +642,7 @@ static VOID SelectCnrsThread (VOID *args)
         WinSendMsg(cmp->hwnd,UM_CONTAINER_FILLED,MPFROMLONG(1L),MPVOID);
       WinDestroyMsgQueue(hmq);
     }
+    DecrThreadUsage();
     WinTerminate(hab);
   }
   free(cmp);
@@ -786,6 +793,7 @@ static VOID FillCnrsThread (VOID *args)
       CHAR            *pch;
 
       WinCancelShutdown(hmq,TRUE);
+      IncrThreadUsage();
       hwndLeft = WinWindowFromID(cmp->hwnd,COMP_LEFTDIR);
       hwndRight = WinWindowFromID(cmp->hwnd,COMP_RIGHTDIR);
       lenl = strlen(cmp->leftdir);
@@ -1409,6 +1417,7 @@ static VOID FillCnrsThread (VOID *args)
         FreeList((CHAR **)filesr);
       WinDestroyMsgQueue(hmq);
     }
+    DecrThreadUsage();
     WinTerminate(hab);
   }
   if (!notified)
