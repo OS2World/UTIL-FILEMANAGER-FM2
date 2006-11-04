@@ -10,6 +10,7 @@
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
   10 Sep 06 GKY Add Move to last, Okay adds if new, Replace Current in Listbox Dialog
+  19 Oct 06 GKY Rework replace logic
 
 **************************************************************************************/
 
@@ -50,7 +51,7 @@ typedef struct LINKASSOC {
 
 
 static LINKASSOC *asshead     = NULL,*asstail = NULL;
-static BOOL       assloaded = FALSE;
+static BOOL       assloaded = FALSE,replace = FALSE ;
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -254,10 +255,10 @@ LINKASSOC * add_association (ASSOC *addme)
 
   if(addme && *addme->cl && *addme->mask) {
     info = asshead;
-    while(info) {
-      if(!stricmp(info->mask,addme->mask) &&
-         ((!info->sig && !*addme->sig) ||
-          (info->sig && !strcmp(addme->sig,info->sig))))
+    while(info)  {
+      if((!replace) && (!stricmp(info->mask,addme->mask) &&
+         ((!info->sig && !*addme->sig) || (!replace) &&
+          (info->sig && !strcmp(addme->sig,info->sig)))))
         return NULL;
       info = info->next;
     }
@@ -681,7 +682,9 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       case DID_OK:
                     {
             ASSOC temp;
-            CHAR  dummy[34];{
+            CHAR  dummy[34];
+            replace=FALSE;
+            {
             x = (SHORT)WinSendDlgItemMsg(hwnd,
                                            ASS_LISTBOX,
                                            LM_QUERYSELECTION,
@@ -775,6 +778,7 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         {
             ASSOC temp;
             CHAR  dummy[34];
+            replace=FALSE;
 
             memset(&temp,0,sizeof(ASSOC));
             WinQueryDlgItemText(hwnd,ASS_MASK,sizeof(temp.mask),temp.mask);
@@ -883,12 +887,11 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           }
           break;
       case ASS_REPLACE:
-               
-               
 
                        {
             ASSOC temp;
             CHAR  dummy[34];
+            replace=TRUE;
 
             y = (SHORT)WinSendDlgItemMsg(hwnd,
                                            ASS_LISTBOX,
@@ -984,7 +987,7 @@ MRESULT EXPENTRY AssocDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
             if(!kill_association(&temp))
               Runtime_Error(pszSrcFile, __LINE__, "kill_association");
 	    else {
-              
+
               if(y >= 0) {
                 WinSendDlgItemMsg(hwnd,
                                   ASS_LISTBOX,
