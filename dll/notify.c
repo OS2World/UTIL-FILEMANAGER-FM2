@@ -479,7 +479,7 @@ MRESULT EXPENTRY NoteWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 }
 
 
-VOID NoteThread (VOID *args)
+static VOID NoteThread(VOID *args)
 {
   HAB    hab2;
   HMQ    hmq2;
@@ -566,14 +566,8 @@ BOOL AddNote (CHAR *note)
 VOID EndNote (VOID)
 {
   if(hwndNotify)
-    if(!PostMsg(hwndNotify,
-                WM_CLOSE,
-                MPVOID,
-                MPVOID))
-      WinSendMsg(hwndNotify,
-                 WM_CLOSE,
-                 MPVOID,
-                 MPVOID);
+    if (!PostMsg(hwndNotify,WM_CLOSE,MPVOID,MPVOID))
+      WinSendMsg(hwndNotify,WM_CLOSE,MPVOID,MPVOID);
 }
 
 
