@@ -17,6 +17,7 @@
   05 Jul 06 SHL COMP_FRAME - support hide not selected, compare content
   31 Jul 06 SHL Change ASEL_EDIT_FRAME button text
   10 Sep 06 GKY Add ASS_REPLACE ASS-BOTTOM to ASS_FRAME
+  20 Oct 06 SHL Sync Seek and scan dialog title and menus
 
 ***********************************************************************/
 
@@ -479,17 +480,17 @@ BEGIN
                         BS_NOPOINTERFOCUS | WS_GROUP
         AUTOCHECKBOX    "~Keep", ASS_KEEP, 179, 71, 39, 10, 
                         BS_NOPOINTERFOCUS | WS_GROUP
-        AUTOCHECKBOX    "Close", ASS_DIEAFTER, 179, 60, 38, 10
+        AUTOCHECKBOX    "~Close", ASS_DIEAFTER, 179, 60, 38, 10
         CONTROL         "", ASS_ENVIRON, 4, 18, 214, 35, WC_MLE, MLS_HSCROLL | 
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP | WS_TABSTOP | 
                         WS_VISIBLE
         DEFPUSHBUTTON   "~Okay", DID_OK, 2, 2, 26, 14, BS_NOPOINTERFOCUS | 
                         WS_GROUP
-        PUSHBUTTON      "Add", ASS_ADD, 30, 2, 20, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Add", ASS_ADD, 30, 2, 20, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "De~l", ASS_DELETE, 52, 2, 20, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Replace", ASS_REPLACE, 74, 2, 38, 14, BS_NOPOINTERFOCUS        
+        PUSHBUTTON      "~Replace", ASS_REPLACE, 74, 2, 38, 14, BS_NOPOINTERFOCUS        
         PUSHBUTTON      "~Top", ASS_TOP, 112, 2, 20, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Last", ASS_BOTTOM, 134, 2, 24, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "La~st", ASS_BOTTOM, 134, 2, 24, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "~Help", IDM_HELP, 160, 2, 24, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 186, 2, 36, 14, 
                         BS_NOPOINTERFOCUS
@@ -883,15 +884,15 @@ BEGIN
         CONTROL         "", CMD_ENVIRON, 4, 18, 247, 38, WC_MLE, MLS_HSCROLL | 
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP | WS_TABSTOP | 
                         WS_VISIBLE
-        DEFPUSHBUTTON   "Okay", DID_OK, 2, 2, 34, 14, BS_NOPOINTERFOCUS | 
+        DEFPUSHBUTTON   "~Okay", DID_OK, 2, 2, 34, 14, BS_NOPOINTERFOCUS | 
                         WS_GROUP
         PUSHBUTTON      "~Add", CMD_ADD, 38, 2, 34, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "De~l", CMD_DELETE, 74, 2, 32, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Replace", CMD_REPLACE, 108, 2, 34, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Reorder", CMD_REORDER, 144, 2, 34, 14, 
+        PUSHBUTTON      "Repla~ce", CMD_REPLACE, 108, 2, 38, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Reorder", CMD_REORDER, 148, 2, 38, 14, 
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Help", IDM_HELP, 180, 2, 34, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Cancel", DID_CANCEL, 216, 2, 34, 14, 
+        PUSHBUTTON      "~Help", IDM_HELP, 188, 2, 34, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Cancel", DID_CANCEL, 224, 2, 34, 14, 
                         BS_NOPOINTERFOCUS
     END
 END
@@ -1119,7 +1120,7 @@ END
 
 DLGTEMPLATE GREP_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "FM/2:  Find files", GREP_FRAME, 12, 6, 292, 224, WS_VISIBLE, 
+    DIALOG  "FM/2:  Seek & scan files", GREP_FRAME, 12, 6, 292, 224, WS_VISIBLE, 
             FCF_TITLEBAR
     BEGIN
         LTEXT           "Filemasks:", -1, 34, 158, 53, 8, DT_BOTTOM

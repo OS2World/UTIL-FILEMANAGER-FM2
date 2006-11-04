@@ -17,6 +17,7 @@
   01 Sep 06 GKY Add partitioning to files > misc menu
   01 Sep 06 GKY Add Make Directory to files menu in addition to files > misc
   24 Sep 06 GKY Changed "Help" to F1 only
+  20 Oct 06 SHL Sync Seek and scan dialog title and menus
 
 ***********************************************************************/
 
@@ -191,7 +192,7 @@ MENU  MAIN_FRAME
     MENUITEM "~Open directory container\tCtrl + O",IDM_OPENWALK
     MENUITEM "",                  -1,               MIS_SEPARATOR
     MENUITEM "~Collector\tF2",    IDM_COLLECTOR
-    MENUITEM "~Seek and scan files",IDM_GREP
+    MENUITEM "~Seek & scan files",IDM_GREP
     MENUITEM "See ~all files",    IDM_SEEALL
     MENUITEM "Compar~e directories...",IDM_COMPARE
     MENUITEM "",                  -1,               MIS_SEPARATOR
@@ -386,7 +387,7 @@ MENU  MAIN2_FRAME
   SUBMENU "~Utilities",           IDM_UTILITIESMENU
   {
     MENUITEM "~Collector...\tF2", IDM_COLLECTOR
-    MENUITEM "~Seek and scan files...",IDM_GREP
+    MENUITEM "~Seek & scan files...",IDM_GREP
     MENUITEM "See ~all files...", IDM_SEEALL
     MENUITEM "~Remap drives...",   IDM_REMAP
     SUBMENU "~Partition disks", IDM_PARTITIONSMENU
@@ -1495,7 +1496,7 @@ MENU COLLECTORCNR_POPUP
     MENUITEM "From a ~list file",IDM_COLLECTSELECT
   }
   MENUITEM "Clear container",   IDM_CLEARCNR
-  MENUITEM "Seek & scan\tCtrl + g",   IDM_GREP
+  MENUITEM "Seek & scan files\tCtrl + g",   IDM_GREP
   MENUITEM "Stop seek & scan\tEsc",DID_CANCEL
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "~See all files...", IDM_SEEALL
