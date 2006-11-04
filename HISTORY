@@ -1,5 +1,14 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.05beta05
+ o Rework session termination logic - avoids hanging zip windows and others
+ o NDFS support by Gregg
+ o Default seek and scan to show files
+ o Rework menus
+ o Correct . and .. compare logic to not skip .dir and ..dir
+ o Correct compare directories . and .. skip logic to not skip .dir
+ o Association editor fixes by Gregg
+
 3.05beta04
  o Change to standard F1 Help hotkey by Gregg
  o Association editor enhancements by Gregg
