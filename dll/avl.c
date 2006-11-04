@@ -23,6 +23,7 @@
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
   15 Aug 06 SHL Use Runtime_Error more
+  01 Nov 06 SHL Turn off leftover debug code
 
 ***********************************************************************/
 
@@ -600,7 +601,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
       DRAGIMAGE dimage;
       HWND hwndDrop;
 
-      fprintf(stderr, "SDlgListboxSubclassProc: BEGINDRAG\n");
+      // fprintf(stderr, "SDlgListboxSubclassProc: BEGINDRAG\n");
       cur_ndx = WinQueryLboxSelectedItem(hwnd);
 
       if (cur_ndx != LIT_NONE) {
@@ -660,11 +661,11 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
       ptl.y = SHORT2FROMMP(mp2);
       ptl2 = ptl;
       WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl2, 1);
-      fprintf(stderr, "DRAGOVER mapped x y %d %d to %d %d\n", ptl.x, ptl.y, ptl2.x, ptl2.y);
+      // fprintf(stderr, "DRAGOVER mapped x y %d %d to %d %d\n", ptl.x, ptl.y, ptl2.x, ptl2.y);
       WinPostMsg(hwnd, WM_BUTTON1CLICK,
 		 MPFROM2SHORT((SHORT)ptl2.x, (SHORT)ptl2.y),
 		 MPFROM2SHORT(HT_NORMAL, KC_NONE));
-      fprintf(stderr, "DRAGOVER posted 0x%x WM_BUTTON1CLICK x y %d %d\n", hwnd, ptl2.x, ptl2.y);
+      // fprintf(stderr, "DRAGOVER posted 0x%x WM_BUTTON1CLICK x y %d %d\n", hwnd, ptl2.x, ptl2.y);
     }
     pdinfo = (PDRAGINFO)mp1;		/* Get DRAGINFO pointer */
     if (pdinfo) {
@@ -684,7 +685,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
       emphasized = FALSE;
       // fixme to draw listbox item emphasized
       // DrawTargetEmphasis(hwnd, emphasized);
-      fprintf(stderr, "DRAGLEAVE\n");
+      // fprintf(stderr, "DRAGLEAVE\n");
       fflush(stderr);
     }
     return 0;
@@ -695,7 +696,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
 
   case DM_DROP:
     ok = FALSE;
-    fprintf(stderr, "DROP\n");
+    // fprintf(stderr, "DROP\n");
     fflush(stderr);
     if (emphasized)
     {
