@@ -1,5 +1,19 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Grep support
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2006 Steven H. Levine
+
+  04 Nov 06 Renames
+
+***********************************************************************/
+
 ULONG SecsSince1980 (FDATE *date,FTIME *time);
-VOID dogrep (VOID *arg);
+VOID GrepThread(VOID *arg);
 
 typedef struct DUPES {
   CHAR *name;
