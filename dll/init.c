@@ -18,6 +18,7 @@
   13 Jul 06 SHL Use Runtime_Error
   13 Jul 06 SHL Sync with current style
   29 Jul 06 SHL Use xfgets
+  22 Oct 06 GKY Add NDFS32 support
 
 ***********************************************************************/
 
@@ -249,6 +250,7 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     FAT32 = "FAT32";
     HPFS386 = "HPFS386";
     CBSIFS = "CBSIFS";
+    NDFS32 = "NDFS32";
     /* end of strings */
     memset(&RGBBLACK, 0, sizeof(RGB2));
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = 204;

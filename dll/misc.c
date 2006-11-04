@@ -20,6 +20,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   16 Aug 06 SHL Comments
   31 Aug 06 SHL disable_menuitem: rework args to match name - sheesh
+  10 Oct 06 GKY Add NDFS32 support
 
 ***********************************************************************/
 
@@ -341,7 +342,9 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
   if (x != -1) {
     if (!stricmp(FileSystem, HPFS) ||
 	!stricmp(FileSystem, JFS) ||
-	!stricmp(FileSystem, FAT32) || !stricmp(FileSystem, HPFS386)) {
+        !stricmp(FileSystem, FAT32) ||
+        !stricmp(FileSystem, NDFS32) ||
+        !stricmp(FileSystem, HPFS386)) {
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
       hasLongNames = TRUE;
