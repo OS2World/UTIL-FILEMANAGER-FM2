@@ -15,6 +15,8 @@
   06 Jun 05 SHL Correct reversed wrap logic
   17 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Use chop_at_crnl and convert_nl_to_nul
+  03 Nov 06 SHL Renames
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -40,10 +42,10 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(NEWVIEW,ViewStatusProc,FreeViewerMem,LoadFile)
+#pragma alloc_text(NEWVIEW,ViewStatusProc,FreeViewerMem,LoadFileThread)
 #pragma alloc_text(NEWVIEW,InitWindow,PaintLine,ViewWndProc)
-#pragma alloc_text(NEWVIEW,ViewFrameWndProc,StartViewer,ReLine)
-#pragma alloc_text(NEWVIEW,BuildAList,Search,Clipboard,FindStrDlgProc)
+#pragma alloc_text(NEWVIEW,ViewFrameWndProc,StartViewer,ReLineThread)
+#pragma alloc_text(NEWVIEW,BuildAList,SearchThread,ClipboardThread,FindStrDlgProc)
 #pragma alloc_text(NEWVIEW,BuildAList2,UrlDlgProc)
 
 #define VF_SELECTED     0x01
@@ -892,7 +894,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
   }
 }
 
-static VOID Search(VOID * args)
+static VOID SearchThread(VOID * args)
 {
   HWND hwnd = (HWND)args;
   HAB hab2;
@@ -909,9 +911,9 @@ static VOID Search(VOID * args)
   if (hab2)
   {
     hmq2 = WinCreateMsgQueue(hab2, 0);
-    if (hmq2)
-    {
+    if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
+      IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad)
       {
@@ -1059,12 +1061,13 @@ static VOID Search(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
+    DecrThreadUsage();
     WinTerminate(hab2);
   }
   DosPostEventSem(CompactSem);
 }
 
-static VOID Clipboard(VOID * args)
+static VOID ClipboardThread(VOID * args)
 {
   HWND hwnd = (HWND)args;
   HAB hab2;
@@ -1080,9 +1083,9 @@ static VOID Clipboard(VOID * args)
   if (hab2)
   {
     hmq2 = WinCreateMsgQueue(hab2, 0);
-    if (hmq2)
-    {
+    if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
+      IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad)
       {
@@ -1167,12 +1170,13 @@ static VOID Clipboard(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
+    DecrThreadUsage();
     WinTerminate(hab2);
   }
   DosPostEventSem(CompactSem);
 }
 
-static VOID ReLine(VOID * args)
+static VOID ReLineThread(VOID * args)
 {
   HWND hwnd = (HWND)args;
   HAB hab2;
@@ -1184,18 +1188,15 @@ static VOID ReLine(VOID * args)
 
   priority_normal();
   hab2 = WinInitialize(0);
-  if (hab2)
-  {
+  if (hab2) {
     hmq2 = WinCreateMsgQueue(hab2, 0);
-    if (hmq2)
-    {
+    if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
+      IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
-      if (ad)
-      {
+      if (ad) {
 	ad -> relining = TRUE;
-	if (!DosRequestMutexSem(ad -> ScanSem, SEM_INDEFINITE_WAIT))
-	{
+	if (!DosRequestMutexSem(ad -> ScanSem, SEM_INDEFINITE_WAIT)) {
 	  ad -> busy++;
 	  ad -> maxx = 0;
 	  if (ad -> text && ad -> textsize)
@@ -1357,18 +1358,18 @@ static VOID ReLine(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
+    DecrThreadUsage();
     WinTerminate(hab2);
   }
   DosPostEventSem(CompactSem);
-  if (ad && !ad -> stopflag)
-  {
+  if (ad && !ad -> stopflag) {
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPFROMLONG(firstline),
 	    MPFROMLONG(cursored));
     ad -> relining = FALSE;
   }
 }
 
-static VOID LoadFile(VOID * args)
+static VOID LoadFileThread(VOID * args)
 {
   HWND hwnd = (HWND)args;
   HAB hab2;
@@ -1386,6 +1387,7 @@ static VOID LoadFile(VOID * args)
     if (hmq2)
     {
       WinCancelShutdown(hmq2, TRUE);
+      IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad)
       {
@@ -1464,7 +1466,7 @@ static VOID LoadFile(VOID * args)
 			ad -> hex = TRUE;
 		    }
 		    if (ad -> textsize) {
-		      if (_beginthread(ReLine, NULL, 524288, (PVOID) hwnd) == -1)
+		      if (_beginthread(ReLineThread, NULL, 524288, (PVOID) hwnd) == -1)
                         Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 		      else
 		        error = FALSE;
@@ -1481,6 +1483,7 @@ static VOID LoadFile(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
+    DecrThreadUsage();
     WinTerminate(hab2);
   }
   if (error)
@@ -1957,7 +1960,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	oldproc = WinSubclassWindow(hwndFrame, ViewFrameWndProc);
 	WinSetWindowPtr(hwndFrame, QWL_USER, (PVOID)oldproc);
 	ad -> hps = InitWindow(hwnd);
-	if (_beginthread(LoadFile, NULL, 524288, (PVOID) hwnd) == -1)
+	if (_beginthread(LoadFileThread, NULL, 524288, (PVOID) hwnd) == -1)
           Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	else {
 	  WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
@@ -2092,7 +2095,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ad -> oldwidth = newwidth;
 	if (!ad -> relining)
 	{
-	  if (_beginthread(ReLine, NULL, 524288, (PVOID) hwnd) == -1)
+	  if (_beginthread(ReLineThread, NULL, 524288, (PVOID) hwnd) == -1)
 	  {
             Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    DosReleaseMutexSem(ad -> ScanSem);
@@ -3678,7 +3681,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      appname,
 				      "Viewer.Searchtext",
 				      (PVOID) ad -> searchtext);
-	      if (_beginthread(Search, NULL, 524288, (PVOID) hwnd) == -1)
+	      if (_beginthread(SearchThread, NULL, 524288, (PVOID) hwnd) == -1)
                 Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    }
 	  }
@@ -3966,7 +3969,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!ad -> busy)
 	  {
 	    ad -> cliptype = SHORT1FROMMP(mp1);
-	    if (_beginthread(Clipboard,NULL,524288,(PVOID) hwnd) == -1)
+	    if (_beginthread(ClipboardThread,NULL,524288,(PVOID) hwnd) == -1)
               Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  }
 	  DosReleaseMutexSem(ad -> ScanSem);

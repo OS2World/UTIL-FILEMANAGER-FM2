@@ -10,6 +10,8 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
+  03 Nov 06 SHL Renames
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -33,7 +35,7 @@
 static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(PRINTER,PrinterReady,SayPrinterReady)
-#pragma alloc_text(PRINTER2,PrintList)
+#pragma alloc_text(PRINTER2,PrintListThread)
 #pragma alloc_text(PRINTER3,PrintDlgProc)
 
 static HMTX PrintSem = 0;
@@ -91,9 +93,9 @@ BOOL SayPrinterReady (HWND hwnd)
 }
 
 
-//=== PrintList - background-print a list of files ===
+//=== PrintListThread - background-print a list of files ===
 
-VOID PrintList (VOID *arg)
+VOID PrintListThread (VOID *arg)
 {
   HAB          hab2;
   HMQ          hmq2;
@@ -121,8 +123,7 @@ VOID PrintList (VOID *arg)
     hmq2 = WinCreateMsgQueue(hab2,0);
     if(hmq2) {
       WinCancelShutdown(hmq2,TRUE);
-      if(hwndMain)
-        WinSendMsg(hwndMain,UM_THREADUSE,MPFROMLONG(1L),MPVOID);
+      IncrThreadUsage();
       if(li && li->list && li->list[0]) {
         AddNote(GetPString(IDS_PRINTINGLISTTEXT));
         for(x = 0;li->list[x];x++) {
@@ -320,10 +321,9 @@ Again:
         if(!StopPrinting)
           AddNote(GetPString(IDS_PRINTEDLISTTEXT));
       }
-      if(hwndMain)
-        WinSendMsg(hwndMain,UM_THREADUSE,MPVOID,MPVOID);
       WinDestroyMsgQueue(hmq2);
     }
+    DecrThreadUsage();
     WinTerminate(hab2);
   }
 Abort:

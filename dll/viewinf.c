@@ -10,6 +10,8 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
+  03 Nov 06 SHL Renames
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -33,7 +35,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(VIEWINFS,FillListbox,ViewInfProc)
+#pragma alloc_text(VIEWINFS,FillListboxThread,ViewInfProc)
 
 typedef struct {
   USHORT size;
@@ -42,7 +44,7 @@ typedef struct {
 } DUMMY;
 
 
-static VOID FillListbox (VOID *args)
+static VOID FillListboxThread(VOID *args)
 {
   HWND hwnd;
   DUMMY *dummy = (DUMMY *)args;
@@ -61,6 +63,7 @@ static VOID FillListbox (VOID *args)
       CHAR *env,*p,*holdenv;
 
       WinCancelShutdown(hmq2,TRUE);
+      IncrThreadUsage();
       priority_normal();
       if(!dummy->help)
         env = getenv("BOOKSHELF");
@@ -184,9 +187,10 @@ NoEnv:
       }
       WinDestroyMsgQueue(hmq2);
     }
+    PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
+    DecrThreadUsage();
     WinTerminate(hab2);
   }
-  PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
   free(dummy);
 }
 
@@ -280,7 +284,7 @@ MRESULT EXPENTRY ViewInfProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
           d->hwnd = hwnd;
           if (help)
             d->help = 1;
-          if(_beginthread(FillListbox,NULL,65536,(PVOID)d) == -1) {
+          if(_beginthread(FillListboxThread,NULL,65536,(PVOID)d) == -1) {
             Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
             free(d);
             WinDismissDlg(hwnd,0);

@@ -15,6 +15,8 @@
   27 Jul 05 SHL	IDM_DOITYOURSELF - avoid need to strip in ExecOnList
   22 Jul 06 SHL	Comments
   22 Jul 06 SHL Check more run time errors
+  03 Nov 06 SHL Renames
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -118,32 +120,24 @@ VOID Action(VOID * args)
   HMQ hmq2;
   CHAR **files = NULL;
   INT numfiles = 0, numalloc = 0, plen = 0;
-  register CHAR *p, *pp;
+  CHAR *p, *pp;
 
-  if (wk)
-  {
+  if (wk) {
     if (wk -> li &&
 	wk -> li -> list &&
 	wk -> li -> list[0])
     {
       hab2 = WinInitialize(0);
-      if (hab2)
-      {
+      if (hab2) {
 	hmq2 = WinCreateMsgQueue(hab2, 0);
-	if (hmq2)
-	{
-
+	if (hmq2) {
 	  CHAR message[(CCHMAXPATH * 2) + 80], wildname[CCHMAXPATH];
 	  register INT x;
 	  BOOL dontask = FALSE, wildcarding = FALSE, overold = FALSE, overnew = FALSE,
 	      usedtarget;
 
 	  WinCancelShutdown(hmq2, TRUE);
-	  if (hwndMain)
-	    WinSendMsg(hwndMain,
-		       UM_THREADUSE,
-		       MPFROMLONG(1L),
-		       MPVOID);
+	  IncrThreadUsage();
 	  *wildname = 0;
 	  switch (wk -> li -> type)
 	  {
@@ -1026,7 +1020,6 @@ VOID Action(VOID * args)
 		}
 		else if (*compare)
 		{
-
 		  CHAR *fakelist[3];
 
 		  fakelist[0] = wk -> li -> list[x];
@@ -1041,7 +1034,6 @@ VOID Action(VOID * args)
 		}
 		else
 		{
-
 		  FCOMPARE fc;
 
 		  memset(&fc, 0, sizeof(fc));
@@ -1058,9 +1050,9 @@ VOID Action(VOID * args)
 		    goto Abort;
 		}
 		break;
-	      }
+	      } // switch
 	      DosSleep(0L);
-	    }
+	    } // for list
 
 	    switch (wk -> li -> type)
 	    {
@@ -1111,8 +1103,7 @@ VOID Action(VOID * args)
 
 	Abort:
 
-	  if (files)
-	  {
+	  if (files) {
 	    Broadcast(hab2,
 		      wk -> hwndCnr,
 		      UM_UPDATERECORDLIST,
@@ -1122,18 +1113,11 @@ VOID Action(VOID * args)
 	  }
 
 	  if (WinIsWindow(hab2, wk -> hwndCnr))
-	    PostMsg(wk -> hwndCnr,
-		    UM_RESCAN,
-		    MPVOID,
-		    MPVOID);
+	    PostMsg(wk -> hwndCnr,UM_RESCAN,MPVOID,MPVOID);
 
-	  if (hwndMain)
-	    WinSendMsg(hwndMain,
-		       UM_THREADUSE,
-		       MPVOID,
-		       MPVOID);
 	  WinDestroyMsgQueue(hmq2);
 	}
+	DecrThreadUsage();
 	WinTerminate(hab2);
       }
     }
@@ -1162,14 +1146,9 @@ VOID MassAction(VOID * args)
       if (hab2)
       {
 	hmq2 = WinCreateMsgQueue(hab2, 0);
-	if (hmq2)
-	{
+	if (hmq2) {
 	  WinCancelShutdown(hmq2, TRUE);
-	  if (hwndMain)
-	    WinSendMsg(hwndMain,
-		       UM_THREADUSE,
-		       MPFROMLONG(1L),
-		       MPVOID);
+	  IncrThreadUsage();
 	  DosError(FERR_DISABLEHARDERR);
 	  if (IsRoot(wk -> li -> list[0]) ||
 	      !IsFile(wk -> li -> list[0]))
@@ -1179,8 +1158,7 @@ VOID MassAction(VOID * args)
 	    if (wk -> li -> type == IDM_EDIT)
 	      wk -> li -> type = IDM_EAS;
 	  }
-	  switch (wk -> li -> type)
-	  {
+	  switch (wk -> li -> type) {
 	  case IDM_INFO:
 	    if (WinDlgBox(HWND_DESKTOP,
 			  wk -> hwndFrame,
@@ -1688,7 +1666,7 @@ VOID MassAction(VOID * args)
 	      if (wk -> li && wk -> li -> list && wk -> li -> list[0])
 	      {
 		strcpy(wk -> li -> targetpath, printer);
-		if (_beginthread(PrintList,NULL,65536,(PVOID) wk -> li) == -1)
+		if (_beginthread(PrintListThread,NULL,65536,(PVOID) wk -> li) == -1)
                   Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 		else
 		  wk -> li = NULL;	/* prevent LISTINFO li from being freed */
@@ -1921,8 +1899,7 @@ VOID MassAction(VOID * args)
 	    }
 	    break;
 	  }
-	  if (files)
-	  {
+	  if (files) {
 	    Broadcast(hab2,
 		      wk -> hwndCnr,
 		      UM_UPDATERECORDLIST,
@@ -1932,18 +1909,11 @@ VOID MassAction(VOID * args)
 	  }
 	Abort:
 	  if (WinIsWindow(hab2, wk -> hwndCnr))
-	    PostMsg(wk -> hwndCnr,
-		    UM_RESCAN,
-		    MPVOID,
-		    MPVOID);
+	    PostMsg(wk -> hwndCnr,UM_RESCAN,MPVOID,MPVOID);
 
-	  if (hwndMain)
-	    WinSendMsg(hwndMain,
-		       UM_THREADUSE,
-		       MPVOID,
-		       MPVOID);
 	  WinDestroyMsgQueue(hmq2);
 	}
+	DecrThreadUsage();
 	WinTerminate(hab2);
       }
     }

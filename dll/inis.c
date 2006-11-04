@@ -11,6 +11,8 @@
   24 May 05 SHL Rework Win_Error usage
   05 Jun 05 SHL Use QWL_USER
   17 Jul 06 SHL Use Runtime_Error
+  03 Nov 06 SHL Renames
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -35,7 +37,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(INIS,EnumAppNames,GetKeyData,EnumKeyNames,AddIniProc,IniProc,BackupIni,ChangeIniProc,SwapIniProc,IniLBSubProc,IniLBSubProc2,CopyIni,CompareIni,IntraIniProc,FilterIniProc)
+#pragma alloc_text(INIS,EnumAppNames,GetKeyData,EnumKeyNames,AddIniProc,IniProc,BackupIniThread,ChangeIniProc,SwapIniProc,IniLBSubProc,IniLBSubProc2,CopyIniThread,CompareIniThread,IntraIniProc,FilterIniProc)
 #pragma alloc_text(STARTUP,StartIniEditor)
 
 typedef struct {
@@ -78,7 +80,7 @@ typedef struct {
 } INIREC;
 
 
-VOID CopyIni (VOID *args)
+VOID CopyIniThread (VOID *args)
 {
   INIREC     *inirec = (INIREC *)args;
   HAB         hab2;
@@ -93,6 +95,7 @@ VOID CopyIni (VOID *args)
       hmq2 = WinCreateMsgQueue(hab2,0);
       if(hmq2) {
         WinCancelShutdown(hmq2,TRUE);
+	IncrThreadUsage();
         *userini = *sysini = 0;
         memset(&cprfp,0,sizeof(PRFPROFILE));
         cprfp.cchUserName = CCHMAXPATH;
@@ -245,6 +248,7 @@ Abort:
           PrfCloseProfile(hini2);
         WinDestroyMsgQueue(hmq2);
       }
+      DecrThreadUsage();
       WinTerminate(hab2);
     }
     PostMsg(inirec->hwndDlg,WM_COMMAND,MPFROM2SHORT(INI_REFRESH,0),
@@ -258,7 +262,7 @@ Abort:
 }
 
 
-VOID CompareIni (VOID *args)
+static VOID CompareIniThread (VOID *args)
 {
   INIREC     *inirec = (INIREC *)args;
   HAB         hab2;
@@ -270,9 +274,13 @@ VOID CompareIni (VOID *args)
       hmq2 = WinCreateMsgQueue(hab2,0);
       if(hmq2) {
         WinCancelShutdown(hmq2,TRUE);
+	IncrThreadUsage();
+
+	// fixme to do something?
 
         WinDestroyMsgQueue(hmq2);
       }
+      DecrThreadUsage();
       WinTerminate(hab2);
     }
     free(inirec);
@@ -280,7 +288,7 @@ VOID CompareIni (VOID *args)
 }
 
 
-VOID BackupIni (VOID *args)
+static VOID BackupIniThread (VOID *args)
 {
   PPRFPROFILE prfp = (PPRFPROFILE)args;
   HAB         hab2;
@@ -298,6 +306,7 @@ VOID BackupIni (VOID *args)
       hmq2 = WinCreateMsgQueue(hab2,0);
       if(hmq2) {
         WinCancelShutdown(hmq2,TRUE);
+	IncrThreadUsage();
         *userini = *sysini = 0;
         memset(&cprfp,0,sizeof(PRFPROFILE));
         cprfp.cchUserName = CCHMAXPATH;
@@ -374,6 +383,7 @@ VOID BackupIni (VOID *args)
         }
         WinDestroyMsgQueue(hmq2);
       }
+      DecrThreadUsage();
       WinTerminate(hab2);
     }
     free(prfp->pszUserName);
@@ -2558,7 +2568,7 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               inirec->hwndDlg = hwnd;
               inirec->confirm = inidata->confirm;
               strcpy(inirec->filename1,inidata->ininame);
-              if (_beginthread(CopyIni,NULL,122880,(PVOID)inirec) == -1) {
+              if (_beginthread(CopyIniThread,NULL,122880,(PVOID)inirec) == -1) {
                 Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                 free(inirec);
               }
@@ -2579,7 +2589,7 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               strcpy(inirec->filename2,(CHAR *)(mp2));
               strcpy(inirec->filename1,inidata->ininame);
               inirec->hwndDlg = hwnd;
-              if (_beginthread(CompareIni,NULL,122880,(PVOID)inirec) == -1) {
+              if (_beginthread(CompareIniThread,NULL,122880,(PVOID)inirec) == -1) {
                 Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                 free(inirec);
               }
@@ -2625,7 +2635,7 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                 free(inirec);
                 break;
               }
-              if (_beginthread(CopyIni,NULL,122880,(PVOID)inirec) == -1) {
+              if (_beginthread(CopyIniThread,NULL,122880,(PVOID)inirec) == -1) {
                 Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                 free(inirec);
               }
@@ -2672,7 +2682,7 @@ MRESULT EXPENTRY IniProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 		  }
 		  else {
                     prfp->cchSysName = strlen(prfp->pszSysName);
-                    if (_beginthread(BackupIni,NULL,122880,(PVOID)prfp) == -1) {
+                    if (_beginthread(BackupIniThread,NULL,122880,(PVOID)prfp) == -1) {
                       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                       free(prfp->pszSysName);
                       free(prfp->pszUserName);

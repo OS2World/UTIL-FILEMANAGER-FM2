@@ -18,6 +18,8 @@
   29 May 06 SHL Comments
   17 Jul 06 SHL Use Runtime_Error
   19 Oct 06 SHL Correct . and .. detect
+  03 Nov 06 SHL Renames
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -47,7 +49,7 @@ static PSZ pszSrcFile = __FILE__;
 #pragma alloc_text(SEEALL,InitWindow,PaintLine,SeeAllWndProc)
 #pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark)
 #pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList)
-#pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObj,FindDupes,DupeDlgProc)
+#pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObjWinThread,FindDupes,DupeDlgProc)
 #pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAllThread,AFDrvsWndProc)
 #pragma alloc_text(SEEALL3,StartSeeAll)
 
@@ -397,7 +399,7 @@ MRESULT EXPENTRY SeeObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 			     MPFROMP(li))) {
 		  if(li && li->list && li->list[0]) {
 		    strcpy(li->targetpath,printer);
-		    if(_beginthread(PrintList,NULL,65536,(PVOID)li) == -1) {
+		    if(_beginthread(PrintListThread,NULL,65536,(PVOID)li) == -1) {
                       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 		      FreeListInfo(li);
 		    }
@@ -1260,7 +1262,7 @@ Abort:
 }
 
 
-static VOID MakeSeeObj (VOID *args)
+static VOID MakeSeeObjWinThread(VOID *args)
 {
   HAB      hab2;
   HMQ      hmq2;
@@ -1791,6 +1793,7 @@ VOID FindDupes (VOID *args)
       hmq2 = WinCreateMsgQueue(hab2,0);
       if(hmq2) {
 	WinCancelShutdown(hmq2,TRUE);
+	IncrThreadUsage();
 	if(ad->cursored <= ad->afifiles) {
 	  for(x = 0;x < ad->affiles;x++)
 	    ad->afhead[x].flags &= (~(AF_DUPE | AF_SELECTED));
@@ -1885,12 +1888,15 @@ SkipNonDupe:
     }
     PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
     DosReleaseMutexSem(ad->hmtxScan);
-  }
-  PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
-  if(hmq2)
+  } // if got sem
+  if(hmq2) {
+    PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
     WinDestroyMsgQueue(hmq2);
-  if(hab2)
+  }
+  if(hab2) {
+    DecrThreadUsage();
     WinTerminate(hab2);
+  }
 }
 
 
@@ -2135,12 +2141,11 @@ static VOID FindAllThread (VOID *args)
   {
     priority_normal();
     hab2 = WinInitialize(0);
-    if(hab2)
-    {
+    if(hab2) {
       hmq2 = WinCreateMsgQueue(hab2,0);
-      if(hmq2)
-      {
+      if(hmq2) {
 	WinCancelShutdown(hmq2,TRUE);
+        IncrThreadUsage();
 	ad->afFilesToGet = min(FilesToGet,128);
 	if(!*ad->szFindPath) {
 	  DosError(FERR_DISABLEHARDERR);
@@ -2183,11 +2188,14 @@ static VOID FindAllThread (VOID *args)
     }
     DosReleaseMutexSem(ad->hmtxScan);
   }
-  PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
-  if(hmq2)
+  if(hmq2) {
+    PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
     WinDestroyMsgQueue(hmq2);
-  if(hab2)
+  }
+  if(hab2) {
+    DecrThreadUsage();
     WinTerminate(hab2);
+  }
 }
 
 
@@ -2654,7 +2662,7 @@ MRESULT EXPENTRY SeeAllWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	pAD->hhscroll = WinWindowFromID(hwndFrame,
 				       FID_HORZSCROLL);
 	pAD->multiplier = 1;
-	if(_beginthread(MakeSeeObj,NULL,122880,(PVOID)pAD) == -1)
+	if(_beginthread(MakeSeeObjWinThread,NULL,122880,(PVOID)pAD) == -1)
           Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	else {
 	  if (!DosCreateMutexSem(NULL,&pAD->hmtxScan,0L,FALSE)) {

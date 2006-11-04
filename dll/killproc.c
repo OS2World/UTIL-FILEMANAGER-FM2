@@ -11,6 +11,8 @@
   24 May 05 SHL Rework Win_Error usage
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
+  03 Nov 06 SHL Renames
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -36,7 +38,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(KILLPROC,FillKillList,FillKillList2,GetDosPgmName,KillDlgProc)
+#pragma alloc_text(KILLPROC,FillKillListThread,FillKillListThread2,GetDosPgmName,KillDlgProc)
 
 CHAR *GetDosPgmName (PID pid,CHAR *string)
 {
@@ -68,7 +70,7 @@ CHAR *GetDosPgmName (PID pid,CHAR *string)
 }
 
 
-VOID FillKillList2 (VOID *arg)
+static VOID FillKillListThread2 (VOID *arg)
 {
   HWND          hwnd = *(HWND *)arg;
   CHAR          s[1036];
@@ -82,6 +84,7 @@ VOID FillKillList2 (VOID *arg)
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab,0);
   WinCancelShutdown(thmq,TRUE);
+  IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd,KILL_LISTBOX,LM_DELETEALL,MPVOID,MPVOID);
   rc = DosAllocMem((PVOID)&pbh,USHRT_MAX + 4096,
@@ -125,11 +128,12 @@ VOID FillKillList2 (VOID *arg)
   if(WinIsWindow(thab,hwnd))
     PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
   WinDestroyMsgQueue(thmq);
+  DecrThreadUsage();
   WinTerminate(thab);
 }
 
 
-VOID FillKillList (VOID *arg)
+static VOID FillKillListThread (VOID *arg)
 {
   HWND  hwnd = *(HWND *)arg;
   CHAR  s[1036],progname[1027],*p;
@@ -148,6 +152,7 @@ VOID FillKillList (VOID *arg)
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab,0);
   WinCancelShutdown(thmq,TRUE);
+  IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd,
                     KILL_LISTBOX,
@@ -226,11 +231,9 @@ VOID FillKillList (VOID *arg)
   }
 Abort:
   DosForceDelete("$PSTAT#$.#$#");
-  PostMsg(hwnd,
-          UM_CONTAINER_FILLED,
-          MPVOID,
-          MPVOID);
+  PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
   WinDestroyMsgQueue(thmq);
+  DecrThreadUsage();
   WinTerminate(thab);
 }
 
@@ -354,7 +357,7 @@ MRESULT EXPENTRY KillDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         case KILL_RESCAN:
           listdone = FALSE;
           if(fUseQProcStat) {
-            if(_beginthread(FillKillList2,
+            if(_beginthread(FillKillListThread2,
                             NULL,
                             65536,
                             (PVOID)&hwnd) != -1)
@@ -363,7 +366,7 @@ MRESULT EXPENTRY KillDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
               WinDismissDlg(hwnd,0);
           }
           else {
-            if(_beginthread(FillKillList,
+            if(_beginthread(FillKillListThread,
                             NULL,
                             65536,
                             (PVOID)&hwnd) != -1)
