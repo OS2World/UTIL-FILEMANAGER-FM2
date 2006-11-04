@@ -23,6 +23,8 @@
   24 Oct 05 SHL FillInRecordFromFSA: correct longname display enable
   24 Oct 05 SHL Drop obsolete code
   22 Jul 06 SHL Check more run time errors
+  20 Oct 06 SHL Sync . .. check code
+  22 Oct 06 GKY Add NDFS32 support
 
 ***********************************************************************/
 
@@ -733,10 +735,10 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 	  pffbFile = (PFILEFINDBUF4)pByte;
 	  if (!*pffbFile->achName ||
 	      (!filestoo && !(pffbFile->attrFile & FILE_DIRECTORY)) ||
-	      (((pffbFile->attrFile & FILE_DIRECTORY) &&
-		pffbFile->achName[0] == '.') &&
-	       (!pffbFile->achName[1] || (pffbFile->achName[1] == '.' &&
-		!pffbFile->achName[2]))))
+	      ((pffbFile->attrFile & FILE_DIRECTORY) &&
+	       pffbFile->achName[0] == '.' &&
+	       (!pffbFile->achName[1] ||
+	        (pffbFile->achName[1] == '.' &&	!pffbFile->achName[2]))))
 	  {
 	    ulFileCnt--;		// Got . or ..
 	  }
@@ -1114,10 +1116,12 @@ VOID FillTreeCnr(HWND hwndCnr,HWND hwndParent)
 		strcmp(FileSystem,JFS) &&
 		strcmp(FileSystem,CDFS) &&
 		strcmp(FileSystem,FAT32) &&
+                strcmp(FileSystem,NDFS32) &&
 		strcmp(FileSystem,HPFS386))
 	    {
 	      driveflags[x] |= DRIVE_NOLONGNAMES;
 	    }
+
 	    if (!strcmp(FileSystem,CDFS))
 	    {
 	      removable = 1;
