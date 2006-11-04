@@ -11,6 +11,7 @@
   13 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
   15 Aug 06 SHL Use Dos_Error
+  03 Nov 06 SHL Rework thread usage count logic
 
 ***********************************************************************/
 
@@ -42,7 +43,7 @@ static PSZ pszSrcFile = __FILE__;
 #pragma alloc_text(COMMON,CommonFrameWndProc,CommonTextProc,CommonTextPaint)
 #pragma alloc_text(COMMON1,CommonCreateTextChildren,CommonCreateMainChildren)
 #pragma alloc_text(COMMON2,CommonDriveCmd,CommonTextButton)
-#pragma alloc_text(COMMON3,CommonMainWndProc)
+#pragma alloc_text(COMMON3,CommonMainWndProc,IncrThreadUsage,DecrThreadUsage)
 #pragma alloc_text(COMMON4,CommonCnrProc)
 #pragma alloc_text(COMMON5,OpenDirCnr)
 
@@ -654,7 +655,7 @@ MRESULT EXPENTRY CommonMainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
   switch(msg) {
     case UM_THREADUSE:
       if (hbmLEDon && hbmLEDoff) {
-	static LONG threaduse = 0;
+	static LONG threaduse;
 	CHAR ts[33];
 
         if(mp1) {
@@ -669,17 +670,15 @@ MRESULT EXPENTRY CommonMainWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 	    threaduse--;
 	    if(threaduse <= 0) {
 	      threaduse = 0;
-            WinSendMsg(hwndLED,
-                       SM_SETHANDLE,
-                       MPFROMLONG(hbmLEDoff),
-                       MPVOID);
+              WinSendMsg(hwndLED,
+                         SM_SETHANDLE,
+                         MPFROMLONG(hbmLEDoff),
+                         MPVOID);
 	  }
 	}
-        ltoa(threaduse,
-             ts,
-             10);
-        WinSetWindowText(hwndLEDHdr,
-                         ts);
+        ltoa(threaduse,ts,10);
+        WinSetWindowText(hwndLEDHdr,ts);
+	DosSleep(0);
       }
       return 0;
 
@@ -987,3 +986,19 @@ HWND OpenDirCnr (HWND hwnd,HWND hwndParent,HWND hwndRestore,
   return hwndDir;
 }
 
+//= IncrThreadUsage() Increment thread usage counter ==
+
+VOID IncrThreadUsage(VOID)
+{
+  if (hwndMain)
+    WinPostMsg(hwndMain,UM_THREADUSE,MPFROMLONG(1),MPVOID);
+}
+
+
+//= DecrThreadUsage() Decrement thread usage counter ==
+
+VOID DecrThreadUsage(VOID)
+{
+  if (hwndMain)
+    WinPostMsg(hwndMain,UM_THREADUSE,MPVOID,MPVOID);
+}
