@@ -11,6 +11,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   16 Apr 06 SHL MLEexportfile: rework to avoid wrap problems
   14 Jul 06 SHL Use Runtime_Error
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -768,6 +769,7 @@ VOID LoadThread (VOID *arg)
       thmq = WinCreateMsgQueue(thab,0);
       if(thmq) {
         WinCancelShutdown(thmq,TRUE);
+        IncrThreadUsage();
         priority_normal();
         if(bkg->hex == 1)
           fSuccess = MLEHexLoad(bkg->h,bkg->filename);
@@ -785,9 +787,11 @@ VOID LoadThread (VOID *arg)
         free(bkg);
         WinDestroyMsgQueue(thmq);
       }
+      DecrThreadUsage();
       WinTerminate(thab);
       _endthread();
     }
+    // fixme to be gone?
     PostMsg(bkg->hwndReport,bkg->msg,MPVOID,MPVOID);
   }
 }

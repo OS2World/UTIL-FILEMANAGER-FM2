@@ -10,6 +10,7 @@
   24 May 05 SHL Rework Win_Error usage
   17 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets_bstripcr
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -32,7 +33,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(UNDELETE,FillUndelList,UndeleteDlgProc)
+#pragma alloc_text(UNDELETE,FillUndelListThread,UndeleteDlgProc)
 
 struct tempstruct {
   HWND hwnd;
@@ -41,7 +42,7 @@ struct tempstruct {
 };
 
 
-VOID FillUndelList (VOID *arg)
+static VOID FillUndelListThread (VOID *arg)
 {
   HWND  hwnd;
   CHAR  s[CCHMAXPATH * 2];
@@ -61,8 +62,9 @@ VOID FillUndelList (VOID *arg)
 
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab,0);
-  WinCancelShutdown(thmq,TRUE);
-  if(thab && thmq) {
+  if (thab && thmq) {
+    WinCancelShutdown(thmq,TRUE);
+    IncrThreadUsage();
     WinSendDlgItemMsg(hwnd,UNDEL_LISTBOX,LM_DELETEALL,MPVOID,MPVOID);
     unlinkf("%s","$UDELETE.#$#");
     fp = xfopen("$UDELETE.#$#","w",pszSrcFile,__LINE__);
@@ -148,21 +150,21 @@ VOID FillUndelList (VOID *arg)
       fclose(fp);
     }
 Abort:
-    WinDestroyMsgQueue(thmq);
-    WinTerminate(thab);
+    ;
   }
   DosForceDelete("$UDELETE.#$#");
-  PostMsg(hwnd,
-          UM_CONTAINER_FILLED,
-          MPVOID,
-          MPVOID);
-  if(killme)
-    PostMsg(hwnd,
-            WM_CLOSE,
-            MPVOID,
-            MPVOID);
-  if(undelinfo)
+  if (undelinfo)
     free(undelinfo);
+  if (thmq) {
+    PostMsg(hwnd,UM_CONTAINER_FILLED,MPVOID,MPVOID);
+    if (killme)
+      PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
+    WinDestroyMsgQueue(thmq);
+  }
+  if (thab) {
+    DecrThreadUsage();
+    WinTerminate(thab);
+  }
 }
 
 
@@ -225,7 +227,7 @@ MRESULT EXPENTRY UndeleteDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   GetPString(IDS_UNDELETETITLETEXT),
                   toupper(*undelinfo->path));
           WinSetWindowText(hwnd,s);
-          if (_beginthread(FillUndelList,NULL,65536,(PVOID)undelinfo) == -1)
+          if (_beginthread(FillUndelListThread,NULL,65536,(PVOID)undelinfo) == -1)
 	  {
             Runtime_Error(pszSrcFile, __LINE__,GetPString(IDS_COULDNTSTARTTHREADTEXT));
             free(undelinfo);

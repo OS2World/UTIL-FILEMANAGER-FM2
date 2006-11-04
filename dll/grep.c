@@ -17,6 +17,7 @@
   22 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Check more run time errors
   19 Oct 06 SHL Correct . and .. detect
+  03 Nov 06 SHL Count thread usage
 
 ***********************************************************************/
 
@@ -39,7 +40,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(GREP,SecsSince1980,match,mmatch,dogrep)
+#pragma alloc_text(GREP,SecsSince1980,match,mmatch,GrepThread)
 #pragma alloc_text(GREP,doallsubdirs,domatchingfiles)
 
 /*****************************/
@@ -234,7 +235,7 @@ static BOOL match (CHAR *string,CHAR *patterns,BOOL absolute,BOOL ignore,
 }
 
 
-VOID dogrep (VOID *arg)
+VOID GrepThread (VOID *arg)
 {
   HAB           ghab;
   HMQ           ghmq;
@@ -257,6 +258,7 @@ VOID dogrep (VOID *arg)
     ghmq = WinCreateMsgQueue(ghab,0);
     if(ghmq) {
       WinCancelShutdown(ghmq,TRUE);
+      IncrThreadUsage();
       DosSleep(128L);
       WinSetWindowText(grep.hwndCurFile,
                        GetPString((grep.finddupes) ?
@@ -370,6 +372,7 @@ ShutDownThread:  /* kill pm connection, end thread */
                    MPVOID);
       WinDestroyMsgQueue(ghmq);
     }
+    DecrThreadUsage();
     WinTerminate(ghab);
   }
   if(!ghmq || !ghab)
