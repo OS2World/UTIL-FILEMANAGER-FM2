@@ -15,6 +15,7 @@
   17 Jul 06 SHL Use Runtime_Error
   28 Jul 06 SHL Avoid 0 length malloc, optimize option checks
   29 Jul 06 SHL Use xfgets
+  22 Oct 06 GKY Switch say files on as default so you can tell that seek and scan files is doing something
 
   fixme for more excess locals to be gone
 
@@ -201,7 +202,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static BOOL recurse = TRUE;
   static BOOL sensitive = FALSE;
   static BOOL absolute = FALSE;
-  static BOOL sayfiles = FALSE;
+  static BOOL sayfiles = TRUE;
   static BOOL searchEAs = TRUE;
   static BOOL searchFiles = TRUE;
   static BOOL changed = FALSE;
@@ -1047,7 +1048,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	g.attrFile = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.attrFile;
 	g.antiattr = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.antiattr;
 	g.stopflag = &((DIRCNRDATA *) INSTDATA(hwndCollect)) -> stopflag;
-	if (_beginthread(dogrep, NULL, 524280, (PVOID)&g) == -1) {
+	if (_beginthread(GrepThread, NULL, 524280, (PVOID)&g) == -1) {
           Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  free(p);
 	  WinDismissDlg(hwnd, 0);
