@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -19,6 +18,7 @@
   17 Jul 06 SHL Use Runtime_Error
   15 Aug 06 SHL Rework SetMask args
   31 Aug 06 JS  Add more partitioning menu items
+  22 OCT o6 GKY Add NDFS32 support
 
 ***********************************************************************/
 
@@ -2059,6 +2059,7 @@ KbdRetry:
 				  DRIVE_NOLOADICONS | DRIVE_NOLOADSUBJS |
 				  DRIVE_NOLOADLONGS | DRIVE_INCLUDEFILES |
 				  DRIVE_SLOW);
+
 		if(removable == 1)
 		  driveflags[x] |= DRIVE_REMOVABLE;
 		if(drvtype & DRIVE_REMOTE)
@@ -2071,6 +2072,7 @@ KbdRetry:
 		    strcmp(FileSystem,JFS) &&
 		    strcmp(FileSystem,CDFS) &&
 		    strcmp(FileSystem,FAT32) &&
+                    strcmp(FileSystem,NDFS32) &&
 		    strcmp(FileSystem,HPFS386))
 		{
 		  driveflags[x] |= DRIVE_NOLONGNAMES;
@@ -2081,6 +2083,7 @@ KbdRetry:
 		}
 		if(driveflags[x] & DRIVE_CDROM)
 		  pciP->rc.hptrIcon = hptrCDROM;
+
 		else
 		  pciP->rc.hptrIcon = (driveflags[x] & DRIVE_REMOVABLE) ?
 				       hptrRemovable :
