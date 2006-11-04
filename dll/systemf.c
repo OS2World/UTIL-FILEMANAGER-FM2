@@ -15,6 +15,7 @@
   26 Jul 06 SHL Use convert_nl_to_nul
   15 Aug 06 SHL More error popups
   01 Nov 06 SHL runemf2: temp fix for hung windows caused by termq errors
+  03 Nov 06 SHL runemf2: rework termination queue logic to work for multiple threads
 
 ***********************************************************************/
 
@@ -595,7 +596,7 @@ BreakOut:
 
 //== runemf2() run requested app, return -1 if problem starting else return app rc ==
 
-int runemf2(int type, HWND hwnd, char *directory, char *environment,
+int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	    char *formatstring,...)
 {
   /* example:
@@ -617,39 +618,46 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 
   va_list parguments;
   int ret = -1;
-  RESULTCODES rt;
+  RESULTCODES results;
   STARTDATA sdata;
   REQUESTDATA rq;
-  ULONG ulSessID, apptype, ulLength, ctr = 0;
+  ULONG ulSessID, apptype, ulLength, ctr;
   PID sessPID;
   BOOL wasquote;
-  char *s = NULL, *s2 = NULL, object[32] = "", *p, savedir[CCHMAXPATH];
-  HQUEUE hque;
-  char szQueueName[] = "\\QUEUES\\FM3WAIT";
-  char tempdir[CCHMAXPATH];
+  char *pszPgm, *pszArgs = NULL;
+  char szObject[32] = "", *p, szSavedir[CCHMAXPATH];
+  BOOL useTermQ = FALSE;
+  char szTempdir[CCHMAXPATH];
+
   typedef struct {
     USHORT usSessID;
     USHORT usRC;
   } TERMINFO;
 
-  TERMINFO *pTermInfo = NULL;
+  TERMINFO *pTermInfo;
   BYTE bPriority;
   APIRET rc;
   PIB *ppib;
   TIB *ptib;
 
-  if (directory && *directory) {
-    if (!DosQueryPathInfo(directory,
+  // Shared by all threads
+# define TERMQ_BASE_NAME "\\QUEUES\\FM3WAIT"
+  static char szTermQName[30];
+  static HQUEUE hTermQ;
+  static HEV hTermQSem;
+
+  if (pszDirectory && *pszDirectory) {
+    if (!DosQueryPathInfo(pszDirectory,
 			  FIL_QUERYFULLNAME,
-			  tempdir,
-			  sizeof(tempdir)))
-      directory = tempdir;
+			  szTempdir,
+			  sizeof(szTempdir)))
+      pszDirectory = szTempdir;
   }
 
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  rc = DosAllocMem((PVOID)&s,
+  rc = DosAllocMem((PVOID)&pszPgm,
 		   MAXSTRG,
 		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
@@ -657,59 +665,59 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
     return -1;
   }
 
-  *savedir = 0;
+  *szSavedir = 0;
 
-  *s = 0;
+  *pszPgm = 0;
   va_start(parguments,
 	   formatstring);
-  vsprintf(s,
+  vsprintf(pszPgm,
 	   formatstring,
 	   parguments);
   va_end(parguments);
 
-  if (environment) {
-    p = &environment[strlen(environment)] + 1;
+  if (pszEnvironment) {
+    p = &pszEnvironment[strlen(pszEnvironment)] + 1;
     *p = 0;
-    p = environment;
+    p = pszEnvironment;
     while ((p = convert_nl_to_nul(p)) != NULL)
       ; // loop
   }
 
-  if (!*s) {
+  if (!*pszPgm) {
     p = GetCmdSpec(FALSE);
-    strcpy(s, p);
-    if (!*s) {
+    strcpy(pszPgm, p);
+    if (!*pszPgm) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       return -1;
     }
   }
 
-  if (*s) {
-    if (*s == '<' && strchr(s, '>')) {
+  if (*pszPgm) {
+    if (*pszPgm == '<' && strchr(pszPgm, '>')) {
       /* is a workplace object */
       HOBJECT hWPSObject;
       char temp;
 
-      p = strchr(s, '>');
+      p = strchr(pszPgm, '>');
       p++;
       temp = *p;
       if (temp) {
-	rc = DosAllocMem((PVOID)&s2,
+	rc = DosAllocMem((PVOID)&pszArgs,
 			 MAXSTRG * 2,
 			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
 	if (rc)
-          Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
       }
       else
-	s2 = NULL;
+	pszArgs = NULL;
       *p = 0;
       /* Find the handle of the WPS object */
-      hWPSObject = WinQueryObject(s);
+      hWPSObject = WinQueryObject(pszPgm);
       *p = temp;
       if (hWPSObject != NULLHANDLE) {
-	if (s2 && *p) {
-	  sprintf(s2,"OPEN=DEFAULT;PARAMETERS=\"%s\"",p);
-	  WinSetObjectData(hWPSObject,s2);
+	if (pszArgs && *p) {
+	  sprintf(pszArgs,"OPEN=DEFAULT;PARAMETERS=\"%s\"",p);
+	  WinSetObjectData(hWPSObject,pszArgs);
 	}
 	else
 	  WinSetObjectData(hWPSObject,"OPEN=DEFAULT");
@@ -722,8 +730,8 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	(type & 15) == ASYNCHRONOUS ||
 	(type & 15) == DETACHED)
     {
-      strip_lead_char(" \t", s);
-      p = s;
+      strip_lead_char(" \t", pszPgm);
+      p = pszPgm;
       wasquote = FALSE;
       while (*p &&
 	     (wasquote ||
@@ -755,29 +763,29 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	p++;
       }
       else
-	p = s;
+	p = pszPgm;
       p[strlen(p) + 1] = 0;		/* double-terminate args */
-      if (*s) {
-	if (!strchr(s, '\\') &&
-	    !strchr(s, ':') &&
-	    directory &&
-	    *directory)
+      if (*pszPgm) {
+	if (!strchr(pszPgm, '\\') &&
+	    !strchr(pszPgm, ':') &&
+	    pszDirectory &&
+	    *pszDirectory)
 	{
-	  save_dir2(savedir);
-	  switch_to(directory);
+	  save_dir2(szSavedir);
+	  switch_to(pszDirectory);
 	}
-	rc = DosQAppType(s,&apptype);
-	if (!strchr(s, '\\') &&
-	    !strchr(s, ':') &&
-	    directory &&
-	    *directory)
-	  switch_to(savedir);
+	rc = DosQAppType(pszPgm,&apptype);
+	if (!strchr(pszPgm, '\\') &&
+	    !strchr(pszPgm, ':') &&
+	    pszDirectory &&
+	    *pszDirectory)
+	  switch_to(szSavedir);
 	if (rc) {
 	  // fixme to be in fm2dll.str
-          Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", s);
-	  DosFreeMem(s);
-	  if (s2)
-	    DosFreeMem(s2);
+	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", pszPgm);
+	  DosFreeMem(pszPgm);
+	  if (pszArgs)
+	    DosFreeMem(pszArgs);
 	  return -1;
 	}
 	if (apptype) {
@@ -785,55 +793,55 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	      (apptype & FAPPTYP_PHYSDRV) || (apptype & FAPPTYP_PROTDLL))
 	  {
 	    // fixme to be in fm2dll.str
-            Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, s);
-	    if (s)
-	      DosFreeMem(s);
-	    if (s2)
-	      DosFreeMem(s2);
+	    Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, pszPgm);
+	    if (pszPgm)
+	      DosFreeMem(pszPgm);
+	    if (pszArgs)
+	      DosFreeMem(pszArgs);
 	    return -1;
 	  }
 	  if ((apptype & FAPPTYP_DOS) || (apptype & FAPPTYP_WINDOWSREAL) ||
 	      (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000))
 	  {
-            Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, s);
-	    if (s)
-	      DosFreeMem(s);
-	    if (s2)
-	      DosFreeMem(s2);
+	    Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, pszPgm);
+	    if (pszPgm)
+	      DosFreeMem(pszPgm);
+	    if (pszArgs)
+	      DosFreeMem(pszArgs);
 	    return -1;
 	  }
 	}
-	memset(&rt, 0, sizeof(RESULTCODES));
-	if (directory && *directory) {
-	  save_dir2(savedir);
-	  switch_to(directory);
+	memset(&results, 0, sizeof(results));
+	if (pszDirectory && *pszDirectory) {
+	  save_dir2(szSavedir);
+	  switch_to(pszDirectory);
 	}
-	ret = DosExecPgm(object, 24L,
-		      (ULONG) (((type & 15) == ASYNCHRONOUS) * EXEC_ASYNC) +
-			       (((type & 15) == DETACHED) * EXEC_BACKGROUND),
-			       s, environment, &rt, s);
-	if (directory && *directory)
-	  switch_to(savedir);
+	ret = DosExecPgm(szObject, sizeof(szObject),
+			 ((type & 15) == ASYNCHRONOUS ?  EXEC_ASYNC : 0) +
+			 ((type & 15) == DETACHED ? EXEC_BACKGROUND : 0),
+			 pszPgm, pszEnvironment, &results, pszPgm);
+	if (pszDirectory && *pszDirectory)
+	  switch_to(szSavedir);
 	if (ret) {
 	  Dos_Error(MB_ENTER,ret,hwnd,pszSrcFile,__LINE__,
-		    GetPString(IDS_DOSEXECPGMFAILEDTEXT), s);
+		    GetPString(IDS_DOSEXECPGMFAILEDTEXT), pszPgm);
 	}
       }
     }
     else {
       if (~type & FULLSCREEN)
 	type |= WINDOWED;
-      rc = DosAllocMem((PVOID) & s2, MAXSTRG * 2,
+      rc = DosAllocMem((PVOID) & pszArgs, MAXSTRG * 2,
 		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
       if (rc) {
-        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
-	DosFreeMem(s);
+	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+	DosFreeMem(pszPgm);
 	return -1;
       }
-      *s2 = 0;
-      memset(&sdata, 0, sizeof(STARTDATA));
-      strip_lead_char(" \t", s);
-      p = s;
+      *pszArgs = 0;
+      memset(&sdata, 0, sizeof(sdata));
+      strip_lead_char(" \t", pszPgm);
+      p = pszPgm;
       wasquote = FALSE;
       while (*p && (wasquote || (*p != ' ' && *p != '\t'))) {
 	if (*p == '\"') {
@@ -850,7 +858,7 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	}
 	else
 	  p++;
-      }
+      } // while
       if (*p) {
 	*p = 0;
 	p++;
@@ -858,120 +866,116 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
       else
 	p = NullStr;
       if (*p)
-	strcpy(s2, p);
+	strcpy(pszArgs, p);
 
-      p = strrchr(s, '.');
+      p = strrchr(pszPgm, '.');
       if (p) {
 	char temp[CCHMAXPATH + 1];
 
 	if (!stricmp(p, ".BAT")) {
-	  strcpy(temp, s);
-	  strcpy(s, s2);
-	  strcpy(s2, "/C ");
-	  strcat(s2, temp);
-	  strcat(s2, " ");
-	  strcat(s2, s);
-	  strcpy(s, GetCmdSpec(TRUE));
+	  strcpy(temp, pszPgm);
+	  strcpy(pszPgm, pszArgs);
+	  strcpy(pszArgs, "/C ");
+	  strcat(pszArgs, temp);
+	  strcat(pszArgs, " ");
+	  strcat(pszArgs, pszPgm);
+	  strcpy(pszPgm, GetCmdSpec(TRUE));		// DOS
 	}
-	else if (!stricmp(p, ".CMD")) {
-	  strcpy(temp, s);
-	  strcpy(s, s2);
-	  strcpy(s2, "/C ");
-	  strcat(s2, temp);
-	  strcat(s2, " ");
-	  strcat(s2, s);
-	  strcpy(s, GetCmdSpec(FALSE));
+	else if (!stricmp(p, ".CMD") || !stricmp(p, ".BTM")) {
+	  // Assume 4OS2 is BTM
+	  strcpy(temp, pszPgm);
+	  strcpy(pszPgm, pszArgs);
+	  strcpy(pszArgs, "/C ");
+	  strcat(pszArgs, temp);
+	  strcat(pszArgs, " ");
+	  strcat(pszArgs, pszPgm);
+	  strcpy(pszPgm, GetCmdSpec(FALSE));		// OS/2
 	}
       }
 
       /* goddamned OS/2 limit */
 
-      if (strlen(s) + strlen(s2) > 1024)
-	s2[1024 - strlen(s)] = 0;
+      if (strlen(pszPgm) + strlen(pszArgs) > 1024)
+	pszArgs[1024 - strlen(pszPgm)] = 0;
 
-      if (!strchr(s, '\\') &&
-	  !strchr(s, ':') &&
-	  directory &&
-	  *directory)
+      if (!strchr(pszPgm, '\\') &&
+	  !strchr(pszPgm, ':') &&
+	  pszDirectory &&
+	  *pszDirectory)
       {
-	save_dir2(savedir);
-	switch_to(directory);
+	save_dir2(szSavedir);
+	switch_to(pszDirectory);
       }
-      rc = DosQAppType(s,&apptype);
-      if (!strchr(s, '\\') &&
-	  !strchr(s, ':') &&
-	  directory &&
-	  *directory)
-	switch_to(savedir);
+      rc = DosQAppType(pszPgm,&apptype);
+      if (!strchr(pszPgm, '\\') &&
+	  !strchr(pszPgm, ':') &&
+	  pszDirectory &&
+	  *pszDirectory)
+	switch_to(szSavedir);
       if (rc) {
 	// fixme to be in fm2dll.str
-        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", s);
-	DosFreeMem(s);
-	if (s2)
-	  DosFreeMem(s2);
+	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", pszPgm);
+	DosFreeMem(pszPgm);
+	if (pszArgs)
+	  DosFreeMem(pszArgs);
 	return -1;
       }
 
       if (apptype) {
-	if ((apptype & FAPPTYP_DLL) || (apptype & FAPPTYP_VIRTDRV) ||
-	    (apptype & FAPPTYP_PHYSDRV) || (apptype & FAPPTYP_PROTDLL))
+	if (apptype & (FAPPTYP_DLL | FAPPTYP_VIRTDRV | FAPPTYP_PHYSDRV | FAPPTYP_PROTDLL))
 	{
 	  // fixme to be in fm2dll.str
-          Runtime_Error(pszSrcFile, __LINE__, "apptype %d unexpected for %s.", s);
-	  DosFreeMem(s);
-	  if (s2)
-	    DosFreeMem(s2);
+	  Runtime_Error(pszSrcFile, __LINE__, "apptype %d unexpected for %s.", pszPgm);
+	  DosFreeMem(pszPgm);
+	  if (pszArgs)
+	    DosFreeMem(pszArgs);
 	  return -1;
 	}
-	apptype &= (~FAPPTYP_BOUND);
-	if ((apptype & FAPPTYP_DOS) || (apptype & FAPPTYP_WINDOWSREAL) ||
-	    (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000))
+	apptype &= ~FAPPTYP_BOUND;
+	if (apptype & (FAPPTYP_DOS | FAPPTYP_WINDOWSREAL | FAPPTYP_WINDOWSPROT | FAPPTYP_WINDOWSPROT31))
 	{
-	  if ((apptype & FAPPTYP_WINDOWSREAL) ||
-	      (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000))
+	  if (apptype & (FAPPTYP_WINDOWSREAL | FAPPTYP_WINDOWSPROT | FAPPTYP_WINDOWSPROT31))
 	  {
-	    if (!(type & FULLSCREEN) && ((apptype & FAPPTYP_WINDOWSREAL) ||
-		     (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000)))
+	    if (~type & FULLSCREEN &&
+		apptype & (FAPPTYP_WINDOWSREAL | FAPPTYP_WINDOWSPROT | FAPPTYP_WINDOWSPROT31))
 	    {
-	      ret = RunSeamless(s, s2, hwnd);
-	      if (s)
-		DosFreeMem(s);
-	      if (s2)
-		DosFreeMem(s2);
+	      ret = RunSeamless(pszPgm, pszArgs, hwnd);
+	      if (pszPgm)
+		DosFreeMem(pszPgm);
+	      if (pszArgs)
+		DosFreeMem(pszArgs);
 	      return ret ? 0 : -1;
 	    }
 	    else {
-	      strcat(s, " ");
-	      strcat(s, s2);
-	      *s2 = 0;
-	      if ((apptype & FAPPTYP_WINDOWSPROT) ||
-		  (apptype & FAPPTYP_WINDOWSREAL) ||
-		  (apptype & 0x1000))
-		strcat(s2, "/3 ");
-	      strcat(s2, s);
-	      strcpy(s, "WINOS2.COM");
+	      strcat(pszPgm, " ");
+	      strcat(pszPgm, pszArgs);
+	      *pszArgs = 0;
+	      if (apptype & (FAPPTYP_WINDOWSPROT | FAPPTYP_WINDOWSREAL | FAPPTYP_WINDOWSPROT31))
+		strcat(pszArgs, "/3 ");
+	      strcat(pszArgs, pszPgm);
+	      strcpy(pszPgm, "WINOS2.COM");
 	    }
 	  }
 	  else {
-	    if (!(type & FULLSCREEN)) {
+	    if (~type & FULLSCREEN) {
 	      type |= WINDOWED;
 	      apptype = SSF_TYPE_WINDOWEDVDM;
 	    }
 	    else {
-	      type &= (~WINDOWED);
+	      type &= ~WINDOWED;
 	      apptype = SSF_TYPE_VDM;
 	    }
 	  }
 	}
 	else if (apptype & FAPPTYP_32BIT) {
-	  apptype &= (~FAPPTYP_32BIT);
+	  apptype &= ~FAPPTYP_32BIT;
 	  if (apptype == FAPPTYP_WINDOWAPI)
 	    apptype = SSF_TYPE_PM;
 	  else if (apptype == FAPPTYP_WINDOWCOMPAT)
 	    apptype = SSF_TYPE_WINDOWABLEVIO;
 	  else if (apptype == FAPPTYP_NOTWINDOWCOMPAT) {
 	    apptype = SSF_TYPE_FULLSCREEN;
-	    type &= (~WINDOWED);
+	    type &= ~WINDOWED;
 	    type |= FULLSCREEN;
 	  }
 	  else				/* ? */
@@ -982,58 +986,73 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	else if (apptype == FAPPTYP_WINDOWCOMPAT)
 	  apptype = SSF_TYPE_WINDOWABLEVIO;
 	else if (apptype == FAPPTYP_NOTWINDOWCOMPAT) {
-	  type &= (~WINDOWED);
+	  type &= ~WINDOWED;
 	  apptype = SSF_TYPE_FULLSCREEN;
 	}
 	else
 	  apptype = SSF_TYPE_DEFAULT;
-	if (((type & FULLSCREEN) || !(type & WINDOWED)) &&
+	if ((type & FULLSCREEN || ~type & WINDOWED) &&
 	    apptype == SSF_TYPE_WINDOWABLEVIO)
 	{
 	  apptype = SSF_TYPE_FULLSCREEN;
 	}
 	// fixme parens?
-	else if (((type & FULLSCREEN) || !(type & WINDOWED) &&
-		  apptype == SSF_TYPE_WINDOWEDVDM))
+	else if (type & FULLSCREEN ||
+		 (type & WINDOWED && apptype == SSF_TYPE_WINDOWEDVDM))
 	  apptype = SSF_TYPE_VDM;
       }
-      if (apptype == SSF_TYPE_WINDOWEDVDM && (type & SEPARATEKEEP)) {
+      if (apptype == SSF_TYPE_WINDOWEDVDM && type & SEPARATEKEEP) {
 	type &= ~SEPARATEKEEP;
 	type |= SEPARATE;
       }
 
       DosGetInfoBlocks(&ptib, &ppib);
-      fprintf(stderr,"runemf2 ptib %x pgm %s\n",ptib,s);
 
-      if (type & WAIT) {
-	rc = DosCreateQueue(&hque, QUE_FIFO | QUE_CONVERT_ADDRESS, szQueueName);
-	if (rc) {
-	  if (rc != ERROR_QUE_DUPLICATE)
-            Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosCreateQueue");
-	  hque = (HQUEUE)0;		// Try to survive
-	  *szQueueName = 0;		// Try to survive
-	}
-	else
-          fprintf(stderr,"runemf2 ptib %x hque %x created\n",ptib,hque);
-      }
+      if (~type & WAIT)
+	useTermQ = FALSE;
       else {
-	hque = (HQUEUE)0;		// No queue if not waiting
-	*szQueueName = 0;		// No queue if not waiting
-      }
+	rc = 0;
+	DosEnterCritSec();
+	if (!hTermQ) {
+	  // Create term queue and event semaphore just once
+	  sprintf(szTermQName, TERMQ_BASE_NAME "_%x", ppib->pib_ulpid);
+	  rc = DosCreateQueue(&hTermQ, QUE_FIFO | QUE_CONVERT_ADDRESS, szTermQName);
+	  if (rc) {
+	    hTermQ = (HQUEUE)0;		// Try to survive
+	    DosExitCritSec();
+	    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosCreateQueue");
+	  }
+	  else {
+	    rc = DosCreateEventSem(NULL,(PHEV)&hTermQSem,0,FALSE);
+	    if (rc) {
+		hTermQSem = (HEV)0;	// Try to survive
+		DosCloseQueue(hTermQ);
+		hTermQ = (HQUEUE)0;	// Try to survive
+		DosExitCritSec();
+		Dos_Error(MB_ENTER,rc,HWND_DESKTOP,pszSrcFile,__LINE__,"DoCreateEventSem");
+	    }
+	    // if (!rc)
+	    //  fprintf(stderr,"runemf2 qcreated ptib %x hTermQ %x\n",ptib,hTermQ);
+	  }
+	} // if 1st time
+	useTermQ = hTermQ && hTermQSem;
+	if (!rc)
+	  DosExitCritSec();
+      } // if wait
       sdata.Length = sizeof(sdata);
       sdata.Related = type & (WAIT | CHILD) ?
 		      SSF_RELATED_CHILD : SSF_RELATED_INDEPENDENT;
       sdata.FgBg = type & BACKGROUND ? SSF_FGBG_BACK : SSF_FGBG_FORE;
       sdata.TraceOpt = SSF_TRACEOPT_NONE;
       sdata.PgmTitle = NULL;
-      sdata.PgmName = s;
-      sdata.PgmInputs = (*s2) ? s2 : NULL;
-      sdata.TermQ = *szQueueName ? szQueueName : NULL;
-      sdata.Environment = environment;
+      sdata.PgmName = pszPgm;
+      sdata.PgmInputs = *pszArgs ? pszArgs : NULL;
+      sdata.TermQ = useTermQ ? szTermQName : NULL;
+      sdata.Environment = pszEnvironment;
       sdata.InheritOpt = SSF_INHERTOPT_PARENT;
       sdata.SessionType = (USHORT)apptype;
-      sdata.ObjectBuffer = object;
-      sdata.ObjectBuffLen = sizeof(object) - 1;
+      sdata.ObjectBuffer = szObject;
+      sdata.ObjectBuffLen = sizeof(szObject);
       sdata.IconFile = NULL;
       sdata.PgmHandle = 0L;
       sdata.Reserved = 0;
@@ -1041,23 +1060,23 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 			(SSF_CONTROL_MAXIMIZE * ((type & MAXIMIZED) != 0)) |
 			(SSF_CONTROL_MINIMIZE * ((type & MINIMIZED) != 0)) |
 		       (SSF_CONTROL_INVISIBLE * ((type & INVISIBLE) != 0)));
-      if (directory && *directory) {
-	save_dir2(savedir);
-	switch_to(directory);
+      if (pszDirectory && *pszDirectory) {
+	save_dir2(szSavedir);
+	switch_to(pszDirectory);
       }
       ret = DosStartSession(&sdata, &ulSessID, &sessPID);
-      if (directory && *directory)
-	switch_to(savedir);
+      if (pszDirectory && *pszDirectory)
+	switch_to(szSavedir);
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
 	Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
-		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),s,s2);
+		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs);
       }
       else if (type & WAIT) {
 	if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
 	  ShowSession(hwnd, sessPID);
 
-	if (!hque) {
-	  // No queue
+	if (!useTermQ) {
+	  // Could not create queue - fallback - fixme to be gone?
 	  STATUSDATA sd;
 
 	  memset(&sd, 0, sizeof(sd));
@@ -1076,52 +1095,57 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 	  }
 	}
 	else {
-	  // This thread owns queue
-          fprintf(stderr,"runemf2 ptib %x hque %x sessID %x sessPID %x\n",ptib,hque,ulSessID,sessPID);
-          fflush(stderr);
 	  for (ctr = 0;; ctr++)
 	  {
-	    // ulLength = sizeof(TERMINFO);
-	    // fixme to supply event semaphore or not wait
-	    rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
-			      DCWW_NOWAIT, &bPriority, 0);
-	    if (rc == ERROR_QUE_EMPTY) {
-	      if (ctr > 20) {
-		ShowSession(hwnd, sessPID);
-		ulLength = sizeof(TERMINFO);
-		rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
-			          DCWW_WAIT, &bPriority, 0);
-		break;
+	    if (ctr < 20) {
+	      rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
+				DCWW_NOWAIT, &bPriority, hTermQSem);
+	      if (rc == ERROR_QUE_EMPTY) {
+		DosSleep(100);
+		continue;
 	      }
-	      DosSleep(100);
 	    }
 	    else {
-	      if (rc) {
-		if (rc != ERROR_INVALID_PARAMETER)
-                  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosReadQueue");
-	        // ulLength = sizeof(TERMINFO);
-		rc = DosReadQueue(hque, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
-			          DCWW_WAIT, &bPriority, 0);
+	      // fixme to not do this?
+	      if (ctr == 20)
+		ShowSession(hwnd, sessPID);		// Show long running session
+	      rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
+				DCWW_WAIT, &bPriority, 0);
+	    }
+
+	    if (rc) {
+	      // Oh heck
+	      Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosReadQueue");
+	      DosSleep(500);
+	      continue;
+	    }
+
+	    if (pTermInfo->usSessID == ulSessID)
+	      break;			// Our session is done
+
+	    // Requeue for other thread
+	    {
+	      static ULONG ulLastSessID;
+	      // fprintf(stderr,"runemf2 requeue other ptib %x sessId %x ti.sessId %x ti.rc %d\n",ptib,ulSessID,pTermInfo->usSessID,pTermInfo->usRC);
+	      // fixme to be gone
+	      if (ulLastSessID) {
+		DosSleep(500);
+		ulLastSessID = pTermInfo->usSessID;
 	      }
-	      // fixme to be much smarter
-	      if (!rc && pTermInfo && pTermInfo->usSessID != ulSessID) {
-		// fixme to requeue
-	        continue;
-	      }
-	      break;
+	      // requeue and do not free yet
+	      rc = DosWriteQueue(hTermQ, rq.ulData, ulLength,(PVOID)pTermInfo, bPriority);
+	      if (rc)
+		Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosWriteQueue");
+	      DosSleep(100);		// Let other thread see queue entry
 	    }
 	  } // for
-          fprintf(stderr,"runemf2 ptib %x hque %x rq pid %x ul %d\n",ptib,hque,rq.pid,rq.ulData);
-	  if (pTermInfo) {
-	    ret = !(!pTermInfo->usRC);		// Set TRUE if rc 0
-            fprintf(stderr,"runemf2 ptib %x hque %x terminfo sessId %x rc %d\n",ptib,hque,pTermInfo->usSessID,pTermInfo->usRC);
-	    DosFreeMem(pTermInfo);
-	  }
-	  DosCloseQueue(hque);
-          fprintf(stderr,"runemf2 ptib %x hque %x closed\n",ptib,hque);
-          fflush(stderr);
+
+	  ret = !(!pTermInfo->usRC);		// Set TRUE if rc 0
+	  // fprintf(stderr,"runemf2 term this ptib %x sessID %x rq.pid %x rq.data %x ti.rc %d\n",ptib,ulSessID,rq.pid,rq.ulData,pTermInfo->usRC);
+	  // fflush(stderr);
+	  DosFreeMem(pTermInfo);
 	}
-      }
+      } // if wait
       else if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
 	ShowSession(hwnd, sessPID);
     }
@@ -1129,10 +1153,10 @@ int runemf2(int type, HWND hwnd, char *directory, char *environment,
 
 ObjectInterrupt:
 
-  if (s)
-    DosFreeMem(s);
-  if (s2)
-    DosFreeMem(s2);
+  if (pszPgm)
+    DosFreeMem(pszPgm);
+  if (pszArgs)
+    DosFreeMem(pszArgs);
   return ret;
 }
 
