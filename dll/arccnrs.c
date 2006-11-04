@@ -29,7 +29,7 @@
   31 Jul 06 SHL Lower priority for archives with more than 1000 entries
   02 Aug 06 SHL Add logic to stop processing large archives
   23 Aug 06 SHL Integrate John Small's switch list title logic
-  02 Nov 06 SHL Comments
+  03 Nov 06 SHL Renames
 
 ***********************************************************************/
 
@@ -1859,7 +1859,7 @@ MRESULT EXPENTRY ArcObjWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                   }
                   else if (li->type == IDM_PRINT) {
                     strcpy(li->targetpath,printer);
-                    if (_beginthread(PrintList,NULL,65536,(PVOID)li) != -1) {
+                    if (_beginthread(PrintListThread,NULL,65536,(PVOID)li) != -1) {
                       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
                       li = NULL;
 		    }

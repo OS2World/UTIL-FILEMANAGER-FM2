@@ -15,6 +15,7 @@
   29 May 06 SHL Sync with archiver.bb2 mods
   22 Jul 06 SHL Check more run time errors
   15 Aug 06 SHL Use Runtime_Error more
+  03 Nov 06 SHL Renames
 
 ***********************************************************************/
 
@@ -39,7 +40,7 @@
 static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(AUTOVIEW,AutoViewProc,CreateHexDump,AutoObjProc)
-#pragma alloc_text(AUTOVIEW2,MakeAutoWin,WriteEA,PutComments)
+#pragma alloc_text(AUTOVIEW2,MakeAutoWinThread,WriteEA,PutComments)
 
 static HWND hwndAutoObj;
 static CHAR stopflag;
@@ -625,7 +626,7 @@ MRESULT EXPENTRY AutoObjProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 }
 
 
-VOID MakeAutoWin (VOID *args)
+static VOID MakeAutoWinThread(VOID *args)
 {
   HAB         hab2;
   HMQ         hmq2;
@@ -686,7 +687,7 @@ MRESULT EXPENTRY AutoViewProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         MRESULT mr;
 
         if (!hwndAutoObj) {
-	  if (_beginthread(MakeAutoWin,NULL,65536,(PVOID)hwnd) == -1) {
+	  if (_beginthread(MakeAutoWinThread,NULL,65536,(PVOID)hwnd) == -1) {
             Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
             PostMsg(hwnd,UM_CLOSE,MPVOID,MPVOID);
 	  }

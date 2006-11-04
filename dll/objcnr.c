@@ -12,6 +12,7 @@
   13 Jul 06 SHL Use Runtime_Error
   01 Sep 06 SHL Do not complain for normal cancel
   19 Oct 06 SHL Correct . and .. detect
+  03 Nov 06 SHL Renames
 
 ***********************************************************************/
 
@@ -47,7 +48,7 @@ static PSZ pszSrcFile = __FILE__;
 
 static HWND objcnrwnd;
 
-#pragma alloc_text(OBJCNR,ProcessDir,FillCnrs,ObjCnrDlgProc)
+#pragma alloc_text(OBJCNR,ProcessDir,FillCnrsThread,ObjCnrDlgProc)
 
 static VOID ProcessDir(HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
                        CHAR *stopflag)
@@ -198,7 +199,7 @@ static VOID ProcessDir(HWND hwndCnr,CHAR *filename,PCNRITEM pciParent,
 }
 
 
-static VOID FillCnrs (VOID *args)
+static VOID FillCnrsThread(VOID *args)
 {
   HAB           hab;
   HMQ           hmq;
@@ -266,7 +267,7 @@ MRESULT EXPENTRY ObjCnrDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         dirsize->stopflag = (CHAR *)&data->stopflag;
         dirsize->filename = data->dirname;
         dirsize->hwndCnr = WinWindowFromID(hwnd,OBJCNR_CNR);
-        if (_beginthread(FillCnrs,NULL,65536 * 8,(PVOID)dirsize) == -1) {
+        if (_beginthread(FillCnrsThread,NULL,65536 * 8,(PVOID)dirsize) == -1) {
           Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
           free(dirsize);
           WinDismissDlg(hwnd,0);
