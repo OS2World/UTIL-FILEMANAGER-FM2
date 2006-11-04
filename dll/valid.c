@@ -17,6 +17,8 @@
   03 Jun 05 SHL Drop CD_DEBUG logic
   28 Nov 05 SHL MakeValidDir: correct DosQuerySysInfo args
   22 Jul 06 SHL Use Runtime_Error
+  22 Oct 06 GKY Add NDFS32 support
+  22 Oct 06 GKY Increased BUFFER_BYTES in CheckDrive to 8192 to fix NDFS32 scan failure
 
 ***********************************************************************/
 
@@ -216,10 +218,11 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
 
   if (pszFileSystem)
     *pszFileSystem = 0;
+
   if (pulType)
     *pulType = 0;
 
-# define BUFFER_BYTES	4096
+# define BUFFER_BYTES 8192
   rc = DosAllocMem(&pvBuffer,BUFFER_BYTES,PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
     Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
@@ -280,6 +283,7 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
 	(!strcmp(pfsn,HPFS) ||
 	 !strcmp(pfsn,JFS) ||
 	 !strcmp(pfsn,FAT32) ||
+         !strcmp(pfsn,NDFS32) ||
 	 !strcmp(pfsn,HPFS386)))
     {
       *pulType &= ~DRIVE_NOLONGNAMES;
@@ -293,6 +297,7 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
       strcmp(pfsn,JFS) &&
       strcmp(pfsn,CDFS) &&
       strcmp(pfsn,FAT32) &&
+      strcmp(pfsn,NDFS32) &&
       strcmp(pfsn,HPFS386))
   {
     if(pulType)
