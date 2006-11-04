@@ -36,6 +36,7 @@
   31 Aug 06 SHL v3.05beta02: Release
   01 Sep 06 SHL v3.05beta03: Release
   24 Sep 06 SHL v3.05beta04: Release
+  04 Nov 06 SHL v3.05beta05: Release
 
 ***********************************************************************/
 
@@ -43,7 +44,7 @@
 #define VERMINOR       05
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-#define VERREALMINOR   "beta04 " __DATE__ " " __TIME__
+#define VERREALMINOR   "beta05 " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 
