@@ -20,6 +20,8 @@
 # 18 Aug 06 SHL Drop rc -x2 compression - not reliable
 # 01 Sep 06 SHL fm3.hlp: add missing dependency on ..\bitmaps
 # 01 Sep 06 SHL Adjust fm3str.str case
+# 30 Sep 06 GKY Add del of Help file to clean
+# 19 Oct 06 SHL Move all .hlp logic build to ipf\makefile too
 
 # Warning - may still be missing some *.h dependencies
 
@@ -191,10 +193,9 @@ $(BASERES).str: $(BASE).str fm3str.h version.h
   ren $(BASERES).str $(BASERES).str
   copy $(BASERES).str ..\ /v
 
-ipf\fm3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp ..\bitmaps\*.bmp
+ipf\fm3.hlp:
   cd ipf
-  ipfc /CODEPAGE=850 fm3.ipf
-  ren fm3.hlp fm3.hlp
+  $(MAKE) /nologo /$(MAKEFLAGS) fm3.hlp
   cd..
 
 arccnrs.c: fm3dll.h fm3dlg.h fm3str.h mle.h
@@ -299,6 +300,8 @@ cleanobj:
 
 clean:
   cd internal
+  $(MAKE) /nologo /$(MAKEFLAGS) clean
+  cd ..\ipf
   $(MAKE) /nologo /$(MAKEFLAGS) clean
   cd..
   -del *.dll
