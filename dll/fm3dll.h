@@ -32,6 +32,8 @@
   26 Jul 06 SHL Add strips.c functions
   26 Jul 06 SHL Add more error.c functions
   29 Jul 06 SHL Add xfgets, xfgets_bstripcr
+  22 Oct 06 GKY Add NDFS32 support
+  03 Nov 06 SHL Renames
 
 ***********************************************************************/
 
@@ -1002,7 +1004,7 @@ BOOL RunSeamless (CHAR *exename,CHAR *args,HWND hwnd);
 /* printer.c */
 BOOL PrinterReady (CHAR *printdevname);
 BOOL SayPrinterReady (HWND hwnd);
-VOID PrintList (VOID *arg);
+VOID PrintListThread(VOID *arg);
 MRESULT EXPENTRY PrintDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 
 /* attribs.c */
@@ -1193,6 +1195,8 @@ MRESULT EXPENTRY CommonTextButton (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 MRESULT EXPENTRY CommonCnrProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 HWND OpenDirCnr (HWND hwnd,HWND hwndParent,HWND hwndRestore,
                  BOOL noautotile,char *directory);
+VOID IncrThreadUsage(VOID);
+VOID DecrThreadUsage(VOID);
 
 /* string.c */
 BOOL LoadStrings (char *filename);
@@ -1284,7 +1288,7 @@ DATADEF CHAR     *DEBUG_STRING,*FM3Str,*FM2Str,*NullStr,*Default,*Settings,
                  *DRM_OS2FILE,*DRM_FM2ARCMEMBER,*DRF_FM2ARCHIVE,
                  *DRMDRFLIST,*DRMDRFOS2FILE,*DRMDRFFM2ARC,
                  *DRM_FM2INIRECORD,*DRF_FM2INI,*SUBJECT,*LONGNAME,
-                 *HPFS,*JFS,*CDFS,*FAT32,*HPFS386,*CBSIFS,*WPProgram,*FM3Folder,*FM3Tools;
+                 *HPFS,*JFS,*CDFS,*FAT32,*HPFS386,*NDFS32,*CBSIFS,*WPProgram,*FM3Folder,*FM3Tools;
 DATADEF RGB2      RGBGREY,RGBBLACK;
 DATADEF CHAR      archiverbb2[CCHMAXPATH],StopPrinting,profile[CCHMAXPATH];
 DATADEF CHAR      appname[12],realappname[12];
