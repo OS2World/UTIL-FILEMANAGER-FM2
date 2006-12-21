@@ -1,6 +1,6 @@
 ; $Id$
 NAME FM4 WINDOWAPI
 NEWFILES
-DESCRIPTION '@#SLAInc:3.05beta04#@##1## 09/24/2006 03:05:00      SLAMain::EN:US:0:U:@@F(ile) M(anager)/2 Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2005, 2007 Steven Levine and Associates, Inc.'
+DESCRIPTION '@#SLAInc:3.05beta06#@##1## 12/20/2006 03:05:00      SLAMain::EN:US:0:U:@@F(ile) M(anager)/2 Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2005, 2007 Steven Levine and Associates, Inc.'
 PROTMODE
 STACKSIZE 655360
