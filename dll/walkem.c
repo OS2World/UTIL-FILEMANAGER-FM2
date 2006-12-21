@@ -13,6 +13,8 @@
   17 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
   20 Oct 06 SHL Correct . .. check
+  06 Nov 06 SHL Oops - need to allow .. here
+  14 Nov 06 SHL Correct FillPathListBox regression
 
 ***********************************************************************/
 
@@ -263,9 +265,9 @@ BOOL add_udir(BOOL userdirs, CHAR * inpath)
 	    }
 	    else
 	    {
-	        /* if adding manual directory, remove from auto list if present */
+		/* if adding manual directory, remove from auto list if present */
 		info = ldirhead;
-                temp = NULL;
+		temp = NULL;
 		while (info)
 		{
 		    if (!stricmp(info -> path, path))
@@ -392,7 +394,7 @@ BOOL remove_ldir(CHAR * path)
     return FALSE;
 }
 
-VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
+VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR *pszPath,
 		     BOOL nounwriteable)
 {
     /*
@@ -415,8 +417,8 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
     if (hwnddrive != hwnddir && hwnddir)
 	WinSendMsg(hwnddir, LM_DELETEALL, MPVOID, MPVOID);
 
-    if (hwnddrive)
-    {
+    if (hwnddrive) {
+	// Fill drive listbox
 	for (sDrive = 0; sDrive < 26; sDrive++)
 	{
 	    if (ulDriveMap & (1L << sDrive))
@@ -428,19 +430,19 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
 			       MPFROMP(szDrive));
 	    }
 	}
-	if (hwnddrive != hwnddir && path && isalpha(*path) && path[1] == ':')
+	if (hwnddrive != hwnddir && pszPath && isalpha(*pszPath) && pszPath[1] == ':')
 	{
-	    *szDrive = toupper(*path);
+	    *szDrive = toupper(*pszPath);
 	    WinSetWindowText(hwnddrive, szDrive);
 	}
     }
 
-    if (hwnddir)
-    {
+    if (hwnddir) {
+        // Fill directory listbox
 	sprintf(szTemp,
 		"%s%s*",
-		path,
-		(path[strlen(path) - 1] == '\\') ? "" : "\\");
+		pszPath,
+		(pszPath[strlen(pszPath) - 1] == '\\') ? "" : "\\");
 	DosError(FERR_DISABLEHARDERR);
 	if (!DosFindFirst(szTemp,
 			  &hDir,
@@ -452,28 +454,25 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
 			  &ulSearchCount,
 			  FIL_STANDARD))
 	{
-	    do
-	    {
+	    do {
 		if (findbuf.attrFile & FILE_DIRECTORY) {
-		    if (strlen(path) > 3 || path[1] != ':') {
-			// Skip . and .. too
-			if (findbuf.achName[0] != '.' ||
-			    (findbuf.achName[1] &&
-			     (findbuf.achName[1] != '.' ||
-			      findbuf.achName[2]))) {
+		    // Skip .. unless full path supplied
+		    if (strcmp(findbuf.achName, "..") ||
+		        strlen(pszPath) > 3 || pszPath[1] != ':') {
+			// Skip . allow ..
+			if (findbuf.achName[0] != '.' || findbuf.achName[1]) {
 			    WinSendMsg(hwnddir,
 				       LM_INSERTITEM,
 				       MPFROM2SHORT(LIT_SORTASCENDING, 0),
 				       MPFROMP(findbuf.achName));
-                        }
+			}
 		    }
 		}
 		ulSearchCount = 1L;
-	    } 
-	    while (!DosFindNext(hDir,
-				&findbuf,
-				sizeof(FILEFINDBUF3),
-				&ulSearchCount));
+	    } while (!DosFindNext(hDir,
+				  &findbuf,
+				  sizeof(FILEFINDBUF3),
+				  &ulSearchCount));
 	    DosFindClose(hDir);
 	}
 	DosError(FERR_DISABLEHARDERR);
@@ -515,7 +514,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*lastdir = 0;
 	if (!mp2)
 	{
-            Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	    WinDismissDlg(hwnd, 0);
 	    break;
 	}
@@ -822,7 +821,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		HDIR hDir;
 		APIRET rc;
 
-                // *szBuffer = 0;
+		// *szBuffer = 0;
 		// WinQueryDlgItemText(hwnd,WALK_RECENT,CCHMAXPATH,szBuffer);
 		if (!*szBuffer)
 		    break;
@@ -845,9 +844,9 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    rc = 0;
 		}
 		if (rc)
-                    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosFindFirst");
+		    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosFindFirst");
 		else if (~findbuf.attrFile & FILE_DIRECTORY)
-                    Runtime_Error(pszSrcFile, __LINE__, "not a directory");
+		    Runtime_Error(pszSrcFile, __LINE__, "not a directory");
 		else
 		{
 		    strcpy(wa -> szCurrentPath, szBuffer);
@@ -898,9 +897,9 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    rc = 0;
 		}
 		if (rc)
-                    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosFindFirst");
+		    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosFindFirst");
 		else if (~findbuf.attrFile & FILE_DIRECTORY)
-                    Runtime_Error(pszSrcFile, __LINE__, "not a directory");
+		    Runtime_Error(pszSrcFile, __LINE__, "not a directory");
 		else
 		{
 		    strcpy(wa -> szCurrentPath, szBuffer);
@@ -1065,7 +1064,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    {
 		MakeFullName(szBuff);
 		if (!add_udir(TRUE, szBuff))
-                    Runtime_Error(pszSrcFile, __LINE__, "add_udir");
+		    Runtime_Error(pszSrcFile, __LINE__, "add_udir");
 		else {
 		    WinSendDlgItemMsg(hwnd,
 				      WALK_USERLIST,
