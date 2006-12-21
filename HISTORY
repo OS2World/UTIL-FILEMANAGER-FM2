@@ -1,5 +1,9 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.05beta06
+ o Put .. back in walk list - oops
+ o Correct walk directory list build regression - oops
+
 3.05beta05
  o Rework session termination logic - avoids hanging zip windows and others
  o NDFS support by Gregg
