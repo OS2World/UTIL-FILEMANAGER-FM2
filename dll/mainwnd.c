@@ -2020,13 +2020,12 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	UINT iDrv;
 	strcpy(szDrv + 2, "\\");
 	MakeValidDir(szDrv);
-	// Disable menus if MakeValidDir changes drive letter
+	// Disable menus if MakeValidDir changes drive letter fixme this section doesn't seem to do anything see treecnt.c
 	rdy = toupper(*szDrv) == toupper(chDrv);
 	iDrv = toupper(*szDrv) - 'A';
 	if (!rdy || ~driveflags[iDrv] & DRIVE_REMOTE)
-	  WinEnableMenuItem(hwndMenu,
-			    IDM_DETACH,
-			    FALSE);
+            WinEnableMenuItem(hwndMenu, IDM_DETACH, FALSE);
+
 	if (!rdy || driveflags[iDrv] & DRIVE_NOTWRITEABLE)
 	{
 	  WinEnableMenuItem(hwndMenu, IDM_MKDIR, FALSE);

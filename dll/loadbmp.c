@@ -6,9 +6,13 @@
   Load bitmaps
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2006, 2007 Steven H.Levine
 
   22 Jul 06 SHL Check more run time errors
+  16 Jan 07 SHL Check more run time errors
+  16 Jan 07 SHL Sync variable names for sanity
+  16 Jan 07 SHL Open bitmap file binary - no wonder the code does not work
+  16 Jan 07 SHL Beautify with indent -i2
 
 ***********************************************************************/
 
@@ -28,261 +32,320 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(LOADBITMAP,LoadBitmapFromFile,LoadBitmapFromFileNum)
 
-
-HBITMAP LoadBitmapFromFileNum (USHORT id)
+HBITMAP LoadBitmapFromFileNum(USHORT id)
 {
-    char s[CCHMAXPATH];
+  char s[CCHMAXPATH];
 
   save_dir2(s);
-  sprintf(s + strlen(s),"\\%u.BMP",id);
+  sprintf(s + strlen(s), "\\%u.BMP", id);
   return LoadBitmapFromFile(s);
 }
 
-
-HBITMAP LoadBitmapFromFile (CHAR *pszFileName)
+HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
 {
-  HBITMAP                 hBmp = (HBITMAP)0;
-  FILE                   *File;
-  ULONG                   rc;
-  USHORT                  usType = 0;           // #@!!! compiler warnings
-  PBITMAPARRAYFILEHEADER2 pbafh2 = NULL;        // (MAM) chng init values to NULL instead of ptr to 0
-  PBITMAPFILEHEADER2      pbfh2  = NULL;
-  PBITMAPINFOHEADER2      pbih2  = NULL;
-  PBITMAPINFO2            pbmi2  = NULL;
-  PBITMAPARRAYFILEHEADER  pbafh  = NULL;
-  PBITMAPFILEHEADER       pbfh   = NULL;
-  PBITMAPINFOHEADER       pbih   = NULL;
-  BOOL                    f2;        // format 1.x or 2.x
-  ULONG                   ulOffset;
-  PBYTE                   pData  = NULL;
-  ULONG                   ulDataSize;
-  SIZEL                   sizel;
-  HPS                     hPS = WinGetPS(HWND_DESKTOP);
+  HBITMAP hBmp = (HBITMAP) 0;
+  FILE *pf;
+  ULONG rc;
+  USHORT usType;
+  PBITMAPARRAYFILEHEADER2 pbmafh2 = NULL;	// Must init for xfree
+  PBITMAPFILEHEADER2 pbmfh2;		// No color table
+  PBITMAPINFOHEADER2 pbmih2;		// No color table
+  PBITMAPINFO2 pbmi2;			// Includes color table
+  BOOL is2x;				// Format 1.x or 2.x
+  ULONG ulColors;
+  ULONG ulRGBOffset;
+  PBYTE pData = NULL;			// Must init for xfree
+  ULONG ulDataSize;
+  SIZEL sizel;
+  HPS hPS = WinGetPS(HWND_DESKTOP);
 
-  //--- open the file
-  File = _fsopen(pszFileName,"r",SH_DENYWR);
-  if(!File)
+  if (!hPS) {
+    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      "WinGetPS");
     goto ExitLoadBMP;
+  }
 
-  /* Read image type, and reset the stream...................................*/
-  /* The image type is a USHORT, so we only read that........................*/
-  rc = fread(&usType,1,sizeof(usType),File);
-  if(rc != sizeof(usType))
+  pf = _fsopen(pszFileName, "rb", SH_DENYWR);
+  if (!pf) {
+    // OK for file to not exist - enable following for debug as needed
+    // Runtime_Error(pszSrcFile, __LINE__, "_fsopen %s", pszFileName);
     goto ExitLoadBMP;
+  }
 
-  /* Next read the bitmap info header........................................*/
-  // we allocate enough to hold a complete bitmap array file header
-  pbafh2 = xmalloc(sizeof(*pbafh2) + 256 * sizeof(RGB2),pszSrcFile,__LINE__);
-  if(!pbafh2)
+  // Read image type
+  // fixme to just read type2 header - this is silly and wastes time
+  rc = fread(&usType, 1, sizeof(usType), pf);
+  if (rc != sizeof(usType)) {
+    Runtime_Error(pszSrcFile, __LINE__, "fread");
     goto ExitLoadBMP;
-  /* Next we assign pointers to the file header and bitmap info header...*/
-  /* Both the 1.x and 2.x structures are assigned just in case...........*/
-  pbfh2 = &pbafh2->bfh2;
-  pbih2 = &pbfh2->bmp2;
-  pbmi2 = (PBITMAPINFO2)pbih2;
-  pbafh = (PBITMAPARRAYFILEHEADER)pbafh2;
-  pbfh  = &pbafh->bfh;
-  pbih  = &pbfh->bmp;
+  }
+
+  /* Read bitmap info header
+     Allocate enough to hold a complete 2.x bitmap array file header
+     fixme to support > 256 colors?
+  */
+  pbmafh2 =
+    xmalloc(sizeof(*pbmafh2) + 256 * sizeof(RGB2), pszSrcFile, __LINE__);
+  if (!pbmafh2)
+    goto ExitLoadBMP;
+  /* Assign pointers to the file header and bitmap info header etc.
+     Both the 1.x and 2.x structures are assigned to simplify code
+     fixme to clean this up - aliased pointers are evil
+  */
+  pbmfh2 = &pbmafh2->bfh2;
+  pbmih2 = &pbmfh2->bmp2;
+  pbmi2 = (PBITMAPINFO2)pbmih2;
+
   switch (usType) {
-    case BFT_BMAP:
-    case BFT_ICON:
-    case BFT_POINTER:
-    case BFT_COLORICON:
-    case BFT_COLORPOINTER:
-      {
-        /* Now we assume the image is a 2.0 image and so we read a bitmap-file-*/
-        /* Now we reset the stream, next we'll read the bitmap info header. To do .*/
-        /* this we need to reset the stream to 0...................................*/
-        fseek(File,0,SEEK_SET);
-        /*-header-2 structure..................................................*/
-        rc = fread(pbfh2,1,sizeof(*pbfh2),File);
-        if(rc != sizeof(*pbfh2))
-          goto ExitLoadBMP;
-
-        f2 = pbih2->cbFix > sizeof(*pbih); // 1.x or 2.x bitmap
-        /* We will need to read the color table. Thus we position the stream...*/
-        /* so that the next read will read IT. This, of course, depends on the.*/
-        /* type of the bitmap (old vs new), note that in the NEW case, we can..*/
-        /* not be certain of the size of the bitmap header.....................*/
-        ulOffset = (f2) ? sizeof(*pbfh2) + pbih->cbFix - sizeof(*pbih2) :
-                          sizeof(*pbfh);
+  case BFT_BMAP:
+  case BFT_ICON:
+  case BFT_POINTER:
+  case BFT_COLORICON:
+  case BFT_COLORPOINTER:
+    {
+      /* Assume image is a 2.0 image and read as a 2.x header
+	 OK for 1.x file - read will not fail unless file is corrupted
+      */
+      rc = fseek(pf, 0, SEEK_SET);
+      if (rc) {
+	Runtime_Error(pszSrcFile, __LINE__, "fseek 0");
+	goto ExitLoadBMP;
       }
-      break;
 
-    case BFT_BITMAPARRAY:
-      {
-        /* Now we are dealing with a bitmap array. This is a collection of ....*/
-        /* bitmap files and each has its own file header.......................*/
-
-        BOOL   bBest = FALSE;
-        ULONG  ulCurOffset, ulOffsetTemp = 0;
-        LONG   lScreenWidth;
-        LONG   lScreenHeight;
-        LONG   lClrsDev, lClrsTemp = 0;
-        LONG   lClrs;
-        ULONG  ulSizeDiff, ulSizeDiffTemp = 0xffffffff;
-        HDC    hdc;
-
-        // -- We will browse through the array and chose the bitmap best suited
-        // -- for the current display size and color capacities.
-        hdc = GpiQueryDevice( hPS );
-        DevQueryCaps(hdc,CAPS_COLORS,1,&lClrsDev);
-        DevQueryCaps(hdc,CAPS_WIDTH, 1,&lScreenWidth);
-        DevQueryCaps(hdc,CAPS_HEIGHT,1,&lScreenHeight);
-        pbafh2->offNext = 0;
-        do {
-           ulCurOffset = pbafh2->offNext;
-           rc = fseek(File,pbafh2->offNext,SEEK_SET);
-           if(rc)
-             goto ExitLoadBMP;
-           rc = fread(pbafh2,1,sizeof(*pbafh2),File);
-           if(rc != sizeof(*pbafh2))
-             goto ExitLoadBMP;
-           f2 = pbih2->cbFix > sizeof(*pbih);
-           if(f2)
-             lClrs = 1 << (pbafh2->bfh2.bmp2.cBitCount *
-                           pbafh2->bfh2.bmp2.cPlanes);
-           else
-             lClrs = 1 << (pbafh->bfh.bmp.cBitCount *
-                           pbafh->bfh.bmp.cPlanes);
-           if((pbafh2->cxDisplay == 0) && (pbafh2->cyDisplay == 0)) {
-             // This is a device independant bitmap
-             // Process it as a VGA
-             pbafh2->cxDisplay = 640;
-             pbafh2->cyDisplay = 480;
-           } // endif
-           ulSizeDiff = abs(pbafh2->cxDisplay - lScreenWidth) +
-                            abs(pbafh2->cyDisplay - lScreenHeight);
-           if((lClrsDev == lClrs) &&
-              (ulSizeDiff == 0)) {
-             // We found the perfect match
-             bBest = TRUE;
-             ulOffsetTemp = ulCurOffset;
-           }
-           else {
-             if((ulOffsetTemp == 0) ||           // First time thru
-                (ulSizeDiff < ulSizeDiffTemp) || // Better fit than any previous
-                  ((lClrs > lClrsTemp) && (lClrs < lClrsDev)) || // More colors than prev & less than device
-                  ((lClrs < lClrsTemp) && (lClrs > lClrsDev))) {
-               ulOffsetTemp = ulCurOffset;       // Make this our current pick
-               lClrsTemp   = lClrs;
-               ulSizeDiffTemp = ulSizeDiff;
-             } // endif
-           } // endif
-        } while((pbafh2->offNext != 0) && !bBest); // enddo
-
-        // Now retrieve the best bitmap
-        rc = fseek(File,ulOffsetTemp,SEEK_SET);
-        if(rc)
-          goto ExitLoadBMP;
-        rc = fread(pbafh2,1,sizeof(*pbafh2),File);
-        if(rc != sizeof(*pbafh2))
-          goto ExitLoadBMP;
-
-        f2 = pbih2->cbFix > sizeof(*pbih);
-        /* as before, we calculate where to position the stream in order to ...*/
-        /* read the color table information....................................*/
-        ulOffset = ulOffsetTemp;
-        ulOffset += (f2) ? sizeof(*pbafh2) + pbih2->cbFix - sizeof(*pbih2):
-                           sizeof(*pbafh);
+      rc = fread(pbmfh2, 1, sizeof(*pbmfh2), pf);
+      if (rc != sizeof(*pbmfh2)) {
+	Runtime_Error(pszSrcFile, __LINE__, "fread");
+	goto ExitLoadBMP;
       }
-      break;
 
-    default:
-       goto ExitLoadBMP;
-  } /* endswitch */
+      is2x = pbmih2->cbFix > sizeof(BITMAPINFOHEADER);	// 1.x or 2.x bitmap
+      /* We will read the color table later
+	 Color table follows header but
+	 location depends on the type of the bitmap (old vs new)
+	 1.x header is fixed size
+	 2.x header is variable sized, so offset must be calculated
+	 cbFix contains actual size of BITMAPINFOHEADER2 in file
+      */
+      ulRGBOffset = is2x ? sizeof(*pbmfh2) - sizeof(*pbmih2) + pbmih2->cbFix :
+			   sizeof(BITMAPFILEHEADER);
+    }
+    break;
 
-  /* We now position the stream on the color table information...............*/
-  rc = fseek(File,ulOffset,SEEK_SET);
-  if(rc)
+  case BFT_BITMAPARRAY:
+    {
+      /* Now we are dealing with a bitmap array which is a collection of bitmaps
+	 Each bitmap has its own file header
+      */
+
+      ULONG ulCurOffset;
+      ULONG clScreenWidth;
+      ULONG clScreenHeight;
+      ULONG ulDeviceColors;
+      ULONG ulSizeDiff;
+      ULONG ulOffsetPicked = 0;
+      ULONG ulColorsPicked;
+      ULONG ulSizeDiffPicked;
+      HDC hdc;
+
+      /* Scan the array and chose the bitmap best suited
+	 for the current display size and color capacities
+      */
+      hdc = GpiQueryDevice(hPS);
+      if (!hdc) {
+	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "GpiQueryDevice");
+	goto ExitLoadBMP;
+      }
+      DevQueryCaps(hdc, CAPS_COLORS, 1, (PLONG)&ulDeviceColors);
+      DevQueryCaps(hdc, CAPS_WIDTH, 1, (PLONG)&clScreenWidth);
+      DevQueryCaps(hdc, CAPS_HEIGHT, 1, (PLONG)&clScreenHeight);
+      pbmafh2->offNext = 0;
+      do {
+	ulCurOffset = pbmafh2->offNext;
+	rc = fseek(pf, pbmafh2->offNext, SEEK_SET);
+	if (rc) {
+	  Runtime_Error(pszSrcFile, __LINE__, "fseek %ld", pbmafh2->offNext);
+	  goto ExitLoadBMP;
+	}
+	rc = fread(pbmafh2, 1, sizeof(*pbmafh2), pf);
+	if (rc != sizeof(*pbmafh2)) {
+	  Runtime_Error(pszSrcFile, __LINE__, "fread");
+	  goto ExitLoadBMP;
+	}
+	is2x = pbmih2->cbFix > sizeof(BITMAPINFOHEADER);
+	if (is2x) {
+	  ulColors = 1 << (pbmafh2->bfh2.bmp2.cBitCount *
+			   pbmafh2->bfh2.bmp2.cPlanes);
+	}
+	else {
+	  ulColors = 1 << (((PBITMAPARRAYFILEHEADER)pbmafh2)->bfh.bmp.cBitCount *
+			   ((PBITMAPARRAYFILEHEADER)pbmafh2)->bfh.bmp.cPlanes);
+	}
+	if (pbmafh2->cxDisplay == 0 && pbmafh2->cyDisplay == 0) {
+	  // This is a device independant bitmap - process it as a VGA
+	  pbmafh2->cxDisplay = 640;
+	  pbmafh2->cyDisplay = 480;
+	}
+	ulSizeDiff = abs(pbmafh2->cxDisplay - clScreenWidth) +
+		     abs(pbmafh2->cyDisplay - clScreenHeight);
+	if (ulDeviceColors == ulColors && ulSizeDiff == 0) {
+	  // We found the perfect match
+	  ulOffsetPicked = ulCurOffset;
+	  break;			// Stop scan
+	}
+	if (ulOffsetPicked == 0 ||	// First time thru
+	    ulSizeDiff < ulSizeDiffPicked ||	// Better fit than any previous
+	    (ulColors > ulColorsPicked && ulColors < ulDeviceColors) ||	// More colors than prev & less than device
+	    (ulColors < ulColorsPicked && ulColors > ulDeviceColors))
+	{
+	  ulOffsetPicked = ulCurOffset;	// Make this our current pick
+	  ulColorsPicked = ulColors;
+	  ulSizeDiffPicked = ulSizeDiff;
+	}
+      } while (pbmafh2->offNext != 0);
+
+      // Retrieve the selected bitmap
+      rc = fseek(pf, ulOffsetPicked, SEEK_SET);
+      if (rc) {
+	Runtime_Error(pszSrcFile, __LINE__, "fseek %ld", ulOffsetPicked);
+	goto ExitLoadBMP;
+      }
+      rc = fread(pbmafh2, 1, sizeof(*pbmafh2), pf);
+      if (rc != sizeof(*pbmafh2)) {
+	Runtime_Error(pszSrcFile, __LINE__, "fread");
+	goto ExitLoadBMP;
+      }
+
+      is2x = pbmih2->cbFix > sizeof(BITMAPINFOHEADER);
+      /* As before, we calculate offset in file stream to color table
+	 This code must match single bitmap logic
+      */
+      ulRGBOffset = ulOffsetPicked;
+      ulRGBOffset += is2x ? sizeof(*pbmafh2) - sizeof(*pbmih2) + pbmih2->cbFix :
+			    sizeof(BITMAPARRAYFILEHEADER);
+    }
+    break;
+
+  default:
+    Runtime_Error(pszSrcFile, __LINE__, "Bad type %u", usType);
     goto ExitLoadBMP;
+  }					// endswitch
 
-  /* Read the color table....................................................*/
-  if(f2) {
-    /* For a 2.0 bitmap, all we need to do is read the color table...........*/
-    /* The bitmap info structure is just the header + color table............*/
-    // If we have 24 bits per pel, there is usually no color table, unless
-    // pbih2->cclrUsed or pbih2->cclrImportant are non zero, we should
-    // test that !
-    if(pbih2->cBitCount < 24) {
+  // Position to color table
+  rc = fseek(pf, ulRGBOffset, SEEK_SET);
+  if (rc) {
+    Runtime_Error(pszSrcFile, __LINE__, "fseek %ld", ulRGBOffset);
+    goto ExitLoadBMP;
+  }
 
-      ULONG ul = (1 << pbih2->cBitCount) * sizeof(RGB2);
+  // Read color table
+  if (is2x) {
+    /* For a 2.0 bitmap, read the color table as is
+       The bitmap info structure is header + color table
+       If we have 24 bits per pel, there is usually no color table, unless
+       pbmih2->cclrUsed or pbmih2->cclrImportant are non zero
+       fixme to test this
+    */
+    if (pbmih2->cBitCount < 24) {
+      ULONG ulRGBBytes;
+      ulColors = 1L << pbmih2->cBitCount;
 
-      rc = fread(&pbmi2->argbColor[0],1,ul,File);
-      if(rc != ul)
-        goto ExitLoadBMP;
-    } // endif
-    /* remember the bitmap info we mentioned just above?.....................*/
-    pbmi2 = (PBITMAPINFO2)pbih2;
+      if (ulColors > 256) {
+	Runtime_Error(pszSrcFile, __LINE__, "RGB exceeds 256 colors: %lu", ulColors);
+	goto ExitLoadBMP;
+      }
+      ulRGBBytes = ulColors * sizeof(RGB2);
+      rc = fread(&pbmi2->argbColor[0], 1, ulRGBBytes, pf);
+      if (rc != ulRGBBytes) {
+	Runtime_Error(pszSrcFile, __LINE__, "fread");
+	goto ExitLoadBMP;
+      }
+    }					// endif
+    // Get pointer to bitmap info (header and color table)
+    pbmi2 = (PBITMAPINFO2)pbmih2;
   }
   else {
-    /* This is an old format bitmap. Since the common format is the 2.0......*/
-    /* We have to convert all the RGB entries to RGB2........................*/
+    /* This is a 1.x format bitmap
+       Since the current standard format is the 2.0
+       convert the header and color table to 2.x format
+    */
+    ULONG ul;
+    RGB rgb;
+    PBITMAPINFOHEADER pbmih = &((PBITMAPARRAYFILEHEADER)pbmafh2)->bfh.bmp;
 
-    ULONG ul, cColors;
-    RGB   rgb;
+    if (pbmih->cBitCount < 24) {
+      ulColors = 1 << pbmih->cBitCount;
+      if (ulColors > 256) {
+	Runtime_Error(pszSrcFile, __LINE__, "RGB exceeds 256 colors: %lu", ulColors);
+	goto ExitLoadBMP;
+      }
+      // Read in 1.x color table and reformat for 2.x
+      for (ul = 0; ul < ulColors; ul++) {
+	fread(&rgb, 1, sizeof(rgb), pf);
+	pbmi2->argbColor[ul].bRed = rgb.bRed;
+	pbmi2->argbColor[ul].bGreen = rgb.bGreen;
+	pbmi2->argbColor[ul].bBlue = rgb.bBlue;
+	pbmi2->argbColor[ul].fcOptions = 0;	// initialize 2.x extra byte to 0
+      }	// for
+    }
 
-    if(pbih->cBitCount <24)
-      cColors = 1 << pbih->cBitCount;
-    else
-    // If there are 24 bits per pel, the 24 bits are assumed to be a RGB value
-      cColors = 0;
-    /* Loop over the original table and create the new table, the extra byte.*/
-    /* has to be 0...........................................................*/
-    for(ul = 0; ul < cColors; ul++) {
-      fread(&rgb,1,sizeof(rgb),File);
-      pbmi2->argbColor[ul].bRed      = rgb.bRed;
-      pbmi2->argbColor[ul].bGreen    = rgb.bGreen;
-      pbmi2->argbColor[ul].bBlue     = rgb.bBlue;
-      pbmi2->argbColor[ul].fcOptions = 0;
-    } /* endfor */
-
-    // we have to convert the old to the new version header
-    pbmi2->cbFix = sizeof(*pbih2);
-    pbmi2->cBitCount = pbih->cBitCount;
-    pbmi2->cPlanes = pbih->cPlanes;
-    pbmi2->cy = pbih->cy;
-    pbmi2->cx = pbih->cx;
+    // Convert the old style to the new header format
+    pbmi2->cbFix = sizeof(BITMAPINFOHEADER2);
+    pbmi2->cBitCount = pbmih->cBitCount;
+    pbmi2->cPlanes = pbmih->cPlanes;
+    pbmi2->cy = pbmih->cy;
+    pbmi2->cx = pbmih->cx;
     // set rest to zero
-    memset((PCHAR)pbmi2 + 16,0,sizeof(*pbih2) - 16);
-  } /* endif */
+    memset((PCHAR)pbmi2 + 16, 0, sizeof(BITMAPINFOHEADER2) - 16);
+  } // if 1.x
 
-  /* We have the 2.0 bitmap info structure set...............................*/
-  /* move to the stream to the start of the bitmap data......................*/
-  rc = fseek(File,pbfh2->offBits,SEEK_SET);
-  if(rc)
+  /* The 2.0 bitmap info structure set up
+     Position to start of the bitmap data
+  */
+  rc = fseek(pf, pbmfh2->offBits, SEEK_SET);
+  if (rc) {
+    Runtime_Error(pszSrcFile, __LINE__, "fseek %ld", pbmfh2->offBits);
     goto ExitLoadBMP;
+  }
 
-  /* Read the bitmap data, the read size is derived using the magic formula..*/
-  /* The bitmap scan line is aligned on a doubleword boundary................*/
-  /* The size of the scan line is the number of pels times the bpp...........*/
-  /* After aligning it, we divide by 4 to get the number of bytes, and.......*/
-  /* multiply by the number of scan lines and the number of pel planes.......*/
-  if(pbmi2->ulCompression)
+  /* Read the bitmap data
+     The read size is derived using the magic formula
+     Each bitmap scan line is aligned on a doubleword boundary
+     The size of the scan line is the number of pels times the bpp
+     After aligning it, we divide by 4 to get the number of bytes, and
+     multiply by the number of scan lines and the number of pel planes
+  */
+  if (pbmi2->ulCompression)
     ulDataSize = pbmi2->cbImage;
   else
     ulDataSize = (((pbmi2->cBitCount * pbmi2->cx) + 31) / 32) * 4 *
-                  pbmi2->cy * pbmi2->cPlanes;
-  pData = xmalloc(ulDataSize,pszSrcFile,__LINE__);
-  if(!pData)
+      pbmi2->cy * pbmi2->cPlanes;
+  pData = xmalloc(ulDataSize, pszSrcFile, __LINE__);
+  if (!pData)
     goto ExitLoadBMP;
-  rc = fread(pData, 1, ulDataSize, File);
-  if(rc != ulDataSize)
+  rc = fread(pData, 1, ulDataSize, pf);
+  if (rc != ulDataSize) {
+    Runtime_Error(pszSrcFile, __LINE__, "fread");
     goto ExitLoadBMP;
+  }
 
-  /* Now, we create the bitmap...............................................*/
+  // Create the GPI bitmap image
   sizel.cx = pbmi2->cx;
   sizel.cy = pbmi2->cy;
 
-  hBmp = GpiCreateBitmap(hPS,(PBITMAPINFOHEADER2)pbmi2,CBM_INIT,
-                         pData,pbmi2);
+  hBmp = GpiCreateBitmap(hPS, (PBITMAPINFOHEADER2) pbmi2, CBM_INIT,
+			 pData, pbmi2);
+  if (!hBmp)
+    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      "GpiCreateBitmap");
 
 ExitLoadBMP:
 
   xfree(pData);
-  xfree(pbafh2);
-  fclose(File);
-  WinReleasePS(hPS);
+  xfree(pbmafh2);
+  if (pf)
+    fclose(pf);
+  if (hPS)
+    WinReleasePS(hPS);
   return hBmp;
 }
-

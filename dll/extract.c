@@ -9,6 +9,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
   17 Jul 06 SHL Use Runtime_Error
+  20 Dec 06 GKY Added checkbox to make default extract with directories
 
 ***********************************************************************/
 
@@ -90,6 +91,7 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
       {
         ULONG size = sizeof(BOOL);
         BOOL  fRemember = FALSE;
+        BOOL  fDirectory = FALSE;
         PFNWP oldproc;
 
         oldproc = WinSubclassWindow(WinWindowFromID(hwnd,EXT_DIRECTORY),
@@ -100,7 +102,10 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
                           (PVOID)oldproc);
         PrfQueryProfileData(fmprof,FM3Str,"RememberExt",
                             (PVOID)&fRemember,&size);
+        PrfQueryProfileData(fmprof,FM3Str,"DirectoryExt",
+                            (PVOID)&fDirectory,&size);
         WinCheckButton(hwnd,EXT_REMEMBER,fRemember);
+        WinCheckButton(hwnd,EXT_AWDIRS,fDirectory);
         WinSendDlgItemMsg(hwnd,EXT_DIRECTORY,EM_SETTEXTLIMIT,
                           MPFROM2SHORT(CCHMAXPATH,0),MPVOID);
         WinSendDlgItemMsg(hwnd,EXT_COMMAND,EM_SETTEXTLIMIT,
@@ -114,9 +119,17 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
         else
           WinSetDlgItemText(hwnd,EXT_FILENAME,
                             GetPString(IDS_EXTVARIOUSTEXT));
+        if(fDirectory){
+        WinSendDlgItemMsg(hwnd,EXT_WDIRS,BM_SETCHECK,
+                          MPFROM2SHORT(TRUE,0),MPVOID);
+        WinSetDlgItemText(hwnd,EXT_COMMAND,arcdata->info->exwdirs);
+        }
+        else {
         WinSendDlgItemMsg(hwnd,EXT_NORMAL,BM_SETCHECK,
                           MPFROM2SHORT(TRUE,0),MPVOID);
         WinSetDlgItemText(hwnd,EXT_COMMAND,arcdata->info->extract);
+
+        }
         if(fRemember) {
 
           CHAR textdir[CCHMAXPATH];
@@ -200,6 +213,26 @@ MRESULT EXPENTRY ExtractDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
 
             PrfWriteProfileData(fmprof,FM3Str,"RememberExt",
                                 (PVOID)&fRemember,sizeof(BOOL));
+          }
+          break;
+
+        case EXT_AWDIRS:
+          {
+            BOOL fDirectory = WinQueryButtonCheckstate(hwnd,EXT_AWDIRS);
+
+            PrfWriteProfileData(fmprof,FM3Str,"DirectoryExt",
+                                (PVOID)&fDirectory,sizeof(BOOL));
+
+            if(fDirectory){
+            WinSendDlgItemMsg(hwnd,EXT_WDIRS,BM_SETCHECK,
+                              MPFROM2SHORT(TRUE,0),MPVOID);
+            WinSetDlgItemText(hwnd,EXT_COMMAND,arcdata->info->exwdirs);
+            }
+            else  {
+            WinSendDlgItemMsg(hwnd,EXT_NORMAL,BM_SETCHECK,
+                          MPFROM2SHORT(TRUE,0),MPVOID);
+            WinSetDlgItemText(hwnd,EXT_COMMAND,arcdata->info->extract);
+            }
           }
           break;
 

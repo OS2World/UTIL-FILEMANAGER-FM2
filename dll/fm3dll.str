@@ -50,8 +50,8 @@ Edit
 10.System Proportional
 WC_OBJECTWINDOW
 WC_BUBBLE
-8.Helv
-6.Helv
+8.Helvetica
+6.Helvetica
 WC_TOOLBUTTONS
 WC_DRIVEBUTTONS
 /HELP
@@ -180,7 +180,7 @@ Pick codepage:
 Click the Help button for more info.
 This is the name of the archive file.
 This is the command that will be sent to the archiver.
-These are filemasks that will be sent to the archiver.
+List the semicolon separated filemasks you wish to extract.
 FM/2: Show archiver help screen
 Dropping here can change the extract directory.
 <Various>

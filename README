@@ -323,9 +323,19 @@ Support:
 
 There is a Yahoo group devoted to fm/2 at:
 
-  <http://groups.yahoo.com/group/fm2user/>
+  http://groups.yahoo.com/group/fm2user/
 
 You will find lots of friendly folks ready to help.
+
+FM/2 is moving to Netlabs (thanks Adrian)
+
+Check it out at
+
+  http://svn.netlabs.org/fm2
+
+Not everything is in place yet, but this is the place to enter defect tickets 
+and enhancement requests.  Eventually, the mailing list and the file archives 
+will all move to the Netlabs server along with the source code.
 
 You can reach me directly at:
 

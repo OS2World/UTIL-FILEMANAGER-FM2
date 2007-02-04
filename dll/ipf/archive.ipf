@@ -1,3 +1,17 @@
+***********************************************************************
+*
+* $Id$
+*
+*  Archiver Usage
+*
+* Copyright (c) 1993-98 M. Kimes
+* Copyright (c) 2006 Steven H.Levine
+*
+* 05 Jan 07 GKY Update extract dialog help
+*
+***********************************************************************
+*
+
 :h2 res=91000 name=PANEL_EXTRACT.Extract from archives
 :i1 id=aboutExtract.Extract from archives
 :artwork name='..\..\bitmaps\extract.bmp' align=center.
@@ -6,11 +20,24 @@ To extract from an archive, select the archive(s), then select
 :hp1.Extract:ehp1. from a context menu.
 :p.
 FM/2 presents you with a dialog that allows you to select the method of
-extraction, add masks for files to extract, tweak the command line for
-exotic settings, and select the extraction directory (the directory to
-which the files will be extracted. You can drag file system objects
-onto the Extract Directory entryfield to set the extraction directory,
-or you can type in one you like, or click the Walk button.
+extraction. :hp1.Normal:ehp1., the default, will extract all the files in the archive
+to the extract directory without any paths which may be present in the archive.
+This can create a problem if the archive contains files of the same name in
+different paths (i.e. the last of theses files extracted will over write the
+ones extracted earlier). :hp1.With Paths:ehp1. will extract the archive including the
+any directories in the archive structure. This can be made the default by checking the
+:hp1.Always Paths:ehp1. box. Refgardless of which method is the default you may
+select the other option on a one time basis without change the default for future archives.
+If you only wish to extract certain files you can select masks (i.e *.txt) for the files
+you wish to extract. The command line box allows you to change or add extraction options.
+See the help files for your archiver (e.g. zip.exe) for more information.
+You can select the extraction directory (the directory to which the files will be extracted.
+The default is the current directory or you can set a specific directory as the  on
+the Archiver page of the Setting Notebook. You can use the :hp1.Walk:ehp1. button
+find the directory you wish to extract to or you can type a path directly into the listbox.
+If the path you type in doesn't exist FM/2 will offer to create it for you.
+You can also drag file system objects onto the Extract Directory entryfield
+to set the extraction directory.
 :p.
 If you check the :hp1.Remember...:ehp1. checkbox, this dialog will
 remember some of its settings for the next time you use it. Uncheck

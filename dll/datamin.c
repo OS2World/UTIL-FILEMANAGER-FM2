@@ -15,6 +15,7 @@
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   06 Jun 05 SHL Drop unused code
   22 Jul 06 SHL Check more run time errors
+  02 Jan 07 GKY Changed drive information string formating to accomodate 5 char FS names
 
 ***********************************************************************/
 
@@ -770,7 +771,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pszFSystem[15] = 0;
 	}
 	sprintf(s,
-		" %s %s (%lu%%) %s [%s]",
+		"%s %13s %lu%%-%s %6s ",
 		szDrvLtr,
 		szFreeQty,
 		ulPercentFree,

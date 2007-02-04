@@ -14,6 +14,8 @@
   05 Jul 06 SHL Add Hide not selected support
   10 Sep 06 GKY Add Assoc enhancements
   23 Sep 06 GKY Add Commands enhancements
+  02 Jan 07 GKY Add always paths opt to extract
+  07 Jan 07 GKY Add remember search flags to seek and scan
 
 ***********************************************************************/
 
@@ -102,6 +104,7 @@
 #define GREP_REMOTEHDS									20331
 #define GREP_ENV												20332
 #define GREP_APPEND 										20333
+#define GREP_REMEMBERFLAGS                   20334
 
 #define INFO_FRAME											20400
 #define INFO_FS 												20401
@@ -129,6 +132,7 @@
 #define EXT_WALK												20509
 #define EXT_HELP												20510
 #define EXT_REMEMBER										20511
+#define EXT_AWDIRS                                                                              20512
 
 #define ARCH_FRAME											20600
 #define ARCH_ARCNAME										20601
@@ -863,6 +867,9 @@
 #define DVS_NOLOADLONGS 								27013
 #define DVS_SLOW												27014
 #define DVS_INCLUDEFILES								27015
+#define DVS_VIRTUAL							    	27016
+#define DVS_NOSTATS								27017
+#define DVS_RAMDISK								27018
 
 #define MRG_FRAME 											27100
 #define MRG_LISTBOX 										27101

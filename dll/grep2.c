@@ -16,6 +16,7 @@
   28 Jul 06 SHL Avoid 0 length malloc, optimize option checks
   29 Jul 06 SHL Use xfgets
   22 Oct 06 GKY Switch say files on as default so you can tell that seek and scan files is doing something
+  07 Jan 07 GKY Add remember search flags to seek and scan
 
   fixme for more excess locals to be gone
 
@@ -207,6 +208,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static BOOL searchFiles = TRUE;
   static BOOL changed = FALSE;
   static BOOL findifany = TRUE;
+  static BOOL gRemember = FALSE;
+  ULONG size = sizeof(BOOL);
   static UINT newer = 0;
   static UINT older = 0;
   static ULONG greater = 0;
@@ -256,6 +259,31 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      EM_SETSEL,
 		      MPFROM2SHORT(0, 8192),
 		      MPVOID);
+	  PrfQueryProfileData(fmprof,FM3Str,"RememberFlagsGrep",
+                    (PVOID)&gRemember,&size);
+     WinCheckButton(hwnd,GREP_REMEMBERFLAGS,gRemember);
+	  if(gRemember){
+      PrfQueryProfileData(fmprof,FM3Str,"Grep_Recurse",
+               (PVOID)&recurse,&size);
+      PrfQueryProfileData(fmprof,FM3Str,"Grep_Absolute",
+                (PVOID)&absolute,&size);
+      PrfQueryProfileData(fmprof,FM3Str,"Grep_Case",
+                (PVOID)&sensitive,&size);
+      PrfQueryProfileData(fmprof,FM3Str,"Grep_Sayfiles",
+                (PVOID)&sayfiles,&size);
+      PrfQueryProfileData(fmprof,FM3Str,"Grep_Searchfiles",
+                (PVOID)&searchFiles,&size);
+      PrfQueryProfileData(fmprof,FM3Str,"Grep_SearchfEAs",
+                (PVOID)&searchEAs,&size);
+        }
+    if(!gRemember){
+       recurse = TRUE;
+       sensitive = FALSE;
+       absolute = FALSE;
+       sayfiles = TRUE;
+       searchEAs = TRUE;
+       searchFiles = TRUE;
+       }
     WinSetWindowText(hwndMLE, lasttext);
     if (*lasttext)
     {
@@ -336,6 +364,15 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CONTROL:
     switch (SHORT1FROMMP(mp1))
     {
+       case GREP_REMEMBERFLAGS:
+  {
+    BOOL gRemember = WinQueryButtonCheckstate(hwnd,GREP_REMEMBERFLAGS);
+
+    PrfWriteProfileData(fmprof,FM3Str,"RememberFlagsGrep",
+                        (PVOID)&gRemember,sizeof(BOOL));
+  }
+  break;
+
     case GREP_DRIVELIST:
       switch (SHORT2FROMMP(mp1))
       {
@@ -886,7 +923,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      break;
 	    case GREP_LOCALHDS:
 	      if (!(driveflags[x] &
-		    (DRIVE_REMOVABLE | DRIVE_IGNORE | DRIVE_REMOTE)))
+		    (DRIVE_REMOVABLE | DRIVE_IGNORE | DRIVE_REMOTE | DRIVE_VIRTUAL)))
 		incl = TRUE;
 	      break;
 	    case GREP_REMOTEHDS:
@@ -935,7 +972,22 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	searchEAs = WinQueryButtonCheckstate(hwnd, GREP_SEARCHEAS) != 0;
 	searchFiles = WinQueryButtonCheckstate(hwnd, GREP_SEARCHFILES) != 0;
 	findifany = WinQueryButtonCheckstate(hwnd, GREP_FINDIFANY) != 0;
-	g.finddupes = WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES) != 0;
+	gRemember = WinQueryButtonCheckstate(hwnd,GREP_REMEMBERFLAGS);
+   if(gRemember){
+    PrfWriteProfileData(fmprof,FM3Str,"Grep_Recurse",
+              (PVOID)&recurse,sizeof(BOOL));
+    PrfWriteProfileData(fmprof,FM3Str,"Grep_Absolute",
+               (PVOID)&absolute,sizeof(BOOL));
+    PrfWriteProfileData(fmprof,FM3Str,"Grep_Case",
+               (PVOID)&sensitive,sizeof(BOOL));
+    PrfWriteProfileData(fmprof,FM3Str,"Grep_Sayfiles",
+               (PVOID)&sayfiles,sizeof(BOOL));
+    PrfWriteProfileData(fmprof,FM3Str,"Grep_Searchfiles",
+               (PVOID)&searchFiles,sizeof(BOOL));
+    PrfWriteProfileData(fmprof,FM3Str,"Grep_SearchfEAs",
+               (PVOID)&searchEAs,sizeof(BOOL));
+      }
+   g.finddupes = WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES) != 0;
 	if (g.finddupes) {
 	  g.CRCdupes = WinQueryButtonCheckstate(hwnd, GREP_CRCDUPES) != 0;
 	  g.nosizedupes = WinQueryButtonCheckstate(hwnd, GREP_NOSIZEDUPES) != 0;

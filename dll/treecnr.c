@@ -18,7 +18,9 @@
   17 Jul 06 SHL Use Runtime_Error
   15 Aug 06 SHL Rework SetMask args
   31 Aug 06 JS  Add more partitioning menu items
-  22 OCT o6 GKY Add NDFS32 support
+  22 OCT 06 GKY Add NDFS32 support
+  29 Dec 06 GKY Fixed menu gray out for remote drives (added variable "remote")
+  29 Dec 06 GKY Enabled edit of drive flags on "not ready" drives
 
 ***********************************************************************/
 
@@ -2339,6 +2341,7 @@ KbdRetry:
 		BOOL rdy;
 		BOOL writeable;
 		BOOL removable;
+                BOOL remote;
 		BOOL underenv;
 		CHAR chDrvU;
                 CHAR szDrv[CCHMAXPATH];
@@ -2349,6 +2352,7 @@ KbdRetry:
 	        rdy = *szDrv == chDrvU;		// Drive not ready if MakeValidDir changes drive letter
 		removable = rdy && (driveflags[chDrvU - 'A'] & DRIVE_REMOVABLE) != 0;
 		writeable = rdy && !(driveflags[chDrvU - 'A'] & DRIVE_NOTWRITEABLE);
+                remote    = rdy && (driveflags[chDrvU - 'A'] & DRIVE_REMOTE) != 0;
 		underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
 
 		WinEnableMenuItem((HWND)mp2, IDM_INFO, rdy);
@@ -2356,7 +2360,7 @@ KbdRetry:
 		WinEnableMenuItem((HWND)mp2, IDM_ATTRS, writeable);
 		WinEnableMenuItem((HWND)mp2, IDM_EAS, writeable);
 		WinEnableMenuItem((HWND)mp2, IDM_SUBJECT, writeable);
-		WinEnableMenuItem((HWND)mp2, IDM_DRVFLAGS, rdy);	// fixme to allow if not ready
+		WinEnableMenuItem((HWND)mp2, IDM_DRVFLAGS, 1);	// fixme to allow if not ready
 
 		WinEnableMenuItem((HWND)mp2, IDM_ARCHIVE, rdy);
 
@@ -2370,12 +2374,12 @@ KbdRetry:
 		WinEnableMenuItem((HWND)mp2, IDM_SHOWALLFILES, rdy);
 		WinEnableMenuItem((HWND)mp2, IDM_UNDELETE, writeable);
 
-		WinEnableMenuItem((HWND)mp2, IDM_CHKDSK, writeable);
-		WinEnableMenuItem((HWND)mp2, IDM_FORMAT, writeable);
-		WinEnableMenuItem((HWND)mp2, IDM_OPTIMIZE, writeable);
+		WinEnableMenuItem((HWND)mp2, IDM_CHKDSK, writeable && !remote);
+		WinEnableMenuItem((HWND)mp2, IDM_FORMAT, writeable && !remote);
+                WinEnableMenuItem((HWND)mp2, IDM_OPTIMIZE, writeable && !remote);
+                WinEnableMenuItem((HWND)mp2, IDM_PARTITIONSMENU, !remote);
 
-		WinEnableMenuItem((HWND)mp2, IDM_DETACH,
-				  rdy && (driveflags[chDrvU - 'A'] & DRIVE_REMOTE) != 0);
+		WinEnableMenuItem((HWND)mp2, IDM_DETACH, remote);
 
 		WinEnableMenuItem((HWND)mp2, IDM_EJECT, removable);
 

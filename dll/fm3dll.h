@@ -34,6 +34,7 @@
   29 Jul 06 SHL Add xfgets, xfgets_bstripcr
   22 Oct 06 GKY Add NDFS32 support
   03 Nov 06 SHL Renames
+  17 Jan 07 SHL Resize extractdir
 
 ***********************************************************************/
 
@@ -449,7 +450,7 @@ typedef struct {
   CHAR     *arcname;
   CHAR     masks[257];
   CHAR     command[257];
-  CHAR     extractdir[1027];
+  CHAR     extractdir[CCHMAXPATH];
   INT      ret;
 } EXTRDATA;
 

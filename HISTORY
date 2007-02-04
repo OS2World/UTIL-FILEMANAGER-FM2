@@ -1,5 +1,16 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.05beta07
+ o Support additional file systems types (Gregg)
+ o Reorganize menus (Gregg)
+ o Enhance unzip option controls (Gregg)
+ o Remember search options in Seek and Scan (Gregg)
+ o Allow drive flag editing for not ready drives (Gregg)
+ o Correct bitmap loading defects (Steven)
+ o Update documentation (Gregg)
+ o Add newer, better bitmaps (David)
+ o Update Readme to discuss move to Netlabs (Steve)
+
 3.05beta06
  o Put .. back in walk list - oops
  o Correct walk directory list build regression - oops

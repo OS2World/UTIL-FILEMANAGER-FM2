@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 30 Dec 06 GKY Corrected statement re copy/move "toggle" in OS/2
+.*
+.***********************************************************************
+.*
 :h2 res=94600 name=PANEL_SETTINGS.Settings notebook
 :i1 id=aboutSettings.Settings Notebook
 FM/2's internal Settings notebook lets you fiddle with some of the
@@ -577,9 +590,9 @@ If :hp6.Default action Copy:ehp6. is checked, FM/2's windows perform a
 copy rather than move by default (note the highlighting on the mouse
 pointer as your cue). Instead of pressing the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key to change a drag
 from a move to a copy, you'll need to press the :color fc=default bc=palegray.Shift:color fc=default bc=default. key to change a
-drag from a copy to a move (don't ask me why). Note that this is the
-opposite of the standard OS/2 behavior, so know what you're doing. I
-remind you that pressing :color fc=default bc=palegray.F1:color fc=default bc=default. when you have a target in an FM/2 window
+drag from a copy to a move (don't ask me why as this is simply the standard OS/2 behavior.)
+I remind you that pressing :color fc=default bc=palegray.F1:color fc=default bc=default.
+when you have a target in an FM/2 window
 will display some help on what the drag command would have performed.
 :p.
 Someone didn't like the bar graphs on the drivespace controls of the

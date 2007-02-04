@@ -63,6 +63,7 @@
 #define DRIVE_NOLOADLONGS   0x00001000
 #define DRIVE_SLOW          0x00002000
 #define DRIVE_INCLUDEFILES  0x00004000
+#define DRIVE_VIRTUAL       0x00008000
 
 #define MAIN_FRAME          1
 #define MAIN_STATUS         2

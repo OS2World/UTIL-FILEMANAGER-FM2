@@ -1,3 +1,16 @@
+***********************************************************************
+*
+* $Id$
+*
+* FM/2 Tutorial
+*
+* Copyright (c) 1993-98 M. Kimes
+* Copyright (c) 2006 Steven H.Levine
+*
+* 05 Jan 07 GKY Update extraction tutorial
+*
+***********************************************************************
+*
 :h1 res=99800 name=PANEL_TUTORIAL.Tutorials
 :i1 id=aboutTutorial.Tutorials
 :artwork name='bitmaps\tutor.bmp' align=center.
@@ -422,14 +435,14 @@ the archive object) and then dragging the objects to be added onto the
 :i1 id=aboutExtractTutorial.Extract from Archive Tutorial
 :artwork name='..\..\bitmaps\extract.bmp' align=left.
 :p.
-To extract from an archive, first place the dotted cursor on the file
-(make it the :hp1.current object:ehp1.), then select the
-:hp1.Extract:ehp1. command from the :hp1.Files:ehp1. menu or a context
-menu requested on the archive, or press the :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
- + :color fc=default bc=palegray.x:color fc=default bc=default. accelerator
+To extract from an archive, first place the cursor on the file
+(make it the :hp1.current object:ehp1.), then select the :hp1.Extract:ehp1.
+command from the :hp1.Files:ehp1. menu, the context menu
+fc=default bc=cyan.B2:color fc=default bc=default., or press the :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+ + :color fc=default bc=palegray.x:color fc=default bc=default. accelerator key.
 key.
 :p.
-The :link reftype=hd res=91000.Extract:elink. dialog then appears and
+The :link reftype=hd res=91000.Extract:elink. dialog will appear and
 allows you to specify a filemask to be extracted and/or to add more
 esoteric options to the command line to be executed.
 :p.
