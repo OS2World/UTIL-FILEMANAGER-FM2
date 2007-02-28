@@ -4,31 +4,31 @@
 
 #pragma alloc_text(MISC8,skip_delim,to_delim)
 
-
-char * skip_delim (char *a,register char *delim) {
+char *skip_delim(char *a, register char *delim)
+{
 
   register char *p = a;
 
-  if(p && delim) {
-    while(*p) {
-      if(strchr(delim,*p))
-        p++;
+  if (p && delim) {
+    while (*p) {
+      if (strchr(delim, *p))
+	p++;
       else
-        break;
+	break;
     }
   }
   return p;
 }
 
-
-char * to_delim (char *a,register char *delim) {
+char *to_delim(char *a, register char *delim)
+{
 
   register char *p = a;
 
-  if(p && delim) {
-    while(*p) {
-      if(strchr(delim,*p))
-        break;
+  if (p && delim) {
+    while (*p) {
+      if (strchr(delim, *p))
+	break;
       p++;
     }
   }

@@ -47,33 +47,29 @@ size_t commafmt(char *pszBuf,	// Output buffer
   char *pch = pszBuf + cBufSize - 1;
 
   if (cBufSize < 2)
-      goto ABORT;
+    goto ABORT;
 
-  *pch-- = 0;			// Stuff terminator
+  *pch-- = 0;				// Stuff terminator
   --cBufSize;
-  if (lNumber < 0)
-  {
+  if (lNumber < 0) {
     sign = -1;
     lNumber = -lNumber;
   }
 
-  for (; cChars <= cBufSize; ++cChars, ++cDigits)
-  {
-    *pch-- = (CHAR)(lNumber % 10 + '0');
+  for (; cChars <= cBufSize; ++cChars, ++cDigits) {
+    *pch-- = (CHAR) (lNumber % 10 + '0');
     lNumber /= 10;
     if (!lNumber)
       break;
-    if (cDigits % 3 == 0)
-    {
+    if (cDigits % 3 == 0) {
       *pch-- = ',';
       ++cChars;
     }
     if (cChars >= cBufSize)
       goto ABORT;
-  } // for
+  }					// for
 
-  if (sign < 0)
-  {
+  if (sign < 0) {
     if (cBufSize == 0)
       goto ABORT;
     *pch-- = '-';
@@ -85,8 +81,8 @@ size_t commafmt(char *pszBuf,	// Output buffer
   return cChars;
 
 ABORT:
-   *pszBuf = 0;
-    return 0;
+  *pszBuf = 0;
+  return 0;
 }
 
 //=== CommaFmtULL: format long long number with commas and SI unit suffix ===
@@ -98,29 +94,24 @@ size_t CommaFmtULL(char *pszBuf,	// Output buffer
 {
   CHAR chSuffix = ' ';
   size_t c;
-  if (ullNumber >= 1ULL << 31 ||
-      (chPreferred != ' ' && ullNumber >= 1024))
-  {
+
+  if (ullNumber >= 1ULL << 31 || (chPreferred != ' ' && ullNumber >= 1024)) {
     ullNumber = (ullNumber + 1023) >> 10;
     chSuffix = 'K';
-    if (ullNumber >= 1ULL << 31 ||
-        (chPreferred == 'M' && ullNumber >= 1024))
-    {
+    if (ullNumber >= 1ULL << 31 || (chPreferred == 'M' && ullNumber >= 1024)) {
       ullNumber = (ullNumber + 1023) >> 10;
       chSuffix = 'M';
     }
   }
 
-  c = commafmt(pszBuf, cBufSize, (LONG)ullNumber);
+  c = commafmt(pszBuf, cBufSize, (LONG) ullNumber);
 
   if (chSuffix != ' ') {
-    if (c + 4 > cBufSize)
-    {
+    if (c + 4 > cBufSize) {
       *pszBuf = 0;
       c = 0;
     }
-    else
-    {
+    else {
       pszBuf += c;
       *pszBuf++ = chSuffix;
       *pszBuf++ = 'i';
@@ -141,14 +132,11 @@ size_t CommaFmtUL(char *pszBuf,	// Output buffer
 {
   CHAR chSuffix = ' ';
   size_t c;
-  if (ulNumber >= 1ULL << 31 ||
-      (chPreferred != ' ' && ulNumber >= 1024))
-  {
+
+  if (ulNumber >= 1ULL << 31 || (chPreferred != ' ' && ulNumber >= 1024)) {
     ulNumber = (ulNumber + 1023) >> 10;
     chSuffix = 'K';
-    if (ulNumber >= 1ULL << 31 ||
-        (chPreferred == 'M' && ulNumber >= 1024))
-    {
+    if (ulNumber >= 1ULL << 31 || (chPreferred == 'M' && ulNumber >= 1024)) {
       ulNumber = (ulNumber + 1023) >> 10;
       chSuffix = 'M';
     }
@@ -157,13 +145,11 @@ size_t CommaFmtUL(char *pszBuf,	// Output buffer
   c = commafmt(pszBuf, cBufSize, ulNumber);
 
   if (chSuffix != ' ') {
-    if (c + 4 > cBufSize)
-    {
+    if (c + 4 > cBufSize) {
       *pszBuf = 0;
       c = 0;
     }
-    else
-    {
+    else {
       pszBuf += c;
       *pszBuf++ = chSuffix;
       *pszBuf++ = 'i';
@@ -174,8 +160,3 @@ size_t CommaFmtUL(char *pszBuf,	// Output buffer
   }
   return c;
 }
-
-
-
-
-

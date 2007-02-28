@@ -69,12 +69,13 @@ MRESULT EXPENTRY CollectorFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   return CommonFrameWndProc(COLLECTOR_CNR, hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				   MPARAM mp2)
 {
   DIRCNRDATA *dcd;
 
   static BOOL emphasized = FALSE;
-  static HWND hwndButtonPopup = (HWND)0;
+  static HWND hwndButtonPopup = (HWND) 0;
   static ULONG timestamp = ULONG_MAX;
   static USHORT lastid = 0;
 
@@ -93,7 +94,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DIR_VIEW:
       case DIR_SORT:
 	{
-	  POINTL ptl = {0, 0};
+	  POINTL ptl = { 0, 0 };
 	  SWP swp;
 
 	  if (hwndButtonPopup)
@@ -102,52 +103,43 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ULONG check;
 
 	    DosQuerySysInfo(QSV_MS_COUNT,
-			    QSV_MS_COUNT,
-			    &check,
-			    sizeof(check));
+			    QSV_MS_COUNT, &check, sizeof(check));
 	    if (check < timestamp + 500) {
 	      lastid = 0;
 	      goto MenuAbort;
 	    }
 	  }
-	  hwndButtonPopup = WinLoadMenu(HWND_DESKTOP,FM3ModHandle,id);
+	  hwndButtonPopup = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, id);
 	  if (hwndButtonPopup) {
-	    WinSetWindowUShort(hwndButtonPopup,QWS_ID,id);
+	    WinSetWindowUShort(hwndButtonPopup, QWS_ID, id);
 	    dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
 								   QW_PARENT),
-						    COLLECTOR_CNR),
-				    QWL_USER);
+						    COLLECTOR_CNR), QWL_USER);
 	    if (id == DIR_VIEW) {
 	      if (dcd) {
-		SetViewMenu(hwndButtonPopup,dcd -> flWindowAttr);
-		SetDetailsSwitches(hwndButtonPopup,dcd);
+		SetViewMenu(hwndButtonPopup, dcd->flWindowAttr);
+		SetDetailsSwitches(hwndButtonPopup, dcd);
 	      }
 
 	      /* don't have tree view in collector */
 	      WinSendMsg(hwndButtonPopup,
 			 MM_DELETEITEM,
-			 MPFROM2SHORT(IDM_TREEVIEW,FALSE),
-			 MPVOID);
+			 MPFROM2SHORT(IDM_TREEVIEW, FALSE), MPVOID);
 
 	    }
 	    else if (id == DIR_SORT) {
 	      if (dcd)
-		SetSortChecks(hwndButtonPopup,dcd -> sortFlags);
+		SetSortChecks(hwndButtonPopup, dcd->sortFlags);
 	    }
 	    ptl.x = 0;
 	    if (WinPopupMenu(HWND_OBJECT,
 			     HWND_OBJECT,
-			     hwndButtonPopup,
-			     -32767,
-			     -32767,
-			     0,
-			     0))
-	    {
-	      WinQueryWindowPos(hwndButtonPopup,&swp);
+			     hwndButtonPopup, -32767, -32767, 0, 0)) {
+	      WinQueryWindowPos(hwndButtonPopup, &swp);
 	      ptl.y = -(swp.cy + 2);
 	    }
 	    else {
-	      WinQueryWindowPos(hwnd,&swp);
+	      WinQueryWindowPos(hwnd, &swp);
 	      ptl.y = swp.cy + 2;
 	    }
 	    if (WinPopupMenu(hwnd,
@@ -157,10 +149,9 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     ptl.y,
 			     0,
 			     PU_HCONSTRAIN | PU_VCONSTRAIN |
-			     PU_KEYBOARD | PU_MOUSEBUTTON1))
-	    {
+			     PU_KEYBOARD | PU_MOUSEBUTTON1)) {
 	      CenterOverWindow(hwndButtonPopup);
-	      PaintRecessedWindow(hwnd,NULLHANDLE,FALSE,FALSE);
+	      PaintRecessedWindow(hwnd, NULLHANDLE, FALSE, FALSE);
 	    }
 	  }
 	}
@@ -169,8 +160,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				COLLECTOR_CNR),
 		WM_CONTROL,
-		MPFROM2SHORT(COLLECTOR_CNR,CN_CONTEXTMENU),
-		MPVOID);
+		MPFROM2SHORT(COLLECTOR_CNR, CN_CONTEXTMENU), MPVOID);
 	break;
       }
     }
@@ -180,16 +170,17 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_MENUEND:
-    if (hwndButtonPopup == (HWND)mp2) {
-      lastid = WinQueryWindowUShort((HWND)mp2, QWS_ID);
+    if (hwndButtonPopup == (HWND) mp2) {
+      lastid = WinQueryWindowUShort((HWND) mp2, QWS_ID);
       WinDestroyWindow(hwndButtonPopup);
-      hwndButtonPopup = (HWND)0;
-      DosQuerySysInfo(QSV_MS_COUNT,QSV_MS_COUNT,&timestamp,sizeof(timestamp));
+      hwndButtonPopup = (HWND) 0;
+      DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &timestamp,
+		      sizeof(timestamp));
       switch (lastid) {
       case DIR_SELECTED:
       case DIR_VIEW:
       case DIR_SORT:
-	PaintRecessedWindow(hwnd,NULLHANDLE,TRUE,FALSE);
+	PaintRecessedWindow(hwnd, NULLHANDLE, TRUE, FALSE);
 	break;
       }
     }
@@ -202,20 +193,15 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       mr = WinSendMsg(WinWindowFromID(WinQueryWindow(hwnd,
 						     QW_PARENT),
-				      COLLECTOR_CNR),
-		      msg,
-		      mp1,
-		      mp2);
+				      COLLECTOR_CNR), msg, mp1, mp2);
       if (hwndButtonPopup &&
 	  SHORT1FROMMP(mp1) > IDM_DETAILSTITLES &&
-	  SHORT1FROMMP(mp1) < IDM_DETAILSSETUP)
-      {
+	  SHORT1FROMMP(mp1) < IDM_DETAILSSETUP) {
 	dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
 							       QW_PARENT),
-						COLLECTOR_CNR),
-				QWL_USER);
+						COLLECTOR_CNR), QWL_USER);
 	if (dcd)
-	  SetDetailsSwitches(hwndButtonPopup,dcd);
+	  SetDetailsSwitches(hwndButtonPopup, dcd);
       }
       return mr;
     }
@@ -228,8 +214,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (fOtherHelp) {
 	if ((!hwndBubble ||
 	     WinQueryWindowULong(hwndBubble, QWL_USER) != hwnd) &&
-	    !WinQueryCapture(HWND_DESKTOP))
-	{
+	    !WinQueryCapture(HWND_DESKTOP)) {
 	  switch (id) {
 	  case DIR_SELECTED:
 	    s = GetPString(IDS_COLSELECTEDHELP);
@@ -293,7 +278,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DIR_VIEW:
       case DIR_SORT:
       case DIR_SELECTED:
-	PostMsg(hwnd,UM_CONTEXTMENU,MPVOID,MPVOID);
+	PostMsg(hwnd, UM_CONTEXTMENU, MPVOID, MPVOID);
 	break;
       case DIR_FILTER:
 	cmd = IDM_FILTER;
@@ -302,11 +287,9 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       }
       if (cmd)
-	PostMsg(WinWindowFromID(WinQueryWindow(hwnd,QW_PARENT),
+	PostMsg(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				COLLECTOR_CNR),
-		WM_COMMAND,
-		MPFROM2SHORT(cmd, 0),
-		MPVOID);
+		WM_COMMAND, MPFROM2SHORT(cmd, 0), MPVOID);
     }
     return 0;
 
@@ -413,42 +396,25 @@ MRESULT EXPENTRY CollectorClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       cx = SHORT1FROMMP(mp2);
       cy = SHORT2FROMMP(mp2);
       WinSetWindowPos(WinWindowFromID(hwnd, COLLECTOR_CNR), HWND_TOP,
-		      0,
-		      0,
-		      cx,
-		      cy - 24,
-		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
+		      0, 0, cx, cy - 24, SWP_SHOW | SWP_MOVE | SWP_SIZE);
       WinSetWindowPos(WinWindowFromID(hwnd, DIR_TOTALS), HWND_TOP,
 		      2,
 		      cy - 22,
-		      (cx / 3) - 2,
-		      20,
-		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
+		      (cx / 3) - 2, 20, SWP_SHOW | SWP_MOVE | SWP_SIZE);
       WinSetWindowPos(WinWindowFromID(hwnd, DIR_SELECTED), HWND_TOP,
 		      2 + (cx / 3) + 2,
 		      cy - 22,
-		      (cx / 3) - 2,
-		      20,
-		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
+		      (cx / 3) - 2, 20, SWP_SHOW | SWP_MOVE | SWP_SIZE);
       bx = (cx - (2 + (((cx / 3) + 2) * 2))) / 3;
       WinSetWindowPos(WinWindowFromID(hwnd, DIR_VIEW), HWND_TOP,
 		      2 + (((cx / 3) + 2) * 2),
-		      cy - 22,
-		      bx - 4,
-		      20,
-		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
+		      cy - 22, bx - 4, 20, SWP_SHOW | SWP_MOVE | SWP_SIZE);
       WinSetWindowPos(WinWindowFromID(hwnd, DIR_SORT), HWND_TOP,
 		      2 + (((cx / 3) + 2) * 2) + bx,
-		      cy - 22,
-		      bx - 4,
-		      20,
-		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
+		      cy - 22, bx - 4, 20, SWP_SHOW | SWP_MOVE | SWP_SIZE);
       WinSetWindowPos(WinWindowFromID(hwnd, DIR_FILTER), HWND_TOP,
 		      2 + (((cx / 3) + 2) * 2) + (bx * 2),
-		      cy - 22,
-		      bx - 4,
-		      20,
-		      SWP_SHOW | SWP_MOVE | SWP_SIZE);
+		      cy - 22, bx - 4, 20, SWP_SHOW | SWP_MOVE | SWP_SIZE);
     }
     CommonTextPaint(hwnd, NULLHANDLE);
     if (msg == UM_SIZE) {
@@ -488,9 +454,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
-      li = DoFileDrop(dcd -> hwndCnr, NULL, FALSE, MPVOID, MPFROMP(&cni));
+      li = DoFileDrop(dcd->hwndCnr, NULL, FALSE, MPVOID, MPFROMP(&cni));
       if (li) {
-	li -> type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
+	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
 	  FreeListInfo(li);
 	else
@@ -508,7 +474,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       while (list[numentries])
 	numentries++;
       if (numentries)
-	UpdateCnrList(dcd -> hwndCnr, list, numentries, FALSE, dcd);
+	UpdateCnrList(dcd->hwndCnr, list, numentries, FALSE, dcd);
     }
     return 0;
 
@@ -518,9 +484,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       /* set unique id */
       WinSetWindowUShort(hwnd,
 			 QWS_ID,
-			 COLLECTOROBJ_FRAME + (COLLECTOR_FRAME - dcd -> id));
-      dcd -> hwndObject = hwnd;
-      if (ParentIsDesktop(hwnd, dcd -> hwndParent))
+			 COLLECTOROBJ_FRAME + (COLLECTOR_FRAME - dcd->id));
+      dcd->hwndObject = hwnd;
+      if (ParentIsDesktop(hwnd, dcd->hwndParent))
 	DosSleep(250L);
     }
     else
@@ -531,7 +497,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (mp1) {
       LISTINFO *li = (LISTINFO *) mp1;
 
-      switch (li -> type) {
+      switch (li->type) {
       case IDM_DOITYOURSELF:
       case IDM_APPENDTOCLIP:
       case IDM_SAVETOCLIP:
@@ -580,30 +546,30 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       ULONGLONG ullTotalBytes;
       CHAR fullname[CCHMAXPATH];
 
-      WinSetWindowText(WinWindowFromID(dcd -> hwndClient,DIR_SELECTED),
+      WinSetWindowText(WinWindowFromID(dcd->hwndClient, DIR_SELECTED),
 		       GetPString(IDS_COLLECTINGTEXT));
-      for (ulMaxFiles = 0; li -> list[ulMaxFiles]; ulMaxFiles++)
-	;				// Count
+      for (ulMaxFiles = 0; li->list[ulMaxFiles]; ulMaxFiles++) ;	// Count
 
       if (ulMaxFiles) {
-	pci = WinSendMsg(dcd -> hwndCnr, CM_ALLOCRECORD,
+	pci = WinSendMsg(dcd->hwndCnr, CM_ALLOCRECORD,
 			 MPFROMLONG(EXTRA_RECORD_BYTES),
 			 MPFROMLONG(ulMaxFiles));
 	if (!pci) {
-	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed", ulMaxFiles);
+	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
+			ulMaxFiles);
 	  break;
 	}
 	else {
 	  pciFirst = pci;
-	  for (x = 0; li -> list[x]; x++) {
+	  for (x = 0; li->list[x]; x++) {
 	    nm = 1L;
 	    hdir = HDIR_CREATE;
 	    DosError(FERR_DISABLEHARDERR);
-	    if (*li -> list[x] &&
-		!DosQueryPathInfo(li -> list[x], FIL_QUERYFULLNAME,
+	    if (*li->list[x] &&
+		!DosQueryPathInfo(li->list[x], FIL_QUERYFULLNAME,
 				  fullname, sizeof(fullname)) &&
 		!IsRoot(fullname) &&
-		!FindCnrRecord(dcd -> hwndCnr,
+		!FindCnrRecord(dcd->hwndCnr,
 			       fullname,
 			       NULL,
 			       FALSE,
@@ -614,32 +580,26 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			      FILE_NORMAL | FILE_DIRECTORY |
 			      FILE_ARCHIVED | FILE_SYSTEM |
 			      FILE_HIDDEN | FILE_READONLY,
-			      &fb4,
-			      sizeof(fb4),
-			      &nm,
-			      FIL_QUERYEASIZE))
-	    {
+			      &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZE)) {
 	      DosFindClose(hdir);
 	      priority_normal();
 	      *fb4.achName = 0;
-	      ullTotalBytes = FillInRecordFromFFB(dcd -> hwndCnr,
+	      ullTotalBytes = FillInRecordFromFFB(dcd->hwndCnr,
 						  pci,
-						  fullname,
-						  &fb4,
-						  FALSE,
-						  dcd);
-	      dcd -> ullTotalBytes += ullTotalBytes;
+						  fullname, &fb4, FALSE, dcd);
+	      dcd->ullTotalBytes += ullTotalBytes;
 	      pciP = pci;
-	      pci = (PCNRITEM) pci -> rc.preccNextRecord;
+	      pci = (PCNRITEM) pci->rc.preccNextRecord;
 	    }
 	    else {
 	      pciT = pci;
-	      pci = (PCNRITEM) pci -> rc.preccNextRecord;
+	      pci = (PCNRITEM) pci->rc.preccNextRecord;
 	      if (pciP)
-		pciP -> rc.preccNextRecord = (PMINIRECORDCORE) pci;
+		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
 	      else
 		pciFirst = pci;
-	      WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pciT),MPFROM2SHORT(1, 0));
+	      WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pciT),
+			 MPFROM2SHORT(1, 0));
 	      ulMaxFiles--;
 	    }
 	    DosSleep(1L);
@@ -652,21 +612,18 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    ri.zOrder = (ULONG) CMA_TOP;
 	    ri.cRecordsInsert = ulMaxFiles;
 	    ri.fInvalidateRecord = TRUE;
-	    WinSendMsg(dcd -> hwndCnr,
-		       CM_INSERTRECORD,
-		       MPFROMP(pciFirst),
-		       MPFROMP(&ri));
-	    PostMsg(dcd -> hwndCnr,UM_RESCAN,MPVOID,MPVOID);
+	    WinSendMsg(dcd->hwndCnr,
+		       CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
+	    PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
 	  }
 	}
       }
     }
-    if (dcd -> flWindowAttr & CV_DETAIL)
+    if (dcd->flWindowAttr & CV_DETAIL)
       WinSendDlgItemMsg(hwnd,
 			COLLECTOR_CNR,
 			CM_INVALIDATERECORD,
-			MPVOID,
-			MPFROM2SHORT(0,CMA_ERASE | CMA_REPOSITION));
+			MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
     return 0;
 
   case UM_COLLECTFROMFILE:
@@ -694,7 +651,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  c = strlen(fullname);
 	  if (c + 1 >= sizeof(fullname))
 	    errs++;
-	  else if (!c || (fullname[c-1] != '\n' && fullname[c-1] != '\r'))
+	  else if (!c || (fullname[c - 1] != '\n' && fullname[c - 1] != '\r'))
 	    errs++;
 	  else {
 	    bstripcr(fullname);
@@ -720,22 +677,17 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				  FIL_QUERYEASIZE,
 				  &fs4,
 				  sizeof(fs4)) &&
-		!FindCnrRecord(dcd -> hwndCnr,
-			       fullname,
-			       NULL,
-			       FALSE,
-			       FALSE,
-			       TRUE))
-	    {
+		!FindCnrRecord(dcd->hwndCnr,
+			       fullname, NULL, FALSE, FALSE, TRUE)) {
 	      /* collect it */
-	      pci = WinSendMsg(dcd -> hwndCnr,
+	      pci = WinSendMsg(dcd->hwndCnr,
 			       CM_ALLOCRECORD,
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
 			       MPFROMLONG(1L));
 	      if (pci) {
-		dcd -> ullTotalBytes += FillInRecordFromFSA(dcd -> hwndCnr, pci,
-							    fullname,
-							    &fs4, FALSE, dcd);
+		dcd->ullTotalBytes += FillInRecordFromFSA(dcd->hwndCnr, pci,
+							  fullname,
+							  &fs4, FALSE, dcd);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -743,7 +695,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		ri.zOrder = (ULONG) CMA_TOP;
 		ri.cRecordsInsert = 1L;
 		ri.fInvalidateRecord = TRUE;
-		WinSendMsg(dcd -> hwndCnr, CM_INSERTRECORD,
+		WinSendMsg(dcd->hwndCnr, CM_INSERTRECORD,
 			   MPFROMP(pci), MPFROMP(&ri));
 	      }
 	    }
@@ -752,10 +704,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  if (errs > (first ? 0 : 50)) {
 	    /* prevent runaway on bad file */
-	    APIRET ret = saymsg(MB_YESNO, dcd -> hwndCnr,
+	    APIRET ret = saymsg(MB_YESNO, dcd->hwndCnr,
 				GetPString(IDS_COLLECTNOLISTHDRTEXT),
 				GetPString(IDS_COLLECTNOLISTTEXT),
-				(CHAR *)mp1);
+				(CHAR *) mp1);
+
 	    if (ret == MBID_NO)
 	      break;
 	    if (!first)
@@ -763,7 +716,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    else
 	      first = FALSE;
 	  }
-	} // while not eof
+	}				// while not eof
 	fclose(fp);
       }
     }
@@ -780,7 +733,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  strcpy(filename, "*.LST");
 	  size = CCHMAXPATH;
-	  PrfQueryProfileData(fmprof,appname,"SaveToListName",filename,&size);
+	  PrfQueryProfileData(fmprof, appname, "SaveToListName", filename,
+			      &size);
 	  pp = strrchr(filename, '\\');
 	  if (!pp)
 	    pp = filename;
@@ -794,26 +748,27 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      memmove(pp, p, strlen(p) + 1);
 	  }
 	  if (insert_filename(hwnd, filename, FALSE, FALSE))
-	    SelectList(dcd -> hwndCnr, TRUE, FALSE, FALSE, NULL, filename, NULL);
+	    SelectList(dcd->hwndCnr, TRUE, FALSE, FALSE, NULL, filename,
+		       NULL);
 	}
 	break;
       case IDM_SELECTALL:
-	SelectAll(dcd -> hwndCnr, TRUE, TRUE, NULL, NULL, FALSE);
+	SelectAll(dcd->hwndCnr, TRUE, TRUE, NULL, NULL, FALSE);
 	break;
       case IDM_DESELECTALL:
-	DeselectAll(dcd -> hwndCnr, TRUE, TRUE, NULL, NULL, FALSE);
+	DeselectAll(dcd->hwndCnr, TRUE, TRUE, NULL, NULL, FALSE);
 	break;
       case IDM_SELECTALLFILES:
-	SelectAll(dcd -> hwndCnr, TRUE, FALSE, NULL, NULL, FALSE);
+	SelectAll(dcd->hwndCnr, TRUE, FALSE, NULL, NULL, FALSE);
 	break;
       case IDM_DESELECTALLFILES:
-	DeselectAll(dcd -> hwndCnr, TRUE, FALSE, NULL, NULL, FALSE);
+	DeselectAll(dcd->hwndCnr, TRUE, FALSE, NULL, NULL, FALSE);
 	break;
       case IDM_SELECTALLDIRS:
-	SelectAll(dcd -> hwndCnr, FALSE, TRUE, NULL, NULL, FALSE);
+	SelectAll(dcd->hwndCnr, FALSE, TRUE, NULL, NULL, FALSE);
 	break;
       case IDM_DESELECTALLDIRS:
-	DeselectAll(dcd -> hwndCnr, FALSE, TRUE, NULL, NULL, FALSE);
+	DeselectAll(dcd->hwndCnr, FALSE, TRUE, NULL, NULL, FALSE);
 	break;
       case IDM_DESELECTMASK:
       case IDM_SELECTMASK:
@@ -827,18 +782,16 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  mask.fText = TRUE;
 	  strcpy(mask.prompt,
 		 GetPString((SHORT1FROMMP(mp1) == IDM_SELECTMASK) ?
-			    IDS_SELECTFILTERTEXT :
-			    IDS_DESELECTFILTERTEXT));
+			    IDS_SELECTFILTERTEXT : IDS_DESELECTFILTERTEXT));
 	  if (pci && (INT) pci != -1)
-	    strcpy(mask.szMask, pci -> szFileName);
-	  if (WinDlgBox(HWND_DESKTOP, dcd -> hwndCnr, PickMaskDlgProc,
-			FM3ModHandle, MSK_FRAME, MPFROMP(&mask)))
-	  {
+	    strcpy(mask.szMask, pci->szFileName);
+	  if (WinDlgBox(HWND_DESKTOP, dcd->hwndCnr, PickMaskDlgProc,
+			FM3ModHandle, MSK_FRAME, MPFROMP(&mask))) {
 	    if (SHORT1FROMMP(mp1) == IDM_SELECTMASK)
-	      SelectAll(dcd -> hwndCnr, TRUE, TRUE, mask.szMask, mask.szText,
+	      SelectAll(dcd->hwndCnr, TRUE, TRUE, mask.szMask, mask.szText,
 			FALSE);
 	    else
-	      DeselectAll(dcd -> hwndCnr, TRUE, TRUE, mask.szMask, mask.szText,
+	      DeselectAll(dcd->hwndCnr, TRUE, TRUE, mask.szMask, mask.szText,
 			  FALSE);
 	  }
 	}
@@ -850,7 +803,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  list = ListFromClipboard(hwnd);
 	  if (list) {
-	    SelectList(dcd -> hwndCnr, TRUE, FALSE,
+	    SelectList(dcd->hwndCnr, TRUE, FALSE,
 		       (SHORT1FROMMP(mp1) == IDM_DESELECTCLIP),
 		       NULL, NULL, list);
 	    FreeList(list);
@@ -859,7 +812,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_INVERT:
-	InvertAll(dcd -> hwndCnr);
+	InvertAll(dcd->hwndCnr);
 	break;
       }
     }
@@ -871,19 +824,20 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (dcd) {
 	WORKER *wk;
 
-	wk = xmallocz(sizeof(WORKER),pszSrcFile,__LINE__);
+	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
 	else {
-	  wk -> size = sizeof(WORKER);
-	  wk -> hwndCnr = dcd -> hwndCnr;
-	  wk -> hwndParent = dcd -> hwndParent;
-	  wk -> hwndFrame = dcd -> hwndFrame;
-	  wk -> hwndClient = dcd -> hwndClient;
-	  wk -> li = (LISTINFO *) mp1;
-	  strcpy(wk -> directory, dcd -> directory);
+	  wk->size = sizeof(WORKER);
+	  wk->hwndCnr = dcd->hwndCnr;
+	  wk->hwndParent = dcd->hwndParent;
+	  wk->hwndFrame = dcd->hwndFrame;
+	  wk->hwndClient = dcd->hwndClient;
+	  wk->li = (LISTINFO *) mp1;
+	  strcpy(wk->directory, dcd->directory);
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	    Runtime_Error(pszSrcFile, __LINE__,
+			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
@@ -898,19 +852,20 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (dcd) {
 	WORKER *wk;
 
-	wk = xmallocz(sizeof(WORKER),pszSrcFile,__LINE__);
+	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
 	else {
-	  wk -> size = sizeof(WORKER);
-	  wk -> hwndCnr = dcd -> hwndCnr;
-	  wk -> hwndParent = dcd -> hwndParent;
-	  wk -> hwndFrame = dcd -> hwndFrame;
-	  wk -> hwndClient = dcd -> hwndClient;
-	  wk -> li = (LISTINFO *) mp1;
-	  strcpy(wk -> directory, dcd -> directory);
+	  wk->size = sizeof(WORKER);
+	  wk->hwndCnr = dcd->hwndCnr;
+	  wk->hwndParent = dcd->hwndParent;
+	  wk->hwndFrame = dcd->hwndFrame;
+	  wk->hwndClient = dcd->hwndClient;
+	  wk->li = (LISTINFO *) mp1;
+	  strcpy(wk->directory, dcd->directory);
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	    Runtime_Error(pszSrcFile, __LINE__,
+			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
@@ -927,23 +882,25 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
       INT x;
-      dcd -> stopflag = 1;
+
+      dcd->stopflag = 1;
       // Allow rescan logic to quiesce
-      for (x = 0; x < 10 && dcd -> amextracted;x++)
+      for (x = 0; x < 10 && dcd->amextracted; x++)
 	DosSleep(250L);
-      WinSendMsg(dcd -> hwndCnr, UM_CLOSE, MPVOID, MPVOID);
-      FreeList(dcd -> lastselection);
+      WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
+      FreeList(dcd->lastselection);
       free(dcd);
     }
     DosPostEventSem(CompactSem);
-    if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
-      WinSendMsg((HWND)0, WM_QUIT, MPVOID, MPVOID);
+    if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
+      WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				     MPARAM mp2)
 {
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
   ULONG size;
@@ -956,7 +913,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
   case DM_DISCARDOBJECT:
     if (dcd)
-      return WinSendMsg(dcd -> hwndObject, msg, mp1, mp2);
+      return WinSendMsg(dcd->hwndObject, msg, mp1, mp2);
     else
       return MRFROMLONG(DRR_TARGET);
 
@@ -989,27 +946,27 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       case '\x1b':
       case '\r':
       case '\n':
-	dcd -> lasttime = 0;
-	*dcd -> szCommonName = 0;
+	dcd->lasttime = 0;
+	*dcd->szCommonName = 0;
 	break;
       default:
 	thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
-	if (thistime > dcd -> lasttime + 1250)
-	  *dcd -> szCommonName = 0;
-	dcd -> lasttime = thistime;
-	if (SHORT1FROMMP(mp2) == ' ' && !dcd -> szCommonName)
+	if (thistime > dcd->lasttime + 1250)
+	  *dcd->szCommonName = 0;
+	dcd->lasttime = thistime;
+	if (SHORT1FROMMP(mp2) == ' ' && !dcd->szCommonName)
 	  break;
       KbdRetry:
-	len = strlen(dcd -> szCommonName);
+	len = strlen(dcd->szCommonName);
 	if (len >= CCHMAXPATH - 1) {
-	  *dcd -> szCommonName = 0;
+	  *dcd->szCommonName = 0;
 	  len = 0;
 	}
-	dcd -> szCommonName[len] = toupper(SHORT1FROMMP(mp2));
-	dcd -> szCommonName[len + 1] = 0;
+	dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
+	dcd->szCommonName[len + 1] = 0;
 	memset(&srch, 0, sizeof(SEARCHSTRING));
 	srch.cb = sizeof(SEARCHSTRING);
-	srch.pszSearch = dcd -> szCommonName;
+	srch.pszSearch = dcd->szCommonName;
 	srch.fsPrefix = TRUE;
 	srch.fsCaseSensitive = FALSE;
 	srch.usView = CV_ICON;
@@ -1019,7 +976,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  USHORT attrib = CRA_CURSORED;
 
 	  /* make found item current item */
-	  if (!stricmp(pci -> pszFileName, dcd -> szCommonName))
+	  if (!stricmp(pci->pszFileName, dcd->szCommonName))
 	    attrib |= CRA_SELECTED;
 	  WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		     MPFROM2SHORT(TRUE, attrib));
@@ -1029,11 +986,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	}
 	else {
 	  if (SHORT1FROMMP(mp2) == ' ') {
-	    dcd -> szCommonName[len] = 0;
+	    dcd->szCommonName[len] = 0;
 	    break;
 	  }
-	  *dcd -> szCommonName = 0;
-	  dcd -> lasttime = 0;
+	  *dcd->szCommonName = 0;
+	  dcd->lasttime = 0;
 	  if (len)			// retry as first letter if no match
 
 	    goto KbdRetry;
@@ -1058,8 +1015,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       memset(&cnri, 0, sizeof(CNRINFO));
       cnri.cb = sizeof(CNRINFO);
       if (WinSendMsg(hwnd, CM_QUERYCNRINFO, MPFROMP(&cnri),
-		     MPFROMLONG(sizeof(CNRINFO))))
-      {
+		     MPFROMLONG(sizeof(CNRINFO)))) {
 	if (cnri.flWindowAttr & CV_DETAIL)
 	  PrfWriteProfileData(fmprof, appname, "CollectorCnrSplitBar",
 			      (PVOID) & cnri.xVertSplitbar, sizeof(LONG));
@@ -1077,13 +1033,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       CHAR *leftdir = (CHAR *) mp1, *rightdir = (CHAR *) mp2;
 
       if (!IsFile(leftdir) && !IsFile(rightdir)) {
-	cmp = xmallocz(sizeof(COMPARE),pszSrcFile,__LINE__);
+	cmp = xmallocz(sizeof(COMPARE), pszSrcFile, __LINE__);
 	if (cmp) {
-	  cmp -> size = sizeof(COMPARE);
-	  strcpy(cmp -> leftdir, leftdir);
-	  strcpy(cmp -> rightdir, rightdir);
-	  cmp -> hwndParent = dcd -> hwndParent;
-	  cmp -> dcd.hwndParent = dcd -> hwndParent;
+	  cmp->size = sizeof(COMPARE);
+	  strcpy(cmp->leftdir, leftdir);
+	  strcpy(cmp->rightdir, rightdir);
+	  cmp->hwndParent = dcd->hwndParent;
+	  cmp->dcd.hwndParent = dcd->hwndParent;
 	  WinDlgBox(HWND_DESKTOP, HWND_DESKTOP, CompareDlgProc,
 		    FM3ModHandle, COMP_FRAME, MPFROMP(cmp));
 	}
@@ -1093,7 +1049,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
   case UM_UPDATERECORDLIST:
     if (dcd && mp1)
-      WinSendMsg(dcd -> hwndObject, msg, mp1, mp2);
+      WinSendMsg(dcd->hwndObject, msg, mp1, mp2);
     return 0;
 
   case UM_UPDATERECORD:
@@ -1116,18 +1072,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       if (fAutoView && hwndMain) {
 	pci = WinSendMsg(hwnd,
 			 CM_QUERYRECORDEMPHASIS,
-			 MPFROMLONG(CMA_FIRST),
-			 MPFROMSHORT(CRA_CURSORED));
+			 MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
 	if (pci && (INT) pci != -1 &&
-	    (!(driveflags[toupper(*pci -> szFileName) - 'A'] & DRIVE_SLOW)))
-	  WinSendMsg(hwndMain,UM_LOADFILE,MPFROMP(pci -> szFileName),MPVOID);
+	    (!(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_SLOW)))
+	  WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->szFileName), MPVOID);
 	else
-	  WinSendMsg(hwndMain,UM_LOADFILE,MPVOID,MPVOID);
+	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
-      if (dcd -> amextracted)
-	WinSetWindowText(hwndStatus2,
-			 GetPString(IDS_INSEEKSCANTEXT));	// Say working
-      WinSendMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
+      if (dcd->amextracted)
+	WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
+      WinSendMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
     }
     break;
 
@@ -1141,93 +1095,88 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       cnri.cb = sizeof(CNRINFO);
       WinSendMsg(hwnd, CM_QUERYCNRINFO, MPFROMP(&cnri),
 		 MPFROMLONG(sizeof(CNRINFO)));
-      dcd -> totalfiles = cnri.cRecords;
-      commafmt(tf, sizeof(tf), dcd -> totalfiles);
-      CommaFmtULL(tb, sizeof(tb), dcd -> ullTotalBytes, ' ');
+      dcd->totalfiles = cnri.cRecords;
+      commafmt(tf, sizeof(tf), dcd->totalfiles);
+      CommaFmtULL(tb, sizeof(tb), dcd->ullTotalBytes, ' ');
       sprintf(s, "%s / %s", tf, tb);
-      WinSetDlgItemText(dcd -> hwndClient, DIR_TOTALS, s);
+      WinSetDlgItemText(dcd->hwndClient, DIR_TOTALS, s);
 
-      commafmt(tf, sizeof(tf), dcd -> selectedfiles);
-      CommaFmtULL(tb, sizeof(tb), dcd -> selectedbytes, ' ');
+      commafmt(tf, sizeof(tf), dcd->selectedfiles);
+      CommaFmtULL(tb, sizeof(tb), dcd->selectedbytes, ' ');
       sprintf(s, "%s / %s", tf, tb);
-      WinSetDlgItemText(dcd -> hwndClient, DIR_SELECTED, s);
+      WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, s);
 
       if (hwndStatus &&
-	  dcd -> hwndFrame == WinQueryActiveWindow(dcd -> hwndParent))
-      {
+	  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 	if (hwndMain) {
 	  pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS,
-			   MPFROMLONG(CMA_FIRST),
-			   MPFROMSHORT(CRA_CURSORED));
+			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
 	  if (pci && (INT) pci != -1)
-	    PostMsg(hwndMain, UM_LOADFILE, MPFROMP(pci -> szFileName), MPVOID);
+	    PostMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->szFileName), MPVOID);
 	  else
 	    PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
 	}
 	if (!fMoreButtons)
 	  sprintf(s, " %s%s%s%s", GetPString(IDS_COLLECTORTEXT),
-		  (*dcd -> mask.szMask || dcd -> mask.antiattr ||
-		   dcd -> mask.attrFile != ALLATTRS) ? "  (" : NullStr,
-		  (*dcd -> mask.szMask) ? dcd -> mask.szMask :
-		  (dcd -> mask.antiattr ||
-		   dcd -> mask.attrFile != ALLATTRS) ?
+		  (*dcd->mask.szMask || dcd->mask.antiattr ||
+		   dcd->mask.attrFile != ALLATTRS) ? "  (" : NullStr,
+		  (*dcd->mask.szMask) ? dcd->mask.szMask :
+		  (dcd->mask.antiattr ||
+		   dcd->mask.attrFile != ALLATTRS) ?
 		  GetPString(IDS_ATTRTEXT) : NullStr,
-		  (*dcd -> mask.szMask || dcd -> mask.antiattr ||
-		   dcd -> mask.attrFile != ALLATTRS) ? ")" : NullStr);
+		  (*dcd->mask.szMask || dcd->mask.antiattr ||
+		   dcd->mask.attrFile != ALLATTRS) ? ")" : NullStr);
 	else
 	  strcpy(s, GetPString(IDS_COLLECTORTEXT));
 	WinSetWindowText(hwndStatus, s);
 	if (!pci)
 	  pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS,
-			   MPFROMLONG(CMA_FIRST),
-			   MPFROMSHORT(CRA_CURSORED));
+			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
 	if (pci && (INT) pci != -1) {
 	  BOOL fStatus2Used = FALSE;
+
 	  if (fSplitStatus && hwndStatus2) {
-	    if (pci -> attrFile & FILE_DIRECTORY)
-	      p = pci -> pszFileName;
+	    if (pci->attrFile & FILE_DIRECTORY)
+	      p = pci->pszFileName;
 	    else {
-	      p = strrchr(pci -> szFileName, '\\');
+	      p = strrchr(pci->szFileName, '\\');
 	      if (p) {
 		if (*(p + 1))
 		  p++;
 		else
-		  p = pci -> pszFileName;
+		  p = pci->pszFileName;
 	      }
 	      else
-		p = pci -> pszFileName;
+		p = pci->pszFileName;
 	    }
-	    CommaFmtULL(tb, sizeof(tb), pci -> cbFile + pci -> easize, ' ');
+	    CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
 	    if (!fMoreButtons) {
 	      sprintf(s, " %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
-		      tb, pci -> date.year, pci -> date.month,
-		    pci -> date.day, pci -> time.hours, pci -> time.minutes,
-		      pci -> time.seconds, pci -> pszDispAttr, p);
+		      tb, pci->date.year, pci->date.month,
+		      pci->date.day, pci->time.hours, pci->time.minutes,
+		      pci->time.seconds, pci->pszDispAttr, p);
 	    }
 	    else {
-	      if (pci -> cbFile + pci -> easize > 1024)
-		CommaFmtULL(tf, sizeof(tf), pci -> cbFile + pci -> easize, 'K');
+	      if (pci->cbFile + pci->easize > 1024)
+		CommaFmtULL(tf, sizeof(tf), pci->cbFile + pci->easize, 'K');
 	      else
 		*tf = 0;
 	      sprintf(s, GetPString(IDS_STATUSSIZETEXT),
-		      tb,
-		      *tf ? " (" : NullStr,
-		      tf,
-		      *tf ? ")" : NullStr);
+		      tb, *tf ? " (" : NullStr, tf, *tf ? ")" : NullStr);
 	    }
 	    WinSetWindowText(hwndStatus2, s);
 	    fStatus2Used = TRUE;
 	  }
 	  if (fMoreButtons) {
-	    WinSetWindowText(hwndName, pci -> pszFileName);
+	    WinSetWindowText(hwndName, pci->pszFileName);
 	    sprintf(s, "%04u/%02u/%02u %02u:%02u:%02u",
-		    pci -> date.year, pci -> date.month,
-		    pci -> date.day, pci -> time.hours, pci -> time.minutes,
-		    pci -> time.seconds);
+		    pci->date.year, pci->date.month,
+		    pci->date.day, pci->time.hours, pci->time.minutes,
+		    pci->time.seconds);
 	    WinSetWindowText(hwndDate, s);
-	    WinSetWindowText(hwndAttr, pci -> pszDispAttr);
+	    WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	  }
-	  if (dcd -> amextracted && hwndStatus2 && !fStatus2Used)
+	  if (dcd->amextracted && hwndStatus2 && !fStatus2Used)
 	    WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
 	}
 	else {
@@ -1244,38 +1193,31 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     return 0;
 
   case UM_CONTAINER_FILLED:
-    DosBeep(1000, 50);		// Wake up user?
+    DosBeep(1000, 50);			// Wake up user?
     WinSendMsg(hwnd,
 	       CM_INVALIDATERECORD,
-	       MPVOID,
-	       MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
+	       MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
     disable_menuitem(WinWindowFromID(WinQueryWindow(hwndMain, QW_PARENT),
-				     FID_MENU),
-	             IDM_GREP,
-                     FALSE);
-    PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
+				     FID_MENU), IDM_GREP, FALSE);
+    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
     if (dcd) {
-      dcd -> stopflag = 0;
-      dcd -> amextracted = FALSE;		// Say not busy
-      if (dcd -> namecanchange) {
-	if (!PostMsg(hwnd,WM_CLOSE,MPVOID,MPVOID))
-	  WinSendMsg(hwnd,WM_CLOSE,MPVOID,MPVOID);
+      dcd->stopflag = 0;
+      dcd->amextracted = FALSE;		// Say not busy
+      if (dcd->namecanchange) {
+	if (!PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID))
+	  WinSendMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       }
       else
 	WinSetWindowPos(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				       QW_PARENT),
 			HWND_TOP,
-			0,
-			0,
-			0,
-			0,
-			SWP_SHOW | SWP_RESTORE | SWP_ZORDER);
+			0, 0, 0, 0, SWP_SHOW | SWP_RESTORE | SWP_ZORDER);
     }
     return 0;
 
   case UM_SETUP:
     if (dcd) {
-      if (!dcd -> hwndObject) {
+      if (!dcd->hwndObject) {
 	/* first time through -- set things up */
 
 	CNRINFO cnri;
@@ -1283,8 +1225,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	RestorePresParams(hwnd, "Collector");
 	LoadDetailsSwitches("Collector", dcd);
 
-	dcd -> amextracted = FALSE;	// Say not busy
-	dcd -> stopflag = 0;
+	dcd->amextracted = FALSE;	// Say not busy
+	dcd->stopflag = 0;
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
 	WinSendMsg(hwnd, CM_QUERYCNRINFO, MPFROMP(&cnri),
@@ -1292,8 +1234,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	cnri.cyLineSpacing = 0;
 	cnri.cxTreeIndent = 12L;
 
-	cnri.flWindowAttr &= (~(CV_ICON | CV_TREE | CV_TEXT |
-				CV_DETAIL));
+	cnri.flWindowAttr &= (~(CV_ICON | CV_TREE | CV_TEXT | CV_DETAIL));
 	cnri.flWindowAttr |= (CV_NAME | CA_DETAILSVIEWTITLES |
 			      CV_MINI | CV_FLOW);
 	cnri.pSortRecord = (PVOID) SortCollectorCnr;
@@ -1303,24 +1244,23 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 			    (PVOID) & cnri.flWindowAttr, &size);
 	size = sizeof(MASK);
 	if (PrfQueryProfileSize(fmprof, appname, "CollectorFilter", &size) &&
-	    size)
-	{
-	  PrfQueryProfileData(fmprof, appname, "CollectorFilter", &dcd -> mask,
+	    size) {
+	  PrfQueryProfileData(fmprof, appname, "CollectorFilter", &dcd->mask,
 			      &size);
-	  SetMask(NULL, &dcd -> mask);
+	  SetMask(NULL, &dcd->mask);
 	}
 	else {
-	  dcd -> mask.attrFile = (FILE_NORMAL | FILE_READONLY |
-				  FILE_DIRECTORY | FILE_HIDDEN |
-				  FILE_SYSTEM | FILE_ARCHIVED);
-	  dcd -> mask.antiattr = 0;
+	  dcd->mask.attrFile = (FILE_NORMAL | FILE_READONLY |
+				FILE_DIRECTORY | FILE_HIDDEN |
+				FILE_SYSTEM | FILE_ARCHIVED);
+	  dcd->mask.antiattr = 0;
 	}
 
-	*(dcd -> mask.prompt) = 0;
+	*(dcd->mask.prompt) = 0;
 
 	cnri.flWindowAttr |= CV_FLOW;
 	cnri.flWindowAttr &= (~(CA_MIXEDTARGETEMPH | CA_ORDEREDTARGETEMPH));
-	dcd -> flWindowAttr = cnri.flWindowAttr;
+	dcd->flWindowAttr = cnri.flWindowAttr;
 	WinSendMsg(hwnd, CM_SETCNRINFO, MPFROMP(&cnri),
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
 			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
@@ -1338,7 +1278,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 		   MPFROMLONG(CMA_XVERTSPLITBAR));
 
 	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1) {
-	  Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  Runtime_Error(pszSrcFile, __LINE__,
+			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	  return 0;
 	}
@@ -1346,11 +1287,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  DosSleep(64L);
       }
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				DIR_FILTER), &dcd -> mask, FALSE);
+				DIR_FILTER), &dcd->mask, FALSE);
       SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 			      DIR_SORT), CollectorsortFlags, FALSE);
       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-			      DIR_VIEW), dcd -> flWindowAttr);
+			      DIR_VIEW), dcd->flWindowAttr);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1360,16 +1301,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
   case WM_MENUEND:
     if (dcd) {
-      HWND hwndMenu = (HWND)mp2;
+      HWND hwndMenu = (HWND) mp2;
 
       if (hwndMenu == CollectorCnrMenu || hwndMenu == CollectorFileMenu ||
-	  hwndMenu == CollectorDirMenu)
-      {
+	  hwndMenu == CollectorDirMenu) {
 	MarkAll(hwnd, TRUE, FALSE, TRUE);
-	if (dcd -> cnremphasized) {
+	if (dcd->cnremphasized) {
 	  WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
 		     MPFROM2SHORT(FALSE, CRA_SOURCE));
-	  dcd -> cnremphasized = FALSE;
+	  dcd->cnremphasized = FALSE;
 	}
       }
     }
@@ -1377,15 +1317,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
   case UM_OPENWINDOWFORME:
     if (dcd) {
-      if (mp1 &&
-	  !IsFile((CHAR *) mp1))
-	OpenDirCnr(HWND_DESKTOP,hwndMain,dcd -> hwndFrame,FALSE,(PSZ)mp1);
+      if (mp1 && !IsFile((CHAR *) mp1))
+	OpenDirCnr(HWND_DESKTOP, hwndMain, dcd->hwndFrame, FALSE, (PSZ) mp1);
       else if (mp1 && IsFile(mp1) == 1)
 	StartArcCnr(HWND_DESKTOP,
-		    dcd -> hwndFrame,
-		    (CHAR *) mp1,
-		    4,
-		    (ARC_TYPE *) mp2);
+		    dcd->hwndFrame, (CHAR *) mp1, 4, (ARC_TYPE *) mp2);
     }
     return 0;
 
@@ -1398,7 +1334,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  ULONG wmsg;
 
 	  wmsg = (SHORT1FROMMP(mp1) == 0) ? UM_FILESMENU : UM_VIEWSMENU;
-	  PortholeInit((HWND)WinSendMsg(dcd -> hwndClient, wmsg, MPVOID,
+	  PortholeInit((HWND) WinSendMsg(dcd->hwndClient, wmsg, MPVOID,
 					 MPVOID), mp1, mp2);
 	}
 	break;
@@ -1411,24 +1347,24 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     if (dcd) {
       switch (SHORT1FROMMP(mp1)) {
       case IDM_VIEWSMENU:
-	SetViewMenu((HWND)mp2, dcd -> flWindowAttr);
-	WinEnableMenuItem((HWND)mp2, IDM_RESELECT,
-			  (dcd -> lastselection != NULL));
+	SetViewMenu((HWND) mp2, dcd->flWindowAttr);
+	WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
+			  (dcd->lastselection != NULL));
 	break;
 
       case IDM_DETAILSSETUP:
-	SetDetailsSwitches((HWND)mp2, dcd);
+	SetDetailsSwitches((HWND) mp2, dcd);
 	break;
 
       case IDM_COMMANDSMENU:
-	SetupCommandMenu((HWND)mp2, hwnd);
+	SetupCommandMenu((HWND) mp2, hwnd);
 	break;
 
       case IDM_SORTSUBMENU:
-	SetSortChecks((HWND)mp2, CollectorsortFlags);
+	SetSortChecks((HWND) mp2, CollectorsortFlags);
 	break;
       }
-      dcd -> hwndLastMenu = (HWND)mp2;
+      dcd->hwndLastMenu = (HWND) mp2;
     }
     if (msg == WM_INITMENU)
       break;
@@ -1441,7 +1377,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       }
       else {
-	if (!PostMsg(dcd -> hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
+	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 	  free(mp1);
 	}
@@ -1452,7 +1388,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
   case UM_COMMAND:
     if (mp1) {
       if (dcd) {
-	if (!PostMsg(dcd -> hwndObject, UM_COMMAND, mp1, mp2)) {
+	if (!PostMsg(dcd->hwndObject, UM_COMMAND, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 	  FreeListInfo((LISTINFO *) mp1);
 	}
@@ -1483,7 +1419,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  PostMsg(hwnd, WM_CONTROL, MPFROM2SHORT(COLLECTOR_CNR,
-					     CN_CONTEXTMENU), MPFROMP(pci));
+						 CN_CONTEXTMENU),
+		  MPFROMP(pci));
 	}
 	break;
 
@@ -1493,12 +1430,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 	  pci = WinSendMsg(hwnd,
 			   CM_QUERYRECORDEMPHASIS,
-			   MPFROMLONG(CMA_FIRST),
-			   MPFROMSHORT(CRA_CURSORED));
+			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
 	  if (pci && (INT) pci != -1) {
 	    static CHAR dirname[CCHMAXPATH];
 
-	    strcpy(dirname, pci -> szFileName);
+	    strcpy(dirname, pci->szFileName);
 	    MakeValidDir(dirname);
 	    StartSeeAll(HWND_DESKTOP, FALSE, dirname);
 	  }
@@ -1514,12 +1450,14 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	break;
 
       case IDM_SHOWSELECT:
-	QuickPopup(hwnd, dcd, CheckMenu(&CollectorCnrMenu, COLLECTORCNR_POPUP),
+	QuickPopup(hwnd, dcd,
+		   CheckMenu(&CollectorCnrMenu, COLLECTORCNR_POPUP),
 		   IDM_SELECTSUBMENU);
 	break;
 
       case IDM_SHOWSORT:
-	QuickPopup(hwnd, dcd, CheckMenu(&CollectorCnrMenu, COLLECTORCNR_POPUP),
+	QuickPopup(hwnd, dcd,
+		   CheckMenu(&CollectorCnrMenu, COLLECTORCNR_POPUP),
 		   IDM_SORTSUBMENU);
 	break;
 
@@ -1532,15 +1470,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 				      MPFROMLONG(CMA_FIRST),
 				      MPFROMSHORT(CRA_CURSORED));
 	  if (pci && (INT) pci != -1) {
-	    WinQueryWindowPos(dcd -> hwndFrame, &swp);
-	    DefaultViewKeys(hwnd, dcd -> hwndFrame, dcd -> hwndParent, &swp,
-			    pci -> szFileName);
+	    WinQueryWindowPos(dcd->hwndFrame, &swp);
+	    DefaultViewKeys(hwnd, dcd->hwndFrame, dcd->hwndParent, &swp,
+			    pci->szFileName);
 	  }
 	}
 	break;
 
       case IDM_SEEALL:
-	StartSeeAll(HWND_DESKTOP,FALSE,NULL);
+	StartSeeAll(HWND_DESKTOP, FALSE, NULL);
 	break;
 
       case IDM_COLLECTSELECT:
@@ -1564,7 +1502,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	      memmove(pp, p, strlen(p) + 1);
 	  }
 	  if (insert_filename(hwnd, filename, FALSE, FALSE)) {
-	    p = xstrdup(filename,pszSrcFile,__LINE__);
+	    p = xstrdup(filename, pszSrcFile, __LINE__);
 	    if (p) {
 	      if (!PostMsg(hwnd, UM_COLLECTFROMFILE, MPFROMP(p), MPVOID))
 		free(p);
@@ -1574,15 +1512,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	break;
 
       case IDM_NOTEBOOK:
-	if (!ParentIsDesktop(dcd -> hwndParent, dcd -> hwndParent))
-	  PostMsg(dcd -> hwndParent, msg, mp1, mp2);
+	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
+	  PostMsg(dcd->hwndParent, msg, mp1, mp2);
 	else
 	  WinDlgBox(HWND_DESKTOP, hwnd, CfgDlgProc, FM3ModHandle,
 		    CFG_FRAME, (PVOID) "Collector");
 	break;
 
       case IDM_RESELECT:
-	SelectList(hwnd, FALSE, FALSE, FALSE, NULL, NULL, dcd -> lastselection);
+	SelectList(hwnd, FALSE, FALSE, FALSE, NULL, NULL, dcd->lastselection);
 	break;
 
       case IDM_HELP:
@@ -1678,14 +1616,14 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	{
 	  LISTINFO *li;
 
-	  li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
+	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
-	    li -> list = ListFromClipboard(hwnd);
-	    if (!li -> list || !li -> list[0])
+	    li->list = ListFromClipboard(hwnd);
+	    if (!li->list || !li->list[0])
 	      FreeListInfo(li);
 	    else {
-	      li -> type = IDM_COLLECT;
-	      if (!PostMsg(dcd -> hwndObject, UM_COLLECT, MPFROMP(li),MPVOID))
+	      li->type = IDM_COLLECT;
+	      if (!PostMsg(dcd->hwndObject, UM_COLLECT, MPFROMP(li), MPVOID))
 		FreeListInfo(li);
 	    }
 	  }
@@ -1693,13 +1631,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	break;
 
       case IDM_REMOVE:
-	if (fAutoView &&
-	    hwndMain)
-	  PostMsg(hwndMain,UM_LOADFILE,MPVOID,MPVOID);
-	dcd -> suspendview = 1;
-	RemoveAll(hwnd,&dcd -> ullTotalBytes,&dcd -> totalfiles);
-	dcd -> suspendview = 0;
-	PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
+	if (fAutoView && hwndMain)
+	  PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
+	dcd->suspendview = 1;
+	RemoveAll(hwnd, &dcd->ullTotalBytes, &dcd->totalfiles);
+	dcd->suspendview = 0;
+	PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	break;
 
       case IDM_CLEARCNR:
@@ -1709,36 +1646,35 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  pci = (PCNRITEM) WinSendMsg(hwnd,
 				      CM_QUERYRECORD,
 				      MPVOID,
-				      MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
+				      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 	  if (pci && (INT) pci != -1) {
 	    WinSendMsg(hwnd,
 		       CM_REMOVERECORD,
-		       MPVOID,
-		       MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE));
-	    dcd -> ullTotalBytes = dcd -> selectedbytes = dcd -> selectedfiles =
-	      dcd -> totalfiles = 0L;
-	    PostMsg(hwnd,UM_RESCAN,MPVOID,MPVOID);
+		       MPVOID, MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE));
+	    dcd->ullTotalBytes = dcd->selectedbytes = dcd->selectedfiles =
+	      dcd->totalfiles = 0L;
+	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	  }
 	}
 	break;
 
       case DID_CANCEL:
-	if (dcd -> amextracted)
-	  dcd -> stopflag = 1;		// Request cancel
+	if (dcd->amextracted)
+	  dcd->stopflag = 1;		// Request cancel
 	break;
 
       case IDM_COLLECTOR:
 	if (mp2) {
 	  LISTINFO *li;
 
-	  li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
+	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
-	    li -> list = mp2;
-	    if (!li -> list || !li -> list[0])
+	    li->list = mp2;
+	    if (!li->list || !li->list[0])
 	      FreeListInfo(li);
 	    else {
-	      li -> type = IDM_COLLECT;
-	      if (!PostMsg(dcd -> hwndObject, UM_COLLECT, MPFROMP(li),MPVOID))
+	      li->type = IDM_COLLECT;
+	      if (!PostMsg(dcd->hwndObject, UM_COLLECT, MPFROMP(li), MPVOID))
 		FreeListInfo(li);
 	    }
 	  }
@@ -1754,7 +1690,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  if (pci) {
-	    strcpy(path, pci -> szFileName);
+	    strcpy(path, pci->szFileName);
 	    MakeValidDir(path);
 	    WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
 		      UNDEL_FRAME, MPFROMP(path));
@@ -1763,17 +1699,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	break;
 
       case IDM_GREP:
-	if (dcd -> amextracted)
+	if (dcd->amextracted)
 	  Runtime_Error(pszSrcFile, __LINE__, "busy");
 	else {
 	  if (WinDlgBox(HWND_DESKTOP, hwnd, GrepDlgProc,
-			FM3ModHandle, GREP_FRAME, (PVOID) & hwnd))
-	  {
-	    dcd -> amextracted = TRUE;	// Say busy scanning
-            disable_menuitem(WinWindowFromID(WinQueryWindow(hwndMain, QW_PARENT),
-					     FID_MENU),
-                             IDM_GREP,
-                             TRUE);
+			FM3ModHandle, GREP_FRAME, (PVOID) & hwnd)) {
+	    dcd->amextracted = TRUE;	// Say busy scanning
+	    disable_menuitem(WinWindowFromID
+			     (WinQueryWindow(hwndMain, QW_PARENT), FID_MENU),
+			     IDM_GREP, TRUE);
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	  }
 	}
@@ -1789,35 +1723,35 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  PCNRITEM pci;
 	  CHAR *p;
 
-	  if (!*dcd -> mask.szMask) {
+	  if (!*dcd->mask.szMask) {
 	    empty = TRUE;
 	    pci = (PCNRITEM) CurrentRecord(hwnd);
-	    if (pci && !(pci -> attrFile & FILE_DIRECTORY)) {
-	      p = strrchr(pci -> szFileName, '\\');
+	    if (pci && !(pci->attrFile & FILE_DIRECTORY)) {
+	      p = strrchr(pci->szFileName, '\\');
 	      if (p) {
 		p++;
-		strcpy(dcd -> mask.szMask, p);
+		strcpy(dcd->mask.szMask, p);
 	      }
 	    }
 	  }
-	  *(dcd -> mask.prompt) = 0;
+	  *(dcd->mask.prompt) = 0;
 
 	  if (WinDlgBox(HWND_DESKTOP, hwnd, PickMaskDlgProc,
-			FM3ModHandle, MSK_FRAME, MPFROMP(&dcd -> mask)))
-	  {
+			FM3ModHandle, MSK_FRAME, MPFROMP(&dcd->mask))) {
 	    size = sizeof(MASK);
 	    PrfWriteProfileData(fmprof, appname, "CollectorFilter",
-				&dcd -> mask, size);
-	    dcd -> suspendview = 1;
-	    WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd -> mask));
-	    dcd -> suspendview = 0;
+				&dcd->mask, size);
+	    dcd->suspendview = 1;
+	    WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
+	    dcd->suspendview = 0;
 	    if (fAutoView && hwndMain) {
 	      pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS,
 			       MPFROMLONG(CMA_FIRST),
 			       MPFROMSHORT(CRA_CURSORED));
 	      if (pci && (INT) pci != -1 &&
-		  (!(driveflags[toupper(*pci -> szFileName) - 'A'] & DRIVE_SLOW)))
-		WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci -> szFileName),
+		  (!(driveflags[toupper(*pci->szFileName) - 'A'] &
+		     DRIVE_SLOW)))
+		WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->szFileName),
 			   MPVOID);
 	      else
 		WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
@@ -1825,18 +1759,18 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	  }
 	  else if (empty)
-	    *dcd -> mask.szMask = 0;
+	    *dcd->mask.szMask = 0;
 	  SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				    DIR_FILTER), &dcd -> mask, FALSE);
+				    DIR_FILTER), &dcd->mask, FALSE);
 	}
 	break;
 
       case IDM_HIDEALL:
 	if (fAutoView && hwndMain)
 	  PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
-	dcd -> suspendview = 1;
+	dcd->suspendview = 1;
 	HideAll(hwnd);
-	dcd -> suspendview = 0;
+	dcd->suspendview = 0;
 	PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	break;
 
@@ -1860,19 +1794,19 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	    pci = NULL;
 	  if (SHORT1FROMMP(mp1) == IDM_HIDEALL) {
 	    if (pci) {
-	      if (!(pci -> rc.flRecordAttr & CRA_SELECTED))
-		pci -> rc.flRecordAttr |= CRA_FILTERED;
+	      if (!(pci->rc.flRecordAttr & CRA_SELECTED))
+		pci->rc.flRecordAttr |= CRA_FILTERED;
 	      WinSendMsg(hwnd, CM_INVALIDATERECORD, MPFROMP(&pci),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
 	      break;
 	    }
 	  }
-	  PostMsg(dcd -> hwndObject, UM_SELECT, mp1, MPFROMP(pci));
+	  PostMsg(dcd->hwndObject, UM_SELECT, mp1, MPFROMP(pci));
 	}
 	break;
 
       case IDM_RESCAN:
-	PostMsg(dcd -> hwndObject, UM_RESCAN, MPVOID, MPVOID);
+	PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPVOID);
 	break;
 
       case IDM_SHOWLNAMES:
@@ -1887,7 +1821,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       case IDM_SHOWCRDATE:
       case IDM_SHOWCRTIME:
       case IDM_SHOWATTR:
-	AdjustDetailsSwitches(hwnd, dcd -> hwndLastMenu,
+	AdjustDetailsSwitches(hwnd, dcd->hwndLastMenu,
 			      SHORT1FROMMP(mp1), NULL,
 			      "Collector", dcd, FALSE);
 	break;
@@ -1939,10 +1873,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	      cnri.flWindowAttr |= CA_DETAILSVIEWTITLES;
 	    break;
 	  }
-	  cnri.flWindowAttr &= (~(CA_ORDEREDTARGETEMPH |
-				  CA_MIXEDTARGETEMPH));
+	  cnri.flWindowAttr &= (~(CA_ORDEREDTARGETEMPH | CA_MIXEDTARGETEMPH));
 	  cnri.flWindowAttr |= CV_FLOW;
-	  dcd -> flWindowAttr = cnri.flWindowAttr;
+	  dcd->flWindowAttr = cnri.flWindowAttr;
 	  PrfWriteProfileData(fmprof, appname, "CollectorflWindowAttr",
 			      &cnri.flWindowAttr, sizeof(ULONG));
 	  WinSendMsg(hwnd, CM_SETCNRINFO, MPFROMP(&cnri),
@@ -1950,7 +1883,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  WinSendMsg(hwnd, CM_INVALIDATERECORD, MPVOID,
 		     MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
 	  SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				  DIR_VIEW), dcd -> flWindowAttr);
+				  DIR_VIEW), dcd->flWindowAttr);
 	}
 	break;
 
@@ -1966,7 +1899,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  if (pci && (INT) pci != -1)
 	    WinDlgBox(HWND_DESKTOP, HWND_DESKTOP, DirSizeProc, FM3ModHandle,
-		      DSZ_FRAME, pci -> szFileName);
+		      DSZ_FRAME, pci->szFileName);
 	}
 	break;
 
@@ -1975,8 +1908,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  PCNRITEM pci;
 
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
-	  PMMkDir(dcd -> hwndParent, (pci && (INT) pci != -1) ?
-		  pci -> szFileName : NULL, FALSE);
+	  PMMkDir(dcd->hwndParent, (pci && (INT) pci != -1) ?
+		  pci->szFileName : NULL, FALSE);
 	}
 	break;
 
@@ -2028,12 +1961,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  li = xmallocz(sizeof(LISTINFO),pszSrcFile,__LINE__);
+	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
-	    li -> type = SHORT1FROMMP(mp1);
-	    li -> hwnd = hwnd;
-	    li -> list = BuildList(hwnd);
-	    if (li -> list) {
+	    li->type = SHORT1FROMMP(mp1);
+	    li->hwnd = hwnd;
+	    li->list = BuildList(hwnd);
+	    if (li->list) {
 	      switch (SHORT1FROMMP(mp1)) {
 	      case IDM_DOITYOURSELF:
 	      case IDM_APPENDTOCLIP:
@@ -2060,16 +1993,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 		action = UM_MASSACTION;
 		break;
 	      }
-	      if (li -> type == IDM_SHADOW || li -> type == IDM_OBJECT ||
-		  li -> type == IDM_SHADOW2)
-		*li -> targetpath = 0;
-	      if (!PostMsg(dcd -> hwndObject, action, MPFROMP(li),MPVOID))
-	      {
+	      if (li->type == IDM_SHADOW || li->type == IDM_OBJECT ||
+		  li->type == IDM_SHADOW2)
+		*li->targetpath = 0;
+	      if (!PostMsg(dcd->hwndObject, action, MPFROMP(li), MPVOID)) {
 		Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 		FreeListInfo(li);
 	      }
 	      else if (fUnHilite)
-		UnHilite(hwnd, TRUE, &dcd -> lastselection);
+		UnHilite(hwnd, TRUE, &dcd->lastselection);
 	    }
 	    else
 	      free(li);
@@ -2081,8 +2013,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	if (!cmdloaded)
 	  load_commands();
 	if (SHORT1FROMMP(mp1) >= IDM_COMMANDSTART &&
-	    SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART)
-	{
+	    SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART) {
 	  INT x;
 
 	  x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
@@ -2090,7 +2021,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	    x++;
 	    RunCommand(hwnd, x);
 	    if (fUnHilite)
-	      UnHilite(hwnd, TRUE, &dcd -> lastselection);
+	      UnHilite(hwnd, TRUE, &dcd->lastselection);
 	  }
 	}
 	break;
@@ -2105,11 +2036,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
   case UM_FILESMENU:
     {
       PCNRITEM pci;
-      HWND menuHwnd = (HWND)0;
+      HWND menuHwnd = (HWND) 0;
 
       pci = (PCNRITEM) CurrentRecord(hwnd);
       if (pci && (INT) pci != -1) {
-	if (pci -> attrFile & FILE_DIRECTORY)
+	if (pci->attrFile & FILE_DIRECTORY)
 	  menuHwnd = CheckMenu(&CollectorDirMenu, COLLECTORDIR_POPUP);
 	else
 	  menuHwnd = CheckMenu(&CollectorFileMenu, COLLECTORFILE_POPUP);
@@ -2129,36 +2060,37 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	    WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		       MPFROM2SHORT(TRUE, CRA_CURSORED));
 	    MarkAll(hwnd, FALSE, FALSE, TRUE);
-	    if (pci -> attrFile & FILE_DIRECTORY)
-	      dcd -> hwndLastMenu = CheckMenu(&CollectorDirMenu,
-					      COLLECTORDIR_POPUP);
+	    if (pci->attrFile & FILE_DIRECTORY)
+	      dcd->hwndLastMenu = CheckMenu(&CollectorDirMenu,
+					    COLLECTORDIR_POPUP);
 	    else
-	      dcd -> hwndLastMenu = CheckMenu(&CollectorFileMenu,
-					      COLLECTORFILE_POPUP);
+	      dcd->hwndLastMenu = CheckMenu(&CollectorFileMenu,
+					    COLLECTORFILE_POPUP);
 	  }
 	  else {
-	    dcd -> hwndLastMenu = CheckMenu(&CollectorCnrMenu,
-					    COLLECTORCNR_POPUP);
-	    if (dcd -> hwndLastMenu && !dcd -> cnremphasized) {
+	    dcd->hwndLastMenu = CheckMenu(&CollectorCnrMenu,
+					  COLLECTORCNR_POPUP);
+	    if (dcd->hwndLastMenu && !dcd->cnremphasized) {
 	      WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
 			 MPFROM2SHORT(TRUE, CRA_SOURCE));
-	      dcd -> cnremphasized = TRUE;
+	      dcd->cnremphasized = TRUE;
 	    }
 	  }
-	  if (dcd -> hwndLastMenu) {
-	    if (dcd -> hwndLastMenu == CollectorCnrMenu) {
-	      SetViewMenu(dcd -> hwndLastMenu, dcd -> flWindowAttr);
-	      SetDetailsSwitches(dcd -> hwndLastMenu, dcd);
-	      if (dcd -> flWindowAttr & CV_MINI)
-		WinCheckMenuItem(dcd -> hwndLastMenu, IDM_MINIICONS, TRUE);
-              disable_menuitem(dcd -> hwndLastMenu,DID_CANCEL,!dcd->amextracted);
-              disable_menuitem(dcd -> hwndLastMenu,IDM_GREP,dcd->amextracted);
+	  if (dcd->hwndLastMenu) {
+	    if (dcd->hwndLastMenu == CollectorCnrMenu) {
+	      SetViewMenu(dcd->hwndLastMenu, dcd->flWindowAttr);
+	      SetDetailsSwitches(dcd->hwndLastMenu, dcd);
+	      if (dcd->flWindowAttr & CV_MINI)
+		WinCheckMenuItem(dcd->hwndLastMenu, IDM_MINIICONS, TRUE);
+	      disable_menuitem(dcd->hwndLastMenu, DID_CANCEL,
+			       !dcd->amextracted);
+	      disable_menuitem(dcd->hwndLastMenu, IDM_GREP, dcd->amextracted);
 	    }
-	    if (!PopupMenu(hwnd, hwnd, dcd -> hwndLastMenu)) {
-	      if (dcd -> cnremphasized) {
+	    if (!PopupMenu(hwnd, hwnd, dcd->hwndLastMenu)) {
+	      if (dcd->cnremphasized) {
 		WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
 			   MPFROM2SHORT(FALSE, CRA_SOURCE));
-		dcd -> cnremphasized = TRUE;
+		dcd->cnremphasized = TRUE;
 	      }
 	      MarkAll(hwnd, TRUE, FALSE, TRUE);
 	    }
@@ -2173,16 +2105,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  ULONG numitems;
 	  USHORT usOperation;
 
-	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2) -> pRecord;
-	  pDInfo = ((PCNRDRAGINFO) mp2) -> pDragInfo;
+	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
+	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "%s",
-		      GetPString(IDS_DROPERRORTEXT));
+		      "%s", GetPString(IDS_DROPERRORTEXT));
 	    break;
 	  }
 	  numitems = DrgQueryDragitemCount(pDInfo);
-	  usOperation = pDInfo -> usOperation;
+	  usOperation = pDInfo->usOperation;
 	  DrgDeleteDraginfoStrHandles(pDInfo);
 	  DrgFreeDraginfo(pDInfo);
 	  saymsg(MB_ENTER | MB_ICONASTERISK,
@@ -2193,7 +2124,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 		 &"s"[numitems == 1L],
 		 (pci) ? NullStr : GetPString(IDS_NOTEXT),
 		 (pci) ? NullStr : " ",
-		 (pci) ? pci -> szFileName : NullStr,
+		 (pci) ? pci->szFileName : NullStr,
 		 (pci) ? " " : NullStr,
 		 GetPString((usOperation == DO_COPY) ?
 			    IDS_COPYTEXT :
@@ -2206,9 +2137,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	if (mp2) {
 	  PDRAGINFO pDInfo;
 
-	  pDInfo = ((PCNRDRAGINFO) mp2) -> pDragInfo;
+	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO	 */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
 	}
 	return 0;
 
@@ -2220,41 +2151,37 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  PCNRITEM pci;
 	  USHORT uso;
 
-	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2) -> pRecord;
-//	      if(SHORT1FROMMP(mp1) == CN_DRAGAFTER)
-	  //		pci = NULL;
-	  pDInfo = ((PCNRDRAGINFO) mp2) -> pDragInfo;
+	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
+//            if(SHORT1FROMMP(mp1) == CN_DRAGAFTER)
+	  //            pci = NULL;
+	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
 	  if (pci) {
-	    if (pci -> rc.flRecordAttr & CRA_SOURCE) {
+	    if (pci->rc.flRecordAttr & CRA_SOURCE) {
 	      DrgFreeDraginfo(pDInfo);
 	      return (MRFROM2SHORT(DOR_NODROP, 0));
 	    }
-	    uso = pDInfo -> usOperation;
+	    uso = pDInfo->usOperation;
 	    if (uso == DO_DEFAULT)
 	      uso = (fCopyDefault) ? DO_COPY : DO_MOVE;
-	    if (!(pci -> attrFile & FILE_DIRECTORY)) {
-	      if (uso != DO_LINK && uso != DO_MOVE &&
-		  uso != DO_COPY)
-	      {
+	    if (!(pci->attrFile & FILE_DIRECTORY)) {
+	      if (uso != DO_LINK && uso != DO_MOVE && uso != DO_COPY) {
 		DrgFreeDraginfo(pDInfo);
 		return MRFROM2SHORT(DOR_NODROP, 0);
 	      }
 	      if (uso != DO_LINK &&
-		  !(driveflags[toupper(*pci -> szFileName) - 'A'] &
-		    DRIVE_NOTWRITEABLE))
-	      {
+		  !(driveflags[toupper(*pci->szFileName) - 'A'] &
+		    DRIVE_NOTWRITEABLE)) {
 		ARC_TYPE *info = NULL;
 
 		if (!fQuickArcFind &&
-		    !(driveflags[toupper(*pci -> szFileName) - 'A'] &
+		    !(driveflags[toupper(*pci->szFileName) - 'A'] &
 		      DRIVE_SLOW))
-		  info = find_type(pci -> szFileName, NULL);
+		  info = find_type(pci->szFileName, NULL);
 		else
-		  info = quick_find_type(pci -> szFileName, NULL);
-		if (!info || ((uso == DO_MOVE && !info -> move) ||
-			      (uso == DO_COPY && !info -> create)))
-		{
+		  info = quick_find_type(pci->szFileName, NULL);
+		if (!info || ((uso == DO_MOVE && !info->move) ||
+			      (uso == DO_COPY && !info->create))) {
 		  DrgFreeDraginfo(pDInfo);
 		  return MRFROM2SHORT(DOR_NODROP, 0);
 		}
@@ -2265,27 +2192,24 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 				       0);	/* Index to DRAGITEM     */
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
 			   DRM_OS2FILE,	/* mechanisms and data   */
-			   NULL))
-	  {
-	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO	 */
+			   NULL)) {
+	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
 	    if (pci) {
-	      if (driveflags[toupper(*pci -> szFileName) - 'A'] &
+	      if (driveflags[toupper(*pci->szFileName) - 'A'] &
 		  DRIVE_NOTWRITEABLE)
 		return MRFROM2SHORT(DOR_DROP, DO_LINK);
-	      if (toupper(*pci -> szFileName) < 'C')
+	      if (toupper(*pci->szFileName) < 'C')
 		return MRFROM2SHORT(DOR_DROP, DO_COPY);
 	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop   */
-				  ((fCopyDefault) ?
-				   DO_COPY :
-				   DO_MOVE));
+				  ((fCopyDefault) ? DO_COPY : DO_MOVE));
 	    }
 	    else
 	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop   */
 				  DO_COPY);
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO	 */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
 	}
-	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid	*/
+	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid       */
 
       case CN_INITDRAG:
 	if (mp2) {
@@ -2294,18 +2218,18 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  PCNRITEM pci;
 
 	  if (pcd) {
-	    pci = (PCNRITEM) pcd -> pRecord;
+	    pci = (PCNRITEM) pcd->pRecord;
 	    if (pci) {
-	      if (pci -> rc.flRecordAttr & CRA_SELECTED)
+	      if (pci->rc.flRecordAttr & CRA_SELECTED)
 		wasemphasized = TRUE;
-	      if (IsRoot(pci -> szFileName))
+	      if (IsRoot(pci->szFileName))
 		break;
 	      if (hwndStatus2)
-		WinSetWindowText(hwndStatus2,GetPString(IDS_DRAGFILEOBJTEXT));
-	      if (DoFileDrag(hwnd,dcd -> hwndObject,mp2,NULL,NULL,TRUE))
-	      {
+		WinSetWindowText(hwndStatus2,
+				 GetPString(IDS_DRAGFILEOBJTEXT));
+	      if (DoFileDrag(hwnd, dcd->hwndObject, mp2, NULL, NULL, TRUE)) {
 		if (fUnHilite && wasemphasized)
-		  UnHilite(hwnd, TRUE, &dcd -> lastselection);
+		  UnHilite(hwnd, TRUE, &dcd->lastselection);
 	      }
 	      if (hwndStatus2)
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
@@ -2321,120 +2245,123 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
 	  if (li) {
-	    if (!*li -> targetpath) {
-	      li -> type = IDM_COLLECT;
+	    if (!*li->targetpath) {
+	      li->type = IDM_COLLECT;
 	      action = UM_COLLECT;
 	    }
 	    else {
-	      if (li -> list && li -> list[0] && IsRoot(li -> list[0]))
-		li -> type = DO_LINK;
-	      else if (fDragndropDlg && (!*li -> arcname || !li -> info)) {
+	      if (li->list && li->list[0] && IsRoot(li->list[0]))
+		li->type = DO_LINK;
+	      else if (fDragndropDlg && (!*li->arcname || !li->info)) {
 		CHECKLIST cl;
 
 		memset(&cl, 0, sizeof(cl));
 		cl.size = sizeof(cl);
-		cl.flags = li -> type;
-		cl.list = li -> list;
-		cl.cmd = li -> type;
-		cl.prompt = li -> targetpath;
-		li -> type = WinDlgBox(HWND_DESKTOP, dcd -> hwndParent,
-				       DropListProc, FM3ModHandle,
-				       DND_FRAME, MPFROMP(&cl));
-		if (!li -> type) {
+		cl.flags = li->type;
+		cl.list = li->list;
+		cl.cmd = li->type;
+		cl.prompt = li->targetpath;
+		li->type = WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
+				     DropListProc, FM3ModHandle,
+				     DND_FRAME, MPFROMP(&cl));
+		if (!li->type) {
 		  FreeListInfo(li);
 		  return 0;
 		}
-		li -> list = cl.list;
-		if (!li -> list || !li -> list[0]) {
+		li->list = cl.list;
+		if (!li->list || !li->list[0]) {
 		  FreeListInfo(li);
 		  return 0;
 		}
 	      }
-	      switch (li -> type) {
+	      switch (li->type) {
 	      case DND_LAUNCH:
-		strcat(li -> targetpath, " %a");
-		ExecOnList(dcd -> hwndParent, li -> targetpath,
-			   PROMPT | WINDOWED, NULL, li -> list, NULL);
-		FreeList(li -> list);
-		li -> list = NULL;
+		strcat(li->targetpath, " %a");
+		ExecOnList(dcd->hwndParent, li->targetpath,
+			   PROMPT | WINDOWED, NULL, li->list, NULL);
+		FreeList(li->list);
+		li->list = NULL;
 		break;
 	      case DO_LINK:
 		if (fLinkSetsIcon) {
-		  li -> type = IDM_SETICON;
+		  li->type = IDM_SETICON;
 		  action = UM_MASSACTION;
 		}
 		else
-		  li -> type = IDM_COMPARE;
+		  li->type = IDM_COMPARE;
 		break;
 	      case DND_EXTRACT:
-		if (*li -> targetpath && !IsFile(li -> targetpath))
-		  li -> type = IDM_EXTRACT;
+		if (*li->targetpath && !IsFile(li->targetpath))
+		  li->type = IDM_EXTRACT;
 		break;
 	      case DND_MOVE:
-		li -> type = IDM_MOVE;
-		if (*li -> targetpath && IsFile(li -> targetpath) == 1) {
+		li->type = IDM_MOVE;
+		if (*li->targetpath && IsFile(li->targetpath) == 1) {
 		  action = UM_MASSACTION;
-		  li -> type = IDM_ARCHIVEM;
+		  li->type = IDM_ARCHIVEM;
 		}
 		break;
 	      case DND_WILDMOVE:
-		li -> type = IDM_WILDMOVE;
-		if (*li -> targetpath && IsFile(li -> targetpath) == 1) {
+		li->type = IDM_WILDMOVE;
+		if (*li->targetpath && IsFile(li->targetpath) == 1) {
 		  action = UM_MASSACTION;
-		  li -> type = IDM_ARCHIVEM;
+		  li->type = IDM_ARCHIVEM;
 		}
 		break;
 	      case DND_OBJECT:
-		li -> type = IDM_OBJECT;
+		li->type = IDM_OBJECT;
 		action = UM_MASSACTION;
 		break;
 	      case DND_SHADOW:
-		li -> type = IDM_SHADOW;
+		li->type = IDM_SHADOW;
 		action = UM_MASSACTION;
 		break;
 	      case DND_COMPARE:
-		li -> type = IDM_COMPARE;
+		li->type = IDM_COMPARE;
 		break;
 	      case DND_SETICON:
 		action = UM_MASSACTION;
-		li -> type = IDM_SETICON;
+		li->type = IDM_SETICON;
 		break;
 	      case DND_WILDCOPY:
-		li -> type = IDM_WILDCOPY;
-		if (*li -> targetpath && IsFile(li -> targetpath) == 1) {
+		li->type = IDM_WILDCOPY;
+		if (*li->targetpath && IsFile(li->targetpath) == 1) {
 		  action = UM_MASSACTION;
-		  li -> type = IDM_ARCHIVE;
+		  li->type = IDM_ARCHIVE;
 		}
 		break;
 	      case DND_COPY:
-		li -> type = IDM_COPY;
-		if (*li -> targetpath && IsFile(li -> targetpath) == 1) {
+		li->type = IDM_COPY;
+		if (*li->targetpath && IsFile(li->targetpath) == 1) {
 		  action = UM_MASSACTION;
-		  li -> type = IDM_ARCHIVE;
+		  li->type = IDM_ARCHIVE;
 		}
 		break;
 	      default:
-		if (*li -> arcname && li -> info) {
+		if (*li->arcname && li->info) {
 		  action = UM_MASSACTION;
-		  li -> type = (li -> type == DO_MOVE) ? IDM_FAKEEXTRACTM : IDM_FAKEEXTRACT;
+		  li->type =
+		    (li->type ==
+		     DO_MOVE) ? IDM_FAKEEXTRACTM : IDM_FAKEEXTRACT;
 		}
-		else if (*li -> targetpath && IsFile(li -> targetpath) == 1) {
+		else if (*li->targetpath && IsFile(li->targetpath) == 1) {
 		  action = UM_MASSACTION;
-		  li -> type = (li -> type == DO_MOVE) ? IDM_ARCHIVEM : IDM_ARCHIVE;
+		  li->type =
+		    (li->type == DO_MOVE) ? IDM_ARCHIVEM : IDM_ARCHIVE;
 		}
 		else
-		  li -> type = (li -> type == DO_MOVE) ? IDM_MOVE : IDM_COPY;
+		  li->type = (li->type == DO_MOVE) ? IDM_MOVE : IDM_COPY;
 		break;
 	      }
 	    }
-	    if (!li -> list || !li -> list[0])
+	    if (!li->list || !li->list[0])
 	      FreeListInfo(li);
-	    else if (!PostMsg(dcd -> hwndObject, action, MPFROMP(li), MPVOID))
+	    else if (!PostMsg(dcd->hwndObject, action, MPFROMP(li), MPVOID))
 	      FreeListInfo(li);
 	    else {
 	      USHORT usop = 0;
 
-	      switch (li -> type) {
+	      switch (li->type) {
 	      case IDM_COPY:
 	      case IDM_WILDCOPY:
 		usop = DO_COPY;
@@ -2470,7 +2397,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	  PCNRITEM pci;
 	  CHAR s[CCHMAXPATH + 91], tb[81], tf[81], *p;
 
-	  pci = (PCNRITEM) ((pre) ? pre -> pRecord : NULL);
+	  pci = (PCNRITEM) ((pre) ? pre->pRecord : NULL);
 	  if (!pci) {
 	    if (hwndStatus2)
 	      WinSetWindowText(hwndStatus2, NullStr);
@@ -2483,86 +2410,85 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 	      WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
 	    break;
 	  }
-	  if (pre -> fEmphasisMask & CRA_SELECTED) {
-	    if (pci -> rc.flRecordAttr & CRA_SELECTED) {
-	      dcd -> selectedbytes += (pci -> cbFile + pci -> easize);
-	      dcd -> selectedfiles++;
+	  if (pre->fEmphasisMask & CRA_SELECTED) {
+	    if (pci->rc.flRecordAttr & CRA_SELECTED) {
+	      dcd->selectedbytes += (pci->cbFile + pci->easize);
+	      dcd->selectedfiles++;
 	    }
-	    else if (dcd -> selectedfiles) {
-	      dcd -> selectedbytes -= (pci -> cbFile + pci -> easize);
-	      dcd -> selectedfiles--;
+	    else if (dcd->selectedfiles) {
+	      dcd->selectedbytes -= (pci->cbFile + pci->easize);
+	      dcd->selectedfiles--;
 	    }
-	    if (!dcd -> suspendview) {
-	      commafmt(tf, sizeof(tf), dcd -> selectedfiles);
-	      CommaFmtULL(tb, sizeof(tb), dcd -> selectedbytes, ' ');
+	    if (!dcd->suspendview) {
+	      commafmt(tf, sizeof(tf), dcd->selectedfiles);
+	      CommaFmtULL(tb, sizeof(tb), dcd->selectedbytes, ' ');
 	      sprintf(s, "%s / %s", tf, tb);
-	      WinSetDlgItemText(dcd -> hwndClient, DIR_SELECTED, s);
+	      WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, s);
 	    }
 	  }
-	  if (!dcd -> suspendview &&
-	      WinQueryActiveWindow(dcd -> hwndParent) == dcd -> hwndFrame)
-	  {
-	    if (pre -> fEmphasisMask & CRA_CURSORED) {
-	      if (pci -> rc.flRecordAttr & CRA_CURSORED) {
+	  if (!dcd->suspendview &&
+	      WinQueryActiveWindow(dcd->hwndParent) == dcd->hwndFrame) {
+	    if (pre->fEmphasisMask & CRA_CURSORED) {
+	      if (pci->rc.flRecordAttr & CRA_CURSORED) {
 		if (fSplitStatus && hwndStatus2) {
-		  if (pci -> attrFile & FILE_DIRECTORY)
-		    p = pci -> pszFileName;
+		  if (pci->attrFile & FILE_DIRECTORY)
+		    p = pci->pszFileName;
 		  else {
-		    p = strrchr(pci -> szFileName, '\\');
+		    p = strrchr(pci->szFileName, '\\');
 		    if (p) {
 		      if (*(p + 1))
 			p++;
 		      else
-			p = pci -> pszFileName;
+			p = pci->pszFileName;
 		    }
 		    else
-		      p = pci -> pszFileName;
+		      p = pci->pszFileName;
 		  }
-		  CommaFmtULL(tb, sizeof(tb), pci -> cbFile + pci -> easize, ' ');
+		  CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
 		  if (!fMoreButtons)
 		    sprintf(s, " %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
-			    tb, pci -> date.year,
-		      pci -> date.month, pci -> date.day, pci -> time.hours,
-			    pci -> time.minutes, pci -> time.seconds,
-			    pci -> pszDispAttr, p);
+			    tb, pci->date.year,
+			    pci->date.month, pci->date.day, pci->time.hours,
+			    pci->time.minutes, pci->time.seconds,
+			    pci->pszDispAttr, p);
 		  else {
-		    if (pci -> cbFile + pci -> easize > 1024)
-		      CommaFmtULL(tf, sizeof(tf), pci -> cbFile + pci -> easize, ' ');
+		    if (pci->cbFile + pci->easize > 1024)
+		      CommaFmtULL(tf, sizeof(tf), pci->cbFile + pci->easize,
+				  ' ');
 		    else
 		      *tf = 0;
 		    sprintf(s, GetPString(IDS_STATUSSIZETEXT),
 			    tb,
-			    *tf ? " (" : NullStr,
-			    tf,
-			    *tf ? ")" : NullStr);
+			    *tf ? " (" : NullStr, tf, *tf ? ")" : NullStr);
 		  }
 		  WinSetWindowText(hwndStatus2, s);
 		}
 		if (fMoreButtons) {
-		  WinSetWindowText(hwndName, pci -> pszFileName);
+		  WinSetWindowText(hwndName, pci->pszFileName);
 		  sprintf(s, "%04u/%02u/%02u %02u:%02u:%02u",
-			  pci -> date.year, pci -> date.month,
-		    pci -> date.day, pci -> time.hours, pci -> time.minutes,
-			  pci -> time.seconds);
+			  pci->date.year, pci->date.month,
+			  pci->date.day, pci->time.hours, pci->time.minutes,
+			  pci->time.seconds);
 		  WinSetWindowText(hwndDate, s);
-		  WinSetWindowText(hwndAttr, pci -> pszDispAttr);
+		  WinSetWindowText(hwndAttr, pci->pszDispAttr);
 		}
 	      }
 	    }
 	  }
-	  if (!dcd -> suspendview && hwndMain &&
-	      (pre -> fEmphasisMask & CRA_CURSORED) &&
-	      (pci -> rc.flRecordAttr & CRA_CURSORED) &&
-	      WinQueryActiveWindow(dcd -> hwndParent) == dcd -> hwndFrame)
+	  if (!dcd->suspendview && hwndMain &&
+	      (pre->fEmphasisMask & CRA_CURSORED) &&
+	      (pci->rc.flRecordAttr & CRA_CURSORED) &&
+	      WinQueryActiveWindow(dcd->hwndParent) == dcd->hwndFrame)
 	    WinSendMsg(hwndMain, UM_LOADFILE,
-	    MPFROMP(((fComments || (pci -> attrFile & FILE_DIRECTORY) == 0) ?
-		     pci -> szFileName : NULL)), MPVOID);
+		       MPFROMP(((fComments
+				 || (pci->attrFile & FILE_DIRECTORY) ==
+				 0) ? pci->szFileName : NULL)), MPVOID);
 	}
 	break;
 
       case CN_ENTER:
 	if (mp2) {
-	  PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2) -> pRecord;
+	  PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
 	  FILEFINDBUF3 ffb;
 	  HDIR hDir = HDIR_CREATE;
 	  ULONG nm = 1L;
@@ -2570,48 +2496,41 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 
 	  SetShiftState();
 	  if (pci) {
-	    if (pci -> rc.flRecordAttr & CRA_INUSE)
+	    if (pci->rc.flRecordAttr & CRA_INUSE)
 	      break;
 	    DosError(FERR_DISABLEHARDERR);
-	    status = DosFindFirst(pci -> szFileName, &hDir,
+	    status = DosFindFirst(pci->szFileName, &hDir,
 				  FILE_NORMAL | FILE_DIRECTORY |
 				  FILE_ARCHIVED | FILE_READONLY |
 				  FILE_HIDDEN | FILE_SYSTEM,
-				  &ffb, sizeof(ffb), &nm,
-				  FIL_STANDARD);
+				  &ffb, sizeof(ffb), &nm, FIL_STANDARD);
 	    priority_bumped();
 	    if (!status) {
 	      DosFindClose(hDir);
 	      if (ffb.attrFile & FILE_DIRECTORY) {
-		if ((shiftstate & (KC_CTRL | KC_ALT)) ==
-		    (KC_CTRL | KC_ALT))
+		if ((shiftstate & (KC_CTRL | KC_ALT)) == (KC_CTRL | KC_ALT))
 		  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_SHOWALLFILES, 0),
 			  MPVOID);
 		else if ((shiftstate & (KC_CTRL | KC_SHIFT)) ==
 			 (KC_CTRL | KC_SHIFT))
-		  OpenObject(pci -> szFileName, Settings, dcd -> hwndFrame);
+		  OpenObject(pci->szFileName, Settings, dcd->hwndFrame);
 		else if (shiftstate & KC_CTRL)
-		  OpenObject(pci -> szFileName, Default, dcd -> hwndFrame);
+		  OpenObject(pci->szFileName, Default, dcd->hwndFrame);
 		else
 		  OpenDirCnr(HWND_DESKTOP,
 			     hwndMain,
-			     dcd -> hwndFrame,
-			     FALSE,
-			     pci -> szFileName);
+			     dcd->hwndFrame, FALSE, pci->szFileName);
 	      }
 	      else {
 		SWP swp;
 
 		WinSendMsg(hwnd,
 			   CM_SETRECORDEMPHASIS,
-			   MPFROMP(pci),
-			   MPFROM2SHORT(TRUE, CRA_INUSE));
-		WinQueryWindowPos(dcd -> hwndFrame, &swp);
+			   MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_INUSE));
+		WinQueryWindowPos(dcd->hwndFrame, &swp);
 		DefaultViewKeys(hwnd,
-				dcd -> hwndFrame,
-				dcd -> hwndParent,
-				&swp,
-				pci -> szFileName);
+				dcd->hwndFrame,
+				dcd->hwndParent, &swp, pci->szFileName);
 		WinSendMsg(hwnd,
 			   CM_SETRECORDEMPHASIS,
 			   MPFROMP(pci),
@@ -2636,10 +2555,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     if (dcd && mp2) {
       HWND ret;
 
-      ret = StartMLEEditor(dcd -> hwndParent,
-			   (INT) mp1,
-			   (CHAR *) mp2,
-			   dcd -> hwndFrame);
+      ret = StartMLEEditor(dcd->hwndParent,
+			   (INT) mp1, (CHAR *) mp2, dcd->hwndFrame);
       if (mp2)
 	free((CHAR *) mp2);
       return MRFROMLONG(ret);
@@ -2652,25 +2569,25 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     return 0;
 
   case UM_FOLDUP:
-    if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
+    if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       DosExit(EXIT_PROCESS, 1);
     return 0;
 
   case WM_CLOSE:
     if (dcd) {
-      dcd -> namecanchange = TRUE;
-      dcd -> stopflag = 1;
-      if (dcd -> amextracted)
-	return 0;		// Can not close yet
+      dcd->namecanchange = TRUE;
+      dcd->stopflag = 1;
+      if (dcd->amextracted)
+	return 0;			// Can not close yet
     }
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     if (dcd) {
-      if (!dcd -> dontclose && ParentIsDesktop(hwnd, dcd -> hwndParent))
+      if (!dcd->dontclose && ParentIsDesktop(hwnd, dcd->hwndParent))
 	PostMsg(hwnd, UM_FOLDUP, MPVOID, MPVOID);
-      if (dcd -> hwndObject) {
+      if (dcd->hwndObject) {
 	DosSleep(64L);
-	if (!PostMsg(dcd -> hwndObject, WM_CLOSE, MPVOID, MPVOID))
-	  WinSendMsg(dcd -> hwndObject, WM_CLOSE, MPVOID, MPVOID);
+	if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
+	  WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
     }
     else
@@ -2684,23 +2601,21 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
       WinDestroyWindow(CollectorFileMenu);
     if (CollectorCnrMenu)
       WinDestroyWindow(CollectorCnrMenu);
-    CollectorCnrMenu = CollectorFileMenu = CollectorDirMenu = (HWND)0;
-    Collector = (HWND)0;
+    CollectorCnrMenu = CollectorFileMenu = CollectorDirMenu = (HWND) 0;
+    Collector = (HWND) 0;
     EmptyCnr(hwnd);
     break;
   }
-  return (dcd && dcd -> oldproc) ? dcd -> oldproc(hwnd, msg, mp1, mp2) :
+  return (dcd && dcd->oldproc) ? dcd->oldproc(hwnd, msg, mp1, mp2) :
     PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
 HWND StartCollector(HWND hwndParent, INT flags)
 {
-  HWND hwndFrame = (HWND)0;
+  HWND hwndFrame = (HWND) 0;
   HWND hwndClient;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
-		     FCF_SIZEBORDER | FCF_MINMAX |
-		     FCF_ICON | FCF_NOBYTEALIGN |
-		     FCF_ACCELTABLE;
+    FCF_SIZEBORDER | FCF_MINMAX | FCF_ICON | FCF_NOBYTEALIGN | FCF_ACCELTABLE;
   USHORT id;
   DIRCNRDATA *dcd;
 
@@ -2712,15 +2627,8 @@ HWND StartCollector(HWND hwndParent, INT flags)
     WinSetWindowPos(WinQueryWindow(WinQueryWindow(Collector,
 						  QW_PARENT),
 				   QW_PARENT),
-		    HWND_TOP,
-		    0,
-		    0,
-		    0,
-		    0,
-		    SWP_SHOW | SWP_RESTORE);
-    return WinQueryWindow(WinQueryWindow(Collector,
-					 QW_PARENT),
-			  QW_PARENT);
+		    HWND_TOP, 0, 0, 0, 0, SWP_SHOW | SWP_RESTORE);
+    return WinQueryWindow(WinQueryWindow(Collector, QW_PARENT), QW_PARENT);
   }
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 WS_VISIBLE,
@@ -2728,59 +2636,55 @@ HWND StartCollector(HWND hwndParent, INT flags)
 				 GetPString(IDS_WCCOLLECTOR),
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
-				 FM3ModHandle,
-				 COLLECTOR_FRAME,
-				 &hwndClient);
+				 FM3ModHandle, COLLECTOR_FRAME, &hwndClient);
   if (hwndFrame && hwndClient) {
     id = COLLECTOR_FRAME + idinc++;
     WinSetWindowUShort(hwndFrame, QWS_ID, id);
-    dcd = xmallocz(sizeof(DIRCNRDATA),pszSrcFile,__LINE__);
+    dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
-      PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
-      hwndFrame = (HWND)0;
+      PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
+      hwndFrame = (HWND) 0;
     }
     else {
-      dcd -> size = sizeof(DIRCNRDATA);
-      dcd -> id = id;
-      dcd -> type = COLLECTOR_FRAME;
-      dcd -> hwndParent = (hwndParent) ? hwndParent : HWND_DESKTOP;
-      dcd -> hwndFrame = hwndFrame;
-      dcd -> hwndClient = hwndClient;
+      dcd->size = sizeof(DIRCNRDATA);
+      dcd->id = id;
+      dcd->type = COLLECTOR_FRAME;
+      dcd->hwndParent = (hwndParent) ? hwndParent : HWND_DESKTOP;
+      dcd->hwndFrame = hwndFrame;
+      dcd->hwndClient = hwndClient;
       if (flags & 4)
-	dcd -> dontclose = TRUE;
+	dcd->dontclose = TRUE;
       {
 	PFNWP oldproc;
 
-	oldproc = WinSubclassWindow(hwndFrame,
-				    (PFNWP) CollectorFrameWndProc);
-	WinSetWindowPtr(hwndFrame,QWL_USER,(PVOID) oldproc);
+	oldproc = WinSubclassWindow(hwndFrame, (PFNWP) CollectorFrameWndProc);
+	WinSetWindowPtr(hwndFrame, QWL_USER, (PVOID) oldproc);
       }
-      dcd -> hwndCnr = WinCreateWindow(hwndClient,
-				       WC_CONTAINER,
-				       NULL,
-				       CCS_AUTOPOSITION | CCS_MINIICONS |
-				       CCS_MINIRECORDCORE | ulCnrType |
-				       WS_VISIBLE,
-				       0,
-				       0,
-				       0,
-				       0,
-				       hwndClient,
-				       HWND_TOP,
-				       (ULONG) COLLECTOR_CNR,
-				       NULL,
-				       NULL);
-      if (!dcd -> hwndCnr) {
-	Win_Error2(hwndClient,hwndClient,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
-	PostMsg(hwndClient,WM_CLOSE,MPVOID,MPVOID);
+      dcd->hwndCnr = WinCreateWindow(hwndClient,
+				     WC_CONTAINER,
+				     NULL,
+				     CCS_AUTOPOSITION | CCS_MINIICONS |
+				     CCS_MINIRECORDCORE | ulCnrType |
+				     WS_VISIBLE,
+				     0,
+				     0,
+				     0,
+				     0,
+				     hwndClient,
+				     HWND_TOP,
+				     (ULONG) COLLECTOR_CNR, NULL, NULL);
+      if (!dcd->hwndCnr) {
+	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
+		   IDS_WINCREATEWINDOW);
+	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	free(dcd);
-	hwndFrame = (HWND)0;
+	hwndFrame = (HWND) 0;
       }
       else {
-	Collector = dcd -> hwndCnr;
-	WinSetWindowPtr(dcd -> hwndCnr, QWL_USER, (PVOID) dcd);
-	WinSetWindowText(hwndFrame,GetPString(IDS_COLLECTORTITLETEXT));
+	Collector = dcd->hwndCnr;
+	WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
+	WinSetWindowText(hwndFrame, GetPString(IDS_COLLECTORTITLETEXT));
 	if (FrameFlags & FCF_MENU) {
 	  if (!fToolbar) {
 	    HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
@@ -2788,38 +2692,33 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	    if (hwndMenu) {
 	      WinSendMsg(hwndMenu,
 			 MM_DELETEITEM,
-			 MPFROM2SHORT(IDM_SEEALL, FALSE),
-			 MPVOID);
+			 MPFROM2SHORT(IDM_SEEALL, FALSE), MPVOID);
 	      WinSendMsg(hwndMenu,
 			 MM_DELETEITEM,
-			 MPFROM2SHORT(IDM_GREP, FALSE),
-			 MPVOID);
+			 MPFROM2SHORT(IDM_GREP, FALSE), MPVOID);
 	      WinSendMsg(hwndMenu,
 			 MM_DELETEITEM,
-			 MPFROM2SHORT(IDM_CLEARCNR, FALSE),
-			 MPVOID);
+			 MPFROM2SHORT(IDM_CLEARCNR, FALSE), MPVOID);
 	      WinSendMsg(hwndMenu,
 			 MM_DELETEITEM,
-			 MPFROM2SHORT(IDM_REMOVE, FALSE),
-			 MPVOID);
+			 MPFROM2SHORT(IDM_REMOVE, FALSE), MPVOID);
 	    }
 	  }
 	}
-	dcd -> oldproc = WinSubclassWindow(dcd -> hwndCnr,
-					   (PFNWP) CollectorCnrWndProc);
+	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
+					 (PFNWP) CollectorCnrWndProc);
 	{
-	  USHORT ids[] =
-	  {DIR_TOTALS, DIR_SELECTED, DIR_VIEW, DIR_SORT,
-	   DIR_FILTER, 0};
+	  USHORT ids[] = { DIR_TOTALS, DIR_SELECTED, DIR_VIEW, DIR_SORT,
+	    DIR_FILTER, 0
+	  };
 
-	  CommonCreateTextChildren(dcd -> hwndClient,
-				   GetPString(IDS_WCCOLSTATUS),
-				   ids);
+	  CommonCreateTextChildren(dcd->hwndClient,
+				   GetPString(IDS_WCCOLSTATUS), ids);
 	}
 	if (FrameFlags & FCF_SHELLPOSITION)
-	  PostMsg(hwndClient,UM_SIZE,MPVOID,MPVOID);
-	if (!PostMsg(dcd -> hwndCnr,UM_SETUP,MPVOID,MPVOID))
-	  WinSendMsg(dcd -> hwndCnr,UM_SETUP,MPVOID,MPVOID);
+	  PostMsg(hwndClient, UM_SIZE, MPVOID, MPVOID);
+	if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
+	  WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
       }
     }
   }

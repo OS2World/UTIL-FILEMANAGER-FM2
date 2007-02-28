@@ -39,83 +39,85 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-typedef struct {
-  CHAR        *pszFileName;
-  HWND         hwndCnr;
-  CHAR        *pchStopFlag;
-  DIRCNRDATA  *pDCD;
-} DIRSIZE;
+typedef struct
+{
+  CHAR *pszFileName;
+  HWND hwndCnr;
+  CHAR *pchStopFlag;
+  DIRCNRDATA *pDCD;
+}
+DIRSIZE;
 
-typedef struct {
-  CHAR      szDirName[CCHMAXPATH];
-  CHAR      chStopFlag;
-  BOOL      dying;
-  BOOL      working;
-  HPOINTER  hptr;
-} tState;
-
+typedef struct
+{
+  CHAR szDirName[CCHMAXPATH];
+  CHAR chStopFlag;
+  BOOL dying;
+  BOOL working;
+  HPOINTER hptr;
+}
+tState;
 
 static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(DIRSIZE,ProcessDir,FillCnrThread,DirSizeProc)
 #pragma alloc_text(DIRSIZE2,PrintToFile,FillInRecSizes,SortSizeCnr)
 
-static SHORT APIENTRY SortSizeCnr (PMINIRECORDCORE p1,PMINIRECORDCORE p2,
-			    PVOID SortFlags)
+static SHORT APIENTRY SortSizeCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
+				  PVOID SortFlags)
 {
   ULONGLONG size1;
   ULONGLONG size2;
 
-  size1 = ((PCNRITEM)p1)->cbFile + ((PCNRITEM)p1)->easize;
-  size2 = ((PCNRITEM)p2)->cbFile + ((PCNRITEM)p2)->easize;
+  size1 = ((PCNRITEM) p1)->cbFile + ((PCNRITEM) p1)->easize;
+  size2 = ((PCNRITEM) p2)->cbFile + ((PCNRITEM) p2)->easize;
   return (size1 < size2) ? 1 : (size1 == size2) ? 0 : -1;
 }
 
-
-static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
-                       PCNRITEM pciParent,
-		       CHAR *pchStopFlag,BOOL top,
+static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
+		       PCNRITEM pciParent,
+		       CHAR * pchStopFlag, BOOL top,
 		       PULONGLONG pullTotalBytes)
 {
-  CHAR           maskstr[CCHMAXPATH];
-  CHAR           *pEndMask;
-  register char  *p;
-  register char  *sp;
-  register char  *pp;
-  ULONG          nm;
-  ULONGLONG	 ullCurDirBytes = 0;
-  ULONGLONG	 ullSubDirBytes = 0;
-  ULONGLONG	 ull;
-  HDIR           hdir;
-  FILEFINDBUF4   *pFFB;
-  APIRET         rc;
-  RECORDINSERT   ri;
-  PCNRITEM       pCI;
+  CHAR maskstr[CCHMAXPATH];
+  CHAR *pEndMask;
+  register char *p;
+  register char *sp;
+  register char *pp;
+  ULONG nm;
+  ULONGLONG ullCurDirBytes = 0;
+  ULONGLONG ullSubDirBytes = 0;
+  ULONGLONG ull;
+  HDIR hdir;
+  FILEFINDBUF4 *pFFB;
+  APIRET rc;
+  RECORDINSERT ri;
+  PCNRITEM pCI;
 
   // fixme to report errors
-  *pullTotalBytes = 0;		// In case we fail
+  *pullTotalBytes = 0;			// In case we fail
 
-  pFFB = xmalloc(sizeof(FILEFINDBUF4),pszSrcFile,__LINE__);
-  if(!pFFB)
+  pFFB = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+  if (!pFFB)
     return FALSE;
-  strcpy(maskstr,pszFileName);
-  if(maskstr[strlen(maskstr) - 1] != '\\')
-    strcat(maskstr,"\\");
+  strcpy(maskstr, pszFileName);
+  if (maskstr[strlen(maskstr) - 1] != '\\')
+    strcat(maskstr, "\\");
   pEndMask = &maskstr[strlen(maskstr)];	// Point after last backslash
-  strcat(maskstr,"*");
+  strcat(maskstr, "*");
   //printf("%s\n",maskstr);
 
   hdir = HDIR_CREATE;
   nm = 1L;
-  memset(pFFB,0,sizeof(FILEFINDBUF4));
+  memset(pFFB, 0, sizeof(FILEFINDBUF4));
   DosError(FERR_DISABLEHARDERR);
   //printf("FIND1\n");
   rc = DosFindFirst(pszFileName, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		    pFFB, sizeof(FILEFINDBUF4),&nm, FIL_QUERYEASIZE);
+		    pFFB, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
 
-  if(!rc)
+  if (!rc)
     DosFindClose(hdir);
 
   /*
@@ -123,20 +125,18 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.
    */
-  if ((!rc && (pFFB->attrFile & FILE_DIRECTORY)) ||
-      strlen(pszFileName) < 4)
-  {
+  if ((!rc && (pFFB->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
       free(pFFB);
       return FALSE;
     }
-    pCI = WinSendMsg(hwndCnr,CM_ALLOCRECORD,MPFROMLONG(EXTRA_RECORD_BYTES2),
+    pCI = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES2),
 		     MPFROMLONG(1L));
     if (!pCI) {
       free(pFFB);
       return FALSE;
     }
-    if(!rc) {
+    if (!rc) {
       ullCurDirBytes = pFFB->cbFile;
       ullCurDirBytes += CBLIST_TO_EASIZE(pFFB->cbList);
     }
@@ -147,54 +147,51 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
     *pCI->szDispAttr = *pCI->szLongname = *pCI->szSubject = 0;
     pCI->attrFile = 0L;
   }
-  else
-  {
+  else {
     free(pFFB);
     Dos_Error(MB_ENTER,
 	      rc,
 	      HWND_DESKTOP,
 	      pszSrcFile,
-	      __LINE__,
-	      GetPString(IDS_CANTFINDDIRTEXT),
-	      pszFileName);
+	      __LINE__, GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
     return FALSE;
   }
 
-  if(strlen(pszFileName) < 4 || top)
-    strcpy(pCI->szFileName,pszFileName);
+  if (strlen(pszFileName) < 4 || top)
+    strcpy(pCI->szFileName, pszFileName);
   else {
-    p = strrchr(pszFileName,'\\');
-    if(!p)
+    p = strrchr(pszFileName, '\\');
+    if (!p)
       p = pszFileName;
     else
       p++;
-    sp = (strchr(pszFileName,' ') != NULL) ? "\"" : NullStr;
+    sp = (strchr(pszFileName, ' ') != NULL) ? "\"" : NullStr;
     pp = pCI->szFileName;
-    if(*sp) {
+    if (*sp) {
       *pp = *sp;
       pp++;
       *pp = 0;
     }
-    strcpy(pp,p);
-    if(*sp)
-      strcat(pp,sp);
+    strcpy(pp, p);
+    if (*sp)
+      strcat(pp, sp);
   }
   pCI->pszFileName = pCI->szFileName + strlen(pCI->szFileName);
   pCI->rc.pszIcon = pCI->pszLongname;
   pCI->rc.flRecordAttr |= CRA_RECORDREADONLY;
-  if(fForceUpper)
+  if (fForceUpper)
     strupr(pCI->szFileName);
-  else if(fForceLower)
+  else if (fForceLower)
     strlwr(pCI->szFileName);
-  memset(&ri,0,sizeof(RECORDINSERT));
-  ri.cb                 = sizeof(RECORDINSERT);
-  ri.pRecordOrder       = (PRECORDCORE)CMA_END;
-  ri.pRecordParent      = (PRECORDCORE)pciParent;
-  ri.zOrder             = (USHORT)CMA_TOP;
-  ri.cRecordsInsert     = 1L;
-  ri.fInvalidateRecord  = TRUE;
+  memset(&ri, 0, sizeof(RECORDINSERT));
+  ri.cb = sizeof(RECORDINSERT);
+  ri.pRecordOrder = (PRECORDCORE) CMA_END;
+  ri.pRecordParent = (PRECORDCORE) pciParent;
+  ri.zOrder = (USHORT) CMA_TOP;
+  ri.cRecordsInsert = 1L;
+  ri.fInvalidateRecord = TRUE;
   //printf("CM_INSERTRECORD\n");
-  if(!WinSendMsg(hwndCnr,CM_INSERTRECORD,MPFROMP(pCI),MPFROMP(&ri))) {
+  if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pCI), MPFROMP(&ri))) {
     //printf("Insert failed\n");
     free(pFFB);
     return FALSE;
@@ -202,26 +199,20 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
   hdir = HDIR_CREATE;
   nm = 1L;
   //printf("FIND2\n");
-  rc = DosFindFirst(maskstr,&hdir,
+  rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
-		    pFFB,
-		    sizeof(FILEFINDBUF4),
-		    &nm,
-		    FIL_QUERYEASIZE);
-  if(!rc)
-  {
-    register PBYTE fb = (PBYTE)pFFB;
-    FILEFINDBUF4  *pffbFile;
-    ULONG          x;
+		    pFFB, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
+  if (!rc) {
+    register PBYTE fb = (PBYTE) pFFB;
+    FILEFINDBUF4 *pffbFile;
+    ULONG x;
 
-    while(!rc)
-    {
+    while (!rc) {
       priority_normal();
       //printf("Found %lu\n",nm);
-      for(x = 0L;x < nm;x++)
-      {
-	pffbFile = (FILEFINDBUF4 *)fb;
+      for (x = 0L; x < nm; x++) {
+	pffbFile = (FILEFINDBUF4 *) fb;
 	//printf("%s\n",pffbFile->achName);
 	//fflush(stdout);
 	// Total size skipping . and ..
@@ -232,30 +223,29 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
 	  ullCurDirBytes += pffbFile->cbFile;
 	  ullCurDirBytes += CBLIST_TO_EASIZE(pffbFile->cbList) & 0x3ff;
 
-	  if(!(pffbFile->attrFile & FILE_DIRECTORY))
+	  if (!(pffbFile->attrFile & FILE_DIRECTORY))
 	    pCI->attrFile++;		// Bump file count
-	  if(*pchStopFlag)
+	  if (*pchStopFlag)
 	    break;
-	  if(pffbFile->attrFile & FILE_DIRECTORY) {
+	  if (pffbFile->attrFile & FILE_DIRECTORY) {
 	    // Recurse into subdir
-	    strcpy(pEndMask,pffbFile->achName);	// Append dirname to base dirname
-	    if(!*pchStopFlag)
-	    {
-	      ProcessDir(hwndCnr,maskstr,pCI,pchStopFlag,FALSE,&ull);
+	    strcpy(pEndMask, pffbFile->achName);	// Append dirname to base dirname
+	    if (!*pchStopFlag) {
+	      ProcessDir(hwndCnr, maskstr, pCI, pchStopFlag, FALSE, &ull);
 	      ullSubDirBytes += ull;
 	    }
 	  }
 	}
-	if(!pffbFile->oNextEntryOffset)
+	if (!pffbFile->oNextEntryOffset)
 	  break;
 	fb += pffbFile->oNextEntryOffset;
-      } // for matches
-      if(*pchStopFlag)
+      }					// for matches
+      if (*pchStopFlag)
 	break;
       DosSleep(0L);
-      nm = 1L;	/* FilesToGet */
-      rc = DosFindNext(hdir,pFFB,sizeof(FILEFINDBUF4) ,&nm);
-    } // while more found
+      nm = 1L;				/* FilesToGet */
+      rc = DosFindNext(hdir, pFFB, sizeof(FILEFINDBUF4), &nm);
+    }					// while more found
     DosFindClose(hdir);
     priority_normal();
   }
@@ -263,60 +253,57 @@ static BOOL ProcessDir(HWND hwndCnr,CHAR *pszFileName,
   free(pFFB);
 
   pCI->cbFile = ullCurDirBytes;
-  pCI->easize = ullSubDirBytes;	// hack cough
-  WinSendMsg(hwndCnr,CM_INVALIDATERECORD,MPFROMP(&pCI),
-	     MPFROM2SHORT(1,CMA_ERASE | CMA_TEXTCHANGED));
+  pCI->easize = ullSubDirBytes;		// hack cough
+  WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pCI),
+	     MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
 
   *pullTotalBytes = ullCurDirBytes + ullSubDirBytes;
   return TRUE;
 }
 
-
-static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONGLONG ullTotalBytes,
-		     CHAR *pchStopFlag,BOOL isroot)
+static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
+			   ULONGLONG ullTotalBytes, CHAR * pchStopFlag,
+			   BOOL isroot)
 {
   PCNRITEM pCI = pciParent;
-  SHORT    attrib = CMA_FIRSTCHILD;
+  SHORT attrib = CMA_FIRSTCHILD;
 
-  if(pCI) {
+  if (pCI) {
 
-    float       fltPct = 0.0;
-    CHAR	szCurDir[80];
-    CHAR        szSubDir[80];
-    CHAR        szAllDir[80];
-    CHAR        szBar[80];
+    float fltPct = 0.0;
+    CHAR szCurDir[80];
+    CHAR szSubDir[80];
+    CHAR szAllDir[80];
+    CHAR szBar[80];
 
     // cbFile = currect directory usage in bytes
     // easize = subdirectory usage in bytes
-    CommaFmtULL(szCurDir,sizeof(szCurDir),pCI->cbFile,'K');
+    CommaFmtULL(szCurDir, sizeof(szCurDir), pCI->cbFile, 'K');
     *szBar = 0;
 
-    if (ullTotalBytes)
-    {
-      register UINT  cBar;
+    if (ullTotalBytes) {
+      register UINT cBar;
 
-      if(isroot)
-      {
+      if (isroot) {
 	FSALLOCATE fsa;
-	APIRET     rc;
+	APIRET rc;
 
-	memset(&fsa,0,sizeof(fsa));
-	rc = DosQueryFSInfo(toupper(*pCI->szFileName) - '@',FSIL_ALLOC,&fsa,
+	memset(&fsa, 0, sizeof(fsa));
+	rc = DosQueryFSInfo(toupper(*pCI->szFileName) - '@', FSIL_ALLOC, &fsa,
 			    sizeof(FSALLOCATE));
-	if (!rc)
-	{
+	if (!rc) {
 	  fltPct = (ullTotalBytes * 100.0) /
-		    ((float)fsa.cUnit *	(fsa.cSectorUnit * fsa.cbSector));
+	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
-	pCI->szLongname[1] = 1;	// Flag root - hack cough
+	pCI->szLongname[1] = 1;		// Flag root - hack cough
       }
       else
 	fltPct = (((float)pCI->cbFile + pCI->easize) * 100.0) / ullTotalBytes;
 
-      cBar = (UINT)fltPct / 2;
+      cBar = (UINT) fltPct / 2;
       if (cBar)
 	memset(szBar, '#', cBar);
-      if(cBar * 2 != (UINT)fltPct) {
+      if (cBar * 2 != (UINT) fltPct) {
 	szBar[cBar] = '=';
 	cBar++;
       }
@@ -325,84 +312,78 @@ static VOID FillInRecSizes (HWND hwndCnr,PCNRITEM pciParent,ULONGLONG ullTotalBy
       szBar[50] = 0;
     }
 
-    pCI->flags = (ULONG)fltPct;
-    CommaFmtULL(szSubDir,sizeof(szSubDir),pCI->easize,'K');
-    CommaFmtULL(szAllDir,sizeof(szAllDir),pCI->cbFile + pCI->easize,'K');
+    pCI->flags = (ULONG) fltPct;
+    CommaFmtULL(szSubDir, sizeof(szSubDir), pCI->easize, 'K');
+    CommaFmtULL(szAllDir, sizeof(szAllDir), pCI->cbFile + pCI->easize, 'K');
     sprintf(&pCI->szFileName[strlen(pCI->szFileName)],
 	    "  %s + %s = %s (%.02lf%%%s)\r%s",
 	    szCurDir,
 	    szSubDir,
 	    szAllDir,
-	    fltPct,
-	    isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr,
-	    szBar);
+	    fltPct, isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr, szBar);
     WinSendMsg(hwndCnr,
-	       CM_INVALIDATERECORD,
-	       MPFROMP(&pCI),
-	       MPFROM2SHORT(1,0));
+	       CM_INVALIDATERECORD, MPFROMP(&pCI), MPFROM2SHORT(1, 0));
     isroot = FALSE;
   }
   else
     attrib = CMA_FIRST;
-  pCI = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPFROMP(pCI),
-			     MPFROM2SHORT(attrib,CMA_ITEMORDER));
-  while(pCI && (INT)pCI != -1) {
-    if(*pchStopFlag)
+  pCI = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pCI),
+			      MPFROM2SHORT(attrib, CMA_ITEMORDER));
+  while (pCI && (INT) pCI != -1) {
+    if (*pchStopFlag)
       break;
-    FillInRecSizes(hwndCnr,pCI,ullTotalBytes,pchStopFlag,isroot);
+    FillInRecSizes(hwndCnr, pCI, ullTotalBytes, pchStopFlag, isroot);
     isroot = FALSE;
-    pCI = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPFROMP(pCI),
-			       MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
+    pCI = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pCI),
+				MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
   }
 }
 
-
-static VOID PrintToFile (HWND hwndCnr,ULONG indent,PCNRITEM pciParent,
-			 FILE *fp)
+static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
+			FILE * fp)
 {
-  PCNRITEM       pci;
+  PCNRITEM pci;
   register CHAR *p;
 
-  if(!pciParent) {
-    pciParent = WinSendMsg(hwndCnr,CM_QUERYRECORD,MPFROMP(NULL),
-			   MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
+  if (!pciParent) {
+    pciParent = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(NULL),
+			   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
     indent = 0;
   }
-  if(pciParent) {
-    p = strchr(pciParent->szFileName,'\r');
-    if(p)
+  if (pciParent) {
+    p = strchr(pciParent->szFileName, '\r');
+    if (p)
       *p = 0;
-    fprintf(fp,"%*.*s%s %lu %s%s\n",
-	    indent * 2,indent * 2," ",
+    fprintf(fp, "%*.*s%s %lu %s%s\n",
+	    indent * 2, indent * 2, " ",
 	    pciParent->szFileName,
 	    pciParent->attrFile,
-	    GetPString(IDS_FILETEXT),
-	    &"s"[pciParent->attrFile == 1]);
-    if(p)
+	    GetPString(IDS_FILETEXT), &"s"[pciParent->attrFile == 1]);
+    if (p)
       *p = '\r';
-    if(pciParent->rc.flRecordAttr & CRA_EXPANDED) {
-      pci = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPFROMP(pciParent),
-				 MPFROM2SHORT(CMA_FIRSTCHILD,CMA_ITEMORDER));
-      while(pci && (INT)pci != -1) {
+    if (pciParent->rc.flRecordAttr & CRA_EXPANDED) {
+      pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
+				  MPFROM2SHORT(CMA_FIRSTCHILD,
+					       CMA_ITEMORDER));
+      while (pci && (INT) pci != -1) {
 	DosSleep(0L);
-	PrintToFile(hwndCnr,indent + 1,pci,fp);
-	pci = (PCNRITEM)WinSendMsg(hwndCnr,CM_QUERYRECORD,MPFROMP(pci),
-				   MPFROM2SHORT(CMA_NEXT,CMA_ITEMORDER));
+	PrintToFile(hwndCnr, indent + 1, pci, fp);
+	pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
+				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
       }
     }
   }
 }
 
-
-static VOID FillCnrThread (VOID *args)
+static VOID FillCnrThread(VOID * args)
 {
-  HAB           hab;
-  HMQ           hmq;
-  DIRSIZE       *dirsize = (DIRSIZE *)args;
-  HWND          hwndCnr;
-  ULONGLONG     ull;
+  HAB hab;
+  HMQ hmq;
+  DIRSIZE *dirsize = (DIRSIZE *) args;
+  HWND hwndCnr;
+  ULONGLONG ull;
 
-  if(!dirsize)
+  if (!dirsize)
     return;
   hwndCnr = dirsize->hwndCnr;
 
@@ -410,550 +391,526 @@ static VOID FillCnrThread (VOID *args)
 
   // priority_normal();
   hab = WinInitialize(0);
-  if(hab)
-  {
-    hmq = WinCreateMsgQueue(hab,0);
-    if(hmq)
-    {
-      WinCancelShutdown(hmq,TRUE);
-      ProcessDir(hwndCnr,dirsize->pszFileName,
-		 (PCNRITEM)NULL,dirsize->pchStopFlag,TRUE,&ull);
+  if (hab) {
+    hmq = WinCreateMsgQueue(hab, 0);
+    if (hmq) {
+      WinCancelShutdown(hmq, TRUE);
+      ProcessDir(hwndCnr, dirsize->pszFileName,
+		 (PCNRITEM) NULL, dirsize->pchStopFlag, TRUE, &ull);
       DosPostEventSem(CompactSem);
-      WinEnableWindowUpdate(hwndCnr,FALSE);
-      FillInRecSizes(hwndCnr,NULL,ull,dirsize->pchStopFlag,TRUE);
-      WinEnableWindowUpdate(hwndCnr,TRUE);
-      WinSendMsg(hwndCnr,CM_INVALIDATERECORD,MPVOID,
-		 MPFROM2SHORT(0,CMA_ERASE | CMA_TEXTCHANGED));
+      WinEnableWindowUpdate(hwndCnr, FALSE);
+      FillInRecSizes(hwndCnr, NULL, ull, dirsize->pchStopFlag, TRUE);
+      WinEnableWindowUpdate(hwndCnr, TRUE);
+      WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPVOID,
+		 MPFROM2SHORT(0, CMA_ERASE | CMA_TEXTCHANGED));
       WinDestroyMsgQueue(hmq);
     }
     WinTerminate(hab);
   }
-  PostMsg(WinQueryWindow(hwndCnr,QW_PARENT),
-	  UM_CONTAINER_FILLED,
-	  MPVOID,MPVOID);
+  PostMsg(WinQueryWindow(hwndCnr, QW_PARENT),
+	  UM_CONTAINER_FILLED, MPVOID, MPVOID);
   free(dirsize);
 }
 
-
-MRESULT EXPENTRY DirSizeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   tState *pState;
   PCNRITEM pci;
   CHAR szBytes[44];
   CHAR sz[66];
 
-  switch(msg) {
-    case WM_INITDLG:
-      if(!mp2) {
-	WinDismissDlg(hwnd,0);
-	break;
-      }
-      pState = xmallocz(sizeof(tState),pszSrcFile,__LINE__);
-      if(!pState) {
-	WinDismissDlg(hwnd,0);
-	break;
-      }
-      strcpy(pState->szDirName,(CHAR *)mp2);
-      WinSetWindowPtr(hwnd,0,(PVOID)pState);
-      pState->hptr = WinLoadPointer(HWND_DESKTOP,FM3ModHandle,DIRSIZE_ICON);
-      WinDefDlgProc(hwnd,WM_SETICON,MPFROMLONG(pState->hptr),MPVOID);
-      {
-	CHAR s[CCHMAXPATH + 81];
-
-	sprintf(s,
-		GetPString(IDS_DIRSIZETITLETEXT),
-		pState->szDirName);
-	WinSetWindowText(hwnd,s);
-      }
-      {
-	DIRSIZE *dirsize;
-
-	dirsize = xmalloc(sizeof(DIRSIZE),pszSrcFile,__LINE__);
-	if(!dirsize) {
-	  WinDismissDlg(hwnd,0);
-	  break;
-	}
-	dirsize->pchStopFlag = (CHAR *)&pState->chStopFlag;
-	dirsize->pszFileName = pState->szDirName;
-	dirsize->hwndCnr = WinWindowFromID(hwnd,DSZ_CNR);
-	if(_beginthread(FillCnrThread,NULL,122880L * 5L,(PVOID)dirsize) == -1) {
-          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  free(dirsize);
-	  WinDismissDlg(hwnd,0);
-	  break;
-	}
-	pState->working = TRUE;
-        WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),FALSE);
-      }
-      PostMsg(hwnd,UM_SETUP,MPVOID,MPVOID);
+  switch (msg) {
+  case WM_INITDLG:
+    if (!mp2) {
+      WinDismissDlg(hwnd, 0);
       break;
+    }
+    pState = xmallocz(sizeof(tState), pszSrcFile, __LINE__);
+    if (!pState) {
+      WinDismissDlg(hwnd, 0);
+      break;
+    }
+    strcpy(pState->szDirName, (CHAR *) mp2);
+    WinSetWindowPtr(hwnd, 0, (PVOID) pState);
+    pState->hptr = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, DIRSIZE_ICON);
+    WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(pState->hptr), MPVOID);
+    {
+      CHAR s[CCHMAXPATH + 81];
 
-    case UM_SETUP:
-      {
-	CNRINFO    cnri;
-	FSALLOCATE fsa;
-	APIRET     rc;
+      sprintf(s, GetPString(IDS_DIRSIZETITLETEXT), pState->szDirName);
+      WinSetWindowText(hwnd, s);
+    }
+    {
+      DIRSIZE *dirsize;
 
-	memset(&cnri,0,sizeof(CNRINFO));
-	cnri.cb = sizeof(CNRINFO);
-	WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYCNRINFO,
-			  MPFROMP(&cnri),MPFROMLONG(sizeof(CNRINFO)));
-	cnri.cyLineSpacing = 0;
-	cnri.cxTreeIndent = 12L;
-	cnri.flWindowAttr = CV_TREE | CV_FLOW | CA_TREELINE | CA_OWNERDRAW;
-	WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_SETCNRINFO,MPFROMP(&cnri),
-			  MPFROMLONG(CMA_FLWINDOWATTR | CMA_TREEICON |
-				     CMA_LINESPACING | CMA_CXTREEINDENT));
-	pState = INSTDATA(hwnd);
-	if(pState && isalpha(*pState->szDirName)) {
-	  memset(&fsa,0,sizeof(fsa));
-	  rc = DosQueryFSInfo(toupper(*pState->szDirName) - '@',FSIL_ALLOC,&fsa,
-			      sizeof(FSALLOCATE));
-	  if (!rc)
-	  {
-
-	    CHAR s[132],tf[80],tb[80],tu[80];
-
-	    CommaFmtULL(tf,sizeof(tf),
-		        (ULONGLONG)fsa.cUnitAvail *
-		        (fsa.cSectorUnit * fsa.cbSector),'M');
-	    CommaFmtULL(tb,sizeof(tb),
-		        (ULONGLONG)fsa.cUnit *
-		        (fsa.cSectorUnit * fsa.cbSector),'M');
-	    CommaFmtULL(tu,sizeof(tu),
-		        (ULONGLONG)(fsa.cUnit - fsa.cUnitAvail) *
-		         (fsa.cSectorUnit * fsa.cbSector),'M');
-	    sprintf(s,
-		    GetPString(IDS_FREESPACETEXT),
-		    tf,
-		    tb,
-		    tu);
-	    WinSetDlgItemText(hwnd,
-			      DSZ_FREESPACE,
-			      s);
-	  }
-	  else
-	    WinSetDlgItemText(hwnd,
-			      DSZ_FREESPACE,
-			      GetPString(IDS_FREESPACEUTEXT));
-	}
+      dirsize = xmalloc(sizeof(DIRSIZE), pszSrcFile, __LINE__);
+      if (!dirsize) {
+	WinDismissDlg(hwnd, 0);
+	break;
       }
-      return 0;
+      dirsize->pchStopFlag = (CHAR *) & pState->chStopFlag;
+      dirsize->pszFileName = pState->szDirName;
+      dirsize->hwndCnr = WinWindowFromID(hwnd, DSZ_CNR);
+      if (_beginthread(FillCnrThread, NULL, 122880L * 5L, (PVOID) dirsize) ==
+	  -1) {
+	Runtime_Error(pszSrcFile, __LINE__,
+		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	free(dirsize);
+	WinDismissDlg(hwnd, 0);
+	break;
+      }
+      pState->working = TRUE;
+      WinEnableWindow(WinWindowFromID(hwnd, DSZ_COLLAPSE), FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, DSZ_EXPAND), FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, DSZ_PRINT), FALSE);
+    }
+    PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
+    break;
 
-    case UM_CONTAINER_FILLED:
+  case UM_SETUP:
+    {
+      CNRINFO cnri;
+      FSALLOCATE fsa;
+      APIRET rc;
+
+      memset(&cnri, 0, sizeof(CNRINFO));
+      cnri.cb = sizeof(CNRINFO);
+      WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYCNRINFO,
+			MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
+      cnri.cyLineSpacing = 0;
+      cnri.cxTreeIndent = 12L;
+      cnri.flWindowAttr = CV_TREE | CV_FLOW | CA_TREELINE | CA_OWNERDRAW;
+      WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_SETCNRINFO, MPFROMP(&cnri),
+			MPFROMLONG(CMA_FLWINDOWATTR | CMA_TREEICON |
+				   CMA_LINESPACING | CMA_CXTREEINDENT));
       pState = INSTDATA(hwnd);
-      if (!pState || pState->dying) {
-	if (pState)
-	  pState->working = FALSE;
-	WinDismissDlg(hwnd,0);
-	return 0;
-      }
-      pState->working = FALSE;
-      WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),TRUE);
+      if (pState && isalpha(*pState->szDirName)) {
+	memset(&fsa, 0, sizeof(fsa));
+	rc =
+	  DosQueryFSInfo(toupper(*pState->szDirName) - '@', FSIL_ALLOC, &fsa,
+			 sizeof(FSALLOCATE));
+	if (!rc) {
 
-      pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORD,MPVOID,
-			      MPFROM2SHORT(CMA_FIRST,CMA_ITEMORDER));
-      if(pci && (INT)pci != -1)
-	WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_EXPANDTREE,MPFROMP(pci),MPVOID);
-      *sz = 0;
-      pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORDEMPHASIS,
-			      MPFROMLONG(CMA_FIRST),
-			      MPFROMSHORT(CRA_CURSORED));
-      if (pci && (INT)pci != -1)
-      {
-	commafmt(szBytes,sizeof(szBytes),pci->attrFile);
-	sprintf(sz,
-		"%s %s%s",
-		szBytes,
-		GetPString(IDS_FILETEXT),
-		&"s"[pci->attrFile == 1]);
-      }
-      WinSetDlgItemText(hwnd,DSZ_NUMFILES,sz);
+	  CHAR s[132], tf[80], tb[80], tu[80];
 
-      WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_SORTRECORD,MPFROMP(SortSizeCnr),
-			MPVOID);
-      DosBeep(500,25);			// Wake up user
-      return 0;
-
-    case WM_ADJUSTWINDOWPOS:
-      PostMsg(hwnd,UM_STRETCH,MPVOID,MPVOID);
-      break;
-
-    case UM_STRETCH:
-      {
-	SWP swpC,swp;
-
-	WinQueryWindowPos(hwnd,&swp);
-	if(!(swp.fl & (SWP_HIDE | SWP_MINIMIZE))) {
-	  WinQueryWindowPos(WinWindowFromID(hwnd,DSZ_CNR),&swpC);
-	  WinSetWindowPos(WinWindowFromID(hwnd,DSZ_CNR),HWND_TOP,
-			  SysVal(SV_CXSIZEBORDER),
-			  swpC.y,
-			  swp.cx - (SysVal(SV_CXSIZEBORDER) * 2),
-			  (swp.cy - swpC.y) - (SysVal(SV_CYTITLEBAR) +
-					       SysVal(SV_CYSIZEBORDER)),
-			  SWP_MOVE | SWP_SIZE);
+	  CommaFmtULL(tf, sizeof(tf),
+		      (ULONGLONG) fsa.cUnitAvail *
+		      (fsa.cSectorUnit * fsa.cbSector), 'M');
+	  CommaFmtULL(tb, sizeof(tb),
+		      (ULONGLONG) fsa.cUnit *
+		      (fsa.cSectorUnit * fsa.cbSector), 'M');
+	  CommaFmtULL(tu, sizeof(tu),
+		      (ULONGLONG) (fsa.cUnit - fsa.cUnitAvail) *
+		      (fsa.cSectorUnit * fsa.cbSector), 'M');
+	  sprintf(s, GetPString(IDS_FREESPACETEXT), tf, tb, tu);
+	  WinSetDlgItemText(hwnd, DSZ_FREESPACE, s);
 	}
+	else
+	  WinSetDlgItemText(hwnd,
+			    DSZ_FREESPACE, GetPString(IDS_FREESPACEUTEXT));
       }
+    }
+    return 0;
+
+  case UM_CONTAINER_FILLED:
+    pState = INSTDATA(hwnd);
+    if (!pState || pState->dying) {
+      if (pState)
+	pState->working = FALSE;
+      WinDismissDlg(hwnd, 0);
       return 0;
+    }
+    pState->working = FALSE;
+    WinEnableWindow(WinWindowFromID(hwnd, DSZ_COLLAPSE), TRUE);
+    WinEnableWindow(WinWindowFromID(hwnd, DSZ_EXPAND), TRUE);
+    WinEnableWindow(WinWindowFromID(hwnd, DSZ_PRINT), TRUE);
 
-    case WM_DRAWITEM:
-      if(mp2) {
+    pci = WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYRECORD, MPVOID,
+			    MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+    if (pci && (INT) pci != -1)
+      WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_EXPANDTREE, MPFROMP(pci), MPVOID);
+    *sz = 0;
+    pci = WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYRECORDEMPHASIS,
+			    MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
+    if (pci && (INT) pci != -1) {
+      commafmt(szBytes, sizeof(szBytes), pci->attrFile);
+      sprintf(sz,
+	      "%s %s%s",
+	      szBytes, GetPString(IDS_FILETEXT), &"s"[pci->attrFile == 1]);
+    }
+    WinSetDlgItemText(hwnd, DSZ_NUMFILES, sz);
 
-	OWNERITEM       *oi = mp2;
-	CNRDRAWITEMINFO *cnd;
-	PCNRITEM         pci;
+    WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_SORTRECORD, MPFROMP(SortSizeCnr),
+		      MPVOID);
+    DosBeep(500, 25);			// Wake up user
+    return 0;
 
-	if(oi->idItem == CMA_TEXT) {
-	  cnd = (CNRDRAWITEMINFO *)oi->hItem;
-	  if(cnd) {
-	    pci = (PCNRITEM)cnd->pRecord;
-	    if(pci) {
+  case WM_ADJUSTWINDOWPOS:
+    PostMsg(hwnd, UM_STRETCH, MPVOID, MPVOID);
+    break;
 
-	      POINTL aptl[TXTBOX_COUNT],ptl;
-	      CHAR  *p;
-	      LONG   clr,x;
+  case UM_STRETCH:
+    {
+      SWP swpC, swp;
 
-	      p = strchr(pci->szFileName,'\r');
-	      if(p) {
-		/* draw text */
-		if (!pci->cbFile)  /* no size */
-		  GpiSetColor(oi->hps,CLR_DARKGRAY);
-		else if (!pci->easize) /* no size below */
-		  GpiSetColor(oi->hps,CLR_DARKBLUE);
+      WinQueryWindowPos(hwnd, &swp);
+      if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE))) {
+	WinQueryWindowPos(WinWindowFromID(hwnd, DSZ_CNR), &swpC);
+	WinSetWindowPos(WinWindowFromID(hwnd, DSZ_CNR), HWND_TOP,
+			SysVal(SV_CXSIZEBORDER),
+			swpC.y,
+			swp.cx - (SysVal(SV_CXSIZEBORDER) * 2),
+			(swp.cy - swpC.y) - (SysVal(SV_CYTITLEBAR) +
+					     SysVal(SV_CYSIZEBORDER)),
+			SWP_MOVE | SWP_SIZE);
+      }
+    }
+    return 0;
+
+  case WM_DRAWITEM:
+    if (mp2) {
+
+      OWNERITEM *oi = mp2;
+      CNRDRAWITEMINFO *cnd;
+      PCNRITEM pci;
+
+      if (oi->idItem == CMA_TEXT) {
+	cnd = (CNRDRAWITEMINFO *) oi->hItem;
+	if (cnd) {
+	  pci = (PCNRITEM) cnd->pRecord;
+	  if (pci) {
+
+	    POINTL aptl[TXTBOX_COUNT], ptl;
+	    CHAR *p;
+	    LONG clr, x;
+
+	    p = strchr(pci->szFileName, '\r');
+	    if (p) {
+	      /* draw text */
+	      if (!pci->cbFile)		/* no size */
+		GpiSetColor(oi->hps, CLR_DARKGRAY);
+	      else if (!pci->easize)	/* no size below */
+		GpiSetColor(oi->hps, CLR_DARKBLUE);
+	      else
+		GpiSetColor(oi->hps, CLR_BLACK);
+	      GpiSetBackMix(oi->hps, BM_LEAVEALONE);
+	      GpiSetMix(oi->hps, FM_OVERPAINT);
+	      *p = 0;
+	      GpiQueryTextBox(oi->hps, strlen(pci->szFileName),
+			      pci->szFileName, TXTBOX_COUNT, aptl);
+	      ptl.x = oi->rclItem.xLeft;
+	      ptl.y = (oi->rclItem.yTop - aptl[TXTBOX_TOPRIGHT].y);
+	      GpiMove(oi->hps, &ptl);
+	      GpiCharString(oi->hps, strlen(pci->szFileName),
+			    pci->szFileName);
+	      *p = '\r';
+
+	      /* draw the graph box */
+	      GpiQueryTextBox(oi->hps, 1, "#", TXTBOX_COUNT, aptl);
+	      /* draw black outline */
+	      GpiSetColor(oi->hps, CLR_BLACK);
+	      ptl.x = oi->rclItem.xLeft;
+	      ptl.y = oi->rclItem.yBottom + 2;
+	      GpiMove(oi->hps, &ptl);
+	      ptl.x = oi->rclItem.xLeft + 101;
+	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y);
+	      GpiBox(oi->hps, DRO_OUTLINE, &ptl, 0, 0);
+	      /* fill with gray */
+	      GpiSetColor(oi->hps, CLR_PALEGRAY);
+	      ptl.x = oi->rclItem.xLeft + 1;
+	      ptl.y = oi->rclItem.yBottom + 3;
+	      GpiMove(oi->hps, &ptl);
+	      ptl.x = oi->rclItem.xLeft + 100;
+	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+	      GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
+
+	      /* draw shadow at bottom & right sides */
+	      GpiSetColor(oi->hps, CLR_DARKGRAY);
+	      ptl.x = oi->rclItem.xLeft + 1;
+	      ptl.y = oi->rclItem.yBottom + 3;
+	      GpiMove(oi->hps, &ptl);
+	      ptl.x = oi->rclItem.xLeft + 100;
+	      GpiLine(oi->hps, &ptl);
+	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+	      GpiLine(oi->hps, &ptl);
+
+	      /* draw highlight at top and left sides */
+	      GpiSetColor(oi->hps, CLR_WHITE);
+	      ptl.x = oi->rclItem.xLeft + 1;
+	      GpiLine(oi->hps, &ptl);
+	      ptl.y = oi->rclItem.yBottom + 3;
+	      GpiLine(oi->hps, &ptl);
+
+	      /* draw shadow of box */
+	      GpiSetColor(oi->hps, CLR_DARKGRAY);
+	      ptl.x = oi->rclItem.xLeft + 2;
+	      ptl.y = oi->rclItem.yBottom;
+	      GpiMove(oi->hps, &ptl);
+	      ptl.x = oi->rclItem.xLeft + 103;
+	      GpiLine(oi->hps, &ptl);
+	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 2;
+	      GpiLine(oi->hps, &ptl);
+	      ptl.x--;
+	      GpiMove(oi->hps, &ptl);
+	      ptl.y = oi->rclItem.yBottom + 1;
+	      GpiLine(oi->hps, &ptl);
+	      ptl.x = oi->rclItem.xLeft + 2;
+	      GpiLine(oi->hps, &ptl);
+
+	      /* fill box with graph bar, flags is integer % */
+	      if (pci->flags) {
+		if (pci->szLongname[1] == 1)	/* is root record */
+		  GpiSetColor(oi->hps, CLR_DARKGREEN);
 		else
-		  GpiSetColor(oi->hps,CLR_BLACK);
-		GpiSetBackMix(oi->hps,BM_LEAVEALONE);
-		GpiSetMix(oi->hps,FM_OVERPAINT);
-		*p = 0;
-		GpiQueryTextBox(oi->hps,strlen(pci->szFileName),
-				pci->szFileName,TXTBOX_COUNT,aptl);
-		ptl.x = oi->rclItem.xLeft;
-		ptl.y = (oi->rclItem.yTop - aptl[TXTBOX_TOPRIGHT].y);
-		GpiMove(oi->hps,&ptl);
-		GpiCharString(oi->hps,strlen(pci->szFileName),
-			      pci->szFileName);
-		*p = '\r';
-
-		/* draw the graph box */
-		GpiQueryTextBox(oi->hps,1,"#",TXTBOX_COUNT,aptl);
-		/* draw black outline */
-		GpiSetColor(oi->hps,CLR_BLACK);
-		ptl.x = oi->rclItem.xLeft;
-		ptl.y = oi->rclItem.yBottom + 2;
-		GpiMove(oi->hps,&ptl);
-		ptl.x = oi->rclItem.xLeft + 101;
-		ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y);
-		GpiBox(oi->hps,DRO_OUTLINE,&ptl,0,0);
-		/* fill with gray */
-		GpiSetColor(oi->hps,CLR_PALEGRAY);
+		  GpiSetColor(oi->hps, CLR_RED);
 		ptl.x = oi->rclItem.xLeft + 1;
 		ptl.y = oi->rclItem.yBottom + 3;
-		GpiMove(oi->hps,&ptl);
-		ptl.x = oi->rclItem.xLeft + 100;
+		GpiMove(oi->hps, &ptl);
+		ptl.x = oi->rclItem.xLeft + pci->flags;
 		ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
-		GpiBox(oi->hps,DRO_OUTLINEFILL,&ptl,0,0);
+		GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
-		/* draw shadow at bottom & right sides */
-		GpiSetColor(oi->hps,CLR_DARKGRAY);
-		ptl.x = oi->rclItem.xLeft + 1;
-		ptl.y = oi->rclItem.yBottom + 3;
-		GpiMove(oi->hps,&ptl);
-		ptl.x = oi->rclItem.xLeft + 100;
-		GpiLine(oi->hps,&ptl);
-		ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
-		GpiLine(oi->hps,&ptl);
-
-		/* draw highlight at top and left sides */
-		GpiSetColor(oi->hps,CLR_WHITE);
-		ptl.x = oi->rclItem.xLeft + 1;
-		GpiLine(oi->hps,&ptl);
-		ptl.y = oi->rclItem.yBottom + 3;
-		GpiLine(oi->hps,&ptl);
-
-		/* draw shadow of box */
-		GpiSetColor(oi->hps,CLR_DARKGRAY);
-		ptl.x = oi->rclItem.xLeft + 2;
-		ptl.y = oi->rclItem.yBottom;
-		GpiMove(oi->hps,&ptl);
-		ptl.x = oi->rclItem.xLeft + 103;
-		GpiLine(oi->hps,&ptl);
-		ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 2;
-		GpiLine(oi->hps,&ptl);
-		ptl.x--;
-		GpiMove(oi->hps,&ptl);
-		ptl.y = oi->rclItem.yBottom + 1;
-		GpiLine(oi->hps,&ptl);
-		ptl.x = oi->rclItem.xLeft + 2;
-		GpiLine(oi->hps,&ptl);
-
-		/* fill box with graph bar, flags is integer % */
-		if(pci->flags) {
-		  if(pci->szLongname[1] == 1) /* is root record */
-		    GpiSetColor(oi->hps,CLR_DARKGREEN);
-		  else
-		    GpiSetColor(oi->hps,CLR_RED);
+		/* draw highlights and shadows on graph */
+		if (pci->szLongname[1] == 1)
+		  GpiSetColor(oi->hps, CLR_GREEN);
+		else
+		  GpiSetColor(oi->hps, CLR_PALEGRAY);
+		if (pci->flags > 5) {
 		  ptl.x = oi->rclItem.xLeft + 1;
 		  ptl.y = oi->rclItem.yBottom + 3;
-		  GpiMove(oi->hps,&ptl);
-		  ptl.x = oi->rclItem.xLeft + pci->flags;
+		  GpiMove(oi->hps, &ptl);
 		  ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
-		  GpiBox(oi->hps,DRO_OUTLINEFILL,&ptl,0,0);
-
-		  /* draw highlights and shadows on graph */
-		  if(pci->szLongname[1] == 1)
-		    GpiSetColor(oi->hps,CLR_GREEN);
-		  else
-		    GpiSetColor(oi->hps,CLR_PALEGRAY);
-		  if(pci->flags > 5) {
-		    ptl.x = oi->rclItem.xLeft + 1;
-		    ptl.y = oi->rclItem.yBottom + 3;
-		    GpiMove(oi->hps,&ptl);
-		    ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
-		    GpiLine(oi->hps,&ptl);
-		  }
-		  else {
-		    ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
-		    GpiMove(oi->hps,&ptl);
-		  }
+		  GpiLine(oi->hps, &ptl);
+		}
+		else {
+		  ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+		  GpiMove(oi->hps, &ptl);
+		}
+		ptl.x = oi->rclItem.xLeft + pci->flags;
+		GpiLine(oi->hps, &ptl);
+		if (pci->szLongname[1] != 1) {
+		  GpiSetColor(oi->hps, CLR_DARKRED);
+		  ptl.x = oi->rclItem.xLeft + 2;
+		  ptl.y = oi->rclItem.yBottom + 3;
+		  GpiMove(oi->hps, &ptl);
 		  ptl.x = oi->rclItem.xLeft + pci->flags;
-		  GpiLine(oi->hps,&ptl);
-		  if(pci->szLongname[1] != 1) {
-		    GpiSetColor(oi->hps,CLR_DARKRED);
-		    ptl.x = oi->rclItem.xLeft + 2;
-		    ptl.y = oi->rclItem.yBottom + 3;
-		    GpiMove(oi->hps,&ptl);
-		    ptl.x = oi->rclItem.xLeft + pci->flags;
-		    GpiLine(oi->hps,&ptl);
-		  }
+		  GpiLine(oi->hps, &ptl);
 		}
-
-		/* draw hash marks in box */
-		GpiSetColor(oi->hps,CLR_WHITE);
-		clr = CLR_WHITE;
-		for(x = 1;x < 10;x++) {
-		  if(clr == CLR_WHITE && x * 10 > pci->flags) {
-		    clr = CLR_BLACK;
-		    GpiSetColor(oi->hps,CLR_BLACK);
-		  }
-		  ptl.x = (oi->rclItem.xLeft + 1) + (x * 10);
-		  ptl.y = oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y - 1;
-		  GpiMove(oi->hps,&ptl);
-		  switch(x) {
-		    case 1:
-		    case 3:
-		    case 7:
-		    case 9:
-		      ptl.y -= 1;
-		      break;
-		    case 5:
-		      ptl.y -= 4;
-		      break;
-		    case 2:
-		    case 4:
-		    case 6:
-		    case 8:
-		      ptl.y -= 2;
-		      break;
-		  }
-		  GpiLine(oi->hps,&ptl);
-		}
-		return MRFROMLONG(TRUE);
 	      }
+
+	      /* draw hash marks in box */
+	      GpiSetColor(oi->hps, CLR_WHITE);
+	      clr = CLR_WHITE;
+	      for (x = 1; x < 10; x++) {
+		if (clr == CLR_WHITE && x * 10 > pci->flags) {
+		  clr = CLR_BLACK;
+		  GpiSetColor(oi->hps, CLR_BLACK);
+		}
+		ptl.x = (oi->rclItem.xLeft + 1) + (x * 10);
+		ptl.y = oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y - 1;
+		GpiMove(oi->hps, &ptl);
+		switch (x) {
+		case 1:
+		case 3:
+		case 7:
+		case 9:
+		  ptl.y -= 1;
+		  break;
+		case 5:
+		  ptl.y -= 4;
+		  break;
+		case 2:
+		case 4:
+		case 6:
+		case 8:
+		  ptl.y -= 2;
+		  break;
+		}
+		GpiLine(oi->hps, &ptl);
+	      }
+	      return MRFROMLONG(TRUE);
 	    }
 	  }
 	}
       }
-      return FALSE;
+    }
+    return FALSE;
 
-    case WM_CONTROL:
-      switch(SHORT2FROMMP(mp1)) {
-	case CN_ENTER:
-	  if(mp2) {
+  case WM_CONTROL:
+    switch (SHORT2FROMMP(mp1)) {
+    case CN_ENTER:
+      if (mp2) {
 
-	    PCNRITEM     pci = (PCNRITEM)((PNOTIFYRECORDENTER)mp2)->pRecord;
-	    CHAR         pszFileName[CCHMAXPATH],szTemp[CCHMAXPATH];
+	PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
+	CHAR pszFileName[CCHMAXPATH], szTemp[CCHMAXPATH];
 
-	    if(pci) {
-	      *pszFileName = 0;
-	      while(pci && (INT)pci != -1) {
-		memset(szTemp,0,sizeof(szTemp));
-		strncpy(szTemp,pci->szFileName,
-			pci->pszFileName - pci->szFileName);
-		strrev(szTemp);
-		if(*pszFileName && *szTemp != '\\')
-		  strcat(pszFileName,"\\");
-		strcat(pszFileName,szTemp);
-		pci = WinSendDlgItemMsg(hwnd,DSZ_CNR,CM_QUERYRECORD,
-					MPFROMP(pci),
-					MPFROM2SHORT(CMA_PARENT,
-						     CMA_ITEMORDER));
-	      }
-	      strrev(pszFileName);
-	      if(!fVTreeOpensWPS)
-		OpenDirCnr((HWND)0,
-			   (hwndMain) ? hwndMain : HWND_DESKTOP,
-			   hwnd,
-			   FALSE,
-			   pszFileName);
-	      else {
-
-		ULONG size = sizeof(ULONG);
-		ULONG flWindowAttr = CV_ICON;
-		CHAR  s[33];
-
-		strcpy(s,"ICON");
-		PrfQueryProfileData(fmprof,appname,"DirflWindowAttr",
-				    (PVOID)&flWindowAttr,&size);
-		if(flWindowAttr & CV_DETAIL) {
-		  if(IsRoot(pszFileName))
-		    strcpy(s,"TREE");
-		  else
-		    strcpy(s,"DETAILS");
-		}
-		OpenObject(pszFileName,s,hwnd);
-	      }
-	    }
+	if (pci) {
+	  *pszFileName = 0;
+	  while (pci && (INT) pci != -1) {
+	    memset(szTemp, 0, sizeof(szTemp));
+	    strncpy(szTemp, pci->szFileName,
+		    pci->pszFileName - pci->szFileName);
+	    strrev(szTemp);
+	    if (*pszFileName && *szTemp != '\\')
+	      strcat(pszFileName, "\\");
+	    strcat(pszFileName, szTemp);
+	    pci = WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYRECORD,
+				    MPFROMP(pci),
+				    MPFROM2SHORT(CMA_PARENT, CMA_ITEMORDER));
 	  }
-	  break;
-	case CN_EMPHASIS:
-	  pState = INSTDATA(hwnd);
-	  if(pState && !pState->working && mp2) {
+	  strrev(pszFileName);
+	  if (!fVTreeOpensWPS)
+	    OpenDirCnr((HWND) 0,
+		       (hwndMain) ? hwndMain : HWND_DESKTOP,
+		       hwnd, FALSE, pszFileName);
+	  else {
 
-	    PNOTIFYRECORDEMPHASIS pre = mp2;
+	    ULONG size = sizeof(ULONG);
+	    ULONG flWindowAttr = CV_ICON;
+	    CHAR s[33];
 
-	    pci = (PCNRITEM)((pre) ? pre->pRecord : NULL);
-	    if(pci && (pre->fEmphasisMask & CRA_SELECTED) &&
-	       (pci->rc.flRecordAttr & CRA_SELECTED)) {
-	      commafmt(szBytes,sizeof(szBytes),pci->attrFile);
-	      sprintf(sz,
-		      "%s %s%s",
-		      szBytes,
-		      GetPString(IDS_FILETEXT),
-		      &"s"[pci->attrFile == 1]);
-	      WinSetDlgItemText(hwnd,
-				DSZ_NUMFILES,
-				sz);
+	    strcpy(s, "ICON");
+	    PrfQueryProfileData(fmprof, appname, "DirflWindowAttr",
+				(PVOID) & flWindowAttr, &size);
+	    if (flWindowAttr & CV_DETAIL) {
+	      if (IsRoot(pszFileName))
+		strcpy(s, "TREE");
+	      else
+		strcpy(s, "DETAILS");
 	    }
+	    OpenObject(pszFileName, s, hwnd);
 	  }
-	  break;
+	}
       }
-      return 0;
-
-    case WM_COMMAND:
-      switch(SHORT1FROMMP(mp1)) {
-	case IDM_HELP:
-	  if(hwndHelp)
-	    WinSendMsg(hwndHelp,HM_DISPLAY_HELP,
-		       MPFROM2SHORT(HELP_DIRSIZE,0),
-		       MPFROMSHORT(HM_RESOURCEID));
-	  break;
-
-	case DSZ_PRINT:
-	  // Save button
-	  pState = INSTDATA(hwnd);
-	  if (!pState)
-            Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
-	  else {
-
-	    CHAR  pszFileName[CCHMAXPATH];
-	    FILE *fp;
-
-	    save_dir2(pszFileName);
-	    sprintf(&pszFileName[strlen(pszFileName)],"\\%csizes.Rpt",
-		    (pState) ? toupper(*pState->szDirName) : '+');
-	    if (export_filename(hwnd,pszFileName,FALSE) && *pszFileName) {
-	      if (stricmp(pszFileName,"PRN") &&
-		 strnicmp(pszFileName,"\\DEV\\LPT",8) &&
-		 !strchr(pszFileName,'.'))
-		strcat(pszFileName,".RPT");
-	      fp = fopen(pszFileName,"a+");
-	      if (!fp) {
-		saymsg(MB_CANCEL,
-		       hwnd,
-		       GetPString(IDS_ERRORTEXT),
-		       GetPString(IDS_COMPCANTOPENTEXT),
-		       pszFileName);
-	      }
-	      else {
-		WinSetPointer(HWND_DESKTOP,hptrBusy);
-		PrintToFile(WinWindowFromID(hwnd,DSZ_CNR),0,NULL,fp);
-		fclose(fp);
-		WinSetPointer(HWND_DESKTOP,hptrArrow);
-	      }
-	    }
-	  }
-	  break;
-
-	case DSZ_EXPAND:
-	case DSZ_COLLAPSE:
-	  pState = INSTDATA(hwnd);
-	  if (pState) {
-	    pci = (PCNRITEM)WinSendDlgItemMsg(hwnd,DSZ_CNR,
-					      CM_QUERYRECORDEMPHASIS,
-					      MPFROMLONG(CMA_FIRST),
-					      MPFROMSHORT(CRA_CURSORED));
-	    if(pci)
-	    {
-              WinEnableWindow(WinWindowFromID(hwnd,DID_OK),FALSE);
-              WinEnableWindow(WinWindowFromID(hwnd,IDM_HELP),FALSE);
-              WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),FALSE);
-              WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),FALSE);
-              WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),FALSE);
-              WinEnableWindow(WinWindowFromID(hwnd,DID_CANCEL),FALSE);
-	      // fixme to use thread - too slow on large trees
-	      ExpandAll(WinWindowFromID(hwnd,DSZ_CNR),
-			(SHORT1FROMMP(mp1) == DSZ_EXPAND),pci);
-              WinEnableWindow(WinWindowFromID(hwnd,DID_OK),TRUE);
-              WinEnableWindow(WinWindowFromID(hwnd,IDM_HELP),TRUE);
-              WinEnableWindow(WinWindowFromID(hwnd,DSZ_COLLAPSE),TRUE);
-              WinEnableWindow(WinWindowFromID(hwnd,DSZ_EXPAND),TRUE);
-              WinEnableWindow(WinWindowFromID(hwnd,DSZ_PRINT),TRUE);
-              WinEnableWindow(WinWindowFromID(hwnd,DID_CANCEL),TRUE);
-	    }
-	  }
-	  break;
-
-	case DID_OK:
-	case DID_CANCEL:
-	  pState = INSTDATA(hwnd);
-	  if (!pState)
-            Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
-	  else {
-	    if (pState->working) {
-	      pState->dying = TRUE;
-	      pState->chStopFlag = 0xff;
-	      DosBeep(1000,100);			// Complain?
-	    }
-	    else
-	      WinDismissDlg(hwnd,0);
-	  }
-	  break;
-      } // switch mp1
-      return 0;
-
-    case WM_CLOSE:
+      break;
+    case CN_EMPHASIS:
       pState = INSTDATA(hwnd);
-      if(pState)
-	pState->chStopFlag = 0xff;
-      DosSleep(1L);
+      if (pState && !pState->working && mp2) {
+
+	PNOTIFYRECORDEMPHASIS pre = mp2;
+
+	pci = (PCNRITEM) ((pre) ? pre->pRecord : NULL);
+	if (pci && (pre->fEmphasisMask & CRA_SELECTED) &&
+	    (pci->rc.flRecordAttr & CRA_SELECTED)) {
+	  commafmt(szBytes, sizeof(szBytes), pci->attrFile);
+	  sprintf(sz,
+		  "%s %s%s",
+		  szBytes,
+		  GetPString(IDS_FILETEXT), &"s"[pci->attrFile == 1]);
+	  WinSetDlgItemText(hwnd, DSZ_NUMFILES, sz);
+	}
+      }
+      break;
+    }
+    return 0;
+
+  case WM_COMMAND:
+    switch (SHORT1FROMMP(mp1)) {
+    case IDM_HELP:
+      if (hwndHelp)
+	WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
+		   MPFROM2SHORT(HELP_DIRSIZE, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
 
-    case WM_DESTROY:
+    case DSZ_PRINT:
+      // Save button
+      pState = INSTDATA(hwnd);
+      if (!pState)
+	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      else {
+
+	CHAR pszFileName[CCHMAXPATH];
+	FILE *fp;
+
+	save_dir2(pszFileName);
+	sprintf(&pszFileName[strlen(pszFileName)], "\\%csizes.Rpt",
+		(pState) ? toupper(*pState->szDirName) : '+');
+	if (export_filename(hwnd, pszFileName, FALSE) && *pszFileName) {
+	  if (stricmp(pszFileName, "PRN") &&
+	      strnicmp(pszFileName, "\\DEV\\LPT", 8) &&
+	      !strchr(pszFileName, '.'))
+	    strcat(pszFileName, ".RPT");
+	  fp = fopen(pszFileName, "a+");
+	  if (!fp) {
+	    saymsg(MB_CANCEL,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_COMPCANTOPENTEXT), pszFileName);
+	  }
+	  else {
+	    WinSetPointer(HWND_DESKTOP, hptrBusy);
+	    PrintToFile(WinWindowFromID(hwnd, DSZ_CNR), 0, NULL, fp);
+	    fclose(fp);
+	    WinSetPointer(HWND_DESKTOP, hptrArrow);
+	  }
+	}
+      }
+      break;
+
+    case DSZ_EXPAND:
+    case DSZ_COLLAPSE:
       pState = INSTDATA(hwnd);
       if (pState) {
-	pState->chStopFlag = 0xff;
-	if (pState->hptr)
-	  WinDestroyPointer(pState->hptr);
-	DosSleep(33L);
-	free (pState);		// Let's hope no one is still looking
+	pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, DSZ_CNR,
+					   CM_QUERYRECORDEMPHASIS,
+					   MPFROMLONG(CMA_FIRST),
+					   MPFROMSHORT(CRA_CURSORED));
+	if (pci) {
+	  WinEnableWindow(WinWindowFromID(hwnd, DID_OK), FALSE);
+	  WinEnableWindow(WinWindowFromID(hwnd, IDM_HELP), FALSE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_COLLAPSE), FALSE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_EXPAND), FALSE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_PRINT), FALSE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), FALSE);
+	  // fixme to use thread - too slow on large trees
+	  ExpandAll(WinWindowFromID(hwnd, DSZ_CNR),
+		    (SHORT1FROMMP(mp1) == DSZ_EXPAND), pci);
+	  WinEnableWindow(WinWindowFromID(hwnd, DID_OK), TRUE);
+	  WinEnableWindow(WinWindowFromID(hwnd, IDM_HELP), TRUE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_COLLAPSE), TRUE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_EXPAND), TRUE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_PRINT), TRUE);
+	  WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), TRUE);
+	}
       }
-      DosPostEventSem(CompactSem);
       break;
+
+    case DID_OK:
+    case DID_CANCEL:
+      pState = INSTDATA(hwnd);
+      if (!pState)
+	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      else {
+	if (pState->working) {
+	  pState->dying = TRUE;
+	  pState->chStopFlag = 0xff;
+	  DosBeep(1000, 100);		// Complain?
+	}
+	else
+	  WinDismissDlg(hwnd, 0);
+      }
+      break;
+    }					// switch mp1
+    return 0;
+
+  case WM_CLOSE:
+    pState = INSTDATA(hwnd);
+    if (pState)
+      pState->chStopFlag = 0xff;
+    DosSleep(1L);
+    break;
+
+  case WM_DESTROY:
+    pState = INSTDATA(hwnd);
+    if (pState) {
+      pState->chStopFlag = 0xff;
+      if (pState->hptr)
+	WinDestroyPointer(pState->hptr);
+      DosSleep(33L);
+      free(pState);			// Let's hope no one is still looking
+    }
+    DosPostEventSem(CompactSem);
+    break;
   }
-  return WinDefDlgProc(hwnd,msg,mp1,mp2);
+  return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }

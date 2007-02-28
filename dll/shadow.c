@@ -30,57 +30,50 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(SHADOW,CreateProgramObject,CreateDataObject,CreateFolderObject,CreateShadowObject)
 
-HOBJECT CreateProgramObject (CHAR *objtitle,CHAR *location,CHAR *path,
-                             CHAR *cnr)
+HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
+			    CHAR * cnr)
 {
-  HOBJECT obj = (HOBJECT)0;
-  CHAR    *s;
+  HOBJECT obj = (HOBJECT) 0;
+  CHAR *s;
 
-  if(!cnr)
+  if (!cnr)
     return obj;
   obj = WinCreateObject(WPProgram,
-                        objtitle,
-                        "NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
-                         (location) ? location : cnr,
-                         CO_FAILIFEXISTS);
-  if(obj) {
-    s = xmalloc(5192,pszSrcFile,__LINE__);
+			objtitle,
+			"NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
+			(location) ? location : cnr, CO_FAILIFEXISTS);
+  if (obj) {
+    s = xmalloc(5192, pszSrcFile, __LINE__);
     if (s) {
       sprintf(s,
-              "EXENAME=%s%s%s%s%s;PARAMETERS=%%*;OBJECTID=<FM2_%s>",
-              (path) ? path : "",
-              (path) ? "\\" : "",
-              objtitle,
-              (path) ? ";STARTUPDIR=" : "",
-              (path) ? path : "",objtitle);
-      WinSetObjectData(obj,
-                       s);
+	      "EXENAME=%s%s%s%s%s;PARAMETERS=%%*;OBJECTID=<FM2_%s>",
+	      (path) ? path : "",
+	      (path) ? "\\" : "",
+	      objtitle,
+	      (path) ? ";STARTUPDIR=" : "", (path) ? path : "", objtitle);
+      WinSetObjectData(obj, s);
       free(s);
     }
   }
   return obj;
 }
 
+HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
+			 CHAR * cnr)
+{
 
-HOBJECT CreateDataObject (CHAR *objtitle,CHAR *location,CHAR *path,
-                          CHAR *cnr) {
+  HOBJECT obj = (HOBJECT) 0;
+  CHAR s[1050], s2[1050], *p,
+    *type[] = { "WPDataFile", "WPIcon", "WPBitmap" };
 
-  HOBJECT obj = (HOBJECT)0;
-  CHAR    s[1050],s2[1050],*p,
-          *type[] = {"WPDataFile","WPIcon","WPBitmap"};
-
-  if(!cnr)
+  if (!cnr)
     return obj;
-  sprintf(s,
-          "%s%s%s",
-          (path) ? path : "",
-          (path) ? "\\" : "",
-          objtitle);
-  p = strrchr(objtitle,'.');
-  if(p) {
-    if(!stricmp(p,".ICO"))
+  sprintf(s, "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
+  p = strrchr(objtitle, '.');
+  if (p) {
+    if (!stricmp(p, ".ICO"))
       p = type[1];
-    else if(!stricmp(p,".BMP"))
+    else if (!stricmp(p, ".BMP"))
       p = type[2];
     else
       p = type[0];
@@ -88,99 +81,76 @@ HOBJECT CreateDataObject (CHAR *objtitle,CHAR *location,CHAR *path,
   else
     p = type[0];
   obj = WinCreateObject(p,
-                        s,
-                        "NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
-                         (location) ? location : cnr,
-                         CO_FAILIFEXISTS);
-  if(obj) {
+			s,
+			"NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
+			(location) ? location : cnr, CO_FAILIFEXISTS);
+  if (obj) {
     sprintf(s2,
-            "%s%s%sOBJECTID=<FM2_%s>",
-            objtitle,
-            (p == type[1]) ? "ICONFILE=" : "",
-            (p == type[1]) ? s : "",
-            (p == type[1]) ? ";" : "",
-            objtitle);
-    WinSetObjectData(obj,
-                     s2);
+	    "%s%s%sOBJECTID=<FM2_%s>",
+	    objtitle,
+	    (p == type[1]) ? "ICONFILE=" : "",
+	    (p == type[1]) ? s : "", (p == type[1]) ? ";" : "", objtitle);
+    WinSetObjectData(obj, s2);
   }
   return obj;
 }
 
-
-HOBJECT CreateFolderObject (CHAR *objtitle,CHAR *cnr)
+HOBJECT CreateFolderObject(CHAR * objtitle, CHAR * cnr)
 {
-  HOBJECT obj = (HOBJECT)0;
-  CHAR    s[1050];
+  HOBJECT obj = (HOBJECT) 0;
+  CHAR s[1050];
 
-  if(!cnr)
+  if (!cnr)
     return obj;
   obj = WinCreateObject("WPFolder",
-                        objtitle,
-                        "NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
-                         cnr,
-                         CO_FAILIFEXISTS);
-  if(obj) {
-    sprintf(s,
-            "OBJECTID=<FM2_%s>",
-            objtitle);
-    WinSetObjectData(obj,
-                     s);
+			objtitle,
+			"NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
+			cnr, CO_FAILIFEXISTS);
+  if (obj) {
+    sprintf(s, "OBJECTID=<FM2_%s>", objtitle);
+    WinSetObjectData(obj, s);
   }
   return obj;
 }
 
+HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
+			   BOOL executable, CHAR * cnr)
+{
 
-HOBJECT CreateShadowObject (CHAR *objtitle,CHAR *location,CHAR *path,
-                            BOOL executable,CHAR *cnr) {
+  HOBJECT obj = (HOBJECT) 0;
+  CHAR *s;
 
-  HOBJECT obj = (HOBJECT)0;
-  CHAR    *s;
-
-  if(!cnr)
+  if (!cnr)
     return obj;
-  s = xmalloc(5192,pszSrcFile,__LINE__);
+  s = xmalloc(5192, pszSrcFile, __LINE__);
   if (s) {
     sprintf(s,
-            "SHADOWID=%s%s%s",
-            (path) ? path : "",
-            (path) ? "\\" : "",
-            objtitle);
-    {  /* find an icon for it if possible */
-      CHAR *p,temp[CCHMAXPATH + 1];
+	    "SHADOWID=%s%s%s",
+	    (path) ? path : "", (path) ? "\\" : "", objtitle);
+    {					/* find an icon for it if possible */
+      CHAR *p, temp[CCHMAXPATH + 1];
 
       sprintf(temp,
-              "%s%s%s",
-              (path) ? path : "",
-              (path) ? "\\" : "",
-              objtitle);
-      p = strrchr(temp,'.');
-      if(p) {
-        *p = 0;
-        strcat(p,".ICO");
-        if(IsFile(temp) == 1)
-          sprintf(&s[strlen(s)],
-                  ";ICONFILE=%s",
-                  temp);
+	      "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
+      p = strrchr(temp, '.');
+      if (p) {
+	*p = 0;
+	strcat(p, ".ICO");
+	if (IsFile(temp) == 1)
+	  sprintf(&s[strlen(s)], ";ICONFILE=%s", temp);
       }
     }
-    if(executable)
+    if (executable)
       sprintf(&s[strlen(s)],
-              ";EXENAME=%s%s%s%s%s;PARAMETERS=%%*",
-              (path) ? path : "",
-              (path) ? "\\" : "",
-              objtitle,
-              (path) ? ";STARTUPDIR=" : "",
-              (path) ? path : "");
-    strcat(s,
-           ";NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO");
-    sprintf(&s[strlen(s)],
-            ";OBJECTID=<FM2_%s>",
-            objtitle);
+	      ";EXENAME=%s%s%s%s%s;PARAMETERS=%%*",
+	      (path) ? path : "",
+	      (path) ? "\\" : "",
+	      objtitle, (path) ? ";STARTUPDIR=" : "", (path) ? path : "");
+    strcat(s, ";NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO");
+    sprintf(&s[strlen(s)], ";OBJECTID=<FM2_%s>", objtitle);
     obj = WinCreateObject("WPShadow",
-                          objtitle,
-                          s,
-                          (location) ? location : cnr,
-                          CO_FAILIFEXISTS);
+			  objtitle,
+			  s, (location) ? location : cnr, CO_FAILIFEXISTS);
     free(s);
   }
   return obj;
@@ -188,18 +158,19 @@ HOBJECT CreateShadowObject (CHAR *objtitle,CHAR *location,CHAR *path,
 
 #pragma alloc_text(SHADOW2,MakeShadows,OpenObject)
 
-VOID MakeShadows (HWND hwnd,CHAR **list,ULONG Shadows,CHAR *cnr, CHAR *foldername)
+VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
+		 CHAR * foldername)
 {
-  INT           x = 0;
-  CHAR          szBuff[CCHMAXPATH + 8];
-  HOBJECT       obj = (HOBJECT)0;
-  FILESTATUS3   fsa;
+  INT x = 0;
+  CHAR szBuff[CCHMAXPATH + 8];
+  HOBJECT obj = (HOBJECT) 0;
+  FILESTATUS3 fsa;
 
   *szBuff = 0;
-  if(foldername)
-    strcpy(szBuff,foldername);
-  if(list) {
-    if((list[0] && list[1]) || Shadows > 1) {
+  if (foldername)
+    strcpy(szBuff, foldername);
+  if (list) {
+    if ((list[0] && list[1]) || Shadows > 1) {
 
       STRINGINPARMS sip;
 
@@ -208,96 +179,69 @@ VOID MakeShadows (HWND hwnd,CHAR **list,ULONG Shadows,CHAR *cnr, CHAR *foldernam
       sip.prompt = GetPString(IDS_MAKESHADOWPROMPTTEXT);
       sip.inputlen = CCHMAXPATHCOMP;
       sip.title = GetPString(IDS_MAKESHADOWTITLETEXT);
-      if(WinDlgBox(HWND_DESKTOP,
-                   hwnd,
-                   InputDlgProc,
-                   FM3ModHandle,
-                   STR_FRAME,
-                   &sip)) {
-        if(*szBuff) {
-          obj = CreateFolderObject(szBuff,cnr);
-          if(!obj) {
-            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-                   hwnd,
-                   GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_MAKESHADOWCREATEFAILEDTEXT),
-                   szBuff);
-            return;
-          }
-        }
+      if (WinDlgBox(HWND_DESKTOP,
+		    hwnd, InputDlgProc, FM3ModHandle, STR_FRAME, &sip)) {
+	if (*szBuff) {
+	  obj = CreateFolderObject(szBuff, cnr);
+	  if (!obj) {
+	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_MAKESHADOWCREATEFAILEDTEXT), szBuff);
+	    return;
+	  }
+	}
       }
       else
-        return;
+	return;
     }
-    while(list[x]) {
-      if(!DosQueryPathInfo(list[x],
-                           FIL_STANDARD,&fsa,
-                           (ULONG)sizeof(FILESTATUS3))) {
+    while (list[x]) {
+      if (!DosQueryPathInfo(list[x],
+			    FIL_STANDARD, &fsa,
+			    (ULONG) sizeof(FILESTATUS3))) {
 
-        ULONG apt;
-        CHAR  *p,*pp,szDir[CCHMAXPATH + 1],szBuffer[CCHMAXPATH + 1];
+	ULONG apt;
+	CHAR *p, *pp, szDir[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1];
 
-        if(DosQAppType(list[x],
-                       &apt))
-          apt = 0;
-        p = strrchr(list[x],'.');
-        if(p) {
-          if(!stricmp(p,".BAT") ||
-             !stricmp(p,".CMD"))
-            apt |= FAPPTYP_BOUND;
-        }
-        *szBuffer = 0;
-        p = strrchr(list[x],'\\');
-        if(!p)
-          p = strrchr(list[x],':');
-        if(p)
-          p++;
-        else
-          p = list[x];
-        strcpy(szDir,
-               list[x]);
-        pp = strrchr(szDir,'\\');
-        if(!pp) {
-          pp = strrchr(szDir,':');
-          if(pp) {
-            pp++;
-            *pp = '\\';
-            pp++;
-          }
-        }
-        if(pp)
-          *pp = 0;
-        else
-          *szDir = 0;
-        if(obj && *szBuff)
-          sprintf(szBuffer,
-                  "<FM2_%s>",
-                  szBuff);
-        else
-          *szBuffer = 0;
-        if((fsa.attrFile & FILE_DIRECTORY) ||
-           Shadows)
-          CreateShadowObject(p,
-                             (obj) ? szBuffer : NULL,
-                             szDir,
-                             0,
-                             cnr);
-        else if(!(apt & (FAPPTYP_NOTWINDOWCOMPAT |
-                         FAPPTYP_WINDOWCOMPAT |
-                         FAPPTYP_WINDOWAPI |
-                         FAPPTYP_BOUND | FAPPTYP_DOS |
-                         FAPPTYP_WINDOWSREAL |
-                         FAPPTYP_WINDOWSPROT |
-                         0x1000)))  /* not an executable app? */
-          CreateDataObject(p,
-                           (obj) ? szBuffer : NULL,
-                           szDir,
-                           cnr);
-        else
-          CreateProgramObject(p,
-                              (obj) ? szBuffer : NULL,
-                              szDir,
-                              cnr);
+	if (DosQAppType(list[x], &apt))
+	  apt = 0;
+	p = strrchr(list[x], '.');
+	if (p) {
+	  if (!stricmp(p, ".BAT") || !stricmp(p, ".CMD"))
+	    apt |= FAPPTYP_BOUND;
+	}
+	*szBuffer = 0;
+	p = strrchr(list[x], '\\');
+	if (!p)
+	  p = strrchr(list[x], ':');
+	if (p)
+	  p++;
+	else
+	  p = list[x];
+	strcpy(szDir, list[x]);
+	pp = strrchr(szDir, '\\');
+	if (!pp) {
+	  pp = strrchr(szDir, ':');
+	  if (pp) {
+	    pp++;
+	    *pp = '\\';
+	    pp++;
+	  }
+	}
+	if (pp)
+	  *pp = 0;
+	else
+	  *szDir = 0;
+	if (obj && *szBuff)
+	  sprintf(szBuffer, "<FM2_%s>", szBuff);
+	else
+	  *szBuffer = 0;
+	if ((fsa.attrFile & FILE_DIRECTORY) || Shadows)
+	  CreateShadowObject(p, (obj) ? szBuffer : NULL, szDir, 0, cnr);
+	else if (!(apt & (FAPPTYP_NOTWINDOWCOMPAT | FAPPTYP_WINDOWCOMPAT | FAPPTYP_WINDOWAPI | FAPPTYP_BOUND | FAPPTYP_DOS | FAPPTYP_WINDOWSREAL | FAPPTYP_WINDOWSPROT | 0x1000)))	/* not an executable app? */
+	  CreateDataObject(p, (obj) ? szBuffer : NULL, szDir, cnr);
+	else
+	  CreateProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr);
       }
       x++;
       DosSleep(1L);
@@ -305,65 +249,45 @@ VOID MakeShadows (HWND hwnd,CHAR **list,ULONG Shadows,CHAR *cnr, CHAR *foldernam
   }
 }
 
-
-VOID OpenObject (CHAR *filename,CHAR *type,HWND hwnd)
+VOID OpenObject(CHAR * filename, CHAR * type, HWND hwnd)
 {
   HOBJECT hWPSObject;
 
-  if(!type)
+  if (!type)
     type = Default;
-  if((*filename == '<' &&
-     filename[strlen(filename) - 1] == '>') ||
-     IsFile(filename) != -1) {
+  if ((*filename == '<' &&
+       filename[strlen(filename) - 1] == '>') || IsFile(filename) != -1) {
     hWPSObject = WinQueryObject(filename);
-    if(hWPSObject != NULLHANDLE) { /* got something; try to to open it */
+    if (hWPSObject != NULLHANDLE) {	/* got something; try to to open it */
 
       CHAR s[CCHMAXPATH];
       HWND hwndDesktop;
 
-      if(hwnd) {
-        hwndDesktop = WinQueryDesktopWindow((HAB)0,
-                                            NULLHANDLE);
-        WinSetFocus(HWND_DESKTOP,
-                    hwndDesktop);
+      if (hwnd) {
+	hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+	WinSetFocus(HWND_DESKTOP, hwndDesktop);
       }
-      sprintf(s,
-              "OPEN=%s",
-              type);
-      if(!WinSetObjectData(hWPSObject,
-                           s) &&
-         hwnd)
-        WinSetFocus(HWND_DESKTOP,
-                    hwnd);
+      sprintf(s, "OPEN=%s", type);
+      if (!WinSetObjectData(hWPSObject, s) && hwnd)
+	WinSetFocus(HWND_DESKTOP, hwnd);
     }
   }
 }
 
-
-BOOL RunSeamless (CHAR *exename,CHAR *args,HWND hwnd)
+BOOL RunSeamless(CHAR * exename, CHAR * args, HWND hwnd)
 {
   CHAR settings[1024 + CCHMAXPATH + 80];
   BOOL ret;
 
   sprintf(settings,
-          "EXENAME=%s;PROGTYPE=SEAMLESS;PARAMETERS=%s;OPEN=DEFAULT",
-          exename,
-          args);
-  if(hwnd)
-    WinSetFocus(HWND_DESKTOP,
-                HWND_DESKTOP);
+	  "EXENAME=%s;PROGTYPE=SEAMLESS;PARAMETERS=%s;OPEN=DEFAULT",
+	  exename, args);
+  if (hwnd)
+    WinSetFocus(HWND_DESKTOP, HWND_DESKTOP);
   ret = WinCreateObject(WPProgram,
-                        exename,
-                        settings,
-                        "<WP_NOWHERE>",
-                        CO_REPLACEIFEXISTS);
-  if(!ret && hwnd)
-    WinSetWindowPos(hwnd,
-                    HWND_TOP,
-                    0,
-                    0,
-                    0,
-                    0,
-                    SWP_ZORDER | SWP_ACTIVATE);
+			exename,
+			settings, "<WP_NOWHERE>", CO_REPLACEIFEXISTS);
+  if (!ret && hwnd)
+    WinSetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_ZORDER | SWP_ACTIVATE);
   return ret;
 }

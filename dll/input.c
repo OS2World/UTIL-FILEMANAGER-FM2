@@ -29,73 +29,63 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(FMINPUT,InputDlgProc)
 
-MRESULT EXPENTRY InputDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   // mp2 points at a structure of type STRINGINPARMS
   STRINGINPARMS *psip;
   PSZ psz;
 
-  switch(msg)
-  {
-    case WM_INITDLG:
-      if (!mp2)
-      {
-        Runtime_Error(pszSrcFile, __LINE__, "no data");
-	WinDismissDlg(hwnd,0);
-	break;
-      }
-      WinSetWindowPtr(hwnd,0,(PVOID)mp2);
-      psip = (STRINGINPARMS *)mp2;
-      if (!WinSendDlgItemMsg(hwnd,STR_INPUT,EM_SETTEXTLIMIT,
-			     MPFROM2SHORT(psip->inputlen,0),MPVOID))
-      {
-        Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,
-                  "setlimit failed");
-	WinDismissDlg(hwnd,0);
-	break;
-      }
-      if (psip->prompt && *psip->prompt)
-	WinSetDlgItemText(hwnd,STR_PROMPT,psip->prompt);
-      if (psip->ret && *psip->ret)
-      {
-	WinSetDlgItemText(hwnd,STR_INPUT,psip->ret);
-	WinSendDlgItemMsg(hwnd,STR_INPUT,EM_SETSEL,
-			  MPFROM2SHORT(0,strlen(psip->ret)),MPVOID);
-      }
-      *psip->ret = 0;
-      if (psip->title && *psip->title)
-	WinSetWindowText(hwnd,psip->title);
+  switch (msg) {
+  case WM_INITDLG:
+    if (!mp2) {
+      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      WinDismissDlg(hwnd, 0);
+      break;
+    }
+    WinSetWindowPtr(hwnd, 0, (PVOID) mp2);
+    psip = (STRINGINPARMS *) mp2;
+    if (!WinSendDlgItemMsg(hwnd, STR_INPUT, EM_SETTEXTLIMIT,
+			   MPFROM2SHORT(psip->inputlen, 0), MPVOID)) {
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "setlimit failed");
+      WinDismissDlg(hwnd, 0);
+      break;
+    }
+    if (psip->prompt && *psip->prompt)
+      WinSetDlgItemText(hwnd, STR_PROMPT, psip->prompt);
+    if (psip->ret && *psip->ret) {
+      WinSetDlgItemText(hwnd, STR_INPUT, psip->ret);
+      WinSendDlgItemMsg(hwnd, STR_INPUT, EM_SETSEL,
+			MPFROM2SHORT(0, strlen(psip->ret)), MPVOID);
+    }
+    *psip->ret = 0;
+    if (psip->title && *psip->title)
+      WinSetWindowText(hwnd, psip->title);
+    break;
+
+  case WM_CONTROL:			// don't care
+    return 0;
+
+  case WM_COMMAND:
+    switch (SHORT1FROMMP(mp1)) {
+    case DID_OK:
+      psip = WinQueryWindowPtr(hwnd, 0);
+      WinQueryDlgItemText(hwnd, STR_INPUT, psip->inputlen, psip->ret);
+      WinDismissDlg(hwnd, 1);
       break;
 
-    case WM_CONTROL:			// don't care
-      return 0;
+    case IDM_HELP:
+      psip = WinQueryWindowPtr(hwnd, 0);
+      psz = psip->help && *psip->help ?
+	psip->help : GetPString(IDS_ENTERTEXTHELPTEXT);
 
-    case WM_COMMAND:
-      switch(SHORT1FROMMP(mp1))
-      {
-	case DID_OK:
-	  psip = WinQueryWindowPtr(hwnd,0);
-	  WinQueryDlgItemText(hwnd,STR_INPUT,psip->inputlen,psip->ret);
-	  WinDismissDlg(hwnd,1);
-	  break;
+      saymsg(MB_ENTER | MB_ICONASTERISK, hwnd, GetPString(IDS_HELPTEXT), psz);
+      break;
 
-	case IDM_HELP:
-	  psip = WinQueryWindowPtr(hwnd,0);
-	  psz = psip->help && *psip->help ?
-		psip->help : GetPString(IDS_ENTERTEXTHELPTEXT);
-
-	  saymsg(MB_ENTER | MB_ICONASTERISK,
-		 hwnd,
-		 GetPString(IDS_HELPTEXT),
-		 psz);
-	  break;
-
-	case DID_CANCEL:
-	  WinDismissDlg(hwnd,0);
-	  break;
-      }
-      return 0;
+    case DID_CANCEL:
+      WinDismissDlg(hwnd, 0);
+      break;
+    }
+    return 0;
   }
-  return WinDefDlgProc(hwnd,msg,mp1,mp2);
+  return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
-

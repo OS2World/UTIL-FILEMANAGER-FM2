@@ -46,12 +46,12 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(MISC9,quick_find_type,find_type)
 
-static void free_arc_type(ARC_TYPE *pat);
+static void free_arc_type(ARC_TYPE * pat);
 static void fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect);
 
 //=== quick_find_type() ===
 
-ARC_TYPE *quick_find_type(CHAR *filespec, ARC_TYPE *topsig)
+ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig)
 {
   ARC_TYPE *info, *found = NULL;
   CHAR *p;
@@ -59,20 +59,15 @@ ARC_TYPE *quick_find_type(CHAR *filespec, ARC_TYPE *topsig)
   if (!arcsigsloaded)
     load_archivers();
   p = strrchr(filespec, '.');
-  if (p)
-  {
+  if (p) {
     p++;
     info = (topsig) ? topsig : arcsighead;
-    while (info)
-    {
-      if (info -> ext &&
-	  *(info -> ext) &&
-	  !stricmp(p, info -> ext))
-      {
+    while (info) {
+      if (info->ext && *(info->ext) && !stricmp(p, info->ext)) {
 	found = find_type(filespec, topsig);
 	break;
       }
-      info = info -> next;
+      info = info->next;
     }
   }
   return found;
@@ -88,72 +83,65 @@ static VOID fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect)
 
   WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
 
-  for (pat = arcsighead; pat; pat = pat -> next)
-  {
+  for (pat = arcsighead; pat; pat = pat->next) {
     /*
      * this inner loop tests for a dup signature entry and assures
      * that only the entry at the top of the list gets used for
      * conversion; editing any is okay
      */
-    if (!fShowAll)
-    {
+    if (!fShowAll) {
       ARC_TYPE *pat2;
       BOOL isDup = FALSE;
+
       for (pat2 = arcsighead;
-	   pat2 && pat -> siglen && pat2 != pat && !isDup;
-	   pat2 = pat2 -> next)
-      {
-	isDup = pat2 -> siglen == pat -> siglen &&
-		!memcmp(pat2 -> signature, pat -> signature, pat -> siglen);
-      } // for
+	   pat2 && pat->siglen && pat2 != pat && !isDup; pat2 = pat2->next) {
+	isDup = pat2->siglen == pat->siglen &&
+	  !memcmp(pat2->signature, pat->signature, pat->siglen);
+      }					// for
       if (isDup)
 	continue;
     }
 
     // If caller is editing archivers or entry useful to caller, show in listbox
-    if (fShowAll || (pat -> id && pat -> extract && pat -> create))
-    {
+    if (fShowAll || (pat->id && pat->extract && pat->create)) {
       sSelect = (SHORT) WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_INSERTITEM,
 					  MPFROM2SHORT(LIT_END, 0),
-					  MPFROMP(pat -> id ?
-						  pat -> id : "?"));
-      if (!found && *szDefArc && pat -> id && !strcmp(szDefArc, pat -> id))
-      {
+					  MPFROMP(pat->id ? pat->id : "?"));
+      if (!found && *szDefArc && pat->id && !strcmp(szDefArc, pat->id)) {
 	// Highlight default
 	WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SELECTITEM,
 			  MPFROMSHORT(sSelect), MPFROMSHORT(TRUE));
 	found = TRUE;
       }
     }
-    else
-    {
+    else {
       // Complain about odd entry
-      if (!pat -> id || !*pat -> id)
-      {
+      if (!pat->id || !*pat->id) {
 	WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_INSERTITEM,
 			  MPFROM2SHORT(LIT_END, 0),
 			  MPFROMP(GetPString(IDS_UNKNOWNUNUSABLETEXT)));
       }
-      else
-      {
+      else {
 	CHAR s[81];
-	sprintf(s, "%0.12s %s", pat -> id, GetPString(IDS_UNUSABLETEXT));
+
+	sprintf(s, "%0.12s %s", pat->id, GetPString(IDS_UNUSABLETEXT));
 	WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_INSERTITEM,
-			  MPFROM2SHORT(LIT_END, 0),
-			  MPFROMP(s));
+			  MPFROM2SHORT(LIT_END, 0), MPFROMP(s));
       }
     }
-  } // while scanning
+  }					// while scanning
 
   // Try to reselect last selection unless user wants default selection
   if (sOldSelect != LIT_NONE && !found) {
-    SHORT sItemCount = (SHORT)WinSendDlgItemMsg(hwnd,ASEL_LISTBOX,LM_QUERYITEMCOUNT,
-					        MPVOID,MPVOID);
+    SHORT sItemCount =
+      (SHORT) WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMCOUNT,
+				MPVOID, MPVOID);
+
     if (sOldSelect >= sItemCount)
       sOldSelect = sItemCount - 1;
     if (sOldSelect >= 0) {
       WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SELECTITEM,
-		        MPFROMSHORT(sOldSelect), MPFROMSHORT(TRUE));
+			MPFROMSHORT(sOldSelect), MPFROMSHORT(TRUE));
     }
   }
 
@@ -161,7 +149,7 @@ static VOID fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect)
     PosOverOkay(hwnd);
 }
 
-ARC_TYPE *find_type(CHAR *filespec, ARC_TYPE *topsig)
+ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 {
   HFILE handle;
   ULONG action;
@@ -186,23 +174,16 @@ ARC_TYPE *find_type(CHAR *filespec, ARC_TYPE *topsig)
 	      OPEN_FLAGS_FAIL_ON_ERROR |
 	      OPEN_FLAGS_NOINHERIT |
 	      OPEN_FLAGS_RANDOMSEQUENTIAL |
-	      OPEN_SHARE_DENYNONE |
-	      OPEN_ACCESS_READONLY,
-	      0L))
+	      OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0L))
     return NULL;
   // Scan signatures
-  for (info = topsig; info; info = info -> next)
-  {
-    if (info -> siglen == 0)
-    {
+  for (info = topsig; info; info = info->next) {
+    if (info->siglen == 0) {
       // No signature -- check extension
       p = strrchr(filespec, '.');
-      if (p)
-      {
+      if (p) {
 	p++;
-	if (info -> ext &&
-	    *(info -> ext) &&
-	    !stricmp(p, info -> ext))
+	if (info->ext && *(info->ext) && !stricmp(p, info->ext))
 	  break;			// Matched
 
       }
@@ -210,24 +191,14 @@ ARC_TYPE *find_type(CHAR *filespec, ARC_TYPE *topsig)
 
     }
     // Try signature match
-    l = info -> siglen;
+    l = info->siglen;
     l = min(l, 79);
     if (!DosChgFilePtr(handle,
-		       abs(info -> file_offset),
-		       (info -> file_offset >= 0L) ?
-		       FILE_BEGIN :
-		       FILE_END,
-		       &len))
-    {
-      if (!DosRead(handle,
-		   buffer,
-		   l,
-		   &len) &&
-	  len == l)
-      {
-	if (!memcmp(info -> signature,
-		    buffer,
-		    l))
+		       abs(info->file_offset),
+		       (info->file_offset >= 0L) ?
+		       FILE_BEGIN : FILE_END, &len)) {
+      if (!DosRead(handle, buffer, l, &len) && len == l) {
+	if (!memcmp(info->signature, buffer, l))
 	  break;			// Matched
 
       }
@@ -240,30 +211,29 @@ ARC_TYPE *find_type(CHAR *filespec, ARC_TYPE *topsig)
 
 //=== free_arc_type() free allocated ARC_TYPE ===
 
-static void free_arc_type(ARC_TYPE *pat)
+static void free_arc_type(ARC_TYPE * pat)
 {
-  if (pat)
-  {
-    xfree(pat -> id);
-    xfree(pat -> ext);
-    xfree(pat -> list);
-    xfree(pat -> extract);
-    xfree(pat -> create);
-    xfree(pat -> move);
-    xfree(pat -> delete);
-    xfree(pat -> signature);
-    xfree(pat -> startlist);
-    xfree(pat -> endlist);
-    xfree(pat -> exwdirs);
-    xfree(pat -> test);
-    xfree(pat -> createrecurse);
-    xfree(pat -> createwdirs);
-    xfree(pat -> movewdirs);
+  if (pat) {
+    xfree(pat->id);
+    xfree(pat->ext);
+    xfree(pat->list);
+    xfree(pat->extract);
+    xfree(pat->create);
+    xfree(pat->move);
+    xfree(pat->delete);
+    xfree(pat->signature);
+    xfree(pat->startlist);
+    xfree(pat->endlist);
+    xfree(pat->exwdirs);
+    xfree(pat->test);
+    xfree(pat->createrecurse);
+    xfree(pat->createwdirs);
+    xfree(pat->movewdirs);
     free(pat);
   }
 }
 
-static UINT cur_line_num;		// Input file line counter
+static UINT cur_line_num;	// Input file line counter
 
 #pragma alloc_text(AVL,load_archivers, get_line_strip_comments, get_line_strip_white)
 
@@ -271,7 +241,7 @@ static UINT cur_line_num;		// Input file line counter
 
 #define ARCHIVER_LINE_BYTES	256
 
-static PSZ get_line_strip_comments(PSZ pszIn, FILE *fp)
+static PSZ get_line_strip_comments(PSZ pszIn, FILE * fp)
 {
   PSZ psz = xfgets(pszIn, ARCHIVER_LINE_BYTES, fp, pszSrcFile, __LINE__);
   PSZ psz2;
@@ -289,9 +259,10 @@ static PSZ get_line_strip_comments(PSZ pszIn, FILE *fp)
 
 //=== get_line_strip_white() read line, strip whitespace ===
 
-static PSZ get_line_strip_white(PSZ pszIn, FILE *fp)
+static PSZ get_line_strip_white(PSZ pszIn, FILE * fp)
 {
-  PSZ psz = xfgets_bstripcr(pszIn, ARCHIVER_LINE_BYTES, fp, pszSrcFile, __LINE__);
+  PSZ psz =
+    xfgets_bstripcr(pszIn, ARCHIVER_LINE_BYTES, fp, pszSrcFile, __LINE__);
 
   if (psz)
     cur_line_num++;
@@ -328,8 +299,7 @@ INT load_archivers(VOID)
 
   DosEnterCritSec();
   psz = searchpath(GetPString(IDS_ARCHIVERBB2));
-  if (!psz || !*psz)
-  {
+  if (!psz || !*psz) {
     DosExitCritSec();
     return -1;
   }
@@ -342,8 +312,7 @@ INT load_archivers(VOID)
   cur_line_num = 0;
 
   // Line 1 must contain number of lines per signature definition
-  if (!get_line_strip_comments(sz, fp))
-  {
+  if (!get_line_strip_comments(sz, fp)) {
     fclose(fp);
     return -3;
   }
@@ -356,8 +325,7 @@ INT load_archivers(VOID)
   // 1st non-blank line starts definition
   // Need to determine header size and start of trailer
 
-  while (!feof(fp))
-  {
+  while (!feof(fp)) {
     // If reading header
     if (!arcsigs_header_lines) {
       // Reading header - find header size and start of signtures
@@ -372,17 +340,18 @@ INT load_archivers(VOID)
       else {
 	// Not a comment, must be start of signatures
 	PSZ psz2 = strchr(sz, ';');
-        if (psz2) {
-          *psz2 = 0;			// Chop trailing comment
-          bstripcr(sz);			// Strip leading white and trailing white and CR/LF
+
+	if (psz2) {
+	  *psz2 = 0;			// Chop trailing comment
+	  bstripcr(sz);			// Strip leading white and trailing white and CR/LF
 	}
-        arcsigs_header_lines = cur_line_num - 1;
+	arcsigs_header_lines = cur_line_num - 1;
       }
     }
     else {
       // Reading defintiions
       if (!get_line_strip_comments(sz, fp))
-        break;				// EOF
+	break;				// EOF
     }
 
     // fixme to avoid allocating empty fields
@@ -391,158 +360,151 @@ INT load_archivers(VOID)
     if (per_sig_comment_line_num == 0)
       per_sig_comment_line_num = cur_line_num;
 
-    if (*sz)
-    {
+    if (*sz) {
       // At start of defintion
 
-      pat = xmallocz(sizeof(ARC_TYPE),pszSrcFile,__LINE__);
+      pat = xmallocz(sizeof(ARC_TYPE), pszSrcFile, __LINE__);
       if (!pat)
 	break;
-      pat -> id = xstrdup(sz,pszSrcFile,__LINE__);
+      pat->id = xstrdup(sz, pszSrcFile, __LINE__);
 
-      pat -> comment_line_num = per_sig_comment_line_num;
-      pat -> defn_line_num = cur_line_num;
+      pat->comment_line_num = per_sig_comment_line_num;
+      pat->defn_line_num = cur_line_num;
 
       if (!get_line_strip_comments(sz, fp))	// line 2 - extension
 	break;
       if (*sz)
-	pat -> ext = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->ext = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> ext = NULL;
+	pat->ext = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 3 - offset to signature
 	break;
-      pat -> file_offset = atol(sz);
+      pat->file_offset = atol(sz);
       if (!get_line_strip_comments(sz, fp))	// line 4 - list command
 	break;
       if (*sz)
-	pat -> list = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->list = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> list = NULL;
-      if (!pat -> list)
+	pat->list = NULL;
+      if (!pat->list)
 	break;				// Must have list command - fixme to complain
       if (!get_line_strip_comments(sz, fp))	// line 5
 	break;
       if (*sz)
-	pat -> extract = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->extract = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> extract = NULL;
+	pat->extract = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 6
 	break;
       if (*sz)
-	pat -> exwdirs = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->exwdirs = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> exwdirs = NULL;
+	pat->exwdirs = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 7
 	break;
       if (*sz)
-	pat -> test = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->test = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> test = NULL;
+	pat->test = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 8
 	break;
       if (*sz)
-	pat -> create = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->create = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> create = NULL;
+	pat->create = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 9
 	break;
       if (*sz)
-	pat -> createwdirs = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->createwdirs = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> createwdirs = NULL;
+	pat->createwdirs = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 10
 	break;
       if (*sz)
-	pat -> createrecurse = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->createrecurse = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> createrecurse = NULL;
+	pat->createrecurse = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 11
 	break;
       if (*sz)
-	pat -> move = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->move = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> move = NULL;
+	pat->move = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 12
 	break;
       if (*sz)
-	pat -> movewdirs = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->movewdirs = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> movewdirs = NULL;
+	pat->movewdirs = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 13
 	break;
       if (*sz)
-        pat -> delete = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->delete = xstrdup(sz, pszSrcFile, __LINE__);
       else
-        pat -> delete = NULL;
+	pat->delete = NULL;
       if (!get_line_strip_white(sz, fp))	// line 14
 	break;
       i = literal(sz);			// Translate \ escapes
-      if (i)
-      {
-	pat -> siglen = i;
-	pat -> signature = xmalloc(i,pszSrcFile,__LINE__);
-	if (!pat -> signature)
+      if (i) {
+	pat->siglen = i;
+	pat->signature = xmalloc(i, pszSrcFile, __LINE__);
+	if (!pat->signature)
 	  break;
-	memcpy(pat -> signature, sz, i);	// signature may not be a string
+	memcpy(pat->signature, sz, i);	// signature may not be a string
       }
       else {
-	pat -> siglen = 0;
-	pat -> signature = NULL;
+	pat->siglen = 0;
+	pat->signature = NULL;
       }
       if (!get_line_strip_white(sz, fp))	// line 15
 	break;
       if (*sz)
-	pat -> startlist = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->startlist = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> startlist = NULL;
+	pat->startlist = NULL;
       if (!get_line_strip_white(sz, fp))	// line 16
 	break;
       if (*sz)
-	pat -> endlist = xstrdup(sz,pszSrcFile,__LINE__);
+	pat->endlist = xstrdup(sz, pszSrcFile, __LINE__);
       else
-	pat -> endlist = NULL;
+	pat->endlist = NULL;
       if (!get_line_strip_comments(sz, fp))	// line 17
 	break;
-      pat -> osizepos = atoi(sz);
+      pat->osizepos = atoi(sz);
       if (!get_line_strip_comments(sz, fp))	// line 18
 	break;
-      pat -> nsizepos = atoi(sz);
+      pat->nsizepos = atoi(sz);
       if (!get_line_strip_comments(sz, fp))	// line 19
 	break;
-      pat -> fdpos = atoi(sz);
+      pat->fdpos = atoi(sz);
       psz = strchr(sz, ',');
-      if (psz)
-      {
+      if (psz) {
 	psz++;
-	pat -> datetype = atoi(psz);
+	pat->datetype = atoi(psz);
       }
       if (!get_line_strip_comments(sz, fp))	// line 20
 	break;
-      pat -> fdflds = atoi(sz);
+      pat->fdflds = atoi(sz);
       if (!get_line_strip_comments(sz, fp))	// line 21
 	break;
-      pat -> fnpos = atoi(sz);
+      pat->fnpos = atoi(sz);
       psz = strchr(sz, ',');
-      if (psz)
-      {
+      if (psz) {
 	psz++;
-	pat -> nameislast = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
+	pat->nameislast = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
 	psz = strchr(psz, ',');
-	if (psz)
-	{
+	if (psz) {
 	  psz++;
-	  pat -> nameisnext = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
+	  pat->nameisnext = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
 	  psz = strchr(psz, ',');
-	  if (psz)
-	  {
+	  if (psz) {
 	    psz++;
-	    pat -> nameisfirst = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
+	    pat->nameisfirst = (BOOL) (*psz && atol(psz) == 0) ? FALSE : TRUE;
 	  }
 	}
       }
       // Ignore unknown lines - must be newer file format
-      for (i = LINES_PER_ARCSIG; i < lines_per_arcsig; i++)
-      {
+      for (i = LINES_PER_ARCSIG; i < lines_per_arcsig; i++) {
 	if (!get_line_strip_comments(sz, fp))
 	  break;			// Unexpected EOF - fixme to complain
       }
@@ -550,23 +512,22 @@ INT load_archivers(VOID)
       // Add to list, assume next and prev already NULL
       if (!arcsighead)
 	arcsighead = patLast = pat;
-      else
-      {
-	patLast -> next = pat;
-	pat -> prev = patLast;
+      else {
+	patLast->next = pat;
+	pat->prev = patLast;
 	patLast = pat;
       }
-      pat = NULL;				// Done with this defintion
+      pat = NULL;			// Done with this defintion
 
       arcsigs_trailer_line_num = cur_line_num + 1;	// In case this is last defintion
       per_sig_comment_line_num = 0;
-    } // if got definition
+    }					// if got definition
 
-  } // while more lines
+  }					// while more lines
 
   fclose(fp);
 
-  free_arc_type(pat);				// In case partial definition in progress
+  free_arc_type(pat);			// In case partial definition in progress
 
   if (!arcsighead)
     return -4;
@@ -580,9 +541,10 @@ INT load_archivers(VOID)
 
 #pragma alloc_text(FMARCHIVE,SBoxDlgProc,SDlgListboxSubclassProc)
 
-static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
+						MPARAM mp1, MPARAM mp2)
 {
-  PFNWP pfnOldProc = (PFNWP)WinQueryWindowPtr(hwnd, QWL_USER);
+  PFNWP pfnOldProc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
 
   PDRAGITEM pditem;
   PDRAGINFO pdinfo;
@@ -592,8 +554,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
   static PSZ DRMDRF_LBOX = "<DRM_LBOX,DRF_UNKNOWN>";
   static PSZ DRM_LBOX = "DRM_LBOX";
 
-  switch (msg)
-  {
+  switch (msg) {
   case WM_BEGINDRAG:
     {
       LONG cur_ndx;
@@ -606,11 +567,11 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
 
       if (cur_ndx != LIT_NONE) {
 	pdinfo = DrgAllocDraginfo(1);
-	if(pdinfo) {
+	if (pdinfo) {
 	  pdinfo->usOperation = DO_DEFAULT;
 	  pdinfo->hwndSource = hwnd;
 
-	  memset(&ditem,0,sizeof(DRAGITEM));
+	  memset(&ditem, 0, sizeof(DRAGITEM));
 	  ditem.hwndItem = hwnd;
 	  ditem.ulItemID = 1;
 	  ditem.hstrType = DrgAddStrHandle(DRT_UNKNOWN);
@@ -621,7 +582,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
 	  // ditem.fsControl = 0;
 	  ditem.fsSupportedOps = DO_MOVEABLE;
 
-	  memset(&dimage,0,sizeof(DRAGIMAGE));
+	  memset(&dimage, 0, sizeof(DRAGIMAGE));
 	  dimage.cb = sizeof(DRAGIMAGE);
 	  dimage.hImage = hptrFile;
 	  dimage.cptl = 0;
@@ -630,18 +591,11 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
 	  dimage.sizlStretch.cy = 32;
 	  dimage.cxOffset = -16;
 	  dimage.cyOffset = 0;
-	  DrgSetDragitem(pdinfo,
-			 &ditem,
-			 sizeof(DRAGITEM),
-			 0);		/* Index of DRAGITEM */
-	  hwndDrop = DrgDrag(hwnd,
-			     pdinfo,
-			     &dimage,
-			     1,		/* One DRAGIMAGE */
-			     VK_ENDDRAG,
-			     NULL);
+	  DrgSetDragitem(pdinfo, &ditem, sizeof(DRAGITEM), 0);	/* Index of DRAGITEM */
+	  hwndDrop = DrgDrag(hwnd, pdinfo, &dimage, 1,	/* One DRAGIMAGE */
+			     VK_ENDDRAG, NULL);
 	  if (!hwndDrop)
-	    Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,"DrgDrag");
+	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DrgDrag");
 
 	  DrgFreeDraginfo(pdinfo);
 	  // WinSetWindowPos(hwnd,HWND_TOP,0,0,0,0,SWP_ACTIVATE);
@@ -652,10 +606,10 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
 
   case DM_DRAGOVER:
     ok = FALSE;
-    if (!emphasized)
-    {
+    if (!emphasized) {
       POINTL ptl;
       POINTL ptl2;
+
       emphasized = TRUE;
       ptl.x = SHORT1FROMMP(mp2);
       ptl.y = SHORT2FROMMP(mp2);
@@ -663,25 +617,25 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
       WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl2, 1);
       // fprintf(stderr, "DRAGOVER mapped x y %d %d to %d %d\n", ptl.x, ptl.y, ptl2.x, ptl2.y);
       WinPostMsg(hwnd, WM_BUTTON1CLICK,
-		 MPFROM2SHORT((SHORT)ptl2.x, (SHORT)ptl2.y),
+		 MPFROM2SHORT((SHORT) ptl2.x, (SHORT) ptl2.y),
 		 MPFROM2SHORT(HT_NORMAL, KC_NONE));
       // fprintf(stderr, "DRAGOVER posted 0x%x WM_BUTTON1CLICK x y %d %d\n", hwnd, ptl2.x, ptl2.y);
     }
-    pdinfo = (PDRAGINFO)mp1;		/* Get DRAGINFO pointer */
+    pdinfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
     if (pdinfo) {
       DrgAccessDraginfo(pdinfo);
-      pditem = DrgQueryDragitemPtr(pdinfo,0);
+      pditem = DrgQueryDragitemPtr(pdinfo, 0);
       /* Check valid rendering mechanisms and data format */
       ok = DrgVerifyRMF(pditem, DRM_LBOX, NULL);
       DrgFreeDraginfo(pdinfo);
       if (ok) {
       }
     }
-    return ok ? MRFROM2SHORT(DOR_DROP, DO_MOVE) : MRFROM2SHORT(DOR_NEVERDROP, 0);
+    return ok ? MRFROM2SHORT(DOR_DROP, DO_MOVE) : MRFROM2SHORT(DOR_NEVERDROP,
+							       0);
 
   case DM_DRAGLEAVE:
-    if (emphasized)
-    {
+    if (emphasized) {
       emphasized = FALSE;
       // fixme to draw listbox item emphasized
       // DrawTargetEmphasis(hwnd, emphasized);
@@ -698,23 +652,23 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
     ok = FALSE;
     // fprintf(stderr, "DROP\n");
     fflush(stderr);
-    if (emphasized)
-    {
+    if (emphasized) {
       emphasized = FALSE;
       // DrawTargetEmphasis(hwnd, emphasized);
     }
-    pdinfo = (PDRAGINFO)mp1;		/* Get DRAGINFO pointer */
+    pdinfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
     if (pdinfo) {
       DrgAccessDraginfo(pdinfo);
-      pditem = DrgQueryDragitemPtr(pdinfo,0);
+      pditem = DrgQueryDragitemPtr(pdinfo, 0);
       if (!pditem)
-	Win_Error(hwnd,hwnd,pszSrcFile,__LINE__,"DM_DROP");
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DM_DROP");
       /* Check valid rendering mechanisms and data */
-      ok = DrgVerifyRMF(pditem,DRM_LBOX,NULL) && ~pditem->fsControl & DC_PREPARE;
+      ok = DrgVerifyRMF(pditem, DRM_LBOX, NULL)
+	&& ~pditem->fsControl & DC_PREPARE;
       if (ok) {
 	// ret = FullDrgName(pditem,buffer,buflen);
 	/* note: targetfail is returned to source for all items */
-	DrgSendTransferMsg(pdinfo->hwndSource,DM_ENDCONVERSATION,
+	DrgSendTransferMsg(pdinfo->hwndSource, DM_ENDCONVERSATION,
 			   MPFROMLONG(pditem->ulItemID),
 			   MPFROMLONG(DMFL_TARGETSUCCESSFUL));
       }
@@ -722,9 +676,9 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg, MPARAM mp1
       DrgFreeDraginfo(pdinfo);
     }
     return 0;
-  } // switch
+  }					// switch
   return pfnOldProc ? pfnOldProc(hwnd, msg, mp1, mp2) :
-		      WinDefWindowProc(hwnd, msg, mp1, mp2);
+    WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
 //=== SBoxDlgProc() Select archiver to use or edit, supports list reorder too ===
@@ -733,25 +687,23 @@ static PSZ pszCantFindMsg = "Can't find item %d";
 
 MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  ARC_TYPE **ppatReturn;		// Where to return selected archiver
+  ARC_TYPE **ppatReturn;	// Where to return selected archiver
   ARC_TYPE *pat;
   SHORT sSelect;
   SHORT sItemCount;
   CHAR szItemText[256];
-  CHAR szPCItemText[256];		// Parent or child item text
+  CHAR szPCItemText[256];	// Parent or child item text
   SHORT i;
   APIRET apiret;
   BOOL fShowAll;
 
   static SHORT sLastSelect = LIT_NONE;
 
-  switch (msg)
-  {
+  switch (msg) {
   case WM_INITDLG:
     if (!arcsigsloaded)
       load_archivers();
-    if (!(ARC_TYPE **)mp2)
-    {
+    if (!(ARC_TYPE **) mp2) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       WinDismissDlg(hwnd, 0);
       break;
@@ -761,11 +713,11 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
      * If non-NULL, dup names are suppressed
      * If NULL, all definitions are shown
      */
-    ppatReturn = (ARC_TYPE **)mp2;
+    ppatReturn = (ARC_TYPE **) mp2;
     fShowAll = *ppatReturn == NULL;
     if (*ppatReturn)
       *ppatReturn = arcsighead;		// Preset to first
-    WinSetWindowPtr(hwnd, QWL_USER, (PVOID)ppatReturn);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) ppatReturn);
     fill_listbox(hwnd, fShowAll, sLastSelect);
 
 #ifdef TEST_DRAG			// fixme
@@ -773,6 +725,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HWND hwnd2 = WinWindowFromID(hwnd, ASEL_LISTBOX);
       PFNWP pfn = WinSubclassWindow(hwnd2,
 				    SDlgListboxSubclassProc);
+
       WinSetWindowPtr(hwnd2, QWL_USER, (PVOID) pfn);
     }
 #endif // TEST_DRAG fixme
@@ -781,51 +734,40 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_COMMAND:
     ppatReturn = (ARC_TYPE **) WinQueryWindowPtr(hwnd, QWL_USER);
-    switch (SHORT1FROMMP(mp1))
-    {
+    switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
-      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					ASEL_LISTBOX,
-					LM_QUERYSELECTION,
-					MPFROMSHORT(LIT_FIRST),
-					MPVOID);
-      if (sSelect == LIT_NONE)
-      {
-        Runtime_Error(pszSrcFile, __LINE__, "list empty");
+      sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					  ASEL_LISTBOX,
+					  LM_QUERYSELECTION,
+					  MPFROMSHORT(LIT_FIRST), MPVOID);
+      if (sSelect == LIT_NONE) {
+	Runtime_Error(pszSrcFile, __LINE__, "list empty");
 	return 0;
       }
       pat = arcsighead;
-      if (*ppatReturn)
-      {
+      if (*ppatReturn) {
 	// If dups hidden, find archiver with matching id
 	*szItemText = 0;
 	WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMTEXT,
 			  MPFROM2SHORT(sSelect, 255), MPFROMP(szItemText));
 	if (!*szItemText)
 	  pat = NULL;
-	else
-	{
-	  for (;pat; pat = pat -> next)
-	  {
-	    if (pat -> id && !strcmp(szItemText, pat -> id))
-		break;		// Found it
+	else {
+	  for (; pat; pat = pat->next) {
+	    if (pat->id && !strcmp(szItemText, pat->id))
+	      break;			// Found it
 	  }
 	}
       }
-      else
-      {
+      else {
 	// If dups not hidden, lookup by count
-	for (i = 0; pat && i < sSelect; i++, pat = pat -> next)
-	  ; // Scan
+	for (i = 0; pat && i < sSelect; i++, pat = pat->next) ;	// Scan
       }
-      if (pat && (!*ppatReturn ||
-		  (pat -> id && pat -> extract && pat -> create)))
-      {
+      if (pat && (!*ppatReturn || (pat->id && pat->extract && pat->create))) {
 	*ppatReturn = pat;
       }
-      else
-      {
-        Runtime_Error(pszSrcFile, __LINE__, "no match");
+      else {
+	Runtime_Error(pszSrcFile, __LINE__, "no match");
 	// Refuse to select
 	WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SELECTITEM,
 			  MPFROMSHORT(LIT_NONE), FALSE);
@@ -840,52 +782,46 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (saymsg(MB_YESNO,
 		   hwnd,
 		   GetPString(IDS_ADCHANGESINMEMTEXT),
-		   GetPString(IDS_ADREWRITETEXT),
-		   NullStr) ==
-	    MBID_YES) {
+		   GetPString(IDS_ADREWRITETEXT), NullStr) == MBID_YES) {
 	  PSZ ab2 = searchpath(GetPString(IDS_ARCHIVERBB2));	// Rewrite without prompting
+
 	  rewrite_archiverbb2(ab2);
 	}
       }
-      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					ASEL_LISTBOX,
-					LM_QUERYSELECTION,
-					MPFROMSHORT(LIT_FIRST),
-					MPVOID);
+      sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					  ASEL_LISTBOX,
+					  LM_QUERYSELECTION,
+					  MPFROMSHORT(LIT_FIRST), MPVOID);
       if (sSelect != LIT_NONE)
-        sLastSelect = sSelect;
+	sLastSelect = sSelect;
       *ppatReturn = NULL;
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);	// fixme to understand why needed
       return 0;
 
     case ASEL_PB_ADD:
-      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					ASEL_LISTBOX,
-					LM_QUERYSELECTION,
-					MPFROMSHORT(LIT_FIRST),
-					MPVOID);
+      sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					  ASEL_LISTBOX,
+					  LM_QUERYSELECTION,
+					  MPFROMSHORT(LIT_FIRST), MPVOID);
       if (sSelect != LIT_NONE) {
 	ARCDUMP ad;
-	memset(&ad,0,sizeof(ARCDUMP));
-	ad.info = xmallocz(sizeof(ARC_TYPE),pszSrcFile,__LINE__);
+
+	memset(&ad, 0, sizeof(ARCDUMP));
+	ad.info = xmallocz(sizeof(ARC_TYPE), pszSrcFile, __LINE__);
 	if (ad.info) {
 	  if (!WinDlgBox(HWND_DESKTOP,
 			 hwnd,
 			 ArcReviewDlgProc,
-			 FM3ModHandle,
-			 AD_FRAME,
-			 MPFROMP(&ad)))
-	  {
+			 FM3ModHandle, AD_FRAME, MPFROMP(&ad))) {
 	    free(ad.info);
 	  }
 	  else {
 	    // Find self - assume all archivers listed since we are editing
-	    for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
-	      ; // Find self
+	    for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++) ;	// Find self
 
 	    if (!pat) {
 	      if (arcsighead)
-                Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
+		Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
 	      else
 		arcsighead = ad.info;
 	    }
@@ -905,7 +841,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_INSERTITEM,
 			      MPFROM2SHORT(sSelect, 0),
-			      MPFROMP(ad.info -> id ? ad.info -> id : "?"));
+			      MPFROMP(ad.info->id ? ad.info->id : "?"));
 	    WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SELECTITEM,
 			      MPFROMSHORT(sSelect - 1), MPFROMSHORT(TRUE));
 	    arcsigsmodified = TRUE;
@@ -914,18 +850,16 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       return 0;
     case ASEL_PB_DELETE:
-      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					ASEL_LISTBOX,
-					LM_QUERYSELECTION,
-					MPFROMSHORT(LIT_FIRST),
-					MPVOID);
+      sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					  ASEL_LISTBOX,
+					  LM_QUERYSELECTION,
+					  MPFROMSHORT(LIT_FIRST), MPVOID);
       if (sSelect != LIT_NONE) {
 	// Find self - assume all archivers listed since we are editing
-	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
-	  ; // Find self
+	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++) ;	// Find self
 
 	if (!pat)
-          Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
+	  Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
 	else {
 	  // Delete current
 	  if (pat->prev) {
@@ -942,10 +876,10 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	free_arc_type(pat);
 	arcsigsmodified = TRUE;
 	WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_DELETEITEM,
-			  MPFROM2SHORT(sSelect, 0),
-			  MPVOID);
-        sItemCount = (SHORT)WinSendDlgItemMsg(hwnd,ASEL_LISTBOX,LM_QUERYITEMCOUNT,
-					      MPVOID,MPVOID);
+			  MPFROM2SHORT(sSelect, 0), MPVOID);
+	sItemCount =
+	  (SHORT) WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMCOUNT,
+				    MPVOID, MPVOID);
 	if (sSelect >= sItemCount)
 	  sSelect--;
 	if (sSelect >= 0) {
@@ -955,21 +889,20 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       return 0;
     case ASEL_PB_UP:
-      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					ASEL_LISTBOX,
-					LM_QUERYSELECTION,
-					MPFROMSHORT(LIT_FIRST),
-					MPVOID);
+      sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					  ASEL_LISTBOX,
+					  LM_QUERYSELECTION,
+					  MPFROMSHORT(LIT_FIRST), MPVOID);
       if (sSelect != LIT_NONE && sSelect > 0) {
 	// Find self - assume all archivers listed since we are editing
-	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
-	  ; // Find self
+	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++) ;	// Find self
 	if (!pat || !pat->prev)
-          Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
+	  Runtime_Error(pszSrcFile, __LINE__, pszCantFindMsg, sSelect);
 	else {
 	  ARC_TYPE *patGDad;
 	  ARC_TYPE *patDad;
 	  ARC_TYPE *patChild;
+
 	  patChild = pat->next;
 	  patDad = pat->prev;
 	  patGDad = patDad->prev;
@@ -990,7 +923,8 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMTEXT,
 			    MPFROM2SHORT(sSelect, 255), MPFROMP(szItemText));
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMTEXT,
-			    MPFROM2SHORT(sSelect - 1, 255), MPFROMP(szPCItemText));
+			    MPFROM2SHORT(sSelect - 1, 255),
+			    MPFROMP(szPCItemText));
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SETITEMTEXT,
 			    MPFROMSHORT(sSelect), MPFROMP(szPCItemText));
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SETITEMTEXT,
@@ -1002,19 +936,22 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       return 0;
     case ASEL_PB_DOWN:
-      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,ASEL_LISTBOX,LM_QUERYSELECTION,
-					 MPFROMSHORT(LIT_FIRST),MPVOID);
-      sItemCount = (SHORT)WinSendDlgItemMsg(hwnd,ASEL_LISTBOX,LM_QUERYITEMCOUNT,
-					    MPVOID,MPVOID);
+      sSelect =
+	(SHORT) WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYSELECTION,
+				  MPFROMSHORT(LIT_FIRST), MPVOID);
+      sItemCount =
+	(SHORT) WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMCOUNT,
+				  MPVOID, MPVOID);
       if (sSelect != LIT_NONE && sSelect < sItemCount - 1) {
 	// Find self - assume all archivers listed since we are editing
-	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++)
-	  ; // Find self
-	if (!pat || !pat->next) 
-          Runtime_Error(pszSrcFile, __LINE__, "Can't find item %d of %d", sSelect, sItemCount);
+	for (i = 0, pat = arcsighead; pat && i < sSelect; pat = pat->next, i++) ;	// Find self
+	if (!pat || !pat->next)
+	  Runtime_Error(pszSrcFile, __LINE__, "Can't find item %d of %d",
+			sSelect, sItemCount);
 	else {
 	  ARC_TYPE *patDad;
 	  ARC_TYPE *patChild;
+
 	  patDad = pat->prev;
 	  patChild = pat->next;
 	  pat->next = patChild->next;
@@ -1023,17 +960,18 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  patChild->prev = patDad;
 	  if (patDad) {
 	    patDad->next = patChild;
-	    patChild->prev=patDad;
+	    patChild->prev = patDad;
 	  }
 	  else {
 	    arcsighead = patChild;
-	    patChild->prev=NULL;
+	    patChild->prev = NULL;
 	  }
 
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMTEXT,
 			    MPFROM2SHORT(sSelect, 255), MPFROMP(szItemText));
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMTEXT,
-			    MPFROM2SHORT(sSelect + 1, 255), MPFROMP(szPCItemText));
+			    MPFROM2SHORT(sSelect + 1, 255),
+			    MPFROMP(szPCItemText));
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SETITEMTEXT,
 			    MPFROMSHORT(sSelect), MPFROMP(szPCItemText));
 	  WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_SETITEMTEXT,
@@ -1047,18 +985,17 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case ASEL_PB_REVERT:
       // Reload without checking in case changed outside
-      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,ASEL_LISTBOX,LM_QUERYSELECTION,
-					 MPFROMSHORT(LIT_FIRST),MPVOID);
+      sSelect =
+	(SHORT) WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYSELECTION,
+				  MPFROMSHORT(LIT_FIRST), MPVOID);
       load_archivers();
       fill_listbox(hwnd, TRUE, sSelect);
       return 0;
 
     case IDM_HELP:
       if (hwndHelp) {
-        WinSendMsg(hwndHelp,
-                   HM_DISPLAY_HELP,
-                   MPFROM2SHORT(HELP_EDITARC,0),	// fixme to be HELP_SELARC
-                   MPFROMSHORT(HM_RESOURCEID));
+	WinSendMsg(hwndHelp, HM_DISPLAY_HELP, MPFROM2SHORT(HELP_EDITARC, 0),	// fixme to be HELP_SELARC
+		   MPFROMSHORT(HM_RESOURCEID));
       }
     }
     return 0;				// WM_COMMAND
@@ -1089,58 +1026,50 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 #pragma alloc_text(ARCCNRS,ArcDateTime)
 
-BOOL ArcDateTime(CHAR *dt, INT type, CDATE *cdate, CTIME *ctime)
+BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
 {
   INT x;
   BOOL ret = FALSE;
   CHAR *p, *pp, *pd;
 
-  if (dt && cdate && ctime)
-  {
+  if (dt && cdate && ctime) {
     memset(cdate, 0, sizeof(CDATE));
     memset(ctime, 0, sizeof(CTIME));
-    if (type)
-    {
+    if (type) {
       p = dt;
       while (*p && *p == ' ')
 	p++;
       pd = dt;
-      switch (type)
-      {
+      switch (type) {
       case 1:
-	cdate -> month = atoi(pd);
+	cdate->month = atoi(pd);
 	p = to_delim(pd, "-/.");
-	if (p)
-	{
+	if (p) {
 	  p++;
-	  cdate -> day = atoi(p);
+	  cdate->day = atoi(p);
 	  pd = p;
 	  p = to_delim(pd, "-/.");
-	  if (p)
-	  {
+	  if (p) {
 	    p++;
-	    cdate -> year = atoi(p);
-	    if (cdate -> year > 80 && cdate -> year < 1900)
-	      cdate -> year += 1900;
-	    else if (cdate -> year < 1900)
-	      cdate -> year += 2000;
+	    cdate->year = atoi(p);
+	    if (cdate->year > 80 && cdate->year < 1900)
+	      cdate->year += 1900;
+	    else if (cdate->year < 1900)
+	      cdate->year += 2000;
 	    ret = TRUE;
 	    p = strchr(p, ' ');
-	    if (p)
-	    {
+	    if (p) {
 	      while (*p && *p == ' ')
 		p++;
-	      ctime -> hours = atoi(p);
+	      ctime->hours = atoi(p);
 	      p = to_delim(pd, ":.");
-	      if (p)
-	      {
+	      if (p) {
 		p++;
-		ctime -> minutes = atoi(p);
+		ctime->minutes = atoi(p);
 		p = to_delim(pd, ":.");
-		if (p)
-		{
+		if (p) {
 		  p++;
-		  ctime -> seconds = atoi(p);
+		  ctime->seconds = atoi(p);
 		}
 	      }
 	    }
@@ -1149,45 +1078,38 @@ BOOL ArcDateTime(CHAR *dt, INT type, CDATE *cdate, CTIME *ctime)
 	break;
 
       case 2:
-	cdate -> day = atoi(p);
+	cdate->day = atoi(p);
 	p = strchr(p, ' ');
-	if (p)
-	{
+	if (p) {
 	  p++;
-	  for (x = 0; x < 12; x++)
-	  {
+	  for (x = 0; x < 12; x++) {
 	    if (!strnicmp(p, GetPString(IDS_JANUARY + x), 3))
 	      break;
 	  }
-	  if (x < 12)
-	  {
-	    cdate -> month = x;
+	  if (x < 12) {
+	    cdate->month = x;
 	    p = strchr(p, ' ');
-	    if (p)
-	    {
+	    if (p) {
 	      p++;
-	      cdate -> year = atoi(p);
-	      if (cdate -> year > 80 && cdate -> year < 1900)
-		cdate -> year += 1900;
-	      else if (cdate -> year < 1900)
-		cdate -> year += 2000;
+	      cdate->year = atoi(p);
+	      if (cdate->year > 80 && cdate->year < 1900)
+		cdate->year += 1900;
+	      else if (cdate->year < 1900)
+		cdate->year += 2000;
 	      ret = TRUE;
 	      p = strchr(p, ' ');
-	      if (p)
-	      {
+	      if (p) {
 		while (*p && *p == ' ')
 		  p++;
-		ctime -> hours = atoi(p);
+		ctime->hours = atoi(p);
 		p = to_delim(pd, ":.");
-		if (p)
-		{
+		if (p) {
 		  p++;
-		  ctime -> minutes = atoi(p);
+		  ctime->minutes = atoi(p);
 		  p = to_delim(pd, ":.");
-		  if (p)
-		  {
+		  if (p) {
 		    p++;
-		    ctime -> seconds = atoi(p);
+		    ctime->seconds = atoi(p);
 		  }
 		}
 	      }
@@ -1197,56 +1119,48 @@ BOOL ArcDateTime(CHAR *dt, INT type, CDATE *cdate, CTIME *ctime)
 	break;
 
       case 3:
-	cdate -> day = atoi(p);
+	cdate->day = atoi(p);
 	p = strchr(p, ' ');
-	if (p)
-	{
+	if (p) {
 	  p++;
-	  for (x = 0; x < 12; x++)
-	  {
+	  for (x = 0; x < 12; x++) {
 	    if (!strnicmp(p, GetPString(IDS_JANUARY + x), 3))
 	      break;
 	  }
-	  if (x < 12)
-	  {
-	    cdate -> month = x;
+	  if (x < 12) {
+	    cdate->month = x;
 	    p = strchr(p, ' ');
-	    if (p)
-	    {
+	    if (p) {
 	      p++;
-	      cdate -> year = atoi(p);
-	      if (cdate -> year > 80 && cdate -> year < 1900)
-		cdate -> year += 1900;
-	      else if (cdate -> year < 1900)
-		cdate -> year += 2000;
+	      cdate->year = atoi(p);
+	      if (cdate->year > 80 && cdate->year < 1900)
+		cdate->year += 1900;
+	      else if (cdate->year < 1900)
+		cdate->year += 2000;
 	      ret = TRUE;
 	      p = strchr(p, ' ');
-	      if (p)
-	      {
+	      if (p) {
 		while (*p && *p == ' ')
 		  p++;
-		ctime -> hours = atoi(p);
+		ctime->hours = atoi(p);
 		p = to_delim(pd, ":.");
-		if (p)
-		{
+		if (p) {
 		  p++;
 		  pp = p;
-		  ctime -> minutes = atoi(p);
+		  ctime->minutes = atoi(p);
 		  p = to_delim(pd, ":.");
-		  if (p)
-		  {
+		  if (p) {
 		    p++;
-		    ctime -> seconds = atoi(p);
+		    ctime->seconds = atoi(p);
 		    p += 2;
 		    if (toupper(*p) == 'P')
-		      ctime -> hours += 12;
+		      ctime->hours += 12;
 		  }
-		  else
-		  {
+		  else {
 		    p = pp;
 		    p += 2;
 		    if (toupper(*p) == 'P')
-		      ctime -> hours += 12;
+		      ctime->hours += 12;
 		  }
 		}
 	      }
@@ -1256,39 +1170,34 @@ BOOL ArcDateTime(CHAR *dt, INT type, CDATE *cdate, CTIME *ctime)
 	break;
 
       case 4:
-	cdate -> year = atoi(p);
-	if (cdate -> year > 80 && cdate -> year < 1900)
-	  cdate -> year += 1900;
-	else if (cdate -> year < 1900)
-	  cdate -> year += 2000;
+	cdate->year = atoi(p);
+	if (cdate->year > 80 && cdate->year < 1900)
+	  cdate->year += 1900;
+	else if (cdate->year < 1900)
+	  cdate->year += 2000;
 	p = to_delim(pd, "-/.");
-	if (p)
-	{
+	if (p) {
 	  p++;
-	  cdate -> month = atoi(p);
+	  cdate->month = atoi(p);
 	  pd = p;
 	  p = to_delim(pd, "-/.");
-	  if (p)
-	  {
+	  if (p) {
 	    p++;
-	    cdate -> day = atoi(p);
+	    cdate->day = atoi(p);
 	    ret = TRUE;
 	    p = strchr(p, ' ');
-	    if (p)
-	    {
+	    if (p) {
 	      while (*p && *p == ' ')
 		p++;
-	      ctime -> hours = atoi(p);
+	      ctime->hours = atoi(p);
 	      p = to_delim(pd, ":.");
-	      if (p)
-	      {
+	      if (p) {
 		p++;
-		ctime -> minutes = atoi(p);
+		ctime->minutes = atoi(p);
 		p = to_delim(pd, ":.");
-		if (p)
-		{
+		if (p) {
 		  p++;
-		  ctime -> seconds = atoi(p);
+		  ctime->seconds = atoi(p);
 		}
 	      }
 	    }
@@ -1297,39 +1206,34 @@ BOOL ArcDateTime(CHAR *dt, INT type, CDATE *cdate, CTIME *ctime)
 	break;
 
       case 5:
-	cdate -> day = atoi(pd);
+	cdate->day = atoi(pd);
 	p = to_delim(pd, "-/.");
-	if (p)
-	{
+	if (p) {
 	  p++;
-	  cdate -> month = atoi(p);
+	  cdate->month = atoi(p);
 	  pd = p;
 	  p = to_delim(pd, "-/.");
-	  if (p)
-	  {
+	  if (p) {
 	    p++;
-	    cdate -> year = atoi(p);
-	    if (cdate -> year > 80 && cdate -> year < 1900)
-	      cdate -> year += 1900;
-	    else if (cdate -> year < 1900)
-	      cdate -> year += 2000;
+	    cdate->year = atoi(p);
+	    if (cdate->year > 80 && cdate->year < 1900)
+	      cdate->year += 1900;
+	    else if (cdate->year < 1900)
+	      cdate->year += 2000;
 	    ret = TRUE;
 	    p = strchr(p, ' ');
-	    if (p)
-	    {
+	    if (p) {
 	      while (*p && *p == ' ')
 		p++;
-	      ctime -> hours = atoi(p);
+	      ctime->hours = atoi(p);
 	      p = to_delim(pd, ":.");
-	      if (p)
-	      {
+	      if (p) {
 		p++;
-		ctime -> minutes = atoi(p);
+		ctime->minutes = atoi(p);
 		p = to_delim(pd, ":.");
-		if (p)
-		{
+		if (p) {
 		  p++;
-		  ctime -> seconds = atoi(p);
+		  ctime->seconds = atoi(p);
 		}
 	      }
 	    }

@@ -731,7 +731,7 @@
 #define IDS_ASN1BYTESTEXT                                     721
 #define IDS_UNKNOWNBYTESTEXT                                  722
 #define IDS_DATABARTITLETEXT                                  723
-#define IDS_FREETEXT2                                         724   // available
+#define IDS_FREETEXT2                                         724	// available
 #define IDS_SUNDAY                                            725
 #define IDS_MONDAY                                            726
 #define IDS_TUESDAY                                           727

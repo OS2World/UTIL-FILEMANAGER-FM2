@@ -10,20 +10,19 @@
 #include "dll\fm3dll.h"
 #include "dll\fm3dlg.h"
 
+int main(int argc, char *argv[])
+{
 
-int main (int argc,char *argv[]) {
-
-  HAB         hab;
-  HMQ         hmq;
+  HAB hab;
+  HMQ hmq;
 
   hab = WinInitialize(0);
-  if(hab) {
-    hmq = WinCreateMsgQueue(hab,256);
-    if(hmq) {
-      if(InitFM3DLL(hab,argc,argv)) {
-        WinDlgBox(HWND_DESKTOP,HWND_DESKTOP,
-                  SysInfoDlgProc,FM3ModHandle,
-                  SYS_FRAME,NULL);
+  if (hab) {
+    hmq = WinCreateMsgQueue(hab, 256);
+    if (hmq) {
+      if (InitFM3DLL(hab, argc, argv)) {
+	WinDlgBox(HWND_DESKTOP, HWND_DESKTOP,
+		  SysInfoDlgProc, FM3ModHandle, SYS_FRAME, NULL);
       }
       WinDestroyMsgQueue(hmq);
     }

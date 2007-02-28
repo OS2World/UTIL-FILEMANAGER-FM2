@@ -178,71 +178,75 @@
                          MPFROM2SHORT(MLFQS_CURSORSEL,0),MPVOID)))
 
 /* declarations of functions in mle.c */
-LONG MLEgetlinetext (HWND h,LONG l,CHAR *buf,INT maxlen);
-LONG MLEdeleteline (HWND h,LONG l);
-LONG MLEdeletecurline (HWND h);
-LONG MLEdeletetoeol (HWND h);
-VOID MLEclearall (HWND h);
-LONG MLEtextatcursor (HWND h,CHAR *buffer,INT buflen);
-LONG MLEtextatpos (HWND h,IPT i,CHAR *buffer,INT buflen);
-LONG MLEsizeofsel (HWND h);
-BOOL MLEdoblock (HWND h,INT action,CHAR *filename);
-BOOL MLEquotepara (HWND h,CHAR *initials,BOOL fQuoteOld);
-BOOL MLEinsertfile (HWND h,CHAR *filename);
-BOOL MLEHexLoad (HWND h,CHAR *filename);
-BOOL MLEloadfile (HWND h,CHAR *filename);
-INT MLEbackgroundload(HWND hwndReport,ULONG msg,HWND h,CHAR *filename,
-                      INT hex);
-BOOL MLEexportfile (HWND h,CHAR *filename,INT tabspaces,BOOL striptraillines,
-                    BOOL striptrailspaces);
-typedef struct {
-  USHORT         size;
-  BOOL           fInsensitive;
-  BOOL           sandr;
-  BOOL           rall;
-  HWND           hwndmle;
+LONG MLEgetlinetext(HWND h, LONG l, CHAR * buf, INT maxlen);
+LONG MLEdeleteline(HWND h, LONG l);
+LONG MLEdeletecurline(HWND h);
+LONG MLEdeletetoeol(HWND h);
+VOID MLEclearall(HWND h);
+LONG MLEtextatcursor(HWND h, CHAR * buffer, INT buflen);
+LONG MLEtextatpos(HWND h, IPT i, CHAR * buffer, INT buflen);
+LONG MLEsizeofsel(HWND h);
+BOOL MLEdoblock(HWND h, INT action, CHAR * filename);
+BOOL MLEquotepara(HWND h, CHAR * initials, BOOL fQuoteOld);
+BOOL MLEinsertfile(HWND h, CHAR * filename);
+BOOL MLEHexLoad(HWND h, CHAR * filename);
+BOOL MLEloadfile(HWND h, CHAR * filename);
+INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
+		      INT hex);
+BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
+		   BOOL striptraillines, BOOL striptrailspaces);
+typedef struct
+{
+  USHORT size;
+  BOOL fInsensitive;
+  BOOL sandr;
+  BOOL rall;
+  HWND hwndmle;
   MLE_SEARCHDATA se;
-  CHAR           search[258];
-  CHAR           replace[258];
-} SRCHPTR;
-MRESULT EXPENTRY SandRDlgProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-BOOL MLEfindfirst (HWND hwnd,SRCHPTR *vw);
-INT MLEfindnext (HWND hwnd,SRCHPTR *vw);
-VOID MLEinternet (HWND h,BOOL ftp);
+  CHAR search[258];
+  CHAR replace[258];
+}
+SRCHPTR;
+MRESULT EXPENTRY SandRDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+BOOL MLEfindfirst(HWND hwnd, SRCHPTR * vw);
+INT MLEfindnext(HWND hwnd, SRCHPTR * vw);
+VOID MLEinternet(HWND h, BOOL ftp);
 
 /* declarations of functions in mlefont.c */
-FATTRS * SetMLEFont (HWND hwndMLE, FATTRS *fattrs, ULONG flags);
+FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags);
 
 /* struct used by MLE editor/viewer, saved in window pointer */
 
-typedef struct {
-  USHORT         size;
-  USHORT         hex;
-  HAB            hab;
-  BOOL           fWrap;
-  SRCHPTR        srch;
-  HWND           hwndMenu;
-  HWND           hwndPopupMenu;
-  HACCEL         accel;
-  BOOL           ch;
-  BOOL           fStripTrail;
-  BOOL           fStripTrailLines;
-  INT            ExpandTabs;
-  INT            TabStops;
-  CHAR           exportfilename[1027];
-  CHAR           importfilename[1027];
-  FATTRS         fattrs;
-  ULONG          cp;
-  INT            busy;
-  ULONG          lastpos;
-  BOOL           killme;
-  BOOL           dontclose;
-  HWND           hwndRestore,hwndFrame,hwndParent;
-} XMLEWNDPTR;
+typedef struct
+{
+  USHORT size;
+  USHORT hex;
+  HAB hab;
+  BOOL fWrap;
+  SRCHPTR srch;
+  HWND hwndMenu;
+  HWND hwndPopupMenu;
+  HACCEL accel;
+  BOOL ch;
+  BOOL fStripTrail;
+  BOOL fStripTrailLines;
+  INT ExpandTabs;
+  INT TabStops;
+  CHAR exportfilename[1027];
+  CHAR importfilename[1027];
+  FATTRS fattrs;
+  ULONG cp;
+  INT busy;
+  ULONG lastpos;
+  BOOL killme;
+  BOOL dontclose;
+  HWND hwndRestore, hwndFrame, hwndParent;
+}
+XMLEWNDPTR;
 
 /* declarations of functions in mlemain.c */
-HWND StartMLEEditor (HWND hwnd,INT flags,CHAR *filename,HWND hwndRestore);
-MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
+HWND StartMLEEditor(HWND hwnd, INT flags, CHAR * filename, HWND hwndRestore);
+MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* MLEdoblock() actions */
 
@@ -257,4 +261,3 @@ MRESULT EXPENTRY MLEEditorProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
 
 #define ParentOf(hwnd)  WinQueryWindow((hwnd),QW_PARENT)
 #define GrandparentOf(hwnd) WinQueryWindow(WinQueryWindow(hwnd,QW_PARENT),QW_PARENT)
-

@@ -33,72 +33,64 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(OBJWIN,ObjectWndProc,MakeObjWin)
 
-MRESULT EXPENTRY ObjectWndProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2)
+MRESULT EXPENTRY ObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
 
-  dcd = WinQueryWindowPtr(hwnd,QWL_USER);
-  if(dcd) {
-    switch(dcd->type) {
-      case DIR_FRAME:
-        return DirObjWndProc(hwnd,msg,mp1,mp2);
-      case TREE_FRAME:
-        return TreeObjWndProc(hwnd,msg,mp1,mp2);
-      case COLLECTOR_FRAME:
-        return CollectorObjWndProc(hwnd,msg,mp1,mp2);
-      case ARC_FRAME:
-        return ArcObjWndProc(hwnd,msg,mp1,mp2);
+  dcd = WinQueryWindowPtr(hwnd, QWL_USER);
+  if (dcd) {
+    switch (dcd->type) {
+    case DIR_FRAME:
+      return DirObjWndProc(hwnd, msg, mp1, mp2);
+    case TREE_FRAME:
+      return TreeObjWndProc(hwnd, msg, mp1, mp2);
+    case COLLECTOR_FRAME:
+      return CollectorObjWndProc(hwnd, msg, mp1, mp2);
+    case ARC_FRAME:
+      return ArcObjWndProc(hwnd, msg, mp1, mp2);
     }
   }
-  return WinDefWindowProc(hwnd,msg,mp1,mp2);
+  return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
-
-VOID MakeObjWin (VOID *args)
+VOID MakeObjWin(VOID * args)
 {
-  HWND        ObjectHwnd;
-  HAB         hab2;
-  HMQ         hmq2;
-  QMSG        qmsg2;
+  HWND ObjectHwnd;
+  HAB hab2;
+  HMQ hmq2;
+  QMSG qmsg2;
 
   hab2 = WinInitialize(0);
-  if(hab2) {
-    hmq2 = WinCreateMsgQueue(hab2,512);
-    if(hmq2) {
+  if (hab2) {
+    hmq2 = WinCreateMsgQueue(hab2, 512);
+    if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
       WinRegisterClass(hab2,
-                       GetPString(IDS_WCOBJECTWINDOW),
-                       ObjectWndProc,
-                       0,
-                       sizeof(PVOID));
+		       GetPString(IDS_WCOBJECTWINDOW),
+		       ObjectWndProc, 0, sizeof(PVOID));
       ObjectHwnd = WinCreateWindow(HWND_OBJECT,
-                                   GetPString(IDS_WCOBJECTWINDOW),
-                                   (PSZ)NULL,
-                                   0,
-                                   0L,
-                                   0L,
-                                   0L,
-                                   0L,
-                                   0L,
-                                   HWND_TOP,
-                                   OBJ_FRAME,
-                                   NULL,
-                                   NULL);
+				   GetPString(IDS_WCOBJECTWINDOW),
+				   (PSZ) NULL,
+				   0,
+				   0L,
+				   0L,
+				   0L,
+				   0L, 0L, HWND_TOP, OBJ_FRAME, NULL, NULL);
       if (!ObjectHwnd)
-        Win_Error2(HWND_OBJECT,HWND_DESKTOP,pszSrcFile,__LINE__,IDS_WINCREATEWINDOW);
+	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		   IDS_WINCREATEWINDOW);
       else {
-        WinSetWindowPtr(ObjectHwnd,QWL_USER,args);
-        /* initially populate container */
-        WinSendMsg(ObjectHwnd,UM_SETUP,MPVOID,MPVOID);
-        PostMsg(ObjectHwnd,UM_RESCAN,MPVOID,MPVOID);
-        priority_normal();
-        while(WinGetMsg(hab2,&qmsg2,(HWND)0,0,0))
-          WinDispatchMsg(hab2,&qmsg2);
-        WinDestroyWindow(ObjectHwnd);
+	WinSetWindowPtr(ObjectHwnd, QWL_USER, args);
+	/* initially populate container */
+	WinSendMsg(ObjectHwnd, UM_SETUP, MPVOID, MPVOID);
+	PostMsg(ObjectHwnd, UM_RESCAN, MPVOID, MPVOID);
+	priority_normal();
+	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
+	  WinDispatchMsg(hab2, &qmsg2);
+	WinDestroyWindow(ObjectHwnd);
       }
       WinDestroyMsgQueue(hmq2);
     }
     WinTerminate(hab2);
   }
 }
-

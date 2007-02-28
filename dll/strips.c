@@ -24,6 +24,7 @@ VOID chop_at_crnl(PSZ pszSrc)
 {
   // Chop line at CR or NL
   PSZ psz = strchr(pszSrc, '\r');
+
   if (psz)
     *psz = 0;
   psz = strchr(pszSrc, '\n');
@@ -35,6 +36,7 @@ PSZ convert_nl_to_nul(PSZ pszSrc)
 {
   // Convert newline to nul, return pointer to next or NULL
   PSZ psz = strchr(pszSrc, '\n');
+
   if (psz) {
     *psz = 0;
     psz++;
@@ -42,30 +44,29 @@ PSZ convert_nl_to_nul(PSZ pszSrc)
   return psz;
 }
 
-void strip_trail_char (char *pszStripChars,char *pszSrc)
+void strip_trail_char(char *pszStripChars, char *pszSrc)
 {
   char *psz;
 
-  if(pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
+  if (pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
     psz = pszSrc + strlen(pszSrc) - 1;
     // while not empty and tail char in strip list
-    while (*pszSrc && strchr(pszStripChars,*psz) != NULL) {
+    while (*pszSrc && strchr(pszStripChars, *psz) != NULL) {
       *psz = 0;
       psz--;
     }
   }
 }
 
-void strip_lead_char (char *pszStripChars,char *pszSrc)
+void strip_lead_char(char *pszStripChars, char *pszSrc)
 {
   char *psz = pszSrc;
 
-  if(pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
+  if (pszSrc && *pszSrc && pszStripChars && *pszStripChars) {
     // while lead char in strip list
-    while(*psz && strchr(pszStripChars,*psz) != NULL)
+    while (*psz && strchr(pszStripChars, *psz) != NULL)
       psz++;
-    if(psz != pszSrc)
-      memmove(pszSrc,psz,strlen(psz) + 1);
+    if (psz != pszSrc)
+      memmove(pszSrc, psz, strlen(psz) + 1);
   }
 }
-

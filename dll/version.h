@@ -50,4 +50,4 @@
 
 #define APPNAME         "FM2"
 
-int CheckVersion (int vermajor,int verminor);
+int CheckVersion(int vermajor, int verminor);

@@ -34,57 +34,55 @@ static PSZ pszSrcFile = __FILE__;
 
 MENU *menuhead = NULL;
 
-INT tokenize (CHAR *str,INT max,CHAR **tokens)
+INT tokenize(CHAR * str, INT max, CHAR ** tokens)
 {
-  INT   x = 0;
+  INT x = 0;
   CHAR *p;
 
-  if(str && max && tokens) {
+  if (str && max && tokens) {
     p = str;
-    for(;;) {
-      p = skip_delim(p," \t");
-      if(!p)
-        break;
+    for (;;) {
+      p = skip_delim(p, " \t");
+      if (!p)
+	break;
       tokens[x++] = p;
-      if(x == max)
-        break;
-      p = to_delim(p," \t");
-      if(!p)
-        break;
+      if (x == max)
+	break;
+      p = to_delim(p, " \t");
+      if (!p)
+	break;
       *p = 0;
       p++;
       // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"\"%s\"\r\r%d",tokens[x - 1],x);
-      if(!*p)
-        break;
+      if (!*p)
+	break;
     }
   }
   return x;
 }
 
-
-VOID FreeMenuList (MENU *head)
+VOID FreeMenuList(MENU * head)
 {
-  MENU *info,*next;
+  MENU *info, *next;
 
   info = head;
-  while(info) {
+  while (info) {
     next = info->next;
-    if(info->text)
+    if (info->text)
       free(info->text);
     free(info);
     info = next;
   }
 }
 
-
-BOOL AddToMenu (CHAR *filename,HWND hwndMenu)
+BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 {
   FILE *fp;
-  CHAR  s[256];
+  CHAR s[256];
   CHAR *tokens[3];
-  INT   lines = 0;
-  MENU *info,*last = NULL;
-  BOOL  ret = FALSE;
+  INT lines = 0;
+  MENU *info, *last = NULL;
+  BOOL ret = FALSE;
 
   // fixme to complain?
   if (!hwndMenu) {
@@ -93,49 +91,49 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu)
   }
   if (!filename)
     filename = "FM3MENU.DAT";
-  fp = _fsopen(filename,"r",SH_DENYWR);
+  fp = _fsopen(filename, "r", SH_DENYWR);
   if (!fp) {
     // else saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Couldn't open %s",filename);
   }
   else {
     while (!feof(fp)) {
-      if (!xfgets_bstripcr(s,sizeof(s),fp,pszSrcFile,__LINE__))
-        break;
+      if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
+	break;
       lines++;
-      if(!*s || *s == ';')
-        continue;
-      if (tokenize(s,3,tokens) == 3 && (USHORT)atoi(tokens[1])) {
-        info = xmallocz(sizeof(MENU),pszSrcFile,__LINE__);
-        if (info) {
-          info->size = sizeof(MENU);
-          info->text = xstrdup(tokens[2],pszSrcFile,__LINE__);
-          if (!info->text)
-            free(info);
+      if (!*s || *s == ';')
+	continue;
+      if (tokenize(s, 3, tokens) == 3 && (USHORT) atoi(tokens[1])) {
+	info = xmallocz(sizeof(MENU), pszSrcFile, __LINE__);
+	if (info) {
+	  info->size = sizeof(MENU);
+	  info->text = xstrdup(tokens[2], pszSrcFile, __LINE__);
+	  if (!info->text)
+	    free(info);
 	  else {
-            if (!stricmp(tokens[0],"MENUITEM"))
-              info->cmd = atoi(tokens[1]);
-            else if (!stricmp(tokens[0],"SEPARATOR"))
-              info->type = SEPARATOR;
-            else {
+	    if (!stricmp(tokens[0], "MENUITEM"))
+	      info->cmd = atoi(tokens[1]);
+	    else if (!stricmp(tokens[0], "SEPARATOR"))
+	      info->type = SEPARATOR;
+	    else {
 	      /* error! */
-              free(info->text);
-              free(info);
-              info = NULL;
-            }
-            if (info) {
-              if(!menuhead)
-                menuhead = info;
-              else
-                last->next = info;
-              info->next = NULL;
-              last = info;
-            }
-          }
-        }
+	      free(info->text);
+	      free(info);
+	      info = NULL;
+	    }
+	    if (info) {
+	      if (!menuhead)
+		menuhead = info;
+	      else
+		last->next = info;
+	      info->next = NULL;
+	      last = info;
+	    }
+	  }
+	}
       }
       else {
 	// fixme to complain?
-        // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tokenization failed");
+	// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tokenization failed");
       }
     }
     fclose(fp);
@@ -143,19 +141,20 @@ BOOL AddToMenu (CHAR *filename,HWND hwndMenu)
     if (menuhead) {
       MENUITEM mi;
 
-      memset(&mi,0,sizeof(mi));
+      memset(&mi, 0, sizeof(mi));
       info = menuhead;
-      WinEnableWindow(hwndMenu,FALSE);
+      WinEnableWindow(hwndMenu, FALSE);
       while (info) {
-        mi.iPosition = MIT_END;
-        mi.id = info->cmd;
-        mi.afStyle = (info->type == SEPARATOR) ? MIS_BREAKSEPARATOR : MIS_TEXT;
-        if (WinSendMsg(hwndMenu, MM_INSERTITEM, MPFROMP(&mi),
-                       MPFROMP(info->text)))
-          ret = TRUE;
-        info = info->next;
+	mi.iPosition = MIT_END;
+	mi.id = info->cmd;
+	mi.afStyle =
+	  (info->type == SEPARATOR) ? MIS_BREAKSEPARATOR : MIS_TEXT;
+	if (WinSendMsg
+	    (hwndMenu, MM_INSERTITEM, MPFROMP(&mi), MPFROMP(info->text)))
+	  ret = TRUE;
+	info = info->next;
       }
-      WinEnableWindow(hwndMenu,TRUE);
+      WinEnableWindow(hwndMenu, TRUE);
       FreeMenuList(menuhead);
       menuhead = NULL;
     }

@@ -58,13 +58,11 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   static CHAR lastenv[CCHMAXPATH] = "DPATH";
 
-  switch (msg)
-  {
+  switch (msg) {
   case WM_INITDLG:
-    if (mp2)
-    {
+    if (mp2) {
       WinSetWindowPtr(hwnd, QWL_USER, mp2);
-      *(CHAR *)mp2 = 0;
+      *(CHAR *) mp2 = 0;
       {
 	CHAR *p;
 	CHAR *pp;
@@ -72,8 +70,7 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	p = GetPString(IDS_ENVVARNAMES);
 	while (*p == ' ')
 	  p++;
-	while (*p)
-	{
+	while (*p) {
 	  *szPath = 0;
 	  pp = szPath;
 	  while (*p && *p != ' ')
@@ -85,86 +82,63 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSendDlgItemMsg(hwnd,
 			      ENV_LISTBOX,
 			      LM_INSERTITEM,
-			      MPFROM2SHORT(LIT_END, 0),
-			      MPFROMP(szPath));
+			      MPFROM2SHORT(LIT_END, 0), MPFROMP(szPath));
 	}
       }
       WinSendDlgItemMsg(hwnd,
 			ENV_NAME,
-			EM_SETTEXTLIMIT,
-			MPFROM2SHORT(CCHMAXPATH, 0),
-			MPVOID);
-      WinSetDlgItemText(hwnd,
-			ENV_NAME,
-			lastenv);
+			EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+      WinSetDlgItemText(hwnd, ENV_NAME, lastenv);
       WinSendDlgItemMsg(hwnd,
 			ENV_NAME,
-			EM_SETSEL,
-			MPFROM2SHORT(0, CCHMAXPATH),
-			MPVOID);
+			EM_SETSEL, MPFROM2SHORT(0, CCHMAXPATH), MPVOID);
     }
     else
       WinDismissDlg(hwnd, 0);
     break;
 
   case WM_CONTROL:
-    switch (SHORT1FROMMP(mp1))
-    {
+    switch (SHORT1FROMMP(mp1)) {
     case ENV_LISTBOX:
-      switch (SHORT2FROMMP(mp1))
-      {
+      switch (SHORT2FROMMP(mp1)) {
       case LN_SELECT:
 	{
-	  sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					     ENV_LISTBOX,
-					     LM_QUERYSELECTION,
-					     MPFROMSHORT(LIT_FIRST),
-					     MPVOID);
-	  if (sSelect >= 0)
-	  {
+	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					      ENV_LISTBOX,
+					      LM_QUERYSELECTION,
+					      MPFROMSHORT(LIT_FIRST), MPVOID);
+	  if (sSelect >= 0) {
 	    *s = 0;
 	    WinSendDlgItemMsg(hwnd,
 			      ENV_LISTBOX,
 			      LM_QUERYITEMTEXT,
-			      MPFROM2SHORT(sSelect, CCHMAXPATH),
-			      MPFROMP(s));
+			      MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
 	    bstrip(s);
 	    if (*s)
-	      WinSetDlgItemText(hwnd,
-				ENV_NAME,
-				s);
+	      WinSetDlgItemText(hwnd, ENV_NAME, s);
 	  }
 	}
 	break;
       case LN_ENTER:
-	PostMsg(hwnd,
-		WM_COMMAND,
-		MPFROM2SHORT(DID_OK, 0),
-		MPVOID);
+	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(DID_OK, 0), MPVOID);
 	break;
       }
     }
     return 0;
 
   case WM_COMMAND:
-    switch (SHORT1FROMMP(mp1))
-    {
+    switch (SHORT1FROMMP(mp1)) {
     case DID_CANCEL:
       WinDismissDlg(hwnd, 0);
       break;
     case DID_OK:
       p = WinQueryWindowPtr(hwnd, QWL_USER);
-      if (p)
-      {
-	WinQueryDlgItemText(hwnd,
-			    ENV_NAME,
-			    CCHMAXPATH,
-			    p);
+      if (p) {
+	WinQueryDlgItemText(hwnd, ENV_NAME, CCHMAXPATH, p);
 	bstrip(p);
 	if (!*p) {
 	  DosBeep(50, 100);
-	  WinSetFocus(HWND_DESKTOP,
-		      WinWindowFromID(hwnd, ENV_NAME));
+	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, ENV_NAME));
 	}
 	else {
 	  strcpy(lastenv, p);
@@ -176,8 +150,7 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (hwndHelp)
 	WinSendMsg(hwndHelp,
 		   HM_DISPLAY_HELP,
-		   MPFROM2SHORT(HELP_ENV, 0),
-		   MPFROMSHORT(HM_RESOURCEID));
+		   MPFROM2SHORT(HELP_ENV, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
     }
     return 0;
@@ -215,78 +188,60 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static ULONG greater = 0;
   static ULONG lesser = 0;
 
-  switch (msg)
-  {
+  switch (msg) {
   case WM_INITDLG:
-    if (!mp2)
-    {
+    if (!mp2) {
       WinDismissDlg(hwnd, 0);
       break;
     }
     WinSetWindowULong(hwnd, QWL_USER, *(HWND *) mp2);
     WinSendDlgItemMsg(hwnd,
 		      GREP_MASK,
-		      EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(8192, 0),
-		      MPVOID);
+		      EM_SETTEXTLIMIT, MPFROM2SHORT(8192, 0), MPVOID);
     MLEsetlimit(hwndMLE, 4096);
     MLEsetformat(hwndMLE, MLFIE_NOTRANS);
     WinSendDlgItemMsg(hwnd,
 		      GREP_NEWER,
-		      EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(34, 0),
-		      MPVOID);
+		      EM_SETTEXTLIMIT, MPFROM2SHORT(34, 0), MPVOID);
     WinSendDlgItemMsg(hwnd,
 		      GREP_OLDER,
-		      EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(34, 0),
-		      MPVOID);
+		      EM_SETTEXTLIMIT, MPFROM2SHORT(34, 0), MPVOID);
     WinSendDlgItemMsg(hwnd,
 		      GREP_GREATER,
-		      EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(34, 0),
-		      MPVOID);
+		      EM_SETTEXTLIMIT, MPFROM2SHORT(34, 0), MPVOID);
     WinSendDlgItemMsg(hwnd,
 		      GREP_LESSER,
-		      EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(34, 0),
-		      MPVOID);
-    WinSetDlgItemText(hwnd,
-		      GREP_MASK,
-		      lastmask);
+		      EM_SETTEXTLIMIT, MPFROM2SHORT(34, 0), MPVOID);
+    WinSetDlgItemText(hwnd, GREP_MASK, lastmask);
     WinSendDlgItemMsg(hwnd,
-		      GREP_MASK,
-		      EM_SETSEL,
-		      MPFROM2SHORT(0, 8192),
-		      MPVOID);
-	  PrfQueryProfileData(fmprof,FM3Str,"RememberFlagsGrep",
-                    (PVOID)&gRemember,&size);
-     WinCheckButton(hwnd,GREP_REMEMBERFLAGS,gRemember);
-	  if(gRemember){
-      PrfQueryProfileData(fmprof,FM3Str,"Grep_Recurse",
-               (PVOID)&recurse,&size);
-      PrfQueryProfileData(fmprof,FM3Str,"Grep_Absolute",
-                (PVOID)&absolute,&size);
-      PrfQueryProfileData(fmprof,FM3Str,"Grep_Case",
-                (PVOID)&sensitive,&size);
-      PrfQueryProfileData(fmprof,FM3Str,"Grep_Sayfiles",
-                (PVOID)&sayfiles,&size);
-      PrfQueryProfileData(fmprof,FM3Str,"Grep_Searchfiles",
-                (PVOID)&searchFiles,&size);
-      PrfQueryProfileData(fmprof,FM3Str,"Grep_SearchfEAs",
-                (PVOID)&searchEAs,&size);
-        }
-    if(!gRemember){
-       recurse = TRUE;
-       sensitive = FALSE;
-       absolute = FALSE;
-       sayfiles = TRUE;
-       searchEAs = TRUE;
-       searchFiles = TRUE;
-       }
+		      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
+    PrfQueryProfileData(fmprof, FM3Str, "RememberFlagsGrep",
+			(PVOID) & gRemember, &size);
+    WinCheckButton(hwnd, GREP_REMEMBERFLAGS, gRemember);
+    if (gRemember) {
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Recurse",
+			  (PVOID) & recurse, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Absolute",
+			  (PVOID) & absolute, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Case",
+			  (PVOID) & sensitive, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Sayfiles",
+			  (PVOID) & sayfiles, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Searchfiles",
+			  (PVOID) & searchFiles, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
+			  (PVOID) & searchEAs, &size);
+    }
+    if (!gRemember) {
+      recurse = TRUE;
+      sensitive = FALSE;
+      absolute = FALSE;
+      sayfiles = TRUE;
+      searchEAs = TRUE;
+      searchFiles = TRUE;
+    }
     WinSetWindowText(hwndMLE, lasttext);
-    if (*lasttext)
-    {
+    if (*lasttext) {
       MLEsetcurpos(hwndMLE, 0);
       MLEsetcurposa(hwndMLE, 4096);
       if (!searchEAs)
@@ -318,17 +273,15 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       strcat(s, "\\");
     strcat(s, "GREPMASK.DAT");
     fp = _fsopen(s, "r", SH_DENYWR);
-    if (fp)
-    {
+    if (fp) {
       while (!feof(fp)) {
-	if (!xfgets_bstripcr(s, 8192 + 4, fp,pszSrcFile,__LINE__))
+	if (!xfgets_bstripcr(s, 8192 + 4, fp, pszSrcFile, __LINE__))
 	  break;
 	if (*s && *s != ';') {
 	  WinSendDlgItemMsg(hwnd,
 			    GREP_LISTBOX,
 			    LM_INSERTITEM,
-			    MPFROM2SHORT(LIT_SORTASCENDING, 0),
-			    MPFROMP(s));
+			    MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(s));
 	}
       }
       fclose(fp);
@@ -336,67 +289,52 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, GREP_DRIVELIST),
-		    (HWND)0,
-		    NULL,
-		    FALSE);
+		    (HWND) 0, NULL, FALSE);
     break;
 
   case WM_ADJUSTWINDOWPOS:
-    PostMsg(hwnd,
-	    UM_SETDIR,
-	    MPVOID,
-	    MPVOID);
+    PostMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
     break;
 
   case UM_SETDIR:
     PaintRecessedWindow(WinWindowFromID(hwnd, GREP_HELP),
-			(HPS)0,
-			FALSE,
-			TRUE);
+			(HPS) 0, FALSE, TRUE);
     return 0;
 
   case UM_FOCUSME:
     /* set focus to window hwnd in mp1 */
     if (mp1)
-      WinSetFocus(HWND_DESKTOP, (HWND)mp1);
+      WinSetFocus(HWND_DESKTOP, (HWND) mp1);
     return 0;
 
   case WM_CONTROL:
-    switch (SHORT1FROMMP(mp1))
-    {
-       case GREP_REMEMBERFLAGS:
-  {
-    BOOL gRemember = WinQueryButtonCheckstate(hwnd,GREP_REMEMBERFLAGS);
+    switch (SHORT1FROMMP(mp1)) {
+    case GREP_REMEMBERFLAGS:
+      {
+	BOOL gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
 
-    PrfWriteProfileData(fmprof,FM3Str,"RememberFlagsGrep",
-                        (PVOID)&gRemember,sizeof(BOOL));
-  }
-  break;
+	PrfWriteProfileData(fmprof, FM3Str, "RememberFlagsGrep",
+			    (PVOID) & gRemember, sizeof(BOOL));
+      }
+      break;
 
     case GREP_DRIVELIST:
-      switch (SHORT2FROMMP(mp1))
-      {
+      switch (SHORT2FROMMP(mp1)) {
       case LN_KILLFOCUS:
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
 	break;
       case LN_SETFOCUS:
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_2CLICKADDDRVMASKTEXT));
+			  GREP_HELP, GetPString(IDS_2CLICKADDDRVMASKTEXT));
 	break;
       case LN_ENTER:
-	WinQueryDlgItemText(hwnd,
-			    GREP_MASK,
-			    8192,
-			    s);
+	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
 	bstrip(s);
 	p = strrchr(s, '\\');
 	if (p)
 	  strcpy(simple, p);
-	else if (*s)
-	{
+	else if (*s) {
 	  strcpy(simple, "\\");
 	  strcat(simple, s);
 	  *s = 0;
@@ -406,22 +344,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (simple[strlen(simple) - 1] == ';')
 	  simple[strlen(simple) - 1] = 0;
 	lLen = strlen(simple) + 1;
-	if (strlen(s) > 8192 - lLen)
-	{
-          Runtime_Error(pszSrcFile, __LINE__, "too big");
-	  WinSetDlgItemText(hwnd,
-			    GREP_MASK,
-			    s);
+	if (strlen(s) > 8192 - lLen) {
+	  Runtime_Error(pszSrcFile, __LINE__, "too big");
+	  WinSetDlgItemText(hwnd, GREP_MASK, s);
 	  break;
 	}
 
-	sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					   GREP_DRIVELIST,
-					   LM_QUERYSELECTION,
-					   MPFROMSHORT(LIT_FIRST),
-					   MPVOID);
-	if (sSelect >= 0)
-	{
+	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					    GREP_DRIVELIST,
+					    LM_QUERYSELECTION,
+					    MPFROMSHORT(LIT_FIRST), MPVOID);
+	if (sSelect >= 0) {
 	  if (*s && s[strlen(s) - 1] != ';')
 	    strcat(s, ";");
 	  WinSendDlgItemMsg(hwnd,
@@ -431,40 +364,31 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					 (8192 - strlen(s)) - lLen),
 			    MPFROMP(&s[strlen(s)]));
 	  rstrip(s);
-	  if (*s)
-	  {
+	  if (*s) {
 	    strcat(s, simple);
-	    WinSetDlgItemText(hwnd,
-			      GREP_MASK,
-			      s);
+	    WinSetDlgItemText(hwnd, GREP_MASK, s);
 	    WinSendDlgItemMsg(hwnd,
 			      GREP_MASK,
 			      EM_SETSEL,
 			      MPFROM2SHORT(strlen(s) - (lLen + 1),
-					   strlen(s)),
-			      MPVOID);
+					   strlen(s)), MPVOID);
 	    PostMsg(hwnd,
 		    UM_FOCUSME,
-		    MPFROMLONG(WinWindowFromID(hwnd, GREP_MASK)),
-		    MPVOID);
+		    MPFROMLONG(WinWindowFromID(hwnd, GREP_MASK)), MPVOID);
 	  }
 	}
-	break; // LN_ENTER
-      } // switch
+	break;				// LN_ENTER
+      }					// switch
       break;
 
     case GREP_LISTBOX:
-      switch (SHORT2FROMMP(mp1))
-      {
+      switch (SHORT2FROMMP(mp1)) {
       case LN_KILLFOCUS:
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
 	break;
       case LN_SETFOCUS:
-	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ADDSELDELMASKTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_ADDSELDELMASKTEXT));
 	break;
       case LN_ENTER:
       case LN_SELECT:
@@ -474,20 +398,14 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	     WinQueryButtonCheckstate(hwnd, GREP_APPEND)))
 	  break;
 	{
-	  sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
-					     GREP_LISTBOX,
-					     LM_QUERYSELECTION,
-					     MPFROMSHORT(LIT_FIRST),
-					     MPVOID);
-	  if (sSelect >= 0)
-	  {
+	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					      GREP_LISTBOX,
+					      LM_QUERYSELECTION,
+					      MPFROMSHORT(LIT_FIRST), MPVOID);
+	  if (sSelect >= 0) {
 	    *s = 0;
-	    if (WinQueryButtonCheckstate(hwnd, GREP_APPEND))
-	    {
-	      WinQueryDlgItemText(hwnd,
-				  GREP_MASK,
-				  8192,
-				  s);
+	    if (WinQueryButtonCheckstate(hwnd, GREP_APPEND)) {
+	      WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
 	      bstrip(s);
 	      if (*s && strlen(s) < 8190 && s[strlen(s) - 1] != ';')
 		strcat(s, ";");
@@ -499,9 +417,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROMP(s + strlen(s)));
 	    bstrip(s);
 	    if (*s)
-	      WinSetDlgItemText(hwnd,
-				GREP_MASK,
-				s);
+	      WinSetDlgItemText(hwnd, GREP_MASK, s);
 	  }
 	}
 	break;
@@ -511,62 +427,44 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case GREP_MASK:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_MASKSFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MASKSFINDTEXT));
       break;
     case GREP_SEARCH:
       if (SHORT2FROMMP(mp1) == MLN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == MLN_SETFOCUS)
-	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_TEXTFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_TEXTFINDTEXT));
       break;
     case GREP_GREATER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_MINSIZEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MINSIZEFINDTEXT));
       break;
     case GREP_LESSER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_MAXSIZEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MAXSIZEFINDTEXT));
       break;
     case GREP_NEWER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_MAXAGEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MAXAGEFINDTEXT));
       break;
     case GREP_OLDER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd,
-			  GREP_HELP,
-			  GetPString(IDS_MINAGEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MINAGEFINDTEXT));
       break;
     case GREP_FINDDUPES:
       {
@@ -577,7 +475,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableWindow(WinWindowFromID(hwnd, GREP_CASE), !finddupes);
 	WinEnableWindow(WinWindowFromID(hwnd, GREP_CRCDUPES), finddupes);
 	WinEnableWindow(WinWindowFromID(hwnd, GREP_NOSIZEDUPES), finddupes);
-	WinEnableWindow(WinWindowFromID(hwnd, GREP_IGNOREEXTDUPES), finddupes);
+	WinEnableWindow(WinWindowFromID(hwnd, GREP_IGNOREEXTDUPES),
+			finddupes);
 	WinEnableWindow(WinWindowFromID(hwnd, GREP_SEARCHFILES), !finddupes);
 	WinEnableWindow(WinWindowFromID(hwnd, GREP_SEARCHEAS), !finddupes);
 	WinEnableWindow(WinWindowFromID(hwnd, GREP_GREATER), !finddupes);
@@ -596,8 +495,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_COMMAND:
-    switch (SHORT1FROMMP(mp1))
-    {
+    switch (SHORT1FROMMP(mp1)) {
     case GREP_ENV:
       {
 	CHAR *t;
@@ -605,12 +503,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	*path = 0;
 	if (!WinDlgBox(HWND_DESKTOP,
-		       hwnd,
-		       EnvDlgProc,
-		       FM3ModHandle,
-		       ENV_FRAME,
-		       path))
-	{
+		       hwnd, EnvDlgProc, FM3ModHandle, ENV_FRAME, path)) {
 	  break;
 	}
 	bstrip(path);
@@ -618,8 +511,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	if (!stricmp(path, "LIBPATH"))
 	  LoadLibPath(env, 8192);
-	else
-	{
+	else {
 	  p = getenv(path);
 	  if (!p)
 	    break;
@@ -628,14 +520,10 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	bstrip(env);
 	if (!*env)
 	  break;
-	WinQueryDlgItemText(hwnd,
-			    GREP_MASK,
-			    8192,
-			    s);
+	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
 	bstrip(s);
-	if (strlen(s) > 8192 - 5)
-	{
-          Runtime_Error(pszSrcFile, __LINE__, "too big");
+	if (strlen(s) > 8192 - 5) {
+	  Runtime_Error(pszSrcFile, __LINE__, "too big");
 	  break;
 	}
 	p = strrchr(s, '\\');
@@ -651,47 +539,36 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  simple[strlen(simple) - 1] = 0;
 	lLen = strlen(simple) + 1;
 	p = env;
-	while (p && *p)
-	{
+	while (p && *p) {
 	  strncpy(path, p, CCHMAXPATH - 1);
 	  path[CCHMAXPATH - 1] = 0;
 	  t = strchr(path, ';');
 	  if (t)
 	    *t = 0;
 	  bstrip(path);
-	  if (isalpha(*path) && path[1] == ':' && path[2] == '\\')
-	  {
-	    if (strlen(s) > (8192 - lLen) - (strlen(path) + 1))
-	    {
-	      WinSetDlgItemText(hwnd,
-				GREP_MASK,
-				s);
+	  if (isalpha(*path) && path[1] == ':' && path[2] == '\\') {
+	    if (strlen(s) > (8192 - lLen) - (strlen(path) + 1)) {
+	      WinSetDlgItemText(hwnd, GREP_MASK, s);
 	      break;
 	    }
-	    if (!*s || (*s && s[strlen(s) - 1] != ';'))
-	    {
+	    if (!*s || (*s && s[strlen(s) - 1] != ';')) {
 	      if (*s)
 		strcat(s, ";");
 	      strcat(s, path);
 	      lLen += strlen(path);
-	      if (s[strlen(s) - 1] != '\\')
-	      {
+	      if (s[strlen(s) - 1] != '\\') {
 		lLen++;
 		strcat(s, "\\");
 	      }
 	      rstrip(s);
-	      if (*s)
-	      {
+	      if (*s) {
 		strcat(s, simple);
-		WinSetDlgItemText(hwnd,
-				  GREP_MASK,
-				  s);
+		WinSetDlgItemText(hwnd, GREP_MASK, s);
 		WinSendDlgItemMsg(hwnd,
 				  GREP_MASK,
 				  EM_SETSEL,
 				  MPFROM2SHORT(strlen(s) - (lLen - 1),
-					       strlen(s)),
-				  MPVOID);
+					       strlen(s)), MPVOID);
 	      }
 	    }
 	  }
@@ -703,25 +580,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case GREP_WALK:
-      WinQueryDlgItemText(hwnd,
-			  GREP_MASK,
-			  8192,
-			  s);
+      WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
       bstrip(s);
-      if (strlen(s) > 8192 - 5)
-      {
-        Runtime_Error(pszSrcFile, __LINE__, "too big");
+      if (strlen(s) > 8192 - 5) {
+	Runtime_Error(pszSrcFile, __LINE__, "too big");
 	break;
       }
       *path = 0;
       if (WinDlgBox(HWND_DESKTOP,
 		    hwnd,
 		    WalkAllDlgProc,
-		    FM3ModHandle,
-		    WALK_FRAME,
-		    MPFROMP(path)) &&
-	  *path)
-      {
+		    FM3ModHandle, WALK_FRAME, MPFROMP(path)) && *path) {
 	p = strrchr(s, '\\');
 	if (p)
 	  strcpy(simple, p + 1);
@@ -734,38 +603,29 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (simple[strlen(simple) - 1] == ';')
 	  simple[strlen(simple) - 1] = 0;
 	lLen = strlen(simple) + 1;
-	if (strlen(s) > (8192 - lLen) - (strlen(path) + 1))
-	{
-          Runtime_Error(pszSrcFile, __LINE__, "too big");
-	  WinSetDlgItemText(hwnd,
-			    GREP_MASK,
-			    s);
+	if (strlen(s) > (8192 - lLen) - (strlen(path) + 1)) {
+	  Runtime_Error(pszSrcFile, __LINE__, "too big");
+	  WinSetDlgItemText(hwnd, GREP_MASK, s);
 	  break;
 	}
-	if (!*s || (*s && s[strlen(s) - 1] != ';'))
-	{
+	if (!*s || (*s && s[strlen(s) - 1] != ';')) {
 	  if (*s)
 	    strcat(s, ";");
 	  strcat(s, path);
 	  lLen += strlen(path);
-	  if (s[strlen(s) - 1] != '\\')
-	  {
+	  if (s[strlen(s) - 1] != '\\') {
 	    lLen++;
 	    strcat(s, "\\");
 	  }
 	  rstrip(s);
-	  if (*s)
-	  {
+	  if (*s) {
 	    strcat(s, simple);
-	    WinSetDlgItemText(hwnd,
-			      GREP_MASK,
-			      s);
+	    WinSetDlgItemText(hwnd, GREP_MASK, s);
 	    WinSendDlgItemMsg(hwnd,
 			      GREP_MASK,
 			      EM_SETSEL,
 			      MPFROM2SHORT(strlen(s) - (lLen - 1),
-					   strlen(s)),
-			      MPVOID);
+					   strlen(s)), MPVOID);
 	  }
 	}
       }
@@ -773,25 +633,19 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case GREP_ADD:
       *s = 0;
-      WinQueryDlgItemText(hwnd,
-			  GREP_MASK,
-			  8192,
-			  s);
+      WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
       bstrip(s);
-      if (*s)
-      {
+      if (*s) {
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    GREP_LISTBOX,
 					    LM_SEARCHSTRING,
 					    MPFROM2SHORT(0, LIT_FIRST),
 					    MPFROMP(s));
-	if (sSelect < 0)
-	{
+	if (sSelect < 0) {
 	  WinSendDlgItemMsg(hwnd,
 			    GREP_LISTBOX,
 			    LM_INSERTITEM,
-			    MPFROM2SHORT(LIT_SORTASCENDING, 0),
-			    MPFROMP(s));
+			    MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(s));
 	  changed = TRUE;
 	}
       }
@@ -801,51 +655,34 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					  GREP_LISTBOX,
 					  LM_QUERYSELECTION,
-					  MPFROMSHORT(LIT_FIRST),
-					  MPVOID);
-      if (sSelect >= 0)
-      {
+					  MPFROMSHORT(LIT_FIRST), MPVOID);
+      if (sSelect >= 0) {
 	WinSendDlgItemMsg(hwnd,
 			  GREP_LISTBOX,
-			  LM_DELETEITEM,
-			  MPFROM2SHORT(sSelect, 0),
-			  MPVOID);
+			  LM_DELETEITEM, MPFROM2SHORT(sSelect, 0), MPVOID);
 	changed = TRUE;
       }
       break;
 
     case GREP_OM:
       *s = 0;
-      WinQueryDlgItemText(hwnd,
-			  GREP_OLDER,
-			  34,
-			  s);
+      WinQueryDlgItemText(hwnd, GREP_OLDER, 34, s);
       ul = atoi(s) * 30L;
       sprintf(s, "%lu", ul);
-      WinSetDlgItemText(hwnd,
-			GREP_OLDER,
-			s);
+      WinSetDlgItemText(hwnd, GREP_OLDER, s);
       break;
 
     case GREP_NM:
       *s = 0;
-      WinQueryDlgItemText(hwnd,
-			  GREP_NEWER,
-			  34,
-			  s);
+      WinQueryDlgItemText(hwnd, GREP_NEWER, 34, s);
       ul = atoi(s) * 30L;
       sprintf(s, "%lu", ul);
-      WinSetDlgItemText(hwnd,
-			GREP_NEWER,
-			s);
+      WinSetDlgItemText(hwnd, GREP_NEWER, s);
       break;
 
     case GREP_GK:
       *s = 0;
-      WinQueryDlgItemText(hwnd,
-			  GREP_GREATER,
-			  34,
-			  s);
+      WinQueryDlgItemText(hwnd, GREP_GREATER, 34, s);
       ul = atol(s) * 1024L;
       sprintf(s, "%lu", ul);
       WinSetDlgItemText(hwnd, GREP_GREATER, s);
@@ -853,15 +690,10 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case GREP_LK:
       *s = 0;
-      WinQueryDlgItemText(hwnd,
-			  GREP_LESSER,
-			  34,
-			  s);
+      WinQueryDlgItemText(hwnd, GREP_LESSER, 34, s);
       ul = atol(s) * 1024L;
       sprintf(s, "%lu", ul);
-      WinSetDlgItemText(hwnd,
-			GREP_LESSER,
-			s);
+      WinSetDlgItemText(hwnd, GREP_LESSER, s);
       break;
 
     case DID_CANCEL:
@@ -872,8 +704,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (hwndHelp)
 	WinSendMsg(hwndHelp,
 		   HM_DISPLAY_HELP,
-		   MPFROM2SHORT(HELP_GREP, 0),
-		   MPFROMSHORT(HM_RESOURCEID));
+		   MPFROM2SHORT(HELP_GREP, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
 
     case GREP_LOCALHDS:
@@ -889,10 +720,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR new[8192];
 
 	*s = 0;
-	WinQueryDlgItemText(hwnd,
-			    GREP_MASK,
-			    8192,
-			    s);
+	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
 	s[8192 - 1] = 0;
 	p = strchr(s, ';');
 	if (p)
@@ -907,23 +735,20 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!*s)
 	  strcpy(s, "*");
 	DosError(FERR_DISABLEHARDERR);
-	DosQCurDisk(&ulDriveNum,
-		    &ulDriveMap);
+	DosQCurDisk(&ulDriveNum, &ulDriveMap);
 	*new = 0;
-	for (x = 2; x < 26; x++)
-	{
-	  if (ulDriveMap & (1L << x))
-	  {
+	for (x = 2; x < 26; x++) {
+	  if (ulDriveMap & (1L << x)) {
 	    incl = FALSE;
-	    switch (SHORT1FROMMP(mp1))
-	    {
+	    switch (SHORT1FROMMP(mp1)) {
 	    case GREP_ALLHDS:
 	      if (!(driveflags[x] & (DRIVE_REMOVABLE | DRIVE_IGNORE)))
 		incl = TRUE;
 	      break;
 	    case GREP_LOCALHDS:
 	      if (!(driveflags[x] &
-		    (DRIVE_REMOVABLE | DRIVE_IGNORE | DRIVE_REMOTE | DRIVE_VIRTUAL)))
+		    (DRIVE_REMOVABLE | DRIVE_IGNORE | DRIVE_REMOTE |
+		     DRIVE_VIRTUAL)))
 		incl = TRUE;
 	      break;
 	    case GREP_REMOTEHDS:
@@ -934,10 +759,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      break;
 	    }
 	  }
-	  if (incl)
-	  {
-	    if (strlen(new) + strlen(s) + 5 < 8192 - 1)
-	    {
+	  if (incl) {
+	    if (strlen(new) + strlen(s) + 5 < 8192 - 1) {
 	      if (*new)
 		strcat(new, ";");
 	      *szDrive = x + 'A';
@@ -947,20 +770,18 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
 	if (*new)
-	  WinSetDlgItemText(hwnd,
-			    GREP_MASK,
-			    new);
+	  WinSetDlgItemText(hwnd, GREP_MASK, new);
       }
       break;
 
     case DID_OK:
       hwndCollect = WinQueryWindowULong(hwnd, QWL_USER);
       if (!hwndCollect)
-        Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	static GREP g;		// Passed to thread
 
-	p = xmalloc(8192 + 512,pszSrcFile,__LINE__);
+	p = xmalloc(8192 + 512, pszSrcFile, __LINE__);
 	if (!p)
 	  break;
 	memset(&g, 0, sizeof(GREP));
@@ -972,35 +793,36 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	searchEAs = WinQueryButtonCheckstate(hwnd, GREP_SEARCHEAS) != 0;
 	searchFiles = WinQueryButtonCheckstate(hwnd, GREP_SEARCHFILES) != 0;
 	findifany = WinQueryButtonCheckstate(hwnd, GREP_FINDIFANY) != 0;
-	gRemember = WinQueryButtonCheckstate(hwnd,GREP_REMEMBERFLAGS);
-   if(gRemember){
-    PrfWriteProfileData(fmprof,FM3Str,"Grep_Recurse",
-              (PVOID)&recurse,sizeof(BOOL));
-    PrfWriteProfileData(fmprof,FM3Str,"Grep_Absolute",
-               (PVOID)&absolute,sizeof(BOOL));
-    PrfWriteProfileData(fmprof,FM3Str,"Grep_Case",
-               (PVOID)&sensitive,sizeof(BOOL));
-    PrfWriteProfileData(fmprof,FM3Str,"Grep_Sayfiles",
-               (PVOID)&sayfiles,sizeof(BOOL));
-    PrfWriteProfileData(fmprof,FM3Str,"Grep_Searchfiles",
-               (PVOID)&searchFiles,sizeof(BOOL));
-    PrfWriteProfileData(fmprof,FM3Str,"Grep_SearchfEAs",
-               (PVOID)&searchEAs,sizeof(BOOL));
-      }
-   g.finddupes = WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES) != 0;
+	gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
+	if (gRemember) {
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Recurse",
+			      (PVOID) & recurse, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Absolute",
+			      (PVOID) & absolute, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Case",
+			      (PVOID) & sensitive, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Sayfiles",
+			      (PVOID) & sayfiles, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Searchfiles",
+			      (PVOID) & searchFiles, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
+			      (PVOID) & searchEAs, sizeof(BOOL));
+	}
+	g.finddupes = WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES) != 0;
 	if (g.finddupes) {
 	  g.CRCdupes = WinQueryButtonCheckstate(hwnd, GREP_CRCDUPES) != 0;
-	  g.nosizedupes = WinQueryButtonCheckstate(hwnd, GREP_NOSIZEDUPES) != 0;
-	  g.ignoreextdupes = WinQueryButtonCheckstate(hwnd, GREP_IGNOREEXTDUPES) != 0;
+	  g.nosizedupes =
+	    WinQueryButtonCheckstate(hwnd, GREP_NOSIZEDUPES) != 0;
+	  g.ignoreextdupes =
+	    WinQueryButtonCheckstate(hwnd, GREP_IGNOREEXTDUPES) != 0;
 	}
 	// Parse file masks
 	*p = 0;
-	WinQueryDlgItemText(hwnd,GREP_MASK,8192,p);
+	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, p);
 	bstrip(p);
-	if (!*p)
-	{
+	if (!*p) {
 	  DosBeep(50, 100);
-	  WinSetFocus(HWND_DESKTOP,WinWindowFromID(hwnd, GREP_MASK));
+	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
 	  free(p);
 	  break;
 	}
@@ -1008,7 +830,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	strcpy(lastmask, p);
 	// Parse search strings
 	*p = 0;
-	WinQueryWindowText(hwndMLE,4096,p);
+	WinQueryWindowText(hwndMLE, 4096, p);
 	strcpy(lasttext, p);
 	{
 	  CHAR *pszFrom;
@@ -1017,15 +839,12 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  pszTo = g.searchPattern;
 	  pszFrom = p;
-	  while (*pszFrom)
-	  {
-	    if (*pszFrom == '\r')
-	    {
+	  while (*pszFrom) {
+	    if (*pszFrom == '\r') {
 	      pszFrom++;
 	      continue;
 	    }
-	    if (*pszFrom == '\n')
-	    {
+	    if (*pszFrom == '\n') {
 	      if (*(pszFrom + 1))
 		matched++;
 	      *pszTo = 0;
@@ -1041,22 +860,22 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *pszTo = 0;
 	  g.numlines = matched;
 	  if (matched) {
-	    g.matched = xmalloc(g.numlines,pszSrcFile,__LINE__);
+	    g.matched = xmalloc(g.numlines, pszSrcFile, __LINE__);
 	    if (!g.matched)
 	      g.numlines = 0;
 	  }
 	}
 	*p = 0;
-	WinQueryDlgItemText(hwnd,GREP_GREATER,34,p);
+	WinQueryDlgItemText(hwnd, GREP_GREATER, 34, p);
 	greater = atol(p);
 	*p = 0;
-	WinQueryDlgItemText(hwnd,GREP_LESSER,34,p);
+	WinQueryDlgItemText(hwnd, GREP_LESSER, 34, p);
 	lesser = atol(p);
 	*p = 0;
-	WinQueryDlgItemText(hwnd,GREP_NEWER,34,p);
+	WinQueryDlgItemText(hwnd, GREP_NEWER, 34, p);
 	newer = atoi(p);
 	*p = 0;
-	WinQueryDlgItemText(hwnd,GREP_OLDER,34,p);
+	WinQueryDlgItemText(hwnd, GREP_OLDER, 34, p);
 	older = atoi(p);
 	if (older || newer) {
 	  FDATE fdate;
@@ -1097,11 +916,12 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	g.hwndFiles = hwndCollect;
 	g.hwnd = WinQueryWindow(hwndCollect, QW_PARENT);
 	g.hwndCurFile = WinWindowFromID(g.hwnd, DIR_SELECTED);
-	g.attrFile = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.attrFile;
-	g.antiattr = ((DIRCNRDATA *) INSTDATA(hwndCollect)) -> mask.antiattr;
-	g.stopflag = &((DIRCNRDATA *) INSTDATA(hwndCollect)) -> stopflag;
-	if (_beginthread(GrepThread, NULL, 524280, (PVOID)&g) == -1) {
-          Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	g.attrFile = ((DIRCNRDATA *) INSTDATA(hwndCollect))->mask.attrFile;
+	g.antiattr = ((DIRCNRDATA *) INSTDATA(hwndCollect))->mask.antiattr;
+	g.stopflag = &((DIRCNRDATA *) INSTDATA(hwndCollect))->stopflag;
+	if (_beginthread(GrepThread, NULL, 524280, (PVOID) & g) == -1) {
+	  Runtime_Error(pszSrcFile, __LINE__,
+			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  free(p);
 	  WinDismissDlg(hwnd, 0);
 	  break;
@@ -1112,17 +932,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       if (changed) {
 	SHORT x;
+
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    GREP_LISTBOX,
 					    LM_QUERYITEMCOUNT,
-					    MPVOID,
-					    MPVOID);
+					    MPVOID, MPVOID);
 	if (sSelect > 0) {
 	  save_dir2(s);
 	  if (s[strlen(s) - 1] != '\\')
 	    strcat(s, "\\");
 	  strcat(s, "GREPMASK.DAT");
-	  fp = xfopen(s, "w",pszSrcFile,__LINE__);
+	  fp = xfopen(s, "w", pszSrcFile, __LINE__);
 	  if (fp) {
 	    fputs(GetPString(IDS_GREPFILETEXT), fp);
 	    for (x = 0; x < sSelect; x++) {
@@ -1130,8 +950,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSendDlgItemMsg(hwnd,
 				GREP_LISTBOX,
 				LM_QUERYITEMTEXT,
-				MPFROM2SHORT(x, 8192),
-				MPFROMP(s));
+				MPFROM2SHORT(x, 8192), MPFROMP(s));
 	      bstrip(s);
 	      if (*s)
 		fprintf(fp, "%s\n", s);

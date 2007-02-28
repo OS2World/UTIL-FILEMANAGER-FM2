@@ -42,7 +42,8 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg);
 
 //== Win_Error: report Win...() error using passed message string ===
 
-VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, PCSZ pszFmt,...)
+VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
+	       PCSZ pszFmt, ...)
 {
   PERRINFO pErrInfoBlk;		/* Pointer to ERRINFO structure filled
 				   by WinGetErrorInfo */
@@ -54,7 +55,7 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, P
   va_list va;
 
   if (hwndErr == NULLHANDLE)
-    hab = (HAB)0;
+    hab = (HAB) 0;
   else
     hab = WinQueryAnchorBlock(hwndErr);
 
@@ -64,12 +65,11 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, P
   va_end(va);
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed.");			// Assume simple function name
+    strcat(szMsg, " failed.");		// Assume simple function name
 
   // Append file name and line number
   sprintf(szMsg + strlen(szMsg),
-	  GetPString(IDS_GENERR1TEXT),
-	  pszFileName, ulLineNo, "  ");
+	  GetPString(IDS_GENERR1TEXT), pszFileName, ulLineNo, "  ");
 
   // Get last PM error for the current thread
   pErrInfoBlk = WinGetErrorInfo(hab);
@@ -83,38 +83,37 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, P
     /* Find message offset in array of message offsets
        Assume 1 message - fixme?
      */
-    pszOffset = ((PSZ) pErrInfoBlk) + pErrInfoBlk -> offaoffszMsg;
+    pszOffset = ((PSZ) pErrInfoBlk) + pErrInfoBlk->offaoffszMsg;
     /* Address error message in array of messages and
        append error message to source code linenumber
      */
     psz = szMsg + strlen(szMsg);
-    sprintf(psz, "#0x%04x  \"", ERRORIDERROR(pErrInfoBlk -> idError));
+    sprintf(psz, "#0x%04x  \"", ERRORIDERROR(pErrInfoBlk->idError));
     psz += strlen(psz);
-    strcpy(psz, ((PSZ)pErrInfoBlk) + *(PSHORT)pszOffset);
+    strcpy(psz, ((PSZ) pErrInfoBlk) + *(PSHORT) pszOffset);
     psz += strlen(psz);
     strcpy(psz, "\"");
     WinFreeErrorInfo(pErrInfoBlk);	// Free resource segment
   }
 
-  showMsg(MB_ENTER | MB_ICONEXCLAMATION,
-	  hwndOwner,
-	  GetPString(IDS_GENERR2TEXT),	// Titlebar message
+  showMsg(MB_ENTER | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_GENERR2TEXT),	// Titlebar message
 	  szMsg);			// Formatted message
 
-} // Win_Error
+}					// Win_Error
 
 //== Win_Error2: report Win...() error using passed message id ===
 
-VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo, UINT idMsg)
+VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName,
+		ULONG ulLineNo, UINT idMsg)
 {
   Win_Error(hwndErr, hwndOwner, pszFileName, ulLineNo, GetPString(idMsg));
 
-} // Win_Error2
+}					// Win_Error2
 
 //== Dos_Error: report Dos...() error using passed message string ===
 
 INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
-	      ULONG ulLineNo, PCSZ pszFmt,...)
+	      ULONG ulLineNo, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
   ULONG Class;			// Error class
@@ -134,7 +133,7 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
   va_end(va);
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed.");			// Assume simple function name
+    strcat(szMsg, " failed.");		// Assume simple function name
 
   DosErrClass(ulRC, &Class, &action, &Locus);
 
@@ -148,9 +147,10 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
 	  GetPString(IDS_ERRLOCUS1TEXT + (Locus - 1)));
   pszMsgStart = szMsg + strlen(szMsg) + 1;
   // Get message leaving space for NL separator
-  if (!DosGetMessage(NULL, 0L, (PCHAR)pszMsgStart + 1, 1024, ulRC, "OSO001.MSG", &ulMsgLen) ||
-      !DosGetMessage(NULL, 0L, (PCHAR)pszMsgStart + 1, 1024, ulRC, "OSO001H.MSG", &ulMsgLen))
-  {
+  if (!DosGetMessage
+      (NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, "OSO001.MSG", &ulMsgLen)
+      || !DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC,
+			"OSO001H.MSG", &ulMsgLen)) {
     // Got message
     pszMsgStart[ulMsgLen + 1] = 0;	// Terminate
     *(pszMsgStart - 1) = '\n';		// Stuff NL before message text
@@ -159,18 +159,15 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
     psz = pszMsgStart + ulMsgLen;	// Point at last char
     // Chop trailing NL CR TAB
     while (*psz &&
-	   (*psz == '\r' || *psz == '\n' || *psz == ' ' || *psz == '\t'))
-    {
+	   (*psz == '\r' || *psz == '\n' || *psz == ' ' || *psz == '\t')) {
       *psz-- = 0;
     }
     strcat(psz, "\"");			// Append trailing quote
 
     // Convert CR and NL combos to single space
     psz = pszMsgStart;
-    while (*psz)
-    {
-      if (*psz == '\n' || *psz == '\r')
-      {
+    while (*psz) {
+      if (*psz == '\n' || *psz == '\r') {
 	while (*(psz + 1) == '\n' || *(psz + 1) == '\r')
 	  memmove(psz, psz + 1, strlen(psz));
 	*psz = ' ';
@@ -180,25 +177,23 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
     }
   }
 
-  return showMsg(mb_type | MB_ICONEXCLAMATION,
-		 hwndOwner,
-		 GetPString(IDS_DOSERR2TEXT),	// Title
+  return showMsg(mb_type | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_DOSERR2TEXT),	// Title
 		 szMsg);
 
-} // Dos_Error
+}					// Dos_Error
 
 //== Dos_Error2: report Dos...() error using passed message id ===
 
 INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
-	      ULONG ulLineNo, UINT idMsg)
+	       ULONG ulLineNo, UINT idMsg)
 {
-  return Dos_Error(mb_type, ulRC, hwndOwner, pszFileName,ulLineNo,
-                    GetPString(idMsg));
-} // Dos_Error2
+  return Dos_Error(mb_type, ulRC, hwndOwner, pszFileName, ulLineNo,
+		   GetPString(idMsg));
+}					// Dos_Error2
 
 //== Runtime_Error: report runtime library error using passed message string ===
 
-VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
+VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
   va_list va;
@@ -210,17 +205,15 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt,...)
   va_end(va);
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed.");			// Assume simple function name
+    strcat(szMsg, " failed.");		// Assume simple function name
 
   sprintf(szMsg + strlen(szMsg),
 	  // GetPString(IDS_DOSERR1TEXT), fixme
-	  "\nModule: %s\nLinenumber: %u",
-	  pszSrcFile,
-	  uSrcLineNo);
+	  "\nModule: %s\nLinenumber: %u", pszSrcFile, uSrcLineNo);
 
-  showMsg(MB_ICONEXCLAMATION,HWND_DESKTOP,DEBUG_STRING,szMsg);
+  showMsg(MB_ICONEXCLAMATION, HWND_DESKTOP, DEBUG_STRING, szMsg);
 
-} // Runtime_Error
+}					// Runtime_Error
 
 //== Runtime_Error2: report runtime library error using passed message id ===
 
@@ -228,13 +221,13 @@ VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 {
   Runtime_Error(pszSrcFile, uSrcLineNo, GetPString(idMsg));
 
-} // Runtime_Error2
+}					// Runtime_Error2
 
 // fixme to be rename to Misc_Error
 
 //=== saymsg: report misc error using passed message ===
 
-APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt,...)
+APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
   va_list va;
@@ -243,16 +236,15 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt,...)
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
 
-  return showMsg(mb_type,hwnd,pszTitle,szMsg);
+  return showMsg(mb_type, hwnd, pszTitle, szMsg);
 
-} // saymsg
+}					// saymsg
 
 //=== showMsg: display error popup ===
 
 static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg)
 {
-  if ((mb_type & (MB_YESNO | MB_YESNOCANCEL)) == 0)
-  {
+  if ((mb_type & (MB_YESNO | MB_YESNOCANCEL)) == 0) {
     fputs(pszMsg, stderr);
     fputc('\n', stderr);
     fflush(stderr);
@@ -261,12 +253,10 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg)
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  DosBeep(250,100);
+  DosBeep(250, 100);
 
   return WinMessageBox(HWND_DESKTOP,	// Parent
 		       hwnd,		// Owner
-		       (PSZ)pszMsg,
-		       (PSZ)pszTitle,
-		       0,		// help id
+		       (PSZ) pszMsg, (PSZ) pszTitle, 0,	// help id
 		       mb_type | MB_MOVEABLE);
-} // showMsg
+}					// showMsg

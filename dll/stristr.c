@@ -8,22 +8,22 @@
 
 #pragma alloc_text(MISC8,stristr,strnstr,strnistr,findstring)
 
-
-CHAR * stristr (register CHAR *t, CHAR *s) {
+CHAR *stristr(register CHAR * t, CHAR * s)
+{
 
   /* case-insensitive strstr() */
 
-  register CHAR *t1,*s1;
+  register CHAR *t1, *s1;
 
   while (*t) {
     t1 = t;
     s1 = s;
     while (*s1) {
-      if (toupper (*s1) != toupper (*t))
-        break;
+      if (toupper(*s1) != toupper(*t))
+	break;
       else {
-        s1++;
-        t++;
+	s1++;
+	t++;
       }
     }
     if (!*s1)
@@ -33,24 +33,23 @@ CHAR * stristr (register CHAR *t, CHAR *s) {
   return NULL;
 }
 
-
-
-CHAR * strnistr (register CHAR *t, CHAR *s, LONG len) {
+CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
+{
 
   /* case-insensitive strnstr() */
 
   register CHAR *s1;
-  register LONG  len2;
+  register LONG len2;
 
   len2 = 0;
   while (len > len2) {
     s1 = s;
     while (len2 < len) {
-      if (toupper (*s1) != toupper (t[len2]))
-        break;
+      if (toupper(*s1) != toupper(t[len2]))
+	break;
       else {
-        len2++;
-        s1++;
+	len2++;
+	s1++;
       }
     }
     if (!*s1)
@@ -60,23 +59,23 @@ CHAR * strnistr (register CHAR *t, CHAR *s, LONG len) {
   return NULL;
 }
 
-
-CHAR * strnstr (register CHAR *t, CHAR *s, LONG len) {
+CHAR *strnstr(register CHAR * t, CHAR * s, LONG len)
+{
 
   /* strnstr() */
 
   register CHAR *s1;
-  register LONG  len2;
+  register LONG len2;
 
   len2 = 0;
   while (len > len2) {
     s1 = s;
     while (len2 < len) {
       if (*s1 != t[len2])
-        break;
+	break;
       else {
-        len2++;
-        s1++;
+	len2++;
+	s1++;
       }
     }
     if (!*s1)
@@ -86,47 +85,46 @@ CHAR * strnstr (register CHAR *t, CHAR *s, LONG len) {
   return NULL;
 }
 
+CHAR *findstring(CHAR * findthis, ULONG lenthis, CHAR * findin,
+		 ULONG lenin, BOOL sensitive)
+{
 
-CHAR * findstring (CHAR *findthis, ULONG lenthis, CHAR *findin,
-                   ULONG lenin, BOOL sensitive) {
+  register CHAR *this, *in;
+  register ULONG lenthis2, lenin2;
 
-  register CHAR *this,*in;
-  register ULONG lenthis2,lenin2;
-
-  if(!findthis || !findin || !lenthis || !lenin)
+  if (!findthis || !findin || !lenthis || !lenin)
     return NULL;
   do {
     this = findthis;
     lenthis2 = lenthis;
     in = findin;
     lenin2 = lenin;
-    while(lenthis2 && lenin2) {
-      if(!sensitive) {
-        if(toupper(*this) != toupper(*in))
-          break;
-        else {
-          this++;
-          in++;
-          lenthis2--;
-          lenin2--;
-        }
+    while (lenthis2 && lenin2) {
+      if (!sensitive) {
+	if (toupper(*this) != toupper(*in))
+	  break;
+	else {
+	  this++;
+	  in++;
+	  lenthis2--;
+	  lenin2--;
+	}
       }
       else {
-        if(*this != *in)
-          break;
-        else {
-          this++;
-          in++;
-          lenthis2--;
-          lenin2--;
-        }
+	if (*this != *in)
+	  break;
+	else {
+	  this++;
+	  in++;
+	  lenthis2--;
+	  lenin2--;
+	}
       }
     }
-    if(lenthis2) {
+    if (lenthis2) {
       lenin--;
       findin++;
     }
-  } while(lenin && lenthis2);
+  } while (lenin && lenthis2);
   return (lenthis2) ? NULL : in - lenthis;
 }
-

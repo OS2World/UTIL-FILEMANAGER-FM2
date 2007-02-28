@@ -18,17 +18,19 @@
 
 #define QWL_DATAMIN_PTR	(QWL_USER + 4)
 
-typedef struct {
-  APIRET     qfsa_rc;
+typedef struct
+{
+  APIRET qfsa_rc;
   FSALLOCATE fsa;
-  APIRET     qfsi_rc;
-  ULONG      qfsa_cb;
+  APIRET qfsi_rc;
+  ULONG qfsa_cb;
   FSQBUFFER2 fsqb2;
-  CHAR	     ab[256];		// space for fsqb2 variable data
-} tDataMin;
+  CHAR ab[256];			// space for fsqb2 variable data
+}
+tDataMin;
 
-MRESULT EXPENTRY MiniTimeProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-MRESULT EXPENTRY DataProc (HWND hwnd,ULONG msg,MPARAM mp1,MPARAM mp2);
-HWND CreateDataBar (HWND hwndParent,ULONG fl);
+MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+HWND CreateDataBar(HWND hwndParent, ULONG fl);
 
 #endif

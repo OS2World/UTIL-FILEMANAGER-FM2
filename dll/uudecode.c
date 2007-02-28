@@ -55,8 +55,7 @@ int UUD(char *filename, CHAR * dest)
     saymsg(MB_CANCEL,
 	   HWND_DESKTOP,
 	   GetPString(IDS_ERRORTEXT),
-	   GetPString(IDS_COMPCANTOPENTEXT),
-	   filename);
+	   GetPString(IDS_COMPCANTOPENTEXT), filename);
     return ret;
   }
 
@@ -67,13 +66,12 @@ int UUD(char *filename, CHAR * dest)
       saymsg(MB_CANCEL,
 	     HWND_DESKTOP,
 	     GetPString(IDS_ERRORTEXT),
-	     GetPString(IDS_UUDNOBEGINTEXT),
-	     filename);
+	     GetPString(IDS_UUDNOBEGINTEXT), filename);
       return ret;
     }
     if (!strncmp(buf, "begin ", 6))
       break;
-  } // for
+  }					// for
   *dest = 0;
   sscanf(buf, "begin %o %259s", &mode, dest);
   dest[CCHMAXPATH - 1] = 0;
@@ -105,16 +103,14 @@ int UUD(char *filename, CHAR * dest)
     saymsg(MB_CANCEL,
 	   HWND_DESKTOP,
 	   GetPString(IDS_ERRORTEXT),
-	   GetPString(IDS_UUDCANTOPENFORTEXT),
-	   dest,
-	   filename);
+	   GetPString(IDS_UUDCANTOPENFORTEXT), dest, filename);
     return ret;
   }
 
   ret = 1;
   decode(in, out);
 
-  xfgets(buf, sizeof(buf), in,pszSrcFile,__LINE__);
+  xfgets(buf, sizeof(buf), in, pszSrcFile, __LINE__);
 
   fclose(in);
   fclose(out);
@@ -132,7 +128,7 @@ static BOOL decode(FILE * in, FILE * out)
 
   for (;;) {
     /* for each input line */
-    if (!xfgets(buf, sizeof(buf), in,pszSrcFile,__LINE__))
+    if (!xfgets(buf, sizeof(buf), in, pszSrcFile, __LINE__))
       return FALSE;
     n = DEC(buf[0]);
     if (n <= 0)
@@ -157,8 +153,8 @@ static void outdec(char *p, FILE * f, int n)
 {
   INT c1, c2, c3;
 
-  c1 = DEC(*p) << 2 | (UINT)DEC(p[1]) >> 4;
-  c2 = DEC(p[1]) << 4 | (UINT)DEC(p[2]) >> 2;
+  c1 = DEC(*p) << 2 | (UINT) DEC(p[1]) >> 4;
+  c2 = DEC(p[1]) << 4 | (UINT) DEC(p[2]) >> 2;
   c3 = DEC(p[2]) << 6 | DEC(p[3]);
   if (n >= 1)
     putc(c1, f);
@@ -172,13 +168,12 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   WORKER *wk;
 
-  switch (msg)
-  {
+  switch (msg) {
   case WM_INITDLG:
     if (mp2) {
       WinSetWindowPtr(hwnd, 0, mp2);
       wk = (WORKER *) mp2;
-      if (wk -> li && wk -> li -> list && wk -> li -> list[0]) {
+      if (wk->li && wk->li->list && wk->li->list[0]) {
 	WinSendDlgItemMsg(hwnd, MRG_TARGETNAME, EM_SETTEXTLIMIT,
 			  MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
 	PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
@@ -198,22 +193,22 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SHORT start;
       CHAR *p;
 
-      WinSetDlgItemText(hwnd, MRG_TARGETNAME, wk -> li -> targetpath);
+      WinSetDlgItemText(hwnd, MRG_TARGETNAME, wk->li->targetpath);
       start = 0;
-      p = strrchr(wk -> li -> targetpath, '\\');
+      p = strrchr(wk->li->targetpath, '\\');
       if (p)
-	start = (p + 1) - wk -> li -> targetpath;
+	start = (p + 1) - wk->li->targetpath;
       WinSendDlgItemMsg(hwnd, MRG_TARGETNAME, EM_SETSEL,
 			MPFROM2SHORT(start, CCHMAXPATH), MPVOID);
-      for (x = 0; wk -> li -> list[x]; x++) {
-	if (IsFile(wk -> li -> list[x]) == 1) {
+      for (x = 0; wk->li->list[x]; x++) {
+	if (IsFile(wk->li->list[x]) == 1) {
 	  numfiles++;
 	  WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_INSERTITEM,
 			    MPFROM2SHORT(LIT_END, 0),
-			    MPFROMP(wk -> li -> list[x]));
+			    MPFROMP(wk->li->list[x]));
 	}
       }
-      WinCheckButton(hwnd, MRG_BINARY, (wk -> li -> type == IDM_MERGEBINARY));
+      WinCheckButton(hwnd, MRG_BINARY, (wk->li->type == IDM_MERGEBINARY));
       if (!numfiles) {
 	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	       hwnd,
@@ -225,11 +220,9 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CONTROL:
-    switch (SHORT1FROMMP(mp1))
-    {
+    switch (SHORT1FROMMP(mp1)) {
     case MRG_LISTBOX:
-      switch (SHORT2FROMMP(mp1))
-      {
+      switch (SHORT2FROMMP(mp1)) {
       case LN_ENTER:
 	{
 	  SHORT x;
@@ -240,8 +233,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (x >= 0) {
 	    *szBuffer = 0;
 	    WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_QUERYITEMTEXT,
-			      MPFROM2SHORT(x, CCHMAXPATH),
-			      MPFROMP(szBuffer));
+			      MPFROM2SHORT(x, CCHMAXPATH), MPFROMP(szBuffer));
 	    if (*szBuffer)
 	      QuickEdit(hwnd, szBuffer);
 	  }
@@ -257,12 +249,12 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SETDIR:
-    PaintRecessedWindow(WinWindowFromID(hwnd, MRG_HELP), (HPS) 0, FALSE, TRUE);
+    PaintRecessedWindow(WinWindowFromID(hwnd, MRG_HELP), (HPS) 0, FALSE,
+			TRUE);
     return 0;
 
   case WM_COMMAND:
-    switch (SHORT1FROMMP(mp1))
-    {
+    switch (SHORT1FROMMP(mp1)) {
     case IDM_UNDO:
       PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
       break;
@@ -272,10 +264,10 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (wk) {
 	CHAR filename[CCHMAXPATH];
 
-	strcpy(filename, wk -> li -> targetpath);
+	strcpy(filename, wk->li->targetpath);
 	if (export_filename(HWND_DESKTOP, filename, FALSE) && *filename) {
-	  strcpy(wk -> li -> targetpath, filename);
-	  WinSetDlgItemText(hwnd, MRG_TARGETNAME, wk -> li -> targetpath);
+	  strcpy(wk->li->targetpath, filename);
+	  WinSetDlgItemText(hwnd, MRG_TARGETNAME, wk->li->targetpath);
 	}
       }
       break;
@@ -303,19 +295,16 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (x >= 0) {
 	  *szBuffer = 0;
 	  WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_QUERYITEMTEXT,
-			    MPFROM2SHORT(x, CCHMAXPATH),
-			    MPFROMP(szBuffer));
+			    MPFROM2SHORT(x, CCHMAXPATH), MPFROMP(szBuffer));
 	  if (*szBuffer) {
 	    WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_DELETEITEM,
 			      MPFROMSHORT(x), MPVOID);
 	    if (SHORT1FROMMP(mp1) == MRG_TOP)
 	      WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_INSERTITEM,
-				MPFROM2SHORT(0, 0),
-				MPFROMP(szBuffer));
+				MPFROM2SHORT(0, 0), MPFROMP(szBuffer));
 	    else
 	      WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_INSERTITEM,
-				MPFROM2SHORT(LIT_END, 0),
-				MPFROMP(szBuffer));
+				MPFROM2SHORT(LIT_END, 0), MPFROMP(szBuffer));
 	  }
 	}
       }
@@ -328,8 +317,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_HELP:
       if (hwndHelp)
 	WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
-		   MPFROM2SHORT(HELP_MERGE, 0),
-		   MPFROMSHORT(HM_RESOURCEID));
+		   MPFROM2SHORT(HELP_MERGE, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
 
     case DID_OK:
@@ -341,76 +329,62 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SHORT x, y;
 
 	*szBuffer = 0;
-	WinQueryDlgItemText(hwnd,
-			    MRG_TARGETNAME,
-			    CCHMAXPATH,
-			    szBuffer);
+	WinQueryDlgItemText(hwnd, MRG_TARGETNAME, CCHMAXPATH, szBuffer);
 	if (!*szBuffer) {
 	  DosBeep(50, 100);
-	  WinSetFocus(HWND_DESKTOP,
-		      WinWindowFromID(hwnd, MRG_TARGETNAME));
+	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, MRG_TARGETNAME));
 	  break;
 	}
 	if (DosQueryPathInfo(szBuffer,
 			     FIL_QUERYFULLNAME,
-			     wk -> li -> targetpath,
-			     CCHMAXPATH))
-	{
+			     wk->li->targetpath, CCHMAXPATH)) {
 	  DosBeep(50, 100);
-	  WinSetFocus(HWND_DESKTOP,
-		      WinWindowFromID(hwnd, MRG_TARGETNAME));
+	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, MRG_TARGETNAME));
 	  break;
 	}
-	WinSetDlgItemText(hwnd,
-			  MRG_TARGETNAME,
-			  szBuffer);
+	WinSetDlgItemText(hwnd, MRG_TARGETNAME, szBuffer);
 	append = WinQueryButtonCheckstate(hwnd, MRG_APPEND);
 	binary = WinQueryButtonCheckstate(hwnd, MRG_BINARY);
-	wk -> li -> type = (append && binary) ? IDM_MERGEBINARYAPPEND :
+	wk->li->type = (append && binary) ? IDM_MERGEBINARYAPPEND :
 	  (append) ? IDM_MERGETEXTAPPEND :
-	  (binary) ? IDM_MERGEBINARY :
-	  IDM_MERGETEXT;
+	  (binary) ? IDM_MERGEBINARY : IDM_MERGETEXT;
 	x = (SHORT) WinSendDlgItemMsg(hwnd,
 				      MRG_LISTBOX,
-				      LM_QUERYITEMCOUNT,
-				      MPVOID,
-				      MPVOID);
+				      LM_QUERYITEMCOUNT, MPVOID, MPVOID);
 	for (y = 0; y < x; y++) {
 	  *szBuffer = 0;
 	  WinSendDlgItemMsg(hwnd,
 			    MRG_LISTBOX,
 			    LM_QUERYITEMTEXT,
-			    MPFROM2SHORT(y, CCHMAXPATH),
-			    MPFROMP(szBuffer));
+			    MPFROM2SHORT(y, CCHMAXPATH), MPFROMP(szBuffer));
 	  if (*szBuffer) {
-	    error = AddToList(szBuffer,
-			      &list,
-			      &numfiles,
-			      &numalloc);
+	    error = AddToList(szBuffer, &list, &numfiles, &numalloc);
 	    if (error) {
-              Runtime_Error(pszSrcFile, __LINE__, "AddToList");
+	      Runtime_Error(pszSrcFile, __LINE__, "AddToList");
 	      break;
 	    }
 	  }
 	}
 	if (numfiles && list && numfiles + 1 < numalloc) {
-	  test = xrealloc(list, sizeof(CHAR *) * (numfiles + 1),pszSrcFile,__LINE__);
+	  test =
+	    xrealloc(list, sizeof(CHAR *) * (numfiles + 1), pszSrcFile,
+		     __LINE__);
 	  if (test)
 	    list = test;
 	}
 	if (!list || !list[0]) {
-          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	  Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	  break;
 	}
 	else {
-	  FreeList(wk -> li -> list);
-	  wk -> li -> list = list;
+	  FreeList(wk->li->list);
+	  wk->li->list = list;
 	}
       }
       WinDismissDlg(hwnd, 1);
       break;
-    } // switch WM_COMMAND mp1
+    }					// switch WM_COMMAND mp1
     return 0;
-  } // switch msg
+  }					// switch msg
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }

@@ -31,40 +31,42 @@
 
 #ifdef NEVER
 
-VOID APIENTRY deinit (ULONG why) {
+VOID APIENTRY deinit(ULONG why)
+{
 
-  if(fmprof)
+  if (fmprof)
     PrfCloseProfile(fmprof);
-  fmprof = (HINI)0;
+  fmprof = (HINI) 0;
 
   flushall();
 
-  DosExitList(EXLST_REMOVE,deinit);
+  DosExitList(EXLST_REMOVE, deinit);
 }
 
 #endif
 
-int main (int argc,char *argv[]) {
+int main(int argc, char *argv[])
+{
 
-  HAB         hab;
-  HMQ         hmq;
-  QMSG        qmsg;
+  HAB hab;
+  HMQ hmq;
+  QMSG qmsg;
 
-  strcpy(appname,"DATABAR");
+  strcpy(appname, "DATABAR");
 
 # ifdef NEVER
-  DosExitList(EXLST_ADD,deinit);
+  DosExitList(EXLST_ADD, deinit);
 # endif
 
   hab = WinInitialize(0);
-  if(hab) {
-    hmq = WinCreateMsgQueue(hab,384);
-    if(hmq) {
-      if(InitFM3DLL(hab,argc,argv)) {
-        if(CreateDataBar(HWND_DESKTOP,0)) {
-          while(WinGetMsg(hab,&qmsg,(HWND)0,0,0))
-            WinDispatchMsg(hab,&qmsg);
-        }
+  if (hab) {
+    hmq = WinCreateMsgQueue(hab, 384);
+    if (hmq) {
+      if (InitFM3DLL(hab, argc, argv)) {
+	if (CreateDataBar(HWND_DESKTOP, 0)) {
+	  while (WinGetMsg(hab, &qmsg, (HWND) 0, 0, 0))
+	    WinDispatchMsg(hab, &qmsg);
+	}
       }
       WinDestroyMsgQueue(hmq);
     }
@@ -72,4 +74,3 @@ int main (int argc,char *argv[]) {
   }
   return 0;
 }
-

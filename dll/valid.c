@@ -24,8 +24,8 @@
 
 #define INCL_DOS
 #define INCL_WIN
-#define INCL_DOSDEVICES		// DosDevIOCtl
-#define INCL_DOSDEVIOCTL	// DosDevIOCtl
+#define INCL_DOSDEVICES			// DosDevIOCtl
+#define INCL_DOSDEVIOCTL		// DosDevIOCtl
 #include <os2.h>
 
 #include <stdlib.h>
@@ -46,52 +46,41 @@ static PSZ pszSrcFile = __FILE__;
 #pragma alloc_text(FILLFLAGS,ArgDriveFlags,DriveFlagsOne)
 #pragma alloc_text(FINDDESK,GetDesktopName)
 
-
-APIRET MakeFullName (char *pszFileName)
+APIRET MakeFullName(char *pszFileName)
 {
   /* pszFileName must be CCHMAXPATH long minimum! */
 
-  char   szPathName[CCHMAXPATH];
+  char szPathName[CCHMAXPATH];
   APIRET rc;
 
   DosError(FERR_DISABLEHARDERR);
   rc = DosQueryPathInfo(pszFileName,
-			FIL_QUERYFULLNAME,
-			szPathName,
-			sizeof(szPathName));
-  if(!rc)
+			FIL_QUERYFULLNAME, szPathName, sizeof(szPathName));
+  if (!rc)
     strcpy(pszFileName, szPathName);	// Pass back actual name
   return rc;
 }
 
-
-char *RootName (char *filename)
+char *RootName(char *filename)
 {
-  char *p = NULL,*pp;
+  char *p = NULL, *pp;
 
   // Return filename, strip path parts
   // Return empty string when filename ends with \
 
-  if(filename) {
-    p = strrchr(filename,'\\');
-    pp = strrchr(filename,'/');
-    p = (p) ?
-	 (pp) ?
-	  (p > pp) ?
-	   p :
-	   pp :
-	  p :
-	 pp;
+  if (filename) {
+    p = strrchr(filename, '\\');
+    pp = strrchr(filename, '/');
+    p = (p) ? (pp) ? (p > pp) ? p : pp : p : pp;
   }
-  if(!p)                  /* name is itself a root */
+  if (!p)				/* name is itself a root */
     p = filename;
-  else                    /* skip past backslash */
+  else					/* skip past backslash */
     p++;
   return p;
 }
 
-
-int TestDates (char *file1,char *file2)
+int TestDates(char *file1, char *file2)
 {
   /*
    * return 1 (file2 newer than file1),
@@ -99,82 +88,72 @@ int TestDates (char *file1,char *file2)
    * or -1 (file1 newer than file2)
    */
 
-  int         comp = 0;
-  FILESTATUS3 fs3o,fs3n;
+  int comp = 0;
+  FILESTATUS3 fs3o, fs3n;
 
   DosError(FERR_DISABLEHARDERR);
-  if(!DosQueryPathInfo(file1,
-		       FIL_STANDARD,
-		       &fs3o,
-		       sizeof(fs3o))) {
+  if (!DosQueryPathInfo(file1, FIL_STANDARD, &fs3o, sizeof(fs3o))) {
     DosError(FERR_DISABLEHARDERR);
-    if(!DosQueryPathInfo(file2,
-			 FIL_STANDARD,
-			 &fs3n,
-			 sizeof(fs3n))) {
+    if (!DosQueryPathInfo(file2, FIL_STANDARD, &fs3n, sizeof(fs3n))) {
       comp = (fs3n.fdateLastWrite.year >
 	      fs3o.fdateLastWrite.year) ? 1 :
-	     (fs3n.fdateLastWrite.year <
-	      fs3o.fdateLastWrite.year) ? -1 :
-	     (fs3n.fdateLastWrite.month >
-	      fs3o.fdateLastWrite.month) ? 1 :
-	     (fs3n.fdateLastWrite.month <
-	      fs3o.fdateLastWrite.month) ? -1 :
-	     (fs3n.fdateLastWrite.day >
-	      fs3o.fdateLastWrite.day) ? 1 :
-	     (fs3n.fdateLastWrite.day <
-	      fs3o.fdateLastWrite.day) ? -1 :
-	     (fs3n.ftimeLastWrite.hours >
-	      fs3o.ftimeLastWrite.hours) ? 1 :
-	     (fs3n.ftimeLastWrite.hours <
-	      fs3o.ftimeLastWrite.hours) ? -1 :
-	     (fs3n.ftimeLastWrite.minutes >
-	      fs3o.ftimeLastWrite.minutes) ? 1 :
-	     (fs3n.ftimeLastWrite.minutes <
-	      fs3o.ftimeLastWrite.minutes) ? -1 :
-	     (fs3n.ftimeLastWrite.twosecs >
-	      fs3o.ftimeLastWrite.twosecs) ? 1 :
-	     (fs3n.ftimeLastWrite.twosecs <
-	      fs3o.ftimeLastWrite.twosecs) ? -1 :
-	     0;
+	(fs3n.fdateLastWrite.year <
+	 fs3o.fdateLastWrite.year) ? -1 :
+	(fs3n.fdateLastWrite.month >
+	 fs3o.fdateLastWrite.month) ? 1 :
+	(fs3n.fdateLastWrite.month <
+	 fs3o.fdateLastWrite.month) ? -1 :
+	(fs3n.fdateLastWrite.day >
+	 fs3o.fdateLastWrite.day) ? 1 :
+	(fs3n.fdateLastWrite.day <
+	 fs3o.fdateLastWrite.day) ? -1 :
+	(fs3n.ftimeLastWrite.hours >
+	 fs3o.ftimeLastWrite.hours) ? 1 :
+	(fs3n.ftimeLastWrite.hours <
+	 fs3o.ftimeLastWrite.hours) ? -1 :
+	(fs3n.ftimeLastWrite.minutes >
+	 fs3o.ftimeLastWrite.minutes) ? 1 :
+	(fs3n.ftimeLastWrite.minutes <
+	 fs3o.ftimeLastWrite.minutes) ? -1 :
+	(fs3n.ftimeLastWrite.twosecs >
+	 fs3o.ftimeLastWrite.twosecs) ? 1 :
+	(fs3n.ftimeLastWrite.twosecs < fs3o.ftimeLastWrite.twosecs) ? -1 : 0;
     }
   }
   return comp;
 }
 
-
-BOOL IsNewer (char *file1,char *file2)
+BOOL IsNewer(char *file1, char *file2)
 {
   /* return TRUE if file2 is newer than file1 */
 
-  return (TestDates(file1,file2) > 0);
+  return (TestDates(file1, file2) > 0);
 }
 
-
-BOOL IsDesktop (HAB hab,HWND hwnd)
+BOOL IsDesktop(HAB hab, HWND hwnd)
 {
   HWND hwndDesktop;
 
-  if(hwnd == HWND_DESKTOP)
+  if (hwnd == HWND_DESKTOP)
     return TRUE;
-  hwndDesktop = WinQueryDesktopWindow(hab,NULLHANDLE);
-  if(hwnd == hwndDesktop)
+  hwndDesktop = WinQueryDesktopWindow(hab, NULLHANDLE);
+  if (hwnd == hwndDesktop)
     return TRUE;
   return FALSE;
 }
 
-BOOL ParentIsDesktop (HWND hwnd,HWND hwndParent)
+BOOL ParentIsDesktop(HWND hwnd, HWND hwndParent)
 {
   HWND hwndDesktop;
   BOOL ret = FALSE;
 
-  if(!hwndParent)
-    hwndParent = WinQueryWindow(hwnd,QW_PARENT);
-  if(hwndParent == HWND_DESKTOP)
+  if (!hwndParent)
+    hwndParent = WinQueryWindow(hwnd, QW_PARENT);
+  if (hwndParent == HWND_DESKTOP)
     ret = TRUE;
   else {
-    hwndDesktop = WinQueryDesktopWindow(WinQueryAnchorBlock(hwnd),(HWND)0);
-    if(hwndDesktop == hwndParent)
+    hwndDesktop = WinQueryDesktopWindow(WinQueryAnchorBlock(hwnd), (HWND) 0);
+    if (hwndDesktop == hwndParent)
       ret = TRUE;
   }
   return ret;
@@ -187,33 +166,40 @@ BOOL ParentIsDesktop (HWND hwnd,HWND hwndParent)
  * @returns removability flag, 1 = removable, 0 = not removable, -1 = error
  */
 
-INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
+INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 {
-  CHAR		szPath[3];
-  VOID		*pvBuffer = NULL;
-  CHAR		*pfsn;
-  CHAR		*pfsd;
-  ULONG		clBufferSize;
-  APIRET	rc;
-  ULONG		ulAction;
-  ULONG		clParmBytes;
-  ULONG		clDataBytes;
-  HFILE		hDev;
+  CHAR szPath[3];
+  VOID *pvBuffer = NULL;
+  CHAR *pfsn;
+  CHAR *pfsd;
+  ULONG clBufferSize;
+  APIRET rc;
+  ULONG ulAction;
+  ULONG clParmBytes;
+  ULONG clDataBytes;
+  HFILE hDev;
+
 # pragma pack(1)
-  struct {
-    BYTE	Cmd;
-    BYTE	Unit;
-  } parmPkt = {0, 0};
+  struct
+  {
+    BYTE Cmd;
+    BYTE Unit;
+  }
+  parmPkt =
+  {
+  0, 0};
 # define BPB_REMOVABLE_MEDIA	0x08	// 3 - Media is removable
   struct
   {
     BIOSPARAMETERBLOCK bpb;
-    USHORT cCylinders;			// Documented but not implemented
-    BYTE bDeviceType;			// Documented but not implemented
-    USHORT fsDeviceAttr;		// Documented but not implemented
-  } dataPkt;
+    USHORT cCylinders;		// Documented but not implemented
+    BYTE bDeviceType;		// Documented but not implemented
+    USHORT fsDeviceAttr;	// Documented but not implemented
+  }
+  dataPkt;
+
 # pragma pack()
-  BYTE		NonRemovable;
+  BYTE NonRemovable;
   PFSQBUFFER2 pfsq;
 
   if (pszFileSystem)
@@ -223,9 +209,12 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
     *pulType = 0;
 
 # define BUFFER_BYTES 8192
-  rc = DosAllocMem(&pvBuffer,BUFFER_BYTES,PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  rc =
+    DosAllocMem(&pvBuffer, BUFFER_BYTES,
+		PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
-    Dos_Error(MB_CANCEL,rc,HWND_DESKTOP,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_OUTOFMEMORY));
     return -1;				// Say failed
   }
 
@@ -235,43 +224,37 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   clBufferSize = BUFFER_BYTES;
   DosError(FERR_DISABLEHARDERR);
   rc = DosQueryFSAttach(szPath, 0, FSAIL_QUERYNAME,
-			  (PFSQBUFFER2)pvBuffer, &clBufferSize);
-  if (rc)
-  {
+			(PFSQBUFFER2) pvBuffer, &clBufferSize);
+  if (rc) {
     /* can't get any info at all */
     DosFreeMem(pvBuffer);
     DosError(FERR_DISABLEHARDERR);
     return -1;				// Say failed
   }
 
-  pfsq = (PFSQBUFFER2)pvBuffer;
+  pfsq = (PFSQBUFFER2) pvBuffer;
   pfsn = pfsq->szName + pfsq->cbName + 1;
   pfsd = pfsn + pfsq->cbFSDName + 1;
 
-  if (pszFileSystem)
-  {
+  if (pszFileSystem) {
     strncpy(pszFileSystem, pfsn, CCHMAXPATH);
     pszFileSystem[CCHMAXPATH - 1] = 0;
   }
 
-  if (pulType && !strcmp(pfsn,CDFS))
+  if (pulType && !strcmp(pfsn, CDFS))
     *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
 
-  if (((PFSQBUFFER2)pvBuffer)->iType == FSAT_REMOTEDRV)
-  {
+  if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV) {
     if (pulType)
       *pulType |= DRIVE_REMOTE;
-    if (pulType && !strcmp(pfsn,CBSIFS))
-    {
+    if (pulType && !strcmp(pfsn, CBSIFS)) {
       *pulType |= DRIVE_ZIPSTREAM;
       *pulType &= ~DRIVE_REMOTE;
       *pulType |= DRIVE_NOLONGNAMES;
-      if (pfsq->cbFSAData)
-      {
+      if (pfsq->cbFSAData) {
 	ULONG FType;
 
-	if (CheckDrive(*pfsd,NULL,&FType) != -1)
-	{
+	if (CheckDrive(*pfsd, NULL, &FType) != -1) {
 	  if (FType & DRIVE_REMOVABLE)
 	    *pulType |= DRIVE_REMOVABLE;
 	  if (~FType & DRIVE_NOLONGNAMES)
@@ -280,12 +263,10 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
       }
     }
     if (pulType &&
-	(!strcmp(pfsn,HPFS) ||
-	 !strcmp(pfsn,JFS) ||
-	 !strcmp(pfsn,FAT32) ||
-         !strcmp(pfsn,NDFS32) ||
-	 !strcmp(pfsn,HPFS386)))
-    {
+	(!strcmp(pfsn, HPFS) ||
+	 !strcmp(pfsn, JFS) ||
+	 !strcmp(pfsn, FAT32) ||
+	 !strcmp(pfsn, NDFS32) || !strcmp(pfsn, HPFS386))) {
       *pulType &= ~DRIVE_NOLONGNAMES;
     }
     DosFreeMem(pvBuffer);
@@ -293,23 +274,19 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   }
 
   // Local drive
-  if (strcmp(pfsn,HPFS) &&
-      strcmp(pfsn,JFS) &&
-      strcmp(pfsn,CDFS) &&
-      strcmp(pfsn,FAT32) &&
-      strcmp(pfsn,NDFS32) &&
-      strcmp(pfsn,HPFS386))
-  {
-    if(pulType)
+  if (strcmp(pfsn, HPFS) &&
+      strcmp(pfsn, JFS) &&
+      strcmp(pfsn, CDFS) &&
+      strcmp(pfsn, FAT32) && strcmp(pfsn, NDFS32) && strcmp(pfsn, HPFS386)) {
+    if (pulType)
       (*pulType) |= DRIVE_NOLONGNAMES;	// Others can not have long names
   }
 
   DosError(FERR_DISABLEHARDERR);
   rc = DosOpen(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
-		 OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
-		 OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
-  if(rc)
-  {
+	       OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
+	       OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
+  if (rc) {
     DosError(FERR_DISABLEHARDERR);
     if (pulType)
       *pulType |= DRIVE_REMOVABLE;	// Assume removable if can not access
@@ -321,13 +298,12 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   clDataBytes = sizeof(NonRemovable);
   NonRemovable = 1;			// Preset as non removable
   DosError(FERR_DISABLEHARDERR);
-  rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE,
-		     &parmPkt.Cmd,		/*  Address of the command-specific argument list. */
-		     sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
-		     &clParmBytes,		/*  Pointer to the length of parameters. */
-		     &NonRemovable,		/*  Address of the data area. */
-		     sizeof(NonRemovable),	/*  Length, in bytes, of pData. */
-		     &clDataBytes);		/*  Pointer to the length of data. */
+  rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE, &parmPkt.Cmd,	/*  Address of the command-specific argument list. */
+		   sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
+		   &clParmBytes,	/*  Pointer to the length of parameters. */
+		   &NonRemovable,	/*  Address of the data area. */
+		   sizeof(NonRemovable),	/*  Length, in bytes, of pData. */
+		   &clDataBytes);	/*  Pointer to the length of data. */
 
   if (!rc && NonRemovable) {
     // Could be USB so check BPB flags
@@ -335,13 +311,12 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
     clDataBytes = sizeof(dataPkt);
     memset(&dataPkt, 0xff, sizeof(dataPkt));
     DosError(FERR_DISABLEHARDERR);
-    rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS,
-		       &parmPkt.Cmd,		/*  Address of the command-specific argument list. */
-		       sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
-		       &clParmBytes,		/*  Pointer to the length of parameters. */
-		       &dataPkt,		/*  Address of the data area. */
-		       sizeof(dataPkt),		/*  Length, in bytes, of pData. */
-		       &clDataBytes);		/*  Pointer to the length of data. */
+    rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS, &parmPkt.Cmd,	/*  Address of the command-specific argument list. */
+		     sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
+		     &clParmBytes,	/*  Pointer to the length of parameters. */
+		     &dataPkt,		/*  Address of the data area. */
+		     sizeof(dataPkt),	/*  Length, in bytes, of pData. */
+		     &clDataBytes);	/*  Pointer to the length of data. */
 
     if (!rc && (dataPkt.bpb.fsDeviceAttr & BPB_REMOVABLE_MEDIA))
       NonRemovable = 0;
@@ -357,26 +332,25 @@ INT CheckDrive (CHAR chDrive, CHAR *pszFileSystem, ULONG *pulType)
   return NonRemovable ? 0 : 1;
 }
 
-
-BOOL IsFileSame (CHAR *filename1,CHAR *filename2)
+BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 {
   /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
 
-  FILESTATUS3 fsa1,fsa2;
-  APIRET      ret;
+  FILESTATUS3 fsa1, fsa2;
+  APIRET ret;
 
-  if(filename1 && filename2) {
+  if (filename1 && filename2) {
     DosError(FERR_DISABLEHARDERR);
-    ret = DosQueryPathInfo(filename1,FIL_STANDARD,&fsa1,
-			(ULONG)sizeof(fsa1));
-    if(!ret) {
+    ret = DosQueryPathInfo(filename1, FIL_STANDARD, &fsa1,
+			   (ULONG) sizeof(fsa1));
+    if (!ret) {
       DosError(FERR_DISABLEHARDERR);
-      ret = DosQueryPathInfo(filename2,FIL_STANDARD,&fsa2,
-			     (ULONG)sizeof(fsa2));
-      if(!ret) {
-	if(fsa1.cbFile == fsa2.cbFile &&
-	   (fsa1.attrFile & (~FILE_ARCHIVED)) ==
-	   (fsa2.attrFile & (~FILE_ARCHIVED)))
+      ret = DosQueryPathInfo(filename2, FIL_STANDARD, &fsa2,
+			     (ULONG) sizeof(fsa2));
+      if (!ret) {
+	if (fsa1.cbFile == fsa2.cbFile &&
+	    (fsa1.attrFile & (~FILE_ARCHIVED)) ==
+	    (fsa2.attrFile & (~FILE_ARCHIVED)))
 	  return TRUE;
       }
     }
@@ -384,63 +358,52 @@ BOOL IsFileSame (CHAR *filename1,CHAR *filename2)
   return FALSE;
 }
 
-
-INT IsFile (CHAR *filename)
+INT IsFile(CHAR * filename)
 {
   /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
 
   FILESTATUS3 fsa;
-  APIRET      ret;
+  APIRET ret;
 
-  if(filename && *filename) {
+  if (filename && *filename) {
     DosError(FERR_DISABLEHARDERR);
-    ret = DosQueryPathInfo(filename,
-			   FIL_STANDARD,
-			   &fsa,
-			   (ULONG)sizeof(fsa));
-    if(!ret)
+    ret = DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa));
+    if (!ret)
       return ((fsa.attrFile & FILE_DIRECTORY) == 0);
-    else if(IsValidDrive(*filename) && IsRoot(filename))
+    else if (IsValidDrive(*filename) && IsRoot(filename))
       return 0;
   }
-  return -1;  /* error; doesn't exist or can't read or null filename */
+  return -1;				/* error; doesn't exist or can't read or null filename */
 }
 
-
-BOOL IsFullName (CHAR *filename)
+BOOL IsFullName(CHAR * filename)
 {
   return (filename) ?
-	  (isalpha(*filename) && filename[1] == ':' && filename[2] == '\\') :
-	  0;
+    (isalpha(*filename) && filename[1] == ':' && filename[2] == '\\') : 0;
 }
 
-
-BOOL IsRoot (CHAR *filename)
+BOOL IsRoot(CHAR * filename)
 {
   return (filename && isalpha(*filename) && filename[1] == ':' &&
 	  filename[2] == '\\' && !filename[3]);
 }
 
-
-BOOL IsValidDir (CHAR *path)
+BOOL IsValidDir(CHAR * path)
 {
-  CHAR        fullname[CCHMAXPATH];
+  CHAR fullname[CCHMAXPATH];
   FILESTATUS3 fs;
 
-  if(path) {
+  if (path) {
     DosError(FERR_DISABLEHARDERR);
-    if(!DosQueryPathInfo(path,
-			 FIL_QUERYFULLNAME,
-			 fullname,
-			 sizeof(fullname))) {
-      if(IsValidDrive(*fullname)) {
-	if(!IsRoot(fullname)) {
+    if (!DosQueryPathInfo(path,
+			  FIL_QUERYFULLNAME, fullname, sizeof(fullname))) {
+      if (IsValidDrive(*fullname)) {
+	if (!IsRoot(fullname)) {
 	  DosError(FERR_DISABLEHARDERR);
-	  if(!DosQueryPathInfo(fullname,
-			       FIL_STANDARD,
-			       &fs,
-			       sizeof(fs)) &&
-	     (fs.attrFile & FILE_DIRECTORY))
+	  if (!DosQueryPathInfo(fullname,
+				FIL_STANDARD,
+				&fs,
+				sizeof(fs)) && (fs.attrFile & FILE_DIRECTORY))
 	    return TRUE;
 	}
 	else
@@ -451,42 +414,39 @@ BOOL IsValidDir (CHAR *path)
   return FALSE;
 }
 
-
-BOOL IsValidDrive (CHAR drive)
+BOOL IsValidDrive(CHAR drive)
 {
-  CHAR   Path[] = " :",Buffer[256];
+  CHAR Path[] = " :", Buffer[256];
   APIRET Status;
-  ULONG  Size;
-  ULONG  ulDriveNum,ulDriveMap;
+  ULONG Size;
+  ULONG ulDriveNum, ulDriveMap;
 
-  if(!isalpha(drive) ||
-     (driveflags[toupper(drive) - 'A'] & (DRIVE_IGNORE | DRIVE_INVALID)))
+  if (!isalpha(drive) ||
+      (driveflags[toupper(drive) - 'A'] & (DRIVE_IGNORE | DRIVE_INVALID)))
     return FALSE;
   DosError(FERR_DISABLEHARDERR);
-  Status = DosQCurDisk(&ulDriveNum,&ulDriveMap);
-  if(!Status) {
-    if(!(ulDriveMap & (1L << (ULONG)(toupper(drive) - 'A'))))
+  Status = DosQCurDisk(&ulDriveNum, &ulDriveMap);
+  if (!Status) {
+    if (!(ulDriveMap & (1L << (ULONG) (toupper(drive) - 'A'))))
       return FALSE;
     Path[0] = toupper(drive);
     Size = sizeof(Buffer);
     DosError(FERR_DISABLEHARDERR);
     Status = DosQueryFSAttach(Path,
 			      0,
-			      FSAIL_QUERYNAME,
-			      (PFSQBUFFER2)Buffer,
-			      &Size);
+			      FSAIL_QUERYNAME, (PFSQBUFFER2) Buffer, &Size);
   }
   return (Status == 0);
 }
 
 //=== MakeValidDir() build valid directory name ===
 
-CHAR *MakeValidDir(CHAR *path)
+CHAR *MakeValidDir(CHAR * path)
 {
-  ULONG		ulDrv;
-  CHAR		*p;
-  FILESTATUS3   fs;
-  APIRET        rc;
+  ULONG ulDrv;
+  CHAR *p;
+  FILESTATUS3 fs;
+  APIRET rc;
 
   if (!MakeFullName(path)) {
     if (IsValidDrive(*path)) {
@@ -495,13 +455,10 @@ CHAR *MakeValidDir(CHAR *path)
 	if (IsRoot(path))
 	  return path;
 	DosError(FERR_DISABLEHARDERR);
-	rc = DosQueryPathInfo(path,
-			      FIL_STANDARD,
-			      &fs,
-			      sizeof(fs));
+	rc = DosQueryPathInfo(path, FIL_STANDARD, &fs, sizeof(fs));
 	if (!rc && (fs.attrFile & FILE_DIRECTORY))
 	  return path;
-	p = strrchr(path,'\\');
+	p = strrchr(path, '\\');
 	if (p) {
 	  if (p < path + 3)
 	    p++;
@@ -514,109 +471,100 @@ CHAR *MakeValidDir(CHAR *path)
   }
   // Fall back to boot drive
   DosError(FERR_DISABLEHARDERR);
-  if (!DosQuerySysInfo(QSV_BOOT_DRIVE,
-		       QSV_BOOT_DRIVE,
-		       &ulDrv,
-		       sizeof(ulDrv))) {
+  if (!DosQuerySysInfo(QSV_BOOT_DRIVE, QSV_BOOT_DRIVE, &ulDrv, sizeof(ulDrv))) {
     ulDrv += '@';
     if (ulDrv < 'C')
       ulDrv = 'C';
-    strcpy(path," :\\");
-    *path = (CHAR)ulDrv;
+    strcpy(path, " :\\");
+    *path = (CHAR) ulDrv;
   }
   else
-    save_dir2(path);	// Fall back to fm3.ini drive or current dir - should never occur
+    save_dir2(path);			// Fall back to fm3.ini drive or current dir - should never occur
   return path;
 }
 
-
-BOOL IsExecutable (CHAR *filename)
+BOOL IsExecutable(CHAR * filename)
 {
   register CHAR *p;
-  APIRET         ret;
-  ULONG          apptype;
+  APIRET ret;
+  ULONG apptype;
 
-  if(filename) {
+  if (filename) {
     DosError(FERR_DISABLEHARDERR);
-    p = strrchr(filename,'.');
-    if(p)
-      ret = DosQAppType(filename,
-			&apptype);
+    p = strrchr(filename, '.');
+    if (p)
+      ret = DosQAppType(filename, &apptype);
     else {
 
       char fname[CCHMAXPATH + 2];
 
-      strcpy(fname,filename);
-      strcat(fname,".");
-      ret = DosQAppType(fname,
-			&apptype);
+      strcpy(fname, filename);
+      strcat(fname, ".");
+      ret = DosQAppType(fname, &apptype);
     }
-    if((!ret && (!apptype ||
-		 (apptype &
-		  (FAPPTYP_NOTWINDOWCOMPAT |
-		   FAPPTYP_WINDOWCOMPAT |
-		   FAPPTYP_WINDOWAPI |
-		   FAPPTYP_BOUND |
-		   FAPPTYP_DOS |
-		   FAPPTYP_WINDOWSREAL |
-		   FAPPTYP_WINDOWSPROT |
-		   FAPPTYP_32BIT |
-		   0x1000)))) ||
-       (p &&
-	(!stricmp(p,".CMD") ||
-	!stricmp(p,".BAT"))))
+    if ((!ret && (!apptype ||
+		  (apptype &
+		   (FAPPTYP_NOTWINDOWCOMPAT |
+		    FAPPTYP_WINDOWCOMPAT |
+		    FAPPTYP_WINDOWAPI |
+		    FAPPTYP_BOUND |
+		    FAPPTYP_DOS |
+		    FAPPTYP_WINDOWSREAL |
+		    FAPPTYP_WINDOWSPROT |
+		    FAPPTYP_32BIT |
+		    0x1000)))) ||
+	(p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT"))))
       return TRUE;
   }
   return FALSE;
 }
 
-
-VOID ArgDriveFlags (INT argc,CHAR **argv)
+VOID ArgDriveFlags(INT argc, CHAR ** argv)
 {
   INT x;
 
-  for(x = 1;x < argc;x++) {
-    if(*argv[x] == '/' && isalpha(argv[x][1])) {
+  for (x = 1; x < argc; x++) {
+    if (*argv[x] == '/' && isalpha(argv[x][1])) {
 
       CHAR *p = &argv[x][1];
 
-      while(isalpha(*p)) {
+      while (isalpha(*p)) {
 	driveflags[toupper(*p) - 'A'] |= DRIVE_IGNORE;
 	p++;
       }
     }
-    else if(*argv[x] == ';' && isalpha(argv[x][1])) {
+    else if (*argv[x] == ';' && isalpha(argv[x][1])) {
 
       CHAR *p = &argv[x][1];
 
-      while(isalpha(*p)) {
+      while (isalpha(*p)) {
 	driveflags[toupper(*p) - 'A'] |= DRIVE_NOPRESCAN;
 	p++;
       }
     }
-    else if(*argv[x] == ',' && isalpha(argv[x][1])) {
+    else if (*argv[x] == ',' && isalpha(argv[x][1])) {
 
       CHAR *p = &argv[x][1];
 
-      while(isalpha(*p)) {
+      while (isalpha(*p)) {
 	driveflags[toupper(*p) - 'A'] |= DRIVE_NOLOADICONS;
 	p++;
       }
     }
-    else if(*argv[x] == '`' && isalpha(argv[x][1])) {
+    else if (*argv[x] == '`' && isalpha(argv[x][1])) {
 
       CHAR *p = &argv[x][1];
 
-      while(isalpha(*p)) {
+      while (isalpha(*p)) {
 	driveflags[toupper(*p) - 'A'] |= DRIVE_NOLOADSUBJS;
 	p++;
       }
     }
-    else if(*argv[x] == '\'' && isalpha(argv[x][1])) {
+    else if (*argv[x] == '\'' && isalpha(argv[x][1])) {
 
       CHAR *p = &argv[x][1];
 
-      while(isalpha(*p)) {
+      while (isalpha(*p)) {
 	driveflags[toupper(*p) - 'A'] |= DRIVE_NOLOADLONGS;
 	p++;
       }
@@ -624,32 +572,31 @@ VOID ArgDriveFlags (INT argc,CHAR **argv)
   }
 }
 
-
-VOID DriveFlagsOne (INT x)
+VOID DriveFlagsOne(INT x)
 {
-  INT         removable;
-  CHAR        szDrive[] = " :\\",FileSystem[CCHMAXPATH];
-  ULONG       drvtype;
+  INT removable;
+  CHAR szDrive[] = " :\\", FileSystem[CCHMAXPATH];
+  ULONG drvtype;
 
-  *szDrive = (CHAR)(x + 'A');
+  *szDrive = (CHAR) (x + 'A');
   *FileSystem = 0;
   drvtype = 0;
-  removable = CheckDrive(*szDrive,FileSystem,&drvtype);
+  removable = CheckDrive(*szDrive, FileSystem, &drvtype);
   driveserial[x] = -1;
   driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		    DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
 		    DRIVE_INCLUDEFILES | DRIVE_SLOW);
-  if(removable != -1)
-  {
+  if (removable != -1) {
     struct
     {
       ULONG serial;
-      CHAR  volumelength;
-      CHAR  volumelabel[CCHMAXPATH];
-    }      volser;
+      CHAR volumelength;
+      CHAR volumelabel[CCHMAXPATH];
+    }
+    volser;
 
     DosError(FERR_DISABLEHARDERR);
-    if(!DosQueryFSInfo((ULONG)x + 1,FSIL_VOLSER,&volser,sizeof(volser)))
+    if (!DosQueryFSInfo((ULONG) x + 1, FSIL_VOLSER, &volser, sizeof(volser)))
       driveserial[x] = volser.serial;
     else
       DosError(FERR_DISABLEHARDERR);
@@ -657,59 +604,55 @@ VOID DriveFlagsOne (INT x)
   else
     driveflags[x] |= DRIVE_INVALID;
   driveflags[x] |= ((removable == -1 || removable == 1) ?
-					DRIVE_REMOVABLE : 0);
-  if(drvtype & DRIVE_REMOTE)
+		    DRIVE_REMOVABLE : 0);
+  if (drvtype & DRIVE_REMOTE)
     driveflags[x] |= DRIVE_REMOTE;
-  if (strcmp(FileSystem,HPFS) &&
-      strcmp(FileSystem,JFS) &&
-      strcmp(FileSystem,CDFS) &&
-      strcmp(FileSystem,FAT32) &&
-      strcmp(FileSystem,HPFS386))
-  {
+  if (strcmp(FileSystem, HPFS) &&
+      strcmp(FileSystem, JFS) &&
+      strcmp(FileSystem, CDFS) &&
+      strcmp(FileSystem, FAT32) && strcmp(FileSystem, HPFS386)) {
     driveflags[x] |= DRIVE_NOLONGNAMES;
   }
-  if(!strcmp(FileSystem,CDFS)) {
+  if (!strcmp(FileSystem, CDFS)) {
     removable = 1;
-    driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
-		      DRIVE_CDROM);
+    driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE | DRIVE_CDROM);
   }
-  else if(!stricmp(FileSystem,CBSIFS)) {
+  else if (!stricmp(FileSystem, CBSIFS)) {
     driveflags[x] |= DRIVE_ZIPSTREAM;
     driveflags[x] &= (~DRIVE_REMOTE);
-    if(drvtype & DRIVE_REMOVABLE)
+    if (drvtype & DRIVE_REMOVABLE)
       driveflags[x] |= DRIVE_REMOVABLE;
-    if(!(drvtype & DRIVE_NOLONGNAMES))
+    if (!(drvtype & DRIVE_NOLONGNAMES))
       driveflags[x] &= (~DRIVE_NOLONGNAMES);
   }
 }
 
-
-VOID FillInDriveFlags (VOID *dummy)
+VOID FillInDriveFlags(VOID * dummy)
 {
-  ULONG        ulDriveNum,ulDriveMap;
+  ULONG ulDriveNum, ulDriveMap;
   register INT x;
 
-  for(x = 0;x < 26;x++)
+  for (x = 0; x < 26; x++)
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
 		      DRIVE_INCLUDEFILES | DRIVE_SLOW);
-  memset(driveserial,-1,sizeof(driveserial));
+  memset(driveserial, -1, sizeof(driveserial));
   DosError(FERR_DISABLEHARDERR);
-  DosQCurDisk(&ulDriveNum,&ulDriveMap);
-  for(x = 0;x < 26;x++) {
-    if(ulDriveMap & (1L << x) && !(driveflags[x] & DRIVE_IGNORE)) {
+  DosQCurDisk(&ulDriveNum, &ulDriveMap);
+  for (x = 0; x < 26; x++) {
+    if (ulDriveMap & (1L << x) && !(driveflags[x] & DRIVE_IGNORE)) {
       {
-	CHAR  s[80];
-	ULONG flags = 0,size = sizeof(ULONG);
+	CHAR s[80];
+	ULONG flags = 0, size = sizeof(ULONG);
 
-	sprintf(s,"%c.DriveFlags",(CHAR)(x + 'A'));
-	if(PrfQueryProfileData(fmprof,appname,s,&flags,&size) &&
-	   size == sizeof(ULONG))
+	sprintf(s, "%c.DriveFlags", (CHAR) (x + 'A'));
+	if (PrfQueryProfileData(fmprof, appname, s, &flags, &size) &&
+	    size == sizeof(ULONG))
 	  driveflags[x] |= flags;
       }
 
-      if(x > 1) {
-	if(!(driveflags[x] & DRIVE_NOPRESCAN))
+      if (x > 1) {
+	if (!(driveflags[x] & DRIVE_NOPRESCAN))
 	  DriveFlagsOne(x);
 	else
 	  driveserial[x] = -1;
@@ -719,39 +662,38 @@ VOID FillInDriveFlags (VOID *dummy)
 	driveserial[x] = -1;
       }
     }
-    else if(!(ulDriveMap & (1L << x)))
+    else if (!(ulDriveMap & (1L << x)))
       driveflags[x] |= DRIVE_INVALID;
   }
   {
-    ULONG  startdrive = 3L;
+    ULONG startdrive = 3L;
 
     DosError(FERR_DISABLEHARDERR);
-    DosQuerySysInfo(QSV_BOOT_DRIVE,QSV_BOOT_DRIVE,
-		    (PVOID)&startdrive,(ULONG)sizeof(ULONG));
-    if(startdrive)
+    DosQuerySysInfo(QSV_BOOT_DRIVE, QSV_BOOT_DRIVE,
+		    (PVOID) & startdrive, (ULONG) sizeof(ULONG));
+    if (startdrive)
       driveflags[startdrive - 1] |= DRIVE_BOOT;
   }
 }
 
-
-CHAR * assign_ignores (CHAR *s)
+CHAR *assign_ignores(CHAR * s)
 {
-  register INT   x;
-  register CHAR *p,*pp;
+  register INT x;
+  register CHAR *p, *pp;
 
   *s = '/';
   s[1] = 0;
   p = s + 1;
-  if(s) {
-    for(x = 0;x < 26;x++) {
-      if((driveflags[x] & DRIVE_IGNORE) != 0) {
-	*p = (CHAR)x + 'A';
+  if (s) {
+    for (x = 0; x < 26; x++) {
+      if ((driveflags[x] & DRIVE_IGNORE) != 0) {
+	*p = (CHAR) x + 'A';
 	p++;
 	*p = 0;
       }
     }
   }
-  if(!s[1]) {
+  if (!s[1]) {
     *s = 0;
     pp = s;
   }
@@ -763,16 +705,16 @@ CHAR * assign_ignores (CHAR *s)
   *pp = ';';
   pp[1] = 0;
   p = pp + 1;
-  if(pp) {
-    for(x = 0;x < 26;x++) {
-      if((driveflags[x] & DRIVE_NOPRESCAN) != 0) {
-	*p = (CHAR)x + 'A';
+  if (pp) {
+    for (x = 0; x < 26; x++) {
+      if ((driveflags[x] & DRIVE_NOPRESCAN) != 0) {
+	*p = (CHAR) x + 'A';
 	p++;
 	*p = 0;
       }
     }
   }
-  if(!pp[1])
+  if (!pp[1])
     *pp = 0;
   pp = &s[strlen(s)];
   *pp = ' ';
@@ -780,16 +722,16 @@ CHAR * assign_ignores (CHAR *s)
   *pp = ',';
   pp[1] = 0;
   p = pp + 1;
-  if(pp) {
-    for(x = 0;x < 26;x++) {
-      if((driveflags[x] & DRIVE_NOLOADICONS) != 0) {
-	*p = (CHAR)x + 'A';
+  if (pp) {
+    for (x = 0; x < 26; x++) {
+      if ((driveflags[x] & DRIVE_NOLOADICONS) != 0) {
+	*p = (CHAR) x + 'A';
 	p++;
 	*p = 0;
       }
     }
   }
-  if(!pp[1])
+  if (!pp[1])
     *pp = 0;
   pp = &s[strlen(s)];
   *pp = ' ';
@@ -797,16 +739,16 @@ CHAR * assign_ignores (CHAR *s)
   *pp = '`';
   pp[1] = 0;
   p = pp + 1;
-  if(pp) {
-    for(x = 0;x < 26;x++) {
-      if((driveflags[x] & DRIVE_NOLOADSUBJS) != 0) {
-	*p = (CHAR)x + 'A';
+  if (pp) {
+    for (x = 0; x < 26; x++) {
+      if ((driveflags[x] & DRIVE_NOLOADSUBJS) != 0) {
+	*p = (CHAR) x + 'A';
 	p++;
 	*p = 0;
       }
     }
   }
-  if(!pp[1])
+  if (!pp[1])
     *pp = 0;
   pp = &s[strlen(s)];
   *pp = ' ';
@@ -814,44 +756,42 @@ CHAR * assign_ignores (CHAR *s)
   *pp = '\'';
   pp[1] = 0;
   p = pp + 1;
-  if(pp) {
-    for(x = 0;x < 26;x++) {
-      if((driveflags[x] & DRIVE_NOLOADLONGS) != 0) {
-	*p = (CHAR)x + 'A';
+  if (pp) {
+    for (x = 0; x < 26; x++) {
+      if ((driveflags[x] & DRIVE_NOLOADLONGS) != 0) {
+	*p = (CHAR) x + 'A';
 	p++;
 	*p = 0;
       }
     }
   }
-  if(!pp[1])
+  if (!pp[1])
     *pp = 0;
   bstrip(s);
   return s;
 }
 
-
-BOOL needs_quoting (register CHAR *f)
+BOOL needs_quoting(register CHAR * f)
 {
   register CHAR *p = " &|<>";
 
-  while(*p) {
-    if(strchr(f,*p))
+  while (*p) {
+    if (strchr(f, *p))
       return TRUE;
     p++;
   }
   return FALSE;
 }
 
-
-BOOL IsBinary (register CHAR *str,ULONG len)
+BOOL IsBinary(register CHAR * str, ULONG len)
 {
   register ULONG x = 0L;
 
-  if(str) {
-    while(x < len) {
-      if(str[x] < ' ' && str[x] != '\r' && str[x] != '\n' && str[x] != '\t' &&
-	 str[x] != '\x1b' && str[x] != '\x1a' && str[x] != '\07' &&
-	 str[x] != '\x0c')
+  if (str) {
+    while (x < len) {
+      if (str[x] < ' ' && str[x] != '\r' && str[x] != '\n' && str[x] != '\t'
+	  && str[x] != '\x1b' && str[x] != '\x1a' && str[x] != '\07'
+	  && str[x] != '\x0c')
 	return TRUE;
       x++;
     }
@@ -859,45 +799,42 @@ BOOL IsBinary (register CHAR *str,ULONG len)
   return FALSE;
 }
 
-
-BOOL TestBinary (CHAR *filename)
+BOOL TestBinary(CHAR * filename)
 {
-  HFILE   handle;
-  ULONG   ulAction;
-  ULONG	  len;
-  APIRET  rc;
-  CHAR    buff[512];
+  HFILE handle;
+  ULONG ulAction;
+  ULONG len;
+  APIRET rc;
+  CHAR buff[512];
 
-  if(filename) {
-    if(!DosOpen(filename,&handle,&ulAction,0L,0L,
-		OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-		OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-		OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-		OPEN_ACCESS_READONLY,0L)) {
+  if (filename) {
+    if (!DosOpen(filename, &handle, &ulAction, 0L, 0L,
+		 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+		 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+		 OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+		 OPEN_ACCESS_READONLY, 0L)) {
       len = 512;
-      rc = DosRead(handle,buff,len,&len);
+      rc = DosRead(handle, buff, len, &len);
       DosClose(handle);
-      if(!rc && len)
-	return IsBinary(buff,len);
+      if (!rc && len)
+	return IsBinary(buff, len);
     }
   }
   return FALSE;
 }
 
-
-char *IsVowel (char a)
+char *IsVowel(char a)
 {
-  return (strchr("aeiouAEIOU",a) != NULL) ? "n" : NullStr;
+  return (strchr("aeiouAEIOU", a) != NULL) ? "n" : NullStr;
 }
 
-
-VOID GetDesktopName (CHAR *objectpath,ULONG size)
+VOID GetDesktopName(CHAR * objectpath, ULONG size)
 {
-  PFN     WQDPath;
+  PFN WQDPath;
   HMODULE hmod = 0;
-  APIRET  rc;
-  ULONG   startdrive = 3L;
-  CHAR    objerr[CCHMAXPATH];
+  APIRET rc;
+  ULONG startdrive = 3L;
+  CHAR objerr[CCHMAXPATH];
 
   if (!objectpath) {
     Runtime_Error(pszSrcFile, __LINE__, "null pointer");
@@ -909,17 +846,11 @@ VOID GetDesktopName (CHAR *objectpath,ULONG size)
      * if running under warp, we can get the desktop name
      * this way...
      */
-    rc = DosLoadModule(objerr,
-			 sizeof(objerr),
-			 "PMWP",
-			 &hmod);
-    if(!rc) {
-      rc = DosQueryProcAddr(hmod,
-			      262,
-			      NULL,
-			      &WQDPath);
-      if(!rc)
-	WQDPath(objectpath,size);
+    rc = DosLoadModule(objerr, sizeof(objerr), "PMWP", &hmod);
+    if (!rc) {
+      rc = DosQueryProcAddr(hmod, 262, NULL, &WQDPath);
+      if (!rc)
+	WQDPath(objectpath, size);
       DosFreeModule(hmod);
     }
   }
@@ -929,9 +860,9 @@ VOID GetDesktopName (CHAR *objectpath,ULONG size)
 			       "FolderWorkareaRunningObjects",
 			       NULL,
 			       "\0",
-			       (PVOID)objectpath,
-			       sizeof(objectpath))) {
-      Win_Error(HWND_DESKTOP,HWND_DESKTOP,pszSrcFile,__LINE__,"PrfQueryProfileString");
+			       (PVOID) objectpath, sizeof(objectpath))) {
+      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		"PrfQueryProfileString");
       *objectpath = 0;
     }
     else if (!*objectpath || IsFile(objectpath)) {
@@ -941,11 +872,9 @@ VOID GetDesktopName (CHAR *objectpath,ULONG size)
     if (!*objectpath) {
       // Fall back - fixme to work for NLS
       DosError(FERR_DISABLEHARDERR);
-      DosQuerySysInfo(QSV_BOOT_DRIVE,QSV_BOOT_DRIVE,
-		      (PVOID)&startdrive,(ULONG)sizeof(ULONG));
-      sprintf(objectpath,
-	      "%c:\\DESKTOP",
-	      ((CHAR)startdrive) + '@');
+      DosQuerySysInfo(QSV_BOOT_DRIVE, QSV_BOOT_DRIVE,
+		      (PVOID) & startdrive, (ULONG) sizeof(ULONG));
+      sprintf(objectpath, "%c:\\DESKTOP", ((CHAR) startdrive) + '@');
     }
   }
 }

@@ -84,7 +84,6 @@
 #define MAIN_CMDLIST        17
 #define COMMAND_BUTTON      18
 
-
 #define MAIN_HELP           97
 #define MAIN_TRASHCAN       98
 
@@ -409,7 +408,6 @@
 #define IDM_PARTITIONLVMG   1157
 #define IDM_PARTITIONFD       1158
 
-
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001
 #define IDM_COLLECTOR       2002
@@ -486,7 +484,6 @@
 #define IDM_TILEBACKWARDS   3070
 #define IDM_AUTOVIEWMLE     3071
 #define IDM_PARTITIONSMENU 3072
-
 
 #define IDM_DRIVESMENU      3899
 #define IDM_DRIVEA          3900
@@ -571,8 +568,8 @@
 #define IDM_IDEALSIZE       9011
 #define IDM_SWITCHLIST      9012
 #define IDM_TILEMENU        9013
-#define IDM_WINDOWSTART     9100        /* Allow for 499 windows */
-#define IDM_SWITCHSTART     9500        /* Allow for 499 switch entries */
+#define IDM_WINDOWSTART     9100	/* Allow for 499 windows */
+#define IDM_SWITCHSTART     9500	/* Allow for 499 switch entries */
 
 #define IDM_PARENT          10000
 #define IDM_PREVIOUS        10001

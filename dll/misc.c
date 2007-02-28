@@ -102,7 +102,7 @@ void EmphasizeButton(HWND hwnd, BOOL on)
     ptl.y = swp.cy - 2;
     GpiBox(hps, DRO_OUTLINE, &ptl, 0, 0);
     DrgReleasePS(hps);
-    if (remove)
+    if (remove) //fixme always true
       WinInvalidateRect(hwnd, NULL, FALSE);
   }
 }
@@ -110,6 +110,7 @@ void EmphasizeButton(HWND hwnd, BOOL on)
 void DrawTargetEmphasis(HWND hwnd, BOOL on)
 {
   HPS hps = DrgGetPS(WinQueryWindow(hwnd, QW_PARENT));
+
   if (hps) {
     BoxWindow(hwnd, hps, ((on) ? CLR_BLACK : CLR_PALEGRAY));
     DrgReleasePS(hps);
@@ -275,9 +276,10 @@ VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl)
 
 BOOL AdjustCnrColVis(HWND hwndCnr, CHAR * title, BOOL visible, BOOL toggle)
 {
-  PFIELDINFO pfi = (PFIELDINFO)WinSendMsg(hwndCnr,
-				        CM_QUERYDETAILFIELDINFO,
-				        MPVOID, MPFROMSHORT(CMA_FIRST));
+  PFIELDINFO pfi = (PFIELDINFO) WinSendMsg(hwndCnr,
+					   CM_QUERYDETAILFIELDINFO,
+					   MPVOID, MPFROMSHORT(CMA_FIRST));
+
   while (pfi) {
     if (!strcmp(pfi->pTitleData, title)) {
       if (toggle) {
@@ -302,9 +304,10 @@ BOOL AdjustCnrColVis(HWND hwndCnr, CHAR * title, BOOL visible, BOOL toggle)
 
 BOOL AdjustCnrColRO(HWND hwndCnr, CHAR * title, BOOL readonly, BOOL toggle)
 {
-  PFIELDINFO pfi = (PFIELDINFO)WinSendMsg(hwndCnr,
-				          CM_QUERYDETAILFIELDINFO,
-				          MPVOID, MPFROMSHORT(CMA_FIRST));
+  PFIELDINFO pfi = (PFIELDINFO) WinSendMsg(hwndCnr,
+					   CM_QUERYDETAILFIELDINFO,
+					   MPVOID, MPFROMSHORT(CMA_FIRST));
+
   while (pfi) {
     if (!strcmp(pfi->pTitleData, title)) {
       if (toggle) {
@@ -342,9 +345,8 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
   if (x != -1) {
     if (!stricmp(FileSystem, HPFS) ||
 	!stricmp(FileSystem, JFS) ||
-        !stricmp(FileSystem, FAT32) ||
-        !stricmp(FileSystem, NDFS32) ||
-        !stricmp(FileSystem, HPFS386)) {
+	!stricmp(FileSystem, FAT32) ||
+	!stricmp(FileSystem, NDFS32) || !stricmp(FileSystem, HPFS386)) {
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
       hasLongNames = TRUE;
@@ -614,7 +616,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 
       if (pci &&
-	  (INT)pci != -1 &&
+	  (INT) pci != -1 &&
 	  !IsRoot(pci->szFileName) &&
 	  !(pci->flags & RECFLAGS_ENV) && !(pci->flags & RECFLAGS_UNDERENV)) {
 	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszFileName)) {
@@ -885,9 +887,7 @@ INT ExecFile(HWND hwnd, CHAR * filename)
   if (ret == 1) {
     lastflags = ex.flags;
     return runemf2(ex.flags, hwnd, path,
-		   (*ex.environment) ? ex.environment : NULL,
-		   "%s",
-		   cl) != -1;
+		   (*ex.environment) ? ex.environment : NULL, "%s", cl) != -1;
   }
   else if (ret != 0)
     return -1;
@@ -1645,9 +1645,9 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     else if (hwndMenu == &TreeCnrMenu) {
       WinSetWindowUShort(TreeCnrMenu, QWS_ID, IDM_VIEWSMENU);
       SetConditionalCascade(TreeCnrMenu, IDM_PARTITIONSMENU, IDM_PARTITION);
-         if (fWorkPlace)
-      WinSendMsg(TreeCnrMenu, MM_DELETEITEM,
-            MPFROM2SHORT(IDM_PARTITIONSMENU, TRUE), MPVOID);
+      if (fWorkPlace)
+	WinSendMsg(TreeCnrMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_PARTITIONSMENU, TRUE), MPVOID);
     }
     else if (hwndMenu == &ArcCnrMenu) {
       WinSetWindowUShort(ArcCnrMenu, QWS_ID, IDM_VIEWSMENU);
@@ -1833,7 +1833,7 @@ VOID LoadLibPath(CHAR * str, LONG len)
     fp = xfopen(configsys, "r", pszSrcFile, __LINE__);
     if (fp) {
       while (!feof(fp)) {
-	if (!xfgets_bstripcr(var, sizeof(var), fp,pszSrcFile,__LINE__))
+	if (!xfgets_bstripcr(var, sizeof(var), fp, pszSrcFile, __LINE__))
 	  break;
 	if (!strnicmp(var, "LIBPATH=", 8)) {
 	  memmove(var, var + 8, strlen(var + 8) + 1);
