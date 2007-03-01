@@ -5,7 +5,7 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -21,6 +21,7 @@
   22 OCT 06 GKY Add NDFS32 support
   29 Dec 06 GKY Fixed menu gray out for remote drives (added variable "remote")
   29 Dec 06 GKY Enabled edit of drive flags on "not ready" drives
+  18 Feb 07 GKY More drive type and inco support
 
 ***********************************************************************/
 
@@ -1772,25 +1773,37 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN |
 				DRIVE_NOLOADICONS | DRIVE_NOLOADSUBJS |
 				DRIVE_NOLOADLONGS | DRIVE_INCLUDEFILES |
-				DRIVE_SLOW);
+				DRIVE_SLOW) | DRIVE_NOSTATS;
 
 	      if (removable == 1)
 		driveflags[x] |= DRIVE_REMOVABLE;
 	      if (drvtype & DRIVE_REMOTE)
 		driveflags[x] |= DRIVE_REMOTE;
-	      if (!strcmp(FileSystem, CDFS))
+              if (!strcmp(FileSystem, CBSIFS)) {
+		driveflags[x] |= DRIVE_ZIPSTREAM;
+                driveflags[x] &= (~DRIVE_REMOTE);
+              if(!strcmp(FileSystem,NDFS32)) {
+                driveflags[x] |= DRIVE_VIRTUAL;
+                driveflags[x] &= (~DRIVE_REMOTE);
+              }
+              if(!strcmp(FileSystem,RAMFS)) {
+                driveflags[x] |= DRIVE_RAMDISK;
+                driveflags[x] &= (~DRIVE_REMOTE);
+              }
+	      if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS))
 		driveflags[x] |= (DRIVE_REMOVABLE |
 				  DRIVE_NOTWRITEABLE | DRIVE_CDROM);
 	      if (strcmp(FileSystem, HPFS) &&
 		  strcmp(FileSystem, JFS) &&
 		  strcmp(FileSystem, CDFS) &&
+                  strcmp(FileSystem, ISOFS) &&
+                  strcmp(FileSystem, RAMFS) &&
 		  strcmp(FileSystem, FAT32) &&
-		  strcmp(FileSystem, NDFS32) && strcmp(FileSystem, HPFS386)) {
+                  strcmp(FileSystem, NDFS32) &&
+                  strcmp(FileSystem, HPFS386)) {
 		driveflags[x] |= DRIVE_NOLONGNAMES;
 	      }
-	      if (!strcmp(FileSystem, CBSIFS)) {
-		driveflags[x] |= DRIVE_ZIPSTREAM;
-		driveflags[x] &= (~DRIVE_REMOTE);
+
 	      }
 	      if (driveflags[x] & DRIVE_CDROM)
 		pciP->rc.hptrIcon = hptrCDROM;
@@ -1798,7 +1811,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      else
 		pciP->rc.hptrIcon = (driveflags[x] & DRIVE_REMOVABLE) ?
 		  hptrRemovable :
-		  (driveflags[x] & DRIVE_REMOTE) ? hptrRemote : hptrDrive;
+                      (driveflags[x] & DRIVE_REMOTE) ?
+                      hptrRemote :
+                      (driveflags[x] & DRIVE_VIRTUAL) ?
+		      hptrVirtual :
+                      (driveflags[x] & DRIVE_RAMDISK) ?
+                      hptrRamdisk :
+                      (driveflags[x] & DRIVE_ZIPSTREAM) ?
+		      hptrZipstrm : hptrDrive;
 	      WinSendMsg(hwnd,
 			 CM_INVALIDATERECORD,
 			 MPFROMP(&pciP),
@@ -2007,7 +2027,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      && (driveflags[chDrvU - 'A'] & DRIVE_REMOVABLE) != 0;
 	    writeable = rdy
 	      && !(driveflags[chDrvU - 'A'] & DRIVE_NOTWRITEABLE);
-	    remote = rdy && (driveflags[chDrvU - 'A'] & DRIVE_REMOTE) != 0;
+	    remote = rdy && (driveflags[chDrvU - 'A'] & (DRIVE_REMOTE || DRIVE_VIRTUAL)) != 0;
 	    underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
 
 	    WinEnableMenuItem((HWND) mp2, IDM_INFO, rdy);
@@ -2538,7 +2558,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  (DRIVE_INVALID | DRIVE_NOPRESCAN)) {
 		driveflags[toupper(*pci->szFileName) - 'A'] &=
 		  (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
-		   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS);
+		   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS | DRIVE_NOSTATS);
 		DriveFlagsOne(toupper(*pci->szFileName) - 'A');
 		if (driveflags[toupper(*pci->szFileName) - 'A'] &
 		    DRIVE_INVALID)
@@ -2554,6 +2574,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      : (driveflags[toupper(*pci->szFileName) - 'A'] &
 			 DRIVE_REMOTE) ? hptrRemote
 		      : (driveflags[toupper(*pci->szFileName) - 'A'] &
+                         DRIVE_VIRTUAL) ? hptrVirtual
+                      : (driveflags[toupper(*pci->szFileName) - 'A'] &
+			 DRIVE_RAMDISK) ? hptrRamdisk
+                      : (driveflags[toupper(*pci->szFileName) - 'A'] &
 			 DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
 		}
 		WinSendMsg(hwnd,

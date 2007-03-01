@@ -16,6 +16,7 @@
   15 Aug 06 SHL More error popups
   01 Nov 06 SHL runemf2: temp fix for hung windows caused by termq errors
   03 Nov 06 SHL runemf2: rework termination queue logic to work for multiple threads
+  07 Jan 07 GKY Move error strings etc. to string file
 
 ***********************************************************************/
 
@@ -781,8 +782,9 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	    *pszDirectory)
 	  switch_to(szSavedir);
 	if (rc) {
-	  // fixme to be in fm2dll.str
-	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", pszPgm);
+          Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
+	            GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
+	            pszPgm);
 	  DosFreeMem(pszPgm);
 	  if (pszArgs)
 	    DosFreeMem(pszArgs);
@@ -792,8 +794,9 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  if ((apptype & FAPPTYP_DLL) || (apptype & FAPPTYP_VIRTDRV) ||
 	      (apptype & FAPPTYP_PHYSDRV) || (apptype & FAPPTYP_PROTDLL))
 	  {
-	    // fixme to be in fm2dll.str
-	    Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, pszPgm);
+            Runtime_Error(pszSrcFile, __LINE__,
+	                  GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
+	                  apptype, pszPgm);
 	    if (pszPgm)
 	      DosFreeMem(pszPgm);
 	    if (pszArgs)
@@ -803,7 +806,9 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  if ((apptype & FAPPTYP_DOS) || (apptype & FAPPTYP_WINDOWSREAL) ||
 	      (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000))
 	  {
-	    Runtime_Error(pszSrcFile, __LINE__, "apptype 0x%x unexpected for %s.", apptype, pszPgm);
+            Runtime_Error(pszSrcFile, __LINE__,
+	                  GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
+	                  apptype, pszPgm);
 	    if (pszPgm)
 	      DosFreeMem(pszPgm);
 	    if (pszArgs)
@@ -913,8 +918,9 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  *pszDirectory)
 	switch_to(szSavedir);
       if (rc) {
-	// fixme to be in fm2dll.str
-	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosQAppType failed for %s.", pszPgm);
+        Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
+	          GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
+	          pszPgm);
 	DosFreeMem(pszPgm);
 	if (pszArgs)
 	  DosFreeMem(pszArgs);
@@ -924,8 +930,9 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
       if (apptype) {
 	if (apptype & (FAPPTYP_DLL | FAPPTYP_VIRTDRV | FAPPTYP_PHYSDRV | FAPPTYP_PROTDLL))
 	{
-	  // fixme to be in fm2dll.str
-	  Runtime_Error(pszSrcFile, __LINE__, "apptype %d unexpected for %s.", pszPgm);
+          Runtime_Error(pszSrcFile, __LINE__,
+	                GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
+                        pszPgm);
 	  DosFreeMem(pszPgm);
 	  if (pszArgs)
 	    DosFreeMem(pszArgs);

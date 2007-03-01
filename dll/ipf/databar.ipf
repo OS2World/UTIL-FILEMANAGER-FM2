@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.*  Databar Usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2007 Steven H.Levine
+.*
+.* 07 Jan 07 GKY How to add remote drives
+.*
+.***********************************************************************
+.*
 :h2 res=99000 name=PANEL_DATABAR.Databar
 :i1 id=aboutDataBar.Databar
 The databar can be set to appear when FM/2 minimizes (see :link
@@ -6,8 +19,11 @@ The databar shows swapper information, time and date, memory information
 and process[/thread] information.
 :p.
 In addition, the databar can optionally show the free drive space on all
-local fixed drives (and, optionally, remote drives). To force a drive's
-information bar to be updated immediately, click it once with :color fc=default bc=cyan.B1:color fc=default bc=default.. The
+local fixed drives (and, optionally, remote drives
+:color fc=default bc=cyan.B2:color fc=default bc=default.
+gives you a context menu select include remote drives). To force a drive's
+information bar to be updated immediately, click it once with
+:color fc=default bc=cyan.B1:color fc=default bc=default.. The
 drive information is presented in both text and as a colored bar showing
 the amount of free space in relation to the total drive's size. The
 bar is usually green, but will turn blue and then red as space decreases.

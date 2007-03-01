@@ -6,13 +6,14 @@
   Global definitions
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2006 Steven H.Levine
+  Copyright (c) 2003, 2007 Steven H.Levine
 
   15 Oct 02 MK Baseline
   04 Nov 03 SHL Drop obsoletes
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   06 Jul 06 SHL Add Select Same Content support
-  31 Aug 06 JS  Add partitioning menu items
+  31 Aug 06 GKY Add partitioning menu items
+  17 Feb 06 GKY Add more drive types and no drive stat option
 
 ***********************************************************************/
 
@@ -64,6 +65,8 @@
 #define DRIVE_SLOW          0x00002000
 #define DRIVE_INCLUDEFILES  0x00004000
 #define DRIVE_VIRTUAL       0x00008000
+#define DRIVE_NOSTATS       0x00010000
+#define DRIVE_RAMDISK       0x00020000
 
 #define MAIN_FRAME          1
 #define MAIN_STATUS         2
@@ -233,6 +236,8 @@
 #define LEDON2_BMP          922
 #define LEDOFF2_BMP         923
 #define ENV_ICON            924
+#define VIRTUAL_ICON        925
+#define RAMDISK_ICON        926
 
 #define IDM_HELPMOUSE       987
 #define IDM_HELPCONTEXT     988

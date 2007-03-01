@@ -4,13 +4,14 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
   10 Sep 06 GKY Add Move to last, Okay adds if new, Replace Current in Listbox Dialog
   19 Oct 06 GKY Rework replace logic
+  18 Feb 07 GKY Movw error messages etc to string file
 
 **************************************************************************************/
 
@@ -796,9 +797,9 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	bstrip(temp.mask);
 	PrfWriteProfileData(fmprof, FM3Str, temp.mask, NULL, 0L);
-	if (!kill_association(&temp))
-	  Runtime_Error(pszSrcFile, __LINE__, "kill_association");
-	else {
+	if (kill_association(&temp))
+	 /* Runtime_Error(pszSrcFile, __LINE__, "kill_association");
+	else */{
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					ASS_LISTBOX,
 					LM_QUERYSELECTION,

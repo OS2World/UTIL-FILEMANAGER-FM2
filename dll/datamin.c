@@ -15,7 +15,8 @@
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   06 Jun 05 SHL Drop unused code
   22 Jul 06 SHL Check more run time errors
-  02 Jan 07 GKY Changed drive information string formating to accomodate 5 char FS names
+  02 Jan 07 GKY Changed drive information string formating to accomodate 6 char FS names
+  07 Jan 07 GKY Move error strings etc. to string file
 
 ***********************************************************************/
 
@@ -77,8 +78,8 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  G_hwndSingle = hwnd;
 	  rc = DosPostEventSem(G_hevDataMin);
 	  if (rc) {
-	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "Post Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
-	      );
+              Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                        GetPString(IDS_POSTSEMFAILED));
 	  }
 	}
       }
@@ -266,7 +267,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG ulDriveNum, ulDriveMap;
 
       if (!fDataInclRemote)
-	drivestyle |= DRIVE_REMOTE;
+	drivestyle |= DRIVE_REMOTE || DRIVE_VIRTUAL;
       if (fDataShowDrives) {
 	DosError(FERR_DISABLEHARDERR);
 	DosQCurDisk(&ulDriveNum, &ulDriveMap);
@@ -447,8 +448,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (G_hevDataMin != NULLHANDLE) {
 	rc = DosPostEventSem(G_hevDataMin);
 	if (rc) {
-	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "Post Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
-	    );
+            Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                      GetPString(IDS_POSTSEMFAILED));
 	}
       }
 
@@ -943,8 +944,8 @@ static VOID dataminThread(VOID * pv)
     // Kernel will clean up on exit
     rc = DosCreateEventSem(NULL, (PHEV) & G_hevDataMin, 0L, FALSE);
     if (rc) {
-      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "Create Semaphore failed"	// GetPString(IDS_CREATESEMFAILED)
-	);
+        Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  GetPString(IDS_CREATESEMFAILED));
       busy = FALSE;
     }
   }
@@ -1013,14 +1014,14 @@ static VOID dataminThread(VOID * pv)
 
       rc = DosWaitEventSem(G_hevDataMin, 20000L);
       if (rc && rc != ERROR_TIMEOUT) {
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "Wait Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
-	  );
+          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    GetPString(IDS_POSTSEMFAILED));
       }
 
       rc = DosResetEventSem(G_hevDataMin, &clPosted);
       if (rc && rc != ERROR_ALREADY_RESET) {
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "Reset Semaphore failed"	// GetPString(IDS_POSTSEMFAILED)
-	  );
+          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    GetPString(IDS_POSTSEMFAILED));
       }
     }
 

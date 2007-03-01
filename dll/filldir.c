@@ -6,7 +6,7 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
@@ -25,6 +25,8 @@
   22 Jul 06 SHL Check more run time errors
   20 Oct 06 SHL Sync . .. check code
   22 Oct 06 GKY Add NDFS32 support
+  17 Feb 07 GKY Additional archive and image file tyoes identifed by extension
+  17 Feb 07 GKY Add more drive types
 
 ***********************************************************************/
 
@@ -68,12 +70,27 @@ static HPOINTER IDFile(PSZ p)
       hptr = hptrApp;
     else if (cmp == *(ULONG *) ".ZIP" || cmp == *(ULONG *) ".LZH" ||
 	     cmp == *(ULONG *) ".ARJ" || cmp == *(ULONG *) ".ARC" ||
-	     cmp == *(ULONG *) ".ZOO" || cmp == *(ULONG *) ".RAR")
+	     cmp == *(ULONG *) ".ZOO" || cmp == *(ULONG *) ".RAR" ||
+	     cmp == *(ULONG *) ".TAR" || cmp == *(ULONG *) ".TGZ" ||
+	     cmp == *(ULONG *) ".GZ" || cmp == *(ULONG *) ".Z" ||
+	     cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2")
       hptr = hptrArc;
     else if (cmp == *(ULONG *) ".BMP" || cmp == *(ULONG *) ".ICO" ||
 	     cmp == *(ULONG *) ".PTR" || cmp == *(ULONG *) ".GIF" ||
 	     cmp == *(ULONG *) ".TIF" || cmp == *(ULONG *) ".PCX" ||
-	     cmp == *(ULONG *) ".TGA" || cmp == *(ULONG *) ".XBM")
+	     cmp == *(ULONG *) ".TGA" || cmp == *(ULONG *) ".XBM" ||
+	     cmp == *(ULONG *) ".JPEG" || cmp == *(ULONG *) ".JPG" ||
+	     cmp == *(ULONG *) ".PNG" || cmp == *(ULONG *) ".PSD" ||
+	     cmp == *(ULONG *) ".LGO" || cmp == *(ULONG *) ".EPS" ||
+	     cmp == *(ULONG *) ".RLE" || cmp == *(ULONG *) ".RAS" ||
+	     cmp == *(ULONG *) ".PLC" || cmp == *(ULONG *) ".MSP" ||
+	     cmp == *(ULONG *) ".IFF" || cmp == *(ULONG *) ".FIT" ||
+	     cmp == *(ULONG *) ".DCX" || cmp == *(ULONG *) ".MAC" ||
+	     cmp == *(ULONG *) ".SFF" || cmp == *(ULONG *) ".SGI" ||
+	     cmp == *(ULONG *) ".XWD" || cmp == *(ULONG *) ".XPM" ||
+	     cmp == *(ULONG *) ".WPG" || cmp == *(ULONG *) ".CUR" ||
+	     cmp == *(ULONG *) ".PNM" || cmp == *(ULONG *) ".PPM" ||
+	     cmp == *(ULONG *) ".PGM" || cmp == *(ULONG *) ".PBM")
       hptr = hptrArt;
     else
       hptr = (HPOINTER) 0;
@@ -921,7 +938,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   ULONG ulDriveNum, ulDriveMap, numtoinsert = 0, drvtype;
   PCNRITEM pci, pciFirst = NULL, pciNext, pciParent = NULL;
   INT x, removable;
-  CHAR szDrive[] = " :\\", FileSystem[CCHMAXPATH], suggest[32];
+  CHAR  suggest[32], szDrive[] = " :\\", FileSystem[CCHMAXPATH];
   FILESTATUS4 fsa4;
   APIRET rc;
   BOOL drivesbuilt = FALSE;
@@ -932,7 +949,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   for (x = 0; x < 26; x++)
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-		      DRIVE_INCLUDEFILES | DRIVE_SLOW);
+		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
   memset(driveserial, -1, sizeof(driveserial));
   {
     ULONG startdrive = 3L;
@@ -968,7 +985,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   else {
     pci = pciFirst;
     for (x = 0; x < 26; x++) {
-      if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
+        if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE))
+          {
 	*szDrive = (CHAR) x + 'A';
 
 	{
@@ -1011,15 +1029,28 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			      DRIVE_REMOVABLE : 0);
 	    if (drvtype & DRIVE_REMOTE)
 	      driveflags[x] |= DRIVE_REMOTE;
+            if (!stricmp(FileSystem,RAMFS))
+	    {
+             driveflags[x] |= DRIVE_RAMDISK;
+             driveflags[x] &= ~DRIVE_REMOTE;
+            }
+             if (!stricmp(FileSystem,NDFS32))
+            {
+             driveflags[x] |= DRIVE_VIRTUAL;
+             driveflags[x] &= ~DRIVE_REMOTE;
+            }
 	    if (strcmp(FileSystem, HPFS) &&
 		strcmp(FileSystem, JFS) &&
+                strcmp(FileSystem, ISOFS) &&
 		strcmp(FileSystem, CDFS) &&
 		strcmp(FileSystem, FAT32) &&
-		strcmp(FileSystem, NDFS32) && strcmp(FileSystem, HPFS386)) {
+                strcmp(FileSystem, NDFS32) &&
+                strcmp(FileSystem, RAMFS) &&
+                strcmp(FileSystem, HPFS386)) {
 	      driveflags[x] |= DRIVE_NOLONGNAMES;
 	    }
 
-	    if (!strcmp(FileSystem, CDFS)) {
+	    if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem,ISOFS)) {
 	      removable = 1;
 	      driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
 		DRIVE_CDROM;
@@ -1081,9 +1112,14 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    else
 	      pci->rc.hptrIcon = (driveflags[x] & DRIVE_REMOVABLE) ?
 		hptrRemovable :
+				  (driveflags[x] & DRIVE_VIRTUAL) ?
+				  hptrVirtual :
 		(driveflags[x] & DRIVE_REMOTE) ?
 		hptrRemote :
-		(driveflags[x] & DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
+				  (driveflags[x] & DRIVE_RAMDISK) ?
+				  hptrRamdisk :
+ 				  (driveflags[x] & DRIVE_ZIPSTREAM) ?
+ 				  hptrZipstrm : hptrDrive;
 	  }
 	  else {
 	    pci->rc.hptrIcon = hptrDunno;

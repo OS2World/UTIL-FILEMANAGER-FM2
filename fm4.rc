@@ -9,6 +9,7 @@
 
   09 Aug 05 SHL Drop dup icon
   04 Sep 06 SHL Sync with fm3.rc
+  17 Feb 07 GKY Add more drive type bitmaps from David
 
 ***********************************************************************/
 
@@ -92,6 +93,8 @@ BITMAP DRIVE_ICON           bitmaps\HDRIVE.BMP
 BITMAP REMOVABLE_ICON       bitmaps\REMOV.BMP
 BITMAP CDROM_ICON           bitmaps\CDROM.BMP
 BITMAP REMOTE_ICON          bitmaps\REMOTE.BMP
+BITMAP VIRTUAL_ICON         bitmaps\VIRTUAL.BMP
+BITMAP RAMDISK_ICON         bitmaps\RAMDISK.BMP
 BITMAP 65534                bitmaps\EMPTY.BMP
 BITMAP LEDON_BMP            bitmaps\LEDON.BMP
 BITMAP LEDOFF_BMP           bitmaps\LEDOFF.BMP

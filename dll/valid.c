@@ -19,6 +19,8 @@
   22 Jul 06 SHL Use Runtime_Error
   22 Oct 06 GKY Add NDFS32 support
   22 Oct 06 GKY Increased BUFFER_BYTES in CheckDrive to 8192 to fix NDFS32 scan failure
+  07 Jan 07 GKY Move error strings etc. to string file
+  18 Feb 07 GKY Add more drive types and icons
 
 ***********************************************************************/
 
@@ -209,8 +211,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
     *pulType = 0;
 
 # define BUFFER_BYTES 8192
-  rc =
-    DosAllocMem(&pvBuffer, BUFFER_BYTES,
+  rc = DosAllocMem(&pvBuffer, BUFFER_BYTES,
 		PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -241,12 +242,19 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
     pszFileSystem[CCHMAXPATH - 1] = 0;
   }
 
-  if (pulType && !strcmp(pfsn, CDFS))
+  if (pulType && (!strcmp(pfsn, CDFS) || !strcmp(pfsn, ISOFS)))
     *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
-
-  if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV) {
+  if (pulType && !strcmp(pfsn, NDFS32)){
+        *pulType |= DRIVE_VIRTUAL;
+    }
+  if (pulType && !strcmp(pfsn, RAMFS)){
+        *pulType |= DRIVE_RAMDISK;
+    }
+  if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV &&
+      (strcmp(pfsn, CDFS) && strcmp(pfsn, ISOFS))) {
     if (pulType)
       *pulType |= DRIVE_REMOTE;
+
     if (pulType && !strcmp(pfsn, CBSIFS)) {
       *pulType |= DRIVE_ZIPSTREAM;
       *pulType &= ~DRIVE_REMOTE;
@@ -260,15 +268,19 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 	  if (~FType & DRIVE_NOLONGNAMES)
 	    *pulType &= ~DRIVE_NOLONGNAMES;
 	}
+
       }
     }
     if (pulType &&
 	(!strcmp(pfsn, HPFS) ||
 	 !strcmp(pfsn, JFS) ||
 	 !strcmp(pfsn, FAT32) ||
-	 !strcmp(pfsn, NDFS32) || !strcmp(pfsn, HPFS386))) {
+         !strcmp(pfsn, RAMFS) ||
+         !strcmp(pfsn, NDFS32) ||
+         !strcmp(pfsn, HPFS386))) {
       *pulType &= ~DRIVE_NOLONGNAMES;
     }
+
     DosFreeMem(pvBuffer);
     return 0;				// Remotes are non-removable
   }
@@ -277,10 +289,15 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   if (strcmp(pfsn, HPFS) &&
       strcmp(pfsn, JFS) &&
       strcmp(pfsn, CDFS) &&
-      strcmp(pfsn, FAT32) && strcmp(pfsn, NDFS32) && strcmp(pfsn, HPFS386)) {
+      strcmp(pfsn, ISOFS) &&
+      strcmp(pfsn, RAMFS) &&
+      strcmp(pfsn, FAT32) &&
+      strcmp(pfsn, NDFS32) &&
+      strcmp(pfsn, HPFS386)) {
     if (pulType)
       (*pulType) |= DRIVE_NOLONGNAMES;	// Others can not have long names
   }
+
 
   DosError(FERR_DISABLEHARDERR);
   rc = DosOpen(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
@@ -542,6 +559,15 @@ VOID ArgDriveFlags(INT argc, CHAR ** argv)
 	p++;
       }
     }
+     else if (*argv[x] == '`' && isalpha(argv[x][1])) {
+
+      CHAR *p = &argv[x][1];
+
+      while (isalpha(*p)) {
+	driveflags[toupper(*p) - 'A'] |= DRIVE_NOSTATS;
+	p++;
+      }
+    }
     else if (*argv[x] == ',' && isalpha(argv[x][1])) {
 
       CHAR *p = &argv[x][1];
@@ -551,7 +577,7 @@ VOID ArgDriveFlags(INT argc, CHAR ** argv)
 	p++;
       }
     }
-    else if (*argv[x] == '`' && isalpha(argv[x][1])) {
+    else if (*argv[x] == '-' && isalpha(argv[x][1])) {
 
       CHAR *p = &argv[x][1];
 
@@ -585,7 +611,7 @@ VOID DriveFlagsOne(INT x)
   driveserial[x] = -1;
   driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		    DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-		    DRIVE_INCLUDEFILES | DRIVE_SLOW);
+		    DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
   if (removable != -1) {
     struct
     {
@@ -607,13 +633,25 @@ VOID DriveFlagsOne(INT x)
 		    DRIVE_REMOVABLE : 0);
   if (drvtype & DRIVE_REMOTE)
     driveflags[x] |= DRIVE_REMOTE;
+  if(!stricmp(FileSystem,NDFS32)){
+    driveflags[x] |= DRIVE_VIRTUAL;
+    driveflags[x] &= (~DRIVE_REMOTE);
+  }
+  if(!stricmp(FileSystem,RAMFS)){
+    driveflags[x] |= DRIVE_RAMDISK;
+    driveflags[x] &= (~DRIVE_REMOTE);
+  }
   if (strcmp(FileSystem, HPFS) &&
       strcmp(FileSystem, JFS) &&
       strcmp(FileSystem, CDFS) &&
-      strcmp(FileSystem, FAT32) && strcmp(FileSystem, HPFS386)) {
+      strcmp(FileSystem, ISOFS) &&
+      strcmp(FileSystem, RAMFS) &&
+      strcmp(FileSystem, FAT32) &&
+      strcmp(FileSystem, HPFS386)) {
     driveflags[x] |= DRIVE_NOLONGNAMES;
   }
-  if (!strcmp(FileSystem, CDFS)) {
+
+  if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS)) {
     removable = 1;
     driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE | DRIVE_CDROM);
   }
@@ -635,7 +673,7 @@ VOID FillInDriveFlags(VOID * dummy)
   for (x = 0; x < 26; x++)
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-		      DRIVE_INCLUDEFILES | DRIVE_SLOW);
+		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
   memset(driveserial, -1, sizeof(driveserial));
   DosError(FERR_DISABLEHARDERR);
   DosQCurDisk(&ulDriveNum, &ulDriveMap);
@@ -736,12 +774,29 @@ CHAR *assign_ignores(CHAR * s)
   pp = &s[strlen(s)];
   *pp = ' ';
   pp++;
-  *pp = '`';
+  *pp = '-';
   pp[1] = 0;
   p = pp + 1;
   if (pp) {
     for (x = 0; x < 26; x++) {
       if ((driveflags[x] & DRIVE_NOLOADSUBJS) != 0) {
+	*p = (CHAR) x + 'A';
+	p++;
+	*p = 0;
+      }
+    }
+  }
+  if (!pp[1])
+    *pp = 0;
+  pp = &s[strlen(s)];
+  *pp = ' ';
+  pp++;
+  *pp = '`';
+  pp[1] = 0;
+  p = pp + 1;
+  if (pp) {
+    for (x = 0; x < 26; x++) {
+      if ((driveflags[x] & DRIVE_NOSTATS) != 0) {
 	*p = (CHAR) x + 'A';
 	p++;
 	*p = 0;
@@ -870,11 +925,11 @@ VOID GetDesktopName(CHAR * objectpath, ULONG size)
       *objectpath = 0;
     }
     if (!*objectpath) {
-      // Fall back - fixme to work for NLS
+      // Fall back
       DosError(FERR_DISABLEHARDERR);
       DosQuerySysInfo(QSV_BOOT_DRIVE, QSV_BOOT_DRIVE,
 		      (PVOID) & startdrive, (ULONG) sizeof(ULONG));
-      sprintf(objectpath, "%c:\\DESKTOP", ((CHAR) startdrive) + '@');
+      sprintf(objectpath, GetPString(IDS_PATHTODESKTOP), ((CHAR) startdrive) + '@');
     }
   }
 }

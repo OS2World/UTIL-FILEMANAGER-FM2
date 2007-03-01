@@ -19,6 +19,7 @@
   13 Jul 06 SHL Use Runtime_Error
   26 Jul 06 SHL Use chop_at_crnl
   15 Aug 06 SHL Rework warning message text
+  07 Jan 07 GKY Move error strings etc. to string file
 
 ***********************************************************************/
 
@@ -2587,9 +2588,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  FSIL_VOLSER, &volser, sizeof(volser));
 	      if (rc) {
 		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-			  // fixme GetPString(IDS_CANTFINDDIRTEXT),
-			  "Can't find drive %s", pci->szFileName);
-		// fixme DosBeep(250,100);
+			  GetPString(IDS_CANTFINDDIRTEXT),
+			  pci->szFileName);
+		DosBeep(250,100);
 		driveserial[toupper(*pci->szFileName) - 'A'] = -1;
 		UnFlesh(hwnd, pci);
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
@@ -2812,7 +2813,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      break;
 	    }
 	    else if (IsRoot(dcd->directory)) {
-	      saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT), "Can not drag root directory");	// fixme to be GetPString
+                saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
+                       GetPString(IDS_CANTDRAGROOTDIR));
 	      break;
 	    }
 	    if (hwndStatus2) {

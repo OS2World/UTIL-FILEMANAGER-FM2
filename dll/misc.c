@@ -6,7 +6,7 @@
   Misc GUI support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2006 Steven H. Levine
+  Copyright (c) 2003, 2007 Steven H. Levine
 
   11 Jun 03 SHL Add JFS and FAT32 support
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -21,6 +21,7 @@
   16 Aug 06 SHL Comments
   31 Aug 06 SHL disable_menuitem: rework args to match name - sheesh
   10 Oct 06 GKY Add NDFS32 support
+  18 Feb 07 GKY More drive type and drive icon support
 
 ***********************************************************************/
 
@@ -346,12 +347,14 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
     if (!stricmp(FileSystem, HPFS) ||
 	!stricmp(FileSystem, JFS) ||
 	!stricmp(FileSystem, FAT32) ||
-	!stricmp(FileSystem, NDFS32) || !stricmp(FileSystem, HPFS386)) {
+        !stricmp(FileSystem, RAMFS) ||
+        !stricmp(FileSystem, NDFS32) ||
+        !stricmp(FileSystem, HPFS386)) {
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
       hasLongNames = TRUE;
     }
-    else if (!strcmp(FileSystem, CDFS)) {
+    else if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS)) {
       hasCreateDT = TRUE;
       hasAccessDT = FALSE;
       hasLongNames = FALSE;

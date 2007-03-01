@@ -1,16 +1,16 @@
-***********************************************************************
-*
-* $Id$
-*
-*  Archiver Usage
-*
-* Copyright (c) 1993-98 M. Kimes
-* Copyright (c) 2006 Steven H.Levine
-*
-* 05 Jan 07 GKY Update extract dialog help
-*
-***********************************************************************
-*
+.***********************************************************************
+.*
+.* $Id$
+.*
+.*  Archiver Usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 05 Jan 07 GKY Update extract dialog help
+.*
+.***********************************************************************
+.*
 
 :h2 res=91000 name=PANEL_EXTRACT.Extract from archives
 :i1 id=aboutExtract.Extract from archives

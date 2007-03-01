@@ -12,6 +12,7 @@
   22 Jul 06 SHL Drop unused
   26 Jul 06 SHL Add new
   15 Aug 06 SHL Add new
+  07 JAN 07 GKY Add new
 
 ***********************************************************************/
 
@@ -21,7 +22,7 @@
 // Spares are names IDS_SPARE###
 // Last string reserved for cvs id
 
-#define IDS_NUMSTRS                                           992
+#define IDS_NUMSTRS                                           1007
 
 #define IDS_OPENBUTTONHELP                                    0
 #define IDS_OPENDROPHELP                                      1
@@ -843,9 +844,9 @@
 #define IDS_FLNOLOADLONGNAMESTEXT                             833
 #define IDS_FLSLOWTEXT                                        834
 #define IDS_FLINCLFILESTEXT                                   835
-#define IDS_DRIVEINFOTITLETEXT                                836
-#define IDS_UNITTEXT                                          837
-#define IDS_SECTORSTEXT                                       838
+#define IDS_FLVIRTUALTEXT                                     836
+#define IDS_FLNOSTATSTEXT                                     837
+#define IDS_FLRAMDISKTEXT                                     838
 #define IDS_CANTQUERYVOLTEXT                                  839
 #define IDS_CANTQUERYALLOCTEXT                                840
 #define IDS_DRIVEINACCESSIBLETEXT                             841
@@ -978,3 +979,18 @@
 #define IDS_NOTEBUBBLE1TEXT                                   988
 #define IDS_NOTEBUBBLE2TEXT                                   989
 #define IDS_TOTARGETTEXT                                      990
+#define IDS_CANTADDCOMMANDTEXT                                991
+#define IDS_CANTADDCOMMANDTEXTDUP                             992
+#define IDS_CREATESEMFAILED                                   993
+#define IDS_POSTSEMFAILED                                     994
+#define IDS_CANTFINDDRIVETEXT                                 995
+#define IDS_CANTDRAGROOTDIR                                   996
+#define IDS_DOSQAPPTYPEFAILEDTEXT                             997
+#define IDS_APPTYPEUNEXPECTEDTEXT                             998
+#define IDS_PATHTODESKTOP                                     999
+#define IDS_DRIVEINFOTITLETEXT                               1000
+#define IDS_18TIMESNEWROMANTEXT                              1001
+#define IDS_10HELVBOLDTEXT                                   1002
+#define IDS_UNITTEXT                                         1003
+#define IDS_SECTORSTEXT                                      1004
+#define IDS_STATSMEANINGLESSTEXT                             1005

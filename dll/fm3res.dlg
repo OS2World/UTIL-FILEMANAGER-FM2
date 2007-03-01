@@ -23,6 +23,7 @@
   07 Jan 07 GKY Add remember search flags to seek and scan
   07 Jan 07 GKY Updated Helv font to vector font Helvetica
   03 Feb 07 SHL It's 2007 copyright time
+  18 Feb 07 GKY Rearranged and added drive type and no stats to drive flag dialog
 
 ***********************************************************************/
 
@@ -41,11 +42,11 @@ BEGIN
                         WS_GROUP
         ENTRYFIELD      "", MSK_MASK, 6, 101, 176, 8, ES_MARGIN
         PUSHBUTTON      "Clear", MSK_CLEAR, 4, 89, 34, 10, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "Always show directories", MSK_SHOWDIRS, 46, 87, 118,
                         10, BS_NOPOINTERFOCUS
         PUSHBUTTON      "All", MSK_ALL, 166, 88, 20, 10, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "~Hidden", MSK_HIDDEN, 12, 67, 49, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
         AUTOCHECKBOX    "~System", MSK_SYSTEM, 65, 67, 51, 10,
@@ -82,30 +83,30 @@ BEGIN
             FS_MOUSEALIGN, FCF_TITLEBAR
     BEGIN
         CTEXT           "", WALK_HELP, 8, 158, 297, 8
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
         ICON            DID_OK, -1, 178, 21, 20, 16
         GROUPBOX        "User List:", -1, 168, 19, 143, 124, NOT WS_GROUP
         GROUPBOX        "", -1, 4, 2, 308, 18, NOT WS_GROUP
         ENTRYFIELD      "", WALK_PATH, 6, 4, 302, 10, WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         WALK_DRIVELIST, 4, 38, 24, 116, LS_NOADJUSTPOS |
                         WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         LISTBOX         WALK_DIRLIST, 30, 38, 134, 116, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         PUSHBUTTON      "Okay", DID_OK, 8, 20, 40, 14, WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 64, 20, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 122, 20, 40, 14
         CONTROL         "", WALK_RECENT, 168, 10, 143, 144, WC_COMBOBOX,
                         CBS_DROPDOWN | LS_HORZSCROLL | WS_GROUP | WS_TABSTOP |
                         WS_VISIBLE
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         LISTBOX         WALK_USERLIST, 171, 38, 137, 96, LS_NOADJUSTPOS |
                         LS_HORZSCROLL | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         PUSHBUTTON      "~Add", WALK_ADD, 214, 22, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Delete", WALK_DELETE, 265, 22, 40, 14,
@@ -119,178 +120,178 @@ BEGIN
             FS_DLGBORDER | FS_BORDER, FCF_TITLEBAR
     BEGIN
         ENTRYFIELD      "", AD_ID, 5, 162, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_ADD, 91, 162, 82, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_MOVE, 177, 162, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_EXT, 5, 137, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_EXTRACT, 91, 137, 82, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_WDIRS, 177, 137, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_SIG, 5, 113, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_LIST, 91, 113, 82, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_TEST, 177, 113, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_ADDWPATHS, 6, 91, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_MOVEWPATHS, 92, 91, 82, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_ADDRECURSE, 178, 91, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_DELETE, 5, 69, 81, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_SIGPOS, 91, 69, 56, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_FNAMEPOS, 151, 69, 55, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_OLDSZ, 210, 69, 48, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_NUMDATEFLDS, 5, 48, 53, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_DATEPOS, 62, 48, 51, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_NEWSZ, 117, 48, 50, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_STARTLIST, 53, 35, 188, 8, ES_MARGIN |
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", AD_ENDLIST, 53, 24, 188, 8, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Start-of-list", -1, 4, 35, 45, 8
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "End-of-list", -1, 4, 24, 46, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "ID", -1, 2, 173, 28, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Add-to-archive", -1, 90, 173, 65, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Move-to-archive", -1, 176, 173, 71, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Extension", -1, 2, 148, 74, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Extract", -1, 90, 148, 55, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Extract w/Dirs", -1, 176, 148, 71, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Signature", -1, 2, 124, 74, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "List-archive", -1, 90, 124, 71, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Test-archive", -1, 176, 124, 71, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Delete-from-archive", -1, 2, 80, 83, 8, NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Sig Pos", -1, 90, 80, 56, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "FName Pos", -1, 151, 80, 54, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "NumDateFlds", -1, 2, 59, 56, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Date Pos", -1, 63, 59, 50, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "NewSz Pos", -1, 115, 59, 54, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "OldSz Pos", -1, 209, 80, 49, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "Archive Listing", -1, 274, 173, 71, 8, DT_VCENTER |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LISTBOX         AD_LISTBOX, 261, 22, 100, 151, LS_HORZSCROLL |
                         WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "Okay", DID_OK, 171, 48, 27, 16, BS_NOPOINTERFOCUS |
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         PUSHBUTTON      "Help", IDM_HELP, 200, 48, 25, 16, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         PUSHBUTTON      "Cancel", DID_CANCEL, 226, 48, 31, 15,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         PUSHBUTTON      "<<", AD_TOSTART, 243, 35, 15, 10, BS_NOPOINTERFOCUS |
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         PUSHBUTTON      "<<", AD_TOEND, 243, 24, 15, 10, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld0", -1, 16, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld1", -1, 52, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld2", -1, 86, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld3", -1, 120, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld4", -1, 154, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld5", -1, 188, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld6", -1, 222, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld7", -1, 256, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld8", -1, 290, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Fld9", -1, 324, 12, 32, 8, DT_VCENTER | DT_HALFTONE
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "", AD_FLD1, 16, 2, 32, 8, DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD2, 52, 2, 32, 8, DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD3, 86, 2, 32, 8, DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD4, 120, 2, 32, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD5, 154, 2, 32, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD6, 188, 2, 32, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD7, 222, 2, 32, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD8, 256, 2, 32, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD9, 290, 2, 32, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         LTEXT           "", AD_FLD10, 324, 2, 32, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "6.Helvetica"
         PUSHBUTTON      "See", AD_SEEEXTRACTOR, 149, 147, 25, 10,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         PUSHBUTTON      "See", AD_SEEADDER, 149, 171, 25, 10,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Add w/ paths", -1, 3, 102, 74, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Move w/ paths", -1, 91, 102, 71, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Add / recurse dirs", -1, 177, 102, 78, 8, NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "", AD_HELP, 9, 185, 346, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     END
 END
 
@@ -302,7 +303,7 @@ BEGIN
         GROUPBOX        "", -1, 4, 103, 150, 17, NOT WS_GROUP
         CTEXT           "Listed:", -1, 29, 106, 92, 7, NOT WS_GROUP
         CTEXT           "FM/2", -1, 50, 2, 61, 15, DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
+                        // PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
         LISTBOX         ASEL_LISTBOX, 4, 19, 150, 83, WS_GROUP
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 2, 44, 13, BS_NOPOINTERFOCUS |
                         WS_GROUP
@@ -320,7 +321,7 @@ BEGIN
         CTEXT           "Listed:", -1, 29, 114, 92, 7, NOT WS_GROUP
         CTEXT           "FM/2", -1, 50, 10, 61, 15, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
+                        // PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
         LISTBOX         ASEL_LISTBOX, 4, 27, 150, 83, WS_GROUP
         DEFPUSHBUTTON   "Edit", DID_OK, 4, 10, 44, 13, BS_NOPOINTERFOCUS |
                         WS_GROUP
@@ -374,11 +375,11 @@ BEGIN
                         CHECK_HELP, 7, 164, 299, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Select the items in the list that you want to keep."
                         "  Then click Okay.", CHECK_PROMPT, 4, 22, 304, 24,
                         DT_WORDBREAK
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         DEFPUSHBUTTON   "Okay", DID_OK, 6, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "~Info", CHECK_INFO, 68, 4, 40, 14,
                         BS_NOPOINTERFOCUS
@@ -429,20 +430,20 @@ BEGIN
     BEGIN
         LTEXT           "Enter search string:", -1, 3, 73, 200, 8, NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
         GROUPBOX        "Options:", -1, 3, 20, 201, 40, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", SRCH_SEARCH, 6, 62, 195, 8, ES_MARGIN | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
         AUTOCHECKBOX    "~Search&Replace", SRCH_SANDR, 16, 40, 92, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
         AUTOCHECKBOX    "~Replace All", SRCH_RALL, 118, 40, 80, 10,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
         ENTRYFIELD      "", SRCH_REPLACE, 8, 26, 191, 8, ES_MARGIN |
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
         DEFPUSHBUTTON   "Okay", DID_OK, 6, 2, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 81, 2, 40, 14, BS_NOPOINTERFOCUS
@@ -507,20 +508,20 @@ BEGIN
             FCF_TITLEBAR
     BEGIN
         GROUPBOX        "Attributes", -1, 2, 19, 238, 37
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         GROUPBOX        "", -1, 2, 57, 172, 36, NOT WS_GROUP
         CTEXT           "/", -1, 82, 76, 6, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         CTEXT           "/", -1, 121, 76, 7, 8, DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         CTEXT           ":", -1, 69, 63, 5, 8, DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         CTEXT           ":", -1, 111, 63, 5, 8, DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Date:", -1, 8, 83, 23, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Time:", -1, 8, 69, 24, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         CONTROL         "", ATR_YEAR, 33, 74, 47, 12, WC_SPINBUTTON,
                         SPBS_ALLCHARACTERS | SPBS_NUMERICONLY |
                         SPBS_READONLY | SPBS_MASTER | SPBS_SERVANT |
@@ -576,18 +577,18 @@ BEGIN
                         BS_NOPOINTERFOCUS
         AUTOCHECKBOX    "~Use Date/Time", ATR_USEDATETIME, 177, 68, 64, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Now", ATR_NOW, 188, 80, 36, 12, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Leave all attrs", ATR_LEAVEALL, 176, 54, 64, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         ATR_LISTBOX, 4, 107, 234, 80, LS_NOADJUSTPOS |
                         LS_HORZSCROLL | LS_EXTENDEDSEL
         CTEXT           "", ATR_HELP, 8, 95, 225, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     END
 END
 
@@ -634,20 +635,20 @@ BEGIN
         GROUPBOX        "Application type:", -1, 3, 30, 330, 49, NOT
                         WS_GROUP
         CTEXT           "", FLE_LASTWRITE, 45, 132, 90, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "n/a", FLE_LASTACCESS, 137, 132, 98, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "n/a", FLE_CREATE, 241, 132, 90, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "Last written:", -1, 45, 142, 90, 8, DT_VCENTER
         CTEXT           "Last accessed:", -1, 137, 142, 100, 8, DT_VCENTER
         CTEXT           "Created:", -1, 241, 142, 89, 8, DT_VCENTER
         LTEXT           "Sizes:", -1, 4, 117, 38, 8, DT_VCENTER
         LTEXT           "", FLE_SIZES, 46, 117, 156, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Slack:", -1, 211, 117, 33, 8, DT_VCENTER
         LTEXT           "", FLE_SLACK, 247, 117, 82, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "Icon", -1, 302, 80, 27, 8, DT_VCENTER
         LISTBOX         FLE_NAME, 4, 156, 328, 48, LS_HORZSCROLL
         DEFPUSHBUTTON   "Okay", DID_OK, 8, 8, 40, 14, BS_NOPOINTERFOCUS
@@ -680,7 +681,7 @@ BEGIN
         CONTROL         "Is Binary", FLE_BINARY, 276, 80, 54, 10, WC_BUTTON,
                         BS_3STATE | BS_NOPOINTERFOCUS | WS_VISIBLE
         LTEXT           "", FLE_ARCNAME, 234, 81, 38, 8
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CHECKBOX        "OS/2 Full screen", FLE_OS2FS, 9, 57, 90, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
         CHECKBOX        "OS/2 Window", FLE_OS2WIN, 101, 57, 76, 10,
@@ -747,7 +748,7 @@ BEGIN
         LTEXT           "Current:", -1, 4, 137, 43, 8, NOT WS_GROUP
         LTEXT           "", OBJCNR_DIR, 50, 137, 181, 8
         CTEXT           "Working...", OBJCNR_NOTE, 134, 6, 50, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CONTROL         "", OBJCNR_CNR, 4, 21, 264, 113, WC_CONTAINER,
                         CCS_SINGLESEL | CCS_READONLY | CCS_MINIRECORDCORE |
                         WS_GROUP | WS_TABSTOP | WS_VISIBLE | CCS_MINIICONS
@@ -789,10 +790,10 @@ BEGIN
         CTEXT           "Finish:", -1, 196, 188, 128, 8, DT_VCENTER
         LISTBOX         RE_ADDLISTBOX, 4, 18, 132, 168, LS_MULTIPLESEL |
                         LS_HORZSCROLL | LS_EXTENDEDSEL
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         LISTBOX         RE_REMOVELISTBOX, 194, 18, 132, 168, LS_MULTIPLESEL |
                         LS_HORZSCROLL | LS_EXTENDEDSEL
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         PUSHBUTTON      "~Add>>", RE_ADD, 140, 97, 49, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "<<~Remove", RE_REMOVE, 140, 70, 50, 14,
                         BS_NOPOINTERFOCUS
@@ -827,7 +828,7 @@ BEGIN
                         BS_NOPOINTERFOCUS
         ENTRYFIELD      "", ADDBTN_ID, 44, 26, 50, 8, ES_MARGIN | WS_GROUP
         PUSHBUTTON      "~Edit bmp", ADDBTN_EDITBMP, 174, 22, 40, 14
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 88, 4, 40, 14
@@ -835,7 +836,7 @@ BEGIN
         CTEXT           "", ADDBTN_HELPME, 10, 92, 201, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CONTROL         65534 /* -2 */, ADDBTN_BMP, 181, 37, 21, 16, WC_STATIC,
                         SS_BITMAP | WS_GROUP | WS_VISIBLE
     END
@@ -847,7 +848,7 @@ BEGIN
             FS_MOUSEALIGN | WS_VISIBLE, FCF_TITLEBAR
     BEGIN
         LISTBOX         PICKBTN_LISTBOX, 4, 20, 248, 102
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 214, 4, 40, 14,
                         BS_NOPOINTERFOCUS
@@ -867,7 +868,7 @@ BEGIN
                              -1,30, 96, 181, 8, DT_VCENTER  | NOT WS_GROUP
                              PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                              PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                             PRESPARAMS PP_FONTNAMESIZE, "9.Helvetica"
+                             // PRESPARAMS PP_FONTNAMESIZE, "9.Helvetica"
         LISTBOX         CMD_LISTBOX, 4, 125, 248, 96, LS_HORZSCROLL |
                         WS_GROUP
         ENTRYFIELD      "", CMD_CL, 4, 106, 214, 8, ES_MARGIN | WS_GROUP
@@ -915,7 +916,7 @@ BEGIN
     BEGIN
         LISTBOX         KILL_LISTBOX, 4, 33, 230, 124, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "~Kill", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Rescan", KILL_RESCAN, 100, 4, 40, 14,
@@ -926,7 +927,7 @@ BEGIN
         AUTOCHECKBOX    "~Use undocumented DosQProcStat API", KILL_CHECKBOX,
                         30, 20, 178, 10
         LTEXT           "PID: Name:", KILL_HDR, 6, 156, 86, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         PUSHBUTTON      "Show", KILL_SHOW, 52, 4, 40, 14, BS_NOPOINTERFOCUS
     END
 END
@@ -956,7 +957,7 @@ BEGIN
         RTEXT           "Mask:", UNDEL_MASKHDR, 85, 156, 36, 8, DT_VCENTER
         ENTRYFIELD      "", UNDEL_ENTRY, 126, 157, 162, 8, ES_MARGIN
         CTEXT           "", UNDEL_COUNT, 56, 7, 25, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     END
 END
 
@@ -983,7 +984,7 @@ BEGIN
     BEGIN
         LISTBOX         SYS_LISTBOX, 4, 18, 308, 136, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 2, 52, 14, BS_NOPOINTERFOCUS
     END
 END
@@ -1121,7 +1122,7 @@ DLGTEMPLATE AUTHOR_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
     DIALOG  "The author at rest", AUTHOR_FRAME, 12, 6, 84, 120,
             FS_SCREENALIGN | WS_VISIBLE, FCF_SYSMENU | FCF_TITLEBAR
-            PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+            // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     BEGIN
         CONTROL         AUTHOR_PICTURE, AUTHOR_BITMAP, 4, 14, 76, 102,
                         WC_STATIC, SS_BITMAP | WS_GROUP | WS_VISIBLE
@@ -1146,7 +1147,7 @@ BEGIN
         LISTBOX         GREP_DRIVELIST, 2, 120, 28, 100
         MLE             "", GREP_SEARCH, 89, 116, 198, 26, MLS_HSCROLL |
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
         AUTOCHECKBOX    "~Include Subdirs", GREP_RECURSE, 10, 102, 94, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
         AUTOCHECKBOX    "~Absolute", GREP_ABSOLUTE, 115, 102, 68, 10,
@@ -1193,9 +1194,9 @@ BEGIN
         CTEXT           "", GREP_HELP, 38, 212, 246, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         GREP_LISTBOX, 34, 168, 254, 41, LS_HORZSCROLL
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "Append", GREP_APPEND, 91, 156, 58, 10, WS_GROUP |
                         BS_NOPOINTERFOCUS
         PUSHBUTTON      "Env", GREP_ENV, 154, 155, 32, 11, BS_NOPOINTERFOCUS
@@ -1214,7 +1215,7 @@ BEGIN
     BEGIN
         GROUPBOX        "Type of extraction:", -1, 2, 85, 180, 22, NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica.Bold"
         LTEXT           "Mask:", -1, 4, 109, 28, 8, NOT WS_GROUP
         LTEXT           "Command Line:", -1, 4, 74, 72, 8, NOT WS_GROUP
         LTEXT           "Filename:", -1, 4, 53, 56, 8, NOT WS_GROUP
@@ -1222,37 +1223,37 @@ BEGIN
         ENTRYFIELD      "", EXT_MASK, 36, 109, 144, 8, ES_MARGIN | WS_GROUP
         AUTORADIOBUTTON "~Normal", EXT_NORMAL, 5, 88, 43, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP | WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         AUTORADIOBUTTON "With ~Paths", EXT_WDIRS, 49, 88, 55, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         AUTOCHECKBOX "~Always Paths", EXT_AWDIRS, 115, 88, 65, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", EXT_COMMAND, 6, 63, 174, 8, ES_MARGIN | WS_GROUP
         PUSHBUTTON      "~See", EXT_SEE, 148, 73, 34, 11
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", EXT_DIRECTORY, 6, 19, 174, 8, ES_MARGIN |
                         WS_GROUP
         PUSHBUTTON      "~Walk", EXT_WALK, 145, 30, 36, 11,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 1, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         PUSHBUTTON      "~Help", IDM_HELP, 72, 1, 40, 14, BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         PUSHBUTTON      "Cancel", DID_CANCEL, 142, 1, 40, 14
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         ENTRYFIELD      "", EXT_FILENAME, 4, 43, 176, 8, ES_READONLY |
                         WS_GROUP
         CTEXT           "", EXT_HELP, 5, 124, 171, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "~Remember...", EXT_REMEMBER, 113, 52, 66, 9,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
     END
 END
 
@@ -1265,7 +1266,7 @@ BEGIN
         PUSHBUTTON      "~Find", ARCH_FIND, 144, 121, 34, 11
         LTEXT           "Archive Name:", -1, 4, 121, 92, 8, NOT WS_GROUP
         GROUPBOX        "Method:", -1, 4, 71, 178, 38, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "Command Line:", -1, 4, 59, 99, 8, NOT WS_GROUP
         LTEXT           "Masks:", -1, 4, 36, 83, 8, NOT WS_GROUP
         AUTOCHECKBOX    "~Move", ARCH_MOVE, 8, 90, 61, 10, BS_NOPOINTERFOCUS
@@ -1284,7 +1285,7 @@ BEGIN
         CTEXT           "", ARCH_HELP, 10, 137, 168, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     END
 END
 
@@ -1303,10 +1304,10 @@ BEGIN
         PUSHBUTTON      "Cancel", DID_CANCEL, 274, 4, 40, 14,
                         BS_NOPOINTERFOCUS
         LTEXT           "", ARCERR_TEXT, 8, 85, 300, 54, DT_WORDBREAK
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         MLE             "", ARCERR_MLE, 4, 22, 308, 58, MLS_READONLY |
                         MLS_HSCROLL | MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "4.System VIO"
+                        // PRESPARAMS PP_FONTNAMESIZE, "4.System VIO"
     END
 END
 
@@ -1334,7 +1335,7 @@ BEGIN
         GROUPBOX        "", -1, 40, 68, 58, 43, NOT WS_GROUP
         CTEXT           "Hilite drives to see, then click Okay.", -1, 42, 69,
                         52, 35, DT_WORDBREAK | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         DRVS_LISTBOX, 4, 4, 29, 120, LS_EXTENDEDSEL |
                         WS_GROUP
         DEFPUSHBUTTON   "Okay", DID_OK, 50, 111, 40, 14, BS_NOPOINTERFOCUS |
@@ -1355,7 +1356,7 @@ BEGIN
                         BKS_STATUSTEXTLEFT | BKS_STATUSTEXTCENTER |
                         BKS_TABTEXTLEFT | BKS_TABTEXTCENTER | BKS_MERLINSTYLE |
                         WS_GROUP | WS_TABSTOP | WS_VISIBLE
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 54, 4, 40, 14, BS_NOPOINTERFOCUS
     END
@@ -1369,7 +1370,7 @@ BEGIN
         CTEXT           "", FCMP_HELP, 52, 8, 220, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 280, 4, 40, 14,
                         BS_NOPOINTERFOCUS
@@ -1490,7 +1491,7 @@ BEGIN
                         "box", IAF_HELP, 8, 150, 208, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         MLE             "", IAF_MLE, 4, 22, 216, 72, MLS_HSCROLL |
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
     END
@@ -1506,7 +1507,7 @@ BEGIN
                         " one.", EA_HELP, 8, 206, 336, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "", EA_TEXT, 8, 23, 336, 10, DT_VCENTER | NOT
                         WS_GROUP
         LISTBOX         EA_LISTBOX, 4, 90, 344, 76, LS_HORZSCROLL | WS_GROUP
@@ -1514,7 +1515,7 @@ BEGIN
                         MLS_HSCROLL | MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
         ENTRYFIELD      "", EA_ENTRY, 6, 58, 340, 8, ES_MARGIN | WS_GROUP
         LISTBOX         EA_HEXDUMP, 4, 38, 344, 50, WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
+                        // PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Change", EA_CHANGE, 63, 4, 40, 14,
@@ -1587,7 +1588,7 @@ BEGIN
         CTEXT           "", FND_HELP, 8, 186, 208, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         FND_LISTBOX, 4, 53, 214, 130, LS_HORZSCROLL |
                         LS_EXTENDEDSEL
         DEFPUSHBUTTON   "~Find", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS
@@ -1747,7 +1748,7 @@ BEGIN
         LTEXT           "", CFGA_DEFARCNAME, 14, 90, 96, 8, DT_VCENTER | NOT
                         WS_GROUP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00000000L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "Show archiver activity", CFGA_ARCSTUFFVISIBLE, 4,
                         74, 112, 10
         LTEXT           "A/Virus:", -1, 4, 34, 48, 8
@@ -1942,22 +1943,25 @@ BEGIN
     DIALOG  "FM/2: Drive flags", DVS_FRAME, 12, 6, 218, 136, WS_VISIBLE,
             FCF_TITLEBAR
     BEGIN
+        CHECKBOX       "Virtual Drive", DVS_VIRTUAL, 4, 122, 94, 10,
+                        BS_NOPOINTERFOCUS | NOT WS_TABSTOP
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         CHECKBOX        "Removable", DVS_REMOVABLE, 4, 110, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Not writeable", DVS_NOTWRITEABLE, 4, 98, 94, 10,
+        CHECKBOX        "RAMDISK", DVS_RAMDISK, 4, 98, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Ignore", DVS_IGNORE, 4, 86, 94, 10,
+        CHECKBOX        "Remote Drive", DVS_REMOTE, 4, 86, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         CHECKBOX        "CD-ROM", DVS_CDROM, 4, 74, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "No longnames", DVS_NOLONGNAMES, 4, 62, 94, 10,
+        CHECKBOX        "Zipstream", DVS_ZIPSTREAM, 4, 62, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Remote drive", DVS_REMOTE, 4, 50, 94, 10,
+        CHECKBOX        "Ignore", DVS_IGNORE, 4, 50, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         CHECKBOX        "Boot drive", DVS_BOOT, 4, 38, 94, 10,
@@ -1966,21 +1970,26 @@ BEGIN
         CHECKBOX        "Invalid", DVS_INVALID, 4, 26, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        AUTOCHECKBOX    "~No prescan", DVS_NOPRESCAN, 106, 110, 94, 10,
-                        BS_NOPOINTERFOCUS
-        CHECKBOX        "Zipstream", DVS_ZIPSTREAM, 106, 98, 94, 10,
+        CHECKBOX        "Not writeable", DVS_NOTWRITEABLE, 106, 122, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 86, 94,
-                        10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 74, 94,
-                        10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 62,
-                        106, 10, BS_NOPOINTERFOCUS
+        CHECKBOX        "~No longnames", DVS_NOLONGNAMES, 106, 110, 94, 10,
+                        BS_NOPOINTERFOCUS | NOT WS_TABSTOP
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
+        AUTOCHECKBOX    "No ~Prescan", DVS_NOPRESCAN, 106, 98, 94, 10,
+                        BS_NOPOINTERFOCUS | NOT WS_TABSTOP
+        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 86, 94,10,
+        		BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 74, 94,10,
+        		BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 62,106, 10,
+        		BS_NOPOINTERFOCUS
         AUTOCHECKBOX    "Slo~w drive", DVS_SLOW, 106, 50, 94, 10,
                         BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 38,
-                        106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 38,106, 10,
+        		BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "~No drive stats", DVS_NOSTATS, 106, 26,106, 10,
+        		BS_NOPOINTERFOCUS
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 64, 4, 40, 14, BS_NOPOINTERFOCUS
@@ -2039,7 +2048,7 @@ BEGIN
                         380, 8, DT_VCENTER | NOT WS_GROUP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         DEFPUSHBUTTON   "~Copy", DND_COPY, 6, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Move", DND_MOVE, 50, 4, 40, 14, BS_NOPOINTERFOCUS
@@ -2061,10 +2070,10 @@ BEGIN
                         BS_NOPOINTERFOCUS
         LISTBOX         DND_LISTBOX, 5, 32, 385, 96, LS_HORZSCROLL |
                         LS_EXTENDEDSEL | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         ENTRYFIELD      "", DND_TARGET, 36, 144, 356, 8, ES_READONLY |
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Target Info", DND_TARGETINFO, 4, 130, 76, 13,
                         BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "Change tar~get", DND_CHANGETARGET, 81, 130, 76, 13,
@@ -2093,9 +2102,9 @@ BEGIN
                         WS_GROUP | WS_VISIBLE
                         CTLDATA 12, 0, 101, 0, 0, 0
         CTEXT           "", INFO_USEDPERCENT, 236, 109, 28, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         CTEXT           "", INFO_FREEPERCENT, 236, 87, 28, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "File System:", -1, 4, 152, 60, 8
         LTEXT           "Label:", -1, 4, 130, 60, 8, NOT WS_GROUP
         LTEXT           "Total:", -1, 4, 120, 60, 8, NOT WS_GROUP
@@ -2104,7 +2113,7 @@ BEGIN
         LTEXT           "Serial #:", -1, 4, 65, 60, 8, NOT WS_GROUP
         LTEXT           "", INFO_FS, 69, 152, 194, 8
         LTEXT           "", INFO_REALPATH, 4, 142, 259, 8, DT_VCENTER
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         ENTRYFIELD      "", INFO_LABEL, 69, 131, 192, 7, ES_MARGIN
         LTEXT           "", INFO_TOTAL, 69, 120, 194, 8, NOT WS_GROUP
         LTEXT           "", INFO_AVAILABLE, 69, 98, 194, 8, NOT WS_GROUP
@@ -2127,20 +2136,20 @@ BEGIN
     BEGIN
         CTEXT           "Directory #1:", -1, 4, 156, 158, 8, DT_VCENTER
         ENTRYFIELD      "", WALK_PATH, 6, 143, 156, 10, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         WALK_DRIVELIST, 4, 22, 24, 116, LS_NOADJUSTPOS
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         LISTBOX         WALK_DIRLIST, 30, 22, 134, 116, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         CTEXT           "Directory #2:", -1, 168, 156, 158, 8, DT_VCENTER
         ENTRYFIELD      "", WALK2_PATH, 170, 143, 156, 10, ES_MARGIN
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         WALK2_DRIVELIST, 168, 22, 24, 116, LS_NOADJUSTPOS
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         LISTBOX         WALK2_DIRLIST, 194, 22, 134, 116, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         PUSHBUTTON      "Okay", DID_OK, 8, 4, 40, 14, WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 147, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 288, 4, 40, 14
@@ -2157,31 +2166,31 @@ BEGIN
         LTEXT           "Deselect:", -1, 234, 47, 51, 8, NOT WS_GROUP
         LTEXT           "Select:", -1, 5, 47, 42, 8, NOT WS_GROUP
         LTEXT           "", COMP_NOTE, 195, 10, 123, 8, NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Total:", COMP_TOTALLEFTHDR, 4, 203, 32, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Selected:", COMP_SELLEFTHDR, 129, 203, 23, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_TOTALLEFT, 37, 203, 55, 8, DT_VCENTER |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_SELLEFT, 154, 203, 64, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Total:", COMP_TOTALRIGHTHDR, 228, 203, 32, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Selected:", COMP_SELRIGHTHDR, 327, 203, 23, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_TOTALRIGHT, 261, 203, 55, 8, DT_VCENTER |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_SELRIGHT, 352, 203, 64, 8, DT_VCENTER |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Actions:", -1, 4, 23, 44, 8, DT_VCENTER | NOT
                         WS_GROUP
         CONTAINER       COMP_LEFTDIR, 4, 58, 216, 143, CCS_EXTENDSEL |
@@ -2190,52 +2199,52 @@ BEGIN
                         CCS_MULTIPLESEL | CCS_MINIRECORDCORE | WS_GROUP
         PUSHBUTTON      "Same size", IDM_SELECTSAME, 35, 45, 52, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Size/time", IDM_SELECTIDENTICAL, 88, 45, 49, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Both", IDM_SELECTBOTH, 4, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "On~e", IDM_SELECTONE, 35, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Larger", IDM_SELECTBIGGER, 66, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Smaller", IDM_SELECTSMALLER, 97, 33, 33, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Older", IDM_SELECTOLDER, 129, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Newer", IDM_SELECTNEWER, 161, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Invert", IDM_INVERT, 193, 45, 38, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~All", IDM_DESELECTALL, 387, 45, 32, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Both", IDM_DESELECTBOTH, 231, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "One", IDM_DESELECTONE, 262, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Lar~ger", IDM_DESELECTBIGGER, 293, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "S~maller", IDM_DESELECTSMALLER, 324, 33, 33, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Ol~der", IDM_DESELECTOLDER, 356, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Ne~wer", IDM_DESELECTNEWER, 387, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Copy>", COMP_COPYLEFT, 50, 21, 40, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "Move>", COMP_MOVELEFT, 89, 21, 40, 12,
@@ -2261,13 +2270,13 @@ BEGIN
                         BS_NOPOINTERFOCUS
         AUTOCHECKBOX    "~Include subdirs", COMP_INCLUDESUBDIRS, 331, 13, 91,
                         8, BS_NOPOINTERFOCUS | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "~Hide not selected", COMP_HIDENOTSELECTED, 330, 5,
                         91, 8, BS_NOPOINTERFOCUS | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Content", IDM_SELECTSAMECONTENT, 138, 45, 42, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     END
 END
 
@@ -2290,7 +2299,7 @@ BEGIN
                         WS_GROUP
         PUSHBUTTON      "~Find", MRG_CHANGETARGET, 252, 48, 30, 12,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "~Append", MRG_APPEND, 6, 34, 51, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
         AUTOCHECKBOX    "~Binary", MRG_BINARY, 6, 22, 51, 10,
@@ -2385,10 +2394,10 @@ BEGIN
         LTEXT           "Command line:", -1, 4, 107, 67, 8, NOT WS_GROUP
         RTEXT           "", EXEC_WARNING, 76, 107, 260, 7, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
+                        // PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
         CTEXT           "", EXEC_WARNING2, 8, 118, 344, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
+                        // PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
         CTEXT           "Environment:", -1, 101, 58, 77, 8, DT_VCENTER
@@ -2396,7 +2405,7 @@ BEGIN
         PUSHBUTTON      "v", EXEC_DROP, 346, 93, 14, 12, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Del", EXEC2_DEL, 337, 106, 23, 11, BS_NOPOINTERFOCUS |
                         NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTORADIOBUTTON "~Default", EXEC_DEFAULT, 22, 73, 51, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP | WS_TABSTOP
         AUTORADIOBUTTON "Mi~nimized", EXEC_MINIMIZED, 79, 73, 65, 10,
@@ -2417,7 +2426,7 @@ BEGIN
         PUSHBUTTON      "~Help", IDM_HELP, 92, 4, 40, 14, BS_NOPOINTERFOCUS
         CHECKBOX        "~Save command line", EXEC_SAVECMD, 142, 4, 96, 10,
                         BS_NOPOINTERFOCUS
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Abort", EXEC_ABORT, 232, 4, 40, 14,
                         BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 307, 4, 40, 14,
@@ -2439,33 +2448,33 @@ BEGIN
                         WS_VISIBLE
         LISTBOX         EXEC2_LISTBOX, 0, 0, 262, 94, LS_NOADJUSTPOS |
                         LS_HORZSCROLL | WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "d", EXEC2_DEL, 262, 84, 10, 10, BS_NOPOINTERFOCUS |
                         WS_GROUP | NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "w", EXEC2_CLR, 262, 73, 10, 10, BS_NOPOINTERFOCUS |
                         NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "o", EXEC2_OPEN, 262, 58, 10, 10, BS_NOPOINTERFOCUS |
                         WS_GROUP | NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "c", EXEC2_CLOSE, 262, 49, 10, 10, BS_NOPOINTERFOCUS |
                         WS_GROUP | NOT WS_TABSTOP
         PUSHBUTTON      "f", EXEC2_FILTER, 262, 40, 10, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP | NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "s", EXEC2_SAVE, 262, 32, 10, 10, BS_NOPOINTERFOCUS |
                         NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "k", EXEC2_KEEP, 262, 23, 10, 10, BS_NOPOINTERFOCUS |
                         NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "h", IDM_HELP, 262, 15, 10, 10, BS_NOPOINTERFOCUS | NOT
                         WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "-", DID_CANCEL, 262, 0, 10, 8, BS_NOPOINTERFOCUS |
                         WS_GROUP | NOT WS_TABSTOP
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     END
 END
 
@@ -2513,7 +2522,7 @@ BEGIN
                         6, 138, 288, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Filename:", 257, 4, 124, 48, 8, DT_VCENTER
         ENTRYFIELD      "", 258, 59, 124, 236, 8, ES_MARGIN
         RTEXT           "UserDirs:", -1, 4, 112, 48, 8, DT_VCENTER
@@ -2603,7 +2612,7 @@ BEGIN
                         46, 22, 130, 54, DT_WORDBREAK | NOT WS_GROUP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         MAP_ATTACHLIST, 4, 4, 32, 164, WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         COMBOBOX        "", MAP_ATTACHTO, 40, 96, 142, 56, LS_HORZSCROLL |
@@ -2655,7 +2664,7 @@ BEGIN
                         6, 164, 288, 8, DT_VCENTER | NOT WS_GROUP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                        PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Filename:", 257, 4, 150, 48, 8, DT_VCENTER | NOT
                         WS_GROUP
         ENTRYFIELD      "", 258, 56, 150, 236, 8, ES_MARGIN

@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -23,6 +23,7 @@
   29 May 06 SHL IDM_EDITANYARCHIVER: sanitize code
   17 Jul 06 SHL Use Runtime_Error
   17 Aug 06 SHL Complain nicer if state name does not exist
+  18 Feb 07 GKY More drive type and icon support
 
 ***********************************************************************/
 
@@ -1954,9 +1955,14 @@ VOID BuildDriveBarButtons(HWND hwndT)
 	  else
 	    iconid = (driveflags[x] & DRIVE_REMOVABLE) ?
 	      REMOVABLE_ICON :
+                     (driveflags[x] & DRIVE_VIRTUAL) ?
+	              VIRTUAL_ICON :
 	      (driveflags[x] & DRIVE_REMOTE) ?
 	      REMOTE_ICON :
-	      (driveflags[x] & DRIVE_ZIPSTREAM) ? DRIVE_ICON : DRIVE_ICON;
+                     (driveflags[x] & DRIVE_RAMDISK) ?
+	              RAMDISK_ICON :
+                     (driveflags[x] & DRIVE_ZIPSTREAM) ?
+                      ZIPSTREAM_ICON :DRIVE_ICON;
 	}
 	else
 	  iconid = FLOPPY_ICON;

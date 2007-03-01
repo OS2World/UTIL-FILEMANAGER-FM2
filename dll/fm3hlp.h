@@ -6,10 +6,11 @@
   Help panel indexes
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2007 Steven H.Levine
 
   16 Oct 02 MK Baseline
   31 May 06 SHL Add HELP_SELARC
+  05 Jan 07 GKY Remove HELP_SELARC since HELP_ARCHIVE pointed to appropriate section
 
 ***********************************************************************/
 
@@ -56,7 +57,6 @@
 #define HELP_EDITOR                 93900
 #define HELP_SAVETOOLS              94000
 #define HELP_OBJECTPATH             94100
-#define HELP_SELARC                 94150
 #define HELP_EDITARC                94200
 #define HELP_ARCFIELDS              94300
 #define HELP_CHANGEBUTTON           94400

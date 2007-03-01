@@ -6,7 +6,7 @@
   Directory sizes
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL Use CBLIST_TO_EASIZE
@@ -21,6 +21,7 @@
   08 Aug 05 SHL Avoid Expand/Collapse hangs while working
   17 Jul 06 SHL Use Runtime_Error
   19 Oct 06 SHL Correct . and .. detect
+  18 Feb 07 GKY Add new drive type icons
 
 ***********************************************************************/
 

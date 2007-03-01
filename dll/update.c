@@ -14,6 +14,7 @@
   25 May 05 SHL Rework for FillInRecordFromFFB
   06 Jun 05 SHL Drop unused code
   22 Jul 06 SHL Use wrappers
+  Add FindDriveIcon
 
 ***********************************************************************/
 
@@ -35,6 +36,31 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(UPDATECNR,UpdateCnrRecord,UpdateCnrList)
 
+HPOINTER FindDriveIcon(PCNRITEM pci)
+                  {
+		      *pci->szFileName = toupper(*pci->szFileName);
+		      if (isalpha(*pci->szFileName) &&
+			  toupper(*pci->szFileName) > 'B') {
+			if (driveflags[toupper(*pci->szFileName) - 'A'] &
+			    DRIVE_CDROM)
+			  pci->rc.hptrIcon = hptrCDROM;
+			else
+			  pci->rc.hptrIcon =
+			    (driveflags[toupper(*pci->szFileName) - 'A'] &
+			      DRIVE_REMOVABLE) ? hptrRemovable
+                            :(driveflags[toupper(*pci->szFileName) - 'A'] &
+                              DRIVE_VIRTUAL) ? hptrVirtual
+                            :(driveflags[toupper(*pci->szFileName) - 'A'] &
+                              DRIVE_REMOTE) ? hptrRemote
+                            :(driveflags[toupper(*pci->szFileName) - 'A'] &
+                              DRIVE_RAMDISK) ? hptrRamdisk
+			    :(driveflags[toupper(*pci->szFileName) - 'A'] &
+			       DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
+		      }
+		      else
+                          pci->rc.hptrIcon = hptrFloppy;
+                      return pci->rc.hptrIcon;
+                  }
 PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 DIRCNRDATA * dcd)
 {
@@ -104,29 +130,25 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 #ifdef DEBUG
       found = TRUE;
 #endif
-      if ((!fForceUpper && !fForceLower && strcmp(pci->szFileName, filename)) || pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile || pci->easize != CBLIST_TO_EASIZE(ffb.cbList) || pci->date.day != ffb.fdateLastWrite.day || pci->date.month != ffb.fdateLastWrite.month || pci->date.year != ffb.fdateLastWrite.year + 1980 || pci->time.seconds != ffb.ftimeLastWrite.twosecs * 2 || pci->time.minutes != ffb.ftimeLastWrite.minutes || pci->time.hours != ffb.ftimeLastWrite.hours || pci->ladate.day != ffb.fdateLastAccess.day || pci->ladate.month != ffb.fdateLastAccess.month || pci->ladate.year != ffb.fdateLastAccess.year + 1980 || pci->latime.seconds != ffb.ftimeLastAccess.twosecs * 2 || pci->latime.minutes != ffb.ftimeLastAccess.minutes || pci->latime.hours != ffb.ftimeLastAccess.hours) {	/* changed; update */
+      if ((!fForceUpper && !fForceLower && strcmp(pci->szFileName, filename)) ||
+          pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
+          pci->easize != CBLIST_TO_EASIZE(ffb.cbList) || pci->date.day !=
+          ffb.fdateLastWrite.day || pci->date.month != ffb.fdateLastWrite.month ||
+          pci->date.year != ffb.fdateLastWrite.year + 1980 || pci->time.seconds !=
+          ffb.ftimeLastWrite.twosecs * 2 || pci->time.minutes != ffb.ftimeLastWrite.minutes ||
+          pci->time.hours != ffb.ftimeLastWrite.hours || pci->ladate.day !=
+          ffb.fdateLastAccess.day || pci->ladate.month != ffb.fdateLastAccess.month ||
+          pci->ladate.year != ffb.fdateLastAccess.year + 1980 || pci->latime.seconds !=
+          ffb.ftimeLastAccess.twosecs * 2 || pci->latime.minutes !=
+          ffb.ftimeLastAccess.minutes || pci->latime.hours != ffb.ftimeLastAccess.hours) {	/* changed; update */
 #ifdef DEBUG
 	updated = TRUE;
 #endif
 	*ffb.achName = 0;
 	ffb.cchName = 0;
 	FillInRecordFromFFB(hwndCnr, pci, filename, &ffb, partial, dcd);
-	if (strlen(pci->szFileName) < 4) {
-	  *pci->szFileName = toupper(*pci->szFileName);
-	  if (isalpha(*pci->szFileName) && toupper(*pci->szFileName) > 'B') {
-	    if (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
-	      pci->rc.hptrIcon = hptrCDROM;
-	    else
-	      pci->rc.hptrIcon =
-		(driveflags[toupper(*pci->szFileName) - 'A'] &
-		 DRIVE_REMOVABLE) ? hptrRemovable
-		: (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOTE)
-		? hptrRemote : (driveflags[toupper(*pci->szFileName) - 'A'] &
-				DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-	  }
-	  else
-	    pci->rc.hptrIcon = hptrFloppy;
-	}
+        if (strlen(pci->szFileName) < 4)
+        FindDriveIcon(pci);
 	oldemphasis = pci->rc.flRecordAttr & (CRA_SELECTED | CRA_CURSORED);
 	if (oldemphasis)
 	  WinSendMsg(hwndCnr,
@@ -161,23 +183,8 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	  ullTotalBytes = FillInRecordFromFFB(hwndCnr,
 					      pci,
 					      filename, &ffb, partial, dcd);
-	  if (strlen(pci->szFileName) < 4) {
-	    *pci->szFileName = toupper(*pci->szFileName);
-	    if (isalpha(*pci->szFileName) && toupper(*pci->szFileName) > 'B') {
-	      if (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
-		pci->rc.hptrIcon = hptrCDROM;
-	      else
-		pci->rc.hptrIcon =
-		  (driveflags[toupper(*pci->szFileName) - 'A'] &
-		   DRIVE_REMOVABLE) ? hptrRemovable
-		  : (driveflags[toupper(*pci->szFileName) - 'A'] &
-		     DRIVE_REMOTE) ? hptrRemote
-		  : (driveflags[toupper(*pci->szFileName) - 'A'] &
-		     DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-	    }
-	    else
-	      pci->rc.hptrIcon = hptrFloppy;
-	  }
+          if (strlen(pci->szFileName) < 4)
+          FindDriveIcon(pci);
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
 	  ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -222,25 +229,8 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 		*ffb.achName = 0;
 		FillInRecordFromFFB(hwndCnr,
 				    pci, filename, &ffb, partial, dcd);
-		if (strlen(pci->szFileName) < 4) {
-		  *pci->szFileName = toupper(*pci->szFileName);
-		  if (isalpha(*pci->szFileName)
-		      && toupper(*pci->szFileName) > 'B') {
-		    if (driveflags[toupper(*pci->szFileName) - 'A'] &
-			DRIVE_CDROM)
-		      pci->rc.hptrIcon = hptrCDROM;
-		    else
-		      pci->rc.hptrIcon =
-			(driveflags[toupper(*pci->szFileName) - 'A'] &
-			 DRIVE_REMOVABLE) ? hptrRemovable
-			: (driveflags[toupper(*pci->szFileName) - 'A'] &
-			   DRIVE_REMOTE) ? hptrRemote
-			: (driveflags[toupper(*pci->szFileName) - 'A'] &
-			   DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-		  }
-		  else
-		    pci->rc.hptrIcon = hptrFloppy;
-		}
+                if (strlen(pci->szFileName) < 4)
+                FindDriveIcon(pci);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -286,23 +276,8 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	  ullTotalBytes = FillInRecordFromFFB(hwndCnr,
 					      pci,
 					      filename, &ffb, partial, dcd);
-	  if (strlen(pci->szFileName) < 4) {
-	    *pci->szFileName = toupper(*pci->szFileName);
-	    if (isalpha(*pci->szFileName) && toupper(*pci->szFileName) > 'B') {
-	      if (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
-		pci->rc.hptrIcon = hptrCDROM;
-	      else
-		pci->rc.hptrIcon =
-		  (driveflags[toupper(*pci->szFileName) - 'A'] &
-		   DRIVE_REMOVABLE) ? hptrRemovable
-		  : (driveflags[toupper(*pci->szFileName) - 'A'] &
-		     DRIVE_REMOTE) ? hptrRemote
-		  : (driveflags[toupper(*pci->szFileName) - 'A'] &
-		     DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-	    }
-	    else
-	      pci->rc.hptrIcon = hptrFloppy;
-	  }
+          if (strlen(pci->szFileName) < 4)
+          FindDriveIcon(pci);
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
 	  ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -459,24 +434,8 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	    ffb.cchName = 0;
 	    FillInRecordFromFFB(hwndCnr,
 				pci, filename[x], &ffb, partial, dcd);
-	    if (IsRoot(pci->szFileName)) {
-	      *pci->szFileName = toupper(*pci->szFileName);
-	      if (isalpha(*pci->szFileName) &&
-		  toupper(*pci->szFileName) > 'B') {
-		if (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_CDROM)
-		  pci->rc.hptrIcon = hptrCDROM;
-		else
-		  pci->rc.hptrIcon =
-		    (driveflags[toupper(*pci->szFileName) - 'A'] &
-		     DRIVE_REMOVABLE) ? hptrRemovable
-		    : (driveflags[toupper(*pci->szFileName) - 'A'] &
-		       DRIVE_REMOTE) ? hptrRemote
-		    : (driveflags[toupper(*pci->szFileName) - 'A'] &
-		       DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-	      }
-	      else
-		pci->rc.hptrIcon = hptrFloppy;
-	    }
+            if (IsRoot(pci->szFileName))
+            FindDriveIcon(pci);
 	    WinSendMsg(hwndCnr,
 		       CM_SETRECORDEMPHASIS,
 		       MPFROMP(pci),
@@ -499,25 +458,8 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						  pci,
 						  filename[x],
 						  &ffb, partial, dcd);
-	      if (strlen(pci->szFileName) < 4) {
-		*pci->szFileName = toupper(*pci->szFileName);
-		if (isalpha(*pci->szFileName) &&
-		    toupper(*pci->szFileName) > 'B') {
-		  if (driveflags[toupper(*pci->szFileName) - 'A'] &
-		      DRIVE_CDROM)
-		    pci->rc.hptrIcon = hptrCDROM;
-		  else
-		    pci->rc.hptrIcon =
-		      (driveflags[toupper(*pci->szFileName) - 'A'] &
-		       DRIVE_REMOVABLE) ? hptrRemovable
-		      : (driveflags[toupper(*pci->szFileName) - 'A'] &
-			 DRIVE_REMOTE) ? hptrRemote
-		      : (driveflags[toupper(*pci->szFileName) - 'A'] &
-			 DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-		}
-		else
-		  pci->rc.hptrIcon = hptrFloppy;
-	      }
+              if (strlen(pci->szFileName) < 4)
+              FindDriveIcon(pci);
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
 	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -570,25 +512,8 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 							pci,
 							filename[x],
 							&ffb, partial, dcd);
-		    if (strlen(pci->szFileName) < 4) {
-		      *pci->szFileName = toupper(*pci->szFileName);
-		      if (isalpha(*pci->szFileName) &&
-			  toupper(*pci->szFileName) > 'B') {
-			if (driveflags[toupper(*pci->szFileName) - 'A'] &
-			    DRIVE_CDROM)
-			  pci->rc.hptrIcon = hptrCDROM;
-			else
-			  pci->rc.hptrIcon =
-			    (driveflags[toupper(*pci->szFileName) - 'A'] &
-			     DRIVE_REMOVABLE) ? hptrRemovable
-			    : (driveflags[toupper(*pci->szFileName) - 'A'] &
-			       DRIVE_REMOTE) ? hptrRemote
-			    : (driveflags[toupper(*pci->szFileName) - 'A'] &
-			       DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-		      }
-		      else
-			pci->rc.hptrIcon = hptrFloppy;
-		    }
+                    if (strlen(pci->szFileName) < 4)
+                    FindDriveIcon(pci);
 		    memset(&ri, 0, sizeof(RECORDINSERT));
 		    ri.cb = sizeof(RECORDINSERT);
 		    ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -634,25 +559,8 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						    pci,
 						    filename[x],
 						    &ffb, partial, dcd);
-		if (strlen(pci->szFileName) < 4) {
-		  *pci->szFileName = toupper(*pci->szFileName);
-		  if (isalpha(*pci->szFileName) &&
-		      toupper(*pci->szFileName) > 'B') {
-		    if (driveflags[toupper(*pci->szFileName) - 'A'] &
-			DRIVE_CDROM)
-		      pci->rc.hptrIcon = hptrCDROM;
-		    else
-		      pci->rc.hptrIcon =
-			(driveflags[toupper(*pci->szFileName) - 'A'] &
-			 DRIVE_REMOVABLE) ? hptrRemovable
-			: (driveflags[toupper(*pci->szFileName) - 'A'] &
-			   DRIVE_REMOTE) ? hptrRemote
-			: (driveflags[toupper(*pci->szFileName) - 'A'] &
-			   DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-		  }
-		  else
-		    pci->rc.hptrIcon = hptrFloppy;
-		}
+                if (strlen(pci->szFileName) < 4)
+                FindDriveIcon(pci);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;

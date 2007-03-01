@@ -19,6 +19,7 @@
   13 Jul 06 SHL Sync with current style
   29 Jul 06 SHL Use xfgets
   22 Oct 06 GKY Add NDFS32 support
+  18 Feb 07 GKY Add ISOFS, RAMFS support
 
 ***********************************************************************/
 
@@ -212,10 +213,12 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     HPFS = "HPFS";
     JFS = "JFS";
     CDFS = "CDFS";
+    ISOFS = "ISOFS";
     FAT32 = "FAT32";
     HPFS386 = "HPFS386";
     CBSIFS = "CBSIFS";
     NDFS32 = "NDFS32";
+    RAMFS = "RAMFS";
     /* end of strings */
     memset(&RGBBLACK, 0, sizeof(RGB2));
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = 204;
@@ -1141,10 +1144,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   hptrArt = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ART_ICON);
   hptrSystem = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, FILE_SYSTEM_ICON);
   hptrHidden = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, FILE_HIDDEN_ICON);
-  hptrReadonly =
-    WinLoadPointer(HWND_DESKTOP, FM3ModHandle, FILE_READONLY_ICON);
+  hptrReadonly = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, FILE_READONLY_ICON);
   hptrLast = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, LASTITEM_ICON);
   hptrRemote = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, REMOTE_ICON);
+  hptrVirtual = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, VIRTUAL_ICON);
+  hptrRamdisk = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, RAMDISK_ICON);
   if (!fNoDead)
     hptrFinger = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, FINGER_ICON);
   else

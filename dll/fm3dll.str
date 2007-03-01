@@ -102,7 +102,7 @@ WC_MAINWND2
 Type "/OPEN path" to open a new Directory Container.\r\rType "/CLOSE path" to close a Directory Container.\r\rType "/FILTER filter" to filter a Directory Container.\r\rType "/KEEP" or "/NOKEEP" to set the type of cmd window (autoclose or not).\r\rType "/SAVE" or "/NOSAVE" to save (or not) cmd lines between sessions.\r\r[Up arrow] or [down arrow] or [+] button for listbox of previous command lines, then [Delete] to remove one or [Enter] to reuse.\r\rOr type a command to be executed (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line.
 WC_AUTOVIEW
 WC_LED
-8.Helv.Bold
+8.Helvetica.Bold
 4.System VIO
 10.System VIO
 10.System Monospaced
@@ -834,9 +834,9 @@ NoLoadSubjs
 NoLoadLongnames
 Slow
 InclFiles
-FM/2: Drive info "%c:"
-unit
-%lu bytes/sector, %lu sector%s/unit
+Virtual
+No stats
+Ram disk
  Can't query volume info drive %c:
  Can't query allocation info drive %c:
  Drive %c: inaccessible.  Flags:  %s
@@ -989,4 +989,19 @@ Based on what I've seen while scanning your drives, I would like to suggest the 
 ~Bubbles
 Bubble help settings
  (to Target directory)
+Can't add %s to command list
+Can't add %s to command list It has a duplicate title
+Create Semaphore failed
+Post Semaphore failed
+Can't find drive %s
+Can't drag root directory
+DosQAppType failed for %s.
+apptype 0x%x unexpected for %s.
+%c:\\DESKTOP
+FM/2: Drive info "%c:"
+18.Times New Roman
+10.Helvetica.Bold
+unit
+%lu bytes/sector, %lu sector%s/unit
+Stats not meaningful
 $Id$

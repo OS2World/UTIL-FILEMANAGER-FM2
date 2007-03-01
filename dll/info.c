@@ -52,7 +52,7 @@ CHAR *FlagMsg(CHAR drive, CHAR * buffer)
     p = buffer;
     if (isalpha(drive)) {
       if (driveflags[toupper(drive) - 'A']) {
-	for (x = IDS_FLREMOVABLETEXT; x < IDS_FLINCLFILESTEXT + 1; x++) {
+	for (x = IDS_FLREMOVABLETEXT; x < IDS_FLRAMDISKTEXT + 1; x++) {
 	  if (driveflags[toupper(drive) - 'A'] &
 	      (1 << (x - IDS_FLREMOVABLETEXT))) {
 	    if (once) {
@@ -99,6 +99,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			INFO_LABEL,
 			EM_SETTEXTLIMIT,
 			MPFROM2SHORT(CCHMAXPATHCOMP, 0), MPVOID);
+      if (!(driveflags[toupper(*pszFileName) - 'A'] & DRIVE_NOSTATS)){
       WinSendDlgItemMsg(hwnd,
 			INFO_FREE,
 			SLM_SETSLIDERINFO,
@@ -109,6 +110,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			SLM_SETSLIDERINFO,
 			MPFROM2SHORT(SMA_SLIDERARMDIMENSIONS, 0),
 			MPFROM2SHORT(0, 0));
+      }
       if (driveflags[toupper(*pszFileName) - 'A'] & DRIVE_NOTWRITEABLE) {
 	WinSendDlgItemMsg(hwnd,
 			  INFO_LABEL,
@@ -122,11 +124,11 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	sprintf(FileSystem,
 		GetPString(IDS_DRIVEINFOTITLETEXT), toupper(*pszFileName));
 	WinSetWindowText(hwnd, FileSystem);
-	if (CheckDrive(toupper(*pszFileName), FileSystem, &type) != -1) {
+        if (CheckDrive(toupper(*pszFileName), FileSystem, &type) != -1){
 
 	  FSALLOCATE fsa;
 
-	  if (type & (DRIVE_REMOTE | DRIVE_ZIPSTREAM)) {
+	  if (type & (DRIVE_REMOTE | DRIVE_ZIPSTREAM | DRIVE_VIRTUAL)) {
 
 	    CHAR Path[3], *pfsn, *pfsd;
 	    ULONG Size;
@@ -172,8 +174,10 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetDlgItemText(hwnd, INFO_FS, FileSystem);
 	      WinSetDlgItemText(hwnd, INFO_LABEL, volser.volumelabel);
 	      sprintf(s, "%lx", volser.serial);
-	      WinSetDlgItemText(hwnd, INFO_SERIAL, s);
-
+              WinSetDlgItemText(hwnd, INFO_SERIAL, s);
+              FlagMsg(*pszFileName, s);
+	      WinSetDlgItemText(hwnd, INFO_FLAGS, s);
+              if (!(driveflags[toupper(*pszFileName) - 'A'] & DRIVE_NOSTATS)){
 	      CommaFmtULL(szMB, sizeof(szMB),
 			  (ULONGLONG) fsa.cUnit *
 			  (fsa.cSectorUnit * fsa.cbSector), 'M');
@@ -203,8 +207,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      fsa.cbSector,
 		      fsa.cSectorUnit, &"s"[fsa.cSectorUnit == 1L]);
 	      WinSetDlgItemText(hwnd, INFO_ALLOCUNITS, s);
-	      FlagMsg(*pszFileName, s);
-	      WinSetDlgItemText(hwnd, INFO_FLAGS, s);
+
 	      percentfree = (fsa.cUnitAvail && fsa.cUnit) ?
 		(fsa.cUnitAvail * 100) / fsa.cUnit : 0;
 	      if (!percentfree && fsa.cUnitAvail)
@@ -225,7 +228,10 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      sprintf(s, "%u%%", percentused);
 	      WinSetDlgItemText(hwnd, INFO_USEDPERCENT, s);
 	      sprintf(s, "%u%%", percentfree);
-	      WinSetDlgItemText(hwnd, INFO_FREEPERCENT, s);
+              WinSetDlgItemText(hwnd, INFO_FREEPERCENT, s);
+              }
+              else
+                 WinSetDlgItemText(hwnd, INFO_AVAILABLE, GetPString(IDS_STATSMEANINGLESSTEXT));
 	    }
 	    else {
 	      sprintf(FileSystem,
@@ -872,9 +878,12 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinEnableWindow(WinWindowFromID(hwnd,DVS_CDROM),FALSE);
         WinEnableWindow(WinWindowFromID(hwnd,DVS_NOLONGNAMES),FALSE);
         WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOTE),FALSE);
+        WinEnableWindow(WinWindowFromID(hwnd,DVS_VIRTUAL),FALSE);
+        WinEnableWindow(WinWindowFromID(hwnd,DVS_RAMDISK),FALSE);
         WinEnableWindow(WinWindowFromID(hwnd,DVS_BOOT),FALSE);
         WinEnableWindow(WinWindowFromID(hwnd,DVS_INVALID),FALSE);
         WinEnableWindow(WinWindowFromID(hwnd,DVS_ZIPSTREAM),FALSE);
+        WinEnableWindow(WinWindowFromID(hwnd,DVS_NOSTATS),FALSE);
 */
       PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     }
@@ -896,7 +905,12 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     ((driveflags[drive] & DRIVE_NOLONGNAMES) != 0));
       WinCheckButton(hwnd, DVS_REMOTE,
 		     ((driveflags[drive] & DRIVE_REMOTE) != 0));
-      WinCheckButton(hwnd, DVS_BOOT, ((driveflags[drive] & DRIVE_BOOT) != 0));
+      WinCheckButton(hwnd,DVS_VIRTUAL,
+                     ((driveflags[drive] & DRIVE_VIRTUAL) != 0));
+      WinCheckButton(hwnd,DVS_RAMDISK,
+                     ((driveflags[drive] & DRIVE_RAMDISK) != 0));
+      WinCheckButton(hwnd, DVS_BOOT,
+                     ((driveflags[drive] & DRIVE_BOOT) != 0));
       WinCheckButton(hwnd, DVS_INVALID,
 		     ((driveflags[drive] & DRIVE_INVALID) != 0));
       WinCheckButton(hwnd, DVS_NOPRESCAN,
@@ -912,6 +926,8 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, DVS_SLOW, ((driveflags[drive] & DRIVE_SLOW) != 0));
       WinCheckButton(hwnd, DVS_INCLUDEFILES,
 		     ((driveflags[drive] & DRIVE_INCLUDEFILES) != 0));
+      WinCheckButton(hwnd,DVS_NOSTATS,
+                     ((driveflags[drive] & DRIVE_NOSTATS) != 0));
     }
     return 0;
 
@@ -948,6 +964,10 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  driveflags[drive] |= DRIVE_INCLUDEFILES;
 	else
 	  driveflags[drive] &= (~DRIVE_INCLUDEFILES);
+        if (WinQueryButtonCheckstate(hwnd,DVS_NOSTATS))
+          driveflags[drive] |= DRIVE_NOSTATS;
+        else
+          driveflags[drive] &= (~DRIVE_NOSTATS);
 	{
 	  ULONG flags;
 	  CHAR s[80];
@@ -957,7 +977,8 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  flags &= (~(DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
 		      DRIVE_IGNORE | DRIVE_CDROM |
 		      DRIVE_NOLONGNAMES | DRIVE_REMOTE |
-		      DRIVE_BOOT | DRIVE_INVALID | DRIVE_ZIPSTREAM));
+                      DRIVE_BOOT | DRIVE_INVALID | DRIVE_ZIPSTREAM |
+                      DRIVE_VIRTUAL  | DRIVE_RAMDISK));
 	  PrfWriteProfileData(fmprof, appname, s, &flags, sizeof(ULONG));
 	}
       }

@@ -6,7 +6,7 @@
   Custom commands
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2007 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Drop unused code
@@ -14,6 +14,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   15 Aug 06 SHL Better can't add message
   18 Sep 06 GKY Add replace command and update okay to add if changed
+  17 Feb 07 GKY Move error messages etc to string file
 
 ***********************************************************************/
 
@@ -637,14 +638,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temp.flags |= ONCE;
 	info = add_command(&temp);
 	if (!info)
+        {
 	  WinDismissDlg(hwnd, 0);
-	/*{
-	   /* saymsg(MB_ENTER,
-	   hwnd,
+          saymsg(MB_ENTER, hwnd,
 	   GetPString(IDS_ERRORTEXT),
-	   // GetPString(IDS_CANTADDCOMMANDTEXT),
-	   "Can't add %s to command list", temp.title); // fixme to be in fm3dll.str
-	   }  */
+	         GetPString(IDS_CANTADDCOMMANDTEXT),
+	         temp.title);
+	 }
 	else {
 	  CHAR env[1002];
 
@@ -717,8 +717,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	info = add_command(&temp);
 	if (!info) {
 	  saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
-		 // GetPString(IDS_CANTADDCOMMANDTEXT),
-		 "Can't add %s to command list It has a duplicate title", temp.title);	// fixme to be in fm3dll.str
+                 GetPString(IDS_CANTADDCOMMANDTEXTDUP), temp.title);
 	}
 	else {
 	  CHAR env[1002];
@@ -781,9 +780,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	WinQueryDlgItemText(hwnd, CMD_TITLE, 34, temp);
 	bstrip(temp);
-	if (!kill_command(temp))
-	  Runtime_Error(pszSrcFile, __LINE__, "kill_command");
-	else {
+	if (kill_command(temp))
+           {
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_QUERYSELECTION,
@@ -826,8 +824,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	info = add_command(&temp);
 	if (!info) {
 	  saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
-		 // GetPString(IDS_CANTADDCOMMANDTEXT),
-		 "Can't add %s to command list", temp.title);	// fixme to be in fm3dll.str
+		 GetPString(IDS_CANTADDCOMMANDTEXT),
+		 temp.title);
 	}
 	else {
 	  CHAR env[1002];

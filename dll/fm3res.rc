@@ -6,7 +6,7 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2006 Steven H. Levine
+  Copyright (c) 2003, 2007 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   04 Nov 03 SHL Drop obsoletes
@@ -20,6 +20,8 @@
   20 Oct 06 SHL Sync Seek and scan dialog title and menus
   29 Dec 06 GKY Move all extract options to main menu for archiver
   29 Dec 06 GKY Removed "Make directory" from all Misc subdirectories
+  17 Feb 07 GKY Add Make direcroy to white space directory container menu
+  17 Feb 07 GKY Additional drive type icons
 
 ***********************************************************************/
 
@@ -75,6 +77,8 @@ ICON        FILE_READONLY_ICON  icons\FRED.ICO
 ICON        DRIVE_ICON          icons\DRIVE.ICO
 ICON        ZIPSTREAM_ICON      icons\ZIPSTRM.ICO
 ICON        ART_ICON            icons\ART.ICO
+ICON        RAMDISK_ICON        icons\RAMDISK.ICO
+ICON        VIRTUAL_ICON        icons\VIRTUAL.ICO
 
 ICON        ID_STICK1           icons\STICK1.ICO
 ICON        ID_STICK2           icons\STICK2.ICO
@@ -857,6 +861,7 @@ MENU DIRCNR_POPUP
   MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
   MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
   MENUITEM "~Walk dirs...\tCtrl + w", IDM_WALKDIR
+  MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
   MENUITEM "~Quick tree...\tCtrl + Q",IDM_QTREE
   SUBMENU  "Open",                    IDM_OPENSUBMENU
   {

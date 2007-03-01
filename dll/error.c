@@ -19,6 +19,7 @@
   22 Jul 06 SHL Optimize calling sequences
   26 Jul 06 SHL Add ..._Error2
   16 Aug 06 SHL Tweak message formatting
+  07 Jan 07 GKY Move error strings etc. to string file
 
 ***********************************************************************/
 
@@ -208,8 +209,7 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
     strcat(szMsg, " failed.");		// Assume simple function name
 
   sprintf(szMsg + strlen(szMsg),
-	  // GetPString(IDS_DOSERR1TEXT), fixme
-	  "\nModule: %s\nLinenumber: %u", pszSrcFile, uSrcLineNo);
+          GetPString(IDS_GENERR1TEXT), pszSrcFile, uSrcLineNo);
 
   showMsg(MB_ICONEXCLAMATION, HWND_DESKTOP, DEBUG_STRING, szMsg);
 

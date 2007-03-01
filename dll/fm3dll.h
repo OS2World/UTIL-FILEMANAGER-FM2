@@ -6,7 +6,7 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   12 Feb 03 SHL Add CBLIST_TO_EASIZE
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -35,6 +35,8 @@
   22 Oct 06 GKY Add NDFS32 support
   03 Nov 06 SHL Renames
   17 Jan 07 SHL Resize extractdir
+  17 Feb 07 GKY Add more file system types
+  17 Feb 07 GKY Add FindDriveIcon to streamline update.c
 
 ***********************************************************************/
 
@@ -1089,6 +1091,7 @@ PCNRITEM FindParentRecord(HWND hwndCnr, PCNRITEM pciC);
 VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi);
 
 /* update.c */
+HPOINTER FindDriveIcon(PCNRITEM pci);
 PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 DIRCNRDATA * dcd);
 BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
@@ -1306,7 +1309,7 @@ DATADEF HWND hwndMain, hwndTree, hwndStatus, hwndStatus2, hwndTrash,
 DATADEF HBITMAP hbmLEDon, hbmLEDoff;
 DATADEF CHAR ArcTempRoot[9];
 DATADEF HPOINTER hptrArrow, hptrBusy, hptrLast, hptrDir, hptrFile, hptrRemote,
-  hptrFloppy, hptrDrive, hptrRemovable, hptrCDROM,
+  hptrFloppy, hptrDrive, hptrRemovable, hptrCDROM,hptrVirtual,hptrRamdisk,
   hptrFinger, hptrApp, hptrDunno, hptrSystem, hptrHidden,
   hptrReadonly, hptrNS, hptrZipstrm, hptrArc, hptrArt, hptrEW,
   hptrCommon, hptrEnv;
@@ -1357,8 +1360,8 @@ DATADEF CHAR *DEBUG_STRING, *FM3Str, *FM2Str, *NullStr, *Default, *Settings,
   *DRM_OS2FILE, *DRM_FM2ARCMEMBER, *DRF_FM2ARCHIVE,
   *DRMDRFLIST, *DRMDRFOS2FILE, *DRMDRFFM2ARC,
   *DRM_FM2INIRECORD, *DRF_FM2INI, *SUBJECT, *LONGNAME,
-  *HPFS, *JFS, *CDFS, *FAT32, *HPFS386, *NDFS32, *CBSIFS, *WPProgram,
-  *FM3Folder, *FM3Tools;
+  *HPFS, *JFS, *CDFS, *FAT32, *HPFS386, *NDFS32, *CBSIFS, *ISOFS, *RAMFS,
+  *WPProgram, *FM3Folder, *FM3Tools;
 DATADEF RGB2 RGBGREY, RGBBLACK;
 DATADEF CHAR archiverbb2[CCHMAXPATH], StopPrinting, profile[CCHMAXPATH];
 DATADEF CHAR appname[12], realappname[12];

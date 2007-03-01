@@ -12,6 +12,8 @@
   22 Jul 06 SHL Check more run time errors
   15 Aug 06 SHL Use Dos_Error
   03 Nov 06 SHL Rework thread usage count logic
+  07 Jan 07 GKY Move error strings etc. to string file
+  07 Jan 07 GKY Updated Helv font to vector font Helvetica
 
 ***********************************************************************/
 
@@ -138,16 +140,14 @@ MRESULT EXPENTRY CommonTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CREATE:
     {
       MRESULT rc;
-      char font[] = "8.Helv";
 
       rc = PFNWPStatic(hwnd, msg, mp1, mp2);
-      switch (WinQueryWindowUShort(hwnd, QWS_ID)) {
+      switch (WinQueryWindowUShort(hwnd, QWS_ID))
       case DIR_SORT:
       case DIR_VIEW:
       case DIR_FILTER:
-	*font = '7';
-      }
-      SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, font);
+
+      SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVTEXT));
       return rc;
     }
   }
@@ -224,6 +224,7 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
 	      DrvInfoProc, FM3ModHandle, INFO_FRAME, (PVOID) dv);
     break;
   case IDM_DRVFLAGS:
+    strcpy(dv, drive);			// Must use original drive letter
     if (WinDlgBox(HWND_DESKTOP,
 		  hwnd,
 		  SetDrvProc,

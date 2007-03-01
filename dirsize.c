@@ -100,6 +100,10 @@ MRESULT EXPENTRY DirMainProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Zipstream drive");
 	else if (type & DRIVE_REMOTE)
 	  WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Remote drive");
+        else if (type & DRIVE_VIRTUAL)
+            WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Virtual drive");
+        else if (type & DRIVE_RAMDISK)
+	  WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Ramdisk");
 	else {
 	  sprintf(s, "Local drive%s", (removable) ? " (removable)" : "");
 	  WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, s);

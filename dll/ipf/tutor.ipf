@@ -1,16 +1,16 @@
-***********************************************************************
-*
-* $Id$
-*
-* FM/2 Tutorial
-*
-* Copyright (c) 1993-98 M. Kimes
-* Copyright (c) 2006 Steven H.Levine
-*
-* 05 Jan 07 GKY Update extraction tutorial
-*
-***********************************************************************
-*
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* FM/2 Tutorial
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 05 Jan 07 GKY Update extraction tutorial
+.*
+.***********************************************************************
+.*
 :h1 res=99800 name=PANEL_TUTORIAL.Tutorials
 :i1 id=aboutTutorial.Tutorials
 :artwork name='bitmaps\tutor.bmp' align=center.
