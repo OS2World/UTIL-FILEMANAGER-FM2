@@ -303,7 +303,7 @@ BEGIN
         GROUPBOX        "", -1, 4, 103, 150, 17, NOT WS_GROUP
         CTEXT           "Listed:", -1, 29, 106, 92, 7, NOT WS_GROUP
         CTEXT           "FM/2", -1, 50, 2, 61, 15, DT_VCENTER | NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
+                        PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
         LISTBOX         ASEL_LISTBOX, 4, 19, 150, 83, WS_GROUP
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 2, 44, 13, BS_NOPOINTERFOCUS |
                         WS_GROUP
@@ -321,7 +321,7 @@ BEGIN
         CTEXT           "Listed:", -1, 29, 114, 92, 7, NOT WS_GROUP
         CTEXT           "FM/2", -1, 50, 10, 61, 15, DT_VCENTER | NOT
                         WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
+                        PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
         LISTBOX         ASEL_LISTBOX, 4, 27, 150, 83, WS_GROUP
         DEFPUSHBUTTON   "Edit", DID_OK, 4, 10, 44, 13, BS_NOPOINTERFOCUS |
                         WS_GROUP
@@ -790,10 +790,10 @@ BEGIN
         CTEXT           "Finish:", -1, 196, 188, 128, 8, DT_VCENTER
         LISTBOX         RE_ADDLISTBOX, 4, 18, 132, 168, LS_MULTIPLESEL |
                         LS_HORZSCROLL | LS_EXTENDEDSEL
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         LISTBOX         RE_REMOVELISTBOX, 194, 18, 132, 168, LS_MULTIPLESEL |
                         LS_HORZSCROLL | LS_EXTENDEDSEL
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         PUSHBUTTON      "~Add>>", RE_ADD, 140, 97, 49, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "<<~Remove", RE_REMOVE, 140, 70, 50, 14,
                         BS_NOPOINTERFOCUS
@@ -848,7 +848,7 @@ BEGIN
             FS_MOUSEALIGN | WS_VISIBLE, FCF_TITLEBAR
     BEGIN
         LISTBOX         PICKBTN_LISTBOX, 4, 20, 248, 102
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 214, 4, 40, 14,
                         BS_NOPOINTERFOCUS
@@ -916,7 +916,7 @@ BEGIN
     BEGIN
         LISTBOX         KILL_LISTBOX, 4, 33, 230, 124, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "~Kill", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Rescan", KILL_RESCAN, 100, 4, 40, 14,
@@ -927,7 +927,7 @@ BEGIN
         AUTOCHECKBOX    "~Use undocumented DosQProcStat API", KILL_CHECKBOX,
                         30, 20, 178, 10
         LTEXT           "PID: Name:", KILL_HDR, 6, 156, 86, 8, DT_VCENTER
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         PUSHBUTTON      "Show", KILL_SHOW, 52, 4, 40, 14, BS_NOPOINTERFOCUS
     END
 END
@@ -984,7 +984,7 @@ BEGIN
     BEGIN
         LISTBOX         SYS_LISTBOX, 4, 18, 308, 136, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 2, 52, 14, BS_NOPOINTERFOCUS
     END
 END
@@ -1147,7 +1147,7 @@ BEGIN
         LISTBOX         GREP_DRIVELIST, 2, 120, 28, 100
         MLE             "", GREP_SEARCH, 89, 116, 198, 26, MLS_HSCROLL |
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helv"
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "~Include Subdirs", GREP_RECURSE, 10, 102, 94, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
         AUTOCHECKBOX    "~Absolute", GREP_ABSOLUTE, 115, 102, 68, 10,
@@ -1307,7 +1307,7 @@ BEGIN
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         MLE             "", ARCERR_MLE, 4, 22, 308, 58, MLS_READONLY |
                         MLS_HSCROLL | MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "4.System VIO"
+                        PRESPARAMS PP_FONTNAMESIZE, "4.System VIO"
     END
 END
 
@@ -1515,7 +1515,7 @@ BEGIN
                         MLS_HSCROLL | MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
         ENTRYFIELD      "", EA_ENTRY, 6, 58, 340, 8, ES_MARGIN | WS_GROUP
         LISTBOX         EA_HEXDUMP, 4, 38, 344, 50, WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
+                        PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Change", EA_CHANGE, 63, 4, 40, 14,
@@ -2146,7 +2146,7 @@ BEGIN
         ENTRYFIELD      "", WALK2_PATH, 170, 143, 156, 10, ES_MARGIN
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         WALK2_DRIVELIST, 168, 22, 24, 116, LS_NOADJUSTPOS
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         LISTBOX         WALK2_DIRLIST, 194, 22, 134, 116, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
                         // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
@@ -2394,10 +2394,10 @@ BEGIN
         LTEXT           "Command line:", -1, 4, 107, 67, 8, NOT WS_GROUP
         RTEXT           "", EXEC_WARNING, 76, 107, 260, 7, DT_VCENTER | NOT
                         WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
+                        PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
         CTEXT           "", EXEC_WARNING2, 8, 118, 344, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
+                        PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
         CTEXT           "Environment:", -1, 101, 58, 77, 8, DT_VCENTER

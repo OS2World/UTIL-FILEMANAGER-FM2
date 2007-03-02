@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.*  Drive flags and stats
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006 Steven H.Levine
+.*
+.* 01 Mar 07 GKY Add no stats drive flag
+.*
+.***********************************************************************
+.*
 :h2 res=90900 name=PANEL_DRVINFO.Drive Info
 :i1 id=aboutDriveInfo.Drive Info
 
@@ -66,6 +79,12 @@ to check the various :hp1.Don't load...:ehp1. flags listed above.
 :hp6.Include files in tree:ehp6. If you check this, files will be shown
 as well as directories in the Drive Tree for this drive. I have no
 idea why you would ever want to check this.
+:p.
+:hp6.No drive stats:ehp6. If you check this, no stats about size free space
+etc will be displayed on the information dialog of this drive. The drive will
+not be shown when FM2 is minimized to a databar. The purpose for this flag is for
+virtual drives such as netdrives, where multiple drives and/or directories can be
+mounted making the stats meaningless at best.
 :p.
 You get this dialog by selecting Edit->Drive flags from a context menu
 requested on a drive (root directory) in the Drive Tree or VTree window.

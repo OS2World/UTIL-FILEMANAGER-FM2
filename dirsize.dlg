@@ -23,9 +23,9 @@ BEGIN
         CTEXT           "Select a drive to display size information on, then"
                         " click Show.", -1, 38, 34, 49, 65, DT_WORDBREAK |
                         NOT WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, GetPString(IDS_8HELVTEXT)
+                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         DIRSIZE_LISTBOX, 2, 2, 30, 124, WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, GetPString(IDS_10SYSTEMMONOTEXT)
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         DEFPUSHBUTTON   "Show", DID_OK, 44, 110, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "Close", DID_CANCEL, 44, 2, 40, 14,

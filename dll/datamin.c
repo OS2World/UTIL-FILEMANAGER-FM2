@@ -263,11 +263,11 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
       ULONG numdrives = 0;
       ULONG drivestyle = (DRIVE_REMOVABLE | DRIVE_INVALID |
-			  DRIVE_IGNORE | DRIVE_ZIPSTREAM);
+			  DRIVE_IGNORE | DRIVE_ZIPSTREAM | DRIVE_NOSTATS);
       ULONG ulDriveNum, ulDriveMap;
 
       if (!fDataInclRemote)
-	drivestyle |= DRIVE_REMOTE || DRIVE_VIRTUAL;
+	drivestyle |= DRIVE_REMOTE || DRIVE_VIRTUAL || DRIVE_RAMDISK;
       if (fDataShowDrives) {
 	DosError(FERR_DISABLEHARDERR);
 	DosQCurDisk(&ulDriveNum, &ulDriveMap);
