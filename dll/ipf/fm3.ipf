@@ -19,8 +19,6 @@
 :ctrl ctrlid=new1 controls='ESC CONTENTS INDEX SEARCH FORWARD BACK' coverpage.
 :ectrldef.
 
-.im footnote.ipf
-
 :h1 res=93200 name=PANEL_HOWTOUSEHELP.How to use FM/2's help (Read me first!)
 :i1 id=aboutHowToUseHelp.How to use FM/2's help (Read me first!)
 :artwork name='bitmaps\fm3.bmp' align=center.

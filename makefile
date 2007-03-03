@@ -36,9 +36,9 @@ dll:
 
 $(BASE): $(BASE).exe $(BASE).res
 
-$(BASE).res: $(BASE).rc  $(BASE).h icons\$(BASE).ico bitmaps\*.bmp
+$(BASE).res: $(BASE).rc  icons\$(BASE).ico bitmaps\*.bmp
 
-$(BASE).obj: $(BASE).c $(BASE).h dll\version.h
+$(BASE).obj: $(BASE).c dll\version.h
 
 # make EXE compenents
 

@@ -46,7 +46,6 @@ tight, you only need to have RC.EXE, IPFC.EXE and the following include files
 available:
 
   dirsize.h
-  fm3.h
   fm3dlg.h
   fm3dll.h
   fm3dll2.h

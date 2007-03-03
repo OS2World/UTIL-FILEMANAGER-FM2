@@ -8,9 +8,9 @@ all: $(BASE).exe $(BASE).res
 
 $(BASE).res: $(BASE).rc
 
-$(BASE).rc: $(BASE).h icons\$(BASE).ico bitmaps\*.bmp
+$(BASE).rc: icons\$(BASE).ico bitmaps\*.bmp
 
-$(BASE).obj: $(BASE).c $(BASE).h dll\version.h
+$(BASE).obj: $(BASE).c dll\version.h
 
 !include makefile_post.mk
 
