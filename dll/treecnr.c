@@ -21,7 +21,7 @@
   22 OCT 06 GKY Add NDFS32 support
   29 Dec 06 GKY Fixed menu gray out for remote drives (added variable "remote")
   29 Dec 06 GKY Enabled edit of drive flags on "not ready" drives
-  18 Feb 07 GKY More drive type and inco support
+  18 Feb 07 GKY More drive type and icon support
 
 ***********************************************************************/
 
@@ -1773,7 +1773,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN |
 				DRIVE_NOLOADICONS | DRIVE_NOLOADSUBJS |
 				DRIVE_NOLOADLONGS | DRIVE_INCLUDEFILES |
-				DRIVE_SLOW) | DRIVE_NOSTATS;
+				DRIVE_SLOW | DRIVE_NOSTATS);
 
 	      if (removable == 1)
 		driveflags[x] |= DRIVE_REMOVABLE;
@@ -1782,6 +1782,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               if (!strcmp(FileSystem, CBSIFS)) {
 		driveflags[x] |= DRIVE_ZIPSTREAM;
                 driveflags[x] &= (~DRIVE_REMOTE);
+              }
               if(!strcmp(FileSystem,NDFS32)) {
                 driveflags[x] |= DRIVE_VIRTUAL;
                 driveflags[x] &= (~DRIVE_REMOTE);
@@ -1792,7 +1793,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               }
 	      if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS))
 		driveflags[x] |= (DRIVE_REMOVABLE |
-				  DRIVE_NOTWRITEABLE | DRIVE_CDROM);
+                                  DRIVE_NOTWRITEABLE | DRIVE_CDROM);
+              if(!strcmp(FileSystem,NTFS))
+                driveflags[x] |= DRIVE_NOTWRITEABLE;
 	      if (strcmp(FileSystem, HPFS) &&
 		  strcmp(FileSystem, JFS) &&
 		  strcmp(FileSystem, CDFS) &&
@@ -1800,10 +1803,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                   strcmp(FileSystem, RAMFS) &&
 		  strcmp(FileSystem, FAT32) &&
                   strcmp(FileSystem, NDFS32) &&
+                  strcmp(FileSystem, NTFS) &&
                   strcmp(FileSystem, HPFS386)) {
 		driveflags[x] |= DRIVE_NOLONGNAMES;
-	      }
-
 	      }
 	      if (driveflags[x] & DRIVE_CDROM)
 		pciP->rc.hptrIcon = hptrCDROM;

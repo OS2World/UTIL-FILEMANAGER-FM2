@@ -5,9 +5,10 @@
 .* Context Menu Usage
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2006 Steven H.Levine
+.* Copyright (c) 2006-07 Steven H.Levine
 .*
 .* 01 Sep 06 GKY ADD new partition disks information
+.* 03 Mar 07 GKY Update that file systems other than HPFS support long names
 .*
 .***********************************************************************
 .*
@@ -570,9 +571,8 @@ the clipboard or a list file and invert the current selections
 The :hp6.Sort submenu:ehp6. allows you to control how objects are sorted
 based on several criteria. You can also tell FM/2 to always display
 directories ahead of or behind files. Note that :hp1.Last access
-date:ehp1. and :hp1.Creation date:ehp1. are only meaningful for HPFS
-file systems; FAT file systems do not track this information. The
-difference between :hp1.Pathname:ehp1. and :hp1.Filename:ehp1. is only
+date:ehp1. and :hp1.Creation date:ehp1. are not tracked by the FAT file system
+The difference between :hp1.Pathname:ehp1. and :hp1.Filename:ehp1. is only
 apparent in the Collector. With the former, the entire pathname of the
 object is used to sort. With the latter, only the filename portion is
 used to sort. FM/2 maintains separate sort criteria for Drive Tree,

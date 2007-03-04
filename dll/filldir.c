@@ -1039,6 +1039,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
              driveflags[x] |= DRIVE_VIRTUAL;
              driveflags[x] &= ~DRIVE_REMOTE;
             }
+            if (!stricmp(FileSystem,NTFS))
+             driveflags[x] |= DRIVE_NOTWRITEABLE;
 	    if (strcmp(FileSystem, HPFS) &&
 		strcmp(FileSystem, JFS) &&
                 strcmp(FileSystem, ISOFS) &&
@@ -1046,6 +1048,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		strcmp(FileSystem, FAT32) &&
                 strcmp(FileSystem, NDFS32) &&
                 strcmp(FileSystem, RAMFS) &&
+                strcmp(FileSystem, NTFS) &&
                 strcmp(FileSystem, HPFS386)) {
 	      driveflags[x] |= DRIVE_NOLONGNAMES;
 	    }
@@ -1086,7 +1089,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		  *suggest = '/';
 		  suggest[1] = 0;
 		}
-		sprintf(suggest + strlen(suggest), "%c", toupper(*szDrive));
+		sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
 		strcpy(pci->szFileName, szDrive);
 		pci->pszFileName = pci->szFileName;
 		pci->rc.pszIcon = pci->pszFileName;

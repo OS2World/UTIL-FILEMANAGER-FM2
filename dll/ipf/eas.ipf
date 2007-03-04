@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Extended Atribute Usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006-07 Steven H.Levine
+.*
+.* 03 Mar 07 GKY Update that file systems other than HPFS support long names
+.*
+.***********************************************************************
+.*
 :h2 res=95000 name=PANEL_EAS.Extended Attributes
 :i1 id=aboutEAs.Extended Attributes
 :artwork name='..\..\bitmaps\ea.bmp' align=center.
@@ -87,8 +100,8 @@ page).
 :p.
 :hp1..LONGNAME:ehp1. is an ASCII attribute that gives the full name of a
 file when stored on a file system that doesn't support long filenames
-(like FAT). Sometimes you'll see them even on files stored on HPFS
-drives, when invalid characters (invalid for the file system, like
+(like FAT). Sometimes you'll see them even on files stored on drives that
+support long names, when invalid characters (invalid for the file system, like
 a colon not used for a path separator, for example) are used.
 :p.
 :hp1..VERSION:ehp1. is an ASCII attribute that gives some sort of version

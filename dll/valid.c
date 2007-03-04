@@ -243,7 +243,9 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   }
 
   if (pulType && (!strcmp(pfsn, CDFS) || !strcmp(pfsn, ISOFS)))
-    *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
+      *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
+  if (pulType && !strcmp(pfsn, NTFS))
+      *pulType |= DRIVE_NOTWRITEABLE;
   if (pulType && !strcmp(pfsn, NDFS32)){
         *pulType |= DRIVE_VIRTUAL;
     }
@@ -251,7 +253,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
         *pulType |= DRIVE_RAMDISK;
     }
   if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV &&
-      (strcmp(pfsn, CDFS) && strcmp(pfsn, ISOFS))) {
+      (strcmp(pfsn, CDFS) || strcmp(pfsn, ISOFS))) {
     if (pulType)
       *pulType |= DRIVE_REMOTE;
 
@@ -277,6 +279,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 	 !strcmp(pfsn, FAT32) ||
          !strcmp(pfsn, RAMFS) ||
          !strcmp(pfsn, NDFS32) ||
+         !strcmp(pfsn, NTFS) ||
          !strcmp(pfsn, HPFS386))) {
       *pulType &= ~DRIVE_NOLONGNAMES;
     }
@@ -293,6 +296,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
       strcmp(pfsn, RAMFS) &&
       strcmp(pfsn, FAT32) &&
       strcmp(pfsn, NDFS32) &&
+      strcmp(pfsn, NTFS) &&
       strcmp(pfsn, HPFS386)) {
     if (pulType)
       (*pulType) |= DRIVE_NOLONGNAMES;	// Others can not have long names
@@ -641,12 +645,16 @@ VOID DriveFlagsOne(INT x)
     driveflags[x] |= DRIVE_RAMDISK;
     driveflags[x] &= (~DRIVE_REMOTE);
   }
+  if(!stricmp(FileSystem,NTFS))
+    driveflags[x] |= DRIVE_NOTWRITEABLE;
   if (strcmp(FileSystem, HPFS) &&
       strcmp(FileSystem, JFS) &&
       strcmp(FileSystem, CDFS) &&
       strcmp(FileSystem, ISOFS) &&
       strcmp(FileSystem, RAMFS) &&
       strcmp(FileSystem, FAT32) &&
+      strcmp(FileSystem, NTFS) &&
+      strcmp(FileSystem, NDFS32) &&
       strcmp(FileSystem, HPFS386)) {
     driveflags[x] |= DRIVE_NOLONGNAMES;
   }

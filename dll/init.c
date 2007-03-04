@@ -219,6 +219,7 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     CBSIFS = "CBSIFS";
     NDFS32 = "NDFS32";
     RAMFS = "RAMFS";
+    NTFS = "NTFS";
     /* end of strings */
     memset(&RGBBLACK, 0, sizeof(RGB2));
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = 204;

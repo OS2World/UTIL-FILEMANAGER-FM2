@@ -349,6 +349,7 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
 	!stricmp(FileSystem, FAT32) ||
         !stricmp(FileSystem, RAMFS) ||
         !stricmp(FileSystem, NDFS32) ||
+        !stricmp(FileSystem, NTFS) ||
         !stricmp(FileSystem, HPFS386)) {
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
