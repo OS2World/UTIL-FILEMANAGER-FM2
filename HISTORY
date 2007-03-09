@@ -1,4 +1,17 @@
 New stuff's at the top.  This list is not necessarily complete.
+3.05 beta 8 (pending)
+ o Add SelectDriveIcon function (Gregg)
+ o New drive flags - ramdisk, virtual drive & no drive stats (Gregg)
+ o New icons for ramdisk, virtual drives & directories (David)
+ o Prevent FM2 from saving a directory from a no prescan drive on close (Steven)
+ o Restore Make directory menu item to drive container context menu (Gregg)
+ o Add read only NTFS file support (requires NTFS.ifs) (Gregg)
+ o Removed most hard coded fonts from dialogs updated Helv font to Helvetica (Gregg)
+ o Moved fonts to string file (Gregg)
+ o Expanded FM2's recognition of image & archive file types (Gregg)
+ o Help file updates (Gregg)
+ o Source code cleanup (Gregg)
+ o Icons update appropriately with drive flag changes (Steven)
 
 3.05beta07
  o Support additional file systems types (Gregg)
