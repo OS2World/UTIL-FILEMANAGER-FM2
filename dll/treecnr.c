@@ -22,6 +22,8 @@
   29 Dec 06 GKY Fixed menu gray out for remote drives (added variable "remote")
   29 Dec 06 GKY Enabled edit of drive flags on "not ready" drives
   18 Feb 07 GKY More drive type and icon support
+  08 Mar 07 SHL Ensure drive icon updates after drive flags change
+  09 Mar 07 GKY Use SelectDriveIcon
 
 ***********************************************************************/
 
@@ -1806,21 +1808,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                   strcmp(FileSystem, NTFS) &&
                   strcmp(FileSystem, HPFS386)) {
 		driveflags[x] |= DRIVE_NOLONGNAMES;
-	      }
-	      if (driveflags[x] & DRIVE_CDROM)
-		pciP->rc.hptrIcon = hptrCDROM;
-
-	      else
-		pciP->rc.hptrIcon = (driveflags[x] & DRIVE_REMOVABLE) ?
-		  hptrRemovable :
-                      (driveflags[x] & DRIVE_REMOTE) ?
-                      hptrRemote :
-                      (driveflags[x] & DRIVE_VIRTUAL) ?
-		      hptrVirtual :
-                      (driveflags[x] & DRIVE_RAMDISK) ?
-                      hptrRamdisk :
-                      (driveflags[x] & DRIVE_ZIPSTREAM) ?
-		      hptrZipstrm : hptrDrive;
+              }
+              SelectDriveIcon(pciP);
 	      WinSendMsg(hwnd,
 			 CM_INVALIDATERECORD,
 			 MPFROMP(&pciP),
@@ -2548,39 +2537,26 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case IDM_UPDATE:
 	{
-	  PCNRITEM pci = NULL;
-
-	  pci = (PCNRITEM) CurrentRecord(hwnd);
-	  if (pci && (INT) pci != -1) {
+	  PCNRITEM pci = (PCNRITEM)CurrentRecord(hwnd);
+	  if (pci && (INT)pci != -1) {
+	    UINT driveflag = driveflags[toupper(*pci->szFileName) - 'A'];
 	    if (pci->attrFile & FILE_DIRECTORY) {
 	      if (pci->flags & RECFLAGS_UNDERENV)
 		break;
 	      UnFlesh(hwnd, pci);
-	      if (driveflags[toupper(*pci->szFileName) - 'A'] &
-		  (DRIVE_INVALID | DRIVE_NOPRESCAN)) {
+	      // Check if drive type might need update
+	      if ((driveflag & (DRIVE_INVALID | DRIVE_NOPRESCAN)) ||
+	          (~driveflag & DRIVE_NOPRESCAN && pci->rc.hptrIcon == hptrDunno))
+	      {
 		driveflags[toupper(*pci->szFileName) - 'A'] &=
 		  (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS | DRIVE_NOSTATS);
 		DriveFlagsOne(toupper(*pci->szFileName) - 'A');
-		if (driveflags[toupper(*pci->szFileName) - 'A'] &
-		    DRIVE_INVALID)
+	        driveflag = driveflags[toupper(*pci->szFileName) - 'A'];
+		if (driveflag & DRIVE_INVALID)
 		  pci->rc.hptrIcon = hptrDunno;
 		else {
-		  if (driveflags[toupper(*pci->szFileName) - 'A'] &
-		      DRIVE_CDROM)
-		    pci->rc.hptrIcon = hptrCDROM;
-		  else
-		    pci->rc.hptrIcon =
-		      (driveflags[toupper(*pci->szFileName) - 'A'] &
-		       DRIVE_REMOVABLE) ? hptrRemovable
-		      : (driveflags[toupper(*pci->szFileName) - 'A'] &
-			 DRIVE_REMOTE) ? hptrRemote
-		      : (driveflags[toupper(*pci->szFileName) - 'A'] &
-                         DRIVE_VIRTUAL) ? hptrVirtual
-                      : (driveflags[toupper(*pci->szFileName) - 'A'] &
-			 DRIVE_RAMDISK) ? hptrRamdisk
-                      : (driveflags[toupper(*pci->szFileName) - 'A'] &
-			 DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
+                  SelectDriveIcon(pci);
 		}
 		WinSendMsg(hwnd,
 			   CM_INVALIDATERECORD,
@@ -2589,13 +2565,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (hwndMain)
 		  PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
 	      }
-	      if (!
-		  (driveflags[toupper(*pci->szFileName) - 'A'] &
-		   DRIVE_INVALID))
+	      if (~driveflag & DRIVE_INVALID)
 		Flesh(hwnd, pci);
-	    }
-	    else {
-
 	    }
 	  }
 	}

@@ -27,6 +27,7 @@
   22 Oct 06 GKY Add NDFS32 support
   17 Feb 07 GKY Additional archive and image file tyoes identifed by extension
   17 Feb 07 GKY Add more drive types
+  09 Mar 07 GKY Use SelectDriveIcon
 
 ***********************************************************************/
 
@@ -1020,8 +1021,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      if (!DosQueryFSInfo((ULONG) x,
 				  FSIL_VOLSER, &volser, sizeof(volser))) {
 		driveserial[x] = volser.serial;
-	      }
-	    }
+              }
+            }
 	    else
 	      driveflags[x] |= DRIVE_INVALID;
 	    memset(&fsa4, 0, sizeof(FILESTATUS4));
@@ -1108,21 +1109,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      pci->attrFile = FILE_DIRECTORY;
 	      strcpy(pci->szDispAttr, "----D-");
 	      pci->pszDispAttr = pci->szDispAttr;
-	    }
-	    *pci->szFileName = toupper(*pci->szFileName);
-	    if (driveflags[x] & DRIVE_CDROM)
-	      pci->rc.hptrIcon = hptrCDROM;
-	    else
-	      pci->rc.hptrIcon = (driveflags[x] & DRIVE_REMOVABLE) ?
-		hptrRemovable :
-				  (driveflags[x] & DRIVE_VIRTUAL) ?
-				  hptrVirtual :
-		(driveflags[x] & DRIVE_REMOTE) ?
-		hptrRemote :
-				  (driveflags[x] & DRIVE_RAMDISK) ?
-				  hptrRamdisk :
- 				  (driveflags[x] & DRIVE_ZIPSTREAM) ?
- 				  hptrZipstrm : hptrDrive;
+            }
+            SelectDriveIcon(pci);
 	  }
 	  else {
 	    pci->rc.hptrIcon = hptrDunno;

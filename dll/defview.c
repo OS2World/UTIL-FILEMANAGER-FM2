@@ -70,7 +70,7 @@ BOOL ShowMultimedia(CHAR * filename)
   rc = pMMIOIdentifyFile(filename,
 			 0L,
 			 &mmFormatInfo,
-			 &fccStorageSystem, 0L, MMIO_FORCE_IDENTIFY_FF);
+			 &fccStorageSystem, 0L, MMIO_FORCE_IDENTIFY_SS | MMIO_FORCE_IDENTIFY_FF);
   /* free module handle */
   DosFreeModule(MMIOModHandle);
 

@@ -24,6 +24,7 @@
   17 Jul 06 SHL Use Runtime_Error
   17 Aug 06 SHL Complain nicer if state name does not exist
   18 Feb 07 GKY More drive type and icon support
+  08 Mar 07 SHL SaveDirCnrState: do not save state of NOPRESCAN volumes
 
 ***********************************************************************/
 
@@ -74,7 +75,7 @@ static PSZ pszSrcFile = __FILE__;
 static USHORT firsttool = 0;
 
 static BOOL CloseDirCnrChildren(HWND hwndClient);
-static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview);
+static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview);
 
 static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 					  MPARAM mp2)
@@ -2625,10 +2626,15 @@ BOOL CloseDirCnrChildren(HWND hwndClient)
   return ret;
 }
 
-BOOL SaveDirCnrState(HWND hwndClient, CHAR * name)
-{
-  /* returns TRUE if any directory container windows existed */
+/** Save directory container state
+ * @param hwndClient Client window handle
+ * @param pszStateName State name to save, NULL to save global state
+ * @returns TRUE if one or more directory container windows were saved
+ * @seealso RestoreDirCnrState
+ */
 
+BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
+{
   HENUM henum;
   HWND hwndChild, hwndDir, hwndC;
   ULONG numsaves = 0, flWindowAttr;
@@ -2648,23 +2654,25 @@ BOOL SaveDirCnrState(HWND hwndClient, CHAR * name)
 	  *directory = 0;
 	  WinSendMsg(hwndC, UM_CONTAINERDIR, MPFROMP(directory), MPVOID);
 	  if (*directory) {
-	    sprintf(s, "%s%sDirCnrPos.%lu", (name) ? name : NullStr,
-		    (name) ? "." : NullStr, numsaves);
+	   if (driveflags[toupper(*directory) - 'A'] & DRIVE_NOPRESCAN)
+	     continue;
+	    sprintf(s, "%s%sDirCnrPos.%lu", pszStateName ? pszStateName : NullStr,
+		    pszStateName ? "." : NullStr, numsaves);
 	    PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & swp,
 				sizeof(SWP));
 	    dcd =
 	      WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	    if (dcd) {
-	      sprintf(s, "%s%sDirCnrSort.%lu", (name) ? name : NullStr,
-		      (name) ? "." : NullStr, numsaves);
+	      sprintf(s, "%s%sDirCnrSort.%lu", pszStateName ? pszStateName : NullStr,
+		      pszStateName ? "." : NullStr, numsaves);
 	      PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & dcd->sortFlags,
 				  sizeof(INT));
-	      sprintf(s, "%s%sDirCnrFilter.%lu", (name) ? name : NullStr,
-		      (name) ? "." : NullStr, numsaves);
+	      sprintf(s, "%s%sDirCnrFilter.%lu", pszStateName ? pszStateName : NullStr,
+		      pszStateName ? "." : NullStr, numsaves);
 	      PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & dcd->mask,
 				  sizeof(MASK));
-	      sprintf(s, "%s%sDirCnrView.%lu", (name) ? name : NullStr,
-		      (name) ? "." : NullStr, numsaves);
+	      sprintf(s, "%s%sDirCnrView.%lu", pszStateName ? pszStateName : NullStr,
+		      pszStateName ? "." : NullStr, numsaves);
 	      flWindowAttr = dcd->flWindowAttr;
 	      if (!fLeaveTree && (flWindowAttr & CV_TREE)) {
 		flWindowAttr &= (~(CV_TREE | CV_ICON | CV_DETAIL | CV_TEXT));
@@ -2684,28 +2692,28 @@ BOOL SaveDirCnrState(HWND hwndClient, CHAR * name)
 	      PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & flWindowAttr,
 				  sizeof(ULONG));
 	    }
-	    sprintf(s, "%s%sDirCnrDir.%lu", (name) ? name : NullStr,
-		    (name) ? "." : NullStr, numsaves++);
+	    sprintf(s, "%s%sDirCnrDir.%lu", pszStateName ? pszStateName : NullStr,
+		    pszStateName ? "." : NullStr, numsaves++);
 	    PrfWriteProfileString(fmprof, FM3Str, s, directory);
 	    ret = TRUE;
 	  }
 	}
       }
     }
-  }
+  } // while
   WinEndEnumWindows(henum);
   if (ret) {
     if (WinQueryWindowPos(hwndTree, &swp)) {
-      sprintf(s, "%s%sLastTreePos", (name) ? name : NullStr,
-	      (name) ? "." : NullStr);
+      sprintf(s, "%s%sLastTreePos", pszStateName ? pszStateName : NullStr,
+	      pszStateName ? "." : NullStr);
       PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & swp, sizeof(SWP));
     }
-    sprintf(s, "%s%sNumDirsLastTime", (name) ? name : NullStr,
-	    (name) ? "." : NullStr);
+    sprintf(s, "%s%sNumDirsLastTime", pszStateName ? pszStateName : NullStr,
+	    pszStateName ? "." : NullStr);
     PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & numsaves, sizeof(ULONG));
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swp);
-    sprintf(s, "%s%sMySizeLastTime", (name) ? name : NullStr,
-	    (name) ? "." : NullStr);
+    sprintf(s, "%s%sMySizeLastTime", pszStateName ? pszStateName : NullStr,
+	    pszStateName ? "." : NullStr);
     PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & swp, sizeof(SWP));
   }
   return ret;
@@ -2745,10 +2753,15 @@ static VOID TransformSwp(PSWP pswp, double xtrans, double ytrans)
   }
 }
 
-static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
-{
-  /* returns TRUE if a directory container was opened */
+/** Restore directory container state
+ * @param hwndClient Client window handle
+ * @param pszStateName State name to restore, NULL to restore global state
+ * @returns TRUE if one or more directory containers were opened
+ * @seealso SaveDirCnrState
+ */
 
+static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
+{
   CHAR s[120], tdir[CCHMAXPATH];
   HWND hwndDir, hwndC;
   SWP swp, swpO, swpN;
@@ -2760,7 +2773,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
   size = sizeof(SWP);
   sprintf(s,
 	  "%s%sMySizeLastTime",
-	  (name) ? name : NullStr, (name) ? "." : NullStr);
+	  pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr);
   if (!PrfQueryProfileData(fmprof,
 			   FM3Str,
 			   s,
@@ -2768,7 +2781,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 			   &size) ||
       size != sizeof(SWP) || !swp.cx || !swp.cy)
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpO);
-  if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+  if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
     PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
   WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpN);
   if (swpN.fl & (SWP_MINIMIZE | SWP_HIDE))
@@ -2778,9 +2791,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
   size = sizeof(SWP);
   sprintf(s,
 	  "%s%sLastTreePos",
-	  (name) ? (name) : NullStr, (name) ? "." : NullStr);
+	  pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr);
   if (PrfQueryProfileData(fmprof, FM3Str, s, (PVOID) & swp, &size)) {
-    if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+    if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
       PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
     swp.hwnd = hwndTree;
     TransformSwp(&swp, xtrans, ytrans);
@@ -2811,25 +2824,25 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
   size = sizeof(ULONG);
   sprintf(s,
 	  "%s%sNumDirsLastTime",
-	  (name) ? name : NullStr, (name) ? "." : NullStr);
+	  pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr);
   if (PrfQueryProfileData(fmprof,
 			  FM3Str, s, (PVOID) & numsaves, &size) && numsaves) {
-    if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+    if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
       PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
     for (x = 0; x < numsaves; x++) {
       sprintf(s,
 	      "%s%sDirCnrPos.%lu",
-	      (name) ? name : NullStr, (name) ? "." : NullStr, x);
+	      pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr, x);
       size = sizeof(SWP);
       if (PrfQueryProfileData(fmprof, FM3Str, s, (PVOID) & swp, &size)) {
-	if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+	if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
 	  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 	sprintf(s,
 		"%s%sDirCnrDir.%lu",
-		(name) ? name : NullStr, (name) ? "." : NullStr, x);
+		pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr, x);
 	size = sizeof(tdir);
 	if (PrfQueryProfileData(fmprof, FM3Str, s, (PVOID) tdir, &size)) {
-	  if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+	  if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
 	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,
@@ -2843,7 +2856,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 		size = sizeof(INT);
 		sprintf(s,
 			"%s%sDirCnrSort.%lu",
-			(name) ? name : NullStr, (name) ? "." : NullStr, x);
+			pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr, x);
 		if (PrfQueryProfileData(fmprof,
 					FM3Str,
 					s,
@@ -2852,12 +2865,12 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 		  if (!dcd->sortFlags)
 		    dcd->sortFlags = SORT_PATHNAME;
 		}
-		if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+		if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
 		  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 		size = sizeof(MASK);
 		sprintf(s,
 			"%s%sDirCnrFilter.%lu",
-			(name) ? name : NullStr, (name) ? "." : NullStr, x);
+			pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr, x);
 		if (PrfQueryProfileData(fmprof,
 					FM3Str,
 					s,
@@ -2867,12 +2880,12 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 			       UM_FILTER, MPFROMP(dcd->mask.szMask), MPVOID);
 		}
 		*(dcd->mask.prompt) = 0;
-		if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+		if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
 		  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 		size = sizeof(ULONG);
 		sprintf(s,
 			"%s%sDirCnrView.%lu",
-			(name) ? name : NullStr, (name) ? "." : NullStr, x);
+			pszStateName ? pszStateName : NullStr, pszStateName ? "." : NullStr, x);
 		if (!noview) {
 		  if (PrfQueryProfileData(fmprof,
 					  FM3Str,
@@ -2896,7 +2909,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 		    }
 		  }
 		}
-		if (!name || !strcmp(name, GetPString(IDS_FM2TEMPTEXT)))
+		if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
 		  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 	      }
 	    }
@@ -2928,7 +2941,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, CHAR * name, BOOL noview)
 	  }
 	}
       }
-    }
+    } // for
   }
   return ret;
 }

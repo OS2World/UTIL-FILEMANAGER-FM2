@@ -36,7 +36,7 @@
   03 Nov 06 SHL Renames
   17 Jan 07 SHL Resize extractdir
   17 Feb 07 GKY Add more file system types
-  17 Feb 07 GKY Add FindDriveIcon to streamline update.c
+  17 Feb 07 GKY Add SelectDriveIcon to streamline update.c
 
 ***********************************************************************/
 
@@ -1091,7 +1091,7 @@ PCNRITEM FindParentRecord(HWND hwndCnr, PCNRITEM pciC);
 VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi);
 
 /* update.c */
-HPOINTER FindDriveIcon(PCNRITEM pci);
+HPOINTER SelectDriveIcon(PCNRITEM pci);
 PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 DIRCNRDATA * dcd);
 BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,

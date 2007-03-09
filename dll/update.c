@@ -14,7 +14,8 @@
   25 May 05 SHL Rework for FillInRecordFromFFB
   06 Jun 05 SHL Drop unused code
   22 Jul 06 SHL Use wrappers
-  Add FindDriveIcon
+  20 Feb 07 GKY Add SelectDriveIcon()
+  09 Mar 07 GKY Cleanup SelectDriveIcon using "driveflag =" from Steven
 
 ***********************************************************************/
 
@@ -36,31 +37,26 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(UPDATECNR,UpdateCnrRecord,UpdateCnrList)
 
-HPOINTER FindDriveIcon(PCNRITEM pci)
-                  {
-		      *pci->szFileName = toupper(*pci->szFileName);
-		      if (isalpha(*pci->szFileName) &&
-			  toupper(*pci->szFileName) > 'B') {
-			if (driveflags[toupper(*pci->szFileName) - 'A'] &
-			    DRIVE_CDROM)
-			  pci->rc.hptrIcon = hptrCDROM;
-			else
-			  pci->rc.hptrIcon =
-			    (driveflags[toupper(*pci->szFileName) - 'A'] &
-			      DRIVE_REMOVABLE) ? hptrRemovable
-                            :(driveflags[toupper(*pci->szFileName) - 'A'] &
-                              DRIVE_VIRTUAL) ? hptrVirtual
-                            :(driveflags[toupper(*pci->szFileName) - 'A'] &
-                              DRIVE_REMOTE) ? hptrRemote
-                            :(driveflags[toupper(*pci->szFileName) - 'A'] &
-                              DRIVE_RAMDISK) ? hptrRamdisk
-			    :(driveflags[toupper(*pci->szFileName) - 'A'] &
-			       DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
-		      }
-		      else
-                          pci->rc.hptrIcon = hptrFloppy;
-                      return pci->rc.hptrIcon;
-                  }
+HPOINTER SelectDriveIcon(PCNRITEM pci)
+{
+    UINT driveflag = driveflags[toupper(*pci->szFileName) - 'A'];
+    *pci->szFileName = toupper(*pci->szFileName);
+    	      if (isalpha(*pci->szFileName) &&
+    		  toupper(*pci->szFileName) > 'B') {
+    		if (driveflag & DRIVE_CDROM)
+		  pci->rc.hptrIcon = hptrCDROM;
+		else
+		  pci->rc.hptrIcon =
+		     (driveflag & DRIVE_REMOVABLE) ? hptrRemovable
+                    :(driveflag & DRIVE_VIRTUAL) ? hptrVirtual
+                    :(driveflag & DRIVE_REMOTE) ? hptrRemote
+                    :(driveflag & DRIVE_RAMDISK) ? hptrRamdisk
+		    :(driveflag & DRIVE_ZIPSTREAM) ? hptrZipstrm : hptrDrive;
+	      }
+	      else
+                pci->rc.hptrIcon = hptrFloppy;
+                return pci->rc.hptrIcon;
+}
 PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 DIRCNRDATA * dcd)
 {
@@ -148,7 +144,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	ffb.cchName = 0;
 	FillInRecordFromFFB(hwndCnr, pci, filename, &ffb, partial, dcd);
         if (strlen(pci->szFileName) < 4)
-        FindDriveIcon(pci);
+        SelectDriveIcon(pci);
 	oldemphasis = pci->rc.flRecordAttr & (CRA_SELECTED | CRA_CURSORED);
 	if (oldemphasis)
 	  WinSendMsg(hwndCnr,
@@ -184,7 +180,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 					      pci,
 					      filename, &ffb, partial, dcd);
           if (strlen(pci->szFileName) < 4)
-          FindDriveIcon(pci);
+          SelectDriveIcon(pci);
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
 	  ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -230,7 +226,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 		FillInRecordFromFFB(hwndCnr,
 				    pci, filename, &ffb, partial, dcd);
                 if (strlen(pci->szFileName) < 4)
-                FindDriveIcon(pci);
+                SelectDriveIcon(pci);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -277,7 +273,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 					      pci,
 					      filename, &ffb, partial, dcd);
           if (strlen(pci->szFileName) < 4)
-          FindDriveIcon(pci);
+          SelectDriveIcon(pci);
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
 	  ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -435,7 +431,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	    FillInRecordFromFFB(hwndCnr,
 				pci, filename[x], &ffb, partial, dcd);
             if (IsRoot(pci->szFileName))
-            FindDriveIcon(pci);
+            SelectDriveIcon(pci);
 	    WinSendMsg(hwndCnr,
 		       CM_SETRECORDEMPHASIS,
 		       MPFROMP(pci),
@@ -459,7 +455,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						  filename[x],
 						  &ffb, partial, dcd);
               if (strlen(pci->szFileName) < 4)
-              FindDriveIcon(pci);
+              SelectDriveIcon(pci);
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
 	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -513,7 +509,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 							filename[x],
 							&ffb, partial, dcd);
                     if (strlen(pci->szFileName) < 4)
-                    FindDriveIcon(pci);
+                    SelectDriveIcon(pci);
 		    memset(&ri, 0, sizeof(RECORDINSERT));
 		    ri.cb = sizeof(RECORDINSERT);
 		    ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -560,7 +556,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						    filename[x],
 						    &ffb, partial, dcd);
                 if (strlen(pci->szFileName) < 4)
-                FindDriveIcon(pci);
+                SelectDriveIcon(pci);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;
