@@ -163,7 +163,7 @@ MENU  INI_FRAME
 MENU INI_APPMENU
 {
   MENUITEM "~Filter appnames...",               IDM_FILTER
-  MENUITEM "~Edit dntry...\tCtrl + e",          INI_EDITENTRY
+  MENUITEM "~Edit entry...\tCtrl + e",          INI_EDITENTRY
   MENUITEM "~Add entry...\tCtrl + a",           INI_ADDENTRY
   MENUITEM "~Delete application\tCtrl + D",     INI_DELETEAPP
   MENUITEM "~Rename application...\tCtrl + R",  INI_RENAMEAPP

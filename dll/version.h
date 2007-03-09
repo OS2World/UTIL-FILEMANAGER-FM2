@@ -46,7 +46,7 @@
 #define VERMINOR       05
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-#define VERREALMINOR   "beta07 " __DATE__ " " __TIME__
+#define VERREALMINOR   "beta08 " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 

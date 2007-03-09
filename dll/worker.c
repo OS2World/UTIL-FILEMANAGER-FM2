@@ -1600,7 +1600,7 @@ VOID MassAction(VOID * args)
 	      }
 	    }
 	    break;
-	  }
+	  } // switch
 	  if (files) {
 	    Broadcast(hab2,
 		      wk->hwndCnr,
