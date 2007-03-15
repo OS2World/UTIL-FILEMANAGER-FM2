@@ -1,5 +1,5 @@
 New stuff's at the top.  This list is not necessarily complete.
-3.05 beta 8 (pending)
+3.05 beta 8 
  o Add SelectDriveIcon function (Gregg)
  o New drive flags - ramdisk, virtual drive & no drive stats (Gregg)
  o New icons for ramdisk, virtual drives & directories (David)
@@ -12,6 +12,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Help file updates (Gregg)
  o Source code cleanup (Gregg)
  o Icons update appropriately with drive flag changes (Steven)
+ o Fixed hang when viewing a file from an archive caused by a viewer as child + archiver activity visible settings. (Steven)
 
 3.05beta07
  o Support additional file systems types (Gregg)

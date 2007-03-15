@@ -30,6 +30,7 @@
   02 Aug 06 SHL Add logic to stop processing large archives
   23 Aug 06 SHL Integrate John Small's switch list title logic
   03 Nov 06 SHL Renames
+  14 Mar 07 SHL ArcObjWndProc/UM_ENTER: delay before starting viewer
 
 ***********************************************************************/
 
@@ -130,7 +131,8 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	else {
 	  if (*viewer) {
 	    ExecOnList((HWND) 0, viewer, WINDOWED | SEPARATE |
-		       ((fViewChild) ? CHILD : 0), NULL, list, NULL);
+		         (fViewChild ? CHILD : 0),
+		       NULL, list, NULL);
 	  }
 	  else
 	    StartMLEEditor(HWND_DESKTOP, 8 + 4 + 1, ad->arcname, hwnd);
@@ -142,8 +144,9 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
 	      hwnd, NULL, NULL, "%s %s%s%s", ad->info->test,
-	      ((needs_quoting(ad->arcname)) ? "\"" : NullStr),
-	      ad->arcname, ((needs_quoting(ad->arcname)) ? "\"" : NullStr));
+	      needs_quoting(ad->arcname) ? "\"" : NullStr,
+	      ad->arcname,
+	      needs_quoting(ad->arcname) ? "\"" : NullStr);
       break;
     }
     return 0;
@@ -233,7 +236,7 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
     if (!ret)
       ret = (SHORT) stricmp(pai1->szFileName, pai2->szFileName);
     if (ret && (sortFlags & SORT_REVERSE))
-      ret = (ret > 0) ? -1 : 1;
+      ret = ret > 0 ? -1 : 1;
     return ret;
   }
   return (SHORT) stricmp(pai1->szFileName, pai2->szFileName);
@@ -386,8 +389,10 @@ ReTry:
 	      "%s /C %s %s%s%s > %s",
 	      p,
 	      info->list,
-	      (needs_quoting(arcname)) ? "\"" : NullStr,
-	      arcname, (needs_quoting(arcname)) ? "\"" : NullStr, arctemp);
+	      needs_quoting(arcname) ? "\"" : NullStr,
+	      arcname,
+	      needs_quoting(arcname) ? "\"" : NullStr,
+	      arctemp);
     }
     else {
       fp = xfopen(arctemp, "w", pszSrcFile, __LINE__);
@@ -414,8 +419,9 @@ ReTry:
 	  else {
 	    runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
 		    hwndCnr, NULL, NULL, "%s %s%s%s", info->list,
-		    (needs_quoting(arcname)) ? "\"" : NullStr, arcname,
-		    (needs_quoting(arcname)) ? "\"" : NullStr);
+		    needs_quoting(arcname) ? "\"" : NullStr,
+		    arcname,
+		    needs_quoting(arcname) ? "\"" : NullStr);
 	    oldstdout = fileno(stdout);
 	    DosError(FERR_DISABLEHARDERR);
 	    DosDupHandle(newstdout, &oldstdout);
@@ -544,9 +550,9 @@ ReTry:
 #ifdef DEBUG
 	    saymsg(MB_ENTER, hwndCnr, DEBUG_STRING,
 		   "fname: %s\r\rpp: %s\r\rp: %s\r\rlonename: %s\r\rhighest: %ld\r\rx: %ld\r\rfdate: %s",
-		   (fname) ? fname : "NULL",
-		   (pp) ? pp : "NULL",
-		   (p) ? p : "NULL",
+		   fname ? fname : "NULL",
+		   pp ? pp : "NULL",
+		   p ? p : "NULL",
 		   lonename, highest, x, (fdate) ? fdate : "NULL");
 #endif
 
@@ -573,7 +579,7 @@ ReTry:
 		strcpy(pai->szDate, fdate);
 	      pai->pszFileName = pai->szFileName;
 	      pai->rc.pszIcon = pai->pszFileName;
-	      pai->rc.hptrIcon = ((pai->flags & ARCFLAGS_REALDIR) != 0) ?
+	      pai->rc.hptrIcon = (pai->flags & ARCFLAGS_REALDIR) != 0 ?
 		hptrDir : hptrFile;
 	      pai->pszDate = pai->szDate;
 	      if (osize)
@@ -637,10 +643,10 @@ ReTry:
 	DosBeep(750, 50);		// wake up user
 	sprintf(errstr, GetPString(IDS_ARCERRORINFOTEXT),
 		arcname,
-		(!gotstart) ? GetPString(IDS_NOGOTSTARTTEXT) : NullStr,
-		(!numarcfiles) ? GetPString(IDS_NOARCFILESFOUNDTEXT) :
+		!gotstart ? GetPString(IDS_NOGOTSTARTTEXT) : NullStr,
+		!numarcfiles ? GetPString(IDS_NOARCFILESFOUNDTEXT) :
 		NullStr,
-		(!gotend) ? GetPString(IDS_NOENDOFLISTTEXT) : NullStr);
+		!gotend ? GetPString(IDS_NOENDOFLISTTEXT) : NullStr);
 	memset(&ad, 0, sizeof(ARCDUMP));
 	ad.info = info;
 	strcpy(ad.listname, arctemp);
@@ -942,7 +948,7 @@ MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DM_DRAGOVER:
 	if (AcceptOneDrop(mp1, mp2))
 	  return MRFROM2SHORT(DOR_DROP, DO_MOVE);
-	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid        */
+	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid */
       case DM_DROPHELP:
 	DropHelp(mp1, mp2, hwnd, GetPString(IDS_ARCCNRFOLDERDROPHELPTEXT));
 	return 0;
@@ -1202,14 +1208,16 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%s %s %s\r[%s]",dcd->info->extract,dcd->arcname,membername,construct);
 	  runemf2(SEPARATE | WINDOWED | WAIT |
-		  ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)) |
-		  WAIT, dcd->hwndClient, construct, NULL, "%s %s%s%s %s%s%s",
+		    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+		    WAIT,
+		  dcd->hwndClient, construct, NULL, "%s %s%s%s %s%s%s",
 		  dcd->info->extract,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
 		  dcd->arcname,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
-		  (needs_quoting(membername)) ? "\"" : NullStr,
-		  membername, (needs_quoting(membername)) ? "\"" : NullStr);
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
+		  needs_quoting(membername) ? "\"" : NullStr,
+		  membername,
+		  needs_quoting(membername) ? "\"" : NullStr);
 	  if (*construct && construct[strlen(construct) - 1] != '\\')
 	    strcat(construct, "\\");
 	  strcat(construct, membername);
@@ -1328,16 +1336,19 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  return 0;
 	}
 	runemf2(SEPARATE | WINDOWED |
-		((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)) |
-		WAIT, dcd->hwndClient, dcd->workdir, NULL, "%s %s%s%s %s%s%s",
-		((dcd->info->exwdirs) ? dcd->info->exwdirs :
-		 dcd->info->extract),
-		(needs_quoting(dcd->arcname)) ? "\"" : NullStr,
+		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+		  WAIT,
+		dcd->hwndClient, dcd->workdir, NULL, "%s %s%s%s %s%s%s",
+		dcd->info->exwdirs ? dcd->info->exwdirs :
+				     dcd->info->extract,
+		needs_quoting(dcd->arcname) ? "\"" : NullStr,
 		dcd->arcname,
-		(needs_quoting(dcd->arcname)) ? "\"" : NullStr,
-		(needs_quoting(s)) ? "\"" : NullStr,
-		s, (needs_quoting(s)) ? "\"" : NullStr);
+		needs_quoting(dcd->arcname) ? "\"" : NullStr,
+		needs_quoting(s) ? "\"" : NullStr,
+		s,
+                needs_quoting(s) ? "\"" : NullStr);
 
+	// printf("%s %d runemf2 returned\n", __FILE__, __LINE__); fflush(stdout);	// 10 Mar 07 SHL
 	if (!dcd->info->exwdirs) {
 	  p = s;
 	  p = strrchr(s, '\\');
@@ -1356,9 +1367,13 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *p = '\\';
 	  p++;
 	}
+	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
 	free(s);
-	if (IsFile(filename) == 1)
+	if (IsFile(filename) == 1) {
+	  if (fViewChild)
+	    DosSleep(250);		// Allow unzip session to finish closing 14 Mar 07 SHL
 	  WinSendMsg(dcd->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
+	}
       }
     }
     return 0;
@@ -1429,9 +1444,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (!li->list[x] || strlen(szBuffer) +
 		  strlen(li->list[x]) + 5 > 1024) {
 		runemf2(SEPARATE | WINDOWED |
-			((fArcStuffVisible) ? 0 :
-			 (BACKGROUND | MINIMIZED)) |
-			WAIT, hwnd, NULL, NULL, "%s", szBuffer);
+			  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+			  WAIT,
+			hwnd, NULL, NULL, "%s", szBuffer);
 		*p = 0;
 	      }
 	      strcat(szBuffer, " ");
@@ -1499,8 +1514,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      z = x;
 	      runemf2(SEPARATE | WINDOWED |
-		      ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)) |
-		      WAIT, hwnd, NullStr, NULL, "%s", cl);
+			(fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+			WAIT,
+		      hwnd, NullStr, NULL, "%s", cl);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    PostMsg(dcd->hwndCnr, UM_RESCAN, MPFROMSHORT(1), MPVOID);
@@ -1600,9 +1616,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					&& li->type == IDM_MCIPLAY)
 				       && !li->info->exwdirs)) ? li->info->
 		    extract : li->info->exwdirs,
-		    (needs_quoting(li->arcname)) ? "\"" : NullStr,
+		    needs_quoting(li->arcname) ? "\"" : NullStr,
 		    li->arcname,
-		    (needs_quoting(li->arcname)) ? "\"" : NullStr);
+		    needs_quoting(li->arcname) ? "\"" : NullStr);
 	    endofit = &cl[strlen(cl)];
 	    z = 0;
 	    do {
@@ -1623,8 +1639,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      z = x;
 	      runemf2(SEPARATE | WINDOWED |
-		      (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)) |
-		      WAIT, hwnd, li->targetpath, NULL, "%s", cl);
+			(fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+			WAIT,
+		      hwnd, li->targetpath, NULL, "%s", cl);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
@@ -1750,7 +1767,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  fclose(fp);
 		  runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, NULL,
 			  NULL, "%sFM2PLAY.EXE /@$FM2PLAY.$$$",
-			  (fAddUtils) ? "UTILS\\" : NullStr);
+			  fAddUtils ? "UTILS\\" : NullStr);
 		}
 	      }
 	      else if (li->type == IDM_PRINT) {
@@ -1847,7 +1864,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  if (*p) {
 		    sprintf(fullname, "%s%s%s", dcd->directory,
 			    (dcd->directory[strlen(dcd->directory) - 1] ==
-			     '\\') ? NullStr : "\\", p);
+			       '\\') ? NullStr : "\\",
+			    p);
 		    if (IsFile(fullname) != -1)
 		      if (AddToList(fullname, &list2, &numfiles, &numalloced))
 			break;
@@ -2108,9 +2126,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		tf,
 		*tb ? " / " : NullStr,
 		tb,
-		(*dcd->mask.szMask) ? " (" : NullStr,
-		(*dcd->mask.szMask) ? dcd->mask.szMask : NullStr,
-		(*dcd->mask.szMask) ? ")" : NullStr, dcd->arcname);
+		*dcd->mask.szMask ? " (" : NullStr,
+		*dcd->mask.szMask ? dcd->mask.szMask : NullStr,
+		*dcd->mask.szMask ? ")" : NullStr, dcd->arcname);
 	WinSetWindowText(hwndStatus, s);
 	if (!ParentIsDesktop(hwnd, dcd->hwndParent)) {
 	  pci = WinSendMsg(hwnd,
@@ -2375,7 +2393,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	{
 	  ULONG wmsg;
 
-	  wmsg = (SHORT1FROMMP(mp1) == 0) ? UM_FILESMENU : UM_VIEWSMENU;
+	  wmsg = SHORT1FROMMP(mp1) == 0 ? UM_FILESMENU : UM_VIEWSMENU;
 	  PortholeInit((HWND) WinSendMsg(dcd->hwndClient,
 					 wmsg, MPVOID, MPVOID), mp1, mp2);
 	}
@@ -2407,7 +2425,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_VIEWSMENU:
 	WinCheckMenuItem((HWND) mp2,
-			 IDM_MINIICONS, ((dcd->flWindowAttr & CV_MINI) != 0));
+			 IDM_MINIICONS, (dcd->flWindowAttr & CV_MINI) != 0);
 	WinEnableMenuItem((HWND) mp2,
 			  IDM_RESELECT, (dcd->lastselection != NULL));
 	break;
@@ -2424,8 +2442,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	/*
 	 * add switchlist entries to end of pulldown menu
 	 */
-	SetupWinList((HWND) mp2,
-		     (hwndMain) ? hwndMain : (HWND) 0, dcd->hwndFrame);
+	SetupWinList((HWND)mp2,
+		     hwndMain ? hwndMain : (HWND)0, dcd->hwndFrame);
 	break;
       }
       dcd->hwndLastMenu = (HWND) mp2;
@@ -2514,7 +2532,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_FOLDERAFTEREXTRACT:
-	fFolderAfterExtract = (fFolderAfterExtract) ? FALSE : TRUE;
+	fFolderAfterExtract = fFolderAfterExtract ? FALSE : TRUE;
 	PrfWriteProfileData(fmprof, appname, "FolderAfterExtract",
 			    &fFolderAfterExtract, sizeof(BOOL));
 	break;
@@ -2684,12 +2702,12 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_ARCEXTRACT:
 	if (dcd->info->extract)
 	  runemf2(SEPARATE | WINDOWED |
-		  ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)),
+		    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
 		  hwnd, dcd->directory, NULL, "%s %s%s%s",
 		  dcd->info->extract,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
 		  dcd->arcname,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr);
 	if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTEXIT)
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	break;
@@ -2698,12 +2716,12 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_ARCEXTRACTWDIRS:
 	if (dcd->info->exwdirs)
 	  runemf2(SEPARATE | WINDOWED |
-		  ((fArcStuffVisible) ? 0 : (BACKGROUND | MINIMIZED)),
+		    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
 		  hwnd, dcd->directory, NULL, "%s %s%s%s",
 		  dcd->info->exwdirs,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
 		  dcd->arcname,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr);
 	if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTWDIRSEXIT)
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	break;
@@ -2772,9 +2790,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (dcd->info->test)
 	  runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
 		  hwnd, NULL, NULL, "%s %s%s%s", dcd->info->test,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
 		  dcd->arcname,
-		  (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
+		  needs_quoting(dcd->arcname) ? "\"" : NullStr);
 	break;
 
       case IDM_REFRESH:
@@ -2919,8 +2937,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PDRAGINFO pDInfo;
 
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	}
 	return 0;
 
@@ -2928,15 +2946,15 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case CN_DRAGOVER:
 	if (mp2) {
 
-	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM   */
-	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO   */
+	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM */
+	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO */
 	  PARCITEM pci;
 
 	  pci = (PARCITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  if (SHORT1FROMMP(mp1) == CN_DRAGAFTER)
 	    pci = NULL;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
+	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
 	  if (*dcd->arcname) {
 	    if ((driveflags[toupper(*dcd->arcname) - 'A'] &
 		 DRIVE_NOTWRITEABLE) || !dcd->info || !dcd->info->create) {
@@ -2948,18 +2966,18 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    DrgFreeDraginfo(pDInfo);
 	    return MRFROM2SHORT(DOR_NODROP, 0);
 	  }
-	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM       */
-				       0);	/* Index to DRAGITEM     */
+	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
+				       0);	/* Index to DRAGITEM */
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   DRM_OS2FILE,	/* mechanisms and data   */
+			   DRM_OS2FILE,	/* mechanisms and data */
 			   NULL) && !(pDItem->fsControl & DC_PREPARE)) {
 	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
-	    return (MRFROM2SHORT(DOR_DROP,	/* Return okay to drop   */
-				 ((fCopyDefault) ? DO_COPY : DO_MOVE)));
+	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
+				fCopyDefault ? DO_COPY : DO_MOVE);
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	}
-	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid        */
+	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid */
 
       case CN_INITDRAG:
 	if (mp2) {
@@ -3010,7 +3028,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
 	  DosBeep(50, 100);		// fixme to know why beep?
 	  if (li) {
-	    li->type = (li->type == DO_MOVE) ? IDM_ARCHIVEM : IDM_ARCHIVE;
+	    li->type = li->type == DO_MOVE ? IDM_ARCHIVEM : IDM_ARCHIVE;
 	    strcpy(li->targetpath, dcd->arcname);
 	    if (!li->list ||
 		!li->list[0] ||
@@ -3064,7 +3082,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PARCITEM pci;
 	  CHAR s[CCHMAXPATHCOMP + 91], tf[81], tb[81];
 
-	  pci = (PARCITEM) ((pre) ? pre->pRecord : NULL);
+	  pci = (PARCITEM)(pre ? pre->pRecord : NULL);
 	  if (!pci) {
 	    if (!ParentIsDesktop(hwnd, dcd->hwndParent)) {
 	      if (hwndStatus2)
@@ -3187,8 +3205,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     EmptyCnr(hwnd);
     break;
   }
-  return (dcd && dcd->oldproc) ? dcd->oldproc(hwnd, msg, mp1, mp2) :
-    PFNWPCnr(hwnd, msg, mp1, mp2);
+  return dcd && dcd->oldproc ? dcd->oldproc(hwnd, msg, mp1, mp2) :
+			       PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
 HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
@@ -3304,11 +3322,11 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	     (driveflags[toupper(*dcd->directory) - 'A'] &
 	      DRIVE_NOTWRITEABLE)))
 	  save_dir2(dcd->directory);
-	dcd->hwndParent = (hwndParent) ? hwndParent : HWND_DESKTOP;
+	dcd->hwndParent = hwndParent ? hwndParent : HWND_DESKTOP;
 	dcd->hwndFrame = hwndFrame;
 	dcd->hwndClient = hwndClient;
-	dcd->amextracted = ((flags & 1) != 0);
-	dcd->dontclose = ((flags & 4) != 0);
+	dcd->amextracted = (flags & 1) != 0;
+	dcd->dontclose = (flags & 4) != 0;
 	dcd->info = info;
 	dcd->sortFlags = DefArcSortFlags;
 	{
