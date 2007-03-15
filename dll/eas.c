@@ -308,14 +308,13 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    eap = xmalloc(sizeof(EAPROCDATA), pszSrcFile, __LINE__);
+    eap = xmallocz(sizeof(EAPROCDATA), pszSrcFile, __LINE__);
     if (!eap) {
       WinDismissDlg(hwnd, 0);
       break;
     }
     hptrIcon = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, EA_FRAME);
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(hptrIcon), MPVOID);
-    memset(eap, 0, sizeof(EAPROCDATA));
     eap->size = sizeof(EAPROCDATA);
     eap->list = (CHAR **) mp2;
     WinSetWindowPtr(hwnd, 0, (PVOID) eap);
