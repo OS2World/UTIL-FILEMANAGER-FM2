@@ -1081,22 +1081,23 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	switch_to(pszDirectory);
       }
 
-     // printf("%s %d DosStartsession thread 0x%x data\n ",
+      // printf("%s %d DosStartsession thread 0x%x data\n ",
       //       __FILE__, __LINE__,ptib->tib_ordinal); fflush(stdout);	// 10 Mar 07 SHL hang
-     // printf(" %d %d %d %s %s %s %d %d\n %s %x %x\n",
+      // printf(" %d %d %d %s %s %s %d %d\n %s %x %x\n",
       //       sdata.Length , sdata.Related, sdata.FgBg, sdata.PgmName,
-	//     sdata.PgmInputs, sdata.TermQ, sdata.InheritOpt,
-	  //   sdata.SessionType, szTermQName,
-       //   hTermQ, hTermQSem); fflush(stdout);
+      //     sdata.PgmInputs, sdata.TermQ, sdata.InheritOpt,
+      //   sdata.SessionType, szTermQName,
+      //   hTermQ, hTermQSem); fflush(stdout);
       ret = DosStartSession(&sdata, &ulSessID, &sessPID);
-      if (type & WAIT) {
-       // printf("%s %d DosStartession thread 0x%x rc = %d sess = %u pid = 0x%x\n",
-       //        __FILE__, __LINE__, ptib->tib_ordinal,ret, ulSessID, sessPID); fflush(stdout);	// 10 Mar 07 SHL hang
-      }
-      else {
-       // printf("%s %d DosStartession thread 0x%x nowait rc = %d\n",
-	 //      __FILE__, __LINE__, ptib->tib_ordinal,ret); fflush(stdout);	// 10 Mar 07 SHL hang
-      }
+
+      // if (type & WAIT) {
+      // printf("%s %d DosStartession thread 0x%x rc = %d sess = %u pid = 0x%x\n",
+      //        __FILE__, __LINE__, ptib->tib_ordinal,ret, ulSessID, sessPID); fflush(stdout);	// 10 Mar 07 SHL hang
+      // }
+      // else {
+      // printf("%s %d DosStartession thread 0x%x nowait rc = %d\n",
+      //      __FILE__, __LINE__, ptib->tib_ordinal,ret); fflush(stdout);	// 10 Mar 07 SHL hang
+      // }
 
       if (pszDirectory && *pszDirectory)
 	switch_to(szSavedir);
@@ -1112,7 +1113,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	if (!useTermQ) {
 	  STATUSDATA sd;
 	  // Could not create queue - fallback - fixme to be gone?
-	 // printf("%s %d waiting wo/termq\n", __FILE__, __LINE__); fflush(stdout);	// 12 Mar 07 SHL hang
+	  // printf("%s %d waiting wo/termq\n", __FILE__, __LINE__); fflush(stdout);	// 12 Mar 07 SHL hang
 
 	  memset(&sd, 0, sizeof(sd));
 	  sd.Length = (USHORT) sizeof(sd);
@@ -1124,8 +1125,8 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	    if (DosSetSession(ulSessID, &sd))	// Check if session gone (i.e. finished)
 	      break;
 	    if (ctr > 10) {
-	   //   printf("%s %d thread 0x%x showing slow sess %u pid 0x%x\n",
-	     //        __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,sessPID); fflush(stdout);	// 12 Mar 07 SHL
+	      //   printf("%s %d thread 0x%x showing slow sess %u pid 0x%x\n",
+	      //        __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,sessPID); fflush(stdout);	// 12 Mar 07 SHL
 	      ShowSession(hwnd, sessPID);	// Show every 2 seconds
 	      ctr = 0;
 	    }
@@ -1144,12 +1145,10 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	    }
 	    else {
 	      if (ctr == 20) {
-	       // printf("%s %d thread 0x%x showing slow sess %u pid 0x%x\n",
+		// printf("%s %d thread 0x%x showing slow sess %u pid 0x%x\n",
 		//       __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,sessPID); fflush(stdout);
 		ShowSession(hwnd, sessPID);		// Show long running session
 	      }
-	     // printf("%s %d thread 0x%x waiting for slow sess %u pid 0x%x\n",
-	       //      __FILE__, __LINE__,ptib->tib_ordinal,ulSessID, sessPID); fflush(stdout);
 	      rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
 				DCWW_WAIT, &bPriority, 0);
 	    }
@@ -1161,17 +1160,16 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	      continue;
 	    }
 
-	  //  printf("%s %d DosReadQueue thread 0x%x sess %u sessRC %u rq.pid 0x%x rq.data 0x%x\n",
+	    //  printf("%s %d DosReadQueue thread 0x%x sess %u sessRC %u rq.pid 0x%x rq.data 0x%x\n",
 	    //       __FILE__, __LINE__,ptib->tib_ordinal,pTermInfo->usSessID,pTermInfo->usRC,rq.pid, rq.ulData); fflush(stdout);
 
-	    // might be looping here if confused about session id - fixme to ensure not possible?
 	    if (pTermInfo->usSessID == ulSessID)
 	      break;			// Our session is done
 
 	    // Requeue session for other thread
 	    {
 	      static ULONG ulLastSessID;
-	     // printf("%s %d requeue thread 0x%x our sess %u term sess %u term rc %u\n",
+	      // printf("%s %d requeue thread 0x%x our sess %u term sess %u term rc %u\n",
 	      //       __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,pTermInfo->usSessID,pTermInfo->usRC); fflush(stdout);
 	      // fixme to be gone when no longer needed for debug?
 	      if (ulLastSessID) {
@@ -1187,8 +1185,8 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  } // for
 
 	  ret = pTermInfo->usRC == 0;		// Set 1 if rc 0 else 0
-	 // printf("%s %d thread 0x%x term for sess %u\n",
-	   //      __FILE__, __LINE__,ptib->tib_ordinal,ulSessID);fflush(stdout);
+	  // printf("%s %d thread 0x%x term for sess %u\n",
+	  //      __FILE__, __LINE__,ptib->tib_ordinal,ulSessID);fflush(stdout);
 	  DosFreeMem(pTermInfo);
 	}
       } // if wait

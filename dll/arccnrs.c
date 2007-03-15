@@ -131,7 +131,7 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	else {
 	  if (*viewer) {
 	    ExecOnList((HWND) 0, viewer, WINDOWED | SEPARATE |
-		         (fViewChild ? CHILD : 0),
+			 (fViewChild ? CHILD : 0),
 		       NULL, list, NULL);
 	  }
 	  else
@@ -378,9 +378,10 @@ ReTry:
       *p = 0;
     DosError(FERR_DISABLEHARDERR);
     if (!DosQAppType(s, &apptype) &&
-	((apptype & FAPPTYP_DOS) ||
-	 (apptype & FAPPTYP_WINDOWSREAL) ||
-	 (apptype & FAPPTYP_WINDOWSPROT) || (apptype & 0x1000))) {
+	(apptype & FAPPTYP_DOS ||
+	 apptype & FAPPTYP_WINDOWSREAL ||
+	 apptype & FAPPTYP_WINDOWSPROT ||
+	 apptype & FAPPTYP_WINDOWSPROT31)) {
       p = GetCmdSpec(TRUE);
       runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
 	      hwndCnr,
@@ -1346,7 +1347,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		needs_quoting(dcd->arcname) ? "\"" : NullStr,
 		needs_quoting(s) ? "\"" : NullStr,
 		s,
-                needs_quoting(s) ? "\"" : NullStr);
+		needs_quoting(s) ? "\"" : NullStr);
 
 	// printf("%s %d runemf2 returned\n", __FILE__, __LINE__); fflush(stdout);	// 10 Mar 07 SHL
 	if (!dcd->info->exwdirs) {
@@ -2156,8 +2157,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  WinSetWindowText(hwndAttr, NullStr);
 	}
       }
-      if ((dcd->arcfilled &&
-	   !dcd->totalfiles) || !IsArcThere(hwnd, dcd->arcname))
+      if ((dcd->arcfilled && !dcd->totalfiles) ||
+          !IsArcThere(hwnd, dcd->arcname))
 	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     }
     return 0;
@@ -2525,9 +2526,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  hwndActive = WinQueryFocus(HWND_DESKTOP);
 	  WinSetFocus(HWND_DESKTOP,
-		      ((hwndActive == hwnd) ?
-		       WinWindowFromID(dcd->hwndClient, ARC_EXTRACTDIR) :
-		       hwnd));
+		      hwndActive == hwnd ?
+		        WinWindowFromID(dcd->hwndClient, ARC_EXTRACTDIR) :
+		        hwnd);
 	}
 	break;
 
@@ -2673,9 +2674,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (ParentIsDesktop(hwnd, dcd->hwndParent) && !fAutoTile &&
 	      (!fExternalCollector && !strcmp(realappname, FM3Str)))
 	    GetNextWindowPos(dcd->hwndParent, &swp, NULL, NULL);
-	  hwndC = StartCollector((fExternalCollector ||
-				  strcmp(realappname, FM3Str)) ?
-				 HWND_DESKTOP : dcd->hwndParent, 4);
+	  hwndC = StartCollector(fExternalCollector ||
+				   strcmp(realappname, FM3Str) ?
+				     HWND_DESKTOP : dcd->hwndParent, 4);
 	  if (hwndC) {
 	    if (!ParentIsDesktop(hwnd, dcd->hwndParent) && !fAutoTile &&
 		(!fExternalCollector && !strcmp(realappname, FM3Str)))
