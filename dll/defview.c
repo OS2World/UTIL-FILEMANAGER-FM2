@@ -4,12 +4,14 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2006 Steven H.Levine
+  Copyright (c) 2003, 2007 Steven H.Levine
 
   Default file viewer
 
   20 Nov 03 SHL ShowMultimedia: try to convince fmplay to not play exes (Gregg Young)
   14 Jul 06 SHL Use Runtime_Error
+  18 Mar 07 GKY Fixed misindentifycation of nonmultimedia files by ShowMultiMedia
+  18 Mar 07 GKY Open mp3, ogg & flac files with OS2 object default since fm2play fails
 
 ***********************************************************************/
 
@@ -40,9 +42,16 @@ BOOL ShowMultimedia(CHAR * filename)
   CHAR loaderror[CCHMAXPATH];
   HMODULE MMIOModHandle = NULLHANDLE;
   PMMIOIDENTIFYFILE pMMIOIdentifyFile = NULL;
+  PMMIOGETINFO pMMIOGetInfo = NULL;
+  PMMIOCLOSE pMMIOClose = NULL;
+  PMMIOOPEN pMMIOOpen = NULL;
+  MMIOINFO mmioinfo;
+  HMMIO  hmmio;
   FOURCC fccStorageSystem = 0;
   MMFORMATINFO mmFormatInfo;
-  APIRET rc;
+  APIRET rc, rc1;
+  HWND hwnd;
+  char *p;
 
   if (no_mmos2 || !filename || !*filename)
     return played;
@@ -62,16 +71,85 @@ BOOL ShowMultimedia(CHAR * filename)
       no_mmos2 = TRUE;
       return played;
     }
+    if (DosQueryProcAddr(MMIOModHandle,
+			 0,
+			 "mmioGetInfo", (PFN *) & pMMIOGetInfo)) {
+      DosFreeModule(MMIOModHandle);
+      no_mmos2 = TRUE;
+      return played;
+    }
+    if (DosQueryProcAddr(MMIOModHandle,
+			 0,
+			 "mmioClose", (PFN *) & pMMIOClose)) {
+      DosFreeModule(MMIOModHandle);
+      no_mmos2 = TRUE;
+      return played;
+    }
+    if (DosQueryProcAddr(MMIOModHandle,
+			 0,
+			 "mmioOpen", (PFN *) & pMMIOOpen)) {
+      DosFreeModule(MMIOModHandle);
+      no_mmos2 = TRUE;
+      return played;
+    }
   }
 
   /* attempt to identify the file using MMPM/2 */
+  //printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+  memset( &mmioinfo, '\0', sizeof(MMIOINFO) );
+  /*Eliminate non multimedia files*/
+  hmmio = pMMIOOpen(filename,
+                    &mmioinfo,
+                    MMIO_READ);
+  /*printf("%s %d %d %d %d %d\n",
+          __FILE__, __LINE__,mmioinfo.ulFlags, mmioinfo.ulErrorRet,
+         mmioinfo.pIOProc, mmioinfo.aulInfo); fflush(stdout);*/
+         if (!hmmio){
+             p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
+	  if (!p)
+              p = ".";
+             /* printf("%s %d %s\n",
+              __FILE__, __LINE__, p); fflush(stdout);*/
+          if  (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC")){
+             hmmio = pMMIOOpen(filename,
+                    &mmioinfo,
+                    MMIO_READ | MMIO_NOIDENTIFY);
+             if (!hmmio){
+                 DosFreeModule(MMIOModHandle);
+                 printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+                 return played;
+             }
+          }
+          else {
+             DosFreeModule(MMIOModHandle);
+                // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+                 return played;
+          }
+         }
+         if (!hmmio){
+                 DosFreeModule(MMIOModHandle);
+                // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+                 return played;
+             }
+
+  rc1 = pMMIOGetInfo( hmmio,
+              &mmioinfo,
+                     0L);   //
+  //printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
   memset(&mmFormatInfo, 0, sizeof(MMFORMATINFO));
   mmFormatInfo.ulStructLen = sizeof(MMFORMATINFO);
   rc = pMMIOIdentifyFile(filename,
-			 0L,
+			 &mmioinfo,
 			 &mmFormatInfo,
-			 &fccStorageSystem, 0L, MMIO_FORCE_IDENTIFY_SS | MMIO_FORCE_IDENTIFY_FF);
+                         &fccStorageSystem, 0L,
+                         MMIO_FORCE_IDENTIFY_FF);
+   /*printf("%s %d %d %d %d\n %d %d %d %s\n",
+          __FILE__, __LINE__,mmioinfo.ulFlags,
+          mmioinfo.pIOProc, mmioinfo.aulInfo,
+          mmFormatInfo.fccIOProc, mmFormatInfo.fccIOProc,
+          mmFormatInfo.ulIOProcType, mmFormatInfo.szDefaultFormatExt); fflush(stdout);*/
   /* free module handle */
+  rc1 = pMMIOClose(hmmio, 0L);
   DosFreeModule(MMIOModHandle);
 
   /* if identified and not FOURCC_DOS */
@@ -88,13 +166,21 @@ BOOL ShowMultimedia(CHAR * filename)
       played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
-      /* is a multimedia file (WAV, MID, AVI, etc.) */
-      runemf2(SEPARATE | WINDOWED,
-	      HWND_DESKTOP,
-	      NULL,
-	      NULL,
-	      "%sFM2PLAY.EXE \"%s\"",
-	      (fAddUtils) ? "UTILS\\" : NullStr, filename);
+        /* is a multimedia file (WAV, MID, AVI, etc.) */
+        p = strrchr(filename, '.');
+	  if (!p)
+              p = ".";
+             /* printf("%s %d %s\n",
+              __FILE__, __LINE__, p); fflush(stdout);*/
+          if  (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC"))
+              OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
+          else
+              runemf2(SEPARATE | WINDOWED,
+	              HWND_DESKTOP,
+	              NULL,
+	              NULL,
+	              "%sFM2PLAY.EXE \"%s\"",
+                      (fAddUtils) ? "UTILS\\" : NullStr, filename);
       played = TRUE;
     }
   }

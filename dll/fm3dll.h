@@ -37,6 +37,7 @@
   17 Jan 07 SHL Resize extractdir
   17 Feb 07 GKY Add more file system types
   17 Feb 07 GKY Add SelectDriveIcon to streamline update.c
+  18 Mar 07 GKY Add MM import typedefines for fix for files misindentified as multimedia
 
 ***********************************************************************/
 
@@ -1402,6 +1403,12 @@ DATADEF LONG standardcolors[16];
 typedef DWORD(APIENTRY MMIOIDENTIFYFILE) (PSZ, PMMIOINFO, PMMFORMATINFO,
 					  PFOURCC, DWORD, DWORD);
 typedef MMIOIDENTIFYFILE *PMMIOIDENTIFYFILE;
+typedef DWORD(APIENTRY MMIOOPEN)( PSZ, PMMIOINFO, DWORD);
+typedef MMIOOPEN *PMMIOOPEN;
+typedef WORD (APIENTRY MMIOGETINFO)( HMMIO, PMMIOINFO, WORD);
+typedef MMIOGETINFO *PMMIOGETINFO;
+typedef WORD (APIENTRY MMIOCLOSE)( HMMIO, WORD);
+typedef MMIOCLOSE *PMMIOCLOSE;
 
 #pragma pack()
 #endif

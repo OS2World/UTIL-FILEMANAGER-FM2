@@ -1371,8 +1371,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
 	free(s);
 	if (IsFile(filename) == 1) {
-	  if (fViewChild)
-	    DosSleep(250);		// Allow unzip session to finish closing 14 Mar 07 SHL
+	  if (fViewChild && fArcStuffVisible)
+	    DosSleep(100);		// Allow unzip session to finish closing 14 Mar 07 SHL
 	  WinSendMsg(dcd->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
 	}
       }
