@@ -28,6 +28,7 @@
   17 Feb 07 GKY Additional archive and image file tyoes identifed by extension
   17 Feb 07 GKY Add more drive types
   09 Mar 07 GKY Use SelectDriveIcon
+  20 Mar 07 GKY Increase extention check to 4 letters for icon selections
 
 ***********************************************************************/
 
@@ -55,14 +56,15 @@ static HPOINTER IDFile(PSZ p)
 {
   HPOINTER hptr;
   ULONG cmp;
-  CHAR cmps[4];
+  CHAR cmps[5];
 
   p = strrchr(p, '.');
-  if (p && !p[4]) {
+  if (p && !p[5]) {
     cmps[0] = '.';
     cmps[1] = toupper(p[1]);
     cmps[2] = toupper(p[2]);
     cmps[3] = toupper(p[3]);
+    cmps[4] = toupper(p[4]);
 
     cmp = *(ULONG *) cmps;
 

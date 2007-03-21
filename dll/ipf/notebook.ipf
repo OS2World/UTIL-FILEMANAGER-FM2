@@ -9,6 +9,7 @@
 .*
 .* 30 Dec 06 GKY Corrected statement re copy/move "toggle" in OS/2
 .* 03 Mar 07 GKY Update that file systems other than HPFS support long names
+.* 20 Mar 07 DG  Add discribtion for Mommy make it stop
 .*
 .***********************************************************************
 .*
@@ -614,9 +615,10 @@ select the action a drag and drop should perform.
 default for the Delete context submenu. If this is checked, the default
 is permanent (unrecoverable) deletion.
 :p.
-:hp6.FM/2 deletes dragged items:ehp6. controls whether FM/2 deletes
-dragged items, or the target of the drag (usually the Trashcan WPS
-object) performs the deletion.
+:hp6.Mommy, make it stop!:ehp6. This button is a 3 state button (toggle)
+which makes the mouse pointer operate in one of 3 ways. If unselected,
+FM/2 will use a finger (the default). The "x" is a transparent pointer, and
+the "=" is the operating system default pointer.
 :p.
 If the :hp6.Confirm target:ehp6. checkbox is checked, as it is by
 default, FM/2 allows you to confirm the target directory to be used when
@@ -787,6 +789,3 @@ mileage may vary.
 :p.
 You might also want to take a look at the :link reftype=hd
 res=100000."FM/2 Lite":elink. object in the FM/2 folder.
-
-
-
