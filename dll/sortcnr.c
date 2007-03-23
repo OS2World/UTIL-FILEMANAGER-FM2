@@ -6,10 +6,11 @@
   Sort container items
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Rework with ULONGLONG
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -34,7 +35,7 @@ SHORT APIENTRY SortTreeCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
 SHORT APIENTRY SortDirCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
 			  PVOID pStorage)
 {
-  DIRCNRDATA *dcd = WinQueryWindowPtr(((PCNRITEM) p1)->hwndCnr, 0);
+  DIRCNRDATA *dcd = WinQueryWindowPtr(((PCNRITEM) p1)->hwndCnr, QWL_USER);
 
   return SortCnr(p1, p2, ((pStorage) ? (INT) pStorage :
 			  (dcd && dcd->size == sizeof(DIRCNRDATA)) ?

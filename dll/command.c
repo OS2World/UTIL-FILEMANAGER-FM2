@@ -15,6 +15,9 @@
   15 Aug 06 SHL Better can't add message
   18 Sep 06 GKY Add replace command and update okay to add if changed
   17 Feb 07 GKY Move error messages etc to string file
+  22 Mar 07 GKY Use QWL_USER
+  23 Mar 07 GKY Replace doesn't change item position
+  23 Mar 07 GKY Okay fails silently when item not changed
 
 ***********************************************************************/
 
@@ -50,7 +53,7 @@ static PSZ pszSrcFile = __FILE__;
 
 MRESULT EXPENTRY CommandTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
   static BOOL emphasized = FALSE;
 
   switch (msg) {
@@ -466,7 +469,7 @@ BOOL kill_command(CHAR * killme)
 
 MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  SHORT x;
+  SHORT x, y;
   LINKCMDS *info;
 
   switch (msg) {
@@ -499,7 +502,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       oldproc = WinSubclassWindow(WinWindowFromID(hwnd, CMD_CL),
 				  (PFNWP) CommandTextProc);
       if (oldproc)
-	WinSetWindowPtr(WinWindowFromID(hwnd, CMD_CL), 0, (PVOID) oldproc);
+	WinSetWindowPtr(WinWindowFromID(hwnd, CMD_CL), QWL_USER, (PVOID) oldproc);
     }
     break;
 
@@ -640,10 +643,10 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!info)
         {
 	  WinDismissDlg(hwnd, 0);
-          saymsg(MB_ENTER, hwnd,
+          /*saymsg(MB_ENTER, hwnd,
 	   GetPString(IDS_ERRORTEXT),
 	         GetPString(IDS_CANTADDCOMMANDTEXT),
-	         temp.title);
+	         temp.title);*/
 	 }
 	else {
 	  CHAR env[1002];
@@ -777,7 +780,10 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case CMD_REPLACE:
       {
 	CHAR temp[34];
-
+        y = (SHORT) WinSendDlgItemMsg(hwnd,
+					CMD_LISTBOX,
+					LM_QUERYSELECTION,
+					MPFROMSHORT(LIT_CURSOR), MPVOID);
 	WinQueryDlgItemText(hwnd, CMD_TITLE, 34, temp);
 	bstrip(temp);
 	if (kill_command(temp))
@@ -839,7 +845,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_INSERTITEM,
-					MPFROM2SHORT(LIT_END, 0),
+					MPFROM2SHORT(y, 0),
 					MPFROMP(temp.title));
 	  if (x >= 0) {
 	    WinSendDlgItemMsg(hwnd,
@@ -849,7 +855,36 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSendDlgItemMsg(hwnd,
 			      CMD_LISTBOX,
 			      LM_SELECTITEM,
-			      MPFROMSHORT(x), MPFROMSHORT(TRUE));
+                              MPFROMSHORT(x), MPFROMSHORT(TRUE));
+            {
+            LINKCMDS *temphead = NULL, *info, *last = NULL, *temptail = NULL;
+	SHORT sSelect, numitems;
+
+	sSelect = 0;
+	numitems = (SHORT) WinSendDlgItemMsg(hwnd, CMD_LISTBOX,
+					     LM_QUERYITEMCOUNT,
+					     MPVOID, MPVOID);
+	while (numitems) {
+	  info = (LINKCMDS *) WinSendDlgItemMsg(hwnd, CMD_LISTBOX,
+						LM_QUERYITEMHANDLE,
+						MPFROMSHORT(sSelect++),
+						MPVOID);
+	  if (info) {
+	    if (!temphead) {
+	      temphead = info;
+	      info->prev = NULL;
+	    }
+	    else {
+	      last->next = info;
+	      info->prev = last;
+	    }
+	    temptail = info;
+	    last = info;
+	    info->next = NULL;
+	  }
+	  numitems--;
+        }
+            }
 	    save_commands();
 	  }
 	}

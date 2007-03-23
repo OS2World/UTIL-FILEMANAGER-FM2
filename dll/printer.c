@@ -12,6 +12,7 @@
   17 Jul 06 SHL Use Runtime_Error
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -331,7 +332,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!mp2)
       WinDismissDlg(hwnd, 0);
     else {
-      WinSetWindowPtr(hwnd, 0, mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, mp2);
       WinSendDlgItemMsg(hwnd, PRN_WIDTH, EM_SETTEXTLIMIT,
 			MPFROM2SHORT(3, 0), MPVOID);
       WinSendDlgItemMsg(hwnd, PRN_LENGTH, EM_SETTEXTLIMIT,

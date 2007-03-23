@@ -6,9 +6,10 @@
   Edit ICON EA
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2006, 2007 Steven H.Levine
 
   17 Jul 06 SHL Use Runtime_Error
+  22 Mar 06 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -35,7 +36,7 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowPtr(hwnd, 0, (PVOID) mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
     WinCheckButton(hwnd, SETICON_SPTR_ARROW, TRUE);
     break;
 
@@ -46,7 +47,7 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
       {
-	CHAR *filename = WinQueryWindowPtr(hwnd, 0), *buff = NULL;
+	CHAR *filename = WinQueryWindowPtr(hwnd, QWL_USER), *buff = NULL;
 	ICONINFO icf;
 	ULONG icid = SPTR_ARROW;
 	INT x;

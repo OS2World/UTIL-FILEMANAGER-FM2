@@ -10,6 +10,7 @@
 
   10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
   14 Jul 06 SHL Use Runtime_Error
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -93,7 +94,7 @@ MRESULT EXPENTRY CheckListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       SHORT x;
 
-      WinSetWindowPtr(hwnd, 0, (PVOID) mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
       cl = (CHECKLIST *) mp2;
       if (!cl->list || !cl->list[0]) {
 	WinDismissDlg(hwnd, 0);
@@ -243,7 +244,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       SHORT x;
 
-      WinSetWindowPtr(hwnd, 0, (PVOID) mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
       cl = (CHECKLIST *) mp2;
       if (!cl->list || !cl->list[0]) {
 	WinDismissDlg(hwnd, 0);
@@ -336,7 +337,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SETUP:
-    cl = WinQueryWindowPtr(hwnd, 0);
+    cl = WinQueryWindowPtr(hwnd, QWL_USER);
     if (cl) {
       if (cl->flags == DO_MOVE)
 	WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, DND_MOVE));

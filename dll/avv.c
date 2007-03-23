@@ -19,6 +19,7 @@
   14 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
   30 Jul 06 SHL Avoid warnings when editing new definition
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -446,7 +447,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
   SHORT sSelect;
 
   if (msg != WM_INITDLG)
-    admp = (ARCDUMP *) WinQueryWindowPtr(hwnd, 0);
+    admp = (ARCDUMP *) WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg) {
   case WM_INITDLG:

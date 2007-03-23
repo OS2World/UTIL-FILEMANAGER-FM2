@@ -12,6 +12,7 @@
   05 Jun 05 SHL Use QWL_USER
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets_bstripcr
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -271,7 +272,7 @@ MRESULT EXPENTRY CmdBtnSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY CmdListSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg) {
   case WM_MOUSEMOVE:
@@ -303,7 +304,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     ex = (EXECARGS *) mp2;
-    WinSetWindowPtr(hwnd, 0, (PVOID) ex);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) ex);
     if (!ex || !ex->commandline) {
       WinDismissDlg(hwnd, 0);
       break;
@@ -723,7 +724,7 @@ MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     {
       int x;
       USHORT ids[] = { IDM_HELP, EXEC2_CLR, EXEC2_DEL, EXEC2_KEEP, EXEC2_SAVE,
@@ -768,7 +769,7 @@ MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case LN_ENTER:
 	{
 	  SHORT x;
-	  CHAR *cmdline = WinQueryWindowPtr(hwnd, 0);
+	  CHAR *cmdline = WinQueryWindowPtr(hwnd, QWL_USER);
 
 	  x = (SHORT) WinSendDlgItemMsg(hwnd, EXEC2_LISTBOX,
 					LM_QUERYSELECTION,
@@ -797,7 +798,7 @@ MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case EXEC2_OPEN:
     case IDM_HELP:
       {
-	char *cmdline = WinQueryWindowPtr(hwnd, 0);
+	char *cmdline = WinQueryWindowPtr(hwnd, QWL_USER);
 	ULONG strid = 0;
 
 	if (cmdline) {

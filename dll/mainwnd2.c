@@ -737,7 +737,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       oldproc = WinSubclassWindow(WinQueryWindow(hwnd, QW_PARENT),
 				  (PFNWP) MainFrameWndProc2);
       if (oldproc)
-	WinSetWindowPtr(WinQueryWindow(hwnd, QW_PARENT), 0, (PVOID) oldproc);
+	WinSetWindowPtr(WinQueryWindow(hwnd, QW_PARENT), QWL_USER, (PVOID) oldproc);
       CommonCreateMainChildren(hwnd, &swp);
 
       {

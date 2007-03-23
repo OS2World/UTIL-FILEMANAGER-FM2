@@ -22,6 +22,7 @@
   17 Jul 06 SHL Use Runtime_Error
   19 Oct 06 SHL Correct . and .. detect
   18 Feb 07 GKY Add new drive type icons
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -432,7 +433,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     strcpy(pState->szDirName, (CHAR *) mp2);
-    WinSetWindowPtr(hwnd, 0, (PVOID) pState);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) pState);
     pState->hptr = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, DIRSIZE_ICON);
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(pState->hptr), MPVOID);
     {

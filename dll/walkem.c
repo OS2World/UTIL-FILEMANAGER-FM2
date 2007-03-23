@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -15,6 +15,7 @@
   20 Oct 06 SHL Correct . .. check
   06 Nov 06 SHL Oops - need to allow .. here
   14 Nov 06 SHL Correct FillPathListBox regression
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -422,7 +423,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
 
 MRESULT EXPENTRY TextSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg) {
   case WM_CHAR:
@@ -461,7 +462,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     wa->size = (USHORT) sizeof(WALKER);
-    WinSetWindowPtr(hwnd, 0, (PVOID) wa);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) wa);
     wa->szReturnPath = (CHAR *) mp2;
     {
       PFNWP oldproc;
@@ -680,7 +681,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_CONTROL:
   case WM_CONTROL:
-    wa = WinQueryWindowPtr(hwnd, 0);
+    wa = WinQueryWindowPtr(hwnd, QWL_USER);
     if (SHORT1FROMMP(mp1) == WALK_DRIVELIST ||
 	SHORT1FROMMP(mp1) == WALK_DIRLIST ||
 	SHORT1FROMMP(mp1) == WALK_USERLIST ||
@@ -884,7 +885,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_COMMAND:
-    wa = WinQueryWindowPtr(hwnd, 0);
+    wa = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!wa)
       WinDismissDlg(hwnd, 0);
     *szBuff = 0;
@@ -1063,7 +1064,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     wa = mp2;
     {
       PFNWP oldproc;
@@ -1159,7 +1160,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_CONTROL:
   case WM_CONTROL:
-    wa = WinQueryWindowPtr(hwnd, 0);
+    wa = WinQueryWindowPtr(hwnd, QWL_USER);
     if (SHORT1FROMMP(mp1) == WALK_DRIVELIST ||
 	SHORT1FROMMP(mp1) == WALK_DIRLIST ||
 	SHORT1FROMMP(mp1) == WALK2_DRIVELIST ||
@@ -1307,7 +1308,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_COMMAND:
-    wa = WinQueryWindowPtr(hwnd, 0);
+    wa = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!wa)
       WinDismissDlg(hwnd, 0);
     *szBuff = 0;

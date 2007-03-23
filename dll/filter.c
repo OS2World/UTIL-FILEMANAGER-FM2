@@ -4,11 +4,12 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets_bstripcr
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -257,7 +258,7 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     if (!loadedmasks)
       load_masks();
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     {					/* fill list box */
       LINKMASKS *info;
 
@@ -360,7 +361,7 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP:
     {
-      MASK *mask = WinQueryWindowPtr(hwnd, 0);
+      MASK *mask = WinQueryWindowPtr(hwnd, QWL_USER);
 
       if (mask && mask->fText) {
 

@@ -6,7 +6,7 @@
   New internal viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   01 Dec 03 SHL Comments
   02 Dec 03 SHL Correct WM_VSCROLL math
@@ -17,6 +17,7 @@
   26 Jul 06 SHL Use chop_at_crnl and convert_nl_to_nul
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -468,7 +469,7 @@ MRESULT EXPENTRY ViewStatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  VIEWDATA *ad =
 	    WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
 							     QW_PARENT),
-					      FID_CLIENT), 0);
+					      FID_CLIENT), QWL_USER);
 
 	  if (ad)
 	    DragOne(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
@@ -498,7 +499,7 @@ MRESULT EXPENTRY ViewStatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG color;
       VIEWDATA *ad = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
 								      QW_PARENT),
-						       FID_CLIENT), 0);
+						       FID_CLIENT), QWL_USER);
       SWP swp;
       POINTL ptl;
       HPS hps;

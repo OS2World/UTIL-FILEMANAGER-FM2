@@ -6,10 +6,11 @@
   Input dialog procecedure
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   28 May 05 SHL Use saymsg
   14 Jul 06 SHL Use Runtime_Error
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -68,13 +69,13 @@ MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
-      psip = WinQueryWindowPtr(hwnd, 0);
+      psip = WinQueryWindowPtr(hwnd, QWL_USER);
       WinQueryDlgItemText(hwnd, STR_INPUT, psip->inputlen, psip->ret);
       WinDismissDlg(hwnd, 1);
       break;
 
     case IDM_HELP:
-      psip = WinQueryWindowPtr(hwnd, 0);
+      psip = WinQueryWindowPtr(hwnd, QWL_USER);
       psz = psip->help && *psip->help ?
 	psip->help : GetPString(IDS_ENTERTEXTHELPTEXT);
 

@@ -13,6 +13,7 @@
   06 Jun 05 SHL Rework DisplayEAsProc for VAC3.65 compat
   06 Jun 05 SHL Drop unused variables
   17 Jul 06 SHL Use Runtime_Error
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -96,7 +97,7 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    WinSetWindowPtr(hwnd, 0, (PVOID) mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
     WinSendDlgItemMsg(hwnd, EAC_NAME, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(255, 0), MPVOID);
     WinCheckButton(hwnd, EAC_ASCII, TRUE);
@@ -300,7 +301,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static HPOINTER hptrIcon = (HPOINTER) 0;
 
   if (msg != WM_INITDLG)
-    eap = (EAPROCDATA *) WinQueryWindowPtr(hwnd, 0);
+    eap = (EAPROCDATA *) WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg) {
   case WM_INITDLG:
@@ -317,7 +318,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(hptrIcon), MPVOID);
     eap->size = sizeof(EAPROCDATA);
     eap->list = (CHAR **) mp2;
-    WinSetWindowPtr(hwnd, 0, (PVOID) eap);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) eap);
     WinSendDlgItemMsg(hwnd,
 		      EA_ENTRY, EM_SETTEXTLIMIT, MPFROM2SHORT(40, 0), MPVOID);
     MLEsetlimit(WinWindowFromID(hwnd, EA_MLE), 32767L);

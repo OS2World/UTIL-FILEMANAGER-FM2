@@ -6,7 +6,7 @@
   Save file list to clipboard
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   12 Feb 03 SHL SaveListDlgProc: standardize EA math
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -14,6 +14,7 @@
   24 May 05 SHL Rework for CNRITEM.szSubject
   17 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -201,7 +202,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
     }
     else {
-      WinSetWindowPtr(hwnd, 0, mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, mp2);
       hwndCnr = *(HWND *) mp2;
       WinSendDlgItemMsg(hwnd,
 			SAV_FILENAME,
@@ -557,7 +558,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       WinDismissDlg(hwnd, 0);
     }
     else {
-      WinSetWindowPtr(hwnd, 0, mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, mp2);
       list = (CHAR **) mp2;
       WinSendDlgItemMsg(hwnd,
 			SAV_FILENAME,

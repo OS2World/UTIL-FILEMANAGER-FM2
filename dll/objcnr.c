@@ -6,13 +6,14 @@
   Object containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   24 May 05 SHL Rework for CNRITEM.szSubject
   13 Jul 06 SHL Use Runtime_Error
   01 Sep 06 SHL Do not complain for normal cancel
   19 Oct 06 SHL Correct . and .. detect
   03 Nov 06 SHL Renames
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -254,7 +255,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     data->dirname = (CHAR *) mp2;
-    WinSetWindowPtr(hwnd, 0, (PVOID) data);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) data);
     if (*data->dirname)
       WinSetDlgItemText(hwnd, OBJCNR_DIR, data->dirname);
     {

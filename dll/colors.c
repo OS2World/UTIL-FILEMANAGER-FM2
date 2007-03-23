@@ -9,6 +9,7 @@
   Copyright (c) 2006 Steven H. Levine
 
   14 Jul 06 SHL Use Runtime_Error
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -41,7 +42,7 @@ MRESULT EXPENTRY ColorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       register SHORT x;
 
-      WinSetWindowPtr(hwnd, 0, mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, mp2);
       co = (COLORS *) mp2;
       if (co->prompt)
 	WinSetWindowText(hwnd, GetPString(co->prompt));
@@ -127,7 +128,7 @@ MRESULT EXPENTRY ColorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CONTROL:
-    co = (COLORS *) WinQueryWindowPtr(hwnd, 0);
+    co = (COLORS *) WinQueryWindowPtr(hwnd, QWL_USER);
     switch (SHORT1FROMMP(mp1)) {
     case COLOR_WHITE:
     case COLOR_BLACK:
@@ -177,7 +178,7 @@ MRESULT EXPENTRY ColorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_COMMAND:
-    co = (COLORS *) WinQueryWindowPtr(hwnd, 0);
+    co = (COLORS *) WinQueryWindowPtr(hwnd, QWL_USER);
     switch (SHORT1FROMMP(mp1)) {
     case DID_CANCEL:
       memcpy(co->colors, co->origs, sizeof(LONG) * co->numcolors);

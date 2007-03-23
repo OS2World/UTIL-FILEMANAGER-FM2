@@ -6,10 +6,11 @@
   Instant command
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   14 Jul 06 SHL Use Runtime_Error
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -58,7 +59,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     path = (CHAR *) mp2;
     {
       CHAR s[CCHMAXPATH + 81];
@@ -85,7 +86,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
-      path = (CHAR *) WinQueryWindowPtr(hwnd, 0);
+      path = (CHAR *) WinQueryWindowPtr(hwnd, QWL_USER);
       {
 	CHAR s[CCHMAXPATH + 1];
 	FILE *fp;
@@ -158,7 +159,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case IDM_HELP:
-      path = WinQueryWindowPtr(hwnd, 0);
+      path = WinQueryWindowPtr(hwnd, QWL_USER);
       rc = saymsg(MB_YESNOCANCEL,
 		  hwnd,
 		  GetPString(IDS_INSTANTHELPTITLETEXT),

@@ -6,13 +6,14 @@
   uudecode
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Drop unused code
   17 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
   01 Sep 06 SHL Back to fgets for now - avoid excess error messages
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -171,7 +172,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     if (mp2) {
-      WinSetWindowPtr(hwnd, 0, mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, mp2);
       wk = (WORKER *) mp2;
       if (wk->li && wk->li->list && wk->li->list[0]) {
 	WinSendDlgItemMsg(hwnd, MRG_TARGETNAME, EM_SETTEXTLIMIT,
@@ -187,7 +188,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_UNDO:
     WinSendDlgItemMsg(hwnd, MRG_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-    wk = WinQueryWindowPtr(hwnd, 0);
+    wk = WinQueryWindowPtr(hwnd, QWL_USER);
     if (wk) {
       INT x, numfiles = 0;
       SHORT start;
@@ -260,7 +261,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case MRG_CHANGETARGET:
-      wk = WinQueryWindowPtr(hwnd, 0);
+      wk = WinQueryWindowPtr(hwnd, QWL_USER);
       if (wk) {
 	CHAR filename[CCHMAXPATH];
 
@@ -321,7 +322,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case DID_OK:
-      wk = WinQueryWindowPtr(hwnd, 0);
+      wk = WinQueryWindowPtr(hwnd, QWL_USER);
       if (wk) {
 	BOOL append, binary;
 	CHAR **list = NULL, **test, szBuffer[CCHMAXPATH];

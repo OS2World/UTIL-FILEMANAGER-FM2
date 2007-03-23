@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2007 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   01 Aug 04 SHL Rework fixup usage
@@ -13,6 +13,7 @@
   17 Jul 06 SHL Use Runtime_Error
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -503,7 +504,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     inidata = (INIDATA *) mp2;
     WinSendDlgItemMsg(hwnd, IAF_SAVENAME, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
@@ -767,7 +768,7 @@ MRESULT EXPENTRY IntraIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     inirec = (INIREC *) mp2;
     WinSendDlgItemMsg(hwnd,
 		      INII_NEWAPP,
@@ -818,7 +819,7 @@ MRESULT EXPENTRY IntraIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
-      inirec = (INIREC *) WinQueryWindowPtr(hwnd, 0);
+      inirec = (INIREC *) WinQueryWindowPtr(hwnd, QWL_USER);
       if (inirec) {
 	WinQueryDlgItemText(hwnd, INII_NEWAPP, CCHMAXPATH, inirec->app2);
 	bstrip(inirec->app2);
@@ -859,7 +860,7 @@ MRESULT EXPENTRY ChangeIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     WinSendDlgItemMsg(hwnd, INIR_USERPROFILE, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, INIR_SYSTEMPROFILE, EM_SETTEXTLIMIT,
@@ -965,7 +966,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     WinSendDlgItemMsg(hwnd,
 		      INIR_USERPROFILE,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
@@ -1221,7 +1222,7 @@ MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     inidata = (INIDATA *) mp2;
     if (inidata->edit)
       WinSetWindowText(hwnd, GetPString(IDS_INIEDITINITITLETEXT));
-    WinSetWindowPtr(hwnd, 0, (PVOID) mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
     WinSendDlgItemMsg(hwnd,
 		      IAD_APPNAME,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
@@ -1479,7 +1480,7 @@ HWND StartIniEditor(HWND hwnd, CHAR * fname, INT flags)
 
 MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
   static HWND hwndPopup = (HWND) 0;
 
   switch (msg) {
@@ -1533,7 +1534,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       USHORT id;
 
       id = WinQueryWindowUShort(hwnd, QWS_ID);
-      inidata = WinQueryWindowPtr(WinQueryWindow(hwnd, QW_PARENT), 0);
+      inidata = WinQueryWindowPtr(WinQueryWindow(hwnd, QW_PARENT), QWL_USER);
       if (!inidata || !*inidata->ininame || !*inidata->applname ||
 	  !inidata->keyname) {
 	DosBeep(50, 100);
@@ -1688,7 +1689,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY IniLBSubProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg) {
   case WM_SETFOCUS:
@@ -1720,7 +1721,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     inidata->hwndMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					FID_MENU);
     inidata->hwndIni = hwnd;
-    WinSetWindowPtr(hwnd, 0, (PVOID) inidata);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) inidata);
     WinCheckMenuItem(inidata->hwndMenu, INI_CONFIRM, inidata->confirm);
 
     if (!WinCreateWindow
@@ -1807,7 +1808,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2) {
       if (hwndMain && fAutoView)
 	PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
-      inidata = WinQueryWindowPtr(hwnd, 0);
+      inidata = WinQueryWindowPtr(hwnd, QWL_USER);
       if (inidata && hwndStatus) {
 	if (*inidata->ininame) {
 	  WinSetWindowText(hwndStatus, GetPString(IDS_INTERNALINIVIEWERTEXT));
@@ -1916,7 +1917,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_INITIALSIZE:			/* kludge */
-    inidata = WinQueryWindowPtr(hwnd, 0);
+    inidata = WinQueryWindowPtr(hwnd, QWL_USER);
     if (inidata)
       inidata->dontclose = TRUE;
     return 0;
@@ -1956,7 +1957,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_LOADFILE:
     /* load initial file */
-    inidata = WinQueryWindowPtr(hwnd, 0);
+    inidata = WinQueryWindowPtr(hwnd, QWL_USER);
     if (inidata) {
       if (mp1) {
 	strcpy(inidata->ininame, (CHAR *) mp1);
@@ -2116,7 +2117,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(hwnd, INI_NUMKEYS, s);
       WinSetDlgItemText(hwnd, INI_NUMDATA, "0");
       WinSendDlgItemMsg(hwnd, INI_DATALIST, LM_DELETEALL, MPVOID, MPVOID);
-      inidata = WinQueryWindowPtr(hwnd, 0);
+      inidata = WinQueryWindowPtr(hwnd, QWL_USER);
     }
     return 0;
 
@@ -2258,7 +2259,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_COPY:
     case IDM_INFO:
     case IDM_MOVE:
-      inidata = WinQueryWindowPtr(hwnd, 0);
+      inidata = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!inidata || !*inidata->ininame)
 	break;
       if (mp2) {
@@ -2281,7 +2282,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case IDM_COMPARE:
-      inidata = WinQueryWindowPtr(hwnd, 0);
+      inidata = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!inidata || !*inidata->ininame)
 	break;
       if (mp2) {
@@ -2307,7 +2308,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_COPYKEY:
     case INI_RENAMEAPP:
     case INI_RENAMEKEY:
-      inidata = WinQueryWindowPtr(hwnd, 0);
+      inidata = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!inidata ||
 	  !*inidata->ininame ||
 	  !*inidata->applname ||
@@ -2657,7 +2658,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE)))
 	WinStoreWindowPos(FM2Str,
 			  "INIWindowPos", WinQueryWindow(hwnd, QW_PARENT));
-      inidata = WinQueryWindowPtr(hwnd, 0);
+      inidata = WinQueryWindowPtr(hwnd, QWL_USER);
     }
     WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
     return 0;

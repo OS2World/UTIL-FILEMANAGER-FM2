@@ -6,12 +6,13 @@
   MLE text editor/viewer
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   16 Apr 06 SHL MLEexportfile: rework to avoid wrap problems
   14 Jul 06 SHL Use Runtime_Error
   03 Nov 06 SHL Count thread usage
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -407,7 +408,7 @@ BOOL MLEAutoLoad(HWND h, CHAR * filename)
 {
   XMLEWNDPTR *vw;
 
-  vw = (XMLEWNDPTR *) WinQueryWindowPtr(WinQueryWindow(h, QW_PARENT), 0);
+  vw = (XMLEWNDPTR *) WinQueryWindowPtr(WinQueryWindow(h, QW_PARENT), QWL_USER);
   if (vw && vw->size != sizeof(XMLEWNDPTR))
     vw = NULL;
   if (TestBinary(filename)) {
@@ -437,7 +438,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 
   *titletext = 0;
   hab = WinQueryAnchorBlock(h);
-  vw = (XMLEWNDPTR *) WinQueryWindowPtr(WinQueryWindow(h, QW_PARENT), 0);
+  vw = (XMLEWNDPTR *) WinQueryWindowPtr(WinQueryWindow(h, QW_PARENT), QWL_USER);
   if (vw && vw->size != sizeof(XMLEWNDPTR))
     vw = NULL;
   grandpa = GrandparentOf(h);
@@ -566,7 +567,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 
   *titletext = 0;
   hab = WinQueryAnchorBlock(h);
-  vw = (XMLEWNDPTR *) WinQueryWindowPtr(WinQueryWindow(h, QW_PARENT), 0);
+  vw = (XMLEWNDPTR *) WinQueryWindowPtr(WinQueryWindow(h, QW_PARENT), QWL_USER);
   if (vw && vw->size != sizeof(XMLEWNDPTR))
     vw = NULL;
   grandpa = GrandparentOf(h);
@@ -922,7 +923,7 @@ MRESULT EXPENTRY SandRDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   SRCHPTR *vw;
 
   if (msg != WM_INITDLG)
-    vw = (SRCHPTR *) WinQueryWindowPtr(hwnd, 0);
+    vw = (SRCHPTR *) WinQueryWindowPtr(hwnd, QWL_USER);
   else
     vw = NULL;
 
@@ -933,7 +934,7 @@ MRESULT EXPENTRY SandRDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    WinSetWindowPtr(hwnd, 0, (PVOID) mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
     WinSendDlgItemMsg(hwnd, SRCH_SEARCH, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(256, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, SRCH_REPLACE, EM_SETTEXTLIMIT,

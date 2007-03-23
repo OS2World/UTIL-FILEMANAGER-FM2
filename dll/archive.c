@@ -11,6 +11,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   28 Jun 06 SHL Drop obsoletes
   17 Jul 06 SHL Use Runtime_Error
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -39,7 +40,7 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     arcdata = (DIRCNRDATA *) mp2;
     WinSendDlgItemMsg(hwnd, ARCH_ARCNAME, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
@@ -81,7 +82,7 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CONTROL:
-    arcdata = (DIRCNRDATA *) WinQueryWindowPtr(hwnd, 0);
+    arcdata = (DIRCNRDATA *) WinQueryWindowPtr(hwnd, QWL_USER);
     switch (SHORT1FROMMP(mp1)) {
     case ARCH_ARCNAME:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
@@ -183,7 +184,7 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_COMMAND:
-    arcdata = (DIRCNRDATA *) WinQueryWindowPtr(hwnd, 0);
+    arcdata = (DIRCNRDATA *) WinQueryWindowPtr(hwnd, QWL_USER);
     if (!arcdata) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       return 0;

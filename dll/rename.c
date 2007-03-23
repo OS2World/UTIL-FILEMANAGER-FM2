@@ -4,9 +4,11 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
-  Revisions	01 Aug 04 SHL - Rework lstrip/rstrip usage
+  Revisions
+  01 Aug 04 SHL - Rework lstrip/rstrip usage
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -33,7 +35,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     mv = (MOVEIT *) mp2;
-    WinSetWindowPtr(hwnd, 0, (PVOID) mv);
+    WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mv);
     if (!mv || !mv->source) {
       WinDismissDlg(hwnd, 0);
       break;
@@ -71,7 +73,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_RESCAN:
     {
-      mv = WinQueryWindowPtr(hwnd, 0);
+      mv = WinQueryWindowPtr(hwnd, QWL_USER);
       if (mv) {
 
 	FILESTATUS3 fs1, fs2;
@@ -249,7 +251,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case REN_SKIP:
-      mv = WinQueryWindowPtr(hwnd, 0);
+      mv = WinQueryWindowPtr(hwnd, QWL_USER);
       if (mv) {
 	mv->skip = TRUE;
 	*mv->target = 0;
@@ -260,7 +262,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case REN_RENEXIST:
-      mv = WinQueryWindowPtr(hwnd, 0);
+      mv = WinQueryWindowPtr(hwnd, QWL_USER);
       if (mv) {
 
 	CHAR newexist[CCHMAXPATH], fullname[CCHMAXPATH];
@@ -313,7 +315,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case REN_OVERWRITE:
     case DID_OK:
-      mv = WinQueryWindowPtr(hwnd, 0);
+      mv = WinQueryWindowPtr(hwnd, QWL_USER);
       if (mv) {
 
 	MRESULT mr;

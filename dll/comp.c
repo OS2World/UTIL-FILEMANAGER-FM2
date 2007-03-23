@@ -6,7 +6,7 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2006 Steven H. Levine
+  Copyright (c) 2003, 2007 Steven H. Levine
 
   16 Oct 02 MK Baseline
   04 Nov 03 SHL Force window refresh after subdir toggle
@@ -22,6 +22,7 @@
   15 Aug 06 SHL Turn off hide not selected on dir change
   19 Oct 06 SHL Correct . and .. detect
   03 Nov 06 SHL Count thread usage
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -288,7 +289,7 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!mp2)
       WinDismissDlg(hwnd, 0);
     else {
-      WinSetWindowPtr(hwnd, 0, mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, mp2);
       fc = (FCOMPARE *) mp2;
       fc->hwndReport = hwnd;
       fc->hwndList = WinWindowFromID(hwnd, FCMP_LISTBOX);
@@ -2523,7 +2524,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (cmp->dcd.hwndLastMenu)
 	WinDestroyWindow(cmp->dcd.hwndLastMenu);
       if (cmp->dcd.hwndObject) {
-	WinSetWindowPtr(cmp->dcd.hwndObject, 0, (PVOID) NULL);
+	WinSetWindowPtr(cmp->dcd.hwndObject, QWL_USER, (PVOID) NULL);
 	if (!PostMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }

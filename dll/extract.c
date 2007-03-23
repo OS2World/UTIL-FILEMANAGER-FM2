@@ -4,12 +4,13 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2007 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
   17 Jul 06 SHL Use Runtime_Error
   20 Dec 06 GKY Added checkbox to make default extract with directories
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -35,7 +36,7 @@ static PSZ pszSrcFile = __FILE__;
 
 MRESULT EXPENTRY ExtractTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
   static BOOL emphasized = FALSE;
 
   switch (msg) {
@@ -83,7 +84,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowPtr(hwnd, 0, mp2);
+    WinSetWindowPtr(hwnd, QWL_USER, mp2);
     arcdata = (EXTRDATA *) mp2;
     {
       ULONG size = sizeof(BOOL);
@@ -202,7 +203,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CONTROL:
-    arcdata = (EXTRDATA *) WinQueryWindowPtr(hwnd, 0);
+    arcdata = (EXTRDATA *) WinQueryWindowPtr(hwnd, QWL_USER);
     switch (SHORT1FROMMP(mp1)) {
     case EXT_REMEMBER:
       {
@@ -279,7 +280,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_COMMAND:
-    arcdata = (EXTRDATA *) WinQueryWindowPtr(hwnd, 0);
+    arcdata = (EXTRDATA *) WinQueryWindowPtr(hwnd, QWL_USER);
     switch (SHORT1FROMMP(mp1)) {
     case IDM_SWITCH:
       if (mp2) {

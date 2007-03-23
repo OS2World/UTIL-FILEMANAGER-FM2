@@ -6,7 +6,7 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H. Levine
+  Copyright (c) 2005-07 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
@@ -14,6 +14,7 @@
   24 Oct 05 SHL Delete obsolete code
   22 Jul 06 SHL Check more run time errors
   19 Oct 06 SHL Stubby - correct . and .. detect
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -46,7 +47,7 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 
   if (!pciParent || (INT) pciParent == -1 || !hwndCnr)
     return FALSE;
-  dcd = (DIRCNRDATA *) WinQueryWindowPtr(hwndCnr, 0);
+  dcd = (DIRCNRDATA *) WinQueryWindowPtr(hwndCnr, QWL_USER);
   if (!dcd)
     return FALSE;
 

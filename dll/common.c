@@ -14,6 +14,7 @@
   03 Nov 06 SHL Rework thread usage count logic
   07 Jan 07 GKY Move error strings etc. to string file
   07 Jan 07 GKY Updated Helv font to vector font Helvetica
+  22 Mar 07 GKY Use QWL_USER
 
 ***********************************************************************/
 
@@ -53,7 +54,7 @@ MRESULT EXPENTRY CommonFrameWndProc(USHORT id,
 				    HWND hwnd,
 				    ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, 0);
+  PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg) {
   case UM_TIMER:
@@ -532,7 +533,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   oldproc = WinSubclassWindow(hwndAutoMLE, AutoViewProc);
-  WinSetWindowPtr(hwndAutoMLE, 0, (PVOID) oldproc);
+  WinSetWindowPtr(hwndAutoMLE, QWL_USER, (PVOID) oldproc);
   PostMsg(hwndAutoMLE, UM_SETUP, MPVOID, MPVOID);
 }
 
@@ -696,7 +697,7 @@ MRESULT EXPENTRY CommonTextButton(HWND hwnd, ULONG msg, MPARAM mp1,
 
 MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, 0);
+  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
 
   switch (msg) {
   case UM_FIXCNRMLE:

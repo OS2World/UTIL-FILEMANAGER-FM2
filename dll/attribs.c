@@ -40,7 +40,7 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!mp2)
       WinDismissDlg(hwnd, 0);
     else {
-      WinSetWindowPtr(hwnd, 0, mp2);
+      WinSetWindowPtr(hwnd, QWL_USER, mp2);
       li = (LISTINFO *) mp2;
       if (!li->list || !li->list[0]) {
 	WinSendMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
