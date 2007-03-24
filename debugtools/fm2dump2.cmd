@@ -13,11 +13,12 @@
 :: gnugpl2.txt or at http://www.gnu.org/licenses/licenses.html#GPL
 
 :: 05 Mar 07 SHL Adapt from fm2dump.cmd
+:: 24 Mar 07 SHL Write dump file to %TMP%
 
 setlocal
 
 :: EDITME to name dump directory - directory must exist and drive must have sufficient free space
-set D=j:\tmp\dumps
+set D=%TMP%
 
 :: Try to validate
 dir %D%\nul >nul 2>&1

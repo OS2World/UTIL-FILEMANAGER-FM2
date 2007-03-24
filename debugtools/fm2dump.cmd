@@ -17,11 +17,12 @@
 :: 12 Apr 04 SHL Rework settings
 :: 09 Aug 05 SHL Add some more system data
 :: 11 Aug 05 SHL Comments
+:: 24 Mar 07 SHL Write dump file to %TMP%
 
 setlocal
 
 :: EDITME to name dump directory - directory must exist and drive must have sufficient free space
-set D=j:\tmp\dumps
+set D=%TMP%
 
 :: Try to validate
 dir %D%\nul >nul 2>&1
