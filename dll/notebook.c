@@ -815,9 +815,7 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGG_DNDDLG, fDragndropDlg);
     WinCheckButton(hwnd, CFGG_DEFAULTDELETEPERM, fDefaultDeletePerm);
     {
-      long th;
-
-      th = (fNoFinger) ? 2 : (fNoDead) ? 1 : 0;
+      long th = fNoFinger ? 2 : (fNoDead ? 1 : 0);
       WinCheckButton(hwnd, CFGG_NODEAD, th);
     }
     WinCheckButton(hwnd, CFGG_BORING, fDullMin);

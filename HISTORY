@@ -1,5 +1,10 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.05.09 (pending)
+ o Correct FileInfoProc binary file detect (Steven)
+ o Correct FileInfoProc/IconProc race crash (Steven)
+ o Convert to WarpIN installer (David, John)
+
 3.05 beta08
  o Add SelectDriveIcon function (Gregg)
  o New drive flags - ramdisk, virtual drive & no drive stats (Gregg)
@@ -15,8 +20,6 @@ New stuff's at the top.  This list is not necessarily complete.
  o Icons update appropriately with drive flag changes (Steven)
  o Avoid restoring directory windows for no prescan drives (Steven)
  o Avoid hangs when viewing zip content and running viewer as child
-
-3.05beta08 (pending)
  o Honor NOPRESCAN flags for drives left open on exit
  o Refresh tree container drive icon after prescan enable
 

@@ -457,8 +457,9 @@ VOID Action(VOID * args)
 		    if (!WinDlgBox(HWND_DESKTOP,
 				   HWND_DESKTOP,
 				   FileInfoProc,
-				   FM3ModHandle, FLE_FRAME, (PVOID) list))
+				   FM3ModHandle, FLE_FRAME, (PVOID) list)) {
 		      goto Abort;
+                    }
 		  }
 		  else {
 		    if (!WinDlgBox(HWND_DESKTOP,
@@ -998,7 +999,9 @@ VOID MassAction(VOID * args)
 			  wk->hwndFrame,
 			  FileInfoProc,
 			  FM3ModHandle, FLE_FRAME, (PVOID) wk->li->list) != 2)
+	    {
 	      break;
+	    }
 	    /* else intentional fallthru */
 	  case IDM_UPDATE:
 	    Broadcast(hab2,

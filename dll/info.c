@@ -15,6 +15,8 @@
   25 May 05 SHL Use ULONGLONG and CommaFmtULL
   05 Jun 05 SHL Use QWL_USER
   14 Jul 06 SHL Use Runtime_Error
+  24 Mar 07 SHL Correct FileInfoProc binary file detect
+  24 Mar 07 SHL Correct FileInfoProc/IconProc race crash
 
 ***********************************************************************/
 
@@ -124,7 +126,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	sprintf(FileSystem,
 		GetPString(IDS_DRIVEINFOTITLETEXT), toupper(*pszFileName));
 	WinSetWindowText(hwnd, FileSystem);
-        if (CheckDrive(toupper(*pszFileName), FileSystem, &type) != -1){
+	if (CheckDrive(toupper(*pszFileName), FileSystem, &type) != -1){
 
 	  FSALLOCATE fsa;
 
@@ -174,10 +176,10 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetDlgItemText(hwnd, INFO_FS, FileSystem);
 	      WinSetDlgItemText(hwnd, INFO_LABEL, volser.volumelabel);
 	      sprintf(s, "%lx", volser.serial);
-              WinSetDlgItemText(hwnd, INFO_SERIAL, s);
-              FlagMsg(*pszFileName, s);
+	      WinSetDlgItemText(hwnd, INFO_SERIAL, s);
+	      FlagMsg(*pszFileName, s);
 	      WinSetDlgItemText(hwnd, INFO_FLAGS, s);
-              if (!(driveflags[toupper(*pszFileName) - 'A'] & DRIVE_NOSTATS)){
+	      if (!(driveflags[toupper(*pszFileName) - 'A'] & DRIVE_NOSTATS)){
 	      CommaFmtULL(szMB, sizeof(szMB),
 			  (ULONGLONG) fsa.cUnit *
 			  (fsa.cSectorUnit * fsa.cbSector), 'M');
@@ -228,10 +230,10 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      sprintf(s, "%u%%", percentused);
 	      WinSetDlgItemText(hwnd, INFO_USEDPERCENT, s);
 	      sprintf(s, "%u%%", percentfree);
-              WinSetDlgItemText(hwnd, INFO_FREEPERCENT, s);
-              }
-              else
-                 WinSetDlgItemText(hwnd, INFO_AVAILABLE, GetPString(IDS_STATSMEANINGLESSTEXT));
+	      WinSetDlgItemText(hwnd, INFO_FREEPERCENT, s);
+	      }
+	      else
+		 WinSetDlgItemText(hwnd, INFO_AVAILABLE, GetPString(IDS_STATSMEANINGLESSTEXT));
 	    }
 	    else {
 	      sprintf(FileSystem,
@@ -327,17 +329,19 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
-typedef struct
-{
+typedef struct {
   USHORT size;
-  USHORT dummy;
-  PFNWP oldproc;
-  HWND lasthwndMenu;
   CHAR szFileName[CCHMAXPATH];
   CHAR **list;
   BOOL madechanges;
-}
-ICONSTUF;
+} FILESTUF;
+
+typedef struct {
+  USHORT size;
+  PFNWP oldproc;
+  FILESTUF *pfs;
+  HWND lasthwndMenu;
+} ICONSTUF;
 
 /*
  * subclass routine to allow changing a program's icon
@@ -345,10 +349,17 @@ ICONSTUF;
 
 MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  ICONSTUF *is;
+  ICONSTUF *pis = (ICONSTUF *)WinQueryWindowPtr(hwnd, QWL_USER);
+  MRESULT mr;
+  CHAR *p;
+
   static BOOL emphasized = FALSE;
 
-  is = (ICONSTUF *) WinQueryWindowPtr(hwnd, QWL_USER);
+  if (!pis) {
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    if (msg != WM_DESTROY)
+      return WinDefWindowProc(hwnd, msg, mp1, mp2);
+  }
 
   switch (msg) {
   case DM_DRAGOVER:
@@ -382,16 +393,16 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ici.cb = sizeof(ICONINFO);
 	ici.fFormat = ICON_FILE;
 	ici.pszFileName = szFrom;
-	if (!WinSetFileIcon((PSZ) is->szFileName, (PICONINFO) & ici)) {
+	if (!WinSetFileIcon((PSZ) pis->pfs->szFileName, (PICONINFO) & ici)) {
 	  ici.fFormat = ICON_CLEAR;
-	  WinSetFileIcon((PSZ) is->szFileName, (PICONINFO) & ici);
+	  WinSetFileIcon((PSZ) pis->pfs->szFileName, (PICONINFO) & ici);
 	}
-	hptr = WinLoadFileIcon(is->szFileName, FALSE);
+	hptr = WinLoadFileIcon(pis->pfs->szFileName, FALSE);
 	if (!hptr)
-	  hptr = (!IsFile(is->szFileName)) ? hptrDir : hptrFile;
-	if (is && is->oldproc) {
+	  hptr = (!IsFile(pis->pfs->szFileName)) ? hptrDir : hptrFile;
+	if (pis && pis->oldproc) {
 	  WinShowWindow(hwnd, FALSE);
-	  is->oldproc(hwnd, SM_SETHANDLE, MPFROMLONG(hptr), MPVOID);
+	  pis->oldproc(hwnd, SM_SETHANDLE, MPFROMLONG(hptr), MPVOID);
 	  WinShowWindow(hwnd, TRUE);
 	  WinInvalidateRect(WinQueryWindow(hwnd, QW_PARENT), NULL, TRUE);
 	}
@@ -400,40 +411,28 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_PAINT:
-    if (is) {
-
-      MRESULT mr;
-
-      mr = is->oldproc(hwnd, msg, mp1, mp2);
-      PaintRecessedWindow(hwnd, (HPS) 0, FALSE, FALSE);
-      return mr;
-    }
+    mr = pis->oldproc(hwnd, msg, mp1, mp2);
+    PaintRecessedWindow(hwnd, (HPS) 0, FALSE, FALSE);
+    return mr;
     break;
 
   case WM_MENUEND:
-    if (is) {
-      if (is->lasthwndMenu == (HWND) mp2)
-	WinDestroyWindow(is->lasthwndMenu);
-      is->lasthwndMenu = (HWND) 0;
-    }
+    if (pis->lasthwndMenu == (HWND)mp2)
+      WinDestroyWindow(pis->lasthwndMenu);
+    pis->lasthwndMenu = (HWND) 0;
     break;
 
   case WM_CONTEXTMENU:
-    if (is) {
-
-      CHAR *p;
-
-      if (is->lasthwndMenu)
-	WinDestroyWindow(is->lasthwndMenu);
-      is->lasthwndMenu = WinLoadMenu(hwnd, FM3ModHandle, FLE_FRAME);
-      if (is->lasthwndMenu) {
-	p = strrchr(is->szFileName, '.');
-	if (!p || (stricmp(p, ".ICO") && stricmp(p, ".PTR")))
-	  WinSendMsg(is->lasthwndMenu,
-		     MM_DELETEITEM,
-		     MPFROM2SHORT(IDM_SELECTALL, TRUE), MPVOID);
-	PopupMenu(hwnd, hwnd, is->lasthwndMenu);
-      }
+    if (pis->lasthwndMenu)
+      WinDestroyWindow(pis->lasthwndMenu);
+    pis->lasthwndMenu = WinLoadMenu(hwnd, FM3ModHandle, FLE_FRAME);
+    if (pis->lasthwndMenu) {
+      p = strrchr(pis->pfs->szFileName, '.');
+      if (!p || (stricmp(p, ".ICO") && stricmp(p, ".PTR")))
+	WinSendMsg(pis->lasthwndMenu,
+		   MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_SELECTALL, TRUE), MPVOID);
+      PopupMenu(hwnd, hwnd, pis->lasthwndMenu);
     }
     break;
 
@@ -447,29 +446,29 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		FM3ModHandle,
 		SETICON_FRAME,
 		(PVOID) ((SHORT1FROMMP(mp1) == IDM_SELECTALL) ?
-			 is->szFileName : NULL));
+			 pis->pfs->szFileName : NULL));
       break;
     }
     return 0;
 
   case WM_DESTROY:
     emphasized = FALSE;
-    if (is && is->lasthwndMenu) {
-      WinDestroyWindow(is->lasthwndMenu);
-      is->lasthwndMenu = (HWND) 0;
+    if (pis && pis->lasthwndMenu) {
+      WinDestroyWindow(pis->lasthwndMenu);
+      pis->lasthwndMenu = (HWND)0;
     }
+    if (!pis)
+      return WinDefWindowProc(hwnd, msg, mp1, mp2);
     break;
   }
 
-  if (is && is->oldproc)
-    return is->oldproc(hwnd, msg, mp1, mp2);
-  else
-    return WinDefWindowProc(hwnd, msg, mp1, mp2);
+  return pis->oldproc(hwnd, msg, mp1, mp2);
 }
 
 MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  ICONSTUF *is;
+  FILESTUF *pfs;
+  ICONSTUF *pis;
 
   switch (msg) {
   case WM_INITDLG:
@@ -477,14 +476,14 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 1);
       break;
     }
-    is = xmallocz(sizeof(ICONSTUF), pszSrcFile, __LINE__);
-    if (!is) {
+    pfs = xmallocz(sizeof(FILESTUF), pszSrcFile, __LINE__);
+    if (!pfs) {
       WinDismissDlg(hwnd, 1);
       break;
     }
-    is->list = (CHAR **) mp2;
-    is->size = sizeof(ICONSTUF);
-    WinSetWindowPtr(hwnd, QWL_USER, is);
+    pfs->list = (CHAR **) mp2;
+    pfs->size = sizeof(FILESTUF);
+    WinSetWindowPtr(hwnd, QWL_USER, pfs);
     {
       USHORT ids[] = { FLE_SIZES, FLE_SLACK, FLE_LASTWRITE, FLE_CREATE,
 	FLE_LASTACCESS, 0
@@ -492,9 +491,9 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       INT x;
       CHAR s[CCHMAXPATH];
 
-      for (x = 0; is->list[x]; x++) {
-	if (DosQueryPathInfo(is->list[x], FIL_QUERYFULLNAME, s, sizeof(s)))
-	  strcpy(s, is->list[x]);
+      for (x = 0; pfs->list[x]; x++) {
+	if (DosQueryPathInfo(pfs->list[x], FIL_QUERYFULLNAME, s, sizeof(s)))
+	  strcpy(s, pfs->list[x]);
 	WinSendDlgItemMsg(hwnd,
 			  FLE_NAME,
 			  LM_INSERTITEM,
@@ -511,8 +510,15 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SetPresParams(WinWindowFromID(hwnd, ids[x]),
 		      &RGBGREY, &RGBBLACK, &RGBBLACK, NULL);
     }
-    WinSetWindowPtr(WinWindowFromID(hwnd, FLE_ICON), QWL_USER, (PVOID) is);
-    is->oldproc = WinSubclassWindow(WinWindowFromID(hwnd, FLE_ICON),
+    pis = xmallocz(sizeof(ICONSTUF), pszSrcFile, __LINE__);
+    if (!pis) {
+      WinDismissDlg(hwnd, 1);
+      break;
+    }
+    WinSetWindowPtr(WinWindowFromID(hwnd, FLE_ICON), QWL_USER, (PVOID) pis);
+    pis->size = sizeof(ICONSTUF);
+    pis->pfs = pfs;
+    pis->oldproc = WinSubclassWindow(WinWindowFromID(hwnd, FLE_ICON),
 				    IconProc);
     break;
 
@@ -524,20 +530,20 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case FLE_HIDDEN:
       switch (SHORT2FROMMP(mp1)) {
       case BN_CLICKED:
-	is = WinQueryWindowPtr(hwnd, QWL_USER);
-	if (is && *is->szFileName) {
+	pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+	if (pfs && *pfs->szFileName) {
 
 	  LISTINFO li;
 	  INT numfiles = 0, numalloc = 0;
 
 	  memset(&li, 0, sizeof(LISTINFO));
-	  if (!AddToList(is->szFileName, &li.list, &numfiles, &numalloc)) {
+	  if (!AddToList(pfs->szFileName, &li.list, &numfiles, &numalloc)) {
 	    if (WinDlgBox(HWND_DESKTOP,
 			  hwnd,
 			  AttrListDlgProc,
 			  FM3ModHandle,
 			  ATR_FRAME, MPFROMP(&li)) && li.list && li.list[0]) {
-	      is->madechanges = TRUE;
+	      pfs->madechanges = TRUE;
 	      WinSendMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
 	    }
 	    FreeList(li.list);
@@ -550,8 +556,8 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case LN_ENTER:
       case LN_SELECT:
-	is = WinQueryWindowPtr(hwnd, QWL_USER);
-	if (!is) {
+	pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+	if (!pfs) {
 	  Runtime_Error(pszSrcFile, __LINE__, "no data");
 	  WinDismissDlg(hwnd, 1);
 	}
@@ -564,18 +570,18 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					      LM_QUERYSELECTION,
 					      MPFROMSHORT(LIT_FIRST), MPVOID);
 	  if (sSelect >= 0) {
-	    *is->szFileName = 0;
+	    *pfs->szFileName = 0;
 	    WinSendDlgItemMsg(hwnd,
 			      FLE_NAME,
 			      LM_QUERYITEMTEXT,
 			      MPFROM2SHORT(sSelect, CCHMAXPATH),
-			      MPFROMP(is->szFileName));
-	    if (*is->szFileName) {
+			      MPFROMP(pfs->szFileName));
+	    if (*pfs->szFileName) {
 	      if (SHORT2FROMMP(mp1) == LN_SELECT)
 		WinSendMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
 	      else
 		DefaultView(hwnd,
-			    (HWND) 0, (HWND) 0, NULL, 32, is->szFileName);
+			    (HWND) 0, (HWND) 0, NULL, 32, pfs->szFileName);
 	    }
 	  }
 	}
@@ -609,8 +615,8 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, FLE_PHYSDRV, FALSE);
     WinCheckButton(hwnd, FLE_VIRTDRV, FALSE);
     WinCheckButton(hwnd, FLE_PROTDLL, FALSE);
-    is = WinQueryWindowPtr(hwnd, QWL_USER);
-    if (is && *is->szFileName) {
+    pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+    if (pfs && *pfs->szFileName) {
       CHAR s[97];
       FILEFINDBUF4 fs;
       HDIR hdir = HDIR_CREATE;
@@ -620,7 +626,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ARC_TYPE *info;
 
       DosError(FERR_DISABLEHARDERR);
-      if (DosFindFirst(is->szFileName,
+      if (DosFindFirst(pfs->szFileName,
 		       &hdir,
 		       FILE_NORMAL | FILE_ARCHIVED |
 		       FILE_DIRECTORY | FILE_READONLY | FILE_HIDDEN |
@@ -699,7 +705,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinCheckButton(hwnd, FLE_HIDDEN, ((fs.attrFile & FILE_HIDDEN) != 0));
 	WinCheckButton(hwnd, FLE_SYSTEM, ((fs.attrFile & FILE_SYSTEM) != 0));
 	DosError(FERR_DISABLEHARDERR);
-	if (!DosQueryAppType(is->szFileName, &apptype)) {
+	if (!DosQueryAppType(pfs->szFileName, &apptype)) {
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2FS), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2WIN), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2PM), TRUE);
@@ -753,7 +759,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_VIRTDRV), FALSE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_PROTDLL), FALSE);
 	}
-	hptr = WinLoadFileIcon(is->szFileName, FALSE);
+	hptr = WinLoadFileIcon(pfs->szFileName, FALSE);
 	WinShowWindow(WinWindowFromID(hwnd, FLE_ICON), FALSE);
 	if (hptr) {
 	  WinSendDlgItemMsg(hwnd,
@@ -767,7 +773,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OPEN), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_ISARCHIVE), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_BINARY), TRUE);
-	  fp = _fsopen(is->szFileName, "rb", SH_DENYNO);
+	  fp = _fsopen(pfs->szFileName, "rb", SH_DENYNO);
 	  if (fp) {
 	    char buff[512];
 	    ULONG len;
@@ -780,7 +786,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   FLE_BINARY,
 			   ((len && rc) ? IsBinary(buff, len) : 2));
 	    WinCheckButton(hwnd, FLE_READABLE, TRUE);
-	    info = find_type(is->szFileName, NULL);
+	    info = find_type(pfs->szFileName, NULL);
 	    if (info) {
 	      WinCheckButton(hwnd, FLE_ISARCHIVE, 1);
 	      if (info->id)
@@ -791,12 +797,12 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinCheckButton(hwnd, FLE_ISARCHIVE, 2);
 	    WinCheckButton(hwnd, FLE_BINARY, 2);
 	  }
-	  fp = _fsopen(is->szFileName, "ab", SH_DENYNO);
+	  fp = _fsopen(pfs->szFileName, "ab", SH_DENYNO);
 	  if (fp) {
 	    WinCheckButton(hwnd, FLE_WRITEABLE, TRUE);
 	    fclose(fp);
 	  }
-	  fp = _fsopen(is->szFileName, "rb", SH_DENYRW);
+	  fp = _fsopen(pfs->szFileName, "rb", SH_DENYRW);
 	  if (!fp)
 	    WinCheckButton(hwnd, FLE_OPEN, TRUE);
 	  else
@@ -816,8 +822,8 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
-      is = WinQueryWindowPtr(hwnd, QWL_USER);
-      WinDismissDlg(hwnd, (is && is->madechanges) ? 2 : 1);
+      pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+      WinDismissDlg(hwnd, (pfs && pfs->madechanges) ? 2 : 1);
       break;
     case IDM_HELP:
       if (hwndHelp)
@@ -826,33 +832,33 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROM2SHORT(HELP_INFO, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
     case FLE_SETTINGS:
-      is = WinQueryWindowPtr(hwnd, QWL_USER);
-      if (is && *is->szFileName)
-	OpenObject(is->szFileName, Settings, hwnd);
+      pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+      if (pfs && *pfs->szFileName)
+	OpenObject(pfs->szFileName, Settings, hwnd);
       break;
     case FLE_EAS:
-      is = WinQueryWindowPtr(hwnd, QWL_USER);
-      if (is && *is->szFileName) {
+      pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+      if (pfs && *pfs->szFileName) {
 
 	CHAR *list[2];
 
-	list[0] = is->szFileName;
+	list[0] = pfs->szFileName;
 	list[1] = NULL;
 	WinDlgBox(HWND_DESKTOP,
 		  hwnd, DisplayEAsProc, FM3ModHandle, EA_FRAME, (PVOID) list);
       }
       break;
     case DID_CANCEL:
-      is = WinQueryWindowPtr(hwnd, QWL_USER);
-      WinDismissDlg(hwnd, (is && is->madechanges) ? 2 : 0);
+      pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+      WinDismissDlg(hwnd, (pfs && pfs->madechanges) ? 2 : 0);
       break;
     }
     return 0;
 
   case WM_DESTROY:
-    is = WinQueryWindowPtr(hwnd, QWL_USER);
-    if (is)
-      free(is);
+    pfs = WinQueryWindowPtr(hwnd, QWL_USER);
+    if (pfs)
+      free(pfs);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -872,18 +878,18 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sprintf(s, GetPString(IDS_DRIVEFLAGSTITLETEXT), toupper(*(CHAR *) mp2));
       WinSetWindowText(hwnd, s);
 /*
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOVABLE),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_NOTWRITEABLE),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_IGNORE),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_CDROM),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_NOLONGNAMES),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOTE),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_VIRTUAL),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_RAMDISK),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_BOOT),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_INVALID),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_ZIPSTREAM),FALSE);
-        WinEnableWindow(WinWindowFromID(hwnd,DVS_NOSTATS),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOVABLE),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_NOTWRITEABLE),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_IGNORE),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_CDROM),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_NOLONGNAMES),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOTE),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_VIRTUAL),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_RAMDISK),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_BOOT),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_INVALID),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_ZIPSTREAM),FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd,DVS_NOSTATS),FALSE);
 */
       PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     }
@@ -906,11 +912,11 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, DVS_REMOTE,
 		     ((driveflags[drive] & DRIVE_REMOTE) != 0));
       WinCheckButton(hwnd,DVS_VIRTUAL,
-                     ((driveflags[drive] & DRIVE_VIRTUAL) != 0));
+		     ((driveflags[drive] & DRIVE_VIRTUAL) != 0));
       WinCheckButton(hwnd,DVS_RAMDISK,
-                     ((driveflags[drive] & DRIVE_RAMDISK) != 0));
+		     ((driveflags[drive] & DRIVE_RAMDISK) != 0));
       WinCheckButton(hwnd, DVS_BOOT,
-                     ((driveflags[drive] & DRIVE_BOOT) != 0));
+		     ((driveflags[drive] & DRIVE_BOOT) != 0));
       WinCheckButton(hwnd, DVS_INVALID,
 		     ((driveflags[drive] & DRIVE_INVALID) != 0));
       WinCheckButton(hwnd, DVS_NOPRESCAN,
@@ -927,7 +933,7 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, DVS_INCLUDEFILES,
 		     ((driveflags[drive] & DRIVE_INCLUDEFILES) != 0));
       WinCheckButton(hwnd,DVS_NOSTATS,
-                     ((driveflags[drive] & DRIVE_NOSTATS) != 0));
+		     ((driveflags[drive] & DRIVE_NOSTATS) != 0));
     }
     return 0;
 
@@ -964,10 +970,10 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  driveflags[drive] |= DRIVE_INCLUDEFILES;
 	else
 	  driveflags[drive] &= (~DRIVE_INCLUDEFILES);
-        if (WinQueryButtonCheckstate(hwnd,DVS_NOSTATS))
-          driveflags[drive] |= DRIVE_NOSTATS;
-        else
-          driveflags[drive] &= (~DRIVE_NOSTATS);
+	if (WinQueryButtonCheckstate(hwnd,DVS_NOSTATS))
+	  driveflags[drive] |= DRIVE_NOSTATS;
+	else
+	  driveflags[drive] &= (~DRIVE_NOSTATS);
 	{
 	  ULONG flags;
 	  CHAR s[80];
@@ -977,8 +983,8 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  flags &= (~(DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
 		      DRIVE_IGNORE | DRIVE_CDROM |
 		      DRIVE_NOLONGNAMES | DRIVE_REMOTE |
-                      DRIVE_BOOT | DRIVE_INVALID | DRIVE_ZIPSTREAM |
-                      DRIVE_VIRTUAL  | DRIVE_RAMDISK));
+		      DRIVE_BOOT | DRIVE_INVALID | DRIVE_ZIPSTREAM |
+		      DRIVE_VIRTUAL  | DRIVE_RAMDISK));
 	  PrfWriteProfileData(fmprof, appname, s, &flags, sizeof(ULONG));
 	}
       }
