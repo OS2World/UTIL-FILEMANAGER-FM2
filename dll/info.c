@@ -3,7 +3,7 @@
 
   $Id$
 
-  Info window
+  Info windows
 
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2006 Steven H. Levine
@@ -453,12 +453,13 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     emphasized = FALSE;
-    if (pis && pis->lasthwndMenu) {
-      WinDestroyWindow(pis->lasthwndMenu);
-      pis->lasthwndMenu = (HWND)0;
-    }
     if (!pis)
       return WinDefWindowProc(hwnd, msg, mp1, mp2);
+    else {
+      if (pis->lasthwndMenu)
+        WinDestroyWindow(pis->lasthwndMenu);
+      free(pis);
+    }
     break;
   }
 
