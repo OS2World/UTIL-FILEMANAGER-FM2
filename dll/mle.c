@@ -36,11 +36,16 @@ static PSZ pszSrcFile = __FILE__;
 #pragma alloc_text(FMMLE,MLEgetlinetext,MLEdeleteline,MLEdeletecurline,MLEdeletetoeol)
 
 #define FAKEROT 1
-#define DOROT13(c) ((FAKEROT==0)?(c):(FAKEROT==1)?(!isalpha((c)))?(c):((((c) >= (char) 'A') && \
+#define DOROT13(c)     (!isalpha((c)))?(c):((((c) >= (char) 'A') && \
+        ((c) <= (char) 'M')) || (((c) >= (char) 'a') && ((c) <= (char) 'm')))?((c) + (char) 0xd)\
+        :((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
+        ((c) - (char) 0xd):(c)
+
+/*((FAKEROT==0)?(c):(FAKEROT==1)?(!isalpha((c)))?(c):((((c) >= (char) 'A') && \
         ((c) <= (char) 'M')) || (((c) >= (char) 'a') && ((c) <= (char) 'm')))?((c) + (char) 0xd)\
         :((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
         ((c) - (char) 0xd):(c):((c) >= (char) '!') ? ((((c) + (char) 47) > (char) '~') ? ((c) - (char) 47) :\
-        ((c) + (char) 47)) : (c))
+        ((c) + (char) 47)) : (c))*/
 
 LONG MLEgetlinetext(HWND h, LONG l, CHAR * buf, INT maxlen)
 {
