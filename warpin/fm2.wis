@@ -1,0 +1,160 @@
+<WARPIN>
+
+<HEAD>
+
+<PCK INDEX=1
+  PACKAGEID="Netlabs\FM2\Base\3\5\9\20070331"
+  TITLE="FM/2 - File Manager/2"
+  TARGET="$(WARPIN_DEFAULTAPPSPATH)\FM2"
+  NODESELECT
+  BASE
+  CREATEOBJECT="WPFolder|File Manager/2|<WP_DESKTOP>|ICONFILE=$(1)\icons\fm2fldr.ICO;ICONNFILE=1,$(1)\icons\fm2fldr2.ICO;CCVIEW=YES;OBJECTID=<FM3_Folder>;"
+  CREATEOBJECT="WPFolder|FM/2 Docs|<FM3_Folder>|ICONFILE=$(1)\icons\docs.ICO;ICONNFILE=1,$(1)\icons\docs2.ICO;OBJECTID=<FM3_Docs>;"
+  CREATEOBJECT="WPProgram|FM/2|<FM3_Folder>|EXENAME=$(1)\fm3.exe;PARAMETERS=%*;STARTUPDIR=$(1);CCVIEW=YES;OBJECTID=<FM/2>;"
+  CREATEOBJECT="WPProgram|FM/2 Online Help|<FM3_Docs>|EXENAME=VIEW.EXE;PARAMETERS=$(1)\FM3.HLP;OBJECTID=<FM3HELP>;"
+  CREATEOBJECT="WPProgram|GNU General Public License|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\copying;OBJECTID=<FM3Copying>;"
+  CREATEOBJECT="WPProgram|History|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\history;OBJECTID=<FM2History>;"
+  CREATEOBJECT="WPProgram|Read Me|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\readme;OBJECTID=<FM3Readme>;"
+  CREATEOBJECT="WPProgram|Customizing^Resources|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\customizingresources.txt;OBJECTID=<FM3CustRes>;
+  EXECUTE="$(1)\cfgmgr"
+  DEEXECUTE="$(1)\cfgmgr /DELETE /UNATTENDED"
+  DEEXECUTE="del $(1)\fm3.ini & del $(1)\fm3ini.bak"
+
+>This package contains the FM/2 base package. If
+you only want a minimal FM/2 installation and none
+of the additional programs,this is only package
+you need to install.
+</PCK>
+
+<PCK INDEX=2
+  PACKAGEID="Netlabs\FM2\FM/2 LITE\3\5\9\20070331"
+  TITLE="FM/2 Lite -- A lite version of the File Manager/2"
+  TARGET="$(1)"
+  SELECT
+  REQUIRES=1
+  CREATEOBJECT="WPProgram|FM/2 Lite|<FM3_Folder>|EXENAME=$(1)\fm4.exe;PARAMETERS=%*;STARTUPDIR=$(1);CCVIEW=YES;TITLE=FM/2 LITE;OBJECTID=<FM/2 LITE>;"
+
+>This package installs FM/2 Lite.  This is a
+lite version of FM/2.  All the same power and
+speed with a simplier screen layout and fewer
+bells and whistles enabled.
+</PCK>
+
+<PCK INDEX=3
+  PACKAGEID="Netlabs\FM2\FM/2 Tools\3\5\9\20070331"
+  TITLE="Standalone FM/2 Tools"
+  TARGET="$(1)"
+  SELECT
+  REQUIRES=1
+  CREATEOBJECT="WPFolder|FM/2 Tools|<FM3_Folder>|ICONFILE=$(1)\icons\toolbox.ICO;ICONNFILE=1,$(1)\icons\toolbox2.ICO;OBJECTID=<FM3_Tools>;"
+  CREATEOBJECT="WPProgram|Bookshelf Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;TITLE=Bookshelf Viewer;STARTUPDIR=$(1);OBJECTID=<FM/2_BOOKSHELF>;"
+  CREATEOBJECT="WPProgram|Collector|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VCOLLECT.EXE;PARAMETERS=**;TITLE=Collector;STARTUPDIR=$(1);OBJECTID=<FM/2_VCOLLECT>;"
+  CREATEOBJECT="WPProgram|Databar|<FM3_Tools>|EXENAME=$(1)\FM2Tools\DATABAR.EXE;TITLE=Databar;STARTUPDIR=$(1);OBJECTID=<FM/2_DATABAR>;"
+  CREATEOBJECT="WPProgram|Dir Sizes|<FM3_Tools>|EXENAME=$(1)\FM2Tools\DIRSIZE.EXE;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=Dir Sizes;OBJECTID=<FM/2_DIRSIZE>;"
+  CREATEOBJECT="WPProgram|EA Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\EAS.EXE;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=EA Viewer;OBJECTID=<FM/2_EAVIEW>;"
+  CREATEOBJECT="WPProgram|FM/2 Utilities command line|<FM3_Tools>|EXENAME=?:\OS2\CMD.EXE;STARTUPDIR=?:\;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/K cls"
+  CREATEOBJECT="WPProgram|Global File Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\GLOBAL.EXE;TITLE=Global File Viewer;STARTUPDIR=$(1);OBJECTID=<FM/2_SEEALL>;"
+  CREATEOBJECT="WPProgram|Helpfile Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;STARTUPDIR=$(1);TITLE=Helpfile Viewer;OBJECTID=<FM2ViewInf>;"
+  CREATEOBJECT="WPProgram|INI Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\INI.EXE;STARTUPDIR=?:\Programs\FM2;PROGTYPE=PM;PARAMETERS=%*;ASSOCFILTER=*.INI,,;OBJECTID=<FM/2_INIVIEW>;"
+  CREATEOBJECT="WPProgram|Process Killer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\KILLPROC.EXE;PARAMETERS=%*;TITLE=Process Killer;STARTUPDIR=$(1);OBJECTID=<FM/2_KILLPROC>;"
+  CREATEOBJECT="WPProgram|Undeleter|<FM3_Tools>|EXENAME=$(1)\FM2Tools\UNDEL.EXE;PARAMETERS=%*;TITLE=Undeleter;STARTUPDIR=$(1);OBJECTID=<FM/2_UNDEL>;"
+  CREATEOBJECT="WPProgram|Seek and scan|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VCOLLECT.EXE;TITLE=Seek and scan;STARTUPDIR=$(1);OBJECTID=<FM/2_VSEEK>;"
+  CREATEOBJECT="WPProgram|Visual Directory|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VDIR.EXE;PARAMETERS=%*;STARTUPDIR=$(1);OBJECTID=<FM/2_VDIR>;"
+  CREATEOBJECT="WPProgram|Visual Tree|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VTREE.EXE;TITLE=Visual Tree;STARTUPDIR=$(1);OBJECTID=<FM/2_VTREE>;"
+  CREATEOBJECT="WPProgram|Archive Viewer/2|<FM3_Tools>|EXENAME=$(1)\FM2Tools\AV2.EXE;PROGTYPE=PM;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=Archive Viewer/2;OBJECTID=<FM/2_AV/2>;"
+  EXECUTE="$(1)\utilsmgr /UNATTENDED"
+  DEEXECUTE="$(1)\utilsmgr /DELETE /UNATTENDED"
+
+>This package installs a number of FM/2's tools
+as stand alone programs.  These tools are all
+built into FM/2, but can be configured to run
+as separate programs for people who prefer to
+use them this way.
+</PCK>
+
+<PCK INDEX=10
+  PACKAGEID="Netlabs\FM2\Reset FM/2 Customizations\3\5\9\20070331"
+  TITLE="Reset all FM/2 customizations to default values"
+  TARGET="$(1)"
+  REQUIRES=1
+  EXECUTE="$(1)\cfgfiles /RESET /UNATTENDED"
+
+>This package resets ALL FM/2 customizations
+to their default values. All customizations
+you may have made will be lost. DO NOT select
+this package unless this is what you desire.
+</PCK>
+
+</HEAD>
+
+<BODY>
+
+<PAGE INDEX=1 TYPE=README>
+<NEXTBUTTON TARGET=2>~Next</NEXTBUTTON>
+<TEXT>
+Click on "Next" to proceed.
+Click on "Cancel" to exit.
+</TEXT>
+<README EXTRACTFROMPCK="1">docs\readme</README>
+</PAGE>
+
+<PAGE INDEX=2 TYPE=README>
+<NEXTBUTTON TARGET=4>~I agree</NEXTBUTTON>
+<TEXT>
+By pressing the "I agree" button, you agree to all terms and conditions
+of the license agreement below.
+</TEXT>
+<README EXTRACTFROMPCK="1">docs\copying</README>
+</PAGE>
+
+<!--
+<PAGE INDEX=3 TYPE=TEXT>
+<NEXTBUTTON TARGET=4>~Continue</NEXTBUTTON>
+<TEXT>
+* I M P O R T A N T *
+
+
+If you have customized any FM/2 files you wish to
+
+SAVE, press "C a n c e l" now to exit install.
+
+
+
+If you have no customized FM/2 files, if you
+
+have already backed them up, or if you don't
+
+know understand what this page is about, press
+
+"C o n t i n u e".
+
+
+</TEXT>
+</PAGE>
+-->
+
+<!-- The TYPE=CONTAINER will list the packages which can be installed. -->
+<PAGE INDEX=4 TYPE=CONTAINER>
+<NEXTBUTTON TARGET=5>~Next</NEXTBUTTON>
+<TEXT>
+FM/2 is broken down into several installable packages.  Package 1, the base
+package must be installed. The other packages are optional.
+</TEXT>
+</PAGE>
+
+<PAGE INDEX=5 TYPE=TEXT>
+<NEXTBUTTON TARGET=0>I~nstall</NEXTBUTTON>
+<TEXT>
+It is best to install this package with FM/2 not running. This way, you
+can be sure that all the files are replaced.
+
+NOTE:  A special thanks to Mark Kimes for making this program open source
+software.  Thanks also goes to Steven Levine, Gregg Young, and others who
+have continued to improve and enhance this great program.
+
+Press "Install" to begin installing this archive.
+</TEXT>
+</PAGE>
+
+</BODY>
+</WARPIN>
