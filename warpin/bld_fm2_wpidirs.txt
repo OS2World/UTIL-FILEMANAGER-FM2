@@ -1,0 +1,140 @@
+;
+;  This is a file which will be used to automate the process of incorporating new files,
+;  directories and/or packages into the Warpin WPI file.
+;
+;  The format of this file is as follows:
+;     -  All blank lines are ignored
+;     -  For any lines which contain a semicolon (like all the
+;        lines so far), the semicolon and any text on the line
+;        following the semicolon are ignored (i.e. they are
+;        comments mean for humans reading the file)
+;     -  All lines which have non-blank text which does not
+;        follow a semicolon, must be in one of the following
+;        formats:
+;           PACKAGECOUNT: <number-of-packages>
+;           PACKAGE: <package-number>  <package-description>
+;           FILE: <name>  <pkg-num> <src-dir> <dest-dir>
+;           DUMMYFILE: <name>  <pkg-num> <dest-dir>
+;        where
+;           <number-of-packages> is the total number of packages
+;           <package-number> is package number being described
+;           <package-description> is a free-form textual description of the package
+;           <name> is a file name (without any path information>
+;           <pkg-num> is the number of the package to which this file belongs
+;           <src-dir> is the directory, relative to the base (or top) of the build subtree.
+;              NOTE: If you run BLD_FM2_WPIDIRS using an unzipped distribution of FM/2
+;              instead of the FM/2 source code build subtree, then <src_dir> is ignored.
+;              (See BLD_FM2_WPI.README for how to use an unzipped distribution of FM/2.)
+;           <dest-dir> is the directory, relative to the base (or top) of the
+;              directory selected by the user during an install, into which this file
+;              should be installed.
+;        NOTE: There can be any number of spaces (except 0) between the various parameters
+;        NOTE: A dot. '.', for src-dir or dest-dir means the base/top directory of the
+;           subtree.
+;
+;     -  The PACKAGECOUNT line should be before all PACKAGE, FILE and DUMMYFILE lines
+;     -  All the PACKAGE lines should be before all FILE and DUMMYFILE lines
+;     -  The FILE and DUMMYFILE lines should be after the PACKAGECOUNT and PACKAGE
+;        line. They may be intermixed with each other. As seen below, they have been
+;        grouped by package. This is not necessary but it will make it easier find
+;        lines that need to be changed.
+;
+;     NOTE: Warpin scripts do not require that the package numbers are consecutive. For
+;     example a script may have four packages which are numbered 1, 4, 12 and 293. For
+;     this script, this file should have:
+;        PACKAGECOUNT: 4               ; NOT 293!!
+;        And then all the package numbers on the PACKAGE, FILE and DUMMYFILE lines would
+;        be 1, 4, 12, or 293.
+;
+;     NOTE: DUMMYFILE's are used because Warpin currently does not allow packages which
+;     do not include a least one file to install. DUMMYFILE's are created dynamically
+;     as needed during the build process (which is why no src-dir is specified).
+
+PACKAGECOUNT: 4
+
+PACKAGE: 1  FM/2 Base
+PACKAGE: 2  FM/2 Lite
+PACKAGE: 3  FM/2 Tools
+
+PACKAGE: 10  Reset FM/2 customizations to defaults
+
+FILE: file_id.diz                1  .        .
+FILE: fm3.exe                    1  .        .
+FILE: fm3.hlp                    1  dll\ipf  .
+FILE: fm3dll.dll                 1  dll      .
+FILE: fm3res.dll                 1  dll      .
+FILE: fm3res.str                 1  dll      .
+;FILE: cfgfiles.cmd               1  .        .
+FILE: cfgmgr.cmd                 1  .        .
+
+FILE: COPYING                    1  .        Docs
+FILE: CustomizingResources.txt   1  .        Docs
+FILE: HISTORY                    1  .        Docs
+FILE: README                     1  .        Docs
+;FILE: readme.org                 1  .        Docs
+
+FILE: docs.ico                   1  Icons    Icons
+FILE: docs2.ico                  1  Icons    Icons
+FILE: fm2fldr.ico                1  Icons    Icons
+FILE: fm2fldr2.ico               1  Icons    Icons
+
+FILE: archiver.tmp               1  .        Tmplates     ;was Install
+FILE: assoc.tmp                  1  .        Tmplates     ;was Install
+FILE: cmds.tmp                   1  .        Tmplates     ;was Install
+FILE: commands.tmp               1  .        Tmplates     ;was Install
+FILE: config.tmp                 1  .        Tmplates     ;was Install
+FILE: example.tmp                1  .        Tmplates     ;was Install
+FILE: fatopt.tmp                 1  .        Tmplates     ;was Install
+FILE: files.tmp                  1  .        Tmplates     ;was Install
+FILE: filters.tmp                1  .        Tmplates     ;was Install
+FILE: fm3tools.tmp               1  .        Tmplates     ;was Install
+FILE: hpfsopt.tmp                1  .        Tmplates     ;was Install
+;FILE: install.cmd                1  .        Tmplates     ;was Install
+;FILE: install.dat                1  .        Tmplates     ;was Install
+FILE: jfsopt.tmp                 1  .        Tmplates     ;was Install
+FILE: quicktls.tmp               1  .        Tmplates     ;was Install
+FILE: select.tmp                 1  .        Tmplates     ;was Install
+FILE: sort.tmp                   1  .        Tmplates     ;was Install
+;FILE: uninstal.cmd               1  .        Tmplates     ;was Install
+FILE: utils.tmp                  1  .        Tmplates     ;was Install
+FILE: views.tmp                  1  .        Tmplates     ;was Install
+
+FILE: fm2dump.cmd                1  debugtools    .
+FILE: fm2dump2.cmd               1  debugtools    .
+
+FILE: fm4.exe           2  .  .
+
+FILE: av2.exe           3  .  FM2Tools              ; was .
+FILE: databar.exe       3  .  FM2Tools              ; was .
+FILE: dirsize.exe       3  .  FM2Tools              ; was .
+FILE: eas.exe           3  .  FM2Tools              ; was .
+FILE: global.exe        3  .  FM2Tools              ; was .
+FILE: ini.exe           3  .  FM2Tools              ; was .
+FILE: killproc.exe      3  .  FM2Tools              ; was .
+FILE: sysinfo.exe       3  .  FM2Tools              ; was .
+FILE: undel.exe         3  .  FM2Tools              ; was .
+FILE: vcollect.exe      3  .  FM2Tools              ; was .
+FILE: vdir.exe          3  .  FM2Tools              ; was .
+FILE: viewinfs.exe      3  .  FM2Tools              ; was .
+FILE: vtree.exe         3  .  FM2Tools              ; was .
+
+;FILE: av2.exe           3  .  .
+;FILE: databar.exe       3  .  .
+;FILE: dirsize.exe       3  .  .
+;FILE: eas.exe           3  .  .
+;FILE: global.exe        3  .  .
+;FILE: ini.exe           3  .  .
+;FILE: killproc.exe      3  .  .
+;FILE: sysinfo.exe       3  .  .
+;FILE: undel.exe         3  .  .
+;FILE: vcollect.exe      3  .  .
+;FILE: vdir.exe          3  .  .
+;FILE: viewinfs.exe      3  .  .
+;FILE: vtree.exe         3  .  .
+
+;FILE: mkutils.cmd       3  .  .
+FILE: utilsmgr.cmd      3  .  .
+FILE: toolbox.ico       3  Icons    Icons
+FILE: toolbox2.ico      3  Icons    Icons
+
+DUMMYFILE: keep.me      10    .
