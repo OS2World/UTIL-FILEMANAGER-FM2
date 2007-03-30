@@ -20,7 +20,7 @@ BASE = fm3
 
 !include makefile_pre.mk
 
-all: dll $(BASE) allexe
+all: dll $(BASE) allexe wpi
 
 # Only update resources
 res:
@@ -45,6 +45,11 @@ $(BASE).obj: $(BASE).c dll\version.h
 allexe: *.mak
   !$(MAKE) /NOLOGO /f $? /$(MAKEFLAGS)
 
+wpi:
+   cd warpin
+   $(MAKE) /nologo /$(MAKEFLAGS) all
+   cd ..
+
 # makefile_post.mk contains lxlite target for $(BASE).exe
 # Apply to each *.mak for other exes
 lxlite:: *.mak
@@ -64,6 +69,8 @@ cleanobj:
 
 clean:
   cd dll
+  $(MAKE) /nologo $(MAKEFLAGS) clean
+  cd ..\warpin
   $(MAKE) /nologo $(MAKEFLAGS) clean
   cd ..
   -del *.exe
