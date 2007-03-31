@@ -14,6 +14,7 @@ if wpi_file_date_time = dummy_date_time then
 
 infile   =  'bld_fm2_wpidirs.txt'
 
+retval = 0
 do while lines(infile) > 0
    line = translate(strip(linein(infile)))
    if line \= '' then
@@ -24,14 +25,17 @@ do while lines(infile) > 0
             file_date_time = GetDate( '..\' || dir || '\' || file )
             if file_date_time >  wpi_file_date_time then
                do
+                  retval = 1
+                  leave
+/*
                   'if exist 'flag_file' del 'flag_file
                   call lineout flag_file
-                  leave
+*/
                end
          end
 end
 
-return
+exit retval
 
 GetDate: procedure expose dummy_date_time
    parse arg file
