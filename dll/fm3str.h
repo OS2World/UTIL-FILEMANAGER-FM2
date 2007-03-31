@@ -13,6 +13,7 @@
   26 Jul 06 SHL Add new
   15 Aug 06 SHL Add new
   07 JAN 07 GKY Add new
+  31 Mar 07 GKY Removed IDS_WC window class names
 
 ***********************************************************************/
 
@@ -72,12 +73,8 @@
 #define IDS_DELETETEXT                                        47
 #define IDS_EDITTEXT                                          48
 #define IDS_10SYSPROTEXT                                      49
-#define IDS_WCOBJECTWINDOW                                    50
-#define IDS_WCBUBBLE                                          51
 #define IDS_8HELVTEXT                                         52
 #define IDS_6HELVTEXT                                         53
-#define IDS_WCTOOLBUTTONS                                     54
-#define IDS_WCDRIVEBUTTONS                                    55
 #define IDS_HELPCMDTEXT                                       56
 #define IDS_FM2TEMPTEXT                                       57
 #define IDS_8TIMESNEWROMANTEXT                                58
@@ -108,13 +105,6 @@
 #define IDS_DRAGFILEOBJTEXT                                   83
 #define IDS_RESCANSUGGESTEDTEXT                               84
 #define IDS_DRIVESMENUTEXT                                    85
-#define IDS_WCDIRCONTAINER                                    86
-#define IDS_WCDIRSTATUS                                       87
-#define IDS_WCTREECONTAINER                                   88
-#define IDS_WCTREEOPENBUTTON                                  89
-#define IDS_WCTREESTATUS                                      90
-#define IDS_WCMAINWND                                         91
-#define IDS_WCMAINWND2                                        92
 #define IDS_OPENCMDTEXT                                       93
 #define IDS_CLOSECMDTEXT                                      94
 #define IDS_SAVECMDTEXT                                       95
@@ -124,8 +114,6 @@
 #define IDS_FILTERCMDTEXT                                     99
 #define IDS_FM2CMDHELPHDRTEXT                                 100
 #define IDS_FM2CMDHELPTEXT                                    101
-#define IDS_WCAUTOVIEW                                        102
-#define IDS_WCLED                                             103
 #define IDS_8HELVBOLDTEXT                                     104
 #define IDS_4SYSTEMVIOTEXT                                    105
 #define IDS_10SYSTEMVIOTEXT                                   106
@@ -137,12 +125,7 @@
 #define IDS_COLLECTNOLISTTEXT                                 114
 #define IDS_INSEEKSCANTEXT                                    115
 #define IDS_COLLECTORTEXT                                     116
-#define IDS_WCCOLLECTOR                                       117
 #define IDS_COLLECTORTITLETEXT                                118
-#define IDS_WCCOLSTATUS                                       119
-#define IDS_WCSTATUS                                          120
-#define IDS_WCTOOLBACK                                        121
-#define IDS_WCDRIVEBACK                                       122
 #define IDS_ARCHIVERREPORTTEXT                                123
 #define IDS_SAYWHATTEXT                                       124
 #define IDS_ARCNOTTHERETEXT                                   125
@@ -176,8 +159,6 @@
 #define IDS_ARCCNRDROPHELPTEXT                                153
 #define IDS_DRAGARCMEMTEXT                                    154
 #define IDS_DRAGARCFILETEXT                                   155
-#define IDS_WCARCCONTAINER                                    156
-#define IDS_WCARCSTATUS                                       157
 #define IDS_WALKDEFAULTHELPTEXT                               158
 #define IDS_WALKRECENTDIRSTEXT                                159
 #define IDS_WALKCURRDIRTEXT                                   160
@@ -316,19 +297,10 @@
 #define IDS_UNDELETEHELPTEXT                                  293
 #define IDS_INIREADONLYTEXT                                   294
 #define IDS_FM2HELPTITLETEXT                                  295
-#define IDS_WCMLEEDITOR                                       296
-#define IDS_WCINIEDITOR                                       297
-#define IDS_WCSEEALL                                          298
-#define IDS_WCNEWVIEW                                         299
-#define IDS_WCSEESTATUS                                       300
-#define IDS_WCVIEWSTATUS                                      301
 #define IDS_SEEALLTITLETEXT                                   302
 #define IDS_UNTITLEDTEXT                                      303
 #define IDS_INTERNALVIEWERTITLETEXT                           304
 #define IDS_FM2VIEWERTITLETEXT                                305
-#define IDS_WCERRORWND                                        306
-#define IDS_WCMINITIME                                        307
-#define IDS_WCDATABAR                                         308
 #define IDS_ARCHIVETEXT                                       309
 #define IDS_ERRORACCESSTEXT                                   310
 #define IDS_EMPTYREMOVETEXT                                   311

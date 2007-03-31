@@ -26,6 +26,7 @@
   18 Feb 07 GKY More drive type and icon support
   08 Mar 07 SHL SaveDirCnrState: do not save state of NOPRESCAN volumes
   09 Mar 07 SHL RestoreDirCnrState/SaveDirCnrState: optimize and avoid overflows
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -208,10 +209,10 @@ VOID MakeMainObjWin(VOID * args)
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
       WinRegisterClass(hab2,
-		       GetPString(IDS_WCOBJECTWINDOW),
+		       (PSZ) WC_OBJECTWINDOW,
 		       MainObjectWndProc, 0, sizeof(PVOID));
       MainObjectHwnd = WinCreateWindow(HWND_OBJECT,
-				       GetPString(IDS_WCOBJECTWINDOW),
+				       WC_OBJECTWINDOW,
 				       (PSZ) NULL,
 				       0,
 				       0L,
@@ -720,7 +721,7 @@ VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
   }
 
   hwndBubble = WinCreateWindow(HWND_DESKTOP,
-			       GetPString(IDS_WCBUBBLE),
+			       WC_BUBBLE,
 			       help,
 			       WS_CLIPSIBLINGS | SS_TEXT |
 			       DT_CENTER | DT_VCENTER,
@@ -1281,7 +1282,7 @@ VOID BuildTools(HWND hwndT, BOOL resize)
     if (!fTextTools) {
       if (!(tool->flags & T_MYICON)) {
 	hwndTool = WinCreateWindow(hwndT,
-				   GetPString(IDS_WCTOOLBUTTONS),
+				   WC_TOOLBUTTONS,
 				   s,
 				   BS_NOPOINTERFOCUS |
 				   BS_BITMAP | BS_PUSHBUTTON,
@@ -1300,7 +1301,7 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 	  btc.cb = sizeof(btc);
 	  btc.hImage = hbm;
 	  hwndTool = WinCreateWindow(hwndT,
-				     GetPString(IDS_WCTOOLBUTTONS),
+				     WC_TOOLBUTTONS,
 				     NullStr,
 				     BS_NOPOINTERFOCUS |
 				     BS_BITMAP | BS_PUSHBUTTON,
@@ -1318,7 +1319,7 @@ VOID BuildTools(HWND hwndT, BOOL resize)
     }
     if (!hwndTool) {
       hwndTool = WinCreateWindow(hwndT,
-				 GetPString(IDS_WCTOOLBUTTONS),
+				 WC_TOOLBUTTONS,
 				 (!tool->text && tool->id >= IDM_COMMANDSTART
 				  && tool->id <
 				  IDM_QUICKTOOLSTART) ? command_title(tool->
@@ -1815,13 +1816,16 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  li->type = WinDlgBox(HWND_DESKTOP,
 			       hwndMain,
 			       DropListProc,
-			       FM3ModHandle, DND_FRAME, MPFROMP(&cl));
-	  if (!li->type) {
+                               FM3ModHandle, DND_FRAME, MPFROMP(&cl));
+          if (li->type == DID_ERROR)
+                  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
+                            "Drag & Drop Dialog");
+          if (!li->type) {
 	    FreeListInfo(li);
 	    return 0;
 	  }
 	  li->list = cl.list;
-	  if (!li->list || !li->list[0]) {
+          if (!li->list || !li->list[0]) {
 	    FreeListInfo(li);
 	    return 0;
 	  }
@@ -1970,7 +1974,7 @@ VOID BuildDriveBarButtons(HWND hwndT)
 	  iconid = FLOPPY_ICON;
 	sprintf(s, "#%lu", iconid);
 	hwndB = WinCreateWindow(hwndT,
-				GetPString(IDS_WCDRIVEBUTTONS),
+				WC_DRIVEBUTTONS,
 				s,
 				BS_NOPOINTERFOCUS | BS_BITMAP | BS_PUSHBUTTON,
 				0,

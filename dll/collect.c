@@ -29,6 +29,7 @@
   18 Aug 06 SHL CollectorCnrWndProc: avoid freeing NULL pointer
   31 Aug 06 SHL Disable Utilities->Seek and scan menu while busy
   31 Aug 06 SHL Correct stop scan context menu enable/disable
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -2263,13 +2264,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		cl.prompt = li->targetpath;
 		li->type = WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
 				     DropListProc, FM3ModHandle,
-				     DND_FRAME, MPFROMP(&cl));
-		if (!li->type) {
+                                     DND_FRAME, MPFROMP(&cl));
+                if (li->type == DID_ERROR)
+                  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
+                            "Drag & Drop Dialog");
+                if (!li->type) {
 		  FreeListInfo(li);
 		  return 0;
 		}
 		li->list = cl.list;
-		if (!li->list || !li->list[0]) {
+                if (!li->list || !li->list[0]) {
 		  FreeListInfo(li);
 		  return 0;
 		}
@@ -2633,7 +2637,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 GetPString(IDS_WCCOLLECTOR),
+				 WC_COLLECTOR,
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, COLLECTOR_FRAME, &hwndClient);
@@ -2713,7 +2717,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	  };
 
 	  CommonCreateTextChildren(dcd->hwndClient,
-				   GetPString(IDS_WCCOLSTATUS), ids);
+				   WC_COLSTATUS, ids);
 	}
 	if (FrameFlags & FCF_SHELLPOSITION)
 	  PostMsg(hwndClient, UM_SIZE, MPVOID, MPVOID);

@@ -10,6 +10,7 @@
 
   17 Jul 06 SHL Use Win_Error
   22 Jul 06 SHL Check more run time errors
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -182,7 +183,7 @@ HWND DoNotify(char *str)
       p = str;
 
     hwnd = WinCreateWindow(hwndP,
-			   GetPString(IDS_WCERRORWND),
+			   WC_ERRORWND,
 			   p,
 			   SS_TEXT | DT_LEFT | DT_VCENTER | WS_VISIBLE,
 			   x, y, cx, cy, hwndP, HWND_TOP, id++, NULL, NULL);

@@ -31,7 +31,7 @@
   23 Aug 06 SHL Integrate John Small's switch list title logic
   03 Nov 06 SHL Renames
   14 Mar 07 SHL ArcObjWndProc/UM_ENTER: delay before starting viewer
-
+  30 Mar 07 GKY Remove GetPString for window class names
 ***********************************************************************/
 
 #define INCL_DOS
@@ -3260,7 +3260,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
     hwndFrame = WinCreateStdWindow(hwndParent,
 				   WS_VISIBLE,
 				   &FrameFlags,
-				   GetPString(IDS_WCARCCONTAINER),
+				   WC_ARCCONTAINER,
 				   title,
 				   WS_VISIBLE | fwsAnimate,
 				   FM3ModHandle, ARC_FRAME, &hwndClient);
@@ -3365,7 +3365,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	    };
 
 	    CommonCreateTextChildren(dcd->hwndClient,
-				     GetPString(IDS_WCARCSTATUS), ids);
+				     WC_ARCSTATUS, ids);
 	  }
 	  WinEnableWindow(WinWindowFromID(dcd->hwndClient, DIR_VIEW), FALSE);
 	  dcd->hwndExtract = WinCreateWindow(dcd->hwndClient,

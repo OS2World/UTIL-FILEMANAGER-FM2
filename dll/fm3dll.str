@@ -34,8 +34,8 @@ Filter:
  Drive is invalid -- rescan if required.
 Error!
 Can't start %s %s
-                      FM/2 is free software from Mark Kimes.
-Freely redistributable.  Code available.
+
+
  You are here --> x
 Move not allowed - forcing copy
 Memory allocation failed!!!
@@ -48,12 +48,12 @@ Hide
 Delete
 Edit
 10.System Proportional
-WC_OBJECTWINDOW
-WC_BUBBLE
+
+
 8.Helvetica
 6.Helvetica
-WC_TOOLBUTTONS
-WC_DRIVEBUTTONS
+
+
 /HELP
 FM/2_Temp
 8.Times New Roman
@@ -84,13 +84,13 @@ Link
  Dragging file system object(s)...
  [Rescan suggested]
 Dri~ves...
-WC_DIRCONTAINER
-WC_DIRSTATUS
-WC_TREECONTAINER
-WC_TREEOPENBUTTON
-WC_TREESTATUS
-WC_MAINWND
-WC_MAINWND2
+
+
+
+
+
+
+
 /OPEN
 /CLOSE
 /SAVE
@@ -100,8 +100,8 @@ WC_MAINWND2
 /FILTER
                                             FM/2 mini-command line help
 Type "/OPEN path" to open a new Directory Container.\r\rType "/CLOSE path" to close a Directory Container.\r\rType "/FILTER filter" to filter a Directory Container.\r\rType "/KEEP" or "/NOKEEP" to set the type of cmd window (autoclose or not).\r\rType "/SAVE" or "/NOSAVE" to save (or not) cmd lines between sessions.\r\r[Up arrow] or [down arrow] or [+] button for listbox of previous command lines, then [Delete] to remove one or [Enter] to reuse.\r\rOr type a command to be executed (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line.
-WC_AUTOVIEW
-WC_LED
+
+
 8.Helvetica.Bold
 4.System VIO
 10.System VIO
@@ -115,12 +115,12 @@ File may not be a list.\r
 Continue to try to Collect from %s?
 Seek & scan in progress.
  Collector
-WC_COLLECTOR
+
 FM/2:  Collector
-WC_COLSTATUS
-WC_STATUS
-WC_TOOLBACK
-WC_DRIVEBACK
+
+
+
+
   **Archiver report:\n\n\n
 Say what?
 The archive you were viewing (%s) has become inaccessible.  Possible reasons:\r\r1. It's been erased.\r  a. If you were viewing it as a subarchive, you may have closed the parent archive.\r\r2. Something else has it open and is denying access.\r\r3. File system glitch (horrors) -- unlikely.
@@ -154,8 +154,8 @@ It's a good idea to specify the drive.
 Dropping here will copy the objects into the archive "%s".  If an object by the same name already exists in the archive, it'll be overwritten.
  Dragging archive member(s)...
  Dragging archive file...
-WC_ARCCONTAINER
-WC_ARCSTATUS
+
+
 Click Help for detailed info.
 Recently used dirs
 This is the 'current' directory -- type in a new one.
@@ -163,16 +163,16 @@ This is a list of recently used directories.
 This is a list of user-defined directories -- Add, Delete or double-click one.
 This is a list of drives.  Double-click one to switch to it.
 This is a list of directories.  Double-click one to 'walk' into it.
-FM/2:  Select a directory -- copy target
-FM/2:  Select a directory -- move target
-FM/2:  Select a directory -- extract
-FM/2: select directories to compare
-FM/2: set directories
+FM/2: Select a directory -- copy target
+FM/2: Select a directory -- move target
+FM/2: Select a directory -- extract
+FM/2: Select directories to compare
+FM/2: Set directories
 DUPE: Reading files
 SCAN: Searching
 Inserting...
-DUPE:  Sorting...
-DUPE:  Comparing...
+DUPE: Sorting...
+DUPE: Comparing...
 DUPE: Checked %lu of %lu
 Help
 Enter the desired text, then click Okay.
@@ -225,7 +225,7 @@ Hold -- deselecting...
 Hold -- inverting...
 Hold -- selecting...
 Dropping here can set the command line.
-FM/2:  Executing an Association
+FM/2: Executing an Association
 <Unknown DOS process>
 <Unknown process>
 Argh
@@ -293,20 +293,20 @@ Could not start thread.
 Undelete:
 Select files to undelete, then click the Okay button.  Click Cancel to exit without doing anything.  Change the mask in the entry field if desired, or select another drive from the dropdown listbox.\r\rNote this requires UNDELETE.COM to be on your PATH (it is in the default installation) and the UNDELETE environment variable to be set for the drive in CONFIG.SYS.  Type HELP UNDELETE at a command line for more information.
 The %s file has been marked ReadOnly -- please correct.
-FM/2:  Help
-WC_MLEEDITOR
-WC_INIEDITOR
-WC_SEEALL
-WC_NEWVIEW
-WC_SEESTATUS
-WC_VIEWSTATUS
-FM/2:  See all files
+FM/2: Help
+
+
+
+
+
+
+FM/2: See all files
  <Untitled>
  Internal Viewer
 FM/2 Viewer
-WC_ERRORWND
-WC_MINITIME
-WC_DATABAR
+
+
+
 archive
 Error #%lu accessing "%s"
  -- Empty or open removable drive?
@@ -329,7 +329,7 @@ Folder "%s" creation failed.
 System configuration error:
 Environment variable %s is not set.  This variable should be set in CONFIG.SYS to point to all directories containing %s files.
 No files found.
-FM/2:  View HELP files
+FM/2: View HELP files
 \r\rModule: %s\nLinenumber: %d\rOS/2 error:%s
                                   Error Message Information
 \r\rModule: %s\nLinenumber: %d\rOS/2 error: %d\rClass: %s\rAction: %s\rLocation: %s\r
@@ -490,7 +490,7 @@ Enter the # spaces to which you want tabs expanded.  Enter 0 if you want real ta
 Expand tabs to # spaces?
 FM/2: Set tabstop space equivalants
 About This Thing
-FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2006 Steven Levine and Associates, Inc.\rAll Rights Reserved
+FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2007 Steven Levine and Associates, Inc.\rAll Rights Reserved
 LAN Error report
 Your LAN is broken -- it's returning files when directories are requested.  Compensating, but expect a slowdown.\r\rNote:  FM/2 is not responsible for fixing broken LANs.  Contact your LAN supplier and advise them that your LAN does not properly respond to DosFindFirst requests with MUST_HAVE_DIRECTORY set.  If your LAN supplier would like more information on their bug, have them contact me at one of the addresses in the READ.ME file.\r\rClick No to stop this notice from showing again for awhile.
 Don't forget
@@ -546,15 +546,15 @@ Okay
 Create new file?
 FM/2: Enter export filename
 %s exists.  Erase?
-FM/2:  Rearrange tools
-FM/2:  Edit tool
+FM/2: Rearrange tools
+FM/2: Edit tool
 This is the quick help text.
 This is the button text.
 This is the button ID -- click Help for list.
 Duplicate
 That ID already has a tool.
 FM/2: Pick tool to %0.81s
-FM/2:  Load Toolbox
+FM/2: Load Toolbox
 OS/2 can't find directory "%s"?
 There are no more directories under there...
 PM limit encountered
@@ -619,18 +619,18 @@ Files containing mask lists.
 Masks (one per line) of applnames to include/exclude.
 Filtering...
 (Was "%s")
-FM/2:  Rename application
-FM/2:  Copy application
-FM/2:  Rename keyword
-FM/2:  Copy keyword
+FM/2: Rename application
+FM/2: Copy application
+FM/2: Rename keyword
+FM/2: Copy keyword
 Requested user profile "%s" can't be opened.
 Requested system profile "%s" can't be opened.
 PrfReset failed.
-FM/2:  Swap OS/2 INIs
+FM/2: Swap OS/2 INIs
 PrfQueryProfile failed.
 Success!
-FM/2:  Edit INI entry
-Data appears to be binary.  The edit control does not support binary data directly.  The data is probably not human-editable, but you can use \\-encoding if you know what you're doing.  WARNING:  Clicking Okay or pressing [Enter] can result in data loss.  Press [Escape] to avoid possible loss!
+FM/2: Edit INI entry
+Data appears to be binary. The edit control does not support binary data directly. The data is probably not human-editable, but you can use \\-encoding if you know what you're doing.  WARNING:  Clicking Okay or pressing [Enter] can result in data loss.  Press [Escape] to avoid possible loss!
 App/keyname pair already exists in the INI file.
 Applications:
 Keywords:
@@ -639,12 +639,12 @@ Data bytes:
 Can't open "%s" as an OS/2 INI file.\rNote:  If you receive a WIN 1302 error, it indicates that the INI file is corrupt.
 Do you want to delete keyname "%s"?
 Do you want to delete application "%s"?
-FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2006 Steven Levine and Associates, Inc.\rAll Rights Reserved
+FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2007 Steven Levine and Associates, Inc.\rAll Rights Reserved
 5.System VIO
 FM/2: INI "%s"
-Enter the characters to find.\r\rInput is case insensitive.  Leading\rspaces are not stripped.  Find\rnexts are made after the current\ritem, find firsts always start at\rthe top.  Beep means no (more)\rmatches.
+Enter the characters to find.\r\rInput is case insensitive. Leading\rspaces are not stripped. Find\rnexts are made after the current\ritem, find firsts always start at\rthe top.  Beep means no (more)\rmatches.
 String to find:
-FM/2:  Find INI string
+FM/2: Find INI string
   Mem:\32
 Wipe all lines
 Delete highlighted line
@@ -657,7 +657,7 @@ Toggle "/KEEP"
 Toggle "/SAVE"
 Can't find this file.
 Must be run through command processor (i.e. "CMD.EXE /C ...")
-OS/2 says:  Not a directly executable type.
+OS/2 says: Not a directly executable type.
 Acceptable apptype
 DOS
 Windows Real
@@ -687,12 +687,12 @@ List of files printed.
 (FM/2 twiddling thumbs)
 Nothing printable selected.
 FM/2 drop help
-OS/2 won't let me query EA "%s" from "%s" because it can't get read/write access to it.  That means the object is in use by another program or OS/2, or is a running program itself.
-OS/2 won't let me assign EA "%s" on object "%s" because it can't get read/write access to it.  The object might be in use by another process or OS/2, or might itself be a running program.
+OS/2 won't let me query EA "%s" from "%s" because it can't get read/write access to it. That means the object is in use by another program or OS/2, or is a running program itself.
+OS/2 won't let me assign EA "%s" on object "%s" because it can't get read/write access to it. The object might be in use by another process or OS/2, or might itself be a running program.
 Error setting EA "%s" on object "%s" offset %ld
 Error querying EA "%s"
 %s%s%s%s%s%s\rNote that only the List, Create and Extract commands were checked.
-List exe not found!  Are path and filename right?\r
+List exe not found! Are path and filename right?\r
 OS/2 bombed checking list exe.\r
 Bad list exe!\r
 No list exe given!\r
@@ -742,8 +742,8 @@ You have disabled the ability to select more than one object at a time in Direct
 
 
 
-FM/2:  Default DirCnr filter
-FM/2:  Default Collector filter
+FM/2: Default DirCnr filter
+FM/2: Default Collector filter
 Don't forget...
 The System Menu contains the command to unhide the pulldown menu.
 ~DirCnrs
@@ -803,7 +803,7 @@ WPS Move
 WPS Copy
 are
 is
-FM/2:  Execute do-it-yourself command line
+FM/2: Execute do-it-yourself command line
 Making objects...
 Made objects...
 You have elected to %sdelete the object%s above.
@@ -846,7 +846,7 @@ FM/2: Drive flags (drive %c:)
 PATH DPATH LIBPATH HELP BOOKSHELF LIB INCLUDE LOCPATH SMINCLUDE LPATH CODELPATH
 %%Environment%%
 You must check at least one criterion or Cancel the operation.
-FM/2:  Trouble...
+FM/2: Trouble...
 Can't load help.%s
   I'll continue, but you should find FM3.HLP and place it into FM/2's working directory.
 
@@ -940,7 +940,7 @@ Text
 -Mini
 Date
 Dropping here can set the command line.
-FM/2:  Executing a Command
+FM/2: Executing a Command
 <Unknown>
 Attach request
 Detach request
@@ -968,7 +968,7 @@ PrfQueryProfileData
 DosQCurDisk failed
 No window
 2.System VIO
-FM/2:  Makearc\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32
+FM/2: Makearc\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32
 Usage:\r\rMAKEARC <file or directory to archive>\r
 Unable to load FM3RES.DLL
 FM3RES.DLL is %s.\r\r%lu %lu\r\r%lu %lu\r\r%lu
@@ -978,7 +978,7 @@ unloadable.
 Recent dirs (%s)
 opened
 all
-FM/2:  Walk to Target directory%s%s%s
+FM/2: Walk to Target directory%s%s%s
 Clear Target directory?
 Do you want to clear the Target directory (in other words, have no preset Target directory)?
 5.Helv

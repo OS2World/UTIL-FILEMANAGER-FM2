@@ -10,6 +10,7 @@
 
   26 Jul 06 SHL Check more run time errors
   02 Nov 06 SHL Comments
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -66,10 +67,10 @@ VOID MakeObjWin(VOID * args)
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
       WinRegisterClass(hab2,
-		       GetPString(IDS_WCOBJECTWINDOW),
+		       WC_OBJECTWINDOW,
 		       ObjectWndProc, 0, sizeof(PVOID));
       ObjectHwnd = WinCreateWindow(HWND_OBJECT,
-				   GetPString(IDS_WCOBJECTWINDOW),
+				   WC_OBJECTWINDOW,
 				   (PSZ) NULL,
 				   0,
 				   0L,

@@ -92,6 +92,7 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
 
   register ULONG len, blen;
   BOOL ret = FALSE;
+  APIRET rc;
 
   if (pDItem && buffer && buflen) {	/* else error calling function */
     *buffer = 0;			/* zero buffer */
@@ -109,20 +110,27 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
     buffer[blen + len] = 0;
     {					/* be sure we get full pathname of file/directory */
       char szTemp[CCHMAXPATH + 2];
-
-      if (!DosQueryPathInfo(buffer,
-			    FIL_QUERYFULLNAME, szTemp, sizeof(szTemp))) {
+      rc = DosQueryPathInfo(buffer,
+			    FIL_QUERYFULLNAME, szTemp, sizeof(szTemp));
+      if (!rc) {
 	strncpy(buffer, szTemp, buflen);
-	buffer[buflen - 1] = 0;
+        buffer[buflen - 1] = 0;
       }
+      else
+       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "DosQueryPathInfo");
     }
     {					/* be sure that file/directory is accessible */
-      FILESTATUS3 fsa3;
+        FILESTATUS3 fsa3;
 
-      if (!DosQueryPathInfo(buffer, FIL_STANDARD, &fsa3, sizeof(fsa3)))
+      rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fsa3, sizeof(fsa3));
+      if (!rc)
 	ret = TRUE;
-      else
-	*buffer = 0;
+      else {
+          Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    "DosQueryPathInfo");
+          *buffer = 0;
+      }
     }
   }
   return ret;

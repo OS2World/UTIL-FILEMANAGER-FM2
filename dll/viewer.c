@@ -11,6 +11,7 @@
   23 May 05 SHL Use QWL_USER
   17 Jul 06 SHL Use Runtime_Error
   31 Aug 06 SHL Sync with disable_menuitem changes
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -96,7 +97,7 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
   hwndFrame = WinCreateStdWindow(hwndClient,
 				 WS_VISIBLE,
 				 &flFrameFlags,
-				 GetPString(IDS_WCMLEEDITOR),
+				 WC_MLEEDITOR,
 				 NullStr,
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, MLE_FRAME, &hwnd);

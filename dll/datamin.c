@@ -17,6 +17,7 @@
   22 Jul 06 SHL Check more run time errors
   02 Jan 07 GKY Changed drive information string formating to accomodate 6 char FS names
   07 Jan 07 GKY Move error strings etc. to string file
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -217,7 +218,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       for (c = 0; ids[c]; c++) {
 	if (!WinCreateWindow(hwnd,
-			     GetPString(IDS_WCMINITIME),
+			     WC_MINITIME,
 			     NullStr,
 			     SS_TEXT | DT_CENTER | DT_VCENTER | WS_VISIBLE,
 			     x,
@@ -277,7 +278,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	for (c = 2; c < 26; c++) {
 	  if ((ulDriveMap & (1L << c)) && !(driveflags[c] & drivestyle)) {
 	    if (!WinCreateWindow(hwnd,
-				 GetPString(IDS_WCMINITIME),
+				 WC_MINITIME,
 				 NullStr,
 				 SS_TEXT | DT_CENTER | DT_VCENTER |
 				 WS_VISIBLE, x, y, MINI_X, MINI_Y, hwnd,
@@ -918,7 +919,7 @@ HWND CreateDataBar(HWND hwndParent, ULONG fl)
   if (WinCreateStdWindow(hwndParent,
 			 WS_VISIBLE,
 			 &FrameFlags,
-			 GetPString(IDS_WCDATABAR),
+			 WC_DATABAR,
 			 NULL, WS_VISIBLE, 0, MINI_FRAME, &hwndClient)) {
     WinSendMsg(hwndClient, UM_RESTORE, MPFROMLONG(fl), MPVOID);
   }

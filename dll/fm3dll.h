@@ -38,6 +38,7 @@
   17 Feb 07 GKY Add more file system types
   17 Feb 07 GKY Add SelectDriveIcon to streamline update.c
   18 Mar 07 GKY Add MM import typedefines for fix for files misindentified as multimedia
+  30 Mar 07 GKY Defined golbals for removing GetPString for window class names
 
 ***********************************************************************/
 
@@ -1388,6 +1389,11 @@ DATADEF BOOL prnpagenums, prnformat, prnformfeedbefore, prnformfeedafter,
 DATADEF LINKDIRS *udirhead, *ldirhead;
 DATADEF LINKCMDS *cmdhead, *cmdtail;
 DATADEF BOOL cmdloaded;
+DATADEF CHAR *WC_OBJECTWINDOW, *WC_BUBBLE, *WC_TOOLBUTTONS, *WC_DRIVEBUTTONS, *WC_DIRCONTAINER,
+  *WC_DIRSTATUS, *WC_TREECONTAINER, *WC_TREEOPENBUTTON, *WC_TREESTATUS, *WC_MAINWND,
+  *WC_MAINWND2, *WC_AUTOVIEW, *WC_LED, *WC_COLLECTOR, *WC_COLSTATUS, *WC_STATUS, *WC_TOOLBACK,
+  *WC_DRIVEBACK, *WC_ARCCONTAINER, *WC_ARCSTATUS, *WC_MLEEDITOR, *WC_INIEDITOR, *WC_SEEALL,
+  *WC_NEWVIEW, *WC_SEESTATUS, *WC_VIEWSTATUS, *WC_ERRORWND, *WC_MINITIME, *WC_DATABAR;
 
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL3)

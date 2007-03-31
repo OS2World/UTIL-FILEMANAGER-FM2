@@ -15,6 +15,7 @@
   07 Jan 07 GKY Move error strings etc. to string file
   07 Jan 07 GKY Updated Helv font to vector font Helvetica
   22 Mar 07 GKY Use QWL_USER
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -339,7 +340,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 
   // Create a children of frame window
   hwndStatus = WinCreateWindow(hwndFrame,
-			       GetPString(IDS_WCSTATUS),
+			       WC_STATUS,
 			       "Status",
 			       WS_VISIBLE | SS_TEXT | DT_LEFT |
 			       DT_VCENTER,
@@ -358,7 +359,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndStatus2 = WinCreateWindow(hwndFrame,
-				GetPString(IDS_WCSTATUS),
+				WC_STATUS,
 				"Status2",
 				WS_VISIBLE | SS_TEXT | DT_LEFT |
 				DT_VCENTER,
@@ -378,7 +379,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndAttr = WinCreateWindow(hwndFrame,
-			     GetPString(IDS_WCSTATUS),
+			     WC_STATUS,
 			     "Attr",
 			     WS_VISIBLE | SS_TEXT | DT_CENTER |
 			     DT_VCENTER,
@@ -396,7 +397,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndDate = WinCreateWindow(hwndFrame,
-			     GetPString(IDS_WCSTATUS),
+			     WC_STATUS,
 			     "Date",
 			     WS_VISIBLE | SS_TEXT | DT_CENTER |
 			     DT_VCENTER,
@@ -414,7 +415,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndName = WinCreateWindow(hwndFrame,
-			     GetPString(IDS_WCSTATUS),
+			     WC_STATUS,
 			     "Name",
 			     WS_VISIBLE | SS_TEXT | DT_LEFT |
 			     DT_VCENTER,
@@ -432,7 +433,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndTmp = WinCreateWindow(hwndFrame,
-			    GetPString(IDS_WCTOOLBACK),
+			    WC_TOOLBACK,
 			    NullStr,
 			    WS_VISIBLE | SS_TEXT | DT_CENTER | DT_VCENTER,
 			    swp->x +
@@ -449,7 +450,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndBack = WinCreateWindow(hwndFrame,
-			     GetPString(IDS_WCDRIVEBACK),
+			     WC_DRIVEBACK,
 			     NullStr,
 			     WS_VISIBLE | SS_TEXT | DT_RIGHT | DT_BOTTOM,
 			     swp->x +
@@ -468,7 +469,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndLED = WinCreateWindow(hwndFrame,
-			    GetPString(IDS_WCLED),
+			    WC_LED,
 			    "#920",
 			    WS_VISIBLE | SS_BITMAP,
 			    swp->cx - 58,
@@ -479,7 +480,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndLEDHdr = WinCreateWindow(hwndFrame,
-			       GetPString(IDS_WCLED),
+			       WC_LED,
 			       "0",
 			       WS_VISIBLE | SS_TEXT | DT_VCENTER |
 			       DT_CENTER,
@@ -492,7 +493,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
   hwndAutoview = WinCreateWindow(hwndFrame,
-				 GetPString(IDS_WCAUTOVIEW),
+				 WC_AUTOVIEW,
 				 NullStr,
 				 WS_VISIBLE | SS_TEXT | DT_LEFT |
 				 DT_TOP | DT_WORDBREAK,

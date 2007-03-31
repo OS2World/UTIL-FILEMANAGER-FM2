@@ -20,6 +20,7 @@
   26 Jul 06 SHL Use chop_at_crnl
   15 Aug 06 SHL Rework warning message text
   07 Jan 07 GKY Move error strings etc. to string file
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -2863,13 +2864,16 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      cl.prompt = li->targetpath;
 	      li->type = WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
 				   DropListProc, FM3ModHandle,
-				   DND_FRAME, MPFROMP(&cl));
-	      if (!li->type) {
+                                   DND_FRAME, MPFROMP(&cl));
+              if (li->type == DID_ERROR)
+                  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
+                            "Drag & Drop Dialog");
+              if (!li->type) {
 		FreeListInfo(li);
 		return 0;
 	      }
 	      li->list = cl.list;
-	      if (!li->list || !li->list[0]) {
+              if (!li->list || !li->list[0]) {
 		FreeListInfo(li);
 		return 0;
 	      }
@@ -3369,7 +3373,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
     hwndFrame = WinCreateStdWindow(hwndParent,
 				   WS_VISIBLE,
 				   &FrameFlags,
-				   GetPString(IDS_WCDIRCONTAINER),
+				   WC_DIRCONTAINER,
 				   NULL,
 				   WS_VISIBLE | fwsAnimate,
 				   FM3ModHandle, DIR_FRAME, &hwndClient);
@@ -3431,7 +3435,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	    if (!(flags & 2))
 	      ids[6] = 0;
 	    CommonCreateTextChildren(dcd->hwndClient,
-				     GetPString(IDS_WCDIRSTATUS), ids);
+				     WC_DIRSTATUS, ids);
 	  }
 	  if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	    WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);

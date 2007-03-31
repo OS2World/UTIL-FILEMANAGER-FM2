@@ -14,7 +14,7 @@
   02 Jan 06 SHL Use QWL_USER more
   02 Jan 06 SHL Map IDM_WINDOWDLG to match IBM_TWODIRS
   17 Jul 06 SHL Use Runtime_Error
-
+  30 Mar 07 GKY Remove GetPString for window class names
 ***********************************************************************/
 
 #define INCL_DOS
@@ -1368,7 +1368,7 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
   hwndFrame = WinCreateStdWindow(HWND_DESKTOP,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 GetPString(IDS_WCMAINWND2),
+				 WC_MAINWND2,
 				 NULL,
 				 WS_VISIBLE | WS_ANIMATE,
 				 FM3ModHandle, MAIN2_FRAME, &hwndClient);

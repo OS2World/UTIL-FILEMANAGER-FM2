@@ -20,6 +20,7 @@
   19 Oct 06 SHL Correct . and .. detect
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -1136,10 +1137,10 @@ static VOID MakeSeeObjWinThread(VOID * args)
       if (hmq2) {
 	DosError(FERR_DISABLEHARDERR);
 	WinRegisterClass(hab2,
-			 GetPString(IDS_WCOBJECTWINDOW),
+			 WC_OBJECTWINDOW,
 			 SeeObjWndProc, 0, sizeof(PVOID));
 	hwndObj = WinCreateWindow(HWND_OBJECT,
-				  GetPString(IDS_WCOBJECTWINDOW),
+				  WC_OBJECTWINDOW,
 				  (PSZ) NULL,
 				  0,
 				  0L,
@@ -2514,7 +2515,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else {
 	if (!DosCreateMutexSem(NULL, &pAD->hmtxScan, 0L, FALSE)) {
 	  pAD->hwndStatus = WinCreateWindow(hwndFrame,
-					    GetPString(IDS_WCSEESTATUS),
+					    WC_SEESTATUS,
 					    NullStr,
 					    WS_VISIBLE | SS_TEXT |
 					    DT_LEFT | DT_VCENTER,
@@ -4239,7 +4240,7 @@ HWND StartSeeAll(HWND hwndParent, BOOL standalone,	// called by applet
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 GetPString(IDS_WCSEEALL),
+				 WC_SEEALL,
 				 GetPString(IDS_SEEALLTITLETEXT),
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, SEEALL_FRAME, &hwndClient);

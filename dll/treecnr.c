@@ -24,6 +24,7 @@
   18 Feb 07 GKY More drive type and icon support
   08 Mar 07 SHL Ensure drive icon updates after drive flags change
   09 Mar 07 GKY Use SelectDriveIcon
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -1388,13 +1389,16 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      li->type = WinDlgBox(HWND_DESKTOP,
 				   dcd->hwndParent,
 				   DropListProc,
-				   FM3ModHandle, DND_FRAME, MPFROMP(&cl));
-	      if (!li->type) {
+                                   FM3ModHandle, DND_FRAME, MPFROMP(&cl));
+              if (li->type == DID_ERROR)
+                  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
+                            "Drag & Drop Dialog");
+              if (!li->type) {
 		FreeListInfo(li);
 		return 0;
 	      }
 	      li->list = cl.list;
-	      if (!li->list || !li->list[0]) {
+              if (!li->list || !li->list[0]) {
 		FreeListInfo(li);
 		return 0;
 	      }
@@ -2899,7 +2903,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 GetPString(IDS_WCTREECONTAINER),
+				 WC_TREECONTAINER,
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, TREE_FRAME, &hwndClient);
@@ -2916,7 +2920,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       WinQueryWindowPos(hwndFrame, &swp);
       if (*(ULONG *) realappname == FM3UL) {
 	if (!WinCreateWindow(hwndFrame,
-			     GetPString(IDS_WCTREEOPENBUTTON),
+			     WC_TREEOPENBUTTON,
 			     "O",
 			     WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
 			     ((swp.cx -
@@ -2940,7 +2944,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       }
       else {
 	if (!WinCreateWindow(hwndFrame,
-			     GetPString(IDS_WCTREESTATUS),
+			     WC_TREESTATUS,
 			     GetPString(IDS_YOUAREHERETEXT),
 			     WS_VISIBLE | SS_TEXT | DT_LEFT | DT_VCENTER,
 			     swp.x + 4 + WinQuerySysValue(HWND_DESKTOP,

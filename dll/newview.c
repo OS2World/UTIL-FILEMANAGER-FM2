@@ -18,6 +18,7 @@
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
   22 Mar 07 GKY Use QWL_USER
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -1709,7 +1710,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(ad->hhscroll, SBM_SETSCROLLBAR, MPFROMSHORT(1),
 		   MPFROM2SHORT(1, 1));
 	ad->hwndStatus1 = WinCreateWindow(hwndFrame,
-					  GetPString(IDS_WCVIEWSTATUS),
+					  WC_VIEWSTATUS,
 					  GetPString(IDS_LOADINGTEXT),
 					  WS_VISIBLE | SS_TEXT |
 					  DT_LEFT | DT_VCENTER,
@@ -1725,7 +1726,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     IDS_WINCREATEWINDOW);
 
 	ad->hwndStatus2 = WinCreateWindow(hwndFrame,
-					  GetPString(IDS_WCVIEWSTATUS),
+					  WC_VIEWSTATUS,
 					  NULL,
 					  WS_VISIBLE | SS_TEXT |
 					  DT_LEFT | DT_VCENTER,
@@ -1741,7 +1742,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     IDS_WINCREATEWINDOW);
 
 	ad->hwndStatus3 = WinCreateWindow(hwndFrame,
-					  GetPString(IDS_WCVIEWSTATUS),
+					  WC_VIEWSTATUS,
 					  NULL,
 					  WS_VISIBLE | SS_TEXT |
 					  DT_LEFT | DT_VCENTER,
@@ -1772,7 +1773,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     IDS_WINCREATEWINDOW);
 
 	ad->hwndDrag = WinCreateWindow(hwndFrame,
-				       GetPString(IDS_WCVIEWSTATUS),
+				       WC_VIEWSTATUS,
 				       "#100",
 				       WS_VISIBLE | SS_BITMAP,
 				       0,
@@ -3815,7 +3816,7 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 0,
 				 &FrameFlags,
-				 GetPString(IDS_WCNEWVIEW),
+				 WC_NEWVIEW,
 				 GetPString(IDS_FM2VIEWERTITLETEXT),
 				 fwsAnimate,
 				 FM3ModHandle, NEWVIEW_FRAME, &hwndClient);

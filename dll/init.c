@@ -20,6 +20,7 @@
   29 Jul 06 SHL Use xfgets
   22 Oct 06 GKY Add NDFS32 support
   18 Feb 07 GKY Add ISOFS, RAMFS support
+  30 Mar 07 GKY Defined golbals for removing GetPString for window class names
 
 ***********************************************************************/
 
@@ -220,6 +221,36 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     NDFS32 = "NDFS32";
     RAMFS = "RAMFS";
     NTFS = "NTFS";
+    WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
+    WC_BUBBLE          =  "WC_BUBBLE";
+    WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
+    WC_DRIVEBUTTONS    =  "WC_DRIVEBUTTONS";
+    WC_DIRCONTAINER    =  "WC_DIRCONTAINER";
+    WC_DIRSTATUS       =  "WC_DIRSTATUS";
+    WC_TREECONTAINER   =  "WC_TREECONTAINER";
+    WC_TREEOPENBUTTON  =  "WC_TREEOPENBUTTON";
+    WC_TREESTATUS      =  "WC_TREESTATUS";
+    WC_MAINWND         =  "WC_MAINWND";
+    WC_MAINWND2        =  "WC_MAINWND2";
+    WC_AUTOVIEW        =  "WC_AUTOVIEW";
+    WC_LED             =  "WC_LED";
+    WC_COLLECTOR       =  "WC_COLLECTOR";
+    WC_COLSTATUS       =  "WC_COLSTATUS";
+    WC_STATUS          =  "WC_STATUS";
+    WC_TOOLBACK        =  "WC_TOOLBACK";
+    WC_DRIVEBACK       =  "WC_DRIVEBACK";
+    WC_ARCCONTAINER    =  "WC_ARCCONTAINER";
+    WC_ARCSTATUS       =  "WC_ARCSTATUS";
+    WC_MLEEDITOR       =  "WC_MLEEDITOR";
+    WC_INIEDITOR       =  "WC_INIEDITOR";
+    WC_SEEALL          =  "WC_SEEALL";
+    WC_NEWVIEW         =  "WC_NEWVIEW";
+    WC_SEESTATUS       =  "WC_SEESTATUS";
+    WC_VIEWSTATUS      =  "WC_VIEWSTATUS";
+    WC_ERRORWND        =  "WC_ERRORWND";
+    WC_MINITIME        =  "WC_MINITIME";
+    WC_DATABAR         =  "WC_DATABAR";
+
     /* end of strings */
     memset(&RGBBLACK, 0, sizeof(RGB2));
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = 204;
@@ -623,128 +654,128 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   /* register window classes we use */
   WinRegisterClass(hab,
-		   GetPString(IDS_WCMAINWND),
+		   WC_MAINWND,
 		   MainWndProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 8);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCMAINWND2),
+		   WC_MAINWND2,
 		   MainWndProc2,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 4);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCTREECONTAINER),
+		   WC_TREECONTAINER,
 		   TreeClientWndProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCDIRCONTAINER),
+		   WC_DIRCONTAINER,
 		   DirClientWndProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCCOLLECTOR),
+		   WC_COLLECTOR,
 		   CollectorClientWndProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCARCCONTAINER),
+		   WC_ARCCONTAINER,
 		   ArcClientWndProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCMLEEDITOR),
+		   WC_MLEEDITOR,
 		   MLEEditorProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCINIEDITOR),
+		   WC_INIEDITOR,
 		   IniProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCTOOLBACK),
+		   WC_TOOLBACK,
 		   ToolBackProc, CS_SIZEREDRAW, sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCDRIVEBACK),
+		   WC_DRIVEBACK,
 		   DriveBackProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCSEEALL),
+		   WC_SEEALL,
 		   SeeAllWndProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCNEWVIEW),
+		   WC_NEWVIEW,
 		   ViewWndProc,
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCTOOLBUTTONS),
+		   WC_TOOLBUTTONS,
 		   ChildButtonProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCDRIVEBUTTONS),
+		   WC_DRIVEBUTTONS,
 		   DriveProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCBUBBLE),
+		   WC_BUBBLE,
 		   BubbleProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCSTATUS),
+		   WC_STATUS,
 		   StatusProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCDIRSTATUS),
+		   WC_DIRSTATUS,
 		   DirTextProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCTREESTATUS),
+		   WC_TREESTATUS,
 		   TreeStatProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCARCSTATUS),
+		   WC_ARCSTATUS,
 		   ArcTextProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCCOLSTATUS),
+		   WC_COLSTATUS,
 		   CollectorTextProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCSEESTATUS),
+		   WC_SEESTATUS,
 		   SeeStatusProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCVIEWSTATUS),
+		   WC_VIEWSTATUS,
 		   ViewStatusProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(ULONG));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCERRORWND),
+		   WC_ERRORWND,
 		   NotifyWndProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCMINITIME),
+		   WC_MINITIME,
 		   MiniTimeProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   GetPString(IDS_WCDATABAR),
+		   WC_DATABAR,
 		   DataProc, CS_SIZEREDRAW, sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCTREEOPENBUTTON),
+		   WC_TREEOPENBUTTON,
 		   OpenButtonProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCAUTOVIEW),
+		   WC_AUTOVIEW,
 		   AutoViewProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
   WinRegisterClass(hab,
-		   GetPString(IDS_WCLED),
+		   WC_LED,
 		   LEDProc,
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
@@ -1206,7 +1237,7 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
   hwndFrame = WinCreateStdWindow(HWND_DESKTOP,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 GetPString(IDS_WCMAINWND),
+				 WC_MAINWND,
 				 NULL,
 				 WS_VISIBLE | WS_ANIMATE,
 				 FM3ModHandle, MAIN_FRAME, &hwndClient);

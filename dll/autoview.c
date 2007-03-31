@@ -16,6 +16,7 @@
   22 Jul 06 SHL Check more run time errors
   15 Aug 06 SHL Use Runtime_Error more
   03 Nov 06 SHL Renames
+ 30  Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -623,10 +624,10 @@ static VOID MakeAutoWinThread(VOID * args)
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
       WinRegisterClass(hab2,
-		       GetPString(IDS_WCOBJECTWINDOW),
+		       WC_OBJECTWINDOW,
 		       AutoObjProc, 0, sizeof(PVOID));
       hwndAutoObj = WinCreateWindow(HWND_OBJECT,
-				    GetPString(IDS_WCOBJECTWINDOW),
+				    WC_OBJECTWINDOW,
 				    (PSZ) NULL,
 				    0,
 				    0L,
