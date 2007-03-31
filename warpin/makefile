@@ -41,9 +41,9 @@ all: ckfiles fm2.wpi
 
 ckfiles:
    @echo Checking to see if files have been changed...
-   ckfiles
+    -ckfiles || del fm2.wpi
 
-fm2.wpi:: bld_fm2_wpidirs.txt bld_fm2_wpidirs.cmd bld_fm2_wpi.cmd lastfile.upd
+fm2.wpi:: bld_fm2_wpidirs.txt bld_fm2_wpidirs.cmd bld_fm2_wpi.cmd
 # stage the files to be included in the WPI file
    @echo Staging files for WPI file...
    bld_fm2_wpidirs
@@ -56,7 +56,7 @@ fm2.wpi:: fm2.wis
    @echo Adding new Warpin script to WPI file...
    bld_fm2_wpi /SCRIPT
 
-clean:
+distclean:
   -del *.wpi
 
 # The end
