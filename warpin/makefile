@@ -37,7 +37,7 @@ BASE = fm2
 #    @echo Adding new Warpin script to WPI file
 #    bld_fm2_wpi /SCRIPT
 
-all: ckfiles fm2.wpi
+wpi: ckfiles fm2.wpi
 
 ckfiles:
    @echo Checking to see if files have been changed...
