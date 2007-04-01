@@ -20,9 +20,9 @@ BASE = fm3
 
 !include makefile_pre.mk
 
-dist: all wpi
-
 all: dll $(BASE) allexe
+
+dist: all lxlite wpi
 
 # Only update resources
 res:
@@ -49,7 +49,7 @@ allexe: *.mak
 
 wpi:
    cd warpin
-   $(MAKE) /NOLOGO /$(MAKEFLAGS) all
+   $(MAKE) /NOLOGO /$(MAKEFLAGS) wpi
    cd ..
 
 # makefile_post.mk contains lxlite target for $(BASE).exe
