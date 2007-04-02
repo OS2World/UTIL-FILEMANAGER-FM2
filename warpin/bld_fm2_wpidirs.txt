@@ -14,7 +14,6 @@
 ;           PACKAGECOUNT: <number-of-packages>
 ;           PACKAGE: <package-number>  <package-description>
 ;           FILE: <name>  <pkg-num> <src-dir> <dest-dir>
-;           DUMMYFILE: <name>  <pkg-num> <dest-dir>
 ;        where
 ;           <number-of-packages> is the total number of packages
 ;           <package-number> is package number being described
@@ -34,10 +33,9 @@
 ;
 ;     -  The PACKAGECOUNT line should be before all PACKAGE, FILE and DUMMYFILE lines
 ;     -  All the PACKAGE lines should be before all FILE and DUMMYFILE lines
-;     -  The FILE and DUMMYFILE lines should be after the PACKAGECOUNT and PACKAGE
-;        line. They may be intermixed with each other. As seen below, they have been
-;        grouped by package. This is not necessary but it will make it easier find
-;        lines that need to be changed.
+;     -  The FILE lines should be after the PACKAGECOUNT and PACKAGE lines. The order
+;        is not important but it will facilitate future changes if files for each
+;        package are grouped together.
 ;
 ;     NOTE: Warpin scripts do not require that the package numbers are consecutive. For
 ;     example a script may have four packages which are numbered 1, 4, 12 and 293. For
@@ -46,9 +44,6 @@
 ;        And then all the package numbers on the PACKAGE, FILE and DUMMYFILE lines would
 ;        be 1, 4, 12, or 293.
 ;
-;     NOTE: DUMMYFILE's are used because Warpin currently does not allow packages which
-;     do not include a least one file to install. DUMMYFILE's are created dynamically
-;     as needed during the build process (which is why no src-dir is specified).
 
 PACKAGECOUNT: 4
 
@@ -64,14 +59,12 @@ FILE: fm3.hlp                    1  dll\ipf  .
 FILE: fm3dll.dll                 1  dll      .
 FILE: fm3res.dll                 1  dll      .
 FILE: fm3res.str                 1  dll      .
-;FILE: cfgfiles.cmd               1  .        .
 FILE: cfgmgr.cmd                 1  .        .
 
 FILE: COPYING                    1  .        Docs
 FILE: CustomizingResources.txt   1  .        Docs
 FILE: HISTORY                    1  .        Docs
 FILE: README                     1  .        Docs
-;FILE: readme.org                 1  .        Docs
 
 FILE: docs.ico                   1  Icons    Icons
 FILE: docs2.ico                  1  Icons    Icons
@@ -132,9 +125,7 @@ FILE: vtree.exe         3  .  FM2Tools              ; was .
 ;FILE: viewinfs.exe      3  .  .
 ;FILE: vtree.exe         3  .  .
 
-;FILE: mkutils.cmd       3  .  .
 FILE: utilsmgr.cmd      3  .  .
 FILE: toolbox.ico       3  Icons    Icons
 FILE: toolbox2.ico      3  Icons    Icons
 
-DUMMYFILE: keep.me      10    .
