@@ -42,7 +42,15 @@ globals                    = 'WPI.'
 WPI.                       = ''
 WPI.default_archivename    = 'fm2.wpi'
 
+/*
 signal on novalue             /* for debugging */
+*/
+signal on Error
+signal on FAILURE name Error
+signal on Halt
+signal on NOTREADY name Error
+signal on NOVALUE name Error
+signal on SYNTAX name Error
 
 call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
 call SysLoadFuncs
@@ -67,7 +75,11 @@ if WPI.scriptonly == 0 then
       else
          'if exist 'WPI.archivename' del 'WPI.archivename
       do p = 1 to WPI.pkg.0
-         WPI.WIC_pgm WPI.archivename' -a 'WPI.pkg.p.number' -r -c'WPI.pkg.p.dir' *'
+         call SysFileTree WPI.pkg.p.dir || '\*', 'pkgfilelist.', 'FOS'
+         if pkgfilelist.0 = 0 then
+            WPI.WIC_pgm WPI.archivename' -a 'WPI.pkg.p.number' NUL'
+         else
+            WPI.WIC_pgm WPI.archivename' -a 'WPI.pkg.p.number' -r -c'WPI.pkg.p.dir' *'
          if rc \= 0 then
             call ErrorExit 3 rc
       end
@@ -198,8 +210,8 @@ Emptydir: procedure
    end
    call SysFileTree dir'\*', 'files.', 'FO'
    do i = 1 to files.0
-      '@attrib -r -s -h 'files.i
-      '@del 'files.i
+      '@attrib -r -s -h 'files.i' >NUL 2>NUL'
+      '@del 'files.i' >NUL 2>NUL'
    end
    '@rd 'dir
 return
@@ -208,4 +220,29 @@ novalue:
    say 'Error: Uninitialized value: ' || condition('D') || ' encountered on line 'sigl':'
    say '   'sourceline(sigl)
    call ErrorExit 1
+
+/*=== Error() Report ERROR, FAILURE etc. and exit ===*/
+
+Error:
+  say
+  parse source . . cmd
+  say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
+  if 'CONDITION'('D') \= '' then
+    say 'REXX reason =' 'CONDITION'('D')'.'
+  if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
+    say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
+  else if 'SYMBOL'('RC') == 'VAR' then
+    say 'RC =' RC'.'
+  say 'Source =' 'SOURCELINE'(SIGL)
+
+  if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
+    trace '?A'
+    say 'Exiting.'
+    call 'SYSSLEEP' 2
+    exit 'CONDITION'('C')
+  end
+
+  return
+
+/* end Error */
 
