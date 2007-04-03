@@ -37,6 +37,8 @@ BASE = fm2
 #    @echo Adding new Warpin script to WPI file
 #    bld_fm2_wpi /SCRIPT
 
+all: wpi
+
 wpi: ckfiles fm2.wpi
 
 ckfiles:
@@ -57,6 +59,6 @@ fm2.wpi:: fm2.wis
    bld_fm2_wpi /SCRIPT
 
 distclean:
-  -del *.wpi
+  -if exist fm2.wpi del fm2.wpi
 
 # The end
