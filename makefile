@@ -49,7 +49,7 @@ allexe: *.mak
 
 wpi:
    cd warpin
-   $(MAKE) /NOLOGO /$(MAKEFLAGS) wpi
+   $(MAKE) /NOLOGO /$(MAKEFLAGS)
    cd ..
 
 # makefile_post.mk contains lxlite target for $(BASE).exe
