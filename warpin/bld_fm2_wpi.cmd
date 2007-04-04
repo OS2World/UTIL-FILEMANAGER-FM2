@@ -70,10 +70,11 @@ call Init strip(args)
 if WPI.scriptonly == 0 then
 /* Add the files to the WPI   */
    do
-      if archive_previous_WPI == 1 then
-         'if exist 'WPI.archivename' ren 'WPI.archivename WPI.archivename || '.' || time('S')
-      else
-         'if exist 'WPI.archivename' del 'WPI.archivename
+      if stream(WPI.archivename, 'c', 'query exists') \= '' then
+         if archive_previous_WPI == 1 then
+            'ren 'WPI.archivename WPI.archivename || '.' || time('S')
+         else
+            'del 'WPI.archivename
       do p = 1 to WPI.pkg.0
          call SysFileTree WPI.pkg.p.dir || '\*', 'pkgfilelist.', 'FOS'
          if pkgfilelist.0 = 0 then
@@ -176,11 +177,7 @@ Init: procedure expose (globals)
 
    ext_libpath = SysQueryExtLibpath('B')
    if pos( Warpin_pathentry, ';' || translate(SysQueryExtLibpath('B')) || ';' ) == 0 then
-      do
-         ext_libpath = SysQueryExtLibpath('E')
-         if pos( Warpin_pathentry, ';' || translate(SysQueryExtLibpath('E')) || ';' ) == 0 then
-            call SysSetExtLibpath Warpin_pathentry || ';' || ext_libpath, 'E'
-      end
+      call SysSetExtLibpath Warpin_pathentry || ';' || ext_libpath, 'B'
 
    parse source . . thispgm
    thisdir = left(thispgm, lastpos('\', thispgm) - 1)
