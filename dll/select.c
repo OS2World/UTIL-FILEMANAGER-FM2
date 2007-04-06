@@ -15,6 +15,7 @@
   13 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets_bstripcr
   15 Aug 06 SHL Rework SetMask args and logic
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
 
 ***********************************************************************/
 
@@ -41,7 +42,7 @@ static PSZ pszSrcFile = __FILE__;
 VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list)
 {
   PCNRITEM pci;
-  INT numfiles = 0, numalloc = 0;
+  INT numfiles = 0, numalloc = 0, x = 0;
   INT attribute = CRA_CURSORED;
 
   if (all && list && *list) {
@@ -59,11 +60,16 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list)
       WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROM2SHORT(FALSE, CRA_SELECTED));
       if (!all)
-	break;
+          break;
+      if(fexceedpmdrglimit && x == 1499){
+          fexceedpmdrglimit = FALSE;
+          break;
+      }
       if (list)
 	AddToList(pci->szFileName, list, &numfiles, &numalloc);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 				  MPFROMP(pci), MPFROMSHORT(CRA_SELECTED));
+      x++;
     }
   }
 }

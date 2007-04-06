@@ -34,7 +34,7 @@ Filter:
  Drive is invalid -- rescan if required.
 Error!
 Can't start %s %s
-
+Your Drag request exceeds the PM limit\n (For compatibility with 16 bit apps)\n The unprocessed objects are still selected in the\n source directory for additional processing\n See Drag & Drop in the help file for additional information
 
  You are here --> x
 Move not allowed - forcing copy

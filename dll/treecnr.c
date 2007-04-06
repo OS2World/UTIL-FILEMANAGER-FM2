@@ -25,6 +25,8 @@
   08 Mar 07 SHL Ensure drive icon updates after drive flags change
   09 Mar 07 GKY Use SelectDriveIcon
   30 Mar 07 GKY Remove GetPString for window class names
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
 
@@ -541,7 +543,12 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
-		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+                      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+      if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = ((fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE);
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -1366,7 +1373,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+          if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (!*li->targetpath) {
 	      if (li->list[0])

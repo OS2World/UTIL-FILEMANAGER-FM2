@@ -15,6 +15,8 @@
   03 Nov 06 SHL Count thread usage
   22 Mar 07 GKY Use QWL_USER
   30 Mar 07 GKY Remove GetPString for window class names
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
 
@@ -1483,6 +1485,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
   static HWND hwndPopup = (HWND) 0;
+  APIRET rc;
 
   switch (msg) {
   case WM_SETFOCUS:
@@ -1533,6 +1536,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       INIDATA *inidata;
       HPOINTER hptrINI;
       USHORT id;
+      HWND hDrop = 0;
 
       id = WinQueryWindowUShort(hwnd, QWS_ID);
       inidata = WinQueryWindowPtr(WinQueryWindow(hwnd, QW_PARENT), QWL_USER);
@@ -1566,7 +1570,9 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       DItem.fsSupportedOps = DO_COPYABLE | DO_LINKABLE | DO_MOVEABLE;
       pDInfo = DrgAllocDraginfo(1L);
       DrgSetDragitem(pDInfo, &DItem, sizeof(DRAGITEM), 0L);
-      DrgDrag(hwnd, pDInfo, &DIcon, 1L, VK_ENDDRAG, (PVOID) NULL);
+      hDrop = DrgDrag(hwnd, pDInfo, &DIcon, 1L, VK_ENDDRAG, (PVOID) NULL);
+      DeleteDragitemStrHandles(pDInfo); //
+      DrgDeleteDraginfoStrHandles (pDInfo);
       DrgFreeDraginfo(pDInfo);
       WinDestroyPointer(hptrINI);
     }
@@ -1672,8 +1678,16 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	curitem++;
       }
+      rc = DeleteDragitemStrHandles(pDInfo); //
+
+      if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    "DrgDeleteDraginfoStrHandles");
       DrgDeleteDraginfoStrHandles(pDInfo);
-      DrgFreeDraginfo(pDInfo);
+      rc = DrgFreeDraginfo(pDInfo);
+      if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                 "DrgFreeDraginfo");
     }
     return 0;
 

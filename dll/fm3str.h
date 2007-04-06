@@ -14,6 +14,7 @@
   15 Aug 06 SHL Add new
   07 JAN 07 GKY Add new
   31 Mar 07 GKY Removed IDS_WC window class names
+  06 Apr 07 GKY Add error message for drg work around
 
 ***********************************************************************/
 
@@ -61,6 +62,7 @@
 #define IDS_RESCANSUGTEXT                                     33
 #define IDS_ERRORTEXT                                         34
 #define IDS_CANTSTARTTEXT                                     35
+#define IDS_EXCEEDPMDRGLMT                                    36
 #define IDS_YOUAREHERETEXT                                    38
 #define IDS_FORCINGCOPYTEXT                                   39
 #define IDS_OUTOFMEMORY                                       40

@@ -12,6 +12,8 @@
   08 Feb 03 SHL DropHelp: calc EA size consistently
   21 Jul 06 SHL Drop dup code
   22 Jul 06 SHL Check more run time errors
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
 
@@ -98,7 +100,10 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
     *buffer = 0;			/* zero buffer */
 
     blen = DrgQueryStrName(pDItem->hstrContainerName, buflen, buffer);
-    if (blen) {
+    if(!blen)
+        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      "DrgQueryStrName");
+    else {
       if (*(buffer + (blen - 1)) != '\\') {
 	*(buffer + blen) = '\\';
 	blen++;
@@ -106,7 +111,12 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
     }
     buffer[blen] = 0;
     len = DrgQueryStrName(pDItem->hstrSourceName,
-			  buflen - blen, buffer + blen);
+                          buflen - blen, buffer + blen);
+    if(!len)
+       // printf("%s %d\n %s\n %d %X\n", pszSrcFile, __LINE__,  pDItem->hstrSourceName,
+        //                  buflen - blen, buffer + blen); fflush(stdout);
+       // Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+         //         "DrgQueryStrName");
     buffer[blen + len] = 0;
     {					/* be sure we get full pathname of file/directory */
       char szTemp[CCHMAXPATH + 2];
@@ -143,6 +153,7 @@ BOOL GetOneDrop(MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen)
   ULONG numitems;
   register ULONG x;
   BOOL ret = FALSE;
+  APIRET rc;
 
   if (buffer && buflen)
     *buffer = 0;			/* zero buffer field     */
@@ -167,8 +178,15 @@ BOOL GetOneDrop(MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen)
 			 MPFROMLONG(pDItem->ulItemID),
 			 MPFROMLONG(DMFL_TARGETFAIL));
     }
-    DrgDeleteDraginfoStrHandles(pDInfo);
-    DrgFreeDraginfo(pDInfo);		/* Free DRAGINFO */
+    rc = DeleteDragitemStrHandles(pDInfo); //
+    if(!rc)
+        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  "DeleteDragitemStrHandles");
+    DrgDeleteDraginfoStrHandles (pDInfo);
+    rc = DrgFreeDraginfo(pDInfo);		/* Free DRAGINFO */
+    if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                 "DrgFreeDraginfo");
   }
 
   return ret;
@@ -179,6 +197,7 @@ BOOL AcceptOneDrop(MPARAM mp1, MPARAM mp2)
   PDRAGITEM pDItem;		/* Pointer to DRAGITEM   */
   PDRAGINFO pDInfo;		/* Pointer to DRAGINFO   */
   BOOL ret = FALSE;
+  APIRET rc;
 
   pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer  */
   if (pDInfo) {
@@ -189,7 +208,15 @@ BOOL AcceptOneDrop(MPARAM mp1, MPARAM mp2)
 		     DRM_OS2FILE,	/* mechanisms and data   */
 		     NULL))		/* formats               */
       ret = TRUE;
-    DrgFreeDraginfo(pDInfo);
+    rc = DeleteDragitemStrHandles(pDInfo); //
+    if(!rc)
+         Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                   "DeleteDragitemStrHandles");
+    DrgDeleteDraginfoStrHandles(pDInfo);
+    rc = DrgFreeDraginfo(pDInfo);
+    if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                 "DrgFreeDraginfo");
   }
   return ret;
 }
@@ -198,13 +225,21 @@ ULONG FreeDrop(MPARAM mp1, MPARAM mp2)
 {
   PDRAGINFO pDInfo;
   ULONG numitems;
+  APIRET rc;
 
   pDInfo = mp1;
   if (pDInfo) {
     DrgAccessDraginfo(pDInfo);
     numitems = DrgQueryDragitemCount(pDInfo);
+    rc = DeleteDragitemStrHandles(pDInfo); //
+    if(!rc)
+         Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                   "DeleteDragitemStrHandles");
     DrgDeleteDraginfoStrHandles(pDInfo);
-    DrgFreeDraginfo(pDInfo);
+    rc = DrgFreeDraginfo(pDInfo);
+    if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                 "DrgFreeDraginfo");
   }
   return numitems;
 }
@@ -235,15 +270,22 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
   LISTINFO *li = NULL;
   ARC_TYPE *arcinfo = NULL;
   USHORT Operation;
+  APIRET rc;
 
   *szArc = 0;
   pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
   pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
   if (!pDInfo)
     return NULL;
-  DrgAccessDraginfo(pDInfo);
+  rc = DrgAccessDraginfo(pDInfo);
+  if(!rc)
+      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      "DrgAccessDraginfo");
   Operation = pDInfo->usOperation;
   pDItem = DrgQueryDragitemPtr(pDInfo, 0L);
+  if(!pDItem)
+      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      "DrgQueryDragitemPtr");
   if (Operation == DO_MOVE && !(pDItem->fsSupportedOps & DO_MOVEABLE)) {
     saymsg(MB_ENTER, HWND_DESKTOP, GetPString(IDS_WARNINGTEXT),
 	   GetPString(IDS_FORCINGCOPYTEXT));
@@ -423,6 +465,10 @@ AbortDrop:
     if (files)
       FreeList(files);
   }
+  rc = DeleteDragitemStrHandles(pDInfo);  //
+  if(!rc)
+        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                 "DeleteDragitemStrHandles");
   DrgDeleteDraginfoStrHandles(pDInfo);
   DrgFreeDraginfo(pDInfo);
   return li;

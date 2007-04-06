@@ -30,6 +30,8 @@
   31 Aug 06 SHL Disable Utilities->Seek and scan menu while busy
   31 Aug 06 SHL Correct stop scan context menu enable/disable
   30 Mar 07 GKY Remove GetPString for window class names
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
 
@@ -456,6 +458,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr, NULL, FALSE, MPVOID, MPFROMP(&cni));
+      if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -2105,6 +2112,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PCNRITEM pci;
 	  ULONG numitems;
 	  USHORT usOperation;
+                APIRET rc;
 
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
@@ -2115,8 +2123,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  numitems = DrgQueryDragitemCount(pDInfo);
 	  usOperation = pDInfo->usOperation;
-	  DrgDeleteDraginfoStrHandles(pDInfo);
-	  DrgFreeDraginfo(pDInfo);
+          rc = DeleteDragitemStrHandles(pDInfo); //
+          if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    "DeleteDragitemStrHandles");
+          DrgDeleteDraginfoStrHandles (pDInfo);
+          rc = DrgFreeDraginfo(pDInfo);
+          if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                 "DrgFreeDraginfo");
 	  saymsg(MB_ENTER | MB_ICONASTERISK,
 		 hwnd,
 		 GetPString(IDS_DROPHELPHDRTEXT),
@@ -2229,7 +2244,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		WinSetWindowText(hwndStatus2,
 				 GetPString(IDS_DRAGFILEOBJTEXT));
 	      if (DoFileDrag(hwnd, dcd->hwndObject, mp2, NULL, NULL, TRUE)) {
-		if (fUnHilite && wasemphasized)
+		if ((fUnHilite && wasemphasized) || fexceedpmdrglimit)
 		  UnHilite(hwnd, TRUE, &dcd->lastselection);
 	      }
 	      if (hwndStatus2)
@@ -2244,7 +2259,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+          if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (!*li->targetpath) {
 	      li->type = IDM_COLLECT;

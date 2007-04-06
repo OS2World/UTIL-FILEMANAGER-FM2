@@ -24,6 +24,7 @@
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
   15 Aug 06 SHL Use Runtime_Error more
   01 Nov 06 SHL Turn off leftover debug code
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limit
 
 ***********************************************************************/
 
@@ -672,6 +673,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 			   MPFROMLONG(pditem->ulItemID),
 			   MPFROMLONG(DMFL_TARGETSUCCESSFUL));
       }
+      DeleteDragitemStrHandles(pdinfo); //
       DrgDeleteDraginfoStrHandles(pdinfo);
       DrgFreeDraginfo(pdinfo);
     }

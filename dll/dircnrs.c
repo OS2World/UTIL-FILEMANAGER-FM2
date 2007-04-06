@@ -21,6 +21,8 @@
   15 Aug 06 SHL Rework warning message text
   07 Jan 07 GKY Move error strings etc. to string file
   30 Mar 07 GKY Remove GetPString for window class names
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
 
@@ -586,6 +588,11 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
 		   MPFROMP(&cni));
+      if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -1049,6 +1056,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
+    APIRET rc;
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -2689,8 +2697,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  numitems = DrgQueryDragitemCount(pDInfo);
 	  usOperation = pDInfo->usOperation;
-	  DrgDeleteDraginfoStrHandles(pDInfo);
-	  DrgFreeDraginfo(pDInfo);
+          rc = DeleteDragitemStrHandles(pDInfo); //
+          if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    "DeleteDragitemStrHandles");
+          DrgDeleteDraginfoStrHandles (pDInfo);
+          rc = DrgFreeDraginfo(pDInfo);
+          if(!rc)
+          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                 "DrgFreeDraginfo");
 	  saymsg(MB_ENTER | MB_ICONASTERISK,
 		 hwnd,
 		 GetPString(IDS_DROPHELPHDRTEXT),
@@ -2831,7 +2846,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   NULL,
 			   (pci) ? NULL : dcd->directory,
 			   (pci) ? TRUE : FALSE)) {
-	      if (pci && fUnHilite && wasemphasized)
+	      if ((pci && fUnHilite && wasemphasized) || fexceedpmdrglimit)
 		UnHilite(hwnd, TRUE, &dcd->lastselection);
 	    }
 	    if (hwndStatus2) {
@@ -2848,7 +2863,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
+          li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
+          if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (li->list && li->list[0] && IsRoot(li->list[0]))
 	      li->type = DO_LINK;

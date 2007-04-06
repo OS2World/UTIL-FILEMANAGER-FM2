@@ -32,6 +32,8 @@
   03 Nov 06 SHL Renames
   14 Mar 07 SHL ArcObjWndProc/UM_ENTER: delay before starting viewer
   30 Mar 07 GKY Remove GetPString for window class names
+   06 Apr 07 GKY Work around PM DragInfo and DrgFreeISH limit
+  06 Apr 07 GKY Add some error checking in drag/drop 
 ***********************************************************************/
 
 #define INCL_DOS
@@ -1126,7 +1128,12 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
-		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+                      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+      if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = (msg == DM_DISCARDOBJECT) ? IDM_DELETE : IDM_PRINT;
 	if (!li->list ||
@@ -2998,7 +3005,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      if (DoFileDrag(hwnd,
 			     dcd->hwndObject,
 			     mp2, dcd->arcname, NULL, TRUE)) {
-		if (fUnHilite && wasemphasized)
+		if ((fUnHilite && wasemphasized) || fexceedpmdrglimit)
 		  UnHilite(hwnd, TRUE, &dcd->lastselection);
 	      }
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
@@ -3027,7 +3034,12 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  DosBeep(500, 100);		// fixme to know why beep?
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
-	  DosBeep(50, 100);		// fixme to know why beep?
+          DosBeep(50, 100);		// fixme to know why beep?
+          if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    li->type = li->type == DO_MOVE ? IDM_ARCHIVEM : IDM_ARCHIVE;
 	    strcpy(li->targetpath, dcd->arcname);

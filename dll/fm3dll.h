@@ -39,6 +39,8 @@
   17 Feb 07 GKY Add SelectDriveIcon to streamline update.c
   18 Mar 07 GKY Add MM import typedefines for fix for files misindentified as multimedia
   30 Mar 07 GKY Defined golbals for removing GetPString for window class names
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits fexceedpmgrglimit & DeleteDragitemStrHandles
+  06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
 
@@ -1055,6 +1057,7 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 		 char *buffer2, ULONG buflen2);
 LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 		     MPARAM mp1, MPARAM mp2);
+BOOL DeleteDragitemStrHandles (PDRAGINFO pDInfo);
 
 /* shadow.c */
 HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
@@ -1341,7 +1344,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fViewChild, fShowEnv, fLeaveTree, fAddUtils, fNoFoldMenu,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
-  fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM;
+  fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM, fexceedpmdrglimit;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslongname, detailsea, detailssize, detailssubject,
   detailslwdate, detailslwtime, detailsattr, detailsicon;

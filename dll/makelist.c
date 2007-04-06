@@ -11,6 +11,7 @@
   12 Feb 03 SHL AddToFileList: standardize EA math
   22 Jul 06 SHL Use Runtime_Error
   22 Jul 06 SHL AddToList optimize
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
 
 ***********************************************************************/
 
@@ -73,6 +74,7 @@ VOID FreeListInfo(LISTINFO * li)
     if (li->list)
       FreeList(li->list);
     free(li);
+    fexceedpmdrglimit = FALSE;
   }
 }
 

@@ -27,6 +27,8 @@
   08 Mar 07 SHL SaveDirCnrState: do not save state of NOPRESCAN volumes
   09 Mar 07 SHL RestoreDirCnrState/SaveDirCnrState: optimize and avoid overflows
   30 Mar 07 GKY Remove GetPString for window class names
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
 
@@ -1230,6 +1232,11 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&cdi, 0, sizeof(cdi));
       cdi.pDragInfo = mp1;
       li = DoFileDrop(hwnd, NULL, FALSE, mp1, MPFROMP(&cdi));
+      if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = id;
 	if (!li->list || !li->list[0])
@@ -1798,6 +1805,11 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       li = DoFileDrop(hwnd,
 		      NULL,
 		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
+      if(fexceedpmdrglimit)
+             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	strcpy(li->targetpath, szDrv);
 	strcat(li->targetpath, "\\");
