@@ -34,3 +34,8 @@ than expected&per.
 :p. &endash. Access to LS120 and FAT32 drives slower than expected
 :p. &endash. Icon display in Directory Container does not always match WPS icons
 :p. &endash. Spurious WPS Objects Handles created during some operations
+:p. &endash. PM has a 64k draginfo buffer for compatibility with 16 bit programs.
+This limits each drag operation to a maximum of about 1800 objects, however in some testing
+we were limited to under 1700. The main problem is PM is happy to over write this buffer.
+The result is significant corruption of share memory forcing a reboot. We have limited drag
+operations to a maximum of 1500 objects to prevent this problem.

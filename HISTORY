@@ -4,6 +4,11 @@ New stuff's at the top.  This list is not necessarily complete.
  o Correct FileInfoProc binary file detect (Steven)
  o Correct FileInfoProc/IconProc race crash (Steven)
  o Convert to WarpIN installer (David, John)
+ o Work around for drag/drop limit in PM Bug 50 (Gregg)
+ o Fix MMPM file scan to not try to play nonmedia files (Gregg)
+ o "Replace" in commands dialog now leave list order intact (Gregg)
+ o Code cleanup (ROT13 compiler warning, removed win class pstrings QWL_USER) (Gregg)
+ o Removed original Readme from distribution package 
 
 3.05 beta08
  o Add SelectDriveIcon function (Gregg)
