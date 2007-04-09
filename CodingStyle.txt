@@ -1,14 +1,17 @@
 
-Coding Style Guide
-==================
+Coding Style Guidelines
+========================
 
 Line lengths
 
   Try to keep lines less than 80 characters.
 
-  Break lines after logical separators
+  Break lines after logical separators.
 
-  Vertically align like constructs
+  Vertically align like constructs.
+
+    func(arg1,
+         arg2);
 
 Indents
 
@@ -16,37 +19,60 @@ Indents
 
   Place function definition } in column 1
 
-  Intent nested constructs by 2 characters
+  Indent nested constructs by 2 characters
 
   void func()
   {
-    stmt
+    statement;
     if (expr)
-      stmt2
+      statement2;
   }
 
 Tabs
 
-  Use only 8 column tabs
+  Use only 8 column tabs.
 
 Layouts
 
   if (expr)
-    statement
+    statement;
 
-  // If expr and statement are brief
-  if (expr) statement
+  // If expr and statement are brief single line is OK.
+  if (expr) statement;
+
+  // If statment is long, split logically and use braces.
+  if (expr) {
+    statement_part1...
+      restoflongstatement;
+  }
+
+  if (expr)
+    statement;
+  else
+    statement2;
 
   if (expr1) {
+    statement1;
+    statement2;
+  }
+  else if (expr2) {
   }
   else {
   }
 
-  // If expression must be wrapped
-  // align like constructs vertically
+  // If expression wrapped, align like constructs vertically.
   if (expr1 &&
       expr2))
   {
+  }
+
+  // Prefer expression sense that places shorter statement list first.
+  if (!expr)
+    ReportError();
+  else {
+    statement1;
+    ...;
+    statementn;
   }
 
   while (expr) {
@@ -61,35 +87,79 @@ Layouts
 
 Variable definitions
 
-  Define one per line
+  Define one variable per line.  They are easier to find and understand.
 
     INT a;
-    INT b;
+    INT *pb;
 
   not
 
-    INT a,b;
+    INT a,*b;
 
+Variable naming
+
+  Prefer Hungarian notation and CamelCaps for global variables.
+
+    BOOL fAGlobalFlag;
+
+  Prefer lower case and underscores for local variables.
+
+    BOOL is_ok;
+  
+  Local varibles can be short as long as meaning is clear.
+
+    BOOL ok;
+
+  Underscores can be omitted if name remains readable.
+
+    USHORT maxcnt;
+  
 Spaces
 
-  Separate keywords from leading paren with 1 space
+  Separate keywords from leading paren with 1 space.
 
-    if (expr) dothis
+    if (expr) statement;
 
-  No space between function name and leading paren
-  No space between last arg and trailing paren
+  No spaces between function name and leading paren.
+  No spaces between last arg and trailing paren.
 
     func()
 
-  Follow separating commas and semicolons with a space
+  Follow separating commas and semicolons with a space.
 
     x = func(a, c)
 
-  Surround binary operators with a leading and trailing spaces
+  Surround binary operators with a leading and trailing spaces.
 
     x = a + b
 
-  Try to avoid spurious internal and trailing whitespace
+  Try to avoid spurious internal and trailing whitespace.
+
+Expressions
+
+  Do not use superfluous parens.
+
+  Prefer
+
+    return 0;
+
+  to
+
+    return (0);
+
+  Do not use superfluous parens when operator precedence with do the
+  right thing.
+
+  Prefer
+
+    if (a & mask && c)
+
+  to
+
+    if ((a & mask) && c)
+
+  Avoid nested ternary conditionals (i.e. ? :).  They are hard to read and
+  rarely generate better code than switch or if statement.
 
 Memory
 
@@ -99,6 +169,8 @@ Memory
    Use xstrdup in non-time critical code
 
  - Use xfree rather than free
+
+ - Buffer overflow possible, check for it.
 
 Windows
 
