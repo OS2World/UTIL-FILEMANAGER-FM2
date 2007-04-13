@@ -82,8 +82,8 @@ this is more-or-less how you manipulate objects in the real world. If
 you don't know how to drag and drop, you :hp2.really:ehp2. should run
 the OS/2 Tutorial. Drag and drop is a superior method for manipulating
 objects, as opposed to keyboard commands, because you choose both the
-command and the target in one operation. We have set a limit of 1500 objects
-per drag because drag larger than that can overwrite the draginfo buffer
+command and the target in one operation. We have limited the number of objects
+per drag because large drags can overflow the draginfo buffer
 causing the corruption of shared memory and forcing a reboot.
 :p.
 :hp1.Dialog:ehp1. = a specialized input or informational window that's

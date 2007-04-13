@@ -74,7 +74,6 @@ VOID FreeListInfo(LISTINFO * li)
     if (li->list)
       FreeList(li->list);
     free(li);
-    fexceedpmdrglimit = FALSE;
   }
 }
 

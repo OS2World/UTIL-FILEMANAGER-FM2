@@ -544,10 +544,10 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
                       dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
-      if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
+      if (fExceedPMDrgLimit)
+        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		             hwnd,
+		             GetPString(IDS_ERRORTEXT),
                    GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = ((fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE);
@@ -1374,11 +1374,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ULONG action = UM_ACTION;
 
           li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+          if (fExceedPMDrgLimit)
+            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		                 hwnd,
+		                 GetPString(IDS_ERRORTEXT),
+                       GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (!*li->targetpath) {
 	      if (li->list[0])

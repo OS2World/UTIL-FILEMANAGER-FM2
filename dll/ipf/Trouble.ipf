@@ -38,4 +38,6 @@ than expected&per.
 This limits each drag operation to a maximum of about 1800 objects, however in some testing
 we were limited to under 1700. The main problem is PM is happy to over write this buffer.
 The result is significant corruption of share memory forcing a reboot. We have limited drag
-operations to a maximum of 1500 objects to prevent this problem.
+operations to maximum number of objects that will fit in the dragitem 
+structure (700- 1700 depending on path length and other factors) 
+to prevent this problem.

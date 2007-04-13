@@ -39,7 +39,7 @@
   17 Feb 07 GKY Add SelectDriveIcon to streamline update.c
   18 Mar 07 GKY Add MM import typedefines for fix for files misindentified as multimedia
   30 Mar 07 GKY Defined golbals for removing GetPString for window class names
-  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits fexceedpmgrglimit & DeleteDragitemStrHandles
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits fExceedPMDrgLimit & DeleteDragitemStrHandles
   06 Apr 07 GKY Add some error checking in drag/drop
 
 ***********************************************************************/
@@ -1344,13 +1344,13 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fViewChild, fShowEnv, fLeaveTree, fAddUtils, fNoFoldMenu,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
-  fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM, fexceedpmdrglimit;
+  fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslongname, detailsea, detailssize, detailssubject,
   detailslwdate, detailslwtime, detailsattr, detailsicon;
 DATADEF PID mypid;
 DATADEF INT driveflags[26], driveserial[26];
-DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines;
+DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines, fExceedPMDrgLimit;
 DATADEF HINI fmprof;
 DATADEF HELPINIT hini;
 DATADEF HWND hwndHelp, LastDir, AboutBox, DirMenu, FileMenu, TreeMenu,

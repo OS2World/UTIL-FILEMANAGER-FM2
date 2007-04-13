@@ -1232,10 +1232,10 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&cdi, 0, sizeof(cdi));
       cdi.pDragInfo = mp1;
       li = DoFileDrop(hwnd, NULL, FALSE, mp1, MPFROMP(&cdi));
-      if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
+      if (fExceedPMDrgLimit)
+        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		             hwnd,
+		             GetPString(IDS_ERRORTEXT),
                    GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = id;
@@ -1805,10 +1805,10 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       li = DoFileDrop(hwnd,
 		      NULL,
 		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
-      if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
+      if (fExceedPMDrgLimit)
+        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		             hwnd,
+		             GetPString(IDS_ERRORTEXT),
                    GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	strcpy(li->targetpath, szDrv);

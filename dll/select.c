@@ -61,8 +61,8 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list)
 		 MPFROM2SHORT(FALSE, CRA_SELECTED));
       if (!all)
           break;
-      if(fexceedpmdrglimit && x == 1499){
-          fexceedpmdrglimit = FALSE;
+      if(fExceedPMDrgLimit && x == fExceedPMDrgLimit - 1){
+          fExceedPMDrgLimit = 0;
           break;
       }
       if (list)
@@ -568,6 +568,7 @@ VOID SpecialSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
   CNRINFO cnri;
   BOOL slow = FALSE;
   register INT x, numD, numS;
+
 
   if (!hwndCnrS || !hwndCnrD)
     return;

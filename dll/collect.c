@@ -458,10 +458,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr, NULL, FALSE, MPVOID, MPFROMP(&cni));
-      if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
+      if (fExceedPMDrgLimit)
+        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		             hwnd,
+		             GetPString(IDS_ERRORTEXT),
                    GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
@@ -2244,7 +2244,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		WinSetWindowText(hwndStatus2,
 				 GetPString(IDS_DRAGFILEOBJTEXT));
 	      if (DoFileDrag(hwnd, dcd->hwndObject, mp2, NULL, NULL, TRUE)) {
-		if ((fUnHilite && wasemphasized) || fexceedpmdrglimit)
+		if ((fUnHilite && wasemphasized) || fExceedPMDrgLimit)
 		  UnHilite(hwnd, TRUE, &dcd->lastselection);
 	      }
 	      if (hwndStatus2)
@@ -2260,11 +2260,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  ULONG action = UM_ACTION;
 
           li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+          if (fExceedPMDrgLimit)
+            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		                 hwnd,
+		                 GetPString(IDS_ERRORTEXT),
+                       GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (!*li->targetpath) {
 	      li->type = IDM_COLLECT;

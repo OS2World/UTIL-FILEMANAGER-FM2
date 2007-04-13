@@ -588,10 +588,10 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
 		   MPFROMP(&cni));
-      if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
+      if (fExceedPMDrgLimit)
+        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		             hwnd,
+		             GetPString(IDS_ERRORTEXT),
                    GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
@@ -2846,7 +2846,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   NULL,
 			   (pci) ? NULL : dcd->directory,
 			   (pci) ? TRUE : FALSE)) {
-	      if ((pci && fUnHilite && wasemphasized) || fexceedpmdrglimit)
+	      if ((pci && fUnHilite && wasemphasized) || fExceedPMDrgLimit)
 		UnHilite(hwnd, TRUE, &dcd->lastselection);
 	    }
 	    if (hwndStatus2) {
@@ -2864,11 +2864,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ULONG action = UM_ACTION;
 
           li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
-          if(fexceedpmdrglimit)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+          if (fExceedPMDrgLimit)
+            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+		                 hwnd,
+		                 GetPString(IDS_ERRORTEXT),
+                       GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (li->list && li->list[0] && IsRoot(li->list[0]))
 	      li->type = DO_LINK;
