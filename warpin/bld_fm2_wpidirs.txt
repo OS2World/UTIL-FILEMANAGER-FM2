@@ -1,25 +1,31 @@
 ;
-;  This is a file which will be used to automate the process of incorporating new files,
-;  directories and/or packages into the Warpin WPI file.
+;  This is a file which will be used to simplify the process of
+;     -  incorporating new files
+;     -  renaming files
+;     -  discontinuing obsolete files
+;     -  relocation of files within the build subtree
+;     -  relocation of files within the installation subtree
+;     -  incorporating new build subtree directories
+;     -  incorporating new installation subtree directories
+;     -  discontinuing obsolete installation subtree directories
+;     -  incorporating new packages
+;     -  renumbering packages
+;     -  discontinuing obsolete packages
+;  into the Warpin WPI file. All of these changes can be accomplished without
+;  modification of the warpin makefile.
 ;
 ;  The format of this file is as follows:
 ;     -  All blank lines are ignored
-;     -  For any lines which contain a semicolon (like all the
-;        lines so far), the semicolon and any text on the line
-;        following the semicolon are ignored (i.e. they are
-;        comments mean for humans reading the file)
-;     -  All lines which have non-blank text which does not
-;        follow a semicolon, must be in one of the following
-;        formats:
-;           PACKAGECOUNT: <number-of-packages>
-;           PACKAGE: <package-number>  <package-description>
-;           FILE: <name>  <pkg-num> <src-dir> <dest-dir>
+;     -  For any lines which contain a semicolon (like all the lines so far),
+;        the semicolon and any text on the line following the semicolon are
+;        ignored (i.e. they are comments meant for humans reading the file)
+;     -  All lines which have non-blank text which does not follow a semicolon,
+;        must be in one of the following formats:
+;           FILE: <name>  <package-number> <src-dir> <dest-dir>
+;           NOFILESPACKAGE: <package-number>
 ;        where
-;           <number-of-packages> is the total number of packages
-;           <package-number> is package number being described
-;           <package-description> is a free-form textual description of the package
 ;           <name> is a file name (without any path information>
-;           <pkg-num> is the number of the package to which this file belongs
+;           <package-number> is a package number
 ;           <src-dir> is the directory, relative to the base (or top) of the build subtree.
 ;              NOTE: If you run BLD_FM2_WPIDIRS using an unzipped distribution of FM/2
 ;              instead of the FM/2 source code build subtree, then <src_dir> is ignored.
@@ -31,27 +37,10 @@
 ;        NOTE: A dot. '.', for src-dir or dest-dir means the base/top directory of the
 ;           subtree.
 ;
-;     -  The PACKAGECOUNT line should be before all PACKAGE, FILE and DUMMYFILE lines
-;     -  All the PACKAGE lines should be before all FILE and DUMMYFILE lines
-;     -  The FILE lines should be after the PACKAGECOUNT and PACKAGE lines. The order
-;        is not important but it will facilitate future changes if files for each
-;        package are grouped together.
+;     -  The order of the FILE and NOFILESPACKAGE lines is not important but it will
+;        facilitate future changes if files for each package are grouped together.
 ;
-;     NOTE: Warpin scripts do not require that the package numbers are consecutive. For
-;     example a script may have four packages which are numbered 1, 4, 12 and 293. For
-;     this script, this file should have:
-;        PACKAGECOUNT: 4               ; NOT 293!!
-;        And then all the package numbers on the PACKAGE, FILE and DUMMYFILE lines would
-;        be 1, 4, 12, or 293.
-;
-
-PACKAGECOUNT: 4
-
-PACKAGE: 1  FM/2 Base
-PACKAGE: 2  FM/2 Lite
-PACKAGE: 3  FM/2 Tools
-
-PACKAGE: 10  Reset FM/2 customizations to defaults
+;     NOTE: Warpin scripts do not require that the package numbers are consecutive.
 
 FILE: file_id.diz                1  .        .
 FILE: fm3.exe                    1  .        .
@@ -95,7 +84,7 @@ FILE: views.tmp                  1  .        Tmplates     ;was Install
 FILE: fm2dump.cmd                1  debugtools    .
 FILE: fm2dump2.cmd               1  debugtools    .
 
-FILE: fm4.exe           2  .  .
+FILE: fm4.exe           1  .  .
 
 FILE: av2.exe           3  .  FM2Tools              ; was .
 FILE: databar.exe       3  .  FM2Tools              ; was .
@@ -111,21 +100,8 @@ FILE: vdir.exe          3  .  FM2Tools              ; was .
 FILE: viewinfs.exe      3  .  FM2Tools              ; was .
 FILE: vtree.exe         3  .  FM2Tools              ; was .
 
-;FILE: av2.exe           3  .  .
-;FILE: databar.exe       3  .  .
-;FILE: dirsize.exe       3  .  .
-;FILE: eas.exe           3  .  .
-;FILE: global.exe        3  .  .
-;FILE: ini.exe           3  .  .
-;FILE: killproc.exe      3  .  .
-;FILE: sysinfo.exe       3  .  .
-;FILE: undel.exe         3  .  .
-;FILE: vcollect.exe      3  .  .
-;FILE: vdir.exe          3  .  .
-;FILE: viewinfs.exe      3  .  .
-;FILE: vtree.exe         3  .  .
-
 FILE: utilsmgr.cmd      3  .  .
 FILE: toolbox.ico       3  Icons    Icons
 FILE: toolbox2.ico      3  Icons    Icons
 
+NOFILESPACKAGE: 10
