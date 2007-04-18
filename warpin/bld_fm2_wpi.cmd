@@ -70,11 +70,13 @@ call Init strip(args)
 if WPI.scriptonly == 0 then
 /* Add the files to the WPI   */
    do
+/*
       if stream(WPI.archivename, 'c', 'query exists') \= '' then
          if archive_previous_WPI == 1 then
             'ren 'WPI.archivename WPI.archivename || '.' || time('S')
          else
             'del 'WPI.archivename
+*/
       do p = 1 to WPI.pkg.0
          call SysFileTree WPI.pkg.p.dir || '\*', 'pkgfilelist.', 'FOS'
          if pkgfilelist.0 = 0 then
@@ -85,18 +87,17 @@ if WPI.scriptonly == 0 then
             call ErrorExit 3 rc
       end
       if delete_files_afterwards = 1 then
-         do pkgnum = 1 to WPI.pkg.0
-            call EmptyDir WPI.pkg.pkgnum.dir
-         end
+         call clean_wpidirs
    end
-
-/* Add the script file to the WPI   */
-/*
-'eautil 'WPI.scriptname' NUL /s'
-*/
-WPI.WIC_pgm WPI.archivename' -s 'WPI.scriptname
-if rc \= 0 then
-   call ErrorExit 4 rc
+   do
+      /* Add the script file to the WPI   */
+      /*
+      'eautil 'WPI.scriptname' NUL /s'
+      */
+      WPI.WIC_pgm WPI.archivename' -s 'WPI.scriptname
+      if rc \= 0 then
+         call ErrorExit 4 rc
+   end
 
 /*
 call Deinit
@@ -138,13 +139,6 @@ exit WPI.retval
 Init: procedure expose (globals)
    WPI.retval = 0
    WPI.scriptonly = 0
-/*
-   parse arg WPI.archivename WPI.scriptname .
-   if WPI.archivename == '' then
-      WPI.archivename = WPI.default_archivename
-   if WPI.scriptname == '' then
-      WPI.scriptname = left(WPI.archivename, length(WPI.archivename) - 3) || 'wis'
-*/
    WPI.archivename = WPI.default_archivename
    WPI.scriptname = left(WPI.archivename, length(WPI.archivename) - 3) || 'wis'
    parse arg args
@@ -176,8 +170,8 @@ Init: procedure expose (globals)
    Warpin_pathentry = ';' || translate(Warpin_path) || ';'
 
    ext_libpath = SysQueryExtLibpath('B')
-   if pos( Warpin_pathentry, ';' || translate(SysQueryExtLibpath('B')) || ';' ) == 0 then
-      call SysSetExtLibpath Warpin_pathentry || ';' || ext_libpath, 'B'
+   if pos( Warpin_pathentry, ';' || translate(ext_libpath) || ';' ) == 0 then
+      call SysSetExtLibpath Warpin_Path || ';' || ext_libpath, 'B'
 
    parse source . . thispgm
    thisdir = left(thispgm, lastpos('\', thispgm) - 1)
@@ -198,20 +192,6 @@ return
 Deinit: procedure expose (globals)
 return
 */
-
-Emptydir: procedure
-   parse arg dir
-   call SysFileTree dir'\*', 'dirs.', 'DO'
-   do i = 1 to dirs.0
-      call EmptyDir dirs.i
-   end
-   call SysFileTree dir'\*', 'files.', 'FO'
-   do i = 1 to files.0
-      '@attrib -r -s -h 'files.i' >NUL 2>NUL'
-      '@del 'files.i' >NUL 2>NUL'
-   end
-   '@rd 'dir
-return
 
 novalue:
    say 'Error: Uninitialized value: ' || condition('D') || ' encountered on line 'sigl':'
