@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2007 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
@@ -20,6 +20,7 @@
   26 Jul 06 SHL Add ..._Error2
   16 Aug 06 SHL Tweak message formatting
   07 Jan 07 GKY Move error strings etc. to string file
+  18 Apr 07 SHL showMsg: correct selective logging checks
 
 ***********************************************************************/
 
@@ -39,7 +40,7 @@
 #pragma data_seg(DATA1)
 #pragma alloc_text(FMINPUT,Win_Error,Dos_Error,saymsg,showMsg)
 
-static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg);
+static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog);
 
 //== Win_Error: report Win...() error using passed message string ===
 
@@ -62,8 +63,14 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
 
   // Format callers message
   va_start(va, pszFmt);
+  szMsg[sizeof(szMsg) - 1] = 0;
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
+
+  if (szMsg[sizeof(szMsg) - 1]) {
+    fprintf(stderr, "Buffer overflow in Win_Error - need %u bytes\n", strlen(szMsg) + 1);
+    fflush(stderr);
+  }
 
   if (strchr(szMsg, ' ') == NULL)
     strcat(szMsg, " failed.");		// Assume simple function name
@@ -76,7 +83,7 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
   pErrInfoBlk = WinGetErrorInfo(hab);
   if (!pErrInfoBlk) {
     psz = szMsg + strlen(szMsg);
-    strcpy(psz, " WinGetError failed.");
+    strcpy(psz, " WinGetErrorInfo failed.");
   }
   else {
     if (!hwndOwner)
@@ -97,8 +104,8 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
     WinFreeErrorInfo(pErrInfoBlk);	// Free resource segment
   }
 
-  showMsg(MB_ENTER | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_GENERR2TEXT),	// Titlebar message
-	  szMsg);			// Formatted message
+  showMsg(MB_ENTER | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_GENERR2TEXT),
+	  szMsg, TRUE);
 
 }					// Win_Error
 
@@ -130,8 +137,14 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
 
   // Format caller's message
   va_start(va, pszFmt);
+  szMsg[sizeof(szMsg) - 1] = 0;
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
+
+  if (szMsg[sizeof(szMsg) - 1]) {
+    fprintf(stderr, "Buffer overflow in Dos_Error - need %u bytes\n", strlen(szMsg) + 1);
+    fflush(stderr);
+  }
 
   if (strchr(szMsg, ' ') == NULL)
     strcat(szMsg, " failed.");		// Assume simple function name
@@ -178,8 +191,8 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
     }
   }
 
-  return showMsg(mb_type | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_DOSERR2TEXT),	// Title
-		 szMsg);
+  return showMsg(mb_type | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_DOSERR2TEXT),
+		 szMsg, TRUE);
 
 }					// Dos_Error
 
@@ -202,16 +215,22 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
   // Format caller's message
   va_start(va, pszFmt);
+  szMsg[sizeof(szMsg) - 1] = 0;
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
+
+  if (szMsg[sizeof(szMsg) - 1]) {
+    fprintf(stderr, "Buffer overflow in Runtime_Error - need %u bytes\n", strlen(szMsg) + 1);
+    fflush(stderr);
+  }
 
   if (strchr(szMsg, ' ') == NULL)
     strcat(szMsg, " failed.");		// Assume simple function name
 
   sprintf(szMsg + strlen(szMsg),
-          GetPString(IDS_GENERR1TEXT), pszSrcFile, uSrcLineNo);
+	  GetPString(IDS_GENERR1TEXT), pszSrcFile, uSrcLineNo);
 
-  showMsg(MB_ICONEXCLAMATION, HWND_DESKTOP, DEBUG_STRING, szMsg);
+  showMsg(MB_ICONEXCLAMATION, HWND_DESKTOP, DEBUG_STRING, szMsg, TRUE);
 
 }					// Runtime_Error
 
@@ -233,18 +252,24 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
   va_list va;
 
   va_start(va, pszFmt);
+  szMsg[sizeof(szMsg) - 1] = 0;
   vsprintf(szMsg, pszFmt, va);
   va_end(va);
 
-  return showMsg(mb_type, hwnd, pszTitle, szMsg);
+  if (szMsg[sizeof(szMsg) - 1]) {
+    fprintf(stderr, "Buffer overflow in saymsg - need %u bytes\n", strlen(szMsg) + 1);
+    fflush(stderr);
+  }
+
+  return showMsg(mb_type, hwnd, pszTitle, szMsg, FALSE);
 
 }					// saymsg
 
 //=== showMsg: display error popup ===
 
-static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg)
+static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog)
 {
-  if ((mb_type & (MB_YESNO | MB_YESNOCANCEL)) == 0) {
+  if (wantLog) {
     fputs(pszMsg, stderr);
     fputc('\n', stderr);
     fflush(stderr);
@@ -259,4 +284,4 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg)
 		       hwnd,		// Owner
 		       (PSZ) pszMsg, (PSZ) pszTitle, 0,	// help id
 		       mb_type | MB_MOVEABLE);
-}					// showMsg
+} // showMsg
