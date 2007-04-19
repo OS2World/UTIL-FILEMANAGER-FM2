@@ -77,7 +77,7 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
 
   // Append file name and line number
   sprintf(szMsg + strlen(szMsg),
-	  GetPString(IDS_GENERR1TEXT), pszFileName, ulLineNo, "  ");
+	  GetPString(IDS_GENERR1TEXT), pszFileName, ulLineNo, " ");
 
   // Get last PM error for the current thread
   pErrInfoBlk = WinGetErrorInfo(hab);
@@ -96,10 +96,16 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
        append error message to source code linenumber
      */
     psz = szMsg + strlen(szMsg);
-    sprintf(psz, "#0x%04x  \"", ERRORIDERROR(pErrInfoBlk->idError));
+    sprintf(psz, "#0x%04x \"", ERRORIDERROR(pErrInfoBlk->idError));
     psz += strlen(psz);
     strcpy(psz, ((PSZ) pErrInfoBlk) + *(PSHORT) pszOffset);
     psz += strlen(psz);
+    // Chop trailing mush
+    psz--;
+    while (*psz == '\r' || *psz == '\n' || *psz == ' ')
+      *psz-- = 0;
+    if (*psz)
+      psz++;
     strcpy(psz, "\"");
     WinFreeErrorInfo(pErrInfoBlk);	// Free resource segment
   }
@@ -271,6 +277,7 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL
 {
   if (wantLog) {
     fputs(pszMsg, stderr);
+    fputc('\n', stderr);
     fputc('\n', stderr);
     fflush(stderr);
   }
