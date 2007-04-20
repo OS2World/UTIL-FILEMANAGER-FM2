@@ -170,7 +170,7 @@ Memory
 
  - Use xfree rather than free
 
- - Buffer overflow possible, check for it.
+ - If buffer overflow possible, check for it.
 
 Windows
 
