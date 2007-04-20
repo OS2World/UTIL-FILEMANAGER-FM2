@@ -21,6 +21,8 @@
   16 Aug 06 SHL Tweak message formatting
   07 Jan 07 GKY Move error strings etc. to string file
   18 Apr 07 SHL showMsg: correct selective logging checks
+  19 Apr 07 SHL Add DbgMsg
+  20 Apr 07 SHL Correct IDS_GENERR1TEXT formatting
 
 ***********************************************************************/
 
@@ -57,7 +59,7 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
   va_list va;
 
   if (hwndErr == NULLHANDLE)
-    hab = (HAB) 0;
+    hab = (HAB)0;
   else
     hab = WinQueryAnchorBlock(hwndErr);
 
@@ -77,7 +79,7 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
 
   // Append file name and line number
   sprintf(szMsg + strlen(szMsg),
-	  GetPString(IDS_GENERR1TEXT), pszFileName, ulLineNo, " ");
+	  GetPString(IDS_GENERR1TEXT), pszFileName, ulLineNo);
 
   // Get last PM error for the current thread
   pErrInfoBlk = WinGetErrorInfo(hab);
@@ -273,7 +275,7 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
 
 //=== showMsg: display error popup ===
 
-static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog)
+static APIRET showMsg(ULONG mb_type, HWND hwndOwner, PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog)
 {
   if (wantLog) {
     fputs(pszMsg, stderr);
@@ -282,13 +284,34 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL
     fflush(stderr);
   }
 
-  if (!hwnd)
-    hwnd = HWND_DESKTOP;
+  if (!hwndOwner)
+    hwndOwner = HWND_DESKTOP;
 
   DosBeep(250, 100);
 
   return WinMessageBox(HWND_DESKTOP,	// Parent
-		       hwnd,		// Owner
+		       hwndOwner,
 		       (PSZ) pszMsg, (PSZ) pszTitle, 0,	// help id
 		       mb_type | MB_MOVEABLE);
 } // showMsg
+
+//=== DbgMsg: output debug message stderr ===
+
+VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
+{
+  va_list va;
+
+  // OK for source file name to be null
+  fprintf(stderr, "%s %u", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo);
+  // If format null want just file and line
+  if (pszFmt) {
+    fputc(' ', stderr);
+    va_start(va, pszFmt);
+    vfprintf(stderr, pszFmt, va);
+    va_end(va);
+  }
+  fputc('\n', stderr);
+  fflush(stderr);
+
+} // DbgMsg
+
