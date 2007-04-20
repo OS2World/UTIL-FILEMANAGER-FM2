@@ -16,6 +16,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   15 Aug 06 SHL Rework SetMask args and logic
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  19 Apr 07 SHL Sync with NumItemsToUnhilite mods
 
 ***********************************************************************/
 
@@ -61,9 +62,10 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list)
 		 MPFROM2SHORT(FALSE, CRA_SELECTED));
       if (!all)
           break;
-      if(fExceedPMDrgLimit && x == fExceedPMDrgLimit - 1){
-          fExceedPMDrgLimit = 0;
-          break;
+      // Count is one extra to ensure non-zero elsewhere
+      if (NumItemsToUnhilite && x + 2 == NumItemsToUnhilite){
+        NumItemsToUnhilite = 0;
+        break;
       }
       if (list)
 	AddToList(pci->szFileName, list, &numfiles, &numalloc);
@@ -420,7 +422,7 @@ VOID MarkAll(HWND hwndCnr, BOOL quitit, BOOL target, BOOL source)
   INT attribute = CRA_CURSORED;
 
   if (quitit)
-    attribute = (target) ? CRA_TARGET : (source) ? CRA_SOURCE : CRA_INUSE;
+    attribute = target ? CRA_TARGET : source ? CRA_SOURCE : CRA_INUSE;
   pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 			      MPFROMLONG(CMA_FIRST), MPFROMSHORT(attribute));
   if (pci && (INT) pci != -1) {
@@ -436,8 +438,8 @@ VOID MarkAll(HWND hwndCnr, BOOL quitit, BOOL target, BOOL source)
   while (pci && (INT) pci != -1) {
     WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 	       MPFROM2SHORT(!quitit,
-			    ((target) ? CRA_TARGET : (source) ? CRA_SOURCE :
-			     CRA_INUSE)));
+			    target ? CRA_TARGET : source ? CRA_SOURCE :
+			     CRA_INUSE));
     pci =
       WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROMSHORT(attribute));

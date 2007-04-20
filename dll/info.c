@@ -17,6 +17,7 @@
   14 Jul 06 SHL Use Runtime_Error
   24 Mar 07 SHL Correct FileInfoProc binary file detect
   24 Mar 07 SHL Correct FileInfoProc/IconProc race crash
+  19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
 
 ***********************************************************************/
 
@@ -367,7 +368,7 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       emphasized = TRUE;
       DrawTargetEmphasis(hwnd, emphasized);
     }
-    if (AcceptOneDrop(mp1, mp2))
+    if (AcceptOneDrop(hwnd, mp1, mp2))
       return MRFROM2SHORT(DOR_DROP, DO_MOVE);
     return MRFROM2SHORT(DOR_NEVERDROP, 0);
 
@@ -388,7 +389,7 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       emphasized = FALSE;
       DrawTargetEmphasis(hwnd, emphasized);
-      if (GetOneDrop(mp1, mp2, szFrom, sizeof(szFrom))) {
+      if (GetOneDrop(hwnd, mp1, mp2, szFrom, sizeof(szFrom))) {
 	memset(&ici, 0, sizeof(ICONINFO));
 	ici.cb = sizeof(ICONINFO);
 	ici.fFormat = ICON_FILE;

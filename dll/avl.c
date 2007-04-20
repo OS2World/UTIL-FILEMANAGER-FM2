@@ -25,6 +25,8 @@
   15 Aug 06 SHL Use Runtime_Error more
   01 Nov 06 SHL Turn off leftover debug code
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limit
+  19 Apr 07 SHL Use FreeDragInfoData
+  19 Apr 07 SHL Add more drag/drop error checking
 
 ***********************************************************************/
 
@@ -547,8 +549,8 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 {
   PFNWP pfnOldProc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
 
-  PDRAGITEM pditem;
-  PDRAGINFO pdinfo;
+  PDRAGITEM pDItem;
+  PDRAGINFO pDInfo;
   BOOL ok;
 
   static BOOL emphasized = FALSE;
@@ -567,10 +569,10 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
       cur_ndx = WinQueryLboxSelectedItem(hwnd);
 
       if (cur_ndx != LIT_NONE) {
-	pdinfo = DrgAllocDraginfo(1);
-	if (pdinfo) {
-	  pdinfo->usOperation = DO_DEFAULT;
-	  pdinfo->hwndSource = hwnd;
+	pDInfo = DrgAllocDraginfo(1);
+	if (pDInfo) {
+	  pDInfo->usOperation = DO_DEFAULT;
+	  pDInfo->hwndSource = hwnd;
 
 	  memset(&ditem, 0, sizeof(DRAGITEM));
 	  ditem.hwndItem = hwnd;
@@ -592,13 +594,13 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 	  dimage.sizlStretch.cy = 32;
 	  dimage.cxOffset = -16;
 	  dimage.cyOffset = 0;
-	  DrgSetDragitem(pdinfo, &ditem, sizeof(DRAGITEM), 0);	/* Index of DRAGITEM */
-	  hwndDrop = DrgDrag(hwnd, pdinfo, &dimage, 1,	/* One DRAGIMAGE */
+	  DrgSetDragitem(pDInfo, &ditem, sizeof(DRAGITEM), 0);	/* Index of DRAGITEM */
+	  hwndDrop = DrgDrag(hwnd, pDInfo, &dimage, 1,	/* One DRAGIMAGE */
 			     VK_ENDDRAG, NULL);
 	  if (!hwndDrop)
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DrgDrag");
 
-	  DrgFreeDraginfo(pdinfo);
+	  DrgFreeDraginfo(pDInfo);
 	  // WinSetWindowPos(hwnd,HWND_TOP,0,0,0,0,SWP_ACTIVATE);
 	}
       }
@@ -622,18 +624,21 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 		 MPFROM2SHORT(HT_NORMAL, KC_NONE));
       // fprintf(stderr, "DRAGOVER posted 0x%x WM_BUTTON1CLICK x y %d %d\n", hwnd, ptl2.x, ptl2.y);
     }
-    pdinfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
-    if (pdinfo) {
-      DrgAccessDraginfo(pdinfo);
-      pditem = DrgQueryDragitemPtr(pdinfo, 0);
-      /* Check valid rendering mechanisms and data format */
-      ok = DrgVerifyRMF(pditem, DRM_LBOX, NULL);
-      DrgFreeDraginfo(pdinfo);
-      if (ok) {
+    pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
+    if (pDInfo) {
+      if (!DrgAccessDraginfo(pDInfo)) {
+        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  "DrgAccessDraginfo");
+      }
+      else {
+        pDItem = DrgQueryDragitemPtr(pDInfo, 0);
+        /* Check valid rendering mechanisms and data format */
+        ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL);
+        DrgFreeDraginfo(pDInfo);
       }
     }
-    return ok ? MRFROM2SHORT(DOR_DROP, DO_MOVE) : MRFROM2SHORT(DOR_NEVERDROP,
-							       0);
+    return ok ? MRFROM2SHORT(DOR_DROP, DO_MOVE) :
+                MRFROM2SHORT(DOR_NEVERDROP, 0);
 
   case DM_DRAGLEAVE:
     if (emphasized) {
@@ -651,34 +656,35 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 
   case DM_DROP:
     ok = FALSE;
-    // fprintf(stderr, "DROP\n");
-    fflush(stderr);
     if (emphasized) {
       emphasized = FALSE;
       // DrawTargetEmphasis(hwnd, emphasized);
     }
-    pdinfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
-    if (pdinfo) {
-      DrgAccessDraginfo(pdinfo);
-      pditem = DrgQueryDragitemPtr(pdinfo, 0);
-      if (!pditem)
-	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DM_DROP");
-      /* Check valid rendering mechanisms and data */
-      ok = DrgVerifyRMF(pditem, DRM_LBOX, NULL)
-	&& ~pditem->fsControl & DC_PREPARE;
-      if (ok) {
-	// ret = FullDrgName(pditem,buffer,buflen);
-	/* note: targetfail is returned to source for all items */
-	DrgSendTransferMsg(pdinfo->hwndSource, DM_ENDCONVERSATION,
-			   MPFROMLONG(pditem->ulItemID),
-			   MPFROMLONG(DMFL_TARGETSUCCESSFUL));
+    pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
+    if (pDInfo) {
+      if (!DrgAccessDraginfo(pDInfo)) {
+        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  "DrgAccessDraginfo");
       }
-      DeleteDragitemStrHandles(pdinfo); //
-      DrgDeleteDraginfoStrHandles(pdinfo);
-      DrgFreeDraginfo(pdinfo);
+      else {
+        pDItem = DrgQueryDragitemPtr(pDInfo, 0);
+        if (!pDItem)
+	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DM_DROP");
+        /* Check valid rendering mechanisms and data */
+        ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL)
+	                  && ~pDItem->fsControl & DC_PREPARE;
+        if (ok) {
+	  // ret = FullDrgName(pDItem,buffer,buflen);
+	  /* note: targetfail is returned to source for all items */
+	  DrgSendTransferMsg(pDInfo->hwndSource, DM_ENDCONVERSATION,
+			     MPFROMLONG(pDItem->ulItemID),
+			     MPFROMLONG(DMFL_TARGETSUCCESSFUL));
+        }
+        FreeDragInfoData(hwnd, pDInfo);
+      }
     }
     return 0;
-  }					// switch
+  } // switch
   return pfnOldProc ? pfnOldProc(hwnd, msg, mp1, mp2) :
     WinDefWindowProc(hwnd, msg, mp1, mp2);
 }

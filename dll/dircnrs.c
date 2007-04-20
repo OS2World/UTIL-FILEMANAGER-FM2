@@ -23,6 +23,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
+  19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checking.
 
 ***********************************************************************/
 
@@ -385,9 +386,9 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DIR_FOLDERICON:
       switch (msg) {
       case DM_DRAGOVER:
-	if (AcceptOneDrop(mp1, mp2))
+	if (AcceptOneDrop(hwnd, mp1, mp2))
 	  return MRFROM2SHORT(DOR_DROP, DO_MOVE);
-	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid        */
+	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
       case DM_DROPHELP:
 	DropHelp(mp1, mp2, hwnd, GetPString(IDS_DIRCNRFOLDERDROPHELP));
 	return 0;
@@ -399,7 +400,7 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    emphasized = FALSE;
 	    DrawTargetEmphasis(hwnd, emphasized);
 	  }
-	  if (GetOneDrop(mp1, mp2, szFrom, sizeof(szFrom)))
+	  if (GetOneDrop(hwnd, mp1, mp2, szFrom, sizeof(szFrom)))
 	    WinSendMsg(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       DIR_CNR),
 		       WM_COMMAND, MPFROM2SHORT(IDM_SWITCH, 0),
@@ -588,11 +589,11 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
 		   MPFROMP(&cni));
-      if (fExceedPMDrgLimit)
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		             hwnd,
-		             GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+      if (NumItemsToUnhilite)
+	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+			     hwnd,
+			     GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -2633,8 +2634,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
 /*
-          case CN_PICKUP:
-            return PickUp(hwnd,dcd->hwndObject,mp2);
+	  case CN_PICKUP:
+	    return PickUp(hwnd,dcd->hwndObject,mp2);
 */
 
       case CN_CONTEXTMENU:
@@ -2693,67 +2694,54 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 		      GetPString(IDS_DROPERRORTEXT));
-	    break;
 	  }
-	  numitems = DrgQueryDragitemCount(pDInfo);
-	  usOperation = pDInfo->usOperation;
-          rc = DeleteDragitemStrHandles(pDInfo); //
-          if(!rc)
-          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                    "DeleteDragitemStrHandles");
-          DrgDeleteDraginfoStrHandles (pDInfo);
-          rc = DrgFreeDraginfo(pDInfo);
-          if(!rc)
-          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                 "DrgFreeDraginfo");
-	  saymsg(MB_ENTER | MB_ICONASTERISK,
-		 hwnd,
-		 GetPString(IDS_DROPHELPHDRTEXT),
-		 GetPString(IDS_DROPHELPTEXT),
-		 numitems,
-		 &"s"[numitems == 1L],
-		 (pci) ? NullStr : GetPString(IDS_NOTEXT),
-		 (pci) ? NullStr : " ",
-		 (pci) ? pci->szFileName : NullStr,
-		 (pci) ? " " : NullStr,
-		 GetPString((usOperation == DO_COPY) ?
-			    IDS_COPYTEXT :
-			    (usOperation == DO_LINK) ?
-			    IDS_LINKTEXT : IDS_MOVETEXT));
+	  else {
+	    numitems = DrgQueryDragitemCount(pDInfo);
+	    usOperation = pDInfo->usOperation;
+	    FreeDragInfoData(hwnd, pDInfo);
+	    saymsg(MB_ENTER | MB_ICONASTERISK,
+		   hwnd,
+		   GetPString(IDS_DROPHELPHDRTEXT),
+		   GetPString(IDS_DROPHELPTEXT),
+		   numitems,
+		   &"s"[numitems == 1L],
+		   pci ? NullStr : GetPString(IDS_NOTEXT),
+		   pci ? NullStr : " ",
+		   pci ? pci->szFileName : NullStr,
+		   pci ? " " : NullStr,
+		   GetPString((usOperation == DO_COPY) ?
+			      IDS_COPYTEXT :
+			      (usOperation == DO_LINK) ?
+			      IDS_LINKTEXT : IDS_MOVETEXT));
+	  }
 	}
 	return 0;
 
       case CN_DRAGLEAVE:
-#ifdef NEVER
-	if (mp2) {
-
-	  PDRAGINFO pDInfo;
-
-	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
-	}
-#endif
 	return 0;
 
       case CN_DRAGAFTER:
       case CN_DRAGOVER:
 	if (mp2) {
 
-	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM   */
-	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO   */
+	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM */
+	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO */
 	  PCNRITEM pci;
 	  USHORT uso;
 
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
+          if (!DrgAccessDraginfo(pDInfo)) {
+            Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                      "DrgAccessDraginfo");
+	      return (MRFROM2SHORT(DOR_NEVERDROP, 0));
+          }
 	  if (*dcd->directory &&
 	      (driveflags[toupper(*dcd->directory) - 'A'] &
 	       DRIVE_NOTWRITEABLE)) {
 	    DrgFreeDraginfo(pDInfo);
 	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to link */
-				DO_LINK);	/* (compare) only      */
+				DO_LINK);	/* (compare) only */
 	  }
 	  if (pci) {
 	    if (pci->rc.flRecordAttr & CRA_SOURCE) {
@@ -2762,7 +2750,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    uso = pDInfo->usOperation;
 	    if (uso == DO_DEFAULT)
-	      uso = (fCopyDefault) ? DO_COPY : DO_MOVE;
+	      uso = fCopyDefault ? DO_COPY : DO_MOVE;
 	    if (!(pci->attrFile & FILE_DIRECTORY)) {
 	      if (uso != DO_LINK && uso != DO_COPY && uso != DO_MOVE) {
 		DrgFreeDraginfo(pDInfo);
@@ -2796,19 +2784,18 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL) ||
 	      ((!pci || (pci->attrFile & FILE_DIRECTORY)) &&
 	       DrgVerifyRMF(pDItem, DRM_FM2ARCMEMBER, DRF_FM2ARCHIVE))) {
-	    /* Free DRAGINFO */
 	    DrgFreeDraginfo(pDInfo);
 	    if (driveflags[toupper(*dcd->directory) - 'A'] &
 		DRIVE_NOTWRITEABLE)
 	      return MRFROM2SHORT(DOR_DROP, DO_LINK);
 	    if (toupper(*dcd->directory) < 'C')
 	      return MRFROM2SHORT(DOR_DROP, DO_COPY);
-	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop  */
+	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
 				((fCopyDefault) ? DO_COPY : DO_MOVE));
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	}
-	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid        */
+	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid */
 
       case CN_INITDRAG:
 	{
@@ -2829,8 +2816,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      break;
 	    }
 	    else if (IsRoot(dcd->directory)) {
-                saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
-                       GetPString(IDS_CANTDRAGROOTDIR));
+		saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
+		       GetPString(IDS_CANTDRAGROOTDIR));
 	      break;
 	    }
 	    if (hwndStatus2) {
@@ -2844,10 +2831,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   dcd->hwndObject,
 			   mp2,
 			   NULL,
-			   (pci) ? NULL : dcd->directory,
-			   (pci) ? TRUE : FALSE)) {
-	      if ((pci && fUnHilite && wasemphasized) || fExceedPMDrgLimit)
+			   pci ? NULL : dcd->directory,
+			   pci ? TRUE : FALSE)) {
+	      if ((pci && fUnHilite && wasemphasized) || NumItemsToUnhilite) {
 		UnHilite(hwnd, TRUE, &dcd->lastselection);
+	      }
 	    }
 	    if (hwndStatus2) {
 	      WinSetFocus(HWND_DESKTOP, hwnd);
@@ -2863,12 +2851,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-          li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
-          if (fExceedPMDrgLimit)
-            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		                 hwnd,
-		                 GetPString(IDS_ERRORTEXT),
-                       GetPString(IDS_EXCEEDPMDRGLMT));
+	  li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
+	  if (NumItemsToUnhilite) {
+	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+				 hwnd,
+				 GetPString(IDS_ERRORTEXT),
+				 GetPString(IDS_EXCEEDPMDRGLMT));
+	  }
 	  if (li) {
 	    if (li->list && li->list[0] && IsRoot(li->list[0]))
 	      li->type = DO_LINK;
@@ -2884,16 +2873,16 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      cl.prompt = li->targetpath;
 	      li->type = WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
 				   DropListProc, FM3ModHandle,
-                                   DND_FRAME, MPFROMP(&cl));
-              if (li->type == DID_ERROR)
-                  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
-                            "Drag & Drop Dialog");
-              if (!li->type) {
+				   DND_FRAME, MPFROMP(&cl));
+	      if (li->type == DID_ERROR)
+		  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
+			    "Drag & Drop Dialog");
+	      if (!li->type) {
 		FreeListInfo(li);
 		return 0;
 	      }
 	      li->list = cl.list;
-              if (!li->list || !li->list[0]) {
+	      if (!li->list || !li->list[0]) {
 		FreeListInfo(li);
 		return 0;
 	      }

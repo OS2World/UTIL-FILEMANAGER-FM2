@@ -18,6 +18,7 @@
   22 Mar 07 GKY Use QWL_USER
   23 Mar 07 GKY Replace doesn't change item position
   23 Mar 07 GKY Okay fails silently when item not changed
+  19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
 
 ***********************************************************************/
 
@@ -62,7 +63,7 @@ MRESULT EXPENTRY CommandTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       emphasized = TRUE;
       DrawTargetEmphasis(hwnd, emphasized);
     }
-    if (AcceptOneDrop(mp1, mp2))
+    if (AcceptOneDrop(hwnd, mp1, mp2))
       return MRFROM2SHORT(DOR_DROP, DO_MOVE);
     return MRFROM2SHORT(DOR_NEVERDROP, 0);
 
@@ -85,7 +86,7 @@ MRESULT EXPENTRY CommandTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	emphasized = FALSE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (GetOneDrop(mp1, mp2, szFrom, CCHMAXPATH)) {
+      if (GetOneDrop(hwnd, mp1, mp2, szFrom, CCHMAXPATH)) {
 	strcat(szFrom, " %a");
 	WinSetWindowText(hwnd, szFrom);
       }

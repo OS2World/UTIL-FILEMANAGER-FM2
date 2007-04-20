@@ -27,6 +27,8 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
+  19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
+  19 Apr 07 SHL Add more drag/drop error checking
 
 ***********************************************************************/
 
@@ -98,7 +100,7 @@ MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       emphasized = TRUE;
       EmphasizeButton(hwnd, emphasized);
     }
-    if (AcceptOneDrop(mp1, mp2))
+    if (AcceptOneDrop(hwnd, mp1, mp2))
       return MRFROM2SHORT(DOR_DROP, DO_MOVE);
     return MRFROM2SHORT(DOR_NEVERDROP, 0);
 
@@ -121,7 +123,7 @@ MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	emphasized = FALSE;
 	EmphasizeButton(hwnd, emphasized);
       }
-      if (GetOneDrop(mp1, mp2, szFrom, sizeof(szFrom))) {
+      if (GetOneDrop(hwnd, mp1, mp2, szFrom, sizeof(szFrom))) {
 	MakeValidDir(szFrom);
 	WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
 		   UM_OPENWINDOWFORME, MPFROMP(szFrom), MPVOID);
@@ -543,12 +545,12 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
-                      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
-      if (fExceedPMDrgLimit)
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		             hwnd,
-		             GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+      if (NumItemsToUnhilite)
+	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+			     hwnd,
+			     GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = ((fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE);
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -1253,6 +1255,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  PDRAGINFO pDInfo;
 
+	  // fixme to know why - seems superfluous
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  DrgAccessDraginfo(pDInfo);
 	  DrgFreeDraginfo(pDInfo);
@@ -1269,15 +1272,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  USHORT uso;
 
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);
+	  if (!DrgAccessDraginfo(pDInfo)) {
+	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      "DrgAccessDraginfo");
+	    return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
+	  }
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  if ((INT) pci == -1)
 	    pci = NULL;
 	  if (pci && (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODROP))) {
-	    DrgFreeDraginfo(pDInfo);
-	    return MRFROM2SHORT(DOR_NODROP, 0);
-	  }
-	  if (!pDInfo) {
 	    DrgFreeDraginfo(pDInfo);
 	    return MRFROM2SHORT(DOR_NODROP, 0);
 	  }
@@ -1314,12 +1317,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	  }
-	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM       */
-				       0);	/* Index to DRAGITEM     */
+	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
+				       0);	/* Index to DRAGITEM */
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   DRM_OS2FILE,	/* mechanisms and data   */
-			   NULL) || DrgVerifyRMF(pDItem, DRM_FM2ARCMEMBER, DRF_FM2ARCHIVE)) {	/* formats               */
-	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+			   DRM_OS2FILE,	/* mechanisms and data */
+			   NULL) || DrgVerifyRMF(pDItem, DRM_FM2ARCMEMBER, DRF_FM2ARCHIVE)) {	/* formats */
+	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	    if (!pci || (INT) pci == -1)
 	      return MRFROM2SHORT(DOR_DROP, DO_MOVE);
 	    if (driveflags[toupper(*pci->szFileName) - 'A'] &
@@ -1327,12 +1330,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      return MRFROM2SHORT(DOR_DROP, DO_LINK);
 	    if (toupper(*pci->szFileName) < 'C')
 	      return MRFROM2SHORT(DOR_DROP, DO_COPY);
-	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop   */
+	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
 				((fCopyDefault) ? DO_COPY : DO_MOVE));
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	}
-	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid        */
+	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid */
 
       case CN_INITDRAG:
 	{
@@ -1373,12 +1376,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          if (fExceedPMDrgLimit)
-            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		                 hwnd,
-		                 GetPString(IDS_ERRORTEXT),
-                       GetPString(IDS_EXCEEDPMDRGLMT));
+	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+	  if (NumItemsToUnhilite)
+	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+				 hwnd,
+				 GetPString(IDS_ERRORTEXT),
+		       GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (!*li->targetpath) {
 	      if (li->list[0])
@@ -1401,16 +1404,16 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      li->type = WinDlgBox(HWND_DESKTOP,
 				   dcd->hwndParent,
 				   DropListProc,
-                                   FM3ModHandle, DND_FRAME, MPFROMP(&cl));
-              if (li->type == DID_ERROR)
-                  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
-                            "Drag & Drop Dialog");
-              if (!li->type) {
+				   FM3ModHandle, DND_FRAME, MPFROMP(&cl));
+	      if (li->type == DID_ERROR)
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
+			    "Drag & Drop Dialog");
+	      if (!li->type) {
 		FreeListInfo(li);
 		return 0;
 	      }
 	      li->list = cl.list;
-              if (!li->list || !li->list[0]) {
+	      if (!li->list || !li->list[0]) {
 		FreeListInfo(li);
 		return 0;
 	      }
@@ -1797,35 +1800,35 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		driveflags[x] |= DRIVE_REMOVABLE;
 	      if (drvtype & DRIVE_REMOTE)
 		driveflags[x] |= DRIVE_REMOTE;
-              if (!strcmp(FileSystem, CBSIFS)) {
+	      if (!strcmp(FileSystem, CBSIFS)) {
 		driveflags[x] |= DRIVE_ZIPSTREAM;
-                driveflags[x] &= (~DRIVE_REMOTE);
-              }
-              if(!strcmp(FileSystem,NDFS32)) {
-                driveflags[x] |= DRIVE_VIRTUAL;
-                driveflags[x] &= (~DRIVE_REMOTE);
-              }
-              if(!strcmp(FileSystem,RAMFS)) {
-                driveflags[x] |= DRIVE_RAMDISK;
-                driveflags[x] &= (~DRIVE_REMOTE);
-              }
+		driveflags[x] &= (~DRIVE_REMOTE);
+	      }
+	      if(!strcmp(FileSystem,NDFS32)) {
+		driveflags[x] |= DRIVE_VIRTUAL;
+		driveflags[x] &= (~DRIVE_REMOTE);
+	      }
+	      if(!strcmp(FileSystem,RAMFS)) {
+		driveflags[x] |= DRIVE_RAMDISK;
+		driveflags[x] &= (~DRIVE_REMOTE);
+	      }
 	      if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS))
 		driveflags[x] |= (DRIVE_REMOVABLE |
-                                  DRIVE_NOTWRITEABLE | DRIVE_CDROM);
-              if(!strcmp(FileSystem,NTFS))
-                driveflags[x] |= DRIVE_NOTWRITEABLE;
+				  DRIVE_NOTWRITEABLE | DRIVE_CDROM);
+	      if(!strcmp(FileSystem,NTFS))
+		driveflags[x] |= DRIVE_NOTWRITEABLE;
 	      if (strcmp(FileSystem, HPFS) &&
 		  strcmp(FileSystem, JFS) &&
 		  strcmp(FileSystem, CDFS) &&
-                  strcmp(FileSystem, ISOFS) &&
-                  strcmp(FileSystem, RAMFS) &&
+		  strcmp(FileSystem, ISOFS) &&
+		  strcmp(FileSystem, RAMFS) &&
 		  strcmp(FileSystem, FAT32) &&
-                  strcmp(FileSystem, NDFS32) &&
-                  strcmp(FileSystem, NTFS) &&
-                  strcmp(FileSystem, HPFS386)) {
+		  strcmp(FileSystem, NDFS32) &&
+		  strcmp(FileSystem, NTFS) &&
+		  strcmp(FileSystem, HPFS386)) {
 		driveflags[x] |= DRIVE_NOLONGNAMES;
-              }
-              SelectDriveIcon(pciP);
+	      }
+	      SelectDriveIcon(pciP);
 	      WinSendMsg(hwnd,
 			 CM_INVALIDATERECORD,
 			 MPFROMP(&pciP),
@@ -2562,17 +2565,17 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      UnFlesh(hwnd, pci);
 	      // Check if drive type might need update
 	      if ((driveflag & (DRIVE_INVALID | DRIVE_NOPRESCAN)) ||
-	          (~driveflag & DRIVE_NOPRESCAN && pci->rc.hptrIcon == hptrDunno))
+		  (~driveflag & DRIVE_NOPRESCAN && pci->rc.hptrIcon == hptrDunno))
 	      {
 		driveflags[toupper(*pci->szFileName) - 'A'] &=
 		  (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS | DRIVE_NOSTATS);
 		DriveFlagsOne(toupper(*pci->szFileName) - 'A');
-	        driveflag = driveflags[toupper(*pci->szFileName) - 'A'];
+		driveflag = driveflags[toupper(*pci->szFileName) - 'A'];
 		if (driveflag & DRIVE_INVALID)
 		  pci->rc.hptrIcon = hptrDunno;
 		else {
-                  SelectDriveIcon(pci);
+		  SelectDriveIcon(pci);
 		}
 		WinSendMsg(hwnd,
 			   CM_INVALIDATERECORD,

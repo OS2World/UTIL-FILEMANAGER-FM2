@@ -32,8 +32,10 @@
   03 Nov 06 SHL Renames
   14 Mar 07 SHL ArcObjWndProc/UM_ENTER: delay before starting viewer
   30 Mar 07 GKY Remove GetPString for window class names
-   06 Apr 07 GKY Work around PM DragInfo and DrgFreeISH limit
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeISH limit
   06 Apr 07 GKY Add some error checking in drag/drop
+  20 Apr 07 SHL Sync with NumItemsToUnhilite mods
+
 ***********************************************************************/
 
 #define INCL_DOS
@@ -949,7 +951,7 @@ MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DIR_FOLDERICON:
       switch (msg) {
       case DM_DRAGOVER:
-	if (AcceptOneDrop(mp1, mp2))
+	if (AcceptOneDrop(hwnd, mp1, mp2))
 	  return MRFROM2SHORT(DOR_DROP, DO_MOVE);
 	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid */
       case DM_DROPHELP:
@@ -963,7 +965,7 @@ MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    emphasized = FALSE;
 	    DrawTargetEmphasis(hwnd, emphasized);
 	  }
-	  if (GetOneDrop(mp1, mp2, szFrom, sizeof(szFrom)))
+	  if (GetOneDrop(hwnd, mp1, mp2, szFrom, sizeof(szFrom)))
 	    WinSendMsg(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				       ARC_CNR),
 		       WM_COMMAND,
@@ -1129,7 +1131,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
                       dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
-      if (fExceedPMDrgLimit)
+      if (NumItemsToUnhilite)
              saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 		                   hwnd,
 		                   GetPString(IDS_ERRORTEXT),
@@ -3005,7 +3007,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      if (DoFileDrag(hwnd,
 			     dcd->hwndObject,
 			     mp2, dcd->arcname, NULL, TRUE)) {
-		if ((fUnHilite && wasemphasized) || fExceedPMDrgLimit)
+		if ((fUnHilite && wasemphasized) || NumItemsToUnhilite)
 		  UnHilite(hwnd, TRUE, &dcd->lastselection);
 	      }
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
@@ -3035,7 +3037,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  DosBeep(500, 100);		// fixme to know why beep?
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
           DosBeep(50, 100);		// fixme to know why beep?
-          if (fExceedPMDrgLimit)
+          if (NumItemsToUnhilite)
             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 		                  hwnd,
 		                  GetPString(IDS_ERRORTEXT),

@@ -29,11 +29,16 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
+  15 Apr 07 SHL mainwnd MAIN_SETUPLIST restore state not found reporting
+  19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
+  20 Apr 07 SHL Avoid spurious add_udir error reports
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
+// #define INCL_WINERRORS
+#define INCL_SHLERRORS
 #define INCL_WINHELP
 #define INCL_GPI
 #define INCL_LONGLONG
@@ -627,7 +632,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	emphasized = TRUE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (AcceptOneDrop(mp1, mp2))
+      if (AcceptOneDrop(hwnd, mp1, mp2))
 	return MRFROM2SHORT(DOR_DROP, DO_MOVE);
       return MRFROM2SHORT(DOR_NEVERDROP, 0);
     }
@@ -661,7 +666,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	emphasized = FALSE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (GetOneDrop(mp1, mp2, szFrom, sizeof(szFrom))) {
+      if (GetOneDrop(hwnd, mp1, mp2, szFrom, sizeof(szFrom))) {
 	MakeValidDir(szFrom);
 	WinSetWindowText(hwnd, szFrom);
 	PostMsg(WinWindowFromID(WinQueryWindow(WinQueryWindow(hwnd,
@@ -1232,7 +1237,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&cdi, 0, sizeof(cdi));
       cdi.pDragInfo = mp1;
       li = DoFileDrop(hwnd, NULL, FALSE, mp1, MPFROMP(&cdi));
-      if (fExceedPMDrgLimit)
+      if (NumItemsToUnhilite)
         saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 		             hwnd,
 		             GetPString(IDS_ERRORTEXT),
@@ -1751,7 +1756,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	emphasized = TRUE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (AcceptOneDrop(mp1, mp2))
+      if (AcceptOneDrop(hwnd, mp1, mp2))
 	return MRFROM2SHORT(DOR_DROP, DO_MOVE);
       return MRFROM2SHORT(DOR_NEVERDROP, 0);
     }
@@ -1805,7 +1810,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       li = DoFileDrop(hwnd,
 		      NULL,
 		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
-      if (fExceedPMDrgLimit)
+      if (NumItemsToUnhilite)
         saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 		             hwnd,
 		             GetPString(IDS_ERRORTEXT),
@@ -3455,7 +3460,7 @@ static MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd,
 	emphasized = TRUE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (AcceptOneDrop(mp1, mp2))
+      if (AcceptOneDrop(hwnd, mp1, mp2))
 	return MRFROM2SHORT(DOR_DROP, DO_MOVE);
     }
     return MRFROM2SHORT(DOR_NEVERDROP, 0);
@@ -3479,7 +3484,7 @@ static MRESULT EXPENTRY ChildFrameButtonProc(HWND hwnd,
 	emphasized = FALSE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (GetOneDrop(mp1, mp2, szFrom, sizeof(szFrom))) {
+      if (GetOneDrop(hwnd, mp1, mp2, szFrom, sizeof(szFrom))) {
 	if (MakeValidDir(szFrom) && !FindDirCnrByName(szFrom, TRUE)) {
 	  OpenDirCnr((HWND) 0, hwndMain, hwndTree, FALSE, szFrom);
 	}
@@ -4150,13 +4155,10 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (*temp &&
 	  !DosQueryPathInfo(temp, FIL_QUERYFULLNAME, path, sizeof(path))) {
 	if (SHORT1FROMMP(mp1) == IDM_ADDTOUSERLIST) {
-	  if (!add_udir(TRUE, path))
-	    Runtime_Error(pszSrcFile, __LINE__, "add_udir");
-	  else {
-	    if (fUdirsChanged)
-	      save_udirs();
-	    WinSendMsg(hwnd, UM_FILLUSERLIST, MPVOID, MPVOID);
-	  }
+	  add_udir(TRUE, path);
+	  if (fUdirsChanged)
+	    save_udirs();
+	  WinSendMsg(hwnd, UM_FILLUSERLIST, MPVOID, MPVOID);
 	}
 	else {
 	  if (!remove_udir(path))
@@ -4179,7 +4181,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       *szStateName = 0;
       WinQueryWindowText(hwndStatelist, 13, szStateName);
       bstrip(szStateName);
-      if (*szStateName) {
+      // Ignore request if blank or attempting to using illegal name
+      if (*szStateName && stricmp(szStateName, GetPString(IDS_STATETEXT))) {
 	if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
 	  // Save
 	  if (SaveDirCnrState(hwnd, szStateName)) {
@@ -4188,8 +4191,19 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
 	      save_setups();
 	    }
+	    else {
+	      saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+		     GetPString(IDS_WARNINGTEXT),
+		     GetPString(IDS_EXISTSASATEXT), szStateName, "state name");
+	      WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+	    }
 	  }
-	  WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+	  else {
+	    saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+		   GetPString(IDS_WARNINGTEXT),
+		   "\"%s\" state save failed", szStateName);	// 15 Apr 07 SHL failed
+	    WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+	  }
 	}
 	else {
 	  // Delete
@@ -5306,11 +5320,10 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowText(WinWindowFromID(hwndUserlist, CBID_EDIT),
 			 (CHAR *) mp1);
       if (add_udir(FALSE, (CHAR *) mp1)) {
-	if (fUserComboBox) {
-	  if (fAutoAddDirs)
-	    WinSendMsg(hwndUserlist, LM_INSERTITEM,
-		       MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		       MPFROMP((CHAR *) mp1));
+	if (fUserComboBox && fAutoAddDirs) {
+	  WinSendMsg(hwndUserlist, LM_INSERTITEM,
+		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
+		     MPFROMP((CHAR *) mp1));
 	}
       }
     }
@@ -5433,7 +5446,6 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_FILLSETUPLIST:
     WinSendMsg(hwndStatelist, LM_DELETEALL, MPVOID, MPVOID);
     if (fUserComboBox) {
-
       INT x;
 
       if (!loadedsetups)
@@ -5703,11 +5715,20 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      SetShiftState();
 	      size = sizeof(ULONG);
-	      sprintf(s, "%s.NumDirsLastTime", path);
+	      sprintf(s, "%s.NumDirsLastTime", path);	// path is state name
 	      if (!PrfQueryProfileData
 		  (fmprof, FM3Str, s, (PVOID) & numsaves, &size))
-		Win_Error2(hwnd, hwnd, __FILE__, __LINE__,
-			   IDS_PRFQUERYPROFILEDATA);
+	      {
+		if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) == PMERR_NOT_IN_IDX) {
+	          saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+		         GetPString(IDS_WARNINGTEXT),
+		         GetPString(IDS_DOESNTEXISTTEXT), path);
+		}
+		else {
+		  Win_Error2(hwnd, hwnd, __FILE__, __LINE__,
+			     IDS_PRFQUERYPROFILEDATA);
+		}
+	      }
 	      else if (!numsaves)
 		Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	      else {
@@ -5729,7 +5750,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  }
 		}
 	      }
-	      WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+	      // fixme to hold restored state name for a while
+	      // WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));	// 15 Apr 07 SHL
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_CMDLIST) {
 

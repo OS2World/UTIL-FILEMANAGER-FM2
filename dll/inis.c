@@ -17,6 +17,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
+  19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checks.
 
 ***********************************************************************/
 
@@ -1571,9 +1572,8 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pDInfo = DrgAllocDraginfo(1L);
       DrgSetDragitem(pDInfo, &DItem, sizeof(DRAGITEM), 0L);
       hDrop = DrgDrag(hwnd, pDInfo, &DIcon, 1L, VK_ENDDRAG, (PVOID) NULL);
-      DeleteDragitemStrHandles(pDInfo); //
-      DrgDeleteDraginfoStrHandles (pDInfo);
-      DrgFreeDraginfo(pDInfo);
+      if (hDrop == NULLHANDLE)
+        FreeDragInfoData(hwnd, pDInfo);
       WinDestroyPointer(hptrINI);
     }
     break;
@@ -1581,30 +1581,31 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case DM_DRAGOVER:
     {
       PDRAGINFO pDInfo = (PDRAGINFO) mp1;
-      PDRAGITEM pDItem;		/* Pointer to DRAGITEM   */
+      PDRAGITEM pDItem;
 
-      DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
-      pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM       */
-				   0);	/* Index to DRAGITEM     */
-      if (DrgVerifyRMF(pDItem,		/* Check valid rendering */
-		       DRM_OS2FILE,	/* mechanisms and data   */
-		       NULL)) {
-	DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
-	return (MRFROM2SHORT(DOR_DROP,	/* Return okay to drop   */
-			     DO_LINK));
+      if (!DrgAccessDraginfo(pDInfo)) {
+        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  "DrgAccessDraginfo");
       }
-      else if (DrgVerifyRMF(pDItem, DRM_FM2INIRECORD, DRF_FM2INI)) {
-	if (WinQueryWindow(pDInfo->hwndSource, QW_PARENT) ==
-	    WinQueryWindow(hwnd, QW_PARENT)) {
+      else {
+        pDItem = DrgQueryDragitemPtr(pDInfo,0);
+        /* Check valid rendering mechanisms and data */
+        if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL)) {
 	  DrgFreeDraginfo(pDInfo);
-	  return MRFROM2SHORT(DOR_NEVERDROP, 0);
-	}
-	DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
-	return (MRFROM2SHORT(DOR_DROP, ((fCopyDefault) ? DO_COPY : DO_MOVE)));
+	  return (MRFROM2SHORT(DOR_DROP, DO_LINK));	/* OK to drop */
+        }
+        else if (DrgVerifyRMF(pDItem, DRM_FM2INIRECORD, DRF_FM2INI)) {
+	  if (WinQueryWindow(pDInfo->hwndSource, QW_PARENT) !=
+	      WinQueryWindow(hwnd, QW_PARENT))
+	  {
+	    DrgFreeDraginfo(pDInfo);
+	    return (MRFROM2SHORT(DOR_DROP, ((fCopyDefault) ? DO_COPY : DO_MOVE)));
+	  }
+        }
+        DrgFreeDraginfo(pDInfo);
       }
-      DrgFreeDraginfo(pDInfo);		/* Free DRAGINFO         */
-      return MRFROM2SHORT(DOR_NEVERDROP, 0);
     }
+    return MRFROM2SHORT(DOR_NEVERDROP, 0);
 
   case DM_DRAGLEAVE:
 
@@ -1614,16 +1615,20 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       PDRAGINFO pDInfo = (PDRAGINFO) mp1;
       PDRAGITEM pDItem;		/* Pointer to DRAGITEM   */
-      ULONG numitems, curitem = 0L, len;
+      ULONG numitems, curitem, len;
       USHORT action;
       CHAR szFrom[CCHMAXPATH + 2], szDir[CCHMAXPATH + 1],
 	szTemp[CCHMAXPATH + 2];
       FILESTATUS3 fsa;
       INIREC inirec;
 
-      DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
+      if (!DrgAccessDraginfo(pDInfo)) {
+        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  "DrgAccessDraginfo");
+        return 0;
+      }
       numitems = DrgQueryDragitemCount(pDInfo);
-      while (curitem < numitems) {
+      for (curitem = 0; curitem < numitems; curitem++) {
 	pDItem = DrgQueryDragitemPtr(pDInfo, curitem);
 	if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL)) {
 	  if (pDItem->fsControl & DC_PREPARE)
@@ -1676,18 +1681,8 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     MPFROMLONG(pDItem->ulItemID),
 			     MPFROMLONG(DMFL_TARGETFAIL));
 	}
-	curitem++;
-      }
-      rc = DeleteDragitemStrHandles(pDInfo); //
-
-      if(!rc)
-          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                    "DrgDeleteDraginfoStrHandles");
-      DrgDeleteDraginfoStrHandles(pDInfo);
-      rc = DrgFreeDraginfo(pDInfo);
-      if(!rc)
-          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                 "DrgFreeDraginfo");
+      } // for
+      FreeDragInfoData(hwnd, pDInfo);
     }
     return 0;
 
@@ -1696,7 +1691,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDestroyWindow(hwndPopup);
     hwndPopup = (HWND) 0;
     break;
-  }
+  } // switch
   if (oldproc)
     return oldproc(hwnd, msg, mp1, mp2);
   return WinDefWindowProc(hwnd, msg, mp1, mp2);

@@ -11,6 +11,7 @@
   17 Jul 06 SHL Use Runtime_Error
   20 Dec 06 GKY Added checkbox to make default extract with directories
   22 Mar 07 GKY Use QWL_USER
+  19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
 
 ***********************************************************************/
 
@@ -45,7 +46,7 @@ MRESULT EXPENTRY ExtractTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       emphasized = TRUE;
       DrawTargetEmphasis(hwnd, emphasized);
     }
-    if (AcceptOneDrop(mp1, mp2))
+    if (AcceptOneDrop(hwnd, mp1, mp2))
       return MRFROM2SHORT(DOR_DROP, DO_MOVE);
     return MRFROM2SHORT(DOR_NEVERDROP, 0);
 
@@ -68,7 +69,7 @@ MRESULT EXPENTRY ExtractTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	emphasized = FALSE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (GetOneDrop(mp1, mp2, szFrom, sizeof(szFrom)))
+      if (GetOneDrop(hwnd, mp1, mp2, szFrom, sizeof(szFrom)))
 	WinSendMsg(WinQueryWindow(hwnd, QW_PARENT), WM_COMMAND,
 		   MPFROM2SHORT(IDM_SWITCH, 0), MPFROMP(szFrom));
     }

@@ -39,8 +39,10 @@
   17 Feb 07 GKY Add SelectDriveIcon to streamline update.c
   18 Mar 07 GKY Add MM import typedefines for fix for files misindentified as multimedia
   30 Mar 07 GKY Defined golbals for removing GetPString for window class names
-  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits fExceedPMDrgLimit & DeleteDragitemStrHandles
+  06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits NumItemsToUnhilite & DeleteDragitemStrHandles
   06 Apr 07 GKY Add some error checking in drag/drop
+  19 Apr 07 SHL Rework DeleteDragitemStrHandles to be FreeDragInfoData
+  19 Apr 07 SHL Add DbgMsg.  Sync with AcceptOneDrop GetOneDrop mods.
 
 ***********************************************************************/
 
@@ -640,6 +642,7 @@ VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName,
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg);
 APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...);
+VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 
 /* valid.c */
 INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
@@ -1048,16 +1051,15 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok);
 BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd);
 
 /* droplist.c */
-ULONG FreeDrop(MPARAM mp1, MPARAM mp2);
 void DropHelp(MPARAM mp1, MPARAM mp2, HWND hwnd, char *text);
-BOOL AcceptOneDrop(MPARAM mp1, MPARAM mp2);
-BOOL GetOneDrop(MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen);
+BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2);
+BOOL GetOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen);
 BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen);
 BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 		 char *buffer2, ULONG buflen2);
 LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 		     MPARAM mp1, MPARAM mp2);
-BOOL DeleteDragitemStrHandles (PDRAGINFO pDInfo);
+VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo);
 
 /* shadow.c */
 HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
@@ -1350,7 +1352,7 @@ DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslwdate, detailslwtime, detailsattr, detailsicon;
 DATADEF PID mypid;
 DATADEF INT driveflags[26], driveserial[26];
-DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines, fExceedPMDrgLimit;
+DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines, NumItemsToUnhilite;
 DATADEF HINI fmprof;
 DATADEF HELPINIT hini;
 DATADEF HWND hwndHelp, LastDir, AboutBox, DirMenu, FileMenu, TreeMenu,

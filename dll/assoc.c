@@ -11,7 +11,8 @@
   29 Jul 06 SHL Use xfgets, xfgets_bstripcr
   10 Sep 06 GKY Add Move to last, Okay adds if new, Replace Current in Listbox Dialog
   19 Oct 06 GKY Rework replace logic
-  18 Feb 07 GKY Movw error messages etc to string file
+  18 Feb 07 GKY Move error messages etc to string file
+  19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
 
 **************************************************************************************/
 
@@ -73,7 +74,7 @@ MRESULT EXPENTRY AssocTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       emphasized = TRUE;
       DrawTargetEmphasis(hwnd, emphasized);
     }
-    if (AcceptOneDrop(mp1, mp2))
+    if (AcceptOneDrop(hwnd, mp1, mp2))
       return MRFROM2SHORT(DOR_DROP, DO_MOVE);
     return MRFROM2SHORT(DOR_NEVERDROP, 0);
 
@@ -96,7 +97,7 @@ MRESULT EXPENTRY AssocTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	emphasized = FALSE;
 	DrawTargetEmphasis(hwnd, emphasized);
       }
-      if (GetOneDrop(mp1, mp2, szFrom, CCHMAXPATH)) {
+      if (GetOneDrop(hwnd, mp1, mp2, szFrom, CCHMAXPATH)) {
 	strcat(szFrom, " %a");
 	WinSetWindowText(hwnd, szFrom);
       }

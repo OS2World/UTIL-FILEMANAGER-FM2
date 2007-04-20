@@ -13,11 +13,15 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add DeleteDragitemStrHandles
   06 Apr 07 GKY Add some error checking in drag/drop
+  19 Apr 07 SHL Rework DeleteDragitemStrHandles to be FreeDragInfoData
+  19 Apr 07 SHL Add more drag/drop error checking
+  19 Apr 07 SHL Optimize DRAGITEM DRAGIMAGE array access
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_SHLERRORS
 #include <os2.h>
 
 #include <stdio.h>
@@ -29,33 +33,76 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(DRAGLIST,DragOne,DoFileDrag,DragList,PickUp,DeleteDragitemStrHandles)
-/* work around for DrgDeleteDraginfoStrHandles
-which seems to fail with a large number of strings */
-BOOL DeleteDragitemStrHandles (PDRAGINFO pDInfo)
-{
-    PDRAGITEM  pDItem;
-    ULONG cDitem;
-    UINT  i = 0;
-    APIRET rc;
+#pragma alloc_text(DRAGLIST,DragOne,DoFileDrag,DragList,PickUp,FreeDragInfoData)
 
-    cDitem = DrgQueryDragitemCount(pDInfo);
-     for (; i < (UINT)cDitem; i++){
-         pDItem = DrgQueryDragitemPtr(pDInfo, i);
-     if (!pDItem)
-        return FALSE;
-     else {
-        DrgDeleteStrHandle(pDItem->hstrType);
-        DrgDeleteStrHandle(pDItem->hstrRMF);
-        DrgDeleteStrHandle(pDItem->hstrContainerName);
-        rc = DrgDeleteStrHandle(pDItem->hstrSourceName);
-        if (!rc)
-	       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                        "DrgDeleteStrHandle");
-        DrgDeleteStrHandle(pDItem->hstrTargetName);
-     }
-   } // for
-   return TRUE;
+/**
+ * Delete drag item string handles.
+ * Work around for DrgDeleteDraginfoStrHandles
+ * which seems to fail with a large number of strings
+ * Assume called after successful DrgAccessDraginfo
+ */
+
+
+// #define USE_FAST_FREE		// Define to let PM do free
+
+VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo)
+{
+  PDRAGITEM pDItem;
+  ULONG cDitem;
+  ULONG curitem;
+  APIRET ok;
+
+# ifdef USE_FAST_FREE
+  if (!DrgDeleteDraginfoStrHandles(pDInfo)) {
+    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+	      "DrgDeleteDraginfoStrHandles");
+  }
+# else // The slow way
+  cDitem = DrgQueryDragitemCount(pDInfo);
+  for (curitem = 0; curitem < cDitem; curitem++) {
+    pDItem = DrgQueryDragitemPtr(pDInfo, curitem);
+    if (!pDItem) {
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		"DrgQueryDragitemPtr(%u)", curitem);
+    }
+    else {
+      ok = DrgDeleteStrHandle(pDItem->hstrType);
+      if (!ok) {
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      "DrgDeleteStrHandle(0x%x) hstrType",pDItem->hstrType);
+      }
+      ok = DrgDeleteStrHandle(pDItem->hstrRMF);
+      if (!ok) {
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      "DrgDeleteStrHandle(0x%x) hstrRMF",pDItem->hstrRMF);
+      }
+      ok = DrgDeleteStrHandle(pDItem->hstrContainerName);
+      if (!ok) {
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      "DrgDeleteStrHandle(0x%x) hstrContainerName",pDItem->hstrContainerName);
+      }
+      ok = DrgDeleteStrHandle(pDItem->hstrSourceName);
+      if (!ok) {
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      "DrgDeleteStrHandle(0x%x) hstrSourceName",pDItem->hstrSourceName);
+      }
+      ok = DrgDeleteStrHandle(pDItem->hstrTargetName);
+      if (!ok) {
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      "DrgDeleteStrHandle(0x%x) hstrTargetName",pDItem->hstrTargetName);
+      }
+    }
+  } // for
+# endif
+  if (!DrgFreeDraginfo(pDInfo)) {
+    // fixme to find callers responsible for PMERR_SOURCE_SAME_AS_TARGET
+    if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) != PMERR_SOURCE_SAME_AS_TARGET) {
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+	       "DrgFreeDraginfo");
+    }
+    else
+      DbgMsg(pszSrcFile, __LINE__, "DrgFreeDraginfo PMERR_SOURCE_SAME_AS_TARGET");
+  }
 }
 
 HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
@@ -94,7 +141,7 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
 			 (fs3.attrFile & FILE_DIRECTORY) != 0) ?
 	hptrDir : hptrFile;
       memset(&DItem, 0, sizeof(DRAGITEM));
-      DItem.hwndItem = (hwndObj) ? hwndObj : hwndCnr;	/* Initialize DRAGITEM */
+      DItem.hwndItem = (hwndObj) ? hwndObj : hwndCnr;	// Initialize DRAGITEM
       // DItem.hwndItem = hwndCnr;
       DItem.ulItemID = 1;
       DItem.hstrType = DrgAddStrHandle(DRT_UNKNOWN);
@@ -102,8 +149,8 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
       DItem.hstrContainerName = DrgAddStrHandle(szDir);
       DItem.hstrSourceName = DrgAddStrHandle(szFile);
       if (!DItem.hstrSourceName)
-         Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-         "DrgQueryStrName");
+	 Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	 "DrgQueryStrName");
       DItem.hstrTargetName = DrgAddStrHandle(szFile);
       DItem.fsControl = 0;
       if (IsRoot(filename) || (fs3.attrFile & FILE_DIRECTORY) != 0)
@@ -124,7 +171,7 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
       fakeicon.sizlStretch.cy = 32;
       fakeicon.cxOffset = -16;
       fakeicon.cyOffset = 0;
-      pDInfo = DrgAllocDraginfo(1);	/* Allocate DRAGINFO */
+      pDInfo = DrgAllocDraginfo(1);
       if (pDInfo) {
 	if (IsFullName(filename) &&
 	    (driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE))
@@ -135,21 +182,16 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
 	  pDInfo->usOperation = DO_LINK;
 	pDInfo->hwndSource = (hwndObj) ? hwndObj : hwndCnr;
 	// pDInfo->hwndSource = hwndCnr;
-	DrgSetDragitem(pDInfo,		/* Set item in DRAGINFO  */
-		       &DItem,		/* Pointer to DRAGITEM   */
-		       sizeof(DRAGITEM),	/* Size of DRAGITEM      */
-		       0);		/* Index of DRAGITEM     */
+	DrgSetDragitem(pDInfo, &DItem, sizeof(DRAGITEM), 0);
 	WinSetFocus(HWND_DESKTOP, HWND_DESKTOP);
-	hDrop = DrgDrag(hwndCnr,	/* Initiate drag         */
-			pDInfo,		/* DRAGINFO structure    */
-			&fakeicon, 1L, VK_ENDDRAG,	/* End of drag indicator */
-			(PVOID) NULL);	/* Reserved              */
-        //if (hDrop == NULLHANDLE)
-        if (!DeleteDragitemStrHandles(pDInfo)) //)
-            Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                      "DeleteDragistr");
-        DrgDeleteDraginfoStrHandles (pDInfo);
-        DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO struct  */
+	hDrop = DrgDrag(hwndCnr,
+			pDInfo,
+			&fakeicon,
+			1,		// DragImage count
+			VK_ENDDRAG,	// Drag end button
+			NULL);
+	if (hDrop == NULLHANDLE)
+	  FreeDragInfoData(hwndCnr, pDInfo);
 	WinSetWindowPos(hwndCnr, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
       }
     }
@@ -160,22 +202,24 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
 HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 		CHAR * directory, BOOL moveok)
 {
-  /* drag files from a container */
+  // Drag files from a container
 
   BOOL isdir, rooting = FALSE;
   PCNRITEM pci;
-  register CHAR *p;
+  CHAR *p;
   INT attribute = CRA_CURSORED;
   PDRAGINFO pDInfo = NULL;
-  DRAGITEM **ppDItem = NULL, **ppTest;
+  DRAGITEM **ppDItem = NULL, **ppDITest;
+  DRAGITEM *pDItem;
   PCNRITEM pciRec = (PCNRITEM) pcd->pRecord;
-  HWND hDrop = 0;
-  register ULONG ulNumfiles = 0L, numdragalloc = 0L, Select, ulNumIcon = 0;
+  HWND hDrop = NULLHANDLE;
+  ULONG ulNumfiles = 0, ulNumDIAlloc = 0, ulSelect, ulNumIcon = 0;
   CHAR szFile[CCHMAXPATH], szBuffer[CCHMAXPATH];
-  DRAGIMAGE *padiIcon = NULL, *padiTest, diFakeIcon;
-  APIRET rc;
+  DRAGIMAGE *paDImgIcons = NULL, *pDImg, dimgFakeIcon;
+  BOOL ok;
 
-  fExceedPMDrgLimit = 0;
+  // fixme to be multi-drag safe - count needs to be in DCD etc. and passed to UnHilite
+  NumItemsToUnhilite = 0;
   if (!pciRec && directory && *directory)
     return DragOne(hwndCnr, hwndObj, directory, moveok);
 
@@ -201,7 +245,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
     }
   }
 
-  Select = 0L;
+  ulSelect = 0;
   while (pci && (INT) pci > -1) {
     if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
       if (IsRoot(pci->szFileName) && !IsValidDrive(*pci->szFileName))
@@ -222,173 +266,201 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
     }
     if (!arcfile) {
       // Filesystem object
-      isdir = ((pci->attrFile & FILE_DIRECTORY) != 0);
-      if (ulNumfiles + 2L > numdragalloc) {
-	if (!padiIcon) {
-	  padiTest =
-	    xrealloc(padiIcon, sizeof(DRAGIMAGE) * (numdragalloc + 4L),
+      isdir = pci->attrFile & FILE_DIRECTORY;
+      // fixme to expand smarter - expand fast at first - do same for similar code
+      if (ulNumfiles + 2 > ulNumDIAlloc) {
+	// Expand
+	if (!paDImgIcons) {
+	  pDImg =
+	    xrealloc(paDImgIcons, sizeof(DRAGIMAGE) * (ulNumDIAlloc + 4L),
 		     pszSrcFile, __LINE__);
-	  if (padiTest)
-	    padiIcon = padiTest;
-	  else
+	  if (!pDImg)
 	    break;
+	  paDImgIcons = pDImg;
 	}
 	else if (!ulNumIcon) {
-	  padiIcon[ulNumfiles].cb = sizeof(DRAGIMAGE);
-	  padiIcon[ulNumfiles].cptl = 0;
-	  padiIcon[ulNumfiles].hImage = hptrLast;
-	  padiIcon[ulNumfiles].fl = DRG_ICON;
-	  padiIcon[ulNumfiles].sizlStretch.cx = 32;
-	  padiIcon[ulNumfiles].sizlStretch.cy = 32;
-	  padiIcon[ulNumfiles].cxOffset = -16 + (ulNumfiles * 4);
-	  padiIcon[ulNumfiles].cyOffset = 0 + (ulNumfiles * 7);
+	  pDImg = &paDImgIcons[ulNumfiles];
+	  pDImg->cb = sizeof(DRAGIMAGE);
+	  pDImg->cptl = 0;
+	  pDImg->hImage = hptrLast;
+	  pDImg->fl = DRG_ICON;
+	  pDImg->sizlStretch.cx = 32;
+	  pDImg->sizlStretch.cy = 32;
+	  pDImg->cxOffset = -16 + (ulNumfiles * 4);
+	  pDImg->cyOffset = 0 + (ulNumfiles * 7);
 	  ulNumIcon = ulNumfiles + 1;
 	}
-	ppTest =
-	  xrealloc(ppDItem, sizeof(DRAGITEM *) * (numdragalloc + 4L),
+	ppDITest =
+	  xrealloc(ppDItem, sizeof(DRAGITEM *) * (ulNumDIAlloc + 4L),
 		   pszSrcFile, __LINE__);
-	if (ppTest) {
-	  ppDItem = ppTest;
-	  numdragalloc += 4L;
-	}
-	else
+	if (!ppDITest)
 	  break;
+	ppDItem = ppDITest;
+	ulNumDIAlloc += 4L;
       }
-      ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
-      if (ppDItem[ulNumfiles]) {
-	if (!ulNumIcon) {
-	  padiIcon[ulNumfiles].cb = sizeof(DRAGIMAGE);
-	  padiIcon[ulNumfiles].cptl = 0;
-	  padiIcon[ulNumfiles].hImage = pci->rc.hptrIcon;
-	  if (!padiIcon[ulNumfiles].hImage)
-	    padiIcon[ulNumfiles].hImage = (isdir) ? hptrDir : hptrFile;
-	  padiIcon[ulNumfiles].fl = DRG_ICON;
-	  padiIcon[ulNumfiles].sizlStretch.cx = 32;
-	  padiIcon[ulNumfiles].sizlStretch.cy = 32;
-	  padiIcon[ulNumfiles].cxOffset = -16 + (ulNumfiles * 3);
-	  padiIcon[ulNumfiles].cyOffset = 0 + (ulNumfiles * 6);
-	}
-        memset(ppDItem[ulNumfiles], 0, sizeof(DRAGITEM));
-        ppDItem[ulNumfiles]->hwndItem = (hwndObj) ? hwndObj : hwndCnr;	/* Initialize DRAGITEM   */
-        ppDItem[ulNumfiles]->hwndItem = hwndCnr;
-        ppDItem[ulNumfiles]->ulItemID = (ULONG) pci;
-        ppDItem[ulNumfiles]->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
-        ppDItem[ulNumfiles]->hstrRMF = DrgAddStrHandle(DRMDRFLIST);
-        ppDItem[ulNumfiles]->hstrContainerName = DrgAddStrHandle(szBuffer);
-	     ppDItem[ulNumfiles]->hstrSourceName = DrgAddStrHandle(szFile);
-        if (!ppDItem[ulNumfiles]->hstrSourceName){
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrType);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrRMF);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrContainerName);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrSourceName);
-            xfree(ppDItem[ulNumfiles]);
-            fExceedPMDrgLimit = ulNumfiles - 1;
-            break;
-        }
-	/*Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  "DrgAddStrHandle");*/
-	ppDItem[ulNumfiles]->hstrTargetName = DrgAddStrHandle(szFile);
-	ppDItem[ulNumfiles]->fsControl = (isdir) ? DC_CONTAINER : 0;
-	if (IsFullName(pci->szFileName) &&
-	    (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE))
-	  ppDItem[ulNumfiles]->fsControl |= DC_REMOVEABLEMEDIA;
-	ppDItem[ulNumfiles]->fsSupportedOps = DO_COPYABLE | DO_LINKABLE;
-	if (moveok && IsFullName(pci->szFileName) &&
-	    !(driveflags[toupper(*pci->szFileName) - 'A'] &
-	      DRIVE_NOTWRITEABLE))
-	  ppDItem[ulNumfiles]->fsSupportedOps |= DO_MOVEABLE;
-	if (IsRoot(pci->szFileName)) {
-	  ppDItem[ulNumfiles]->fsSupportedOps = DO_LINKABLE;
-	  rooting = TRUE;
-        }
-   //if (ulNumfiles >= 2000){
-     // pDInfo = DrgAllocDraginfo(ulNumfiles);
-     // fExceedPMDrgLimit = TRUE;
-     // goto Thatsall;
-     //   }
-	ulNumfiles++;
-	ppDItem[ulNumfiles] = NULL;
+      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      if (!pDItem)
+	break;				// Already complained
+      ppDItem[ulNumfiles] = pDItem;
+      if (!ulNumIcon) {
+	pDImg = &paDImgIcons[ulNumfiles];
+	pDImg->cb = sizeof(DRAGIMAGE);
+	pDImg->cptl = 0;
+	pDImg->hImage = pci->rc.hptrIcon;
+	if (!pDImg->hImage)
+	  pDImg->hImage = isdir ? hptrDir : hptrFile;
+	pDImg->fl = DRG_ICON;
+	pDImg->sizlStretch.cx = 32;
+	pDImg->sizlStretch.cy = 32;
+	pDImg->cxOffset = -16 + (ulNumfiles * 3);
+	pDImg->cyOffset = 0 + (ulNumfiles * 6);
       }
-      else
+      // Initialize DRAGITEM
+      memset(pDItem, 0, sizeof(DRAGITEM));
+      pDItem->hwndItem = (hwndObj) ? hwndObj : hwndCnr;
+      pDItem->hwndItem = hwndCnr;
+      pDItem->ulItemID = (ULONG) pci;
+      pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
+      ok = pDItem->hstrType;
+      pDItem->hstrRMF = DrgAddStrHandle(DRMDRFLIST);
+      ok = ok && pDItem->hstrRMF;
+      pDItem->hstrContainerName = DrgAddStrHandle(szBuffer);
+      ok = ok && pDItem->hstrContainerName;
+      pDItem->hstrSourceName = DrgAddStrHandle(szFile);
+      ok = ok && pDItem->hstrSourceName;
+      pDItem->hstrTargetName = DrgAddStrHandle(szFile);
+      ok = ok && pDItem->hstrTargetName;
+      if (!ok) {
+	DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
+	// Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,"DrgAddStrHandle");
+	if (pDItem->hstrType)
+	  DrgDeleteStrHandle(pDItem->hstrType);
+	if (pDItem->hstrRMF)
+	  DrgDeleteStrHandle(pDItem->hstrRMF);
+	if (pDItem->hstrContainerName)
+	  DrgDeleteStrHandle(pDItem->hstrContainerName);
+	if (pDItem->hstrSourceName)
+	  DrgDeleteStrHandle(pDItem->hstrSourceName);
+	if (pDItem->hstrTargetName)
+	  DrgDeleteStrHandle(pDItem->hstrTargetName);
+	xfree(pDItem);
+	// ppDItem[ulNumfiles] = NULL;	// Why bother - we can count - fixme to be gone
+	NumItemsToUnhilite = ulNumfiles + 1;	// Use +1 to ensure non-zero on any failure
 	break;
+      }
+      pDItem->fsControl = isdir ? DC_CONTAINER : 0;
+      if (IsFullName(pci->szFileName) &&
+	  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE))
+	pDItem->fsControl |= DC_REMOVEABLEMEDIA;
+      pDItem->fsSupportedOps = DO_COPYABLE | DO_LINKABLE;
+      if (moveok && IsFullName(pci->szFileName) &&
+	  !(driveflags[toupper(*pci->szFileName) - 'A'] &
+	    DRIVE_NOTWRITEABLE))
+	pDItem->fsSupportedOps |= DO_MOVEABLE;
+      if (IsRoot(pci->szFileName)) {
+	pDItem->fsSupportedOps = DO_LINKABLE;
+	rooting = TRUE;
+      }
+      ulNumfiles++;
+      // ppDItem[ulNumfiles] = NULL;	// Why bother - can't we count - fixme to be gone?
     }
     else {
       // Archive object
-      if (ulNumfiles + 3L > numdragalloc) {
-	ppTest =
-	  xrealloc(ppDItem, sizeof(DRAGITEM *) * (numdragalloc + 5L),
+      if (ulNumfiles + 3L > ulNumDIAlloc) {
+	ppDITest =
+	  xrealloc(ppDItem, sizeof(DRAGITEM *) * (ulNumDIAlloc + 5L),
 		   pszSrcFile, __LINE__);
-	if (!ppTest)
+	if (!ppDITest)
 	  break;
-	else {
-	  ppDItem = ppTest;
-	  numdragalloc += 5L;
-	}
+	ppDItem = ppDITest;
+	ulNumDIAlloc += 5L;
       }
-      ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
-      if (!ppDItem[ulNumfiles])
+      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      if (!pDItem)
 	break;
-      else {
-	diFakeIcon.hImage = hptrFile;
-	memset(ppDItem[ulNumfiles], 0, sizeof(DRAGITEM));
-	ppDItem[ulNumfiles]->hwndItem = (hwndObj) ? hwndObj : hwndCnr;	/* Initialize DRAGITEM   */
-	ppDItem[ulNumfiles]->hwndItem = hwndCnr;
-	ppDItem[ulNumfiles]->ulItemID = (ULONG) pci;
-	ppDItem[ulNumfiles]->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
-	ppDItem[ulNumfiles]->hstrRMF = DrgAddStrHandle(DRMDRFOS2FILE);
-	ppDItem[ulNumfiles]->hstrContainerName = DrgAddStrHandle(arcfile);
-	ppDItem[ulNumfiles]->hstrSourceName = DrgAddStrHandle(szFile);
-	if (!ppDItem[ulNumfiles]->hstrSourceName){
-          DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrType);
-          DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrRMF);
-          DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrContainerName);
-          DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrSourceName);
-          xfree(ppDItem[ulNumfiles]);
-          fExceedPMDrgLimit = ulNumfiles - 1;
-          break;
-       }
-	ppDItem[ulNumfiles]->hstrTargetName = DrgAddStrHandle(szFile);
-	ppDItem[ulNumfiles]->fsControl = DC_PREPARE;
+      ppDItem[ulNumfiles] = pDItem;
+      dimgFakeIcon.hImage = hptrFile;
+      // Initialize DRAGITEM
+      memset(pDItem, 0, sizeof(DRAGITEM));
+      pDItem->hwndItem = (hwndObj) ? hwndObj : hwndCnr;
+      pDItem->hwndItem = hwndCnr;
+      pDItem->ulItemID = (ULONG) pci;
+      pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
+      ok = pDItem->hstrType;
+      pDItem->hstrRMF = DrgAddStrHandle(DRMDRFOS2FILE);
+      ok = ok && pDItem->hstrRMF;
+      pDItem->hstrContainerName = DrgAddStrHandle(arcfile);
+      ok = ok && pDItem->hstrContainerName;
+      pDItem->hstrSourceName = DrgAddStrHandle(szFile);
+      ok = ok && pDItem->hstrSourceName;
+      pDItem->hstrTargetName = DrgAddStrHandle(szFile);
+      ok = ok && pDItem->hstrTargetName;
+      if (!ok){
+	if (pDItem->hstrType)
+	  DrgDeleteStrHandle(pDItem->hstrType);
+	if (pDItem->hstrRMF)
+	  DrgDeleteStrHandle(pDItem->hstrRMF);
+	if (pDItem->hstrContainerName)
+	  DrgDeleteStrHandle(pDItem->hstrContainerName);
+	if (pDItem->hstrSourceName)
+	  DrgDeleteStrHandle(pDItem->hstrSourceName);
+	if (pDItem->hstrTargetName)
+	  DrgDeleteStrHandle(pDItem->hstrTargetName);
+	xfree(pDItem);
+	NumItemsToUnhilite = ulNumfiles + 1;	// +1 to ensure non-zero
+	break;
+     }
+      pDItem->fsControl = DC_PREPARE;
+      if (IsFullName(arcfile) &&
+	  (driveflags[toupper(*arcfile) - 'A'] & DRIVE_REMOVABLE))
+	pDItem->fsControl |= DC_REMOVEABLEMEDIA;
+      pDItem->fsSupportedOps = DO_COPYABLE;
+      ulNumfiles++;
+
+      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      if (pDItem) {
+	ppDItem[ulNumfiles] = pDItem;
+	dimgFakeIcon.hImage = hptrFile;
+	// Initialize DRAGITEM
+	memset(pDItem, 0, sizeof(DRAGITEM));
+	pDItem->hwndItem = (hwndObj) ? hwndObj : hwndCnr;
+	pDItem->hwndItem = hwndCnr;
+	pDItem->ulItemID = ulSelect++;
+	pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
+	ok = ok && pDItem->hstrType;
+	pDItem->hstrRMF = DrgAddStrHandle(DRMDRFFM2ARC);
+	ok = ok && pDItem->hstrRMF;
+	pDItem->hstrContainerName = DrgAddStrHandle(arcfile);
+	ok = ok && pDItem->hstrContainerName;
+	pDItem->hstrSourceName = DrgAddStrHandle(szFile);
+	ok = ok && pDItem->hstrSourceName;
+	pDItem->hstrTargetName = DrgAddStrHandle(szFile);
+	ok = ok && pDItem->hstrTargetName;
+	if (!ok) {
+	  DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
+	  if (pDItem->hstrType)
+	    DrgDeleteStrHandle(pDItem->hstrType);
+	  if (pDItem->hstrRMF)
+	    DrgDeleteStrHandle(pDItem->hstrRMF);
+	  if (pDItem->hstrContainerName)
+	    DrgDeleteStrHandle(pDItem->hstrContainerName);
+	  if (pDItem->hstrSourceName)
+	    DrgDeleteStrHandle(pDItem->hstrSourceName);
+	  if (pDItem->hstrTargetName)
+	    DrgDeleteStrHandle(pDItem->hstrTargetName);
+	  xfree(pDItem);
+	  // pDItem = NULL;		// Why bother - fixme to be gone?
+	  NumItemsToUnhilite = ulNumfiles + 1;
+	  break;
+	}
+	pDItem->fsControl = 0;
 	if (IsFullName(arcfile) &&
 	    (driveflags[toupper(*arcfile) - 'A'] & DRIVE_REMOVABLE))
-	  ppDItem[ulNumfiles]->fsControl |= DC_REMOVEABLEMEDIA;
-	ppDItem[ulNumfiles]->fsSupportedOps = DO_COPYABLE;
+	  pDItem->fsControl |= DC_REMOVEABLEMEDIA;
+	pDItem->fsSupportedOps = DO_COPYABLE;
 	ulNumfiles++;
-	ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
-	if (ppDItem[ulNumfiles]) {
-	  diFakeIcon.hImage = hptrFile;
-	  memset(ppDItem[ulNumfiles], 0, sizeof(DRAGITEM));
-	  ppDItem[ulNumfiles]->hwndItem = (hwndObj) ? hwndObj : hwndCnr;	/* Initialize DRAGITEM   */
-	  ppDItem[ulNumfiles]->hwndItem = hwndCnr;
-	  ppDItem[ulNumfiles]->ulItemID = Select++;
-	  ppDItem[ulNumfiles]->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
-	  ppDItem[ulNumfiles]->hstrRMF = DrgAddStrHandle(DRMDRFFM2ARC);
-	  ppDItem[ulNumfiles]->hstrContainerName = DrgAddStrHandle(arcfile);
-	  ppDItem[ulNumfiles]->hstrSourceName = DrgAddStrHandle(szFile);
-	  if (!ppDItem[ulNumfiles]->hstrSourceName){
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrType);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrRMF);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrContainerName);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrSourceName);
-            xfree(ppDItem[ulNumfiles]);
-            fExceedPMDrgLimit = ulNumfiles - 1;
-            break;
-        }
-	  ppDItem[ulNumfiles]->hstrTargetName = DrgAddStrHandle(szFile);
-	  ppDItem[ulNumfiles]->fsControl = 0;
-	  if (IsFullName(arcfile) &&
-	      (driveflags[toupper(*arcfile) - 'A'] & DRIVE_REMOVABLE))
-	    ppDItem[ulNumfiles]->fsControl |= DC_REMOVEABLEMEDIA;
-          ppDItem[ulNumfiles]->fsSupportedOps = DO_COPYABLE;
-     //if (ulNumfiles >= 1000){
-       // pDInfo = DrgAllocDraginfo(ulNumfiles);
-       // fexceedpmdrglimit = TRUE;
-       // goto Thatsall;
-       //   }
-	  ulNumfiles++;
-	}
-	ppDItem[ulNumfiles] = NULL;
       }
+      // ppDItem[ulNumfiles] = NULL;	// Why bother - fixme to be gone?
     }
     WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 	       MPFROM2SHORT(TRUE, CRA_SOURCE));
@@ -399,11 +471,10 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
       break;
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMP(pci),
 		     MPFROMSHORT(attribute));
-  }					// while
-  if (fExceedPMDrgLimit)
-    ulNumfiles = ulNumfiles - 1;
+  } // while
+
   if (ulNumfiles) {
-    pDInfo = DrgAllocDraginfo(ulNumfiles);	/* Allocate DRAGINFO */
+    pDInfo = DrgAllocDraginfo(ulNumfiles);
     if (pDInfo) {
       if ((arcfile && *arcfile) || (IsFullName(szBuffer) &&
 				    (driveflags[toupper(*szBuffer) - 'A'] &
@@ -415,90 +486,85 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	pDInfo->usOperation = DO_LINK;
       pDInfo->hwndSource = (hwndObj) ? hwndObj : hwndCnr;
       // pDInfo->hwndSource = hwndCnr;
-      for (Select = 0L; Select < ulNumfiles; Select++) {
-	DrgSetDragitem(pDInfo,		/* Set item in DRAGINFO  */
-		       ppDItem[Select],	/* Pointer to DRAGITEM   */
-		       sizeof(DRAGITEM),	/* Size of DRAGITEM      */
-		       Select);		/* Index of DRAGITEM     */
-	xfree(ppDItem[Select]);
+      for (ulSelect = 0; ulSelect < ulNumfiles; ulSelect++) {
+	DrgSetDragitem(pDInfo, ppDItem[ulSelect], sizeof(DRAGITEM), ulSelect);
+	xfree(ppDItem[ulSelect]);
       }
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
       xfree(ppDItem);
-      ppDItem = NULL;
+      ppDItem = NULL;			// Remember gone
       DosPostEventSem(CompactSem);
 
       if (arcfile) {
-	diFakeIcon.cb = sizeof(DRAGIMAGE);
-	diFakeIcon.cptl = 0;
+	dimgFakeIcon.cb = sizeof(DRAGIMAGE);
+	dimgFakeIcon.cptl = 0;
 	if (ulNumfiles > 1)
-	  diFakeIcon.hImage = hptrFile;
-	diFakeIcon.fl = DRG_ICON;
-	diFakeIcon.sizlStretch.cx = 32;
-	diFakeIcon.sizlStretch.cy = 32;
-	diFakeIcon.cxOffset = -16;
-	diFakeIcon.cyOffset = 0;
-	padiIcon = &diFakeIcon;
+	  dimgFakeIcon.hImage = hptrFile;
+	dimgFakeIcon.fl = DRG_ICON;
+	dimgFakeIcon.sizlStretch.cx = 32;
+	dimgFakeIcon.sizlStretch.cy = 32;
+	dimgFakeIcon.cxOffset = -16;
+	dimgFakeIcon.cyOffset = 0;
+	paDImgIcons = &dimgFakeIcon;
       }
       if (!arcfile) {
 	if (!ulNumIcon)
 	  ulNumIcon = ulNumfiles;
       }
       else
-	ulNumIcon = 1L;
+	ulNumIcon = 1;
 
       WinSetFocus(HWND_DESKTOP, HWND_DESKTOP);
-      hDrop = DrgDrag(hwndCnr,		/* Initiate drag         */
-		      pDInfo,		/* DRAGINFO structure    */
-		      padiIcon, ulNumIcon, VK_ENDDRAG,	/* End of drag indicator */
-		      (PVOID) NULL);	/* Reserved              */
-      rc = DeleteDragitemStrHandles(pDInfo);
-      if (!rc)
-          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                    "DeleteDragistr");
-      DrgDeleteDraginfoStrHandles (pDInfo);
-      rc = DrgFreeDraginfo(pDInfo);		/* Free DRAGINFO struct  */
-      if (!rc)
-      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                "DrgFreeDraginfo");
-      if (padiIcon && padiIcon != &diFakeIcon)
-	xfree(padiIcon);
-      padiIcon = NULL;
+      hDrop = DrgDrag(hwndCnr,
+		      pDInfo,
+		      paDImgIcons,
+		      ulNumIcon,
+		      VK_ENDDRAG,	// Drag end button
+		      NULL);
       WinSetWindowPos(hwndCnr, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-      DosPostEventSem(CompactSem);
     }
   }
+
+  if (hDrop == NULLHANDLE ) {
+    NumItemsToUnhilite = 0;
+    if (pDInfo)
+      FreeDragInfoData(hwndCnr, pDInfo);
+  }
+
   if (ppDItem)
     xfree(ppDItem);
-  if (padiIcon && padiIcon != &diFakeIcon)
-    xfree(padiIcon);
+  if (paDImgIcons && paDImgIcons != &dimgFakeIcon)
+    xfree(paDImgIcons);
+  DosPostEventSem(CompactSem);
   MarkAll(hwndCnr, TRUE, FALSE, TRUE);
   return hDrop;
 }
 
 HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 {
-
-  /* drag a linked list of files */
+  // Drag a linked list of files
 
   BOOL isdir;
   register CHAR *p;
   PDRAGINFO pDInfo = NULL;
-  DRAGITEM **ppDItem = NULL, **ppTest;
+  DRAGITEM **ppDItem = NULL, **ppDITest;
+  DRAGITEM *pDItem;
   HWND hDrop = (HWND) 0;
-  register ULONG ulNumfiles = 0L, numdragalloc = 0L, Select, ulNumIcon = 0;
+  ULONG ulNumfiles = 0, ulNumDIAlloc = 0, ulSelect, ulNumIcon = 0;
   CHAR szFile[CCHMAXPATH], szBuffer[CCHMAXPATH];
-  DRAGIMAGE *padiIcon = NULL, *padiTest;
+  DRAGIMAGE *paDImgIcons = NULL, *pDImg;
   FILESTATUS3 fs3;
+  BOOL ok;
 
   if (!list || !list[0])
     return hDrop;
-  for (Select = 0; list[Select]; Select++) {
-    if ((!IsRoot(list[Select]) || !IsValidDrive(*list[Select])) &&
-	DosQueryPathInfo(list[Select], FIL_STANDARD, &fs3, sizeof(fs3)))
+  for (ulSelect = 0; list[ulSelect]; ulSelect++) {
+    if ((!IsRoot(list[ulSelect]) || !IsValidDrive(*list[ulSelect])) &&
+	DosQueryPathInfo(list[ulSelect], FIL_STANDARD, &fs3, sizeof(fs3)))
       continue;
-    strcpy(szBuffer, list[Select]);
+    strcpy(szBuffer, list[ulSelect]);
     p = strrchr(szBuffer, '\\');
     if (p) {
       p++;
@@ -508,90 +574,98 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
     else
       continue;
     if (*szFile) {
-      isdir = (IsRoot(list[Select])) ? TRUE :
-	((fs3.attrFile & FILE_DIRECTORY) != 0);
-      if (ulNumfiles + 2L > numdragalloc) {
-	if (!padiIcon) {
-	  padiTest =
-	    xrealloc(padiIcon, sizeof(DRAGIMAGE) * (numdragalloc + 4L),
+      isdir = IsRoot(list[ulSelect]) || fs3.attrFile & FILE_DIRECTORY;
+      // fixme to expand smarter - expand fast at first - do same for similar code
+      if (ulNumfiles + 2 > ulNumDIAlloc) {
+	if (!paDImgIcons) {
+	  pDImg =
+	    xrealloc(paDImgIcons, sizeof(DRAGIMAGE) * (ulNumDIAlloc + 4L),
 		     pszSrcFile, __LINE__);
-	  if (!padiTest)
+	  if (!pDImg)
 	    break;
-	  else
-	    padiIcon = padiTest;
+	  paDImgIcons = pDImg;
 	}
 	else if (!ulNumIcon) {
-	  padiIcon[ulNumfiles].cb = sizeof(DRAGIMAGE);
-	  padiIcon[ulNumfiles].cptl = 0;
-	  padiIcon[ulNumfiles].hImage = hptrLast;
-	  padiIcon[ulNumfiles].fl = DRG_ICON;
-	  padiIcon[ulNumfiles].sizlStretch.cx = 32;
-	  padiIcon[ulNumfiles].sizlStretch.cy = 32;
-	  padiIcon[ulNumfiles].cxOffset = -16 + (ulNumfiles * 4);
-	  padiIcon[ulNumfiles].cyOffset = 0 + (ulNumfiles * 7);
+	  pDImg = &paDImgIcons[ulNumfiles];
+	  pDImg->cb = sizeof(DRAGIMAGE);
+	  pDImg->cptl = 0;
+	  pDImg->hImage = hptrLast;
+	  pDImg->fl = DRG_ICON;
+	  pDImg->sizlStretch.cx = 32;
+	  pDImg->sizlStretch.cy = 32;
+	  pDImg->cxOffset = -16 + (ulNumfiles * 4);
+	  pDImg->cyOffset = 0 + (ulNumfiles * 7);
 	  ulNumIcon = ulNumfiles + 1;
 	}
-	ppTest =
-	  xrealloc(ppDItem, sizeof(DRAGITEM *) * (numdragalloc + 4L),
+	ppDITest =
+	  xrealloc(ppDItem, sizeof(DRAGITEM *) * (ulNumDIAlloc + 4L),
 		   pszSrcFile, __LINE__);
-	if (!ppTest)
+	if (!ppDITest)
 	  break;
-	else {
-	  ppDItem = ppTest;
-	  numdragalloc += 4L;
-	}
+	ppDItem = ppDITest;
+	ulNumDIAlloc += 4L;
       }
-      ppDItem[ulNumfiles] = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
-      if (!ppDItem[ulNumfiles])
+      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      if (!pDItem)
 	break;
-      else {
-	if (!ulNumIcon) {
-	  padiIcon[ulNumfiles].cb = sizeof(DRAGIMAGE);
-	  padiIcon[ulNumfiles].cptl = 0;
-	  padiIcon[ulNumfiles].hImage = (isdir) ? hptrDir : hptrFile;
-	  padiIcon[ulNumfiles].fl = DRG_ICON;
-	  padiIcon[ulNumfiles].sizlStretch.cx = 32;
-	  padiIcon[ulNumfiles].sizlStretch.cy = 32;
-	  padiIcon[ulNumfiles].cxOffset = -16 + (ulNumfiles * 3);
-	  padiIcon[ulNumfiles].cyOffset = 0 + (ulNumfiles * 6);
-	}
-	memset(ppDItem[ulNumfiles], 0, sizeof(DRAGITEM));
-	ppDItem[ulNumfiles]->hwndItem = (hwndObj) ? hwndObj : hwnd;	/* Initialize DRAGITEM */
-	// ppDItem[ulNumfiles]->hwndItem = hwnd;
-	ppDItem[ulNumfiles]->ulItemID = (ULONG) Select;
-	ppDItem[ulNumfiles]->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
-	ppDItem[ulNumfiles]->hstrRMF = DrgAddStrHandle(DRMDRFLIST);
-	ppDItem[ulNumfiles]->hstrContainerName = DrgAddStrHandle(szBuffer);
-	ppDItem[ulNumfiles]->hstrSourceName = DrgAddStrHandle(szFile);
-	if (!ppDItem[ulNumfiles]->hstrSourceName){
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrType);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrRMF);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrContainerName);
-            DrgDeleteStrHandle(ppDItem[ulNumfiles]->hstrSourceName);
-            xfree(ppDItem[ulNumfiles]);
-            fExceedPMDrgLimit = ulNumfiles - 1;
-            break;
-        }
-	ppDItem[ulNumfiles]->hstrTargetName = DrgAddStrHandle(szFile);
-	ppDItem[ulNumfiles]->fsControl = (isdir) ? DC_CONTAINER : 0;
-	if (IsFullName(list[Select]) &&
-	    (driveflags[toupper(*list[Select]) - 'A'] & DRIVE_REMOVABLE))
-	  ppDItem[ulNumfiles]->fsControl |= DC_REMOVEABLEMEDIA;
-	ppDItem[ulNumfiles]->fsSupportedOps = DO_COPYABLE | DO_LINKABLE;
-	if (moveok && IsFullName(list[Select]) &&
-	    !(driveflags[toupper(*list[Select]) - 'A'] & DRIVE_NOTWRITEABLE))
-	  ppDItem[ulNumfiles]->fsSupportedOps |= DO_MOVEABLE;
-	if (IsRoot(list[Select]))
-	  ppDItem[ulNumfiles]->fsControl = DO_LINKABLE;
-	ulNumfiles++;
-	ppDItem[ulNumfiles] = NULL;
+      ppDItem[ulNumfiles] = pDItem;
+      if (!ulNumIcon) {
+	pDImg = &paDImgIcons[ulNumfiles];
+	pDImg->cb = sizeof(DRAGIMAGE);
+	pDImg->cptl = 0;
+	pDImg->hImage = isdir ? hptrDir : hptrFile;
+	pDImg->fl = DRG_ICON;
+	pDImg->sizlStretch.cx = 32;
+	pDImg->sizlStretch.cy = 32;
+	pDImg->cxOffset = -16 + (ulNumfiles * 3);
+	pDImg->cyOffset = 0 + (ulNumfiles * 6);
       }
+      memset(pDItem, 0, sizeof(DRAGITEM));
+      pDItem->hwndItem = (hwndObj) ? hwndObj : hwnd;
+      // pDItem->hwndItem = hwnd;
+      pDItem->ulItemID = (ULONG) ulSelect;
+      pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
+      ok = pDItem->hstrType;
+      pDItem->hstrRMF = DrgAddStrHandle(DRMDRFLIST);
+      ok = ok && pDItem->hstrRMF;
+      pDItem->hstrContainerName = DrgAddStrHandle(szBuffer);
+      ok = ok && pDItem->hstrContainerName;
+      pDItem->hstrSourceName = DrgAddStrHandle(szFile);
+      ok = ok && pDItem->hstrSourceName;
+      pDItem->hstrTargetName = DrgAddStrHandle(szFile);
+      ok = ok && pDItem->hstrTargetName;
+      if (!ok) {
+	if (pDItem->hstrType)
+	  DrgDeleteStrHandle(pDItem->hstrType);
+	if (pDItem->hstrRMF)
+	  DrgDeleteStrHandle(pDItem->hstrRMF);
+	if (pDItem->hstrContainerName)
+	  DrgDeleteStrHandle(pDItem->hstrContainerName);
+	if (pDItem->hstrSourceName)
+	  DrgDeleteStrHandle(pDItem->hstrSourceName);
+	if (pDItem->hstrTargetName)
+	  DrgDeleteStrHandle(pDItem->hstrTargetName);
+	xfree(pDItem);
+	// pDItem = NULL;	// Why bother, we can count - fixme to be gone
+	NumItemsToUnhilite = ulNumfiles + 1;
+	break;
+      }
+      pDItem->fsControl = isdir ? DC_CONTAINER : 0;
+      if (IsFullName(list[ulSelect]) &&
+	  (driveflags[toupper(*list[ulSelect]) - 'A'] & DRIVE_REMOVABLE))
+	pDItem->fsControl |= DC_REMOVEABLEMEDIA;
+      pDItem->fsSupportedOps = DO_COPYABLE | DO_LINKABLE;
+      if (moveok && IsFullName(list[ulSelect]) &&
+	  !(driveflags[toupper(*list[ulSelect]) - 'A'] & DRIVE_NOTWRITEABLE))
+	pDItem->fsSupportedOps |= DO_MOVEABLE;
+      if (IsRoot(list[ulSelect]))
+	pDItem->fsControl = DO_LINKABLE;
+      ulNumfiles++;
+      // ppDItem[ulNumfiles] = NULL;	// Why bother - fixme to be gone
     }
-  }					// for
-  if (fExceedPMDrgLimit)
-    ulNumfiles = ulNumfiles - 1;
+  } // for
   if (ulNumfiles) {
-    pDInfo = DrgAllocDraginfo(ulNumfiles);	/* Allocate DRAGINFO */
+    pDInfo = DrgAllocDraginfo(ulNumfiles);
     if (pDInfo) {
       if ((IsFullName(szBuffer) &&
 	   (driveflags[toupper(*szBuffer) - 'A'] & DRIVE_NOTWRITEABLE)))
@@ -600,51 +674,50 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	pDInfo->usOperation = DO_DEFAULT;
       if (IsRoot(list[0]))
 	pDInfo->usOperation = DO_LINK;
-      pDInfo->hwndSource = (hwndObj) ? hwndObj : hwnd;
+      pDInfo->hwndSource = hwndObj ? hwndObj : hwnd;
       // pDInfo->hwndSource = hwnd;
-      for (Select = 0L; Select < ulNumfiles; Select++) {
-	DrgSetDragitem(pDInfo,		/* Set item in DRAGINFO  */
-		       ppDItem[Select],	/* Pointer to DRAGITEM   */
-		       sizeof(DRAGITEM),	/* Size of DRAGITEM      */
-		       Select);		/* Index of DRAGITEM     */
-	free(ppDItem[Select]);
-      }					// for
+      for (ulSelect = 0; ulSelect < ulNumfiles; ulSelect++) {
+	if (!DrgSetDragitem(pDInfo, ppDItem[ulSelect], sizeof(DRAGITEM), ulSelect)) {
+	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		   "DrgSetDragitem");
+	}
+	free(ppDItem[ulSelect]);
+      }	// for
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
       free(ppDItem);
-      ppDItem = NULL;
+      ppDItem = NULL;			// Remember gone
       DosPostEventSem(CompactSem);
 
       if (!ulNumIcon)
 	ulNumIcon = ulNumfiles;
 
       WinSetFocus(HWND_DESKTOP, HWND_DESKTOP);
-      hDrop = DrgDrag(hwnd,		/* Initiate drag         */
-		      pDInfo,		/* DRAGINFO structure    */
-		      padiIcon, ulNumIcon, VK_ENDDRAG,	/* End of drag indicator */
-		      (PVOID) NULL);	/* Reserved              */
-      if (!DeleteDragitemStrHandles(pDInfo))
-        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  "DeleteDragistr");
-      DrgDeleteDraginfoStrHandles (pDInfo);
-      if (!DrgFreeDraginfo(pDInfo));		/* Free DRAGINFO struct  */
-        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  "DrgFreeDraginfo");
-      xfree(padiIcon);
-      padiIcon = NULL;
+      hDrop = DrgDrag(hwnd,
+		      pDInfo,
+		      paDImgIcons,
+		      ulNumIcon,
+		      VK_ENDDRAG,	// Drag end button
+		      (PVOID) NULL);
+      if (hDrop == NULLHANDLE) {
+	NumItemsToUnhilite = 0;
+	FreeDragInfoData(hwnd, pDInfo);
+      }
+      xfree(paDImgIcons);
+      paDImgIcons = NULL;		// Remember gone
       WinSetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
       DosPostEventSem(CompactSem);
     }
   }
   if (ppDItem)
     free(ppDItem);
-  if (padiIcon)
-    free(padiIcon);
+  if (paDImgIcons)
+    free(paDImgIcons);
   return hDrop;
 }
 
-#ifdef NEVER
+#ifdef NEVER				// fixme to be enabled someday?
 
 BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 {
@@ -654,7 +727,7 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
   PDRAGINFO pdinfoOld = NULL, pdinfoCurrent = NULL;
   ULONG cditem = 0;
   DRAGITEM ditem;
-  DRAGIMAGE diFakeIcon;
+  DRAGIMAGE dimgFakeIcon;
   CHAR szDir[CCHMAXPATH], szFile[CCHMAXPATH], *p;
 
   pci = (PCNRITEM) pcd->pRecord;
@@ -701,9 +774,11 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 	ditem.hstrRMF = DrgAddStrHandle(DRMDRFLIST);
 	ditem.hstrContainerName = DrgAddStrHandle(szDir);
 	ditem.hstrSourceName = DrgAddStrHandle(szFile);
-	if (!ditem.hstrSourceName)
-	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                 "DrgAddStrHandle");
+	// fixme to check better if code ever enabled
+	if (!ditem.hstrSourceName) {
+	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		   "DrgAddStrHandle");
+	}
 	ditem.hstrTargetName = DrgAddStrHandle(szFile);
 	ditem.fsControl = 0;
 	if (IsRoot(pci->szFileName) || (pci->attrFile & FILE_DIRECTORY) != 0)
@@ -718,15 +793,15 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 	  ditem.fsSupportedOps |= DO_MOVEABLE;
 	if (IsRoot(pci->szFileName))
 	  ditem.fsSupportedOps = DO_LINKABLE;
-	memset(&diFakeIcon, 0, sizeof(DRAGIMAGE));
-	diFakeIcon.hImage = pci->rc.hptrIcon;
-	diFakeIcon.cb = sizeof(DRAGIMAGE);
-	diFakeIcon.cptl = 0;
-	diFakeIcon.fl = DRG_ICON;
-	diFakeIcon.sizlStretch.cx = 32;
-	diFakeIcon.sizlStretch.cy = 32;
-	diFakeIcon.cxOffset = -16;
-	diFakeIcon.cyOffset = 0;
+	memset(&dimgFakeIcon, 0, sizeof(DRAGIMAGE));
+	dimgFakeIcon.hImage = pci->rc.hptrIcon;
+	dimgFakeIcon.cb = sizeof(DRAGIMAGE);
+	dimgFakeIcon.cptl = 0;
+	dimgFakeIcon.fl = DRG_ICON;
+	dimgFakeIcon.sizlStretch.cx = 32;
+	dimgFakeIcon.sizlStretch.cy = 32;
+	dimgFakeIcon.cxOffset = -16;
+	dimgFakeIcon.cyOffset = 0;
 	if (IsFullName(pci->szFileName) &&
 	    (driveflags[toupper(*pci->szFileName) - 'A'] &
 	     DRIVE_NOTWRITEABLE))
@@ -742,9 +817,9 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 	break;
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 		       MPFROMP(pci), MPFROMSHORT(CRA_SELECTED));
-    }
+    } // while
     if (pdinfoCurrent)
-      return DrgLazyDrag(hwndCnr, pdinfoCurrent, &diFakeIcon, 1, NULL);
+      return DrgLazyDrag(hwndCnr, pdinfoCurrent, &dimgFakeIcon, 1, NULL);
   }
   return FALSE;
 }

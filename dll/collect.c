@@ -32,6 +32,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
+  19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checks.
 
 ***********************************************************************/
 
@@ -458,11 +459,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr, NULL, FALSE, MPVOID, MPFROMP(&cni));
-      if (fExceedPMDrgLimit)
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		             hwnd,
-		             GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+      if (NumItemsToUnhilite)
+	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+			     hwnd,
+			     GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_EXCEEDPMDRGLMT));
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -2112,26 +2113,18 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PCNRITEM pci;
 	  ULONG numitems;
 	  USHORT usOperation;
-                APIRET rc;
+		APIRET rc;
 
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "%s", GetPString(IDS_DROPERRORTEXT));
-	    break;
+		      "DrgAccessDraginfo");
+	    return 0;
 	  }
 	  numitems = DrgQueryDragitemCount(pDInfo);
 	  usOperation = pDInfo->usOperation;
-          rc = DeleteDragitemStrHandles(pDInfo); //
-          if(!rc)
-          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                    "DeleteDragitemStrHandles");
-          DrgDeleteDraginfoStrHandles (pDInfo);
-          rc = DrgFreeDraginfo(pDInfo);
-          if(!rc)
-          Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                 "DrgFreeDraginfo");
+	  FreeDragInfoData(hwnd, pDInfo);
 	  saymsg(MB_ENTER | MB_ICONASTERISK,
 		 hwnd,
 		 GetPString(IDS_DROPHELPHDRTEXT),
@@ -2153,25 +2146,30 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (mp2) {
 	  PDRAGINFO pDInfo;
 
+	  // fixme to know why needed
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	}
 	return 0;
 
       case CN_DRAGAFTER:
       case CN_DRAGOVER:
 	if (mp2) {
-	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM   */
-	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO   */
+	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM */
+	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO */
 	  PCNRITEM pci;
 	  USHORT uso;
 
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
-//            if(SHORT1FROMMP(mp1) == CN_DRAGAFTER)
-	  //            pci = NULL;
+	  // if(SHORT1FROMMP(mp1) == CN_DRAGAFTER)
+	  //    pci = NULL;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO       */
+	  if (!DrgAccessDraginfo(pDInfo)) {
+	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      "DrgAccessDraginfo");
+	    return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
+	  }
 	  if (pci) {
 	    if (pci->rc.flRecordAttr & CRA_SOURCE) {
 	      DrgFreeDraginfo(pDInfo);
@@ -2204,28 +2202,28 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      }
 	    }
 	  }
-	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM       */
-				       0);	/* Index to DRAGITEM     */
+	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
+				       0);	/* Index to DRAGITEM */
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   DRM_OS2FILE,	/* mechanisms and data   */
+			   DRM_OS2FILE,	/* mechanisms and data */
 			   NULL)) {
-	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	    if (pci) {
 	      if (driveflags[toupper(*pci->szFileName) - 'A'] &
 		  DRIVE_NOTWRITEABLE)
 		return MRFROM2SHORT(DOR_DROP, DO_LINK);
 	      if (toupper(*pci->szFileName) < 'C')
 		return MRFROM2SHORT(DOR_DROP, DO_COPY);
-	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop   */
+	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
 				  ((fCopyDefault) ? DO_COPY : DO_MOVE));
 	    }
 	    else
-	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop   */
+	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
 				  DO_COPY);
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	}
-	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid       */
+	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
 
       case CN_INITDRAG:
 	if (mp2) {
@@ -2244,7 +2242,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		WinSetWindowText(hwndStatus2,
 				 GetPString(IDS_DRAGFILEOBJTEXT));
 	      if (DoFileDrag(hwnd, dcd->hwndObject, mp2, NULL, NULL, TRUE)) {
-		if ((fUnHilite && wasemphasized) || fExceedPMDrgLimit)
+		if ((fUnHilite && wasemphasized) || NumItemsToUnhilite)
 		  UnHilite(hwnd, TRUE, &dcd->lastselection);
 	      }
 	      if (hwndStatus2)
@@ -2259,12 +2257,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          if (fExceedPMDrgLimit)
-            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		                 hwnd,
-		                 GetPString(IDS_ERRORTEXT),
-                       GetPString(IDS_EXCEEDPMDRGLMT));
+	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+	  if (NumItemsToUnhilite)
+	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+				 hwnd,
+				 GetPString(IDS_ERRORTEXT),
+		       GetPString(IDS_EXCEEDPMDRGLMT));
 	  if (li) {
 	    if (!*li->targetpath) {
 	      li->type = IDM_COLLECT;
@@ -2284,16 +2282,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		cl.prompt = li->targetpath;
 		li->type = WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
 				     DropListProc, FM3ModHandle,
-                                     DND_FRAME, MPFROMP(&cl));
-                if (li->type == DID_ERROR)
-                  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
-                            "Drag & Drop Dialog");
-                if (!li->type) {
+				     DND_FRAME, MPFROMP(&cl));
+		if (li->type == DID_ERROR)
+		  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
+			    "Drag & Drop Dialog");
+		if (!li->type) {
 		  FreeListInfo(li);
 		  return 0;
 		}
 		li->list = cl.list;
-                if (!li->list || !li->list[0]) {
+		if (!li->list || !li->list[0]) {
 		  FreeListInfo(li);
 		  return 0;
 		}
