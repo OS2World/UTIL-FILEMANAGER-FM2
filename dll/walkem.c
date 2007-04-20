@@ -16,6 +16,7 @@
   06 Nov 06 SHL Oops - need to allow .. here
   14 Nov 06 SHL Correct FillPathListBox regression
   22 Mar 07 GKY Use QWL_USER
+  20 Apr 07 SHL Avoid spurious add_udir error reports
 
 ***********************************************************************/
 
@@ -194,9 +195,15 @@ VOID save_udirs(VOID)
   }
 }
 
-//=== add_udir - add path to user dir list or last used dir list ===
+/**
+ * Add path to user directory list or last used directory list.
+ * Callers need to check fUdirsChanged to know if user dirs change occured.
+ * Callers need to check return code to know if last dirs change occured.
+ * @param userdirs TRUE to process user directory list. Otherwise last used list.
+ * @return TRUE if added, FALSE if already in list or error.
+ */
 
-BOOL add_udir(BOOL userdirs, CHAR * inpath)
+BOOL add_udir(BOOL userdirs, CHAR *inpath)
 {
   CHAR path[CCHMAXPATH];
   LINKDIRS *info;
@@ -913,9 +920,8 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*p = '\\';
       if (*szBuff && !IsFile(szBuff)) {
 	MakeFullName(szBuff);
-	if (!add_udir(TRUE, szBuff))
-	  Runtime_Error(pszSrcFile, __LINE__, "add_udir");
-	else {
+	add_udir(TRUE, szBuff);
+	if (fUdirsChanged) {
 	  WinSendDlgItemMsg(hwnd,
 			    WALK_USERLIST,
 			    LM_INSERTITEM,
