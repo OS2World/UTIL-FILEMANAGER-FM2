@@ -6,7 +6,7 @@
   Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -21,6 +21,7 @@
   22 Oct 06 GKY Add NDFS32 support
   18 Feb 07 GKY Add ISOFS, RAMFS support
   30 Mar 07 GKY Defined golbals for removing GetPString for window class names
+  21 Apr 07 GKY Find FM2Utils by path or utils directory eleminate fAddUtils global
 
 ***********************************************************************/
 
@@ -448,8 +449,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   ArgDriveFlags(argc, argv);
   FillInDriveFlags(NULL);
 
-  {
-    /* try to ensure that FM/2 Utilities are available */
+  /*{ Removed so can use either path or \utils for fm2play.exe and image.exe
+     try to ensure that FM/2 Utilities are available
     CHAR curpath[CCHMAXPATH + 8], *env;
     FILESTATUS3 fs3;
 
@@ -465,7 +466,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	  fAddUtils = TRUE;
       }
     }
-  }
+  } */
   if (!*profile)
     strcpy(profile, "FM3.INI");
   mypid = getpid();

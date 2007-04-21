@@ -6,7 +6,7 @@
   Worker thread
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   16 Oct 02 SHL Comments
   18 Oct 02 SHL MassAction:Archive - force extension so file found
@@ -17,6 +17,7 @@
   22 Jul 06 SHL Check more run time errors
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
+  21 Apr 07 GKY Find FM2Utils by path or utils directory
 
 ***********************************************************************/
 
@@ -1029,9 +1030,12 @@ VOID MassAction(VOID * args)
 	  case IDM_MCIPLAY:
 	    {
 	      register INT x;
-	      register ULONG total = strlen("FM2PLAY.EXE ");
+              register ULONG total = strlen("FM2PLAY.EXE ");
+              CHAR fbuf[CCHMAXPATH];
 
-	      if (fAddUtils)
+              if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+	                        SEARCH_CUR_DIRECTORY,
+                                "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
 		total += strlen("UTILS\\");
 	      for (x = 0; wk->li->list[x]; x++)
 		total += (strlen(wk->li->list[x]) + 1 +
@@ -1046,13 +1050,24 @@ VOID MassAction(VOID * args)
 		  for (x = 0; wk->li->list[x]; x++)
 		    fprintf(fp, "%s\n", wk->li->list[x]);
 		  fprintf(fp, ";end\n");
-		  fclose(fp);
-		  runemf2(SEPARATE | WINDOWED,
-			  HWND_DESKTOP,
-			  NULL,
-			  NULL,
-			  "%sFM2PLAY.EXE /#$FM2PLAY.$$$",
-			  (fAddUtils) ? "UTILS\\" : NullStr);
+                  fclose(fp);
+                  if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+		                 SEARCH_CUR_DIRECTORY,
+                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1)){
+                    runemf2(SEPARATE | WINDOWED,
+	                    HWND_DESKTOP,
+	                    NULL,
+	                    NULL,
+	                    "%sFM2PLAY.EXE /#$FM2PLAY.$$$",
+                            "UTILS\\");
+                  }
+                   else {
+                     runemf2(SEPARATE | WINDOWED,
+	                     HWND_DESKTOP,
+	                     NULL,
+	                     NULL,
+	                     "FM2PLAY.EXE /#$FM2PLAY.$$$");
+                  }
 		  break;
 		}
 	      }
@@ -1064,7 +1079,8 @@ VOID MassAction(VOID * args)
 		(*wk->li->arcname && wk->li->info &&
 		 wk->li->info->extract && *wk->li->targetpath)) {
 
-	      CHAR szBuffer[1025];
+              CHAR szBuffer[1025];
+              CHAR fbuf[CCHMAXPATH];
 	      register INT x;
 
 	      if (wk->li->type == IDM_FAKEEXTRACT ||
@@ -1080,7 +1096,9 @@ VOID MassAction(VOID * args)
 		  strcat(szBuffer, "\"");
 	      }
 	      else {
-		if (fAddUtils)
+                if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+		                  SEARCH_CUR_DIRECTORY,
+                                  "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
 		  strcpy(szBuffer, "UTILS\\FM2PLAY.EXE");
 		else
 		  strcpy(szBuffer, "FM2PLAY.EXE");

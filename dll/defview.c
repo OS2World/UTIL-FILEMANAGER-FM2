@@ -12,6 +12,7 @@
   14 Jul 06 SHL Use Runtime_Error
   18 Mar 07 GKY Fixed misindentifycation of nonmultimedia files by ShowMultiMedia
   18 Mar 07 GKY Open mp3, ogg & flac files with OS2 object default since fm2play fails
+  21 Apr 07 GKY Find FM2Utils by path or utils directory
 
 ***********************************************************************/
 
@@ -40,6 +41,7 @@ BOOL ShowMultimedia(CHAR * filename)
   static BOOL no_mmos2 = FALSE;
   BOOL played = FALSE;
   CHAR loaderror[CCHMAXPATH];
+  CHAR fbuf[CCHMAXPATH];
   HMODULE MMIOModHandle = NULLHANDLE;
   PMMIOIDENTIFYFILE pMMIOIdentifyFile = NULL;
   PMMIOGETINFO pMMIOGetInfo = NULL;
@@ -156,13 +158,25 @@ BOOL ShowMultimedia(CHAR * filename)
   if (!rc && mmFormatInfo.fccIOProc != FOURCC_DOS) {
     if (mmFormatInfo.ulMediaType == MMIO_MEDIATYPE_IMAGE &&
 	(mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
-      /* is an image that can be translated */
-      runemf2(SEPARATE | WINDOWED,
-	      HWND_DESKTOP,
-	      NULL,
-	      NULL,
-	      "%sIMAGE.EXE \"%s\"",
-	      (fAddUtils) ? "UTILS\\" : NullStr, filename);
+        /* is an image that can be translated */
+      if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+		        SEARCH_CUR_DIRECTORY,
+                        "PATH", "IMAGE.EXE", fbuf, CCHMAXPATH - 1)){
+        runemf2(SEPARATE | WINDOWED,
+	        HWND_DESKTOP,
+	        NULL,
+	        NULL,
+	        "%sIMAGE.EXE \"%s\"",
+                "UTILS\\", filename);
+      }
+      else {
+        runemf2(SEPARATE | WINDOWED,
+	        HWND_DESKTOP,
+	        NULL,
+	        NULL,
+	        "IMAGE.EXE \"%s\"",
+                filename);
+      }
       played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
@@ -174,13 +188,24 @@ BOOL ShowMultimedia(CHAR * filename)
               __FILE__, __LINE__, p); fflush(stdout);*/
           if  (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC"))
               OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
-          else
-              runemf2(SEPARATE | WINDOWED,
-	              HWND_DESKTOP,
-	              NULL,
-	              NULL,
-	              "%sFM2PLAY.EXE \"%s\"",
-                      (fAddUtils) ? "UTILS\\" : NullStr, filename);
+          else if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+		                 SEARCH_CUR_DIRECTORY,
+                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1)){
+                 runemf2(SEPARATE | WINDOWED,
+	                 HWND_DESKTOP,
+	                 NULL,
+	                 NULL,
+	                 "%sFM2PLAY.EXE \"%s\"",
+                         "UTILS\\" , filename);
+               }
+               else {
+                 runemf2(SEPARATE | WINDOWED,
+	                 HWND_DESKTOP,
+	                 NULL,
+	                 NULL,
+	                 "FM2PLAY.EXE \"%s\"",
+                         filename);
+               }
       played = TRUE;
     }
   }

@@ -43,6 +43,7 @@
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Rework DeleteDragitemStrHandles to be FreeDragInfoData
   19 Apr 07 SHL Add DbgMsg.  Sync with AcceptOneDrop GetOneDrop mods.
+  21 Apr 07 GKY Find FM2Utils by path or utils directory eliminate fAddUtils global
 
 ***********************************************************************/
 
@@ -1343,7 +1344,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fLookInDir, fSwitchTree, fSwitchTreeOnFocus, fDrivebar,
   fSwitchTreeExpand, fCollapseFirst, fFilesInTree, fNoDead,
   fThreadNotes, fOkayMinimize, fRunning, fDullMin, fBlueLED,
-  fViewChild, fShowEnv, fLeaveTree, fAddUtils, fNoFoldMenu,
+  fViewChild, fShowEnv, fLeaveTree,  fNoFoldMenu,                 //fAddUtils,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM;

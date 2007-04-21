@@ -35,6 +35,7 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeISH limit
   06 Apr 07 GKY Add some error checking in drag/drop
   20 Apr 07 SHL Sync with NumItemsToUnhilite mods
+  21 Apr 07 GKY Find FM2Utils by path or utils directory
 
 ***********************************************************************/
 
@@ -1766,7 +1767,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      if (li->type == IDM_MCIPLAY) {
 
-		FILE *fp;
+                FILE *fp;
+                CHAR fbuf[CCHMAXPATH];
 
 		fp = xfopen("$FM2PLAY.$$$", "w", pszSrcFile, __LINE__);
 		if (fp) {
@@ -1774,11 +1776,25 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  for (x = 0; li->list[x]; x++)
 		    fprintf(fp, "%s\n", li->list[x]);
 		  fprintf(fp, ";end\n");
-		  fclose(fp);
-		  runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, NULL,
-			  NULL, "%sFM2PLAY.EXE /@$FM2PLAY.$$$",
-			  fAddUtils ? "UTILS\\" : NullStr);
-		}
+                  fclose(fp);
+                  if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+		                 SEARCH_CUR_DIRECTORY,
+                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1)){
+                    runemf2(SEPARATE | WINDOWED,
+	                    HWND_DESKTOP,
+	                    NULL,
+	                    NULL,
+	                    "%sFM2PLAY.EXE /@$FM2PLAY.$$$",
+                            "UTILS\\");
+                  }
+                   else {
+                     runemf2(SEPARATE | WINDOWED,
+	                     HWND_DESKTOP,
+	                     NULL,
+	                     NULL,
+	                     "FM2PLAY.EXE /@$FM2PLAY.$$$");
+                  }
+               	}
 	      }
 	      else if (li->type == IDM_PRINT) {
 		strcpy(li->targetpath, printer);
