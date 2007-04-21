@@ -33,7 +33,9 @@ globals = 'cfg.'
 
 call Init
 
+/*
 call DeleteObsoleteFiles
+*/
 
 parse arg args
 call ProcessArgs strip(args)
@@ -46,51 +48,59 @@ if cfg.unattended = 0 then
 if cfg.userabort = 1 then
    signal NormalExit
 
-action_taken = 0
+cfg.action_taken = 0
 do f = 1 to cfg.file.0
    file_exists = stream(cfg.file.f.name, 'c' , 'query exists')
-   if cfg.delete = 1 then
+   if cfg.operation = 'INSTALL' then
       if file_exists \= '' then
          do
-            'del 'cfg.file.f.name
-            action_taken = 1
+            if FilesAreDifferent(cfg.file.f.default, cfg.file.f.name) = 1 then
+               if cfg.defaults = 1 then
+                  do
+                     call SysMkDir cfg.backupdir
+                     if cfg.unattended = 0 then
+                        do
+                           user_choice = PromptForReplaceOption(f)
+                           if user_choice == 'Q' then
+                              signal NormalExit
+                           if user_choice == 'N' then
+                              iterate
+                        end
+                     /* unattended = 1 or user_choice = 'Y' */
+                     cfg.errorcode = CfgAction( 'RESETTODEFAULT', f )
+                  end
          end
       else
-         nop
-   else
-      /* must be a "reset" operation */
-      select
-         when file_exists == '' then                     /* If file is missing... */
+        cfg.errorcode = CfgAction( 'INSTALLDEFAULT', f )
+   else /* operation = deinstall */
+      do
+         if BackupFileIsOK(f) = 0 then
+            iterate
+         if cfg.unattended = 0 then
             do
-               'copy 'cfg.file.f.tmpl8 cfg.file.f.name
-               action_taken = 1
+               user_choice = PromptForReplaceOption(f)
+               if user_choice == 'Q' then
+                  signal NormalExit
+               if user_choice == 'N' then
+                  iterate
             end
-         when cfg.reset_overwrite == 1 then
-            if FilesAreDifferent(cfg.file.f.tmpl8, cfg.file.f.name) == 1 then
-               if cfg.unattended == 1 | ,                   /* If unattended reset, or  */
-                  cfg.reset_overwrite_option == 'A' then    /* user has wants "ALL" overwrites... */
-                  do
-                     'copy 'cfg.file.f.tmpl8 cfg.file.f.name
-                     action_taken = 1
-                  end
-               else
-                  if PromptedReset(f) == 'Y' then           /* If user has OK'd this overwrite... */
-                     do
-                        'copy 'cfg.file.f.tmpl8 cfg.file.f.name
-                        action_taken = 1
-                     end
-         otherwise
-            nop
+         cfg.errorcode = CfgAction('DEINSTALL', f)
+         if cfg.errorcode \= 0 then
+            leave
       end
 end
 
 if cfg.errorcode \= 0 then
    signal ErrorExit
-if action_taken = 0 then
+
+if cfg.action_taken = 0 then
    do
+      say
+      say 'No action taken.'
       say
       say 'FM/2 configuration files are already as you desire.'
    end
+
 signal NormalExit
 
 ErrorExit:
@@ -116,106 +126,107 @@ Init: procedure expose (globals)
 
    cfg.              = ''
    cfg.errorcode     = 0
-   cfg.reset_overwrite = 0
+   cfg.defaults      = 0
    cfg.unattended    = 0
-   cfg.delete        = 0
+   cfg.backupdir     = '.\User_Config_Backup'
+   cfg.actionmethod  = 'COPY'       /* The default method of backing up and restoring */
 
    f = 0
 
    /*   Read from a file instead?   */
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\assoc.tmp'
+   cfg.file.f.default = '.\Tmplates\assoc.tmp'
    cfg.file.f.name    = '.\assoc.dat'
    cfg.file.f.desc.1  = 'FM/2 associations'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\commands.tmp'
+   cfg.file.f.default = '.\Tmplates\commands.tmp'
    cfg.file.f.name    = '.\commands.dat'
    cfg.file.f.desc.1  = 'FM/2 user-defined commands'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\archiver.tmp'
+   cfg.file.f.default = '.\Tmplates\archiver.tmp'
    cfg.file.f.name    = '.\archiver.bb2'
    cfg.file.f.desc.1  = 'FM/2 archiver definitions'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\cmds.tmp'
+   cfg.file.f.default = '.\Tmplates\cmds.tmp'
    cfg.file.f.name    = '.\cmds.tls'
    cfg.file.f.desc.1  = 'FM/2 toolbar: commands'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\files.tmp'
+   cfg.file.f.default = '.\Tmplates\files.tmp'
    cfg.file.f.name    = '.\files.tls'
    cfg.file.f.desc.1  = 'FM/2 toolbar: files'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\select.tmp'
+   cfg.file.f.default = '.\Tmplates\select.tmp'
    cfg.file.f.name    = '.\select.tls'
    cfg.file.f.desc.1  = 'FM/2 toolbar: select'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\sort.tmp'
+   cfg.file.f.default = '.\Tmplates\sort.tmp'
    cfg.file.f.name    = '.\sort.tls'
    cfg.file.f.desc.1  = 'FM/2 toolbar: sort'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\utils.tmp'
+   cfg.file.f.default = '.\Tmplates\utils.tmp'
    cfg.file.f.name    = '.\utils.tls'
    cfg.file.f.desc.1  = 'FM/2 toolbar: utils'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\views.tmp'
+   cfg.file.f.default = '.\Tmplates\views.tmp'
    cfg.file.f.name    = '.\views.tls'
    cfg.file.f.desc.1  = 'FM/2 toolbar: views'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\config.tmp'
+   cfg.file.f.default = '.\Tmplates\config.tmp'
    cfg.file.f.name    = '.\config.tls'
    cfg.file.f.desc.1  = 'FM/2 toolbar: config'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\fm3tools.tmp'
+   cfg.file.f.default = '.\Tmplates\fm3tools.tmp'
    cfg.file.f.name    = '.\fm3tools.dat'
    cfg.file.f.desc.1  = 'FM/2 toolbar: tools?'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\filters.tmp'
+   cfg.file.f.default = '.\Tmplates\filters.tmp'
    cfg.file.f.name    = '.\filters.dat'
    cfg.file.f.desc.1  = 'FM/2 filters'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\quicktls.tmp'
+   cfg.file.f.default = '.\Tmplates\quicktls.tmp'
    cfg.file.f.name    = '.\quicktls.dat'
    cfg.file.f.desc.1  = 'FM/2 toolbar list'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\fatopt.tmp'
+   cfg.file.f.default = '.\Tmplates\fatopt.tmp'
    cfg.file.f.name    = '.\fatopt.cmd'
    cfg.file.f.desc.1  = 'FM/2 FAT optimizing command'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\hpfsopt.tmp'
+   cfg.file.f.default = '.\Tmplates\hpfsopt.tmp'
    cfg.file.f.name    = '.\hpfsopt.cmd'
    cfg.file.f.desc.1  = 'FM/2 HPFS optimizing command'
    cfg.file.f.desc.0  = 1
 
    f = f + 1
-   cfg.file.f.tmpl8   = '.\Tmplates\jfsopt.tmp'
+   cfg.file.f.default = '.\Tmplates\jfsopt.tmp'
    cfg.file.f.name    = '.\jfsopt.cmd'
    cfg.file.f.desc.1  = 'FM/2 JFS optimizing command'
    cfg.file.f.desc.0  = 1
@@ -242,30 +253,37 @@ ProcessArgs: procedure expose (globals)
    do while args \= '' & cfg.errorcode = 0
       parse var args param args
       select
-         when param = '/RESET' then
-            if cfg.delete = 1 then
+         when param = '/INSTALL' then
+            if cfg.operation \= '' then
                cfg.errorcode = 1
             else
-               cfg.reset_overwrite = 1
-         when param = '/DELETE' then
-            if cfg.reset_overwrite = 1 then
+               cfg.operation = 'INSTALL'
+         when param = '/DEINSTALL' then
+            if cfg.operation \= '' then
                cfg.errorcode = 1
             else
-               cfg.delete = 1
+               cfg.operation = 'DEINSTALL'
          when param = '/UNATTENDED' then
             cfg.unattended = 1
+         when param = '/DEFAULTS' then
+            cfg.defaults = 1
          otherwise
             cfg.errorcode = 2
       end
    end
+   if cfg.operation = '' then
+      cfg.errorcode = 1
+   else
+      if cfg.operation = 'INSTALL' & cfg.defaults = 0 then
+         cfg.unattended = 1
 return
 
 GetUserOptions: procedure expose (globals)
-   if cfg.reset_overwrite = 1 then
+   call SysCls
+   option = ''
+   if cfg.defaults = 1 then
       do
-         /* messages here about reset */
-         call SysCls
-         do while wordpos(cfg.reset_overwrite_option, 'A C Q') == 0
+         do while wordpos(option, 'A C Q') == 0
             say
             say
             say
@@ -277,43 +295,51 @@ GetUserOptions: procedure expose (globals)
             say
             say 'This program can ask for confirmation before each file,'
             say 'if it already exists, is replaced with its default.'
-            cfg.reset_overwrite_option = GetResponse('Type ''A'' for ALL files, ''C'' for Confirmations, ''Q'' to quit')
+            say
+            option = GetResponse('Type ''A'' for ALL files, ''C'' for Confirmations, ''Q'' to quit')
          end
-         cfg.userabort = (cfg.reset_overwrite_option == 'Q')
-         if cfg.reset_overwrite_option == 'A' then
+         cfg.userabort = (option == 'Q')
+         if option == 'A' then
             do
                say
                say
-               say center(copies('   ** Warning!! **   ', 3), cfg.screen_width)
+               say '****  WARNING  ****' || copies(d2c(7), 3)
                say
                say 'You have chosen to replace ALL configuration files with'
                say 'default values.'
-               cfg.userabort = (GetResponse('Type ''Y'' to proceed, anthing else cancels') \= 'Y')
+               say
+               if GetResponse('Type ''Y'' to proceed, anthing else cancels') = 'Y' then
+                  cfg.unattended = 1
+               else
+                  cfg.userabort = 1
             end
       end
    else
-      if cfg.delete = 1 then
+      if cfg.operation = 'DEINSTALL' then
          do
             /* messages here about delete */
             call SysCls
             say
-            say center(copies('   ** Warning!! **   ', 3), cfg.screen_width)
+            say '****  WARNING  ****' || copies(d2c(7), 3)
             say
             say 'If you provide your consent, this program will'
             say 'DELETE all FM/2 configuration files.'
             say
-            cfg.userabort = (GetResponse('Type ''Y'' to proceed, anthing else cancels') \= 'Y')
+            if GetResponse('Type ''Y'' to proceed, anthing else cancels') = 'Y' then
+               cfg.unattended = 1
+            else
+               cfg.userabort = 1
          end
 return
 
 GetResponse: procedure
    parse arg prompt
-   say
    call charout , prompt || ': '
    reply = translate(strip(SysGetKey()))
    say
    return reply
 
+/*
 DeleteObsoleteFiles: procedure expose (globals)
    i  =  0
 
@@ -337,6 +363,7 @@ DeleteObsoleteFiles: procedure expose (globals)
       end
    end
 return
+*/
 
 FilesAreDifferent: procedure
    parse arg file.1, file.2
@@ -354,43 +381,60 @@ FilesAreDifferent: procedure
       end
 return retval
 
-PromptedReset: procedure expose (globals)
+PromptForReplaceOption: procedure expose (globals)
    parse arg f
+   filename = filespec('N', cfg.file.f.name)
    call SysCls
    say
    say
    say 'Configuration file reset confirmation'
    say
    say 'File:'
-   say '   'substr(cfg.file.f.name, lastpos('\', cfg.file.f.name) + 1)
+   say '   'filename
    say
    say 'Description:'
    do d = 1 to cfg.file.f.desc.0
       say '   'cfg.file.f.desc.d
    end
    say
-return GetResponse('Type ''Y'' to reset to default')
+   if cfg.operation = 'INSTALL' then
+      do
+         say 'Back up and then overwrite your current 'filename
+         msg = 'with default values'
+      end
+   else
+      msg = 'Replace your current 'filename' with the backup file'
+return GetResponse(msg '(Y/n)?')
+
+novalue:
+   say 'Unitialized variable: 'condition('D')' found on line: 'sigl
+   say 'Line text: 'sourceline(sigl)
+   say
+   say 'Exiting...'
+   signal NormalExit
+
 
 Usage: procedure expose (globals)
-   say 'Invalid usage. See below for acceptable calls:'
+   say 'Proper usage of 'cfg.pgmname':'
    say
-   say cfg.pgmname' <no parameters>'
-   say '   This installs missing configuration files with default values.'
+   say cfg.pgmname' /INSTALL [/UNATTENDED]'
+   say '   This installs any missing configuration files with default values.'
    say
-   say cfg.pgmname' /RESET'
-   say '   This replaces existing configuration files with default values.'
-   say '   You asked to confirm this action. You can choose to replace all'
-   say '   files or you can request a file-by-file confirmation.'
+   say cfg.pgmname' /INSTALL /DEFAULTS [/UNATTENDED]'
+   say '   This action backs up user-modified configuration files and replaces'
+   say '   them with default values. Unless /UNATTENDED, you are asked to confirm'
+   say '   this action.'
    say
-   say cfg.pgmname' /DELETE'
-   say '   This deletes all configuration files. You are asked to confirm'
-   say '   this action. (This is not an action users should normally take.)'
+   say cfg.pgmname' /DEINSTALL /DEFAULTS [/UNATTENDED]'
+   say '   This reverses the action described above.'
    say
-   say cfg.pgmname' /RESET /UNATTENDED'
-   say cfg.pgmname' /DELETE /UNATTENDED'
-   say '   These operations operate as above except there is NO user'
-   say '   interaction or confirmation! Use with extreme care!'
+   say cfg.pgmname' /DEINSTALL [/UNATTENDED]'
+   say '   This deletes all configuration files. Unless /UNATTENDED, you are asked'
+   say '   to confirm this action. (This is action is automatically done during'
+   say '   de-installation of FM/2. It is not an action users should normally take.)'
    say
+   say 'The optional parameter /UNATTENDED means there will be NO user interaction'
+   say '   interaction during or confirmation of the operation!!!'
    say 'The order of the parameters is not important.'
 return
 
@@ -401,11 +445,89 @@ ProgramError: procedure expose (globals)
    say
    say 'If this error continues after re-installing FM/2, contact FM/2 support'
    say 'through the FM2USER group on Yahoo.'
-return
+exit
 
 novalue:
    say 'Uninitialized variable: ' || condition('D') || ' on line: 'sigl
    say 'Line text: 'sourceline(sigl)
    cfg.errorcode = 3
    signal ErrorExit
+
+CfgAction: procedure expose (globals)
+   parse arg action, f
+   retval = 0
+   select
+      when action = 'RESETTODEFAULT' then
+         select
+            when cfg.actionmethod = 'COPY' then
+               do
+                  'copy 'cfg.file.f.name cfg.backupdir
+                  'copy 'cfg.file.f.default cfg.file.f.name
+                  cfg.action_taken = 1
+               end
+            /* Implement other archive/restore methods here */
+            otherwise
+               retval = 4
+         end
+      when action = 'INSTALLDEFAULT' then
+         select
+            when cfg.actionmethod = 'COPY' then
+               do
+                  'copy 'cfg.file.f.default cfg.file.f.name
+                  cfg.action_taken = 1
+               end
+            /* Implement other archive/restore methods here */
+            otherwise
+               retval = 4
+         end
+      when action = 'DEINSTALL' then
+         if cfg.defaults = 1 then
+            select
+               when cfg.actionmethod = 'COPY' then
+                  do
+                     'copy 'cfg.backupdir || '\' || cfg.file.f.name' .'
+                     cfg.action_taken = 1
+                  end
+               /* Implement other archive/restore methods here */
+               otherwise
+                  retval = 4
+            end
+         else
+            select
+               when cfg.actionmethod = 'COPY' then
+                  if stream(cfg.file.f.name, 'c', 'query exists') \= '' then
+                     if FilesAreDifferent(cfg.file.f.name, cfg.file.f.default) = 0 then
+                        do
+                           'del 'cfg.file.f.name
+                           cfg.action_taken = 1
+                        end
+               /* Implement other archive/restore methods here */
+               otherwise
+                  retval = 4
+            end
+      otherwise
+         retval = 5
+
+   end
+return retval
+
+BackupFileIsOK: procedure expose (globals)
+   parse arg f
+   retval = 1                    /* assume yes */
+   if cfg.defaults = 1 then      /* Not needed when cfg.defaults = 0 */
+      do
+         retval = 0
+         select
+            when cfg.actionmethod = 'COPY' then
+               do
+                  backup_file = cfg.backupdir || '\' || cfg.file.f.name
+                  if stream(backup_file, 'c', 'query exists') \= '' then
+                     retval = FilesAreDifferent(cfg.file.f.name, backup_file)
+               end
+            /* Implement other archive/restore methods here */
+            otherwise
+               cfg.errorcode = 4
+         end
+      end
+return retval
 
