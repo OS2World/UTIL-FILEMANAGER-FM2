@@ -1,11 +1,16 @@
 <WARPIN VERSION 1.0.15>
 
 <!--
-NOTE: If a package index greater than 999 is used, then the REXX program
-      BLD_FM2_WPIDIRS.CMD (found in the warpin directory of the build subtree)
+NOTE: If a NON-EXTERNAL package (i.e. a package whose files will be staged before
+      building the WPI file) with an index greater than 999 is used, then the REXX
+      program BLD_FM2_WPIDIRS.CMD (found in the warpin directory of the build subtree)
       will have to be changed. The line:
          WPI.max_package_number_length = 3
       will need to be changed accordingly.
+-->
+
+<!--
+  CREATEOBJECT="WPShadow|History (Shadow)|<FM3_Docs>|SHADOWID=$(1)\docs\history;OBJECTID=<FM2HistoryShadow>;"
 -->
 
 <HEAD>
@@ -19,17 +24,37 @@ NOTE: If a package index greater than 999 is used, then the REXX program
   LONGFILENAMES
   CREATEOBJECT="WPFolder|File Manager/2|<WP_DESKTOP>|ICONFILE=$(1)\icons\fm2fldr.ICO;ICONNFILE=1,$(1)\icons\fm2fldr2.ICO;CCVIEW=YES;OBJECTID=<FM3_Folder>;"
   CREATEOBJECT="WPFolder|FM/2 Docs|<FM3_Folder>|ICONFILE=$(1)\icons\docs.ICO;ICONNFILE=1,$(1)\icons\docs2.ICO;OBJECTID=<FM3_Docs>;"
+  CREATEOBJECT="WPFolder|FM/2 Tools|<FM3_Folder>|ICONFILE=$(1)\icons\toolbox.ICO;ICONNFILE=1,$(1)\icons\toolbox2.ICO;OBJECTID=<FM3_Tools>;"
   CREATEOBJECT="WPProgram|FM/2|<FM3_Folder>|EXENAME=$(1)\fm3.exe;PARAMETERS=%*;STARTUPDIR=$(1);CCVIEW=YES;OBJECTID=<FM/2>;"
   CREATEOBJECT="WPProgram|FM/2 Lite|<FM3_Folder>|EXENAME=$(1)\fm4.exe;PARAMETERS=%*;STARTUPDIR=$(1);CCVIEW=YES;TITLE=FM/2 LITE;OBJECTID=<FM/2 LITE>;"
+  CREATEOBJECT="WPProgram|Back up FM/2 Customizations^ and reset to defaults|<FM3_Folder>|EXENAME=*;PARAMETERS=/c cfgmgr /INSTALL /DEFAULTS /UNATTENDED;STARTUPDIR=$(1);PROGTYPE=WINDOWABLEVIO;MINIMIZED=YES;OBJECTID=<FM/2_RESET_TO_DEFAULTS>;"
+  CREATEOBJECT="WPProgram|Reverse last reset of^FM/2 Customizations|<FM3_Folder>|EXENAME=*;PARAMETERS=/c cfgmgr /DEINSTALL /DEFAULTS /UNATTENDED;STARTUPDIR=$(1);PROGTYPE=WINDOWABLEVIO;MINIMIZED=YES;OBJECTID=<FM/2_REVERSE_RESET_TO_DEFAULTS>;"
   CREATEOBJECT="WPProgram|FM/2 Online Help|<FM3_Docs>|EXENAME=VIEW.EXE;PARAMETERS=$(1)\FM3.HLP;OBJECTID=<FM3HELP>;"
   CREATEOBJECT="WPProgram|GNU General Public License|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\copying;OBJECTID=<FM3Copying>;"
   CREATEOBJECT="WPProgram|History|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\history;OBJECTID=<FM2History>;"
-  CREATEOBJECT="WPShadow|History (Shadow)|<FM3_Docs>|SHADOWID=$(1)\docs\history;OBJECTID=<FM2HistoryShadow>;"
   CREATEOBJECT="WPProgram|Read Me|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\readme;OBJECTID=<FM3Readme>;"
   CREATEOBJECT="WPProgram|Customizing^Resources|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\customizingresources.txt;OBJECTID=<FM3CustRes>;"
+  CREATEOBJECT="WPProgram|Archive Viewer/2|<FM3_Tools>|EXENAME=$(1)\FM2Tools\AV2.EXE;PROGTYPE=PM;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=Archive Viewer/2;OBJECTID=<FM/2_AV/2>;"
+  CREATEOBJECT="WPProgram|Bookshelf Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;TITLE=Bookshelf Viewer;STARTUPDIR=$(1);OBJECTID=<FM/2_BOOKSHELF>;"
+  CREATEOBJECT="WPProgram|Collector|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VCOLLECT.EXE;TITLE=Collector;STARTUPDIR=$(1);OBJECTID=<FM/2_VCOLLECT>;"
+  CREATEOBJECT="WPProgram|Databar|<FM3_Tools>|EXENAME=$(1)\FM2Tools\DATABAR.EXE;TITLE=Databar;STARTUPDIR=$(1);OBJECTID=<FM/2_DATABAR>;"
+  CREATEOBJECT="WPProgram|Dir Sizes|<FM3_Tools>|EXENAME=$(1)\FM2Tools\DIRSIZE.EXE;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=Dir Sizes;OBJECTID=<FM/2_DIRSIZE>;"
+  CREATEOBJECT="WPProgram|EA Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\EAS.EXE;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=EA Viewer;OBJECTID=<FM/2_EAVIEW>;"
+  CREATEOBJECT="WPProgram|FM/2 Utilities command line|<FM3_Tools>|EXENAME=?:\OS2\CMD.EXE;STARTUPDIR=?:\;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/K $(1)\SETENV.CMD"
+  CREATEOBJECT="WPProgram|Global File Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\GLOBAL.EXE;TITLE=Global File Viewer;STARTUPDIR=$(1);OBJECTID=<FM/2_SEEALL>;"
+  CREATEOBJECT="WPProgram|Helpfile Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;STARTUPDIR=$(1);TITLE=Helpfile Viewer;OBJECTID=<FM2ViewInf>;"
+  CREATEOBJECT="WPProgram|INI Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\INI.EXE;STARTUPDIR=$(1);PROGTYPE=PM;PARAMETERS=%*;ASSOCFILTER=*.INI,,;OBJECTID=<FM/2_INIVIEW>;"
+  CREATEOBJECT="WPProgram|Process Killer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\KILLPROC.EXE;PARAMETERS=%*;TITLE=Process Killer;STARTUPDIR=$(1);OBJECTID=<FM/2_KILLPROC>;"
+  CREATEOBJECT="WPProgram|Undeleter|<FM3_Tools>|EXENAME=$(1)\FM2Tools\UNDEL.EXE;PARAMETERS=%*;TITLE=Undeleter;STARTUPDIR=$(1);OBJECTID=<FM/2_UNDEL>;"
+  CREATEOBJECT="WPProgram|Seek and scan|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VCOLLECT.EXE;TITLE=Seek and scan;PARAMETERS=**;STARTUPDIR=$(1);OBJECTID=<FM/2_VSEEK>;"
+  CREATEOBJECT="WPProgram|Visual Directory|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VDIR.EXE;PARAMETERS=%*;STARTUPDIR=$(1);OBJECTID=<FM/2_VDIR>;"
+  CREATEOBJECT="WPProgram|Visual Tree|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VTREE.EXE;TITLE=Visual Tree;STARTUPDIR=$(1);OBJECTID=<FM/2_VTREE>;"
   EXECUTE="$(1)\cfgmgr /INSTALL /UNATTENDED"
+  EXECUTE="$(1)\utilsmgr /UNATTENDED"
   DEEXECUTE="$(1)\cfgmgr /DEINSTALL /UNATTENDED"
+  DEEXECUTE="$(1)\utilsmgr /DELETE /UNATTENDED"
   DEEXECUTE="del $(1)\fm3.ini & del $(1)\fm3ini.bak"
+
 
 >This package contains the FM/2 base package. If
 you only want a minimal FM/2 installation and none
@@ -41,6 +66,7 @@ you need to install.
   PACKAGEID="Netlabs\FM2\FM/2 Tools\3\5\9\20070331"
   TITLE="Standalone FM/2 Tools"
   TARGET="$(1)"
+  EXTERNAL="FM2Utilx.wpi"
   SELECT
   REQUIRES=1
   FIXED
@@ -70,12 +96,28 @@ as separate programs for people who prefer to
 use them this way.
 </PCK>
 
+<!--
+<PCK INDEX=7
+  PACKAGEID="Netlabs\FM2\FM/2 Utilities\3\5\9\20070331"
+  TITLE="FM/2 Utilities"
+  EXTERNAL="FM2Utilx.wpi"
+  TARGET="$(WARPIN_DEFAULTAPPSPATH)\FM2Utils"
+>This package contains the FM/2 Utilities,
+a collection of utilities designed for
+use with FM/2 (they can also be used
+without FM/2).  FATOPT, HPFSOPT, QFORMAT,
+RENCASE, MOV, KILL/2, PTREE and more.
+</PCK>
+-->
+
 <PCK INDEX=10
   PACKAGEID="Netlabs\FM2\Reset FM/2 Customizations\3\5\9\20070331"
   TITLE="Reset all FM/2 customizations to default values"
   TARGET="$(1)"
+  EXTERNAL="FM2Utilx.wpi"
   REQUIRES=1
   EXECUTE="$(1)\cfgmgr /INSTALL /DEFAULTS /UNATTENDED"
+  DEEXECUTE="$(1)\cfgmgr /DEINSTALL /DEFAULTS /UNATTENDED"
 
 >This package resets ALL FM/2 customizations
 to their default values. All customizations
