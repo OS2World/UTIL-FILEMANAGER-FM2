@@ -86,22 +86,22 @@ FILE: fm2dump2.cmd               1  debugtools    .
 
 FILE: fm4.exe           1  .  .
 
-FILE: av2.exe           3  .  FM2Tools              ; was .
-FILE: databar.exe       3  .  FM2Tools              ; was .
-FILE: dirsize.exe       3  .  FM2Tools              ; was .
-FILE: eas.exe           3  .  FM2Tools              ; was .
-FILE: global.exe        3  .  FM2Tools              ; was .
-FILE: ini.exe           3  .  FM2Tools              ; was .
-FILE: killproc.exe      3  .  FM2Tools              ; was .
-FILE: sysinfo.exe       3  .  FM2Tools              ; was .
-FILE: undel.exe         3  .  FM2Tools              ; was .
-FILE: vcollect.exe      3  .  FM2Tools              ; was .
-FILE: vdir.exe          3  .  FM2Tools              ; was .
-FILE: viewinfs.exe      3  .  FM2Tools              ; was .
-FILE: vtree.exe         3  .  FM2Tools              ; was .
+FILE: av2.exe           1  .  FM2Tools              ; was .
+FILE: databar.exe       1  .  FM2Tools              ; was .
+FILE: dirsize.exe       1  .  FM2Tools              ; was .
+FILE: eas.exe           1  .  FM2Tools              ; was .
+FILE: global.exe        1  .  FM2Tools              ; was .
+FILE: ini.exe           1  .  FM2Tools              ; was .
+FILE: killproc.exe      1  .  FM2Tools              ; was .
+FILE: sysinfo.exe       1  .  FM2Tools              ; was .
+FILE: undel.exe         1  .  FM2Tools              ; was .
+FILE: vcollect.exe      1  .  FM2Tools              ; was .
+FILE: vdir.exe          1  .  FM2Tools              ; was .
+FILE: viewinfs.exe      1  .  FM2Tools              ; was .
+FILE: vtree.exe         1  .  FM2Tools              ; was .
 
-FILE: utilsmgr.cmd      3  .  .
-FILE: toolbox.ico       3  Icons    Icons
-FILE: toolbox2.ico      3  Icons    Icons
+FILE: utilsmgr.cmd      1  .  .
+FILE: toolbox.ico       1  Icons    Icons
+FILE: toolbox2.ico      1  Icons    Icons
 
-NOFILESPACKAGE: 10
+;NOFILESPACKAGE: 10
