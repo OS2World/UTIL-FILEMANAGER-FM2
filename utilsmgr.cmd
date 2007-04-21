@@ -1,5 +1,5 @@
 /*
-   MKUTILS - FM/2 program which is used to install various CMD files
+   UTILSMGR - FM/2 program which is used to install various CMD files
    which facilitate access to FM/2 and its associated utilities from
    the command line.
 
@@ -184,6 +184,7 @@ CreateCmds: procedure expose attended
     */
 
    rc = stream('SETENV.CMD','c','query exists')
+/*
    if rc \= '' then
    do
      shell = value('COMSPEC',,'OS2ENVIRONMENT')
@@ -192,9 +193,10 @@ CreateCmds: procedure expose attended
      title = "FM/2 Utilities command line"
      classname = 'WPProgram'
      location = '<FM3_Tools>'
-     setup = 'EXENAME='shell';PARAMETERS=/K 'rc';STARTUPDIR=C:\'
+     setup = 'EXENAME='shell';PARAMETERS=/K 'rc';STARTUPDIR=?:\'
      call SysCreateObject classname,title,location,setup,'u'
    end
+*/
 
    call SysMkDir curdir'\Utils'
    if translate(directory(curdir'\Utils')) \= translate(curdir'\Utils') then
