@@ -835,6 +835,7 @@ BOOL PMMkDir(HWND hwnd, CHAR * filename, BOOL copy);
 void SetTargetDir(HWND hwnd, BOOL justshow);
 
 /* srchpath.c */
+INT RunFM2Util(CHAR *appname, CHAR *filename);
 CHAR *first_path(CHAR * path, CHAR * ret);
 CHAR *searchapath(CHAR * path, CHAR * filename);
 CHAR *searchpath(CHAR * filename);
@@ -867,7 +868,6 @@ VOID EditArchiverDefinition(HWND hwnd);
 
 /* systemf.c */
 BOOL ShowSession(HWND hwnd, PID pid);
-INT RunFM2Util(CHAR *appname, CHAR *filename);
 INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
 	       CHAR ** list, CHAR * prompt);
 INT runemf2(INT type, HWND hwnd, CHAR * directory, CHAR * environment,

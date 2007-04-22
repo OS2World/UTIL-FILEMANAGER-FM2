@@ -39,45 +39,9 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2,RunFM2Util)
+#pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2)
 
 #define MAXSTRG (4096)			/* used to build command line strings */
-
-//== RunFM2Util() Find and run an app from the FM2utilities ==
-//== Search PATH plus 2 default install dirs ==
-
-INT RunFM2Util(CHAR *appname, CHAR *filename)
-{
-    CHAR fbuf[CCHMAXPATH];
-    APIRET rc, ret = -1;
-
-    rc = DosSearchPath(SEARCH_IGNORENETERRS |SEARCH_ENVIRONMENT |
-		       SEARCH_CUR_DIRECTORY,"PATH",
-		       appname, fbuf, CCHMAXPATH - 1);
-      if (rc != 0) {
-	if (rc != 2){
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DosSearchPath", appname);
-	return ret;
-	}
-	else {
-	rc = DosSearchPath(0, "UTILS;..\\FM2Utils",
-			   appname, fbuf, CCHMAXPATH - 1);
-	    if (rc != 0 && rc != 2){
-	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-			"DosSearchPath", appname);
-	      return ret;
-	    }
-      }
-    }
-    ret = runemf2(SEPARATE | WINDOWED,
-                  HWND_DESKTOP,
-                  NULL,
-                  NULL,
-                  "%s \"%s\"",
-		  fbuf, filename);
-    return ret;
-}
 
 //== ShowSession() bring session for foreground ==
 

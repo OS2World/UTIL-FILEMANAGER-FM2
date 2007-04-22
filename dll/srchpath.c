@@ -1,12 +1,73 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Path search Functions
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003, 2007 Steven H.Levine
+
+  22 Apr 07 GKY Add RunFM2Util to find and run apps from the FM2Utilities
+
+***********************************************************************/
+#define INCL_WIN
+#define INCL_WINERRORS
 #define INCL_DOS
+#define INCL_DOSERRORS
 
 #include <os2.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
+//#include <ctype.h>
+//#include <time.h>
+
+#include "fm3dll.h"
+#include "fm3dlg.h"
+#include "fm3str.h"
+
+static PSZ pszSrcFile = __FILE__;
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(MISC9,first_path,searchapath,searchpath)
+#pragma alloc_text(MISC9,first_path,searchapath,searchpath,RunFM2Util)
+
+//== RunFM2Util() Find and run an app from the FM2utilities ==
+//== Search PATH plus 2 default install dirs ==
+
+INT RunFM2Util(CHAR *appname, CHAR *filename)
+{
+    CHAR fbuf[CCHMAXPATH];
+    APIRET rc, ret = -1;
+
+    rc = DosSearchPath(SEARCH_IGNORENETERRS |SEARCH_ENVIRONMENT |
+		       SEARCH_CUR_DIRECTORY,"PATH",
+		       appname, fbuf, CCHMAXPATH - 1);
+      if (rc != 0) {
+	if (rc != 2){
+	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "DosSearchPath", appname);
+	return ret;
+	}
+	else {
+	rc = DosSearchPath(0, "UTILS;..\\FM2Utils",
+			   appname, fbuf, CCHMAXPATH - 1);
+	    if (rc != 0 && rc != 2){
+	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+			"DosSearchPath", appname);
+	      return ret;
+	    }
+      }
+    }
+    ret = runemf2(SEPARATE | WINDOWED,
+                  HWND_DESKTOP,
+                  NULL,
+                  NULL,
+                  "%s \"%s\"",
+		  fbuf, filename);
+    return ret;
+}
 
 CHAR *first_path(CHAR * path, CHAR * ret)
 {
