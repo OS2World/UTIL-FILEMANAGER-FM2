@@ -279,3 +279,4 @@ EXPORTS   InitFM3DLL                                  @1      NONAME
          GetPString                                   @265    NONAME
          FM3DllHandle                                 @266    NONAME
          RootName                                     @267    NONAME
+         RunFM2Util				      @268    NONAME

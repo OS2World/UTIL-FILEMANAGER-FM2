@@ -1768,7 +1768,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (li->type == IDM_MCIPLAY) {
 
                 FILE *fp;
-                CHAR fbuf[CCHMAXPATH];
 
 		fp = xfopen("$FM2PLAY.$$$", "w", pszSrcFile, __LINE__);
 		if (fp) {
@@ -1777,23 +1776,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    fprintf(fp, "%s\n", li->list[x]);
 		  fprintf(fp, ";end\n");
                   fclose(fp);
-                  if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
-		                 SEARCH_CUR_DIRECTORY,
-                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1)){
-                    runemf2(SEPARATE | WINDOWED,
-	                    HWND_DESKTOP,
-	                    NULL,
-	                    NULL,
-	                    "%sFM2PLAY.EXE /@$FM2PLAY.$$$",
-                            "UTILS\\");
-                  }
-                   else {
-                     runemf2(SEPARATE | WINDOWED,
-	                     HWND_DESKTOP,
-	                     NULL,
-	                     NULL,
-	                     "FM2PLAY.EXE /@$FM2PLAY.$$$");
-                  }
+                  RunFM2Util("FM2PLAY.EXE", "/@$FM2PLAY.$$$");
                	}
 	      }
 	      else if (li->type == IDM_PRINT) {

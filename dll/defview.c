@@ -41,7 +41,6 @@ BOOL ShowMultimedia(CHAR * filename)
   static BOOL no_mmos2 = FALSE;
   BOOL played = FALSE;
   CHAR loaderror[CCHMAXPATH];
-  CHAR fbuf[CCHMAXPATH];
   HMODULE MMIOModHandle = NULLHANDLE;
   PMMIOIDENTIFYFILE pMMIOIdentifyFile = NULL;
   PMMIOGETINFO pMMIOGetInfo = NULL;
@@ -157,26 +156,9 @@ BOOL ShowMultimedia(CHAR * filename)
   /* if identified and not FOURCC_DOS */
   if (!rc && mmFormatInfo.fccIOProc != FOURCC_DOS) {
     if (mmFormatInfo.ulMediaType == MMIO_MEDIATYPE_IMAGE &&
-	(mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
-        /* is an image that can be translated */
-      if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
-		        SEARCH_CUR_DIRECTORY,
-                        "PATH", "IMAGE.EXE", fbuf, CCHMAXPATH - 1)){
-        runemf2(SEPARATE | WINDOWED,
-	        HWND_DESKTOP,
-	        NULL,
-	        NULL,
-	        "%sIMAGE.EXE \"%s\"",
-                "UTILS\\", filename);
-      }
-      else {
-        runemf2(SEPARATE | WINDOWED,
-	        HWND_DESKTOP,
-	        NULL,
-	        NULL,
-	        "IMAGE.EXE \"%s\"",
-                filename);
-      }
+        (mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
+      // is an image that can be translated
+      RunFM2Util("IMAGE.EXE", filename);
       played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
@@ -188,25 +170,9 @@ BOOL ShowMultimedia(CHAR * filename)
               __FILE__, __LINE__, p); fflush(stdout);*/
           if  (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC"))
               OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
-          else if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
-		                 SEARCH_CUR_DIRECTORY,
-                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1)){
-                 runemf2(SEPARATE | WINDOWED,
-	                 HWND_DESKTOP,
-	                 NULL,
-	                 NULL,
-	                 "%sFM2PLAY.EXE \"%s\"",
-                         "UTILS\\" , filename);
-               }
-               else {
-                 runemf2(SEPARATE | WINDOWED,
-	                 HWND_DESKTOP,
-	                 NULL,
-	                 NULL,
-	                 "FM2PLAY.EXE \"%s\"",
-                         filename);
-               }
-      played = TRUE;
+          else
+            RunFM2Util("FM2PLAY.EXE", filename);
+          played = TRUE;
     }
   }
 

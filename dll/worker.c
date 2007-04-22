@@ -1030,13 +1030,15 @@ VOID MassAction(VOID * args)
 	  case IDM_MCIPLAY:
 	    {
 	      register INT x;
-              register ULONG total = strlen("FM2PLAY.EXE ");
+              register ULONG total;
               CHAR fbuf[CCHMAXPATH];
 
               if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 	                        SEARCH_CUR_DIRECTORY,
                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
-		total += strlen("UTILS\\");
+                total += strlen("..\\FM2UTILS\\");
+              else
+                total = strlen(fbuf);
 	      for (x = 0; wk->li->list[x]; x++)
 		total += (strlen(wk->li->list[x]) + 1 +
 			  (needs_quoting(wk->li->list[x]) * 2));
@@ -1051,23 +1053,7 @@ VOID MassAction(VOID * args)
 		    fprintf(fp, "%s\n", wk->li->list[x]);
 		  fprintf(fp, ";end\n");
                   fclose(fp);
-                  if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
-		                 SEARCH_CUR_DIRECTORY,
-                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1)){
-                    runemf2(SEPARATE | WINDOWED,
-	                    HWND_DESKTOP,
-	                    NULL,
-	                    NULL,
-	                    "%sFM2PLAY.EXE /#$FM2PLAY.$$$",
-                            "UTILS\\");
-                  }
-                   else {
-                     runemf2(SEPARATE | WINDOWED,
-	                     HWND_DESKTOP,
-	                     NULL,
-	                     NULL,
-	                     "FM2PLAY.EXE /#$FM2PLAY.$$$");
-                  }
+                  RunFM2Util("FM2PLAY.EXE", "/#$FM2PLAY.$$$");
 		  break;
 		}
 	      }
