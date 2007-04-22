@@ -16,6 +16,7 @@
   19 Apr 07 SHL Rework DeleteDragitemStrHandles to be FreeDragInfoData
   19 Apr 07 SHL Add more drag/drop error checking
   19 Apr 07 SHL Optimize DRAGITEM DRAGIMAGE array access
+  21 Apr 07 SHL Avoid odd first time drag failure
 
 ***********************************************************************/
 
@@ -217,6 +218,9 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
   CHAR szFile[CCHMAXPATH], szBuffer[CCHMAXPATH];
   DRAGIMAGE *paDImgIcons = NULL, *pDImg, dimgFakeIcon;
   BOOL ok;
+  UINT c;
+
+  static BOOL first_drag = TRUE;
 
   // fixme to be multi-drag safe - count needs to be in DCD etc. and passed to UnHilite
   NumItemsToUnhilite = 0;
@@ -332,20 +336,32 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
       ok = ok && pDItem->hstrTargetName;
       if (!ok) {
 	DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
-	// Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,"DrgAddStrHandle");
-	if (pDItem->hstrType)
-	  DrgDeleteStrHandle(pDItem->hstrType);
-	if (pDItem->hstrRMF)
-	  DrgDeleteStrHandle(pDItem->hstrRMF);
-	if (pDItem->hstrContainerName)
-	  DrgDeleteStrHandle(pDItem->hstrContainerName);
-	if (pDItem->hstrSourceName)
-	  DrgDeleteStrHandle(pDItem->hstrSourceName);
-	if (pDItem->hstrTargetName)
-	  DrgDeleteStrHandle(pDItem->hstrTargetName);
-	xfree(pDItem);
-	// ppDItem[ulNumfiles] = NULL;	// Why bother - we can count - fixme to be gone
-	NumItemsToUnhilite = ulNumfiles + 1;	// Use +1 to ensure non-zero on any failure
+	// If we have string handle add overflow, release corrupt DragItem
+	// We release 3 more to work around 1st time drag failure reported by Gregg
+	// fixme to know why this happens - PM may need to create a handle?
+	c = first_drag ? 4 : 1;
+	first_drag = FALSE;
+	for (; c > 0 && ulNumfiles > 0; c--) {
+	  if (pDItem->hstrType)
+	    DrgDeleteStrHandle(pDItem->hstrType);
+	  if (pDItem->hstrRMF)
+	    DrgDeleteStrHandle(pDItem->hstrRMF);
+	  if (pDItem->hstrContainerName)
+	    DrgDeleteStrHandle(pDItem->hstrContainerName);
+	  if (pDItem->hstrSourceName)
+	    DrgDeleteStrHandle(pDItem->hstrSourceName);
+	  if (pDItem->hstrTargetName)
+	    DrgDeleteStrHandle(pDItem->hstrTargetName);
+	  xfree(pDItem);
+	  // Last item not yet count so only decrement by one less than loop count
+	  // Unhilite code will adjust this when unhighliting
+	  if (c > 1) {
+	    ulNumfiles--;
+	    pDItem = ppDItem[ulNumfiles];
+	  }
+	}
+	// Set count to actual count + 1 to ensure count non-zero on any failure
+	NumItemsToUnhilite = ulNumfiles + 1;
 	break;
       }
       pDItem->fsControl = isdir ? DC_CONTAINER : 0;
@@ -363,7 +379,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
       }
       ulNumfiles++;
       // ppDItem[ulNumfiles] = NULL;	// Why bother - can't we count - fixme to be gone?
-    }
+    } // if filesystem object
     else {
       // Archive object
       if (ulNumfiles + 3L > ulNumDIAlloc) {
@@ -438,18 +454,31 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	ok = ok && pDItem->hstrTargetName;
 	if (!ok) {
 	  DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
-	  if (pDItem->hstrType)
-	    DrgDeleteStrHandle(pDItem->hstrType);
-	  if (pDItem->hstrRMF)
-	    DrgDeleteStrHandle(pDItem->hstrRMF);
-	  if (pDItem->hstrContainerName)
-	    DrgDeleteStrHandle(pDItem->hstrContainerName);
-	  if (pDItem->hstrSourceName)
-	    DrgDeleteStrHandle(pDItem->hstrSourceName);
-	  if (pDItem->hstrTargetName)
-	    DrgDeleteStrHandle(pDItem->hstrTargetName);
-	  xfree(pDItem);
-	  // pDItem = NULL;		// Why bother - fixme to be gone?
+	  // If we have string handle add overflow, release corrupt DragItem
+	  // We release 3 more to work around 1st time drag failure reported by Gregg
+	  // fixme to know why this happens - PM may need to create a handle?
+	  c = first_drag ? 4 : 1;
+	  first_drag = FALSE;
+	  for (; c > 0 && ulNumfiles > 0; c--) {
+	    if (pDItem->hstrType)
+	      DrgDeleteStrHandle(pDItem->hstrType);
+	    if (pDItem->hstrRMF)
+	      DrgDeleteStrHandle(pDItem->hstrRMF);
+	    if (pDItem->hstrContainerName)
+	      DrgDeleteStrHandle(pDItem->hstrContainerName);
+	    if (pDItem->hstrSourceName)
+	      DrgDeleteStrHandle(pDItem->hstrSourceName);
+	    if (pDItem->hstrTargetName)
+	      DrgDeleteStrHandle(pDItem->hstrTargetName);
+	    xfree(pDItem);
+	    // Last item not yet count so only decrement by one less than loop count
+	    if (c > 1) {
+	      ulNumfiles--;
+	      pDItem = ppDItem[ulNumfiles];
+	    }
+	  }
+	  // Set count to actual count + 1 to ensure count non-zero on any failure
+	  // Unhilite code will adjust this when unhighliting
 	  NumItemsToUnhilite = ulNumfiles + 1;
 	  break;
 	}
@@ -461,7 +490,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	ulNumfiles++;
       }
       // ppDItem[ulNumfiles] = NULL;	// Why bother - fixme to be gone?
-    }
+    } // if archive object
     WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 	       MPFROM2SHORT(TRUE, CRA_SOURCE));
 
