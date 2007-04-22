@@ -16,6 +16,7 @@
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Use FreeDragInfoData
   19 Apr 07 SHL Add more drag/drop error checking
+  21 Apr 07 SHL Add debug code to track down reason for PMERR_SOURCE_SAME_AS_TARGET
 
 ***********************************************************************/
 
@@ -267,8 +268,10 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
   *szArc = 0;
   pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
   pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-  if (!pDInfo)
+  if (!pDInfo) {
+    Runtime_Error(pszSrcFile, __LINE__, "No drag info");
     return NULL;
+  }
   if (!DrgAccessDraginfo(pDInfo)) {
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
 	    "DrgAccessDraginfo");
@@ -423,7 +426,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 			 DM_ENDCONVERSATION,
 			 MPFROMLONG(pDItem->ulItemID),
 			 MPFROMLONG(DMFL_TARGETFAIL));
-  } // for
+  } // for curitem
 
   if (files && numfiles && files[0] && cbFile && ulitemID) {
     li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
@@ -462,6 +465,9 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
       FreeList(files);
   }
 
+  // fixme to know why PM thinks drop not done
+  // this will avoid DrgFreeDraginfo complaints from FreeDragInfoData
+  DbgMsg(pszSrcFile, __LINE__, "calling FreeDragInfoData");
   FreeDragInfoData(hwndCnr, pDInfo);
 
   return li;
