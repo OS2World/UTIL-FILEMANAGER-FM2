@@ -1036,7 +1036,7 @@ VOID MassAction(VOID * args)
               if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 	                        SEARCH_CUR_DIRECTORY,
                                 "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
-                total += strlen("..\\FM2UTILS\\");
+                total += strlen("..\\FM2UTILS\\FM2PLAY.EXE ");
               else
                 total = strlen(fbuf);
 	      for (x = 0; wk->li->list[x]; x++)
