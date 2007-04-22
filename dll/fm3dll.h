@@ -1345,7 +1345,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fLookInDir, fSwitchTree, fSwitchTreeOnFocus, fDrivebar,
   fSwitchTreeExpand, fCollapseFirst, fFilesInTree, fNoDead,
   fThreadNotes, fOkayMinimize, fRunning, fDullMin, fBlueLED,
-  fViewChild, fShowEnv, fLeaveTree,  fNoFoldMenu,                 //fAddUtils,
+  fViewChild, fShowEnv, fLeaveTree,  fNoFoldMenu,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM;

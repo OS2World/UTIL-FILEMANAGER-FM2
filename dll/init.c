@@ -449,24 +449,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   ArgDriveFlags(argc, argv);
   FillInDriveFlags(NULL);
 
-  /*{ Removed so can use either path or \utils for fm2play.exe and image.exe
-     try to ensure that FM/2 Utilities are available
-    CHAR curpath[CCHMAXPATH + 8], *env;
-    FILESTATUS3 fs3;
-
-    save_dir2(curpath);
-    strcat(curpath, "\\UTILS");
-    if (!DosQueryPathInfo(curpath,
-			  FIL_STANDARD,
-			  &fs3,
-			  sizeof(fs3)) && (fs3.attrFile & FILE_DIRECTORY)) {
-      env = getenv("PATH");
-      if (env) {
-	if (!stristr(curpath, env))
-	  fAddUtils = TRUE;
-      }
-    }
-  } */
   if (!*profile)
     strcpy(profile, "FM3.INI");
   mypid = getpid();

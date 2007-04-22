@@ -21,8 +21,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-//#include <ctype.h>
-//#include <time.h>
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
