@@ -55,7 +55,7 @@ Many of the programs included within FM/2 Utilities are intended to be run from 
 <TEXT>
 Please select/deselect the desired configuration option(s).
 
-The CONFIG.SYS modification is the addition of the FM/2 Utilities installation directory to end of the PATH. If the FM/2 Utilities directory is already on the PATH it will NOT be added a second time.
+The CONFIG.SYS modification is the addition of the FM/2 Utilities installation directory to end of the PATH (if it is not already on the PATH), simplifying access to the utiities from the command line.
 
 Uncheck "Modify CONFIG.SYS" if you do not want this change to your PATH.
 </TEXT>
@@ -63,3 +63,10 @@ Uncheck "Modify CONFIG.SYS" if you do not want this change to your PATH.
 
 </BODY>
 </WARPIN>
+
+
+<!--
+ or if you do not plan to use the utilities from the command line
+If "Modify CONFIG.SYS" remains checked and the FM/2 Utilities directory is already on the PATH it will NOT be added a second time.
+-->
+
