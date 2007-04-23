@@ -1,0 +1,65 @@
+<WARPIN>
+
+<HEAD>
+
+<PCK INDEX=7
+  PACKAGEID="Netlabs\FM2 Utilities\FM2Utils\1\0\0"
+  TITLE="FM/2 Utilities"
+  TARGET="$(WARPIN_DEFAULTTOOLSPATH)"
+  SELECT
+  CREATEOBJECT="WPFolder|FM/2 Utilities|<FM3_Folder>|OBJECTID=<FM2_Utilities>;"
+  CREATEOBJECT="WPProgram|FM/2 Utils Doc|<FM2_Utilities>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(7)\fm2utils.doc;OBJECTID=<FM2UtilsDoc>;"
+  CREATEOBJECT="WPProgram|Make Object|<FM2_Utilities>|EXENAME=$(7)\makeobj.cmd;PARAMETERS=%*;OBJECTID=<FM2MakeObj>;"
+  CREATEOBJECT="WPProgram|Image Viewer|<FM2_Utilities>|EXENAME=$(7)\image.exe;PARAMETERS=%*;OBJECTID=<FM2Imageexe>;"
+  CREATEOBJECT="WPProgram|Reboot w/ Pause|<FM2_Utilities>|EXENAME=$(7)\rebootp.exe;PARAMETERS=%*;OBJECTID=<FM2rebootp>;"
+  CREATEOBJECT="WPProgram|Iconify|<FM2_Utilities>|EXENAME=$(7)\iconify.exe;PARAMETERS=%*;OBJECTID=<FM2Iconify>;"
+  CREATEOBJECT="WPProgram|Delete Tree|<FM2_Utilities>|EXENAME=*;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/c ($(7)\deltree.exe [Enter directory to delete:] || pause);OBJECTID=<FM2Deltree>;"
+  CONFIGSYS="SET PATH=$(7); | ADDRIGHT"
+>This package contains the FM/2 Utilities, a
+collection of more than 60  utilities which may
+be used with or without FM/2. Included are
+DELTREE, HPFSOPT, RENCASE, MOV, KILL/2,
+PTREE and many more.
+</PCK>
+
+</HEAD>
+
+<BODY>
+
+<PAGE INDEX=1 TYPE=README>
+<NEXTBUTTON TARGET=2>~Next</NEXTBUTTON>
+<TEXT>
+A short description of each utility is included at the end of the readme below. A special note of thanks to Mark Kimes for making these utilities freely available.
+</TEXT>
+<README EXTRACTFROMPCK="7">fm2utils.doc</README>
+</PAGE>
+
+<PAGE INDEX=2 TYPE=README>
+<NEXTBUTTON TARGET=3>~I agree</NEXTBUTTON>
+<TEXT>
+By pressing the "I agree" button, you agree to all terms and conditions of the license agreement below.
+</TEXT>
+<README EXTRACTFROMPCK="7">license.txt</README>
+</PAGE>
+
+<!-- The TYPE=CONTAINER will list the packages which can be installed. -->
+<PAGE INDEX=3 TYPE=CONTAINER>
+<NEXTBUTTON TARGET=4>~Next</NEXTBUTTON>
+<TEXT>
+Many of the programs included within FM/2 Utilities are intended to be run from the command line. If the installation directory is not already on the PATH, then this installation will ensure that your installation directory will be on the PATH after the next reboot (unless you specifiy otherwise on the next page).
+</TEXT>
+</PAGE>
+
+<PAGE INDEX=4 TYPE=CONFIGURE>
+<NEXTBUTTON TARGET=0>I~nstall</NEXTBUTTON>
+<TEXT>
+Please select/deselect the desired configuration option(s).
+
+The CONFIG.SYS modification is the addition of the FM/2 Utilities installation directory to end of the PATH. If the FM/2 Utilities directory is already on the PATH it will NOT be added a second time.
+
+Uncheck "Modify CONFIG.SYS" if you do not want this change to your PATH.
+</TEXT>
+</PAGE>
+
+</BODY>
+</WARPIN>
