@@ -330,9 +330,9 @@ System configuration error:
 Environment variable %s is not set.  This variable should be set in CONFIG.SYS to point to all directories containing %s files.
 No files found.
 FM/2: View HELP files
-\nModule: %s Line number: %d
+\nModule: %s Line number: %u 
                                   Error Message Information
-\nModule: %s Line number: %d\nOS/2 error: %d\nClass: %s\nAction: %s\nLocation: %s
+\nModule: %s Line number: %u\nOS/2 error: %d\nClass: %s\nAction: %s\nLocation: %s
                                   OS/2 Error Message Information
 Out of resource
 Temporary situation

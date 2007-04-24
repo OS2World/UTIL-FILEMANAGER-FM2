@@ -23,6 +23,7 @@
   18 Apr 07 SHL showMsg: correct selective logging checks
   19 Apr 07 SHL Add DbgMsg
   20 Apr 07 SHL Correct IDS_GENERR1TEXT formatting
+  23 Apr 07 SHL Add Win_Error_NoMsgBox.  Rework others
 
 ***********************************************************************/
 
@@ -42,99 +43,41 @@
 #pragma data_seg(DATA1)
 #pragma alloc_text(FMINPUT,Win_Error,Dos_Error,saymsg,showMsg)
 
+static VOID formatWinError(PSZ pszBuf, UINT cBufBytes, HWND hwndErr, HWND hwndOwner,
+			   PCSZ pszSrcFile, UINT uSrcLineNo,
+			   PCSZ pszFmt, va_list pva);
+
 static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog);
 
-//== Win_Error: report Win...() error using passed message string ===
+//=== DbgMsg: output debug message stderr ===
 
-VOID Win_Error(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName, ULONG ulLineNo,
-	       PCSZ pszFmt, ...)
+VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
-  PERRINFO pErrInfoBlk;		/* Pointer to ERRINFO structure filled
-				   by WinGetErrorInfo */
-  PSZ pszOffset;		/* Pointer to current error message returned
-				   by WinGetErrorInfo */
-  CHAR szMsg[4096];
-  PSZ psz;
-  HAB hab;
   va_list va;
 
-  if (hwndErr == NULLHANDLE)
-    hab = (HAB)0;
-  else
-    hab = WinQueryAnchorBlock(hwndErr);
-
-  // Format callers message
-  va_start(va, pszFmt);
-  szMsg[sizeof(szMsg) - 1] = 0;
-  vsprintf(szMsg, pszFmt, va);
-  va_end(va);
-
-  if (szMsg[sizeof(szMsg) - 1]) {
-    fprintf(stderr, "Buffer overflow in Win_Error - need %u bytes\n", strlen(szMsg) + 1);
-    fflush(stderr);
+  // OK for source file name to be null
+  fprintf(stderr, "%s %u", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo);
+  // If format null want just file and line
+  if (pszFmt) {
+    fputc(' ', stderr);
+    va_start(va, pszFmt);
+    vfprintf(stderr, pszFmt, va);
+    va_end(va);
   }
+  fputc('\n', stderr);
+  fflush(stderr);
 
-  if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed.");		// Assume simple function name
-
-  // Append file name and line number
-  sprintf(szMsg + strlen(szMsg),
-	  GetPString(IDS_GENERR1TEXT), pszFileName, ulLineNo);
-
-  // Get last PM error for the current thread
-  pErrInfoBlk = WinGetErrorInfo(hab);
-  if (!pErrInfoBlk) {
-    psz = szMsg + strlen(szMsg);
-    strcpy(psz, " WinGetErrorInfo failed.");
-  }
-  else {
-    if (!hwndOwner)
-      hwndOwner = HWND_DESKTOP;
-    /* Find message offset in array of message offsets
-       Assume 1 message - fixme?
-     */
-    pszOffset = ((PSZ) pErrInfoBlk) + pErrInfoBlk->offaoffszMsg;
-    /* Address error message in array of messages and
-       append error message to source code linenumber
-     */
-    psz = szMsg + strlen(szMsg);
-    sprintf(psz, "#0x%04x \"", ERRORIDERROR(pErrInfoBlk->idError));
-    psz += strlen(psz);
-    strcpy(psz, ((PSZ) pErrInfoBlk) + *(PSHORT) pszOffset);
-    psz += strlen(psz);
-    // Chop trailing mush
-    psz--;
-    while (*psz == '\r' || *psz == '\n' || *psz == ' ')
-      *psz-- = 0;
-    if (*psz)
-      psz++;
-    strcpy(psz, "\"");
-    WinFreeErrorInfo(pErrInfoBlk);	// Free resource segment
-  }
-
-  showMsg(MB_ENTER | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_GENERR2TEXT),
-	  szMsg, TRUE);
-
-}					// Win_Error
-
-//== Win_Error2: report Win...() error using passed message id ===
-
-VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName,
-		ULONG ulLineNo, UINT idMsg)
-{
-  Win_Error(hwndErr, hwndOwner, pszFileName, ulLineNo, GetPString(idMsg));
-
-}					// Win_Error2
+} // DbgMsg
 
 //== Dos_Error: report Dos...() error using passed message string ===
 
-INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
-	      ULONG ulLineNo, PCSZ pszFmt, ...)
+INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
+	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
-  ULONG Class;			// Error class
-  ULONG action;			// Error action
-  ULONG Locus;			// Error location
+  ULONG Class;				// Error class
+  ULONG action;				// Error action
+  ULONG Locus;				// Error location
   ULONG ulMsgLen;
   CHAR *pszMsgStart;
   CHAR *psz;
@@ -155,14 +98,14 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
   }
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed.");		// Assume simple function name
+    strcat(szMsg, " failed");		// Assume simple function name
 
   DosErrClass(ulRC, &Class, &action, &Locus);
 
   sprintf(szMsg + strlen(szMsg),
 	  GetPString(IDS_DOSERR1TEXT),
-	  pszFileName,
-	  ulLineNo,
+	  pszSrcFile,
+	  uSrcLineNo,
 	  ulRC,
 	  GetPString(IDS_ERRCLASS1TEXT + (Class - 1)),
 	  GetPString(IDS_ERRACTION1TEXT + (action - 1)),
@@ -202,16 +145,86 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
   return showMsg(mb_type | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_DOSERR2TEXT),
 		 szMsg, TRUE);
 
-}					// Dos_Error
+} // Dos_Error
 
 //== Dos_Error2: report Dos...() error using passed message id ===
 
-INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
-	       ULONG ulLineNo, UINT idMsg)
+INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
+	       PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 {
-  return Dos_Error(mb_type, ulRC, hwndOwner, pszFileName, ulLineNo,
+  return Dos_Error(mb_type, ulRC, hwndOwner, pszSrcFile, uSrcLineNo,
 		   GetPString(idMsg));
-}					// Dos_Error2
+} // Dos_Error2
+
+/**
+ * Format last PM error into passed buffer
+ */
+
+static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
+			   HWND hwndErr, HWND hwndOwner,
+			   PCSZ pszSrcFile, UINT uSrcLineNo,
+			   PCSZ pszFmt, va_list pva)
+{
+  PERRINFO pErrInfoBlk;		/* Pointer to ERRINFO structure filled
+				   by WinGetErrorInfo */
+  PSZ pszOffset;		/* Pointer to current error message returned
+				   by WinGetErrorInfo */
+  PSZ psz;
+  HAB hab;
+
+  if (hwndErr == NULLHANDLE)
+    hab = (HAB)0;
+  else
+    hab = WinQueryAnchorBlock(hwndErr);
+
+  // Format callers message
+  pszBuf[cBufBytes - 1] = 0;
+  vsprintf(pszBuf, pszFmt, pva);
+
+  if (pszBuf[cBufBytes - 1]) {
+    fprintf(stderr, "Buffer overflow in formatWinError - need %u bytes\n", strlen(pszBuf) + 1);
+    fflush(stderr);
+  }
+
+  if (strchr(pszBuf, ' ') == NULL)
+    strcat(pszBuf, " failed");		// Assume simple function name
+
+  // Append file name and line number and trailing space
+  sprintf(pszBuf + strlen(pszBuf),
+	  GetPString(IDS_GENERR1TEXT), pszSrcFile, uSrcLineNo);
+
+  // Get last PM error for the current thread
+  pErrInfoBlk = WinGetErrorInfo(hab);
+  if (!pErrInfoBlk) {
+    psz = pszBuf + strlen(pszBuf);
+    strcpy(psz, "WinGetErrorInfo failed");
+  }
+  else {
+    if (!hwndOwner)
+      hwndOwner = HWND_DESKTOP;
+    /* Find message offset in array of message offsets
+       Assume 1 message - fixme?
+     */
+    pszOffset = ((PSZ) pErrInfoBlk) + pErrInfoBlk->offaoffszMsg;
+    /* Address error message in array of messages and
+       append error message to source code linenumber
+     */
+    psz = pszBuf + strlen(pszBuf);
+    sprintf(psz, "#0x%04x \"", ERRORIDERROR(pErrInfoBlk->idError));
+    psz += strlen(psz);
+    strcpy(psz, ((PSZ) pErrInfoBlk) + *(PSHORT) pszOffset);
+    psz += strlen(psz);
+    // Chop trailing mush
+    psz--;
+    while (*psz == '\r' || *psz == '\n' || *psz == ' ')
+      *psz-- = 0;
+    if (*psz)
+      psz++;
+    strcpy(psz, "\"");
+    WinFreeErrorInfo(pErrInfoBlk);	// Free resource segment
+  }
+
+} // formatWinError
 
 //== Runtime_Error: report runtime library error using passed message string ===
 
@@ -233,14 +246,14 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
   }
 
   if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed.");		// Assume simple function name
+    strcat(szMsg, " failed");		// Assume simple function name
 
   sprintf(szMsg + strlen(szMsg),
 	  GetPString(IDS_GENERR1TEXT), pszSrcFile, uSrcLineNo);
 
   showMsg(MB_ICONEXCLAMATION, HWND_DESKTOP, DEBUG_STRING, szMsg, TRUE);
 
-}					// Runtime_Error
+} // Runtime_Error
 
 //== Runtime_Error2: report runtime library error using passed message id ===
 
@@ -248,7 +261,7 @@ VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 {
   Runtime_Error(pszSrcFile, uSrcLineNo, GetPString(idMsg));
 
-}					// Runtime_Error2
+} // Runtime_Error2
 
 // fixme to be rename to Misc_Error
 
@@ -271,11 +284,12 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
 
   return showMsg(mb_type, hwnd, pszTitle, szMsg, FALSE);
 
-}					// saymsg
+} // saymsg
 
 //=== showMsg: display error popup ===
 
-static APIRET showMsg(ULONG mb_type, HWND hwndOwner, PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog)
+static APIRET showMsg(ULONG mb_type, HWND hwndOwner,
+		      PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog)
 {
   if (wantLog) {
     fputs(pszMsg, stderr);
@@ -295,23 +309,59 @@ static APIRET showMsg(ULONG mb_type, HWND hwndOwner, PCSZ pszTitle, PCSZ pszMsg,
 		       mb_type | MB_MOVEABLE);
 } // showMsg
 
-//=== DbgMsg: output debug message stderr ===
+//== Win_Error: report Win...() error using passed message string ===
 
-VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
+VOID Win_Error(HWND hwndErr, HWND hwndOwner,
+	       PCSZ pszSrcFile, UINT uSrcLineNo,
+	       PCSZ pszFmt, ...)
 {
+  CHAR szMsg[4096];
+  PSZ psz;
+  HAB hab;
   va_list va;
 
-  // OK for source file name to be null
-  fprintf(stderr, "%s %u", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo);
-  // If format null want just file and line
-  if (pszFmt) {
-    fputc(' ', stderr);
-    va_start(va, pszFmt);
-    vfprintf(stderr, pszFmt, va);
-    va_end(va);
-  }
+  // Format callers message
+  va_start(va, pszFmt);
+  formatWinError(szMsg, sizeof(szMsg), hwndErr, hwndOwner, pszSrcFile, uSrcLineNo, pszFmt, va);
+  va_end(va);
+
+  showMsg(MB_ENTER | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_GENERR2TEXT),
+	  szMsg, TRUE);
+
+} // Win_Error
+
+//== Win_Error2: report Win...() error using passed message id ===
+
+VOID Win_Error2(HWND hwndErr, HWND hwndOwner,
+		PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
+{
+  Win_Error(hwndErr, hwndOwner, pszSrcFile, uSrcLineNo, GetPString(idMsg));
+
+} // Win_Error2
+
+/**
+  * Output PM error messsage to stderr
+  * This does to same reporting as Win_Error, but bypasses the
+  * message box popup.
+  * Use this version when the popup would hang PM.
+  */
+
+VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
+			PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
+{
+  CHAR szMsg[4096];
+  va_list va;
+
+  // Format callers message
+  va_start(va, pszFmt);
+  formatWinError(szMsg, sizeof(szMsg), hwndErr, hwndOwner, pszSrcFile, uSrcLineNo, pszFmt, va);
+  va_end(va);
+
+  fputs(szMsg, stderr);
+  fputc('\n', stderr);
   fputc('\n', stderr);
   fflush(stderr);
 
-} // DbgMsg
+  DosBeep(250, 100);
 
+} // Win_Error_NoMsgBox

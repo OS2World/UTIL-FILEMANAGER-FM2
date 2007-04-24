@@ -44,6 +44,7 @@
   19 Apr 07 SHL Rework DeleteDragitemStrHandles to be FreeDragInfoData
   19 Apr 07 SHL Add DbgMsg.  Sync with AcceptOneDrop GetOneDrop mods.
   21 Apr 07 GKY Find FM2Utils by path or utils directory eliminate fAddUtils global
+  23 Apr 07 SHL Add Win_Error_NoMsgBox
 
 ***********************************************************************/
 
@@ -146,7 +147,7 @@ PDRAGINFO APIENTRY DrgReallocDraginfo(PDRAGINFO pdinfoOld, ULONG cditem);
 #define EXTRA_RECORD_BYTES      (EXTRA_RECORD_BYTES2 + (CCHMAXPATHCOMP - 1))
 #define EXTRA_ARCRECORD_BYTES   (sizeof(ARCITEM) - sizeof(MINIRECORDCORE))
 #define ALLATTRS                (FILE_NORMAL | FILE_DIRECTORY | FILE_ARCHIVED |\
-                                 FILE_HIDDEN | FILE_READONLY | FILE_SYSTEM)
+				 FILE_HIDDEN | FILE_READONLY | FILE_SYSTEM)
 #define LISTTEMPROOT            "$FM2LI$T."
 
 #include "fm3dll2.h"			// SHL
@@ -632,18 +633,20 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent);
 BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
 
 /* error.c */
+VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
-	      PCSZ pszFileName, ULONG ulLineNo, PCSZ pszFmt, ...);
-INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszFileName,
-	       ULONG ulLineNo, UINT idMsg);
-VOID Win_Error(HWND hwndErr, HWND hwndOwner,
-	       PCSZ pszFileName, ULONG ulLineNo, PCSZ pszFmt, ...);
-VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszFileName,
-		ULONG ulLineNo, UINT idMsg);
+	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
+INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszSrcFile,
+	       UINT uSrcLineNo, UINT idMsg);
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg);
 APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...);
-VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
+VOID Win_Error(HWND hwndErr, HWND hwndOwner,
+	       PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
+VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszSrcFile,
+		UINT uSrcLineNo, UINT idMsg);
+VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
+			PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 
 /* valid.c */
 INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
