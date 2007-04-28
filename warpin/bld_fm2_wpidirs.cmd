@@ -20,7 +20,7 @@ call SysLoadFuncs
 signal on novalue     /* for debugging */
 
 n = setlocal()
-
+trace 'i'
 parse source . . thispgm
 thisdir = left(thispgm, lastpos('\', thispgm) - 1)
 if length(thisdir) = 2 then
@@ -140,15 +140,14 @@ ProcessArgs: procedure expose (globals)
    if right(WPI.src_basedir, 1) \= '\' then
       WPI.src_basedir = WPI.src_basedir || '\'
    if args == '' then
-/*
-      WPI.infile = 'BLD_FM2_WPIDIRS.TXT'
-*/
       WPI.infile = 'BLD_FM2_WPIDIRS.IN'
    else
       if left(args, 1) == '"' then
          parse var args '"' WPI.infile '"' .
       else
          WPI.infile = word(args, 1)
+   if stream(WPI.infile, 'c', 'query exists') == '' then
+      WPI.infile = 'BLD_FM2_WPIDIRS.TXT'
 return
 
 MakePackageDir: procedure expose (globals)
