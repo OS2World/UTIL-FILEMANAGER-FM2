@@ -20,7 +20,7 @@ call SysLoadFuncs
 signal on novalue     /* for debugging */
 
 n = setlocal()
-trace 'i'
+
 parse source . . thispgm
 thisdir = left(thispgm, lastpos('\', thispgm) - 1)
 if length(thisdir) = 2 then
