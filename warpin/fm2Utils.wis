@@ -7,7 +7,7 @@
   TITLE="FM/2 Utilities"
   TARGET="$(WARPIN_DEFAULTTOOLSPATH)"
   SELECT
-  CREATEOBJECT="WPFolder|FM/2 Utilities|<FM3_Folder>|OBJECTID=<FM2_Utilities>;"
+  CREATEOBJECT="WPFolder|FM/2 Utilities|<WP_DESKTOP>|OBJECTID=<FM2_Utilities>;"
   CREATEOBJECT="WPProgram|FM/2 Utils Doc|<FM2_Utilities>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(7)\fm2utils.doc;OBJECTID=<FM2UtilsDoc>;"
   CREATEOBJECT="WPProgram|Make Object|<FM2_Utilities>|EXENAME=$(7)\makeobj.cmd;PARAMETERS=%*;OBJECTID=<FM2MakeObj>;"
   CREATEOBJECT="WPProgram|Image Viewer|<FM2_Utilities>|EXENAME=$(7)\image.exe;PARAMETERS=%*;OBJECTID=<FM2Imageexe>;"
