@@ -868,7 +868,7 @@ BEGIN
                              -1,30, 96, 181, 8, DT_VCENTER  | NOT WS_GROUP
                              PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                              PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-                             // PRESPARAMS PP_FONTNAMESIZE, "9.Helvetica"
+                             PRESPARAMS PP_FONTNAMESIZE, "9.Helvetica"
         LISTBOX         CMD_LISTBOX, 4, 125, 248, 96, LS_HORZSCROLL |
                         WS_GROUP
         ENTRYFIELD      "", CMD_CL, 4, 106, 214, 8, ES_MARGIN | WS_GROUP
