@@ -31,8 +31,9 @@ anyone to create the WPI file needed for a Warpin installation of FM/2:
             c) Unzip the FM/2 distribution into <unzipped-dir>
             d) Perform the following COPY commands
                COPY <trunk-dir>\cfgmgr.cmd <unzippped-dir>
+               COPY <trunk-dir>\shadowmgr.cmd <unzippped-dir>
                COPY <trunk-dir>\utilsmgr.cmd <unzippped-dir>
-               COPY <trunk-dir>\readme.cmd <unzippped-dir>
+               COPY <trunk-dir>\readme <unzippped-dir>
                COPY <trunk-dir>\debugtools\fm2dump.cmd <unzippped-dir>
                COPY <trunk-dir>\debugtools\fm2dump2.cmd <unzippped-dir>
                (NOTE: You may want to make a CMD file of these.)
@@ -76,14 +77,13 @@ If you want to help develop the Warpin install for FM/2:
 KEY FILES USED IN CREATING THE FM2 WARPIN INSTALLATION FILE: FM2.WPI
 
 BLD_FM2_WPIDIRS.TXT, a text file which contains information on
-   -  the number of packages there are in the Warpin WPI file
-   -  the package numbers
    -  the files
       -  which packages they are a part of
       -  which they files can be found (to copy in preparation to
          building the WPI file
       -  which directories into which they should be installed (relative
          to the FM/2 installation directory)
+   -  the packages, if any, which have no files
    By defining this information outside of the programs that use it, this
    file greatly simplifies future changes. This file, as distributed, is
    customized for the script file (*.WIS) that is also included in this
@@ -101,17 +101,17 @@ BLD_FM2_WPIDIRS.CMD, a program which
    -  Copies the files from the FM/2 build subtree (or from an unzipped
       binary FM/2 distribution) into the subdirectories created above.
    -  Optional parameters:
-      1) By default BLD_FM2_WPIDIRS.CMD reads BLD_FM2_WPIDIRS.TXT to obtain
+      1) By default BLD_FM2_WPIDIRS assumes it should retrieve files from
+         a build subtree and that it resides in the Warpin subdirectory of
+         that build subtree. One way to tell BLD_FM2_WPIDIRS to use an
+         unzipped distribution of FM/2 instead of a build subtree is to
+         use the "SRC=" parameter. For example:
+            BLD_FM2_WPIDIRS SRC=C:\TMP\UNZIPPEDFM2
+      2) By default BLD_FM2_WPIDIRS.CMD reads BLD_FM2_WPIDIRS.TXT to obtain
          required information on packages, files and directories.
          You can have BLD_FM2_WPIDIRS.CMD read a different file by passing
          the name of the file as a parameter. For example:
             BLD_FM2_WPIDIRS <name-of-other-file-to-read>
-      2) By default BLD_FM2_WPIDIRS assumes it should retrieve files from
-         a build subtree and that it resides in the Warpin
-         subdirectory of that build subtree. One way to tell BLD_FM2_WPIDIRS
-         to use an unzipped distribution of FM/2 instead of a build
-         subtree is to use the "SRC=" parameter. For example:
-            BLD_FM2_WPIDIRS SRC=C:\TMP\UNZIPPEDFM2
       NOTE: If needed, both parameters may be used and the order
       they are specified is not important
 
@@ -162,5 +162,4 @@ BLD_FM2_WPI.CMD, a program which
 
 FM2.WIS, the current beta Warpin script file
    -  used as the default script file for BLD_FM2_WPI.CMD.
-
 
