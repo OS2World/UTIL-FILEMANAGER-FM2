@@ -12,7 +12,9 @@
 ;     -  renumbering packages
 ;     -  discontinuing obsolete packages
 ;  into the Warpin WPI file. All of these changes can be accomplished without
-;  modification of the warpin makefile.
+;  modification of the warpin makefile. Just make any necessary changes within
+;  the build subtree and change this file accordingly. The next FM2.WPI created
+;  by NMAKE DIST will reflect these changes.
 ;
 ;  The format of this file is as follows:
 ;     -  All blank lines are ignored
@@ -34,7 +36,7 @@
 ;              directory selected by the user during an install, into which this file
 ;              should be installed.
 ;        NOTE: There can be any number of spaces (except 0) between the various parameters
-;        NOTE: A dot. '.', for src-dir or dest-dir means the base/top directory of the
+;        NOTE: A dot, '.', for src-dir or dest-dir means the base/top directory of the
 ;           subtree.
 ;
 ;     -  The order of the FILE and NOFILESPACKAGE lines is not important but it will
@@ -48,7 +50,11 @@ FILE: fm3.hlp                    1  dll\ipf  .
 FILE: fm3dll.dll                 1  dll      .
 FILE: fm3res.dll                 1  dll      .
 FILE: fm3res.str                 1  dll      .
+FILE: fm4.exe                    1  .        .
 FILE: cfgmgr.cmd                 1  .        .
+FILE: utilsmgr.cmd               1  .        .
+FILE: fm2dump.cmd                1  debugtools    .
+FILE: fm2dump2.cmd               1  debugtools    .
 
 FILE: COPYING                    1  .        Docs
 FILE: CustomizingResources.txt   1  .        Docs
@@ -59,49 +65,44 @@ FILE: docs.ico                   1  Icons    Icons
 FILE: docs2.ico                  1  Icons    Icons
 FILE: fm2fldr.ico                1  Icons    Icons
 FILE: fm2fldr2.ico               1  Icons    Icons
+FILE: toolbox.ico                1  Icons    Icons
+FILE: toolbox2.ico               1  Icons    Icons
 
-FILE: archiver.tmp               1  .        Tmplates     ;was Install
-FILE: assoc.tmp                  1  .        Tmplates     ;was Install
-FILE: cmds.tmp                   1  .        Tmplates     ;was Install
-FILE: commands.tmp               1  .        Tmplates     ;was Install
-FILE: config.tmp                 1  .        Tmplates     ;was Install
-FILE: example.tmp                1  .        Tmplates     ;was Install
-FILE: fatopt.tmp                 1  .        Tmplates     ;was Install
-FILE: files.tmp                  1  .        Tmplates     ;was Install
-FILE: filters.tmp                1  .        Tmplates     ;was Install
-FILE: fm3tools.tmp               1  .        Tmplates     ;was Install
-FILE: hpfsopt.tmp                1  .        Tmplates     ;was Install
-;FILE: install.cmd                1  .        Tmplates     ;was Install
-;FILE: install.dat                1  .        Tmplates     ;was Install
-FILE: jfsopt.tmp                 1  .        Tmplates     ;was Install
-FILE: quicktls.tmp               1  .        Tmplates     ;was Install
-FILE: select.tmp                 1  .        Tmplates     ;was Install
-FILE: sort.tmp                   1  .        Tmplates     ;was Install
-;FILE: uninstal.cmd               1  .        Tmplates     ;was Install
-FILE: utils.tmp                  1  .        Tmplates     ;was Install
-FILE: views.tmp                  1  .        Tmplates     ;was Install
+FILE: av2.exe                    1  .  FM2Tools
+FILE: databar.exe                1  .  FM2Tools
+FILE: dirsize.exe                1  .  FM2Tools
+FILE: eas.exe                    1  .  FM2Tools
+FILE: global.exe                 1  .  FM2Tools
+FILE: ini.exe                    1  .  FM2Tools
+FILE: killproc.exe               1  .  FM2Tools
+FILE: sysinfo.exe                1  .  FM2Tools
+FILE: undel.exe                  1  .  FM2Tools
+FILE: vcollect.exe               1  .  FM2Tools
+FILE: vdir.exe                   1  .  FM2Tools
+FILE: viewinfs.exe               1  .  FM2Tools
+FILE: vtree.exe                  1  .  FM2Tools
 
-FILE: fm2dump.cmd                1  debugtools    .
-FILE: fm2dump2.cmd               1  debugtools    .
+FILE: archiver.tmp               1  .  Tmplates
+FILE: assoc.tmp                  1  .  Tmplates
+FILE: cmds.tmp                   1  .  Tmplates
+FILE: commands.tmp               1  .  Tmplates
+FILE: config.tmp                 1  .  Tmplates
+FILE: example.tmp                1  .  Tmplates
+FILE: fatopt.tmp                 1  .  Tmplates
+FILE: files.tmp                  1  .  Tmplates
+FILE: filters.tmp                1  .  Tmplates
+FILE: fm3tools.tmp               1  .  Tmplates
+FILE: hpfsopt.tmp                1  .  Tmplates
+;FILE: install.cmd                1  .  Tmplates
+;FILE: install.dat                1  .  Tmplates
+FILE: jfsopt.tmp                 1  .  Tmplates
+FILE: quicktls.tmp               1  .  Tmplates
+FILE: select.tmp                 1  .  Tmplates
+FILE: sort.tmp                   1  .  Tmplates
+;FILE: uninstal.cmd               1  .  Tmplates
+FILE: utils.tmp                  1  .  Tmplates
+FILE: views.tmp                  1  .  Tmplates
 
-FILE: fm4.exe           1  .  .
-
-FILE: av2.exe           1  .  FM2Tools              ; was .
-FILE: databar.exe       1  .  FM2Tools              ; was .
-FILE: dirsize.exe       1  .  FM2Tools              ; was .
-FILE: eas.exe           1  .  FM2Tools              ; was .
-FILE: global.exe        1  .  FM2Tools              ; was .
-FILE: ini.exe           1  .  FM2Tools              ; was .
-FILE: killproc.exe      1  .  FM2Tools              ; was .
-FILE: sysinfo.exe       1  .  FM2Tools              ; was .
-FILE: undel.exe         1  .  FM2Tools              ; was .
-FILE: vcollect.exe      1  .  FM2Tools              ; was .
-FILE: vdir.exe          1  .  FM2Tools              ; was .
-FILE: viewinfs.exe      1  .  FM2Tools              ; was .
-FILE: vtree.exe         1  .  FM2Tools              ; was .
-
-FILE: utilsmgr.cmd      1  .  .
-FILE: toolbox.ico       1  Icons    Icons
-FILE: toolbox2.ico      1  Icons    Icons
+FILE: shadowmgr.cmd              1  .  Utils
 
 ;NOFILESPACKAGE: 10
