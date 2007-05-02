@@ -25,7 +25,7 @@ fm2.wpi:: fm2.wis
    bld_fm2_wpi /SCRIPT
 
 !ifdef BUILD_FM2UTILS
-fm2utils.wpi: bld_fm2utils_wpi.cmd fm2utils\fm2utils.doc fm2utils\license.txt ..\shadowmgr.cmd
+fm2utils.wpi: bld_fm2utils_wpi.cmd fm2utils.wis fm2utils\fm2utils.doc fm2utils\license.txt ..\shadowmgr.cmd
    @echo Building FM2Utils
    bld_fm2utils_wpi
 !endif
