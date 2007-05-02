@@ -21,31 +21,31 @@ i = 0
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '..\docs\readme'
+Shadow.i.filename = '.\docs\readme'
 Shadow.i.longname = 'Read Me'
 
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '..\docs\copying'
+Shadow.i.filename = '.\docs\copying'
 Shadow.i.longname = 'GNU General Public License'
 
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '..\docs\history'
+Shadow.i.filename = '.\docs\history'
 Shadow.i.longname = 'History'
 
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '..\docs\customizingresources.txt'
+Shadow.i.filename = '.\docs\customizingresources.txt'
 Shadow.i.longname = 'Customizing^Resources'
 
 i = i + 1
 Shadow.i.package  = 'FM2UTILS'
 Shadow.i.folderid = '<FM2_Utilities>'
-Shadow.i.filename = 'fm2utils.doc'
+Shadow.i.filename = '.\fm2utils.doc'
 Shadow.i.longname = 'FM/2 Utilities Read Me'
 
 Shadow.0 = i
@@ -57,6 +57,7 @@ do i = 1 to Shadow.0
          if fullfilename = '' then
             do
                say 'Unable to find file: 'Shadow.i.filename
+               say 'curdir: 'curdir
                '@pause'
                exit 1
             end
