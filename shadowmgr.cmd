@@ -14,32 +14,36 @@ else
          exit 1
       end
 
-curdir = directory()
+parse source . . thispgm
+thisdir = left(thispgm, lastpos('\', thispgm) - 1)
+if length(thisdir) = 2 then
+   thisdir = thisdir || '\'
+call directory thisdir
 
 i = 0
 
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '.\docs\readme'
+Shadow.i.filename = '..\docs\readme'
 Shadow.i.longname = 'Read Me'
 
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '.\docs\copying'
+Shadow.i.filename = '..\docs\copying'
 Shadow.i.longname = 'GNU General Public License'
 
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '.\docs\history'
+Shadow.i.filename = '..\docs\history'
 Shadow.i.longname = 'History'
 
 i = i + 1
 Shadow.i.package  = 'FM2'
 Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '.\docs\customizingresources.txt'
+Shadow.i.filename = '..\docs\customizingresources.txt'
 Shadow.i.longname = 'Customizing^Resources'
 
 i = i + 1
@@ -53,11 +57,11 @@ Shadow.0 = i
 do i = 1 to Shadow.0
    if package_parm = Shadow.i.package then
       do
-         fullfilename = stream(curdir || '\' || Shadow.i.filename, 'c', 'query exists')
+         fullfilename = stream(thisdir || '\' || Shadow.i.filename, 'c', 'query exists')
          if fullfilename = '' then
             do
                say 'Unable to find file: 'Shadow.i.filename
-               say 'curdir: 'curdir
+               say 'thisdir: 'thisdir
                '@pause'
                exit 1
             end
