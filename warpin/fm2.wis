@@ -1,4 +1,8 @@
-<WARPIN>
+<!--
+ WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
+ WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
+-->
+<WARPIN VERSION 0.9.20>
 
 <!--
 NOTE: If a NON-EXTERNAL package (i.e. a package whose files will be staged before
@@ -20,7 +24,7 @@ NOTE: If a NON-EXTERNAL package (i.e. a package whose files will be staged befor
 <PCK INDEX=1
   PACKAGEID="Netlabs\FM2\Base\3\5\9\20070331"
   TITLE="FM/2 - File Manager/2 (Base package)"
-  TARGET="$(WARPIN_DEFAULTAPPSPATH)\FM2"
+  TARGET="$(WARPIN_DEFAULTTOOLSPATH)\FM2"
   SELECT
   BASE
   LONGFILENAMES
@@ -50,9 +54,11 @@ NOTE: If a NON-EXTERNAL package (i.e. a package whose files will be staged befor
   EXECUTE="$(1)\cfgmgr /INSTALL /UNATTENDED"
   EXECUTE="$(1)\utilsmgr /UNATTENDED"
   EXECUTE="$(1)\utils\shadowmgr FM2"
+  EXECUTE="for %a in ($(1)\install.cmd $(1)\uninstal.cmd $(1)\install.dat) do if exist %a del %a"
   DEEXECUTE="$(1)\cfgmgr /DEINSTALL /UNATTENDED"
   DEEXECUTE="$(1)\utilsmgr /DELETE /UNATTENDED"
   DEEXECUTE="del $(1)\fm3.ini & del $(1)\fm3ini.bak"
+  CLEARPROFILE="USER\FM/2"
 
 
 >This package contains the base File Manager/2 (FM/2) package.
@@ -66,7 +72,7 @@ The FM/2 base package must be installed to a drive with long filename support!
   EXTERNAL="FM2Utils.wpi"
   TARGET="$(1)\Utils"
   SELECT
-  CREATEOBJECT="WPFolder|FM/2 Utilities|<FM3_Folder>|OBJECTID=<FM2_Utilities>;"
+  CREATEOBJECT="WPFolder|FM/2 Utilities|<WP_DESKTOP>|OBJECTID=<FM2_Utilities>;"
   CREATEOBJECT="WPProgram|Make Object|<FM2_Utilities>|EXENAME=$(7)\makeobj.cmd;PARAMETERS=%*;OBJECTID=<FM2MakeObj>;"
   CREATEOBJECT="WPProgram|Image Viewer|<FM2_Utilities>|EXENAME=$(7)\image.exe;PARAMETERS=%*;OBJECTID=<FM2Imageexe>;"
   CREATEOBJECT="WPProgram|Reboot w/ Pause|<FM2_Utilities>|EXENAME=$(7)\rebootp.exe;PARAMETERS=%*;OBJECTID=<FM2rebootp>;"
@@ -473,10 +479,8 @@ Uncheck "Modify CONFIG.SYS" if you do not want your PATH changed.</TEXT>
   CREATEOBJECT="WPShadow|History (Shadow)|<FM3_Docs>|SHADOWID=$(1)\docs\history;OBJECTID=<FM2HistoryShadow>;"
   CREATEOBJECT="WPProgram|Read Me|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\readme;OBJECTID=<FM3Readme>;"
   CREATEOBJECT="WPProgram|Customizing^Resources|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\customizingresources.txt;OBJECTID=<FM3CustRes>;"
-  CREATEOBJECT="WPProgram|FM/2 Utilities command line|<FM3_Tools>|EXENAME=?:\OS2\CMD.EXE;STARTUPDIR=?:\;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/K $(1)\SETENV.CMD"
   CREATEOBJECT="WPProgram|FM/2 Utils Doc|<FM2_Utilities>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(7)\fm2utils.doc;OBJECTID=<FM2UtilsDoc>;"
 
-<README EXTRACTFROMPCK="7">fm2utils.doc</README>
 <WARPIN VERSION 1.0.15>
 
 <PCK INDEX=3
