@@ -1,4 +1,8 @@
-<WARPIN>
+<!--
+ WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
+ WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
+-->
+<WARPIN VERSION 0.9.9>
 
 <HEAD>
 <REXX NAME=FindFM2>
