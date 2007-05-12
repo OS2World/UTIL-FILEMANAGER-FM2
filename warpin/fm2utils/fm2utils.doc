@@ -1,0 +1,313 @@
+
+    FM/2 Utilities, a utility collection for use with File Manager/2
+         copyright (c) 1994/95 by M. Kimes (Barebones Software)
+                          all rights reserved
+    ================================================================
+
+This is a collection of utilities that may prove useful in conjunction
+with FM/2 (or even without it).
+
+All the .EXE utilities provide help if you run them with /? as an
+argument (hint:  arguments shown in brackets [] are optional, arguments
+shown in braces <> are required).  The .CMD utilities may be directly
+inspected using a text editor and are commented as to use and function.
+It's recommended that you place these utilities into a directory on your
+PATH (type HELP PATH at a command prompt if you don't know what that
+means).  If you have FM/2 installed, may I suggest you make a UTILS
+directory off your FM/2 directory (the FM/2 INSTALL.CMD assumes you
+will, and will make some program objects for you)?
+
+These utilities are standalone, meaning that one doesn't rely on
+another.  You can therefore delete any you don't want to keep around
+without affecting the operation of any of the others.
+
+If you like the FM/2 Utilities package, you'll love FM/2.  File
+Manager/2 (FM/2) is a shareware OS/2 2.1+ PM 32-bit
+file/directory/archive maintenance utility (a sort of super-Drives
+object, something midway between the Drives objects and a more
+traditional file manager) with plenty of bells, whistles and utilities,
+drag and drop, context menus, toolbars and accelerator keys.  FM/2 won a
+1995 OS/2 Magazine Editor's Choice award -- the only file management
+software to do so.  If you know how to use OS/2, you already know how to
+use most of FM/2.  You can easily glean the rest from the extensive
+online help.  FM/2 is available from ftp.secret.com (/g/os2utl), from
+Compuserve's OS2SHARE (OS2BVEN) forum (GO OS2SHARE) in library 18, and
+from finer OS/2 BBSs everywhere.
+
+
+Following is a very brief description of each program in the package:
+
+BEEP.EXE
+    Makes a beep noise.
+
+CRC.EXE
+    Calculates and prints the CRC of a file or files.
+
+CVT4OS2.CMD
+    Converts 4DOS/4OS2 non-standard DESCRIPT.ION files to WPS-standard
+    .SUBJECT EAs (see comments in program).
+
+CVTFBBS.CMD
+    Converts FILES.BBS file comments to WPS-standard .SUBJECT EAs (see
+    comments in program).
+
+DELTREE.EXE
+    Deletes a directory and all its subdirectories and files.
+
+DRVRLIST.EXE
+    Lists all mounted drivers.  Use /w switch for a "wide" listing.
+
+DRVTYPES.EXE
+    Lists all drives with information on their types.
+
+DSTART.EXE
+    A START command that will work from DOS VDMs (penalty box).
+
+EA.EXE
+    An extended attribute manipulation program.  Can be used to zap all
+    the EAs from REXX .CMD files.
+
+EJECT.EXE
+    Eject media from a removable drive.  Notes:  when EJECT, LOCK or
+    UNLOCK returns an error code of 31, it usually means that function
+    is not supported for the requested drive.  "The parameter is not
+    correct" may mean you tried it on a non-existent or fixed drive.
+    Error 163 is not in the OS/2 message file; it's "uncertain media,"
+    and usually just repeating the command will "fix" it.
+
+FATOPT.EXE*
+    An OS/2 FAT optimizer -- defragment, condense freespaces, sort file
+    and directory names, test sectors in system areas, test (and repair
+    some damaged) clusters, report on drive usage.  If you receive a
+    "FATOpt can't lock" message from FATOpt, the drive is in use and
+    FATOpt can't optimize it; try booting from floppies (place
+    FATOPT.EXE on the floppy together with VIOCALLS.DLL).  If you
+    receive a "FATOpt ran out of memory" error, add RAM and/or set up a
+    swapfile on a partition other than the one being optimized (type
+    HELP SWAPPATH at a command line for more info) and/or try the -p
+    or -q switches.  Other errors (uncommon) should be self-explanatory,
+    if distressing.  CHKDSK/F should be run before running FATOpt, and
+    it's always a good idea to back up before defragging.  FATOpt
+    errorlevel returns for batch files:  0 = no problems, 1 = user
+    abort, 2 = out of memory, 3 = bad file (run CHKDSK/F, dammit),
+    4 = can't open drive, 5 = can't lock drive, 6 = can't fix bad
+    cluster, 7 = insufficient free space on drive, 8 = unknown error,
+    9 = bad system area, 10 = error during standard file copy.
+    BACKUP BEFORE OPTIMIZING.  REMEMBER THE BEST OPTIMIZATION IS
+    ACCOMPLISHED BY A BACKUP/DELETE/RESTORE.
+
+FINDPATH.EXE
+    List a PATH-style environment variable's directories (or LIBPATH),
+    or find a file or files in those directories.  Perhaps useful for
+    tracking down files that appear in more than one directory on the
+    PATH or LIBPATH.
+
+FLUSH.EXE
+    Flush file system caches and buffers (make system quiescent).
+
+FM2PLAY.EXE*
+    Used by FM/2 to play multimedia files with the "Play Multimedia"
+    command (requires MMPM/2).
+
+HPFSOPT.EXE*
+    An HPFS optimizer.
+
+ICONIFY.EXE
+    "Iconifies" image files, which is to say that it sets the icon
+    of image files to be miniature versions of the image files.  A
+    PM program, but designed to be run in batch mode from a command
+    line.
+
+IMAGE.EXE*
+    Used by FM/2 to quickly display image files (requires MMPM/2).
+    Request a context menu for several options.
+
+ISTEXT.EXE
+    Returns ERRORLEVEL 1 if a file appears to be a text (ASCII) file,
+    0 if not or file is inaccessible.
+
+KILL2.EXE
+    A timed deletion/touch/list utility.
+
+KILLPID.EXE
+    Kill processes by PID or title, or list PIDs of running processes.
+    See also SWITCHTO.EXE.
+
+KEYLOCKS.EXE
+    Control state of num lock, caps lock, scroll lock.  Note:  PM
+    program, but still designed to be run from command line.
+
+LA.EXE
+    Lists the contents of archive files, extracts files from archives
+    using one command without you having to know the archive type or
+    archiver commands (requires ARCHIVER.BB2 datafile to be on your
+    PATH or DPATH, copy included in the archive, edit to taste/need).
+
+LINES.EXE
+    Counts lines in text files.
+
+LOCK.EXE
+    Lock a removable drive.
+
+MAKEOBJ.CMD
+    Creates WPS objects for filenames -- program objects for programs,
+    shadows for everything else -- on the desktop.
+
+MKPATH.EXE
+    Make directories many levels deep with one command.
+
+MOV.EXE
+    A MOVE command that can move between drives and optionally allows
+    overwriting.
+
+MSENSIT.EXE
+    Set sensitivity of mouse.
+
+NO.EXE
+    Hides file system objects, then runs a command (excludes file system
+    objects from a command).
+
+NOCAD.EXE
+    Disables/reenables (toggles) CTRL-ALT-DEL.
+
+OPEN.EXE
+    Opens a WPS object or website.
+
+PRIORITY.EXE
+    A launch-with-priority program that lets you set the priority of
+    other programs when you start them.
+
+PTREE.EXE
+    Displays the tree of a given path, several options.
+
+QFORMAT.EXE
+    Quick format floppies by zapping the root and FATs.  NOTE:  Warp's
+    FORMAT will do this now, too (/Q switch).
+
+QPLAY.EXE
+    Quiet play plays multimedia files via MMPM/2 without showing itself
+    (perhaps useful from batch files).
+
+REBOOT.EXE
+    Reboots the system as though you'd pressed CTRL-ALT-DEL.
+
+REBOOTP.EXE
+    Reboots the system as though you'd pressed CTRL-ALT-DEL after
+    broadcasting a WM_QUIT message to all children of the desktop and
+    waiting 60 seconds for the applications to save their settings and
+    quit (note that VIO and DOS applications will pop up their "Are you
+    sure?" boxes, but you don't have to be there to answer (and
+    shouldn't be -- use Shutdown instead if you're not automating),
+    though such apps won't pick up on the hint to shut down).  This is a
+    PM application, but still designed to be run from command line.
+
+REMTAB.EXE
+    Removes TABs from text files.
+
+RENCASE.EXE
+    Renames files to the same name but all upper, lower or "mixed" case.
+
+RESET.EXE
+    Resets a drive.
+
+SAVEDESK.EXE
+    Saves the Desktop, optionally restarts WPS by killing it and letting
+    it restart itself.
+
+SCOPY.EXE
+    Copy new files and/or newer versions of existing files.  Primarily
+    intended for backup and synchronization.
+
+SDIR.CMD
+    Directory listing that shows .SUBJECT EAs.
+
+SEEHELP.EXE
+    For systems where VIEW.EXE will not display .HLP files, this lets
+    you view help files without starting the program to which they
+    belong.
+
+SMODE.EXE
+    Set screen modes (columns, rows, resolutions) for VIO/full screen
+    sessions or reports on available modes.
+
+SNAPSHOT.EXE
+    Creates a "snapshot" file compatible with PMDMatch.
+
+SR.EXE
+    Simple search-and-replace command, optional interactive mode.
+    Intended to be used non-interactively for many files in a single
+    pass (otherwise a text editor is more suitable).
+
+SRCH.CMD
+    A search command for OS/2 (finds text in files).
+
+STRIP.EXE
+    Filter that strips specified strings from input.
+
+SUBJ.CMD
+    Show and modify .SUBJECT EAs.
+
+STRIPCDS.EXE
+    A filter that strips ANSI and VT-100 escape codes from stdin and
+    writes the results to stdout.
+
+SWEEP.CMD
+    A sweep command for OS/2; performs a command in all subdirectories
+    of the current directory.
+
+SWITCHTO.EXE
+    Switch current or a specified process (by PID or partial title) to
+    the foreground.
+
+TEST.EXE
+TEST.CMD
+TESTPM.EXE
+    Repeat all the arguments it receives; useful for debugging command
+    lines and figuring out what arguments one program receives from
+    another.
+
+TESTDRV.EXE
+    Test a drive.  Should be run with a drive other than the one being
+    tested as the default for best results (saves a logfile listing any
+    bad sectors found to the default directory).
+
+TESTFIND.EXE
+    Tests an IFS's DosFindFirst/Next implementation for troubleshooting.
+
+TESTHAND.EXE
+    Reports the number and type of inherited file handles.
+
+TESTRC.EXE
+    Runs a program and reports its return code (ERRORLEVEL).
+
+TYPERATE.EXE
+    Sets the typematic rate.
+
+UNARJER.CMD
+    Unarjs any arj file dropped onto it into the same directory where
+    the arj file resides, then opens a folder for that directory.
+
+UNIQUE.EXE
+    Counts the number of lines, words and unique words in a text file,
+    gives a breakdown of how many times each unique word was used.
+
+UNLOCK.EXE
+    Unlock a removable drive.
+
+UNLZHER.CMD
+    Unlzhs any lzh file dropped onto it into the same directory where
+    the lzh file resides, then opens a folder for that directory.
+
+UNZIPPER.CMD
+    Unzips any zip file dropped onto it into the same directory where
+    the zip file resides, then opens a folder for that directory.
+
+WHERE.CMD
+    A where command for OS/2; finds files on a specified or the default
+    drive.
+
+WIPE.EXE
+    Wipes then erases files so that their data cannot be recovered.
+    Meets DOD standards.
+
+                                                    * Used by "stock" FM/2.
