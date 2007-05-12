@@ -11,11 +11,12 @@ All the .EXE utilities provide help if you run them with /? as an
 argument (hint:  arguments shown in brackets [] are optional, arguments
 shown in braces <> are required).  The .CMD utilities may be directly
 inspected using a text editor and are commented as to use and function.
-It's recommended that you place these utilities into a directory on your
-PATH (type HELP PATH at a command prompt if you don't know what that
-means).  If you have FM/2 installed, may I suggest you make a UTILS
-directory off your FM/2 directory (the FM/2 INSTALL.CMD assumes you
-will, and will make some program objects for you)?
+
+It's recommended that you install these utilities into a directory on
+your PATH or, if you already have FM/2 installed, into a UTILS subdirectory
+off of your FM/2 installation directory. This will allow FM/2 to find
+and use these utilities. (If you are not familiar with the term "PATH",
+type HELP PATH at a command prompt.)
 
 These utilities are standalone, meaning that one doesn't rely on
 another.  You can therefore delete any you don't want to keep around
@@ -30,7 +31,7 @@ drag and drop, context menus, toolbars and accelerator keys.  FM/2 won a
 1995 OS/2 Magazine Editor's Choice award -- the only file management
 software to do so.  If you know how to use OS/2, you already know how to
 use most of FM/2.  You can easily glean the rest from the extensive
-online help.  FM/2 is available from http://hobbes.nmsu.edu/ or 
+online help.  FM/2 is available from http://hobbes.nmsu.edu/ or
 ftp://ftp.netlabs.org (initially in /incoming/fm2 moving to /pub/fm2)
 
 
