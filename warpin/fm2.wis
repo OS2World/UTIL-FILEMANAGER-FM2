@@ -1,17 +1,20 @@
 <!--
- WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
- WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
+   IMPORTANT: DO NOT EDIT FM2.WIS! Please edit FM2.WIS.IN instead.
+   FM2.WIS.IN is used as input to SED which then replaces/inserts
+   various text and creates FM2.WIS during the FM/2 build process.
+
+   NOTE: If a NON-EXTERNAL package (i.e. a package whose files
+   will be staged before building the WPI file) with an index
+   greater than 999 is used, then the REXX program BLD_FM2_WPIDIRS.CMD
+   (found in the warpin directory of the build subtree) will have
+   to be changed. The line:
+         WPI.max_package_number_length = 3
+   will need to be changed accordingly.
+
+   WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
+   WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
 -->
 <WARPIN VERSION 0.9.20>
-
-<!--
-NOTE: If a NON-EXTERNAL package (i.e. a package whose files will be staged before
-      building the WPI file) with an index greater than 999 is used, then the REXX
-      program BLD_FM2_WPIDIRS.CMD (found in the warpin directory of the build subtree)
-      will have to be changed. The line:
-         WPI.max_package_number_length = 3
-      will need to be changed accordingly.
--->
 
 <HEAD>
 <REXX NAME=UtilsCheck>
@@ -22,7 +25,7 @@ NOTE: If a NON-EXTERNAL package (i.e. a package whose files will be staged befor
 </REXX>
 
 <PCK INDEX=1
-  PACKAGEID="Netlabs\FM2\Base\3\5\9\20070331"
+  PACKAGEID="Netlabs\FM2\Base\3\5\9"
   TITLE="FM/2 - File Manager/2 (Base package)"
   TARGET="$(WARPIN_DEFAULTTOOLSPATH)\FM2"
   SELECT
@@ -69,7 +72,7 @@ The FM/2 base package must be installed to a drive with long filename support!
 <PCK INDEX=7
   PACKAGEID="Netlabs\FM2 Utilities\FM2Utils\1\0\0"
   TITLE="FM/2 Utilities"
-  EXTERNAL="FM2Utils.wpi"
+  EXTERNAL="fm2utils.wpi"
   TARGET="$(1)\Utils"
   SELECT
   CREATEOBJECT="WPFolder|FM/2 Utilities|<WP_DESKTOP>|OBJECTID=<FM2_Utilities>;"
@@ -120,7 +123,9 @@ PTREE and many more.
 <PAGE INDEX=5 TYPE=README>
 <NEXTBUTTON TARGET=6>~Next</NEXTBUTTON>
 <TEXT>FM/2 Utilities: A short description of each utility is included at the end of the readme below. A special note of thanks to Mark Kimes for making these utilities freely available.</TEXT>
-<README>    FM/2 Utilities, a utility collection for use with File Manager/2
+<README>
+
+    FM/2 Utilities, a utility collection for use with File Manager/2
          copyright (c) 1994/95 by M. Kimes (Barebones Software)
                           all rights reserved
     ================================================================
@@ -438,7 +443,8 @@ WIPE.EXE
 <PAGE INDEX=6 TYPE=README>
 <NEXTBUTTON TARGET=7>~I agree</NEXTBUTTON>
 <TEXT>FM/2 Utilities: By pressing the "I agree" button, you agree to all terms and conditions of the license agreement below.</TEXT>
-<README>Simple license statement:
+<README>
+Simple license statement:
 ========================
 These utilities may be freely used by end users.  I retain copyright and
 reserve all rights.  There is NO warranty expressed or implied.
