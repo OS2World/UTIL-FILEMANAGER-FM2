@@ -126,7 +126,7 @@ Init: procedure expose (globals)
    WPI.retval = 0
    WPI.scriptonly = 0
    WPI.archivename = WPI.default_archivename
-   WPI.scriptname = left(WPI.archivename, length(WPI.archivename) - 3) || 'wis'
+   WPI.scriptname = 'fm2utils.wis'
    parse arg args
    do while args \= ''
       parse var args word1 args
@@ -134,9 +134,9 @@ Init: procedure expose (globals)
          when translate(word1) == '/SCRIPT' then
             WPI.scriptonly = 1
          when translate(right(word1, 4)) == '.WIS' then
-            WPS.scriptname = word1
+            WPI.scriptname = word1
          when translate(right(word1, 4)) == '.WPI' then
-            WPS.archivename = word1
+            WPI.archivename = word1
          otherwise
             call ErrorExit 5
       end
