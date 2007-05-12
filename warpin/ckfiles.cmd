@@ -5,7 +5,8 @@ call SysLoadFuncs
 
 signal on novalue
 
-wpi_file          =  'fm2.wpi'
+parse arg args
+wpi_file          =  strip(args)
 wis_file          =  'fm2.wis'
 dummy_date_time   =  '-1'
 in_file   =  'bld_fm2_wpidirs.txt'
@@ -26,7 +27,7 @@ wpi_file_date_time = GetDate(wpi_file)
 
 if in_file_date_time > out_file_date_time | ,
    out_file_date_time = dummy_date_time  | ,
-   wpi_file_date_time = dummy_date_time then
+   wpi_file_date_time = dummy_date_time         then
    do
       'copy 'in_file out_file
       call SysSetFileDateTime out_file
