@@ -5,11 +5,11 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
-File Manager/2 (FM/2) is a free OS/2 3.0 (Warp)+ PM 32-bit
-file/directory/archive maintenance utility (a sort of
-super-Drives object, something midway between the Drives
-objects and a more traditional file manager) with plenty of
-bells, whistles and utilities, drag and drop, context menus,
+File Manager/2 (FM/2) is a free OS/2(Warp)/eCS Presentation
+Manager 32-bit file/directory/archive maintenance utility 
+(a sort of super-Drives object, something midway between the 
+Drives objects and a more traditional file manager) with plenty 
+of bells, whistles and utilities, drag and drop, context menus,
 toolbars, bubble help and accelerator keys. If you know how
 to use OS/2, you already know how to use most of FM/2. You
 can easily glean the rest from the extensive online help,
@@ -43,7 +43,7 @@ FM/2 3.x installation instructions:
 ==================================
 
 Pre-requisite:
-   WarpIN must be installed.
+   WarpIN 0.9.20 or higher must be installed.
 
 Install (or re-install) from a FM/2 ZIP file distribution
 ---------------------------------------------------------
@@ -180,9 +180,9 @@ does, read the help under Settings notebook for that page
 (each Settings notebook page has its own Help button).
 
 If you prefer hardcopy help, print this file, run FM/2,
-press Ctrl + F1, click the "Print" button at the bottom of
-the help window that appears and then print both the
-"Contents" and "All sections" (keep an eye on the printer,
+press F1, click the "Print" button at the bottom (IBM View)
+or top (Newview)of the help window that appears and then print 
+both the "Contents" and "All sections" (keep an eye on the printer,
 after page 100 of "All sections" as the Help Manager will
 begin printing its own help then -- you may want to abort
 printing at that point). Advanced and/or curious users may
@@ -282,12 +282,12 @@ Troubleshooting:
 ===============
 
 If FM/2 won't run, the probable culprit is CONFIG.SYS. Your
-LIBPATH statement should contain a ".\" entry. If yours
+LIBPATH statement should contain a ".;" entry. If yours
 doesn't, add it. It's standard for an OS/2 installation, but
 some buggy install programs knock it out because they
 translate entries to their full pathname before rewriting
-(so ".\" gets translated to whatever the current directory
-is for the buggy install program). What this ".\" entry does
+(so ".;" gets translated to whatever the current directory
+is for the buggy install program). What this ".;" entry does
 is allow a program to find and use .DLL files in the
 program's current directory -- obviously something you want
 programs to be able to do, otherwise you'd have to put every
@@ -296,9 +296,14 @@ or add the directories of all applications to the LIBPATH, a
 rather huge pain in the, uh, neck.
 
 If things in FM/2 are suddenly acting strange after an
-upgrade, first make _sure_ you unpacked _all_ the files and
-overwrote the old ones, then ran INSTALL.CMD to update your
-WPS objects.
+upgrade, first check the intergrety of the install
+using wrapin. If it shows a problem rerun the install
+package. If that fails try installing to a new directory 
+or backup your existing directory so you can save any changes
+you made to the template files then uninstall and reinstall.
+Once you have FM/2 working migrate the *.ini,*.dat, *.tls, *.bb2
+and *.cmd from your old install/backup to recover your custom 
+settings   
 
 If the "FM/2 Online Help" object in the "FM/2 Docs"
 subfolder won't work properly, you've got a version of
@@ -336,13 +341,16 @@ SYS0039 error.
 - Tree switching on Focus/Directory Change appears to be
 slower than expected.
 
-- Access to LS120 and FAT32 drives slower than expected
+- Access to LS120 and FAT32 drives may be slower than expected
 
 - Icon display in Directory Container does not always match
 WPS icons
 
-- Spurious WPS Objects Handles created during some
+- Spurious WPS Objects Handles may be created during some
 operations
+
+- See http://svn.netlabs.org/fm2/report/1 for a complete list of 
+currently active bugs
 
 
 About FM/2:
@@ -374,16 +382,23 @@ Check it out at
   http://svn.netlabs.org/fm2
 
 Not everything is in place yet, but this is the place to
-enter defect tickets and enhancement requests. Eventually,
-the mailing list and the file archives will all move to the
-Netlabs server along with the source code.
+enter defect tickets and enhancement requests (username netlabs 
+password guest; please include a valid email so we can contact you 
+if we need more information). Eventually,the mailing list and the 
+file archives will all move to the Netlabs server where you can 
+find the source code.
 
-You can reach me directly at:
+You can reach us directly at:
 
   Steven H. Levine
   steve53@earthlink.net
 
-I also monitor the comp.os.os2.apps newsgroup and several
+    or
+
+  Gregg Young
+  ygk@qwest.net
+
+We also monitor the comp.os.os2.apps newsgroup and several
 others in the comp.os.os2.* hierarchy.
 
 Thanks and enjoy.

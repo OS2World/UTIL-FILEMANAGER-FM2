@@ -1,6 +1,7 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.05.09 (pending)
+ o Update readme to reflect warpin install and other code changes (David, John, Gregg) 
  o Avoid spurious add_udir error reports (Steven)
  o Harden drag/drop error recovery (Steven, Gregg)
  o Add DbgMsg (Steven)
@@ -9,7 +10,8 @@ New stuff's at the top.  This list is not necessarily complete.
  o Correct FileInfoProc binary file detect (Steven)
  o Correct FileInfoProc/IconProc race crash - ticket#77 (Steven)
  o Convert to WarpIN installer - ticket #10 (David, John)
- o Work around for drag/drop limit in PM Bug 50 (Gregg)
+ o Work around for drag/drop limit in PM Bug 50 (Gregg, Steven)
+ o Add RunFM2Utils function find utils in path or \utils (Gregg)
  o Fix MMPM file scan to not try to play nonmedia files (Gregg)
  o "Replace" in commands dialog now leave list order intact (Gregg)
  o Code cleanup (ROT13 compiler warning, removed win class pstrings QWL_USER) (Gregg)
