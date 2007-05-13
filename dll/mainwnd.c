@@ -32,6 +32,7 @@
   15 Apr 07 SHL mainwnd MAIN_SETUPLIST restore state not found reporting
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Apr 07 SHL Avoid spurious add_udir error reports
+  12 May 07 SHL Use dcd->ulItemsToUnHilite
 
 ***********************************************************************/
 
@@ -1021,7 +1022,9 @@ MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   USHORT id;
-  register TOOL *tool;
+  TOOL *tool;
+  DIRCNRDATA *dcd;
+
   static HWND hwndMenu = (HWND) 0;
 
   switch (msg) {
@@ -1237,11 +1240,13 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&cdi, 0, sizeof(cdi));
       cdi.pDragInfo = mp1;
       li = DoFileDrop(hwnd, NULL, FALSE, mp1, MPFROMP(&cdi));
-      if (NumItemsToUnhilite)
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		             hwnd,
-		             GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+      dcd = INSTDATA(cdi.pDragInfo->hwndSource);
+      if (dcd->ulItemsToUnHilite) {
+	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	       hwnd,
+	       GetPString(IDS_ERRORTEXT),
+	       GetPString(IDS_EXCEEDPMDRGLMT));
+      }
       if (li) {
 	li->type = id;
 	if (!li->list || !li->list[0])
@@ -1614,6 +1619,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   USHORT id;
   CHAR szDrv[CCHMAXPATH];
+  DIRCNRDATA *dcd;
 
   static BOOL emphasized = FALSE;
   static HWND hwndMenu = NULLHANDLE;
@@ -1810,11 +1816,13 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       li = DoFileDrop(hwnd,
 		      NULL,
 		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
-      if (NumItemsToUnhilite)
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		             hwnd,
-		             GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
+      dcd = INSTDATA(cnd.pDragInfo->hwndSource);
+      if (dcd && dcd->ulItemsToUnHilite) {
+	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	       hwnd,
+	       GetPString(IDS_ERRORTEXT),
+	       GetPString(IDS_EXCEEDPMDRGLMT));
+      }
       if (li) {
 	strcpy(li->targetpath, szDrv);
 	strcat(li->targetpath, "\\");
@@ -1833,16 +1841,16 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  li->type = WinDlgBox(HWND_DESKTOP,
 			       hwndMain,
 			       DropListProc,
-                               FM3ModHandle, DND_FRAME, MPFROMP(&cl));
-          if (li->type == DID_ERROR)
-                  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
-                            "Drag & Drop Dialog");
-          if (!li->type) {
+			       FM3ModHandle, DND_FRAME, MPFROMP(&cl));
+	  if (li->type == DID_ERROR)
+		  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
+			    "Drag & Drop Dialog");
+	  if (!li->type) {
 	    FreeListInfo(li);
 	    return 0;
 	  }
 	  li->list = cl.list;
-          if (!li->list || !li->list[0]) {
+	  if (!li->list || !li->list[0]) {
 	    FreeListInfo(li);
 	    return 0;
 	  }
@@ -4821,6 +4829,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    PCNRITEM pci;
 	    DIRCNRDATA *dcd = NULL;
 
+	    // 12 May 07 SHL fixme to understand?  backwards maybe? looking for DIR_CNR?
 	    if (WinQueryWindowUShort(hwndCnr, QWS_ID) != TREE_CNR)
 	      dcd = INSTDATA(hwndCnr);
 	    pci = (PCNRITEM) WinSendMsg(hwndCnr,
@@ -4829,7 +4838,12 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					MPFROMSHORT(CRA_CURSORED));
 	    if (pci && (INT) pci != -1 &&
 		(pci->rc.flRecordAttr & CRA_SELECTED))
-	      UnHilite(hwnd, TRUE, ((dcd) ? &dcd->lastselection : NULL));
+	    {
+	      UnHilite(hwnd,
+		       TRUE,
+		       dcd ? &dcd->lastselection : NULL,
+		       dcd ? dcd ->ulItemsToUnHilite : 0);
+	    }
 	  }
 	}
       }
@@ -5720,9 +5734,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  (fmprof, FM3Str, s, (PVOID) & numsaves, &size))
 	      {
 		if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) == PMERR_NOT_IN_IDX) {
-	          saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
-		         GetPString(IDS_WARNINGTEXT),
-		         GetPString(IDS_DOESNTEXISTTEXT), path);
+		  saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+			 GetPString(IDS_WARNINGTEXT),
+			 GetPString(IDS_DOESNTEXISTTEXT), path);
 		}
 		else {
 		  Win_Error2(hwnd, hwnd, __FILE__, __LINE__,

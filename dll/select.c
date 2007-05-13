@@ -6,7 +6,7 @@
   Container item selection support routines
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2007 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   25 May 05 SHL Rework for ULONGLONG
@@ -17,6 +17,7 @@
   15 Aug 06 SHL Rework SetMask args and logic
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   19 Apr 07 SHL Sync with NumItemsToUnhilite mods
+  12 May 07 SHL Use dcd->ulItemsToUnHilite
 
 ***********************************************************************/
 
@@ -40,7 +41,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list)
+VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite)
 {
   PCNRITEM pci;
   INT numfiles = 0, numalloc = 0, x = 0;
@@ -63,10 +64,9 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list)
       if (!all)
           break;
       // Count is one extra to ensure non-zero elsewhere
-      if (NumItemsToUnhilite && x + 2 == NumItemsToUnhilite){
-        NumItemsToUnhilite = 0;
+      // x is 0 based index
+      if (x + 2 == ulItemsToUnHilite)
         break;
-      }
       if (list)
 	AddToList(pci->szFileName, list, &numfiles, &numalloc);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
@@ -86,7 +86,7 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
   ULONG errs = 0L;
 
   if (clearfirst && !deselect)
-    UnHilite(hwndCnr, TRUE, NULL);
+    UnHilite(hwndCnr, TRUE, NULL, 0);
   if (list && list[0]) {
     for (x = 0; list[x]; x++) {
       pci = FindCnrRecord(hwndCnr,

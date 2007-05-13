@@ -29,6 +29,7 @@
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   19 Apr 07 SHL Add more drag/drop error checking
+  12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
 
 ***********************************************************************/
 
@@ -503,6 +504,7 @@ MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
+  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case WM_CREATE:
@@ -546,11 +548,13 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
 		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
-      if (NumItemsToUnhilite)
+      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
+      if (dcdsrc->ulItemsToUnHilite) {
 	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-			     hwnd,
-			     GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_EXCEEDPMDRGLMT));
+	       hwnd,
+	       GetPString(IDS_ERRORTEXT),
+	       GetPString(IDS_EXCEEDPMDRGLMT));
+      }
       if (li) {
 	li->type = ((fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE);
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -829,7 +833,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   static APPNOTIFY *apphead = NULL, *apptail = NULL;
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
+  DIRCNRDATA *dcd = INSTDATA(hwnd);
+  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -1377,11 +1382,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ULONG action = UM_ACTION;
 
 	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-	  if (NumItemsToUnhilite)
+          dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
+	  if (dcdsrc->ulItemsToUnHilite) {
 	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-				 hwnd,
-				 GetPString(IDS_ERRORTEXT),
-		       GetPString(IDS_EXCEEDPMDRGLMT));
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_EXCEEDPMDRGLMT));
+	  }
 	  if (li) {
 	    if (!*li->targetpath) {
 	      if (li->list[0])
@@ -2783,7 +2790,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    x++;
 	    RunCommand(hwnd, x);
 	    if (fUnHilite)
-	      UnHilite(hwnd, TRUE, &dcd->lastselection);
+	      UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	  }
 	}
 	break;

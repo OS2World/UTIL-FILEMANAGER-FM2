@@ -6,7 +6,7 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2006 Steven H. Levine
+  Copyright (c) 2003, 2007 Steven H. Levine
 
   15 Oct 02 MK Baseline
   10 Jan 04 SHL Avoid -1L byte counts
@@ -33,6 +33,7 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checks.
+  12 May 07 SHL Use dcd->ulItemsToUnHilite
 
 ***********************************************************************/
 
@@ -442,6 +443,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 {
   ULONG size;
   DIRCNRDATA *dcd;
+  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case WM_CREATE:
@@ -459,13 +461,15 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr, NULL, FALSE, MPVOID, MPFROMP(&cni));
-      if (NumItemsToUnhilite)
+      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
+      if (dcdsrc->ulItemsToUnHilite) {
 	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-			     hwnd,
-			     GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_EXCEEDPMDRGLMT));
+	       hwnd,
+	       GetPString(IDS_ERRORTEXT),
+	       GetPString(IDS_EXCEEDPMDRGLMT));
+      }
       if (li) {
-	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
+	li->type = fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
 	  FreeListInfo(li);
 	else
@@ -911,7 +915,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				     MPARAM mp2)
 {
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
+  DIRCNRDATA *dcd = INSTDATA(hwnd);
+  DIRCNRDATA *dcdsrc;
   ULONG size;
 
   static INT savedSortFlags;
@@ -2010,7 +2015,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		FreeListInfo(li);
 	      }
 	      else if (fUnHilite)
-		UnHilite(hwnd, TRUE, &dcd->lastselection);
+		UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	    }
 	    else
 	      free(li);
@@ -2030,7 +2035,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    x++;
 	    RunCommand(hwnd, x);
 	    if (fUnHilite)
-	      UnHilite(hwnd, TRUE, &dcd->lastselection);
+	      UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	  }
 	}
 	break;
@@ -2242,8 +2247,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		WinSetWindowText(hwndStatus2,
 				 GetPString(IDS_DRAGFILEOBJTEXT));
 	      if (DoFileDrag(hwnd, dcd->hwndObject, mp2, NULL, NULL, TRUE)) {
-		if ((fUnHilite && wasemphasized) || NumItemsToUnhilite)
-		  UnHilite(hwnd, TRUE, &dcd->lastselection);
+		if ((fUnHilite && wasemphasized) || dcd->ulItemsToUnHilite)
+		  UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	      }
 	      if (hwndStatus2)
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
@@ -2258,11 +2263,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  ULONG action = UM_ACTION;
 
 	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-	  if (NumItemsToUnhilite)
+          dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
+	  if (dcdsrc->ulItemsToUnHilite) {
 	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-				 hwnd,
-				 GetPString(IDS_ERRORTEXT),
-		       GetPString(IDS_EXCEEDPMDRGLMT));
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_EXCEEDPMDRGLMT));
+	  }
 	  if (li) {
 	    if (!*li->targetpath) {
 	      li->type = IDM_COLLECT;

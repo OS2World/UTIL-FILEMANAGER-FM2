@@ -6,7 +6,7 @@
   fm/4 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   23 May 05 SHL Use datamin.h
   26 May 05 SHL Comments and localize code
@@ -15,6 +15,8 @@
   02 Jan 06 SHL Map IDM_WINDOWDLG to match IBM_TWODIRS
   17 Jul 06 SHL Use Runtime_Error
   30 Mar 07 GKY Remove GetPString for window class names
+  12 May 07 SHL Pass ulItemsToUnHilite to UnHilite
+
 ***********************************************************************/
 
 #define INCL_DOS
@@ -656,8 +658,12 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 				      CM_QUERYRECORDEMPHASIS,
 				      MPFROMLONG(CMA_FIRST),
 				      MPFROMSHORT(CRA_CURSORED));
-	  if (pci && (INT) pci != -1 && (pci->rc.flRecordAttr & CRA_SELECTED))
-	    UnHilite(hwnd, TRUE, ((dcd) ? &dcd->lastselection : NULL));
+	  if (pci && (INT) pci != -1 && (pci->rc.flRecordAttr & CRA_SELECTED)) {
+	    UnHilite(hwnd,
+		     TRUE,
+		     dcd ? &dcd->lastselection : NULL,
+		     dcd ? dcd->ulItemsToUnHilite : 0);
+	  }
 	}
       }
     }

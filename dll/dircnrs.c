@@ -6,7 +6,7 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -24,6 +24,7 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checking.
+  12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
 
 ***********************************************************************/
 
@@ -569,6 +570,7 @@ MRESULT EXPENTRY DirClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
+  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case WM_CREATE:
@@ -586,14 +588,17 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
+      DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
 		   MPFROMP(&cni));
-      if (NumItemsToUnhilite)
+      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
+      if (dcdsrc->ulItemsToUnHilite) {
 	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-			     hwnd,
-			     GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_EXCEEDPMDRGLMT));
+	       hwnd,
+	       GetPString(IDS_ERRORTEXT),
+	       GetPString(IDS_EXCEEDPMDRGLMT));
+      }
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -1056,8 +1061,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
-    APIRET rc;
+  DIRCNRDATA *dcd = INSTDATA(hwnd);
+  DIRCNRDATA *dcdsrc;
+  APIRET rc;
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -1984,7 +1990,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(list)))
 		FreeList(list);
 	      else if (fUnHilite)
-		UnHilite(hwnd, TRUE, &dcd->lastselection);
+		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	    else
 	      FreeList(list);
@@ -2512,7 +2518,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		FreeListInfo(li);
 	      }
 	      else if (fUnHilite)
-		UnHilite(hwnd, TRUE, &dcd->lastselection);
+		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	    else
 	      free(li);
@@ -2541,7 +2547,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      x++;
 	      RunCommand(hwnd, x);
 	      if (fUnHilite)
-		UnHilite(hwnd, TRUE, &dcd->lastselection);
+		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	  }
 	}
@@ -2833,8 +2839,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   NULL,
 			   pci ? NULL : dcd->directory,
 			   pci ? TRUE : FALSE)) {
-	      if ((pci && fUnHilite && wasemphasized) || NumItemsToUnhilite) {
-		UnHilite(hwnd, TRUE, &dcd->lastselection);
+	      if ((pci && fUnHilite && wasemphasized) || dcd->ulItemsToUnHilite) {
+		UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	      }
 	    }
 	    if (hwndStatus2) {
@@ -2851,13 +2857,17 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
+          DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
 	  li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
-	  if (NumItemsToUnhilite) {
+	  dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
+
+	  if (dcdsrc->ulItemsToUnHilite) {
 	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-				 hwnd,
-				 GetPString(IDS_ERRORTEXT),
-				 GetPString(IDS_EXCEEDPMDRGLMT));
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_EXCEEDPMDRGLMT));
 	  }
+
 	  if (li) {
 	    if (li->list && li->list[0] && IsRoot(li->list[0]))
 	      li->type = DO_LINK;

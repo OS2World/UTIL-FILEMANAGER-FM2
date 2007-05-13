@@ -6,7 +6,7 @@
   Drag drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2002 Steven H.Levine
+  Copyright (c) 2001, 2007 Steven H.Levine
 
   16 Oct 02 SHL DoFileDrag: don't free stack
   26 Jul 06 SHL Check more run time errors
@@ -17,6 +17,7 @@
   19 Apr 07 SHL Add more drag/drop error checking
   19 Apr 07 SHL Optimize DRAGITEM DRAGIMAGE array access
   21 Apr 07 SHL Avoid odd first time drag failure
+  12 May 07 SHL Use dcd->ulItemsToUnHilite
 
 ***********************************************************************/
 
@@ -96,13 +97,13 @@ VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo)
   } // for
 # endif
   if (!DrgFreeDraginfo(pDInfo)) {
-    // fixme to find callers responsible for PMERR_SOURCE_SAME_AS_TARGET
-    if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) != PMERR_SOURCE_SAME_AS_TARGET) {
-      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-	       "DrgFreeDraginfo");
+    if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) == PMERR_SOURCE_SAME_AS_TARGET) {
+      // fixme to find caller responsible for PMERR_SOURCE_SAME_AS_TARGET
+      Win_Error_NoMsgBox(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	                 "DrgFreeDraginfo failed with PMERR_SOURCE_SAME_AS_TARGET");
     }
     else
-      DbgMsg(pszSrcFile, __LINE__, "DrgFreeDraginfo PMERR_SOURCE_SAME_AS_TARGET");
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DrgFreeDraginfo");
   }
 }
 
@@ -219,11 +220,13 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
   DRAGIMAGE *paDImgIcons = NULL, *pDImg, dimgFakeIcon;
   BOOL ok;
   UINT c;
+  DIRCNRDATA *dcd;
 
   static BOOL first_drag = TRUE;
 
-  // fixme to be multi-drag safe - count needs to be in DCD etc. and passed to UnHilite
-  NumItemsToUnhilite = 0;
+  // Count items to unhilite, pass to UnHilite when partial unhilite required
+  dcd = INSTDATA(hwndCnr);
+  dcd->ulItemsToUnHilite = 0;
   if (!pciRec && directory && *directory)
     return DragOne(hwndCnr, hwndObj, directory, moveok);
 
@@ -361,7 +364,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	  }
 	}
 	// Set count to actual count + 1 to ensure count non-zero on any failure
-	NumItemsToUnhilite = ulNumfiles + 1;
+	dcd->ulItemsToUnHilite = ulNumfiles + 1;
 	break;
       }
       pDItem->fsControl = isdir ? DC_CONTAINER : 0;
@@ -423,7 +426,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	if (pDItem->hstrTargetName)
 	  DrgDeleteStrHandle(pDItem->hstrTargetName);
 	xfree(pDItem);
-	NumItemsToUnhilite = ulNumfiles + 1;	// +1 to ensure non-zero
+	dcd->ulItemsToUnHilite = ulNumfiles + 1;	// +1 to ensure non-zero
 	break;
      }
       pDItem->fsControl = DC_PREPARE;
@@ -479,7 +482,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	  }
 	  // Set count to actual count + 1 to ensure count non-zero on any failure
 	  // Unhilite code will adjust this when unhighliting
-	  NumItemsToUnhilite = ulNumfiles + 1;
+	  dcd->ulItemsToUnHilite = ulNumfiles + 1;
 	  break;
 	}
 	pDItem->fsControl = 0;
@@ -557,7 +560,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
   }
 
   if (hDrop == NULLHANDLE ) {
-    NumItemsToUnhilite = 0;
+    dcd->ulItemsToUnHilite = 0;
     if (pDInfo)
       FreeDragInfoData(hwndCnr, pDInfo);
   }
@@ -586,9 +589,13 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
   DRAGIMAGE *paDImgIcons = NULL, *pDImg;
   FILESTATUS3 fs3;
   BOOL ok;
+  DIRCNRDATA *dcd;
 
   if (!list || !list[0])
     return hDrop;
+
+  dcd = INSTDATA(hwnd);
+
   for (ulSelect = 0; list[ulSelect]; ulSelect++) {
     if ((!IsRoot(list[ulSelect]) || !IsValidDrive(*list[ulSelect])) &&
 	DosQueryPathInfo(list[ulSelect], FIL_STANDARD, &fs3, sizeof(fs3)))
@@ -676,7 +683,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	  DrgDeleteStrHandle(pDItem->hstrTargetName);
 	xfree(pDItem);
 	// pDItem = NULL;	// Why bother, we can count - fixme to be gone
-	NumItemsToUnhilite = ulNumfiles + 1;
+	dcd->ulItemsToUnHilite = ulNumfiles + 1;
 	break;
       }
       pDItem->fsControl = isdir ? DC_CONTAINER : 0;
@@ -730,7 +737,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 		      VK_ENDDRAG,	// Drag end button
 		      (PVOID) NULL);
       if (hDrop == NULLHANDLE) {
-	NumItemsToUnhilite = 0;
+	dcd->ulItemsToUnHilite = 0;
 	FreeDragInfoData(hwnd, pDInfo);
       }
       xfree(paDImgIcons);

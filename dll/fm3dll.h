@@ -45,6 +45,7 @@
   19 Apr 07 SHL Add DbgMsg.  Sync with AcceptOneDrop GetOneDrop mods.
   21 Apr 07 GKY Find FM2Utils by path or utils directory eliminate fAddUtils global
   23 Apr 07 SHL Add Win_Error_NoMsgBox
+  12 May 07 SHL Add ulItemsToUnHilite to DIRCNRDATA, pass to Unhilite as arg
 
 ***********************************************************************/
 
@@ -139,7 +140,7 @@ PDRAGINFO APIENTRY DrgReallocDraginfo(PDRAGINFO pdinfoOld, ULONG cditem);
 
 #define LINES_PER_ARCSIG        21	// Lines in each archiver.bb2 definition
 #define CON_COLS                6
-#define INSTDATA(h)             WinQueryWindowPtr(h,QWL_USER)
+#define INSTDATA(h)             WinQueryWindowPtr((h),QWL_USER)
 #define DIR_SPLITBAR_OFFSET     18 * 12	/* Pixel offset of details splitbar */
 #define CONTAINER_COLUMNS       13	/* Number of columns in details view */
 #define RGBFROMPARTS(r,g,b)     (((r) * 65536) + ((g) * 256) + (b))
@@ -555,6 +556,7 @@ typedef struct DIRCNRDATA
   HMTX filling;
   BOOL firsttree;
   ULONG lastattr;
+  ULONG ulItemsToUnHilite;
 }
 DIRCNRDATA;
 
@@ -949,7 +951,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* select.c */
-VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list);
+VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite);
 VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
 		PCNRITEM pciParent, CHAR * filename, CHAR ** list);
 VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * mask, CHAR * text,
@@ -1357,7 +1359,7 @@ DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslwdate, detailslwtime, detailsattr, detailsicon;
 DATADEF PID mypid;
 DATADEF INT driveflags[26], driveserial[26];
-DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines, NumItemsToUnhilite;
+DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines;
 DATADEF HINI fmprof;
 DATADEF HELPINIT hini;
 DATADEF HWND hwndHelp, LastDir, AboutBox, DirMenu, FileMenu, TreeMenu,

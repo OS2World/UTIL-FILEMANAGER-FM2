@@ -6,7 +6,7 @@
   Archive containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   11 Jun 02 SHL Ensure archive name not garbage
   22 May 03 SHL ArcObjWndProc: fix UM_RESCAN now that we understand it
@@ -36,6 +36,7 @@
   06 Apr 07 GKY Add some error checking in drag/drop
   20 Apr 07 SHL Sync with NumItemsToUnhilite mods
   21 Apr 07 GKY Find FM2Utils by path or utils directory
+  12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
 
 ***********************************************************************/
 
@@ -1117,6 +1118,7 @@ MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
+  DIRCNRDATA *dcdsrc;
   PSZ psz;
 
   switch (msg) {
@@ -1132,11 +1134,14 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
                       dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
-      if (NumItemsToUnhilite)
-             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		                   hwnd,
-		                   GetPString(IDS_ERRORTEXT),
-                         GetPString(IDS_EXCEEDPMDRGLMT));
+      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
+      if (dcdsrc->ulItemsToUnHilite) {
+        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	       hwnd,
+	       GetPString(IDS_ERRORTEXT),
+               GetPString(IDS_EXCEEDPMDRGLMT));
+      }
+
       if (li) {
 	li->type = (msg == DM_DISCARDOBJECT) ? IDM_DELETE : IDM_PRINT;
 	if (!li->list ||
@@ -1935,7 +1940,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				      MPARAM mp2)
 {
-  DIRCNRDATA *dcd = WinQueryWindowPtr(hwnd, QWL_USER);
+  DIRCNRDATA *dcd = INSTDATA(hwnd);
+  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -2373,7 +2379,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       WinQueryWindowPos(dcd->hwndFrame, &swp);
       DefaultViewKeys(hwnd, dcd->hwndFrame, dcd->hwndParent, &swp, filename);
       if (fUnHilite)
-	UnHilite(hwnd, FALSE, &dcd->lastselection);
+	UnHilite(hwnd, FALSE, &dcd->lastselection, 0);
     }
     return 0;
 
@@ -2894,7 +2900,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		FreeListInfo(li);
 	      }
 	      else if (fUnHilite && SHORT1FROMMP(mp1) != IDM_EDIT)
-		UnHilite(hwnd, TRUE, &dcd->lastselection);
+		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	    else
 	      free(li);
@@ -3006,8 +3012,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      if (DoFileDrag(hwnd,
 			     dcd->hwndObject,
 			     mp2, dcd->arcname, NULL, TRUE)) {
-		if ((fUnHilite && wasemphasized) || NumItemsToUnhilite)
-		  UnHilite(hwnd, TRUE, &dcd->lastselection);
+		if ((fUnHilite && wasemphasized) || dcd->ulItemsToUnHilite)
+		  UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	      }
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
 		  fSplitStatus && hwndStatus2) {
@@ -3036,11 +3042,13 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  DosBeep(500, 100);		// fixme to know why beep?
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
           DosBeep(50, 100);		// fixme to know why beep?
-          if (NumItemsToUnhilite)
+          dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
+          if (dcdsrc->ulItemsToUnHilite) {
             saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-		                  hwnd,
-		                  GetPString(IDS_ERRORTEXT),
-                        GetPString(IDS_EXCEEDPMDRGLMT));
+		   hwnd,
+		   GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_EXCEEDPMDRGLMT));
+	  }
 	  if (li) {
 	    li->type = li->type == DO_MOVE ? IDM_ARCHIVEM : IDM_ARCHIVE;
 	    strcpy(li->targetpath, dcd->arcname);
