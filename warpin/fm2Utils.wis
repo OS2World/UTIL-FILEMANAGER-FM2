@@ -36,7 +36,7 @@
   CREATEOBJECT="WPProgram|Iconify|<FM2_Utilities>|EXENAME=$(7)\iconify.exe;PARAMETERS=%*;OBJECTID=<FM2Iconify>;"
   CREATEOBJECT="WPProgram|Delete Tree|<FM2_Utilities>|EXENAME=*;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/c ($(7)\deltree.exe [Enter directory to delete:] || pause);OBJECTID=<FM2Deltree>;"
   CONFIGSYS="SET PATH=$(7); | ADDRIGHT"
-  EXECUTE="$(7)\shadowmgr FM2UTILS"
+  EXECUTE="$(7)\shdwmgr FM2UTILS"
 >This package contains the FM/2 Utilities, a
 collection of more than 60  utilities which may
 be used with or without FM/2. Included are
