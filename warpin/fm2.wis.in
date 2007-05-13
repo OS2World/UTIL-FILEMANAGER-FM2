@@ -60,7 +60,6 @@
   EXECUTE="for %a in ($(1)\install.cmd $(1)\uninstal.cmd $(1)\install.dat) do if exist %a del %a"
   DEEXECUTE="$(1)\cfgmgr /DEINSTALL /UNATTENDED"
   DEEXECUTE="$(1)\utilsmgr /DELETE /UNATTENDED"
-  DEEXECUTE="del $(1)\fm3.ini & del $(1)\fm3ini.bak"
   CLEARPROFILE="USER\FM/2"
 
 
