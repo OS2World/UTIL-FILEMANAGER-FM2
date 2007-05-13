@@ -41,12 +41,6 @@ Shadow.i.filename = '..\docs\history'
 Shadow.i.longname = 'History'
 
 i = i + 1
-Shadow.i.package  = 'FM2'
-Shadow.i.folderid = '<FM3_Docs>'
-Shadow.i.filename = '..\docs\customizingresources.txt'
-Shadow.i.longname = 'Customizing^Resources'
-
-i = i + 1
 Shadow.i.package  = 'FM2UTILS'
 Shadow.i.folderid = '<FM2_Utilities>'
 Shadow.i.filename = '.\fm2utils.doc'

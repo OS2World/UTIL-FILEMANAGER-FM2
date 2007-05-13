@@ -57,7 +57,7 @@ FILE: fm2dump.cmd                1  debugtools    .
 FILE: fm2dump2.cmd               1  debugtools    .
 
 FILE: COPYING                    1  .        Docs
-FILE: CustomizingResources.txt   1  .        Docs
+
 FILE: HISTORY                    1  .        Docs
 FILE: README                     1  .        Docs
 
@@ -103,6 +103,6 @@ FILE: sort.tmp                   1  .  Tmplates
 FILE: utils.tmp                  1  .  Tmplates
 FILE: views.tmp                  1  .  Tmplates
 
-FILE: shadowmgr.cmd              1  .  Utils
+FILE: shdwmgr.cmd              1  .  Utils
 
 ;NOFILESPACKAGE: 10

@@ -157,7 +157,6 @@ Uncheck "Modify CONFIG.SYS" if you do not want your PATH changed.</TEXT>
   CREATEOBJECT="WPProgram|GNU General Public License|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\copying;OBJECTID=<FM3Copying>;"
   CREATEOBJECT="WPShadow|History (Shadow)|<FM3_Docs>|SHADOWID=$(1)\docs\history;OBJECTID=<FM2HistoryShadow>;"
   CREATEOBJECT="WPProgram|Read Me|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\readme;OBJECTID=<FM3Readme>;"
-  CREATEOBJECT="WPProgram|Customizing^Resources|<FM3_Docs>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(1)\docs\customizingresources.txt;OBJECTID=<FM3CustRes>;"
   CREATEOBJECT="WPProgram|FM/2 Utils Doc|<FM2_Utilities>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(7)\fm2utils.doc;OBJECTID=<FM2UtilsDoc>;"
 
 <WARPIN VERSION 1.0.15>

@@ -71,7 +71,7 @@ if WPI.scriptonly == 0 then
       if stream(WPI.archivename, 'c', 'query exists') = '' then
          WPI.WIC_pgm WPI.archivename' -a 'WPI.pkg.p.number' -c'WPI.pkg.p.dir' *'
       else
-         WPI.WIC_pgm WPI.archivename' -a 'WPI.pkg.p.number' -c'WPI.pkg.p.dir' fm2utils.doc license.txt shadowmgr.cmd'
+         WPI.WIC_pgm WPI.archivename' -a 'WPI.pkg.p.number' -c'WPI.pkg.p.dir' fm2utils.doc license.txt shdwmgr.cmd'
       if rc \= 0 then
          call ErrorExit 3 rc
    end
@@ -168,7 +168,7 @@ Init: procedure expose (globals)
    WPI.pkg.0         = 1
    WPI.pkg.1.number  = 7
    WPI.pkg.1.dir     = 'fm2utils'
-   'copy ..\shadowmgr.cmd fm2utils'
+   'copy ..\shdwmgr.cmd fm2utils'
 return
 
 /*

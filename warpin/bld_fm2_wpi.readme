@@ -31,7 +31,7 @@ anyone to create the WPI file needed for a Warpin installation of FM/2:
             c) Unzip the FM/2 distribution into <unzipped-dir>
             d) Perform the following COPY commands
                COPY <trunk-dir>\cfgmgr.cmd <unzippped-dir>
-               COPY <trunk-dir>\shadowmgr.cmd <unzippped-dir>
+               COPY <trunk-dir>\shdwmgr.cmd <unzippped-dir>
                COPY <trunk-dir>\utilsmgr.cmd <unzippped-dir>
                COPY <trunk-dir>\readme <unzippped-dir>
                COPY <trunk-dir>\debugtools\fm2dump.cmd <unzippped-dir>
