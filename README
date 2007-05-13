@@ -6,9 +6,9 @@
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
 File Manager/2 (FM/2) is a free OS/2(Warp)/eCS Presentation
-Manager 32-bit file/directory/archive maintenance utility 
-(a sort of super-Drives object, something midway between the 
-Drives objects and a more traditional file manager) with plenty 
+Manager 32-bit file/directory/archive maintenance utility
+(a sort of super-Drives object, something midway between the
+Drives objects and a more traditional file manager) with plenty
 of bells, whistles and utilities, drag and drop, context menus,
 toolbars, bubble help and accelerator keys. If you know how
 to use OS/2, you already know how to use most of FM/2. You
@@ -181,7 +181,7 @@ does, read the help under Settings notebook for that page
 
 If you prefer hardcopy help, print this file, run FM/2,
 press F1, click the "Print" button at the bottom (IBM View)
-or top (Newview)of the help window that appears and then print 
+or top (Newview)of the help window that appears and then print
 both the "Contents" and "All sections" (keep an eye on the printer,
 after page 100 of "All sections" as the Help Manager will
 begin printing its own help then -- you may want to abort
@@ -296,14 +296,14 @@ or add the directories of all applications to the LIBPATH, a
 rather huge pain in the, uh, neck.
 
 If things in FM/2 are suddenly acting strange after an
-upgrade, first check the intergrety of the install
-using wrapin. If it shows a problem rerun the install
-package. If that fails try installing to a new directory 
+upgrade, first check the integrity of the install using
+using WarpIN. If it shows a problem rerun the install
+package. If that fails try installing to a new directory
 or backup your existing directory so you can save any changes
 you made to the template files then uninstall and reinstall.
-Once you have FM/2 working migrate the *.ini,*.dat, *.tls, *.bb2
-and *.cmd from your old install/backup to recover your custom 
-settings   
+Once you have FM/2 working migrate the *.ini, *.dat, *.tls,
+*.bb2 and *.cmd from your old install/backup to recover your
+custom settings
 
 If the "FM/2 Online Help" object in the "FM/2 Docs"
 subfolder won't work properly, you've got a version of
@@ -349,7 +349,7 @@ WPS icons
 - Spurious WPS Objects Handles may be created during some
 operations
 
-- See http://svn.netlabs.org/fm2/report/1 for a complete list of 
+- See http://svn.netlabs.org/fm2/report/1 for a complete list of
 currently active bugs
 
 
@@ -375,17 +375,17 @@ There is a Yahoo group devoted to fm/2 at:
 
 You will find lots of friendly folks ready to help.
 
-FM/2 is moving to Netlabs (thanks Adrian)
+FM/2 is moving to Netlabs (thanks Adrian).
 
 Check it out at
 
   http://svn.netlabs.org/fm2
 
 Not everything is in place yet, but this is the place to
-enter defect tickets and enhancement requests (username netlabs 
-password guest; please include a valid email so we can contact you 
-if we need more information). Eventually,the mailing list and the 
-file archives will all move to the Netlabs server where you can 
+enter defect tickets and enhancement requests (username netlabs,
+password guest; please include a valid email so we can contact you
+if we need more information). Eventually, the mailing list and the
+file archives will all move to the Netlabs server where you can
 find the source code.
 
 You can reach us directly at:
