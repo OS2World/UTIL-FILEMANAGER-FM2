@@ -1136,7 +1136,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                       dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
       dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
       if (dcdsrc->ulItemsToUnHilite) {
-        saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+        saymsg(MB_OK | MB_INFORMATION,
 	       hwnd,
 	       GetPString(IDS_ERRORTEXT),
                GetPString(IDS_EXCEEDPMDRGLMT));
@@ -3044,7 +3044,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
           DosBeep(50, 100);		// fixme to know why beep?
           dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
           if (dcdsrc->ulItemsToUnHilite) {
-            saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+            saymsg(MB_OK | MB_INFORMATION,
 		   hwnd,
 		   GetPString(IDS_ERRORTEXT),
                    GetPString(IDS_EXCEEDPMDRGLMT));

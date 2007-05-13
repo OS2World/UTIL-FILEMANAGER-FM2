@@ -594,7 +594,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROMP(&cni));
       dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
       if (dcdsrc->ulItemsToUnHilite) {
-	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	saymsg(MB_OK | MB_INFORMATION,
 	       hwnd,
 	       GetPString(IDS_ERRORTEXT),
 	       GetPString(IDS_EXCEEDPMDRGLMT));
@@ -2862,7 +2862,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
 
 	  if (dcdsrc->ulItemsToUnHilite) {
-	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	    saymsg(MB_OK | MB_INFORMATION,
 		   hwnd,
 		   GetPString(IDS_ERRORTEXT),
 		   GetPString(IDS_EXCEEDPMDRGLMT));

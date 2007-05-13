@@ -550,7 +550,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
       dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
       if (dcdsrc->ulItemsToUnHilite) {
-	saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	saymsg(MB_OK | MB_INFORMATION,
 	       hwnd,
 	       GetPString(IDS_ERRORTEXT),
 	       GetPString(IDS_EXCEEDPMDRGLMT));
@@ -1384,7 +1384,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
           dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
 	  if (dcdsrc->ulItemsToUnHilite) {
-	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	    saymsg(MB_OK | MB_INFORMATION,
 		   hwnd,
 		   GetPString(IDS_ERRORTEXT),
 		   GetPString(IDS_EXCEEDPMDRGLMT));
