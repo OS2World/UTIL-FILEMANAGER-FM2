@@ -56,7 +56,7 @@
   CREATEOBJECT="WPProgram|Visual Tree|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VTREE.EXE;TITLE=Visual Tree;STARTUPDIR=$(1);OBJECTID=<FM/2_VTREE>;"
   EXECUTE="$(1)\cfgmgr /INSTALL /UNATTENDED"
   EXECUTE="$(1)\utilsmgr /UNATTENDED"
-  EXECUTE="$(1)\utils\shadowmgr FM2"
+  EXECUTE="$(1)\utils\shdwmgr FM2"
   EXECUTE="for %a in ($(1)\install.cmd $(1)\uninstal.cmd $(1)\install.dat) do if exist %a del %a"
   DEEXECUTE="$(1)\cfgmgr /DEINSTALL /UNATTENDED"
   DEEXECUTE="$(1)\utilsmgr /DELETE /UNATTENDED"
@@ -82,7 +82,7 @@ The FM/2 base package must be installed to a drive with long filename support!
   CREATEOBJECT="WPProgram|Iconify|<FM2_Utilities>|EXENAME=$(7)\iconify.exe;PARAMETERS=%*;OBJECTID=<FM2Iconify>;"
   CREATEOBJECT="WPProgram|Delete Tree|<FM2_Utilities>|EXENAME=*;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/c ($(7)\deltree.exe [Enter directory to delete:] || pause);OBJECTID=<FM2Deltree>;"
   CONFIGSYS="SET PATH=$(7); | ADDRIGHT"
-  EXECUTE="$(7)\shadowmgr FM2UTILS"
+  EXECUTE="$(7)\shdwmgr FM2UTILS"
 >This package contains the FM/2 Utilities, a
 collection of more than 60  utilities which may
 be used with or without FM/2. Included are
