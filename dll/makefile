@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2006 Steven H. Levine
+# Copyright (c) 2002, 2007 Steven H. Levine
 
 # 22 May 03 SHL Correct icon dependencies
 # 21 Nov 03 SHL Correct ipf dependents
@@ -22,6 +22,7 @@
 # 01 Sep 06 SHL Adjust fm3str.str case
 # 30 Sep 06 GKY Add del of Help file to clean
 # 19 Oct 06 SHL Move all .hlp logic build to ipf\makefile too
+# 12 May 07 SHL Drop obsolete macros
 
 # Warning - may still be missing some *.h dependencies
 
@@ -87,10 +88,6 @@ OFILES3=notebook.obj commafmt.obj seeall.obj autoview.obj delims.obj\
 	menu.obj worker.obj datamin.obj fm2cmd.obj newview.obj colors.obj\
 	uudecode.obj loadbmp.obj mainwnd2.obj remap.obj timer.obj grep2.obj\
 	common.obj string.obj wrappers.obj
-
-LFILES=$(OFILES:.obj=)
-LFILES2=$(OFILES2:.obj=)
-LFILES3=$(OFILES3:.obj=)
 
 !ifndef MAKERES
 
