@@ -6,7 +6,7 @@
   Version labels
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion VERREALMINOR
   11 Jun 03 SHL v3.02b: add JFS and FAT32 support
@@ -47,7 +47,7 @@
 #define VERMINOR       05
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-#define VERREALMINOR   "beta08 " __DATE__ " " __TIME__
+#define VERREALMINOR   "09 " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 

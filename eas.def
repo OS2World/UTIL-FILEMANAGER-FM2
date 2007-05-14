@@ -1,6 +1,6 @@
 ; $Id$
 NAME EAS WINDOWAPI
 NEWFILES
-DESCRIPTION '@#SLAInc:3.05.beta08#@##1## 03/14/2007 03:05:08      SLAMain::EN:US:0:U:@@FM/2 EA Editor MiniApp Copyright (c) 1993, 1998 by M. Kimes Copyright (c) 2005, 2007 Steven Levine and Associates, Inc.'
+DESCRIPTION '@#SLAInc:3.05.09#@##1## 05/13/2007 03:05:08      SLAMain::EN:US:0:U:@@FM/2 EA Editor MiniApp Copyright (c) 1993, 1998 by M. Kimes Copyright (c) 2005, 2007 Steven Levine and Associates, Inc.'
 PROTMODE
 STACKSIZE 0x50000
