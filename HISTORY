@@ -1,7 +1,11 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.05.09 
- o Update readme to reflect warpin install and other code changes (David, John, Gregg) 
+3.06 (pending)
+ o Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+ o Mouse button 3 white space click to fail silently
+
+3.05.09
+ o Update readme to reflect warpin install and other code changes (David, John, Gregg)
  o Avoid spurious add_udir error reports (Steven)
  o Harden drag/drop error recovery (Steven, Gregg)
  o Add DbgMsg (Steven)
@@ -15,7 +19,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Fix MMPM file scan to not try to play nonmedia files (Gregg)
  o "Replace" in commands dialog now leave list order intact (Gregg)
  o Code cleanup (ROT13 compiler warning, removed win class pstrings QWL_USER) (Gregg)
- o Removed original Readme from distribution package 
+ o Removed original Readme from distribution package
 
 3.05 beta08
  o Add SelectDriveIcon function (Gregg)

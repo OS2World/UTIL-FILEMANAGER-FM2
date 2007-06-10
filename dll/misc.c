@@ -22,6 +22,7 @@
   31 Aug 06 SHL disable_menuitem: rework args to match name - sheesh
   10 Oct 06 GKY Add NDFS32 support
   18 Feb 07 GKY More drive type and drive icon support
+  10 Jun 07 GKY Add IsFm2Window as part of work around PM drag limit
 
 ***********************************************************************/
 

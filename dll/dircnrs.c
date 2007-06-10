@@ -25,6 +25,7 @@
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checking.
   12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
+  10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
 
 ***********************************************************************/
 

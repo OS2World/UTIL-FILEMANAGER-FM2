@@ -46,6 +46,7 @@
   21 Apr 07 GKY Find FM2Utils by path or utils directory eliminate fAddUtils global
   23 Apr 07 SHL Add Win_Error_NoMsgBox
   12 May 07 SHL Add ulItemsToUnHilite to DIRCNRDATA, pass to Unhilite as arg
+  10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
 
 ***********************************************************************/
 

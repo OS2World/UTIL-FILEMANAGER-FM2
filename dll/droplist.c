@@ -17,6 +17,7 @@
   19 Apr 07 SHL Use FreeDragInfoData
   19 Apr 07 SHL Add more drag/drop error checking
   21 Apr 07 SHL Add debug code to track down reason for PMERR_SOURCE_SAME_AS_TARGET
+  10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
 
 ***********************************************************************/
 

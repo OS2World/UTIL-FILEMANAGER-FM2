@@ -30,6 +30,8 @@
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   19 Apr 07 SHL Add more drag/drop error checking
   12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
+  10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  10 Jun 07 GKY Mouse button 3 white space click to fail silently
 
 ***********************************************************************/
 
