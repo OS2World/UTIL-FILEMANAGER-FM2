@@ -461,13 +461,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr, NULL, FALSE, MPVOID, MPFROMP(&cni));
-      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
-      if (dcdsrc->ulItemsToUnHilite) {
-	saymsg(MB_OK | MB_INFORMATION,
-	       hwnd,
-	       GetPString(IDS_ERRORTEXT),
-	       GetPString(IDS_EXCEEDPMDRGLMT));
-      }
+      CheckPmDrgLimit(cni.pDragInfo);
       if (li) {
 	li->type = fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -2262,14 +2256,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
-	  if (dcdsrc->ulItemsToUnHilite) {
-	    saymsg(MB_OK | MB_INFORMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_EXCEEDPMDRGLMT));
-	  }
+          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    if (!*li->targetpath) {
 	      li->type = IDM_COLLECT;

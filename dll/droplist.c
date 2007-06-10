@@ -36,7 +36,33 @@ static PSZ pszSrcFile = __FILE__;
 
 static ULONG GetDropCount(HWND hwnd, MPARAM mp1);
 
-#pragma alloc_text(DROPLIST,DoFileDrop,FullDrgName,TwoDrgNames,GetOneDrop)
+#pragma alloc_text(DROPLIST,DoFileDrop,FullDrgName,TwoDrgNames,GetOneDrop,CheckPmDrgLimit)
+
+BOOL CheckPmDrgLimit(PDRAGINFO pDInfo)
+{
+    /*
+     * Checks for FM2 source window then checks window words
+     * for ulItemsToUnHilite and if it is not zero displays a
+     * message to the users that not all items are being dragged
+     * returns TRUE on success
+     */
+	  if (!DrgAccessDraginfo(pDInfo)) {
+	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                      "DrgAccessDraginfo");
+            return FALSE;
+	  }
+	  else if (IsFm2Window(pDInfo->hwndSource, FALSE)) {
+	    DIRCNRDATA *dcdsrc = INSTDATA(pDInfo->hwndSource);
+	    if (dcdsrc->ulItemsToUnHilite) {
+ 	    saymsg(MB_OK | MB_INFORMATION,
+ 		   HWND_DESKTOP,
+ 		   GetPString(IDS_ERRORTEXT),
+ 		   GetPString(IDS_EXCEEDPMDRGLMT));
+	    }
+	    DrgFreeDraginfo(pDInfo);
+          }
+          return TRUE;
+}
 
 BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 		 char *buffer2, ULONG buflen2)

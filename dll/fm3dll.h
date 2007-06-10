@@ -677,6 +677,7 @@ char *RootName(char *filename);
 APIRET MakeFullName(char *filename);
 
 /* misc.c */
+BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
 VOID SetShiftState(VOID);
 void EmphasizeButton(HWND hwnd, BOOL on);
 void DrawTargetEmphasis(HWND hwnd, BOOL on);
@@ -1067,6 +1068,7 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 		     MPARAM mp1, MPARAM mp2);
 VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo);
+BOOL CheckPmDrgLimit(PDRAGINFO pDInfo);
 
 /* shadow.c */
 HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,

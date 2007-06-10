@@ -1134,14 +1134,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
                       dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
-      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
-      if (dcdsrc->ulItemsToUnHilite) {
-        saymsg(MB_OK | MB_INFORMATION,
-	       hwnd,
-	       GetPString(IDS_ERRORTEXT),
-               GetPString(IDS_EXCEEDPMDRGLMT));
-      }
-
+      CheckPmDrgLimit(cni.pDragInfo);
       if (li) {
 	li->type = (msg == DM_DISCARDOBJECT) ? IDM_DELETE : IDM_PRINT;
 	if (!li->list ||
@@ -3042,13 +3035,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  DosBeep(500, 100);		// fixme to know why beep?
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
           DosBeep(50, 100);		// fixme to know why beep?
-          dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
-          if (dcdsrc->ulItemsToUnHilite) {
-            saymsg(MB_OK | MB_INFORMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
-                   GetPString(IDS_EXCEEDPMDRGLMT));
-	  }
+          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    li->type = li->type == DO_MOVE ? IDM_ARCHIVEM : IDM_ARCHIVE;
 	    strcpy(li->targetpath, dcd->arcname);

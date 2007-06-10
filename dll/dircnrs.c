@@ -591,14 +591,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
-		   MPFROMP(&cni));
-      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
-      if (dcdsrc->ulItemsToUnHilite) {
-	saymsg(MB_OK | MB_INFORMATION,
-	       hwnd,
-	       GetPString(IDS_ERRORTEXT),
-	       GetPString(IDS_EXCEEDPMDRGLMT));
-      }
+                   MPFROMP(&cni));
+      CheckPmDrgLimit(cni.pDragInfo);
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -2742,9 +2736,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                       "DrgAccessDraginfo");
 	      return (MRFROM2SHORT(DOR_NEVERDROP, 0));
           }
-	  if (*dcd->directory &&
-	      (driveflags[toupper(*dcd->directory) - 'A'] &
-	       DRIVE_NOTWRITEABLE)) {
+          if (*dcd->directory &&
+	     (driveflags[toupper(*dcd->directory) - 'A'] &
+	      DRIVE_NOTWRITEABLE)) {
 	    DrgFreeDraginfo(pDInfo);
 	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to link */
 				DO_LINK);	/* (compare) only */
@@ -2858,16 +2852,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ULONG action = UM_ACTION;
 
           DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
-	  li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
-	  dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
-
-	  if (dcdsrc->ulItemsToUnHilite) {
-	    saymsg(MB_OK | MB_INFORMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_EXCEEDPMDRGLMT));
-	  }
-
+          li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
+          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    if (li->list && li->list[0] && IsRoot(li->list[0]))
 	      li->type = DO_LINK;

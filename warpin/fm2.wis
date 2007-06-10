@@ -18,7 +18,7 @@
 
 <HEAD>
 <REXX NAME=UtilsCheck>
-   if stream(WirexxGetEnv('WI_ARCHIVE_PATH') || '\fm2utils-1-0.wpi', 'c', 'query exists') = '' then
+   if stream(WirexxGetEnv('WI_ARCHIVE_PATH') || '\fm2utils-1-1.wpi', 'c', 'query exists') = '' then
       return '3'
    else
       return '5'
@@ -71,7 +71,7 @@ The FM/2 base package must be installed to a drive with long filename support!
 <PCK INDEX=7
   PACKAGEID="Netlabs\FM2 Utilities\FM2Utils\1\0\0"
   TITLE="FM/2 Utilities"
-  EXTERNAL="fm2utils-1-0.wpi"
+  EXTERNAL="fm2utils-1-1.wpi"
   TARGET="$(1)\Utils"
   SELECT
   CREATEOBJECT="WPFolder|FM/2 Utilities|<WP_DESKTOP>|OBJECTID=<FM2_Utilities>;"

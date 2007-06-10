@@ -1240,13 +1240,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&cdi, 0, sizeof(cdi));
       cdi.pDragInfo = mp1;
       li = DoFileDrop(hwnd, NULL, FALSE, mp1, MPFROMP(&cdi));
-      dcd = INSTDATA(cdi.pDragInfo->hwndSource);
-      if (dcd->ulItemsToUnHilite) {
-	saymsg(MB_OK | MB_INFORMATION,
-	       hwnd,
-	       GetPString(IDS_ERRORTEXT),
-	       GetPString(IDS_EXCEEDPMDRGLMT));
-      }
+      CheckPmDrgLimit(cdi.pDragInfo);
       if (li) {
 	li->type = id;
 	if (!li->list || !li->list[0])
@@ -1815,14 +1809,8 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cnd.pRecord = NULL;
       li = DoFileDrop(hwnd,
 		      NULL,
-		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
-      dcd = INSTDATA(cnd.pDragInfo->hwndSource);
-      if (dcd && dcd->ulItemsToUnHilite) {
-	saymsg(MB_OK | MB_INFORMATION,
-	       hwnd,
-	       GetPString(IDS_ERRORTEXT),
-	       GetPString(IDS_EXCEEDPMDRGLMT));
-      }
+                      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
+      CheckPmDrgLimit(cnd.pDragInfo);
       if (li) {
 	strcpy(li->targetpath, szDrv);
 	strcat(li->targetpath, "\\");

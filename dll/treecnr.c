@@ -547,14 +547,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
-		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
-      dcdsrc = INSTDATA(cni.pDragInfo->hwndSource);
-      if (dcdsrc->ulItemsToUnHilite) {
-	saymsg(MB_OK | MB_INFORMATION,
-	       hwnd,
-	       GetPString(IDS_ERRORTEXT),
-	       GetPString(IDS_EXCEEDPMDRGLMT));
-      }
+                      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+      CheckPmDrgLimit(cni.pDragInfo);
       if (li) {
 	li->type = ((fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE);
 	if (!PostMsg(hwnd, UM_MASSACTION, MPFROMP(li), MPVOID))
@@ -1219,7 +1213,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  CM_QUERYRECORDFROMRECT,
 				  MPFROMLONG(CMA_FIRST), MPFROMP(&pqr));
       if (!pci || (INT) pci == -1)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	break; //Probable B3 click on white space Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	memset(&nr, 0, sizeof(nr));
 	nr.hwndCnr = hwnd;
@@ -1381,14 +1375,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          dcdsrc = INSTDATA(((PCNRDRAGINFO)mp2)->pDragInfo->hwndSource);
-	  if (dcdsrc->ulItemsToUnHilite) {
-	    saymsg(MB_OK | MB_INFORMATION,
-		   hwnd,
-		   GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_EXCEEDPMDRGLMT));
-	  }
+          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    if (!*li->targetpath) {
 	      if (li->list[0])
