@@ -13,6 +13,7 @@
   18 Mar 07 GKY Fixed misindentifycation of nonmultimedia files by ShowMultiMedia
   18 Mar 07 GKY Open mp3, ogg & flac files with OS2 object default since fm2play fails
   21 Apr 07 GKY Find FM2Utils by path or utils directory
+  09 Jun 07 SHL ShowMultimedia: Initialize hwnd so that OpenObject might work
 
 ***********************************************************************/
 
@@ -51,7 +52,7 @@ BOOL ShowMultimedia(CHAR * filename)
   FOURCC fccStorageSystem = 0;
   MMFORMATINFO mmFormatInfo;
   APIRET rc, rc1;
-  HWND hwnd;
+  HWND hwnd = HWND_DESKTOP;
   char *p;
 
   if (no_mmos2 || !filename || !*filename)

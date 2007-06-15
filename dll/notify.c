@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <stddef.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -62,8 +63,8 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	RGB2 rgb2F, rgb2;
 
 	memset(&rgb2F, 0, sizeof(RGB2));
-	rgb2F.bRed = 65;
-	rgb2.bRed = rgb2.bGreen = rgb2.bBlue = 255;
+	rgb2F.bRed = (BYTE)65;
+	rgb2.bRed = rgb2.bGreen = rgb2.bBlue = (BYTE)255;
 	rgb2.fcOptions = 0;
 	SetPresParams(hwnd, &rgb2, &rgb2F, &rgb2, GetPString(IDS_8HELVTEXT));
 	if (hwndMain) {

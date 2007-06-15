@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -885,7 +886,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else {
 	if (pState->working) {
 	  pState->dying = TRUE;
-	  pState->chStopFlag = 0xff;
+	  pState->chStopFlag = (BYTE)0xff;
 	  DosBeep(1000, 100);		// Complain?
 	}
 	else
@@ -898,14 +899,14 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     pState = INSTDATA(hwnd);
     if (pState)
-      pState->chStopFlag = 0xff;
+      pState->chStopFlag = (BYTE)0xff;
     DosSleep(1L);
     break;
 
   case WM_DESTROY:
     pState = INSTDATA(hwnd);
     if (pState) {
-      pState->chStopFlag = 0xff;
+      pState->chStopFlag = (BYTE)0xff;
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
       DosSleep(33L);

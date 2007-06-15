@@ -53,6 +53,7 @@
 #include <time.h>
 #include <share.h>
 #include <limits.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -2113,7 +2114,6 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PCNRITEM pci;
 	  ULONG numitems;
 	  USHORT usOperation;
-		APIRET rc;
 
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;

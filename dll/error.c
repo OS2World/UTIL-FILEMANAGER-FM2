@@ -232,7 +232,6 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
   va_list va;
-  PSZ psz;
 
   // Format caller's message
   va_start(va, pszFmt);
@@ -316,8 +315,6 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner,
 	       PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
-  PSZ psz;
-  HAB hab;
   va_list va;
 
   // Format callers message

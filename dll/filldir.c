@@ -108,7 +108,6 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
 {
   HPOINTER hptr2;
   HPOINTER hptr3;
-  LONG l;
   UINT u;
 
   static HPOINTER hptrPMFile;
@@ -949,10 +948,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   fDummy = TRUE;
   *suggest = 0;
-  for (x = 0; x < 26; x++)
+  for (x = 0; x < 26; x++) {
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
 		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
+  }
   memset(driveserial, -1, sizeof(driveserial));
   {
     ULONG startdrive = 3L;
@@ -973,23 +973,25 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      pszSrcFile, __LINE__, GetPString(IDS_FILLDIRQCURERRTEXT));
     exit(0);
   }
-  for (x = 0; x < 26; x++)
+  for (x = 0; x < 26; x++) {
     if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE))
       numtoinsert++;
-  if (numtoinsert)
+  }
+  if (numtoinsert) {
     pciFirst = WinSendMsg(hwndCnr,
 			  CM_ALLOCRECORD,
 			  MPFROMLONG(EXTRA_RECORD_BYTES2),
 			  MPFROMLONG((ULONG) numtoinsert));
+  }
   if (!pciFirst) {
     Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__, IDS_CMALLOCRECERRTEXT);
     exit(0);
   }
   else {
+
     pci = pciFirst;
     for (x = 0; x < 26; x++) {
-        if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE))
-          {
+      if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
 	*szDrive = (CHAR) x + 'A';
 
 	{
@@ -1141,7 +1143,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
       else if (!(ulDriveMap & (1L << x)))
 	driveflags[x] |= DRIVE_INVALID;
-    }
+    } // for drives
+
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
     drivesbuilt = TRUE;
     /* insert the drives */
@@ -1160,6 +1163,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__,
 		   IDS_CMINSERTERRTEXT);
     }
+
     /* move cursor onto the default drive rather than the first drive */
     if (!fSwitchTree) {
       pci = (PCNRITEM) WinSendMsg(hwndCnr,
@@ -1180,10 +1184,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
     }
 
-    if (hwndParent)
+    if (hwndParent) {
       WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
 				 MAIN_DRIVELIST),
 		 LM_DELETEALL, MPVOID, MPVOID);
+    }
 
     if (fShowEnv) {
       RECORDINSERT ri;
@@ -1263,7 +1268,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  WinSendMsg(hwndCnr,
 		     CM_FREERECORD, MPFROMP(&pciParent), MPFROMSHORT(1));
       }
-    }
+    } // if show env
 
     x = 0;
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
@@ -1294,11 +1299,12 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    }
 	  }
 	}
-	else
+	else {
 	  WinSendMsg(hwndCnr,
 		     CM_INVALIDATERECORD,
 		     MPFROMP(&pci),
 		     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+	}
 
 	WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
 				   MAIN_DRIVELIST),

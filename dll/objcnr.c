@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -406,8 +407,8 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       data = INSTDATA(hwnd);
       if (data) {
 	if (data->working) {
-	  data->dying = TRUE;
-	  data->stopflag = 0xff;
+	  data->dying = (CHAR)TRUE;
+	  data->stopflag = (CHAR)0xff;
 	  break;
 	}
 	WinDismissDlg(hwnd, 0);

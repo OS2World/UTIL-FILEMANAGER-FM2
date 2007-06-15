@@ -52,6 +52,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -1540,7 +1541,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       RGB2 rgb;
 
       memset(&rgb, 0, sizeof(rgb));
-      rgb.bRed = 128;
+      rgb.bRed = (BYTE)128;
       SetPresParams(hwnd,
 		    &RGBGREY, &rgb, &RGBGREY, GetPString(IDS_8HELVTEXT));
       SetTargetDir(hwnd, TRUE);

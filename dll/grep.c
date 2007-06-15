@@ -348,9 +348,7 @@ VOID GrepThread(VOID * arg)
 	x++;
 	if (WinIsWindow(grep.ghab, grep.hwndFiles))
 	  doinsertion(&grep);		/* insert any remaining objects */
-      }
-
-    ShutDownThread:			/* kill pm connection, end thread */
+      } // while
 
       if (WinIsWindow(grep.ghab, grep.hwndFiles))
 	doinsertion(&grep);		/* insert any remaining objects */
@@ -844,9 +842,7 @@ static BOOL doonefile(GREP * grep, CHAR * filename, FILEFINDBUF4 * f)
       free(input);
       DosSleep(1L);
     }
-  }
-
-Match:
+  } // if
 
   if (strmatch)
     ret = insert_grepfile(grep, filename, f);
@@ -1256,7 +1252,7 @@ static VOID FillDupes(GREP * g)
 		  }
 		  if ((*r)->CRC != -1L && i->CRC != -1L &&
 		      (*r)->CRC != i->CRC) {
-		    *r++;
+		    *r += 1;
 		    continue;
 		  }
 		}
@@ -1322,7 +1318,7 @@ static VOID FillDupes(GREP * g)
 	  y++;
 	  pi = strrchr(i->name, '\\');
 	  if (pi)
-	    *pi++;
+	    pi++;
 	  else
 	    pi = i->name;
 	  c = g->dupehead;

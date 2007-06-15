@@ -72,7 +72,7 @@ PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
     }
     pci = WinSendMsg(hwndCnr, CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pci));
   }
-Abort:
+
   return NULL;				/* failure */
 }
 

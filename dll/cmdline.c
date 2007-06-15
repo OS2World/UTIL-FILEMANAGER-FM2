@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+#include <io.h>				// unlink
 
 #include "fm3dll.h"
 #include "fm3dlg.h"

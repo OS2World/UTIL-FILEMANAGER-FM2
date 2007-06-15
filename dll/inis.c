@@ -32,6 +32,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -1486,7 +1487,6 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   PFNWP oldproc = (PFNWP) WinQueryWindowPtr(hwnd, QWL_USER);
   static HWND hwndPopup = (HWND) 0;
-  APIRET rc;
 
   switch (msg) {
   case WM_SETFOCUS:

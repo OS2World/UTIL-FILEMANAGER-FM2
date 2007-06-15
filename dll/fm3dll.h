@@ -46,16 +46,18 @@
   21 Apr 07 GKY Find FM2Utils by path or utils directory eliminate fAddUtils global
   23 Apr 07 SHL Add Win_Error_NoMsgBox
   12 May 07 SHL Add ulItemsToUnHilite to DIRCNRDATA, pass to Unhilite as arg
+  05 Jun 07 SHL Update for OpenWatcom
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
 
 ***********************************************************************/
 
+#if defined(__IBMC__)
 #if __IBMC__ != 430
 #error VAC365 required for long long support
 #endif
-
 #if !defined(_LONG_LONG)
 #error Long long support not enabled
+#endif
 #endif
 
 #ifdef DEFINE_GLOBALS
@@ -1119,8 +1121,10 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+#if defined(__IBMC__)
 /* fsopen.c */
 FILE *_fsopen(CHAR * filename, CHAR * mode, INT sharemode, ...);
+#endif
 
 /* seticon.c */
 MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);

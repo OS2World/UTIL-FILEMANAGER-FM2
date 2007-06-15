@@ -1,3 +1,20 @@
+
+/***********************************************************************
+
+  $Id$
+
+  _fsopen for IBMC
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2007 Steven H. Levine
+
+  15 Oct 02 SHL Baseline
+  05 Jun 07 SHL Update for OpenWatcom
+
+***********************************************************************/
+
+#if defined(__IBMC__)
+
 #define INCL_WIN
 #define INCL_DOS
 
@@ -68,3 +85,5 @@ FILE *_fsopen(CHAR * filename, CHAR * mode, INT sharemode, ...)
   }
   return fp;
 }
+
+#endif

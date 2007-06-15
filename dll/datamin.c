@@ -33,6 +33,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -601,7 +602,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!pDM || pDM->qfsi_rc || pDM->qfsa_rc)
 	  pszFSystem = "N/A";
 	else {
-	  pszFSystem = pDM->fsqb2.szName + pDM->fsqb2.cbName + 1;
+	  pszFSystem = (PCHAR)(pDM->fsqb2.szName) + pDM->fsqb2.cbName + 1;
 	  pszFSystem[15] = 0;
 	}
 	sprintf(s,

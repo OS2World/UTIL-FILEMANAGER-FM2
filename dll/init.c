@@ -121,7 +121,7 @@ VOID FindSwapperDat(VOID)
 	      p++;
 	      pp = p;
 	      while (*pp && *pp != '\"')
-		*pp++;
+		*pp += 1;
 	      if (*pp)
 		*pp = 0;
 	    }
@@ -254,7 +254,7 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
 
     /* end of strings */
     memset(&RGBBLACK, 0, sizeof(RGB2));
-    RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = 204;
+    RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = (BYTE)204;
     RGBGREY.fcOptions = 0;
     FM3UL = *(ULONG *) FM3Str;
     DEBUG_STRING = "Debug -- please report to author";
@@ -299,7 +299,11 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   if (fToolsChanged)
     save_tools(NULL);
 
+#  ifdef __IBMC__
   _fcloseall();
+# else // __WATCOMC__
+  fcloseall();
+# endif
 
   save_dir(s);
   if (s[strlen(s) - 1] != '\\')

@@ -465,7 +465,7 @@ VOID RemoveAll(HWND hwndCnr, ULONGLONG * pullTotalBytes,
     if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
       didone = TRUE;
       if (pulTotalFiles)
-	*pulTotalFiles--;
+	*pulTotalFiles -= 1;
       if (pullTotalBytes)
 	*pullTotalBytes -= (pci->cbFile + pci->easize);
       WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),

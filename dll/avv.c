@@ -60,7 +60,6 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest);
 VOID EditArchiverDefinition(HWND hwnd)
 {
   ARCDUMP ad;
-  FILE *fp;
   ARC_TYPE *pat;
 
   // Allow multiple edits

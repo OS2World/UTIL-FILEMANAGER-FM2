@@ -34,6 +34,7 @@
 #include <stddef.h>
 #include <share.h>
 #include <time.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -1614,7 +1615,6 @@ VOID MassAction(VOID * args)
 		      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
 	    FreeList(files);
 	  }
-	Abort:
 	  if (WinIsWindow(hab2, wk->hwndCnr))
 	    PostMsg(wk->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
 

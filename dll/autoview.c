@@ -16,7 +16,7 @@
   22 Jul 06 SHL Check more run time errors
   15 Aug 06 SHL Use Runtime_Error more
   03 Nov 06 SHL Renames
- 30  Mar 07 GKY Remove GetPString for window class names
+  30 Mar 07 GKY Remove GetPString for window class names
 
 ***********************************************************************/
 
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <process.h>			// _beginthread
 
 #include "fm3dll.h"
 #include "fm3dlg.h"

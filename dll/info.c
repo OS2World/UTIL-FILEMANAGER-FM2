@@ -147,7 +147,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  0, FSAIL_QUERYNAME, (PFSQBUFFER2) s, &Size);
 	    if (!rc) {
 	      pfsq = (PFSQBUFFER2) s;
-	      pfsn = pfsq->szName + pfsq->cbName + 1;
+	      pfsn = (PCHAR)(pfsq->szName) + pfsq->cbName + 1;
 	      pfsd = pfsn + pfsq->cbFSDName + 1;
 	      if (pfsq->cbFSAData && pfsd && *pfsd) {
 		sprintf(s, " (%s)", pfsd);

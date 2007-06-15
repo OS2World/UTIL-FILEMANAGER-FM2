@@ -68,7 +68,7 @@ char *RootName(char *filename)
   char *p = NULL, *pp;
 
   // Return filename, strip path parts
-  // Return empty string when filename ends with \
+  // Return empty string when filename ends with backslash
 
   if (filename) {
     p = strrchr(filename, '\\');
@@ -234,7 +234,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   }
 
   pfsq = (PFSQBUFFER2) pvBuffer;
-  pfsn = pfsq->szName + pfsq->cbName + 1;
+  pfsn = (PCHAR)(pfsq->szName) + pfsq->cbName + 1;
   pfsd = pfsn + pfsq->cbFSDName + 1;
 
   if (pszFileSystem) {

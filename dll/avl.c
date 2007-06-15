@@ -702,7 +702,6 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   CHAR szItemText[256];
   CHAR szPCItemText[256];	// Parent or child item text
   SHORT i;
-  APIRET apiret;
   BOOL fShowAll;
 
   static SHORT sLastSelect = LIT_NONE;

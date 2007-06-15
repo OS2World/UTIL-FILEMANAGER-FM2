@@ -46,6 +46,7 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+#include <process.h>			// _beginthread
 
 #pragma data_seg(DATA1)
 #pragma alloc_text(DIRCNRS,DirCnrWndProc,DirObjWndProc,DirClientWndProc)
@@ -1058,7 +1059,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd = INSTDATA(hwnd);
   DIRCNRDATA *dcdsrc;
-  APIRET rc;
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -3012,7 +3012,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 	  HWND hwndMLE;
 	  static CHAR szData[CCHMAXPATH];
-	  CHAR testname[CCHMAXPATH], *p;
+	  CHAR testname[CCHMAXPATH];
 
 	  if (!pci && !pfi) {
 	    hwndMLE = WinWindowFromID(hwnd, CID_MLE);

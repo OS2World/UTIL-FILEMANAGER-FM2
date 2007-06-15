@@ -25,7 +25,7 @@
 
 #include "fm3dll.h"
 
-static PSZ pszSrcFile = __FILE__;
+// static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(PRESPARAM,CopyPresParams,SetPresParams,IfNoParam)
 #pragma alloc_text(PRESPARAM,PresParamChanged,RestorePresParams)

@@ -37,6 +37,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+#include <malloc.h>			// headmin
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -668,7 +669,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2) {
       PFIELDINFO pfi = ((PCNREDITDATA) mp2)->pFieldInfo;
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
-      CHAR szData[CCHMAXPATH], testname[CCHMAXPATH], *p;
+      CHAR szData[CCHMAXPATH], testname[CCHMAXPATH];
       HWND hwndMLE = WinWindowFromID(hwnd, CID_MLE);
 
       if (pci && (INT) pci != -1 && !IsRoot(pci->szFileName)) {
