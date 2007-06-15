@@ -445,7 +445,6 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 {
   ULONG size;
   DIRCNRDATA *dcd;
-  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case WM_CREATE:
@@ -912,7 +911,6 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				     MPARAM mp2)
 {
   DIRCNRDATA *dcd = INSTDATA(hwnd);
-  DIRCNRDATA *dcdsrc;
   ULONG size;
 
   static INT savedSortFlags;

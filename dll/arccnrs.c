@@ -1120,7 +1120,6 @@ MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
-  DIRCNRDATA *dcdsrc;
   PSZ psz;
 
   switch (msg) {
@@ -1936,7 +1935,6 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				      MPARAM mp2)
 {
   DIRCNRDATA *dcd = INSTDATA(hwnd);
-  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case DM_PRINTOBJECT:

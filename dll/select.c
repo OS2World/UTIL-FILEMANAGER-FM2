@@ -18,6 +18,7 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   19 Apr 07 SHL Sync with NumItemsToUnhilite mods
   12 May 07 SHL Use dcd->ulItemsToUnHilite
+  14 Jun 07 SHL SelectAll: make odd expression go away
 
 ***********************************************************************/
 
@@ -62,11 +63,11 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite)
       WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROM2SHORT(FALSE, CRA_SELECTED));
       if (!all)
-          break;
+	  break;
       // Count is one extra to ensure non-zero elsewhere
       // x is 0 based index
       if (x + 2 == ulItemsToUnHilite)
-        break;
+	break;
       if (list)
 	AddToList(pci->szFileName, list, &numfiles, &numalloc);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
@@ -198,20 +199,26 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	    if (*Mask.pszMasks[x] != '/') {
 	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
 			    strchr(Mask.pszMasks[x], ':')) ?
-			   pci->szFileName : file, Mask.pszMasks[x], FALSE))
+			     pci->szFileName :
+			     file,
+			   Mask.pszMasks[x],
+			   FALSE)) {
 		markit = TRUE;
+	      }
 	    }
 	    else {
-	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||  //fixme always true?
-			    strchr(Mask.pszMasks[x], ':'), FALSE) ?
-			   pci->szFileName : file, Mask.pszMasks[x] + 1,
+	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
+			    strchr(Mask.pszMasks[x], ':')) ?
+			      pci->szFileName :
+			      file,
+			    Mask.pszMasks[x] + 1,
 			   FALSE)) {
 		markit = FALSE;
 		break;
 	      }
 	    }
 	  }
-	}
+	} // for
       }
     }
     if (markit && text && *text && !(pci->attrFile & FILE_DIRECTORY)) {
@@ -502,7 +509,6 @@ VOID SetMask(PSZ maskstr, MASK * mask)
   // Build array of pointers
   p = mask->szMaskCopy;
   strcpy(p, mask->szMask);
-  // memset(mask->pszMasks,0,sizeof(mask->pszMasks);    // fixme to be gone
   // Allow up to 25 masks - ignore extras
   for (x = 0; *p && x < 25; x++) {
     mask->pszMasks[x] = p;
@@ -766,7 +772,7 @@ Restart:
     break;
 
   case IDM_SELECTSAMECONTENT:
-    // fixme
+    // fixme why?
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
 	  *pciSa[x]->szFileName &&
@@ -816,8 +822,8 @@ Restart:
 		}
 		else if (memcmp(buf1, buf2, numread1))
 		  break;
-	      }				// while
-	    }				// same len
+	      }	// while
+	    } // same len
 	  }
 	}
 
@@ -1187,7 +1193,6 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
   if (numwindows < 2) {
     FreeCnrs(Cnrs, numwindows);
     Runtime_Error(pszSrcFile, __LINE__, "expected two windows");
-    // fixme DosBeep(250,100);
     Notify(GetPString(IDS_COMPSEL2ORMORETEXT));
     return;
   }

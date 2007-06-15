@@ -22,6 +22,7 @@
   18 Feb 07 GKY Add ISOFS, RAMFS support
   30 Mar 07 GKY Defined golbals for removing GetPString for window class names
   21 Apr 07 GKY Find FM2Utils by path or utils directory eleminate fAddUtils global
+  15 Jun 07 SHL Make OpenWatcom compatible
 
 ***********************************************************************/
 
@@ -49,7 +50,12 @@
 #include "fm3str.h"
 #include "version.h"
 
+#ifdef __WATCOMC__
+#pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
+#else // __IBMC__
 #pragma alloc_text(INIT,_DLL_InitTerm,InitFM3DLL,DeInitFM3DLL)
+#endif
+
 #pragma alloc_text(INIT1,StartFM3,FindSwapperDat)
 
 extern int _CRT_init(void);
@@ -158,6 +164,125 @@ VOID FindSwapperDat(VOID)
     }
   }
 }
+
+#ifdef __WATCOMC__
+
+unsigned APIENTRY LibMain(unsigned hModule,
+		          unsigned ulFlag)
+{
+  CHAR *env;
+  CHAR stringfile[CCHMAXPATH];
+  FILESTATUS3 fsa;
+  APIRET rc;
+
+  switch (ulFlag) {
+  case 0:
+    // 14 Jun 07 SHL Already done for us
+    // if (_CRT_init() == -1)
+    //   return 0UL;
+    FM3DllHandle = hModule;
+    strcpy(stringfile, "FM3RES.STR");
+    env = getenv("FM3INI");
+    if (env) {
+      DosError(FERR_DISABLEHARDERR);
+      rc = DosQueryPathInfo(env, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa));
+      if (!rc) {
+	if (fsa.attrFile & FILE_DIRECTORY) {
+	  strcpy(stringfile, env);
+	  if (stringfile[strlen(stringfile) - 1] != '\\')
+	    strcat(stringfile, "\\");
+	  strcat(stringfile, "FM3RES.STR");
+	  DosError(FERR_DISABLEHARDERR);
+	  if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
+	    strcpy(stringfile, "FM3RES.STR");
+	}
+      }
+    }
+    LoadStrings(stringfile);
+
+    DosError(FERR_DISABLEHARDERR);
+    /* strings here to prevent multiple occurences in DLL */
+    FM2Str = "FM/2";
+    FM3Str = "FM/3";
+    NullStr = "";
+    Default = "DEFAULT";
+    Settings = "SETTINGS";
+    WPProgram = "WPProgram";
+    FM3Folder = "<FM3_Folder>";
+    FM3Tools = "<FM3_Tools>";
+    DRM_OS2FILE = "DRM_OS2FILE";
+    DRM_FM2ARCMEMBER = "DRM_FM2ARCMEMBER";
+    DRF_FM2ARCHIVE = "DRF_FM2ARCHIVE";
+    DRMDRFLIST = "<DRM_OS2FILE,DRF_UNKNOWN>,"
+      "<DRM_DISCARD,DRF_UNKNOWN>," "<DRM_PRINT,DRF_UNKNOWN>";
+    DRMDRFOS2FILE = "<DRM_OS2FILE,DRF_UNKNOWN>";
+    DRMDRFFM2ARC = "<DRM_FM2ARCMEMBER,DRF_FM2ARCHIVE>";
+    DRM_FM2INIRECORD = "DRM_FM2INIRECORD";
+    DRF_FM2INI = "DRF_FM2INI";
+    SUBJECT = ".SUBJECT";
+    LONGNAME = ".LONGNAME";
+    HPFS = "HPFS";
+    JFS = "JFS";
+    CDFS = "CDFS";
+    ISOFS = "ISOFS";
+    FAT32 = "FAT32";
+    HPFS386 = "HPFS386";
+    CBSIFS = "CBSIFS";
+    NDFS32 = "NDFS32";
+    RAMFS = "RAMFS";
+    NTFS = "NTFS";
+    WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
+    WC_BUBBLE          =  "WC_BUBBLE";
+    WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
+    WC_DRIVEBUTTONS    =  "WC_DRIVEBUTTONS";
+    WC_DIRCONTAINER    =  "WC_DIRCONTAINER";
+    WC_DIRSTATUS       =  "WC_DIRSTATUS";
+    WC_TREECONTAINER   =  "WC_TREECONTAINER";
+    WC_TREEOPENBUTTON  =  "WC_TREEOPENBUTTON";
+    WC_TREESTATUS      =  "WC_TREESTATUS";
+    WC_MAINWND         =  "WC_MAINWND";
+    WC_MAINWND2        =  "WC_MAINWND2";
+    WC_AUTOVIEW        =  "WC_AUTOVIEW";
+    WC_LED             =  "WC_LED";
+    WC_COLLECTOR       =  "WC_COLLECTOR";
+    WC_COLSTATUS       =  "WC_COLSTATUS";
+    WC_STATUS          =  "WC_STATUS";
+    WC_TOOLBACK        =  "WC_TOOLBACK";
+    WC_DRIVEBACK       =  "WC_DRIVEBACK";
+    WC_ARCCONTAINER    =  "WC_ARCCONTAINER";
+    WC_ARCSTATUS       =  "WC_ARCSTATUS";
+    WC_MLEEDITOR       =  "WC_MLEEDITOR";
+    WC_INIEDITOR       =  "WC_INIEDITOR";
+    WC_SEEALL          =  "WC_SEEALL";
+    WC_NEWVIEW         =  "WC_NEWVIEW";
+    WC_SEESTATUS       =  "WC_SEESTATUS";
+    WC_VIEWSTATUS      =  "WC_VIEWSTATUS";
+    WC_ERRORWND        =  "WC_ERRORWND";
+    WC_MINITIME        =  "WC_MINITIME";
+    WC_DATABAR         =  "WC_DATABAR";
+
+    /* end of strings */
+    memset(&RGBBLACK, 0, sizeof(RGB2));
+    RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = (BYTE)204;
+    RGBGREY.fcOptions = 0;
+    FM3UL = *(ULONG *) FM3Str;
+    DEBUG_STRING = "Debug -- please report to author";
+    break;
+  case 1:
+    StopPrinting = 1;
+    if (fmprof)
+      PrfCloseProfile(fmprof);
+    DosError(FERR_ENABLEHARDERR);
+    // 14 Jun 07 SHL Already done for us
+    // _CRT_term();
+    break;
+  default:
+    return 0UL;
+  }
+  return 1UL;
+}
+
+#else // __IBMC__
 
 unsigned long _System _DLL_InitTerm(unsigned long hModule,
 				    unsigned long ulFlag)
@@ -271,6 +396,8 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
   }
   return 1UL;
 }
+
+#endif // __IBMC__
 
 VOID APIENTRY DeInitFM3DLL(ULONG why)
 {

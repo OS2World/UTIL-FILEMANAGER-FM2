@@ -1025,7 +1025,6 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   USHORT id;
   TOOL *tool;
-  DIRCNRDATA *dcd;
 
   static HWND hwndMenu = (HWND) 0;
 
@@ -1615,7 +1614,6 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   USHORT id;
   CHAR szDrv[CCHMAXPATH];
-  DIRCNRDATA *dcd;
 
   static BOOL emphasized = FALSE;
   static HWND hwndMenu = NULLHANDLE;

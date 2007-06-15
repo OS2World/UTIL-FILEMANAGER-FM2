@@ -507,7 +507,6 @@ MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
-  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case WM_CREATE:
@@ -831,7 +830,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   static APPNOTIFY *apphead = NULL, *apptail = NULL;
   DIRCNRDATA *dcd = INSTDATA(hwnd);
-  DIRCNRDATA *dcdsrc;
 
   switch (msg) {
   case DM_PRINTOBJECT:
