@@ -4,6 +4,8 @@
 # 28 Apr 07 SHL Add clean target
 # 13 May 07 SHL Tweak macro handling to work as documented
 # 13 May 07 SHL Correct clean target
+# 08 Jun 07 JBS Corrected BUILD_FM2UTILS code so that it is actually
+#               possible to disable the build of the FM2UTILS*.WPI file
 
 # Environment:
 
@@ -30,24 +32,24 @@ FM2_VER=-3-5-9
 # NOTE: Start the variable with '-'
 
 !ifndef FM2UTILS_VER
-FM2UTILS_VER=-1-0
+FM2UTILS_VER=-1-0-1
 !endif
 
-all: wpi
+all: wpi .symbolic
 
-!ifdef BUILD_FM2UTILS
-wpi: checkfiles fm2$(FM2_VER).wpi fm2utils$(FM2UTILS_VER).wpi
+!if $(BUILD_FM2UTILS) == 0
+wpi: checkfiles fm2$(FM2_VER).wpi .symbolic
 !else
-wpi: checkfiles fm2$(FM2_VER).wpi
+wpi: checkfiles fm2$(FM2_VER).wpi fm2utils$(FM2UTILS_VER).wpi .symbolic
 !endif
 
 
-checkfiles:
+checkfiles: .symbolic
    @echo Checking to see if files have been changed...
     ckfiles fm2$(FM2_VER).wpi
 
-fm2.wis: fm2.wis.in
-   sed -e "s/###FM2UTILS_VER###/$(FM2UTILS_VER)/g" -e "/###include fm2utils.doc###/r fm2utils\fm2utils.doc" -e "s/###include fm2utils.doc###//g" -e "/###include license.txt###/r fm2utils\license.txt" -e "s/###include license.txt###//g" fm2.wis.in >fm2.wis
+fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt
+   sed -e "s/###FM2UTILS_VER###/$(FM2UTILS_VER)/" -e "/###include fm2utils.doc###/r fm2utils\fm2utils.doc" -e "s/###include fm2utils.doc###//g" -e "/###include license.txt###/r fm2utils\license.txt" -e "s/###include license.txt###//g" fm2.wis.in >fm2.wis
 
 fm2$(FM2_VER).wpi:: bld_fm2_wpidirs.in
    @echo Staging files for WPI file...
@@ -63,7 +65,7 @@ fm2utils$(FM2UTILS_VER).wpi: bld_fm2utils_wpi.cmd fm2utils.wis fm2utils\fm2utils
    @echo Building FM2Utils
    bld_fm2utils_wpi fm2utils$(FM2UTILS_VER).wpi
 
-clean:
+clean: .symbolic
   -if exist fm2$(FM2_VER).wpi del fm2$(FM2_VER).wpi
   -if exist fm2utils$(FM2UTILS_VER).wpi del fm2utils$(FM2UTILS_VER).wpi
   -if exist bld_fm2_wpidirs.in del bld_fm2_wpidirs.in
@@ -75,3 +77,5 @@ distclean: clean
   -if exist fm2utils.wis del fm2utils.wis
 
 # The end
+
+
