@@ -74,7 +74,6 @@ clean: .symbolic
 # fixme to decide if these should be cleaned and not distcleaned
 distclean: clean .symbolic
   -if exist fm2.wis del fm2.wis
-  -if exist fm2utils.wis del fm2utils.wis
 
 # The end
 
