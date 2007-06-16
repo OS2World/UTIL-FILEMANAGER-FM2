@@ -22,6 +22,7 @@
   29 Dec 06 GKY Removed "Make directory" from all Misc subdirectories
   17 Feb 07 GKY Add Make direcroy to white space directory container menu
   17 Feb 07 GKY Additional drive type icons
+  15 Jun 07 SHL Update for OpenWatcom
 
 ***********************************************************************/
 
@@ -398,10 +399,10 @@ MENU  MAIN2_FRAME
     MENUITEM "~Remap drives...",   IDM_REMAP
     SUBMENU "~Partition disks", IDM_PARTITIONSMENU
 {
-        MENUITEM "~MiniLVM - eCS only" IDM_PARTITION
-        MENUITEM "~DFSee - If installed in System Path"   IDM_PARTITIONDF
-        MENUITEM "~LVMGUI" IDM_PARTITIONLVMG
-        MENUITEM "~FDisk - Do not use on LVM systems" IDM_PARTITIONFD
+        MENUITEM "~MiniLVM - eCS only", IDM_PARTITION
+        MENUITEM "~DFSee - If installed in System Path",   IDM_PARTITIONDF
+        MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+        MENUITEM "~FDisk - Do not use on LVM systems", IDM_PARTITIONFD
 }
     MENUITEM "",                  -1,   MIS_SEPARATOR
     MENUITEM "Compar~e directories...",IDM_COMPARE
@@ -979,10 +980,10 @@ MENU TREECNR_POPUP
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU "~Partition disks", IDM_PARTITIONSMENU
      {
-        MENUITEM "~MiniLVM - eCS only" IDM_PARTITION
-        MENUITEM "~DFSee - If installed in System Path"   IDM_PARTITIONDF
-        MENUITEM "~LVMGUI" IDM_PARTITIONLVMG
-        MENUITEM "~FDisk - Do not use on LVM systems" IDM_PARTITIONFD
+        MENUITEM "~MiniLVM - eCS only", IDM_PARTITION
+        MENUITEM "~DFSee - If installed in System Path",   IDM_PARTITIONDF
+        MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+        MENUITEM "~FDisk - Do not use on LVM systems", IDM_PARTITIONFD
       }
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU "Windows",            IDM_WINDOWSMENU
@@ -1251,10 +1252,10 @@ MENU TREE_POPUP
     MENUITEM "~Optimize...",    IDM_OPTIMIZE
     SUBMENU "~Partition disks", IDM_PARTITIONSMENU
     {
-      MENUITEM "~MiniLVM - eCS only" IDM_PARTITION
-      MENUITEM "~DFSee - If installed in System Path"   IDM_PARTITIONDF
-      MENUITEM "~LVMGUI" IDM_PARTITIONLVMG
-      MENUITEM "~FDisk - Do not use on LVM systems" IDM_PARTITIONFD
+      MENUITEM "~MiniLVM - eCS only", IDM_PARTITION
+      MENUITEM "~DFSee - If installed in System Path",   IDM_PARTITIONDF
+      MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+      MENUITEM "~FDisk - Do not use on LVM systems", IDM_PARTITIONFD
     }
     MENUITEM "",                -1,       MIS_SEPARATOR
     MENUITEM "De~tach\tCtrl + H",IDM_DETACH

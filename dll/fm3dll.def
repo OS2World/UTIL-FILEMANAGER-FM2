@@ -1,282 +1,285 @@
-; $Id$
-LIBRARY FM3DLL INITINSTANCE TERMINSTANCE
-DESCRIPTION '@#SLAInc:3.05.09#@##1## 05/13/2007 03:05:07      SLAMain::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2007 Steven Levine and Associates, Inc.'
-EXETYPE OS2
-PROTMODE
-DATA MULTIPLE READWRITE LOADONCALL NONSHARED
-CODE LOADONCALL
+# $Id$
 
-IMPORTS DOSQPROCSTATUS=DOSCALLS.154
+# Copyright (c) 2002, 2007 Steven H. Levine
 
-EXPORTS   InitFM3DLL                                  @1      NONAME
-          FindSwapperDat                              @2      NONAME
-          StartFM3                                    @3      NONAME
-          saymsg                                      @4      NONAME
-          Win_Error                                   @5      NONAME
-          IsRoot                                      @6      NONAME
-          IsFile                                      @7      NONAME
-          MakeValidDir                                @8      NONAME
-          StartTreeCnr                                @9      NONAME
-          StartDirCnr                                 @10     NONAME
-          save_dir                                    @11     NONAME
-          strip_lead_char                             @12     NONAME
-          strip_trail_char                            @13     NONAME
-          unlinkf                                     @14     NONAME
-          wipeallf                                    @15     NONAME
-          insert_filename                             @16     NONAME
-          StartMLEEditor                              @17     NONAME
-          StartArcCnr                                 @18     NONAME
-          ExecAssociation                             @19     NONAME
-          StartIniEditor                              @20     NONAME
-          KillDlgProc                                 @21     NONAME
-          UndeleteDlgProc                             @22     NONAME
-          StartCollector                              @23     NONAME
-          FillInDriveFlags                            @24     NONAME
-          save_tools                                  @25     NONAME
-          ViewInfProc                                 @26     NONAME
-          ArgDriveFlags                               @27     NONAME
-          SetIconDlgProc                              @28     NONAME
-          DisplayEAsProc                              @29     NONAME
-          CreateDataBar                               @30     NONAME
-          AddToList                                   @31     NONAME
-          FreeList                                    @32     NONAME
-          StartSeeAll                                 @33     NONAME
+# 14 Jun 07 SHL Convert to OpenWatcom
 
-          fToolsChanged                               @34     NONAME
-          fAmAV2                                      @35     NONAME
-          fNoSaveState                                @37     NONAME
-          fLogFile                                    @38     NONAME
-          LogFileHandle                               @39     NONAME
-          fmprof                                      @40     NONAME
-          FM3ModHandle                                @41     NONAME
-          StopPrinting                                @42     NONAME
-          fReminimize                                 @43     NONAME
-          ArcTempRoot                                 @44     NONAME
-          hwndHelp                                    @45     NONAME
-          fIniExisted                                 @46     NONAME
+option description '@#SLAInc:3.05.09#@##1## 06/14/2007 03:05:09      SLAMain::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2007 Steven Levine and Associates, Inc.'
+segment class 'DATA' readwrite loadoncall nonshared
+segment class 'CODE' loadoncall
+option manyautodata
 
-         _PGLOBAL_PTR                                 @47     NONAME
-         _cputsused                                   @48     NONAME
-         _critlib_except                              @49     NONAME
-         _ctype                                       @50     NONAME
-         _DosSelToFlat                                @51     NONAME
-         _DosFlatToSel                                @52     NONAME
-         _environ                                     @53     NONAME
-         _errno                                       @54     NONAME
-         _getcheused                                  @55     NONAME
-         _osmajor                                     @56     NONAME
-         _osminor                                     @57     NONAME
-         _osmode                                      @58     NONAME
-         _timezone                                    @59     NONAME
-         _tzname                                      @60     NONAME
-         _ungetchused                                 @61     NONAME
-         stderr                                       @62     NONAME
-         stdin                                        @63     NONAME
-         stdout                                       @64     NONAME
-         _CRT_init                                    @65     NONAME
-         _CheckIfMem                                  @66     NONAME
-; SHL         _EXE_Exception                               @67     NONAME
-         _Exception                                   @68     NONAME
-         _Flush                                       @69     NONAME
-         _Fmprs                                       @70     NONAME
-         _Fnprs                                       @71     NONAME
-         _GetErrMsg                                   @72     NONAME
-         _InitBuf                                     @73     NONAME
-; SHL         _Lib_excpt                                   @74     NONAME
-         _PrintErrMsg                                 @75     NONAME
-; SHL         _ReleaseSem                                  @76     NONAME
-; SHL         _RequestSem                                  @77     NONAME
-         __EDC3216                                    @78     NONAME
-         __EDCThunkProlog                             @79     NONAME
-         __dofmto                                     @80     NONAME
-         __doserrno                                   @81     NONAME
-         __goscan                                     @82     NONAME
-         __threadid                                   @83     NONAME
-         _assert                                      @84     NONAME
-         _atold                                       @85     NONAME
-         _beginthread                                 @86     NONAME
-         _cputs                                       @87     NONAME
-         _ddused                                      @88     NONAME
-         _dposqnan                                    @89     NONAME
-         _ecvt                                        @90     NONAME
-         _endthread                                   @91     NONAME
-         _erf                                         @92     NONAME
-         _erfc                                        @93     NONAME
-         _exception_dllinit                           @94     NONAME
-         _exception_procinit                          @95     NONAME
-         _fcloseall                                   @96     NONAME
-         _fopenused                                   @97     NONAME
-         _fposqnan                                    @98     NONAME
-         _fposinfi                                    @99     NONAME
-         _fpreset                                     @100    NONAME
-         _FreeFCB                                     @101    NONAME
-         _freemod                                     @102    NONAME
-         _gcvt                                        @103    NONAME
-         _getche                                      @104    NONAME
-         _heapmin                                     @105    NONAME
-         _InitFCB                                     @106    NONAME
-         _internal_err                                @107    NONAME
-         _itoa                                        @108    NONAME
-         _j0                                          @109    NONAME
-         _j1                                          @110    NONAME
-         _jn                                          @111    NONAME
-         _ldposqnan                                   @112    NONAME
-         _ldposinfi                                   @113    NONAME
-         _loadmod                                     @114    NONAME
-         _ltoa                                        @115    NONAME
-         _matherr                                     @116    NONAME
-         _putenv                                      @117    NONAME
-         _setupenv                                    @118    NONAME
-         _terminate                                   @119    NONAME
-         _test_handle                                 @120    NONAME
-; SHL         _tmemory_sem                                 @121    NONAME
-         _tzset                                       @122    NONAME
-         _ultoa                                       @123    NONAME
-         _y0                                          @124    NONAME
-         _y1                                          @125    NONAME
-         _yn                                          @126    NONAME
-         abort                                        @127    NONAME
-         abs                                          @128    NONAME
-         asctime                                      @129    NONAME
-         atexit                                       @130    NONAME
-         atof                                         @131    NONAME
-         atoi                                         @132    NONAME
-         atol                                         @133    NONAME
-         bsearch                                      @134    NONAME
-         calloc                                       @135    NONAME
-         clearerr                                     @136    NONAME
-         clock                                        @137    NONAME
-         ctime                                        @138    NONAME
-         difftime                                     @139    NONAME
-         exit                                         @140    NONAME
-         fclose                                       @141    NONAME
-         feof                                         @142    NONAME
-         ferror                                       @143    NONAME
-         fflush                                       @144    NONAME
-         fgetc                                        @145    NONAME
-         fgetpos                                      @146    NONAME
-         fgets                                        @147    NONAME
-; SHL         flushall                                     @148    NONAME
-         fopen                                        @149    NONAME
-         fprintf                                      @150    NONAME
-         fputc                                        @151    NONAME
-         fputs                                        @152    NONAME
-         fread                                        @153    NONAME
-         free                                         @154    NONAME
-         freopen                                      @155    NONAME
-         frexp                                        @156    NONAME
-         fscanf                                       @157    NONAME
-         fseek                                        @158    NONAME
-         fsetpos                                      @159    NONAME
-         ftell                                        @160    NONAME
-         fwrite                                       @161    NONAME
-         getchar                                      @162    NONAME
-         getenv                                       @163    NONAME
-         gmtime                                       @164    NONAME
-         isalnum                                      @165    NONAME
-         isalpha                                      @166    NONAME
-         iscntrl                                      @167    NONAME
-         isdigit                                      @168    NONAME
-         isgraph                                      @169    NONAME
-         islower                                      @170    NONAME
-         isprint                                      @171    NONAME
-         ispunct                                      @172    NONAME
-         isspace                                      @173    NONAME
-         isupper                                      @174    NONAME
-         isxdigit                                     @175    NONAME
-         localeconv                                   @176    NONAME
-         localtime                                    @177    NONAME
-         malloc                                       @178    NONAME
-         memccpy                                      @179    NONAME
-         memchr                                       @180    NONAME
-         memcmp                                       @181    NONAME
-         memcpy                                       @182    NONAME
-         memicmp                                      @183    NONAME
-         memmove                                      @184    NONAME
-         memset                                       @185    NONAME
-         mktime                                       @186    NONAME
-         perror                                       @187    NONAME
-         printf                                       @188    NONAME
-         qsort                                        @189    NONAME
-         raise                                        @190    NONAME
-         rand                                         @191    NONAME
-         realloc                                      @192    NONAME
-         remove                                       @193    NONAME
-         rename                                       @194    NONAME
-         rewind                                       @195    NONAME
-         scanf                                        @196    NONAME
-         setbuf                                       @197    NONAME
-         setvbuf                                      @198    NONAME
-         signal                                       @199    NONAME
-         sprintf                                      @200    NONAME
-         srand                                        @201    NONAME
-         sscanf                                       @202    NONAME
-         strcat                                       @203    NONAME
-         strchr                                       @204    NONAME
-         strcmp                                       @205    NONAME
-         strcoll                                      @206    NONAME
-         strcpy                                       @207    NONAME
-         strcspn                                      @208    NONAME
-         strdup                                       @209    NONAME
-         strerror                                     @210    NONAME
-         strftime                                     @211    NONAME
-         stricmp                                      @212    NONAME
-         strlen                                       @213    NONAME
-         strlwr                                       @214    NONAME
-         strncat                                      @215    NONAME
-         strncmp                                      @216    NONAME
-         strncpy                                      @217    NONAME
-         strnicmp                                     @218    NONAME
-         strpbrk                                      @219    NONAME
-         strrchr                                      @220    NONAME
-         strspn                                       @221    NONAME
-         strstr                                       @222    NONAME
-         strtod                                       @223    NONAME
-         strtok                                       @224    NONAME
-         strtol                                       @225    NONAME
-         strtold                                      @226    NONAME
-         strtoul                                      @227    NONAME
-         strupr                                       @228    NONAME
-         strxfrm                                      @229    NONAME
-         system                                       @230    NONAME
-         tan                                          @231    NONAME
-         tanh                                         @232    NONAME
-         time                                         @233    NONAME
-         tmpfile                                      @234    NONAME
-         tmpnam                                       @235    NONAME
-         tolower                                      @236    NONAME
-         toupper                                      @237    NONAME
-         ungetc                                       @238    NONAME
-         vfprintf                                     @239    NONAME
-         vprintf                                      @240    NONAME
-         vsprintf                                     @241    NONAME
+import DOSQPROCSTATUS DOSCALLS.154
 
-         DefaultView                                  @242    NONAME
-         SysInfoDlgProc                               @243    NONAME
-         appname                                      @244    NONAME
-         hwndTree                                     @245    NONAME
-         EndNote                                      @246    NONAME
-         StartNotes                                   @247    NONAME
-         DirSizeProc                                  @248    NONAME
-         driveflags                                   @249    NONAME
-         CheckDrive                                   @250    NONAME
+export    InitFM3DLL_                                 .1,
+          FindSwapperDat_                             .2,
+          StartFM3_                                   .3,
+          saymsg_                                     .4,
+          Win_Error_                                  .5,
+          IsRoot_                                     .6,
+          IsFile_                                     .7,
+          MakeValidDir_                               .8,
+          StartTreeCnr_                               .9,
+          StartDirCnr_                                .10,
+          save_dir_                                   .11,
+          strip_lead_char_                            .12,
+          strip_trail_char_                           .13,
+          unlinkf_                                    .14,
+          wipeallf_                                   .15,
+          insert_filename_                            .16,
+          StartMLEEditor_                             .17,
+          StartArcCnr_                                .18,
+          ExecAssociation_                            .19,
+          StartIniEditor_                             .20,
+          KillDlgProc                                 .21,
+          UndeleteDlgProc                             .22,
+          StartCollector_                             .23,
+          FillInDriveFlags_                           .24,
+          save_tools_                                 .25,
+          ViewInfProc                                 .26,
+          ArgDriveFlags_                              .27,
+          SetIconDlgProc                              .28,
+          DisplayEAsProc                              .29,
+          CreateDataBar_                              .30,
+          AddToList_                                  .31,
+          FreeList_                                   .32,
+          StartSeeAll_                                .33,
 
-         _sprintfieee                                 @251    NONAME
+          _fToolsChanged                              .34,
+          _fAmAV2                                     .35,
+          _fNoSaveState                               .37,
+          _fLogFile                                   .38,
+          _LogFileHandle                              .39,
+          _fmprof                                     .40,
+          _FM3ModHandle                               .41,
+          _StopPrinting                               .42,
+          _fReminimize                                .43,
+          _ArcTempRoot                                .44,
+          _hwndHelp                                   .45,
+          _fIniExisted                                .46,
 
-         needs_quoting                                @252    NONAME
-         ArchiveDlgProc                               @253    NONAME
-         SBoxDlgProc                                  @254    NONAME
-         arcsighead                                   @255    NONAME
-         fArcStuffVisible                             @256    NONAME
-         runemf2                                      @257    NONAME
-         StartFM32                                    @258    NONAME
-         profile                                      @259    NONAME
-         hptrCommon                                   @260    NONAME
-         switch_to                                    @261    NONAME
-         CheckVersion                                 @262    NONAME
-         ShowMultimedia                               @263    NONAME
-         hwndBubble                                   @264    NONAME
-         GetPString                                   @265    NONAME
-         FM3DllHandle                                 @266    NONAME
-         RootName                                     @267    NONAME
-         RunFM2Util				      @268    NONAME
+# NOWAT  __PGLOBAL_PTR                                .47,
+# NOWAT  __cputsused                                  .48,
+# NOWAT  __critlib_except                             .49,
+# NOWAT  __ctype                                      .50,
+# NOWAT  _DosSelToFlat                                .51,
+# NOWAT  _DosFlatToSel                                .52,
+          _environ                                    .53,
+# NOWAT   _errno                                      .54,
+# NOWAT  _getcheused                                  .55,
+         __osmajor                                    .56,
+         __osminor                                    .57,
+# NOWAT  _osmode                                      .58,
+         _timezone                                    .59,
+         _tzname                                      .60,
+# NOWAT  __ungetchused                                .61,
+# NOWAT  _stderr                                      .62,
+# NOWAT  _stdin                                       .63,
+# NOWAT  _stdout                                      .64,
+# NOWAT  __CRT_init                                   .65,
+# NOWAT  __CheckIfMem                                 .66,
+# NOVAC  _EXE_Exception                               .67,
+# NOWAT  __Exception                                  .68,
+# NOWAT  __Flush                                      .69,
+# NOWAT  __Fmprs                                      .70,
+# NOWAT  __Fnprs                                      .71,
+# NOWAT  _GetErrMsg                                   .72,
+# NOWAT   _InitBuf                                    .73,
+# NOVAC  _Lib_excpt                                   .74,
+# NOWAT  _PrintErrMsg                                 .75,
+# NOVAC  _ReleaseSem                                  .76,
+# NOVAC  _RequestSem                                  .77,
+# NOWAT  __EDC3216                                    .78,
+# NOWAT  __EDCThunkProlog                             .79,
+# NOWAT  __dofmto                                     .80,
+# NOWAT  __doserrno                                   .81,
+# NOWAT  __goscan                                     .82,
+         __threadid_                                  .83,
+         _assert_                                     .84,
+# NOWAT  atold_                                       .85,
+         _beginthread_                                .86,
+         cputs_                                       .87,
+# NOWAT  _ddused                                      .88,
+# NOWAT  _dposqnan                                    .89,
+         _ecvt_                                       .90,
+         _endthread_                                  .91,
+# NOWAT  erf_                                         .92,
+# NOWAT  erfc_                                        .93,
+# NOWAT exception_dllinit_                            .94,
+# NOWAT  exception_procinit_                          .95,
+         fcloseall_                                   .96,
+# NOWAT  _fopenused                                   .97,
+# NOWAT  fposqnan_                                    .98,
+# NOWAT  fposinfi_                                    .99,
+         _fpreset_                                    .100,
+# NOWAT  FreeFCB_                                     .101,
+# NOWAT  freemod_                                     .102,
+         gcvt_                                        .103,
+         getche_                                      .104,
+         _heapmin_                                    .105,
+# NOWAT  InitFCB_                                     .106,
+# NOWAT  internal_err_                                .107,
+         itoa_                                        .108,
+         j0_                                          .109,
+         j1_                                          .110,
+         jn_                                          .111,
+# NOWAT  ldposqnan_                                   .112,
+# NOWAT  ldposinfi_                                   .113,
+# NOWAT  loadmod_                                     .114,
+         ltoa_                                        .115,
+         matherr_                                     .116,
+         putenv_                                      .117,
+# NOWAT  setupenv_                                    .118,
+# NOWAT  terminate_                                   .119,
+# NOWAT  test_handle_                                 .120,
+# NOVAC  _tmemory_sem                                 .121,
+         tzset_                                       .122,
+         ultoa_                                       .123,
+         y0_                                          .124,
+         y1_                                          .125,
+         yn_                                          .126,
+         abort_                                       .127,
+         abs_                                         .128,
+         asctime_                                     .129,
+         atexit_                                      .130,
+         atof_                                        .131,
+         atoi_                                        .132,
+         atol_                                        .133,
+         bsearch_                                     .134,
+         calloc_                                      .135,
+         clearerr_                                    .136,
+         clock_                                       .137,
+         ctime_                                       .138,
+         difftime_                                    .139,
+         exit_                                        .140,
+         fclose_                                      .141,
+         feof_                                        .142,
+         ferror_                                      .143,
+         fflush_                                      .144,
+         fgetc_                                       .145,
+         fgetpos_                                     .146,
+         fgets_                                       .147,
+         flushall_                                    .148,
+         fopen_                                       .149,
+         fprintf_                                     .150,
+         fputc_                                       .151,
+         fputs_                                       .152,
+         fread_                                       .153,
+         free_                                        .154,
+         freopen_                                     .155,
+         frexp_                                       .156,
+         fscanf_                                      .157,
+         fseek_                                       .158,
+         fsetpos_                                     .159,
+         ftell_                                       .160,
+         fwrite_                                      .161,
+         getchar_                                     .162,
+         getenv_                                      .163,
+         gmtime_                                      .164,
+         isalnum_                                     .165,
+         isalpha_                                     .166,
+         iscntrl_                                     .167,
+         isdigit_                                     .168,
+         isgraph_                                     .169,
+         islower_                                     .170,
+         isprint_                                     .171,
+         ispunct_                                     .172,
+         isspace_                                     .173,
+         isupper_                                     .174,
+         isxdigit_                                    .175,
+         localeconv_                                  .176,
+         localtime_                                   .177,
+         malloc_                                      .178,
+         memccpy_                                     .179,
+         memchr_                                      .180,
+         memcmp_                                      .181,
+         memcpy_                                      .182,
+         memicmp_                                     .183,
+         memmove_                                     .184,
+         memset_                                      .185,
+         mktime_                                      .186,
+         perror_                                      .187,
+         printf_                                      .188,
+         qsort_                                       .189,
+         raise_                                       .190,
+         rand_                                        .191,
+         realloc_                                     .192,
+         remove_                                      .193,
+         rename_                                      .194,
+         rewind_                                      .195,
+         scanf_                                       .196,
+         setbuf_                                      .197,
+         setvbuf_                                     .198,
+         signal_                                      .199,
+         sprintf_                                     .200,
+         srand_                                       .201,
+         sscanf_                                      .202,
+         strcat_                                      .203,
+         strchr_                                      .204,
+         strcmp_                                      .205,
+         strcoll_                                     .206,
+         strcpy_                                      .207,
+         strcspn_                                     .208,
+         strdup_                                      .209,
+         strerror_                                    .210,
+         strftime_                                    .211,
+         stricmp_                                     .212,
+         strlen_                                      .213,
+         strlwr_                                      .214,
+         strncat_                                     .215,
+         strncmp_                                     .216,
+         strncpy_                                     .217,
+         strnicmp_                                    .218,
+         strpbrk_                                     .219,
+         strrchr_                                     .220,
+         strspn_                                      .221,
+         strstr_                                      .222,
+         strtod_                                      .223,
+         strtok_                                      .224,
+         strtol_                                      .225,
+# NOWAT  strtold_                                     .226,
+         strtoul_                                     .227,
+         strupr_                                      .228,
+         strxfrm_                                     .229,
+         system_                                      .230,
+         tan_                                         .231,
+         tanh_                                        .232,
+         time_                                        .233,
+         tmpfile_                                     .234,
+         tmpnam_                                      .235,
+         tolower_                                     .236,
+         toupper_                                     .237,
+         ungetc_                                      .238,
+         vfprintf_                                    .239,
+         vprintf_                                     .240,
+         vsprintf_                                    .241,
+
+         DefaultView_                                 .242,
+         SysInfoDlgProc                               .243,
+         _appname                                     .244,
+         _hwndTree                                    .245,
+         EndNote_                                     .246,
+         StartNotes_                                  .247,
+         DirSizeProc                                  .248,
+         _driveflags                                  .249,
+         CheckDrive_                                  .250,
+
+# NOWAT  sprintfieee_                                 .251,
+
+         needs_quoting_                               .252,
+         ArchiveDlgProc                               .253,
+         SBoxDlgProc                                  .254,
+         _arcsighead                                  .255,
+         _fArcStuffVisible                            .256,
+         runemf2_                                     .257,
+         StartFM32_                                   .258,
+         _profile                                     .259,
+         _hptrCommon                                  .260,
+         switch_to_                                   .261,
+         CheckVersion_                                .262,
+         ShowMultimedia_                              .263,
+         _hwndBubble                                  .264,
+         GetPString_                                  .265,
+         _FM3DllHandle                                .266,
+         RootName_                                    .267,
+         RunFM2Util_				      .268

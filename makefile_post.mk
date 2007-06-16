@@ -3,37 +3,46 @@
 
 # 16 Aug 05 SHL Clean up
 # 16 Apr 06 SHL Add lxlite target
+# 02 Jun 07 SHL Convert to OpenWatcom
 
 !ifndef MAKERES
 
-$(BASE).exe: $(BASE).obj $(BASE).res $(BASE).def
-  @$(LINK) @<<$(BASE).lrf
-  $(LFLAGS)
-  $(BASE).obj
-  dll\fm3dll.lib
-  os2386.lib
-  $(BASE).def
-<<
-  @rem type $(BASE).lrf
-  $(RC) -x2 $(BASE).res $@
+# Build executable
+# Common parameters go in .lrf
+# Executable specific paramters go in .def
+
+$(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
+  @$(LINK) @$(BASE).lrf @$(BASE).def
+  $(RC) $(RCFLAGS2) $(BASE).res $@
   bldlevel $@
+
+$(BASE).lrf: $(__MAKEFILES__) .explicit
+   @%write $^@ $(LFLAGS)
+   @%append $^@ name $(BASE)
+   @%append $^@ file $(BASE).obj
+!ifdef %EXCEPTQ
+    @%append $^@ file exceptq.lib
+!endif
+   @%append $^@ library dll\fm3dll.lib
+   @%append $^@ library os2386.lib
 
 !else
 
-$(BASE).exe: $(BASE).res
+# Replace resources
+$(BASE).exe: $(BASE).res .explicit
   @if not exist $@ echo $@ missing
   lxlite $@ /x+ /b-
   lxlite $@ /c:minstub
-  $(RC) -x2 $(BASE).res $@
+  $(RC) $(RCFLAGS2) $(BASE).res $@
   lxlite $@ /x- /b-
   bldlevel $@
 
 !endif
 
-lxlite:: $(BASE).exe
+lxlite:: $(BASE).exe .symbolic .explicit
   lxlite /x- /b- $?
 
-clean:
+clean:: .symbolic .explicit
   -del $(BASE).exe
   -del $(BASE).lrf
   -del $(BASE).map

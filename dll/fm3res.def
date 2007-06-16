@@ -1,9 +1,12 @@
-; $Id$
-LIBRARY FM3RES
-DESCRIPTION '@#SLAInc:3.05.09#@##1## 05/13/2007 03:05:08      SLAMain::EN:US:0:U:@@FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2007 Steven Levine and Associates, Inc.'
-EXETYPE OS2
-PROTMODE
-DATA LOADONCALL SHARED
-CODE LOADONCALL
+# ; $Id$
 
-EXPORTS  ResVersion                        @1     NONAME
+# Copyright (c) 2002, 2007 Steven H. Levine
+
+# 14 Jun 07 SHL Convert to OpenWatcom
+
+option description '@#SLAInc:3.05.09#@##1## 06/14/2007 03:05:09      SLAMain::EN:US:0:U:@@FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2007 Steven Levine and Associates, Inc.'
+
+segment class 'DATA' readonly loadoncall shared
+segment class 'CODE' loadoncall
+
+export  ResVersion                        .1

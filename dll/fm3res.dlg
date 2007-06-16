@@ -24,6 +24,7 @@
   07 Jan 07 GKY Updated Helv font to vector font Helvetica
   03 Feb 07 SHL It's 2007 copyright time
   18 Feb 07 GKY Rearranged and added drive type and no stats to drive flag dialog
+  15 Jun 07 SHL Update for OpenWatcom
 
 ***********************************************************************/
 
@@ -245,7 +246,7 @@ BEGIN
         LTEXT           "Fld8", -1, 290, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
-        LTEXT           "Fld9", -1, 324, 12, 32, 8, DT_VCENTER | DT_HALFTONE
+        LTEXT           "Fld9", -1, 324, 12, 32, 8, DT_VCENTER | DT_HALFTONE |
                         NOT WS_GROUP
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
         LTEXT           "", AD_FLD1, 16, 2, 32, 8, DT_VCENTER | NOT WS_GROUP
@@ -1382,8 +1383,8 @@ DLGTEMPLATE MINI_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
     DIALOG  "", MINI_FRAME, 8, 8, 0, 0, NOT FS_DLGBORDER | FS_BORDER |
             FS_SCREENALIGN | NOT WS_SAVEBITS
-    BEGIN
-    END
+    // BEGIN
+    // END
 END
 
 DLGTEMPLATE NEWFIND_FRAME LOADONCALL MOVEABLE DISCARDABLE
