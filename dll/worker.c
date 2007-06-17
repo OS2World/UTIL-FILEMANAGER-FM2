@@ -18,12 +18,14 @@
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
   21 Apr 07 GKY Find FM2Utils by path or utils directory
+  16 Jun 07 SHL Update for OpenWatcom
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_DOSERRORS
+#define INCL_WPCLASS			// WinQueryObjectPath
 #include <os2.h>
 
 #include <stdarg.h>
@@ -47,9 +49,6 @@ static PSZ pszSrcFile = __FILE__;
 #pragma alloc_text(MASSACTION,MassAction)
 #pragma alloc_text(ACTION,Action)
 #pragma alloc_text(UNDO,FreeUndo,Undo)
-
-BOOL APIENTRY WinQueryObjectPath(HOBJECT hobject,
-				 PSZ pszPathName, ULONG ulSize);
 
 #ifdef UNDO
 

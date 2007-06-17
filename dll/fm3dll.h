@@ -105,7 +105,10 @@
 #ifndef BKS_MERLINSTYLE
 #define BKS_MERLINSTYLE   0x0800
 #endif
-#if !defined(PMBITMAP_INCLUDED) && !defined(INCL_GPIINCLUDED)
+
+// PMBITMAP_INCLUDED - IBM Toolkit
+// INCL_GPIBITMAPS - OpenWatcom Toolkit
+#if !defined(PMBITMAP_INCLUDED) && !defined(INCL_GPIBITMAPS)
 typedef struct _RGB2		/* rgb2 */
 {
   BYTE bBlue;			/* Blue component of the color definition */

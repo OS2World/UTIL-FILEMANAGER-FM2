@@ -6,7 +6,7 @@
   archiver.bb2 editor
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
   31 Jul 04 SHL ArcReviewDlgProc: correct nameis... decodes
   01 Aug 04 SHL Localize functions
@@ -20,6 +20,7 @@
   29 Jul 06 SHL Use xfgets
   30 Jul 06 SHL Avoid warnings when editing new definition
   22 Mar 07 GKY Use QWL_USER
+  16 Jun 07 SHL Update for OpenWatcom
 
 ***********************************************************************/
 
@@ -354,7 +355,7 @@ static PSZ checkfile(PSZ file, INT * error)
   if (!p || !*p)
     *error = 1;
   else {
-    ret = (INT) DosQAppType(p, &apptype);
+    ret = (INT) DosQueryAppType(p, &apptype);
     if (ret)
       *error = -1;
     else {

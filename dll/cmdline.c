@@ -6,13 +6,14 @@
   User defined commands support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets_bstripcr
   22 Mar 07 GKY Use QWL_USER
+  16 Jun 07 SHL Update for OpenWatcom
 
 ***********************************************************************/
 
@@ -392,7 +393,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      if (DosQAppType(executable, &apptype) ||
+      if (DosQueryAppType(executable, &apptype) ||
 	  (apptype && !(apptype &
 			(FAPPTYP_NOTWINDOWCOMPAT |
 			 FAPPTYP_WINDOWCOMPAT |

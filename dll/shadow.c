@@ -6,9 +6,10 @@
   Desktop shadows
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2006 Steven H. Levine
+  Copyright (c) 2006, 2007 Steven H. Levine
 
   22 Jul 06 SHL Check more run time errors
+  16 Jun 07 SHL Update for OpenWatcom
 
 ***********************************************************************/
 
@@ -203,7 +204,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	ULONG apt;
 	CHAR *p, *pp, szDir[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1];
 
-	if (DosQAppType(list[x], &apt))
+	if (DosQueryAppType(list[x], &apt))
 	  apt = 0;
 	p = strrchr(list[x], '.');
 	if (p) {

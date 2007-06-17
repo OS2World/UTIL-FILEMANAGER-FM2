@@ -6,7 +6,7 @@
   File name manipulation routines
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2002, 2006 Steven H.Levine
+  Copyright (c) 2002, 2007 Steven H.Levine
 
   23 Nov 02 SHL RootName: rework for sanity
   27 Nov 02 SHL MakeFullName: correct typo
@@ -21,6 +21,7 @@
   22 Oct 06 GKY Increased BUFFER_BYTES in CheckDrive to 8192 to fix NDFS32 scan failure
   07 Jan 07 GKY Move error strings etc. to string file
   18 Feb 07 GKY Add more drive types and icons
+  16 Jun 07 SHL Update for OpenWatcom
 
 ***********************************************************************/
 
@@ -514,14 +515,14 @@ BOOL IsExecutable(CHAR * filename)
     DosError(FERR_DISABLEHARDERR);
     p = strrchr(filename, '.');
     if (p)
-      ret = DosQAppType(filename, &apptype);
+      ret = DosQueryAppType(filename, &apptype);
     else {
 
       char fname[CCHMAXPATH + 2];
 
       strcpy(fname, filename);
       strcat(fname, ".");
-      ret = DosQAppType(fname, &apptype);
+      ret = DosQueryAppType(fname, &apptype);
     }
     if ((!ret && (!apptype ||
 		  (apptype &
