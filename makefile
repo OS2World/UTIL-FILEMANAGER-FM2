@@ -46,7 +46,7 @@ $(BASE).obj: $(BASE).c dll\version.h
 # make EXE compenents
 
 allexe: *.mak .symbolic
-  !$(MAKE) -f $? $(__MAKEOPTS__)
+   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__)
 
 wpi: .symbolic
    cd warpin

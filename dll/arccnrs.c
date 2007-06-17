@@ -38,6 +38,7 @@
   21 Apr 07 GKY Find FM2Utils by path or utils directory
   12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  16 Jun 07 SHL Use DosQueryAppType not DosQAppType
 
 ***********************************************************************/
 
@@ -385,7 +386,7 @@ ReTry:
     if (p)
       *p = 0;
     DosError(FERR_DISABLEHARDERR);
-    if (!DosQAppType(s, &apptype) &&
+    if (!DosQueryAppType(s, &apptype) &&
 	(apptype & FAPPTYP_DOS ||
 	 apptype & FAPPTYP_WINDOWSREAL ||
 	 apptype & FAPPTYP_WINDOWSPROT ||

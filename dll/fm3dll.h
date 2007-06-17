@@ -48,6 +48,8 @@
   12 May 07 SHL Add ulItemsToUnHilite to DIRCNRDATA, pass to Unhilite as arg
   05 Jun 07 SHL Update for OpenWatcom
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  16 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  16 Jun 07 SHL Update more for OpenWatcom
 
 ***********************************************************************/
 
@@ -103,7 +105,7 @@
 #ifndef BKS_MERLINSTYLE
 #define BKS_MERLINSTYLE   0x0800
 #endif
-#ifndef PMBITMAP_INCLUDED
+#if !defined(PMBITMAP_INCLUDED) && !defined(INCL_GPIINCLUDED)
 typedef struct _RGB2		/* rgb2 */
 {
   BYTE bBlue;			/* Blue component of the color definition */

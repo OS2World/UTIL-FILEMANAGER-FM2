@@ -9,8 +9,6 @@ BASE=mkstr
 
 !include ..\..\makefile_pre.mk
 
-# CFLAGS = /G5 /Gm+ /Gs- /Gt- /IDLL /Mp /O- /Q+     /Sp4 /Ss /Ti+ /W3
-# CFLAGS = /G5 /Gm+ /Gs- /Gt-       /Mp /O+ /Q+ /Sm      /Ss /W3
 # -bc		console app
 # -bm		multithread libs
 # -bt=os2	target
@@ -52,7 +50,7 @@ $(BASE).lrf: $(__MAKEFILES__)
 !endif
    @%write $^@ option map
    @%write $^@ name $(BASE)
-   @%write $^@ op desc '@$#$(%VENDOR):$(%BUILDVER)$#@$#$#1$#$# $(%BUILDTIME)      slamain::EN:US:0:U:@@Fm/2 Strings Compiler'
+   @%write $^@ op desc '@$#SLAInc:3.05.09$#@$#$#1$#$# 06/15/2007 03:05:09      slamain::EN:US:0:U:@@Fm/2 Strings Compiler'
    @%write $^@ file $(BASE).obj
    @%write $^@ library os2386.lib
 
