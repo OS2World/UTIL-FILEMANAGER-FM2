@@ -1,14 +1,16 @@
 # $Id$
 
+# Copyright (c) 2002, 2007 Steven H. Levine
+
+# 16 Jun 07 GKY Convert to OpenWatcom
+
 BASE=vtree
 
 !include makefile_pre.mk
 
-all: $(BASE).exe $(BASE).res
+all: $(BASE).exe $(BASE).res .symbolic
 
-$(BASE).res: $(BASE).rc
-
-$(BASE).rc: icons\tree.ico bitmaps\*.bmp
+$(BASE).res: $(BASE).rc icons\tree.ico bitmaps\*.bmp
 
 $(BASE).obj: $(BASE).c
 
