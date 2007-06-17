@@ -49,7 +49,8 @@ checkfiles: .symbolic
     ckfiles fm2$(FM2_VER).wpi
 
 fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt
-   sed -e "s/###FM2UTILS_VER###/$(FM2UTILS_VER)/" -e "/###include fm2utils.doc###/r fm2utils\fm2utils.doc" -e "s/###include fm2utils.doc###//g" -e "/###include license.txt###/r fm2utils\license.txt" -e "s/###include license.txt###//g" fm2.wis.in >fm2.wis
+#  sed -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -e "/@@@include fm2utils.doc@@@/r fm2utils\fm2utils.doc" -e "s/@@@include fm2utils.doc@@@//g" -e "/@@@include license.txt@@@/r fm2utils\license.txt" -e "s/@@@include license.txt@@@//g" fm2.wis.in >fm2.wis
+   sed -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -e "/@@@include fm2utils.doc@@@/r fm2utils\fm2utils.doc" -e "s/@@@include fm2utils.doc@@@//" -e "/@@@include license.txt@@@/r fm2utils\license.txt" -e "s/@@@include license.txt@@@//" fm2.wis.in >fm2.wis
 
 fm2$(FM2_VER).wpi:: bld_fm2_wpidirs.in
    @echo Staging files for WPI file...
