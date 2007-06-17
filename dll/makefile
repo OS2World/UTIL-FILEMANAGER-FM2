@@ -233,8 +233,9 @@ ipf\fm3.hlp:
   cd..
 
 # Run for each dependent
-lxlite: $(BASE).dll $(BASERES).dll
-  !lxlite /x- /b- $?
+lxlite: $(BASE).dll $(BASERES).dll .symbolic
+# !lxlite /x- /b- $?
+   @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
 
 cleanobj: .symbolic
   cd internal

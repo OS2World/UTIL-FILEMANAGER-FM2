@@ -56,7 +56,8 @@ wpi: .symbolic
 # makefile_post.mk contains lxlite target for $(BASE).exe
 # Apply to each *.mak for other exes
 lxlite:: *.mak .symbolic
-  !$(MAKE) -f $? $(__MAKEOPTS__) lxlite
+#  !$(MAKE) -f $? $(__MAKEOPTS__) lxlite
+   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) lxlite
 
 # Apply to dlls
 lxlite:: .symbolic
