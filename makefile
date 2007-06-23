@@ -12,12 +12,54 @@
 # 31 Jul 06 SHL Tweak dependencies
 # 26 Aug 06 SHL Add rest of lxlite support
 # 14 Jun 07 SHL Convert to OpenWatcom
+# 22 Jun 07 JBS Moved some macro-handling code to this
+#               file from warpin\makefile because of some
+#               differences in how Watcom handles macros.
 
 # Environment:
 
-# DEBUG	0 = release build, 1 = debug build
+# DEBUG 0 = release build, 1 = debug build
 
 BASE = fm3
+
+# FM2_VER defines fm/2 WPI file name suffix
+# e.g. FM2_VER=-3-5-9 results in FM2-3-5-9.wpi being built
+# If FM2_VER is empty, then FM2.wpi is built
+# NOTE: Start the variable with '-'
+
+!ifndef FM2_VER                  # if defined on wmake command, use it
+FM2_VER=-3-6-0                   # default value
+!ifdef %FM2_VER                  # if defined via env. var.
+FM2_VER=$(%FM2_VER)              #     use the env. var.
+!endif
+!endif
+
+# FM2UTILS_VER defines the fm2utils WPI file name suffix.
+# e.g. FM2UTILS_VER=-1-0 results in FM2Utils-1.0.wpi being built
+# If FM2UTILS_VER is empty, then FM2UTILS.wpi is built
+# NOTE: Start the variable with '-'
+
+!ifndef FM2UTILS_VER             # if defined on wmake command, use it
+FM2UTILS_VER=-1-1                # default value
+!ifdef %FM2UTILS_VER             # if defined via env. var.
+FM2UTILS_VER=$(%FM2UTILS_VER)    #     use the env. var.
+!endif
+!endif
+
+# If BUILD_FM2UTILS = 1, build FM2UTILS*.wpi and FM2*.wpi
+# Otherwise build just FM2*.wpi
+
+!ifndef BUILD_FM2UTILS           # if defined on wmake command, use it
+!ifdef %BUILD_FM2UTILS           # else if defined via env. var.
+!ifneq %BUILD_FM2UTILS 1         #     if env. var. is anything but 1
+BUILD_FM2UTILS=0                 #     use a value of 0
+!else
+BUILD_FM2UTILS=1
+!endif
+!else
+BUILD_FM2UTILS=0                 # use default value if not defined via env. or command line
+!endif
+!endif
 
 !include makefile_pre.mk
 
@@ -50,7 +92,7 @@ allexe: *.mak .symbolic
 
 wpi: .symbolic
    cd warpin
-   $(MAKE) $(__MAKEOPTS__)
+   $(MAKE) $(__MAKEOPTS__) FM2_VER=$(FM2_VER) FM2UTILS_VER=$(FM2UTILS_VER) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
    cd ..
 
 # makefile_post.mk contains lxlite target for $(BASE).exe

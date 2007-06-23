@@ -6,41 +6,17 @@
 # 13 May 07 SHL Correct clean target
 # 08 Jun 07 JBS Corrected BUILD_FM2UTILS code so that it is actually
 #               possible to disable the build of the FM2UTILS*.WPI file
+# 22 Jun 07 JBS Reworked the code related to macros in both this file
+#               and the base makefile. Also made the fm2.wis file a
+#               dependant of the WPI target.
 
-# Environment:
-
-# DEBUG  0 = release build, 1 = debug build
-
-# If BUILD_FM2UTILS defined, build FM2UTILS*.wpi and FM2*.wpi
-# Otherwise build just FM2*.wpi
-!ifndef BUILD_FM2UTILS
-BUILD_FM2UTILS=1
-!endif
-
-# FM2_VER defines fm/2 WPI file name suffix
-# e.g. FM2_VER=-3-5-9 results in FM2-3-5-9.wpi being built
-# If FM2_VER is empty, then FM2.wpi is built
-# NOTE: Start the variable with '-'
-
-!ifndef FM2_VER
-FM2_VER=-3-5-9
-!endif
-
-# FM2UTILS_VER defines the fm2utils WPI file name suffix.
-# e.g. FM2UTILS_VER=-1-0 results in FM2Utils-1.0.wpi being built
-# If FM2UTILS_VER is empty, then FM2UTILS.wpi is built
-# NOTE: Start the variable with '-'
-
-!ifndef FM2UTILS_VER
-FM2UTILS_VER=-1-0-1
-!endif
 
 all: wpi .symbolic
 
-!if $(BUILD_FM2UTILS) == 0
-wpi: checkfiles fm2$(FM2_VER).wpi .symbolic
+!ifeq BUILD_FM2UTILS 0
+wpi: checkfiles fm2.wis fm2$(FM2_VER).wpi .symbolic
 !else
-wpi: checkfiles fm2$(FM2_VER).wpi fm2utils$(FM2UTILS_VER).wpi .symbolic
+wpi: checkfiles fm2.wis fm2$(FM2_VER).wpi fm2utils$(FM2UTILS_VER).wpi .symbolic
 !endif
 
 
