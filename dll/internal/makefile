@@ -26,7 +26,11 @@ BASE=mkstr
 # -zgp		disable gs use
 # -zp4		align 4
 # -zq		quiet
-CFLAGS = -bt=os2 -mf -bm -d1 -olirs   -s -j -wx -zfp -zgp -zq -hd
+!ifdef %DEBUG
+CFLAGS =   -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zq -hd
+!else
+CFLAGS =   -bt=os2 -mf -bm -d1 -olirs   -s -j -wx -zfp -zgp -zq -hd
+!endif
 
 # fixme
 #LFLAGS = /EXEPACK:2 /MAP /PMTYPE:VIO

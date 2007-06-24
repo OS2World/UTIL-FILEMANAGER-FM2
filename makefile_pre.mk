@@ -41,7 +41,7 @@ RC = rc
 # -zq		quiet
 
 !ifdef %DEBUG
-CFLAGS =   -bt=os2 -mf -bm -d1 -olirs   -s -j -wx -zfp -zgp -zq -hd
+CFLAGS =   -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zq -hd
 !else
 CFLAGS =   -bt=os2 -mf -bm -d1 -olirs   -s -j -wx -zfp -zgp -zq -hd
 !endif
