@@ -2888,8 +2888,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     break;
   }
-  return (dcd && dcd->oldproc) ? dcd->oldproc(hwnd, msg, mp1, mp2) :
-    PFNWPCnr(hwnd, msg, mp1, mp2);
+  if (dcd && dcd->oldproc){
+      return dcd->oldproc(hwnd, msg, mp1, mp2);
+  }
+  else
+      return PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
 HWND StartTreeCnr(HWND hwndParent, ULONG flags)
@@ -3016,7 +3019,12 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	  WinSetWindowText(WinWindowFromID(hwndFrame, FID_TITLEBAR),
 			   GetPString(IDS_TREETEXT));
 	}
-	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr, TreeCnrWndProc);
+        dcd->oldproc = WinSubclassWindow(dcd->hwndCnr, TreeCnrWndProc);
+        printf("%s %d oldproc subclass %X\n ",
+         __FILE__, __LINE__, dcd->oldproc); fflush(stdout);
+        if (dcd->oldproc == 0l)
+            Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		     "WinSubclassWindow");
 	if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
       }

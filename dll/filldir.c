@@ -29,6 +29,7 @@
   17 Feb 07 GKY Add more drive types
   09 Mar 07 GKY Use SelectDriveIcon
   20 Mar 07 GKY Increase extention check to 4 letters for icon selections
+  23 Jun 07 GKY Fixed ram disk without a directory not appearing on states drive list
 
 ***********************************************************************/
 
@@ -1290,7 +1291,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 					!(driveflags
 					  [toupper(*pci->szFileName) -
 					   'A'] & DRIVE_REMOVABLE))) {
-	    if (!Stubby(hwndCnr, pci)) {
+	    if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
 	      WinSendMsg(hwndCnr,
 			 CM_INVALIDATERECORD,
 			 MPFROMP(&pci),

@@ -23,6 +23,7 @@
   30 Mar 07 GKY Defined golbals for removing GetPString for window class names
   21 Apr 07 GKY Find FM2Utils by path or utils directory eleminate fAddUtils global
   15 Jun 07 SHL Make OpenWatcom compatible
+  23 Jun 07 GKY Fix WORPLACE_PROCESS enviroment check logic
 
 ***********************************************************************/
 
@@ -627,8 +628,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     return FALSE;
 
   /* are we the workplace shell? */
-  env = getenv("WORKPLACE__PROCESS");
-  if (!env || stricmp(env, "NO"))
+  env = getenv("WORKPLACE_PROCESS");
+  if (!env || stricmp(env, "YES"))
     fWorkPlace = TRUE;
 
   if ((!strchr(profile, '\\') && !strchr(profile, ':')) ||

@@ -3215,8 +3215,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     EmptyCnr(hwnd);
     break;
   }
-  return dcd && dcd->oldproc ? dcd->oldproc(hwnd, msg, mp1, mp2) :
-			       PFNWPCnr(hwnd, msg, mp1, mp2);
+  if (dcd && dcd->oldproc){
+      return dcd->oldproc(hwnd, msg, mp1, mp2);
+  }
+  else
+      return PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
 HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,

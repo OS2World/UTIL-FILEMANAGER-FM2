@@ -3327,8 +3327,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     EmptyCnr(hwnd);
     break;
   }
-  return (dcd && dcd->oldproc) ? dcd->oldproc(hwnd, msg, mp1, mp2) :
-    PFNWPCnr(hwnd, msg, mp1, mp2);
+  if (dcd && dcd->oldproc){
+      return dcd->oldproc(hwnd, msg, mp1, mp2);
+  }
+  else
+      return PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
 HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
