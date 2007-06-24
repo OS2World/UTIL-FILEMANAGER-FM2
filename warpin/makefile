@@ -10,6 +10,40 @@
 #               and the base makefile. Also made the fm2.wis file a
 #               dependant of the WPI target.
 
+!ifndef FM2_VER                  # if defined on wmake command, use it
+FM2_VER=-3-6-0                   # default value
+!ifdef %FM2_VER                  # if defined via env. var.
+FM2_VER=$(%FM2_VER)              #     use the env. var.
+!endif
+!endif
+
+# FM2UTILS_VER defines the fm2utils WPI file name suffix.
+# e.g. FM2UTILS_VER=-1-0 results in FM2Utils-1.0.wpi being built
+# If FM2UTILS_VER is empty, then FM2UTILS.wpi is built
+# NOTE: Start the variable with '-'
+
+!ifndef FM2UTILS_VER             # if defined on wmake command, use it
+FM2UTILS_VER=-1-1                # default value
+!ifdef %FM2UTILS_VER             # if defined via env. var.
+FM2UTILS_VER=$(%FM2UTILS_VER)    #     use the env. var.
+!endif
+!endif
+
+# If BUILD_FM2UTILS = 1, build FM2UTILS*.wpi and FM2*.wpi
+# Otherwise build just FM2*.wpi
+
+!ifndef BUILD_FM2UTILS           # if defined on wmake command, use it
+!ifdef %BUILD_FM2UTILS           # else if defined via env. var.
+!ifneq %BUILD_FM2UTILS 1         #     if env. var. is anything but 1
+BUILD_FM2UTILS=0                 #     use a value of 0
+!else
+BUILD_FM2UTILS=1
+!endif
+!else
+BUILD_FM2UTILS=0                 # use default value if not defined via env. or command line
+!endif
+!endif
+
 
 all: wpi .symbolic
 
@@ -24,9 +58,9 @@ checkfiles: .symbolic
    @echo Checking to see if files have been changed...
     ckfiles fm2$(FM2_VER).wpi
 
-fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt
-#  sed -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -e "/@@@include fm2utils.doc@@@/r fm2utils\fm2utils.doc" -e "s/@@@include fm2utils.doc@@@//g" -e "/@@@include license.txt@@@/r fm2utils\license.txt" -e "s/@@@include license.txt@@@//g" fm2.wis.in >fm2.wis
-   sed -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -e "/@@@include fm2utils.doc@@@/r fm2utils\fm2utils.doc" -e "s/@@@include fm2utils.doc@@@//" -e "/@@@include license.txt@@@/r fm2utils\license.txt" -e "s/@@@include license.txt@@@//" fm2.wis.in >fm2.wis
+fm2.wis: fm2.wis.in sed.in fm2utils\fm2utils.doc fm2utils\license.txt
+#  sed -e "/@@@include fm2utils.doc@@@/r fm2utils\fm2utils.doc" -e "s/@@@include fm2utils.doc@@@//" -e "/@@@include license.txt@@@/r fm2utils\license.txt" -e "s/@@@include license.txt@@@//" -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "/PACKAGEID/s/-/\\/g" fm2.wis.in >fm2.wis
+   sed -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "/PACKAGEID/s/-/\\/g" -f sed.in fm2.wis.in >fm2.wis
 
 fm2$(FM2_VER).wpi:: bld_fm2_wpidirs.in
    @echo Staging files for WPI file...
