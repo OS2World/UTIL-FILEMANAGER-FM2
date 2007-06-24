@@ -38,6 +38,19 @@ than expected&per.
 This limits each drag operation to a maximum of about 1800 objects, however in some testing
 we were limited to under 1700. The main problem is PM is happy to over write this buffer.
 The result is significant corruption of share memory forcing a reboot. We have limited drag
-operations to maximum number of objects that will fit in the dragitem 
-structure (700- 1700 depending on path length and other factors) 
+operations to maximum number of objects that will fit in the dragitem
+structure (700-1700 depending on path length and other factors)
 to prevent this problem.
+:p. &endash. Trying to run Global.exe from the command line in 4OS2 (perhaps other shells)
+results in the execution of 4OS2's "Global" command. Global.exe can be run by placing
+it in quotes or prefixing it with *. See 4OS2's documentation for more information.
+:p. &endash. As with any OS/2 program significant changes (such as our change to OpenWatcom)
+will result in the incompatibility of older (VAC) exes with new dlls and viceversa. Attempting to run
+OpenWatcom exes with a VAC dll loaded in memory or in your libpath ahead of the new version
+will result in a SYS3175 in popuplog.os2. The reverse gives a SYS2070. If you experience these
+problems search your libpath for fm3dll.dll and remove or rename it. Your libpath should have "."
+(without the quotes) as your first entry to minimize the likelyhood of this problem. FM/2's installer
+does not add the FM/2 directory to the libpath.
+:p. &endash. Accessing a subdirectory on a vfat (fat) formatted USB removable drive may result
+in a SYS3175. If this occurs try accessing the directory using "open" from the context (popup)
+menu. Mounting it using netdrives' vfat plugin also solves the problem.

@@ -5,6 +5,30 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+File Manager/2 (FM/2) starting with version 3.6 is being 
+built with OpenWatcom. Changing compilers can introduce 
+unexpected problem so you may want to backup your current
+install, or at minimum have a working copy of the FM/2 
+version 3.5.9 warpin available for reinstall if problems arise.
+To backup your current install simple zip up your install
+directory with its subdirectories or copy them to a different
+location.To restore simply copy the old FM/2 back to the 
+its original location. Remember you can't use the new FM/2
+to do this since if it is running some files will be locked
+and won't be replaced. If you didn't backup and need to go
+back just install the 3.5.9 warpin package over the new 
+install. It will warn you that the install is newer but just
+tell it to install anyway. The warpin install process is 
+designed to save all your customizations. Don't delete the 
+new install if you don't have a backup since this will result 
+in the loss of any custom chages you have made. If you need 
+to delete it to get the reinstall to work. Backup up the new 
+install and then copy the *.bmp, *.tls, *.dat, *.cmd & *.ini 
+files back to the install directory after the reinstall. 
+Don't copy the *.str files as they are version specific. 
+If you have problems be sure to report it (See Support
+at the end of this file).    
+
 File Manager/2 (FM/2) is a free OS/2(Warp)/eCS Presentation
 Manager 32-bit file/directory/archive maintenance utility
 (a sort of super-Drives object, something midway between the
@@ -349,8 +373,25 @@ WPS icons
 - Spurious WPS Objects Handles may be created during some
 operations
 
+- Trying to run Global.exe from the command line in 4OS2 
+(perhaps other shells) results in the execution of 4OS2's "Global" 
+command. Global.exe can be run by placing it in quotes or 
+prefixing it with *. See 4OS2's documentation for more information.
+
+- As with any OS/2 program significant changes (such as our 
+change to OpenWatcom) will result in the incompatibility of 
+older (VAC) exes with new dlls and viceversa. Attempting to run
+OpenWatcom exes with a VAC dll loaded in memory or in your 
+libpath ahead of the new version will result in a SYS3175 in 
+popuplog.os2. The reverse gives a SYS2070. If you experience these
+problems search your libpath for fm3dll.dll and remove or rename 
+it. Your libpath should have "." (without the quotes) as your 
+first entry to minimize the likelyhood of this problem. FM/2's 
+installer does not add the FM/2 directory to the libpath.
+
 - See http://svn.netlabs.org/fm2/report/1 for a complete list of
 currently active bugs
+
 
 
 About FM/2:

@@ -58,7 +58,10 @@ Filename VCOLLECT.EXE.
 :p.
 Two other objects&comma. "See all files" and "Seek and scan" are created which
 call up the Collector and go directly to dialogs for the appropriate purpose.
-:p.Global Viewer&colon. Opens a global view of a drive or drives.
+:p.Global Viewer&colon. Opens a global view of a drive or drives. Trying to run this program from
+the command line in 4OS2 (perhaps other shells) results in the execution of 4OS2's "Global"
+command. Global.exe can be run by placing it in quotes or prefixing it with *. See 4OS2's
+documentation for more information.
 .br
 Filename GLOBAL.EXE.
 :p.:link reftype=hd res=99000.Databar&colon.:elink. Opens a databar showing some system information.
