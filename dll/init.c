@@ -629,9 +629,15 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   /* are we the workplace shell? */
   env = getenv("WORKPLACE_PROCESS");
-  if (!env || stricmp(env, "YES"))
-    fWorkPlace = TRUE;
-
+  if (!env){
+    env = getenv("WORKPLACE__PROCESS");
+    if (!env || stricmp(env, "YES"))
+      fWorkPlace = TRUE;
+  }
+  else{
+    if (stricmp(env, "YES"))
+      fWorkPlace = TRUE;
+  }
   if ((!strchr(profile, '\\') && !strchr(profile, ':')) ||
       !(fmprof = PrfOpenProfile((HAB) 0, profile))) {
     /* figure out where to put INI file... */
