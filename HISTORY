@@ -1,8 +1,12 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.06 (pending)
- o Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
- o Mouse button 3 white space click to fail silently
+3.06 
+ o First release built with OpenWtcom associated documentation updates (Steven,Gregg,John)
+ o Fixed ramdisk not shown it states bar drive lists (Gregg)
+ o Fixed WORKPLACE_PROCESS envroment varible check (Gregg)
+ o Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit (Steven,Gregg)
+ o Mouse button 3 white space click to fail silently (Gregg)
+ o Document behavior of global.exe when attempt is made to run it from 4os2 (Gregg)
 
 3.05.09
  o Update readme to reflect warpin install and other code changes (David, John, Gregg)

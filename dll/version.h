@@ -40,15 +40,17 @@
   06 Nov 06 SHL v3.05beta06: Release
   03 Feb 07 SHL v3.05beta07: Release
   14 Mar 07 SHL v3.05beta08: Release
+  13 May 07 GKY v3.05.09: Release 1st warpin installer version
+  24 Jun 07 GKY v3.06: Release 1st OpenWatcom release
 
 ***********************************************************************/
 
 #define VERMAJOR       3
-#define VERMINOR       05
+#define VERMINOR       6
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-// #define VERREALMINOR   ".09 "__DATE__
-#define VERREALMINOR   ".09 " __DATE__ " " __TIME__
+#define VERREALMINOR   " "__DATE__
+//#define VERREALMINOR   ".09 " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 
