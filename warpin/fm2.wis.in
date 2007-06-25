@@ -11,8 +11,16 @@
          WPI.max_package_number_length = 3
    will need to be changed accordingly.
 
+   NOTE: If a PACKAGEID line below ever has a '-' added to it, then the
+   SED command in warpin\makefile will have to change. Right now the SED
+   command first replaces the @@@FM2*_VER@@@ string in tha PACKAGEID's
+   below with the filename version strings (e.g. -3-6-0) and then it
+   replaces the '-' with backslashes. In summary, don't use '-' in these
+   PACKAGEID's if possible.
+
    WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
    WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
+
 -->
 <WARPIN VERSION 0.9.20>
 
@@ -67,9 +75,9 @@
 
 The FM/2 base package must be installed to a drive with long filename support!
 This is the first release of FM/2 that was build with OpenWatcom. Changing
-compilers can introduce unexpected problem so you may want to install this
+compilers can introduce unexpected problems so you may want to install this
 package to a location different than your current install for testing before
-replacing your current version. See the readme for more information
+replacing your current version. See the readme for more information.
 </PCK>
 
 <PCK INDEX=7
