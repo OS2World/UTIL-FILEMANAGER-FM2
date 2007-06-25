@@ -631,7 +631,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   env = getenv("WORKPLACE_PROCESS");
   if (!env){
     env = getenv("WORKPLACE__PROCESS");
-    if (!env || stricmp(env, "YES"))
+    if (!env || stricmp(env, "NO"))
       fWorkPlace = TRUE;
   }
   else{
