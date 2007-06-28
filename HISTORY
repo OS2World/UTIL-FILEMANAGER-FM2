@@ -1,11 +1,11 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.06 
- o First release built with OpenWtcom associated documentation updates (Steven,Gregg,John)
- o Fixed ramdisk not shown it states bar drive lists (Gregg)
- o Fixed WORKPLACE_PROCESS envroment varible check (Gregg)
+ o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)
+ o Fixed ramdisk not shown in quicklist drives dropdown and drive bar drive lists (Gregg)
+ o Fixed WORKPLACE_PROCESS environment variable check (Gregg)
  o Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit (Steven,Gregg)
- o Mouse button 3 white space click to fail silently (Gregg)
+ o Change mouse button 3 white space click to fail silently (Gregg)
  o Document behavior of global.exe when attempt is made to run it from 4os2 (Gregg)
 
 3.05.09
