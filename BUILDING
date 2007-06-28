@@ -1,52 +1,66 @@
 
-Building FM/2                               			14 Aug 2005
+Building FM/2
 =============
 
 This document explains how to build FM/2 from source.
 
-
 Tools
 =====
 
-The following tools are currently used to build binary distributions:
+The following tools are currently used to build the FM/2 binaries
 
-  IBM VisualAge C++ V3.65 with FP2
+  OpenWatcom v1.6 or newer
   IBM Developers Toolkit v4.5
   lxlite LX compressor
 
-Older versions of the Toolkit may work.  There are no known special setup requirements.
+Older versions of the Toolkit may work.  The OpenWatcom implementation of 
+the Toolkit should work, but this has not been fully verified.  There are no 
+known special setup requirements. 
 
 Not all versions of RC.EXE are created equal.  Currently, the best version to
-use is:
+use is
 
  12-18-97   6:01         868,000           0  RC.EXE
 
-which reports itself as:
+which reports itself as
 
  IBM RC (Resource Compiler) Version 5.00.002 Dec 18 1997
 
-and it is available at:
+and it is available from
 
   <ftp://ftp.software.ibm.com/ps/products/warpzilla/os2tk40rc.zip>
 
-You can get LXLITE.EXE at:
+You can get LXLITE.EXE from
 
  <http://hobbes.nmsu.edu/cgi-bin/h-search?key=lxlite&pushbutton=Search>
+
+You can get OpenWatcom from
+
+ <http://www.openwatcom.org>
 
 
 Building
 ========
 
-Unzip the source code distribution to a work directory.  Be sure to preserve 
-the directory tree.
+Use subversion to pull a copy of the source code distribution into your 
+client workspace.  See
 
-Build the release version with:
+ <http://svn.netlabs.org/fm2>
 
-  nmake
+for instructions on how to do this.
 
-Build the debug version with:
+Build the release version with
 
-  NMAKE DEBUG=1
+  wmake
+
+Build the debug version with
+
+  wmake DEBUG=1
+
+or
+
+  set DEBUG=1
+  wmake
 
 The build outputs are:
 
@@ -76,15 +90,31 @@ The build outputs are:
 
   internal\mkstr.exe
 
+Release Packaging
+=================
+
+FM/2 is released as a WarpIN package.
+
+The basic process is
+
+  wmake wpi
+
+See
+
+ <http://svn.netlabs.org/fm2/wiki/WPIBuild>
+
+for more details.
+
+
 About FM/2
 ==========
 
-FM2 was originally written by:
+FM2 was originally written by
 
   Mark Kimes
   <hectorplasmic@worldnet.att.net>
 
-He has kindly allowed me to take over maintenance and support of FM/2 and to
+He has kindly allowed us to take over maintenance and support of FM/2 and to
 release the program under the GNU GPL license.  I'm sure he would appreciate
 a Thank You note for his generosity.
 
@@ -92,15 +122,29 @@ a Thank You note for his generosity.
 Support
 =======
 
-Please address support questions and enhancement requests to:
+FM/2 is a Netlabs project.  The project URL is
+
+ <http://svn.netlabs.org/fm2>
+
+The user support mailing list is
+
+  <mailto:fm2-user@netlabs.org>
+
+Like all Netlabs mailing list, this is mirrored to gmane.
+
+In addition the maintainers, monitor the comp.os.os2.programmer.misc 
+newsgroup and others in the comp.os.os2.* hierarchy.
+
+There is also an archived Yahoo group at
+
+ http://tech.groups.yahoo.com/group/fm2/
+
+The list is closed to new posts, but contains some useful info.
+
+If all else fails, you can always e-mail me directly at
 
   Steven H. Levine
   steve53@earthlink.net
-
-In addition to the fm2user Yahoo group, I monitor the 
-comp.os.os2.programmer.misc newsgroup and others in the comp.os.os2.* 
-hierarchy.
-
 
 Thanks and enjoy.
 
