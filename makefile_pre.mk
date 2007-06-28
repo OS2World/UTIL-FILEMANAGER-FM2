@@ -3,13 +3,17 @@
 
 # 01 Sep 06 SHL Adjust .res case
 # 02 Jun 07 SHL Convert to OpenWatcom
+# 27 Jun 07 SHL Use same CFLAGS for all builds
 
 CC = wcc386
 LINK = wlink
 
 # fixme for wrc to build working .res
 # fixme for wrc to not clobber bldlevel strings
+
+!ifndef USE_WRC
 USE_WRC = 0
+!endif
 
 !if $(USE_WRC)
 RC = wrc
@@ -40,11 +44,8 @@ RC = rc
 # -zp4		align 4
 # -zq		quiet
 
-!ifdef %DEBUG
+# We always compile with debug info to avoid needed a full rebuild just to debug
 CFLAGS =   -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zq -hd
-!else
-CFLAGS =   -bt=os2 -mf -bm -d1 -olirs   -s -j -wx -zfp -zgp -zq -hd
-!endif
 
 !ifdef %DEBUG
 LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map debug dwarf all
