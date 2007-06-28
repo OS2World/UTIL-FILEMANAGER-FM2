@@ -4,6 +4,7 @@
 # Copyright (c) 2002, 2007 Steven H. Levine
 
 # 14 Jun 07 SHL Convert to OpenWatcom
+# 27 Jun 07 SHL Support DEBUG set from command line or environment
 
 BASE=mkstr
 
@@ -26,11 +27,8 @@ BASE=mkstr
 # -zgp		disable gs use
 # -zp4		align 4
 # -zq		quiet
-!ifdef %DEBUG
-CFLAGS =   -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zq -hd
-!else
-CFLAGS =   -bt=os2 -mf -bm -d1 -olirs   -s -j -wx -zfp -zgp -zq -hd
-!endif
+
+CFLAGS = -bt=os2 -mf -bm -d2 -olirs -s -j -wx -zfp -zgp -zq -hd
 
 # fixme
 #LFLAGS = /EXEPACK:2 /MAP /PMTYPE:VIO
@@ -40,7 +38,7 @@ all: $(BASE).exe .symbolic
 $(BASE).obj: $(BASE).c ..\version.h ..\fm3str.h
 
 $(BASE).exe: $(BASE).obj $(BASE).lrf
-  @$(LINK) @$(BASE).lrf
+  $(LINK) @$(BASE).lrf
   bldlevel $@
 
 $(BASE).lrf: $(__MAKEFILES__)
@@ -49,12 +47,12 @@ $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ option verbose
    @%write $^@ option cache
    @%write $^@ option caseexact
-!ifdef %DEBUG
+!if $(DEBUG)
     @%write $^@ debug dwarf all
 !endif
    @%write $^@ option map
    @%write $^@ name $(BASE)
-   @%write $^@ op desc '@$#SLAInc:3.05.09$#@$#$#1$#$# 06/15/2007 03:05:09      slamain::EN:US:0:U:@@Fm/2 Strings Compiler'
+   @%write $^@ op desc '@$#SLAInc:3.06.00$#@$#$#1$#$# 06/24/2007 03:06:00      slamain::EN:US:0:U:@@FM/2 Strings Compiler'
    @%write $^@ file $(BASE).obj
    @%write $^@ library os2386.lib
 
