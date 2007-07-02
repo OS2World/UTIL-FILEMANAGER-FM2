@@ -24,6 +24,7 @@
   21 Apr 07 GKY Find FM2Utils by path or utils directory eleminate fAddUtils global
   15 Jun 07 SHL Make OpenWatcom compatible
   23 Jun 07 GKY Fix WORPLACE_PROCESS enviroment check logic
+  28 Jun 07 SHL Rework WORKPLACE_PROCESS check to match reality
 
 ***********************************************************************/
 
@@ -627,17 +628,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (!StartTimer())
     return FALSE;
 
-  /* are we the workplace shell? */
+  /* Are we the workplace shell? */
   env = getenv("WORKPLACE_PROCESS");
-  if (!env){
-    env = getenv("WORKPLACE__PROCESS");
-    if (!env || stricmp(env, "NO"))
-      fWorkPlace = TRUE;
-  }
-  else{
-    if (stricmp(env, "YES"))
-      fWorkPlace = TRUE;
-  }
+  fWorkPlace = env != NULL &&
+	       (stricmp(env, "YES") == 0 || atoi(env) == 1);
+
   if ((!strchr(profile, '\\') && !strchr(profile, ':')) ||
       !(fmprof = PrfOpenProfile((HAB) 0, profile))) {
     /* figure out where to put INI file... */
