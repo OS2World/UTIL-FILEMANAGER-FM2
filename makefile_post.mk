@@ -12,7 +12,7 @@
 # Executable specific paramters go in .def
 
 $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
-  @$(LINK) @$(BASE).lrf @$(BASE).def
+  $(LINK) @$(BASE).lrf @$(BASE).def
   $(RC) $(RCFLAGS2) $(BASE).res $@
   bldlevel $@
 

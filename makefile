@@ -16,16 +16,14 @@
 #               file from warpin\makefile because of some
 #               differences in how Watcom handles macros.
 
-# Environment:
-
-# DEBUG 0 = release build, 1 = debug build
+# Environment - see makefile_pre.mk
 
 BASE = fm3
 
 # FM2_VER defines fm/2 WPI file name suffix
 # e.g. FM2_VER=-3-5-9 results in FM2-3-5-9.wpi being built
 # If FM2_VER is empty, then FM2.wpi is built
-# NOTE: Start the variable with '-'
+# NOTE: Start the value with '-'
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
 FM2_VER=-3-6-0                   # default value
@@ -37,7 +35,7 @@ FM2_VER=$(%FM2_VER)              #     use the env. var.
 # FM2UTILS_VER defines the fm2utils WPI file name suffix.
 # e.g. FM2UTILS_VER=-1-0 results in FM2Utils-1.0.wpi being built
 # If FM2UTILS_VER is empty, then FM2UTILS.wpi is built
-# NOTE: Start the variable with '-'
+# NOTE: Start the value with '-'
 
 !ifndef FM2UTILS_VER             # if defined on wmake command, use it
 FM2UTILS_VER=-1-1                # default value
@@ -98,7 +96,6 @@ wpi: .symbolic
 # makefile_post.mk contains lxlite target for $(BASE).exe
 # Apply to each *.mak for other exes
 lxlite:: *.mak .symbolic
-#  !$(MAKE) -f $? $(__MAKEOPTS__) lxlite
    @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) lxlite
 
 # Apply to dlls

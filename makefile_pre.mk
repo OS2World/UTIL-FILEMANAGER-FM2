@@ -4,12 +4,14 @@
 # 01 Sep 06 SHL Adjust .res case
 # 02 Jun 07 SHL Convert to OpenWatcom
 # 27 Jun 07 SHL Use same CFLAGS for all builds
+# 27 Jun 07 SHL Allow DEBUG set from command line or environment
+# 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 
 CC = wcc386
 LINK = wlink
 
-# fixme for wrc to build working .res
-# fixme for wrc to not clobber bldlevel strings
+# fixme use use wrc when wrc fixed (v1.7 maybe)
+# wrc 1.6 is broken - does not copy resident name table
 
 !ifndef USE_WRC
 USE_WRC = 0
@@ -19,6 +21,13 @@ USE_WRC = 0
 RC = wrc
 !else
 RC = rc
+!endif
+
+# Keep this code in sync with dll\makefile
+!ifndef DEBUG                  # if not defined on wmake command line
+!ifdef %DEBUG                  # if defined in environment
+DEBUG = $(%DEBUG)              # pass environment value
+!endif
 !endif
 
 # Some flags are order dependent - see OpenWatcom docs
@@ -45,12 +54,11 @@ RC = rc
 # -zq		quiet
 
 # We always compile with debug info to avoid needed a full rebuild just to debug
-CFLAGS =   -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zq -hd
+CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zq -hd
 
-!ifdef %DEBUG
-LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map debug dwarf all
-!else
 LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map
+!ifdef DEBUG
+LFLAGS += debug dwarf all
 !endif
 
 # rc Includes can be in current director or dll subdirectory

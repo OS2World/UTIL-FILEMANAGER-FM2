@@ -24,13 +24,12 @@
 # 19 Oct 06 SHL Move all .hlp logic build to ipf\makefile too
 # 12 May 07 SHL Drop obsolete macros
 # 02 Jun 07 SHL Convert to OpenWatcom
-
-# Warning - may still be missing some *.h dependencies
+# 27 Jun 07 SHL Allow DEBUG set from command line or environment
+# 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 
 # Environment:
 
-#   DEBUG	0 = release build, 1 = debug build
-#   WARN	define for verbose compile time warnings
+#   DEBUG - not defined = release build, defined = debug build
 
 BASE = fm3dll
 BASERES = fm3res
@@ -43,12 +42,22 @@ LINK = wlink
 
 # fixme for wrc to build working .res
 # fixme for wrc to not clobber bldlevel strings
+
+!ifndef USE_WRC
 USE_WRC = 0
+!endif
 
 !if $(USE_WRC)
 RC = wrc
 !else
 RC = rc
+!endif
+
+# Keep this code in sync with makefile_pre.mk
+!ifndef DEBUG                  # if not defined on wmake command line
+!ifdef %DEBUG                  # if defined in environment
+DEBUG = $(%DEBUG)              # use environment setting
+!endif
 !endif
 
 # Some flags are order dependent - see OpenWatcom docs
@@ -74,7 +83,7 @@ RC = rc
 # -zp4		align 4
 # -zq		quiet
 
-!ifdef %DEBUG
+!ifdef DEBUG
 CFLAGS =   -bt=os2 -mf -bd -bm -d2 -olirs   -s -sg -j -wx -zfp -zgp -zq -hd
 !else
 CFLAGS =   -bt=os2 -mf -bd -bm -d1 -olirs   -s -sg -j -wx -zfp -zgp -zq -hd
@@ -83,7 +92,7 @@ CFLAGS =   -bt=os2 -mf -bd -bm -d1 -olirs   -s -sg -j -wx -zfp -zgp -zq -hd
 # for fm3res only
 CFLAGSR = -bt=os2 -mf -bd -bm     -olirs   -s -j -wx -zfp -zgp
 
-!ifdef %DEBUG
+!ifdef DEBUG
 LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
 	 op caseexact op implib op map debug dwarf all
 !else

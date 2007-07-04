@@ -30,9 +30,6 @@ BASE=mkstr
 
 CFLAGS = -bt=os2 -mf -bm -d2 -olirs -s -j -wx -zfp -zgp -zq -hd
 
-# fixme
-#LFLAGS = /EXEPACK:2 /MAP /PMTYPE:VIO
-
 all: $(BASE).exe .symbolic
 
 $(BASE).obj: $(BASE).c ..\version.h ..\fm3str.h
@@ -47,7 +44,7 @@ $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ option verbose
    @%write $^@ option cache
    @%write $^@ option caseexact
-!if $(DEBUG)
+!ifdef DEBUG
     @%write $^@ debug dwarf all
 !endif
    @%write $^@ option map
