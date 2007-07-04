@@ -27,6 +27,7 @@
 # 27 Jun 07 SHL Allow DEBUG set from command line or environment
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
+# 04 Jul 07 SHL Add missing .AUTODEPEND
 
 # Environment:
 
@@ -118,7 +119,7 @@ RCFLAGS2 = -x2
 !endif
 
 !ifndef MAKERES
-.c.obj:
+.c.obj: .AUTODEPEND
   $(CC) $(CFLAGS) $*.c
 !else
   # !error "MAKERES mode"
