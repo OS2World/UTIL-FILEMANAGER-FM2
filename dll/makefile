@@ -197,8 +197,7 @@ internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
   cd..
 
-$(BASERES).obj: $(BASERES).c
-  # $(CC) $(CFLAGSR) /C $(BASERES).c
+$(BASERES).obj: $(BASERES).c .AUTODEPEND
   $(CC) $(CFLAGSR) $(BASERES).c
 
 $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
