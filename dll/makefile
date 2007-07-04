@@ -26,6 +26,7 @@
 # 02 Jun 07 SHL Convert to OpenWatcom
 # 27 Jun 07 SHL Allow DEBUG set from command line or environment
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
+# 04 Jul 07 SHL Pass DEBUG settings to sub-make
 
 # Environment:
 
@@ -54,9 +55,12 @@ RC = rc
 !endif
 
 # Keep this code in sync with makefile_pre.mk
-!ifndef DEBUG                  # if not defined on wmake command line
-!ifdef %DEBUG                  # if defined in environment
-DEBUG = $(%DEBUG)              # use environment setting
+!ifdef DEBUG                  	# if defined on wmake command line
+DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
+!else
+!ifdef %DEBUG                  	# if defined in environment
+DEBUG = $(%DEBUG)              	# use value from environment
+DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
 
@@ -185,11 +189,11 @@ chkexe:
 
 res:
   @echo Updating resources only
-  $(MAKE) $(__MAKEOPTS__) MAKERES=1
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) MAKERES=1
 
 internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
   cd internal
-  $(MAKE) $(__MAKEOPTS__)
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
   cd..
 
 $(BASERES).obj: $(BASERES).c
@@ -238,7 +242,7 @@ ipf: ipf\fm3.hlp .symbolic
 
 ipf\fm3.hlp:
   cd ipf
-  $(MAKE) $(__MAKEOPTS__) fm3.hlp
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) fm3.hlp
   cd..
 
 # Run for each dependent
@@ -248,15 +252,15 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
 
 cleanobj: .symbolic
   cd internal
-  $(MAKE) $(__MAKEOPTS__) cleanobj
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) cleanobj
   cd..
   -del *.obj
 
 clean: .symbolic
   cd internal
-  $(MAKE) $(__MAKEOPTS__) clean
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) clean
   cd ..\ipf
-  $(MAKE) $(__MAKEOPTS__) clean
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) clean
   cd..
   -del *.dll
   -del *.lib

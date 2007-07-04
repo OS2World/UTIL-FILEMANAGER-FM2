@@ -6,6 +6,7 @@
 # 27 Jun 07 SHL Use same CFLAGS for all builds
 # 27 Jun 07 SHL Allow DEBUG set from command line or environment
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
+# 04 Jul 07 SHL Pass DEBUG settings to sub-make
 
 CC = wcc386
 LINK = wlink
@@ -24,9 +25,12 @@ RC = rc
 !endif
 
 # Keep this code in sync with dll\makefile
-!ifndef DEBUG                  # if not defined on wmake command line
-!ifdef %DEBUG                  # if defined in environment
-DEBUG = $(%DEBUG)              # pass environment value
+!ifdef DEBUG                  	# if defined on wmake command line
+DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
+!else
+!ifdef %DEBUG                  	# if defined in environment
+DEBUG = $(%DEBUG)              	# use value from environment
+DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
 

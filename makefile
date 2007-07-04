@@ -15,6 +15,7 @@
 # 22 Jun 07 JBS Moved some macro-handling code to this
 #               file from warpin\makefile because of some
 #               differences in how Watcom handles macros.
+# 04 Jul 07 SHL Pass DEBUG settings to sub-make
 
 # Environment - see makefile_pre.mk
 
@@ -68,13 +69,13 @@ dist: all lxlite wpi .symbolic
 # Only update resources
 res: .symbolic
   @echo Updating resources only
-  $(MAKE) $(__MAKEOPTS__) MAKERES=1
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) MAKERES=1
 
 # make DLL components
 
 dll: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__)
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
   cd ..
 
 $(BASE): $(BASE).exe $(BASE).res .symbolic
@@ -86,33 +87,33 @@ $(BASE).obj: $(BASE).c dll\version.h
 # make EXE compenents
 
 allexe: *.mak .symbolic
-   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__)
+   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT)
 
 wpi: .symbolic
    cd warpin
-   $(MAKE) $(__MAKEOPTS__) FM2_VER=$(FM2_VER) FM2UTILS_VER=$(FM2UTILS_VER) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
+   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) FM2_VER=$(FM2_VER) FM2UTILS_VER=$(FM2UTILS_VER) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
    cd ..
 
 # makefile_post.mk contains lxlite target for $(BASE).exe
 # Apply to each *.mak for other exes
 lxlite:: *.mak .symbolic
-   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) lxlite
+   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
 
 # Apply to dlls
 lxlite:: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) lxlite
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
   cd ..
 
 cleanobj: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) cleanobj
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) cleanobj
   cd ..
   -del *.obj
 
 clean:: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) clean
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) clean
   cd ..
   -del *.exe
   -del *.map
@@ -122,7 +123,7 @@ clean:: .symbolic
 
 distclean: clean .symbolic
   cd warpin
-  $(MAKE) $(__MAKEOPTS__) distclean
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) distclean
   cd ..
 
 !include makefile_post.mk
