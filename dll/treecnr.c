@@ -32,6 +32,7 @@
   12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   10 Jun 07 GKY Mouse button 3 white space click to fail silently
+  05 Jul 07 SHL Disable leftover debug code
 
 ***********************************************************************/
 
@@ -549,7 +550,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
-                      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
       CheckPmDrgLimit(cni.pDragInfo);
       if (li) {
 	li->type = ((fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE);
@@ -1376,8 +1377,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
+	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+	  CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    if (!*li->targetpath) {
 	      if (li->list[0])
@@ -3019,11 +3020,11 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	  WinSetWindowText(WinWindowFromID(hwndFrame, FID_TITLEBAR),
 			   GetPString(IDS_TREETEXT));
 	}
-        dcd->oldproc = WinSubclassWindow(dcd->hwndCnr, TreeCnrWndProc);
-        printf("%s %d oldproc subclass %X\n ",
-         __FILE__, __LINE__, dcd->oldproc); fflush(stdout);
-        if (dcd->oldproc == 0l)
-            Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr, TreeCnrWndProc);
+	// DbgMsg(pszSrcFile, __LINE__, "oldproc subclass %X", dcd->oldproc);	// 05 Jul 07 SHL
+	// fixme to document 01 test?
+	if (dcd->oldproc == 0l)
+	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
 		     "WinSubclassWindow");
 	if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
