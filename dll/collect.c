@@ -35,6 +35,7 @@
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checks.
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  05 Jul 07 SHL CollectorCnrWndProc: just warn if busy
 
 ***********************************************************************/
 
@@ -1707,8 +1708,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_GREP:
-	if (dcd->amextracted)
-	  Runtime_Error(pszSrcFile, __LINE__, "busy");
+	if (dcd->amextracted) {
+	  saymsg(MB_OK | MB_ICONASTERISK,
+		 hwnd,
+		 GetPString(IDS_WARNINGTEXT),
+		 "Collector busy - please try again later");
+	}
 	else {
 	  if (WinDlgBox(HWND_DESKTOP, hwnd, GrepDlgProc,
 			FM3ModHandle, GREP_FRAME, (PVOID) & hwnd)) {
@@ -2255,8 +2260,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-          li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
-          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
+	  li = DoFileDrop(hwnd, NULL, TRUE, mp1, mp2);
+	  CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    if (!*li->targetpath) {
 	      li->type = IDM_COLLECT;
