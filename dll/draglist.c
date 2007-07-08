@@ -18,6 +18,7 @@
   19 Apr 07 SHL Optimize DRAGITEM DRAGIMAGE array access
   21 Apr 07 SHL Avoid odd first time drag failure
   12 May 07 SHL Use dcd->ulItemsToUnHilite
+  05 Jul 07 FreeDragInfoData: suppress PMERR_SOURCE_SAME_AS_TARGET notices
 
 ***********************************************************************/
 
@@ -97,13 +98,12 @@ VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo)
   } // for
 # endif
   if (!DrgFreeDraginfo(pDInfo)) {
-    if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) == PMERR_SOURCE_SAME_AS_TARGET) {
-      // fixme to find caller responsible for PMERR_SOURCE_SAME_AS_TARGET
-      Win_Error_NoMsgBox(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	                 "DrgFreeDraginfo failed with PMERR_SOURCE_SAME_AS_TARGET");
-    }
-    else
+    // PMERR_SOURCE_SAME_AS_TARGET is not an error if dragging within same fm/2 process
+    if (!IsFm2Window(pDInfo->hwndSource, FALSE) ||
+	(WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) != PMERR_SOURCE_SAME_AS_TARGET)
+    {
       Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DrgFreeDraginfo");
+    }
   }
 }
 
