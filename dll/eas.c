@@ -496,7 +496,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      if (!strcmp(info->name, SUBJECT))
 			WinSendDlgItemMsg(hwnd, EA_ENTRY,
 					  EM_SETTEXTLIMIT,
-					  MPFROM2SHORT(40, 0), MPVOID);
+					  MPFROM2SHORT(256, 0), MPVOID);
 		      else
 			WinSendDlgItemMsg(hwnd, EA_ENTRY,
 					  EM_SETTEXTLIMIT,
