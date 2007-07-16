@@ -1165,15 +1165,16 @@ MENU DIR_POPUP
     MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
   }
-  SUBMENU    "~Open",           IDM_OPENSUBMENU
+  SUBMENU    "~Open WPS object",           IDM_OPENSUBMENU
   {
-    MENUITEM "~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+    MENUITEM "Default\tF6",     IDM_OPENDEFAULT
     MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
     MENUITEM "~Icon",           IDM_OPENICON
     MENUITEM "~Details",        IDM_OPENDETAILS
     MENUITEM "~Tree",           IDM_OPENTREE
-    MENUITEM "Default\tF6",     IDM_OPENDEFAULT
   }
+  MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+  MENUITEM "",                  -1,             MIS_SEPARATOR
   SUBMENU "Save Lists",         IDM_SAVESUBMENU
   {
     MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
@@ -1212,15 +1213,17 @@ MENU TREE_POPUP
     MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
     MENUITEM "~Drive flags...",       IDM_DRVFLAGS
   }
-  SUBMENU    "~Open",           IDM_OPENSUBMENU
+  SUBMENU    "~Open WPS object",           IDM_OPENSUBMENU
   {
-    MENUITEM "~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+    MENUITEM "Default\tF6",     IDM_OPENDEFAULT
     MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
     MENUITEM "~Icon",           IDM_OPENICON
     MENUITEM "~Details",        IDM_OPENDETAILS
     MENUITEM "~Tree",           IDM_OPENTREE
   }
+  MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
   MENUITEM "Create ~shadows...",IDM_SHADOW
+  MENUITEM "",                  -1,             MIS_SEPARATOR
   SUBMENU "Save ~Lists",        IDM_SAVESUBMENU
   {
     MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
@@ -1428,15 +1431,16 @@ MENU COLLECTORDIR_POPUP
     MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
     MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
   }
-  SUBMENU    "~Open",           IDM_OPENSUBMENU
+  SUBMENU    "~Open WPS object",           IDM_OPENSUBMENU
   {
-    MENUITEM "~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+    MENUITEM "Default\tF6",     IDM_OPENDEFAULT
     MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
     MENUITEM "~Icon",           IDM_OPENICON
     MENUITEM "~Details",        IDM_OPENDETAILS
     MENUITEM "~Tree",           IDM_OPENTREE
-    MENUITEM "Default",         IDM_OPENDEFAULT
   }
+  MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+  MENUITEM "",                  -1,             MIS_SEPARATOR
   SUBMENU "Save Lists",         IDM_SAVESUBMENU
   {
     MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP

@@ -1678,9 +1678,6 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     else if (hwndMenu == &TreeCnrMenu) {
       WinSetWindowUShort(TreeCnrMenu, QWS_ID, IDM_VIEWSMENU);
       SetConditionalCascade(TreeCnrMenu, IDM_PARTITIONSMENU, IDM_PARTITION);
-      if (fWorkPlace)
-	WinSendMsg(TreeCnrMenu, MM_DELETEITEM,
-		   MPFROM2SHORT(IDM_PARTITIONSMENU, TRUE), MPVOID);
     }
     else if (hwndMenu == &ArcCnrMenu) {
       WinSetWindowUShort(ArcCnrMenu, QWS_ID, IDM_VIEWSMENU);
