@@ -188,8 +188,8 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
   if (sortFlags) {
     switch (sortFlags & (~SORT_REVERSE)) {
     case SORT_FIRSTEXTENSION:
-      pext = strchr(pai1->szFileName, '.');
-      ppext = strchr(pai2->szFileName, '.');
+      pext = strchr(pai1->pszFileName, '.');
+      ppext = strchr(pai2->pszFileName, '.');
       if (!pext)
 	pext = NullStr;
       if (!ppext)
@@ -198,8 +198,8 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
       break;
 
     case SORT_LASTEXTENSION:
-      pext = strrchr(pai1->szFileName, '.');
-      ppext = strrchr(pai2->szFileName, '.');
+      pext = strrchr(pai1->pszFileName, '.');
+      ppext = strrchr(pai2->pszFileName, '.');
       if (!pext)
 	pext = NullStr;
       if (!ppext)
@@ -243,12 +243,12 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
       break;
     }
     if (!ret)
-      ret = (SHORT) stricmp(pai1->szFileName, pai2->szFileName);
+      ret = (SHORT) stricmp(pai1->pszFileName, pai2->pszFileName);
     if (ret && (sortFlags & SORT_REVERSE))
       ret = ret > 0 ? -1 : 1;
     return ret;
   }
-  return (SHORT) stricmp(pai1->szFileName, pai2->szFileName);
+  return (SHORT) stricmp(pai1->pszFileName, pai2->pszFileName);
 }
 
 static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg)
@@ -264,11 +264,11 @@ static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg)
       for (x = 0; dcd->mask.pszMasks[x]; x++) {
 	if (*dcd->mask.pszMasks[x]) {
 	  if (*dcd->mask.pszMasks[x] != '/') {
-	    if (wildcard(r->szFileName, dcd->mask.pszMasks[x], FALSE))
+	    if (wildcard(r->pszFileName, dcd->mask.pszMasks[x], FALSE))
 	      ret = TRUE;
 	  }
 	  else {
-	    if (wildcard(r->szFileName, dcd->mask.pszMasks[x] + 1, FALSE)) {
+	    if (wildcard(r->pszFileName, dcd->mask.pszMasks[x] + 1, FALSE)) {
 	      ret = FALSE;
 	      break;
 	    }
@@ -277,7 +277,7 @@ static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg)
       }
     }
     else {
-      if (wildcard(r->szFileName, dcd->mask.szMask, FALSE))
+      if (wildcard(r->pszFileName, dcd->mask.szMask, FALSE))
 	ret = TRUE;
     }
   }
@@ -584,10 +584,10 @@ ReTry:
 	      if (fname[strlen(fname) - 1] == '\\' ||
 		  fname[strlen(fname) - 1] == '/')
 		pai->flags = ARCFLAGS_REALDIR;
-	      strcpy(pai->szFileName, fname);
+	      pai->pszFileName = xstrdup(fname,pszSrcFile, __LINE__);
 	      if (fdate)
 		strcpy(pai->szDate, fdate);
-	      pai->pszFileName = pai->szFileName;
+	      // pai->pszFileName = pai->pszFileName;
 	      pai->rc.pszIcon = pai->pszFileName;
 	      pai->rc.hptrIcon = (pai->flags & ARCFLAGS_REALDIR) != 0 ?
 		hptrDir : hptrFile;
@@ -1317,7 +1317,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 GetPString((SHORT1FROMMP(mp1) == IDM_SELECTMASK) ?
 			    IDS_SELECTFILTERTEXT : IDS_DESELECTFILTERTEXT));
 	  if (pci && (INT) pci != -1)
-	    strcpy(mask.szMask, pci->szFileName);
+	    strcpy(mask.szMask, pci->pszFileName);
 	  if (WinDlgBox(HWND_DESKTOP, dcd->hwndCnr, PickMaskDlgProc,
 			FM3ModHandle, MSK_FRAME, MPFROMP(&mask))) {
 	    if (SHORT1FROMMP(mp1) == IDM_SELECTMASK)
@@ -2151,11 +2151,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		*tb = 0;
 	      sprintf(s, "%s%s%s%s",
 		      *tb ? " " : NullStr,
-		      tb, *tb ? "  " : NullStr, pci->szFileName);
+		      tb, *tb ? "  " : NullStr, pci->pszFileName);
 	      WinSetWindowText(hwndStatus2, s);
 	    }
 	    if (fMoreButtons)
-	      WinSetWindowText(hwndName, pci->szFileName);
+	      WinSetWindowText(hwndName, pci->pszFileName);
 	  }
 	  else {
 	    WinSetWindowText(hwndStatus2, NullStr);
@@ -2747,8 +2747,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (!*dcd->mask.szMask) {
 	    empty = TRUE;
 	    pci = (PARCITEM) CurrentRecord(hwnd);
-	    if (pci && strchr(pci->szFileName, '.'))
-	      strcpy(dcd->mask.szMask, pci->szFileName);
+	    if (pci && strchr(pci->pszFileName, '.'))
+	      strcpy(dcd->mask.szMask, pci->pszFileName);
 	  }
 
 	  if (WinDlgBox(HWND_DESKTOP, hwnd, PickMaskDlgProc,
@@ -2867,7 +2867,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 					    MPFROMLONG(CMA_FIRST),
 					    MPFROMSHORT(CRA_CURSORED));
 	      if (pai && (INT) pai != -1)
-		strcpy(li->runfile, pai->szFileName);
+		strcpy(li->runfile, pai->pszFileName);
 	      else
 		strcpy(li->runfile, li->list[0]);
 	    }
@@ -3131,11 +3131,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		    *tb = 0;
 		  sprintf(s, "%s%s%s%s",
 			  *tb ? " " : NullStr,
-			  tb, *tb ? "  " : NullStr, pci->szFileName);
+			  tb, *tb ? "  " : NullStr, pci->pszFileName);
 		  WinSetWindowText(hwndStatus2, s);
 		}
 		if (fMoreButtons)
-		  WinSetWindowText(hwndName, pci->szFileName);
+		  WinSetWindowText(hwndName, pci->pszFileName);
 	      }
 	    }
 	  }
@@ -3154,7 +3154,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if ((pci->rc.flRecordAttr & CRA_INUSE) ||
 		(pci->flags & (ARCFLAGS_REALDIR | ARCFLAGS_PSEUDODIR)))
 	      break;
-	    s = xstrdup(pci->szFileName, pszSrcFile, __LINE__);
+	    s = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
 	    if (s) {
 	      if (!PostMsg(dcd->hwndObject, UM_ENTER, MPFROMP(s), MPVOID)) {
 		Runtime_Error(pszSrcFile, __LINE__, "post");

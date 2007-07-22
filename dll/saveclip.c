@@ -446,10 +446,10 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    p++;
 		    switch (*p) {
 		    case 's':
-		      fputs(pci->szSubject, fp);
+		      fputs(pci->pszSubject, fp);
 		      break;
 		    case 'S':
-		      fprintf(fp, "%-40s", pci->szSubject);
+		      fprintf(fp, "%-40s", pci->pszSubject);
 		      break;
 		    case 'Z':
 		      fprintf(fp, "%-13lu", pci->cbFile);
@@ -477,21 +477,21 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      pci->time.minutes, pci->time.seconds);
 		      break;
 		    case 'l':
-		      fputs(pci->szLongname, fp);
+		      fputs(pci->pszLongname, fp);
 		      break;
 		    case 'L':
-		      fprintf(fp, "%-40s", pci->szLongname);
+		      fprintf(fp, "%-40s", pci->pszLongname);
 		      break;
 		    case 'F':
 		    case 'f':
-		      if (IsRoot(pci->szFileName))
-			pp = pci->szFileName;
+		      if (IsRoot(pci->pszFileName))
+			pp = pci->pszFileName;
 		      else {
-			pp = strrchr(pci->szFileName, '\\');
+			pp = strrchr(pci->pszFileName, '\\');
 			if (pp)
 			  pp++;
 			else
-			  pp = pci->szFileName;
+			  pp = pci->pszFileName;
 		      }
 		      if (*p == 'F')
 			fprintf(fp, "%-13s", pp);
@@ -499,23 +499,23 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			fputs(pp, fp);
 		      break;
 		    case 'p':
-		      fputs(pci->szFileName, fp);
+		      fputs(pci->pszFileName, fp);
 		      break;
 		    case 'P':
 		      temp = 0;
-		      if (!IsRoot(pci->szFileName)) {
-			pp = strrchr(pci->szFileName, '\\');
+		      if (!IsRoot(pci->pszFileName)) {
+			pp = strrchr(pci->pszFileName, '\\');
 			if (pp) {
 			  temp = *pp;
 			  *pp = 0;
 			}
 		      }
-		      fputs(pci->szFileName, fp);
+		      fputs(pci->pszFileName, fp);
 		      if (temp)
 			*pp = temp;
 		      break;
 		    case '$':
-		      fputc(*pci->szFileName, fp);
+		      fputc(*pci->pszFileName, fp);
 		      break;
 		    case '%':
 		      fputc('%', fp);

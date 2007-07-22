@@ -15,6 +15,7 @@
   17 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   05 Jul 07 SHL GetFileEAs: avoid heap corruption
+  15 Jul 07 GKY Allow subject edit of up to 256 chars
 
 ***********************************************************************/
 

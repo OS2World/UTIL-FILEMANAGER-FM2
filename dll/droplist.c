@@ -467,7 +467,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
       if (!pci && directory)
 	strcpy(li->targetpath, directory);
       else if (pci)
-	strcpy(li->targetpath, pci->szFileName);
+	strcpy(li->targetpath, pci->pszFileName);
       if (isArc) {
 	strcpy(li->arcname, szArc);
 	li->info = arcinfo;

@@ -69,7 +69,7 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite)
       if (x + 2 == ulItemsToUnHilite)
 	break;
       if (list)
-	AddToList(pci->szFileName, list, &numfiles, &numalloc);
+	AddToList(pci->pszFileName, list, &numfiles, &numalloc);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 				  MPFROMP(pci), MPFROMSHORT(CRA_SELECTED));
       x++;
@@ -187,19 +187,19 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	markit = TRUE;
       if (maskstr && *maskstr && markit) {
 	markit = FALSE;
-	file = strrchr(pci->szFileName, '\\');
+	file = strrchr(pci->pszFileName, '\\');
 	if (!file)
-	  file = strrchr(pci->szFileName, ':');
+	  file = strrchr(pci->pszFileName, ':');
 	if (file)
 	  file++;
 	else
-	  file = pci->szFileName;
+	  file = pci->pszFileName;
 	for (x = 0; Mask.pszMasks[x]; x++) {
 	  if (*Mask.pszMasks[x]) {
 	    if (*Mask.pszMasks[x] != '/') {
 	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
 			    strchr(Mask.pszMasks[x], ':')) ?
-			     pci->szFileName :
+			     pci->pszFileName :
 			     file,
 			   Mask.pszMasks[x],
 			   FALSE)) {
@@ -209,7 +209,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	    else {
 	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
 			    strchr(Mask.pszMasks[x], ':')) ?
-			      pci->szFileName :
+			      pci->pszFileName :
 			      file,
 			    Mask.pszMasks[x] + 1,
 			   FALSE)) {
@@ -232,7 +232,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	LONG len;
 	FILE *inputFile;
 
-	if ((inputFile = _fsopen(pci->szFileName, "rb", SH_DENYNO)) != NULL) {
+	if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
 	  pos = ftell(inputFile);
 	  while (!feof(inputFile)) {
 	    if (pos)
@@ -293,25 +293,25 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	unmarkit = TRUE;
       if (maskstr && *maskstr && unmarkit) {
 	unmarkit = FALSE;
-	file = strrchr(pci->szFileName, '\\');
+	file = strrchr(pci->pszFileName, '\\');
 	if (!file)
-	  file = strrchr(pci->szFileName, ':');
+	  file = strrchr(pci->pszFileName, ':');
 	if (file)
 	  file++;
 	else
-	  file = pci->szFileName;
+	  file = pci->pszFileName;
 	for (x = 0; Mask.pszMasks[x]; x++) {
 	  if (*Mask.pszMasks[x]) {
 	    if (*Mask.pszMasks[x] != '/') {
 	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
 			    strchr(Mask.pszMasks[x], ':')) ?
-			   pci->szFileName : file, Mask.pszMasks[x], FALSE))
+			   pci->pszFileName : file, Mask.pszMasks[x], FALSE))
 		unmarkit = TRUE;
 	    }
 	    else {
 	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
 			    strchr(Mask.pszMasks[x], ':')) ?
-			   pci->szFileName : file, Mask.pszMasks[x] + 1,
+			   pci->pszFileName : file, Mask.pszMasks[x] + 1,
 			   FALSE)) {
 		unmarkit = FALSE;
 		break;
@@ -332,7 +332,7 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	LONG len;
 	FILE *inputFile;
 
-	if ((inputFile = _fsopen(pci->szFileName, "rb", SH_DENYNO)) != NULL) {
+	if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
 	  pos = ftell(inputFile);
 	  while (!feof(inputFile)) {
 	    if (pos)
@@ -673,7 +673,7 @@ Restart:
 
   if (reset) {
     for (x = 0; x < numS; x++) {
-      if (!*pciSa[x]->szFileName || !*pciDa[x]->szFileName)
+      if (!*pciSa[x]->pszFileName || !*pciDa[x]->pszFileName)
 	continue;
       pciSa[x]->flags |= CNRITEM_EXISTS;
       pciDa[x]->flags |= CNRITEM_EXISTS;
@@ -729,7 +729,7 @@ Restart:
   case IDM_SELECTIDENTICAL:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED)) {
-	if (*pciSa[x]->szFileName &&
+	if (*pciSa[x]->pszFileName &&
 	    (pciSa[x]->flags & CNRITEM_EXISTS) &&
 	    !(pciSa[x]->flags & CNRITEM_SMALLER) &&
 	    !(pciSa[x]->flags & CNRITEM_LARGER) &&
@@ -753,7 +753,7 @@ Restart:
   case IDM_SELECTSAME:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName &&
+	  *pciSa[x]->pszFileName &&
 	  (pciSa[x]->flags & CNRITEM_EXISTS) &&
 	  !(pciSa[x]->flags & CNRITEM_SMALLER) &&
 	  !(pciSa[x]->flags & CNRITEM_LARGER)) {
@@ -775,8 +775,8 @@ Restart:
     // fixme why?
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
-	  *pciSa[x]->szFileName &&
-	  *pciDa[x]->szFileName &&
+	  *pciSa[x]->pszFileName &&
+	  *pciDa[x]->pszFileName &&
 	  pciSa[x]->flags & CNRITEM_EXISTS &&
 	  pciDa[x]->flags & CNRITEM_EXISTS) {
 
@@ -789,13 +789,13 @@ Restart:
 	CHAR buf2[1024];
 	HAB hab = WinQueryAnchorBlock(hwndCnrS);
 
-	fp1 = _fsopen(pciSa[x]->szFileName, "rb", SH_DENYNO);
+	fp1 = _fsopen(pciSa[x]->pszFileName, "rb", SH_DENYNO);
 	if (!fp1) {
 	  errLineNo = __LINE__;
 	  compErrno = errno;
 	}
 	else {
-	  fp2 = _fsopen(pciDa[x]->szFileName, "rb", SH_DENYNO);
+	  fp2 = _fsopen(pciDa[x]->pszFileName, "rb", SH_DENYNO);
 	  if (!fp2) {
 	    errLineNo = __LINE__;
 	    compErrno = errno;
@@ -856,7 +856,7 @@ Restart:
   case IDM_SELECTBOTH:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_EXISTS)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_EXISTS)) {
 	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
@@ -874,12 +874,12 @@ Restart:
   case IDM_SELECTONE:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && !(pciSa[x]->flags & CNRITEM_EXISTS)) {
+	  *pciSa[x]->pszFileName && !(pciSa[x]->flags & CNRITEM_EXISTS)) {
 	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      else if (*pciDa[x]->szFileName && !(pciDa[x]->flags & CNRITEM_EXISTS)) {
+      else if (*pciDa[x]->pszFileName && !(pciDa[x]->flags & CNRITEM_EXISTS)) {
 	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
@@ -894,13 +894,13 @@ Restart:
   case IDM_SELECTBIGGER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_LARGER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_LARGER)) {
 	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_LARGER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_LARGER)) {
 	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
@@ -915,13 +915,13 @@ Restart:
   case IDM_SELECTSMALLER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_SMALLER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_SMALLER)) {
 	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_SMALLER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_SMALLER)) {
 	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
@@ -936,13 +936,13 @@ Restart:
   case IDM_SELECTNEWER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_NEWER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_NEWER)) {
 	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_NEWER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_NEWER)) {
 	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
@@ -957,13 +957,13 @@ Restart:
   case IDM_SELECTOLDER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_OLDER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_OLDER)) {
 	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_OLDER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_OLDER)) {
 	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
@@ -978,7 +978,7 @@ Restart:
   case IDM_DESELECTBOTH:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_EXISTS)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_EXISTS)) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -996,12 +996,12 @@ Restart:
   case IDM_DESELECTONE:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && !(pciSa[x]->flags & CNRITEM_EXISTS)) {
+	  *pciSa[x]->pszFileName && !(pciSa[x]->flags & CNRITEM_EXISTS)) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      else if (*pciDa[x]->szFileName && !(pciDa[x]->flags & CNRITEM_EXISTS)) {
+      else if (*pciDa[x]->pszFileName && !(pciDa[x]->flags & CNRITEM_EXISTS)) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1016,13 +1016,13 @@ Restart:
   case IDM_DESELECTBIGGER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_LARGER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_LARGER)) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_LARGER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_LARGER)) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1037,13 +1037,13 @@ Restart:
   case IDM_DESELECTSMALLER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_SMALLER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_SMALLER)) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_SMALLER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_SMALLER)) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1058,13 +1058,13 @@ Restart:
   case IDM_DESELECTNEWER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_NEWER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_NEWER)) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_NEWER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_NEWER)) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1079,13 +1079,13 @@ Restart:
   case IDM_DESELECTOLDER:
     for (x = 0; x < numS; x++) {
       if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->szFileName && (pciSa[x]->flags & CNRITEM_OLDER)) {
+	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_OLDER)) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->szFileName && (pciDa[x]->flags & CNRITEM_OLDER)) {
+	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_OLDER)) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));

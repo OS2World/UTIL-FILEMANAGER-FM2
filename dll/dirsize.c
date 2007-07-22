@@ -96,6 +96,7 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pCI;
+  CHAR *f = 0;
 
   // fixme to report errors
   *pullTotalBytes = 0;			// In case we fail
@@ -145,10 +146,12 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
     }
     else
       DosError(FERR_DISABLEHARDERR);
-    pCI->pszLongname = pCI->szFileName;
+    pCI->pszLongname = pCI->pszFileName;
     pCI->rc.hptrIcon = hptrDir;
-    *pCI->szDispAttr = *pCI->szLongname = *pCI->szSubject = 0;
-    pCI->attrFile = 0L;
+    *pCI->szDispAttr = 0;
+    pCI->attrFile = 0;
+    pCI->pszLongname = xstrdup(f, pszSrcFile, __LINE__);
+    pCI->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
   }
   else {
     free(pFFB);
@@ -161,7 +164,7 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
   }
 
   if (strlen(pszFileName) < 4 || top)
-    strcpy(pCI->szFileName, pszFileName);
+   pCI->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
   else {
     p = strrchr(pszFileName, '\\');
     if (!p)
@@ -169,7 +172,7 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
     else
       p++;
     sp = (strchr(pszFileName, ' ') != NULL) ? "\"" : NullStr;
-    pp = pCI->szFileName;
+    pp = pCI->pszFileName;
     if (*sp) {
       *pp = *sp;
       pp++;
@@ -179,13 +182,13 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
     if (*sp)
       strcat(pp, sp);
   }
-  pCI->pszFileName = pCI->szFileName + strlen(pCI->szFileName);
+  pCI->pszFileName = pCI->pszFileName + strlen(pCI->pszFileName);
   pCI->rc.pszIcon = pCI->pszLongname;
   pCI->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
-    strupr(pCI->szFileName);
+    strupr(pCI->pszFileName);
   else if (fForceLower)
-    strlwr(pCI->szFileName);
+    strlwr(pCI->pszFileName);
   memset(&ri, 0, sizeof(RECORDINSERT));
   ri.cb = sizeof(RECORDINSERT);
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -292,13 +295,13 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	APIRET rc;
 
 	memset(&fsa, 0, sizeof(fsa));
-	rc = DosQueryFSInfo(toupper(*pCI->szFileName) - '@', FSIL_ALLOC, &fsa,
+	rc = DosQueryFSInfo(toupper(*pCI->pszFileName) - '@', FSIL_ALLOC, &fsa,
 			    sizeof(FSALLOCATE));
 	if (!rc) {
 	  fltPct = (ullTotalBytes * 100.0) /
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
-	pCI->szLongname[1] = 1;		// Flag root - hack cough
+	pCI->pszLongname[1] = 1;		// Flag root - hack cough
       }
       else
 	fltPct = (((float)pCI->cbFile + pCI->easize) * 100.0) / ullTotalBytes;
@@ -318,7 +321,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     pCI->flags = (ULONG) fltPct;
     CommaFmtULL(szSubDir, sizeof(szSubDir), pCI->easize, 'K');
     CommaFmtULL(szAllDir, sizeof(szAllDir), pCI->cbFile + pCI->easize, 'K');
-    sprintf(&pCI->szFileName[strlen(pCI->szFileName)],
+    sprintf(&pCI->pszFileName[strlen(pCI->pszFileName)],
 	    "  %s + %s = %s (%.02lf%%%s)\r%s",
 	    szCurDir,
 	    szSubDir,
@@ -354,12 +357,12 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
     indent = 0;
   }
   if (pciParent) {
-    p = strchr(pciParent->szFileName, '\r');
+    p = strchr(pciParent->pszFileName, '\r');
     if (p)
       *p = 0;
     fprintf(fp, "%*.*s%s %lu %s%s\n",
 	    indent * 2, indent * 2, " ",
-	    pciParent->szFileName,
+	    pciParent->pszFileName,
 	    pciParent->attrFile,
 	    GetPString(IDS_FILETEXT), &"s"[pciParent->attrFile == 1]);
     if (p)
@@ -587,7 +590,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    CHAR *p;
 	    LONG clr, x;
 
-	    p = strchr(pci->szFileName, '\r');
+	    p = strchr(pci->pszFileName, '\r');
 	    if (p) {
 	      /* draw text */
 	      if (!pci->cbFile)		/* no size */
@@ -599,13 +602,13 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      GpiSetBackMix(oi->hps, BM_LEAVEALONE);
 	      GpiSetMix(oi->hps, FM_OVERPAINT);
 	      *p = 0;
-	      GpiQueryTextBox(oi->hps, strlen(pci->szFileName),
-			      pci->szFileName, TXTBOX_COUNT, aptl);
+	      GpiQueryTextBox(oi->hps, strlen(pci->pszFileName),
+			      pci->pszFileName, TXTBOX_COUNT, aptl);
 	      ptl.x = oi->rclItem.xLeft;
 	      ptl.y = (oi->rclItem.yTop - aptl[TXTBOX_TOPRIGHT].y);
 	      GpiMove(oi->hps, &ptl);
-	      GpiCharString(oi->hps, strlen(pci->szFileName),
-			    pci->szFileName);
+	      GpiCharString(oi->hps, strlen(pci->pszFileName),
+			    pci->pszFileName);
 	      *p = '\r';
 
 	      /* draw the graph box */
@@ -662,7 +665,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      /* fill box with graph bar, flags is integer % */
 	      if (pci->flags) {
-		if (pci->szLongname[1] == 1)	/* is root record */
+		if (*(pci->pszLongname + 1) == 1)	/* is root record */
 		  GpiSetColor(oi->hps, CLR_DARKGREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_RED);
@@ -674,7 +677,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
 		/* draw highlights and shadows on graph */
-		if (pci->szLongname[1] == 1)
+		if (*(pci->pszLongname + 1) == 1)
 		  GpiSetColor(oi->hps, CLR_GREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_PALEGRAY);
@@ -691,7 +694,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 		ptl.x = oi->rclItem.xLeft + pci->flags;
 		GpiLine(oi->hps, &ptl);
-		if (pci->szLongname[1] != 1) {
+		if (*(pci->pszLongname + 1) != 1) {
 		  GpiSetColor(oi->hps, CLR_DARKRED);
 		  ptl.x = oi->rclItem.xLeft + 2;
 		  ptl.y = oi->rclItem.yBottom + 3;
@@ -751,8 +754,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *pszFileName = 0;
 	  while (pci && (INT) pci != -1) {
 	    memset(szTemp, 0, sizeof(szTemp));
-	    strncpy(szTemp, pci->szFileName,
-		    pci->pszFileName - pci->szFileName);
+	    strncpy(szTemp, pci->pszFileName,
+		    pci->pszFileName - pci->pszFileName);
 	    strrev(szTemp);
 	    if (*pszFileName && *szTemp != '\\')
 	      strcat(pszFileName, "\\");

@@ -23,6 +23,7 @@
   10 Oct 06 GKY Add NDFS32 support
   18 Feb 07 GKY More drive type and drive icon support
   10 Jun 07 GKY Add IsFm2Window as part of work around PM drag limit
+  05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
 
 ***********************************************************************/
 
@@ -650,10 +651,10 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (pci &&
 	  (INT) pci != -1 &&
-	  !IsRoot(pci->szFileName) &&
+	  !IsRoot(pci->pszFileName) &&
 	  !(pci->flags & RECFLAGS_ENV) && !(pci->flags & RECFLAGS_UNDERENV)) {
 	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszFileName)) {
-	  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMP(pci->szFileName), MPVOID);
+	  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMP(pci->pszFileName), MPVOID);
 	}
 	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject))
 	  PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(40), MPVOID);
@@ -672,7 +673,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR szData[CCHMAXPATH], testname[CCHMAXPATH];
       HWND hwndMLE = WinWindowFromID(hwnd, CID_MLE);
 
-      if (pci && (INT) pci != -1 && !IsRoot(pci->szFileName)) {
+      if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
 	if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject)) {
 
 	  APIRET rc;
@@ -719,7 +720,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    eaop.fpGEA2List = (PGEA2LIST) 0;
 	    eaop.fpFEA2List = pfealist;
 	    eaop.oError = 0L;
-	    rc = DosSetPathInfo(pci->szFileName,
+	    rc = DosSetPathInfo(pci->pszFileName,
 				FIL_QUERYEASIZE,
 				(PVOID) & eaop, sizeof(EAOP2), DSPI_WRTTHRU);
 	    DosFreeMem(pfealist);
@@ -737,12 +738,12 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  longname[CCHMAXPATHCOMP - 1] = 0;
 	  chop_at_crnl(longname);
 	  WinSetWindowText(hwndMLE, longname);
-	  return (MRESULT) WriteLongName(pci->szFileName, longname);
+	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
 	else {
 	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
 	  if (strchr(szData, '?') ||
-	      strchr(szData, '*') || IsRoot(pci->szFileName))
+	      strchr(szData, '*') || IsRoot(pci->pszFileName))
 	    return (MRESULT) FALSE;
 	  /* If the text changed, rename the file system object. */
 	  chop_at_crnl(szData);
@@ -754,9 +755,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 FIL_QUERYFULLNAME,
 				 testname, sizeof(testname)))
 	      return FALSE;
-	    if (DosQueryPathInfo(pci->szFileName,
+	    if (DosQueryPathInfo(pci->pszFileName,
 				 FIL_QUERYFULLNAME, szData, sizeof(szData)))
-	      strcpy(szData, pci->szFileName);
+	      strcpy(szData, pci->pszFileName);
 	    WinSetWindowText(hwndMLE, szData);
 	    if (strcmp(szData, testname)) {
 	      if (stricmp(szData, testname) && IsFile(testname) != -1) {
@@ -774,9 +775,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
 		    free(filename);
 		}
-		if (stricmp(testname, pci->szFileName)) {
+		if (stricmp(testname, pci->pszFileName)) {
 		  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
-		  filename = xstrdup(pci->szFileName, pszSrcFile, __LINE__);
+		  filename = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
 		  if (filename) {
 		    if (!PostMsg(hwnd,
 				 UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
@@ -796,7 +797,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PFIELDINFO pfi = ((PCNREDITDATA) mp2)->pFieldInfo;
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 
-      if (pci && (INT) pci != -1 && !IsRoot(pci->szFileName)) {
+      if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
 	WinSendMsg(hwnd,
 		   CM_INVALIDATERECORD,
 		   MPFROMP(&pci),

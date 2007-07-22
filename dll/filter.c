@@ -55,7 +55,7 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
 
   if (mask) {
     r = (PCNRITEM) rmini;
-    if (!r->szFileName[3]
+    if (!(*(r->pszFileName + 3))
 	|| (mask->fShowDirs && (r->attrFile & FILE_DIRECTORY)))
       return TRUE;
     if ((!(mask->attrFile & FILE_HIDDEN) && (r->attrFile & FILE_HIDDEN)) ||
@@ -75,26 +75,26 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
 	    && !(r->attrFile & FILE_DIRECTORY)))
       return FALSE;
     if (*mask->szMask) {
-      file = strrchr(r->szFileName, '\\');
+      file = strrchr(r->pszFileName, '\\');
       if (!file)
-	file = strrchr(r->szFileName, ':');
+	file = strrchr(r->pszFileName, ':');
       if (file)
 	file++;
       else
-	file = r->szFileName;
+	file = r->pszFileName;
       if (mask->pszMasks[1]) {
 	for (x = 0; mask->pszMasks[x]; x++) {
 	  if (*mask->pszMasks[x]) {
 	    if (*mask->pszMasks[x] != '/') {
 	      if (wildcard((strchr(mask->pszMasks[x], '\\') ||
 			    strchr(mask->pszMasks[x], ':')) ?
-			   r->szFileName : file, mask->pszMasks[x], FALSE))
+			   r->pszFileName : file, mask->pszMasks[x], FALSE))
 		ret = TRUE;
 	    }
 	    else {
 	      if (wildcard((strchr(mask->pszMasks[x], '\\') ||
 			    strchr(mask->pszMasks[x], ':')) ?
-			   r->szFileName : file, mask->pszMasks[x] + 1,
+			   r->pszFileName : file, mask->pszMasks[x] + 1,
 			   FALSE)) {
 		ret = FALSE;
 		break;
@@ -106,7 +106,7 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
       else {
 	if (wildcard((strchr(mask->szMask, '\\') ||
 		      strchr(mask->szMask, ':')) ?
-		     r->szFileName : file, mask->szMask, FALSE))
+		     r->pszFileName : file, mask->szMask, FALSE))
 	  ret = TRUE;
       }
     }

@@ -354,6 +354,7 @@ static VOID ActionCnrThread(VOID * args)
   PCNRITEM pci, pciO, pcin, pciOn;
   CHAR newname[CCHMAXPATH], dirname[CCHMAXPATH], *p;
   APIRET rc;
+  CHAR *f = 0;
 
   if (!cmp)
     return;
@@ -413,13 +414,13 @@ static VOID ActionCnrThread(VOID * args)
 			  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
 	pciOn = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciO),
 			   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-	if (*pci->szFileName && (pci->rc.flRecordAttr & CRA_SELECTED)) {
+	if (*pci->pszFileName && (pci->rc.flRecordAttr & CRA_SELECTED)) {
 	  switch (cmp->action) {
 	  case IDM_DELETE:
-	    if (!unlinkf("%s", pci->szFileName)) {
+	    if (!unlinkf("%s", pci->pszFileName)) {
 	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      if (!*pciO->szFileName) {
+	      if (!*pciO->pszFileName) {
 		WinSendMsg(hwndCnrS, CM_REMOVERECORD, MPFROMP(&pci),
 			   MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
 		if (pciO->rc.flRecordAttr & CRA_SELECTED)
@@ -428,9 +429,9 @@ static VOID ActionCnrThread(VOID * args)
 		WinSendMsg(hwndCnrD, CM_REMOVERECORD, MPFROMP(&pciO),
 			   MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
 	      }
-	      else {
-		*pci->szFileName = 0;
-		pci->pszFileName = pci->szFileName;
+              else {
+		pci->pszFileName = xstrdup(f, pszSrcFile, __LINE__);
+		//pci->pszFileName = pci->szFileName;
 		pci->flags = 0;
 		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
 			   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
@@ -462,24 +463,24 @@ static VOID ActionCnrThread(VOID * args)
 	      if (IsFile(dirname) == -1)
 		MassMkdir(hwndMain, dirname);
 	    }
-	    rc = docopyf(MOVE, pci->szFileName, "%s", newname);
-	    if (!rc && stricmp(pci->szFileName, newname)) {
+	    rc = docopyf(MOVE, pci->pszFileName, "%s", newname);
+	    if (!rc && stricmp(pci->pszFileName, newname)) {
 	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      if (pciO->rc.flRecordAttr & CRA_SELECTED)
 		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciO),
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      strcpy(pciO->szFileName, newname);
+	      pciO->pszFileName = xstrdup(newname, pszSrcFile, __LINE__);
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
-		pciO->pszFileName = pciO->szFileName + strlen(cmp->leftdir);
+		pciO->pszFileName = pciO->pszFileName + strlen(cmp->leftdir);
 		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
 		  pciO->pszFileName++;
 	      }
 	      else {
-		pciO->pszFileName = pciO->szFileName + strlen(cmp->rightdir);
+		pciO->pszFileName = pciO->pszFileName + strlen(cmp->rightdir);
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciO->pszFileName++;
-	      }
+              }
 	      strcpy(pciO->szDispAttr, pci->szDispAttr);
 	      pciO->attrFile = pci->attrFile;
 	      pciO->flags = 0;
@@ -491,9 +492,9 @@ static VOID ActionCnrThread(VOID * args)
 	      pciO->crtime = pci->crtime;
 	      pciO->cbFile = pci->cbFile;
 	      pciO->easize = pci->easize;
-	      *pciO->szSubject = 0;
-	      *pci->szFileName = 0;
-	      pci->pszFileName = pci->szFileName;
+	      pciO->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
+	      pci->pszFileName = xstrdup(f, pszSrcFile, __LINE__);
+	      //pci->pszFileName = pci->szFileName;
 	      pci->flags = 0;
 	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
@@ -507,7 +508,7 @@ static VOID ActionCnrThread(VOID * args)
 			     pszSrcFile,
 			     __LINE__,
 			     GetPString(IDS_COMPMOVEFAILEDTEXT),
-			     pci->szFileName, newname);
+			     pci->pszFileName, newname);
 	      if (rc == MBID_CANCEL)	/* cause loop to break */
 		pcin = NULL;
 	    }
@@ -532,7 +533,7 @@ static VOID ActionCnrThread(VOID * args)
 	      if (IsFile(dirname) == -1)
 		MassMkdir(hwndMain, dirname);
 	    }
-	    rc = docopyf(COPY, pci->szFileName, "%s", newname);
+	    rc = docopyf(COPY, pci->pszFileName, "%s", newname);
 	    if (rc) {
 	      rc = Dos_Error(MB_ENTERCANCEL,
 			     rc,
@@ -540,7 +541,7 @@ static VOID ActionCnrThread(VOID * args)
 			     pszSrcFile,
 			     __LINE__,
 			     GetPString(IDS_COMPCOPYFAILEDTEXT),
-			     pci->szFileName, newname);
+			     pci->pszFileName, newname);
 	      if (rc == MBID_CANCEL)
 		pcin = NULL;		/* cause loop to break */
 	    }
@@ -550,17 +551,17 @@ static VOID ActionCnrThread(VOID * args)
 	      if (pciO->rc.flRecordAttr & CRA_SELECTED)
 		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciO),
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      strcpy(pciO->szFileName, newname);
+	      pciO->pszFileName = xstrdup(newname, pszSrcFile, __LINE__);
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
-		pciO->pszFileName = pciO->szFileName + strlen(cmp->leftdir);
+		pciO->pszFileName = pciO->pszFileName + strlen(cmp->leftdir);
 		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
 		  pciO->pszFileName++;
 	      }
 	      else {
-		pciO->pszFileName = pciO->szFileName + strlen(cmp->rightdir);
+		pciO->pszFileName = pciO->pszFileName + strlen(cmp->rightdir);
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciO->pszFileName++;
-	      }
+              }
 	      strcpy(pciO->szDispAttr, pci->szDispAttr);
 	      pciO->attrFile = pci->attrFile;
 	      pciO->flags = CNRITEM_EXISTS;
@@ -572,7 +573,7 @@ static VOID ActionCnrThread(VOID * args)
 	      pciO->crtime = pci->crtime;
 	      pciO->cbFile = pci->cbFile;
 	      pciO->easize = pci->easize;
-	      *pci->szSubject = 0;
+	      pci->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
 	      pci->flags = CNRITEM_EXISTS;
 	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
@@ -791,6 +792,7 @@ static VOID FillCnrsThread(VOID * args)
       PCNRITEM pcit;
       RECORDINSERT ri;
       CHAR *pch;
+      CHAR fname[CCHMAXPATH];
 
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
@@ -1023,28 +1025,28 @@ static VOID FillCnrsThread(VOID * args)
 	pcir = pcirFirst;
 	while ((filesl && filesl[l]) || (filesr && filesr[r])) {
 	  pcir->hwndCnr = hwndRight;
-	  pcir->pszFileName = pcir->szFileName;
+	  //pcir->pszFileName = pcir->szFileName;
 	  pcir->rc.pszIcon = pcir->pszFileName;
 	  pcir->rc.hptrIcon = (HPOINTER) 0;
-	  pcir->pszSubject = pcir->szSubject;
-	  pcir->pszLongname = pcir->szLongname;
+	  //pcir->pszSubject = pcir->szSubject;
+	  //pcir->pszLongname = pcir->szLongname;
 	  pcir->pszDispAttr = pcir->szDispAttr;
 	  pcil->hwndCnr = hwndLeft;
-	  pcil->pszFileName = pcil->szFileName;
+	  //pcil->pszFileName = pcil->szFileName;
 	  pcil->rc.pszIcon = pcil->pszFileName;
 	  pcil->rc.hptrIcon = (HPOINTER) 0;
 	  pcil->pszDispAttr = pcil->szDispAttr;
-	  pcil->pszSubject = pcil->szSubject;
-	  pcil->pszLongname = pcil->szLongname;
+	  //pcil->pszSubject = pcil->szSubject;
+	  //pcil->pszLongname = pcil->szLongname;
 	  if ((filesl && filesl[l]) && (filesr && filesr[r])) {
 	    x = stricmp(filesl[l]->fname, filesr[r]->fname);
 	    if (!x) {
-	      // Same
-	      sprintf(pcil->szFileName, "%s%s%s", cmp->leftdir,
+                // Same
+	      sprintf(fname, "%s%s%s", cmp->leftdir,
 		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		      NullStr : "\\", filesl[l]->fname);
 	      // pcil->rc.hptrIcon    = hptrFile;
-	      pcil->pszFileName = pcil->szFileName + lenl;
+	      pcil->pszFileName = xstrdup((fname + lenl), pszSrcFile, __LINE__);
 	      pcil->attrFile = filesl[l]->attrFile;
 	      y = 0;
 	      for (x = 0; x < 6; x++) {
@@ -1080,10 +1082,10 @@ static VOID FillCnrsThread(VOID * args)
 		  pcir->rc.flRecordAttr |= CRA_FILTERED;
 		}
 	      }
-	      sprintf(pcir->szFileName, "%s%s%s", cmp->rightdir,
+	      sprintf(fname, "%s%s%s", cmp->rightdir,
 		      (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		      NullStr : "\\", filesr[r]->fname);
-	      pcir->pszFileName = pcir->szFileName + lenr;
+	      pcir->pszFileName = xstrdup((fname + lenr), pszSrcFile, __LINE__);
 	      pcir->attrFile = filesr[r]->attrFile;
 	      // pcir->rc.hptrIcon    = hptrFile;
 	      y = 0;
@@ -1115,7 +1117,7 @@ static VOID FillCnrsThread(VOID * args)
 	      pcir->crtime.hours = filesr[r]->crtime.hours;
 	      pcil->flags |= CNRITEM_EXISTS;
 	      pcir->flags |= CNRITEM_EXISTS;
-	      pch = pcil->szSubject;
+	      pch = pcil->pszSubject;
 	      if (pcil->cbFile + pcil->easize > pcir->cbFile + pcir->easize) {
 		pcil->flags |= CNRITEM_LARGER;
 		pcir->flags |= CNRITEM_SMALLER;
@@ -1143,7 +1145,7 @@ static VOID FillCnrsThread(VOID * args)
 		  (pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE) {
 		pcil->flags |= CNRITEM_NEWER;
 		pcir->flags |= CNRITEM_OLDER;
-		if (pch != pcil->szSubject) {
+		if (pch != pcil->pszSubject) {
 		  strcpy(pch, ", ");
 		  pch += 2;
 		}
@@ -1165,7 +1167,7 @@ static VOID FillCnrsThread(VOID * args)
 		       FALSE) {
 		pcil->flags |= CNRITEM_OLDER;
 		pcir->flags |= CNRITEM_NEWER;
-		if (pch != pcil->szSubject) {
+		if (pch != pcil->pszSubject) {
 		  strcpy(pch, ", ");
 		  pch += 2;
 		}
@@ -1178,10 +1180,10 @@ static VOID FillCnrsThread(VOID * args)
 	    }
 	    else if (x < 0) {
 	      // Just on left
-	      sprintf(pcil->szFileName, "%s%s%s", cmp->leftdir,
+	      sprintf(fname, "%s%s%s", cmp->leftdir,
 		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		      NullStr : "\\", filesl[l]->fname);
-	      pcil->pszFileName = pcil->szFileName + lenl;
+	      pcil->pszFileName = xstrdup((fname + lenl), pszSrcFile, __LINE__);
 	      pcil->attrFile = filesl[l]->attrFile;
 	      // pcil->rc.hptrIcon    = hptrFile;
 	      y = 0;
@@ -1222,10 +1224,10 @@ static VOID FillCnrsThread(VOID * args)
 	    }
 	    else {
 	      // Just on right
-	      sprintf(pcir->szFileName, "%s%s%s", cmp->rightdir,
+	      sprintf(fname, "%s%s%s", cmp->rightdir,
 		      (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		      NullStr : "\\", filesr[r]->fname);
-	      pcir->pszFileName = pcir->szFileName + lenr;
+	      pcir->pszFileName = xstrdup((fname + lenr), pszSrcFile, __LINE__);
 	      pcir->attrFile = filesr[r]->attrFile;
 	      // pcir->rc.hptrIcon    = hptrFile;
 	      y = 0;
@@ -1268,10 +1270,10 @@ static VOID FillCnrsThread(VOID * args)
 	  }
 	  else if (filesl && filesl[l]) {
 	    // Just on left
-	    sprintf(pcil->szFileName, "%s%s%s", cmp->leftdir,
+	    sprintf(fname, "%s%s%s", cmp->leftdir,
 		    (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		    NullStr : "\\", filesl[l]->fname);
-	    pcil->pszFileName = pcil->szFileName + lenl;
+	    pcil->pszFileName = xstrdup((fname + lenl), pszSrcFile, __LINE__);
 	    pcil->attrFile = filesl[l]->attrFile;
 	    // pcil->rc.hptrIcon    = hptrFile;
 	    y = 0;
@@ -1312,10 +1314,10 @@ static VOID FillCnrsThread(VOID * args)
 	  else {
 	    /* filesr && filesr[r] */
 	    // Just on right
-	    sprintf(pcir->szFileName, "%s%s%s", cmp->rightdir,
+	    sprintf(fname, "%s%s%s", cmp->rightdir,
 		    (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		    NullStr : "\\", filesr[r]->fname);
-	    pcir->pszFileName = pcir->szFileName + lenr;
+	    pcir->pszFileName = xstrdup((fname + lenr), pszSrcFile, __LINE__);
 	    pcir->attrFile = filesr[r]->attrFile;
 	    // pcir->rc.hptrIcon    = hptrFile;
 	    y = 0;
@@ -1620,7 +1622,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pcown = (PCNRDRAWITEMINFO) pown->hItem;
       if (pcown) {
 	pci = (PCNRITEM) pcown->pRecord;
-	if (pci && (INT) pci != -1 && !*pci->szFileName)
+	if (pci && (INT) pci != -1 && !*pci->pszFileName)
 	  return MRFROMLONG(TRUE);
       }
     }
@@ -1760,19 +1762,19 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  SetShiftState();
 	  if (pci) {
-	    if ((pci->rc.flRecordAttr & CRA_INUSE) || !*pci->szFileName)
+	    if ((pci->rc.flRecordAttr & CRA_INUSE) || !*pci->pszFileName)
 	      break;
 	    WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		       MPFROM2SHORT(TRUE, CRA_INUSE));
 	    if (pci->attrFile & FILE_DIRECTORY) {
 	      if ((shiftstate & (KC_CTRL | KC_SHIFT)) == (KC_CTRL | KC_SHIFT))
-		OpenObject(pci->szFileName, Settings, hwnd);
+		OpenObject(pci->pszFileName, Settings, hwnd);
 	      else
-		OpenObject(pci->szFileName, Default, hwnd);
+		OpenObject(pci->pszFileName, Default, hwnd);
 	    }
 	    else
 	      DefaultViewKeys(hwnd, hwnd, HWND_DESKTOP, NULL,
-			      pci->szFileName);
+			      pci->pszFileName);
 	    WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS,
 		       MPFROMP(pci),
 		       MPFROM2SHORT(FALSE, CRA_INUSE |
@@ -1793,7 +1795,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  cmp->dcd.hwndLastMenu = (HWND) 0;
 	  cmp->hwndCalling = WinWindowFromID(hwnd, SHORT1FROMMP(mp1));
 	  if (pci) {
-	    if (!*pci->szFileName || *cmp->rightlist)
+	    if (!*pci->pszFileName || *cmp->rightlist)
 	      break;
 	    id = COMP_MENU;
 	    WinSendMsg(cmp->hwndCalling, CM_SETRECORDEMPHASIS,
@@ -1841,7 +1843,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (pre->fEmphasisMask & CRA_SELECTED) {
 	    pci = (PCNRITEM) pre->pRecord;
 	    if (pci) {
-	      if (!*pci->szFileName) {
+	      if (!*pci->pszFileName) {
 		if (pci->rc.flRecordAttr & CRA_SELECTED)
 		  WinSendDlgItemMsg(hwnd, SHORT1FROMMP(mp1),
 				    CM_SETRECORDEMPHASIS,
@@ -2087,7 +2089,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    CHAR *fakelist[3];
 
-	    fakelist[0] = pci->szFileName;
+	    fakelist[0] = pci->pszFileName;
 	    fakelist[1] = ofile;
 	    fakelist[2] = NULL;
 	    ExecOnList(hwnd, compare,
@@ -2100,7 +2102,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    memset(&fc, 0, sizeof(fc));
 	    fc.size = sizeof(fc);
 	    fc.hwndParent = hwnd;
-	    strcpy(fc.file1, pci->szFileName);
+	    strcpy(fc.file1, pci->pszFileName);
 	    strcpy(fc.file2, ofile);
 	    WinDlgBox(HWND_DESKTOP, hwnd,
 		      CFileDlgProc, FM3ModHandle, FCMP_FRAME, (PVOID) & fc);
@@ -2126,7 +2128,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  fSelectedAlways = temp;
 	  if (pci && !(pci->attrFile & FILE_DIRECTORY)) {
-	    p = strrchr(pci->szFileName, '\\');
+	    p = strrchr(pci->pszFileName, '\\');
 	    if (p) {
 	      p++;
 	      strcpy(cmp->dcd.mask.szMask, p);

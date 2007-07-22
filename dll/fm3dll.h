@@ -405,8 +405,8 @@ typedef struct _CNRITEM
   MINIRECORDCORE rc;		/* Base information */
   HWND hwndCnr;			/* The container holding this record */
   PSZ pszFileName;		// Points to szFileName  - required by CFA_STRING
-  CHAR szFileName[CCHMAXPATH];	// Path name - fixme to rename to szPathName?
-  CHAR szSubject[40];		/* Subject string */
+  //CHAR szFileName[CCHMAXPATH];	// Path name - fixme to rename to szPathName?
+  //CHAR szSubject[40];		/* Subject string */
   CHAR *pszSubject;		// Points szSubject - required by CFA_STRING
   CHAR *pszDispAttr;		// Points to szDispAttr - required by CFA_STRING
   CDATE date;			/* Last write date of file */
@@ -421,7 +421,7 @@ typedef struct _CNRITEM
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */
   ULONG flags;
-  CHAR szLongname[1];		// Holds .LONGNAME EA or root flag
+  //CHAR szLongname[1];		// Holds .LONGNAME EA or root flag
 }
 CNRITEM, *PCNRITEM;
 

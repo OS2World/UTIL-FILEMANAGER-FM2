@@ -775,7 +775,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OPEN), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_ISARCHIVE), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_BINARY), TRUE);
-	  fp = _fsopen(pfs->szFileName, "rb", SH_DENYNO);
+          fp = _fsopen(pfs->szFileName, "rb", SH_DENYNO);
 	  if (fp) {
 	    char buff[512];
 	    ULONG len;

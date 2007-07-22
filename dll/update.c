@@ -39,10 +39,10 @@ static PSZ pszSrcFile = __FILE__;
 
 HPOINTER SelectDriveIcon(PCNRITEM pci)
 {
-    UINT driveflag = driveflags[toupper(*pci->szFileName) - 'A'];
-    *pci->szFileName = toupper(*pci->szFileName);
-    	      if (isalpha(*pci->szFileName) &&
-    		  toupper(*pci->szFileName) > 'B') {
+    UINT driveflag = driveflags[toupper(*pci->pszFileName) - 'A'];
+    *pci->pszFileName = toupper(*pci->pszFileName);
+    	      if (isalpha(*pci->pszFileName) &&
+    		  toupper(*pci->pszFileName) > 'B') {
     		if (driveflag & DRIVE_CDROM)
 		  pci->rc.hptrIcon = hptrCDROM;
 		else
@@ -126,7 +126,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 #ifdef DEBUG
       found = TRUE;
 #endif
-      if ((!fForceUpper && !fForceLower && strcmp(pci->szFileName, filename)) ||
+      if ((!fForceUpper && !fForceLower && strcmp(pci->pszFileName, filename)) ||
           pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
           pci->easize != CBLIST_TO_EASIZE(ffb.cbList) || pci->date.day !=
           ffb.fdateLastWrite.day || pci->date.month != ffb.fdateLastWrite.month ||
@@ -143,7 +143,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	*ffb.achName = 0;
 	ffb.cchName = 0;
 	FillInRecordFromFFB(hwndCnr, pci, filename, &ffb, partial, dcd);
-        if (strlen(pci->szFileName) < 4)
+        if (strlen(pci->pszFileName) < 4)
         SelectDriveIcon(pci);
 	oldemphasis = pci->rc.flRecordAttr & (CRA_SELECTED | CRA_CURSORED);
 	if (oldemphasis)
@@ -179,7 +179,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	  ullTotalBytes = FillInRecordFromFFB(hwndCnr,
 					      pci,
 					      filename, &ffb, partial, dcd);
-          if (strlen(pci->szFileName) < 4)
+          if (strlen(pci->pszFileName) < 4)
           SelectDriveIcon(pci);
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
@@ -225,7 +225,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 		*ffb.achName = 0;
 		FillInRecordFromFFB(hwndCnr,
 				    pci, filename, &ffb, partial, dcd);
-                if (strlen(pci->szFileName) < 4)
+                if (strlen(pci->pszFileName) < 4)
                 SelectDriveIcon(pci);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
@@ -272,7 +272,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	  ullTotalBytes = FillInRecordFromFFB(hwndCnr,
 					      pci,
 					      filename, &ffb, partial, dcd);
-          if (strlen(pci->szFileName) < 4)
+          if (strlen(pci->pszFileName) < 4)
           SelectDriveIcon(pci);
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
@@ -299,7 +299,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 				partial,
 				FALSE,
 				TRUE)) !=
-	   NULL && (INT) pci != -1 && strlen(pci->szFileName) > 3) {
+	   NULL && (INT) pci != -1 && strlen(pci->pszFileName) > 3) {
     /* file doesn't exist; delete record */
 #ifdef DEBUG
     found = TRUE;
@@ -409,7 +409,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	if (pci) {
 	  /* update record? */
 	  if ((!fForceUpper && !fForceLower &&
-	       strcmp(pci->szFileName, filename[x])) ||
+	       strcmp(pci->pszFileName, filename[x])) ||
 	      pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
 	      pci->easize != CBLIST_TO_EASIZE(ffb.cbList) ||
 	      pci->date.day != ffb.fdateLastWrite.day ||
@@ -430,7 +430,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	    ffb.cchName = 0;
 	    FillInRecordFromFFB(hwndCnr,
 				pci, filename[x], &ffb, partial, dcd);
-            if (IsRoot(pci->szFileName))
+            if (IsRoot(pci->pszFileName))
             SelectDriveIcon(pci);
 	    WinSendMsg(hwndCnr,
 		       CM_SETRECORDEMPHASIS,
@@ -454,7 +454,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						  pci,
 						  filename[x],
 						  &ffb, partial, dcd);
-              if (strlen(pci->szFileName) < 4)
+              if (strlen(pci->pszFileName) < 4)
               SelectDriveIcon(pci);
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
@@ -508,7 +508,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 							pci,
 							filename[x],
 							&ffb, partial, dcd);
-                    if (strlen(pci->szFileName) < 4)
+                    if (strlen(pci->pszFileName) < 4)
                     SelectDriveIcon(pci);
 		    memset(&ri, 0, sizeof(RECORDINSERT));
 		    ri.cb = sizeof(RECORDINSERT);
@@ -555,7 +555,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						    pci,
 						    filename[x],
 						    &ffb, partial, dcd);
-                if (strlen(pci->szFileName) < 4)
+                if (strlen(pci->pszFileName) < 4)
                 SelectDriveIcon(pci);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
@@ -588,7 +588,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 				    partial,
 				    FALSE,
 				    TRUE)) != NULL &&
-	       (INT) pci != -1 && !IsRoot(pci->szFileName)) {
+	       (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
 	/* file doesn't exist; delete record */
 	if (pci->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnr,

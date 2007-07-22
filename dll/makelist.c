@@ -191,7 +191,7 @@ CHAR **BuildList(HWND hwndCnr)
   }
   while (pci && (INT) pci != -1 && !error) {
     if (!(pci->rc.flRecordAttr & CRA_FILTERED))
-      error = AddToList(pci->szFileName, &list, &numfiles, &numalloc);
+      error = AddToList(pci->pszFileName, &list, &numfiles, &numalloc);
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMP(pci),
 		     MPFROMSHORT(attribute));
   }
@@ -222,7 +222,7 @@ CHAR **BuildArcList(HWND hwndCnr)
   }
   while (pai && (INT) pai != -1 && !error) {
     if (!(pai->rc.flRecordAttr & CRA_FILTERED))
-      error = AddToList(pai->szFileName, &list, &numfiles, &numalloc);
+      error = AddToList(pai->pszFileName, &list, &numfiles, &numalloc);
     pai = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMP(pai),
 		     MPFROMSHORT(attribute));
   }

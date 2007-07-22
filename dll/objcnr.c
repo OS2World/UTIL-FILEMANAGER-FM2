@@ -66,6 +66,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pciP;
+  CHAR *f = 0;
 
   ffb = xmalloc(sizeof(FILEFINDBUF3), pszSrcFile, __LINE__);
   if (!ffb)
@@ -97,27 +98,29 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
       free(ffb);
       return;
     }
-    strcpy(pciP->szFileName, filename);
+    pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
     pciP->pszDispAttr = pciP->szDispAttr;
-    pciP->pszSubject = pciP->szSubject;
-    pciP->pszLongname = pciP->szLongname;
+    //pciP->pszSubject = pciP->szSubject;
+    //pciP->pszLongname = pciP->szLongname;
     pciP->pszDispAttr = pciP->szDispAttr;
-    *pciP->szDispAttr = *pciP->szLongname = *pciP->szSubject = 0;
+    *pciP->szDispAttr = 0;
+    pciP->pszLongname = xstrdup(f, pszSrcFile, __LINE__);
+    pciP->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
     if (strlen(filename) < 4)
-      pciP->pszFileName = pciP->szFileName;
+      pciP->pszFileName = pciP->pszFileName;
     else {
-      p = strrchr(pciP->szFileName, '\\');
+      p = strrchr(pciP->pszFileName, '\\');
       if (!p)
-	pciP->pszFileName = pciP->szFileName;
+	pciP->pszFileName = pciP->pszFileName;
       else if (*(p + 1))
 	p++;
       pciP->pszFileName = p;
     }
     pciP->rc.pszIcon = pciP->pszFileName;
     if (fForceUpper)
-      strupr(pciP->szFileName);
+      strupr(pciP->pszFileName);
     else if (fForceLower)
-      strlwr(pciP->szFileName);
+      strlwr(pciP->pszFileName);
     pciP->rc.flRecordAttr |= CRA_RECORDREADONLY;
   }
   else {
@@ -132,7 +135,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   {
     HPOINTER hptr;
 
-    hptr = WinLoadFileIcon(pciP->szFileName, FALSE);
+    hptr = WinLoadFileIcon(pciP->pszFileName, FALSE);
     if (hptr)
       pciP->rc.hptrIcon = hptr;
   }
@@ -398,7 +401,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					   MPFROMLONG(CMA_FIRST),
 					   MPFROMSHORT(CRA_CURSORED));
 	if (pci && (INT) pci != -1)
-	  strcpy(data->dirname, pci->szFileName);
+	  strcpy(data->dirname, pci->pszFileName);
 	WinDismissDlg(hwnd, 1);
       }
       break;

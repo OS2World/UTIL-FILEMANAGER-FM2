@@ -793,7 +793,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		 GetPString((SHORT1FROMMP(mp1) == IDM_SELECTMASK) ?
 			    IDS_SELECTFILTERTEXT : IDS_DESELECTFILTERTEXT));
 	  if (pci && (INT) pci != -1)
-	    strcpy(mask.szMask, pci->szFileName);
+	    strcpy(mask.szMask, pci->pszFileName);
 	  if (WinDlgBox(HWND_DESKTOP, dcd->hwndCnr, PickMaskDlgProc,
 			FM3ModHandle, MSK_FRAME, MPFROMP(&mask))) {
 	    if (SHORT1FROMMP(mp1) == IDM_SELECTMASK)
@@ -1083,8 +1083,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			 CM_QUERYRECORDEMPHASIS,
 			 MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
 	if (pci && (INT) pci != -1 &&
-	    (!(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_SLOW)))
-	  WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->szFileName), MPVOID);
+	    (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_SLOW)))
+	  WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->pszFileName), MPVOID);
 	else
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
@@ -1121,7 +1121,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS,
 			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
 	  if (pci && (INT) pci != -1)
-	    PostMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->szFileName), MPVOID);
+	    PostMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->pszFileName), MPVOID);
 	  else
 	    PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
 	}
@@ -1148,7 +1148,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (pci->attrFile & FILE_DIRECTORY)
 	      p = pci->pszFileName;
 	    else {
-	      p = strrchr(pci->szFileName, '\\');
+	      p = strrchr(pci->pszFileName, '\\');
 	      if (p) {
 		if (*(p + 1))
 		  p++;
@@ -1443,7 +1443,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (pci && (INT) pci != -1) {
 	    static CHAR dirname[CCHMAXPATH];
 
-	    strcpy(dirname, pci->szFileName);
+	    strcpy(dirname, pci->pszFileName);
 	    MakeValidDir(dirname);
 	    StartSeeAll(HWND_DESKTOP, FALSE, dirname);
 	  }
@@ -1481,7 +1481,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (pci && (INT) pci != -1) {
 	    WinQueryWindowPos(dcd->hwndFrame, &swp);
 	    DefaultViewKeys(hwnd, dcd->hwndFrame, dcd->hwndParent, &swp,
-			    pci->szFileName);
+			    pci->pszFileName);
 	  }
 	}
 	break;
@@ -1699,7 +1699,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  if (pci) {
-	    strcpy(path, pci->szFileName);
+	    strcpy(path, pci->pszFileName);
 	    MakeValidDir(path);
 	    WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
 		      UNDEL_FRAME, MPFROMP(path));
@@ -1740,7 +1740,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    empty = TRUE;
 	    pci = (PCNRITEM) CurrentRecord(hwnd);
 	    if (pci && !(pci->attrFile & FILE_DIRECTORY)) {
-	      p = strrchr(pci->szFileName, '\\');
+	      p = strrchr(pci->pszFileName, '\\');
 	      if (p) {
 		p++;
 		strcpy(dcd->mask.szMask, p);
@@ -1762,9 +1762,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			       MPFROMLONG(CMA_FIRST),
 			       MPFROMSHORT(CRA_CURSORED));
 	      if (pci && (INT) pci != -1 &&
-		  (!(driveflags[toupper(*pci->szFileName) - 'A'] &
+		  (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		     DRIVE_SLOW)))
-		WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->szFileName),
+		WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->pszFileName),
 			   MPVOID);
 	      else
 		WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
@@ -1912,7 +1912,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  if (pci && (INT) pci != -1)
 	    WinDlgBox(HWND_DESKTOP, HWND_DESKTOP, DirSizeProc, FM3ModHandle,
-		      DSZ_FRAME, pci->szFileName);
+		      DSZ_FRAME, pci->pszFileName);
 	}
 	break;
 
@@ -1922,7 +1922,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  PMMkDir(dcd->hwndParent, (pci && (INT) pci != -1) ?
-		  pci->szFileName : NULL, FALSE);
+		  pci->pszFileName : NULL, FALSE);
 	}
 	break;
 
@@ -2136,7 +2136,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		 &"s"[numitems == 1L],
 		 (pci) ? NullStr : GetPString(IDS_NOTEXT),
 		 (pci) ? NullStr : " ",
-		 (pci) ? pci->szFileName : NullStr,
+		 (pci) ? pci->pszFileName : NullStr,
 		 (pci) ? " " : NullStr,
 		 GetPString((usOperation == DO_COPY) ?
 			    IDS_COPYTEXT :
@@ -2187,16 +2187,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		return MRFROM2SHORT(DOR_NODROP, 0);
 	      }
 	      if (uso != DO_LINK &&
-		  !(driveflags[toupper(*pci->szFileName) - 'A'] &
+		  !(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		    DRIVE_NOTWRITEABLE)) {
 		ARC_TYPE *info = NULL;
 
 		if (!fQuickArcFind &&
-		    !(driveflags[toupper(*pci->szFileName) - 'A'] &
+		    !(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		      DRIVE_SLOW))
-		  info = find_type(pci->szFileName, NULL);
+		  info = find_type(pci->pszFileName, NULL);
 		else
-		  info = quick_find_type(pci->szFileName, NULL);
+		  info = quick_find_type(pci->pszFileName, NULL);
 		if (!info || ((uso == DO_MOVE && !info->move) ||
 			      (uso == DO_COPY && !info->create))) {
 		  DrgFreeDraginfo(pDInfo);
@@ -2212,10 +2212,10 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			   NULL)) {
 	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	    if (pci) {
-	      if (driveflags[toupper(*pci->szFileName) - 'A'] &
+	      if (driveflags[toupper(*pci->pszFileName) - 'A'] &
 		  DRIVE_NOTWRITEABLE)
 		return MRFROM2SHORT(DOR_DROP, DO_LINK);
-	      if (toupper(*pci->szFileName) < 'C')
+	      if (toupper(*pci->pszFileName) < 'C')
 		return MRFROM2SHORT(DOR_DROP, DO_COPY);
 	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
 				  ((fCopyDefault) ? DO_COPY : DO_MOVE));
@@ -2239,7 +2239,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (pci) {
 	      if (pci->rc.flRecordAttr & CRA_SELECTED)
 		wasemphasized = TRUE;
-	      if (IsRoot(pci->szFileName))
+	      if (IsRoot(pci->pszFileName))
 		break;
 	      if (hwndStatus2)
 		WinSetWindowText(hwndStatus2,
@@ -2455,7 +2455,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		  if (pci->attrFile & FILE_DIRECTORY)
 		    p = pci->pszFileName;
 		  else {
-		    p = strrchr(pci->szFileName, '\\');
+		    p = strrchr(pci->pszFileName, '\\');
 		    if (p) {
 		      if (*(p + 1))
 			p++;
@@ -2503,7 +2503,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    WinSendMsg(hwndMain, UM_LOADFILE,
 		       MPFROMP(((fComments
 				 || (pci->attrFile & FILE_DIRECTORY) ==
-				 0) ? pci->szFileName : NULL)), MPVOID);
+				 0) ? pci->pszFileName : NULL)), MPVOID);
 	}
 	break;
 
@@ -2520,7 +2520,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (pci->rc.flRecordAttr & CRA_INUSE)
 	      break;
 	    DosError(FERR_DISABLEHARDERR);
-	    status = DosFindFirst(pci->szFileName, &hDir,
+	    status = DosFindFirst(pci->pszFileName, &hDir,
 				  FILE_NORMAL | FILE_DIRECTORY |
 				  FILE_ARCHIVED | FILE_READONLY |
 				  FILE_HIDDEN | FILE_SYSTEM,
@@ -2534,13 +2534,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			  MPVOID);
 		else if ((shiftstate & (KC_CTRL | KC_SHIFT)) ==
 			 (KC_CTRL | KC_SHIFT))
-		  OpenObject(pci->szFileName, Settings, dcd->hwndFrame);
+		  OpenObject(pci->pszFileName, Settings, dcd->hwndFrame);
 		else if (shiftstate & KC_CTRL)
-		  OpenObject(pci->szFileName, Default, dcd->hwndFrame);
+		  OpenObject(pci->pszFileName, Default, dcd->hwndFrame);
 		else
 		  OpenDirCnr(HWND_DESKTOP,
 			     hwndMain,
-			     dcd->hwndFrame, FALSE, pci->szFileName);
+			     dcd->hwndFrame, FALSE, pci->pszFileName);
 	      }
 	      else {
 		SWP swp;
@@ -2551,7 +2551,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		WinQueryWindowPos(dcd->hwndFrame, &swp);
 		DefaultViewKeys(hwnd,
 				dcd->hwndFrame,
-				dcd->hwndParent, &swp, pci->szFileName);
+				dcd->hwndParent, &swp, pci->pszFileName);
 		WinSendMsg(hwnd,
 			   CM_SETRECORDEMPHASIS,
 			   MPFROMP(pci),

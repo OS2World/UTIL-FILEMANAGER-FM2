@@ -48,24 +48,24 @@ PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   while (pci && (INT) pci != -1) {
     if (!noenv || (pci->flags & (RECFLAGS_ENV | RECFLAGS_UNDERENV)) == 0) {
       if (!partmatch) {			/* full name must match full name */
-	if (!stricmp(pci->szFileName, filename))
+	if (!stricmp(pci->pszFileName, filename))
 	  return pci;			/* success */
       }
       else {				/* only root name must match */
-	if (strlen(pci->szFileName) > 3) {
-	  p = strrchr(pci->szFileName, '\\');
+	if (strlen(pci->pszFileName) > 3) {
+	  p = strrchr(pci->pszFileName, '\\');
 	  if (!p) {
-	    p = strrchr(pci->szFileName, ':');
+	    p = strrchr(pci->pszFileName, ':');
 	    if (p)
 	      p++;
 	    else
-	      p = pci->szFileName;
+	      p = pci->pszFileName;
 	  }
 	  else
 	    p++;
 	}
 	else
-	  p = pci->szFileName;
+	  p = pci->pszFileName;
 	if (!stricmp(p, file))
 	  return pci;			/* success */
       }

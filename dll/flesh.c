@@ -51,7 +51,7 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
   if (!dcd)
     return FALSE;
 
-  strcpy(path, pciParent->szFileName + 1);
+  strcpy(path, pciParent->pszFileName + 1);
   if (stricmp(path, GetPString(IDS_ENVVARSTEXT) + 1))
     UnFlesh(hwndCnr, pciParent);
   if (*path) {
@@ -104,9 +104,8 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 				MPFROMLONG(EXTRA_RECORD_BYTES2),
 				MPFROMLONG(1));
 	      if (pciL) {
-		strcpy(pciL->szFileName, fullpath);
-		pciL->pszFileName = pciL->szFileName;
-		pciL->rc.pszIcon = pciL->pszFileName;
+		pciL->pszFileName = xstrdup(fullpath, pszSrcFile, __LINE__);
+                pciL->rc.pszIcon = pciL->pszFileName;
 		if (!fNoIconsDirs &&
 		    (!isalpha(*fullpath) ||
 		     !(driveflags[toupper(*fullpath) - 'A'] &
@@ -164,7 +163,7 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 			       CM_QUERYRECORD,
 			       MPFROMP(pciParent),
 			       MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-  if (!pciL || !*pciL->szFileName) {
+  if (!pciL || !*pciL->pszFileName) {
     if (pciL && (INT) pciL != -1) {
       WinSendMsg(hwndCnr,
 		 CM_REMOVERECORD, MPFROMP(&pciL), MPFROM2SHORT(1, CMA_FREE));
@@ -172,12 +171,12 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
     dcd = INSTDATA(hwndCnr);
     if (dcd && dcd->size != sizeof(DIRCNRDATA))
       dcd = NULL;
-    if (driveflags[toupper(*pciParent->szFileName) - 'A'] &
+    if (driveflags[toupper(*pciParent->pszFileName) - 'A'] &
 	DRIVE_INCLUDEFILES)
       includefiles = TRUE;
     ProcessDirectory(hwndCnr,
 		     pciParent,
-		     pciParent->szFileName,
+		     pciParent->pszFileName,
 		     includefiles, TRUE, TRUE, NULL, dcd, NULL, NULL);
   }
   return TRUE;
@@ -233,12 +232,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   BOOL isadir = FALSE, isremote = FALSE, includefiles = fFilesInTree;
   ULONG ddepth = 3L;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
+  CHAR *f = 0;
 
-  if (!pciParent || !*pciParent->szFileName || !hwndCnr)
+  if (!pciParent || !*pciParent->pszFileName || !hwndCnr)
     return FALSE;
 
-  len = strlen(pciParent->szFileName);
-  memcpy(str, pciParent->szFileName, len + 1);
+  len = strlen(pciParent->pszFileName);
+  memcpy(str, pciParent->pszFileName, len + 1);
   if (str[len - 1] != '\\')
     str[len++] = '\\';
   str[len++] = '*';
@@ -336,15 +336,15 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 						     sizeof(FILEFINDBUF3),
 						     &nm))));
     DosFindClose(hDir);
-    if (toupper(*pciParent->szFileName) > 'B' &&
-	pciParent->szFileName[1] == ':' &&
-	pciParent->szFileName[2] == '\\' && !pciParent->szFileName[3]) {
+    if (toupper(*pciParent->pszFileName) > 'B' &&
+        (*(pciParent->pszFileName + 1)) == ':' &&
+	(*(pciParent->pszFileName + 2)) == '\\' && !(*(pciParent->pszFileName + 3))) {
 
       CHAR s[132];
 
       sprintf(s,
 	      GetPString(IDS_NOSUBDIRSTEXT),
-	      total, toupper(*pciParent->szFileName));
+	      total, toupper(*pciParent->pszFileName));
       if (rc && rc != ERROR_NO_MORE_FILES)
 	sprintf(&s[strlen(s)], GetPString(IDS_SEARCHERRORTEXT), rc, str);
       else if (ddepth < 16L)
@@ -421,9 +421,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	}
 	else {
 	  RECORDINSERT ri;
-
-	  *pci->szFileName = 0;
-	  pci->pszFileName = pci->szFileName;
+	  pci->pszFileName = xstrdup(f, pszSrcFile, __LINE__);
+	  //pci->pszFileName = pci->szFileName;
 	  pci->rc.pszIcon = pci->pszFileName;
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
@@ -460,7 +459,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	sprintf(s,
 		GetPString(IDS_NOSUBDIRS2TEXT),
 		nm,
-		toupper(*pciParent->szFileName),
+		toupper(*pciParent->pszFileName),
 		(isremote) ? GetPString(IDS_NOSUBDIRS3TEXT) : NullStr);
 	Notify(s);
       }

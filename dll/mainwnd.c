@@ -327,7 +327,7 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 				    MPFROMSHORT(CRA_CURSORED));
       }
       if (pci && (INT) pci != -1) {
-	strcpy(ret, pci->szFileName);
+	strcpy(ret, pci->pszFileName);
 	MakeValidDir(ret);
       }
       else
@@ -4074,7 +4074,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
 		   MPFROMSHORT(CRA_CURSORED));
       if (pci && (INT) pci != -1) {
-	strcpy(wa.szCurrentPath1, pci->szFileName);
+	strcpy(wa.szCurrentPath1, pci->pszFileName);
 	MakeValidDir(wa.szCurrentPath1);
       }
       else
@@ -4486,7 +4486,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    MPFROMLONG(CMA_FIRST),
 				    MPFROMSHORT(CRA_CURSORED));
       if (pci && (INT) pci != -1) {
-	strcpy(path, pci->szFileName);
+	strcpy(path, pci->pszFileName);
 	MakeValidDir(path);
       }
       else
@@ -4552,10 +4552,10 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					MPFROMLONG(CMA_FIRST),
 					MPFROMSHORT(CRA_CURSORED));
 	    if (pci && (INT) pci != -1 &&
-		(!(driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_SLOW)))
+		(!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_SLOW)))
 	      WinSendMsg(hwnd,
 			 UM_LOADFILE,
-			 MPFROMP(pci->szFileName),
+			 MPFROMP(pci->pszFileName),
 			 (SHORT1FROMMP(mp1) == IDM_AUTOVIEW) ?
 			 MPVOID : MPFROMLONG(1L));
 	  }

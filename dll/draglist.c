@@ -255,10 +255,10 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
   ulSelect = 0;
   while (pci && (INT) pci > -1) {
     if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
-      if (IsRoot(pci->szFileName) && !IsValidDrive(*pci->szFileName))
+      if (IsRoot(pci->pszFileName) && !IsValidDrive(*pci->pszFileName))
 	goto Continuing;
       if (!arcfile) {
-	strcpy(szBuffer, pci->szFileName);
+	strcpy(szBuffer, pci->pszFileName);
 	p = strrchr(szBuffer, '\\');
 	if (p) {
 	  p++;
@@ -269,7 +269,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	  goto Continuing;
       }
       else
-	strcpy(szFile, pci->szFileName);
+	strcpy(szFile, pci->pszFileName);
     }
     if (!arcfile) {
       // Filesystem object
@@ -368,15 +368,15 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	break;
       }
       pDItem->fsControl = isdir ? DC_CONTAINER : 0;
-      if (IsFullName(pci->szFileName) &&
-	  (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE))
+      if (IsFullName(pci->pszFileName) &&
+	  (driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_REMOVABLE))
 	pDItem->fsControl |= DC_REMOVEABLEMEDIA;
       pDItem->fsSupportedOps = DO_COPYABLE | DO_LINKABLE;
-      if (moveok && IsFullName(pci->szFileName) &&
-	  !(driveflags[toupper(*pci->szFileName) - 'A'] &
+      if (moveok && IsFullName(pci->pszFileName) &&
+	  !(driveflags[toupper(*pci->pszFileName) - 'A'] &
 	    DRIVE_NOTWRITEABLE))
 	pDItem->fsSupportedOps |= DO_MOVEABLE;
-      if (IsRoot(pci->szFileName)) {
+      if (IsRoot(pci->pszFileName)) {
 	pDItem->fsSupportedOps = DO_LINKABLE;
 	rooting = TRUE;
       }
@@ -773,7 +773,7 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 		       MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_SELECTED));
     }
-    while (pci && (INT) pci != -1 && *pci->szFileName) {
+    while (pci && (INT) pci != -1 && *pci->pszFileName) {
       if (pdinfoOld || DrgQueryDragStatus() & DGS_LAZYDRAGINPROGRESS) {
 	if (!pdinfoOld)
 	  pdinfoOld = DrgQueryDraginfoPtr(NULL);
@@ -786,7 +786,7 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
       else
 	pdinfoCurrent = pdinfoOld = DrgAllocDraginfo(1);
       if (pdinfoCurrent) {
-	strcpy(szDir, pci->szFileName);
+	strcpy(szDir, pci->pszFileName);
 	p = szDir;
 	while (*p) {
 	  if (*p == '/')
@@ -801,7 +801,7 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 	  strcat(szDir, "\\");
 	}
 	else {
-	  strcpy(szFile, pci->szFileName);
+	  strcpy(szFile, pci->pszFileName);
 	  *szDir = 0;
 	}
 	ditem.ulItemID = (ULONG) pci;
@@ -817,17 +817,17 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 	}
 	ditem.hstrTargetName = DrgAddStrHandle(szFile);
 	ditem.fsControl = 0;
-	if (IsRoot(pci->szFileName) || (pci->attrFile & FILE_DIRECTORY) != 0)
+	if (IsRoot(pci->pszFileName) || (pci->attrFile & FILE_DIRECTORY) != 0)
 	  ditem.fsControl |= DC_CONTAINER;
-	if (IsFullName(pci->szFileName) &&
-	    (driveflags[toupper(*pci->szFileName) - 'A'] & DRIVE_REMOVABLE))
+	if (IsFullName(pci->pszFileName) &&
+	    (driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_REMOVABLE))
 	  ditem.fsControl |= DC_REMOVEABLEMEDIA;
 	ditem.fsSupportedOps = DO_COPYABLE | DO_LINKABLE;
-	if (IsFullName(pci->szFileName) &&
-	    !(driveflags[toupper(*pci->szFileName) - 'A'] &
+	if (IsFullName(pci->pszFileName) &&
+	    !(driveflags[toupper(*pci->pszFileName) - 'A'] &
 	      DRIVE_NOTWRITEABLE))
 	  ditem.fsSupportedOps |= DO_MOVEABLE;
-	if (IsRoot(pci->szFileName))
+	if (IsRoot(pci->pszFileName))
 	  ditem.fsSupportedOps = DO_LINKABLE;
 	memset(&dimgFakeIcon, 0, sizeof(DRAGIMAGE));
 	dimgFakeIcon.hImage = pci->rc.hptrIcon;
@@ -838,13 +838,13 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 	dimgFakeIcon.sizlStretch.cy = 32;
 	dimgFakeIcon.cxOffset = -16;
 	dimgFakeIcon.cyOffset = 0;
-	if (IsFullName(pci->szFileName) &&
-	    (driveflags[toupper(*pci->szFileName) - 'A'] &
+	if (IsFullName(pci->pszFileName) &&
+	    (driveflags[toupper(*pci->pszFileName) - 'A'] &
 	     DRIVE_NOTWRITEABLE))
 	  pdinfoCurrent->usOperation = DO_COPY;
 	else
 	  pdinfoCurrent->usOperation = DO_DEFAULT;
-	if (IsRoot(pci->szFileName))
+	if (IsRoot(pci->pszFileName))
 	  pdinfoCurrent->usOperation = DO_LINK;
 	pdinfoCurrent->hwndSource = (hwndObj) ? hwndObj : hwndCnr;
 	DrgSetDragitem(pdinfoCurrent, &ditem, sizeof(DRAGITEM), cditem);

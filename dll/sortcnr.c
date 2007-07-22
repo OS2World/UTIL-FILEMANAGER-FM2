@@ -57,7 +57,7 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
 
   if (SortFlags & SORT_NOSORT)
     return 0;
-  if (SortFlags && pCI1->szFileName[3] && pCI2->szFileName[3]) {
+  if (SortFlags && pCI1->pszFileName + 3 && pCI2->pszFileName + 3) {
     if (SortFlags & SORT_DIRSFIRST) {
       if ((pCI1->attrFile & FILE_DIRECTORY) !=
 	  (pCI2->attrFile & FILE_DIRECTORY))
@@ -70,18 +70,18 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
     }
     switch (SortFlags & (~(SORT_DIRSFIRST | SORT_DIRSLAST | SORT_REVERSE))) {
     case SORT_SUBJECT:
-      if (*pCI1->szSubject && *pCI2->szSubject)
-	ret = stricmp(pCI1->szSubject, pCI2->szSubject);
+      if (*pCI1->pszSubject && *pCI2->pszSubject)
+	ret = stricmp(pCI1->pszSubject, pCI2->pszSubject);
       else {
-	ret = (*pCI2->szSubject) ? 1 : (*pCI1->szSubject) ? -1 : 0;
+	ret = (*pCI2->pszSubject) ? 1 : (*pCI1->pszSubject) ? -1 : 0;
 	if (ret && (SortFlags & SORT_REVERSE))
 	  ret = (ret > 0) ? -1 : 1;
       }
       break;
 
     case SORT_FILENAME:
-      pch1 = strrchr(pCI1->szFileName, '\\');
-      pch2 = strrchr(pCI2->szFileName, '\\');
+      pch1 = strrchr(pCI1->pszFileName, '\\');
+      pch2 = strrchr(pCI2->pszFileName, '\\');
       if (!pch1)
 	pch1 = NullStr;
       if (!pch2)
@@ -90,12 +90,12 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
       break;
 
     case SORT_FIRSTEXTENSION:
-      pch1 = strrchr(pCI1->szFileName, '\\');
-      pch2 = strrchr(pCI2->szFileName, '\\');
+      pch1 = strrchr(pCI1->pszFileName, '\\');
+      pch2 = strrchr(pCI2->pszFileName, '\\');
       if (!pch1)
-	pch1 = pCI1->szFileName;
+	pch1 = pCI1->pszFileName;
       if (!pch2)
-	pch2 = pCI2->szFileName;
+	pch2 = pCI2->pszFileName;
       pch1 = strchr(pch1, '.');
       pch2 = strchr(pch2, '.');
       if (!pch1)
@@ -106,12 +106,12 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
       break;
 
     case SORT_LASTEXTENSION:
-      pch1 = strrchr(pCI1->szFileName, '\\');
-      pch2 = strrchr(pCI2->szFileName, '\\');
+      pch1 = strrchr(pCI1->pszFileName, '\\');
+      pch2 = strrchr(pCI2->pszFileName, '\\');
       if (!pch1)
-	pch1 = pCI1->szFileName;
+	pch1 = pCI1->pszFileName;
       if (!pch2)
-	pch2 = pCI2->szFileName;
+	pch2 = pCI2->pszFileName;
       pch1 = strrchr(pch1, '.');
       pch2 = strrchr(pch2, '.');
       if (!pch1)
@@ -188,12 +188,12 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
     }
 
     if (!ret)
-      ret = (SHORT) stricmp(pCI1->szFileName, pCI2->szFileName);
+      ret = (SHORT) stricmp(pCI1->pszFileName, pCI2->pszFileName);
 
     if (ret && (SortFlags & SORT_REVERSE))
       ret = (ret > 0) ? -1 : 1;
 
     return ret;
   }
-  return (SHORT) stricmp(pCI1->szFileName, pCI2->szFileName);
+  return (SHORT) stricmp(pCI1->pszFileName, pCI2->pszFileName);
 }

@@ -352,9 +352,9 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 				      CM_QUERYRECORDEMPHASIS,
 				      MPFROMLONG(CMA_FIRST),
 				      MPFROMSHORT(CRA_CURSORED));
-	  if (pci && (int) pci != -1 && *pci -> szFileName) {
-	    if (needs_quoting(pci -> szFileName) &&
-		!strchr(pci -> szFileName, '\"'))
+	  if (pci && (int) pci != -1 && *pci->pszFileName) {
+	    if (needs_quoting(pci->pszFileName) &&
+		!strchr(pci->pszFileName, '\"'))
 	    {
 	      *pp = '\"';
 	      pp++;
@@ -362,8 +362,8 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    }
 	    else
 	      spaces = FALSE;
-	    strcpy(pp, pci -> szFileName);
-	    pp += strlen(pci -> szFileName);
+	    strcpy(pp, pci->pszFileName);
+	    pp += strlen(pci->pszFileName);
 	    if (spaces) {
 	      *pp = '\"';
 	      pp++;
