@@ -32,7 +32,7 @@ CFLAGS = -bt=os2 -mf -bm -d2 -olirs -s -j -wx -zfp -zgp -zq -hd
 
 all: $(BASE).exe .symbolic
 
-$(BASE).obj: $(BASE).c ..\version.h ..\fm3str.h
+$(BASE).obj: $(BASE).c .AUTODEPEND
 
 $(BASE).exe: $(BASE).obj $(BASE).lrf
   $(LINK) @$(BASE).lrf
