@@ -156,15 +156,17 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
     }
     DosSleep(rand() % 100);
 
-  }					// for
+  } // for
 
   return hptr == hptrPMFile || hptr == hptrWPSFile;
 
-}					// IsDefaultIcon
+} // IsDefaultIcon
 
-ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
+ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
+			      PCNRITEM pci,
 			      const PSZ pszDirectory,
-			      const PFILEFINDBUF4 pffb, const BOOL partial,
+			      const PFILEFINDBUF4 pffb,
+			      const BOOL partial,
 			      DIRCNRDATA * dcd)
 {
   /* fill in a container record from a FILEFINDBUF4 structure */
@@ -174,18 +176,27 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
   HPOINTER hptr;
   UINT x;
   UINT y;
-  UINT t;
-  CHAR *f = 0;
 
   pci->hwndCnr = hwndCnr;
-  t = strlen(pszDirectory);
+
+  // 23 Jul 07 SHL fixme to optimize
   pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
-  /* note!  we cheat below, and accept the full pathname in pszDirectory
-     if !*pffb->achName.  speeds up and simplifies processing elsewhere
+  /* note that we cheat below, and accept the full pathname in pszDirectory
+     if !*pffb->achName.  This speeds up and simplifies processing elsewhere
      (like in update.c)
    */
-  if (*pffb->achName) {
-    p = pci->pszFileName + (t - 1);
+  if (!*pffb->achName)
+    pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
+  else {
+    INT c = strlen(pszDirectory);
+    INT c2 = pffb->cchName + 1;
+    if (pszDirectory[c - 1] != '\\')
+      c2++;
+    pci->pszFileName = xmalloc(c + c2,
+			       pszSrcFile,
+			       __LINE__);
+    memcpy(pci->pszFileName, pszDirectory, c + 1);
+    p = pci->pszFileName + c - 1;
     if (*p != '\\') {
       p++;
       *p = '\\';
@@ -193,11 +204,14 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
     p++;
     memcpy(p, pffb->achName, pffb->cchName + 1);
   }
+
   /* load the object's Subject, if required */
+  pci->pszSubject = NULL;
   if (pffb->cbList > 4L &&
       dcd && fLoadSubject &&
       (isalpha(*pci->pszFileName) &&
-       !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADSUBJS))) {
+       !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADSUBJS)))
+  {
     APIRET rc;
     EAOP2 eaop;
     PGEA2LIST pgealist;
@@ -233,14 +247,19 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
       free(pgealist);
     }
   }
+  // If still need subject - fixme to just point NullStr
+  if (!pci->pszSubject)
+    pci->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
+
   /* load the object's longname */
-  pci->pszLongname = xstrdup(f, pszSrcFile, __LINE__);
+  pci->pszLongname = 0;
   if (fLoadLongnames &&
       dcd &&
       pffb->cbList > 4L &&
       isalpha(*pci->pszFileName) &&
       ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLONGNAMES &&
-      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADLONGS) {
+      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADLONGS)
+  {
     APIRET rc;
     EAOP2 eaop;
     PGEA2LIST pgealist;
@@ -276,6 +295,10 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
       free(pgealist);
     }
   }
+  // If still need long name set - fixme to just point to NullStr
+  if (!pci->pszLongname)
+    pci->pszLongname = xstrdup(NullStr, pszSrcFile, __LINE__);
+
   /* do anything required to case of filename */
   if (fForceUpper)
     strupr(pci->pszFileName);
@@ -309,11 +332,12 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 
   if (!hptr) {
     hptr = pffb->attrFile & FILE_DIRECTORY ?
-      hptrDir :
-      pffb->attrFile & FILE_SYSTEM ?
-      hptrSystem :
-      pffb->attrFile & FILE_HIDDEN ?
-      hptrHidden : pffb->attrFile & FILE_READONLY ? hptrReadonly : hptrFile;
+      hptrDir : pffb->attrFile & FILE_SYSTEM ?
+		  hptrSystem :
+		    pffb->attrFile & FILE_HIDDEN ?
+		    hptrHidden :
+		    pffb->attrFile & FILE_READONLY ?
+		      hptrReadonly : hptrFile;
   }
 
   /* decide where to point for the container's title text */
@@ -336,6 +360,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
   else
     p = pci->pszFileName;
   /* now fill the darned thing in... */
+  // fixme to have secondary pointer that points to real buffer 23 Jul 07 SHL
   pci->pszFileName = p;
   pci->date.day = pffb->fdateLastWrite.day;
   pci->date.month = pffb->fdateLastWrite.month;
@@ -396,27 +421,29 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 
   return pffb->cbFile + pci->easize;
 
-}					// FillInRecordFromFFB
+} // FillInRecordFromFFB
 
 ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName, const PFILESTATUS4 pfsa4, const BOOL partial, DIRCNRDATA * dcd)	// Optional
 {
   HPOINTER hptr;
   CHAR attrstring[] = "RHS\0DA";
-  register CHAR *p;
-  register INT x;
-  register INT y;
-  CHAR *f = 0;
+  CHAR *p;
+  INT x;
+  INT y;
 
   /* fill in a container record from a FILESTATUS4 structure */
 
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
+
   /* load the object's Subject, if required */
+  pci->pszSubject = NULL;
   if (pfsa4->cbList > 4L &&
       dcd &&
       fLoadSubject &&
       (!isalpha(*pci->pszFileName) ||
-       !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADSUBJS))) {
+       !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADSUBJS)))
+  {
     APIRET rc;
     EAOP2 eaop;
     PGEA2LIST pgealist;
@@ -445,20 +472,25 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
 	  value = pfea->szName + pfea->cbName + 1;
 	  value[pfea->cbValue] = 0;
 	  if (*(USHORT *) value == EAT_ASCII)
-            pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
+	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
 	free(pfealist);
       }
       free(pgealist);
     }
   }
-  pci->pszLongname = xstrdup(f, pszSrcFile, __LINE__);
+  // If still need subject buffer - fixme to just point to NullStr
+  if (!pci->pszSubject)
+    pci->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
+
+  pci->pszLongname = 0;
   if (fLoadLongnames &&
       dcd &&
       pfsa4->cbList > 4L &&
       isalpha(*pci->pszFileName) &&
       ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLONGNAMES &&
-      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADLONGS) {
+      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADLONGS)
+  {
     APIRET rc;
     EAOP2 eaop;
     PGEA2LIST pgealist;
@@ -484,16 +516,22 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
 			      (PVOID) & eaop, (ULONG) sizeof(EAOP2));
 	if (!rc) {
 	  pfea = &eaop.fpFEA2List->list[0];
-	  value = pfea->szName + pfea->cbName + 1;
-	  value[pfea->cbValue] = 0;
-	  if (*(USHORT *) value == EAT_ASCII)
-	    pci->pszLongname = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
+	  value = pfea->szName + pfea->cbName + 1;	// Point at EA value
+	  value[pfea->cbValue] = 0;			// Terminate
+	  if (*(USHORT *) value == EAT_ASCII) {
+	    p = value + sizeof(USHORT) * 2;		// Point at value string
+	    pci->pszLongname = xstrdup(p, pszSrcFile, __LINE__);
+	  }
 	}
 	free(pfealist);
       }
       free(pgealist);
     }
   }
+  // If still need long name set - fixme to just point to NullStr
+  if (!pci->pszLongname)
+    pci->pszLongname = xstrdup(NullStr, pszSrcFile, __LINE__);
+
   if (fForceUpper)
     strupr(pci->pszFileName);
   else if (fForceLower)
@@ -597,7 +635,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
 
   return pfsa4->cbFile + pci->easize;
 
-}					// FillInRecordFromFSA
+} // FillInRecordFromFSA
 
 VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent, const CHAR * szDirBase, const BOOL filestoo, const BOOL recurse, const BOOL partial, CHAR * stopflag, DIRCNRDATA * dcd,	// Optional
 		      ULONG * pulTotalFiles,	// Optional
@@ -730,7 +768,7 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent, const CHAR *
 					       pffbFile, partial, dcd);
 		pci = (PCNRITEM) pci->rc.preccNextRecord;
 		ullTotalBytes += ullBytes;
-	      }
+	      } // for
 	      if (ulFileCnt) {
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
@@ -910,7 +948,7 @@ Abort:
   if (pullTotalBytes)
     *pullTotalBytes = ullReturnBytes;
 
-}					// ProcessDirectory
+} // ProcessDirectory
 
 VOID FillDirCnr(HWND hwndCnr,
 		CHAR * pszDirectory,
@@ -925,14 +963,15 @@ VOID FillDirCnr(HWND hwndCnr,
 		   dcd ? &dcd->stopflag : NULL, dcd, NULL, pullTotalBytes);
   DosPostEventSem(CompactSem);
 
-}					// FillDirCnr
+} // FillDirCnr
 
 VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 {
-  ULONG ulDriveNum, ulDriveMap, numtoinsert = 0, drvtype;
+  ULONG ulCurDriveNum, ulDriveMap, numtoinsert = 0, drvtype;
   PCNRITEM pci, pciFirst = NULL, pciNext, pciParent = NULL;
   INT x, removable;
-  CHAR  suggest[32], szDrive[] = " :\\", FileSystem[CCHMAXPATH];
+  CHAR suggest[32];
+  CHAR szDrive[] = " :\\", FileSystem[CCHMAXPATH];
   FILESTATUS4 fsa4;
   APIRET rc;
   BOOL drivesbuilt = FALSE;
@@ -957,7 +996,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       driveflags[startdrive - 1] |= DRIVE_BOOT;
   }
   DosError(FERR_DISABLEHARDERR);
-  rc = DosQCurDisk(&ulDriveNum, &ulDriveMap);
+  rc = DosQCurDisk(&ulCurDriveNum, &ulDriveMap);
   if (rc) {
     Dos_Error(MB_CANCEL,
 	      rc,
@@ -965,6 +1004,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      pszSrcFile, __LINE__, GetPString(IDS_FILLDIRQCURERRTEXT));
     exit(0);
   }
+  // Calc number of drive items to create
   for (x = 0; x < 26; x++) {
     if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE))
       numtoinsert++;
@@ -984,76 +1024,73 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     pci = pciFirst;
     for (x = 0; x < 26; x++) {
       if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
-	*szDrive = (CHAR) x + 'A';
 
-	{
-	  CHAR s[80];
-	  ULONG flags = 0;
-	  ULONG size = sizeof(ULONG);
+	CHAR s[80];
+	ULONG flags = 0;
+	ULONG size = sizeof(ULONG);
 
-	  sprintf(s, "%c.DriveFlags", toupper(*szDrive));
-	  if (PrfQueryProfileData(fmprof, appname, s, &flags, &size) &&
-	      size == sizeof(ULONG)) {
-	    driveflags[toupper(*szDrive) - 'A'] |= flags;
-	  }
+	*szDrive = (CHAR)x + 'A';		// Build path spec
+
+	sprintf(s, "%c.DriveFlags", toupper(*szDrive));
+	if (PrfQueryProfileData(fmprof, appname, s, &flags, &size) &&
+	    size == sizeof(ULONG)) {
+	  driveflags[toupper(*szDrive) - 'A'] |= flags;
 	}
 
 	if (x > 1) {
+	  // Hard drive (2..N)
 	  if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
 	    *FileSystem = 0;
 	    drvtype = 0;
 	    removable = CheckDrive(*szDrive, FileSystem, &drvtype);
 	    driveserial[x] = -1;
 	    if (removable != -1) {
-	      struct
-	      {
+	      struct {
 		ULONG serial;
 		CHAR volumelength;
 		CHAR volumelabel[CCHMAXPATH];
-	      }
-	      volser;
+	      } volser;
 
 	      DosError(FERR_DISABLEHARDERR);
 	      if (!DosQueryFSInfo((ULONG) x,
 				  FSIL_VOLSER, &volser, sizeof(volser))) {
 		driveserial[x] = volser.serial;
-              }
-            }
+	      }
+	    }
 	    else
 	      driveflags[x] |= DRIVE_INVALID;
+
 	    memset(&fsa4, 0, sizeof(FILESTATUS4));
-	    driveflags[x] |= ((removable == -1 || removable == 1) ?
-			      DRIVE_REMOVABLE : 0);
+	    driveflags[x] |= removable == -1 || removable == 1 ?
+			      DRIVE_REMOVABLE : 0;
 	    if (drvtype & DRIVE_REMOTE)
 	      driveflags[x] |= DRIVE_REMOTE;
-            if (!stricmp(FileSystem,RAMFS))
-	    {
-             driveflags[x] |= DRIVE_RAMDISK;
-             driveflags[x] &= ~DRIVE_REMOTE;
-            }
-             if (!stricmp(FileSystem,NDFS32))
-            {
-             driveflags[x] |= DRIVE_VIRTUAL;
-             driveflags[x] &= ~DRIVE_REMOTE;
-            }
-            if (!stricmp(FileSystem,NTFS))
-             driveflags[x] |= DRIVE_NOTWRITEABLE;
+	    if (!stricmp(FileSystem,RAMFS)) {
+	      driveflags[x] |= DRIVE_RAMDISK;
+	      driveflags[x] &= ~DRIVE_REMOTE;
+	    }
+	    if (!stricmp(FileSystem,NDFS32)) {
+	      driveflags[x] |= DRIVE_VIRTUAL;
+	      driveflags[x] &= ~DRIVE_REMOTE;
+	    }
+	    if (!stricmp(FileSystem,NTFS))
+	      driveflags[x] |= DRIVE_NOTWRITEABLE;
 	    if (strcmp(FileSystem, HPFS) &&
 		strcmp(FileSystem, JFS) &&
-                strcmp(FileSystem, ISOFS) &&
+		strcmp(FileSystem, ISOFS) &&
 		strcmp(FileSystem, CDFS) &&
 		strcmp(FileSystem, FAT32) &&
-                strcmp(FileSystem, NDFS32) &&
-                strcmp(FileSystem, RAMFS) &&
-                strcmp(FileSystem, NTFS) &&
-                strcmp(FileSystem, HPFS386)) {
+		strcmp(FileSystem, NDFS32) &&
+		strcmp(FileSystem, RAMFS) &&
+		strcmp(FileSystem, NTFS) &&
+		strcmp(FileSystem, HPFS386)) {
 	      driveflags[x] |= DRIVE_NOLONGNAMES;
 	    }
 
 	    if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem,ISOFS)) {
 	      removable = 1;
 	      driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
-		DRIVE_CDROM;
+			       DRIVE_CDROM;
 	    }
 	    else if (!stricmp(FileSystem, CBSIFS)) {
 	      driveflags[x] |= DRIVE_ZIPSTREAM;
@@ -1065,15 +1102,18 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    }
 
 	    pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
-	    if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulDriveNum)
+	    // if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum)	// 23 Jul 07 SHL
+	    if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
 	      pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
 
 	    if (removable == 0) {
+	      // Fixed volume
 	      pci->attrFile |= FILE_DIRECTORY;
 	      DosError(FERR_DISABLEHARDERR);
 	      rc = DosQueryPathInfo(szDrive,
 				    FIL_QUERYEASIZE,
 				    &fsa4, (ULONG) sizeof(FILESTATUS4));
+	      // ERROR_BAD_NET_RSP = 58
 	      if (rc == 58) {
 		DosError(FERR_DISABLEHARDERR);
 		rc = DosQueryPathInfo(szDrive,
@@ -1082,12 +1122,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		fsa4.cbList = 0;
 	      }
 	      if (rc && !didonce) {
+		// Guess drive letter
 		if (!*suggest) {
 		  *suggest = '/';
 		  suggest[1] = 0;
 		}
 		sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
-                pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+		pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 		pci->rc.pszIcon = pci->pszFileName;
 		pci->attrFile = FILE_DIRECTORY;
 		strcpy(pci->szDispAttr, "----D-");
@@ -1098,17 +1139,18 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		FillInRecordFromFSA(hwndCnr, pci, szDrive, &fsa4, TRUE, NULL);
 	    }
 	    else {
-              pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	      // Removable volume
+	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	      pci->rc.pszIcon = pci->pszFileName;
 	      pci->attrFile = FILE_DIRECTORY;
 	      strcpy(pci->szDispAttr, "----D-");
 	      pci->pszDispAttr = pci->szDispAttr;
-            }
-            SelectDriveIcon(pci);
+	    }
+	    SelectDriveIcon(pci);
 	  }
 	  else {
 	    pci->rc.hptrIcon = hptrDunno;
-            pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	    pci->rc.pszIcon = pci->pszFileName;
 	    pci->attrFile = FILE_DIRECTORY;
 	    strcpy(pci->szDispAttr, "----D-");
@@ -1117,6 +1159,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  }
 	}
 	else {
+	  // diskette drive (A or B)
 	  pci->rc.hptrIcon = hptrFloppy;
 	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	  pci->rc.pszIcon = pci->pszFileName;
@@ -1159,7 +1202,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				  MPVOID,
 				  MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
       while (pci && (INT) pci != -1) {
-	if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulDriveNum) {
+	if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum) {
 	  WinSendMsg(hwndCnr,
 		     CM_SETRECORDEMPHASIS,
 		     MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
@@ -1221,9 +1264,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			       CM_ALLOCRECORD,
 			       MPFROMLONG(EXTRA_RECORD_BYTES2),
 			       MPFROMLONG(1));
-              if (pci) {
-                CHAR fname[CCHMAXPATH];
-                pci->flags |= RECFLAGS_ENV;
+	      if (pci) {
+		CHAR fname[CCHMAXPATH];
+		pci->flags |= RECFLAGS_ENV;
 		sprintf(fname, "%%%s%%", FileSystem);
 		pci->pszFileName = xstrdup(fname, pszSrcFile, __LINE__);
 		pci->rc.hptrIcon = hptrEnv;
@@ -1270,7 +1313,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				      MPFROMP(pci),
 				      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
       if (!(pci->flags & RECFLAGS_ENV)) {
-	if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulDriveNum ||
+	if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum ||
 	    toupper(*pci->pszFileName) > 'B') {
 	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_INVALID)
 	      && !(driveflags[toupper(*pci->pszFileName) - 'A'] &
@@ -1398,4 +1441,4 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   }
   didonce = TRUE;
 
-}					// FillTreeCnr
+} // FillTreeCnr

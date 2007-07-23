@@ -345,16 +345,15 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 //=== ActionCnrThread() Do requested action on container contents ===
 
-static VOID ActionCnrThread(VOID * args)
+static VOID ActionCnrThread(VOID *args)
 {
-  COMPARE *cmp = (COMPARE *) args;
+  COMPARE *cmp = (COMPARE *)args;
   HAB hab;
   HMQ hmq;
   HWND hwndCnrS, hwndCnrD;
   PCNRITEM pci, pciO, pcin, pciOn;
   CHAR newname[CCHMAXPATH], dirname[CCHMAXPATH], *p;
   APIRET rc;
-  CHAR *f = 0;
 
   if (!cmp)
     return;
@@ -430,7 +429,7 @@ static VOID ActionCnrThread(VOID * args)
 			   MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
 	      }
               else {
-		pci->pszFileName = xstrdup(f, pszSrcFile, __LINE__);
+		pci->pszFileName = xstrdup(NullStr, pszSrcFile, __LINE__);
 		//pci->pszFileName = pci->szFileName;
 		pci->flags = 0;
 		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
@@ -492,8 +491,8 @@ static VOID ActionCnrThread(VOID * args)
 	      pciO->crtime = pci->crtime;
 	      pciO->cbFile = pci->cbFile;
 	      pciO->easize = pci->easize;
-	      pciO->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
-	      pci->pszFileName = xstrdup(f, pszSrcFile, __LINE__);
+	      pciO->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
+	      pci->pszFileName = xstrdup(NullStr, pszSrcFile, __LINE__);
 	      //pci->pszFileName = pci->szFileName;
 	      pci->flags = 0;
 	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
@@ -573,7 +572,7 @@ static VOID ActionCnrThread(VOID * args)
 	      pciO->crtime = pci->crtime;
 	      pciO->cbFile = pci->cbFile;
 	      pciO->easize = pci->easize;
-	      pci->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
+	      pci->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
 	      pci->flags = CNRITEM_EXISTS;
 	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));

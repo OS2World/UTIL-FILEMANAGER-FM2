@@ -66,7 +66,6 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pciP;
-  CHAR *f = 0;
 
   ffb = xmalloc(sizeof(FILEFINDBUF3), pszSrcFile, __LINE__);
   if (!ffb)
@@ -91,21 +90,21 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   }
 
   if ((!rc && (ffb->attrFile & FILE_DIRECTORY))) {
-    pciP =
-      WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES2),
-		 MPFROMLONG(1L));
+    pciP = WinSendMsg(hwndCnr,
+		      CM_ALLOCRECORD,
+		      MPFROMLONG(EXTRA_RECORD_BYTES2),
+		      MPFROMLONG(1L));
     if (!pciP) {
       free(ffb);
       return;
     }
     pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
     pciP->pszDispAttr = pciP->szDispAttr;
-    //pciP->pszSubject = pciP->szSubject;
-    //pciP->pszLongname = pciP->szLongname;
-    pciP->pszDispAttr = pciP->szDispAttr;
     *pciP->szDispAttr = 0;
-    pciP->pszLongname = xstrdup(f, pszSrcFile, __LINE__);
-    pciP->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
+    //pciP->pszSubject = pciP->szSubject;
+    pciP->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);	// 23 Jul 07 SHL
+    //pciP->pszLongname = pciP->szLongname;
+    pciP->pszLongname = xstrdup(NullStr, pszSrcFile, __LINE__);
     if (strlen(filename) < 4)
       pciP->pszFileName = pciP->pszFileName;
     else {

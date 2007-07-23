@@ -77,9 +77,11 @@ static SHORT APIENTRY SortSizeCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
   return (size1 < size2) ? 1 : (size1 == size2) ? 0 : -1;
 }
 
-static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
+static BOOL ProcessDir(HWND hwndCnr,
+		       CHAR *pszFileName,
 		       PCNRITEM pciParent,
-		       CHAR * pchStopFlag, BOOL top,
+		       CHAR *pchStopFlag,
+		       BOOL top,
 		       PULONGLONG pullTotalBytes)
 {
   CHAR maskstr[CCHMAXPATH];
@@ -96,7 +98,6 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pCI;
-  CHAR *f = 0;
 
   // fixme to report errors
   *pullTotalBytes = 0;			// In case we fail
@@ -146,12 +147,12 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
     }
     else
       DosError(FERR_DISABLEHARDERR);
+    // fixme to not double free when pointers match
     pCI->pszLongname = pCI->pszFileName;
     pCI->rc.hptrIcon = hptrDir;
     *pCI->szDispAttr = 0;
     pCI->attrFile = 0;
-    pCI->pszLongname = xstrdup(f, pszSrcFile, __LINE__);
-    pCI->pszSubject = xstrdup(f, pszSrcFile, __LINE__);
+    pCI->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
   }
   else {
     free(pFFB);
@@ -182,13 +183,14 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
     if (*sp)
       strcat(pp, sp);
   }
-  pCI->pszFileName = pCI->pszFileName + strlen(pCI->pszFileName);
   pCI->rc.pszIcon = pCI->pszLongname;
   pCI->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
     strupr(pCI->pszFileName);
   else if (fForceLower)
     strlwr(pCI->pszFileName);
+  // fixme to work - code is hiding file name from container but... 23 Jul 07 SHL
+  pCI->pszFileName = pCI->pszFileName + strlen(pCI->pszFileName);
   memset(&ri, 0, sizeof(RECORDINSERT));
   ri.cb = sizeof(RECORDINSERT);
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -196,15 +198,12 @@ static BOOL ProcessDir(HWND hwndCnr, CHAR * pszFileName,
   ri.zOrder = (USHORT) CMA_TOP;
   ri.cRecordsInsert = 1L;
   ri.fInvalidateRecord = TRUE;
-  //printf("CM_INSERTRECORD\n");
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pCI), MPFROMP(&ri))) {
-    //printf("Insert failed\n");
     free(pFFB);
     return FALSE;
   }
   hdir = HDIR_CREATE;
   nm = 1L;
-  //printf("FIND2\n");
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
@@ -301,6 +300,9 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	  fltPct = (ullTotalBytes * 100.0) /
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
+	// Need unique buffer 23 Jul 07 SHL
+        pCI->pszLongname = xmalloc(2, pszSrcFile, __LINE__);
+	pCI->pszLongname[0] = 0;		// Make null string
 	pCI->pszLongname[1] = 1;		// Flag root - hack cough
       }
       else
@@ -321,7 +323,10 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     pCI->flags = (ULONG) fltPct;
     CommaFmtULL(szSubDir, sizeof(szSubDir), pCI->easize, 'K');
     CommaFmtULL(szAllDir, sizeof(szAllDir), pCI->cbFile + pCI->easize, 'K');
-    sprintf(&pCI->pszFileName[strlen(pCI->pszFileName)],
+    pCI->pszFileName = xrealloc(pCI->pszFileName, strlen(pCI->pszFileName) + 100,
+				pszSrcFile,
+				__LINE__);	// 23 Jul 07 SHL
+    sprintf(pCI->pszFileName + strlen(pCI->pszFileName),
 	    "  %s + %s = %s (%.02lf%%%s)\r%s",
 	    szCurDir,
 	    szSubDir,
@@ -746,29 +751,29 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT2FROMMP(mp1)) {
     case CN_ENTER:
       if (mp2) {
-
-	PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
-	CHAR pszFileName[CCHMAXPATH], szTemp[CCHMAXPATH];
+	PCNRITEM pci = (PCNRITEM)((PNOTIFYRECORDENTER)mp2)->pRecord;
+	CHAR szFileName[CCHMAXPATH];	// 23 Jul 07 SHL
+	CHAR szTemp[CCHMAXPATH];
 
 	if (pci) {
-	  *pszFileName = 0;
+	  *szFileName = 0;
 	  while (pci && (INT) pci != -1) {
 	    memset(szTemp, 0, sizeof(szTemp));
 	    strncpy(szTemp, pci->pszFileName,
 		    pci->pszFileName - pci->pszFileName);
 	    strrev(szTemp);
-	    if (*pszFileName && *szTemp != '\\')
-	      strcat(pszFileName, "\\");
-	    strcat(pszFileName, szTemp);
+	    if (*szFileName && *szTemp != '\\')
+	      strcat(szFileName, "\\");
+	    strcat(szFileName, szTemp);
 	    pci = WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYRECORD,
 				    MPFROMP(pci),
 				    MPFROM2SHORT(CMA_PARENT, CMA_ITEMORDER));
 	  }
-	  strrev(pszFileName);
+	  strrev(szFileName);
 	  if (!fVTreeOpensWPS)
 	    OpenDirCnr((HWND) 0,
 		       (hwndMain) ? hwndMain : HWND_DESKTOP,
-		       hwnd, FALSE, pszFileName);
+		       hwnd, FALSE, szFileName);
 	  else {
 
 	    ULONG size = sizeof(ULONG);
@@ -779,12 +784,12 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    PrfQueryProfileData(fmprof, appname, "DirflWindowAttr",
 				(PVOID) & flWindowAttr, &size);
 	    if (flWindowAttr & CV_DETAIL) {
-	      if (IsRoot(pszFileName))
+	      if (IsRoot(szFileName))
 		strcpy(s, "TREE");
 	      else
 		strcpy(s, "DETAILS");
 	    }
-	    OpenObject(pszFileName, s, hwnd);
+	    OpenObject(szFileName, s, hwnd);
 	  }
 	}
       }
@@ -825,23 +830,23 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 
-	CHAR pszFileName[CCHMAXPATH];
+	CHAR szFileName[CCHMAXPATH];
 	FILE *fp;
 
-	save_dir2(pszFileName);
-	sprintf(&pszFileName[strlen(pszFileName)], "\\%csizes.Rpt",
+	save_dir2(szFileName);
+	sprintf(&szFileName[strlen(szFileName)], "\\%csizes.Rpt",
 		(pState) ? toupper(*pState->szDirName) : '+');
-	if (export_filename(hwnd, pszFileName, FALSE) && *pszFileName) {
-	  if (stricmp(pszFileName, "PRN") &&
-	      strnicmp(pszFileName, "\\DEV\\LPT", 8) &&
-	      !strchr(pszFileName, '.'))
-	    strcat(pszFileName, ".RPT");
-	  fp = fopen(pszFileName, "a+");
+	if (export_filename(hwnd, szFileName, FALSE) && *szFileName) {
+	  if (stricmp(szFileName, "PRN") &&
+	      strnicmp(szFileName, "\\DEV\\LPT", 8) &&
+	      !strchr(szFileName, '.'))
+	    strcat(szFileName, ".RPT");
+	  fp = fopen(szFileName, "a+");
 	  if (!fp) {
 	    saymsg(MB_CANCEL,
 		   hwnd,
 		   GetPString(IDS_ERRORTEXT),
-		   GetPString(IDS_COMPCANTOPENTEXT), pszFileName);
+		   GetPString(IDS_COMPCANTOPENTEXT), szFileName);
 	  }
 	  else {
 	    WinSetPointer(HWND_DESKTOP, hptrBusy);

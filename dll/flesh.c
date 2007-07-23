@@ -232,7 +232,6 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   BOOL isadir = FALSE, isremote = FALSE, includefiles = fFilesInTree;
   ULONG ddepth = 3L;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
-  CHAR *f = 0;
 
   if (!pciParent || !*pciParent->pszFileName || !hwndCnr)
     return FALSE;
@@ -421,8 +420,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	}
 	else {
 	  RECORDINSERT ri;
-	  pci->pszFileName = xstrdup(f, pszSrcFile, __LINE__);
 	  //pci->pszFileName = pci->szFileName;
+	  pci->pszFileName = xstrdup(NullStr, pszSrcFile, __LINE__);
 	  pci->rc.pszIcon = pci->pszFileName;
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
