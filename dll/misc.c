@@ -84,22 +84,24 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
     APIRET rc;
 
     rc = DosGetInfoBlocks(&ptib, &ppib);
-    if (rc)
+    if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		"DosGetInfoBlocks");
+    }
     else {
       PID pid;
       TID tid;
 
-      if (WinQueryWindowProcess(hwnd, &pid, &tid))
+      if (WinQueryWindowProcess(hwnd, &pid, &tid)) {
 	if (chkTid) {
-	  // If window owned by FM2 process on same thread?
+	  // Is window owned by FM2 process on same thread?
 	  if (pid == ppib->pib_ulpid && tid == ptib->tib_ptib2->tib2_ultid)
 	    return TRUE;
         }
-      //Window is owned by FM2
+        // Is window owned by some FM2 thread
 	else if (pid == ppib->pib_ulpid)
 	  return TRUE;
+      }
     }
     return FALSE;
 }
@@ -1393,18 +1395,9 @@ BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
   BOOL rc = WinPostMsg(h, msg, mp1, mp2);
 
   if (!rc) {
-   /* PIB *ppib;
-    TIB *ptib;
 
-    if (!DosGetInfoBlocks(&ptib, &ppib)) {
-      PID pid;
-      TID tid;
-      QMSG qmsg;
-
-      if (WinQueryWindowProcess(h, &pid, &tid)) {
-	// If window owned by some other process or some other thread?
-        if (pid != ppib->pib_ulpid || tid != ptib->tib_ptib2->tib2_ultid)*/
-      if(!IsFm2Window(h, 1)){
+      // If window owned by some other process or some other thread?
+      if (!IsFm2Window(h, 1)) {
           QMSG qmsg;
 	  for (;;) {
 	    DosSleep(1L);
