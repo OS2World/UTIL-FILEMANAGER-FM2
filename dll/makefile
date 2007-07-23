@@ -71,7 +71,8 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -bg		gui app with WinMain entry point
 # -bm		multithread libs
 # -bt=os2	target
-# -d2		full debug
+#  d1		line number debugging information
+# -d2		full symbolic debugging information
 # -d3		full debug w/unref
 # -hd		dwarf
 # -j		signed char
