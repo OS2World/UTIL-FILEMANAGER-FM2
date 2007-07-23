@@ -4617,12 +4617,12 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	already = TRUE;
       if (!already && !fAutoTile && !fExternalCollector)
 	GetNextWindowPos(hwnd, &swp, NULL, NULL);
-      hwndC = StartCollector((fExternalCollector) ? HWND_DESKTOP : hwnd, 4);
+      hwndC = StartCollector(fExternalCollector ? HWND_DESKTOP : hwnd, 4);
       if (hwndC) {
 	if (!already && !fAutoTile && !fExternalCollector)
-	  WinSetWindowPos(hwndC, HWND_TOP, swp.x, swp.y,
-			  swp.cx, swp.cy, SWP_MOVE | SWP_SIZE |
-			  SWP_SHOW | SWP_ZORDER);
+	  WinSetWindowPos(hwndC, HWND_TOP,
+			  swp.x, swp.y, swp.cx, swp.cy,
+			  SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_ZORDER);
 	else if (fAutoTile && !already)
 	  TileChildren(hwnd, TRUE);
 	WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_SHOW | SWP_RESTORE |
@@ -5810,7 +5810,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
     }
     DosSleep(1L);
-    return 0;
+    return 0;				// Hold off WM_QUIT
 
   case UM_CLOSE:
     HideNote();
