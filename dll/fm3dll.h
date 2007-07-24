@@ -50,6 +50,8 @@
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   16 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   16 Jun 07 SHL Update more for OpenWatcom
+  22 Jul 07 GKY Update CNRITEM to optimize RAM usage
+  23 Jul 07 SHL More CNRITEM updates (ticket#24)
 
 ***********************************************************************/
 
@@ -404,10 +406,11 @@ typedef struct _CNRITEM
 {				/* CONTAINER RECORD STRUCTURE */
   MINIRECORDCORE rc;		/* Base information */
   HWND hwndCnr;			/* The container holding this record */
-  PSZ pszFileName;		// Points to szFileName  - required by CFA_STRING
+  PSZ pszFileName;		// Points to buffer holding full pathname
+  PSZ pszDisplayName;		// Points to displayable part of path name  - used by CFA_STRING
   //CHAR szFileName[CCHMAXPATH];	// Path name - fixme to rename to szPathName?
   //CHAR szSubject[40];		/* Subject string */
-  CHAR *pszSubject;		// Points szSubject - required by CFA_STRING
+  CHAR *pszSubject;		// Points subject buffer - used by fm/2 and by CFA_STRING
   CHAR *pszDispAttr;		// Points to szDispAttr - required by CFA_STRING
   CDATE date;			/* Last write date of file */
   CTIME time;			/* Last write time of file */
@@ -416,7 +419,7 @@ typedef struct _CNRITEM
   CDATE crdate;			/* Creation date of file */
   CTIME crtime;			/* Creation time of file */
   CHAR szDispAttr[6];		/* Attrib string for details display */
-  CHAR *pszLongname;		// Points to szLongName - required by CFA_STRING
+  CHAR *pszLongname;		// Points to long name buffer - used by code and by CFA_STRING
   ULONGLONG cbFile;		/* File size */
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */

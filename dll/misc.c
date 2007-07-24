@@ -24,6 +24,7 @@
   18 Feb 07 GKY More drive type and drive icon support
   10 Jun 07 GKY Add IsFm2Window as part of work around PM drag limit
   05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
+  23 Jul 07 SHL Sync with CNRITEM updates (ticket#24)
 
 ***********************************************************************/
 
@@ -490,18 +491,14 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL compare)
     pfiIconCol = pfi;
 
     // Fill in column information for the file name. Note that we are
-    // using the pszFileName variable rather than szFileName. We do this
-    // because the container needs a pointer to the file name. If we used
-    // szFileName (a character array, not a pointer), the container would
-    // take the first 4 bytes of szFileName and think it was a pointer,
-    // which of course it is not. Later in the FillInRecord* functions we set
-    // pszFileName to point to szFileName.
+    // using the pszDisplayName variable rather than pszFileName. We do this
+    // because the container does not always display the full path file name.
 
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
     pfi->flTitle = CFA_CENTER;
     pfi->pTitleData = GetPString(IDS_FILENAME);
-    pfi->offStruct = FIELDOFFSET(CNRITEM, pszFileName);
+    pfi->offStruct = FIELDOFFSET(CNRITEM, pszDisplayName);
 
     // Fill in column information for the longname.
 

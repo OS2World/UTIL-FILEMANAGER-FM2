@@ -30,6 +30,7 @@
   09 Mar 07 GKY Use SelectDriveIcon
   20 Mar 07 GKY Increase extention check to 4 letters for icon selections
   23 Jun 07 GKY Fixed ram disk without a directory not appearing on states drive list
+  23 Jul 07 SHL Sync with CNRITEM updates (ticket#24)
 
 ***********************************************************************/
 
@@ -167,7 +168,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 			      const PSZ pszDirectory,
 			      const PFILEFINDBUF4 pffb,
 			      const BOOL partial,
-			      DIRCNRDATA * dcd)
+			      DIRCNRDATA *dcd)
 {
   /* fill in a container record from a FILEFINDBUF4 structure */
 
@@ -179,8 +180,6 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
   pci->hwndCnr = hwndCnr;
 
-  // 23 Jul 07 SHL fixme to optimize
-  pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
   /* note that we cheat below, and accept the full pathname in pszDirectory
      if !*pffb->achName.  This speeds up and simplifies processing elsewhere
      (like in update.c)
@@ -340,7 +339,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 		      hptrReadonly : hptrFile;
   }
 
-  /* decide where to point for the container's title text */
+  // Tell container what part of pathname to display
   if (partial) {
     p = strrchr(pci->pszFileName, '\\');
     if (!p) {
@@ -359,9 +358,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   }
   else
     p = pci->pszFileName;
+  pci->pszDisplayName = p;
+
   /* now fill the darned thing in... */
-  // fixme to have secondary pointer that points to real buffer 23 Jul 07 SHL
-  pci->pszFileName = p;
   pci->date.day = pffb->fdateLastWrite.day;
   pci->date.month = pffb->fdateLastWrite.month;
   pci->date.year = pffb->fdateLastWrite.year + 1980;
@@ -564,6 +563,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
       hptrHidden : pfsa4->attrFile & FILE_READONLY ? hptrReadonly : hptrFile;
   }
 
+  // Tell container what part of pathname to display
   if (partial) {
     p = strrchr(pci->pszFileName, '\\');
     if (!p) {
@@ -581,7 +581,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
   }
   else
     p = pci->pszFileName;
-  pci->pszFileName = p;
+  pci->pszDisplayName = p;
+
   pci->date.day = pfsa4->fdateLastWrite.day;
   pci->date.month = pfsa4->fdateLastWrite.month;
   pci->date.year = pfsa4->fdateLastWrite.year + 1980;
@@ -637,8 +638,15 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
 
 } // FillInRecordFromFSA
 
-VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent, const CHAR * szDirBase, const BOOL filestoo, const BOOL recurse, const BOOL partial, CHAR * stopflag, DIRCNRDATA * dcd,	// Optional
-		      ULONG * pulTotalFiles,	// Optional
+VOID ProcessDirectory(const HWND hwndCnr,
+		      const PCNRITEM pciParent,
+		      const CHAR *szDirBase,
+		      const BOOL filestoo,
+		      const BOOL recurse,
+		      const BOOL partial,
+		      CHAR *stopflag,
+		      DIRCNRDATA *dcd,	// Optional
+		      ULONG *pulTotalFiles,	// Optional
 		      PULONGLONG pullTotalBytes)	// Optional
 {
   /* put all the directories (and files if filestoo is TRUE) from a
@@ -957,10 +965,13 @@ VOID FillDirCnr(HWND hwndCnr,
   ProcessDirectory(hwndCnr,
 		   (PCNRITEM) NULL,
 		   pszDirectory,
-		   TRUE,
-		   FALSE,
-		   TRUE,
-		   dcd ? &dcd->stopflag : NULL, dcd, NULL, pullTotalBytes);
+		   TRUE,		// filestoo
+		   FALSE,		// recurse
+		   TRUE,		// partial
+		   dcd ? &dcd->stopflag : NULL,
+		   dcd,
+		   NULL,
+		   pullTotalBytes);
   DosPostEventSem(CompactSem);
 
 } // FillDirCnr
