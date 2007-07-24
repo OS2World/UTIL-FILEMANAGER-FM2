@@ -23,6 +23,7 @@
   19 Oct 06 SHL Correct . and .. detect
   18 Feb 07 GKY Add new drive type icons
   22 Mar 07 GKY Use QWL_USER
+  23 Jul 07 SHL Sync with naming standards
 
 ***********************************************************************/
 
@@ -48,8 +49,7 @@ typedef struct
   HWND hwndCnr;
   CHAR *pchStopFlag;
   DIRCNRDATA *pDCD;
-}
-DIRSIZE;
+} DIRSIZE;
 
 typedef struct
 {
@@ -58,8 +58,7 @@ typedef struct
   BOOL dying;
   BOOL working;
   HPOINTER hptr;
-}
-tState;
+} tState;
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -94,16 +93,16 @@ static BOOL ProcessDir(HWND hwndCnr,
   ULONGLONG ullSubDirBytes = 0;
   ULONGLONG ull;
   HDIR hdir;
-  FILEFINDBUF4 *pFFB;
+  FILEFINDBUF4 *pffb;
   APIRET rc;
   RECORDINSERT ri;
-  PCNRITEM pCI;
+  PCNRITEM pci;
 
   // fixme to report errors
   *pullTotalBytes = 0;			// In case we fail
 
-  pFFB = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-  if (!pFFB)
+  pffb = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+  if (!pffb)
     return FALSE;
   strcpy(maskstr, pszFileName);
   if (maskstr[strlen(maskstr) - 1] != '\\')
@@ -114,13 +113,13 @@ static BOOL ProcessDir(HWND hwndCnr,
 
   hdir = HDIR_CREATE;
   nm = 1L;
-  memset(pFFB, 0, sizeof(FILEFINDBUF4));
+  memset(pffb, 0, sizeof(FILEFINDBUF4));
   DosError(FERR_DISABLEHARDERR);
   //printf("FIND1\n");
   rc = DosFindFirst(pszFileName, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		    pFFB, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
+		    pffb, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
 
   if (!rc)
     DosFindClose(hdir);
@@ -130,32 +129,32 @@ static BOOL ProcessDir(HWND hwndCnr,
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.
    */
-  if ((!rc && (pFFB->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
+  if ((!rc && (pffb->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
-      free(pFFB);
+      free(pffb);
       return FALSE;
     }
-    pCI = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES2),
+    pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES2),
 		     MPFROMLONG(1L));
-    if (!pCI) {
-      free(pFFB);
+    if (!pci) {
+      free(pffb);
       return FALSE;
     }
     if (!rc) {
-      ullCurDirBytes = pFFB->cbFile;
-      ullCurDirBytes += CBLIST_TO_EASIZE(pFFB->cbList);
+      ullCurDirBytes = pffb->cbFile;
+      ullCurDirBytes += CBLIST_TO_EASIZE(pffb->cbList);
     }
     else
       DosError(FERR_DISABLEHARDERR);
     // fixme to not double free when pointers match
-    pCI->pszLongname = pCI->pszFileName;
-    pCI->rc.hptrIcon = hptrDir;
-    *pCI->szDispAttr = 0;
-    pCI->attrFile = 0;
-    pCI->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
+    pci->pszLongname = pci->pszFileName;
+    pci->rc.hptrIcon = hptrDir;
+    *pci->szDispAttr = 0;
+    pci->attrFile = 0;
+    pci->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
   }
   else {
-    free(pFFB);
+    free(pffb);
     Dos_Error(MB_ENTER,
 	      rc,
 	      HWND_DESKTOP,
@@ -165,7 +164,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   }
 
   if (strlen(pszFileName) < 4 || top)
-   pCI->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
+   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
   else {
     p = strrchr(pszFileName, '\\');
     if (!p)
@@ -173,7 +172,7 @@ static BOOL ProcessDir(HWND hwndCnr,
     else
       p++;
     sp = (strchr(pszFileName, ' ') != NULL) ? "\"" : NullStr;
-    pp = pCI->pszFileName;
+    pp = pci->pszFileName;
     if (*sp) {
       *pp = *sp;
       pp++;
@@ -183,14 +182,14 @@ static BOOL ProcessDir(HWND hwndCnr,
     if (*sp)
       strcat(pp, sp);
   }
-  pCI->rc.pszIcon = pCI->pszLongname;
-  pCI->rc.flRecordAttr |= CRA_RECORDREADONLY;
+  pci->rc.pszIcon = pci->pszLongname;
+  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
-    strupr(pCI->pszFileName);
+    strupr(pci->pszFileName);
   else if (fForceLower)
-    strlwr(pCI->pszFileName);
+    strlwr(pci->pszFileName);
   // fixme to work - code is hiding file name from container but... 23 Jul 07 SHL
-  pCI->pszFileName = pCI->pszFileName + strlen(pCI->pszFileName);
+  pci->pszFileName = pci->pszFileName + strlen(pci->pszFileName);
   memset(&ri, 0, sizeof(RECORDINSERT));
   ri.cb = sizeof(RECORDINSERT);
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -198,8 +197,8 @@ static BOOL ProcessDir(HWND hwndCnr,
   ri.zOrder = (USHORT) CMA_TOP;
   ri.cRecordsInsert = 1L;
   ri.fInvalidateRecord = TRUE;
-  if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pCI), MPFROMP(&ri))) {
-    free(pFFB);
+  if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
+    free(pffb);
     return FALSE;
   }
   hdir = HDIR_CREATE;
@@ -207,9 +206,9 @@ static BOOL ProcessDir(HWND hwndCnr,
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
-		    pFFB, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
+		    pffb, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
   if (!rc) {
-    register PBYTE fb = (PBYTE) pFFB;
+    register PBYTE fb = (PBYTE) pffb;
     FILEFINDBUF4 *pffbFile;
     ULONG x;
 
@@ -229,14 +228,14 @@ static BOOL ProcessDir(HWND hwndCnr,
 	  ullCurDirBytes += CBLIST_TO_EASIZE(pffbFile->cbList) & 0x3ff;
 
 	  if (!(pffbFile->attrFile & FILE_DIRECTORY))
-	    pCI->attrFile++;		// Bump file count
+	    pci->attrFile++;		// Bump file count
 	  if (*pchStopFlag)
 	    break;
 	  if (pffbFile->attrFile & FILE_DIRECTORY) {
 	    // Recurse into subdir
 	    strcpy(pEndMask, pffbFile->achName);	// Append dirname to base dirname
 	    if (!*pchStopFlag) {
-	      ProcessDir(hwndCnr, maskstr, pCI, pchStopFlag, FALSE, &ull);
+	      ProcessDir(hwndCnr, maskstr, pci, pchStopFlag, FALSE, &ull);
 	      ullSubDirBytes += ull;
 	    }
 	  }
@@ -249,17 +248,17 @@ static BOOL ProcessDir(HWND hwndCnr,
 	break;
       DosSleep(0L);
       nm = 1L;				/* FilesToGet */
-      rc = DosFindNext(hdir, pFFB, sizeof(FILEFINDBUF4), &nm);
+      rc = DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &nm);
     }					// while more found
     DosFindClose(hdir);
     priority_normal();
   }
 
-  free(pFFB);
+  free(pffb);
 
-  pCI->cbFile = ullCurDirBytes;
-  pCI->easize = ullSubDirBytes;		// hack cough
-  WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pCI),
+  pci->cbFile = ullCurDirBytes;
+  pci->easize = ullSubDirBytes;		// hack cough
+  WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pci),
 	     MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
 
   *pullTotalBytes = ullCurDirBytes + ullSubDirBytes;
@@ -270,10 +269,10 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 			   ULONGLONG ullTotalBytes, CHAR * pchStopFlag,
 			   BOOL isroot)
 {
-  PCNRITEM pCI = pciParent;
+  PCNRITEM pci = pciParent;
   SHORT attrib = CMA_FIRSTCHILD;
 
-  if (pCI) {
+  if (pci) {
 
     float fltPct = 0.0;
     CHAR szCurDir[80];
@@ -283,7 +282,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 
     // cbFile = currect directory usage in bytes
     // easize = subdirectory usage in bytes
-    CommaFmtULL(szCurDir, sizeof(szCurDir), pCI->cbFile, 'K');
+    CommaFmtULL(szCurDir, sizeof(szCurDir), pci->cbFile, 'K');
     *szBar = 0;
 
     if (ullTotalBytes) {
@@ -294,19 +293,19 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	APIRET rc;
 
 	memset(&fsa, 0, sizeof(fsa));
-	rc = DosQueryFSInfo(toupper(*pCI->pszFileName) - '@', FSIL_ALLOC, &fsa,
+	rc = DosQueryFSInfo(toupper(*pci->pszFileName) - '@', FSIL_ALLOC, &fsa,
 			    sizeof(FSALLOCATE));
 	if (!rc) {
 	  fltPct = (ullTotalBytes * 100.0) /
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
 	// Need unique buffer 23 Jul 07 SHL
-        pCI->pszLongname = xmalloc(2, pszSrcFile, __LINE__);
-	pCI->pszLongname[0] = 0;		// Make null string
-	pCI->pszLongname[1] = 1;		// Flag root - hack cough
+        pci->pszLongname = xmalloc(2, pszSrcFile, __LINE__);
+	pci->pszLongname[0] = 0;		// Make null string
+	pci->pszLongname[1] = 1;		// Flag root - hack cough
       }
       else
-	fltPct = (((float)pCI->cbFile + pCI->easize) * 100.0) / ullTotalBytes;
+	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
 
       cBar = (UINT) fltPct / 2;
       if (cBar)
@@ -320,32 +319,32 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
       szBar[50] = 0;
     }
 
-    pCI->flags = (ULONG) fltPct;
-    CommaFmtULL(szSubDir, sizeof(szSubDir), pCI->easize, 'K');
-    CommaFmtULL(szAllDir, sizeof(szAllDir), pCI->cbFile + pCI->easize, 'K');
-    pCI->pszFileName = xrealloc(pCI->pszFileName, strlen(pCI->pszFileName) + 100,
+    pci->flags = (ULONG) fltPct;
+    CommaFmtULL(szSubDir, sizeof(szSubDir), pci->easize, 'K');
+    CommaFmtULL(szAllDir, sizeof(szAllDir), pci->cbFile + pci->easize, 'K');
+    pci->pszFileName = xrealloc(pci->pszFileName, strlen(pci->pszFileName) + 100,
 				pszSrcFile,
 				__LINE__);	// 23 Jul 07 SHL
-    sprintf(pCI->pszFileName + strlen(pCI->pszFileName),
+    sprintf(pci->pszFileName + strlen(pci->pszFileName),
 	    "  %s + %s = %s (%.02lf%%%s)\r%s",
 	    szCurDir,
 	    szSubDir,
 	    szAllDir,
 	    fltPct, isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr, szBar);
     WinSendMsg(hwndCnr,
-	       CM_INVALIDATERECORD, MPFROMP(&pCI), MPFROM2SHORT(1, 0));
+	       CM_INVALIDATERECORD, MPFROMP(&pci), MPFROM2SHORT(1, 0));
     isroot = FALSE;
   }
   else
     attrib = CMA_FIRST;
-  pCI = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pCI),
+  pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 			      MPFROM2SHORT(attrib, CMA_ITEMORDER));
-  while (pCI && (INT) pCI != -1) {
+  while (pci && (INT) pci != -1) {
     if (*pchStopFlag)
       break;
-    FillInRecSizes(hwndCnr, pCI, ullTotalBytes, pchStopFlag, isroot);
+    FillInRecSizes(hwndCnr, pci, ullTotalBytes, pchStopFlag, isroot);
     isroot = FALSE;
-    pCI = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pCI),
+    pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 				MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
   }
 }
@@ -354,7 +353,7 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
 			FILE * fp)
 {
   PCNRITEM pci;
-  register CHAR *p;
+  CHAR *p;
 
   if (!pciParent) {
     pciParent = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(NULL),
