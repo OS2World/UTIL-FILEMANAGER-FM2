@@ -1025,8 +1025,11 @@ static VOID FillCnrsThread(VOID * args)
 	while ((filesl && filesl[l]) || (filesr && filesr[r])) {
 	  pcir->hwndCnr = hwndRight;
 	  //pcir->pszFileName = pcir->szFileName;
+	  // 23 Jul 07 SHL fixme to set pszIcon after pszFileName allocated
+	  // 23 Jul 07 SHL fixme to set pszLongName after pszFileName allocated
 	  pcir->rc.pszIcon = pcir->pszFileName;
 	  pcir->rc.hptrIcon = (HPOINTER) 0;
+	  pcir->pszDisplayName = NULL;	// Not used here
 	  //pcir->pszSubject = pcir->szSubject;
 	  //pcir->pszLongname = pcir->szLongname;
 	  pcir->pszDispAttr = pcir->szDispAttr;
@@ -1035,6 +1038,7 @@ static VOID FillCnrsThread(VOID * args)
 	  pcil->rc.pszIcon = pcil->pszFileName;
 	  pcil->rc.hptrIcon = (HPOINTER) 0;
 	  pcil->pszDispAttr = pcil->szDispAttr;
+	  pcil->pszDisplayName = NULL;	// Not used here
 	  //pcil->pszSubject = pcil->szSubject;
 	  //pcil->pszLongname = pcil->szLongname;
 	  if ((filesl && filesl[l]) && (filesr && filesr[r])) {

@@ -146,8 +146,6 @@ static BOOL ProcessDir(HWND hwndCnr,
     }
     else
       DosError(FERR_DISABLEHARDERR);
-    // fixme to not double free when pointers match
-    pci->pszLongname = pci->pszFileName;
     pci->rc.hptrIcon = hptrDir;
     *pci->szDispAttr = 0;
     pci->attrFile = 0;
@@ -170,11 +168,13 @@ static BOOL ProcessDir(HWND hwndCnr,
     if (!p)
       p = pszFileName;
     else
-      p++;
-    sp = (strchr(pszFileName, ' ') != NULL) ? "\"" : NullStr;
+      p++;				// After last backslash
+    // Handle quoted names?
+    sp = strchr(pszFileName, ' ') != NULL ? "\"" : NullStr;
+    pci->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);	// fixme to optimize alloc
     pp = pci->pszFileName;
     if (*sp) {
-      *pp = *sp;
+      *pp = *sp;			// Need quotes
       pp++;
       *pp = 0;
     }
@@ -182,14 +182,14 @@ static BOOL ProcessDir(HWND hwndCnr,
     if (*sp)
       strcat(pp, sp);
   }
+  pci->pszLongname = pci->pszFileName;
   pci->rc.pszIcon = pci->pszLongname;
   pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
     strupr(pci->pszFileName);
   else if (fForceLower)
     strlwr(pci->pszFileName);
-  // fixme to work - code is hiding file name from container but... 23 Jul 07 SHL
-  pci->pszFileName = pci->pszFileName + strlen(pci->pszFileName);
+  pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
   memset(&ri, 0, sizeof(RECORDINSERT));
   ri.cb = sizeof(RECORDINSERT);
   ri.pRecordOrder = (PRECORDCORE) CMA_END;

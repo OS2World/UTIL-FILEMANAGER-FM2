@@ -2943,16 +2943,16 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 						SV_CXMINMAXBUTTON)) -
 			      WinQuerySysValue(HWND_DESKTOP,
 					       SV_CXMINMAXBUTTON) / 2) -
-			     WinQuerySysValue(HWND_DESKTOP, SV_CXSIZEBORDER),
+			      WinQuerySysValue(HWND_DESKTOP, SV_CXSIZEBORDER),
 			     (swp.cy -
 			      WinQuerySysValue(HWND_DESKTOP,
 					       SV_CYMINMAXBUTTON)) -
-			     WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER),
+			      WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER),
 			     WinQuerySysValue(HWND_DESKTOP,
 					      SV_CXMINMAXBUTTON) / 2,
 			     WinQuerySysValue(HWND_DESKTOP,
 					      SV_CYMINMAXBUTTON), hwndFrame,
-			     HWND_TOP, IDM_OPENWINDOW, NULL, NULL)) {
+					      HWND_TOP, IDM_OPENWINDOW, NULL, NULL)) {
 	  Win_Error2(hwndFrame, hwndParent, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	}

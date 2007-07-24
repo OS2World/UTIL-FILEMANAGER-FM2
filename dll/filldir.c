@@ -392,7 +392,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   }
   pci->szDispAttr[5] = 0;
   pci->pszDispAttr = pci->szDispAttr;
-  pci->rc.pszIcon = pci->pszFileName;
+  pci->rc.pszIcon = pci->pszDisplayName;
   pci->rc.hptrIcon = hptr;
 
   /* check to see if record should be visible */
@@ -611,7 +611,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
 				     attrstring[x] : '-');
   pci->szDispAttr[5] = 0;
   pci->pszDispAttr = pci->szDispAttr;
-  pci->rc.pszIcon = pci->pszFileName;
+  pci->rc.pszIcon = pci->pszDisplayName;
   pci->rc.hptrIcon = hptr;
 
   if (dcd &&
@@ -982,10 +982,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   PCNRITEM pci, pciFirst = NULL, pciNext, pciParent = NULL;
   INT x, removable;
   CHAR suggest[32];
-  CHAR szDrive[] = " :\\", FileSystem[CCHMAXPATH];
+  CHAR szDrive[] = " :\\";
+  CHAR szFileSystem[CCHMAXPATH];
   FILESTATUS4 fsa4;
   APIRET rc;
   BOOL drivesbuilt = FALSE;
+  ULONG startdrive = 3;
+
   static BOOL didonce = FALSE;
 
   fDummy = TRUE;
@@ -996,16 +999,17 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
   }
   memset(driveserial, -1, sizeof(driveserial));
-  {
-    ULONG startdrive = 3L;
 
-    DosError(FERR_DISABLEHARDERR);
-    if (!DosQuerySysInfo(QSV_BOOT_DRIVE,
-			 QSV_BOOT_DRIVE,
-			 (PVOID) & startdrive,
-			 (ULONG) sizeof(ULONG)) && startdrive)
-      driveflags[startdrive - 1] |= DRIVE_BOOT;
+  DosError(FERR_DISABLEHARDERR);
+  if (!DosQuerySysInfo(QSV_BOOT_DRIVE,
+		       QSV_BOOT_DRIVE,
+		       (PVOID) &startdrive,
+		       (ULONG) sizeof(ULONG)) &&
+      startdrive)
+  {
+    driveflags[startdrive - 1] |= DRIVE_BOOT;
   }
+
   DosError(FERR_DISABLEHARDERR);
   rc = DosQCurDisk(&ulCurDriveNum, &ulDriveMap);
   if (rc) {
@@ -1015,378 +1019,217 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      pszSrcFile, __LINE__, GetPString(IDS_FILLDIRQCURERRTEXT));
     exit(0);
   }
+
   // Calc number of drive items to create
   for (x = 0; x < 26; x++) {
     if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE))
       numtoinsert++;
   }
+
   if (numtoinsert) {
     pciFirst = WinSendMsg(hwndCnr,
 			  CM_ALLOCRECORD,
 			  MPFROMLONG(EXTRA_RECORD_BYTES2),
 			  MPFROMLONG((ULONG) numtoinsert));
   }
+
   if (!pciFirst) {
     Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__, IDS_CMALLOCRECERRTEXT);
     exit(0);
   }
-  else {
 
-    pci = pciFirst;
-    for (x = 0; x < 26; x++) {
-      if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
+  pci = pciFirst;
+  for (x = 0; x < 26; x++) {
+    if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
 
-	CHAR s[80];
-	ULONG flags = 0;
-	ULONG size = sizeof(ULONG);
+      CHAR s[80];
+      ULONG flags = 0;
+      ULONG size = sizeof(ULONG);
 
-	*szDrive = (CHAR)x + 'A';		// Build path spec
+      *szDrive = (CHAR)x + 'A';		// Build path spec
 
-	sprintf(s, "%c.DriveFlags", toupper(*szDrive));
-	if (PrfQueryProfileData(fmprof, appname, s, &flags, &size) &&
-	    size == sizeof(ULONG)) {
-	  driveflags[toupper(*szDrive) - 'A'] |= flags;
-	}
+      sprintf(s, "%c.DriveFlags", toupper(*szDrive));
+      if (PrfQueryProfileData(fmprof, appname, s, &flags, &size) &&
+	  size == sizeof(ULONG)) {
+	driveflags[toupper(*szDrive) - 'A'] |= flags;
+      }
 
-	if (x > 1) {
-	  // Hard drive (2..N)
-	  if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
-	    *FileSystem = 0;
-	    drvtype = 0;
-	    removable = CheckDrive(*szDrive, FileSystem, &drvtype);
-	    driveserial[x] = -1;
-	    if (removable != -1) {
-	      struct {
-		ULONG serial;
-		CHAR volumelength;
-		CHAR volumelabel[CCHMAXPATH];
-	      } volser;
+      if (x > 1) {
+	// Hard drive (2..N)
+	if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
+	  *szFileSystem = 0;
+	  drvtype = 0;
+	  removable = CheckDrive(*szDrive, szFileSystem, &drvtype);
+	  driveserial[x] = -1;
+	  if (removable != -1) {
+	    struct {
+	      ULONG serial;
+	      CHAR volumelength;
+	      CHAR volumelabel[CCHMAXPATH];
+	    } volser;
 
-	      DosError(FERR_DISABLEHARDERR);
-	      if (!DosQueryFSInfo((ULONG) x,
-				  FSIL_VOLSER, &volser, sizeof(volser))) {
-		driveserial[x] = volser.serial;
-	      }
+	    DosError(FERR_DISABLEHARDERR);
+	    if (!DosQueryFSInfo((ULONG) x,
+				FSIL_VOLSER, &volser, sizeof(volser))) {
+	      driveserial[x] = volser.serial;
 	    }
-	    else
-	      driveflags[x] |= DRIVE_INVALID;
+	  }
+	  else
+	    driveflags[x] |= DRIVE_INVALID;
 
-	    memset(&fsa4, 0, sizeof(FILESTATUS4));
-	    driveflags[x] |= removable == -1 || removable == 1 ?
-			      DRIVE_REMOVABLE : 0;
-	    if (drvtype & DRIVE_REMOTE)
-	      driveflags[x] |= DRIVE_REMOTE;
-	    if (!stricmp(FileSystem,RAMFS)) {
-	      driveflags[x] |= DRIVE_RAMDISK;
-	      driveflags[x] &= ~DRIVE_REMOTE;
-	    }
-	    if (!stricmp(FileSystem,NDFS32)) {
-	      driveflags[x] |= DRIVE_VIRTUAL;
-	      driveflags[x] &= ~DRIVE_REMOTE;
-	    }
-	    if (!stricmp(FileSystem,NTFS))
-	      driveflags[x] |= DRIVE_NOTWRITEABLE;
-	    if (strcmp(FileSystem, HPFS) &&
-		strcmp(FileSystem, JFS) &&
-		strcmp(FileSystem, ISOFS) &&
-		strcmp(FileSystem, CDFS) &&
-		strcmp(FileSystem, FAT32) &&
-		strcmp(FileSystem, NDFS32) &&
-		strcmp(FileSystem, RAMFS) &&
-		strcmp(FileSystem, NTFS) &&
-		strcmp(FileSystem, HPFS386)) {
-	      driveflags[x] |= DRIVE_NOLONGNAMES;
-	    }
+	  memset(&fsa4, 0, sizeof(FILESTATUS4));
+	  driveflags[x] |= removable == -1 || removable == 1 ?
+			    DRIVE_REMOVABLE : 0;
+	  if (drvtype & DRIVE_REMOTE)
+	    driveflags[x] |= DRIVE_REMOTE;
+	  if (!stricmp(szFileSystem,RAMFS)) {
+	    driveflags[x] |= DRIVE_RAMDISK;
+	    driveflags[x] &= ~DRIVE_REMOTE;
+	  }
+	  if (!stricmp(szFileSystem,NDFS32)) {
+	    driveflags[x] |= DRIVE_VIRTUAL;
+	    driveflags[x] &= ~DRIVE_REMOTE;
+	  }
+	  if (!stricmp(szFileSystem,NTFS))
+	    driveflags[x] |= DRIVE_NOTWRITEABLE;
+	  if (strcmp(szFileSystem, HPFS) &&
+	      strcmp(szFileSystem, JFS) &&
+	      strcmp(szFileSystem, ISOFS) &&
+	      strcmp(szFileSystem, CDFS) &&
+	      strcmp(szFileSystem, FAT32) &&
+	      strcmp(szFileSystem, NDFS32) &&
+	      strcmp(szFileSystem, RAMFS) &&
+	      strcmp(szFileSystem, NTFS) &&
+	      strcmp(szFileSystem, HPFS386)) {
+	    driveflags[x] |= DRIVE_NOLONGNAMES;
+	  }
 
-	    if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem,ISOFS)) {
-	      removable = 1;
-	      driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
-			       DRIVE_CDROM;
-	    }
-	    else if (!stricmp(FileSystem, CBSIFS)) {
-	      driveflags[x] |= DRIVE_ZIPSTREAM;
-	      driveflags[x] &= ~DRIVE_REMOTE;
-	      if (drvtype & DRIVE_REMOVABLE)
-		driveflags[x] |= DRIVE_REMOVABLE;
-	      if (!(drvtype & DRIVE_NOLONGNAMES))
-		driveflags[x] &= ~DRIVE_NOLONGNAMES;
-	    }
+	  if (!strcmp(szFileSystem, CDFS) || !strcmp(szFileSystem,ISOFS)) {
+	    removable = 1;
+	    driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
+			     DRIVE_CDROM;
+	  }
+	  else if (!stricmp(szFileSystem, CBSIFS)) {
+	    driveflags[x] |= DRIVE_ZIPSTREAM;
+	    driveflags[x] &= ~DRIVE_REMOTE;
+	    if (drvtype & DRIVE_REMOVABLE)
+	      driveflags[x] |= DRIVE_REMOVABLE;
+	    if (!(drvtype & DRIVE_NOLONGNAMES))
+	      driveflags[x] &= ~DRIVE_NOLONGNAMES;
+	  }
 
-	    pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
-	    // if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum)	// 23 Jul 07 SHL
-	    if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
-	      pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
+	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
+	  // if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum)	// 23 Jul 07 SHL
+	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
+	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
 
-	    if (removable == 0) {
-	      // Fixed volume
-	      pci->attrFile |= FILE_DIRECTORY;
+	  if (removable == 0) {
+	    // Fixed volume
+	    pci->attrFile |= FILE_DIRECTORY;
+	    DosError(FERR_DISABLEHARDERR);
+	    rc = DosQueryPathInfo(szDrive,
+				  FIL_QUERYEASIZE,
+				  &fsa4, (ULONG) sizeof(FILESTATUS4));
+	    // ERROR_BAD_NET_RSP = 58
+	    if (rc == 58) {
 	      DosError(FERR_DISABLEHARDERR);
 	      rc = DosQueryPathInfo(szDrive,
-				    FIL_QUERYEASIZE,
-				    &fsa4, (ULONG) sizeof(FILESTATUS4));
-	      // ERROR_BAD_NET_RSP = 58
-	      if (rc == 58) {
-		DosError(FERR_DISABLEHARDERR);
-		rc = DosQueryPathInfo(szDrive,
-				      FIL_STANDARD,
-				      &fsa4, (ULONG) sizeof(FILESTATUS3));
-		fsa4.cbList = 0;
-	      }
-	      if (rc && !didonce) {
-		// Guess drive letter
-		if (!*suggest) {
-		  *suggest = '/';
-		  suggest[1] = 0;
-		}
-		sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
-		pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-		pci->rc.pszIcon = pci->pszFileName;
-		pci->attrFile = FILE_DIRECTORY;
-		strcpy(pci->szDispAttr, "----D-");
-		pci->pszDispAttr = pci->szDispAttr;
-		driveserial[x] = -1;
-	      }
-	      else
-		FillInRecordFromFSA(hwndCnr, pci, szDrive, &fsa4, TRUE, NULL);
+				    FIL_STANDARD,
+				    &fsa4, (ULONG) sizeof(FILESTATUS3));
+	      fsa4.cbList = 0;
 	    }
-	    else {
-	      // Removable volume
+	    if (rc && !didonce) {
+	      // Guess drive letter
+	      if (!*suggest) {
+		*suggest = '/';
+		suggest[1] = 0;
+	      }
+	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
 	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	      pci->rc.pszIcon = pci->pszFileName;
+	      pci->pszDisplayName = pci->pszFileName;
+	      pci->rc.pszIcon = pci->pszDisplayName;
 	      pci->attrFile = FILE_DIRECTORY;
 	      strcpy(pci->szDispAttr, "----D-");
 	      pci->pszDispAttr = pci->szDispAttr;
+	      driveserial[x] = -1;
 	    }
-	    SelectDriveIcon(pci);
+	    else
+	      FillInRecordFromFSA(hwndCnr, pci, szDrive, &fsa4, TRUE, NULL);
 	  }
 	  else {
-	    pci->rc.hptrIcon = hptrDunno;
+	    // Removable volume
 	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	    pci->rc.pszIcon = pci->pszFileName;
+	    pci->pszDisplayName = pci->pszFileName;
+	    pci->rc.pszIcon = pci->pszDisplayName;
 	    pci->attrFile = FILE_DIRECTORY;
 	    strcpy(pci->szDispAttr, "----D-");
 	    pci->pszDispAttr = pci->szDispAttr;
-	    driveserial[x] = -1;
 	  }
+	  SelectDriveIcon(pci);
 	}
 	else {
-	  // diskette drive (A or B)
-	  pci->rc.hptrIcon = hptrFloppy;
+	  pci->rc.hptrIcon = hptrDunno;
 	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	  pci->pszDisplayName = pci->pszFileName;
 	  pci->rc.pszIcon = pci->pszFileName;
 	  pci->attrFile = FILE_DIRECTORY;
 	  strcpy(pci->szDispAttr, "----D-");
 	  pci->pszDispAttr = pci->szDispAttr;
-	  driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOLONGNAMES);
 	  driveserial[x] = -1;
 	}
-	pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
-	pci = (PCNRITEM) pci->rc.preccNextRecord;	/* next rec */
       }
-      else if (!(ulDriveMap & (1L << x)))
-	driveflags[x] |= DRIVE_INVALID;
-    } // for drives
-
-    PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-    drivesbuilt = TRUE;
-    /* insert the drives */
-    if (numtoinsert && pciFirst) {
-      RECORDINSERT ri;
-
-      memset(&ri, 0, sizeof(RECORDINSERT));
-      ri.cb = sizeof(RECORDINSERT);
-      ri.pRecordOrder = (PRECORDCORE) CMA_END;
-      ri.pRecordParent = (PRECORDCORE) NULL;
-      ri.zOrder = (ULONG) CMA_TOP;
-      ri.cRecordsInsert = numtoinsert;
-      ri.fInvalidateRecord = FALSE;
-      if (!WinSendMsg(hwndCnr,
-		      CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri)))
-	Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__,
-		   IDS_CMINSERTERRTEXT);
-    }
-
-    /* move cursor onto the default drive rather than the first drive */
-    if (!fSwitchTree) {
-      pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				  CM_QUERYRECORD,
-				  MPVOID,
-				  MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-      while (pci && (INT) pci != -1) {
-	if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum) {
-	  WinSendMsg(hwndCnr,
-		     CM_SETRECORDEMPHASIS,
-		     MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
-	  break;
-	}
-	pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				    CM_QUERYRECORD,
-				    MPFROMP(pci),
-				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+      else {
+	// diskette drive (A or B)
+	pci->rc.hptrIcon = hptrFloppy;
+	pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	pci->pszDisplayName = pci->pszFileName;
+	pci->rc.pszIcon = pci->pszDisplayName;
+	pci->attrFile = FILE_DIRECTORY;
+	strcpy(pci->szDispAttr, "----D-");
+	pci->pszDispAttr = pci->szDispAttr;
+	driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOLONGNAMES);
+	driveserial[x] = -1;
       }
+      pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
+      pci = (PCNRITEM) pci->rc.preccNextRecord;	/* next rec */
     }
+    else if (!(ulDriveMap & (1L << x)))
+      driveflags[x] |= DRIVE_INVALID;
+  } // for drives
 
-    if (hwndParent) {
-      WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-				 MAIN_DRIVELIST),
-		 LM_DELETEALL, MPVOID, MPVOID);
+  PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
+  drivesbuilt = TRUE;
+
+  /* insert the drives */
+  if (numtoinsert && pciFirst) {
+    RECORDINSERT ri;
+
+    memset(&ri, 0, sizeof(RECORDINSERT));
+    ri.cb = sizeof(RECORDINSERT);
+    ri.pRecordOrder = (PRECORDCORE) CMA_END;
+    ri.pRecordParent = (PRECORDCORE) NULL;
+    ri.zOrder = (ULONG) CMA_TOP;
+    ri.cRecordsInsert = numtoinsert;
+    ri.fInvalidateRecord = FALSE;
+    if (!WinSendMsg(hwndCnr,
+		    CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri)))
+    {
+      Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__,
+		 IDS_CMINSERTERRTEXT);
     }
+  }
 
-    if (fShowEnv) {
-      RECORDINSERT ri;
-
-      pciParent = WinSendMsg(hwndCnr,
-			     CM_ALLOCRECORD,
-			     MPFROMLONG(EXTRA_RECORD_BYTES2), MPFROMLONG(1));
-      if (pciParent) {
-	pciParent->flags |= RECFLAGS_ENV;
-	pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
-	//pciParent->pszFileName = pciParent->szFileName;
-	pciParent->rc.hptrIcon = hptrEnv;
-	pciParent->rc.pszIcon = pciParent->pszFileName;
-	strcpy(pciParent->szDispAttr, "------");
-	pciParent->pszDispAttr = pciParent->szDispAttr;
-	memset(&ri, 0, sizeof(RECORDINSERT));
-	ri.cb = sizeof(RECORDINSERT);
-	ri.pRecordOrder = (PRECORDCORE) CMA_END;
-	ri.pRecordParent = (PRECORDCORE) NULL;
-	ri.zOrder = (ULONG) CMA_TOP;
-	ri.cRecordsInsert = 1;
-	ri.fInvalidateRecord = FALSE;
-	if (WinSendMsg(hwndCnr,
-		       CM_INSERTRECORD, MPFROMP(pciParent), MPFROMP(&ri))) {
-
-	  char *p, *pp;
-
-	  p = GetPString(IDS_ENVVARNAMES);
-	  while (*p == ' ')
-	    p++;
-	  while (*p) {
-	    *FileSystem = 0;
-	    pp = FileSystem;
-	    while (*p && *p != ' ')
-	      *pp++ = *p++;
-	    *pp = 0;
-	    while (*p == ' ')
-	      p++;
-	    if (*FileSystem &&
-		(!stricmp(FileSystem, "LIBPATH") || getenv(FileSystem))) {
-	      pci = WinSendMsg(hwndCnr,
-			       CM_ALLOCRECORD,
-			       MPFROMLONG(EXTRA_RECORD_BYTES2),
-			       MPFROMLONG(1));
-	      if (pci) {
-		CHAR fname[CCHMAXPATH];
-		pci->flags |= RECFLAGS_ENV;
-		sprintf(fname, "%%%s%%", FileSystem);
-		pci->pszFileName = xstrdup(fname, pszSrcFile, __LINE__);
-		pci->rc.hptrIcon = hptrEnv;
-		pci->rc.pszIcon = pci->pszFileName;
-		strcpy(pci->szDispAttr, "------");
-		pci->pszDispAttr = pci->szDispAttr;
-		memset(&ri, 0, sizeof(RECORDINSERT));
-		ri.cb = sizeof(RECORDINSERT);
-		ri.pRecordOrder = (PRECORDCORE) CMA_END;
-		ri.pRecordParent = (PRECORDCORE) pciParent;
-		ri.zOrder = (ULONG) CMA_TOP;
-		ri.cRecordsInsert = 1;
-		ri.fInvalidateRecord = FALSE;
-		if (!WinSendMsg(hwndCnr,
-				CM_INSERTRECORD,
-				MPFROMP(pci), MPFROMP(&ri))) {
-		  Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__,
-			     IDS_CMINSERTERRTEXT);
-		  WinSendMsg(hwndCnr, CM_FREERECORD, MPFROMP(&pci),
-			     MPFROMSHORT(1));
-		}
-	      }
-	    }
-	  }
-	  WinSendMsg(hwndCnr,
-		     CM_INVALIDATERECORD,
-		     MPFROMP(&pciParent),
-		     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	}
-	else
-	  WinSendMsg(hwndCnr,
-		     CM_FREERECORD, MPFROMP(&pciParent), MPFROMSHORT(1));
-      }
-    } // if show env
-
-    x = 0;
+  /* move cursor onto the default drive rather than the first drive */
+  if (!fSwitchTree) {
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
 				MPVOID,
 				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
     while (pci && (INT) pci != -1) {
-      pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
-				      CM_QUERYRECORD,
-				      MPFROMP(pci),
-				      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-      if (!(pci->flags & RECFLAGS_ENV)) {
-	if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum ||
-	    toupper(*pci->pszFileName) > 'B') {
-	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_INVALID)
-	      && !(driveflags[toupper(*pci->pszFileName) - 'A'] &
-		   DRIVE_NOPRESCAN) && (!fNoRemovableScan
-					||
-					!(driveflags
-					  [toupper(*pci->pszFileName) -
-					   'A'] & DRIVE_REMOVABLE))) {
-	    if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
-	      WinSendMsg(hwndCnr,
-			 CM_INVALIDATERECORD,
-			 MPFROMP(&pci),
-			 MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	      goto SkipBadRec;
-	    }
-	  }
-	}
-	else {
-	  WinSendMsg(hwndCnr,
-		     CM_INVALIDATERECORD,
-		     MPFROMP(&pci),
-		     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	}
-
-	WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-				   MAIN_DRIVELIST),
-		   LM_INSERTITEM,
-		   MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		   MPFROMP(pci->pszFileName));
-      }
-    SkipBadRec:
-      x++;
-      pci = pciNext;
-    }
-    if (hwndParent)
-      WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-				 MAIN_DRIVELIST), LM_SELECTITEM,
-		 MPFROM2SHORT(0, 0), MPFROMLONG(TRUE));
-
-    pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				CM_QUERYRECORD,
-				MPVOID,
-				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-    while (pci && (INT) pci != -1) {
-      pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
-				      CM_QUERYRECORD,
-				      MPFROMP(pci),
-				      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-      if (pci->flags & RECFLAGS_ENV) {
-	pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				    CM_QUERYRECORD,
-				    MPFROMP(pci),
-				    MPFROM2SHORT(CMA_FIRSTCHILD,
-						 CMA_ITEMORDER));
-	while (pci && (INT) pci != -1) {
-	  if (pci->flags & RECFLAGS_ENV)
-	    FleshEnv(hwndCnr, pci);
-	  pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				      CM_QUERYRECORD,
-				      MPFROMP(pci),
-				      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-	}
+      if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum) {
+	WinSendMsg(hwndCnr,
+		   CM_SETRECORDEMPHASIS,
+		   MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
 	break;
       }
       pci = (PCNRITEM) WinSendMsg(hwndCnr,
@@ -1394,13 +1237,182 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				  MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
-
   }
+
+  if (hwndParent) {
+    WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
+			       MAIN_DRIVELIST),
+	       LM_DELETEALL, MPVOID, MPVOID);
+  }
+
+  if (fShowEnv) {
+    RECORDINSERT ri;
+
+    pciParent = WinSendMsg(hwndCnr,
+			   CM_ALLOCRECORD,
+			   MPFROMLONG(EXTRA_RECORD_BYTES2), MPFROMLONG(1));
+    if (pciParent) {
+      pciParent->flags |= RECFLAGS_ENV;
+      pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
+      //pciParent->pszFileName = pciParent->szFileName;
+      pciParent->rc.hptrIcon = hptrEnv;
+      pciParent->rc.pszIcon = pciParent->pszFileName;
+      strcpy(pciParent->szDispAttr, "------");
+      pciParent->pszDispAttr = pciParent->szDispAttr;
+      memset(&ri, 0, sizeof(RECORDINSERT));
+      ri.cb = sizeof(RECORDINSERT);
+      ri.pRecordOrder = (PRECORDCORE) CMA_END;
+      ri.pRecordParent = (PRECORDCORE) NULL;
+      ri.zOrder = (ULONG) CMA_TOP;
+      ri.cRecordsInsert = 1;
+      ri.fInvalidateRecord = FALSE;
+      if (WinSendMsg(hwndCnr,
+		     CM_INSERTRECORD, MPFROMP(pciParent), MPFROMP(&ri))) {
+
+	char *p, *pp;
+
+	p = GetPString(IDS_ENVVARNAMES);
+	while (*p == ' ')
+	  p++;
+	while (*p) {
+	  *szFileSystem = 0;
+	  pp = szFileSystem;
+	  while (*p && *p != ' ')
+	    *pp++ = *p++;
+	  *pp = 0;
+	  while (*p == ' ')
+	    p++;
+	  if (*szFileSystem &&
+	      (!stricmp(szFileSystem, "LIBPATH") || getenv(szFileSystem))) {
+	    pci = WinSendMsg(hwndCnr,
+			     CM_ALLOCRECORD,
+			     MPFROMLONG(EXTRA_RECORD_BYTES2),
+			     MPFROMLONG(1));
+	    if (pci) {
+	      CHAR fname[CCHMAXPATH];
+	      pci->flags |= RECFLAGS_ENV;
+	      sprintf(fname, "%%%s%%", szFileSystem);
+	      pci->pszFileName = xstrdup(fname, pszSrcFile, __LINE__);
+	      pci->rc.hptrIcon = hptrEnv;
+	      pci->rc.pszIcon = pci->pszFileName;
+	      strcpy(pci->szDispAttr, "------");
+	      pci->pszDispAttr = pci->szDispAttr;
+	      memset(&ri, 0, sizeof(RECORDINSERT));
+	      ri.cb = sizeof(RECORDINSERT);
+	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
+	      ri.pRecordParent = (PRECORDCORE) pciParent;
+	      ri.zOrder = (ULONG) CMA_TOP;
+	      ri.cRecordsInsert = 1;
+	      ri.fInvalidateRecord = FALSE;
+	      if (!WinSendMsg(hwndCnr,
+			      CM_INSERTRECORD,
+			      MPFROMP(pci), MPFROMP(&ri))) {
+		Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__,
+			   IDS_CMINSERTERRTEXT);
+		WinSendMsg(hwndCnr, CM_FREERECORD, MPFROMP(&pci),
+			   MPFROMSHORT(1));
+	      }
+	    }
+	  }
+	}
+	WinSendMsg(hwndCnr,
+		   CM_INVALIDATERECORD,
+		   MPFROMP(&pciParent),
+		   MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+      }
+      else
+	WinSendMsg(hwndCnr,
+		   CM_FREERECORD, MPFROMP(&pciParent), MPFROMSHORT(1));
+    }
+  } // if show env
+
+  x = 0;
+  pci = (PCNRITEM) WinSendMsg(hwndCnr,
+			      CM_QUERYRECORD,
+			      MPVOID,
+			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  while (pci && (INT) pci != -1) {
+    pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
+				    CM_QUERYRECORD,
+				    MPFROMP(pci),
+				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+    if (!(pci->flags & RECFLAGS_ENV)) {
+      if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum ||
+	  toupper(*pci->pszFileName) > 'B')
+      {
+	if (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_INVALID) &&
+	    !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOPRESCAN) &&
+	    (!fNoRemovableScan ||
+	     !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_REMOVABLE)))
+	{
+	  if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
+	    WinSendMsg(hwndCnr,
+		       CM_INVALIDATERECORD,
+		       MPFROMP(&pci),
+		       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+	    goto SkipBadRec;
+	  }
+	}
+      }
+      else {
+	WinSendMsg(hwndCnr,
+		   CM_INVALIDATERECORD,
+		   MPFROMP(&pci),
+		   MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+      }
+
+      WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
+				 MAIN_DRIVELIST),
+		 LM_INSERTITEM,
+		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
+		 MPFROMP(pci->pszFileName));
+    }
+  SkipBadRec:
+    x++;
+    pci = pciNext;
+  }
+  if (hwndParent)
+    WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
+			       MAIN_DRIVELIST), LM_SELECTITEM,
+	       MPFROM2SHORT(0, 0), MPFROMLONG(TRUE));
+
+  pci = (PCNRITEM) WinSendMsg(hwndCnr,
+			      CM_QUERYRECORD,
+			      MPVOID,
+			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  while (pci && (INT) pci != -1) {
+    pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
+				    CM_QUERYRECORD,
+				    MPFROMP(pci),
+				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+    if (pci->flags & RECFLAGS_ENV) {
+      pci = (PCNRITEM) WinSendMsg(hwndCnr,
+				  CM_QUERYRECORD,
+				  MPFROMP(pci),
+				  MPFROM2SHORT(CMA_FIRSTCHILD,
+					       CMA_ITEMORDER));
+      while (pci && (INT) pci != -1) {
+	if (pci->flags & RECFLAGS_ENV)
+	  FleshEnv(hwndCnr, pci);
+	pci = (PCNRITEM) WinSendMsg(hwndCnr,
+				    CM_QUERYRECORD,
+				    MPFROMP(pci),
+				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+      }
+      break;
+    }
+    pci = (PCNRITEM) WinSendMsg(hwndCnr,
+				CM_QUERYRECORD,
+				MPFROMP(pci),
+				MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+  }
+
   if (!drivesbuilt && hwndMain)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
   DosSleep(33L);
   fDummy = FALSE;
   DosPostEventSem(CompactSem);
+
   {
     BYTE info;
     BOOL includesyours = FALSE;
@@ -1450,6 +1462,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
     }
   }
+
   didonce = TRUE;
 
 } // FillTreeCnr

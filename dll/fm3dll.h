@@ -432,8 +432,9 @@ typedef struct _ARCITEM
 {				// ARCHIVE CONTAINER RECORD STRUCTURE
   MINIRECORDCORE rc;		// Base information
   HWND hwndCnr;			/* Container holding this record */
-  PSZ pszFileName;		// Pointer to file name
-  CHAR szFileName[CCHMAXPATH];	// File name
+  PSZ pszFileName;		// Pointer to full path name
+  PSZ pszDisplayName;		// Points to displayable part of path name  - used by CFA_STRING
+  // CHAR szFileName[CCHMAXPATH];	// File name
   CHAR szDate[40];		// File's assembled date
   PSZ pszDate;			// Pointer to date
   CDATE date;			// if we know date format

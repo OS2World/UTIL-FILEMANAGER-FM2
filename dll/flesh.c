@@ -429,6 +429,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	  //pci->pszFileName = pci->szFileName;
 	  pci->pszFileName = xstrdup(NullStr, pszSrcFile, __LINE__);
 	  pci->rc.pszIcon = pci->pszFileName;
+	  // 23 Jul 07 SHL fixme to ensure pszDisplay set appropriately
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
 	  ri.pRecordOrder = (PRECORDCORE) CMA_END;

@@ -585,6 +585,8 @@ ReTry:
 		  fname[strlen(fname) - 1] == '/')
 		pai->flags = ARCFLAGS_REALDIR;
 	      pai->pszFileName = xstrdup(fname,pszSrcFile, __LINE__);
+	      // 23 Jul 07 SHL fixme to set pszDisplayName
+	      // 23 Jul 07 SHL fixme to set pszIcon after pszFileName allocated
 	      if (fdate)
 		strcpy(pai->szDate, fdate);
 	      // pai->pszFileName = pai->pszFileName;
@@ -2231,7 +2233,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    pfi->flData = CFA_STRING | CFA_LEFT | CFA_FIREADONLY;
 	    pfi->flTitle = CFA_CENTER;
 	    pfi->pTitleData = GetPString(IDS_FILENAMECOLTEXT);
-	    pfi->offStruct = FIELDOFFSET(ARCITEM, pszFileName);
+	    pfi->offStruct = FIELDOFFSET(ARCITEM, pszDisplayName);
 	    pfiLastLeftCol = pfi;
 	    pfi = pfi->pNextFieldInfo;
 	    pfi->flData =
@@ -2919,7 +2921,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PFIELDINFO pfi = ((PCNREDITDATA) mp2)->pFieldInfo;
 	  USHORT cmd = 0;
 
-	  if (!pfi || pfi->offStruct == FIELDOFFSET(ARCITEM, pszFileName))
+	  if (!pfi || pfi->offStruct == FIELDOFFSET(ARCITEM, pszDisplayName))
 	    cmd = IDM_SORTSMARTNAME;
 	  else if (pfi->offStruct == FIELDOFFSET(ARCITEM, cbFile))
 	    cmd = IDM_SORTSIZE;
