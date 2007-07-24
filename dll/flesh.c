@@ -177,7 +177,13 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
     ProcessDirectory(hwndCnr,
 		     pciParent,
 		     pciParent->pszFileName,
-		     includefiles, TRUE, TRUE, NULL, dcd, NULL, NULL);
+		     includefiles,	// filestoo
+		     TRUE,		// recurse
+		     TRUE,		// partial
+		     NULL,
+		     dcd,
+		     NULL,
+		     NULL);
   }
   return TRUE;
 }
