@@ -23,6 +23,7 @@
   19 Oct 06 SHL Correct . and .. detect
   03 Nov 06 SHL Count thread usage
   22 Mar 07 GKY Use QWL_USER
+  29 Jul 07 SHL Use Win_Error to report container errors
 
 ***********************************************************************/
 
@@ -428,7 +429,7 @@ static VOID ActionCnrThread(VOID *args)
 		WinSendMsg(hwndCnrD, CM_REMOVERECORD, MPFROMP(&pciO),
 			   MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
 	      }
-              else {
+	      else {
 		pci->pszFileName = xstrdup(NullStr, pszSrcFile, __LINE__);
 		//pci->pszFileName = pci->szFileName;
 		pci->flags = 0;
@@ -479,7 +480,7 @@ static VOID ActionCnrThread(VOID *args)
 		pciO->pszFileName = pciO->pszFileName + strlen(cmp->rightdir);
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciO->pszFileName++;
-              }
+	      }
 	      strcpy(pciO->szDispAttr, pci->szDispAttr);
 	      pciO->attrFile = pci->attrFile;
 	      pciO->flags = 0;
@@ -560,7 +561,7 @@ static VOID ActionCnrThread(VOID *args)
 		pciO->pszFileName = pciO->pszFileName + strlen(cmp->rightdir);
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciO->pszFileName++;
-              }
+	      }
 	      strcpy(pciO->szDispAttr, pci->szDispAttr);
 	      pciO->attrFile = pci->attrFile;
 	      pciO->flags = CNRITEM_EXISTS;
@@ -996,8 +997,8 @@ static VOID FillCnrsThread(VOID * args)
 			       MPFROMLONG(EXTRA_RECORD_BYTES2),
 			       MPFROMLONG(recsNeeded));
 	if (!pcilFirst) {
-	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
-			recsNeeded);
+	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
+		    recsNeeded);
 	  recsNeeded = 0;
 	}
       }
@@ -1006,8 +1007,8 @@ static VOID FillCnrsThread(VOID * args)
 			       MPFROMLONG(EXTRA_RECORD_BYTES2),
 			       MPFROMLONG(recsNeeded));
 	if (!pcirFirst) {
-	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
-			recsNeeded);
+	  Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
+		    recsNeeded);
 	  recsNeeded = 0;
 	  pcil = pcilFirst;
 	  while (pcil) {
@@ -1025,8 +1026,8 @@ static VOID FillCnrsThread(VOID * args)
 	  pcir->hwndCnr = hwndRight;
 	  //pcir->pszFileName = pcir->szFileName;
 	  // 23 Jul 07 SHL fixme to set pszIcon after pszFileName allocated
-          // 23 Jul 07 SHL fixme to set pszLongName after pszFileName allocated
-          pcir->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);//29 Jul 07 GKY Temp fix to crash
+	  // 23 Jul 07 SHL fixme to set pszLongName after pszFileName allocated
+	  pcir->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);//29 Jul 07 GKY Temp fix to crash
 	  pcir->rc.pszIcon = pcir->pszFileName;
 	  pcir->rc.hptrIcon = (HPOINTER) 0;
 	  pcir->pszDisplayName = pcir->pszFileName;	// Not used here
@@ -1034,8 +1035,8 @@ static VOID FillCnrsThread(VOID * args)
 	  //pcir->pszLongname = pcir->pszFileName;
 	  pcir->pszDispAttr = pcir->szDispAttr;
 	  pcil->hwndCnr = hwndLeft;
-          //pcil->pszFileName = pcil->szFileName;
-          pcil->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);//29 Jul 07 GKY Temp fix to crash
+	  //pcil->pszFileName = pcil->szFileName;
+	  pcil->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);//29 Jul 07 GKY Temp fix to crash
 	  pcil->rc.pszIcon = pcil->pszFileName;
 	  pcil->rc.hptrIcon = (HPOINTER) 0;
 	  pcil->pszDispAttr = pcil->szDispAttr;
@@ -1045,11 +1046,11 @@ static VOID FillCnrsThread(VOID * args)
 	  if ((filesl && filesl[l]) && (filesr && filesr[r])) {
 	    x = stricmp(filesl[l]->fname, filesr[r]->fname);
 	    if (!x) {
-                // Same
+		// Same
 	      sprintf(pcil->pszFileName, "%s%s%s", cmp->leftdir,
 		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		      NullStr : "\\", filesl[l]->fname);
-	      // pcil->rc.hptrIcon    = hptrFile;
+	      // pcil->rc.hptrIcon = hptrFile;
 	      pcil->pszFileName = pcil->pszFileName + lenl;
 	      pcil->attrFile = filesl[l]->attrFile;
 	      y = 0;
@@ -1091,7 +1092,7 @@ static VOID FillCnrsThread(VOID * args)
 		      NullStr : "\\", filesr[r]->fname);
 	      pcir->pszFileName = pcir->pszFileName + lenr;
 	      pcir->attrFile = filesr[r]->attrFile;
-	      // pcir->rc.hptrIcon    = hptrFile;
+	      // pcir->rc.hptrIcon = hptrFile;
 	      y = 0;
 	      for (x = 0; x < 6; x++)
 		if (attrstring[x])
@@ -1189,7 +1190,7 @@ static VOID FillCnrsThread(VOID * args)
 		      NullStr : "\\", filesl[l]->fname);
 	      pcil->pszFileName = pcil->pszFileName + lenl;
 	      pcil->attrFile = filesl[l]->attrFile;
-	      // pcil->rc.hptrIcon    = hptrFile;
+	      // pcil->rc.hptrIcon = hptrFile;
 	      y = 0;
 	      for (x = 0; x < 6; x++)
 		if (attrstring[x])
@@ -1233,7 +1234,7 @@ static VOID FillCnrsThread(VOID * args)
 		      NullStr : "\\", filesr[r]->fname);
 	      pcir->pszFileName = pcir->pszFileName + lenr;
 	      pcir->attrFile = filesr[r]->attrFile;
-	      // pcir->rc.hptrIcon    = hptrFile;
+	      // pcir->rc.hptrIcon = hptrFile;
 	      y = 0;
 	      for (x = 0; x < 6; x++) {
 		if (attrstring[x])
@@ -1279,7 +1280,7 @@ static VOID FillCnrsThread(VOID * args)
 		    NullStr : "\\", filesl[l]->fname);
 	    pcil->pszFileName = pcil->pszFileName + lenl;
 	    pcil->attrFile = filesl[l]->attrFile;
-	    // pcil->rc.hptrIcon    = hptrFile;
+	    // pcil->rc.hptrIcon = hptrFile;
 	    y = 0;
 	    for (x = 0; x < 6; x++)
 	      if (attrstring[x])
@@ -1323,7 +1324,7 @@ static VOID FillCnrsThread(VOID * args)
 		    NullStr : "\\", filesr[r]->fname);
 	    pcir->pszFileName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;
-	    // pcir->rc.hptrIcon    = hptrFile;
+	    // pcir->rc.hptrIcon = hptrFile;
 	    y = 0;
 	    for (x = 0; x < 6; x++) {
 	      if (attrstring[x])
@@ -1385,6 +1386,7 @@ static VOID FillCnrsThread(VOID * args)
 	ri.fInvalidateRecord = FALSE;
 	if (!WinSendMsg(hwndLeft, CM_INSERTRECORD,
 			MPFROMP(pcilFirst), MPFROMP(&ri))) {
+	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
 	  pcil = pcilFirst;
 	  while (pcil) {
 	    pcit = (PCNRITEM) pcil->rc.preccNextRecord;
@@ -1403,6 +1405,7 @@ static VOID FillCnrsThread(VOID * args)
 	ri.fInvalidateRecord = FALSE;
 	if (!WinSendMsg(hwndRight, CM_INSERTRECORD,
 			MPFROMP(pcirFirst), MPFROMP(&ri))) {
+	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
 	  WinSendMsg(hwndLeft, CM_REMOVERECORD,
 		     MPVOID, MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE));
 	  pcir = pcirFirst;
