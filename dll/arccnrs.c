@@ -585,8 +585,8 @@ ReTry:
 		  fname[strlen(fname) - 1] == '/')
 		pai->flags = ARCFLAGS_REALDIR;
 	      pai->pszFileName = xstrdup(fname,pszSrcFile, __LINE__);
-	      // 23 Jul 07 SHL fixme to set pszDisplayName
-	      // 23 Jul 07 SHL fixme to set pszIcon after pszFileName allocated
+              pai->pszDisplayName = pai->pszFileName;
+              pai->rc.pszIcon = pai->pszDisplayName;
 	      if (fdate)
 		strcpy(pai->szDate, fdate);
 	      // pai->pszFileName = pai->pszFileName;
