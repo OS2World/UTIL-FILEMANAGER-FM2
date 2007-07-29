@@ -337,7 +337,7 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-    DosSleep(100L);
+    DosSleep(100);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -791,7 +791,6 @@ static VOID FillCnrsThread(VOID * args)
       PCNRITEM pcit;
       RECORDINSERT ri;
       CHAR *pch;
-      CHAR fname[CCHMAXPATH];
 
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
@@ -1026,30 +1025,32 @@ static VOID FillCnrsThread(VOID * args)
 	  pcir->hwndCnr = hwndRight;
 	  //pcir->pszFileName = pcir->szFileName;
 	  // 23 Jul 07 SHL fixme to set pszIcon after pszFileName allocated
-	  // 23 Jul 07 SHL fixme to set pszLongName after pszFileName allocated
+          // 23 Jul 07 SHL fixme to set pszLongName after pszFileName allocated
+          pcir->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);//29 Jul 07 GKY Temp fix to crash
 	  pcir->rc.pszIcon = pcir->pszFileName;
 	  pcir->rc.hptrIcon = (HPOINTER) 0;
-	  pcir->pszDisplayName = NULL;	// Not used here
-	  //pcir->pszSubject = pcir->szSubject;
-	  //pcir->pszLongname = pcir->szLongname;
+	  pcir->pszDisplayName = pcir->pszFileName;	// Not used here
+	  pcir->pszSubject = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
+	  //pcir->pszLongname = pcir->pszFileName;
 	  pcir->pszDispAttr = pcir->szDispAttr;
 	  pcil->hwndCnr = hwndLeft;
-	  //pcil->pszFileName = pcil->szFileName;
+          //pcil->pszFileName = pcil->szFileName;
+          pcil->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);//29 Jul 07 GKY Temp fix to crash
 	  pcil->rc.pszIcon = pcil->pszFileName;
 	  pcil->rc.hptrIcon = (HPOINTER) 0;
 	  pcil->pszDispAttr = pcil->szDispAttr;
-	  pcil->pszDisplayName = NULL;	// Not used here
-	  //pcil->pszSubject = pcil->szSubject;
-	  //pcil->pszLongname = pcil->szLongname;
+	  pcil->pszDisplayName = pcil->pszFileName;	// Not used here
+	  pcil->pszSubject = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__) ;
+	  //pcil->pszLongname = pcil->pszFileName;
 	  if ((filesl && filesl[l]) && (filesr && filesr[r])) {
 	    x = stricmp(filesl[l]->fname, filesr[r]->fname);
 	    if (!x) {
                 // Same
-	      sprintf(fname, "%s%s%s", cmp->leftdir,
+	      sprintf(pcil->pszFileName, "%s%s%s", cmp->leftdir,
 		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		      NullStr : "\\", filesl[l]->fname);
 	      // pcil->rc.hptrIcon    = hptrFile;
-	      pcil->pszFileName = xstrdup((fname + lenl), pszSrcFile, __LINE__);
+	      pcil->pszFileName = pcil->pszFileName + lenl;
 	      pcil->attrFile = filesl[l]->attrFile;
 	      y = 0;
 	      for (x = 0; x < 6; x++) {
@@ -1085,10 +1086,10 @@ static VOID FillCnrsThread(VOID * args)
 		  pcir->rc.flRecordAttr |= CRA_FILTERED;
 		}
 	      }
-	      sprintf(fname, "%s%s%s", cmp->rightdir,
+	      sprintf(pcir->pszFileName, "%s%s%s", cmp->rightdir,
 		      (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		      NullStr : "\\", filesr[r]->fname);
-	      pcir->pszFileName = xstrdup((fname + lenr), pszSrcFile, __LINE__);
+	      pcir->pszFileName = pcir->pszFileName + lenr;
 	      pcir->attrFile = filesr[r]->attrFile;
 	      // pcir->rc.hptrIcon    = hptrFile;
 	      y = 0;
@@ -1183,10 +1184,10 @@ static VOID FillCnrsThread(VOID * args)
 	    }
 	    else if (x < 0) {
 	      // Just on left
-	      sprintf(fname, "%s%s%s", cmp->leftdir,
+	      sprintf(pcil->pszFileName, "%s%s%s", cmp->leftdir,
 		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		      NullStr : "\\", filesl[l]->fname);
-	      pcil->pszFileName = xstrdup((fname + lenl), pszSrcFile, __LINE__);
+	      pcil->pszFileName = pcil->pszFileName + lenl;
 	      pcil->attrFile = filesl[l]->attrFile;
 	      // pcil->rc.hptrIcon    = hptrFile;
 	      y = 0;
@@ -1227,10 +1228,10 @@ static VOID FillCnrsThread(VOID * args)
 	    }
 	    else {
 	      // Just on right
-	      sprintf(fname, "%s%s%s", cmp->rightdir,
+	      sprintf(pcir->pszFileName, "%s%s%s", cmp->rightdir,
 		      (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		      NullStr : "\\", filesr[r]->fname);
-	      pcir->pszFileName = xstrdup((fname + lenr), pszSrcFile, __LINE__);
+	      pcir->pszFileName = pcir->pszFileName + lenr;
 	      pcir->attrFile = filesr[r]->attrFile;
 	      // pcir->rc.hptrIcon    = hptrFile;
 	      y = 0;
@@ -1273,10 +1274,10 @@ static VOID FillCnrsThread(VOID * args)
 	  }
 	  else if (filesl && filesl[l]) {
 	    // Just on left
-	    sprintf(fname, "%s%s%s", cmp->leftdir,
+	    sprintf(pcil->pszFileName, "%s%s%s", cmp->leftdir,
 		    (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		    NullStr : "\\", filesl[l]->fname);
-	    pcil->pszFileName = xstrdup((fname + lenl), pszSrcFile, __LINE__);
+	    pcil->pszFileName = pcil->pszFileName + lenl;
 	    pcil->attrFile = filesl[l]->attrFile;
 	    // pcil->rc.hptrIcon    = hptrFile;
 	    y = 0;
@@ -1317,10 +1318,10 @@ static VOID FillCnrsThread(VOID * args)
 	  else {
 	    /* filesr && filesr[r] */
 	    // Just on right
-	    sprintf(fname, "%s%s%s", cmp->rightdir,
+	    sprintf(pcir->pszFileName, "%s%s%s", cmp->rightdir,
 		    (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		    NullStr : "\\", filesr[r]->fname);
-	    pcir->pszFileName = xstrdup((fname + lenr), pszSrcFile, __LINE__);
+	    pcir->pszFileName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;
 	    // pcir->rc.hptrIcon    = hptrFile;
 	    y = 0;
