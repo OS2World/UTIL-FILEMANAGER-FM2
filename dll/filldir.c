@@ -1485,11 +1485,14 @@ VOID EmptyCnr(HWND hwnd)
   // Remove field info descriptors
   pfi = (PFIELDINFO) WinSendMsg(hwnd, CM_QUERYDETAILFIELDINFO, MPVOID,
 				MPFROMSHORT(CMA_FIRST));
-  if (pfi)
-    WinSendMsg(hwnd, CM_REMOVEDETAILFIELDINFO, MPVOID,
-	       MPFROM2SHORT(0, CMA_FREE));
-}
+  if (pfi &&
+      (INT)WinSendMsg(hwnd, CM_REMOVEDETAILFIELDINFO, MPVOID,
+	       MPFROM2SHORT(0, CMA_FREE)) == -1) {
+    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVEDETAILFIELDINFO hwnd %x", hwnd);
+  }
 
+  // DbgMsg(pszSrcFile, __LINE__, "EmptyCnr hwnd %p emptied", hwnd);
+}
 
 /**
  * Free storage associated with container item
@@ -1497,6 +1500,8 @@ VOID EmptyCnr(HWND hwnd)
 
 static VOID FreeCnrItemData(PCNRITEM pci)
 {
+  // DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData %p", pci);
+
   if (pci->pszSubject && pci->pszSubject != NullStr)
     xfree(pci->pszSubject);
 
@@ -1514,11 +1519,13 @@ static VOID FreeCnrItemData(PCNRITEM pci)
 
 VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
 {
+  // DbgMsg(pszSrcFile, __LINE__, "FreeCnrItem hwnd %x pci %p", hwnd, pci);
+
   FreeCnrItemData(pci);
 
-  if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1))) {
+  if ((INT)WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1)) == -1) {
     // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
-    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD");
+    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD hwnd %x pci %p", hwnd, pci);
   }
 }
 
@@ -1549,12 +1556,13 @@ VOID RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags)
   else if (usCnt != 1)
     Runtime_Error(pszSrcFile, __LINE__, "count not 1");
   else {
+    // DbgMsg(pszSrcFile, __LINE__, "RemoveCnrItems %p %u %s", pci, usCnt, pci->pszFileName);
+
     FreeCnrItemData(pci);
 
-    DbgMsg(pszSrcFile, __LINE__, "removing %p %u", pci, usCnt);
-    if (!WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pci), MPFROM2SHORT(usCnt, CMA_FREE))) {
+    if ((INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pci), MPFROM2SHORT(usCnt, CMA_FREE)) == -1) {
       // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
-      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD");
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pci %p", hwnd, pci);
     }
   }
 }
