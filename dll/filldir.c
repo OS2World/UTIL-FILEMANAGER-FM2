@@ -31,6 +31,7 @@
   20 Mar 07 GKY Increase extention check to 4 letters for icon selections
   23 Jun 07 GKY Fixed ram disk without a directory not appearing on states drive list
   23 Jul 07 SHL Sync with CNRITEM updates (ticket#24)
+  29 Jul 07 SHL Add CNRITEM free and remove support (ticket#24)
 
 ***********************************************************************/
 
@@ -1035,7 +1036,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   }
 
   if (!pciFirst) {
-    Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__, IDS_CMALLOCRECERRTEXT);
+    Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, IDS_CMALLOCRECERRTEXT);
     exit(0);
   }
 
@@ -1215,7 +1216,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     if (!WinSendMsg(hwndCnr,
 		    CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri)))
     {
-      Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__,
+      Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
 		 IDS_CMINSERTERRTEXT);
     }
   }
@@ -1308,7 +1309,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      if (!WinSendMsg(hwndCnr,
 			      CM_INSERTRECORD,
 			      MPFROMP(pci), MPFROMP(&ri))) {
-		Win_Error2(hwndCnr, hwndCnr, pszSrcFile, __LINE__,
+		Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
 			   IDS_CMINSERTERRTEXT);
 		WinSendMsg(hwndCnr, CM_FREERECORD, MPFROMP(&pci),
 			   MPFROMSHORT(1));
@@ -1516,8 +1517,8 @@ VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
   FreeCnrItemData(pci);
 
   if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1))) {
-    // Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
-    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,"CM_FREERECORD");
+    // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
+    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD");
   }
 }
 
@@ -1533,11 +1534,13 @@ VOID RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags)
     else {
       for (;;) {
 	pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, MPVOID,
-				  MPFROMSHORT(CMA_FIRST));
+				   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 	if (!pci)
 	  break;
-	else if ((INT)pci == -1)
-	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,"CM_QUERYRECORD");
+	else if ((INT)pci == -1) {
+	  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_QUERYRECORD");
+	  break;
+	}
 	else
 	  RemoveCnrItems(hwnd, pci, 1, usFlags);
       }
@@ -1548,9 +1551,10 @@ VOID RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags)
   else {
     FreeCnrItemData(pci);
 
+    DbgMsg(pszSrcFile, __LINE__, "removing %p %u", pci, usCnt);
     if (!WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pci), MPFROM2SHORT(usCnt, CMA_FREE))) {
-      // Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
-      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,"CM_REMOVERECORD");
+      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD");
     }
   }
 }
