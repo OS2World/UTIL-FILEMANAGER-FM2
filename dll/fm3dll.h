@@ -624,21 +624,24 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv);
 HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
 
 /* filldir.c */
-VOID FillDirCnr(HWND hwndCnr, CHAR * pszDirectory, DIRCNRDATA * pdcd,
+VOID EmptyCnr(HWND hwnd);
+VOID FillDirCnr(HWND hwndCnr, CHAR *pszDirectory, DIRCNRDATA *pdcd,
 		PULONGLONG pullBytes);
 VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent);
 VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
-		      const CHAR * szDirBase, const BOOL filestoo,
+		      const CHAR *szDirBase, const BOOL filestoo,
 		      const BOOL recurse, const BOOL partial,
-		      CHAR * stopflag, DIRCNRDATA * pdcd,
+		      CHAR *stopflag, DIRCNRDATA *pdcd,
 		      PULONG pullTotalFiles, PULONGLONG pullTotalBytes);
 ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszDirectory,
 			      const PFILEFINDBUF4 pffb, const BOOL partial,
-			      DIRCNRDATA * pdcd);
+			      DIRCNRDATA *pdcd);
 ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszFileName, const PFILESTATUS4 pfsa4,
-			      const BOOL partial, DIRCNRDATA * pdcd);
+			      const BOOL partial, DIRCNRDATA *pdcd);
+VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
+VOID RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
 
 /* flesh.c */
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent);
@@ -709,7 +712,6 @@ VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL enable);
 BOOL ViewHelp(CHAR * filename);
 VOID CloseHelp(VOID);
 INT ExecFile(HWND hwnd, CHAR * filename);
-VOID EmptyCnr(HWND hwnd);
 VOID SetDetailsSwitches(HWND hwnd, DIRCNRDATA * dcd);
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
 			   CHAR * directory, CHAR * keyroot, DIRCNRDATA * dcd,

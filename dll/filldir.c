@@ -53,6 +53,7 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
 #pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr)
+#pragma alloc_text(EMPTYCNR,EmptyCnr)
 
 static HPOINTER IDFile(PSZ p)
 {
@@ -1466,3 +1467,91 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   didonce = TRUE;
 
 } // FillTreeCnr
+
+
+/**
+ * Empty all records from a container and free associated storage and
+ * Free up field infos
+ */
+
+VOID EmptyCnr(HWND hwnd)
+{
+  PFIELDINFO pfi;
+
+  // Remove all records
+  RemoveCnrItems(hwnd, NULL, 0, CMA_FREE);
+
+  // Remove field info descriptors
+  pfi = (PFIELDINFO) WinSendMsg(hwnd, CM_QUERYDETAILFIELDINFO, MPVOID,
+				MPFROMSHORT(CMA_FIRST));
+  if (pfi)
+    WinSendMsg(hwnd, CM_REMOVEDETAILFIELDINFO, MPVOID,
+	       MPFROM2SHORT(0, CMA_FREE));
+}
+
+
+/**
+ * Free storage associated with container item
+ */
+
+static VOID FreeCnrItemData(PCNRITEM pci)
+{
+  if (pci->pszSubject && pci->pszSubject != NullStr)
+    xfree(pci->pszSubject);
+
+  if (pci->pszLongname && pci->pszLongname != NullStr &&
+      pci->pszLongname != pci->pszFileName && pci->pszLongname != pci->pszDisplayName)
+    xfree(pci->pszLongname);
+
+  if (pci->pszFileName && pci->pszFileName != NullStr)
+    xfree(pci->pszFileName);
+}
+
+/**
+ * Free container item and associated storage
+ */
+
+VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
+{
+  FreeCnrItemData(pci);
+
+  if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1))) {
+    // Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
+    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,"CM_FREERECORD");
+  }
+}
+
+/**
+ * Remove item from container and free associated storage
+ */
+
+VOID RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags)
+{
+  if (usCnt == 0) {
+    if (pci != NULL)
+      Runtime_Error(pszSrcFile, __LINE__, "pci not NULL");
+    else {
+      for (;;) {
+	pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, MPVOID,
+				  MPFROMSHORT(CMA_FIRST));
+	if (!pci)
+	  break;
+	else if ((INT)pci == -1)
+	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,"CM_QUERYRECORD");
+	else
+	  RemoveCnrItems(hwnd, pci, 1, usFlags);
+      }
+    }
+  }
+  else if (usCnt != 1)
+    Runtime_Error(pszSrcFile, __LINE__, "count not 1");
+  else {
+    FreeCnrItemData(pci);
+
+    if (!WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pci), MPFROM2SHORT(usCnt, CMA_FREE))) {
+      // Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,"CM_REMOVERECORD");
+    }
+  }
+}
+

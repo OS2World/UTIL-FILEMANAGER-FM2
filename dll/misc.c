@@ -54,7 +54,7 @@ static PSZ pszSrcFile = __FILE__;
 #pragma alloc_text(MISC1,FixSwitchList,FindDirCnr,CurrentRecord,SetShiftState,AddToListboxBottom)
 #pragma alloc_text(CNR_MISC1,AdjustCnrColVis,AdjustCnrColsForFSType)
 #pragma alloc_text(CNR_MISC1,AdjustCnrColsForPref,SetCnrCols)
-#pragma alloc_text(CNR_MISC2,CnrDirectEdit,EmptyCnr,OpenEdit)
+#pragma alloc_text(CNR_MISC2,CnrDirectEdit,OpenEdit)
 #pragma alloc_text(MISC2,SetMenuCheck,disable_menuitem,SetSortChecks)
 #pragma alloc_text(MISC2,SetDetailsSwitches,SetViewMenu)
 #pragma alloc_text(MISC3,SetupCommandMenu,AdjustDetailsSwitches)
@@ -925,23 +925,6 @@ INT ExecFile(HWND hwnd, CHAR * filename)
   else if (ret != 0)
     return -1;
   return 0;
-}
-
-VOID EmptyCnr(HWND hwnd)
-{
-  /* Empty out a container in preparation to it dying */
-  PCNRITEM pci;
-  PFIELDINFO pfi;
-
-  pci = (PCNRITEM) WinSendMsg(hwnd, CM_QUERYRECORD, MPVOID,
-			      MPFROMSHORT(CMA_FIRST));
-  if (pci && (INT) pci != -1)
-    WinSendMsg(hwnd, CM_REMOVERECORD, MPVOID, MPFROM2SHORT(0, CMA_FREE));
-  pfi = (PFIELDINFO) WinSendMsg(hwnd, CM_QUERYDETAILFIELDINFO, MPVOID,
-				MPFROMSHORT(CMA_FIRST));
-  if (pfi)
-    WinSendMsg(hwnd, CM_REMOVEDETAILFIELDINFO, MPVOID,
-	       MPFROM2SHORT(0, CMA_FREE));
 }
 
 VOID SetDetailsSwitches(HWND hwnd, DIRCNRDATA * dcd)
