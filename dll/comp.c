@@ -472,12 +472,12 @@ static VOID ActionCnrThread(VOID *args)
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      pciO->pszFileName = xstrdup(newname, pszSrcFile, __LINE__);
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
-		pciO->pszFileName = pciO->pszFileName + strlen(cmp->leftdir);
+		pciO->pszDisplayName = pciO->pszFileName + strlen(cmp->leftdir);
 		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
 		  pciO->pszFileName++;
 	      }
 	      else {
-		pciO->pszFileName = pciO->pszFileName + strlen(cmp->rightdir);
+		pciO->pszDisplayName = pciO->pszFileName + strlen(cmp->rightdir);
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciO->pszFileName++;
 	      }
@@ -553,12 +553,12 @@ static VOID ActionCnrThread(VOID *args)
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      pciO->pszFileName = xstrdup(newname, pszSrcFile, __LINE__);
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
-		pciO->pszFileName = pciO->pszFileName + strlen(cmp->leftdir);
+		pciO->pszDisplayName = pciO->pszFileName + strlen(cmp->leftdir);
 		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
 		  pciO->pszFileName++;
 	      }
 	      else {
-		pciO->pszFileName = pciO->pszFileName + strlen(cmp->rightdir);
+		pciO->pszDisplayName = pciO->pszFileName + strlen(cmp->rightdir);
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciO->pszFileName++;
 	      }
@@ -1029,8 +1029,8 @@ static VOID FillCnrsThread(VOID * args)
 	  // 23 Jul 07 SHL fixme to set pszLongName after pszFileName allocated
 	  pcir->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);//29 Jul 07 GKY Temp fix to crash
 	  pcir->rc.pszIcon = pcir->pszFileName;
-	  pcir->rc.hptrIcon = (HPOINTER) 0;
-	  pcir->pszDisplayName = pcir->pszFileName;	// Not used here
+          pcir->rc.hptrIcon = (HPOINTER) 0;
+          pcir->pszDisplayName = NULL;  	// Not used here
 	  pcir->pszSubject = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
 	  //pcir->pszLongname = pcir->pszFileName;
 	  pcir->pszDispAttr = pcir->szDispAttr;
@@ -1040,7 +1040,7 @@ static VOID FillCnrsThread(VOID * args)
 	  pcil->rc.pszIcon = pcil->pszFileName;
 	  pcil->rc.hptrIcon = (HPOINTER) 0;
 	  pcil->pszDispAttr = pcil->szDispAttr;
-	  pcil->pszDisplayName = pcil->pszFileName;	// Not used here
+	  pcil->pszDisplayName = NULL; 	// Not used here
 	  pcil->pszSubject = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__) ;
 	  //pcil->pszLongname = pcil->pszFileName;
 	  if ((filesl && filesl[l]) && (filesr && filesr[r])) {
@@ -1051,7 +1051,7 @@ static VOID FillCnrsThread(VOID * args)
 		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		      NullStr : "\\", filesl[l]->fname);
 	      // pcil->rc.hptrIcon = hptrFile;
-	      pcil->pszFileName = pcil->pszFileName + lenl;
+	      pcil->pszDisplayName = pcil->pszFileName + lenl;
 	      pcil->attrFile = filesl[l]->attrFile;
 	      y = 0;
 	      for (x = 0; x < 6; x++) {
@@ -1090,7 +1090,7 @@ static VOID FillCnrsThread(VOID * args)
 	      sprintf(pcir->pszFileName, "%s%s%s", cmp->rightdir,
 		      (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		      NullStr : "\\", filesr[r]->fname);
-	      pcir->pszFileName = pcir->pszFileName + lenr;
+	      pcir->pszDisplayName = pcir->pszFileName + lenr;
 	      pcir->attrFile = filesr[r]->attrFile;
 	      // pcir->rc.hptrIcon = hptrFile;
 	      y = 0;
@@ -1188,7 +1188,7 @@ static VOID FillCnrsThread(VOID * args)
 	      sprintf(pcil->pszFileName, "%s%s%s", cmp->leftdir,
 		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		      NullStr : "\\", filesl[l]->fname);
-	      pcil->pszFileName = pcil->pszFileName + lenl;
+	      pcil->pszDisplayName = pcil->pszFileName + lenl;
 	      pcil->attrFile = filesl[l]->attrFile;
 	      // pcil->rc.hptrIcon = hptrFile;
 	      y = 0;
@@ -1232,7 +1232,7 @@ static VOID FillCnrsThread(VOID * args)
 	      sprintf(pcir->pszFileName, "%s%s%s", cmp->rightdir,
 		      (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		      NullStr : "\\", filesr[r]->fname);
-	      pcir->pszFileName = pcir->pszFileName + lenr;
+	      pcir->pszDisplayName = pcir->pszFileName + lenr;
 	      pcir->attrFile = filesr[r]->attrFile;
 	      // pcir->rc.hptrIcon = hptrFile;
 	      y = 0;
@@ -1278,7 +1278,7 @@ static VOID FillCnrsThread(VOID * args)
 	    sprintf(pcil->pszFileName, "%s%s%s", cmp->leftdir,
 		    (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 		    NullStr : "\\", filesl[l]->fname);
-	    pcil->pszFileName = pcil->pszFileName + lenl;
+	    pcil->pszDisplayName = pcil->pszFileName + lenl;
 	    pcil->attrFile = filesl[l]->attrFile;
 	    // pcil->rc.hptrIcon = hptrFile;
 	    y = 0;
@@ -1322,7 +1322,7 @@ static VOID FillCnrsThread(VOID * args)
 	    sprintf(pcir->pszFileName, "%s%s%s", cmp->rightdir,
 		    (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 		    NullStr : "\\", filesr[r]->fname);
-	    pcir->pszFileName = pcir->pszFileName + lenr;
+	    pcir->pszDisplayName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;
 	    // pcir->rc.hptrIcon = hptrFile;
 	    y = 0;
