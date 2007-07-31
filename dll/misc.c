@@ -678,13 +678,14 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  APIRET rc;
 	  EAOP2 eaop;
 	  PFEA2LIST pfealist = NULL;
-	  CHAR szSubject[256];
+	  CHAR szSubject[2048];
 	  ULONG ealen;
 	  USHORT len;
-	  CHAR *eaval;
+          CHAR *eaval;
+          LONG retlen;
 
-	  WinQueryWindowText(hwndMLE, 40, szSubject);
-	  szSubject[39] = 0;
+	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
+	  szSubject[retlen + 1] = 0;
 	  chop_at_crnl(szSubject);
 	  bstrip(szSubject);
 	  WinSetWindowText(hwndMLE, szSubject);
@@ -693,7 +694,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
 	  else
 	    ealen = sizeof(FEALIST) + 9;
-	  rc = DosAllocMem((PPVOID) & pfealist, ealen + 64L,
+	  rc = DosAllocMem((PPVOID) & pfealist, ealen + 64,
 			   OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
 	  if (rc)
 	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile,
@@ -701,7 +702,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    memset(pfealist, 0, ealen + 1);
 	    pfealist->cbList = ealen;
-	    pfealist->list[0].oNextEntryOffset = 0L;
+	    pfealist->list[0].oNextEntryOffset = 0;
 	    pfealist->list[0].fEA = 0;
 	    pfealist->list[0].cbName = 8;
 	    strcpy(pfealist->list[0].szName, SUBJECT);
@@ -731,29 +732,33 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongname)) {
 
 	  CHAR longname[CCHMAXPATHCOMP];
+        LONG retlen;
 
 	  *longname = 0;
-	  WinQueryWindowText(hwndMLE, sizeof(longname), longname);
-	  longname[CCHMAXPATHCOMP - 1] = 0;
+	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
+	  longname[retlen + 1] = 0;
 	  chop_at_crnl(longname);
-	  WinSetWindowText(hwndMLE, longname);
+          WinSetWindowText(hwndMLE, longname);
+          pci->pszFileName = xrealloc(pci->pszFileName, sizeof(longname), pszSrcFile, __LINE__);
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
-	else {
-	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
+        else {
+          pci->pszFileName = pci->pszDisplayName;
+          WinQueryWindowText(hwndMLE, sizeof(szData), szData);
+          pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
 	  if (strchr(szData, '?') ||
 	      strchr(szData, '*') || IsRoot(pci->pszFileName))
 	    return (MRESULT) FALSE;
-	  /* If the text changed, rename the file system object. */
+          /* If the text changed, rename the file system object. */
 	  chop_at_crnl(szData);
-	  bstrip(szData);
+          bstrip(szData);
 	  if (!IsFullName(szData))
 	    Runtime_Error(pszSrcFile, __LINE__, "bad name");
 	  else {
 	    if (DosQueryPathInfo(szData,
 				 FIL_QUERYFULLNAME,
 				 testname, sizeof(testname)))
-	      return FALSE;
+                return FALSE;
 	    if (DosQueryPathInfo(pci->pszFileName,
 				 FIL_QUERYFULLNAME, szData, sizeof(szData)))
 	      strcpy(szData, pci->pszFileName);
@@ -1380,7 +1385,7 @@ BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!IsFm2Window(h, 1)) {
           QMSG qmsg;
 	  for (;;) {
-	    DosSleep(1L);
+	    DosSleep(1);
 	    rc = WinPostMsg(h, msg, mp1, mp2);
 	    if (rc)
 	      break;			// OK
