@@ -36,6 +36,7 @@
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   05 Jul 07 SHL CollectorCnrWndProc: just warn if busy
+  02 Aug 07 SHL Minor clean up
 
 ***********************************************************************/
 
@@ -496,7 +497,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			 COLLECTOROBJ_FRAME + (COLLECTOR_FRAME - dcd->id));
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(250L);
+	DosSleep(250);
     }
     else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -571,7 +572,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	else {
 	  pciFirst = pci;
 	  for (x = 0; li->list[x]; x++) {
-	    nm = 1L;
+	    nm = 1;
 	    hdir = HDIR_CREATE;
 	    DosError(FERR_DISABLEHARDERR);
 	    if (*li->list[x] &&
@@ -607,11 +608,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
 	      else
 		pciFirst = pci;
-	      WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pciT),
-			 MPFROM2SHORT(1, 0));
+	      WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pciT), MPFROMSHORT(1));
 	      ulMaxFiles--;
 	    }
-	    DosSleep(1L);
+	    DosSleep(1);
 	  }
 	  if (ulMaxFiles) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
@@ -643,7 +643,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       RECORDINSERT ri;
       CHAR fullname[1024], *p;
       FILE *fp;
-      ULONG errs = 0L;
+      ULONG errs = 0;
       BOOL first = FALSE;
       size_t c;
 
@@ -692,7 +692,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      pci = WinSendMsg(dcd->hwndCnr,
 			       CM_ALLOCRECORD,
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
-			       MPFROMLONG(1L));
+			       MPFROMLONG(1));
 	      if (pci) {
 		dcd->ullTotalBytes += FillInRecordFromFSA(dcd->hwndCnr, pci,
 							  fullname,
@@ -702,7 +702,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;
 		ri.pRecordParent = (PRECORDCORE) 0;
 		ri.zOrder = (ULONG) CMA_TOP;
-		ri.cRecordsInsert = 1L;
+		ri.cRecordsInsert = 1;
 		ri.fInvalidateRecord = TRUE;
 		WinSendMsg(dcd->hwndCnr, CM_INSERTRECORD,
 			   MPFROMP(pci), MPFROMP(&ri));
@@ -895,7 +895,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       dcd->stopflag = 1;
       // Allow rescan logic to quiesce
       for (x = 0; x < 10 && dcd->amextracted; x++)
-	DosSleep(250L);
+	DosSleep(250);
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
       free(dcd);
@@ -1241,7 +1241,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	WinSendMsg(hwnd, CM_QUERYCNRINFO, MPFROMP(&cnri),
 		   MPFROMLONG(sizeof(CNRINFO)));
 	cnri.cyLineSpacing = 0;
-	cnri.cxTreeIndent = 12L;
+	cnri.cxTreeIndent = 12;
 
 	cnri.flWindowAttr &= (~(CV_ICON | CV_TREE | CV_TEXT | CV_DETAIL));
 	cnri.flWindowAttr |= (CV_NAME | CA_DETAILSVIEWTITLES |
@@ -1293,7 +1293,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  return 0;
 	}
 	else
-	  DosSleep(64L);
+	  DosSleep(64);
       }
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				DIR_FILTER), &dcd->mask, FALSE);
@@ -1661,7 +1661,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		       CM_REMOVERECORD,
 		       MPVOID, MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE));
 	    dcd->ullTotalBytes = dcd->selectedbytes = dcd->selectedfiles =
-	      dcd->totalfiles = 0L;
+	      dcd->totalfiles = 0;
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	  }
 	}
@@ -2133,7 +2133,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		 GetPString(IDS_DROPHELPHDRTEXT),
 		 GetPString(IDS_DROPHELPTEXT),
 		 numitems,
-		 &"s"[numitems == 1L],
+		 &"s"[numitems == 1],
 		 (pci) ? NullStr : GetPString(IDS_NOTEXT),
 		 (pci) ? NullStr : " ",
 		 (pci) ? pci->pszFileName : NullStr,
@@ -2512,7 +2512,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
 	  FILEFINDBUF3 ffb;
 	  HDIR hDir = HDIR_CREATE;
-	  ULONG nm = 1L;
+	  ULONG nm = 1;
 	  APIRET status = 0;
 
 	  SetShiftState();
@@ -2606,7 +2606,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (!dcd->dontclose && ParentIsDesktop(hwnd, dcd->hwndParent))
 	PostMsg(hwnd, UM_FOLDUP, MPVOID, MPVOID);
       if (dcd->hwndObject) {
-	DosSleep(64L);
+	DosSleep(64);
 	if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
