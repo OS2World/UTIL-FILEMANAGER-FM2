@@ -33,6 +33,7 @@
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   10 Jun 07 GKY Mouse button 3 white space click to fail silently
   05 Jul 07 SHL Disable leftover debug code
+  02 Aug 07 SHL Sync with CNRITEM mods
 
 ***********************************************************************/
 
@@ -696,10 +697,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!dcd)
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     else {
-      WinSendMsg(dcd->hwndCnr,
-		 CM_REMOVERECORD,
-		 MPVOID,
-		 MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
+      RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW, MPFROMSHORT(CMA_VERTICAL), MPFROMLONG(-1));
       WinSendMsg(dcd->hwndCnr,
@@ -1742,11 +1740,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		pciP = pciL;
 		break;
 	      }
-	    }				// for
-	    WinSendMsg(hwnd,
-		       CM_REMOVERECORD,
-		       MPFROMP(&pciP),
-		       MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
+	    } // for
+	    RemoveCnrItems(hwnd, pciP, 1, CMA_FREE | CMA_INVALIDATE);
 	    return 0;
 	  }
 	}
@@ -1933,10 +1928,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    if (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		  DRIVE_INCLUDEFILES))
-	      WinSendMsg(hwnd,
-			 CM_REMOVERECORD,
-			 MPFROMP(&pci),
-			 MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
+	      RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE);
 	    else {
 
 	      SWP swp;
@@ -1951,10 +1943,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  if (!IsRoot(pci->pszFileName)) {
 	    NotifyError(pci->pszFileName, status);
-	    WinSendMsg(hwnd,
-		       CM_REMOVERECORD,
-		       MPFROMP(&pci),
-		       MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
+	    RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE);
 	  }
 	}
       }
@@ -2190,9 +2179,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    DriveFlagsOne(info->device - 'A');
 	    if (driveflags[info->device - 'A'] &
 		(DRIVE_INVALID | DRIVE_IGNORE))
-	      WinSendMsg(hwnd,
-			 CM_REMOVERECORD,
-			 MPFROMP(&pci), MPFROM2SHORT(1, CMA_FREE));
+	      RemoveCnrItems(hwnd, pci, 1, CMA_FREE);
 	    else
 	      Flesh(hwnd, pci);
 	  }

@@ -6,7 +6,7 @@
   Common window functions
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   13 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
@@ -16,6 +16,7 @@
   07 Jan 07 GKY Updated Helv font to vector font Helvetica
   22 Mar 07 GKY Use QWL_USER
   30 Mar 07 GKY Remove GetPString for window class names
+  02 Aug 07 SHL Sync with CNRITEM mods
 
 ***********************************************************************/
 
@@ -741,13 +742,8 @@ MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else if (mp2) {
 	if ((INT) mp1 == -1) {
-
 	  PCNRITEM pci = (PCNRITEM) mp2;
-
-	  WinSendMsg(hwnd,
-		     CM_REMOVERECORD,
-		     MPFROMP(&pci),
-		     MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
+	  RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE);
 	}
 	else {
 	  Broadcast(WinQueryAnchorBlock(hwnd),

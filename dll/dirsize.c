@@ -84,6 +84,7 @@ static BOOL ProcessDir(HWND hwndCnr,
 		       PULONGLONG pullTotalBytes)
 {
   CHAR maskstr[CCHMAXPATH];
+  CHAR szBuf[CCHMAXPATH];
   CHAR *pEndMask;
   register char *p;
   register char *sp;
@@ -112,7 +113,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   //printf("%s\n",maskstr);
 
   hdir = HDIR_CREATE;
-  nm = 1L;
+  nm = 1;
   memset(pffb, 0, sizeof(FILEFINDBUF4));
   DosError(FERR_DISABLEHARDERR);
   //printf("FIND1\n");
@@ -134,8 +135,8 @@ static BOOL ProcessDir(HWND hwndCnr,
       free(pffb);
       return FALSE;
     }
-    pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES2),
-		     MPFROMLONG(1L));
+    pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES),
+		     MPFROMLONG(1));
     if (!pci) {
       free(pffb);
       return FALSE;
@@ -147,9 +148,9 @@ static BOOL ProcessDir(HWND hwndCnr,
     else
       DosError(FERR_DISABLEHARDERR);
     pci->rc.hptrIcon = hptrDir;
-    *pci->szDispAttr = 0;
     pci->attrFile = 0;
-    pci->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);
+    pci->pszDispAttr = NullStr;
+    pci->pszSubject = NullStr;
   }
   else {
     free(pffb);
@@ -162,28 +163,28 @@ static BOOL ProcessDir(HWND hwndCnr,
   }
 
   if (strlen(pszFileName) < 4 || top)
-   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
+    pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
   else {
     p = strrchr(pszFileName, '\\');
     if (!p)
       p = pszFileName;
     else
       p++;				// After last backslash
-    // Handle quoted names?
+    // Handle quoted names
+    // fixme to understand this - why lose path prefix?
     sp = strchr(pszFileName, ' ') != NULL ? "\"" : NullStr;
-    pci->pszFileName = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);	// fixme to optimize alloc
-    pp = pci->pszFileName;
-    if (*sp) {
-      *pp = *sp;			// Need quotes
-      pp++;
-      *pp = 0;
-    }
+    pp = szBuf;
+    if (*sp)
+      *pp++ = *sp;			// Need quotes
     strcpy(pp, p);
     if (*sp)
       strcat(pp, sp);
+    pci->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
   }
-  pci->pszLongname = pci->pszFileName;
-  pci->rc.pszIcon = pci->pszLongname;
+  // fixme to know why - it appears to be indirectly saving length, but why?
+  pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
+  pci->pszLongname = pci->pszFileName;		// fixme to be sure?
+  pci->rc.pszIcon = pci->pszFileName;
   pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
     strupr(pci->pszFileName);
@@ -195,14 +196,14 @@ static BOOL ProcessDir(HWND hwndCnr,
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
   ri.pRecordParent = (PRECORDCORE) pciParent;
   ri.zOrder = (USHORT) CMA_TOP;
-  ri.cRecordsInsert = 1L;
+  ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
     free(pffb);
     return FALSE;
   }
   hdir = HDIR_CREATE;
-  nm = 1L;
+  nm = 1;
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
@@ -215,7 +216,7 @@ static BOOL ProcessDir(HWND hwndCnr,
     while (!rc) {
       priority_normal();
       //printf("Found %lu\n",nm);
-      for (x = 0L; x < nm; x++) {
+      for (x = 0; x < nm; x++) {
 	pffbFile = (FILEFINDBUF4 *) fb;
 	//printf("%s\n",pffbFile->achName);
 	//fflush(stdout);
@@ -246,8 +247,8 @@ static BOOL ProcessDir(HWND hwndCnr,
       }					// for matches
       if (*pchStopFlag)
 	break;
-      DosSleep(0L);
-      nm = 1L;				/* FilesToGet */
+      DosSleep(1);
+      nm = 1;				/* FilesToGet */
       rc = DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &nm);
     }					// while more found
     DosFindClose(hdir);
@@ -275,6 +276,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
   if (pci) {
 
     float fltPct = 0.0;
+    USHORT c;
     CHAR szCurDir[80];
     CHAR szSubDir[80];
     CHAR szAllDir[80];
@@ -300,7 +302,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
 	// Need unique buffer 23 Jul 07 SHL
-        pci->pszLongname = xmalloc(2, pszSrcFile, __LINE__);
+	pci->pszLongname = xmalloc(2, pszSrcFile, __LINE__);
 	pci->pszLongname[0] = 0;		// Make null string
 	pci->pszLongname[1] = 1;		// Flag root - hack cough
       }
@@ -322,15 +324,24 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     pci->flags = (ULONG) fltPct;
     CommaFmtULL(szSubDir, sizeof(szSubDir), pci->easize, 'K');
     CommaFmtULL(szAllDir, sizeof(szAllDir), pci->cbFile + pci->easize, 'K');
-    pci->pszFileName = xrealloc(pci->pszFileName, strlen(pci->pszFileName) + 100,
+    c = pci->pszDisplayName - pci->pszFileName;
+    pci->pszFileName = xrealloc(pci->pszFileName,
+				CCHMAXPATH,
 				pszSrcFile,
 				__LINE__);	// 23 Jul 07 SHL
-    sprintf(pci->pszFileName + strlen(pci->pszFileName),
+    sprintf(pci->pszFileName + c,
 	    "  %s + %s = %s (%.02lf%%%s)\r%s",
 	    szCurDir,
 	    szSubDir,
 	    szAllDir,
-	    fltPct, isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr, szBar);
+	    fltPct,
+	    isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr,
+	    szBar);
+    pci->pszFileName = xrealloc(pci->pszFileName,
+				strlen(pci->pszFileName) + 1,
+				pszSrcFile,
+				__LINE__);	// 23 Jul 07 SHL
+    pci->pszDisplayName = pci->pszFileName + c;
     WinSendMsg(hwndCnr,
 	       CM_INVALIDATERECORD, MPFROMP(&pci), MPFROM2SHORT(1, 0));
     isroot = FALSE;
@@ -376,7 +387,7 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
 				  MPFROM2SHORT(CMA_FIRSTCHILD,
 					       CMA_ITEMORDER));
       while (pci && (INT) pci != -1) {
-	DosSleep(0L);
+	DosSleep(1);
 	PrintToFile(hwndCnr, indent + 1, pci, fp);
 	pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
@@ -461,7 +472,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dirsize->pchStopFlag = (CHAR *) & pState->chStopFlag;
       dirsize->pszFileName = pState->szDirName;
       dirsize->hwndCnr = WinWindowFromID(hwnd, DSZ_CNR);
-      if (_beginthread(FillCnrThread, NULL, 122880L * 5L, (PVOID) dirsize) ==
+      if (_beginthread(FillCnrThread, NULL, 122880L * 5, (PVOID)dirsize) ==
 	  -1) {
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
@@ -488,7 +499,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYCNRINFO,
 			MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       cnri.cyLineSpacing = 0;
-      cnri.cxTreeIndent = 12L;
+      cnri.cxTreeIndent = 12;
       cnri.flWindowAttr = CV_TREE | CV_FLOW | CA_TREELINE | CA_OWNERDRAW;
       WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_SETCNRINFO, MPFROMP(&cnri),
 			MPFROMLONG(CMA_FLWINDOWATTR | CMA_TREEICON |
@@ -759,7 +770,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  while (pci && (INT) pci != -1) {
 	    memset(szTemp, 0, sizeof(szTemp));
 	    strncpy(szTemp, pci->pszFileName,
-		    pci->pszFileName - pci->pszFileName);
+		    pci->pszDisplayName - pci->pszFileName);
 	    strrev(szTemp);
 	    if (*szFileName && *szTemp != '\\')
 	      strcat(szFileName, "\\");
@@ -770,9 +781,11 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  strrev(szFileName);
 	  if (!fVTreeOpensWPS)
-	    OpenDirCnr((HWND) 0,
-		       (hwndMain) ? hwndMain : HWND_DESKTOP,
-		       hwnd, FALSE, szFileName);
+	    OpenDirCnr((HWND)0,
+		       hwndMain ? hwndMain : HWND_DESKTOP,
+		       hwnd,
+		       FALSE,
+		       szFileName);
 	  else {
 
 	    ULONG size = sizeof(ULONG);
@@ -907,7 +920,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     pState = INSTDATA(hwnd);
     if (pState)
       pState->chStopFlag = (BYTE)0xff;
-    DosSleep(1L);
+    DosSleep(1);
     break;
 
   case WM_DESTROY:
@@ -916,7 +929,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pState->chStopFlag = (BYTE)0xff;
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
-      DosSleep(33L);
+      DosSleep(33);
       free(pState);			// Let's hope no one is still looking
     }
     DosPostEventSem(CompactSem);

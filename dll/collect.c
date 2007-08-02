@@ -36,7 +36,7 @@
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   05 Jul 07 SHL CollectorCnrWndProc: just warn if busy
-  02 Aug 07 SHL Minor clean up
+  02 Aug 07 SHL Sync with CNRITEM mods
 
 ***********************************************************************/
 
@@ -608,7 +608,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
 	      else
 		pciFirst = pci;
-	      WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pciT), MPFROMSHORT(1));
+	      FreeCnrItem(hwnd, pciT);
 	      ulMaxFiles--;
 	    }
 	    DosSleep(1);
@@ -1657,9 +1657,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				      MPVOID,
 				      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 	  if (pci && (INT) pci != -1) {
-	    WinSendMsg(hwnd,
-		       CM_REMOVERECORD,
-		       MPVOID, MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE));
+	    RemoveCnrItems(hwnd, NULL, 0, CMA_FREE | CMA_INVALIDATE);
 	    dcd->ullTotalBytes = dcd->selectedbytes = dcd->selectedfiles =
 	      dcd->totalfiles = 0;
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
@@ -2560,11 +2558,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      }
 	    }
 	    else
-	      WinSendMsg(hwnd,
-			 CM_REMOVERECORD,
-			 MPFROMP(&pci),
-			 MPFROM2SHORT(1,
-				      CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
+	      RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
 	  }
 	}
 	break;

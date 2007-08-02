@@ -26,6 +26,7 @@
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checking.
   12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  02 Aug 07 SHL Sync with CNRITEM mods
 
 ***********************************************************************/
 
@@ -735,10 +736,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowText(dcd->hwndFrame, s);
 	WinSetWindowText(WinWindowFromID(dcd->hwndFrame, FID_TITLEBAR), s);
       }
-      WinSendMsg(dcd->hwndCnr,
-		 CM_REMOVERECORD,
-		 MPVOID,
-		 MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
+      RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
       AdjustCnrColsForFSType(dcd->hwndCnr, dcd->directory, dcd);
       dcd->ullTotalBytes = dcd->totalfiles =
 	dcd->selectedfiles = dcd->selectedbytes = 0;
@@ -3221,12 +3219,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else {
 	      if (!*dcd->directory || IsValidDir(dcd->directory)) {
 		NotifyError(pci->pszFileName, status);
-		WinSendMsg(hwnd,
-			   CM_REMOVERECORD,
-			   MPFROMP(&pci),
-			   MPFROM2SHORT(1,
-					CMA_FREE | CMA_INVALIDATE |
-					CMA_ERASE));
+		RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
 		if (hwndStatus)
 		  WinSetWindowText(hwndStatus,
 				   GetPString(IDS_RESCANSUGGESTEDTEXT));

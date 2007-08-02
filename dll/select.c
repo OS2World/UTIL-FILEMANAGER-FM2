@@ -19,7 +19,7 @@
   19 Apr 07 SHL Sync with NumItemsToUnhilite mods
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   14 Jun 07 SHL SelectAll: make odd expression go away
-  01 Aug 07 SHL Clean up while auditing for CNRITEM sync
+  02 Aug 07 SHL Sync with CNRITEM mods
 
 ***********************************************************************/
 
@@ -483,11 +483,9 @@ VOID RemoveAll(HWND hwndCnr, ULONGLONG * pullTotalBytes,
       WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROM2SHORT(0, CRA_SELECTED));
       if (fSyncUpdates)
-	WinSendMsg(hwndCnr, CM_REMOVERECORD, MPFROMP(&pci),
-		   MPFROM2SHORT(1, CMA_FREE | CMA_INVALIDATE));
+	RemoveCnrItems(hwndCnr, pci, 1, CMA_FREE | CMA_INVALIDATE);
       else
-	WinSendMsg(hwndCnr, CM_REMOVERECORD, MPFROMP(&pci),
-		   MPFROM2SHORT(1, CMA_FREE));
+	RemoveCnrItems(hwndCnr, pci, 1, CMA_FREE);
       if (attribute == CRA_CURSORED)
 	break;
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),

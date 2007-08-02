@@ -25,6 +25,7 @@
   10 Jun 07 GKY Add IsFm2Window as part of work around PM drag limit
   05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
   23 Jul 07 SHL Sync with CNRITEM updates (ticket#24)
+  31 Jul 07 SHL Clean up and report errors (ticket#24)
 
 ***********************************************************************/
 
@@ -82,29 +83,26 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
 {
     PIB *ppib;
     TIB *ptib;
-    APIRET rc;
+    BOOL yes;
+    APIRET rc = DosGetInfoBlocks(&ptib, &ppib);
 
-    rc = DosGetInfoBlocks(&ptib, &ppib);
     if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		"DosGetInfoBlocks");
+      yes = FALSE;
     }
     else {
       PID pid;
       TID tid;
 
-      if (WinQueryWindowProcess(hwnd, &pid, &tid)) {
-	if (chkTid) {
-	  // Is window owned by FM2 process on same thread?
-	  if (pid == ppib->pib_ulpid && tid == ptib->tib_ptib2->tib2_ultid)
-	    return TRUE;
-        }
-        // Is window owned by some FM2 thread
-	else if (pid == ppib->pib_ulpid)
-	  return TRUE;
-      }
+      // Check window owned by FM2 process
+      // Check say same thread too, if requested
+      // OK for window to be dead - just return FALSE
+      yes = WinQueryWindowProcess(hwnd, &pid, &tid) &&
+	    pid == ppib->pib_ulpid &&
+	    (!chkTid || tid == ptib->tib_ptib2->tib2_ultid);
     }
-    return FALSE;
+    return yes;
 }
 
 VOID SetShiftState(VOID)
@@ -380,10 +378,10 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
     if (!stricmp(FileSystem, HPFS) ||
 	!stricmp(FileSystem, JFS) ||
 	!stricmp(FileSystem, FAT32) ||
-        !stricmp(FileSystem, RAMFS) ||
-        !stricmp(FileSystem, NDFS32) ||
-        !stricmp(FileSystem, NTFS) ||
-        !stricmp(FileSystem, HPFS386)) {
+	!stricmp(FileSystem, RAMFS) ||
+	!stricmp(FileSystem, NDFS32) ||
+	!stricmp(FileSystem, NTFS) ||
+	!stricmp(FileSystem, HPFS386)) {
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
       hasLongNames = TRUE;
@@ -429,31 +427,35 @@ VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd,
 {
   BOOL *bool;
 
-  bool = (dcd) ? &dcd->detailssubject : &detailssubject;
-  AdjustCnrColVis(hwndCnr, ((compare) ? GetPString(IDS_STATUS) :
-			    GetPString(IDS_SUBJ)), *bool, FALSE);
-  bool = (dcd) ? &dcd->detailsattr : &detailsattr;
+  bool = dcd ? &dcd->detailssubject : &detailssubject;
+  AdjustCnrColVis(hwndCnr,
+		  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+		  *bool,
+		  FALSE);
+
+  bool = dcd ? &dcd->detailsattr : &detailsattr;
   AdjustCnrColVis(hwndCnr, GetPString(IDS_ATTR), *bool, FALSE);
-  bool = (dcd) ? &dcd->detailsicon : &detailsicon;
+  bool = dcd ? &dcd->detailsicon : &detailsicon;
   AdjustCnrColVis(hwndCnr, GetPString(IDS_ICON), *bool, FALSE);
-  bool = (dcd) ? &dcd->detailslwdate : &detailslwdate;
+  bool = dcd ? &dcd->detailslwdate : &detailslwdate;
   AdjustCnrColVis(hwndCnr, GetPString(IDS_LWDATE), *bool, FALSE);
-  bool = (dcd) ? &dcd->detailslwtime : &detailslwtime;
+  bool = dcd ? &dcd->detailslwtime : &detailslwtime;
   AdjustCnrColVis(hwndCnr, GetPString(IDS_LWTIME), *bool, FALSE);
-  bool = (dcd) ? &dcd->detailsea : &detailsea;
+  bool = dcd ? &dcd->detailsea : &detailsea;
   AdjustCnrColVis(hwndCnr, GetPString(IDS_EA), *bool, FALSE);
-  bool = (dcd) ? &dcd->detailssize : &detailssize;
+  bool = dcd ? &dcd->detailssize : &detailssize;
   AdjustCnrColVis(hwndCnr, GetPString(IDS_SIZE), *bool, FALSE);
+
   if (!directory) {
-    bool = (dcd) ? &dcd->detailsladate : &detailsladate;
+    bool = dcd ? &dcd->detailsladate : &detailsladate;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LADATE), *bool, FALSE);
-    bool = (dcd) ? &dcd->detailslatime : &detailslatime;
+    bool = dcd ? &dcd->detailslatime : &detailslatime;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LATIME), *bool, FALSE);
-    bool = (dcd) ? &dcd->detailscrdate : &detailscrdate;
+    bool = dcd ? &dcd->detailscrdate : &detailscrdate;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_CRDATE), *bool, FALSE);
-    bool = (dcd) ? &dcd->detailscrtime : &detailscrtime;
+    bool = dcd ? &dcd->detailscrtime : &detailscrtime;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_CRTIME), *bool, FALSE);
-    bool = (dcd) ? &dcd->detailslongname : &detailslongname;
+    bool = dcd ? &dcd->detailslongname : &detailslongname;
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LNAME), *bool, FALSE);
     WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
   }
@@ -461,7 +463,7 @@ VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd,
     AdjustCnrColsForFSType(hwndCnr, directory, dcd);
 }
 
-BOOL SetCnrCols(HWND hwndCnr, BOOL compare)
+BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 {
   BOOL fSuccess = TRUE;
   PFIELDINFO pfi, pfiLastLeftCol, pfiIconCol;
@@ -471,7 +473,11 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL compare)
   pfi = WinSendMsg(hwndCnr, CM_ALLOCDETAILFIELDINFO,
 		   MPFROMLONG(CONTAINER_COLUMNS), NULL);
 
-  if (pfi) {
+  if (!pfi) {
+    Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCDETAILFIELDINFO");
+    fSuccess = FALSE;
+  }
+  else {
 
     PFIELDINFO pfiFirst;
     FIELDINFOINSERT fii;
@@ -517,10 +523,10 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL compare)
 
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
-    if (compare)
+    if (isCompCnr)
       pfi->flData |= CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
-    pfi->pTitleData = (compare) ? GetPString(IDS_STATUS) :
+    pfi->pTitleData = (isCompCnr) ? GetPString(IDS_STATUS) :
       GetPString(IDS_SUBJ);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
 
@@ -609,11 +615,11 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL compare)
     fii.fInvalidateFieldInfo = TRUE;
 
     if (!WinSendMsg(hwndCnr, CM_INSERTDETAILFIELDINFO, MPFROMP(pfiFirst),
-		    MPFROMP(&fii)))
+		    MPFROMP(&fii))) {
+      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_INSERTDETAILFIELDINFO");
       fSuccess = FALSE;
+    }
   }
-  else
-    fSuccess = FALSE;
 
   if (fSuccess) {
 
@@ -633,8 +639,10 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL compare)
       cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 32;
     if (!WinSendMsg(hwndCnr, CM_SETCNRINFO, MPFROMP(&cnri),
 		    MPFROMLONG(CMA_PFIELDINFOLAST | CMA_PFIELDINFOOBJECT |
-			       CMA_XVERTSPLITBAR)))
+			       CMA_XVERTSPLITBAR))) {
+      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_SETCNRINFO");
       fSuccess = FALSE;
+    }
   }
 
   return fSuccess;
@@ -681,8 +689,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  CHAR szSubject[2048];
 	  ULONG ealen;
 	  USHORT len;
-          CHAR *eaval;
-          LONG retlen;
+	  CHAR *eaval;
+	  LONG retlen;
 
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
 	  szSubject[retlen + 1] = 0;
@@ -732,33 +740,33 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongname)) {
 
 	  CHAR longname[CCHMAXPATHCOMP];
-        LONG retlen;
+	LONG retlen;
 
 	  *longname = 0;
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
 	  longname[retlen + 1] = 0;
 	  chop_at_crnl(longname);
-          WinSetWindowText(hwndMLE, longname);
-          pci->pszFileName = xrealloc(pci->pszFileName, sizeof(longname), pszSrcFile, __LINE__);
+	  WinSetWindowText(hwndMLE, longname);
+	  pci->pszFileName = xrealloc(pci->pszFileName, sizeof(longname), pszSrcFile, __LINE__);
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
-        else {
-          pci->pszFileName = pci->pszDisplayName;
-          WinQueryWindowText(hwndMLE, sizeof(szData), szData);
-          pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+	else {
+	  pci->pszFileName = pci->pszDisplayName;
+	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
+	  pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
 	  if (strchr(szData, '?') ||
 	      strchr(szData, '*') || IsRoot(pci->pszFileName))
 	    return (MRESULT) FALSE;
-          /* If the text changed, rename the file system object. */
+	  /* If the text changed, rename the file system object. */
 	  chop_at_crnl(szData);
-          bstrip(szData);
+	  bstrip(szData);
 	  if (!IsFullName(szData))
 	    Runtime_Error(pszSrcFile, __LINE__, "bad name");
 	  else {
 	    if (DosQueryPathInfo(szData,
 				 FIL_QUERYFULLNAME,
 				 testname, sizeof(testname)))
-                return FALSE;
+		return FALSE;
 	    if (DosQueryPathInfo(pci->pszFileName,
 				 FIL_QUERYFULLNAME, szData, sizeof(szData)))
 	      strcpy(szData, pci->pszFileName);
@@ -935,28 +943,28 @@ INT ExecFile(HWND hwnd, CHAR * filename)
 VOID SetDetailsSwitches(HWND hwnd, DIRCNRDATA * dcd)
 {
   WinCheckMenuItem(hwnd, IDM_SHOWLNAMES,
-		   (dcd) ? dcd->detailslongname : detailslongname);
+		   dcd ? dcd->detailslongname : detailslongname);
   WinCheckMenuItem(hwnd, IDM_SHOWSUBJECT,
-		   (dcd) ? dcd->detailssubject : detailssubject);
-  WinCheckMenuItem(hwnd, IDM_SHOWEAS, (dcd) ? dcd->detailsea : detailsea);
+		   dcd ? dcd->detailssubject : detailssubject);
+  WinCheckMenuItem(hwnd, IDM_SHOWEAS, dcd ? dcd->detailsea : detailsea);
   WinCheckMenuItem(hwnd, IDM_SHOWSIZE,
-		   (dcd) ? dcd->detailssize : detailssize);
+		   dcd ? dcd->detailssize : detailssize);
   WinCheckMenuItem(hwnd, IDM_SHOWICON,
-		   (dcd) ? dcd->detailsicon : detailsicon);
+		   dcd ? dcd->detailsicon : detailsicon);
   WinCheckMenuItem(hwnd, IDM_SHOWLWDATE,
-		   (dcd) ? dcd->detailslwdate : detailslwdate);
+		   dcd ? dcd->detailslwdate : detailslwdate);
   WinCheckMenuItem(hwnd, IDM_SHOWLWTIME,
-		   (dcd) ? dcd->detailslwtime : detailslwtime);
+		   dcd ? dcd->detailslwtime : detailslwtime);
   WinCheckMenuItem(hwnd, IDM_SHOWLADATE,
-		   (dcd) ? dcd->detailsladate : detailsladate);
+		   dcd ? dcd->detailsladate : detailsladate);
   WinCheckMenuItem(hwnd, IDM_SHOWLATIME,
-		   (dcd) ? dcd->detailslatime : detailslatime);
+		   dcd ? dcd->detailslatime : detailslatime);
   WinCheckMenuItem(hwnd, IDM_SHOWCRDATE,
-		   (dcd) ? dcd->detailscrdate : detailscrdate);
+		   dcd ? dcd->detailscrdate : detailscrdate);
   WinCheckMenuItem(hwnd, IDM_SHOWCRTIME,
-		   (dcd) ? dcd->detailscrtime : detailscrtime);
+		   dcd ? dcd->detailscrtime : detailscrtime);
   WinCheckMenuItem(hwnd, IDM_SHOWATTR,
-		   (dcd) ? dcd->detailsattr : detailsattr);
+		   dcd ? dcd->detailsattr : detailsattr);
 }
 
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
@@ -974,51 +982,51 @@ VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
   }
   switch (cmd) {
   case IDM_SHOWLNAMES:
-    bool = (dcd) ? &dcd->detailslongname : &detailslongname;
+    bool = dcd ? &dcd->detailslongname : &detailslongname;
     strcpy(eos, "DetailsLongname");
     break;
   case IDM_SHOWSUBJECT:
-    bool = (dcd) ? &dcd->detailssubject : &detailssubject;
+    bool = dcd ? &dcd->detailssubject : &detailssubject;
     strcpy(eos, "DetailsSubject");
     break;
   case IDM_SHOWEAS:
-    bool = (dcd) ? &dcd->detailsea : &detailsea;
+    bool = dcd ? &dcd->detailsea : &detailsea;
     strcpy(eos, "DetailsEA");
     break;
   case IDM_SHOWSIZE:
-    bool = (dcd) ? &dcd->detailssize : &detailssize;
+    bool = dcd ? &dcd->detailssize : &detailssize;
     strcpy(eos, "DetailsSize");
     break;
   case IDM_SHOWICON:
-    bool = (dcd) ? &dcd->detailsicon : &detailsicon;
+    bool = dcd ? &dcd->detailsicon : &detailsicon;
     strcpy(eos, "DetailsIcon");
     break;
   case IDM_SHOWLWDATE:
-    bool = (dcd) ? &dcd->detailslwdate : &detailslwdate;
+    bool = dcd ? &dcd->detailslwdate : &detailslwdate;
     strcpy(eos, "DetailsLWDate");
     break;
   case IDM_SHOWLWTIME:
-    bool = (dcd) ? &dcd->detailslwtime : &detailslwtime;
+    bool = dcd ? &dcd->detailslwtime : &detailslwtime;
     strcpy(eos, "DetailsLWTime");
     break;
   case IDM_SHOWLADATE:
-    bool = (dcd) ? &dcd->detailsladate : &detailsladate;
+    bool = dcd ? &dcd->detailsladate : &detailsladate;
     strcpy(eos, "DetailsLADate");
     break;
   case IDM_SHOWLATIME:
-    bool = (dcd) ? &dcd->detailslatime : &detailslatime;
+    bool = dcd ? &dcd->detailslatime : &detailslatime;
     strcpy(eos, "DetailsLATime");
     break;
   case IDM_SHOWCRDATE:
-    bool = (dcd) ? &dcd->detailscrdate : &detailscrdate;
+    bool = dcd ? &dcd->detailscrdate : &detailscrdate;
     strcpy(eos, "DetailsCRDate");
     break;
   case IDM_SHOWCRTIME:
-    bool = (dcd) ? &dcd->detailscrtime : &detailscrtime;
+    bool = dcd ? &dcd->detailscrtime : &detailscrtime;
     strcpy(eos, "DetailsCRTime");
     break;
   case IDM_SHOWATTR:
-    bool = (dcd) ? &dcd->detailsattr : &detailsattr;
+    bool = dcd ? &dcd->detailsattr : &detailsattr;
     strcpy(eos, "DetailsAttr");
     break;
   default:
@@ -1383,7 +1391,7 @@ BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       // If window owned by some other process or some other thread?
       if (!IsFm2Window(h, 1)) {
-          QMSG qmsg;
+	  QMSG qmsg;
 	  for (;;) {
 	    DosSleep(1);
 	    rc = WinPostMsg(h, msg, mp1, mp2);

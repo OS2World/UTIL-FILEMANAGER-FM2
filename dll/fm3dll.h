@@ -52,6 +52,7 @@
   16 Jun 07 SHL Update more for OpenWatcom
   22 Jul 07 GKY Update CNRITEM to optimize RAM usage
   23 Jul 07 SHL More CNRITEM updates (ticket#24)
+  01 Aug 07 SHL More CNRITEM and ARCITEM updates (ticket#24)
 
 ***********************************************************************/
 
@@ -154,9 +155,10 @@ PDRAGINFO APIENTRY DrgReallocDraginfo(PDRAGINFO pdinfoOld, ULONG cditem);
 #define DIR_SPLITBAR_OFFSET     18 * 12	/* Pixel offset of details splitbar */
 #define CONTAINER_COLUMNS       13	/* Number of columns in details view */
 #define RGBFROMPARTS(r,g,b)     (((r) * 65536) + ((g) * 256) + (b))
-#define EXTRA_RECORD_BYTES2     (sizeof(CNRITEM) - sizeof(MINIRECORDCORE))
-#define EXTRA_RECORD_BYTES      (EXTRA_RECORD_BYTES2 + (CCHMAXPATHCOMP - 1))
+
+#define EXTRA_RECORD_BYTES      (sizeof(CNRITEM) - sizeof(MINIRECORDCORE))
 #define EXTRA_ARCRECORD_BYTES   (sizeof(ARCITEM) - sizeof(MINIRECORDCORE))
+
 #define ALLATTRS                (FILE_NORMAL | FILE_DIRECTORY | FILE_ARCHIVED |\
 				 FILE_HIDDEN | FILE_READONLY | FILE_SYSTEM)
 #define LISTTEMPROOT            "$FM2LI$T."
@@ -406,11 +408,9 @@ typedef struct _CNRITEM
 {				/* CONTAINER RECORD STRUCTURE */
   MINIRECORDCORE rc;		/* Base information */
   HWND hwndCnr;			/* The container holding this record */
-  PSZ pszFileName;		// Points to buffer holding full pathname
+  PSZ pszFileName;		// Points to buffer holding full pathname or NullStr
   PSZ pszDisplayName;		// Points to displayable part of path name  - used by CFA_STRING
-  //CHAR szFileName[CCHMAXPATH];	// Path name - fixme to rename to szPathName?
-  //CHAR szSubject[40];		/* Subject string */
-  CHAR *pszSubject;		// Points subject buffer - used by fm/2 and by CFA_STRING
+  CHAR *pszSubject;		// Points subject buffer or Nullstr - used by fm/2 and by CFA_STRING
   CHAR *pszDispAttr;		// Points to szDispAttr - required by CFA_STRING
   CDATE date;			/* Last write date of file */
   CTIME time;			/* Last write time of file */
@@ -418,13 +418,11 @@ typedef struct _CNRITEM
   CTIME latime;			/* Last access time of file */
   CDATE crdate;			/* Creation date of file */
   CTIME crtime;			/* Creation time of file */
-  CHAR szDispAttr[6];		/* Attrib string for details display */
   CHAR *pszLongname;		// Points to long name buffer - used by code and by CFA_STRING
   ULONGLONG cbFile;		/* File size */
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */
   ULONG flags;
-  //CHAR szLongname[1];		// Holds .LONGNAME EA or root flag
 }
 CNRITEM, *PCNRITEM;
 
@@ -432,9 +430,8 @@ typedef struct _ARCITEM
 {				// ARCHIVE CONTAINER RECORD STRUCTURE
   MINIRECORDCORE rc;		// Base information
   HWND hwndCnr;			/* Container holding this record */
-  PSZ pszFileName;		// Pointer to full path name
+  PSZ pszFileName;		// Points to full path name or NullStr
   PSZ pszDisplayName;		// Points to displayable part of path name  - used by CFA_STRING
-  // CHAR szFileName[CCHMAXPATH];	// File name
   CHAR szDate[40];		// File's assembled date
   PSZ pszDate;			// Pointer to date
   CDATE date;			// if we know date format
@@ -625,6 +622,7 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
 
 /* filldir.c */
 VOID EmptyCnr(HWND hwnd);
+const PSZ FileAttrToString(ULONG fileAttr);
 VOID FillDirCnr(HWND hwndCnr, CHAR *pszDirectory, DIRCNRDATA *pdcd,
 		PULONGLONG pullBytes);
 VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent);
@@ -640,9 +638,10 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszFileName, const PFILESTATUS4 pfsa4,
 			      const BOOL partial, DIRCNRDATA *pdcd);
-VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
+INT FreeCnrItem(HWND hwnd, PCNRITEM pci);
+VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
 VOID FreeCnrItemData(PCNRITEM pci);
-VOID RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
+INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
 
 /* flesh.c */
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent);

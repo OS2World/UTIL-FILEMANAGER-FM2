@@ -14,6 +14,7 @@
   19 Oct 06 SHL Correct . and .. detect
   03 Nov 06 SHL Renames
   22 Mar 07 GKY Use QWL_USER
+  01 Aug 07 SHL Rework to sync with CNRITEM mods
 
 ***********************************************************************/
 
@@ -92,30 +93,27 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   if ((!rc && (ffb->attrFile & FILE_DIRECTORY))) {
     pciP = WinSendMsg(hwndCnr,
 		      CM_ALLOCRECORD,
-		      MPFROMLONG(EXTRA_RECORD_BYTES2),
+		      MPFROMLONG(EXTRA_RECORD_BYTES),
 		      MPFROMLONG(1L));
     if (!pciP) {
       free(ffb);
       return;
     }
     pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
-    pciP->pszDispAttr = pciP->szDispAttr;
-    *pciP->szDispAttr = 0;
-    //pciP->pszSubject = pciP->szSubject;
-    pciP->pszSubject = xstrdup(NullStr, pszSrcFile, __LINE__);	// 23 Jul 07 SHL
-    //pciP->pszLongname = pciP->szLongname;
-    pciP->pszLongname = xstrdup(NullStr, pszSrcFile, __LINE__);
+    pciP->pszDispAttr = NullStr;
+    pciP->pszSubject = NullStr;
+    pciP->pszLongname = NullStr;
     if (strlen(filename) < 4)
-      pciP->pszFileName = pciP->pszFileName;
+      pciP->pszDisplayName = pciP->pszFileName;
     else {
       p = strrchr(pciP->pszFileName, '\\');
       if (!p)
 	pciP->pszFileName = pciP->pszFileName;
       else if (*(p + 1))
 	p++;
-      pciP->pszFileName = p;
+      pciP->pszDisplayName = p;
     }
-    pciP->rc.pszIcon = pciP->pszFileName;
+    pciP->rc.pszIcon = pciP->pszDisplayName;
     if (fForceUpper)
       strupr(pciP->pszFileName);
     else if (fForceLower)

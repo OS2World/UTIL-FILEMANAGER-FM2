@@ -6,7 +6,7 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005-07 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
@@ -15,6 +15,7 @@
   22 Jul 06 SHL Check more run time errors
   19 Oct 06 SHL Stubby - correct . and .. detect
   22 Mar 07 GKY Use QWL_USER
+  01 Aug 07 SHL Sync with CNRITEM mods
 
 ***********************************************************************/
 
@@ -101,11 +102,11 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 
 	      pciL = WinSendMsg(hwndCnr,
 				CM_ALLOCRECORD,
-				MPFROMLONG(EXTRA_RECORD_BYTES2),
+				MPFROMLONG(EXTRA_RECORD_BYTES),
 				MPFROMLONG(1));
 	      if (pciL) {
 		pciL->pszFileName = xstrdup(fullpath, pszSrcFile, __LINE__);
-                pciL->rc.pszIcon = pciL->pszFileName;
+		pciL->rc.pszIcon = pciL->pszFileName;
 		if (!fNoIconsDirs &&
 		    (!isalpha(*fullpath) ||
 		     !(driveflags[toupper(*fullpath) - 'A'] &
@@ -114,8 +115,7 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 		if (!pciL->rc.hptrIcon)
 		  pciL->rc.hptrIcon = hptrDir;
 		pciL->attrFile = FILE_DIRECTORY;
-		strcpy(pciL->szDispAttr, "----D-");
-		pciL->pszDispAttr = pciL->szDispAttr;
+		pciL->pszDispAttr = FileAttrToString(pciL->attrFile);
 		memset(&ri, 0, sizeof(ri));
 		ri.cb = sizeof(ri);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -125,8 +125,7 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 		ri.fInvalidateRecord = FALSE;
 		if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD, MPFROMP(pciL), MPFROMP(&ri)))
-		  WinSendMsg(hwndCnr,
-			     CM_FREERECORD, MPFROMP(&pciL), MPFROMSHORT(1));
+		  FreeCnrItem(hwndCnr, pciL);
 	      }
 	    }
 	  }
@@ -164,10 +163,8 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 			       MPFROMP(pciParent),
 			       MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
   if (!pciL || !*pciL->pszFileName) {
-    if (pciL && (INT) pciL != -1) {
-      WinSendMsg(hwndCnr,
-		 CM_REMOVERECORD, MPFROMP(&pciL), MPFROM2SHORT(1, CMA_FREE));
-    }
+    if (pciL && (INT) pciL != -1)
+      RemoveCnrItems(hwndCnr, pciL, 1, CMA_FREE);
     dcd = INSTDATA(hwndCnr);
     if (dcd && dcd->size != sizeof(DIRCNRDATA))
       dcd = NULL;
@@ -202,8 +199,7 @@ BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
 				 MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     if (pciL && (INT) pciL != -1) {
       ret = TRUE;
-      WinSendMsg(hwndCnr,
-		 CM_REMOVERECORD, MPFROMP(&pciL), MPFROM2SHORT(1, CMA_FREE));
+      RemoveCnrItems(hwndCnr, pciL, 1, CMA_FREE);
     }
     else
       break;
@@ -342,7 +338,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 						     &nm))));
     DosFindClose(hDir);
     if (toupper(*pciParent->pszFileName) > 'B' &&
-        (*(pciParent->pszFileName + 1)) == ':' &&
+	(*(pciParent->pszFileName + 1)) == ':' &&
 	(*(pciParent->pszFileName + 2)) == '\\' && !(*(pciParent->pszFileName + 3))) {
 
       CHAR s[132];
@@ -419,17 +415,16 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 
 	pci = WinSendMsg(hwndCnr,
 			 CM_ALLOCRECORD,
-			 MPFROMLONG(EXTRA_RECORD_BYTES2), MPFROMLONG(1L));
+			 MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1L));
 	if (!pci) {
 	  Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
 		    GetPString(IDS_RECORDALLOCFAILEDTEXT));
 	}
 	else {
 	  RECORDINSERT ri;
-	  //pci->pszFileName = pci->szFileName;
-	  pci->pszFileName = xstrdup(NullStr, pszSrcFile, __LINE__);
-	  pci->rc.pszIcon = pci->pszFileName;
-	  // 23 Jul 07 SHL fixme to ensure pszDisplay set appropriately
+	  pci->pszFileName = NullStr;
+	  pci->pszDisplayName = pci->pszFileName;
+	  pci->rc.pszIcon = pci->pszDisplayName;
 	  memset(&ri, 0, sizeof(RECORDINSERT));
 	  ri.cb = sizeof(RECORDINSERT);
 	  ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -439,15 +434,14 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	  ri.fInvalidateRecord = TRUE;
 	  if (!WinSendMsg(hwndCnr,
 			  CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-	    DosSleep(100L);
+	    DosSleep(100);
 	    WinSetFocus(HWND_DESKTOP, hwndCnr);
-	    if (WinIsWindow((HAB) 0, hwndCnr)) {
+	    if (WinIsWindow((HAB)0, hwndCnr)) {
 	      if (!WinSendMsg(hwndCnr,
 			      CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
 		Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
 			  GetPString(IDS_RECORDINSERTFAILEDTEXT));
-		WinSendMsg(hwndCnr,
-			   CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1));
+		FreeCnrItem(hwndCnr, pci);
 	      }
 	      else
 		ret = TRUE;

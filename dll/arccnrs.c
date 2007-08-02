@@ -39,6 +39,7 @@
   12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   16 Jun 07 SHL Use DosQueryAppType not DosQAppType
+  02 Aug 07 SHL Sync with ARCITEM mods
 
 ***********************************************************************/
 
@@ -59,6 +60,7 @@
 #include <share.h>
 #include <limits.h>
 #include <process.h>			// _beginthread
+#include <malloc.h>			// _heapchk
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -306,6 +308,80 @@ static BOOL IsArcThere(HWND hwnd, CHAR * arcname)
   return FALSE;
 }
 
+/**
+ * Free storage associated with archive container item
+ * Caller is responsible for correcting pointers
+ */
+
+static VOID FreeArcItemData(PARCITEM pai)
+{
+  // DbgMsg(pszSrcFile, __LINE__, "FreeArcItemData %p", pai);
+
+  if (pai->pszFileName && pai->pszFileName != NullStr)
+    xfree(pai->pszFileName);
+}
+
+/**
+ * Remove item from archive container and free associated storage if requested
+ */
+
+static VOID RemoveArcItems(HWND hwnd, PARCITEM pai, USHORT usCnt, USHORT usFlags)
+{
+  if (usCnt == 0) {
+    if (pai != NULL)
+      Runtime_Error(pszSrcFile, __LINE__, "pai not NULL");
+    else {
+      for (;;) {
+	pai = (PARCITEM)WinSendMsg(hwnd, CM_QUERYRECORD, MPVOID,
+				   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+	if (!pai)
+	  break;
+	else if ((INT)pai == -1) {
+	  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_QUERYRECORD");
+	  break;
+	}
+	else
+	  RemoveArcItems(hwnd, pai, 1, usFlags);
+      }
+    }
+  }
+  else if (usCnt != 1)
+    Runtime_Error(pszSrcFile, __LINE__, "count not 1");
+  else {
+    // DbgMsg(pszSrcFile, __LINE__, "RemoveArcItems %p %u %s", pai, usCnt, pai->pszFileName);
+
+    if (usFlags & CMA_FREE)
+      FreeArcItemData(pai);
+
+    if ((INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pai), MPFROM2SHORT(usCnt, usFlags)) == -1) {
+      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pai %p", hwnd, pai);
+    }
+  }
+}
+
+/**
+ * Empty all records from an archive container and free associated storage and
+ * Free up field infos
+ */
+
+static VOID EmptyArcCnr(HWND hwnd)
+{
+#if 1 // fixme to disable or to be configurable
+  {
+    int state = _heapchk();
+    if (state != _HEAPOK)
+      Runtime_Error(pszSrcFile, __LINE__, "heap corrupted %d", state);
+  }
+#endif
+
+  // Remove all ARCITEM records
+  RemoveArcItems(hwnd, NULL, 0, CMA_FREE);
+
+  // Use common code to remove rest
+  EmptyCnr(hwnd);
+}
+
 //== FillArcCnr() generate archive content list and fill container window ==
 
 static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
@@ -358,10 +434,7 @@ ReTry:
   if (!info || !info->list)
     Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
   else {
-    WinSendMsg(hwndCnr,
-	       CM_REMOVERECORD,
-	       MPVOID,
-	       MPFROM2SHORT(0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE));
+    RemoveArcItems(hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
     *arcinfo = info;
     highest = info->osizepos;
     if (info->nsizepos > highest)
@@ -3214,7 +3287,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (ArcCnrMenu)
       WinDestroyWindow(ArcCnrMenu);
     ArcMenu = ArcCnrMenu = (HWND) 0;
-    EmptyCnr(hwnd);
+    EmptyArcCnr(hwnd);
     break;
   }
   if (dcd && dcd->oldproc){
