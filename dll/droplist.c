@@ -6,7 +6,7 @@
   Drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2006 Steven H.Levine
+  Copyright (c) 2003, 2007 Steven H.Levine
 
   22 Nov 02 SHL Baseline
   08 Feb 03 SHL DropHelp: calc EA size consistently
@@ -18,6 +18,7 @@
   19 Apr 07 SHL Add more drag/drop error checking
   21 Apr 07 SHL Add debug code to track down reason for PMERR_SOURCE_SAME_AS_TARGET
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  02 Aug 07 SHL Lock in DoFileDrop sanity checks
 
 ***********************************************************************/
 
@@ -49,20 +50,20 @@ BOOL CheckPmDrgLimit(PDRAGINFO pDInfo)
      */
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                      "DrgAccessDraginfo");
-            return FALSE;
+		      "DrgAccessDraginfo");
+	    return FALSE;
 	  }
 	  else if (IsFm2Window(pDInfo->hwndSource, FALSE)) {
 	    DIRCNRDATA *dcdsrc = INSTDATA(pDInfo->hwndSource);
 	    if (dcdsrc->ulItemsToUnHilite) {
- 	    saymsg(MB_OK | MB_INFORMATION,
- 		   HWND_DESKTOP,
- 		   GetPString(IDS_ERRORTEXT),
- 		   GetPString(IDS_EXCEEDPMDRGLMT));
+	    saymsg(MB_OK | MB_INFORMATION,
+		   HWND_DESKTOP,
+		   GetPString(IDS_ERRORTEXT),
+		   GetPString(IDS_EXCEEDPMDRGLMT));
 	    }
 	    DrgFreeDraginfo(pDInfo);
-          }
-          return TRUE;
+	  }
+	  return TRUE;
 }
 
 BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
@@ -277,7 +278,6 @@ void DropHelp(MPARAM mp1, MPARAM mp2, HWND hwnd, char *text)
 LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 		     MPARAM mp1, MPARAM mp2)
 {
-
   /* builds a list from the dropped files */
 
   BOOL isArc = FALSE, arctest = FALSE;
@@ -286,11 +286,14 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
   PCNRITEM pci;
   CHAR szFrom[CCHMAXPATH + 1], szArc[CCHMAXPATH + 1];
   CHAR **files = NULL;
-  INT numfiles = 0, numalloc = 0;
+  UINT numfiles = 0, numalloc = 0;
   ULONG curitem, numitems, *cbFile = NULL, *ulitemID = NULL;
   LISTINFO *li = NULL;
   ARC_TYPE *arcinfo = NULL;
   USHORT Operation;
+
+  UINT numok = 0;			// 02 Aug 07 SHL fixme to be gone someday
+  UINT numfail = 0;
 
   *szArc = 0;
   pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
@@ -360,6 +363,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 			   DM_ENDCONVERSATION,
 			   MPFROMLONG(pDItem->ulItemID),
 			   MPFROMLONG(DMFL_TARGETFAIL));
+	numfail++;
 	continue;
       }
     }
@@ -376,6 +380,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 			   DM_ENDCONVERSATION,
 			   MPFROMLONG(pDItem->ulItemID),
 			   MPFROMLONG(DMFL_TARGETFAIL));
+	numfail++;
 	continue;
       }
 
@@ -404,6 +409,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 			   DM_ENDCONVERSATION,
 			   MPFROMLONG(pDItem->ulItemID),
 			   MPFROMLONG(DMFL_TARGETFAIL));
+	numfail++;
 	continue;
       }
 
@@ -447,12 +453,15 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 			 DM_ENDCONVERSATION,
 			 MPFROMLONG(pDItem->ulItemID),
 			 MPFROMLONG(DMFL_TARGETSUCCESSFUL));
+      numok++;
     }
-    else
+    else {
       DrgSendTransferMsg(pDItem->hwndItem,
 			 DM_ENDCONVERSATION,
 			 MPFROMLONG(pDItem->ulItemID),
 			 MPFROMLONG(DMFL_TARGETFAIL));
+      numfail++;
+    }
   } // for curitem
 
   if (files && numfiles && files[0] && cbFile && ulitemID) {
@@ -492,10 +501,11 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
       FreeList(files);
   }
 
-  // fixme to know why PM thinks drop not done
-  // this will avoid DrgFreeDraginfo complaints from FreeDragInfoData
-  DbgMsg(pszSrcFile, __LINE__, "calling FreeDragInfoData");
   FreeDragInfoData(hwndCnr, pDInfo);
+
+  // 02 Aug 07 SHL fixme to be gone someday or use Runtime_Error is really an error
+  if (numfail || numok == 0)
+    DbgMsg(pszSrcFile, __LINE__, "calling FreeDragInfoData with %u ok, %u failed", numok, numfail);
 
   return li;
 }
