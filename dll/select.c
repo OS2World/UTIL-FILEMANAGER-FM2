@@ -19,6 +19,7 @@
   19 Apr 07 SHL Sync with NumItemsToUnhilite mods
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   14 Jun 07 SHL SelectAll: make odd expression go away
+  01 Aug 07 SHL Clean up while auditing for CNRITEM sync
 
 ***********************************************************************/
 
@@ -53,13 +54,13 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite)
     *list = NULL;
   }
   pci = (PCNRITEM) CurrentRecord(hwndCnr);
-  if (pci && (INT) pci != -1) {
+  if (pci && (INT)pci != -1) {
     if (pci->rc.flRecordAttr & CRA_SELECTED) {
       attribute = CRA_SELECTED;
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
 		       MPFROMSHORT(attribute));
     }
-    while (pci && (INT) pci != -1) {
+    while (pci && (INT)pci != -1) {
       WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROM2SHORT(FALSE, CRA_SELECTED));
       if (!all)
@@ -78,7 +79,7 @@ VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite)
 }
 
 VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
-		PCNRITEM pciParent, CHAR * filename, CHAR ** list)
+		PCNRITEM pciParent, PSZ filename, CHAR ** list)
 {
 
   PCNRITEM pci;
@@ -156,15 +157,16 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
   }
 }
 
-VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
-	       CHAR * text, BOOL is_arc)
+VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
+	       PSZ text, BOOL is_arc)
 {
 
   PCNRITEM pci;
   BOOL markit;
-  register CHAR *file;
+  PSZ file;
+  PSZ pszToMatch;
   MASK Mask;
-  register INT x;
+  INT x;
   ULONG textlen = 0;
 
   if (text)
@@ -174,19 +176,22 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
     SetMask(maskstr, &Mask);
   pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPVOID,
 			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-  while (pci && (INT) pci != -1) {
+  while (pci && (INT)pci != -1) {
+
     markit = FALSE;
-    if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
+
+    if (~pci->rc.flRecordAttr & CRA_FILTERED) {
       if (!is_arc) {
-	if (files && !(pci->attrFile & FILE_DIRECTORY))
+	if (files && ~pci->attrFile & FILE_DIRECTORY)
 	  markit = TRUE;
-	if (dirs && (pci->attrFile & FILE_DIRECTORY))
+	if (dirs && pci->attrFile & FILE_DIRECTORY)
 	  markit = TRUE;
       }
       else
 	markit = TRUE;
       if (maskstr && *maskstr && markit) {
 	markit = FALSE;
+	// Point a filename part
 	file = strrchr(pci->pszFileName, '\\');
 	if (!file)
 	  file = strrchr(pci->pszFileName, ':');
@@ -196,23 +201,18 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	  file = pci->pszFileName;
 	for (x = 0; Mask.pszMasks[x]; x++) {
 	  if (*Mask.pszMasks[x]) {
+	    if ((strchr(Mask.pszMasks[x], '\\') ||
+		strchr(Mask.pszMasks[x], ':')))
+	      pszToMatch = pci->pszFileName;
+	    else
+	      pszToMatch = file;
 	    if (*Mask.pszMasks[x] != '/') {
-	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
-			    strchr(Mask.pszMasks[x], ':')) ?
-			     pci->pszFileName :
-			     file,
-			   Mask.pszMasks[x],
-			   FALSE)) {
+	      if (wildcard(pszToMatch, Mask.pszMasks[x], FALSE)) {
 		markit = TRUE;
 	      }
 	    }
 	    else {
-	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
-			    strchr(Mask.pszMasks[x], ':')) ?
-			      pci->pszFileName :
-			      file,
-			    Mask.pszMasks[x] + 1,
-			   FALSE)) {
+	      if (wildcard(pszToMatch, Mask.pszMasks[x] + 1, FALSE)) {
 		markit = FALSE;
 		break;
 	      }
@@ -221,40 +221,42 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	} // for
       }
     }
-    if (markit && text && *text && !(pci->attrFile & FILE_DIRECTORY)) {
 
-      CHAR *input;
+    if (markit && text && *text) {
+      if (~pci->attrFile & FILE_DIRECTORY) {
+	PSZ input;
+	markit = FALSE;
+	input = xmalloc(65537, pszSrcFile, __LINE__);
+	if (input) {
+	  ULONG pos;
+	  LONG len;
+	  FILE *inputFile;
 
-      markit = FALSE;
-      input = xmalloc(65537, pszSrcFile, __LINE__);
-      if (input) {
-	ULONG pos;
-	LONG len;
-	FILE *inputFile;
-
-	if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
-	  pos = ftell(inputFile);
-	  while (!feof(inputFile)) {
-	    if (pos)
-	      fseek(inputFile, pos - 256, SEEK_SET);
-	    len = fread(input, 1, 65536, inputFile);
-	    if (len >= 0) {
-	      if (findstring(text, textlen, input, len, FALSE)) {
-		markit = TRUE;
-		break;
+	  if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
+	    pos = ftell(inputFile);
+	    while (!feof(inputFile)) {
+	      if (pos)
+		fseek(inputFile, pos - 256, SEEK_SET);
+	      len = fread(input, 1, 65536, inputFile);
+	      if (len >= 0) {
+		if (findstring(text, textlen, input, len, FALSE)) {
+		  markit = TRUE;
+		  break;
+		}
 	      }
+	      else
+		break;
 	    }
-	    else
-	      break;
+	    fclose(inputFile);
 	  }
-	  fclose(inputFile);
+	  free(input);
+	  DosSleep(1L);
 	}
-	free(input);
-	DosSleep(1L);
       }
+      else
+	markit = FALSE;
     }
-    else if (markit && text && *text && (pci->attrFile & FILE_DIRECTORY))
-      markit = FALSE;
+
     if (markit)
       WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROM2SHORT(TRUE, CRA_SELECTED));
@@ -263,12 +265,13 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
   }					// while
 }
 
-VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
-		 CHAR * text, BOOL is_arc)
+VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
+		 PSZ text, BOOL is_arc)
 {
   PCNRITEM pci;
   BOOL unmarkit;
-  register CHAR *file;
+  PSZ file;
+  PSZ pszToMatch;
   MASK Mask;
   register INT x;
   ULONG textlen = 0;
@@ -280,11 +283,11 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
     SetMask(maskstr, &Mask);
   pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPVOID,
 			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-  while (pci && (INT) pci != -1) {
+  while (pci && (INT)pci != -1) {
     unmarkit = FALSE;
-    if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
+    if (~pci->rc.flRecordAttr & CRA_FILTERED) {
       if (!is_arc) {
-	if (files && !(pci->attrFile & FILE_DIRECTORY))
+	if (files && ~pci->attrFile & FILE_DIRECTORY)
 	  unmarkit = TRUE;
 	if (dirs && (pci->attrFile & FILE_DIRECTORY))
 	  unmarkit = TRUE;
@@ -302,17 +305,17 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	  file = pci->pszFileName;
 	for (x = 0; Mask.pszMasks[x]; x++) {
 	  if (*Mask.pszMasks[x]) {
+	    if (strchr(Mask.pszMasks[x], '\\') ||
+		strchr(Mask.pszMasks[x], ':'))
+	      pszToMatch = pci->pszFileName;
+	    else
+	      pszToMatch = file;
 	    if (*Mask.pszMasks[x] != '/') {
-	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
-			    strchr(Mask.pszMasks[x], ':')) ?
-			   pci->pszFileName : file, Mask.pszMasks[x], FALSE))
+	      if (wildcard(pszToMatch, Mask.pszMasks[x], FALSE))
 		unmarkit = TRUE;
 	    }
 	    else {
-	      if (wildcard((strchr(Mask.pszMasks[x], '\\') ||
-			    strchr(Mask.pszMasks[x], ':')) ?
-			   pci->pszFileName : file, Mask.pszMasks[x] + 1,
-			   FALSE)) {
+	      if (wildcard(pszToMatch, Mask.pszMasks[x] + 1, FALSE)) {
 		unmarkit = FALSE;
 		break;
 	      }
@@ -321,40 +324,42 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * maskstr,
 	}
       }
     }
-    if (unmarkit && text && *text && !(pci->attrFile & FILE_DIRECTORY)) {
 
-      CHAR *input;
+    if (unmarkit && text && *text) {
+      if (~pci->attrFile & FILE_DIRECTORY) {
+	PSZ input;
+	unmarkit = FALSE;
+	input = xmalloc(65537, pszSrcFile, __LINE__);
+	if (input) {
+	  ULONG pos;
+	  LONG len;
+	  FILE *inputFile;
 
-      unmarkit = FALSE;
-      input = xmalloc(65537, pszSrcFile, __LINE__);
-      if (input) {
-	ULONG pos;
-	LONG len;
-	FILE *inputFile;
-
-	if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
-	  pos = ftell(inputFile);
-	  while (!feof(inputFile)) {
-	    if (pos)
-	      fseek(inputFile, pos - 256, SEEK_SET);
-	    len = fread(input, 1, 65536, inputFile);
-	    if (len >= 0) {
-	      if (findstring(text, textlen, input, len, FALSE)) {
-		unmarkit = TRUE;
-		break;
+	  if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
+	    pos = ftell(inputFile);
+	    while (!feof(inputFile)) {
+	      if (pos)
+		fseek(inputFile, pos - 256, SEEK_SET);
+	      len = fread(input, 1, 65536, inputFile);
+	      if (len >= 0) {
+		if (findstring(text, textlen, input, len, FALSE)) {
+		  unmarkit = TRUE;
+		  break;
+		}
 	      }
+	      else
+		break;
 	    }
-	    else
-	      break;
+	    fclose(inputFile);
 	  }
-	  fclose(inputFile);
+	  free(input);
+	  DosSleep(1L);
 	}
-	free(input);
-	DosSleep(1L);
       }
+      else
+	unmarkit = FALSE;
     }
-    else if (unmarkit && text && *text && (pci->attrFile & FILE_DIRECTORY))
-      unmarkit = FALSE;
+
     if (unmarkit)
       WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, pci,
 		 MPFROM2SHORT(FALSE, CRA_SELECTED | CRA_CURSORED |
@@ -371,7 +376,7 @@ VOID Deselect(HWND hwndCnr)
   pcil = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 			       MPFROMLONG(CMA_FIRST),
 			       MPFROMSHORT(CRA_SELECTED));
-  while (pcil && (INT) pcil != -1) {
+  while (pcil && (INT)pcil != -1) {
     WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pcil),
 	       MPFROM2SHORT(FALSE, CRA_SELECTED));
     pcil = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMP(pcil),
@@ -393,14 +398,14 @@ VOID HideAll(HWND hwndCnr)
   WinSendMsg(hwndCnr, CM_QUERYCNRINFO, MPFROMP(&cnri),
 	     MPFROMLONG(sizeof(CNRINFO)));
   pci = (PCNRITEM) CurrentRecord(hwndCnr);
-  if (pci && (INT) pci != -1) {
+  if (pci && (INT)pci != -1) {
     if (pci->rc.flRecordAttr & CRA_SELECTED) {
       attribute = CRA_SELECTED;
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
 		       MPFROMSHORT(attribute));
     }
   }
-  while (pci && (INT) pci != -1) {
+  while (pci && (INT)pci != -1) {
     pciH = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMP(pci),
 		      MPFROMSHORT(attribute));
     WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
@@ -432,7 +437,7 @@ VOID MarkAll(HWND hwndCnr, BOOL quitit, BOOL target, BOOL source)
     attribute = target ? CRA_TARGET : source ? CRA_SOURCE : CRA_INUSE;
   pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 			      MPFROMLONG(CMA_FIRST), MPFROMSHORT(attribute));
-  if (pci && (INT) pci != -1) {
+  if (pci && (INT)pci != -1) {
     if (attribute == CRA_CURSORED) {
       if (pci->rc.flRecordAttr & CRA_SELECTED) {
 	attribute = CRA_SELECTED;
@@ -442,7 +447,7 @@ VOID MarkAll(HWND hwndCnr, BOOL quitit, BOOL target, BOOL source)
       }
     }
   }
-  while (pci && (INT) pci != -1) {
+  while (pci && (INT)pci != -1) {
     WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 	       MPFROM2SHORT(!quitit,
 			    target ? CRA_TARGET : source ? CRA_SOURCE :
@@ -461,15 +466,15 @@ VOID RemoveAll(HWND hwndCnr, ULONGLONG * pullTotalBytes,
   BOOL didone = FALSE;
 
   pci = (PCNRITEM) CurrentRecord(hwndCnr);
-  if (pci && (INT) pci != -1) {
+  if (pci && (INT)pci != -1) {
     if (pci->rc.flRecordAttr & CRA_SELECTED) {
       attribute = CRA_SELECTED;
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
 		       MPFROMSHORT(attribute));
     }
   }
-  while (pci && (INT) pci != -1) {
-    if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
+  while (pci && (INT)pci != -1) {
+    if (~pci->rc.flRecordAttr & CRA_FILTERED) {
       didone = TRUE;
       if (pulTotalFiles)
 	*pulTotalFiles -= 1;
@@ -530,7 +535,7 @@ VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)
     pciParent = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(NULL),
 			   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
   if (pciParent) {
-    if (expand && !(pciParent->rc.flRecordAttr & CRA_EXPANDED))
+    if (expand && ~pciParent->rc.flRecordAttr & CRA_EXPANDED)
       WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciParent), MPVOID);
     else if (!expand && (pciParent->rc.flRecordAttr & CRA_EXPANDED))
       WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciParent), MPVOID);
@@ -538,13 +543,13 @@ VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)
 				MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     if (pci)
       DosSleep(1L);
-    while (pci && (INT) pci != -1) {
+    while (pci && (INT)pci != -1) {
       ExpandAll(hwndCnr, expand, pci);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
   }
-  DosSleep(0L);
+  DosSleep(1);
 }
 
 VOID InvertAll(HWND hwndCnr)
@@ -553,9 +558,9 @@ VOID InvertAll(HWND hwndCnr)
 
   pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPVOID,
 			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-  while (pci && (INT) pci != -1) {
-    if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
-      if (!(pci->rc.flRecordAttr & CRA_SELECTED))
+  while (pci && (INT)pci != -1) {
+    if (~pci->rc.flRecordAttr & CRA_FILTERED) {
+      if (~pci->rc.flRecordAttr & CRA_SELECTED)
 	WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		   MPFROM2SHORT(TRUE, CRA_SELECTED));
       else
@@ -615,7 +620,7 @@ Restart:
   pciD = (PCNRITEM) WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
 			       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
   x = 0;
-  while (pciD && (INT) pciD != -1 && x < numD) {
+  while (pciD && (INT)pciD != -1 && x < numD) {
     if (reset)
       pciD->flags = 0;
     pciDa[x] = pciD;
@@ -628,7 +633,7 @@ Restart:
     if (!(x % 500))
       DosSleep(1L);
     else if (!(x % 50))
-      DosSleep(0L);
+      DosSleep(1);
   }
   if (numD != x) {
     if (!slow) {
@@ -645,7 +650,7 @@ Restart:
   pciS = (PCNRITEM) WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPVOID,
 			       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
   x = 0;
-  while (pciS && (INT) pciS != -1 && x < numS) {
+  while (pciS && (INT)pciS != -1 && x < numS) {
     if (reset)
       pciS->flags = 0;
     pciSa[x] = pciS;
@@ -658,7 +663,7 @@ Restart:
     if (!(x % 500))
       DosSleep(1L);
     else if (!(x % 50))
-      DosSleep(0L);
+      DosSleep(1);
   }
   if (numS != x) {
     if (!slow) {
@@ -673,8 +678,10 @@ Restart:
 
   if (reset) {
     for (x = 0; x < numS; x++) {
+
       if (!*pciSa[x]->pszFileName || !*pciDa[x]->pszFileName)
 	continue;
+
       pciSa[x]->flags |= CNRITEM_EXISTS;
       pciDa[x]->flags |= CNRITEM_EXISTS;
       if (pciSa[x]->cbFile + pciSa[x]->easize >
@@ -721,53 +728,53 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
   }
 
   switch (action) {
   case IDM_SELECTIDENTICAL:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED)) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
 	if (*pciSa[x]->pszFileName &&
-	    (pciSa[x]->flags & CNRITEM_EXISTS) &&
-	    !(pciSa[x]->flags & CNRITEM_SMALLER) &&
-	    !(pciSa[x]->flags & CNRITEM_LARGER) &&
-	    !(pciSa[x]->flags & CNRITEM_NEWER) &&
-	    !(pciSa[x]->flags & CNRITEM_OLDER)) {
-	  if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+	    pciSa[x]->flags & CNRITEM_EXISTS &&
+	    ~pciSa[x]->flags & CNRITEM_SMALLER &&
+	    ~pciSa[x]->flags & CNRITEM_LARGER &&
+	    ~pciSa[x]->flags & CNRITEM_NEWER &&
+	    ~pciSa[x]->flags & CNRITEM_OLDER) {
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	  if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		       MPFROM2SHORT(TRUE, CRA_SELECTED));
 	}
 	if (!(x % 500))
 	  DosSleep(1L);
 	else if (!(x % 50))
-	  DosSleep(0L);
+	  DosSleep(1);
       }
     }
     break;
 
   case IDM_SELECTSAME:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
 	  *pciSa[x]->pszFileName &&
-	  (pciSa[x]->flags & CNRITEM_EXISTS) &&
-	  !(pciSa[x]->flags & CNRITEM_SMALLER) &&
-	  !(pciSa[x]->flags & CNRITEM_LARGER)) {
-	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+	  pciSa[x]->flags & CNRITEM_EXISTS &&
+	  ~pciSa[x]->flags & CNRITEM_SMALLER &&
+	  ~pciSa[x]->flags & CNRITEM_LARGER) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
-	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
@@ -778,8 +785,8 @@ Restart:
 	  *pciSa[x]->pszFileName &&
 	  *pciDa[x]->pszFileName &&
 	  pciSa[x]->flags & CNRITEM_EXISTS &&
-	  pciDa[x]->flags & CNRITEM_EXISTS) {
-
+	  pciDa[x]->flags & CNRITEM_EXISTS)
+      {
 	FILE *fp1 = NULL;
 	FILE *fp2 = NULL;
 	BOOL gotMatch = FALSE;
@@ -838,10 +845,10 @@ Restart:
 			"error %d while comparing", compErrno);
 	}
 	if (gotMatch) {
-	  if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	  if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		       MPFROM2SHORT(TRUE, CRA_SELECTED));
 	}
@@ -849,136 +856,148 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }					// for records
     break;
 
   case IDM_SELECTBOTH:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_EXISTS)) {
-	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_EXISTS) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
-	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_SELECTONE:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && !(pciSa[x]->flags & CNRITEM_EXISTS)) {
-	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  ~pciSa[x]->flags & CNRITEM_EXISTS)
+      {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      else if (*pciDa[x]->pszFileName && !(pciDa[x]->flags & CNRITEM_EXISTS)) {
-	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+      else if (*pciDa[x]->pszFileName &&
+	       ~pciDa[x]->flags & CNRITEM_EXISTS) {
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_SELECTBIGGER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_LARGER)) {
-	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  pciSa[x]->flags & CNRITEM_LARGER) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_LARGER)) {
-	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_LARGER) {
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_SELECTSMALLER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_SMALLER)) {
-	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_SMALLER) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_SMALLER)) {
-	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_SMALLER) {
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_SELECTNEWER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_NEWER)) {
-	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_NEWER) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_NEWER)) {
-	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_NEWER) {
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_SELECTOLDER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_OLDER)) {
-	if (!(pciSa[x]->rc.flRecordAttr & CRA_SELECTED))
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_OLDER) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_OLDER)) {
-	if (!(pciDa[x]->rc.flRecordAttr & CRA_SELECTED))
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_OLDER) {
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_DESELECTBOTH:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_EXISTS)) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_EXISTS) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -989,19 +1008,21 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_DESELECTONE:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && !(pciSa[x]->flags & CNRITEM_EXISTS)) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  ~pciSa[x]->flags & CNRITEM_EXISTS) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      else if (*pciDa[x]->pszFileName && !(pciDa[x]->flags & CNRITEM_EXISTS)) {
+      else if (*pciDa[x]->pszFileName &&
+	       ~pciDa[x]->flags & CNRITEM_EXISTS) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1009,20 +1030,22 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_DESELECTBIGGER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_LARGER)) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_LARGER) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_LARGER)) {
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_LARGER) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1030,20 +1053,22 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_DESELECTSMALLER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_SMALLER)) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_SMALLER) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_SMALLER)) {
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_SMALLER) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1051,20 +1076,22 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_DESELECTNEWER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_NEWER)) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_NEWER) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_NEWER)) {
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_NEWER) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1072,20 +1099,22 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
   case IDM_DESELECTOLDER:
     for (x = 0; x < numS; x++) {
-      if (!(pciSa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	  *pciSa[x]->pszFileName && (pciSa[x]->flags & CNRITEM_OLDER)) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  *pciSa[x]->pszFileName &&
+	  pciSa[x]->flags & CNRITEM_OLDER) {
 	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      else if (!(pciDa[x]->rc.flRecordAttr & CRA_FILTERED) &&
-	       *pciDa[x]->pszFileName && (pciDa[x]->flags & CNRITEM_OLDER)) {
+      else if (~pciDa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	       *pciDa[x]->pszFileName &&
+	       pciDa[x]->flags & CNRITEM_OLDER) {
 	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -1093,7 +1122,7 @@ Restart:
       if (!(x % 500))
 	DosSleep(1L);
       else if (!(x % 50))
-	DosSleep(0L);
+	DosSleep(1);
     }
     break;
 
@@ -1105,12 +1134,12 @@ Restart:
     while (numS) {
       WinSendMsg(hwndCnrS, CM_INVALIDATERECORD,
 		 MPFROMP(pciSa), MPFROM2SHORT((min(numS, 65535)), 0));
-      DosSleep(0L);
+      DosSleep(1);
       WinSendMsg(hwndCnrD, CM_INVALIDATERECORD,
 		 MPFROMP(pciDa), MPFROM2SHORT((min(numD, 65535)), 0));
       numS -= min(numS, 65535);
       if (numS)
-	DosSleep(0L);
+	DosSleep(1);
     }
   }
 
@@ -1136,7 +1165,7 @@ static int CompSSNamesB(const void *s1, const void *s2)
 {
   struct SS *ss2 = (struct SS *)s2;
 
-  return stricmp((CHAR *) s1, ss2->pci->pszFileName);
+  return stricmp((PSZ)s1, ss2->pci->pszFileName);
 }
 
 static int CompSSNames(const void *s1, const void *s2)
@@ -1200,7 +1229,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
     WinSendMsg(Cnrs[0].
 	       hwndCnr,
 	       UM_NOTIFY, MPFROMP(GetPString(IDS_BUILDINGLISTSTEXT)), MPVOID);
-    DosSleep(0L);
+    DosSleep(1);
   }
 
   /* count records, build array of pointers to records */
@@ -1210,9 +1239,9 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 				MPVOID,
 				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
     x = 0;
-    while (pci && (INT) pci != -1) {
-      if (!(pci->rc.flRecordAttr & CRA_FILTERED) &&
-	  !(pci->attrFile & FILE_DIRECTORY)) {
+    while (pci && (INT)pci != -1) {
+      if (~pci->rc.flRecordAttr & CRA_FILTERED &&
+	  ~pci->attrFile & FILE_DIRECTORY) {
 	Cnrs[z].ss =
 	  xrealloc(Cnrs[z].ss, (x + 1) * sizeof(struct SS), pszSrcFile,
 		   __LINE__);
@@ -1230,7 +1259,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 				  MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
-    DosSleep(0L);
+    DosSleep(1);
     Cnrs[z].numfiles = x;
     if (Cnrs[z].numfiles)
       qsort(Cnrs[z].ss, Cnrs[z].numfiles, sizeof(struct SS), CompSSNames);
@@ -1338,7 +1367,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
       if (Cnrs[z].ss[x].unique)
 	Cnrs[z].ss[x].oldest = Cnrs[z].ss[x].newest = Cnrs[z].ss[x].all =
 	  Cnrs[z].ss[x].largest = Cnrs[z].ss[x].smallest = FALSE;
-      DosSleep(0L);
+      DosSleep(1);
     }
     DosSleep(1L);
   }
@@ -1352,7 +1381,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_SELECTMORE:
@@ -1363,7 +1392,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_SELECTONE:
@@ -1374,7 +1403,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_SELECTNEWER:
@@ -1385,7 +1414,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_SELECTOLDER:
@@ -1396,7 +1425,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_SELECTBIGGER:
@@ -1407,7 +1436,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_SELECTSMALLER:
@@ -1418,7 +1447,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
 
@@ -1430,7 +1459,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_DESELECTMORE:
@@ -1441,7 +1470,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_DESELECTONE:
@@ -1452,7 +1481,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_DESELECTNEWER:
@@ -1463,7 +1492,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_DESELECTOLDER:
@@ -1474,7 +1503,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_DESELECTBIGGER:
@@ -1485,7 +1514,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   case IDM_DESELECTSMALLER:
@@ -1496,7 +1525,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0L);
+      DosSleep(1);
     }
     break;
   }

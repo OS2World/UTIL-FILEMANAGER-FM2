@@ -641,6 +641,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszFileName, const PFILESTATUS4 pfsa4,
 			      const BOOL partial, DIRCNRDATA *pdcd);
 VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
+VOID FreeCnrItemData(PCNRITEM pci);
 VOID RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
 
 /* flesh.c */
