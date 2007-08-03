@@ -154,7 +154,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
       ((driveflags[toupper(*maskstr) - 'A'] & DRIVE_REMOTE) && fRemoteBug))
     ulM = 1L;
   else
-    ulM = min(FilesToGet, 225);
+    ulM = FilesToGet;
   if (ulM > 1L) {
     fft = xrealloc(ffb, sizeof(FILEFINDBUF3) * ulM, pszSrcFile, __LINE__);
     if (!fft)

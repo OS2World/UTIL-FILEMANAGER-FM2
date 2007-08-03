@@ -245,7 +245,7 @@ VOID GrepThread(VOID * arg)
     return;
   grep = *(GREP *) arg;
   *grep.stopflag = 0;			/* reset thread-killing flag */
-  grep.FilesToGet = (grep.dirFlag) ? min(FilesToGet, 128) : FilesToGet;
+  grep.FilesToGet = FilesToGet;
   DosError(FERR_DISABLEHARDERR);
   priority_normal();
 

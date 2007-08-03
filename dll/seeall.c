@@ -2008,7 +2008,7 @@ static VOID FindAllThread(VOID * args)
       if (hmq2) {
 	WinCancelShutdown(hmq2, TRUE);
 	IncrThreadUsage();
-	ad->afFilesToGet = min(FilesToGet, 128);
+	ad->afFilesToGet = FilesToGet;
 	if (!*ad->szFindPath) {
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQCurDisk(&ulDriveNum, &ulDriveMap)) {

@@ -824,7 +824,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD,
 				MPFROMP(pciFirst), MPFROMP(&ri))) {
-		  DosSleep(100);
+		  DosSleep(10);
 		  WinSetFocus(HWND_DESKTOP, hwndCnr);
 		  if (!WinSendMsg(hwndCnr,
 				  CM_INSERTRECORD,
@@ -922,7 +922,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 				    dcd->type == DIR_FRAME) ? FALSE : TRUE;
 	    if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
 			    MPFROMP(pciFirst), MPFROMP(&ri))) {
-	      DosSleep(100);
+	      DosSleep(10);
 	      WinSetFocus(HWND_DESKTOP, hwndCnr);
 	      if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
 			      MPFROMP(pciFirst), MPFROMP(&ri))) {
@@ -1427,7 +1427,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   if (!drivesbuilt && hwndMain)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-  DosSleep(33L);
+  DosSleep(33);
   fDummy = FALSE;
   DosPostEventSem(CompactSem);
 

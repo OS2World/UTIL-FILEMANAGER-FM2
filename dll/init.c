@@ -910,8 +910,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = TRUE;
   ulCnrType = CCS_EXTENDSEL;
-  FilesToGet = 128L;
-  AutoviewHeight = 48L;
+  FilesToGet = 10240;
+  AutoviewHeight = 48;
   strcpy(printer, "PRN");
   prnwidth = 80;
   prnlength = 66;

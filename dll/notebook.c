@@ -222,9 +222,9 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_SETTEXTLIMIT,
-		      MPFROMSHORT(4L), MPVOID);
+		      MPFROMSHORT(2048), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_OVERRIDESETLIMITS,
-		      MPFROMLONG(2048L), MPFROMLONG(16L));
+		      MPFROMLONG(102400), MPFROMLONG(2048));
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 
@@ -317,10 +317,10 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_QUERYVALUE,
 			MPFROMP(&temp), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-      if (temp < 16L)
-	temp = 16L;
-      else if (temp > 2048L)
-	temp = 2048L;
+      if (temp < 2048)
+	temp = 2048;
+      else if (temp > 102400)
+	temp = 102400;
       FilesToGet = temp;
       PrfWriteProfileData(fmprof,
 			  appname, "FilesToGet", &FilesToGet, sizeof(ULONG));
@@ -2182,7 +2182,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fLoadLongnames = FALSE;
       fVerify = FALSE;
       DosSetVerify(FALSE);
-      FilesToGet = 512;
+      FilesToGet = 10240;
       fQuickArcFind = TRUE;
       fMinOnOpen = TRUE;
       fRealIdle = FALSE;
@@ -2233,7 +2233,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fMinOnOpen = FALSE;
       fQuickArcFind = TRUE;
       fNoRemovableScan = TRUE;
-      FilesToGet = 128;
+      FilesToGet = 2048;
       fFreeTree = FALSE;
       fSplitStatus = TRUE;
       fAutoTile = TRUE;
@@ -2352,7 +2352,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fMinOnOpen = FALSE;
       fQuickArcFind = TRUE;
       fNoRemovableScan = FALSE;
-      FilesToGet = 128;
+      FilesToGet = 10240;
       fFreeTree = FALSE;
       fSplitStatus = TRUE;
       fAutoTile = TRUE;

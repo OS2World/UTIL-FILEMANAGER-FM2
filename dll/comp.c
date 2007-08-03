@@ -721,7 +721,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
   }
 
   if (!recurse)
-    ulM = 128;
+    ulM = FilesToGet;
   maskstr = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
   if (!maskstr)
     return;
