@@ -21,6 +21,7 @@
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
   30 Mar 07 GKY Remove GetPString for window class names
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
 
 ***********************************************************************/
 

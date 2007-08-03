@@ -33,6 +33,7 @@
   23 Jul 07 SHL Sync with CNRITEM updates (ticket#24)
   29 Jul 07 SHL Add CNRITEM free and remove support (ticket#24)
   02 Aug 07 SHL Add FileAttrToString
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
 
 ***********************************************************************/
 
@@ -262,7 +263,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   }
 
   /* load the object's Subject, if required */
-  pci->pszSubject = NULL;
+  pci->pszSubject = NullStr;
   if (pffb->cbList > 4L &&
       dcd && fLoadSubject &&
       (isalpha(*pci->pszFileName) &&
@@ -479,7 +480,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
 
   /* load the object's Subject, if required */
-  pci->pszSubject = NULL;
+  pci->pszSubject = NullStr;
   if (pfsa4->cbList > 4L &&
       dcd &&
       fLoadSubject &&

@@ -26,6 +26,7 @@
   29 Jul 07 SHL Use Win_Error to report container errors
   01 Aug 07 SHL Rework to sync with CNRITEM mods
   01 Aug 07 SHL Rework to remove vast amount of duplicate code
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
 
 ***********************************************************************/
 

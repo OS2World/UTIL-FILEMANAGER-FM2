@@ -26,6 +26,7 @@
   05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
   23 Jul 07 SHL Sync with CNRITEM updates (ticket#24)
   31 Jul 07 SHL Clean up and report errors (ticket#24)
+  03 Aug 07 GKY Direct editting fixed (ticket#24)
 
 ***********************************************************************/
 
@@ -660,7 +661,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  (INT) pci != -1 &&
 	  !IsRoot(pci->pszFileName) &&
 	  !(pci->flags & RECFLAGS_ENV) && !(pci->flags & RECFLAGS_UNDERENV)) {
-	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszFileName)) {
+	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName)) {
 	  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMP(pci->pszFileName), MPVOID);
 	}
 	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject))
@@ -694,8 +695,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
 	  szSubject[retlen + 1] = 0;
-	  chop_at_crnl(szSubject);
-	  bstrip(szSubject);
+	  //chop_at_crnl(szSubject);
+          bstrip(szSubject);
+          pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
 	  WinSetWindowText(hwndMLE, szSubject);
 	  len = strlen(szSubject);
 	  if (len)
@@ -745,15 +747,14 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *longname = 0;
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
 	  longname[retlen + 1] = 0;
-	  chop_at_crnl(longname);
+          //chop_at_crnl(longname);
+          pci->pszLongname = xrealloc(pci->pszLongname, retlen + 1, pszSrcFile, __LINE__);
 	  WinSetWindowText(hwndMLE, longname);
-	  pci->pszFileName = xrealloc(pci->pszFileName, sizeof(longname), pszSrcFile, __LINE__);
+	  pci->pszFileName = xrealloc(pci->pszFileName, retlen + 1, pszSrcFile, __LINE__);
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
-	else {
-	  pci->pszFileName = pci->pszDisplayName;
-	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
-	  pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+        else {
+          WinQueryWindowText(hwndMLE, sizeof(szData), szData);
 	  if (strchr(szData, '?') ||
 	      strchr(szData, '*') || IsRoot(pci->pszFileName))
 	    return (MRESULT) FALSE;
@@ -768,8 +769,10 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 testname, sizeof(testname)))
 		return FALSE;
 	    if (DosQueryPathInfo(pci->pszFileName,
-				 FIL_QUERYFULLNAME, szData, sizeof(szData)))
-	      strcpy(szData, pci->pszFileName);
+                                 FIL_QUERYFULLNAME, szData, sizeof(szData))){
+              pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+              strcpy(szData, pci->pszFileName);
+            }
 	    WinSetWindowText(hwndMLE, szData);
 	    if (strcmp(szData, testname)) {
 	      if (stricmp(szData, testname) && IsFile(testname) != -1) {
@@ -814,13 +817,13 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   CM_INVALIDATERECORD,
 		   MPFROMP(&pci),
 		   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
-	if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszFileName))
+	if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName))
 	  PostMsg(hwnd, UM_SORTRECORD, MPVOID, MPVOID);
       }
       else {
 	USHORT cmd = 0;
 
-	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszFileName))
+	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName))
 	  cmd = IDM_SORTSMARTNAME;
 	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, cbFile))
 	  cmd = IDM_SORTSIZE;

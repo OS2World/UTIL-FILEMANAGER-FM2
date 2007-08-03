@@ -14,6 +14,7 @@
   29 May 06 SHL Comments
   17 Jul 06 SHL Use Runtime_Error
   15 Aug 06 SHL Rework SetMask args
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
 
 ***********************************************************************/
 
@@ -222,9 +223,9 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_SETTEXTLIMIT,
-		      MPFROMSHORT(2048), MPVOID);
+		      MPFROMSHORT(8), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_OVERRIDESETLIMITS,
-		      MPFROMLONG(102400), MPFROMLONG(2048));
+                      MPFROMLONG(102400), MPFROMLONG(2048));
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 

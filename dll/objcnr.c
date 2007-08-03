@@ -15,6 +15,7 @@
   03 Nov 06 SHL Renames
   22 Mar 07 GKY Use QWL_USER
   01 Aug 07 SHL Rework to sync with CNRITEM mods
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
 
 ***********************************************************************/
 
@@ -108,7 +109,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
     else {
       p = strrchr(pciP->pszFileName, '\\');
       if (!p)
-	pciP->pszFileName = pciP->pszFileName;
+	pciP->pszDisplayName = pciP->pszFileName;
       else if (*(p + 1))
 	p++;
       pciP->pszDisplayName = p;

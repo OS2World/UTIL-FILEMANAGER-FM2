@@ -26,6 +26,7 @@
   18 Feb 07 GKY Rearranged and added drive type and no stats to drive flag dialog
   15 Jun 07 SHL Update for OpenWatcom
   19 Jun 07 SHL Update ABT_FRAME to include netlabs URL and built with OpenWatcom
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
 
 ***********************************************************************/
 
@@ -993,34 +994,34 @@ END
 
 DLGTEMPLATE ABT_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "About FM/2", ABT_FRAME, 40, -15, 188, 152, NOT FS_DLGBORDER | 
+    DIALOG  "About FM/2", ABT_FRAME, 40, -15, 188, 152, NOT FS_DLGBORDER |
             FS_BORDER | FS_MOUSEALIGN | WS_VISIBLE, FCF_TITLEBAR
     BEGIN
         GROUPBOX        "", -1, 6, 26, 177, 105, NOT WS_GROUP
         ICON            COLR_BLACK, ABT_ICON, 79, 133, 21, 16, WS_GROUP
         ICON            COLR_GREEN, ABT_STICK1, 57, 133, 21, 16
         ICON            COLR_DARKRED, ABT_STICK2, 101, 133, 21, 16
-        CTEXT           "FM/2 (File Manager/2)", ABT_PROGNAME, 10, 112, 164, 
+        CTEXT           "FM/2 (File Manager/2)", ABT_PROGNAME, 10, 112, 164,
                         8, DT_VCENTER
-        CTEXT           "Copyright ¸ 1993-98", -1, 10, 104, 164, 8, 
+        CTEXT           "Copyright ¸ 1993-98", -1, 10, 104, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "M. Kimes (Barebones Software)", -1, 10, 96, 164, 8, 
+        CTEXT           "M. Kimes (Barebones Software)", -1, 10, 96, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "All rights reserved", -1, 10, 88, 164, 8, 
+        CTEXT           "All rights reserved", -1, 10, 88, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "Copyright ¸ 1998, 2007", -1, 10, 80, 164, 8, 
+        CTEXT           "Copyright ¸ 1998, 2007", -1, 10, 80, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "Steven Levine and Associates, Inc.", -1, 10, 72, 
+        CTEXT           "Steven Levine and Associates, Inc.", -1, 10, 72,
                         164, 8, DT_VCENTER | NOT WS_GROUP
-        CTEXT           "All rights reserved", -1, 10, 64, 164, 8, 
+        CTEXT           "All rights reserved", -1, 10, 64, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
         DEFPUSHBUTTON   "", ABT_VERSION, 6, 4, 176, 14, WS_GROUP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00300000L
-        CTEXT           "Built with OpenWatcom", -1, 12, 39, 164, 8, 
+        CTEXT           "Built with OpenWatcom", -1, 12, 39, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "http://www.openwatcom.org", -1, 11, 30, 164, 8, 
+        CTEXT           "http://www.openwatcom.org", -1, 11, 30, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "http://svn.netlabs.org/fm2", -1, 11, 53, 164, 8, 
+        CTEXT           "http://svn.netlabs.org/fm2", -1, 11, 53, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
     END
 END

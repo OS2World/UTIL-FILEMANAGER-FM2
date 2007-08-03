@@ -715,7 +715,7 @@ temporarily consumed as a container is filled. If you habitually work
 with directories containing great numbers of files and have sufficient
 memory, boosting this may be a good idea. On the other hand, if you are
 extremely limited in memory (less than 16 megs), reducing this might be
-the thing to do. The range is 16 to 2048, with 128 the default.
+the thing to do. The range is 2048 to 102400, with 10240 the default.
 
 
 :h3 res=100070 name=PANEL_BUBBLEPAGE.Bubble help page

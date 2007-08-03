@@ -18,6 +18,7 @@
   26 Jul 06 SHL Check more run time errors
   19 Oct 06 SHL Correct . and .. detect
   03 Nov 06 SHL Count thread usage
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
 
 ***********************************************************************/
 
