@@ -279,7 +279,7 @@ PSZ fixup(const PCH pachIn, PSZ pszOutBuf, const UINT cBufBytes,
           *pchOut++ = 'b';
         }
         else {
-          sprintf(szTemp + 2, "%02hhx", *pchIn);
+          sprintf(szTemp + 2, "%02x", (UCHAR)*pchIn);
           for (pszTemp = szTemp; *pszTemp;)
             *pchOut++ = *pszTemp++;
         }
