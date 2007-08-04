@@ -34,6 +34,7 @@
   29 Jul 07 SHL Add CNRITEM free and remove support (ticket#24)
   02 Aug 07 SHL Add FileAttrToString
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  04 Aug 07 SHL Update #pragma alloc_test for new functions
 
 ***********************************************************************/
 
@@ -57,7 +58,7 @@ static PSZ pszSrcFile = __FILE__;
 
 #pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
 #pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString)
-#pragma alloc_text(EMPTYCNR,EmptyCnr)
+#pragma alloc_text(EMPTYCNR,EmptyCnr,FreeCnrItemData,FreeCnrItem,FreeCnrItemList,RemoveCnrItems)
 
 /**
  * Return display string given standard file attribute mask
@@ -994,7 +995,7 @@ VOID FillDirCnr(HWND hwndCnr,
 		   pullTotalBytes);
   DosPostEventSem(CompactSem);
 
-#if 1 // fixme to disable or to be configurable
+#if 0 // fixme to disable or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
@@ -1496,7 +1497,7 @@ VOID EmptyCnr(HWND hwnd)
 {
   PFIELDINFO pfi;
 
-#if 1 // fixme to disable or to be configurable
+#if 0 // fixme to disable or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
