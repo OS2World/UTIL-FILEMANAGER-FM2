@@ -24,6 +24,7 @@
   18 Feb 07 GKY Add new drive type icons
   22 Mar 07 GKY Use QWL_USER
   23 Jul 07 SHL Sync with naming standards
+  03 Aug 07 SHL DirSizeProc; correct sizing and positioning to be deterministic
 
 ***********************************************************************/
 
@@ -469,7 +470,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinDismissDlg(hwnd, 0);
 	break;
       }
-      dirsize->pchStopFlag = (CHAR *) & pState->chStopFlag;
+      dirsize->pchStopFlag = (CHAR *)&pState->chStopFlag;
       dirsize->pszFileName = pState->szDirName;
       dirsize->hwndCnr = WinWindowFromID(hwnd, DSZ_CNR);
       if (_beginthread(FillCnrThread, NULL, 122880L * 5, (PVOID)dirsize) ==
@@ -596,15 +597,20 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PCNRITEM pci;
 
       if (oi->idItem == CMA_TEXT) {
-	cnd = (CNRDRAWITEMINFO *) oi->hItem;
+
+	cnd = (CNRDRAWITEMINFO *)oi->hItem;
+
 	if (cnd) {
-	  pci = (PCNRITEM) cnd->pRecord;
+	  pci = (PCNRITEM)cnd->pRecord;
+
 	  if (pci) {
-
-	    POINTL aptl[TXTBOX_COUNT], ptl;
-	    CHAR *p;
-	    LONG clr, x;
-
+	    POINTL aptl[TXTBOX_COUNT];
+	    POINTL ptl;
+	    PSZ p;
+	    LONG clr;
+	    LONG x;
+	    LONG yBottom;
+	    INT boxHeight;
 	    p = strchr(pci->pszFileName, '\r');
 	    if (p) {
 	      /* draw text */
@@ -616,64 +622,76 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		GpiSetColor(oi->hps, CLR_BLACK);
 	      GpiSetBackMix(oi->hps, BM_LEAVEALONE);
 	      GpiSetMix(oi->hps, FM_OVERPAINT);
-	      *p = 0;
+
+	      *p = 0;			// Make 1 line high
+
+	      // Calculate nominal graph box height based on font size
 	      GpiQueryTextBox(oi->hps, strlen(pci->pszFileName),
 			      pci->pszFileName, TXTBOX_COUNT, aptl);
+	      boxHeight = aptl[TXTBOX_TOPRIGHT].y - aptl[TXTBOX_BOTTOMRIGHT].y;
+	      boxHeight -= 6;
+
+	      // Calculate nominal baseline of graph box
+	      // rclItem.yBottom is at center of icon because it is
+	      yBottom = oi->rclItem.yBottom - boxHeight + 3;
+
+	      // Place text above graph box with a bit of whitespace between
 	      ptl.x = oi->rclItem.xLeft;
-	      ptl.y = (oi->rclItem.yTop - aptl[TXTBOX_TOPRIGHT].y);
-	      GpiMove(oi->hps, &ptl);
-	      GpiCharString(oi->hps, strlen(pci->pszFileName),
-			    pci->pszFileName);
-	      *p = '\r';
+	      ptl.y = yBottom + boxHeight + 8;		// 03 Aug 07 SHL
+	      // GpiMove(oi->hps, &ptl);
+	      GpiCharStringAt(oi->hps, &ptl, strlen(pci->pszFileName),
+			      pci->pszFileName);
+
+	      *p = '\r';		// Restore
 
 	      /* draw the graph box */
-	      GpiQueryTextBox(oi->hps, 1, "#", TXTBOX_COUNT, aptl);
+	      // GpiQueryTextBox(oi->hps, 1, "#", TXTBOX_COUNT, aptl);	// 03 Aug 07 SHL
 	      /* draw black outline */
 	      GpiSetColor(oi->hps, CLR_BLACK);
 	      ptl.x = oi->rclItem.xLeft;
-	      ptl.y = oi->rclItem.yBottom + 2;
+	      ptl.y = yBottom + 2;
 	      GpiMove(oi->hps, &ptl);
 	      ptl.x = oi->rclItem.xLeft + 101;
-	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y);
+	      ptl.y = yBottom + boxHeight;
 	      GpiBox(oi->hps, DRO_OUTLINE, &ptl, 0, 0);
 	      /* fill with gray */
 	      GpiSetColor(oi->hps, CLR_PALEGRAY);
 	      ptl.x = oi->rclItem.xLeft + 1;
-	      ptl.y = oi->rclItem.yBottom + 3;
+	      ptl.y = yBottom + 3;
 	      GpiMove(oi->hps, &ptl);
 	      ptl.x = oi->rclItem.xLeft + 100;
-	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+	      ptl.y = yBottom + boxHeight - 1;
 	      GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
 	      /* draw shadow at bottom & right sides */
 	      GpiSetColor(oi->hps, CLR_DARKGRAY);
 	      ptl.x = oi->rclItem.xLeft + 1;
-	      ptl.y = oi->rclItem.yBottom + 3;
+	      ptl.y = yBottom + 3;
 	      GpiMove(oi->hps, &ptl);
 	      ptl.x = oi->rclItem.xLeft + 100;
 	      GpiLine(oi->hps, &ptl);
-	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+	      ptl.y = yBottom + boxHeight - 1;
 	      GpiLine(oi->hps, &ptl);
 
 	      /* draw highlight at top and left sides */
 	      GpiSetColor(oi->hps, CLR_WHITE);
 	      ptl.x = oi->rclItem.xLeft + 1;
 	      GpiLine(oi->hps, &ptl);
-	      ptl.y = oi->rclItem.yBottom + 3;
+	      ptl.y = yBottom + 3;
 	      GpiLine(oi->hps, &ptl);
 
 	      /* draw shadow of box */
 	      GpiSetColor(oi->hps, CLR_DARKGRAY);
 	      ptl.x = oi->rclItem.xLeft + 2;
-	      ptl.y = oi->rclItem.yBottom;
+	      ptl.y = yBottom + boxHeight;
 	      GpiMove(oi->hps, &ptl);
 	      ptl.x = oi->rclItem.xLeft + 103;
 	      GpiLine(oi->hps, &ptl);
-	      ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 2;
+	      ptl.y = yBottom + boxHeight - 2;
 	      GpiLine(oi->hps, &ptl);
 	      ptl.x--;
 	      GpiMove(oi->hps, &ptl);
-	      ptl.y = oi->rclItem.yBottom + 1;
+	      ptl.y = yBottom + 1;
 	      GpiLine(oi->hps, &ptl);
 	      ptl.x = oi->rclItem.xLeft + 2;
 	      GpiLine(oi->hps, &ptl);
@@ -685,10 +703,10 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		else
 		  GpiSetColor(oi->hps, CLR_RED);
 		ptl.x = oi->rclItem.xLeft + 1;
-		ptl.y = oi->rclItem.yBottom + 3;
+		ptl.y = yBottom + 3;
 		GpiMove(oi->hps, &ptl);
 		ptl.x = oi->rclItem.xLeft + pci->flags;
-		ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+		ptl.y = yBottom + boxHeight - 1;
 		GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
 		/* draw highlights and shadows on graph */
@@ -698,13 +716,13 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  GpiSetColor(oi->hps, CLR_PALEGRAY);
 		if (pci->flags > 5) {
 		  ptl.x = oi->rclItem.xLeft + 1;
-		  ptl.y = oi->rclItem.yBottom + 3;
+		  ptl.y = yBottom + 3;
 		  GpiMove(oi->hps, &ptl);
-		  ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+		  ptl.y = yBottom + boxHeight - 1;
 		  GpiLine(oi->hps, &ptl);
 		}
 		else {
-		  ptl.y = (oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y) - 1;
+		  ptl.y = yBottom + boxHeight - 1;
 		  GpiMove(oi->hps, &ptl);
 		}
 		ptl.x = oi->rclItem.xLeft + pci->flags;
@@ -712,7 +730,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (*(pci->pszLongname + 1) != 1) {
 		  GpiSetColor(oi->hps, CLR_DARKRED);
 		  ptl.x = oi->rclItem.xLeft + 2;
-		  ptl.y = oi->rclItem.yBottom + 3;
+		  ptl.y = yBottom + 3;
 		  GpiMove(oi->hps, &ptl);
 		  ptl.x = oi->rclItem.xLeft + pci->flags;
 		  GpiLine(oi->hps, &ptl);
@@ -727,8 +745,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  clr = CLR_BLACK;
 		  GpiSetColor(oi->hps, CLR_BLACK);
 		}
-		ptl.x = (oi->rclItem.xLeft + 1) + (x * 10);
-		ptl.y = oi->rclItem.yBottom + aptl[TXTBOX_TOPRIGHT].y - 1;
+		ptl.x = oi->rclItem.xLeft + 1 + x * 10;
+		ptl.y = yBottom + boxHeight - 1;
 		GpiMove(oi->hps, &ptl);
 		switch (x) {
 		case 1:
@@ -748,14 +766,14 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  break;
 		}
 		GpiLine(oi->hps, &ptl);
-	      }
+	      } // for x
 	      return MRFROMLONG(TRUE);
 	    }
 	  }
 	}
       }
     }
-    return FALSE;
+    return FALSE;			// Let PM draw
 
   case WM_CONTROL:
     switch (SHORT2FROMMP(mp1)) {
