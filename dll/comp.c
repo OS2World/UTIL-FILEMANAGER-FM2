@@ -441,11 +441,8 @@ static VOID ActionCnrThread(VOID *args)
 	      else {
 		// Other side is not blank - update just this side
 		FreeCnrItemData(pci);
-		pci->pszFileName = NullStr;
 		pci->pszDisplayName = pci->pszFileName;
 		pci->rc.pszIcon = pci->pszFileName;
-		pci->pszLongname = NullStr;
-		pci->pszSubject = NullStr;
 		pci->flags = 0;
 		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
 			   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
@@ -502,14 +499,14 @@ static VOID ActionCnrThread(VOID *args)
 		  pciD->pszDisplayName++;
 	      }
 	      // 02 Aug 07 SHL fixme to know Longname transfer is correct?
-	      pciD->pszLongname = pci->pszLongname;
+	      pciD->pszLongName = pci->pszLongName;
 	      if (pciD->pszSubject != NullStr) {
 		xfree(pciD->pszSubject);
 		pciD->pszSubject = NullStr;
 	      }
 	      pciD->attrFile = pci->attrFile;
 	      pciD->pszDispAttr = pci->pszDispAttr;
-	      pciD->flags = 0;
+	      pciD->flags = CNRITEM_EXISTS;	// 04 Aug 07 SHL
 	      pciD->date = pci->date;
 	      pciD->time = pci->time;
 	      pciD->ladate = pci->ladate;
@@ -592,8 +589,6 @@ static VOID ActionCnrThread(VOID *args)
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      FreeCnrItemData(pciD);
 	      pciD->pszFileName = xstrdup(newname, pszSrcFile, __LINE__);
-	      pciD->pszLongname = NullStr;
-	      pciD->pszSubject = NullStr;
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
 		pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->leftdir);
 		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
@@ -622,7 +617,7 @@ static VOID ActionCnrThread(VOID *args)
 		pci->pszSubject = NullStr;
 	      }
 	      // 02 Aug 07 SHL fixme to know why - should already be set?
-	      pci->flags = CNRITEM_EXISTS;
+	      // pci->flags = CNRITEM_EXISTS;
 
 	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
@@ -1252,348 +1247,6 @@ static VOID FillCnrsThread(VOID *args)
 	    r++;
 	  }
 
-#if 0 //============================ fixme to be gone =================
-
-	  if (filesl && filesl[l] && filesr && filesr[r]) {
-	    // Got two names
-	    x = stricmp(filesl[l]->fname, filesr[r]->fname);
-	    if (!x) {
-	      // Names match - insert on both sides
-	      sprintf(szBuf, "%s%s%s", cmp->leftdir,
-		      (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
-		      NullStr : "\\", filesl[l]->fname);
-	      // pcil->rc.hptrIcon = hptrFile;
-	      pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
-	      pcil->pszDisplayName = pcil->pszFileName + lenl;
-	      pcil->attrFile = filesl[l]->attrFile;
-	      y = 0;
-	      for (x = 0; x < 6; x++) {
-		if (attrstring[x])
-		  pcil->szDispAttr[y++] =
-		    (CHAR) ((pcil->
-			     attrFile & (1 << x)) ? attrstring[x] : '-');
-	      }
-	      pcil->szDispAttr[5] = 0;
-	      pcil->cbFile = filesl[l]->cbFile;
-	      pcil->easize = filesl[l]->easize;
-	      pcil->date.day = filesl[l]->date.day;
-	      pcil->date.month = filesl[l]->date.month;
-	      pcil->date.year = filesl[l]->date.year + 1980;
-	      pcil->time.seconds = filesl[l]->time.twosecs * 2;
-	      pcil->time.minutes = filesl[l]->time.minutes;
-	      pcil->time.hours = filesl[l]->time.hours;
-	      pcil->ladate.day = filesl[l]->ladate.day;
-	      pcil->ladate.month = filesl[l]->ladate.month;
-	      pcil->ladate.year = filesl[l]->ladate.year + 1980;
-	      pcil->latime.seconds = filesl[l]->latime.twosecs * 2;
-	      pcil->latime.minutes = filesl[l]->latime.minutes;
-	      pcil->latime.hours = filesl[l]->latime.hours;
-	      pcil->crdate.day = filesl[l]->crdate.day;
-	      pcil->crdate.month = filesl[l]->crdate.month;
-	      pcil->crdate.year = filesl[l]->crdate.year + 1980;
-	      pcil->crtime.seconds = filesl[l]->crtime.twosecs * 2;
-	      pcil->crtime.minutes = filesl[l]->crtime.minutes;
-	      pcil->crtime.hours = filesl[l]->crtime.hours;
-	      if (*cmp->dcd.mask.szMask) {
-		if (!Filter((PMINIRECORDCORE) pcil, (PVOID) & cmp->dcd.mask)) {
-		  pcil->rc.flRecordAttr |= CRA_FILTERED;
-		  pcir->rc.flRecordAttr |= CRA_FILTERED;
-		}
-	      }
-	      sprintf(szBuf, "%s%s%s", cmp->rightdir,
-		      (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
-		      NullStr : "\\", filesr[r]->fname);
-	      pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
-	      pcir->pszDisplayName = pcir->pszFileName + lenr;
-	      pcir->attrFile = filesr[r]->attrFile;
-	      // pcir->rc.hptrIcon = hptrFile;
-	      y = 0;
-	      for (x = 0; x < 6; x++)
-		if (attrstring[x])
-		  pcir->szDispAttr[y++] =
-		    (CHAR) ((pcir->
-			     attrFile & (1 << x)) ? attrstring[x] : '-');
-	      pcir->szDispAttr[5] = 0;
-	      pcir->cbFile = filesr[r]->cbFile;
-	      pcir->easize = filesr[r]->easize;
-	      pcir->date.day = filesr[r]->date.day;
-	      pcir->date.month = filesr[r]->date.month;
-	      pcir->date.year = filesr[r]->date.year + 1980;
-	      pcir->time.seconds = filesr[r]->time.twosecs * 2;
-	      pcir->time.minutes = filesr[r]->time.minutes;
-	      pcir->time.hours = filesr[r]->time.hours;
-	      pcir->ladate.day = filesr[r]->ladate.day;
-	      pcir->ladate.month = filesr[r]->ladate.month;
-	      pcir->ladate.year = filesr[r]->ladate.year + 1980;
-	      pcir->latime.seconds = filesr[r]->latime.twosecs * 2;
-	      pcir->latime.minutes = filesr[r]->latime.minutes;
-	      pcir->latime.hours = filesr[r]->latime.hours;
-	      pcir->crdate.day = filesr[r]->crdate.day;
-	      pcir->crdate.month = filesr[r]->crdate.month;
-	      pcir->crdate.year = filesr[r]->crdate.year + 1980;
-	      pcir->crtime.seconds = filesr[r]->crtime.twosecs * 2;
-	      pcir->crtime.minutes = filesr[r]->crtime.minutes;
-	      pcir->crtime.hours = filesr[r]->crtime.hours;
-	      pcil->flags |= CNRITEM_EXISTS;
-	      pcir->flags |= CNRITEM_EXISTS;
-	      pch = szBuf;
-	      // Subject field holds status messages
-	      // pch = pcil->pszSubject;
-	      *pch = 0;
-	      if (pcil->cbFile + pcil->easize > pcir->cbFile + pcir->easize) {
-		pcil->flags |= CNRITEM_LARGER;
-		pcir->flags |= CNRITEM_SMALLER;
-		strcpy(pch, GetPString(IDS_LARGERTEXT));
-		pch += 6;
-	      }
-	      else if (pcil->cbFile + pcil->easize <
-		       pcir->cbFile + pcir->easize) {
-		pcil->flags |= CNRITEM_SMALLER;
-		pcir->flags |= CNRITEM_LARGER;
-		strcpy(pch, GetPString(IDS_SMALLERTEXT));
-		pch += 7;
-	      }
-	      if ((pcil->date.year > pcir->date.year) ? TRUE :
-		  (pcil->date.year < pcir->date.year) ? FALSE :
-		  (pcil->date.month > pcir->date.month) ? TRUE :
-		  (pcil->date.month < pcir->date.month) ? FALSE :
-		  (pcil->date.day > pcir->date.day) ? TRUE :
-		  (pcil->date.day < pcir->date.day) ? FALSE :
-		  (pcil->time.hours > pcir->time.hours) ? TRUE :
-		  (pcil->time.hours < pcir->time.hours) ? FALSE :
-		  (pcil->time.minutes > pcir->time.minutes) ? TRUE :
-		  (pcil->time.minutes < pcir->time.minutes) ? FALSE :
-		  (pcil->time.seconds > pcir->time.seconds) ? TRUE :
-		  (pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE) {
-		pcil->flags |= CNRITEM_NEWER;
-		pcir->flags |= CNRITEM_OLDER;
-		if (pch != szBuf) {
-		  strcpy(pch, ", ");
-		  pch += 2;
-		}
-		strcpy(pch, GetPString(IDS_NEWERTEXT));
-		pch += 5;
-	      }
-	      else if ((pcil->date.year < pcir->date.year) ? TRUE :
-		       (pcil->date.year > pcir->date.year) ? FALSE :
-		       (pcil->date.month < pcir->date.month) ? TRUE :
-		       (pcil->date.month > pcir->date.month) ? FALSE :
-		       (pcil->date.day < pcir->date.day) ? TRUE :
-		       (pcil->date.day > pcir->date.day) ? FALSE :
-		       (pcil->time.hours < pcir->time.hours) ? TRUE :
-		       (pcil->time.hours > pcir->time.hours) ? FALSE :
-		       (pcil->time.minutes < pcir->time.minutes) ? TRUE :
-		       (pcil->time.minutes > pcir->time.minutes) ? FALSE :
-		       (pcil->time.seconds < pcir->time.seconds) ? TRUE :
-		       (pcil->time.seconds > pcir->time.seconds) ? FALSE :
-		       FALSE) {
-		pcil->flags |= CNRITEM_OLDER;
-		pcir->flags |= CNRITEM_NEWER;
-		if (pch != szBuf) {
-		  strcpy(pch, ", ");
-		  pch += 2;
-		}
-		strcpy(pch, GetPString(IDS_OLDERTEXT));
-		pch += 5;
-	      }
-	      *pch = 0;
-	      pcil->pszSubject = *szBuf ? strdup(szBuf) : NullStr;
-	      r++;
-	      l++;
-	    }
-	    else if (x < 0) {
-	      // Left side name less than right side name
-	      // Insert name on left, leave blank filler on right
-	      sprintf(szBuf, "%s%s%s", cmp->leftdir,
-		      cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-			NullStr : "\\",
-		      filesl[l]->fname);
-	      pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
-	      pcil->pszDisplayName = pcil->pszFileName + lenl;
-	      pcil->attrFile = filesl[l]->attrFile;
-	      // pcil->rc.hptrIcon = hptrFile;
-	      y = 0;
-	      for (x = 0; x < 6; x++)
-		if (attrstring[x])
-		  pcil->szDispAttr[y++] =
-		    (CHAR) ((pcil->
-			     attrFile & (1 << x)) ? attrstring[x] : '-');
-	      pcil->szDispAttr[5] = 0;
-	      pcil->cbFile = filesl[l]->cbFile;
-	      pcil->easize = filesl[l]->easize;
-	      pcil->date.day = filesl[l]->date.day;
-	      pcil->date.month = filesl[l]->date.month;
-	      pcil->date.year = filesl[l]->date.year + 1980;
-	      pcil->time.seconds = filesl[l]->time.twosecs * 2;
-	      pcil->time.minutes = filesl[l]->time.minutes;
-	      pcil->time.hours = filesl[l]->time.hours;
-	      pcil->ladate.day = filesl[l]->ladate.day;
-	      pcil->ladate.month = filesl[l]->ladate.month;
-	      pcil->ladate.year = filesl[l]->ladate.year + 1980;
-	      pcil->latime.seconds = filesl[l]->latime.twosecs * 2;
-	      pcil->latime.minutes = filesl[l]->latime.minutes;
-	      pcil->latime.hours = filesl[l]->latime.hours;
-	      pcil->crdate.day = filesl[l]->crdate.day;
-	      pcil->crdate.month = filesl[l]->crdate.month;
-	      pcil->crdate.year = filesl[l]->crdate.year + 1980;
-	      pcil->crtime.seconds = filesl[l]->crtime.twosecs * 2;
-	      pcil->crtime.minutes = filesl[l]->crtime.minutes;
-	      pcil->crtime.hours = filesl[l]->crtime.hours;
-	      if (*cmp->dcd.mask.szMask) {
-		if (!Filter((PMINIRECORDCORE) pcil, (PVOID) & cmp->dcd.mask)) {
-		  pcil->rc.flRecordAttr |= CRA_FILTERED;
-		  pcir->rc.flRecordAttr |= CRA_FILTERED;
-		}
-	      }
-	      free(filesl[l]);
-	      l++;
-	    }
-	    else {
-	      // Left side name larger than right side name
-	      // Insert name on right, leave blank filler on left
-	      sprintf(szBuf, "%s%s%s", cmp->rightdir,
-		      cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-			NullStr : "\\",
-		      filesr[r]->fname);
-	      pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
-	      pcir->pszDisplayName = pcir->pszFileName + lenr;
-	      pcir->attrFile = filesr[r]->attrFile;
-	      // pcir->rc.hptrIcon = hptrFile;
-	      y = 0;
-	      for (x = 0; x < 6; x++) {
-		if (attrstring[x])
-		  pcir->szDispAttr[y++] =
-		    (CHAR) ((pcir->
-			     attrFile & (1 << x)) ? attrstring[x] : '-');
-	      }
-	      pcir->szDispAttr[5] = 0;
-	      pcir->cbFile = filesr[r]->cbFile;
-	      pcir->easize = filesr[r]->easize;
-	      pcir->date.day = filesr[r]->date.day;
-	      pcir->date.month = filesr[r]->date.month;
-	      pcir->date.year = filesr[r]->date.year + 1980;
-	      pcir->time.seconds = filesr[r]->time.twosecs * 2;
-	      pcir->time.minutes = filesr[r]->time.minutes;
-	      pcir->time.hours = filesr[r]->time.hours;
-	      pcir->ladate.day = filesr[r]->ladate.day;
-	      pcir->ladate.month = filesr[r]->ladate.month;
-	      pcir->ladate.year = filesr[r]->ladate.year + 1980;
-	      pcir->latime.seconds = filesr[r]->latime.twosecs * 2;
-	      pcir->latime.minutes = filesr[r]->latime.minutes;
-	      pcir->latime.hours = filesr[r]->latime.hours;
-	      pcir->crdate.day = filesr[r]->crdate.day;
-	      pcir->crdate.month = filesr[r]->crdate.month;
-	      pcir->crdate.year = filesr[r]->crdate.year + 1980;
-	      pcir->crtime.seconds = filesr[r]->crtime.twosecs * 2;
-	      pcir->crtime.minutes = filesr[r]->crtime.minutes;
-	      pcir->crtime.hours = filesr[r]->crtime.hours;
-	      if (*cmp->dcd.mask.szMask) {
-		if (!Filter((PMINIRECORDCORE) pcir, (PVOID) & cmp->dcd.mask)) {
-		  pcir->rc.flRecordAttr |= CRA_FILTERED;
-		  pcil->rc.flRecordAttr |= CRA_FILTERED;
-		}
-	      }
-	      free(filesr[r]);
-	      r++;
-	    }
-	  }
-	  else if (filesl && filesl[l]) {
-	    // Left side list longer than right side list
-	    // Insert name on left, leave blank filler on right
-	    sprintf(szBuf, "%s%s%s", cmp->leftdir,
-		    cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-		      NullStr : "\\",
-		    filesl[l]->fname);
-	    pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
-	    pcil->pszDisplayName = pcil->pszFileName + lenl;
-	    pcil->attrFile = filesl[l]->attrFile;
-	    // pcil->rc.hptrIcon = hptrFile;
-	    y = 0;
-	    for (x = 0; x < 6; x++)
-	      if (attrstring[x])
-		pcil->szDispAttr[y++] = (CHAR) ((pcil->attrFile & (1 << x)) ?
-						attrstring[x] : '-');
-	    pcil->szDispAttr[5] = 0;
-	    pcil->cbFile = filesl[l]->cbFile;
-	    pcil->easize = filesl[l]->easize;
-	    pcil->date.day = filesl[l]->date.day;
-	    pcil->date.month = filesl[l]->date.month;
-	    pcil->date.year = filesl[l]->date.year + 1980;
-	    pcil->time.seconds = filesl[l]->time.twosecs * 2;
-	    pcil->time.minutes = filesl[l]->time.minutes;
-	    pcil->time.hours = filesl[l]->time.hours;
-	    pcil->ladate.day = filesl[l]->ladate.day;
-	    pcil->ladate.month = filesl[l]->ladate.month;
-	    pcil->ladate.year = filesl[l]->ladate.year + 1980;
-	    pcil->latime.seconds = filesl[l]->latime.twosecs * 2;
-	    pcil->latime.minutes = filesl[l]->latime.minutes;
-	    pcil->latime.hours = filesl[l]->latime.hours;
-	    pcil->crdate.day = filesl[l]->crdate.day;
-	    pcil->crdate.month = filesl[l]->crdate.month;
-	    pcil->crdate.year = filesl[l]->crdate.year + 1980;
-	    pcil->crtime.seconds = filesl[l]->crtime.twosecs * 2;
-	    pcil->crtime.minutes = filesl[l]->crtime.minutes;
-	    pcil->crtime.hours = filesl[l]->crtime.hours;
-	    if (*cmp->dcd.mask.szMask) {
-	      if (!Filter((PMINIRECORDCORE) pcil, (PVOID) & cmp->dcd.mask)) {
-		pcil->rc.flRecordAttr |= CRA_FILTERED;
-		pcir->rc.flRecordAttr |= CRA_FILTERED;
-	      }
-	    }
-	    free(filesl[l]);
-	    l++;
-	  }
-	  else {
-	    // filesr && filesr[r]
-	    // Right side list longer than left side
-	    // Insert name on right, leave blank filler on left
-	    sprintf(szBuf, "%s%s%s", cmp->rightdir,
-		    cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-		      NullStr : "\\",
-		    filesr[r]->fname);
-	    pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
-	    pcir->pszDisplayName = pcir->pszFileName + lenr;
-	    pcir->attrFile = filesr[r]->attrFile;
-	    // pcir->rc.hptrIcon = hptrFile;
-	    y = 0;
-	    for (x = 0; x < 6; x++) {
-	      if (attrstring[x])
-		pcir->szDispAttr[y++] = (CHAR) ((pcir->attrFile & (1 << x)) ?
-						attrstring[x] : '-');
-	    }
-	    pcir->szDispAttr[5] = 0;
-	    pcir->cbFile = filesr[r]->cbFile;
-	    pcir->easize = filesr[r]->easize;
-	    pcir->date.day = filesr[r]->date.day;
-	    pcir->date.month = filesr[r]->date.month;
-	    pcir->date.year = filesr[r]->date.year + 1980;
-	    pcir->time.seconds = filesr[r]->time.twosecs * 2;
-	    pcir->time.minutes = filesr[r]->time.minutes;
-	    pcir->time.hours = filesr[r]->time.hours;
-	    pcir->ladate.day = filesr[r]->ladate.day;
-	    pcir->ladate.month = filesr[r]->ladate.month;
-	    pcir->ladate.year = filesr[r]->ladate.year + 1980;
-	    pcir->latime.seconds = filesr[r]->latime.twosecs * 2;
-	    pcir->latime.minutes = filesr[r]->latime.minutes;
-	    pcir->latime.hours = filesr[r]->latime.hours;
-	    pcir->crdate.day = filesr[r]->crdate.day;
-	    pcir->crdate.month = filesr[r]->crdate.month;
-	    pcir->crdate.year = filesr[r]->crdate.year + 1980;
-	    pcir->crtime.seconds = filesr[r]->crtime.twosecs * 2;
-	    pcir->crtime.minutes = filesr[r]->crtime.minutes;
-	    pcir->crtime.hours = filesr[r]->crtime.hours;
-	    if (*cmp->dcd.mask.szMask) {
-	      if (!Filter((PMINIRECORDCORE) pcir, (PVOID) & cmp->dcd.mask)) {
-		pcir->rc.flRecordAttr |= CRA_FILTERED;
-		pcil->rc.flRecordAttr |= CRA_FILTERED;
-	      }
-	    }
-	    free(filesr[r]);
-	    r++;
-	  }
-
-#endif //=========================== fixme to be gone =================
-
 	  // Ensure empty buffers point somewhere
 	  if (!pcil->pszFileName) {
 	    pcil->pszFileName = NullStr;
@@ -1608,8 +1261,8 @@ static VOID FillCnrsThread(VOID *args)
 	  pcil->rc.pszIcon = pcil->pszDisplayName;
 	  pcir->rc.pszIcon = pcir->pszDisplayName;
 
-	  pcil->pszLongname = NullStr;
-	  pcir->pszLongname = NullStr;
+	  pcil->pszLongName = NullStr;
+	  pcir->pszLongName = NullStr;
 
 	  if (!pcil->pszSubject)
 	    pcil->pszSubject = NullStr;

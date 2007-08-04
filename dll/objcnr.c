@@ -103,7 +103,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
     pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
     pciP->pszDispAttr = NullStr;
     pciP->pszSubject = NullStr;
-    pciP->pszLongname = NullStr;
+    pciP->pszLongName = NullStr;
     if (strlen(filename) < 4)
       pciP->pszDisplayName = pciP->pszFileName;
     else {

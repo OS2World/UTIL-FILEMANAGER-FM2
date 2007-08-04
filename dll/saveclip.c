@@ -477,10 +477,10 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      pci->time.minutes, pci->time.seconds);
 		      break;
 		    case 'l':
-		      fputs(pci->pszLongname, fp);
+		      fputs(pci->pszLongName, fp);
 		      break;
 		    case 'L':
-		      fprintf(fp, "%-40s", pci->pszLongname);
+		      fprintf(fp, "%-40s", pci->pszLongName);
 		      break;
 		    case 'F':
 		    case 'f':

@@ -418,7 +418,7 @@ typedef struct _CNRITEM
   CTIME latime;			/* Last access time of file */
   CDATE crdate;			/* Creation date of file */
   CTIME crtime;			/* Creation time of file */
-  CHAR *pszLongname;		// Points to long name buffer - used by code and by CFA_STRING
+  CHAR *pszLongName;		// Points to long name buffer - used by code and by CFA_STRING
   ULONGLONG cbFile;		/* File size */
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */
@@ -638,7 +638,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszFileName, const PFILESTATUS4 pfsa4,
 			      const BOOL partial, DIRCNRDATA *pdcd);
-INT FreeCnrItem(HWND hwnd, PCNRITEM pci);
+VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
 VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
 VOID FreeCnrItemData(PCNRITEM pci);
 INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);

@@ -20,6 +20,7 @@
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   14 Jun 07 SHL SelectAll: make odd expression go away
   02 Aug 07 SHL Sync with CNRITEM mods
+  04 Aug 07 SHL Use Runtime_Error
 
 ***********************************************************************/
 
@@ -573,6 +574,11 @@ VOID InvertAll(HWND hwndCnr)
 #pragma alloc_text (SELECT3,SpecialSelect)
 #pragma alloc_text(SELECT4,FreeCnrs,SpecialSelect2,CompSSNames,CompSSNamesB)
 
+/**
+ * Do select actions for compare directories containers
+ *
+ */
+
 VOID SpecialSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
 {
   PCNRITEM pciS, pciD, *pciSa = NULL, *pciDa = NULL;
@@ -581,8 +587,10 @@ VOID SpecialSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
   register INT x, numD, numS;
 
 
-  if (!hwndCnrS || !hwndCnrD)
+  if (!hwndCnrS || !hwndCnrD) {
+    Runtime_Error(pszSrcFile, __LINE__, "hwndCnrS %p hwndCnrD %p", hwndCnrS, hwndCnrD);
     return;
+  }
 
   memset(&cnri, 0, sizeof(CNRINFO));
   cnri.cb = sizeof(CNRINFO);
@@ -595,9 +603,7 @@ VOID SpecialSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
 	     MPFROMLONG(sizeof(CNRINFO)));
   numS = (INT) cnri.cRecords;
   if (!numD || numS != numD) {
-    saymsg(MB_ENTER,
-	   HWND_DESKTOP,
-	   DEBUG_STRING, "numD (%lu) != numS (%lu)", numD, numS);
+    Runtime_Error(pszSrcFile, __LINE__, "numD %u != numS %u", numD, numS);
     return;
   }
   pciDa = xmalloc(sizeof(PCNRITEM) * numD, pszSrcFile, __LINE__);
@@ -629,10 +635,11 @@ Restart:
       pciD = (PCNRITEM) WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciD),
 				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     if (!(x % 500))
-      DosSleep(1L);
+      DosSleep(1);
     else if (!(x % 50))
       DosSleep(1);
-  }
+  } // while
+
   if (numD != x) {
     if (!slow) {
       slow = TRUE;
@@ -640,8 +647,7 @@ Restart:
     }
     free(pciDa);
     free(pciSa);
-    saymsg(MB_ENTER,
-	   HWND_DESKTOP, DEBUG_STRING, "numD (%lu) != x (%lu)", numD, x);
+    Runtime_Error(pszSrcFile, __LINE__, "numD %u != x %lu", numD, x);
     return;
   }
 
@@ -659,10 +665,11 @@ Restart:
       pciS = (PCNRITEM) WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pciS),
 				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     if (!(x % 500))
-      DosSleep(1L);
+      DosSleep(1);
     else if (!(x % 50))
       DosSleep(1);
-  }
+  } // while
+
   if (numS != x) {
     if (!slow) {
       slow = TRUE;
@@ -724,7 +731,7 @@ Restart:
 	pciDa[x]->flags |= CNRITEM_NEWER;
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1185,6 +1192,11 @@ VOID FreeCnrs(struct Cnr * Cnrs, INT numw)
   free(Cnrs);
   DosPostEventSem(CompactSem);
 }
+
+/**
+ * Do select actions for single container
+ *
+ */
 
 VOID SpecialSelect2(HWND hwndParent, INT action)
 {

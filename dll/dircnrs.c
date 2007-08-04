@@ -3044,7 +3044,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PCNRITEM pci;
 	  CHAR s[CCHMAXPATHCOMP + 91], tb[81], tf[81];
 
-	  pci = (PCNRITEM) ((pre) ? pre->pRecord : NULL);
+	  pci = (PCNRITEM) (pre ? pre->pRecord : NULL);
 	  if (!pci) {
 	    if (hwndStatus2)
 	      WinSetWindowText(hwndStatus2, NullStr);

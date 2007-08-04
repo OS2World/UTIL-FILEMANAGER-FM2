@@ -309,7 +309,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     pci->pszSubject = NullStr;
 
   /* load the object's longname */
-  pci->pszLongname = 0;
+  pci->pszLongName = 0;
   if (fLoadLongnames &&
       dcd &&
       pffb->cbList > 4L &&
@@ -345,15 +345,15 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  value = pfea->szName + pfea->cbName + 1;
 	  value[pfea->cbValue] = 0;
 	  if (*(USHORT *) value == EAT_ASCII)
-	    pci->pszLongname = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
+	    pci->pszLongName = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
 	free(pfealist);
       }
       free(pgealist);
     }
   }
-  if (!pci->pszLongname)
-    pci->pszLongname = NullStr;
+  if (!pci->pszLongName)
+    pci->pszLongName = NullStr;
 
   /* do anything required to case of filename */
   if (fForceUpper)
@@ -526,7 +526,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
   if (!pci->pszSubject)
     pci->pszSubject = NullStr;
 
-  pci->pszLongname = 0;
+  pci->pszLongName = 0;
   if (fLoadLongnames &&
       dcd &&
       pfsa4->cbList > 4L &&
@@ -563,7 +563,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
 	  value[pfea->cbValue] = 0;			// Terminate
 	  if (*(USHORT *) value == EAT_ASCII) {
 	    p = value + sizeof(USHORT) * 2;		// Point at value string
-	    pci->pszLongname = xstrdup(p, pszSrcFile, __LINE__);
+	    pci->pszLongName = xstrdup(p, pszSrcFile, __LINE__);
 	  }
 	}
 	free(pfealist);
@@ -571,8 +571,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
       free(pgealist);
     }
   }
-  if (!pci->pszLongname)
-    pci->pszLongname = NullStr;
+  if (!pci->pszLongName)
+    pci->pszLongName = NullStr;
 
   if (fForceUpper)
     strupr(pci->pszFileName);
@@ -963,7 +963,7 @@ Abort:
   if (recurse) {
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-    while (pci && (INT) pci != -1) {
+    while (pci && (INT)pci != -1) {
       if (pci->attrFile & FILE_DIRECTORY)
 	Stubby(hwndCnr, pci);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
@@ -995,7 +995,7 @@ VOID FillDirCnr(HWND hwndCnr,
 		   pullTotalBytes);
   DosPostEventSem(CompactSem);
 
-#if 0 // fixme to disable or to be configurable
+#if 0 // fixme to be gone or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
@@ -1250,7 +1250,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				CM_QUERYRECORD,
 				MPVOID,
 				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-    while (pci && (INT) pci != -1) {
+    while (pci && (INT)pci != -1) {
       if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum) {
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
@@ -1351,7 +1351,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			      CM_QUERYRECORD,
 			      MPVOID,
 			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-  while (pci && (INT) pci != -1) {
+  while (pci && (INT)pci != -1) {
     pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				    CM_QUERYRECORD,
 				    MPFROMP(pci),
@@ -1400,7 +1400,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			      CM_QUERYRECORD,
 			      MPVOID,
 			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-  while (pci && (INT) pci != -1) {
+  while (pci && (INT)pci != -1) {
     pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				    CM_QUERYRECORD,
 				    MPFROMP(pci),
@@ -1411,7 +1411,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				  MPFROMP(pci),
 				  MPFROM2SHORT(CMA_FIRSTCHILD,
 					       CMA_ITEMORDER));
-      while (pci && (INT) pci != -1) {
+      while (pci && (INT)pci != -1) {
 	if (pci->flags & RECFLAGS_ENV)
 	  FleshEnv(hwndCnr, pci);
 	pci = (PCNRITEM) WinSendMsg(hwndCnr,
@@ -1497,7 +1497,7 @@ VOID EmptyCnr(HWND hwnd)
 {
   PFIELDINFO pfi;
 
-#if 0 // fixme to disable or to be configurable
+#if 0 // fixme to be gone or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
@@ -1520,42 +1520,52 @@ VOID EmptyCnr(HWND hwnd)
 
 /**
  * Free storage associated with container item
- * Caller is responsible for correcting pointers
  */
 
 VOID FreeCnrItemData(PCNRITEM pci)
 {
+  PSZ psz;
   // DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData %p", pci);
 
-  if (pci->pszSubject && pci->pszSubject != NullStr)
-    xfree(pci->pszSubject);
+  if (pci->pszSubject && pci->pszSubject != NullStr) {
 
-  if (pci->pszLongname && pci->pszLongname != NullStr &&
-      pci->pszLongname != pci->pszFileName && pci->pszLongname != pci->pszDisplayName)
-    xfree(pci->pszLongname);
+    psz = pci->pszSubject;
+    pci->pszSubject = NullStr;
+    free(psz);
+  }
 
-  if (pci->pszFileName && pci->pszFileName != NullStr)
-    xfree(pci->pszFileName);
+  // +1 in case long name pointing after last backslash
+  if (pci->pszLongName &&
+      pci->pszLongName != NullStr &&
+      pci->pszLongName != pci->pszFileName &&
+      pci->pszLongName != pci->pszDisplayName &&
+      pci->pszLongName != pci->pszDisplayName + 1) {
+    psz = pci->pszLongName;
+    pci->pszLongName = NullStr;
+    free(psz);
+  }
+
+  if (pci->pszFileName && pci->pszFileName != NullStr) {
+    psz = pci->pszFileName;
+    pci->pszFileName = NullStr;
+    free(psz);
+  }
 }
 
 /**
- * Free container item and associated storage
+ * Free single container item and associated storage
  */
 
-INT FreeCnrItem(HWND hwnd, PCNRITEM pci)
+VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
 {
-  INT remaining;
-
   // DbgMsg(pszSrcFile, __LINE__, "FreeCnrItem hwnd %x pci %p", hwnd, pci);
 
   FreeCnrItemData(pci);
 
-  remaining = (INT)WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1));
-  if (remaining == -1) {
+  if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1))) {
     // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
     Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD hwnd %x pci %p", hwnd, pci);
   }
-  return remaining;
 }
 
 /**
@@ -1566,66 +1576,71 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
 {
   PCNRITEM pci = pciFirst;
   PCNRITEM pciNext;
+  USHORT usCount;
 
-  while (pci) {
+  for (usCount = 0; pci; usCount++) {
     pciNext = (PCNRITEM) pci->rc.preccNextRecord;
-    if (FreeCnrItem(hwnd, pci) == -1)
-      break;				// Avoid cascading errors
+    FreeCnrItemData(pci);
     pci = pciNext;
+  }
+
+  if (usCount) {
+    if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(usCount))) {
+      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD hwnd %x pci %p cnt %u", hwnd, pci, usCount);
+    }
   }
 }
 
 /**
  * Remove item(s) from container and free associated storage if requested
+ * @param pciFirst points to first item to remove or NULL to remove all
+ * @param usCnt is remove count or 0 to remove all
  * @returns count of items remaining in container or -1 if error
  */
 
-INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags)
+INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 {
-  INT remaining;
+  INT remaining = usCnt;
+  PCNRITEM pci;
 
-  if (usCnt == 0) {
-    if (pci != NULL) {
-      Runtime_Error(pszSrcFile, __LINE__, "pci not NULL");
+  if ((usCnt && !pciFirst) || (!usCnt && pciFirst)) {
+      Runtime_Error(pszSrcFile, __LINE__, "pciFirst %p usCnt %u mismatch", pciFirst, usCnt);
       remaining = -1;
-    }
-    else {
-      for (;;) {
-	pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, MPVOID,
-				   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-	if (!pci) {
-	  remaining = 0;
-	  break;			// Done
-	}
-	else if ((INT)pci == -1) {
-	  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_QUERYRECORD");
-	  remaining = -1;
-	  break;
-	}
-	else {
-	  remaining = RemoveCnrItems(hwnd, pci, 1, usFlags);
-	  if (remaining == -1)
-	    break;
-	}
-      } // for
-    }
-  }
-  else if (usCnt != 1) {
-    Runtime_Error(pszSrcFile, __LINE__, "count not 1");
-    remaining = -1;
   }
   else {
-    // DbgMsg(pszSrcFile, __LINE__, "RemoveCnrItems %p %u %s", pci, usCnt, pci->pszFileName);
-
-    if (usFlags & CMA_FREE)
-      FreeCnrItemData(pci);
-
-    remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pci), MPFROM2SHORT(usCnt, usFlags));
-    if (remaining == -1) {
-      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
-      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pci %p", hwnd, pci);
+    // Free our buffers if free requested
+    if (usFlags & CMA_FREE) {
+      if (pciFirst)
+	pci = pciFirst;
+      else {
+	pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, MPVOID,
+				   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+	if ((INT)pci == -1) {
+	  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_QUERYRECORD");
+	  remaining = -1;
+	  pci = NULL;
+	}
+      }
+      while (pci) {
+	FreeCnrItemData(pci);
+	pci = (PCNRITEM)pci->rc.preccNextRecord;
+	if (remaining && --remaining == 0)
+	  break;
+      }
     }
   }
+
+  // DbgMsg(pszSrcFile, __LINE__, "RemoveCnrItems %p %u %s", pci, usCnt, pci->pszFileName);
+
+  if (remaining != - 1) {
+    remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pciFirst), MPFROM2SHORT(usCnt, usFlags));
+    if (remaining == -1) {
+      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pci %p cnt %u", hwnd, pciFirst, usCnt);
+    }
+  }
+
   return remaining;
 }
 

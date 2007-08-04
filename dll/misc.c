@@ -513,7 +513,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi->flData = CFA_STRING | CFA_LEFT;
     pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
     pfi->pTitleData = GetPString(IDS_LNAME);
-    pfi->offStruct = FIELDOFFSET(CNRITEM, pszLongname);
+    pfi->offStruct = FIELDOFFSET(CNRITEM, pszLongName);
 
     // Store the current pfi value as that will be used to indicate the
     // last column in the lefthand container window (we have a splitbar)
@@ -739,7 +739,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  return (MRESULT) TRUE;
 	}
-	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongname)) {
+	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongName)) {
 
 	  CHAR longname[CCHMAXPATHCOMP];
 	LONG retlen;
@@ -748,7 +748,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
 	  longname[retlen + 1] = 0;
           //chop_at_crnl(longname);
-          pci->pszLongname = xrealloc(pci->pszLongname, retlen + 1, pszSrcFile, __LINE__);
+          pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
 	  WinSetWindowText(hwndMLE, longname);
 	  pci->pszFileName = xrealloc(pci->pszFileName, retlen + 1, pszSrcFile, __LINE__);
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);

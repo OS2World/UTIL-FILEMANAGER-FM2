@@ -184,7 +184,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   }
   // fixme to know why - it appears to be indirectly saving length, but why?
   pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
-  pci->pszLongname = pci->pszFileName;		// fixme to be sure?
+  pci->pszLongName = pci->pszFileName;		// fixme to be sure?
   pci->rc.pszIcon = pci->pszFileName;
   pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
@@ -303,9 +303,9 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
 	// Need unique buffer 23 Jul 07 SHL
-	pci->pszLongname = xmalloc(2, pszSrcFile, __LINE__);
-	pci->pszLongname[0] = 0;		// Make null string
-	pci->pszLongname[1] = 1;		// Flag root - hack cough
+	pci->pszLongName = xmalloc(2, pszSrcFile, __LINE__);
+	pci->pszLongName[0] = 0;		// Make null string
+	pci->pszLongName[1] = 1;		// Flag root - hack cough
       }
       else
 	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
@@ -698,7 +698,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      /* fill box with graph bar, flags is integer % */
 	      if (pci->flags) {
-		if (*(pci->pszLongname + 1) == 1)	/* is root record */
+		if (*(pci->pszLongName + 1) == 1)	/* is root record */
 		  GpiSetColor(oi->hps, CLR_DARKGREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_RED);
@@ -710,7 +710,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
 		/* draw highlights and shadows on graph */
-		if (*(pci->pszLongname + 1) == 1)
+		if (*(pci->pszLongName + 1) == 1)
 		  GpiSetColor(oi->hps, CLR_GREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_PALEGRAY);
@@ -727,7 +727,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 		ptl.x = oi->rclItem.xLeft + pci->flags;
 		GpiLine(oi->hps, &ptl);
-		if (*(pci->pszLongname + 1) != 1) {
+		if (*(pci->pszLongName + 1) != 1) {
 		  GpiSetColor(oi->hps, CLR_DARKRED);
 		  ptl.x = oi->rclItem.xLeft + 2;
 		  ptl.y = yBottom + 3;

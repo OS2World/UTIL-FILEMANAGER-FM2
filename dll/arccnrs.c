@@ -60,7 +60,10 @@
 #include <share.h>
 #include <limits.h>
 #include <process.h>			// _beginthread
+
+#if 0
 #include <malloc.h>			// _heapchk
+#endif
 
 #include "fm3dll.h"
 #include "fm3dlg.h"
@@ -316,62 +319,76 @@ static BOOL IsArcThere(HWND hwnd, CHAR * arcname)
 static VOID FreeArcItemData(PARCITEM pai)
 {
   // DbgMsg(pszSrcFile, __LINE__, "FreeArcItemData %p", pai);
+  PSZ psz;
 
-  if (pai->pszFileName && pai->pszFileName != NullStr)
-    xfree(pai->pszFileName);
+  if (pai->pszFileName && pai->pszFileName != NullStr) {
+    psz = pai->pszFileName;
+    pai->pszFileName = NullStr;
+    free(psz);
+  }
 }
 
 /**
- * Remove item from archive container and free associated storage if requested
+ * Remove item(s) from archive container and free associated storage if requested
+ * @param paiFirst points to first item to remove or NULL to remove all
+ * @param usCnt is remove count or 0 to remove all
  */
 
-static VOID RemoveArcItems(HWND hwnd, PARCITEM pai, USHORT usCnt, USHORT usFlags)
+static VOID RemoveArcItems(HWND hwnd, PARCITEM paiFirst, USHORT usCnt, USHORT usFlags)
 {
-  if (usCnt == 0) {
-    if (pai != NULL)
-      Runtime_Error(pszSrcFile, __LINE__, "pai not NULL");
-    else {
-      for (;;) {
+  INT remaining = usCnt;
+  PARCITEM pai;
+
+  if ((usCnt && !paiFirst) || (!usCnt && paiFirst))
+    Runtime_Error(pszSrcFile, __LINE__, "paiFirst %p usCnt %u mismatch", paiFirst, usCnt);
+  else {
+    // Free our buffers if free requested
+    if (usFlags & CMA_FREE) {
+      if (paiFirst)
+	pai = paiFirst;
+      else {
 	pai = (PARCITEM)WinSendMsg(hwnd, CM_QUERYRECORD, MPVOID,
 				   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-	if (!pai)
-	  break;
-	else if ((INT)pai == -1) {
+	if ((INT)pai == -1) {
 	  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_QUERYRECORD");
-	  break;
+	  remaining = -1;
+	  pai = NULL;
 	}
-	else
-	  RemoveArcItems(hwnd, pai, 1, usFlags);
+      }
+      while (pai) {
+	FreeArcItemData(pai);
+	pai = (PARCITEM)pai->rc.preccNextRecord;
+	if (remaining && --remaining == 0)
+	  break;
       }
     }
   }
-  else if (usCnt != 1)
-    Runtime_Error(pszSrcFile, __LINE__, "count not 1");
-  else {
-    // DbgMsg(pszSrcFile, __LINE__, "RemoveArcItems %p %u %s", pai, usCnt, pai->pszFileName);
 
-    if (usFlags & CMA_FREE)
-      FreeArcItemData(pai);
+  // DbgMsg(pszSrcFile, __LINE__, "RemoveArcItems %p %u %s", pai, usCnt, pai->pszFileName);
 
-    if ((INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pai), MPFROM2SHORT(usCnt, usFlags)) == -1) {
+  if (remaining != - 1) {
+    remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&paiFirst), MPFROM2SHORT(usCnt, usFlags));
+    if (remaining == -1) {
       // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
-      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pai %p", hwnd, pai);
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pai %p cnt %u", hwnd, paiFirst, usCnt);
     }
   }
 }
 
 /**
- * Empty all records from an archive container and free associated storage and
- * Free up field infos
+ * Empty all records from an archive container and
+ * free associated storage and free up field infos
  */
 
 static VOID EmptyArcCnr(HWND hwnd)
 {
-#if 1 // fixme to disable or to be configurable
+#if 0 // fixme to disable or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
       Runtime_Error(pszSrcFile, __LINE__, "heap corrupted %d", state);
+    else
+      DbgMsg(pszSrcFile, __LINE__, "_memavl %u", _memavl());
   }
 #endif
 
@@ -658,8 +675,8 @@ ReTry:
 		  fname[strlen(fname) - 1] == '/')
 		pai->flags = ARCFLAGS_REALDIR;
 	      pai->pszFileName = xstrdup(fname,pszSrcFile, __LINE__);
-              pai->pszDisplayName = pai->pszFileName;
-              pai->rc.pszIcon = pai->pszDisplayName;
+	      pai->pszDisplayName = pai->pszFileName;
+	      pai->rc.pszIcon = pai->pszDisplayName;
 	      if (fdate)
 		strcpy(pai->szDate, fdate);
 	      // pai->pszFileName = pai->pszFileName;
@@ -1210,7 +1227,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li = DoFileDrop(dcd->hwndCnr,
-                      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
+		      dcd->directory, FALSE, MPVOID, MPFROMP(&cni));
       CheckPmDrgLimit(cni.pDragInfo);
       if (li) {
 	li->type = (msg == DM_DISCARDOBJECT) ? IDM_DELETE : IDM_PRINT;
@@ -1842,7 +1859,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      if (li->type == IDM_MCIPLAY) {
 
-                FILE *fp;
+		FILE *fp;
 
 		fp = xfopen("$FM2PLAY.$$$", "w", pszSrcFile, __LINE__);
 		if (fp) {
@@ -1850,9 +1867,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  for (x = 0; li->list[x]; x++)
 		    fprintf(fp, "%s\n", li->list[x]);
 		  fprintf(fp, ";end\n");
-                  fclose(fp);
-                  RunFM2Util("FM2PLAY.EXE", "/@$FM2PLAY.$$$");
-               	}
+		  fclose(fp);
+		  RunFM2Util("FM2PLAY.EXE", "/@$FM2PLAY.$$$");
+		}
 	      }
 	      else if (li->type == IDM_PRINT) {
 		strcpy(li->targetpath, printer);
@@ -2241,7 +2258,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	}
       }
       if ((dcd->arcfilled && !dcd->totalfiles) ||
-          !IsArcThere(hwnd, dcd->arcname))
+	  !IsArcThere(hwnd, dcd->arcname))
 	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     }
     return 0;
@@ -2610,8 +2627,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  hwndActive = WinQueryFocus(HWND_DESKTOP);
 	  WinSetFocus(HWND_DESKTOP,
 		      hwndActive == hwnd ?
-		        WinWindowFromID(dcd->hwndClient, ARC_EXTRACTDIR) :
-		        hwnd);
+			WinWindowFromID(dcd->hwndClient, ARC_EXTRACTDIR) :
+			hwnd);
 	}
 	break;
 
@@ -3110,8 +3127,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  DosBeep(500, 100);		// fixme to know why beep?
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
-          DosBeep(50, 100);		// fixme to know why beep?
-          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
+	  DosBeep(50, 100);		// fixme to know why beep?
+	  CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    li->type = li->type == DO_MOVE ? IDM_ARCHIVEM : IDM_ARCHIVE;
 	    strcpy(li->targetpath, dcd->arcname);
