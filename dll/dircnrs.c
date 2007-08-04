@@ -3129,7 +3129,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
 	  FILEFINDBUF3 ffb;
 	  HDIR hDir = HDIR_CREATE;
-	  ULONG nm = 1L;
+	  ULONG nm = 1;
 	  APIRET status = 0;
 
 	  SetShiftState();

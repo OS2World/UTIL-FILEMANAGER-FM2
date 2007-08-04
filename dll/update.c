@@ -337,7 +337,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
   PCNRITEM pci, *pciList = NULL;
   FILEFINDBUF4 ffb;
   HDIR hDir;
-  ULONG nm = 1;
+  ULONG nm = (ULONG) howmany;
   INT x;
   INT numlist = 0;
   INT numremain;

@@ -742,7 +742,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       CHAR s[134], szFileQty[38], szFreeQty[38];
       FILEFINDBUF3 ffb;
-      ULONG nm = 1L;
+      ULONG nm = 1;
       ULONGLONG ullFreeQty;
       HDIR hdir = HDIR_CREATE;
       FSALLOCATE fsa;

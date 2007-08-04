@@ -227,12 +227,12 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   FILEFINDBUF3 ffb[DDEPTH];
   PFILEFINDBUF3 pffb;
   HDIR hDir = HDIR_CREATE;
-  ULONG nm, ulM = 1L, total = 0L, fl = MUST_HAVE_DIRECTORY;
+  ULONG nm, ulM = 1, total = 0, fl = MUST_HAVE_DIRECTORY;
   CHAR str[CCHMAXPATH];
   register INT len;
   APIRET rc, prc;
   BOOL isadir = FALSE, isremote = FALSE, includefiles = fFilesInTree;
-  ULONG ddepth = 3L;
+  ULONG ddepth = 3;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
 
   if (!pciParent || !*pciParent->pszFileName || !hwndCnr)
@@ -268,7 +268,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	ddepth = (ULONG) - 1;
 	ddepth--;
       }
-      ulM = 1L;
+      ulM = 1;
     }
   }
   else if (isbroken)
@@ -288,7 +288,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		    FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN,
 		    &ffb, ulM * sizeof(FILEFINDBUF3), &nm, FIL_STANDARD);
-  if (ulM == 1L && !rc) {
+  if (ulM == 1 && !rc) {
     do {
       pffb = &ffb[0];
       if (!includefiles && !(pffb->attrFile & FILE_DIRECTORY) && !brokenlan) {
@@ -330,7 +330,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	isadir = TRUE;
 	goto Interruptus;
       }
-      nm = 1L;
+      nm = 1;
       DosError(FERR_DISABLEHARDERR);
     } while (++total < ddepth && !(rc = (DosFindNext(hDir,
 						     &ffb,

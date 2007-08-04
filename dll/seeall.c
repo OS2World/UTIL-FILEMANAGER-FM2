@@ -1436,7 +1436,7 @@ static BOOL UpdateList(HWND hwnd, CHAR ** list)
       if (ret) {
 	didone = TRUE;
 	hdir = HDIR_CREATE;
-	nm = 1L;
+	nm = 1;
 	if (!DosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
 			  FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
 			  FILE_HIDDEN, &ffb, sizeof(ffb), &nm,
@@ -1457,7 +1457,7 @@ static BOOL UpdateList(HWND hwnd, CHAR ** list)
       else if (isalpha(*list[z]) && ad->abDrvFlags[toupper(*list[z]) - 'A']) {
 	didone = TRUE;
 	hdir = HDIR_CREATE;
-	nm = 1L;
+	nm = 1;
 	if (!DosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
 			  FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
 			  FILE_HIDDEN, &ffb, sizeof(ffb), &nm,
@@ -1906,7 +1906,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   if (fRemoteBug && isalpha(*pathname) && pathname[1] == ':' &&
       pathname[2] == '\\' &&
       (driveflags[toupper(*pathname) - 'A'] & DRIVE_REMOTE))
-    uL = 1L;
+    uL = 1;
   pffb = xmalloc(sizeof(FILEFINDBUF3) * uL, pszSrcFile, __LINE__);
   if (!pffb) {
     free(filename);

@@ -114,7 +114,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   //printf("%s\n",maskstr);
 
   hdir = HDIR_CREATE;
-  nm = 1;
+  nm = 128;
   memset(pffb, 0, sizeof(FILEFINDBUF4));
   DosError(FERR_DISABLEHARDERR);
   //printf("FIND1\n");
@@ -197,14 +197,14 @@ static BOOL ProcessDir(HWND hwndCnr,
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
   ri.pRecordParent = (PRECORDCORE) pciParent;
   ri.zOrder = (USHORT) CMA_TOP;
-  ri.cRecordsInsert = 1;
+  ri.cRecordsInsert = 128;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
     free(pffb);
     return FALSE;
   }
   hdir = HDIR_CREATE;
-  nm = 1;
+  nm = 128;
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
@@ -249,7 +249,7 @@ static BOOL ProcessDir(HWND hwndCnr,
       if (*pchStopFlag)
 	break;
       DosSleep(1);
-      nm = 1;				/* FilesToGet */
+      nm = 128;				/* FilesToGet */
       rc = DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &nm);
     }					// while more found
     DosFindClose(hdir);

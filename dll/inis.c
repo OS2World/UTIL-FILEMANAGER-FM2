@@ -522,7 +522,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HDIR hdir;
 
       hdir = HDIR_CREATE;
-      nm = 1L;
+      nm = 1;
       DosError(FERR_DISABLEHARDERR);
       if (!DosFindFirst("*.IST",
 			&hdir,
@@ -533,7 +533,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendDlgItemMsg(hwnd, IAF_LISTBOX, LM_INSERTITEM,
 			    MPFROMSHORT(LIT_SORTASCENDING),
 			    MPFROMP(ffb.achName));
-	  nm = 1L;
+	  nm = 1;
 	} while (!DosFindNext(hdir, &ffb, sizeof(ffb), &nm));
 	DosFindClose(hdir);
 	priority_bumped();

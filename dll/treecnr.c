@@ -936,7 +936,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent) &&
 	hwndStatus2) {
       FILEFINDBUF3 ffb;
-      ULONG nm = 1L;
+      ULONG nm = 1;
       HDIR hdir = HDIR_CREATE;
 
       if (*SwapperDat) {
@@ -1704,7 +1704,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       FILEFINDBUF3 ffb;
       HDIR hDir = HDIR_CREATE;
-      ULONG nm = 1L;
+      ULONG nm = 1;
       APIRET status;
       BOOL IsOk = FALSE;
       ULONG ulDriveNum, ulDriveMap;

@@ -717,7 +717,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	FILEFINDBUF4 ffb4;
 	ULONG nm;
 	HDIR hdir;
-	CHAR longname[CCHMAXPATH], subject[42];
+	CHAR longname[CCHMAXPATH], subject[256];
 
 	*pattern = 0;
 	WinQueryDlgItemText(hwnd, SAV_PATTERN, 80, pattern);
@@ -789,7 +789,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      fseek(fp, 0L, SEEK_END);
 	    while (list[x]) {
 	      hdir = HDIR_CREATE;
-	      nm = 1L;
+	      nm = 1;
 	      *subject = *longname = 0;
 	      if (!DosFindFirst(list[x], &hdir,
 				FILE_NORMAL | FILE_DIRECTORY |

@@ -78,7 +78,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   endpath = &maskstr[strlen(maskstr)];
   strcat(maskstr, "*");
   hdir = HDIR_CREATE;
-  nm = 1L;
+  nm = 128;
   rc = DosFindFirst(filename, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
@@ -95,7 +95,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
     pciP = WinSendMsg(hwndCnr,
 		      CM_ALLOCRECORD,
 		      MPFROMLONG(EXTRA_RECORD_BYTES),
-		      MPFROMLONG(1L));
+		      MPFROMLONG(1));
     if (!pciP) {
       free(ffb);
       return;
@@ -144,7 +144,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
   ri.pRecordParent = (PRECORDCORE) pciParent;
   ri.zOrder = (USHORT) CMA_TOP;
-  ri.cRecordsInsert = 1L;
+  ri.cRecordsInsert = 128;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pciP), MPFROMP(&ri))) {
     free(ffb);
@@ -153,13 +153,13 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   hdir = HDIR_CREATE;
   if (!isalpha(*maskstr) || maskstr[1] != ':' || maskstr[2] != '\\' ||
       ((driveflags[toupper(*maskstr) - 'A'] & DRIVE_REMOTE) && fRemoteBug))
-    ulM = 1L;
+    ulM = 1;
   else
     ulM = FilesToGet;
-  if (ulM > 1L) {
+  if (ulM > 1) {
     fft = xrealloc(ffb, sizeof(FILEFINDBUF3) * ulM, pszSrcFile, __LINE__);
     if (!fft)
-      ulM = 1L;
+      ulM = 1;
     else
       ffb = fft;
   }
@@ -175,7 +175,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
     ULONG x;
 
     while (!rc) {
-      for (x = 0L; x < nm; x++) {
+      for (x = 0; x < nm; x++) {
 	pffbFile = (FILEFINDBUF3 *) fb;
 	if (*stopflag)
 	  break;
@@ -191,7 +191,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
 	  break;
 	fb += pffbFile->oNextEntryOffset;
       }
-      DosSleep(0L);
+      DosSleep(1);
       if (*stopflag)
 	break;
       nm = ulM;
