@@ -2408,7 +2408,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  free(prfp);
 		}
 		else
-		  DosSleep(250L);
+		  DosSleep(250);
 	      }
 	    }
 	  }

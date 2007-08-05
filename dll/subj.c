@@ -49,7 +49,7 @@ INT Subject(HWND hwnd, CHAR * filename)
     pgea = &pgealist->list[0];
     strcpy(pgea->szName, SUBJECT);
     pgea->cbName = strlen(pgea->szName);
-    pgea->oNextEntryOffset = 0L;
+    pgea->oNextEntryOffset = 0;
     pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
     pfealist = xmallocz(1024, pszSrcFile, __LINE__);
     if (pfealist)
@@ -58,7 +58,7 @@ INT Subject(HWND hwnd, CHAR * filename)
       pfealist->cbList = 1024;
       eaop.fpGEA2List = pgealist;
       eaop.fpFEA2List = pfealist;
-      eaop.oError = 0L;
+      eaop.oError = 0;
       rc = DosQueryPathInfo(filename, FIL_QUERYEASFROMLIST,
 			    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
       free(pgealist);

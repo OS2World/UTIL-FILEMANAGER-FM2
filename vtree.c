@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	  }
 	}
       }
-      DosSleep(125L);
+      DosSleep(125);
       WinDestroyMsgQueue(hmq);
     }
     WinTerminate(hab);

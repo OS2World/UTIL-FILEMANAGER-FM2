@@ -899,7 +899,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	masks[1] = NULL;
       while (masks[x]) {
 	hDir = HDIR_CREATE;
-	ulSearchCount = 1L;
+	ulSearchCount = 1;
 	DosError(FERR_DISABLEHARDERR);
 	if (!DosFindFirst(masks[x],
 			  &hDir,
@@ -914,7 +914,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       LM_INSERTITEM,
 		       MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		       MPFROMP(findbuf.achName));
-	    ulSearchCount = 1L;
+	    ulSearchCount = 1;
 	  } while (!DosFindNext(hDir,
 				&findbuf,
 				sizeof(FILEFINDBUF3), &ulSearchCount));

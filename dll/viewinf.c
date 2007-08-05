@@ -81,7 +81,7 @@ static VOID FillListboxThread(VOID * args)
 	goto NoEnv;
       }
       else {
-	holdenv = xmalloc(strlen(env) + 2L, pszSrcFile, __LINE__);
+	holdenv = xmalloc(strlen(env) + 2, pszSrcFile, __LINE__);
 	if (holdenv) {
 	  strcpy(holdenv, env);
 	Repeat:
@@ -106,7 +106,7 @@ static VOID FillListboxThread(VOID * args)
 	      else
 		strcat(mask, "*.INF");
 	      hdir = HDIR_CREATE;
-	      nm = 1L;
+	      nm = 1;
 	      DosError(FERR_DISABLEHARDERR);
 	      if (!DosFindFirst(mask, &hdir, FILE_NORMAL | FILE_ARCHIVED,
 				&ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
@@ -126,7 +126,7 @@ static VOID FillListboxThread(VOID * args)
 			goto Continue;
 		      }
 		      *title = 0;
-		      fseek(fp, 107L, SEEK_SET);
+		      fseek(fp, 107, SEEK_SET);
 		      fread(title, 1, CCHMAXPATH - 2, fp);
 		      title[CCHMAXPATH - 3] = 0;
 		      bstrip(title);
@@ -147,7 +147,7 @@ static VOID FillListboxThread(VOID * args)
 				    MPFROM2SHORT(LIT_SORTASCENDING, 0),
 				    MPFROMP(text));
 		Continue:
-		  nm = 1L;
+		  nm = 1;
 		} while (!DosFindNext(hdir, &ffb, sizeof(ffb), &nm));
 		DosFindClose(hdir);
 		priority_normal();
@@ -168,7 +168,7 @@ static VOID FillListboxThread(VOID * args)
 	      key = "HLPPaths";
 	    repeating = TRUE;
 	    if (PrfQueryProfileSize(fmprof, FM3Str, key, &size) && size) {
-	      holdenv = xmalloc(size + 2L, pszSrcFile, __LINE__);
+	      holdenv = xmalloc(size + 2, pszSrcFile, __LINE__);
 	      if (holdenv) {
 		if (!PrfQueryProfileData(fmprof, FM3Str, key, holdenv, &size)) {
 		  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
@@ -448,7 +448,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSendDlgItemMsg(hwnd,
 			      VINF_LISTBOX,
 			      LM_SETITEMHANDLE,
-			      MPFROM2SHORT(sSelect, 0), MPFROMLONG(1L));
+			      MPFROM2SHORT(sSelect, 0), MPFROMLONG(1));
 	  else
 	    break;
 	}

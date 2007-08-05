@@ -80,7 +80,7 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	/* Get the switch list information */
 	ulcEntries = WinQuerySwitchList(0, NULL, 0);
-	ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4L) *
+	ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4) *
 	  (LONG) sizeof(SWENTRY);
 	/* Allocate memory for list */
 	pswb = xmalloc((unsigned)ulSize, pszSrcFile, __LINE__);

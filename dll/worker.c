@@ -897,7 +897,7 @@ VOID Action(VOID * args)
 		}
 		break;
 	      }				// switch
-	      DosSleep(0L);
+	      DosSleep(1);
 	    }				// for list
 
 	    switch (wk->li->type) {
@@ -935,9 +935,9 @@ VOID Action(VOID * args)
 	      Notify(message);
 	      if (toupper(*wk->li->targetpath) < 'C')
 		DosBeep(1000, 25);	// Wake up user
-	      DosSleep(33L);
+	      DosSleep(33);
 	      if (wk->li->type == IDM_WPSMOVE || wk->li->type == IDM_WPSCOPY)
-		DosSleep(96L);
+		DosSleep(96);
 	      break;
 	    default:
 	      break;
@@ -1112,7 +1112,7 @@ VOID MassAction(VOID * args)
 			  ((wk->li->type == IDM_FAKEEXTRACT ||
 			    wk->li->type == IDM_FAKEEXTRACTM) ?
 			   wk->li->targetpath : NULL), NULL, "%s", szBuffer);
-		  DosSleep(1L);
+		  DosSleep(1);
 		  *p = 0;
 		}
 		strcat(szBuffer, " ");
@@ -1268,7 +1268,7 @@ VOID MassAction(VOID * args)
 			  ((fArcStuffVisible) ? 0 :
 			   (BACKGROUND | MINIMIZED)) |
 			  WAIT, HWND_DESKTOP, NULL, NULL, "%s", szBuffer);
-		  DosSleep(1L);
+		  DosSleep(1);
 		  *p = 0;
 		}
 		strcat(szBuffer, " ");
@@ -1318,10 +1318,10 @@ VOID MassAction(VOID * args)
 		if (temp && WinIsWindow(hab2, wk->hwndCnr)) {
 		  if (!PostMsg(wk->hwndCnr,
 			       UM_LOADFILE,
-			       MPFROMLONG(5L + viewtype), MPFROMP(temp)))
+			       MPFROMLONG(5 + viewtype), MPFROMP(temp)))
 		    free(temp);
 		}
-		DosSleep(1L);
+		DosSleep(1);
 	      }
 	    }
 	    break;
@@ -1361,10 +1361,10 @@ VOID MassAction(VOID * args)
 		if (temp && WinIsWindow(hab2, wk->hwndCnr)) {
 		  if (!PostMsg(wk->hwndCnr,
 			       UM_LOADFILE,
-			       MPFROMLONG(4L + viewtype), MPFROMP(temp)))
+			       MPFROMLONG(4 + viewtype), MPFROMP(temp)))
 		    free(temp);
 		}
-		DosSleep(1L);
+		DosSleep(1);
 	      }
 	    }
 	    break;

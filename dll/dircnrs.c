@@ -626,7 +626,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowUShort(hwnd, QWS_ID, DIROBJ_FRAME + (DIR_FRAME - dcd->id));
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(250L);
+	DosSleep(250);
     }
     else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -692,7 +692,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
 	  if (!pciC) {
 	    Stubby(dcd->hwndCnr, pci);
-	    DosSleep(0L);
+	    DosSleep(1);
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
@@ -1485,7 +1485,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  return 0;
 	}
 	else
-	  DosSleep(64L);
+	  DosSleep(64);
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
@@ -1960,7 +1960,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     !strcmp(realappname, FM3Str))
 	      TileChildren(dcd->hwndParent, TRUE);
 	    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	    DosSleep(250L);
+	    DosSleep(250);
 	  }
 	}
 	else
@@ -1969,7 +1969,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_COLLECTOR:
-	DosSleep(64L);
+	DosSleep(64);
 	{
 	  CHAR **list;
 
@@ -2468,7 +2468,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      TileChildren(dcd->hwndParent, TRUE);
 		    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0,
 				    SWP_ACTIVATE);
-		    DosSleep(250L);
+		    DosSleep(250);
 		  }
 		}
 		else

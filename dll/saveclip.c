@@ -64,7 +64,7 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
 	if (append)
 	  clip = (CHAR *) WinQueryClipbrdData(hab, CF_TEXT);
 	if (clip)
-	  len += strlen(clip) + 1L;
+	  len += strlen(clip) + 1;
 	if (!DosAllocSharedMem((PPVOID) & hold, (PSZ) NULL, len, PAG_COMMIT |
 			       OBJ_GIVEABLE | PAG_READ | PAG_WRITE)) {
 	  *hold = 0;
@@ -103,7 +103,7 @@ VOID ListToClipboardHab(HAB hab, CHAR ** list, BOOL append)
 {
   CHAR *text = NULL, **clip = NULL;
   INT x;
-  ULONG len = 0L;
+  ULONG len = 0;
 
   if (list && list[0]) {
     for (x = 0; list[x]; x++)
@@ -433,11 +433,11 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!fp)
 	    Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
 	  else {
-	    fseek(fp, 0L, SEEK_SET);
+	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
-	      DosSetFileSize((HFILE) fileno(fp), 0L);
+	      DosSetFileSize((HFILE) fileno(fp), 0);
 	    else
-	      fseek(fp, 0L, SEEK_END);
+	      fseek(fp, 0, SEEK_END);
 	    while (pci && (INT) pci != -1) {
 	      if (!(pci->rc.flRecordAttr & CRA_FILTERED)) {
 		p = pattern;
@@ -782,11 +782,11 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (!fp)
 	    Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
 	  else {
-	    fseek(fp, 0L, SEEK_SET);
+	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
-	      DosSetFileSize((HFILE) fileno(fp), 0L);
+	      DosSetFileSize((HFILE) fileno(fp), 0);
 	    else
-	      fseek(fp, 0L, SEEK_END);
+	      fseek(fp, 0, SEEK_END);
 	    while (list[x]) {
 	      hdir = HDIR_CREATE;
 	      nm = 1;
@@ -797,7 +797,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				FILE_HIDDEN | FILE_SYSTEM,
 				&ffb4, sizeof(ffb4), &nm, FIL_QUERYEASIZE)) {
 		/* load the object's Subject, if required */
-		if (ffb4.cbList > 4L) {
+		if (ffb4.cbList > 4) {
 		  APIRET rc;
 		  EAOP2 eaop;
 		  PGEA2LIST pgealist;
@@ -812,14 +812,14 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		    pgea = &pgealist->list[0];
 		    strcpy(pgea->szName, SUBJECT);
 		    pgea->cbName = strlen(pgea->szName);
-		    pgea->oNextEntryOffset = 0L;
+		    pgea->oNextEntryOffset = 0;
 		    pgealist->cbList = sizeof(GEA2LIST) + pgea->cbName;
 		    pfealist = xmallocz(1024, pszSrcFile, __LINE__);
 		    if (pfealist) {
 		      pfealist->cbList = 1024;
 		      eaop.fpGEA2List = pgealist;
 		      eaop.fpFEA2List = pfealist;
-		      eaop.oError = 0L;
+		      eaop.oError = 0;
 		      rc = DosQueryPathInfo(list[x],
 					    FIL_QUERYEASFROMLIST,
 					    (PVOID) & eaop,
@@ -838,7 +838,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		  }
 		}
 		/* load the object's longname */
-		if (ffb4.cbList > 4L) {
+		if (ffb4.cbList > 4) {
 		  APIRET rc;
 		  EAOP2 eaop;
 		  PGEA2LIST pgealist;
@@ -853,7 +853,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		    pgea = &pgealist->list[0];
 		    strcpy(pgea->szName, LONGNAME);
 		    pgea->cbName = strlen(pgea->szName);
-		    pgea->oNextEntryOffset = 0L;
+		    pgea->oNextEntryOffset = 0;
 		    pgealist->cbList = sizeof(GEA2LIST) + pgea->cbName;
 		    pfealist = xmallocz(1024, pszSrcFile, __LINE__);
 		    if (pfealist) {

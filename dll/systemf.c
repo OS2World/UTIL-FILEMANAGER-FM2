@@ -170,7 +170,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    if (listfile[strlen(listfile) - 1] != '\\')
 	      strcat(listfile, "\\");
 	    sprintf(&listfile[strlen(listfile)], "%s%03x",
-		    LISTTEMPROOT, (clock() & 4095L));
+		    LISTTEMPROOT, (clock() & 4095));
 	    fp = xfopen(listfile, "w",pszSrcFile,__LINE__);
 	    if (fp) {
 	      for (x = 0; list[x]; x++)
@@ -230,7 +230,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	if (drive)
 	  *pp = drive;
 	else {
-	  ULONG ulDriveNum = 3L, ulDriveMap;
+	  ULONG ulDriveNum = 3, ulDriveMap;
 
 	  DosQCurDisk(&ulDriveNum, &ulDriveMap);
 	  *pp = (char) (ulDriveNum + '@');
@@ -1121,7 +1121,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  sd.BondInd = SET_SESSION_UNCHANGED;
 	  for (ctr = 0;; ctr++)
 	  {
-	    DosSleep(200L);
+	    DosSleep(200);
 	    if (DosSetSession(ulSessID, &sd))	// Check if session gone (i.e. finished)
 	      break;
 	    if (ctr > 10) {

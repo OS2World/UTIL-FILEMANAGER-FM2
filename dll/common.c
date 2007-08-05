@@ -562,7 +562,7 @@ MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       }
       ltoa(threaduse, ts, 10);
       WinSetWindowText(hwndLEDHdr, ts);
-      DosSleep(0);
+      DosSleep(1);
     }
     return 0;
 

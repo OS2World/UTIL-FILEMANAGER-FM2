@@ -257,7 +257,7 @@ VOID GrepThread(VOID * arg)
     if (ghmq) {
       WinCancelShutdown(ghmq, TRUE);
       IncrThreadUsage();
-      DosSleep(128L);
+      DosSleep(128);
       WinSetWindowText(grep.hwndCurFile,
 		       GetPString((grep.finddupes) ?
 				  IDS_GREPDUPETEXT : IDS_GREPSCANTEXT));
@@ -437,10 +437,10 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
 	if (!grep->anyexcludes || !IsExcluded(searchPath, fle, numfls)) {
 	  domatchingfiles(grep, searchPath, fle, numfls);
 	  doallsubdirs(grep, searchPath, TRUE, fle, numfls);
-	  DosSleep(0L);
+	  DosSleep(1);
 	}
       }
-      findCount = 1L;
+      findCount = 1;
     } while (!DosFindNext(findHandle,
 			  &findBuffer,
 			  sizeof(findBuffer), (PULONG) & findCount));
@@ -524,7 +524,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 		       (ULONG) (grep->FilesToGet * sizeof(FILEFINDBUF4)),
 		       (PULONG) & findCount);
       if (!rc)
-	DosSleep(1L);
+	DosSleep(1);
     } while (!rc);
     DosFindClose(findHandle);
     priority_normal();
@@ -595,7 +595,7 @@ static BOOL doinsertion(GREP * grep)
       DosExitCritSec();
     }
     if (grep->toinsert == grep->FilesToGet)
-      DosSleep(1L);
+      DosSleep(1);
     freegreplist(grep);
     PostMsg(grep->hwndFiles, UM_RESCAN, MPVOID, MPVOID);
     return TRUE;
@@ -807,7 +807,7 @@ static BOOL doonefile(GREP * grep, CHAR * filename, FILEFINDBUF4 * f)
 	info = info->next;
       }					// while
       Free_FEAList(head);
-      DosSleep(1L);
+      DosSleep(1);
     }
   }
 
@@ -841,7 +841,7 @@ static BOOL doonefile(GREP * grep, CHAR * filename, FILEFINDBUF4 * f)
 	fclose(inputFile);
       }
       free(input);
-      DosSleep(1L);
+      DosSleep(1);
     }
   } // if
 
@@ -953,10 +953,10 @@ LONG CRCFile(CHAR * filename, INT * error)
 	  CRC = CRCBlock(buffer, len, CRC);
 	else
 	  break;
-	DosSleep(0L);
+	DosSleep(1);
       }
       fclose(fp);
-      DosSleep(1L);
+      DosSleep(1);
     }
     free(buffer);
   }
@@ -1113,7 +1113,7 @@ static VOID FillDupes(GREP * g)
   register CHAR *pc, *pi;
   CHAR **list = NULL;
   INT numfiles = 0, numalloced = 0, error;
-  register ULONG x = 0L, y = 0L;
+  register ULONG x = 0, y = 0;
   ULONG cntr = 100;
 
   if (g->CRCdupes)
@@ -1125,7 +1125,7 @@ static VOID FillDupes(GREP * g)
   }
   if (x) {
     WinSetWindowText(g->hwndCurFile, GetPString(IDS_GREPDUPESORTINGTEXT));
-    DosSleep(1L);
+    DosSleep(1);
     g->dupenames = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (!g->nosizedupes)
       g->dupesizes = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
@@ -1141,20 +1141,20 @@ static VOID FillDupes(GREP * g)
       g->dupenames[y] = NULL;
       if (!g->nosizedupes)
 	g->dupesizes[y] = NULL;
-      DosSleep(1L);
+      DosSleep(1);
       qsort(g->dupenames,
 	    x,
 	    sizeof(DUPES *),
 	    ((g->ignoreextdupes) ? comparenamesqe : comparenamesq));
-      DosSleep(1L);
+      DosSleep(1);
       if (!g->nosizedupes) {
 	qsort(g->dupesizes, x, sizeof(DUPES *), comparesizesq);
-	DosSleep(1L);
+	DosSleep(1);
       }
       WinSetWindowText(g->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
 
       i = g->dupehead;
-      y = 0L;
+      y = 0;
       while (i) {
 	if (*g->stopflag)
 	  break;
@@ -1285,7 +1285,7 @@ static VOID FillDupes(GREP * g)
 
 	  sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, g->numfiles);
 	  WinSetWindowText(g->hwndCurFile, s);
-	  DosSleep(128L);
+	  DosSleep(128);
 	}
 	DosSleep(y % 2);
       }
@@ -1294,7 +1294,7 @@ static VOID FillDupes(GREP * g)
       // Insufficient memory - fall back
       DosBeep(50, 100);
       WinSetWindowText(g->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
-      x = y = 0L;
+      x = y = 0;
       if (g->dupenames) {
 	free(g->dupenames);
 	g->dupenames = NULL;
@@ -1314,7 +1314,7 @@ static VOID FillDupes(GREP * g)
 
 	    sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, g->numfiles);
 	    WinSetWindowText(g->hwndCurFile, s);
-	    DosSleep(0L);
+	    DosSleep(1);
 	  }
 	  y++;
 	  pi = strrchr(i->name, '\\');
@@ -1373,8 +1373,8 @@ static VOID FillDupes(GREP * g)
 		  i->flags |= GF_SKIPME;
 		}
 	      }
-	      else if (!(x % 100L))
-		DosSleep(1L);
+	      else if (!(x % 100))
+		DosSleep(1);
 	    }
 	    c = c->next;
 	  }

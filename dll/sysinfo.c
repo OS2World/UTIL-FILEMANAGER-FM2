@@ -258,7 +258,7 @@ MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG vals[26], val, x;
       CHAR s[134], dev;
 
-      if (DosQuerySysInfo(QSV_MAX_PATH_LENGTH, QSV_MAX_COMP_LENGTH + 2L,
+      if (DosQuerySysInfo(QSV_MAX_PATH_LENGTH, QSV_MAX_COMP_LENGTH + 2,
 			  (PVOID) vals, (ULONG) sizeof(vals))) {
 	WinDismissDlg(hwnd, 0);
 	break;
@@ -299,12 +299,12 @@ MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ULONG numdays, nummins;
 
 	    sprintf(s, "%-28.28s%lu (", names[x], vals[x]);
-	    vals[x] /= 60000L;
-	    numdays = vals[x] / (60L * 24L);
+	    vals[x] /= 60000;
+	    numdays = vals[x] / (60 * 24);
 	    if (numdays)
 	      sprintf(s + strlen(s), "%lu day%s, ", numdays,
-		      &"s"[numdays == 1L]);
-	    nummins = vals[x] % (60L * 24L);
+		      &"s"[numdays == 1]);
+	    nummins = vals[x] % (60 * 24);
 	    sprintf(s + strlen(s), "%luh:%02lum)", nummins / 60,
 		    nummins % 60);
 	  }

@@ -245,7 +245,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	for (x = 0; x < 26; x++) {
 	  if (!(driveflags[x] & DRIVE_IGNORE)) {
 	    *s = (CHAR) x + 'A';
-	    if (!(ulDriveMap & (1L << x)))
+	    if (!(ulDriveMap & (1 << x)))
 	      WinSendDlgItemMsg(hwnd,
 				MAP_ATTACHLIST,
 				LM_INSERTITEM,

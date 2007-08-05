@@ -45,7 +45,7 @@ BOOL PrinterReady(CHAR * printdevname)
 {
   FILE *printhandle;
   CHAR param = 0, data = 0;
-  ULONG datalen = 1L, parmlen = 1L, htype, flagword;
+  ULONG datalen = 1, parmlen = 1, htype, flagword;
 
   if (!fWorkPlace)			/* assume spooler is active */
     return TRUE;
@@ -61,8 +61,8 @@ BOOL PrinterReady(CHAR * printdevname)
       fclose(printhandle);
       return TRUE;
     }
-    if (DosDevIOCtl(fileno(printhandle), 5L, 0x00000066, (PVOID) & param,
-		    1L, &parmlen, (PVOID) & data, 1L,
+    if (DosDevIOCtl(fileno(printhandle), 5, 0x00000066, (PVOID) & param,
+		    1, &parmlen, (PVOID) & data, 1,
 		    &datalen) != 0x00000100) {
       fclose(printhandle);
       return FALSE;
@@ -132,7 +132,7 @@ VOID PrintListThread(VOID * arg)
 	    continue;
 	  if (StopPrinting)
 	    break;
-	  DosRequestMutexSem(PrintSem, 240000L);
+	  DosRequestMutexSem(PrintSem, 240000);
 	  if (StopPrinting)
 	    break;
 	  if (!PrinterReady(li->targetpath))
@@ -265,7 +265,7 @@ VOID PrintListThread(VOID * arg)
 		      ungetc(c, fpi);
 		      if (prnformat && prnalt)
 			skipping = (skipping) ? FALSE : TRUE;
-		      DosSleep(1L);
+		      DosSleep(1);
 		    }
 		  }
 		  else
@@ -308,7 +308,7 @@ VOID PrintListThread(VOID * arg)
 	    }
 	  }
 	  DosReleaseMutexSem(PrintSem);
-	  DosSleep(1L);
+	  DosSleep(1);
 	}
 	if (!StopPrinting)
 	  AddNote(GetPString(IDS_PRINTEDLISTTEXT));

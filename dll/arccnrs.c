@@ -1979,7 +1979,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else {
 	      WinSendMsg(dcd->hwndCnr, WM_COMMAND,
 			 MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
-	      DosSleep(128L);
+	      DosSleep(128);
 	      if (Collector) {
 		if (!PostMsg(Collector, WM_COMMAND,
 			     MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(list2)))
@@ -2004,10 +2004,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
       if (*dcd->workdir) {
-	DosSleep(33L);
+	DosSleep(33);
 	wipeallf("%s\\*", dcd->workdir);
 	if (rmdir(dcd->workdir)) {
-	  DosSleep(256L);
+	  DosSleep(256);
 	  wipeallf("%s\\*", dcd->workdir);
 	  rmdir(dcd->workdir);
 	}
@@ -2395,7 +2395,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  return 0;
 	}
 	else
-	  DosSleep(1L);
+	  DosSleep(1);
 	SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				  DIR_FILTER), &dcd->mask, TRUE);
 	SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
@@ -2792,7 +2792,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      TileChildren(dcd->hwndParent, TRUE);
 	    }
 	    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	    DosSleep(128L);
+	    DosSleep(128);
 	  }
 	}
 	else

@@ -187,7 +187,7 @@ VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
       }
       else
 	break;
-      DosSleep(0L);
+      DosSleep(1);
     }
     pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
   }
@@ -224,7 +224,7 @@ VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
 	}
 	else
 	  break;
-	DosSleep(0L);
+	DosSleep(1);
       }
     }
     /* make record visible */
@@ -600,7 +600,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     else {
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(250L);
+	DosSleep(250);
     }
     return 0;
 
@@ -1134,7 +1134,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   CM_QUERYCNRINFO,
 		   MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
 	cnri.cyLineSpacing = 0;
-	cnri.cxTreeIndent = 12L;
+	cnri.cxTreeIndent = 12;
 	cnri.pSortRecord = (PVOID) SortTreeCnr;
 	cnri.flWindowAttr &= (~(CV_NAME | CV_DETAIL | CV_TEXT));
 	cnri.flWindowAttr |= (CV_TREE | CA_TREELINE | CV_ICON | CV_MINI);
@@ -1176,7 +1176,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  return 0;
 	}
 	else
-	  DosSleep(1L);
+	  DosSleep(1);
       }
     }
     return 0;
@@ -1195,7 +1195,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (msg == WM_CHORD) {
 	if (!WinQueryPointerPos(HWND_DESKTOP, &ptl))
 	  break;
-	WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl, 1L);
+	WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl, 1);
       }
       else {
 	ptl.x = SHORT1FROMMP(mp1);
@@ -1727,7 +1727,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	DosError(FERR_DISABLEHARDERR);
 	if (!DosQCurDisk(&ulDriveNum, &ulDriveMap)) {
-	  if (!(ulDriveMap & 1L << (toupper(*pci->pszFileName) - 'A'))) {
+	  if (!(ulDriveMap & 1 << (toupper(*pci->pszFileName) - 'A'))) {
 	    pciL = pciP = pci;
 	    for (;;) {
 	      pciP = WinSendMsg(hwnd,
@@ -2292,7 +2292,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
 			WalkAllDlgProc,
 			FM3ModHandle, WALK_FRAME, MPFROMP(dir)) && *dir)
-	    WinSendMsg(hwnd, UM_SHOWME, MPFROMP(dir), MPFROMLONG(1L));
+	    WinSendMsg(hwnd, UM_SHOWME, MPFROMP(dir), MPFROMLONG(1));
 	}
 	break;
 
@@ -2804,7 +2804,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && hwndMain) {
       fOkayMinimize = TRUE;
       if (dcd->hwndObject && !fDummy) {
-	DosSleep(100L);
+	DosSleep(100);
 	if (!fDummy) {
 	  fOkayMinimize = FALSE;
 	  WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain, QW_PARENT) :
@@ -2850,7 +2850,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
     }
     else
-      WinSendMsg(hwnd, UM_CLOSE, MPFROMLONG(1L), MPVOID);
+      WinSendMsg(hwnd, UM_CLOSE, MPFROMLONG(1), MPVOID);
     return 0;
 
   case WM_DESTROY:
@@ -3010,7 +3010,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr, TreeCnrWndProc);
 	// DbgMsg(pszSrcFile, __LINE__, "oldproc subclass %X", dcd->oldproc);	// 05 Jul 07 SHL
 	// fixme to document 01 test?
-	if (dcd->oldproc == 0l)
+	if (dcd->oldproc == 0)
 	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
 		     "WinSubclassWindow");
 	if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))

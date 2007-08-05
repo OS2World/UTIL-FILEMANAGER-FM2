@@ -245,7 +245,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	  CreateProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr);
       }
       x++;
-      DosSleep(1L);
+      DosSleep(1);
     }
   }
 }

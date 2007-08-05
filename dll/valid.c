@@ -449,7 +449,7 @@ BOOL IsValidDrive(CHAR drive)
   DosError(FERR_DISABLEHARDERR);
   Status = DosQCurDisk(&ulDriveNum, &ulDriveMap);
   if (!Status) {
-    if (!(ulDriveMap & (1L << (ULONG) (toupper(drive) - 'A'))))
+    if (!(ulDriveMap & (1 << (ULONG) (toupper(drive) - 'A'))))
       return FALSE;
     Path[0] = toupper(drive);
     Size = sizeof(Buffer);
@@ -687,7 +687,7 @@ VOID FillInDriveFlags(VOID * dummy)
   DosError(FERR_DISABLEHARDERR);
   DosQCurDisk(&ulDriveNum, &ulDriveMap);
   for (x = 0; x < 26; x++) {
-    if (ulDriveMap & (1L << x) && !(driveflags[x] & DRIVE_IGNORE)) {
+    if (ulDriveMap & (1 << x) && !(driveflags[x] & DRIVE_IGNORE)) {
       {
 	CHAR s[80];
 	ULONG flags = 0, size = sizeof(ULONG);
@@ -709,7 +709,7 @@ VOID FillInDriveFlags(VOID * dummy)
 	driveserial[x] = -1;
       }
     }
-    else if (!(ulDriveMap & (1L << x)))
+    else if (!(ulDriveMap & (1 << x)))
       driveflags[x] |= DRIVE_INVALID;
   }
   {
@@ -849,7 +849,7 @@ BOOL needs_quoting(register CHAR * f)
 
 BOOL IsBinary(register CHAR * str, ULONG len)
 {
-  register ULONG x = 0L;
+  register ULONG x = 0;
 
   if (str) {
     while (x < len) {
@@ -872,11 +872,11 @@ BOOL TestBinary(CHAR * filename)
   CHAR buff[512];
 
   if (filename) {
-    if (!DosOpen(filename, &handle, &ulAction, 0L, 0L,
+    if (!DosOpen(filename, &handle, &ulAction, 0, 0,
 		 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
 		 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
 		 OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-		 OPEN_ACCESS_READONLY, 0L)) {
+		 OPEN_ACCESS_READONLY, 0)) {
       len = 512;
       rc = DosRead(handle, buff, len, &len);
       DosClose(handle);
@@ -897,7 +897,7 @@ VOID GetDesktopName(CHAR * objectpath, ULONG size)
   PFN WQDPath;
   HMODULE hmod = 0;
   APIRET rc;
-  ULONG startdrive = 3L;
+  ULONG startdrive = 3;
   CHAR objerr[CCHMAXPATH];
 
   if (!objectpath) {

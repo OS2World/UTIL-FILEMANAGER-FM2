@@ -86,7 +86,7 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
   PCNRITEM pci;
   register INT x;
   BOOL foundone = FALSE;
-  ULONG errs = 0L;
+  ULONG errs = 0;
 
   if (clearfirst && !deselect)
     UnHilite(hwndCnr, TRUE, NULL, 0);
@@ -140,7 +140,7 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
 				  CRA_SELECTED));
 	else
 	  errs++;
-	if (errs > 50L) {		/* prevent runaway on bad file */
+	if (errs > 50) {		/* prevent runaway on bad file */
 
 	  APIRET ret;
 
@@ -150,7 +150,7 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
 		       GetPString(IDS_MAYNOTBELISTTEXT), filename);
 	  if (ret == MBID_NO)
 	    break;
-	  errs = 0L;
+	  errs = 0;
 	}
       }
       fclose(fp);
@@ -251,7 +251,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    fclose(inputFile);
 	  }
 	  free(input);
-	  DosSleep(1L);
+	  DosSleep(1);
 	}
       }
       else
@@ -354,7 +354,7 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    fclose(inputFile);
 	  }
 	  free(input);
-	  DosSleep(1L);
+	  DosSleep(1);
 	}
       }
       else
@@ -541,7 +541,7 @@ VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)
     pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
 				MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     if (pci)
-      DosSleep(1L);
+      DosSleep(1);
     while (pci && (INT)pci != -1) {
       ExpandAll(hwndCnr, expand, pci);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
@@ -755,7 +755,7 @@ Restart:
 		       MPFROM2SHORT(TRUE, CRA_SELECTED));
 	}
 	if (!(x % 500))
-	  DosSleep(1L);
+	  DosSleep(1);
 	else if (!(x % 50))
 	  DosSleep(1);
       }
@@ -777,7 +777,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -859,7 +859,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }					// for records
@@ -878,7 +878,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -901,7 +901,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -923,7 +923,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -946,7 +946,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -969,7 +969,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -992,7 +992,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1011,7 +1011,7 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1033,7 +1033,7 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1056,7 +1056,7 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1079,7 +1079,7 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1102,7 +1102,7 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1125,7 +1125,7 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       else if (!(x % 50))
 	DosSleep(1);
     }
@@ -1379,7 +1379,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 	  Cnrs[z].ss[x].largest = Cnrs[z].ss[x].smallest = FALSE;
       DosSleep(1);
     }
-    DosSleep(1L);
+    DosSleep(1);
   }
 
   switch (action) {

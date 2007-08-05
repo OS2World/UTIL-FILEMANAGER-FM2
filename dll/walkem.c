@@ -365,7 +365,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
   FILEFINDBUF3 findbuf;
   HDIR hDir = HDIR_CREATE;
   SHORT sDrive;
-  ULONG ulDriveNum, ulSearchCount = 1L, ulDriveMap;
+  ULONG ulDriveNum, ulSearchCount = 1, ulDriveMap;
 
   DosError(FERR_DISABLEHARDERR);
   DosQCurDisk(&ulDriveNum, &ulDriveMap);
@@ -377,7 +377,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
   if (hwnddrive) {
     // Fill drive listbox
     for (sDrive = 0; sDrive < 26; sDrive++) {
-      if (ulDriveMap & (1L << sDrive)) {
+      if (ulDriveMap & (1 << sDrive)) {
 	*szDrive = (CHAR) (sDrive + 'A');
 	if ((!nounwriteable || !(driveflags[sDrive] & DRIVE_NOTWRITEABLE)) &&
 	    !(driveflags[sDrive] & (DRIVE_IGNORE | DRIVE_INVALID)))
@@ -419,7 +419,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
 	    }
 	  }
 	}
-	ulSearchCount = 1L;
+	ulSearchCount = 1;
       } while (!DosFindNext(hDir,
 			    &findbuf, sizeof(FILEFINDBUF3), &ulSearchCount));
       DosFindClose(hDir);
@@ -507,7 +507,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (DosQuerySysInfo(QSV_BOOT_DRIVE,
 			  QSV_BOOT_DRIVE,
 			  (PVOID) & bd, (ULONG) sizeof(ULONG)))
-	bd = 3L;
+	bd = 3;
       *wa->szCurrentPath = (CHAR) bd + '@';
     }
     WinSendDlgItemMsg(hwnd,
@@ -533,7 +533,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      (DRIVE_IGNORE | DRIVE_INVALID))) {
 	  DosError(FERR_DISABLEHARDERR);
 	  hDir = HDIR_CREATE;
-	  ulSearchCount = 1L;
+	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
 	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			      MUST_HAVE_DIRECTORY | FILE_READONLY |
@@ -558,7 +558,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      continue;
 	    }
 	  }
-	  else if (!(ulDriveMap & (1L << (toupper(*info->path) - 'A')))) {
+	  else if (!(ulDriveMap & (1 << (toupper(*info->path) - 'A')))) {
 	    temp = info->next;
 	    remove_udir(info->path);
 	    info = temp;
@@ -574,7 +574,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      (DRIVE_IGNORE | DRIVE_INVALID))) {
 	  DosError(FERR_DISABLEHARDERR);
 	  hDir = HDIR_CREATE;
-	  ulSearchCount = 1L;
+	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
 	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			      MUST_HAVE_DIRECTORY | FILE_READONLY |
@@ -601,7 +601,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetDlgItemText(hwnd, WALK_RECENT,
 			      GetPString(IDS_WALKRECENTDIRSTEXT));
 	  }
-	  else if (!(ulDriveMap & (1L << (toupper(*info->path) - 'A')))) {
+	  else if (!(ulDriveMap & (1 << (toupper(*info->path) - 'A')))) {
 	    temp = info->next;
 	    remove_ldir(info->path);
 	    info = temp;
@@ -725,7 +725,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	DosError(FERR_DISABLEHARDERR);
 	hDir = HDIR_CREATE;
-	ulSearchCount = 1L;
+	ulSearchCount = 1;
 	if (!IsRoot(szBuffer)) {
 	  rc = DosFindFirst(szBuffer, &hDir, FILE_DIRECTORY |
 			    MUST_HAVE_DIRECTORY | FILE_READONLY |
@@ -771,7 +771,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	DosError(FERR_DISABLEHARDERR);
 	hDir = HDIR_CREATE;
-	ulSearchCount = 1L;
+	ulSearchCount = 1;
 	if (!IsRoot(szBuffer)) {
 	  rc = DosFindFirst(szBuffer,
 			    &hDir,
@@ -854,7 +854,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);
 	  hDir = HDIR_CREATE;
-	  ulSearchCount = 1L;
+	  ulSearchCount = 1;
 	  if (!IsRoot(szBuff)) {
 	    rc = DosFindFirst(szBuff,
 			      &hDir,
@@ -1217,7 +1217,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);
 	  hDir = HDIR_CREATE;
-	  ulSearchCount = 1L;
+	  ulSearchCount = 1;
 	  if (!IsRoot(szBuff)) {
 	    rc = DosFindFirst(szBuff,
 			      &hDir,
@@ -1282,7 +1282,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);
 	  hDir = HDIR_CREATE;
-	  ulSearchCount = 1L;
+	  ulSearchCount = 1;
 	  if (!IsRoot(szBuff)) {
 	    rc = DosFindFirst(szBuff,
 			      &hDir,

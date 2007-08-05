@@ -64,9 +64,9 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!fp)
 	    break;
 	  else {
-	    fseek(fp, 0L, SEEK_END);
+	    fseek(fp, 0, SEEK_END);
 	    icf.cbIconData = ftell(fp);
-	    fseek(fp, 0L, SEEK_SET);
+	    fseek(fp, 0, SEEK_SET);
 	    buff = xmalloc(icf.cbIconData, pszSrcFile, __LINE__);
 	    if (!buff) {
 	      fclose(fp);

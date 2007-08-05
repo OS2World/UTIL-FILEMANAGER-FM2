@@ -304,9 +304,9 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 (PSZ) NULL,
 			 MLS_HSCROLL | MLS_VSCROLL | MLS_BORDER |
 			 WS_VISIBLE,
-			 0L,
-			 0L,
-			 0L, 0L, hwnd, HWND_TOP, MLE_MLE, MPVOID, MPVOID)) {
+			 0,
+			 0,
+			 0, 0, hwnd, HWND_TOP, MLE_MLE, MPVOID, MPVOID)) {
       Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
     }
     else {
@@ -402,9 +402,9 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
       /* set up initial MLE conditions */
       vw->srch.hwndmle = hwndMLE;
-      MLEsetcurpos(hwndMLE, 0L);
+      MLEsetcurpos(hwndMLE, 0);
       MLEclearall(hwndMLE);
-      MLEsetlimit(hwndMLE, -1L);
+      MLEsetlimit(hwndMLE, -1);
       MLEsetformat(hwndMLE, MLFIE_NOTRANS);
       WinSetSysValue(HWND_DESKTOP, SV_INSERTMODE, TRUE);
       vw->fWrap = TRUE;
@@ -810,7 +810,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  fp = xfopen(vw->exportfilename, "r+", pszSrcFile, __LINE__);
 	  if (fp) {
 	    oldsize = filelength(fileno(fp));
-	    DosSetFileSize(fileno(fp), 0L);
+	    DosSetFileSize(fileno(fp), 0);
 	    fclose(fp);
 	  }
 	}
