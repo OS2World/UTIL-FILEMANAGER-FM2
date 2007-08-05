@@ -71,7 +71,7 @@ static VOID SnapShot(char *path, FILE * fp, BOOL recurse)
   FILEFINDBUF4 *fb;
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
-  ULONG nm = 1L;
+  ULONG nm = 1;
 
   fb = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
   if (fb) {
@@ -102,7 +102,7 @@ static VOID SnapShot(char *path, FILE * fp, BOOL recurse)
 		    fb->ftimeLastWrite.hours,
 		    fb->ftimeLastWrite.minutes,
 		    fb->ftimeLastWrite.twosecs,
-		    fb->attrFile, (fb->cbList > 4L) ? (fb->cbList / 2L) : 0L);
+		    fb->attrFile, (fb->cbList > 4) ? (fb->cbList / 2) : 0);
 	  // Skip . and ..
 	  else if (recurse &&
 		   (fb->achName[0] != '.' ||
@@ -110,7 +110,7 @@ static VOID SnapShot(char *path, FILE * fp, BOOL recurse)
 		     (fb->achName[1] != '.' || fb->achName[2])))) {
 	    SnapShot(mask, fp, recurse);
 	  }
-	  nm = 1L;
+	  nm = 1;
 	} while (!DosFindNext(hdir, fb, sizeof(FILEFINDBUF4), &nm));
 	DosFindClose(hdir);
       }
@@ -357,6 +357,7 @@ static VOID ActionCnrThread(VOID *args)
   HWND hwndCnrS, hwndCnrD;
   PCNRITEM pci, pciD, pciNextS, pciNextD;
   CHAR newname[CCHMAXPATH], dirname[CCHMAXPATH], *p;
+  PSZ pszNewName = newname;
   APIRET rc;
 
   if (!cmp) {
@@ -457,18 +458,20 @@ static VOID ActionCnrThread(VOID *args)
 
 	  case IDM_MOVE:
 	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-	      // 02 Aug 07 SHL fixme to replace this kind of stuff with _makepath or equivalent
-	      sprintf(newname, "%s%s%s",
-		      cmp->leftdir,
-		      cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-			NullStr : "\\",
-			pci->pszDisplayName);
-	    else
-	      sprintf(newname, "%s%s%s",
-		      cmp->rightdir,
-		      cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-			NullStr : "\\",
-		      pci->pszDisplayName);
+              // 02 Aug 07 SHL fixme to replace this kind of stuff with _makepath or equivalent
+              BldFullPathName(pszNewName, cmp->leftdir, pci->pszDisplayName);
+	      //sprintf(newname, "%s%s%s",
+	      //        cmp->leftdir,
+	      //        cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
+	      //  	NullStr : "\\",
+	      //  	pci->pszDisplayName);
+            else
+              BldFullPathName(pszNewName, cmp->rightdir, pci->pszDisplayName);
+	      //sprintf(newname, "%s%s%s",
+	      //        cmp->rightdir,
+	      //        cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
+	      //  	NullStr : "\\",
+	      //        pci->pszDisplayName);
 	    // Make directory if required
 	    strcpy(dirname, newname);
 	    p = strrchr(dirname, '\\');
@@ -547,18 +550,20 @@ static VOID ActionCnrThread(VOID *args)
 	    break;
 
 	  case IDM_COPY:
-	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-	      sprintf(newname, "%s%s%s",
-		      cmp->leftdir,
-		      cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-			NullStr : "\\",
-		      pci->pszDisplayName);
-	    else
-	      sprintf(newname, "%s%s%s",
-		      cmp->rightdir,
-		      cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-			NullStr : "\\",
-		      pci->pszDisplayName);
+            if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
+              BldFullPathName(pszNewName, cmp->leftdir, pci->pszDisplayName);
+	      //sprintf(newname, "%s%s%s",
+	      //        cmp->leftdir,
+	      //        cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
+	      //  	NullStr : "\\",
+	      //        pci->pszDisplayName);
+            else
+              BldFullPathName(pszNewName, cmp->rightdir, pci->pszDisplayName);
+	      //sprintf(newname, "%s%s%s",
+	      //        cmp->rightdir,
+	      //        cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
+	      //  	NullStr : "\\",
+	      //        pci->pszDisplayName);
 	    // Make directory if required
 	    strcpy(dirname, newname);
 	    p = strrchr(dirname, '\\');
@@ -708,7 +713,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
   CHAR *maskstr;
   FILEFINDBUF4 *ffb4, *pffb;
   HDIR hDir;
-  ULONG nm, fl = 0, ulM = 64;
+  ULONG nm, fl = 0, ulM = FilesToGet;
   APIRET rc;
 
   if (!str || !*str) {
@@ -716,8 +721,8 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
     return;
   }
 
-  if (!recurse)
-    ulM = FilesToGet;
+  //if (!recurse)
+  //  ulM = FilesToGet;
   maskstr = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
   if (!maskstr)
     return;
@@ -811,6 +816,7 @@ static VOID FillCnrsThread(VOID *args)
 
   HWND hwndLeft, hwndRight;
   CHAR szBuf[CCHMAXPATH];
+  PSZ pszBuf = szBuf;
   CNRINFO cnri;
 
   if (!cmp) {
@@ -1092,10 +1098,11 @@ static VOID FillCnrsThread(VOID *args)
 	    x = +1;			// Right side list longer
 
 	  if (x <= 0) {
-	    // File appears on left side
-	    sprintf(szBuf, "%s%s%s", cmp->leftdir,
-		    (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
-		    NullStr : "\\", filesl[l]->fname);
+            // File appears on left side
+            BldFullPathName(pszBuf, cmp->leftdir, filesl[l]->fname);
+	    //sprintf(szBuf, "%s%s%s", cmp->leftdir,
+	    //        (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
+	    //        NullStr : "\\", filesl[l]->fname);
 	    pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
 	    pcil->pszDisplayName = pcil->pszFileName + lenl;
 	    pcil->attrFile = filesl[l]->attrFile;
@@ -1130,10 +1137,11 @@ static VOID FillCnrsThread(VOID *args)
 	  } // if on left
 
 	  if (x >= 0) {
-	    // File appears on right side
-	    sprintf(szBuf, "%s%s%s", cmp->rightdir,
-		    (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
-		    NullStr : "\\", filesr[r]->fname);
+            // File appears on right side
+            BldFullPathName(pszBuf, cmp->rightdir, filesl[r]->fname);
+	    //sprintf(szBuf, "%s%s%s", cmp->rightdir,
+	    //        (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
+	    //        NullStr : "\\", filesr[r]->fname);
 	    pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
 	    pcir->pszDisplayName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;

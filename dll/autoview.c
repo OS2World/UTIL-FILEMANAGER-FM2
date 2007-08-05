@@ -411,18 +411,22 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else if (!IsFile(currfile)) {
 
 	    static FILEFINDBUF4 ffb[130];
-	    static char fullname[CCHMAXPATH + 4];
+            CHAR fullname[CCHMAXPATH + 4];
+            PSZ pszFullName = fullname, pszCurrFile = currfile, psz;
 	    HDIR hdir = HDIR_CREATE;
 	    ULONG x, nm, ml, mc, bufflen;
 	    PBYTE fb;
 	    PFILEFINDBUF4 pffbFile;
-	    char *buff, *p;
-	    APIRET rc;
+	    CHAR *buff, *p = "*";
+            APIRET rc;
 
-	    sprintf(fullname,
-		    "%s%s*",
-		    currfile,
-		    (currfile[strlen(currfile) - 1] == '\\') ? "" : "\\");
+            psz = p;
+            BldFullPathName(pszFullName, pszCurrFile, psz);
+            *p = 0;
+	    //sprintf(fullname,
+	    //        "%s%s*",
+	    //        currfile,
+	    //        (currfile[strlen(currfile) - 1] == '\\') ? "" : "\\");
 	    DosError(FERR_DISABLEHARDERR);
 	    nm = sizeof(ffb) / sizeof(FILEFINDBUF4);
 	    if (AutoviewHeight < 96)

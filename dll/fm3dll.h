@@ -423,6 +423,7 @@ typedef struct _CNRITEM
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */
   ULONG flags;
+  CHAR szFileName[CCHMAXPATH];	// Full path name - fixed size for speed
 }
 CNRITEM, *PCNRITEM;
 
@@ -621,6 +622,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv);
 HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
 
 /* filldir.c */
+PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
+PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
+PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
 VOID EmptyCnr(HWND hwnd);
 const PSZ FileAttrToString(ULONG fileAttr);
 VOID FillDirCnr(HWND hwndCnr, CHAR *pszDirectory, DIRCNRDATA *pdcd,

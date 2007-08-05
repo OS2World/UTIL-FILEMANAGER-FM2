@@ -49,16 +49,94 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <time.h>
+
+#if 1 // fixme to disable or to be configurable
 #include <malloc.h>			// _heapchk
+#endif
 
 #include "fm3dll.h"
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
+extern BOOL needs_quoting(PSZ psz);
 
 #pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
 #pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString)
+#pragma alloc_text(BldFullPathName, BldQuotedFullPathName, BldQuotedFileName)
 #pragma alloc_text(EMPTYCNR,EmptyCnr,FreeCnrItemData,FreeCnrItem,FreeCnrItemList,RemoveCnrItems)
+
+/**
+ * Build full path name in callers buffer given directory
+ * name and filename
+ * @returns pointer to users buffers
+ *
+ */
+
+PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
+{
+  UINT c = strlen(pszPathName);
+  if (c > 0) {
+    memcpy(pszFullPathName, pszPathName, c);
+    if (pszFullPathName[c] != '\\')
+      pszFullPathName[c++] = '\\';
+  }
+  strcpy(pszFullPathName + c, pszFileName);
+  return pszFullPathName;
+}
+
+/**
+ * Build quoted full path name in callers buffer given directory
+ * name and filename
+ * @returns pointer to users buffers
+ *
+ */
+
+PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
+{
+  UINT c = strlen(pszPathName);
+  BOOL q = needs_quoting(pszPathName) ||
+	   needs_quoting(pszFileName);
+  PSZ psz = pszFullPathName;
+
+  if (q)
+    *psz++ = '"';
+  if (c > 0) {
+    memcpy(pszFullPathName, pszPathName, c);
+    if (pszFullPathName[c] != '\\')
+      pszFullPathName[c++] = '\\';
+  }
+  strcpy(pszFullPathName + c, pszFileName);
+  if (q) {
+    *psz++ = '"';
+    *psz = 0;
+  }
+  return pszFullPathName;
+}
+
+
+/**
+ * Build quoted full path name in callers buffer given directory
+ * name and filename
+ * @returns pointer to users buffers
+ *
+ */
+
+PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName)
+{
+  BOOL q = needs_quoting(pszFileName);
+  PSZ psz = pszQuotedFileName;
+
+  if (q)
+    *psz++ = '"';
+  strcpy(psz, pszFileName);
+  if (q) {
+    psz += strlen(psz);
+    *psz++ = '"';
+    *psz = 0;
+  }
+  return pszQuotedFileName;
+}
 
 /**
  * Return display string given standard file attribute mask
@@ -245,14 +323,18 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
      if !*pffb->achName.  This speeds up and simplifies processing elsewhere
      (like in update.c)
    */
-  if (!*pffb->achName)
-    pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
+  if (!*pffb->achName) {
+    // pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
+    pci->pszFileName = pci->szFileName;
+    strcpy(pci->pszFileName, pszDirectory);
+  }
   else {
     INT c = strlen(pszDirectory);
     INT c2 = pffb->cchName + 1;
     if (pszDirectory[c - 1] != '\\')
       c2++;
-    pci->pszFileName = xmalloc(c + c2, pszSrcFile, __LINE__);
+    // pci->pszFileName = xmalloc(c + c2, pszSrcFile, __LINE__);
+    pci->pszFileName = pci->szFileName;
     memcpy(pci->pszFileName, pszDirectory, c + 1);
     p = pci->pszFileName + c - 1;
     if (*p != '\\') {
@@ -478,7 +560,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
   /* fill in a container record from a FILESTATUS4 structure */
 
   pci->hwndCnr = hwndCnr;
-  pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
+  // pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
+  pci->pszFileName = pci->szFileName;
+  strcpy(pci->pszFileName, pszFileName);
 
   /* load the object's Subject, if required */
   pci->pszSubject = NullStr;
@@ -787,7 +871,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    break;
 	  }
 	  pByte += pffbFile->oNextEntryOffset;
-	}
+	} // for
 	if (ulFileCnt) {
 	  if (stopflag && *stopflag)
 	    goto Abort;
@@ -1000,6 +1084,8 @@ VOID FillDirCnr(HWND hwndCnr,
     int state = _heapchk();
     if (state != _HEAPOK)
       Runtime_Error(pszSrcFile, __LINE__, "heap corrupted %d", state);
+    else
+      DbgMsg(pszSrcFile, __LINE__, "_memavl %u", _memavl());
   }
 #endif
 
@@ -1174,7 +1260,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		suggest[1] = 0;
 	      }
 	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
-	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	      // pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	      pci->pszFileName = pci->szFileName;
+	      strcpy(pci->pszFileName, szDrive);
 	      pci->pszDisplayName = pci->pszFileName;
 	      pci->rc.pszIcon = pci->pszDisplayName;
 	      pci->attrFile = FILE_DIRECTORY;
@@ -1186,7 +1274,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  }
 	  else {
 	    // Removable volume
-	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	    // pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	    pci->pszFileName = pci->szFileName;
+	    strcpy(pci->pszFileName, szDrive);
 	    pci->pszDisplayName = pci->pszFileName;
 	    pci->rc.pszIcon = pci->pszDisplayName;
 	    pci->attrFile = FILE_DIRECTORY;
@@ -1196,7 +1286,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	}
 	else {
 	  pci->rc.hptrIcon = hptrDunno;
-	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	  // pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	  pci->pszFileName = pci->szFileName;
+	  strcpy(pci->pszFileName, szDrive);
 	  pci->pszDisplayName = pci->pszFileName;
 	  pci->rc.pszIcon = pci->pszFileName;
 	  pci->attrFile = FILE_DIRECTORY;
@@ -1207,7 +1299,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       else {
 	// diskette drive (A or B)
 	pci->rc.hptrIcon = hptrFloppy;
-	pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	// pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	pci->pszFileName = pci->szFileName;
+	strcpy(pci->pszFileName, szDrive);
 	pci->pszDisplayName = pci->pszFileName;
 	pci->rc.pszIcon = pci->pszDisplayName;
 	pci->attrFile = FILE_DIRECTORY;
@@ -1278,7 +1372,10 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			   MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1));
     if (pciParent) {
       pciParent->flags |= RECFLAGS_ENV;
-      pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
+      // pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
+      pciParent->pszFileName = pciParent->szFileName;
+      strcpy(pciParent->pszFileName, GetPString(IDS_ENVVARSTEXT));
+      pciParent->pszDisplayName = pciParent->pszFileName;	// 03 Aug 07 SHL
       pciParent->rc.hptrIcon = hptrEnv;
       pciParent->rc.pszIcon = pciParent->pszFileName;
       pciParent->pszDispAttr = FileAttrToString(0);
