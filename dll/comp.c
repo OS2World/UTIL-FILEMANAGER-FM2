@@ -469,9 +469,9 @@ static VOID ActionCnrThread(VOID *args)
               BldFullPathName(pszNewName, cmp->rightdir, pci->pszDisplayName);
 	      //sprintf(newname, "%s%s%s",
 	      //        cmp->rightdir,
-	      //        cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-	      //  	NullStr : "\\",
-	      //        pci->pszDisplayName);
+	     //         cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
+	     //   	NullStr : "\\",
+	     //         pci->pszDisplayName);
 	    // Make directory if required
 	    strcpy(dirname, newname);
 	    p = strrchr(dirname, '\\');
@@ -556,7 +556,7 @@ static VOID ActionCnrThread(VOID *args)
 	      //        cmp->leftdir,
 	      //        cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
 	      //  	NullStr : "\\",
-	      //        pci->pszDisplayName);
+	      //         pci->pszDisplayName);
             else
               BldFullPathName(pszNewName, cmp->rightdir, pci->pszDisplayName);
 	      //sprintf(newname, "%s%s%s",
@@ -818,6 +818,7 @@ static VOID FillCnrsThread(VOID *args)
   CHAR szBuf[CCHMAXPATH];
   PSZ pszBuf = szBuf;
   CNRINFO cnri;
+
 
   if (!cmp) {
     Runtime_Error(pszSrcFile, __LINE__, "no data");
@@ -1103,7 +1104,7 @@ static VOID FillCnrsThread(VOID *args)
 	    //sprintf(szBuf, "%s%s%s", cmp->leftdir,
 	    //        (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 	    //        NullStr : "\\", filesl[l]->fname);
-	    pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
+	    pcil->pszFileName = xstrdup(pszBuf, pszSrcFile, __LINE__);
 	    pcil->pszDisplayName = pcil->pszFileName + lenl;
 	    pcil->attrFile = filesl[l]->attrFile;
 	    pcil->pszDispAttr = FileAttrToString(pcil->attrFile);
@@ -1138,11 +1139,11 @@ static VOID FillCnrsThread(VOID *args)
 
 	  if (x >= 0) {
             // File appears on right side
-            BldFullPathName(pszBuf, cmp->rightdir, filesl[r]->fname);
-	    //sprintf(szBuf, "%s%s%s", cmp->rightdir,
-	    //        (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
-	    //        NullStr : "\\", filesr[r]->fname);
-	    pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
+            //BldFullPathName(pszBuf, cmp->rightdir, filesl[r]->fname);
+	    sprintf(szBuf, "%s%s%s", cmp->rightdir,
+	            (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
+	            NullStr : "\\", filesr[r]->fname);
+	    pcir->pszFileName = xstrdup(pszBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
 	    pcir->pszDisplayName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;
 	    // pcir->rc.hptrIcon = hptrFile;
@@ -1179,7 +1180,7 @@ static VOID FillCnrsThread(VOID *args)
 
 	  if (x == 0) {
 	    // File appears on both sides
-	    pch = szBuf;
+	    pch = pszBuf;
 	    // Subject field holds status messages
 	    *pch = 0;
 	    if (pcil->cbFile + pcil->easize > pcir->cbFile + pcir->easize) {
@@ -1209,7 +1210,7 @@ static VOID FillCnrsThread(VOID *args)
 		(pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE) {
 	      pcil->flags |= CNRITEM_NEWER;
 	      pcir->flags |= CNRITEM_OLDER;
-	      if (pch != szBuf) {
+	      if (pch != pszBuf) {
 		strcpy(pch, ", ");
 		pch += 2;
 	      }
@@ -1231,7 +1232,7 @@ static VOID FillCnrsThread(VOID *args)
 		     FALSE) {
 	      pcil->flags |= CNRITEM_OLDER;
 	      pcir->flags |= CNRITEM_NEWER;
-	      if (pch != szBuf) {
+	      if (pch != pszBuf) {
 		strcpy(pch, ", ");
 		pch += 2;
 	      }
@@ -1239,8 +1240,8 @@ static VOID FillCnrsThread(VOID *args)
 	      pch += 5;
 	    }
 	    // fixme to know why not displayed - defect?
-	    pcil->pszSubject = *szBuf ?
-			         xstrdup(szBuf, pszSrcFile, __LINE__) :
+	    pcil->pszSubject = pszBuf ?
+			         xstrdup(pszBuf, pszSrcFile, __LINE__) :
 				 NullStr;
 
 	  } // if on both sides
