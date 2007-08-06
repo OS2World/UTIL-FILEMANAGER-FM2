@@ -646,7 +646,7 @@ ACCELTABLE  TREE_FRAME
   "s",         IDM_SUBJECT,           CONTROL
   "T",         IDM_SETTARGET,         CONTROL,SHIFT
   "u",         IDM_UPDATE,            CONTROL
-  "Z",         IDM_SIZES,             SHIFT,CONTROL
+  "Z",         IDM_SIZES,             CONTROL
   "_",         IDM_COLLAPSEALL,       SHIFT,CONTROL
   "-",         IDM_COLLAPSEALL,       SHIFT,CONTROL
   "-",         IDM_COLLAPSE,          CONTROL
@@ -797,7 +797,7 @@ ACCELTABLE  DIR_FRAME
   "v",         IDM_VIEW,              CONTROL
   "w",         IDM_WALKDIR,           CONTROL
   "x",         IDM_EXTRACT,           CONTROL
-  "Z",         IDM_SIZES,             SHIFT,CONTROL
+  "Z",         IDM_SIZES,             CONTROL
   ">",         IDM_PREVIOUS,          SHIFT,CONTROL
   ".",         IDM_PARENT,            CONTROL
   "+",         IDM_DESELECTMASK,      SHIFT,CONTROL
@@ -1590,7 +1590,7 @@ ACCELTABLE  COLLECTOR_FRAME
   "u",         IDM_UPDATE,            CONTROL
   "v",         IDM_VIEW,              CONTROL
   "x",         IDM_EXTRACT,           CONTROL
-  "Z",         IDM_SIZES,             SHIFT,CONTROL
+  "Z",         IDM_SIZES,             CONTROL
   "=",         IDM_SELECTMASK,        CONTROL
   "?",         IDM_SELECTALLDIRS,     SHIFT,CONTROL
   "/",         IDM_SELECTALLFILES,    CONTROL
