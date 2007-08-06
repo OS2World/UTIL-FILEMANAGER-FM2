@@ -6,7 +6,7 @@
   Make file lists
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2006 Steven H.Levine
+  Copyright (c) 2003, 2007 Steven H.Levine
 
   12 Feb 03 SHL AddToFileList: standardize EA math
   22 Jul 06 SHL Use Runtime_Error
@@ -102,10 +102,12 @@ INT AddToFileList(CHAR * string, FILEFINDBUF4 * ffb4, FILELIST *** list,
   FILELIST *pfl;
 
   if (string && ffb4) {
+    // Ensure room for NULL entry
     if (((*numfiles) + 3) > *numalloced) {
       FILELIST **pflArray;
 
       // Use plain realloc for speed
+      // 06 Aug 07 SHL fixme to know why + 6
       pflArray = realloc(*list, (*numalloced + 6) * sizeof(FILELIST *));
       if (!pflArray) {
 	Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));
@@ -132,6 +134,8 @@ INT AddToFileList(CHAR * string, FILEFINDBUF4 * ffb4, FILELIST *** list,
     strcpy(pfl->fname, string);
     (*list)[*numfiles] = pfl;
     (*numfiles)++;
+    // Ensure list always ends with two NULL entries
+    // 06 Aug 07 SHL fixme to know why
     (*list)[*numfiles] = NULL;
     (*list)[(*numfiles) + 1] = NULL;
 #ifdef __DEBUG_ALLOC__
