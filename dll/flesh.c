@@ -434,7 +434,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	  ri.fInvalidateRecord = TRUE;
 	  if (!WinSendMsg(hwndCnr,
 			  CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-	    DosSleep(100);
+	    DosSleep(50); //05 Aug 07 GKY 100
 	    WinSetFocus(HWND_DESKTOP, hwndCnr);
 	    if (WinIsWindow((HAB)0, hwndCnr)) {
 	      if (!WinSendMsg(hwndCnr,

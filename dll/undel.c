@@ -226,7 +226,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDismissDlg(hwnd, 0);
 	}
 	else
-	  DosSleep(500L);
+	  DosSleep(100);//05 Aug 07 GKY 500
       }
       refresh = FALSE;
     }

@@ -1121,7 +1121,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  sd.BondInd = SET_SESSION_UNCHANGED;
 	  for (ctr = 0;; ctr++)
 	  {
-	    DosSleep(200);
+	    DosSleep(100);//05 Aug 07 GKY 200
 	    if (DosSetSession(ulSessID, &sd))	// Check if session gone (i.e. finished)
 	      break;
 	    if (ctr > 10) {
@@ -1139,7 +1139,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	      rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
 				DCWW_NOWAIT, &bPriority, hTermQSem);
 	      if (rc == ERROR_QUE_EMPTY) {
-		DosSleep(100);
+		DosSleep(50);//05 Aug 07 GKY 100
 		continue;
 	      }
 	    }
@@ -1156,7 +1156,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	    if (rc) {
 	      // Oh heck
 	      Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosReadQueue");
-	      DosSleep(500);
+	      DosSleep(100);//05 Aug 07 GKY 500
 	      continue;
 	    }
 
@@ -1173,14 +1173,14 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	      //       __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,pTermInfo->usSessID,pTermInfo->usRC); fflush(stdout);
 	      // fixme to be gone when no longer needed for debug?
 	      if (ulLastSessID) {
-		DosSleep(500);
+		DosSleep(100);//05 Aug 07 GKY 500
 		ulLastSessID = pTermInfo->usSessID;
 	      }
 	      // requeue term report for other thread and do not free yet
 	      rc = DosWriteQueue(hTermQ, rq.ulData, ulLength,(PVOID)pTermInfo, bPriority);
 	      if (rc)
 		Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosWriteQueue");
-	      DosSleep(100);		// Let other thread see queue entry
+	      DosSleep(50); //05 Aug 07 GKY 100		// Let other thread see queue entry
 	    }
 	  } // for
 

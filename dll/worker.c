@@ -682,7 +682,7 @@ VOID Action(VOID * args)
 				   FM3ModHandle, REN_FRAME, (PVOID) & mv);
 		    if (!rc)
 		      goto Abort;
-		    DosSleep(1L);
+		    DosSleep(1);
 		    if (mv.skip || !*mv.target)
 		      break;
 		    if (mv.dontask)
@@ -935,9 +935,9 @@ VOID Action(VOID * args)
 	      Notify(message);
 	      if (toupper(*wk->li->targetpath) < 'C')
 		DosBeep(1000, 25);	// Wake up user
-	      DosSleep(33);
+	      DosSleep(16);//05 Aug 07 GKY 33
 	      if (wk->li->type == IDM_WPSMOVE || wk->li->type == IDM_WPSCOPY)
-		DosSleep(96);
+		DosSleep(48);//05 Aug 07 GKY 96
 	      break;
 	    default:
 	      break;

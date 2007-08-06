@@ -1525,7 +1525,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   if (!drivesbuilt && hwndMain)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-  DosSleep(33);
+  DosSleep(16);//05 Aug 07 GKY 33
   fDummy = FALSE;
   DosPostEventSem(CompactSem);
 

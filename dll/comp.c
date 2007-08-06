@@ -341,7 +341,7 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-    DosSleep(100);
+    DosSleep(50);//05 Aug 07 GKY 100
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -2399,7 +2399,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else if (!ParentIsDesktop(hwnd, cmp->hwndParent) && fAutoTile &&
 		     !strcmp(realappname, FM3Str))
 	      TileChildren(cmp->hwndParent, TRUE);
-	    DosSleep(64);
+	    DosSleep(32); //05 Aug 07 GKY 64
 	    PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(COMP_COLLECT, 0), MPVOID);
 	    break;
 	  }

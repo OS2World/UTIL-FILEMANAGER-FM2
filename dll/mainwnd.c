@@ -4896,14 +4896,14 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       return 0;
     }
     else
-      DosSleep(64);
+      DosSleep(32);//05 Aug 07 GKY 64
 
     hwndFrame = WinQueryWindow(hwnd, QW_PARENT);
 
     /*
      * create frame children (not client children, frame children)
      */
-    DosSleep(1L);
+    DosSleep(1);
     WinQueryWindowPos(hwndFrame, &swp);
     oldproc = WinSubclassWindow(hwndFrame, MainFrameWndProc);
     WinSetWindowPtr(hwndFrame, QWL_USER, (PVOID) oldproc);
@@ -5809,7 +5809,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!PostMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID))
 	WinSendMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
     }
-    DosSleep(1L);
+    DosSleep(1);
     return 0;				// Hold off WM_QUIT
 
   case UM_CLOSE:

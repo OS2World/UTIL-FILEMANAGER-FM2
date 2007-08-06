@@ -717,7 +717,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	FILEFINDBUF4 ffb4;
 	ULONG nm;
 	HDIR hdir;
-	CHAR longname[CCHMAXPATH], subject[256];
+	CHAR longname[CCHMAXPATH], subject[1024];
 
 	*pattern = 0;
 	WinQueryDlgItemText(hwnd, SAV_PATTERN, 80, pattern);
@@ -829,8 +829,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			value = pfea->szName + pfea->cbName + 1;
 			value[pfea->cbValue] = 0;
 			if (*(USHORT *) value == EAT_ASCII)
-			  strncpy(subject, value + (sizeof(USHORT) * 2), 40);
-			subject[40] = 0;
+			  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
+			subject[1023] = 0;
 		      }
 		      free(pfealist);
 		    }

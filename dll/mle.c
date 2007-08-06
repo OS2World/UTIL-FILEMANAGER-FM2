@@ -508,7 +508,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	      while (howmuch < numimport) {
 		numimport -= howmuch;
 		memmove(hexbuff, hexbuff + howmuch, numimport);
-		DosSleep(0L);
+		DosSleep(1);
 		if (!WinIsWindow(hab, h) || (vw && vw->killme))
 		  break;
 		howmuch = (INT) WinSendMsg(h,
@@ -533,7 +533,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	      sprintf(s, GetPString(IDS_LOADINGMLETEXT), len);
 	      WinSetWindowText(grandpa, s);
 	    }
-	    DosSleep(1L);
+	    DosSleep(1);
 	  }
 	  else
 	    ret = FALSE;
@@ -664,7 +664,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 		else
 		  numread = tempnum;
 	      }
-	      DosSleep(0L);
+	      DosSleep(1);
 	    }
 	    else
 	      numread = fread(buffer, 1, min(50000, len), fp);
@@ -675,7 +675,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 	    sprintf(s, GetPString(IDS_LOADINGMLETEXT), len);
 	    WinSetWindowText(grandpa, s);
 	  }
-	  DosSleep(1L);
+	  DosSleep(1);
 	}
 	DosFreeMem(buffer);
       }

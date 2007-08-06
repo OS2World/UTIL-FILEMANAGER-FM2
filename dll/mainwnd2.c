@@ -723,7 +723,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       return 0;
     }
     else
-      DosSleep(64);
+      DosSleep(32);//05 Aug 07 GKY 64
 
     pd = xmallocz(sizeof(PERSON1DATA), pszSrcFile, __LINE__);
     if (!pd)
@@ -739,7 +739,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       /*
        * create frame children (not client children, frame children)
        */
-      DosSleep(1L);
+      DosSleep(1);
       WinQueryWindowPos(WinQueryWindow(hwnd, QW_PARENT), &swp);
       oldproc = WinSubclassWindow(WinQueryWindow(hwnd, QW_PARENT),
 				  (PFNWP) MainFrameWndProc2);
@@ -1316,7 +1316,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     CloseChildren(hwnd);
     PostMsg(hwnd, UM_CLOSE, MPVOID, MPVOID);
-    DosSleep(1L);
+    DosSleep(1);
     return 0;
 
   case UM_CLOSE:

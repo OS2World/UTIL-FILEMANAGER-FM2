@@ -257,7 +257,7 @@ VOID GrepThread(VOID * arg)
     if (ghmq) {
       WinCancelShutdown(ghmq, TRUE);
       IncrThreadUsage();
-      DosSleep(128);
+      DosSleep(100); //05 Aug 07 GKY 128
       WinSetWindowText(grep.hwndCurFile,
 		       GetPString((grep.finddupes) ?
 				  IDS_GREPDUPETEXT : IDS_GREPSCANTEXT));
@@ -1285,7 +1285,7 @@ static VOID FillDupes(GREP * g)
 
 	  sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, g->numfiles);
 	  WinSetWindowText(g->hwndCurFile, s);
-	  DosSleep(128);
+	  DosSleep(100); //05 Aug 07 GKY 128
 	}
 	DosSleep(y % 2);
       }

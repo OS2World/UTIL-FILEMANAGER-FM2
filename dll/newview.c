@@ -954,7 +954,7 @@ static VOID SearchThread(VOID * args)
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
 			       GetPString(IDS_NOMATCHINGTEXT));
-	      DosSleep(1500);
+	      DosSleep(150);//05 Aug 07 GKY 1500
 	      PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	      PostMsg(hwnd, UM_SETUP4, MPVOID, MPVOID);
 	    }
@@ -1058,7 +1058,7 @@ static VOID ClipboardThread(VOID * args)
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
 			       GetPString(IDS_NVNOLINESSELTEXT));
-	      DosSleep(1500);
+	      DosSleep(150);//05 Aug 07 GKY 1500
 	    }
 	  }
 	  if (!released)
@@ -1794,7 +1794,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	else {
 	  WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
-	  DosSleep(32L);
+	  DosSleep(16); //05 Aug 07 GKY 32
 	  return (MRESULT) 1;
 	}
       }
@@ -2147,7 +2147,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    (SHORT) ptl.x == (SHORT) SHORT1FROMMP(mp1) &&
 	    ((SHORT) ptl.y < 0 || ptl.y > (Rectl.yTop - Rectl.yBottom))) {
 	  PostMsg(hwnd, UM_MOUSEMOVE, mp1, MPVOID);
-	  DosSleep(1L);
+	  DosSleep(1);
 	}
       }
     }
@@ -2161,11 +2161,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowRect(hwnd, &Rectl);
       WinQueryPointerPos(HWND_DESKTOP, &ptl);
-      WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl, 1L);
+      WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl, 1);
       if ((SHORT) ptl.y == (SHORT) SHORT2FROMMP(mp1) &&
 	  (SHORT) ptl.x == (SHORT) SHORT1FROMMP(mp1) &&
 	  ((SHORT) ptl.y < 0 || ptl.y > (Rectl.yTop - Rectl.yBottom))) {
-	DosSleep(1L);
+	DosSleep(1);
 	PostMsg(hwnd, WM_MOUSEMOVE, mp1, MPFROM2SHORT(TRUE, 0));
       }
     }
@@ -3757,11 +3757,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (ad) {
 	ad->stopflag = 1;
 	if (ad->ScanSem) {
-	  DosRequestMutexSem(ad->ScanSem, 15000L);
+	  DosRequestMutexSem(ad->ScanSem, 15000);
 	  DosCloseMutexSem(ad->ScanSem);
 	}
 	if (ad->busy)
-	  DosSleep(128L);
+	  DosSleep(100); //05 Aug 07 GKY 128
 	if (ad->hps) {
 	  GpiDeleteSetId(ad->hps, FIXED_FONT_LCID);
 	  GpiAssociate(ad->hps, 0);

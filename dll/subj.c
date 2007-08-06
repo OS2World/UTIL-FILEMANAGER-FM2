@@ -39,7 +39,7 @@ INT Subject(HWND hwnd, CHAR * filename)
   PFEA2LIST pfealist;
   PGEA2 pgea;
   PFEA2 pfea;
-  CHAR *value, subject[42], oldsubject[42];
+  CHAR *value, subject[1024], oldsubject[1024];
   STRINGINPARMS sip;
   INT ret = 0;
 
@@ -67,8 +67,8 @@ INT Subject(HWND hwnd, CHAR * filename)
 	value = pfea->szName + pfea->cbName + 1;
 	value[pfea->cbValue] = 0;
 	if (*(USHORT *) value == EAT_ASCII)
-	  strncpy(subject, value + (sizeof(USHORT) * 2), 39);
-	subject[39] = 0;
+	  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
+	subject[1023] = 0;
       }
       free(pfealist);
       if (rc == ERROR_SHARING_VIOLATION || rc == ERROR_ACCESS_DENIED) {
@@ -90,13 +90,13 @@ INT Subject(HWND hwnd, CHAR * filename)
   sip.help = GetPString(IDS_SUBJECTINPUTHELPTEXT);
   sip.ret = subject;
   sip.prompt = GetPString(IDS_SUBJECTINPUTPROMPTTEXT);
-  sip.inputlen = 40;
+  sip.inputlen = 1024;
   sip.title = filename;
   if (WinDlgBox
       (HWND_DESKTOP, hwnd, InputDlgProc, FM3ModHandle, STR_FRAME, &sip)
       && isalpha(*filename)
       && !(driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE)) {
-    subject[39] = 0;
+    subject[1023] = 0;
     bstrip(subject);
     if (strcmp(oldsubject, subject)) {
 

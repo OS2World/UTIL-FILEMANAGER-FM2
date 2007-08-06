@@ -450,11 +450,11 @@ BOOL AddNote(CHAR * note)
 	fThreadNotes = FALSE;
 	StartNotes(NULL);
 	if (!hwndNotify)
-	  DosSleep(33L);
+	  DosSleep(16);//05 Aug 07 GKY 33
 	if (!hwndNotify)
-	  DosSleep(33L);
+	  DosSleep(16);//05 Aug 07 GKY 33
 	if (!hwndNotify)
-	  DosSleep(33L);
+	  DosSleep(16);//05 Aug 07 GKY 33
       }
       if (hwndNotify) {
 	s = xmalloc(strlen(p) + 14, pszSrcFile, __LINE__);
@@ -493,11 +493,11 @@ VOID ShowNote(VOID)
   if (!hwndNotify)
     StartNotes(NULL);
   if (!hwndNotify)
-    DosSleep(33L);
+    DosSleep(16);//05 Aug 07 GKY 33
   if (!hwndNotify)
-    DosSleep(33L);
+    DosSleep(16);//05 Aug 07 GKY 33
   if (!hwndNotify)
-    DosSleep(33L);
+    DosSleep(16);//05 Aug 07 GKY 33
   if (hwndNotify)
     PostMsg(hwndNotify, UM_SHOWME, MPVOID, MPVOID);
 }

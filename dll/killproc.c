@@ -318,14 +318,14 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (fUseQProcStat) {
 	if (_beginthread(FillKillListThread2,
 			 NULL, 65536, (PVOID) & hwnd) != -1)
-	  DosSleep(250L);
+	  DosSleep(100);//05 Aug 07 GKY 250
 	else
 	  WinDismissDlg(hwnd, 0);
       }
       else {
 	if (_beginthread(FillKillListThread,
 			 NULL, 65536, (PVOID) & hwnd) != -1)
-	  DosSleep(250L);
+	  DosSleep(100); //05 Aug 07 GKY 250
 	else
 	  WinDismissDlg(hwnd, 0);
       }

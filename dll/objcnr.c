@@ -78,7 +78,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   endpath = &maskstr[strlen(maskstr)];
   strcat(maskstr, "*");
   hdir = HDIR_CREATE;
-  nm = 128;
+  nm = 1;
   rc = DosFindFirst(filename, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
@@ -144,7 +144,7 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
   ri.pRecordParent = (PRECORDCORE) pciParent;
   ri.zOrder = (USHORT) CMA_TOP;
-  ri.cRecordsInsert = 128;
+  ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pciP), MPFROMP(&ri))) {
     free(ffb);

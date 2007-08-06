@@ -947,7 +947,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pState->chStopFlag = (BYTE)0xff;
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
-      DosSleep(33);
+      DosSleep(16); //05 Aug 07 GKY 33
       free(pState);			// Let's hope no one is still looking
     }
     DosPostEventSem(CompactSem);

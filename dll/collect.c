@@ -497,7 +497,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			 COLLECTOROBJ_FRAME + (COLLECTOR_FRAME - dcd->id));
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(250);
+	DosSleep(100); //05 Aug 07 GKY 250
     }
     else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -895,7 +895,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       dcd->stopflag = 1;
       // Allow rescan logic to quiesce
       for (x = 0; x < 10 && dcd->amextracted; x++)
-	DosSleep(250);
+	DosSleep(100); //05 Aug 07 GKY 250
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
       free(dcd);
@@ -1293,7 +1293,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  return 0;
 	}
 	else
-	  DosSleep(64);
+	  DosSleep(32); //05 Aug 07 GKY 64
       }
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				DIR_FILTER), &dcd->mask, FALSE);
@@ -2600,7 +2600,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (!dcd->dontclose && ParentIsDesktop(hwnd, dcd->hwndParent))
 	PostMsg(hwnd, UM_FOLDUP, MPVOID, MPVOID);
       if (dcd->hwndObject) {
-	DosSleep(64);
+	DosSleep(32); //05 Aug 07 GKY 64
 	if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }

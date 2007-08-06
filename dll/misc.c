@@ -687,7 +687,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  APIRET rc;
 	  EAOP2 eaop;
 	  PFEA2LIST pfealist = NULL;
-	  CHAR szSubject[2048];
+	  CHAR szSubject[1048];
 	  ULONG ealen;
 	  USHORT len;
 	  CHAR *eaval;

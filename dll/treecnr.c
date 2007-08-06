@@ -600,7 +600,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     else {
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(250);
+	DosSleep(100); //05 Aug 07 GKY 250
     }
     return 0;
 
@@ -2495,7 +2495,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      TileChildren(dcd->hwndParent, TRUE);
 	  }
 	  WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	  DosSleep(250L);
+	  DosSleep(100);//05 Aug 07 GKY 250
 	}
 	else
 	  StartCollector(dcd->hwndParent, 4);
@@ -2503,7 +2503,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_COLLECTOR:
-	DosSleep(64L);
+	DosSleep(32);//05 Aug 07 GKY 64
 	{
 	  CHAR **list;
 
@@ -2804,7 +2804,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && hwndMain) {
       fOkayMinimize = TRUE;
       if (dcd->hwndObject && !fDummy) {
-	DosSleep(100);
+	DosSleep(50);//05 Aug 07 GKY 100
 	if (!fDummy) {
 	  fOkayMinimize = FALSE;
 	  WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain, QW_PARENT) :

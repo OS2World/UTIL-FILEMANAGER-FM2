@@ -1350,7 +1350,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowUShort(hwnd, QWS_ID, ARCOBJ_FRAME + (ARC_FRAME - dcd->id));
       dcd->hwndObject = hwnd;		// pass back hwnd
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(250);			// Avoid race?
+	DosSleep(100); //05 Aug 07 GKY 250 // Avoid race?
     }
     return 0;
 
@@ -1474,7 +1474,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	free(s);
 	if (IsFile(filename) == 1) {
 	  if (fViewChild && fArcStuffVisible)
-	    DosSleep(100);		// Allow unzip session to finish closing 14 Mar 07 SHL
+	    DosSleep(50); //05 Aug 07 GKY 100 // Allow unzip session to finish closing 14 Mar 07 SHL
 	  WinSendMsg(dcd->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
 	}
       }
@@ -1900,7 +1900,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       (li->type == IDM_VIEWBINARY && *binview) ||
 		       (li->type == IDM_EDITTEXT && *editor) ||
 		       (li->type == IDM_EDITBINARY && *bined)) {
-		DosSleep(100);
+		DosSleep(50); //05 Aug 07 GKY 100
 		ExecOnList(hwnd, ((li->type == IDM_VIEWTEXT) ? viewer :
 				  (li->type == IDM_VIEWBINARY) ? binview :
 				  (li->type == IDM_EDITTEXT) ? editor :
@@ -1979,7 +1979,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else {
 	      WinSendMsg(dcd->hwndCnr, WM_COMMAND,
 			 MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
-	      DosSleep(128);
+	      DosSleep(100); //05 Aug 07 GKY 128
 	      if (Collector) {
 		if (!PostMsg(Collector, WM_COMMAND,
 			     MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(list2)))
@@ -2004,10 +2004,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
       if (*dcd->workdir) {
-	DosSleep(33);
+	DosSleep(16); //05 Aug 07 GKY 33
 	wipeallf("%s\\*", dcd->workdir);
 	if (rmdir(dcd->workdir)) {
-	  DosSleep(256);
+	  DosSleep(100); //05 Aug 07 GKY 256
 	  wipeallf("%s\\*", dcd->workdir);
 	  rmdir(dcd->workdir);
 	}
@@ -2792,7 +2792,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      TileChildren(dcd->hwndParent, TRUE);
 	    }
 	    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	    DosSleep(128);
+	    DosSleep(100); //05 Aug 07 GKY 128
 	  }
 	}
 	else

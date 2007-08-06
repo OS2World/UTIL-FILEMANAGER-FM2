@@ -928,7 +928,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	}
 	else
-	  DosSleep(128);
+	  DosSleep(100); //05 Aug 07 GKY 128
 	free(p);
       }
       if (changed) {

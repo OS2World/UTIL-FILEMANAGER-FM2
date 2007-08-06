@@ -1094,7 +1094,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS), message);
 	if (toupper(*path) < 'C')
 	  DosBeep(1000, 25);
-	DosSleep(33L);
+	DosSleep(16);//05 Aug 07 GKY 33
 	break;
 
       default:
@@ -1289,12 +1289,12 @@ static VOID CollectList(HWND hwnd, CHAR ** list)
 	else
 	  TileChildren(hwndMain, TRUE);
 	WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	DosSleep(250);
+	DosSleep(100);//05 Aug 07 GKY 250
       }
     }
     else {
       StartCollector(HWND_DESKTOP, 4);
-      DosSleep(250);
+      DosSleep(100);//05 Aug 07 GKY 250
     }
   }
   if (!PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0),
@@ -2561,7 +2561,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       }
       else {
-	DosSleep(100);
+	DosSleep(50);//05 Aug 07 GKY 100
 	PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
 	PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
       }
@@ -4005,7 +4005,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else {
 	  DosReleaseMutexSem(pAD->hmtxScan);
-	  DosSleep(100);
+	  DosSleep(50);//05 Aug 07 GKY 100
 	  WinInvalidateRect(hwnd, NULL, FALSE);
 	  PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
 	  PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
@@ -4168,7 +4168,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	DosReleaseMutexSem(pAD->hmtxScan);
       }
       else if (SHORT1FROMMP(mp1) == IDM_COLLECTOR) {
-	DosSleep(100);
+	DosSleep(50);//05 Aug 07 GKY 100
 	if (!PostMsg(hwnd, msg, mp1, mp2))
 	  WinSendMsg(hwnd, msg, mp1, mp2);
       }
