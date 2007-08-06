@@ -388,11 +388,12 @@ EXECARGS;
 
 #pragma pack(1)
 
-#define CNRITEM_SMALLER   0x00010000
+// Compare directory flags
+#define CNRITEM_SMALLER   0x00010000	// file exists in both containers and this one is smaller
 #define CNRITEM_LARGER    0x00020000
 #define CNRITEM_NEWER     0x00040000
 #define CNRITEM_OLDER     0x00080000
-#define CNRITEM_EXISTS    0x00100000
+#define CNRITEM_EXISTS    0x00100000	// file exists in both containers
 
 #define RECFLAGS_ENV      0x00000001
 #define RECFLAGS_NODRAG   0x00000002

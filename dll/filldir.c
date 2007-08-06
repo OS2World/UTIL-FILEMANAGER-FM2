@@ -69,7 +69,7 @@ extern BOOL needs_quoting(PSZ psz);
 /**
  * Build full path name in callers buffer given directory
  * name and filename
- * @returns pointer to users buffers
+ * @returns pointer to full path name in caller's buffer
  *
  */
 
@@ -77,8 +77,8 @@ PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 {
   UINT c = strlen(pszPathName);
   if (c > 0) {
-    memcpy(pszFullPathName, pszPathName, c + 1);
-    if (pszFullPathName[c] != '\\')
+    memcpy(pszFullPathName, pszPathName, c);
+    if (pszFullPathName[c - 1] != '\\')
       pszFullPathName[c++] = '\\';
   }
   strcpy(pszFullPathName + c, pszFileName);
@@ -86,9 +86,9 @@ PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 }
 
 /**
- * Build quoted full path name in callers buffer given directory
- * name and filename
- * @returns pointer to users buffers
+ * Build quoted full path name in callers buffer given
+ * directory name and filename
+ * @returns pointer to quoted path name in caller's buffer
  *
  */
 
@@ -103,7 +103,7 @@ PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
     *psz++ = '"';
   if (c > 0) {
     memcpy(pszFullPathName, pszPathName, c);
-    if (pszFullPathName[c] != '\\')
+    if (pszFullPathName[c - 1] != '\\')
       pszFullPathName[c++] = '\\';
   }
   strcpy(pszFullPathName + c, pszFileName);
@@ -116,9 +116,8 @@ PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 
 
 /**
- * Build quoted full path name in callers buffer given directory
- * name and filename
- * @returns pointer to users buffers
+ * Build quoted full path name in callers buffer given a filename
+ * @returns pointer to quoted file name in caller's buffer
  *
  */
 

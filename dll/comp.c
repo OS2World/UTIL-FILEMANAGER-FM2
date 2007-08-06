@@ -356,8 +356,7 @@ static VOID ActionCnrThread(VOID *args)
   HMQ hmq;
   HWND hwndCnrS, hwndCnrD;
   PCNRITEM pci, pciD, pciNextS, pciNextD;
-  CHAR newname[CCHMAXPATH], dirname[CCHMAXPATH], *p;
-  PSZ pszNewName = newname;
+  CHAR szNewName[CCHMAXPATH], szDirName[CCHMAXPATH], *p;
   APIRET rc;
 
   if (!cmp) {
@@ -458,39 +457,39 @@ static VOID ActionCnrThread(VOID *args)
 
 	  case IDM_MOVE:
 	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-              // 02 Aug 07 SHL fixme to replace this kind of stuff with _makepath or equivalent
-              BldFullPathName(pszNewName, cmp->leftdir, pci->pszDisplayName);
-	      //sprintf(newname, "%s%s%s",
+	      // 02 Aug 07 SHL fixme to replace this kind of stuff with _makepath or equivalent
+	      BldFullPathName(szNewName, cmp->leftdir, pci->pszDisplayName);
+	      //sprintf(szNewName, "%s%s%s",
 	      //        cmp->leftdir,
 	      //        cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-	      //  	NullStr : "\\",
-	      //  	pci->pszDisplayName);
-            else
-              BldFullPathName(pszNewName, cmp->rightdir, pci->pszDisplayName);
-	      //sprintf(newname, "%s%s%s",
+	      //	NullStr : "\\",
+	      //	pci->pszDisplayName);
+	    else
+	      BldFullPathName(szNewName, cmp->rightdir, pci->pszDisplayName);
+	      //sprintf(szNewName, "%s%s%s",
 	      //        cmp->rightdir,
 	     //         cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-	     //   	NullStr : "\\",
+	     //	NullStr : "\\",
 	     //         pci->pszDisplayName);
 	    // Make directory if required
-	    strcpy(dirname, newname);
-	    p = strrchr(dirname, '\\');
+	    strcpy(szDirName, szNewName);
+	    p = strrchr(szDirName, '\\');
 	    if (p) {
-	      if (p > dirname + 2)
+	      if (p > szDirName + 2)
 		p++;
 	      *p = 0;
-	      if (IsFile(dirname) == -1)
-		MassMkdir(hwndMain, dirname);
+	      if (IsFile(szDirName) == -1)
+		MassMkdir(hwndMain, szDirName);
 	    }
-	    rc = docopyf(MOVE, pci->pszFileName, "%s", newname);
-	    if (!rc && stricmp(pci->pszFileName, newname)) {
+	    rc = docopyf(MOVE, pci->pszFileName, "%s", szNewName);
+	    if (!rc && stricmp(pci->pszFileName, szNewName)) {
 	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      if (pciD->rc.flRecordAttr & CRA_SELECTED)
 		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      FreeCnrItemData(pciD);
-	      pciD->pszFileName = xstrdup(newname, pszSrcFile, __LINE__);
+	      pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
 		pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->leftdir);
 		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
@@ -501,7 +500,7 @@ static VOID ActionCnrThread(VOID *args)
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciD->pszDisplayName++;
 	      }
-	      // 02 Aug 07 SHL fixme to know Longname transfer is correct?
+	      // 02 Aug 07 SHL fixme to know if LongName transfer is correct?
 	      pciD->pszLongName = pci->pszLongName;
 	      if (pciD->pszSubject != NullStr) {
 		xfree(pciD->pszSubject);
@@ -509,7 +508,7 @@ static VOID ActionCnrThread(VOID *args)
 	      }
 	      pciD->attrFile = pci->attrFile;
 	      pciD->pszDispAttr = pci->pszDispAttr;
-	      pciD->flags = CNRITEM_EXISTS;	// 04 Aug 07 SHL
+	      pciD->flags = 0;		// Just on one side
 	      pciD->date = pci->date;
 	      pciD->time = pci->time;
 	      pciD->ladate = pci->ladate;
@@ -543,38 +542,38 @@ static VOID ActionCnrThread(VOID *args)
 			     pszSrcFile,
 			     __LINE__,
 			     GetPString(IDS_COMPMOVEFAILEDTEXT),
-			     pci->pszFileName, newname);
+			     pci->pszFileName, szNewName);
 	      if (rc == MBID_CANCEL)	// Cause loop to break
 		pciNextS = NULL;
 	    }
 	    break;
 
 	  case IDM_COPY:
-            if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-              BldFullPathName(pszNewName, cmp->leftdir, pci->pszDisplayName);
-	      //sprintf(newname, "%s%s%s",
+	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
+	      BldFullPathName(szNewName, cmp->leftdir, pci->pszDisplayName);
+	      //sprintf(szNewName, "%s%s%s",
 	      //        cmp->leftdir,
 	      //        cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-	      //  	NullStr : "\\",
+	      //	NullStr : "\\",
 	      //         pci->pszDisplayName);
-            else
-              BldFullPathName(pszNewName, cmp->rightdir, pci->pszDisplayName);
-	      //sprintf(newname, "%s%s%s",
+	    else
+	      BldFullPathName(szNewName, cmp->rightdir, pci->pszDisplayName);
+	      //sprintf(szNewName, "%s%s%s",
 	      //        cmp->rightdir,
 	      //        cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-	      //  	NullStr : "\\",
+	      //	NullStr : "\\",
 	      //        pci->pszDisplayName);
 	    // Make directory if required
-	    strcpy(dirname, newname);
-	    p = strrchr(dirname, '\\');
+	    strcpy(szDirName, szNewName);
+	    p = strrchr(szDirName, '\\');
 	    if (p) {
-	      if (p > dirname + 2)
+	      if (p > szDirName + 2)
 		p++;
 	      *p = 0;
-	      if (IsFile(dirname) == -1)
-		MassMkdir(hwndMain, dirname);
+	      if (IsFile(szDirName) == -1)
+		MassMkdir(hwndMain, szDirName);
 	    }
-	    rc = docopyf(COPY, pci->pszFileName, "%s", newname);
+	    rc = docopyf(COPY, pci->pszFileName, "%s", szNewName);
 	    if (rc) {
 	      rc = Dos_Error(MB_ENTERCANCEL,
 			     rc,
@@ -582,7 +581,7 @@ static VOID ActionCnrThread(VOID *args)
 			     pszSrcFile,
 			     __LINE__,
 			     GetPString(IDS_COMPCOPYFAILEDTEXT),
-			     pci->pszFileName, newname);
+			     pci->pszFileName, szNewName);
 	      if (rc == MBID_CANCEL)
 		pciNextS = NULL;		// Cause loop to break
 	    }
@@ -593,7 +592,7 @@ static VOID ActionCnrThread(VOID *args)
 		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      FreeCnrItemData(pciD);
-	      pciD->pszFileName = xstrdup(newname, pszSrcFile, __LINE__);
+	      pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
 		pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->leftdir);
 		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
@@ -606,7 +605,7 @@ static VOID ActionCnrThread(VOID *args)
 	      }
 	      pciD->attrFile = pci->attrFile;
 	      pciD->pszDispAttr = pci->pszDispAttr;
-	      pciD->flags = CNRITEM_EXISTS;
+	      pciD->flags = CNRITEM_EXISTS;	// Now on both sides
 	      pciD->date = pci->date;
 	      pciD->time = pci->time;
 	      pciD->ladate = pci->ladate;
@@ -616,13 +615,12 @@ static VOID ActionCnrThread(VOID *args)
 	      pciD->cbFile = pci->cbFile;
 	      pciD->easize = pci->easize;
 
-	      // 02 Aug 07 SHL fixme to know why subject cleared?
+	      // Forget status until we regenerate it
 	      if (pci->pszSubject != NullStr) {
 		xfree(pci->pszSubject);
 		pci->pszSubject = NullStr;
 	      }
-	      // 02 Aug 07 SHL fixme to know why - should already be set?
-	      // pci->flags = CNRITEM_EXISTS;
+	      pci->flags = CNRITEM_EXISTS;
 
 	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
@@ -816,9 +814,7 @@ static VOID FillCnrsThread(VOID *args)
 
   HWND hwndLeft, hwndRight;
   CHAR szBuf[CCHMAXPATH];
-  PSZ pszBuf = szBuf;
   CNRINFO cnri;
-
 
   if (!cmp) {
     Runtime_Error(pszSrcFile, __LINE__, "no data");
@@ -846,8 +842,8 @@ static VOID FillCnrsThread(VOID *args)
       INT numfilesr = 0;
       INT numallocl = 0;
       INT numallocr = 0;
-      INT lenl;				// Directory prefix length
-      INT lenr;
+      UINT lenl;			// Directory prefix length
+      UINT lenr;
       UINT recsNeeded;
       PCNRITEM pcilFirst;
       PCNRITEM pcirFirst;
@@ -941,8 +937,9 @@ static VOID FillCnrsThread(VOID *args)
 	  }
 
 	  if (*cmp->rightdir) {
-	    lenr = strlen(cmp->rightdir) +
-	      (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\');
+	    lenr = strlen(cmp->rightdir);
+	    if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
+	      lenr++;
 	    while (!feof(fp)) {
 	      if (!xfgets_bstripcr
 		  (str, sizeof(str), fp, pszSrcFile, __LINE__))
@@ -1099,12 +1096,12 @@ static VOID FillCnrsThread(VOID *args)
 	    x = +1;			// Right side list longer
 
 	  if (x <= 0) {
-            // File appears on left side
-            BldFullPathName(pszBuf, cmp->leftdir, filesl[l]->fname);
+	    // File appears on left side
+	    BldFullPathName(szBuf, cmp->leftdir, filesl[l]->fname);
 	    //sprintf(szBuf, "%s%s%s", cmp->leftdir,
 	    //        (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
 	    //        NullStr : "\\", filesl[l]->fname);
-	    pcil->pszFileName = xstrdup(pszBuf, pszSrcFile, __LINE__);
+	    pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
 	    pcil->pszDisplayName = pcil->pszFileName + lenl;
 	    pcil->attrFile = filesl[l]->attrFile;
 	    pcil->pszDispAttr = FileAttrToString(pcil->attrFile);
@@ -1134,16 +1131,15 @@ static VOID FillCnrsThread(VOID *args)
 		pcir->rc.flRecordAttr |= CRA_FILTERED;
 	      }
 	    }
-	    pcil->flags |= CNRITEM_EXISTS;
 	  } // if on left
 
 	  if (x >= 0) {
-            // File appears on right side
-            //BldFullPathName(pszBuf, cmp->rightdir, filesl[r]->fname);
-	    sprintf(szBuf, "%s%s%s", cmp->rightdir,
-	            (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
-	            NullStr : "\\", filesr[r]->fname);
-	    pcir->pszFileName = xstrdup(pszBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
+	    // File appears on right side
+	    BldFullPathName(szBuf, cmp->rightdir, filesl[r]->fname);
+	    //sprintf(szBuf, "%s%s%s", cmp->rightdir,
+	    //        (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
+	    //        NullStr : "\\", filesr[r]->fname);
+	    pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
 	    pcir->pszDisplayName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;
 	    // pcir->rc.hptrIcon = hptrFile;
@@ -1175,12 +1171,13 @@ static VOID FillCnrsThread(VOID *args)
 		pcir->rc.flRecordAttr |= CRA_FILTERED;
 	      }
 	    }
-	    pcir->flags |= CNRITEM_EXISTS;
 	  } // if on right
 
 	  if (x == 0) {
 	    // File appears on both sides
-	    pch = pszBuf;
+	    pcil->flags |= CNRITEM_EXISTS;
+	    pcir->flags |= CNRITEM_EXISTS;
+	    pch = szBuf;
 	    // Subject field holds status messages
 	    *pch = 0;
 	    if (pcil->cbFile + pcil->easize > pcir->cbFile + pcir->easize) {
@@ -1210,7 +1207,7 @@ static VOID FillCnrsThread(VOID *args)
 		(pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE) {
 	      pcil->flags |= CNRITEM_NEWER;
 	      pcir->flags |= CNRITEM_OLDER;
-	      if (pch != pszBuf) {
+	      if (pch != szBuf) {
 		strcpy(pch, ", ");
 		pch += 2;
 	      }
@@ -1232,16 +1229,15 @@ static VOID FillCnrsThread(VOID *args)
 		     FALSE) {
 	      pcil->flags |= CNRITEM_OLDER;
 	      pcir->flags |= CNRITEM_NEWER;
-	      if (pch != pszBuf) {
+	      if (pch != szBuf) {
 		strcpy(pch, ", ");
 		pch += 2;
 	      }
 	      strcpy(pch, GetPString(IDS_OLDERTEXT));
 	      pch += 5;
 	    }
-	    // fixme to know why not displayed - defect?
-	    pcil->pszSubject = pszBuf ?
-			         xstrdup(pszBuf, pszSrcFile, __LINE__) :
+	    pcil->pszSubject = *szBuf ?
+				 xstrdup(szBuf, pszSrcFile, __LINE__) :
 				 NullStr;
 
 	  } // if on both sides
@@ -2168,7 +2164,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinDlgBox(HWND_DESKTOP, hwnd, WalkTwoCmpDlgProc,
 		      FM3ModHandle, WALK2_FRAME,
 		      MPFROMP(&wa)) &&
-	    !IsFile(wa.szCurrentPath1) && !IsFile(wa.szCurrentPath2)) {
+	    !IsFile(wa.szCurrentPath1) &&
+	    !IsFile(wa.szCurrentPath2)) {
 	  strcpy(cmp->leftdir, wa.szCurrentPath1);
 	  strcpy(cmp->rightdir, wa.szCurrentPath2);
 	  *cmp->rightlist = 0;
