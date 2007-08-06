@@ -102,7 +102,7 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
     WinSendDlgItemMsg(hwnd, EAC_NAME, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(255, 0), MPVOID);
+		      MPFROM2SHORT(1024, 0), MPVOID);
     WinCheckButton(hwnd, EAC_ASCII, TRUE);
     break;
 
@@ -125,12 +125,12 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       head = add->head;
       filename = add->filename;
       {
-	CHAR s[257];
+	CHAR s[1025];
 	INT x;
 	USHORT type = EAT_ASCII;
 
 	*s = 0;
-	WinQueryDlgItemText(hwnd, EAC_NAME, 255, s);
+	WinQueryDlgItemText(hwnd, EAC_NAME, 1024, s);
 	bstrip(s);
 	if (!*s)
 	  WinDismissDlg(hwnd, 0);
@@ -324,7 +324,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSetWindowPtr(hwnd, QWL_USER, (PVOID) eap);
     WinSendDlgItemMsg(hwnd,
 		      EA_ENTRY, EM_SETTEXTLIMIT, MPFROM2SHORT(40, 0), MPVOID);
-    MLEsetlimit(WinWindowFromID(hwnd, EA_MLE), 32767L);
+    MLEsetlimit(WinWindowFromID(hwnd, EA_MLE), 32767);
     MLEsetformat(WinWindowFromID(hwnd, EA_MLE), MLFIE_NOTRANS);
     {
       INT x;
@@ -422,7 +422,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case LN_ENTER:
       case LN_SELECT:
 	{
-	  CHAR s[CCHMAXPATH];
+	  CHAR s[1025];
 	  SHORT sSelect;
 
 	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd, EA_NAMES,
@@ -432,7 +432,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (sSelect >= 0) {
 	    *s = 0;
 	    WinSendDlgItemMsg(hwnd, EA_NAMES, LM_QUERYITEMTEXT,
-			      MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
+			      MPFROM2SHORT(sSelect, 1024), MPFROMP(s));
 	    if (*s) {
 	      strcpy(eap->filename, s);
 	      if (SHORT2FROMMP(mp1) == LN_SELECT)
@@ -456,7 +456,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       case LN_SELECT:
 	{
-	  CHAR s[257];
+	  CHAR s[1024];
 	  SHORT sSelect;
 
 	  eap->current = NULL;
@@ -477,7 +477,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 						 MPVOID);
 	    if (sSelect >= 0) {
 	      WinSendDlgItemMsg(hwnd, EA_LISTBOX, LM_QUERYITEMTEXT,
-				MPFROM2SHORT(sSelect, 256), MPFROMP(s));
+				MPFROM2SHORT(sSelect, 1024), MPFROMP(s));
 	      if (*s) {
 
 		USHORT len, num, type;
@@ -498,11 +498,11 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      if (!strcmp(info->name, SUBJECT))
 			WinSendDlgItemMsg(hwnd, EA_ENTRY,
 					  EM_SETTEXTLIMIT,
-					  MPFROM2SHORT(256, 0), MPVOID);
+					  MPFROM2SHORT(1024, 0), MPVOID);
 		      else
 			WinSendDlgItemMsg(hwnd, EA_ENTRY,
 					  EM_SETTEXTLIMIT,
-					  MPFROM2SHORT(256, 0), MPVOID);
+					  MPFROM2SHORT(1024, 0), MPVOID);
 		      WinSetDlgItemText(hwnd, EA_ENTRY,
 					info->value + (sizeof(USHORT) * 2));
 		      WinShowWindow(WinWindowFromID(hwnd, EA_ENTRY), TRUE);
@@ -534,11 +534,11 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					      EA_MLE,
 					      MLM_SETIMPORTEXPORT,
 					      MPFROMP(linefeed),
-					      MPFROMLONG(1L));
+					      MPFROMLONG(1));
 			    WinSendDlgItemMsg(hwnd,
 					      EA_MLE,
 					      MLM_IMPORT,
-					      MPFROMP(&pos), MPFROMLONG(1L));
+					      MPFROMP(&pos), MPFROMLONG(1));
 			  }
 			  WinSendDlgItemMsg(hwnd,
 					    EA_MLE,
@@ -614,11 +614,11 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					      EA_MLE,
 					      MLM_SETIMPORTEXPORT,
 					      MPFROMP(linefeed),
-					      MPFROMLONG(1L));
+					      MPFROMLONG(1));
 			    WinSendDlgItemMsg(hwnd,
 					      EA_MLE,
 					      MLM_IMPORT,
-					      MPFROMP(&pos), MPFROMLONG(1L));
+					      MPFROMP(&pos), MPFROMLONG(1));
 			  }
 			  WinSendDlgItemMsg(hwnd,
 					    EA_MLE,
@@ -846,7 +846,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    s = xmalloc(32768, pszSrcFile, __LINE__);
 	    if (s) {
 	      *s = 0;
-	      WinQueryDlgItemText(hwnd, control, 32767L, (PCH) s);
+	      WinQueryDlgItemText(hwnd, control, 32767, (PCH) s);
 	      if (!*s)
 		Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	      else {
@@ -1214,7 +1214,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 				 &handle,
 				 ulEntry,
 				 (PVOID)pdena,
-				 (ULONG)65536L,
+				 (ULONG)65536,
 				 &ulCount,
 				 ENUMEA_LEVEL_NO_VALUE) &&
 	       ulCount)
@@ -1301,7 +1301,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
       if (pdena) {
 	while (!DosEnumAttribute
 	       (ENUMEA_REFTYPE_PATH, filename, ulEntry, (PVOID) pdena,
-		(ULONG) 65536L, &ulCount, ENUMEA_LEVEL_NO_VALUE) && ulCount)
+		(ULONG) 65536, &ulCount, ENUMEA_LEVEL_NO_VALUE) && ulCount)
 	{
 	  pgealist = xmalloc(64 + pdena->cbName, pszSrcFile, __LINE__);
 	  if (pgealist) {
