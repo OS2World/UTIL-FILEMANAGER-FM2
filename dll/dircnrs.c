@@ -590,7 +590,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
-      DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
+      // DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
                    MPFROMP(&cni));
@@ -2848,7 +2848,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-          DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
+          // DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
           li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
           CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
