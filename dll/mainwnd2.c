@@ -16,6 +16,7 @@
   17 Jul 06 SHL Use Runtime_Error
   30 Mar 07 GKY Remove GetPString for window class names
   12 May 07 SHL Pass ulItemsToUnHilite to UnHilite
+  07 Aug 07 SHL Use BldQuotedFileName
 
 ***********************************************************************/
 
@@ -123,7 +124,7 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
 
       /*
        * Calculate the position of the client rectangle.
-       * Otherwise,  we'll see a lot of redraw when we move the
+       * Otherwise, we'll see a lot of redraw when we move the
        * client during WM_FORMATFRAME.
        */
 
@@ -497,20 +498,26 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	}
 	else {
-
-	  CHAR *d1 = "\"", *d2 = "\"";
-
-	  if (!needs_quoting(wa.szCurrentPath1))
-	    *d1 = 0;
-	  if (!needs_quoting(wa.szCurrentPath2))
-	    *d2 = 0;
+	  CHAR szPath1[CCHMAXPATH];
+	  CHAR szPath2[CCHMAXPATH];
 	  runemf2(SEPARATE,
-		  HWND_DESKTOP,
-		  NULL,
-		  NULL,
-		  "%s %s%s%s %s%s%s",
+		  HWND_DESKTOP, NULL, NULL,
+		  "%s %s %s",
 		  dircompare,
-		  d1, wa.szCurrentPath1, d1, d2, wa.szCurrentPath2, d2);
+		  BldQuotedFileName(szPath1, wa.szCurrentPath1),
+		  BldQuotedFileName(szPath2, wa.szCurrentPath2));
+	  // CHAR *d1 = "\"", *d2 = "\"";
+	  // if (!needs_quoting(wa.szCurrentPath1))
+	  //   *d1 = 0;
+	  // if (!needs_quoting(wa.szCurrentPath2))
+	  //   *d2 = 0;
+	  // runemf2(SEPARATE,
+	  //	  HWND_DESKTOP,
+	  //	  NULL,
+	  //	  NULL,
+	  //	  "%s %s%s%s %s%s%s",
+	  //	  dircompare,
+	  //	  d1, wa.szCurrentPath1, d1, d2, wa.szCurrentPath2, d2);
 	}
       }
     }

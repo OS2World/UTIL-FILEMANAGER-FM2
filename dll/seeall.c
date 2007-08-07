@@ -22,6 +22,7 @@
   03 Nov 06 SHL Count thread usage
   30 Mar 07 GKY Remove GetPString for window class names
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  07 Aug 07 SHL Use BldQuotedFullPathName and BldQuotedFileName
 
 ***********************************************************************/
 
@@ -464,34 +465,35 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcat(szBuffer, " ");
 	  x = 0;
 	  while (list[x]) {
-
 	    FILESTATUS3 fsa;
-	    BOOL spaces;
-
-	    if (needs_quoting(list[x])) {
-	      spaces = TRUE;
-	      strcat(szBuffer, "\"");
-	    }
-	    else
-	      spaces = FALSE;
-	    strcat(szBuffer, list[x]);
+	    // BOOL spaces;
+	    // if (needs_quoting(list[x])) {
+	    //   spaces = TRUE;
+	    //   strcat(szBuffer, "\"");
+	    // }
+	    // else
+	    //   spaces = FALSE;
+	    // strcat(szBuffer, list[x]);
 	    memset(&fsa, 0, sizeof(fsa));
 	    DosError(FERR_DISABLEHARDERR);
-	    DosQueryPathInfo(list[x], FIL_STANDARD,
-			     &fsa, (ULONG) sizeof(fsa));
+	    DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa));
 	    if (fsa.attrFile & FILE_DIRECTORY) {
-	      if (szBuffer[strlen(szBuffer) - 1] != '\\')
-		strcat(szBuffer, "\\");
-	      strcat(szBuffer, "*");
+	      BldQuotedFullPathName(szBuffer + strlen(szBuffer),
+				    list[x], "*");
+	      // if (szBuffer[strlen(szBuffer) - 1] != '\\')
+	      //	strcat(szBuffer, "\\");
+	      // strcat(szBuffer, "*");
 	    }
-	    if (spaces)
-	      strcat(szBuffer, "\"");
+	    else
+	      BldQuotedFileName(szBuffer + strlen(szBuffer), list[x]);
+	    // if (spaces)
+	    //   strcat(szBuffer, "\"");
 	    x++;
 	    if (!list[x] || strlen(szBuffer) + strlen(list[x]) + 5 > 1024) {
-	      runemf2(SEPARATE | WINDOWED |
-		      ((fArcStuffVisible) ? 0 :
-		       (BACKGROUND | MINIMIZED)) |
-		      WAIT, HWND_DESKTOP, NULL, NULL, "%s", szBuffer);
+	      runemf2(SEPARATE | WINDOWED | WAIT |
+		      (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)),
+		      HWND_DESKTOP, NULL, NULL,
+		      "%s", szBuffer);
 	      DosSleep(1);
 	      *p = 0;
 	    }
@@ -828,17 +830,14 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (needs_quoting(ex.masks) && !strchr(ex.masks, '\"'))
 	      maskspaces = TRUE;
 	    runemf2(SEPARATE | WINDOWED |
-		    ((fArcStuffVisible) ? 0 :
-		     (BACKGROUND | MINIMIZED)),
-		    HWND_DESKTOP,
-		    ex.extractdir,
-		    NULL,
+		    (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)),
+		    HWND_DESKTOP, ex.extractdir, NULL,
 		    "%s %s %s%s%s",
 		    ex.command,
 		    ex.arcname,
-		    (maskspaces) ? "\"" : NullStr,
-		    (*ex.masks) ? ex.masks : "*",
-		    (maskspaces) ? "\"" : NullStr);
+		    maskspaces ? "\"" : NullStr,
+		    *ex.masks ? ex.masks : "*",
+		    maskspaces ? "\"" : NullStr);
 	  }
 	}
 	// fixme to not leak?
@@ -3011,7 +3010,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       list = BuildAList(hwnd);
       if (!list)
-	Runtime_Error(pszSrcFile, __LINE__, "no data");
+	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	WinSetWindowText(pAD->hwndStatus, GetPString(IDS_DRAGGINGFILESTEXT));
 	DragList(hwnd, (HWND) 0, list, TRUE);
@@ -4104,7 +4103,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    CHAR **list = BuildAList(hwnd);
 
 	    if (!list)
-	      Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
 	    else {
 	      switch (SHORT1FROMMP(mp1)) {
 	      case IDM_COLLECT:

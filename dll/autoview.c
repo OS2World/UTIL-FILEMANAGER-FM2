@@ -350,8 +350,8 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      }
 		      if (info) {
 			sprintf(p, "**%s%s%s\n",
-				(info->id) ? info->id : "",
-				(info->id) ? " " : "",
+				info->id ? info->id : "",
+				info->id ? " " : "",
 				GetPString(IDS_ARCHIVETEXT));
 			p += strlen(p);
 		      }
@@ -411,18 +411,16 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else if (!IsFile(currfile)) {
 
 	    static FILEFINDBUF4 ffb[130];
-            CHAR fullname[CCHMAXPATH + 4];
-            PSZ pszFullName = fullname, pszCurrFile = currfile, psz;
+	    CHAR fullname[CCHMAXPATH + 4];
 	    HDIR hdir = HDIR_CREATE;
 	    ULONG x, nm, ml, mc, bufflen;
 	    PBYTE fb;
 	    PFILEFINDBUF4 pffbFile;
-	    CHAR *buff, *p = "*";
-            APIRET rc;
+	    PSZ pszBuf;
+	    PSZ p;
+	    APIRET rc;
 
-            psz = p;
-            BldFullPathName(pszFullName, pszCurrFile, psz);
-            *p = 0;
+	    BldFullPathName(fullname, currfile, "*");
 	    //sprintf(fullname,
 	    //        "%s%s*",
 	    //        currfile,
@@ -451,9 +449,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		x++;
 	      }
 	      bufflen = (CCHMAXPATHCOMP + 42) * nm;
-	      buff = xmalloc(bufflen, pszSrcFile, __LINE__);
-	      if (buff) {
-		p = buff;
+	      pszBuf = xmalloc(bufflen, pszSrcFile, __LINE__);
+	      if (pszBuf) {
+		p = pszBuf;
 		*p = 0;
 		fb = (PBYTE) & ffb;
 		x = 0;
@@ -496,11 +494,11 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  fb += pffbFile->oNextEntryOffset;
 		  x++;
 		}			// while
-		if (p - buff >= bufflen)
+		if (p - pszBuf >= bufflen)
 		  Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
-		if (*buff)
-		  WinSetWindowText(hwndAutoview, buff);
-		free(buff);
+		if (*pszBuf)
+		  WinSetWindowText(hwndAutoview, pszBuf);
+		free(pszBuf);
 	      }
 	    }
 	    if (!rc)
@@ -515,7 +513,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PFEA2LIST pfealist;
 	  PGEA2 pgea;
 	  PFEA2 pfea;
-	  CHAR *value, *buff, *p, *data;
+	  CHAR *value, *pszBuf, *p, *data;
 	  USHORT len, type, plen, dlen;
 	  BOOL readonly = FALSE;
 
@@ -541,10 +539,10 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  value = pfea->szName + pfea->cbName + 1;
 		  value[pfea->cbValue] = 0;
 		  if (*(USHORT *) value == EAT_MVMT) {
-		    buff = xmalloc(65536, pszSrcFile, __LINE__);
-		    if (buff) {
-		      p = buff;
-		      *buff = 0;
+		    pszBuf = xmalloc(65536, pszSrcFile, __LINE__);
+		    if (pszBuf) {
+		      p = pszBuf;
+		      *pszBuf = 0;
 		      data = value + (sizeof(USHORT) * 3);
 		      type = *(USHORT *) data;
 		      data += sizeof(USHORT);
@@ -578,13 +576,13 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			len = *(USHORT *) data;
 			data += sizeof(USHORT);
 		      }			// while
-		      if (p - buff >= 65536) {
+		      if (p - pszBuf >= 65536) {
 			Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
-			buff[65535] = 0;	// Try to stay alive
+			pszBuf[65535] = 0;	// Try to stay alive
 			break;
 		      }
-		      WinSetWindowText(hwndAutoMLE, buff);
-		      free(buff);
+		      WinSetWindowText(hwndAutoMLE, pszBuf);
+		      free(pszBuf);
 		    }
 		  }
 		  else

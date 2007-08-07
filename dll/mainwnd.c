@@ -34,6 +34,7 @@
   20 Apr 07 SHL Avoid spurious add_udir error reports
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  07 Aug 07 SHL Use BldQuotedFileName
 
 ***********************************************************************/
 
@@ -1809,7 +1810,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cnd.pRecord = NULL;
       li = DoFileDrop(hwnd,
 		      NULL,
-                      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
+		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
       CheckPmDrgLimit(cnd.pDragInfo);
       if (li) {
 	strcpy(li->targetpath, szDrv);
@@ -4108,20 +4109,25 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else {
 
-	  CHAR d1[] = "\"";
-	  CHAR d2[] = "\"";
-
-	  if (!needs_quoting(wa.szCurrentPath1))
-	    *d1 = 0;
-	  if (!needs_quoting(wa.szCurrentPath2))
-	    *d2 = 0;
+	  CHAR szPath1[CCHMAXPATH];
+	  CHAR szPath2[CCHMAXPATH];
 	  runemf2(SEPARATE,
-		  HWND_DESKTOP,
-		  NULL,
-		  NULL,
-		  "%s %s%s%s %s%s%s",
+		  HWND_DESKTOP, NULL, NULL,
+		  "%s %s %s",
 		  dircompare,
-		  d1, wa.szCurrentPath1, d1, d2, wa.szCurrentPath2, d2);
+		  BldQuotedFileName(szPath1, wa.szCurrentPath1),
+		  BldQuotedFileName(szPath2, wa.szCurrentPath2));
+	  // CHAR d1[] = "\"";
+	  // CHAR d2[] = "\"";
+	  // if (!needs_quoting(wa.szCurrentPath1))
+	  //   *d1 = 0;
+	  // if (!needs_quoting(wa.szCurrentPath2))
+	  //   *d2 = 0;
+	  // runemf2(SEPARATE,
+	  //	  HWND_DESKTOP, NULL, NULL,
+	  //	  "%s %s%s%s %s%s%s",
+	  //	  dircompare,
+	  //	  d1, wa.szCurrentPath1, d1, d2, wa.szCurrentPath2, d2);
 	}
       }
     }
@@ -4817,7 +4823,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    PCNRITEM pci;
 	    DIRCNRDATA *dcd = NULL;
 
-	    // 12 May 07 SHL fixme to understand?  backwards maybe? looking for DIR_CNR?
+	    // 12 May 07 SHL fixme to understand? backwards maybe? looking for DIR_CNR?
 	    if (WinQueryWindowUShort(hwndCnr, QWS_ID) != TREE_CNR)
 	      dcd = INSTDATA(hwndCnr);
 	    pci = (PCNRITEM) WinSendMsg(hwndCnr,

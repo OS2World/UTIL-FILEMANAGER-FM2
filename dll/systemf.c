@@ -730,9 +730,9 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
       goto ObjectInterrupt;
     }
 
-    if ((type & 15) == SYNCHRONOUS ||
-	(type & 15) == ASYNCHRONOUS ||
-	(type & 15) == DETACHED)
+    if ((type & RUNTYPE_MASK) == SYNCHRONOUS ||
+	(type & RUNTYPE_MASK) == ASYNCHRONOUS ||
+	(type & RUNTYPE_MASK) == DETACHED)
     {
       strip_lead_char(" \t", pszPgm);
       p = pszPgm;
@@ -825,8 +825,8 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  switch_to(pszDirectory);
 	}
 	ret = DosExecPgm(szObject, sizeof(szObject),
-			 ((type & 15) == ASYNCHRONOUS ?  EXEC_ASYNC : 0) +
-			 ((type & 15) == DETACHED ? EXEC_BACKGROUND : 0),
+			 ((type & RUNTYPE_MASK) == ASYNCHRONOUS ?  EXEC_ASYNC : 0) +
+			 ((type & RUNTYPE_MASK) == DETACHED ? EXEC_BACKGROUND : 0),
 			 pszPgm, pszEnvironment, &results, pszPgm);
 	if (pszDirectory && *pszDirectory)
 	  switch_to(szSavedir);
@@ -1067,7 +1067,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
       sdata.SessionType = ulAppType;
       sdata.ObjectBuffer = szObject;
       sdata.ObjectBuffLen = sizeof(szObject);
-      if ((type & 15) == SEPARATEKEEP)
+      if ((type & RUNTYPE_MASK) == SEPARATEKEEP)
 	sdata.PgmControl |= SSF_CONTROL_NOAUTOCLOSE;
       if (type & MAXIMIZED)
 	sdata.PgmControl |= SSF_CONTROL_MAXIMIZE;

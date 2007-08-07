@@ -19,6 +19,7 @@
   03 Nov 06 SHL Count thread usage
   21 Apr 07 GKY Find FM2Utils by path or utils directory
   16 Jun 07 SHL Update for OpenWatcom
+  07 Aug 07 SHL Use BldQuotedFileName
 
 ***********************************************************************/
 
@@ -109,12 +110,14 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 
 VOID Action(VOID * args)
 {
-  WORKER *wk = (WORKER *) args;
+  WORKER *wk = (WORKER *)args;
   HAB hab2;
   HMQ hmq2;
   CHAR **files = NULL;
   INT numfiles = 0, numalloc = 0, plen = 0;
   CHAR *p, *pp;
+  CHAR szQuotedDirName[CCHMAXPATH];
+  CHAR szQuotedFileName[CCHMAXPATH];
 
   if (wk) {
     if (wk->li && wk->li->list && wk->li->list[0]) {
@@ -406,17 +409,14 @@ VOID Action(VOID * args)
 		  if (needs_quoting(ex.masks) && !strchr(ex.masks, '\"'))
 		    maskspaces = TRUE;
 		  if (!runemf2(SEPARATE | WINDOWED |
-			       ((fArcStuffVisible) ? 0 :
-				(BACKGROUND | MINIMIZED)),
-			       HWND_DESKTOP,
-			       ex.extractdir,
-			       NULL,
+			       fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED),
+			       HWND_DESKTOP, ex.extractdir, NULL,
 			       "%s %s %s%s%s",
 			       ex.command,
 			       ex.arcname,
-			       (maskspaces) ? "\"" : NullStr,
-			       (*ex.masks) ? ex.masks : "*",
-			       (maskspaces) ? "\"" : NullStr) &&
+			       maskspaces ? "\"" : NullStr,
+			       *ex.masks ? ex.masks : "*",
+			       maskspaces ? "\"" : NullStr) &&
 		      !stricmp(ex.extractdir, wk->directory)) {
 		    if (WinIsWindow(hab2, wk->hwndCnr))
 		      WinSendMsg(wk->hwndCnr,
@@ -854,21 +854,24 @@ VOID Action(VOID * args)
 			       MPFROMP(wk->li->targetpath),
 			       MPFROMP(wk->li->list[x]));
 		  else {
-		    CHAR d1[] = "\"";
-		    CHAR d2[] = "\"";
-
-		    if (!needs_quoting(wk->li->targetpath))
-		      *d1 = 0;
-		    if (!needs_quoting(wk->li->list[x]))
-		      *d2 = 0;
 		    runemf2(SEPARATE,
-			    HWND_DESKTOP,
-			    NULL,
-			    NULL,
-			    "%s %s%s%s %s%s%s",
+			    HWND_DESKTOP, NULL, NULL,
+			    "%s %s %s",
 			    dircompare,
-			    d1,
-			    wk->li->targetpath, d1, d2, wk->li->list[x], d2);
+			    BldQuotedFileName(szQuotedDirName, wk->li->targetpath),
+			    BldQuotedFileName(szQuotedFileName, wk->li->list[x]));
+		    // CHAR d1[] = "\"";
+		    // CHAR d2[] = "\"";
+		    // if (!needs_quoting(wk->li->targetpath))
+		    //   *d1 = 0;
+		    // if (!needs_quoting(wk->li->list[x]))
+		    //   *d2 = 0;
+		    // runemf2(SEPARATE,
+		    // 	    HWND_DESKTOP, NULL, NULL,
+		    // 	    "%s %s%s%s %s%s%s",
+		    // 	    dircompare,
+		    // 	    d1, wk->li->targetpath, d1,
+		    // 	    d2, wk->li->list[x], d2);
 		  }
 		}
 		else if (*compare) {
@@ -1075,11 +1078,12 @@ VOID MassAction(VOID * args)
 		       (wk->li->info->exwdirs) ?
 		       wk->li->info->exwdirs : wk->li->info->extract);
 		strcat(szBuffer, " ");
-		if (needs_quoting(wk->li->arcname))
-		  strcat(szBuffer, "\"");
-		strcat(szBuffer, wk->li->arcname);
-		if (needs_quoting(wk->li->arcname))
-		  strcat(szBuffer, "\"");
+		BldQuotedFileName(szBuffer + strlen(szBuffer), wk->li->arcname);
+		// if (needs_quoting(wk->li->arcname))
+		//   strcat(szBuffer, "\"");
+		// strcat(szBuffer, wk->li->arcname);
+		// if (needs_quoting(wk->li->arcname))
+		//   strcat(szBuffer, "\"");
 	      }
 	      else {
                 if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
@@ -1099,19 +1103,22 @@ VOID MassAction(VOID * args)
 		    *pp = '\\';
 		  pp++;
 		}
-		if (needs_quoting(wk->li->list[x]))
-		  strcat(szBuffer, "\"");
-		strcat(szBuffer, wk->li->list[x]);
-		if (needs_quoting(wk->li->list[x]))
-		  strcat(szBuffer, "\"");
+		BldQuotedFileName(szBuffer + strlen(szBuffer), wk->li->list[x]);
+		// if (needs_quoting(wk->li->list[x]))
+		//   strcat(szBuffer, "\"");
+		// strcat(szBuffer, wk->li->list[x]);
+		// if (needs_quoting(wk->li->list[x]))
+		//   strcat(szBuffer, "\"");
 		x++;
 		if (!wk->li->list[x] || strlen(szBuffer) +
 		    strlen(wk->li->list[x]) + 5 > 1024) {
 		  runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
 			  HWND_DESKTOP,
-			  ((wk->li->type == IDM_FAKEEXTRACT ||
-			    wk->li->type == IDM_FAKEEXTRACTM) ?
-			   wk->li->targetpath : NULL), NULL, "%s", szBuffer);
+			  (wk->li->type == IDM_FAKEEXTRACT ||
+			   wk->li->type == IDM_FAKEEXTRACTM) ?
+			     wk->li->targetpath : NULL,
+			   NULL,
+			   "%s", szBuffer);
 		  DosSleep(1);
 		  *p = 0;
 		}
@@ -1225,11 +1232,12 @@ VOID MassAction(VOID * args)
 	      /* build the sucker */
 	      strcpy(szBuffer, ad.command);
 	      strcat(szBuffer, " ");
-	      if (needs_quoting(ad.arcname))
-		strcat(szBuffer, "\"");
-	      strcat(szBuffer, ad.arcname);
-	      if (needs_quoting(ad.arcname))
-		strcat(szBuffer, "\"");
+	      BldQuotedFileName(szBuffer + strlen(szBuffer), ad.arcname);
+	      // if (needs_quoting(ad.arcname))
+	      // 	strcat(szBuffer, "\"");
+	      // strcat(szBuffer, ad.arcname);
+	      // if (needs_quoting(ad.arcname))
+	      // 	strcat(szBuffer, "\"");
 	      p = &szBuffer[strlen(szBuffer)];
 	      if (ad.mask.szMask) {
 		strcat(szBuffer, " ");
@@ -1238,36 +1246,37 @@ VOID MassAction(VOID * args)
 	      strcat(szBuffer, " ");
 	      x = 0;
 	      while (wk->li->list[x]) {
-
 		FILESTATUS3 fsa;
-		BOOL spaces;
-
-		if (needs_quoting(wk->li->list[x])) {
-		  spaces = TRUE;
-		  strcat(szBuffer, "\"");
-		}
-		else
-		  spaces = FALSE;
-		strcat(szBuffer, wk->li->list[x]);
+		// BOOL spaces;
+		// if (needs_quoting(wk->li->list[x])) {
+		//   spaces = TRUE;
+		//   strcat(szBuffer, "\"");
+		// }
+		// else
+		//   spaces = FALSE;
+		// strcat(szBuffer, wk->li->list[x]);
 		memset(&fsa, 0, sizeof(FILESTATUS3));
 		DosError(FERR_DISABLEHARDERR);
 		DosQueryPathInfo(wk->li->list[x],
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
 		if (fsa.attrFile & FILE_DIRECTORY) {
-		  if (szBuffer[strlen(szBuffer) - 1] != '\\')
-		    strcat(szBuffer, "\\");
-		  strcat(szBuffer, "*");
+		  BldQuotedFullPathName(szBuffer + strlen(szBuffer), wk->li->list[x], "*");
+		  // if (szBuffer[strlen(szBuffer) - 1] != '\\')
+		  //   strcat(szBuffer, "\\");
+		  // strcat(szBuffer, "*");
 		}
-		if (spaces)
-		  strcat(szBuffer, "\"");
+		else
+		  BldQuotedFileName(szBuffer + strlen(szBuffer), wk->li->list[x]);
+		// if (spaces)
+		//   strcat(szBuffer, "\"");
 		x++;
 		if (!wk->li->list[x] ||
 		    strlen(szBuffer) + strlen(wk->li->list[x]) + 5 > 1024) {
-		  runemf2(SEPARATE | WINDOWED |
-			  ((fArcStuffVisible) ? 0 :
-			   (BACKGROUND | MINIMIZED)) |
-			  WAIT, HWND_DESKTOP, NULL, NULL, "%s", szBuffer);
+		  runemf2(SEPARATE | WINDOWED | WAIT |
+			  (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)),
+			  HWND_DESKTOP, NULL, NULL,
+			  "%s", szBuffer);
 		  DosSleep(1);
 		  *p = 0;
 		}

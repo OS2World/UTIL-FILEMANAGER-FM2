@@ -424,7 +424,6 @@ typedef struct _CNRITEM
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */
   ULONG flags;
-  CHAR szFileName[CCHMAXPATH];	// Full path name - fixed size for speed
 }
 CNRITEM, *PCNRITEM;
 
@@ -623,9 +622,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv);
 HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
 
 /* filldir.c */
-PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
-PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
-PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
 VOID EmptyCnr(HWND hwnd);
 const PSZ FileAttrToString(ULONG fileAttr);
 VOID FillDirCnr(HWND hwndCnr, CHAR *pszDirectory, DIRCNRDATA *pdcd,
@@ -899,6 +895,7 @@ INT runemf2(INT type, HWND hwnd, CHAR * directory, CHAR * environment,
 	    CHAR * formatstring, ...);
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	  PROGTYPE * progt, ULONG fl, char *formatstring, ...);
+#define RUNTYPE_MASK  0xf
 #define SYNCHRONOUS   1
 #define ASYNCHRONOUS  2
 #define DETACHED      3
@@ -1063,6 +1060,8 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ArcFolderProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
+PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
 
 /* assoc.c */
 INT ExecAssociation(HWND hwnd, CHAR * datafile);
@@ -1116,6 +1115,7 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* comp.c */
+PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
 MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 

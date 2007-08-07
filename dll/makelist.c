@@ -145,6 +145,12 @@ INT AddToFileList(CHAR * string, FILEFINDBUF4 * ffb4, FILELIST *** list,
   return 0;
 }
 
+/**
+ * Add string to string list
+ * Enlarges as needed
+ * Ensures 2 NULL end markers exist
+ */
+
 INT AddToList(CHAR * string, CHAR *** list, INT * numfiles, INT * numalloced)
 {
   CHAR **ppsz;
@@ -168,10 +174,10 @@ INT AddToList(CHAR * string, CHAR *** list, INT * numfiles, INT * numalloced)
       return 2;
     }
     (*list)[*numfiles] = psz;
-    strcpy((*list)[*numfiles], string);
+    strcpy((*list)[*numfiles], string);	// Add entry
     (*numfiles)++;
-    (*list)[*numfiles] = NULL;
-    (*list)[(*numfiles) + 1] = NULL;
+    (*list)[*numfiles] = NULL;		// Add end marker
+    (*list)[(*numfiles) + 1] = NULL;	// Add 2nd end marker - fixme to know why?
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
@@ -206,7 +212,7 @@ CHAR **BuildList(HWND hwndCnr)
       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));
     else
       list = test;
-  }
+  } // while
   return list;
 }
 

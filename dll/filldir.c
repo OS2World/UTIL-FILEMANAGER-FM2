@@ -59,83 +59,10 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-extern BOOL needs_quoting(PSZ psz);
 
 #pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
 #pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString)
-#pragma alloc_text(BldFullPathName, BldQuotedFullPathName, BldQuotedFileName)
 #pragma alloc_text(EMPTYCNR,EmptyCnr,FreeCnrItemData,FreeCnrItem,FreeCnrItemList,RemoveCnrItems)
-
-/**
- * Build full path name in callers buffer given directory
- * name and filename
- * @returns pointer to full path name in caller's buffer
- *
- */
-
-PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
-{
-  UINT c = strlen(pszPathName);
-  if (c > 0) {
-    memcpy(pszFullPathName, pszPathName, c);
-    if (pszFullPathName[c - 1] != '\\')
-      pszFullPathName[c++] = '\\';
-  }
-  strcpy(pszFullPathName + c, pszFileName);
-  return pszFullPathName;
-}
-
-/**
- * Build quoted full path name in callers buffer given
- * directory name and filename
- * @returns pointer to quoted path name in caller's buffer
- *
- */
-
-PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
-{
-  UINT c = strlen(pszPathName);
-  BOOL q = needs_quoting(pszPathName) ||
-	   needs_quoting(pszFileName);
-  PSZ psz = pszFullPathName;
-
-  if (q)
-    *psz++ = '"';
-  if (c > 0) {
-    memcpy(pszFullPathName, pszPathName, c);
-    if (pszFullPathName[c - 1] != '\\')
-      pszFullPathName[c++] = '\\';
-  }
-  strcpy(pszFullPathName + c, pszFileName);
-  if (q) {
-    *psz++ = '"';
-    *psz = 0;
-  }
-  return pszFullPathName;
-}
-
-
-/**
- * Build quoted full path name in callers buffer given a filename
- * @returns pointer to quoted file name in caller's buffer
- *
- */
-
-PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName)
-{
-  BOOL q = needs_quoting(pszFileName);
-  PSZ psz = pszQuotedFileName;
-
-  if (q)
-    *psz++ = '"';
-  strcpy(psz, pszFileName);
-  if (q) {
-    psz += strlen(psz);
-    *psz++ = '"';
-    *psz = 0;
-  }
-  return pszQuotedFileName;
-}
 
 /**
  * Return display string given standard file attribute mask
@@ -323,8 +250,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
      (like in update.c)
    */
   if (!*pffb->achName) {
-    // pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
-    pci->pszFileName = pci->szFileName;
+    pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
     strcpy(pci->pszFileName, pszDirectory);
   }
   else {
@@ -332,8 +258,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     INT c2 = pffb->cchName + 1;
     if (pszDirectory[c - 1] != '\\')
       c2++;
-    // pci->pszFileName = xmalloc(c + c2, pszSrcFile, __LINE__);
-    pci->pszFileName = pci->szFileName;
+    pci->pszFileName = xmalloc(c + c2, pszSrcFile, __LINE__);
     memcpy(pci->pszFileName, pszDirectory, c + 1);
     p = pci->pszFileName + c - 1;
     if (*p != '\\') {
@@ -559,8 +484,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
   /* fill in a container record from a FILESTATUS4 structure */
 
   pci->hwndCnr = hwndCnr;
-  // pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
-  pci->pszFileName = pci->szFileName;
+  pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
   strcpy(pci->pszFileName, pszFileName);
 
   /* load the object's Subject, if required */
@@ -1259,8 +1183,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		suggest[1] = 0;
 	      }
 	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
-	      // pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	      pci->pszFileName = pci->szFileName;
+	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	      strcpy(pci->pszFileName, szDrive);
 	      pci->pszDisplayName = pci->pszFileName;
 	      pci->rc.pszIcon = pci->pszDisplayName;
@@ -1273,8 +1196,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  }
 	  else {
 	    // Removable volume
-	    // pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	    pci->pszFileName = pci->szFileName;
+	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	    strcpy(pci->pszFileName, szDrive);
 	    pci->pszDisplayName = pci->pszFileName;
 	    pci->rc.pszIcon = pci->pszDisplayName;
@@ -1285,8 +1207,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	}
 	else {
 	  pci->rc.hptrIcon = hptrDunno;
-	  // pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	  pci->pszFileName = pci->szFileName;
+	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	  strcpy(pci->pszFileName, szDrive);
 	  pci->pszDisplayName = pci->pszFileName;
 	  pci->rc.pszIcon = pci->pszFileName;
@@ -1298,8 +1219,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       else {
 	// diskette drive (A or B)
 	pci->rc.hptrIcon = hptrFloppy;
-	// pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	pci->pszFileName = pci->szFileName;
+	pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	strcpy(pci->pszFileName, szDrive);
 	pci->pszDisplayName = pci->pszFileName;
 	pci->rc.pszIcon = pci->pszDisplayName;
@@ -1371,8 +1291,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			   MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1));
     if (pciParent) {
       pciParent->flags |= RECFLAGS_ENV;
-      // pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
-      pciParent->pszFileName = pciParent->szFileName;
+      pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
       strcpy(pciParent->pszFileName, GetPString(IDS_ENVVARSTEXT));
       pciParent->pszDisplayName = pciParent->pszFileName;	// 03 Aug 07 SHL
       pciParent->rc.hptrIcon = hptrEnv;
@@ -1660,7 +1579,10 @@ VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
 
   if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1))) {
     // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
-    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD hwnd %x pci %p", hwnd, pci);
+    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      "CM_FREERECORD hwnd %x pci %p file %s",
+              hwnd, pci,
+	      pci && pci->pszFileName ? pci->pszFileName : "n/a");
   }
 }
 

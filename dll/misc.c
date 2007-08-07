@@ -27,6 +27,7 @@
   23 Jul 07 SHL Sync with CNRITEM updates (ticket#24)
   31 Jul 07 SHL Clean up and report errors (ticket#24)
   03 Aug 07 GKY Direct editting fixed (ticket#24)
+  06 Aug 07 SHL Use BldQuotedFileName
 
 ***********************************************************************/
 
@@ -921,11 +922,13 @@ INT ExecFile(HWND hwnd, CHAR * filename)
   else
     *path = 0;
   *cl = 0;
-  if (needs_quoting(filename))
-    strcat(cl, "\"");
-  strcat(cl, filename);
-  if (needs_quoting(filename))
-    strcat(cl, "\"");
+  BldQuotedFileName(cl, filename);
+  // *cl = 0;
+  // if (needs_quoting(filename))
+  //   strcat(cl, "\"");
+  // strcat(cl, filename);
+  // if (needs_quoting(filename))
+  //   strcat(cl, "\"");
   memset(&ex, 0, sizeof(ex));
   ex.flags = lastflags;
   ex.commandline = cl;

@@ -10,6 +10,7 @@
 
   22 Jul 06 SHL Check more run time errors
   16 Jun 07 SHL Update for OpenWatcom
+  06 Aug 07 SHL Use BldFullPathName
 
 ***********************************************************************/
 
@@ -69,7 +70,8 @@ HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
 
   if (!cnr)
     return obj;
-  sprintf(s, "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
+  BldFullPathName(s, path, objtitle);
+  // sprintf(s, "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
   p = strrchr(objtitle, '.');
   if (p) {
     if (!stricmp(p, ".ICO"))
@@ -131,8 +133,9 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
     {					/* find an icon for it if possible */
       CHAR *p, temp[CCHMAXPATH + 1];
 
-      sprintf(temp,
-	      "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
+      BldFullPathName(temp, path, objtitle);
+      // sprintf(temp,
+      // 	      "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
       p = strrchr(temp, '.');
       if (p) {
 	*p = 0;

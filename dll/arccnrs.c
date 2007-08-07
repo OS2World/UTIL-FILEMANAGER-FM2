@@ -40,6 +40,9 @@
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   16 Jun 07 SHL Use DosQueryAppType not DosQAppType
   02 Aug 07 SHL Sync with ARCITEM mods
+  06 Aug 07 SHL Use BldFullPathName and BldQuotedFileName
+  06 Aug 07 SHL Move BldQuotedFileName and BldQuotedFullPathNamehere
+		to be near primary caller
 
 ***********************************************************************/
 
@@ -75,15 +78,68 @@
 static INT DefArcSortFlags;
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(ARCCNRS,ArcCnrWndProc,ArcObjWndProc,ArcClientWndProc)
-#pragma alloc_text(ARCCNRS,ArcTextProc,FillArcCnr,ArcFilter)
+#pragma alloc_text(ARCCNRS,ArcCnrWndProc,ArcObjWndProc,ArcClientWndProc,BldQuotedFullPathName)
+#pragma alloc_text(ARCCNRS,ArcTextProc,FillArcCnr,ArcFilter,BldQuotedFileName)
 #pragma alloc_text(ARCCNRS,ArcSort,ArcFrameWndProc,IsArcThere,ArcErrProc)
 #pragma alloc_text(STARTUP,StartArcCnr)
+
+/**
+ * Build quoted full path name in callers buffer given
+ * directory name and filename
+ * @param pszPathName points to drive/directory if not NULL
+ * @returns pointer to quoted path name in caller's buffer
+ */
+
+PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
+{
+  UINT c = pszPathName ? strlen(pszPathName) : 0;
+  BOOL q = needs_quoting(pszPathName) ||
+	   needs_quoting(pszFileName);
+  PSZ psz = pszFullPathName;
+
+  if (q)
+    *psz++ = '"';
+  if (c > 0) {
+    memcpy(psz, pszPathName, c);
+    psz += c;
+    if (*(psz - 1) != '\\')
+      *psz++ = '\\';
+  }
+  strcpy(psz, pszFileName);
+  if (q) {
+    psz += strlen(psz);
+    *psz++ = '"';
+    *psz = 0;
+  }
+  return pszFullPathName;
+}
+
+/**
+ * Build quoted full path name in callers buffer given a filename
+ * @returns pointer to quoted file name in caller's buffer
+ */
+
+PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName)
+{
+  BOOL q = needs_quoting(pszFileName);
+  PSZ psz = pszQuotedFileName;
+
+  if (q)
+    *psz++ = '"';
+  strcpy(psz, pszFileName);
+  if (q) {
+    psz += strlen(psz);
+    *psz++ = '"';
+    *psz = 0;
+  }
+  return pszQuotedFileName;
+}
 
 static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
 {
   ARCDUMP *ad;
+  CHAR szQuotedArcName[CCHMAXPATH];
 
   switch (msg) {
   case WM_INITDLG:
@@ -157,10 +213,15 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
     case ARCERR_TEST:
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
-	      hwnd, NULL, NULL, "%s %s%s%s", ad->info->test,
-	      needs_quoting(ad->arcname) ? "\"" : NullStr,
-	      ad->arcname,
-	      needs_quoting(ad->arcname) ? "\"" : NullStr);
+	      hwnd, NULL, NULL,
+	      "%s %s",
+	      ad->info->test,
+	      BldQuotedFileName(szQuotedArcName, ad->arcname));
+      // runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
+      //	      hwnd, NULL, NULL, "%s %s%s%s", ad->info->test,
+	      // needs_quoting(ad->arcname) ? "\"" : NullStr,
+	      // ad->arcname,
+	      // needs_quoting(ad->arcname) ? "\"" : NullStr);
       break;
     }
     return 0;
@@ -382,7 +443,7 @@ static VOID RemoveArcItems(HWND hwnd, PARCITEM paiFirst, USHORT usCnt, USHORT us
 
 static VOID EmptyArcCnr(HWND hwnd)
 {
-#if 0 // fixme to disable or to be configurable
+#if 0 // fixme to be gone or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
@@ -408,11 +469,11 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   HFILE oldstdout;
   HFILE newstdout;
   CHAR s[CCHMAXPATH * 2], lonename[CCHMAXPATH + 2],
-    *nsize, *osize, *fdate, *fname, *p, *pp, arctemp[33];
+       *nsize, *osize, *fdate, *fname, *p, *pp, arctemp[33];
   BOOL gotstart;
   BOOL gotend;
   BOOL wasquote;
-  BOOL nomove = FALSE;		// fixme to be gone?
+  BOOL nomove = FALSE;			// fixme to be gone?
   INT highest = 0, x, counter = 0, numarcfiles = 0;
   PARCITEM lastpai;
   ARC_TYPE *info;
@@ -483,16 +544,23 @@ ReTry:
 	 apptype & FAPPTYP_WINDOWSPROT31)) {
       p = GetCmdSpec(TRUE);
       runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
-	      hwndCnr,
-	      NULL,
-	      "DOS_BACKGROUND_EXECUTION=1",
-	      "%s /C %s %s%s%s > %s",
-	      p,
-	      info->list,
-	      needs_quoting(arcname) ? "\"" : NullStr,
-	      arcname,
-	      needs_quoting(arcname) ? "\"" : NullStr,
+	      hwndCnr, NULL, "DOS_BACKGROUND_EXECUTION=1",
+	      "%s /C %s %s >%s",
+	      p,			// shell
+	      info->list,		// list command
+	      BldQuotedFileName(s, arcname),
 	      arctemp);
+      // runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
+      //	      hwndCnr,
+      //	      NULL,
+      //	      "DOS_BACKGROUND_EXECUTION=1",
+      //	      "%s /C %s %s%s%s > %s",
+      //	      p,
+      //	      info->list,
+      //	      needs_quoting(arcname) ? "\"" : NullStr,
+      //	      arcname,
+      //	      needs_quoting(arcname) ? "\"" : NullStr,
+      //	      arctemp);
     }
     else {
       fp = xfopen(arctemp, "w", pszSrcFile, __LINE__);
@@ -518,10 +586,15 @@ ReTry:
 	  }
 	  else {
 	    runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
-		    hwndCnr, NULL, NULL, "%s %s%s%s", info->list,
-		    needs_quoting(arcname) ? "\"" : NullStr,
-		    arcname,
-		    needs_quoting(arcname) ? "\"" : NullStr);
+		    hwndCnr, NULL, NULL,
+		    "%s %s",
+		    info->list,
+		    BldQuotedFileName(s, arcname));
+	    // runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
+	    //	    hwndCnr, NULL, NULL, "%s %s%s%s", info->list,
+	    //	    needs_quoting(arcname) ? "\"" : NullStr,
+	    //	    arcname,
+	    //	    needs_quoting(arcname) ? "\"" : NullStr);
 	    oldstdout = fileno(stdout);
 	    DosError(FERR_DISABLEHARDERR);
 	    DosDupHandle(newstdout, &oldstdout);
@@ -1214,6 +1287,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
   PSZ psz;
+  CHAR szQuotedArcName[CCHMAXPATH];
+  CHAR szQuotedMemberName[CCHMAXPATH];
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -1311,19 +1386,27 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%s %s %s\r[%s]",dcd->info->extract,dcd->arcname,membername,construct);
 	  runemf2(SEPARATE | WINDOWED | WAIT |
-		    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
-		    WAIT,
-		  dcd->hwndClient, construct, NULL, "%s %s%s%s %s%s%s",
+		    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+		  dcd->hwndClient, construct, NULL,
+		  "%s %s %s",
 		  dcd->info->extract,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
-		  dcd->arcname,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
-		  needs_quoting(membername) ? "\"" : NullStr,
-		  membername,
-		  needs_quoting(membername) ? "\"" : NullStr);
-	  if (*construct && construct[strlen(construct) - 1] != '\\')
-	    strcat(construct, "\\");
-	  strcat(construct, membername);
+		  BldQuotedFileName(szQuotedArcName, dcd->arcname),
+		  BldQuotedFileName(szQuotedMemberName, membername));
+	  // runemf2(SEPARATE | WINDOWED | WAIT |
+	  //	    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+	  //	    WAIT,
+	  //	  dcd->hwndClient, construct, NULL, "%s %s%s%s %s%s%s",
+	  //	  dcd->info->extract,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr,
+	  //	  dcd->arcname,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr,
+	  //	  needs_quoting(membername) ? "\"" : NullStr,
+	  //	  membername,
+	  //	  needs_quoting(membername) ? "\"" : NullStr);
+	  BldFullPathName(construct, construct, membername);
+	  // if (*construct && construct[strlen(construct) - 1] != '\\')
+	  //   strcat(construct, "\\");
+	  // strcat(construct, membername);
 	  if (IsFile(construct) != -1) {
 	    rename(construct, filename);
 	    unlinkf("%s", construct);
@@ -1438,20 +1521,26 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  free(s);
 	  return 0;
 	}
-	runemf2(SEPARATE | WINDOWED |
-		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
-		  WAIT,
-		dcd->hwndClient, dcd->workdir, NULL, "%s %s%s%s %s%s%s",
+	runemf2(SEPARATE | WINDOWED | WAIT |
+		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+		dcd->hwndClient, dcd->workdir, NULL,
+		"%s %s %s",
 		dcd->info->exwdirs ? dcd->info->exwdirs :
 				     dcd->info->extract,
-		needs_quoting(dcd->arcname) ? "\"" : NullStr,
-		dcd->arcname,
-		needs_quoting(dcd->arcname) ? "\"" : NullStr,
-		needs_quoting(s) ? "\"" : NullStr,
-		s,
-		needs_quoting(s) ? "\"" : NullStr);
-
-	// printf("%s %d runemf2 returned\n", __FILE__, __LINE__); fflush(stdout);	// 10 Mar 07 SHL
+		BldQuotedFileName(szQuotedArcName, dcd->arcname),
+		BldQuotedFileName(szQuotedMemberName, s));
+	// runemf2(SEPARATE | WINDOWED |
+	//	  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+	//	  WAIT,
+	//	dcd->hwndClient, dcd->workdir, NULL, "%s %s%s%s %s%s%s",
+	//	dcd->info->exwdirs ? dcd->info->exwdirs :
+	//			     dcd->info->extract,
+	//	needs_quoting(dcd->arcname) ? "\"" : NullStr,
+	//	dcd->arcname,
+	//	needs_quoting(dcd->arcname) ? "\"" : NullStr,
+	//	needs_quoting(s) ? "\"" : NullStr,
+	//	s,
+	//	needs_quoting(s) ? "\"" : NullStr);
 	if (!dcd->info->exwdirs) {
 	  p = s;
 	  p = strrchr(s, '\\');
@@ -1516,33 +1605,48 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    /* build the sucker */
 	    strcpy(szBuffer, ad.command);
 	    strcat(szBuffer, " ");
-	    if (needs_quoting(ad.arcname))
-	      strcat(szBuffer, "\"");
-	    strcat(szBuffer, ad.arcname);
-	    if (needs_quoting(ad.arcname))
-	      strcat(szBuffer, "\"");
-	    p = &szBuffer[strlen(szBuffer)];
+
+	    BldQuotedFileName(szBuffer + strlen(szBuffer), ad.arcname);
+	    // if (needs_quoting(ad.arcname))
+	    //   strcat(szBuffer, "\"");
+	    // strcat(szBuffer, ad.arcname);
+	    // if (needs_quoting(ad.arcname))
+	    //   strcat(szBuffer, "\"");
+
+	    p = &szBuffer[strlen(szBuffer)];	// Remeber where archiver name ends
+
 	    if (ad.mask.szMask) {
 	      strcat(szBuffer, " ");
-	      if (needs_quoting(ad.mask.szMask))
-		strcat(szBuffer, "\"");
-	      strcat(szBuffer, ad.mask.szMask);
-	      if (needs_quoting(ad.mask.szMask))
-		strcat(szBuffer, "\"");
+
+	      BldQuotedFileName(szBuffer + strlen(szBuffer), ad.mask.szMask);
+	      // if (needs_quoting(ad.mask.szMask))
+	      //	strcat(szBuffer, "\"");
+	      // strcat(szBuffer, ad.mask.szMask);
+	      // if (needs_quoting(ad.mask.szMask))
+	      //	strcat(szBuffer, "\"");
 	    }
 	    strcat(szBuffer, " ");
 	    x = 0;
+
+	    // Run commands avoiding command line overflow
 	    while (li->list[x]) {
-	      if (needs_quoting(li->list[x]))
-		strcat(szBuffer, "\"");
-	      strcat(szBuffer, li->list[x]);
-	      if (!IsFile(li->list[x])) {
-		if (szBuffer[strlen(szBuffer) - 1] != '\\')
-		  strcat(szBuffer, "\\");
-		strcat(szBuffer, "*");
-	      }
-	      if (needs_quoting(li->list[x]))
-		strcat(szBuffer, "\"");
+
+	      if (IsFile(li->list[x]))
+		BldQuotedFileName(szBuffer + strlen(szBuffer), li->list[x]);
+	      else
+		BldQuotedFullPathName(szBuffer + strlen(szBuffer), li->list[x], "*");
+
+	      // if (needs_quoting(li->list[x]))
+	      //	strcat(szBuffer, "\"");
+	      // strcat(szBuffer, li->list[x]);
+	      // if (!IsFile(li->list[x])) {
+	      //	if (szBuffer[strlen(szBuffer) - 1] != '\\')
+	      //	  strcat(szBuffer, "\\");
+	      //	strcat(szBuffer, "*");
+	      // }
+	      // if (needs_quoting(li->list[x]))
+	      //	strcat(szBuffer, "\"");
+
 	      x++;
 	      if (!li->list[x] || strlen(szBuffer) +
 		  strlen(li->list[x]) + 5 > 1024) {
@@ -1553,7 +1657,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		*p = 0;
 	      }
 	      strcat(szBuffer, " ");
-	    }
+	    } // while
+
 	    PostMsg(dcd->hwndCnr, UM_RESCAN, MPFROMSHORT(1), MPVOID);
 	    Broadcast(WinQueryAnchorBlock(hwnd),
 		      hwndMain, UM_UPDATERECORD, MPFROMP(ad.arcname), MPVOID);
@@ -1593,32 +1698,37 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->list = ck.list;
 	    if (!li->list || !li->list[0])
 	      break;
-	    if (li->type == IDM_DELETE)
-	      sprintf(cl, "%s %s%s%s", dcd->info->delete,
-		      (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
-		      dcd->arcname,
-		      (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
-	    else
-	      sprintf(cl, "%s %s%s%s", dcd->info->create,
-		      (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
-		      dcd->arcname,
-		      (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
+	    strcpy(cl, li->type == IDM_DELETE ?
+			 dcd->info->delete :
+			 dcd->info->create);
+	    strcat(cl, " ");
+	    BldQuotedFileName(cl + strlen(cl), dcd->arcname);
+	    // if (li->type == IDM_DELETE)
+	    //   sprintf(cl, "%s %s%s%s", dcd->info->delete,
+	    //	      (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
+	    //	      dcd->arcname,
+	    //	      (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
+	    // else
+	    //   sprintf(cl, "%s %s%s%s", dcd->info->create,
+	    //	      (needs_quoting(dcd->arcname)) ? "\"" : NullStr,
+	    //	      dcd->arcname,
+	    //	      (needs_quoting(dcd->arcname)) ? "\"" : NullStr);
 	    endofit = &cl[strlen(cl)];
 	    z = 0;
 	    do {
 	      for (x = z; li->list[x] &&
 		   strlen(cl) + strlen(li->list[x]) < 999; x++) {
 		strcat(cl, " ");
-		if (needs_quoting(li->list[x]))
-		  strcat(cl, "\"");
-		strcat(cl, li->list[x]);
-		if (needs_quoting(li->list[x]))
-		  strcat(cl, "\"");
+		BldQuotedFileName(cl + strlen(cl), li->list[x]);
+		// if (needs_quoting(li->list[x]))
+		//   strcat(cl, "\"");
+		// strcat(cl, li->list[x]);
+		// if (needs_quoting(li->list[x]))
+		//   strcat(cl, "\"");
 	      }
 	      z = x;
-	      runemf2(SEPARATE | WINDOWED |
-			(fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
-			WAIT,
+	      runemf2(SEPARATE | WINDOWED | WAIT |
+			(fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
 		      hwnd, NullStr, NULL, "%s", cl);
 	      *endofit = 0;
 	    } while (li->list[x]);
@@ -1669,10 +1779,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      INT numfiles = 0, numalloc = 0;
 
 	      for (x = 0; li->list[x]; x++) {
-		sprintf(fullname, "%s%s%s",
-			li->targetpath,
-			(li->targetpath[strlen(li->targetpath) - 1] == '\\') ?
-			NullStr : "\\", li->list[x]);
+		BldFullPathName(fullname, li->targetpath, li->list[x]);
+		// sprintf(fullname, "%s%s%s",
+		//	li->targetpath,
+		//	(li->targetpath[strlen(li->targetpath) - 1] == '\\') ?
+		//	NullStr : "\\", li->list[x]);
 		if (IsFile(fullname) != -1) {
 		  AddToList(li->list[x], &exfiles, &numfiles, &numalloc);
 		  li->list = RemoveFromList(li->list, li->list[x]);
@@ -1707,32 +1818,49 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    if (!li->list || !li->list[0])
 	      break;
-	    sprintf(cl, "%s %s%s%s", (li->type == IDM_EXTRACT ||
-				      ((li->type == IDM_VIEW
-					|| li->type == IDM_VIEWTEXT
-					|| li->type == IDM_VIEWBINARY
-					|| li->type == IDM_VIEWARCHIVE
-					|| li->type == IDM_PRINT
-					|| li->type == IDM_EDIT
-					|| li->type == IDM_EDITTEXT
-					|| li->type == IDM_EDITBINARY
-					&& li->type == IDM_MCIPLAY)
-				       && !li->info->exwdirs)) ? li->info->
-		    extract : li->info->exwdirs,
-		    needs_quoting(li->arcname) ? "\"" : NullStr,
-		    li->arcname,
-		    needs_quoting(li->arcname) ? "\"" : NullStr);
+	    strcpy(cl,
+		   (li->type == IDM_EXTRACT ||
+		    ((li->type == IDM_VIEW ||
+		      li->type == IDM_VIEWTEXT ||
+		      li->type == IDM_VIEWBINARY ||
+		      li->type == IDM_VIEWARCHIVE ||
+		      li->type == IDM_PRINT ||
+		      li->type == IDM_EDIT ||
+		      li->type == IDM_EDITTEXT ||
+		      (li->type == IDM_EDITBINARY &&
+		       li->type == IDM_MCIPLAY)) &&
+		     !li->info->exwdirs)) ?
+		     li->info->extract :
+		     li->info->exwdirs);
+	     strcat(cl, " ");
+	     BldQuotedFileName(cl + strlen(cl), li->arcname);
+	    // sprintf(cl, "%s %s%s%s", (li->type == IDM_EXTRACT ||
+	    //			      ((li->type == IDM_VIEW
+	    //				|| li->type == IDM_VIEWTEXT
+	    //				|| li->type == IDM_VIEWBINARY
+	    //				|| li->type == IDM_VIEWARCHIVE
+	    //				|| li->type == IDM_PRINT
+	    //				|| li->type == IDM_EDIT
+	    //				|| li->type == IDM_EDITTEXT
+	    //				|| li->type == IDM_EDITBINARY
+	    //				&& li->type == IDM_MCIPLAY)
+	    //			       && !li->info->exwdirs)) ? li->info->
+	    //	    extract : li->info->exwdirs,
+	    //	    needs_quoting(li->arcname) ? "\"" : NullStr,
+	    //	    li->arcname,
+	    //	    needs_quoting(li->arcname) ? "\"" : NullStr);
 	    endofit = &cl[strlen(cl)];
 	    z = 0;
 	    do {
 	      for (x = z; li->list[x] &&
 		   strlen(cl) + strlen(li->list[x]) < 999; x++) {
 		strcat(cl, " ");
-		if (needs_quoting(li->list[x]))
-		  strcat(cl, "\"");
-		strcat(cl, li->list[x]);
-		if (needs_quoting(li->list[x]))
-		  strcat(cl, "\"");
+		BldQuotedFileName(cl + strlen(cl), li->list[x]);
+		// if (needs_quoting(li->list[x]))
+		//   strcat(cl, "\"");
+		// strcat(cl, li->list[x]);
+		// if (needs_quoting(li->list[x]))
+		//   strcat(cl, "\"");
 		ptr = li->list[x];
 		while (*ptr) {
 		  if (*ptr == '/')
@@ -1830,9 +1958,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    }
 		  }
 		}
-		sprintf(cl, "%s%s%s", li->targetpath,
-			(li->targetpath[strlen(li->targetpath) - 1] == '\\') ?
-			NullStr : "\\", li->list[x]);
+		BldFullPathName(cl, li->targetpath, li->list[x]);
+		// sprintf(cl, "%s%s%s", li->targetpath,
+		//	(li->targetpath[strlen(li->targetpath) - 1] == '\\') ?
+		//	NullStr : "\\", li->list[x]);
 		temp = li->list[x];
 		li->list[x] = xstrdup(cl, pszSrcFile, __LINE__);
 		if (!li->list[x])
@@ -1952,9 +2081,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  *p = '\\';
 		p++;
 	      }
-	      sprintf(fullname, "%s%s%s", dcd->directory,
-		      (dcd->directory[strlen(dcd->directory) - 1] == '\\') ?
-		      NullStr : "\\", li->list[x]);
+	      BldFullPathName(fullname, dcd->directory, li->list[x]);
+	      // sprintf(fullname, "%s%s%s", dcd->directory,
+	      //	      (dcd->directory[strlen(dcd->directory) - 1] == '\\') ?
+	      //	      NullStr : "\\", li->list[x]);
 	      if (IsFile(fullname) != -1)
 		if (AddToList(fullname, &list2, &numfiles, &numalloced))
 		  break;
@@ -1963,10 +2093,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (p) {
 		  p++;
 		  if (*p) {
-		    sprintf(fullname, "%s%s%s", dcd->directory,
-			    (dcd->directory[strlen(dcd->directory) - 1] ==
-			       '\\') ? NullStr : "\\",
-			    p);
+		    BldFullPathName(fullname, dcd->directory, p);
+		    // sprintf(fullname, "%s%s%s", dcd->directory,
+		    //	    (dcd->directory[strlen(dcd->directory) - 1] ==
+		    //	       '\\') ? NullStr : "\\",
+		    //	    p);
 		    if (IsFile(fullname) != -1)
 		      if (AddToList(fullname, &list2, &numfiles, &numalloced))
 			break;
@@ -2028,6 +2159,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				      MPARAM mp2)
 {
   DIRCNRDATA *dcd = INSTDATA(hwnd);
+  CHAR szQuotedArcName[CCHMAXPATH];
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -2804,11 +2936,16 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (dcd->info->extract)
 	  runemf2(SEPARATE | WINDOWED |
 		    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-		  hwnd, dcd->directory, NULL, "%s %s%s%s",
+		  hwnd, dcd->directory, NULL, "%s %s",
 		  dcd->info->extract,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
-		  dcd->arcname,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr);
+		  BldQuotedFileName(szQuotedArcName, dcd->arcname));
+	  // runemf2(SEPARATE | WINDOWED |
+	  //	    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+	  //	  hwnd, dcd->directory, NULL, "%s %s%s%s",
+	  //	  dcd->info->extract,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr,
+	  //	  dcd->arcname,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr);
 	if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTEXIT)
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	break;
@@ -2818,11 +2955,17 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (dcd->info->exwdirs)
 	  runemf2(SEPARATE | WINDOWED |
 		    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-		  hwnd, dcd->directory, NULL, "%s %s%s%s",
+		  hwnd, dcd->directory, NULL,
+		  "%s %s",
 		  dcd->info->exwdirs,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
-		  dcd->arcname,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr);
+		  BldQuotedFileName(szQuotedArcName, dcd->arcname));
+	  // runemf2(SEPARATE | WINDOWED |
+	  //	    (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+	  //	  hwnd, dcd->directory, NULL, "%s %s%s%s",
+	  //	  dcd->info->exwdirs,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr,
+	  //	  dcd->arcname,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr);
 	if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTWDIRSEXIT)
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	break;
@@ -2890,10 +3033,14 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_TEST:
 	if (dcd->info->test)
 	  runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
-		  hwnd, NULL, NULL, "%s %s%s%s", dcd->info->test,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr,
-		  dcd->arcname,
-		  needs_quoting(dcd->arcname) ? "\"" : NullStr);
+		  hwnd, NULL, NULL,
+		  "%s %s",dcd->info->test,
+		  BldQuotedFileName(szQuotedArcName, dcd->arcname));
+	  // runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
+	  //	  hwnd, NULL, NULL, "%s %s%s%s",dcd->info->test,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr,
+	  //	  dcd->arcname,
+	  //	  needs_quoting(dcd->arcname) ? "\"" : NullStr);
 	break;
 
       case IDM_REFRESH:
@@ -2925,9 +3072,10 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      INT x, y;
 
 	      for (x = 0; li->list && li->list[x]; x++) {
-		sprintf(s, "%s%s%s", dcd->workdir,
-			(dcd->workdir[strlen(dcd->workdir) - 1] == '\\') ?
-			NullStr : "\\", li->list[x]);
+		BldFullPathName(s, dcd->workdir, li->list[x]);
+		// sprintf(s, "%s%s%s", dcd->workdir,
+		//	(dcd->workdir[strlen(dcd->workdir) - 1] == '\\') ?
+		//	NullStr : "\\", li->list[x]);
 		if (IsFile(s) != 1) {
 		  free(li->list[x]);
 		  li->list[x] = NULL;
@@ -3047,8 +3195,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case CN_DRAGOVER:
 	if (mp2) {
 
-	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM */
-	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO */
+	  PDRAGITEM pDItem;		/* Pointer to DRAGITEM */
+	  PDRAGINFO pDInfo;		/* Pointer to DRAGINFO */
 	  PARCITEM pci;
 
 	  pci = (PARCITEM) ((PCNRDRAGINFO) mp2)->pRecord;
@@ -3072,7 +3220,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
 			   DRM_OS2FILE,	/* mechanisms and data */
 			   NULL) && !(pDItem->fsControl & DC_PREPARE)) {
-	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO         */
+	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
 				fCopyDefault ? DO_COPY : DO_MOVE);
 	  }

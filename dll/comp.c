@@ -27,6 +27,8 @@
   01 Aug 07 SHL Rework to sync with CNRITEM mods
   01 Aug 07 SHL Rework to remove vast amount of duplicate code
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  06 Aug 07 SHL Move BldFullPathName here to be near primary caller
+  07 Aug 07 SHL COMP_COLLECT: Avoid collecting empty entries when nothing selected
 
 ***********************************************************************/
 
@@ -48,7 +50,7 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
-#pragma alloc_text(COMPAREDIR,FillCnrsThread,FillDirList,CompNames)
+#pragma alloc_text(COMPAREDIR,FillCnrsThread,FillDirList,CompNames,BldFullPathName)
 #pragma alloc_text(COMPAREDIR1,CompareDlgProc)
 #pragma alloc_text(COMPAREDIR2,SelectCnrsThread,ActionCnrThread)
 #pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFilesThread)
@@ -63,6 +65,27 @@ typedef struct
 SNAPSTUFF;
 
 static PSZ pszSrcFile = __FILE__;
+
+/**
+ * Build full path name in callers buffer given directory
+ * name and filename
+ * @param pszPathName points to drive/directory if not NULL
+ * @returns pointer to full path name in caller's buffer
+ * @note OK for pszFullPathName and pszPathName to point to same buffer
+ *
+ */
+
+PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
+{
+  UINT c = pszPathName ? strlen(pszPathName) : 0;
+  if (c > 0) {
+    memcpy(pszFullPathName, pszPathName, c);
+    if (pszFullPathName[c - 1] != '\\')
+      pszFullPathName[c++] = '\\';
+  }
+  strcpy(pszFullPathName + c, pszFileName);
+  return pszFullPathName;
+}
 
 //=== SnapShot() Write directory tree to file and recurse if requested ===
 
@@ -360,7 +383,7 @@ static VOID ActionCnrThread(VOID *args)
   APIRET rc;
 
   if (!cmp) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     return;
   }
 
@@ -457,7 +480,6 @@ static VOID ActionCnrThread(VOID *args)
 
 	  case IDM_MOVE:
 	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-	      // 02 Aug 07 SHL fixme to replace this kind of stuff with _makepath or equivalent
 	      BldFullPathName(szNewName, cmp->leftdir, pci->pszDisplayName);
 	      //sprintf(szNewName, "%s%s%s",
 	      //        cmp->leftdir,
@@ -715,7 +737,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
   APIRET rc;
 
   if (!str || !*str) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     return;
   }
 
@@ -817,7 +839,7 @@ static VOID FillCnrsThread(VOID *args)
   CNRINFO cnri;
 
   if (!cmp) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     _endthread();
   }
 
@@ -1135,7 +1157,7 @@ static VOID FillCnrsThread(VOID *args)
 
 	  if (x >= 0) {
 	    // File appears on right side
-	    BldFullPathName(szBuf, cmp->rightdir, filesl[r]->fname);
+	    BldFullPathName(szBuf, cmp->rightdir, filesr[r]->fname);
 	    //sprintf(szBuf, "%s%s%s", cmp->rightdir,
 	    //        (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
 	    //        NullStr : "\\", filesr[r]->fname);
@@ -1359,16 +1381,18 @@ static VOID FillCnrsThread(VOID *args)
   DosPostEventSem(CompactSem);
 }
 
-#define hwndLeft  (WinWindowFromID(hwnd,COMP_LEFTDIR))
-#define hwndRight (WinWindowFromID(hwnd,COMP_RIGHTDIR))
+// fixme to be gone - use variable
+#define hwndLeft	(WinWindowFromID(hwnd,COMP_LEFTDIR))
+#define hwndRight	(WinWindowFromID(hwnd,COMP_RIGHTDIR))
 
 //=== CompareDlgProc() Compare directories dialog procedure ===
 
 MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   COMPARE *cmp;
+  BOOL temp;
 
-  static HPOINTER hptr = (HPOINTER) 0;
+  static HPOINTER hptr;
 
   switch (msg) {
   case WM_INITDLG:
@@ -2375,68 +2399,75 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case COMP_COLLECT:
       cmp = INSTDATA(hwnd);
-      if (cmp) {
-
-	CHAR **listl, **listr = NULL;
-
+      if (!cmp)
+	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      else {
+	CHAR **listl;
+	CHAR **listr = NULL;
 	if (!Collector) {
-
 	  SWP swp;
 	  HWND hwndC;
-
-	  if (!fAutoTile && !ParentIsDesktop(hwnd, cmp->hwndParent) &&
-	      (!fExternalCollector && !strcmp(realappname, FM3Str)))
+	  if (!fAutoTile &&
+	       !ParentIsDesktop(hwnd, cmp->hwndParent) &&
+	       !fExternalCollector &&
+	       !strcmp(realappname, FM3Str)) {
 	    GetNextWindowPos(cmp->hwndParent, &swp, NULL, NULL);
-	  hwndC = StartCollector((fExternalCollector ||
-				  strcmp(realappname, FM3Str)) ?
-				 HWND_DESKTOP : cmp->hwndParent, 4);
+	  }
+	  hwndC = StartCollector(fExternalCollector ||
+				 strcmp(realappname, FM3Str) ?
+				   HWND_DESKTOP :
+				   cmp->hwndParent,
+				 4);
 	  if (hwndC) {
-	    if (!fAutoTile && !ParentIsDesktop(hwnd, cmp->hwndParent) &&
-		(!fExternalCollector && !strcmp(realappname, FM3Str)))
-	      WinSetWindowPos(hwndC, HWND_TOP, swp.x, swp.y,
-			      swp.cx, swp.cy, SWP_MOVE | SWP_SIZE |
-			      SWP_SHOW | SWP_ZORDER);
-	    else if (!ParentIsDesktop(hwnd, cmp->hwndParent) && fAutoTile &&
-		     !strcmp(realappname, FM3Str))
+	    if (!fAutoTile &&
+		!ParentIsDesktop(hwnd, cmp->hwndParent) &&
+		!fExternalCollector &&
+		!strcmp(realappname, FM3Str)) {
+	      WinSetWindowPos(hwndC, HWND_TOP,
+			      swp.x, swp.y, swp.cx, swp.cy,
+			      SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_ZORDER);
+	    }
+	    else if (!ParentIsDesktop(hwnd, cmp->hwndParent) &&
+		     fAutoTile &&
+		     !strcmp(realappname, FM3Str)) {
 	      TileChildren(cmp->hwndParent, TRUE);
-	    DosSleep(32); //05 Aug 07 GKY 64
+	    }
+	    DosSleep(32); // 05 Aug 07 GKY 64
 	    PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(COMP_COLLECT, 0), MPVOID);
 	    break;
 	  }
 	}
 	else
 	  StartCollector(cmp->hwndParent, 4);
-	{
-	  BOOL temp;
 
-	  temp = fSelectedAlways;
-	  fSelectedAlways = TRUE;
-	  listl = BuildList(hwndLeft);
-	  if (!*cmp->rightlist)
-	    listr = BuildList(hwndRight);
-	  fSelectedAlways = temp;
-	}
+	temp = fSelectedAlways;
+	fSelectedAlways = TRUE;
+	listl = BuildList(hwndLeft);
+	if (!*cmp->rightlist)
+	  listr = BuildList(hwndRight);
+	fSelectedAlways = temp;
+
 	if (listl || listr) {
 	  if (Collector) {
-	    if (listl) {
-	      if (!PostMsg(Collector, WM_COMMAND,
-			   MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(listl)))
-		FreeList(listl);
+	    // 07 Aug 07 SHL Avoid collected from empty list
+	    if (listl && listl[0] && *listl[0]) {
+	      if (PostMsg(Collector, WM_COMMAND,
+			  MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(listl)))
+		listl = NULL;		// Collector will free
 	    }
-	    if (listr) {
-	      if (!PostMsg(Collector, WM_COMMAND,
-			   MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(listr)))
-		FreeList(listr);
+	    if (listr && listr[0] && *listr[0]) {
+	      if (PostMsg(Collector, WM_COMMAND,
+			  MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(listr)))
+		listr = NULL;		// Collector will free
 	    }
 	    WinSetWindowPos(WinQueryWindow(WinQueryWindow(Collector,
 							  QW_PARENT),
-					   QW_PARENT), HWND_TOP, 0, 0, 0, 0,
+					   QW_PARENT),
+			    HWND_TOP, 0, 0, 0, 0,
 			    SWP_ACTIVATE);
 	  }
-	  else {
-	    FreeList(listl);
-	    FreeList(listr);
-	  }
+	  FreeList(listl);
+	  FreeList(listr);
 	}
       }
       break;
