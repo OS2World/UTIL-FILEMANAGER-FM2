@@ -98,7 +98,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   ULONGLONG ullSubDirBytes = 0;
   ULONGLONG ull;
   HDIR hdir;
-  FILEFINDBUF4 *pffb;
+  FILEFINDBUF4 *pffb, *pffbTemp;
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pci;
@@ -207,16 +207,20 @@ static BOOL ProcessDir(HWND hwndCnr,
     return FALSE;
   }
   hdir = HDIR_CREATE;
+  pffbTemp = pffb;
   nm = FilesToGet;
-  pffb =
-    xrealloc(pffb, (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+  pffb = xrealloc(pffb, (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+  if (!pffb) { //Error already sent
+        free(pffbTemp);
+        return FALSE;
+      }
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
 		    pffb, (nm + 1) * sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
   if (!rc) {
     register PBYTE fb = (PBYTE) pffb;
-    FILEFINDBUF4 *pffbFile, *pffbTemp;
+    FILEFINDBUF4 *pffbFile;
     ULONG x;
     UINT y = 1;
 
