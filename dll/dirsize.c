@@ -24,7 +24,10 @@
   18 Feb 07 GKY Add new drive type icons
   22 Mar 07 GKY Use QWL_USER
   23 Jul 07 SHL Sync with naming standards
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   03 Aug 07 SHL DirSizeProc; correct sizing and positioning to be deterministic
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 
@@ -204,15 +207,18 @@ static BOOL ProcessDir(HWND hwndCnr,
     return FALSE;
   }
   hdir = HDIR_CREATE;
-  nm = 1;
+  nm = FilesToGet;
+  pffb =
+    xrealloc(pffb, (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
-		    pffb, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
+		    pffb, (nm + 1) * sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
   if (!rc) {
     register PBYTE fb = (PBYTE) pffb;
     FILEFINDBUF4 *pffbFile;
     ULONG x;
+    UINT y = 1;
 
     while (!rc) {
       priority_normal();
@@ -249,8 +255,11 @@ static BOOL ProcessDir(HWND hwndCnr,
       if (*pchStopFlag)
 	break;
       DosSleep(1);
-      nm = 1;				/* FilesToGet */
-      rc = DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &nm);
+      nm = FilesToGet;				/* FilesToGet */
+      y++;
+      pffb = xrealloc(pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+      DosError(FERR_DISABLEHARDERR);
+      rc = DosFindNext(hdir, pffb, (nm + 1) * sizeof(FILEFINDBUF4), &nm);
     }					// while more found
     DosFindClose(hdir);
     priority_normal();
