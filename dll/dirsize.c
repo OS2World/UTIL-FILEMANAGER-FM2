@@ -216,7 +216,7 @@ static BOOL ProcessDir(HWND hwndCnr,
 		    pffb, (nm + 1) * sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
   if (!rc) {
     register PBYTE fb = (PBYTE) pffb;
-    FILEFINDBUF4 *pffbFile;
+    FILEFINDBUF4 *pffbFile, *pffbTemp;
     ULONG x;
     UINT y = 1;
 
@@ -255,14 +255,15 @@ static BOOL ProcessDir(HWND hwndCnr,
       if (*pchStopFlag)
         break;
       DosSleep(1);
+      pffbTemp = pffb;
       nm = FilesToGet;				/* FilesToGet */
       y++;
       pffb = xrealloc(pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-      if (!pffb) //Error already sent {
-        free(pffb)
+      if (!pffb) { //Error already sent
+        free(pffbTemp);
         break;
-    }
-     DosError(FERR_DISABLEHARDERR);
+      }
+      DosError(FERR_DISABLEHARDERR);
       rc = DosFindNext(hdir, pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), &nm);
     }					// while more found
     DosFindClose(hdir);
