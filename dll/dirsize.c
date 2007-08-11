@@ -253,13 +253,15 @@ static BOOL ProcessDir(HWND hwndCnr,
 	fb += pffbFile->oNextEntryOffset;
       }					// for matches
       if (*pchStopFlag)
-	break;
+        break;
       DosSleep(1);
       nm = FilesToGet;				/* FilesToGet */
       y++;
       pffb = xrealloc(pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-      DosError(FERR_DISABLEHARDERR);
-      rc = DosFindNext(hdir, pffb, (nm + 1) * sizeof(FILEFINDBUF4), &nm);
+      if (!pffb)
+        break;
+     DosError(FERR_DISABLEHARDERR);
+      rc = DosFindNext(hdir, pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), &nm);
     }					// while more found
     DosFindClose(hdir);
     priority_normal();
