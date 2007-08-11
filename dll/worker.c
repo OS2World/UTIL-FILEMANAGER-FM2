@@ -19,6 +19,7 @@
   03 Nov 06 SHL Count thread usage
   21 Apr 07 GKY Find FM2Utils by path or utils directory
   16 Jun 07 SHL Update for OpenWatcom
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
 
 ***********************************************************************/

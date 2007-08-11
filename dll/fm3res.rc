@@ -24,6 +24,7 @@
   17 Feb 07 GKY Additional drive type icons
   15 Jun 07 SHL Update for OpenWatcom
   05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
+  06 Aug 07 GKY Fix Dirsizes accel key to be ctrl + z
 
 ***********************************************************************/
 

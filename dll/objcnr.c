@@ -16,6 +16,8 @@
   22 Mar 07 GKY Use QWL_USER
   01 Aug 07 SHL Rework to sync with CNRITEM mods
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

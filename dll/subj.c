@@ -10,6 +10,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
+  06 Aug 07 GKY Increase Subject EA to 1024
 
 ***********************************************************************/
 

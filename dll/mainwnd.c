@@ -34,6 +34,7 @@
   20 Apr 07 SHL Avoid spurious add_udir error reports
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
 
 ***********************************************************************/

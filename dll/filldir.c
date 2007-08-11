@@ -35,6 +35,7 @@
   02 Aug 07 SHL Add FileAttrToString
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   04 Aug 07 SHL Update #pragma alloc_test for new functions
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
 
 ***********************************************************************/
 

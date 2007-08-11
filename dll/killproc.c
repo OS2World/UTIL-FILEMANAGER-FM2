@@ -13,6 +13,8 @@
   29 Jul 06 SHL Use xfgets
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

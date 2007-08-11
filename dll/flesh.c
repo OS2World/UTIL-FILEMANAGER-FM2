@@ -16,6 +16,8 @@
   19 Oct 06 SHL Stubby - correct . and .. detect
   22 Mar 07 GKY Use QWL_USER
   01 Aug 07 SHL Sync with CNRITEM mods
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

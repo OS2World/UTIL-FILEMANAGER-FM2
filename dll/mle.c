@@ -13,6 +13,8 @@
   14 Jul 06 SHL Use Runtime_Error
   03 Nov 06 SHL Count thread usage
   22 Mar 07 GKY Use QWL_USER
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

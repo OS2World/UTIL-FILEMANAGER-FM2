@@ -29,6 +29,8 @@
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   06 Aug 07 SHL Move BldFullPathName here to be near primary caller
   07 Aug 07 SHL COMP_COLLECT: Avoid collecting empty entries when nothing selected
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

@@ -16,6 +16,7 @@
   17 Jul 06 SHL Use Runtime_Error
   30 Mar 07 GKY Remove GetPString for window class names
   12 May 07 SHL Pass ulItemsToUnHilite to UnHilite
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
 
 ***********************************************************************/

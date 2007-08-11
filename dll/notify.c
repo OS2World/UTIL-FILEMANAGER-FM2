@@ -11,6 +11,8 @@
   17 Jul 06 SHL Use Win_Error
   22 Jul 06 SHL Check more run time errors
   30 Mar 07 GKY Remove GetPString for window class names
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

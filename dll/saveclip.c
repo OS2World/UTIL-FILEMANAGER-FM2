@@ -15,6 +15,7 @@
   17 Jul 06 SHL Use Runtime_Error
   29 Jul 06 SHL Use xfgets
   22 Mar 07 GKY Use QWL_USER
+  06 Aug 07 GKY Increase Subject EA to 1024
 
 ***********************************************************************/
 

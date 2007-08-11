@@ -17,6 +17,8 @@
   29 Jul 06 SHL Use xfgets
   22 Oct 06 GKY Switch say files on as default so you can tell that seek and scan files is doing something
   07 Jan 07 GKY Add remember search flags to seek and scan
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
   fixme for more excess locals to be gone
 

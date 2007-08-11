@@ -34,6 +34,7 @@
   10 Jun 07 GKY Mouse button 3 white space click to fail silently
   05 Jul 07 SHL Disable leftover debug code
   02 Aug 07 SHL Sync with CNRITEM mods
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
 
 ***********************************************************************/
 

@@ -37,6 +37,8 @@
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   05 Jul 07 SHL CollectorCnrWndProc: just warn if busy
   02 Aug 07 SHL Sync with CNRITEM mods
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

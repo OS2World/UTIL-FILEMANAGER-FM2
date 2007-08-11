@@ -17,6 +17,7 @@
   05 Jul 07 SHL GetFileEAs: avoid heap corruption
   15 Jul 07 GKY Allow subject edit of up to 256 chars
   03 Aug 07 GKY Remove surrious error message
+  06 Aug 07 GKY Increase Subject EA to 1024
 
 ***********************************************************************/
 

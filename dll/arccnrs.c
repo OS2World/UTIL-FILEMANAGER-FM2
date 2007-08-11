@@ -43,6 +43,7 @@
   06 Aug 07 SHL Use BldFullPathName and BldQuotedFileName
   06 Aug 07 SHL Move BldQuotedFileName and BldQuotedFullPathNamehere
 		to be near primary caller
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
 
 ***********************************************************************/
 

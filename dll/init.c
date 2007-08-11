@@ -26,6 +26,8 @@
   23 Jun 07 GKY Fix WORPLACE_PROCESS enviroment check logic
   28 Jun 07 SHL Rework WORKPLACE_PROCESS check to match reality
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

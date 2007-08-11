@@ -8,7 +8,10 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004 Steven H. Levine
 
-  Revisions	01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
+  Revisions	
+  01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

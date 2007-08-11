@@ -17,6 +17,8 @@
   01 Nov 06 SHL runemf2: temp fix for hung windows caused by termq errors
   03 Nov 06 SHL runemf2: rework termination queue logic to work for multiple threads
   07 Jan 07 GKY Move error strings etc. to string file
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

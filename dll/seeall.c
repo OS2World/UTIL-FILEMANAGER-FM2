@@ -22,6 +22,7 @@
   03 Nov 06 SHL Count thread usage
   30 Mar 07 GKY Remove GetPString for window class names
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFullPathName and BldQuotedFileName
 
 ***********************************************************************/

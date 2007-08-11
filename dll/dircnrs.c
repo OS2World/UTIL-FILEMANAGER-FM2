@@ -27,6 +27,8 @@
   12 May 07 SHL Use dcd->ulItemsToUnHilite; sync with UnHilite arg mods
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   02 Aug 07 SHL Sync with CNRITEM mods
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 

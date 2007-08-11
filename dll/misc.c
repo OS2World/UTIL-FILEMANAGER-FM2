@@ -28,6 +28,9 @@
   31 Jul 07 SHL Clean up and report errors (ticket#24)
   03 Aug 07 GKY Direct editting fixed (ticket#24)
   06 Aug 07 SHL Use BldQuotedFileName
+  06 Aug 07 GKY Increase Subject EA to 1024
+  06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+
 
 ***********************************************************************/
 
