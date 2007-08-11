@@ -1,5 +1,13 @@
 :h2 res=100100 id='PANEL_TROUBLE'.
 Troubleshooting
+:p.The Find Buffer in FM/2 has been reworked to make it user
+settable in more place and significantly enlarge it. This
+significantly increases the loading speed for large directories
+However, most users will need to reset the buffer by going
+to the settings notebook scanning page and setting FindBuf.
+The new default for clean installs is 10240. We recommend you
+change to this setting (or higher) unless you have very limited
+hardware (less than 32 meg of memory original pentium or earlier).
 :p.If FM&slash.2 won&apos.t run&comma. &lpar.Error Message&colon. FM3RES.STR isn't in right format, at least for this version of FM/2.&rpar.
 the probable culprit is CONFIG&per.SYS&per.  Your LIBPATH statement should contain a "&per.&bsl." entry&per.
 If yours doesn&apos.t&comma. add it&per.  It&apos.s

@@ -5,6 +5,15 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+The Find Buffer in FM/2 has been reworked to make it user
+settable in more place and significantly enlarge it. This 
+significantly increases the loading speed for large directories
+However, most users will need to reset the buffer by going 
+to the settings notebook scanning page and setting FindBuf.
+The new default for clean installs is 10240. We recommend you
+change to this setting (or higher) unless you have very limited
+hardware (less than 32 meg of memory, original Pentium or earlier).
+
 File Manager/2 (FM/2) starting with version 3.6 is being 
 built with OpenWatcom. Changing compilers can introduce 
 unexpected problem so you may want to backup your current
@@ -21,7 +30,7 @@ install. It will warn you that the install is newer but just
 tell it to install anyway. The warpin install process is 
 designed to save all your customizations. Don't delete the 
 new install if you don't have a backup since this will result 
-in the loss of any custom chages you have made. If you need 
+in the loss of any custom changes you have made. If you need 
 to delete it to get the reinstall to work. Backup up the new 
 install and then copy the *.bmp, *.tls, *.dat, *.cmd & *.ini 
 files back to the install directory after the reinstall. 
@@ -203,7 +212,7 @@ the need; for instance, if you want to know what a toggle
 does, read the help under Settings notebook for that page
 (each Settings notebook page has its own Help button).
 
-If you prefer hardcopy help, print this file, run FM/2,
+If you prefer hard copy help, print this file, run FM/2,
 press F1, click the "Print" button at the bottom (IBM View)
 or top (Newview)of the help window that appears and then print
 both the "Contents" and "All sections" (keep an eye on the printer,
@@ -305,6 +314,16 @@ in any given session without modifying CONFIG.SYS.
 Troubleshooting:
 ===============
 
+FM/2 seems much slower than previous versions. 
+The Find Buffer in FM/2 has been reworked to make it user
+settable in more place and significantly enlarge it. This 
+significantly increases the loading speed for large directories
+However, most users will need to reset the buffer by going 
+to the settings notebook scanning page and setting FindBuf.
+The new default for clean installs is 10240. We recommend you
+change to this setting (or higher) unless you have very limited
+hardware (less than 32 meg of memory original Pentium or earlier).
+
 If FM/2 won't run, the probable culprit is CONFIG.SYS. Your
 LIBPATH statement should contain a ".;" entry. If yours
 doesn't, add it. It's standard for an OS/2 installation, but
@@ -380,13 +399,13 @@ prefixing it with *. See 4OS2's documentation for more information.
 
 - As with any OS/2 program significant changes (such as our 
 change to OpenWatcom) will result in the incompatibility of 
-older (VAC) exes with new dlls and viceversa. Attempting to run
+older (VAC) exes with new dlls and vice versa. Attempting to run
 OpenWatcom exes with a VAC dll loaded in memory or in your 
 libpath ahead of the new version will result in a SYS3175 in 
 popuplog.os2. The reverse gives a SYS2070. If you experience these
 problems search your libpath for fm3dll.dll and remove or rename 
 it. Your libpath should have "." (without the quotes) as your 
-first entry to minimize the likelyhood of this problem. FM/2's 
+first entry to minimize the likelihood of this problem. FM/2's 
 installer does not add the FM/2 directory to the libpath.
 
 - See http://svn.netlabs.org/fm2/report/1 for a complete list of
@@ -445,3 +464,4 @@ others in the comp.os.os2.* hierarchy.
 Thanks and enjoy.
 
 $Id$
+
