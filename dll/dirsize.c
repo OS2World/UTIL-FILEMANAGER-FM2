@@ -258,8 +258,10 @@ static BOOL ProcessDir(HWND hwndCnr,
       nm = FilesToGet;				/* FilesToGet */
       y++;
       pffb = xrealloc(pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-      if (!pffb)
+      if (!pffb) //Error already sent {
+        free(pffb)
         break;
+    }
      DosError(FERR_DISABLEHARDERR);
       rc = DosFindNext(hdir, pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), &nm);
     }					// while more found
