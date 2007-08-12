@@ -332,7 +332,7 @@ MENU  MAIN2_FRAME
     MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
     MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
     MENUITEM "",                  -1,                 MIS_SEPARATOR
-    MENUITEM "Si~zes...\tCtrl + Z",   IDM_SIZES
+    MENUITEM "Si~zes...\tCtrl + z",   IDM_SIZES
     MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
     MENUITEM "",                        -1,                 MIS_SEPARATOR
     SUBMENU "Select\tCtrl + F8",        IDM_SELECTSUBMENU
@@ -647,7 +647,7 @@ ACCELTABLE  TREE_FRAME
   "s",         IDM_SUBJECT,           CONTROL
   "T",         IDM_SETTARGET,         CONTROL,SHIFT
   "u",         IDM_UPDATE,            CONTROL
-  "Z",         IDM_SIZES,             CONTROL
+  "z",         IDM_SIZES,             CONTROL
   "_",         IDM_COLLAPSEALL,       SHIFT,CONTROL
   "-",         IDM_COLLAPSEALL,       SHIFT,CONTROL
   "-",         IDM_COLLAPSE,          CONTROL
@@ -798,7 +798,7 @@ ACCELTABLE  DIR_FRAME
   "v",         IDM_VIEW,              CONTROL
   "w",         IDM_WALKDIR,           CONTROL
   "x",         IDM_EXTRACT,           CONTROL
-  "Z",         IDM_SIZES,             CONTROL
+  "z",         IDM_SIZES,             CONTROL
   ">",         IDM_PREVIOUS,          SHIFT,CONTROL
   ".",         IDM_PARENT,            CONTROL
   "+",         IDM_DESELECTMASK,      SHIFT,CONTROL
@@ -875,7 +875,7 @@ MENU DIRCNR_POPUP
   }
   SUBMENU  "Miscellaneous",           IDM_MISCSUBMENU
   {
-    MENUITEM "Si~zes...\tCtrl + Z",   IDM_SIZES
+    MENUITEM "Si~zes...\tCtrl + z",   IDM_SIZES
     MENUITEM "~Undelete files...",    IDM_UNDELETESPEC
     MENUITEM "~Find in drive tree\tCtrl + F",IDM_FINDINTREE
     MENUITEM "~Show all files...\tCtrl + g",IDM_SHOWALLFILESCNR
@@ -1193,7 +1193,7 @@ MENU DIR_POPUP
   MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
   SUBMENU "Miscellaneous",      IDM_MISCSUBMENU
   {
-    MENUITEM "Si~zes...\tCtrl + Z",  IDM_SIZES
+    MENUITEM "Si~zes...\tCtrl + z",  IDM_SIZES
     MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
     MENUITEM "Undelete...",     IDM_UNDELETE
   }
@@ -1248,7 +1248,7 @@ MENU TREE_POPUP
   }
   SUBMENU "~Miscellaneous",     IDM_MISCSUBMENU
   {
-    MENUITEM "Si~zes...\tCtrl + Z",IDM_SIZES
+    MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
     MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
     MENUITEM "~Undelete...",    IDM_UNDELETE
     MENUITEM "",                -1,       MIS_SEPARATOR
@@ -1277,7 +1277,7 @@ MENU MAIN_DRIVES
 {
   MENUITEM "~Info...\tCtrl + i",IDM_INFO
   MENUITEM "~Drive flags...", IDM_DRVFLAGS
-  MENUITEM "Si~zes...\tCtrl + Z",IDM_SIZES
+  MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
   MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
   MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
   MENUITEM "~Undelete...",    IDM_UNDELETE
@@ -1458,7 +1458,7 @@ MENU COLLECTORDIR_POPUP
   MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
   SUBMENU  "Miscellaneous",     IDM_MISCSUBMENU
   {
-    MENUITEM "Si~zes...\tCtrl + Z",IDM_SIZES
+    MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
     MENUITEM "Undelete...",     IDM_UNDELETE
     MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
   }
@@ -1591,7 +1591,7 @@ ACCELTABLE  COLLECTOR_FRAME
   "u",         IDM_UPDATE,            CONTROL
   "v",         IDM_VIEW,              CONTROL
   "x",         IDM_EXTRACT,           CONTROL
-  "Z",         IDM_SIZES,             CONTROL
+  "z",         IDM_SIZES,             CONTROL
   "=",         IDM_SELECTMASK,        CONTROL
   "?",         IDM_SELECTALLDIRS,     SHIFT,CONTROL
   "/",         IDM_SELECTALLFILES,    CONTROL
