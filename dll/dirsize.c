@@ -27,7 +27,7 @@
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   03 Aug 07 SHL DirSizeProc; correct sizing and positioning to be deterministic
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
-
+  11 Aug 07 SHL ProcessDir: remove unneeded reallocs
 
 ***********************************************************************/
 
@@ -35,6 +35,7 @@
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_LONGLONG
+#define INCL_DOSERRORS
 #include <os2.h>
 
 #include <stdio.h>
@@ -98,7 +99,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   ULONGLONG ullSubDirBytes = 0;
   ULONGLONG ull;
   HDIR hdir;
-  FILEFINDBUF4 *pffb, *pffbTemp;
+  FILEFINDBUF4 *pffb;
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pci;
@@ -106,21 +107,22 @@ static BOOL ProcessDir(HWND hwndCnr,
   // fixme to report errors
   *pullTotalBytes = 0;			// In case we fail
 
-  pffb = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+  pffb = xmalloc(sizeof(FILEFINDBUF4) * FilesToGet, pszSrcFile, __LINE__);
   if (!pffb)
-    return FALSE;
+    return FALSE;			// Error already reported
+
   strcpy(maskstr, pszFileName);
   if (maskstr[strlen(maskstr) - 1] != '\\')
     strcat(maskstr, "\\");
   pEndMask = &maskstr[strlen(maskstr)];	// Point after last backslash
   strcat(maskstr, "*");
-  //printf("%s\n",maskstr);
 
   hdir = HDIR_CREATE;
   nm = 1;
+  // 11 Aug 07 SHL fixme to know if we can bypass memset
   memset(pffb, 0, sizeof(FILEFINDBUF4));
   DosError(FERR_DISABLEHARDERR);
-  //printf("FIND1\n");
+  // Check directory exists
   rc = DosFindFirst(pszFileName, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
@@ -155,14 +157,12 @@ static BOOL ProcessDir(HWND hwndCnr,
     pci->attrFile = 0;
     pci->pszDispAttr = NullStr;
     pci->pszSubject = NullStr;
-  }
+  } // if got something
   else {
+    // No match
     free(pffb);
-    Dos_Error(MB_ENTER,
-	      rc,
-	      HWND_DESKTOP,
-	      pszSrcFile,
-	      __LINE__, GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
     return FALSE;
   }
 
@@ -187,7 +187,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   }
   // fixme to know why - it appears to be indirectly saving length, but why?
   pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
-  pci->pszLongName = pci->pszFileName;		// fixme to be sure?
+  pci->pszLongName = pci->pszFileName;	// fixme to be sure?
   pci->rc.pszIcon = pci->pszFileName;
   pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
@@ -206,31 +206,23 @@ static BOOL ProcessDir(HWND hwndCnr,
     free(pffb);
     return FALSE;
   }
+
+  // Find files and directories in this directory
   hdir = HDIR_CREATE;
-  pffbTemp = pffb;
   nm = FilesToGet;
-  pffb = xrealloc(pffb, (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-  if (!pffb) { //Error already sent
-        free(pffbTemp);
-        return FALSE;
-      }
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
-		    pffb, (nm + 1) * sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
+		    pffb, nm * sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
   if (!rc) {
-    register PBYTE fb = (PBYTE) pffb;
+    PBYTE fb = (PBYTE)pffb;
     FILEFINDBUF4 *pffbFile;
     ULONG x;
-    UINT y = 1;
 
     while (!rc) {
       priority_normal();
-      //printf("Found %lu\n",nm);
       for (x = 0; x < nm; x++) {
-	pffbFile = (FILEFINDBUF4 *) fb;
-	//printf("%s\n",pffbFile->achName);
-	//fflush(stdout);
+	pffbFile = (FILEFINDBUF4 *)fb;
 	// Total size skipping . and ..
 	if ((~pffbFile->attrFile & FILE_DIRECTORY) ||
 	    (pffbFile->achName[0] != '.' ||
@@ -255,24 +247,23 @@ static BOOL ProcessDir(HWND hwndCnr,
 	if (!pffbFile->oNextEntryOffset)
 	  break;
 	fb += pffbFile->oNextEntryOffset;
-      }					// for matches
+      }	// for matches
       if (*pchStopFlag)
-        break;
+	break;
       DosSleep(1);
-      pffbTemp = pffb;
-      nm = FilesToGet;				/* FilesToGet */
-      y++;
-      pffb = xrealloc(pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-      if (!pffb) { //Error already sent
-        free(pffbTemp);
-        break;
-      }
+      nm = FilesToGet;
       DosError(FERR_DISABLEHARDERR);
-      rc = DosFindNext(hdir, pffb, y * (nm + 1) * sizeof(FILEFINDBUF4), &nm);
-    }					// while more found
+      rc = DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4) * FilesToGet, &nm);
+    } // while more found
+
+    if (rc != ERROR_NO_MORE_FILES) {
+      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
+    }
+
     DosFindClose(hdir);
     priority_normal();
-  }
+  } // if got files or directories
 
   free(pffb);
 
@@ -322,8 +313,8 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	}
 	// Need unique buffer 23 Jul 07 SHL
 	pci->pszLongName = xmalloc(2, pszSrcFile, __LINE__);
-	pci->pszLongName[0] = 0;		// Make null string
-	pci->pszLongName[1] = 1;		// Flag root - hack cough
+	pci->pszLongName[0] = 0;	// Make null string
+	pci->pszLongName[1] = 1;	// Flag root - hack cough
       }
       else
 	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
@@ -631,10 +622,10 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    INT boxHeight;
 	    p = strchr(pci->pszFileName, '\r');
 	    if (p) {
-	      /* draw text */
-	      if (!pci->cbFile)		/* no size */
+	      // draw text
+	      if (!pci->cbFile)		// no size
 		GpiSetColor(oi->hps, CLR_DARKGRAY);
-	      else if (!pci->easize)	/* no size below */
+	      else if (!pci->easize)	// no size below
 		GpiSetColor(oi->hps, CLR_DARKBLUE);
 	      else
 		GpiSetColor(oi->hps, CLR_BLACK);
@@ -655,16 +646,16 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      // Place text above graph box with a bit of whitespace between
 	      ptl.x = oi->rclItem.xLeft;
-	      ptl.y = yBottom + boxHeight + 8;		// 03 Aug 07 SHL
+	      ptl.y = yBottom + boxHeight + 8;	// 03 Aug 07 SHL
 	      // GpiMove(oi->hps, &ptl);
 	      GpiCharStringAt(oi->hps, &ptl, strlen(pci->pszFileName),
 			      pci->pszFileName);
 
 	      *p = '\r';		// Restore
 
-	      /* draw the graph box */
+	      // draw the graph box
 	      // GpiQueryTextBox(oi->hps, 1, "#", TXTBOX_COUNT, aptl);	// 03 Aug 07 SHL
-	      /* draw black outline */
+	      // draw black outline
 	      GpiSetColor(oi->hps, CLR_BLACK);
 	      ptl.x = oi->rclItem.xLeft;
 	      ptl.y = yBottom + 2;
@@ -672,7 +663,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft + 101;
 	      ptl.y = yBottom + boxHeight;
 	      GpiBox(oi->hps, DRO_OUTLINE, &ptl, 0, 0);
-	      /* fill with gray */
+	      // fill with gray
 	      GpiSetColor(oi->hps, CLR_PALEGRAY);
 	      ptl.x = oi->rclItem.xLeft + 1;
 	      ptl.y = yBottom + 3;
@@ -681,7 +672,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.y = yBottom + boxHeight - 1;
 	      GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
-	      /* draw shadow at bottom & right sides */
+	      // draw shadow at bottom & right sides
 	      GpiSetColor(oi->hps, CLR_DARKGRAY);
 	      ptl.x = oi->rclItem.xLeft + 1;
 	      ptl.y = yBottom + 3;
@@ -691,14 +682,14 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.y = yBottom + boxHeight - 1;
 	      GpiLine(oi->hps, &ptl);
 
-	      /* draw highlight at top and left sides */
+	      // draw highlight at top and left sides
 	      GpiSetColor(oi->hps, CLR_WHITE);
 	      ptl.x = oi->rclItem.xLeft + 1;
 	      GpiLine(oi->hps, &ptl);
 	      ptl.y = yBottom + 3;
 	      GpiLine(oi->hps, &ptl);
 
-	      /* draw shadow of box */
+	      // draw shadow of box
 	      GpiSetColor(oi->hps, CLR_DARKGRAY);
 	      ptl.x = oi->rclItem.xLeft + 2;
 	      ptl.y = yBottom + boxHeight;
@@ -714,9 +705,9 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft + 2;
 	      GpiLine(oi->hps, &ptl);
 
-	      /* fill box with graph bar, flags is integer % */
+	      // fill box with graph bar, flags is integer %
 	      if (pci->flags) {
-		if (*(pci->pszLongName + 1) == 1)	/* is root record */
+		if (*(pci->pszLongName + 1) == 1)	// is root record
 		  GpiSetColor(oi->hps, CLR_DARKGREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_RED);
@@ -727,7 +718,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		ptl.y = yBottom + boxHeight - 1;
 		GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
-		/* draw highlights and shadows on graph */
+		// draw highlights and shadows on graph
 		if (*(pci->pszLongName + 1) == 1)
 		  GpiSetColor(oi->hps, CLR_GREEN);
 		else
@@ -755,7 +746,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 	      }
 
-	      /* draw hash marks in box */
+	      // draw hash marks in box
 	      GpiSetColor(oi->hps, CLR_WHITE);
 	      clr = CLR_WHITE;
 	      for (x = 1; x < 10; x++) {
