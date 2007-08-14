@@ -36,11 +36,14 @@
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   04 Aug 07 SHL Update #pragma alloc_test for new functions
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  13 Aug 07 SHL Sync code with other FilesToGet usage and optimize
+  13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_DOSERRORS
 #define INCL_LONGLONG
 #include <os2.h>
 
@@ -52,7 +55,7 @@
 #include <time.h>
 #include <time.h>
 
-#if 1 // fixme to disable or to be configurable
+#if 0 // fixme to disable or to be configurable
 #include <malloc.h>			// _heapchk
 #endif
 
@@ -60,10 +63,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
-#pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString)
-#pragma alloc_text(EMPTYCNR,EmptyCnr,FreeCnrItemData,FreeCnrItem,FreeCnrItemList,RemoveCnrItems)
 
 /**
  * Return display string given standard file attribute mask
@@ -239,7 +238,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 			      const BOOL partial,
 			      DIRCNRDATA *dcd)
 {
-  /* fill in a container record from a FILEFINDBUF4 structure */
+  // fill in a container record from a FILEFINDBUF4 structure
 
   CHAR *p;
   HPOINTER hptr;
@@ -270,7 +269,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     memcpy(p, pffb->achName, pffb->cchName + 1);
   }
 
-  /* load the object's Subject, if required */
+  // load the object's Subject, if required
   pci->pszSubject = NullStr;
   if (pffb->cbList > 4L &&
       dcd && fLoadSubject &&
@@ -315,7 +314,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   if (!pci->pszSubject)
     pci->pszSubject = NullStr;
 
-  /* load the object's longname */
+  // load the object's longname
   pci->pszLongName = 0;
   if (fLoadLongnames &&
       dcd &&
@@ -362,13 +361,13 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   if (!pci->pszLongName)
     pci->pszLongName = NullStr;
 
-  /* do anything required to case of filename */
+  // do anything required to case of filename
   if (fForceUpper)
     strupr(pci->pszFileName);
   else if (fForceLower)
     strlwr(pci->pszFileName);
 
-  /* get an icon to use with it */
+  // get an icon to use with it
   if (pffb->attrFile & FILE_DIRECTORY) {
     // is directory
     if (fNoIconsDirs ||
@@ -424,7 +423,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     p = pci->pszFileName;
   pci->pszDisplayName = p;
 
-  /* now fill the darned thing in... */
+  // now fill the darned thing in...
   pci->date.day = pffb->fdateLastWrite.day;
   pci->date.month = pffb->fdateLastWrite.month;
   pci->date.year = pffb->fdateLastWrite.year + 1980;
@@ -450,7 +449,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   pci->rc.pszIcon = pci->pszDisplayName;
   pci->rc.hptrIcon = hptr;
 
-  /* check to see if record should be visible */
+  // check to see if record should be visible
   if (dcd && (*dcd->mask.szMask || dcd->mask.antiattr ||
 	      ((dcd->mask.attrFile &
 		(FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY | FILE_ARCHIVED))
@@ -482,13 +481,13 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
   HPOINTER hptr;
   CHAR *p;
 
-  /* fill in a container record from a FILESTATUS4 structure */
+  // fill in a container record from a FILESTATUS4 structure
 
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
   strcpy(pci->pszFileName, pszFileName);
 
-  /* load the object's Subject, if required */
+  // load the object's Subject, if required
   pci->pszSubject = NullStr;
   if (pfsa4->cbList > 4L &&
       dcd &&
@@ -707,9 +706,9 @@ VOID ProcessDirectory(const HWND hwndCnr,
   PFILEFINDBUF4 paffbTotal = NULL;
   PFILEFINDBUF4 paffbTemp;
   HDIR hdir = HDIR_CREATE;
-  ULONG ulFileCnt;
-  ULONG ulExtraBytes;
-  ULONG ulM = 1;
+  ULONG ulFindCnt;
+  ULONG ulFindMax;
+  ULONG ulSelCnt;
   ULONG ulTotal = 0;
   ULONGLONG ullBytes;
   ULONGLONG ullTotalBytes;
@@ -720,32 +719,30 @@ VOID ProcessDirectory(const HWND hwndCnr,
   PCNRITEM pci;
   PCNRITEM pciFirst;
   RECORDINSERT ri;
-  PBYTE pByte;
-  PBYTE pByte2;
   BOOL ok = TRUE;
+  ULONG ulBufBytes;
+  ULONG x;
 
   if (isalpha(*szDirBase) && szDirBase[1] == ':' && szDirBase[2] == '\\') {
-    ulExtraBytes = EXTRA_RECORD_BYTES;
     if ((driveflags[toupper(*szDirBase) - 'A'] & DRIVE_REMOTE) && fRemoteBug)
-      ulM = 1;				/* file system gets confused */
+      ulFindMax = 1;				// file system gets confused
     else if (driveflags[toupper(*szDirBase) - 'A'] & DRIVE_ZIPSTREAM)
-      ulM = min(FilesToGet, 225);	/* anything more is wasted */
+      ulFindMax = min(FilesToGet, 225);	// anything more is wasted
     else
-      ulM = FilesToGet;			/* full-out */
+      ulFindMax = FilesToGet;		// full-out
   }
   else {
-    ulExtraBytes = EXTRA_RECORD_BYTES;
-    ulM = FilesToGet;
+    ulFindMax = FilesToGet;
   }
   if (OS2ver[0] == 20 && OS2ver[1] < 30)
-    ulM = min(ulM, (65535 / sizeof(FILEFINDBUF4)));
+    ulFindMax = min(ulFindMax, (65535 / sizeof(FILEFINDBUF4)));
 
-  ulFileCnt = ulM;
+  ulBufBytes = ulFindMax * sizeof(FILEFINDBUF4);
+
   pszFileSpec = xmalloc(CCHMAXPATH + 2, pszSrcFile, __LINE__);
-  paffbFound =
-    xmalloc((ulM + 1) * sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-  papffbSelected =
-    xmalloc((ulM + 1) * sizeof(PFILEFINDBUF4), pszSrcFile, __LINE__);
+  paffbFound = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
+  papffbSelected = xmalloc(sizeof(PFILEFINDBUF4) * ulFindMax, pszSrcFile, __LINE__);
+
   if (paffbFound && papffbSelected && pszFileSpec) {
     t = strlen(szDirBase);
     memcpy(pszFileSpec, szDirBase, t + 1);
@@ -756,16 +753,20 @@ VOID ProcessDirectory(const HWND hwndCnr,
     }
     memcpy(pchEndPath, "*", 2);
     DosError(FERR_DISABLEHARDERR);
-    rc = DosFindFirst(pszFileSpec, &hdir,
-		      FILE_NORMAL | ((filestoo) ? FILE_DIRECTORY :
-				     MUST_HAVE_DIRECTORY) | FILE_READONLY |
-		      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-		      paffbFound, ulM * sizeof(FILEFINDBUF4),
-		      &ulFileCnt, FIL_QUERYEASIZE);
+    ulFindCnt = ulFindMax;
+    rc = DosFindFirst(pszFileSpec,
+		      &hdir,
+		      FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		      FILE_SYSTEM | FILE_HIDDEN |
+		      (filestoo ? FILE_DIRECTORY : MUST_HAVE_DIRECTORY),
+		      paffbFound,
+		      ulBufBytes,
+		      &ulFindCnt,
+		      FIL_QUERYEASIZE);
     priority_normal();
     *pchEndPath = 0;
     if (!rc) {
-      while (!rc) {
+      do {
 	/*
 	 * remove . and .. from list if present
 	 * also counter file system bugs that sometimes
@@ -773,36 +774,45 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	 * only directories should appear (only a few
 	 * network file systems exhibit such a problem).
 	 */
-	register ULONG x;
+#if 0 // 13 Aug 07 SHL fixme to be gone
+	{
+	  static ULONG ulMaxCnt = 1;
+	  if (ulFindCnt > ulMaxCnt) {
+	    ulMaxCnt = ulFindCnt;
+	    DbgMsg(pszSrcFile, __LINE__, "ulMaxCnt %u/%u", ulMaxCnt, ulFindMax);
+	  }
+	}
+#endif // fixme to be gone
 
 	if (stopflag && *stopflag)
 	  goto Abort;
-	pByte = (PBYTE) paffbFound;
-	for (x = 0; x < ulFileCnt;) {
-	  pffbFile = (PFILEFINDBUF4) pByte;
+	pffbFile = paffbFound;
+	ulSelCnt = 0;
+	for (;;) {
 	  if (!*pffbFile->achName ||
-	      (!filestoo && !(pffbFile->attrFile & FILE_DIRECTORY)) ||
-	      ((pffbFile->attrFile & FILE_DIRECTORY) &&
+	      (!filestoo && ~pffbFile->attrFile & FILE_DIRECTORY) ||
+	      (pffbFile->attrFile & FILE_DIRECTORY &&
 	       pffbFile->achName[0] == '.' &&
 	       (!pffbFile->achName[1] ||
 		(pffbFile->achName[1] == '.' && !pffbFile->achName[2])))) {
-	    ulFileCnt--;		// Got . or ..
+	    // ulFindCnt--;		// Got . or .. or file to be skipped
 	  }
 	  else
-	    papffbSelected[x++] = pffbFile;	// Count file
+	    papffbSelected[ulSelCnt++] = pffbFile;	// Remember selected file
 	  if (!pffbFile->oNextEntryOffset) {
-	    ulFileCnt = x;		// Adjust count
+	    // ulFindCnt = ulSelCnt;	// Remember number selected
 	    break;
 	  }
-	  pByte += pffbFile->oNextEntryOffset;
+	  pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
 	} // for
-	if (ulFileCnt) {
+	if (ulSelCnt) {
+	  // One or more entries selected
 	  if (stopflag && *stopflag)
 	    goto Abort;
 	  if (fSyncUpdates) {
 	    pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
-				  MPFROMLONG(ulExtraBytes),
-				  MPFROMLONG(ulFileCnt));
+				  MPFROMLONG(EXTRA_RECORD_BYTES),
+				  MPFROMLONG(ulSelCnt));
 	    if (!pciFirst) {
 	      Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
 			 IDS_CMALLOCRECERRTEXT);
@@ -810,59 +820,61 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      ullTotalBytes = 0;
 	    }
 	    else {
-	      register INT i;
-
 	      pci = pciFirst;
 	      ullTotalBytes = 0;
-	      for (i = 0; i < ulFileCnt; i++) {
-		pffbFile = papffbSelected[i];
+	      // Insert selected in container
+	      for (x = 0; x < ulSelCnt; x++) {
+		pffbFile = papffbSelected[x];
 		ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
 					       pffbFile, partial, dcd);
 		pci = (PCNRITEM) pci->rc.preccNextRecord;
 		ullTotalBytes += ullBytes;
 	      } // for
-	      if (ulFileCnt) {
-		memset(&ri, 0, sizeof(RECORDINSERT));
-		ri.cb = sizeof(RECORDINSERT);
-		ri.pRecordOrder = (PRECORDCORE) CMA_END;
-		ri.pRecordParent = (PRECORDCORE) pciParent;
-		ri.zOrder = (ULONG) CMA_TOP;
-		ri.cRecordsInsert = ulFileCnt;
-		ri.fInvalidateRecord = (!fSyncUpdates && dcd &&
-					dcd->type == DIR_FRAME) ?
+	      // 13 Aug 07 SHL ulSelCnt checked already?
+	      // if (ulSelCnt) {
+	      memset(&ri, 0, sizeof(RECORDINSERT));
+	      ri.cb = sizeof(RECORDINSERT);
+	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
+	      ri.pRecordParent = (PRECORDCORE) pciParent;
+	      ri.zOrder = (ULONG) CMA_TOP;
+	      ri.cRecordsInsert = ulSelCnt;
+	      ri.fInvalidateRecord =
+		!fSyncUpdates && dcd && dcd->type == DIR_FRAME ?
 		  FALSE : TRUE;
+	      if (!WinSendMsg(hwndCnr,
+			      CM_INSERTRECORD,
+			      MPFROMP(pciFirst), MPFROMP(&ri))) {
+		DosSleep(10);		// Give GUI time to work
+		WinSetFocus(HWND_DESKTOP, hwndCnr);
 		if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD,
 				MPFROMP(pciFirst), MPFROMP(&ri))) {
-		  DosSleep(10);
-		  WinSetFocus(HWND_DESKTOP, hwndCnr);
-		  if (!WinSendMsg(hwndCnr,
-				  CM_INSERTRECORD,
-				  MPFROMP(pciFirst), MPFROMP(&ri))) {
-		    Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-			       IDS_CMINSERTERRTEXT);
-		    ok = FALSE;
-		    ullTotalBytes = 0;
-		    if (WinIsWindow((HAB) 0, hwndCnr))
-		      FreeCnrItemList(hwndCnr, pciFirst);
-		  }
+		  Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+			     IDS_CMINSERTERRTEXT);
+		  ok = FALSE;
+		  ullTotalBytes = 0;
+		  if (WinIsWindow((HAB) 0, hwndCnr))
+		    FreeCnrItemList(hwndCnr, pciFirst);
 		}
+	      // }
 	      }
 	    }
 	    if (ok) {
 	      ullReturnBytes += ullTotalBytes;
-	      ulReturnFiles += ulFileCnt;
+	      ulReturnFiles += ulSelCnt;
 	    }
-	  }
+	  } // if sync updates
 	  else {
+	    // Append newly selected entries to aggregate list
 	    paffbTemp = xrealloc(paffbTotal,
-				 sizeof(FILEFINDBUF4) * (ulFileCnt + ulTotal),
+				 sizeof(FILEFINDBUF4) * (ulSelCnt + ulTotal),
 				 pszSrcFile, __LINE__);
 	    if (paffbTemp) {
+	      // 13 Aug 07 SHL fixme to optimize copy
 	      paffbTotal = paffbTemp;
-	      for (x = 0; x < ulFileCnt; x++)
+	      for (x = 0; x < ulSelCnt; x++)
 		paffbTotal[x + ulTotal] = *papffbSelected[x];
-	      ulTotal += ulFileCnt;
+	      ulTotal += ulSelCnt;
 	    }
 	    else {
 	      saymsg(MB_ENTER,
@@ -871,26 +883,26 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      break;
 	    }
 	  }
-	}
+	} // if entries selected
 	if (stopflag && *stopflag)
 	  goto Abort;
-	ulFileCnt = ulM;
 	DosError(FERR_DISABLEHARDERR);
-	rc = DosFindNext(hdir, paffbFound, ulM * sizeof(FILEFINDBUF4),
-			 &ulFileCnt);
+	ulFindCnt = ulFindMax;
+	rc = DosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt);
 	priority_normal();
 	if (rc)
 	  DosError(FERR_DISABLEHARDERR);
-      }
+      } while (!rc);
+
       DosFindClose(hdir);
 
-      if (paffbFound || papffbSelected) {
-	if (paffbFound)
-	  free(paffbFound);
-	if (papffbSelected)
-	  free(papffbSelected);
-	papffbSelected = NULL;
+      if (paffbFound) {
+	free(paffbFound);
 	paffbFound = NULL;
+      }
+      if (papffbSelected) {
+	free(papffbSelected);
+	papffbSelected = NULL;
       }
 
       if (ulTotal && paffbTotal) {
@@ -899,7 +911,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  goto Abort;
 
 	pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
-			      MPFROMLONG(ulExtraBytes), MPFROMLONG(ulTotal));
+			      MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulTotal));
 	if (!pciFirst) {
 	  Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
 		     IDS_CMALLOCRECERRTEXT);
@@ -907,19 +919,16 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  ullTotalBytes = 0;
 	}
 	else {
-	  register INT i;
-
 	  pci = pciFirst;
 	  ullTotalBytes = 0;
-	  pByte2 = (PBYTE) paffbTotal;
-	  for (i = 0; i < ulTotal; i++) {
-	    pffbFile = (PFILEFINDBUF4) pByte2;
+	  pffbFile = paffbTotal;
+	  for (x = 0; x < ulTotal; x++) {
 	    ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
 					   pffbFile, partial, dcd);
 	    pci = (PCNRITEM) pci->rc.preccNextRecord;
 	    ullTotalBytes += ullBytes;
-
-	    pByte2 += sizeof(FILEFINDBUF4);
+	    // Can not use offset since we have merged lists - this should be equivalent
+	    pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + sizeof(FILEFINDBUF4));
 	  }
 	  if (ulTotal) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
@@ -932,7 +941,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 				    dcd->type == DIR_FRAME) ? FALSE : TRUE;
 	    if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
 			    MPFROMP(pciFirst), MPFROMP(&ri))) {
-	      DosSleep(10);
+	      DosSleep(10);		// Give GUI time to work
 	      WinSetFocus(HWND_DESKTOP, hwndCnr);
 	      if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
 			      MPFROMP(pciFirst), MPFROMP(&ri))) {
@@ -948,9 +957,14 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	}
 	if (ok) {
 	  ullReturnBytes += ullTotalBytes;
-	  ulReturnFiles += ulFileCnt;
+	  ulReturnFiles += ulFindCnt;
 	}
       }
+    }
+
+    if (rc && rc != ERROR_NO_MORE_FILES) {
+      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		GetPString(IDS_CANTFINDDIRTEXT), pszFileSpec);
     }
 
     if (!fSyncUpdates && dcd && dcd->type == DIR_FRAME)
@@ -958,16 +972,15 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		 MPFROM2SHORT(0, CMA_ERASE));
   }
 Abort:
-  if (paffbTotal || papffbSelected || paffbFound || pszFileSpec) {
-    if (paffbTotal)
-      free(paffbTotal);
-    if (pszFileSpec)
-      free(pszFileSpec);
-    if (paffbFound)
-      free(paffbFound);
-    if (papffbSelected)
-      free(papffbSelected);
-  }
+  if (paffbTotal)
+    free(paffbTotal);
+  if (pszFileSpec)
+    free(pszFileSpec);
+  if (paffbFound)
+    free(paffbFound);
+  if (papffbSelected)
+    free(papffbSelected);
+
   if (recurse) {
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
@@ -1230,7 +1243,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	driveserial[x] = -1;
       }
       pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
-      pci = (PCNRITEM) pci->rc.preccNextRecord;	/* next rec */
+      pci = (PCNRITEM) pci->rc.preccNextRecord;	// next rec
     }
     else if (!(ulDriveMap & (1L << x)))
       driveflags[x] |= DRIVE_INVALID;
@@ -1239,7 +1252,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
   drivesbuilt = TRUE;
 
-  /* insert the drives */
+  // insert the drives
   if (numtoinsert && pciFirst) {
     RECORDINSERT ri;
 
@@ -1258,7 +1271,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     }
   }
 
-  /* move cursor onto the default drive rather than the first drive */
+  // move cursor onto the default drive rather than the first drive
   if (!fSwitchTree) {
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
@@ -1445,7 +1458,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   if (!drivesbuilt && hwndMain)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-  DosSleep(16);//05 Aug 07 GKY 33
+  DosSleep(16);				// 05 Aug 07 GKY 33
   fDummy = FALSE;
   DosPostEventSem(CompactSem);
 
@@ -1582,7 +1595,7 @@ VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
     // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
     Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      "CM_FREERECORD hwnd %x pci %p file %s",
-              hwnd, pci,
+	      hwnd, pci,
 	      pci && pci->pszFileName ? pci->pszFileName : "n/a");
   }
 }
@@ -1662,4 +1675,8 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 
   return remaining;
 }
+
+#pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
+#pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString)
+#pragma alloc_text(EMPTYCNR,EmptyCnr,FreeCnrItemData,FreeCnrItem,FreeCnrItemList,RemoveCnrItems)
 

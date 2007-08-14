@@ -5,11 +5,12 @@
 .* fm/2 help
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2006-07 Steven H.Levine
+.* Copyright (c) 2006, 2007 Steven H.Levine
 .*
 .* 30 Dec 06 GKY Corrected statement re copy/move "toggle" in OS/2
 .* 03 Mar 07 GKY Update that file systems other than HPFS support long names
-.* 20 Mar 07 DG  Add discribtion for Mommy make it stop
+.* 20 Mar 07 DG  Add description for Mommy make it stop
+.* 13 Aug 07 SHL Tweak scanning page
 .*
 .***********************************************************************
 .*
@@ -697,7 +698,7 @@ turn off the toggle. If that's not possible for some reason, use
 FM/2's INI editor to view FM3.INI and delete the "RemoteBug" keyword
 from the INI (which will cause FM/2 to revert to the default setting).
 :p.
-If the :hp6.Don't scan remov.:ehp6. is checked, FM/2 won't attempt to
+If the :hp6.Don't scan removables:ehp6. is checked, FM/2 won't attempt to
 find subdirectories on removable drives until you double-click the drive
 in the Drive Tree, so you won't see a [+] sign beside removable drives
 even if they do contain subdirectories until you double-click the drive.
@@ -706,7 +707,7 @@ toggle; it's for other removable drives, like CD-ROM drives. This was
 added to allow folks with CD-ROM carousels to avoid having each CD
 loaded and scanned automatically at FM/2 startup.
 :p.
-The :hp6.Findbuf:ehp6. spin button controls how many files FM/2 searches
+The :hp6.Find count:ehp6. spin button controls how many files FM/2 searches
 for in one system call. The higher this number, the faster FM/2 works
 (with properly operating FSDs that support "finding" more than one file
 at a time -- unfortunately, the FSDs that can benefit the most from this,
@@ -715,7 +716,7 @@ temporarily consumed as a container is filled. If you habitually work
 with directories containing great numbers of files and have sufficient
 memory, boosting this may be a good idea. On the other hand, if you are
 extremely limited in memory (less than 16 megs), reducing this might be
-the thing to do. The range is 2048 to 102400, with 10240 the default.
+the thing to do. The range is 512 to 4096, with 4096 being the default.
 
 
 :h3 res=100070 name=PANEL_BUBBLEPAGE.Bubble help page

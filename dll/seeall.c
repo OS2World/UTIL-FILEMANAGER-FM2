@@ -21,9 +21,11 @@
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
   30 Mar 07 GKY Remove GetPString for window class names
-  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speeds file loading)
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFullPathName and BldQuotedFileName
+  13 Aug 07 SHL Sync code with other FilesToGet usage
+  13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -47,15 +49,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(SEEALL,comparefullnames,comparenames,comparesizes)
-#pragma alloc_text(SEEALL,comparedates,compareexts,SeeStatusProc)
-#pragma alloc_text(SEEALL,InitWindow,PaintLine,SeeAllWndProc)
-#pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark)
-#pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList)
-#pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObjWinThread,FindDupes,DupeDlgProc)
-#pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAllThread,AFDrvsWndProc)
-#pragma alloc_text(SEEALL3,StartSeeAll)
 
 typedef struct
 {
@@ -725,7 +718,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    FSIL_ALLOC, &fsa, sizeof(fsa))) {
 		  // Assume <2GB since file did not fit
 		  clFreeBytes = fsa.cUnitAvail * fsa.cSectorUnit *
-		    fsa.cbSector;
+				fsa.cbSector;
 		  if (clFreeBytes) {
 		    // Find item that will fit in available space
 		    for (cntr = x + 1; list[cntr]; cntr++) {
@@ -1412,15 +1405,15 @@ static BOOL Mark(HWND hwnd, INT command, CHAR ** list)
   return didone;
 }
 
-static BOOL UpdateList(HWND hwnd, CHAR ** list)
+static BOOL UpdateList(HWND hwnd, CHAR **list)
 {
   /* Updates files in the list */
 
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
-  register ULONG x, z;
+  ULONG x, z;
   BOOL ret, didone = FALSE;
   FILEFINDBUF3 ffb;
-  ULONG nm;
+  ULONG ulFindCnt;
   HDIR hdir;
   CHAR *p;
 
@@ -1436,10 +1429,10 @@ static BOOL UpdateList(HWND hwnd, CHAR ** list)
       if (ret) {
 	didone = TRUE;
 	hdir = HDIR_CREATE;
-	nm = 1;
+	ulFindCnt = 1;
 	if (!DosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
 			  FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
-			  FILE_HIDDEN, &ffb, sizeof(ffb), &nm,
+			  FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
 			  FIL_STANDARD)) {
 	  DosFindClose(hdir);
 	  if (!(ffb.attrFile & FILE_DIRECTORY)) {
@@ -1457,10 +1450,10 @@ static BOOL UpdateList(HWND hwnd, CHAR ** list)
       else if (isalpha(*list[z]) && ad->abDrvFlags[toupper(*list[z]) - 'A']) {
 	didone = TRUE;
 	hdir = HDIR_CREATE;
-	nm = 1;
+	ulFindCnt = 1;
 	if (!DosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
 			  FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
-			  FILE_HIDDEN, &ffb, sizeof(ffb), &nm,
+			  FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
 			  FIL_STANDARD)) {
 	  DosFindClose(hdir);
 	  if (!(ffb.attrFile & FILE_DIRECTORY)) {
@@ -1892,27 +1885,31 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 {
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   CHAR *filename, *enddir;
-  FILEFINDBUF3 *pffb, *ffb;
+  PFILEFINDBUF3 pffbArray, pffbFile;
   HDIR hdir = HDIR_CREATE;
-  ULONG nm, uL;
-  register ULONG x;
-  register PBYTE fb;
+  ULONG ulFindCnt;
+  ULONG ulFindMax;
+  ULONG ulBufBytes;
+  ULONG x;
+  APIRET rc;
 
   filename = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
   if (!filename)
     return;
 
-  uL = ad->afFilesToGet;
+  ulFindMax = ad->afFilesToGet;
   if (fRemoteBug && isalpha(*pathname) && pathname[1] == ':' &&
       pathname[2] == '\\' &&
       (driveflags[toupper(*pathname) - 'A'] & DRIVE_REMOTE))
-    uL = 1;
-  pffb = xmalloc(sizeof(FILEFINDBUF3) * uL, pszSrcFile, __LINE__);
-  if (!pffb) {
+    ulFindMax = 1;
+
+  ulBufBytes = sizeof(FILEFINDBUF3) * ulFindMax;
+  pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
+  if (!pffbArray) {
     free(filename);
     return;
   }
-  nm = uL;
+
   strcpy(filename, pathname);
   enddir = &filename[strlen(filename) - 1];
   if (*enddir != '\\') {
@@ -1922,27 +1919,37 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   enddir++;
   strcpy(enddir, "*");
   DosError(FERR_DISABLEHARDERR);
-  if (!DosFindFirst(filename, &hdir, FILE_NORMAL | FILE_ARCHIVED |
+  ulFindCnt = ulFindMax;
+  rc = DosFindFirst(filename, &hdir, FILE_NORMAL | FILE_ARCHIVED |
 		    FILE_READONLY | FILE_DIRECTORY | FILE_SYSTEM |
-		    FILE_HIDDEN, pffb, sizeof(FILEFINDBUF3) * nm, &nm,
-		    FIL_STANDARD)) {
+		    FILE_HIDDEN,
+		    pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
+  if (!rc) {
     do {
+#if 0 // 13 Aug 07 SHL fixme to be gone
+      {
+	static ULONG ulMaxCnt = 1;
+	if (ulFindCnt > ulMaxCnt) {
+	  ulMaxCnt = ulFindCnt;
+	  DbgMsg(pszSrcFile, __LINE__, "ulMaxCnt %u/%u", ulMaxCnt, ulFindMax);
+	}
+      }
+#endif // fixme to be gone
       priority_normal();
-      fb = (PBYTE) pffb;
-      for (x = 0; x < nm; x++) {
-	ffb = (FILEFINDBUF3 *) fb;
-	if (ffb->attrFile & FILE_DIRECTORY) {
+      pffbFile = pffbArray;
+      for (x = 0; x < ulFindCnt; x++) {
+	if (pffbFile->attrFile & FILE_DIRECTORY) {
 	  // Skip . and ..
-	  if (ffb->achName[0] != '.' ||
-	      (ffb->achName[1] &&
-	       (ffb->achName[1] != '.' || ffb->achName[2]))) {
-	    strcpy(enddir, ffb->achName);
+	  if (pffbFile->achName[0] != '.' ||
+	      (pffbFile->achName[1] &&
+	       (pffbFile->achName[1] != '.' || pffbFile->achName[2]))) {
+	    strcpy(enddir, pffbFile->achName);
 	    DoADir(hwnd, filename);
 	  }
 	}
 	else {
 	  *enddir = 0;
-	  strcpy(enddir, ffb->achName);
+	  strcpy(enddir, pffbFile->achName);
 	  if (!ad->afalloc || ad->affiles > ad->afalloc - 1) {
 
 	    ALLFILES *temp;
@@ -1969,26 +1976,34 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	  else {
 	    ad->afhead[ad->affiles].filename =
 	      ad->afhead[ad->affiles].fullname + (enddir - filename);
-	    ad->afhead[ad->affiles].cbFile = ffb->cbFile;
-	    ad->afhead[ad->affiles].date = ffb->fdateLastWrite;
-	    ad->afhead[ad->affiles].time = ffb->ftimeLastWrite;
-	    ad->afhead[ad->affiles].attrFile = (USHORT) ffb->attrFile;
+	    ad->afhead[ad->affiles].cbFile = pffbFile->cbFile;
+	    ad->afhead[ad->affiles].date = pffbFile->fdateLastWrite;
+	    ad->afhead[ad->affiles].time = pffbFile->ftimeLastWrite;
+	    ad->afhead[ad->affiles].attrFile = (USHORT) pffbFile->attrFile;
 	    ad->afhead[ad->affiles].flags = 0;
 	    ad->affiles++;
-	    if (ad->longest < ffb->cchName)
-	      ad->longest = ffb->cchName;
-	    if (ad->longestw < ffb->cchName + (enddir - filename))
-	      ad->longestw = ffb->cchName + (enddir - filename);
+	    if (ad->longest < pffbFile->cchName)
+	      ad->longest = pffbFile->cchName;
+	    if (ad->longestw < pffbFile->cchName + (enddir - filename))
+	      ad->longestw = pffbFile->cchName + (enddir - filename);
 	  }
 	}
-	fb += ffb->oNextEntryOffset;
-      }
-      nm = uL;
-    } while (!ad->stopflag &&
-	     !DosFindNext(hdir, pffb, sizeof(FILEFINDBUF3) * nm, &nm));
+	pffbFile = (PFILEFINDBUF3)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+      } // for
+      if (ad->stopflag)
+	break;
+      ulFindCnt = ulFindMax;
+      rc = DosFindNext(hdir, pffbArray, sizeof(FILEFINDBUF3) * ulFindCnt, &ulFindCnt);
+    } while (!rc);
     DosFindClose(hdir);
   }
-  free(pffb);
+
+  if (rc && rc != ERROR_NO_MORE_FILES) {
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_CANTFINDDIRTEXT), filename);
+  }
+
+  free(pffbArray);
   free(filename);
 }
 
@@ -2215,7 +2230,6 @@ static HPS InitWindow(HWND hwnd)
 static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 		      RECTL * Rectl)
 {
-
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   POINTL ptl;
   CHAR szBuff[CCHMAXPATH + 80];
@@ -3801,8 +3815,10 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_COMMAND:
-    if (!pAD)
+    if (!pAD) {
+      Runtime_Error(pszSrcFile, __LINE__, "no data");
       return 0;
+    }
     switch (SHORT1FROMMP(mp1)) {
     case IDM_SETTARGET:
       SetTargetDir(hwnd, FALSE);
@@ -4271,3 +4287,13 @@ HWND StartSeeAll(HWND hwndParent, BOOL standalone,	// called by applet
     PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
   return hwndFrame;
 }
+
+#pragma alloc_text(SEEALL,comparefullnames,comparenames,comparesizes)
+#pragma alloc_text(SEEALL,comparedates,compareexts,SeeStatusProc)
+#pragma alloc_text(SEEALL,InitWindow,PaintLine,SeeAllWndProc)
+#pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark)
+#pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList)
+#pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObjWinThread,FindDupes,DupeDlgProc)
+#pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAllThread,AFDrvsWndProc)
+#pragma alloc_text(SEEALL3,StartSeeAll)
+

@@ -6,7 +6,7 @@
   Configuration notebook
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2007 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
@@ -15,6 +15,8 @@
   17 Jul 06 SHL Use Runtime_Error
   15 Aug 06 SHL Rework SetMask args
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  13 Aug 07 SHL Rework FileToGet min/max to match how DosFindFirst/Next works
 
 ***********************************************************************/
 
@@ -30,15 +32,12 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 
+#define FILESTOGET_MIN  256
+#define FILESTOGET_MAX  4096
+
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(NOTEBOOK,CfgTDlgProc,CfgTSDlgProc,CfgMDlgProc)
-#pragma alloc_text(NOTEBOOK2,CfgADlgProc,CfgSDlgProc,CfgVDlgProc)
-#pragma alloc_text(NOTEBOOK3,CfgDDlgProc,Cfg5DlgProc,Cfg6DlgProc)
-#pragma alloc_text(NOTEBOOK4,Cfg7DlgProc,Cfg8DlgProc,CfgCDlgProc)
-#pragma alloc_text(NOTEBOOK5,CfgGDlgProc,CfgDlgProc,CfgBDlgProc)
 
 typedef struct
 {
@@ -225,7 +224,7 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_SETTEXTLIMIT,
 		      MPFROMSHORT(8), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_OVERRIDESETLIMITS,
-                      MPFROMLONG(102400), MPFROMLONG(2048));
+		      MPFROMLONG(FILESTOGET_MAX), MPFROMLONG(FILESTOGET_MIN));
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 
@@ -318,10 +317,10 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_QUERYVALUE,
 			MPFROMP(&temp), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-      if (temp < 2048)
-	temp = 2048;
-      else if (temp > 102400)
-	temp = 102400;
+      if (temp < FILESTOGET_MIN)
+	temp = FILESTOGET_MIN;
+      else if (temp > FILESTOGET_MAX)
+	temp = FILESTOGET_MAX;
       FilesToGet = temp;
       PrfWriteProfileData(fmprof,
 			  appname, "FilesToGet", &FilesToGet, sizeof(ULONG));
@@ -2183,7 +2182,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fLoadLongnames = FALSE;
       fVerify = FALSE;
       DosSetVerify(FALSE);
-      FilesToGet = 10240;
+      FilesToGet = FILESTOGET_MAX;
       fQuickArcFind = TRUE;
       fMinOnOpen = TRUE;
       fRealIdle = FALSE;
@@ -2234,7 +2233,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fMinOnOpen = FALSE;
       fQuickArcFind = TRUE;
       fNoRemovableScan = TRUE;
-      FilesToGet = 2048;
+      FilesToGet = FILESTOGET_MIN;
       fFreeTree = FALSE;
       fSplitStatus = TRUE;
       fAutoTile = TRUE;
@@ -2353,7 +2352,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fMinOnOpen = FALSE;
       fQuickArcFind = TRUE;
       fNoRemovableScan = FALSE;
-      FilesToGet = 10240;
+      FilesToGet = FILESTOGET_MAX;
       fFreeTree = FALSE;
       fSplitStatus = TRUE;
       fAutoTile = TRUE;
@@ -2929,3 +2928,10 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(NOTEBOOK,CfgTDlgProc,CfgTSDlgProc,CfgMDlgProc)
+#pragma alloc_text(NOTEBOOK2,CfgADlgProc,CfgSDlgProc,CfgVDlgProc)
+#pragma alloc_text(NOTEBOOK3,CfgDDlgProc,Cfg5DlgProc,Cfg6DlgProc)
+#pragma alloc_text(NOTEBOOK4,Cfg7DlgProc,Cfg8DlgProc,CfgCDlgProc)
+#pragma alloc_text(NOTEBOOK5,CfgGDlgProc,CfgDlgProc,CfgBDlgProc)
+

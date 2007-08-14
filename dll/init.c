@@ -27,7 +27,7 @@
   28 Jun 07 SHL Rework WORKPLACE_PROCESS check to match reality
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
-
+  13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -55,13 +55,10 @@
 #include "fm3str.h"
 #include "version.h"
 
-#ifdef __WATCOMC__
+#ifdef __IBMC__
 #pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
-#else // __IBMC__
-#pragma alloc_text(INIT,_DLL_InitTerm,InitFM3DLL,DeInitFM3DLL)
-#endif
-
 #pragma alloc_text(INIT1,StartFM3,FindSwapperDat)
+#endif
 
 extern int _CRT_init(void);
 extern void _CRT_term(void);
@@ -173,7 +170,7 @@ VOID FindSwapperDat(VOID)
 #ifdef __WATCOMC__
 
 unsigned APIENTRY LibMain(unsigned hModule,
-		          unsigned ulFlag)
+			  unsigned ulFlag)
 {
   CHAR *env;
   CHAR stringfile[CCHMAXPATH];
@@ -1407,3 +1404,9 @@ int CheckVersion(int vermajor, int verminor)
 
   return ok;
 }
+
+#ifdef __WATCOMC__
+#pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
+#pragma alloc_text(INIT1,StartFM3,FindSwapperDat)
+#endif
+

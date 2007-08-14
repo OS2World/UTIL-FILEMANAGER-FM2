@@ -27,7 +27,8 @@
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   03 Aug 07 SHL DirSizeProc; correct sizing and positioning to be deterministic
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
-  11 Aug 07 SHL ProcessDir: remove unneeded reallocs
+  13 Aug 07 SHL ProcessDir: remove unneeded reallocs.  Sanitize code
+  13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -67,10 +68,8 @@ typedef struct
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(DIRSIZE,ProcessDir,FillCnrThread,DirSizeProc)
-#pragma alloc_text(DIRSIZE2,PrintToFile,FillInRecSizes,SortSizeCnr)
-
-static SHORT APIENTRY SortSizeCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
+static SHORT APIENTRY SortSizeCnr(PMINIRECORDCORE p1,
+				  PMINIRECORDCORE p2,
 				  PVOID SortFlags)
 {
   ULONGLONG size1;
@@ -94,21 +93,22 @@ static BOOL ProcessDir(HWND hwndCnr,
   register char *p;
   register char *sp;
   register char *pp;
-  ULONG nm;
+  ULONG ulFindCnt;
   ULONGLONG ullCurDirBytes = 0;
   ULONGLONG ullSubDirBytes = 0;
   ULONGLONG ull;
   HDIR hdir;
-  FILEFINDBUF4 *pffb;
+  PFILEFINDBUF4 pffbArray;
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pci;
+  ULONG ulBufBytes;
 
-  // fixme to report errors
   *pullTotalBytes = 0;			// In case we fail
 
-  pffb = xmalloc(sizeof(FILEFINDBUF4) * FilesToGet, pszSrcFile, __LINE__);
-  if (!pffb)
+  ulBufBytes = sizeof(FILEFINDBUF4) * FilesToGet;
+  pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
+  if (!pffbArray)
     return FALSE;			// Error already reported
 
   strcpy(maskstr, pszFileName);
@@ -118,15 +118,14 @@ static BOOL ProcessDir(HWND hwndCnr,
   strcat(maskstr, "*");
 
   hdir = HDIR_CREATE;
-  nm = 1;
-  // 11 Aug 07 SHL fixme to know if we can bypass memset
-  memset(pffb, 0, sizeof(FILEFINDBUF4));
+  ulFindCnt = 1;
+  // memset(pffbArray, 0, sizeof(FILEFINDBUF4));	// 11 Aug 07 SHL bypass memset
   DosError(FERR_DISABLEHARDERR);
   // Check directory exists
   rc = DosFindFirst(pszFileName, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		    pffb, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
+		    pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
 
   if (!rc)
     DosFindClose(hdir);
@@ -136,20 +135,21 @@ static BOOL ProcessDir(HWND hwndCnr,
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.
    */
-  if ((!rc && (pffb->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
+  if ((!rc && (pffbArray->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
-      free(pffb);
+      free(pffbArray);
       return FALSE;
     }
     pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES),
 		     MPFROMLONG(1));
     if (!pci) {
-      free(pffb);
+      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
+      free(pffbArray);
       return FALSE;
     }
     if (!rc) {
-      ullCurDirBytes = pffb->cbFile;
-      ullCurDirBytes += CBLIST_TO_EASIZE(pffb->cbList);
+      ullCurDirBytes = pffbArray->cbFile;
+      ullCurDirBytes += CBLIST_TO_EASIZE(pffbArray->cbList);
     }
     else
       DosError(FERR_DISABLEHARDERR);
@@ -160,7 +160,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   } // if got something
   else {
     // No match
-    free(pffb);
+    free(pffbArray);
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
     return FALSE;
@@ -185,7 +185,7 @@ static BOOL ProcessDir(HWND hwndCnr,
       strcat(pp, sp);
     pci->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
   }
-  // fixme to know why - it appears to be indirectly saving length, but why?
+  // fixme to understand this - appears to be indirectly saving length, but why?
   pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
   pci->pszLongName = pci->pszFileName;	// fixme to be sure?
   pci->rc.pszIcon = pci->pszFileName;
@@ -203,26 +203,37 @@ static BOOL ProcessDir(HWND hwndCnr,
   ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-    free(pffb);
+    free(pffbArray);
     return FALSE;
   }
 
   // Find files and directories in this directory
   hdir = HDIR_CREATE;
-  nm = FilesToGet;
+  // 13 Aug 07 SHL fixme to know if need to support fRemoteBug here like objcnr.c?
+  ulFindCnt = FilesToGet;
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
-		    pffb, nm * sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE);
+		    pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
   if (!rc) {
-    PBYTE fb = (PBYTE)pffb;
-    FILEFINDBUF4 *pffbFile;
+    PFILEFINDBUF4 pffbFile;
     ULONG x;
 
     while (!rc) {
+
+#if 0 // 13 Aug 07 SHL fixme to be gone
+      {
+	static ULONG ulMaxCnt = 1;
+	if (ulFindCnt > ulMaxCnt) {
+	  ulMaxCnt = ulFindCnt;
+	  DbgMsg(pszSrcFile, __LINE__, "ulMaxCnt %u/%u", ulMaxCnt, FilesToGet);
+	}
+      }
+#endif
+
       priority_normal();
-      for (x = 0; x < nm; x++) {
-	pffbFile = (FILEFINDBUF4 *)fb;
+      pffbFile = pffbArray;
+      for (x = 0; x < ulFindCnt; x++) {
 	// Total size skipping . and ..
 	if ((~pffbFile->attrFile & FILE_DIRECTORY) ||
 	    (pffbFile->achName[0] != '.' ||
@@ -231,41 +242,52 @@ static BOOL ProcessDir(HWND hwndCnr,
 	  ullCurDirBytes += pffbFile->cbFile;
 	  ullCurDirBytes += CBLIST_TO_EASIZE(pffbFile->cbList) & 0x3ff;
 
-	  if (!(pffbFile->attrFile & FILE_DIRECTORY))
-	    pci->attrFile++;		// Bump file count
 	  if (*pchStopFlag)
 	    break;
-	  if (pffbFile->attrFile & FILE_DIRECTORY) {
+	  if (~pffbFile->attrFile & FILE_DIRECTORY)
+	    pci->attrFile++;		// Bump file count
+	  else {
 	    // Recurse into subdir
 	    strcpy(pEndMask, pffbFile->achName);	// Append dirname to base dirname
-	    if (!*pchStopFlag) {
-	      ProcessDir(hwndCnr, maskstr, pci, pchStopFlag, FALSE, &ull);
-	      ullSubDirBytes += ull;
-	    }
+	    ProcessDir(hwndCnr, maskstr, pci, pchStopFlag, FALSE, &ull);
+	    ullSubDirBytes += ull;
 	  }
 	}
 	if (!pffbFile->oNextEntryOffset)
 	  break;
-	fb += pffbFile->oNextEntryOffset;
+	pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+
+#if 0 // 13 Aug 07 SHL fixme to be gone
+	{
+	  static ULONG ulMaxBytes = 65535;
+	  ULONG ul = (PBYTE)pffbFile - (PBYTE)pffbArray;
+	  if (ul > ulMaxBytes) {
+	    ulMaxBytes = ul;
+	    DbgMsg(pszSrcFile, __LINE__, "ulFindCnt %u/%u ulMaxBytes %u/%u",
+		   ulFindCnt, FilesToGet, ulMaxBytes, ulBufBytes);
+	  }
+	}
+#endif
+
       }	// for matches
       if (*pchStopFlag)
 	break;
-      DosSleep(1);
-      nm = FilesToGet;
+      DosSleep(0);
+      ulFindCnt = FilesToGet;
       DosError(FERR_DISABLEHARDERR);
-      rc = DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4) * FilesToGet, &nm);
+      rc = DosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
     } // while more found
-
-    if (rc != ERROR_NO_MORE_FILES) {
-      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
-    }
 
     DosFindClose(hdir);
     priority_normal();
   } // if got files or directories
 
-  free(pffb);
+  if (rc && rc != ERROR_NO_MORE_FILES) {
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
+  }
+
+  free(pffbArray);
 
   pci->cbFile = ullCurDirBytes;
   pci->easize = ullSubDirBytes;		// hack cough
@@ -406,16 +428,19 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
   }
 }
 
-static VOID FillCnrThread(VOID * args)
+static VOID FillCnrThread(VOID *args)
 {
   HAB hab;
   HMQ hmq;
-  DIRSIZE *dirsize = (DIRSIZE *) args;
+  DIRSIZE *dirsize = (DIRSIZE *)args;
   HWND hwndCnr;
   ULONGLONG ull;
 
-  if (!dirsize)
+  if (!dirsize) {
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
     return;
+  }
+
   hwndCnr = dirsize->hwndCnr;
 
   DosError(FERR_DISABLEHARDERR);
@@ -964,3 +989,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(DIRSIZE,ProcessDir,FillCnrThread,DirSizeProc)
+#pragma alloc_text(DIRSIZE2,PrintToFile,FillInRecSizes,SortSizeCnr)
+

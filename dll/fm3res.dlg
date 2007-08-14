@@ -27,6 +27,7 @@
   15 Jun 07 SHL Update for OpenWatcom
   19 Jun 07 SHL Update ABT_FRAME to include netlabs URL and built with OpenWatcom
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
+  13 Aug 07 SHL Tweak scanning page
 
 ***********************************************************************/
 
@@ -1873,9 +1874,9 @@ BEGIN
         AUTOCHECKBOX    "Uppercase names", CFGS_FORCEUPPER, 4, 80, 106, 10
         AUTOCHECKBOX    "Lowercase names", CFGS_FORCELOWER, 4, 68, 106, 10
         AUTOCHECKBOX    "Remote find bug", CFGS_REMOTEBUG, 4, 56, 106, 10
-        AUTOCHECKBOX    "Don't scan remov.", CFGS_NOREMOVABLESCAN, 4, 44,
+        AUTOCHECKBOX    "Don't scan removables", CFGS_NOREMOVABLESCAN, 4, 44,
                         106, 10
-        LTEXT           "Findbuf:", -1, 4, 28, 54, 12, NOT WS_GROUP
+        LTEXT           "Find count", -1, 4, 28, 54, 12, NOT WS_GROUP
         CONTROL         "", CFGS_FILESTOGET, 44, 30, 64, 12, WC_SPINBUTTON,
                         SPBS_NUMERICONLY | SPBS_MASTER | SPBS_SERVANT |
                         SPBS_JUSTCENTER | WS_TABSTOP | SPBS_FASTSPIN |

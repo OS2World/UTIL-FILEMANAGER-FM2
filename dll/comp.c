@@ -30,12 +30,14 @@
   06 Aug 07 SHL Move BldFullPathName here to be near primary caller
   07 Aug 07 SHL COMP_COLLECT: Avoid collecting empty entries when nothing selected
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
-
+  13 Aug 07 SHL Sync code with other FilesToGet usage
+  13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_DOSERRORS
 #define INCL_GPI
 #define INCL_LONGLONG
 #include <os2.h>
@@ -51,12 +53,6 @@
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
-
-#pragma alloc_text(COMPAREDIR,FillCnrsThread,FillDirList,CompNames,BldFullPathName)
-#pragma alloc_text(COMPAREDIR1,CompareDlgProc)
-#pragma alloc_text(COMPAREDIR2,SelectCnrsThread,ActionCnrThread)
-#pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFilesThread)
-#pragma alloc_text(SNAPSHOT,SnapShot,StartSnap)
 
 typedef struct
 {
@@ -91,57 +87,61 @@ PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 
 //=== SnapShot() Write directory tree to file and recurse if requested ===
 
-static VOID SnapShot(char *path, FILE * fp, BOOL recurse)
+static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 {
-  FILEFINDBUF4 *fb;
+  PFILEFINDBUF4 pffb;
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
-  ULONG nm = 1;
+  ULONG ulFindCnt;
 
-  fb = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
-  if (fb) {
+  // 13 Aug 07 SHL fimxe to use FileToGet
+  pffb = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+  if (pffb) {
     mask = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
     if (mask) {
-      sprintf(mask,
-	      "%s%s*",
-	      path, (path[strlen(path) - 1] != '\\') ? "\\" : NullStr);
+      BldFullPathName(mask, path, "*");
+      // sprintf(mask,
+      //	 "%s%s*",
+      //	 path, (path[strlen(path) - 1] != '\\') ? "\\" : NullStr);
       enddir = strrchr(mask, '\\');
       enddir++;
+      ulFindCnt = 1;
+      // 13 Aug 07 SHL fixme to report errors
       if (!DosFindFirst(mask,
 			&hdir,
 			FILE_NORMAL | FILE_DIRECTORY |
 			FILE_ARCHIVED | FILE_READONLY | FILE_HIDDEN |
 			FILE_SYSTEM,
-			fb, sizeof(FILEFINDBUF4), &nm, FIL_QUERYEASIZE)) {
+			pffb, sizeof(FILEFINDBUF4), &ulFindCnt, FIL_QUERYEASIZE)) {
 	do {
-	  strcpy(enddir, fb->achName);
-	  if (!(fb->attrFile & FILE_DIRECTORY))
+	  strcpy(enddir, pffb->achName);
+	  if (!(pffb->attrFile & FILE_DIRECTORY))
 	    fprintf(fp,
 		    "\"%s\",%u,%lu,%04u/%02u/%02u,%02u:%02u:%02u,%lu,%lu,N\n",
 		    mask,
 		    enddir - mask,
-		    fb->cbFile,
-		    (fb->fdateLastWrite.year + 1980),
-		    fb->fdateLastWrite.month,
-		    fb->fdateLastWrite.day,
-		    fb->ftimeLastWrite.hours,
-		    fb->ftimeLastWrite.minutes,
-		    fb->ftimeLastWrite.twosecs,
-		    fb->attrFile, (fb->cbList > 4) ? (fb->cbList / 2) : 0);
+		    pffb->cbFile,
+		    (pffb->fdateLastWrite.year + 1980),
+		    pffb->fdateLastWrite.month,
+		    pffb->fdateLastWrite.day,
+		    pffb->ftimeLastWrite.hours,
+		    pffb->ftimeLastWrite.minutes,
+		    pffb->ftimeLastWrite.twosecs,
+		    pffb->attrFile, (pffb->cbList > 4) ? (pffb->cbList / 2) : 0);
 	  // Skip . and ..
 	  else if (recurse &&
-		   (fb->achName[0] != '.' ||
-		    (fb->achName[1] &&
-		     (fb->achName[1] != '.' || fb->achName[2])))) {
+		   (pffb->achName[0] != '.' ||
+		    (pffb->achName[1] &&
+		     (pffb->achName[1] != '.' || pffb->achName[2])))) {
 	    SnapShot(mask, fp, recurse);
 	  }
-	  nm = 1;
-	} while (!DosFindNext(hdir, fb, sizeof(FILEFINDBUF4), &nm));
+	  ulFindCnt = 1;
+	} while (!DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &ulFindCnt));
 	DosFindClose(hdir);
       }
       free(mask);
     }
-    free(fb);
+    free(pffb);
   }
 }
 
@@ -682,8 +682,10 @@ static VOID SelectCnrsThread(VOID * args)
   HAB hab;
   HMQ hmq;
 
-  if (!cmp)
+  if (!cmp) {
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
     return;
+  }
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -728,14 +730,14 @@ static VOID SelectCnrsThread(VOID * args)
 static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
 			FILELIST ***list, INT *numfiles, INT *numalloc)
 {
-
-  BYTE *fb;
   CHAR *enddir;
   ULONG x;
   CHAR *maskstr;
-  FILEFINDBUF4 *ffb4, *pffb;
+  PFILEFINDBUF4 pffbArray;
+  PFILEFINDBUF4 pffbFile;
   HDIR hDir;
-  ULONG nm, fl = 0, ulM = FilesToGet;
+  ULONG ulFindCnt;
+  ULONG ulBufBytes = sizeof(FILEFINDBUF4) * FilesToGet;
   APIRET rc;
 
   if (!str || !*str) {
@@ -743,13 +745,11 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
     return;
   }
 
-  //if (!recurse)
-  //  ulM = FilesToGet;
   maskstr = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
   if (!maskstr)
     return;
-  ffb4 = xmalloc(sizeof(FILEFINDBUF4) * ulM, pszSrcFile, __LINE__);
-  if (!ffb4) {
+  pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
+  if (!pffbArray) {
     free(maskstr);
     return;
   }
@@ -764,57 +764,62 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
   *enddir = '*';
   *(enddir + 1) = 0;
   hDir = HDIR_CREATE;
-  nm = ulM;
-  if (recurse)
-    fl = FILE_DIRECTORY;
   DosError(FERR_DISABLEHARDERR);
+  ulFindCnt = FilesToGet;
   rc = DosFindFirst(maskstr, &hDir,
-		    (FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		     FILE_SYSTEM | FILE_HIDDEN) | fl,
-		    ffb4, sizeof(FILEFINDBUF4) * nm, &nm, FIL_QUERYEASIZE);
+		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		    FILE_SYSTEM | FILE_HIDDEN |
+		    (recurse ? FILE_DIRECTORY : 0),
+		    pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
   if (!rc) {
-    while (!rc) {
-      fb = (BYTE *) ffb4;
-      x = 0;
-      while (x < nm) {
-	pffb = (FILEFINDBUF4 *) fb;
-	if (pffb->attrFile & FILE_DIRECTORY) {
+    do {
+      pffbFile = pffbArray;
+      for (x = 0; x < ulFindCnt; x++) {
+	if (pffbFile->attrFile & FILE_DIRECTORY) {
 	  // Skip . and ..
 	  if (recurse &&
-	      (pffb->achName[0] != '.' ||
-	       (pffb->achName[1] &&
-		(pffb->achName[1] != '.' || pffb->achName[2])))) {
+	      (pffbFile->achName[0] != '.' ||
+	       (pffbFile->achName[1] &&
+		(pffbFile->achName[1] != '.' || pffbFile->achName[2])))) {
 	    if (fForceUpper)
-	      strupr(pffb->achName);
+	      strupr(pffbFile->achName);
 	    else if (fForceLower)
-	      strlwr(pffb->achName);
-	    memcpy(enddir, pffb->achName, pffb->cchName + 1);
+	      strlwr(pffbFile->achName);
+	    memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
 	    FillDirList(maskstr, skiplen, recurse, list, numfiles, numalloc);
 	  }
 	}
 	else {
 	  if (fForceUpper)
-	    strupr(pffb->achName);
+	    strupr(pffbFile->achName);
 	  else if (fForceLower)
-	    strlwr(pffb->achName);
-	  memcpy(enddir, pffb->achName, pffb->cchName + 1);
-	  if (AddToFileList
-	      (maskstr + skiplen, pffb, list, numfiles, numalloc))
+	    strlwr(pffbFile->achName);
+	  memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
+	  if (AddToFileList(maskstr + skiplen,
+			    pffbFile, list, numfiles, numalloc)) {
 	    goto Abort;
+	  }
 	}
-	fb += pffb->oNextEntryOffset;
-	x++;
-      }
-      nm = ulM;
+	pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+      } // for
       DosError(FERR_DISABLEHARDERR);
-      rc = DosFindNext(hDir, ffb4, sizeof(FILEFINDBUF4) * nm, &nm);
-    }
-  Abort:
+      ulFindCnt = FilesToGet;
+      rc = DosFindNext(hDir, pffbArray, ulBufBytes, &ulFindCnt);
+    } while (!rc);
+
+Abort:
+
     DosFindClose(hDir);
     DosSleep(1);
   }
+
+  if (rc && rc != ERROR_NO_MORE_FILES) {
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_CANTFINDDIRTEXT), maskstr);
+  }
+
   free(maskstr);
-  free(ffb4);
+  free(pffbArray);
 }
 
 //=== CompNames() Compare names for qsort ===
@@ -2499,3 +2504,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(COMPAREDIR,FillCnrsThread,FillDirList,CompNames,BldFullPathName)
+#pragma alloc_text(COMPAREDIR1,CompareDlgProc)
+#pragma alloc_text(COMPAREDIR2,SelectCnrsThread,ActionCnrThread)
+#pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFilesThread)
+#pragma alloc_text(SNAPSHOT,SnapShot,StartSnap)
+

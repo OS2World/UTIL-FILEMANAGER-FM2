@@ -17,12 +17,14 @@
   01 Aug 07 SHL Rework to sync with CNRITEM mods
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
-
+  13 Aug 07 SHL Avoid realloc - not needed; sanitize code
+  13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_DOSERRORS
 #include <os2.h>
 
 #include <stdio.h>
@@ -58,48 +60,50 @@ static PSZ pszSrcFile = __FILE__;
 
 static HWND objcnrwnd;
 
-#pragma alloc_text(OBJCNR,ProcessDir,FillCnrsThread,ObjCnrDlgProc)
-
-static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
-		       CHAR * stopflag)
+static VOID ProcessDir(HWND hwndCnr,
+		       CHAR *filename,
+		       PCNRITEM pciParent,
+		       CHAR *stopflag)
 {
   CHAR maskstr[CCHMAXPATH], *endpath, *p;
-  ULONG nm, ulM;
+  ULONG ulFindCnt, ulFindMax;
+  ULONG ulBufBytes;
   HDIR hdir;
-  FILEFINDBUF3 *ffb, *fft;
+  PFILEFINDBUF3 pffbArray;
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pciP;
+  HPOINTER hptr;
 
-  ffb = xmalloc(sizeof(FILEFINDBUF3), pszSrcFile, __LINE__);
-  if (!ffb)
-    return;
+  ulBufBytes = sizeof(FILEFINDBUF3) * FilesToGet;
+  pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
+  if (!pffbArray)
+    return;				// Error already reported
   strcpy(maskstr, filename);
   if (maskstr[strlen(maskstr) - 1] != '\\')
     strcat(maskstr, "\\");
   endpath = &maskstr[strlen(maskstr)];
   strcat(maskstr, "*");
   hdir = HDIR_CREATE;
-  nm = 1;
+  ulFindCnt = 1;
   rc = DosFindFirst(filename, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		    ffb, sizeof(FILEFINDBUF3), &nm, FIL_STANDARD);
+		    pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
   if (!rc)
     DosFindClose(hdir);
+  // work around furshluginer FAT root bug
+  else if (IsRoot(filename))
+    rc = 0;
 
-  if (rc) {				/* work around furshluginer FAT bug... */
-    if (IsRoot(filename))
-      rc = 0;
-  }
-
-  if ((!rc && (ffb->attrFile & FILE_DIRECTORY))) {
+  if ((!rc && (pffbArray->attrFile & FILE_DIRECTORY))) {
     pciP = WinSendMsg(hwndCnr,
 		      CM_ALLOCRECORD,
 		      MPFROMLONG(EXTRA_RECORD_BYTES),
 		      MPFROMLONG(1));
     if (!pciP) {
-      free(ffb);
+      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
+      free(pffbArray);
       return;
     }
     pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
@@ -124,23 +128,19 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
     pciP->rc.flRecordAttr |= CRA_RECORDREADONLY;
   }
   else {
-    free(ffb);
-    Dos_Error(MB_ENTER,
-	      rc,
-	      HWND_DESKTOP,
-	      pszSrcFile,
-	      __LINE__, GetPString(IDS_CANTFINDDIRTEXT), filename);
+    free(pffbArray);
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_CANTFINDDIRTEXT), filename);
     return;
   }
-  {
-    HPOINTER hptr;
 
-    hptr = WinLoadFileIcon(pciP->pszFileName, FALSE);
-    if (hptr)
-      pciP->rc.hptrIcon = hptr;
-  }
+  hptr = WinLoadFileIcon(pciP->pszFileName, FALSE);
+  if (hptr)
+    pciP->rc.hptrIcon = hptr;
+
   if (!pciP->rc.hptrIcon || pciP->rc.hptrIcon == hptrFile)	/* OS/2 bug bug bug bug */
     pciP->rc.hptrIcon = hptrDir;
+
   memset(&ri, 0, sizeof(RECORDINSERT));
   ri.cb = sizeof(RECORDINSERT);
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -149,36 +149,27 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
   ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pciP), MPFROMP(&ri))) {
-    free(ffb);
+    free(pffbArray);
     return;
   }
   hdir = HDIR_CREATE;
   if (!isalpha(*maskstr) || maskstr[1] != ':' || maskstr[2] != '\\' ||
       ((driveflags[toupper(*maskstr) - 'A'] & DRIVE_REMOTE) && fRemoteBug))
-    ulM = 1;
+    ulFindMax = 1;
   else
-    ulM = FilesToGet;
-  if (ulM > 1) {
-    fft = xrealloc(ffb, sizeof(FILEFINDBUF3) * ulM, pszSrcFile, __LINE__);
-    if (!fft)
-      ulM = 1;
-    else
-      ffb = fft;
-  }
-  nm = ulM;
+    ulFindMax = FilesToGet;
+  ulFindCnt = ulFindMax;
   rc = DosFindFirst(maskstr, &hdir,
 		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY, ffb,
-		    sizeof(FILEFINDBUF3) * ulM, &nm, FIL_STANDARD);
+		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
+		    pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
   if (!rc) {
-
-    register PBYTE fb = (PBYTE) ffb;
-    FILEFINDBUF3 *pffbFile;
+    PFILEFINDBUF3 pffbFile;
     ULONG x;
 
     while (!rc) {
-      for (x = 0; x < nm; x++) {
-	pffbFile = (FILEFINDBUF3 *) fb;
+      pffbFile = pffbArray;
+      for (x = 0; x < ulFindCnt; x++) {
 	if (*stopflag)
 	  break;
 	if ((pffbFile->attrFile & FILE_DIRECTORY) &&
@@ -191,17 +182,23 @@ static VOID ProcessDir(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
 	}
 	if (!pffbFile->oNextEntryOffset)
 	  break;
-	fb += pffbFile->oNextEntryOffset;
-      }
+	pffbFile = (PFILEFINDBUF3)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+      } // for
       DosSleep(1);
       if (*stopflag)
 	break;
-      nm = ulM;
-      rc = DosFindNext(hdir, ffb, sizeof(FILEFINDBUF3) * ulM, &nm);
-    }
+      ulFindCnt = ulFindMax;
+      rc = DosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
+    } // while
     DosFindClose(hdir);
   }
-  free(ffb);
+
+  if (rc && rc != ERROR_NO_MORE_FILES) {
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_CANTFINDDIRTEXT), filename);
+  }
+
+  free(pffbArray);
   WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pciP),
 	     MPFROM2SHORT(1, 0));
 }
@@ -210,10 +207,12 @@ static VOID FillCnrsThread(VOID * args)
 {
   HAB hab;
   HMQ hmq;
-  DIRSIZE *dirsize = (DIRSIZE *) args;
+  DIRSIZE *dirsize = (DIRSIZE *)args;
 
-  if (!dirsize)
+  if (!dirsize) {
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
     return;
+  }
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -429,3 +428,5 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(OBJCNR,ProcessDir,FillCnrsThread,ObjCnrDlgProc)
