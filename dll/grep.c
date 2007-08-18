@@ -22,6 +22,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   13 Aug 07 SHL Avoid pointer errors; sanitize code
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  15 Aug 07 SHL Use FilesToGet directly
 
 ***********************************************************************/
 
@@ -243,7 +244,6 @@ VOID GrepThread(VOID * arg)
 
   grep = *(GREP *)arg;
   *grep.stopflag = 0;			// reset thread-killing flag
-  grep.FilesToGet = FilesToGet;
   DosError(FERR_DISABLEHARDERR);
   priority_normal();
 
@@ -459,7 +459,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   CHAR szFindPath[CCHMAXPATH];
   PSZ p;
   APIRET rc;
-  ULONG ulBufBytes = grep->FilesToGet * sizeof(FILEFINDBUF4);
+  ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4);
 
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray)
@@ -483,7 +483,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 
   // step through matching files
   DosError(FERR_DISABLEHARDERR);
-  ulFindCnt = grep->FilesToGet;
+  ulFindCnt = FilesToGet;
   rc = DosFindFirst(szFindPath,
 		    &findHandle,
 		    FILE_NORMAL | grep->attrFile | grep->antiattr,
@@ -519,7 +519,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
       if (*grep->stopflag)
 	break;
       DosSleep(1);
-      ulFindCnt = grep->FilesToGet;
+      ulFindCnt = FilesToGet;
       rc = DosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
     } while (!rc);
 
@@ -595,7 +595,7 @@ static BOOL doinsertion(GREP * grep)
       dcd->ullTotalBytes += grep->insertedbytes;
       DosExitCritSec();
     }
-    if (grep->toinsert == grep->FilesToGet)
+    if (grep->toinsert == FilesToGet)
       DosSleep(1);
     freegreplist(grep);
     PostMsg(grep->hwndFiles, UM_RESCAN, MPVOID, MPVOID);
@@ -620,14 +620,12 @@ static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4 pffb)
       *p = 0;
       if (!grep->insertffb) {
 	// Allocate 1 extra for end marker?
-	grep->insertffb =
-	  xmallocz(sizeof(PFILEFINDBUF4) * (grep->FilesToGet + 1),
-			  pszSrcFile, __LINE__);
+	grep->insertffb = xmallocz(sizeof(PFILEFINDBUF4) * (FilesToGet + 1),
+				   pszSrcFile, __LINE__);
 	if (!grep->insertffb)
 	  return FALSE;
-	grep->dir =
-	  xmallocz(sizeof(CHAR *) * (grep->FilesToGet + 1),
-		   pszSrcFile, __LINE__);
+	grep->dir = xmallocz(sizeof(CHAR *) * (FilesToGet + 1),
+			     pszSrcFile, __LINE__);
 	if (!grep->dir) {
 	  free(grep->insertffb);
 	  return FALSE;
@@ -645,7 +643,7 @@ static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4 pffb)
       }
       grep->insertedbytes += pffb->cbFile + CBLIST_TO_EASIZE(pffb->cbList);
       grep->toinsert++;
-      if (grep->toinsert == grep->FilesToGet)
+      if (grep->toinsert == FilesToGet)
 	return doinsertion(grep);
       return TRUE;
     }

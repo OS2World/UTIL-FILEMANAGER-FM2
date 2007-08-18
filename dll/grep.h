@@ -6,9 +6,10 @@
   Grep support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H. Levine
+  Copyright (c) 2006, 2007 Steven H. Levine
 
-  04 Nov 06 Renames
+  04 Nov 06 SHL Renames
+  15 Aug 07 SHL Drop obsoletes
 
 ***********************************************************************/
 
@@ -66,7 +67,6 @@ typedef struct
   ULONG attrFile;
   ULONG antiattr;
   DUPES *dupehead, *dupelast, **dupenames, **dupesizes;
-  ULONG FilesToGet;
   CHAR searchPattern[4096];
   ULONG numlines;
   CHAR *matched;
