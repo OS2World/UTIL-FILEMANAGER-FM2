@@ -28,6 +28,7 @@
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  18 Aug 07 JBS Added code to read Details* keys from the INI file (Ticket 118)
 
 ***********************************************************************/
 
@@ -1275,6 +1276,43 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, FM3Str, "AutoView", (PVOID) & fAutoView, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "FM2Deletes", (PVOID) & fFM2Deletes,
+		      &size);
+
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsLWDate", (PVOID) &detailslwdate,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsLWTime", (PVOID) &detailslwtime,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsLADate", (PVOID) &detailsladate,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsLATime", (PVOID) &detailslatime,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsCRDate", (PVOID) &detailscrdate,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsCRTime", (PVOID) &detailscrtime,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsLongname", (PVOID) &detailslongname,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsEA", (PVOID) &detailsea,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsSize", (PVOID) &detailssize,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsSubject", (PVOID) &detailssubject,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsAttr", (PVOID) &detailsattr,
+		      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DetailsIcon", (PVOID) &detailsicon,
 		      &size);
 
   /* load pointers and icons we use */
