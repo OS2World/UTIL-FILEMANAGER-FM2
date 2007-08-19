@@ -29,6 +29,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   18 Aug 07 JBS Added code to read Details* keys from the INI file (Ticket 118)
+  19 Aug 07 SHL Ensure FilesToGet in valid range
 
 ***********************************************************************/
 
@@ -911,7 +912,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = TRUE;
   ulCnrType = CCS_EXTENDSEL;
-  FilesToGet = 10240;
+  FilesToGet = FILESTOGET_MIN;
   AutoviewHeight = 48;
   strcpy(printer, "PRN");
   prnwidth = 80;
@@ -1270,8 +1271,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "ContainerType", (PVOID) & ulCnrType,
 		      &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, appname, "FilesToGet", (PVOID) & FilesToGet,
+  PrfQueryProfileData(fmprof, appname, "FilesToGet", (PVOID)&FilesToGet,
 		      &size);
+  if (FilesToGet < FILESTOGET_MIN)
+    FilesToGet = FILESTOGET_MIN;
+  else if (FilesToGet > FILESTOGET_MAX)
+    FilesToGet = FILESTOGET_MAX;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "AutoView", (PVOID) & fAutoView, &size);
   size = sizeof(BOOL);

@@ -18,6 +18,7 @@
   22 Mar 07 GKY Use QWL_USER
   20 Apr 07 SHL Avoid spurious add_udir error reports
   16 Aug 07 SHL Update add_setups for ticket# 109
+  19 Aug 07 SHL Correct load_setups error reporting
 
 ***********************************************************************/
 
@@ -170,9 +171,13 @@ VOID load_setups(VOID)
     // fixme to use generic hab
     ERRORID eid = WinGetLastError((HAB)0);
     if ((eid & 0xffff) != PMERR_NOT_IN_IDX) {
-      Runtime_Error(pszSrcFile, __LINE__, "PrfQueryProfileSize returned %u", eid);
-      return;
+      // Get error info back
+      PrfQueryProfileSize(fmprof, FM3Str, pszLastSetups, &ulDataBytes);
+      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "PrfQueryProfileSize");
     }
+    else
+      fSetupsLoaded = TRUE;		// Nothing saved
+    return;
   }
 
   if (ulDataBytes == 0) {

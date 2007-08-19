@@ -39,6 +39,7 @@
   16 Aug 07 SHL Update IDM_SAVEDIRCNRSTATE logic for ticket# 109
   18 Aug 07 SHL Rework UM_FILLSETUPLIST for new setups storage
   19 Aug 07 SHL Move #pragma alloc_text to end of file for OpenWatcom
+  19 Aug 07 SHL Rework SaveDirCnrState to return better error info
 
 ***********************************************************************/
 
@@ -2632,13 +2633,13 @@ BOOL CloseDirCnrChildren(HWND hwndClient)
 /** Save directory container state
  * @param hwndClient Client window handle
  * @param pszStateName State name to save, NULL to save global state
- * @returns TRUE if one or more directory container windows were saved
+ * @returns Number of directory container windows that were saved or -1 if error
  * @seealso RestoreDirCnrState
  */
 
 #define STATE_NAME_MAX_BYTES	256
 
-BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
+INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 {
   HENUM henum;
   HWND hwndChild, hwndDir, hwndC;
@@ -2647,7 +2648,7 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
   CHAR szKey[STATE_NAME_MAX_BYTES + 80];
   CHAR szDir[CCHMAXPATH];
   SWP swp;
-  BOOL fSaved = FALSE;
+  INT nSaved = 0;
   DIRCNRDATA *dcd;
 
   if (!pszStateName)
@@ -2655,7 +2656,7 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
   else {
     if (strlen(pszStateName) > sizeof(szPrefix) - 2) {
       Runtime_Error(pszSrcFile, __LINE__, "SaveDirCnrState");
-      return fSaved;;
+      return -1;
     }
     sprintf(szPrefix, "%s.", pszStateName);
   }
@@ -2707,7 +2708,7 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 	    }
 	    sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, numsaves++);
 	    PrfWriteProfileString(fmprof, FM3Str, szKey, szDir);
-	    fSaved = TRUE;
+	    nSaved++;
 	  }
 	}
       }
@@ -2715,7 +2716,7 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
   } // while
   WinEndEnumWindows(henum);
 
-  if (fSaved) {
+  if (nSaved) {
     if (WinQueryWindowPos(hwndTree, &swp)) {
       sprintf(szKey, "%sLastTreePos", szPrefix);
       PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, sizeof(SWP));
@@ -2727,7 +2728,7 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
     PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, sizeof(SWP));
   }
 
-  return fSaved;
+  return nSaved;
 }
 
 static VOID TransformSwp(PSWP pswp, double xtrans, double ytrans)
@@ -4173,7 +4174,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (*szStateName && stricmp(szStateName, GetPString(IDS_STATETEXT))) {
 	if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
 	  // Save
-	  if (SaveDirCnrState(hwnd, szStateName)) {
+	  INT nSaved = SaveDirCnrState(hwnd, szStateName);
+	  if (nSaved > 0) {
 	    INT ret = add_setup(szStateName);
 	    if (ret == 0) {
 	      WinSendMsg(hwndStatelist, LM_INSERTITEM,
@@ -4188,9 +4190,12 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 	  else {
-	    saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+	    saymsg(MB_ENTER | MB_ICONASTERISK,
+		   hwnd,
 		   GetPString(IDS_WARNINGTEXT),
-		   "\"%s\" state save failed", szStateName);	// 15 Apr 07 SHL failed
+		   nSaved == 0 ?
+		     "Nothing to save" :
+		     "State data save failed");
 	    WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
 	  }
 	}

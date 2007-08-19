@@ -57,6 +57,8 @@
   14 Aug 07 SHL Delete obsoletes
   16 Aug 07 SHL Update for ticket# 109 - status update
   18 Aug 07 SHL Update for ticket# 31 - states length
+  19 Aug 07 SHL Move FILESTOGET_MIN/MAX here
+  19 Aug 07 SHL Update SaveDirCnrState return
 
 ***********************************************************************/
 
@@ -763,7 +765,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				 MPARAM mp2);
 MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-BOOL SaveDirCnrState(HWND hwndClient, CHAR * name);
+INT SaveDirCnrState(HWND hwndClient, CHAR * name);
 MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID BuildDriveBarButtons(HWND hwndT);
@@ -1420,6 +1422,10 @@ DATADEF BOOL qtloaded;
 DATADEF INT sortFlags, TreesortFlags, CollectorsortFlags;
 DATADEF INT butxsize, butysize;
 DATADEF FILE *LogFileHandle;
+
+#define FILESTOGET_MIN  256
+#define FILESTOGET_MAX  4096
+
 DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL;
 DATADEF long prnwidth, prnlength, prntmargin, prnbmargin, prnlmargin,
   prnrmargin, prnspacing, prntabspaces;

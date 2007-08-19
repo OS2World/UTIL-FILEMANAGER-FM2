@@ -16,7 +16,8 @@
   15 Aug 06 SHL Rework SetMask args
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
-  13 Aug 07 SHL Rework FileToGet min/max to match how DosFindFirst/Next works
+  13 Aug 07 SHL Rework FilesToGet min/max to match how DosFindFirst/Next works
+  19 Aug 07 SHL Sync with SaveDirCnrState mods
 
 ***********************************************************************/
 
@@ -31,9 +32,6 @@
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
-
-#define FILESTOGET_MIN  256
-#define FILESTOGET_MAX  4096
 
 #pragma data_seg(DATA2)
 
@@ -313,15 +311,12 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "ForceLower",
 			&fForceLower, sizeof(BOOL));
     {
-      ULONG temp = 0;
-
       WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_QUERYVALUE,
-			MPFROMP(&temp), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-      if (temp < FILESTOGET_MIN)
-	temp = FILESTOGET_MIN;
-      else if (temp > FILESTOGET_MAX)
-	temp = FILESTOGET_MAX;
-      FilesToGet = temp;
+			MPFROMP(&FilesToGet), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
+      if (FilesToGet < FILESTOGET_MIN)
+	FilesToGet = FILESTOGET_MIN;
+      else if (FilesToGet > FILESTOGET_MAX)
+	FilesToGet = FILESTOGET_MAX;
       PrfWriteProfileData(fmprof,
 			  appname, "FilesToGet", &FilesToGet, sizeof(ULONG));
     }
@@ -1104,8 +1099,8 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (dummy != fSyncUpdates) {
 	fSyncUpdates = dummy;
 	if (hwndMain && !strcmp(realappname, FM3Str)) {
-	  if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT))) {
-	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2L));
+	  if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
+	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
 	    PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
 	  }
 	}
@@ -2641,8 +2636,8 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
 			&detailsattr, sizeof(BOOL));
     if (hwndMain) {
-      if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT))) {
-	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2L));
+      if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
+	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
 	PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
       }
     }
