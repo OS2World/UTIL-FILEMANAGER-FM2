@@ -322,6 +322,8 @@ to look into.
 :hp6.Collapse before switch:ehp6. makes the Drive Tree first collapse
 all expanded branches in the tree before switching because of one of the
 two above switch events.
+This option is will significantly slow down switching
+if you a large number of directories in the Drive Tree.
 :p.
 :hp6.Expand curr. after switch:ehp6. causes the Drive Tree to expand
 the branch of the directory to which it just switched because of one of

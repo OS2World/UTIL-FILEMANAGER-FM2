@@ -24,6 +24,8 @@
   19 Apr 07 SHL Add DbgMsg
   20 Apr 07 SHL Correct IDS_GENERR1TEXT formatting
   23 Apr 07 SHL Add Win_Error_NoMsgBox.  Rework others
+  14 Aug 07 SHL Add GetMSecTimer
+  14 Aug 07 SHL Use GetMSecTimer in DbgMsg
 
 ***********************************************************************/
 
@@ -41,7 +43,8 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(FMINPUT,Win_Error,Dos_Error,saymsg,showMsg)
+
+static PSZ pszSrcFile = __FILE__;
 
 static VOID formatWinError(PSZ pszBuf, UINT cBufBytes, HWND hwndErr, HWND hwndOwner,
 			   PCSZ pszSrcFile, UINT uSrcLineNo,
@@ -54,6 +57,25 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL
 VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
   va_list va;
+
+#if 1 // fixme to be selectable
+
+  static ULONG ul1stMSec;
+  // static ULONG ulLastMSec;
+
+  ULONG msec = GetMSecTimer();
+  ULONG delta;
+
+  if (!ul1stMSec) {
+    ul1stMSec = msec;
+    // ulLastMSec = msec;			// Avoid big delta 1st time
+  }
+
+  delta = msec - ul1stMSec;
+  // ulLastMSec = msec;
+  fprintf(stderr, "%03lu.%03lu ", delta / 1000, delta % 1000);
+
+#endif
 
   // OK for source file name to be null
   fprintf(stderr, "%s %u", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo);
@@ -226,6 +248,26 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
 
 } // formatWinError
 
+/**
+ * Return millisecond timer value
+ * Resolution is milliseconds, but accuracy will be less
+ * depending on systems settings
+ */
+
+ULONG GetMSecTimer(void)
+{
+  ULONG msec;
+
+  APIRET rc = DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT,
+			      &msec, sizeof(msec));
+  if (rc) {
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      "DosQuerySysInfo");
+    msec = 0;
+  }
+  return msec;
+}
+
 //== Runtime_Error: report runtime library error using passed message string ===
 
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
@@ -362,3 +404,5 @@ VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
   DosBeep(250, 100);
 
 } // Win_Error_NoMsgBox
+
+#pragma alloc_text(ERROR,Win_Error,Dos_Error,saymsg,showMsg,GetHiresTimeer)

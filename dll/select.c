@@ -24,6 +24,7 @@
   05 Aug 07 SHL Rework SpecialSelect to use CNRITEM_EXISTS and
 	       not use pszFileName since CNRITEM_EXISTS set implies
 	       pszFileName not null
+  14 Aug 07 SHL Revert ExpandAll DosSleep to 0
 
 ***********************************************************************/
 
@@ -250,7 +251,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	      }
 	      else
 		break;
-	    }
+	    } // while
 	    fclose(inputFile);
 	  }
 	  free(input);
@@ -353,7 +354,7 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	      }
 	      else
 		break;
-	    }
+	    } // while
 	    fclose(inputFile);
 	  }
 	  free(input);
@@ -544,14 +545,14 @@ VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)
     pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
 				MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     if (pci)
-      DosSleep(1);
+      DosSleep(0);
     while (pci && (INT)pci != -1) {
       ExpandAll(hwndCnr, expand, pci);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
   }
-  DosSleep(1);
+  DosSleep(0);
 }
 
 VOID InvertAll(HWND hwndCnr)
@@ -637,9 +638,9 @@ Restart:
       pciD = (PCNRITEM) WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciD),
 				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     if (!(x % 500))
-      DosSleep(1L);
+      DosSleep(1);
     // else if (!(x % 50))
-    //  DosSleep(0L);
+    //  DosSleep(0);
   } // while
 
   if (numD != x) {
@@ -667,9 +668,9 @@ Restart:
       pciS = (PCNRITEM) WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pciS),
 				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     if (!(x % 500))
-      DosSleep(1L);
+      DosSleep(1);
     // else if (!(x % 50))
-    //  DosSleep(0L);
+    //  DosSleep(0);
   } // while
 
   if (numS != x) {
@@ -736,9 +737,9 @@ Restart:
 	pciDa[x]->flags |= CNRITEM_NEWER;
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     } // for
   } // if reset
 
@@ -759,9 +760,9 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     } // for
     break;
 
@@ -779,9 +780,9 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -865,9 +866,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     } // for
     break;
 
@@ -883,9 +884,9 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -905,9 +906,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -926,9 +927,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -947,9 +948,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -968,9 +969,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -989,9 +990,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -1007,9 +1008,9 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -1028,9 +1029,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -1049,9 +1050,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -1070,9 +1071,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -1091,9 +1092,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 
@@ -1112,9 +1113,9 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1L);
+	DosSleep(1);
       // else if (!(x % 50))
-      //	DosSleep(0L);
+      //	DosSleep(0);
     }
     break;
 

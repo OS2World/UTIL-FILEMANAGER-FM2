@@ -19,6 +19,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   13 Aug 07 SHL Avoid realloc - not needed; sanitize code
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  14 Aug 07 SHL Revert ProcessDir DosSleep to 0
 
 ***********************************************************************/
 
@@ -184,7 +185,7 @@ static VOID ProcessDir(HWND hwndCnr,
 	  break;
 	pffbFile = (PFILEFINDBUF3)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
-      DosSleep(1);
+      DosSleep(0);			// Let's others at same priority get some work done
       if (*stopflag)
 	break;
       ulFindCnt = ulFindMax;

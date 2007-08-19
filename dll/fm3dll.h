@@ -53,6 +53,10 @@
   22 Jul 07 GKY Update CNRITEM to optimize RAM usage
   23 Jul 07 SHL More CNRITEM updates (ticket#24)
   01 Aug 07 SHL More CNRITEM and ARCITEM updates (ticket#24)
+  14 Aug 07 SHL Add GetMSecTimer
+  14 Aug 07 SHL Delete obsoletes
+  16 Aug 07 SHL Update for ticket# 109 - status update
+  18 Aug 07 SHL Update for ticket# 31 - states length
 
 ***********************************************************************/
 
@@ -656,6 +660,7 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszSrcFile,
 	       UINT uSrcLineNo, UINT idMsg);
+ULONG GetMSecTimer(void);
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg);
 APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...);
@@ -717,8 +722,6 @@ VOID SetDetailsSwitches(HWND hwnd, DIRCNRDATA * dcd);
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
 			   CHAR * directory, CHAR * keyroot, DIRCNRDATA * dcd,
 			   BOOL compare);
-VOID FreeMallocedMem(VOID * mem);
-VOID FcloseFile(FILE * fp);
 VOID SetConditionalCascade(HWND hwndMenu, USHORT id, USHORT def);
 VOID SetSortChecks(HWND hwndMenu, INT sortflags);
 VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr);
@@ -1027,14 +1030,15 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 /* walkem.c */
 VOID load_udirs(VOID);
 VOID save_udirs(VOID);
-BOOL add_udir(BOOL userdirs, CHAR * inpath);
-BOOL remove_udir(CHAR * path);
-BOOL remove_ldir(CHAR * path);
+BOOL add_udir(BOOL userdirs, PSZ inpath);
+BOOL remove_udir(PSZ path);
+BOOL remove_ldir(PSZ path);
+VOID fill_setups_list(VOID);
 VOID load_setups(VOID);
 VOID save_setups(VOID);
-BOOL add_setup(CHAR * name);
-BOOL remove_setup(CHAR * name);
-VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * path,
+INT add_setup(PSZ stateName);
+INT remove_setup(PSZ stateName);
+VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, PSZ path,
 		     BOOL nounwriteable);
 MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY WalkAllDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
@@ -1361,7 +1365,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fSplitStatus, fArcStuffVisible, fUseMCI, fAmAV2,
   fNoTreeGap, fDummy, fVTreeOpensWPS, fUseQProcStat,
   fStartMinimized, fStartMaximized, fRemoteBug, fReminimize,
-  fDragndropDlg, fMinOnOpen, fUserComboBox, loadedsetups,
+  fDragndropDlg, fMinOnOpen, fUserComboBox,
   fQuickArcFind, fNoRemovableScan, fAutoView, fDataMin,
   fDataToFore, fDataShowDrives, fDataInclRemote,
   fExternalArcboxes, fExternalViewer, fExternalCollector,
@@ -1433,9 +1437,6 @@ DATADEF CHAR *WC_OBJECTWINDOW, *WC_BUBBLE, *WC_TOOLBUTTONS, *WC_DRIVEBUTTONS, *W
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL3)
 #endif
-#define MAXNUMSETUPS  100
-DATADEF CHAR lastsetups[MAXNUMSETUPS][13];
-DATADEF INT lastsetup;
 DATADEF LONG standardcolors[16];
 
 #ifdef INCL_MMIOOS2

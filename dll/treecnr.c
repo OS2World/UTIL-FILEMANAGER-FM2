@@ -18,7 +18,7 @@
   17 Jul 06 SHL Use Runtime_Error
   15 Aug 06 SHL Rework SetMask args
   31 Aug 06 JS  Add more partitioning menu items
-  22 OCT 06 GKY Add NDFS32 support
+  22 Oct 06 GKY Add NDFS32 support
   29 Dec 06 GKY Fixed menu gray out for remote drives (added variable "remote")
   29 Dec 06 GKY Enabled edit of drive flags on "not ready" drives
   18 Feb 07 GKY More drive type and icon support
@@ -35,6 +35,8 @@
   05 Jul 07 SHL Disable leftover debug code
   02 Aug 07 SHL Sync with CNRITEM mods
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  14 Aug 07 SHL Revert ShowTreeRec DosSleep to 0
+  14 Aug 07 SHL Optimze ShowTreeRec collapse - was really slow
 
 ***********************************************************************/
 
@@ -142,7 +144,9 @@ MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return PFNWPButton(hwnd, msg, mp1, mp2);
 }
 
-VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
+VOID ShowTreeRec(HWND hwndCnr,
+		 CHAR *dirname,
+		 BOOL collapsefirst,
 		 BOOL maketop)
 {
   /* Find a record in tree view, move it so it shows in container and
@@ -152,35 +156,37 @@ VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
   BOOL quickbail = FALSE;
   CHAR szDir[CCHMAXPATH], *p;
 
-  /* is it already the current record? */
+  // already positioned to requested record?
   pci = WinSendMsg(hwndCnr,
 		   CM_QUERYRECORDEMPHASIS,
 		   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
   if (pci && (INT) pci != -1 && !stricmp(pci->pszFileName, dirname)) {
-    quickbail = TRUE;
-    goto MakeTop;			/* skip lookup bullsh*t */
+    // DbgMsg(pszSrcFile, __LINE__, "already at %s collapse %u maketop %u", dirname, collapsefirst, maketop);	// 14 Aug 07 SHL fixme
+    quickbail = TRUE;			// Bypass repositioning
+    goto MakeTop;
   }
   WinEnableWindowUpdate(hwndCnr, FALSE);
+  DbgMsg(pszSrcFile, __LINE__, "finding %s collapse %u maketop %u", dirname, collapsefirst, maketop);	// 14 Aug 07 SHL fixme
   pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
   if (!pci || (INT) pci == -1) {
     *szDir = *dirname;
     szDir[1] = ':';
     szDir[2] = '\\';
     szDir[3] = 0;
-    p = szDir + 3;
+    p = szDir + 3;			// Point after root backslash
     for (;;) {
       pciP = FindCnrRecord(hwndCnr, szDir, NULL, TRUE, FALSE, TRUE);
       if (pciP && (INT) pciP != -1) {
 	if (!stricmp(dirname, pciP->pszFileName))
-	  break;
-	if (!(pciP->rc.flRecordAttr & CRA_EXPANDED))
+	  break;			// Found it
+	if (~pciP->rc.flRecordAttr & CRA_EXPANDED)
 	  WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
 	strcpy(szDir, dirname);
 	if (p - szDir >= strlen(szDir))
-	  break;
+	  break;			// Not root dir
 	p = strchr(p, '\\');
 	if (p) {
-	  *p = 0;
+	  *p = 0;			// fixme?
 	  p++;
 	}
 	else
@@ -188,30 +194,43 @@ VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
       }
       else
 	break;
-      DosSleep(1);
-    }
+      DosSleep(0);
+    } // for
     pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
   }
+  DbgMsg(pszSrcFile, __LINE__, "found");	// 14 Aug 07 SHL fixme
   if (pci && (INT) pci != -1) {
-    if (!(pci->rc.flRecordAttr & CRA_CURSORED)) {
+    if (~pci->rc.flRecordAttr & CRA_CURSORED) {
       if (collapsefirst) {
-	/* collapse top level of all branches */
+        DbgMsg(pszSrcFile, __LINE__, "collapsing");	// 14 Aug 07 SHL fixme
 	pciP = WinSendMsg(hwndCnr,
 			  CM_QUERYRECORD,
 			  MPVOID, MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 	while (pciP && (INT) pciP != -1) {
-	  if (toupper(*pciP->pszFileName) == toupper(*dirname))
-	    /* collapse all levels if branch is our drive */
-	    ExpandAll(hwndCnr, FALSE, pciP);
-	  else if (pciP->rc.flRecordAttr & CRA_EXPANDED)
+#if 1
+	  if (pciP->rc.flRecordAttr & CRA_EXPANDED) {
+	    // collapse top level of all branches
 	    WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciP), MPVOID);
+	  }
+#else // fixme to be gone
+	  if (toupper(*pciP->pszFileName) == toupper(*dirname)) {
+	    // collapse all levels if branch is our drive
+	    if (pciP->rc.flRecordAttr & CRA_EXPANDED)
+	      ExpandAll(hwndCnr, FALSE, pciP);
+	  }
+	  else if (pciP->rc.flRecordAttr & CRA_EXPANDED) {
+	    // collapse top level of all branches
+	    WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciP), MPVOID);
+	  }
+#endif
 	  pciP = WinSendMsg(hwndCnr,
 			    CM_QUERYRECORD,
 			    MPFROMP(pciP),
 			    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-	}
+	} // while
       }
       /* expand all parent branches */
+      DbgMsg(pszSrcFile, __LINE__, "expanding parents");	// 14 Aug 07 SHL fixme
       pciToSelect = pci;
       for (;;) {
 	pciP = WinSendMsg(hwndCnr,
@@ -225,28 +244,33 @@ VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
 	}
 	else
 	  break;
-	DosSleep(1);
-      }
+	DosSleep(1);			// Let GUI update
+      } // for
     }
     /* make record visible */
   MakeTop:
+    DbgMsg(pszSrcFile, __LINE__, "moving into view");	// 14 Aug 07 SHL fixme
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
-      if (fTopDir || maketop)
+      if (fTopDir || maketop) {
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
-      if (fSwitchTreeExpand && !(pciToSelect->rc.flRecordAttr & CRA_EXPANDED))
-	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-      if (quickbail) {
-	WinEnableWindowUpdate(hwndCnr, TRUE);
-	return;
       }
-      WinSendMsg(hwndCnr,
-		 CM_SETRECORDEMPHASIS,
-		 MPFROMP(pciToSelect),
-		 MPFROM2SHORT(TRUE, CRA_SELECTED | CRA_CURSORED));
+      if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) {
+        DbgMsg(pszSrcFile, __LINE__, "expanding current");	// 14 Aug 07 SHL fixme
+	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
+        DbgMsg(pszSrcFile, __LINE__, "expanded");	// 14 Aug 07 SHL fixme
+      }
+      if (!quickbail) {
+        WinSendMsg(hwndCnr,
+		   CM_SETRECORDEMPHASIS,
+		   MPFROMP(pciToSelect),
+		   MPFROM2SHORT(TRUE, CRA_SELECTED | CRA_CURSORED));
+      }
     }
   }
+  DbgMsg(pszSrcFile, __LINE__, "done");	// 14 Aug 07 SHL fixme
   WinEnableWindowUpdate(hwndCnr, TRUE);
+  DosSleep(1);			// Let GUI update
 }
 
 MRESULT EXPENTRY TreeTitleWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
@@ -516,8 +540,10 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SHOWME:
+    // DbgMsg(pszSrcFile, __LINE__, "UM_SHOWME mp1 %p mp2 %p", mp1, mp2);	// 14 Aug 07 SHL fixme
     if (mp1) {
       dcd = INSTDATA(hwnd);
+      // DbgMsg(pszSrcFile, __LINE__, "UM_SHOWME dcd %p", dcd);	// 14 Aug 07 SHL fixme
       if (dcd) {
 	BOOL tempsusp, tempfollow, temptop;
 

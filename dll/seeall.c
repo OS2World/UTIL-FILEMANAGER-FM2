@@ -6,7 +6,7 @@
   See all matching files
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2007 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   25 Nov 03 SHL StartSeeAll: avoid forgetting startpath
@@ -26,6 +26,8 @@
   07 Aug 07 SHL Use BldQuotedFullPathName and BldQuotedFileName
   13 Aug 07 SHL Sync code with other FilesToGet usage
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  14 Aug 07 SHL Revert to DosSleep(0) to speed up inner loops
+  14 Aug 07 SHL Drop afFilesToGet
 
 ***********************************************************************/
 
@@ -107,7 +109,6 @@ typedef struct
   ALLFILES **afindex;
   ULONG affiles;
   ULONG afalloc;
-  ULONG afFilesToGet;
   ULONG longest;
   ULONG longestw;
   ULONG topfile;
@@ -432,7 +433,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 SBoxDlgProc,
 			 FM3ModHandle,
 			 ASEL_FRAME, (PVOID) & ad.info) || !ad.info) {
-	    /* we blew it */
+	    // we blew it
 	    FreeList(list);
 	    break;
 	  }
@@ -440,6 +441,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      !ad.info->move &&
 	      !ad.info->createwdirs &&
 	      !ad.info->movewdirs && !ad.info->createrecurse) {
+	    // 14 Aug 07 SHL fixme to tell user why we failed
 	    FreeList(list);
 	    break;
 	  }
@@ -447,7 +449,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    FreeList(list);
 	    break;
 	  }
-	  /* build the sucker */
+	  // Build archiver command line
 	  strcpy(szBuffer, ad.command);
 	  strcat(szBuffer, " ");
 	  strcat(szBuffer, ad.arcname);
@@ -488,11 +490,11 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)),
 		      HWND_DESKTOP, NULL, NULL,
 		      "%s", szBuffer);
-	      DosSleep(1);
+	      DosSleep(1);		// Let archiver get started
 	      *p = 0;
 	    }
 	    strcat(szBuffer, " ");
-	  }
+	  } // while
 	  AddToList(ad.arcname, &files, &numfiles, &numalloc);
 	}
 	if (!PostMsg(WinWindowFromID(hwndFrame, FID_CLIENT),
@@ -1061,33 +1063,31 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_RENAME:
 	sprintf(message,
 		GetPString(IDS_OPSCOMPLETETEXT),
-		(SHORT1FROMMP(mp1) == IDM_MOVE) ?
-		GetPString(IDS_MOVETEXT) :
-		(SHORT1FROMMP(mp1) == IDM_COPY) ?
-		GetPString(IDS_COPYTEXT) :
-		(SHORT1FROMMP(mp1) == IDM_WPSMOVE) ?
-		GetPString(IDS_WPSMOVETEXT) :
-		(SHORT1FROMMP(mp1) == IDM_WPSCOPY) ?
-		GetPString(IDS_WPSCOPYTEXT) :
-		GetPString(IDS_RENAMETEXT),
+		SHORT1FROMMP(mp1) == IDM_MOVE ?
+		  GetPString(IDS_MOVETEXT) :
+		  SHORT1FROMMP(mp1) == IDM_COPY ?
+		    GetPString(IDS_COPYTEXT) :
+		    SHORT1FROMMP(mp1) == IDM_WPSMOVE ?
+		      GetPString(IDS_WPSMOVETEXT) :
+		      SHORT1FROMMP(mp1) == IDM_WPSCOPY ?
+			GetPString(IDS_WPSCOPYTEXT) :
+			GetPString(IDS_RENAMETEXT),
 		&"s"[x == 1],
-		(SHORT1FROMMP(mp1) == IDM_MOVE ||
-		 SHORT1FROMMP(mp1) == IDM_COPY ||
-		 SHORT1FROMMP(mp1) == IDM_WPSMOVE ||
-		 SHORT1FROMMP(mp1) == IDM_WPSCOPY) ?
-		GetPString(IDS_TOTEXT) :
-		NullStr,
-		(SHORT1FROMMP(mp1) == IDM_MOVE ||
-		 SHORT1FROMMP(mp1) == IDM_COPY ||
-		 SHORT1FROMMP(mp1) == IDM_WPSMOVE ||
-		 SHORT1FROMMP(mp1) == IDM_WPSCOPY) ?
-		path :
-		NullStr,
-		(x != 1) ? GetPString(IDS_ARETEXT) : GetPString(IDS_ISTEXT));
+		SHORT1FROMMP(mp1) == IDM_MOVE ||
+		SHORT1FROMMP(mp1) == IDM_COPY ||
+		SHORT1FROMMP(mp1) == IDM_WPSMOVE ||
+		SHORT1FROMMP(mp1) == IDM_WPSCOPY ?
+		  GetPString(IDS_TOTEXT) : NullStr,
+		SHORT1FROMMP(mp1) == IDM_MOVE ||
+		SHORT1FROMMP(mp1) == IDM_COPY ||
+		SHORT1FROMMP(mp1) == IDM_WPSMOVE ||
+		SHORT1FROMMP(mp1) == IDM_WPSCOPY ?
+		  path : NullStr,
+		x != 1 ? GetPString(IDS_ARETEXT) : GetPString(IDS_ISTEXT));
 	WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS), message);
 	if (toupper(*path) < 'C')
 	  DosBeep(1000, 25);
-	DosSleep(16);//05 Aug 07 GKY 33
+	DosSleep(16);			// 05 Aug 07 GKY 33
 	break;
 
       default:
@@ -1622,7 +1622,7 @@ static VOID ReSort(HWND hwnd)
   }
 }
 
-VOID FindDupes(VOID * args)
+VOID FindDupesThread(VOID * args)
 {
   register ULONG x, z;
   register CHAR *px, *pz;
@@ -1653,8 +1653,9 @@ VOID FindDupes(VOID * args)
 		WinSetWindowText(ad->hwndStatus, s);
 	      }
 	      for (z = 0; z < ad->affiles && !ad->stopflag; z++) {
-		if (x != z
-		    && !(ad->afhead[z].flags & (AF_DUPE | AF_FILTERED))) {
+		if (x != z &&
+		    !(ad->afhead[z].flags & (AF_DUPE | AF_FILTERED)))
+		{
 		  if (ad->dupeflags & DP_SIZES) {
 		    if (ad->afhead[x].cbFile != ad->afhead[z].cbFile)
 		      goto SkipNonDupe;
@@ -1712,17 +1713,17 @@ VOID FindDupes(VOID * args)
 		      if (ad->afhead[x].CRC != ad->afhead[z].CRC)
 			goto SkipNonDupe;
 		    }
-		    DosSleep(1);
+		    DosSleep(0);
 		  }
 		  ad->afhead[x].flags |= AF_DUPE;
 		  ad->afhead[z].flags |= AF_DUPE;
 		SkipNonDupe:
 		  ;
 		}
-	      }
-	      DosSleep(1);
+	      } // for
+	      DosSleep(0);
 	    }
-	  }
+	  } // for
 	  for (x = 0; x < ad->affiles && !ad->stopflag; x++) {
 	    if (!(ad->afhead[x].flags & AF_DUPE))
 	      ad->afhead[x].flags |= AF_FILTERED;
@@ -1734,7 +1735,7 @@ VOID FindDupes(VOID * args)
     }
     PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
     DosReleaseMutexSem(ad->hmtxScan);
-  }					// if got sem
+  } // if got sem
   if (hmq2) {
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
     WinDestroyMsgQueue(hmq2);
@@ -1897,7 +1898,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   if (!filename)
     return;
 
-  ulFindMax = ad->afFilesToGet;
+  ulFindMax = FilesToGet;
   if (fRemoteBug && isalpha(*pathname) && pathname[1] == ':' &&
       pathname[2] == '\\' &&
       (driveflags[toupper(*pathname) - 'A'] & DRIVE_REMOTE))
@@ -2024,7 +2025,6 @@ static VOID FindAllThread(VOID * args)
       if (hmq2) {
 	WinCancelShutdown(hmq2, TRUE);
 	IncrThreadUsage();
-	ad->afFilesToGet = FilesToGet;
 	if (!*ad->szFindPath) {
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQCurDisk(&ulDriveNum, &ulDriveMap)) {
@@ -3834,7 +3834,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    DUPE_FRAME,
 					    MPFROM2SHORT(pAD->dupeflags, 0));
 	if (pAD->dupeflags) {
-	  if (_beginthread(FindDupes, NULL, 65536, (PVOID) hwnd) == -1)
+	  if (_beginthread(FindDupesThread, NULL, 65536, (PVOID) hwnd) == -1)
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	}
@@ -4293,7 +4293,7 @@ HWND StartSeeAll(HWND hwndParent, BOOL standalone,	// called by applet
 #pragma alloc_text(SEEALL,InitWindow,PaintLine,SeeAllWndProc)
 #pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark)
 #pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList)
-#pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObjWinThread,FindDupes,DupeDlgProc)
+#pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObjWinThread,FindDupesThread,DupeDlgProc)
 #pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAllThread,AFDrvsWndProc)
 #pragma alloc_text(SEEALL3,StartSeeAll)
 

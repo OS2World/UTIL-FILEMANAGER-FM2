@@ -30,7 +30,8 @@
   06 Aug 07 SHL Use BldQuotedFileName
   06 Aug 07 GKY Increase Subject EA to 1024
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
-
+  14 Aug 07 SHL Delete obsoletes
+  14 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -54,23 +55,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(MAINWND5,SetSysMenu)
-#pragma alloc_text(MISC1,BoxWindow,PaintRecessedWindow,PostMsg,PaintSTextWindow,IsFm2Window)
-#pragma alloc_text(MISC1,FixSwitchList,FindDirCnr,CurrentRecord,SetShiftState,AddToListboxBottom)
-#pragma alloc_text(CNR_MISC1,AdjustCnrColVis,AdjustCnrColsForFSType)
-#pragma alloc_text(CNR_MISC1,AdjustCnrColsForPref,SetCnrCols)
-#pragma alloc_text(CNR_MISC2,CnrDirectEdit,OpenEdit)
-#pragma alloc_text(MISC2,SetMenuCheck,disable_menuitem,SetSortChecks)
-#pragma alloc_text(MISC2,SetDetailsSwitches,SetViewMenu)
-#pragma alloc_text(MISC3,SetupCommandMenu,AdjustDetailsSwitches)
-#pragma alloc_text(MISC3,ViewHelp,GetCmdSpec)
-#pragma alloc_text(MISC3,ExecFile,SetConditionalCascade,LoadDetailsSwitches)
-#pragma alloc_text(MISC3,FreeMallocedMem,FcloseFile)
-#pragma alloc_text(MISC4,PortholeInit,CheckMenu,Broadcast,SetupWinList,SwitchCommand)
-#pragma alloc_text(MISC6,DrawTargetEmphasis,EmphasizeButton)
-#pragma alloc_text(MISC_LIBPATH,LoadLibPath)
-#pragma alloc_text(MISC_SAY,SayView,SaySort,SayFilter)
 
 #ifndef BEGIN_LIBPATH
 #define BEGIN_LIBPATH            1
@@ -134,7 +118,7 @@ void EmphasizeButton(HWND hwnd, BOOL on)
     ptl.x = 1;
     ptl.y = 1;
     GpiMove(hps, &ptl);
-    GpiSetColor(hps, ((on) ? CLR_BLACK : CLR_PALEGRAY));
+    GpiSetColor(hps, on ? CLR_BLACK : CLR_PALEGRAY);
     ptl.x = swp.cx - 2;
     ptl.y = swp.cy - 2;
     GpiBox(hps, DRO_OUTLINE, &ptl, 0, 0);
@@ -149,7 +133,7 @@ void DrawTargetEmphasis(HWND hwnd, BOOL on)
   HPS hps = DrgGetPS(WinQueryWindow(hwnd, QW_PARENT));
 
   if (hps) {
-    BoxWindow(hwnd, hps, ((on) ? CLR_BLACK : CLR_PALEGRAY));
+    BoxWindow(hwnd, hps, on ? CLR_BLACK : CLR_PALEGRAY);
     DrgReleasePS(hps);
   }
 }
@@ -213,7 +197,7 @@ void PaintSTextWindow(HWND hwnd, HPS hps)
 	len = aptl[TXTBOX_TOPRIGHT].x;
 	do {
 	  GpiQueryTextBox(hps, strlen(p), p, TXTBOX_COUNT, aptl);
-	  if (aptl[TXTBOX_TOPRIGHT].x > (rcl.xRight - ((p != s) ? len : 0)))
+	  if (aptl[TXTBOX_TOPRIGHT].x > (rcl.xRight - (p != s ? len : 0)))
 	    p++;
 	  else
 	    break;
@@ -409,21 +393,31 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
     hasAccessDT = FALSE;
     hasLongNames = FALSE;
   }
-  pBool = (dcd) ? &dcd->detailsladate : &detailsladate;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_LADATE),
-		  (*pBool) ? hasAccessDT : FALSE, FALSE);
-  pBool = (dcd) ? &dcd->detailslatime : &detailslatime;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_LATIME),
-		  (*pBool) ? hasAccessDT : FALSE, FALSE);
-  pBool = (dcd) ? &dcd->detailscrdate : &detailscrdate;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_CRDATE),
-		  (*pBool) ? hasCreateDT : FALSE, FALSE);
-  pBool = (dcd) ? &dcd->detailscrtime : &detailscrtime;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_CRTIME),
-		  (*pBool) ? hasCreateDT : FALSE, FALSE);
-  pBool = (dcd) ? &dcd->detailslongname : &detailslongname;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_LNAME),
-		  (*pBool) ? hasLongNames : FALSE, FALSE);
+  pBool = dcd ? &dcd->detailsladate : &detailsladate;
+  AdjustCnrColVis(hwndCnr,
+		  GetPString(IDS_LADATE),
+		  *pBool ? hasAccessDT : FALSE,
+		  FALSE);
+  pBool = dcd ? &dcd->detailslatime : &detailslatime;
+  AdjustCnrColVis(hwndCnr,
+		  GetPString(IDS_LATIME),
+		  *pBool ? hasAccessDT : FALSE,
+		  FALSE);
+  pBool = dcd ? &dcd->detailscrdate : &detailscrdate;
+  AdjustCnrColVis(hwndCnr,
+		  GetPString(IDS_CRDATE),
+		  *pBool ? hasCreateDT : FALSE,
+		  FALSE);
+  pBool = dcd ? &dcd->detailscrtime : &detailscrtime;
+  AdjustCnrColVis(hwndCnr,
+		  GetPString(IDS_CRTIME),
+		  *pBool ? hasCreateDT : FALSE,
+		  FALSE);
+  pBool = dcd ? &dcd->detailslongname : &detailslongname;
+  AdjustCnrColVis(hwndCnr,
+		  GetPString(IDS_LNAME),
+		  *pBool ? hasLongNames : FALSE,
+		  FALSE);
   WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
 }
 
@@ -531,8 +525,8 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     if (isCompCnr)
       pfi->flData |= CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
-    pfi->pTitleData = (isCompCnr) ? GetPString(IDS_STATUS) :
-      GetPString(IDS_SUBJ);
+    pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
+				  GetPString(IDS_SUBJ);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
 
     // Fill in column information for the file size
@@ -700,8 +694,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
 	  szSubject[retlen + 1] = 0;
 	  //chop_at_crnl(szSubject);
-          bstrip(szSubject);
-          pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
+	  bstrip(szSubject);
+	  pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
 	  WinSetWindowText(hwndMLE, szSubject);
 	  len = strlen(szSubject);
 	  if (len)
@@ -751,14 +745,14 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *longname = 0;
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
 	  longname[retlen + 1] = 0;
-          //chop_at_crnl(longname);
-          pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+	  //chop_at_crnl(longname);
+	  pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
 	  WinSetWindowText(hwndMLE, longname);
 	  pci->pszFileName = xrealloc(pci->pszFileName, retlen + 1, pszSrcFile, __LINE__);
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
-        else {
-          WinQueryWindowText(hwndMLE, sizeof(szData), szData);
+	else {
+	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
 	  if (strchr(szData, '?') ||
 	      strchr(szData, '*') || IsRoot(pci->pszFileName))
 	    return (MRESULT) FALSE;
@@ -773,10 +767,10 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 testname, sizeof(testname)))
 		return FALSE;
 	    if (DosQueryPathInfo(pci->pszFileName,
-                                 FIL_QUERYFULLNAME, szData, sizeof(szData))){
-              pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
-              strcpy(szData, pci->pszFileName);
-            }
+				 FIL_QUERYFULLNAME, szData, sizeof(szData))){
+	      pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+	      strcpy(szData, pci->pszFileName);
+	    }
 	    WinSetWindowText(hwndMLE, szData);
 	    if (strcmp(szData, testname)) {
 	      if (stricmp(szData, testname) && IsFile(testname) != -1) {
@@ -858,7 +852,7 @@ BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
 		  CHAR * savename)
 {
   if (toggle) {
-    *bool = (*bool) ? FALSE : TRUE;
+    *bool = *bool ? FALSE : TRUE;
     if (savename && *savename)
       PrfWriteProfileData(fmprof, appname, savename, bool, sizeof(BOOL));
   }
@@ -942,7 +936,8 @@ INT ExecFile(HWND hwnd, CHAR * filename)
   if (ret == 1) {
     lastflags = ex.flags;
     return runemf2(ex.flags, hwnd, path,
-		   (*ex.environment) ? ex.environment : NULL, "%s", cl) != -1;
+		   *ex.environment ? ex.environment : NULL,
+		   "%s", cl) != -1;
   }
   else if (ret != 0)
     return -1;
@@ -1044,7 +1039,7 @@ VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
     return;
   }
   if (bool)
-    *bool = (*bool) ? FALSE : TRUE;
+    *bool = *bool ? FALSE : TRUE;
   if (*s && bool)
     PrfWriteProfileData(fmprof, appname, s, bool, sizeof(BOOL));
   if (hwnd)
@@ -1117,12 +1112,6 @@ VOID SetSortChecks(HWND hwndMenu, INT sortflags)
     WinCheckMenuItem(hwndMenu, IDM_SORTREVERSE, TRUE);
 }
 
-VOID FreeMallocedMem(VOID * mem)
-{
-  /* for use by apps that don't use the DLLs runtime library */
-  free(mem);
-}
-
 VOID FcloseFile(FILE * fp)
 {
   /* for use by apps that don't use the DLLs runtime library */
@@ -1166,15 +1155,14 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
 	sprintf(s,
 		"%s%s%s",
 		info->title,
-		(x < 20) ? "\tCtrl + " : NullStr,
-		(x < 20 && x > 9) ? "Shift + " : NullStr);
+		x < 20 ? "\tCtrl + " : NullStr,
+		x < 20 && x > 9 ? "Shift + " : NullStr);
 	if (x < 20)
 	  sprintf(&s[strlen(s)], "%d",
-		  (((x % 10) + 1) == 10) ? 0 : (x % 10) + 1);
+		  ((x % 10) + 1) == 10 ? 0 : (x % 10) + 1);
 	mi.id = IDM_COMMANDSTART + x;
-	mi.afAttribute = (((info->flags & ONCE) != 0) ?
-			  MIA_CHECKED : 0) |
-	  (((info->flags & PROMPT) != 0) ? MIA_FRAMED : 0);
+	mi.afAttribute = (info->flags & ONCE ? MIA_CHECKED : 0) |
+			 (info->flags & PROMPT ? MIA_FRAMED : 0);
 	mi.afStyle = MIS_TEXT;
 	if (!(x % 24) && x && info->next)
 	  mi.afStyle |= MIS_BREAK;
@@ -1377,7 +1365,7 @@ VOID QuickPopup(HWND hwnd, DIRCNRDATA * dcd, HWND hwndMenu, USHORT id)
 
 PMINIRECORDCORE CurrentRecord(HWND hwndCnr)
 {
-  SHORT attrib = (fSelectedAlways) ? CRA_SELECTED : CRA_CURSORED;
+  SHORT attrib = fSelectedAlways ? CRA_SELECTED : CRA_CURSORED;
   PMINIRECORDCORE pmi;
 
   for (;;) {
@@ -1389,7 +1377,7 @@ PMINIRECORDCORE CurrentRecord(HWND hwndCnr)
     else
       break;
   }
-  return ((INT) pmi == -1) ? NULL : pmi;
+  return ((INT)pmi == -1) ? NULL : pmi;
 }
 
 BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -1481,8 +1469,9 @@ VOID QuickView(HWND hwnd, CHAR * filename)
 
       list[0] = filename;
       list[1] = NULL;
-      ExecOnList(hwnd, viewer, WINDOWED | SEPARATE |
-		 ((fViewChild) ? CHILD : 0), NULL, list, NULL);
+      ExecOnList(hwnd, viewer,
+		 WINDOWED | SEPARATE | (fViewChild ? CHILD : 0),
+		 NULL, list, NULL);
       return;
     }
     StartMLEEditor(HWND_DESKTOP, 5, filename, (HWND) 0);
@@ -1607,8 +1596,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
       SetConditionalCascade(DirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(DirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(DirMenu, IDM_DELETESUBMENU,
-			    (fDefaultDeletePerm) ? IDM_PERMDELETE :
-			    IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(DirMenu, IDM_MISCSUBMENU, IDM_SIZES);
       SetConditionalCascade(DirMenu, IDM_OPENSUBMENU, IDM_OPENWINDOW);
       if (fWorkPlace) {
@@ -1652,8 +1640,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
       SetConditionalCascade(FileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(FileMenu, IDM_COLLECTMENU, IDM_COLLECT);
       SetConditionalCascade(FileMenu, IDM_DELETESUBMENU,
-			    (fDefaultDeletePerm) ? IDM_PERMDELETE :
-			    IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(FileMenu, IDM_OPENSUBMENU, IDM_OPENDEFAULT);
       SetConditionalCascade(FileMenu, IDM_OBJECTSUBMENU, IDM_SHADOW);
       if (fWorkPlace) {
@@ -1698,8 +1685,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorFileMenu, IDM_VIEWSUBMENU, IDM_VIEW);
       SetConditionalCascade(CollectorFileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(CollectorFileMenu, IDM_DELETESUBMENU,
-			    (fDefaultDeletePerm) ? IDM_PERMDELETE :
-			    IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(CollectorFileMenu, IDM_OPENSUBMENU,
 			    IDM_OPENDEFAULT);
       SetConditionalCascade(CollectorFileMenu, IDM_OBJECTSUBMENU, IDM_SHADOW);
@@ -1721,8 +1707,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorDirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(CollectorDirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(CollectorDirMenu, IDM_DELETESUBMENU,
-			    (fDefaultDeletePerm) ? IDM_PERMDELETE :
-			    IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(CollectorDirMenu, IDM_MISCSUBMENU, IDM_SIZES);
       SetConditionalCascade(CollectorDirMenu, IDM_OPENSUBMENU,
 			    IDM_OPENWINDOW);
@@ -1894,22 +1879,23 @@ void SaySort(HWND hwnd, INT sortflags, BOOL archive)
   s = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
   if (s) {
     sprintf(s, "S:%s%s",
-	    (sortflags & SORT_REVERSE) ? "^" : NullStr,
-	    (sortflags & SORT_FIRSTEXTENSION) ? GetPString(IDS_FIRSTX) :
-	    (sortflags & SORT_LASTEXTENSION) ? GetPString(IDS_LASTX) :
-	    (sortflags & SORT_SIZE) ? "Size" :
-	    (sortflags & SORT_EASIZE) ? (archive ==
-					 0) ? GetPString(IDS_EASIZE) :
-	    GetPString(IDS_CSIZE) : (sortflags & SORT_LWDATE) ? (archive
-								 ==
-								 0) ?
-	    GetPString(IDS_LWDATE) : GetPString(IDS_DATE) : (sortflags &
-							     SORT_LADATE)
-	    ? GetPString(IDS_LADATE) : (sortflags & SORT_CRDATE) ?
-	    GetPString(IDS_CRDATE) : (sortflags & SORT_PATHNAME) ?
-	    GetPString(IDS_PATH) : (sortflags & SORT_NOSORT) ?
-	    GetPString(IDS_NONE) : (sortflags & SORT_SUBJECT) ?
-	    GetPString(IDS_SUBJ) : GetPString(IDS_NAME));
+	    sortflags & SORT_REVERSE ? "^" : NullStr,
+	    (sortflags & SORT_FIRSTEXTENSION) ?
+	      GetPString(IDS_FIRSTX) : (sortflags & SORT_LASTEXTENSION) ?
+		GetPString(IDS_LASTX) : (sortflags & SORT_SIZE) ?
+		  "Size" : (sortflags & SORT_EASIZE) ?
+		    (archive == 0) ?
+		      GetPString(IDS_EASIZE) : GetPString(IDS_CSIZE) :
+		    (sortflags & SORT_LWDATE) ?
+		      (archive == 0) ?
+			GetPString(IDS_LWDATE) : GetPString(IDS_DATE) :
+			(sortflags & SORT_LADATE) ?
+			  GetPString(IDS_LADATE) : (sortflags & SORT_CRDATE) ?
+			    GetPString(IDS_CRDATE) :
+			    (sortflags & SORT_PATHNAME) ?
+			      GetPString(IDS_PATH) : (sortflags & SORT_NOSORT) ?
+				GetPString(IDS_NONE) : (sortflags & SORT_SUBJECT) ?
+				  GetPString(IDS_SUBJ) : GetPString(IDS_NAME));
     WinSetWindowText(hwnd, s);
     free(s);
   }
@@ -2048,7 +2034,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
     HWND hwndTopFrame;
     register INT i;
 
-    hwndTopFrame = (hwndTop) ? WinQueryWindow(hwndTop, QW_PARENT) : (HWND) 0;
+    hwndTopFrame = hwndTop ? WinQueryWindow(hwndTop, QW_PARENT) : (HWND)0;
     /* Get the switch list information */
     x = 0;
     ulcEntries = WinQuerySwitchList(0, NULL, 0);
@@ -2168,3 +2154,20 @@ BOOL SwitchCommand(HWND hwndMenu, USHORT cmd)
 
   return ret;
 }
+
+#pragma alloc_text(MAINWND5,SetSysMenu)
+#pragma alloc_text(MISC1,BoxWindow,PaintRecessedWindow,PostMsg,PaintSTextWindow,IsFm2Window)
+#pragma alloc_text(MISC1,FixSwitchList,FindDirCnr,CurrentRecord,SetShiftState,AddToListboxBottom)
+#pragma alloc_text(CNR_MISC1,AdjustCnrColVis,AdjustCnrColsForFSType)
+#pragma alloc_text(CNR_MISC1,AdjustCnrColsForPref,SetCnrCols)
+#pragma alloc_text(CNR_MISC2,CnrDirectEdit,OpenEdit)
+#pragma alloc_text(MISC2,SetMenuCheck,disable_menuitem,SetSortChecks)
+#pragma alloc_text(MISC2,SetDetailsSwitches,SetViewMenu)
+#pragma alloc_text(MISC3,SetupCommandMenu,AdjustDetailsSwitches)
+#pragma alloc_text(MISC3,ViewHelp,GetCmdSpec)
+#pragma alloc_text(MISC3,ExecFile,SetConditionalCascade,LoadDetailsSwitches)
+#pragma alloc_text(MISC4,PortholeInit,CheckMenu,Broadcast,SetupWinList,SwitchCommand)
+#pragma alloc_text(MISC6,DrawTargetEmphasis,EmphasizeButton)
+#pragma alloc_text(MISC_LIBPATH,LoadLibPath)
+#pragma alloc_text(MISC_SAY,SayView,SaySort,SayFilter)
+

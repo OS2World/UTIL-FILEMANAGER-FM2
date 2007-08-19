@@ -17,12 +17,14 @@
   14 Nov 06 SHL Correct FillPathListBox regression
   22 Mar 07 GKY Use QWL_USER
   20 Apr 07 SHL Avoid spurious add_udir error reports
+  16 Aug 07 SHL Update add_setups for ticket# 109
 
 ***********************************************************************/
 
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
+#define INCL_SHLERRORS			// PMERR_NOT_IN_IDX
 #include <os2.h>
 
 #include <stdlib.h>
@@ -61,68 +63,241 @@ WALKER;
 static CHAR WalkFont[CCHMAXPATH] = "";
 static ULONG WalkFontSize = sizeof(WalkFont);
 
+/**
+ * States names management
+ */
+
+static BOOL fSetupsLoaded;
+static LINKDIRS *pFirstSetup;
+static const PSZ pszLastSetups = "LastSetups";
+// // 18 Aug 07 SHL fixme to stop supporting old style 1 year from now?
+static const ULONG ulOldSetupsBytes = 100 * 13;	// Prior to 3.0.7
+
+/**
+ * Fill States drop down list with known state names
+ */
+
+VOID fill_setups_list(VOID)
+{
+  WinSendMsg(hwndStatelist, LM_DELETEALL, MPVOID, MPVOID);
+  if (fUserComboBox) {
+    LINKDIRS *pld;
+    load_setups();
+    for (pld = pFirstSetup; pld; pld = pld->next) {
+      // DbgMsg(pszSrcFile, __LINE__, "Inserted %s", pld->path);
+      WinSendMsg(hwndStatelist,
+		 LM_INSERTITEM,
+		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
+		 MPFROMP(pld->path));
+    }
+    WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+  }
+}
+
+/**
+ * Lookup setup and do requested action
+ * @param - action, Support old/new style storage method
+ * @return 1 if found and action OK, 0 if not found and action OK, -1 if error during action
+ */
+
+#define LS_FIND		0
+#define LS_ADD		1
+#define LS_DELETE	2
+
+static INT lookup_setup(PSZ name, UINT action)
+{
+  LINKDIRS *pld;
+  LINKDIRS *pldLast = NULL;
+
+  if (!name || !*name) {
+    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    return -1;
+  }
+
+  load_setups();
+
+  for (pld = pFirstSetup; pld; pld = pld->next) {
+    if (!stricmp(pld->path, name)) {
+      if (action == LS_DELETE) {
+	if (pldLast)
+	  pldLast->next = pld->next;
+	else
+	  pFirstSetup = pld->next;
+	xfree(pld->path);
+	xfree(pld);
+      }
+      return 1;				// Found or added
+    }
+    pldLast = pld;			// In case deleting
+  } // for
+
+  // Not found
+  if (action == LS_ADD) {
+    pld = xmalloc(sizeof(LINKDIRS), pszSrcFile, __LINE__);
+    if (!pld)
+      return -1;
+    pld->path = xstrdup(name, pszSrcFile, __LINE__);
+    if (!pld->path) {
+      xfree(pld);
+      return -1;
+    }
+    // Insert at front of list - drop down will sort
+    pld->next = pFirstSetup;
+    pFirstSetup = pld;
+    return 0;
+  }
+
+  return FALSE;				// Not found
+}
+
+/**
+ * Load state names from ini
+ * Support old/new style storage method
+ */
+
 VOID load_setups(VOID)
 {
-  ULONG len = sizeof(lastsetups);
+  ULONG ulDataBytes;
+  ULONG l;
+  PSZ pszBuf;
+  PSZ psz;
+  LINKDIRS *pld;
 
-  memset(lastsetups, 0, len);
-  PrfQueryProfileData(fmprof, FM3Str, "LastSetups", lastsetups, &len);
-  len = sizeof(INT);
-  lastsetup = 0;
-  PrfQueryProfileData(fmprof, FM3Str, "LastSetup", &lastsetup, &len);
-  loadedsetups = TRUE;
+  if (fSetupsLoaded)
+    return;
+
+  if (!PrfQueryProfileSize(fmprof, FM3Str, pszLastSetups, &ulDataBytes)) {
+    // fixme to use generic hab
+    ERRORID eid = WinGetLastError((HAB)0);
+    if ((eid & 0xffff) != PMERR_NOT_IN_IDX) {
+      Runtime_Error(pszSrcFile, __LINE__, "PrfQueryProfileSize returned %u", eid);
+      return;
+    }
+  }
+
+  if (ulDataBytes == 0) {
+    Runtime_Error(pszSrcFile, __LINE__, "PrfQueryProfileSize reported 0 bytes");
+    return;
+  }
+
+  pszBuf = xmalloc(ulDataBytes + 1, pszSrcFile, __LINE__);	// One extra for end marker
+  if (!pszBuf)
+    return;
+  l = ulDataBytes;
+  if (!PrfQueryProfileData(fmprof, FM3Str, pszLastSetups, pszBuf, &l)) {
+    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "PrfQueryProfileData");
+    xfree(pszBuf);
+    return;
+  }
+
+  if (ulDataBytes != l) {
+    Runtime_Error(pszSrcFile, __LINE__, "PrfQueryProfileData reported %u expected %u", l, ulDataBytes);
+    xfree(pszBuf);
+    return;
+  }
+
+  *(pszBuf + ulDataBytes) = 0;			// Insert end marker
+
+  psz = pszBuf;
+  if (!*psz && ulDataBytes == ulOldSetupsBytes)
+    psz += 13;			// Rarely used 1st fixed width entry prior to 3.0.7
+
+  while (*psz) {
+    pld = xmalloc(sizeof(LINKDIRS), pszSrcFile, __LINE__);
+    if (!pld) {
+      xfree(pszBuf);
+      return;
+    }
+    pld->path = xstrdup(psz, pszSrcFile, __LINE__);
+    if (!pld->path) {
+      xfree(pszBuf);
+      xfree(pld);
+      return;
+    }
+
+    // Insert at front of list - drop down will sort
+    pld->next = pFirstSetup;
+    pFirstSetup = pld;
+    // DbgMsg(pszSrcFile, __LINE__, "Inserted %s", pld->path);
+
+    if (ulDataBytes == ulOldSetupsBytes)
+      psz += 13;			// Buffers fixed width prior to 3.0.7
+    else
+      psz += strlen(psz) + 1;
+  } // while
+
+  xfree(pszBuf);
+
+  fSetupsLoaded = TRUE;
 }
 
 VOID save_setups(VOID)
 {
-  if (!loadedsetups)
+  ULONG ulBufBytes;
+  ULONG ulFillBytes;
+  ULONG l;
+  PSZ pszBuf;
+  PSZ psz;
+  LINKDIRS *pld;
+
+  if (!fSetupsLoaded)
     return;
-  PrfWriteProfileData(fmprof,
-		      FM3Str,
-		      "LastSetups", lastsetups, (ULONG) sizeof(lastsetups));
-  PrfWriteProfileData(fmprof,
-		      FM3Str, "LastSetup", &lastsetup, (ULONG) sizeof(INT));
+
+  ulBufBytes = 0;
+  for (pld = pFirstSetup; pld; pld = pld->next) {
+    ulBufBytes += strlen(pld->path) + 1;
+  } // for
+
+  if (!ulBufBytes)
+    pszBuf = NULL;
+  else {
+    // Ensure different than size prior to 3.0.7
+    ulFillBytes = ulBufBytes == ulOldSetupsBytes ? 1 : 0;
+    pszBuf = xmalloc(ulBufBytes + ulFillBytes, pszSrcFile, __LINE__);
+    if (!pszBuf)
+      return;
+
+    psz = pszBuf;
+    for (pld = pFirstSetup; pld; pld = pld->next) {
+      l = strlen(pld->path) + 1;
+      memcpy(psz, pld->path, l);
+      psz += l;
+    } // for
+    if (ulFillBytes)
+      *psz = 0;
+  }
+
+  if (!PrfWriteProfileData(fmprof,
+			   FM3Str,
+			    pszLastSetups, pszBuf, ulBufBytes)) {
+    // Win_Error(pszSrcFile, __LINE__, HWND_DESKTOP, HWND_DESKTOP, "PrfWriteProfileData");
+    ERRORID eid = WinGetLastError((HAB)0);
+    if ((eid & 0xffff) != PMERR_NOT_IN_IDX)
+      Runtime_Error(pszSrcFile, __LINE__, "PrfWriteProfileData returned %u", eid);
+  }
+
+  // Delete obsolete INI entry
+  PrfWriteProfileData(fmprof, FM3Str, "LastSetup", NULL, 0);
 }
 
-BOOL add_setup(CHAR * name)
-{
-  INT x;
+/**
+ * Add named state to setups list
+ * @return same as lookup_setup
+ */
 
-  if (!name || !*name)
-    return FALSE;
-  if (!loadedsetups)
-    load_setups();
-  for (x = 0; x < MAXNUMSETUPS; x++) {
-    if (!stricmp(lastsetups[x], name))
-      return FALSE;
-  }
-  lastsetup++;
-  if (lastsetup >= MAXNUMSETUPS)
-    lastsetup = 0;
-  strcpy(lastsetups[lastsetup], name);
-  return TRUE;
+INT add_setup(PSZ name)
+{
+  return lookup_setup(name, LS_ADD);
 }
 
-BOOL remove_setup(CHAR * name)
-{
-  INT x, y;
+/**
+ * Delete named state from setups list
+ * @return same as lookup_setup
+ */
 
-  if (!name || !*name)
-    return FALSE;
-  if (!loadedsetups)
-    load_setups();
-  for (x = 0; x < MAXNUMSETUPS; x++) {
-    if (!stricmp(lastsetups[x], name)) {
-      *lastsetups[x] = 0;
-      for (y = x + 1; y < MAXNUMSETUPS; y++)
-	strcpy(lastsetups[y - 1], lastsetups[y]);
-      *lastsetups[MAXNUMSETUPS - 1] = 0;
-      if (lastsetup >= x)
-	lastsetup--;
-      return TRUE;
-    }
-  }
-  return FALSE;
+INT remove_setup(PSZ name)
+{
+  return lookup_setup(name, LS_DELETE);
 }
 
 VOID load_udirs(VOID)

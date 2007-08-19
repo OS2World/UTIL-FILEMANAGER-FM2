@@ -798,14 +798,13 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (*dcd->previous) {
 	if (strlen(dcd->previous) > strlen(dcd->directory) &&
 	    !strnicmp(dcd->directory, dcd->previous,
-		      strlen(dcd->directory))) {
-
-	  PCNRITEM pci;
-
-	  pci = FindCnrRecord(dcd->hwndCnr,
-			      dcd->previous, NULL, TRUE, FALSE, TRUE);
+		      strlen(dcd->directory)))
+        {
+	  PCNRITEM pci = FindCnrRecord(dcd->hwndCnr,
+			               dcd->previous,
+				       NULL, TRUE, FALSE, TRUE);
 	  if (pci && (INT) pci != -1) {
-	    /* make found item current (cursored) item */
+	    // make found item current (cursored) item
 	    WinSendMsg(dcd->hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		       MPFROM2SHORT(TRUE, CRA_CURSORED));
 	    /* make sure that record shows in viewport */
@@ -3249,22 +3248,20 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else if (*dcd->directory)
 	    OpenObject(dcd->directory, Default, hwnd);
-	}
+	} // CN_ENTER
 	break;
-      }
+      } // switch mp1
       break;
-    }
+    } // if dcd
     return 0;
 
   case UM_LOADFILE:
     if (dcd && mp2) {
 
-      HWND ret;
-
-      ret = StartMLEEditor(dcd->hwndParent,
-			   (INT) mp1, (CHAR *) mp2, dcd->hwndFrame);
+      HWND ret = StartMLEEditor(dcd->hwndParent,
+			        (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
       if (mp2)
-	free((CHAR *) mp2);
+	free((CHAR *)mp2);
       return MRFROMLONG(ret);
     }
     return 0;

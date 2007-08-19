@@ -36,13 +36,16 @@
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
+  16 Aug 07 SHL Update IDM_SAVEDIRCNRSTATE logic for ticket# 109
+  18 Aug 07 SHL Rework UM_FILLSETUPLIST for new setups storage
+  19 Aug 07 SHL Move #pragma alloc_text to end of file for OpenWatcom
 
 ***********************************************************************/
 
 #define INCL_DOS
 #define INCL_WIN
 // #define INCL_WINERRORS
-#define INCL_SHLERRORS
+#define INCL_SHLERRORS			// PMERR_NOT_IN_IDX
 #define INCL_WINHELP
 #define INCL_GPI
 #define INCL_LONGLONG
@@ -65,26 +68,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(MISC8,SetToggleChecks,FindDirCnrByName,TopWindow)
-#pragma alloc_text(MISC8,TopWindowName,CountDirCnrs)
-#pragma alloc_text(MAINWND,AdjustSizeOfClient,FillClient,ChildButtonProc)
-#pragma alloc_text(MAINWND,ToolBackProc,StatusProc)
-#pragma alloc_text(MAINWND,MoveChildrenAwayFromTree,ArrangeIcons,NextChild)
-#pragma alloc_text(MAINWND,ChildFrameButtonProc)
-#pragma alloc_text(MAINWND2,CloseChildren,CountChildren,GetNextWindowPos)
-#pragma alloc_text(MAINWND2,CascadeChildren,TileChildren,ResizeChildren)
-#pragma alloc_text(MAINWND2,MinResChildren,MainFrameWndProc,MainWndProc)
-#pragma alloc_text(MAINWND2,DropDownListProc)
-#pragma alloc_text(MAINWND3,RestoreDirCnrState,SaveDirCnrState)
-#pragma alloc_text(MAINWND3,CloseDirCnrChildren,TransformSwp)
-#pragma alloc_text(MAINWND3,ResizeTools,BuildTools,CommandLineProc)
-#pragma alloc_text(MAINWND4,DriveProc,DriveBackProc,BuildDriveBarButtons,ResizeDrives)
-#pragma alloc_text(MAINWND4,LEDProc,IdealButtonProc)
-#pragma alloc_text(MAINWND5,MainWMOnce)
-#pragma alloc_text(MAINWND6,MainWMCommand)
-#pragma alloc_text(BUBBLE,MakeBubble,BubbleProc,BubbleHelp)
-#pragma alloc_text(MAINOBJ,MainObjectWndProc,MakeMainObjWin)
 
 static USHORT firsttool = 0;
 
@@ -159,12 +142,12 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			  (PVOID) & bd, (ULONG) sizeof(ULONG)))
 	bd = 3L;
       *s = (CHAR) bd + '@';
-      WinSendMsg(hwndMain, UM_SETDIR, MPFROMP(s), MPFROMLONG(1L));
+      WinSendMsg(hwndMain, UM_SETDIR, MPFROMP(s), MPFROMLONG(1));
       if (!mp1) {
 	s[3] = 0;
 	WinSendMsg(hwndMain, UM_SETDIR, MPFROMP(s), MPVOID);
       }
-      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMLONG(1L), MPFROMLONG(1L));
+      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMLONG(1), MPFROMLONG(1));
     }
     return 0;
 
@@ -2653,13 +2636,15 @@ BOOL CloseDirCnrChildren(HWND hwndClient)
  * @seealso RestoreDirCnrState
  */
 
+#define STATE_NAME_MAX_BYTES	256
+
 BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 {
   HENUM henum;
   HWND hwndChild, hwndDir, hwndC;
   ULONG numsaves = 0, flWindowAttr;
-  CHAR szPrefix[20];
-  CHAR s[80];
+  CHAR szPrefix[STATE_NAME_MAX_BYTES + 1];
+  CHAR szKey[STATE_NAME_MAX_BYTES + 80];
   CHAR szDir[CCHMAXPATH];
   SWP swp;
   BOOL fSaved = FALSE;
@@ -2688,19 +2673,19 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 	  if (*szDir) {
 	   if (driveflags[toupper(*szDir) - 'A'] & DRIVE_NOPRESCAN)
 	     continue;
-	    sprintf(s, "%sDirCnrPos.%lu", szPrefix, numsaves);
-	    PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & swp,
+	    sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, numsaves);
+	    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp,
 				sizeof(SWP));
 	    dcd =
 	      WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	    if (dcd) {
-	      sprintf(s, "%sDirCnrSort.%lu", szPrefix, numsaves);
-	      PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & dcd->sortFlags,
+	      sprintf(szKey, "%sDirCnrSort.%lu", szPrefix, numsaves);
+	      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->sortFlags,
 				  sizeof(INT));
-	      sprintf(s, "%sDirCnrFilter.%lu", szPrefix, numsaves);
-	      PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & dcd->mask,
+	      sprintf(szKey, "%sDirCnrFilter.%lu", szPrefix, numsaves);
+	      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->mask,
 				  sizeof(MASK));
-	      sprintf(s, "%sDirCnrView.%lu", szPrefix, numsaves);
+	      sprintf(szKey, "%sDirCnrView.%lu", szPrefix, numsaves);
 	      flWindowAttr = dcd->flWindowAttr;
 	      if (!fLeaveTree && (flWindowAttr & CV_TREE)) {
 		flWindowAttr &= (~(CV_TREE | CV_ICON | CV_DETAIL | CV_TEXT));
@@ -2717,11 +2702,11 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 		else
 		  flWindowAttr |= CV_NAME;
 	      }
-	      PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & flWindowAttr,
+	      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & flWindowAttr,
 				  sizeof(ULONG));
 	    }
-	    sprintf(s, "%sDirCnrDir.%lu", szPrefix, numsaves++);
-	    PrfWriteProfileString(fmprof, FM3Str, s, szDir);
+	    sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, numsaves++);
+	    PrfWriteProfileString(fmprof, FM3Str, szKey, szDir);
 	    fSaved = TRUE;
 	  }
 	}
@@ -2732,14 +2717,14 @@ BOOL SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 
   if (fSaved) {
     if (WinQueryWindowPos(hwndTree, &swp)) {
-      sprintf(s, "%sLastTreePos", szPrefix);
-      PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & swp, sizeof(SWP));
+      sprintf(szKey, "%sLastTreePos", szPrefix);
+      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, sizeof(SWP));
     }
-    sprintf(s, "%sNumDirsLastTime", szPrefix);
-    PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & numsaves, sizeof(ULONG));
+    sprintf(szKey, "%sNumDirsLastTime", szPrefix);
+    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & numsaves, sizeof(ULONG));
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swp);
-    sprintf(s, "%sMySizeLastTime", szPrefix);
-    PrfWriteProfileData(fmprof, FM3Str, s, (PVOID) & swp, sizeof(SWP));
+    sprintf(szKey, "%sMySizeLastTime", szPrefix);
+    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, sizeof(SWP));
   }
 
   return fSaved;
@@ -2788,9 +2773,9 @@ static VOID TransformSwp(PSWP pswp, double xtrans, double ytrans)
 
 static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 {
-  CHAR s[80];
+  CHAR szKey[STATE_NAME_MAX_BYTES + 80];
   CHAR szDir[CCHMAXPATH];
-  CHAR szPrefix[20];
+  CHAR szPrefix[STATE_NAME_MAX_BYTES + 2];
   HWND hwndDir, hwndC;
   SWP swp, swpO, swpN;
   ULONG size, numsaves = 0L, x;
@@ -2809,10 +2794,10 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   }
 
   size = sizeof(SWP);
-  sprintf(s, "%sMySizeLastTime", szPrefix);
+  sprintf(szKey, "%sMySizeLastTime", szPrefix);
   if (!PrfQueryProfileData(fmprof,
 			   FM3Str,
-			   s,
+			   szKey,
 			   (PVOID) & swpO,
 			   &size) ||
       size != sizeof(SWP) || !swp.cx || !swp.cy)
@@ -2820,17 +2805,17 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpO);
   }
   if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
   WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpN);
   if (swpN.fl & (SWP_MINIMIZE | SWP_HIDE))
     swpN = swpO;
   xtrans = ((double)swpO.cx * 100.0) / (double)swpN.cx;
   ytrans = ((double)swpO.cy * 100.0) / (double)swpN.cy;
   size = sizeof(SWP);
-  sprintf(s, "%sLastTreePos", szPrefix);
-  if (PrfQueryProfileData(fmprof, FM3Str, s, (PVOID) & swp, &size)) {
+  sprintf(szKey, "%sLastTreePos", szPrefix);
+  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, &size)) {
     if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
     swp.hwnd = hwndTree;
     TransformSwp(&swp, xtrans, ytrans);
     if (!fFreeTree) {
@@ -2858,29 +2843,29 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
     }
   }
   size = sizeof(ULONG);
-  sprintf(s, "%sNumDirsLastTime", szPrefix);
+  sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   if (PrfQueryProfileData(fmprof,
-			  FM3Str, s, (PVOID) & numsaves, &size) && numsaves) {
+			  FM3Str, szKey, (PVOID) & numsaves, &size) && numsaves) {
     if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
     for (x = 0; x < numsaves; x++) {
-      sprintf(s, "%sDirCnrPos.%lu", szPrefix, x);
+      sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, x);
       size = sizeof(SWP);
-      if (PrfQueryProfileData(fmprof, FM3Str, s, (PVOID) & swp, &size)) {
+      if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, &size)) {
 	if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-	  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
-	sprintf(s, "%sDirCnrDir.%lu", szPrefix, x);
+	  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+	sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, x);
 	size = sizeof(szDir);
-	if (PrfQueryProfileData(fmprof, FM3Str, s, (PVOID) szDir, &size)) {
+	if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size)) {
 	  if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+	    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  if (driveflags[toupper(*szDir) - 'A'] & DRIVE_NOPRESCAN) {
-	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+	    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	    continue;
 	  }
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,
-				      MPFROMP(szDir), MPFROMLONG(1L));
+				      MPFROMP(szDir), MPFROMLONG(1));
 	  if (hwndDir) {
 	    hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
 	    if (hwndC) {
@@ -2888,22 +2873,22 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				      QWL_USER);
 	      if (dcd) {
 		size = sizeof(INT);
-		sprintf(s, "%sDirCnrSort.%lu", szPrefix, x);
+		sprintf(szKey, "%sDirCnrSort.%lu", szPrefix, x);
 		if (PrfQueryProfileData(fmprof,
 					FM3Str,
-					s,
+					szKey,
 					(PVOID) & dcd->sortFlags,
 					&size) && size == sizeof(INT)) {
 		  if (!dcd->sortFlags)
 		    dcd->sortFlags = SORT_PATHNAME;
 		}
 		if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-		  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 		size = sizeof(MASK);
-		sprintf(s, "%sDirCnrFilter.%lu", szPrefix, x);
+		sprintf(szKey, "%sDirCnrFilter.%lu", szPrefix, x);
 		if (PrfQueryProfileData(fmprof,
 					FM3Str,
-					s,
+					szKey,
 					(PVOID) & dcd->mask, &size) && size) {
 		  if (*dcd->mask.szMask)
 		    WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
@@ -2911,13 +2896,13 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		}
 		*(dcd->mask.prompt) = 0;
 		if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-		  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 		size = sizeof(ULONG);
-		sprintf(s, "%sDirCnrView.%lu", szPrefix, x);
+		sprintf(szKey, "%sDirCnrView.%lu", szPrefix, x);
 		if (!noview) {
 		  if (PrfQueryProfileData(fmprof,
 					  FM3Str,
-					  s,
+					  szKey,
 					  (PVOID) & dcd->flWindowAttr,
 					  &size) && size == sizeof(ULONG)) {
 
@@ -2938,7 +2923,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		  }
 		}
 		if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
-		  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	      }
 	    }
 	    fRestored = TRUE;
@@ -3012,7 +2997,7 @@ VOID GetNextWindowPos(HWND hwndClient, PSWP pswp, ULONG * ulCntR,
   else {
     ulCnt = *ulCntR;
     ulNumMinChildren = *ulNumMinChildrenR;
-    if (ulCnt == (ULONG) - 1L) {
+    if (ulCnt == (ULONG) - 1) {
       ulCnt = CountChildren(hwndClient, &ulNumMinChildren);
       /* return these values to the caller for later use */
       *ulCntR = ulCnt;
@@ -3120,11 +3105,11 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
     ;
   }
   if (!fTileBackwards) {
-    ulNumCols = ulSquare - 1L;
+    ulNumCols = ulSquare - 1;
     ulNumRows = ulChildCnt / ulNumCols;
   }
   else {
-    ulNumRows = ulSquare - 1L;
+    ulNumRows = ulSquare - 1;
     ulNumCols = ulChildCnt / ulNumRows;
   }
   ulExtraCols = ulChildCnt % ulNumCols;
@@ -3204,7 +3189,7 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
 	      WinSetWindowUShort(hwndChild,
 				 QWS_YRESTORE,
 				 (USHORT) (Rectl.yTop -
-					   (ulHeight * (ulCurRow + 1L))));
+					   (ulHeight * (ulCurRow + 1))));
 	      WinSetWindowUShort(hwndChild, QWS_CXRESTORE, (USHORT) ulWidth);
 	      WinSetWindowUShort(hwndChild, QWS_CYRESTORE, (USHORT) ulHeight);
 	    }
@@ -3212,7 +3197,7 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
 	      WinSetWindowPos(hwndChild,
 			      HWND_TOP,
 			      (ulWidth * ulCurCol) + Rectl.xLeft,
-			      Rectl.yTop - (ulHeight * (ulCurRow + 1L)),
+			      Rectl.yTop - (ulHeight * (ulCurRow + 1)),
 			      ulWidth,
 			      ulHeight,
 			      SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_RESTORE);
@@ -4179,25 +4164,26 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case IDM_SAVEDIRCNRSTATE:
   case IDM_DELETEDIRCNRSTATE:
     {
-      CHAR szStateName[14];
+      CHAR szStateName[STATE_NAME_MAX_BYTES + 1];
 
       *szStateName = 0;
-      WinQueryWindowText(hwndStatelist, 13, szStateName);
+      WinQueryWindowText(hwndStatelist, STATE_NAME_MAX_BYTES, szStateName);
       bstrip(szStateName);
       // Ignore request if blank or attempting to using illegal name
       if (*szStateName && stricmp(szStateName, GetPString(IDS_STATETEXT))) {
 	if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
 	  // Save
 	  if (SaveDirCnrState(hwnd, szStateName)) {
-	    if (add_setup(szStateName)) {
+	    INT ret = add_setup(szStateName);
+	    if (ret == 0) {
 	      WinSendMsg(hwndStatelist, LM_INSERTITEM,
 			 MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
 	      save_setups();
 	    }
-	    else {
+	    else if (ret != 1) {
 	      saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 		     GetPString(IDS_WARNINGTEXT),
-		     GetPString(IDS_EXISTSASATEXT), szStateName, "state name");
+		     "\"%s\" state name add failed", szStateName);	// 15 Apr 07 SHL failed
 	      WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
 	    }
 	  }
@@ -4211,14 +4197,18 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  // Delete
 	  ULONG numsaves = 0, size, x;
-	  CHAR s[80];
+	  CHAR s[STATE_NAME_MAX_BYTES + 80];
 
-	  if (remove_setup(szStateName))
+	  INT ret = remove_setup(szStateName);
+	  if (ret == 1)
 	    save_setups();
 	  sprintf(s, "%s.NumDirsLastTime", szStateName);
 	  size = sizeof(ULONG);
-	  if (!PrfQueryProfileData
-	      (fmprof, FM3Str, s, (PVOID) & numsaves, &size)) {
+	  if (!PrfQueryProfileData(fmprof,
+				   FM3Str,
+				   s,
+				   (PVOID)&numsaves,
+				   &size)) {
 	    saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 		   GetPString(IDS_WARNINGTEXT),
 		   GetPString(IDS_DOESNTEXISTTEXT), szStateName);
@@ -4564,7 +4554,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 UM_LOADFILE,
 			 MPFROMP(pci->pszFileName),
 			 (SHORT1FROMMP(mp1) == IDM_AUTOVIEW) ?
-			 MPVOID : MPFROMLONG(1L));
+			 MPVOID : MPFROMLONG(1));
 	  }
 	}
       }
@@ -5062,7 +5052,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     WinSendMsg(WinWindowFromID(hwndUserlist, CBID_EDIT),
 	       EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendMsg(WinWindowFromID(hwndStatelist, CBID_EDIT),
-	       EM_SETTEXTLIMIT, MPFROM2SHORT(13, 0), MPVOID);
+	       EM_SETTEXTLIMIT, MPFROM2SHORT(STATE_NAME_MAX_BYTES, 0), MPVOID);
     WinSendMsg(WinWindowFromID(hwndDrivelist, CBID_EDIT),
 	       EM_SETREADONLY, MPFROM2SHORT(TRUE, 0), MPVOID);
     WinSendMsg(WinWindowFromID(hwndButtonlist, CBID_EDIT),
@@ -5453,20 +5443,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_FILLSETUPLIST:
-    WinSendMsg(hwndStatelist, LM_DELETEALL, MPVOID, MPVOID);
-    if (fUserComboBox) {
-      INT x;
-
-      if (!loadedsetups)
-	load_setups();
-      for (x = 0; x < MAXNUMSETUPS; x++) {
-	if (*lastsetups[x])
-	  WinSendMsg(hwndStatelist, LM_INSERTITEM,
-		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		     MPFROMP(lastsetups[x]));
-      }
-      WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
-    }
+    fill_setups_list();
     return 0;
 
   case UM_FILLBUTTONLIST:
@@ -5482,7 +5459,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       DosError(FERR_DISABLEHARDERR);
       hDir = HDIR_CREATE;
-      ulSearchCount = 1L;
+      ulSearchCount = 1;
       if (!DosFindFirst("*.TLS", &hDir, FILE_READONLY | FILE_ARCHIVED,
 			&findbuf, sizeof(FILEFINDBUF3),
 			&ulSearchCount, FIL_STANDARD)) {
@@ -5542,7 +5519,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      (DRIVE_IGNORE | DRIVE_INVALID))) {
 	  DosError(FERR_DISABLEHARDERR);
 	  hDir = HDIR_CREATE;
-	  ulSearchCount = 1L;
+	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
 	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			      MUST_HAVE_DIRECTORY | FILE_READONLY |
@@ -5584,7 +5561,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      (DRIVE_IGNORE | DRIVE_INVALID))) {
 	  DosError(FERR_DISABLEHARDERR);
 	  hDir = HDIR_CREATE;
-	  ulSearchCount = 1L;
+	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
 	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			      MUST_HAVE_DIRECTORY | FILE_READONLY |
@@ -5669,11 +5646,21 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  HWND hwndUL = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					SHORT1FROMMP(mp1));
 	  CHAR path[CCHMAXPATH];
+	  ULONG ul;
+
+	  switch (SHORT1FROMMP(mp1)) {
+	  case MAIN_USERLIST:
+	    ul = CCHMAXPATH;
+	    break;
+	  case MAIN_SETUPLIST:
+	    ul = STATE_NAME_MAX_BYTES;
+	    break;
+	  default:
+	    ul = 13;			// fixme to not be hardcoded
+	  }
 
 	  SetShiftState();
-	  WinQueryWindowText(WinWindowFromID(hwndUL, CBID_EDIT),
-			     ((SHORT1FROMMP(mp1) == MAIN_USERLIST) ?
-			      CCHMAXPATH : 13), path);
+	  WinQueryWindowText(WinWindowFromID(hwndUL, CBID_EDIT), ul, path);
 	  bstrip(path);
 	  if (*path) {
 	    if (SHORT1FROMMP(mp1) == MAIN_USERLIST) {
@@ -5719,14 +5706,17 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_SETUPLIST) {
 
-	      CHAR s[80];
+	      CHAR szKey[80];
 	      ULONG size, numsaves = 0;
 
 	      SetShiftState();
 	      size = sizeof(ULONG);
-	      sprintf(s, "%s.NumDirsLastTime", path);	// path is state name
-	      if (!PrfQueryProfileData
-		  (fmprof, FM3Str, s, (PVOID) & numsaves, &size))
+	      sprintf(szKey, "%s.NumDirsLastTime", path);	// path is state name
+	      if (!PrfQueryProfileData(fmprof,
+				       FM3Str,
+				       szKey,
+				       (PVOID)&numsaves,
+				       &size))
 	      {
 		if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) == PMERR_NOT_IN_IDX) {
 		  saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
@@ -5750,7 +5740,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  if (!temp) {
 		    if ((shiftstate & KC_SHIFT) != 0 || fAutoTile)
 		      PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID,
-			      MPFROMLONG(1L));
+			      MPFROMLONG(1));
 		  }
 		  else {
 		    if (!PostMsg
@@ -5853,3 +5843,24 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(MISC8,SetToggleChecks,FindDirCnrByName,TopWindow)
+#pragma alloc_text(MISC8,TopWindowName,CountDirCnrs)
+#pragma alloc_text(MAINWND,AdjustSizeOfClient,FillClient,ChildButtonProc)
+#pragma alloc_text(MAINWND,ToolBackProc,StatusProc)
+#pragma alloc_text(MAINWND,MoveChildrenAwayFromTree,ArrangeIcons,NextChild)
+#pragma alloc_text(MAINWND,ChildFrameButtonProc)
+#pragma alloc_text(MAINWND2,CloseChildren,CountChildren,GetNextWindowPos)
+#pragma alloc_text(MAINWND2,CascadeChildren,TileChildren,ResizeChildren)
+#pragma alloc_text(MAINWND2,MinResChildren,MainFrameWndProc,MainWndProc)
+#pragma alloc_text(MAINWND2,DropDownListProc)
+#pragma alloc_text(MAINWND3,RestoreDirCnrState,SaveDirCnrState)
+#pragma alloc_text(MAINWND3,CloseDirCnrChildren,TransformSwp)
+#pragma alloc_text(MAINWND3,ResizeTools,BuildTools,CommandLineProc)
+#pragma alloc_text(MAINWND4,DriveProc,DriveBackProc,BuildDriveBarButtons,ResizeDrives)
+#pragma alloc_text(MAINWND4,LEDProc,IdealButtonProc)
+#pragma alloc_text(MAINWND5,MainWMOnce)
+#pragma alloc_text(MAINWND6,MainWMCommand)
+#pragma alloc_text(BUBBLE,MakeBubble,BubbleProc,BubbleHelp)
+#pragma alloc_text(MAINOBJ,MainObjectWndProc,MakeMainObjWin)
+
