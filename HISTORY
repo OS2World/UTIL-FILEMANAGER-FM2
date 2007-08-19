@@ -5,9 +5,10 @@ New stuff's at the top.  This list is not necessarily complete.
  o Rework internals to increase file and directory limits (Steven, Gregg)
  o Rework internal sleep durations to increase performance (Gregg)
  o Rework file scanning buffer handling to increase performance (Gregg)
- o Speed up Config->Tree->Collapse before switch (Steven)
+ o Speed up Config->Tree->Collapse before switching speed (Steven)
  o Update configuration notebook scanning page (Steven)
  o Rework states logic to allow longer state names, tickets #109, #31 (Steven)
+ o Report delta time in debug messages (Steven)
 
 3.06
  o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)
