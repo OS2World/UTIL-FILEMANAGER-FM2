@@ -1,6 +1,15 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.06 
+3.07 (pending)
+ o Tweak build process (Steven)
+ o Rework internals to increase file and directory limits (Steven, Gregg)
+ o Rework internal sleep durations to increase performance (Gregg)
+ o Rework file scanning buffer handling to increase performance (Gregg)
+ o Speed up Config->Tree->Collapse before switch (Steven)
+ o Update configuration notebook scanning page (Steven)
+ o Rework states logic to allow longer state names, tickets #109, #31 (Steven)
+
+3.06
  o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)
  o Fixed ramdisk not shown in quicklist drives dropdown and drive bar drive lists (Gregg)
  o Fixed WORKPLACE_PROCESS environment variable check (Gregg)
