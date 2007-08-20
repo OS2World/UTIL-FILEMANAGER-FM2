@@ -32,6 +32,9 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   13 Aug 07 SHL Sync code with other FilesToGet usage
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  20 Aug 07 SHL Correct remaining pcil/pcir typos (we hope)
+  20 Aug 07 SHL Revert to DosSleep(0)
+  20 Aug 07 SHL Use GetMSecTimer for timing
 
 ***********************************************************************/
 
@@ -841,6 +844,9 @@ static VOID FillCnrsThread(VOID *args)
   HMQ hmq;
   BOOL notified = FALSE;
 
+  ULONG lastMSec = GetMSecTimer();
+  ULONG ul;
+
   HWND hwndLeft, hwndRight;
   CHAR szBuf[CCHMAXPATH];
   CNRINFO cnri;
@@ -1193,7 +1199,8 @@ static VOID FillCnrsThread(VOID *args)
 	    pcir->crtime.seconds = filesr[r]->crtime.twosecs * 2;
 	    pcir->crtime.minutes = filesr[r]->crtime.minutes;
 	    pcir->crtime.hours = filesr[r]->crtime.hours;
-	    if (~pcil->rc.flRecordAttr & CRA_FILTERED &&
+	    // Bypass check if already filtered on left side
+	    if (~pcir->rc.flRecordAttr & CRA_FILTERED &&
 		*cmp->dcd.mask.szMask) {
 	      if (!Filter((PMINIRECORDCORE)pcir, (PVOID)&cmp->dcd.mask)) {
 		pcil->rc.flRecordAttr |= CRA_FILTERED;
@@ -1301,20 +1308,28 @@ static VOID FillCnrsThread(VOID *args)
 	  if (!pcil->pszSubject)
 	    pcil->pszSubject = NullStr;
 	  if (!pcir->pszSubject)
-	    pcil->pszSubject = NullStr;
+	    pcir->pszSubject = NullStr;
 
 	  if (!pcil->pszDispAttr)
 	    pcil->pszDispAttr = NullStr;
 	  if (!pcir->pszDispAttr)
-	    pcil->pszDispAttr = NullStr;
+	    pcir->pszDispAttr = NullStr;
 
-	  // fixme to be time based - every 2 sec should be OK
+#if 0					// 20 Aug 07 SHL fixme to be gone
 	  if (!(cntr % 500))
 	    DosSleep(1);
 	  else if (!(cntr % 50))
-	    DosSleep(1);
-
+	    DosSleep(0);
 	  cntr++;
+#else
+	  if ((cntr++ % 500) == 0) {
+	    ul = GetMSecTimer();
+	    if (ul - lastMSec >= 1000) {
+	      lastMSec = ul;
+	      DosSleep(1);
+	    }
+	  }
+#endif
 
 	  pcil = (PCNRITEM) pcil->rc.preccNextRecord;
 	  pcir = (PCNRITEM) pcir->rc.preccNextRecord;
@@ -2439,7 +2454,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     !strcmp(realappname, FM3Str)) {
 	      TileChildren(cmp->hwndParent, TRUE);
 	    }
-	    DosSleep(32); // 05 Aug 07 GKY 64
+	    DosSleep(32);		// 05 Aug 07 GKY 64
 	    PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(COMP_COLLECT, 0), MPVOID);
 	    break;
 	  }
