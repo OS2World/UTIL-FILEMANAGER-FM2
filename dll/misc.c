@@ -501,7 +501,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
-    pfi->flTitle = CFA_CENTER;
+    pfi->flTitle = CFA_LEFT;
     pfi->pTitleData = GetPString(IDS_FILENAME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszDisplayName);
 
@@ -509,14 +509,9 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_LEFT;
-    pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
+    pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
     pfi->pTitleData = GetPString(IDS_LNAME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszLongName);
-
-    // Store the current pfi value as that will be used to indicate the
-    // last column in the lefthand container window (we have a splitbar)
-
-    pfiLastLeftCol = pfi;
 
     // Fill in column info for subjects
 
@@ -524,10 +519,15 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
     if (isCompCnr)
       pfi->flData |= CFA_FIREADONLY;
-    pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
+    pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
     pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
 				  GetPString(IDS_SUBJ);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
+
+    // Store the current pfi value as that will be used to indicate the
+    // last column in the lefthand container window (we have a splitbar)
+
+    pfiLastLeftCol = pfi;
 
     // Fill in column information for the file size
 
