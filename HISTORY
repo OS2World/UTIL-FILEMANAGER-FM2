@@ -9,6 +9,8 @@ New stuff's at the top.  This list is not necessarily complete.
  o Update configuration notebook scanning page (Steven)
  o Rework states logic to allow longer state names, tickets #109, #31 (Steven)
  o Report delta time in debug messages (Steven)
+ o Fixed the restore of the settings under "Include in details view" on the "DirView"
+   tab of the configuration notebook, Ticket 118/71 (John)
 
 3.06
  o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)
