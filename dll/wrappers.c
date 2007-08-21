@@ -10,6 +10,7 @@
   22 Jul 06 SHL Baseline
   29 Jul 06 SHL Add xgets_stripped
   18 Aug 06 SHL Correct Runtime_Error line number report
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -23,7 +24,6 @@
 #include "fm3dll.h"
 #include "fm3str.h"
 
-#pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc)
 
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 	   UINT uiLineNumber)
@@ -133,3 +133,6 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
 
   return psz;
 }
+
+#pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc, xstrdup)
+

@@ -19,6 +19,7 @@
   20 Apr 07 SHL Avoid spurious add_udir error reports
   16 Aug 07 SHL Update add_setups for ticket# 109
   19 Aug 07 SHL Correct load_setups error reporting
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -43,13 +44,6 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(WALKER,FillPathListBox,WalkDlgProc,TextSubProc)
-#pragma alloc_text(WALKER,WalkAllDlgProc,WalkCopyDlgProc)
-#pragma alloc_text(WALKER,WalkMoveDlgProc,WalkExtractDlgProc,WalkTargetDlgProc)
-#pragma alloc_text(WALK2,WalkTwoDlgProc,WalkTwoCmpDlgProc,WalkTwoSetDlgProc)
-#pragma alloc_text(UDIRS,add_udir,remove_udir,remove_ldir,load_udirs)
-#pragma alloc_text(UDIRS,save_udirs,load_setup,save_setup,add_setup)
-#pragma alloc_text(UDIRS,remove_setup)
 
 typedef struct
 {
@@ -1574,3 +1568,11 @@ MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
   }
   return WalkTwoDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(WALKER,FillPathListBox,WalkDlgProc,TextSubProc)
+#pragma alloc_text(WALKER,WalkAllDlgProc,WalkCopyDlgProc)
+#pragma alloc_text(WALKER,WalkMoveDlgProc,WalkExtractDlgProc,WalkTargetDlgProc)
+#pragma alloc_text(WALK2,WalkTwoDlgProc,WalkTwoCmpDlgProc,WalkTwoSetDlgProc)
+#pragma alloc_text(UDIRS,add_udir,remove_udir,remove_ldir,load_udirs)
+#pragma alloc_text(UDIRS,save_udirs,load_setup,save_setup,add_setup)
+#pragma alloc_text(UDIRS,remove_setup)

@@ -21,6 +21,7 @@
   16 Jun 07 SHL Update for OpenWatcom
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -48,9 +49,6 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(MASSACTION,MassAction)
-#pragma alloc_text(ACTION,Action)
-#pragma alloc_text(UNDO,FreeUndo,Undo)
 
 #ifdef UNDO
 
@@ -1639,3 +1637,6 @@ VOID MassAction(VOID * args)
     DosPostEventSem(CompactSem);
   }
 }
+#pragma alloc_text(MASSACTION,MassAction)
+#pragma alloc_text(ACTION,Action)
+#pragma alloc_text(UNDO,FreeUndo,Undo)
