@@ -18,6 +18,7 @@
   15 Jul 07 GKY Allow subject edit of up to 256 chars
   03 Aug 07 GKY Remove surrious error message
   06 Aug 07 GKY Increase Subject EA to 1024
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -40,8 +41,6 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(EAS,DisplayEAsProc,SaveEA,HexDumpEA,CheckEA,AddEAProc)
-#pragma alloc_text(EAS1,HexDump,GetFileEAs,Free_FEAList)
 
 typedef struct
 {
@@ -1398,3 +1397,7 @@ VOID Free_FEAList(HOLDFEA * pFEA)
   }
   DosPostEventSem(CompactSem);
 }
+
+#pragma alloc_text(EAS,DisplayEAsProc,SaveEA,HexDumpEA,CheckEA,AddEAProc)
+#pragma alloc_text(EAS1,HexDump,GetFileEAs,Free_FEAList)
+

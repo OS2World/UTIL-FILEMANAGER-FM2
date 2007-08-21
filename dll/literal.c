@@ -14,6 +14,7 @@
   01 Aug 04 SHL Rework fixup to avoid overflows
   16 Jun 06 SHL liternal: comments
   22 Jul 06 SHL Check more run time errors
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -31,8 +32,6 @@
 static PSZ pszSrcFile = __FILE__;
 
 static INT index(const CHAR * s, const CHAR c);
-
-#pragma alloc_text(LITERAL,literal,index,fixup,wildcard)
 
 /* Get index of char in string
  * @parm s string to search
@@ -297,3 +296,6 @@ PSZ fixup(const PCH pachIn, PSZ pszOutBuf, const UINT cBufBytes,
   *pchOut = 0;
   return pszOutBuf;
 }
+
+#pragma alloc_text(LITERAL,literal,index,fixup,wildcard)
+
