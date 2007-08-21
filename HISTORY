@@ -9,8 +9,23 @@ New stuff's at the top.  This list is not necessarily complete.
  o Update configuration notebook scanning page (Steven)
  o Rework states logic to allow longer state names, tickets #109, #31 (Steven)
  o Report delta time in debug messages (Steven)
+ o Improved container load times by increasing the number of files processed in each
+   pass; "FileBuf" is now settable most places (See readme since most will need to
+   reset this manually). (Gregg)
+ o Added BldFullPathName cleaned up comp dirs code fix right left misalignment(Steven)
+ o Added BldQuotedFileName and BldQuotedFullPathName to streamline code. (Steven, Gregg)
+ o Increased limit on Subject EA to 1024 from 40. (Gregg)
+ o Corrected dir sizes accel key to ctrl + z. (Gregg)
+ o Fixed addition of ff in Hex notation by archiver editor. (John)
+ o Updated build instructions on FM/2 Wiki. (David)
+ o Dir sizes correct some sizing and positioning issues. (Steve)
+ o Removed error message in eas.c which caused seek and scan for text including eas to fail on
+   read only files. (Gregg)
+ o Fixed unnecessary menu item removal when FM/2 is run as the WPS.(Gregg)
  o Fixed the restore of the settings under "Include in details view" on the "DirView"
    tab of the configuration notebook, Ticket 118/71 (John)
+ o Subject column can be moved to left side of split bar in directory container 
+   and/or sized which will truncate long subjects (Gregg)
 
 3.06
  o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)
@@ -1285,3 +1300,4 @@ New stuff's at the top.  This list is not necessarily complete.
    Still, if you used 1.x you should feel at home.
 
 $Id$
+

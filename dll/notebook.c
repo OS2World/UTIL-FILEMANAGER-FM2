@@ -18,6 +18,7 @@
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   13 Aug 07 SHL Rework FilesToGet min/max to match how DosFindFirst/Next works
   19 Aug 07 SHL Sync with SaveDirCnrState mods
+  21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
 
 ***********************************************************************/
 
@@ -593,7 +594,7 @@ MRESULT EXPENTRY CfgTSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	WinCheckButton(hwnd, CFG6_SORTNAME, TRUE);
       if (TreesortFlags & SORT_REVERSE)
-	WinCheckButton(hwnd, CFG6_SORTREVERSE, TRUE);
+        WinCheckButton(hwnd, CFG6_SORTREVERSE, TRUE);
     }
     return 0;
 
@@ -1340,6 +1341,10 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_INITDLG:
+    WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETTEXTLIMIT,
+		      MPFROMSHORT(8), MPVOID);
+    WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_OVERRIDESETLIMITS,
+		      MPFROMLONG(1000), MPFROMLONG(50));
     WinSendDlgItemMsg(hwnd,
 		      CFG5_FILTER,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
@@ -1393,6 +1398,10 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
       strcpy(mask.prompt, GetPString(IDS_DEFDIRFILTERTITLETEXT));
       WinSetDlgItemText(hwnd, CFG5_FILTER, mask.szMask);
+      WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, fSubjectInLeftPane);
+      WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, fSubjectLengthMax);
+      WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETCURRENTVALUE,
+		      MPFROMLONG(SubjectDisplayWidth), MPVOID);
     }
     return 0;
 
@@ -1518,9 +1527,37 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "DetailsAttr",
 			&detailsattr, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-			&detailsattr, sizeof(BOOL));
+                        &detailsattr, sizeof(BOOL));
+    fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
+    PrfWriteProfileData(fmprof, appname, "SubjectInLeftPane",
+			&fSubjectInLeftPane, sizeof(BOOL));
+    PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectInLeftPane",
+                        &fSubjectInLeftPane, sizeof(BOOL));
+    fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
+    PrfWriteProfileData(fmprof, appname, "SubjectLengthMax",
+			&fSubjectInLeftPane, sizeof(BOOL));
+    PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectLengthMax",
+			&fSubjectInLeftPane, sizeof(BOOL));
     *mask.prompt = 0;
     PrfWriteProfileData(fmprof, appname, "DirFilter", &mask, sizeof(MASK));
+    {
+        if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
+        WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
+			MPFROMP(&SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
+        if (SubjectDisplayWidth < 50)
+          SubjectDisplayWidth  = 0;
+        else if (SubjectDisplayWidth > 1000)
+          SubjectDisplayWidth = 1000;
+        }
+        else
+          SubjectDisplayWidth  = 0;
+        PrfWriteProfileData(fmprof,
+                            appname, "SubjectDisplayWidth",
+                            &SubjectDisplayWidth, sizeof(ULONG));
+        PrfWriteProfileData(fmprof,
+                            appname, "DirCnr.SubjectDisplayWidth",
+                            &SubjectDisplayWidth, sizeof(ULONG));
+    }
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);

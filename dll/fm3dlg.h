@@ -16,6 +16,7 @@
   23 Sep 06 GKY Add Commands enhancements
   02 Jan 07 GKY Add always paths opt to extract
   07 Jan 07 GKY Add remember search flags to seek and scan
+  21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
 
 ***********************************************************************/
 
@@ -712,6 +713,9 @@
 #define CFG5_SHOWCRTIME 								25518
 #define CFG5_FILTER 										25519
 #define CFG5_EXTERNALCOLLECTOR					25520
+#define CFG5_SUBJECTLENGTHMAX                                                           25521
+#define CFG5_SUBJECTDISPLAYWIDTH                                                        25522
+#define CFG5_SUBJECTINLEFTPANE                                                          25523
 
 #define CFGTS_FRAME                     25599
 

@@ -152,6 +152,15 @@ the slowest view for a container control to maintain.
 :hp6.Mini Icons:ehp6. is a toggle controlling whether icons are shown
 full size or in miniature in views that show icons.
 :p.
+The :hp6.Subject Column Settings:ehp6. section allows you to set the width of
+of the subject column which can be quite wide if you have any long subjects
+in a directory. The :hp6.Subject Width:ehp6. spin button will show 0 if the
+:hp6.Subject Max Width:ehp6. button (which sets the column to the width of
+the longest subject in the directory) is selected. In addition you can move the
+subject column to the left side of the slide bar by selecting :hp6.Subject
+Left:ehp6.
+
+:p.
 The :hp6.Field Titles:ehp6. group (analogous to the Views->Details Setup
 submenu) allows you to control what is shown in a Details view. Each
 possible field in the details view is shown. If the field is checked,
@@ -322,7 +331,7 @@ to look into.
 :hp6.Collapse before switch:ehp6. makes the Drive Tree first collapse
 all expanded branches in the tree before switching because of one of the
 two above switch events.
-This option is will significantly slow down switching
+This option will significantly slow down switching
 if you a large number of directories in the Drive Tree.
 :p.
 :hp6.Expand curr. after switch:ehp6. causes the Drive Tree to expand

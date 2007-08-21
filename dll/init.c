@@ -30,6 +30,7 @@
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   18 Aug 07 JBS Added code to read Details* keys from the INI file (Ticket 118)
   19 Aug 07 SHL Ensure FilesToGet in valid range
+  21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
 
 ***********************************************************************/
 
@@ -1271,7 +1272,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "ContainerType", (PVOID) & ulCnrType,
 		      &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, appname, "FilesToGet", (PVOID)&FilesToGet,
+  PrfQueryProfileData(fmprof, appname, "FilesToGet", (PVOID) &FilesToGet,
 		      &size);
   if (FilesToGet < FILESTOGET_MIN)
     FilesToGet = FILESTOGET_MIN;
@@ -1318,7 +1319,20 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DetailsIcon", (PVOID) &detailsicon,
+                      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SubjectInLeftPane", (PVOID) &fSubjectInLeftPane,
+                      &size);
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, appname, "SubjectDisplayWidth", (PVOID) &SubjectDisplayWidth,
 		      &size);
+  if (SubjectDisplayWidth < 50)
+    SubjectDisplayWidth = 0;
+  else if (SubjectDisplayWidth > 1000)
+    SubjectDisplayWidth = 1000;
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SubjectLengthMax", (PVOID) &fSubjectLengthMax,
+                      &size);
 
   /* load pointers and icons we use */
   hptrArrow = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE);

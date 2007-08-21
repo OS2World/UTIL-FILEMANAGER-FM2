@@ -59,6 +59,7 @@
   18 Aug 07 SHL Update for ticket# 31 - states length
   19 Aug 07 SHL Move FILESTOGET_MIN/MAX here
   19 Aug 07 SHL Update SaveDirCnrState return
+  21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
 
 ***********************************************************************/
 
@@ -1379,10 +1380,11 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fLookInDir, fSwitchTree, fSwitchTreeOnFocus, fDrivebar,
   fSwitchTreeExpand, fCollapseFirst, fFilesInTree, fNoDead,
   fThreadNotes, fOkayMinimize, fRunning, fDullMin, fBlueLED,
-  fViewChild, fShowEnv, fLeaveTree,  fNoFoldMenu,
+  fViewChild, fShowEnv, fLeaveTree, fNoFoldMenu, fSubjectInLeftPane,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
-  fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM;
+  fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
+  fSubjectLengthMax;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslongname, detailsea, detailssize, detailssubject,
   detailslwdate, detailslwtime, detailsattr, detailsicon;
@@ -1426,7 +1428,7 @@ DATADEF FILE *LogFileHandle;
 #define FILESTOGET_MIN  256
 #define FILESTOGET_MAX  4096
 
-DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL;
+DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL, SubjectDisplayWidth;
 DATADEF long prnwidth, prnlength, prntmargin, prnbmargin, prnlmargin,
   prnrmargin, prnspacing, prntabspaces;
 DATADEF BOOL prnpagenums, prnformat, prnformfeedbefore, prnformfeedafter,

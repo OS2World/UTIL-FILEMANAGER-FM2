@@ -28,6 +28,7 @@
   19 Jun 07 SHL Update ABT_FRAME to include netlabs URL and built with OpenWatcom
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   13 Aug 07 SHL Tweak scanning page
+  21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
 
 ***********************************************************************/
 
@@ -1618,6 +1619,7 @@ BEGIN
         GROUPBOX        "View type:", -1, 4, 90, 108, 48
         GROUPBOX        "Include in detail view:", -1, 4, 16, 236, 72, NOT
                         WS_GROUP
+        GROUPBOX        "Subject Column Settings:", -1, 120, 90, 110, 48, NOT WS_GROUP
         AUTORADIOBUTTON "Icon", CFG5_ICON, 12, 118, 42, 10,
                         BS_NOCURSORSELECT | WS_GROUP | WS_TABSTOP
         AUTORADIOBUTTON "Name", CFG5_NAME, 12, 106, 42, 10,
@@ -1627,6 +1629,8 @@ BEGIN
         AUTORADIOBUTTON "Text", CFG5_TEXT, 62, 106, 42, 10,
                         BS_NOCURSORSELECT | WS_TABSTOP
         AUTOCHECKBOX    "MiniIcons", CFG5_MINIICONS, 12, 94, 58, 10
+        AUTOCHECKBOX    "Subject Left", CFG5_SUBJECTINLEFTPANE, 128, 118, 66, 10
+        AUTOCHECKBOX    "Subject Max Width", CFG5_SUBJECTLENGTHMAX, 128, 106, 66, 10
         AUTOCHECKBOX    "Field Titles", CFG5_SHOWTITLES, 12, 68, 66, 10,
                         WS_GROUP
         AUTOCHECKBOX    "Icons", CFG5_SHOWICON, 12, 56, 66, 10
@@ -1641,11 +1645,16 @@ BEGIN
         AUTOCHECKBOX    "LA Times", CFG5_SHOWLATIME, 164, 68, 66, 10
         AUTOCHECKBOX    "CR Dates", CFG5_SHOWCRDATE, 164, 56, 66, 10
         AUTOCHECKBOX    "CR Times", CFG5_SHOWCRTIME, 164, 44, 66, 10
+        LTEXT           "Subject Width", -1, 128, 92, 45, 12, NOT WS_GROUP
+        CONTROL         "", CFG5_SUBJECTDISPLAYWIDTH, 175, 96, 45, 12, WC_SPINBUTTON,
+                        SPBS_ALLCHARACTERS  | SPBS_MASTER |
+                        SPBS_JUSTCENTER | WS_TABSTOP | SPBS_FASTSPIN |
+                        WS_VISIBLE
         ENTRYFIELD      "", CFG5_FILTER, 45, 4, 192, 8, ES_MARGIN |
                         ES_READONLY | WS_GROUP
-        PUSHBUTTON      "~Help", IDM_HELP, 168, 98, 40, 14, BS_NOPOINTERFOCUS |
+        PUSHBUTTON      "~Help", IDM_HELP, 250, 68, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
-        PUSHBUTTON      "~Undo", IDM_UNDO, 168, 116, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Undo", IDM_UNDO, 250, 85, 40, 14, BS_NOPOINTERFOCUS
     END
 END
 
