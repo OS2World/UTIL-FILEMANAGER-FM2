@@ -21,6 +21,7 @@
   30 Jul 06 SHL Avoid warnings when editing new definition
   22 Mar 07 GKY Use QWL_USER
   16 Jun 07 SHL Update for OpenWatcom
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -43,11 +44,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(AVV,EditArchiverDefinition,free_and_strdup_from_window)
-#pragma alloc_text(AVV,get_int_from_window,get_int2_from_window)
-#pragma alloc_text(AVV,get_long_from_window,get_int3_from_window)
-#pragma alloc_text(AVV,get_int4_from_window)
 
 static PSZ checkfile(PSZ file, INT * error);
 static BOOL check_archiver(HWND hwnd, ARC_TYPE * info);
@@ -936,3 +932,8 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(AVV,EditArchiverDefinition,free_and_strdup_from_window)
+#pragma alloc_text(AVV,get_int_from_window,get_int2_from_window)
+#pragma alloc_text(AVV,get_long_from_window,get_int3_from_window)
+#pragma alloc_text(AVV,get_int4_from_window)

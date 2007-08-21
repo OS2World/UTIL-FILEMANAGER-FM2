@@ -19,6 +19,7 @@
   23 Mar 07 GKY Replace doesn't change item position
   23 Mar 07 GKY Okay fails silently when item not changed
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -48,9 +49,6 @@ COMMAND;
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(COMMAND,command_title,free_commands,add_command,kill_command)
-#pragma alloc_text(COMMAND,CommandDlgProc,EditCommands,ReOrderProc,CommandTextProc)
 
 MRESULT EXPENTRY CommandTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -963,3 +961,6 @@ VOID EditCommands(HWND hwnd)
 	    hwnd, CommandDlgProc, FM3ModHandle, CMD_FRAME, MPFROMP(&hwnd));
   stop = 0;
 }
+
+#pragma alloc_text(COMMAND,command_title,free_commands,add_command,kill_command)
+#pragma alloc_text(COMMAND,CommandDlgProc,EditCommands,ReOrderProc,CommandTextProc)

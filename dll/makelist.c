@@ -12,6 +12,7 @@
   22 Jul 06 SHL Use Runtime_Error
   22 Jul 06 SHL AddToList optimize
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -28,9 +29,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(MAKELIST,AddToList,AddToFileList,BuildList,FreeListInfo,FreeList)
-#pragma alloc_text(MAKELIST,SortList,BuildArcList,RemoveFromList,CombineLists)
 
 VOID SortList(LISTINFO * li)
 {
@@ -283,3 +281,6 @@ CHAR **CombineLists(CHAR ** prime, CHAR ** add)
   }
   return prime;
 }
+
+#pragma alloc_text(MAKELIST,AddToList,AddToFileList,BuildList,FreeListInfo,FreeList)
+#pragma alloc_text(MAKELIST,SortList,BuildArcList,RemoveFromList,CombineLists)

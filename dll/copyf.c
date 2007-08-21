@@ -15,6 +15,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   28 May 05 SHL Drop debug code
   14 Jul 06 SHL Use Runtime_Error
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -44,11 +45,6 @@ HOBJECT APIENTRY WinMoveObject(HOBJECT hObjectofObject,
 HOBJECT APIENTRY WinCopyObject(HOBJECT hObjectofObject,
 			       HOBJECT hObjectofDest, ULONG ulReserved);
 #endif
-
-#pragma alloc_text(LONGNAMES,TruncName,GetLongName,WriteLongName)
-#pragma alloc_text(LONGNAMES,ZapLongName,AdjustWildcardName)
-#pragma alloc_text(COPYF,default_disk,docopyf)
-#pragma alloc_text(UNLINKF,unlinkf,unlink_allf,make_deleteable,wipeallf)
 
 char *MakeTempName(char *buffer)
 {
@@ -894,3 +890,8 @@ INT unlinkf(CHAR * string, ...)
   }
   return 0;
 }
+
+#pragma alloc_text(LONGNAMES,TruncName,GetLongName,WriteLongName)
+#pragma alloc_text(LONGNAMES,ZapLongName,AdjustWildcardName)
+#pragma alloc_text(COPYF,default_disk,docopyf)
+#pragma alloc_text(UNLINKF,unlinkf,unlink_allf,make_deleteable,wipeallf)

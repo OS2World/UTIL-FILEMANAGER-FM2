@@ -27,6 +27,7 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limit
   19 Apr 07 SHL Use FreeDragInfoData
   19 Apr 07 SHL Add more drag/drop error checking
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -46,8 +47,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(MISC9,quick_find_type,find_type)
 
 static void free_arc_type(ARC_TYPE * pat);
 static void fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect);
@@ -237,8 +236,6 @@ static void free_arc_type(ARC_TYPE * pat)
 }
 
 static UINT cur_line_num;	// Input file line counter
-
-#pragma alloc_text(AVL,load_archivers, get_line_strip_comments, get_line_strip_white)
 
 //=== get_line_strip_comments() read line, strip comments and whitespace ===
 
@@ -541,8 +538,6 @@ INT load_archivers(VOID)
 }
 
 #define TEST_DRAG 0			// fixme to be gone or to work
-
-#pragma alloc_text(FMARCHIVE,SBoxDlgProc,SDlgListboxSubclassProc)
 
 static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 						MPARAM mp1, MPARAM mp2)
@@ -1031,8 +1026,6 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
    31-02-98  23:55              5
  */
 
-#pragma alloc_text(ARCCNRS,ArcDateTime)
-
 BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
 {
   INT x;
@@ -1255,3 +1248,8 @@ BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
   }
   return ret;
 }
+
+#pragma alloc_text(MISC9,quick_find_type,find_type)
+#pragma alloc_text(AVL,load_archivers, get_line_strip_comments, get_line_strip_white)
+#pragma alloc_text(FMARCHIVE,SBoxDlgProc,SDlgListboxSubclassProc)
+#pragma alloc_text(ARCCNRS,ArcDateTime)

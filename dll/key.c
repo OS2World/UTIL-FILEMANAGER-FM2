@@ -8,9 +8,10 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004 Steven H. Levine
 
-  Revisions	
+  Revisions
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -32,7 +33,6 @@
 #include "version.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(ABOUT,AboutDlgProc,AuthorDlgProc)
 
 MRESULT EXPENTRY AuthorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -312,3 +312,5 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(ABOUT,AboutDlgProc,AuthorDlgProc)

@@ -22,6 +22,7 @@
   07 Jan 07 GKY Move error strings etc. to string file
   18 Feb 07 GKY Add more drive types and icons
   16 Jun 07 SHL Update for OpenWatcom
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -40,14 +41,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(VALID,CheckDrive,IsRoot,IsFile,IsFullName,needsquoting)
-#pragma alloc_text(VALID,IsValidDir,IsValidDrive,MakeValidDir,IsVowel)
-#pragma alloc_text(VALID,IsFileSame,IsNewer,TestDates,RootName,MakeFullName)
-#pragma alloc_text(VALID,IsExecutable,IsBinary,IsDesktop,ParentIsDesktop)
-#pragma alloc_text(FILLFLAGS,FillInDriveFlags,assign_ignores)
-#pragma alloc_text(FILLFLAGS,ArgDriveFlags,DriveFlagsOne)
-#pragma alloc_text(FINDDESK,GetDesktopName)
 
 APIRET MakeFullName(char *pszFileName)
 {
@@ -942,3 +935,11 @@ VOID GetDesktopName(CHAR * objectpath, ULONG size)
     }
   }
 }
+
+#pragma alloc_text(VALID,CheckDrive,IsRoot,IsFile,IsFullName,needsquoting)
+#pragma alloc_text(VALID,IsValidDir,IsValidDrive,MakeValidDir,IsVowel)
+#pragma alloc_text(VALID,IsFileSame,IsNewer,TestDates,RootName,MakeFullName)
+#pragma alloc_text(VALID,IsExecutable,IsBinary,IsDesktop,ParentIsDesktop)
+#pragma alloc_text(FILLFLAGS,FillInDriveFlags,assign_ignores)
+#pragma alloc_text(FILLFLAGS,ArgDriveFlags,DriveFlagsOne)
+#pragma alloc_text(FINDDESK,GetDesktopName)

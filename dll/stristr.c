@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003, 2007 Steven H.Levine
+
+  Case insensitive strings
+
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+
+***********************************************************************/
+
 #define INCL_DOS
 
 #include <os2.h>
@@ -5,8 +19,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-
-#pragma alloc_text(MISC8,stristr,strnstr,strnistr,findstring)
 
 CHAR *stristr(register CHAR * t, CHAR * s)
 {
@@ -128,3 +140,5 @@ CHAR *findstring(CHAR * findthis, ULONG lenthis, CHAR * findin,
   } while (lenin && lenthis2);
   return (lenthis2) ? NULL : in - lenthis;
 }
+
+#pragma alloc_text(MISC8,stristr,strnstr,strnistr,findstring)

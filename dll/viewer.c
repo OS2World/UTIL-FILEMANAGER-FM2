@@ -12,6 +12,7 @@
   17 Jul 06 SHL Use Runtime_Error
   31 Aug 06 SHL Sync with disable_menuitem changes
   30 Mar 07 GKY Remove GetPString for window class names
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -33,9 +34,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(VIEWER,MLEEditorProc,MLESubProc)
-#pragma alloc_text(STARTUP,StartMLEEditor)
 
 #define hwndMLE WinWindowFromID(hwnd,MLE_MLE)
 
@@ -1183,3 +1181,6 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(VIEWER,MLEEditorProc,MLESubProc)
+#pragma alloc_text(STARTUP,StartMLEEditor)

@@ -12,6 +12,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   03 Nov 06 SHL Count thread usage
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -34,8 +35,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(UNDELETE,FillUndelListThread,UndeleteDlgProc)
 
 struct tempstruct
 {
@@ -476,3 +475,5 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(UNDELETE,FillUndelListThread,UndeleteDlgProc)

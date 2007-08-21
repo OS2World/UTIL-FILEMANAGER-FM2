@@ -18,6 +18,7 @@
   12 May 07 SHL Pass ulItemsToUnHilite to UnHilite
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -52,10 +53,6 @@ typedef struct
 PERSON1DATA;
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(PERSON11,MainFrameWndProc2,MainWndProc2)
-#pragma alloc_text(PERSON12,StartFM32,MainWMOnce2)
-#pragma alloc_text(PERSON13,MainWMCommand2)
 
 static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
 					  MPARAM mp2)
@@ -1414,3 +1411,7 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
   }
   return hwndFrame;
 }
+
+#pragma alloc_text(PERSON11,MainFrameWndProc2,MainWndProc2)
+#pragma alloc_text(PERSON12,StartFM32,MainWMOnce2)
+#pragma alloc_text(PERSON13,MainWMCommand2)

@@ -10,6 +10,7 @@
 
   17 Jul 06 SHL Use Runtime_Error
   22 Mar 06 GKY Use QWL_USER
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -29,8 +30,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(MENU,SetIconDlgProc)
 
 MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -115,3 +114,5 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(MENU,SetIconDlgProc)

@@ -11,6 +11,7 @@
   28 May 05 SHL Use saymsg
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -27,8 +28,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FMINPUT,InputDlgProc)
 
 MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -90,3 +89,5 @@ MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(FMINPUT,InputDlgProc)

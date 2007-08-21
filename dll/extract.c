@@ -12,6 +12,7 @@
   20 Dec 06 GKY Added checkbox to make default extract with directories
   22 Mar 07 GKY Use QWL_USER
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -30,8 +31,6 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-
-#pragma alloc_text(FMEXTRACT,ExtractTextProc,ExtractDlgProc)
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -407,3 +406,5 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(FMEXTRACT,ExtractTextProc,ExtractDlgProc)

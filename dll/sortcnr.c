@@ -11,6 +11,7 @@
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Rework with ULONGLONG
   22 Mar 07 GKY Use QWL_USER
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -23,8 +24,6 @@
 #include <string.h>
 
 #include "fm3dll.h"
-
-#pragma alloc_text(SORTCNR,SortCnr,SortTreeCnr,SortDirCnr,SortCollectorCnr)
 
 SHORT APIENTRY SortTreeCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
 			   PVOID pStorage)
@@ -197,3 +196,5 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
   }
   return (SHORT) stricmp(pCI1->pszFileName, pCI2->pszFileName);
 }
+
+#pragma alloc_text(SORTCNR,SortCnr,SortTreeCnr,SortDirCnr,SortCollectorCnr)

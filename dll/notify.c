@@ -12,6 +12,7 @@
   22 Jul 06 SHL Check more run time errors
   30 Mar 07 GKY Remove GetPString for window class names
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -37,11 +38,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(NOTIFY,Notify,NotifyWndProc,StartNotify)
-#pragma alloc_text(NOTIFY,NotifyThread,NotifyError)
-#pragma alloc_text(NOTIFY2,AddNote,NoteThread,NoteWndProc)
-#pragma alloc_text(NOTIFY3,StartNotes,EndNote,HideNote,ShowNote)
 
 static HWND hwndNotify;
 
@@ -512,3 +508,8 @@ VOID HideNote(VOID)
 		    0,
 		    0, 0, 0, SWP_MINIMIZE | SWP_ZORDER | SWP_FOCUSDEACTIVATE);
 }
+
+#pragma alloc_text(NOTIFY,Notify,NotifyWndProc,StartNotify)
+#pragma alloc_text(NOTIFY,NotifyThread,NotifyError)
+#pragma alloc_text(NOTIFY2,AddNote,NoteThread,NoteWndProc)
+#pragma alloc_text(NOTIFY3,StartNotes,EndNote,HideNote,ShowNote)

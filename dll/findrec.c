@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003, 2007 Steven H.Levine
+
+  Find records
+
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+
+***********************************************************************/
+
 #define INCL_WIN
 
 #include <os2.h>
@@ -6,8 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "fm3dll.h"
-
-#pragma alloc_text(FINDREC,FindCnrRecord,FindParentRecord,ShowCnrRecord)
 
 PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
 		       BOOL partial, BOOL partmatch, BOOL noenv)
@@ -123,3 +135,5 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
 	     CM_SCROLLWINDOW,
 	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xLeft - 4));
 }
+
+#pragma alloc_text(FINDREC,FindCnrRecord,FindParentRecord,ShowCnrRecord)

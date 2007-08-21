@@ -13,6 +13,7 @@
   19 Oct 06 GKY Rework replace logic
   18 Feb 07 GKY Move error messages etc to string file
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 **************************************************************************************/
 
@@ -59,9 +60,6 @@ static LINKASSOC *asshead = NULL, *asstail = NULL;
 static BOOL assloaded = FALSE, replace = FALSE;
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(ASSOC2,free_commands,load_associations,save_associations)
-#pragma alloc_text(ASSOC2,ExecAssociation,AssocTextProc)
 
 MRESULT EXPENTRY AssocTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -244,8 +242,6 @@ VOID save_associations(VOID)
     fclose(fp);
   }
 }
-
-#pragma alloc_text(ASSOC,add_association,kill_association,AssocDlgProc,EditAssociations)
 
 LINKASSOC *add_association(ASSOC * addme)
 {
@@ -937,3 +933,7 @@ VOID EditAssociations(HWND hwnd)
   WinDlgBox(HWND_DESKTOP, hwnd, AssocDlgProc, FM3ModHandle, ASS_FRAME, NULL);
   stop = 0;
 }
+
+#pragma alloc_text(ASSOC2,free_commands,load_associations,save_associations)
+#pragma alloc_text(ASSOC2,ExecAssociation,AssocTextProc)
+#pragma alloc_text(ASSOC,add_association,kill_association,AssocDlgProc,EditAssociations)

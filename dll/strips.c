@@ -10,6 +10,7 @@
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   26 Jul 06 SHL Add chop_at_crnl
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -17,8 +18,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
-#pragma alloc_text(MISC8,chop_at_crnl,convert_nl_to_nul,strip_trail_char,strip_lead_char)
 
 VOID chop_at_crnl(PSZ pszSrc)
 {
@@ -70,3 +69,5 @@ void strip_lead_char(char *pszStripChars, char *pszSrc)
       memmove(pszSrc, psz, strlen(psz) + 1);
   }
 }
+
+#pragma alloc_text(MISC8,chop_at_crnl,convert_nl_to_nul,strip_trail_char,strip_lead_char)

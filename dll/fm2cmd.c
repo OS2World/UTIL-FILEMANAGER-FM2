@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003, 2007 Steven H.Levine
+
+  Command processing
+
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+
+***********************************************************************/
+
 #define INCL_DOS
 #define INCL_WIN
 
@@ -12,7 +26,6 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA2)
-#pragma alloc_text(FM2CMD,FM2Command,fullname,parse)
 
 static VOID fullname(CHAR * directory, CHAR * name)
 {
@@ -113,3 +126,5 @@ BOOL FM2Command(CHAR * directory, CHAR * command)
   }
   return ret;
 }
+
+#pragma alloc_text(FM2CMD,FM2Command,fullname,parse)

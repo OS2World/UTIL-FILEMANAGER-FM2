@@ -19,6 +19,7 @@
   21 Apr 07 SHL Add debug code to track down reason for PMERR_SOURCE_SAME_AS_TARGET
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   02 Aug 07 SHL Lock in DoFileDrop sanity checks
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -37,8 +38,6 @@
 static PSZ pszSrcFile = __FILE__;
 
 static ULONG GetDropCount(HWND hwnd, MPARAM mp1);
-
-#pragma alloc_text(DROPLIST,DoFileDrop,FullDrgName,TwoDrgNames,GetOneDrop,CheckPmDrgLimit)
 
 BOOL CheckPmDrgLimit(PDRAGINFO pDInfo)
 {
@@ -509,3 +508,5 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 
   return li;
 }
+
+#pragma alloc_text(DROPLIST,DoFileDrop,FullDrgName,TwoDrgNames,GetOneDrop,CheckPmDrgLimit)

@@ -9,6 +9,7 @@
   Copyright (c) 2003, 2007 Steven H.Levine
 
   22 Apr 07 GKY Add RunFM2Util to find and run apps from the FM2Utilities
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 #define INCL_WIN
@@ -29,7 +30,6 @@
 static PSZ pszSrcFile = __FILE__;
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(MISC9,first_path,searchapath,searchpath,RunFM2Util)
 
 //== RunFM2Util() Find and run an app from the FM2utilities ==
 //== Search PATH plus 2 default install dirs ==
@@ -128,3 +128,5 @@ CHAR *searchpath(CHAR * filename)
   }
   return found;
 }
+
+#pragma alloc_text(MISC9,first_path,searchapath,searchpath,RunFM2Util)

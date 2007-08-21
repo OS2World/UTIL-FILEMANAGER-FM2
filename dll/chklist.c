@@ -11,6 +11,7 @@
   10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -31,10 +32,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(CHECKLIST,CheckListProc)
-#pragma alloc_text(DNDLIST,DropListProc)
-#pragma alloc_text(MISC7,PosOverOkay,CenterOverWindow,PopupMenu)
 
 VOID CenterOverWindow(HWND hwnd)
 {
@@ -574,3 +571,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(CHECKLIST,CheckListProc)
+#pragma alloc_text(DNDLIST,DropListProc)
+#pragma alloc_text(MISC7,PosOverOkay,CenterOverWindow,PopupMenu)

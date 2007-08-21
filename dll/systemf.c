@@ -18,6 +18,7 @@
   03 Nov 06 SHL runemf2: rework termination queue logic to work for multiple threads
   07 Jan 07 GKY Move error strings etc. to string file
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -40,8 +41,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2)
 
 #define MAXSTRG (4096)			/* used to build command line strings */
 
@@ -1303,3 +1302,5 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
   }
   return happ;
 }
+
+#pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2)

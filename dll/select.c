@@ -25,6 +25,7 @@
 	       not use pszFileName since CNRITEM_EXISTS set implies
 	       pszFileName not null
   14 Aug 07 SHL Revert ExpandAll DosSleep to 0
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -41,10 +42,6 @@
 
 #include "fm3dll.h"
 #include "fm3str.h"
-
-#pragma alloc_text(SELECT,UnHilite,SelectAll,DeselectAll,MarkAll,SetMask)
-#pragma alloc_text(SELECT,SelectList)
-#pragma alloc_text(SELECT1,Deselect,HideAll,RemoveAll,ExpandAll,InvertAll)
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -574,9 +571,6 @@ VOID InvertAll(HWND hwndCnr)
 				MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
   }
 }
-
-#pragma alloc_text (SELECT3,SpecialSelect)
-#pragma alloc_text(SELECT4,FreeCnrs,SpecialSelect2,CompSSNames,CompSSNamesB)
 
 /**
  * Do select actions for compare directories containers
@@ -1530,3 +1524,9 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 
   FreeCnrs(Cnrs, numwindows);
 }
+
+#pragma alloc_text(SELECT,UnHilite,SelectAll,DeselectAll,MarkAll,SetMask)
+#pragma alloc_text(SELECT,SelectList)
+#pragma alloc_text(SELECT1,Deselect,HideAll,RemoveAll,ExpandAll,InvertAll)
+#pragma alloc_text(SELECT3,SpecialSelect)
+#pragma alloc_text(SELECT4,FreeCnrs,SpecialSelect2,CompSSNames,CompSSNamesB)

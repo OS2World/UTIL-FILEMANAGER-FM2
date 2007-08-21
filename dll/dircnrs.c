@@ -28,6 +28,7 @@
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   02 Aug 07 SHL Sync with CNRITEM mods
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -52,9 +53,6 @@
 #include <process.h>			// _beginthread
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(DIRCNRS,DirCnrWndProc,DirObjWndProc,DirClientWndProc)
-#pragma alloc_text(DIRCNRS,DirTextProc,DirFrameWndProc)
-#pragma alloc_text(STARTUP,StartDirCnr)
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -3471,3 +3469,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
   }
   return hwndFrame;
 }
+
+#pragma alloc_text(DIRCNRS,DirCnrWndProc,DirObjWndProc,DirClientWndProc)
+#pragma alloc_text(DIRCNRS,DirTextProc,DirFrameWndProc)
+#pragma alloc_text(STARTUP,StartDirCnr)

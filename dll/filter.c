@@ -10,6 +10,7 @@
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets_bstripcr
   22 Mar 07 GKY Use QWL_USER
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -29,8 +30,6 @@
 #pragma data_seg(FILTER_DATA)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FILTER,Filter)
 
 #define MAXNUMMASKS 50
 
@@ -117,8 +116,6 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
     ret = TRUE;
   return ret;
 }
-
-#pragma alloc_text(masks,load_masks,save_masks,add_mask,remove_mask,PickMaskDlgProc)
 
 VOID load_masks(VOID)
 {
@@ -659,3 +656,6 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(FILTER,Filter)
+#pragma alloc_text(MASKS,load_masks,save_masks,add_mask,remove_mask,PickMaskDlgProc)

@@ -14,6 +14,7 @@
   18 Mar 07 GKY Open mp3, ogg & flac files with OS2 object default since fm2play fails
   21 Apr 07 GKY Find FM2Utils by path or utils directory
   09 Jun 07 SHL ShowMultimedia: Initialize hwnd so that OpenObject might work
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -33,8 +34,6 @@
 #include "fm3dlg.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(DEFVIEW,DefaultView,ShowMultimedia,DefaultViewKeys)
 
 BOOL ShowMultimedia(CHAR * filename)
 {
@@ -333,3 +332,5 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
     }
   }
 }
+
+#pragma alloc_text(DEFVIEW,DefaultView,ShowMultimedia,DefaultViewKeys)

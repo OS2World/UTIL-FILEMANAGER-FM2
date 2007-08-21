@@ -19,6 +19,7 @@
   21 Apr 07 SHL Avoid odd first time drag failure
   12 May 07 SHL Use dcd->ulItemsToUnHilite
   05 Jul 07 FreeDragInfoData: suppress PMERR_SOURCE_SAME_AS_TARGET notices
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -35,8 +36,6 @@
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(DRAGLIST,DragOne,DoFileDrag,DragList,PickUp,FreeDragInfoData)
 
 /**
  * Delete drag item string handles.
@@ -861,3 +860,5 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 }
 
 #endif // NEVER
+
+#pragma alloc_text(DRAGLIST,DragOne,DoFileDrag,DragList,PickUp,FreeDragInfoData)

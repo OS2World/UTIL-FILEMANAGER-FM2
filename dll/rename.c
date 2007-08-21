@@ -9,6 +9,7 @@
   Revisions
   01 Aug 04 SHL - Rework lstrip/rstrip usage
   22 Mar 07 GKY Use QWL_USER
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -24,8 +25,6 @@
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
-
-#pragma alloc_text(FMRENAME,RenameProc)
 
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -361,3 +360,5 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(FMRENAME,RenameProc)

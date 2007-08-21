@@ -14,6 +14,7 @@
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -39,8 +40,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(KILLPROC,FillKillListThread,FillKillListThread2,GetDosPgmName,KillDlgProc)
 
 CHAR *GetDosPgmName(PID pid, CHAR * string)
 {
@@ -406,3 +405,5 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(KILLPROC,FillKillListThread,FillKillListThread2,GetDosPgmName,KillDlgProc)

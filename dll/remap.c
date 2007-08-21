@@ -11,6 +11,7 @@
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets
   31 Aug 06 SHL Use _fsopen to avoid noise complaints
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -33,9 +34,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FMREMAP,RemapDlgProc,load_resources,save_resources)
-#pragma alloc_text(FMREMAP,add_resource,remove_resource,free_resources)
 
 typedef struct APPNOTIFY
 {
@@ -745,3 +743,6 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(FMREMAP,RemapDlgProc,load_resources,save_resources)
+#pragma alloc_text(FMREMAP,add_resource,remove_resource,free_resources)

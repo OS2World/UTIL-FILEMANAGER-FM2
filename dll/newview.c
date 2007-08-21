@@ -20,6 +20,7 @@
   22 Mar 07 GKY Use QWL_USER
   30 Mar 07 GKY Remove GetPString for window class names
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -45,12 +46,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(NEWVIEW,ViewStatusProc,FreeViewerMem,LoadFileThread)
-#pragma alloc_text(NEWVIEW,InitWindow,PaintLine,ViewWndProc)
-#pragma alloc_text(NEWVIEW,ViewFrameWndProc,StartViewer,ReLineThread)
-#pragma alloc_text(NEWVIEW,BuildAList,SearchThread,ClipboardThread,FindStrDlgProc)
-#pragma alloc_text(NEWVIEW,BuildAList2,UrlDlgProc)
 
 #define VF_SELECTED     0x01
 #define VF_FOUND        0x02
@@ -3950,3 +3945,9 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
   }
   return hwndFrame;
 }
+
+#pragma alloc_text(NEWVIEW,ViewStatusProc,FreeViewerMem,LoadFileThread)
+#pragma alloc_text(NEWVIEW,InitWindow,PaintLine,ViewWndProc)
+#pragma alloc_text(NEWVIEW,ViewFrameWndProc,StartViewer,ReLineThread)
+#pragma alloc_text(NEWVIEW,BuildAList,SearchThread,ClipboardThread,FindStrDlgProc)
+#pragma alloc_text(NEWVIEW,BuildAList2,UrlDlgProc)

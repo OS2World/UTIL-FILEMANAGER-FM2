@@ -1,3 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003, 2007 Steven H.Levine
+
+  Directory manipulation
+
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+
+***********************************************************************/
+
 #define INCL_WIN
 #define INCL_WINERRORS
 #define INCL_DOS
@@ -10,8 +24,6 @@
 #include <string.h>
 #include <ctype.h>
 #include "fm3dll.h"
-
-#pragma alloc_text(MISC9,save_dir,save_dir2,switch_to)
 
 APIRET save_dir2(CHAR * curdir)
 {
@@ -88,3 +100,5 @@ APIRET switch_to(CHAR * s)
   }
   return DosChDir(path);
 }
+
+#pragma alloc_text(MISC9,save_dir,save_dir2,switch_to)

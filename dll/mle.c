@@ -14,7 +14,7 @@
   03 Nov 06 SHL Count thread usage
   22 Mar 07 GKY Use QWL_USER
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
-
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -35,8 +35,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FMMLE,MLEgetlinetext,MLEdeleteline,MLEdeletecurline,MLEdeletetoeol)
 
 #define FAKEROT 1
 #define DOROT13(c)     (!isalpha((c)))?(c):((((c) >= (char) 'A') && \
@@ -93,8 +91,6 @@ LONG MLEdeletetoeol(HWND h)
   return MLEdelete(h, s, e);
 }
 
-#pragma alloc_text(FMMLE,MLEclearall,MLEtextatcursor,MLEtextatpos,MLEsizeofsel)
-
 VOID MLEclearall(HWND h)
 {
   /* remove all text from MLE */
@@ -145,8 +141,6 @@ LONG MLEsizeofsel(HWND h)
 					      (anchor - cursor) :
 					      (cursor - anchor))));
 }
-
-#pragma alloc_text(FMMLE3,MLEdoblock,MLEquotepara,MLEinternet)
 
 VOID MLEinternet(HWND h, BOOL ftp)
 {
@@ -409,8 +403,6 @@ BOOL MLEquotepara(HWND h, CHAR * initials, BOOL fQuoteOld)
   MLEsetcurpos(h, MLEstartofline(h, num));
   return TRUE;
 }
-
-#pragma alloc_text(FMMLE4,MLEAutoLoad,MLEHexLoad,MLEinsertfile,LoadThread,MLEbackgroundload)
 
 BOOL MLEAutoLoad(HWND h, CHAR * filename)
 {
@@ -773,8 +765,6 @@ INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
   return rc;
 }
 
-#pragma alloc_text(FMMLE5,MLEloadfile,MLEexportfile)
-
 BOOL MLEloadfile(HWND h, CHAR * filename)
 {
   /* load a file into the MLE, getting rid of whatever was already
@@ -921,8 +911,6 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
 
   return ok;
 }
-
-#pragma alloc_text(FMMLE3,MLEfindfirst,MLEfindnext,SandRDlgProc)
 
 MRESULT EXPENTRY SandRDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -1100,3 +1088,10 @@ INT MLEfindnext(HWND hwnd, SRCHPTR * vw)
   }
   return 0;
 }
+
+#pragma alloc_text(FMMLE,MLEgetlinetext,MLEdeleteline,MLEdeletecurline,MLEdeletetoeol)
+#pragma alloc_text(FMMLE,MLEclearall,MLEtextatcursor,MLEtextatpos,MLEsizeofsel)
+#pragma alloc_text(FMMLE3,MLEdoblock,MLEquotepara,MLEinternet)
+#pragma alloc_text(FMMLE4,MLEAutoLoad,MLEHexLoad,MLEinsertfile,LoadThread,MLEbackgroundload)
+#pragma alloc_text(FMMLE5,MLEloadfile,MLEexportfile)
+#pragma alloc_text(FMMLE3,MLEfindfirst,MLEfindnext,SandRDlgProc)

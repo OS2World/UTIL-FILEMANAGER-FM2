@@ -17,6 +17,7 @@
   22 Mar 07 GKY Use QWL_USER
   01 Aug 07 SHL Sync with CNRITEM mods
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -38,8 +39,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FLESH,Flesh,FleshEnv,Unflesh,Stubby)
 
 BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 {
@@ -480,3 +479,5 @@ None:
   DosError(FERR_DISABLEHARDERR);
   return ret;
 }
+
+#pragma alloc_text(FLESH,Flesh,FleshEnv,Unflesh,Stubby)

@@ -14,6 +14,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   22 Mar 07 GKY Use QWL_USER
   16 Jun 07 SHL Update for OpenWatcom
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -34,9 +35,6 @@
 #include "mle.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(CMDLINE1,CmdLineDlgProc,CmdListSubProc,CmdLine2DlgProc,CmdBtnSubProc)
-#pragma alloc_text(CMDLINE2,save_cmdlines,load_cmdlines,add_cmdline,remove_cmdline,free_cmdlines)
 
 #define MAXNUMCLS 250
 
@@ -881,3 +879,6 @@ MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(CMDLINE1,CmdLineDlgProc,CmdListSubProc,CmdLine2DlgProc,CmdBtnSubProc)
+#pragma alloc_text(CMDLINE2,save_cmdlines,load_cmdlines,add_cmdline,remove_cmdline,free_cmdlines)

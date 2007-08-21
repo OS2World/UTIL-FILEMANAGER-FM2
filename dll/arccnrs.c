@@ -44,6 +44,7 @@
   06 Aug 07 SHL Move BldQuotedFileName and BldQuotedFullPathNamehere
 		to be near primary caller
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -78,11 +79,6 @@
 
 static INT DefArcSortFlags;
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(ARCCNRS,ArcCnrWndProc,ArcObjWndProc,ArcClientWndProc,BldQuotedFullPathName)
-#pragma alloc_text(ARCCNRS,ArcTextProc,FillArcCnr,ArcFilter,BldQuotedFileName)
-#pragma alloc_text(ARCCNRS,ArcSort,ArcFrameWndProc,IsArcThere,ArcErrProc)
-#pragma alloc_text(STARTUP,StartArcCnr)
 
 /**
  * Build quoted full path name in callers buffer given
@@ -3696,3 +3692,8 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
   }
   return hwndFrame;
 }
+
+#pragma alloc_text(ARCCNRS,ArcCnrWndProc,ArcObjWndProc,ArcClientWndProc,BldQuotedFullPathName)
+#pragma alloc_text(ARCCNRS,ArcTextProc,FillArcCnr,ArcFilter,BldQuotedFileName)
+#pragma alloc_text(ARCCNRS,ArcSort,ArcFrameWndProc,IsArcThere,ArcErrProc)
+#pragma alloc_text(STARTUP,StartArcCnr)

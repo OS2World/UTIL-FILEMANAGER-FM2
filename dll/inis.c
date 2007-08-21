@@ -18,6 +18,7 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checks.
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -42,9 +43,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(INIS,EnumAppNames,GetKeyData,EnumKeyNames,AddIniProc,IniProc,BackupIniThread,ChangeIniProc,SwapIniProc,IniLBSubProc,IniLBSubProc2,CopyIniThread,CompareIniThread,IntraIniProc,FilterIniProc)
-#pragma alloc_text(STARTUP,StartIniEditor)
 
 typedef struct
 {
@@ -2700,3 +2698,8 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(INIS,EnumAppNames,GetKeyData,EnumKeyNames,AddIniProc,IniProc,BackupIniThread)
+#pragma alloc_text(INIS,ChangeIniProc,SwapIniProc,IniLBSubProc,IniLBSubProc2,CopyIniThread)
+#pragma alloc_text(INIS,IntraIniProc,FilterIniProc)
+#pragma alloc_text(STARTUP,StartIniEditor)

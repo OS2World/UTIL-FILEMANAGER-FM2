@@ -14,6 +14,7 @@
   29 Jul 06 SHL Use xfgets
   01 Sep 06 SHL Back to fgets for now - avoid excess error messages
   22 Mar 07 GKY Use QWL_USER
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -38,9 +39,6 @@ static void outdec(char *p, FILE * f, int n);
 
 /* single character decode */
 #define DEC(c)	(((c) - ' ') & 077)
-
-#pragma alloc_text(UUD,UUD,decode,outdec)
-#pragma alloc_text(MERGE,MergeDlgProc)
 
 int UUD(char *filename, CHAR * dest)
 {
@@ -389,3 +387,6 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }					// switch msg
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(UUD,UUD,decode,outdec)
+#pragma alloc_text(MERGE,MergeDlgProc)

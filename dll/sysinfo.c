@@ -13,6 +13,7 @@
   01 Aug 04 SHL RunRmview: avoid buffer overflow
   26 Jul 06 SHL Report open errors
   29 Jul 06 SHL Use xfgets
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -30,8 +31,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(SYSINFO,SysInfoDlgProc,RunRmview)
 
 VOID RunRmview(VOID * arg)
 {
@@ -488,3 +487,5 @@ MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(SYSINFO,SysInfoDlgProc,RunRmview)

@@ -18,6 +18,7 @@
   02 Jan 07 GKY Changed drive information string formating to accomodate 6 char FS names
   07 Jan 07 GKY Move error strings etc. to string file
   30 Mar 07 GKY Remove GetPString for window class names
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -44,8 +45,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(DATAMIN,DataDlgProc,MiniTimeProc)
 
 APIRET16 APIENTRY16 Dos16MemAvail(PULONG pulAvailMem);
 
@@ -1036,3 +1035,5 @@ static VOID dataminThread(VOID * pv)
     WinTerminate(hab);
 
 }					// dataminThread
+
+#pragma alloc_text(DATAMIN,DataDlgProc,MiniTimeProc)

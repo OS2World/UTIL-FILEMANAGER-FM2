@@ -11,6 +11,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
   06 Aug 07 GKY Increase Subject EA to 1024
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -27,8 +28,6 @@
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
-
-#pragma alloc_text(FMINPUT,Subject)
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -150,3 +149,5 @@ INT Subject(HWND hwnd, CHAR * filename)
   }
   return ret;				// No change?
 }
+
+#pragma alloc_text(FMINPUT,Subject)

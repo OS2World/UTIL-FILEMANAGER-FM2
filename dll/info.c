@@ -18,6 +18,7 @@
   24 Mar 07 SHL Correct FileInfoProc binary file detect
   24 Mar 07 SHL Correct FileInfoProc/IconProc race crash
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -40,9 +41,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FMINFO,FileInfoProc,IconProc)
-#pragma alloc_text(FMINFO2,SetDrvProc,DrvInfoProc)
 
 CHAR *FlagMsg(CHAR drive, CHAR * buffer)
 {
@@ -1012,3 +1010,6 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(FMINFO,FileInfoProc,IconProc)
+#pragma alloc_text(FMINFO2,SetDrvProc,DrvInfoProc)

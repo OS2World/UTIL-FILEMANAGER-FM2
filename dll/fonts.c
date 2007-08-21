@@ -12,10 +12,8 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(FONTS,ConvertVectorFontSize,SetFont,SetMLEFont)
-#pragma alloc_text(FONTS,SetPresParamFromFattrs)
 
-static INT counter = 0L;
+static INT counter = 0;
 
 /*
  *   Convert vector font size using point size and fAttrs structure and
@@ -266,3 +264,6 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   return fattrs;
 
 }					/* End of SetMLEFont() */
+
+#pragma alloc_text(FONTS,ConvertVectorFontSize,SetFont,SetMLEFont)
+#pragma alloc_text(FONTS,SetPresParamFromFattrs)

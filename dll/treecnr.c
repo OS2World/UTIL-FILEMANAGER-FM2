@@ -37,6 +37,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   14 Aug 07 SHL Revert ShowTreeRec DosSleep to 0
   14 Aug 07 SHL Optimze ShowTreeRec collapse - was really slow
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -62,11 +63,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(TREECNR,TreeCnrWndProc,TreeObjWndProc,TreeClientWndProc)
-#pragma alloc_text(TREECNR,TreeFrameWndProc,TreeTitleWndProc,ShowTreeRec)
-#pragma alloc_text(TREECNR,TreeStatProc,OpenButtonProc)
-#pragma alloc_text(STARTUP,StartTreeCnr)
 
 APIRET16 APIENTRY16 Dos16MemAvail(PULONG pulAvailMem);
 
@@ -3047,3 +3043,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
   }
   return hwndFrame;
 }
+
+#pragma alloc_text(TREECNR,TreeCnrWndProc,TreeObjWndProc,TreeClientWndProc)
+#pragma alloc_text(TREECNR,TreeFrameWndProc,TreeTitleWndProc,ShowTreeRec)
+#pragma alloc_text(TREECNR,TreeStatProc,OpenButtonProc)
+#pragma alloc_text(STARTUP,StartTreeCnr)

@@ -15,6 +15,7 @@
   18 Aug 06 SHL Report more runtime errors
   05 Sep 06 SHL docopyf filename args must be variables
   05 Sep 06 SHL Sync with standard source formatting
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -35,9 +36,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(TOOLS,load_tools,save_tools,add_tool,insert_tool,del_tool,free_tools,swap_tools,load_quicktools,save_quicktools)
-#pragma alloc_text(TOOLS1,ReOrderToolsProc,PickToolProc,AddToolProc,ToolIODlgProc)
 
 TOOL *toolhead = NULL;
 
@@ -1020,3 +1018,6 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(TOOLS,load_tools,save_tools,add_tool,insert_tool,del_tool,free_tools,swap_tools,load_quicktools,save_quicktools)
+#pragma alloc_text(TOOLS1,ReOrderToolsProc,PickToolProc,AddToolProc,ToolIODlgProc)

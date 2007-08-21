@@ -9,6 +9,7 @@
   Copyright (c) 2006 Steven H. Levine
 
   23 Aug 06 SHL Comments
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -27,7 +28,6 @@
 #include "fm3str.h"
 
 #pragma data_seg(DATA1)
-#pragma alloc_text(GETNAMES,insert_filename,export_filename,CustomFileDlg)
 
 MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -391,3 +391,5 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
     strcpy(lastfilename, filename);
   return TRUE;
 }
+
+#pragma alloc_text(GETNAMES,insert_filename,export_filename,CustomFileDlg)

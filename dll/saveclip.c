@@ -16,6 +16,7 @@
   29 Jul 06 SHL Use xfgets
   22 Mar 07 GKY Use QWL_USER
   06 Aug 07 GKY Increase Subject EA to 1024
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -34,10 +35,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FMCLIPBOARDIN,SaveToClip,SaveToClipHab)
-#pragma alloc_text(FMCLIPBOARDOUT,ListToClipboard,ListToClipboardHab)
-#pragma alloc_text(FMCLIPBOARDOUT,ListFromClipboard,ListFromClipboardHab)
 
 BOOL SaveToClip(HWND hwnd, CHAR * text, BOOL append)
 {
@@ -188,8 +185,6 @@ CHAR **ListFromClipboardHab(HAB hab)
   }
   return list;
 }
-
-#pragma alloc_text(SAVELIST,SaveListDlgProc,SaveAllListDlgProc)
 
 MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -987,3 +982,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(FMCLIPBOARDIN,SaveToClip,SaveToClipHab)
+#pragma alloc_text(FMCLIPBOARDOUT,ListToClipboard,ListToClipboardHab)
+#pragma alloc_text(FMCLIPBOARDOUT,ListFromClipboard,ListFromClipboardHab)
+#pragma alloc_text(SAVELIST,SaveListDlgProc,SaveAllListDlgProc)

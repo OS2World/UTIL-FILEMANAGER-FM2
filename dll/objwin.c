@@ -11,6 +11,7 @@
   26 Jul 06 SHL Check more run time errors
   02 Nov 06 SHL Comments
   30 Mar 07 GKY Remove GetPString for window class names
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -31,8 +32,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(OBJWIN,ObjectWndProc,MakeObjWin)
 
 MRESULT EXPENTRY ObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -95,3 +94,5 @@ VOID MakeObjWin(VOID * args)
     WinTerminate(hab2);
   }
 }
+
+#pragma alloc_text(OBJWIN,ObjectWndProc,MakeObjWin)

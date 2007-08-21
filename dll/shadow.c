@@ -11,6 +11,7 @@
   22 Jul 06 SHL Check more run time errors
   16 Jun 07 SHL Update for OpenWatcom
   06 Aug 07 SHL Use BldFullPathName
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -29,8 +30,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(SHADOW,CreateProgramObject,CreateDataObject,CreateFolderObject,CreateShadowObject)
 
 HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 			    CHAR * cnr)
@@ -159,8 +158,6 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
   }
   return obj;
 }
-
-#pragma alloc_text(SHADOW2,MakeShadows,OpenObject)
 
 VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 		 CHAR * foldername)
@@ -295,3 +292,6 @@ BOOL RunSeamless(CHAR * exename, CHAR * args, HWND hwnd)
     WinSetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_ZORDER | SWP_ACTIVATE);
   return ret;
 }
+
+#pragma alloc_text(SHADOW,CreateProgramObject,CreateDataObject,CreateFolderObject,CreateShadowObject)
+#pragma alloc_text(SHADOW2,MakeShadows,OpenObject)

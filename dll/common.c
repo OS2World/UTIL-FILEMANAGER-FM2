@@ -17,6 +17,7 @@
   22 Mar 07 GKY Use QWL_USER
   30 Mar 07 GKY Remove GetPString for window class names
   02 Aug 07 SHL Sync with CNRITEM mods
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -44,13 +45,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(COMMON,CommonFrameWndProc,CommonTextProc,CommonTextPaint)
-#pragma alloc_text(COMMON1,CommonCreateTextChildren,CommonCreateMainChildren)
-#pragma alloc_text(COMMON2,CommonDriveCmd,CommonTextButton)
-#pragma alloc_text(COMMON3,CommonMainWndProc,IncrThreadUsage,DecrThreadUsage)
-#pragma alloc_text(COMMON4,CommonCnrProc)
-#pragma alloc_text(COMMON5,OpenDirCnr)
 
 MRESULT EXPENTRY CommonFrameWndProc(USHORT id,
 				    HWND hwnd,
@@ -816,3 +810,10 @@ VOID DecrThreadUsage(VOID)
   if (hwndMain)
     WinPostMsg(hwndMain, UM_THREADUSE, MPVOID, MPVOID);
 }
+
+#pragma alloc_text(COMMON,CommonFrameWndProc,CommonTextProc,CommonTextPaint)
+#pragma alloc_text(COMMON1,CommonCreateTextChildren,CommonCreateMainChildren)
+#pragma alloc_text(COMMON2,CommonDriveCmd,CommonTextButton)
+#pragma alloc_text(COMMON3,CommonMainWndProc,IncrThreadUsage,DecrThreadUsage)
+#pragma alloc_text(COMMON4,CommonCnrProc)
+#pragma alloc_text(COMMON5,OpenDirCnr)

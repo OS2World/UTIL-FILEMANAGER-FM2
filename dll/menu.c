@@ -11,6 +11,7 @@
   01 Aug 04 SHL Rework lstrip/rstrip usage
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets_bstripcr
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -29,8 +30,6 @@
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(MENU,tokenize,FreeMenuList,AddToMenu)
 
 MENU *menuhead = NULL;
 
@@ -161,3 +160,5 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
   }
   return ret;
 }
+
+#pragma alloc_text(MENU,tokenize,FreeMenuList,AddToMenu)

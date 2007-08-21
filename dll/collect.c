@@ -38,6 +38,7 @@
   05 Jul 07 SHL CollectorCnrWndProc: just warn if busy
   02 Aug 07 SHL Sync with CNRITEM mods
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
 ***********************************************************************/
@@ -68,11 +69,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(COLLECTOR,CollectorCnrWndProc,CollectorObjWndProc)
-#pragma alloc_text(COLLECTOR,CollectorClientWndProc,CollectorTextProc)
-#pragma alloc_text(COLLECTOR,CollectorFrameWndProc)
-#pragma alloc_text(STARTUP,StartCollector)
 
 MRESULT EXPENTRY CollectorFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				       MPARAM mp2)
@@ -2744,3 +2740,8 @@ HWND StartCollector(HWND hwndParent, INT flags)
   }
   return hwndFrame;
 }
+
+#pragma alloc_text(COLLECTOR,CollectorCnrWndProc,CollectorObjWndProc)
+#pragma alloc_text(COLLECTOR,CollectorClientWndProc,CollectorTextProc)
+#pragma alloc_text(COLLECTOR,CollectorFrameWndProc)
+#pragma alloc_text(STARTUP,StartCollector)

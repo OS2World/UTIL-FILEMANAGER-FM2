@@ -17,6 +17,7 @@
   20 Feb 07 GKY Add SelectDriveIcon()
   09 Mar 07 GKY Cleanup SelectDriveIcon using "driveflag =" from Steven
   02 Aug 07 SHL Sync with CNRITEM mods
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -35,8 +36,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(UPDATECNR,UpdateCnrRecord,UpdateCnrList)
 
 HPOINTER SelectDriveIcon(PCNRITEM pci)
 {
@@ -647,3 +646,5 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
   }
   return ret;
 }
+
+#pragma alloc_text(UPDATECNR,UpdateCnrRecord,UpdateCnrList)

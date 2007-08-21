@@ -18,6 +18,7 @@
   22 Oct 06 GKY Switch say files on as default so you can tell that seek and scan files is doing something
   07 Jan 07 GKY Add remember search flags to seek and scan
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 
   fixme for more excess locals to be gone
@@ -49,8 +50,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(GREP,GrepDlgProc,EnvDlgProc)
 
 MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -969,3 +968,5 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(GREP,GrepDlgProc,EnvDlgProc)

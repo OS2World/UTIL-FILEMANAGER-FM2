@@ -9,6 +9,7 @@
   Copyright (c) 2006 Steven H.Levine
 
   14 Jul 06 SHL Use Runtime_Error
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -28,8 +29,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(FMCODEPAGE,PickCodePageDlgBox,PickCodepage)
 
 MRESULT EXPENTRY PickCodePageDlgBox(HWND hwnd, ULONG msg, MPARAM mp1,
 				    MPARAM mp2)
@@ -222,3 +221,5 @@ INT PickCodepage(HWND hwnd)
     cp = -1;
   return cp;
 }
+
+#pragma alloc_text(FMCODEPAGE,PickCodePageDlgBox,PickCodepage)

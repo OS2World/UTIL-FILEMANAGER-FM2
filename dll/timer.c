@@ -9,6 +9,7 @@
   Copyright (c) 2006 Steven H. Levine
 
   22 Jul 06 SHL Check more run time errors
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -25,8 +26,6 @@
 
 #include "fm3dll.h"
 #include "fm3str.h"
-
-#pragma alloc_text(TIMER,TimerThread,StartTimer,StopTimer)
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -81,3 +80,5 @@ void StopTimer(void)
 {
   DosPostEventSem(hevTimerSem);
 }
+
+#pragma alloc_text(TIMER,TimerThread,StartTimer,StopTimer)

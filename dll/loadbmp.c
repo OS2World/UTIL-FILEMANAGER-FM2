@@ -30,8 +30,6 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#pragma alloc_text(LOADBITMAP,LoadBitmapFromFile,LoadBitmapFromFileNum)
-
 HBITMAP LoadBitmapFromFileNum(USHORT id)
 {
   char s[CCHMAXPATH];
@@ -352,3 +350,5 @@ ExitLoadBMP:
     WinReleasePS(hPS);
   return hBmp;
 }
+
+#pragma alloc_text(LOADBITMAP,LoadBitmapFromFile,LoadBitmapFromFileNum)

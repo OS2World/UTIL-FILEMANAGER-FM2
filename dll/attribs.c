@@ -9,6 +9,7 @@
   Copyright (c) 2006 Steven H.Levine
 
   14 Jul 06 SHL Use Runtime_Error
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -28,8 +29,6 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(ATTRIBS,AttrListDlgProc)
 
 MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -399,3 +398,5 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(ATTRIBS,AttrListDlgProc)

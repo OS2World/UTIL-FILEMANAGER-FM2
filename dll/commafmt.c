@@ -11,6 +11,7 @@
   06 Jan 04 SHL Disable hundfmt, clean commafmt
   25 May 05 SHL Drop hundfmt
   25 May 05 SHL Add CommaFmtULL, CommaFmtUL
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -26,8 +27,6 @@
    **          3. Use the thousands grouping and thousands separator from the
    **             ANSI locale to make this more robust.
  */
-
-#pragma alloc_text(MISC8,commafmt,CommaFmtU64)
 
 #define INCL_LONGLONG
 #include <os2.h>
@@ -160,3 +159,5 @@ size_t CommaFmtUL(char *pszBuf,	// Output buffer
   }
   return c;
 }
+
+#pragma alloc_text(MISC8,commafmt,CommaFmtU64)

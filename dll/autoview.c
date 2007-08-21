@@ -17,6 +17,7 @@
   15 Aug 06 SHL Use Runtime_Error more
   03 Nov 06 SHL Renames
   30 Mar 07 GKY Remove GetPString for window class names
+  20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
 ***********************************************************************/
 
@@ -39,9 +40,6 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
-
-#pragma alloc_text(AUTOVIEW,AutoViewProc,CreateHexDump,AutoObjProc)
-#pragma alloc_text(AUTOVIEW2,MakeAutoWinThread,WriteEA,PutComments)
 
 static HWND hwndAutoObj;
 static CHAR stopflag;
@@ -914,3 +912,6 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return PFNWPMLE(hwnd, msg, mp1, mp2);
   return PFNWPStatic(hwnd, msg, mp1, mp2);
 }
+
+#pragma alloc_text(AUTOVIEW,AutoViewProc,CreateHexDump,AutoObjProc)
+#pragma alloc_text(AUTOVIEW2,MakeAutoWinThread,WriteEA,PutComments)
