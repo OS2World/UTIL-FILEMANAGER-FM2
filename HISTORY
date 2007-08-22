@@ -9,9 +9,6 @@ New stuff's at the top.  This list is not necessarily complete.
  o Update configuration notebook scanning page (Steven)
  o Rework states logic to allow longer state names, tickets #109, #31 (Steven)
  o Report delta time in debug messages (Steven)
- o Improved container load times by increasing the number of files processed in each
-   pass; "FileBuf" is now settable most places (See readme since most will need to
-   reset this manually). (Gregg)
  o Added BldFullPathName cleaned up comp dirs code fix right left misalignment(Steven)
  o Added BldQuotedFileName and BldQuotedFullPathName to streamline code. (Steven, Gregg)
  o Increased limit on Subject EA to 1024 from 40. (Gregg)
