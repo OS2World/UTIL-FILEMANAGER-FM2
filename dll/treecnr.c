@@ -38,6 +38,7 @@
   14 Aug 07 SHL Revert ShowTreeRec DosSleep to 0
   14 Aug 07 SHL Optimze ShowTreeRec collapse - was really slow
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  22 Aug 07 SHL Disable DbgMsgs shipped with 3.0.8beta1
 
 ***********************************************************************/
 
@@ -162,7 +163,7 @@ VOID ShowTreeRec(HWND hwndCnr,
     goto MakeTop;
   }
   WinEnableWindowUpdate(hwndCnr, FALSE);
-  DbgMsg(pszSrcFile, __LINE__, "finding %s collapse %u maketop %u", dirname, collapsefirst, maketop);	// 14 Aug 07 SHL fixme
+  // DbgMsg(pszSrcFile, __LINE__, "finding %s collapse %u maketop %u", dirname, collapsefirst, maketop);	// 14 Aug 07 SHL fixme
   pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
   if (!pci || (INT) pci == -1) {
     *szDir = *dirname;
@@ -194,11 +195,11 @@ VOID ShowTreeRec(HWND hwndCnr,
     } // for
     pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
   }
-  DbgMsg(pszSrcFile, __LINE__, "found");	// 14 Aug 07 SHL fixme
+  // DbgMsg(pszSrcFile, __LINE__, "found");	// 14 Aug 07 SHL fixme
   if (pci && (INT) pci != -1) {
     if (~pci->rc.flRecordAttr & CRA_CURSORED) {
       if (collapsefirst) {
-        DbgMsg(pszSrcFile, __LINE__, "collapsing");	// 14 Aug 07 SHL fixme
+        // DbgMsg(pszSrcFile, __LINE__, "collapsing");	// 14 Aug 07 SHL fixme
 	pciP = WinSendMsg(hwndCnr,
 			  CM_QUERYRECORD,
 			  MPVOID, MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
@@ -226,7 +227,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 	} // while
       }
       /* expand all parent branches */
-      DbgMsg(pszSrcFile, __LINE__, "expanding parents");	// 14 Aug 07 SHL fixme
+      // DbgMsg(pszSrcFile, __LINE__, "expanding parents");	// 14 Aug 07 SHL fixme
       pciToSelect = pci;
       for (;;) {
 	pciP = WinSendMsg(hwndCnr,
@@ -245,16 +246,16 @@ VOID ShowTreeRec(HWND hwndCnr,
     }
     /* make record visible */
   MakeTop:
-    DbgMsg(pszSrcFile, __LINE__, "moving into view");	// 14 Aug 07 SHL fixme
+    // DbgMsg(pszSrcFile, __LINE__, "moving into view");	// 14 Aug 07 SHL fixme
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
       if (fTopDir || maketop) {
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
       }
       if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) {
-        DbgMsg(pszSrcFile, __LINE__, "expanding current");	// 14 Aug 07 SHL fixme
+        // DbgMsg(pszSrcFile, __LINE__, "expanding current");	// 14 Aug 07 SHL fixme
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-        DbgMsg(pszSrcFile, __LINE__, "expanded");	// 14 Aug 07 SHL fixme
+        // DbgMsg(pszSrcFile, __LINE__, "expanded");	// 14 Aug 07 SHL fixme
       }
       if (!quickbail) {
         WinSendMsg(hwndCnr,
@@ -264,7 +265,7 @@ VOID ShowTreeRec(HWND hwndCnr,
       }
     }
   }
-  DbgMsg(pszSrcFile, __LINE__, "done");	// 14 Aug 07 SHL fixme
+  // DbgMsg(pszSrcFile, __LINE__, "done");	// 14 Aug 07 SHL fixme
   WinEnableWindowUpdate(hwndCnr, TRUE);
   DosSleep(1);			// Let GUI update
 }
