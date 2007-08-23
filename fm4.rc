@@ -5,11 +5,12 @@
   fm3 resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2007 Steven H. Levine
 
   09 Aug 05 SHL Drop dup icon
   04 Sep 06 SHL Sync with fm3.rc
   17 Feb 07 GKY Add more drive type bitmaps from David
+  16 Aug 07 SHL Document AUTHOR_PICTURE
 
 ***********************************************************************/
 
@@ -127,4 +128,5 @@ BITMAP IDM_WPSCOPY          bitmaps\WPSCOPYB.BMP
 BITMAP IDM_WPSMOVE          bitmaps\WPSMOVEB.BMP
 BITMAP IDM_UUDECODE         bitmaps\UDECODE.BMP
 
-BITMAP 26102                bitmaps\HECTOR.BMP
+#define AUTHOR_PICTURE		 26102               /* fm3dlg.h */
+BITMAP AUTHOR_PICTURE       bitmaps\HECTOR.BMP
