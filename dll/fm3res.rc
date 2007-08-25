@@ -270,7 +270,7 @@ MENU  MAIN_FRAME
   {
     MENUITEM "~Contents\tF1",        IDM_HELPCONTENTS
     MENUITEM "~General help",               IDM_HELPGENERAL
-    MENUITEM "~Keys help\t^k",              IDM_HELPKEYS
+    MENUITEM "~Keys help\tCtrl + k"       IDM_HELPKEYS
     MENUITEM "~Mouse help",                 IDM_HELPMOUSE
     MENUITEM "~Tutorials",                  IDM_HELPTUTOR
     MENUITEM "~Hints and troubleshooting",  IDM_HELPHINTS
@@ -438,7 +438,7 @@ MENU  MAIN2_FRAME
   {
     MENUITEM "~Contents\tF1",        IDM_HELPCONTENTS
     MENUITEM "~General help",               IDM_HELPGENERAL
-    MENUITEM "~Keys help\t^k",              IDM_HELPKEYS
+    MENUITEM "~Keys help\tCtrl + k",      IDM_HELPKEYS
     MENUITEM "~Mouse help",                 IDM_HELPMOUSE
     MENUITEM "~Tutorials",                  IDM_HELPTUTOR
     MENUITEM "~Hints and troubleshooting",  IDM_HELPHINTS
