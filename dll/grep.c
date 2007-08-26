@@ -23,6 +23,8 @@
   13 Aug 07 SHL Avoid pointer errors; sanitize code
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   15 Aug 07 SHL Use FilesToGet directly
+  26 Aug 07 GKY Improved performance of FillDups
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 ***********************************************************************/
 
@@ -433,7 +435,7 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
 	if (!grep->anyexcludes || !IsExcluded(searchPath, fle, numfls)) {
 	  domatchingfiles(grep, searchPath, fle, numfls);
 	  doallsubdirs(grep, searchPath, TRUE, fle, numfls);
-	  DosSleep(1);
+	  DosSleep(0); //26 Aug 07 GKY 1
 	}
       }
       ulFindCnt = 1;
@@ -518,7 +520,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
       } // for
       if (*grep->stopflag)
 	break;
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
       ulFindCnt = FilesToGet;
       rc = DosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
     } while (!rc);
@@ -596,7 +598,7 @@ static BOOL doinsertion(GREP * grep)
       DosExitCritSec();
     }
     if (grep->toinsert == FilesToGet)
-      DosSleep(1);
+      DosSleep(0);  //26 Aug 07 GKY 1
     freegreplist(grep);
     PostMsg(grep->hwndFiles, UM_RESCAN, MPVOID, MPVOID);
     return TRUE;
@@ -949,7 +951,7 @@ LONG CRCFile(CHAR * filename, INT * error)
 	  CRC = CRCBlock(buffer, len, CRC);
 	else
 	  break;
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       }
       fclose(fp);
       DosSleep(1);
@@ -1110,10 +1112,10 @@ static VOID FillDupes(GREP * grep)
   CHAR **list = NULL;
   INT numfiles = 0, numalloced = 0, error;
   register ULONG x = 0, y = 0;
-  ULONG cntr = 100;
+  ULONG cntr = 1000;
 
   if (grep->CRCdupes)
-    cntr = 50;
+    cntr = 100;
   i = grep->dupehead;
   while (i) {
     x++;
@@ -1121,7 +1123,7 @@ static VOID FillDupes(GREP * grep)
   }
   if (x) {
     WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPESORTINGTEXT));
-    DosSleep(1);
+    DosSleep(0);  //26 Aug 07 GKY 1
     grep->dupenames = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (!grep->nosizedupes)
       grep->dupesizes = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
@@ -1137,15 +1139,15 @@ static VOID FillDupes(GREP * grep)
       grep->dupenames[y] = NULL;
       if (!grep->nosizedupes)
 	grep->dupesizes[y] = NULL;
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
       qsort(grep->dupenames,
 	    x,
 	    sizeof(DUPES *),
 	    ((grep->ignoreextdupes) ? comparenamesqe : comparenamesq));
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
       if (!grep->nosizedupes) {
 	qsort(grep->dupesizes, x, sizeof(DUPES *), comparesizesq);
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       }
       WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
 
@@ -1281,9 +1283,9 @@ static VOID FillDupes(GREP * grep)
 
 	  sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, grep->numfiles);
 	  WinSetWindowText(grep->hwndCurFile, s);
-	  DosSleep(100);		//05 Aug 07 GKY 128
+	  DosSleep(1);		//05 Aug 07 GKY 128
 	}
-	DosSleep(y % 2);
+	DosSleep(0); //26 Aug 07 GKY 1
       }
     }
     else {
@@ -1310,7 +1312,7 @@ static VOID FillDupes(GREP * grep)
 
 	    sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, grep->numfiles);
 	    WinSetWindowText(grep->hwndCurFile, s);
-	    DosSleep(1);
+	    DosSleep(0); //26 Aug 07 GKY 1
 	  }
 	  y++;
 	  pi = strrchr(i->name, '\\');
@@ -1370,7 +1372,7 @@ static VOID FillDupes(GREP * grep)
 		}
 	      }
 	      else if (!(x % 100))
-		DosSleep(1);
+		DosSleep(0);  //26 Aug 07 GKY 1
 	    }
 	    c = c->next;
 	  }
