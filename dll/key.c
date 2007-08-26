@@ -119,7 +119,7 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk1), MPVOID);
-	  DosSleep(16L);//05 Aug 07 GKY 33
+	  DosSleep(16);//05 Aug 07 GKY 33
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk2), MPVOID);
 	  DosSleep(16);//05 Aug 07 GKY 33

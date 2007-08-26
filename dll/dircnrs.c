@@ -29,6 +29,7 @@
   02 Aug 07 SHL Sync with CNRITEM mods
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 
 ***********************************************************************/
@@ -692,7 +693,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
 	  if (!pciC) {
 	    Stubby(dcd->hwndCnr, pci);
-	    DosSleep(1);
+	    DosSleep(0); //26 Aug 07 GKY 1
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,

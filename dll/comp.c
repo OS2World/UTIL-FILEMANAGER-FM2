@@ -35,6 +35,7 @@
   20 Aug 07 SHL Correct remaining pcil/pcir typos (we hope)
   20 Aug 07 SHL Revert to DosSleep(0)
   20 Aug 07 SHL Use GetMSecTimer for timing
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 ***********************************************************************/
 
@@ -479,7 +480,7 @@ static VOID ActionCnrThread(VOID *args)
 		cmp->cmp->totalleft--;
 	      else
 		cmp->cmp->totalright--;
-	      DosSleep(1);
+	      DosSleep(0); //8-26-07 GKY 1
 	    }
 	    break;
 

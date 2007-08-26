@@ -15,6 +15,7 @@
   22 Mar 07 GKY Use QWL_USER
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 ***********************************************************************/
 
@@ -502,7 +503,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	      while (howmuch < numimport) {
 		numimport -= howmuch;
 		memmove(hexbuff, hexbuff + howmuch, numimport);
-		DosSleep(1);
+		DosSleep(0);  //26 Aug 07 GKY 1
 		if (!WinIsWindow(hab, h) || (vw && vw->killme))
 		  break;
 		howmuch = (INT) WinSendMsg(h,
@@ -658,7 +659,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 		else
 		  numread = tempnum;
 	      }
-	      DosSleep(1);
+	      DosSleep(0); //26 Aug 07 GKY 1
 	    }
 	    else
 	      numread = fread(buffer, 1, min(50000, len), fp);
@@ -669,7 +670,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 	    sprintf(s, GetPString(IDS_LOADINGMLETEXT), len);
 	    WinSetWindowText(grandpa, s);
 	  }
-	  DosSleep(1);
+	  DosSleep(0); //26 Aug 07 GKY 1
 	}
 	DosFreeMem(buffer);
       }

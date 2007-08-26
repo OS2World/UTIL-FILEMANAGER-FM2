@@ -45,6 +45,7 @@
 		to be near primary caller
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 ***********************************************************************/
 
@@ -2026,7 +2027,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       (li->type == IDM_VIEWBINARY && *binview) ||
 		       (li->type == IDM_EDITTEXT && *editor) ||
 		       (li->type == IDM_EDITBINARY && *bined)) {
-		DosSleep(50); //05 Aug 07 GKY 100
+		DosSleep(32); //05 Aug 07 GKY 100
 		ExecOnList(hwnd, ((li->type == IDM_VIEWTEXT) ? viewer :
 				  (li->type == IDM_VIEWBINARY) ? binview :
 				  (li->type == IDM_EDITTEXT) ? editor :
@@ -2107,7 +2108,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else {
 	      WinSendMsg(dcd->hwndCnr, WM_COMMAND,
 			 MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
-	      DosSleep(100); //05 Aug 07 GKY 128
+	      DosSleep(10); //05 Aug 07 GKY 128
 	      if (Collector) {
 		if (!PostMsg(Collector, WM_COMMAND,
 			     MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(list2)))

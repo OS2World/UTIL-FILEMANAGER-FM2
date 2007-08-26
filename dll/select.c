@@ -26,6 +26,7 @@
 	       pszFileName not null
   14 Aug 07 SHL Revert ExpandAll DosSleep to 0
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 ***********************************************************************/
 
@@ -632,7 +633,7 @@ Restart:
       pciD = (PCNRITEM) WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciD),
 				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     if (!(x % 500))
-      DosSleep(1);
+      DosSleep(0);  //26 Aug 07 GKY 1
     // else if (!(x % 50))
     //  DosSleep(0);
   } // while
@@ -662,7 +663,7 @@ Restart:
       pciS = (PCNRITEM) WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pciS),
 				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     if (!(x % 500))
-      DosSleep(1);
+      DosSleep(0);  //26 Aug 07 GKY 1
     // else if (!(x % 50))
     //  DosSleep(0);
   } // while
@@ -731,7 +732,7 @@ Restart:
 	pciDa[x]->flags |= CNRITEM_NEWER;
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     } // for
@@ -754,7 +755,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     } // for
@@ -774,7 +775,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -860,7 +861,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     } // for
@@ -878,7 +879,7 @@ Restart:
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -900,7 +901,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0);  //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -921,7 +922,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -942,7 +943,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -963,7 +964,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -984,7 +985,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -1002,7 +1003,7 @@ Restart:
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -1023,7 +1024,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -1044,7 +1045,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -1065,7 +1066,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -1086,7 +1087,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -1107,7 +1108,7 @@ Restart:
 	}
       }
       if (!(x % 500))
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
       // else if (!(x % 50))
       //	DosSleep(0);
     }
@@ -1121,12 +1122,12 @@ Restart:
     while (numS) {
       WinSendMsg(hwndCnrS, CM_INVALIDATERECORD,
 		 MPFROMP(pciSa), MPFROM2SHORT((min(numS, 65535)), 0));
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
       WinSendMsg(hwndCnrD, CM_INVALIDATERECORD,
 		 MPFROMP(pciDa), MPFROM2SHORT((min(numD, 65535)), 0));
       numS -= min(numS, 65535);
       if (numS)
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
     }
   }
 
@@ -1221,7 +1222,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
     WinSendMsg(Cnrs[0].
 	       hwndCnr,
 	       UM_NOTIFY, MPFROMP(GetPString(IDS_BUILDINGLISTSTEXT)), MPVOID);
-    DosSleep(1);
+    DosSleep(0); //26 Aug 07 GKY 1
   }
 
   /* count records, build array of pointers to records */
@@ -1251,7 +1252,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 				  MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
-    DosSleep(1);
+    DosSleep(0);  //26 Aug 07 GKY 1
     Cnrs[z].numfiles = x;
     if (Cnrs[z].numfiles)
       qsort(Cnrs[z].ss, Cnrs[z].numfiles, sizeof(struct SS), CompSSNames);
@@ -1373,7 +1374,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_SELECTMORE:
@@ -1384,7 +1385,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0);  //26 Aug 07 GKY 1
     }
     break;
   case IDM_SELECTONE:
@@ -1395,7 +1396,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0);  //26 Aug 07 GKY 1
     }
     break;
   case IDM_SELECTNEWER:
@@ -1406,7 +1407,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_SELECTOLDER:
@@ -1417,7 +1418,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_SELECTBIGGER:
@@ -1428,7 +1429,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_SELECTSMALLER:
@@ -1439,7 +1440,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
 
@@ -1451,7 +1452,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_DESELECTMORE:
@@ -1462,7 +1463,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_DESELECTONE:
@@ -1473,7 +1474,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_DESELECTNEWER:
@@ -1484,7 +1485,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_DESELECTOLDER:
@@ -1495,7 +1496,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_DESELECTBIGGER:
@@ -1506,7 +1507,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   case IDM_DESELECTSMALLER:
@@ -1517,7 +1518,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(1);
+      DosSleep(0); //26 Aug 07 GKY 1
     }
     break;
   }

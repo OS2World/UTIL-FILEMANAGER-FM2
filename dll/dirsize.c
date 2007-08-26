@@ -29,6 +29,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   13 Aug 07 SHL ProcessDir: remove unneeded reallocs.  Sanitize code
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 ***********************************************************************/
 
@@ -419,11 +420,11 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
 				  MPFROM2SHORT(CMA_FIRSTCHILD,
 					       CMA_ITEMORDER));
       while (pci && (INT) pci != -1) {
-	DosSleep(1);
+	DosSleep(0); //26 Aug 07 GKY 1
 	PrintToFile(hwndCnr, indent + 1, pci, fp);
 	pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-      }
+      } //while
     }
   }
 }

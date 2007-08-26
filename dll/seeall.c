@@ -28,6 +28,7 @@
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   14 Aug 07 SHL Revert to DosSleep(0) to speed up inner loops
   14 Aug 07 SHL Drop afFilesToGet
+  26 Aug 07 GKY DosSleep(1) in loops changed to (0)
 
 ***********************************************************************/
 
@@ -641,7 +642,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		FreeList(list);
 		goto Abort;
 	      }
-	      DosSleep(1);
+	      DosSleep(0);  //26 Aug 07 GKY 1
 	      if (mv.skip || !*mv.target)
 		break;
 	      if (mv.dontask)
@@ -1644,7 +1645,7 @@ VOID FindDupesThread(VOID * args)
 	if (ad->cursored <= ad->afifiles) {
 	  for (x = 0; x < ad->affiles; x++)
 	    ad->afhead[x].flags &= (~(AF_DUPE | AF_SELECTED));
-	  DosSleep(1);
+	  DosSleep(0);  //26 Aug 07 GKY 1
 	  for (x = 0; x < ad->affiles && !ad->stopflag; x++) {
 	    if (!(ad->afhead[x].flags & (AF_DUPE | AF_FILTERED))) {
 	      if (!(x % 50)) {
@@ -2033,7 +2034,7 @@ static VOID FindAllThread(VOID * args)
 		*startname = (CHAR) (x + 'A');
 		DoADir(hwnd, startname);
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-		DosSleep(1);
+		DosSleep(0); //26 Aug 07 GKY 1
 	      }
 	    }
 	  }
