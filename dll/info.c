@@ -19,6 +19,8 @@
   24 Mar 07 SHL Correct FileInfoProc/IconProc race crash
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  25 Aug 07 SHL Drop list from FILESTUF - data not static
+  25 Aug 07 SHL IconProc: do not use freed memory - random bad things happen
 
 ***********************************************************************/
 
@@ -331,7 +333,6 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 typedef struct {
   USHORT size;
   CHAR szFileName[CCHMAXPATH];
-  CHAR **list;
   BOOL madechanges;
 } FILESTUF;
 
@@ -455,9 +456,11 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!pis)
       return WinDefWindowProc(hwnd, msg, mp1, mp2);
     else {
+      PFNWP oldproc = pis->oldproc;
       if (pis->lasthwndMenu)
-        WinDestroyWindow(pis->lasthwndMenu);
+	WinDestroyWindow(pis->lasthwndMenu);
       free(pis);
+      return oldproc(hwnd, msg, mp1, mp2);
     }
     break;
   }
@@ -469,6 +472,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   FILESTUF *pfs;
   ICONSTUF *pis;
+  CHAR **ppsz;
 
   switch (msg) {
   case WM_INITDLG:
@@ -481,7 +485,6 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 1);
       break;
     }
-    pfs->list = (CHAR **) mp2;
     pfs->size = sizeof(FILESTUF);
     WinSetWindowPtr(hwnd, QWL_USER, pfs);
     {
@@ -491,9 +494,10 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       INT x;
       CHAR s[CCHMAXPATH];
 
-      for (x = 0; pfs->list[x]; x++) {
-	if (DosQueryPathInfo(pfs->list[x], FIL_QUERYFULLNAME, s, sizeof(s)))
-	  strcpy(s, pfs->list[x]);
+      ppsz = (CHAR **)mp2;
+      for (x = 0; ppsz[x]; x++) {
+	if (DosQueryPathInfo(ppsz[x], FIL_QUERYFULLNAME, s, sizeof(s)))
+	  strcpy(s, ppsz[x]);
 	WinSendDlgItemMsg(hwnd,
 			  FLE_NAME,
 			  LM_INSERTITEM,
@@ -550,7 +554,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
 	break;
-      }
+      } // switch
       break;
     case FLE_NAME:
       switch (SHORT2FROMMP(mp1)) {
@@ -773,7 +777,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OPEN), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_ISARCHIVE), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_BINARY), TRUE);
-          fp = _fsopen(pfs->szFileName, "rb", SH_DENYNO);
+	  fp = _fsopen(pfs->szFileName, "rb", SH_DENYNO);
 	  if (fp) {
 	    char buff[512];
 	    ULONG len;
