@@ -22,6 +22,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 SHL Revert to DosSleep(0)
 
 ***********************************************************************/
 
@@ -898,9 +899,9 @@ VOID Action(VOID * args)
 		    goto Abort;
 		}
 		break;
-	      }				// switch
-	      DosSleep(1);
-	    }				// for list
+	      }	// switch
+	      DosSleep(0);
+	    } // for list
 
 	    switch (wk->li->type) {
 	    case IDM_MOVE:

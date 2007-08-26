@@ -39,6 +39,7 @@
   14 Aug 07 SHL Optimze ShowTreeRec collapse - was really slow
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   22 Aug 07 SHL Disable DbgMsgs shipped with 3.0.8beta1
+  26 Aug 07 SHL Revert to DosSleep(0)
 
 ***********************************************************************/
 
@@ -241,7 +242,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 	}
 	else
 	  break;
-	DosSleep(1);			// Let GUI update
+	DosSleep(0);			// Let GUI update
       } // for
     }
     /* make record visible */
@@ -267,7 +268,7 @@ VOID ShowTreeRec(HWND hwndCnr,
   }
   // DbgMsg(pszSrcFile, __LINE__, "done");	// 14 Aug 07 SHL fixme
   WinEnableWindowUpdate(hwndCnr, TRUE);
-  DosSleep(1);			// Let GUI update
+  // DosSleep(1);			// Let GUI update
 }
 
 MRESULT EXPENTRY TreeTitleWndProc(HWND hwnd, ULONG msg, MPARAM mp1,

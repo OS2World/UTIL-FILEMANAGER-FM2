@@ -18,6 +18,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   02 Aug 07 SHL Sync with CNRITEM mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 SHL Change to DosSleep(0)
 
 ***********************************************************************/
 
@@ -556,7 +557,7 @@ MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       }
       ltoa(threaduse, ts, 10);
       WinSetWindowText(hwndLEDHdr, ts);
-      DosSleep(1);
+      DosSleep(0);
     }
     return 0;
 

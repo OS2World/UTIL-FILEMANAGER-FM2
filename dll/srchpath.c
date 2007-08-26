@@ -3,13 +3,14 @@
 
   $Id$
 
-  Path search Functions
+  Path search functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H.Levine
+  Copyright (c) 2003, 2007 Steven H. Levine
 
   22 Apr 07 GKY Add RunFM2Util to find and run apps from the FM2Utilities
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  23 Aug 07 SHL Comments
 
 ***********************************************************************/
 #define INCL_WIN
@@ -90,9 +91,13 @@ CHAR *first_path(CHAR * path, CHAR * ret)
   return ret;
 }
 
-CHAR *searchapath(CHAR * path, CHAR * filename)
-{
+/**
+ * Search for file in name PATH env variable
+ * 23 Aug 07 SHL fixme to be MT safe
+ */
 
+CHAR *searchapath(CHAR *pathvar, CHAR *filename)
+{
   static CHAR fbuf[CCHMAXPATH];
 
   if (strchr(filename, '\\') || strchr(filename, '/')
@@ -108,14 +113,13 @@ CHAR *searchapath(CHAR * path, CHAR * filename)
   *fbuf = 0;
   if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 		    SEARCH_CUR_DIRECTORY,
-		    path, filename, fbuf, CCHMAXPATH - 1))
+		    pathvar, filename, fbuf, CCHMAXPATH - 1))
     *fbuf = 0;
   return fbuf;
 }
 
 CHAR *searchpath(CHAR * filename)
 {
-
   CHAR *found;
 
   if (!filename)
