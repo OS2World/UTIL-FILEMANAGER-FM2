@@ -28,10 +28,12 @@
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
 # 04 Jul 07 SHL Add missing .AUTODEPEND
+# 06 Aug 07 SHL Tweak CFLAGS for DEBUG builds
+# 26 Aug 07 SHL Clean *.lrf
 
 # Environment:
 
-#   DEBUG - not defined = release build, defined = debug build
+# DEBUG - not defined = release build, defined = debug build
 
 BASE = fm3dll
 BASERES = fm3res
@@ -56,11 +58,11 @@ RC = rc
 !endif
 
 # Keep this code in sync with makefile_pre.mk
-!ifdef DEBUG                  	# if defined on wmake command line
+!ifdef DEBUG			# if defined on wmake command line
 DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !else
-!ifdef %DEBUG                  	# if defined in environment
-DEBUG = $(%DEBUG)              	# use value from environment
+!ifdef %DEBUG			# if defined in environment
+DEBUG = $(%DEBUG)		# use value from environment
 DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
@@ -71,12 +73,13 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -bg		gui app with WinMain entry point
 # -bm		multithread libs
 # -bt=os2	target
-#  d1		line number debugging information
+# -d1		line number debugging information
 # -d2		full symbolic debugging information
 # -d3		full debug w/unref
 # -hd		dwarf
 # -j		signed char
 # -mf		flat
+# -of		generate traceable stack frames
 # -olinars	optimze loops, inline, e(n)able fp recip, relax (a)lias, reordering, space
 # -s		disable stack checks
 # -sg		generate calls to grow the stack
@@ -90,13 +93,14 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -zq		quiet
 
 !ifdef DEBUG
-CFLAGS =   -bt=os2 -mf -bd -bm -d2 -olirs   -s -sg -j -wx -zfp -zgp -zq -hd
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -wx -zfp -zgp -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zq
 !else
-CFLAGS =   -bt=os2 -mf -bd -bm -d1 -olirs   -s -sg -j -wx -zfp -zgp -zq -hd
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zq
 !endif
 
 # for fm3res only
-CFLAGSR = -bt=os2 -mf -bd -bm     -olirs   -s -j -wx -zfp -zgp
+CFLAGSR = -bt=os2 -mf -bd -bm         -olirs -s     -j -wx -zfp -zgp -zq
 
 !ifdef DEBUG
 LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
@@ -265,6 +269,7 @@ clean: .symbolic
   cd..
   -del *.dll
   -del *.lib
+  -del *.lrf
   -del *.map
   -del *.obj
   -del *.res
