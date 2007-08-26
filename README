@@ -5,6 +5,15 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.07 has had changes made to its ini file structure.
+These changes mean that the ini file is not backward 
+compatible. Please backup you FM3.INI file before installing
+so you can revert to an earlier version without losing some 
+of your customizations. Please note you need to leave a copy
+of the fm3.ini file in the install directory in order to keep your 
+customizations in 3.07. The temp file fm3.!!! will not update 
+the new ini as it is only used when fm2 is running.
+
 File Manager/2 (FM/2) starting with version 3.6 is being 
 built with OpenWatcom. Changing compilers can introduce 
 unexpected problem so you may want to backup your current
