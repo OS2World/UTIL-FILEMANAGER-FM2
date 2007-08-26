@@ -6,7 +6,7 @@
   archiver.bb2 search, load, save and date parse
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2007 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   13 Aug 05 SHL Beautify with indent
@@ -28,6 +28,7 @@
   19 Apr 07 SHL Use FreeDragInfoData
   19 Apr 07 SHL Add more drag/drop error checking
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  25 Aug 07 SHL load_archivers: add missing close on error path
 
 ***********************************************************************/
 
@@ -318,8 +319,10 @@ INT load_archivers(VOID)
   }
   if (*sz)
     lines_per_arcsig = atoi(sz);
-  if (!*sz || lines_per_arcsig < LINES_PER_ARCSIG)
+  if (!*sz || lines_per_arcsig < LINES_PER_ARCSIG) {
+    fclose(fp);				// 25 Aug 07 SHL
     return -3;
+  }
 
   // Parse rest of file
   // 1st non-blank line starts definition
@@ -622,18 +625,18 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
     pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
     if (pDInfo) {
       if (!DrgAccessDraginfo(pDInfo)) {
-        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  "DrgAccessDraginfo");
+	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "DrgAccessDraginfo");
       }
       else {
-        pDItem = DrgQueryDragitemPtr(pDInfo, 0);
-        /* Check valid rendering mechanisms and data format */
-        ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL);
-        DrgFreeDraginfo(pDInfo);
+	pDItem = DrgQueryDragitemPtr(pDInfo, 0);
+	/* Check valid rendering mechanisms and data format */
+	ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL);
+	DrgFreeDraginfo(pDInfo);
       }
     }
     return ok ? MRFROM2SHORT(DOR_DROP, DO_MOVE) :
-                MRFROM2SHORT(DOR_NEVERDROP, 0);
+		MRFROM2SHORT(DOR_NEVERDROP, 0);
 
   case DM_DRAGLEAVE:
     if (emphasized) {
@@ -658,24 +661,24 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
     pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
     if (pDInfo) {
       if (!DrgAccessDraginfo(pDInfo)) {
-        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  "DrgAccessDraginfo");
+	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "DrgAccessDraginfo");
       }
       else {
-        pDItem = DrgQueryDragitemPtr(pDInfo, 0);
-        if (!pDItem)
+	pDItem = DrgQueryDragitemPtr(pDInfo, 0);
+	if (!pDItem)
 	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DM_DROP");
-        /* Check valid rendering mechanisms and data */
-        ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL)
-	                  && ~pDItem->fsControl & DC_PREPARE;
-        if (ok) {
+	/* Check valid rendering mechanisms and data */
+	ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL)
+			  && ~pDItem->fsControl & DC_PREPARE;
+	if (ok) {
 	  // ret = FullDrgName(pDItem,buffer,buflen);
 	  /* note: targetfail is returned to source for all items */
 	  DrgSendTransferMsg(pDInfo->hwndSource, DM_ENDCONVERSATION,
 			     MPFROMLONG(pDItem->ulItemID),
 			     MPFROMLONG(DMFL_TARGETSUCCESSFUL));
-        }
-        FreeDragInfoData(hwnd, pDInfo);
+	}
+	FreeDragInfoData(hwnd, pDInfo);
       }
     }
     return 0;
