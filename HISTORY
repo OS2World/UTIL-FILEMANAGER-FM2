@@ -23,6 +23,8 @@ New stuff's at the top.  This list is not necessarily complete.
    tab of the configuration notebook, Ticket 118/71 (John)
  o Subject column can be moved to left side of split bar in directory container 
    and/or sized which will truncate long subjects (Gregg)
+ o Avoid can not set fm3.ini read-only failure - DosSetPathInfo (Steven)
+ o Avoid exception when exiting File/Directory Object Information dialog (Steven)
 
 3.06
  o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)
