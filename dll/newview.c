@@ -21,6 +21,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Aug 07 GKY Fixed fast viewer text load failure
 
 
 ***********************************************************************/
@@ -1088,6 +1089,7 @@ static VOID ReLineThread(VOID * args)
     if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
+      DosSleep(32);
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad) {
 	ad->relining = TRUE;
@@ -1179,9 +1181,9 @@ static VOID ReLineThread(VOID * args)
 
 		    for (x = 0; x < ad->numlines; x++) {
 		      if ((LONG) (Rectl.yTop -
-				  (ad->lMaxHeight * (((x + 1) -
-						      ad->topline) + 1))) < 0)
-			break;
+		        	  (ad->lMaxHeight * (((x + 1) -
+		        			      ad->topline) + 1))) < 0)
+		        break;
 		      PaintLine(hwnd, ad->hps, x, 1, &Rectl);
 		    }
 		  }
@@ -1791,7 +1793,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	else {
 	  WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
-	  DosSleep(16); //05 Aug 07 GKY 32
+	  DosSleep(32); //05 Aug 07 GKY 32
 	  return (MRESULT) 1;
 	}
       }
@@ -3909,7 +3911,7 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
       if (!WinSendMsg(hwndClient, UM_SETUP, MPVOID, MPVOID))
 	hwndFrame = (HWND) 0;
       else {
-	// DosSleep(64L);
+	//DosSleep(32);
 	if (!(FrameFlags & FCF_TASKLIST) && !(flags & 2)) {
 	  SWP swp;
 
