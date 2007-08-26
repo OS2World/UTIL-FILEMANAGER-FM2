@@ -20,6 +20,7 @@
   16 Aug 07 SHL Update add_setups for ticket# 109
   19 Aug 07 SHL Correct load_setups error reporting
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  25 Aug 07 SHL Correct #pragma alloc_text typos
 
 ***********************************************************************/
 
@@ -1574,5 +1575,5 @@ MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 #pragma alloc_text(WALKER,WalkMoveDlgProc,WalkExtractDlgProc,WalkTargetDlgProc)
 #pragma alloc_text(WALK2,WalkTwoDlgProc,WalkTwoCmpDlgProc,WalkTwoSetDlgProc)
 #pragma alloc_text(UDIRS,add_udir,remove_udir,remove_ldir,load_udirs)
-#pragma alloc_text(UDIRS,save_udirs,load_setup,save_setup,add_setup)
+#pragma alloc_text(UDIRS,save_udirs,load_setups,save_setups,add_setups)
 #pragma alloc_text(UDIRS,remove_setup)
