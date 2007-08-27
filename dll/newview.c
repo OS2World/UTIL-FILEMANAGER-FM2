@@ -1089,9 +1089,10 @@ static VOID ReLineThread(VOID * args)
     if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
-      DosSleep(32);
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad) {
+        if (ad->text)
+          DosSleep(32);   // 26 Aug 07 GKY Fixes failure to load text file in some cases
 	ad->relining = TRUE;
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
 	  ad->busy++;
