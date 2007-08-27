@@ -1091,7 +1091,7 @@ static VOID ReLineThread(VOID * args)
       IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad) {
-        if (ad->text)
+        if (ad->text && ad->textsize && !ad->hex)
           DosSleep(32);   // 26 Aug 07 GKY Fixes failure to load text file in some cases
 	ad->relining = TRUE;
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
@@ -2565,12 +2565,14 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      IDM_NEXTBLANKLINE), !ad->hex);
       WinEnableWindow(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				      IDM_PREVBLANKLINE), !ad->hex);
-      if (!ad->numlines) {
-	if (!ad->text)
-	  Runtime_Error(pszSrcFile, __LINE__, "no data");
-	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
-      }
-      else {
+      if (ad->numlines)
+      //{      // 27 Aug 07 GKY This creates a duplicate error for a zero byte file
+      //  if (!ad->text)
+      //    Runtime_Error(pszSrcFile, __LINE__, "no data");
+      //  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
+      // }
+      // else
+      {
 	if (mp1 && (ULONG) mp1 < ad->numlines + 1) {
 
 	  RECTL Rectl;
