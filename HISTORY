@@ -22,11 +22,13 @@ New stuff's at the top.  This list is not necessarily complete.
  o Fixed unnecessary menu item removal when FM/2 is run as the WPS.(Gregg)
  o Fixed the restore of the settings under "Include in details view" on the "DirView"
    tab of the configuration notebook, Ticket 118/71 (John)
- o Subject column can be moved to left side of split bar in directory container 
+ o Subject column can be moved to left side of split bar in directory container
    and/or sized which will truncate long subjects (Gregg)
  o Avoid can not set fm3.ini read-only failure - DosSetPathInfo (Steven)
  o Avoid exception when exiting File/Directory Object Information dialog (Steven)
  o Fix a fast viewer text file load failure. (Gregg)
+ o Reversed behavior of horizontal scroll bar in fast viewer bar present with unwrapped text
+   absent with wrapped tex and hex
 
 3.06
  o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)
@@ -1301,4 +1303,3 @@ New stuff's at the top.  This list is not necessarily complete.
    Still, if you used 1.x you should feel at home.
 
 $Id$
-

@@ -22,6 +22,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY Fixed fast viewer text load failure
+  28 Aug 07 GKY Reversed horizontal scrollbar behavior to be present for unwrapped text and absent for wrapped text & hex.
 
 
 ***********************************************************************/
@@ -1866,7 +1867,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       BOOL invalidate = FALSE;
 
-      if (ad->wrapon || ad->hex) {
+      if (ad->wrapon || ad->hex) { // GKY reverse case where hscroll bar is presnt
         if (WinQueryWindow(ad->hhscroll, QW_PARENT) == ad->hwndFrame) {
           invalidate = TRUE;
           WinSetOwner(ad->hhscroll, HWND_OBJECT);
