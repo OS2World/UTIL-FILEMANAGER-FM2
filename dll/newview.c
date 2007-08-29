@@ -1794,7 +1794,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	else {
 	  WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
-	  DosSleep(32); //05 Aug 07 GKY 32
+	  DosSleep(16); //05 Aug 07 GKY 32
 	  return (MRESULT) 1;
 	}
       }
@@ -1866,14 +1866,14 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       BOOL invalidate = FALSE;
 
-      if (!ad->wrapon && !ad->hex) {
-	if (WinQueryWindow(ad->hhscroll, QW_PARENT) == ad->hwndFrame) {
-	  invalidate = TRUE;
-	  WinSetOwner(ad->hhscroll, HWND_OBJECT);
-	  WinSetParent(ad->hhscroll, HWND_OBJECT, TRUE);
-	  ad->maxx = 0;
-	  ad->horzscroll = 0;
-	}
+      if (ad->wrapon || ad->hex) {
+        if (WinQueryWindow(ad->hhscroll, QW_PARENT) == ad->hwndFrame) {
+          invalidate = TRUE;
+          WinSetOwner(ad->hhscroll, HWND_OBJECT);
+          WinSetParent(ad->hhscroll, HWND_OBJECT, TRUE);
+          ad->maxx = 0;
+          ad->horzscroll = 0;
+        }
       }
       else {
 	if (WinQueryWindow(ad->hhscroll, QW_PARENT) != ad->hwndFrame) {
@@ -3639,7 +3639,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	    WinInvalidateRect(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					      NEWVIEW_DRAG), NULL, FALSE);
-	    WinInvalidateRect(ad->hhscroll, NULL, FALSE);
+	    //WinInvalidateRect(ad->hhscroll, NULL, FALSE);
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
 	}
@@ -3678,7 +3678,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	    WinInvalidateRect(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					      NEWVIEW_DRAG), NULL, FALSE);
-	    WinInvalidateRect(ad->hhscroll, NULL, FALSE);
+	    //WinInvalidateRect(ad->hhscroll, NULL, FALSE);
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
 	}
