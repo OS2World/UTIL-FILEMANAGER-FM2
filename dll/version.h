@@ -43,6 +43,7 @@
   13 May 07 GKY v3.05.09: Release 1st warpin installer version
   24 Jun 07 GKY v3.06: Release 1st OpenWatcom release
   21 Aug 07 GKY v3.07beta01: Release
+  31 Aug 07 GKY v3.07: Release modified ini structure
 
 ***********************************************************************/
 
@@ -50,8 +51,8 @@
 #define VERMINOR       7
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-//#define VERREALMINOR   " "__DATE__
-#define VERREALMINOR   "beta01 " __DATE__ " " __TIME__
+#define VERREALMINOR   " "__DATE__
+//#define VERREALMINOR   "beta01 " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 
