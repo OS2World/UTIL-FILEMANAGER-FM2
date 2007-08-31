@@ -29,6 +29,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Fix a fast viewer text file load failure. (Gregg)
  o Reversed behavior of horizontal scroll bar in fast viewer bar present with unwrapped text
    absent with wrapped tex and hex
+ o Add accelerator support to quicklist windows (Steven)
 
 3.06
  o First release built with OpenWatcom associated documentation updates (Steven,Gregg,John)

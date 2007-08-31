@@ -40,6 +40,7 @@
   18 Aug 07 SHL Rework UM_FILLSETUPLIST for new setups storage
   19 Aug 07 SHL Move #pragma alloc_text to end of file for OpenWatcom
   19 Aug 07 SHL Rework SaveDirCnrState to return better error info
+  30 Aug 07 SHL Add accelerator support to quicklist windows
 
 ***********************************************************************/
 
@@ -503,8 +504,9 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 					 MPARAM mp2)
 {
   PFNWP oldproc = (PFNWP) INSTDATA(hwnd);
-  static HWND hwndMenu = (HWND) 0;
   USHORT id;
+
+  static HWND hwndMenu = (HWND)0;
   static BOOL emphasized = FALSE;
 
   switch (msg) {
@@ -522,6 +524,118 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
       hwndMenu = (HWND) 0;
     }
     break;
+
+  case WM_FOCUSCHANGE:
+    {
+      HAB hab = WinQueryAnchorBlock(hwnd);
+      HWND hwndParent = WinQueryWindow(hwnd, QW_PARENT);
+      HWND hwndFrame = WinQueryWindow(hwndParent, QW_PARENT);
+      static HACCEL haccelSaved = NULLHANDLE;
+      static HACCEL haccelDriveList = NULLHANDLE;
+      static HACCEL haccelSetupList = NULLHANDLE;
+      static HACCEL haccelUserList = NULLHANDLE;
+      static HACCEL haccelCmdList = NULLHANDLE;
+      static HACCEL haccelButtonList = NULLHANDLE;
+      // DbgMsg(pszSrcFile, __LINE__, "WM_FOCUSCHANGE %u", SHORT1FROMMP(mp2));
+      id = WinQueryWindowUShort(hwndParent, QWS_ID);
+      if (SHORT1FROMMP(mp2)) {
+	// If getting focus 1st time - save original accelerator
+	if (haccelSaved == NULLHANDLE) {
+	  haccelSaved = WinQueryAccelTable(hab, hwndFrame);
+	  if (haccelSaved == NULLHANDLE)
+	    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinQueryAccelTable");
+	  // else
+	    // DbgMsg(pszSrcFile, __LINE__, "WinQueryAccelTable SAVED %x", haccelSaved);
+	}
+	if (haccelSaved != NULLHANDLE) {
+	  switch (id) {
+	  case MAIN_DRIVELIST:
+	    if (haccelDriveList == NULLHANDLE) {
+		haccelDriveList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_DRIVELIST);
+		if (haccelDriveList == NULLHANDLE)
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+	    }
+	    if (haccelDriveList != NULLHANDLE) {
+	      if (!WinSetAccelTable(hab, haccelDriveList, hwndFrame))
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	      // else
+		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_DRIVELIST %x %x", hwndFrame, haccelDriveList);
+	    }
+	    break;
+	  case MAIN_SETUPLIST:
+	    if (haccelSetupList == NULLHANDLE) {
+		haccelSetupList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_SETUPLIST);
+		if (haccelSetupList == NULLHANDLE)
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+	    }
+	    if (haccelSetupList != NULLHANDLE) {
+	      if (!WinSetAccelTable(hab, haccelSetupList, hwndFrame))
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	      // else
+		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_SETUPLIST %x %x", hwndFrame, haccelSetupList);
+	    }
+	    break;
+	  case MAIN_CMDLIST:
+	    if (haccelCmdList == NULLHANDLE) {
+		haccelCmdList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_CMDLIST);
+		if (haccelCmdList == NULLHANDLE)
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+	    }
+	    if (haccelCmdList != NULLHANDLE) {
+	      if (!WinSetAccelTable(hab, haccelCmdList, hwndFrame))
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	      // else
+		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_CMDLIST %x %x", hwndFrame, haccelCmdList);
+	    }
+	    break;
+	  case MAIN_USERLIST:
+	    if (haccelUserList == NULLHANDLE) {
+		haccelUserList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_USERLIST);
+		if (haccelUserList == NULLHANDLE)
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+	    }
+	    if (haccelUserList != NULLHANDLE) {
+	      if (!WinSetAccelTable(hab, haccelUserList, hwndFrame))
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	      // else
+		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_USERLIST %x %x", hwndFrame, haccelUserList);
+	    }
+	    break;
+	  case MAIN_BUTTONLIST:
+	    if (haccelButtonList == NULLHANDLE) {
+		haccelButtonList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_BUTTONLIST);
+		if (haccelButtonList == NULLHANDLE)
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+	    }
+	    if (haccelButtonList != NULLHANDLE) {
+	      if (!WinSetAccelTable(hab, haccelButtonList, hwndFrame))
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	      // else
+		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_BUTTONLIST %x %x", hwndFrame, haccelButtonList);
+	    }
+	    break;
+	  } // switch
+	}
+      }
+      else {
+	// Losing focus
+	switch (id) {
+	case MAIN_DRIVELIST:
+	case MAIN_SETUPLIST:
+	case MAIN_CMDLIST:
+	case MAIN_USERLIST:
+	case MAIN_BUTTONLIST:
+	  if (haccelSaved != NULLHANDLE) {
+	    if (!WinSetAccelTable(hab, haccelSaved, hwndFrame))
+	      Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	    // else
+	      // DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable SAVED %x %x", hwndFrame, haccelSaved);
+	  }
+	  break;
+	} // switch
+      }
+    }
+    break; // WM_FOCUSCHANGE
 
   case WM_CONTEXTMENU:
     {
@@ -552,7 +666,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
       default:
 	ret = FALSE;
 	break;
-      }
+      } // switch
       return ret;
     }
 
@@ -4032,6 +4146,25 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   SetShiftState();
   switch (SHORT1FROMMP(mp1)) {
+
+  case IDM_CONTEXTMENU:
+    {
+      HWND hwnd = WinQueryFocus(HWND_DESKTOP);
+      // DbgMsg(pszSrcFile, __LINE__, "IDM_CONTEXTMENU %x", hwnd);
+      if (hwnd != NULLHANDLE) {
+	HWND hwndParent = WinQueryWindow(hwnd, QW_PARENT);
+	USHORT id = WinQueryWindowUShort(hwndParent, QWS_ID);
+	switch (id) {
+	case MAIN_SETUPLIST:
+	case MAIN_USERLIST:
+	case MAIN_CMDLIST:
+	  // DbgMsg(pszSrcFile, __LINE__, "WM_CONTEXTMENU");
+	  WinPostMsg(hwnd, WM_CONTEXTMENU, 0, 0);
+	}
+      }
+    }
+    break;
+
   case IDM_SETTARGET:
     SetTargetDir(hwnd, FALSE);
     break;
@@ -4864,8 +4997,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  WM_COMMAND, mp1, mp2);
       }
     }
-    break;
-  }
+    break;				// default
+  } // switch mp1
   return 0;
 }
 
@@ -5020,6 +5153,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 				    MAIN_SETUPLIST, NULL, NULL);
     if (!hwndStatelist)
       Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+
     hwndDrivelist = WinCreateWindow(hwndFrame,
 				    WC_COMBOBOX,
 				    (PSZ) NULL,

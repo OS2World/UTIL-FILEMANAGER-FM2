@@ -292,7 +292,7 @@ No data.
 Could not start thread.
 Undelete:
 Select files to undelete, then click the Okay button.  Click Cancel to exit without doing anything.  Change the mask in the entry field if desired, or select another drive from the dropdown listbox.\r\rNote this requires UNDELETE.COM to be on your PATH (it is in the default installation) and the UNDELETE environment variable to be set for the drive in CONFIG.SYS.  Type HELP UNDELETE at a command line for more information.
-The %s file has been marked ReadOnly -- please correct.
+The FM/2 INI file \"%s\" can not be marked read/write.
 FM/2: Help
 
 

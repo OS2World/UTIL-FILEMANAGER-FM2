@@ -846,6 +846,10 @@ used in these windows. Note that you must set the entry field and
 listbox components separately. To set the listbox component, drop
 onto the button, not the entry field.
 :p.
+The quicklist windows have window-specific context menus and accelerators.
+If you want access to the general context menu or accelerators,
+press the Esc key to exit from the quicklist window.
+:p.
 The :hp1.Interface:ehp1. (list-and-arrow) :hp1.button:ehp1. at the
 bottom right corner of the FM/2 window toggles the quicklists on and off.
 :p.

@@ -25,6 +25,7 @@
   15 Jun 07 SHL Update for OpenWatcom
   05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
   06 Aug 07 GKY Fix Dirsizes accel key to be ctrl + z
+  30 Aug 07 SHL Add accelerator support to QuickList windows
 
 ***********************************************************************/
 
@@ -1893,20 +1894,58 @@ MENU ID_BUTTONMENU
   MENUITEM "Help",                    IDM_HELP
 }
 
-MENU MAIN_USERLIST
+ACCELTABLE  MAIN_DRIVELIST
 {
-  MENUITEM "~Add pathname",           IDM_ADDTOUSERLIST
-  MENUITEM "~Delete pathname",        IDM_DELETEFROMUSERLIST
-  MENUITEM "",                        -1,             MIS_SEPARATOR
-  MENUITEM "~Help",                   IDM_HELPUSERLIST
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
 }
 
 MENU MAIN_SETUPLIST
 {
-  MENUITEM "~Save state as name",     IDM_SAVEDIRCNRSTATE
-  MENUITEM "~Delete state name",      IDM_DELETEDIRCNRSTATE
-  MENUITEM "",                        -1,             MIS_SEPARATOR
-  MENUITEM "~Help",                   IDM_HELPUSERLIST
+  MENUITEM "~Save state as name\tCtrl + s",  IDM_SAVEDIRCNRSTATE
+  MENUITEM "~Delete state name\tCtrl + d",   IDM_DELETEDIRCNRSTATE
+  MENUITEM "",                        -1,    MIS_SEPARATOR
+  MENUITEM "~Help",                          IDM_HELPUSERLIST
+}
+
+ACCELTABLE  MAIN_SETUPLIST
+{
+  "a",         IDM_SAVEDIRCNRSTATE,    CONTROL
+  "d",         IDM_DELETEDIRCNRSTATE,  CONTROL
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
+}
+
+ACCELTABLE  MAIN_CMDLIST
+{
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
+}
+
+MENU MAIN_USERLIST
+{
+  MENUITEM "~Add pathname\tCtrl + a",     IDM_ADDTOUSERLIST
+  MENUITEM "~Delete pathname\tCtrl + d",  IDM_DELETEFROMUSERLIST
+  MENUITEM "",                        -1, MIS_SEPARATOR
+  MENUITEM "~Help",                       IDM_HELPUSERLIST
+}
+
+ACCELTABLE  MAIN_USERLIST
+{
+  "a",         IDM_ADDTOUSERLIST,      CONTROL
+  "d",         IDM_DELETEFROMUSERLIST, CONTROL
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
+}
+
+ACCELTABLE  MAIN_BUTTONLIST
+{
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
 }
 
 MENU SEEALL_FRAME
