@@ -34,6 +34,7 @@
   23 Aug 07 SHL InitFM3DLL: report INI file DosSetPathInfo error correctly
   23 Aug 07 SHL Use BldFullPathName
   25 Aug 07 SHL Work around DosSetPathInfo kernel defect
+  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -669,24 +670,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       fIniExisted = TRUE;
       if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
 	fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
-	rc = DosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
+	rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
 	if (rc) {
-	  /* Some kernels to do not handle fs3 buffers that cross 64K boundaries
-	     and return ERROR_INVALID_NAME
-	     If code works around the problem because if fs3 crosses the boundary
-	     fsa2 will not because we don't have enough data on the stack for this
-	     to occur 25 Aug 07 SHL
-	  */
-	  if (rc == ERROR_INVALID_NAME) {
-	    FILESTATUS3 fs3x;
-	    fs3x = fs3;
-	    rc = DosSetPathInfo(inipath, FIL_STANDARD, &fs3x, sizeof(fs3x), 0);
-	  }
-	  if (rc) {
-	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		      GetPString(IDS_INIREADONLYTEXT), inipath);
 	  }
-	}
+
       }
     }
 

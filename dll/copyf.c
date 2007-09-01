@@ -16,6 +16,7 @@
   28 May 05 SHL Drop debug code
   14 Jul 06 SHL Use Runtime_Error
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -298,7 +299,7 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
     eaop.fpFEA2List = pfealist;
     eaop.oError = 0L;
     DosError(FERR_DISABLEHARDERR);
-    rc = DosSetPathInfo(filename,
+    rc = xDosSetPathInfo(filename,
 			FIL_QUERYEASIZE,
 			(PVOID) & eaop, (ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
     DosFreeMem(pfealist);
@@ -666,7 +667,7 @@ INT make_deleteable(CHAR * filename)
   if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(FILESTATUS3))) {
     fsi.attrFile = 0;
     DosError(FERR_DISABLEHARDERR);
-    if (!DosSetPathInfo(filename,
+    if (!xDosSetPathInfo(filename,
 			FIL_STANDARD, &fsi, sizeof(FILESTATUS3), 0L))
       ret = 0;
   }

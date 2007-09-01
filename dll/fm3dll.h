@@ -60,6 +60,7 @@
   19 Aug 07 SHL Move FILESTOGET_MIN/MAX here
   19 Aug 07 SHL Update SaveDirCnrState return
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
+  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -1316,6 +1317,11 @@ char *GetPString(ULONG id);
 BOOL StringsLoaded(void);
 
 /* wrappers.c */
+APIRET APIENTRY  xDosSetPathInfo(PSZ   pszPathName,
+                                 ULONG ulInfoLevel,
+                                 PVOID pInfoBuf,
+                                 ULONG cbInfoBuf,
+                                 ULONG flOptions);
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 	   UINT uiLineNumber);
 PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,

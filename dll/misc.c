@@ -32,6 +32,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   14 Aug 07 SHL Delete obsoletes
   14 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -746,7 +747,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    eaop.fpGEA2List = (PGEA2LIST) 0;
 	    eaop.fpFEA2List = pfealist;
 	    eaop.oError = 0L;
-	    rc = DosSetPathInfo(pci->pszFileName,
+	    rc = xDosSetPathInfo(pci->pszFileName,
 				FIL_QUERYEASIZE,
 				(PVOID) & eaop, sizeof(EAOP2), DSPI_WRTTHRU);
 	    DosFreeMem(pfealist);
