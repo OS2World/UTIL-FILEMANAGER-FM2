@@ -32,7 +32,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   14 Aug 07 SHL Delete obsoletes
   14 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -520,7 +520,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
       pfi = pfi->pNextFieldInfo;
       pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
       if (isCompCnr)
-        pfi->flData |= CFA_FIREADONLY;
+	pfi->flData |= CFA_FIREADONLY;
       pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
       pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
 				  GetPString(IDS_SUBJ);
@@ -540,7 +540,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
       pfi = pfi->pNextFieldInfo;
       pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
       if (isCompCnr)
-        pfi->flData |= CFA_FIREADONLY;
+	pfi->flData |= CFA_FIREADONLY;
       pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
       pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
 				  GetPString(IDS_SUBJ);
@@ -747,9 +747,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    eaop.fpGEA2List = (PGEA2LIST) 0;
 	    eaop.fpFEA2List = pfealist;
 	    eaop.oError = 0L;
-	    rc = xDosSetPathInfo(pci->pszFileName,
-				FIL_QUERYEASIZE,
-				(PVOID) & eaop, sizeof(EAOP2), DSPI_WRTTHRU);
+	    rc = xDosSetPathInfo(pci->pszFileName, FIL_QUERYEASIZE,
+				 &eaop, sizeof(eaop), DSPI_WRTTHRU);
 	    DosFreeMem(pfealist);
 	    if (rc)
 	      return FALSE;

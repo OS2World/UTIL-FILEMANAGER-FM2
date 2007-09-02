@@ -34,7 +34,7 @@
   23 Aug 07 SHL InitFM3DLL: report INI file DosSetPathInfo error correctly
   23 Aug 07 SHL Use BldFullPathName
   25 Aug 07 SHL Work around DosSetPathInfo kernel defect
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 

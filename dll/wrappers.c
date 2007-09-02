@@ -27,34 +27,46 @@
 #include "fm3dll.h"
 #include "fm3str.h"
 
-APIRET APIENTRY  xDosSetPathInfo(PSZ   pszPathName,
-                                 ULONG ulInfoLevel,
-                                 PVOID pInfoBuf,
-                                 ULONG cbInfoBuf,
-                                 ULONG flOptions)
-{
-    APIRET rc;
+static PSZ pszSrcFile = __FILE__;
 
-    rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
-    if (rc)
-      /* Some kernels to do not handle fs3 buffers that cross 64K boundaries
-        and return ERROR_INVALID_NAME
-        If code works around the problem because if fs3 crosses the boundary
-        fsa2 will not because we don't have enough data on the stack for this
-        to occur 25 Aug 07 SHL
-      */
-        if (rc == ERROR_INVALID_NAME){
-          if (ulInfoLevel == FIL_STANDARD){
-            FILESTATUS3 fs3x;
-            fs3x = *(PFILESTATUS3) pInfoBuf;
-            rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3x, sizeof(fs3x), flOptions);
-          }
-          else {
-            EAOP2 eaop2x;
-            eaop2x = *(PEAOP2) pInfoBuf;
-            rc = DosSetPathInfo(pszPathName, ulInfoLevel, &eaop2x, sizeof(eaop2x), flOptions);
-          }
-        }
+/**
+ * Wrap DosSetPathInfo to avoid spurious ERROR_INVALID_NAME returns
+ * Some kernels to do not correctly handle FILESTATUS3 and PEAOP2 buffers
+ * that cross a 64K boundary.
+ * When this occurs, they return ERROR_INVALID_NAME.
+ * This code works around the problem because if the passed buffer crosses
+ * the boundary the alternate buffer will not because both are on the stack
+ * and we don't put enough additional data on the stack for this to occur.
+ * It is caller's responsitibility to report errors
+ * @param pInfoBuf pointer to FILESTATUS3 or EAOP2 buffer
+ * @param ulInfoLevel FIL_STANDARD or FIL_QUERYEASIZE
+ * @returns Same as DosSetPathInfo
+ */
+
+APIRET APIENTRY xDosSetPathInfo(PSZ pszPathName,
+				ULONG ulInfoLevel,
+				PVOID pInfoBuf,
+				ULONG cbInfoBuf,
+				ULONG flOptions)
+{
+    APIRET rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
+    FILESTATUS3 alt_fs3;
+    EAOP2 alt_eaop2;
+    if (rc == ERROR_INVALID_NAME) {
+      switch (ulInfoLevel) {
+      case FIL_STANDARD:
+	alt_fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy
+	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3, sizeof(alt_fs3), flOptions);
+	break;
+      case FIL_QUERYEASIZE:
+	alt_eaop2 = *(PEAOP2)pInfoBuf;	// Copy
+	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_eaop2, sizeof(alt_eaop2), flOptions);
+	break;
+      default:
+	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
+	rc = ERROR_INVALID_PARAMETER;
+      } // switch
+    }
     return rc;
 }
 

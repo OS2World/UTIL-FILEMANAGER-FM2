@@ -16,7 +16,7 @@
   28 May 05 SHL Drop debug code
   14 Jul 06 SHL Use Runtime_Error
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -299,9 +299,8 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
     eaop.fpFEA2List = pfealist;
     eaop.oError = 0L;
     DosError(FERR_DISABLEHARDERR);
-    rc = xDosSetPathInfo(filename,
-			FIL_QUERYEASIZE,
-			(PVOID) & eaop, (ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
+    rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE,
+			 &eaop, sizeof(eaop), DSPI_WRTTHRU);
     DosFreeMem(pfealist);
     if (rc)
       return FALSE;
@@ -313,7 +312,7 @@ BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname)
 {
   BOOL ret = FALSE;
 
-  /* NOTE:  newname should be CCHMAXPATH chars long! */
+  /* NOTE: newname should be CCHMAXPATH chars long! */
 
   if (strchr(newname, '*') || strchr(newname, '?')) {
 
@@ -374,7 +373,7 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
 	if (rc == ERROR_INVALID_NAME || rc == ERROR_FILENAME_EXCED_RANGE) {
 
 	  /* truncate directory name */
-	  /* create that directory   */
+	  /* create that directory */
 	  /* update containers for name used */
 
 	}
@@ -401,7 +400,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
    *  -1:  bad string parameter(s)
    *  -2:  source didn't exist
    *  -3:  bad type
-   *   anything else:  API return
+   *   anything else: API return
    */
 
   CHAR fullnewname[CCHMAXPATH + 1], longname[CCHMAXPATH],
@@ -664,17 +663,16 @@ INT make_deleteable(CHAR * filename)
   FILESTATUS3 fsi;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(FILESTATUS3))) {
+  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi))) {
     fsi.attrFile = 0;
     DosError(FERR_DISABLEHARDERR);
-    if (!xDosSetPathInfo(filename,
-			FIL_STANDARD, &fsi, sizeof(FILESTATUS3), 0L))
+    if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
       ret = 0;
   }
   return ret;
 }
 
-INT wipeallf(CHAR * string, ...)
+INT wipeallf(CHAR *string, ...)
 {
   /* unlink everything from directory on down... */
 

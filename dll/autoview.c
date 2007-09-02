@@ -18,7 +18,7 @@
   03 Nov 06 SHL Renames
   30 Mar 07 GKY Remove GetPString for window class names
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -194,8 +194,8 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
     eaop.fpFEA2List = pfealist;
     pfealist->cbList = 13L + (ULONG) pfealist->list[0].cbName +
       (ULONG) pfealist->list[0].cbValue;
-    rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & eaop,
-			(ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
+    rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE,
+			 &eaop, sizeof(eaop), DSPI_WRTTHRU);
     DosFreeMem(pfealist);
     if (!rc)
       ret = TRUE;

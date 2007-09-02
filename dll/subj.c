@@ -12,7 +12,7 @@
   17 Jul 06 SHL Use Runtime_Error
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -135,9 +135,9 @@ INT Subject(HWND hwnd, CHAR * filename)
 	  pfealist->list[0].cbValue = 0;
 	eaop.fpGEA2List = (PGEA2LIST) 0;
 	eaop.fpFEA2List = pfealist;
-	eaop.oError = 0L;
-	rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & eaop,
-	         	     (ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
+	eaop.oError = 0;
+	rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE,
+			     &eaop, sizeof(eaop), DSPI_WRTTHRU);
 	DosFreeMem(pfealist);
 	if (rc) {
 	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,

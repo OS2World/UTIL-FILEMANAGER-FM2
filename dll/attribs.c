@@ -10,7 +10,7 @@
 
   14 Jul 06 SHL Use Runtime_Error
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -377,8 +377,7 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fi.attrFile &= (~FILE_ARCHIVED);
 	  else if (state == 1)
 	    fi.attrFile |= FILE_ARCHIVED;
-	  xDosSetPathInfo(li->list[x], FIL_STANDARD, (PVOID) & fi,
-			 (ULONG) sizeof(FILESTATUS3), 0L);
+	  xDosSetPathInfo(li->list[x], FIL_STANDARD, &fi, sizeof(fi), 0);
 	}
 	WinDismissDlg(hwnd, 1);
       }

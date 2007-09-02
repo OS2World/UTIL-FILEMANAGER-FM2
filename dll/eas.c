@@ -19,7 +19,7 @@
   03 Aug 07 GKY Remove surrious error message
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
 
 ***********************************************************************/
 
@@ -206,8 +206,8 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      eaop.fpGEA2List = (PGEA2LIST) 0;
 	      eaop.fpFEA2List = pfealist;
 	      eaop.oError = 0;
-	      xDosSetPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & eaop,
-			     (ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
+	      xDosSetPathInfo(filename, FIL_QUERYEASIZE,
+			      &eaop, sizeof(eaop), DSPI_WRTTHRU);
 	      WinDismissDlg(hwnd, 1);
 	    }
 	  }
@@ -906,8 +906,8 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  eaop.fpGEA2List = &gealist;
 	  eaop.fpFEA2List = pfealist;
 	  eaop.oError = 0;
-	  rc = xDosSetPathInfo(eap->filename, FIL_QUERYEASIZE, (PVOID) & eaop,
-			      (ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
+	  rc = xDosSetPathInfo(eap->filename, FIL_QUERYEASIZE,
+			       &eaop, sizeof(eaop), DSPI_WRTTHRU);
 	  free(pfealist);
 	  if (rc)
 	    Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
@@ -1150,8 +1150,8 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
     pfealist->cbList = 13 + (ULONG) pfealist->list[0].cbName +
 		       (ULONG)pfealist->list[0].cbValue;
 
-    rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & eaop,
-			(ULONG) sizeof(EAOP2), DSPI_WRTTHRU);
+    rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE,
+			 &eaop, sizeof(eaop), DSPI_WRTTHRU);
     if (rc) {
       DosFreeMem(pfealist);
       pfealist = NULL;
