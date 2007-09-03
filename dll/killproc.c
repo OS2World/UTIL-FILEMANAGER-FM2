@@ -106,9 +106,9 @@ static VOID FillKillListThread2(VOID * arg)
 	    sprintf(s, "%04x ", ppi->pid);
 	    if (!stricmp(pmi->szModName, "SYSINIT"))
 	      GetDosPgmName(ppi->pid, s + strlen(s));
-	    else {
+            else {
 	      if (*pmi->szModName)
-		strcat(s, pmi->szModName);
+                strcat(s, pmi->szModName);
 	      else
 		strcat(s, GetPString(IDS_UNKNOWNPROCTEXT));
 	    }
@@ -169,9 +169,9 @@ static VOID FillKillListThread3(VOID * arg)
 	    sprintf(s, "%04x ", ppi->pid);
 	    if (!stricmp((CHAR *) pmi->pName, "SYSINIT"))
 	      GetDosPgmName(ppi->pid, s + strlen(s));
-	    else {
+            else {
 	      if (*pmi->pName)
-		strcat(s, (CHAR *) pmi->pName);
+                strcat(s, (CHAR *) pmi->pName);
 	      else
 		strcat(s, GetPString(IDS_UNKNOWNPROCTEXT));
 	    }
@@ -505,4 +505,4 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 }
 
 #pragma alloc_text(KILLPROC,FillKillListThread,FillKillListThread2,GetDosPgmName,KillDlgProc)
-#pragma alloc_text(KILLPROC,FillKillListThread)
+#pragma alloc_text(KILLPROC,FillKillListThread3)

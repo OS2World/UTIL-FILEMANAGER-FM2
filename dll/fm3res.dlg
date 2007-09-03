@@ -914,27 +914,27 @@ END
 
 DLGTEMPLATE KILL_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "FM/2: Kill Process", KILL_FRAME, 25, -48, 265, 203, NOT 
-            FS_DLGBORDER | WS_VISIBLE | NOT WS_SAVEBITS, FCF_SYSMENU | 
+    DIALOG  "FM/2: Kill Process", KILL_FRAME, 25, -48, 265, 203, NOT
+            FS_DLGBORDER | WS_VISIBLE | NOT WS_SAVEBITS, FCF_SYSMENU |
             FCF_TITLEBAR | FCF_MINBUTTON | FCF_MAXBUTTON
     BEGIN
-        LISTBOX         KILL_LISTBOX, 16, 58, 230, 124, LS_NOADJUSTPOS | 
+        LISTBOX         KILL_LISTBOX, 16, 58, 230, 124, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
-        DEFPUSHBUTTON   "~Kill", COLR_BLACK, 14, 9, 40, 14, 
+        DEFPUSHBUTTON   "~Kill", COLR_BLACK, 14, 9, 40, 14,
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "~Rescan", KILL_RESCAN, 110, 9, 40, 14, 
+        PUSHBUTTON      "~Rescan", KILL_RESCAN, 110, 9, 40, 14,
                         BS_NOPOINTERFOCUS
         PUSHBUTTON      "~Help", IDM_HELP, 156, 9, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Cancel", COLR_BLUE, 204, 9, 40, 14, 
+        PUSHBUTTON      "~Cancel", COLR_BLUE, 204, 9, 40, 14,
                         BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~Use DosQProcStat 16 bit API (deprecated)", 
+        AUTOCHECKBOX    "~Use DosQProcStat 16 bit API (deprecated)",
                         KILL_CHECKBOX, 24, 29, 201, 10, WS_GROUP
-        AUTOCHECKBOX    "~Use DosQSysState 32 bit API  (preferred)", 
+        AUTOCHECKBOX    "Use Dos~QSysState 32 bit API  (preferred)",
                         KILL2_CHECKBOX, 24, 40, 201, 12
         LTEXT           "PID: Name:", KILL_HDR, 18, 185, 86, 8, DT_VCENTER
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
-        PUSHBUTTON      "Show", KILL_SHOW, 62, 9, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Show", KILL_SHOW, 62, 9, 40, 14, BS_NOPOINTERFOCUS
     END
 END
 
