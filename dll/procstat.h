@@ -1,3 +1,14 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Define DosQProcStatus interface
+
+  02 Sep 07 SHL Update for OpenWatcom
+
+***********************************************************************/
+
 /**********************************************************************
  * MODULE NAME :  procstat.h             AUTHOR:  Rick Fishman        *
  * DATE WRITTEN:   2-10-92                                            *
@@ -16,8 +27,14 @@
  *                                                                    *
  **********************************************************************/
 
+#if defined(__WATCOMC__)
+APIRET16 APIENTRY16 DosQProcStatus(ULONG *pBuf, USHORT cbBuf);
+#endif
+
+#if defined(__IBMC__)
 #pragma linkage( DosQProcStatus, far16 pascal )
 USHORT DosQProcStatus(PVOID pvBuf, USHORT cbBuf);
+#endif
 
 #define PROCESS_END_INDICATOR   3	// Indicates end of process structs
 

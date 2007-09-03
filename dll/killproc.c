@@ -16,7 +16,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   02 Sep 07 GKY Replaced DosQProcStatus with DosQuerySysState to fix trap in thunk code
-
+  02 Sep 07 SHL Expand FillKillListThread2 stack to avoid exception in __TNK
 
 ***********************************************************************/
 
@@ -94,7 +94,7 @@ static VOID FillKillListThread2(VOID * arg)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
   else {
-    rc = DosQProcStatus(pbh, USHRT_MAX);
+    rc = DosQProcStatus((ULONG *)pbh, USHRT_MAX);
     if (!rc) {
       ppi = pbh->ppi;
       while (ppi->ulEndIndicator != PROCESS_END_INDICATOR) {
@@ -410,8 +410,8 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       listdone = FALSE;
       if (fUseQProcStat) {
 	if (_beginthread(FillKillListThread2,
-			 NULL, 65536, (PVOID) & hwnd) != -1)
-	  DosSleep(100);//05 Aug 07 GKY 250
+			 NULL, 65536 + 8192, (PVOID)&hwnd) != -1)
+	  DosSleep(100);		// 05 Aug 07 GKY 250
 	else
             WinDismissDlg(hwnd, 0);
       }
@@ -424,7 +424,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else {
 	if (_beginthread(FillKillListThread,
 			 NULL, 65536, (PVOID) & hwnd) != -1)
-	  DosSleep(100); //05 Aug 07 GKY 250
+	  DosSleep(100); 		// 05 Aug 07 GKY 250
 	else
 	  WinDismissDlg(hwnd, 0);
       }

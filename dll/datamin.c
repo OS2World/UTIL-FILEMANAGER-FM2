@@ -806,13 +806,13 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG numprocs = 0, numthreads = 0;
 	APIRET rc;
 
-	rc = DosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+	rc = DosAllocMem((PVOID)&pbh, USHRT_MAX + 4096,
 			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
 	if (rc)
 	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 		    GetPString(IDS_OUTOFMEMORY));
 	else {
-	  if (DosQProcStatus(pbh, USHRT_MAX))
+	  if (DosQProcStatus((ULONG *)pbh, USHRT_MAX))
 	    noqproc = TRUE;
 	  else {
 	    ppi = pbh->ppi;
