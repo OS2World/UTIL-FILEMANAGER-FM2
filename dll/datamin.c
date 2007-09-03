@@ -19,6 +19,7 @@
   07 Jan 07 GKY Move error strings etc. to string file
   30 Mar 07 GKY Remove GetPString for window class names
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  02 Sep 07 GKY Replaced DosQProcStatus with DosQuerySysState to fix trap in thunk code
 
 ***********************************************************************/
 
@@ -795,9 +796,9 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP5:			// Process status
     {
-      CHAR s[134], tm[38], szQty[38];
+     CHAR s[134], tm[38], szQty[38];
 
-      if (fUseQProcStat && !noqproc) {
+     if (fUseQProcStat && !noqproc) {
 
 	PROCESSINFO *ppi;
 	BUFFHEADER *pbh = NULL;
@@ -824,6 +825,45 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		numthreads += ppi->usThreadCount;
 	      }
 	      ppi = (PPROCESSINFO) (ppi->ptiFirst + ppi->usThreadCount);
+	    }
+	    commafmt(szQty, sizeof(szQty), numprocs);
+	    commafmt(tm, sizeof(tm), numthreads);
+	    sprintf(s,
+		    " %s%s  %s%s",
+		    GetPString(IDS_PROCSTITLETEXT),
+		    szQty, GetPString(IDS_THRDSTITLETEXT), tm);
+	    WinSetDlgItemText(hwnd, MINI_PROC, s);
+	  }
+	  DosFreeMem(pbh);
+	}
+      }
+      else if (fUseQSysState && !noqproc) {
+
+	QSPREC *ppi;
+	QSPTRREC *pbh = NULL;
+	QSLREC *pmi;
+	ULONG numprocs = 0, numthreads = 0;
+	APIRET rc;
+
+	rc = DosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+	if (rc)
+	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
+		    GetPString(IDS_OUTOFMEMORY));
+	else { //2 Sep 07 GKY 0x05 = process & Mod data only
+	  if (DosQuerySysState(QS_PROCESS | QS_MTE, 0, 0, 0, pbh, USHRT_MAX))
+	    noqproc = TRUE;
+	  else {
+	    ppi = pbh->pProcRec;
+	    while (ppi->RecType == 1) {
+	      pmi = pbh->pLibRec;
+	      while (pmi && ppi->hMte != pmi->hmte)
+		pmi = pmi->pNextRec;
+	      if (pmi) {
+		numprocs++;
+		numthreads += ppi->cTCB;
+	      }
+	      ppi = (QSPREC *) (ppi->pThrdRec + ppi->cTCB);
 	    }
 	    commafmt(szQty, sizeof(szQty), numprocs);
 	    commafmt(tm, sizeof(tm), numthreads);

@@ -15,6 +15,7 @@
   03 Nov 06 SHL Count thread usage
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  02 Sep 07 GKY Replaced DosQProcStatus with DosQuerySysState to fix trap in thunk code
 
 
 ***********************************************************************/
@@ -32,10 +33,10 @@
 #include <process.h>
 #include <limits.h>
 
-#include "procstat.h"
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "procstat.h"
 
 #pragma data_seg(DATA2)
 
@@ -121,6 +122,69 @@ static VOID FillKillListThread2(VOID * arg)
 	  }
 	}
 	ppi = (PPROCESSINFO) (ppi->ptiFirst + ppi->usThreadCount);
+      }					// while
+    }
+    DosFreeMem(pbh);
+  }
+
+  if (WinIsWindow(thab, hwnd))
+    PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
+  WinDestroyMsgQueue(thmq);
+  DecrThreadUsage();
+  WinTerminate(thab);
+}
+
+static VOID FillKillListThread3(VOID * arg)
+{
+  HWND hwnd = *(HWND *) arg;
+  CHAR s[1036];
+  HAB thab;
+  HMQ thmq;
+  INT rc;
+  QSPREC *ppi;
+  QSPTRREC *pbh;
+  QSLREC *pmi;
+
+  thab = WinInitialize(0);
+  thmq = WinCreateMsgQueue(thab, 0);
+  WinCancelShutdown(thmq, TRUE);
+  IncrThreadUsage();
+
+  WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
+  rc = DosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  if (rc)
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      GetPString(IDS_OUTOFMEMORY));
+  else {
+    rc = DosQuerySysState(QS_PROCESS | QS_MTE, 0, 0, 0, pbh, USHRT_MAX);
+    if (!rc) {
+      ppi = pbh->pProcRec;
+      while (ppi->RecType == 1) {
+	if (ppi->pid != mypid) {
+	  pmi = pbh->pLibRec;
+	  while (pmi && ppi->hMte != pmi->hmte)
+	    pmi = pmi->pNextRec;
+	  if (pmi) {
+	    sprintf(s, "%04x ", ppi->pid);
+	    if (!stricmp((CHAR *) pmi->pName, "SYSINIT"))
+	      GetDosPgmName(ppi->pid, s + strlen(s));
+	    else {
+	      if (*pmi->pName)
+		strcat(s, (CHAR *) pmi->pName);
+	      else
+		strcat(s, GetPString(IDS_UNKNOWNPROCTEXT));
+	    }
+	    if (WinIsWindow(thab, hwnd)) {
+	      WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_INSERTITEM,
+				MPFROM2SHORT(LIT_SORTASCENDING, 0),
+				MPFROMP(s));
+	    }
+	    else
+	      break;
+	  }
+	}
+	ppi = (QSPREC *) (ppi->pThrdRec + ppi->cTCB);
       }					// while
     }
     DosFreeMem(pbh);
@@ -240,6 +304,15 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hptrIcon = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, KILL_FRAME);
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(hptrIcon), MPVOID);
     WinCheckButton(hwnd, KILL_CHECKBOX, fUseQProcStat);
+    WinCheckButton(hwnd, KILL2_CHECKBOX, fUseQSysState);
+    if (WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX)) {
+      WinCheckButton(hwnd, KILL_CHECKBOX, FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, KILL_CHECKBOX), FALSE);
+    }
+    if (WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX)) {
+      WinCheckButton(hwnd, KILL2_CHECKBOX, FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, KILL2_CHECKBOX), FALSE);
+    }
     PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
     break;
 
@@ -266,8 +339,27 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fUseQProcStat = WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX);
       PrfWriteProfileData(fmprof,
 			  FM3Str,
-			  "UseQProcStat", &fUseQProcStat, sizeof(BOOL));
+                          "UseQProcStat", &fUseQProcStat, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
+      if (WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX)) {
+	WinCheckButton(hwnd, KILL2_CHECKBOX, FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd, KILL2_CHECKBOX), FALSE);
+      }
+      else
+	WinEnableWindow(WinWindowFromID(hwnd, KILL2_CHECKBOX), TRUE);
+      break;
+    case KILL2_CHECKBOX:
+      fUseQSysState = WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX);
+      PrfWriteProfileData(fmprof,
+			  FM3Str,
+			  "UseQSysState", &fUseQSysState, sizeof(BOOL));
+      PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
+      if (WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX)) {
+	WinCheckButton(hwnd, KILL_CHECKBOX, FALSE);
+	WinEnableWindow(WinWindowFromID(hwnd, KILL_CHECKBOX), FALSE);
+      }
+      else
+	WinEnableWindow(WinWindowFromID(hwnd, KILL_CHECKBOX), TRUE);
       break;
 
     case KILL_LISTBOX:
@@ -321,8 +413,14 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 NULL, 65536, (PVOID) & hwnd) != -1)
 	  DosSleep(100);//05 Aug 07 GKY 250
 	else
-	  WinDismissDlg(hwnd, 0);
+            WinDismissDlg(hwnd, 0);
       }
+      else if (fUseQSysState)
+        if (_beginthread(FillKillListThread3,
+			 NULL, 65536, (PVOID) & hwnd) != -1)
+	  DosSleep(100);//05 Aug 07 GKY 250
+	else
+            WinDismissDlg(hwnd, 0);
       else {
 	if (_beginthread(FillKillListThread,
 			 NULL, 65536, (PVOID) & hwnd) != -1)
@@ -407,3 +505,4 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 }
 
 #pragma alloc_text(KILLPROC,FillKillListThread,FillKillListThread2,GetDosPgmName,KillDlgProc)
+#pragma alloc_text(KILLPROC,FillKillListThread)

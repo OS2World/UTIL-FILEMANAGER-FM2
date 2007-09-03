@@ -929,8 +929,10 @@ BEGIN
         PUSHBUTTON      "~Help", IDM_HELP, 146, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 194, 4, 40, 14,
                         BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~Use undocumented DosQProcStat API", KILL_CHECKBOX,
-                        30, 20, 178, 10
+        AUTOCHECKBOX    "~Use DosQProcStat 16 bit API (thunk)", KILL_CHECKBOX,
+                        20, 20, 118, 10, WS_GROUP
+        AUTOCHECKBOX    "~Use DosQSysState 32 bit API ", KILL2_CHECKBOX,
+                        140, 20, 108, 10
         LTEXT           "PID: Name:", KILL_HDR, 6, 156, 86, 8, DT_VCENTER
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         PUSHBUTTON      "Show", KILL_SHOW, 52, 4, 40, 14, BS_NOPOINTERFOCUS

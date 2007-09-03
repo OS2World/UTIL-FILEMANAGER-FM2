@@ -10,6 +10,7 @@ segment class 'CODE' loadoncall
 option manyautodata
 
 import DOSQPROCSTATUS DOSCALLS.154
+#       DOSQUERYSYSSTATE DOSCALLS.368
 
 export    InitFM3DLL_                                 .1,
           FindSwapperDat_                             .2,

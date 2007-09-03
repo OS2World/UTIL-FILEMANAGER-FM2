@@ -1055,7 +1055,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		      &fExternalViewer, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UseQProcStat",
-		      &fUseQProcStat, &size);
+                      &fUseQProcStat, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "UseQSysState",
+		      &fUseQSysState, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "DataMin", &fDataMin, &size);
   size = sizeof(BOOL);

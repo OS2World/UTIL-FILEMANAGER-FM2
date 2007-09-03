@@ -520,6 +520,7 @@
 #define KILL_CHECKBOX 									23103
 #define KILL_SHOW 											23104
 #define KILL_HDR												23105
+#define KILL2_CHECKBOX                                                                  23106
 
 #define UNDEL_FRAME 										23200
 #define UNDEL_LISTBOX 									23201
