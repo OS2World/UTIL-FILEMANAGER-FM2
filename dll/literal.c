@@ -203,12 +203,12 @@ UINT literal(PSZ pszBuf)
 BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
               const BOOL fNotFileSpec)
 {
-  const CHAR *fstr = pszBuf;
-  PSZ fcard = pszWildCard;
-  INT wmatch = TRUE;
 
+  const CHAR *fstr = strrev(pszBuf);
+  PSZ fcard = strrev(pszWildCard);
+  INT wmatch = TRUE;
   while (wmatch && *fcard && *fstr) {
-    switch (*fcard) {
+  switch (*fcard) {
     case '?':                                /* character substitution */
       fcard++;
       if (fNotFileSpec || (*fstr != '.' && *fstr != '/' && *fstr != '\\'))
@@ -218,13 +218,16 @@ BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
     case '*':
       /* find next non-wild character in wildcard */
       while (*fcard && (*fcard == '?' || *fcard == '*'))
-        fcard++;
-      if (!*fcard)                        /* if last char of wildcard is *, it matches */
+       fcard++;
+      if (!*fcard){                        /* if last char of wildcard is *, it matches */
+        fstr = strrev(pszBuf);
+        fcard = strrev(pszWildCard);
         return TRUE;
+      }
       /* skip until partition, match, or eos */
       while (*fstr && toupper(*fstr) != toupper(*fcard) &&
              (fNotFileSpec || (*fstr != '\\' &&
-                               *fstr != '/' && *fstr != '.')))
+                             *fstr != '/' && *fstr != '.')))
         fstr++;
       if (!fNotFileSpec && !*fstr)        /* implicit '.' */
         if (*fcard == '.')
@@ -233,7 +236,7 @@ BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
 
     default:
       if (!fNotFileSpec && ((*fstr == '/' || *fstr == '\\') &&
-                            (*fcard == '/' || *fcard == '\\')))
+                          (*fcard == '/' || *fcard == '\\')))
         wmatch = TRUE;
       else
         wmatch = (toupper(*fstr) == toupper(*fcard));
@@ -242,12 +245,68 @@ BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
       break;
     }
   }
+  if ((*fcard && *fcard != '*') || *fstr){
+    fstr = strrev(pszBuf);
+    fcard = strrev(pszWildCard);
+    return 0;
+  }
+  else{
+    fstr = strrev(pszBuf);
+    fcard = strrev(pszWildCard);
+    return wmatch;
+  }
+}
+
+BOOL wildcard2(const PSZ pszBuf, const PSZ pszWildCard,
+              const BOOL fNotFileSpec)
+{
+  const CHAR *fstr = pszBuf;
+  PSZ fcard = pszWildCard;
+  CHAR tcard[50];
+  INT wmatch = TRUE;
+
+    while (wmatch && *fcard && *fstr) {
+      switch (*fcard) {
+       case '?':                                /* character substitution */
+         fcard++;
+         if (fNotFileSpec || (*fstr != '.' && *fstr != '/' && *fstr != '\\'))
+           fstr++;                                /* skip (match) next character */
+         break;
+
+       case '*':
+         /* find next non-wild character in wildcard */
+         while (*fcard && (*fcard == '?' || *fcard == '*'))
+           fcard++;
+         if (!*fcard)                        /* if last char of wildcard is *, it matches */
+           return TRUE;
+         /* skip until partition, match, or eos */
+         while (*fstr && toupper(*fstr) != toupper(*fcard) &&
+                (fNotFileSpec || (*fstr != '\\' &&
+                                  *fstr != '/' && *fstr != '.')))
+           fstr++;
+         if (!fNotFileSpec && !*fstr)        /* implicit '.' */
+           if (*fcard == '.')
+             fcard++;
+         break;
+
+       default:
+         if (!fNotFileSpec && ((*fstr == '/' || *fstr == '\\') &&
+                               (*fcard == '/' || *fcard == '\\')))
+           wmatch = TRUE;
+         else
+           wmatch = (toupper(*fstr) == toupper(*fcard));
+         fstr++;
+         fcard++;
+         break;
+       }
+  }  //while
 
   if ((*fcard && *fcard != '*') || *fstr)
     return 0;
   else
     return wmatch;
 }
+
 
 // fixup - quote literal character array
 
@@ -297,5 +356,5 @@ PSZ fixup(const PCH pachIn, PSZ pszOutBuf, const UINT cBufBytes,
   return pszOutBuf;
 }
 
-#pragma alloc_text(LITERAL,literal,index,fixup,wildcard)
+#pragma alloc_text(LITERAL,literal,index,fixup,wildcard, wildcard2)
 

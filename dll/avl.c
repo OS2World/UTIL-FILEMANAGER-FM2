@@ -170,14 +170,14 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
   if (DosOpen(filespec,
 	      &handle,
 	      &action,
-	      0L,
-	      0L,
+	      0,
+	      0,
 	      OPEN_ACTION_FAIL_IF_NEW |
 	      OPEN_ACTION_OPEN_IF_EXISTS,
 	      OPEN_FLAGS_FAIL_ON_ERROR |
 	      OPEN_FLAGS_NOINHERIT |
 	      OPEN_FLAGS_RANDOMSEQUENTIAL |
-	      OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0L))
+	      OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0))
     return NULL;
   // Scan signatures
   for (info = topsig; info; info = info->next) {
@@ -198,7 +198,7 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
     l = min(l, 79);
     if (!DosChgFilePtr(handle,
 		       abs(info->file_offset),
-		       (info->file_offset >= 0L) ?
+		       (info->file_offset >= 0) ?
 		       FILE_BEGIN : FILE_END, &len)) {
       if (!DosRead(handle, buffer, l, &len) && len == l) {
 	if (!memcmp(info->signature, buffer, l))

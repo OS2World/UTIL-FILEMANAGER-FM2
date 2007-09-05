@@ -871,6 +871,8 @@ CHAR *searchpath(CHAR * filename);
 /* literal.c */
 UINT literal(PSZ pszBuf);
 BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
+              const BOOL fNotFileSpec);
+BOOL wildcard2(const PSZ pszBuf, const PSZ pszWildCard,
 	      const BOOL fNotFileSpec);
 PSZ fixup(const PCH pachInBuf, PSZ pszOutBuf, const UINT cBufBytes,
 	  const UINT cInBytes);

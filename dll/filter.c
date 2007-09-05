@@ -72,43 +72,82 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
 	    && !(r->attrFile & FILE_ARCHIVED))
 	|| ((mask->antiattr & FILE_DIRECTORY)
 	    && !(r->attrFile & FILE_DIRECTORY)))
-      return FALSE;
+        return FALSE;
     if (*mask->szMask) {
+      if ((*mask->szMask == '*') &&
+          !((mask->szMask[strlen(mask->szMask)-1]) == '*')){
+        file = strrchr(r->pszFileName, '\\');
+        if (!file)
+          file = strrchr(r->pszFileName, ':');
+        if (file)
+          file++;
+        else
+          file = r->pszFileName;
+        if (mask->pszMasks[1]) {
+          for (x = 0; mask->pszMasks[x]; x++) {
+            if (*mask->pszMasks[x]) {
+              if (*mask->pszMasks[x] != '/') {
+                if (wildcard((strchr(mask->pszMasks[x], '\\') ||
+                              strchr(mask->pszMasks[x], ':')) ?
+                             r->pszFileName : file, mask->pszMasks[x], FALSE))
+                  ret = TRUE;
+              }
+              else {
+                if (wildcard((strchr(mask->pszMasks[x], '\\') ||
+                              strchr(mask->pszMasks[x], ':')) ?
+                             r->pszFileName : file, mask->pszMasks[x] + 1,
+                             FALSE)) {
+                  ret = FALSE;
+                  break;
+                }
+              }
+            }
+          }
+        }
+        else {
+          if (wildcard((strchr(mask->szMask, '\\') ||
+                        strchr(mask->szMask, ':')) ?
+                       r->pszFileName : file, mask->szMask, FALSE))
+            ret = TRUE;
+        }
+      }
+      else{
       file = strrchr(r->pszFileName, '\\');
-      if (!file)
-	file = strrchr(r->pszFileName, ':');
-      if (file)
-	file++;
-      else
-	file = r->pszFileName;
-      if (mask->pszMasks[1]) {
-	for (x = 0; mask->pszMasks[x]; x++) {
-	  if (*mask->pszMasks[x]) {
-	    if (*mask->pszMasks[x] != '/') {
-	      if (wildcard((strchr(mask->pszMasks[x], '\\') ||
-			    strchr(mask->pszMasks[x], ':')) ?
-			   r->pszFileName : file, mask->pszMasks[x], FALSE))
-		ret = TRUE;
-	    }
-	    else {
-	      if (wildcard((strchr(mask->pszMasks[x], '\\') ||
-			    strchr(mask->pszMasks[x], ':')) ?
-			   r->pszFileName : file, mask->pszMasks[x] + 1,
-			   FALSE)) {
-		ret = FALSE;
-		break;
-	      }
-	    }
-	  }
-	}
+        if (!file)
+          file = strrchr(r->pszFileName, ':');
+        if (file)
+          file++;
+        else
+          file = r->pszFileName;
+        if (mask->pszMasks[1]) {
+          for (x = 0; mask->pszMasks[x]; x++) {
+            if (*mask->pszMasks[x]) {
+              if (*mask->pszMasks[x] != '/') {
+                if (wildcard2((strchr(mask->pszMasks[x], '\\') ||
+                              strchr(mask->pszMasks[x], ':')) ?
+                             r->pszFileName : file, mask->pszMasks[x], FALSE))
+                  ret = TRUE;
+              }
+              else {
+                if (wildcard2((strchr(mask->pszMasks[x], '\\') ||
+                              strchr(mask->pszMasks[x], ':')) ?
+                             r->pszFileName : file, mask->pszMasks[x] + 1,
+                             FALSE)) {
+                  ret = FALSE;
+                  break;
+                }
+              }
+            }
+          }
+        }
+        else {
+          if (wildcard2((strchr(mask->szMask, '\\') ||
+                        strchr(mask->szMask, ':')) ?
+                       r->pszFileName : file, mask->szMask, FALSE))
+            ret = TRUE;
+        }
       }
-      else {
-	if (wildcard((strchr(mask->szMask, '\\') ||
-		      strchr(mask->szMask, ':')) ?
-		     r->pszFileName : file, mask->szMask, FALSE))
-	  ret = TRUE;
-      }
-    }
+  }
     else
       ret = TRUE;
   }
