@@ -26,6 +26,7 @@
   05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
   06 Aug 07 GKY Fix Dirsizes accel key to be ctrl + z
   30 Aug 07 SHL Add accelerator support to QuickList windows
+  05 Sep 07 SHL Small change for OpenWatcom wrc compat
 
 ***********************************************************************/
 
@@ -271,7 +272,7 @@ MENU  MAIN_FRAME
   {
     MENUITEM "~Contents\tF1",        IDM_HELPCONTENTS
     MENUITEM "~General help",               IDM_HELPGENERAL
-    MENUITEM "~Keys help\tCtrl + k"       IDM_HELPKEYS
+    MENUITEM "~Keys help\tCtrl + k",       IDM_HELPKEYS
     MENUITEM "~Mouse help",                 IDM_HELPMOUSE
     MENUITEM "~Tutorials",                  IDM_HELPTUTOR
     MENUITEM "~Hints and troubleshooting",  IDM_HELPHINTS

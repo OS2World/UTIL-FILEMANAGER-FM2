@@ -30,6 +30,7 @@
 # 04 Jul 07 SHL Add missing .AUTODEPEND
 # 06 Aug 07 SHL Tweak CFLAGS for DEBUG builds
 # 26 Aug 07 SHL Clean *.lrf
+# 05 Sep 07 SHL Correct USE_WRC logic
 
 # Environment:
 
@@ -44,11 +45,15 @@ BASERES = fm3res
 CC = wcc386
 LINK = wlink
 
-# fixme for wrc to build working .res
-# fixme for wrc to not clobber bldlevel strings
+# fixme for wrc to build working .res 
+# fixme ow 1.6 wrc clobbers bldlevel strings
 
-!ifndef USE_WRC
+!ifndef USE_WRC			# if not defined on command line
+!ifdef %USE_WRC			# if defined in environment
+USE_WRC = $(%USE_WRC)
+!else
 USE_WRC = 0
+!endif
 !endif
 
 !if $(USE_WRC)
