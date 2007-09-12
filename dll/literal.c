@@ -203,108 +203,88 @@ UINT literal(PSZ pszBuf)
 BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
               const BOOL fNotFileSpec)
 {
-
-  const CHAR *fstr = strrev(pszBuf);
-  PSZ fcard = strrev(pszWildCard);
-  INT wmatch = TRUE;
-  while (wmatch && *fcard && *fstr) {
-  switch (*fcard) {
-    case '?':                                /* character substitution */
-      fcard++;
-      if (fNotFileSpec || (*fstr != '.' && *fstr != '/' && *fstr != '\\'))
-        fstr++;                                /* skip (match) next character */
-      break;
-
-    case '*':
-      /* find next non-wild character in wildcard */
-      while (*fcard && (*fcard == '?' || *fcard == '*'))
-       fcard++;
-      if (!*fcard){                        /* if last char of wildcard is *, it matches */
-        fstr = strrev(pszBuf);
-        fcard = strrev(pszWildCard);
-        return TRUE;
-      }
-      /* skip until partition, match, or eos */
-      while (*fstr && toupper(*fstr) != toupper(*fcard) &&
-             (fNotFileSpec || (*fstr != '\\' &&
-                             *fstr != '/' && *fstr != '.')))
-        fstr++;
-      if (!fNotFileSpec && !*fstr)        /* implicit '.' */
-        if (*fcard == '.')
-          fcard++;
-      break;
-
-    default:
-      if (!fNotFileSpec && ((*fstr == '/' || *fstr == '\\') &&
-                          (*fcard == '/' || *fcard == '\\')))
-        wmatch = TRUE;
-      else
-        wmatch = (toupper(*fstr) == toupper(*fcard));
-      fstr++;
-      fcard++;
-      break;
-    }
-  }
-  if ((*fcard && *fcard != '*') || *fstr){
-    fstr = strrev(pszBuf);
-    fcard = strrev(pszWildCard);
-    return 0;
-  }
-  else{
-    fstr = strrev(pszBuf);
-    fcard = strrev(pszWildCard);
-    return wmatch;
-  }
-}
-
-BOOL wildcard2(const PSZ pszBuf, const PSZ pszWildCard,
-              const BOOL fNotFileSpec)
-{
   const CHAR *fstr = pszBuf;
   PSZ fcard = pszWildCard;
-  CHAR tcard[50];
+  CHAR *tcard;
   INT wmatch = TRUE;
+  BOOL reverse = FALSE;
 
-    while (wmatch && *fcard && *fstr) {
-      switch (*fcard) {
-       case '?':                                /* character substitution */
-         fcard++;
-         if (fNotFileSpec || (*fstr != '.' && *fstr != '/' && *fstr != '\\'))
-           fstr++;                                /* skip (match) next character */
-         break;
+  while (wmatch && *fcard && *fstr) {
+    if (*fcard == '*' && fcard[strlen(fcard) - 1] == '*' && !reverse){
+      tcard  = xstrdup(fcard + 1, __FILE__, __LINE__);
+      tcard[strlen(tcard) - 1] = 0;
+      if (!(strchr(tcard, '?')) && !(strchr(tcard, '*'))){
+        if (strstr(fstr, tcard)){ //strstr match for *stuff* pattern no wildcards in "stuff"
+          xfree(tcard);
+          return TRUE;
+        }
+        else{
+          xfree(tcard);
+          return FALSE;
+        }
+      }
+      xfree(tcard);
+    }
+    else   //reverse search for *stuff pattern "stuff" can contain wildcards
+      if (*fcard == '*' && fcard[strlen(fcard) - 1] != '*'){
+        fstr = strrev(pszBuf);
+        fcard = strrev(pszWildCard);
+        reverse = TRUE;
+      }
+     switch (*fcard) { //fm2 standard forward search for all other cases
+      case '?':                                /* character substitution */
+        fcard++;
+        if (fNotFileSpec || (*fstr != '.' && *fstr != '/' && *fstr != '\\'))
+          fstr++;                                /* skip (match) next character */
+        break;
 
-       case '*':
-         /* find next non-wild character in wildcard */
-         while (*fcard && (*fcard == '?' || *fcard == '*'))
-           fcard++;
-         if (!*fcard)                        /* if last char of wildcard is *, it matches */
-           return TRUE;
-         /* skip until partition, match, or eos */
-         while (*fstr && toupper(*fstr) != toupper(*fcard) &&
-                (fNotFileSpec || (*fstr != '\\' &&
-                                  *fstr != '/' && *fstr != '.')))
-           fstr++;
-         if (!fNotFileSpec && !*fstr)        /* implicit '.' */
-           if (*fcard == '.')
-             fcard++;
-         break;
+      case '*':
+        /* find next non-wild character in wildcard */
+        while (*fcard && (*fcard == '?' || *fcard == '*'))
+          fcard++;
+        if (!*fcard){                        /* if last char of wildcard is *, it matches */
+          if (reverse){
+            fstr = strrev(pszBuf);
+            fcard = strrev(pszWildCard);
+          }
+          return TRUE;
+        }
+        /* skip until partition, match, or eos */
+        while (*fstr && toupper(*fstr) != toupper(*fcard) &&
+               (fNotFileSpec || (*fstr != '\\' &&
+                                 *fstr != '/' && *fstr != '.')))
+          fstr++;
+        if (!fNotFileSpec && !*fstr)        /* implicit '.' */
+          if (*fcard == '.')
+            fcard++;
+        break;
 
-       default:
-         if (!fNotFileSpec && ((*fstr == '/' || *fstr == '\\') &&
-                               (*fcard == '/' || *fcard == '\\')))
-           wmatch = TRUE;
-         else
-           wmatch = (toupper(*fstr) == toupper(*fcard));
-         fstr++;
-         fcard++;
-         break;
-       }
+      default:
+        if (!fNotFileSpec && ((*fstr == '/' || *fstr == '\\') &&
+                              (*fcard == '/' || *fcard == '\\')))
+          wmatch = TRUE;
+        else
+          wmatch = (toupper(*fstr) == toupper(*fcard));
+        fstr++;
+        fcard++;
+        break;
+      }
   }  //while
 
-  if ((*fcard && *fcard != '*') || *fstr)
+  if ((*fcard && *fcard != '*') || *fstr){
+    if (reverse){
+      fstr = strrev(pszBuf);
+      fcard = strrev(pszWildCard);
+    }
     return 0;
-  else
+  }
+  else {
+    if (reverse){
+      fstr = strrev(pszBuf);
+      fcard = strrev(pszWildCard);
+    }
     return wmatch;
+  }
 }
 
 
@@ -356,5 +336,5 @@ PSZ fixup(const PCH pachIn, PSZ pszOutBuf, const UINT cBufBytes,
   return pszOutBuf;
 }
 
-#pragma alloc_text(LITERAL,literal,index,fixup,wildcard, wildcard2)
+#pragma alloc_text(LITERAL,literal,index,fixup,wildcard)
 

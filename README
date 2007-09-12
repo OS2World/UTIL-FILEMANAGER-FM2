@@ -5,7 +5,16 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
-FM/2 3.07 has had changes made to its ini file structure.
+FM/2 3.08 has had changes to its file filtering logic.
+It now searches for the last extension if a mask like *.zip
+is used. This change was made to over come the problem with
+associations failing on files with multiple ".". You can 
+also seach for a complete string within the file names by
+using the pattern *stuff* (stuff can't contain an * or ?).
+If "stuff" contains an * or ? the old method of searching
+(character by character)is used.
+
+FM/2 3.07 had changes made to its ini file structure.
 These changes mean that the ini file is not backward 
 compatible. Please backup you FM3.INI file before installing
 so you can revert to an earlier version without losing some 

@@ -41,9 +41,18 @@ characters.
  :hp1.*:ehp1. An asterisk matches characters from the source to the target
 until it finds a filename character that matches the non-wild character
 following it in the filemask, or a period, slash, backslash or
-the end of the filename and/or filemask.
+the end of the filename and/or filemask. The pattern *stuff* where "stuff"
+doesn't contain an * or ? will match based on a search for "stuff" in the
+file name so it will match even is the first letter occurs mutliple times
+prior to the sring being matched. The pattern *stuff (stuff can contain an
+* or ?) is search backwards on the assumption that for most situations the
+final extension is the marker for the file type.
 :p.
-Therefore, "*.f?o" matches "anything.foo" but not "anything.foe".
+Therefore, "*.f?o" matches "anything.foo" but not "anything.foe". While read*
+will fail to match rreadme.txt *read* will result in it being matched. Additionally,
+*.zip will match any file with the last extension of .zip (ie it will match myfile.zip
+and myfile.1.zip but not myfile.zip.bak). While *.zip* will match all 3 of the files
+from the preceeding example.
 :p.
 Up to 24 masks may be "cascaded" by separation with semicolons.
 When specifying multiple filemasks, you can use '/' as the first character
@@ -54,7 +63,9 @@ be listed before inclusions to attain the desired effect.
 :p.
 :parml compact tsize=37 break=none.
 :pt./*.obj;/*.res;*
-:pd.(Show all but *.obj and *.res files)
+:pd.(Show all but *.obj and *.res files where .obj and .res are the last file extension)
+:pt./*.obj*;/*.res*;*
+:pd.(Show all but *.obj and *.res files where .obj and .res are any file extension)
 :pt.*.c;*.h
 :pd.(Show only C source and header files)
 :pt.*.ico

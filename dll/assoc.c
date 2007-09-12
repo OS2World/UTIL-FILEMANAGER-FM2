@@ -360,13 +360,8 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 	exclude = TRUE;
       }
       else
-          exclude = FALSE;
-      if ((*p == '*') &&
-          !((p[strlen(p) - 1]) == '*'))
+        exclude = FALSE;
         didmatch = wildcard((strchr(p, '\\') ||
-                             strchr(p, ':')) ? datafile : file, p, FALSE);
-      else
-        didmatch = wildcard2((strchr(p, '\\') ||
                              strchr(p, ':')) ? datafile : file, p, FALSE);
       if (exclude && didmatch)
 	didmatch = FALSE;

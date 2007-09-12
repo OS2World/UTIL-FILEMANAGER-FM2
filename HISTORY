@@ -1,6 +1,9 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.07 (pending)
+3.08 (pending)
+ o Rework filemask logic to match last extension and allow for string matching (Gregg)
+
+3.07 
  o Tweak build process (Steven)
  o Rework internals to increase file and directory limits (Steven, Gregg)
  o Rework internal sleep durations to increase performance (Gregg)
