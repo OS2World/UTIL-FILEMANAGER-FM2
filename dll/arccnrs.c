@@ -1561,7 +1561,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	free(s);
 	if (IsFile(filename) == 1) {
 	  if (fViewChild && fArcStuffVisible)
-	    DosSleep(50); //05 Aug 07 GKY 100 // Allow unzip session to finish closing 14 Mar 07 SHL
+	    DosSleep(100);  // Allow unzip session to finish closing 14 Mar 07 SHL
 	  WinSendMsg(dcd->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
 	}
       }

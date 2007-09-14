@@ -59,8 +59,8 @@
   18 Aug 07 SHL Update for ticket# 31 - states length
   19 Aug 07 SHL Move FILESTOGET_MIN/MAX here
   19 Aug 07 SHL Update SaveDirCnrState return
-  21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
-  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the right to the left pane
+  01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundary
 
 ***********************************************************************/
 

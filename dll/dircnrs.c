@@ -2229,12 +2229,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case IDM_MKDIR:
 	{
-	  PCNRITEM pci;
+	 // PCNRITEM pci;
 
-	  pci = (PCNRITEM) CurrentRecord(hwnd);
+	 // pci = (PCNRITEM) CurrentRecord(hwnd);
 	  PMMkDir(dcd->hwndParent,
-		  ((pci && (INT) pci != -1) ?
-		   pci->pszFileName : dcd->directory), FALSE);
+		  (dcd->directory), FALSE);
 	}
 	break;
 
