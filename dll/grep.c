@@ -25,6 +25,7 @@
   15 Aug 07 SHL Use FilesToGet directly
   26 Aug 07 GKY Improved performance of FillDups
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
+  21 Sep 07 GKY Fix trap on search that includes filenames that exceed maxpath
 
 ***********************************************************************/
 
@@ -410,11 +411,10 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
   strcat(searchPath, "*");
   // step through all subdirectories
   DosError(FERR_DISABLEHARDERR);
-  if (!DosFindFirst(searchPath, &findHandle, (MUST_HAVE_DIRECTORY |
-					      FILE_ARCHIVED | FILE_SYSTEM |
-					      FILE_HIDDEN | FILE_READONLY),
-		    &ffb, (ULONG) sizeof(ffb),
-		    (PULONG) & ulFindCnt, FIL_QUERYEASIZE)) {
+  if (!xDosFindFirst(searchPath, &findHandle, (MUST_HAVE_DIRECTORY |
+		     FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN | FILE_READONLY),
+		     &ffb, (ULONG) sizeof(ffb),
+		     (PULONG) & ulFindCnt, FIL_QUERYEASIZE)) {
 
     // get rid of mask portion, save end-of-directory
 
@@ -439,9 +439,9 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
 	}
       }
       ulFindCnt = 1;
-    } while (!DosFindNext(findHandle,
-			  &ffb,
-			  sizeof(ffb), (PULONG) & ulFindCnt));
+    } while (!xDosFindNext(findHandle,
+			   &ffb,
+			   sizeof(ffb), (PULONG) & ulFindCnt));
     DosFindClose(findHandle);
     priority_normal();
   }
@@ -486,13 +486,13 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   // step through matching files
   DosError(FERR_DISABLEHARDERR);
   ulFindCnt = FilesToGet;
-  rc = DosFindFirst(szFindPath,
-		    &findHandle,
-		    FILE_NORMAL | grep->attrFile | grep->antiattr,
-		    pffbArray,
-		    ulBufBytes,
-		    &ulFindCnt,
-		    FIL_QUERYEASIZE);
+  rc = xDosFindFirst(szFindPath,
+		     &findHandle,
+		     FILE_NORMAL | grep->attrFile | grep->antiattr,
+		     pffbArray,
+		     ulBufBytes,
+		     &ulFindCnt,
+		     FIL_QUERYEASIZE);
   if (!rc) {
     do {
       // Process each file that matches the mask
@@ -502,8 +502,13 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	if (*grep->stopflag)
 	  break;
 	if (*pffbFile->achName != '.' ||
-	    (pffbFile->achName[1] && pffbFile->achName[1] != '.')) {
-	  strcpy(p, pffbFile->achName);	// build filename
+            (pffbFile->achName[1] && pffbFile->achName[1] != '.')) {
+          strcpy(p, pffbFile->achName);	// build filename
+          if (strlen(szFindPath) > 256){   //21 Sep GKY check for pathnames that exceed maxpath
+            DosFindClose(findHandle);
+	    free(pffbArray);
+	    return 1;
+          }
 	  if (!grep->anyexcludes || !IsExcluded(szFindPath, fle, numfls)) {
 	    if (!grep->finddupes)
 	      doonefile(grep, szFindPath, pffbFile);
@@ -522,7 +527,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	break;
       DosSleep(0); //26 Aug 07 GKY 1
       ulFindCnt = FilesToGet;
-      rc = DosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
     } while (!rc);
 
     DosFindClose(findHandle);

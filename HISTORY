@@ -2,6 +2,7 @@ New stuff's at the top.  This list is not necessarily complete.
 
 3.08 (pending)
  o Rework filemask logic to match last extension and allow for string matching (Gregg)
+ o Fix trap on search where file name length exceeds maxpath (Gregg)
 
 3.07 
  o Tweak build process (Steven)
