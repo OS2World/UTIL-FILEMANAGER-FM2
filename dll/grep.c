@@ -462,6 +462,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   PSZ p;
   APIRET rc;
   ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4);
+  static BOOL fDone;
 
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray)
@@ -506,7 +507,14 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
           strcpy(p, pffbFile->achName);	// build filename
           if (strlen(szFindPath) > 256){   //21 Sep GKY check for pathnames that exceed maxpath
             DosFindClose(findHandle);
-	    free(pffbArray);
+            free(pffbArray);
+            if (!fDone) {
+              fDone = TRUE;
+              saymsg(MB_OK | MB_ICONASTERISK,
+	             HWND_DESKTOP,
+		     GetPString(IDS_WARNINGTEXT),
+                     "One or more of your files has a full path name that exceeds the OS/2 maximum");
+            }
 	    return 1;
           }
 	  if (!grep->anyexcludes || !IsExcluded(szFindPath, fle, numfls)) {
