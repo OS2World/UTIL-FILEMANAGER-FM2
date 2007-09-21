@@ -111,12 +111,12 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
       enddir++;
       ulFindCnt = 1;
       // 13 Aug 07 SHL fixme to report errors
-      if (!DosFindFirst(mask,
-			&hdir,
-			FILE_NORMAL | FILE_DIRECTORY |
-			FILE_ARCHIVED | FILE_READONLY | FILE_HIDDEN |
-			FILE_SYSTEM,
-			pffb, sizeof(FILEFINDBUF4), &ulFindCnt, FIL_QUERYEASIZE)) {
+      if (!xDosFindFirst(mask,
+	         	 &hdir,
+			 FILE_NORMAL | FILE_DIRECTORY |
+			 FILE_ARCHIVED | FILE_READONLY | FILE_HIDDEN |
+			 FILE_SYSTEM,
+			 pffb, sizeof(FILEFINDBUF4), &ulFindCnt, FIL_QUERYEASIZE)) {
 	do {
 	  strcpy(enddir, pffb->achName);
 	  if (!(pffb->attrFile & FILE_DIRECTORY))
@@ -140,7 +140,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	    SnapShot(mask, fp, recurse);
 	  }
 	  ulFindCnt = 1;
-	} while (!DosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &ulFindCnt));
+	} while (!xDosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &ulFindCnt));
 	DosFindClose(hdir);
       }
       free(mask);
@@ -770,11 +770,11 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
   hDir = HDIR_CREATE;
   DosError(FERR_DISABLEHARDERR);
   ulFindCnt = FilesToGet;
-  rc = DosFindFirst(maskstr, &hDir,
-		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		    FILE_SYSTEM | FILE_HIDDEN |
-		    (recurse ? FILE_DIRECTORY : 0),
-		    pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
+  rc = xDosFindFirst(maskstr, &hDir,
+	 	     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN |
+		     (recurse ? FILE_DIRECTORY : 0),
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
   if (!rc) {
     do {
       pffbFile = pffbArray;
@@ -808,7 +808,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
       } // for
       DosError(FERR_DISABLEHARDERR);
       ulFindCnt = FilesToGet;
-      rc = DosFindNext(hDir, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(hDir, pffbArray, ulBufBytes, &ulFindCnt);
     } while (!rc);
 
 Abort:

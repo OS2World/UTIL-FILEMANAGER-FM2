@@ -787,11 +787,11 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      hdir = HDIR_CREATE;
 	      nm = 1;
 	      *subject = *longname = 0;
-	      if (!DosFindFirst(list[x], &hdir,
-				FILE_NORMAL | FILE_DIRECTORY |
-				FILE_READONLY | FILE_ARCHIVED |
-				FILE_HIDDEN | FILE_SYSTEM,
-				&ffb4, sizeof(ffb4), &nm, FIL_QUERYEASIZE)) {
+	      if (!xDosFindFirst(list[x], &hdir,
+				 FILE_NORMAL | FILE_DIRECTORY |
+				 FILE_READONLY | FILE_ARCHIVED |
+				 FILE_HIDDEN | FILE_SYSTEM,
+				 &ffb4, sizeof(ffb4), &nm, FIL_QUERYEASIZE)) {
 		/* load the object's Subject, if required */
 		if (ffb4.cbList > 4) {
 		  APIRET rc;

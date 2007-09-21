@@ -87,10 +87,10 @@ static VOID ProcessDir(HWND hwndCnr,
   strcat(maskstr, "*");
   hdir = HDIR_CREATE;
   ulFindCnt = 1;
-  rc = DosFindFirst(filename, &hdir,
-		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		    pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
+  rc = xDosFindFirst(filename, &hdir,
+		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
   if (!rc)
     DosFindClose(hdir);
   // work around furshluginer FAT root bug
@@ -160,10 +160,10 @@ static VOID ProcessDir(HWND hwndCnr,
   else
     ulFindMax = FilesToGet;
   ulFindCnt = ulFindMax;
-  rc = DosFindFirst(maskstr, &hdir,
-		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		    pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
+  rc = xDosFindFirst(maskstr, &hdir,
+		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
   if (!rc) {
     PFILEFINDBUF3 pffbFile;
     ULONG x;
@@ -189,7 +189,7 @@ static VOID ProcessDir(HWND hwndCnr,
       if (*stopflag)
 	break;
       ulFindCnt = ulFindMax;
-      rc = DosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
     } // while
     DosFindClose(hdir);
   }

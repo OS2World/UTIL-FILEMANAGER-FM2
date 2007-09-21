@@ -754,15 +754,15 @@ VOID ProcessDirectory(const HWND hwndCnr,
     memcpy(pchEndPath, "*", 2);
     DosError(FERR_DISABLEHARDERR);
     ulFindCnt = ulFindMax;
-    rc = DosFindFirst(pszFileSpec,
-		      &hdir,
-		      FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		      FILE_SYSTEM | FILE_HIDDEN |
-		      (filestoo ? FILE_DIRECTORY : MUST_HAVE_DIRECTORY),
-		      paffbFound,
-		      ulBufBytes,
-		      &ulFindCnt,
-		      FIL_QUERYEASIZE);
+    rc = xDosFindFirst(pszFileSpec,
+		       &hdir,
+		       FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		       FILE_SYSTEM | FILE_HIDDEN |
+		       (filestoo ? FILE_DIRECTORY : MUST_HAVE_DIRECTORY),
+		       paffbFound,
+		       ulBufBytes,
+		       &ulFindCnt,
+		       FIL_QUERYEASIZE);
     priority_normal();
     *pchEndPath = 0;
     if (!rc) {
@@ -888,7 +888,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  goto Abort;
 	DosError(FERR_DISABLEHARDERR);
 	ulFindCnt = ulFindMax;
-	rc = DosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt);
+	rc = xDosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt);
 	priority_normal();
 	if (rc)
 	  DosError(FERR_DISABLEHARDERR);

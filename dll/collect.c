@@ -584,12 +584,12 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			       FALSE,
 			       FALSE,
 			       TRUE) &&
-		!DosFindFirst(fullname,
-			      &hdir,
-			      FILE_NORMAL | FILE_DIRECTORY |
-			      FILE_ARCHIVED | FILE_SYSTEM |
-			      FILE_HIDDEN | FILE_READONLY,
-			      &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZE)) {
+		!xDosFindFirst(fullname,
+		               &hdir,
+		               FILE_NORMAL | FILE_DIRECTORY |
+		               FILE_ARCHIVED | FILE_SYSTEM |
+		               FILE_HIDDEN | FILE_READONLY,
+		               &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZE)) {
 	      DosFindClose(hdir);
 	      priority_normal();
 	      *fb4.achName = 0;
@@ -2517,11 +2517,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (pci->rc.flRecordAttr & CRA_INUSE)
 	      break;
 	    DosError(FERR_DISABLEHARDERR);
-	    status = DosFindFirst(pci->pszFileName, &hDir,
-				  FILE_NORMAL | FILE_DIRECTORY |
-				  FILE_ARCHIVED | FILE_READONLY |
-				  FILE_HIDDEN | FILE_SYSTEM,
-				  &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+	    status = xDosFindFirst(pci->pszFileName, &hDir,
+		               	   FILE_NORMAL | FILE_DIRECTORY |
+				   FILE_ARCHIVED | FILE_READONLY |
+				   FILE_HIDDEN | FILE_SYSTEM,
+				   &ffb, sizeof(ffb), &nm, FIL_STANDARD);
 	    priority_bumped();
 	    if (!status) {
 	      DosFindClose(hDir);

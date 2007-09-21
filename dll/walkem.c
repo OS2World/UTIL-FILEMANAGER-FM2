@@ -573,13 +573,13 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
 	    "%s%s*",
 	    pszPath, (pszPath[strlen(pszPath) - 1] == '\\') ? "" : "\\");
     DosError(FERR_DISABLEHARDERR);
-    if (!DosFindFirst(szTemp,
-		      &hDir,
-		      FILE_DIRECTORY | MUST_HAVE_DIRECTORY |
-		      FILE_READONLY | FILE_ARCHIVED | FILE_SYSTEM |
-		      FILE_HIDDEN,
-		      &findbuf,
-		      sizeof(FILEFINDBUF3), &ulSearchCount, FIL_STANDARD)) {
+    if (!xDosFindFirst(szTemp,
+		       &hDir,
+		       FILE_DIRECTORY | MUST_HAVE_DIRECTORY |
+		       FILE_READONLY | FILE_ARCHIVED | FILE_SYSTEM |
+		       FILE_HIDDEN,
+		       &findbuf,
+		       sizeof(FILEFINDBUF3), &ulSearchCount, FIL_STANDARD)) {
       do {
 	if (findbuf.attrFile & FILE_DIRECTORY) {
 	  // Skip .. unless full path supplied
@@ -595,8 +595,8 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
 	  }
 	}
 	ulSearchCount = 1;
-      } while (!DosFindNext(hDir,
-			    &findbuf, sizeof(FILEFINDBUF3), &ulSearchCount));
+      } while (!xDosFindNext(hDir,
+			     &findbuf, sizeof(FILEFINDBUF3), &ulSearchCount));
       DosFindClose(hDir);
     }
     DosError(FERR_DISABLEHARDERR);
@@ -710,11 +710,11 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
-	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf, sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf, sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -751,11 +751,11 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
-	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf, sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf, sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -902,11 +902,11 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	hDir = HDIR_CREATE;
 	ulSearchCount = 1;
 	if (!IsRoot(szBuffer)) {
-	  rc = DosFindFirst(szBuffer, &hDir, FILE_DIRECTORY |
-			    MUST_HAVE_DIRECTORY | FILE_READONLY |
-			    FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			    &findbuf, sizeof(FILEFINDBUF3),
-			    &ulSearchCount, FIL_STANDARD);
+	  rc = xDosFindFirst(szBuffer, &hDir, FILE_DIRECTORY |
+			     MUST_HAVE_DIRECTORY | FILE_READONLY |
+			     FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			     &findbuf, sizeof(FILEFINDBUF3),
+			     &ulSearchCount, FIL_STANDARD);
 	  if (!rc)
 	    DosFindClose(hDir);
 	}
@@ -916,7 +916,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (rc)
 	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		    "DosFindFirst");
+		    "xDosFindFirst");
 	else if (~findbuf.attrFile & FILE_DIRECTORY)
 	  Runtime_Error(pszSrcFile, __LINE__, "not a directory");
 	else {
@@ -948,14 +948,14 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	hDir = HDIR_CREATE;
 	ulSearchCount = 1;
 	if (!IsRoot(szBuffer)) {
-	  rc = DosFindFirst(szBuffer,
-			    &hDir,
-			    FILE_DIRECTORY |
-			    MUST_HAVE_DIRECTORY | FILE_READONLY |
-			    FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			    &findbuf,
-			    sizeof(FILEFINDBUF3),
-			    &ulSearchCount, FIL_STANDARD);
+	  rc = xDosFindFirst(szBuffer,
+			     &hDir,
+			     FILE_DIRECTORY |
+			     MUST_HAVE_DIRECTORY | FILE_READONLY |
+			     FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			     &findbuf,
+			     sizeof(FILEFINDBUF3),
+			     &ulSearchCount, FIL_STANDARD);
 	  if (!rc)
 	    DosFindClose(hDir);
 	}
@@ -965,7 +965,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (rc)
 	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		    "DosFindFirst");
+		    "xDosFindFirst");
 	else if (~findbuf.attrFile & FILE_DIRECTORY)
 	  Runtime_Error(pszSrcFile, __LINE__, "not a directory");
 	else {
@@ -1031,14 +1031,14 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(szBuff)) {
-	    rc = DosFindFirst(szBuff,
-			      &hDir,
-			      FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf,
-			      sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(szBuff,
+			       &hDir,
+			       FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf,
+			       sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	    if (!rc)
 	      DosFindClose(hDir);
 	  }
@@ -1394,14 +1394,14 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(szBuff)) {
-	    rc = DosFindFirst(szBuff,
-			      &hDir,
-			      FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf,
-			      sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(szBuff,
+			       &hDir,
+			       FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf,
+			       sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	    if (!rc)
 	      DosFindClose(hDir);
 	  }
@@ -1459,14 +1459,14 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(szBuff)) {
-	    rc = DosFindFirst(szBuff,
-			      &hDir,
-			      FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf,
-			      sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(szBuff,
+			       &hDir,
+			       FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf,
+			       sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	    if (!rc)
 	      DosFindClose(hDir);
 	  }

@@ -123,10 +123,10 @@ static BOOL ProcessDir(HWND hwndCnr,
   // memset(pffbArray, 0, sizeof(FILEFINDBUF4));	// 11 Aug 07 SHL bypass memset
   DosError(FERR_DISABLEHARDERR);
   // Check directory exists
-  rc = DosFindFirst(pszFileName, &hdir,
-		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		    FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		    pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
+  rc = xDosFindFirst(pszFileName, &hdir,
+		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
 
   if (!rc)
     DosFindClose(hdir);
@@ -212,10 +212,10 @@ static BOOL ProcessDir(HWND hwndCnr,
   hdir = HDIR_CREATE;
   // 13 Aug 07 SHL fixme to know if need to support fRemoteBug here like objcnr.c?
   ulFindCnt = FilesToGet;
-  rc = DosFindFirst(maskstr, &hdir,
-		    FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-		    FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
-		    pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
+  rc = xDosFindFirst(maskstr, &hdir,
+		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
   if (!rc) {
     PFILEFINDBUF4 pffbFile;
     ULONG x;
@@ -276,7 +276,7 @@ static BOOL ProcessDir(HWND hwndCnr,
       DosSleep(0);
       ulFindCnt = FilesToGet;
       DosError(FERR_DISABLEHARDERR);
-      rc = DosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
     } // while more found
 
     DosFindClose(hdir);

@@ -630,12 +630,12 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ARC_TYPE *info;
 
       DosError(FERR_DISABLEHARDERR);
-      if (DosFindFirst(pfs->szFileName,
-		       &hdir,
-		       FILE_NORMAL | FILE_ARCHIVED |
-		       FILE_DIRECTORY | FILE_READONLY | FILE_HIDDEN |
-		       FILE_SYSTEM,
-		       &fs, sizeof(fs), &apptype, FIL_QUERYEASIZE)) {
+      if (xDosFindFirst(pfs->szFileName,
+		        &hdir,
+		        FILE_NORMAL | FILE_ARCHIVED |
+		        FILE_DIRECTORY | FILE_READONLY | FILE_HIDDEN |
+		        FILE_SYSTEM,
+		        &fs, sizeof(fs), &apptype, FIL_QUERYEASIZE)) {
 	// Not found
 	SHORT sSelect, numitems;
 

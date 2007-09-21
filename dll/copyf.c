@@ -362,7 +362,7 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
   va_end(ap);
 
   DosError(FERR_DISABLEHARDERR);
-  if (!DosFindFirst(oldname)) {
+  if (!xDosFindFirst(oldname)) {
     do {
 
       /* build target name */
@@ -382,7 +382,7 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
       else
 	rc = docopyf(type,, "%s",);	/* copy file */
       DosError(FERR_DISABLEHARDERR);
-    } while (!rc && !DosFindNext());
+    } while (!rc && !xDosFindNext());
     DosFindClose(hdir);
   }
   else
@@ -746,9 +746,9 @@ INT wipeallf(CHAR *string, ...)
   num_matches = 1L;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!DosFindFirst(str, &search_handle, FILE_NORMAL | FILE_DIRECTORY |
-		    FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
-		    f, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+  if (!xDosFindFirst(str, &search_handle, FILE_NORMAL | FILE_DIRECTORY |
+		     FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
+		     f, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
 
     strcpy(ss, s);
     p = &ss[strlen(ss)];
@@ -778,8 +778,8 @@ INT wipeallf(CHAR *string, ...)
       }
       num_matches = 1L;
       DosError(FERR_DISABLEHARDERR);
-    } while (!DosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
-			  &num_matches));
+    } while (!xDosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
+			   &num_matches));
     DosFindClose(search_handle);
   }
 
@@ -837,11 +837,11 @@ INT unlink_allf(CHAR * string, ...)
   }
 
   search_handle = HDIR_CREATE;
-  num_matches = 1L;
+  num_matches = 1;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!DosFindFirst(str, &search_handle, FILE_NORMAL, f,
-		    sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+  if (!xDosFindFirst(str, &search_handle, FILE_NORMAL, f,
+		     sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
 
     strcpy(ss, s);
     p = &ss[strlen(ss)];
@@ -849,10 +849,10 @@ INT unlink_allf(CHAR * string, ...)
     do {
       strcpy(p, f->achName);
       unlinkf("%s", ss);
-      num_matches = 1L;
+      num_matches = 1;
       DosError(FERR_DISABLEHARDERR);
-    } while (!DosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
-			  &num_matches));
+    } while (!xDosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
+			   &num_matches));
     DosFindClose(search_handle);
   }
 

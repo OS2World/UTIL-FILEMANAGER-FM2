@@ -29,6 +29,32 @@
 
 static PSZ pszSrcFile = __FILE__;
 
+APIRET APIENTRY  xDosFindFirst(PSZ    pszFileSpec,
+                               PHDIR  phdir,
+                               ULONG  flAttribute,
+                               PVOID  pfindbuf,
+                               ULONG  cbBuf,
+                               PULONG pcFileNames,
+                               ULONG  ulInfoLevel)
+{
+    APIRET rc;
+
+    rc = DosFindFirst(pszFileSpec, phdir, flAttribute, pfindbuf, cbBuf,
+                      pcFileNames, ulInfoLevel);
+    return rc;
+}
+
+APIRET APIENTRY  xDosFindNext(HDIR   hDir,
+                              PVOID  pfindbuf,
+                              ULONG  cbfindbuf,
+                              PULONG pcFilenames)
+{
+  APIRET rc;
+
+  rc = DosFindNext(hDir, pfindbuf, cbfindbuf, pcFilenames);
+  return rc;
+}
+
 /**
  * Wrap DosSetPathInfo to avoid spurious ERROR_INVALID_NAME returns
  * Some kernels to do not correctly handle FILESTATUS3 and PEAOP2 buffers

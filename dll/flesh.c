@@ -283,12 +283,12 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   DosError(FERR_DISABLEHARDERR);
   if (includefiles)
     fl = FILE_DIRECTORY;
-  rc = DosFindFirst(str,
-		    &hDir,
-		    FILE_NORMAL | fl |
-		    FILE_READONLY | FILE_ARCHIVED |
-		    FILE_SYSTEM | FILE_HIDDEN,
-		    &ffb, ulM * sizeof(FILEFINDBUF3), &nm, FIL_STANDARD);
+  rc = xDosFindFirst(str,
+		     &hDir,
+		     FILE_NORMAL | fl |
+		     FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN,
+		     &ffb, ulM * sizeof(FILEFINDBUF3), &nm, FIL_STANDARD);
   if (ulM == 1 && !rc) {
     do {
       pffb = &ffb[0];
@@ -333,10 +333,10 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
       }
       nm = 1;
       DosError(FERR_DISABLEHARDERR);
-    } while (++total < ddepth && !(rc = (DosFindNext(hDir,
-						     &ffb,
-						     sizeof(FILEFINDBUF3),
-						     &nm))));
+    } while (++total < ddepth && !(rc = (xDosFindNext(hDir,
+						      &ffb,
+						      sizeof(FILEFINDBUF3),
+						      &nm))));
     DosFindClose(hDir);
     if (toupper(*pciParent->pszFileName) > 'B' &&
 	(*(pciParent->pszFileName + 1)) == ':' &&

@@ -749,9 +749,9 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (*SwapperDat) {
 	DosError(FERR_DISABLEHARDERR);
-	if (!DosFindFirst(SwapperDat, &hdir, FILE_NORMAL | FILE_HIDDEN |
-			  FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
-			  &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+	if (!xDosFindFirst(SwapperDat, &hdir, FILE_NORMAL | FILE_HIDDEN |
+			   FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
+			   &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
 	  priority_bumped();
 	  DosFindClose(hdir);
 	  DosError(FERR_DISABLEHARDERR);

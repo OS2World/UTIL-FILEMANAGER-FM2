@@ -5599,9 +5599,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       DosError(FERR_DISABLEHARDERR);
       hDir = HDIR_CREATE;
       ulSearchCount = 1;
-      if (!DosFindFirst("*.TLS", &hDir, FILE_READONLY | FILE_ARCHIVED,
-			&findbuf, sizeof(FILEFINDBUF3),
-			&ulSearchCount, FIL_STANDARD)) {
+      if (!xDosFindFirst("*.TLS", &hDir, FILE_READONLY | FILE_ARCHIVED,
+			 &findbuf, sizeof(FILEFINDBUF3),
+			 &ulSearchCount, FIL_STANDARD)) {
 	do {
 	  priority_bumped();
 	  if (!foundit) {
@@ -5626,8 +5626,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    foundit = TRUE;
 	  }
 	}
-	while (!DosFindNext(hDir, &findbuf, sizeof(FILEFINDBUF3),
-			    &ulSearchCount));
+	while (!xDosFindNext(hDir, &findbuf, sizeof(FILEFINDBUF3),
+			     &ulSearchCount));
 	DosFindClose(hDir);
 	priority_bumped();
       }
@@ -5660,11 +5660,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
-	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf, sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf, sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -5702,11 +5702,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
-	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf, sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf, sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;

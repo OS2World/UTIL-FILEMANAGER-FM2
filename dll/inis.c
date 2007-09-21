@@ -522,17 +522,17 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hdir = HDIR_CREATE;
       nm = 1;
       DosError(FERR_DISABLEHARDERR);
-      if (!DosFindFirst("*.IST",
-			&hdir,
-			FILE_NORMAL | FILE_ARCHIVED,
-			&ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+      if (!xDosFindFirst("*.IST",
+			 &hdir,
+			 FILE_NORMAL | FILE_ARCHIVED,
+			 &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
 	do {
 	  priority_bumped();
 	  WinSendDlgItemMsg(hwnd, IAF_LISTBOX, LM_INSERTITEM,
 			    MPFROMSHORT(LIT_SORTASCENDING),
 			    MPFROMP(ffb.achName));
 	  nm = 1;
-	} while (!DosFindNext(hdir, &ffb, sizeof(ffb), &nm));
+	} while (!xDosFindNext(hdir, &ffb, sizeof(ffb), &nm));
 	DosFindClose(hdir);
 	priority_bumped();
       }

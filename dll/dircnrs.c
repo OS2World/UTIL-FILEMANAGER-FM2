@@ -3136,12 +3136,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (pci->rc.flRecordAttr & CRA_INUSE)
 	      break;
 	    DosError(FERR_DISABLEHARDERR);
-	    status = DosFindFirst(pci->pszFileName,
-				  &hDir,
-				  FILE_NORMAL | FILE_DIRECTORY |
-				  FILE_ARCHIVED | FILE_READONLY |
-				  FILE_HIDDEN | FILE_SYSTEM,
-				  &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+	    status = xDosFindFirst(pci->pszFileName,
+				   &hDir,
+				   FILE_NORMAL | FILE_DIRECTORY |
+				   FILE_ARCHIVED | FILE_READONLY |
+				   FILE_HIDDEN | FILE_SYSTEM,
+				   &ffb, sizeof(ffb), &nm, FIL_STANDARD);
 	    priority_bumped();
 	    if (!status) {
 	      DosFindClose(hDir);

@@ -965,11 +965,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HDIR hdir = HDIR_CREATE;
 
       if (*SwapperDat) {
-	if (!DosFindFirst(SwapperDat,
-			  &hdir,
-			  FILE_NORMAL | FILE_HIDDEN |
-			  FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
-			  &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+	if (!xDosFindFirst(SwapperDat,
+			   &hdir,
+			   FILE_NORMAL | FILE_HIDDEN |
+			   FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
+			   &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
 	  CHAR tb[39], tm[39], tpm[39], s[163];
 	  ULONG amem;
 
@@ -1887,11 +1887,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		IsValidDrive(toupper(*pci->pszFileName)));
 	if (!IsOk) {
 	  DosError(FERR_DISABLEHARDERR);
-	  status = DosFindFirst(pci->pszFileName, &hDir,
-				FILE_NORMAL | FILE_DIRECTORY |
-				FILE_ARCHIVED | FILE_READONLY |
-				FILE_HIDDEN | FILE_SYSTEM,
-				&ffb, sizeof(ffb), &nm, FIL_STANDARD);
+	  status = xDosFindFirst(pci->pszFileName, &hDir,
+				 FILE_NORMAL | FILE_DIRECTORY |
+				 FILE_ARCHIVED | FILE_READONLY |
+				 FILE_HIDDEN | FILE_SYSTEM,
+				 &ffb, sizeof(ffb), &nm, FIL_STANDARD);
 	  priority_bumped();
 	}
 	if (!status) {

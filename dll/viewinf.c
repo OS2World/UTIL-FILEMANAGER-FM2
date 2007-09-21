@@ -107,8 +107,8 @@ static VOID FillListboxThread(VOID * args)
 	      hdir = HDIR_CREATE;
 	      nm = 1;
 	      DosError(FERR_DISABLEHARDERR);
-	      if (!DosFindFirst(mask, &hdir, FILE_NORMAL | FILE_ARCHIVED,
-				&ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+	      if (!xDosFindFirst(mask, &hdir, FILE_NORMAL | FILE_ARCHIVED,
+				 &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
 		do {
 		  priority_normal();
 		  strcpy(enddir, ffb.achName);
@@ -147,7 +147,7 @@ static VOID FillListboxThread(VOID * args)
 				    MPFROMP(text));
 		Continue:
 		  nm = 1;
-		} while (!DosFindNext(hdir, &ffb, sizeof(ffb), &nm));
+		} while (!xDosFindNext(hdir, &ffb, sizeof(ffb), &nm));
 		DosFindClose(hdir);
 		priority_normal();
 	      }

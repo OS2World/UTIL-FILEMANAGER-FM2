@@ -1431,10 +1431,10 @@ static BOOL UpdateList(HWND hwnd, CHAR **list)
 	didone = TRUE;
 	hdir = HDIR_CREATE;
 	ulFindCnt = 1;
-	if (!DosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
-			  FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
-			  FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
-			  FIL_STANDARD)) {
+	if (!xDosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
+			   FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
+			   FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
+			   FIL_STANDARD)) {
 	  DosFindClose(hdir);
 	  if (!(ffb.attrFile & FILE_DIRECTORY)) {
 	    ad->afhead[x].attrFile = (USHORT) ffb.attrFile;
@@ -1452,10 +1452,10 @@ static BOOL UpdateList(HWND hwnd, CHAR **list)
 	didone = TRUE;
 	hdir = HDIR_CREATE;
 	ulFindCnt = 1;
-	if (!DosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
-			  FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
-			  FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
-			  FIL_STANDARD)) {
+	if (!xDosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
+			   FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
+			   FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
+			   FIL_STANDARD)) {
 	  DosFindClose(hdir);
 	  if (!(ffb.attrFile & FILE_DIRECTORY)) {
 	    if (!ad->afalloc || ad->affiles > ad->afalloc - 1) {
@@ -1922,10 +1922,10 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   strcpy(enddir, "*");
   DosError(FERR_DISABLEHARDERR);
   ulFindCnt = ulFindMax;
-  rc = DosFindFirst(filename, &hdir, FILE_NORMAL | FILE_ARCHIVED |
-		    FILE_READONLY | FILE_DIRECTORY | FILE_SYSTEM |
-		    FILE_HIDDEN,
-		    pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
+  rc = xDosFindFirst(filename, &hdir, FILE_NORMAL | FILE_ARCHIVED |
+		     FILE_READONLY | FILE_DIRECTORY | FILE_SYSTEM |
+		     FILE_HIDDEN,
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
   if (!rc) {
     do {
 #if 0 // 13 Aug 07 SHL fixme to be gone
@@ -1995,7 +1995,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
       if (ad->stopflag)
 	break;
       ulFindCnt = ulFindMax;
-      rc = DosFindNext(hdir, pffbArray, sizeof(FILEFINDBUF3) * ulFindCnt, &ulFindCnt);
+      rc = xDosFindNext(hdir, pffbArray, sizeof(FILEFINDBUF3) * ulFindCnt, &ulFindCnt);
     } while (!rc);
     DosFindClose(hdir);
   }

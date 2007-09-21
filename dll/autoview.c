@@ -428,12 +428,12 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    nm = sizeof(ffb) / sizeof(FILEFINDBUF4);
 	    if (AutoviewHeight < 96)
 	      nm /= 2;
-	    rc = DosFindFirst(fullname,
-			      &hdir,
-			      FILE_NORMAL | FILE_DIRECTORY |
-			      FILE_READONLY | FILE_ARCHIVED |
-			      FILE_SYSTEM | FILE_HIDDEN,
-			      &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
+	    rc = xDosFindFirst(fullname,
+		               &hdir,
+		               FILE_NORMAL | FILE_DIRECTORY |
+		               FILE_READONLY | FILE_ARCHIVED |
+		               FILE_SYSTEM | FILE_HIDDEN,
+		               &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
 	    if (!rc && nm) {
 	      fb = (PBYTE) & ffb;
 	      x = ml = 0;

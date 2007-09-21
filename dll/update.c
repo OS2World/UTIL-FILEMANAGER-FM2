@@ -79,12 +79,12 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
       /* ignore non-writeable drives */
       return (PCNRITEM) NULL;
   }
-  status = DosFindFirst(filename,
-			&hDir,
-			FILE_NORMAL | FILE_DIRECTORY |
-			FILE_ARCHIVED | FILE_READONLY |
-			FILE_HIDDEN | FILE_SYSTEM,
-			&ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
+  status = xDosFindFirst(filename,
+			 &hDir,
+			 FILE_NORMAL | FILE_DIRECTORY |
+			 FILE_ARCHIVED | FILE_READONLY |
+			 FILE_HIDDEN | FILE_SYSTEM,
+			 &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
   if (!status) {
 #ifdef DEBUG
     existed = TRUE;
@@ -370,12 +370,12 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	  continue;
       }
       hDir = HDIR_CREATE;
-      status = DosFindFirst(filename[x],
-			    &hDir,
-			    FILE_NORMAL | FILE_DIRECTORY |
-			    FILE_ARCHIVED | FILE_READONLY |
-			    FILE_HIDDEN | FILE_SYSTEM,
-			    &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
+      status = xDosFindFirst(filename[x],
+			     &hDir,
+			     FILE_NORMAL | FILE_DIRECTORY |
+			     FILE_ARCHIVED | FILE_READONLY |
+			     FILE_HIDDEN | FILE_SYSTEM,
+			     &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
       if (!status) {
 	/* file exists */
 	DosFindClose(hDir);

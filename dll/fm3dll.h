@@ -872,8 +872,6 @@ CHAR *searchpath(CHAR * filename);
 UINT literal(PSZ pszBuf);
 BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
               const BOOL fNotFileSpec);
-/*BOOL wildcard2(const PSZ pszBuf, const PSZ pszWildCard,
-	      const BOOL fNotFileSpec);*/
 PSZ fixup(const PCH pachInBuf, PSZ pszOutBuf, const UINT cBufBytes,
 	  const UINT cInBytes);
 
@@ -1319,6 +1317,17 @@ char *GetPString(ULONG id);
 BOOL StringsLoaded(void);
 
 /* wrappers.c */
+APIRET APIENTRY  xDosFindFirst(PSZ    pszFileSpec,
+                               PHDIR  phdir,
+                               ULONG  flAttribute,
+                               PVOID  pfindbuf,
+                               ULONG  cbBuf,
+                               PULONG pcFileNames,
+                               ULONG  ulInfoLevel);
+APIRET APIENTRY  xDosFindNext(HDIR   hDir,
+                              PVOID  pfindbuf,
+                              ULONG  cbfindbuf,
+                              PULONG pcFilenames);
 APIRET APIENTRY  xDosSetPathInfo(PSZ   pszPathName,
                                  ULONG ulInfoLevel,
                                  PVOID pInfoBuf,

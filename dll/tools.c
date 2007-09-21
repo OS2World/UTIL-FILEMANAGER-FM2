@@ -899,12 +899,12 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	hDir = HDIR_CREATE;
 	ulSearchCount = 1;
 	DosError(FERR_DISABLEHARDERR);
-	if (!DosFindFirst(masks[x],
-			  &hDir,
-			  FILE_ARCHIVED,
-			  &findbuf,
-			  sizeof(FILEFINDBUF3),
-			  &ulSearchCount, FIL_STANDARD)) {
+	if (!xDosFindFirst(masks[x],
+			   &hDir,
+			   FILE_ARCHIVED,
+			   &findbuf,
+			   sizeof(FILEFINDBUF3),
+			   &ulSearchCount, FIL_STANDARD)) {
 	  do {
 	    priority_bumped();
 	    WinSendMsg(WinWindowFromID(hwnd,
@@ -913,9 +913,9 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		       MPFROMP(findbuf.achName));
 	    ulSearchCount = 1;
-	  } while (!DosFindNext(hDir,
-				&findbuf,
-				sizeof(FILEFINDBUF3), &ulSearchCount));
+	  } while (!xDosFindNext(hDir,
+				 &findbuf,
+				 sizeof(FILEFINDBUF3), &ulSearchCount));
 	  DosFindClose(hDir);
 	  priority_bumped();
 	}

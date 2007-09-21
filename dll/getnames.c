@@ -54,11 +54,11 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1L;
 	  if (!IsRoot(info->path))
-	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
-			      MUST_HAVE_DIRECTORY | FILE_READONLY |
-			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			      &findbuf, sizeof(FILEFINDBUF3),
-			      &ulSearchCount, FIL_STANDARD);
+	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
+			       MUST_HAVE_DIRECTORY | FILE_READONLY |
+			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			       &findbuf, sizeof(FILEFINDBUF3),
+			       &ulSearchCount, FIL_STANDARD);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
