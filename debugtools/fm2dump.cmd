@@ -77,7 +77,7 @@ goto Usage
   echo Dump facility configured to dump all memory
   goto shift
 
-:: Configure optimal dump settings for mr/2 ice
+:: Configure optimal dump settings for fm/2
 
 :Configure
   :: Turn on dump facility - set dump directory
@@ -163,12 +163,12 @@ goto Usage
 
 :Help
   echo.
-  echo Simple Dump Facility controller for mr/2 ice
+  echo Simple Dump Facility controller for fm/2
   echo.
   echo Usage: fm2dump [a] [c] [f] [n] [o] [p] [q] [r]
   echo.
   echo   a     Configure to dump all memory
-  echo   c     Configure optimally for mr/2 dump
+  echo   c     Configure optimally for fm/2 dump
   echo   f     Force dump using current settings
   echo   n     Turn on dump facility
   echo   o     Turn off dump facility
