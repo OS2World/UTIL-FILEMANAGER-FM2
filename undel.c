@@ -1,6 +1,5 @@
 #define INCL_DOS
 #define INCL_WIN
-#define INCL_LONGLONG
 
 #include <os2.h>
 #include <stdarg.h>
@@ -16,7 +15,7 @@ int main(int argc, char *argv[])
 
   HAB hab;
   HMQ hmq;
-  FILESTATUS3L fs;
+  FILESTATUS3 fs;
   static CHAR fullname[CCHMAXPATH];
   CHAR *thisarg = NULL;
   INT x;
@@ -33,7 +32,7 @@ int main(int argc, char *argv[])
     save_dir(fullname);
   }
   DosError(FERR_DISABLEHARDERR);
-  if (thisarg && !DosQueryPathInfo(thisarg, FIL_STANDARDL, &fs, sizeof(fs))) {
+  if (thisarg && !DosQueryPathInfo(thisarg, FIL_STANDARD, &fs, sizeof(fs))) {
     if (DosQueryPathInfo(thisarg,
 			 FIL_QUERYFULLNAME, fullname, sizeof(fullname)))
       strcpy(fullname, thisarg);
@@ -48,7 +47,7 @@ int main(int argc, char *argv[])
 		    UndeleteDlgProc,
 		    FM3ModHandle, UNDEL_FRAME, (PVOID) fullname);
 	}
-	DosSleep(250L);
+	DosSleep(250);
 	WinDestroyMsgQueue(hmq);
       }
       WinTerminate(hab);

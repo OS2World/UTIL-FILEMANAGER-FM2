@@ -27,7 +27,7 @@
 setlocal
 
 :: Edit this to point to existing directory on drive with sufficient free space
-set D=%TMP%
+set D=U:\Dump
 
 :: Try to validate dump directory
 dir %D%\nul >nul 2>&1

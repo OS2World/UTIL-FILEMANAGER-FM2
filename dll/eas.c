@@ -1190,12 +1190,12 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 
   if (!filename)
     return head;
-  if (ishandle || !DosOpenL(filename, &handle, &action, 0, 0,
-			    OPEN_ACTION_FAIL_IF_NEW |
-			    OPEN_ACTION_OPEN_IF_EXISTS,
-			    OPEN_FLAGS_NOINHERIT |
-			    OPEN_SHARE_DENYREADWRITE |
-			    OPEN_ACCESS_READWRITE, (PEAOP2)0)) {
+  if (ishandle || !DosOpen(filename, &handle, &action, 0, 0,
+			   OPEN_ACTION_FAIL_IF_NEW |
+			   OPEN_ACTION_OPEN_IF_EXISTS,
+			   OPEN_FLAGS_NOINHERIT |
+			   OPEN_SHARE_DENYREADWRITE |
+			   OPEN_ACCESS_READWRITE, (PEAOP2)0)) {
     if (ishandle)
       handle = *(HFILE *) filename;
     if (!DosQueryFileInfo(handle, FIL_QUERYEASIZEL, (PVOID)&fsa4,

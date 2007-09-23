@@ -168,17 +168,17 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
   if (!topsig)
     topsig = arcsighead;
   DosError(FERR_DISABLEHARDERR);
-  if (DosOpenL(filespec,
-	       &handle,
-	       &action,
-	       0,
-	       0,
-	       OPEN_ACTION_FAIL_IF_NEW |
-	       OPEN_ACTION_OPEN_IF_EXISTS,
-	       OPEN_FLAGS_FAIL_ON_ERROR |
-	       OPEN_FLAGS_NOINHERIT |
-	       OPEN_FLAGS_RANDOMSEQUENTIAL |
-	       OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0))
+  if (DosOpen(filespec,
+	      &handle,
+	      &action,
+	      0,
+	      0,
+	      OPEN_ACTION_FAIL_IF_NEW |
+	      OPEN_ACTION_OPEN_IF_EXISTS,
+	      OPEN_FLAGS_FAIL_ON_ERROR |
+	      OPEN_FLAGS_NOINHERIT |
+	      OPEN_FLAGS_RANDOMSEQUENTIAL |
+	      OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0))
     return NULL;
   // Scan signatures
   for (info = topsig; info; info = info->next) {

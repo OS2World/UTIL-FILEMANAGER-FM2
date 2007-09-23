@@ -278,17 +278,17 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       APIRET rc;
 
       dv[2] = 0;
-      rc = DosOpenL(dv,
-		    &hfile,
-		    &dlen,
-		    0,
-		    0,
-		    OPEN_ACTION_OPEN_IF_EXISTS |
-		    OPEN_ACTION_CREATE_IF_NEW,
-		    OPEN_FLAGS_DASD |
-		    OPEN_FLAGS_FAIL_ON_ERROR | OPEN_SHARE_DENYNONE, NULL);
+      rc = DosOpen(dv,
+		   &hfile,
+		   &dlen,
+		   0,
+		   0,
+		   OPEN_ACTION_OPEN_IF_EXISTS |
+		   OPEN_ACTION_CREATE_IF_NEW,
+		   OPEN_FLAGS_DASD |
+		   OPEN_FLAGS_FAIL_ON_ERROR | OPEN_SHARE_DENYNONE, NULL);
       if (rc)
-	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__, "DosOpenL");
+	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__, "DosOpen");
       else {
 	dlen = 0;
 	plen = sizeof(parm);

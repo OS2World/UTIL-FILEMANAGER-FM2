@@ -303,15 +303,15 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    CHAR *ibuff, *obuff, *p, buffer[80];
 	    ARC_TYPE *info;
 
-	    if (!DosOpenL((CHAR *) mp1,
-			  &handle,
-			  &action,
-			  0,
-			  0,
-			  OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-			  OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-			  OPEN_FLAGS_RANDOMSEQUENTIAL | OPEN_SHARE_DENYNONE |
-			  OPEN_ACCESS_READONLY, 0)) {
+	    if (!DosOpen((CHAR *) mp1,
+			 &handle,
+			 &action,
+			 0,
+			 0,
+			 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+			 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+			 OPEN_FLAGS_RANDOMSEQUENTIAL | OPEN_SHARE_DENYNONE |
+			 OPEN_ACCESS_READONLY, 0)) {
 	      ibufflen = (AutoviewHeight < 96) ? 512 : 3072;
 	      ibuff = xmalloc(ibufflen + 2, pszSrcFile, __LINE__);
 	      if (ibuff) {

@@ -1290,11 +1290,11 @@ static VOID LoadFileThread(VOID * args)
 	    PostMsg(ad->hwndFrame, WM_UPDATEFRAME,
 		    MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	    WinSetFocus(HWND_DESKTOP, hwnd);
-	    rc = DosOpenL(ad->filename, &handle, &action, 0, 0,
-			  OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-			  OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-			  OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-			  OPEN_ACCESS_READONLY, 0);
+	    rc = DosOpen(ad->filename, &handle, &action, 0, 0,
+			 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+			 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+			 OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+			 OPEN_ACCESS_READONLY, 0);
 	    if (rc) {
 	      Dos_Error(MB_CANCEL,
 			rc,

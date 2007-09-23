@@ -67,8 +67,8 @@ FILE *_fsopen(CHAR * filename, CHAR * mode, INT sharemode, ...)
     openmode |= OPEN_FLAGS_SEQUENTIAL;
   else
     openmode |= OPEN_FLAGS_RANDOMSEQUENTIAL;
-  if (DosOpenL(filename, &handle, &action, 0, FILE_NORMAL, openflag, openmode,
-	       (PEAOP2) 0))
+  if (DosOpen(filename, &handle, &action, 0, FILE_NORMAL, openflag, openmode,
+	      (PEAOP2) 0))
     return NULL;
   if (mode[strlen(mode) - 1] == 't')
     mode[strlen(mode) - 1] = 0;		/* bug bug bug */

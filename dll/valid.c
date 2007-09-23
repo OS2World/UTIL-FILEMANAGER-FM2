@@ -299,9 +299,9 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 
 
   DosError(FERR_DISABLEHARDERR);
-  rc = DosOpenL(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
-	        OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
-	        OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
+  rc = DosOpen(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
+	       OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
+	       OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
   if (rc) {
     DosError(FERR_DISABLEHARDERR);
     if (pulType)
@@ -866,11 +866,11 @@ BOOL TestBinary(CHAR * filename)
   CHAR buff[512];
 
   if (filename) {
-    if (!DosOpenL(filename, &handle, &ulAction, 0, 0,
-		  OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-		  OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-		  OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-		  OPEN_ACCESS_READONLY, 0)) {
+    if (!DosOpen(filename, &handle, &ulAction, 0, 0,
+		 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+		 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+		 OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+		 OPEN_ACCESS_READONLY, 0)) {
       len = 512;
       rc = DosRead(handle, buff, len, &len);
       DosClose(handle);

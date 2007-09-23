@@ -446,11 +446,11 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
   grandpa = GrandparentOf(h);
   *titletext = 0;
   WinQueryWindowText(grandpa, 512, titletext);
-  rc = DosOpenL(filename, &handle, &action, 0, 0,
-	        OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-	        OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-	        OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-	        OPEN_ACCESS_READONLY, 0);
+  rc = DosOpen(filename, &handle, &action, 0, 0,
+	       OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+	       OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+	       OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+	       OPEN_ACCESS_READONLY, 0);
   if (rc) {
     ret = FALSE;
   }

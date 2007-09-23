@@ -1,6 +1,5 @@
 #define INCL_DOS
 #define INCL_WIN
-#define INCL_LONGLONG
 
 #include <os2.h>
 #include <stdarg.h>
@@ -26,7 +25,7 @@ VOID APIENTRY deinit(ULONG why)
     CHAR *enddir;
     HDIR search_handle;
     ULONG num_matches;
-    static FILEFINDBUF3L f;
+    static FILEFINDBUF3 f;
 
     save_dir(s);
     if (s[strlen(s) - 1] != '\\')
@@ -37,13 +36,13 @@ VOID APIENTRY deinit(ULONG why)
       strcat(s, "*");
       search_handle = HDIR_CREATE;
       num_matches = 1;
-      if (!xDosFindFirst(s,
+      if (!DosFindFirst(s,
 			&search_handle,
 			FILE_NORMAL | FILE_DIRECTORY |
 			FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
 			FILE_ARCHIVED,
 			&f,
-			sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
+			sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
 	do {
 	  strcpy(enddir, f.achName);
 	  if (f.attrFile & FILE_DIRECTORY) {
@@ -52,8 +51,8 @@ VOID APIENTRY deinit(ULONG why)
 	  }
 	  else
 	    unlinkf("%s", s);
-	} while (!xDosFindNext(search_handle,
-			      &f, sizeof(FILEFINDBUF3L), &num_matches));
+	} while (!DosFindNext(search_handle,
+			      &f, sizeof(FILEFINDBUF3), &num_matches));
 	DosFindClose(search_handle);
       }
     }
@@ -99,7 +98,7 @@ int main(int argc, char *argv[])
     if (*fullname && (strchr(fullname, '?') ||
 		      strchr(fullname, '*') || !strchr(fullname, '.'))) {
 
-      static FILEFINDBUF3L ffb;
+      static FILEFINDBUF3 ffb;
       ULONG nm;
       HDIR hdir;
       CHAR *enddir;
@@ -111,11 +110,11 @@ int main(int argc, char *argv[])
 	enddir++;
 	hdir = HDIR_CREATE;
 	nm = 1;
-	if (!xDosFindFirst(fullname,
+	if (!DosFindFirst(fullname,
 			  &hdir,
 			  FILE_NORMAL | FILE_SYSTEM |
 			  FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
-			  &ffb, sizeof(FILEFINDBUF3L), &nm, FIL_STANDARDL)) {
+			  &ffb, sizeof(FILEFINDBUF3), &nm, FIL_STANDARD)) {
 	  strcpy(enddir, ffb.achName);
 	  DosFindClose(hdir);
 	}
@@ -129,7 +128,7 @@ int main(int argc, char *argv[])
       {
 	static CHAR path[CCHMAXPATH];
 	CHAR *env;
-	FILESTATUS3L fs;
+	FILESTATUS3 fs;
 
 	env = getenv("FM3INI");
 	if (env && *env) {
@@ -137,7 +136,7 @@ int main(int argc, char *argv[])
 	  if (!DosQueryPathInfo(env, FIL_QUERYFULLNAME, path, sizeof(path))) {
 	    DosError(FERR_DISABLEHARDERR);
 	    if (!DosQueryPathInfo(path,
-				  FIL_STANDARDL, &fs, (ULONG) sizeof(fs))) {
+				  FIL_STANDARD, &fs, (ULONG) sizeof(fs))) {
 	      if (!(fs.attrFile & FILE_DIRECTORY)) {
 		env = strrchr(path, '\\');
 		if (env)
@@ -145,7 +144,7 @@ int main(int argc, char *argv[])
 	      }
 	      DosError(FERR_DISABLEHARDERR);
 	      if (!DosQueryPathInfo(path,
-				    FIL_STANDARDL, &fs, (ULONG) sizeof(fs))) {
+				    FIL_STANDARD, &fs, (ULONG) sizeof(fs))) {
 		if (fs.attrFile & FILE_DIRECTORY)
 		  switch_to(path);
 	      }
@@ -203,14 +202,14 @@ int main(int argc, char *argv[])
 		    WinShowWindow(hwndBubble, FALSE);
 		  WinDispatchMsg(hab, &qmsg);
 		}
-		DosSleep(125L);
+		DosSleep(125);
 	      }
 	    }
 	  }
 	}
       }
     Abort:
-      DosSleep(125L);
+      DosSleep(125);
       WinDestroyMsgQueue(hmq);
     }
     WinTerminate(hab);
