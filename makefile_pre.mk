@@ -7,6 +7,7 @@
 # 27 Jun 07 SHL Allow DEBUG set from command line or environment
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
+# 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
 
 CC = wcc386
 LINK = wlink
@@ -58,7 +59,7 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -zq		quiet
 
 # We always compile with debug info to avoid needed a full rebuild just to debug
-CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zq -hd
+CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zp4 -zq -hd
 
 LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map
 !ifdef DEBUG
