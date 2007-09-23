@@ -26,6 +26,7 @@
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -1182,22 +1183,22 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
   /* load eas from disk into HOLDFEA linked list */
 
   HOLDFEA *head = NULL, *info, *last = NULL;
-  FILESTATUS4 fsa4;
+  FILESTATUS4L fsa4;
   HFILE handle;
   ULONG action;
   APIRET rc;
 
   if (!filename)
     return head;
-  if (ishandle || !DosOpen(filename, &handle, &action, 0, 0,
-			   OPEN_ACTION_FAIL_IF_NEW |
-			   OPEN_ACTION_OPEN_IF_EXISTS,
-			   OPEN_FLAGS_NOINHERIT |
-			   OPEN_SHARE_DENYREADWRITE |
-			   OPEN_ACCESS_READWRITE, (PEAOP2)0)) {
+  if (ishandle || !DosOpenL(filename, &handle, &action, 0, 0,
+			    OPEN_ACTION_FAIL_IF_NEW |
+			    OPEN_ACTION_OPEN_IF_EXISTS,
+			    OPEN_FLAGS_NOINHERIT |
+			    OPEN_SHARE_DENYREADWRITE |
+			    OPEN_ACCESS_READWRITE, (PEAOP2)0)) {
     if (ishandle)
       handle = *(HFILE *) filename;
-    if (!DosQueryFileInfo(handle, FIL_QUERYEASIZE, (PVOID)&fsa4,
+    if (!DosQueryFileInfo(handle, FIL_QUERYEASIZEL, (PVOID)&fsa4,
 			  (ULONG) sizeof(fsa4)) &&
 	fsa4.cbList > 4)
     {
@@ -1287,7 +1288,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
     //Runtime_Error(pszSrcFile, __LINE__, "why here", filename);
     //03 AUG 07 GKY This isn't an error it is for processing Readonly files
     /* try it without opening it */
-    if (!DosQueryPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & fsa4,
+    if (!DosQueryPathInfo(filename, FIL_QUERYEASIZEL, (PVOID) & fsa4,
 			  (ULONG) sizeof(fsa4)) &&
 	fsa4.cbList > 4)
     {

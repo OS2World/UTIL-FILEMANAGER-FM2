@@ -546,7 +546,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (dcd) {
       LISTINFO *li = (LISTINFO *) mp1;
       INT x;
-      FILEFINDBUF4 fb4;
+      FILEFINDBUF4L fb4;
       HDIR hdir;
       ULONG nm;
       PCNRITEM pci, pciFirst, pciT, pciP = NULL;
@@ -589,7 +589,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		               FILE_NORMAL | FILE_DIRECTORY |
 		               FILE_ARCHIVED | FILE_SYSTEM |
 		               FILE_HIDDEN | FILE_READONLY,
-		               &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZE)) {
+		               &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL)) {
 	      DosFindClose(hdir);
 	      priority_normal();
 	      *fb4.achName = 0;
@@ -637,7 +637,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_COLLECTFROMFILE:
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd && mp1) {
-      FILESTATUS4 fs4;
+      FILESTATUS4L fs4;
       PCNRITEM pci;
       RECORDINSERT ri;
       CHAR fullname[1024], *p;
@@ -682,7 +682,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (IsFullName(fullname) &&
 		!IsRoot(fullname) &&
 		!DosQueryPathInfo(fullname,
-				  FIL_QUERYEASIZE,
+				  FIL_QUERYEASIZEL,
 				  &fs4,
 				  sizeof(fs4)) &&
 		!FindCnrRecord(dcd->hwndCnr,
@@ -2507,7 +2507,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case CN_ENTER:
 	if (mp2) {
 	  PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
-	  FILEFINDBUF3 ffb;
+	  FILEFINDBUF3L ffb;
 	  HDIR hDir = HDIR_CREATE;
 	  ULONG nm = 1;
 	  APIRET status = 0;
@@ -2521,7 +2521,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		               	   FILE_NORMAL | FILE_DIRECTORY |
 				   FILE_ARCHIVED | FILE_READONLY |
 				   FILE_HIDDEN | FILE_SYSTEM,
-				   &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+				   &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
 	    priority_bumped();
 	    if (!status) {
 	      DosFindClose(hDir);

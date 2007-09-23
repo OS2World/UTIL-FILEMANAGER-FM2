@@ -30,6 +30,7 @@
 #define INCL_WIN
 #define INCL_DOSDEVICES			// DosDevIOCtl
 #define INCL_DOSDEVIOCTL		// DosDevIOCtl
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -85,12 +86,12 @@ int TestDates(char *file1, char *file2)
    */
 
   int comp = 0;
-  FILESTATUS3 fs3o, fs3n;
+  FILESTATUS3L fs3o, fs3n;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!DosQueryPathInfo(file1, FIL_STANDARD, &fs3o, sizeof(fs3o))) {
+  if (!DosQueryPathInfo(file1, FIL_STANDARDL, &fs3o, sizeof(fs3o))) {
     DosError(FERR_DISABLEHARDERR);
-    if (!DosQueryPathInfo(file2, FIL_STANDARD, &fs3n, sizeof(fs3n))) {
+    if (!DosQueryPathInfo(file2, FIL_STANDARDL, &fs3n, sizeof(fs3n))) {
       comp = (fs3n.fdateLastWrite.year >
 	      fs3o.fdateLastWrite.year) ? 1 :
 	(fs3n.fdateLastWrite.year <
@@ -298,9 +299,9 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 
 
   DosError(FERR_DISABLEHARDERR);
-  rc = DosOpen(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
-	       OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
-	       OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
+  rc = DosOpenL(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
+	        OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE |
+	        OPEN_FLAGS_DASD | OPEN_FLAGS_FAIL_ON_ERROR, 0);
   if (rc) {
     DosError(FERR_DISABLEHARDERR);
     if (pulType)
@@ -351,16 +352,16 @@ BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 {
   /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
 
-  FILESTATUS3 fsa1, fsa2;
+  FILESTATUS3L fsa1, fsa2;
   APIRET ret;
 
   if (filename1 && filename2) {
     DosError(FERR_DISABLEHARDERR);
-    ret = DosQueryPathInfo(filename1, FIL_STANDARD, &fsa1,
+    ret = DosQueryPathInfo(filename1, FIL_STANDARDL, &fsa1,
 			   (ULONG) sizeof(fsa1));
     if (!ret) {
       DosError(FERR_DISABLEHARDERR);
-      ret = DosQueryPathInfo(filename2, FIL_STANDARD, &fsa2,
+      ret = DosQueryPathInfo(filename2, FIL_STANDARDL, &fsa2,
 			     (ULONG) sizeof(fsa2));
       if (!ret) {
 	if (fsa1.cbFile == fsa2.cbFile &&
@@ -377,12 +378,12 @@ INT IsFile(CHAR * filename)
 {
   /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
 
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
   APIRET ret;
 
   if (filename && *filename) {
     DosError(FERR_DISABLEHARDERR);
-    ret = DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa));
+    ret = DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa));
     if (!ret)
       return ((fsa.attrFile & FILE_DIRECTORY) == 0);
     else if (IsValidDrive(*filename) && IsRoot(filename))
@@ -406,7 +407,7 @@ BOOL IsRoot(CHAR * filename)
 BOOL IsValidDir(CHAR * path)
 {
   CHAR fullname[CCHMAXPATH];
-  FILESTATUS3 fs;
+  FILESTATUS3L fs;
 
   if (path) {
     DosError(FERR_DISABLEHARDERR);
@@ -416,7 +417,7 @@ BOOL IsValidDir(CHAR * path)
 	if (!IsRoot(fullname)) {
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQueryPathInfo(fullname,
-				FIL_STANDARD,
+				FIL_STANDARDL,
 				&fs,
 				sizeof(fs)) && (fs.attrFile & FILE_DIRECTORY))
 	    return TRUE;
@@ -460,7 +461,7 @@ CHAR *MakeValidDir(CHAR * path)
 {
   ULONG ulDrv;
   CHAR *p;
-  FILESTATUS3 fs;
+  FILESTATUS3L fs;
   APIRET rc;
 
   if (!MakeFullName(path)) {
@@ -470,7 +471,7 @@ CHAR *MakeValidDir(CHAR * path)
 	if (IsRoot(path))
 	  return path;
 	DosError(FERR_DISABLEHARDERR);
-	rc = DosQueryPathInfo(path, FIL_STANDARD, &fs, sizeof(fs));
+	rc = DosQueryPathInfo(path, FIL_STANDARDL, &fs, sizeof(fs));
 	if (!rc && (fs.attrFile & FILE_DIRECTORY))
 	  return path;
 	p = strrchr(path, '\\');
@@ -865,11 +866,11 @@ BOOL TestBinary(CHAR * filename)
   CHAR buff[512];
 
   if (filename) {
-    if (!DosOpen(filename, &handle, &ulAction, 0, 0,
-		 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-		 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-		 OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-		 OPEN_ACCESS_READONLY, 0)) {
+    if (!DosOpenL(filename, &handle, &ulAction, 0, 0,
+		  OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+		  OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+		  OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+		  OPEN_ACCESS_READONLY, 0)) {
       len = 512;
       rc = DosRead(handle, buff, len, &len);
       DosClose(handle);

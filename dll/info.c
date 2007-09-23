@@ -622,9 +622,9 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     pfs = WinQueryWindowPtr(hwnd, QWL_USER);
     if (pfs && *pfs->szFileName) {
       CHAR s[97];
-      FILEFINDBUF4 fs;
+      FILEFINDBUF4L fs;
       HDIR hdir = HDIR_CREATE;
-      ULONG apptype = 1L;
+      ULONG apptype = 1;
       FILE *fp;
       HPOINTER hptr;
       ARC_TYPE *info;
@@ -635,7 +635,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		        FILE_NORMAL | FILE_ARCHIVED |
 		        FILE_DIRECTORY | FILE_READONLY | FILE_HIDDEN |
 		        FILE_SYSTEM,
-		        &fs, sizeof(fs), &apptype, FIL_QUERYEASIZE)) {
+		        &fs, sizeof(fs), &apptype, FIL_QUERYEASIZEL)) {
 	// Not found
 	SHORT sSelect, numitems;
 

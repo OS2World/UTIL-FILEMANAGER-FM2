@@ -1,5 +1,6 @@
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 
 #include <os2.h>
 #include <stdarg.h>
@@ -25,7 +26,7 @@ VOID APIENTRY deinit(ULONG why)
     CHAR *enddir;
     HDIR search_handle;
     ULONG num_matches;
-    static FILEFINDBUF3 f;
+    static FILEFINDBUF3L f;
 
     save_dir(s);
     if (s[strlen(s) - 1] != '\\')
@@ -35,14 +36,14 @@ VOID APIENTRY deinit(ULONG why)
       strcat(s, ArcTempRoot);
       strcat(s, "*");
       search_handle = HDIR_CREATE;
-      num_matches = 1L;
-      if (!DosFindFirst(s,
+      num_matches = 1;
+      if (!xDosFindFirst(s,
 			&search_handle,
 			FILE_NORMAL | FILE_DIRECTORY |
 			FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
 			FILE_ARCHIVED,
 			&f,
-			sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+			sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
 	do {
 	  strcpy(enddir, f.achName);
 	  if (f.attrFile & FILE_DIRECTORY) {
@@ -51,8 +52,8 @@ VOID APIENTRY deinit(ULONG why)
 	  }
 	  else
 	    unlinkf("%s", s);
-	} while (!DosFindNext(search_handle,
-			      &f, sizeof(FILEFINDBUF3), &num_matches));
+	} while (!xDosFindNext(search_handle,
+			      &f, sizeof(FILEFINDBUF3L), &num_matches));
 	DosFindClose(search_handle);
       }
     }
@@ -98,7 +99,7 @@ int main(int argc, char *argv[])
     if (*fullname && (strchr(fullname, '?') ||
 		      strchr(fullname, '*') || !strchr(fullname, '.'))) {
 
-      static FILEFINDBUF3 ffb;
+      static FILEFINDBUF3L ffb;
       ULONG nm;
       HDIR hdir;
       CHAR *enddir;
@@ -109,12 +110,12 @@ int main(int argc, char *argv[])
       if (enddir) {
 	enddir++;
 	hdir = HDIR_CREATE;
-	nm = 1L;
-	if (!DosFindFirst(fullname,
+	nm = 1;
+	if (!xDosFindFirst(fullname,
 			  &hdir,
 			  FILE_NORMAL | FILE_SYSTEM |
 			  FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
-			  &ffb, sizeof(FILEFINDBUF3), &nm, FIL_STANDARD)) {
+			  &ffb, sizeof(FILEFINDBUF3L), &nm, FIL_STANDARDL)) {
 	  strcpy(enddir, ffb.achName);
 	  DosFindClose(hdir);
 	}
@@ -128,7 +129,7 @@ int main(int argc, char *argv[])
       {
 	static CHAR path[CCHMAXPATH];
 	CHAR *env;
-	FILESTATUS3 fs;
+	FILESTATUS3L fs;
 
 	env = getenv("FM3INI");
 	if (env && *env) {
@@ -136,7 +137,7 @@ int main(int argc, char *argv[])
 	  if (!DosQueryPathInfo(env, FIL_QUERYFULLNAME, path, sizeof(path))) {
 	    DosError(FERR_DISABLEHARDERR);
 	    if (!DosQueryPathInfo(path,
-				  FIL_STANDARD, &fs, (ULONG) sizeof(fs))) {
+				  FIL_STANDARDL, &fs, (ULONG) sizeof(fs))) {
 	      if (!(fs.attrFile & FILE_DIRECTORY)) {
 		env = strrchr(path, '\\');
 		if (env)
@@ -144,7 +145,7 @@ int main(int argc, char *argv[])
 	      }
 	      DosError(FERR_DISABLEHARDERR);
 	      if (!DosQueryPathInfo(path,
-				    FIL_STANDARD, &fs, (ULONG) sizeof(fs))) {
+				    FIL_STANDARDL, &fs, (ULONG) sizeof(fs))) {
 		if (fs.attrFile & FILE_DIRECTORY)
 		  switch_to(path);
 	      }

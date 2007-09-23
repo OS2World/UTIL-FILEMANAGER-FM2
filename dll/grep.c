@@ -52,9 +52,9 @@ static PSZ pszSrcFile = __FILE__;
 static VOID doallsubdirs(GREP *grep, CHAR *searchPath, BOOL recursing,
 			 char **fle, int numfls);
 static INT domatchingfiles(GREP *grep, CHAR *path, char **fle, int numfls);
-static BOOL doonefile(GREP *grep, CHAR *fileName, FILEFINDBUF4 *pffb);
+static BOOL doonefile(GREP *grep, CHAR *fileName, FILEFINDBUF4L *pffb);
 static BOOL doinsertion(GREP *grep);
-static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4 *pffb);
+static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4L *pffb);
 static VOID FillDupes(GREP *grep);
 static VOID FreeDupes(GREP *grep);
 
@@ -67,25 +67,25 @@ static INT monthdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 ULONG SecsSince1980(FDATE * date, FTIME * time)
 {
-  ULONG total = 0L;
+  ULONG total = 0;
   register int x;
 
   for (x = 1980; x < date->year + 1980; x++) {
     if (isleap(x))
-      total += (366L * (24L * 60L * 60L));
+      total += (366 * (24 * 60 * 60));
     else
-      total += (365L * (24L * 60L * 60L));
+      total += (365 * (24 * 60 * 60));
   }
   for (x = 1; x < date->month; x++) {
     if (x == 2 && isleap(date->year + 1980))
-      total += (29L * (24L * 60L * 60L));
+      total += (29 * (24 * 60 * 60));
     else
-      total += ((long)monthdays[x - 1] * (24L * 60L * 60L));
+      total += ((long)monthdays[x - 1] * (24 * 60 * 60));
   }
-  total += (((long)date->day - 1L) * (24L * 60L * 60L));
-  total += ((long)time->hours * (60L * 60L));
-  total += ((long)time->minutes * 60L);
-  total += ((long)time->twosecs * 2L);
+  total += (((long)date->day - 1) * (24 * 60 * 60));
+  total += ((long)time->hours * (60 * 60));
+  total += ((long)time->minutes * 60);
+  total += ((long)time->twosecs * 2);
   return total;
 }
 
@@ -400,7 +400,7 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
 {
   // process all subdirectories
 
-  FILEFINDBUF4 ffb;
+  FILEFINDBUF4L ffb;
   HDIR findHandle = HDIR_CREATE;
   LONG ulFindCnt = 1;
   CHAR *p = NULL;
@@ -414,7 +414,7 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
   if (!xDosFindFirst(searchPath, &findHandle, (MUST_HAVE_DIRECTORY |
 		     FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN | FILE_READONLY),
 		     &ffb, (ULONG) sizeof(ffb),
-		     (PULONG) & ulFindCnt, FIL_QUERYEASIZE)) {
+		     (PULONG) & ulFindCnt, FIL_QUERYEASIZEL)) {
 
     // get rid of mask portion, save end-of-directory
 
@@ -453,15 +453,15 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 {
   // process all matching files in a directory
 
-  PFILEFINDBUF4 pffbArray;
-  PFILEFINDBUF4 pffbFile;
+  PFILEFINDBUF4L pffbArray;
+  PFILEFINDBUF4L pffbFile;
   ULONG x;
   HDIR findHandle = HDIR_CREATE;
   ULONG ulFindCnt;
   CHAR szFindPath[CCHMAXPATH];
   PSZ p;
   APIRET rc;
-  ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4);
+  ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4L);
   static BOOL fDone;
 
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
@@ -493,7 +493,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 		     pffbArray,
 		     ulBufBytes,
 		     &ulFindCnt,
-		     FIL_QUERYEASIZE);
+		     FIL_QUERYEASIZEL);
   if (!rc) {
     do {
       // Process each file that matches the mask
@@ -505,7 +505,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	if (*pffbFile->achName != '.' ||
             (pffbFile->achName[1] && pffbFile->achName[1] != '.')) {
           strcpy(p, pffbFile->achName);	// build filename
-          if (strlen(szFindPath) > 256){   //21 Sep GKY check for pathnames that exceed maxpath
+          if (strlen(szFindPath) > CCHMAXPATH){   //21 Sep GKY check for pathnames that exceed maxpath
             DosFindClose(findHandle);
             free(pffbArray);
             if (!fDone) {
@@ -529,7 +529,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	}
 	if (!pffbFile->oNextEntryOffset)
 	  break;
-	pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
       if (*grep->stopflag)
 	break;
@@ -620,7 +620,7 @@ static BOOL doinsertion(GREP * grep)
   return FALSE;
 }
 
-static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4 pffb)
+static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4L pffb)
 {
   PSZ p;
   CHAR szDirectory[CCHMAXPATH];
@@ -635,7 +635,7 @@ static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4 pffb)
       *p = 0;
       if (!grep->insertffb) {
 	// Allocate 1 extra for end marker?
-	grep->insertffb = xmallocz(sizeof(PFILEFINDBUF4) * (FilesToGet + 1),
+	grep->insertffb = xmallocz(sizeof(PFILEFINDBUF4L) * (FilesToGet + 1),
 				   pszSrcFile, __LINE__);
 	if (!grep->insertffb)
 	  return FALSE;
@@ -647,10 +647,10 @@ static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4 pffb)
 	}
       }
       grep->insertffb[grep->toinsert] =
-	xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+	xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);
       if (!grep->insertffb[grep->toinsert])
 	return FALSE;
-      memcpy(grep->insertffb[grep->toinsert], pffb, sizeof(FILEFINDBUF4));
+      memcpy(grep->insertffb[grep->toinsert], pffb, sizeof(FILEFINDBUF4L));
       grep->dir[grep->toinsert] = xstrdup(szDirectory, pszSrcFile, __LINE__);
       if (!grep->dir) {
 	free(grep->insertffb[grep->toinsert]);
@@ -668,7 +668,7 @@ static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4 pffb)
   return FALSE;
 }
 
-static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4 * pffb)
+static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
 {
   // process a single file
   CHAR *input;
@@ -1405,7 +1405,7 @@ BreakOut:
     DosPostEventSem(CompactSem);
 }
 
-static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4 *pffb)
+static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4L *pffb)
 {
   DUPES *info;
 

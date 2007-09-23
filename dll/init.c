@@ -51,6 +51,7 @@
 #define INCL_MMIOOS2
 #define INCL_GPI
 #define INCL_DOSERRORS
+#define INCL_LONGLONG
 #include <os2.h>
 #include <os2me.h>
 
@@ -80,7 +81,7 @@ VOID FindSwapperDat(VOID)
   CHAR *p;
   CHAR *pp;
   FILE *fp;
-  FILEFINDBUF3 ffb;
+  FILEFINDBUF3L ffb;
   ULONG nm;
   ULONG size = sizeof(SwapperDat);
   HDIR hdir = HDIR_CREATE;
@@ -95,7 +96,7 @@ VOID FindSwapperDat(VOID)
 		       &hdir,
 		       FILE_NORMAL | FILE_ARCHIVED |
 		       FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-		       &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+		       &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
     if (!rc) {
       DosFindClose(hdir);
       fp = fopen(SwapperDat, "r");
@@ -156,7 +157,7 @@ VOID FindSwapperDat(VOID)
 				 &hdir,
 				 FILE_NORMAL | FILE_ARCHIVED |
 				 FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-				 &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+				 &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
 		DosFindClose(hdir);
 		PrfWriteProfileString(fmprof,
 				      FM3Str, "SwapperDat", SwapperDat);
@@ -180,7 +181,7 @@ unsigned APIENTRY LibMain(unsigned hModule,
 {
   CHAR *env;
   CHAR stringfile[CCHMAXPATH];
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
   APIRET rc;
 
   switch (ulFlag) {
@@ -193,12 +194,12 @@ unsigned APIENTRY LibMain(unsigned hModule,
     env = getenv("FM3INI");
     if (env) {
       DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(env, FIL_STANDARD, &fsa, sizeof(fsa));
+      rc = DosQueryPathInfo(env, FIL_STANDARDL, &fsa, sizeof(fsa));
       if (!rc) {
 	if (fsa.attrFile & FILE_DIRECTORY) {
 	  BldFullPathName(stringfile, env, "FM3RES.STR");
 	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
+	  if (DosQueryPathInfo(stringfile, FIL_STANDARDL, &fsa, sizeof(fsa)))
 	    strcpy(stringfile, "FM3RES.STR");
 	}
       }
@@ -294,7 +295,7 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
 {
   CHAR *env;
   CHAR stringfile[CCHMAXPATH];
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
   APIRET rc;
 
   switch (ulFlag) {
@@ -306,12 +307,12 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     env = getenv("FM3INI");
     if (env) {
       DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(env, FIL_STANDARD, &fsa, sizeof(fsa));
+      rc = DosQueryPathInfo(env, FIL_STANDARDL, &fsa, sizeof(fsa));
       if (!rc) {
 	if (fsa.attrFile & FILE_DIRECTORY) {
 	  BldFullPathName(stringfile, env, "FM3RES.STR");
 	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
+	  if (DosQueryPathInfo(stringfile, FIL_STANDARDL, &fsa, sizeof(fsa)))
 	    strcpy(stringfile, "FM3RES.STR");
 	}
       }
@@ -408,7 +409,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   CHAR *enddir;
   HDIR search_handle;
   ULONG num_matches;
-  static FILEFINDBUF3 f;
+  static FILEFINDBUF3L f;
 
   StopTimer();
   StopPrinting = 1;
@@ -448,7 +449,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 		       FILE_NORMAL | FILE_DIRECTORY |
 		       FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
 		       FILE_ARCHIVED,
-		       &f, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+		       &f, sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
       do {
 	strcpy(enddir, f.achName);
 	if (f.attrFile & FILE_DIRECTORY) {
@@ -459,7 +460,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 	  unlinkf("%s", s);
       }
       while (!xDosFindNext(search_handle,
-			   &f, sizeof(FILEFINDBUF3), &num_matches));
+			   &f, sizeof(FILEFINDBUF3L), &num_matches));
       DosFindClose(search_handle);
     }
   }
@@ -477,7 +478,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 		     FILE_NORMAL | FILE_DIRECTORY |
 		     FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
 		     FILE_ARCHIVED,
-		     &f, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+		     &f, sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
     do {
       if (!(f.attrFile & FILE_DIRECTORY)) {
 	strcpy(enddir, f.achName);
@@ -485,7 +486,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
       }
     }
     while (!xDosFindNext(search_handle,
-			 &f, sizeof(FILEFINDBUF3), &num_matches));
+			 &f, sizeof(FILEFINDBUF3L), &num_matches));
     DosFindClose(search_handle);
   }
 
@@ -514,7 +515,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   ULONG RVMajor = 0;
   ULONG RVMinor = 0;
   ULONG ret = 0;
-  FILESTATUS3 fs3;			// 25 Aug 07 SHL
+  FILESTATUS3L fs3;			// 25 Aug 07 SHL
   PSZ env;
   CHAR dllfile[CCHMAXPATH];
   ULONG size;
@@ -532,12 +533,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   env = getenv("FM3INI");
   if (env) {
     DosError(FERR_DISABLEHARDERR);
-    rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
+    rc = DosQueryPathInfo(env, FIL_STANDARDL, &fs3, sizeof(fs3));
     if (!rc) {
       if (fs3.attrFile & FILE_DIRECTORY) {
 	BldFullPathName(dllfile, env, "FM3RES");	// 23 Aug 07 SHL
 	DosError(FERR_DISABLEHARDERR);
-	if (DosQueryPathInfo(dllfile, FIL_STANDARD, (PVOID)&fs3, (ULONG)sizeof(fs3)))
+	if (DosQueryPathInfo(dllfile, FIL_STANDARDL, (PVOID)&fs3, (ULONG)sizeof(fs3)))
 	  strcpy(dllfile, "FM3RES");
       }
     }
@@ -647,7 +648,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (env) {
       strcpy(inipath, env);
       DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
+      rc = DosQueryPathInfo(inipath, FIL_STANDARDL, &fs3, sizeof(fs3));
       if (!rc) {
 	if (fs3.attrFile & FILE_DIRECTORY)
 	  BldFullPathName(inipath, inipath, profile);
@@ -666,11 +667,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       strcpy(inipath, profile);
     DosError(FERR_DISABLEHARDERR);
 
-    if (!DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3))) {
+    if (!DosQueryPathInfo(inipath, FIL_STANDARDL, &fs3, sizeof(fs3))) {
       fIniExisted = TRUE;
       if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
 	fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
-	rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
+	rc = xDosSetPathInfo(inipath, FIL_STANDARDL, &fs3, sizeof(fs3), 0);
 	if (rc) {
 	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		      GetPString(IDS_INIREADONLYTEXT), inipath);
@@ -723,7 +724,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (env) {
       strcpy(helppath, env);
       DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(helppath, FIL_STANDARD, &fs3, sizeof(fs3));
+      rc = DosQueryPathInfo(helppath, FIL_STANDARDL, &fs3, sizeof(fs3));
       if (!rc) {
 	if (fs3.attrFile & FILE_DIRECTORY) {
 	  BldFullPathName(helppath, helppath, "FM3.HLP");

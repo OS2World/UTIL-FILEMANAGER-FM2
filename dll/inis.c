@@ -26,6 +26,7 @@
 #define INCL_GPI
 #define INCL_DOS
 #define INCL_DOSERRORS
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -515,7 +516,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     MLEsetlimit(hwndMLE, 8192);
     WinSetWindowText(hwndMLE, lasttext);
     {
-      FILEFINDBUF3 ffb;
+      FILEFINDBUF3L ffb;
       ULONG nm;
       HDIR hdir;
 
@@ -525,7 +526,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!xDosFindFirst("*.IST",
 			 &hdir,
 			 FILE_NORMAL | FILE_ARCHIVED,
-			 &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+			 &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
 	do {
 	  priority_bumped();
 	  WinSendDlgItemMsg(hwnd, IAF_LISTBOX, LM_INSERTITEM,
@@ -1617,7 +1618,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       USHORT action;
       CHAR szFrom[CCHMAXPATH + 2], szDir[CCHMAXPATH + 1],
 	szTemp[CCHMAXPATH + 2];
-      FILESTATUS3 fsa;
+      FILESTATUS3L fsa;
       INIREC inirec;
 
       if (!DrgAccessDraginfo(pDInfo)) {
@@ -1636,8 +1637,8 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       MPFROMLONG(DMFL_TARGETFAIL));
 	  else {
 	    if (FullDrgName(pDItem, szFrom, sizeof(szFrom)) &&
-		!DosQueryPathInfo(szFrom, FIL_STANDARD, &fsa,
-				  (ULONG) sizeof(FILESTATUS3)))
+		!DosQueryPathInfo(szFrom, FIL_STANDARDL, &fsa,
+				  (ULONG) sizeof(FILESTATUS3L)))
 	      WinSendMsg(WinQueryWindow(hwnd, QW_PARENT), WM_COMMAND,
 			 MPFROM2SHORT(IDM_COMPARE, 0), MPFROMP(szFrom));
 	    DrgSendTransferMsg(pDItem->hwndItem,
@@ -2486,7 +2487,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (inidata) {
 
 	CHAR filename[CCHMAXPATH + 81], *p;
-	FILESTATUS3 fsa;
+	FILESTATUS3L fsa;
 	HINI hINI;
 
 	strcpy(filename, inidata->ininame);
@@ -2509,7 +2510,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    TRUE,
 			    TRUE) &&
 	    *filename &&
-	    !DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
+	    !DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, sizeof(fsa))) {
 	  hINI = PrfOpenProfile(WinQueryAnchorBlock(hwnd), filename);
 	  if (!hINI) {
 	    Win_Error(hwnd, hwnd, __FILE__, __LINE__,

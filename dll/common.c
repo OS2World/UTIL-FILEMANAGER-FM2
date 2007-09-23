@@ -26,6 +26,7 @@
 #define INCL_DOSERRORS
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdarg.h>
@@ -271,22 +272,23 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     if (driveflags[*dv - 'A'] & DRIVE_CDROM) {
 
       BYTE parm[4] = { "CD01" };
-      ULONG dlen, plen;
+      ULONGLONG dlen;
+      ULONG plen;
       HFILE hfile;
       APIRET rc;
 
       dv[2] = 0;
-      rc = DosOpen(dv,
-		   &hfile,
-		   &dlen,
-		   0,
-		   0,
-		   OPEN_ACTION_OPEN_IF_EXISTS |
-		   OPEN_ACTION_CREATE_IF_NEW,
-		   OPEN_FLAGS_DASD |
-		   OPEN_FLAGS_FAIL_ON_ERROR | OPEN_SHARE_DENYNONE, NULL);
+      rc = DosOpenL(dv,
+		    &hfile,
+		    &dlen,
+		    0,
+		    0,
+		    OPEN_ACTION_OPEN_IF_EXISTS |
+		    OPEN_ACTION_CREATE_IF_NEW,
+		    OPEN_FLAGS_DASD |
+		    OPEN_FLAGS_FAIL_ON_ERROR | OPEN_SHARE_DENYNONE, NULL);
       if (rc)
-	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__, "DosOpen");
+	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__, "DosOpenL");
       else {
 	dlen = 0;
 	plen = sizeof(parm);

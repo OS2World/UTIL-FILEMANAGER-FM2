@@ -21,6 +21,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -428,8 +429,8 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 
   HAB hab;
   CHAR *buffer = NULL, *hexbuff = NULL;
-  IPT iptOffset = -1L;
-  ULONG numread, howmuch, numimport, action, len, left = 0L;
+  IPT iptOffset = -1;
+  ULONG numread, howmuch, numimport, action, len, left = 0;
   BOOL ret = TRUE, first = TRUE;
   CHAR titletext[512];
   HWND grandpa;
@@ -445,19 +446,19 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
   grandpa = GrandparentOf(h);
   *titletext = 0;
   WinQueryWindowText(grandpa, 512, titletext);
-  rc = DosOpen(filename, &handle, &action, 0L, 0L,
-	       OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-	       OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-	       OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-	       OPEN_ACCESS_READONLY, 0L);
+  rc = DosOpenL(filename, &handle, &action, 0, 0,
+	        OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+	        OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+	        OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+	        OPEN_ACCESS_READONLY, 0);
   if (rc) {
     ret = FALSE;
   }
   else {
-    DosChgFilePtr(handle, 0L, FILE_END, &len);
-    DosChgFilePtr(handle, 0L, FILE_BEGIN, &action);
+    DosChgFilePtr(handle, 0, FILE_END, &len);
+    DosChgFilePtr(handle, 0, FILE_BEGIN, &action);
     if (len) {
-      rc = DosAllocMem((PVOID) & hexbuff, 50001L,
+      rc = DosAllocMem((PVOID) & hexbuff, 50001,
 		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
       if (rc || !hexbuff) {
 	Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
@@ -773,10 +774,10 @@ BOOL MLEloadfile(HWND h, CHAR * filename)
    * file to load does not exist
    */
 
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
   BOOL ret;
 
-  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)) &&
+  if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa)) &&
       !(fsa.attrFile & FILE_DIRECTORY)) {
     MLEclearall(h);
     ret = MLEinsertfile(h, filename);

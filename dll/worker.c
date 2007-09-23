@@ -30,6 +30,7 @@
 #define INCL_WIN
 #define INCL_DOSERRORS
 #define INCL_WPCLASS			// WinQueryObjectPath
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdarg.h>
@@ -126,7 +127,7 @@ VOID Action(VOID * args)
 	hmq2 = WinCreateMsgQueue(hab2, 0);
 	if (hmq2) {
 	  CHAR message[(CCHMAXPATH * 2) + 80], wildname[CCHMAXPATH];
-	  register INT x;
+	  INT x;
 	  BOOL dontask = FALSE, wildcarding = FALSE, overold =
 	    FALSE, overnew = FALSE, usedtarget;
 
@@ -396,14 +397,14 @@ VOID Action(VOID * args)
 		      !*ex.command || !*ex.arcname || !*ex.extractdir)
 		    goto Abort;
 		  {
-		    FILESTATUS3 fsa;
+		    FILESTATUS3L fsa;
 
 		    DosError(FERR_DISABLEHARDERR);
 		    if (DosQueryPathInfo(ex.extractdir,
-					 FIL_STANDARD,
+					 FIL_STANDARDL,
 					 &fsa,
-					 (ULONG) sizeof(FILESTATUS3)) ||
-			!(fsa.attrFile & FILE_DIRECTORY))
+					 (ULONG) sizeof(FILESTATUS3L)) ||
+		    !(fsa.attrFile & FILE_DIRECTORY))
 		      goto Abort;
 		  }
 		  if (needs_quoting(ex.masks) && !strchr(ex.masks, '\"'))
@@ -485,14 +486,14 @@ VOID Action(VOID * args)
 	      case IDM_OPENDETAILS:
 	      case IDM_OPENTREE:
 		{
-		  FILESTATUS3 fsa;
+		  FILESTATUS3L fsa;
 
 		  DosError(FERR_DISABLEHARDERR);
 		  if (DosQueryPathInfo(wk->li->list[x],
-				       FIL_STANDARD,
+				       FIL_STANDARDL,
 				       &fsa,
-				       (ULONG) sizeof(FILESTATUS3)) ||
-		      !(fsa.attrFile & FILE_DIRECTORY))
+				       (ULONG) sizeof(FILESTATUS3L)) ||
+		  !(fsa.attrFile & FILE_DIRECTORY))
 		    break;
 		}
 		/* else intentional fallthru */
@@ -599,7 +600,7 @@ VOID Action(VOID * args)
 		  CHAR newname[CCHMAXPATH], *moving, *move, *moved;
 		  APIRET rc;
 		  INT type;
-		  FILESTATUS4 fs4;
+		  FILESTATUS4L fs4;
 		  BOOL isnewer, existed;
 
 		  type = (wk->li->type == IDM_RENAME) ? MOVE :
@@ -754,7 +755,7 @@ VOID Action(VOID * args)
 			&& !(driveflags[toupper(*newname) - 'A'] &
 			     DRIVE_NOTWRITEABLE)
 			&& toupper(*newname) != toupper(*wk->li->list[x])
-			&& !DosQueryPathInfo(wk->li->list[x], FIL_QUERYEASIZE,
+			&& !DosQueryPathInfo(wk->li->list[x], FIL_QUERYEASIZEL,
 					     &fs4, sizeof(fs4))
 			&& !(fs4.attrFile & FILE_DIRECTORY)) {
 
@@ -776,7 +777,7 @@ VOID Action(VOID * args)
 			  for (cntr = x + 1; wk->li->list[cntr]; cntr++) {
 			    DosError(FERR_DISABLEHARDERR);
 			    if (!DosQueryPathInfo(wk->li->list[cntr],
-						  FIL_QUERYEASIZE,
+						  FIL_QUERYEASIZEL,
 						  &fs4,
 						  sizeof(fs4)) &&
 				!(fs4.attrFile & FILE_DIRECTORY) &&
@@ -1246,7 +1247,7 @@ VOID MassAction(VOID * args)
 	      strcat(szBuffer, " ");
 	      x = 0;
 	      while (wk->li->list[x]) {
-		FILESTATUS3 fsa;
+		FILESTATUS3L fsa;
 		// BOOL spaces;
 		// if (needs_quoting(wk->li->list[x])) {
 		//   spaces = TRUE;
@@ -1255,11 +1256,11 @@ VOID MassAction(VOID * args)
 		// else
 		//   spaces = FALSE;
 		// strcat(szBuffer, wk->li->list[x]);
-		memset(&fsa, 0, sizeof(FILESTATUS3));
+		memset(&fsa, 0, sizeof(FILESTATUS3L));
 		DosError(FERR_DISABLEHARDERR);
 		DosQueryPathInfo(wk->li->list[x],
-				 FIL_STANDARD,
-				 &fsa, (ULONG) sizeof(FILESTATUS3));
+				 FIL_STANDARDL,
+				 &fsa, (ULONG) sizeof(FILESTATUS3L));
 		if (fsa.attrFile & FILE_DIRECTORY) {
 		  BldQuotedFullPathName(szBuffer + strlen(szBuffer), wk->li->list[x], "*");
 		  // if (szBuffer[strlen(szBuffer) - 1] != '\\')
@@ -1446,7 +1447,7 @@ VOID MassAction(VOID * args)
 	      CHECKLIST cl;
 	      INT isdir = 0, sysdir = 0, ro = 0, hs = 0;
 	      register INT x;
-	      FILESTATUS3 fsa;
+	      FILESTATUS3L fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
 	      APIRET error;
 
@@ -1461,8 +1462,8 @@ VOID MassAction(VOID * args)
 		}
 		DosError(FERR_DISABLEHARDERR);
 		if (DosQueryPathInfo(wk->li->list[x],
-				     FIL_STANDARD, &fsa,
-				     (ULONG) sizeof(FILESTATUS3))) {
+				     FIL_STANDARDL, &fsa,
+				     (ULONG) sizeof(FILESTATUS3L))) {
 		  wk->li->list = RemoveFromList(wk->li->list,
 						wk->li->list[x]);
 		  if (!wk->li->list)
@@ -1548,8 +1549,8 @@ VOID MassAction(VOID * args)
 		fsa.attrFile = 0;
 		DosError(FERR_DISABLEHARDERR);
 		DosQueryPathInfo(wk->li->list[x],
-				 FIL_STANDARD,
-				 &fsa, (ULONG) sizeof(FILESTATUS3));
+				 FIL_STANDARDL,
+				 &fsa, (ULONG) sizeof(FILESTATUS3L));
 		if (fsa.attrFile & FILE_DIRECTORY) {
 		  sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);

@@ -741,7 +741,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP2:
     {
       CHAR s[134], szFileQty[38], szFreeQty[38];
-      FILEFINDBUF3 ffb;
+      FILEFINDBUF3L ffb;
       ULONG nm = 1;
       ULONGLONG ullFreeQty;
       HDIR hdir = HDIR_CREATE;
@@ -751,7 +751,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	DosError(FERR_DISABLEHARDERR);
 	if (!xDosFindFirst(SwapperDat, &hdir, FILE_NORMAL | FILE_HIDDEN |
 			   FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
-			   &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+			   &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
 	  priority_bumped();
 	  DosFindClose(hdir);
 	  DosError(FERR_DISABLEHARDERR);

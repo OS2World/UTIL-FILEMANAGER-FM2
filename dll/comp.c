@@ -93,13 +93,13 @@ PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 
 static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 {
-  PFILEFINDBUF4 pffb;
+  PFILEFINDBUF4L pffb;
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
 
   // 13 Aug 07 SHL fimxe to use FileToGet
-  pffb = xmalloc(sizeof(FILEFINDBUF4), pszSrcFile, __LINE__);
+  pffb = xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);
   if (pffb) {
     mask = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
     if (mask) {
@@ -116,7 +116,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 			 FILE_NORMAL | FILE_DIRECTORY |
 			 FILE_ARCHIVED | FILE_READONLY | FILE_HIDDEN |
 			 FILE_SYSTEM,
-			 pffb, sizeof(FILEFINDBUF4), &ulFindCnt, FIL_QUERYEASIZE)) {
+			 pffb, sizeof(FILEFINDBUF4L), &ulFindCnt, FIL_QUERYEASIZEL)) {
 	do {
 	  strcpy(enddir, pffb->achName);
 	  if (!(pffb->attrFile & FILE_DIRECTORY))
@@ -140,7 +140,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	    SnapShot(mask, fp, recurse);
 	  }
 	  ulFindCnt = 1;
-	} while (!xDosFindNext(hdir, pffb, sizeof(FILEFINDBUF4), &ulFindCnt));
+	} while (!xDosFindNext(hdir, pffb, sizeof(FILEFINDBUF4L), &ulFindCnt));
 	DosFindClose(hdir);
       }
       free(mask);
@@ -189,7 +189,8 @@ static VOID CompareFilesThread(VOID * args)
   HAB hab2;
   HMQ hmq2;
   FILE *fp1, *fp2;
-  ULONG len1, len2, offset = 0L;
+  ULONGLONG len1, len2;
+  ULONG offset = 0;
   LONG numread1, numread2;
   CHAR s[1024], ss[1024], *p1, *p2;
 
@@ -235,8 +236,8 @@ static VOID CompareFilesThread(VOID * args)
 	    WinSetWindowText(fc.hwndHelp, GetPString(IDS_ERRORTEXT));
 	  }
 	  else {
-	    len1 = filelength(fileno(fp1));
-	    len2 = filelength(fileno(fp2));
+	    len1 = _filelengthi64(fileno(fp1));
+	    len2 = _filelengthi64(fileno(fp2));
 	    if (len1 != len2) {
 	      strcpy(s, GetPString(IDS_COMPDIFSIZESTEXT));
 	      AddToListboxBottom(fc.hwndList, s);
@@ -737,11 +738,11 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
   CHAR *enddir;
   ULONG x;
   CHAR *maskstr;
-  PFILEFINDBUF4 pffbArray;
-  PFILEFINDBUF4 pffbFile;
+  PFILEFINDBUF4L pffbArray;
+  PFILEFINDBUF4L pffbFile;
   HDIR hDir;
   ULONG ulFindCnt;
-  ULONG ulBufBytes = sizeof(FILEFINDBUF4) * FilesToGet;
+  ULONG ulBufBytes = sizeof(FILEFINDBUF4L) * FilesToGet;
   APIRET rc;
 
   if (!str || !*str) {
@@ -774,7 +775,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
 	 	     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		     FILE_SYSTEM | FILE_HIDDEN |
 		     (recurse ? FILE_DIRECTORY : 0),
-		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
   if (!rc) {
     do {
       pffbFile = pffbArray;
@@ -804,7 +805,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
 	    goto Abort;
 	  }
 	}
-	pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
       DosError(FERR_DISABLEHARDERR);
       ulFindCnt = FilesToGet;
@@ -927,7 +928,7 @@ static VOID FillCnrsThread(VOID *args)
       else {
 	// Use snapshot file
 	FILE *fp;
-	FILEFINDBUF4 fb4;
+	FILEFINDBUF4L fb4;
 	CHAR str[CCHMAXPATH * 2], *p;
 
 	memset(&fb4, 0, sizeof(fb4));

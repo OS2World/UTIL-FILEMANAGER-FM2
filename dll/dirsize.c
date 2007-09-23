@@ -99,7 +99,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   ULONGLONG ullSubDirBytes = 0;
   ULONGLONG ull;
   HDIR hdir;
-  PFILEFINDBUF4 pffbArray;
+  PFILEFINDBUF4L pffbArray;
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pci;
@@ -107,7 +107,7 @@ static BOOL ProcessDir(HWND hwndCnr,
 
   *pullTotalBytes = 0;			// In case we fail
 
-  ulBufBytes = sizeof(FILEFINDBUF4) * FilesToGet;
+  ulBufBytes = sizeof(FILEFINDBUF4L) * FilesToGet;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray)
     return FALSE;			// Error already reported
@@ -120,13 +120,13 @@ static BOOL ProcessDir(HWND hwndCnr,
 
   hdir = HDIR_CREATE;
   ulFindCnt = 1;
-  // memset(pffbArray, 0, sizeof(FILEFINDBUF4));	// 11 Aug 07 SHL bypass memset
+  // memset(pffbArray, 0, sizeof(FILEFINDBUF4L));	// 11 Aug 07 SHL bypass memset
   DosError(FERR_DISABLEHARDERR);
   // Check directory exists
   rc = xDosFindFirst(pszFileName, &hdir,
 		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
 
   if (!rc)
     DosFindClose(hdir);
@@ -215,9 +215,9 @@ static BOOL ProcessDir(HWND hwndCnr,
   rc = xDosFindFirst(maskstr, &hdir,
 		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		     FILE_SYSTEM | FILE_HIDDEN | FILE_DIRECTORY,
-		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZE);
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
   if (!rc) {
-    PFILEFINDBUF4 pffbFile;
+    PFILEFINDBUF4L pffbFile;
     ULONG x;
 
     while (!rc) {
@@ -256,7 +256,7 @@ static BOOL ProcessDir(HWND hwndCnr,
 	}
 	if (!pffbFile->oNextEntryOffset)
 	  break;
-	pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
 
 #if 0 // 13 Aug 07 SHL fixme to be gone
 	{

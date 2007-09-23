@@ -26,6 +26,7 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_DOSERRORS
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdio.h>
@@ -70,13 +71,13 @@ static VOID ProcessDir(HWND hwndCnr,
   ULONG ulFindCnt, ulFindMax;
   ULONG ulBufBytes;
   HDIR hdir;
-  PFILEFINDBUF3 pffbArray;
+  PFILEFINDBUF3L pffbArray;
   APIRET rc;
   RECORDINSERT ri;
   PCNRITEM pciP;
   HPOINTER hptr;
 
-  ulBufBytes = sizeof(FILEFINDBUF3) * FilesToGet;
+  ulBufBytes = sizeof(FILEFINDBUF3L) * FilesToGet;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray)
     return;				// Error already reported
@@ -90,7 +91,7 @@ static VOID ProcessDir(HWND hwndCnr,
   rc = xDosFindFirst(filename, &hdir,
 		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
   if (!rc)
     DosFindClose(hdir);
   // work around furshluginer FAT root bug
@@ -163,9 +164,9 @@ static VOID ProcessDir(HWND hwndCnr,
   rc = xDosFindFirst(maskstr, &hdir,
 		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
   if (!rc) {
-    PFILEFINDBUF3 pffbFile;
+    PFILEFINDBUF3L pffbFile;
     ULONG x;
 
     while (!rc) {
@@ -183,7 +184,7 @@ static VOID ProcessDir(HWND hwndCnr,
 	}
 	if (!pffbFile->oNextEntryOffset)
 	  break;
-	pffbFile = (PFILEFINDBUF3)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	pffbFile = (PFILEFINDBUF3L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
       DosSleep(0);			// Let's others at same priority get some work done
       if (*stopflag)

@@ -28,6 +28,7 @@
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_SHLERRORS			// PMERR_NOT_IN_IDX
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -537,7 +538,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
    */
 
   CHAR szDrive[] = " :", szTemp[1032];
-  FILEFINDBUF3 findbuf;
+  FILEFINDBUF3L findbuf;
   HDIR hDir = HDIR_CREATE;
   SHORT sDrive;
   ULONG ulDriveNum, ulSearchCount = 1, ulDriveMap;
@@ -579,7 +580,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
 		       FILE_READONLY | FILE_ARCHIVED | FILE_SYSTEM |
 		       FILE_HIDDEN,
 		       &findbuf,
-		       sizeof(FILEFINDBUF3), &ulSearchCount, FIL_STANDARD)) {
+		       sizeof(FILEFINDBUF3L), &ulSearchCount, FIL_STANDARDL)) {
       do {
 	if (findbuf.attrFile & FILE_DIRECTORY) {
 	  // Skip .. unless full path supplied
@@ -596,7 +597,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
 	}
 	ulSearchCount = 1;
       } while (!xDosFindNext(hDir,
-			     &findbuf, sizeof(FILEFINDBUF3), &ulSearchCount));
+			     &findbuf, sizeof(FILEFINDBUF3L), &ulSearchCount));
       DosFindClose(hDir);
     }
     DosError(FERR_DISABLEHARDERR);
@@ -694,7 +695,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {					/* fill user list box */
       ULONG ulDriveNum, ulDriveMap;
       ULONG ulSearchCount;
-      FILEFINDBUF3 findbuf;
+      FILEFINDBUF3L findbuf;
       HDIR hDir;
       APIRET rc;
       LINKDIRS *info, *temp;
@@ -713,8 +714,8 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			       &findbuf, sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       &findbuf, sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -754,8 +755,8 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			       &findbuf, sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       &findbuf, sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -890,7 +891,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (okay && SHORT2FROMMP(mp1) == CBN_LBSELECT) {
 
 	ULONG ulSearchCount;
-	FILEFINDBUF3 findbuf;
+	FILEFINDBUF3L findbuf;
 	HDIR hDir;
 	APIRET rc;
 
@@ -905,8 +906,8 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  rc = xDosFindFirst(szBuffer, &hDir, FILE_DIRECTORY |
 			     MUST_HAVE_DIRECTORY | FILE_READONLY |
 			     FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			     &findbuf, sizeof(FILEFINDBUF3),
-			     &ulSearchCount, FIL_STANDARD);
+			     &findbuf, sizeof(FILEFINDBUF3L),
+			     &ulSearchCount, FIL_STANDARDL);
 	  if (!rc)
 	    DosFindClose(hDir);
 	}
@@ -940,7 +941,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (okay && *szBuffer && SHORT2FROMMP(mp1) == LN_SELECT) {
 
 	ULONG ulSearchCount;
-	FILEFINDBUF3 findbuf;
+	FILEFINDBUF3L findbuf;
 	HDIR hDir;
 	APIRET rc;
 
@@ -954,8 +955,8 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     MUST_HAVE_DIRECTORY | FILE_READONLY |
 			     FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
 			     &findbuf,
-			     sizeof(FILEFINDBUF3),
-			     &ulSearchCount, FIL_STANDARD);
+			     sizeof(FILEFINDBUF3L),
+			     &ulSearchCount, FIL_STANDARDL);
 	  if (!rc)
 	    DosFindClose(hDir);
 	}
@@ -1016,7 +1017,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (okay && SHORT2FROMMP(mp1) == LN_ENTER) {
 
 	ULONG ulSearchCount;
-	FILEFINDBUF3 findbuf;
+	FILEFINDBUF3L findbuf;
 	HDIR hDir;
 	APIRET rc;
 
@@ -1037,8 +1038,8 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
 			       &findbuf,
-			       sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	    if (!rc)
 	      DosFindClose(hDir);
 	  }
@@ -1379,7 +1380,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (okay && SHORT2FROMMP(mp1) == LN_ENTER) {
 
 	ULONG ulSearchCount;
-	FILEFINDBUF3 findbuf;
+	FILEFINDBUF3L findbuf;
 	HDIR hDir;
 	APIRET rc;
 
@@ -1400,8 +1401,8 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
 			       &findbuf,
-			       sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	    if (!rc)
 	      DosFindClose(hDir);
 	  }
@@ -1444,7 +1445,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (okay && SHORT2FROMMP(mp1) == LN_ENTER) {
 
 	ULONG ulSearchCount;
-	FILEFINDBUF3 findbuf;
+	FILEFINDBUF3L findbuf;
 	HDIR hDir;
 	APIRET rc;
 
@@ -1465,8 +1466,8 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
 			       &findbuf,
-			       sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	    if (!rc)
 	      DosFindClose(hDir);
 	  }

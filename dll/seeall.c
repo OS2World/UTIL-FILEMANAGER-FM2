@@ -59,7 +59,8 @@ typedef struct
   USHORT attrFile, flags;
   FDATE date;
   FTIME time;
-  ULONG cbFile, CRC;
+  ULONGLONG cbFile;
+  ULONG CRC;
 }
 ALLFILES;
 
@@ -462,7 +463,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcat(szBuffer, " ");
 	  x = 0;
 	  while (list[x]) {
-	    FILESTATUS3 fsa;
+	    FILESTATUS3L fsa;
 	    // BOOL spaces;
 	    // if (needs_quoting(list[x])) {
 	    //   spaces = TRUE;
@@ -473,7 +474,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    // strcat(szBuffer, list[x]);
 	    memset(&fsa, 0, sizeof(fsa));
 	    DosError(FERR_DISABLEHARDERR);
-	    DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa));
+	    DosQueryPathInfo(list[x], FIL_STANDARDL, &fsa, sizeof(fsa));
 	    if (fsa.attrFile & FILE_DIRECTORY) {
 	      BldQuotedFullPathName(szBuffer + strlen(szBuffer),
 				    list[x], "*");
@@ -563,7 +564,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  CHAR newname[CCHMAXPATH], *moving, *move, *moved;
 	  APIRET rc;
 	  INT type;
-	  FILESTATUS4 fs4;
+	  FILESTATUS4L fs4;
 	  BOOL isnewer, existed;
 
 	  for (x = 0; list[x]; x++) {
@@ -705,7 +706,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  (driveflags[toupper(*newname) - 'A'] & DRIVE_REMOVABLE) &&
 		  !(driveflags[toupper(*newname) - 'A'] & DRIVE_NOTWRITEABLE)
 		  && toupper(*newname) != toupper(*list[x])
-		  && !DosQueryPathInfo(list[x], FIL_QUERYEASIZE, &fs4,
+		  && !DosQueryPathInfo(list[x], FIL_QUERYEASIZEL, &fs4,
 				       sizeof(fs4))
 		  && !(fs4.attrFile & FILE_DIRECTORY)) {
 
@@ -727,7 +728,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    for (cntr = x + 1; list[cntr]; cntr++) {
 		      DosError(FERR_DISABLEHARDERR);
 		      if (!DosQueryPathInfo(list[cntr],
-					    FIL_QUERYEASIZE,
+					    FIL_QUERYEASIZEL,
 					    &fs4, sizeof(fs4)) &&
 			  !(fs4.attrFile & FILE_DIRECTORY) &&
 			  // fixme to use CBLIST_TO_EASIZE?
@@ -885,7 +886,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  CHECKLIST cl;
 	  INT isdir = 0, sysdir = 0, ro = 0, hs = 0;
-	  FILESTATUS3 fsa;
+	  FILESTATUS3L fsa;
 	  CHAR prompt[CCHMAXPATH * 3];
 	  APIRET error;
 
@@ -898,7 +899,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      continue;
 	    }
 	    DosError(FERR_DISABLEHARDERR);
-	    if (DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa))) {
+	    if (DosQueryPathInfo(list[x], FIL_STANDARDL, &fsa, sizeof(fsa))) {
 	      list = RemoveFromList(list, list[x]);
 	      if (!list)
 		break;
@@ -980,7 +981,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  for (x = 0; list[x]; x++) {
 	    fsa.attrFile = 0;
 	    DosError(FERR_DISABLEHARDERR);
-	    DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa));
+	    DosQueryPathInfo(list[x], FIL_STANDARDL, &fsa, sizeof(fsa));
 	    if (fsa.attrFile & FILE_DIRECTORY) {
 	      sprintf(prompt, GetPString(IDS_DELETINGTEXT), list[x]);
 	      WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS),
@@ -1413,7 +1414,7 @@ static BOOL UpdateList(HWND hwnd, CHAR **list)
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   ULONG x, z;
   BOOL ret, didone = FALSE;
-  FILEFINDBUF3 ffb;
+  FILEFINDBUF3L ffb;
   ULONG ulFindCnt;
   HDIR hdir;
   CHAR *p;
@@ -1434,7 +1435,7 @@ static BOOL UpdateList(HWND hwnd, CHAR **list)
 	if (!xDosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
 			   FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
 			   FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
-			   FIL_STANDARD)) {
+			   FIL_STANDARDL)) {
 	  DosFindClose(hdir);
 	  if (!(ffb.attrFile & FILE_DIRECTORY)) {
 	    ad->afhead[x].attrFile = (USHORT) ffb.attrFile;
@@ -1455,7 +1456,7 @@ static BOOL UpdateList(HWND hwnd, CHAR **list)
 	if (!xDosFindFirst(list[z], &hdir, FILE_NORMAL | FILE_ARCHIVED |
 			   FILE_DIRECTORY | FILE_READONLY | FILE_SYSTEM |
 			   FILE_HIDDEN, &ffb, sizeof(ffb), &ulFindCnt,
-			   FIL_STANDARD)) {
+			   FIL_STANDARDL)) {
 	  DosFindClose(hdir);
 	  if (!(ffb.attrFile & FILE_DIRECTORY)) {
 	    if (!ad->afalloc || ad->affiles > ad->afalloc - 1) {
@@ -1887,7 +1888,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 {
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   CHAR *filename, *enddir;
-  PFILEFINDBUF3 pffbArray, pffbFile;
+  PFILEFINDBUF3L pffbArray, pffbFile;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
   ULONG ulFindMax;
@@ -1905,7 +1906,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
       (driveflags[toupper(*pathname) - 'A'] & DRIVE_REMOTE))
     ulFindMax = 1;
 
-  ulBufBytes = sizeof(FILEFINDBUF3) * ulFindMax;
+  ulBufBytes = sizeof(FILEFINDBUF3L) * ulFindMax;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray) {
     free(filename);
@@ -1925,7 +1926,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   rc = xDosFindFirst(filename, &hdir, FILE_NORMAL | FILE_ARCHIVED |
 		     FILE_READONLY | FILE_DIRECTORY | FILE_SYSTEM |
 		     FILE_HIDDEN,
-		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARD);
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
   if (!rc) {
     do {
 #if 0 // 13 Aug 07 SHL fixme to be gone
@@ -1990,12 +1991,12 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	      ad->longestw = pffbFile->cchName + (enddir - filename);
 	  }
 	}
-	pffbFile = (PFILEFINDBUF3)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	pffbFile = (PFILEFINDBUF3L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
       if (ad->stopflag)
 	break;
       ulFindCnt = ulFindMax;
-      rc = xDosFindNext(hdir, pffbArray, sizeof(FILEFINDBUF3) * ulFindCnt, &ulFindCnt);
+      rc = xDosFindNext(hdir, pffbArray, sizeof(FILEFINDBUF3L) * ulFindCnt, &ulFindCnt);
     } while (!rc);
     DosFindClose(hdir);
   }

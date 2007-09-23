@@ -3126,7 +3126,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (mp2) {
 
 	  PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
-	  FILEFINDBUF3 ffb;
+	  FILEFINDBUF3L ffb;
 	  HDIR hDir = HDIR_CREATE;
 	  ULONG nm = 1;
 	  APIRET status = 0;
@@ -3141,7 +3141,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				   FILE_NORMAL | FILE_DIRECTORY |
 				   FILE_ARCHIVED | FILE_READONLY |
 				   FILE_HIDDEN | FILE_SYSTEM,
-				   &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+				   &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
 	    priority_bumped();
 	    if (!status) {
 	      DosFindClose(hDir);
@@ -3181,7 +3181,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  dcd->stopflag++;
 		  DosExitCritSec();
 		  if (!PostMsg(dcd->hwndObject,
-			       UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
+			       UM_RESCAN, MPVOID, MPFROMLONG(1))) {
 		    DosEnterCritSec();
 		    dcd->stopflag--;
 		    DosExitCritSec();

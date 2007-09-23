@@ -351,7 +351,7 @@ typedef struct
   struct __arc_type__ *info;
   CHAR **list;
   ULONG *ulitemID;
-  ULONG *cbFile;
+  ULONGLONG *cbFile;
   CHAR targetpath[CCHMAXPATH + 6];
   CHAR arcname[CCHMAXPATH];
   CHAR runfile[CCHMAXPATH];
@@ -411,7 +411,7 @@ EXECARGS;
 #define ARCFLAGS_REALDIR    0x00000001
 #define ARCFLAGS_PSEUDODIR  0x00000002
 
-#define CBLIST_TO_EASIZE(cb) ((cb) > 4 ? (cb) / 2 : 0)	// FILEFINDBUF4.cbList to logical EA size
+#define CBLIST_TO_EASIZE(cb) ((cb) > 4 ? (cb) / 2 : 0)	// FILEFINDBUF4L.cbList to logical EA size
 
 typedef struct _CNRITEM
 {				/* CONTAINER RECORD STRUCTURE */
@@ -445,8 +445,8 @@ typedef struct _ARCITEM
   PSZ pszDate;			// Pointer to date
   CDATE date;			// if we know date format
   CTIME time;			// if we know time format
-  ULONG cbFile;			// File's original size
-  ULONG cbComp;			// File's compressed size
+  ULONGLONG cbFile;		// File's original size
+  ULONGLONG cbComp;		// File's compressed size
   ULONG flags;
 }
 ARCITEM, *PARCITEM;
@@ -456,8 +456,8 @@ ARCITEM, *PARCITEM;
 typedef struct
 {
   ULONG attrFile;
-  ULONG cbFile;
-  ULONG easize;
+  ULONGLONG cbFile;
+  ULONGLONG easize;
   FDATE date;
   FTIME time;
   FDATE ladate;
@@ -642,10 +642,10 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 		      PULONG pullTotalFiles, PULONGLONG pullTotalBytes);
 ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszDirectory,
-			      const PFILEFINDBUF4 pffb, const BOOL partial,
+			      const PFILEFINDBUF4L pffb, const BOOL partial,
 			      DIRCNRDATA *pdcd);
 ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
-			      const PSZ pszFileName, const PFILESTATUS4 pfsa4,
+			      const PSZ pszFileName, const PFILESTATUS4L pfsa4,
 			      const BOOL partial, DIRCNRDATA *pdcd);
 VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
 VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
@@ -931,7 +931,7 @@ MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 /* makelist.c */
 INT AddToList(CHAR * string, CHAR *** list, INT * numfiles, INT * numalloced);
-INT AddToFileList(CHAR * string, FILEFINDBUF4 * ffb4, FILELIST *** list,
+INT AddToFileList(CHAR * string, FILEFINDBUF4L * ffb4, FILELIST *** list,
 		  INT * numfiles, INT * numalloced);
 CHAR **BuildList(HWND hwndCnr);
 VOID FreeListInfo(LISTINFO * li);
@@ -1317,22 +1317,22 @@ char *GetPString(ULONG id);
 BOOL StringsLoaded(void);
 
 /* wrappers.c */
-APIRET APIENTRY  xDosFindFirst(PSZ    pszFileSpec,
-                               PHDIR  phdir,
-                               ULONG  flAttribute,
-                               PVOID  pfindbuf,
-                               ULONG  cbBuf,
-                               PULONG pcFileNames,
-                               ULONG  ulInfoLevel);
-APIRET APIENTRY  xDosFindNext(HDIR   hDir,
-                              PVOID  pfindbuf,
-                              ULONG  cbfindbuf,
-                              PULONG pcFilenames);
-APIRET APIENTRY  xDosSetPathInfo(PSZ   pszPathName,
-                                 ULONG ulInfoLevel,
-                                 PVOID pInfoBuf,
-                                 ULONG cbInfoBuf,
-                                 ULONG flOptions);
+APIRET xDosFindFirst(PSZ pszFileSpec,
+                     PHDIR phdir,
+                     ULONG  flAttribute,
+                     PVOID  pfindbuf,
+                     ULONG  cbBuf,
+                     PULONG pcFileNames,
+                     ULONG  ulInfoLevel);
+APIRET xDosFindNext(HDIR   hDir,
+                    PVOID  pfindbuf,
+                    ULONG  cbfindbuf,
+                    PULONG pcFilenames);
+APIRET xDosSetPathInfo(PSZ   pszPathName,
+                       ULONG ulInfoLevel,
+                       PVOID pInfoBuf,
+                       ULONG cbInfoBuf,
+                       ULONG flOptions);
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 	   UINT uiLineNumber);
 PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,

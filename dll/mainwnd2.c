@@ -25,6 +25,7 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -1361,12 +1362,12 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
   }
   {
     CHAR inipath[CCHMAXPATH], fullpath[CCHMAXPATH];
-    FILESTATUS3 fsa;
+    FILESTATUS3L fsa;
 
     if (PrfQueryProfileString(HINI_USERPROFILE,
 			      FM2Str,
 			      "Home", NULL, inipath, sizeof(inipath))) {
-      if (!DosQueryPathInfo(inipath, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa))) {
+      if (!DosQueryPathInfo(inipath, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa))) {
 	if (fsa.attrFile & FILE_DIRECTORY) {
 	  if (DosQueryPathInfo(inipath,
 			       FIL_QUERYFULLNAME, fullpath, sizeof(fullpath)))

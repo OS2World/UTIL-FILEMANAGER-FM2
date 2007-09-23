@@ -234,11 +234,11 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
 ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 			      PCNRITEM pci,
 			      const PSZ pszDirectory,
-			      const PFILEFINDBUF4 pffb,
+			      const PFILEFINDBUF4L pffb,
 			      const BOOL partial,
 			      DIRCNRDATA *dcd)
 {
-  // fill in a container record from a FILEFINDBUF4 structure
+  // fill in a container record from a FILEFINDBUF4L structure
 
   CHAR *p;
   HPOINTER hptr;
@@ -476,12 +476,15 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
 } // FillInRecordFromFFB
 
-ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName, const PFILESTATUS4 pfsa4, const BOOL partial, DIRCNRDATA * dcd)	// Optional
+ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
+                              const PSZ pszFileName,
+                              const PFILESTATUS4L pfsa4,
+                              const BOOL partial, DIRCNRDATA * dcd)	// Optional
 {
   HPOINTER hptr;
   CHAR *p;
 
-  // fill in a container record from a FILESTATUS4 structure
+  // fill in a container record from a FILESTATUS4L structure
 
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
@@ -489,7 +492,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci, const PSZ pszFileName,
 
   // load the object's Subject, if required
   pci->pszSubject = NullStr;
-  if (pfsa4->cbList > 4L &&
+  if (pfsa4->cbList > 4 &&
       dcd &&
       fLoadSubject &&
       (!isalpha(*pci->pszFileName) ||
@@ -700,11 +703,11 @@ VOID ProcessDirectory(const HWND hwndCnr,
 
   PSZ pszFileSpec;
   INT t;
-  PFILEFINDBUF4 paffbFound;
-  PFILEFINDBUF4 *papffbSelected;
-  PFILEFINDBUF4 pffbFile;
-  PFILEFINDBUF4 paffbTotal = NULL;
-  PFILEFINDBUF4 paffbTemp;
+  PFILEFINDBUF4L paffbFound;
+  PFILEFINDBUF4L *papffbSelected;
+  PFILEFINDBUF4L pffbFile;
+  PFILEFINDBUF4L paffbTotal = NULL;
+  PFILEFINDBUF4L paffbTemp;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
   ULONG ulFindMax;
@@ -735,13 +738,13 @@ VOID ProcessDirectory(const HWND hwndCnr,
     ulFindMax = FilesToGet;
   }
   if (OS2ver[0] == 20 && OS2ver[1] < 30)
-    ulFindMax = min(ulFindMax, (65535 / sizeof(FILEFINDBUF4)));
+    ulFindMax = min(ulFindMax, (65535 / sizeof(FILEFINDBUF4L)));
 
-  ulBufBytes = ulFindMax * sizeof(FILEFINDBUF4);
+  ulBufBytes = ulFindMax * sizeof(FILEFINDBUF4L);
 
   pszFileSpec = xmalloc(CCHMAXPATH + 2, pszSrcFile, __LINE__);
   paffbFound = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
-  papffbSelected = xmalloc(sizeof(PFILEFINDBUF4) * ulFindMax, pszSrcFile, __LINE__);
+  papffbSelected = xmalloc(sizeof(PFILEFINDBUF4L) * ulFindMax, pszSrcFile, __LINE__);
 
   if (paffbFound && papffbSelected && pszFileSpec) {
     t = strlen(szDirBase);
@@ -762,7 +765,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       paffbFound,
 		       ulBufBytes,
 		       &ulFindCnt,
-		       FIL_QUERYEASIZE);
+		       FIL_QUERYEASIZEL);
     priority_normal();
     *pchEndPath = 0;
     if (!rc) {
@@ -803,7 +806,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    // ulFindCnt = ulSelCnt;	// Remember number selected
 	    break;
 	  }
-	  pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	  pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
 	} // for
 	if (ulSelCnt) {
 	  // One or more entries selected
@@ -867,7 +870,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  else {
 	    // Append newly selected entries to aggregate list
 	    paffbTemp = xrealloc(paffbTotal,
-				 sizeof(FILEFINDBUF4) * (ulSelCnt + ulTotal),
+				 sizeof(FILEFINDBUF4L) * (ulSelCnt + ulTotal),
 				 pszSrcFile, __LINE__);
 	    if (paffbTemp) {
 	      // 13 Aug 07 SHL fixme to optimize copy
@@ -928,7 +931,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    pci = (PCNRITEM) pci->rc.preccNextRecord;
 	    ullTotalBytes += ullBytes;
 	    // Can not use offset since we have merged lists - this should be equivalent
-	    pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + sizeof(FILEFINDBUF4));
+	    pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
 	  }
 	  if (ulTotal) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
@@ -1036,7 +1039,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   CHAR suggest[32];
   CHAR szDrive[] = " :\\";
   CHAR szFileSystem[CCHMAXPATH];
-  FILESTATUS4 fsa4;
+  FILESTATUS4L fsa4;
   APIRET rc;
   BOOL drivesbuilt = FALSE;
   ULONG startdrive = 3;
@@ -1129,7 +1132,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  else
 	    driveflags[x] |= DRIVE_INVALID;
 
-	  memset(&fsa4, 0, sizeof(FILESTATUS4));
+	  memset(&fsa4, 0, sizeof(FILESTATUS4L));
 	  driveflags[x] |= removable == -1 || removable == 1 ?
 			    DRIVE_REMOVABLE : 0;
 	  if (drvtype & DRIVE_REMOTE)
@@ -1180,14 +1183,14 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    pci->attrFile |= FILE_DIRECTORY;
 	    DosError(FERR_DISABLEHARDERR);
 	    rc = DosQueryPathInfo(szDrive,
-				  FIL_QUERYEASIZE,
-				  &fsa4, (ULONG) sizeof(FILESTATUS4));
+				  FIL_QUERYEASIZEL,
+				  &fsa4, (ULONG) sizeof(FILESTATUS4L));
 	    // ERROR_BAD_NET_RSP = 58
 	    if (rc == 58) {
 	      DosError(FERR_DISABLEHARDERR);
 	      rc = DosQueryPathInfo(szDrive,
-				    FIL_STANDARD,
-				    &fsa4, (ULONG) sizeof(FILESTATUS3));
+				    FIL_STANDARDL,
+				    &fsa4, (ULONG) sizeof(FILESTATUS3L));
 	      fsa4.cbList = 0;
 	    }
 	    if (rc && !didonce) {

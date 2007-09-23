@@ -61,8 +61,8 @@ typedef struct
   HAB ghab;
   CHAR *stopflag;
   ULONG toinsert;
-  ULONG insertedbytes;
-  FILEFINDBUF4 **insertffb;
+  ULONGLONG insertedbytes;
+  FILEFINDBUF4L **insertffb;
   CHAR **dir;
   ULONG attrFile;
   ULONG antiattr;

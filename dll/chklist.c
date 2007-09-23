@@ -18,6 +18,7 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdio.h>
@@ -429,7 +430,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 
 	    FILEDLG fdlg;
-	    FILESTATUS3 fs3;
+	    FILESTATUS3L fs3;
 	    CHAR drive[3], *pdrive = drive, filename[CCHMAXPATH], *p;
 
 	    memset(&fdlg, 0, sizeof(FILEDLG));
@@ -458,7 +459,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      FIL_QUERYFULLNAME,
 				      filename, sizeof(filename))) {
 		  if (!DosQueryPathInfo(filename,
-					FIL_STANDARD, &fs3, sizeof(fs3))) {
+					FIL_STANDARDL, &fs3, sizeof(fs3))) {
 		    p = filename;
 		    while (*p) {
 		      if (*p == '/')
@@ -468,7 +469,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    strcpy(cl->prompt, filename);
 		    PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
 		  }
-// else saymsg(MB_ENTER,hwnd,DEBUG_STRING,"DosQueryPathInfo FIL_STANDARD failed");
+// else saymsg(MB_ENTER,hwnd,DEBUG_STRING,"DosQueryPathInfo FIL_STANDARDL failed");
 		}
 // else saymsg(MB_ENTER,hwnd,DEBUG_STRING,"DosQueryPathInfo FIL_QUERYFULLNAME failed");
 	      }

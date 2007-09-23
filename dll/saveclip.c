@@ -22,6 +22,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdarg.h>
@@ -431,7 +432,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
-	      DosSetFileSize((HFILE) fileno(fp), 0);
+	      DosSetFileSizeL((HFILE) fileno(fp), 0);
 	    else
 	      fseek(fp, 0, SEEK_END);
 	    while (pci && (INT) pci != -1) {
@@ -710,7 +711,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	CHAR *p, *pp, temp;
 	INT x = 0;
 	SHORT sSelect;
-	FILEFINDBUF4 ffb4;
+	FILEFINDBUF4L ffb4;
 	ULONG nm;
 	HDIR hdir;
 	CHAR longname[CCHMAXPATH], subject[1024];
@@ -780,7 +781,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  else {
 	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
-	      DosSetFileSize((HFILE) fileno(fp), 0);
+	      DosSetFileSizeL((HFILE) fileno(fp), 0);
 	    else
 	      fseek(fp, 0, SEEK_END);
 	    while (list[x]) {
@@ -791,7 +792,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				 FILE_NORMAL | FILE_DIRECTORY |
 				 FILE_READONLY | FILE_ARCHIVED |
 				 FILE_HIDDEN | FILE_SYSTEM,
-				 &ffb4, sizeof(ffb4), &nm, FIL_QUERYEASIZE)) {
+				 &ffb4, sizeof(ffb4), &nm, FIL_QUERYEASIZEL)) {
 		/* load the object's Subject, if required */
 		if (ffb4.cbList > 4) {
 		  APIRET rc;

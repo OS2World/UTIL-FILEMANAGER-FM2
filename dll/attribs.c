@@ -16,6 +16,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdarg.h>
@@ -89,7 +90,7 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_UNDO:
     {
-      FILESTATUS3 fi;
+      FILESTATUS3L fi;
       long ro = 2, hi = 2, sy = 2, ar = 2;
       BOOL allgrey;
 
@@ -99,7 +100,7 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 (long)WinQueryButtonCheckstate(hwnd, ATR_ARCHIVED) == 2);
       li = INSTDATA(hwnd);
       if (li && li->list[0] && (allgrey || mp1) &&
-	  !DosQueryPathInfo(li->list[0], FIL_STANDARD, &fi,
+	  !DosQueryPathInfo(li->list[0], FIL_STANDARDL, &fi,
 			    (ULONG) sizeof(fi))) {
 	ro = ((fi.attrFile & FILE_READONLY) != 0);
 	hi = ((fi.attrFile & FILE_HIDDEN) != 0);
@@ -278,8 +279,8 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       }
       {
-	ULONG temp = 0L;
-	FILESTATUS3 fi;
+	ULONG temp = 0;
+	FILESTATUS3L fi;
 	SHORT x;
 	APIRET rc;
 	USHORT state;
@@ -325,14 +326,14 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	for (x = 0; li->list[x]; x++) {
 	  DosError(FERR_DISABLEHARDERR);
-	  rc = DosQueryPathInfo(li->list[x], FIL_STANDARD, &fi,
+	  rc = DosQueryPathInfo(li->list[x], FIL_STANDARDL, &fi,
 				(ULONG) sizeof(fi));
 	  if (rc)
 	    continue;
 	  if (WinQueryButtonCheckstate(hwnd, ATR_USEDATETIME)) {
 	    WinSendDlgItemMsg(hwnd, ATR_YEAR, SPBM_QUERYVALUE, MPFROMP(&temp),
 			      MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-	    fi.fdateLastWrite.year = temp - 1980L;
+	    fi.fdateLastWrite.year = temp - 1980;
 	    WinSendDlgItemMsg(hwnd, ATR_MONTH, SPBM_QUERYVALUE,
 			      MPFROMP(&temp), MPFROM2SHORT(0,
 							   SPBQ_DONOTUPDATE));
@@ -377,7 +378,7 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fi.attrFile &= (~FILE_ARCHIVED);
 	  else if (state == 1)
 	    fi.attrFile |= FILE_ARCHIVED;
-	  xDosSetPathInfo(li->list[x], FIL_STANDARD, &fi, sizeof(fi), 0);
+	  xDosSetPathInfo(li->list[x], FIL_STANDARDL, &fi, sizeof(fi), 0);
 	}
 	WinDismissDlg(hwnd, 1);
       }

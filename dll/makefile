@@ -31,6 +31,7 @@
 # 06 Aug 07 SHL Tweak CFLAGS for DEBUG builds
 # 26 Aug 07 SHL Clean *.lrf
 # 05 Sep 07 SHL Correct USE_WRC logic
+# 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
 
 # Environment:
 
@@ -98,14 +99,14 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -zq		quiet
 
 !ifdef DEBUG
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -wx -zfp -zgp -zq
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq
 !else
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
 !endif
 
 # for fm3res only
-CFLAGSR = -bt=os2 -mf -bd -bm         -olirs -s     -j -wx -zfp -zgp -zq
+CFLAGSR = -bt=os2 -mf -bd -bm         -olirs -s     -j -wx -zfp -zgp -zp4 -zq
 
 !ifdef DEBUG
 LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &

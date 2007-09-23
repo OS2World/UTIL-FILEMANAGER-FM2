@@ -5592,7 +5592,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       BOOL foundit = FALSE, thisone;
       ULONG ulSearchCount;
       SHORT sSelect;
-      FILEFINDBUF3 findbuf;
+      FILEFINDBUF3L findbuf;
       HDIR hDir;
       CHAR *p;
 
@@ -5600,8 +5600,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hDir = HDIR_CREATE;
       ulSearchCount = 1;
       if (!xDosFindFirst("*.TLS", &hDir, FILE_READONLY | FILE_ARCHIVED,
-			 &findbuf, sizeof(FILEFINDBUF3),
-			 &ulSearchCount, FIL_STANDARD)) {
+			 &findbuf, sizeof(FILEFINDBUF3L),
+			 &ulSearchCount, FIL_STANDARDL)) {
 	do {
 	  priority_bumped();
 	  if (!foundit) {
@@ -5626,7 +5626,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    foundit = TRUE;
 	  }
 	}
-	while (!xDosFindNext(hDir, &findbuf, sizeof(FILEFINDBUF3),
+	while (!xDosFindNext(hDir, &findbuf, sizeof(FILEFINDBUF3L),
 			     &ulSearchCount));
 	DosFindClose(hDir);
 	priority_bumped();
@@ -5641,7 +5641,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG ulDriveNum;
       ULONG ulDriveMap;
       ULONG ulSearchCount;
-      FILEFINDBUF3 findbuf;
+      FILEFINDBUF3L findbuf;
       HDIR hDir;
       APIRET rc;
       LINKDIRS *info;
@@ -5663,8 +5663,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			       &findbuf, sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       &findbuf, sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -5705,8 +5705,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			       &findbuf, sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       &findbuf, sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;

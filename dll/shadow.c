@@ -17,6 +17,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -165,7 +166,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
   INT x = 0;
   CHAR szBuff[CCHMAXPATH + 8];
   HOBJECT obj = (HOBJECT) 0;
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
 
   *szBuff = 0;
   if (foldername)
@@ -198,8 +199,8 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
     }
     while (list[x]) {
       if (!DosQueryPathInfo(list[x],
-			    FIL_STANDARD, &fsa,
-			    (ULONG) sizeof(FILESTATUS3))) {
+			    FIL_STANDARDL, &fsa,
+			    (ULONG) sizeof(FILESTATUS3L))) {
 
 	ULONG apt;
 	CHAR *p, *pp, szDir[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1];

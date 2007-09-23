@@ -25,6 +25,7 @@
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdarg.h>
@@ -225,8 +226,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
    */
 
   BOOL ret = FALSE;
-  FILEFINDBUF3 ffb[DDEPTH];
-  PFILEFINDBUF3 pffb;
+  FILEFINDBUF3L ffb[DDEPTH];
+  PFILEFINDBUF3L pffb;
   HDIR hDir = HDIR_CREATE;
   ULONG nm, ulM = 1, total = 0, fl = MUST_HAVE_DIRECTORY;
   CHAR str[CCHMAXPATH];
@@ -288,7 +289,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		     FILE_NORMAL | fl |
 		     FILE_READONLY | FILE_ARCHIVED |
 		     FILE_SYSTEM | FILE_HIDDEN,
-		     &ffb, ulM * sizeof(FILEFINDBUF3), &nm, FIL_STANDARD);
+		     &ffb, ulM * sizeof(FILEFINDBUF3L), &nm, FIL_STANDARDL);
   if (ulM == 1 && !rc) {
     do {
       pffb = &ffb[0];
@@ -335,7 +336,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
       DosError(FERR_DISABLEHARDERR);
     } while (++total < ddepth && !(rc = (xDosFindNext(hDir,
 						      &ffb,
-						      sizeof(FILEFINDBUF3),
+						      sizeof(FILEFINDBUF3L),
 						      &nm))));
     DosFindClose(hDir);
     if (toupper(*pciParent->pszFileName) > 'B' &&
@@ -363,7 +364,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
       register PBYTE fb = (PBYTE) & ffb[0];
 
       for (len = 0; len < nm; len++) {
-	pffb = (PFILEFINDBUF3) fb;
+	pffb = (PFILEFINDBUF3L) fb;
 	if (!includefiles && !(pffb->attrFile & FILE_DIRECTORY)) {
 	  if (!isbroken) {
 	    isbroken = TRUE;

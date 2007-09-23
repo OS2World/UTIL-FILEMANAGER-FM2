@@ -19,6 +19,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 
 #include <os2.h>
 #include <stdlib.h>
@@ -95,7 +96,7 @@ VOID PrintListThread(VOID * arg)
   register INT x;
   FILE *fpi, *fpo;
   CHAR s[CCHMAXPATH + 80];
-  FILESTATUS3 fs3;
+  FILESTATUS3L fs3;
   LONG cols, lines, pages, z, lmargin, rmargin;
   BOOL endline, endpage, startpage, skipping, firstpass;
   int c;
@@ -124,7 +125,7 @@ VOID PrintListThread(VOID * arg)
 	    break;
 	  DosError(FERR_DISABLEHARDERR);
 	  if (DosQueryPathInfo
-	      (li->list[x], FIL_STANDARD, &fs3, (ULONG) sizeof(fs3))
+	      (li->list[x], FIL_STANDARDL, &fs3, (ULONG) sizeof(fs3))
 	      || (fs3.attrFile & FILE_DIRECTORY) || !fs3.cbFile)
 	    continue;
 	  if (StopPrinting)

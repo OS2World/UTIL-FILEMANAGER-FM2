@@ -15,6 +15,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -38,7 +39,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {					/* fill user list box */
       ULONG ulDriveNum, ulDriveMap;
       ULONG ulSearchCount;
-      FILEFINDBUF3 findbuf;
+      FILEFINDBUF3L findbuf;
       HDIR hDir;
       APIRET rc;
       LINKDIRS *info, *temp;
@@ -57,8 +58,8 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
 			       MUST_HAVE_DIRECTORY | FILE_READONLY |
 			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			       &findbuf, sizeof(FILEFINDBUF3),
-			       &ulSearchCount, FIL_STANDARD);
+			       &findbuf, sizeof(FILEFINDBUF3L),
+			       &ulSearchCount, FIL_STANDARDL);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -208,7 +209,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
 {
   FILEDLG fdlg;
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
   CHAR drive[3], *pdrive = drive, *p;
   APIRET rc;
   static CHAR lastfilename[CCHMAXPATH] = "";
@@ -276,14 +277,14 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
   else
     return FALSE;
   MakeFullName(filename);
-  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
+  if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, sizeof(fsa))) {
     if (fsa.attrFile & FILE_DIRECTORY) {
       /* device or directory */
       saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	     hwnd, filename, GetPString(IDS_EXISTSBUTNOTFILETEXT), filename);
       return FALSE;
     }
-    else if (fsa.cbFile == 0L) {
+    else if (fsa.cbFile == 0) {
       saymsg(MB_CANCEL,
 	     hwnd, filename, GetPString(IDS_ISZEROLENGTHTEXT), filename);
       return FALSE;
@@ -314,7 +315,7 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
 BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
 {
   FILEDLG fdlg;
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
   CHAR drive[3], *pdrive = drive, *p;
   static CHAR lastfilename[CCHMAXPATH] = "";
 
@@ -367,7 +368,7 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
   else
     return FALSE;
   MakeFullName(filename);
-  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
+  if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, sizeof(fsa))) {
     if (fsa.attrFile & FILE_DIRECTORY) {	/* device or directory */
       saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	     hwnd, filename, GetPString(IDS_EXISTSBUTNOTFILETEXT), filename);

@@ -20,6 +20,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdio.h>
@@ -92,7 +93,7 @@ static VOID FillListboxThread(VOID * args)
 	    if (*p) {
 
 	      CHAR mask[CCHMAXPATH], *enddir, text[CCHMAXPATH * 2];
-	      FILEFINDBUF3 ffb;
+	      FILEFINDBUF3L ffb;
 	      HDIR hdir;
 	      ULONG nm;
 
@@ -108,7 +109,7 @@ static VOID FillListboxThread(VOID * args)
 	      nm = 1;
 	      DosError(FERR_DISABLEHARDERR);
 	      if (!xDosFindFirst(mask, &hdir, FILE_NORMAL | FILE_ARCHIVED,
-				 &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+				 &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
 		do {
 		  priority_normal();
 		  strcpy(enddir, ffb.achName);

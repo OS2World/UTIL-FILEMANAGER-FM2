@@ -18,6 +18,7 @@
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdio.h>
@@ -29,13 +30,13 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-APIRET APIENTRY  xDosFindFirst(PSZ    pszFileSpec,
-                               PHDIR  phdir,
-                               ULONG  flAttribute,
-                               PVOID  pfindbuf,
-                               ULONG  cbBuf,
-                               PULONG pcFileNames,
-                               ULONG  ulInfoLevel)
+APIRET xDosFindFirst(PSZ    pszFileSpec,
+                     PHDIR  phdir,
+                     ULONG  flAttribute,
+                     PVOID  pfindbuf,
+                     ULONG  cbBuf,
+                     PULONG pcFileNames,
+                     ULONG  ulInfoLevel)
 {
     APIRET rc;
 
@@ -44,10 +45,10 @@ APIRET APIENTRY  xDosFindFirst(PSZ    pszFileSpec,
     return rc;
 }
 
-APIRET APIENTRY  xDosFindNext(HDIR   hDir,
-                              PVOID  pfindbuf,
-                              ULONG  cbfindbuf,
-                              PULONG pcFilenames)
+APIRET xDosFindNext(HDIR   hDir,
+                    PVOID  pfindbuf,
+                    ULONG  cbfindbuf,
+                    PULONG pcFilenames)
 {
   APIRET rc;
 
@@ -64,24 +65,24 @@ APIRET APIENTRY  xDosFindNext(HDIR   hDir,
  * the boundary the alternate buffer will not because both are on the stack
  * and we don't put enough additional data on the stack for this to occur.
  * It is caller's responsitibility to report errors
- * @param pInfoBuf pointer to FILESTATUS3 or EAOP2 buffer
- * @param ulInfoLevel FIL_STANDARD or FIL_QUERYEASIZE
+ * @param pInfoBuf pointer to FILESTATUS3L or EAOP2 buffer
+ * @param ulInfoLevel FIL_STANDARDL or FIL_QUERYEASIZE
  * @returns Same as DosSetPathInfo
  */
 
-APIRET APIENTRY xDosSetPathInfo(PSZ pszPathName,
-				ULONG ulInfoLevel,
-				PVOID pInfoBuf,
-				ULONG cbInfoBuf,
-				ULONG flOptions)
+APIRET xDosSetPathInfo(PSZ pszPathName,
+        	       ULONG ulInfoLevel,
+		       PVOID pInfoBuf,
+		       ULONG cbInfoBuf,
+		       ULONG flOptions)
 {
     APIRET rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
-    FILESTATUS3 alt_fs3;
+    FILESTATUS3L alt_fs3;
     EAOP2 alt_eaop2;
     if (rc == ERROR_INVALID_NAME) {
       switch (ulInfoLevel) {
-      case FIL_STANDARD:
-	alt_fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy
+      case FIL_STANDARDL:
+	alt_fs3 = *(PFILESTATUS3L)pInfoBuf;	// Copy
 	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3, sizeof(alt_fs3), flOptions);
 	break;
       case FIL_QUERYEASIZE:
@@ -206,4 +207,4 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
 }
 
 #pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc, xstrdup)
-
+#pragma alloc_text(WRAPPERS2,xDosSetPathInfo,xDosFindFirst,xDosFindNext)

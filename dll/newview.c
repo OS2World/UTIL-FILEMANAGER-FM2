@@ -30,6 +30,7 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -1256,7 +1257,8 @@ static VOID LoadFileThread(VOID * args)
   HMQ hmq2;
   VIEWDATA *ad;
   HFILE handle;
-  ULONG action, len;
+  ULONG action;
+  ULONG len;
   APIRET rc;
   BOOL error = TRUE;
 
@@ -1288,11 +1290,11 @@ static VOID LoadFileThread(VOID * args)
 	    PostMsg(ad->hwndFrame, WM_UPDATEFRAME,
 		    MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	    WinSetFocus(HWND_DESKTOP, hwnd);
-	    rc = DosOpen(ad->filename, &handle, &action, 0L, 0L,
-			 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-			 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-			 OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
-			 OPEN_ACCESS_READONLY, 0L);
+	    rc = DosOpenL(ad->filename, &handle, &action, 0, 0,
+			  OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+			  OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+			  OPEN_FLAGS_SEQUENTIAL | OPEN_SHARE_DENYNONE |
+			  OPEN_ACCESS_READONLY, 0);
 	    if (rc) {
 	      Dos_Error(MB_CANCEL,
 			rc,
@@ -1302,8 +1304,8 @@ static VOID LoadFileThread(VOID * args)
 			GetPString(IDS_COMPCANTOPENTEXT), ad->filename);
 	    }
 	    else {
-	      DosChgFilePtr(handle, 0L, FILE_END, &len);
-	      DosChgFilePtr(handle, 0L, FILE_BEGIN, &action);
+	      DosChgFilePtr(handle, 0, FILE_END, &len);
+	      DosChgFilePtr(handle, 0, FILE_BEGIN, &action);
 	      if (!len) {
 		saymsg(MB_CANCEL,
 		       hwnd,

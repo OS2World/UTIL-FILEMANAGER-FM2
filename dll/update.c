@@ -61,7 +61,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 DIRCNRDATA * dcd)
 {
   PCNRITEM pci;
-  FILEFINDBUF4 ffb;
+  FILEFINDBUF4L ffb;
   HDIR hDir = HDIR_CREATE;
   ULONG nm = 1;
   ULONG oldemphasis = 0;
@@ -84,7 +84,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 FILE_NORMAL | FILE_DIRECTORY |
 			 FILE_ARCHIVED | FILE_READONLY |
 			 FILE_HIDDEN | FILE_SYSTEM,
-			 &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
+			 &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
   if (!status) {
 #ifdef DEBUG
     existed = TRUE;
@@ -334,7 +334,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		   DIRCNRDATA * dcd)
 {
   PCNRITEM pci, *pciList = NULL;
-  FILEFINDBUF4 ffb;
+  FILEFINDBUF4L ffb;
   HDIR hDir;
   ULONG nm = (ULONG) howmany;
   INT x;
@@ -375,7 +375,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 			     FILE_NORMAL | FILE_DIRECTORY |
 			     FILE_ARCHIVED | FILE_READONLY |
 			     FILE_HIDDEN | FILE_SYSTEM,
-			     &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
+			     &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
       if (!status) {
 	/* file exists */
 	DosFindClose(hDir);

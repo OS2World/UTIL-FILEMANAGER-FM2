@@ -16,6 +16,7 @@
 #define INCL_WINERRORS
 #define INCL_DOS
 #define INCL_DOSERRORS
+#define INCL_LONGLONG
 
 #include <os2.h>
 #include <stdlib.h>
@@ -67,13 +68,13 @@ APIRET switch_to(CHAR * s)
 {
 
   APIRET ret;
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
   CHAR path[CCHMAXPATH + 1], *p;
 
   strcpy(path, s);
   while (*path) {
-    ret = DosQueryPathInfo(path, FIL_STANDARD, &fsa,
-			   (ULONG) sizeof(FILESTATUS3));
+    ret = DosQueryPathInfo(path, FIL_STANDARDL, &fsa,
+			   (ULONG) sizeof(FILESTATUS3L));
     if (ret || !(fsa.attrFile & FILE_DIRECTORY)) {
       p = strrchr(path, '\\');
       if (p)

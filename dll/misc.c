@@ -39,6 +39,7 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdarg.h>

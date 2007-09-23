@@ -25,6 +25,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdio.h>
@@ -95,11 +96,11 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 	}
       }
       {					/* be sure that file/directory is accessible */
-	FILESTATUS3 fsa3;
+	FILESTATUS3L fsa3;
 
 	DosError(FERR_DISABLEHARDERR);
 	if (DosQueryPathInfo(buffer1,
-			     FIL_STANDARD,
+			     FIL_STANDARDL,
 			     &fsa3,
 			     sizeof(fsa3)) ||
 	    (fsa3.attrFile & FILE_DIRECTORY) != 0) {
@@ -164,9 +165,9 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
 		  "DosQueryPathInfo");
     }
     {					/* be sure that file/directory is accessible */
-	FILESTATUS3 fsa3;
+	FILESTATUS3L fsa3;
 
-      rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fsa3, sizeof(fsa3));
+      rc = DosQueryPathInfo(buffer, FIL_STANDARDL, &fsa3, sizeof(fsa3));
       if (!rc)
 	ret = TRUE;
       else {
@@ -286,7 +287,9 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
   CHAR szFrom[CCHMAXPATH + 1], szArc[CCHMAXPATH + 1];
   CHAR **files = NULL;
   UINT numfiles = 0, numalloc = 0;
-  ULONG curitem, numitems, *cbFile = NULL, *ulitemID = NULL;
+  ULONG curitem, numitems;
+  PULONGLONG pcbFile = NULL;
+  PULONG pulitemID = NULL;
   LISTINFO *li = NULL;
   ARC_TYPE *arcinfo = NULL;
   USHORT Operation;
@@ -415,7 +418,8 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
       if (numfiles + 2 > numalloc) {
 
 	CHAR **test;
-	ULONG *ltest;
+        PULONG pltest;
+        PULONGLONG plltest;
 
 	numalloc += 12;
 	test =
@@ -423,26 +427,26 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 	if (!test)
 	  break;
 	files = test;
-	ltest =
-	  xrealloc(cbFile, numalloc * sizeof(ULONG), pszSrcFile, __LINE__);
-	if (!ltest)
+	plltest =
+	  xrealloc(pcbFile, numalloc * sizeof(ULONGLONG), pszSrcFile, __LINE__);
+	if (!plltest)
 	  break;
-	cbFile = ltest;
-	ltest =
-	  xrealloc(ulitemID, numalloc * sizeof(ULONG), pszSrcFile, __LINE__);
-	if (!ltest)
+	pcbFile = plltest;
+	pltest =
+	  xrealloc(pulitemID, numalloc * sizeof(ULONG), pszSrcFile, __LINE__);
+	if (!pltest)
 	  break;
-	ulitemID = ltest;
+	pulitemID = pltest;
       }
-      cbFile[numfiles] = 0;
+      pcbFile[numfiles] = 0;
       if (!isArc) {
 
-	FILESTATUS4 fsa4;
+	FILESTATUS4L fsa4;
 
-	if (!DosQueryPathInfo(szFrom, FIL_QUERYEASIZE, &fsa4, sizeof(fsa4)))
-	  cbFile[numfiles] = fsa4.cbFile + CBLIST_TO_EASIZE(fsa4.cbList);
+	if (!DosQueryPathInfo(szFrom, FIL_QUERYEASIZEL, &fsa4, sizeof(fsa4)))
+	  pcbFile[numfiles] = fsa4.cbFile + CBLIST_TO_EASIZE(fsa4.cbList);
       }
-      ulitemID[numfiles] = pDItem->ulItemID;
+      pulitemID[numfiles] = pDItem->ulItemID;
       files[numfiles] = xstrdup(szFrom, pszSrcFile, __LINE__);
       files[numfiles + 1] = NULL;
       if (!files[numfiles])
@@ -463,14 +467,14 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
     }
   } // for curitem
 
-  if (files && numfiles && files[0] && cbFile && ulitemID) {
+  if (files && numfiles && files[0] && pcbFile && pulitemID) {
     li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
     if (li) {
       li->type = Operation;
       li->hwnd = hwndCnr;
       li->list = files;
-      li->cbFile = cbFile;
-      li->ulitemID = ulitemID;
+      li->cbFile = pcbFile;
+      li->ulitemID = pulitemID;
       li->hwndS = pDInfo->hwndSource;
       if (!pci && directory)
 	strcpy(li->targetpath, directory);
@@ -483,19 +487,15 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
       SortList(li);
     }
     else {
-      if (cbFile)
-	free(cbFile);
-      if (ulitemID)
-	free(ulitemID);
+      xfree(pcbFile);
+      xfree(pulitemID);
       if (files)
 	FreeList(files);
     }
   }
   else {
-    if (cbFile)
-      free(cbFile);
-    if (ulitemID)
-      free(ulitemID);
+    xfree(pcbFile);
+    xfree(pulitemID);
     if (files)
       FreeList(files);
   }

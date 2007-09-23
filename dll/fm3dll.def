@@ -283,4 +283,7 @@ export    InitFM3DLL_                                 .1,
          GetPString_                                  .265,
          _FM3DllHandle                                .266,
          RootName_                                    .267,
-         RunFM2Util_				      .268
+         RunFM2Util_				      .268,
+         xDosFindFirst_                               .269,
+         xDosFindNext_                                .270
+

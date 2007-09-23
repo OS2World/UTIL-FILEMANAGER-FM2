@@ -25,6 +25,7 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -192,7 +193,7 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
 					  pfealist->list[0].cbName + 1));
     memset(&eaop, 0, sizeof(eaop));
     eaop.fpFEA2List = pfealist;
-    pfealist->cbList = 13L + (ULONG) pfealist->list[0].cbName +
+    pfealist->cbList = 13 + (ULONG) pfealist->list[0].cbName +
       (ULONG) pfealist->list[0].cbValue;
     rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE,
 			 &eaop, sizeof(eaop), DSPI_WRTTHRU);
@@ -298,19 +299,19 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (IsFile((CHAR *) mp1) == 1) {
 
 	    HFILE handle;
-	    ULONG action, olen, ibufflen, obufflen, l;
+            ULONG olen, ibufflen, action, obufflen, l;
 	    CHAR *ibuff, *obuff, *p, buffer[80];
 	    ARC_TYPE *info;
 
-	    if (!DosOpen((CHAR *) mp1,
-			 &handle,
-			 &action,
-			 0L,
-			 0L,
-			 OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
-			 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
-			 OPEN_FLAGS_RANDOMSEQUENTIAL | OPEN_SHARE_DENYNONE |
-			 OPEN_ACCESS_READONLY, 0L)) {
+	    if (!DosOpenL((CHAR *) mp1,
+			  &handle,
+			  &action,
+			  0,
+			  0,
+			  OPEN_ACTION_FAIL_IF_NEW | OPEN_ACTION_OPEN_IF_EXISTS,
+			  OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
+			  OPEN_FLAGS_RANDOMSEQUENTIAL | OPEN_SHARE_DENYNONE |
+			  OPEN_ACCESS_READONLY, 0)) {
 	      ibufflen = (AutoviewHeight < 96) ? 512 : 3072;
 	      ibuff = xmalloc(ibufflen + 2, pszSrcFile, __LINE__);
 	      if (ibuff) {
@@ -409,12 +410,12 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else if (!IsFile(currfile)) {
 
-	    static FILEFINDBUF4 ffb[130];
+	    static FILEFINDBUF4L ffb[130];
 	    CHAR fullname[CCHMAXPATH + 4];
 	    HDIR hdir = HDIR_CREATE;
 	    ULONG x, nm, ml, mc, bufflen;
 	    PBYTE fb;
-	    PFILEFINDBUF4 pffbFile;
+	    PFILEFINDBUF4L pffbFile;
 	    PSZ pszBuf;
 	    PSZ p;
 	    APIRET rc;
@@ -425,7 +426,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    //        currfile,
 	    //        (currfile[strlen(currfile) - 1] == '\\') ? "" : "\\");
 	    DosError(FERR_DISABLEHARDERR);
-	    nm = sizeof(ffb) / sizeof(FILEFINDBUF4);
+	    nm = sizeof(ffb) / sizeof(FILEFINDBUF4L);
 	    if (AutoviewHeight < 96)
 	      nm /= 2;
 	    rc = xDosFindFirst(fullname,
@@ -433,12 +434,12 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		               FILE_NORMAL | FILE_DIRECTORY |
 		               FILE_READONLY | FILE_ARCHIVED |
 		               FILE_SYSTEM | FILE_HIDDEN,
-		               &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZE);
+		               &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
 	    if (!rc && nm) {
 	      fb = (PBYTE) & ffb;
 	      x = ml = 0;
 	      while (x < nm) {
-		pffbFile = (PFILEFINDBUF4) fb;
+		pffbFile = (PFILEFINDBUF4L) fb;
 		mc = (ULONG) pffbFile->cchName +
 		  ((pffbFile->attrFile & FILE_DIRECTORY) != 0);
 		ml = max(ml, mc);
@@ -455,7 +456,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		fb = (PBYTE) & ffb;
 		x = 0;
 		while (x < nm) {
-		  pffbFile = (PFILEFINDBUF4) fb;
+		  pffbFile = (PFILEFINDBUF4L) fb;
 		  if (!(!*pffbFile->achName ||
 			(((pffbFile->attrFile & FILE_DIRECTORY) &&
 			  pffbFile->achName[0] == '.') &&

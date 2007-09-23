@@ -21,6 +21,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdio.h>
@@ -888,7 +889,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      SVBTN_ENTRY,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     {
-      FILEFINDBUF3 findbuf;
+      FILEFINDBUF3L findbuf;
       HDIR hDir;
       ULONG ulSearchCount, x = 0;
       CHAR *masks[] = { "*.TLS", "FM3TOOLS.DAT", NULL };
@@ -903,8 +904,8 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   &hDir,
 			   FILE_ARCHIVED,
 			   &findbuf,
-			   sizeof(FILEFINDBUF3),
-			   &ulSearchCount, FIL_STANDARD)) {
+			   sizeof(FILEFINDBUF3L),
+			   &ulSearchCount, FIL_STANDARDL)) {
 	  do {
 	    priority_bumped();
 	    WinSendMsg(WinWindowFromID(hwnd,
@@ -915,7 +916,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ulSearchCount = 1;
 	  } while (!xDosFindNext(hDir,
 				 &findbuf,
-				 sizeof(FILEFINDBUF3), &ulSearchCount));
+				 sizeof(FILEFINDBUF3L), &ulSearchCount));
 	  DosFindClose(hDir);
 	  priority_bumped();
 	}

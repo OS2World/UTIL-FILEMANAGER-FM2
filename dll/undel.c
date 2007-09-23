@@ -19,6 +19,7 @@
 #define INCL_DOSERRORS
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -54,7 +55,7 @@ static VOID FillUndelListThread(VOID * arg)
   HFILE oldstdout, newstdout;
   struct tempstruct *undelinfo;
   BOOL killme = FALSE;
-  FILESTATUS3 fsa;
+  FILESTATUS3L fsa;
 
   undelinfo = (struct tempstruct *)arg;
   hwnd = undelinfo->hwnd;
@@ -134,7 +135,7 @@ static VOID FillUndelListThread(VOID * arg)
 		   WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_SEARCHSTRING,
 				     MPFROM2SHORT(0, LIT_FIRST),
 				     MPFROMP(s)) < 0
-		   && DosQueryPathInfo(s, FIL_STANDARD, &fsa,
+		   && DosQueryPathInfo(s, FIL_STANDARDL, &fsa,
 				       (ULONG) sizeof(fsa)))
 	    WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_INSERTITEM,
 			      MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(s));

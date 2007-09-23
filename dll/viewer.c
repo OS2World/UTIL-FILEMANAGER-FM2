@@ -18,6 +18,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -789,7 +790,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case MLE_EXPORTFILE:
       if (!MLEgetreadonly(hwndMLE)) {
 
-	LONG oldsize;
+	LONGLONG oldsize;
 
 	if (!*vw->exportfilename ||
 	    strchr(vw->exportfilename, '?') ||
@@ -807,8 +808,8 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  fp = xfopen(vw->exportfilename, "r+", pszSrcFile, __LINE__);
 	  if (fp) {
-	    oldsize = filelength(fileno(fp));
-	    DosSetFileSize(fileno(fp), 0);
+	    oldsize = _filelengthi64(fileno(fp));
+	    DosSetFileSizeL(fileno(fp), 0);
 	    fclose(fp);
 	  }
 	}
@@ -821,7 +822,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__, "MLEexportfile");
 	  fp = xfopen(vw->exportfilename, "r+", pszSrcFile, __LINE__);
 	  if (fp) {
-	    DosSetFileSize(fileno(fp), oldsize);
+	    DosSetFileSizeL(fileno(fp), oldsize);
 	    fclose(fp);
 	  }
 	}

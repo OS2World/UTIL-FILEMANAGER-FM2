@@ -17,6 +17,7 @@
 #define INCL_WINERRORS
 #define INCL_DOS
 #define INCL_DOSERRORS
+#define INCL_LONGLONG
 
 #include <os2.h>
 #include <stdlib.h>
@@ -103,9 +104,9 @@ CHAR *searchapath(CHAR *pathvar, CHAR *filename)
   if (strchr(filename, '\\') || strchr(filename, '/')
       || strchr(filename, ':')) {
 
-    FILESTATUS3 fsa;
+    FILESTATUS3L fsa;
 
-    if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)))
+    if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa)))
       return filename;
     *fbuf = 0;
     return fbuf;

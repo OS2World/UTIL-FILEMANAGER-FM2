@@ -960,7 +960,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_TIMER:
     if (dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent) &&
 	hwndStatus2) {
-      FILEFINDBUF3 ffb;
+      FILEFINDBUF3L ffb;
       ULONG nm = 1;
       HDIR hdir = HDIR_CREATE;
 
@@ -969,7 +969,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   &hdir,
 			   FILE_NORMAL | FILE_HIDDEN |
 			   FILE_SYSTEM | FILE_ARCHIVED | FILE_READONLY,
-			   &ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
+			   &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
 	  CHAR tb[39], tm[39], tpm[39], s[163];
 	  ULONG amem;
 
@@ -1727,7 +1727,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_ENTER:
     {
-      FILEFINDBUF3 ffb;
+      FILEFINDBUF3L ffb;
       HDIR hDir = HDIR_CREATE;
       ULONG nm = 1;
       APIRET status;
@@ -1891,7 +1891,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 FILE_NORMAL | FILE_DIRECTORY |
 				 FILE_ARCHIVED | FILE_READONLY |
 				 FILE_HIDDEN | FILE_SYSTEM,
-				 &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+				 &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
 	  priority_bumped();
 	}
 	if (!status) {

@@ -15,6 +15,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 
 #include <os2.h>
 #include <stdarg.h>
@@ -75,7 +76,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       mv = WinQueryWindowPtr(hwnd, QWL_USER);
       if (mv) {
 
-	FILESTATUS3 fs1, fs2;
+	FILESTATUS3L fs1, fs2;
 	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH];
 	INT sourceexists = 0, targetexists = 0,
 	  sourcenewer = 0, sourcesmaller = 0;
@@ -90,7 +91,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetDlgItemText(hwnd, REN_TARGET, mv->target);
 	if (!MakeFullName(mv->source))
 	  WinSetDlgItemText(hwnd, REN_SOURCE, mv->source);
-	if (!DosQueryPathInfo(mv->source, FIL_STANDARD, &fs1, sizeof(fs1))) {
+	if (!DosQueryPathInfo(mv->source, FIL_STANDARDL, &fs1, sizeof(fs1))) {
 	  sprintf(s,
 		  " %s%lu %ss %04u/%02u/%02u %02u:%02u:%02u",
 		  (fs1.attrFile & FILE_DIRECTORY) ?
@@ -117,7 +118,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!AdjustWildcardName(mv->target, chkname))
 	    strcpy(chkname, mv->target);
 	}
-	if (!DosQueryPathInfo(chkname, FIL_STANDARD, &fs2, sizeof(fs2))) {
+	if (!DosQueryPathInfo(chkname, FIL_STANDARDL, &fs2, sizeof(fs2))) {
 	  sprintf(s,
 		  " %s%lu %ss %04u/%02u/%02u %02u:%02u:%02u",
 		  (fs2.attrFile & FILE_DIRECTORY) ?

@@ -18,6 +18,7 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdio.h>
@@ -94,7 +95,7 @@ VOID FreeList(CHAR ** list)
   DosPostEventSem(CompactSem);
 }
 
-INT AddToFileList(CHAR * string, FILEFINDBUF4 * ffb4, FILELIST *** list,
+INT AddToFileList(CHAR * string, FILEFINDBUF4L * ffb4, FILELIST *** list,
 		  INT * numfiles, INT * numalloced)
 {
   FILELIST *pfl;
