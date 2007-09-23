@@ -50,7 +50,7 @@ HOBJECT APIENTRY WinCopyObject(HOBJECT hObjectofObject,
 
 char *MakeTempName(char *buffer)
 {
-  FILESTATUS3L fs3;
+  FILESTATUS3 fs3;
   APIRET rc;
   char *p, *o;
 
@@ -59,10 +59,10 @@ char *MakeTempName(char *buffer)
   p = buffer + (strlen(buffer) - 1);
   for (;;) {
     DosError(FERR_DISABLEHARDERR);
-    rc = DosQueryPathInfo(buffer, FIL_STANDARDL, &fs3, (ULONG) sizeof(fs3));
+    rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fs3, sizeof(fs3));
     if (rc == ERROR_DISK_CHANGE) {
       DosError(FERR_ENABLEHARDERR);
-      rc = DosQueryPathInfo(buffer, FIL_STANDARDL, &fs3, (ULONG) sizeof(fs3));
+      rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fs3, sizeof(fs3));
     }
     if (rc)
       break;
@@ -90,7 +90,7 @@ char *MakeTempName(char *buffer)
 CHAR *TruncName(CHAR * oldname, CHAR * buffer)
 {
   CHAR *p, *f, *s, *o;
-  FILESTATUS3L fs3;
+  FILESTATUS3 fs3;
   APIRET rc;
 
   if (!buffer || !oldname || !*oldname) {
@@ -153,10 +153,10 @@ CHAR *TruncName(CHAR * oldname, CHAR * buffer)
   p = o + (strlen(o) - 1);
   for (;;) {
     DosError(FERR_DISABLEHARDERR);
-    rc = DosQueryPathInfo(buffer, FIL_STANDARDL, &fs3, (ULONG) sizeof(fs3));
+    rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fs3, sizeof(fs3));
     if (rc == ERROR_DISK_CHANGE) {
       DosError(FERR_ENABLEHARDERR);
-      rc = DosQueryPathInfo(buffer, FIL_STANDARDL, &fs3, (ULONG) sizeof(fs3));
+      rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fs3, sizeof(fs3));
     }
     if (rc)
       break;

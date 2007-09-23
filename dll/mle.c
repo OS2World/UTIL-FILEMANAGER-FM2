@@ -774,11 +774,11 @@ BOOL MLEloadfile(HWND h, CHAR * filename)
    * file to load does not exist
    */
 
-  FILESTATUS3L fsa;
+  FILESTATUS3 fsa;
   BOOL ret;
 
-  if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa)) &&
-      !(fsa.attrFile & FILE_DIRECTORY)) {
+  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa)) &&
+      ~fsa.attrFile & FILE_DIRECTORY) {
     MLEclearall(h);
     ret = MLEinsertfile(h, filename);
     MLEsetchanged(h, FALSE);

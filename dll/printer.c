@@ -17,11 +17,6 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_LONGLONG
-
-#include <os2.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -29,6 +24,11 @@
 #include <io.h>
 #include <share.h>
 #include <string.h>
+
+#define INCL_DOS
+#define INCL_WIN
+#include <os2.h>
+
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -96,7 +96,7 @@ VOID PrintListThread(VOID * arg)
   register INT x;
   FILE *fpi, *fpo;
   CHAR s[CCHMAXPATH + 80];
-  FILESTATUS3L fs3;
+  FILESTATUS3 fs3;
   LONG cols, lines, pages, z, lmargin, rmargin;
   BOOL endline, endpage, startpage, skipping, firstpass;
   int c;
@@ -124,9 +124,9 @@ VOID PrintListThread(VOID * arg)
 	  if (rc == MBID_CANCEL)
 	    break;
 	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo
-	      (li->list[x], FIL_STANDARDL, &fs3, (ULONG) sizeof(fs3))
-	      || (fs3.attrFile & FILE_DIRECTORY) || !fs3.cbFile)
+	  if (DosQueryPathInfo(li->list[x], FIL_STANDARD, &fs3, sizeof(fs3)) ||
+	      fs3.attrFile & FILE_DIRECTORY ||
+	      !fs3.cbFile)
 	    continue;
 	  if (StopPrinting)
 	    break;

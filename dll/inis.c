@@ -26,7 +26,6 @@
 #define INCL_GPI
 #define INCL_DOS
 #define INCL_DOSERRORS
-#define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
@@ -523,17 +522,17 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hdir = HDIR_CREATE;
       nm = 1;
       DosError(FERR_DISABLEHARDERR);
-      if (!xDosFindFirst("*.IST",
-			 &hdir,
-			 FILE_NORMAL | FILE_ARCHIVED,
-			 &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
+      if (!DosFindFirst("*.IST",
+			&hdir,
+			FILE_NORMAL | FILE_ARCHIVED,
+			&ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
 	do {
 	  priority_bumped();
 	  WinSendDlgItemMsg(hwnd, IAF_LISTBOX, LM_INSERTITEM,
 			    MPFROMSHORT(LIT_SORTASCENDING),
 			    MPFROMP(ffb.achName));
 	  nm = 1;
-	} while (!xDosFindNext(hdir, &ffb, sizeof(ffb), &nm));
+	} while (!DosFindNext(hdir, &ffb, sizeof(ffb), &nm));
 	DosFindClose(hdir);
 	priority_bumped();
       }
@@ -1178,7 +1177,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinDismissDlg(hwnd, 1);
 	    break;
 	  }
-	  /*  replace temp inis with new permanent inis */
+	  /* replace temp inis with new permanent inis */
 	  memset(&prfp, 0, sizeof(PRFPROFILE));
 	  prfp.cchUserName = strlen(oldsysini);
 	  prfp.cchSysName = strlen(olduserini);
@@ -1572,7 +1571,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       DrgSetDragitem(pDInfo, &DItem, sizeof(DRAGITEM), 0L);
       hDrop = DrgDrag(hwnd, pDInfo, &DIcon, 1L, VK_ENDDRAG, (PVOID) NULL);
       if (hDrop == NULLHANDLE)
-        FreeDragInfoData(hwnd, pDInfo);
+	FreeDragInfoData(hwnd, pDInfo);
       WinDestroyPointer(hptrINI);
     }
     break;
@@ -1583,25 +1582,25 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PDRAGITEM pDItem;
 
       if (!DrgAccessDraginfo(pDInfo)) {
-        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  "DrgAccessDraginfo");
+	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "DrgAccessDraginfo");
       }
       else {
-        pDItem = DrgQueryDragitemPtr(pDInfo,0);
-        /* Check valid rendering mechanisms and data */
-        if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL)) {
+	pDItem = DrgQueryDragitemPtr(pDInfo,0);
+	/* Check valid rendering mechanisms and data */
+	if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL)) {
 	  DrgFreeDraginfo(pDInfo);
 	  return (MRFROM2SHORT(DOR_DROP, DO_LINK));	/* OK to drop */
-        }
-        else if (DrgVerifyRMF(pDItem, DRM_FM2INIRECORD, DRF_FM2INI)) {
+	}
+	else if (DrgVerifyRMF(pDItem, DRM_FM2INIRECORD, DRF_FM2INI)) {
 	  if (WinQueryWindow(pDInfo->hwndSource, QW_PARENT) !=
 	      WinQueryWindow(hwnd, QW_PARENT))
 	  {
 	    DrgFreeDraginfo(pDInfo);
 	    return (MRFROM2SHORT(DOR_DROP, ((fCopyDefault) ? DO_COPY : DO_MOVE)));
 	  }
-        }
-        DrgFreeDraginfo(pDInfo);
+	}
+	DrgFreeDraginfo(pDInfo);
       }
     }
     return MRFROM2SHORT(DOR_NEVERDROP, 0);
@@ -1613,7 +1612,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case DM_DROP:
     {
       PDRAGINFO pDInfo = (PDRAGINFO) mp1;
-      PDRAGITEM pDItem;		/* Pointer to DRAGITEM   */
+      PDRAGITEM pDItem;		/* Pointer to DRAGITEM */
       ULONG numitems, curitem, len;
       USHORT action;
       CHAR szFrom[CCHMAXPATH + 2], szDir[CCHMAXPATH + 1],
@@ -1622,9 +1621,9 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       INIREC inirec;
 
       if (!DrgAccessDraginfo(pDInfo)) {
-        Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  "DrgAccessDraginfo");
-        return 0;
+	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "DrgAccessDraginfo");
+	return 0;
       }
       numitems = DrgQueryDragitemCount(pDInfo);
       for (curitem = 0; curitem < numitems; curitem++) {
@@ -1637,8 +1636,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       MPFROMLONG(DMFL_TARGETFAIL));
 	  else {
 	    if (FullDrgName(pDItem, szFrom, sizeof(szFrom)) &&
-		!DosQueryPathInfo(szFrom, FIL_STANDARDL, &fsa,
-				  (ULONG) sizeof(FILESTATUS3L)))
+		!DosQueryPathInfo(szFrom, FIL_STANDARD, &fsa, sizeof(fsa)))
 	      WinSendMsg(WinQueryWindow(hwnd, QW_PARENT), WM_COMMAND,
 			 MPFROM2SHORT(IDM_COMPARE, 0), MPFROMP(szFrom));
 	    DrgSendTransferMsg(pDItem->hwndItem,

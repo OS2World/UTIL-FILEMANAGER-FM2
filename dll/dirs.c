@@ -68,13 +68,12 @@ APIRET switch_to(CHAR * s)
 {
 
   APIRET ret;
-  FILESTATUS3L fsa;
+  FILESTATUS3 fsa;
   CHAR path[CCHMAXPATH + 1], *p;
 
   strcpy(path, s);
   while (*path) {
-    ret = DosQueryPathInfo(path, FIL_STANDARDL, &fsa,
-			   (ULONG) sizeof(FILESTATUS3L));
+    ret = DosQueryPathInfo(path, FIL_STANDARD, &fsa, sizeof(fsa));
     if (ret || !(fsa.attrFile & FILE_DIRECTORY)) {
       p = strrchr(path, '\\');
       if (p)

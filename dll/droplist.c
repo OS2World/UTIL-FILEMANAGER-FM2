@@ -103,7 +103,7 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 			     FIL_STANDARDL,
 			     &fsa3,
 			     sizeof(fsa3)) ||
-	    (fsa3.attrFile & FILE_DIRECTORY) != 0) {
+	    fsa3.attrFile & FILE_DIRECTORY) {
 	  *buffer1 = 0;
 	  return ret;
 	}
@@ -125,9 +125,10 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
    * Returns FALSE on error, TRUE on success.
    */
 
-  register ULONG len, blen;
+  ULONG len, blen;
   BOOL ret = FALSE;
   APIRET rc;
+  FILESTATUS3 fsa3;
 
   if (pDItem && buffer && buflen) {	/* else error calling function */
     *buffer = 0;			/* zero buffer */
@@ -164,17 +165,14 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
        Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		  "DosQueryPathInfo");
     }
-    {					/* be sure that file/directory is accessible */
-	FILESTATUS3L fsa3;
 
-      rc = DosQueryPathInfo(buffer, FIL_STANDARDL, &fsa3, sizeof(fsa3));
-      if (!rc)
-	ret = TRUE;
-      else {
-	  Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		    "DosQueryPathInfo");
-	  *buffer = 0;
-      }
+    rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fsa3, sizeof(fsa3));
+    if (!rc)
+      ret = TRUE;
+    else {
+	Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "DosQueryPathInfo");
+	*buffer = 0;
     }
   }
   return ret;

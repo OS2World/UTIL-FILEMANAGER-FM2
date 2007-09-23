@@ -81,7 +81,7 @@ VOID FindSwapperDat(VOID)
   CHAR *p;
   CHAR *pp;
   FILE *fp;
-  FILEFINDBUF3L ffb;
+  FILEFINDBUF3 ffb;
   ULONG nm;
   ULONG size = sizeof(SwapperDat);
   HDIR hdir = HDIR_CREATE;
@@ -92,11 +92,11 @@ VOID FindSwapperDat(VOID)
   PrfQueryProfileData(fmprof, FM3Str, "SwapperDat", SwapperDat, &size);
   if (*SwapperDat) {
     nm = 1;
-    rc = xDosFindFirst(SwapperDat,
-		       &hdir,
-		       FILE_NORMAL | FILE_ARCHIVED |
-		       FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-		       &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
+    rc = DosFindFirst(SwapperDat,
+		      &hdir,
+		      FILE_NORMAL | FILE_ARCHIVED |
+		      FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+		      &ffb, sizeof(ffb), &nm, FIL_STANDARD);
     if (!rc) {
       DosFindClose(hdir);
       fp = fopen(SwapperDat, "r");
@@ -153,11 +153,11 @@ VOID FindSwapperDat(VOID)
 	      BldFullPathName(SwapperDat, SwapperDat, "SWAPPER.DAT");
 	      hdir = HDIR_CREATE;
 	      nm = 1;
-	      if (!xDosFindFirst(SwapperDat,
-				 &hdir,
-				 FILE_NORMAL | FILE_ARCHIVED |
-				 FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-				 &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
+	      if (!DosFindFirst(SwapperDat,
+				&hdir,
+				FILE_NORMAL | FILE_ARCHIVED |
+				FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+				&ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
 		DosFindClose(hdir);
 		PrfWriteProfileString(fmprof,
 				      FM3Str, "SwapperDat", SwapperDat);
@@ -409,7 +409,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   CHAR *enddir;
   HDIR search_handle;
   ULONG num_matches;
-  static FILEFINDBUF3L f;
+  FILEFINDBUF3 ffb;
 
   StopTimer();
   StopPrinting = 1;
@@ -444,23 +444,23 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
     strcat(s, "*");
     search_handle = HDIR_CREATE;
     num_matches = 1L;
-    if (!xDosFindFirst(s,
-		       &search_handle,
-		       FILE_NORMAL | FILE_DIRECTORY |
-		       FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
-		       FILE_ARCHIVED,
-		       &f, sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
+    if (!DosFindFirst(s,
+		      &search_handle,
+		      FILE_NORMAL | FILE_DIRECTORY |
+		      FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
+		      FILE_ARCHIVED,
+		      &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
       do {
-	strcpy(enddir, f.achName);
-	if (f.attrFile & FILE_DIRECTORY) {
+	strcpy(enddir, ffb.achName);
+	if (ffb.attrFile & FILE_DIRECTORY) {
 	  wipeallf("%s\\*", s);
 	  DosDeleteDir(s);
 	}
 	else
 	  unlinkf("%s", s);
       }
-      while (!xDosFindNext(search_handle,
-			   &f, sizeof(FILEFINDBUF3L), &num_matches));
+      while (!DosFindNext(search_handle,
+			  &ffb, sizeof(ffb), &num_matches));
       DosFindClose(search_handle);
     }
   }
@@ -473,20 +473,20 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   strcat(s, "???");
   search_handle = HDIR_CREATE;
   num_matches = 1;
-  if (!xDosFindFirst(s,
-		     &search_handle,
-		     FILE_NORMAL | FILE_DIRECTORY |
-		     FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
-		     FILE_ARCHIVED,
-		     &f, sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
+  if (!DosFindFirst(s,
+		    &search_handle,
+		    FILE_NORMAL | FILE_DIRECTORY |
+		    FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
+		    FILE_ARCHIVED,
+		    &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
     do {
-      if (!(f.attrFile & FILE_DIRECTORY)) {
-	strcpy(enddir, f.achName);
+      if (!(ffb.attrFile & FILE_DIRECTORY)) {
+	strcpy(enddir, ffb.achName);
 	unlinkf("%s", s);
       }
     }
-    while (!xDosFindNext(search_handle,
-			 &f, sizeof(FILEFINDBUF3L), &num_matches));
+    while (!DosFindNext(search_handle,
+			&ffb, sizeof(ffb), &num_matches));
     DosFindClose(search_handle);
   }
 

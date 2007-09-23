@@ -1362,12 +1362,12 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
   }
   {
     CHAR inipath[CCHMAXPATH], fullpath[CCHMAXPATH];
-    FILESTATUS3L fsa;
+    FILESTATUS3 fsa;
 
     if (PrfQueryProfileString(HINI_USERPROFILE,
 			      FM2Str,
 			      "Home", NULL, inipath, sizeof(inipath))) {
-      if (!DosQueryPathInfo(inipath, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa))) {
+      if (!DosQueryPathInfo(inipath, FIL_STANDARD, &fsa, sizeof(fsa))) {
 	if (fsa.attrFile & FILE_DIRECTORY) {
 	  if (DosQueryPathInfo(inipath,
 			       FIL_QUERYFULLNAME, fullpath, sizeof(fullpath)))
