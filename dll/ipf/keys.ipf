@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 keys help
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2007 Steven H.Levine
+.*
+.* 23 Sep 07 SHL Document quicklists keys
+.*
+.***********************************************************************
+.*
 :h2 res=100005 name=PANEL_KEYS.Keys help
 :i1 id=aboutKeys.Keys help
 
@@ -444,6 +457,19 @@ Collector windows.
 :pt.:color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Previous control window
 :eparml.
+:p.
+:hp2.Quicklists:ehp2.
+:parml compact tsize=20 break=none.
+:pt.:color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.Down:color fc=default bc=default.
+:pd.Open drop-down list
+:pt.:color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.F10:color fc=default bc=default.
+:pd.Open context menu
+:pt.:color fc=default bc=palegray.Esc:color fc=default bc=default.
+:pd.Exit quicklist and return focus to last container
+:eparml.
+:p.
+Some of the The quicklists have specific accelerators assigned.
+These are indicated on the context menus.
 :p.
 :hp2.Miscellaneous:ehp2.
 :p.
