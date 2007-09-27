@@ -21,6 +21,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   25 Aug 07 SHL Drop list from FILESTUF - data not static
   25 Aug 07 SHL IconProc: do not use freed memory - random bad things happen
+  27 Sep 07 SHL Correct ULONGLONG size formatting
 
 ***********************************************************************/
 
@@ -691,14 +692,17 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  fs.ftimeLastAccess.minutes, fs.ftimeLastAccess.twosecs * 2);
 	  WinSetDlgItemText(hwnd, FLE_LASTACCESS, s);
 	}
+	// 27 Sep 07 SHL fixme to use CommaFmtULL
+	// 27 Sep 07 SHL fixme to not format numbers in IDS_SIZEINCLEASTEXT
 	sprintf(s,
 		GetPString(IDS_SIZEINCLEASTEXT),
 		fs.cbFile,
 		CBLIST_TO_EASIZE(fs.cbList),
 		fs.cbFile + CBLIST_TO_EASIZE(fs.cbList),
-		(fs.cbFile + CBLIST_TO_EASIZE(fs.cbList)) / 1024);
+		(ULONG)((fs.cbFile + CBLIST_TO_EASIZE(fs.cbList)) / 1024));
 	WinSetDlgItemText(hwnd, FLE_SIZES, s);
-	sprintf(s, "%lub", fs.cbFileAlloc - fs.cbFile);
+	// 27 Sep 07 SHL fixme to use CommaFmtULL
+	sprintf(s, "%llub", fs.cbFileAlloc - fs.cbFile);
 	WinSetDlgItemText(hwnd, FLE_SLACK, s);
 	WinCheckButton(hwnd,
 		       FLE_READONLY, ((fs.attrFile & FILE_READONLY) != 0));

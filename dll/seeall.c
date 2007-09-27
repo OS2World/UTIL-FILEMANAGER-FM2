@@ -29,6 +29,7 @@
   14 Aug 07 SHL Revert to DosSleep(0) to speed up inner loops
   14 Aug 07 SHL Drop afFilesToGet
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
+  27 Sep 07 SHL Correct ULONGLONG size formatting
 
 ***********************************************************************/
 
@@ -2268,12 +2269,13 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 		     1) ? standardcolors[Colors[COLORS_CURSOREDNORMALBACK]] :
 		    standardcolors[Colors[COLORS_NORMALBACK]]);
   }
+  // 27 Sep 07 SHL fixme to use CommaFmtULL
   len = sprintf(szBuff,
-		"%c%-*.*s  %-12lu  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
-		(whichfile == ad->cursored - 1) ? '>' : ' ',
-		(ad->fullnames) ? ad->longestw : ad->longest,
-		(ad->fullnames) ? ad->longestw : ad->longest,
-		(ad->fullnames) ? ad->afindex[y]->fullname :
+		"%c%-*.*s  %-12llu  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
+		whichfile == ad->cursored - 1 ? '>' : ' ',
+		ad->fullnames ? ad->longestw : ad->longest,
+		ad->fullnames ? ad->longestw : ad->longest,
+		ad->fullnames ? ad->afindex[y]->fullname :
 		ad->afindex[y]->filename,
 		ad->afindex[y]->cbFile,
 		"-A"[((ad->afindex[y]->attrFile & FILE_ARCHIVED) != 0)],
@@ -3437,12 +3439,13 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      GpiSetBackColor(pAD->hps,
 			      standardcolors[Colors
 					     [COLORS_CURSOREDNORMALBACK]]);
+	    // 27 Sep 07 SHL fixme to use CommaFmtULL
 	    len =
 	      sprintf(szBuff,
-		      "%c%-*.*s  %-12lu  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
-		      (wascursored) ? '>' : ' ',
-		      (pAD->fullnames) ? pAD->longestw : pAD->longest,
-		      (pAD->fullnames) ? pAD->longestw : pAD->longest,
+		      "%c%-*.*s  %-12llu  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
+		      wascursored ? '>' : ' ',
+		      pAD->fullnames ? pAD->longestw : pAD->longest,
+		      pAD->fullnames ? pAD->longestw : pAD->longest,
 		      (pAD->fullnames) ? pAD->afindex[y]->fullname : pAD->
 		      afindex[y]->filename, pAD->afindex[y]->cbFile,
 		      "-A"[((pAD->afindex[y]->attrFile & FILE_ARCHIVED) !=

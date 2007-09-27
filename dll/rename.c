@@ -10,6 +10,7 @@
   01 Aug 04 SHL - Rework lstrip/rstrip usage
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  27 Sep 07 SHL Correct ULONGLONG size formatting
 
 ***********************************************************************/
 
@@ -29,7 +30,6 @@
 
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-
   MOVEIT *mv;
 
   switch (msg) {
@@ -51,21 +51,18 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
     if (mv->rename || !stricmp(mv->target, mv->source)) {
 
-      CHAR *p;
-
-      p = strrchr(mv->target, '\\');
+      CHAR *p = strrchr(mv->target, '\\');
       if (p) {
 
 	USHORT sello, selhi;
 
-	sello = (p - mv->target) + 1;
+	sello = p - mv->target + 1;
 	selhi = strlen(mv->target);
 
 	WinSendDlgItemMsg(hwnd,
 			  REN_TARGET,
 			  EM_SETSEL, MPFROM2SHORT(sello, selhi), MPVOID);
       }
-//        WinShowWindow(WinWindowFromID(hwnd,REN_DONTASK),FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_OVEROLD), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_OVERNEW), FALSE);
     }
@@ -79,7 +76,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FILESTATUS3L fs1, fs2;
 	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH];
 	INT sourceexists = 0, targetexists = 0,
-	  sourcenewer = 0, sourcesmaller = 0;
+	    sourcenewer = 0, sourcesmaller = 0;
 
 	p = mv->target;
 	while (*p) {
@@ -92,11 +89,11 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!MakeFullName(mv->source))
 	  WinSetDlgItemText(hwnd, REN_SOURCE, mv->source);
 	if (!DosQueryPathInfo(mv->source, FIL_STANDARDL, &fs1, sizeof(fs1))) {
+	  // 27 Sep 07 SHL fixme to use CommaFmtULL
 	  sprintf(s,
-		  " %s%lu %ss %04u/%02u/%02u %02u:%02u:%02u",
-		  (fs1.attrFile & FILE_DIRECTORY) ?
-		  GetPString(IDS_DIRBRKTTEXT) :
-		  NullStr,
+		  " %s%llu %ss %04u/%02u/%02u %02u:%02u:%02u",
+		  fs1.attrFile & FILE_DIRECTORY ?
+		    GetPString(IDS_DIRBRKTTEXT) : NullStr,
 		  fs1.cbFile,
 		  GetPString(IDS_BYTETEXT),
 		  fs1.fdateLastWrite.year + 1980,
@@ -106,7 +103,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  fs1.ftimeLastWrite.minutes, fs1.ftimeLastWrite.twosecs * 2);
 	  WinSetDlgItemText(hwnd, REN_SOURCEINFO, s);
 	  sourceexists = 1;
-	  if (fs1.attrFile & (FILE_DIRECTORY))
+	  if (fs1.attrFile & FILE_DIRECTORY)
 	    sourceexists = 3;
 	}
 	else
@@ -119,11 +116,11 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(chkname, mv->target);
 	}
 	if (!DosQueryPathInfo(chkname, FIL_STANDARDL, &fs2, sizeof(fs2))) {
+	  // 27 Sep 07 SHL fixme to use CommaFmtULL
 	  sprintf(s,
-		  " %s%lu %ss %04u/%02u/%02u %02u:%02u:%02u",
-		  (fs2.attrFile & FILE_DIRECTORY) ?
-		  GetPString(IDS_DIRBRKTTEXT) :
-		  NullStr,
+		  " %s%llu %ss %04u/%02u/%02u %02u:%02u:%02u",
+		  fs2.attrFile & FILE_DIRECTORY ?
+		    GetPString(IDS_DIRBRKTTEXT) : NullStr,
 		  fs2.cbFile,
 		  GetPString(IDS_BYTETEXT),
 		  fs2.fdateLastWrite.year + 1980,
@@ -146,14 +143,13 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (sourceexists)
 	  sprintf(s,
 		  GetPString(IDS_SOURCEISATEXT),
-		  (sourceexists & 2) ?
-		  GetPString(IDS_DIRECTORYTEXT) : GetPString(IDS_FILETEXT));
+		  sourceexists & 2 ? GetPString(IDS_DIRECTORYTEXT) :
+				     GetPString(IDS_FILETEXT));
 	{
 	  FILE *fp = NULL;
-
-	  if (!(sourceexists & 2))
+	  if (~sourceexists & 2)
 	    fp = fopen(mv->source, "ab");
-	  if ((!fp && !(sourceexists & 2)) || !sourceexists)
+	  if ((!fp && ~sourceexists & 2) || !sourceexists)
 	    strcpy(s, GetPString(IDS_CANTACCESSSOURCETEXT));
 	  if (fp)
 	    fclose(fp);
@@ -161,65 +157,40 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (targetexists && stricmp(mv->source, mv->target))
 	  sprintf(&s[strlen(s)],
 		  GetPString(IDS_TARGETEXISTSISATEXT),
-		  (targetexists & 2) ?
-		  GetPString(IDS_DIRECTORYTEXT) : GetPString(IDS_FILETEXT));
+		  targetexists & 2 ? GetPString(IDS_DIRECTORYTEXT) :
+				     GetPString(IDS_FILETEXT));
 	if (targetexists && stricmp(mv->source, mv->target))
 	  strcpy(&s[strlen(s)], GetPString(IDS_CLICKOVERWRITETEXT));
 	else if (targetexists && !stricmp(mv->source, mv->target))
 	  strcpy(&s[strlen(s)], GetPString(IDS_ENTERNEWTARGETTEXT));
 	WinEnableWindow(WinWindowFromID(hwnd, REN_OVERWRITE),
-			(stricmp(mv->target, mv->source) &&
-			 (!mv->rename || strcmp(mv->target, mv->source))));
+			stricmp(mv->target, mv->source) &&
+			  (!mv->rename || strcmp(mv->target, mv->source)));
 
 	if (targetexists == 1 && sourceexists == 1) {
 	  sourcenewer =
-	    (fs1.fdateLastWrite.year <
-	     fs2.fdateLastWrite.year) ? 1 : (fs1.fdateLastWrite.year >
-					     fs2.fdateLastWrite.
-					     year) ? -1 : (fs1.fdateLastWrite.
-							   month <
-							   fs2.fdateLastWrite.
-							   month) ? 1 : (fs1.
-									 fdateLastWrite.
-									 month
-									 >
-									 fs2.
-									 fdateLastWrite.
-									 month)
-	    ? -1 : (fs1.fdateLastWrite.day <
-		    fs2.fdateLastWrite.day) ? 1 : (fs1.fdateLastWrite.day >
-						   fs2.fdateLastWrite.
-						   day) ? -1 : (fs1.
-								ftimeLastWrite.
-								hours <
-								fs2.
-								ftimeLastWrite.
-								hours) ? 1
-	    : (fs1.ftimeLastWrite.hours >
-	       fs2.ftimeLastWrite.hours) ? -1 : (fs1.ftimeLastWrite.minutes <
-						 fs2.ftimeLastWrite.
-						 minutes) ? 1 : (fs1.
-								 ftimeLastWrite.
-								 minutes >
-								 fs2.
-								 ftimeLastWrite.
-								 minutes) ? -1
-	    : (fs1.ftimeLastWrite.twosecs <
-	       fs2.ftimeLastWrite.twosecs) ? 1 : (fs1.ftimeLastWrite.twosecs >
-						  fs2.ftimeLastWrite.
-						  twosecs) ? -1 : 0;
-	  sourcesmaller =
-	    (fs1.cbFile < fs2.cbFile) ? -1 : (fs1.cbFile >
-					      fs2.cbFile) ? 1 : 0;
+	    (fs1.fdateLastWrite.year < fs2.fdateLastWrite.year) ? 1 :
+	      (fs1.fdateLastWrite.year > fs2.fdateLastWrite.year) ? -1 :
+	       (fs1.fdateLastWrite.month < fs2.fdateLastWrite.month) ? 1 :
+		 (fs1.fdateLastWrite.month > fs2.fdateLastWrite.month) ? -1 :
+		   (fs1.fdateLastWrite.day < fs2.fdateLastWrite.day) ? 1 :
+		     (fs1.fdateLastWrite.day > fs2.fdateLastWrite.day) ? -1 :
+		       (fs1.ftimeLastWrite.hours < fs2. ftimeLastWrite. hours) ? 1 :
+			 (fs1.ftimeLastWrite.hours > fs2.ftimeLastWrite.hours) ? -1 :
+			   (fs1.ftimeLastWrite.minutes < fs2.ftimeLastWrite.minutes) ? 1 :
+			     (fs1.ftimeLastWrite.minutes > fs2.ftimeLastWrite.minutes) ? -1 :
+			       (fs1.ftimeLastWrite.twosecs < fs2.ftimeLastWrite.twosecs) ? 1 :
+				 (fs1.ftimeLastWrite.twosecs > fs2.ftimeLastWrite.twosecs) ? -1 : 0;
+	  sourcesmaller = (fs1.cbFile < fs2.cbFile) ? -1 :
+			  (fs1.cbFile > fs2.cbFile) ? 1 :
+			  0;
 	  sprintf(&s[strlen(s)], GetPString(IDS_SOURCEISTEXT),
-		  (sourcenewer ==
-		   -1) ? GetPString(IDS_NEWERTEXT) : (sourcenewer ==
-						      1) ?
-		  GetPString(IDS_OLDERTEXT) : GetPString(IDS_SAMEDATETEXT),
-		  (sourcesmaller ==
-		   -1) ? GetPString(IDS_SMALLERTEXT) : (sourcesmaller ==
-							1) ?
-		  GetPString(IDS_LARGERTEXT) : GetPString(IDS_SAMESIZETEXT));
+		  (sourcenewer == -1) ? GetPString(IDS_NEWERTEXT) :
+		    (sourcenewer == 1) ? GetPString(IDS_OLDERTEXT) :
+		      GetPString(IDS_SAMEDATETEXT),
+		  (sourcesmaller == -1) ? GetPString(IDS_SMALLERTEXT) :
+		    (sourcesmaller == 1) ? GetPString(IDS_LARGERTEXT) :
+		      GetPString(IDS_SAMESIZETEXT));
 	}
 	WinSetDlgItemText(hwnd, REN_INFORMATION, s);
 	if (targetexists && stricmp(mv->source, mv->target)) {

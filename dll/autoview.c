@@ -19,6 +19,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  27 Sep 07 SHL Correct ULONGLONG size formatting
 
 ***********************************************************************/
 
@@ -463,24 +464,20 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 (!pffbFile->achName[1] ||
 			  (pffbFile->achName[1] == '.' &&
 			   !pffbFile->achName[2]))))) {
+		    // 27 Sep 07 SHL fixme to use CommaFmtULL
 		    sprintf(p,
-			    "%s%-*.*s  %-8lu  [%s%s%s%s]  %04lu/%02lu/%02lu "
-			    "%02lu:%02lu:%02lu\r",
-			    ((pffbFile->attrFile & FILE_DIRECTORY) != 0) ?
-			    "\\" : " ",
+			    "%s%-*.*s  %-8llu  [%s%s%s%s]  %04lu/%02lu/%02lu "
+			      "%02lu:%02lu:%02lu\r",
+			    pffbFile->attrFile & FILE_DIRECTORY ? "\\" : " ",
 			    ml,
 			    ml,
 			    pffbFile->achName,
 			    pffbFile->cbFile +
-			    CBLIST_TO_EASIZE(pffbFile->cbList),
-			    ((pffbFile->attrFile & FILE_READONLY) != 0) ?
-			    "R" : "-",
-			    ((pffbFile->attrFile & FILE_ARCHIVED) != 0) ?
-			    "A" : "-",
-			    ((pffbFile->attrFile & FILE_HIDDEN) != 0) ?
-			    "H" : "-",
-			    ((pffbFile->attrFile & FILE_SYSTEM) != 0) ?
-			    "S" : "-",
+			      CBLIST_TO_EASIZE(pffbFile->cbList),
+			    pffbFile->attrFile & FILE_READONLY ? "R" : "-",
+			    pffbFile->attrFile & FILE_ARCHIVED ? "A" : "-",
+			    pffbFile->attrFile & FILE_HIDDEN ? "H" : "-",
+			    pffbFile->attrFile & FILE_SYSTEM ? "S" : "-",
 			    pffbFile->fdateLastWrite.year + 1980,
 			    pffbFile->fdateLastWrite.month,
 			    pffbFile->fdateLastWrite.day,

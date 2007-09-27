@@ -17,6 +17,7 @@
   22 Mar 07 GKY Use QWL_USER
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  27 Sep 07 SHL Correct ULONGLONG size formatting
 
 ***********************************************************************/
 
@@ -449,10 +450,12 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      fprintf(fp, "%-40s", pci->pszSubject);
 		      break;
 		    case 'Z':
-		      fprintf(fp, "%-13lu", pci->cbFile);
+		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
+		      fprintf(fp, "%-13llu", pci->cbFile);
 		      break;
 		    case 'z':
-		      fprintf(fp, "%lu", pci->cbFile);
+		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
+		      fprintf(fp, "%llu", pci->cbFile);
 		      break;
 		    case 'E':
 		      fprintf(fp, "%-5u", pci->easize);
@@ -889,10 +892,12 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		      fprintf(fp, "%-40s", subject);
 		      break;
 		    case 'Z':
-		      fprintf(fp, "%-13lu", ffb4.cbFile);
+		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
+		      fprintf(fp, "%-13llu", ffb4.cbFile);
 		      break;
 		    case 'z':
-		      fprintf(fp, "%lu", ffb4.cbFile);
+		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
+		      fprintf(fp, "%llu", ffb4.cbFile);
 		      break;
 		    case 'E':
 		      fprintf(fp, "%-5u", CBLIST_TO_EASIZE(ffb4.cbList));
