@@ -1190,7 +1190,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      DosError(FERR_DISABLEHARDERR);
 	      rc = DosQueryPathInfo(szDrive,
 				    FIL_STANDARDL,
-				    &fsa4, (ULONG) sizeof(FILESTATUS3L));
+				    &fsa4, (ULONG) sizeof(FILESTATUS4L));
 	      fsa4.cbList = 0;
 	    }
 	    if (rc && !didonce) {

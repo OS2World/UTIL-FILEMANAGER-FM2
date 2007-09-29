@@ -93,7 +93,7 @@ static VOID FillListboxThread(VOID * args)
 	    if (*p) {
 
 	      CHAR mask[CCHMAXPATH], *enddir, text[CCHMAXPATH * 2];
-	      FILEFINDBUF3L ffb;
+	      FILEFINDBUF3 ffb;
 	      HDIR hdir;
 	      ULONG nm;
 
@@ -108,8 +108,8 @@ static VOID FillListboxThread(VOID * args)
 	      hdir = HDIR_CREATE;
 	      nm = 1;
 	      DosError(FERR_DISABLEHARDERR);
-	      if (!xDosFindFirst(mask, &hdir, FILE_NORMAL | FILE_ARCHIVED,
-				 &ffb, sizeof(ffb), &nm, FIL_STANDARDL)) {
+	      if (!DosFindFirst(mask, &hdir, FILE_NORMAL | FILE_ARCHIVED,
+				&ffb, sizeof(ffb), &nm, FIL_STANDARD)) {
 		do {
 		  priority_normal();
 		  strcpy(enddir, ffb.achName);
@@ -148,7 +148,7 @@ static VOID FillListboxThread(VOID * args)
 				    MPFROMP(text));
 		Continue:
 		  nm = 1;
-		} while (!xDosFindNext(hdir, &ffb, sizeof(ffb), &nm));
+		} while (!DosFindNext(hdir, &ffb, sizeof(ffb), &nm));
 		DosFindClose(hdir);
 		priority_normal();
 	      }

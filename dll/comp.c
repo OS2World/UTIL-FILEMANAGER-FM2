@@ -193,7 +193,7 @@ static VOID CompareFilesThread(VOID * args)
   HAB hab2;
   HMQ hmq2;
   FILE *fp1, *fp2;
-  ULONGLONG len1, len2;
+  ULONG len1, len2;
   ULONG offset = 0;
   LONG numread1, numread2;
   CHAR s[1024], ss[1024], *p1, *p2;
@@ -240,8 +240,8 @@ static VOID CompareFilesThread(VOID * args)
 	    WinSetWindowText(fc.hwndHelp, GetPString(IDS_ERRORTEXT));
 	  }
 	  else {
-	    len1 = _filelengthi64(fileno(fp1));
-	    len2 = _filelengthi64(fileno(fp2));
+	    len1 = filelength(fileno(fp1));
+	    len2 = filelength(fileno(fp2));
 	    if (len1 != len2) {
 	      strcpy(s, GetPString(IDS_COMPDIFSIZESTEXT));
 	      AddToListboxBottom(fc.hwndList, s);

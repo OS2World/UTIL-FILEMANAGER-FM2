@@ -889,7 +889,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      SVBTN_ENTRY,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     {
-      FILEFINDBUF3L findbuf;
+      FILEFINDBUF3 findbuf;
       HDIR hDir;
       ULONG ulSearchCount, x = 0;
       CHAR *masks[] = { "*.TLS", "FM3TOOLS.DAT", NULL };
@@ -900,12 +900,12 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	hDir = HDIR_CREATE;
 	ulSearchCount = 1;
 	DosError(FERR_DISABLEHARDERR);
-	if (!xDosFindFirst(masks[x],
-			   &hDir,
-			   FILE_ARCHIVED,
-			   &findbuf,
-			   sizeof(FILEFINDBUF3L),
-			   &ulSearchCount, FIL_STANDARDL)) {
+	if (!DosFindFirst(masks[x],
+			  &hDir,
+			  FILE_ARCHIVED,
+			  &findbuf,
+			  sizeof(FILEFINDBUF3),
+			  &ulSearchCount, FIL_STANDARD)) {
 	  do {
 	    priority_bumped();
 	    WinSendMsg(WinWindowFromID(hwnd,
@@ -914,9 +914,9 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		       MPFROMP(findbuf.achName));
 	    ulSearchCount = 1;
-	  } while (!xDosFindNext(hDir,
-				 &findbuf,
-				 sizeof(FILEFINDBUF3L), &ulSearchCount));
+	  } while (!DosFindNext(hDir,
+				&findbuf,
+				sizeof(FILEFINDBUF3), &ulSearchCount));
 	  DosFindClose(hDir);
 	  priority_bumped();
 	}

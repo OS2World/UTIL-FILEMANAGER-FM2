@@ -226,8 +226,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
    */
 
   BOOL ret = FALSE;
-  FILEFINDBUF3L ffb[DDEPTH];
-  PFILEFINDBUF3L pffb;
+  FILEFINDBUF3 ffb[DDEPTH];
+  PFILEFINDBUF3 pffb;
   HDIR hDir = HDIR_CREATE;
   ULONG nm, ulM = 1, total = 0, fl = MUST_HAVE_DIRECTORY;
   CHAR str[CCHMAXPATH];
@@ -277,25 +277,25 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
     ddepth = 14;
 
   if (!isremote || !fRemoteBug)
-    ulM = (ddepth < 16L) ? ddepth : 1L;
+    ulM = (ddepth < 16) ? ddepth : 1;
 
   nm = ulM;
 
   DosError(FERR_DISABLEHARDERR);
   if (includefiles)
     fl = FILE_DIRECTORY;
-  rc = xDosFindFirst(str,
-		     &hDir,
-		     FILE_NORMAL | fl |
-		     FILE_READONLY | FILE_ARCHIVED |
-		     FILE_SYSTEM | FILE_HIDDEN,
-		     &ffb, ulM * sizeof(FILEFINDBUF3L), &nm, FIL_STANDARDL);
+  rc = DosFindFirst(str,
+		    &hDir,
+		    FILE_NORMAL | fl |
+		    FILE_READONLY | FILE_ARCHIVED |
+		    FILE_SYSTEM | FILE_HIDDEN,
+		    &ffb, ulM * sizeof(FILEFINDBUF3), &nm, FIL_STANDARD);
   if (ulM == 1 && !rc) {
     do {
       pffb = &ffb[0];
       if (!includefiles && !(pffb->attrFile & FILE_DIRECTORY) && !brokenlan) {
 	brokenlan = TRUE;
-	ddepth = (ULONG) - 1L;
+	ddepth = (ULONG) - 1;
 	ddepth--;
 	if (!NoBrokenNotify) {
 	  prc = saymsg(MB_YESNO | MB_ICONEXCLAMATION,
@@ -307,7 +307,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		   HWND_DESKTOP,
 		   GetPString(IDS_LANERROR2TITLETEXT),
 		   GetPString(IDS_LANERROR2TEXT));
-	    NoBrokenNotify = 255L;
+	    NoBrokenNotify = 255;
 	    PrfWriteProfileData(fmprof,
 				FM3Str,
 				"NoBrokenNotify",
@@ -334,10 +334,10 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
       }
       nm = 1;
       DosError(FERR_DISABLEHARDERR);
-    } while (++total < ddepth && !(rc = (xDosFindNext(hDir,
-						      &ffb,
-						      sizeof(FILEFINDBUF3L),
-						      &nm))));
+    } while (++total < ddepth && !(rc = (DosFindNext(hDir,
+						     &ffb,
+						     sizeof(FILEFINDBUF3),
+						     &nm))));
     DosFindClose(hDir);
     if (toupper(*pciParent->pszFileName) > 'B' &&
 	(*(pciParent->pszFileName + 1)) == ':' &&
@@ -350,7 +350,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	      total, toupper(*pciParent->pszFileName));
       if (rc && rc != ERROR_NO_MORE_FILES)
 	sprintf(&s[strlen(s)], GetPString(IDS_SEARCHERRORTEXT), rc, str);
-      else if (ddepth < 16L)
+      else if (ddepth < 16)
 	brokenlan = TRUE;
       Notify(s);
     }
@@ -364,7 +364,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
       register PBYTE fb = (PBYTE) & ffb[0];
 
       for (len = 0; len < nm; len++) {
-	pffb = (PFILEFINDBUF3L) fb;
+	pffb = (PFILEFINDBUF3) fb;
 	if (!includefiles && !(pffb->attrFile & FILE_DIRECTORY)) {
 	  if (!isbroken) {
 	    isbroken = TRUE;
@@ -381,7 +381,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		       HWND_DESKTOP,
 		       GetPString(IDS_FSDERROR2TITLETEXT),
 		       GetPString(IDS_FSDERROR2TEXT));
-		NoBrokenNotify = 255L;
+		NoBrokenNotify = 255;
 		PrfWriteProfileData(fmprof,
 				    FM3Str,
 				    "NoBrokenNotify",
@@ -417,7 +417,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 
 	pci = WinSendMsg(hwndCnr,
 			 CM_ALLOCRECORD,
-			 MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1L));
+			 MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1));
 	if (!pci) {
 	  Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
 		    GetPString(IDS_RECORDALLOCFAILEDTEXT));

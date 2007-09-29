@@ -55,7 +55,7 @@ static VOID FillUndelListThread(VOID * arg)
   HFILE oldstdout, newstdout;
   struct tempstruct *undelinfo;
   BOOL killme = FALSE;
-  FILESTATUS3L fsa;
+  FILESTATUS3 fsa;
 
   undelinfo = (struct tempstruct *)arg;
   hwnd = undelinfo->hwnd;
@@ -135,7 +135,7 @@ static VOID FillUndelListThread(VOID * arg)
 		   WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_SEARCHSTRING,
 				     MPFROM2SHORT(0, LIT_FIRST),
 				     MPFROMP(s)) < 0
-		   && DosQueryPathInfo(s, FIL_STANDARDL, &fsa,
+		   && DosQueryPathInfo(s, FIL_STANDARD, &fsa,
 				       (ULONG) sizeof(fsa)))
 	    WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_INSERTITEM,
 			      MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(s));

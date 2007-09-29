@@ -5592,16 +5592,16 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       BOOL foundit = FALSE, thisone;
       ULONG ulSearchCount;
       SHORT sSelect;
-      FILEFINDBUF3L findbuf;
+      FILEFINDBUF3 findbuf;
       HDIR hDir;
       CHAR *p;
 
       DosError(FERR_DISABLEHARDERR);
       hDir = HDIR_CREATE;
       ulSearchCount = 1;
-      if (!xDosFindFirst("*.TLS", &hDir, FILE_READONLY | FILE_ARCHIVED,
-			 &findbuf, sizeof(FILEFINDBUF3L),
-			 &ulSearchCount, FIL_STANDARDL)) {
+      if (!DosFindFirst("*.TLS", &hDir, FILE_READONLY | FILE_ARCHIVED,
+		        &findbuf, sizeof(FILEFINDBUF3),
+		        &ulSearchCount, FIL_STANDARD)) {
 	do {
 	  priority_bumped();
 	  if (!foundit) {
@@ -5626,8 +5626,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    foundit = TRUE;
 	  }
 	}
-	while (!xDosFindNext(hDir, &findbuf, sizeof(FILEFINDBUF3L),
-			     &ulSearchCount));
+	while (!DosFindNext(hDir, &findbuf, sizeof(FILEFINDBUF3),
+			    &ulSearchCount));
 	DosFindClose(hDir);
 	priority_bumped();
       }
@@ -5641,7 +5641,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG ulDriveNum;
       ULONG ulDriveMap;
       ULONG ulSearchCount;
-      FILEFINDBUF3L findbuf;
+      FILEFINDBUF3 findbuf;
       HDIR hDir;
       APIRET rc;
       LINKDIRS *info;
@@ -5660,11 +5660,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
-	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
-			       MUST_HAVE_DIRECTORY | FILE_READONLY |
-			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			       &findbuf, sizeof(FILEFINDBUF3L),
-			       &ulSearchCount, FIL_STANDARDL);
+	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
+			      MUST_HAVE_DIRECTORY | FILE_READONLY |
+			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			      &findbuf, sizeof(FILEFINDBUF3),
+			      &ulSearchCount, FIL_STANDARD);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -5684,7 +5684,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      continue;
 	    }
 	  }
-	  else if (!(ulDriveMap & (1L << (toupper(*info->path) - 'A')))) {
+	  else if (!(ulDriveMap & (1 << (toupper(*info->path) - 'A')))) {
 	    temp = info->next;
 	    remove_udir(info->path);
 	    info = temp;
@@ -5702,11 +5702,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  hDir = HDIR_CREATE;
 	  ulSearchCount = 1;
 	  if (!IsRoot(info->path))
-	    rc = xDosFindFirst(info->path, &hDir, FILE_DIRECTORY |
-			       MUST_HAVE_DIRECTORY | FILE_READONLY |
-			       FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
-			       &findbuf, sizeof(FILEFINDBUF3L),
-			       &ulSearchCount, FIL_STANDARDL);
+	    rc = DosFindFirst(info->path, &hDir, FILE_DIRECTORY |
+			      MUST_HAVE_DIRECTORY | FILE_READONLY |
+			      FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN,
+			      &findbuf, sizeof(FILEFINDBUF3),
+			      &ulSearchCount, FIL_STANDARD);
 	  else {
 	    rc = 0;
 	    findbuf.attrFile = FILE_DIRECTORY;
@@ -5726,7 +5726,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      continue;
 	    }
 	  }
-	  else if (!(ulDriveMap & (1L << (toupper(*info->path) - 'A')))) {
+	  else if (!(ulDriveMap & (1 << (toupper(*info->path) - 'A')))) {
 	    temp = info->next;
 	    remove_udir(info->path);
 	    info = temp;

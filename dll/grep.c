@@ -400,7 +400,7 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
 {
   // process all subdirectories
 
-  FILEFINDBUF4L ffb;
+  FILEFINDBUF4 ffb;
   HDIR findHandle = HDIR_CREATE;
   LONG ulFindCnt = 1;
   CHAR *p = NULL;
@@ -411,10 +411,10 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
   strcat(searchPath, "*");
   // step through all subdirectories
   DosError(FERR_DISABLEHARDERR);
-  if (!xDosFindFirst(searchPath, &findHandle, (MUST_HAVE_DIRECTORY |
-		     FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN | FILE_READONLY),
-		     &ffb, (ULONG) sizeof(ffb),
-		     (PULONG) & ulFindCnt, FIL_QUERYEASIZEL)) {
+  if (!DosFindFirst(searchPath, &findHandle, (MUST_HAVE_DIRECTORY |
+		    FILE_ARCHIVED | FILE_SYSTEM | FILE_HIDDEN | FILE_READONLY),
+		    &ffb, (ULONG) sizeof(ffb),
+		    (PULONG) & ulFindCnt, FIL_QUERYEASIZE)) {
 
     // get rid of mask portion, save end-of-directory
 
@@ -439,9 +439,9 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
 	}
       }
       ulFindCnt = 1;
-    } while (!xDosFindNext(findHandle,
-			   &ffb,
-			   sizeof(ffb), (PULONG) & ulFindCnt));
+    } while (!DosFindNext(findHandle,
+			  &ffb,
+			  sizeof(ffb), (PULONG) & ulFindCnt));
     DosFindClose(findHandle);
     priority_normal();
   }
@@ -453,15 +453,15 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 {
   // process all matching files in a directory
 
-  PFILEFINDBUF4L pffbArray;
-  PFILEFINDBUF4L pffbFile;
+  PFILEFINDBUF4 pffbArray;
+  PFILEFINDBUF4 pffbFile;
   ULONG x;
   HDIR findHandle = HDIR_CREATE;
   ULONG ulFindCnt;
   CHAR szFindPath[CCHMAXPATH];
   PSZ p;
   APIRET rc;
-  ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4L);
+  ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4);
   static BOOL fDone;
 
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
@@ -487,13 +487,13 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   // step through matching files
   DosError(FERR_DISABLEHARDERR);
   ulFindCnt = FilesToGet;
-  rc = xDosFindFirst(szFindPath,
-		     &findHandle,
-		     FILE_NORMAL | grep->attrFile | grep->antiattr,
-		     pffbArray,
-		     ulBufBytes,
-		     &ulFindCnt,
-		     FIL_QUERYEASIZEL);
+  rc = DosFindFirst(szFindPath,
+		    &findHandle,
+		    FILE_NORMAL | grep->attrFile | grep->antiattr,
+		    pffbArray,
+		    ulBufBytes,
+		    &ulFindCnt,
+		    FIL_QUERYEASIZE);
   if (!rc) {
     do {
       // Process each file that matches the mask
@@ -529,13 +529,13 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	}
 	if (!pffbFile->oNextEntryOffset)
 	  break;
-	pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
       if (*grep->stopflag)
 	break;
       DosSleep(0); //26 Aug 07 GKY 1
       ulFindCnt = FilesToGet;
-      rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = DosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
     } while (!rc);
 
     DosFindClose(findHandle);

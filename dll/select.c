@@ -814,8 +814,8 @@ Restart:
 	    compErrno = errno;
 	  }
 	  else {
-	    size_t len1 = _filelengthi64(fileno(fp1));
-	    size_t len2 = _filelengthi64(fileno(fp2));
+	    size_t len1 = filelength(fileno(fp1));
+	    size_t len2 = filelength(fileno(fp2));
 
 	    if (len1 == len2) {
 	      setbuf(fp1, NULL);

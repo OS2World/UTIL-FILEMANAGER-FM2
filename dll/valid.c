@@ -86,12 +86,12 @@ int TestDates(char *file1, char *file2)
    */
 
   int comp = 0;
-  FILESTATUS3L fs3o, fs3n;
+  FILESTATUS3 fs3o, fs3n;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!DosQueryPathInfo(file1, FIL_STANDARDL, &fs3o, sizeof(fs3o))) {
+  if (!DosQueryPathInfo(file1, FIL_STANDARD, &fs3o, sizeof(fs3o))) {
     DosError(FERR_DISABLEHARDERR);
-    if (!DosQueryPathInfo(file2, FIL_STANDARDL, &fs3n, sizeof(fs3n))) {
+    if (!DosQueryPathInfo(file2, FIL_STANDARD, &fs3n, sizeof(fs3n))) {
       comp = (fs3n.fdateLastWrite.year >
 	      fs3o.fdateLastWrite.year) ? 1 :
 	(fs3n.fdateLastWrite.year <
@@ -378,12 +378,12 @@ INT IsFile(CHAR * filename)
 {
   /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
 
-  FILESTATUS3L fsa;
+  FILESTATUS3 fsa;
   APIRET ret;
 
   if (filename && *filename) {
     DosError(FERR_DISABLEHARDERR);
-    ret = DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa));
+    ret = DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa));
     if (!ret)
       return ((fsa.attrFile & FILE_DIRECTORY) == 0);
     else if (IsValidDrive(*filename) && IsRoot(filename))
@@ -407,7 +407,7 @@ BOOL IsRoot(CHAR * filename)
 BOOL IsValidDir(CHAR * path)
 {
   CHAR fullname[CCHMAXPATH];
-  FILESTATUS3L fs;
+  FILESTATUS3 fs;
 
   if (path) {
     DosError(FERR_DISABLEHARDERR);
@@ -417,7 +417,7 @@ BOOL IsValidDir(CHAR * path)
 	if (!IsRoot(fullname)) {
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQueryPathInfo(fullname,
-				FIL_STANDARDL,
+				FIL_STANDARD,
 				&fs,
 				sizeof(fs)) && (fs.attrFile & FILE_DIRECTORY))
 	    return TRUE;
@@ -461,7 +461,7 @@ CHAR *MakeValidDir(CHAR * path)
 {
   ULONG ulDrv;
   CHAR *p;
-  FILESTATUS3L fs;
+  FILESTATUS3 fs;
   APIRET rc;
 
   if (!MakeFullName(path)) {
@@ -471,7 +471,7 @@ CHAR *MakeValidDir(CHAR * path)
 	if (IsRoot(path))
 	  return path;
 	DosError(FERR_DISABLEHARDERR);
-	rc = DosQueryPathInfo(path, FIL_STANDARDL, &fs, sizeof(fs));
+	rc = DosQueryPathInfo(path, FIL_STANDARD, &fs, sizeof(fs));
 	if (!rc && (fs.attrFile & FILE_DIRECTORY))
 	  return path;
 	p = strrchr(path, '\\');

@@ -65,8 +65,8 @@ APIRET xDosFindNext(HDIR   hDir,
  * the boundary the alternate buffer will not because both are on the stack
  * and we don't put enough additional data on the stack for this to occur.
  * It is caller's responsitibility to report errors
- * @param pInfoBuf pointer to FILESTATUS3L or EAOP2 buffer
- * @param ulInfoLevel FIL_STANDARDL or FIL_QUERYEASIZE
+ * @param pInfoBuf pointer to FILESTATUS3(L) or EAOP2 buffer
+ * @param ulInfoLevel FIL_STANDARD(L) or FIL_QUERYEASIZE
  * @returns Same as DosSetPathInfo
  */
 
@@ -77,18 +77,23 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
 		       ULONG flOptions)
 {
     APIRET rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
-    FILESTATUS3L alt_fs3;
+    FILESTATUS3 alt_fs3;
+    FILESTATUS3L alt_fs3L;
     EAOP2 alt_eaop2;
     if (rc == ERROR_INVALID_NAME) {
       switch (ulInfoLevel) {
-      case FIL_STANDARDL:
-	alt_fs3 = *(PFILESTATUS3L)pInfoBuf;	// Copy
-	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3, sizeof(alt_fs3), flOptions);
-	break;
-      case FIL_QUERYEASIZE:
-	alt_eaop2 = *(PEAOP2)pInfoBuf;	// Copy
-	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_eaop2, sizeof(alt_eaop2), flOptions);
-	break;
+        case FIL_STANDARD:
+	  alt_fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy
+	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3, sizeof(alt_fs3), flOptions);
+          break;
+        case FIL_STANDARDL:
+          alt_fs3L = *(PFILESTATUS3L)pInfoBuf;	// Copy
+          rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3L, sizeof(alt_fs3L), flOptions);
+          break;
+        case FIL_QUERYEASIZE:
+          alt_eaop2 = *(PEAOP2)pInfoBuf;	// Copy
+          rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_eaop2, sizeof(alt_eaop2), flOptions);
+          break;
       default:
 	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
 	rc = ERROR_INVALID_PARAMETER;

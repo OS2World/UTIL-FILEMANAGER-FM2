@@ -515,7 +515,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     MLEsetlimit(hwndMLE, 8192);
     WinSetWindowText(hwndMLE, lasttext);
     {
-      FILEFINDBUF3L ffb;
+      FILEFINDBUF3 ffb;
       ULONG nm;
       HDIR hdir;
 
@@ -1617,7 +1617,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       USHORT action;
       CHAR szFrom[CCHMAXPATH + 2], szDir[CCHMAXPATH + 1],
 	szTemp[CCHMAXPATH + 2];
-      FILESTATUS3L fsa;
+      FILESTATUS3 fsa;
       INIREC inirec;
 
       if (!DrgAccessDraginfo(pDInfo)) {
@@ -2485,7 +2485,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (inidata) {
 
 	CHAR filename[CCHMAXPATH + 81], *p;
-	FILESTATUS3L fsa;
+	FILESTATUS3 fsa;
 	HINI hINI;
 
 	strcpy(filename, inidata->ininame);
@@ -2508,7 +2508,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    TRUE,
 			    TRUE) &&
 	    *filename &&
-	    !DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, sizeof(fsa))) {
+	    !DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
 	  hINI = PrfOpenProfile(WinQueryAnchorBlock(hwnd), filename);
 	  if (!hINI) {
 	    Win_Error(hwnd, hwnd, __FILE__, __LINE__,

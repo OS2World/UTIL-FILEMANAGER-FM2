@@ -209,7 +209,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
 {
   FILEDLG fdlg;
-  FILESTATUS3L fsa;
+  FILESTATUS3 fsa;
   CHAR drive[3], *pdrive = drive, *p;
   APIRET rc;
   static CHAR lastfilename[CCHMAXPATH] = "";
@@ -277,7 +277,7 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
   else
     return FALSE;
   MakeFullName(filename);
-  if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, sizeof(fsa))) {
+  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
     if (fsa.attrFile & FILE_DIRECTORY) {
       /* device or directory */
       saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
@@ -315,7 +315,7 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
 BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
 {
   FILEDLG fdlg;
-  FILESTATUS3L fsa;
+  FILESTATUS3 fsa;
   CHAR drive[3], *pdrive = drive, *p;
   static CHAR lastfilename[CCHMAXPATH] = "";
 
@@ -368,13 +368,13 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
   else
     return FALSE;
   MakeFullName(filename);
-  if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, sizeof(fsa))) {
+  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
     if (fsa.attrFile & FILE_DIRECTORY) {	/* device or directory */
       saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	     hwnd, filename, GetPString(IDS_EXISTSBUTNOTFILETEXT), filename);
       return FALSE;
     }
-    else if (overwrite && fsa.cbFile != 0L) {
+    else if (overwrite && fsa.cbFile != 0) {
       if (saymsg(MB_YESNO,
 		 hwnd,
 		 filename,

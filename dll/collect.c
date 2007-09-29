@@ -2507,7 +2507,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case CN_ENTER:
 	if (mp2) {
 	  PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
-	  FILEFINDBUF3L ffb;
+	  FILEFINDBUF3 ffb;
 	  HDIR hDir = HDIR_CREATE;
 	  ULONG nm = 1;
 	  APIRET status = 0;
@@ -2517,11 +2517,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (pci->rc.flRecordAttr & CRA_INUSE)
 	      break;
 	    DosError(FERR_DISABLEHARDERR);
-	    status = xDosFindFirst(pci->pszFileName, &hDir,
+	    status = DosFindFirst(pci->pszFileName, &hDir,
 		               	   FILE_NORMAL | FILE_DIRECTORY |
 				   FILE_ARCHIVED | FILE_READONLY |
 				   FILE_HIDDEN | FILE_SYSTEM,
-				   &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
+				   &ffb, sizeof(ffb), &nm, FIL_STANDARD);
 	    priority_bumped();
 	    if (!status) {
 	      DosFindClose(hDir);

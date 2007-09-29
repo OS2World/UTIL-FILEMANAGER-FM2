@@ -430,7 +430,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 
 	    FILEDLG fdlg;
-	    FILESTATUS3L fs3;
+	    FILESTATUS3 fs3;
 	    CHAR drive[3], *pdrive = drive, filename[CCHMAXPATH], *p;
 
 	    memset(&fdlg, 0, sizeof(FILEDLG));
@@ -459,7 +459,7 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      FIL_QUERYFULLNAME,
 				      filename, sizeof(filename))) {
 		  if (!DosQueryPathInfo(filename,
-					FIL_STANDARDL, &fs3, sizeof(fs3))) {
+					FIL_STANDARD, &fs3, sizeof(fs3))) {
 		    p = filename;
 		    while (*p) {
 		      if (*p == '/')

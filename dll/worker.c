@@ -397,13 +397,13 @@ VOID Action(VOID * args)
 		      !*ex.command || !*ex.arcname || !*ex.extractdir)
 		    goto Abort;
 		  {
-		    FILESTATUS3L fsa;
+		    FILESTATUS3 fsa;
 
 		    DosError(FERR_DISABLEHARDERR);
 		    if (DosQueryPathInfo(ex.extractdir,
-					 FIL_STANDARDL,
+					 FIL_STANDARD,
 					 &fsa,
-					 (ULONG) sizeof(FILESTATUS3L)) ||
+					 (ULONG) sizeof(FILESTATUS3)) ||
 		    !(fsa.attrFile & FILE_DIRECTORY))
 		      goto Abort;
 		  }
@@ -486,13 +486,13 @@ VOID Action(VOID * args)
 	      case IDM_OPENDETAILS:
 	      case IDM_OPENTREE:
 		{
-		  FILESTATUS3L fsa;
+		  FILESTATUS3 fsa;
 
 		  DosError(FERR_DISABLEHARDERR);
 		  if (DosQueryPathInfo(wk->li->list[x],
-				       FIL_STANDARDL,
+				       FIL_STANDARD,
 				       &fsa,
-				       (ULONG) sizeof(FILESTATUS3L)) ||
+				       (ULONG) sizeof(FILESTATUS3)) ||
 		  !(fsa.attrFile & FILE_DIRECTORY))
 		    break;
 		}
@@ -1247,7 +1247,7 @@ VOID MassAction(VOID * args)
 	      strcat(szBuffer, " ");
 	      x = 0;
 	      while (wk->li->list[x]) {
-		FILESTATUS3L fsa;
+		FILESTATUS3 fsa;
 		// BOOL spaces;
 		// if (needs_quoting(wk->li->list[x])) {
 		//   spaces = TRUE;
@@ -1256,11 +1256,11 @@ VOID MassAction(VOID * args)
 		// else
 		//   spaces = FALSE;
 		// strcat(szBuffer, wk->li->list[x]);
-		memset(&fsa, 0, sizeof(FILESTATUS3L));
+		memset(&fsa, 0, sizeof(FILESTATUS3));
 		DosError(FERR_DISABLEHARDERR);
 		DosQueryPathInfo(wk->li->list[x],
-				 FIL_STANDARDL,
-				 &fsa, (ULONG) sizeof(FILESTATUS3L));
+				 FIL_STANDARD,
+				 &fsa, (ULONG) sizeof(FILESTATUS3));
 		if (fsa.attrFile & FILE_DIRECTORY) {
 		  BldQuotedFullPathName(szBuffer + strlen(szBuffer), wk->li->list[x], "*");
 		  // if (szBuffer[strlen(szBuffer) - 1] != '\\')
@@ -1447,7 +1447,7 @@ VOID MassAction(VOID * args)
 	      CHECKLIST cl;
 	      INT isdir = 0, sysdir = 0, ro = 0, hs = 0;
 	      register INT x;
-	      FILESTATUS3L fsa;
+	      FILESTATUS3 fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
 	      APIRET error;
 
@@ -1462,8 +1462,8 @@ VOID MassAction(VOID * args)
 		}
 		DosError(FERR_DISABLEHARDERR);
 		if (DosQueryPathInfo(wk->li->list[x],
-				     FIL_STANDARDL, &fsa,
-				     (ULONG) sizeof(FILESTATUS3L))) {
+				     FIL_STANDARD, &fsa,
+				     (ULONG) sizeof(FILESTATUS3))) {
 		  wk->li->list = RemoveFromList(wk->li->list,
 						wk->li->list[x]);
 		  if (!wk->li->list)
@@ -1549,8 +1549,8 @@ VOID MassAction(VOID * args)
 		fsa.attrFile = 0;
 		DosError(FERR_DISABLEHARDERR);
 		DosQueryPathInfo(wk->li->list[x],
-				 FIL_STANDARDL,
-				 &fsa, (ULONG) sizeof(FILESTATUS3L));
+				 FIL_STANDARD,
+				 &fsa, (ULONG) sizeof(FILESTATUS3));
 		if (fsa.attrFile & FILE_DIRECTORY) {
 		  sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);

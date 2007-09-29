@@ -352,7 +352,7 @@ CHAR default_disk(VOID)
 
 APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
 {
-  FILEFINDBUF3L fb;
+  FILEFINDBUF3 fb;
   ULONG nm;
   HDIR hdir;
   APIRET rc = 0;
@@ -363,7 +363,7 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
   va_end(ap);
 
   DosError(FERR_DISABLEHARDERR);
-  if (!xDosFindFirst(oldname)) {
+  if (!DosFindFirst(oldname)) {
     do {
 
       /* build target name */
@@ -383,7 +383,7 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
       else
 	rc = docopyf(type,, "%s",);	/* copy file */
       DosError(FERR_DISABLEHARDERR);
-    } while (!rc && !xDosFindNext());
+    } while (!rc && !DosFindNext());
     DosFindClose(hdir);
   }
   else
@@ -661,13 +661,13 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
 INT make_deleteable(CHAR * filename)
 {
   INT ret = -1;
-  FILESTATUS3L fsi;
+  FILESTATUS3 fsi;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsi, sizeof(fsi))) {
+  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi))) {
     fsi.attrFile = 0;
     DosError(FERR_DISABLEHARDERR);
-    if (!xDosSetPathInfo(filename, FIL_STANDARDL, &fsi, sizeof(fsi), 0))
+    if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
       ret = 0;
   }
   return ret;
@@ -677,7 +677,7 @@ INT wipeallf(CHAR *string, ...)
 {
   /* unlink everything from directory on down... */
 
-  FILEFINDBUF3L *f;
+  FILEFINDBUF3 *f;
   HDIR search_handle;
   ULONG num_matches;
   CHAR *p, *ss, *str;
@@ -735,7 +735,7 @@ INT wipeallf(CHAR *string, ...)
   }
 
   ss = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
-  f = xmalloc(sizeof(FILEFINDBUF3L), pszSrcFile, __LINE__);
+  f = xmalloc(sizeof(FILEFINDBUF3), pszSrcFile, __LINE__);
   if (!ss || !f) {
     xfree(ss);
     xfree(f);
@@ -747,9 +747,9 @@ INT wipeallf(CHAR *string, ...)
   num_matches = 1;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!xDosFindFirst(str, &search_handle, FILE_NORMAL | FILE_DIRECTORY |
+  if (!DosFindFirst(str, &search_handle, FILE_NORMAL | FILE_DIRECTORY |
 		     FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
-		     f, sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
+		     f, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
 
     strcpy(ss, s);
     p = &ss[strlen(ss)];
@@ -777,10 +777,10 @@ INT wipeallf(CHAR *string, ...)
 	    return rc;
 	}
       }
-      num_matches = 1L;
+      num_matches = 1;
       DosError(FERR_DISABLEHARDERR);
-    } while (!xDosFindNext(search_handle, f, sizeof(FILEFINDBUF3L),
-			   &num_matches));
+    } while (!DosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
+			  &num_matches));
     DosFindClose(search_handle);
   }
 
@@ -794,7 +794,7 @@ INT unlink_allf(CHAR * string, ...)
 {
   /* wildcard delete */
 
-  FILEFINDBUF3L *f;
+  FILEFINDBUF3 *f;
   HDIR search_handle;
   ULONG num_matches;
   CHAR *p, *ss, *str;
@@ -829,7 +829,7 @@ INT unlink_allf(CHAR * string, ...)
     *s = 0;
 
   ss = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
-  f = xmalloc(sizeof(FILEFINDBUF3L), pszSrcFile, __LINE__);
+  f = xmalloc(sizeof(FILEFINDBUF3), pszSrcFile, __LINE__);
   if (!ss || !f) {
     xfree(ss);
     xfree(f);
@@ -841,8 +841,8 @@ INT unlink_allf(CHAR * string, ...)
   num_matches = 1;
 
   DosError(FERR_DISABLEHARDERR);
-  if (!xDosFindFirst(str, &search_handle, FILE_NORMAL, f,
-		     sizeof(FILEFINDBUF3L), &num_matches, FIL_STANDARDL)) {
+  if (!DosFindFirst(str, &search_handle, FILE_NORMAL, f,
+        	    sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
 
     strcpy(ss, s);
     p = &ss[strlen(ss)];
@@ -852,8 +852,8 @@ INT unlink_allf(CHAR * string, ...)
       unlinkf("%s", ss);
       num_matches = 1;
       DosError(FERR_DISABLEHARDERR);
-    } while (!xDosFindNext(search_handle, f, sizeof(FILEFINDBUF3L),
-			   &num_matches));
+    } while (!DosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
+			  &num_matches));
     DosFindClose(search_handle);
   }
 

@@ -104,9 +104,9 @@ CHAR *searchapath(CHAR *pathvar, CHAR *filename)
   if (strchr(filename, '\\') || strchr(filename, '/')
       || strchr(filename, ':')) {
 
-    FILESTATUS3L fsa;
+    FILESTATUS3 fsa;
 
-    if (!DosQueryPathInfo(filename, FIL_STANDARDL, &fsa, (ULONG) sizeof(fsa)))
+    if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)))
       return filename;
     *fbuf = 0;
     return fbuf;

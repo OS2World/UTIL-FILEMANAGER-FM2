@@ -790,7 +790,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case MLE_EXPORTFILE:
       if (!MLEgetreadonly(hwndMLE)) {
 
-	LONGLONG oldsize;
+	ULONG oldsize;
 
 	if (!*vw->exportfilename ||
 	    strchr(vw->exportfilename, '?') ||
@@ -808,8 +808,8 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  fp = xfopen(vw->exportfilename, "r+", pszSrcFile, __LINE__);
 	  if (fp) {
-	    oldsize = _filelengthi64(fileno(fp));
-	    DosSetFileSizeL(fileno(fp), 0);
+	    oldsize = filelength(fileno(fp));
+	    DosSetFileSize(fileno(fp), 0);
 	    fclose(fp);
 	  }
 	}
@@ -822,7 +822,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__, "MLEexportfile");
 	  fp = xfopen(vw->exportfilename, "r+", pszSrcFile, __LINE__);
 	  if (fp) {
-	    DosSetFileSizeL(fileno(fp), oldsize);
+	    DosSetFileSize(fileno(fp), oldsize);
 	    fclose(fp);
 	  }
 	}

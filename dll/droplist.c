@@ -96,11 +96,11 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 	}
       }
       {					/* be sure that file/directory is accessible */
-	FILESTATUS3L fsa3;
+	FILESTATUS3 fsa3;
 
 	DosError(FERR_DISABLEHARDERR);
 	if (DosQueryPathInfo(buffer1,
-			     FIL_STANDARDL,
+			     FIL_STANDARD,
 			     &fsa3,
 			     sizeof(fsa3)) ||
 	    fsa3.attrFile & FILE_DIRECTORY) {

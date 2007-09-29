@@ -1727,7 +1727,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_ENTER:
     {
-      FILEFINDBUF3L ffb;
+      FILEFINDBUF3 ffb;
       HDIR hDir = HDIR_CREATE;
       ULONG nm = 1;
       APIRET status;
@@ -1887,11 +1887,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		IsValidDrive(toupper(*pci->pszFileName)));
 	if (!IsOk) {
 	  DosError(FERR_DISABLEHARDERR);
-	  status = xDosFindFirst(pci->pszFileName, &hDir,
-				 FILE_NORMAL | FILE_DIRECTORY |
-				 FILE_ARCHIVED | FILE_READONLY |
-				 FILE_HIDDEN | FILE_SYSTEM,
-				 &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
+	  status = DosFindFirst(pci->pszFileName, &hDir,
+				FILE_NORMAL | FILE_DIRECTORY |
+				FILE_ARCHIVED | FILE_READONLY |
+				FILE_HIDDEN | FILE_SYSTEM,
+				&ffb, sizeof(ffb), &nm, FIL_STANDARD);
 	  priority_bumped();
 	}
 	if (!status) {

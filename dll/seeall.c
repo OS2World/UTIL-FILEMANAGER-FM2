@@ -464,7 +464,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcat(szBuffer, " ");
 	  x = 0;
 	  while (list[x]) {
-	    FILESTATUS3L fsa;
+	    FILESTATUS3 fsa;
 	    // BOOL spaces;
 	    // if (needs_quoting(list[x])) {
 	    //   spaces = TRUE;
@@ -475,7 +475,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    // strcat(szBuffer, list[x]);
 	    memset(&fsa, 0, sizeof(fsa));
 	    DosError(FERR_DISABLEHARDERR);
-	    DosQueryPathInfo(list[x], FIL_STANDARDL, &fsa, sizeof(fsa));
+	    DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa));
 	    if (fsa.attrFile & FILE_DIRECTORY) {
 	      BldQuotedFullPathName(szBuffer + strlen(szBuffer),
 				    list[x], "*");
@@ -887,7 +887,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  CHECKLIST cl;
 	  INT isdir = 0, sysdir = 0, ro = 0, hs = 0;
-	  FILESTATUS3L fsa;
+	  FILESTATUS3 fsa;
 	  CHAR prompt[CCHMAXPATH * 3];
 	  APIRET error;
 
@@ -900,7 +900,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      continue;
 	    }
 	    DosError(FERR_DISABLEHARDERR);
-	    if (DosQueryPathInfo(list[x], FIL_STANDARDL, &fsa, sizeof(fsa))) {
+	    if (DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa))) {
 	      list = RemoveFromList(list, list[x]);
 	      if (!list)
 		break;
@@ -982,7 +982,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  for (x = 0; list[x]; x++) {
 	    fsa.attrFile = 0;
 	    DosError(FERR_DISABLEHARDERR);
-	    DosQueryPathInfo(list[x], FIL_STANDARDL, &fsa, sizeof(fsa));
+	    DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa));
 	    if (fsa.attrFile & FILE_DIRECTORY) {
 	      sprintf(prompt, GetPString(IDS_DELETINGTEXT), list[x]);
 	      WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS),

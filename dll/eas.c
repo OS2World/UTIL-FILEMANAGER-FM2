@@ -1183,7 +1183,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
   /* load eas from disk into HOLDFEA linked list */
 
   HOLDFEA *head = NULL, *info, *last = NULL;
-  FILESTATUS4L fsa4;
+  FILESTATUS4 fsa4;
   HFILE handle;
   ULONG action;
   APIRET rc;
@@ -1198,7 +1198,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 			   OPEN_ACCESS_READWRITE, (PEAOP2)0)) {
     if (ishandle)
       handle = *(HFILE *) filename;
-    if (!DosQueryFileInfo(handle, FIL_QUERYEASIZEL, (PVOID)&fsa4,
+    if (!DosQueryFileInfo(handle, FIL_QUERYEASIZE, (PVOID)&fsa4,
 			  (ULONG) sizeof(fsa4)) &&
 	fsa4.cbList > 4)
     {
@@ -1288,7 +1288,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
     //Runtime_Error(pszSrcFile, __LINE__, "why here", filename);
     //03 AUG 07 GKY This isn't an error it is for processing Readonly files
     /* try it without opening it */
-    if (!DosQueryPathInfo(filename, FIL_QUERYEASIZEL, (PVOID) & fsa4,
+    if (!DosQueryPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & fsa4,
 			  (ULONG) sizeof(fsa4)) &&
 	fsa4.cbList > 4)
     {

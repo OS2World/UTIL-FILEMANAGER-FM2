@@ -433,7 +433,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
-	      DosSetFileSizeL((HFILE) fileno(fp), 0);
+	      DosSetFileSize((HFILE) fileno(fp), 0);
 	    else
 	      fseek(fp, 0, SEEK_END);
 	    while (pci && (INT) pci != -1) {
@@ -784,7 +784,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  else {
 	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
-	      DosSetFileSizeL((HFILE) fileno(fp), 0);
+	      DosSetFileSize((HFILE) fileno(fp), 0);
 	    else
 	      fseek(fp, 0, SEEK_END);
 	    while (list[x]) {

@@ -114,12 +114,12 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
   HWND hDrop = 0;
   DRAGIMAGE fakeicon;
   PDRAGINFO pDInfo;
-  FILESTATUS3L fs3;
+  FILESTATUS3 fs3;
   CHAR szDir[CCHMAXPATH], szFile[CCHMAXPATH], *p;
 
   if (filename && *filename) {
     if ((IsRoot(filename) && IsValidDrive(*filename)) ||
-	!DosQueryPathInfo(filename, FIL_STANDARDL, &fs3, sizeof(fs3))) {
+	!DosQueryPathInfo(filename, FIL_STANDARD, &fs3, sizeof(fs3))) {
       strcpy(szDir, filename);
       p = szDir;
       while (*p) {
@@ -587,7 +587,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
   ULONG ulNumfiles = 0, ulNumDIAlloc = 0, ulSelect, ulNumIcon = 0;
   CHAR szFile[CCHMAXPATH], szBuffer[CCHMAXPATH];
   DRAGIMAGE *paDImgIcons = NULL, *pDImg;
-  FILESTATUS3L fs3;
+  FILESTATUS3 fs3;
   BOOL ok;
   DIRCNRDATA *dcd;
 
@@ -598,7 +598,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 
   for (ulSelect = 0; list[ulSelect]; ulSelect++) {
     if ((!IsRoot(list[ulSelect]) || !IsValidDrive(*list[ulSelect])) &&
-	DosQueryPathInfo(list[ulSelect], FIL_STANDARDL, &fs3, sizeof(fs3)))
+	DosQueryPathInfo(list[ulSelect], FIL_STANDARD, &fs3, sizeof(fs3)))
       continue;
     strcpy(szBuffer, list[ulSelect]);
     p = strrchr(szBuffer, '\\');
