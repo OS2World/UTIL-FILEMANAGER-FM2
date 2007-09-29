@@ -453,8 +453,8 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 {
   // process all matching files in a directory
 
-  PFILEFINDBUF4 pffbArray;
-  PFILEFINDBUF4 pffbFile;
+  PFILEFINDBUF4L pffbArray;
+  PFILEFINDBUF4L pffbFile;
   ULONG x;
   HDIR findHandle = HDIR_CREATE;
   ULONG ulFindCnt;
@@ -487,13 +487,13 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   // step through matching files
   DosError(FERR_DISABLEHARDERR);
   ulFindCnt = FilesToGet;
-  rc = DosFindFirst(szFindPath,
-		    &findHandle,
-		    FILE_NORMAL | grep->attrFile | grep->antiattr,
-		    pffbArray,
-		    ulBufBytes,
-		    &ulFindCnt,
-		    FIL_QUERYEASIZE);
+  rc = xDosFindFirst(szFindPath,
+		     &findHandle,
+		     FILE_NORMAL | grep->attrFile | grep->antiattr,
+		     pffbArray,
+		     ulBufBytes,
+		     &ulFindCnt,
+		     FIL_QUERYEASIZEL);
   if (!rc) {
     do {
       // Process each file that matches the mask
@@ -529,13 +529,13 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	}
 	if (!pffbFile->oNextEntryOffset)
 	  break;
-	pffbFile = (PFILEFINDBUF4)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
       if (*grep->stopflag)
 	break;
       DosSleep(0); //26 Aug 07 GKY 1
       ulFindCnt = FilesToGet;
-      rc = DosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
     } while (!rc);
 
     DosFindClose(findHandle);
