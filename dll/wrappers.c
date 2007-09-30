@@ -39,7 +39,50 @@ APIRET xDosFindFirst(PSZ    pszFileSpec,
                      ULONG  ulInfoLevel)
 {
     APIRET rc;
-
+    if (fNoLargeFileSupport) {
+        switch (ulInfoLevel) {
+    case FIL_STANDARDL: {
+      FILEFINDBUF3 ff3;
+      ff3 = *(PFILEFINDBUF3)pfindbuf;
+      ulInfoLevel = FIL_STANDARD;
+      rc = DosFindFirst(pszFileSpec, phdir, flAttribute, &ff3, cbBuf,
+                        pcFileNames, ulInfoLevel);
+      *(PFILEFINDBUF3)pfindbuf = ff3;   // Copy aligned data
+      ((PFILEFINDBUF3L)pfindbuf) -> cbFile = ff3.cbFile;  // Copy unaligned data
+      ((PFILEFINDBUF3L)pfindbuf) -> cbFileAlloc = ff3.cbFileAlloc;
+      ((PFILEFINDBUF3L)pfindbuf) -> attrFile = ff3.attrFile;
+      ((PFILEFINDBUF3L)pfindbuf) -> cchName = ff3.cchName;
+      ((PFILEFINDBUF3L)pfindbuf) -> achName[CCHMAXPATHCOMP] = *ff3.achName;
+      break;
+    }
+    case  FIL_QUERYEASIZEL:{
+      FILEFINDBUF4 ff4;
+      ff4 = *(PFILEFINDBUF4)pfindbuf;
+      ulInfoLevel = FIL_QUERYEASIZE;
+      rc = DosFindFirst(pszFileSpec, phdir, flAttribute, &ff4, cbBuf,
+                        pcFileNames, ulInfoLevel);
+      //(PFILEFINDBUF4L)pfindbuf = (PFILEFINDBUF4L)pff4;   // Copy aligned data
+      ((PFILEFINDBUF4L)pfindbuf) -> oNextEntryOffset = ff4.oNextEntryOffset;
+      ((PFILEFINDBUF4L)pfindbuf) -> fdateCreation = ff4.fdateCreation;
+      ((PFILEFINDBUF4L)pfindbuf) -> ftimeCreation = ff4.ftimeCreation;
+      ((PFILEFINDBUF4L)pfindbuf) -> fdateLastAccess = ff4.fdateLastAccess;
+      ((PFILEFINDBUF4L)pfindbuf) -> ftimeLastAccess = ff4.ftimeLastAccess;
+      ((PFILEFINDBUF4L)pfindbuf) -> fdateLastWrite = ff4.fdateLastWrite;
+      ((PFILEFINDBUF4L)pfindbuf) -> ftimeLastWrite = ff4.ftimeLastWrite;
+      ((PFILEFINDBUF4L)pfindbuf) -> cbFile = ff4.cbFile;  // Copy unaligned data
+      ((PFILEFINDBUF4L)pfindbuf) -> cbFileAlloc = ff4.cbFileAlloc;
+      ((PFILEFINDBUF4L)pfindbuf) -> attrFile = ff4.attrFile;
+      ((PFILEFINDBUF4L)pfindbuf) -> cbList = ff4.cbList;
+      ((PFILEFINDBUF4L)pfindbuf) -> cchName = ff4.cchName;
+      ((PFILEFINDBUF4L)pfindbuf) -> achName[CCHMAXPATHCOMP] = *ff4.achName;
+      break;
+    }
+    default:
+	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
+        rc = ERROR_INVALID_PARAMETER;
+        }
+    }
+    else
     rc = DosFindFirst(pszFileSpec, phdir, flAttribute, pfindbuf, cbBuf,
                       pcFileNames, ulInfoLevel);
     return rc;
@@ -51,8 +94,34 @@ APIRET xDosFindNext(HDIR   hDir,
                     PULONG pcFilenames)
 {
   APIRET rc;
+  if (fNoLargeFileSupport) {
+    if (((PFILEFINDBUF4L)pfindbuf)->cbList) {
+      FILEFINDBUF4 ff4;
+      ff4 = *(PFILEFINDBUF4)pfindbuf;
+      rc = DosFindNext(hDir, &ff4, cbfindbuf, pcFilenames);
+      *(PFILEFINDBUF4)pfindbuf = ff4;   // Copy aligned data
+      ((PFILEFINDBUF4L)pfindbuf) -> cbFile = ff4.cbFile;  // Copy unaligned data
+      ((PFILEFINDBUF4L)pfindbuf) -> cbFileAlloc = ff4.cbFileAlloc;
+      ((PFILEFINDBUF4L)pfindbuf) -> attrFile = ff4.attrFile;
+      ((PFILEFINDBUF4L)pfindbuf) -> cbList = ff4.cbList;
+      ((PFILEFINDBUF4L)pfindbuf) -> cchName = ff4.cchName;
+      ((PFILEFINDBUF4L)pfindbuf) -> achName[CCHMAXPATHCOMP] = *ff4.achName;
+    }
+    else {
+      FILEFINDBUF3 ff3;
+      ff3 = *(PFILEFINDBUF3)pfindbuf;
+      rc = DosFindNext(hDir, &ff3, cbfindbuf, pcFilenames);
+      *(PFILEFINDBUF3)pfindbuf = ff3;   // Copy aligned data
+      ((PFILEFINDBUF3L)pfindbuf) -> cbFile = ff3.cbFile;  // Copy unaligned data
+      ((PFILEFINDBUF3L)pfindbuf) -> cbFileAlloc = ff3.cbFileAlloc;
+      ((PFILEFINDBUF3L)pfindbuf) -> attrFile = ff3.attrFile;
+      ((PFILEFINDBUF3L)pfindbuf) -> cchName = ff3.cchName;
+      ((PFILEFINDBUF3L)pfindbuf) -> achName[CCHMAXPATHCOMP] = *ff3.achName;
+    }
+  }
+  else
+    rc = DosFindNext(hDir, pfindbuf, cbfindbuf, pcFilenames);
 
-  rc = DosFindNext(hDir, pfindbuf, cbfindbuf, pcFilenames);
   return rc;
 }
 
@@ -74,25 +143,37 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
         	       ULONG ulInfoLevel,
 		       PVOID pInfoBuf,
 		       ULONG cbInfoBuf,
-		       ULONG flOptions)
+                       ULONG flOptions)
 {
-    APIRET rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
     FILESTATUS3 alt_fs3;
     FILESTATUS3L alt_fs3L;
     EAOP2 alt_eaop2;
+    BOOL large = FALSE;
+    APIRET rc;
+    if (fNoLargeFileSupport && ulInfoLevel == FIL_STANDARDL){
+      large = TRUE;
+      ulInfoLevel = FIL_STANDARD;
+    }
+    rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
     if (rc == ERROR_INVALID_NAME) {
       switch (ulInfoLevel) {
         case FIL_STANDARD:
 	  alt_fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy
-	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3, sizeof(alt_fs3), flOptions);
+          rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3, cbInfoBuf, flOptions);
+          if (fNoLargeFileSupport && large) {
+            *(PFILESTATUS3)pInfoBuf = alt_fs3;   // Copy aligned data
+            ((PFILESTATUS3L)pInfoBuf) -> cbFile = alt_fs3.cbFile;  // Copy unaligned data
+            ((PFILESTATUS3L)pInfoBuf) -> cbFileAlloc = alt_fs3.cbFileAlloc;
+            ((PFILESTATUS3L)pInfoBuf) -> attrFile = alt_fs3.attrFile;
+          }
           break;
         case FIL_STANDARDL:
           alt_fs3L = *(PFILESTATUS3L)pInfoBuf;	// Copy
-          rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3L, sizeof(alt_fs3L), flOptions);
+          rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_fs3L, cbInfoBuf, flOptions);
           break;
         case FIL_QUERYEASIZE:
           alt_eaop2 = *(PEAOP2)pInfoBuf;	// Copy
-          rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_eaop2, sizeof(alt_eaop2), flOptions);
+          rc = DosSetPathInfo(pszPathName, ulInfoLevel, &alt_eaop2, cbInfoBuf, flOptions);
           break;
       default:
 	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
@@ -102,6 +183,39 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
     return rc;
 }
 
+APIRET xDosQueryPathInfo (PSZ pszPathName, ULONG ulInfoLevel, PVOID pInfoBuf, ULONG cbInfoBuf)
+{
+  FILESTATUS3 alt_fs3;
+  FILESTATUS4 alt_fs4;
+  APIRET rc;
+  if (fNoLargeFileSupport){
+  switch (ulInfoLevel) {
+    case FIL_STANDARDL:
+	  alt_fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy
+          rc = DosQueryPathInfo(pszPathName, ulInfoLevel, &alt_fs3, cbInfoBuf);
+          *(PFILESTATUS3)pInfoBuf = alt_fs3;   // Copy aligned data
+          ((PFILESTATUS3L)pInfoBuf) -> cbFile = alt_fs3.cbFile;  // Copy unaligned data
+          ((PFILESTATUS3L)pInfoBuf) -> cbFileAlloc = alt_fs3.cbFileAlloc;
+          ((PFILESTATUS3L)pInfoBuf) -> attrFile = alt_fs3.attrFile;
+          break;
+    case FIL_QUERYEASIZEL:
+          alt_fs4 = *(PFILESTATUS4)pInfoBuf;	// Copy
+          rc = DosQueryPathInfo(pszPathName, ulInfoLevel, &alt_fs4, cbInfoBuf);
+          *(PFILESTATUS4)pInfoBuf = alt_fs4;   // Copy aligned data
+          ((PFILESTATUS4L)pInfoBuf) -> cbFile = alt_fs4.cbFile;  // Copy unaligned data
+          ((PFILESTATUS4L)pInfoBuf) -> cbFileAlloc = alt_fs4.cbFileAlloc;
+          ((PFILESTATUS4L)pInfoBuf) -> attrFile = alt_fs4.attrFile;
+          ((PFILESTATUS4L)pInfoBuf) -> cbList = alt_fs4.cbList;
+          break;
+      default:
+	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
+	rc = ERROR_INVALID_PARAMETER;
+      } // switch
+  }
+  else
+    DosQueryPathInfo (pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf);
+  return rc;
+}
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 	   UINT uiLineNumber)
 {

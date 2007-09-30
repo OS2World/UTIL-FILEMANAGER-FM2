@@ -1401,7 +1401,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
-  fSubjectLengthMax;
+  fSubjectLengthMax, fNoLargeFileSupport;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslongname, detailsea, detailssize, detailssubject,
   detailslwdate, detailslwtime, detailsattr, detailsicon;
