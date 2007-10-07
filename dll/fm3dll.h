@@ -1327,7 +1327,8 @@ APIRET xDosFindFirst(PSZ pszFileSpec,
 APIRET xDosFindNext(HDIR   hDir,
                     PVOID  pfindbuf,
                     ULONG  cbfindbuf,
-                    PULONG pcFilenames);
+                    PULONG pcFilenames,
+		    ULONG  ulInfoLevel);	// 06 Oct 07 SHL Added
 APIRET xDosSetPathInfo(PSZ   pszPathName,
                        ULONG ulInfoLevel,
                        PVOID pInfoBuf,
