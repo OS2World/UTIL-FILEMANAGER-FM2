@@ -161,7 +161,8 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
   ULONG l;
   ARC_TYPE *info;
   CHAR *p;
-  CHAR buffer[80];
+  // CHAR buffer[80];
+  CHAR buffer[4096];			// 06 Oct 07 SHL Protect against NTFS defect
 
   if (!arcsigsloaded)
     load_archivers();

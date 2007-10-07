@@ -144,7 +144,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	    SnapShot(mask, fp, recurse);
 	  }
 	  ulFindCnt = 1;
-	} while (!xDosFindNext(hdir, pffb, sizeof(FILEFINDBUF4L), &ulFindCnt));
+	} while (!xDosFindNext(hdir, pffb, sizeof(FILEFINDBUF4L), &ulFindCnt, FIL_QUERYEASIZEL));
 	DosFindClose(hdir);
       }
       free(mask);
@@ -815,7 +815,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
       } // for
       DosError(FERR_DISABLEHARDERR);
       ulFindCnt = FilesToGet;
-      rc = xDosFindNext(hDir, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(hDir, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
     } while (!rc);
 
 Abort:

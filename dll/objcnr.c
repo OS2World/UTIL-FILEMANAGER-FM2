@@ -190,7 +190,7 @@ static VOID ProcessDir(HWND hwndCnr,
       if (*stopflag)
 	break;
       ulFindCnt = ulFindMax;
-      rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
     } // while
     DosFindClose(hdir);
   }

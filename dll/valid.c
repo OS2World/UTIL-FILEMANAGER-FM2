@@ -863,7 +863,8 @@ BOOL TestBinary(CHAR * filename)
   ULONG ulAction;
   ULONG len;
   APIRET rc;
-  CHAR buff[512];
+  // CHAR buff[512];
+  CHAR buff[4096];			// 06 Oct 07 SHL protect against NTFS defect
 
   if (filename) {
     if (!DosOpen(filename, &handle, &ulAction, 0, 0,

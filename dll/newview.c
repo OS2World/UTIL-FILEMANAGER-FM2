@@ -23,7 +23,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY Fixed fast viewer text load failure
   28 Aug 07 GKY Reversed horizontal scrollbar behavior to be present for unwrapped text and absent for wrapped text & hex.
-
+  14 Sep 07 SHL Another attempt to correct the fast viewer text load failure
 
 ***********************************************************************/
 
@@ -1092,11 +1092,11 @@ static VOID ReLineThread(VOID * args)
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
-      if (ad) {
-        if (ad->text && ad->textsize && !ad->hex)
-          DosSleep(32);   // 26 Aug 07 GKY Fixes failure to load text file in some cases
-	ad->relining = TRUE;
+      if (ad)
+	Runtime_Error(pszSrcFile, __LINE__, "no data");
+      else {
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
+	  ad->relining = TRUE;
 	  ad->busy++;
 	  ad->maxx = 0;
 	  if (ad->text && ad->textsize) {
@@ -1184,9 +1184,9 @@ static VOID ReLineThread(VOID * args)
 
 		    for (x = 0; x < ad->numlines; x++) {
 		      if ((LONG) (Rectl.yTop -
-		        	  (ad->lMaxHeight * (((x + 1) -
-		        			      ad->topline) + 1))) < 0)
-		        break;
+				  (ad->lMaxHeight * (((x + 1) -
+						      ad->topline) + 1))) < 0)
+			break;
 		      PaintLine(hwnd, ad->hps, x, 1, &Rectl);
 		    }
 		  }
@@ -1235,8 +1235,8 @@ static VOID ReLineThread(VOID * args)
 	  PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	  PostMsg(hwnd, UM_SETUP4, MPVOID, MPVOID);
 	  ad->busy--;
-	}
-      }
+	} // if got sim
+      } // if got VIEWDATA
       WinDestroyMsgQueue(hmq2);
     }
     DecrThreadUsage();
@@ -1313,7 +1313,10 @@ static VOID LoadFileThread(VOID * args)
 		       GetPString(IDS_ZEROLENGTHTEXT), ad->filename);
 	      }
 	      else {
-		ad->text = xmalloc(len + 2, pszSrcFile, __LINE__);
+		// 06 Oct 07 SHL Protect against 4096 NFTS driver small buffer defect
+		ad->text = xmalloc(min(len + 2, 4096),
+				   pszSrcFile,
+				   __LINE__);
 		if (ad->text) {
 		  *ad->text = 0;
 		  ad->text[len] = 0;
@@ -1870,13 +1873,13 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       BOOL invalidate = FALSE;
 
       if (ad->wrapon || ad->hex) { // GKY reverse case where hscroll bar is presnt
-        if (WinQueryWindow(ad->hhscroll, QW_PARENT) == ad->hwndFrame) {
-          invalidate = TRUE;
-          WinSetOwner(ad->hhscroll, HWND_OBJECT);
-          WinSetParent(ad->hhscroll, HWND_OBJECT, TRUE);
-          ad->maxx = 0;
-          ad->horzscroll = 0;
-        }
+	if (WinQueryWindow(ad->hhscroll, QW_PARENT) == ad->hwndFrame) {
+	  invalidate = TRUE;
+	  WinSetOwner(ad->hhscroll, HWND_OBJECT);
+	  WinSetParent(ad->hhscroll, HWND_OBJECT, TRUE);
+	  ad->maxx = 0;
+	  ad->horzscroll = 0;
+	}
       }
       else {
 	if (WinQueryWindow(ad->hhscroll, QW_PARENT) != ad->hwndFrame) {

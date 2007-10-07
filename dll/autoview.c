@@ -301,7 +301,10 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    HFILE handle;
             ULONG olen, ibufflen, action, obufflen, l;
-	    CHAR *ibuff, *obuff, *p, buffer[80];
+	    CHAR *ibuff, *obuff, *p;
+	    // 06 Oct 07 SHL Protect against NTFS driver small buffer defect
+	    // CHAR buffer[80];
+	    CHAR buffer[4096];
 	    ARC_TYPE *info;
 
 	    if (!DosOpen((CHAR *) mp1,
@@ -313,16 +316,19 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 OPEN_FLAGS_FAIL_ON_ERROR | OPEN_FLAGS_NOINHERIT |
 			 OPEN_FLAGS_RANDOMSEQUENTIAL | OPEN_SHARE_DENYNONE |
 			 OPEN_ACCESS_READONLY, 0)) {
-	      ibufflen = (AutoviewHeight < 96) ? 512 : 3072;
-	      ibuff = xmalloc(ibufflen + 2, pszSrcFile, __LINE__);
+	      ibufflen = AutoviewHeight < 96 ? 512 : 3072;
+	      // 06 Oct 07 SHL protect against NTFS driver small buffer defect
+	      // ibuff = xmalloc(ibufflen + 2, pszSrcFile, __LINE__);
+	      ibuff = xmalloc(min(ibufflen + 2, 4096), pszSrcFile, __LINE__);
 	      if (ibuff) {
 		// Depends on CreateHexDump line width
 		obufflen = (ibufflen / 16) * (6 + 3 * 16 + 1 + 16 + 1) + 80;
 		obuff = xmalloc(obufflen + 1, pszSrcFile, __LINE__);
 		if (obuff) {
 		  *obuff = 0;
-		  if (!DosRead(handle,
-			       ibuff, ibufflen, &ibufflen) && ibufflen) {
+		  if (!DosRead(handle, ibuff, ibufflen, &ibufflen) &&
+			       ibufflen)
+		  {
 		    ibuff[ibufflen] = 0;
 		    p = obuff;
 		    if (IsBinary(ibuff, ibufflen)) {

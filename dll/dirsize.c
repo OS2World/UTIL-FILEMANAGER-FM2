@@ -276,7 +276,7 @@ static BOOL ProcessDir(HWND hwndCnr,
       DosSleep(0);
       ulFindCnt = FilesToGet;
       DosError(FERR_DISABLEHARDERR);
-      rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
     } // while more found
 
     DosFindClose(hdir);

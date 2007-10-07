@@ -461,7 +461,8 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   CHAR szFindPath[CCHMAXPATH];
   PSZ p;
   APIRET rc;
-  ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4);
+  // 06 Oct 07 SHL Correct size for xDosFindFirst
+  ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4L);
   static BOOL fDone;
 
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
@@ -535,7 +536,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	break;
       DosSleep(0); //26 Aug 07 GKY 1
       ulFindCnt = FilesToGet;
-      rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt);
+      rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
     } while (!rc);
 
     DosFindClose(findHandle);

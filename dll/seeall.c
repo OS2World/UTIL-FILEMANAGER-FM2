@@ -1997,7 +1997,11 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
       if (ad->stopflag)
 	break;
       ulFindCnt = ulFindMax;
-      rc = xDosFindNext(hdir, pffbArray, sizeof(FILEFINDBUF3L) * ulFindCnt, &ulFindCnt);
+      rc = xDosFindNext(hdir,
+		        pffbArray,
+			sizeof(FILEFINDBUF3L) * ulFindCnt,
+			&ulFindCnt,
+			FIL_STANDARDL);
     } while (!rc);
     DosFindClose(hdir);
   }

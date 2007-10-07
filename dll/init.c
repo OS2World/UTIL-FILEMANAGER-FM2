@@ -96,14 +96,14 @@ VOID FindSwapperDat(VOID)
 		      &hdir,
 		      FILE_NORMAL | FILE_ARCHIVED |
 		      FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-                      &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
-    if (rc && rc != 2 && rc !=3){
+		      &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
+    if (rc && rc != ERROR_FILE_NOT_FOUND && rc != ERROR_PATH_NOT_FOUND) {
       FILEFINDBUF3 ffb;
       rc = DosFindFirst(SwapperDat,
-		        &hdir,
-		        FILE_NORMAL | FILE_ARCHIVED |
-		        FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-                        &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+			&hdir,
+			FILE_NORMAL | FILE_ARCHIVED |
+			FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+			&ffb, sizeof(ffb), &nm, FIL_STANDARD);
       fNoLargeFileSupport = TRUE;
     }
     if (!rc) {
@@ -166,17 +166,17 @@ VOID FindSwapperDat(VOID)
 				&hdir,
 				FILE_NORMAL | FILE_ARCHIVED |
 				FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-                                &ffb, sizeof(ffb), &nm, FIL_STANDARD);
-              if (rc){
-                FILEFINDBUF3 ffb;
-                rc = DosFindFirst(SwapperDat,
-		                  &hdir,
-		                  FILE_NORMAL | FILE_ARCHIVED |
-		                  FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-                                  &ffb, sizeof(ffb), &nm, FIL_STANDARD);
-                fNoLargeFileSupport = TRUE;
-              }
-              if (!rc) {
+				&ffb, sizeof(ffb), &nm, FIL_STANDARD);
+	      if (rc){
+		FILEFINDBUF3 ffb;
+		rc = DosFindFirst(SwapperDat,
+				  &hdir,
+				  FILE_NORMAL | FILE_ARCHIVED |
+				  FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+				  &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+		fNoLargeFileSupport = TRUE;
+	      }
+	      if (!rc) {
 		DosFindClose(hdir);
 		PrfWriteProfileString(fmprof,
 				      FM3Str, "SwapperDat", SwapperDat);
@@ -922,7 +922,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
-    fShowTarget = fDrivebarHelp = fCheckMM = fNoLargeFileSupport = TRUE;
+    fShowTarget = fDrivebarHelp = fCheckMM = TRUE;
+#if 1 // 06 Oct 07 SHL fixme to be gone after wrapper testing finished
+    fNoLargeFileSupport = TRUE;
+#endif
   ulCnrType = CCS_EXTENDSEL;
   FilesToGet = FILESTOGET_MIN;
   AutoviewHeight = 48;
@@ -1075,7 +1078,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		      &fExternalViewer, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UseQProcStat",
-                      &fUseQProcStat, &size);
+		      &fUseQProcStat, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UseQSysState",
 		      &fUseQSysState, &size);

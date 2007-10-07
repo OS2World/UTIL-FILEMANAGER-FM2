@@ -783,7 +783,8 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_BINARY), TRUE);
 	  fp = _fsopen(pfs->szFileName, "rb", SH_DENYNO);
 	  if (fp) {
-	    char buff[512];
+	    // char buff[512];
+	    char buff[4096];		// 06 Oct 07 SHL protect against NTFS defect
 	    ULONG len;
 	    APIRET rc;
 

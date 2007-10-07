@@ -891,7 +891,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  goto Abort;
 	DosError(FERR_DISABLEHARDERR);
 	ulFindCnt = ulFindMax;
-	rc = xDosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt);
+	rc = xDosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
 	priority_normal();
 	if (rc)
 	  DosError(FERR_DISABLEHARDERR);
@@ -1658,7 +1658,16 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	}
       }
       while (pci) {
+	// 12 Sep 07 SHL dwg drivebar crash testing - ticket# ???
+        static PCNRITEM pciLast;		// 12 Sep 07 SHL
+        ULONG ulSize = sizeof(*pci);
+        ULONG ulAttr;
+	APIRET apiret = DosQueryMem((PVOID)pci, &ulSize, &ulAttr);
+	if (apiret)
+          Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    "DosQueryMem failed pci %p pciLast %p", pci, pciLast);
 	FreeCnrItemData(pci);
+	pciLast = pci;
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (remaining && --remaining == 0)
 	  break;
