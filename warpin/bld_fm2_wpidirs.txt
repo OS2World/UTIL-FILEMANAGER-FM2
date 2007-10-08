@@ -1,4 +1,6 @@
 ;
+; $Id: $
+;
 ;  This is a file which will be used to simplify the process of
 ;     -  incorporating new files
 ;     -  renaming files
@@ -54,7 +56,6 @@ FILE: fm4.exe                    1  .        .
 FILE: cfgmgr.cmd                 1  .        .
 FILE: utilsmgr.cmd               1  .        .
 FILE: fm2dump.cmd                1  debugtools    .
-FILE: fm2dump2.cmd               1  debugtools    .
 
 FILE: COPYING                    1  .        Docs
 
