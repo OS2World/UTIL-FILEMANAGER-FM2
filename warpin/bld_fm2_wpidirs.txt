@@ -1,5 +1,5 @@
 ;
-; $Id: $
+; $Id$
 ;
 ;  This is a file which will be used to simplify the process of
 ;     -  incorporating new files
