@@ -24,6 +24,7 @@
   26 Aug 07 GKY Fixed fast viewer text load failure
   28 Aug 07 GKY Reversed horizontal scrollbar behavior to be present for unwrapped text and absent for wrapped text & hex.
   14 Sep 07 SHL Another attempt to correct the fast viewer text load failure
+  10 Oct 07 SHL Correct ReLineThread typo
 
 ***********************************************************************/
 
@@ -1092,7 +1093,7 @@ static VOID ReLineThread(VOID * args)
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
-      if (ad)
+      if (!ad)
 	Runtime_Error(pszSrcFile, __LINE__, "no data");
       else {
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
