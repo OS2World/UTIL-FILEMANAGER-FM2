@@ -1597,6 +1597,12 @@ VOID FreeCnrItemData(PCNRITEM pci)
     pci->pszFileName = NullStr;
     free(psz);
   }
+
+  if (pci->pszFmtFileSize && pci->pszFmtFileSize != NullStr) {
+    psz = pci->pszFmtFileSize;
+    pci->pszFmtFileSize = NullStr;
+    free(psz);
+  }
 }
 
 /**

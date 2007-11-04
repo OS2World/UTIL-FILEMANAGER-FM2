@@ -89,7 +89,7 @@ ABORT:
 size_t CommaFmtULL(char *pszBuf,	// Output buffer
 		   UINT cBufSize,	// Buffer size, including nul
 		   ULONGLONG ullNumber,	// Number to convert
-		   CHAR chPreferred)	// Preferred suffix, blank, K, M
+		   CHAR chPreferred)	// Preferred suffix, blank, K, M, G
 {
   CHAR chSuffix = ' ';
   size_t c;
@@ -100,6 +100,10 @@ size_t CommaFmtULL(char *pszBuf,	// Output buffer
     if (ullNumber >= 1ULL << 31 || (chPreferred == 'M' && ullNumber >= 1024)) {
       ullNumber = (ullNumber + 1023) >> 10;
       chSuffix = 'M';
+      if (ullNumber >= 1ULL << 31 || (chPreferred == 'G' && ullNumber >= 1024)) {
+        ullNumber = (ullNumber + 1023) >> 10;
+        chSuffix = 'G';
+      }
     }
   }
 
