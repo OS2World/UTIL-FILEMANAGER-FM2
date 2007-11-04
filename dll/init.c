@@ -923,7 +923,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = TRUE;
-#if 1 // 06 Oct 07 SHL fixme to be gone after wrapper testing finished
+#if 0 // 06 Oct 07 SHL fixme to be gone after wrapper testing finished
     fNoLargeFileSupport = TRUE;
 #endif
   ulCnrType = CCS_EXTENDSEL;

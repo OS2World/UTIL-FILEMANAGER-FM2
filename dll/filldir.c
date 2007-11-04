@@ -38,6 +38,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   13 Aug 07 SHL Sync code with other FilesToGet usage and optimize
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
+  04 Nov 07 GKY Use commaFmtULL to display large file sizes
 
 ***********************************************************************/
 
@@ -423,6 +424,13 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     p = pci->pszFileName;
   pci->pszDisplayName = p;
 
+  //comma format the file size for large file support
+  if(!fNoLargeFileSupport){
+  CHAR szBuf[30];
+    CommaFmtULL(szBuf, sizeof(szBuf), pffb->cbFile, ' ');
+    pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
+  }
+
   // now fill the darned thing in...
   pci->date.day = pffb->fdateLastWrite.day;
   pci->date.month = pffb->fdateLastWrite.month;
@@ -636,6 +644,13 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
     p = pci->pszFileName;
   pci->pszDisplayName = p;
 
+  //comma format the file size for large file support
+
+  if(!fNoLargeFileSupport){
+    CHAR szBuf[30];
+    CommaFmtULL(szBuf, sizeof(szBuf), pfsa4->cbFile, ' ');
+    pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
+  }
   pci->date.day = pfsa4->fdateLastWrite.day;
   pci->date.month = pfsa4->fdateLastWrite.month;
   pci->date.year = pfsa4->fdateLastWrite.year + 1980;

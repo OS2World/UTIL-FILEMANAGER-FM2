@@ -61,6 +61,7 @@
   19 Aug 07 SHL Update SaveDirCnrState return
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the right to the left pane
   01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundary
+  04 Nov 07 GKY Add pszFmtFileSize to CNRITEM to display large file sizes
 
 ***********************************************************************/
 
@@ -428,6 +429,7 @@ typedef struct _CNRITEM
   CDATE crdate;			/* Creation date of file */
   CTIME crtime;			/* Creation time of file */
   CHAR *pszLongName;		// Points to long name buffer - used by code and by CFA_STRING
+  CHAR *pszFmtFileSize;         // Comma formatted file size for large file support
   ULONGLONG cbFile;		/* File size */
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */

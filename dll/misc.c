@@ -502,6 +502,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     // because the container does not always display the full path file name.
 
     pfi = pfi->pNextFieldInfo;
+
     pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
     pfi->flTitle = CFA_LEFT;
     pfi->pTitleData = GetPString(IDS_FILENAME);
@@ -551,11 +552,20 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
     // Fill in column information for the file size
 
-    pfi = pfi->pNextFieldInfo;
-    pfi->flData = CFA_ULONG | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
-    pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_SIZE);
-    pfi->offStruct = FIELDOFFSET(CNRITEM, cbFile);
+    if(fNoLargeFileSupport) {
+      pfi = pfi->pNextFieldInfo;
+      pfi->flData = CFA_ULONG | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
+      pfi->flTitle = CFA_CENTER;
+      pfi->pTitleData = GetPString(IDS_SIZE);
+      pfi->offStruct = FIELDOFFSET(CNRITEM, cbFile);
+    }
+    else {
+      pfi = pfi->pNextFieldInfo;
+      pfi->flData = CFA_STRING | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
+      pfi->flTitle = CFA_CENTER;
+      pfi->pTitleData = GetPString(IDS_SIZE);
+      pfi->offStruct = FIELDOFFSET(CNRITEM, pszFmtFileSize);
+    }
 
     // Fill in the column information for the file's ea size
 
