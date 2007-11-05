@@ -1315,7 +1315,7 @@ static VOID LoadFileThread(VOID * args)
 	      }
 	      else {
 		// 06 Oct 07 SHL Protect against 4096 NFTS driver small buffer defect
-		ad->text = xmalloc(min(len + 2, 4096),
+		ad->text = xmalloc(max(len + 2, 4096),	// 05 Nov 07 SHL
 				   pszSrcFile,
 				   __LINE__);
 		if (ad->text) {
@@ -3821,7 +3821,7 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
     hwndParent = HWND_DESKTOP;
   if (ParentIsDesktop(hwndParent, hwndParent))
     FrameFlags |= FCF_TASKLIST;
-// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"\"%s\"\r\rparent %s desktop",filename,(ParentIsDesktop(hwndParent,hwndParent)) ? "is" : "isn't");
+  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"\"%s\"\r\rparent %s desktop",filename,(ParentIsDesktop(hwndParent,hwndParent)) ? "is" : "isn't");
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 0,
 				 &FrameFlags,
@@ -3846,7 +3846,7 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
     ad = xmallocz(sizeof(VIEWDATA), pszSrcFile, __LINE__);
     if (!ad) {
       WinDestroyWindow(hwndFrame);
-      hwndFrame = (HWND) 0;
+      hwndFrame = (HWND)0;
     }
     else {
       ad->size = sizeof(VIEWDATA);

@@ -300,7 +300,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (IsFile((CHAR *) mp1) == 1) {
 
 	    HFILE handle;
-            ULONG olen, ibufflen, action, obufflen, l;
+	    ULONG olen, ibufflen, action, obufflen, l;
 	    CHAR *ibuff, *obuff, *p;
 	    // 06 Oct 07 SHL Protect against NTFS driver small buffer defect
 	    // CHAR buffer[80];
@@ -318,8 +318,8 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 OPEN_ACCESS_READONLY, 0)) {
 	      ibufflen = AutoviewHeight < 96 ? 512 : 3072;
 	      // 06 Oct 07 SHL protect against NTFS driver small buffer defect
-	      // ibuff = xmalloc(ibufflen + 2, pszSrcFile, __LINE__);
-	      ibuff = xmalloc(min(ibufflen + 2, 4096), pszSrcFile, __LINE__);
+	      // ibuff = xmalloc(ibufflen + 2, pszSrcFile, __LINE__);	// 05 Nov 07 SHL
+	      ibuff = xmalloc(max(ibufflen + 2, 4096), pszSrcFile, __LINE__);
 	      if (ibuff) {
 		// Depends on CreateHexDump line width
 		obufflen = (ibufflen / 16) * (6 + 3 * 16 + 1 + 16 + 1) + 80;
@@ -437,11 +437,11 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (AutoviewHeight < 96)
 	      nm /= 2;
 	    rc = xDosFindFirst(fullname,
-		               &hdir,
-		               FILE_NORMAL | FILE_DIRECTORY |
-		               FILE_READONLY | FILE_ARCHIVED |
-		               FILE_SYSTEM | FILE_HIDDEN,
-		               &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
+			       &hdir,
+			       FILE_NORMAL | FILE_DIRECTORY |
+			       FILE_READONLY | FILE_ARCHIVED |
+			       FILE_SYSTEM | FILE_HIDDEN,
+			       &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
 	    if (!rc && nm) {
 	      fb = (PBYTE) & ffb;
 	      x = ml = 0;
