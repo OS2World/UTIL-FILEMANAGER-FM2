@@ -97,7 +97,8 @@ size_t CommaFmtULL(char *pszBuf,	// Output buffer
   if (ullNumber >= 1ULL << 31 || (chPreferred != ' ' && ullNumber >= 1024)) {
     ullNumber = (ullNumber + 1023) >> 10;
     chSuffix = 'K';
-    if (ullNumber >= 1ULL << 31 || (chPreferred == 'M' && ullNumber >= 1024)) {
+    if (ullNumber >= 1ULL << 31 || (chPreferred == 'M' && ullNumber >= 1024) ||
+        (chPreferred == 'G' && ullNumber >= 1024)) {
       ullNumber = (ullNumber + 1023) >> 10;
       chSuffix = 'M';
       if (ullNumber >= 1ULL << 31 || (chPreferred == 'G' && ullNumber >= 1024)) {

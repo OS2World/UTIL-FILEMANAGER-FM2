@@ -425,7 +425,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   pci->pszDisplayName = p;
 
   //comma format the file size for large file support
-  if(!fNoLargeFileSupport){
+  {
   CHAR szBuf[30];
     CommaFmtULL(szBuf, sizeof(szBuf), pffb->cbFile, ' ');
     pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
@@ -645,9 +645,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
   pci->pszDisplayName = p;
 
   //comma format the file size for large file support
-
-  if(!fNoLargeFileSupport){
-    CHAR szBuf[30];
+  {
+  CHAR szBuf[30];
     CommaFmtULL(szBuf, sizeof(szBuf), pfsa4->cbFile, ' ');
     pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
   }

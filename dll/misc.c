@@ -552,20 +552,13 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
     // Fill in column information for the file size
 
-    if(fNoLargeFileSupport) {
-      pfi = pfi->pNextFieldInfo;
-      pfi->flData = CFA_ULONG | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
-      pfi->flTitle = CFA_CENTER;
-      pfi->pTitleData = GetPString(IDS_SIZE);
-      pfi->offStruct = FIELDOFFSET(CNRITEM, cbFile);
-    }
-    else {
-      pfi = pfi->pNextFieldInfo;
-      pfi->flData = CFA_STRING | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
-      pfi->flTitle = CFA_CENTER;
-      pfi->pTitleData = GetPString(IDS_SIZE);
-      pfi->offStruct = FIELDOFFSET(CNRITEM, pszFmtFileSize);
-    }
+
+    pfi = pfi->pNextFieldInfo;
+    pfi->flData = CFA_STRING | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
+    pfi->flTitle = CFA_CENTER;
+    pfi->pTitleData = GetPString(IDS_SIZE);
+    pfi->offStruct = FIELDOFFSET(CNRITEM, pszFmtFileSize);
+
 
     // Fill in the column information for the file's ea size
 
