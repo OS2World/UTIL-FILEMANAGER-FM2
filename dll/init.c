@@ -35,6 +35,7 @@
   23 Aug 07 SHL Use BldFullPathName
   25 Aug 07 SHL Work around DosSetPathInfo kernel defect
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  10 Nov 07 GKY Get thousands separator from country info for file sizes.
 
 ***********************************************************************/
 
@@ -52,6 +53,7 @@
 #define INCL_GPI
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
+#define INCL_DOSNLS
 #include <os2.h>
 #include <os2me.h>
 
@@ -939,6 +941,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   prnspacing = 1;
   prntabspaces = 8;
   CollectorsortFlags = sortFlags = SORT_DIRSFIRST;
+
+  //Get default Country info
+  {
+  COUNTRYCODE Country    = {0};
+  ULONG ulInfoLen  = 0;
+  COUNTRYINFO CtryInfo   = {0};
+
+  DosQueryCtryInfo(sizeof(CtryInfo), &Country,
+                   &CtryInfo, &ulInfoLen);
+  *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
+  }
 
   // load preferences from profile (INI) file
   size = sizeof(BOOL);

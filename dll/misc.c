@@ -33,6 +33,7 @@
   14 Aug 07 SHL Delete obsoletes
   14 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
 
 ***********************************************************************/
 

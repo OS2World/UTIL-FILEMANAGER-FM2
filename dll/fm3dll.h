@@ -62,6 +62,7 @@
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the right to the left pane
   01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundary
   04 Nov 07 GKY Add pszFmtFileSize to CNRITEM to display large file sizes
+  10 Nov 07 GKY Add ThousandSeparator variable for file sizes NLS tseparator.
 
 ***********************************************************************/
 
@@ -1371,7 +1372,7 @@ DATADEF HWND hwndMain, hwndTree, hwndStatus, hwndStatus2, hwndTrash,
   hwndAutoview, hwndAttr, hwndDate, hwndName, hwndBack,
   hwndLED, hwndLEDHdr, hwndAutoMLE, hwndCmdlist;
 DATADEF HBITMAP hbmLEDon, hbmLEDoff;
-DATADEF CHAR ArcTempRoot[9];
+DATADEF CHAR ArcTempRoot[9], ThousandsSeparator[2];
 DATADEF HPOINTER hptrArrow, hptrBusy, hptrLast, hptrDir, hptrFile, hptrRemote,
   hptrFloppy, hptrDrive, hptrRemovable, hptrCDROM,hptrVirtual,hptrRamdisk,
   hptrFinger, hptrApp, hptrDunno, hptrSystem, hptrHidden,

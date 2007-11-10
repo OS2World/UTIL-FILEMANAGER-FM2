@@ -12,28 +12,30 @@
   25 May 05 SHL Drop hundfmt
   25 May 05 SHL Add CommaFmtULL, CommaFmtUL
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
+  10 Nov 07 GKY Get thousands separator from country info for file sizes.
 
 ***********************************************************************/
 
 /*
-   **  COMMAFMT.C
-   **  Public domain by Bob Stout
-   **
-   **  Notes:  1. Use static buffer to eliminate error checks on buffer overflow
-   **             and reduce code size.
-   **          2. By making the numeric argument a long and prototyping it before
-   **             use, passed numeric arguments will be implicitly cast to longs
-   **             thereby avoiding int overflow.
-   **          3. Use the thousands grouping and thousands separator from the
-   **             ANSI locale to make this more robust.
+ * COMMAFMT.C
+ * Adapted from public domain code by Bob Stout
+ *
+ *         2. By making the numeric argument a long and prototyping it before
+ *            use, passed numeric arguments will be implicitly cast to longs
+ *            thereby avoiding int overflow.
+ *         3. Use the thousands grouping and thousands separator from the
+ *            ANSI locale to make this more robust.
  */
 
+#define INCL_WIN
 #define INCL_LONGLONG
 #include <os2.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "fm3dll.h"
 
 size_t commafmt(char *pszBuf,	// Output buffer
 		UINT cBufSize,	// Buffer size, including nul
@@ -56,12 +58,12 @@ size_t commafmt(char *pszBuf,	// Output buffer
   }
 
   for (; cChars <= cBufSize; ++cChars, ++cDigits) {
-    *pch-- = (CHAR) (lNumber % 10 + '0');
+    *pch-- = (CHAR)(lNumber % 10 + '0');
     lNumber /= 10;
     if (!lNumber)
       break;
     if (cDigits % 3 == 0) {
-      *pch-- = ',';
+      *pch-- = *ThousandsSeparator;
       ++cChars;
     }
     if (cChars >= cBufSize)
@@ -84,7 +86,14 @@ ABORT:
   return 0;
 }
 
-//=== CommaFmtULL: format long long number with commas and SI unit suffix ===
+/**
+ * Format long long number with commas and SI unit suffix
+ * @param pszBuf Points to output buffer
+ * @param cBufSize Buffer size including space for terminating nul
+ * @param ullNumber Number to convert
+ * @param chPreferred Preferred suffix, blank, K, M
+ * @return size of formatting string excluding terminating nul
+ */
 
 size_t CommaFmtULL(char *pszBuf,	// Output buffer
 		   UINT cBufSize,	// Buffer size, including nul
@@ -108,7 +117,7 @@ size_t CommaFmtULL(char *pszBuf,	// Output buffer
     }
   }
 
-  c = commafmt(pszBuf, cBufSize, (LONG) ullNumber);
+  c = commafmt(pszBuf, cBufSize, (LONG)ullNumber);
 
   if (chSuffix != ' ') {
     if (c + 4 > cBufSize) {
