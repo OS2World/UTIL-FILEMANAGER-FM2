@@ -21,6 +21,7 @@
 :: 24 Mar 07 SHL Write dump file to %TMP%
 :: 14 Jul 07 SHL Add options, sync with pdumpctl
 :: 14 Sep 07 SHL Sync with current standards
+:: 24 Sep 07 SHL Add maximal configure, change normal configure to process only
 
 :: Version 0.3
 
@@ -49,6 +50,8 @@ if "%1" == "c" goto Configure
 if "%1" == "C" goto Configure
 if "%1" == "f" goto Force
 if "%1" == "F" goto Force
+if "%1" == "m" goto ConfigureMax
+if "%1" == "M" goto ConfigureMax
 if "%1" == "n" goto TurnOn
 if "%1" == "N" goto TurnOn
 if "%1" == "q" goto Query
@@ -78,17 +81,33 @@ goto Usage
   goto shift
 
 :: Configure optimal dump settings for fm/2
+:: Includes details for fm/2 process only
 
 :Configure
   :: Turn on dump facility - set dump directory
   procdump on /l:%D%
   @if errorlevel 1 pause
   :: Configure settings
-  procdump set /proc:%P% /pd:instance,private,shared,sysfs,sysio,sysldr,syssem,syssumm,systk,sysvm /pc:0
+  procdump set /proc:%P% /pd:summ,sysldr,sysfs,sysvm,private,shared,instance,sem,sysio /pc:0
   @if errorlevel 1 pause
   @echo off
   echo.
-  echo Dump facility configured to dump %P% to %D%
+  echo Dump facility optimally configured to dump %P% to %D%
+  goto shift
+
+:: Configure maximal dump settings for fm/2
+:: Includes details for all processes
+
+:ConfigureMax
+  :: Turn on dump facility - set dump directory
+  procdump on /l:%D%
+  @if errorlevel 1 pause
+  :: Configure settings
+  procdump set /proc:%P% /pd:syssumm,sysldr,sysfs,sysvm,systk,private,shared,instance,syssem,sysio /pc:0
+  @if errorlevel 1 pause
+  @echo off
+  echo.
+  echo Dump facility maximally configured to dump %P% to %D%
   goto shift
 
 :: Force dump with current settings
@@ -170,6 +189,7 @@ goto Usage
   echo   a     Configure to dump all memory
   echo   c     Configure optimally for fm/2 dump
   echo   f     Force dump using current settings
+  echo   m     Configure maximally for fm/2 dump
   echo   n     Turn on dump facility
   echo   o     Turn off dump facility
   echo   q     Query current settings
@@ -187,3 +207,27 @@ goto Usage
   echo     fm2dump r o
 
 :end
+
+:: pdumpusr option summary - see \OS2\SYSTEM\RAS\PROCDUMP.DOC
+:: summ		Summary for dumped threads (default)
+:: syssumm	Summary for all threads
+:: idt          Interrupt descriptor table
+:: laddr	Linear address range(s)
+:: paddr(all)	Add physical memory
+:: sysldr	Loader data for all processes
+:: sysfs	File System data for all processes (default)
+:: sysvm	Virtual Memory data for all processes
+:: systk	Task Management related data for all processes
+:: private	Private code and data referenced by process
+:: shared	Shared code and data referenced by process
+:: instance	Instance data referenced by the process.
+:: mvdm		MVDM instance data for process (default)
+:: sysmvdm	MVDM data for all VDM and the kernel resident heap
+:: sem		Semaphore data for all blocked threads in process (default)
+:: syssem	SEM data for all blocked threads in system
+:: krheaps	Kernel Resident Heaps
+:: ksheaps	Kernel Swappable Heaps
+:: syspg	Physical and Page Memory management records (PF, VP, PTE, PDE)
+:: sysio	IO subsystem structures (AIRQI, DIRQ, PDD eps, PDD chain)
+:: trace	System trace buffers
+:: strace	STRACE buffer
