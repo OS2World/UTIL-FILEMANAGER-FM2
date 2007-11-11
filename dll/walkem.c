@@ -21,6 +21,7 @@
   19 Aug 07 SHL Correct load_setups error reporting
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   25 Aug 07 SHL Correct #pragma alloc_text typos
+  11 Nov 07 GKY Cancel now directly closes dialog even if directory path text has changed
 
 ***********************************************************************/
 
@@ -1079,11 +1080,11 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     while (strlen(szBuff) > 3 && szBuff[strlen(szBuff) - 1] == '\\')
       szBuff[strlen(szBuff) - 1] = 0;
     MakeFullName(szBuff);
-    if (*szBuff && stricmp(szBuff, wa->szCurrentPath)) {
+    if (*szBuff && stricmp(szBuff, wa->szCurrentPath) && SHORT1FROMMP(mp1) != DID_CANCEL) {
       if (!SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				 QW_OWNER), hwnd, szBuff, 0))
 	strcpy(wa->szCurrentPath, szBuff);
-      else if (SHORT1FROMMP(mp1) != DID_CANCEL)
+      else //if (SHORT1FROMMP(mp1) != DID_CANCEL)
 	return 0;
     }
     WinSetDlgItemText(hwnd, WALK_PATH, wa->szCurrentPath);
@@ -1156,7 +1157,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case DID_CANCEL:
       if (wa->changed)
-	WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
+        WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
       free(wa);
       WinDismissDlg(hwnd, 0);
       break;
@@ -1501,11 +1502,11 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     while (strlen(szBuff) > 3 && szBuff[strlen(szBuff) - 1] == '\\')
       szBuff[strlen(szBuff) - 1] = 0;
     MakeFullName(szBuff);
-    if (*szBuff && stricmp(szBuff, wa->szCurrentPath1)) {
+    if (*szBuff && stricmp(szBuff, wa->szCurrentPath1) && SHORT1FROMMP(mp1) != DID_CANCEL) {
       if (!SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				 QW_OWNER), hwnd, szBuff, 0))
 	strcpy(wa->szCurrentPath1, szBuff);
-      else if (SHORT1FROMMP(mp1) != DID_CANCEL)
+      else //if (SHORT1FROMMP(mp1) != DID_CANCEL)
 	return 0;
     }
     WinSetDlgItemText(hwnd, WALK_PATH, wa->szCurrentPath1);
@@ -1517,11 +1518,11 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     while (strlen(szBuff) > 3 && szBuff[strlen(szBuff) - 1] == '\\')
       szBuff[strlen(szBuff) - 1] = 0;
     MakeFullName(szBuff);
-    if (*szBuff && stricmp(szBuff, wa->szCurrentPath2)) {
+    if (*szBuff && stricmp(szBuff, wa->szCurrentPath2) && SHORT1FROMMP(mp1) != DID_CANCEL) {
       if (!SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				 QW_OWNER), hwnd, szBuff, 0))
 	strcpy(wa->szCurrentPath2, szBuff);
-      else if (SHORT1FROMMP(mp1) != DID_CANCEL)
+      else // if (SHORT1FROMMP(mp1) != DID_CANCEL)
 	return 0;
     }
     WinSetDlgItemText(hwnd, WALK2_PATH, wa->szCurrentPath2);
