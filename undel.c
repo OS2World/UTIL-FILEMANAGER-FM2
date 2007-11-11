@@ -1,22 +1,37 @@
-#define INCL_DOS
-#define INCL_WIN
 
-#include <os2.h>
+/***********************************************************************
+
+  $Id$
+
+  File undelete applet
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2007 Steven H. Levine
+
+  23 Sep 07 SHL Sync with standards
+  23 Sep 07 SHL Get rid of statics
+
+***********************************************************************/
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+#define INCL_DOS
+#define INCL_WIN
+#include <os2.h>
+
 #include "dll\fm3dll.h"
 #include "dll\fm3dlg.h"
 
 int main(int argc, char *argv[])
 {
-
   HAB hab;
   HMQ hmq;
   FILESTATUS3 fs;
-  static CHAR fullname[CCHMAXPATH];
+  CHAR fullname[CCHMAXPATH];
   CHAR *thisarg = NULL;
   INT x;
 
@@ -45,7 +60,9 @@ int main(int argc, char *argv[])
 	  WinDlgBox(HWND_DESKTOP,
 		    HWND_DESKTOP,
 		    UndeleteDlgProc,
-		    FM3ModHandle, UNDEL_FRAME, (PVOID) fullname);
+		    FM3ModHandle,
+		    UNDEL_FRAME,
+		    fullname);
 	}
 	DosSleep(250);
 	WinDestroyMsgQueue(hmq);
