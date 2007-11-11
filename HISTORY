@@ -3,6 +3,7 @@ New stuff's at the top.  This list is not necessarily complete.
 3.08 (pending)
  o Rework filemask logic to match last extension and allow for string matching (Gregg)
  o Fix trap on search where file name length exceeds maxpath (Gregg)
+ o Use 4096 byte buffers to protect against NFTS driver small read defect (Steven)
 
 3.07 
  o Tweak build process (Steven)
