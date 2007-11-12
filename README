@@ -12,7 +12,8 @@ associations failing on files with multiple ".". You can
 also seach for a complete string within the file names by
 using the pattern *stuff* (stuff can't contain an * or ?).
 If "stuff" contains an * or ? the old method of searching
-(character by character)is used.
+(character by character)is used.Large (>4GiB) file support
+has been added.
 
 FM/2 3.07 had changes made to its ini file structure.
 These changes mean that the ini file is not backward 

@@ -1,11 +1,21 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.08 (pending)
- o Rework filemask logic to match last extension and allow for string matching (Gregg)
- o Fix trap on search where file name length exceeds maxpath (Gregg)
+3.08 
+ o Cancel in walk directories dialog now directly closes dialog even if
+   directory path text has changed (Gregg)
+ o Fixed seek and scan crash caused by file names that exceed maxpath(Gregg)
+ o Fixed INVALID_NAME error caused by FILEFIND buffer crossing a 64k boundry (Steven)
+ o Added 32 bit DosQuerySysState API (Gregg)
+ o Warpin build will not attempt to use wrong wic.exe (John)
+ o Make directory now always lists current directory (not subdirectories)
+   on status line (Gregg)
+ o Use thousands separator from default COUNTRYINFO (Gregg, Steven)
+ o Add support for files over 4GiB (Gregg, Steven)
+ o Rework filemask logic to match last extension and allow for better
+   string matching (Gregg)
  o Use 4096 byte buffers to protect against NFTS driver small read defect (Steven)
 
-3.07 
+3.07
  o Tweak build process (Steven)
  o Rework internals to increase file and directory limits (Steven, Gregg)
  o Rework internal sleep durations to increase performance (Gregg)
