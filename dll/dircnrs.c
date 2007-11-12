@@ -1418,9 +1418,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	 */
 
 	CNRINFO cnri;
+//         static int i = 0;
+//             FILE * f = fopen("e:\\dev\\netlabs\\fm2\\trunk\\jbsdebug.log", "a");
+//             fprintf(f, "UM_SETUP Dir: %s; Count: %d Details: %d %d %d %d\n", dcd->directory, ++i, (int)dcd->detailscrdate, (int)dcd->detailscrtime, (int)dcd->detailsladate, (int)dcd->detailsladate);
+//             fclose(f);
 
 	RestorePresParams(hwnd, "DirCnr");
-	LoadDetailsSwitches("DirCnr", dcd);
+//	LoadDetailsSwitches("DirCnr", dcd);
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
 	WinSendMsg(hwnd,
@@ -1477,7 +1481,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
 			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
 	SetCnrCols(hwnd, FALSE);
-	AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
+//	AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
 	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
@@ -1494,6 +1498,17 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      DIR_SORT), dcd->sortFlags, FALSE);
       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 			      DIR_VIEW), dcd->flWindowAttr);
+    }
+    else {
+      PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
+      return 0;
+    }
+    return 0;
+
+  case UM_SETUP2:
+    if (dcd)
+    {
+      AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -2134,7 +2149,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	AdjustDetailsSwitches(hwnd,
 			      dcd->hwndLastMenu,
 			      SHORT1FROMMP(mp1),
-			      dcd->directory, "DirCnr", dcd, FALSE);
+//			      dcd->directory, "DirCnr", dcd, FALSE);
+			      dcd->directory, NULL, dcd, FALSE);
 	break;
 
       case IDM_TREEVIEW:
@@ -3393,6 +3409,18 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	dcd->hwndClient = hwndClient;
 	dcd->hwndRestore = hwndRestore;
 	dcd->dontclose = ((flags & 1) != 0);
+        dcd->detailslongname = detailslongname;
+        dcd->detailssubject = detailssubject;
+        dcd->detailsea = detailsea;
+        dcd->detailssize = detailssize;
+        dcd->detailsicon = detailsicon;
+        dcd->detailsattr = detailsattr;
+        dcd->detailscrdate = detailscrdate;
+        dcd->detailscrtime = detailscrtime;
+        dcd->detailslwdate = detailslwdate;
+        dcd->detailslwtime = detailslwtime;
+        dcd->detailsladate = detailsladate;
+        dcd->detailslatime = detailslatime;
 	strcpy(dcd->directory, directory);
 	add_udir(FALSE, directory);
 	{

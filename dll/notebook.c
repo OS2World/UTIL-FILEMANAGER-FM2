@@ -1471,63 +1471,63 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
     PrfWriteProfileData(fmprof, appname, "DetailsLongname",
 			&detailslongname, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-			&detailslongname, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
+// 			&detailslongname, sizeof(BOOL));
     detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
     PrfWriteProfileData(fmprof, appname, "DetailsSubject",
 			&detailssubject, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-			&detailssubject, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
+// 			&detailssubject, sizeof(BOOL));
     detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWEAS);
     PrfWriteProfileData(fmprof, appname, "DetailsEA",
 			&detailsea, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-			&detailsea, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
+//			&detailsea, sizeof(BOOL));
     detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
     PrfWriteProfileData(fmprof, appname, "DetailsSize",
 			&detailssize, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-			&detailssize, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
+// 			&detailssize, sizeof(BOOL));
     detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
     PrfWriteProfileData(fmprof, appname, "DetailsIcon",
 			&detailsicon, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-			&detailsicon, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
+// 			&detailsicon, sizeof(BOOL));
     detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
     PrfWriteProfileData(fmprof, appname, "DetailsLWDate",
 			&detailslwdate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-			&detailslwdate, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
+// 			&detailslwdate, sizeof(BOOL));
     detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
     PrfWriteProfileData(fmprof, appname, "DetailsLWTime",
 			&detailslwtime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-			&detailslwtime, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
+// 			&detailslwtime, sizeof(BOOL));
     detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
     PrfWriteProfileData(fmprof, appname, "DetailsLADate",
 			&detailsladate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-			&detailsladate, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
+// 			&detailsladate, sizeof(BOOL));
     detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
     PrfWriteProfileData(fmprof, appname, "DetailsLATime",
 			&detailslatime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-			&detailslatime, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
+// 			&detailslatime, sizeof(BOOL));
     detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
     PrfWriteProfileData(fmprof, appname, "DetailsCRDate",
 			&detailscrdate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-			&detailscrdate, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
+// 			&detailscrdate, sizeof(BOOL));
     detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
     PrfWriteProfileData(fmprof, appname, "DetailsCRTime",
 			&detailscrtime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-			&detailscrtime, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
+// 			&detailscrtime, sizeof(BOOL));
     detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
     PrfWriteProfileData(fmprof, appname, "DetailsAttr",
 			&detailsattr, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-                        &detailsattr, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
+//                         &detailsattr, sizeof(BOOL));
     fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
     PrfWriteProfileData(fmprof, appname, "SubjectInLeftPane",
 			&fSubjectInLeftPane, sizeof(BOOL));
@@ -2626,52 +2626,52 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     PrfWriteProfileData(fmprof, appname, "DetailsLongname",
 			&detailslongname, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-			&detailslongname, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
+// 			&detailslongname, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsSubject",
 			&detailssubject, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-			&detailssubject, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
+// 			&detailssubject, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsEA",
 			&detailsea, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-			&detailsea, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
+// 			&detailsea, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsSize",
 			&detailssize, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-			&detailssize, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
+// 			&detailssize, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsIcon",
 			&detailsicon, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-			&detailsicon, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
+// 			&detailsicon, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLWDate",
 			&detailslwdate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-			&detailslwdate, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
+// 			&detailslwdate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLWTime",
 			&detailslwtime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-			&detailslwtime, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
+// 			&detailslwtime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLADate",
 			&detailsladate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-			&detailsladate, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
+// 			&detailsladate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLATime",
 			&detailslatime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-			&detailslatime, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
+// 			&detailslatime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsCRDate",
 			&detailscrdate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-			&detailscrdate, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
+// 			&detailscrdate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsCRTime",
 			&detailscrtime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-			&detailscrtime, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
+// 			&detailscrtime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsAttr",
 			&detailsattr, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-			&detailsattr, sizeof(BOOL));
+//     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
+// 			&detailsattr, sizeof(BOOL));
     if (hwndMain) {
       if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
 	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));

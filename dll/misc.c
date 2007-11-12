@@ -998,63 +998,63 @@ VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
 			   CHAR * directory, CHAR * keyroot,
 			   DIRCNRDATA * dcd, BOOL compare)
 {
-  CHAR s[CCHMAXPATH], *eos = s;
-  BOOL *bool = NULL;
+//   CHAR s[CCHMAXPATH], *eos = s;
+   BOOL *bool = NULL;
 
-  *s = 0;
-  if (keyroot) {
-    strcpy(s, keyroot);
-    strcat(s, ".");
-    eos = &s[strlen(s)];
-  }
+//   *s = 0;
+//   if (keyroot) {
+//     strcpy(s, keyroot);
+//     strcat(s, ".");
+//     eos = &s[strlen(s)];
+//   }
   switch (cmd) {
   case IDM_SHOWLNAMES:
     bool = dcd ? &dcd->detailslongname : &detailslongname;
-    strcpy(eos, "DetailsLongname");
+//     strcpy(eos, "DetailsLongname");
     break;
   case IDM_SHOWSUBJECT:
     bool = dcd ? &dcd->detailssubject : &detailssubject;
-    strcpy(eos, "DetailsSubject");
+//     strcpy(eos, "DetailsSubject");
     break;
   case IDM_SHOWEAS:
     bool = dcd ? &dcd->detailsea : &detailsea;
-    strcpy(eos, "DetailsEA");
+//     strcpy(eos, "DetailsEA");
     break;
   case IDM_SHOWSIZE:
     bool = dcd ? &dcd->detailssize : &detailssize;
-    strcpy(eos, "DetailsSize");
+//     strcpy(eos, "DetailsSize");
     break;
   case IDM_SHOWICON:
     bool = dcd ? &dcd->detailsicon : &detailsicon;
-    strcpy(eos, "DetailsIcon");
+//     strcpy(eos, "DetailsIcon");
     break;
   case IDM_SHOWLWDATE:
     bool = dcd ? &dcd->detailslwdate : &detailslwdate;
-    strcpy(eos, "DetailsLWDate");
+//     strcpy(eos, "DetailsLWDate");
     break;
   case IDM_SHOWLWTIME:
     bool = dcd ? &dcd->detailslwtime : &detailslwtime;
-    strcpy(eos, "DetailsLWTime");
+//     strcpy(eos, "DetailsLWTime");
     break;
   case IDM_SHOWLADATE:
     bool = dcd ? &dcd->detailsladate : &detailsladate;
-    strcpy(eos, "DetailsLADate");
+//     strcpy(eos, "DetailsLADate");
     break;
   case IDM_SHOWLATIME:
     bool = dcd ? &dcd->detailslatime : &detailslatime;
-    strcpy(eos, "DetailsLATime");
+//     strcpy(eos, "DetailsLATime");
     break;
   case IDM_SHOWCRDATE:
     bool = dcd ? &dcd->detailscrdate : &detailscrdate;
-    strcpy(eos, "DetailsCRDate");
+//     strcpy(eos, "DetailsCRDate");
     break;
   case IDM_SHOWCRTIME:
     bool = dcd ? &dcd->detailscrtime : &detailscrtime;
-    strcpy(eos, "DetailsCRTime");
+//     strcpy(eos, "DetailsCRTime");
     break;
   case IDM_SHOWATTR:
     bool = dcd ? &dcd->detailsattr : &detailsattr;
-    strcpy(eos, "DetailsAttr");
+//     strcpy(eos, "DetailsAttr");
     break;
   default:
     if (hwndMenu)
@@ -1063,8 +1063,8 @@ VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
   }
   if (bool)
     *bool = *bool ? FALSE : TRUE;
-  if (*s && bool)
-    PrfWriteProfileData(fmprof, appname, s, bool, sizeof(BOOL));
+//   if (*s && bool)
+//     PrfWriteProfileData(fmprof, appname, s, bool, sizeof(BOOL));
   if (hwnd)
     AdjustCnrColsForPref(hwnd, directory, dcd, compare);
   if (hwndMenu)
@@ -1208,6 +1208,21 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
     strcpy(s, keyroot);
     strcat(s, ".");
     eos = &s[strlen(s)];
+  } else
+  {
+     dcd->detailslongname = detailslongname;
+     dcd->detailssubject = detailssubject;
+     dcd->detailsea = detailsea;
+     dcd->detailssize = detailssize;
+     dcd->detailsicon = detailsicon;
+     dcd->detailsattr = detailsattr;
+     dcd->detailscrdate = detailscrdate;
+     dcd->detailscrtime = detailscrtime;
+     dcd->detailslwdate = detailslwdate;
+     dcd->detailslwtime = detailslwtime;
+     dcd->detailsladate = detailsladate;
+     dcd->detailslatime = detailslatime;
+     return;
   }
   strcpy(eos, "DetailsLongname");
   if (dcd)

@@ -44,6 +44,11 @@
 
 ***********************************************************************/
 
+// #define FM2_STATE_AT_CLOSE GetPString(IDS_FM2TEMPTEXT)
+#define FM2_STATE_AT_CLOSE "StateAtFM2Close"
+//#define JBSDBG size = 1; //
+#define JBSDBG
+
 #define INCL_DOS
 #define INCL_WIN
 // #define INCL_WINERRORS
@@ -2819,6 +2824,42 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 	      }
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & flWindowAttr,
 				  sizeof(ULONG));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsLongname", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslongname,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsSubject", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailssubject,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsSize", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailssize,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsEA", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsea,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsAttr", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsattr,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsIcon", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsicon,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsLWDate", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslwdate,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsLWTime", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslwtime,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsLADate", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsladate,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsLATime", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslatime,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsCRDate", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailscrdate,
+                                  sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu.DetailsCRTime", szPrefix, numsaves);
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailscrtime,
+                                  sizeof(BOOL));
 	    }
 	    sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, numsaves++);
 	    PrfWriteProfileString(fmprof, FM3Str, szKey, szDir);
@@ -2897,6 +2938,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   double xtrans, ytrans;
   BOOL fRestored = FALSE;
   DIRCNRDATA *dcd;
+  DIRCNRDATA localdcd;
 
   if (!pszStateName)
     strcpy(szPrefix, NullStr);
@@ -2978,15 +3020,174 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	    continue;
 	  }
+// test code
+
+                localdcd.detailslongname = detailslongname;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsLongname", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailslongname,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailssubject = detailssubject;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsSubject", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailssubject,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailsea = detailsea;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsEA", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailsea,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailssize = detailssize;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsSize", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailssize,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailsicon = detailsicon;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsIcon", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailsicon,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailsattr = detailsattr;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsAttr", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailsattr,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailscrdate = detailscrdate;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsCRDate", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailscrdate,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailscrtime = detailscrtime;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsCRTime", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailscrtime,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailslwdate = detailslwdate;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsLWDate", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailslwdate,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailslwtime = detailslwtime;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsLWTime", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailslwtime,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailsladate = detailsladate;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsLADate", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailsladate,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+                localdcd.detailslatime = detailslatime;  // Set default
+                size = sizeof(BOOL);
+                sprintf(szKey, "%sDirCnr.%lu.DetailsLATime", szPrefix, x);
+                if (PrfQueryProfileData(fmprof,
+                                        FM3Str,
+                                        szKey,
+                                        (PVOID) & localdcd.detailslatime,
+                                        &size) && size == sizeof(BOOL))
+                                        {
+                                          if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
+                                            JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                                        }
+
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,
 				      MPFROMP(szDir), MPFROMLONG(1));
 	  if (hwndDir) {
 	    hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
 	    if (hwndC) {
-	      dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR),
-				      QWL_USER);
+              HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
+              dcd = WinQueryWindowPtr(hwndCnr, QWL_USER);
 	      if (dcd) {
+                dcd->detailslongname = localdcd.detailslongname;
+                dcd->detailssubject  = localdcd.detailssubject ;
+                dcd->detailsattr     = localdcd.detailsattr    ;
+                dcd->detailsea       = localdcd.detailsea      ;
+                dcd->detailssize     = localdcd.detailssize    ;
+                dcd->detailsicon     = localdcd.detailsicon    ;
+                dcd->detailscrdate   = localdcd.detailscrdate  ;
+                dcd->detailscrtime   = localdcd.detailscrtime  ;
+                dcd->detailsladate   = localdcd.detailsladate  ;
+                dcd->detailslatime   = localdcd.detailslatime  ;
+                dcd->detailslwdate   = localdcd.detailslwdate  ;
+                dcd->detailslwtime   = localdcd.detailslwtime  ;
 		size = sizeof(INT);
 		sprintf(szKey, "%sDirCnrSort.%lu", szPrefix, x);
 		if (PrfQueryProfileData(fmprof,
@@ -3039,6 +3240,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		}
 		if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
 		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+                if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
+                  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
 	      }
 	    }
 	    fRestored = TRUE;
@@ -4366,6 +4569,28 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	      sprintf(s, "%s.DirCnrView.%lu", szStateName, x);
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsLongname", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsSubject", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsSize", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsEA", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsAttr", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsLWDate", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsLWTime", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsLADate", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsLATime", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsCRDate", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+              sprintf(s, "%s.DirCnr.%lu.DetailsCRTime", szStateName, x);
+              PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	    }
 	    sprintf(s, "%s.LastTreePos", szStateName);
 	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
@@ -5357,7 +5582,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP3:
     /* start remaining child windows */
     if (!fNoSaveState && fSaveState)
-      PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPVOID);
+//    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPVOID);
+      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(FM2_STATE_AT_CLOSE), MPVOID);
     PostMsg(MainObjectHwnd, UM_SETUP4, mp1, mp2);
     return 0;
 
@@ -5497,8 +5723,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinStoreWindowPos(FM2Str,
 			  "MainWindowPos", WinQueryWindow(hwnd, QW_PARENT));
 	if (!fNoSaveState && fSaveState)
-	  SaveDirCnrState(hwnd, NULL);
-      }
+//        SaveDirCnrState(hwnd, NULL);
+          SaveDirCnrState(hwnd, FM2_STATE_AT_CLOSE);
+}
     }
     break;
 
