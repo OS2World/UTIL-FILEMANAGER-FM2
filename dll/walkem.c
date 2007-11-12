@@ -1084,7 +1084,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				 QW_OWNER), hwnd, szBuff, 0))
 	strcpy(wa->szCurrentPath, szBuff);
-      else //if (SHORT1FROMMP(mp1) != DID_CANCEL)
+      else
 	return 0;
     }
     WinSetDlgItemText(hwnd, WALK_PATH, wa->szCurrentPath);
@@ -1506,7 +1506,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				 QW_OWNER), hwnd, szBuff, 0))
 	strcpy(wa->szCurrentPath1, szBuff);
-      else //if (SHORT1FROMMP(mp1) != DID_CANCEL)
+      else
 	return 0;
     }
     WinSetDlgItemText(hwnd, WALK_PATH, wa->szCurrentPath1);
@@ -1522,7 +1522,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				 QW_OWNER), hwnd, szBuff, 0))
 	strcpy(wa->szCurrentPath2, szBuff);
-      else // if (SHORT1FROMMP(mp1) != DID_CANCEL)
+      else
 	return 0;
     }
     WinSetDlgItemText(hwnd, WALK2_PATH, wa->szCurrentPath2);
