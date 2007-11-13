@@ -296,7 +296,7 @@ static CHAR **BuildAList(HWND hwnd)
 	  sprintf(s, "%08lx ", x * 16);
 	  p = s + 9;
 	  for (y = 0; y < width; y++) {
-	    sprintf(p, " %02hx", ad->text[(x * 16) + y]);
+	    sprintf(p, " %02x", (UCHAR)ad->text[(x * 16) + y]);
 	    p += 3;
 	  }
 	  *p = ' ';
@@ -790,7 +790,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
       sprintf(s, "%08lx ", whichline * 16);
       p = s + 9;
       for (x = 0; x < width; x++) {
-	sprintf(p, " %02hx", ad->text[(whichline * 16) + x]);
+	sprintf(p, " %02x", (UCHAR)ad->text[(whichline * 16) + x]);
 	p += 3;
       }
       for (; x < 16; x++) {
@@ -2347,7 +2347,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    sprintf(s, "%08lx ", whichline * 16);
 	    p = s + 9;
 	    for (x = 0; x < width; x++) {
-	      sprintf(p, " %02hx", ad->text[(whichline * 16) + x]);
+	      sprintf(p, " %02x", (UCHAR)ad->text[(whichline * 16) + x]);
 	      p += 3;
 	    }
 	    *p = ' ';

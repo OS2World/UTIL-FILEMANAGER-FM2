@@ -247,7 +247,7 @@ ULONG CreateHexDump(CHAR * pchInBuf, ULONG cbInBuf,
 	sprintf(pchOut, "%04lx  ", ibIn + cOffset);
       pchOut += 6 + (fLongAddr ? 4 : 0);
       do {
-	sprintf(pchOut, "%02hx ", *pchIn);
+	sprintf(pchOut, "%02x ", (UCHAR)*pchIn);
 	pchOut += 3;
 	pchIn++;
 	ibIn++;

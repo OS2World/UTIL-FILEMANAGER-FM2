@@ -44,6 +44,7 @@
   24 Jun 07 GKY v3.06: Release 1st OpenWatcom release
   21 Aug 07 GKY v3.07beta01: Release
   31 Aug 07 GKY v3.07: Release modified ini structure
+  11 Nov 07 GKY v3.08 Release large file support
 
 ***********************************************************************/
 

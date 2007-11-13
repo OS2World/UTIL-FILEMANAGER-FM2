@@ -253,7 +253,7 @@ VOID HexDump(HWND hwnd, CHAR * value, ULONG cbValue)
       sprintf(s, "%04lx  ", x);
       a = s + 6;
       do {
-	sprintf(a, "%02hx ", *p);
+	sprintf(a, "%02x ", (UCHAR)*p);
 	a += 3;
 	p++;
 	x++;
