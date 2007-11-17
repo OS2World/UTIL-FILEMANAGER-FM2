@@ -18,6 +18,7 @@
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   27 Sep 07 SHL Correct ULONGLONG size formatting
+  16 Nov 07 SHL Ensure fixup buffer sufficiently large
 
 ***********************************************************************/
 
@@ -37,6 +38,7 @@
 #include "fm3str.h"
 
 static PSZ pszSrcFile = __FILE__;
+#define MAX_PATTERN_BYTES 80
 
 BOOL SaveToClip(HWND hwnd, CHAR * text, BOOL append)
 {
@@ -215,7 +217,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	size = CCHMAXPATH;
 	PrfQueryProfileData(fmprof,
 			    appname, "SaveToListName", savename, &size);
-	size = 81;
+	size = MAX_PATTERN_BYTES + 1;
 	PrfQueryProfileData(fmprof,
 			    appname, "SaveToListPattern", pattern, &size);
       }
@@ -223,7 +225,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!*pattern)
 	strcpy(pattern, "%F  %s");
       {
-	CHAR temp[162];
+	CHAR temp[MAX_PATTERN_BYTES * 4 + 1];
 
 	fixup(pattern, temp, sizeof(temp), strlen(pattern));
 	WinSetDlgItemText(hwnd, SAV_PATTERN, temp);
@@ -573,7 +575,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	size = CCHMAXPATH;
 	PrfQueryProfileData(fmprof,
 			    appname, "SaveToListName", savename, &size);
-	size = 81;
+	size = MAX_PATTERN_BYTES + 1;
 	PrfQueryProfileData(fmprof,
 			    appname, "SaveToListPattern", pattern, &size);
       }
@@ -581,7 +583,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (!*pattern)
 	strcpy(pattern, "%F  %s");
       {
-	CHAR temp[162];
+	CHAR temp[MAX_PATTERN_BYTES * 4 + 1];
 
 	fixup(pattern, temp, sizeof(temp), strlen(pattern));
 	WinSetDlgItemText(hwnd, SAV_PATTERN, temp);

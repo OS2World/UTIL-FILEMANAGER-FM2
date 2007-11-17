@@ -19,6 +19,7 @@
   06 Apr 07 GKY Add some error checking in drag/drop
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checks.
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  16 Nov 07 SHL Ensure fixup buffer sufficiently large
 
 ***********************************************************************/
 
@@ -1215,6 +1216,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   INIDATA *inidata;
+  size_t l;
 
   switch (msg) {
   case WM_INITDLG:
@@ -1260,9 +1262,10 @@ MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     GetPString(IDS_WARNINGTEXT),
 		     GetPString(IDS_INIBINARYDATASKIPTEXT)) == MBID_CANCEL)
 	    WinDismissDlg(hwnd, 0);
-	  p = xmallocz(inidata->datalen * 2, pszSrcFile, __LINE__);
+	  l = inidata->datalen * 4 + 1;
+	  p = xmallocz(l, pszSrcFile, __LINE__);
 	  if (p) {
-	    fixup(inidata->data, p, inidata->datalen * 2, inidata->datalen);
+	    fixup(inidata->data, p, l, inidata->datalen);
 	    WinSetDlgItemText(hwnd, IAD_DATA, p);
 	    free(p);
 	  }
