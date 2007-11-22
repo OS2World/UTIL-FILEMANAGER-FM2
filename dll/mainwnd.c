@@ -41,6 +41,7 @@
   19 Aug 07 SHL Move #pragma alloc_text to end of file for OpenWatcom
   19 Aug 07 SHL Rework SaveDirCnrState to return better error info
   30 Aug 07 SHL Add accelerator support to quicklist windows
+  22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 
@@ -1267,7 +1268,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!hwndMenu)
       hwndMenu = WinLoadMenu(hwnd, FM3ModHandle, ID_BUTTONMENU);
     DosExitCritSec();
-    SetPresParams(hwndMenu, NULL, NULL, NULL, GetPString(IDS_10SYSPROTEXT));
+    // SetPresParams(hwndMenu, NULL, NULL, NULL, GetPString(IDS_10SYSPROTEXT));
     if (PopupMenu(hwnd, hwnd, hwndMenu))
       WinShowWindow(hwndMenu, TRUE);
     return MRFROMSHORT(TRUE);
@@ -2178,8 +2179,8 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       MRESULT mr = PFNWPStatic(hwnd, msg, mp1, mp2);
 
       SetPresParams(hwnd,
-		    &RGBGREY,
-		    &RGBBLACK, &RGBGREY, GetPString(IDS_8HELVBOLDTEXT));
+        	    &RGBGREY,
+        	    &RGBBLACK, &RGBGREY, GetPString(IDS_8HELVBOLDTEXT));
       return mr;
     }
 
@@ -5444,7 +5445,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_CONTEXTMENU:
   case WM_CONTEXTMENU:
-    if (CheckMenu(&MainPopupMenu, MAIN_POPUP)) {
+    if (CheckMenu(hwnd, &MainPopupMenu, MAIN_POPUP)) {
       SetToggleChecks(MainPopupMenu);
       PopupMenu(hwnd, hwnd, MainPopupMenu);
     }

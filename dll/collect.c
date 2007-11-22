@@ -40,7 +40,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
-
+  22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 
@@ -126,7 +126,8 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (id == DIR_VIEW) {
 	      if (dcd) {
 		SetViewMenu(hwndButtonPopup, dcd->flWindowAttr);
-		SetDetailsSwitches(hwndButtonPopup, dcd);
+                SetDetailsSwitches(hwndButtonPopup, dcd);
+                CopyPresParams(hwndButtonPopup, hwnd);
 	      }
 
 	      /* don't have tree view in collector */
@@ -353,7 +354,7 @@ MRESULT EXPENTRY CollectorClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     return MRFROMLONG(WinWindowFromID(hwnd, COLLECTOR_CNR));
 
   case UM_VIEWSMENU:
-    return MRFROMLONG(CheckMenu(&CollectorCnrMenu, COLLECTORCNR_POPUP));
+    return MRFROMLONG(CheckMenu(hwnd, &CollectorCnrMenu, COLLECTORCNR_POPUP));
 
   case MM_PORTHOLEINIT:
   case WM_INITMENU:
@@ -1357,7 +1358,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_VIEWSMENU:
 	SetViewMenu((HWND) mp2, dcd->flWindowAttr);
 	WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
-			  (dcd->lastselection != NULL));
+                          (dcd->lastselection != NULL));
+        CopyPresParams((HWND) mp2, hwnd);
 	break;
 
       case IDM_DETAILSSETUP:
@@ -1459,13 +1461,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_SHOWSELECT:
 	QuickPopup(hwnd, dcd,
-		   CheckMenu(&CollectorCnrMenu, COLLECTORCNR_POPUP),
+		   CheckMenu(hwnd, &CollectorCnrMenu, COLLECTORCNR_POPUP),
 		   IDM_SELECTSUBMENU);
 	break;
 
       case IDM_SHOWSORT:
 	QuickPopup(hwnd, dcd,
-		   CheckMenu(&CollectorCnrMenu, COLLECTORCNR_POPUP),
+		   CheckMenu(hwnd, &CollectorCnrMenu, COLLECTORCNR_POPUP),
 		   IDM_SORTSUBMENU);
 	break;
 
@@ -2051,9 +2053,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       pci = (PCNRITEM) CurrentRecord(hwnd);
       if (pci && (INT) pci != -1) {
 	if (pci->attrFile & FILE_DIRECTORY)
-	  menuHwnd = CheckMenu(&CollectorDirMenu, COLLECTORDIR_POPUP);
+	  menuHwnd = CheckMenu(hwnd, &CollectorDirMenu, COLLECTORDIR_POPUP);
 	else
-	  menuHwnd = CheckMenu(&CollectorFileMenu, COLLECTORFILE_POPUP);
+	  menuHwnd = CheckMenu(hwnd, &CollectorFileMenu, COLLECTORFILE_POPUP);
       }
       return MRFROMLONG(menuHwnd);
     }
@@ -2071,14 +2073,14 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		       MPFROM2SHORT(TRUE, CRA_CURSORED));
 	    MarkAll(hwnd, FALSE, FALSE, TRUE);
 	    if (pci->attrFile & FILE_DIRECTORY)
-	      dcd->hwndLastMenu = CheckMenu(&CollectorDirMenu,
+	      dcd->hwndLastMenu = CheckMenu(hwnd, &CollectorDirMenu,
 					    COLLECTORDIR_POPUP);
 	    else
-	      dcd->hwndLastMenu = CheckMenu(&CollectorFileMenu,
+	      dcd->hwndLastMenu = CheckMenu(hwnd, &CollectorFileMenu,
 					    COLLECTORFILE_POPUP);
 	  }
 	  else {
-	    dcd->hwndLastMenu = CheckMenu(&CollectorCnrMenu,
+	    dcd->hwndLastMenu = CheckMenu(hwnd, &CollectorCnrMenu,
 					  COLLECTORCNR_POPUP);
 	    if (dcd->hwndLastMenu && !dcd->cnremphasized) {
 	      WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
@@ -2089,7 +2091,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (dcd->hwndLastMenu) {
 	    if (dcd->hwndLastMenu == CollectorCnrMenu) {
 	      SetViewMenu(dcd->hwndLastMenu, dcd->flWindowAttr);
-	      SetDetailsSwitches(dcd->hwndLastMenu, dcd);
+              SetDetailsSwitches(dcd->hwndLastMenu, dcd);
+              CopyPresParams(dcd->hwndLastMenu, hwnd);
 	      if (dcd->flWindowAttr & CV_MINI)
 		WinCheckMenuItem(dcd->hwndLastMenu, IDM_MINIICONS, TRUE);
 	      disable_menuitem(dcd->hwndLastMenu, DID_CANCEL,

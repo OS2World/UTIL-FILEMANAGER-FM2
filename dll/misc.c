@@ -34,6 +34,7 @@
   14 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
+  22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 
@@ -1563,6 +1564,7 @@ VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2)
       WinSetOwner(mi.hwndSubMenu, hwndMenu);
       WinSetParent(mi.hwndSubMenu, hwndMenu, FALSE);
       WinSetWindowUShort(mi.hwndSubMenu, QWS_ID, IDM_FILESMENU);
+      CopyPresParams(mi.hwndSubMenu, hwndNow);
       mi.afStyle = MIS_SUBMENU;
       ulStyle = WinQueryWindowULong(mi.hwndSubMenu, QWL_STYLE);
       ulStyle &= -WS_SAVEBITS;
@@ -1594,6 +1596,7 @@ VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2)
       WinSetOwner(mi.hwndSubMenu, hwndMenu);
       WinSetParent(mi.hwndSubMenu, hwndMenu, FALSE);
       WinSetWindowUShort(mi.hwndSubMenu, QWS_ID, IDM_VIEWSMENU);
+      CopyPresParams(mi.hwndSubMenu, hwndNow);
       mi.afStyle = MIS_SUBMENU;
       ulStyle = WinQueryWindowULong(mi.hwndSubMenu, QWL_STYLE);
       ulStyle &= -WS_SAVEBITS;
@@ -1605,13 +1608,14 @@ VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2)
   }
 }
 
-HWND CheckMenu(HWND * hwndMenu, USHORT id)
+HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
 {
   /* load and adjust menus as required */
   if (!*hwndMenu || !WinIsWindow((HAB) 0, *hwndMenu)) {
     *hwndMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, id);
     if (hwndMenu == &DirMenu) {
       WinSetWindowUShort(DirMenu, QWS_ID, IDM_FILESMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(DirMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
       SetConditionalCascade(DirMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(DirMenu, IDM_MOVEMENU, IDM_MOVE);
@@ -1631,6 +1635,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &TreeMenu) {
       WinSetWindowUShort(TreeMenu, QWS_ID, IDM_FILESMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(TreeMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
       SetConditionalCascade(TreeMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIP);
       SetConditionalCascade(TreeMenu, IDM_EDITSUBMENU, IDM_ATTRS);
@@ -1646,6 +1651,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &ArcMenu) {
       WinSetWindowUShort(ArcMenu, QWS_ID, IDM_FILESMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(ArcMenu, IDM_EXTRACTSUBMENU, IDM_EXTRACT);
       SetConditionalCascade(ArcMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(ArcMenu, IDM_VIEWSUBMENU, IDM_VIEW);
@@ -1655,6 +1661,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &FileMenu) {
       WinSetWindowUShort(FileMenu, QWS_ID, IDM_FILESMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(FileMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
       SetConditionalCascade(FileMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(FileMenu, IDM_MOVEMENU, IDM_MOVE);
@@ -1675,6 +1682,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &DirCnrMenu) {
       WinSetWindowUShort(DirCnrMenu, QWS_ID, IDM_VIEWSMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(DirCnrMenu, IDM_MISCSUBMENU, IDM_SIZES);
       SetConditionalCascade(DirCnrMenu, IDM_OPENSUBMENU, IDM_OPENSETTINGSME);
       if (fWorkPlace)
@@ -1683,10 +1691,12 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &TreeCnrMenu) {
       WinSetWindowUShort(TreeCnrMenu, QWS_ID, IDM_VIEWSMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(TreeCnrMenu, IDM_PARTITIONSMENU, IDM_PARTITION);
     }
     else if (hwndMenu == &ArcCnrMenu) {
       WinSetWindowUShort(ArcCnrMenu, QWS_ID, IDM_VIEWSMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(ArcCnrMenu, IDM_EXTRACTSUBMENU, IDM_ARCEXTRACT);
       if (fWorkPlace)
 	WinSendMsg(ArcCnrMenu, MM_DELETEITEM,
@@ -1694,11 +1704,13 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &CollectorCnrMenu) {
       WinSetWindowUShort(CollectorCnrMenu, QWS_ID, IDM_VIEWSMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(CollectorCnrMenu, IDM_COLLECTMENU,
 			    IDM_COLLECTFROMCLIP);
     }
     else if (hwndMenu == &CollectorFileMenu) {
       WinSetWindowUShort(CollectorFileMenu, QWS_ID, IDM_FILESMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(CollectorFileMenu, IDM_COMMANDSMENU,
 			    IDM_DOITYOURSELF);
       SetConditionalCascade(CollectorFileMenu, IDM_COPYMENU, IDM_COPY);
@@ -1721,6 +1733,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &CollectorDirMenu) {
       WinSetWindowUShort(CollectorDirMenu, QWS_ID, IDM_FILESMENU);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(CollectorDirMenu, IDM_COMMANDSMENU,
 			    IDM_DOITYOURSELF);
       SetConditionalCascade(CollectorDirMenu, IDM_COPYMENU, IDM_COPY);
@@ -1743,6 +1756,7 @@ HWND CheckMenu(HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &MainPopupMenu) {
       WinSetWindowUShort(MainPopupMenu, QWS_ID, IDM_MAINPOPUP);
+      CopyPresParams(*hwndMenu, hwnd);
       SetConditionalCascade(MainPopupMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
       SetConditionalCascade(MainPopupMenu, IDM_AUTOVIEWSUBMENU, IDM_AUTOVIEW);
     }

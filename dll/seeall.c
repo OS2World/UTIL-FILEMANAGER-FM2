@@ -3232,10 +3232,10 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!pAD->hwndPopup) {
 	pAD->hwndPopup =
 	  WinLoadMenu(HWND_DESKTOP, FM3ModHandle, SEEALL_POPUP);
-	if (pAD->hwndPopup) {
+        if (pAD->hwndPopup) {
 	  WinSetPresParam(pAD->hwndPopup, PP_FONTNAMESIZE,
-			  (ULONG) strlen(GetPString(IDS_8HELVTEXT)) + 1,
-			  (PVOID) GetPString(IDS_8HELVTEXT));
+	        	  (ULONG) strlen(GetPString(IDS_8HELVTEXT)) + 1,
+	        	  (PVOID) GetPString(IDS_8HELVTEXT));
 	  SetConditionalCascade(pAD->hwndPopup,
 				IDM_DELETESUBMENU,
 				(fDefaultDeletePerm) ?

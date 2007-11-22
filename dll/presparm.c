@@ -10,6 +10,7 @@
 
   22 Jul 06 SHL Check more run time errors
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 

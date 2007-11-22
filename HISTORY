@@ -2,8 +2,10 @@ New stuff's at the top.  This list is not necessarily complete.
 
 3.09(pre)
  o Correct hex edit buffer sizing to avoid data loss
+ o Use CopyPresParams to fix presparam inconsistencies in menus
+ o Correct variable cast to fix hex code display problem
 
-3.08 
+3.08
  o Cancel in walk directories dialog now directly closes dialog even if
    directory path text has changed (Gregg)
  o Fixed seek and scan crash caused by file names that exceed maxpath(Gregg)

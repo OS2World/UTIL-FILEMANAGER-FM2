@@ -40,6 +40,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   22 Aug 07 SHL Disable DbgMsgs shipped with 3.0.8beta1
   26 Aug 07 SHL Revert to DosSleep(0)
+  22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 
@@ -457,7 +458,7 @@ MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     return MRFROMLONG(WinWindowFromID(hwnd, TREE_CNR));
 
   case UM_VIEWSMENU:
-    return MRFROMLONG(CheckMenu(&TreeCnrMenu, TREECNR_POPUP));
+    return MRFROMLONG(CheckMenu(hwnd, &TreeCnrMenu, TREECNR_POPUP));
 
   case UM_TIMER:
   case UM_ACTION:
@@ -1016,15 +1017,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pci = (PCNRITEM) CurrentRecord(hwnd);
       if (pci && (INT) pci != -1) {
 	if (IsRoot(pci->pszFileName))
-	  menuHwnd = CheckMenu(&TreeMenu, TREE_POPUP);
+	  menuHwnd = CheckMenu(hwnd, &TreeMenu, TREE_POPUP);
 	else {
-	  menuHwnd = CheckMenu(&DirMenu, DIR_POPUP);
+	  menuHwnd = CheckMenu(hwnd, &DirMenu, DIR_POPUP);
 //            WinEnableMenuItem(DirMenu,
 //                              IDM_TREE,
 //                              FALSE);
 	}
 	if (!(pci->attrFile & FILE_DIRECTORY))
-	  menuHwnd = CheckMenu(&FileMenu, FILE_POPUP);
+	  menuHwnd = CheckMenu(hwnd, &FileMenu, FILE_POPUP);
       }
       return MRFROMLONG(menuHwnd);
     }
@@ -1591,14 +1592,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
 	    MarkAll(hwnd, FALSE, FALSE, TRUE);
 	    if (!(pci->attrFile & FILE_DIRECTORY))
-	      dcd->hwndLastMenu = CheckMenu(&FileMenu, FILE_POPUP);
+	      dcd->hwndLastMenu = CheckMenu(hwnd, &FileMenu, FILE_POPUP);
 	    else if (!IsRoot(pci->pszFileName))
-	      dcd->hwndLastMenu = CheckMenu(&DirMenu, DIR_POPUP);
+	      dcd->hwndLastMenu = CheckMenu(hwnd, &DirMenu, DIR_POPUP);
 	    else
-	      dcd->hwndLastMenu = CheckMenu(&TreeMenu, TREE_POPUP);
+	      dcd->hwndLastMenu = CheckMenu(hwnd, &TreeMenu, TREE_POPUP);
 	  }
 	  else {
-	    dcd->hwndLastMenu = CheckMenu(&TreeCnrMenu, TREECNR_POPUP);
+	    dcd->hwndLastMenu = CheckMenu(hwnd, &TreeCnrMenu, TREECNR_POPUP);
 	    if (dcd->hwndLastMenu && !dcd->cnremphasized) {
 	      WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
 			 MPFROM2SHORT(TRUE, CRA_SOURCE));
@@ -2089,7 +2090,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      && writeable);
 	    WinEnableMenuItem((HWND) mp2, IDM_MOVEMENU, !underenv
 			      && writeable);
-	    WinEnableMenuItem((HWND) mp2, IDM_RENAME, !underenv && writeable);
+            WinEnableMenuItem((HWND) mp2, IDM_RENAME, !underenv && writeable);
+            CopyPresParams((HWND) mp2, hwnd);
 
 	  }
 	}
@@ -2098,20 +2100,24 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_VIEWSMENU:
 	WinCheckMenuItem((HWND) mp2,
 			 IDM_MINIICONS, ((dcd->flWindowAttr & CV_MINI) != 0));
-	WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
+        WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
+        CopyPresParams((HWND) mp2, hwnd);
 	break;
 
       case IDM_COMMANDSMENU:
-	SetupCommandMenu((HWND) mp2, hwnd);
+        SetupCommandMenu((HWND) mp2, hwnd);
+        CopyPresParams((HWND) mp2, hwnd);
 	break;
 
       case IDM_SORTSUBMENU:
 	SetSortChecks((HWND) mp2, TreesortFlags);
-	break;
+        CopyPresParams((HWND) mp2, hwnd);
+        break;
 
       case IDM_WINDOWSMENU:
 	SetupWinList((HWND) mp2,
-		     (hwndMain) ? hwndMain : (HWND) 0, dcd->hwndFrame);
+                     (hwndMain) ? hwndMain : (HWND) 0, dcd->hwndFrame);
+        CopyPresParams((HWND) mp2, hwnd);
 	break;
       }
       dcd->hwndLastMenu = (HWND) mp2;
@@ -2356,12 +2362,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_SHOWSORT:
-	QuickPopup(hwnd, dcd, CheckMenu(&TreeCnrMenu, TREECNR_POPUP),
+	QuickPopup(hwnd, dcd, CheckMenu(hwnd, &TreeCnrMenu, TREECNR_POPUP),
 		   IDM_SORTSUBMENU);
 	break;
 
       case IDM_SHOWSELECT:
-	QuickPopup(hwnd, dcd, CheckMenu(&TreeCnrMenu, TREECNR_POPUP),
+	QuickPopup(hwnd, dcd, CheckMenu(hwnd, &TreeCnrMenu, TREECNR_POPUP),
 		   IDM_SELECTSUBMENU);
 	break;
 

@@ -20,6 +20,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   27 Sep 07 SHL Correct ULONGLONG size formatting
+  22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 
@@ -873,7 +874,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_CONTEXTMENU:
-    CheckMenu(&AutoMenu, (id == MAIN_AUTOVIEWMLE) ?
+    CheckMenu(hwnd, &AutoMenu, (id == MAIN_AUTOVIEWMLE) ?
 	      IDM_AUTOVIEWMLE : IDM_AUTOVIEW);
     WinCheckMenuItem(AutoMenu, IDM_AUTOVIEWFILE, !fComments);
     WinCheckMenuItem(AutoMenu, IDM_AUTOVIEWCOMMENTS, fComments);

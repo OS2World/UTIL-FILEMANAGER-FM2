@@ -46,6 +46,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
+  22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 
@@ -1186,11 +1187,11 @@ MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_VIEWSMENU:
     // fixme to disble menu items as needed
-    return MRFROMLONG(CheckMenu(&ArcCnrMenu, ARCCNR_POPUP));
+    return MRFROMLONG(CheckMenu(hwnd, &ArcCnrMenu, ARCCNR_POPUP));
 
   case UM_FILESMENU:
     // fixme to disble menu items as needed
-    return MRFROMLONG(CheckMenu(&ArcMenu, ARC_POPUP));
+    return MRFROMLONG(CheckMenu(hwnd, &ArcMenu, ARC_POPUP));
 
   case MM_PORTHOLEINIT:
   case WM_INITMENU:
@@ -2769,12 +2770,12 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_SHOWSELECT:
-	QuickPopup(hwnd, dcd, CheckMenu(&ArcCnrMenu, ARCCNR_POPUP),
+	QuickPopup(hwnd, dcd, CheckMenu(hwnd, &ArcCnrMenu, ARCCNR_POPUP),
 		   IDM_SELECTSUBMENU);
 	break;
 
       case IDM_SHOWSORT:
-	QuickPopup(hwnd, dcd, CheckMenu(&ArcCnrMenu, ARCCNR_POPUP),
+	QuickPopup(hwnd, dcd, CheckMenu(hwnd, &ArcCnrMenu, ARCCNR_POPUP),
 		   IDM_SORTSUBMENU);
 	break;
 
@@ -3294,10 +3295,10 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		       MPFROM2SHORT(TRUE, CRA_CURSORED));
 	    MarkAll(hwnd, FALSE, FALSE, TRUE);
-	    dcd->hwndLastMenu = CheckMenu(&ArcMenu, ARC_POPUP);
+	    dcd->hwndLastMenu = CheckMenu(hwnd, &ArcMenu, ARC_POPUP);
 	  }
 	  else {
-	    dcd->hwndLastMenu = CheckMenu(&ArcCnrMenu, ARCCNR_POPUP);
+	    dcd->hwndLastMenu = CheckMenu(hwnd, &ArcCnrMenu, ARCCNR_POPUP);
 	    if (dcd->hwndLastMenu && !dcd->cnremphasized) {
 	      WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
 			 MPFROM2SHORT(TRUE, CRA_SOURCE));

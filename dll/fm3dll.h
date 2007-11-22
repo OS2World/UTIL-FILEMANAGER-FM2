@@ -63,6 +63,7 @@
   01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundary
   04 Nov 07 GKY Add pszFmtFileSize to CNRITEM to display large file sizes
   10 Nov 07 GKY Add ThousandSeparator variable for file sizes NLS tseparator.
+  22 Nov 07 GKY Use CopyPresParams in CheckMenu to fix presparam inconsistencies in menus
 
 ***********************************************************************/
 
@@ -741,7 +742,7 @@ PMINIRECORDCORE CurrentRecord(HWND hwndCnr);
 BOOL PostMsg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID OpenEdit(HWND hwnd);
 VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2);
-HWND CheckMenu(HWND * hwndMenu, USHORT id);
+HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id);
 SHORT AddToListboxBottom(HWND hwnd, CHAR * str);
 VOID SetSysMenu(HWND hwndSysMenu);
 VOID LoadLibPath(CHAR * str, LONG len);
