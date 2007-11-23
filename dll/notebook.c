@@ -53,6 +53,8 @@ static HWND hwndNotebook;
 
 MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+  ULONG  ulResult;
+
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGA_VIRUS, EM_SETTEXTLIMIT,
@@ -202,10 +204,18 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (strcmp(extractpath, "*")) {
 
 	MakeFullName(extractpath);
-	if (IsFile(extractpath)) {
-	  Runtime_Error(pszSrcFile, __LINE__, "%s not a directory",
-			extractpath);
-	  *extractpath = 0;
+        if (IsFile(extractpath)) {
+          ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+                     "Bad pathname", "%s is not a valid directory\nDo you wish to delete it?",
+                            extractpath);
+          if (ulResult == MBID_YES)
+            *extractpath = 0;
+          if (ulResult == MBID_CANCEL){
+            WinDlgBox(HWND_DESKTOP,
+		    hwnd,
+		    CfgDlgProc, FM3ModHandle, CFG_FRAME, (PVOID) "Archive");
+            break;
+          }
 	}
       }
     }

@@ -5445,7 +5445,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_CONTEXTMENU:
   case WM_CONTEXTMENU:
-    if (CheckMenu(hwnd, &MainPopupMenu, MAIN_POPUP)) {
+    if (CheckMenu(hwndMainMenu, &MainPopupMenu, MAIN_POPUP)) {
       SetToggleChecks(MainPopupMenu);
       PopupMenu(hwnd, hwnd, MainPopupMenu);
     }

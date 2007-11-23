@@ -1386,6 +1386,7 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
 				 WS_VISIBLE | WS_ANIMATE,
 				 FM3ModHandle, MAIN2_FRAME, &hwndClient);
   if (hwndFrame) {
+    hwndMainMenu = WinWindowFromID(hwndFrame, FID_MENU);
     if (!WinRestoreWindowPos(FM2Str, "MainWindowPos2", hwndFrame)) {
 
       ULONG fl = SWP_MOVE | SWP_SIZE;

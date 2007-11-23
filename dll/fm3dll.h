@@ -1419,7 +1419,7 @@ DATADEF HWND hwndHelp, LastDir, AboutBox, DirMenu, FileMenu, TreeMenu,
   ArcMenu, DirCnrMenu, TreeCnrMenu, ArcCnrMenu,
   CollectorCnrMenu, CollectorFileMenu, CollectorDirMenu,
   Collector, MainPopupMenu, DataHwnd, AutoMenu, hwndBubble,
-  hwndToolback, MainObjectHwnd;
+  hwndToolback, MainObjectHwnd, hwndMainMenu;
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL2)
 #endif

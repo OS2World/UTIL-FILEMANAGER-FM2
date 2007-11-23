@@ -1163,8 +1163,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     *targetdir = 0;
   size = sizeof(extractpath);
   PrfQueryProfileData(fmprof, appname, "ExtractPath", extractpath, &size);
-  if (!IsValidDir(extractpath))
-    *extractpath = 0;
+  //if (!IsValidDir(extractpath))
+  //  *extractpath = 0;
   size = sizeof(printer);
   PrfQueryProfileData(fmprof, appname, "Printer", printer, &size);
   size = sizeof(dircompare);
@@ -1368,6 +1368,7 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
 				 FM3ModHandle, MAIN_FRAME, &hwndClient);
   if (hwndFrame) {
     WinSetWindowUShort(hwndFrame, QWS_ID, MAIN_FRAME);
+    hwndMainMenu = WinWindowFromID(hwndFrame, FID_MENU);
     if (!WinRestoreWindowPos(FM2Str, "MainWindowPos", hwndFrame)) {
 
       ULONG fl = SWP_MOVE | SWP_SIZE;
