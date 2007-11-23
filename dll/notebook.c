@@ -212,8 +212,9 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             *extractpath = 0;
           if (ulResult == MBID_CANCEL){
             WinDlgBox(HWND_DESKTOP,
-		    hwnd,
-		    CfgDlgProc, FM3ModHandle, CFG_FRAME, (PVOID) "Archive");
+                      hwnd, CfgDlgProc,
+                      FM3ModHandle, CFG_FRAME,
+                      (PVOID) "Archive");
             break;
           }
 	}
