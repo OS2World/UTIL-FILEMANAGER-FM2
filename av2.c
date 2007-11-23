@@ -1,12 +1,28 @@
-#define INCL_DOS
-#define INCL_WIN
 
-#include <os2.h>
+/***********************************************************************
+
+  $Id$
+
+  Archive viewer applet
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2007 Steven H. Levine
+
+  23 Sep 07 SHL Sync with standards
+  23 Sep 07 SHL Get rid of statics
+
+***********************************************************************/
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+#define INCL_DOS
+#define INCL_WIN
+#include <os2.h>
+
 #include "dll\fm3dll.h"
 #include "dll\version.h"
 #include "dll\fm3str.h"
@@ -15,17 +31,15 @@ HMTX av2Sem;
 
 VOID APIENTRY deinit(ULONG why)
 {
-
-  /* cleanup */
+  /* cleanup before exiting */
 
   DosCloseMutexSem(av2Sem);
   if (DosOpenMutexSem("\\SEM32\\AV2", &av2Sem)) {
-
-    static CHAR s[CCHMAXPATH];
+    CHAR s[CCHMAXPATH];			// 23 Sep 07 SHL
     CHAR *enddir;
     HDIR search_handle;
     ULONG num_matches;
-    static FILEFINDBUF3 f;
+    FILEFINDBUF3 ffb3;
 
     save_dir(s);
     if (s[strlen(s) - 1] != '\\')
@@ -38,21 +52,22 @@ VOID APIENTRY deinit(ULONG why)
       num_matches = 1;
       if (!DosFindFirst(s,
 			&search_handle,
-			FILE_NORMAL | FILE_DIRECTORY |
-			FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
-			FILE_ARCHIVED,
-			&f,
-			sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+			FILE_NORMAL | FILE_DIRECTORY | FILE_SYSTEM |
+			FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
+			&ffb3,
+			sizeof(ffb3),
+			&num_matches,
+			FIL_STANDARD)) {
 	do {
-	  strcpy(enddir, f.achName);
-	  if (f.attrFile & FILE_DIRECTORY) {
+	  strcpy(enddir, ffb3.achName);
+	  if (ffb3.attrFile & FILE_DIRECTORY) {
 	    wipeallf("%s\\*", s);
 	    DosDeleteDir(s);
 	  }
 	  else
 	    unlinkf("%s", s);
 	} while (!DosFindNext(search_handle,
-			      &f, sizeof(FILEFINDBUF3), &num_matches));
+			      &ffb3, sizeof(FILEFINDBUF3), &num_matches));
 	DosFindClose(search_handle);
       }
     }
@@ -65,12 +80,11 @@ VOID APIENTRY deinit(ULONG why)
 
 int main(int argc, char *argv[])
 {
-
   HAB hab;
   HMQ hmq;
   QMSG qmsg;
   HWND hwndFrame = (HWND) 0;
-  static CHAR fullname[CCHMAXPATH];
+  static CHAR fullname[CCHMAXPATH];	// 23 Sep 07 SHL fixme to not be static
   CHAR *thisarg = NULL;
   INT x;
 
@@ -98,7 +112,7 @@ int main(int argc, char *argv[])
     if (*fullname && (strchr(fullname, '?') ||
 		      strchr(fullname, '*') || !strchr(fullname, '.'))) {
 
-      static FILEFINDBUF3 ffb;
+      FILEFINDBUF3 ffb3;
       ULONG nm;
       HDIR hdir;
       CHAR *enddir;
@@ -114,8 +128,8 @@ int main(int argc, char *argv[])
 			  &hdir,
 			  FILE_NORMAL | FILE_SYSTEM |
 			  FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
-			  &ffb, sizeof(FILEFINDBUF3), &nm, FIL_STANDARD)) {
-	  strcpy(enddir, ffb.achName);
+			  &ffb3, sizeof(FILEFINDBUF3), &nm, FIL_STANDARD)) {
+	  strcpy(enddir, ffb3.achName);
 	  DosFindClose(hdir);
 	}
       }
@@ -126,7 +140,7 @@ int main(int argc, char *argv[])
     hmq = WinCreateMsgQueue(hab, 1024);
     if (hmq) {
       {
-	static CHAR path[CCHMAXPATH];
+	CHAR path[CCHMAXPATH];
 	CHAR *env;
 	FILESTATUS3 fs;
 
@@ -135,16 +149,14 @@ int main(int argc, char *argv[])
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQueryPathInfo(env, FIL_QUERYFULLNAME, path, sizeof(path))) {
 	    DosError(FERR_DISABLEHARDERR);
-	    if (!DosQueryPathInfo(path,
-				  FIL_STANDARD, &fs, (ULONG) sizeof(fs))) {
+	    if (!DosQueryPathInfo(path, FIL_STANDARD, &fs, sizeof(fs))) {
 	      if (!(fs.attrFile & FILE_DIRECTORY)) {
 		env = strrchr(path, '\\');
 		if (env)
 		  *env = 0;
 	      }
 	      DosError(FERR_DISABLEHARDERR);
-	      if (!DosQueryPathInfo(path,
-				    FIL_STANDARD, &fs, (ULONG) sizeof(fs))) {
+	      if (!DosQueryPathInfo(path, FIL_STANDARD, &fs, sizeof(fs))) {
 		if (fs.attrFile & FILE_DIRECTORY)
 		  switch_to(path);
 	      }
