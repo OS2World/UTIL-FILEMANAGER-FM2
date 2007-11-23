@@ -8,15 +8,19 @@
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
 # 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
+# 26 Sep 07 SHL Support USE_WRC from environment
 
 CC = wcc386
 LINK = wlink
 
-# fixme use use wrc when wrc fixed (v1.7 maybe)
-# wrc 1.6 is broken - does not copy resident name table
+# 26 Sep 07 SHL fixme for rc.exe logic to be gone
 
-!ifndef USE_WRC
+!ifndef USE_WRC			# if not defined on command line
+!ifdef %USE_WRC			# if defined in environment
+USE_WRC = $(%USE_WRC)
+!else
 USE_WRC = 0
+!endif
 !endif
 
 !if $(USE_WRC)
