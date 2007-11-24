@@ -1268,7 +1268,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!hwndMenu)
       hwndMenu = WinLoadMenu(hwnd, FM3ModHandle, ID_BUTTONMENU);
     DosExitCritSec();
-    // SetPresParams(hwndMenu, NULL, NULL, NULL, GetPString(IDS_10SYSPROTEXT));
+    SetPresParams(hwndMenu, NULL, NULL, NULL, GetPString(IDS_10SYSPROTEXT));
     if (PopupMenu(hwnd, hwnd, hwndMenu))
       WinShowWindow(hwndMenu, TRUE);
     return MRFROMSHORT(TRUE);
@@ -2195,12 +2195,12 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				   &AttrFound,
 				   (ULONG) sizeof(AttrValue), &AttrValue, 0);
       if (cbRetLen) {
-	switch (AttrFound) {
-	case PP_FONTNAMESIZE:
+	//switch (AttrFound) {
+	//case PP_FONTNAMESIZE:
 	  PostMsg(WinQueryWindow(hwnd, QW_PARENT),
 		  WM_UPDATEFRAME, MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	  break;
-	}
+
       }
     }
     break;

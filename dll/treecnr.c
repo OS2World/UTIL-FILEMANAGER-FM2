@@ -2052,7 +2052,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    remote = rdy && (driveflags[chDrvU - 'A'] & (DRIVE_REMOTE || DRIVE_VIRTUAL)) != 0;
 	    underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
 
-	    WinEnableMenuItem((HWND) mp2, IDM_INFO, rdy);
+	    CopyPresParams((HWND) mp2, hwndMainMenu);
+            WinEnableMenuItem((HWND) mp2, IDM_INFO, rdy);
 
 	    WinEnableMenuItem((HWND) mp2, IDM_ATTRS, writeable);
 	    WinEnableMenuItem((HWND) mp2, IDM_EAS, writeable);
@@ -2091,7 +2092,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_MOVEMENU, !underenv
 			      && writeable);
             WinEnableMenuItem((HWND) mp2, IDM_RENAME, !underenv && writeable);
-            CopyPresParams((HWND) mp2, hwndMainMenu);
 
 	  }
 	}
@@ -2100,9 +2100,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_VIEWSMENU:
 	WinCheckMenuItem((HWND) mp2,
 			 IDM_MINIICONS, ((dcd->flWindowAttr & CV_MINI) != 0));
-        WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
         CopyPresParams((HWND) mp2, hwndMainMenu);
-	break;
+	WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
+        break;
 
       case IDM_COMMANDSMENU:
         SetupCommandMenu((HWND) mp2, hwnd);
@@ -2941,7 +2941,6 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, TREE_FRAME, &hwndClient);
   if (hwndFrame && hwndClient) {
-    hwndMainMenu = WinWindowFromID(hwndFrame, FID_MENU);
     dcd = xmalloc(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));

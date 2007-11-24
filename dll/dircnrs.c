@@ -474,7 +474,7 @@ MRESULT EXPENTRY DirClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     return MRFROMLONG(WinWindowFromID(hwnd, DIR_CNR));
 
   case UM_VIEWSMENU:
-    return MRFROMLONG(CheckMenu(hwndMainMenu, &DirCnrMenu, DIRCNR_POPUP));
+    return MRFROMLONG(CheckMenu(hwnd, &DirCnrMenu, DIRCNR_POPUP));
 
   case UM_DRIVECMD:
   case WM_INITMENU:
@@ -1553,7 +1553,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       switch (SHORT1FROMMP(mp1)) {
       case IDM_FILESMENU:
-	if (isalpha(*dcd->directory)) {
+        CopyPresParams((HWND) mp2, hwndMainMenu);
+        if (isalpha(*dcd->directory)) {
 	  if (driveflags[toupper(*dcd->directory) - 'A'] & DRIVE_NOTWRITEABLE) {
 	    WinEnableMenuItem((HWND) mp2, IDM_MOVEMENU, FALSE);
 	    WinEnableMenuItem((HWND) mp2, IDM_RENAME, FALSE);
@@ -1577,17 +1578,16 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_EDITTEXT, TRUE);
 	    WinEnableMenuItem((HWND) mp2, IDM_EDITBINARY, TRUE);
             WinEnableMenuItem((HWND) mp2, IDM_ATTRS, TRUE);
-            CopyPresParams((HWND) mp2, hwndMainMenu);
 	  }
 	}
 	break;
 
       case IDM_VIEWSMENU:
         SetViewMenu((HWND) mp2, dcd->flWindowAttr);
-	WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
+	CopyPresParams((HWND) mp2, hwndMainMenu);
+        WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
                           (dcd->lastselection != NULL));
-        CopyPresParams((HWND) mp2, hwndMainMenu);
-	if (isalpha(*dcd->directory)) {
+        if (isalpha(*dcd->directory)) {
 	  if (driveflags[toupper(*dcd->directory) - 'A'] & DRIVE_NOTWRITEABLE)
 	    WinEnableMenuItem((HWND) mp2, IDM_MKDIR, FALSE);
 	  else
@@ -1792,11 +1792,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_SHOWSELECT:
 	QuickPopup(hwnd,
 		   dcd,
-		   CheckMenu(hwndMainMenu, &DirCnrMenu, DIRCNR_POPUP), IDM_SELECTSUBMENU);
+		   CheckMenu(hwnd, &DirCnrMenu, DIRCNR_POPUP), IDM_SELECTSUBMENU);
 	break;
 
       case IDM_SHOWSORT:
-	QuickPopup(hwnd, dcd, CheckMenu(hwndMainMenu, &DirCnrMenu, DIRCNR_POPUP),
+	QuickPopup(hwnd, dcd, CheckMenu(hwnd, &DirCnrMenu, DIRCNR_POPUP),
 		   IDM_SORTSUBMENU);
 	break;
 
@@ -2645,14 +2645,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSendMsg(hwnd,
 		       CM_SETRECORDEMPHASIS,
 		       MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
-	    MarkAll(hwnd, FALSE, FALSE, TRUE);
-	    if (pci->attrFile & FILE_DIRECTORY)
+            MarkAll(hwnd, FALSE, FALSE, TRUE);
+            if (pci->attrFile & FILE_DIRECTORY)
 	      dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
 	    else
 	      dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);
 	  }
 	  else {
-	    dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &DirCnrMenu, DIRCNR_POPUP);
+	    dcd->hwndLastMenu = CheckMenu(hwnd, &DirCnrMenu, DIRCNR_POPUP);
 	    if (dcd->hwndLastMenu && !dcd->cnremphasized) {
 	      WinSendMsg(hwnd,
 			 CM_SETRECORDEMPHASIS,
@@ -3382,7 +3382,6 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
       if (idinc > 99)
 	idinc = 0;
       WinSetWindowUShort(hwndFrame, QWS_ID, id);
-      hwndMainMenu = WinWindowFromID(hwndFrame, FID_MENU);
       dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
       if (!dcd) {
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);

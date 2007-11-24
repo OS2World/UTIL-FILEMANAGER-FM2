@@ -324,22 +324,22 @@ VOID CopyPresParams(HWND target, HWND source)
    */
 
   ULONG AttrFound, AttrValue[64], cbRetLen, x = 0,
-    AttrName[] = { PP_FONTNAMESIZE, PP_BACKGROUNDCOLOR,
-    PP_FOREGROUNDCOLOR, PP_HILITEBACKGROUNDCOLOR,
-    PP_HILITEFOREGROUNDCOLOR, PP_BORDERCOLOR,
-    0
-  };
+    AttrName[] = { PP_FONTNAMESIZE, PP_FOREGROUNDCOLOR,
+    PP_BACKGROUNDCOLOR, PP_HILITEBACKGROUNDCOLOR,
+    PP_HILITEFOREGROUNDCOLOR, PP_BORDERCOLOR};
 
-  while (AttrName[x]) {
+  for (x=0; x < 6; x++) {
     cbRetLen = WinQueryPresParam(source,
 				 AttrName[x],
 				 0,
 				 &AttrFound,
-				 (ULONG) sizeof(AttrValue), &AttrValue, 0);
+                                 sizeof(AttrValue),
+                                 &AttrValue, 0);
+    //printf("%s %x\n", AttrValue, source); fflush(stdout);
+    //printf("%x\n", AttrValue); fflush(stdout);
     if (cbRetLen)
       WinSetPresParam(target, AttrName[x], cbRetLen, (PVOID) AttrValue);
-    x++;
-  }
+  } //for
 }
 
 VOID SetPresParams(HWND hwnd, RGB2 * back, RGB2 * fore, RGB2 * border,
