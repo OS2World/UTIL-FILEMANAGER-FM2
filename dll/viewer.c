@@ -848,7 +848,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               else
                 vw->saveas = FALSE;
           }
-          else if (vw->saveas = TRUE) {
+          else if (vw->saveas) {
             vw->saveas = FALSE;
             WinSendMsg(hwnd,
                        WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
