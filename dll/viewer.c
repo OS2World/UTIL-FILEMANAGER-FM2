@@ -13,6 +13,8 @@
   31 Aug 06 SHL Sync with disable_menuitem changes
   30 Mar 07 GKY Remove GetPString for window class names
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  26 Nov 07 GKY Allow open of readonly files in the editor with warning
+  26 Nov 07 GKY Add "Save as" menu option to editor
 
 ***********************************************************************/
 
@@ -63,17 +65,46 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
   HWND hwndFrame, hwnd;
   XMLEWNDPTR *vw;
   ULONG flFrameFlags = FCF_SYSMENU | FCF_SIZEBORDER | FCF_ICON |
-    FCF_TITLEBAR | FCF_MINMAX | FCF_MENU | FCF_ACCELTABLE | FCF_NOBYTEALIGN;
+      FCF_TITLEBAR | FCF_MINMAX | FCF_MENU | FCF_ACCELTABLE | FCF_NOBYTEALIGN;
+  ULONG ulResult;
+  BOOL OpenInViewer = FALSE, readonly = FALSE;
+  FILESTATUS3 fs3;
 
   if (fExternalViewer || strcmp(realappname, FM3Str))
     hwndClient = HWND_DESKTOP;
-  if ((flags & 1) && fUseNewViewer)
-    return StartViewer(hwndClient, (USHORT) flags, filename, hwndRestore);
+  DosQueryPathInfo(filename, FIL_STANDARD, &fs3, sizeof(fs3));
+  if (fs3.attrFile & FILE_READONLY) {
+    ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+                      GetPString(IDS_WARNINGTEXT),
+                      GetPString(IDS_EDITREADONLYFILETEXT),
+                      filename);
+    switch (ulResult){
+    case MBID_YES:{
+      readonly = TRUE;
+      break;
+    }
+
+    case MBID_NO:
+      if (fUseNewViewer)
+        return StartViewer(hwndClient, (USHORT) flags, filename, hwndRestore);
+      else{
+        OpenInViewer = TRUE;
+        break;
+      }
+
+    case MBID_CANCEL:
+        return (HWND) 0;
+    }
+  }
 
   vw = xmallocz(sizeof(XMLEWNDPTR), pszSrcFile, __LINE__);
   if (!vw)
     return (HWND) 0;
   vw->size = sizeof(XMLEWNDPTR);
+  if (readonly)
+    vw->fileattrreadonly = TRUE;
+  else
+    vw->fileattrreadonly = FALSE;
   if (flags & 1) {
     if (flags & 8)
       vw->hex = 2;
@@ -94,11 +125,11 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
   if (ParentIsDesktop(hwndClient, hwndClient))
     flFrameFlags |= FCF_TASKLIST;
   hwndFrame = WinCreateStdWindow(hwndClient,
-				 WS_VISIBLE,
+				 0,
 				 &flFrameFlags,
 				 WC_MLEEDITOR,
 				 NullStr,
-				 WS_VISIBLE | fwsAnimate,
+				 fwsAnimate,
 				 FM3ModHandle, MLE_FRAME, &hwnd);
   if (hwndFrame) {
     vw->hwndFrame = hwndFrame;
@@ -142,7 +173,8 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
 		      SWP_SIZE | SWP_MOVE | SWP_SHOW | SWP_ZORDER |
 		      SWP_ACTIVATE);
     }
-    MLEsetreadonly(hwndMLE, ((flags & 1) != 0));
+    if (OpenInViewer | (flags & 1))
+      MLEsetreadonly(hwndMLE, ((flags & 1) != 0));
     WinSetWindowPtr(hwnd, QWL_USER, (PVOID) vw);
     if (!PostMsg(hwnd, UM_SETUP, MPVOID, MPFROMLONG(hwndClient)))
       WinSendMsg(hwnd, UM_SETUP, MPVOID, MPFROMLONG(hwndClient));
@@ -730,9 +762,16 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			hwnd, NullStr, GetPString(IDS_SAVECHANGESTEXT));
 	  if (temp == MBID_CANCEL)
 	    break;
-	  if (temp == MBID_YES)
+          if (temp == MBID_YES){
 	    WinSendMsg(hwnd,
-		       WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
+                       WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
+            if (vw->fileattrreadonly) {
+              temp = saymsg(MB_OKCANCEL | MB_ICONEXCLAMATION,
+                            hwnd, NullStr, "File is readonly and has not been saved");
+              if (temp == MBID_CANCEL)
+                return 0;
+            }
+          }
 	}
 	MLEclearall(hwndMLE);
 	*vw->exportfilename = 0;
@@ -769,25 +808,61 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
+    case MLE_EXPORTAS:
+      vw->saveas = TRUE;
+      WinSendMsg(hwnd,
+                 WM_COMMAND, MPFROM2SHORT(MLE_SETEXPORTFILE, 0), MPVOID);
+      break;
+
     case IDM_RENAME:
     case MLE_SETEXPORTFILE:
       if (vw && !MLEgetreadonly(hwndMLE)) {
 
-	CHAR filename[1027];
+        CHAR filename[1027];
+        ULONG ulResult;
 
 	strcpy(filename, vw->exportfilename);
-	if (export_filename(hwnd, filename, 1)) {
+	if (export_filename(hwnd, filename, !vw->fileattrreadonly)) {
 	  if (stricmp(filename, vw->exportfilename)) {
-	    vw->ch = TRUE;
-	    MLEsetchanged(hwndMLE, TRUE);
+            vw->ch = TRUE;
+            vw->fileattrreadonly = FALSE;
+            MLEsetchanged(hwndMLE, TRUE);
 	    strcpy(vw->exportfilename, filename);
-	    WinSendMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
-	  }
+            WinSendMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
+            if (vw->saveas) {
+              vw->saveas = FALSE;
+              WinSendMsg(hwnd,
+                         WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
+            }
+          }
+          else if (vw->fileattrreadonly){
+              ulResult = saymsg(MB_OKCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+                                GetPString(IDS_WARNINGTEXT),
+                                GetPString(IDS_EDITREADONLYFILETEXT2),
+                                filename);
+              if (ulResult == MBID_OK){
+                WinSendMsg(hwnd,
+                           WM_COMMAND, MPFROM2SHORT(MLE_SETEXPORTFILE, 0), MPVOID);
+                break;
+              }
+              else
+                vw->saveas = FALSE;
+          }
+          else if (vw->saveas = TRUE) {
+            vw->saveas = FALSE;
+            WinSendMsg(hwnd,
+                       WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
+          }
 	}
       }
       break;
 
     case MLE_EXPORTFILE:
+      if (vw->fileattrreadonly){
+        WinSendMsg(hwnd,
+                   WM_COMMAND, MPFROM2SHORT(MLE_SETEXPORTFILE, 0), MPVOID);
+        break;
+      }
       if (!MLEgetreadonly(hwndMLE)) {
 
 	ULONG oldsize;
@@ -806,7 +881,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  /* zero file length instead of unlink (protects EAs from loss) */
 	  FILE *fp;
 
-	  fp = xfopen(vw->exportfilename, "r+", pszSrcFile, __LINE__);
+	  fp = fopen(vw->exportfilename, "r+"); //, pszSrcFile, __LINE__);
 	  if (fp) {
 	    oldsize = filelength(fileno(fp));
 	    DosSetFileSize(fileno(fp), 0);
@@ -941,7 +1016,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR filename[1027];
 
 	strcpy(filename, vw->exportfilename);
-	if (export_filename(hwnd, filename, 1))
+	if (export_filename(hwnd, filename, !vw->fileattrreadonly))
 	  MLEdoblock(hwndMLE, WRITE, filename);
       }
       break;
@@ -1137,9 +1212,16 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      hwnd, NullStr, GetPString(IDS_SAVECHANGESTEXT));
 	if (temp == MBID_CANCEL)
 	  return 0;
-	if (temp == MBID_YES)
+        if (temp == MBID_YES){
 	  WinSendMsg(hwnd,
-		     WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
+                     WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
+          if (vw->fileattrreadonly) {
+            temp = saymsg(MB_OKCANCEL | MB_ICONEXCLAMATION,
+                          hwnd, NullStr, "File is readonly and has not been saved");
+            if (temp == MBID_CANCEL)
+                return 0;
+          }
+        }
       }
     }
     WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));

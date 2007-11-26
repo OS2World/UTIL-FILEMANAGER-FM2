@@ -27,6 +27,7 @@
   06 Aug 07 GKY Fix Dirsizes accel key to be ctrl + z
   30 Aug 07 SHL Add accelerator support to QuickList windows
   05 Sep 07 SHL Small change for OpenWatcom wrc compat
+  26 Nov 07 GKY Added "Save as" to internal editor
 
 ***********************************************************************/
 
@@ -1729,6 +1730,7 @@ MENU MLE_FRAME
       MENUITEM "~Load file...\tCtrl + l",         MLE_LOADFILE
       MENUITEM "~Insert file...\tCtrl + i",       MLE_INSERTFILE
       MENUITEM "~Save file...\tCtrl + s",         MLE_EXPORTFILE
+      MENUITEM "Save ~as...\tCtrl + e",           MLE_EXPORTAS
       MENUITEM "~Change filename...\tCtrl + c",   MLE_SETEXPORTFILE
       MENUITEM "",                          -1,     MIS_SEPARATOR
       MENUITEM "~New file",                 MLE_NEWFILE
@@ -1849,6 +1851,7 @@ ACCELTABLE MLE_FRAME
    "a",      MLE_APPENDCLIP,            CONTROL
    "R",      MLE_TOGGLEREADONLY,        CONTROL,SHIFT
    "s",      MLE_EXPORTFILE,            CONTROL
+   "e",      MLE_EXPORTAS,              CONTROL
    "f",      MLE_FINDFIRST,             CONTROL
    "I",      MLE_SENSITIVE,             SHIFT,CONTROL
    "j",      MLE_JUMP,                  CONTROL

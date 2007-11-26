@@ -19,6 +19,7 @@
   13 Aug 07 SHL Rework FilesToGet min/max to match how DosFindFirst/Next works
   19 Aug 07 SHL Sync with SaveDirCnrState mods
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
+  26 Nov 07 GKY Allow a currently nonvalid path in the ext path field with warning
 
 ***********************************************************************/
 
@@ -206,7 +207,8 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	MakeFullName(extractpath);
         if (IsFile(extractpath)) {
           ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
-                     "Bad pathname", "%s is not a valid directory\nDo you wish to delete it?",
+                            GetPString(IDS_WARNINGTEXT),
+                            GetPString(IDS_EXTPATHNOTVALIDTEXT),
                             extractpath);
           if (ulResult == MBID_YES)
             *extractpath = 0;

@@ -328,6 +328,7 @@
 #define MLE_EDITMENU										21740
 #define MLE_VIEWHTTP										21741
 #define MLE_VIEWFTP 										21742
+#define MLE_EXPORTAS                                                                    21743
 
 #define SRCH_FRAME											21800
 #define SRCH_HELP 											21801

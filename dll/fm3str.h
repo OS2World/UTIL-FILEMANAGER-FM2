@@ -15,6 +15,7 @@
   07 JAN 07 GKY Add new
   31 Mar 07 GKY Removed IDS_WC window class names
   06 Apr 07 GKY Add error message for drg work around
+  26 Nov 07 GKY Added new readonly in editor & ext path
 
 ***********************************************************************/
 
@@ -24,7 +25,7 @@
 // Spares are names IDS_SPARE###
 // Last string reserved for cvs id
 
-#define IDS_NUMSTRS                                           1007
+#define IDS_NUMSTRS                                           1009
 
 #define IDS_OPENBUTTONHELP                                    0
 #define IDS_OPENDROPHELP                                      1
@@ -842,6 +843,7 @@
 #define IDS_PERNODETEXT                                       859
 #define IDS_USUALDISCTEXT                                     860
 #define IDS_FATALERRORTEXT                                    876
+#define IDS_EXTPATHNOTVALIDTEXT                               877
 #define IDS_VERSIONTEXT                                       878
 #define IDS_FM2LITETEXT                                       879
 #define IDS_NODESMAXTEXT                                      882
@@ -968,3 +970,5 @@
 #define IDS_UNITTEXT                                         1003
 #define IDS_SECTORSTEXT                                      1004
 #define IDS_STATSMEANINGLESSTEXT                             1005
+#define IDS_EDITREADONLYFILETEXT                             1006
+#define IDS_EDITREADONLYFILETEXT2                            1007

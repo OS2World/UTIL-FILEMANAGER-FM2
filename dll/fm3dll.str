@@ -330,7 +330,7 @@ System configuration error:
 Environment variable %s is not set.  This variable should be set in CONFIG.SYS to point to all directories containing %s files.
 No files found.
 FM/2: View HELP files
-\nModule: %s Line number: %u 
+\nModule: %s Line number: %u
                                   Error Message Information
 \nModule: %s Line number: %u\nOS/2 error: %d\nClass: %s\nAction: %s\nLocation: %s
                                   OS/2 Error Message Information
@@ -875,7 +875,7 @@ Check your system clock.
 
 
 Fatal Error:
-
+%s is not a valid directory\nDo you wish to delete it?
 Version:
 FM/2 Lite
 
@@ -1004,4 +1004,6 @@ FM/2: Drive info "%c:"
 unit
 %lu bytes/sector, %lu sector%s/unit
 Stats not meaningful
+%s is marked Read Only\n You will need to change its name to save.\n Select: yes to continue, no to open in viewer
+%s is marked Read Only\n You will need to change its name to save.
 $Id$

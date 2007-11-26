@@ -36,6 +36,7 @@
   25 Aug 07 SHL Work around DosSetPathInfo kernel defect
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   10 Nov 07 GKY Get thousands separator from country info for file sizes.
+  26 Nov 07 GKY Eliminate check of ext path on start up
 
 ***********************************************************************/
 

@@ -1,8 +1,15 @@
-/**************************************************************************/
-/*                  MLE text editor/viewer source code                    */
-/*                    copyright (c) 1993 by M. Kimes                      */
-/*                        All rights reserved                             */
-/**************************************************************************/
+/***********************************************************************
+
+  $Id$
+
+  headers for internal viewer/editor
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2002, 2006 Steven H. Levine
+
+  26 Nov 07 Add items to XMLEWNDPTR struct for "Save as" & readonly file handling
+
+***********************************************************************/
 
 /* MLE support macros */
 
@@ -234,11 +241,13 @@ typedef struct
   INT TabStops;
   CHAR exportfilename[1027];
   CHAR importfilename[1027];
+  BOOL fileattrreadonly;
   FATTRS fattrs;
   ULONG cp;
   INT busy;
   ULONG lastpos;
   BOOL killme;
+  BOOL saveas;
   BOOL dontclose;
   HWND hwndRestore, hwndFrame, hwndParent;
 }

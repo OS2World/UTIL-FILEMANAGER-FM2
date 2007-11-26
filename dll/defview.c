@@ -308,7 +308,12 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 			   viewer,
 			   WINDOWED | SEPARATE |
 			   ((fViewChild) ? CHILD : 0), NULL, dummy, NULL);
-	      }
+              }
+              else if (fUseNewViewer) {
+                if (fExternalViewer || strcmp(realappname, FM3Str))
+                  hwndParent = HWND_DESKTOP;
+                StartViewer(hwndParent, 5, filename, hwndFrame);
+              }
 	      else
 		StartMLEEditor(hwndParent, 5, filename, hwndFrame);
 	    }
