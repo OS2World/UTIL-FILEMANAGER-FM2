@@ -1326,8 +1326,9 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 	      if (!rc) {
 		info = xmalloc(sizeof(HOLDFEA), pszSrcFile, __LINE__);
 		if (info) {
+        // 29 Nov 07 GKY One short (EA search crash)
 		  info->pfea =
-		    xmalloc(eaop.fpFEA2List->cbList - sizeof(ULONG),
+		    xmalloc(eaop.fpFEA2List->cbList - sizeof(ULONG) + 1,
 			    pszSrcFile, __LINE__);
 		  memcpy(info->pfea, eaop.fpFEA2List->list,
 			 eaop.fpFEA2List->cbList - sizeof(ULONG));
