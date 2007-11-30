@@ -326,9 +326,10 @@ VOID CopyPresParams(HWND target, HWND source)
   ULONG AttrFound, AttrValue[64], cbRetLen, x = 0,
     AttrName[] = { PP_FONTNAMESIZE, PP_FOREGROUNDCOLOR,
     PP_BACKGROUNDCOLOR, PP_HILITEBACKGROUNDCOLOR,
-    PP_HILITEFOREGROUNDCOLOR, PP_BORDERCOLOR};
+    PP_HILITEFOREGROUNDCOLOR, PP_BORDERCOLOR, PP_MENUFOREGROUNDCOLOR,
+    PP_MENUBACKGROUNDCOLOR};
 
-  for (x=0; x < 6; x++) {
+  for (x=0; x < 8; x++) {
     cbRetLen = WinQueryPresParam(source,
 				 AttrName[x],
 				 0,
