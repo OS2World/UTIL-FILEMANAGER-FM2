@@ -1410,21 +1410,21 @@ BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   if (!rc) {
 
-      // If window owned by some other process or some other thread?
-      if (!IsFm2Window(h, 1)) {
-	  QMSG qmsg;
-	  for (;;) {
-	    DosSleep(1);
-	    rc = WinPostMsg(h, msg, mp1, mp2);
-	    if (rc)
-	      break;			// OK
-	    if (!WinIsWindow((HAB) 0, h))
-	      break;			// Window gone
-	    if (WinPeekMsg((HAB) 0, &qmsg, (HWND) 0, 0, 0, PM_NOREMOVE))
-	      break;			// Queue has message(s)
-	  }				// for
-	}
+    // If window owned by some other process or some other thread?
+    if (!IsFm2Window(h, 1)) {
+      QMSG qmsg;
+      for (;;) {
+        DosSleep(1);
+        rc = WinPostMsg(h, msg, mp1, mp2);
+        if (rc)
+          break;			// OK
+        if (!WinIsWindow((HAB) 0, h))
+          break;			// Window gone
+        if (WinPeekMsg((HAB) 0, &qmsg, (HWND) 0, 0, 0, PM_NOREMOVE))
+          break;			// Queue has message(s)
+      }				// for
     }
+  }
   return rc;
 }
 

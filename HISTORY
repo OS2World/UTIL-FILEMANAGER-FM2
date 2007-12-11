@@ -1,6 +1,7 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.09(pre)
+ o Update CopyPresParams to copy all types of pres parameters (Gregg)
  o Add "Save as" menu item to internal viewer (Gregg)
  o Eliminate deletion of ext path if it was not valid on startup
  allow saving of a currently not valid ext path with warning (Gregg)
