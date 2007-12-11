@@ -1,5 +1,5 @@
 # warpin\makefile - build the FM/2 Warpin installation file: FM2.WIS
-# $Id: $
+# $Id$
 
 # 28 Apr 07 SHL Add clean target
 # 13 May 07 SHL Tweak macro handling to work as documented
