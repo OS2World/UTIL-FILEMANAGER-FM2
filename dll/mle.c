@@ -180,7 +180,7 @@ VOID MLEinternet(HWND h, BOOL ftp)
 		    h, NULL, NULL, "%s %s", ftprun, temp);
 	  else if (!ftp && *httprun)
 	    runemf2(SEPARATE | WINDOWED,
-		    h, NULL, NULL, "%s %s", httprun, temp);
+		    h, httprund, NULL, "%s %s", httprun, temp);
 	}
       }
       DosFreeMem(temp);
