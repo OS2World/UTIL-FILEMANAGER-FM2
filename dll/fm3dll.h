@@ -1439,7 +1439,8 @@ DATADEF CHAR editor[CCHMAXPATH], viewer[CCHMAXPATH],
   HomePath[CCHMAXPATH], SwapperDat[CCHMAXPATH],
   binview[CCHMAXPATH], bined[CCHMAXPATH],
   dircompare[CCHMAXPATH], szDefArc[CCHMAXPATH],
-  ftprun[CCHMAXPATH], httprun[CCHMAXPATH], httprund[CCHMAXPATH], targetdir[CCHMAXPATH];
+  ftprun[CCHMAXPATH], ftprund[CCHMAXPATH], httprun[CCHMAXPATH],
+  httprund[CCHMAXPATH], targetdir[CCHMAXPATH];
 DATADEF HMODULE FM3DllHandle, FM3ModHandle;
 DATADEF CHAR *quicktool[50];
 DATADEF BOOL qtloaded;

@@ -1185,15 +1185,20 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "Virus", virus, &size);
   size = sizeof(ftprun);
   PrfQueryProfileData(fmprof, appname, "FTPRun", ftprun, &size);
-  if (!*ftprun || !size)
-    strcpy(ftprun, "ftppm.exe");
+  if (!*ftprun){
+    size = sizeof(ftprun);
+    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+                        "DefaultBrowserExe", ftprun, &size);
+    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+                        "DefaultWorkingDir", ftprund, &size);
+  }
   size = sizeof(httprun);
   PrfQueryProfileData(fmprof, appname, "HTTPRun", httprun, &size);
-  if (!*httprun || !size){
+  if (!*httprun){
     size = sizeof(httprun);
     PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
                         "DefaultBrowserExe", httprun, &size);
-    PrfQueryProfileData(HINI_PROFILE, "WPURLDEFAULTSETTINGS",
+    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
                         "DefaultWorkingDir", httprund, &size);
   }
   size = sizeof(lasttoolbox);

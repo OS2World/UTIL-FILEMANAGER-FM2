@@ -177,7 +177,7 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	if (*temp) {
 	  if (ftp && *ftprun)
 	    runemf2(SEPARATE | WINDOWED,
-		    h, NULL, NULL, "%s %s", ftprun, temp);
+		    h, ftprund, NULL, "%s %s", ftprun, temp);
 	  else if (!ftp && *httprun)
 	    runemf2(SEPARATE | WINDOWED,
 		    h, httprund, NULL, "%s %s", httprun, temp);

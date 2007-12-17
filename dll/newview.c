@@ -2294,7 +2294,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case 2:
 		if (*urld->url)
 		  runemf2(SEPARATE | WINDOWED,
-			  hwnd, NULL, NULL, "%s %s", ftprun, urld->url);
+			  hwnd, ftprund, NULL, "%s %s", ftprun, urld->url);
 		free(urld);
 		goto NoAdd;
 	      default:
