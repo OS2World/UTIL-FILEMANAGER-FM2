@@ -243,7 +243,8 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     break;
   case IDM_CHKDSK:
     runemf2(SEPARATE | WINDOWED,
-	    hwnd, NULL, NULL, "PMCHKDSK.EXE %c:", toupper(*dv));
+            hwnd, pszSrcFile, __LINE__, NULL, NULL,
+            "PMCHKDSK.EXE %c:", toupper(*dv));
     break;
   case IDM_OPTIMIZE:
     {
@@ -254,7 +255,7 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       if (*FileSystem) {
 	strcat(FileSystem, "OPT.CMD");
 	runemf2(SEPARATE | WINDOWED,
-		hwnd,
+		hwnd, pszSrcFile, __LINE__,
 		NULL,
 		NULL,
 		"%s /C %s %c:", GetCmdSpec(FALSE), FileSystem, toupper(*dv));
@@ -263,7 +264,8 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     break;
   case IDM_FORMAT:
     runemf2(SEPARATE | WINDOWED,
-	    hwnd, NULL, NULL, "PMFORMAT.EXE %c:", toupper(*dv));
+            hwnd, pszSrcFile, __LINE__, NULL, NULL,
+            "PMFORMAT.EXE %c:", toupper(*dv));
     break;
 
 #if 0					// fixme to be gone?
@@ -787,7 +789,7 @@ HWND OpenDirCnr(HWND hwnd, HWND hwndParent, HWND hwndRestore,
 
     assign_ignores(s);
     runemf2(WINDOWED | SEPARATE,
-	    hwnd,
+	    hwnd, pszSrcFile, __LINE__,
 	    NULL,
 	    NULL,
 	    "VDIR.EXE %s%s\"%s%s\"",

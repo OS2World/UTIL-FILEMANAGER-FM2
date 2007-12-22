@@ -152,7 +152,7 @@ VOID load_masks(VOID)
 	    free(info);
 	}
       }
-    }
+    }  //while
     fclose(fp);
   }
 }

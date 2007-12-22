@@ -560,12 +560,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1)) {
     case CMD_FIND:
       {
-	CHAR filename[CCHMAXPATH + 9];
+	CHAR filename[CCHMAXPATH + 9], szfilename[CCHMAXPATH + 9];
 
 	*filename = 0;
-	if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
-	  strcat(filename, " %a");
-	  WinSetDlgItemText(hwnd, CMD_CL, filename);
+        if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
+          BldQuotedFileName(szfilename, filename);
+	  strcat(szfilename, " %a");
+	  WinSetDlgItemText(hwnd, CMD_CL, szfilename);
 	}
       }
       break;
@@ -936,13 +937,15 @@ VOID RunCommand(HWND hwnd, INT cx)
 	fakelist[1] = NULL;
 	ExecOnList(hwnd,
 		   info->cl,
-		   flags, NULL, fakelist, GetPString(IDS_EXECCMDTITLETEXT));
+                   flags, NULL, fakelist, GetPString(IDS_EXECCMDTITLETEXT),
+                   pszSrcFile, __LINE__);
       }
     }
     else
       ExecOnList(hwnd,
 		 info->cl,
-		 flags, NULL, list, GetPString(IDS_EXECCMDTITLETEXT));
+                 flags, NULL, list, GetPString(IDS_EXECCMDTITLETEXT),
+                 pszSrcFile, __LINE__);
   }
   FreeList(list);
   DosPostEventSem(CompactSem);

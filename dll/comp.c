@@ -2173,7 +2173,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fakelist[1] = ofile;
 	    fakelist[2] = NULL;
 	    ExecOnList(hwnd, compare,
-		       WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL);
+                       WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
+                       pszSrcFile, __LINE__);
 	  }
 	  else {
 	    FCOMPARE fc;

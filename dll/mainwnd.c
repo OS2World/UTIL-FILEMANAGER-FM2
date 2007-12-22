@@ -1591,7 +1591,7 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		       cl,
 		       WINDOWED | ((fKeepCmdLine) ?
 				   SEPARATEKEEP : SEPARATE),
-		       directory, list, NULL);
+		       directory, list, NULL, pszSrcFile, __LINE__);
 	    if (list)
 	      free(list);
 	    WinDestroyWindow(hwnd);
@@ -1959,7 +1959,8 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case DND_LAUNCH:
 	  strcat(li->targetpath, " %a");
 	  ExecOnList(hwndMain,
-		     li->targetpath, PROMPT | WINDOWED, NULL, li->list, NULL);
+                     li->targetpath, PROMPT | WINDOWED, NULL, li->list, NULL,
+                     pszSrcFile, __LINE__);
 	  FreeList(li->list);
 	  li->list = NULL;
 	  break;
@@ -4233,22 +4234,12 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  CHAR szPath1[CCHMAXPATH];
 	  CHAR szPath2[CCHMAXPATH];
 	  runemf2(SEPARATE,
-		  HWND_DESKTOP, NULL, NULL,
+                  HWND_DESKTOP, pszSrcFile, __LINE__,
+                  NULL, NULL,
 		  "%s %s %s",
 		  dircompare,
 		  BldQuotedFileName(szPath1, wa.szCurrentPath1),
 		  BldQuotedFileName(szPath2, wa.szCurrentPath2));
-	  // CHAR d1[] = "\"";
-	  // CHAR d2[] = "\"";
-	  // if (!needs_quoting(wa.szCurrentPath1))
-	  //   *d1 = 0;
-	  // if (!needs_quoting(wa.szCurrentPath2))
-	  //   *d2 = 0;
-	  // runemf2(SEPARATE,
-	  //	  HWND_DESKTOP, NULL, NULL,
-	  //	  "%s %s%s%s %s%s%s",
-	  //	  dircompare,
-	  //	  d1, wa.szCurrentPath1, d1, d2, wa.szCurrentPath2, d2);
 	}
       }
     }
@@ -4647,7 +4638,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	env = "WINOS2.COM";
 	type = SEPARATE | FULLSCREEN;
       }
-      runemf2(type, hwnd, path, NULL, "%s", env);
+      runemf2(type, hwnd, pszSrcFile, __LINE__,
+              path, NULL, "%s", env);
     }
     break;
 

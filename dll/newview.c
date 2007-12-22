@@ -25,6 +25,7 @@
   28 Aug 07 GKY Reversed horizontal scrollbar behavior to be present for unwrapped text and absent for wrapped text & hex.
   14 Sep 07 SHL Another attempt to correct the fast viewer text load failure
   10 Oct 07 SHL Correct ReLineThread typo
+  17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
 
 ***********************************************************************/
 
@@ -2288,13 +2289,15 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case 1:
                        if (*urld->url)
                          runemf2(SEPARATE | WINDOWED,
-		               hwnd, httprund, NULL, "%s %s", httprun, urld->url);
+                                 hwnd, pszSrcFile, __LINE__,
+                                 httprund, NULL, "%s %s", httprun, urld->url);
 		free(urld);
 		goto NoAdd;
 	      case 2:
 		if (*urld->url)
 		  runemf2(SEPARATE | WINDOWED,
-			  hwnd, ftprund, NULL, "%s %s", ftprun, urld->url);
+                          hwnd, pszSrcFile, __LINE__,
+                          ftprund, NULL, "%s %s", ftprun, urld->url);
 		free(urld);
 		goto NoAdd;
 	      default:
@@ -3116,7 +3119,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	dummy[0] = ad->filename;
 	dummy[1] = NULL;
-	ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, dummy, NULL);
+        ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
+                   pszSrcFile, __LINE__);
       }
       else
 	StartMLEEditor(ad->hwndParent, 4, ad->filename, ad->hwndFrame);

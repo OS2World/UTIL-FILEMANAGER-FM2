@@ -392,7 +392,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			CmdLineDlgProc,
 			FM3ModHandle, EXEC_FRAME, MPFROMP(&ex)) && *s) {
 	    runemf2(ex.flags,
-		    hwnd,
+		    hwnd, pszSrcFile, __LINE__,
 		    NULL, (*ex.environment) ? ex.environment : NULL, "%s", s);
 	  }
 	}

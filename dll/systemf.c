@@ -70,7 +70,7 @@ BOOL ShowSession(HWND hwnd, PID pid)
 //== ExecOnList() Invoke runemf2 for command and file/directory list ==
 
 int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
-	       char **list, char *prompt)
+	       char **list, char *prompt, PCSZ pszCallingFile, UINT uiLineNumber)
 {
   /* executes the command once for all files in list */
 
@@ -590,7 +590,7 @@ BreakOut:
     else
       ex.flags = flags;
     ex.flags &= (~PROMPT);
-    return runemf2(ex.flags, hwnd, path,
+    return runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
 		   (*ex.environment) ? ex.environment : NULL,
 		   "%s", commandline);
   }
@@ -598,13 +598,14 @@ BreakOut:
 
 //== runemf2() run requested app, return -1 if problem starting else return app rc ==
 
-int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
+int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
+            char *pszDirectory, char *pszEnvironment,
 	    char *formatstring,...)
 {
   /* example:
 
    * status = runemf2(SEPARATE | WINDOWED,
-   *                  hwnd,
+   *                  hwnd, pszCallingFile, __LINE__,
    *                  NullStr,
    *                  NULL,
    *                  "%s /C %s",
@@ -612,6 +613,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
    *                  batchfilename);
    *
    * use (HWND)0 for hwnd if window handle not handy.
+   * pszCallingFile and __LINE__ are used to determine caller for easier error tracking
    */
 
   /*
@@ -633,6 +635,9 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
   char szObject[32] = "", *p, szSavedir[CCHMAXPATH];
   BOOL useTermQ = FALSE;
   char szTempdir[CCHMAXPATH];
+  char szTempPgm[CCHMAXPATH], tempcom[1024], temparg[1024], buf[10] = " &|<>";
+  char *offset, *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
+  UINT offsetquote;
 
   typedef struct {
     USHORT usSessID;
@@ -674,12 +679,43 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 
   *pszPgm = 0;
   va_start(parguments,
-	   formatstring);
+           formatstring);
   vsprintf(pszPgm,
 	   formatstring,
-	   parguments);
+           parguments);
   va_end(parguments);
-
+  offsetexe = strstr(pszPgm, ".exe");
+  offsetcmd = strstr(pszPgm, ".cmd");
+  offsetcom = strstr(pszPgm, ".com");
+  offsetbtm = strstr(pszPgm, ".btm");
+  offsetbat = strstr(pszPgm, ".bat");
+  if (offsetexe)
+    offset = offsetexe;
+  else if (offsetcom)
+    offset = offsetcom;
+  else if (offsetcmd)
+    offset = offsetcmd;
+  else if (offsetbtm)
+    offset = offsetbtm;
+  else if (offsetbat)
+    offset = offsetbat;
+  else
+    offset = NULL;
+  offsetquote = strcspn(pszPgm, buf);
+  if (pszPgm[0] != '\"' && offsetquote < offset - pszPgm && offsetquote != NULL){
+    strcpy(tempcom, pszPgm);
+    tempcom[offset + 4 - pszPgm] = '\0';
+    strcpy (temparg, &pszPgm[offset + 4 - pszPgm]);
+    pszDirectory = szTempdir;
+    strcpy(pszDirectory, tempcom);
+    offset = strrchr(pszDirectory, '\\');
+    pszDirectory[offset +1 - pszDirectory] = '\0';
+    BldQuotedFileName(szTempPgm, tempcom);
+    strcat(szTempPgm, temparg);
+    memcpy(pszPgm, szTempPgm, 1024);
+    //printf("%s\n %s\n%s %s\n %d %d",
+    //       pszPgm, szTempPgm, tempcom, temparg, offset, offsetquote); fflush(stdout);
+  }
   if (pszEnvironment) {
     p = &pszEnvironment[strlen(pszEnvironment)] + 1;
     *p = 0;
@@ -788,7 +824,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	if (rc) {
 	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
 		    GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
-		    pszPgm);
+		    pszPgm, pszCallingFile, __LINE__);
 	  DosFreeMem(pszPgm);
 	  if (pszArgs)
 	    DosFreeMem(pszArgs);
@@ -800,7 +836,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
-			  ulAppType, pszPgm);
+			  ulAppType, pszPgm, pszCallingFile, __LINE__);
 	    if (pszPgm)
 	      DosFreeMem(pszPgm);
 	    if (pszArgs)
@@ -812,7 +848,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
-			  ulAppType, pszPgm);
+			  ulAppType, pszPgm, pszCallingFile, __LINE__);
 	    if (pszPgm)
 	      DosFreeMem(pszPgm);
 	    if (pszArgs)
@@ -833,7 +869,8 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  switch_to(szSavedir);
 	if (ret) {
 	  Dos_Error(MB_ENTER,ret,hwnd,pszSrcFile,__LINE__,
-		    GetPString(IDS_DOSEXECPGMFAILEDTEXT), pszPgm);
+                    GetPString(IDS_DOSEXECPGMFAILEDTEXT), pszPgm,
+                    pszCallingFile, __LINE__);
 	}
       }
     }
@@ -902,7 +939,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	}
       }
 
-      /* goddamned OS/2 limit */
+      // goddamned OS/2 limit
 
       if (strlen(pszPgm) + strlen(pszArgs) > 1024)
 	pszArgs[1024 - strlen(pszPgm)] = 0;
@@ -921,10 +958,10 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	  pszDirectory &&
 	  *pszDirectory)
 	switch_to(szSavedir);
-      if (rc) {
+      if (rc){
 	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
 		  GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
-		  pszPgm);
+		  pszPgm, pszCallingFile, __LINE__);
 	DosFreeMem(pszPgm);
 	if (pszArgs)
 	  DosFreeMem(pszArgs);
@@ -936,7 +973,7 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 	{
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
-			pszPgm);
+			pszPgm, pszCallingFile, __LINE__);
 	  DosFreeMem(pszPgm);
 	  if (pszArgs)
 	    DosFreeMem(pszArgs);
@@ -1105,7 +1142,8 @@ int runemf2(int type, HWND hwnd, char *pszDirectory, char *pszEnvironment,
 
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
 	Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
-		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs);
+                  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs,
+                  pszCallingFile, __LINE__);
       }
       else if (type & WAIT) {
 	if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))

@@ -143,7 +143,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		fprintf(fp, "\n%sDEL \"%s\"%s\n", rexx, s, rexx);
 		fclose(fp);
 		runemf2(WINDOWED | SEPARATE,
-			hwnd,
+			hwnd, pszSrcFile, __LINE__,
 			path, NULL, "%s /C \"%s\"", GetCmdSpec(FALSE), s);
 	      }
 	    }
@@ -167,7 +167,8 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  (path[strlen(path) - 1] == '\\') ? "" : "\\", batches);
       if (rc == MBID_YES)
 	runemf2(WINDOWED | INVISIBLE | BACKGROUND,
-		hwnd, NULL, NULL, "%s /C HELP BATCH", GetCmdSpec(FALSE));
+                hwnd, pszSrcFile, __LINE__, NULL, NULL,
+                "%s /C HELP BATCH", GetCmdSpec(FALSE));
       else if (rc == MBID_CANCEL)
 	WinDismissDlg(hwnd, 0);
       break;

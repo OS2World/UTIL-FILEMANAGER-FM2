@@ -587,8 +587,8 @@ You are actually writing a command (batch) file that will be run once and then d
 1251 Russian Win
 1381 China GB
 0
-DosStartSession failed to run "%s %s"
-DosExecPgm failed for %s.
+DosStartSession failed to run "%s %s"\n called from %s %d.
+DosExecPgm failed for %s.\n called from %s %d.
 We are all Books of Blood.
 "Is THIS your card?"
 I'm a victim of coicumstance!
@@ -995,8 +995,8 @@ Create Semaphore failed
 Post Semaphore failed
 Can't find drive %s
 Can't drag root directory
-DosQAppType failed for %s.
-apptype 0x%x unexpected for %s.
+DosQAppType failed for %s\n called from %s %d.
+apptype 0x%x unexpected for %s.\n called from %s %d.
 %c:\\DESKTOP
 FM/2: Drive info "%c:"
 18.Times New Roman

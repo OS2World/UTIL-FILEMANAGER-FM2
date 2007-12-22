@@ -15,6 +15,7 @@
   21 Apr 07 GKY Find FM2Utils by path or utils directory
   09 Jun 07 SHL ShowMultimedia: Initialize hwnd so that OpenObject might work
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  20 Dec 07 GKY Open jpg files with OS2 object default since image.exe fails
 
 ***********************************************************************/
 

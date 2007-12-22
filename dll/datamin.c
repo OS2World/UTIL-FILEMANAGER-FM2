@@ -428,7 +428,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  env = "WINOS2.COM";
 	  type = SEPARATE | FULLSCREEN;
 	}
-	runemf2(type, hwnd, path, NULL, "%s", env);
+        runemf2(type, hwnd, pszSrcFile, __LINE__,
+                path, NULL, "%s", env);
       }
       break;
 

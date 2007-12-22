@@ -411,7 +411,7 @@ VOID Action(VOID * args)
 		    maskspaces = TRUE;
 		  if (!runemf2(SEPARATE | WINDOWED |
 			       fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED),
-			       HWND_DESKTOP, ex.extractdir, NULL,
+			       HWND_DESKTOP, pszSrcFile, __LINE__, ex.extractdir, NULL,
 			       "%s %s %s%s%s",
 			       ex.command,
 			       ex.arcname,
@@ -856,23 +856,12 @@ VOID Action(VOID * args)
 			       MPFROMP(wk->li->list[x]));
 		  else {
 		    runemf2(SEPARATE,
-			    HWND_DESKTOP, NULL, NULL,
+                            HWND_DESKTOP, pszSrcFile, __LINE__,
+                            NULL, NULL,
 			    "%s %s %s",
 			    dircompare,
 			    BldQuotedFileName(szQuotedDirName, wk->li->targetpath),
 			    BldQuotedFileName(szQuotedFileName, wk->li->list[x]));
-		    // CHAR d1[] = "\"";
-		    // CHAR d2[] = "\"";
-		    // if (!needs_quoting(wk->li->targetpath))
-		    //   *d1 = 0;
-		    // if (!needs_quoting(wk->li->list[x]))
-		    //   *d2 = 0;
-		    // runemf2(SEPARATE,
-		    // 	    HWND_DESKTOP, NULL, NULL,
-		    // 	    "%s %s%s%s %s%s%s",
-		    // 	    dircompare,
-		    // 	    d1, wk->li->targetpath, d1,
-		    // 	    d2, wk->li->list[x], d2);
 		  }
 		}
 		else if (*compare) {
@@ -883,7 +872,8 @@ VOID Action(VOID * args)
 		  fakelist[2] = NULL;
 		  ExecOnList(wk->hwndFrame,
 			     compare,
-			     WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL);
+                             WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
+                             pszSrcFile, __LINE__);
 		}
 		else {
 		  FCOMPARE fc;
@@ -1028,7 +1018,8 @@ VOID MassAction(VOID * args)
 	    ExecOnList(wk->hwndFrame,
 		       "%a",
 		       WINDOWED | SEPARATE | PROMPT,
-		       NULL, wk->li->list, GetPString(IDS_DOITYOURSELFTEXT));
+                       NULL, wk->li->list, GetPString(IDS_DOITYOURSELFTEXT),
+                       pszSrcFile, __LINE__);
 	    break;
 
 	  case IDM_MCIPLAY:
@@ -1080,11 +1071,6 @@ VOID MassAction(VOID * args)
 		       wk->li->info->exwdirs : wk->li->info->extract);
 		strcat(szBuffer, " ");
 		BldQuotedFileName(szBuffer + strlen(szBuffer), wk->li->arcname);
-		// if (needs_quoting(wk->li->arcname))
-		//   strcat(szBuffer, "\"");
-		// strcat(szBuffer, wk->li->arcname);
-		// if (needs_quoting(wk->li->arcname))
-		//   strcat(szBuffer, "\"");
 	      }
 	      else {
                 if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
@@ -1105,16 +1091,11 @@ VOID MassAction(VOID * args)
 		  pp++;
 		}
 		BldQuotedFileName(szBuffer + strlen(szBuffer), wk->li->list[x]);
-		// if (needs_quoting(wk->li->list[x]))
-		//   strcat(szBuffer, "\"");
-		// strcat(szBuffer, wk->li->list[x]);
-		// if (needs_quoting(wk->li->list[x]))
-		//   strcat(szBuffer, "\"");
 		x++;
 		if (!wk->li->list[x] || strlen(szBuffer) +
 		    strlen(wk->li->list[x]) + 5 > 1024) {
 		  runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
-			  HWND_DESKTOP,
+			  HWND_DESKTOP, pszSrcFile, __LINE__,
 			  (wk->li->type == IDM_FAKEEXTRACT ||
 			   wk->li->type == IDM_FAKEEXTRACTM) ?
 			     wk->li->targetpath : NULL,
@@ -1234,11 +1215,6 @@ VOID MassAction(VOID * args)
 	      strcpy(szBuffer, ad.command);
 	      strcat(szBuffer, " ");
 	      BldQuotedFileName(szBuffer + strlen(szBuffer), ad.arcname);
-	      // if (needs_quoting(ad.arcname))
-	      // 	strcat(szBuffer, "\"");
-	      // strcat(szBuffer, ad.arcname);
-	      // if (needs_quoting(ad.arcname))
-	      // 	strcat(szBuffer, "\"");
 	      p = &szBuffer[strlen(szBuffer)];
 	      if (ad.mask.szMask) {
 		strcat(szBuffer, " ");
@@ -1248,14 +1224,6 @@ VOID MassAction(VOID * args)
 	      x = 0;
 	      while (wk->li->list[x]) {
 		FILESTATUS3 fsa;
-		// BOOL spaces;
-		// if (needs_quoting(wk->li->list[x])) {
-		//   spaces = TRUE;
-		//   strcat(szBuffer, "\"");
-		// }
-		// else
-		//   spaces = FALSE;
-		// strcat(szBuffer, wk->li->list[x]);
 		memset(&fsa, 0, sizeof(FILESTATUS3));
 		DosError(FERR_DISABLEHARDERR);
 		DosQueryPathInfo(wk->li->list[x],
@@ -1263,20 +1231,15 @@ VOID MassAction(VOID * args)
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
 		if (fsa.attrFile & FILE_DIRECTORY) {
 		  BldQuotedFullPathName(szBuffer + strlen(szBuffer), wk->li->list[x], "*");
-		  // if (szBuffer[strlen(szBuffer) - 1] != '\\')
-		  //   strcat(szBuffer, "\\");
-		  // strcat(szBuffer, "*");
 		}
 		else
 		  BldQuotedFileName(szBuffer + strlen(szBuffer), wk->li->list[x]);
-		// if (spaces)
-		//   strcat(szBuffer, "\"");
 		x++;
 		if (!wk->li->list[x] ||
 		    strlen(szBuffer) + strlen(wk->li->list[x]) + 5 > 1024) {
 		  runemf2(SEPARATE | WINDOWED | WAIT |
 			  (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)),
-			  HWND_DESKTOP, NULL, NULL,
+			  HWND_DESKTOP, pszSrcFile, __LINE__, NULL, NULL,
 			  "%s", szBuffer);
 		  DosSleep(1);
 		  *p = 0;
@@ -1304,7 +1267,8 @@ VOID MassAction(VOID * args)
 	    if (*binview) {
 	      ExecOnList((HWND) 0,
 			 binview,
-			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL);
+                         WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+                         pszSrcFile, __LINE__);
 	      break;
 	    }
 	    /* else intentional fallthru */
@@ -1314,7 +1278,8 @@ VOID MassAction(VOID * args)
 	      ExecOnList((HWND) 0, viewer,
 			 WINDOWED | SEPARATE |
 			 ((fViewChild) ? CHILD : 0),
-			 NULL, wk->li->list, NULL);
+                         NULL, wk->li->list, NULL,
+                         pszSrcFile, __LINE__);
 	    else {
 
 	      CHAR *temp;
@@ -1348,7 +1313,8 @@ VOID MassAction(VOID * args)
 	    if (*bined) {
 	      ExecOnList((HWND) 0,
 			 bined,
-			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL);
+                         WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+                         pszSrcFile, __LINE__);
 	      break;
 	    }
 	    /* else intentional fallthru */
@@ -1357,7 +1323,8 @@ VOID MassAction(VOID * args)
 	    if (*editor)
 	      ExecOnList((HWND) 0,
 			 editor,
-			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL);
+                         WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+                         pszSrcFile, __LINE__);
 	    else {
 
 	      CHAR *temp;

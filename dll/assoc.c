@@ -418,7 +418,8 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 	rc = ExecOnList(hwnd,
 			info->cl,
 			flags,
-			NULL, list, GetPString(IDS_EXECASSOCTITLETEXT));
+                        NULL, list, GetPString(IDS_EXECASSOCTITLETEXT),
+                        pszSrcFile, __LINE__);
 	if (rc != -1 && dieafter)
 	  PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
 	return rc;
@@ -612,12 +613,13 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     case ASS_FIND:
       {
-	CHAR filename[CCHMAXPATH + 9];
+	CHAR filename[CCHMAXPATH + 9], szfilename[CCHMAXPATH + 9];
 
 	*filename = 0;
-	if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
-	  strcat(filename, " %a");
-	  WinSetDlgItemText(hwnd, ASS_CL, filename);
+        if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
+          BldQuotedFileName(szfilename, filename);
+	  strcat(szfilename, " %a");
+	  WinSetDlgItemText(hwnd, ASS_CL, szfilename);
 	}
       }
       break;

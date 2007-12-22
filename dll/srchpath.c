@@ -61,7 +61,7 @@ INT RunFM2Util(CHAR *appname, CHAR *filename)
       }
     }
     ret = runemf2(SEPARATE | WINDOWED,
-                  HWND_DESKTOP,
+                  HWND_DESKTOP, pszSrcFile, __LINE__,
                   NULL,
                   NULL,
                   "%s \"%s\"",

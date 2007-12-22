@@ -62,7 +62,8 @@ VOID RunRmview(VOID * arg)
       oldstdout = fileno(stdout);
       DosDupHandle(fileno(fp), &oldstdout);
       runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
-	      hwnd, NULL, NULL, "%s", "RMVIEW.EXE");
+              hwnd, pszSrcFile, __LINE__,
+              NULL, NULL, "%s", "RMVIEW.EXE");
       oldstdout = fileno(stdout);
       DosDupHandle(newstdout, &oldstdout);
       DosClose(newstdout);

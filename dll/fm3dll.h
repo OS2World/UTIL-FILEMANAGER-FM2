@@ -64,6 +64,7 @@
   04 Nov 07 GKY Add pszFmtFileSize to CNRITEM to display large file sizes
   10 Nov 07 GKY Add ThousandSeparator variable for file sizes NLS tseparator.
   22 Nov 07 GKY Use CopyPresParams in CheckMenu to fix presparam inconsistencies in menus
+  17 Dec 07 GKY Add variables for using WPURLDEFAULTSETTINGS as the fall back for ftphttprun
 
 ***********************************************************************/
 
@@ -901,8 +902,9 @@ VOID EditArchiverDefinition(HWND hwnd);
 /* systemf.c */
 BOOL ShowSession(HWND hwnd, PID pid);
 INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
-	       CHAR ** list, CHAR * prompt);
-INT runemf2(INT type, HWND hwnd, CHAR * directory, CHAR * environment,
+	       CHAR ** list, CHAR * prompt, PCSZ pszCallingFile, UINT uiLineNumber);
+INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
+            CHAR * directory, CHAR * environment,
 	    CHAR * formatstring, ...);
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	  PROGTYPE * progt, ULONG fl, char *formatstring, ...);

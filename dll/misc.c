@@ -912,7 +912,8 @@ BOOL ViewHelp(CHAR * filename)
       return FALSE;
     }
     fclose(fp);
-    ret = runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, NULL, NULL,
+    ret = runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  NULL, NULL,
 		  "VIEW.EXE \"%s\"", filename);
   }
 
@@ -944,12 +945,6 @@ INT ExecFile(HWND hwnd, CHAR * filename)
     *path = 0;
   *cl = 0;
   BldQuotedFileName(cl, filename);
-  // *cl = 0;
-  // if (needs_quoting(filename))
-  //   strcat(cl, "\"");
-  // strcat(cl, filename);
-  // if (needs_quoting(filename))
-  //   strcat(cl, "\"");
   memset(&ex, 0, sizeof(ex));
   ex.flags = lastflags;
   ex.commandline = cl;
@@ -959,7 +954,7 @@ INT ExecFile(HWND hwnd, CHAR * filename)
 		  EXEC_FRAME, &ex);
   if (ret == 1) {
     lastflags = ex.flags;
-    return runemf2(ex.flags, hwnd, path,
+    return runemf2(ex.flags, hwnd, pszSrcFile, __LINE__, path,
 		   *ex.environment ? ex.environment : NULL,
 		   "%s", cl) != -1;
   }
@@ -1484,7 +1479,8 @@ VOID QuickView(HWND hwnd, CHAR * filename)
 
       list[0] = filename;
       list[1] = NULL;
-      ExecOnList(hwnd, binview, WINDOWED | SEPARATE, NULL, list, NULL);
+      ExecOnList(hwnd, binview, WINDOWED | SEPARATE, NULL, list, NULL,
+                 pszSrcFile, __LINE__);
       return;
     }
     else if (*viewer) {
@@ -1495,7 +1491,7 @@ VOID QuickView(HWND hwnd, CHAR * filename)
       list[1] = NULL;
       ExecOnList(hwnd, viewer,
 		 WINDOWED | SEPARATE | (fViewChild ? CHILD : 0),
-		 NULL, list, NULL);
+		 NULL, list, NULL, pszSrcFile, __LINE__);
       return;
     }
     StartMLEEditor(HWND_DESKTOP, 5, filename, (HWND) 0);
@@ -1511,7 +1507,8 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
 
       list[0] = filename;
       list[1] = NULL;
-      ExecOnList(hwnd, bined, WINDOWED | SEPARATE, NULL, list, NULL);
+      ExecOnList(hwnd, bined, WINDOWED | SEPARATE, NULL, list, NULL,
+                 pszSrcFile, __LINE__);
       return;
     }
     else if (*editor) {
@@ -1520,7 +1517,8 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
 
       list[0] = filename;
       list[1] = NULL;
-      ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, list, NULL);
+      ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, list, NULL,
+                 pszSrcFile, __LINE__);
       return;
     }
     StartMLEEditor(HWND_DESKTOP, 4, filename, (HWND) 0);

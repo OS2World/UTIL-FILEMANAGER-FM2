@@ -594,7 +594,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    case MAP_INFO:
 	      runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
-		      hwnd,
+		      hwnd, pszSrcFile, __LINE__,
 		      NULL, NULL, "%s /C NET USE %s", GetCmdSpec(FALSE), d);
 	      break;
 	    }

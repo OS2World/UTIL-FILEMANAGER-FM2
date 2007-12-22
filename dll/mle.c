@@ -16,6 +16,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
+  17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
 
 ***********************************************************************/
 
@@ -177,10 +178,12 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	if (*temp) {
 	  if (ftp && *ftprun)
 	    runemf2(SEPARATE | WINDOWED,
-		    h, ftprund, NULL, "%s %s", ftprun, temp);
+                    h, pszSrcFile, __LINE__,
+                    ftprund, NULL, "%s %s", ftprun, temp);
 	  else if (!ftp && *httprun)
 	    runemf2(SEPARATE | WINDOWED,
-		    h, httprund, NULL, "%s %s", httprun, temp);
+                    h, pszSrcFile, __LINE__,
+                    httprund, NULL, "%s %s", httprun, temp);
 	}
       }
       DosFreeMem(temp);

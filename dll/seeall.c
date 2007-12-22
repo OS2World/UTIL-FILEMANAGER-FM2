@@ -465,34 +465,21 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  x = 0;
 	  while (list[x]) {
 	    FILESTATUS3 fsa;
-	    // BOOL spaces;
-	    // if (needs_quoting(list[x])) {
-	    //   spaces = TRUE;
-	    //   strcat(szBuffer, "\"");
-	    // }
-	    // else
-	    //   spaces = FALSE;
-	    // strcat(szBuffer, list[x]);
 	    memset(&fsa, 0, sizeof(fsa));
 	    DosError(FERR_DISABLEHARDERR);
 	    DosQueryPathInfo(list[x], FIL_STANDARD, &fsa, sizeof(fsa));
 	    if (fsa.attrFile & FILE_DIRECTORY) {
 	      BldQuotedFullPathName(szBuffer + strlen(szBuffer),
 				    list[x], "*");
-	      // if (szBuffer[strlen(szBuffer) - 1] != '\\')
-	      //	strcat(szBuffer, "\\");
-	      // strcat(szBuffer, "*");
 	    }
 	    else
 	      BldQuotedFileName(szBuffer + strlen(szBuffer), list[x]);
-	    // if (spaces)
-	    //   strcat(szBuffer, "\"");
 	    x++;
 	    if (!list[x] || strlen(szBuffer) + strlen(list[x]) + 5 > 1024) {
 	      runemf2(SEPARATE | WINDOWED | WAIT |
 		      (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)),
-		      HWND_DESKTOP, NULL, NULL,
-		      "%s", szBuffer);
+                      HWND_DESKTOP, pszSrcFile, __LINE__,
+                      NULL, NULL, "%s", szBuffer);
 	      DosSleep(1);		// Let archiver get started
 	      *p = 0;
 	    }
@@ -830,7 +817,8 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      maskspaces = TRUE;
 	    runemf2(SEPARATE | WINDOWED |
 		    (fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED)),
-		    HWND_DESKTOP, ex.extractdir, NULL,
+                    HWND_DESKTOP, pszSrcFile, __LINE__,
+                    ex.extractdir, NULL,
 		    "%s %s %s%s%s",
 		    ex.command,
 		    ex.arcname,

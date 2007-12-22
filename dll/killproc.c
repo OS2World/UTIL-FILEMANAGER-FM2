@@ -235,7 +235,8 @@ static VOID FillKillListThread(VOID * arg)
     oldstdout = fileno(stdout);
     DosDupHandle(fileno(fp), &oldstdout);
     rc = runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
-		 hwnd, NULL, NULL, "%s", "PSTAT.EXE /C");
+                 hwnd, pszSrcFile, __LINE__, NULL, NULL,
+                 "%s", "PSTAT.EXE /C");
     oldstdout = fileno(stdout);
     DosDupHandle(newstdout, &oldstdout);
     DosClose(newstdout);

@@ -2410,22 +2410,26 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_PARTITION:
-	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, NULL, NULL,
+        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+                NULL, NULL,
 		"%s", "MINILVM.EXE");
 	break;
 
       case IDM_PARTITIONDF:
-	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, NULL, NULL,
+        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+                NULL, NULL,
 		"%s", "DFSOS2.EXE");
 	break;
 
       case IDM_PARTITIONLVMG:
-	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, NULL, NULL,
+        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+                NULL, NULL,
 		"%s", "LVMGUI.CMD");
 	break;
 
       case IDM_PARTITIONFD:
-	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, NULL, NULL,
+        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+                NULL, NULL,
 		"%s", "FDISKPM.EXE");
 	break;
 

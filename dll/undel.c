@@ -89,7 +89,7 @@ static VOID FillUndelListThread(VOID * arg)
       oldstdout = fileno(stdout);
       DosDupHandle(fileno(fp), &oldstdout);
       runemf2(SEPARATE | INVISIBLE | WINDOWED | BACKGROUND | WAIT,
-	      hwnd,
+	      hwnd, pszSrcFile, __LINE__,
 	      NULL,
 	      NULL,
 	      "UNDELETE.COM %s /L%s",
@@ -123,7 +123,7 @@ static VOID FillUndelListThread(VOID * arg)
 			  hwnd, GetPString(IDS_ERRORTEXT), "%s", s);
 	    if (temp == MBID_YES)
 	      runemf2(BACKGROUND | INVISIBLE | SEPARATE | WINDOWED,
-		      hwnd,
+		      hwnd, pszSrcFile, __LINE__,
 		      NULL, NULL, "%s /C HELP UNDELETE", GetCmdSpec(FALSE));
 	    if (temp == MBID_CANCEL)
 	      killme = TRUE;
@@ -426,7 +426,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fprintf(fp, "DEL \\FMUNDEL.CMD /F\n");
 	    fclose(fp);
 	    runemf2(WINDOWED | BACKGROUND | SEPARATE | INVISIBLE,
-		    hwnd,
+		    hwnd, pszSrcFile, __LINE__,
 		    NULL, NULL, "%s /C \\FMUNDEL.CMD", GetCmdSpec(FALSE));
 	  }
 	}

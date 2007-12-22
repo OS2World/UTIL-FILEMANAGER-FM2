@@ -500,23 +500,12 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	  CHAR szPath1[CCHMAXPATH];
 	  CHAR szPath2[CCHMAXPATH];
 	  runemf2(SEPARATE,
-		  HWND_DESKTOP, NULL, NULL,
+                  HWND_DESKTOP, pszSrcFile, __LINE__,
+                  NULL, NULL,
 		  "%s %s %s",
 		  dircompare,
 		  BldQuotedFileName(szPath1, wa.szCurrentPath1),
 		  BldQuotedFileName(szPath2, wa.szCurrentPath2));
-	  // CHAR *d1 = "\"", *d2 = "\"";
-	  // if (!needs_quoting(wa.szCurrentPath1))
-	  //   *d1 = 0;
-	  // if (!needs_quoting(wa.szCurrentPath2))
-	  //   *d2 = 0;
-	  // runemf2(SEPARATE,
-	  //	  HWND_DESKTOP,
-	  //	  NULL,
-	  //	  NULL,
-	  //	  "%s %s%s%s %s%s%s",
-	  //	  dircompare,
-	  //	  d1, wa.szCurrentPath1, d1, d2, wa.szCurrentPath2, d2);
 	}
       }
     }

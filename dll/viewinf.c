@@ -574,7 +574,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fclose(fp);
 	    runemf2(SEPARATE | WINDOWED | MINIMIZED |
 		    BACKGROUND | INVISIBLE,
-		    hwnd,
+		    hwnd, pszSrcFile, __LINE__,
 		    NULL, NULL, "%s /C %s", GetCmdSpec(FALSE), filename);
 	  }
 	}

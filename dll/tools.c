@@ -790,7 +790,8 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  docopyf(COPY, s, filename);
 	}
 	runemf2(SEPARATE | WINDOWED,
-		hwnd, NULL, NULL, "ICONEDIT.EXE %s", filename);
+                hwnd, pszSrcFile, __LINE__,
+                NULL, NULL, "ICONEDIT.EXE %s", filename);
       }
       break;
 
