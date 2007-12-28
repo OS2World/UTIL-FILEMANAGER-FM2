@@ -900,6 +900,7 @@ VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL disable)
 BOOL ViewHelp(CHAR * filename)
 {
   CHAR s[CCHMAXPATH + 81];
+  CHAR szQuotedFileName[CCHMAXPATH];
   FILE *fp;
   INT ret = -1;
 
@@ -914,7 +915,8 @@ BOOL ViewHelp(CHAR * filename)
     fclose(fp);
     ret = runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
                   NULL, NULL,
-		  "VIEW.EXE \"%s\"", filename);
+                  "VIEW.EXE \"%s\"",
+                  BldQuotedFileName(szQuotedFileName, filename));
   }
 
   return (ret != -1);

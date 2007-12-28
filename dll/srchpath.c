@@ -39,6 +39,7 @@ static PSZ pszSrcFile = __FILE__;
 INT RunFM2Util(CHAR *appname, CHAR *filename)
 {
     CHAR fbuf[CCHMAXPATH];
+    CHAR szQuotedFileName[CCHMAXPATH];
     APIRET rc, ret = -1;
 
     rc = DosSearchPath(SEARCH_IGNORENETERRS |SEARCH_ENVIRONMENT |
@@ -64,8 +65,8 @@ INT RunFM2Util(CHAR *appname, CHAR *filename)
                   HWND_DESKTOP, pszSrcFile, __LINE__,
                   NULL,
                   NULL,
-                  "%s \"%s\"",
-		  fbuf, filename);
+                  "%s %s",
+		  fbuf, BldQuotedFileName(szQuotedFileName, filename));
     return ret;
 }
 
