@@ -38,6 +38,7 @@
 #define HELP_CONFIG                 92000
 #define HELP_UTILITIES              92100
 #define HELP_CFGV                   92200
+#define HELP_CFGH                   92250
 #define HELP_SORTBY                 92300
 #define HELP_CFGT                   92400
 #define HELP_UNDELETE               92500

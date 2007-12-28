@@ -660,18 +660,36 @@
 #define CFGM_BLUELED                    25318
 #define CFGM_SHOWTARGET                 25319
 
-#define CFGV_FRAME											25330
-#define CFGV_EDITOR 										25331
-#define CFGV_BINED											25332
-#define CFGV_VIEWER 										25333
-#define CFGV_BINVIEW										25334
-#define CFGV_FIND 											25335
-#define CFGV_USENEWVIEWER 							25336
+#define CFGV_FRAME 									25330
+#define CFGV_EDITOR									25331
+#define CFGV_BINED 									25332
+#define CFGV_VIEWER									25333
+#define CFGV_BINVIEW    								25334
+#define CFGV_FIND  									25335
+#define CFGV_USENEWVIEWER  							        25336
 #define CFGV_GUESSTYPE									25337
-#define CFGV_HTTPRUN										25338
-#define CFGV_FTPRUN 										25339
+#define CFGV_PDFVIEWER	  								25338
+#define CFGV_PDFVIEWERDIR 								25339
 #define CFGV_VIEWCHILD									25340
-#define CFGV_CHECKMM                    25350
+#define CFGV_CHECKMM                                                                    25341
+#define CFGV_PDFVIEWERWPSDEFAULT							25342
+
+#define CFGH_FRAME                                                                      25344
+#define CFGH_HTTPVIEWER                                                                 25345
+#define CFGH_HTTPRUN                                                                    25346
+#define CFGH_FTPRUN                                                                     25347
+#define CFGH_RUNFTPWORKDIR                                                              25348
+#define CFGH_RUNHTTPWORKDIR                                                             25349
+#define CFGH_VIEWHTTPWORKDIR                                                            25350
+#define CFGH_RUNMAILWORKDIR                                                             25351
+#define CFGH_MAILRUN                                                                    25352
+#define CFGH_USEWPSDEFAULTVIEWER                                                        25353
+#define CFGH_HTTPRUNWPSDEFAULT                                                          25354
+#define CFGH_FTPRUNWPSDEFAULT                                                           25355
+#define CFGH_LIBPATHSTRICTHTTPVIEWER                                                    25356
+#define CFGH_LIBPATHSTRICTHTTPRUN                                                       25357
+#define CFGH_LIBPATHSTRICTFTPRUN                                                        25358
+#define CFGH_FIND                                                                       25359
 
 #define CFGS_FRAME											25360
 #define CFGS_LOADSUBJECTS 							25361

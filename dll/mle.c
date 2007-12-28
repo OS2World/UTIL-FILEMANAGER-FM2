@@ -151,6 +151,7 @@ VOID MLEinternet(HWND h, BOOL ftp)
   IPT ancpos, curpos, here;
   LONG len, oldlen;
   APIRET rc;
+  ULONG size;
 
   len = MLEsizeofsel(h);
   len = min(2048, len);
@@ -176,14 +177,47 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	temp[len] = 0;
 	bstripcr(temp);
 	if (*temp) {
-	  if (ftp && *ftprun)
-	    runemf2(SEPARATE | WINDOWED,
-                    h, pszSrcFile, __LINE__,
-                    ftprund, NULL, "%s %s", ftprun, temp);
-	  else if (!ftp && *httprun)
-	    runemf2(SEPARATE | WINDOWED,
-                    h, pszSrcFile, __LINE__,
-                    httprund, NULL, "%s %s", httprun, temp);
+          if (ftp) {
+            if (fFtpRunWPSDefault) {
+              CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
+
+              size = sizeof(WPSDefaultFtpRun);
+              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+                                  "DefaultBrowserExe", WPSDefaultFtpRun, &size);
+              size = sizeof(WPSDefaultFtpRunDir);
+              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+                                  "DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
+              runemf2(SEPARATE | WINDOWED,
+                      h, pszSrcFile, __LINE__,
+                      WPSDefaultFtpRunDir,
+                      fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+                      "%s %s", WPSDefaultFtpRun, temp);
+            }
+            else
+              runemf2(SEPARATE | WINDOWED,
+                      h, pszSrcFile, __LINE__,
+                      ftprundir, NULL, "%s %s", ftprun, temp);
+          }
+          else
+            if (fHttpRunWPSDefault) {
+              CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
+
+              size = sizeof(WPSDefaultHttpRun);
+              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+                                  "DefaultBrowserExe", WPSDefaultHttpRun, &size);
+              size = sizeof(WPSDefaultHttpRunDir);
+              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+                                  "DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
+              runemf2(SEPARATE | WINDOWED,
+                      h, pszSrcFile, __LINE__,
+                      WPSDefaultHttpRunDir,
+                      fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+                      "%s %s", WPSDefaultHttpRun, temp);
+            }
+            else
+              runemf2(SEPARATE | WINDOWED,
+                      h, pszSrcFile, __LINE__,
+                      httprundir, NULL, "%s %s", httprun, temp);
 	}
       }
       DosFreeMem(temp);

@@ -364,10 +364,6 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGV_BINED, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
-    WinSendDlgItemMsg(hwnd, CFGV_FTPRUN, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
-    WinSendDlgItemMsg(hwnd, CFGV_HTTPRUN, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGV_FIND), FALSE);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
@@ -377,8 +373,6 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSetDlgItemText(hwnd, CFGV_EDITOR, editor);
     WinSetDlgItemText(hwnd, CFGV_BINVIEW, binview);
     WinSetDlgItemText(hwnd, CFGV_BINED, bined);
-    WinSetDlgItemText(hwnd, CFGV_FTPRUN, ftprun);
-    WinSetDlgItemText(hwnd, CFGV_HTTPRUN, httprun);
     WinCheckButton(hwnd, CFGV_USENEWVIEWER, fUseNewViewer);
     WinCheckButton(hwnd, CFGV_GUESSTYPE, fGuessType);
     WinCheckButton(hwnd, CFGV_VIEWCHILD, fViewChild);
@@ -391,8 +385,6 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case CFGV_EDITOR:
     case CFGV_BINVIEW:
     case CFGV_BINED:
-    case CFGV_HTTPRUN:
-    case CFGV_FTPRUN:
       switch (SHORT2FROMMP(mp1)) {
       case EN_KILLFOCUS:
 	WinEnableWindow(WinWindowFromID(hwnd, CFGV_FIND), FALSE);
@@ -438,19 +430,12 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  case CFGV_BINVIEW:
 	  case CFGV_BINED:
 	  case CFGV_VIEWER:
-	  case CFGV_EDITOR:
+          case CFGV_EDITOR:
             if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
               BldQuotedFileName(szfilename, filename);
 	      strcat(szfilename, " %a");
 	      WinSetDlgItemText(hwnd, id, szfilename);
 	    }
-	    break;
-	  case CFGV_HTTPRUN:
-	  case CFGV_FTPRUN:
-            if (insert_filename(hwnd, filename, 2, FALSE) && *filename){
-              BldQuotedFileName(szfilename, filename);
-              WinSetDlgItemText(hwnd, id, szfilename);
-            }
 	    break;
 	  default:
 	    Runtime_Error(pszSrcFile, __LINE__, "bad case %d", id);
@@ -502,27 +487,12 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         memcpy(bined, szBuf, strlen(szBuf) + 1);
       if (!strchr(bined, '%') && strlen(bined) > 3)
         strcat(bined, " %a");
-      WinQueryDlgItemText(hwnd, CFGV_FTPRUN, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      bstrip(szBuf);
-      if (!strchr(szBuf, '"'))
-        BldQuotedFileName(ftprun, szBuf);
       else
-        memcpy(ftprun, szBuf, strlen(szBuf) + 1);
-      WinQueryDlgItemText(hwnd, CFGV_HTTPRUN, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      bstrip(szBuf);
-      if (!strchr(szBuf, '"'))
-        BldQuotedFileName(httprun, szBuf);
-      else
-        memcpy(httprun, szBuf, strlen(szBuf) + 1);
+        memcpy(bined, szBuf, strlen(szBuf) + 1);
       PrfWriteProfileString(fmprof, appname, "Viewer", viewer);
       PrfWriteProfileString(fmprof, appname, "Editor", editor);
       PrfWriteProfileString(fmprof, appname, "BinView", binview);
       PrfWriteProfileString(fmprof, appname, "BinEd", bined);
-
-      PrfWriteProfileString(fmprof, appname, "FTPRun", ftprun);
-      PrfWriteProfileString(fmprof, appname, "HTTPRun", httprun);
       fUseNewViewer = WinQueryButtonCheckstate(hwnd, CFGV_USENEWVIEWER);
       PrfWriteProfileData(fmprof, appname, "UseNewViewer", &fUseNewViewer,
                           sizeof(BOOL));
@@ -534,6 +504,199 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                           sizeof(BOOL));
       fCheckMM = WinQueryButtonCheckstate(hwnd, CFGV_CHECKMM);
       PrfWriteProfileData(fmprof, appname, "CheckMM", &fCheckMM, sizeof(BOOL));
+
+      break;
+    }
+  }
+  return WinDefDlgProc(hwnd, msg, mp1, mp2);
+}
+
+MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+{
+  switch (msg) {
+  case WM_INITDLG:
+    WinSendDlgItemMsg(hwnd, CFGH_RUNFTPWORKDIR, EM_SETTEXTLIMIT,
+		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+    WinSendDlgItemMsg(hwnd, CFGH_RUNHTTPWORKDIR, EM_SETTEXTLIMIT,
+		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+    WinSendDlgItemMsg(hwnd, CFGH_FTPRUN, EM_SETTEXTLIMIT,
+		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+    WinSendDlgItemMsg(hwnd, CFGH_HTTPRUN, EM_SETTEXTLIMIT,
+                      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+    WinSendDlgItemMsg(hwnd, CFGH_MAILRUN, EM_SETTEXTLIMIT,
+                      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+    WinSendDlgItemMsg(hwnd, CFGH_RUNMAILWORKDIR, EM_SETTEXTLIMIT,
+		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+    WinEnableWindow(WinWindowFromID(hwnd, CFGH_FIND), FALSE);
+    PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case UM_UNDO:
+    WinSetDlgItemText(hwnd, CFGH_RUNFTPWORKDIR, ftprundir);
+    WinSetDlgItemText(hwnd, CFGH_RUNHTTPWORKDIR, httprundir);
+    WinSetDlgItemText(hwnd, CFGH_RUNMAILWORKDIR, mailrundir);
+    WinSetDlgItemText(hwnd, CFGH_MAILRUN, mailrun);
+    WinSetDlgItemText(hwnd, CFGH_FTPRUN, ftprun);
+    WinSetDlgItemText(hwnd, CFGH_HTTPRUN, httprun);
+    WinCheckButton(hwnd, CFGH_HTTPRUNWPSDEFAULT, fHttpRunWPSDefault);
+    WinCheckButton(hwnd, CFGH_FTPRUNWPSDEFAULT, fFtpRunWPSDefault);
+    WinCheckButton(hwnd, CFGH_LIBPATHSTRICTHTTPRUN, fLibPathStrictHttpRun);
+    WinCheckButton(hwnd, CFGH_LIBPATHSTRICTFTPRUN, fLibPathStrictFtpRun);
+    return 0;
+
+  case WM_CONTROL:
+    switch (SHORT1FROMMP(mp1)) {
+    case CFGH_HTTPRUN:
+    case CFGH_FTPRUN:
+    case CFGH_RUNFTPWORKDIR:
+    case CFGH_RUNHTTPWORKDIR:
+    case CFGH_RUNMAILWORKDIR:
+    case CFGH_MAILRUN:
+      switch (SHORT2FROMMP(mp1)) {
+      case EN_KILLFOCUS:
+	WinEnableWindow(WinWindowFromID(hwnd, CFGH_FIND), FALSE);
+	break;
+      case EN_SETFOCUS:
+	WinEnableWindow(WinWindowFromID(hwnd, CFGH_FIND), TRUE);
+	break;
+      }
+      break;
+    }
+    return 0;
+
+  case WM_COMMAND:
+    switch (SHORT1FROMMP(mp1)) {
+    case IDM_UNDO:
+      PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+      break;
+
+    case DID_CANCEL:
+      WinSendMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+
+    case DID_OK:
+      PostMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER), msg, mp1, mp2);
+      break;
+
+    case IDM_HELP:
+      if (hwndHelp)
+	WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
+		   MPFROM2SHORT(HELP_CFGH, 0), MPFROMSHORT(HM_RESOURCEID));
+      break;
+
+    case CFGH_FIND:
+      {
+	CHAR filename[CCHMAXPATH + 9], szfilename[CCHMAXPATH + 9];
+	USHORT id;
+	HWND hwndFocus;
+
+	strcpy(filename, "*.EXE");
+	hwndFocus = WinQueryFocus(HWND_DESKTOP);
+	if (hwndFocus) {
+	  id = WinQueryWindowUShort(hwndFocus, QWS_ID);
+	  switch (id) {
+	  case CFGH_HTTPRUN:
+          case CFGH_FTPRUN:
+          case CFGH_MAILRUN:
+            if (insert_filename(hwnd, filename, 2, FALSE) && *filename){
+              BldQuotedFileName(szfilename, filename);
+              WinSetDlgItemText(hwnd, id, szfilename);
+            }
+            break;
+          case CFGH_RUNFTPWORKDIR:
+	    strcpy(filename, ftprundir);
+	    if (WinDlgBox(HWND_DESKTOP, hwndNotebook,
+			  WalkExtractDlgProc, FM3ModHandle, WALK_FRAME,
+			  MPFROMP(filename)) && *filename)
+	      WinSetDlgItemText(hwnd, id, filename);
+            break;
+          case CFGH_RUNHTTPWORKDIR:
+            strcpy(filename, httprundir);
+	    if (WinDlgBox(HWND_DESKTOP, hwndNotebook,
+			  WalkExtractDlgProc, FM3ModHandle, WALK_FRAME,
+			  MPFROMP(filename)) && *filename)
+	      WinSetDlgItemText(hwnd, id, filename);
+            break;
+          case CFGH_RUNMAILWORKDIR:
+            strcpy(filename, mailrundir);
+	    if (WinDlgBox(HWND_DESKTOP, hwndNotebook,
+			  WalkExtractDlgProc, FM3ModHandle, WALK_FRAME,
+			  MPFROMP(filename)) && *filename)
+	      WinSetDlgItemText(hwnd, id, filename);
+            break;
+	  default:
+	    Runtime_Error(pszSrcFile, __LINE__, "bad case %d", id);
+	    break;
+	  }
+	}
+      }
+      break;
+    }
+    return 0;
+
+  case WM_CLOSE:
+    {
+      CHAR szBuf[CCHMAXPATH], buf[10] = "\"%-/";
+
+      WinQueryDlgItemText(hwnd, CFGH_RUNHTTPWORKDIR, CCHMAXPATH, szBuf);
+      szBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szBuf);
+      if (!strcspn(szBuf, buf))
+        BldQuotedFileName(httprundir, szBuf);
+      else
+        memcpy(httprundir, szBuf, strlen(szBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_RUNFTPWORKDIR, CCHMAXPATH, szBuf);
+      szBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szBuf);
+      if (!strcspn(szBuf, buf))
+        BldQuotedFileName(ftprundir, szBuf);
+      else
+        memcpy(ftprundir, szBuf, strlen(szBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_RUNMAILWORKDIR, CCHMAXPATH, szBuf);
+      szBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szBuf);
+      if (!strcspn(szBuf, buf))
+        BldQuotedFileName(mailrundir, szBuf);
+      else
+        memcpy(mailrundir, szBuf, strlen(szBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_FTPRUN, CCHMAXPATH, szBuf);
+      szBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szBuf);
+      if (!strchr(szBuf, '"'))
+        BldQuotedFileName(ftprun, szBuf);
+      else
+        memcpy(ftprun, szBuf, strlen(szBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_HTTPRUN, CCHMAXPATH, szBuf);
+      szBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szBuf);
+      if (!strchr(szBuf, '"'))
+        BldQuotedFileName(httprun, szBuf);
+      else
+        memcpy(httprun, szBuf, strlen(szBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_MAILRUN, CCHMAXPATH, szBuf);
+      szBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szBuf);
+      if (!strcspn(szBuf, buf))
+        BldQuotedFileName(mailrun, szBuf);
+      else
+        memcpy(mailrun, szBuf, strlen(szBuf) + 1);
+      PrfWriteProfileString(fmprof, appname, "HttpRunDir", httprundir);
+      PrfWriteProfileString(fmprof, appname, "FtpRunDir", ftprundir);
+      PrfWriteProfileString(fmprof, appname, "MailRunDir", mailrundir);
+      PrfWriteProfileString(fmprof, appname, "FTPRun", ftprun);
+      PrfWriteProfileString(fmprof, appname, "HTTPRun", httprun);
+      PrfWriteProfileString(fmprof, appname, "MailRun", mailrun);
+      fHttpRunWPSDefault = WinQueryButtonCheckstate(hwnd, CFGH_HTTPRUNWPSDEFAULT);
+      PrfWriteProfileData(fmprof, appname, "HttpRunWPSDefault", &fHttpRunWPSDefault,
+                          sizeof(BOOL));
+      fFtpRunWPSDefault = WinQueryButtonCheckstate(hwnd, CFGH_FTPRUNWPSDEFAULT);
+      PrfWriteProfileData(fmprof, appname, "FtpRunWPSDefault", &fFtpRunWPSDefault,
+                          sizeof(BOOL));
+      fLibPathStrictHttpRun = WinQueryButtonCheckstate(hwnd, CFGH_LIBPATHSTRICTHTTPRUN);
+      PrfWriteProfileData(fmprof, appname, "LibPathStrictHttpRun",
+                          &fLibPathStrictHttpRun, sizeof(BOOL));
+      fLibPathStrictFtpRun = WinQueryButtonCheckstate(hwnd, CFGH_LIBPATHSTRICTFTPRUN);
+      PrfWriteProfileData(fmprof, appname, "LibPathStrictFtpRun",
+                          &fLibPathStrictFtpRun, sizeof(BOOL));
       break;
     }
   }
@@ -1625,12 +1788,12 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "DirFilter", &mask, sizeof(MASK));
     {
         if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
-        WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
-			MPFROMP(&SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-        if (SubjectDisplayWidth < 50)
-          SubjectDisplayWidth  = 0;
-        else if (SubjectDisplayWidth > 1000)
-          SubjectDisplayWidth = 1000;
+          WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
+	           	    MPFROMP(&SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
+          if (SubjectDisplayWidth < 50)
+            SubjectDisplayWidth  = 0;
+          else if (SubjectDisplayWidth > 1000)
+            SubjectDisplayWidth = 1000;
         }
         else
           SubjectDisplayWidth  = 0;
@@ -2825,6 +2988,12 @@ NOTEPAGES np[] = { CFGD_FRAME,
   0,
   0,
   0,
+  CFGH_FRAME,
+  IDS_NOTEVIEWERS3TEXT,
+  CfgHDlgProc,
+  0,
+  0,
+  0,
   CFGC_FRAME,
   IDS_NOTECOMPARE1TEXT,
   CfgCDlgProc,
@@ -3045,7 +3214,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 }
 
 #pragma alloc_text(NOTEBOOK,CfgTDlgProc,CfgTSDlgProc,CfgMDlgProc)
-#pragma alloc_text(NOTEBOOK2,CfgADlgProc,CfgSDlgProc,CfgVDlgProc)
+#pragma alloc_text(NOTEBOOK2,CfgADlgProc,CfgSDlgProc,CfgVDlgProc,CfgHDlgProc)
 #pragma alloc_text(NOTEBOOK3,CfgDDlgProc,Cfg5DlgProc,Cfg6DlgProc)
 #pragma alloc_text(NOTEBOOK4,Cfg7DlgProc,Cfg8DlgProc,CfgCDlgProc)
 #pragma alloc_text(NOTEBOOK5,CfgGDlgProc,CfgDlgProc,CfgBDlgProc)

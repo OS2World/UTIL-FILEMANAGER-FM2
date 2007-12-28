@@ -302,10 +302,10 @@ MRESULT EXPENTRY MLESubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableMenuItem(vw->hwndPopupMenu, MLE_CLEAR, TRUE);
 	  WinEnableMenuItem(vw->hwndPopupMenu, MLE_BLOCKMENU, TRUE);
 	}
-	if (!*ftprun)
+	if (!*ftprun && !fFtpRunWPSDefault)
 	  WinSendMsg(vw->hwndPopupMenu, MM_DELETEITEM,
 		     MPFROM2SHORT(MLE_VIEWFTP, FALSE), MPVOID);
-	if (!*httprun)
+	if (!*httprun && !fHttpRunWPSDefault)
 	  WinSendMsg(vw->hwndPopupMenu, MM_DELETEITEM,
 		     MPFROM2SHORT(MLE_VIEWHTTP, FALSE), MPVOID);
 	PopupMenu(WinQueryWindow(hwnd, QW_PARENT),

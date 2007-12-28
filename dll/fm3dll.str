@@ -304,9 +304,9 @@ FM/2: See all files
  <Untitled>
  Internal Viewer
 FM/2 Viewer
-
-
-
+Foreground
+Background
+FM/2: 'Editor' colors
 archive
 Error #%lu accessing "%s"
  -- Empty or open removable drive?
@@ -392,8 +392,10 @@ Selected foreground
 Selected found foreground
 http: background
 http: foreground
-ftp: foreground
 ftp: background
+ftp: foreground
+Mail: backgroung
+Mail: foreground
 FM/2: 'Viewer' colors
 Normal cursored background
 Selected cursored background
@@ -404,9 +406,7 @@ Normal foreground
 Readonly foreground
 System/Hidden foreground
 FM/2: 'See all files' colors
-Foreground
-Background
-FM/2: 'Editor' colors
+
 byte
 line
  No lines to display
@@ -740,8 +740,8 @@ day
 FM/2:  Tree filter
 You have disabled the ability to select more than one object at a time in Directory Containers, the Collector and Archive Containers.  If that's not what you intended, return to the Settings notebook's DirCnrs page and correct the mistake.
 
-
-
+Viewers ~2
+Default viewers and related controls continued
 FM/2: Default DirCnr filter
 FM/2: Default Collector filter
 Don't forget...

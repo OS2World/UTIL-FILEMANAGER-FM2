@@ -1408,7 +1408,9 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
-  fSubjectLengthMax, fNoLargeFileSupport;
+  fSubjectLengthMax, fNoLargeFileSupport,
+  fHttpRunWPSDefault, fFtpRunWPSDefault,
+  fLibPathStrictHttpRun, fLibPathStrictFtpRun;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslongname, detailsea, detailssize, detailssubject,
   detailslwdate, detailslwtime, detailsattr, detailsicon;
@@ -1434,15 +1436,15 @@ DATADEF CHAR *DEBUG_STRING, *FM3Str, *FM2Str, *NullStr, *Default, *Settings,
 DATADEF RGB2 RGBGREY, RGBBLACK;
 DATADEF CHAR archiverbb2[CCHMAXPATH], StopPrinting, profile[CCHMAXPATH];
 DATADEF CHAR appname[12], realappname[12];
-DATADEF CHAR editor[CCHMAXPATH], viewer[CCHMAXPATH],
-  virus[CCHMAXPATH], printer[CCHMAXPATH],
+DATADEF CHAR editor[CCHMAXPATH], viewer[CCHMAXPATH], virus[CCHMAXPATH],
   compare[CCHMAXPATH], extractpath[CCHMAXPATH],
   lastextractpath[CCHMAXPATH], lasttoolbox[CCHMAXPATH],
   HomePath[CCHMAXPATH], SwapperDat[CCHMAXPATH],
-  binview[CCHMAXPATH], bined[CCHMAXPATH],
+  binview[CCHMAXPATH], bined[CCHMAXPATH], printer[CCHMAXPATH],
   dircompare[CCHMAXPATH], szDefArc[CCHMAXPATH],
-  ftprun[CCHMAXPATH], ftprund[CCHMAXPATH], httprun[CCHMAXPATH],
-  httprund[CCHMAXPATH], targetdir[CCHMAXPATH];
+  ftprun[CCHMAXPATH], ftprundir[CCHMAXPATH], httprun[CCHMAXPATH],
+  httprundir[CCHMAXPATH], mailrundir[CCHMAXPATH],
+  mailrun[CCHMAXPATH], targetdir[CCHMAXPATH];
 DATADEF HMODULE FM3DllHandle, FM3ModHandle;
 DATADEF CHAR *quicktool[50];
 DATADEF BOOL qtloaded;

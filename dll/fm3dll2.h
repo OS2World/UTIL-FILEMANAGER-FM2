@@ -409,9 +409,10 @@
 #define IDM_WPSCOPY         1153
 #define IDM_SETTARGET       1154
 #define IDM_CLOSETRAY       1155
-#define IDM_PARTITIONDF       1156
+#define IDM_PARTITIONDF     1156
 #define IDM_PARTITIONLVMG   1157
-#define IDM_PARTITIONFD       1158
+#define IDM_PARTITIONFD     1158
+#define IDM_IGNOREMAIL      1159
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001

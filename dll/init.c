@@ -1184,26 +1184,36 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "Compare", compare, &size);
   size = sizeof(virus);
   PrfQueryProfileData(fmprof, appname, "Virus", virus, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "FtpRunWPSDefault", &fFtpRunWPSDefault, &size);
   size = sizeof(ftprun);
   PrfQueryProfileData(fmprof, appname, "FTPRun", ftprun, &size);
   if (!*ftprun){
-    size = sizeof(ftprun);
-    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                        "DefaultBrowserExe", ftprun, &size);
-    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                        "DefaultWorkingDir", ftprund, &size);
+    fFtpRunWPSDefault = TRUE;
   }
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "HttpRunWPSDefault", &fHttpRunWPSDefault, &size);
   size = sizeof(httprun);
   PrfQueryProfileData(fmprof, appname, "HTTPRun", httprun, &size);
   if (!*httprun){
-    size = sizeof(httprun);
-    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                        "DefaultBrowserExe", httprun, &size);
-    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                        "DefaultWorkingDir", httprund, &size);
+    fHttpRunWPSDefault = TRUE;
   }
+  size = sizeof(mailrun);
+  PrfQueryProfileData(fmprof, appname, "MailRun", mailrun, &size);
+  size = sizeof(ftprundir);
+  PrfQueryProfileData(fmprof, appname, "FtpRunDir", ftprundir, &size);
+  size = sizeof(httprundir);
+  PrfQueryProfileData(fmprof, appname, "HttpRunDir", httprundir, &size);
+  size = sizeof(mailrundir);
+  PrfQueryProfileData(fmprof, appname, "MailRun", mailrun, &size);
   size = sizeof(lasttoolbox);
   PrfQueryProfileData(fmprof, FM3Str, "LastToolBox", lasttoolbox,
+                      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "LibPathStrictHttpRun", &fLibPathStrictHttpRun,
+                      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "LibPathStrictFtpRun", &fLibPathStrictFtpRun,
 		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FollowTree", &fFollowTree,
@@ -1288,15 +1298,19 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "SubjectInLeftPane", &fSubjectInLeftPane,
 		      &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, appname, "SubjectDisplayWidth",
-		      &SubjectDisplayWidth, &size);
-  if (SubjectDisplayWidth < 50)
-    SubjectDisplayWidth = 0;
-  else if (SubjectDisplayWidth > 1000)
-    SubjectDisplayWidth = 1000;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SubjectLengthMax", &fSubjectLengthMax,
-		      &size);
+                      &size);
+  if (fSubjectLengthMax)
+    SubjectDisplayWidth = 0;
+  else {
+    PrfQueryProfileData(fmprof, appname, "SubjectDisplayWidth",
+              	        &SubjectDisplayWidth, &size);
+    if (SubjectDisplayWidth < 50)
+      SubjectDisplayWidth = 0;
+    else if (SubjectDisplayWidth > 1000)
+      SubjectDisplayWidth = 1000;
+  }
 
   /* load pointers and icons we use */
   hptrArrow = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE);

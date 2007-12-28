@@ -2132,6 +2132,7 @@ MENU NEWVIEW_FRAME
     MENUITEM "",                    -1,               MIS_SEPARATOR
     MENUITEM "~Ignore http://",     IDM_IGNOREHTTP
     MENUITEM "I~gnore ftp://",      IDM_IGNOREFTP
+    MENUITEM "Ignore ~mail",        IDM_IGNOREMAIL
     MENUITEM "",                    -1,               MIS_SEPARATOR
     MENUITEM "~Edit this file\tCtrl + e",IDM_EDIT
   }
