@@ -635,9 +635,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   char szObject[32] = "", *p, szSavedir[CCHMAXPATH];
   BOOL useTermQ = FALSE;
   char szTempdir[CCHMAXPATH];
-  char szTempPgm[CCHMAXPATH], tempcom[2048], temparg[2048], buf[10] = " &|<>";
-  char *offset, *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
-  UINT offsetquote;
+  //char szTempPgm[CCHMAXPATH], tempcom[2048], temparg[2048], buf[10] = " &|<>";
+  //char *offset, *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
+  //UINT offsetquote;
 
   typedef struct {
     USHORT usSessID;
@@ -684,7 +684,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	   formatstring,
            parguments);
   va_end(parguments);
-  offsetexe = strstr(strlwr(pszPgm), ".exe");
+  /*offsetexe = strstr(strlwr(pszPgm), ".exe");
   offsetcmd = strstr(strlwr(pszPgm), ".cmd");
   offsetcom = strstr(strlwr(pszPgm), ".com");
   offsetbtm = strstr(strlwr(pszPgm), ".btm");
@@ -700,8 +700,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   else if (offsetbat)
     offset = offsetbat;
   else {
-    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_NOTDIRECTEXETEXT));
-    return -1;
+    offset = pszPgm;
   }
   offsetquote = strcspn(pszPgm, buf);
   if (pszPgm[0] != '\"' && offsetquote < offset - pszPgm && offsetquote != NULL){
@@ -717,7 +716,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     memcpy(pszPgm, szTempPgm, 2048);
     //printf("%s\n %s\n%s %s\n %d %d",
     //       pszPgm, szTempPgm, tempcom, temparg, offset, offsetquote); fflush(stdout);
-  }
+  } */
   if (pszEnvironment) {
     p = &pszEnvironment[strlen(pszEnvironment)] + 1;
     *p = 0;

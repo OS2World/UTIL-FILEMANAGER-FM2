@@ -110,7 +110,7 @@ typedef struct
     hwndPopup, hwndListbox, hwndFrame, hwndDrag, hwndParent, hhscroll;
   HPS hps;
   FATTRS fattrs;
-  LONG colors[12];
+  LONG colors[14];
 }
 VIEWDATA;
 
@@ -161,7 +161,6 @@ CHAR *mailstr(CHAR *t, CHAR *s, LONG lens)
          *pp != '\"')
     pp++;
   *pp = 0;
-  printf("%s", t); fflush(stdout);
   strip_lead_char(t, "<");
   strip_trail_char(t, ">");
   return t;
@@ -284,12 +283,9 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  break;
 		}
               }
-              else if (!strncmp(urld->url, "@", 1)) {
-		memmove(urld->url, urld->url + 6, strlen(urld->url) + 1);
-		if (*urld->url) {
+              else if (strchr(urld->url, '@')) {
 		  WinDismissDlg(hwnd, 3);
 		  break;
-		}
               }
 	    }
 	  }
@@ -2269,7 +2265,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG numlines, whichline, wascursored, width;
       RECTL Rectl;
       POINTS pts;
-      //CHAR *mailstring;
 
       WinQueryWindowRect(hwnd, &Rectl);
       numlines = NumLines(&Rectl, ad);
