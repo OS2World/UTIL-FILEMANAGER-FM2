@@ -27,6 +27,7 @@
   10 Oct 07 SHL Correct ReLineThread typo
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
   28 Dec 07 GKY Add mailrun to allow mailto by clicking on an email address in the viewer
+  29 Dec 07 GKY Formated email address using "<mailto:"
 
 ***********************************************************************/
 
@@ -77,7 +78,8 @@ static PSZ pszSrcFile = __FILE__;
 #define COLORS_MAILBACK              12
 #define COLORS_MAILFORE              13
 
-static LONG Colors[COLORS_MAX] = { COLR_WHITE, COLR_DARKGRAY,
+static LONG Colors[COLORS_MAX] = {
+  COLR_WHITE, COLR_DARKGRAY,
   COLR_PALEGRAY, COLR_BLACK,
   COLR_BLACK, COLR_RED,
   COLR_WHITE, COLR_YELLOW,
@@ -90,36 +92,36 @@ static LONG Colors[COLORS_MAX] = { COLR_WHITE, COLR_DARKGRAY,
 
 typedef struct
 {
-  USHORT size;
-  USHORT flags;
-  USHORT cliptype;
-  CHAR filename[CCHMAXPATH];
+  FATTRS fattrs;
+  LONG colors[COLORS_MAX];
   CHAR *text;
   CHAR **lines, *markedlines;
   CHAR searchtext[SEARCHSTRINGLEN], *lastpos, szFacename[FACESIZE];
   ULONG textsize, numlines, topline, cursored, selected, numalloc, multiplier,
     lastselected, found;
-  CHAR stopflag, busy;
   LONG oldwidth, lastdirection, lMaxAscender, lMaxDescender, lMaxHeight,
     maxx, horzscroll;
-  BOOL hex, mousecaptured, sensitive, dummy, literalsearch, clientfocused,
-    alsoselect, wrapon, relining, httpin, ftpin, mailin, ignorehttp, ignoreftp,
-    ignoremail, needrefreshing;
   HMTX ScanSem;
   HWND hvscroll, hwndMenu, hwndStatus1, hwndStatus2, hwndStatus3, hwndRestore,
     hwndPopup, hwndListbox, hwndFrame, hwndDrag, hwndParent, hhscroll;
   HPS hps;
-  FATTRS fattrs;
-  LONG colors[COLORS_MAX];
+  USHORT size;
+  USHORT flags;
+  USHORT cliptype;
+  CHAR filename[CCHMAXPATH];
+  CHAR stopflag, busy;
+  BOOL hex, mousecaptured, sensitive, dummy, literalsearch, clientfocused,
+    alsoselect, wrapon, relining, httpin, ftpin, mailin, ignorehttp, ignoreftp,
+    ignoremail, needrefreshing;
 }
 VIEWDATA;
 
 typedef struct
 {
-  USHORT size;
-  USHORT dummy;
   ULONG len;
   CHAR *line;
+  USHORT size;
+  USHORT dummy;
   CHAR url[SEARCHSTRINGLEN];
 }
 URLDATA;
@@ -136,34 +138,57 @@ static BOOL IgnoreMail = FALSE;
 static FATTRS Fattrs;
 
 // mailstr checks for a designated character in a string then cuts the string
-//to the first word that contains the character
+//to the first word that contains the character then prepends <mailto: and appends >
 
-CHAR *mailstr(CHAR *t, CHAR *s, LONG lens)
+CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
 {
-  CHAR *pp;
-  CHAR *test = t;
+  CHAR *pszCharCounter;
+  CHAR *pszTestStr = pszSrc;
+  CHAR szMailTo[1024] = "<mailto:";
+  CHAR szMailEnd[] = ">";
 
-  if (!strnstr(test, s, lens))
+  if (!strnstr(pszTestStr, pszFindChar, StrLens))
     return NULL;
-  bstripcr(t);
-  if (!strstr(t, " "))
-    return t;
-  while (strchr(t, ' ') < strchr(t, (CHAR) s)){
-    pp = t;
-    while (*pp && *pp != ' '){
-      *pp = ' ';
-      pp++;
+  bstripcr(pszSrc);
+  remove_first_occurence_of_character("\r", pszSrc);
+  remove_first_occurence_of_character("\n", pszSrc);
+  if (!strstr(pszSrc, " ")){
+    if (!stristr(pszSrc, "<mailto:")) {
+      strip_lead_char("<", pszSrc);
+      strip_trail_char(">", pszSrc);
+      strcat(szMailTo, pszSrc);
+      strcat(szMailTo, szMailEnd);
+      pszSrc = szMailTo;
+      return pszSrc;
     }
-      lstrip(t);
+    else {
+      return pszSrc;
+    }
   }
-  pp = t;
-  while (*pp && *pp != ' ' && *pp != '\r' && *pp != '\n' &&
-         *pp != '\"')
-    pp++;
-  *pp = 0;
-  strip_lead_char(t, "<");
-  strip_trail_char(t, ">");
-  return t;
+  while (strchr(pszSrc, ' ') < strchr(pszSrc, *pszFindChar)){
+    pszCharCounter = pszSrc;
+    while (*pszCharCounter && *pszCharCounter != ' '){
+      *pszCharCounter = ' ';
+      pszCharCounter++;
+    }
+    lstrip(pszSrc);
+  }
+  pszCharCounter = pszSrc;
+  while (*pszCharCounter && *pszCharCounter != ' ' && *pszCharCounter != '\r' &&
+         *pszCharCounter != '\n' && *pszCharCounter != '\"')
+    pszCharCounter++;
+  *pszCharCounter = 0;
+  if (!stristr(pszSrc, "<mailto:")) {
+    strip_lead_char("<", pszSrc);
+    strip_trail_char(">", pszSrc);
+    strcat(szMailTo, pszSrc);
+    strcat(szMailTo, szMailEnd);
+    pszSrc = szMailTo;
+    return pszSrc;
+    }
+  else {
+    return pszSrc;
+  }
 }
 
 MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -215,7 +240,8 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       while (p && *p && p < e);
       p = urld->line;
       if (mailstr(p, "@", e - p)) {
-        strcpy(urld->url, p);
+        pp = mailstr(p, "@", e - p);
+        strcpy(urld->url, pp);
         WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
 	  	          MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
       }

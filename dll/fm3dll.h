@@ -65,6 +65,7 @@
   10 Nov 07 GKY Add ThousandSeparator variable for file sizes NLS tseparator.
   22 Nov 07 GKY Use CopyPresParams in CheckMenu to fix presparam inconsistencies in menus
   17 Dec 07 GKY Add variables for using WPURLDEFAULTSETTINGS as the fall back for ftphttprun
+  29 Dec 07 GKY Add remove_first_occurence_of_character
 
 ***********************************************************************/
 
@@ -831,6 +832,7 @@ VOID chop_at_crnl(PSZ pszSrc);
 PSZ convert_nl_to_nul(PSZ pszSrc);
 void strip_lead_char(char *pszStripChars, char *pszSrc);
 void strip_trail_char(char *pszStripChars, char *pszSrc);
+VOID remove_first_occurence_of_character(char *pszRemoveChar, char *pszSrc);
 
 #define lstrip(s)         strip_lead_char(" \t",(s))
 #define rstrip(s)         strip_trail_char(" \t",(s))
