@@ -110,7 +110,7 @@ typedef struct
     hwndPopup, hwndListbox, hwndFrame, hwndDrag, hwndParent, hhscroll;
   HPS hps;
   FATTRS fattrs;
-  LONG colors[14];
+  LONG colors[COLORS_MAX];
 }
 VIEWDATA;
 
