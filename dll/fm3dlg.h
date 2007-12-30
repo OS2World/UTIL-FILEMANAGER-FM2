@@ -683,6 +683,7 @@
 #define CFGH_LIBPATHSTRICTHTTPRUN                                                       25357
 #define CFGH_LIBPATHSTRICTFTPRUN                                                        25358
 #define CFGH_FIND                                                                       25359
+#define CFGH_LIBPATHSTRICTMAILRUN                                                       25360
 
 #define CFGS_FRAME											25360
 #define CFGS_LOADSUBJECTS 							25361

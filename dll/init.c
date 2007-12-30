@@ -1214,6 +1214,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
                       &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictFtpRun", &fLibPathStrictFtpRun,
+                      &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "LibPathStrictMailRun", &fLibPathStrictMailRun,
 		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FollowTree", &fFollowTree,

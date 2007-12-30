@@ -1965,13 +1965,15 @@ BEGIN
                         CFGH_LIBPATHSTRICTHTTPRUN, 162, 122, 156, 10
         AUTOCHECKBOX    "Use LIBPATHSTRICT for run ftp",
                         CFGH_LIBPATHSTRICTFTPRUN, 162, 110, 156, 10
+        AUTOCHECKBOX    "Use LIBPATHSTRICT for mailto",
+                        CFGH_LIBPATHSTRICTMAILRUN, 162, 98, 156, 10
         LTEXT           "Run http:", -1, 2, 86, 68, 8
         ENTRYFIELD      "", CFGH_HTTPRUN, 72, 86, 196, 8, ES_MARGIN
         LTEXT           "Run http dir:", -1, 2, 74, 68, 8, NOT WS_GROUP
         ENTRYFIELD      "", CFGH_RUNHTTPWORKDIR, 72, 74, 196, 8, ES_MARGIN
-        LTEXT           "Run mail:", -1, 2, 62, 68, 8, NOT WS_GROUP
+        LTEXT           "Mailto:", -1, 2, 62, 68, 8, NOT WS_GROUP
         ENTRYFIELD      "", CFGH_MAILRUN, 72, 62, 196, 8, ES_MARGIN
-        LTEXT           "Run mail dir:", -1, 2, 50, 68, 8, NOT WS_GROUP
+        LTEXT           "Mailto dir:", -1, 2, 50, 68, 8, NOT WS_GROUP
         ENTRYFIELD      "", CFGH_RUNMAILWORKDIR, 72, 50, 196, 8, ES_MARGIN
         LTEXT           "Run ftp:", -1, 2, 38, 68, 8, NOT WS_GROUP
         ENTRYFIELD      "", CFGH_FTPRUN, 72, 38, 196, 8, ES_MARGIN

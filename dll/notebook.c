@@ -542,6 +542,7 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGH_FTPRUNWPSDEFAULT, fFtpRunWPSDefault);
     WinCheckButton(hwnd, CFGH_LIBPATHSTRICTHTTPRUN, fLibPathStrictHttpRun);
     WinCheckButton(hwnd, CFGH_LIBPATHSTRICTFTPRUN, fLibPathStrictFtpRun);
+    WinCheckButton(hwnd, CFGH_LIBPATHSTRICTMAILRUN, fLibPathStrictMailRun);
     return 0;
 
   case WM_CONTROL:
@@ -697,6 +698,9 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fLibPathStrictFtpRun = WinQueryButtonCheckstate(hwnd, CFGH_LIBPATHSTRICTFTPRUN);
       PrfWriteProfileData(fmprof, appname, "LibPathStrictFtpRun",
                           &fLibPathStrictFtpRun, sizeof(BOOL));
+      fLibPathStrictMailRun = WinQueryButtonCheckstate(hwnd, CFGH_LIBPATHSTRICTMAILRUN);
+      PrfWriteProfileData(fmprof, appname, "LibPathStrictMailRun",
+                          &fLibPathStrictMailRun, sizeof(BOOL));
       break;
     }
   }

@@ -2398,7 +2398,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                   else
                     runemf2(SEPARATE | WINDOWED,
                             hwnd, pszSrcFile, __LINE__,
-                            httprundir, NULL, "%s %s", httprun, urld->url);
+                            httprundir,
+                            fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+                            "%s %s", httprun, urld->url);
                 }
 		free(urld);
 		goto NoAdd;
@@ -2422,13 +2424,17 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                   else
                     runemf2(SEPARATE | WINDOWED,
                             hwnd, pszSrcFile, __LINE__,
-                            ftprundir, NULL, "%s %s", ftprun, urld->url);
+                            ftprundir,
+                            fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+                            "%s %s", ftprun, urld->url);
                 }
               case 3:
                 if (*urld->url){
                   runemf2(SEPARATE | WINDOWED,
                           hwnd, pszSrcFile, __LINE__,
-                          mailrundir, NULL, "%s %s", mailrun, urld->url);
+                          mailrundir,
+                          fLibPathStrictMailRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+                          "%s %s", mailrun, urld->url);
                 }
                 free(urld);
                 goto NoAdd;

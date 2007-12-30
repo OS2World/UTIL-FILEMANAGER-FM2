@@ -66,6 +66,8 @@
   22 Nov 07 GKY Use CopyPresParams in CheckMenu to fix presparam inconsistencies in menus
   17 Dec 07 GKY Add variables for using WPURLDEFAULTSETTINGS as the fall back for ftphttprun
   29 Dec 07 GKY Add remove_first_occurence_of_character
+  30 Dec 07 GKY Change TestDates to TestFDates can compare by filename or FDATE/FTIME data
+  30 Dec 07 GKY Add TestCDates to compare CNRITEMs by CDATE/CTIME data
 
 ***********************************************************************/
 
@@ -683,7 +685,9 @@ VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
 
 /* valid.c */
 INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
-int TestDates(char *file1, char *file2);
+int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
+               FDATE *datevar2, FTIME *timevar2);
+int TestCDates(CDATE *datevar1, CTIME *timevar1, CDATE *datevar2, CTIME *timevar2);
 BOOL IsNewer(char *file1, char *file2);
 BOOL IsRoot(CHAR * filename);
 BOOL IsFileSame(CHAR * filename1, CHAR * filename2);
@@ -1411,7 +1415,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
   fSubjectLengthMax, fNoLargeFileSupport,
-  fHttpRunWPSDefault, fFtpRunWPSDefault,
+  fHttpRunWPSDefault, fFtpRunWPSDefault, fLibPathStrictMailRun,
   fLibPathStrictHttpRun, fLibPathStrictFtpRun;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslongname, detailsea, detailssize, detailssubject,
