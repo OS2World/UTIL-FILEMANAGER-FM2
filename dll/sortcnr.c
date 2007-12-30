@@ -141,7 +141,9 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
       break;
 
     case SORT_LWDATE:
-      ret = (pCI1->date.year < pCI2->date.year) ? 1 :
+      ret =  TestCDates(&pCI1->date, &pCI1->time,
+                        &pCI2->date, &pCI2->time);
+        /*(pCI1->date.year < pCI2->date.year) ? 1 :
 	(pCI1->date.year > pCI2->date.year) ? -1 :
 	(pCI1->date.month < pCI2->date.month) ? 1 :
 	(pCI1->date.month > pCI2->date.month) ? -1 :
@@ -152,11 +154,13 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
 	(pCI1->time.minutes < pCI2->time.minutes) ? 1 :
 	(pCI1->time.minutes > pCI2->time.minutes) ? -1 :
 	(pCI1->time.seconds < pCI2->time.seconds) ? 1 :
-	(pCI1->time.seconds > pCI2->time.seconds) ? -1 : 0;
+	(pCI1->time.seconds > pCI2->time.seconds) ? -1 : 0;*/
       break;
 
     case SORT_LADATE:
-      ret = (pCI1->ladate.year < pCI2->ladate.year) ? 1 :
+      ret = TestCDates(&pCI1->ladate, &pCI1->latime,
+                       &pCI2->ladate, &pCI2->latime);
+        /*(pCI1->ladate.year < pCI2->ladate.year) ? 1 :
 	(pCI1->ladate.year > pCI2->ladate.year) ? -1 :
 	(pCI1->ladate.month < pCI2->ladate.month) ? 1 :
 	(pCI1->ladate.month > pCI2->ladate.month) ? -1 :
@@ -167,11 +171,13 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
 	(pCI1->latime.minutes < pCI2->latime.minutes) ? 1 :
 	(pCI1->latime.minutes > pCI2->latime.minutes) ? -1 :
 	(pCI1->latime.seconds < pCI2->latime.seconds) ? 1 :
-	(pCI1->latime.seconds > pCI2->latime.seconds) ? -1 : 0;
+	(pCI1->latime.seconds > pCI2->latime.seconds) ? -1 : 0;*/
       break;
 
     case SORT_CRDATE:
-      ret = (pCI1->crdate.year < pCI2->crdate.year) ? 1 :
+      ret = TestCDates(&pCI1->crdate, &pCI1->crtime,
+                       &pCI2->crdate, &pCI2->crtime);
+        /*(pCI1->crdate.year < pCI2->crdate.year) ? 1 :
 	(pCI1->crdate.year > pCI2->crdate.year) ? -1 :
 	(pCI1->crdate.month < pCI2->crdate.month) ? 1 :
 	(pCI1->crdate.month > pCI2->crdate.month) ? -1 :
@@ -182,7 +188,7 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
 	(pCI1->crtime.minutes < pCI2->crtime.minutes) ? 1 :
 	(pCI1->crtime.minutes > pCI2->crtime.minutes) ? -1 :
 	(pCI1->crtime.seconds < pCI2->crtime.seconds) ? 1 :
-	(pCI1->crtime.seconds > pCI2->crtime.seconds) ? -1 : 0;
+	(pCI1->crtime.seconds > pCI2->crtime.seconds) ? -1 : 0;*/
       break;
     }
 

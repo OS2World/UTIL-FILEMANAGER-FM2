@@ -19,6 +19,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   27 Sep 07 SHL Correct ULONGLONG size formatting
   16 Nov 07 SHL Ensure fixup buffer sufficiently large
+  30 Dec 07 GKY Use CommaFmtULL
 
 ***********************************************************************/
 
@@ -355,7 +356,8 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	PCNRITEM pci;
 	FILE *fp;
-	CHAR *p, *pp, temp;
+        CHAR *p, *pp, temp;
+        CHAR szCmmaFmtFileSize[81];
 	INT attribute = CRA_CURSORED;
 	SHORT sSelect;
 
@@ -452,12 +454,14 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      fprintf(fp, "%-40s", pci->pszSubject);
 		      break;
 		    case 'Z':
-		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
-		      fprintf(fp, "%-13llu", pci->cbFile);
+                      CommaFmtULL(szCmmaFmtFileSize,
+                      sizeof(szCmmaFmtFileSize), pci->cbFile, ' ');
+		      fprintf(fp, "%-13s", szCmmaFmtFileSize);
 		      break;
 		    case 'z':
-		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
-		      fprintf(fp, "%llu", pci->cbFile);
+                      CommaFmtULL(szCmmaFmtFileSize,
+                      sizeof(szCmmaFmtFileSize), pci->cbFile, ' ');
+		      fprintf(fp, "%s", szCmmaFmtFileSize);
 		      break;
 		    case 'E':
 		      fprintf(fp, "%-5u", pci->easize);
@@ -847,7 +851,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		  PFEA2LIST pfealist;
 		  PGEA2 pgea;
 		  PFEA2 pfea;
-		  CHAR *value;
+                  CHAR *value;
+
 
 		  pgealist =
 		    xmallocz(sizeof(GEA2LIST) + 64, pszSrcFile, __LINE__);
@@ -886,7 +891,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		while (*p) {
 		  if (*p == '%') {
 		    p++;
-		    switch (*p) {
+                    switch (*p) {
+                      CHAR szCmmaFmtFileSize[81];
 		    case 's':
 		      fputs(subject, fp);
 		      break;
@@ -894,12 +900,14 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		      fprintf(fp, "%-40s", subject);
 		      break;
 		    case 'Z':
-		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
-		      fprintf(fp, "%-13llu", ffb4.cbFile);
+                      CommaFmtULL(szCmmaFmtFileSize,
+                      sizeof(szCmmaFmtFileSize), ffb4.cbFile, ' ');
+		      fprintf(fp, "%-13s", szCmmaFmtFileSize);
 		      break;
 		    case 'z':
-		      // 27 Sep 07 SHL fixme to use CommaFmtULL?
-		      fprintf(fp, "%llu", ffb4.cbFile);
+                      CommaFmtULL(szCmmaFmtFileSize,
+                      sizeof(szCmmaFmtFileSize), ffb4.cbFile, ' ');
+		      fprintf(fp, "%s", szCmmaFmtFileSize);
 		      break;
 		    case 'E':
 		      fprintf(fp, "%-5u", CBLIST_TO_EASIZE(ffb4.cbList));

@@ -11,6 +11,7 @@
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   27 Sep 07 SHL Correct ULONGLONG size formatting
+  30 Dec 07 GKY Use TestFDates for comparing dates
 
 ***********************************************************************/
 
@@ -74,7 +75,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (mv) {
 
 	FILESTATUS3L fs1, fs2;
-	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH];
+	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH], szCmmaFmtFileSize[81];
 	INT sourceexists = 0, targetexists = 0,
 	    sourcenewer = 0, sourcesmaller = 0;
 
@@ -89,12 +90,13 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!MakeFullName(mv->source))
 	  WinSetDlgItemText(hwnd, REN_SOURCE, mv->source);
 	if (!DosQueryPathInfo(mv->source, FIL_STANDARDL, &fs1, sizeof(fs1))) {
-	  // 27 Sep 07 SHL fixme to use CommaFmtULL
+          CommaFmtULL(szCmmaFmtFileSize,
+                      sizeof(szCmmaFmtFileSize), fs1.cbFile, ' ');
 	  sprintf(s,
-		  " %s%llu %ss %04u/%02u/%02u %02u:%02u:%02u",
+		  " %s%s %ss %04u/%02u/%02u %02u:%02u:%02u",
 		  fs1.attrFile & FILE_DIRECTORY ?
 		    GetPString(IDS_DIRBRKTTEXT) : NullStr,
-		  fs1.cbFile,
+		  szCmmaFmtFileSize,
 		  GetPString(IDS_BYTETEXT),
 		  fs1.fdateLastWrite.year + 1980,
 		  fs1.fdateLastWrite.month,
@@ -116,12 +118,13 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(chkname, mv->target);
 	}
 	if (!DosQueryPathInfo(chkname, FIL_STANDARDL, &fs2, sizeof(fs2))) {
-	  // 27 Sep 07 SHL fixme to use CommaFmtULL
+          CommaFmtULL(szCmmaFmtFileSize,
+                      sizeof(szCmmaFmtFileSize), fs2.cbFile, ' ');
 	  sprintf(s,
-		  " %s%llu %ss %04u/%02u/%02u %02u:%02u:%02u",
+		  " %s%s %ss %04u/%02u/%02u %02u:%02u:%02u",
 		  fs2.attrFile & FILE_DIRECTORY ?
 		    GetPString(IDS_DIRBRKTTEXT) : NullStr,
-		  fs2.cbFile,
+		  szCmmaFmtFileSize,
 		  GetPString(IDS_BYTETEXT),
 		  fs2.fdateLastWrite.year + 1980,
 		  fs2.fdateLastWrite.month,
@@ -168,22 +171,11 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  (!mv->rename || strcmp(mv->target, mv->source)));
 
 	if (targetexists == 1 && sourceexists == 1) {
-	  sourcenewer =
-	    (fs1.fdateLastWrite.year < fs2.fdateLastWrite.year) ? 1 :
-	      (fs1.fdateLastWrite.year > fs2.fdateLastWrite.year) ? -1 :
-	       (fs1.fdateLastWrite.month < fs2.fdateLastWrite.month) ? 1 :
-		 (fs1.fdateLastWrite.month > fs2.fdateLastWrite.month) ? -1 :
-		   (fs1.fdateLastWrite.day < fs2.fdateLastWrite.day) ? 1 :
-		     (fs1.fdateLastWrite.day > fs2.fdateLastWrite.day) ? -1 :
-		       (fs1.ftimeLastWrite.hours < fs2. ftimeLastWrite. hours) ? 1 :
-			 (fs1.ftimeLastWrite.hours > fs2.ftimeLastWrite.hours) ? -1 :
-			   (fs1.ftimeLastWrite.minutes < fs2.ftimeLastWrite.minutes) ? 1 :
-			     (fs1.ftimeLastWrite.minutes > fs2.ftimeLastWrite.minutes) ? -1 :
-			       (fs1.ftimeLastWrite.twosecs < fs2.ftimeLastWrite.twosecs) ? 1 :
-				 (fs1.ftimeLastWrite.twosecs > fs2.ftimeLastWrite.twosecs) ? -1 : 0;
+          sourcenewer = TestFDates(NULL, NULL,
+                                   &fs1.fdateLastWrite, &fs1.ftimeLastWrite,
+                                   &fs2.fdateLastWrite, &fs2.ftimeLastWrite);
 	  sourcesmaller = (fs1.cbFile < fs2.cbFile) ? -1 :
-			  (fs1.cbFile > fs2.cbFile) ? 1 :
-			  0;
+			  (fs1.cbFile > fs2.cbFile) ? 1 : 0;
 	  sprintf(&s[strlen(s)], GetPString(IDS_SOURCEISTEXT),
 		  (sourcenewer == -1) ? GetPString(IDS_NEWERTEXT) :
 		    (sourcenewer == 1) ? GetPString(IDS_OLDERTEXT) :

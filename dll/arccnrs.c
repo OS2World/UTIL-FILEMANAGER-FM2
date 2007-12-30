@@ -47,6 +47,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
+  30 Dec 07 GKY Use TestCDates for sort by date
 
 ***********************************************************************/
 
@@ -268,7 +269,9 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
       break;
 
     case SORT_LWDATE:
-      ret = (pai1->date.year < pai2->date.year) ? 1 :
+      ret = TestCDates(&pai1->date, &pai1->time,
+                       &pai2->date, &pai2->time);
+        /*(pai1->date.year < pai2->date.year) ? 1 :
 	(pai1->date.year > pai2->date.year) ? -1 :
 	(pai1->date.month < pai2->date.month) ? 1 :
 	(pai1->date.month > pai2->date.month) ? -1 :
@@ -279,7 +282,7 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
 	(pai1->time.minutes < pai2->time.minutes) ? 1 :
 	(pai1->time.minutes > pai2->time.minutes) ? -1 :
 	(pai1->time.seconds < pai2->time.seconds) ? 1 :
-	(pai1->time.seconds > pai2->time.seconds) ? -1 : 0;
+	(pai1->time.seconds > pai2->time.seconds) ? -1 : 0;*/
       break;
 
     case SORT_SIZE:

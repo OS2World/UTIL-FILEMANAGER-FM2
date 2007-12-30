@@ -23,6 +23,8 @@
   18 Feb 07 GKY Add more drive types and icons
   16 Jun 07 SHL Update for OpenWatcom
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  30 Dec 07 GKY Change TestDates to TestFDates can compare by filename or FDATE/FTIME data
+  30 Dec 07 GKY Add TestCDates to compare CNRITEMs by CDATE/CTIME data
 
 ***********************************************************************/
 
@@ -77,7 +79,63 @@ char *RootName(char *filename)
   return p;
 }
 
-int TestDates(char *file1, char *file2)
+int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
+               FDATE *datevar2, FTIME *timevar2)
+{
+  /*
+   * return 1 (file2 newer than file1),
+   * 0 (files same)
+   * or -1 (file1 newer than file2)
+   * Make the FILSTATUS pointers NULL if passing file names
+   * if the FILESTATUS information is already available it can be passed instead
+   * Make the files NULL if passing FILESTATUS buffers
+   */
+
+  int comp = 0;
+  FILESTATUS3 fs3o, fs3n;
+
+  if (file1){
+    DosError(FERR_DISABLEHARDERR);
+    DosQueryPathInfo(file1, FIL_STANDARD, &fs3o, sizeof(fs3o));
+    datevar1 = &fs3o.fdateLastWrite;
+    timevar1 = &fs3o.ftimeLastWrite;
+  }
+  if (file2) {
+    DosError(FERR_DISABLEHARDERR);
+    DosQueryPathInfo(file2, FIL_STANDARD, &fs3n, sizeof(fs3n));
+    datevar2 = &fs3n.fdateLastWrite;
+    timevar2 = &fs3n.ftimeLastWrite;
+  }
+  if (&datevar1 && &datevar2 && &timevar1 && &timevar2) {
+    comp = (datevar2->year >
+            datevar1->year) ? 1 :
+      (datevar2->year <
+       datevar1->year) ? -1 :
+      (datevar2->month >
+       datevar1->month) ? 1 :
+      (datevar2->month <
+       datevar1->month) ? -1 :
+      (datevar2->day >
+       datevar1->day) ? 1 :
+      (datevar2->day <
+       datevar1->day) ? -1 :
+      (timevar2->hours >
+       timevar1->hours) ? 1 :
+      (timevar2->hours <
+       timevar1->hours) ? -1 :
+      (timevar2->minutes >
+       timevar1->minutes) ? 1 :
+      (timevar2->minutes <
+       timevar1->minutes) ? -1 :
+      (timevar2->twosecs >
+       timevar1->twosecs) ? 1 :
+    (timevar2->twosecs < timevar1->twosecs) ? -1 : 0;
+  }
+    return comp;
+}
+
+int TestCDates(CDATE *datevar1, CTIME *timevar1,
+               CDATE *datevar2, CTIME *timevar2)
 {
   /*
    * return 1 (file2 newer than file1),
@@ -86,45 +144,40 @@ int TestDates(char *file1, char *file2)
    */
 
   int comp = 0;
-  FILESTATUS3 fs3o, fs3n;
 
-  DosError(FERR_DISABLEHARDERR);
-  if (!DosQueryPathInfo(file1, FIL_STANDARD, &fs3o, sizeof(fs3o))) {
-    DosError(FERR_DISABLEHARDERR);
-    if (!DosQueryPathInfo(file2, FIL_STANDARD, &fs3n, sizeof(fs3n))) {
-      comp = (fs3n.fdateLastWrite.year >
-	      fs3o.fdateLastWrite.year) ? 1 :
-	(fs3n.fdateLastWrite.year <
-	 fs3o.fdateLastWrite.year) ? -1 :
-	(fs3n.fdateLastWrite.month >
-	 fs3o.fdateLastWrite.month) ? 1 :
-	(fs3n.fdateLastWrite.month <
-	 fs3o.fdateLastWrite.month) ? -1 :
-	(fs3n.fdateLastWrite.day >
-	 fs3o.fdateLastWrite.day) ? 1 :
-	(fs3n.fdateLastWrite.day <
-	 fs3o.fdateLastWrite.day) ? -1 :
-	(fs3n.ftimeLastWrite.hours >
-	 fs3o.ftimeLastWrite.hours) ? 1 :
-	(fs3n.ftimeLastWrite.hours <
-	 fs3o.ftimeLastWrite.hours) ? -1 :
-	(fs3n.ftimeLastWrite.minutes >
-	 fs3o.ftimeLastWrite.minutes) ? 1 :
-	(fs3n.ftimeLastWrite.minutes <
-	 fs3o.ftimeLastWrite.minutes) ? -1 :
-	(fs3n.ftimeLastWrite.twosecs >
-	 fs3o.ftimeLastWrite.twosecs) ? 1 :
-	(fs3n.ftimeLastWrite.twosecs < fs3o.ftimeLastWrite.twosecs) ? -1 : 0;
-    }
+  if (&datevar1 && &datevar2 && &timevar1 && &timevar2) {
+    comp = (datevar2->year >
+            datevar1->year) ? 1 :
+      (datevar2->year <
+       datevar1->year) ? -1 :
+      (datevar2->month >
+       datevar1->month) ? 1 :
+      (datevar2->month <
+       datevar1->month) ? -1 :
+      (datevar2->day >
+       datevar1->day) ? 1 :
+      (datevar2->day <
+       datevar1->day) ? -1 :
+      (timevar2->hours >
+       timevar1->hours) ? 1 :
+      (timevar2->hours <
+       timevar1->hours) ? -1 :
+      (timevar2->minutes >
+       timevar1->minutes) ? 1 :
+      (timevar2->minutes <
+       timevar1->minutes) ? -1 :
+      (timevar2->seconds >
+       timevar1->seconds) ? 1 :
+    (timevar2->seconds < timevar1->seconds) ? -1 : 0;
   }
-  return comp;
+    return comp;
 }
 
 BOOL IsNewer(char *file1, char *file2)
 {
   /* return TRUE if file2 is newer than file1 */
 
-  return (TestDates(file1, file2) > 0);
+  return (TestFDates(file1, file2, NULL, NULL, NULL, NULL) > 0);
 }
 
 BOOL IsDesktop(HAB hab, HWND hwnd)
@@ -940,7 +993,7 @@ VOID GetDesktopName(CHAR * objectpath, ULONG size)
 
 #pragma alloc_text(VALID,CheckDrive,IsRoot,IsFile,IsFullName,needsquoting)
 #pragma alloc_text(VALID,IsValidDir,IsValidDrive,MakeValidDir,IsVowel)
-#pragma alloc_text(VALID,IsFileSame,IsNewer,TestDates,RootName,MakeFullName)
+#pragma alloc_text(VALID,IsFileSame,IsNewer,TestFDates,TestCDates,RootName,MakeFullName)
 #pragma alloc_text(VALID,IsExecutable,IsBinary,IsDesktop,ParentIsDesktop)
 #pragma alloc_text(FILLFLAGS,FillInDriveFlags,assign_ignores)
 #pragma alloc_text(FILLFLAGS,ArgDriveFlags,DriveFlagsOne)

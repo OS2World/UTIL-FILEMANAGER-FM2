@@ -30,6 +30,8 @@
   14 Aug 07 SHL Drop afFilesToGet
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   27 Sep 07 SHL Correct ULONGLONG size formatting
+  30 Dec 07 GKY Use CommaFmtULL
+  30 Dec 07 GKY Use TestFDates for comparing by date
 
 ***********************************************************************/
 
@@ -1571,7 +1573,10 @@ static int comparedates(const void *v1, const void *v2)
   ALLFILES *d2 = *(ALLFILES **) v2;
   int ret;
 
-  ret = (d1->date.year > d2->date.year) ? 1 :
+  ret = TestFDates(NULL, NULL,
+                  &d2->date, &d2->time,
+                  &d1->date, &d1->time);
+    /*(d1->date.year > d2->date.year) ? 1 :
     (d1->date.year < d2->date.year) ? -1 :
     (d1->date.month > d2->date.month) ? 1 :
     (d1->date.month < d2->date.month) ? -1 :
@@ -1582,7 +1587,7 @@ static int comparedates(const void *v1, const void *v2)
     (d1->time.minutes > d2->time.minutes) ? 1 :
     (d1->time.minutes < d2->time.minutes) ? -1 :
     (d1->time.twosecs > d2->time.twosecs) ? 1 :
-    (d1->time.twosecs < d2->time.twosecs) ? -1 : 0;
+    (d1->time.twosecs < d2->time.twosecs) ? -1 : 0;*/
 
   if (!ret)
     ret = comparenames(v1, v2);
@@ -2227,7 +2232,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 {
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   POINTL ptl;
-  CHAR szBuff[CCHMAXPATH + 80];
+  CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81];
   ULONG len, y;
 
   y = (ad->invertsort) ? (ad->afifiles - 1) - whichfile : whichfile;
@@ -2261,15 +2266,16 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 		     1) ? standardcolors[Colors[COLORS_CURSOREDNORMALBACK]] :
 		    standardcolors[Colors[COLORS_NORMALBACK]]);
   }
-  // 27 Sep 07 SHL fixme to use CommaFmtULL
+  CommaFmtULL(szCmmaFmtFileSize,
+              sizeof(szCmmaFmtFileSize), ad->afindex[y]->cbFile, ' ');
   len = sprintf(szBuff,
-		"%c%-*.*s  %-12llu  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
+		"%c%-*.*s  %-12s  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
 		whichfile == ad->cursored - 1 ? '>' : ' ',
 		ad->fullnames ? ad->longestw : ad->longest,
 		ad->fullnames ? ad->longestw : ad->longest,
 		ad->fullnames ? ad->afindex[y]->fullname :
 		ad->afindex[y]->filename,
-		ad->afindex[y]->cbFile,
+		szCmmaFmtFileSize,
 		"-A"[((ad->afindex[y]->attrFile & FILE_ARCHIVED) != 0)],
 		"-R"[((ad->afindex[y]->attrFile & FILE_READONLY) != 0)],
 		"-H"[((ad->afindex[y]->attrFile & FILE_HIDDEN) != 0)],
@@ -3344,7 +3350,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       POINTL ptl;
       register ULONG x;
       ULONG y, len, numlines;
-      CHAR szBuff[CCHMAXPATH + 80];
+      CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81];
       BOOL inverted, hidsys, reado, wascursored;
 
       hpsp = WinBeginPaint(hwnd, pAD->hps, &Rectl);
@@ -3431,15 +3437,16 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      GpiSetBackColor(pAD->hps,
 			      standardcolors[Colors
 					     [COLORS_CURSOREDNORMALBACK]]);
-	    // 27 Sep 07 SHL fixme to use CommaFmtULL
+            CommaFmtULL(szCmmaFmtFileSize,
+                        sizeof(szCmmaFmtFileSize), pAD->afindex[y]->cbFile, ' ');
 	    len =
 	      sprintf(szBuff,
-		      "%c%-*.*s  %-12llu  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
+		      "%c%-*.*s  %-12s  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
 		      wascursored ? '>' : ' ',
 		      pAD->fullnames ? pAD->longestw : pAD->longest,
 		      pAD->fullnames ? pAD->longestw : pAD->longest,
 		      (pAD->fullnames) ? pAD->afindex[y]->fullname : pAD->
-		      afindex[y]->filename, pAD->afindex[y]->cbFile,
+		      afindex[y]->filename, szCmmaFmtFileSize,
 		      "-A"[((pAD->afindex[y]->attrFile & FILE_ARCHIVED) !=
 			    0)],
 		      "-R"[((pAD->afindex[y]->attrFile & FILE_READONLY) !=

@@ -38,6 +38,7 @@
   20 Aug 07 SHL A few more speed up tweaks.  Some experimental timing code
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   27 Sep 07 SHL Correct ULONGLONG size formatting
+  30 Dec 07 GKY Use TestCDates for compare by file date/time
 
 ***********************************************************************/
 
@@ -930,6 +931,7 @@ static VOID FillCnrsThread(VOID *args)
       INT numfilesr = 0;
       INT numallocl = 0;
       INT numallocr = 0;
+      INT ret = 0;
       UINT lenl;			// Directory prefix length
       UINT lenr;
       UINT recsNeeded;
@@ -1288,8 +1290,11 @@ static VOID FillCnrsThread(VOID *args)
 	      pcir->flags |= CNRITEM_LARGER;
 	      strcpy(pch, GetPString(IDS_SMALLERTEXT));
 	      pch += 7;
-	    }
-	    if ((pcil->date.year > pcir->date.year) ? TRUE :
+            }
+            ret = TestCDates(&pcir->date, &pcir->time,
+                             &pcil->date, &pcil->time);
+            if (ret == 1)
+              /*((pcil->date.year > pcir->date.year) ? TRUE :
 		(pcil->date.year < pcir->date.year) ? FALSE :
 		(pcil->date.month > pcir->date.month) ? TRUE :
 		(pcil->date.month < pcir->date.month) ? FALSE :
@@ -1300,7 +1305,7 @@ static VOID FillCnrsThread(VOID *args)
 		(pcil->time.minutes > pcir->time.minutes) ? TRUE :
 		(pcil->time.minutes < pcir->time.minutes) ? FALSE :
 		(pcil->time.seconds > pcir->time.seconds) ? TRUE :
-		(pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE) {
+		(pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE)*/ {
 	      pcil->flags |= CNRITEM_NEWER;
 	      pcir->flags |= CNRITEM_OLDER;
 	      if (pch != szBuf) {
@@ -1310,7 +1315,8 @@ static VOID FillCnrsThread(VOID *args)
 	      strcpy(pch, GetPString(IDS_NEWERTEXT));
 	      pch += 5;
 	    }
-	    else if ((pcil->date.year < pcir->date.year) ? TRUE :
+            else if (ret == -1)
+              /*((pcil->date.year < pcir->date.year) ? TRUE :
 		     (pcil->date.year > pcir->date.year) ? FALSE :
 		     (pcil->date.month < pcir->date.month) ? TRUE :
 		     (pcil->date.month > pcir->date.month) ? FALSE :
@@ -1322,7 +1328,7 @@ static VOID FillCnrsThread(VOID *args)
 		     (pcil->time.minutes > pcir->time.minutes) ? FALSE :
 		     (pcil->time.seconds < pcir->time.seconds) ? TRUE :
 		     (pcil->time.seconds > pcir->time.seconds) ? FALSE :
-		     FALSE) {
+		     FALSE)*/ {
 	      pcil->flags |= CNRITEM_OLDER;
 	      pcir->flags |= CNRITEM_NEWER;
 	      if (pch != szBuf) {

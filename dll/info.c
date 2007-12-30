@@ -22,6 +22,7 @@
   25 Aug 07 SHL Drop list from FILESTUF - data not static
   25 Aug 07 SHL IconProc: do not use freed memory - random bad things happen
   27 Sep 07 SHL Correct ULONGLONG size formatting
+  30 Dec 07 GKY Use CommaFmtULL
 
 ***********************************************************************/
 
@@ -623,6 +624,8 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     pfs = WinQueryWindowPtr(hwnd, QWL_USER);
     if (pfs && *pfs->szFileName) {
       CHAR s[97];
+      CHAR szCmmaFmtFileSize[81], szCmmaFmtEASize[81];
+      CHAR szCmmaFmtFileEASize[81], szCmmaFmtFileEASizeK[81];
       FILEFINDBUF4L fs;
       HDIR hdir = HDIR_CREATE;
       ULONG apptype = 1;
@@ -692,17 +695,28 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  fs.ftimeLastAccess.minutes, fs.ftimeLastAccess.twosecs * 2);
 	  WinSetDlgItemText(hwnd, FLE_LASTACCESS, s);
 	}
-	// 27 Sep 07 SHL fixme to use CommaFmtULL
-	// 27 Sep 07 SHL fixme to not format numbers in IDS_SIZEINCLEASTEXT
+        CommaFmtULL(szCmmaFmtFileSize,
+                    sizeof(szCmmaFmtFileSize), fs.cbFile, ' ');
+        CommaFmtULL(szCmmaFmtEASize,
+                    sizeof(szCmmaFmtEASize), CBLIST_TO_EASIZE(fs.cbList), ' ');
+        CommaFmtULL(szCmmaFmtFileEASize,
+                    sizeof(szCmmaFmtFileEASize),
+                    fs.cbFile + CBLIST_TO_EASIZE(fs.cbList),
+                    ' ');
+        CommaFmtULL(szCmmaFmtFileEASizeK,
+                    sizeof(szCmmaFmtFileEASizeK),
+                    fs.cbFile + CBLIST_TO_EASIZE(fs.cbList),
+                    'K');
 	sprintf(s,
 		GetPString(IDS_SIZEINCLEASTEXT),
-		fs.cbFile,
-		CBLIST_TO_EASIZE(fs.cbList),
-		fs.cbFile + CBLIST_TO_EASIZE(fs.cbList),
-		(ULONG)((fs.cbFile + CBLIST_TO_EASIZE(fs.cbList)) / 1024));
+		szCmmaFmtFileSize,
+		szCmmaFmtEASize,
+		szCmmaFmtFileEASize,
+		szCmmaFmtFileEASizeK);
 	WinSetDlgItemText(hwnd, FLE_SIZES, s);
-	// 27 Sep 07 SHL fixme to use CommaFmtULL
-	sprintf(s, "%llub", fs.cbFileAlloc - fs.cbFile);
+        CommaFmtULL(szCmmaFmtFileSize,
+                    sizeof(szCmmaFmtFileSize), fs.cbFileAlloc - fs.cbFile, ' ');
+	sprintf(s, "%s", szCmmaFmtFileSize);
 	WinSetDlgItemText(hwnd, FLE_SLACK, s);
 	WinCheckButton(hwnd,
 		       FLE_READONLY, ((fs.attrFile & FILE_READONLY) != 0));

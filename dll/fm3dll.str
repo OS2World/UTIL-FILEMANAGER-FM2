@@ -842,7 +842,7 @@ Ram disk
  Drive %c: inaccessible.  Flags:  %s
 Dropping here can change the icon of the object.
 FM/2: Drive flags (drive %c:)
-%llub + %lub EAs = %llub (%luk) total
+%s + %s EAs = %s (%s) total
 PATH DPATH LIBPATH HELP BOOKSHELF LIB INCLUDE LOCPATH SMINCLUDE LPATH CODELPATH
 %%Environment%%
 You must check at least one criterion or Cancel the operation.

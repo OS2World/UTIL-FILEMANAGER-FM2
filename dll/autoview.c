@@ -21,6 +21,7 @@
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   27 Sep 07 SHL Correct ULONGLONG size formatting
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
+  30 Dec 07 GKY Use CommaFmtULL
 
 ***********************************************************************/
 
@@ -419,7 +420,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else if (!IsFile(currfile)) {
 
 	    static FILEFINDBUF4L ffb[130];
-	    CHAR fullname[CCHMAXPATH + 4];
+	    CHAR fullname[CCHMAXPATH + 4], szCmmaFmtFileSize[81];
 	    HDIR hdir = HDIR_CREATE;
 	    ULONG x, nm, ml, mc, bufflen;
 	    PBYTE fb;
@@ -471,16 +472,18 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 (!pffbFile->achName[1] ||
 			  (pffbFile->achName[1] == '.' &&
 			   !pffbFile->achName[2]))))) {
-		    // 27 Sep 07 SHL fixme to use CommaFmtULL
+                    CommaFmtULL(szCmmaFmtFileSize,
+                                sizeof(szCmmaFmtFileSize),
+                                pffbFile->cbFile + CBLIST_TO_EASIZE(pffbFile->cbList),
+                                ' ');
 		    sprintf(p,
-			    "%s%-*.*s  %-8llu  [%s%s%s%s]  %04lu/%02lu/%02lu "
+			    "%s%-*.*s  %-8s  [%s%s%s%s]  %04lu/%02lu/%02lu "
 			      "%02lu:%02lu:%02lu\r",
 			    pffbFile->attrFile & FILE_DIRECTORY ? "\\" : " ",
 			    ml,
 			    ml,
-			    pffbFile->achName,
-			    pffbFile->cbFile +
-			      CBLIST_TO_EASIZE(pffbFile->cbList),
+                            pffbFile->achName,
+                            szCmmaFmtFileSize,
 			    pffbFile->attrFile & FILE_READONLY ? "R" : "-",
 			    pffbFile->attrFile & FILE_ARCHIVED ? "A" : "-",
 			    pffbFile->attrFile & FILE_HIDDEN ? "H" : "-",

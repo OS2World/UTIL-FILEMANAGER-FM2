@@ -1,11 +1,15 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.09(pre)
+ o Add TestFDate and TestCDate for date compare and sort functions (Gregg)
+ o Use commaFMTULL for formating additional file, EA etc size information(Gregg)
+ o Give LIBPATHSTRICT option for mailto & run FTP/HTTP (Gregg)
+ o Add "mailto" option in new viewer (Gregg)
  o Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun (Gregg)
  o Update CopyPresParams to copy all types of pres parameters (Gregg)
  o Add "Save as" menu item to internal viewer (Gregg)
  o Eliminate deletion of ext path if it was not valid on startup
- allow saving of a currently not valid ext path with warning (Gregg)
+ o Allow saving of a currently not valid ext path with warning (Gregg)
  o Internal editor now handles readonly files (Gregg)
  o Correct hex edit buffer sizing to avoid data loss (Steven)
  o Use CopyPresParams to fix presparam inconsistencies in menus  (Gregg)

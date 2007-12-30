@@ -584,6 +584,7 @@ VOID SpecialSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
   CNRINFO cnri;
   BOOL slow = FALSE;
   UINT x, numD, numS;
+  INT ret = 0;
 
   if (!hwndCnrS || !hwndCnrD) {
     Runtime_Error(pszSrcFile, __LINE__, "hwndCnrS %p hwndCnrD %p", hwndCnrS, hwndCnrD);
@@ -700,7 +701,10 @@ Restart:
 	pciSa[x]->flags |= CNRITEM_SMALLER;
 	pciDa[x]->flags |= CNRITEM_LARGER;
       }
-      if ((pciSa[x]->date.year > pciDa[x]->date.year) ? TRUE :
+      ret = TestCDates(&pciDa[x]->date, &pciDa[x]->time,
+                       &pciSa[x]->date, &pciSa[x]->time);
+      if (ret == 1)
+        /*((pciSa[x]->date.year > pciDa[x]->date.year) ? TRUE :
 	  (pciSa[x]->date.year < pciDa[x]->date.year) ? FALSE :
 	  (pciSa[x]->date.month > pciDa[x]->date.month) ? TRUE :
 	  (pciSa[x]->date.month < pciDa[x]->date.month) ? FALSE :
@@ -711,11 +715,12 @@ Restart:
 	  (pciSa[x]->time.minutes > pciDa[x]->time.minutes) ? TRUE :
 	  (pciSa[x]->time.minutes < pciDa[x]->time.minutes) ? FALSE :
 	  (pciSa[x]->time.seconds > pciDa[x]->time.seconds) ? TRUE :
-	  (pciSa[x]->time.seconds < pciDa[x]->time.seconds) ? FALSE : FALSE) {
+	  (pciSa[x]->time.seconds < pciDa[x]->time.seconds) ? FALSE : FALSE)*/ {
 	pciSa[x]->flags |= CNRITEM_NEWER;
 	pciDa[x]->flags |= CNRITEM_OLDER;
       }
-      else if ((pciSa[x]->date.year < pciDa[x]->date.year) ? TRUE :
+      else if (ret == -1)
+        /*((pciSa[x]->date.year < pciDa[x]->date.year) ? TRUE :
 	       (pciSa[x]->date.year > pciDa[x]->date.year) ? FALSE :
 	       (pciSa[x]->date.month < pciDa[x]->date.month) ? TRUE :
 	       (pciSa[x]->date.month > pciDa[x]->date.month) ? FALSE :
@@ -727,7 +732,7 @@ Restart:
 	       (pciSa[x]->time.minutes > pciDa[x]->time.minutes) ? FALSE :
 	       (pciSa[x]->time.seconds < pciDa[x]->time.seconds) ? TRUE :
 	       (pciSa[x]->time.seconds > pciDa[x]->time.seconds) ? FALSE :
-	       FALSE) {
+	       FALSE)*/ {
 	pciSa[x]->flags |= CNRITEM_OLDER;
 	pciDa[x]->flags |= CNRITEM_NEWER;
       }
@@ -1186,7 +1191,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
   PCNRITEM pci;
   HENUM henum;
   HWND hwnd;
-  register INT numwindows = 0, w, x, z, cmp;
+  INT numwindows = 0, w, x, z, cmp = 0;
   struct Cnr *Cnrs = NULL;
   struct SS *bsres;
 
@@ -1276,8 +1281,9 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 	    if (Cnrs[z].ss[x].pci->cbFile + Cnrs[z].ss[x].pci->easize <
 		bsres->pci->cbFile + bsres->pci->easize)
 	      Cnrs[z].ss[x].largest = FALSE;
-	    cmp =
-	      (Cnrs[z].ss[x].pci->date.year >
+	    cmp = TestCDates(&bsres->pci->date, &bsres->pci->time,
+                             &Cnrs[z].ss[x].pci->date, &Cnrs[z].ss[x].pci->time);
+	      /*(Cnrs[z].ss[x].pci->date.year >
 	       bsres->pci->date.year) ? TRUE : (Cnrs[z].ss[x].pci->date.year <
 						bsres->pci->date.
 						year) ? FALSE : (Cnrs[z].
@@ -1310,10 +1316,10 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		 bsres->pci->time.seconds) ? TRUE : (Cnrs[z].ss[x].pci->time.
 						     seconds <
 						     bsres->pci->time.
-						     seconds) ? FALSE : FALSE;
-	    if (!cmp)
+						     seconds) ? FALSE : FALSE;*/
+	    if (cmp != 1)
 	      Cnrs[z].ss[x].newest = FALSE;
-	    cmp =
+	    /*cmp =
 	      (Cnrs[z].ss[x].pci->date.year <
 	       bsres->pci->date.year) ? TRUE : (Cnrs[z].ss[x].pci->date.year >
 						bsres->pci->date.
@@ -1347,8 +1353,8 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		 bsres->pci->time.seconds) ? TRUE : (Cnrs[z].ss[x].pci->time.
 						     seconds >
 						     bsres->pci->time.
-						     seconds) ? FALSE : FALSE;
-	    if (!cmp)
+						     seconds) ? FALSE : FALSE;*/
+	    if (cmp != -1)
 	      Cnrs[z].ss[x].oldest = FALSE;
 	    cmp = 0;
 	    break;
