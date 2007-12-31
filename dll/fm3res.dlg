@@ -1961,6 +1961,8 @@ BEGIN
                         CFGH_HTTPRUNWPSDEFAULT, 4, 122, 156, 10
         AUTOCHECKBOX    "Use WPS default for run ftp",
                         CFGH_FTPRUNWPSDEFAULT, 4, 110, 156, 10
+        AUTOCHECKBOX    "Don't use <mailto> wrapper",
+                        CFGH_NOMAILTOMAILRUN, 4, 98, 156, 10
         AUTOCHECKBOX    "Use LIBPATHSTRICT for run http",
                         CFGH_LIBPATHSTRICTHTTPRUN, 162, 122, 156, 10
         AUTOCHECKBOX    "Use LIBPATHSTRICT for run ftp",

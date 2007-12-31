@@ -1414,7 +1414,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
-  fSubjectLengthMax, fNoLargeFileSupport,
+  fSubjectLengthMax, fNoLargeFileSupport, fNoMailtoMailRun,
   fHttpRunWPSDefault, fFtpRunWPSDefault, fLibPathStrictMailRun,
   fLibPathStrictHttpRun, fLibPathStrictFtpRun;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,

@@ -153,7 +153,7 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
   remove_first_occurence_of_character("\r", pszSrc);
   remove_first_occurence_of_character("\n", pszSrc);
   if (!strstr(pszSrc, " ")){
-    if (!stristr(pszSrc, "<mailto:")) {
+    if (!stristr(pszSrc, "<mailto:") && !fNoMailtoMailRun) {
       strip_lead_char("<", pszSrc);
       strip_trail_char(">", pszSrc);
       strcat(szMailTo, pszSrc);
@@ -162,6 +162,8 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
       return pszSrc;
     }
     else {
+      strip_lead_char("<", pszSrc);
+      strip_trail_char(">", pszSrc);
       return pszSrc;
     }
   }
@@ -178,7 +180,7 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
          *pszCharCounter != '\n' && *pszCharCounter != '\"')
     pszCharCounter++;
   *pszCharCounter = 0;
-  if (!stristr(pszSrc, "<mailto:")) {
+  if (!stristr(pszSrc, "<mailto:") && !fNoMailtoMailRun) {
     strip_lead_char("<", pszSrc);
     strip_trail_char(">", pszSrc);
     strcat(szMailTo, pszSrc);
@@ -187,6 +189,8 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
     return pszSrc;
     }
   else {
+    strip_lead_char("<", pszSrc);
+    strip_trail_char(">", pszSrc);
     return pszSrc;
   }
 }

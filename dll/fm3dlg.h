@@ -672,6 +672,7 @@
 #define CFGV_CHECKMM                                                                    25341
 
 #define CFGH_FRAME                                                                      25344
+#define CFGH_NOMAILTOMAILRUN                                                            25345
 #define CFGH_HTTPRUN                                                                    25346
 #define CFGH_FTPRUN                                                                     25347
 #define CFGH_RUNFTPWORKDIR                                                              25348
