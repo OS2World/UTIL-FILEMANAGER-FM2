@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2007 Steven H. Levine
+# Copyright (c) 2002, 2008 Steven H. Levine
 
 # 22 May 03 SHL Correct icon dependencies
 # 21 Nov 03 SHL Correct ipf dependents
@@ -32,6 +32,7 @@
 # 26 Aug 07 SHL Clean *.lrf
 # 05 Sep 07 SHL Correct USE_WRC logic
 # 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
+# 03 Jan 08 SHL Prepare for final, implending switch to wrc.exe
 
 # Environment:
 
@@ -46,8 +47,8 @@ BASERES = fm3res
 CC = wcc386
 LINK = wlink
 
-# fixme for wrc to build working .res 
-# fixme ow 1.6 wrc clobbers bldlevel strings
+# // 01 Jan 08 SHL fixme debug
+# USE_WRC = 1
 
 !ifndef USE_WRC			# if not defined on command line
 !ifdef %USE_WRC			# if defined in environment
@@ -117,13 +118,11 @@ LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
 !endif
 
 # rc Includes can be in current director or dll subdirectory
-# fixme for wrc to build working .res
-# fixme for wrc to not clobber bldlevel strings
 !if $(USE_WRC)
 # Pass 1 flags
 RCFLAGS = -r -i=dll -ad
 # Pass 2 flags
-RCFLAGS2 =-ad
+RCFLAGS2 =
 !else
 RCFLAGS = -r -i dll
 RCFLAGS2 = -x2
@@ -222,7 +221,7 @@ $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
 $(BASERES).dll $(BASERES).lib: $(BASERES).res $(BASERES).obj $(BASERES).def $(BASERES).lrf
   @echo $(LINK) @$(BASERES).lrf @$(BASERES).def
   $(LINK) @$(BASERES).lrf @$(BASERES).def
-  $(RC) $(RCLAGS2) $(BASERES).res $@
+  $(RC) $(RCFLAGS2) $(BASERES).res $@
   bldlevel $@
 
 $(BASERES).lrf: $(__MAKEFILES__)
