@@ -48,7 +48,7 @@ BOOL ShowMultimedia(CHAR * filename)
   PMMIOCLOSE pMMIOClose = NULL;
   PMMIOOPEN pMMIOOpen = NULL;
   MMIOINFO mmioinfo;
-  HMMIO  hmmio;
+  HMMIO hmmio;
   FOURCC fccStorageSystem = 0;
   MMFORMATINFO mmFormatInfo;
   APIRET rc, rc1;
@@ -101,56 +101,58 @@ BOOL ShowMultimedia(CHAR * filename)
   memset( &mmioinfo, '\0', sizeof(MMIOINFO) );
   /*Eliminate non multimedia files*/
   hmmio = pMMIOOpen(filename,
-                    &mmioinfo,
-                    MMIO_READ);
-  /*printf("%s %d %d %d %d %d\n",
-          __FILE__, __LINE__,mmioinfo.ulFlags, mmioinfo.ulErrorRet,
-         mmioinfo.pIOProc, mmioinfo.aulInfo); fflush(stdout);*/
-         if (!hmmio){
-             p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
+	            &mmioinfo,
+	            MMIO_READ);
+#if 0
+  printf("%s %d %d %d %d %d\n",
+	  __FILE__, __LINE__,mmioinfo.ulFlags, mmioinfo.ulErrorRet,
+	 mmioinfo.pIOProc, mmioinfo.aulInfo); fflush(stdout);
+#endif
+	 if (!hmmio) {
+	     p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
 	  if (!p)
-              p = ".";
-             /* printf("%s %d %s\n",
-              __FILE__, __LINE__, p); fflush(stdout);*/
-          if  (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC") ||
-               !stricmp(p, ".JPG") || !stricmp(p, ".JPEG")){
-             hmmio = pMMIOOpen(filename,
-                    &mmioinfo,
-                    MMIO_READ | MMIO_NOIDENTIFY);
-             if (!hmmio){
-                 DosFreeModule(MMIOModHandle);
-                 printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
-                 return played;
-             }
-          }
-          else {
-             DosFreeModule(MMIOModHandle);
-                // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
-                 return played;
-          }
-         }
-         if (!hmmio){
-                 DosFreeModule(MMIOModHandle);
-                // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
-                 return played;
-             }
+	      p = ".";
+	     /* printf("%s %d %s\n",
+	      __FILE__, __LINE__, p); fflush(stdout);*/
+	  if (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC") ||
+	       !stricmp(p, ".JPG") || !stricmp(p, ".JPEG")){
+	     hmmio = pMMIOOpen(filename,
+	            &mmioinfo,
+	            MMIO_READ | MMIO_NOIDENTIFY);
+	     if (!hmmio){
+	         DosFreeModule(MMIOModHandle);
+	         printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+	         return played;
+	     }
+	  }
+	  else {
+	     DosFreeModule(MMIOModHandle);
+	        // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+	         return played;
+	  }
+	 }
+	 if (!hmmio) {
+	         DosFreeModule(MMIOModHandle);
+	        // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+	         return played;
+	     }
 
-  rc1 = pMMIOGetInfo( hmmio,
-              &mmioinfo,
-                     0L);   //
-  //printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+  rc1 = pMMIOGetInfo(hmmio, &mmioinfo, 0L);
+  // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
   memset(&mmFormatInfo, 0, sizeof(MMFORMATINFO));
   mmFormatInfo.ulStructLen = sizeof(MMFORMATINFO);
   rc = pMMIOIdentifyFile(filename,
 			 &mmioinfo,
 			 &mmFormatInfo,
-                         &fccStorageSystem, 0L,
-                         MMIO_FORCE_IDENTIFY_FF);
-   /*printf("%s %d %d %d %d\n %d %d %d %s\n",
-          __FILE__, __LINE__,mmioinfo.ulFlags,
-          mmioinfo.pIOProc, mmioinfo.aulInfo,
-          mmFormatInfo.fccIOProc, mmFormatInfo.fccIOProc,
-          mmFormatInfo.ulIOProcType, mmFormatInfo.szDefaultFormatExt); fflush(stdout);*/
+	                 &fccStorageSystem, 0L,
+	                 MMIO_FORCE_IDENTIFY_FF);
+#if 0
+   printf("%s %d %d %d %d\n %d %d %d %s\n",
+	  __FILE__, __LINE__,mmioinfo.ulFlags,
+	  mmioinfo.pIOProc, mmioinfo.aulInfo,
+	  mmFormatInfo.fccIOProc, mmFormatInfo.fccIOProc,
+	  mmFormatInfo.ulIOProcType, mmFormatInfo.szDefaultFormatExt); fflush(stdout);
+#endif
   /* free module handle */
   rc1 = pMMIOClose(hmmio, 0L);
   DosFreeModule(MMIOModHandle);
@@ -158,30 +160,30 @@ BOOL ShowMultimedia(CHAR * filename)
   /* if identified and not FOURCC_DOS */
   if (!rc && mmFormatInfo.fccIOProc != FOURCC_DOS) {
     if (mmFormatInfo.ulMediaType == MMIO_MEDIATYPE_IMAGE &&
-        (mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
+	(mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
       p = strrchr(filename, '.');
 	  if (!p)
-              p = ".";
-             /* printf("%s %d %s\n",
-              __FILE__, __LINE__, p); fflush(stdout);*/
-          if  (!stricmp(p, ".JPG") || !stricmp(p, ".JPEG"))
-            OpenObject(filename, Default, hwnd);  //Image fails to display these
-          else       // is an image that can be translated
-            RunFM2Util("IMAGE.EXE", filename);
-          played = TRUE;
+	      p = ".";
+	     /* printf("%s %d %s\n",
+	      __FILE__, __LINE__, p); fflush(stdout);*/
+	  if (!stricmp(p, ".JPG") || !stricmp(p, ".JPEG"))
+	    OpenObject(filename, Default, hwnd);  //Image fails to display these
+	  else       // is an image that can be translated
+	    RunFM2Util("IMAGE.EXE", filename);
+	  played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
-        /* is a multimedia file (WAV, MID, AVI, etc.) */
-        p = strrchr(filename, '.');
+	/* is a multimedia file (WAV, MID, AVI, etc.) */
+	p = strrchr(filename, '.');
 	  if (!p)
-              p = ".";
-             /* printf("%s %d %s\n",
-              __FILE__, __LINE__, p); fflush(stdout);*/
-          if  (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC"))
-              OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
-          else
-            RunFM2Util("FM2PLAY.EXE", filename);
-          played = TRUE;
+	      p = ".";
+	     /* printf("%s %d %s\n",
+	      __FILE__, __LINE__, p); fflush(stdout);*/
+	  if (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC"))
+	      OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
+	  else
+	    RunFM2Util("FM2PLAY.EXE", filename);
+	  played = TRUE;
     }
   }
 
@@ -279,15 +281,15 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
     switch (type) {
     case IDM_EDITBINARY:
       if (*bined) {
-        ExecOnList((HWND) 0, bined, WINDOWED | SEPARATE, NULL, dummy, NULL,
-                   pszSrcFile, __LINE__);
+	ExecOnList((HWND) 0, bined, WINDOWED | SEPARATE, NULL, dummy, NULL,
+	           pszSrcFile, __LINE__);
 	break;
       }
       /* else intentional fallthru */
     case IDM_EDITTEXT:
       if (*editor)
-        ExecOnList((HWND) 0, editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
-                   pszSrcFile, __LINE__);
+	ExecOnList((HWND) 0, editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
+	           pszSrcFile, __LINE__);
       else {
 	type = (type == IDM_EDITTEXT) ? 8 : (type == IDM_EDITBINARY) ? 16 : 0;
 	type |= 4;
@@ -318,14 +320,14 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 		ExecOnList(hwnd,
 			   viewer,
 			   WINDOWED | SEPARATE |
-                           ((fViewChild) ? CHILD : 0), NULL, dummy, NULL,
-                           pszSrcFile, __LINE__);
-              }
-              else if (fUseNewViewer) {
-                if (fExternalViewer || strcmp(realappname, FM3Str))
-                  hwndParent = HWND_DESKTOP;
-                StartViewer(hwndParent, 5, filename, hwndFrame);
-              }
+	                   ((fViewChild) ? CHILD : 0), NULL, dummy, NULL,
+	                   pszSrcFile, __LINE__);
+	      }
+	      else if (fUseNewViewer) {
+	        if (fExternalViewer || strcmp(realappname, FM3Str))
+	          hwndParent = HWND_DESKTOP;
+	        StartViewer(hwndParent, 5, filename, hwndFrame);
+	      }
 	      else
 		StartMLEEditor(hwndParent, 5, filename, hwndFrame);
 	    }
