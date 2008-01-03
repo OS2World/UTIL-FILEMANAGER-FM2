@@ -2118,12 +2118,12 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       num = (SHORT) WinSendDlgItemMsg(hwnd,
 				      INI_APPLIST,
 				      LM_QUERYITEMCOUNT, MPVOID, MPVOID);
-      sprintf(s, "%d", num);
+      sprintf(s, "%u", num);
       WinSetDlgItemText(hwnd, INI_NUMAPPS, s);
       num = (SHORT) WinSendDlgItemMsg(hwnd,
 				      INI_KEYLIST,
 				      LM_QUERYITEMCOUNT, MPVOID, MPVOID);
-      sprintf(s, "%d", num);
+      sprintf(s, "%u", num);
       WinSetDlgItemText(hwnd, INI_NUMKEYS, s);
       WinSetDlgItemText(hwnd, INI_NUMDATA, "0");
       WinSendDlgItemMsg(hwnd, INI_DATALIST, LM_DELETEALL, MPVOID, MPVOID);
