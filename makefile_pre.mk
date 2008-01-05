@@ -9,24 +9,23 @@
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
 # 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
 # 26 Sep 07 SHL Support USE_WRC from environment
+# 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 
 CC = wcc386
 LINK = wlink
 
-# 26 Sep 07 SHL fixme for rc.exe logic to be gone
-
-!ifndef USE_WRC			# if not defined on command line
-!ifdef %USE_WRC			# if defined in environment
-USE_WRC = $(%USE_WRC)
+!ifndef USE_RC			# if not defined on command line
+!ifdef %USE_RC			# if defined in environment
+USE_RC = $(%USE_RC)
 !else
-USE_WRC = 0
+USE_RC = 0
 !endif
 !endif
 
-!if $(USE_WRC)
-RC = wrc
-!else
+!if $(USE_RC)
 RC = rc
+!else
+RC = wrc
 !endif
 
 # Keep this code in sync with dll\makefile
@@ -71,26 +70,26 @@ LFLAGS += debug dwarf all
 !endif
 
 # rc Includes can be in current director or dll subdirectory
-!if $(USE_WRC)
+!if $(USE_RC)
+RCFLAGS = -r -i dll
+RCFLAGS2 = -x2
+!else
 # Pass 1 flags
 RCFLAGS = -r -i=dll -ad
 # Pass 2 flags
 RCFLAGS2 =-ad
-!else
-RCFLAGS = -r -i dll
-RCFLAGS2 = -x2
 !endif
 
 .SUFFIXES:
 .SUFFIXES: .obj .c .res .rc .ipf
 
-!if $(USE_WRC)
-.rc.res: .AUTODEPEND
-  $(RC) $(RCFLAGS) $*.rc
-!else
+!if $(USE_RC)
 .rc.res:
    $(RC) $(RCFLAGS) $*.rc
    ren $*.res $*.res
+!else
+.rc.res: .AUTODEPEND
+  $(RC) $(RCFLAGS) $*.rc
 !endif
 
 .c.obj: .AUTODEPEND

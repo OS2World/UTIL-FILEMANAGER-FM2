@@ -33,6 +33,7 @@
 # 05 Sep 07 SHL Correct USE_WRC logic
 # 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
 # 03 Jan 08 SHL Prepare for final, implending switch to wrc.exe
+# 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 
 # Environment:
 
@@ -47,21 +48,18 @@ BASERES = fm3res
 CC = wcc386
 LINK = wlink
 
-# // 01 Jan 08 SHL fixme debug
-# USE_WRC = 1
-
-!ifndef USE_WRC			# if not defined on command line
-!ifdef %USE_WRC			# if defined in environment
-USE_WRC = $(%USE_WRC)
+!ifndef USE_RC			# if not defined on command line
+!ifdef %USE_RC			# if defined in environment
+USE_RC = $(%USE_RC)
 !else
-USE_WRC = 0
+USE_RC = 0
 !endif
 !endif
 
-!if $(USE_WRC)
-RC = wrc
-!else
+!if $(USE_RC)
 RC = rc
+!else
+RC = wrc
 !endif
 
 # Keep this code in sync with makefile_pre.mk
@@ -118,14 +116,14 @@ LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
 !endif
 
 # rc Includes can be in current director or dll subdirectory
-!if $(USE_WRC)
+!if $(USE_RC)
+RCFLAGS = -r -i dll
+RCFLAGS2 = -x2
+!else
 # Pass 1 flags
 RCFLAGS = -r -i=dll -ad
 # Pass 2 flags
 RCFLAGS2 =
-!else
-RCFLAGS = -r -i dll
-RCFLAGS2 = -x2
 !endif
 
 !ifndef MAKERES
@@ -212,7 +210,7 @@ $(BASERES).obj: $(BASERES).c .AUTODEPEND
 
 $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
   $(RC) $(RCFLAGS) $*
-!if ! $(USE_WRC)
+!if $(USE_RC)
   ren $*.res $*.res
 !endif
 
@@ -241,7 +239,10 @@ $(BASERES).dll: $(BASERES).res
   lxlite $@ /x- /b-
   bldlevel $@
 
-!endif
+!endif # MAKERES mode
+
+# For testing new code
+tmp.obj: tmp.c
 
 $(BASERES).str: $(BASE).str fm3str.h version.h
   internal\mkstr
