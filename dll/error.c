@@ -218,8 +218,9 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
   // Get last PM error for the current thread
   pErrInfoBlk = WinGetErrorInfo(hab);
   if (!pErrInfoBlk) {
+    ERRORID id = WinGetLastError(hab);	// 03 Jan 08 SHL fixme debug
     psz = pszBuf + strlen(pszBuf);
-    strcpy(psz, "WinGetErrorInfo failed");
+    sprintf(psz, " WinGetErrorInfo failed (%u)", id);
   }
   else {
     if (!hwndOwner)
@@ -232,7 +233,7 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
        append error message to source code linenumber
      */
     psz = pszBuf + strlen(pszBuf);
-    sprintf(psz, "#0x%04x \"", ERRORIDERROR(pErrInfoBlk->idError));
+    sprintf(psz, " #0x%04x \"", ERRORIDERROR(pErrInfoBlk->idError));
     psz += strlen(psz);
     strcpy(psz, ((PSZ) pErrInfoBlk) + *(PSHORT) pszOffset);
     psz += strlen(psz);
