@@ -6,7 +6,7 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   12 Feb 03 SHL Add CBLIST_TO_EASIZE
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -68,8 +68,37 @@
   29 Dec 07 GKY Add remove_first_occurence_of_character
   30 Dec 07 GKY Change TestDates to TestFDates can compare by filename or FDATE/FTIME data
   30 Dec 07 GKY Add TestCDates to compare CNRITEMs by CDATE/CTIME data
+  04 Jan 08 SHL Allow standalone usage
 
 ***********************************************************************/
+
+#if !defined(FM3DLL_H)
+
+#define FM3DLL_H
+
+#include <stdio.h>			// FILE
+#include <time.h>			// time_t
+
+#if !defined(OS2_INCLUDED)
+#define INCL_WINSTDDRAG
+#define INCL_WINSTDCNR
+#define INCL_WINPROGRAMLIST
+#define INCL_WINHELP
+#include <os2.h>
+#else
+#if !defined(INCL_WINSTDDRAG)
+#error INCL_WINSTDDRAG required
+#endif
+#if !defined(INCL_WINSTDCNR)
+#error INCL_WINSTDCNR required
+#endif
+#if !defined(INCL_WINPROGRAMLIST)
+#error INCL_WINPROGRAMLIST required
+#endif
+#if !defined(INCL_WINHELP)
+#error INCL_WINHELP required
+#endif
+#endif // OS2_INCLUDED
 
 #if defined(__IBMC__)
 #if __IBMC__ != 430
@@ -686,7 +715,7 @@ VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
 /* valid.c */
 INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
 int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
-               FDATE *datevar2, FTIME *timevar2);
+	       FDATE *datevar2, FTIME *timevar2);
 int TestCDates(CDATE *datevar1, CTIME *timevar1, CDATE *datevar2, CTIME *timevar2);
 BOOL IsNewer(char *file1, char *file2);
 BOOL IsRoot(CHAR * filename);
@@ -882,7 +911,7 @@ CHAR *searchpath(CHAR * filename);
 /* literal.c */
 UINT literal(PSZ pszBuf);
 BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
-              const BOOL fNotFileSpec);
+	      const BOOL fNotFileSpec);
 PSZ fixup(const PCH pachInBuf, PSZ pszOutBuf, const UINT cBufBytes,
 	  const UINT cInBytes);
 
@@ -910,7 +939,7 @@ BOOL ShowSession(HWND hwnd, PID pid);
 INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
 	       CHAR ** list, CHAR * prompt, PCSZ pszCallingFile, UINT uiLineNumber);
 INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
-            CHAR * directory, CHAR * environment,
+	    CHAR * directory, CHAR * environment,
 	    CHAR * formatstring, ...);
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	  PROGTYPE * progt, ULONG fl, char *formatstring, ...);
@@ -1330,22 +1359,22 @@ BOOL StringsLoaded(void);
 
 /* wrappers.c */
 APIRET xDosFindFirst(PSZ pszFileSpec,
-                     PHDIR phdir,
-                     ULONG  flAttribute,
-                     PVOID  pfindbuf,
-                     ULONG  cbBuf,
-                     PULONG pcFileNames,
-                     ULONG  ulInfoLevel);
+	             PHDIR phdir,
+	             ULONG  flAttribute,
+	             PVOID  pfindbuf,
+	             ULONG  cbBuf,
+	             PULONG pcFileNames,
+	             ULONG  ulInfoLevel);
 APIRET xDosFindNext(HDIR   hDir,
-                    PVOID  pfindbuf,
-                    ULONG  cbfindbuf,
-                    PULONG pcFilenames,
+	            PVOID  pfindbuf,
+	            ULONG  cbfindbuf,
+	            PULONG pcFilenames,
 		    ULONG  ulInfoLevel);	// 06 Oct 07 SHL Added
 APIRET xDosSetPathInfo(PSZ   pszPathName,
-                       ULONG ulInfoLevel,
-                       PVOID pInfoBuf,
-                       ULONG cbInfoBuf,
-                       ULONG flOptions);
+	               ULONG ulInfoLevel,
+	               PVOID pInfoBuf,
+	               ULONG cbInfoBuf,
+	               ULONG flOptions);
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 	   UINT uiLineNumber);
 PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
@@ -1509,3 +1538,5 @@ DATADEF ULONG numswitches;
 #define priority_critical() DosSetPriority(PRTYS_THREAD,PRTYC_FOREGROUNDSERVER,2L,0L)
 #define priority_max()      DosSetPriority(PRTYS_THREAD,PRTYC_FOREGROUNDSERVER,31L,0L)
 #define SysVal(value)       WinQuerySysValue(HWND_DESKTOP, (value))
+
+#endif // FM3DLL_H

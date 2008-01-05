@@ -6,15 +6,20 @@
   Minimized data bar interface
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   23 May 05 SHL Pull from fm3dll.h
+  04 Jan 08 SHL Allow standalone usage
 
 ***********************************************************************/
 
-#if !defined(DATAMIN_INCLUDED)
+#if !defined(DATAMIN_H)
 
-#define DATAMIN_INCLUDED
+#define DATAMIN_H
+
+#if !defined(OS2_INCLUDED)
+#include <os2.h>
+#endif
 
 #define QWL_DATAMIN_PTR	(QWL_USER + 4)
 
@@ -33,4 +38,4 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND CreateDataBar(HWND hwndParent, ULONG fl);
 
-#endif
+#endif // DATAMIN_H

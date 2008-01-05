@@ -6,12 +6,20 @@
   Grep support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2007 Steven H. Levine
+  Copyright (c) 2006, 2008 Steven H. Levine
 
   04 Nov 06 SHL Renames
   15 Aug 07 SHL Drop obsoletes
+  04 Jan 08 SHL Allow standalone usage
 
 ***********************************************************************/
+
+#if !defined(GREP_H)
+#define GREP_H
+
+#if !defined(OS2_INCLUDED)
+#include <os2.h>
+#endif
 
 ULONG SecsSince1980(FDATE * date, FTIME * time);
 VOID GrepThread(VOID * arg);
@@ -74,3 +82,5 @@ typedef struct
 GREP;
 
 extern volatile CHAR diegrep;
+
+#endif // GREP_H

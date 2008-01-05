@@ -6,6 +6,7 @@
   Define DosQProcStatus interface
 
   02 Sep 07 SHL Update for OpenWatcom
+  04 Jan 08 SHL Allow standalone usage
 
 ***********************************************************************/
 
@@ -26,6 +27,13 @@
  *           IMPORTS DOSQPROCSTATUS=DOSCALLS.154                      *
  *                                                                    *
  **********************************************************************/
+
+#if !defined(PROCSTAT_H)
+#define PROCSTAT_H
+
+#if !defined(OS2_INCLUDED)
+#include <os2.h>
+#endif
 
 #if defined(__WATCOMC__)
 APIRET16 APIENTRY16 DosQProcStatus(ULONG *pBuf, USHORT cbBuf);
@@ -144,3 +152,5 @@ typedef struct _BUFFHEADER
 BUFFHEADER, *PBUFFHEADER;
 
 #pragma pack()
+
+#endif // PROCSTAT_H

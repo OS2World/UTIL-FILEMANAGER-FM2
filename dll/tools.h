@@ -6,11 +6,19 @@
   tools interface
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   26 May 05 SHL Localize toolhead
+  04 Jan 08 SHL Allow standalone usage
 
 ***********************************************************************/
+
+#if !defined(TOOLS_H)
+#define TOOLS_H
+
+#if !defined(OS2_INCLUDED)
+#include <os2.h>
+#endif
 
 typedef struct TOOL
 {
@@ -48,3 +56,5 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY PickToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+
+#endif // TOOLS_H

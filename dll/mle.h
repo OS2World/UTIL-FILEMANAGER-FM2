@@ -5,11 +5,24 @@
   headers for internal viewer/editor
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2002, 2006 Steven H. Levine
+  Copyright (c) 2002, 2008 Steven H. Levine
 
   26 Nov 07 Add items to XMLEWNDPTR struct for "Save as" & readonly file handling
+  04 Jan 08 SHL Allow standalone usage
 
 ***********************************************************************/
+
+#if !defined(MLE_H)
+#define MLE_H
+
+#if !defined(OS2_INCLUDED)
+#define INCL_WINMLE
+#include <os2.h>
+#else
+#if !defined(INCL_WINMLE)
+#error INCL_WINMLE required
+#endif
+#endif // OS2_INCLUDED
 
 /* MLE support macros */
 
@@ -270,3 +283,5 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 #define ParentOf(hwnd)  WinQueryWindow((hwnd),QW_PARENT)
 #define GrandparentOf(hwnd) WinQueryWindow(WinQueryWindow(hwnd,QW_PARENT),QW_PARENT)
+
+#endif // MLE_H
