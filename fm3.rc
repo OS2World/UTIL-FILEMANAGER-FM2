@@ -1,11 +1,12 @@
+
 /***********************************************************************
 
   $Id$
 
-  fm3 resources
+  fm3 resources (fm/2 standard)
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   09 Aug 05 SHL Drop dup icon
   21 Aug 06 SHL Add select and sort toolbar bitmaps
@@ -13,10 +14,9 @@
   03 Sep 06 SHL Add more select and sort toolbar bitmaps from David
   17 Feb 07 GKY Add more drive type bitmaps from David
   16 Aug 07 SHL Document AUTHOR_PICTURE
+  04 Jan 08 SHL Sync with fm3dll.h mods
 
 ***********************************************************************/
-
-#include <os2.h>
 
 #include "dll\fm3dll.h"
 

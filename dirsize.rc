@@ -1,4 +1,18 @@
-#include <os2.h>
+
+/***********************************************************************
+
+  $Id$
+
+  dirsize resources
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2003, 2008 Steven H.Levine
+
+  15 Oct 02 MK Baseline
+  04 Jan 08 SHL Sync with fm3dll.h mods
+
+***********************************************************************/
+
 #include "dll\fm3dll.h"
 #include "dirsize.h"
 

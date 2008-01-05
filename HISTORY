@@ -14,6 +14,9 @@ New stuff's at the top.  This list is not necessarily complete.
  o Correct hex edit buffer sizing to avoid data loss (Steven)
  o Use CopyPresParams to fix presparam inconsistencies in menus  (Gregg)
  o Correct variable cast to fix hex code display problem (Gregg)
+ o Correct variable cast to fix hex code display problem (Gregg)
+ o Update includes to allow standalone usage (Steven)
+ o Switch to wrc.exe default; support USE_RC from environment (Steven)
 
 3.08
  o Cancel in walk directories dialog now directly closes dialog even if

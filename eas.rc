@@ -6,14 +6,14 @@
   eas resources
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003 Steven H.Levine
+  Copyright (c) 2003, 2008 Steven H.Levine
 
-  Revisions	15 Oct 02 MK - Baseline
-		04 Nov 03 SHL - Drop extra default icon
+  15 Oct 02 MK Baseline
+  04 Nov 03 SHL Drop extra default icon
+  04 Jan 08 SHL Sync with fm3dll.h mods
 
 ***********************************************************************/
 
-#include <os2.h>
 #include "dll\fm3dll.h"
 
 DEFAULTICON                 icons\EAS.ICO
