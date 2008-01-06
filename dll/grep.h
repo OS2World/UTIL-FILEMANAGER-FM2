@@ -18,7 +18,12 @@
 #define GREP_H
 
 #if !defined(OS2_INCLUDED)
+#define INCL_LONGLONG
 #include <os2.h>
+#else
+#if !defined(INCL_LONGLONG)
+#error INCL_LONGLONG required by grep.h
+#endif
 #endif
 
 ULONG SecsSince1980(FDATE * date, FTIME * time);

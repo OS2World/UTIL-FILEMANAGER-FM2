@@ -6,7 +6,7 @@
   Archive containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   11 Jun 02 SHL Ensure archive name not garbage
   22 May 03 SHL ArcObjWndProc: fix UM_RESCAN now that we understand it
@@ -51,89 +51,37 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_DOSERRORS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>			// free..
 #include <string.h>
 #include <ctype.h>
-#include <time.h>
-#include <direct.h>
-#include <share.h>
-#include <limits.h>
+#include <direct.h>			// rmdir
+#include <share.h>			// SH_DENYWR
+#include <limits.h>			// ULONG_MAX
 #include <process.h>			// _beginthread
 
 #if 0
 #include <malloc.h>			// _heapchk
 #endif
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_DOSERRORS
+#define INCL_WIN
+#define INCL_LONGLONG
+
+#include "arccnrs.h"			// StartArcCnr
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+#include "pathutil.h"			// BldFullPathName
+#include "filldir.h"			// EmptyCnr...
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
 static INT DefArcSortFlags;
 static PSZ pszSrcFile = __FILE__;
-
-/**
- * Build quoted full path name in callers buffer given
- * directory name and filename
- * @param pszPathName points to drive/directory if not NULL
- * @returns pointer to quoted path name in caller's buffer
- */
-
-PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
-{
-  UINT c = pszPathName ? strlen(pszPathName) : 0;
-  BOOL q = needs_quoting(pszPathName) ||
-	   needs_quoting(pszFileName);
-  PSZ psz = pszFullPathName;
-
-  if (q)
-    *psz++ = '"';
-  if (c > 0) {
-    memcpy(psz, pszPathName, c);
-    psz += c;
-    if (*(psz - 1) != '\\')
-      *psz++ = '\\';
-  }
-  strcpy(psz, pszFileName);
-  if (q) {
-    psz += strlen(psz);
-    *psz++ = '"';
-    *psz = 0;
-  }
-  return pszFullPathName;
-}
-
-/**
- * Build quoted full path name in callers buffer given a filename
- * @returns pointer to quoted file name in caller's buffer
- */
-
-PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName)
-{
-  BOOL q = needs_quoting(pszFileName);
-  PSZ psz = pszQuotedFileName;
-
-  if (q)
-    *psz++ = '"';
-  strcpy(psz, pszFileName);
-  if (q) {
-    psz += strlen(psz);
-    *psz++ = '"';
-    *psz = 0;
-  }
-  return pszQuotedFileName;
-}
 
 static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
@@ -201,8 +149,8 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	else {
 	  if (*viewer) {
 	    ExecOnList((HWND) 0, viewer, WINDOWED | SEPARATE |
-		            (fViewChild ? CHILD : 0),
-		             NULL, list, NULL, pszSrcFile, __LINE__);
+			    (fViewChild ? CHILD : 0),
+			     NULL, list, NULL, pszSrcFile, __LINE__);
 	  }
 	  else
 	    StartMLEEditor(HWND_DESKTOP, 8 + 4 + 1, ad->arcname, hwnd);
@@ -270,8 +218,8 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
 
     case SORT_LWDATE:
       ret = TestCDates(&pai1->date, &pai1->time,
-                       &pai2->date, &pai2->time);
-        /*(pai1->date.year < pai2->date.year) ? 1 :
+		       &pai2->date, &pai2->time);
+	/*(pai1->date.year < pai2->date.year) ? 1 :
 	(pai1->date.year > pai2->date.year) ? -1 :
 	(pai1->date.month < pai2->date.month) ? 1 :
 	(pai1->date.month > pai2->date.month) ? -1 :
@@ -1517,8 +1465,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
 	free(s);
 	if (IsFile(filename) == 1) {
+#if 1 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58  testing
 	  if (fViewChild && fArcStuffVisible)
 	    DosSleep(100);  // Allow unzip session to finish closing 14 Mar 07 SHL
+#endif
 	  WinSendMsg(dcd->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
 	}
       }
@@ -1577,17 +1527,17 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    while (li->list[x]) {
 
 	      if (IsFile(li->list[x]))
-	        BldQuotedFileName(szBuffer + strlen(szBuffer), li->list[x]);
+		BldQuotedFileName(szBuffer + strlen(szBuffer), li->list[x]);
 	      else
-	         BldQuotedFullPathName(szBuffer + strlen(szBuffer), li->list[x], "*");
+		 BldQuotedFullPathName(szBuffer + strlen(szBuffer), li->list[x], "*");
 
 	      x++;
 	      if (!li->list[x] || strlen(szBuffer) +
 		  strlen(li->list[x]) + 5 > 1024) {
 		runemf2(SEPARATE | WINDOWED |
-		        (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
-                        WAIT, hwnd, pszSrcFile, __LINE__,
-                        NULL, NULL, "%s", szBuffer);
+			(fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
+			WAIT, hwnd, pszSrcFile, __LINE__,
+			NULL, NULL, "%s", szBuffer);
 		*p = 0;
 	      }
 	      strcat(szBuffer, " ");
@@ -1695,7 +1645,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      CHAR fullname[CCHMAXPATH * 2];
 	      CHAR **exfiles = NULL;
-	      INT numfiles = 0, numalloc = 0;
+	      UINT numfiles = 0, numalloc = 0;
 
 	      for (x = 0; li->list[x]; x++) {
 		BldFullPathName(fullname, li->targetpath, li->list[x]);
@@ -1766,8 +1716,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      z = x;
 	      runemf2(SEPARATE | WINDOWED |
 		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
-                      WAIT, hwnd, pszSrcFile, __LINE__,
-                      li->targetpath, NULL, "%s", cl);
+		      WAIT, hwnd, pszSrcFile, __LINE__,
+		      li->targetpath, NULL, "%s", cl);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
@@ -1825,13 +1775,13 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 li->runfile,
 			 WINDOWED | SEPARATEKEEP | PROMPT,
 			 li->targetpath,
-                         NULL, GetPString(IDS_EXECARCFILETITLETEXT),
-                         pszSrcFile, __LINE__);
+			 NULL, GetPString(IDS_EXECARCFILETITLETEXT),
+			 pszSrcFile, __LINE__);
 	    else if (li->type == IDM_VIRUSSCAN)
 	      ExecOnList(hwnd, virus, PROMPT | WINDOWED | SEPARATEKEEP,
 			 li->targetpath, NULL,
-                         GetPString(IDS_VIRUSSCANARCHIVETITLETEXT),
-                         pszSrcFile, __LINE__);
+			 GetPString(IDS_VIRUSSCANARCHIVETITLETEXT),
+			 pszSrcFile, __LINE__);
 	    else if (li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
 		     li->type == IDM_VIEWBINARY || li->type == IDM_EDIT ||
 		     li->type == IDM_EDITTEXT ||
@@ -1965,7 +1915,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	case IDM_FIND:
 	  {
-	    INT numfiles = 0, numalloced = 0;
+	    UINT numfiles = 0, numalloced = 0;
 	    CHAR **list2 = NULL, fullname[CCHMAXPATH * 2], *p;
 
 	    for (x = 0; li->list[x]; x++) {
@@ -2830,8 +2780,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (dcd->info->extract)
 	  runemf2(SEPARATE | WINDOWED |
 		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-                  hwnd, pszSrcFile, __LINE__,
-                  dcd->directory, NULL, "%s %s", dcd->info->extract,
+		  hwnd, pszSrcFile, __LINE__,
+		  dcd->directory, NULL, "%s %s", dcd->info->extract,
 		  BldQuotedFileName(szQuotedArcName, dcd->arcname));
 	if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTEXIT)
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -2842,8 +2792,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (dcd->info->exwdirs)
 	  runemf2(SEPARATE | WINDOWED |
 		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-                  hwnd, pszSrcFile, __LINE__,
-                  dcd->directory, NULL, "%s %s",
+		  hwnd, pszSrcFile, __LINE__,
+		  dcd->directory, NULL, "%s %s",
 		  dcd->info->exwdirs,
 		  BldQuotedFileName(szQuotedArcName, dcd->arcname));
 	if (SHORT1FROMMP(mp1) == IDM_ARCEXTRACTWDIRSEXIT)

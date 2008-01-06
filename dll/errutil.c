@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H. Levine
+  Copyright (c) 2004, 2008 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
@@ -26,21 +26,24 @@
   23 Apr 07 SHL Add Win_Error_NoMsgBox.  Rework others
   14 Aug 07 SHL Add GetMSecTimer
   14 Aug 07 SHL Use GetMSecTimer in DbgMsg
+  05 Jan 08 SHL Renamed from error.c to match errutil.h
 
 ***********************************************************************/
+
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
 
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
 
-#include <os2.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-
-#include "fm3dll.h"
+#include "errutil.h"
+#include "strutil.h"			// GetPString
 #include "fm3str.h"
+
+#pragma data_seg(GLOBAL2)
+PSZ DEBUG_STRING;
 
 #pragma data_seg(DATA1)
 
@@ -218,7 +221,7 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
   // Get last PM error for the current thread
   pErrInfoBlk = WinGetErrorInfo(hab);
   if (!pErrInfoBlk) {
-    ERRORID id = WinGetLastError(hab);	// 03 Jan 08 SHL fixme debug
+    ERRORID id = WinGetLastError(hab);
     psz = pszBuf + strlen(pszBuf);
     sprintf(psz, " WinGetErrorInfo failed (%u)", id);
   }

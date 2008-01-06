@@ -16,18 +16,20 @@
 
 ***********************************************************************/
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
 #include <os2.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "fm3dll.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
 
 static PSZ pszSrcFile = __FILE__;
 

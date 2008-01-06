@@ -23,23 +23,24 @@
 
 ***********************************************************************/
 
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_DOS
-#define INCL_DOSERRORS
-#include <os2.h>
-
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
 #include <process.h>			// _beginthread
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_DOSERRORS
+#define INCL_WIN
+#define INCL_GPI
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA2)
 

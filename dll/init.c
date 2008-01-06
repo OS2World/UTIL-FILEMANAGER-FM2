@@ -6,7 +6,7 @@
   Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -42,11 +42,8 @@
 ***********************************************************************/
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <share.h>
-#include <time.h>
 #include <process.h>
 
 #define INCL_DOS
@@ -61,12 +58,16 @@
 
 #define DEFINE_GLOBALS 1
 
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "datamin.h"
 #include "tools.h"
 #include "fm3str.h"
 #include "version.h"
+#include "pathutil.h"			// BldFullPathName
+#include "arccnrs.h"			// ArcClientWndProc
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #ifdef __IBMC__
 #pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)

@@ -15,13 +15,9 @@
 
 ***********************************************************************/
 
-#define INCL_WIN
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+
+#define INCL_WIN
 
 #include "fm3dll.h"
 

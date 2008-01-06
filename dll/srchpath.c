@@ -6,28 +6,25 @@
   Path search functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H. Levine
+  Copyright (c) 2003, 2008 Steven H. Levine
 
   22 Apr 07 GKY Add RunFM2Util to find and run apps from the FM2Utilities
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   23 Aug 07 SHL Comments
 
 ***********************************************************************/
-#define INCL_WIN
-#define INCL_WINERRORS
-#define INCL_DOS
-#define INCL_DOSERRORS
-#define INCL_LONGLONG
 
-#include <os2.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
 
-#include "fm3dll.h"
+#define INCL_WIN
+#define INCL_DOS
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "pathutil.h"			// BldQuotedFileName
+#include "errutil.h"			// Dos_Error...
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

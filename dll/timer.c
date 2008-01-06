@@ -13,19 +13,17 @@
 
 ***********************************************************************/
 
+#include <process.h>			// _beginthread
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
-#include <os2.h>
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <process.h>			// _beginthread
-
-#include "fm3dll.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

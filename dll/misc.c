@@ -6,7 +6,7 @@
   Misc GUI support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H. Levine
+  Copyright (c) 2003, 2008 Steven H. Levine
 
   11 Jun 03 SHL Add JFS and FAT32 support
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -38,23 +38,23 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
-#include <malloc.h>			// headmin
+#include <malloc.h>			// _heapmin
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_GPI
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "pathutil.h"			// BldQuotedFileName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

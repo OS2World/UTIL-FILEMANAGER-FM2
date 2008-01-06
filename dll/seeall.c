@@ -6,7 +6,7 @@
   See all matching files
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   25 Nov 03 SHL StartSeeAll: avoid forgetting startpath
@@ -35,22 +35,24 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <process.h>
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <process.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "pathutil.h"			// BldQuotedFullPathName...
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA2)
 
@@ -261,7 +263,8 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_MASSACTION:
     {
       CHAR **files = NULL, **list = (CHAR **) mp2, path[CCHMAXPATH];
-      INT numfiles = 0, numalloc = 0, plen = 0;
+      UINT numfiles = 0, numalloc = 0;
+      INT plen = 0;
       HWND hwndFrame = WinQueryWindowULong(hwnd, QWL_USER);
       CHAR message[CCHMAXPATH * 2], wildname[CCHMAXPATH];
       register INT x;
@@ -1316,8 +1319,8 @@ static CHAR **BuildAList(HWND hwnd)
   ULONG y;
   ULONG z = 0;
   CHAR **list = NULL;
-  INT numfiles = 0;
-  INT numalloc = 0;
+  UINT numfiles = 0;
+  UINT numalloc = 0;
   INT error;
 
   if (ad->selected) {
@@ -1923,15 +1926,6 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
   if (!rc) {
     do {
-#if 0 // 13 Aug 07 SHL fixme to be gone
-      {
-	static ULONG ulMaxCnt = 1;
-	if (ulFindCnt > ulMaxCnt) {
-	  ulMaxCnt = ulFindCnt;
-	  DbgMsg(pszSrcFile, __LINE__, "ulMaxCnt %u/%u", ulMaxCnt, ulFindMax);
-	}
-      }
-#endif // fixme to be gone
       priority_normal();
       pffbFile = pffbArray;
       for (x = 0; x < ulFindCnt; x++) {

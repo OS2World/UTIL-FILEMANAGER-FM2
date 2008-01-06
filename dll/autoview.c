@@ -6,7 +6,7 @@
   Auto view
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H.Levine
+  Copyright (c) 2001, 2008 Steven H.Levine
 
   12 Sep 02 SHL AutoObjProc: catch buff2 overflows
   25 Oct 02 SHL CreateHexDump: catch buffer overflow
@@ -25,22 +25,23 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_LONGLONG
-#include <os2.h>
-
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <process.h>			// _beginthread
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_GPI
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+#include "pathutil.h"			// BldFullPathName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

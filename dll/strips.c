@@ -15,10 +15,9 @@
 
 ***********************************************************************/
 
-#include <os2.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+
+#include <os2.h>
 
 VOID chop_at_crnl(PSZ pszSrc)
 {

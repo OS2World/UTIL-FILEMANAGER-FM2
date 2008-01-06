@@ -55,6 +55,7 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -st		touch stack through SS first
 # -wcd14	no reference to symbol
 # -wcd726	no reference to formal parameter
+# -we		treat warnings as errors
 # -wx		max warnings
 # -zfp		disable fs use
 # -zgp		disable gs use
@@ -62,7 +63,7 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -zq		quiet
 
 # We always compile with debug info to avoid needed a full rebuild just to debug
-CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zp4 -zq -hd
+CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -we -wx -zfp -zgp -zp4 -zq -hd
 
 LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map
 !ifdef DEBUG

@@ -33,22 +33,23 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_LONGLONG
-#define INCL_DOSERRORS
-#include <os2.h>
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <process.h>			// _beginthread
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_DOSERRORS
+#define INCL_WIN
+#define INCL_GPI
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "dircnrs.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 typedef struct
 {
@@ -222,16 +223,6 @@ static BOOL ProcessDir(HWND hwndCnr,
 
     while (!rc) {
 
-#if 0 // 13 Aug 07 SHL fixme to be gone
-      {
-	static ULONG ulMaxCnt = 1;
-	if (ulFindCnt > ulMaxCnt) {
-	  ulMaxCnt = ulFindCnt;
-	  DbgMsg(pszSrcFile, __LINE__, "ulMaxCnt %u/%u", ulMaxCnt, FilesToGet);
-	}
-      }
-#endif
-
       priority_normal();
       pffbFile = pffbArray;
       for (x = 0; x < ulFindCnt; x++) {
@@ -257,18 +248,6 @@ static BOOL ProcessDir(HWND hwndCnr,
 	if (!pffbFile->oNextEntryOffset)
 	  break;
 	pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
-
-#if 0 // 13 Aug 07 SHL fixme to be gone
-	{
-	  static ULONG ulMaxBytes = 65535;
-	  ULONG ul = (PBYTE)pffbFile - (PBYTE)pffbArray;
-	  if (ul > ulMaxBytes) {
-	    ulMaxBytes = ul;
-	    DbgMsg(pszSrcFile, __LINE__, "ulFindCnt %u/%u ulMaxBytes %u/%u",
-		   ulFindCnt, FilesToGet, ulMaxBytes, ulBufBytes);
-	  }
-	}
-#endif
 
       }	// for matches
       if (*pchStopFlag)

@@ -23,18 +23,16 @@
 
 ***********************************************************************/
 
+#include <string.h>
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "fm3dll.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -500,7 +498,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 
   FreeDragInfoData(hwndCnr, pDInfo);
 
-  // 02 Aug 07 SHL fixme to be gone someday or use Runtime_Error is really an error
+  // 02 Aug 07 SHL fixme to be gone someday or use Runtime_Error if really an error
   if (numfail || numok == 0)
     DbgMsg(pszSrcFile, __LINE__, "calling FreeDragInfoData with %u ok, %u failed", numok, numfail);
 

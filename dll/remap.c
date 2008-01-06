@@ -15,21 +15,20 @@
 
 ***********************************************************************/
 
-#define INCL_WIN
-#define INCL_DOS
-#include <os2.h>
-
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <ctype.h>
-#include <time.h>
 #include <share.h>
 #include <io.h>				// unlink
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

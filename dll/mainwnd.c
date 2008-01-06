@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -45,28 +45,27 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <process.h>			// _beginthread
+
 #define INCL_DOS
 #define INCL_WIN
-// #define INCL_WINERRORS
 #define INCL_SHLERRORS			// PMERR_NOT_IN_IDX
 #define INCL_WINHELP
 #define INCL_GPI
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <share.h>
-#include <process.h>			// _beginthread
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
+#include "comp.h"
 #include "datamin.h"
+#include "arccnrs.h"			// BldQuotedFileName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

@@ -6,7 +6,7 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H. Levine
+  Copyright (c) 2003, 2008 Steven H. Levine
 
   15 Oct 02 MK Baseline
   10 Jan 04 SHL Avoid -1L byte counts
@@ -44,28 +44,28 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_DOSERRORS
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <time.h>
 #include <share.h>
 #include <limits.h>
 #include <process.h>			// _beginthread
 
-#include "fm3dll.h"
+#define INCL_DOS			// QSV_MS_COUNT
+#define INCL_WIN
+#define INCL_DOSERRORS
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 #include "grep.h"
+#include "comp.h"
+#include "arccnrs.h"			// StartArcCnr
+#include "filldir.h"			// EmptyCnr...
+#include "strutil.h"			// GetPString
+#include "errutil.h"			// Runtime_Error
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -126,8 +126,8 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (id == DIR_VIEW) {
 	      if (dcd) {
 		SetViewMenu(hwndButtonPopup, dcd->flWindowAttr);
-                SetDetailsSwitches(hwndButtonPopup, dcd);
-                CopyPresParams(hwndButtonPopup, hwnd);
+		SetDetailsSwitches(hwndButtonPopup, dcd);
+		CopyPresParams(hwndButtonPopup, hwnd);
 	      }
 
 	      /* don't have tree view in collector */
@@ -571,6 +571,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	}
 	else {
 	  pciFirst = pci;
+	  // 04 Jan 08 SHL fixme like comp.c if CM_ALLOCRECORD returns unexpected record count
 	  for (x = 0; li->list[x]; x++) {
 	    nm = 1;
 	    hdir = HDIR_CREATE;
@@ -586,11 +587,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			       FALSE,
 			       TRUE) &&
 		!xDosFindFirst(fullname,
-		               &hdir,
-		               FILE_NORMAL | FILE_DIRECTORY |
-		               FILE_ARCHIVED | FILE_SYSTEM |
-		               FILE_HIDDEN | FILE_READONLY,
-		               &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL)) {
+			       &hdir,
+			       FILE_NORMAL | FILE_DIRECTORY |
+			       FILE_ARCHIVED | FILE_SYSTEM |
+			       FILE_HIDDEN | FILE_READONLY,
+			       &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL)) {
 	      DosFindClose(hdir);
 	      priority_normal();
 	      *fb4.achName = 0;
@@ -1358,8 +1359,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_VIEWSMENU:
 	SetViewMenu((HWND) mp2, dcd->flWindowAttr);
 	WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
-                          (dcd->lastselection != NULL));
-        CopyPresParams((HWND) mp2, hwnd);
+			  (dcd->lastselection != NULL));
+	CopyPresParams((HWND) mp2, hwnd);
 	break;
 
       case IDM_DETAILSSETUP:
@@ -2091,8 +2092,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (dcd->hwndLastMenu) {
 	    if (dcd->hwndLastMenu == CollectorCnrMenu) {
 	      SetViewMenu(dcd->hwndLastMenu, dcd->flWindowAttr);
-              SetDetailsSwitches(dcd->hwndLastMenu, dcd);
-              CopyPresParams(dcd->hwndLastMenu, hwnd);
+	      SetDetailsSwitches(dcd->hwndLastMenu, dcd);
+	      CopyPresParams(dcd->hwndLastMenu, hwnd);
 	      if (dcd->flWindowAttr & CV_MINI)
 		WinCheckMenuItem(dcd->hwndLastMenu, IDM_MINIICONS, TRUE);
 	      disable_menuitem(dcd->hwndLastMenu, DID_CANCEL,
@@ -2299,8 +2300,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      case DND_LAUNCH:
 		strcat(li->targetpath, " %a");
 		ExecOnList(dcd->hwndParent, li->targetpath,
-                           PROMPT | WINDOWED, NULL, li->list, NULL,
-                           pszSrcFile, __LINE__);
+			   PROMPT | WINDOWED, NULL, li->list, NULL,
+			   pszSrcFile, __LINE__);
 		FreeList(li->list);
 		li->list = NULL;
 		break;
@@ -2522,7 +2523,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      break;
 	    DosError(FERR_DISABLEHARDERR);
 	    status = DosFindFirst(pci->pszFileName, &hDir,
-		               	   FILE_NORMAL | FILE_DIRECTORY |
+				   FILE_NORMAL | FILE_DIRECTORY |
 				   FILE_ARCHIVED | FILE_READONLY |
 				   FILE_HIDDEN | FILE_SYSTEM,
 				   &ffb, sizeof(ffb), &nm, FIL_STANDARD);

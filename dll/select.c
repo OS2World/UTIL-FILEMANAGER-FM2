@@ -6,7 +6,7 @@
   Container item selection support routines
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H. Levine
+  Copyright (c) 2004, 2008 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   25 May 05 SHL Rework for ULONGLONG
@@ -30,26 +30,29 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
 #include <io.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_LONGLONG
+
 #include "fm3str.h"
+#include "filldir.h"			// RemoveCnrItems
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 
 VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite)
 {
   PCNRITEM pci;
-  INT numfiles = 0, numalloc = 0, x = 0;
+  UINT numfiles = 0, numalloc = 0;
+  UINT x = 0;
   INT attribute = CRA_CURSORED;
 
   if (all && list && *list) {

@@ -25,23 +25,22 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <share.h>
+
 #define INCL_WIN
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_SHLERRORS			// PMERR_NOT_IN_IDX
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
-#include <share.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -68,7 +67,7 @@ static ULONG WalkFontSize = sizeof(WalkFont);
 static BOOL fSetupsLoaded;
 static LINKDIRS *pFirstSetup;
 static const PSZ pszLastSetups = "LastSetups";
-// // 18 Aug 07 SHL fixme to stop supporting old style 1 year from now?
+// 18 Aug 07 SHL fixme to stop supporting old style 1 year from now?
 static const ULONG ulOldSetupsBytes = 100 * 13;	// Prior to 3.0.7
 
 /**

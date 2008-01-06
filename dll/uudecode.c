@@ -6,7 +6,7 @@
   uudecode
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   06 Jun 05 SHL Indent -i2
   06 Jun 05 SHL Drop unused code
@@ -18,18 +18,20 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#include <os2.h>
-
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <share.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -324,7 +326,8 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (wk) {
 	BOOL append, binary;
 	CHAR **list = NULL, **test, szBuffer[CCHMAXPATH];
-	INT numfiles = 0, numalloc = 0, error;
+	UINT numfiles = 0, numalloc = 0;
+	INT error;
 	SHORT x, y;
 
 	*szBuffer = 0;

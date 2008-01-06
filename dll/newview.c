@@ -6,7 +6,7 @@
   New internal viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   01 Dec 03 SHL Comments
   02 Dec 03 SHL Correct WM_VSCROLL math
@@ -31,24 +31,24 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_LONGLONG
-#include <os2.h>
-
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <process.h>
 #include <limits.h>
 #include <share.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_GPI
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA2)
 
@@ -356,7 +356,7 @@ static CHAR **BuildAList(HWND hwnd)
   RECTL Rectl;
   CHAR **list = NULL, s[SEARCHSTRINGLEN], a;
   register CHAR *p, *e;
-  INT numlines = 0, numalloc = 0;
+  UINT numlines = 0, numalloc = 0;
 
   if (ad && ad->selected) {
     WinQueryWindowRect(hwnd, &Rectl);
@@ -395,10 +395,10 @@ static CHAR **BuildAList(HWND hwnd)
 	    e = p = ad->lines[x];
 	    while (*e != '\r' && *e != '\n' && e < ad->text + ad->textsize)
 	      e++;
-/*
-   if((*e == '\r' || *e == '\n') && e > p)
-   e--;
- */
+            /* fixme to be gone?
+               if((*e == '\r' || *e == '\n') && e > p)
+               e--;
+            */
 	    width = e - p;
 	  }
 	  else {
@@ -433,7 +433,7 @@ static CHAR **BuildAList2(HWND hwnd)
   VIEWDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   CHAR **list = NULL, s[SEARCHSTRINGLEN];
   SHORT x, z;
-  INT numlines = 0, numalloc = 0;
+  UINT numlines = 0, numalloc = 0;
 
   if (ad) {
     z = (SHORT) WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,

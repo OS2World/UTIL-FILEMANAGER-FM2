@@ -6,7 +6,7 @@
   Print file list
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
@@ -20,18 +20,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
-#include <io.h>
 #include <share.h>
-#include <string.h>
 
 #define INCL_DOS
 #define INCL_WIN
-#include <os2.h>
+#define INCL_LONGLONG			// dircnrs.h
 
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -546,7 +546,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	{
 	  CHAR szBuffer[CCHMAXPATH + 1];
-	  INT numfiles = 0, numalloc = 0, error;
+	  UINT numfiles = 0, numalloc = 0;
+	  INT error;
 	  SHORT x;
 
 	  if (li->list)

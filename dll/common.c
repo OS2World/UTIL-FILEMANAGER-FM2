@@ -6,7 +6,7 @@
   Common window functions
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   13 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
@@ -22,27 +22,23 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN
 #define INCL_GPI
-#define INCL_LONGLONG
-#include <os2.h>
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
-#include <direct.h>
-#include <share.h>
-#include <limits.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+#include "filldir.h"			// RemoveCnrItems
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -243,8 +239,8 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     break;
   case IDM_CHKDSK:
     runemf2(SEPARATE | WINDOWED,
-            hwnd, pszSrcFile, __LINE__, NULL, NULL,
-            "PMCHKDSK.EXE %c:", toupper(*dv));
+	    hwnd, pszSrcFile, __LINE__, NULL, NULL,
+	    "PMCHKDSK.EXE %c:", toupper(*dv));
     break;
   case IDM_OPTIMIZE:
     {
@@ -264,8 +260,8 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     break;
   case IDM_FORMAT:
     runemf2(SEPARATE | WINDOWED,
-            hwnd, pszSrcFile, __LINE__, NULL, NULL,
-            "PMFORMAT.EXE %c:", toupper(*dv));
+	    hwnd, pszSrcFile, __LINE__, NULL, NULL,
+	    "PMFORMAT.EXE %c:", toupper(*dv));
     break;
 
 #if 0					// fixme to be gone?

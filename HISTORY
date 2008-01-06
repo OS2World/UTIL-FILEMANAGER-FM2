@@ -17,6 +17,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Correct variable cast to fix hex code display problem (Gregg)
  o Update includes to allow standalone usage (Steven)
  o Switch to wrc.exe default; support USE_RC from environment (Steven)
+ o Avoid out of memory traps in Compare Directories (Steven)
 
 3.08
  o Cancel in walk directories dialog now directly closes dialog even if

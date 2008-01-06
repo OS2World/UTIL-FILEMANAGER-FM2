@@ -12,23 +12,16 @@
 
 ***********************************************************************/
 
-#define INCL_WIN
-#define INCL_WINERRORS
-#define INCL_DOS
-#define INCL_DOSERRORS
-#define INCL_LONGLONG
-
-#include <os2.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dll.h"
 
 APIRET save_dir2(CHAR * curdir)
 {
-
   CHAR *env = getenv("FM3INI");
 
   if (env && *env) {

@@ -28,20 +28,18 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_DOSDEVICES			// DosDevIOCtl
-#define INCL_DOSDEVIOCTL		// DosDevIOCtl
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_DOSDEVIOCTL		// DosDevIOCtl
+#define INCL_LONGLONG
+
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

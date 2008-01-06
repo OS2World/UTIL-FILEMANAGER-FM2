@@ -12,17 +12,13 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-
-#include <os2.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
+#include <os2.h>
+
 CHAR *stristr(register CHAR * t, CHAR * s)
 {
-
   /* case-insensitive strstr() */
 
   register CHAR *t1, *s1;
@@ -47,7 +43,6 @@ CHAR *stristr(register CHAR * t, CHAR * s)
 
 CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
 {
-
   /* case-insensitive strnstr() */
 
   register CHAR *s1;
@@ -73,7 +68,6 @@ CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
 
 CHAR *strnstr(register CHAR * t, CHAR * s, LONG len)
 {
-
   /* strnstr() */
 
   register CHAR *s1;
@@ -100,7 +94,6 @@ CHAR *strnstr(register CHAR * t, CHAR * s, LONG len)
 CHAR *findstring(CHAR * findthis, ULONG lenthis, CHAR * findin,
 		 ULONG lenin, BOOL sensitive)
 {
-
   register CHAR *this, *in;
   register ULONG lenthis2, lenin2;
 

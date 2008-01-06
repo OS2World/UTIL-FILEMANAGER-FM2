@@ -28,13 +28,8 @@
  *            ANSI locale to make this more robust.
  */
 
-#define INCL_WIN
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
+
 #include "fm3dll.h"
 
 size_t commafmt(char *pszBuf,	// Output buffer

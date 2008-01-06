@@ -13,19 +13,17 @@
 
 ***********************************************************************/
 
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #define INCL_DOS
 #define INCL_WIN
-#include <os2.h>
+#define INCL_LONGLONG
 
-#include "dll\fm3dll.h"
 #include "dll\version.h"
 #include "dll\fm3str.h"
+#include "dll\arccnrs.h"
+#include "dll\fm3dll.h"
 
 HMTX av2Sem;
 

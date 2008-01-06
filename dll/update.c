@@ -6,7 +6,7 @@
   Update Container record/list
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H. Levine
+  Copyright (c) 2003, 2008 Steven H. Levine
 
   12 Feb 03 SHL Standardize EA math
   10 Jan 04 SHL Add some intermin large drive error avoidance
@@ -21,19 +21,19 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_LONGLONG
+
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "filldir.h"			// FillInRecordFromFFB
+#include "dircnrs.h"
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

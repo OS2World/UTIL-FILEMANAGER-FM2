@@ -6,7 +6,7 @@
   archiver.bb2 search, load, save and date parse
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   13 Aug 05 SHL Beautify with indent
@@ -32,21 +32,22 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <share.h>
+
+#define INCL_DOS
 #define INCL_WIN
 #define INCL_WINSTDDRAG
-#define INCL_DOS
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <share.h>
-#include <ctype.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "avl.h"
+#include "strutil.h"			// GetPString
+#include "errutil.h"			// Runtime_Error
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

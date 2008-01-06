@@ -20,25 +20,24 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
-
 ***********************************************************************/
 
-#define INCL_WIN
-#define INCL_WINERRORS
-#define INCL_DOS
-#define INCL_DOSERRORS
-#include <os2.h>
-
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <time.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_DOSERRORS
+#define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "pathutil.h"
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

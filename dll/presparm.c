@@ -15,16 +15,10 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+
+#define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
 

@@ -6,7 +6,7 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
@@ -42,26 +42,24 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_DOSERRORS
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <time.h>
-#include <time.h>
 
 #if 0 // fixme to disable or to be configurable
 #include <malloc.h>			// _heapchk
 #endif
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_DOSERRORS
+#define INCL_LONGLONG
+
 #include "fm3str.h"
+#include "filldir.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -485,9 +483,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 } // FillInRecordFromFFB
 
 ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
-                              const PSZ pszFileName,
-                              const PFILESTATUS4L pfsa4,
-                              const BOOL partial, DIRCNRDATA * dcd)	// Optional
+			      const PSZ pszFileName,
+			      const PFILESTATUS4L pfsa4,
+			      const BOOL partial, DIRCNRDATA * dcd)	// Optional
 {
   HPOINTER hptr;
   CHAR *p;
@@ -791,15 +789,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	 * only directories should appear (only a few
 	 * network file systems exhibit such a problem).
 	 */
-#if 0 // 13 Aug 07 SHL fixme to be gone
-	{
-	  static ULONG ulMaxCnt = 1;
-	  if (ulFindCnt > ulMaxCnt) {
-	    ulMaxCnt = ulFindCnt;
-	    DbgMsg(pszSrcFile, __LINE__, "ulMaxCnt %u/%u", ulMaxCnt, ulFindMax);
-	  }
-	}
-#endif // fixme to be gone
 
 	if (stopflag && *stopflag)
 	  goto Abort;
@@ -837,6 +826,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      ullTotalBytes = 0;
 	    }
 	    else {
+	      // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
 	      pci = pciFirst;
 	      ullTotalBytes = 0;
 	      // Insert selected in container
@@ -936,6 +926,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  ullTotalBytes = 0;
 	}
 	else {
+	  // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
 	  pci = pciFirst;
 	  ullTotalBytes = 0;
 	  pffbFile = paffbTotal;
@@ -1104,9 +1095,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   if (!pciFirst) {
     Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, IDS_CMALLOCRECERRTEXT);
+    // 04 Jan 08 SHL fixme not just up and die
     exit(0);
   }
 
+  // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
   pci = pciFirst;
   for (x = 0; x < 26; x++) {
     if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
@@ -1679,12 +1672,12 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       }
       while (pci) {
 	// 12 Sep 07 SHL dwg drivebar crash testing - ticket# ???
-        static PCNRITEM pciLast;		// 12 Sep 07 SHL
-        ULONG ulSize = sizeof(*pci);
-        ULONG ulAttr;
+	static PCNRITEM pciLast;		// 12 Sep 07 SHL
+	ULONG ulSize = sizeof(*pci);
+	ULONG ulAttr;
 	APIRET apiret = DosQueryMem((PVOID)pci, &ulSize, &ulAttr);
 	if (apiret)
-          Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	  Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
 		    "DosQueryMem failed pci %p pciLast %p", pci, pciLast);
 	FreeCnrItemData(pci);
 	pciLast = pci;

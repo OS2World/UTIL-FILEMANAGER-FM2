@@ -1,20 +1,29 @@
+
+/***********************************************************************
+
+  $Id$
+
+  fm/2 starter
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2008 Steven H.Levine
+
+  05 Jan 08 SHL Sync
+
+***********************************************************************/
+
+#include <string.h>
+
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG
 
-#include <os2.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <direct.h>
-#include "dll\fm3dll.h"
 #include "dll\tools.h"
 #include "dll\version.h"
+#include "dll\fm3dll.h"
 
 int main(int argc, char *argv[])
 {
-
   HAB hab;
   HMQ hmq;
   QMSG qmsg;

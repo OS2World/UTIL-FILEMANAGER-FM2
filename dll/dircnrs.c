@@ -6,7 +6,7 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -34,24 +34,26 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_DOSERRORS
-#define INCL_LONGLONG
-
-#include <os2.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include "fm3dll.h"
+#include <process.h>			// _beginthread
+
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_DOSERRORS
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
-#include <process.h>			// _beginthread
+#include "arccnrs.h"			// StartArcCnr
+#include "comp.h"			// COMPARE
+#include "filldir.h"			// EmptyCnr...
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -131,8 +133,8 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      goto MenuAbort;
 	    }
 	  }
-          hwndButtonPopup = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, id);
-          CopyPresParams(hwndButtonPopup, hwnd);
+	  hwndButtonPopup = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, id);
+	  CopyPresParams(hwndButtonPopup, hwnd);
 	  if (hwndButtonPopup) {
 	    WinSetWindowUShort(hwndButtonPopup, QWS_ID, id);
 	    dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
@@ -595,7 +597,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
-                   MPFROMP(&cni));
+		   MPFROMP(&cni));
       CheckPmDrgLimit(cni.pDragInfo);
       if (li) {
 	li->type = (fDefaultDeletePerm) ? IDM_PERMDELETE : IDM_DELETE;
@@ -799,9 +801,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (strlen(dcd->previous) > strlen(dcd->directory) &&
 	    !strnicmp(dcd->directory, dcd->previous,
 		      strlen(dcd->directory)))
-        {
+	{
 	  PCNRITEM pci = FindCnrRecord(dcd->hwndCnr,
-			               dcd->previous,
+				       dcd->previous,
 				       NULL, TRUE, FALSE, TRUE);
 	  if (pci && (INT) pci != -1) {
 	    // make found item current (cursored) item
@@ -1553,8 +1555,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       switch (SHORT1FROMMP(mp1)) {
       case IDM_FILESMENU:
-        CopyPresParams((HWND) mp2, hwndMainMenu);
-        if (isalpha(*dcd->directory)) {
+	CopyPresParams((HWND) mp2, hwndMainMenu);
+	if (isalpha(*dcd->directory)) {
 	  if (driveflags[toupper(*dcd->directory) - 'A'] & DRIVE_NOTWRITEABLE) {
 	    WinEnableMenuItem((HWND) mp2, IDM_MOVEMENU, FALSE);
 	    WinEnableMenuItem((HWND) mp2, IDM_RENAME, FALSE);
@@ -1577,17 +1579,17 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_EDIT, TRUE);
 	    WinEnableMenuItem((HWND) mp2, IDM_EDITTEXT, TRUE);
 	    WinEnableMenuItem((HWND) mp2, IDM_EDITBINARY, TRUE);
-            WinEnableMenuItem((HWND) mp2, IDM_ATTRS, TRUE);
+	    WinEnableMenuItem((HWND) mp2, IDM_ATTRS, TRUE);
 	  }
 	}
 	break;
 
       case IDM_VIEWSMENU:
-        SetViewMenu((HWND) mp2, dcd->flWindowAttr);
+	SetViewMenu((HWND) mp2, dcd->flWindowAttr);
 	CopyPresParams((HWND) mp2, hwndMainMenu);
-        WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
-                          (dcd->lastselection != NULL));
-        if (isalpha(*dcd->directory)) {
+	WinEnableMenuItem((HWND) mp2, IDM_RESELECT,
+			  (dcd->lastselection != NULL));
+	if (isalpha(*dcd->directory)) {
 	  if (driveflags[toupper(*dcd->directory) - 'A'] & DRIVE_NOTWRITEABLE)
 	    WinEnableMenuItem((HWND) mp2, IDM_MKDIR, FALSE);
 	  else
@@ -1726,8 +1728,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  dummy[0] = newfile;
 		  dummy[1] = NULL;
 		  ExecOnList(hwnd,
-                             editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
-                             pszSrcFile, __LINE__);
+			     editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
+			     pszSrcFile, __LINE__);
 		}
 		else
 		  StartMLEEditor(dcd->hwndParent, 4, newfile, dcd->hwndFrame);
@@ -2233,11 +2235,17 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case IDM_MKDIR:
 	{
-	 // PCNRITEM pci;
+	  PCNRITEM pci;
+	  BOOL saved;
 
-	 // pci = (PCNRITEM) CurrentRecord(hwnd);
+	  saved = fSelectedAlways;
+	  fSelectedAlways = FALSE;
+	  pci = (PCNRITEM)CurrentRecord(hwnd);
+	  // 01 Oct 07 SHL Make below selected directory or in current directory
 	  PMMkDir(dcd->hwndParent,
-		  (dcd->directory), FALSE);
+		  pci && (INT)pci != -1 ? pci->pszFileName : dcd->directory,
+		  FALSE);
+	  fSelectedAlways = saved;
 	}
 	break;
 
@@ -2593,7 +2601,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      memset(&volser, 0, sizeof(volser));
 	      DosError(FERR_DISABLEHARDERR);
-	      // fixme
+	      // fixme?
 	      rc = DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
 				  FSIL_VOLSER, &volser, sizeof(volser));
 	      if (rc) {
@@ -2608,7 +2616,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      else {
 		if (SHORT2FROMMP(mp1) == CN_COLLAPSETREE &&
 		    !volser.serial ||
-                    driveserial[toupper(*pci->pszFileName) - 'A'] !=
+		    driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		    volser.serial)
 		  UnFlesh(hwnd, pci);
 		if (SHORT2FROMMP(mp1) != CN_COLLAPSETREE ||
@@ -2646,8 +2654,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSendMsg(hwnd,
 		       CM_SETRECORDEMPHASIS,
 		       MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
-            MarkAll(hwnd, FALSE, FALSE, TRUE);
-            if (pci->attrFile & FILE_DIRECTORY)
+	    MarkAll(hwnd, FALSE, FALSE, TRUE);
+	    if (pci->attrFile & FILE_DIRECTORY)
 	      dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
 	    else
 	      dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);
@@ -2731,12 +2739,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-          if (!DrgAccessDraginfo(pDInfo)) {
-            Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                      "DrgAccessDraginfo");
+	  if (!DrgAccessDraginfo(pDInfo)) {
+	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		      "DrgAccessDraginfo");
 	      return (MRFROM2SHORT(DOR_NEVERDROP, 0));
-          }
-          if (*dcd->directory &&
+	  }
+	  if (*dcd->directory &&
 	     (driveflags[toupper(*dcd->directory) - 'A'] &
 	      DRIVE_NOTWRITEABLE)) {
 	    DrgFreeDraginfo(pDInfo);
@@ -2851,9 +2859,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-          // DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
-          li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
-          CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
+	  // DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
+	  li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
+	  CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    if (li->list && li->list[0] && IsRoot(li->list[0]))
 	      li->type = DO_LINK;
@@ -2887,8 +2895,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    case DND_LAUNCH:
 	      strcat(li->targetpath, " %a");
 	      ExecOnList(dcd->hwndParent, li->targetpath,
-                         PROMPT | WINDOWED, NULL, li->list, NULL,
-                         pszSrcFile, __LINE__);
+			 PROMPT | WINDOWED, NULL, li->list, NULL,
+			 pszSrcFile, __LINE__);
 	      FreeList(li->list);
 	      li->list = NULL;
 	      break;
@@ -3262,7 +3270,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && mp2) {
 
       HWND ret = StartMLEEditor(dcd->hwndParent,
-			        (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
+				(INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
       if (mp2)
 	free((CHAR *)mp2);
       return MRFROMLONG(ret);

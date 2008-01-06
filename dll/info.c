@@ -6,7 +6,7 @@
   Info windows
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL FileInfoProc: standardize EA math
@@ -26,21 +26,22 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_GPI
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -540,7 +541,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (pfs && *pfs->szFileName) {
 
 	  LISTINFO li;
-	  INT numfiles = 0, numalloc = 0;
+	  UINT numfiles = 0, numalloc = 0;
 
 	  memset(&li, 0, sizeof(LISTINFO));
 	  if (!AddToList(pfs->szFileName, &li.list, &numfiles, &numalloc)) {

@@ -6,26 +6,22 @@
   External strings file support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H. Levine
+  Copyright (c) 2006, 2008 Steven H. Levine
 
   22 Jul 06 SHL Comments
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  05 Jan 08 SHL Rename from string.c to avoid string.h conflict
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#include <os2.h>
-
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <share.h>
-#include <io.h>
 
-#include "fm3dll.h"
+#include "strutil.h"
 #include "fm3str.h"
 #include "version.h"
+
+extern PSZ NullStr;			// 05 Jan 08 SHL fixme to be in some .h
 
 static char **strs, *str;
 static ULONG numStr;

@@ -6,7 +6,7 @@
   Utility windows and mouse positioning
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H.Levine
+  Copyright (c) 2005, 2008 Steven H.Levine
 
   10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
   14 Jul 06 SHL Use Runtime_Error
@@ -15,20 +15,20 @@
 
 ***********************************************************************/
 
+#include <string.h>
+#include <ctype.h>
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -192,7 +192,8 @@ MRESULT EXPENTRY CheckListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (cl) {
 
 	CHAR szBuffer[CCHMAXPATH + 1];
-	INT numfiles = 0, numalloc = 0, error;
+	UINT numfiles = 0, numalloc = 0;
+	INT error;
 	SHORT x;
 
 	FreeList(cl->list);
@@ -507,7 +508,8 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	SHORT x;
 	CHAR szBuffer[CCHMAXPATH + 1];
-	INT numfiles = 0, numalloc = 0, error;
+	UINT numfiles = 0, numalloc = 0;
+	INT error;
 	USHORT cmd;
 
 	FreeList(cl->list);

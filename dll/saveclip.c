@@ -6,7 +6,7 @@
   Save file list to clipboard
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   12 Feb 03 SHL SaveListDlgProc: standardize EA math
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -23,20 +23,19 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
 
-#include "fm3dll.h"
+#define INCL_WIN
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 #define MAX_PATTERN_BYTES 80
@@ -157,7 +156,7 @@ CHAR **ListFromClipboard(HWND hwnd)
 CHAR **ListFromClipboardHab(HAB hab)
 {
   CHAR *p, *pp, *text = NULL, **list = NULL;
-  INT numfiles = 0, numalloced = 0;
+  UINT numfiles = 0, numalloced = 0;
 
   if (WinOpenClipbrd(hab)) {
     p = (CHAR *) WinQueryClipbrdData(hab, CF_TEXT);

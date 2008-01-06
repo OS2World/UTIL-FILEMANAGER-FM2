@@ -12,19 +12,15 @@
 
 ***********************************************************************/
 
-#define INCL_WIN
-
-#include <os2.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dll.h"
 
 PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
 		       BOOL partial, BOOL partmatch, BOOL noenv)
 {
-
   SEARCHSTRING srch;
   PCNRITEM pci;
   register CHAR *file, *p;

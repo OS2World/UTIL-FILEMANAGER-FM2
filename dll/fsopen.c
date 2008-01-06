@@ -15,17 +15,17 @@
 
 #if defined(__IBMC__)
 
-#define INCL_WIN
-#define INCL_DOS
-#define INCL_LONGLONG
-
-#include <os2.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <io.h>
 #include <fcntl.h>
 #include <share.h>
+
+#define INCL_WIN
+#define INCL_DOS
+#define INCL_LONGLONG
+
 #include "fm3dll.h"
 
 #pragma alloc_text(FSOPEN,_fsopen)

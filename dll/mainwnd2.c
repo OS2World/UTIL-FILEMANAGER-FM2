@@ -6,7 +6,7 @@
   fm/4 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   23 May 05 SHL Use datamin.h
   26 May 05 SHL Comments and localize code
@@ -22,24 +22,25 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <share.h>
+#include <process.h>			// _beginthread
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <share.h>
-#include <process.h>			// _beginthread
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
 #include "datamin.h"
+#include "comp.h"			// COMPARE
+#include "arccnrs.h"			// BldQuotedFileName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 typedef struct
 {

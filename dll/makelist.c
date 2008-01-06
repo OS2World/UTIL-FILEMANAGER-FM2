@@ -6,7 +6,7 @@
   Make file lists
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H.Levine
+  Copyright (c) 2003, 2008 Steven H.Levine
 
   12 Feb 03 SHL AddToFileList: standardize EA math
   22 Jul 06 SHL Use Runtime_Error
@@ -16,26 +16,27 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "fm3dll.h"
 #include "fm3str.h"
+#include "makelist.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "dircnrs.h"
+#include "fm3dll.h"			// 05 Jan 08 SHL fixme to be gone
 
 static PSZ pszSrcFile = __FILE__;
 
-VOID SortList(LISTINFO * li)
+VOID SortList(LISTINFO *li)
 {
   /* bubble-sort entries by size, descending */
 
-  INT x;
+  UINT x;
   CHAR *s;
   ULONG l;
   BOOL swapped;
@@ -63,7 +64,7 @@ VOID SortList(LISTINFO * li)
   }
 }
 
-VOID FreeListInfo(LISTINFO * li)
+VOID FreeListInfo(LISTINFO *li)
 {
   if (li) {
     if (li->ulitemID)
@@ -76,9 +77,9 @@ VOID FreeListInfo(LISTINFO * li)
   }
 }
 
-VOID FreeList(CHAR ** list)
+VOID FreeList(CHAR **list)
 {
-  register INT x;
+  UINT x;
 
   if (list) {
     for (x = 0; list[x]; x++) {
@@ -95,24 +96,24 @@ VOID FreeList(CHAR ** list)
   DosPostEventSem(CompactSem);
 }
 
-INT AddToFileList(CHAR * string, FILEFINDBUF4L * ffb4, FILELIST *** list,
-		  INT * numfiles, INT * numalloced)
+INT AddToFileList(CHAR *string, FILEFINDBUF4L *ffb4, FILELIST ***list,
+		  UINT *pnumfiles, UINT *pnumalloced)
 {
   FILELIST *pfl;
 
   if (string && ffb4) {
     // Ensure room for NULL entry
-    if (((*numfiles) + 3) > *numalloced) {
+    if (((*pnumfiles) + 3) > *pnumalloced) {
       FILELIST **pflArray;
 
       // Use plain realloc for speed
       // 06 Aug 07 SHL fixme to know why + 6
-      pflArray = realloc(*list, (*numalloced + 6) * sizeof(FILELIST *));
+      pflArray = realloc(*list, (*pnumalloced + 6) * sizeof(FILELIST *));
       if (!pflArray) {
 	Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));
 	return 1;
       }
-      (*numalloced) += 6;
+      (*pnumalloced) += 6;
       *list = pflArray;
     }
     // Use plain malloc for speed
@@ -131,12 +132,12 @@ INT AddToFileList(CHAR * string, FILEFINDBUF4L * ffb4, FILELIST *** list,
     pfl->cbFile = ffb4->cbFile;
     pfl->easize = CBLIST_TO_EASIZE(ffb4->cbList);
     strcpy(pfl->fname, string);
-    (*list)[*numfiles] = pfl;
-    (*numfiles)++;
+    (*list)[*pnumfiles] = pfl;
+    (*pnumfiles)++;
     // Ensure list always ends with two NULL entries
     // 06 Aug 07 SHL fixme to know why
-    (*list)[*numfiles] = NULL;
-    (*list)[(*numfiles) + 1] = NULL;
+    (*list)[*pnumfiles] = NULL;
+    (*list)[(*pnumfiles) + 1] = NULL;
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
@@ -150,20 +151,20 @@ INT AddToFileList(CHAR * string, FILEFINDBUF4L * ffb4, FILELIST *** list,
  * Ensures 2 NULL end markers exist
  */
 
-INT AddToList(CHAR * string, CHAR *** list, INT * numfiles, INT * numalloced)
+INT AddToList(CHAR *string, CHAR ***list, UINT *pnumfiles, UINT *pnumalloced)
 {
   CHAR **ppsz;
   PSZ psz;
 
   if (string) {
-    if (((*numfiles) + 3) > *numalloced) {
+    if (((*pnumfiles) + 3) > *pnumalloced) {
       // Use plain realloc for speed
-      ppsz = realloc(*list, (*numalloced + 6) * sizeof(CHAR *));
+      ppsz = realloc(*list, (*pnumalloced + 6) * sizeof(CHAR *));
       if (!ppsz) {
 	Runtime_Error(pszSrcFile, __LINE__, "realloc");
 	return 1;
       }
-      (*numalloced) += 6;
+      (*pnumalloced) += 6;
       *list = ppsz;
     }
     // Use plain malloc for speed
@@ -172,11 +173,11 @@ INT AddToList(CHAR * string, CHAR *** list, INT * numfiles, INT * numalloced)
       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));
       return 2;
     }
-    (*list)[*numfiles] = psz;
-    strcpy((*list)[*numfiles], string);	// Add entry
-    (*numfiles)++;
-    (*list)[*numfiles] = NULL;		// Add end marker
-    (*list)[(*numfiles) + 1] = NULL;	// Add 2nd end marker - fixme to know why?
+    (*list)[*pnumfiles] = psz;
+    strcpy((*list)[*pnumfiles], string);	// Add entry
+    (*pnumfiles)++;
+    (*list)[*pnumfiles] = NULL;		// Add end marker
+    (*list)[(*pnumfiles) + 1] = NULL;	// Add 2nd end marker - fixme to know why?
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
@@ -188,7 +189,8 @@ CHAR **BuildList(HWND hwndCnr)
 {
   PCNRITEM pci;
   CHAR **list = NULL, **test;
-  INT numfiles = 0, numalloc = 0, error = 0, attribute = CRA_CURSORED;
+  UINT numfiles = 0, numalloc = 0;
+  INT error = 0, attribute = CRA_CURSORED;
 
   pci = (PCNRITEM) CurrentRecord(hwndCnr);
   if (pci && (INT) pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
@@ -219,7 +221,8 @@ CHAR **BuildArcList(HWND hwndCnr)
 {
   PARCITEM pai;
   CHAR **list = NULL;
-  INT numfiles = 0, numalloc = 0, error = 0, attribute = CRA_CURSORED;
+  UINT numfiles = 0, numalloc = 0;
+  INT error = 0, attribute = CRA_CURSORED;
 
   pai = (PARCITEM) CurrentRecord(hwndCnr);
   if (pai && (INT) pai != -1) {
@@ -238,9 +241,9 @@ CHAR **BuildArcList(HWND hwndCnr)
   return list;
 }
 
-CHAR **RemoveFromList(CHAR ** list, CHAR * item)
+CHAR **RemoveFromList(CHAR **list, CHAR *item)
 {
-  register INT x, y;
+  UINT x, y;
 
   if (list && list[0] && item) {
     for (x = 0; list[x]; x++) {
@@ -263,10 +266,10 @@ CHAR **RemoveFromList(CHAR ** list, CHAR * item)
   return list;
 }
 
-CHAR **CombineLists(CHAR ** prime, CHAR ** add)
+CHAR **CombineLists(CHAR **prime, CHAR **add)
 {
-  register INT x;
-  INT numalloc, numfiles = 0;
+  UINT x;
+  UINT numalloc, numfiles = 0;
 
   if (add && add[0]) {
     if (prime) {

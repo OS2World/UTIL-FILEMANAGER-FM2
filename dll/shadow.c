@@ -6,7 +6,7 @@
   Desktop shadows
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2006, 2007 Steven H. Levine
+  Copyright (c) 2006, 2008 Steven H. Levine
 
   22 Jul 06 SHL Check more run time errors
   16 Jun 07 SHL Update for OpenWatcom
@@ -15,18 +15,19 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "pathutil.h"			// BldFullPathName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -135,7 +136,7 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
 
       BldFullPathName(temp, path, objtitle);
       // sprintf(temp,
-      // 	      "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
+      //	      "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
       p = strrchr(temp, '.');
       if (p) {
 	*p = 0;

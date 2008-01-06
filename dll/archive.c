@@ -16,20 +16,17 @@
 
 ***********************************************************************/
 
+#include <string.h>
+
 #define INCL_WIN
 #define INCL_DOS
-#include <os2.h>
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <share.h>
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "strutil.h"			// GetPString
+#include "errutil.h"			// Runtime_Error
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

@@ -6,7 +6,7 @@
   Version labels
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion VERREALMINOR
   11 Jun 03 SHL v3.02b: add JFS and FAT32 support
@@ -45,15 +45,16 @@
   21 Aug 07 GKY v3.07beta01: Release
   31 Aug 07 GKY v3.07: Release modified ini structure
   11 Nov 07 GKY v3.08 Release large file support
+  12 Nov 07 SHL v3.09pre (shl)
 
 ***********************************************************************/
 
 #define VERMAJOR       3
-#define VERMINOR       8
+#define VERMINOR       9
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-#define VERREALMINOR   " "__DATE__
-//#define VERREALMINOR   "beta01 " __DATE__ " " __TIME__
+// #define VERREALMINOR   " "__DATE__
+#define VERREALMINOR   "pre (shl) " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 

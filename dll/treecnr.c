@@ -1,3 +1,4 @@
+
 /***********************************************************************
 
   $Id$
@@ -5,7 +6,7 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -44,24 +45,23 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_GPI
-#define INCL_DOSERRORS
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <process.h>			// _beginthread
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_LONGLONG
+
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
+#include "comp.h"			// COMPARE
+#include "filldir.h"			// RemoveCnrItems...
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -201,12 +201,12 @@ VOID ShowTreeRec(HWND hwndCnr,
   if (pci && (INT) pci != -1) {
     if (~pci->rc.flRecordAttr & CRA_CURSORED) {
       if (collapsefirst) {
-        // DbgMsg(pszSrcFile, __LINE__, "collapsing");	// 14 Aug 07 SHL fixme
+	// DbgMsg(pszSrcFile, __LINE__, "collapsing");	// 14 Aug 07 SHL fixme
 	pciP = WinSendMsg(hwndCnr,
 			  CM_QUERYRECORD,
 			  MPVOID, MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 	while (pciP && (INT) pciP != -1) {
-#if 1
+#if 1 // // 05 Jan 08 SHL fixme to be sure this is correct code
 	  if (pciP->rc.flRecordAttr & CRA_EXPANDED) {
 	    // collapse top level of all branches
 	    WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciP), MPVOID);
@@ -255,12 +255,12 @@ VOID ShowTreeRec(HWND hwndCnr,
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
       }
       if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) {
-        // DbgMsg(pszSrcFile, __LINE__, "expanding current");	// 14 Aug 07 SHL fixme
+	// DbgMsg(pszSrcFile, __LINE__, "expanding current");	// 14 Aug 07 SHL fixme
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-        // DbgMsg(pszSrcFile, __LINE__, "expanded");	// 14 Aug 07 SHL fixme
+	// DbgMsg(pszSrcFile, __LINE__, "expanded");	// 14 Aug 07 SHL fixme
       }
       if (!quickbail) {
-        WinSendMsg(hwndCnr,
+	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
 		   MPFROMP(pciToSelect),
 		   MPFROM2SHORT(TRUE, CRA_SELECTED | CRA_CURSORED));
@@ -2053,7 +2053,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
 
 	    CopyPresParams((HWND) mp2, hwndMainMenu);
-            WinEnableMenuItem((HWND) mp2, IDM_INFO, rdy);
+	    WinEnableMenuItem((HWND) mp2, IDM_INFO, rdy);
 
 	    WinEnableMenuItem((HWND) mp2, IDM_ATTRS, writeable);
 	    WinEnableMenuItem((HWND) mp2, IDM_EAS, writeable);
@@ -2091,7 +2091,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      && writeable);
 	    WinEnableMenuItem((HWND) mp2, IDM_MOVEMENU, !underenv
 			      && writeable);
-            WinEnableMenuItem((HWND) mp2, IDM_RENAME, !underenv && writeable);
+	    WinEnableMenuItem((HWND) mp2, IDM_RENAME, !underenv && writeable);
 
 	  }
 	}
@@ -2100,24 +2100,24 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_VIEWSMENU:
 	WinCheckMenuItem((HWND) mp2,
 			 IDM_MINIICONS, ((dcd->flWindowAttr & CV_MINI) != 0));
-        CopyPresParams((HWND) mp2, hwndMainMenu);
+	CopyPresParams((HWND) mp2, hwndMainMenu);
 	WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
-        break;
+	break;
 
       case IDM_COMMANDSMENU:
-        SetupCommandMenu((HWND) mp2, hwnd);
-        CopyPresParams((HWND) mp2, hwndMainMenu);
+	SetupCommandMenu((HWND) mp2, hwnd);
+	CopyPresParams((HWND) mp2, hwndMainMenu);
 	break;
 
       case IDM_SORTSUBMENU:
 	SetSortChecks((HWND) mp2, TreesortFlags);
-        CopyPresParams((HWND) mp2, hwndMainMenu);
-        break;
+	CopyPresParams((HWND) mp2, hwndMainMenu);
+	break;
 
       case IDM_WINDOWSMENU:
 	SetupWinList((HWND) mp2,
-                     (hwndMain) ? hwndMain : (HWND) 0, dcd->hwndFrame);
-        CopyPresParams((HWND) mp2, hwndMainMenu);
+		     (hwndMain) ? hwndMain : (HWND) 0, dcd->hwndFrame);
+	CopyPresParams((HWND) mp2, hwndMainMenu);
 	break;
       }
       dcd->hwndLastMenu = (HWND) mp2;
@@ -2410,26 +2410,26 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_PARTITION:
-        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
-                NULL, NULL,
+	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+		NULL, NULL,
 		"%s", "MINILVM.EXE");
 	break;
 
       case IDM_PARTITIONDF:
-        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
-                NULL, NULL,
+	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+		NULL, NULL,
 		"%s", "DFSOS2.EXE");
 	break;
 
       case IDM_PARTITIONLVMG:
-        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
-                NULL, NULL,
+	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+		NULL, NULL,
 		"%s", "LVMGUI.CMD");
 	break;
 
       case IDM_PARTITIONFD:
-        runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
-                NULL, NULL,
+	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+		NULL, NULL,
 		"%s", "FDISKPM.EXE");
 	break;
 

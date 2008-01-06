@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   14 Jul 06 SHL Use Runtime_Error
@@ -17,20 +17,22 @@
 
 **************************************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <share.h>
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_PM
 #define INCL_WINHOOKS
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <os2.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <share.h>
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "pathutil.h"			// BldQuotedFileName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

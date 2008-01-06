@@ -13,18 +13,18 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+
 #define INCL_DOS
 #define INCL_WIN
-#include <os2.h>
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "strutil.h"			// GetPString
+#include "errutil.h"			// Runtime_Error
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

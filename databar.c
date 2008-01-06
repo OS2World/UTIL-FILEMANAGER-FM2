@@ -15,25 +15,20 @@
 
 ***********************************************************************/
 
+#include <string.h>
+
 #define INCL_DOS
 #define INCL_WIN
-#include <os2.h>
+#define INCL_LONGLONG
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "dll\fm3dll.h"
 #include "dll\datamin.h"
 #include "dll\fm3dlg.h"
+#include "dll\fm3dll.h"
 
-#ifdef NEVER
+#ifdef NEVER				// 05 Jan 08 SHL fixme to be gone?
 
 VOID APIENTRY deinit(ULONG why)
 {
-
   if (fmprof)
     PrfCloseProfile(fmprof);
   fmprof = (HINI) 0;
@@ -47,7 +42,6 @@ VOID APIENTRY deinit(ULONG why)
 
 int main(int argc, char *argv[])
 {
-
   HAB hab;
   HMQ hmq;
   QMSG qmsg;

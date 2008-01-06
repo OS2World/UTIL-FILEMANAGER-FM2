@@ -34,6 +34,7 @@
 # 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
 # 03 Jan 08 SHL Prepare for final, implending switch to wrc.exe
 # 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
+# 05 Jan 08 SHL Sync with .c renames
 
 # Environment:
 
@@ -91,6 +92,7 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -st		touch stack through SS first
 # -wcd14	no reference to symbol
 # -wcd726	no reference to formal parameter
+# -we		treat warnings as errors
 # -wx		max warnings
 # -zfp		disable fs use
 # -zgp		disable gs use
@@ -98,14 +100,14 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 # -zq		quiet
 
 !ifdef DEBUG
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -we -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -we -wx -zfp -zgp -zp4 -zq
 !else
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -we -wx -zfp -zgp -zp4 -zq
 !endif
 
 # for fm3res only
-CFLAGSR = -bt=os2 -mf -bd -bm         -olirs -s     -j -wx -zfp -zgp -zp4 -zq
+CFLAGSR = -bt=os2 -mf -bd -bm         -olirs -s     -j -we -wx -zfp -zgp -zp4 -zq
 
 !ifdef DEBUG
 LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
@@ -137,16 +139,19 @@ OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        avl.obj avv.obj chklist.obj cmdline.obj codepage.obj &
        collect.obj colors.obj commafmt.obj command.obj common.obj &
        comp.obj copyf.obj datamin.obj defview.obj delims.obj dircnrs.obj &
-       dirs.obj dirsize.obj draglist.obj droplist.obj eas.obj error.obj &
+       dirs.obj dirsize.obj draglist.obj droplist.obj eas.obj errutil.obj &
        extract.obj filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
        fonts.obj fsopen.obj getnames.obj grep.obj grep2.obj info.obj inis.obj &
        init.obj input.obj instant.obj key.obj killproc.obj literal.obj &
        loadbmp.obj mainwnd.obj mainwnd2.obj makelist.obj menu.obj misc.obj &
        mkdir.obj mle.obj newview.obj notebook.obj notify.obj objcnr.obj &
-       objwin.obj presparm.obj printer.obj remap.obj rename.obj saveclip.obj &
+       objwin.obj &
+       pathutil.obj &
+       presparm.obj printer.obj remap.obj rename.obj saveclip.obj &
        seeall.obj select.obj seticon.obj shadow.obj sortcnr.obj srchpath.obj &
-       string.obj strips.obj stristr.obj subj.obj sysinfo.obj systemf.obj &
-       timer.obj tools.obj treecnr.obj undel.obj update.obj uudecode.obj &
+       strutil.obj strips.obj stristr.obj subj.obj sysinfo.obj systemf.obj &
+       timer.obj tmrsvcs.obj tools.obj treecnr.obj &
+       undel.obj update.obj uudecode.obj &
        valid.obj viewer.obj viewinf.obj walkem.obj winlist.obj worker.obj &
        wrappers.obj
 

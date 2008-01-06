@@ -1,15 +1,28 @@
-/* handles setting fonts */
+
+/***********************************************************************
+
+  $Id$
+
+  Font support
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2008 Steven H. Levine
+
+  05 Jan 08 SHL Sync
+
+***********************************************************************/
+
+#include <string.h>
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <os2.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "fm3dll.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

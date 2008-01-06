@@ -6,7 +6,7 @@
   grep tools
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   12 Feb 03 SHL insert_grepfile: standardize EA math
   12 Feb 03 SHL doonefile: standardize EA math
@@ -29,21 +29,24 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_DOSERRORS
-#define INCL_LONGLONG
-#include <os2.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
 #include <share.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_DOSERRORS
+#define INCL_WIN
+#define INCL_LONGLONG
+
 #include "fm3str.h"
 #include "grep.h"
+#include "pathutil.h"			// BldFullPathName
+#include "filldir.h"			// FillInRecordFromFFB
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA2)
 
@@ -587,7 +590,9 @@ static BOOL doinsertion(GREP * grep)
 		   CM_ALLOCRECORD,
 		   MPFROMLONG(EXTRA_RECORD_BYTES),
 		   MPFROMLONG(grep->toinsert));
+  // 04 Jan 08 SHL fixme to complain if CM_ALLOCRECORD fails
   if (pci) {
+    // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
     if (grep->sayfiles)
       WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPINSERTINGTEXT));
     pciFirst = pci;
@@ -1124,7 +1129,8 @@ static VOID FillDupes(GREP * grep)
   DUPES *c, *i, **r;
   register CHAR *pc, *pi;
   CHAR **list = NULL;
-  INT numfiles = 0, numalloced = 0, error;
+  UINT numfiles = 0, numalloced = 0;
+  INT error;
   register ULONG x = 0, y = 0;
   ULONG cntr = 1000;
 

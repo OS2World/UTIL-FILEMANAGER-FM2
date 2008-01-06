@@ -19,15 +19,15 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 #define INCL_OS2
 #define INCL_WIN
-#include <os2.h>
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
+#include "errutil.h"			// Dos_Error...
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;

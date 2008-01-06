@@ -6,7 +6,7 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2007 Steven H. Levine
+  Copyright (c) 2003, 2008 Steven H. Levine
 
   16 Oct 02 MK Baseline
   04 Nov 03 SHL Force window refresh after subdir toggle
@@ -39,27 +39,34 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   27 Sep 07 SHL Correct ULONGLONG size formatting
   30 Dec 07 GKY Use TestCDates for compare by file date/time
+  04 Jan 08 SHL Avoid traps if CM_ALLOCRECORD returns less that requested
+  05 Jan 08 SHL Use WM_TIMER for progress messaging
+  05 Jan 08 SHL Use ITIMER_DESC for hogging control
 
 ***********************************************************************/
+
+#include <stdlib.h>
+#include <string.h>
+#include <share.h>
+#include <io.h>
+#include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_DOSERRORS
 #define INCL_GPI
 #define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <share.h>
-#include <io.h>
-#include <process.h>			// _beginthread
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "pathutil.h"			// BldFullPathName
+#include "filldir.h"			// EmptyCnr...
+#include "makelist.h"			// AddToFileList...
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "tmrsvcs.h"			// IsITimerExpired
+#include "comp.h"
+#include "fm3dll.h"
 
 typedef struct
 {
@@ -70,27 +77,6 @@ typedef struct
 SNAPSTUFF;
 
 static PSZ pszSrcFile = __FILE__;
-
-/**
- * Build full path name in callers buffer given directory
- * name and filename
- * @param pszPathName points to drive/directory if not NULL
- * @returns pointer to full path name in caller's buffer
- * @note OK for pszFullPathName and pszPathName to point to same buffer
- *
- */
-
-PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
-{
-  UINT c = pszPathName ? strlen(pszPathName) : 0;
-  if (c > 0) {
-    memcpy(pszFullPathName, pszPathName, c);
-    if (pszFullPathName[c - 1] != '\\')
-      pszFullPathName[c++] = '\\';
-  }
-  strcpy(pszFullPathName + c, pszFileName);
-  return pszFullPathName;
-}
 
 //=== SnapShot() Write directory tree to file and recurse if requested ===
 
@@ -115,7 +101,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
       ulFindCnt = 1;
       // 13 Aug 07 SHL fixme to report errors
       if (!xDosFindFirst(mask,
-	         	 &hdir,
+			 &hdir,
 			 FILE_NORMAL | FILE_DIRECTORY |
 			 FILE_ARCHIVED | FILE_READONLY | FILE_HIDDEN |
 			 FILE_SYSTEM,
@@ -449,6 +435,8 @@ static VOID ActionCnrThread(VOID *args)
       pciD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
 			MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 
+      WinStartTimer(hab, cmp->hwnd, ID_TIMER, 2000);
+
       while (pci && (INT)pci != -1 && pciD && (INT)pciD != -1) {
 
 	pciNextS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pci),
@@ -674,13 +662,14 @@ static VOID ActionCnrThread(VOID *args)
 
       }	// while
     Abort:
+      WinStopTimer(hab, cmp->hwnd, ID_TIMER);
       WinDestroyMsgQueue(hmq);
     }
+    PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID);
+    PostMsg(cmp->hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DESELECTALL, 0), MPVOID);
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID);
-  PostMsg(cmp->hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DESELECTALL, 0), MPVOID);
   free(cmp);
 }
 
@@ -706,6 +695,7 @@ static VOID SelectCnrsThread(VOID * args)
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
       priority_normal();
+      WinStartTimer(hab, cmp->hwnd, ID_TIMER, 2000);
       switch (cmp->action) {
       case IDM_INVERT:
 	InvertAll(WinWindowFromID(cmp->hwnd, COMP_LEFTDIR));
@@ -723,6 +713,7 @@ static VOID SelectCnrsThread(VOID * args)
 		      cmp->action, cmp->reset);
 	break;
       }
+      WinStopTimer(hab, cmp->hwnd, ID_TIMER);
       if (!PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID))
 	WinSendMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID);
       WinDestroyMsgQueue(hmq);
@@ -737,8 +728,8 @@ static VOID SelectCnrsThread(VOID * args)
  * Build FILELIST given pathname
  */
 
-static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
-			FILELIST ***list, INT *numfiles, INT *numalloc)
+static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
+			FILELIST ***list, UINT *pnumfiles, UINT *pnumalloc)
 {
   CHAR *enddir;
   ULONG x;
@@ -779,7 +770,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
   DosError(FERR_DISABLEHARDERR);
   ulFindCnt = FilesToGet;
   rc = xDosFindFirst(maskstr, &hDir,
-	 	     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
 		     FILE_SYSTEM | FILE_HIDDEN |
 		     (recurse ? FILE_DIRECTORY : 0),
 		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
@@ -798,7 +789,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
 	    else if (fForceLower)
 	      strlwr(pffbFile->achName);
 	    memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
-	    FillDirList(maskstr, skiplen, recurse, list, numfiles, numalloc);
+	    FillDirList(maskstr, skiplen, recurse, list, pnumfiles, pnumalloc);
 	  }
 	}
 	else {
@@ -808,7 +799,7 @@ static VOID FillDirList(CHAR *str, INT skiplen, BOOL recurse,
 	    strlwr(pffbFile->achName);
 	  memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
 	  if (AddToFileList(maskstr + skiplen,
-			    pffbFile, list, numfiles, numalloc)) {
+			    pffbFile, list, pnumfiles, pnumalloc)) {
 	    goto Abort;
 	  }
 	}
@@ -846,45 +837,6 @@ static int CompNames(const void *n1, const void *n2)
   return stricmp(fl1->fname, fl2->fname);
 }
 
-// 20 Aug 07 SHL experimental fixme
-
-typedef struct {
-  // Caller must init
-  UINT sleepTime;		// How long to sleep
-  UINT interval;		// How often to sleep
-  // Owned by SleepIfNeeded
-  UINT modulo;			// How often to call GetMSecTimer
-  UINT cntr;			// Call counter
-  ULONG lastMSec;		// Last time DosSleep invoked
-} SLEEP_DESC;
-
-VOID SleepIfNeeded(BOOL id, UINT interval, UINT sleepTime)
-{
-  static ULONG lastMSec[10];
-  static UINT cntr;
-  static UINT modulo = 32;
-  BOOL yes = ++cntr >= modulo;
-
-  if (yes) {
-    ULONG newMSec = GetMSecTimer();
-    // 1st time will have large difference, but don't care
-    ULONG diff = newMSec - lastMSec[id];
-    cntr = 0;
-    yes = diff >= interval;
-    // Try to tune modulo counter to approx 12% error
-    if (yes) {
-      lastMSec[id] = newMSec;
-      if (diff >= interval + (interval / 8) && modulo > 0)
-	modulo--;
-    }
-    else {
-      if (diff < interval - (interval / 8))
-	modulo++;
-    }
-    DosSleep(sleepTime);
-  }
-}
-
 //=== FillCnrsThread() Fill left and right containers ===
 
 static VOID FillCnrsThread(VOID *args)
@@ -893,11 +845,7 @@ static VOID FillCnrsThread(VOID *args)
   HAB hab;
   HMQ hmq;
   BOOL notified = FALSE;
-
-#if 0
-  ULONG lastMSec = GetMSecTimer();
-  ULONG ul;
-#endif
+  ITIMER_DESC itdSleep = { 0 };
 
   HWND hwndLeft, hwndRight;
   CHAR szBuf[CCHMAXPATH];
@@ -912,6 +860,8 @@ static VOID FillCnrsThread(VOID *args)
 
   DosError(FERR_DISABLEHARDERR);
 
+  InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
+
   hab = WinInitialize(0);
   if (!hab)
     Win_Error(NULLHANDLE, NULLHANDLE, pszSrcFile, __LINE__, "WinInitialize");
@@ -922,21 +872,26 @@ static VOID FillCnrsThread(VOID *args)
 		"WinCreateMsgQueue");
     else {
       INT x;
-      INT l;
-      INT r;
+      UINT l;
+      UINT r;
       UINT cntr;
       FILELIST **filesl = NULL;
       FILELIST **filesr = NULL;
-      INT numfilesl = 0;
-      INT numfilesr = 0;
-      INT numallocl = 0;
-      INT numallocr = 0;
+      UINT numfilesl = 0;
+      UINT numfilesr = 0;
+      UINT numallocl = 0;
+      UINT numallocr = 0;
       INT ret = 0;
       UINT lenl;			// Directory prefix length
       UINT lenr;
       UINT recsNeeded;
+      UINT recsGotten;
+      UINT filesSeenL;
+      UINT filesSeenR;
       PCNRITEM pcilFirst;
       PCNRITEM pcirFirst;
+      PCNRITEM pcilLast;
+      PCNRITEM pcirLast;
       PCNRITEM pcil;
       PCNRITEM pcir;
       RECORDINSERT ri;
@@ -944,6 +899,8 @@ static VOID FillCnrsThread(VOID *args)
 
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
+      WinStartTimer(hab, cmp->hwnd, ID_TIMER, 2000);
+
       hwndLeft = WinWindowFromID(cmp->hwnd, COMP_LEFTDIR);
       hwndRight = WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR);
       lenl = strlen(cmp->leftdir);
@@ -964,7 +921,8 @@ static VOID FillCnrsThread(VOID *args)
       else if (fForceUpper)
 	strupr(cmp->leftdir);
       FillDirList(cmp->leftdir, lenl, cmp->includesubdirs,
-		  &filesl, &numfilesl, &numallocl);
+		  &filesl, &cmp->cmp->totalleft, &numallocl);
+      numfilesl = cmp->cmp->totalleft;
 
       if (filesl)
 	qsort(filesl, numfilesl, sizeof(CHAR *), CompNames);
@@ -978,7 +936,8 @@ static VOID FillCnrsThread(VOID *args)
 	else if (fForceUpper)
 	  strupr(cmp->rightdir);
 	FillDirList(cmp->rightdir, lenr, cmp->includesubdirs,
-		    &filesr, &numfilesr, &numallocr);
+		    &filesr, &cmp->cmp->totalright, &numallocr);
+	numfilesr = cmp->cmp->totalright;
       }
       else {
 	// Use snapshot file
@@ -1143,6 +1102,7 @@ static VOID FillCnrsThread(VOID *args)
 
       }	// while
 
+      // Say building list - fixme to post?
       WinSendMsg(cmp->hwnd, UM_CONTAINERHWND, MPVOID, MPVOID);
 
       // Now insert records into the containers
@@ -1177,7 +1137,29 @@ static VOID FillCnrsThread(VOID *args)
 
 	pcil = pcilFirst;
 	pcir = pcirFirst;
+	pcilLast = 0;
+	pcirLast = 0;
+
+	recsGotten = 0;
+	filesSeenL = 0;
+	filesSeenR = 0;
+
 	while ((filesl && filesl[l]) || (filesr && filesr[r])) {
+
+	  // 03 Jan 08 SHL fixme to have user friendly message
+	  if (!pcil) {
+	    Runtime_Error(pszSrcFile, __LINE__, "pcil short %u/%u",
+			  recsGotten, recsNeeded);
+	    break;
+	  }
+
+	  // 03 Jan 08 SHL fixme to have user friendly message
+	  if (!pcir) {
+	    Runtime_Error(pszSrcFile, __LINE__, "pcir short %u/%u",
+			  recsGotten, recsNeeded);
+	    break;
+	  }
+	  recsGotten++;
 	  pcir->hwndCnr = hwndRight;
 	  pcir->rc.hptrIcon = (HPOINTER) 0;
 	  pcil->hwndCnr = hwndLeft;
@@ -1194,6 +1176,7 @@ static VOID FillCnrsThread(VOID *args)
 
 	  if (x <= 0) {
 	    // File appears on left side
+	    filesSeenL++;
 	    BldFullPathName(szBuf, cmp->leftdir, filesl[l]->fname);
 	    //sprintf(szBuf, "%s%s%s", cmp->leftdir,
 	    //        (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
@@ -1232,6 +1215,7 @@ static VOID FillCnrsThread(VOID *args)
 
 	  if (x >= 0) {
 	    // File appears on right side
+	    filesSeenR++;
 	    BldFullPathName(szBuf, cmp->rightdir, filesr[r]->fname);
 	    //sprintf(szBuf, "%s%s%s", cmp->rightdir,
 	    //        (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
@@ -1290,11 +1274,11 @@ static VOID FillCnrsThread(VOID *args)
 	      pcir->flags |= CNRITEM_LARGER;
 	      strcpy(pch, GetPString(IDS_SMALLERTEXT));
 	      pch += 7;
-            }
-            ret = TestCDates(&pcir->date, &pcir->time,
-                             &pcil->date, &pcil->time);
-            if (ret == 1)
-              /*((pcil->date.year > pcir->date.year) ? TRUE :
+	    }
+	    ret = TestCDates(&pcir->date, &pcir->time,
+			     &pcil->date, &pcil->time);
+	    if (ret == 1)
+	      /*((pcil->date.year > pcir->date.year) ? TRUE :
 		(pcil->date.year < pcir->date.year) ? FALSE :
 		(pcil->date.month > pcir->date.month) ? TRUE :
 		(pcil->date.month < pcir->date.month) ? FALSE :
@@ -1315,8 +1299,8 @@ static VOID FillCnrsThread(VOID *args)
 	      strcpy(pch, GetPString(IDS_NEWERTEXT));
 	      pch += 5;
 	    }
-            else if (ret == -1)
-              /*((pcil->date.year < pcir->date.year) ? TRUE :
+	    else if (ret == -1)
+	      /*((pcil->date.year < pcir->date.year) ? TRUE :
 		     (pcil->date.year > pcir->date.year) ? FALSE :
 		     (pcil->date.month < pcir->date.month) ? TRUE :
 		     (pcil->date.month > pcir->date.month) ? FALSE :
@@ -1381,30 +1365,52 @@ static VOID FillCnrsThread(VOID *args)
 	  if (!pcir->pszDispAttr)
 	    pcir->pszDispAttr = NullStr;
 
-#if 0					// 20 Aug 07 SHL fixme to be gone
-	  if (!(cntr % 500))
-	    DosSleep(1);
-	  else if (!(cntr % 50))
-	    DosSleep(0);
-	  cntr++;
-#endif
-#if 0					// 20 Aug 07 SHL
-	  if (cntr++ % 256 == 0) {
-	    ul = GetMSecTimer();
-	    if (ul - lastMSec >= 200) {
-	      lastMSec = ul;
-	      DosSleep(1);
-	    }
-	  }
-#endif
-#if 1					// 20 Aug 07 SHL
-	  SleepIfNeeded(0, 500, 1);
-#endif
+	  // Avoid hogging systems
+	  SleepIfNeeded(&itdSleep, 0);
 
+	  pcilLast = pcil;
+	  pcirLast = pcir;
 	  pcil = (PCNRITEM) pcil->rc.preccNextRecord;
 	  pcir = (PCNRITEM) pcir->rc.preccNextRecord;
 
+	  // Show running totals every 2 seconds
+	  cmp->cmp->totalleft = filesSeenL;
+	  cmp->cmp->totalright = filesSeenR;
+
 	} // while filling left or right
+
+	// If stopped early CM_ALLOCATERECORD partially failed
+	// Free up container records we did not use on other side
+	// Free up filesl/filer entries we skipped
+	if (recsGotten < recsNeeded) {
+	  if (pcil) {
+	    pcilLast->rc.preccNextRecord = NULL;
+	    FreeCnrItemList(hwndLeft, pcil);
+	  }
+	  if (filesl) {
+	    while (filesl[l]) {
+	      free(filesl[l]);
+	      l++;
+	    }
+	  }
+	  if (pcir) {
+	    pcirLast->rc.preccNextRecord = NULL;
+	    FreeCnrItemList(hwndRight, pcir);
+	  }
+	  if (filesr) {
+	    while (filesr[r]) {
+	      free(filesr[r]);
+	      r++;
+	    }
+	  }
+	  // Reduce counts to match what is in container
+	  if (numfilesl > filesSeenL)
+	    numfilesl = filesSeenL;
+	  if (numfilesr > filesSeenR)
+	    numfilesr = filesSeenR;
+	  recsNeeded = recsGotten;
+	} // if insufficient resources
+
 
 	if (filesl)
 	  free(filesl);			// Free header - have already freed elements
@@ -1412,9 +1418,11 @@ static VOID FillCnrsThread(VOID *args)
 	if (filesr)
 	  free(filesr);
 	filesr = NULL;
-	// Insert 'em
+
+	// Say inserting
 	WinSendMsg(cmp->hwnd, UM_CONTAINERDIR, MPVOID, MPVOID);
 
+	// Insert left side
 	memset(&ri, 0, sizeof(RECORDINSERT));
 	ri.cb = sizeof(RECORDINSERT);
 	ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -1429,6 +1437,7 @@ static VOID FillCnrsThread(VOID *args)
 	  numfilesl = 0;
 	}
 
+	// Insert right side
 	memset(&ri, 0, sizeof(RECORDINSERT));
 	ri.cb = sizeof(RECORDINSERT);
 	ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -1452,11 +1461,14 @@ static VOID FillCnrsThread(VOID *args)
 
       }	// if recsNeeded
 
+      WinStopTimer(hab, cmp->hwnd, ID_TIMER);
+
       Deselect(hwndLeft);
       Deselect(hwndRight);
 
       // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread deselected");
 
+      // Request window update
       if (!PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID))
 	WinSendMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
       notified = TRUE;
@@ -1469,12 +1481,12 @@ static VOID FillCnrsThread(VOID *args)
 	FreeList((CHAR **)filesr);
 
       WinDestroyMsgQueue(hmq);
-    }
+    } // if have queue
+    if (!notified)
+      PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  if (!notified)
-    PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
   free(cmp);
   DosPostEventSem(CompactSem);
 
@@ -1485,41 +1497,13 @@ static VOID FillCnrsThread(VOID *args)
 #define hwndLeft	(WinWindowFromID(hwnd,COMP_LEFTDIR))
 #define hwndRight	(WinWindowFromID(hwnd,COMP_RIGHTDIR))
 
-// 20 Aug 07 SHL fixme experimental
-
-BOOL NeedGUIUpdate(BOOL id)
-{
-  static ULONG lastMSec[10];
-  static UINT cntr;
-  static UINT modulo = 32;
-  BOOL yes = ++cntr >= modulo;
-
-  if (yes) {
-    ULONG newMSec = GetMSecTimer();
-    // 1st time will have large difference, but don't care
-    ULONG diff = newMSec - lastMSec[id];
-    cntr = 0;
-    yes = diff >= 500;
-    // Try to tune modulo counter to 10% error
-    if (yes) {
-      lastMSec[id] = newMSec;
-      if (diff >= 550 && modulo > 0)
-	modulo--;
-    }
-    else {
-      if (diff < 450)
-	modulo++;
-    }
-  }
-  return yes;
-}
-
 //=== CompareDlgProc() Compare directories dialog procedure ===
 
 MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   COMPARE *cmp;
   BOOL temp;
+  CHAR s[81];
 
   static HPOINTER hptr;
 
@@ -1709,12 +1693,34 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_CONTAINERHWND:
+    // Building list
     WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPHOLDBLDLISTTEXT));
     return 0;
 
   case UM_CONTAINERDIR:
+    // Filling container
     WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPHOLDFILLCNRTEXT));
     return 0;
+
+  case WM_TIMER:
+    // Show current totals
+    cmp = INSTDATA(hwnd);
+    if (!cmp) {
+      Runtime_Error(pszSrcFile, __LINE__, "pCompare NULL");
+      WinDismissDlg(hwnd, 0);
+    }
+    else {
+      // 05 Jan 08 SHL fixme to use timer id to optimize output
+      sprintf(s, " %d", cmp->totalleft);
+      WinSetDlgItemText(hwnd, COMP_TOTALLEFT, s);
+      sprintf(s, " %d", cmp->totalright);
+      WinSetDlgItemText(hwnd, COMP_TOTALRIGHT, s);
+      sprintf(s, " %d", cmp->selleft);
+      WinSetDlgItemText(hwnd, COMP_SELLEFT, s);
+      sprintf(s, " %d", cmp->selright);
+      WinSetDlgItemText(hwnd, COMP_SELRIGHT, s);
+    }
+    break;
 
   case UM_CONTAINER_FILLED:
     cmp = INSTDATA(hwnd);
@@ -1723,7 +1729,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
     }
     else {
-      CHAR s[81];
 
       // DbgMsg(pszSrcFile, __LINE__, "CompareDlgProc UM_CONTAINER_FILLED enter");
 
@@ -1937,8 +1942,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      else {
 
-		CHAR s[81];
-
 		cmp = INSTDATA(hwnd);
 		if (pci->rc.flRecordAttr & CRA_SELECTED) {
 		  if (SHORT1FROMMP(mp1) == COMP_LEFTDIR)
@@ -1954,20 +1957,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  else {
 		    if (cmp->selright)
 		      cmp->selright--;
-		  }
-		}
-		if (SHORT1FROMMP(mp1) == COMP_LEFTDIR) {
-		  // if (WinIsWindowEnabled(hwndLeft) || !(cmp->selleft % 50)) {
-		  if (WinIsWindowEnabled(hwndLeft) || NeedGUIUpdate(0)) {
-		    sprintf(s, " %d", cmp->selleft);
-		    WinSetDlgItemText(hwnd, COMP_SELLEFT, s);
-		  }
-		}
-		else {
-		  // if (WinIsWindowEnabled(hwndRight) || !(cmp->selright % 50)) {
-		  if (WinIsWindowEnabled(hwndRight) || NeedGUIUpdate(1)) {
-		    sprintf(s, " %d", cmp->selright);
-		    WinSetDlgItemText(hwnd, COMP_SELRIGHT, s);
 		  }
 		}
 	      }
@@ -2179,8 +2168,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fakelist[1] = ofile;
 	    fakelist[2] = NULL;
 	    ExecOnList(hwnd, compare,
-                       WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
-                       pszSrcFile, __LINE__);
+		       WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
+		       pszSrcFile, __LINE__);
 	  }
 	  else {
 	    FCOMPARE fc;

@@ -69,6 +69,11 @@
   30 Dec 07 GKY Change TestDates to TestFDates can compare by filename or FDATE/FTIME data
   30 Dec 07 GKY Add TestCDates to compare CNRITEMs by CDATE/CTIME data
   04 Jan 08 SHL Allow standalone usage
+  05 Jan 08 SHL Move comp.c definitions to comp.h
+  05 Jan 08 SHL Move dircnr.c definitions to dircnr.h
+  05 Jan 08 SHL Move makelist.c definitions to makelist.h
+  05 Jan 08 SHL Move error.c definitions to errutil.h
+  05 Jan 08 SHL Move string.c definitions to strutil.h
 
 ***********************************************************************/
 
@@ -84,6 +89,7 @@
 #define INCL_WINSTDCNR
 #define INCL_WINPROGRAMLIST
 #define INCL_WINHELP
+#define INCL_LONGLONG			// 05 Jan 08 SHL fixme to be gone eventually
 #include <os2.h>
 #else
 #if !defined(INCL_WINSTDDRAG)
@@ -98,6 +104,9 @@
 #if !defined(INCL_WINHELP)
 #error INCL_WINHELP required
 #endif
+#if !defined(INCL_LONGLONG)
+#error INCL_LONGLONG required
+#endif
 #endif // OS2_INCLUDED
 
 #if defined(__IBMC__)
@@ -108,6 +117,9 @@
 #error Long long support not enabled
 #endif
 #endif
+
+#include "dircnrs.h"	// 05 Jan 08 SHL fixme to be gone when DIRCNRDATA refs gone
+#include "makelist.h"	// 05 Jan 08 SHL fixme to be gone when LISTINFO refs gone
 
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL1)
@@ -325,25 +337,6 @@ LINKCMDS;
 
 typedef struct
 {
-  CHAR szMask[CCHMAXPATH];
-  CHAR szMaskCopy[CCHMAXPATH];
-  CHAR *pszMasks[26];
-  ULONG attrFile;
-  ULONG antiattr;
-  BOOL fNoAttribs;
-  BOOL fShowDirs;
-  BOOL fNoDirs;
-  BOOL fIsTree;
-  BOOL fIsSeeAll;
-  BOOL fFilesIncluded;
-  BOOL fText;
-  CHAR szText[256];
-  CHAR prompt[80];
-}
-MASK;
-
-typedef struct
-{
   CHAR *title;			/* title of dialog */
   CHAR *prompt;			/* prompt to user */
   CHAR *ret;			/* buffer out, default in */
@@ -376,23 +369,6 @@ typedef struct HOLDFEA
   struct HOLDFEA *next;
 }
 HOLDFEA;
-
-typedef struct
-{
-  HWND hwnd;
-  HWND hwndS;
-  USHORT type;
-  USHORT id;
-  INT flags;
-  struct __arc_type__ *info;
-  CHAR **list;
-  ULONG *ulitemID;
-  ULONGLONG *cbFile;
-  CHAR targetpath[CCHMAXPATH + 6];
-  CHAR arcname[CCHMAXPATH];
-  CHAR runfile[CCHMAXPATH];
-}
-LISTINFO;
 
 typedef struct
 {
@@ -447,31 +423,6 @@ EXECARGS;
 #define ARCFLAGS_REALDIR    0x00000001
 #define ARCFLAGS_PSEUDODIR  0x00000002
 
-#define CBLIST_TO_EASIZE(cb) ((cb) > 4 ? (cb) / 2 : 0)	// FILEFINDBUF4L.cbList to logical EA size
-
-typedef struct _CNRITEM
-{				/* CONTAINER RECORD STRUCTURE */
-  MINIRECORDCORE rc;		/* Base information */
-  HWND hwndCnr;			/* The container holding this record */
-  PSZ pszFileName;		// Points to buffer holding full pathname or NullStr
-  PSZ pszDisplayName;		// Points to displayable part of path name  - used by CFA_STRING
-  CHAR *pszSubject;		// Points subject buffer or Nullstr - used by fm/2 and by CFA_STRING
-  CHAR *pszDispAttr;		// Points to szDispAttr - required by CFA_STRING
-  CDATE date;			/* Last write date of file */
-  CTIME time;			/* Last write time of file */
-  CDATE ladate;			/* Last access date of file */
-  CTIME latime;			/* Last access time of file */
-  CDATE crdate;			/* Creation date of file */
-  CTIME crtime;			/* Creation time of file */
-  CHAR *pszLongName;		// Points to long name buffer - used by code and by CFA_STRING
-  CHAR *pszFmtFileSize;         // Comma formatted file size for large file support
-  ULONGLONG cbFile;		/* File size */
-  ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
-  ULONG attrFile;		/* Attributes of this file */
-  ULONG flags;
-}
-CNRITEM, *PCNRITEM;
-
 typedef struct _ARCITEM
 {				// ARCHIVE CONTAINER RECORD STRUCTURE
   MINIRECORDCORE rc;		// Base information
@@ -492,56 +443,6 @@ ARCITEM, *PARCITEM;
 
 typedef struct
 {
-  ULONG attrFile;
-  ULONGLONG cbFile;
-  ULONGLONG easize;
-  FDATE date;
-  FTIME time;
-  FDATE ladate;
-  FTIME latime;
-  FDATE crdate;
-  FTIME crtime;
-  CHAR fname[1];
-}
-FILELIST;
-
-typedef struct __arc_type__
-{
-  CHAR *id;			// User id
-  CHAR *ext;			// Extension (without leading dot)
-  LONG file_offset;		// Offset to signature (0..n)
-  CHAR *list;			// List command
-  CHAR *extract;		// Extract command
-  CHAR *exwdirs;		// Extract with directories command
-  CHAR *test;			// Test command
-  CHAR *create;			// Create without directories
-  CHAR *move;			// Move into archive without directories
-  CHAR *createrecurse;		// Create with recurse and directories
-  CHAR *createwdirs;		// Create with directories
-  CHAR *movewdirs;		// Move into archive with directories
-  CHAR *delete;			// Delete from archive
-  CHAR *signature;		// Archiver signature
-  CHAR *startlist;		// Listing start marker (blank means no start marker)
-  CHAR *endlist;		// Listing end marker (blank means next blank line or EOF)
-  INT siglen;			// Signature length in bytes
-  INT osizepos;			// Original file size position (0..n) or -1
-  INT nsizepos;			// Compressed file size position or -1
-  INT fdpos;			// File date position or -1
-  INT fdflds;			// File date element count (typically 3) or -1
-  INT fnpos;			// File name position or -1 if last
-  INT datetype;			// Date field format
-  UINT comment_line_num;	// Comment start in old sig file (1..n), 0 if none
-  UINT defn_line_num;		// Definition start in old sig file (1..n), 0 if none
-  BOOL nameislast;		// Name is last item on line
-  BOOL nameisnext;		// File name is on next line
-  BOOL nameisfirst;		// File name is first item on line
-  struct __arc_type__ *next;
-  struct __arc_type__ *prev;
-}
-ARC_TYPE;
-
-typedef struct
-{
   USHORT size;
   ARC_TYPE *info;
   CHAR *arcname;
@@ -552,165 +453,16 @@ typedef struct
 }
 EXTRDATA;
 
-typedef struct
-{
-  ARC_TYPE *info;
-  CHAR listname[CCHMAXPATH];
-  CHAR arcname[CCHMAXPATH];
-  CHAR *errmsg;
-}
-ARCDUMP;
-
-typedef struct DIRCNRDATA
-{
-  USHORT size;
-  USHORT id;
-  INT type;
-  ULONG flWindowAttr;
-  HWND hwndParent;
-  HWND hwndCnr;
-  HWND hwndObject;
-  HWND hwndFrame;
-  HWND hwndClient;
-  HWND hwndLastMenu;
-  HWND hwndExtract;
-  HWND hwndLastDirCnr;
-  HWND hwndRestore;
-  CHAR directory[CCHMAXPATH];
-  CHAR previous[CCHMAXPATH];
-  ULONG fg, bg, hifg, hibg, border;
-  PFNWP oldproc;
-  CHAR font[CCHMAXPATH];
-  MASK mask;
-  ULONGLONG ullTotalBytes;
-  ULONGLONG selectedbytes;
-  ULONG selectedfiles;
-  ULONG totalfiles;
-  BOOL cnremphasized;
-  BOOL dontclose;
-  ARC_TYPE *info;
-  CHAR arcname[CCHMAXPATH];
-  CHAR command[257];
-  CHAR stopflag;
-  CHAR workdir[CCHMAXPATH];
-  CHAR lastfilename[CCHMAXPATH];
-  BOOL namecanchange;
-  BOOL fmoving;
-  BOOL amextracted;
-  INT lasthelp;
-  INT sortFlags;
-  BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
-    detailslongname, detailsea, detailssize, detailssubject,
-    detailslwdate, detailslwtime, detailsattr, detailsicon;
-  CHAR **lastselection;
-  USHORT shiftstate;
-  USHORT suspendview;
-  CHAR szCommonName[CCHMAXPATH];
-  ULONG lasttime;
-  BOOL arcfilled;
-  HMTX filling;
-  BOOL firsttree;
-  ULONG lastattr;
-  ULONG ulItemsToUnHilite;
-}
-DIRCNRDATA;
-
-typedef struct
-{
-  USHORT size;
-  HWND hwndCnr;
-  CHAR directory[CCHMAXPATH];
-  BOOL collapsefirst;
-  DIRCNRDATA *dcd;
-}
-SHOWREC;
-
-typedef struct
-{
-  USHORT size;
-  USHORT dummy;
-  CHAR file1[CCHMAXPATH];
-  CHAR file2[CCHMAXPATH];
-  HWND hwndParent;
-  HWND hwndList;
-  HWND hwndReport;
-  HWND hwndHelp;
-}
-FCOMPARE;
-
-typedef struct COMPARE
-{
-  USHORT size;
-  HWND hwnd;
-  HWND hwndParent;
-  CHAR leftdir[CCHMAXPATH + 2];
-  CHAR rightdir[CCHMAXPATH + 2];
-  BOOL forcescroll;
-  BOOL filling;
-  BOOL includesubdirs;
-  INT action;
-  INT selleft;
-  INT selright;
-  INT totalleft;
-  INT totalright;
-  CHAR rightlist[CCHMAXPATH];	// Snapshot file name
-  BOOL reset;
-  HWND hwndCalling;
-  struct COMPARE *cmp;		// callers compare defintion
-  struct DIRCNRDATA dcd;
-}
-COMPARE;
-
 /* init.c */
 VOID FindSwapperDat(VOID);
 BOOL InitFM3DLL(HAB hab, int argc, char **argv);
 HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
-
-/* filldir.c */
-VOID EmptyCnr(HWND hwnd);
-const PSZ FileAttrToString(ULONG fileAttr);
-VOID FillDirCnr(HWND hwndCnr, CHAR *pszDirectory, DIRCNRDATA *pdcd,
-		PULONGLONG pullBytes);
-VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent);
-VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
-		      const CHAR *szDirBase, const BOOL filestoo,
-		      const BOOL recurse, const BOOL partial,
-		      CHAR *stopflag, DIRCNRDATA *pdcd,
-		      PULONG pullTotalFiles, PULONGLONG pullTotalBytes);
-ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
-			      const PSZ pszDirectory,
-			      const PFILEFINDBUF4L pffb, const BOOL partial,
-			      DIRCNRDATA *pdcd);
-ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
-			      const PSZ pszFileName, const PFILESTATUS4L pfsa4,
-			      const BOOL partial, DIRCNRDATA *pdcd);
-VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
-VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
-VOID FreeCnrItemData(PCNRITEM pci);
-INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
 
 /* flesh.c */
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent);
 BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);
 BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent);
 BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
-
-/* error.c */
-VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
-INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
-	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
-INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszSrcFile,
-	       UINT uSrcLineNo, UINT idMsg);
-ULONG GetMSecTimer(void);
-VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
-VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg);
-APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...);
-VOID Win_Error(HWND hwndErr, HWND hwndOwner,
-	       PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
-VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszSrcFile,
-		UINT uSrcLineNo, UINT idMsg);
-VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
-			PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 
 /* valid.c */
 INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
@@ -834,16 +586,6 @@ VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
 		 BOOL maketop);
 MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
-/* dircnrs.c */
-MRESULT EXPENTRY DirClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				  MPARAM mp2);
-HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
-		 ULONG flags);
-MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY DirFolderProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY DirMaxProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
 /* presparm.c */
 VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof);
 
@@ -924,12 +666,6 @@ CHAR *strnstr(register CHAR * t, CHAR * s, LONG len);
 CHAR *findstring(CHAR * findthis, ULONG lenthis, CHAR * findin,
 		 ULONG lenin, BOOL insensitive);
 
-/* avl.c */
-ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig);
-ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig);
-INT load_archivers(VOID);
-BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime);
-
 /* avv.c */
 VOID rewrite_archiverbb2(CHAR * archiverbb2);
 MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
@@ -971,18 +707,6 @@ VOID save_cmdlines(BOOL big);
 MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				 MPARAM mp2);
-
-/* makelist.c */
-INT AddToList(CHAR * string, CHAR *** list, INT * numfiles, INT * numalloced);
-INT AddToFileList(CHAR * string, FILEFINDBUF4L * ffb4, FILELIST *** list,
-		  INT * numfiles, INT * numalloced);
-CHAR **BuildList(HWND hwndCnr);
-VOID FreeListInfo(LISTINFO * li);
-VOID FreeList(CHAR ** list);
-VOID SortList(LISTINFO * li);
-CHAR **BuildArcList(HWND hwndCnr);
-CHAR **RemoveFromList(CHAR ** list, CHAR * item);
-CHAR **CombineLists(CHAR ** prime, CHAR ** add);
 
 /* chklist.c */
 VOID PosOverOkay(HWND hwnd);
@@ -1103,17 +827,6 @@ MRESULT EXPENTRY WalkTwoCmpDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
 
-/* arccnrs.c */
-MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				  MPARAM mp2);
-HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
-		 ARC_TYPE * sinfo);
-MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY ArcFolderProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
-PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
-
 /* assoc.c */
 INT ExecAssociation(HWND hwnd, CHAR * datafile);
 VOID EditAssociations(HWND hwnd);
@@ -1164,11 +877,6 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 /* rename.c */
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* comp.c */
-PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
-MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* findrec.c */
 PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
@@ -1354,29 +1062,24 @@ HWND OpenDirCnr(HWND hwnd, HWND hwndParent, HWND hwndRestore,
 VOID IncrThreadUsage(VOID);
 VOID DecrThreadUsage(VOID);
 
-/* string.c */
-BOOL LoadStrings(char *filename);
-char *GetPString(ULONG id);
-BOOL StringsLoaded(void);
-
 /* wrappers.c */
 APIRET xDosFindFirst(PSZ pszFileSpec,
-	             PHDIR phdir,
-	             ULONG  flAttribute,
-	             PVOID  pfindbuf,
-	             ULONG  cbBuf,
-	             PULONG pcFileNames,
-	             ULONG  ulInfoLevel);
+		     PHDIR phdir,
+		     ULONG  flAttribute,
+		     PVOID  pfindbuf,
+		     ULONG  cbBuf,
+		     PULONG pcFileNames,
+		     ULONG  ulInfoLevel);
 APIRET xDosFindNext(HDIR   hDir,
-	            PVOID  pfindbuf,
-	            ULONG  cbfindbuf,
-	            PULONG pcFilenames,
+		    PVOID  pfindbuf,
+		    ULONG  cbfindbuf,
+		    PULONG pcFilenames,
 		    ULONG  ulInfoLevel);	// 06 Oct 07 SHL Added
 APIRET xDosSetPathInfo(PSZ   pszPathName,
-	               ULONG ulInfoLevel,
-	               PVOID pInfoBuf,
-	               ULONG cbInfoBuf,
-	               ULONG flOptions);
+		       ULONG ulInfoLevel,
+		       PVOID pInfoBuf,
+		       ULONG cbInfoBuf,
+		       ULONG flOptions);
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 	   UINT uiLineNumber);
 PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
@@ -1464,7 +1167,8 @@ DATADEF HWND hwndHelp, LastDir, AboutBox, DirMenu, FileMenu, TreeMenu,
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL2)
 #endif
-DATADEF CHAR *DEBUG_STRING, *FM3Str, *FM2Str, *NullStr, *Default, *Settings,
+
+DATADEF CHAR *FM3Str, *FM2Str, *NullStr, *Default, *Settings,
   *DRM_OS2FILE, *DRM_FM2ARCMEMBER, *DRF_FM2ARCHIVE,
   *DRMDRFLIST, *DRMDRFOS2FILE, *DRMDRFFM2ARC,
   *DRM_FM2INIRECORD, *DRF_FM2INI, *SUBJECT, *LONGNAME,

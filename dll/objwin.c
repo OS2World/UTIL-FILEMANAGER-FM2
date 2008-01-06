@@ -17,19 +17,13 @@
 
 #define INCL_DOS
 #define INCL_WIN
-#define INCL_GPI
-#include <os2.h>
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <stddef.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "arccnrs.h"			// ArcObjWndProc
+#include "errutil.h"			// Win_Error
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

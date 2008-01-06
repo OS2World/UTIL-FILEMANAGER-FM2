@@ -14,21 +14,17 @@
 
 ***********************************************************************/
 
+#include <ctype.h>
+
 #define INCL_DOS
 #define INCL_WIN
-#define INCL_LONGLONG
-#include <os2.h>
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "makelist.h"			// LISTINFO
+#include "errutil.h"			// Runtime_Error
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -292,7 +288,8 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	{
 	  CHAR szBuffer[CCHMAXPATH + 1];
-	  INT numfiles = 0, numalloc = 0, error;
+	  UINT numfiles = 0, numalloc = 0;
+	  INT error;
 
 	  if (li->list)
 	    FreeList(li->list);

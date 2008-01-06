@@ -6,7 +6,7 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
@@ -19,23 +19,22 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
 
-
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_DOSERRORS
-#define INCL_WIN
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_DOSERRORS
+#define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3str.h"
+#include "filldir.h"			// FileAttrToString...
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

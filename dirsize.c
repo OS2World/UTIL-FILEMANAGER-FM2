@@ -8,24 +8,20 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004 Steven H.Levine
 
-  Revisions	11 Jun 02 SHL - Baseline
-		06 Jan 04 SHL - Total drives >4GB better
+  11 Jun 02 SHL Baseline
+  06 Jan 04 SHL Total drives >4GB better
 
 ***********************************************************************/
+
+#include <string.h>
+#include <ctype.h>
 
 #define INCL_DOS
 #define INCL_WIN
 
-#include <os2.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "dll\fm3dll.h"
 #include "dll\fm3dlg.h"
 #include "dirsize.h"
+#include "dll\fm3dll.h"
 
 MRESULT EXPENTRY DirMainProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -100,9 +96,9 @@ MRESULT EXPENTRY DirMainProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Zipstream drive");
 	else if (type & DRIVE_REMOTE)
 	  WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Remote drive");
-        else if (type & DRIVE_VIRTUAL)
-            WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Virtual drive");
-        else if (type & DRIVE_RAMDISK)
+	else if (type & DRIVE_VIRTUAL)
+	    WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Virtual drive");
+	else if (type & DRIVE_RAMDISK)
 	  WinSetDlgItemText(hwnd, DIRSIZE_LOCAL, "Ramdisk");
 	else {
 	  sprintf(s, "Local drive%s", (removable) ? " (removable)" : "");
@@ -204,7 +200,7 @@ MRESULT EXPENTRY DirMainProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
-#ifdef NEVER
+#ifdef NEVER				// 05 Jan 08 SHL fixme to be gone?
 
 VOID APIENTRY deinit(ULONG why)
 {

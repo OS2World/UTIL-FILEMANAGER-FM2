@@ -3,6 +3,8 @@
 
   $Id$
 
+  Filter mask select dialog
+
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2004, 2007 Steven H.Levine
 
@@ -14,18 +16,19 @@
 
 ***********************************************************************/
 
-#define INCL_WIN
-#define INCL_DOS
-#include <os2.h>
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
 
-#include "fm3dll.h"
+#define INCL_WIN
+#define INCL_DOS
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(FILTER_DATA)
 

@@ -14,18 +14,14 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+
 #include "fm3dlg.h"
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 

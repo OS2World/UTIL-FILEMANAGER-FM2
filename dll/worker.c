@@ -6,7 +6,7 @@
   Worker thread
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   16 Oct 02 SHL Comments
   18 Oct 02 SHL MassAction:Archive - force extension so file found
@@ -26,31 +26,31 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#define INCL_DOSERRORS
-#define INCL_WPCLASS			// WinQueryObjectPath
-#define INCL_LONGLONG
-#include <os2.h>
-
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stddef.h>
 #include <share.h>
-#include <time.h>
 #include <process.h>			// _beginthread
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_DOSERRORS
+#define INCL_WINPROGRAMLIST
+#define INCL_WINHELP
+#define INCL_LONGLONG
+#define INCL_WINPOINTERS
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "comp.h"			// FCOMPARE
+#include "pathutil.h"			// BldQuotedFileName
+#include "makelist.h"			// AddToList
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
 
 #ifdef UNDO
 
@@ -115,7 +115,8 @@ VOID Action(VOID * args)
   HAB hab2;
   HMQ hmq2;
   CHAR **files = NULL;
-  INT numfiles = 0, numalloc = 0, plen = 0;
+  UINT numfiles = 0, numalloc = 0;
+  INT plen = 0;
   CHAR *p, *pp;
   CHAR szQuotedDirName[CCHMAXPATH];
   CHAR szQuotedFileName[CCHMAXPATH];
@@ -461,7 +462,7 @@ VOID Action(VOID * args)
 				   FileInfoProc,
 				   FM3ModHandle, FLE_FRAME, (PVOID) list)) {
 		      goto Abort;
-                    }
+		    }
 		  }
 		  else {
 		    if (!WinDlgBox(HWND_DESKTOP,
@@ -856,8 +857,8 @@ VOID Action(VOID * args)
 			       MPFROMP(wk->li->list[x]));
 		  else {
 		    runemf2(SEPARATE,
-                            HWND_DESKTOP, pszSrcFile, __LINE__,
-                            NULL, NULL,
+			    HWND_DESKTOP, pszSrcFile, __LINE__,
+			    NULL, NULL,
 			    "%s %s %s",
 			    dircompare,
 			    BldQuotedFileName(szQuotedDirName, wk->li->targetpath),
@@ -872,8 +873,8 @@ VOID Action(VOID * args)
 		  fakelist[2] = NULL;
 		  ExecOnList(wk->hwndFrame,
 			     compare,
-                             WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
-                             pszSrcFile, __LINE__);
+			     WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
+			     pszSrcFile, __LINE__);
 		}
 		else {
 		  FCOMPARE fc;
@@ -971,7 +972,7 @@ VOID MassAction(VOID * args)
   HMQ hmq2;
   CHAR **files = NULL;
   register CHAR *p, *pp;
-  INT numfiles = 0, numalloc = 0;
+  UINT numfiles = 0, numalloc = 0;
 
   if (wk) {
     if (wk->li && wk->li->list && wk->li->list[0]) {
@@ -1018,22 +1019,22 @@ VOID MassAction(VOID * args)
 	    ExecOnList(wk->hwndFrame,
 		       "%a",
 		       WINDOWED | SEPARATE | PROMPT,
-                       NULL, wk->li->list, GetPString(IDS_DOITYOURSELFTEXT),
-                       pszSrcFile, __LINE__);
+		       NULL, wk->li->list, GetPString(IDS_DOITYOURSELFTEXT),
+		       pszSrcFile, __LINE__);
 	    break;
 
 	  case IDM_MCIPLAY:
 	    {
 	      register INT x;
-              register ULONG total;
-              CHAR fbuf[CCHMAXPATH];
+	      register ULONG total;
+	      CHAR fbuf[CCHMAXPATH];
 
-              if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
-	                        SEARCH_CUR_DIRECTORY,
-                                "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
-                total += strlen("..\\FM2UTILS\\FM2PLAY.EXE ");
-              else
-                total = strlen(fbuf);
+	      if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+				SEARCH_CUR_DIRECTORY,
+				"PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
+		total += strlen("..\\FM2UTILS\\FM2PLAY.EXE ");
+	      else
+		total = strlen(fbuf);
 	      for (x = 0; wk->li->list[x]; x++)
 		total += (strlen(wk->li->list[x]) + 1 +
 			  (needs_quoting(wk->li->list[x]) * 2));
@@ -1047,8 +1048,8 @@ VOID MassAction(VOID * args)
 		  for (x = 0; wk->li->list[x]; x++)
 		    fprintf(fp, "%s\n", wk->li->list[x]);
 		  fprintf(fp, ";end\n");
-                  fclose(fp);
-                  RunFM2Util("FM2PLAY.EXE", "/#$FM2PLAY.$$$");
+		  fclose(fp);
+		  RunFM2Util("FM2PLAY.EXE", "/#$FM2PLAY.$$$");
 		  break;
 		}
 	      }
@@ -1060,8 +1061,8 @@ VOID MassAction(VOID * args)
 		(*wk->li->arcname && wk->li->info &&
 		 wk->li->info->extract && *wk->li->targetpath)) {
 
-              CHAR szBuffer[1025];
-              CHAR fbuf[CCHMAXPATH];
+	      CHAR szBuffer[1025];
+	      CHAR fbuf[CCHMAXPATH];
 	      register INT x;
 
 	      if (wk->li->type == IDM_FAKEEXTRACT ||
@@ -1073,9 +1074,9 @@ VOID MassAction(VOID * args)
 		BldQuotedFileName(szBuffer + strlen(szBuffer), wk->li->arcname);
 	      }
 	      else {
-                if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
-		                  SEARCH_CUR_DIRECTORY,
-                                  "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
+		if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+				  SEARCH_CUR_DIRECTORY,
+				  "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
 		  strcpy(szBuffer, "UTILS\\FM2PLAY.EXE");
 		else
 		  strcpy(szBuffer, "FM2PLAY.EXE");
@@ -1267,8 +1268,8 @@ VOID MassAction(VOID * args)
 	    if (*binview) {
 	      ExecOnList((HWND) 0,
 			 binview,
-                         WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
-                         pszSrcFile, __LINE__);
+			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+			 pszSrcFile, __LINE__);
 	      break;
 	    }
 	    /* else intentional fallthru */
@@ -1278,8 +1279,8 @@ VOID MassAction(VOID * args)
 	      ExecOnList((HWND) 0, viewer,
 			 WINDOWED | SEPARATE |
 			 ((fViewChild) ? CHILD : 0),
-                         NULL, wk->li->list, NULL,
-                         pszSrcFile, __LINE__);
+			 NULL, wk->li->list, NULL,
+			 pszSrcFile, __LINE__);
 	    else {
 
 	      CHAR *temp;
@@ -1313,8 +1314,8 @@ VOID MassAction(VOID * args)
 	    if (*bined) {
 	      ExecOnList((HWND) 0,
 			 bined,
-                         WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
-                         pszSrcFile, __LINE__);
+			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+			 pszSrcFile, __LINE__);
 	      break;
 	    }
 	    /* else intentional fallthru */
@@ -1323,8 +1324,8 @@ VOID MassAction(VOID * args)
 	    if (*editor)
 	      ExecOnList((HWND) 0,
 			 editor,
-                         WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
-                         pszSrcFile, __LINE__);
+			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+			 pszSrcFile, __LINE__);
 	    else {
 
 	      CHAR *temp;

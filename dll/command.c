@@ -6,7 +6,7 @@
   Custom commands
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H. Levine
+  Copyright (c) 2004, 2008 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Drop unused code
@@ -23,20 +23,22 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
-#define INCL_WIN
-#include <os2.h>
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <share.h>
 
-#include "fm3dll.h"
+#define INCL_DOS
+#define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
+#include "arccnrs.h"			// BldQuotedFileName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
+
 
 typedef struct
 {

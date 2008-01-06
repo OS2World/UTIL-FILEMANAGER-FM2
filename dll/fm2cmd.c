@@ -12,18 +12,17 @@
 
 ***********************************************************************/
 
+#include <string.h>
+
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
 
-#include <os2.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <share.h>
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma data_seg(DATA2)
 

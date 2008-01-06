@@ -15,19 +15,16 @@
 
 ***********************************************************************/
 
-#define INCL_DOS
+#include <string.h>
+
 #define INCL_WIN
 #define INCL_LONGLONG
 
-#include <os2.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {

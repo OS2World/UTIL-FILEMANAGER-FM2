@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H.Levine
+  Copyright (c) 2003, 2008 Steven H.Levine
 
   Default file viewer
 
@@ -19,20 +19,21 @@
 
 ***********************************************************************/
 
+#include <string.h>
+#include <ctype.h>
+
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
 #define INCL_MMIOOS2
+#define INCL_LONGLONG			// dircnrs.h
 #include <os2.h>
 #include <os2me.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "fm3dll.h"
 #include "fm3dlg.h"
+#include "arccnrs.h"			// StartArcCnr
+#include "errutil.h"			// Dos_Error...
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 

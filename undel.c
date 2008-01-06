@@ -13,18 +13,12 @@
 
 ***********************************************************************/
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #define INCL_DOS
-#define INCL_WIN
-#include <os2.h>
 
-#include "dll\fm3dll.h"
 #include "dll\fm3dlg.h"
+#include "dll\fm3dll.h"
 
 int main(int argc, char *argv[])
 {

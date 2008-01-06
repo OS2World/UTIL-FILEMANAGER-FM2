@@ -1,22 +1,34 @@
-#define INCL_DOS
-#define INCL_DOSERRORS
-#define INCL_WIN
 
-#include <os2.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+/***********************************************************************
+
+  $Id$
+
+  Make directory dialog
+
+  Copyright (c) 1993-97 M. Kimes
+  Copyright (c) 2004, 2007 Steven H.Levine
+
+  01 Aug 04 SHL Baseline
+
+***********************************************************************/
+
 #include <string.h>
 #include <ctype.h>
-#include "fm3dll.h"
+
+#define INCL_DOSERRORS
+#define INCL_WIN
+#define INCL_LONGLONG			// dircnrs.h
+
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "fm3dll.h"
 
 #pragma alloc_text(MKDIR,MassMkdir,SetDir,PMMkDir,SetTargetDir)
 
 APIRET MassMkdir(HWND hwndClient, CHAR * dir)
 {
-
   APIRET last, was = 0;
   CHAR *p;
   CHAR s[CCHMAXPATH];
