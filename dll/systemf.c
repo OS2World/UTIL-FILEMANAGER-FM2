@@ -1348,19 +1348,8 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
     if (offset){
       tempcom[offset + 4 - pszPgm] = '\0';
       strcpy(temparg, &pszPgm[offset + 4 - pszPgm]);
-      /*if ((offsetexe  && !offsetcom && !offsetcmd && !offsetbtm && !offsetbat) ||
-          (offsetcom  && !offsetexe && !offsetcmd && !offsetbtm && !offsetbat) ||
-          (offsetcmd  && !offsetexe && !offsetcom && !offsetbtm && !offsetbat) ||
-          (offsetbtm  && !offsetexe && !offsetcom && !offsetcmd && !offsetbat) ||
-          (offsetbat  && !offsetexe && !offsetcom && !offsetcmd && !offsetbtm))*/
-      remove_first_occurence_of_character("\"", tempcom);
-      if (strchr(tempcom, '\"') != strrchr(tempcom, '\"'))
-        saymsg(MB_OK, HWND_DESKTOP,
-               NullStr,
-               GetPString(IDS_QUOTESINARGSTEXT),
-               pszPgm);
-      else
-        remove_first_occurence_of_character("\"", tempcom);
+      while (strchr(tempcom, '\"'))
+           remove_first_occurence_of_character("\"", tempcom);
       if ((temparg[0] == '\"' && temparg[1] == ' ') ||
            !strstr(pszPgm, "\\:")||
            strchr(temparg, '\"') == strrchr(temparg, '\"'))
@@ -1370,15 +1359,30 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
                NullStr,
                GetPString(IDS_QUOTESINARGSTEXT),
                pszPgm);
-      if (!strstr(strlwr(tempcom), ".exe")) {
+      if (!offsetexe) {
         ret = DosFindFirst(tempcom, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
                            ulResultBufLen, &ulFindCount, FIL_STANDARD);
-        BldQuotedFileName(szTempPgm, tempcom);
+        if (ret){
+          pszChar = tempcom;
+          while (pszChar){
+            if (*pszChar == ' '){
+              *pszChar = '\0';
+              strcat(tempcom, ".exe");
+              ret = DosQueryAppType(tempcom, &ulAppType);
+              //printf("%d %s\n", ret, tempcom); fflush(stdout);
+              if (!ret){
+                strcpy(temparg, pszPgm + strlen(tempcom) - 3);
+                break;
+              }
+            }
+            strcpy(tempcom, pszPgm);
+            pszChar++;
+          }
+        }
       }
-      else{
-        BldQuotedFileName(szTempPgm, tempcom);
+      else
         ret = DosQueryAppType(tempcom, &ulAppType);
-      }
+      BldQuotedFileName(szTempPgm, tempcom);
       //printf("%d A", ret); fflush(stdout);
       if (ret) {
         ret = saymsg(MB_YESNO,
@@ -1387,10 +1391,7 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
                      GetPString(IDS_PROGRAMNOTFOUNDTEXT),
                      pszPgm);
         if (ret == MBID_YES){
-          if (temparg[0] != ' ')
-            strcat(szTempPgm, " ");
-          strcat(szTempPgm, temparg);
-          pszQuotedCompletePgm = szTempPgm;
+          pszQuotedCompletePgm = pszPgm;
         }
         else{
           fCancelAction = TRUE;
@@ -1490,31 +1491,30 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
                    GetPString(IDS_PROGRAMNOTFOUNDTEXT),
                    pszPgm);
       if (ret == MBID_YES){
-        if (temparg[0] != ' ')
-          strcat(szTempPgm, " ");
-        strcat(szTempPgm, temparg);
-        pszQuotedCompletePgm = szTempPgm;
+        pszQuotedCompletePgm = pszPgm;
       }
       else{
         fCancelAction = TRUE;
         pszQuotedCompletePgm = pszPgm;
       }
     }
-    ret = saymsg(MB_YESNO,
+    ret = saymsg(MB_YESNOCANCEL,
                    HWND_DESKTOP,
                    NullStr,
                    GetPString(IDS_PROGRAMNOTEXE3TEXT),
-                   pszPgm);
+                   pszPgm, szTempPgm);
       if (ret == MBID_YES){
         if (temparg[0] != ' ')
           strcat(szTempPgm, " ");
         strcat(szTempPgm, temparg);
         pszQuotedCompletePgm = szTempPgm;
       }
-      else{
+      if (ret == MBID_CANCEL){
         fCancelAction = TRUE;
         pszQuotedCompletePgm = pszPgm;
       }
+      else
+        pszQuotedCompletePgm = pszPgm;
     }
     return pszQuotedCompletePgm;
   }
