@@ -1699,10 +1699,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      for (x = 0; li->list[x]; x++) {
 		BldFullPathName(fullname, li->targetpath, li->list[x]);
-		// sprintf(fullname, "%s%s%s",
-		//	li->targetpath,
-		//	(li->targetpath[strlen(li->targetpath) - 1] == '\\') ?
-		//	NullStr : "\\", li->list[x]);
 		if (IsFile(fullname) != -1) {
 		  AddToList(li->list[x], &exfiles, &numfiles, &numalloc);
 		  li->list = RemoveFromList(li->list, li->list[x]);
@@ -1860,9 +1856,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  }
 		}
 		BldFullPathName(cl, li->targetpath, li->list[x]);
-		// sprintf(cl, "%s%s%s", li->targetpath,
-		//	(li->targetpath[strlen(li->targetpath) - 1] == '\\') ?
-		//	NullStr : "\\", li->list[x]);
 		temp = li->list[x];
 		li->list[x] = xstrdup(cl, pszSrcFile, __LINE__);
 		if (!li->list[x])
@@ -2683,11 +2676,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_NOTEBOOK:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
-	  PostMsg(dcd->hwndParent, msg, mp1, mp2);
-	else
+          PostMsg(dcd->hwndParent, msg, mp1, mp2);
+        else
 	  WinDlgBox(HWND_DESKTOP,
 		    hwnd,
-		    CfgDlgProc, FM3ModHandle, CFG_FRAME, (PVOID) "Archive");
+		    CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMP("Archive"));
 	break;
 
       case IDM_RESCAN:
@@ -2955,9 +2948,6 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	      for (x = 0; li->list && li->list[x]; x++) {
 		BldFullPathName(s, dcd->workdir, li->list[x]);
-		// sprintf(s, "%s%s%s", dcd->workdir,
-		//	(dcd->workdir[strlen(dcd->workdir) - 1] == '\\') ?
-		//	NullStr : "\\", li->list[x]);
 		if (IsFile(s) != 1) {
 		  free(li->list[x]);
 		  li->list[x] = NULL;

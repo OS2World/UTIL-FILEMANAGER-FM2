@@ -2372,11 +2372,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_NOTEBOOK:
-	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
-	  PostMsg(dcd->hwndParent, msg, mp1, mp2);
-	else
+	//if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
+	//  PostMsg(dcd->hwndParent, msg, mp1, mp2);
+	//else
 	  WinDlgBox(HWND_DESKTOP, hwnd, CfgDlgProc, FM3ModHandle,
-		    CFG_FRAME, (PVOID) "Tree");
+                    CFG_FRAME, MPFROMP("Tree"));
 	break;
 
       case IDM_WALKDIR:

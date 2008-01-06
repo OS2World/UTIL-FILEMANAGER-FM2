@@ -80,4 +80,13 @@ VOID remove_first_occurence_of_character(char *pszRemoveChar, char *pszSrc)
     memmove(pszStrLocation, pszStrLocation + 1, strlen(pszStrLocation) + 1);
 }
 
+VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc)
+{
+  PSZ pszStrLocation;
+
+  pszStrLocation = strrchr(pszSrc, *pszRemoveChar);
+  if (pszStrLocation)
+    memmove(pszStrLocation, pszStrLocation + 1, strlen(pszStrLocation) + 1);
+}
+
 #pragma alloc_text(MISC8,chop_at_crnl,convert_nl_to_nul,strip_trail_char,strip_lead_char)

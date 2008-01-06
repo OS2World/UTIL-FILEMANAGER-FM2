@@ -294,11 +294,11 @@ Undelete:
 Select files to undelete, then click the Okay button.  Click Cancel to exit without doing anything.  Change the mask in the entry field if desired, or select another drive from the dropdown listbox.\r\rNote this requires UNDELETE.COM to be on your PATH (it is in the default installation) and the UNDELETE environment variable to be set for the drive in CONFIG.SYS.  Type HELP UNDELETE at a command line for more information.
 The FM/2 INI file \"%s\" can not be marked read/write.
 FM/2: Help
-
-
-
-
-
+The program "%s" not found.\nAre the Path and Filename correct?\nDo you wish to save it anyway?
+"%s" doesn't appear to be executable.\nDo you wish to save it anyway?
+"%s" isn't an exe file and has no extension.\nFM2 requires an extension for executing a program
+"%s" doesn't appear to be executable. It doesn't have a standard executable file extension\nDo you wish to save it anyway?
+"%s" has quoting in the program arguments which may or may not be correct.
 
 FM/2: See all files
  <Untitled>
@@ -657,7 +657,7 @@ Toggle "/KEEP"
 Toggle "/SAVE"
 Can't find this file.
 Must be run through command processor (i.e. "CMD.EXE /C ...")
-OS/2 says: Not a directly executable type.
+OS/2 says: Doesn't appear to be a directly executable type.
 Acceptable apptype
 DOS
 Windows Real

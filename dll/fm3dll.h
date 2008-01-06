@@ -739,6 +739,7 @@ char *IsVowel(char a);
 VOID GetDesktopName(CHAR * objectpath, ULONG size);
 char *RootName(char *filename);
 APIRET MakeFullName(char *filename);
+PSZ CheckApp_QuoteAddExe(PSZ pszPgm);
 
 /* misc.c */
 BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
@@ -866,6 +867,7 @@ PSZ convert_nl_to_nul(PSZ pszSrc);
 void strip_lead_char(char *pszStripChars, char *pszSrc);
 void strip_trail_char(char *pszStripChars, char *pszSrc);
 VOID remove_first_occurence_of_character(char *pszRemoveChar, char *pszSrc);
+VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc);
 
 #define lstrip(s)         strip_lead_char(" \t",(s))
 #define rstrip(s)         strip_trail_char(" \t",(s))
@@ -1445,7 +1447,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
   fSubjectLengthMax, fNoLargeFileSupport, fNoMailtoMailRun,
   fHttpRunWPSDefault, fFtpRunWPSDefault, fLibPathStrictMailRun,
-  fLibPathStrictHttpRun, fLibPathStrictFtpRun;
+  fLibPathStrictHttpRun, fLibPathStrictFtpRun, fCancelAction;
 DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
   detailslongname, detailsea, detailssize, detailssubject,
   detailslwdate, detailslwtime, detailsattr, detailsicon;

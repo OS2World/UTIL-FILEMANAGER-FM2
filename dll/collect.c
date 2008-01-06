@@ -1526,7 +1526,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PostMsg(dcd->hwndParent, msg, mp1, mp2);
 	else
 	  WinDlgBox(HWND_DESKTOP, hwnd, CfgDlgProc, FM3ModHandle,
-		    CFG_FRAME, (PVOID) "Collector");
+		    CFG_FRAME, MPFROMP("Collector"));
 	break;
 
       case IDM_RESELECT:

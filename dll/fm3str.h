@@ -300,6 +300,11 @@
 #define IDS_UNDELETEHELPTEXT                                  293
 #define IDS_INIREADONLYTEXT                                   294
 #define IDS_FM2HELPTITLETEXT                                  295
+#define IDS_PROGRAMNOTFOUNDTEXT                               296
+#define IDS_PROGRAMNOTEXETEXT                                 297
+#define IDS_PROGRAMNOTEXE2TEXT                                298
+#define IDS_PROGRAMNOTEXE3TEXT                                299
+#define IDS_QUOTESINARGSTEXT                                  300
 #define IDS_SEEALLTITLETEXT                                   302
 #define IDS_UNTITLEDTEXT                                      303
 #define IDS_INTERNALVIEWERTITLETEXT                           304

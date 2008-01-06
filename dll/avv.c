@@ -51,6 +51,7 @@ static INT get_int_from_window(HWND hwnd, USHORT id);
 static LONG get_long_from_window(HWND hwnd, USHORT id);
 static PSZ nonull(PSZ a);
 static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest);
+static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest);
 
 //=== EditArchiverDefinition() Select archiver to edit definition ===
 
@@ -84,6 +85,21 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest)
   WinQueryDlgItemText(hwnd, id, sizeof(sz), sz);
   if (*sz)
     pszDest = xstrdup(sz, pszSrcFile, __LINE__);
+  else
+    pszDest = NULL;
+  return pszDest;
+}
+
+static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
+{
+  CHAR sz[256], *psz[256];
+
+  xfree(pszDest);
+  WinQueryDlgItemText(hwnd, id, sizeof(sz), sz);
+  if (*sz){
+    *psz = CheckApp_QuoteAddExe(sz);
+    pszDest = xstrdup(sz, pszSrcFile, __LINE__);
+  }
   else
     pszDest = NULL;
   return pszDest;
@@ -815,32 +831,32 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       admp->info->id =
 	free_and_strdup_from_window(hwnd, AD_ID, admp->info->id);
       admp->info->create =
-	free_and_strdup_from_window(hwnd, AD_ADD, admp->info->create);
+	free_and_strdup_quoted_from_window(hwnd, AD_ADD, admp->info->create);
       admp->info->createwdirs =
-	free_and_strdup_from_window(hwnd, AD_ADDWPATHS,
+	free_and_strdup_quoted_from_window(hwnd, AD_ADDWPATHS,
 				    admp->info->createwdirs);
       admp->info->createrecurse =
-	free_and_strdup_from_window(hwnd, AD_ADDRECURSE,
+	free_and_strdup_quoted_from_window(hwnd, AD_ADDRECURSE,
 				    admp->info->createrecurse);
       admp->info->movewdirs =
-	free_and_strdup_from_window(hwnd, AD_MOVEWPATHS,
+	free_and_strdup_quoted_from_window(hwnd, AD_MOVEWPATHS,
 				    admp->info->movewdirs);
       admp->info->move =
-	free_and_strdup_from_window(hwnd, AD_MOVE, admp->info->move);
+	free_and_strdup_quoted_from_window(hwnd, AD_MOVE, admp->info->move);
       admp->info->delete =
-	free_and_strdup_from_window(hwnd, AD_DELETE, admp->info->delete);
+	free_and_strdup_quoted_from_window(hwnd, AD_DELETE, admp->info->delete);
       admp->info->test =
-	free_and_strdup_from_window(hwnd, AD_TEST, admp->info->test);
+	free_and_strdup_quoted_from_window(hwnd, AD_TEST, admp->info->test);
       admp->info->extract =
-	free_and_strdup_from_window(hwnd, AD_EXTRACT, admp->info->extract);
+	free_and_strdup_quoted_from_window(hwnd, AD_EXTRACT, admp->info->extract);
       admp->info->exwdirs =
-	free_and_strdup_from_window(hwnd, AD_WDIRS, admp->info->exwdirs);
+	free_and_strdup_quoted_from_window(hwnd, AD_WDIRS, admp->info->exwdirs);
       admp->info->ext =
 	free_and_strdup_from_window(hwnd, AD_EXT, admp->info->ext);
       admp->info->signature =
 	free_and_strdup_from_window(hwnd, AD_SIG, admp->info->signature);
       admp->info->siglen = literal(admp->info->signature);
-      admp->info->list = free_and_strdup_from_window(hwnd,
+      admp->info->list = free_and_strdup_quoted_from_window(hwnd,
 						     AD_LIST,
 						     admp->info->list);
       admp->info->file_offset = get_long_from_window(hwnd, AD_SIGPOS);

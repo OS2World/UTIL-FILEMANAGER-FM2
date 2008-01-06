@@ -144,8 +144,8 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
 {
   CHAR *pszCharCounter;
   CHAR *pszTestStr = pszSrc;
-  CHAR szMailTo[1024] = "<mailto:";
-  CHAR szMailEnd[] = ">";
+  CHAR szMailTo[1024] = "mailto:";
+  //CHAR szMailEnd[] = ">";
 
   if (!strnstr(pszTestStr, pszFindChar, StrLens))
     return NULL;
@@ -157,7 +157,7 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
       strip_lead_char("<", pszSrc);
       strip_trail_char(">", pszSrc);
       strcat(szMailTo, pszSrc);
-      strcat(szMailTo, szMailEnd);
+     // strcat(szMailTo, szMailEnd);
       pszSrc = szMailTo;
       return pszSrc;
     }
@@ -184,7 +184,7 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
     strip_lead_char("<", pszSrc);
     strip_trail_char(">", pszSrc);
     strcat(szMailTo, pszSrc);
-    strcat(szMailTo, szMailEnd);
+    //strcat(szMailTo, szMailEnd);
     pszSrc = szMailTo;
     return pszSrc;
     }
