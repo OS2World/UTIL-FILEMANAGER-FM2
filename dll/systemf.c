@@ -1308,8 +1308,8 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 
 PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
 {
-  char szTempPgm[CCHMAXPATH], tempcom[CCHMAXPATH], temparg[CCHMAXPATH];
-  char *offset, *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
+  char szTempPgm[2048], tempcom[2048], temparg[2048];
+  char *offset = '\0', *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
   APIRET ret;
   ULONG ulAppType;
   char *pszChar;
@@ -1327,33 +1327,25 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
     offsetcom = strstr(strlwr(pszPgm), ".com");
     offsetbtm = strstr(strlwr(pszPgm), ".btm");
     offsetbat = strstr(strlwr(pszPgm), ".bat");
-    if (offsetbat){
-      if (strstr(strlwr(pszPgm), "command ") < offsetbat)
-        offset = pszPgm;
-      else
-        offset = offsetbat;
-    }
-    else if (offsetbtm){
-      if (strstr(strlwr(pszPgm), "4os2 ") < offsetbtm)
-        offset = pszPgm;
-      else
-        offset = offsetbtm;
-    }
-    else if (offsetcmd){
-      if (strstr(strlwr(pszPgm), "cmd ") < offsetcmd ||
-          strstr(strlwr(pszPgm), "4os2 ") < offsetcmd)
-        offset = pszPgm;
-      else
-        offset = offsetcmd;
-    }
-    else if (offsetcom)
-      offset = offsetcom;
-    else if (offsetexe)
+    if (offsetexe)
       offset = offsetexe;
-    else {
-      offset = pszPgm;
+    else{
+      if (offsetcom)
+        offset = offsetcom;
+      else{
+        if (offsetcmd)
+          offset = offsetcmd;
+        else{
+          if (offsetbtm)
+            offset = offsetbtm;
+          else{
+            if (offsetbat)
+              offset = offsetexe;
+          }
+        }
+      }
     }
-    if (offset - pszPgm != 0){
+    if (offset){
       tempcom[offset + 4 - pszPgm] = '\0';
       strcpy(temparg, &pszPgm[offset + 4 - pszPgm]);
       /*if ((offsetexe  && !offsetcom && !offsetcmd && !offsetbtm && !offsetbat) ||

@@ -567,7 +567,6 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*filename = 0;
         if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
           BldQuotedFileName(szfilename, filename);
-	  strcat(szfilename, " %a");
 	  WinSetDlgItemText(hwnd, CMD_CL, szfilename);
 	}
       }
@@ -619,11 +618,22 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					MPFROMSHORT(0), MPFROMSHORT(TRUE));
       }
       {
-	COMMAND temp;
+        COMMAND temp;
+        char *psz[1002];
+        APIRET ret;
 
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-	bstrip(temp.cl);
+        *psz = CheckApp_QuoteAddExe(temp.cl);
+        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        if (!strchr(temp.cl, '%')){
+          ret = saymsg(MB_YESNO,
+                       HWND_DESKTOP,
+                       NullStr,
+                       GetPString(IDS_TOACTONSELECTEDTEXT));
+          if (ret == MBID_YES)
+            strcat(temp.cl, " %a");
+        }
 	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
 	if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
 	  temp.flags = 0;
@@ -640,9 +650,14 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, CMD_PROMPT))
 	  temp.flags |= PROMPT;
 	if (WinQueryButtonCheckstate(hwnd, CMD_ONCE))
-	  temp.flags |= ONCE;
-	info = add_command(&temp);
-	if (!info)
+          temp.flags |= ONCE;
+        if (fCancelAction){
+          fCancelAction = FALSE;
+          break;
+        }
+        else
+          info = add_command(&temp);
+        if (!info)
         {
 	  WinDismissDlg(hwnd, 0);
           /*saymsg(MB_ENTER, hwnd,
@@ -697,11 +712,22 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case CMD_ADD:
       {
-	COMMAND temp;
+        COMMAND temp;
+        CHAR *psz[1002];
+        APIRET ret;
 
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-	bstrip(temp.cl);
+        *psz = CheckApp_QuoteAddExe(temp.cl);
+        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        if (!strchr(temp.cl, '%')){
+          ret = saymsg(MB_YESNO,
+                       HWND_DESKTOP,
+                       NullStr,
+                       GetPString(IDS_TOACTONSELECTEDTEXT));
+          if (ret == MBID_YES)
+            strcat(temp.cl, " %a");
+        }
 	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
 	if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
 	  temp.flags = 0;
@@ -718,8 +744,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, CMD_PROMPT))
 	  temp.flags |= PROMPT;
 	if (WinQueryButtonCheckstate(hwnd, CMD_ONCE))
-	  temp.flags |= ONCE;
-	info = add_command(&temp);
+          temp.flags |= ONCE;
+        if (fCancelAction){
+          fCancelAction = FALSE;
+          break;
+        }
+        else
+	  info = add_command(&temp);
 	if (!info) {
 	  saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
                  GetPString(IDS_CANTADDCOMMANDTEXTDUP), temp.title);
@@ -780,16 +811,35 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
     case CMD_REPLACE:
-      {
-	CHAR temp[34];
+      { //Delete first
+        char *psz[1002];
+        COMMAND temp;
+        APIRET ret;
+
+	memset(&temp, 0, sizeof(COMMAND));
+	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
+        *psz = CheckApp_QuoteAddExe(temp.cl);
+        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        if (fCancelAction){
+          fCancelAction = FALSE;
+          break;
+        }
+        if (!strchr(temp.cl, '%')){
+          ret = saymsg(MB_YESNO,
+                       HWND_DESKTOP,
+                       NullStr,
+                       GetPString(IDS_TOACTONSELECTEDTEXT));
+          if (ret == MBID_YES)
+            strcat(temp.cl, " %a");
+        }
+        //remember item location in the list
         y = (SHORT) WinSendDlgItemMsg(hwnd,
-					CMD_LISTBOX,
-					LM_QUERYSELECTION,
-					MPFROMSHORT(LIT_CURSOR), MPVOID);
-	WinQueryDlgItemText(hwnd, CMD_TITLE, 34, temp);
-	bstrip(temp);
-	if (kill_command(temp))
-           {
+				      CMD_LISTBOX,
+				      LM_QUERYSELECTION,
+				      MPFROMSHORT(LIT_CURSOR), MPVOID);
+	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
+        bstrip(temp.title);
+	if (kill_command(temp.title)){
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_QUERYSELECTION,
@@ -803,38 +853,30 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      LM_SELECTITEM,
 			      MPFROMSHORT(LIT_NONE), MPFROMSHORT(FALSE));
 	  }
-	  save_commands();
-	}
-      }
-      {
-	COMMAND temp;
-
-	memset(&temp, 0, sizeof(COMMAND));
-	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-	bstrip(temp.cl);
-	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
-	if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
-	  temp.flags = 0;
-	else if (WinQueryButtonCheckstate(hwnd, CMD_FULLSCREEN))
-	  temp.flags = FULLSCREEN;
-	else if (WinQueryButtonCheckstate(hwnd, CMD_MINIMIZED))
-	  temp.flags = MINIMIZED;
-	else if (WinQueryButtonCheckstate(hwnd, CMD_MAXIMIZED))
-	  temp.flags = MAXIMIZED;
-	else if (WinQueryButtonCheckstate(hwnd, CMD_INVISIBLE))
-	  temp.flags = INVISIBLE;
-	if (WinQueryButtonCheckstate(hwnd, CMD_KEEP))
-	  temp.flags |= KEEP;
-	if (WinQueryButtonCheckstate(hwnd, CMD_PROMPT))
-	  temp.flags |= PROMPT;
-	if (WinQueryButtonCheckstate(hwnd, CMD_ONCE))
-	  temp.flags |= ONCE;
-	info = add_command(&temp);
-	if (!info) {
+        } // then do an add
+        if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
+          temp.flags = 0;
+        else if (WinQueryButtonCheckstate(hwnd, CMD_FULLSCREEN))
+          temp.flags = FULLSCREEN;
+        else if (WinQueryButtonCheckstate(hwnd, CMD_MINIMIZED))
+          temp.flags = MINIMIZED;
+        else if (WinQueryButtonCheckstate(hwnd, CMD_MAXIMIZED))
+          temp.flags = MAXIMIZED;
+        else if (WinQueryButtonCheckstate(hwnd, CMD_INVISIBLE))
+          temp.flags = INVISIBLE;
+        if (WinQueryButtonCheckstate(hwnd, CMD_KEEP))
+          temp.flags |= KEEP;
+        if (WinQueryButtonCheckstate(hwnd, CMD_PROMPT))
+          temp.flags |= PROMPT;
+        if (WinQueryButtonCheckstate(hwnd, CMD_ONCE))
+          temp.flags |= ONCE;
+        info = add_command(&temp);
+        if (!info) {
 	  saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
-		 GetPString(IDS_CANTADDCOMMANDTEXT),
-		 temp.title);
-	}
+	         GetPString(IDS_CANTADDCOMMANDTEXT),
+                 temp.title);
+          }
+
 	else {
 	  CHAR env[1002];
 
@@ -843,13 +885,16 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  bstripcr(env);
 	  if (*env) {
 	    PrfWriteProfileString(fmprof, FM3Str, temp.cl, env);
-	  }
+	  } //put item back in original place
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_INSERTITEM,
 					MPFROM2SHORT(y, 0),
 					MPFROMP(temp.title));
-	  if (x >= 0) {
+          if (x >= 0) {
+            LINKCMDS *temphead = NULL,*last = NULL, *temptail = NULL;
+            SHORT numitems, sSelect = 0;
+
 	    WinSendDlgItemMsg(hwnd,
 			      CMD_LISTBOX,
 			      LM_SETITEMHANDLE,
@@ -858,38 +903,38 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      CMD_LISTBOX,
 			      LM_SELECTITEM,
                               MPFROMSHORT(x), MPFROMSHORT(TRUE));
-            {
-            LINKCMDS *temphead = NULL, *info, *last = NULL, *temptail = NULL;
-	SHORT sSelect, numitems;
+            //then reorder
+            numitems = (SHORT) WinSendDlgItemMsg(hwnd, CMD_LISTBOX,
+                                                 LM_QUERYITEMCOUNT,
+                                                 MPVOID, MPVOID);
 
-	sSelect = 0;
-	numitems = (SHORT) WinSendDlgItemMsg(hwnd, CMD_LISTBOX,
-					     LM_QUERYITEMCOUNT,
-					     MPVOID, MPVOID);
-	while (numitems) {
-	  info = (LINKCMDS *) WinSendDlgItemMsg(hwnd, CMD_LISTBOX,
-						LM_QUERYITEMHANDLE,
-						MPFROMSHORT(sSelect++),
-						MPVOID);
-	  if (info) {
-	    if (!temphead) {
-	      temphead = info;
-	      info->prev = NULL;
-	    }
-	    else {
-	      last->next = info;
-	      info->prev = last;
-	    }
-	    temptail = info;
-	    last = info;
-	    info->next = NULL;
-	  }
-	  numitems--;
-        }
+            while (numitems) {
+
+
+              info = (LINKCMDS *) WinSendDlgItemMsg(hwnd, CMD_LISTBOX,
+                                                    LM_QUERYITEMHANDLE,
+                                                    MPFROMSHORT(sSelect++),
+                                                    MPVOID);
+              if (info) {
+                if (!temphead) {
+                  temphead = info;
+                  info->prev = NULL;
+                }
+                else {
+                  last->next = info;
+                  info->prev = last;
+                }
+                temptail = info;
+                last = info;
+                info->next = NULL;
+              }
+              numitems--;
             }
-	    save_commands();
-	  }
-	}
+            cmdhead = temphead;
+	    cmdtail = temptail;
+            save_commands();
+          }
+        }
       }
       break;
     }

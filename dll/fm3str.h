@@ -305,6 +305,7 @@
 #define IDS_PROGRAMNOTEXE2TEXT                                298
 #define IDS_PROGRAMNOTEXE3TEXT                                299
 #define IDS_QUOTESINARGSTEXT                                  300
+#define IDS_TOACTONSELECTEDTEXT                               301
 #define IDS_SEEALLTITLETEXT                                   302
 #define IDS_UNTITLEDTEXT                                      303
 #define IDS_INTERNALVIEWERTITLETEXT                           304

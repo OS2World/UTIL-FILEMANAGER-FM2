@@ -629,7 +629,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       {
 	ASSOC temp;
-	CHAR dummy[34];
+	CHAR dummy[34], *psz[1002];
 
 	replace = FALSE;
 	{
@@ -644,7 +644,9 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
-	WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
+        WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
+        *psz = CheckApp_QuoteAddExe(temp.cl);
+        memcpy(temp.cl, *psz, strlen(*psz) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -668,7 +670,12 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-	  temp.flags |= PROMPT;
+          temp.flags |= PROMPT;
+        if (fCancelAction){
+          fCancelAction = FALSE;
+          break;
+        }
+        else
 	info = add_association(&temp);
 	if (!info)
 	  WinDismissDlg(hwnd, 1);	/* Runtime_Error(pszSrcFile, __LINE__, "add_association"); */
@@ -718,13 +725,15 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case ASS_ADD:
       {
 	ASSOC temp;
-	CHAR dummy[34];
+	CHAR dummy[34], *psz[1002];
 
 	replace = FALSE;
 
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
-	WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
+        WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
+        *psz = CheckApp_QuoteAddExe(temp.cl);
+        memcpy(temp.cl, *psz, strlen(*psz) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -748,8 +757,13 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-	  temp.flags |= PROMPT;
-	info = add_association(&temp);
+          temp.flags |= PROMPT;
+        if (fCancelAction){
+          fCancelAction = FALSE;
+          break;
+        }
+        else
+          info = add_association(&temp);
 	//Add will fail if mask is not changed
 	if (info) {
 
@@ -820,7 +834,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       {
 	ASSOC temp;
-	CHAR dummy[34];
+	CHAR dummy[34], *psz[1002];
 
 	replace = TRUE;
 
@@ -830,7 +844,9 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      MPFROMSHORT(LIT_CURSOR), MPVOID);
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
-	WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
+        WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
+        *psz = CheckApp_QuoteAddExe(temp.cl);
+        memcpy(temp.cl, *psz, strlen(*psz) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -854,8 +870,13 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-	  temp.flags |= PROMPT;
-	info = add_association(&temp);
+          temp.flags |= PROMPT;
+        if (fCancelAction){
+          fCancelAction = FALSE;
+          break;
+        }
+        else
+	  info = add_association(&temp);
 	//Add will fail if mask is not changed
 	if (info) {
 
