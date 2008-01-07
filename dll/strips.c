@@ -12,6 +12,7 @@
   26 Jul 06 SHL Add chop_at_crnl
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Dec 07 GKY Add remove_first_occurence_of_character
+  29 Dec 07 GKY Add remove_last_occurence_of_character
 
 ***********************************************************************/
 
@@ -89,3 +90,4 @@ VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc)
 }
 
 #pragma alloc_text(MISC8,chop_at_crnl,convert_nl_to_nul,strip_trail_char,strip_lead_char)
+#pragma alloc_text(MISC8,remove_first_occurence_of_character,remove_last_occurence_of_character)

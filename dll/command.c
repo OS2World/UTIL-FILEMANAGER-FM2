@@ -20,6 +20,7 @@
   23 Mar 07 GKY Okay fails silently when item not changed
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  06 Jan 08 GKY Use CheckApp_QuoteAddExe to check program strings on entry
 
 ***********************************************************************/
 

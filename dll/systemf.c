@@ -19,6 +19,7 @@
   07 Jan 07 GKY Move error strings etc. to string file
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  06 Jan 08 GKY Add CheckApp_QuoteAddExe to check program strings on entry
 
 ***********************************************************************/
 
@@ -1521,4 +1522,4 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
   return pszPgm;
 }
 
-#pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2)
+#pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2,CheckApp_QuoteAddExe)

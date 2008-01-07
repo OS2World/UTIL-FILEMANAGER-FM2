@@ -1,6 +1,8 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.09(pre)
+ o Check program strings entered in assoc, commands & settings for quoting,
+ file extension, space before args and existence on entry. (Gregg)
  o Add TestFDate and TestCDate for date compare and sort functions (Gregg)
  o Use commaFMTULL for formating additional file, EA etc size information(Gregg)
  o Give LIBPATHSTRICT option for mailto & run FTP/HTTP (Gregg)

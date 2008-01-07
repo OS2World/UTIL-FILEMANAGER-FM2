@@ -51,6 +51,8 @@ See also&colon.
 .br
 :link reftype=hd res=92200.Viewers page:elink.
 .br
+:link reftype=hd res=92250.Viewers2 page:elink.
+.br
 :link reftype=hd res=98400.Compare page:elink.
 .br
 :link reftype=hd res=97000.Monolithic FM/2 page:elink.
@@ -455,6 +457,45 @@ Virus:   "OS2SCAN.EXE %p /SUB /A"
 :p.
 See also :link reftype=hd res=100075.Metastrings:elink..
 
+:h3 res=92250 name=PANEL_VIEWPAGE2.Viewers2 page
+:i1 id=aboutVIEWP2.Viewers2 page
+
+:artwork name='bitmaps\viewer.bmp' align=left.
+:p.
+This page contains controls relating to the internal viewers web access
+features.
+:p.
+:hp6.Use WPS default for run Http/Ftp:ehp6. If selected FM/2 will use the
+program and work directory found in the OS2 INI key WPURLDEFAULTSETTINGS.
+If these boxes are check they over ride the programs listed for Run
+Ftp/Http below them.
+:p.
+:hp6.Use LIBPATHSTRICT for run Http/Ftp/Mail:ehp6. If selected FM/2 will
+set LIBPATHSTRICT to true before running the associaed program. This is
+particularly useful when running Mozilla based applications. Note you need
+to fill in the working directory if not using the defaults for this to work
+correctly.
+:p.
+:hp6.Don't use mailto wrapper:ehp6. If selected FM/2 will pass the bare email
+address to the run mail application. This is needed if using startpmm for mailto
+support in PMMail. www.hobbes.nmsu.edu/cgi-bin/h-search?key=startpmm&amp.pushbutton=Search
+:p.
+You can fill in the names of programs to run to view WWW (web --
+http&colon.//), FTP (ftp&colon.//) or mail (@) internet components
+when they're encountered in text in the internal viewers here. In the faster
+(non-MLE) internal viewer, double-clicking the line containing the
+component causes it to be viewed (you're given a choice of component if
+there's more than one on the line). For WWW components, the prefacing
+"http&colon.//" is included. For FTP components, the prefacing
+"ftp&colon.//" is :hp1.not:ehp1. included. Mailto&colon. is prepended to the
+the email address before being placed on the command line In the MLE-based internal
+viewer/editor, you highlight the desired text and choose to view the
+component from a context menu. The command line that you enter here is
+automatically appended with a space and then the component descriptor
+from the text.
+:p.
+You can fill in the name of a working directory for any or all of the "run" functions.
+If a working directory is provided the program will be executed from that directory.
 
 :h3 res=98400 name=PANEL_COMPPAGE.Compare page
 :i1 id=aboutCOMPP.Compare page

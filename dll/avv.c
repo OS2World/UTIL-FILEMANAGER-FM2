@@ -22,6 +22,7 @@
   22 Mar 07 GKY Use QWL_USER
   16 Jun 07 SHL Update for OpenWatcom
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  06 Jan 08 GKY Use CheckApp_QuoteAddExe to check program strings on entry
 
 ***********************************************************************/
 
@@ -950,4 +951,4 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 #pragma alloc_text(AVV,EditArchiverDefinition,free_and_strdup_from_window)
 #pragma alloc_text(AVV,get_int_from_window,get_int2_from_window)
 #pragma alloc_text(AVV,get_long_from_window,get_int3_from_window)
-#pragma alloc_text(AVV,get_int4_from_window)
+#pragma alloc_text(AVV,get_int4_from_window,free_and_strdup_quoted_from_window)

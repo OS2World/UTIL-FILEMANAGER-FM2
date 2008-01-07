@@ -20,6 +20,7 @@
   19 Aug 07 SHL Sync with SaveDirCnrState mods
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
   26 Nov 07 GKY Allow a currently nonvalid path in the ext path field with warning
+  06 Jan 08 GKY Use CheckApp_QuoteAddExe to check program strings on entry
 
 ***********************************************************************/
 
