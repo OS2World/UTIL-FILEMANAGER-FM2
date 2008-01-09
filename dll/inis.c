@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H. Levine
+  Copyright (c) 2004, 2008 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   01 Aug 04 SHL Rework fixup usage
@@ -20,6 +20,9 @@
   19 Apr 07 SHL Use FreeDragInfoData.  Add more drag/drop error checks.
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 Nov 07 SHL Ensure fixup buffer sufficiently large
+  09 Jan 08 SHL Avoid closing INI more times than opened
+  09 Jan 08 SHL Add some missing error reporting
+  09 Jan 08 SHL Standardize PrfOpenProfile return checks
 
 ***********************************************************************/
 
@@ -94,7 +97,8 @@ VOID CopyIniThread(VOID * args)
   INIREC *inirec = (INIREC *) args;
   HAB hab2;
   HMQ hmq2;
-  HINI hini1 = (HINI) 0, hini2 = (HINI) 0;
+  HINI hini1 = NULLHANDLE;
+  HINI hini2 = NULLHANDLE;
   PRFPROFILE cprfp;
   CHAR userini[CCHMAXPATH], sysini[CCHMAXPATH];
 
@@ -121,13 +125,23 @@ VOID CopyIniThread(VOID * args)
 	  else if (!stricmp(cprfp.pszSysName, inirec->filename2))
 	    hini2 = HINI_SYSTEMPROFILE;
 	}
-	if (!hini1)
+	if (hini1 == NULLHANDLE) {
 	  hini1 = PrfOpenProfile(hab2, inirec->filename1);
-	if (!hini2) {
+	  if (hini1 == NULLHANDLE) {
+	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		      "PrfOpenProfile failed for %s", inirec->filename1);
+	  }
+	}
+	if (hini2 == NULLHANDLE) {
 	  if (!stricmp(inirec->filename1, inirec->filename2))
 	    hini2 = hini1;
-	  else
+	  else {
 	    hini2 = PrfOpenProfile(hab2, inirec->filename2);
+	    if (hini2 == NULLHANDLE) {
+	      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+			"PrfOpenProfile failed for %s", inirec->filename2);
+	    }
+	  }
 	}
 	if (hini1 && hini2 && (*inirec->app2 || hini1 != hini2)) {
 
@@ -242,7 +256,7 @@ VOID CopyIniThread(VOID * args)
       Abort:
 	if (hini1)
 	  PrfCloseProfile(hini1);
-	if (hini2)
+	if (hini2 && hini2 != hini1)
 	  PrfCloseProfile(hini2);
 	WinDestroyMsgQueue(hmq2);
       }
@@ -289,7 +303,8 @@ static VOID BackupIniThread(VOID * args)
   PPRFPROFILE prfp = (PPRFPROFILE) args;
   HAB hab2;
   HMQ hmq2;
-  HINI orig = (HINI) 0, new;
+  HINI orig = NULLHANDLE;
+  HINI new;
   PVOID pDataA, pDataK, pData;
   PBYTE pCurrentA, pCurrentK;
   ULONG ulSize = 0L;
@@ -315,11 +330,19 @@ static VOID BackupIniThread(VOID * args)
 	  else if (!stricmp(cprfp.pszSysName, prfp->pszUserName))
 	    orig = HINI_SYSTEMPROFILE;
 	}
-	if (!orig)
+	if (orig == NULLHANDLE)
 	  orig = PrfOpenProfile(hab2, prfp->pszUserName);
-	if (orig) {
+	if (orig == NULLHANDLE) {
+	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    "PrfOpenProfile failed for %s", prfp->pszUserName);
+	}
+	else {
 	  new = PrfOpenProfile(hab2, prfp->pszSysName);
-	  if (new) {
+	  if (new == NULLHANDLE) {
+	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		      "PrfOpenProfile failed for %s", prfp->pszSysName);
+	  }
+	  else {
 	    if (PrfQueryProfileSize(orig, NULL, NULL, (PULONG) & ulSize)
 		&& ulSize) {
 	      pDataA = xmalloc(ulSize, pszSrcFile, __LINE__);	/* allocate space for applnames */
@@ -920,7 +943,7 @@ MRESULT EXPENTRY ChangeIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, INIR_USERPROFILE, CCHMAXPATH, userini);
 	WinQueryDlgItemText(hwnd, INIR_SYSTEMPROFILE, CCHMAXPATH, sysini);
 	testini = PrfOpenProfile(WinQueryAnchorBlock(hwnd), userini);
-	if (!testini) {
+	if (testini == NULLHANDLE) {
 	  saymsg(MB_CANCEL,
 		 hwnd,
 		 GetPString(IDS_ERRORTEXT),
@@ -929,7 +952,7 @@ MRESULT EXPENTRY ChangeIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	PrfCloseProfile(testini);
 	testini = PrfOpenProfile(WinQueryAnchorBlock(hwnd), sysini);
-	if (!testini) {
+	if (testini == NULLHANDLE) {
 	  saymsg(MB_CANCEL,
 		 hwnd,
 		 GetPString(IDS_ERRORTEXT),
@@ -1053,7 +1076,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	MakeFullName(userini);
 	MakeFullName(sysini);
 	testini = PrfOpenProfile(WinQueryAnchorBlock(hwnd), userini);
-	if (!testini) {
+	if (testini == NULLHANDLE) {
 	  saymsg(MB_CANCEL,
 		 hwnd,
 		 GetPString(IDS_ERRORTEXT),
@@ -1062,7 +1085,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	PrfCloseProfile(testini);
 	testini = PrfOpenProfile(WinQueryAnchorBlock(hwnd), sysini);
-	if (!testini) {
+	if (testini == NULLHANDLE) {
 	  saymsg(MB_CANCEL,
 		 hwnd,
 		 GetPString(IDS_ERRORTEXT),
@@ -1429,7 +1452,7 @@ HWND StartIniEditor(HWND hwnd, CHAR * fname, INT flags)
     if (!filename)
       return (HWND) 0;
     hINI = PrfOpenProfile(useHab, filename);
-    if (!hINI) {
+    if (hINI == NULLHANDLE) {
       free(filename);
       return (HWND) 0;
     }
@@ -1978,7 +2001,9 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else
 	inidata->hini = HINI_USERPROFILE;
-      if (!inidata->hini) {
+      if (inidata->hini == NULLHANDLE) {
+	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  "PrfOpenProfile failed for %s", inidata->ininame);
 	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	break;
       }
@@ -2514,7 +2539,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *filename &&
 	    !DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
 	  hINI = PrfOpenProfile(WinQueryAnchorBlock(hwnd), filename);
-	  if (!hINI) {
+	  if (hINI == NULLHANDLE) {
 	    Win_Error(hwnd, hwnd, __FILE__, __LINE__,
 		      GetPString(IDS_INICANTOPENINITEXT), filename);
 	  }
