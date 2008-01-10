@@ -77,10 +77,7 @@ char *RootName(char *filename)
   return p;
 }
 
-int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
-               FDATE *datevar2, FTIME *timevar2)
-{
-  /*
+  /** TestFDate
    * return 1 (file2 newer than file1),
    * 0 (files same)
    * or -1 (file1 newer than file2)
@@ -89,6 +86,9 @@ int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
    * Make the files NULL if passing FILESTATUS buffers
    */
 
+int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
+               FDATE *datevar2, FTIME *timevar2)
+{
   int comp = 0;
   FILESTATUS3 fs3o, fs3n;
 
@@ -132,15 +132,15 @@ int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
     return comp;
 }
 
-int TestCDates(CDATE *datevar1, CTIME *timevar1,
-               CDATE *datevar2, CTIME *timevar2)
-{
-  /*
+  /** TestCDate
    * return 1 (file2 newer than file1),
    * 0 (files same)
    * or -1 (file1 newer than file2)
    */
 
+int TestCDates(CDATE *datevar1, CTIME *timevar1,
+               CDATE *datevar2, CTIME *timevar2)
+{
   int comp = 0;
 
   if (&datevar1 && &datevar2 && &timevar1 && &timevar2) {

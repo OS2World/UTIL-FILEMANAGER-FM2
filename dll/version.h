@@ -46,6 +46,7 @@
   31 Aug 07 GKY v3.07: Release modified ini structure
   11 Nov 07 GKY v3.08 Release large file support
   12 Nov 07 SHL v3.09pre (shl)
+  10 Jan 08 GKY v3.09 Release
 
 ***********************************************************************/
 
@@ -53,8 +54,8 @@
 #define VERMINOR       9
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-// #define VERREALMINOR   " "__DATE__
-#define VERREALMINOR   "pre (shl) " __DATE__ " " __TIME__
+#define VERREALMINOR   " "__DATE__
+// #define VERREALMINOR   "pre (shl) " __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 

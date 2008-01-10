@@ -1,7 +1,7 @@
 # makefile - build makestr.exe
 # $Id$
 
-# Copyright (c) 2002, 2007 Steven H. Levine
+# Copyright (c) 2002, 2008 Steven H. Levine
 
 # 14 Jun 07 SHL Convert to OpenWatcom
 # 27 Jun 07 SHL Support DEBUG set from command line or environment
@@ -49,7 +49,7 @@ $(BASE).lrf: $(__MAKEFILES__)
 !endif
    @%write $^@ option map
    @%write $^@ name $(BASE)
-   @%write $^@ op desc '@$#SLAInc:3.07$#@$#$#1$#$# 11/11/2007 03:08:00      slamain::EN:US:0:U:@@FM/2 Strings Compiler'
+   @%write $^@ op desc '@$#SLAInc:3.09$#@$#$#1$#$# 01/10/2007 03:09:00      slamain::EN:US:0:U:@@FM/2 Strings Compiler'
    @%write $^@ file $(BASE).obj
    @%write $^@ library os2386.lib
 

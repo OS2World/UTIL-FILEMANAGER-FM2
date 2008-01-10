@@ -1,6 +1,6 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.09(pre)
+3.09
  o Check program strings entered in assoc, commands & settings for quoting,
  file extension, space before args and existence on entry. (Gregg)
  o Add TestFDate and TestCDate for date compare and sort functions (Gregg)
@@ -21,6 +21,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Switch to wrc.exe default; support USE_RC from environment (Steven)
  o Avoid out of memory traps in Compare Directories (Steven)
  o Correct INI editor copy failures (Steven)
+ o Use CloseProfile to avoid spurious system INI closes (Steven)
 
 3.08
  o Cancel in walk directories dialog now directly closes dialog even if

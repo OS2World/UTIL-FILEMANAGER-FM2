@@ -5,10 +5,17 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.09 adds "mailto:" so you can configure the ability to
+double click an email address in the new viewer and have it
+open a new email using that address. The viewer page in the
+settings notebook was split into 2 pages to facilitate the
+change. Additionally, We fixed some defects and enhance
+performance in some areas such as commandline quoting.
+
 FM/2 3.08 has had changes to its file filtering logic.
 It now searches for the last extension if a mask like *.zip
 is used. This change was made to over come the problem with
-associations failing on files with multiple ".". You can 
+associations failing on files with multiple ".". You can
 also seach for a complete string within the file names by
 using the pattern *stuff* (stuff can't contain an * or ?).
 If "stuff" contains an * or ? the old method of searching
@@ -16,37 +23,37 @@ If "stuff" contains an * or ? the old method of searching
 has been added.
 
 FM/2 3.07 had changes made to its ini file structure.
-These changes mean that the ini file is not backward 
+These changes mean that the ini file is not backward
 compatible. Please backup you FM3.INI file before installing
-so you can revert to an earlier version without losing some 
+so you can revert to an earlier version without losing some
 of your customizations. Please note you need to leave a copy
-of the fm3.ini file in the install directory in order to keep your 
-customizations in 3.07. The temp file fm3.!!! will not update 
+of the fm3.ini file in the install directory in order to keep your
+customizations in 3.07. The temp file fm3.!!! will not update
 the new ini as it is only used when fm2 is running.
 
-File Manager/2 (FM/2) starting with version 3.6 is being 
-built with OpenWatcom. Changing compilers can introduce 
+File Manager/2 (FM/2) starting with version 3.6 is being
+built with OpenWatcom. Changing compilers can introduce
 unexpected problem so you may want to backup your current
-install, or at minimum have a working copy of the FM/2 
+install, or at minimum have a working copy of the FM/2
 version 3.5.9 warpin available for reinstall if problems arise.
 To backup your current install simple zip up your install
 directory with its subdirectories or copy them to a different
-location.To restore simply copy the old FM/2 back to the 
+location.To restore simply copy the old FM/2 back to the
 its original location. Remember you can't use the new FM/2
 to do this since if it is running some files will be locked
 and won't be replaced. If you didn't backup and need to go
-back just install the 3.5.9 warpin package over the new 
+back just install the 3.5.9 warpin package over the new
 install. It will warn you that the install is newer but just
-tell it to install anyway. The warpin install process is 
-designed to save all your customizations. Don't delete the 
-new install if you don't have a backup since this will result 
-in the loss of any custom changes you have made. If you need 
-to delete it to get the reinstall to work. Backup up the new 
-install and then copy the *.bmp, *.tls, *.dat, *.cmd & *.ini 
-files back to the install directory after the reinstall. 
-Don't copy the *.str files as they are version specific. 
+tell it to install anyway. The warpin install process is
+designed to save all your customizations. Don't delete the
+new install if you don't have a backup since this will result
+in the loss of any custom changes you have made. If you need
+to delete it to get the reinstall to work. Backup up the new
+install and then copy the *.bmp, *.tls, *.dat, *.cmd & *.ini
+files back to the install directory after the reinstall.
+Don't copy the *.str files as they are version specific.
 If you have problems be sure to report it (See Support
-at the end of this file).    
+at the end of this file).
 
 File Manager/2 (FM/2) is a free OS/2(Warp)/eCS Presentation
 Manager 32-bit file/directory/archive maintenance utility
@@ -324,11 +331,11 @@ in any given session without modifying CONFIG.SYS.
 Troubleshooting:
 ===============
 
-FM/2 seems much slower than previous versions. 
+FM/2 seems much slower than previous versions.
 The Find Buffer in FM/2 has been reworked to make it user
-settable in more place and significantly enlarge it. This 
+settable in more place and significantly enlarge it. This
 significantly increases the loading speed for large directories
-However, most users will need to reset the buffer by going 
+However, most users will need to reset the buffer by going
 to the settings notebook scanning page and setting FindBuf.
 The new default for clean installs is 10240. We recommend you
 change to this setting (or higher) unless you have very limited
@@ -402,20 +409,20 @@ WPS icons
 - Spurious WPS Objects Handles may be created during some
 operations
 
-- Trying to run Global.exe from the command line in 4OS2 
-(perhaps other shells) results in the execution of 4OS2's "Global" 
-command. Global.exe can be run by placing it in quotes or 
+- Trying to run Global.exe from the command line in 4OS2
+(perhaps other shells) results in the execution of 4OS2's "Global"
+command. Global.exe can be run by placing it in quotes or
 prefixing it with *. See 4OS2's documentation for more information.
 
-- As with any OS/2 program significant changes (such as our 
-change to OpenWatcom) will result in the incompatibility of 
+- As with any OS/2 program significant changes (such as our
+change to OpenWatcom) will result in the incompatibility of
 older (VAC) exes with new dlls and vice versa. Attempting to run
-OpenWatcom exes with a VAC dll loaded in memory or in your 
-libpath ahead of the new version will result in a SYS3175 in 
+OpenWatcom exes with a VAC dll loaded in memory or in your
+libpath ahead of the new version will result in a SYS3175 in
 popuplog.os2. The reverse gives a SYS2070. If you experience these
-problems search your libpath for fm3dll.dll and remove or rename 
-it. Your libpath should have "." (without the quotes) as your 
-first entry to minimize the likelihood of this problem. FM/2's 
+problems search your libpath for fm3dll.dll and remove or rename
+it. Your libpath should have "." (without the quotes) as your
+first entry to minimize the likelihood of this problem. FM/2's
 installer does not add the FM/2 directory to the libpath.
 
 - See http://svn.netlabs.org/fm2/report/1 for a complete list of

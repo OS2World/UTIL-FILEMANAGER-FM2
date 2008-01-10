@@ -1,9 +1,9 @@
 # $Id$
 
-# Copyright (c) 2002, 2007 Steven H. Levine
+# Copyright (c) 2002, 2008 Steven H. Levine
 
 # 16 Jun 07 GKY Convert to OpenWatcom
 
-option description '@#SLAInc:3.08#@##1## 11/11/2007 03:08:00      SLAMain::EN:US:0:U:@@FM/2 View Directory MiniApp Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2005, 2007 Steven Levine and Associates, Inc.'
+option description '@#SLAInc:3.09#@##1## 01/10/2008 03:09:00      SLAMain::EN:US:0:U:@@FM/2 View Directory MiniApp Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2005, 2008 Steven Levine and Associates, Inc.'
 
 option stack = 488416
