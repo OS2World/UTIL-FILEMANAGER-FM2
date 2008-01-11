@@ -74,6 +74,7 @@
   05 Jan 08 SHL Move makelist.c definitions to makelist.h
   05 Jan 08 SHL Move error.c definitions to errutil.h
   05 Jan 08 SHL Move string.c definitions to strutil.h
+  10 Jan 08 SHL Add UM_FIRSTTIME
 
 ***********************************************************************/
 
@@ -179,9 +180,10 @@ RGB2;
 typedef RGB2 *PRGB2;
 #endif
 
- /**************************************************/
- /* Lazy Drag API's.                               */
- /**************************************************/
+/**************************************************/
+/* Lazy Drag API's.                               */
+/**************************************************/
+
 BOOL APIENTRY DrgLazyDrag(HWND hwndSource,
 			  PDRAGINFO pdinfo,
 			  PDRAGIMAGE pdimg, ULONG cdimg, PVOID pRsvd);
@@ -219,7 +221,7 @@ PDRAGINFO APIENTRY DrgReallocDraginfo(PDRAGINFO pdinfoOld, ULONG cditem);
 				 FILE_HIDDEN | FILE_READONLY | FILE_SYSTEM)
 #define LISTTEMPROOT            "$FM2LI$T."
 
-#include "fm3dll2.h"			// SHL
+#include "fm3dll2.h"
 
 #define UM_PAINT            (WM_USER)
 #define UM_SETUP            (WM_USER + 1)
@@ -295,6 +297,7 @@ PDRAGINFO APIENTRY DrgReallocDraginfo(PDRAGINFO pdinfoOld, ULONG cditem);
 #define UM_CLICKED          (WM_USER + 71)
 #define UM_CLICKED3         (WM_USER + 72)
 #define UM_HIDENOTSELECTED  (WM_USER + 73)
+#define UM_FIRSTTIME	    (WM_USER + 74)
 
 typedef struct
 {
@@ -1111,9 +1114,9 @@ DATADEF UINT arcsigs_trailer_line_num;	// Trailer comments start line number (1.
 DATADEF USHORT nodes, shiftstate;
 DATADEF HEV CompactSem;
 DATADEF HWND hwndMain, hwndTree, hwndStatus, hwndStatus2, hwndTrash,
-  hwndButtonlist, hwndDrivelist, hwndStatelist, hwndUserlist,
-  hwndAutoview, hwndAttr, hwndDate, hwndName, hwndBack,
-  hwndLED, hwndLEDHdr, hwndAutoMLE, hwndCmdlist;
+	     hwndButtonlist, hwndDrivelist, hwndStatelist, hwndUserlist,
+	     hwndAutoview, hwndAttr, hwndDate, hwndName, hwndBack,
+	     hwndLED, hwndLEDHdr, hwndAutoMLE, hwndCmdlist;
 DATADEF HBITMAP hbmLEDon, hbmLEDoff;
 DATADEF CHAR ArcTempRoot[9], ThousandsSeparator[2];
 DATADEF HPOINTER hptrArrow, hptrBusy, hptrLast, hptrDir, hptrFile, hptrRemote,
@@ -1164,6 +1167,7 @@ DATADEF HWND hwndHelp, LastDir, AboutBox, DirMenu, FileMenu, TreeMenu,
   CollectorCnrMenu, CollectorFileMenu, CollectorDirMenu,
   Collector, MainPopupMenu, DataHwnd, AutoMenu, hwndBubble,
   hwndToolback, MainObjectHwnd, hwndMainMenu;
+
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL2)
 #endif
@@ -1213,6 +1217,8 @@ DATADEF CHAR *WC_OBJECTWINDOW, *WC_BUBBLE, *WC_TOOLBUTTONS, *WC_DRIVEBUTTONS, *W
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL3)
 #endif
+
+DATADEF BOOL fWantFirstTimeInit;
 DATADEF LONG standardcolors[16];
 
 #ifdef INCL_MMIOOS2
@@ -1234,6 +1240,7 @@ typedef MMIOCLOSE *PMMIOCLOSE;
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL4)
 #endif
+
 DATADEF HSWITCH switches[499];
 DATADEF ULONG numswitches;
 

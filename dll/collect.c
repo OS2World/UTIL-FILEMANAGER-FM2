@@ -41,6 +41,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
+  10 Jan 08 SHL Sync with CfgDlgProc mods
 
 ***********************************************************************/
 
@@ -1524,10 +1525,15 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_NOTEBOOK:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
-	  PostMsg(dcd->hwndParent, msg, mp1, mp2);
-	else
-	  WinDlgBox(HWND_DESKTOP, hwnd, CfgDlgProc, FM3ModHandle,
-		    CFG_FRAME, MPFROMP("Collector"));
+	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_COLLECTORSETTINGS), mp2);
+	else {
+	  WinDlgBox(HWND_DESKTOP,
+		    hwnd,
+		    CfgDlgProc,
+		    FM3ModHandle,
+		    CFG_FRAME,
+		    MPFROMLONG(IDM_COLLECTORSETTINGS));
+	}
 	break;
 
       case IDM_RESELECT:

@@ -644,6 +644,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		  GetPString(IDS_COULDNTSTARTTHREADTEXT));
     return FALSE;
   }
+
   /* timer messages are sent from a separate thread -- start it */
   if (!StartTimer()) {
     Runtime_Error(pszSrcFile, __LINE__,
@@ -661,7 +662,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   {
     /* figure out where to put INI file... */
     CHAR inipath[CCHMAXPATH];
-    // PSZ env;
 
     DosError(FERR_DISABLEHARDERR);
     save_dir2(HomePath);
@@ -691,7 +691,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       strcpy(inipath, profile);
     DosError(FERR_DISABLEHARDERR);
 
-    if (!DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3))) {
+    rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
+    if (rc) {
+      if (rc == ERROR_FILE_NOT_FOUND)
+      fWantFirstTimeInit = TRUE;
+    }
+    else {
       fIniExisted = TRUE;
       if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
 	fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
@@ -710,6 +715,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       fmprof = PrfOpenProfile((HAB)0, inipath);
     }
 
+    // 10 Jan 08 SHL fixme to do first time if new ini
+    // 10 Jan 08 SHL post UM_FIRSTTIME to main window
     if (!fmprof) {
       Win_Error(NULLHANDLE, NULLHANDLE, pszSrcFile, __LINE__,
 		"PrfOpenProfile");
@@ -928,9 +935,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = TRUE;
-#if 0 // 06 Oct 07 SHL fixme to be gone after wrapper testing finished
-    fNoLargeFileSupport = TRUE;
-#endif
   ulCnrType = CCS_EXTENDSEL;
   FilesToGet = FILESTOGET_MIN;
   AutoviewHeight = 48;
@@ -952,7 +956,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   COUNTRYINFO CtryInfo   = {0};
 
   DosQueryCtryInfo(sizeof(CtryInfo), &Country,
-                   &CtryInfo, &ulInfoLen);
+		   &CtryInfo, &ulInfoLen);
   *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
   }
 
@@ -1166,8 +1170,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     *targetdir = 0;
   size = sizeof(extractpath);
   PrfQueryProfileData(fmprof, appname, "ExtractPath", extractpath, &size);
-  //if (!IsValidDir(extractpath))
-  //  *extractpath = 0;
   size = sizeof(printer);
   PrfQueryProfileData(fmprof, appname, "Printer", printer, &size);
   size = sizeof(dircompare);
@@ -1189,16 +1191,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "FtpRunWPSDefault", &fFtpRunWPSDefault, &size);
   size = sizeof(ftprun);
   PrfQueryProfileData(fmprof, appname, "FTPRun", ftprun, &size);
-  if (!*ftprun){
+  if (!*ftprun)
     fFtpRunWPSDefault = TRUE;
-  }
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "HttpRunWPSDefault", &fHttpRunWPSDefault, &size);
   size = sizeof(httprun);
   PrfQueryProfileData(fmprof, appname, "HTTPRun", httprun, &size);
-  if (!*httprun){
+  if (!*httprun)
     fHttpRunWPSDefault = TRUE;
-  }
   size = sizeof(mailrun);
   PrfQueryProfileData(fmprof, appname, "MailRun", mailrun, &size);
   size = sizeof(ftprundir);
@@ -1209,16 +1209,16 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "MailRunDir", mailrundir, &size);
   size = sizeof(lasttoolbox);
   PrfQueryProfileData(fmprof, FM3Str, "LastToolBox", lasttoolbox,
-                      &size);
+		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictHttpRun", &fLibPathStrictHttpRun,
-                      &size);
+		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictFtpRun", &fLibPathStrictFtpRun,
-                      &size);
+		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictMailRun", &fLibPathStrictMailRun,
-                      &size);
+		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoMailtoMailRun", &fNoMailtoMailRun,
 		      &size);
@@ -1307,12 +1307,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(ULONG);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SubjectLengthMax", &fSubjectLengthMax,
-                      &size);
+		      &size);
   if (fSubjectLengthMax)
     SubjectDisplayWidth = 0;
   else {
     PrfQueryProfileData(fmprof, appname, "SubjectDisplayWidth",
-              	        &SubjectDisplayWidth, &size);
+			&SubjectDisplayWidth, &size);
     if (SubjectDisplayWidth < 50)
       SubjectDisplayWidth = 0;
     else if (SubjectDisplayWidth > 1000)

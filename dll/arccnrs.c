@@ -48,6 +48,7 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   30 Dec 07 GKY Use TestCDates for sort by date
+  10 Jan 08 SHL Sync with CfgDlgProc mods
 
 ***********************************************************************/
 
@@ -1465,7 +1466,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
 	free(s);
 	if (IsFile(filename) == 1) {
-#if 1 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58  testing
+#if 1 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
 	  if (fViewChild && fArcStuffVisible)
 	    DosSleep(100);  // Allow unzip session to finish closing 14 Mar 07 SHL
 #endif
@@ -2626,11 +2627,15 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_NOTEBOOK:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
-          PostMsg(dcd->hwndParent, msg, mp1, mp2);
-        else
+	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_ARCHIVERSETTINGS), mp2);
+	else {
 	  WinDlgBox(HWND_DESKTOP,
 		    hwnd,
-		    CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMP("Archive"));
+		    CfgDlgProc,
+		    FM3ModHandle,
+		    CFG_FRAME,
+		    MPFROMLONG(IDM_ARCHIVERSETTINGS));
+	}
 	break;
 
       case IDM_RESCAN:

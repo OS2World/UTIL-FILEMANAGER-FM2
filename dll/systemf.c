@@ -44,7 +44,10 @@ static PSZ pszSrcFile = __FILE__;
 
 #define MAXSTRG (4096)			/* used to build command line strings */
 
-//== ShowSession() bring session for foreground ==
+/**
+ * Bring session foreground
+ * @return TRUE if OK, else FALSE
+ */
 
 BOOL ShowSession(HWND hwnd, PID pid)
 {
@@ -67,7 +70,12 @@ BOOL ShowSession(HWND hwnd, PID pid)
   return FALSE;
 }
 
-//== ExecOnList() Invoke runemf2 for command and file/directory list ==
+/**
+ * Invoke runemf2 for command and file/directory list
+ * @return command return code or
+ *         -1 if runtime error or
+ *         -2 if user cancels command line edit dialog
+ */
 
 int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	       char **list, char *prompt, PCSZ pszCallingFile, UINT uiLineNumber)
@@ -596,10 +604,12 @@ BreakOut:
   }
 }
 
-//== runemf2() run requested app, return -1 if problem starting else return app rc ==
+/** Run requested app
+ * @return application return code or -1 if problem starting app
+ */
 
 int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
-            char *pszDirectory, char *pszEnvironment,
+	    char *pszDirectory, char *pszEnvironment,
 	    char *formatstring,...)
 {
   /* example:
@@ -676,10 +686,10 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 
   *pszPgm = 0;
   va_start(parguments,
-           formatstring);
+	   formatstring);
   vsprintf(pszPgm,
 	   formatstring,
-           parguments);
+	   parguments);
   va_end(parguments);
 
   if (pszEnvironment) {
@@ -835,8 +845,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  switch_to(szSavedir);
 	if (ret) {
 	  Dos_Error(MB_ENTER,ret,hwnd,pszSrcFile,__LINE__,
-                    GetPString(IDS_DOSEXECPGMFAILEDTEXT), pszPgm,
-                    pszCallingFile, __LINE__);
+		    GetPString(IDS_DOSEXECPGMFAILEDTEXT), pszPgm,
+		    pszCallingFile, __LINE__);
 	}
       }
     }
@@ -924,7 +934,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  pszDirectory &&
 	  *pszDirectory)
 	switch_to(szSavedir);
-      if (rc){
+      if (rc) {
 	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
 		  GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
 		  pszPgm, pszCallingFile, __LINE__);
@@ -1108,8 +1118,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
 	Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
-                  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs,
-                  pszCallingFile, __LINE__);
+		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs,
+		  pszCallingFile, __LINE__);
       }
       else if (type & WAIT) {
 	if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
@@ -1309,6 +1319,8 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 
 PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
 {
+  // 11 Jan 08 SHL fixme to not return quoted string on stack
+  // 11 Jan 08 SHL fixme to have javadoc comments
   char szTempPgm[2048], tempcom[2048], temparg[2048];
   char *offset = '\0', *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
   APIRET ret;
@@ -1322,7 +1334,7 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
 
   bstrip(pszPgm);
   strcpy(tempcom, pszPgm);
-  if (tempcom[0] != '\0'){
+  if (tempcom[0] != '\0') {
     offsetexe = strstr(strlwr(pszPgm), ".exe");
     offsetcmd = strstr(strlwr(pszPgm), ".cmd");
     offsetcom = strstr(strlwr(pszPgm), ".com");
@@ -1330,192 +1342,191 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
     offsetbat = strstr(strlwr(pszPgm), ".bat");
     if (offsetexe)
       offset = offsetexe;
-    else{
+    else {
       if (offsetcom)
-        offset = offsetcom;
-      else{
-        if (offsetcmd)
-          offset = offsetcmd;
-        else{
-          if (offsetbtm)
-            offset = offsetbtm;
-          else{
-            if (offsetbat)
-              offset = offsetexe;
-          }
-        }
+	offset = offsetcom;
+      else {
+	if (offsetcmd)
+	  offset = offsetcmd;
+	else {
+	  if (offsetbtm)
+	    offset = offsetbtm;
+	  else {
+	    if (offsetbat)
+	      offset = offsetexe;
+	  }
+	}
       }
     }
-    if (offset){
+    if (offset) {
       tempcom[offset + 4 - pszPgm] = '\0';
       strcpy(temparg, &pszPgm[offset + 4 - pszPgm]);
       while (strchr(tempcom, '\"'))
-           remove_first_occurence_of_character("\"", tempcom);
+	   remove_first_occurence_of_character("\"", tempcom);
       if ((temparg[0] == '\"' && temparg[1] == ' ') ||
-           !strstr(pszPgm, "\\:")||
-           strchr(temparg, '\"') == strrchr(temparg, '\"'))
-        remove_first_occurence_of_character("\"", temparg);
+	   !strstr(pszPgm, "\\:")||
+	   strchr(temparg, '\"') == strrchr(temparg, '\"'))
+	remove_first_occurence_of_character("\"", temparg);
       if (strchr(temparg, '\"') != strrchr(temparg, '\"'))
-        saymsg(MB_OK, HWND_DESKTOP,
-               NullStr,
-               GetPString(IDS_QUOTESINARGSTEXT),
-               pszPgm);
+	saymsg(MB_OK, HWND_DESKTOP,
+	       NullStr,
+	       GetPString(IDS_QUOTESINARGSTEXT),
+	       pszPgm);
       if (!offsetexe) {
-        ret = DosFindFirst(tempcom, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
-                           ulResultBufLen, &ulFindCount, FIL_STANDARD);
-        if (ret){
-          pszChar = tempcom;
-          while (pszChar){
-            if (*pszChar == ' '){
-              *pszChar = '\0';
-              strcat(tempcom, ".exe");
-              ret = DosQueryAppType(tempcom, &ulAppType);
-              //printf("%d %s\n", ret, tempcom); fflush(stdout);
-              if (!ret){
-                strcpy(temparg, pszPgm + strlen(tempcom) - 3);
-                break;
-              }
-            }
-            strcpy(tempcom, pszPgm);
-            pszChar++;
-          }
-        }
+	ret = DosFindFirst(tempcom, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
+			   ulResultBufLen, &ulFindCount, FIL_STANDARD);
+	if (ret) {
+	  pszChar = tempcom;
+	  while (pszChar) {
+	    if (*pszChar == ' ') {
+	      *pszChar = '\0';
+	      strcat(tempcom, ".exe");
+	      ret = DosQueryAppType(tempcom, &ulAppType);
+	      //printf("%d %s\n", ret, tempcom); fflush(stdout);
+	      if (!ret) {
+		strcpy(temparg, pszPgm + strlen(tempcom) - 3);
+		break;
+	      }
+	    }
+	    strcpy(tempcom, pszPgm);
+	    pszChar++;
+	  }
+	}
       }
       else
-        ret = DosQueryAppType(tempcom, &ulAppType);
+	ret = DosQueryAppType(tempcom, &ulAppType);
       BldQuotedFileName(szTempPgm, tempcom);
       //printf("%d A", ret); fflush(stdout);
       if (ret) {
-        ret = saymsg(MB_YESNO,
-                     HWND_DESKTOP,
-                     NullStr,
-                     GetPString(IDS_PROGRAMNOTFOUNDTEXT),
-                     pszPgm);
-        if (ret == MBID_YES){
-          pszQuotedCompletePgm = pszPgm;
-        }
-        else{
-          fCancelAction = TRUE;
-          pszQuotedCompletePgm = pszPgm;
-        }
+	ret = saymsg(MB_YESNO,
+		     HWND_DESKTOP,
+		     NullStr,
+		     GetPString(IDS_PROGRAMNOTFOUNDTEXT),
+		     pszPgm);
+	if (ret == MBID_YES)
+	  pszQuotedCompletePgm = pszPgm;
+	else {
+	  fCancelAction = TRUE;
+	  pszQuotedCompletePgm = pszPgm;
+	}
       }
-      else{
-        if (temparg[0] != ' ')
-          strcat(szTempPgm, " ");
-        strcat(szTempPgm, temparg);
-        pszQuotedCompletePgm = szTempPgm;
+      else {
+	if (temparg[0] != ' ')
+	  strcat(szTempPgm, " ");
+	strcat(szTempPgm, temparg);
+	pszQuotedCompletePgm = szTempPgm;
       }
 
     }
     else if (tempcom && (!strchr(tempcom, '.') ||
-                         strrchr(tempcom, '.' ) < strrchr(tempcom, '\\'))){
-      if (!strchr(tempcom, ' ')){
-        while (strchr(tempcom, '\"'))
-          remove_first_occurence_of_character("\"", tempcom);
-        strcat(tempcom, ".exe");
-        ret = DosFindFirst(tempcom, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
-                           ulResultBufLen, &ulFindCount, FIL_STANDARD);
-        //printf("%d", ret); fflush(stdout);
-      }
-      else{
-        pszChar = tempcom;
-        while (pszChar){
-          while (strchr(tempcom, '\"'))
-            remove_first_occurence_of_character("\"", tempcom);
-          if (*pszChar == ' '){
-            *pszChar = '\0';
-            strcat(tempcom, ".exe");
-            ret = DosQueryAppType(tempcom, &ulAppType);
-            //printf("%d %s\n", ret, tempcom); fflush(stdout);
-            if (!ret){
-              break;
-            }
-          }
-          strcpy(tempcom, pszPgm);
-          pszChar++;
-        }
-      }
-      if (!ret){
-        BldQuotedFileName(szTempPgm, tempcom);
-        strcpy(temparg, pszPgm + strlen(tempcom) - 3);
-        if ((temparg[0] == '\"' && temparg[1] == ' ') ||
-             !strstr(pszPgm, "\\:" ) ||
-             strchr(temparg, '\"') == strrchr(temparg, '\"'))
-          remove_first_occurence_of_character("\"", temparg);
-        if (strchr(temparg, '\"') != strrchr(temparg, '\"'))
-          saymsg(MB_OK, HWND_DESKTOP,
-                 NullStr,
-                 GetPString(IDS_QUOTESINARGSTEXT),
-                 pszPgm);
-        if (temparg[0] != ' ')
-          strcat(szTempPgm, " ");
-        strcat(szTempPgm, temparg);
-        pszQuotedCompletePgm = szTempPgm;
+			 strrchr(tempcom, '.' ) < strrchr(tempcom, '\\'))) {
+      if (!strchr(tempcom, ' ')) {
+	while (strchr(tempcom, '\"'))
+	  remove_first_occurence_of_character("\"", tempcom);
+	strcat(tempcom, ".exe");
+	ret = DosFindFirst(tempcom, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
+			   ulResultBufLen, &ulFindCount, FIL_STANDARD);
+	//printf("%d", ret); fflush(stdout);
       }
       else {
-        ret = saymsg(MB_OK,
-                     HWND_DESKTOP,
-                     NullStr,
-                     GetPString(IDS_PROGRAMNOTEXE2TEXT),
-                     pszPgm);
-          fCancelAction = TRUE;
-          pszQuotedCompletePgm = pszPgm;
+	pszChar = tempcom;
+	while (pszChar) {
+	  while (strchr(tempcom, '\"'))
+	    remove_first_occurence_of_character("\"", tempcom);
+	  if (*pszChar == ' ') {
+	    *pszChar = '\0';
+	    strcat(tempcom, ".exe");
+	    ret = DosQueryAppType(tempcom, &ulAppType);
+	    //printf("%d %s\n", ret, tempcom); fflush(stdout);
+	    if (!ret) {
+	      break;
+	    }
+	  }
+	  strcpy(tempcom, pszPgm);
+	  pszChar++;
+	}
+      }
+      if (!ret) {
+	BldQuotedFileName(szTempPgm, tempcom);
+	strcpy(temparg, pszPgm + strlen(tempcom) - 3);
+	if ((temparg[0] == '\"' && temparg[1] == ' ') ||
+	     !strstr(pszPgm, "\\:" ) ||
+	     strchr(temparg, '\"') == strrchr(temparg, '\"'))
+	  remove_first_occurence_of_character("\"", temparg);
+	if (strchr(temparg, '\"') != strrchr(temparg, '\"'))
+	  saymsg(MB_OK, HWND_DESKTOP,
+		 NullStr,
+		 GetPString(IDS_QUOTESINARGSTEXT),
+		 pszPgm);
+	if (temparg[0] != ' ')
+	  strcat(szTempPgm, " ");
+	strcat(szTempPgm, temparg);
+	pszQuotedCompletePgm = szTempPgm;
+      }
+      else {
+	ret = saymsg(MB_OK,
+		     HWND_DESKTOP,
+		     NullStr,
+		     GetPString(IDS_PROGRAMNOTEXE2TEXT),
+		     pszPgm);
+	  fCancelAction = TRUE;
+	  pszQuotedCompletePgm = pszPgm;
       }
     }
     else {
       pszChar = strrchr(tempcom, '.');
-      while (pszChar && *pszChar !=' '){
-        pszChar++;
+      while (pszChar && *pszChar !=' ') {
+	pszChar++;
       }
       *pszChar = '\0';
       strcpy (temparg, pszPgm + strlen(tempcom));
       while (strchr(tempcom, '\"'))
-        remove_first_occurence_of_character("\"", tempcom);
+	remove_first_occurence_of_character("\"", tempcom);
     if ((temparg[0] == '\"' && temparg[1] == ' ') ||
-         !strstr(pszPgm, "\\:")||
-         strchr(temparg, '\"') == strrchr(temparg, '\"'))
+	 !strstr(pszPgm, "\\:")||
+	 strchr(temparg, '\"') == strrchr(temparg, '\"'))
       remove_first_occurence_of_character("\"", temparg);
     if (strchr(temparg, '\"') != strrchr(temparg, '\"'))
       saymsg(MB_OK, HWND_DESKTOP,
-             NullStr,
-             GetPString(IDS_QUOTESINARGSTEXT),
-             pszPgm);
+	     NullStr,
+	     GetPString(IDS_QUOTESINARGSTEXT),
+	     pszPgm);
     ret = DosFindFirst(tempcom, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
-                         ulResultBufLen, &ulFindCount, FIL_STANDARD);
+			 ulResultBufLen, &ulFindCount, FIL_STANDARD);
 
     BldQuotedFileName(szTempPgm, tempcom);
     //printf("%d %s ", ret, tempcom); fflush(stdout);
     if (ret) {
       ret = saymsg(MB_YESNO,
-                   HWND_DESKTOP,
-                   NullStr,
-                   GetPString(IDS_PROGRAMNOTFOUNDTEXT),
-                   pszPgm);
-      if (ret == MBID_YES){
-        pszQuotedCompletePgm = pszPgm;
+		   HWND_DESKTOP,
+		   NullStr,
+		   GetPString(IDS_PROGRAMNOTFOUNDTEXT),
+		   pszPgm);
+      if (ret == MBID_YES) {
+	pszQuotedCompletePgm = pszPgm;
       }
-      else{
-        fCancelAction = TRUE;
-        pszQuotedCompletePgm = pszPgm;
+      else {
+	fCancelAction = TRUE;
+	pszQuotedCompletePgm = pszPgm;
       }
     }
     ret = saymsg(MB_YESNOCANCEL,
-                   HWND_DESKTOP,
-                   NullStr,
-                   GetPString(IDS_PROGRAMNOTEXE3TEXT),
-                   pszPgm, szTempPgm);
-      if (ret == MBID_YES){
-        if (temparg[0] != ' ')
-          strcat(szTempPgm, " ");
-        strcat(szTempPgm, temparg);
-        pszQuotedCompletePgm = szTempPgm;
+		   HWND_DESKTOP,
+		   NullStr,
+		   GetPString(IDS_PROGRAMNOTEXE3TEXT),
+		   pszPgm, szTempPgm);
+      if (ret == MBID_YES) {
+	if (temparg[0] != ' ')
+	  strcat(szTempPgm, " ");
+	strcat(szTempPgm, temparg);
+	pszQuotedCompletePgm = szTempPgm;
       }
-      if (ret == MBID_CANCEL){
-        fCancelAction = TRUE;
-        pszQuotedCompletePgm = pszPgm;
+      if (ret == MBID_CANCEL) {
+	fCancelAction = TRUE;
+	pszQuotedCompletePgm = pszPgm;
       }
       else
-        pszQuotedCompletePgm = pszPgm;
+	pszQuotedCompletePgm = pszPgm;
     }
     return pszQuotedCompletePgm;
   }

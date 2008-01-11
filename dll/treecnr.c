@@ -42,6 +42,7 @@
   22 Aug 07 SHL Disable DbgMsgs shipped with 3.0.8beta1
   26 Aug 07 SHL Revert to DosSleep(0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
+  10 Jan 08 SHL Sync with CfgDlgProc mods
 
 ***********************************************************************/
 
@@ -2373,10 +2374,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case IDM_NOTEBOOK:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
-	  PostMsg(dcd->hwndParent, msg, mp1, mp2);
-	else
-	  WinDlgBox(HWND_DESKTOP, hwnd, CfgDlgProc, FM3ModHandle,
-                    CFG_FRAME, MPFROMP("Tree"));
+	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_TREECNRSETTINGS), mp2);
+	else {
+	  WinDlgBox(HWND_DESKTOP,
+		    hwnd,
+		    CfgDlgProc,
+		    FM3ModHandle,
+		    CFG_FRAME,
+		    MPFROMLONG(IDM_TREECNRSETTINGS));
+	}
 	break;
 
       case IDM_WALKDIR:

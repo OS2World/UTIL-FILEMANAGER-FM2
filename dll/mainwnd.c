@@ -1958,8 +1958,8 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case DND_LAUNCH:
 	  strcat(li->targetpath, " %a");
 	  ExecOnList(hwndMain,
-                     li->targetpath, PROMPT | WINDOWED, NULL, li->list, NULL,
-                     pszSrcFile, __LINE__);
+		     li->targetpath, PROMPT | WINDOWED, NULL, li->list, NULL,
+		     pszSrcFile, __LINE__);
 	  FreeList(li->list);
 	  li->list = NULL;
 	  break;
@@ -2179,8 +2179,8 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       MRESULT mr = PFNWPStatic(hwnd, msg, mp1, mp2);
 
       SetPresParams(hwnd,
-        	    &RGBGREY,
-        	    &RGBBLACK, &RGBGREY, GetPString(IDS_8HELVBOLDTEXT));
+		    &RGBGREY,
+		    &RGBBLACK, &RGBGREY, GetPString(IDS_8HELVBOLDTEXT));
       return mr;
     }
 
@@ -4233,8 +4233,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  CHAR szPath1[CCHMAXPATH];
 	  CHAR szPath2[CCHMAXPATH];
 	  runemf2(SEPARATE,
-                  HWND_DESKTOP, pszSrcFile, __LINE__,
-                  NULL, NULL,
+		  HWND_DESKTOP, pszSrcFile, __LINE__,
+		  NULL, NULL,
 		  "%s %s %s",
 		  dircompare,
 		  BldQuotedFileName(szPath1, wa.szCurrentPath1),
@@ -4424,8 +4424,15 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case IDM_NOTEBOOK:
+  case IDM_DIRCNRSETTINGS:
+  case IDM_COLLECTORSETTINGS:
+  case IDM_TREECNRSETTINGS:
+  case IDM_ARCHIVERSETTINGS:
+  case IDM_VIEWERSETTINGS:
+  case IDM_COMPARESETTINGS:
+  case IDM_QUICKSETTINGS:
     WinDlgBox(HWND_DESKTOP,
-	      hwnd, CfgDlgProc, FM3ModHandle, CFG_FRAME, MPVOID);
+	      hwnd, CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMLONG(mp1));
     break;
 
   case IDM_VIEWHELPS:
@@ -4638,7 +4645,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	type = SEPARATE | FULLSCREEN;
       }
       runemf2(type, hwnd, pszSrcFile, __LINE__,
-              path, NULL, "%s", env);
+	      path, NULL, "%s", env);
     }
     break;
 
@@ -5387,6 +5394,10 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     else if (fStartMaximized)
       PostMsg(hwndTree, UM_MAXIMIZE, MPVOID, MPVOID);
     fRunning = TRUE;
+    if (fWantFirstTimeInit) {
+      fWantFirstTimeInit = FALSE;
+      PostMsg(hwnd, WM_COMMAND, MPFROMLONG(IDM_QUICKSETTINGS), MPVOID);
+    }
     return 0;
   }
 
@@ -5592,8 +5603,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hDir = HDIR_CREATE;
       ulSearchCount = 1;
       if (!DosFindFirst("*.TLS", &hDir, FILE_READONLY | FILE_ARCHIVED,
-		        &findbuf, sizeof(FILEFINDBUF3),
-		        &ulSearchCount, FIL_STANDARD)) {
+			&findbuf, sizeof(FILEFINDBUF3),
+			&ulSearchCount, FIL_STANDARD)) {
 	do {
 	  priority_bumped();
 	  if (!foundit) {

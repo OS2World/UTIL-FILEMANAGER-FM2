@@ -877,8 +877,8 @@ static VOID FillCnrsThread(VOID *args)
       UINT cntr;
       FILELIST **filesl = NULL;
       FILELIST **filesr = NULL;
-      UINT numfilesl = 0;
-      UINT numfilesr = 0;
+      // UINT numfilesl = 0;		// 08 Jan 08 SHL fixme
+      // UINT numfilesr = 0;
       UINT numallocl = 0;
       UINT numallocr = 0;
       INT ret = 0;
@@ -913,7 +913,8 @@ static VOID FillCnrsThread(VOID *args)
       // Clear containers
       RemoveCnrItems(hwndRight, NULL, 0, CMA_FREE | CMA_INVALIDATE);
       RemoveCnrItems(hwndLeft, NULL, 0, CMA_FREE | CMA_INVALIDATE);
-      cmp->cmp->totalleft = cmp->cmp->totalright = 0;
+      cmp->cmp->totalleft = 0;
+      cmp->cmp->totalright = 0;
 
       // Build list of all files in left directory
       if (fForceLower)
@@ -922,10 +923,10 @@ static VOID FillCnrsThread(VOID *args)
 	strupr(cmp->leftdir);
       FillDirList(cmp->leftdir, lenl, cmp->includesubdirs,
 		  &filesl, &cmp->cmp->totalleft, &numallocl);
-      numfilesl = cmp->cmp->totalleft;
+      // numfilesl = cmp->cmp->totalleft;	// 08 Jan 08 SHL fixme
 
       if (filesl)
-	qsort(filesl, numfilesl, sizeof(CHAR *), CompNames);
+	qsort(filesl, cmp->cmp->totalleft, sizeof(CHAR *), CompNames);
 
       // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread sorted filesl");
 
@@ -937,7 +938,7 @@ static VOID FillCnrsThread(VOID *args)
 	  strupr(cmp->rightdir);
 	FillDirList(cmp->rightdir, lenr, cmp->includesubdirs,
 		    &filesr, &cmp->cmp->totalright, &numallocr);
-	numfilesr = cmp->cmp->totalright;
+	// numfilesr = cmp->cmp->totalright;
       }
       else {
 	// Use snapshot file
@@ -1051,7 +1052,7 @@ static VOID FillCnrsThread(VOID *args)
 					if (AddToFileList((str + 1) + lenr,
 							  &fb4,
 							  &filesr,
-							  &numfilesr,
+							  &cmp->cmp->totalright,
 							  &numallocr))
 					  break;
 				      }
@@ -1074,7 +1075,7 @@ static VOID FillCnrsThread(VOID *args)
       }	// if snapshot file
 
       if (filesr)
-	qsort(filesr, numfilesr, sizeof(CHAR *), CompNames);
+	qsort(filesr, cmp->cmp->totalright, sizeof(CHAR *), CompNames);
 
       // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread sorted filesr");
 
@@ -1177,10 +1178,8 @@ static VOID FillCnrsThread(VOID *args)
 	  if (x <= 0) {
 	    // File appears on left side
 	    filesSeenL++;
+	    cmp->cmp->totalleft = filesSeenL;
 	    BldFullPathName(szBuf, cmp->leftdir, filesl[l]->fname);
-	    //sprintf(szBuf, "%s%s%s", cmp->leftdir,
-	    //        (cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\') ?
-	    //        NullStr : "\\", filesl[l]->fname);
 	    pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
 	    pcil->pszDisplayName = pcil->pszFileName + lenl;
 	    pcil->attrFile = filesl[l]->attrFile;
@@ -1216,10 +1215,8 @@ static VOID FillCnrsThread(VOID *args)
 	  if (x >= 0) {
 	    // File appears on right side
 	    filesSeenR++;
+	    cmp->cmp->totalright = filesSeenR;
 	    BldFullPathName(szBuf, cmp->rightdir, filesr[r]->fname);
-	    //sprintf(szBuf, "%s%s%s", cmp->rightdir,
-	    //        (cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\') ?
-	    //        NullStr : "\\", filesr[r]->fname);
 	    pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
 	    pcir->pszDisplayName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;
@@ -1373,10 +1370,6 @@ static VOID FillCnrsThread(VOID *args)
 	  pcil = (PCNRITEM) pcil->rc.preccNextRecord;
 	  pcir = (PCNRITEM) pcir->rc.preccNextRecord;
 
-	  // Show running totals every 2 seconds
-	  cmp->cmp->totalleft = filesSeenL;
-	  cmp->cmp->totalright = filesSeenR;
-
 	} // while filling left or right
 
 	// If stopped early CM_ALLOCATERECORD partially failed
@@ -1403,14 +1396,9 @@ static VOID FillCnrsThread(VOID *args)
 	      r++;
 	    }
 	  }
-	  // Reduce counts to match what is in container
-	  if (numfilesl > filesSeenL)
-	    numfilesl = filesSeenL;
-	  if (numfilesr > filesSeenR)
-	    numfilesr = filesSeenR;
+	  // Reduce count to match what is in containers
 	  recsNeeded = recsGotten;
 	} // if insufficient resources
-
 
 	if (filesl)
 	  free(filesl);			// Free header - have already freed elements
@@ -1434,7 +1422,8 @@ static VOID FillCnrsThread(VOID *args)
 			MPFROMP(pcilFirst), MPFROMP(&ri))) {
 	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
 	  FreeCnrItemList(hwndLeft, pcilFirst);
-	  numfilesl = 0;
+	  // numfilesl = 0;		// 08 Jan 08 SHL fixme
+	  cmp->cmp->totalleft = 0;
 	}
 
 	// Insert right side
@@ -1451,11 +1440,9 @@ static VOID FillCnrsThread(VOID *args)
 	  Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
 	  RemoveCnrItems(hwndLeft, NULL, 0, CMA_FREE | CMA_INVALIDATE);
 	  FreeCnrItemList(hwndRight, pcirFirst);
-	  numfilesr = 0;
+	  // numfilesr = 0;
+	  cmp->cmp->totalright = 0;
 	}
-
-	cmp->cmp->totalleft = numfilesl;
-	cmp->cmp->totalright = numfilesr;
 
 	// DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread filled");
 

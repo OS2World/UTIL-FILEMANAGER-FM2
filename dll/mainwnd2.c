@@ -19,6 +19,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   07 Aug 07 SHL Use BldQuotedFileName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  10 Jan 08 SHL Sync with CfgDlgProc mods
 
 ***********************************************************************/
 
@@ -501,8 +502,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	  CHAR szPath1[CCHMAXPATH];
 	  CHAR szPath2[CCHMAXPATH];
 	  runemf2(SEPARATE,
-                  HWND_DESKTOP, pszSrcFile, __LINE__,
-                  NULL, NULL,
+		  HWND_DESKTOP, pszSrcFile, __LINE__,
+		  NULL, NULL,
 		  "%s %s %s",
 		  dircompare,
 		  BldQuotedFileName(szPath1, wa.szCurrentPath1),
@@ -587,9 +588,14 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
     break;
 
   case IDM_NOTEBOOK:
+    // Indicate fm/2 lite
+    // 10 Jan 08 SHL fixme to have IDM_FM2LITE
     WinDlgBox(HWND_DESKTOP,
 	      hwnd,
-	      CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMP(realappname));
+	      CfgDlgProc,
+	      FM3ModHandle,
+	      CFG_FRAME,
+	      MPFROMLONG(IDM_LITESETTINGS));
     PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
     break;
 

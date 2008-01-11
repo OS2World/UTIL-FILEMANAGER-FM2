@@ -21,6 +21,8 @@
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
   26 Nov 07 GKY Allow a currently nonvalid path in the ext path field with warning
   06 Jan 08 GKY Use CheckApp_QuoteAddExe to check program strings on entry
+  10 Jan 08 SHL Remember last settings page
+  10 Jan 08 SHL Rework page select logic
 
 ***********************************************************************/
 
@@ -43,22 +45,11 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-typedef struct
-{
-  USHORT frameid;
-  ULONG title;
-  PFNWP proc;
-  HWND hwnd;
-  ULONG helpid;
-  ULONG pageID;
-}
-NOTEPAGES;
-
 static HWND hwndNotebook;
 
 MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  ULONG  ulResult;
+  ULONG ulResult;
 
   switch (msg) {
   case WM_INITDLG:
@@ -151,11 +142,11 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  id = WinQueryWindowUShort(hwndFocus, QWS_ID);
 	  switch (id) {
 	  case CFGA_VIRUS:
-            if (insert_filename(hwnd, filename, 2, FALSE) && *filename){
-              BldQuotedFileName(szfilename, filename);
-              strcat(szfilename, " %p");
-              WinSetDlgItemText(hwnd, id, szfilename);
-            }
+	    if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
+	      BldQuotedFileName(szfilename, filename);
+	      strcat(szfilename, " %p");
+	      WinSetDlgItemText(hwnd, id, szfilename);
+	    }
 	    break;
 	  case CFGA_EXTRACTPATH:
 	    strcpy(filename, extractpath);
@@ -205,48 +196,54 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryDlgItemText(hwnd, CFGA_VIRUS, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, virus)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(virus, psz, strlen(psz) + 1);
-        if (!strchr(virus, '%') && strlen(virus) > 3)
-          strcat(virus, " %p");
+      if (strcmp(szBuf, virus)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(virus, psz, strlen(psz) + 1);
+	if (!strchr(virus, '%') && strlen(virus) > 3)
+	  strcat(virus, " %p");
       }
       if (!*virus)
-        strcpy(virus, "OS2SCAN.EXE %p /SUB /A");
+	strcpy(virus, "OS2SCAN.EXE %p /SUB /A");
       WinQueryDlgItemText(hwnd, CFGA_EXTRACTPATH, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
       bstrip(szBuf);
 
       if (strcmp(extractpath, szBuf)) {
-        memcpy(extractpath, szBuf, strlen(szBuf) + 1);
-        if (*extractpath){
-          MakeFullName(extractpath);
-          if (IsFile(extractpath)) {
-            ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
-                              GetPString(IDS_WARNINGTEXT),
-                              GetPString(IDS_EXTPATHNOTVALIDTEXT),
-                              extractpath);
-            if (ulResult == MBID_YES)
-              *extractpath = 0;
-            if (ulResult == MBID_CANCEL){
-              WinDlgBox(HWND_DESKTOP,
-                        hwnd, CfgDlgProc,
-                        FM3ModHandle, CFG_FRAME,
-                        MPFROMP("Archive"));
-              break;
-            }
-          }
-        }
+	memcpy(extractpath, szBuf, strlen(szBuf) + 1);
+	if (*extractpath) {
+	  MakeFullName(extractpath);
+	  if (IsFile(extractpath)) {
+	    ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+			      GetPString(IDS_WARNINGTEXT),
+			      GetPString(IDS_EXTPATHNOTVALIDTEXT),
+			      extractpath);
+	    if (ulResult == MBID_YES)
+	      *extractpath = 0;
+	    if (ulResult == MBID_CANCEL) {
+	      WinDlgBox(HWND_DESKTOP,
+			hwnd,
+			CfgDlgProc,
+			FM3ModHandle,
+			CFG_FRAME,
+			MPFROMLONG(IDM_ARCHIVERSETTINGS));
+	      break;
+	    }
+	  }
+	}
       }
     }
     PrfWriteProfileString(fmprof, appname, "Virus", virus);
     PrfWriteProfileString(fmprof, appname, "ExtractPath", extractpath);
     break;
   }
-  if (fCancelAction){
+  if (fCancelAction) {
     fCancelAction = FALSE;
     WinDlgBox(HWND_DESKTOP,
-              hwnd, CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMP("Archive"));
+	      hwnd,
+	      CfgDlgProc,
+	      FM3ModHandle,
+	      CFG_FRAME,
+	      MPFROMLONG(IDM_ARCHIVERSETTINGS));
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
@@ -439,9 +436,9 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  case CFGV_BINVIEW:
 	  case CFGV_BINED:
 	  case CFGV_VIEWER:
-          case CFGV_EDITOR:
-            if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
-              BldQuotedFileName(szfilename, filename);
+	  case CFGV_EDITOR:
+	    if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
+	      BldQuotedFileName(szfilename, filename);
 	      strcat(szfilename, " %a");
 	      WinSetDlgItemText(hwnd, id, szfilename);
 	    }
@@ -462,35 +459,35 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryDlgItemText(hwnd, CFGV_VIEWER, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, viewer)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(viewer, psz, strlen(psz) + 1);
-        if (!strchr(viewer, '%') && strlen(viewer) > 3)
-          strcat(viewer, " %a");
+      if (strcmp(szBuf, viewer)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(viewer, psz, strlen(psz) + 1);
+	if (!strchr(viewer, '%') && strlen(viewer) > 3)
+	  strcat(viewer, " %a");
       }
       WinQueryDlgItemText(hwnd, CFGV_EDITOR, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, editor)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(editor, psz, strlen(psz) + 1);
-        if (!strchr(editor, '%') && strlen(editor) > 3)
-          strcat(editor, " %a");
+      if (strcmp(szBuf, editor)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(editor, psz, strlen(psz) + 1);
+	if (!strchr(editor, '%') && strlen(editor) > 3)
+	  strcat(editor, " %a");
       }
       WinQueryDlgItemText(hwnd, CFGV_BINVIEW, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, binview)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(binview, psz, strlen(psz) + 1);
-        if (!strchr(binview, '%') && strlen(binview) > 3)
-          strcat(binview, " %a");
+      if (strcmp(szBuf, binview)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(binview, psz, strlen(psz) + 1);
+	if (!strchr(binview, '%') && strlen(binview) > 3)
+	  strcat(binview, " %a");
       }
       WinQueryDlgItemText(hwnd, CFGV_BINED, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, bined)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(bined, psz, strlen(psz) + 1);
-        if (!strchr(bined, '%') && strlen(bined) > 3)
-          strcat(bined, " %a");
+      if (strcmp(szBuf, bined)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(bined, psz, strlen(psz) + 1);
+	if (!strchr(bined, '%') && strlen(bined) > 3)
+	  strcat(bined, " %a");
       }
       PrfWriteProfileString(fmprof, appname, "Viewer", viewer);
       PrfWriteProfileString(fmprof, appname, "Editor", editor);
@@ -498,23 +495,27 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PrfWriteProfileString(fmprof, appname, "BinEd", bined);
       fUseNewViewer = WinQueryButtonCheckstate(hwnd, CFGV_USENEWVIEWER);
       PrfWriteProfileData(fmprof, appname, "UseNewViewer", &fUseNewViewer,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fGuessType = WinQueryButtonCheckstate(hwnd, CFGV_GUESSTYPE);
       PrfWriteProfileData(fmprof, appname, "GuessType", &fGuessType,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fViewChild = WinQueryButtonCheckstate(hwnd, CFGV_VIEWCHILD);
       PrfWriteProfileData(fmprof, appname, "ViewChild", &fViewChild,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fCheckMM = WinQueryButtonCheckstate(hwnd, CFGV_CHECKMM);
       PrfWriteProfileData(fmprof, appname, "CheckMM", &fCheckMM, sizeof(BOOL));
 
       break;
     }
   }
-  if (fCancelAction){
+  if (fCancelAction) {
     fCancelAction = FALSE;
     WinDlgBox(HWND_DESKTOP,
-              hwnd, CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMP("Viewer1"));
+	      hwnd,
+	      CfgDlgProc,
+	      FM3ModHandle,
+	      CFG_FRAME,
+	      MPFROMLONG(IDM_VIEWERSETTINGS));
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
@@ -530,9 +531,9 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, CFGH_FTPRUN, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_HTTPRUN, EM_SETTEXTLIMIT,
-                      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_MAILRUN, EM_SETTEXTLIMIT,
-                      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_RUNMAILWORKDIR, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGH_FIND), FALSE);
@@ -605,34 +606,34 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  id = WinQueryWindowUShort(hwndFocus, QWS_ID);
 	  switch (id) {
 	  case CFGH_HTTPRUN:
-          case CFGH_FTPRUN:
-          case CFGH_MAILRUN:
-            if (insert_filename(hwnd, filename, 2, FALSE) && *filename){
-              BldQuotedFileName(szfilename, filename);
-              WinSetDlgItemText(hwnd, id, szfilename);
-            }
-            break;
-          case CFGH_RUNFTPWORKDIR:
+	  case CFGH_FTPRUN:
+	  case CFGH_MAILRUN:
+	    if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
+	      BldQuotedFileName(szfilename, filename);
+	      WinSetDlgItemText(hwnd, id, szfilename);
+	    }
+	    break;
+	  case CFGH_RUNFTPWORKDIR:
 	    strcpy(filename, ftprundir);
 	    if (WinDlgBox(HWND_DESKTOP, hwndNotebook,
 			  WalkExtractDlgProc, FM3ModHandle, WALK_FRAME,
 			  MPFROMP(filename)) && *filename)
 	      WinSetDlgItemText(hwnd, id, filename);
-            break;
-          case CFGH_RUNHTTPWORKDIR:
-            strcpy(filename, httprundir);
+	    break;
+	  case CFGH_RUNHTTPWORKDIR:
+	    strcpy(filename, httprundir);
 	    if (WinDlgBox(HWND_DESKTOP, hwndNotebook,
 			  WalkExtractDlgProc, FM3ModHandle, WALK_FRAME,
 			  MPFROMP(filename)) && *filename)
 	      WinSetDlgItemText(hwnd, id, filename);
-            break;
-          case CFGH_RUNMAILWORKDIR:
-            strcpy(filename, mailrundir);
+	    break;
+	  case CFGH_RUNMAILWORKDIR:
+	    strcpy(filename, mailrundir);
 	    if (WinDlgBox(HWND_DESKTOP, hwndNotebook,
 			  WalkExtractDlgProc, FM3ModHandle, WALK_FRAME,
 			  MPFROMP(filename)) && *filename)
 	      WinSetDlgItemText(hwnd, id, filename);
-            break;
+	    break;
 	  default:
 	    Runtime_Error(pszSrcFile, __LINE__, "bad case %d", id);
 	    break;
@@ -662,21 +663,21 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memcpy(mailrundir, szBuf, strlen(szBuf) + 1);
       WinQueryDlgItemText(hwnd, CFGH_FTPRUN, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, ftprun)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(ftprun, psz, strlen(psz) + 1);
+      if (strcmp(szBuf, ftprun)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(ftprun, psz, strlen(psz) + 1);
       }
       WinQueryDlgItemText(hwnd, CFGH_HTTPRUN, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, httprun)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(httprun, psz, strlen(psz) + 1);
+      if (strcmp(szBuf, httprun)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(httprun, psz, strlen(psz) + 1);
       }
       WinQueryDlgItemText(hwnd, CFGH_MAILRUN, CCHMAXPATH, szBuf);
       szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, mailrun)){
-        psz = CheckApp_QuoteAddExe(szBuf);
-        memcpy(mailrun, psz, strlen(psz) + 1);
+      if (strcmp(szBuf, mailrun)) {
+	psz = CheckApp_QuoteAddExe(szBuf);
+	memcpy(mailrun, psz, strlen(psz) + 1);
       }
       PrfWriteProfileString(fmprof, appname, "HttpRunDir", httprundir);
       PrfWriteProfileString(fmprof, appname, "FtpRunDir", ftprundir);
@@ -686,29 +687,33 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PrfWriteProfileString(fmprof, appname, "MailRun", mailrun);
       fHttpRunWPSDefault = WinQueryButtonCheckstate(hwnd, CFGH_HTTPRUNWPSDEFAULT);
       PrfWriteProfileData(fmprof, appname, "HttpRunWPSDefault", &fHttpRunWPSDefault,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fFtpRunWPSDefault = WinQueryButtonCheckstate(hwnd, CFGH_FTPRUNWPSDEFAULT);
       PrfWriteProfileData(fmprof, appname, "FtpRunWPSDefault", &fFtpRunWPSDefault,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fLibPathStrictHttpRun = WinQueryButtonCheckstate(hwnd, CFGH_LIBPATHSTRICTHTTPRUN);
       PrfWriteProfileData(fmprof, appname, "LibPathStrictHttpRun",
-                          &fLibPathStrictHttpRun, sizeof(BOOL));
+			  &fLibPathStrictHttpRun, sizeof(BOOL));
       fLibPathStrictFtpRun = WinQueryButtonCheckstate(hwnd, CFGH_LIBPATHSTRICTFTPRUN);
       PrfWriteProfileData(fmprof, appname, "LibPathStrictFtpRun",
-                          &fLibPathStrictFtpRun, sizeof(BOOL));
+			  &fLibPathStrictFtpRun, sizeof(BOOL));
       fLibPathStrictMailRun = WinQueryButtonCheckstate(hwnd, CFGH_LIBPATHSTRICTMAILRUN);
       PrfWriteProfileData(fmprof, appname, "LibPathStrictMailRun",
-                          &fLibPathStrictMailRun, sizeof(BOOL));
+			  &fLibPathStrictMailRun, sizeof(BOOL));
       fNoMailtoMailRun = WinQueryButtonCheckstate(hwnd, CFGH_NOMAILTOMAILRUN);
       PrfWriteProfileData(fmprof, appname, "NoMailtoMailRun",
-                          &fNoMailtoMailRun, sizeof(BOOL));
+			  &fNoMailtoMailRun, sizeof(BOOL));
       break;
     }
   }
-  if (fCancelAction){
+  if (fCancelAction) {
     fCancelAction = FALSE;
     WinDlgBox(HWND_DESKTOP,
-              hwnd, CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMP("Viewer2"));
+	      hwnd,
+	      CfgDlgProc,
+	      FM3ModHandle,
+	      CFG_FRAME,
+	      MPFROMLONG(IDM_VIEWERSETTINGS));
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
@@ -781,12 +786,13 @@ MRESULT EXPENTRY CfgTSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_UNDO:
     {
-      ULONG flWindowAttr = 0, size = sizeof(ULONG);
+      ULONG flWindowAttr = 0;
+      ULONG ulSize = sizeof(ULONG);
 
       if (!PrfQueryProfileData(fmprof,
 			       appname,
 			       "TreeflWindowAttr",
-			       (PVOID) & flWindowAttr, &size))
+			       (PVOID) & flWindowAttr, &ulSize))
 	flWindowAttr |= (CV_TREE | CA_TREELINE | CV_ICON | CV_MINI | CV_FLOW);
       WinCheckButton(hwnd, CFG5_ICON, ((flWindowAttr & CV_ICON) != FALSE));
       WinCheckButton(hwnd, CFG5_MINIICONS,
@@ -795,8 +801,8 @@ MRESULT EXPENTRY CfgTSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       mask.attrFile = FILE_DIRECTORY | FILE_ARCHIVED | FILE_HIDDEN |
 	FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
       mask.fIsTree = TRUE;
-      size = sizeof(MASK);
-      if (PrfQueryProfileData(fmprof, appname, "TreeFilter", &mask, &size)) {
+      ulSize = sizeof(MASK);
+      if (PrfQueryProfileData(fmprof, appname, "TreeFilter", &mask, &ulSize)) {
 	SetMask(NULL, &mask);
       }
       if (!mask.attrFile)
@@ -833,7 +839,7 @@ MRESULT EXPENTRY CfgTSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	WinCheckButton(hwnd, CFG6_SORTNAME, TRUE);
       if (TreesortFlags & SORT_REVERSE)
-        WinCheckButton(hwnd, CFG6_SORTREVERSE, TRUE);
+	WinCheckButton(hwnd, CFG6_SORTREVERSE, TRUE);
     }
     return 0;
 
@@ -1232,8 +1238,8 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  switch (id) {
 	  case CFGC_COMPARE:
 	  case CFGC_DIRCOMPARE:
-            if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
-              BldQuotedFileName(szfilename, filename);
+	    if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
+	      BldQuotedFileName(szfilename, filename);
 	      strcat(szfilename, " %a");
 	      WinSetDlgItemText(hwnd, id, szfilename);
 	    }
@@ -1253,30 +1259,34 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR szBuf[CCHMAXPATH], *psz;
 
       WinQueryDlgItemText(hwnd, CFGC_DIRCOMPARE, CCHMAXPATH, szBuf);
-        szBuf[CCHMAXPATH - 1] = 0;
-        if (strcmp(szBuf, dircompare)){
-          psz = CheckApp_QuoteAddExe(szBuf);
-          memcpy(dircompare, psz, strlen(psz) + 1);
-          if (!strchr(dircompare, '%') && strlen(dircompare) > 3)
-            strcat(dircompare, " %a");
-        }
+	szBuf[CCHMAXPATH - 1] = 0;
+	if (strcmp(szBuf, dircompare)) {
+	  psz = CheckApp_QuoteAddExe(szBuf);
+	  memcpy(dircompare, psz, strlen(psz) + 1);
+	  if (!strchr(dircompare, '%') && strlen(dircompare) > 3)
+	    strcat(dircompare, " %a");
+	}
       PrfWriteProfileString(fmprof, appname, "DirCompare", dircompare);
       WinQueryDlgItemText(hwnd, CFGC_COMPARE, CCHMAXPATH, szBuf);
-        szBuf[CCHMAXPATH - 1] = 0;
-        if (strcmp(szBuf, compare)){
-          psz = CheckApp_QuoteAddExe(szBuf);
-          memcpy(compare, psz, strlen(psz) + 1);
-          if (!strchr(compare, '%') && strlen(compare) > 3)
-            strcat(compare, " %a");
-        }
+	szBuf[CCHMAXPATH - 1] = 0;
+	if (strcmp(szBuf, compare)) {
+	  psz = CheckApp_QuoteAddExe(szBuf);
+	  memcpy(compare, psz, strlen(psz) + 1);
+	  if (!strchr(compare, '%') && strlen(compare) > 3)
+	    strcat(compare, " %a");
+	}
       PrfWriteProfileString(fmprof, appname, "Compare", compare);
       break;
     }
   }
-  if (fCancelAction){
+  if (fCancelAction) {
     fCancelAction = FALSE;
     WinDlgBox(HWND_DESKTOP,
-              hwnd, CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMP("Compare"));
+	      hwnd,
+	      CfgDlgProc,
+	      FM3ModHandle,
+	      CFG_FRAME,
+	      MPFROMLONG(IDM_COMPARESETTINGS));
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
@@ -1616,11 +1626,12 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_UNDO:
     {
-      ULONG flWindowAttr = 0, size = sizeof(ULONG);
+      ULONG flWindowAttr = 0;
+      ULONG ulSize = sizeof(ULONG);
 
       if (!PrfQueryProfileData(fmprof,
 			       appname,
-			       "DirflWindowAttr", &flWindowAttr, &size))
+			       "DirflWindowAttr", &flWindowAttr, &ulSize))
 	flWindowAttr = (CV_NAME | CV_MINI | CA_DETAILSVIEWTITLES | CV_FLOW);
       if (flWindowAttr & CV_ICON)
 	WinCheckButton(hwnd, CFG5_ICON, TRUE);
@@ -1649,8 +1660,8 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&mask, 0, sizeof(mask));
       mask.attrFile = FILE_DIRECTORY | FILE_ARCHIVED | FILE_HIDDEN |
 	FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
-      size = sizeof(MASK);
-      if (PrfQueryProfileData(fmprof, appname, "DirFilter", &mask, &size))
+      ulSize = sizeof(MASK);
+      if (PrfQueryProfileData(fmprof, appname, "DirFilter", &mask, &ulSize))
 	SetMask(NULL, &mask);
       if (!mask.attrFile)
 	mask.attrFile = FILE_DIRECTORY | FILE_ARCHIVED | FILE_HIDDEN |
@@ -1786,12 +1797,12 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "DetailsAttr",
 			&detailsattr, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-                        &detailsattr, sizeof(BOOL));
+			&detailsattr, sizeof(BOOL));
     fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
     PrfWriteProfileData(fmprof, appname, "SubjectInLeftPane",
 			&fSubjectInLeftPane, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectInLeftPane",
-                        &fSubjectInLeftPane, sizeof(BOOL));
+			&fSubjectInLeftPane, sizeof(BOOL));
     fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
     PrfWriteProfileData(fmprof, appname, "SubjectLengthMax",
 			&fSubjectInLeftPane, sizeof(BOOL));
@@ -1800,22 +1811,22 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     *mask.prompt = 0;
     PrfWriteProfileData(fmprof, appname, "DirFilter", &mask, sizeof(MASK));
     {
-        if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
-          WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
-	           	    MPFROMP(&SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-          if (SubjectDisplayWidth < 50)
-            SubjectDisplayWidth  = 0;
-          else if (SubjectDisplayWidth > 1000)
-            SubjectDisplayWidth = 1000;
-        }
-        else
-          SubjectDisplayWidth  = 0;
-        PrfWriteProfileData(fmprof,
-                            appname, "SubjectDisplayWidth",
-                            &SubjectDisplayWidth, sizeof(ULONG));
-        PrfWriteProfileData(fmprof,
-                            appname, "DirCnr.SubjectDisplayWidth",
-                            &SubjectDisplayWidth, sizeof(ULONG));
+	if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
+	  WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
+			    MPFROMP(&SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
+	  if (SubjectDisplayWidth < 50)
+	    SubjectDisplayWidth = 0;
+	  else if (SubjectDisplayWidth > 1000)
+	    SubjectDisplayWidth = 1000;
+	}
+	else
+	  SubjectDisplayWidth = 0;
+	PrfWriteProfileData(fmprof,
+			    appname, "SubjectDisplayWidth",
+			    &SubjectDisplayWidth, sizeof(ULONG));
+	PrfWriteProfileData(fmprof,
+			    appname, "DirCnr.SubjectDisplayWidth",
+			    &SubjectDisplayWidth, sizeof(ULONG));
     }
     break;
   }
@@ -1959,11 +1970,12 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_UNDO:
     WinCheckButton(hwnd, CFG5_EXTERNALCOLLECTOR, fExternalCollector);
     {
-      ULONG flWindowAttr = 0, size = sizeof(ULONG);
+      ULONG flWindowAttr = 0;
+      ULONG ulSize = sizeof(ULONG);
 
       if (!PrfQueryProfileData(fmprof,
 			       appname,
-			       "CollectorflWindowAttr", &flWindowAttr, &size))
+			       "CollectorflWindowAttr", &flWindowAttr, &ulSize))
 	flWindowAttr = (CV_NAME | CA_DETAILSVIEWTITLES | CV_MINI | CV_FLOW);
       if (flWindowAttr & CV_ICON)
 	WinCheckButton(hwnd, CFG5_ICON, TRUE);
@@ -1980,9 +1992,9 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&mask, 0, sizeof(mask));
       mask.attrFile = FILE_DIRECTORY | FILE_ARCHIVED | FILE_HIDDEN |
 	FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
-      size = sizeof(MASK);
+      ulSize = sizeof(MASK);
       if (PrfQueryProfileData(fmprof,
-			      appname, "CollectorFilter", &mask, &size)) {
+			      appname, "CollectorFilter", &mask, &ulSize)) {
 	SetMask(NULL, &mask);
       }
       if (!mask.attrFile)
@@ -2947,108 +2959,33 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
-NOTEPAGES np[] = { CFGD_FRAME,
-  IDS_NOTEDIRCNRS1TEXT,
-  CfgDDlgProc,
-  0,
-  0,
-  0,
-  CFG5_FRAME,
-  IDS_NOTEDIRVIEW1TEXT,
-  Cfg5DlgProc,
-  0,
-  0,
-  0,
-  CFG6_FRAME,
-  IDS_NOTEDIRSORT1TEXT,
-  Cfg6DlgProc,
-  0,
-  0,
-  0,
-  CFG5_FRAME,
-  IDS_NOTECOLVIEW1TEXT,
-  Cfg7DlgProc,
-  0,
-  0,
-  0,
-  CFG6_FRAME,
-  IDS_NOTECOLSORT1TEXT,
-  Cfg8DlgProc,
-  0,
-  0,
-  0,
-  CFGA_FRAME,
-  IDS_NOTEARCHIVER1TEXT,
-  CfgADlgProc,
-  0,
-  0,
-  0,
-  CFGT_FRAME,
-  IDS_NOTETREE1TEXT,
-  CfgTDlgProc,
-  0,
-  0,
-  0,
-  CFGTS_FRAME,
-  IDS_NOTETREESORT1TEXT,
-  CfgTSDlgProc,
-  0,
-  0,
-  0,
-  CFGV_FRAME,
-  IDS_NOTEVIEWERS1TEXT,
-  CfgVDlgProc,
-  0,
-  0,
-  0,
-  CFGH_FRAME,
-  IDS_NOTEVIEWERS3TEXT,
-  CfgHDlgProc,
-  0,
-  0,
-  0,
-  CFGC_FRAME,
-  IDS_NOTECOMPARE1TEXT,
-  CfgCDlgProc,
-  0,
-  0,
-  0,
-  CFGM_FRAME,
-  IDS_NOTEMONOLITHIC1TEXT,
-  CfgMDlgProc,
-  0,
-  0,
-  0,
-  CFGG_FRAME,
-  IDS_NOTEGENERAL1TEXT,
-  CfgGDlgProc,
-  0,
-  0,
-  0,
-  CFGS_FRAME,
-  IDS_NOTESCANNING1TEXT,
-  CfgSDlgProc,
-  0,
-  0,
-  0,
-  CFGB_FRAME,
-  IDS_NOTEBUBBLE1TEXT,
-  CfgBDlgProc,
-  0,
-  0,
-  0,
-  CFG9_FRAME,
-  IDS_NOTEQUICK1TEXT,
-  Cfg9DlgProc,
-  0,
-  0,
-  0,
-  0,
-  0,
-  NULL,
-  0,
-  0,
-  0
+struct
+{
+  USHORT usMenuId;
+  USHORT usFrameId;
+  ULONG ulTitle;
+  PFNWP pfnPageProc;
+  HWND hwnd;
+  ULONG ulHelpId;
+  ULONG ulPageId;
+} np[] = {
+  { IDM_DIRCNRSETTINGS, CFGD_FRAME, IDS_NOTEDIRCNRS1TEXT, CfgDDlgProc, 0, 0, 0 },
+  { 0, CFG5_FRAME, IDS_NOTEDIRVIEW1TEXT, Cfg5DlgProc, 0, 0, 0},
+  { 0, CFG6_FRAME, IDS_NOTEDIRSORT1TEXT, Cfg6DlgProc, 0, 0, 0 },
+  { IDM_COLLECTORSETTINGS, CFG5_FRAME, IDS_NOTECOLVIEW1TEXT, Cfg7DlgProc, 0, 0, 0 },
+  { 0, CFG6_FRAME, IDS_NOTECOLSORT1TEXT, Cfg8DlgProc, 0, 0, 0 },
+  { IDM_ARCHIVERSETTINGS, CFGA_FRAME, IDS_NOTEARCHIVER1TEXT, CfgADlgProc, 0, 0, 0 },
+  { 0, CFGT_FRAME, IDS_NOTETREE1TEXT, CfgTDlgProc, 0, 0, 0 },
+  { 0, CFGTS_FRAME, IDS_NOTETREESORT1TEXT, CfgTSDlgProc, 0, 0, 0 },
+  { 0, CFGV_FRAME, IDS_NOTEVIEWERS1TEXT, CfgVDlgProc, 0, 0, 0 },
+  { IDM_VIEWERSETTINGS, CFGH_FRAME, IDS_NOTEVIEWERS3TEXT, CfgHDlgProc, 0, 0, 0 },
+  { IDM_COMPARESETTINGS, CFGC_FRAME, IDS_NOTECOMPARE1TEXT, CfgCDlgProc, 0, 0, 0 },
+  { 0, CFGM_FRAME, IDS_NOTEMONOLITHIC1TEXT, CfgMDlgProc, 0, 0, 0 },
+  { 0, CFGG_FRAME, IDS_NOTEGENERAL1TEXT, CfgGDlgProc, 0, 0, 0 },
+  { 0, CFGS_FRAME, IDS_NOTESCANNING1TEXT, CfgSDlgProc, 0, 0, 0 },
+  { 0, CFGB_FRAME, IDS_NOTEBUBBLE1TEXT, CfgBDlgProc, 0, 0, 0 },
+  { IDM_QUICKSETTINGS, CFG9_FRAME, IDS_NOTEQUICK1TEXT, Cfg9DlgProc, 0, 0, 0 },
+  { 0, 0, 0, NULL, 0, 0, 0 }	// usFrameId 0 is end marker
 };
 
 MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -3056,17 +2993,30 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   HWND hwndTemp;
   USHORT attrib = BKA_FIRST;
   INT x;
-  ULONG pageID;
+  ULONG ulPageId;
+  ULONG ulSize;
+
+  static PSZ pszIK_LastSettingsPage = "LastSettingsPage";
+  static BOOL fInitDone;
+
+  static UINT uLastPageIndex;
 
   switch (msg) {
   case WM_INITDLG:
     hwndNotebook = hwnd;
+    if (!fInitDone) {
+      ulSize = sizeof(uLastPageIndex);
+      PrfQueryProfileData(fmprof, appname, pszIK_LastSettingsPage, &uLastPageIndex, &ulSize);
+      fInitDone = TRUE;
+    }
     if (mp2) {
-      if (!strcmp((CHAR *) mp2, "FM/4")) {
+      // If fm/2 lite drop quick setting page
+      if (mp2 == MPFROMLONG(IDM_LITESETTINGS)) {
 	x = 0;
-	while (np[x].frameid && np[x].frameid != CFG9_FRAME)
+	while (np[x].usFrameId && np[x].usFrameId != CFG9_FRAME)
 	  x++;
-	np[x].frameid = 0;
+	np[x].usFrameId = 0;
+	mp2 = 0;
       }
     }
     PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
@@ -3082,68 +3032,59 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      CFG_NOTEBOOK,
 		      BKM_SETDIMENSIONS,
 		      MPFROM2SHORT(0, 0), MPFROMLONG(BKA_MINORTAB));
-    for (x = 0; np[x].frameid; x++) {
+    for (x = 0; np[x].usFrameId; x++) {
       hwndTemp = WinLoadDlg(HWND_DESKTOP,
 			    HWND_DESKTOP,
-			    np[x].proc, FM3ModHandle, np[x].frameid, MPVOID);
-      if (hwndTemp) {
-	WinSetWindowULong(hwndTemp, QWL_USER, (ULONG) hwnd);
+			    np[x].pfnPageProc, FM3ModHandle, np[x].usFrameId, MPVOID);
+      if (!hwndTemp) {
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		  "Can not load settings page %u", x);
+      }
+      else {
+	WinSetWindowULong(hwndTemp, QWL_USER, (ULONG)hwnd);
 	np[x].hwnd = hwndTemp;
-	np[x].pageID = (ULONG) WinSendDlgItemMsg(hwnd,
-						 CFG_NOTEBOOK,
-						 BKM_INSERTPAGE,
-						 MPFROMLONG(BKA_FIRST),
-						 MPFROM2SHORT(BKA_AUTOPAGESIZE
-							      |
-							      BKA_STATUSTEXTON
-							      | BKA_MAJOR,
-							      attrib));
+	np[x].ulPageId = (ULONG)WinSendDlgItemMsg(hwnd,
+						CFG_NOTEBOOK,
+						BKM_INSERTPAGE,
+						MPFROMLONG(BKA_FIRST),
+						MPFROM2SHORT(BKA_AUTOPAGESIZE |
+							     BKA_STATUSTEXTON |
+							     BKA_MAJOR, attrib));
 	attrib = BKA_LAST;
 	WinSendDlgItemMsg(hwnd,
 			  CFG_NOTEBOOK,
 			  BKM_SETPAGEWINDOWHWND,
-			  MPFROMLONG(np[x].pageID), MPFROMLONG(np[x].hwnd));
+			  MPFROMLONG(np[x].ulPageId), MPFROMLONG(np[x].hwnd));
 	WinSendDlgItemMsg(hwnd,
 			  CFG_NOTEBOOK,
 			  BKM_SETTABTEXT,
-			  MPFROMLONG(np[x].pageID),
-			  MPFROMP(GetPString(np[x].title)));
+			  MPFROMLONG(np[x].ulPageId),
+			  MPFROMP(GetPString(np[x].ulTitle)));
 	WinSendDlgItemMsg(hwnd,
 			  CFG_NOTEBOOK,
 			  BKM_SETSTATUSLINETEXT,
-			  MPFROMLONG(np[x].pageID),
-			  MPFROMP(GetPString(np[x].title + 1)));
+			  MPFROMLONG(np[x].ulPageId),
+			  MPFROMP(GetPString(np[x].ulTitle + 1)));
+	if (LONGFROMMP(mp2) == np[x].usMenuId) {
+	  uLastPageIndex = x;
+	}
       }
+    } // for
+    // If quick settings page requested, assume request is for first time init
+    // Turn to cfg page and show help
+    // Page will not be available if running fm/2 lite or if load error
+    if (mp2 == MPFROMLONG(IDM_QUICKSETTINGS) &&
+	x-- > 0 && np[x].hwnd && np[x].usFrameId == CFG9_FRAME) {
+      // 10 Jan 08 SHL fixme to know what UM_SETDIR 1 means
+      PostMsg(MainObjectHwnd, UM_SETDIR, MPFROMLONG(1), MPVOID);
+      PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
+	      BKM_TURNTOPAGE, MPFROMLONG(np[x].ulPageId), MPVOID);
+      PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(np[x].hwnd), MPVOID);
+      PostMsg(np[x].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
     }
-    if (mp2 && !strcmp((CHAR *) mp2, "Viewer2"))
-      PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-              BKM_TURNTOPAGE, MPFROMLONG(np[9].pageID), MPVOID);
-    else if (mp2 && !strcmp((CHAR *) mp2, "Viewer1"))
-           PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-                   BKM_TURNTOPAGE, MPFROMLONG(np[8].pageID), MPVOID);
-    else if (mp2 && !strcmp((CHAR *) mp2, "Compare"))
-           PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-                   BKM_TURNTOPAGE, MPFROMLONG(np[10].pageID), MPVOID);
-    else if (mp2 && !strcmp((CHAR *) mp2, "Archive"))
-           PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-                   BKM_TURNTOPAGE, MPFROMLONG(np[5].pageID), MPVOID);
-    else if (mp2 && !strcmp((CHAR *) mp2, "Tree"))
-           PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-                   BKM_TURNTOPAGE, MPFROMLONG(np[6].pageID), MPVOID);
-    else if (mp2 && !strcmp((CHAR *) mp2, "Collector"))
-           PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-                   BKM_TURNTOPAGE, MPFROMLONG(np[3].pageID), MPVOID);
-    /* see if we've been asked to display quick cfg page */
-    else if (!mp2 || strcmp((CHAR *) mp2, "First Time") ||
-             !x || !np[x - 1].hwnd || !np[x - 1].pageID)
-           PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-                   BKM_TURNTOPAGE, MPFROMLONG(np[0].pageID), MPVOID);
     else {
-      PostMsg(MainObjectHwnd, UM_SETDIR, MPFROMLONG(1L), MPVOID);
       PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-              BKM_TURNTOPAGE, MPFROMLONG(np[x - 1].pageID), MPVOID);
-      PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(np[x - 1].hwnd), MPVOID);
-      PostMsg(np[x - 1].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
+	      BKM_TURNTOPAGE, MPFROMLONG(np[uLastPageIndex].ulPageId), MPVOID);
     }
 
   break;
@@ -3159,18 +3100,19 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case BKN_PAGESELECTED:
 	if (mp2) {
-
 	  PAGESELECTNOTIFY *psn = mp2;
-
-	  WinSendDlgItemMsg(hwnd,
-			    CFG_NOTEBOOK,
-			    BKM_QUERYPAGEWINDOWHWND,
-			    MPFROMLONG(psn->ulPageIdNew), MPVOID);
+	  ULONG id = psn->ulPageIdNew;
+	  UINT x;
+	  for (x = 0; np[x].usFrameId; x++) {
+	    if (np[x].ulPageId == id) {
+	      uLastPageIndex = x;	// Found it
+	      break;
+	    }
+	  }
 	}
-	break;
-      }
+      } // switch BKN
       break;
-    }
+    } // switch page
     return 0;
 
   case UM_SETUP:
@@ -3186,7 +3128,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case DID_CANCEL:
       // Tell current page to undo itself in case changed and still alive
-      pageID = (ULONG) WinSendDlgItemMsg(hwnd,
+      ulPageId = (ULONG) WinSendDlgItemMsg(hwnd,
 					 CFG_NOTEBOOK,
 					 BKM_QUERYPAGEID,
 					 MPFROMLONG(0),
@@ -3194,7 +3136,9 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hwndTemp = (HWND) WinSendDlgItemMsg(hwnd,
 					  CFG_NOTEBOOK,
 					  BKM_QUERYPAGEWINDOWHWND,
-					  MPFROMLONG(pageID), MPVOID);
+					  MPFROMLONG(ulPageId), MPVOID);
+      PrfWriteProfileData(fmprof, FM3Str, pszIK_LastSettingsPage,
+			  (PVOID)&uLastPageIndex, sizeof(uLastPageIndex));
       if (hwndTemp)
 	WinSendMsg(hwndTemp, UM_UNDO, MPVOID, MPVOID);
 
@@ -3202,7 +3146,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case IDM_HELP:			/* relay message to appropriate page's window */
-      pageID = (ULONG) WinSendDlgItemMsg(hwnd,
+      ulPageId = (ULONG) WinSendDlgItemMsg(hwnd,
 					 CFG_NOTEBOOK,
 					 BKM_QUERYPAGEID,
 					 MPFROMLONG(0),
@@ -3210,7 +3154,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hwndTemp = (HWND) WinSendDlgItemMsg(hwnd,
 					  CFG_NOTEBOOK,
 					  BKM_QUERYPAGEWINDOWHWND,
-					  MPFROMLONG(pageID), MPVOID);
+					  MPFROMLONG(ulPageId), MPVOID);
       if (hwndTemp)
 	PostMsg(hwndTemp, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
       break;
@@ -3218,26 +3162,30 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_UNDO:
-    for (x = 0; np[x].frameid; x++) {
+    for (x = 0; np[x].usFrameId; x++) {
       if (np[x].hwnd)
 	WinSendMsg(np[x].hwnd, UM_UNDO, MPVOID, MPVOID);
     }
     break;
 
   case WM_DESTROY:
-    if (np[0].frameid) {
-      for (x = 1; np[x].frameid; x++) {
+    if (np[0].usFrameId) {
+      for (x = 1; np[x].usFrameId; x++) {
 	if (np[x].hwnd) {
 	  WinSendMsg(np[x].hwnd, WM_CLOSE, MPVOID, MPVOID);
 	  np[x].hwnd = (HWND) 0;
-	  np[x].pageID = 0;
+	  np[x].ulPageId = 0;
 	}
       }
       WinSendMsg(np[0].hwnd, WM_CLOSE, MPVOID, MPVOID);
       np[0].hwnd = (HWND) 0;
-      np[0].pageID = 0;
+      np[0].ulPageId = 0;
     }
     hwndNotebook = (HWND) 0;
+    break;
+  case WM_CLOSE:
+    PrfWriteProfileData(fmprof, FM3Str, pszIK_LastSettingsPage,
+			(PVOID)&uLastPageIndex, sizeof(uLastPageIndex));
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);

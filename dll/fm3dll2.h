@@ -6,7 +6,7 @@
   Global definitions
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2007 Steven H.Levine
+  Copyright (c) 2003, 2008 Steven H.Levine
 
   15 Oct 02 MK Baseline
   04 Nov 03 SHL Drop obsoletes
@@ -14,6 +14,7 @@
   06 Jul 06 SHL Add Select Same Content support
   31 Aug 06 GKY Add partitioning menu items
   17 Feb 06 GKY Add more drive types and no drive stat option
+  10 Jan 08 SHL Add IDM_*SETTINGS for individual notebook pages
 
 ***********************************************************************/
 
@@ -491,6 +492,15 @@
 #define IDM_AUTOVIEWMLE     3071
 #define IDM_PARTITIONSMENU 3072
 
+#define IDM_DIRCNRSETTINGS      3310
+#define IDM_COLLECTORSETTINGS   3311
+#define IDM_TREECNRSETTINGS     3312
+#define IDM_ARCHIVERSETTINGS    3313
+#define IDM_VIEWERSETTINGS      3314
+#define IDM_COMPARESETTINGS     3315
+#define IDM_QUICKSETTINGS       3316
+#define IDM_LITESETTINGS        3317
+
 #define IDM_DRIVESMENU      3899
 #define IDM_DRIVEA          3900
 #define IDM_DRIVEATEXT      3950
@@ -574,8 +584,8 @@
 #define IDM_IDEALSIZE       9011
 #define IDM_SWITCHLIST      9012
 #define IDM_TILEMENU        9013
-#define IDM_WINDOWSTART     9100	/* Allow for 499 windows */
-#define IDM_SWITCHSTART     9500	/* Allow for 499 switch entries */
+#define IDM_WINDOWSTART     9100        /* Allow for 499 windows */
+#define IDM_SWITCHSTART     9500        /* Allow for 499 switch entries */
 
 #define IDM_PARENT          10000
 #define IDM_PREVIOUS        10001

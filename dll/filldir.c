@@ -1476,6 +1476,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     BYTE info;
     BOOL includesyours = FALSE;
 
+    // 10 Jan 08 SHL fixme to understand fFirstTime
     if (*suggest || (!(driveflags[1] & DRIVE_IGNORE) && fFirstTime)) {
       if (!DosDevConfig(&info, DEVINFO_FLOPPY) && info == 1) {
 	if (!*suggest) {

@@ -1,5 +1,9 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.10 (pre)
+ o Correct/enhance settings notebook navigation, ticket #188  (Steven)
+ o Reopen settings notebook to last selected page unless overridden, ticket #188 (Steven)
+
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,
  file extension, space before args and existence on entry. (Gregg)
