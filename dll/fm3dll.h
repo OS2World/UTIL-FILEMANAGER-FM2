@@ -494,7 +494,6 @@ char *IsVowel(char a);
 VOID GetDesktopName(CHAR * objectpath, ULONG size);
 char *RootName(char *filename);
 APIRET MakeFullName(char *filename);
-PSZ CheckApp_QuoteAddExe(PSZ pszPgm);
 
 /* misc.c */
 BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
@@ -683,7 +682,9 @@ INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    CHAR * directory, CHAR * environment,
 	    CHAR * formatstring, ...);
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
-	  PROGTYPE * progt, ULONG fl, char *formatstring, ...);
+          PROGTYPE * progt, ULONG fl, char *formatstring, ...);
+PSZ CheckApp_QuoteAddExe(PSZ pszQuotedCompletePgm, PSZ pszPgm);
+#define MAXCOMLINESTRG (4096)			/* used to build command line strings */
 #define RUNTYPE_MASK  0xf
 #define SYNCHRONOUS   1
 #define ASYNCHRONOUS  2
@@ -1181,15 +1182,15 @@ DATADEF CHAR *FM3Str, *FM2Str, *NullStr, *Default, *Settings,
 DATADEF RGB2 RGBGREY, RGBBLACK;
 DATADEF CHAR archiverbb2[CCHMAXPATH], StopPrinting, profile[CCHMAXPATH];
 DATADEF CHAR appname[12], realappname[12];
-DATADEF CHAR editor[CCHMAXPATH], viewer[CCHMAXPATH], virus[CCHMAXPATH],
-  compare[CCHMAXPATH], extractpath[CCHMAXPATH],
+DATADEF CHAR editor[MAXCOMLINESTRG], viewer[MAXCOMLINESTRG], virus[MAXCOMLINESTRG],
+  compare[MAXCOMLINESTRG], extractpath[CCHMAXPATH],
   lastextractpath[CCHMAXPATH], lasttoolbox[CCHMAXPATH],
   HomePath[CCHMAXPATH], SwapperDat[CCHMAXPATH],
-  binview[CCHMAXPATH], bined[CCHMAXPATH], printer[CCHMAXPATH],
-  dircompare[CCHMAXPATH], szDefArc[CCHMAXPATH],
-  ftprun[CCHMAXPATH], ftprundir[CCHMAXPATH], httprun[CCHMAXPATH],
+  binview[MAXCOMLINESTRG], bined[MAXCOMLINESTRG], printer[CCHMAXPATH],
+  dircompare[MAXCOMLINESTRG], szDefArc[CCHMAXPATH],
+  ftprun[MAXCOMLINESTRG], ftprundir[CCHMAXPATH], httprun[MAXCOMLINESTRG],
   httprundir[CCHMAXPATH], mailrundir[CCHMAXPATH],
-  mailrun[CCHMAXPATH], targetdir[CCHMAXPATH];
+  mailrun[MAXCOMLINESTRG], targetdir[CCHMAXPATH];
 DATADEF HMODULE FM3DllHandle, FM3ModHandle;
 DATADEF CHAR *quicktool[50];
 DATADEF BOOL qtloaded;

@@ -43,7 +43,7 @@
 
 typedef struct
 {
-  CHAR cl[1001];
+  CHAR cl[MAXCOMLINESTRG];
   INT flags;
   CHAR title[34];
 }
@@ -620,13 +620,14 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       {
         COMMAND temp;
-        char *psz[1002];
+        PSZ psz;
         APIRET ret;
 
+        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        *psz = CheckApp_QuoteAddExe(temp.cl);
-        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        CheckApp_QuoteAddExe(psz, temp.cl);
+        memcpy(temp.cl, psz, strlen(psz) + 1);
         if (!strchr(temp.cl, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -714,13 +715,14 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case CMD_ADD:
       {
         COMMAND temp;
-        CHAR *psz[1002];
+        PSZ psz;
         APIRET ret;
 
+        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        *psz = CheckApp_QuoteAddExe(temp.cl);
-        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        CheckApp_QuoteAddExe(psz, temp.cl);
+        memcpy(temp.cl, psz, strlen(psz) + 1);
         if (!strchr(temp.cl, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -813,14 +815,15 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     case CMD_REPLACE:
       { //Delete first
-        char *psz[1002];
+        PSZ psz;
         COMMAND temp;
         APIRET ret;
 
+        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        *psz = CheckApp_QuoteAddExe(temp.cl);
-        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        CheckApp_QuoteAddExe(psz, temp.cl);
+        memcpy(temp.cl, psz, strlen(psz) + 1);
         if (fCancelAction){
           fCancelAction = FALSE;
           break;

@@ -192,44 +192,45 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       *szDefArc = 0;
     PrfWriteProfileString(fmprof, appname, "DefArc", szDefArc);
     {
-      CHAR szBuf[CCHMAXPATH], *psz;
+      CHAR szCLBuf[MAXCOMLINESTRG], szPathBuf[CCHMAXPATH];
+      PSZ psz;
 
-      WinQueryDlgItemText(hwnd, CFGA_VIRUS, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, virus)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(virus, psz, strlen(psz) + 1);
-	if (!strchr(virus, '%') && strlen(virus) > 3)
-	  strcat(virus, " %p");
+      psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      WinQueryDlgItemText(hwnd, CFGA_VIRUS, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, virus)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(virus, psz, strlen(psz) + 1);
+        if (!strchr(virus, '%') && strlen(virus) > 3)
+          strcat(virus, " %p");
       }
       if (!*virus)
 	strcpy(virus, "OS2SCAN.EXE %p /SUB /A");
-      WinQueryDlgItemText(hwnd, CFGA_EXTRACTPATH, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      bstrip(szBuf);
-
-      if (strcmp(extractpath, szBuf)) {
-	memcpy(extractpath, szBuf, strlen(szBuf) + 1);
-	if (*extractpath) {
-	  MakeFullName(extractpath);
-	  if (IsFile(extractpath)) {
-	    ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
-			      GetPString(IDS_WARNINGTEXT),
-			      GetPString(IDS_EXTPATHNOTVALIDTEXT),
-			      extractpath);
-	    if (ulResult == MBID_YES)
-	      *extractpath = 0;
-	    if (ulResult == MBID_CANCEL) {
-	      WinDlgBox(HWND_DESKTOP,
+      WinQueryDlgItemText(hwnd, CFGA_EXTRACTPATH, CCHMAXPATH, szPathBuf);
+      szPathBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szPathBuf);
+      if (strcmp(extractpath, szPathBuf)) {
+        memcpy(extractpath, szPathBuf, strlen(szPathBuf) + 1);
+        if (*extractpath){
+          MakeFullName(extractpath);
+          if (IsFile(extractpath)) {
+            ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+                              GetPString(IDS_WARNINGTEXT),
+                              GetPString(IDS_EXTPATHNOTVALIDTEXT),
+                              extractpath);
+            if (ulResult == MBID_YES)
+              *extractpath = 0;
+            if (ulResult == MBID_CANCEL){
+              WinDlgBox(HWND_DESKTOP,
 			hwnd,
 			CfgDlgProc,
 			FM3ModHandle,
 			CFG_FRAME,
 			MPFROMLONG(IDM_ARCHIVERSETTINGS));
-	      break;
-	    }
-	  }
-	}
+              break;
+            }
+          }
+        }
       }
     }
     PrfWriteProfileString(fmprof, appname, "Virus", virus);
@@ -363,13 +364,13 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGV_VIEWER, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGV_EDITOR, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGV_BINVIEW, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGV_BINED, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGV_FIND), FALSE);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
@@ -455,39 +456,41 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_CLOSE:
     {
-      CHAR szBuf[CCHMAXPATH], *psz;
+      CHAR szCLBuf[MAXCOMLINESTRG];
+      PSZ psz;
 
-      WinQueryDlgItemText(hwnd, CFGV_VIEWER, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, viewer)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(viewer, psz, strlen(psz) + 1);
-	if (!strchr(viewer, '%') && strlen(viewer) > 3)
-	  strcat(viewer, " %a");
+      psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      WinQueryDlgItemText(hwnd, CFGV_VIEWER, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, viewer)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(viewer, psz, strlen(psz) + 1);
+        if (!strchr(viewer, '%') && strlen(viewer) > 3)
+          strcat(viewer, " %a");
       }
-      WinQueryDlgItemText(hwnd, CFGV_EDITOR, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, editor)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(editor, psz, strlen(psz) + 1);
-	if (!strchr(editor, '%') && strlen(editor) > 3)
-	  strcat(editor, " %a");
+      WinQueryDlgItemText(hwnd, CFGV_EDITOR, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, editor)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(editor, psz, strlen(psz) + 1);
+        if (!strchr(editor, '%') && strlen(editor) > 3)
+          strcat(editor, " %a");
       }
-      WinQueryDlgItemText(hwnd, CFGV_BINVIEW, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, binview)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(binview, psz, strlen(psz) + 1);
-	if (!strchr(binview, '%') && strlen(binview) > 3)
-	  strcat(binview, " %a");
+      WinQueryDlgItemText(hwnd, CFGV_BINVIEW, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, binview)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(binview, psz, strlen(psz) + 1);
+        if (!strchr(binview, '%') && strlen(binview) > 3)
+          strcat(binview, " %a");
       }
-      WinQueryDlgItemText(hwnd, CFGV_BINED, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, bined)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(bined, psz, strlen(psz) + 1);
-	if (!strchr(bined, '%') && strlen(bined) > 3)
-	  strcat(bined, " %a");
+      WinQueryDlgItemText(hwnd, CFGV_BINED, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, bined)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(bined, psz, strlen(psz) + 1);
+        if (!strchr(bined, '%') && strlen(bined) > 3)
+          strcat(bined, " %a");
       }
       PrfWriteProfileString(fmprof, appname, "Viewer", viewer);
       PrfWriteProfileString(fmprof, appname, "Editor", editor);
@@ -529,11 +532,11 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, CFGH_RUNHTTPWORKDIR, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_FTPRUN, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_HTTPRUN, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+                      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_MAILRUN, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+                      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_RUNMAILWORKDIR, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGH_FIND), FALSE);
@@ -647,37 +650,39 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     { // fixme these strings can be longer than CCHMAXPATH since
       // they contain args.
-      CHAR szBuf[CCHMAXPATH], *psz;
+      CHAR szCLBuf[MAXCOMLINESTRG], szPathBuf[CCHMAXPATH];
+      PSZ  psz;
 
-      WinQueryDlgItemText(hwnd, CFGH_RUNHTTPWORKDIR, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      bstrip(szBuf);
-      memcpy(httprundir, szBuf, strlen(szBuf) + 1);
-      WinQueryDlgItemText(hwnd, CFGH_RUNFTPWORKDIR, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      bstrip(szBuf);
-      memcpy(ftprundir, szBuf, strlen(szBuf) + 1);
-      WinQueryDlgItemText(hwnd, CFGH_RUNMAILWORKDIR, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      bstrip(szBuf);
-      memcpy(mailrundir, szBuf, strlen(szBuf) + 1);
-      WinQueryDlgItemText(hwnd, CFGH_FTPRUN, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, ftprun)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(ftprun, psz, strlen(psz) + 1);
+      psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      WinQueryDlgItemText(hwnd, CFGH_RUNHTTPWORKDIR, CCHMAXPATH, szPathBuf);
+      szPathBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szPathBuf);
+      memcpy(httprundir, szPathBuf, strlen(szPathBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_RUNFTPWORKDIR, CCHMAXPATH, szPathBuf);
+      szPathBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szPathBuf);
+      memcpy(ftprundir, szPathBuf, strlen(szPathBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_RUNMAILWORKDIR, CCHMAXPATH, szPathBuf);
+      szPathBuf[CCHMAXPATH - 1] = 0;
+      bstrip(szPathBuf);
+      memcpy(mailrundir, szPathBuf, strlen(szPathBuf) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_FTPRUN, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, ftprun)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(ftprun, psz, strlen(psz) + 1);
       }
-      WinQueryDlgItemText(hwnd, CFGH_HTTPRUN, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, httprun)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(httprun, psz, strlen(psz) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_HTTPRUN, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, httprun)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(httprun, psz, strlen(psz) + 1);
       }
-      WinQueryDlgItemText(hwnd, CFGH_MAILRUN, CCHMAXPATH, szBuf);
-      szBuf[CCHMAXPATH - 1] = 0;
-      if (strcmp(szBuf, mailrun)) {
-	psz = CheckApp_QuoteAddExe(szBuf);
-	memcpy(mailrun, psz, strlen(psz) + 1);
+      WinQueryDlgItemText(hwnd, CFGH_MAILRUN, MAXCOMLINESTRG, szCLBuf);
+      szCLBuf[MAXCOMLINESTRG - 1] = 0;
+      if (strcmp(szCLBuf, mailrun)){
+        CheckApp_QuoteAddExe(psz, szCLBuf);
+        memcpy(mailrun, psz, strlen(psz) + 1);
       }
       PrfWriteProfileString(fmprof, appname, "HttpRunDir", httprundir);
       PrfWriteProfileString(fmprof, appname, "FtpRunDir", ftprundir);
@@ -1178,9 +1183,9 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGC_COMPARE, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGC_DIRCOMPARE, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGC_FIND), FALSE);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
@@ -1256,25 +1261,27 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_CLOSE:
     {
-      CHAR szBuf[CCHMAXPATH], *psz;
+      CHAR szCLBuf[MAXCOMLINESTRG];
+      PSZ psz;
 
-      WinQueryDlgItemText(hwnd, CFGC_DIRCOMPARE, CCHMAXPATH, szBuf);
-	szBuf[CCHMAXPATH - 1] = 0;
-	if (strcmp(szBuf, dircompare)) {
-	  psz = CheckApp_QuoteAddExe(szBuf);
-	  memcpy(dircompare, psz, strlen(psz) + 1);
-	  if (!strchr(dircompare, '%') && strlen(dircompare) > 3)
-	    strcat(dircompare, " %a");
-	}
+      psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      WinQueryDlgItemText(hwnd, CFGC_DIRCOMPARE, MAXCOMLINESTRG, szCLBuf);
+        szCLBuf[MAXCOMLINESTRG - 1] = 0;
+        if (strcmp(szCLBuf, dircompare)){
+          CheckApp_QuoteAddExe(psz, szCLBuf);
+          memcpy(dircompare, psz, strlen(psz) + 1);
+          if (!strchr(dircompare, '%') && strlen(dircompare) > 3)
+            strcat(dircompare, " %a");
+        }
       PrfWriteProfileString(fmprof, appname, "DirCompare", dircompare);
-      WinQueryDlgItemText(hwnd, CFGC_COMPARE, CCHMAXPATH, szBuf);
-	szBuf[CCHMAXPATH - 1] = 0;
-	if (strcmp(szBuf, compare)) {
-	  psz = CheckApp_QuoteAddExe(szBuf);
-	  memcpy(compare, psz, strlen(psz) + 1);
-	  if (!strchr(compare, '%') && strlen(compare) > 3)
-	    strcat(compare, " %a");
-	}
+      WinQueryDlgItemText(hwnd, CFGC_COMPARE, MAXCOMLINESTRG, szCLBuf);
+        szCLBuf[MAXCOMLINESTRG - 1] = 0;
+        if (strcmp(szCLBuf, compare)){
+          CheckApp_QuoteAddExe(psz, szCLBuf);
+          memcpy(compare, psz, strlen(psz) + 1);
+          if (!strchr(compare, '%') && strlen(compare) > 3)
+            strcat(compare, " %a");
+        }
       PrfWriteProfileString(fmprof, appname, "Compare", compare);
       break;
     }

@@ -42,8 +42,6 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-#define MAXSTRG (4096)			/* used to build command line strings */
-
 /**
  * Bring session foreground
  * @return TRUE if OK, else FALSE
@@ -82,7 +80,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 {
   /* executes the command once for all files in list */
 
-  char path[CCHMAXPATH], commandline[2048], modpath[CCHMAXPATH], listfile[CCHMAXPATH],
+  char path[CCHMAXPATH], commandline[MAXCOMLINESTRG], modpath[CCHMAXPATH], listfile[CCHMAXPATH],
        *p, *pp, drive, *file, *ext, *dot;
   register int x;
   BOOL spaces;
@@ -675,7 +673,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     hwnd = HWND_DESKTOP;
 
   rc = DosAllocMem((PVOID)&pszPgm,
-		   MAXSTRG,
+		   MAXCOMLINESTRG,
 		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
     Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
@@ -720,7 +718,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       temp = *p;
       if (temp) {
 	rc = DosAllocMem((PVOID)&pszArgs,
-			 MAXSTRG * 2,
+			 MAXCOMLINESTRG * 2,
 			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
 	if (rc)
 	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
@@ -853,7 +851,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     else {
       if (~type & FULLSCREEN)
 	type |= WINDOWED;
-      rc = DosAllocMem((PVOID) & pszArgs, MAXSTRG * 2,
+      rc = DosAllocMem((PVOID) & pszArgs, MAXCOMLINESTRG * 2,
 		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
       if (rc) {
 	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
@@ -1236,14 +1234,14 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
   if (child)
     ulOptions |= SAF_STARTCHILDAPP;
 
-  executable = xmallocz(MAXSTRG,pszSrcFile,__LINE__);
+  executable = xmallocz(MAXCOMLINESTRG, pszSrcFile, __LINE__);
   if (executable) {
     va_start(parguments, formatstring);
     vsprintf(executable, formatstring, parguments);
     va_end(parguments);
     strip_lead_char(" \t", executable);
     if (*executable) {
-      parameters = xmalloc(MAXSTRG,pszSrcFile,__LINE__);
+      parameters = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
       if (parameters) {
 	p = executable;
 	wasquote = FALSE;
@@ -1317,11 +1315,9 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
   return happ;
 }
 
-PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
+PSZ CheckApp_QuoteAddExe(PSZ pszQuotedCompletePgm, PSZ pszPgm)
 {
-  // 11 Jan 08 SHL fixme to not return quoted string on stack
-  // 11 Jan 08 SHL fixme to have javadoc comments
-  char szTempPgm[2048], tempcom[2048], temparg[2048];
+  char tempcom[MAXCOMLINESTRG], temparg[MAXCOMLINESTRG];
   char *offset = '\0', *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
   APIRET ret;
   ULONG ulAppType;
@@ -1330,7 +1326,7 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
   ULONG ulResultBufLen = sizeof(FILEFINDBUF3);
   HDIR hdirFindHandle = HDIR_CREATE;
   ULONG ulFindCount = 1;
-  PSZ pszQuotedCompletePgm;
+  PSZ pszTempPgm = pszQuotedCompletePgm;
 
   bstrip(pszPgm);
   strcpy(tempcom, pszPgm);
@@ -1395,26 +1391,26 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
       }
       else
 	ret = DosQueryAppType(tempcom, &ulAppType);
-      BldQuotedFileName(szTempPgm, tempcom);
+      BldQuotedFileName(pszTempPgm, tempcom);
       //printf("%d A", ret); fflush(stdout);
       if (ret) {
-	ret = saymsg(MB_YESNO,
-		     HWND_DESKTOP,
-		     NullStr,
-		     GetPString(IDS_PROGRAMNOTFOUNDTEXT),
-		     pszPgm);
-	if (ret == MBID_YES)
-	  pszQuotedCompletePgm = pszPgm;
-	else {
-	  fCancelAction = TRUE;
-	  pszQuotedCompletePgm = pszPgm;
-	}
+        ret = saymsg(MB_YESNO,
+                     HWND_DESKTOP,
+                     NullStr,
+                     GetPString(IDS_PROGRAMNOTFOUNDTEXT),
+                     pszPgm);
+        if (ret == MBID_YES){
+          pszTempPgm = pszPgm;
       }
-      else {
-	if (temparg[0] != ' ')
-	  strcat(szTempPgm, " ");
-	strcat(szTempPgm, temparg);
-	pszQuotedCompletePgm = szTempPgm;
+        else{
+          fCancelAction = TRUE;
+          pszTempPgm = pszPgm;
+        }
+      }
+      else{
+        if (temparg[0] != ' ')
+          strcat(pszTempPgm, " ");
+        strcat(pszTempPgm, temparg);
       }
 
     }
@@ -1446,31 +1442,30 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
 	  pszChar++;
 	}
       }
-      if (!ret) {
-	BldQuotedFileName(szTempPgm, tempcom);
-	strcpy(temparg, pszPgm + strlen(tempcom) - 3);
-	if ((temparg[0] == '\"' && temparg[1] == ' ') ||
-	     !strstr(pszPgm, "\\:" ) ||
-	     strchr(temparg, '\"') == strrchr(temparg, '\"'))
-	  remove_first_occurence_of_character("\"", temparg);
-	if (strchr(temparg, '\"') != strrchr(temparg, '\"'))
-	  saymsg(MB_OK, HWND_DESKTOP,
-		 NullStr,
-		 GetPString(IDS_QUOTESINARGSTEXT),
-		 pszPgm);
-	if (temparg[0] != ' ')
-	  strcat(szTempPgm, " ");
-	strcat(szTempPgm, temparg);
-	pszQuotedCompletePgm = szTempPgm;
+      if (!ret){
+        BldQuotedFileName(pszTempPgm, tempcom);
+        strcpy(temparg, pszPgm + strlen(tempcom) - 3);
+        if ((temparg[0] == '\"' && temparg[1] == ' ') ||
+             !strstr(pszPgm, "\\:" ) ||
+             strchr(temparg, '\"') == strrchr(temparg, '\"'))
+          remove_first_occurence_of_character("\"", temparg);
+        if (strchr(temparg, '\"') != strrchr(temparg, '\"'))
+          saymsg(MB_OK, HWND_DESKTOP,
+                 NullStr,
+                 GetPString(IDS_QUOTESINARGSTEXT),
+                 pszPgm);
+        if (temparg[0] != ' ')
+          strcat(pszTempPgm, " ");
+        strcat(pszTempPgm, temparg);
       }
       else {
-	ret = saymsg(MB_OK,
-		     HWND_DESKTOP,
-		     NullStr,
-		     GetPString(IDS_PROGRAMNOTEXE2TEXT),
-		     pszPgm);
-	  fCancelAction = TRUE;
-	  pszQuotedCompletePgm = pszPgm;
+        ret = saymsg(MB_OK,
+                     HWND_DESKTOP,
+                     NullStr,
+                     GetPString(IDS_PROGRAMNOTEXE2TEXT),
+                     pszPgm);
+          fCancelAction = TRUE;
+          pszTempPgm = pszPgm;
       }
     }
     else {
@@ -1494,7 +1489,7 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
     ret = DosFindFirst(tempcom, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
 			 ulResultBufLen, &ulFindCount, FIL_STANDARD);
 
-    BldQuotedFileName(szTempPgm, tempcom);
+    BldQuotedFileName(pszTempPgm, tempcom);
     //printf("%d %s ", ret, tempcom); fflush(stdout);
     if (ret) {
       ret = saymsg(MB_YESNO,
@@ -1511,26 +1506,24 @@ PSZ CheckApp_QuoteAddExe(PSZ pszPgm)
       }
     }
     ret = saymsg(MB_YESNOCANCEL,
-		   HWND_DESKTOP,
-		   NullStr,
-		   GetPString(IDS_PROGRAMNOTEXE3TEXT),
-		   pszPgm, szTempPgm);
-      if (ret == MBID_YES) {
-	if (temparg[0] != ' ')
-	  strcat(szTempPgm, " ");
-	strcat(szTempPgm, temparg);
-	pszQuotedCompletePgm = szTempPgm;
+                   HWND_DESKTOP,
+                   NullStr,
+                   GetPString(IDS_PROGRAMNOTEXE3TEXT),
+                   pszPgm, pszTempPgm);
+      if (ret == MBID_YES){
+        if (temparg[0] != ' ')
+          strcat(pszTempPgm, " ");
+        strcat(pszTempPgm, temparg);
       }
-      if (ret == MBID_CANCEL) {
-	fCancelAction = TRUE;
-	pszQuotedCompletePgm = pszPgm;
+      if (ret == MBID_CANCEL){
+        fCancelAction = TRUE;
+        pszTempPgm = pszPgm;
       }
-      else
-	pszQuotedCompletePgm = pszPgm;
     }
-    return pszQuotedCompletePgm;
   }
-  return pszPgm;
+  else
+    pszTempPgm = pszPgm;
+  return pszQuotedCompletePgm;
 }
 
 #pragma alloc_text(SYSTEMF,ShowSession,ExecOnList,runemf2,CheckApp_QuoteAddExe)

@@ -90,14 +90,16 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 }
 
 static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
-{
-  CHAR sz[256], *psz[256];
+{ // fixme for command line limit
+  CHAR sz[256];
+  PSZ psz;
 
+  psz = xmalloc(256, pszSrcFile, __LINE__);
   xfree(pszDest);
   WinQueryDlgItemText(hwnd, id, sizeof(sz), sz);
   if (*sz){
-    *psz = CheckApp_QuoteAddExe(sz);
-    pszDest = xstrdup(sz, pszSrcFile, __LINE__);
+    CheckApp_QuoteAddExe(psz, sz);
+    pszDest = xstrdup(psz, pszSrcFile, __LINE__);
   }
   else
     pszDest = NULL;

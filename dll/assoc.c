@@ -40,7 +40,7 @@
 typedef struct
 {
   CHAR mask[CCHMAXPATH];
-  CHAR cl[1001];
+  CHAR cl[MAXCOMLINESTRG];
   CHAR sig[CCHMAXPATH];
   LONG offset;
   ULONG flags;
@@ -630,9 +630,10 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       {
 	ASSOC temp;
-	CHAR dummy[34], *psz[1002];
+        CHAR dummy[34];
+        PSZ psz;
+        replace = FALSE;
 
-	replace = FALSE;
 	{
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					ASS_LISTBOX,
@@ -642,12 +643,13 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  ASS_LISTBOX,
 					  LM_SELECTITEM,
 					  MPFROMSHORT(0), MPFROMSHORT(TRUE));
-	}
+        }
+        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
-        *psz = CheckApp_QuoteAddExe(temp.cl);
-        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        CheckApp_QuoteAddExe(psz, temp.cl);
+        memcpy(temp.cl, psz, strlen(psz) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -726,15 +728,16 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case ASS_ADD:
       {
 	ASSOC temp;
-	CHAR dummy[34], *psz[1002];
-
+        CHAR dummy[34];
+        PSZ psz;
 	replace = FALSE;
 
+        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
-        *psz = CheckApp_QuoteAddExe(temp.cl);
-        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        CheckApp_QuoteAddExe(psz, temp.cl);
+        memcpy(temp.cl, psz, strlen(psz) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -835,19 +838,20 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       {
 	ASSOC temp;
-	CHAR dummy[34], *psz[1002];
-
+        CHAR dummy[34];
+        PSZ psz;
 	replace = TRUE;
 
 	y = (SHORT) WinSendDlgItemMsg(hwnd,
 				      ASS_LISTBOX,
 				      LM_QUERYSELECTION,
-				      MPFROMSHORT(LIT_CURSOR), MPVOID);
+                                      MPFROMSHORT(LIT_CURSOR), MPVOID);
+        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
-        *psz = CheckApp_QuoteAddExe(temp.cl);
-        memcpy(temp.cl, *psz, strlen(*psz) + 1);
+        CheckApp_QuoteAddExe(psz, temp.cl);
+        memcpy(temp.cl, psz, strlen(psz) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
