@@ -3,6 +3,9 @@ New stuff's at the top.  This list is not necessarily complete.
 3.10 (pre)
  o Correct/enhance settings notebook navigation, ticket #188  (Steven)
  o Reopen settings notebook to last selected page unless overridden, ticket #188 (Steven)
+ o Correct Compare Directories select count regression (Steven)
+ o Correct Compare Directories file sizes regression (Steven)
+ o Speed up Compare Directories filter redraw (Steven)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

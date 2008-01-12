@@ -22,7 +22,8 @@
 #define VERMAJORBREAK                                         3
 #define VERMINORBREAK                                         02
 
-// Spares are names IDS_SPARE###
+// Spares are named IDS_SPARE_### here
+// Text in fm3dll.str will contain the notation Spare ###
 // Last string reserved for cvs id
 
 #define IDS_NUMSTRS                                           1009
@@ -226,7 +227,7 @@
 #define IDS_COMPHOLDDELETINGTEXT                              219
 #define IDS_COMPHOLDMOVINGTEXT                                220
 #define IDS_COMPHOLDCOPYINGTEXT                               221
-#define IDS_COMPHOLDDUNNOTEXT                                 222
+#define IDS_COMPHOLDFILTERINGTEXT                             222
 #define IDS_COMPHOLDDESELTEXT                                 223
 #define IDS_COMPHOLDINVERTTEXT                                224
 #define IDS_COMPHOLDSELTEXT                                   225
@@ -595,7 +596,7 @@
 #define IDS_CODEPAGES24                                       588
 #define IDS_DOSSTARTSESSIONFAILEDTEXT                         589
 #define IDS_DOSEXECPGMFAILEDTEXT                              590
-#define IDS_BLURB1TEXT                                        591	// 591 to 604 used by fonts.c
+#define IDS_BLURB1TEXT                                        591       // 591 to 604 used by fonts.c
 #define IDS_ITALICTEXT                                        605
 #define IDS_OUTLINETEXT                                       606
 #define IDS_BOLDTEXT                                          607
@@ -715,7 +716,7 @@
 #define IDS_ASN1BYTESTEXT                                     721
 #define IDS_UNKNOWNBYTESTEXT                                  722
 #define IDS_DATABARTITLETEXT                                  723
-#define IDS_FREETEXT2                                         724	// available
+#define IDS_SPARE_724                                         724       // available
 #define IDS_SUNDAY                                            725
 #define IDS_MONDAY                                            726
 #define IDS_TUESDAY                                           727

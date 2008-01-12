@@ -3082,7 +3082,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     // Page will not be available if running fm/2 lite or if load error
     if (mp2 == MPFROMLONG(IDM_QUICKSETTINGS) &&
 	x-- > 0 && np[x].hwnd && np[x].usFrameId == CFG9_FRAME) {
-      // 10 Jan 08 SHL fixme to know what UM_SETDIR 1 means
+      // 10 Jan 08 SHL fixme to document what UM_SETDIR 1 means
       PostMsg(MainObjectHwnd, UM_SETDIR, MPFROMLONG(1), MPVOID);
       PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
 	      BKM_TURNTOPAGE, MPFROMLONG(np[x].ulPageId), MPVOID);
@@ -3090,6 +3090,11 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PostMsg(np[x].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
     }
     else {
+      if (uLastPageIndex >= x) {
+	Runtime_Error(pszSrcFile, __LINE__, "uLastPageIndex corrupted (%u)",
+		      uLastPageIndex);
+	uLastPageIndex = 0;
+      }
       PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
 	      BKM_TURNTOPAGE, MPFROMLONG(np[uLastPageIndex].ulPageId), MPVOID);
     }
