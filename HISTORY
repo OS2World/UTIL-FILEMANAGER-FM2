@@ -8,6 +8,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Speed up Compare Directories filter redraw (Steven)
  o Rework Config menu.  Move some to submenu.  Add drag&drop dialog toggle. (Steven)
  o Rework Walk dialog.  Put entry field at the top. (Steven)
+ o Get Subjectwidth/left working in the collector. (Gregg)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

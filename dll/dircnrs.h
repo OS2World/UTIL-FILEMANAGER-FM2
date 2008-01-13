@@ -124,7 +124,8 @@ typedef struct DIRCNRDATA
   INT sortFlags;
   BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
     detailslongname, detailsea, detailssize, detailssubject,
-    detailslwdate, detailslwtime, detailsattr, detailsicon;
+    detailslwdate, detailslwtime, detailsattr, detailsicon,
+    fSubjectInLeftPane, fSubjectLengthMax, SubjectDisplayWidth;
   CHAR **lastselection;
   USHORT shiftstate;
   USHORT suspendview;

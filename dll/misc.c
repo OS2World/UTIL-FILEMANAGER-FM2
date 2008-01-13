@@ -1315,6 +1315,52 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailslatime;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  strcpy(eos, "SubjectInLeftPane");
+  if (dcd)
+    bool = &dcd->fSubjectInLeftPane;
+  else
+    bool = &fSubjectInLeftPane;
+  *bool = fSubjectInLeftPane;
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  strcpy(eos, "SubjectLengthMax");
+  if (dcd)
+    bool = &dcd->fSubjectLengthMax;
+  else
+    bool = &fSubjectLengthMax;
+  *bool = fSubjectLengthMax;
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  if (dcd) {
+    if (dcd->fSubjectLengthMax)
+      dcd->SubjectDisplayWidth = 0;
+    else {
+      strcpy(eos, "SubjectDisplayWidth");
+      bool = &dcd->SubjectDisplayWidth;
+      *bool = SubjectDisplayWidth;
+      size = sizeof(ULONG);
+      PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+      if (dcd->SubjectDisplayWidth < 50)
+        dcd->SubjectDisplayWidth = 0;
+      else if (dcd->SubjectDisplayWidth > 1000)
+        dcd->SubjectDisplayWidth = 1000;
+    }
+  }
+  else {
+    if (fSubjectLengthMax)
+      SubjectDisplayWidth = 0;
+    else {
+      strcpy(eos, "SubjectDisplayWidth");
+      bool = &SubjectDisplayWidth;
+      *bool = SubjectDisplayWidth;
+      size = sizeof(ULONG);
+      PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+      if (SubjectDisplayWidth < 50)
+        SubjectDisplayWidth = 0;
+      else if (SubjectDisplayWidth > 1000)
+        SubjectDisplayWidth = 1000;
+    }
+  }
 }
 
 HWND FindDirCnr(HWND hwndParent)

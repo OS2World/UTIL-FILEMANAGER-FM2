@@ -1304,10 +1304,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SubjectInLeftPane", &fSubjectInLeftPane,
 		      &size);
-  size = sizeof(ULONG);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SubjectLengthMax", &fSubjectLengthMax,
-		      &size);
+                      &size);
   if (fSubjectLengthMax)
     SubjectDisplayWidth = 0;
   else {

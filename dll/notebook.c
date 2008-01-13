@@ -1678,7 +1678,7 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, fSubjectInLeftPane);
       WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, fSubjectLengthMax);
       WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETCURRENTVALUE,
-		      MPFROMLONG(SubjectDisplayWidth), MPVOID);
+		        MPFROMLONG(SubjectDisplayWidth), MPVOID);
     }
     return 0;
 
@@ -1812,9 +1812,9 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			&fSubjectInLeftPane, sizeof(BOOL));
     fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
     PrfWriteProfileData(fmprof, appname, "SubjectLengthMax",
-			&fSubjectInLeftPane, sizeof(BOOL));
+			&fSubjectLengthMax, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectLengthMax",
-			&fSubjectInLeftPane, sizeof(BOOL));
+			&fSubjectLengthMax, sizeof(BOOL));
     *mask.prompt = 0;
     PrfWriteProfileData(fmprof, appname, "DirFilter", &mask, sizeof(MASK));
     {
@@ -1965,6 +1965,10 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_INITDLG:
+    WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETTEXTLIMIT,
+		      MPFROMSHORT(8), MPVOID);
+    WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_OVERRIDESETLIMITS,
+		      MPFROMLONG(1000), MPFROMLONG(50));
     WinSendDlgItemMsg(hwnd, CFG5_FILTER, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
@@ -2027,6 +2031,11 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, CFG5_SHOWCRDATE, dcd.detailscrdate);
       WinCheckButton(hwnd, CFG5_SHOWCRTIME, dcd.detailscrtime);
       WinCheckButton(hwnd, CFG5_SHOWATTR, dcd.detailsattr);
+      WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, dcd.fSubjectInLeftPane);
+      WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, dcd.fSubjectLengthMax);
+      WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETCURRENTVALUE,
+		        MPFROMLONG(dcd.SubjectDisplayWidth), MPVOID);
+
     }
     return 0;
 
@@ -2135,10 +2144,31 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  &dcd.detailscrtime, sizeof(BOOL));
       dcd.detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsAttr",
-			  &dcd.detailsattr, sizeof(BOOL));
+                          &dcd.detailsattr, sizeof(BOOL));
+      dcd.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
+      PrfWriteProfileData(fmprof, appname, "Collector.SubjectInLeftPane",
+         		  &dcd.fSubjectInLeftPane, sizeof(BOOL));
+      dcd.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
+      PrfWriteProfileData(fmprof, appname, "Collector.SubjectLengthMax",
+			  &dcd.fSubjectLengthMax, sizeof(BOOL));
       *mask.prompt = 0;
       PrfWriteProfileData(fmprof,
-			  appname, "CollectorFilter", &mask, sizeof(MASK));
+                          appname, "CollectorFilter", &mask, sizeof(MASK));
+      {
+	if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
+	  WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
+			    MPFROMP(&dcd.SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
+	  if (dcd.SubjectDisplayWidth < 50)
+	    dcd.SubjectDisplayWidth = 0;
+	  else if (dcd.SubjectDisplayWidth > 1000)
+	    dcd.SubjectDisplayWidth = 1000;
+	}
+	else
+	  dcd.SubjectDisplayWidth = 0;
+	PrfWriteProfileData(fmprof,
+			    appname, "Collector.SubjectDisplayWidth",
+			    &dcd.SubjectDisplayWidth, sizeof(ULONG));
+      }
     }
     break;
   }
