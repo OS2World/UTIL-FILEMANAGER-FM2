@@ -14,7 +14,7 @@
   18 Feb 07 GKY Move error messages etc to string file
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  06 Jan 08 GKY Use CheckApp_QuoteAddExe to check program strings on entry
+  06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
 
 **************************************************************************************/
 
@@ -631,7 +631,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	ASSOC temp;
         CHAR dummy[34];
-        PSZ psz;
+        PSZ pszWorkBuf;
         replace = FALSE;
 
 	{
@@ -644,12 +644,12 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  LM_SELECTITEM,
 					  MPFROMSHORT(0), MPFROMSHORT(TRUE));
         }
-        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
-        CheckApp_QuoteAddExe(psz, temp.cl);
-        memcpy(temp.cl, psz, strlen(psz) + 1);
+        NormalizeCmdLine(pszWorkBuf, temp.cl);
+        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -729,15 +729,15 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	ASSOC temp;
         CHAR dummy[34];
-        PSZ psz;
+        PSZ pszWorkBuf;
 	replace = FALSE;
 
-        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
-        CheckApp_QuoteAddExe(psz, temp.cl);
-        memcpy(temp.cl, psz, strlen(psz) + 1);
+        NormalizeCmdLine(pszWorkBuf, temp.cl);
+        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -839,19 +839,19 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	ASSOC temp;
         CHAR dummy[34];
-        PSZ psz;
+        PSZ pszWorkBuf;
 	replace = TRUE;
 
 	y = (SHORT) WinSendDlgItemMsg(hwnd,
 				      ASS_LISTBOX,
 				      LM_QUERYSELECTION,
                                       MPFROMSHORT(LIT_CURSOR), MPVOID);
-        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
-        CheckApp_QuoteAddExe(psz, temp.cl);
-        memcpy(temp.cl, psz, strlen(psz) + 1);
+        NormalizeCmdLine(pszWorkBuf, temp.cl);
+        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {

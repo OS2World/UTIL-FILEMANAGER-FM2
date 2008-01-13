@@ -20,7 +20,7 @@
   23 Mar 07 GKY Okay fails silently when item not changed
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  06 Jan 08 GKY Use CheckApp_QuoteAddExe to check program strings on entry
+  06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
 
 ***********************************************************************/
 
@@ -39,7 +39,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
-
+#include "pathutil.h"                   // NormalizeCmdLine
 
 typedef struct
 {
@@ -620,14 +620,14 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       {
         COMMAND temp;
-        PSZ psz;
+        PSZ pszWorkBuf;
         APIRET ret;
 
-        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        CheckApp_QuoteAddExe(psz, temp.cl);
-        memcpy(temp.cl, psz, strlen(psz) + 1);
+        NormalizeCmdLine(pszWorkBuf, temp.cl);
+        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
         if (!strchr(temp.cl, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -715,14 +715,14 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case CMD_ADD:
       {
         COMMAND temp;
-        PSZ psz;
+        PSZ pszWorkBuf;
         APIRET ret;
 
-        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        CheckApp_QuoteAddExe(psz, temp.cl);
-        memcpy(temp.cl, psz, strlen(psz) + 1);
+        NormalizeCmdLine(pszWorkBuf, temp.cl);
+        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
         if (!strchr(temp.cl, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -815,15 +815,15 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     case CMD_REPLACE:
       { //Delete first
-        PSZ psz;
+        PSZ pszWorkBuf;
         COMMAND temp;
         APIRET ret;
 
-        psz = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        CheckApp_QuoteAddExe(psz, temp.cl);
-        memcpy(temp.cl, psz, strlen(psz) + 1);
+        NormalizeCmdLine(pszWorkBuf, temp.cl);
+        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
         if (fCancelAction){
           fCancelAction = FALSE;
           break;

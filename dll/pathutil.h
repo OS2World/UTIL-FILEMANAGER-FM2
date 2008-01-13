@@ -24,5 +24,6 @@
 PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
 PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
 PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
+PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_);
 
 #endif // PATHUTIL_H

@@ -722,7 +722,7 @@ Icon data (%u bytes)
 ASN1 data (%u bytes)
 Unknown datatype 0x%04x (%u bytes)
 FM/2 Databar
-Spare 724
+The NTFS.IFS fails with a NO_MORE_FILES_ERROR on each subdirectory. We have not found a work around as yet.
 Sun
 Mon
 Tue

@@ -1961,7 +1961,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP2:
-    /*
+    /**
      * calculate width of client in characters, recalc lines if
      * oldwidth != newwidth, set ad->oldwidth for later comparison
      */

@@ -716,7 +716,7 @@
 #define IDS_ASN1BYTESTEXT                                     721
 #define IDS_UNKNOWNBYTESTEXT                                  722
 #define IDS_DATABARTITLETEXT                                  723
-#define IDS_SPARE_724                                         724       // available
+#define IDS_NTFSDRIVERFAILSTEXT                               724
 #define IDS_SUNDAY                                            725
 #define IDS_MONDAY                                            726
 #define IDS_TUESDAY                                           727

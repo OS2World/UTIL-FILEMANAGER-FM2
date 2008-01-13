@@ -91,6 +91,7 @@ static BOOL ProcessDir(HWND hwndCnr,
 {
   CHAR maskstr[CCHMAXPATH];
   CHAR szBuf[CCHMAXPATH];
+  CHAR FileSystem[CCHMAXPATH];
   CHAR *pEndMask;
   register char *p;
   register char *sp;
@@ -108,6 +109,14 @@ static BOOL ProcessDir(HWND hwndCnr,
 
   *pullTotalBytes = 0;			// In case we fail
 
+  CheckDrive(toupper(*pszFileName), FileSystem, NULL);
+  /*if (!stricmp(FileSystem, NTFS)) {
+    saymsg(MB_OK,
+           HWND_DESKTOP,
+           NullStr,
+           GetPString(IDS_NTFSDRIVERFAILSTEXT));
+    return FALSE;
+  } */
   ulBufBytes = sizeof(FILEFINDBUF4L) * FilesToGet;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray)
@@ -137,7 +146,7 @@ static BOOL ProcessDir(HWND hwndCnr,
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.
    */
-  if ((!rc && (pffbArray->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
+  if (((!rc || rc == ERROR_NO_MORE_FILES) && (pffbArray->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
       free(pffbArray);
       return FALSE;

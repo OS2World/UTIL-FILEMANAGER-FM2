@@ -22,7 +22,7 @@
   22 Mar 07 GKY Use QWL_USER
   16 Jun 07 SHL Update for OpenWatcom
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  06 Jan 08 GKY Use CheckApp_QuoteAddExe to check program strings on entry
+  06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
 
 ***********************************************************************/
 
@@ -39,6 +39,7 @@
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
 #include "fm3dll.h"
+#include "pathutil.h"                   // NormalizeCmdLine
 
 #pragma data_seg(DATA1)
 
@@ -91,15 +92,15 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 
 static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 { // fixme for command line limit
-  CHAR sz[256];
-  PSZ psz;
+  CHAR szCmdLine[256];
+  PSZ pszWorkBuf;
 
-  psz = xmalloc(256, pszSrcFile, __LINE__);
+  pszWorkBuf = xmalloc(256, pszSrcFile, __LINE__);
   xfree(pszDest);
-  WinQueryDlgItemText(hwnd, id, sizeof(sz), sz);
-  if (*sz){
-    CheckApp_QuoteAddExe(psz, sz);
-    pszDest = xstrdup(psz, pszSrcFile, __LINE__);
+  WinQueryDlgItemText(hwnd, id, sizeof(szCmdLine), szCmdLine);
+  if (*szCmdLine){
+    NormalizeCmdLine(pszWorkBuf, szCmdLine);
+    pszDest = xstrdup(pszWorkBuf, pszSrcFile, __LINE__);
   }
   else
     pszDest = NULL;
