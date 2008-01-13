@@ -42,6 +42,7 @@
   19 Aug 07 SHL Rework SaveDirCnrState to return better error info
   30 Aug 07 SHL Add accelerator support to quicklist windows
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
+  12 Jan 08 SHL Support drag&drop dialog toggle
 
 ***********************************************************************/
 
@@ -391,6 +392,7 @@ static VOID SetToggleChecks(HWND hwndMenu)
   WinCheckMenuItem(hwndMenu, IDM_DRIVEBAR, fDrivebar);
   WinCheckMenuItem(hwndMenu, IDM_AUTOTILE, fAutoTile);
   WinCheckMenuItem(hwndMenu, IDM_TILEBACKWARDS, fTileBackwards);
+  WinCheckMenuItem(hwndMenu, IDM_TOGGLEDRAGDIALOG, fDragndropDlg);
 }
 
 static VOID ResizeTools(HWND hwnd)
@@ -4856,9 +4858,16 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WM_UPDATEFRAME, MPFROMLONG(FCF_SIZEBORDER), MPVOID);
     break;
 
+  case IDM_TOGGLEDRAGDIALOG:
+    SetMenuCheck(WinQueryWindowULong(hwnd, QWL_USER),
+		 IDM_TOGGLEDRAGDIALOG,
+		 &fDragndropDlg,
+		 TRUE,
+		 "Drag&DropDlg");
+    break;
+
   case IDM_FREETREE:
     if (fFreeTree) {
-
       SWP swp, swpT;
 
       WinQueryWindowPos(hwndTree, &swpT);

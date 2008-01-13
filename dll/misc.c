@@ -35,6 +35,7 @@
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
+  12 Jan 08 SHL Document SetConditionalCascade
 
 ***********************************************************************/
 
@@ -791,7 +792,10 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 testname, sizeof(testname)))
 		return FALSE;
 	    if (DosQueryPathInfo(pci->pszFileName,
-				 FIL_QUERYFULLNAME, szData, sizeof(szData))){
+				 FIL_QUERYFULLNAME,
+				 szData,
+				 sizeof(szData)))
+	    {
 	      pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
 	      strcpy(szData, pci->pszFileName);
 	    }
@@ -914,9 +918,9 @@ BOOL ViewHelp(CHAR * filename)
     }
     fclose(fp);
     ret = runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  NULL, NULL,
-                  "VIEW.EXE \"%s\"",
-                  BldQuotedFileName(szQuotedFileName, filename));
+		  NULL, NULL,
+		  "VIEW.EXE \"%s\"",
+		  BldQuotedFileName(szQuotedFileName, filename));
   }
 
   return (ret != -1);
@@ -1069,17 +1073,25 @@ VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
     SetDetailsSwitches(hwndMenu, dcd);
 }
 
+/**
+ * Set default menu item to invoke for top level conditional cascade menu
+ * @param def is default menu id (i.e. IDM_...)
+ */
+
 VOID SetConditionalCascade(HWND hwndMenu, USHORT id, USHORT def)
 {
   MENUITEM mi;
 
   mi.iPosition = MIT_END;
-  mi.hItem = 0L;
-  mi.hwndSubMenu = (HWND) 0;
+  mi.hItem = 0;
+  mi.hwndSubMenu = (HWND)0;
   mi.afAttribute = 0;
   mi.afStyle = MIS_TEXT;
-  if (WinSendMsg
-      (hwndMenu, MM_QUERYITEM, MPFROM2SHORT(id, TRUE), MPFROMP(&mi))) {
+  if (WinSendMsg(hwndMenu,
+		 MM_QUERYITEM,
+		 MPFROM2SHORT(id, TRUE),
+		 MPFROMP(&mi)))
+  {
     WinSetWindowBits(mi.hwndSubMenu, QWL_STYLE, MS_CONDITIONALCASCADE,
 		     MS_CONDITIONALCASCADE);
     WinSendMsg(mi.hwndSubMenu, MM_SETDEFAULTITEMID, MPFROMSHORT(def), MPVOID);
@@ -1411,14 +1423,14 @@ BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!IsFm2Window(h, 1)) {
       QMSG qmsg;
       for (;;) {
-        DosSleep(1);
-        rc = WinPostMsg(h, msg, mp1, mp2);
-        if (rc)
-          break;			// OK
-        if (!WinIsWindow((HAB) 0, h))
-          break;			// Window gone
-        if (WinPeekMsg((HAB) 0, &qmsg, (HWND) 0, 0, 0, PM_NOREMOVE))
-          break;			// Queue has message(s)
+	DosSleep(1);
+	rc = WinPostMsg(h, msg, mp1, mp2);
+	if (rc)
+	  break;			// OK
+	if (!WinIsWindow((HAB) 0, h))
+	  break;			// Window gone
+	if (WinPeekMsg((HAB) 0, &qmsg, (HWND) 0, 0, 0, PM_NOREMOVE))
+	  break;			// Queue has message(s)
       }				// for
     }
   }
@@ -1482,7 +1494,7 @@ VOID QuickView(HWND hwnd, CHAR * filename)
       list[0] = filename;
       list[1] = NULL;
       ExecOnList(hwnd, binview, WINDOWED | SEPARATE, NULL, list, NULL,
-                 pszSrcFile, __LINE__);
+		 pszSrcFile, __LINE__);
       return;
     }
     else if (*viewer) {
@@ -1510,7 +1522,7 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
       list[0] = filename;
       list[1] = NULL;
       ExecOnList(hwnd, bined, WINDOWED | SEPARATE, NULL, list, NULL,
-                 pszSrcFile, __LINE__);
+		 pszSrcFile, __LINE__);
       return;
     }
     else if (*editor) {
@@ -1520,7 +1532,7 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
       list[0] = filename;
       list[1] = NULL;
       ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, list, NULL,
-                 pszSrcFile, __LINE__);
+		 pszSrcFile, __LINE__);
       return;
     }
     StartMLEEditor(HWND_DESKTOP, 4, filename, (HWND) 0);

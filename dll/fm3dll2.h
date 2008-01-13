@@ -15,6 +15,7 @@
   31 Aug 06 GKY Add partitioning menu items
   17 Feb 06 GKY Add more drive types and no drive stat option
   10 Jan 08 SHL Add IDM_*SETTINGS for individual notebook pages
+  12 Jan 08 SHL Add IDM_TOGGLEDRAGDIALOG
 
 ***********************************************************************/
 
@@ -414,6 +415,7 @@
 #define IDM_PARTITIONLVMG   1157
 #define IDM_PARTITIONFD     1158
 #define IDM_IGNOREMAIL      1159
+#define IDM_TOGGLEDRAGDIALOG	1160
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001

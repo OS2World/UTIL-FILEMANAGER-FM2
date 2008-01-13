@@ -6,6 +6,8 @@ New stuff's at the top.  This list is not necessarily complete.
  o Correct Compare Directories select count regression (Steven)
  o Correct Compare Directories file sizes regression (Steven)
  o Speed up Compare Directories filter redraw (Steven)
+ o Rework Config menu.  Move some to submenu.  Add drag&drop dialog toggle. (Steven)
+ o Rework Walk dialog.  Put entry field at the top. (Steven)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

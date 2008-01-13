@@ -29,6 +29,7 @@
   03 Aug 07 GKY Enlarged and made setable everywhere Findbuf (speed file loading)
   13 Aug 07 SHL Tweak scanning page
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
+  12 Jan 08 SHL Rework WALK_FRAME
 
 ***********************************************************************/
 
@@ -84,40 +85,63 @@ END
 
 DLGTEMPLATE WALK_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
+    DIALOG  "FM/2: Select a directory", WALK_FRAME, 60, -15, 314, 181,
+            FS_MOUSEALIGN, FCF_TITLEBAR
+    BEGIN
+        ENTRYFIELD      "", WALK_PATH, 5, 161, 302, 10, WS_GROUP
+        LISTBOX         WALK_DRIVELIST, 3, 38, 24, 116, LS_NOADJUSTPOS | WS_GROUP
+                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
+        LISTBOX         WALK_DIRLIST, 29, 38, 134, 116, LS_NOADJUSTPOS | LS_HORZSCROLL
+        CONTROL         "", WALK_RECENT, 167, 10, 143, 144, WC_COMBOBOX,
+                        CBS_DROPDOWN | LS_HORZSCROLL | WS_GROUP | WS_TABSTOP | WS_VISIBLE
+        GROUPBOX        "User List:", -1, 167, 19, 143, 124, NOT WS_GROUP
+        LISTBOX         WALK_USERLIST, 170, 38, 137, 96, LS_NOADJUSTPOS | LS_HORZSCROLL | WS_GROUP
+        PUSHBUTTON      "Okay", COLR_BLACK, 7, 20, 40, 14, WS_GROUP
+        PUSHBUTTON      "~Help", IDM_HELP, 63, 20, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Cancel", COLR_BLUE, 121, 20, 40, 14
+        ICON            COLR_BLACK, -1, 177, 21, 20, 16
+        PUSHBUTTON      "~Add", WALK_ADD, 213, 22, 40, 14, BS_NOPOINTERFOCUS | WS_GROUP
+        PUSHBUTTON      "~Delete", WALK_DELETE, 264, 22, 40, 14, BS_NOPOINTERFOCUS
+        GROUPBOX        "", -1, 2, 159, 308, 18, NOT WS_GROUP
+        CTEXT           "", WALK_HELP, 5, 4, 297, 8
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
+                        PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
+    END
+END
+
+#if 0 // 12 Jan 08 SHL fixme to be gone
+DLGTEMPLATE WALK_FRAME LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
     DIALOG  "FM/2: Select a directory", WALK_FRAME, -50, -86, 314, 168,
             FS_MOUSEALIGN, FCF_TITLEBAR
     BEGIN
         CTEXT           "", WALK_HELP, 8, 158, 297, 8
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
         ICON            DID_OK, -1, 178, 21, 20, 16
         GROUPBOX        "User List:", -1, 168, 19, 143, 124, NOT WS_GROUP
         GROUPBOX        "", -1, 4, 2, 308, 18, NOT WS_GROUP
         ENTRYFIELD      "", WALK_PATH, 6, 4, 302, 10, WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LISTBOX         WALK_DRIVELIST, 4, 38, 24, 116, LS_NOADJUSTPOS |
                         WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
         LISTBOX         WALK_DIRLIST, 30, 38, 134, 116, LS_NOADJUSTPOS |
                         LS_HORZSCROLL
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         PUSHBUTTON      "Okay", DID_OK, 8, 20, 40, 14, WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 64, 20, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 122, 20, 40, 14
         CONTROL         "", WALK_RECENT, 168, 10, 143, 144, WC_COMBOBOX,
                         CBS_DROPDOWN | LS_HORZSCROLL | WS_GROUP | WS_TABSTOP |
                         WS_VISIBLE
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         LISTBOX         WALK_USERLIST, 171, 38, 137, 96, LS_NOADJUSTPOS |
                         LS_HORZSCROLL | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "10.Helvetica"
         PUSHBUTTON      "~Add", WALK_ADD, 214, 22, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Delete", WALK_DELETE, 265, 22, 40, 14,
                         BS_NOPOINTERFOCUS
     END
 END
+#endif // 12 Jan 08 SHL
 
 DLGTEMPLATE AD_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
@@ -2029,20 +2053,13 @@ BEGIN
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         AUTOCHECKBOX    "No ~Prescan", DVS_NOPRESCAN, 106, 98, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
-        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 86, 94,10,
-        		BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 74, 94,10,
-        		BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 62,106, 10,
-        		BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Slo~w drive", DVS_SLOW, 106, 50, 94, 10,
-                        BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 38,106, 10,
-        		BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~No drive stats", DVS_NOSTATS, 106, 26,106, 10,
-        		BS_NOPOINTERFOCUS
-        DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
-                        WS_GROUP
+        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 86, 94,10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 74, 94,10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 62,106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Slo~w drive", DVS_SLOW, 106, 50, 94, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 38,106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "~No drive stats", DVS_NOSTATS, 106, 26,106, 10, BS_NOPOINTERFOCUS
+        DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 64, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "~Undo", IDM_UNDO, 118, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 172, 4, 40, 14,
