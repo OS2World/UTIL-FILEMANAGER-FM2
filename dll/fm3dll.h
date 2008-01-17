@@ -684,7 +684,7 @@ INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    CHAR * formatstring, ...);
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
           PROGTYPE * progt, ULONG fl, char *formatstring, ...);
-#define MAXCOMLINESTRG (4096)			/* used to build command line strings */
+#define MAXCOMLINESTRG (2048)			/* used to build command line strings */
 #define RUNTYPE_MASK  0xf
 #define SYNCHRONOUS   1
 #define ASYNCHRONOUS  2

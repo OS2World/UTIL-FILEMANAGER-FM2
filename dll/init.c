@@ -829,7 +829,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
 		   WC_TOOLBACK,
-		   ToolBackProc, CS_SIZEREDRAW, sizeof(PVOID));
+                   ToolBackProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
 		   WC_DRIVEBACK,
 		   DriveBackProc,

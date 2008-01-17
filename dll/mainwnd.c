@@ -2466,8 +2466,7 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_CREATE:
     hwndToolback = hwnd;
-    SetPresParams(hwnd,
-		  &RGBGREY, &RGBBLACK, &RGBGREY, GetPString(IDS_8HELVTEXT));
+    RestorePresParams(hwnd, "ToolBar");
     break;
 
   case WM_MOUSEMOVE:
@@ -2489,18 +2488,35 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      FID_CLIENT), msg, mp1, mp2);
 
   case WM_PAINT:
+
+    PaintRecessedWindow(hwnd, (HPS)0, TRUE, FALSE);
+
     {
       HPS hps;
       RECTL rcl;
+      ULONG lColor;
 
-      hps = WinBeginPaint(hwnd, (HPS) 0, NULL);
+      hps = WinBeginPaint(hwnd, (HPS)0, NULL);
       if (hps) {
-	WinQueryWindowRect(hwnd, &rcl);
-	WinFillRect(hps, &rcl, CLR_PALEGRAY);
-	WinEndPaint(hps);
+        GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
+        WinQueryPresParam(hwnd,              /* Window handle         */
+                          PP_BACKGROUNDCOLOR,  /* Background presparam  */
+                          0,
+                          NULL,
+                          sizeof(lColor),      /* Length of data buffer */
+                          &lColor,             /* Data buffer returned  */
+                          0);
+        WinQueryWindowRect(hwnd, &rcl);
+        WinFillRect(hps, &rcl, lColor);
+        WinEndPaint(hps);
       }
-      PaintRecessedWindow(hwnd, (HPS) 0, TRUE, FALSE);
+
     }
+    break;
+
+  case WM_PRESPARAMCHANGED:
+    PresParamChanged(hwnd, "ToolBar", mp1, mp2);
+    WinInvalidateRect(hwnd, NULL, TRUE);
     break;
 
   case UM_SETUP:
