@@ -201,6 +201,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (strcmp(szCLBuf, virus)){
         NormalizeCmdLine(pszWorkBuf, szCLBuf);
         memcpy(virus, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        xfree(pszWorkBuf);
         if (!strchr(virus, '%') && strlen(virus) > 3)
           strcat(virus, " %p");
       }
@@ -492,6 +493,7 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         if (!strchr(bined, '%') && strlen(bined) > 3)
           strcat(bined, " %a");
       }
+      xfree(pszWorkBuf);
       PrfWriteProfileString(fmprof, appname, "Viewer", viewer);
       PrfWriteProfileString(fmprof, appname, "Editor", editor);
       PrfWriteProfileString(fmprof, appname, "BinView", binview);
@@ -684,6 +686,7 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         NormalizeCmdLine(pszWorkBuf, szCLBuf);
         memcpy(mailrun, pszWorkBuf, strlen(pszWorkBuf) + 1);
       }
+      xfree(pszWorkBuf);
       PrfWriteProfileString(fmprof, appname, "HttpRunDir", httprundir);
       PrfWriteProfileString(fmprof, appname, "FtpRunDir", ftprundir);
       PrfWriteProfileString(fmprof, appname, "MailRunDir", mailrundir);
@@ -1282,6 +1285,7 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (!strchr(compare, '%') && strlen(compare) > 3)
             strcat(compare, " %a");
         }
+      xfree(pszWorkBuf);
       PrfWriteProfileString(fmprof, appname, "Compare", compare);
       break;
     }

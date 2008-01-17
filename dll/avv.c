@@ -104,6 +104,7 @@ static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
   }
   else
     pszDest = NULL;
+  xfree(pszWorkBuf);
   return pszDest;
 }
 

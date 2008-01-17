@@ -628,6 +628,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
         memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        xfree(pszWorkBuf);
         if (!strchr(temp.cl, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -723,6 +724,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
         memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        xfree(pszWorkBuf);
         if (!strchr(temp.cl, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -824,6 +826,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
         memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        xfree(pszWorkBuf);
         if (fCancelAction){
           fCancelAction = FALSE;
           break;

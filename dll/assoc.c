@@ -650,6 +650,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
         memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        xfree(pszWorkBuf);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -738,6 +739,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
         memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        xfree(pszWorkBuf);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -852,6 +854,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
         memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        xfree(pszWorkBuf);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {

@@ -44,6 +44,7 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   12 Jan 08 SHL Support drag&drop dialog toggle
   16 Jan 08 SHL Add sync updates toggle
+  16 Jan 08 GKY Fix changing background color on toolbar
 
 ***********************************************************************/
 
