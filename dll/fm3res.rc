@@ -29,6 +29,7 @@
   05 Sep 07 SHL Small change for OpenWatcom wrc compat
   26 Nov 07 GKY Added "Save as" to internal editor
   12 Jan 08 SHL Rework Config menu
+  16 Jan 08 SHL Add sync updates toggle
 
 ***********************************************************************/
 
@@ -244,7 +245,8 @@ MENU  MAIN_FRAME
     MENUITEM "Toggle ~quicklists\tF8",IDM_USERLIST
     MENUITEM "Toggle ~bottom buttons\tCtrl + F8",IDM_MOREBUTTONS
     MENUITEM "Toggle dri~vebar\tCtrl + Shift + F8",IDM_DRIVEBAR
-    MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG		// 12 Jan 08 SHL
+    MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG	// 12 Jan 08 SHL
+    MENUITEM "Toggle ~immediate updates",IDM_SYNCUPDATES		// 16 Jan 08 SHL
     MENUITEM "",                  -1,           MIS_SEPARATOR
     SUBMENU "~Edit",							-1
 	 {
