@@ -43,6 +43,9 @@
   05 Jan 08 SHL Use WM_TIMER for progress messaging
   05 Jan 08 SHL Use ITIMER_DESC for hogging control
   12 Jan 08 SHL Correct select count display regression
+  12 Jan 08 SHL Localize SpecialSelect here and rename
+  12 Jan 08 SHL Use SleepIfNeeded
+  12 Jan 08 SHL Reduce/eliminate more DosSleep calls
 
 ***********************************************************************/
 
@@ -363,7 +366,7 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-    DosSleep(50);			// 05 Aug 07 GKY 100
+    DosSleep(50);			// Let others die first
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -377,9 +380,10 @@ static VOID ActionCnrThread(VOID *args)
   HAB hab;
   HMQ hmq;
   HWND hwndCnrS, hwndCnrD;
-  PCNRITEM pci, pciD, pciNextS, pciNextD;
+  PCNRITEM pciS, pciD, pciNextS, pciNextD;
   CHAR szNewName[CCHMAXPATH], szDirName[CCHMAXPATH], *p;
   APIRET rc;
+  ITIMER_DESC itdSleep = { 0 };
 
   if (!cmp) {
     Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
@@ -431,32 +435,33 @@ static VOID ActionCnrThread(VOID *args)
 	goto Abort;
       }
 
-      pci = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPVOID,
+      pciS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPVOID,
 		       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
       pciD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
 			MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 
       WinStartTimer(hab, cmp->hwnd, ID_TIMER, 2000);
+      InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
 
-      while (pci && (INT)pci != -1 && pciD && (INT)pciD != -1) {
+      while (pciS && (INT)pciS != -1 && pciD && (INT)pciD != -1) {
 
-	pciNextS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pci),
+	pciNextS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pciS),
 			  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
 	pciNextD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciD),
 			   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
 
-	if (*pci->pszFileName && pci->rc.flRecordAttr & CRA_SELECTED) {
+	if (*pciS->pszFileName && pciS->rc.flRecordAttr & CRA_SELECTED) {
 
 	  // Source name not blank
 	  switch (cmp->action) {
 	  case IDM_DELETE:
-	    if (!unlinkf("%s", pci->pszFileName)) {
-	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pci),
+	    if (!unlinkf("%s", pciS->pszFileName)) {
+	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
 
 	      if (!*pciD->pszFileName) {
 		// Other side is blank - remove from both sides
-		RemoveCnrItems(hwndCnrS, pci, 1, CMA_FREE | CMA_INVALIDATE);
+		RemoveCnrItems(hwndCnrS, pciS, 1, CMA_FREE | CMA_INVALIDATE);
 		if (pciD->rc.flRecordAttr & CRA_SELECTED)
 		  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
 			     MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -464,36 +469,31 @@ static VOID ActionCnrThread(VOID *args)
 	      }
 	      else {
 		// Other side is not blank - update just this side
-		FreeCnrItemData(pci);
-		pci->pszDisplayName = pci->pszFileName;
-		pci->rc.pszIcon = pci->pszFileName;
-		pci->flags = 0;
-		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
+		FreeCnrItemData(pciS);
+		pciS->pszDisplayName = pciS->pszFileName;
+		pciS->rc.pszIcon = pciS->pszFileName;
+		pciS->flags = 0;	// Just on one side
+		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
 			   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+		pciD->flags = 0;	// Just on one side
+	        if (pciD->pszSubject != NullStr) {
+		  xfree(pciD->pszSubject);
+		  pciD->pszSubject = NullStr;
+	        }
 	      }
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
 		cmp->cmp->totalleft--;
 	      else
 		cmp->cmp->totalright--;
-	      DosSleep(0);		// 8-26-07 GKY 1
+	      // DosSleep(0);		// 8-26-07 GKY 1 // 12 Jan 08 SHL
 	    }
 	    break;
 
 	  case IDM_MOVE:
 	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-	      BldFullPathName(szNewName, cmp->leftdir, pci->pszDisplayName);
-	      //sprintf(szNewName, "%s%s%s",
-	      //        cmp->leftdir,
-	      //        cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-	      //	NullStr : "\\",
-	      //	pci->pszDisplayName);
+	      BldFullPathName(szNewName, cmp->leftdir, pciS->pszDisplayName);
 	    else
-	      BldFullPathName(szNewName, cmp->rightdir, pci->pszDisplayName);
-	      //sprintf(szNewName, "%s%s%s",
-	      //        cmp->rightdir,
-	     //         cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-	     //	NullStr : "\\",
-	     //         pci->pszDisplayName);
+	      BldFullPathName(szNewName, cmp->rightdir, pciS->pszDisplayName);
 	    // Make directory if required
 	    strcpy(szDirName, szNewName);
 	    p = strrchr(szDirName, '\\');
@@ -504,9 +504,9 @@ static VOID ActionCnrThread(VOID *args)
 	      if (IsFile(szDirName) == -1)
 		MassMkdir(hwndMain, szDirName);
 	    }
-	    rc = docopyf(MOVE, pci->pszFileName, "%s", szNewName);
-	    if (!rc && stricmp(pci->pszFileName, szNewName)) {
-	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pci),
+	    rc = docopyf(MOVE, pciS->pszFileName, "%s", szNewName);
+	    if (!rc && stricmp(pciS->pszFileName, szNewName)) {
+	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      if (pciD->rc.flRecordAttr & CRA_SELECTED)
 		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
@@ -524,39 +524,45 @@ static VOID ActionCnrThread(VOID *args)
 		  pciD->pszDisplayName++;
 	      }
 	      // 02 Aug 07 SHL fixme to know if LongName transfer is correct?
-	      pciD->pszLongName = pci->pszLongName;
+	      pciD->pszLongName = pciS->pszLongName;
 	      if (pciD->pszSubject != NullStr) {
 		xfree(pciD->pszSubject);
 		pciD->pszSubject = NullStr;
 	      }
-	      pciD->attrFile = pci->attrFile;
-	      pciD->pszDispAttr = pci->pszDispAttr;
+	      pciD->attrFile = pciS->attrFile;
+	      pciD->pszDispAttr = pciS->pszDispAttr;
 	      pciD->flags = 0;		// Just on one side
-	      pciD->date = pci->date;
-	      pciD->time = pci->time;
-	      pciD->ladate = pci->ladate;
-	      pciD->latime = pci->latime;
-	      pciD->crdate = pci->crdate;
-	      pciD->crtime = pci->crtime;
-	      pciD->cbFile = pci->cbFile;
-	      pciD->easize = pci->easize;
+	      pciD->date = pciS->date;
+	      pciD->time = pciS->time;
+	      pciD->ladate = pciS->ladate;
+	      pciD->latime = pciS->latime;
+	      pciD->crdate = pciS->crdate;
+	      pciD->crtime = pciS->crtime;
+	      pciD->cbFile = pciS->cbFile;
+	      pciD->easize = pciS->easize;
 
-	      if (pci->pszFileName != NullStr) {
-		xfree(pci->pszFileName);
-		pci->pszFileName = NullStr;
-		pci->pszDisplayName = pci->pszFileName;
-		pci->rc.pszIcon = pci->pszFileName;
+	      if (pciS->pszFileName != NullStr) {
+		xfree(pciS->pszFileName);
+		pciS->pszFileName = NullStr;
+		pciS->pszDisplayName = pciS->pszFileName;
+		pciS->rc.pszIcon = pciS->pszFileName;
 	      }
-	      if (pci->pszSubject != NullStr) {
-		xfree(pci->pszSubject);
-		pci->pszSubject = NullStr;
+	      if (pciS->pszSubject != NullStr) {
+		xfree(pciS->pszSubject);
+		pciS->pszSubject = NullStr;
 	      }
-	      pci->flags = 0;
+	      pciS->flags = 0;		// Just on one side
 
-	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
+	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+
 	      WinSendMsg(hwndCnrD, CM_INVALIDATERECORD, MPFROMP(&pciD),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+
+	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
+		cmp->cmp->totalleft--;
+	      else
+		cmp->cmp->totalright--;
 	    }
 	    else if (rc) {
 	      rc = Dos_Error(MB_ENTERCANCEL,
@@ -565,7 +571,7 @@ static VOID ActionCnrThread(VOID *args)
 			     pszSrcFile,
 			     __LINE__,
 			     GetPString(IDS_COMPMOVEFAILEDTEXT),
-			     pci->pszFileName, szNewName);
+			     pciS->pszFileName, szNewName);
 	      if (rc == MBID_CANCEL)	// Cause loop to break
 		pciNextS = NULL;
 	    }
@@ -573,19 +579,9 @@ static VOID ActionCnrThread(VOID *args)
 
 	  case IDM_COPY:
 	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-	      BldFullPathName(szNewName, cmp->leftdir, pci->pszDisplayName);
-	      //sprintf(szNewName, "%s%s%s",
-	      //        cmp->leftdir,
-	      //        cmp->leftdir[strlen(cmp->leftdir) - 1] == '\\' ?
-	      //	NullStr : "\\",
-	      //         pci->pszDisplayName);
+	      BldFullPathName(szNewName, cmp->leftdir, pciS->pszDisplayName);
 	    else
-	      BldFullPathName(szNewName, cmp->rightdir, pci->pszDisplayName);
-	      //sprintf(szNewName, "%s%s%s",
-	      //        cmp->rightdir,
-	      //        cmp->rightdir[strlen(cmp->rightdir) - 1] == '\\' ?
-	      //	NullStr : "\\",
-	      //        pci->pszDisplayName);
+	      BldFullPathName(szNewName, cmp->rightdir, pciS->pszDisplayName);
 	    // Make directory if required
 	    strcpy(szDirName, szNewName);
 	    p = strrchr(szDirName, '\\');
@@ -596,7 +592,7 @@ static VOID ActionCnrThread(VOID *args)
 	      if (IsFile(szDirName) == -1)
 		MassMkdir(hwndMain, szDirName);
 	    }
-	    rc = docopyf(COPY, pci->pszFileName, "%s", szNewName);
+	    rc = docopyf(COPY, pciS->pszFileName, "%s", szNewName);
 	    if (rc) {
 	      rc = Dos_Error(MB_ENTERCANCEL,
 			     rc,
@@ -604,16 +600,23 @@ static VOID ActionCnrThread(VOID *args)
 			     pszSrcFile,
 			     __LINE__,
 			     GetPString(IDS_COMPCOPYFAILEDTEXT),
-			     pci->pszFileName, szNewName);
+			     pciS->pszFileName, szNewName);
 	      if (rc == MBID_CANCEL)
 		pciNextS = NULL;		// Cause loop to break
 	    }
 	    else {
-	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pci),
+	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      if (pciD->rc.flRecordAttr & CRA_SELECTED)
 		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
 			   MPFROM2SHORT(FALSE, CRA_SELECTED));
+	      // 12 Jan 08 SHL
+	      if (pciD->pszFileName == NullStr) {
+		if (hwndCnrD == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
+		  cmp->totalleft++;
+		else
+		  cmp->totalright++;
+	      }
 	      FreeCnrItemData(pciD);
 	      pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
@@ -626,26 +629,26 @@ static VOID ActionCnrThread(VOID *args)
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciD->pszDisplayName++;
 	      }
-	      pciD->attrFile = pci->attrFile;
-	      pciD->pszDispAttr = pci->pszDispAttr;
+	      pciD->attrFile = pciS->attrFile;
+	      pciD->pszDispAttr = pciS->pszDispAttr;
 	      pciD->flags = CNRITEM_EXISTS;	// Now on both sides
-	      pciD->date = pci->date;
-	      pciD->time = pci->time;
-	      pciD->ladate = pci->ladate;
-	      pciD->latime = pci->latime;
-	      pciD->crdate = pci->crdate;
-	      pciD->crtime = pci->crtime;
-	      pciD->cbFile = pci->cbFile;
-	      pciD->easize = pci->easize;
+	      pciD->date = pciS->date;
+	      pciD->time = pciS->time;
+	      pciD->ladate = pciS->ladate;
+	      pciD->latime = pciS->latime;
+	      pciD->crdate = pciS->crdate;
+	      pciD->crtime = pciS->crtime;
+	      pciD->cbFile = pciS->cbFile;
+	      pciD->easize = pciS->easize;
 
 	      // Forget status until we regenerate it
-	      if (pci->pszSubject != NullStr) {
-		xfree(pci->pszSubject);
-		pci->pszSubject = NullStr;
+	      if (pciS->pszSubject != NullStr) {
+		xfree(pciS->pszSubject);
+		pciS->pszSubject = NullStr;
 	      }
-	      pci->flags = CNRITEM_EXISTS;
+	      pciS->flags = CNRITEM_EXISTS;	// Now on both sides
 
-	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pci),
+	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
 	      WinSendMsg(hwndCnrD, CM_INVALIDATERECORD, MPFROMP(&pciD),
 			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
@@ -658,9 +661,10 @@ static VOID ActionCnrThread(VOID *args)
 
 	} // if have name
 
-	pci = pciNextS;
+	pciS = pciNextS;
 	pciD = pciNextD;
 
+	SleepIfNeeded(&itdSleep, 0);
       }	// while
     Abort:
       WinStopTimer(hab, cmp->hwnd, ID_TIMER);
@@ -673,6 +677,8 @@ static VOID ActionCnrThread(VOID *args)
   }
   free(cmp);
 }
+
+VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset);
 
 //=== SelectCnrsThread() Update container selection flags thread ===
 
@@ -709,9 +715,13 @@ static VOID SelectCnrsThread(VOID *args)
 	break;
 
       default:
-	SpecialSelect(WinWindowFromID(cmp->hwnd, COMP_LEFTDIR),
-		      WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR),
-		      cmp->action, cmp->reset);
+	// 13 Jan 08 SHL fixme to decide if cmp->reset can ever get set
+	// if not lots of code can disappear
+	if (cmp->reset)
+	  DbgMsg(pszSrcFile, __LINE__, "cmp->reset is TRUE");
+	CompSelect(WinWindowFromID(cmp->hwnd, COMP_LEFTDIR),
+		   WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR),
+		   cmp->action, cmp->reset);
 	break;
       }
       WinStopTimer(hab, cmp->hwnd, ID_TIMER);
@@ -723,6 +733,535 @@ static VOID SelectCnrsThread(VOID *args)
     WinTerminate(hab);
   }
   free(cmp);
+}
+
+/**
+ * Do select actions for compare directories containers
+ * @param action is select mode
+ * @param reset requests flags by regenerated
+ */
+
+VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
+{
+  PCNRITEM pciS, pciD, *pciSa = NULL, *pciDa = NULL;
+  CNRINFO cnri;
+  BOOL slow = FALSE;
+  UINT x, numD, numS;
+  INT ret = 0;
+  ITIMER_DESC itdSleep = { 0 };
+
+  if (!hwndCnrS || !hwndCnrD) {
+    Runtime_Error(pszSrcFile, __LINE__, "hwndCnrS %p hwndCnrD %p", hwndCnrS, hwndCnrD);
+    return;
+  }
+
+  memset(&cnri, 0, sizeof(CNRINFO));
+  cnri.cb = sizeof(CNRINFO);
+  WinSendMsg(hwndCnrD, CM_QUERYCNRINFO, MPFROMP(&cnri),
+	     MPFROMLONG(sizeof(CNRINFO)));
+  numD = cnri.cRecords;
+  memset(&cnri, 0, sizeof(CNRINFO));
+  cnri.cb = sizeof(CNRINFO);
+  WinSendMsg(hwndCnrS, CM_QUERYCNRINFO, MPFROMP(&cnri),
+	     MPFROMLONG(sizeof(CNRINFO)));
+  numS = cnri.cRecords;
+  if (!numD || numS != numD) {
+    Runtime_Error(pszSrcFile, __LINE__, "numD %u != numS %u", numD, numS);
+    return;
+  }
+
+  pciDa = xmalloc(sizeof(PCNRITEM) * numD, pszSrcFile, __LINE__);
+  if (!pciDa)
+    return;
+
+  pciSa = xmalloc(sizeof(PCNRITEM) * numS, pszSrcFile, __LINE__);
+  if (!pciSa) {
+    free(pciDa);
+    return;
+  }
+
+  InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
+
+Restart:
+
+  memset(pciDa, 0, sizeof(PCNRITEM) * numD);
+  memset(pciSa, 0, sizeof(PCNRITEM) * numS);
+
+  pciD = (PCNRITEM)WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
+			       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  x = 0;
+  while (pciD && (INT)pciD != -1 && x < numD) {
+    if (reset)
+      pciD->flags = 0;
+    pciDa[x] = pciD;
+    x++;
+    if (!slow)
+      pciD = (PCNRITEM) pciD->rc.preccNextRecord;
+    else
+      pciD = (PCNRITEM) WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciD),
+				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+    SleepIfNeeded(&itdSleep, 0);
+  } // while
+
+  if (numD != x) {
+    // Something out of sync - fixme to document why
+    if (!slow) {
+      slow = TRUE;
+      goto Restart;
+    }
+    free(pciDa);
+    free(pciSa);
+    Runtime_Error(pszSrcFile, __LINE__, "numD %u != x %lu", numD, x);
+    return;
+  }
+
+  pciS = (PCNRITEM) WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPVOID,
+			       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  x = 0;
+  while (pciS && (INT)pciS != -1 && x < numS) {
+    if (reset)
+      pciS->flags = 0;
+    pciSa[x] = pciS;
+    x++;
+    if (!slow)
+      pciS = (PCNRITEM) pciS->rc.preccNextRecord;
+    else
+      pciS = (PCNRITEM) WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pciS),
+				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+    SleepIfNeeded(&itdSleep, 0);
+  } // while
+
+  if (numS != x) {
+    if (!slow) {
+      slow = TRUE;
+      goto Restart;
+    }
+    free(pciSa);
+    free(pciDa);
+    Runtime_Error(pszSrcFile, __LINE__, "numS (%lu) != x (%lu)", numS, x);
+    return;
+  }
+
+  if (reset) {
+    // Update flags for files that exist on both sides
+    for (x = 0; x < numS; x++) {
+
+      if (!*pciSa[x]->pszFileName || !*pciDa[x]->pszFileName) {
+	// 12 Jan 08 SHL clear flags
+	pciSa[x]->flags = 0;	// File exists on one side only
+	pciDa[x]->flags = 0;
+	continue;
+      }
+
+      pciSa[x]->flags |= CNRITEM_EXISTS;	// File exists on both sides
+      pciDa[x]->flags |= CNRITEM_EXISTS;
+      if (pciSa[x]->cbFile + pciSa[x]->easize >
+	  pciDa[x]->cbFile + pciDa[x]->easize) {
+	pciSa[x]->flags |= CNRITEM_LARGER;
+	pciDa[x]->flags |= CNRITEM_SMALLER;
+      }
+      else if (pciSa[x]->cbFile + pciSa[x]->easize <
+	       pciDa[x]->cbFile + pciDa[x]->easize) {
+	pciSa[x]->flags |= CNRITEM_SMALLER;
+	pciDa[x]->flags |= CNRITEM_LARGER;
+      }
+      ret = TestCDates(&pciDa[x]->date, &pciDa[x]->time,
+		       &pciSa[x]->date, &pciSa[x]->time);
+      if (ret == 1)
+	/* 13 Jan 08 SHL fixme to be gone?
+	  ((pciSa[x]->date.year > pciDa[x]->date.year) ? TRUE :
+	  (pciSa[x]->date.year < pciDa[x]->date.year) ? FALSE :
+	  (pciSa[x]->date.month > pciDa[x]->date.month) ? TRUE :
+	  (pciSa[x]->date.month < pciDa[x]->date.month) ? FALSE :
+	  (pciSa[x]->date.day > pciDa[x]->date.day) ? TRUE :
+	  (pciSa[x]->date.day < pciDa[x]->date.day) ? FALSE :
+	  (pciSa[x]->time.hours > pciDa[x]->time.hours) ? TRUE :
+	  (pciSa[x]->time.hours < pciDa[x]->time.hours) ? FALSE :
+	  (pciSa[x]->time.minutes > pciDa[x]->time.minutes) ? TRUE :
+	  (pciSa[x]->time.minutes < pciDa[x]->time.minutes) ? FALSE :
+	  (pciSa[x]->time.seconds > pciDa[x]->time.seconds) ? TRUE :
+	  (pciSa[x]->time.seconds < pciDa[x]->time.seconds) ? FALSE : FALSE)
+	*/
+      {
+	pciSa[x]->flags |= CNRITEM_NEWER;
+	pciDa[x]->flags |= CNRITEM_OLDER;
+      }
+      else if (ret == -1)
+	/* 13 Jan 08 SHL fixme to be gone?
+	  ((pciSa[x]->date.year < pciDa[x]->date.year) ? TRUE :
+	  (pciSa[x]->date.year > pciDa[x]->date.year) ? FALSE :
+	  (pciSa[x]->date.month < pciDa[x]->date.month) ? TRUE :
+	  (pciSa[x]->date.month > pciDa[x]->date.month) ? FALSE :
+	  (pciSa[x]->date.day < pciDa[x]->date.day) ? TRUE :
+	  (pciSa[x]->date.day > pciDa[x]->date.day) ? FALSE :
+	  (pciSa[x]->time.hours < pciDa[x]->time.hours) ? TRUE :
+	  (pciSa[x]->time.hours > pciDa[x]->time.hours) ? FALSE :
+	  (pciSa[x]->time.minutes < pciDa[x]->time.minutes) ? TRUE :
+	  (pciSa[x]->time.minutes > pciDa[x]->time.minutes) ? FALSE :
+	  (pciSa[x]->time.seconds < pciDa[x]->time.seconds) ? TRUE :
+	  (pciSa[x]->time.seconds > pciDa[x]->time.seconds) ? FALSE :
+	  FALSE)
+	*/
+      {
+	pciSa[x]->flags |= CNRITEM_OLDER;
+	pciDa[x]->flags |= CNRITEM_NEWER;
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+  } // if reset
+
+  switch (action) {
+  case IDM_SELECTIDENTICAL:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  pciSa[x]->flags & CNRITEM_EXISTS &&
+	  ~pciSa[x]->flags & CNRITEM_SMALLER &&
+	  ~pciSa[x]->flags & CNRITEM_LARGER &&
+	  ~pciSa[x]->flags & CNRITEM_NEWER &&
+	  ~pciSa[x]->flags & CNRITEM_OLDER) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTSAME:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  pciSa[x]->flags & CNRITEM_EXISTS &&
+	  ~pciSa[x]->flags & CNRITEM_SMALLER &&
+	  ~pciSa[x]->flags & CNRITEM_LARGER) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTSAMECONTENT:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  pciSa[x]->flags & CNRITEM_EXISTS)
+      {
+	FILE *fp1 = NULL;
+	FILE *fp2 = NULL;
+	BOOL gotMatch = FALSE;
+	UINT errLineNo = 0;
+	UINT compErrno = 0;
+	CHAR buf1[1024];
+	CHAR buf2[1024];
+	HAB hab = WinQueryAnchorBlock(hwndCnrS);
+
+	if (!*pciSa[x]->pszFileName ||
+	    !*pciDa[x]->pszFileName) {
+	  Runtime_Error(pszSrcFile, __LINE__,
+			"CNRITEM_EXISTS set with null file name for index %u", x);
+	  break;
+	}
+
+	fp1 = _fsopen(pciSa[x]->pszFileName, "rb", SH_DENYNO);
+	if (!fp1) {
+	  errLineNo = __LINE__;
+	  compErrno = errno;
+	}
+	else {
+	  fp2 = _fsopen(pciDa[x]->pszFileName, "rb", SH_DENYNO);
+	  if (!fp2) {
+	    errLineNo = __LINE__;
+	    compErrno = errno;
+	  }
+	  else {
+	    size_t len1 = filelength(fileno(fp1));
+	    size_t len2 = filelength(fileno(fp2));
+
+	    if (len1 == len2) {
+	      setbuf(fp1, NULL);
+	      setbuf(fp2, NULL);
+	      while (WinIsWindow(hab, hwndCnrS)) {
+		size_t numread1 = fread(buf1, 1, 1024, fp1);
+		size_t numread2 = fread(buf2, 1, 1024, fp2);
+
+		if (!numread1 || !numread2 || numread1 != numread2) {
+		  if (ferror(fp1) || ferror(fp2)) {
+		    errLineNo = __LINE__;
+		    compErrno = errno;
+		  }
+		  else if (feof(fp1) && feof(fp2))
+		    gotMatch = TRUE;
+		  break;
+		}
+		else if (memcmp(buf1, buf2, numread1))
+		  break;
+	      }	// while
+	    } // same len
+	  }
+	}
+
+	if (fp1)
+	  fclose(fp1);
+
+	if (fp2)
+	  fclose(fp2);
+
+	if (errLineNo) {
+	  Runtime_Error(pszSrcFile, errLineNo,
+			"error %d while comparing", compErrno);
+	}
+
+	if (gotMatch) {
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTBOTH:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  pciSa[x]->flags & CNRITEM_EXISTS) {
+	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTONE:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  ~pciSa[x]->flags & CNRITEM_EXISTS) {
+	if (*pciSa[x]->pszFileName) {
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	  }
+	}
+	else if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
+	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTBIGGER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_LARGER) {
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_LARGER) {
+	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTSMALLER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_SMALLER) {
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_SMALLER) {
+	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTNEWER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_NEWER) {
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_NEWER) {
+	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_SELECTOLDER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_OLDER) {
+	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_OLDER) {
+	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(TRUE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_DESELECTBOTH:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
+	  pciSa[x]->flags & CNRITEM_EXISTS) {
+	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		     MPFROM2SHORT(FALSE, CRA_SELECTED));
+	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		     MPFROM2SHORT(FALSE, CRA_SELECTED));
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_DESELECTONE:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (~pciSa[x]->flags & CNRITEM_EXISTS) {
+	if (*pciSa[x]->pszFileName) {
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_DESELECTBIGGER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_LARGER) {
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_LARGER) {
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_DESELECTSMALLER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_SMALLER) {
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_SMALLER) {
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_DESELECTNEWER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_NEWER) {
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_NEWER) {
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_DESELECTOLDER:
+    for (x = 0; x < numS; x++) {
+      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
+	if (pciSa[x]->flags & CNRITEM_OLDER) {
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+	else if (pciDa[x]->flags & CNRITEM_OLDER) {
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
+		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  default:
+    break;
+  }
+
+  if (reset) {
+    while (numS) {
+      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD,
+		 MPFROMP(pciSa), MPFROM2SHORT((min(numS, 65535)), 0));
+      // DosSleep(0);			//Let screen update // 12 Jan 08 SHL
+      WinSendMsg(hwndCnrD, CM_INVALIDATERECORD,
+		 MPFROMP(pciDa), MPFROM2SHORT((min(numD, 65535)), 0));
+      numS -= min(numS, 65535);
+      // if (numS) // 12 Jan 08 SHL
+	// DosSleep(0); //26 Aug 07 GKY 1
+      SleepIfNeeded(&itdSleep, 0); // 12 Jan 08 SHL
+    } // while
+  }
+
+  free(pciSa);
+  free(pciDa);
+  DosPostEventSem(CompactSem);
 }
 
 /**
@@ -828,7 +1367,9 @@ Abort:
   // DbgMsg(pszSrcFile, __LINE__, "FillDirList finish %s", str);
 }
 
-//=== CompNames() Compare names for qsort ===
+/**
+ * Compare names for qsort
+ */
 
 static int CompNames(const void *n1, const void *n2)
 {
@@ -1274,7 +1815,8 @@ static VOID FillCnrsThread(VOID *args)
 	    ret = TestCDates(&pcir->date, &pcir->time,
 			     &pcil->date, &pcil->time);
 	    if (ret == 1)
-	      /*((pcil->date.year > pcir->date.year) ? TRUE :
+	      /* 13 Jan 08 SHL fixme to be gone
+		((pcil->date.year > pcir->date.year) ? TRUE :
 		(pcil->date.year < pcir->date.year) ? FALSE :
 		(pcil->date.month > pcir->date.month) ? TRUE :
 		(pcil->date.month < pcir->date.month) ? FALSE :
@@ -1285,7 +1827,9 @@ static VOID FillCnrsThread(VOID *args)
 		(pcil->time.minutes > pcir->time.minutes) ? TRUE :
 		(pcil->time.minutes < pcir->time.minutes) ? FALSE :
 		(pcil->time.seconds > pcir->time.seconds) ? TRUE :
-		(pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE)*/ {
+		(pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE)
+	       */
+	    {
 	      pcil->flags |= CNRITEM_NEWER;
 	      pcir->flags |= CNRITEM_OLDER;
 	      if (pch != szBuf) {
@@ -1296,19 +1840,22 @@ static VOID FillCnrsThread(VOID *args)
 	      pch += 5;
 	    }
 	    else if (ret == -1)
-	      /*((pcil->date.year < pcir->date.year) ? TRUE :
-		     (pcil->date.year > pcir->date.year) ? FALSE :
-		     (pcil->date.month < pcir->date.month) ? TRUE :
-		     (pcil->date.month > pcir->date.month) ? FALSE :
-		     (pcil->date.day < pcir->date.day) ? TRUE :
-		     (pcil->date.day > pcir->date.day) ? FALSE :
-		     (pcil->time.hours < pcir->time.hours) ? TRUE :
-		     (pcil->time.hours > pcir->time.hours) ? FALSE :
-		     (pcil->time.minutes < pcir->time.minutes) ? TRUE :
-		     (pcil->time.minutes > pcir->time.minutes) ? FALSE :
-		     (pcil->time.seconds < pcir->time.seconds) ? TRUE :
-		     (pcil->time.seconds > pcir->time.seconds) ? FALSE :
-		     FALSE)*/ {
+	      /* 13 Jan 08 SHL fixme to be gone
+		((pcil->date.year < pcir->date.year) ? TRUE :
+		(pcil->date.year > pcir->date.year) ? FALSE :
+		(pcil->date.month < pcir->date.month) ? TRUE :
+		(pcil->date.month > pcir->date.month) ? FALSE :
+		(pcil->date.day < pcir->date.day) ? TRUE :
+		(pcil->date.day > pcir->date.day) ? FALSE :
+		(pcil->time.hours < pcir->time.hours) ? TRUE :
+		(pcil->time.hours > pcir->time.hours) ? FALSE :
+		(pcil->time.minutes < pcir->time.minutes) ? TRUE :
+		(pcil->time.minutes > pcir->time.minutes) ? FALSE :
+		(pcil->time.seconds < pcir->time.seconds) ? TRUE :
+		(pcil->time.seconds > pcir->time.seconds) ? FALSE :
+		FALSE)
+	      */
+	    {
 	      pcil->flags |= CNRITEM_OLDER;
 	      pcir->flags |= CNRITEM_NEWER;
 	      if (pch != szBuf) {
@@ -1514,10 +2061,11 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 0
 		       };
 	UINT x;
-	for (x = 0; ids[x]; x++)
+	for (x = 0; ids[x]; x++) {
 	  SetPresParams(WinWindowFromID(hwnd, ids[x]),
 			&RGBGREY,
 			&RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVTEXT));
+	}
       }
     }
     break;
@@ -1713,9 +2261,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
     }
     else {
-
-      // DbgMsg(pszSrcFile, __LINE__, "CompareDlgProc UM_CONTAINER_FILLED enter");
-
       cmp->filling = FALSE;
       WinEnableWindow(hwndLeft, TRUE);
       WinEnableWindow(hwndRight, TRUE);
@@ -1771,9 +2316,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else
 	WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPREADYTEXT));
-
-      // DbgMsg(pszSrcFile, __LINE__, "CompareDlgProc UM_CONTAINER_FILLED exit");
-
     }
     break;
 
@@ -2548,7 +3090,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     !strcmp(realappname, FM3Str)) {
 	      TileChildren(cmp->hwndParent, TRUE);
 	    }
-	    DosSleep(32);		// 05 Aug 07 GKY 64
+	    // DosSleep(32);		// 05 Aug 07 GKY 64
+	    DosSleep(1);		// 12 Jan 08 SHL Let screen update
 	    PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(COMP_COLLECT, 0), MPVOID);
 	    break;
 	  }
@@ -2619,4 +3162,5 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #pragma alloc_text(COMPAREDIR2,SelectCnrsThread,ActionCnrThread)
 #pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFilesThread)
 #pragma alloc_text(SNAPSHOT,SnapShot,StartSnap)
+#pragma alloc_text(COMPSELECT,CompSelect)
 

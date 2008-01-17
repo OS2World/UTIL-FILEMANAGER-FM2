@@ -746,9 +746,9 @@ VOID ProcessDirectory(const HWND hwndCnr,
     else
       ulFindMax = FilesToGet;		// full-out
   }
-  else {
+  else
     ulFindMax = FilesToGet;
-  }
+
   if (OS2ver[0] == 20 && OS2ver[1] < 30)
     ulFindMax = min(ulFindMax, (65535 / sizeof(FILEFINDBUF4L)));
 
@@ -779,7 +779,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       &ulFindCnt,
 		       FIL_QUERYEASIZEL);
     priority_normal();
-    *pchEndPath = 0;
+    *pchEndPath = 0;			// Chop off wildcard
     if (!rc) {
       do {
 	/*
@@ -970,6 +970,23 @@ VOID ProcessDirectory(const HWND hwndCnr,
       }
     }
 
+    /**
+     * DosFind for subdirectories of a read-only directory on a FAT volume
+     * returns path not found if there are no subdirectories
+     * FAT FS seems to ignore . and .. in this case
+     * Map to no more files
+     * We could verify that directory is marked read-only, it's probably not
+     * worth the extra code since we do verify 2 out of 3 prerequisites
+     * 15 Jan 08 SHL
+     */
+    if (rc == ERROR_PATH_NOT_FOUND && !filestoo) {
+      ULONG ulDriveType = 0;
+      CHAR szFSType[CCHMAXPATH];
+      INT removable = CheckDrive(*pszFileSpec, szFSType, &ulDriveType);
+      if (removable != -1 && strcmp(szFSType, "FAT") == 0)
+	rc = ERROR_NO_MORE_FILES;
+    }
+
     if (rc && rc != ERROR_NO_MORE_FILES) {
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		GetPString(IDS_CANTFINDDIRTEXT), pszFileSpec);
@@ -1010,17 +1027,18 @@ Abort:
 
 VOID FillDirCnr(HWND hwndCnr,
 		CHAR * pszDirectory,
-		DIRCNRDATA * dcd, PULONGLONG pullTotalBytes)
+		DIRCNRDATA * dcd,
+		PULONGLONG pullTotalBytes)
 {
   ProcessDirectory(hwndCnr,
-		   (PCNRITEM) NULL,
+		   (PCNRITEM)NULL,
 		   pszDirectory,
 		   TRUE,		// filestoo
 		   FALSE,		// recurse
 		   TRUE,		// partial
 		   dcd ? &dcd->stopflag : NULL,
 		   dcd,
-		   NULL,
+		   NULL,		// total files
 		   pullTotalBytes);
   DosPostEventSem(CompactSem);
 
@@ -1038,12 +1056,13 @@ VOID FillDirCnr(HWND hwndCnr,
 
 VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 {
-  ULONG ulCurDriveNum, ulDriveMap, numtoinsert = 0, drvtype;
+  ULONG ulCurDriveNum, ulDriveMap, numtoinsert = 0;
+  ULONG ulDriveType;
   PCNRITEM pci, pciFirst = NULL, pciNext, pciParent = NULL;
   INT x, removable;
   CHAR suggest[32];
   CHAR szDrive[] = " :\\";
-  CHAR szFileSystem[CCHMAXPATH];
+  CHAR szFSType[CCHMAXPATH];
   FILESTATUS4L fsa4;
   APIRET rc;
   BOOL drivesbuilt = FALSE;
@@ -1119,9 +1138,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       if (x > 1) {
 	// Hard drive (2..N)
 	if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
-	  *szFileSystem = 0;
-	  drvtype = 0;
-	  removable = CheckDrive(*szDrive, szFileSystem, &drvtype);
+	  *szFSType = 0;
+	  ulDriveType = 0;
+	  removable = CheckDrive(*szDrive, szFSType, &ulDriveType);
 	  driveserial[x] = -1;
 	  if (removable != -1) {
 	    struct {
@@ -1142,41 +1161,41 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  memset(&fsa4, 0, sizeof(FILESTATUS4L));
 	  driveflags[x] |= removable == -1 || removable == 1 ?
 			    DRIVE_REMOVABLE : 0;
-	  if (drvtype & DRIVE_REMOTE)
+	  if (ulDriveType & DRIVE_REMOTE)
 	    driveflags[x] |= DRIVE_REMOTE;
-	  if (!stricmp(szFileSystem,RAMFS)) {
+	  if (!stricmp(szFSType,RAMFS)) {
 	    driveflags[x] |= DRIVE_RAMDISK;
 	    driveflags[x] &= ~DRIVE_REMOTE;
 	  }
-	  if (!stricmp(szFileSystem,NDFS32)) {
+	  if (!stricmp(szFSType,NDFS32)) {
 	    driveflags[x] |= DRIVE_VIRTUAL;
 	    driveflags[x] &= ~DRIVE_REMOTE;
 	  }
-	  if (!stricmp(szFileSystem,NTFS))
+	  if (!stricmp(szFSType,NTFS))
 	    driveflags[x] |= DRIVE_NOTWRITEABLE;
-	  if (strcmp(szFileSystem, HPFS) &&
-	      strcmp(szFileSystem, JFS) &&
-	      strcmp(szFileSystem, ISOFS) &&
-	      strcmp(szFileSystem, CDFS) &&
-	      strcmp(szFileSystem, FAT32) &&
-	      strcmp(szFileSystem, NDFS32) &&
-	      strcmp(szFileSystem, RAMFS) &&
-	      strcmp(szFileSystem, NTFS) &&
-	      strcmp(szFileSystem, HPFS386)) {
+	  if (strcmp(szFSType, HPFS) &&
+	      strcmp(szFSType, JFS) &&
+	      strcmp(szFSType, ISOFS) &&
+	      strcmp(szFSType, CDFS) &&
+	      strcmp(szFSType, FAT32) &&
+	      strcmp(szFSType, NDFS32) &&
+	      strcmp(szFSType, RAMFS) &&
+	      strcmp(szFSType, NTFS) &&
+	      strcmp(szFSType, HPFS386)) {
 	    driveflags[x] |= DRIVE_NOLONGNAMES;
 	  }
 
-	  if (!strcmp(szFileSystem, CDFS) || !strcmp(szFileSystem,ISOFS)) {
+	  if (!strcmp(szFSType, CDFS) || !strcmp(szFSType,ISOFS)) {
 	    removable = 1;
 	    driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
 			     DRIVE_CDROM;
 	  }
-	  else if (!stricmp(szFileSystem, CBSIFS)) {
+	  else if (!stricmp(szFSType, CBSIFS)) {
 	    driveflags[x] |= DRIVE_ZIPSTREAM;
 	    driveflags[x] &= ~DRIVE_REMOTE;
-	    if (drvtype & DRIVE_REMOVABLE)
+	    if (ulDriveType & DRIVE_REMOVABLE)
 	      driveflags[x] |= DRIVE_REMOVABLE;
-	    if (!(drvtype & DRIVE_NOLONGNAMES))
+	    if (!(ulDriveType & DRIVE_NOLONGNAMES))
 	      driveflags[x] &= ~DRIVE_NOLONGNAMES;
 	  }
 
@@ -1337,15 +1356,15 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	while (*p == ' ')
 	  p++;
 	while (*p) {
-	  *szFileSystem = 0;
-	  pp = szFileSystem;
+	  *szFSType = 0;
+	  pp = szFSType;
 	  while (*p && *p != ' ')
 	    *pp++ = *p++;
 	  *pp = 0;
 	  while (*p == ' ')
 	    p++;
-	  if (*szFileSystem &&
-	      (!stricmp(szFileSystem, "LIBPATH") || getenv(szFileSystem))) {
+	  if (*szFSType &&
+	      (!stricmp(szFSType, "LIBPATH") || getenv(szFSType))) {
 	    pci = WinSendMsg(hwndCnr,
 			     CM_ALLOCRECORD,
 			     MPFROMLONG(EXTRA_RECORD_BYTES),
@@ -1353,7 +1372,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    if (pci) {
 	      CHAR fname[CCHMAXPATH];
 	      pci->flags |= RECFLAGS_ENV;
-	      sprintf(fname, "%%%s%%", szFileSystem);
+	      sprintf(fname, "%%%s%%", szFSType);
 	      pci->pszFileName = xstrdup(fname, pszSrcFile, __LINE__);
 	      pci->rc.hptrIcon = hptrEnv;
 	      pci->rc.pszIcon = pci->pszFileName;
@@ -1429,7 +1448,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   SkipBadRec:
     x++;
     pci = pciNext;
-  }
+  } // while
   if (hwndParent)
     WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
 			       MAIN_DRIVELIST), LM_SELECTITEM,

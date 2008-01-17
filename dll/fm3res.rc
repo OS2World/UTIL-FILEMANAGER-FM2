@@ -246,13 +246,13 @@ MENU  MAIN_FRAME
     MENUITEM "Toggle dri~vebar\tCtrl + Shift + F8",IDM_DRIVEBAR
     MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG		// 12 Jan 08 SHL
     MENUITEM "",                  -1,           MIS_SEPARATOR
-    SUBMENU "~Edit",							IDM_EDITCOMMANDS
+    SUBMENU "~Edit",							-1
 	 {
 	   MENUITEM "Edit ~associations...",IDM_EDITASSOC
 		MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
 		MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
 	 }
-    SUBMENU "~Palette",							IDM_FONTPALETTE
+    SUBMENU "~Palette",							-1
 	 {
 	    MENUITEM "~Font palette",     IDM_FONTPALETTE
 	    MENUITEM "~Color palette",    IDM_COLORPALETTE

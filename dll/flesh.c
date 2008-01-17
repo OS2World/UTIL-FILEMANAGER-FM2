@@ -178,10 +178,10 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 		     includefiles,	// filestoo
 		     TRUE,		// recurse
 		     TRUE,		// partial
-		     NULL,
+		     NULL,		// stop flag
 		     dcd,
-		     NULL,
-		     NULL);
+		     NULL,		// total files
+		     NULL);		// total bytes
   }
   return TRUE;
 }

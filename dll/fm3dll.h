@@ -75,6 +75,7 @@
   05 Jan 08 SHL Move error.c definitions to errutil.h
   05 Jan 08 SHL Move string.c definitions to strutil.h
   10 Jan 08 SHL Add UM_FIRSTTIME
+  12 Jan 08 SHL Localize SpecialSelect to comp.c
 
 ***********************************************************************/
 
@@ -759,7 +760,6 @@ VOID MarkAll(HWND hwndCnr, BOOL quitit, BOOL target, BOOL source);
 VOID SetMask(CHAR * str, MASK * mask);
 VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent);
 VOID InvertAll(HWND hwndCnr);
-VOID SpecialSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset);
 VOID SpecialSelect2(HWND hwndParent, INT action);
 
 /* viewer.c */

@@ -9,6 +9,8 @@ New stuff's at the top.  This list is not necessarily complete.
  o Rework Config menu.  Move some to submenu.  Add drag&drop dialog toggle. (Steven)
  o Rework Walk dialog.  Put entry field at the top. (Steven)
  o Get Subjectwidth/left working in the collector. (Gregg)
+ o Change Config->Edit and Config->Palette menus to have no default (Steven)
+ o Avoid spurious error reports for R/O directories on FAT volumes.  Ticket #116. (Steven)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,
