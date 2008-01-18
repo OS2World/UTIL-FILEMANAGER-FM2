@@ -460,6 +460,58 @@ VOID RestorePresParams(HWND hwnd, CHAR * keyroot)
     WinSetPresParam(hwnd, PP_FONTNAMESIZE, size, (PVOID) AttrValue);
 }
 
+  /** SavePresParams
+   * Save the presentation parameters used by RestorePresParams
+   */
+VOID SavePresParams(HWND hwnd, CHAR *keyroot)
+{
+
+
+  ULONG AttrFound, AttrValue[64], cbRetLen, x = 0,
+    AttrName[] = { PP_FONTNAMESIZE, PP_FOREGROUNDCOLOR,
+    PP_BACKGROUNDCOLOR, PP_HILITEBACKGROUNDCOLOR,
+    PP_HILITEFOREGROUNDCOLOR, PP_BORDERCOLOR, 0 };
+
+  while (AttrName[x]) {
+    cbRetLen = WinQueryPresParam(hwnd,
+				 AttrName[x],
+				 0,
+				 &AttrFound,
+                                 sizeof(AttrValue),
+                                 &AttrValue, 0);
+    if (cbRetLen){
+      CHAR s[133];
+
+    *s = 0;
+    switch (AttrFound) {
+    case PP_BACKGROUNDCOLOR:
+      sprintf(s, "%s.Backgroundcolor", keyroot);
+      break;
+    case PP_FOREGROUNDCOLOR:
+      sprintf(s, "%s.Foregroundcolor", keyroot);
+      break;
+    case PP_HILITEBACKGROUNDCOLOR:
+      sprintf(s, "%s.Hilitebackgroundcolor", keyroot);
+      break;
+    case PP_HILITEFOREGROUNDCOLOR:
+      sprintf(s, "%s.Hiliteforegroundcolor", keyroot);
+      break;
+    case PP_BORDERCOLOR:
+      sprintf(s, "%s.Bordercolor", keyroot);
+      break;
+    case PP_FONTNAMESIZE:
+      sprintf(s, "%s.Fontnamesize", keyroot);
+      break;
+    default:
+      break;
+    }
+    if (*s)
+      PrfWriteProfileData(fmprof, appname, s, (PVOID) AttrValue, cbRetLen);
+    }
+    x++;
+  } //while
+}
+
 #pragma alloc_text(PRESPARAM,CopyPresParams,SetPresParams,IfNoParam)
-#pragma alloc_text(PRESPARAM,PresParamChanged,RestorePresParams)
+#pragma alloc_text(PRESPARAM,PresParamChanged,RestorePresParams,SavePresParams)
 #pragma alloc_text(PRESPARAM,StoreWndPresParams)

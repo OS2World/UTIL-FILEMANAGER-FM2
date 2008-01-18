@@ -2500,13 +2500,8 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hps = WinBeginPaint(hwnd, (HPS)0, NULL);
       if (hps) {
         GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
-        WinQueryPresParam(hwnd,              /* Window handle         */
-                          PP_BACKGROUNDCOLOR,  /* Background presparam  */
-                          0,
-                          NULL,
-                          sizeof(lColor),      /* Length of data buffer */
-                          &lColor,             /* Data buffer returned  */
-                          0);
+        WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
+                          sizeof(lColor), &lColor, 0);
         WinQueryWindowRect(hwnd, &rcl);
         WinFillRect(hps, &rcl, lColor);
         WinEndPaint(hps);
@@ -2517,7 +2512,6 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_PRESPARAMCHANGED:
     PresParamChanged(hwnd, "ToolBar", mp1, mp2);
-    WinInvalidateRect(hwnd, NULL, TRUE);
     break;
 
   case UM_SETUP:
@@ -2882,6 +2876,8 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
               sprintf(szKey, "%sDirCnr.%lu.DetailsCRTime", szPrefix, numsaves);
               PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailscrtime,
                                   sizeof(BOOL));
+              sprintf(szKey, "%sDirCnr.%lu", szPrefix, numsaves);
+              SavePresParams(hwndDir, szKey);
 	    }
 	    sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, numsaves++);
 	    PrfWriteProfileString(fmprof, FM3Str, szKey, szDir);
@@ -3185,6 +3181,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
                                     if (!pszStateName || !strcmp(pszStateName, FM2_STATE_AT_CLOSE))
                                       JBSDBG PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
                                   }
+          sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
+          RestorePresParams(hwndClient, szKey);
+          SavePresParams(hwndClient, "DirCnr");
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,
 				      MPFROMP(szDir), MPFROMLONG(1));

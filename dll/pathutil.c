@@ -123,6 +123,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
   PSZ pszNewCmdLine = pszWorkBuf;
 
   bstrip(pszCmdLine_);
+  memset(pszWorkBuf, 0, MAXCOMLINESTRG);
   strcpy(szCmdLine, pszCmdLine_);
   if (szCmdLine[0] != '\0') {
     offsetexe = strstr(strlwr(pszCmdLine_), ".exe");

@@ -600,6 +600,7 @@ VOID CopyPresParams(HWND target, HWND source);
 VOID IfNoParam(HWND hwnd, CHAR * keyroot, ULONG size, PVOID attrvalue);
 VOID PresParamChanged(HWND hwnd, CHAR * keyroot, MPARAM mp1, MPARAM mp2);
 VOID RestorePresParams(HWND hwnd, CHAR * keyroot);
+VOID SavePresParams(HWND hwnd, CHAR * keyroot);
 
 /* dirs.c */
 APIRET save_dir2(CHAR * curdir);
