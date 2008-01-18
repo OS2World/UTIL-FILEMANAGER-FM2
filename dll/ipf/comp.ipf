@@ -1,10 +1,22 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Compare directories help
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2008 Steven H.Levine
+.*
+.* 18 Jan 08 SHL Update hide not selected documentation
+.*
+.***********************************************************************
+.*
 :h2 res=94900 name=PANEL_COMPARE.Compare Directories
 :i1 id=aboutCompare.Compare Directories
-
 :artwork name='bitmaps\linkdrag.bmp' align=center.
 :p.
 The :hp1.Compare Directories:ehp1. dialog shows you a comparison
-breakdown of two directories. You can highlight files here and
+breakdown of two directories. You can select files here and
 :link reftype=hd res=90100.Collect:elink. them for later processing,
 or drag them elsewhere.
 :p.
@@ -36,17 +48,20 @@ have changed in your system directories). You can also
 :p.
 The row of :hp1.Actions&colon.:ehp1. pushbuttons allow you to
 :hp6.Delete:ehp6. files from either directory and to :hp6.Move:ehp6. or
-:hp6.Copy:ehp6. files from one directory to another. You can
-double-click a file to view it, or request a context menu on it to
+:hp6.Copy:ehp6. files from one directory to another.
+:p.
+You can double-click a file to view it, or request a context menu on it to
 compare it to its counterpart in the other directory.
+To use an external compare utility, define it on the
+:link reftype=hd res=98400.Compare Settings:elink.notebook page.
 :p.
 Several selection/deselection techniques are available via pushbuttons
 to enable you to select files based on their comparison. The pushbuttons
 operate on both containers. You can also select and deselect files in
-the containers manually with the mouse and/or keyboard.
+the containers manually with the mouse or keyboard.
 :hp2.Hint&colon.:ehp2. mouse selection of multiple files works slightly differently when you hold down :color fc=default bc=palegray.Ctrl:color fc=default bc=default. while clicking.
 :p.
-:hp2.Brief description of selection/deselection button options&colon.:ehp2.
+:hp2.The selection and deselection buttons are&colon.:ehp2.
 :p.
 :hp6.Same size:ehp6. All items which match name and size exactly.
 :p.
@@ -54,11 +69,10 @@ the containers manually with the mouse and/or keyboard.
 :p.
 :hp6.Content:ehp6. All items which match name and content exactly.
 :p.
-:hp6.Both:ehp6. All items which are present in both containers (only
-name used as criteria).
+:hp6.Both:ehp6. All items which have matching names in both containers.
 :p.
 :hp6.One:ehp6. All items which are present in only one of the
-containers (only name used as criteria).
+containers using only the name as criteria.
 :p.
 :hp6.Newer:ehp6. All items which have a counterpart in the other
 container and are the newer of the pair.
@@ -76,19 +90,26 @@ container and are the larger of the pair.
 :p.
 :hp6.Invert:ehp6. Inverts selection state of all items in both containers.
 :p.
-:hp2.Brief description of the remaining options in the dialog box&colon.:ehp2.
+:hp2.The other buttons in the dialog are&colon.:ehp2.
 :p.
-:hp6.Actions:ehp6. Provides directional copy and move along with directory specific delete. Filter opens the filter dialog so you can restrict the files viewed to a certain mask (i.e. *.sys)
+:hp6.Actions:ehp6. Provides directional copy and move along with directory specific delete.
+:p.
+:hp6.Filter:ehp6. opens the filter dialog so you can restrict the files viewed to a certain mask (i.e. *.sys).
 :p.
 :hp6.Okay and Cancel:ehp6. Both close the dialog.
 :p.
-:hp6.Collect:ehp6. Copies highlighted files to the collector.
+:hp6.Collect:ehp6. Copies the selected files to the collector.
 :p.
 :hp6.Dirs:ehp6. Opens the select directories dialog.
 :p.
 :hp6.Include subdirectories:ehp6. Includes files from all subdirectories in both directory trees for comparison.(this is a toggle which change the display automatically)
 :p.
-:hp6.Hide not selected:ehp6. Includes selected files only on the display.(this is a toggle which change the display automatically)
+:hp6.Hide not selected:ehp6. Includes selected files only on the display.
+The display is updated immediately when the button is clicked.
+This is a 3 state checkbox.
+If one or more files are deselected when the box is checked,
+the check mark will change to half-tone to indicate that this.
+Click the checkbox again to update the display.
 :p.
 See also :link reftype=hd res=99100.Selection:elink..
 :p.
@@ -105,9 +126,12 @@ files (click the :hp1.Identical:ehp1. button), and all the files should
 be selected (to confirm).
 :p.
 :hp2.Note&colon.:ehp2. You can use multiple combination of the select/deselect buttons however
-they will select you all the files as if an "or" operation not as an "and" operation
-(i.e. selecting larger then selecting newer will highlight all the larger files and then highlight
-all the newer files not just the newer files among the already highlighted)
+they will select you all the files as if an "or" operation not as an "and" operation.
+This means that clicking larger then clicking newer will select all the larger files and then select
+all the newer files not just the newer files among the already selected files.
+You can use DeMorgan's rules to get the effect of "and" operation.
+DeMorgan's rule says A and B is the equivalent to not (not A or not B).
+:p.
 If you're looking directory matching features not included in FM/2, you
 might find them in the programs available on Hobbes
 http&colon.//hobbes.nmsu.edu/cgi-bin/h-search?key=directory+compare&amp.pushbutton=Search
@@ -116,7 +140,7 @@ reftype=hd res=98400.Compare page:elink. of the internal Settings notebook.
 
 :h3 res=91550 name=PANEL_WALKEM2.Select two directories
 :i1 id=aboutWalkem2.Select two directories
-
+:p.
 This dialog lets you pick two directories by "walking" through the
 directory structure of your drives. See also :link reftype=hd
 res=91500.Walk Directories:elink..

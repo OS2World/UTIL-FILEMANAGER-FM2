@@ -9,15 +9,13 @@
   Copyright (c) 2001, 2008 Steven H. Levine
 
   05 Jan 08 SHL Split from fm3dll.h
+  18 Jan 08 SHL Sync with count update mods
 
 ***********************************************************************/
 
 #if !defined(COMP_H)
 
 #define COMP_H
-
-// #include <stdio.h>			// FILE
-// #include <time.h>			// time_t
 
 #if !defined(OS2_INCLUDED)
 #define INCL_WINSTDCNR			// dircnrs.h
@@ -62,6 +60,10 @@ typedef struct COMPARE
   UINT selright;
   UINT totalleft;
   UINT totalright;
+  UINT uOldSelLeft;
+  UINT uOldSelRight;
+  UINT uOldTotalLeft;
+  UINT uOldTotalRight;
   CHAR rightlist[CCHMAXPATH];	// Snapshot file name
   BOOL reset;
   HWND hwndCalling;

@@ -6,7 +6,7 @@
   Dialog templates
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H. Levine
+  Copyright (c) 2003, 2008 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   25 Nov 03 SHL Rework ABT_FRAME
@@ -2234,31 +2234,22 @@ BEGIN
         LTEXT           "Deselect:", -1, 234, 47, 51, 8, NOT WS_GROUP
         LTEXT           "Select:", -1, 5, 47, 42, 8, NOT WS_GROUP
         LTEXT           "", COMP_NOTE, 195, 10, 123, 8, NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Total:", COMP_TOTALLEFTHDR, 4, 203, 32, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Selected:", COMP_SELLEFTHDR, 129, 203, 23, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_TOTALLEFT, 37, 203, 55, 8, DT_VCENTER |
                         NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_SELLEFT, 154, 203, 64, 8, DT_VCENTER | NOT
                         WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Total:", COMP_TOTALRIGHTHDR, 228, 203, 32, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         RTEXT           "Selected:", COMP_SELRIGHTHDR, 327, 203, 23, 8,
                         DT_VCENTER | NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_TOTALRIGHT, 261, 203, 55, 8, DT_VCENTER |
                         NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "0", COMP_SELRIGHT, 352, 203, 64, 8, DT_VCENTER |
                         NOT WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         LTEXT           "Actions:", -1, 4, 23, 44, 8, DT_VCENTER | NOT
                         WS_GROUP
         CONTAINER       COMP_LEFTDIR, 4, 58, 216, 143, CCS_EXTENDSEL |
@@ -2267,52 +2258,36 @@ BEGIN
                         CCS_MULTIPLESEL | CCS_MINIRECORDCORE | WS_GROUP
         PUSHBUTTON      "Same size", IDM_SELECTSAME, 35, 45, 52, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Size/time", IDM_SELECTIDENTICAL, 88, 45, 49, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Both", IDM_SELECTBOTH, 4, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "On~e", IDM_SELECTONE, 35, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Larger", IDM_SELECTBIGGER, 66, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Smaller", IDM_SELECTSMALLER, 97, 33, 33, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Older", IDM_SELECTOLDER, 129, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~Newer", IDM_SELECTNEWER, 161, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Invert", IDM_INVERT, 193, 45, 38, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "~All", IDM_DESELECTALL, 387, 45, 32, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Both", IDM_DESELECTBOTH, 231, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "One", IDM_DESELECTONE, 262, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Lar~ger", IDM_DESELECTBIGGER, 293, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "S~maller", IDM_DESELECTSMALLER, 324, 33, 33, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Ol~der", IDM_DESELECTOLDER, 356, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Ne~wer", IDM_DESELECTNEWER, 387, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         PUSHBUTTON      "Copy>", COMP_COPYLEFT, 50, 21, 40, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "Move>", COMP_MOVELEFT, 89, 21, 40, 12,
@@ -2338,13 +2313,10 @@ BEGIN
                         BS_NOPOINTERFOCUS
         AUTOCHECKBOX    "~Include subdirs", COMP_INCLUDESUBDIRS, 331, 13, 91,
                         8, BS_NOPOINTERFOCUS | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
-        AUTOCHECKBOX    "~Hide not selected", COMP_HIDENOTSELECTED, 330, 5,
-                        91, 8, BS_NOPOINTERFOCUS | WS_GROUP
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
+        CONTROL         "~Hide not selected", COMP_HIDENOTSELECTED, 330, 5, 91, 8,
+                        WC_BUTTON, BS_3STATE | BS_NOPOINTERFOCUS | WS_GROUP | WS_VISIBLE
         PUSHBUTTON      "Content", IDM_SELECTSAMECONTENT, 138, 45, 42, 12,
                         BS_NOPOINTERFOCUS
-                        // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
     END
 END
 

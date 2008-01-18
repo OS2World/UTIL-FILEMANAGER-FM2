@@ -13,6 +13,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Avoid spurious error reports for R/O directories on FAT volumes.  Ticket #116. (Steven)
  o Add immediate updates toggle to config menu.  Ticket #132. (Steven)
  o Fix toolbar to change background colors with color drag drop ticket #161 (Gregg) 
+ o More Compare Directories rework.  Filters now honored by actions.  Tickets #191, #198 (Steven)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

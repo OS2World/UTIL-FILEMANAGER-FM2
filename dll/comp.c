@@ -46,6 +46,9 @@
   12 Jan 08 SHL Localize SpecialSelect here and rename
   12 Jan 08 SHL Use SleepIfNeeded
   12 Jan 08 SHL Reduce/eliminate more DosSleep calls
+  16 Jan 08 SHL Update total/select counts with WM_TIMER only
+  17 Jan 08 SHL Change hide not selected button to 3 state
+  18 Jan 08 SHL Honor filters in actions
 
 ***********************************************************************/
 
@@ -440,7 +443,6 @@ static VOID ActionCnrThread(VOID *args)
       pciD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
 			MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 
-      WinStartTimer(hab, cmp->hwnd, ID_TIMER, 2000);
       InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
 
       while (pciS && (INT)pciS != -1 && pciD && (INT)pciD != -1) {
@@ -450,8 +452,11 @@ static VOID ActionCnrThread(VOID *args)
 	pciNextD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciD),
 			   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
 
-	if (*pciS->pszFileName && pciS->rc.flRecordAttr & CRA_SELECTED) {
-
+	// Process file if selected and not filtered
+	if (*pciS->pszFileName &&
+	     pciS->rc.flRecordAttr & CRA_SELECTED &&
+	     ~pciS->rc.flRecordAttr & CRA_FILTERED)
+	{
 	  // Source name not blank
 	  switch (cmp->action) {
 	  case IDM_DELETE:
@@ -476,16 +481,15 @@ static VOID ActionCnrThread(VOID *args)
 		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
 			   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
 		pciD->flags = 0;	// Just on one side
-	        if (pciD->pszSubject != NullStr) {
+		if (pciD->pszSubject != NullStr) {
 		  xfree(pciD->pszSubject);
 		  pciD->pszSubject = NullStr;
-	        }
+		}
 	      }
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
 		cmp->cmp->totalleft--;
 	      else
 		cmp->cmp->totalright--;
-	      // DosSleep(0);		// 8-26-07 GKY 1 // 12 Jan 08 SHL
 	    }
 	    break;
 
@@ -666,19 +670,19 @@ static VOID ActionCnrThread(VOID *args)
 
 	SleepIfNeeded(&itdSleep, 0);
       }	// while
+      WinPostMsg(cmp->hwnd, WM_TIMER, MPFROMLONG(ID_TIMER), 0);	// Force update
     Abort:
-      WinStopTimer(hab, cmp->hwnd, ID_TIMER);
       WinDestroyMsgQueue(hmq);
     }
-    PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID);
-    PostMsg(cmp->hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DESELECTALL, 0), MPVOID);
+    PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1), MPVOID);
+    // PostMsg(cmp->hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DESELECTALL, 0), MPVOID);	// 18 Jan 08 SHL we can count now
     DecrThreadUsage();
     WinTerminate(hab);
   }
   free(cmp);
 }
 
-VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset);
+VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset);
 
 //=== SelectCnrsThread() Update container selection flags thread ===
 
@@ -702,7 +706,6 @@ static VOID SelectCnrsThread(VOID *args)
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
       priority_normal();
-      WinStartTimer(hab, cmp->hwnd, ID_TIMER, 2000);
       switch (cmp->action) {
       case IDM_INVERT:
 	InvertAll(WinWindowFromID(cmp->hwnd, COMP_LEFTDIR));
@@ -721,10 +724,11 @@ static VOID SelectCnrsThread(VOID *args)
 	  DbgMsg(pszSrcFile, __LINE__, "cmp->reset is TRUE");
 	CompSelect(WinWindowFromID(cmp->hwnd, COMP_LEFTDIR),
 		   WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR),
-		   cmp->action, cmp->reset);
+		   cmp->hwnd,
+		   cmp->action,
+		   cmp->reset);
 	break;
       }
-      WinStopTimer(hab, cmp->hwnd, ID_TIMER);
       if (!PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID))
 	WinSendMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID);
       WinDestroyMsgQueue(hmq);
@@ -741,7 +745,7 @@ static VOID SelectCnrsThread(VOID *args)
  * @param reset requests flags by regenerated
  */
 
-VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
+VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset)
 {
   PCNRITEM pciS, pciD, *pciSa = NULL, *pciDa = NULL;
   CNRINFO cnri;
@@ -749,6 +753,7 @@ VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, INT action, BOOL reset)
   UINT x, numD, numS;
   INT ret = 0;
   ITIMER_DESC itdSleep = { 0 };
+  BOOL fUpdateHideButton = FALSE;
 
   if (!hwndCnrS || !hwndCnrD) {
     Runtime_Error(pszSrcFile, __LINE__, "hwndCnrS %p hwndCnrD %p", hwndCnrS, hwndCnrD);
@@ -1140,12 +1145,16 @@ Restart:
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
 	  pciSa[x]->flags & CNRITEM_EXISTS) {
-	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
-	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  fUpdateHideButton = TRUE;
+	}
+	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
+	  fUpdateHideButton = TRUE;
+	}
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1155,14 +1164,18 @@ Restart:
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
 	if (~pciSa[x]->flags & CNRITEM_EXISTS) {
-	if (*pciSa[x]->pszFileName) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	}
-	else if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (*pciSa[x]->pszFileName) {
+	    if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
+	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
+			 MPFROM2SHORT(FALSE, CRA_SELECTED));
+	      fUpdateHideButton = TRUE;
+	    }
+	  }
+	  else if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1173,14 +1186,18 @@ Restart:
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
 	if (pciSa[x]->flags & CNRITEM_LARGER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
 	else if (pciDa[x]->flags & CNRITEM_LARGER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1191,14 +1208,18 @@ Restart:
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
 	if (pciSa[x]->flags & CNRITEM_SMALLER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
 	else if (pciDa[x]->flags & CNRITEM_SMALLER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1209,14 +1230,18 @@ Restart:
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
 	if (pciSa[x]->flags & CNRITEM_NEWER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
 	else if (pciDa[x]->flags & CNRITEM_NEWER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1227,14 +1252,18 @@ Restart:
     for (x = 0; x < numS; x++) {
       if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
 	if (pciSa[x]->flags & CNRITEM_OLDER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
 	else if (pciDa[x]->flags & CNRITEM_OLDER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
+	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
 	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
 		       MPFROM2SHORT(FALSE, CRA_SELECTED));
+	    fUpdateHideButton = TRUE;
+	  }
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1243,24 +1272,28 @@ Restart:
 
   default:
     break;
-  }
+  } // switch
 
   if (reset) {
     while (numS) {
       WinSendMsg(hwndCnrS, CM_INVALIDATERECORD,
 		 MPFROMP(pciSa), MPFROM2SHORT((min(numS, 65535)), 0));
-      // DosSleep(0);			//Let screen update // 12 Jan 08 SHL
       WinSendMsg(hwndCnrD, CM_INVALIDATERECORD,
 		 MPFROMP(pciDa), MPFROM2SHORT((min(numD, 65535)), 0));
       numS -= min(numS, 65535);
-      // if (numS) // 12 Jan 08 SHL
-	// DosSleep(0); //26 Aug 07 GKY 1
       SleepIfNeeded(&itdSleep, 0); // 12 Jan 08 SHL
     } // while
   }
 
   free(pciSa);
   free(pciDa);
+
+  if (fUpdateHideButton) {
+    if (WinQueryButtonCheckstate(hwnd,COMP_HIDENOTSELECTED) == 1)
+      WinCheckButton(hwnd, COMP_HIDENOTSELECTED, 2);
+  }
+
+  WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_TIMER), 0);	// Force update
   DosPostEventSem(CompactSem);
 }
 
@@ -1437,7 +1470,6 @@ static VOID FillCnrsThread(VOID *args)
 
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
-      WinStartTimer(hab, cmp->hwnd, ID_TIMER, 2000);
 
       hwndLeft = WinWindowFromID(cmp->hwnd, COMP_LEFTDIR);
       hwndRight = WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR);
@@ -1991,8 +2023,6 @@ static VOID FillCnrsThread(VOID *args)
 
       }	// if recsNeeded
 
-      WinStopTimer(hab, cmp->hwnd, ID_TIMER);
-
       Deselect(hwndLeft);
       Deselect(hwndRight);
 
@@ -2023,7 +2053,7 @@ static VOID FillCnrsThread(VOID *args)
   // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread exit");
 }
 
-// fixme to be gone - use variable
+// fixme to be gone - use variable?
 #define hwndLeft	(WinWindowFromID(hwnd,COMP_LEFTDIR))
 #define hwndRight	(WinWindowFromID(hwnd,COMP_RIGHTDIR))
 
@@ -2067,6 +2097,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			&RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVTEXT));
 	}
       }
+      WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER, 500);
     }
     break;
 
@@ -2217,7 +2248,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pcown) {
 	pci = (PCNRITEM)pcown->pRecord;
 	// 01 Aug 07 SHL if field null or blank, we draw
-	// fixme to know why - probably to optimize and bypass draw?
+	// fixme to document why - probably to optimize and bypass draw?
 	if (pci && (INT)pci != -1 && !*pci->pszFileName)
 	  return MRFROMLONG(TRUE);
       }
@@ -2242,15 +2273,26 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
     }
     else {
-      // 05 Jan 08 SHL fixme to use timer id to optimize output
-      sprintf(s, " %d", cmp->totalleft);
-      WinSetDlgItemText(hwnd, COMP_TOTALLEFT, s);
-      sprintf(s, " %d", cmp->totalright);
-      WinSetDlgItemText(hwnd, COMP_TOTALRIGHT, s);
-      sprintf(s, " %d", cmp->selleft);
-      WinSetDlgItemText(hwnd, COMP_SELLEFT, s);
-      sprintf(s, " %d", cmp->selright);
-      WinSetDlgItemText(hwnd, COMP_SELRIGHT, s);
+      if (cmp->uOldTotalLeft != cmp->totalleft) {
+	cmp->uOldTotalLeft = cmp->totalleft;
+	sprintf(s, " %d", cmp->totalleft);
+	WinSetDlgItemText(hwnd, COMP_TOTALLEFT, s);
+      }
+      if (cmp->uOldTotalRight != cmp->totalright) {
+	cmp->uOldTotalRight = cmp->totalright;
+	sprintf(s, " %d", cmp->totalright);
+	WinSetDlgItemText(hwnd, COMP_TOTALRIGHT, s);
+      }
+      if (cmp->uOldSelLeft != cmp->selleft) {
+	cmp->uOldSelLeft = cmp->selleft;
+	sprintf(s, " %d", cmp->selleft);
+	WinSetDlgItemText(hwnd, COMP_SELLEFT, s);
+      }
+      if (cmp->uOldSelRight != cmp->selright) {
+	cmp->uOldSelRight = cmp->selright;
+	sprintf(s, " %d", cmp->selright);
+	WinSetDlgItemText(hwnd, COMP_SELRIGHT, s);
+      }
     }
     break;
 
@@ -2266,15 +2308,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinEnableWindow(hwndRight, TRUE);
       WinEnableWindowUpdate(hwndLeft, TRUE);
       WinEnableWindowUpdate(hwndRight, TRUE);
-      sprintf(s, " %d", cmp->totalleft);
-      WinSetDlgItemText(hwnd, COMP_TOTALLEFT, s);
-      sprintf(s, " %d", cmp->totalright);
-      WinSetDlgItemText(hwnd, COMP_TOTALRIGHT, s);
-      sprintf(s, " %d", cmp->selleft);
-      WinSetDlgItemText(hwnd, COMP_SELLEFT, s);
-      sprintf(s, " %d", cmp->selright);
-      WinSetDlgItemText(hwnd, COMP_SELRIGHT, s);
-      // 12 Jan 08 SHL fixme to have SetEnables(COMPARE* pcmp, BOOL fEnable)
+      WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_TIMER), 0);	// Force update
+      // 12 Jan 08 SHL fixme to have SetButtonEnables(COMPARE* pcmp, BOOL fEnable)
       // to replace duplicated code here and elsewhere
       WinEnableWindow(WinWindowFromID(hwnd, DID_OK), TRUE);
       WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), TRUE);
@@ -2451,7 +2486,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case CN_BEGINEDIT:
       case CN_REALLOCPSZ:
-	// fixme to be gone - field edits not allowed
+	// fixme to be gone - field edits not allowed?
 	Runtime_Error(pszSrcFile, __LINE__,
 		      "CN_BEGINEDIT/CN_REALLOCPSZ unexpected");
 	break;
@@ -2459,10 +2494,14 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case CN_EMPHASIS:
 	{
 	  PNOTIFYRECORDEMPHASIS pnre = mp2;
+	  BOOL fSelected;
 	  if (pnre->fEmphasisMask & CRA_SELECTED) {
+	    // Select toggled
 	    PCNRITEM pci = (PCNRITEM)pnre->pRecord;
 	    if (pci) {
 	      if (!*pci->pszFileName) {
+		// Slot empty
+		// 17 Jan 08 SHL fixme to know how can get here
 		// 12 Jan 08 SHL fixme to know if select counts need update?
 		if (pci->rc.flRecordAttr & CRA_SELECTED)
 		  WinSendDlgItemMsg(hwnd, SHORT1FROMMP(mp1),
@@ -2471,27 +2510,29 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				    MPFROM2SHORT(FALSE, CRA_SELECTED));
 	      }
 	      else {
+		BOOL fUpdateHideButton = FALSE;
 		cmp = INSTDATA(hwnd);
 		if (SHORT1FROMMP(mp1) == COMP_LEFTDIR) {
-		  cmp->selleft +=
-		    pci->rc.flRecordAttr & CRA_SELECTED ? 1 : -1;
-		  // If window not enabled WM_TIMER will update display
-		  if (WinIsWindowEnabled(hwndLeft)) {
-		    sprintf(s, " %d", cmp->selleft);
-		    WinSetDlgItemText(hwnd, COMP_SELLEFT, s);
-		  }
+		  fSelected = pci->rc.flRecordAttr & CRA_SELECTED;
+		  cmp->selleft += fSelected ? 1 : -1;
+		  if (!fSelected)
+		    fUpdateHideButton = TRUE;
 		}
 		else if (SHORT1FROMMP(mp1) == COMP_RIGHTDIR) {
-		  cmp->selright +=
-		    pci->rc.flRecordAttr & CRA_SELECTED ? 1 : -1;
-		  if (WinIsWindowEnabled(hwndRight)) {
-		    sprintf(s, " %d", cmp->selright);
-		    WinSetDlgItemText(hwnd, COMP_SELRIGHT, s);
-		  }
+		  fSelected = pci->rc.flRecordAttr & CRA_SELECTED;
+		  cmp->selright += fSelected ? 1 : -1;
+		  if (!fSelected)
+		    fUpdateHideButton = TRUE;
 		}
 		else {
 		  Runtime_Error(pszSrcFile, __LINE__,
 				"mp1 %u unexpected", SHORT1FROMMP(mp1));
+		}
+		if (fUpdateHideButton) {
+		  USHORT state = WinQueryButtonCheckstate(hwnd,COMP_HIDENOTSELECTED);
+		  if (state == 1) {
+		    WinCheckButton(hwnd, COMP_HIDENOTSELECTED, 2);
+		  }
 		}
 	      }
 	    }
@@ -2560,10 +2601,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindowUpdate(hwndLeft, FALSE);
 	  WinEnableWindowUpdate(hwndRight, FALSE);
 	  cmp->selleft = cmp->selright = 0;
-	  WinSetDlgItemText(hwnd, COMP_SELLEFT, "0");
-	  WinSetDlgItemText(hwnd, COMP_SELRIGHT, "0");
-	  WinSetDlgItemText(hwnd, COMP_TOTALLEFT, "0");
-	  WinSetDlgItemText(hwnd, COMP_TOTALRIGHT, "0");
 	  WinSetDlgItemText(hwnd, COMP_NOTE,
 			    GetPString(IDS_COMPHOLDREADDISKTEXT));
 	  WinEnableWindow(hwndRight, FALSE);
@@ -2635,11 +2672,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_HIDENOTSELECTED:
     cmp = INSTDATA(hwnd);
     if (cmp) {
-      USHORT wantHide = WinQueryButtonCheckstate(hwnd,
-						 COMP_HIDENOTSELECTED);
+      USHORT wasHidden = WinQueryButtonCheckstate(hwnd,
+						  COMP_HIDENOTSELECTED);
 
       // cmp->dcd.suspendview = 1;		// 12 Jan 08 SHL appears not to be used here
-      if (wantHide) {
+      if (wasHidden != 1) {
+	// Hide if not selected on both sides
 	BOOL needRefresh = FALSE;
 	HWND hwndl = WinWindowFromID(cmp->hwnd, COMP_LEFTDIR);
 	HWND hwndr = WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR);
@@ -2651,6 +2689,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	while (pcil && (INT)pcil != -1 && pcir && (INT)pcir != -1) {
 	  if (~pcil->rc.flRecordAttr & CRA_SELECTED &&
 	      ~pcir->rc.flRecordAttr & CRA_SELECTED) {
+	    // 17 Jan 08 SHL fixme to optimize refresh
 	    pcil->rc.flRecordAttr |= CRA_FILTERED;
 	    pcir->rc.flRecordAttr |= CRA_FILTERED;
 	    needRefresh = TRUE;
@@ -2668,6 +2707,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       else {
+	// Unhide
 	WinSendMsg(hwndLeft, CM_FILTER, MPFROMP(Filter),
 		   MPFROMP(&cmp->dcd.mask));
 	WinSendMsg(hwndRight, CM_FILTER, MPFROMP(Filter),
@@ -2682,6 +2722,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else
 	WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPREADYTEXT));
+      WinCheckButton(hwnd, COMP_HIDENOTSELECTED, wasHidden != 1 ? 1 : 0);
     }
     return 0;
 
@@ -3090,7 +3131,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     !strcmp(realappname, FM3Str)) {
 	      TileChildren(cmp->hwndParent, TRUE);
 	    }
-	    // DosSleep(32);		// 05 Aug 07 GKY 64
 	    DosSleep(1);		// 12 Jan 08 SHL Let screen update
 	    PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(COMP_COLLECT, 0), MPVOID);
 	    break;
@@ -3134,12 +3174,15 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CLOSE:
+    // 18 Jan 08 SHL fixme to hold off if thread busy?
     WinDismissDlg(hwnd, 0);
     return 0;
 
   case WM_DESTROY:
     cmp = INSTDATA(hwnd);
     if (cmp) {
+      // 17 Jan 08 SHL fixme to know if stop really needed?
+      WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER);
       if (cmp->dcd.hwndLastMenu)
 	WinDestroyWindow(cmp->dcd.hwndLastMenu);
       if (cmp->dcd.hwndObject) {
