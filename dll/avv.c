@@ -92,19 +92,19 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 
 static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 { // fixme for command line limit
-  CHAR szCmdLine[256];
-  PSZ pszWorkBuf;
+  CHAR szCmdLine[MAXCOMLINESTRG];
 
-  pszWorkBuf = xmalloc(256, pszSrcFile, __LINE__);
   xfree(pszDest);
   WinQueryDlgItemText(hwnd, id, sizeof(szCmdLine), szCmdLine);
   if (*szCmdLine){
+    PSZ pszWorkBuf;
+    pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
     NormalizeCmdLine(pszWorkBuf, szCmdLine);
-    pszDest = xstrdup(pszWorkBuf, pszSrcFile, __LINE__);
+    pszDest = xstrdup(szCmdLine, pszSrcFile, __LINE__);
+    xfree(pszWorkBuf);
   }
   else
     pszDest = NULL;
-  xfree(pszWorkBuf);
   return pszDest;
 }
 
