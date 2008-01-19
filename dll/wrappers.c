@@ -258,7 +258,8 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
 	  // fixme to validate counts?
 	  eaop2 = *(PEAOP2)pInfoBuf;	// Copy to buffer that does not cross
 	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &eaop2, sizeof(eaop2), flOptions);
-	}
+        }
+        break;
       default:
 	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
 	rc = ERROR_INVALID_PARAMETER;
