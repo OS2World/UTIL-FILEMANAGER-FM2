@@ -3283,7 +3283,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
             }
             else
               WinSetWindowPos(hwndDir,
-                              HWND_TOP,
+			      HWND_BOTTOM,
                               0, 0, 0, 0, SWP_ZORDER | SWP_ACTIVATE);
           }
         }
@@ -5494,6 +5494,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
     WinSendMsg(hwnd, UM_ADDTOMENU, MPVOID, MPVOID);
     SetToggleChecks(hwndMenu);
+    SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
     SetConditionalCascade(hwndMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
     SetConditionalCascade(hwndMenu, IDM_AUTOVIEWSUBMENU, IDM_AUTOVIEW);
     SetConditionalCascade(hwndMenu, IDM_TILEMENU, IDM_TILE);

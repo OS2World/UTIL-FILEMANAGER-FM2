@@ -213,18 +213,26 @@ MENU  MAIN_FRAME
     MENUITEM "~INI viewer",       IDM_INIVIEWER
     MENUITEM "~Kill processes",   IDM_KILLPROC
     MENUITEM "I~nstant CMD file", IDM_INSTANT
-    MENUITEM "~View bookshelf",   IDM_VIEWINFS
-    MENUITEM "View ~helpfiles",   IDM_VIEWHELPS
+    SUBMENU  "~Bookshelf",        IDM_BOOKSELFSUBMENU
+    {
+      MENUITEM "~View bookshelf",   IDM_VIEWINFS
+      MENUITEM "View ~helpfiles",   IDM_VIEWHELPS
+    }
+    MENUITEM "",                  -1,               MIS_SEPARATOR
+    SUBMENU  "Command ~line",         IDM_COMMANDLINESUBMENU
+    {
+      MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
+      MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
+      MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
+    }
+    SUBMENU  "S~ystem",           IDM_SYSTEMSUBMENU
+    {
+      MENUITEM "System ~clock",     IDM_SYSTEMCLOCK
+      MENUITEM "System ~setup",     IDM_SYSTEMSETUP
 #ifdef NEVER
-    MENUITEM "System in~formation",IDM_SYSINFO
+      MENUITEM "System ~information",IDM_SYSINFO
 #endif
-    MENUITEM "",                  -1,               MIS_SEPARATOR
-    MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
-    MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
-    MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
-    MENUITEM "",                  -1,               MIS_SEPARATOR
-    MENUITEM "S~ystem clock",     IDM_SYSTEMCLOCK
-    MENUITEM "System setu~p",     IDM_SYSTEMSETUP
+    }
   }
   SUBMENU "~Config",              IDM_CONFIGMENU
   {
@@ -251,8 +259,8 @@ MENU  MAIN_FRAME
     SUBMENU "~Edit",							-1
 	 {
 	   MENUITEM "Edit ~associations...",IDM_EDITASSOC
-		MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
-		MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
+	   MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
+	   MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
 	 }
     SUBMENU "~Palette",							-1
 	 {
