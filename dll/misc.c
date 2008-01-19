@@ -36,6 +36,7 @@
   05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   12 Jan 08 SHL Document SetConditionalCascade
+  xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
 
 ***********************************************************************/
 
@@ -43,7 +44,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
-#include <malloc.h>			// _heapmin
+#include <malloc.h>		     // _heapmin
 
 #define INCL_DOS
 #define INCL_WIN
@@ -52,9 +53,9 @@
 
 #include "fm3dlg.h"
 #include "fm3str.h"
-#include "pathutil.h"			// BldQuotedFileName
-#include "errutil.h"			// Dos_Error...
-#include "strutil.h"			// GetPString
+#include "pathutil.h"		   // BldQuotedFileName
+#include "errutil.h"		    // Dos_Error...
+#include "strutil.h"		    // GetPString
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -62,11 +63,11 @@
 static PSZ pszSrcFile = __FILE__;
 
 #ifndef BEGIN_LIBPATH
-#define BEGIN_LIBPATH            1
+#define BEGIN_LIBPATH	    1
 #endif
 
 #ifndef END_LIBPATH
-#define END_LIBPATH              2
+#define END_LIBPATH	      2
 #endif
 
 #ifndef ORD_DOS32QUERYEXTLIBPATH
@@ -802,7 +803,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetWindowText(hwndMLE, szData);
 	    if (strcmp(szData, testname)) {
 	      if (stricmp(szData, testname) && IsFile(testname) != -1) {
-		DosBeep(50, 100);	/* exists; disallow */
+		DosBeep(50, 100);       /* exists; disallow */
 		return (MRESULT) FALSE;
 	      }
 	      if (docopyf(MOVE, szData, "%s", testname))
@@ -1342,9 +1343,9 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
       size = sizeof(ULONG);
       PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
       if (dcd->SubjectDisplayWidth < 50)
-        dcd->SubjectDisplayWidth = 0;
+	dcd->SubjectDisplayWidth = 0;
       else if (dcd->SubjectDisplayWidth > 1000)
-        dcd->SubjectDisplayWidth = 1000;
+	dcd->SubjectDisplayWidth = 1000;
     }
   }
   else {
@@ -1357,9 +1358,9 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
       size = sizeof(ULONG);
       PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
       if (SubjectDisplayWidth < 50)
-        SubjectDisplayWidth = 0;
+	SubjectDisplayWidth = 0;
       else if (SubjectDisplayWidth > 1000)
-        SubjectDisplayWidth = 1000;
+	SubjectDisplayWidth = 1000;
     }
   }
 }
@@ -1452,7 +1453,7 @@ PMINIRECORDCORE CurrentRecord(HWND hwndCnr)
     pmi = (PMINIRECORDCORE) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 				       MPFROMLONG(CMA_FIRST),
 				       MPFROMSHORT(attrib));
-    if ((!pmi || (INT) pmi == -1) && attrib == CRA_SELECTED)	/* punt */
+    if ((!pmi || (INT) pmi == -1) && attrib == CRA_SELECTED)    /* punt */
       attrib = CRA_CURSORED;
     else
       break;
@@ -1478,7 +1479,7 @@ BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;			// Window gone
 	if (WinPeekMsg((HAB) 0, &qmsg, (HWND) 0, 0, 0, PM_NOREMOVE))
 	  break;			// Queue has message(s)
-      }				// for
+      }			 // for
     }
   }
   return rc;

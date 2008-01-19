@@ -32,6 +32,7 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Jan 08 SHL Sync with CfgDlgProc mods
+  xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
 
 ***********************************************************************/
 
@@ -1422,13 +1423,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	 */
 
 	CNRINFO cnri;
-// JBS     static int i = 0;
-//             FILE * f = fopen("e:\\dev\\netlabs\\fm2\\trunk\\jbsdebug.log", "a");
-//             fprintf(f, "UM_SETUP Dir: %s; Count: %d Details: %d %d %d %d\n", dcd->directory, ++i, (int)dcd->detailscrdate, (int)dcd->detailscrtime, (int)dcd->detailsladate, (int)dcd->detailsladate);
-//             fclose(f);
 
 	RestorePresParams(hwnd, "DirCnr");
-// JBS	LoadDetailsSwitches("DirCnr", dcd);
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
 	WinSendMsg(hwnd,
@@ -1485,7 +1481,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
 			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
 	SetCnrCols(hwnd, FALSE);
-// JBS	AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
 	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
@@ -2039,10 +2034,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_RESORT:
-//            WinSendMsg(hwnd,
-//                       CM_SORTRECORD,
-//                       MPFROMP(SortDirCnr),
-//                       MPFROMLONG((fSyncUpdates) ? sortFlags : dcd->sortFlags));
+//	    WinSendMsg(hwnd,
+//		       CM_SORTRECORD,
+//		       MPFROMP(SortDirCnr),
+//		       MPFROMLONG((fSyncUpdates) ? sortFlags : dcd->sortFlags));
 	WinSendMsg(hwnd,
 		   CM_SORTRECORD,
 		   MPFROMP(SortDirCnr), MPFROMLONG(dcd->sortFlags));
@@ -2161,7 +2156,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	AdjustDetailsSwitches(hwnd,
 			      dcd->hwndLastMenu,
 			      SHORT1FROMMP(mp1),
-// JBS			      dcd->directory, "DirCnr", dcd, FALSE);
 			      dcd->directory, NULL, dcd, FALSE);
 	break;
 
@@ -2593,7 +2587,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pci && (INT) pci != -1) {
 	if (pci->attrFile & FILE_DIRECTORY) {
 	  menuHwnd = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
-//            WinEnableMenuItem(DirMenu,IDM_TREE,TRUE);
+//	    WinEnableMenuItem(DirMenu,IDM_TREE,TRUE);
 	}
 	else
 	  menuHwnd = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);
@@ -3428,18 +3422,18 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	dcd->hwndClient = hwndClient;
 	dcd->hwndRestore = hwndRestore;
 	dcd->dontclose = ((flags & 1) != 0);
-        dcd->detailslongname = detailslongname;
-        dcd->detailssubject = detailssubject;
-        dcd->detailsea = detailsea;
-        dcd->detailssize = detailssize;
-        dcd->detailsicon = detailsicon;
-        dcd->detailsattr = detailsattr;
-        dcd->detailscrdate = detailscrdate;
-        dcd->detailscrtime = detailscrtime;
-        dcd->detailslwdate = detailslwdate;
-        dcd->detailslwtime = detailslwtime;
-        dcd->detailsladate = detailsladate;
-        dcd->detailslatime = detailslatime;
+	dcd->detailslongname = detailslongname;
+	dcd->detailssubject = detailssubject;
+	dcd->detailsea = detailsea;
+	dcd->detailssize = detailssize;
+	dcd->detailsicon = detailsicon;
+	dcd->detailsattr = detailsattr;
+	dcd->detailscrdate = detailscrdate;
+	dcd->detailscrtime = detailscrtime;
+	dcd->detailslwdate = detailslwdate;
+	dcd->detailslwtime = detailslwtime;
+	dcd->detailsladate = detailsladate;
+	dcd->detailslatime = detailslatime;
 	strcpy(dcd->directory, directory);
 	add_udir(FALSE, directory);
 	{

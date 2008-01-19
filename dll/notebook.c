@@ -23,6 +23,7 @@
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
   10 Jan 08 SHL Remember last settings page
   10 Jan 08 SHL Rework page select logic
+  xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
 
 ***********************************************************************/
 
@@ -199,11 +200,11 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinQueryDlgItemText(hwnd, CFGA_VIRUS, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, virus)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(virus, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        xfree(pszWorkBuf);
-        if (!strchr(virus, '%') && strlen(virus) > 3)
-          strcat(virus, " %p");
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(virus, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	xfree(pszWorkBuf);
+	if (!strchr(virus, '%') && strlen(virus) > 3)
+	  strcat(virus, " %p");
       }
       if (!*virus)
 	strcpy(virus, "OS2SCAN.EXE %p /SUB /A");
@@ -211,27 +212,27 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       szPathBuf[CCHMAXPATH - 1] = 0;
       bstrip(szPathBuf);
       if (strcmp(extractpath, szPathBuf)) {
-        memcpy(extractpath, szPathBuf, strlen(szPathBuf) + 1);
-        if (*extractpath){
-          MakeFullName(extractpath);
-          if (IsFile(extractpath)) {
-            ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
-                              GetPString(IDS_WARNINGTEXT),
-                              GetPString(IDS_EXTPATHNOTVALIDTEXT),
-                              extractpath);
-            if (ulResult == MBID_YES)
-              *extractpath = 0;
-            if (ulResult == MBID_CANCEL){
-              WinDlgBox(HWND_DESKTOP,
+	memcpy(extractpath, szPathBuf, strlen(szPathBuf) + 1);
+	if (*extractpath){
+	  MakeFullName(extractpath);
+	  if (IsFile(extractpath)) {
+	    ulResult = saymsg(MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+			      GetPString(IDS_WARNINGTEXT),
+			      GetPString(IDS_EXTPATHNOTVALIDTEXT),
+			      extractpath);
+	    if (ulResult == MBID_YES)
+	      *extractpath = 0;
+	    if (ulResult == MBID_CANCEL){
+	      WinDlgBox(HWND_DESKTOP,
 			hwnd,
 			CfgDlgProc,
 			FM3ModHandle,
 			CFG_FRAME,
 			MPFROMLONG(IDM_ARCHIVERSETTINGS));
-              break;
-            }
-          }
-        }
+	      break;
+	    }
+	  }
+	}
       }
     }
     PrfWriteProfileString(fmprof, appname, "Virus", virus);
@@ -464,34 +465,34 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinQueryDlgItemText(hwnd, CFGV_VIEWER, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, viewer)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(viewer, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        if (!strchr(viewer, '%') && strlen(viewer) > 3)
-          strcat(viewer, " %a");
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(viewer, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	if (!strchr(viewer, '%') && strlen(viewer) > 3)
+	  strcat(viewer, " %a");
       }
       WinQueryDlgItemText(hwnd, CFGV_EDITOR, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, editor)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(editor, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        if (!strchr(editor, '%') && strlen(editor) > 3)
-          strcat(editor, " %a");
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(editor, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	if (!strchr(editor, '%') && strlen(editor) > 3)
+	  strcat(editor, " %a");
       }
       WinQueryDlgItemText(hwnd, CFGV_BINVIEW, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, binview)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(binview, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        if (!strchr(binview, '%') && strlen(binview) > 3)
-          strcat(binview, " %a");
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(binview, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	if (!strchr(binview, '%') && strlen(binview) > 3)
+	  strcat(binview, " %a");
       }
       WinQueryDlgItemText(hwnd, CFGV_BINED, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, bined)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(bined, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        if (!strchr(bined, '%') && strlen(bined) > 3)
-          strcat(bined, " %a");
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(bined, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	if (!strchr(bined, '%') && strlen(bined) > 3)
+	  strcat(bined, " %a");
       }
       xfree(pszWorkBuf);
       PrfWriteProfileString(fmprof, appname, "Viewer", viewer);
@@ -536,9 +537,9 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, CFGH_FTPRUN, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_HTTPRUN, EM_SETTEXTLIMIT,
-                      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_MAILRUN, EM_SETTEXTLIMIT,
-                      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
+		      MPFROM2SHORT(MAXCOMLINESTRG, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CFGH_RUNMAILWORKDIR, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGH_FIND), FALSE);
@@ -671,20 +672,20 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinQueryDlgItemText(hwnd, CFGH_FTPRUN, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, ftprun)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(ftprun, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(ftprun, pszWorkBuf, strlen(pszWorkBuf) + 1);
       }
       WinQueryDlgItemText(hwnd, CFGH_HTTPRUN, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, httprun)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(httprun, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(httprun, pszWorkBuf, strlen(pszWorkBuf) + 1);
       }
       WinQueryDlgItemText(hwnd, CFGH_MAILRUN, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, mailrun)){
-        NormalizeCmdLine(pszWorkBuf, szCLBuf);
-        memcpy(mailrun, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	memcpy(mailrun, pszWorkBuf, strlen(pszWorkBuf) + 1);
       }
       xfree(pszWorkBuf);
       PrfWriteProfileString(fmprof, appname, "HttpRunDir", httprundir);
@@ -1269,22 +1270,22 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
       WinQueryDlgItemText(hwnd, CFGC_DIRCOMPARE, MAXCOMLINESTRG, szCLBuf);
-        szCLBuf[MAXCOMLINESTRG - 1] = 0;
-        if (strcmp(szCLBuf, dircompare)){
-          NormalizeCmdLine(pszWorkBuf, szCLBuf);
-          memcpy(dircompare, pszWorkBuf, strlen(pszWorkBuf) + 1);
-          if (!strchr(dircompare, '%') && strlen(dircompare) > 3)
-            strcat(dircompare, " %a");
-        }
+	szCLBuf[MAXCOMLINESTRG - 1] = 0;
+	if (strcmp(szCLBuf, dircompare)){
+	  NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	  memcpy(dircompare, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	  if (!strchr(dircompare, '%') && strlen(dircompare) > 3)
+	    strcat(dircompare, " %a");
+	}
       PrfWriteProfileString(fmprof, appname, "DirCompare", dircompare);
       WinQueryDlgItemText(hwnd, CFGC_COMPARE, MAXCOMLINESTRG, szCLBuf);
-        szCLBuf[MAXCOMLINESTRG - 1] = 0;
-        if (strcmp(szCLBuf, compare)){
-          NormalizeCmdLine(pszWorkBuf, szCLBuf);
-          memcpy(compare, pszWorkBuf, strlen(pszWorkBuf) + 1);
-          if (!strchr(compare, '%') && strlen(compare) > 3)
-            strcat(compare, " %a");
-        }
+	szCLBuf[MAXCOMLINESTRG - 1] = 0;
+	if (strcmp(szCLBuf, compare)){
+	  NormalizeCmdLine(pszWorkBuf, szCLBuf);
+	  memcpy(compare, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	  if (!strchr(compare, '%') && strlen(compare) > 3)
+	    strcat(compare, " %a");
+	}
       xfree(pszWorkBuf);
       PrfWriteProfileString(fmprof, appname, "Compare", compare);
       break;
@@ -1682,7 +1683,7 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, fSubjectInLeftPane);
       WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, fSubjectLengthMax);
       WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETCURRENTVALUE,
-		        MPFROMLONG(SubjectDisplayWidth), MPVOID);
+			MPFROMLONG(SubjectDisplayWidth), MPVOID);
     }
     return 0;
 
@@ -1752,73 +1753,44 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
     PrfWriteProfileData(fmprof, appname, "DetailsLongname",
 			&detailslongname, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-// JBS			&detailslongname, sizeof(BOOL));
     detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
     PrfWriteProfileData(fmprof, appname, "DetailsSubject",
 			&detailssubject, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-// JBS			&detailssubject, sizeof(BOOL));
-    detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWEAS);
     PrfWriteProfileData(fmprof, appname, "DetailsEA",
 			&detailsea, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-// JBS			&detailsea, sizeof(BOOL));
     detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
     PrfWriteProfileData(fmprof, appname, "DetailsSize",
 			&detailssize, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-// JBS			&detailssize, sizeof(BOOL));
     detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
     PrfWriteProfileData(fmprof, appname, "DetailsIcon",
 			&detailsicon, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-// JBS			&detailsicon, sizeof(BOOL));
     detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
     PrfWriteProfileData(fmprof, appname, "DetailsLWDate",
 			&detailslwdate, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-// JBS			&detailslwdate, sizeof(BOOL));
     detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
     PrfWriteProfileData(fmprof, appname, "DetailsLWTime",
 			&detailslwtime, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-// JBS			&detailslwtime, sizeof(BOOL));
     detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
     PrfWriteProfileData(fmprof, appname, "DetailsLADate",
 			&detailsladate, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-// JBS			&detailsladate, sizeof(BOOL));
     detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
     PrfWriteProfileData(fmprof, appname, "DetailsLATime",
 			&detailslatime, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-// JBS			&detailslatime, sizeof(BOOL));
     detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
     PrfWriteProfileData(fmprof, appname, "DetailsCRDate",
 			&detailscrdate, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-// JBS			&detailscrdate, sizeof(BOOL));
     detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
     PrfWriteProfileData(fmprof, appname, "DetailsCRTime",
 			&detailscrtime, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-// JBS			&detailscrtime, sizeof(BOOL));
     detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
     PrfWriteProfileData(fmprof, appname, "DetailsAttr",
 			&detailsattr, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-// JBS			&detailsattr, sizeof(BOOL));
     fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
     PrfWriteProfileData(fmprof, appname, "SubjectInLeftPane",
 			&fSubjectInLeftPane, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectInLeftPane",
-// JBS			&fSubjectInLeftPane, sizeof(BOOL));
     fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
     PrfWriteProfileData(fmprof, appname, "SubjectLengthMax",
 			&fSubjectLengthMax, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectLengthMax",
-// JBS			&fSubjectLengthMax, sizeof(BOOL));
     *mask.prompt = 0;
     PrfWriteProfileData(fmprof, appname, "DirFilter", &mask, sizeof(MASK));
     {
@@ -2038,7 +2010,7 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, dcd.fSubjectInLeftPane);
       WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, dcd.fSubjectLengthMax);
       WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETCURRENTVALUE,
-		        MPFROMLONG(dcd.SubjectDisplayWidth), MPVOID);
+			MPFROMLONG(dcd.SubjectDisplayWidth), MPVOID);
 
     }
     return 0;
@@ -2148,16 +2120,16 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  &dcd.detailscrtime, sizeof(BOOL));
       dcd.detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsAttr",
-                          &dcd.detailsattr, sizeof(BOOL));
+			  &dcd.detailsattr, sizeof(BOOL));
       dcd.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
       PrfWriteProfileData(fmprof, appname, "Collector.SubjectInLeftPane",
-         		  &dcd.fSubjectInLeftPane, sizeof(BOOL));
+	 		  &dcd.fSubjectInLeftPane, sizeof(BOOL));
       dcd.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
       PrfWriteProfileData(fmprof, appname, "Collector.SubjectLengthMax",
 			  &dcd.fSubjectLengthMax, sizeof(BOOL));
       *mask.prompt = 0;
       PrfWriteProfileData(fmprof,
-                          appname, "CollectorFilter", &mask, sizeof(MASK));
+			  appname, "CollectorFilter", &mask, sizeof(MASK));
       {
 	if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
 	  WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
@@ -2938,52 +2910,28 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     PrfWriteProfileData(fmprof, appname, "DetailsLongname",
 			&detailslongname, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-// JBS			&detailslongname, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsSubject",
 			&detailssubject, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-// JBS			&detailssubject, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsEA",
 			&detailsea, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-// JBS			&detailsea, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsSize",
 			&detailssize, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-// JBS			&detailssize, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsIcon",
 			&detailsicon, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-// JBS			&detailsicon, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLWDate",
 			&detailslwdate, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-// JBS			&detailslwdate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLWTime",
 			&detailslwtime, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-// JBS			&detailslwtime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLADate",
 			&detailsladate, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-// JBS			&detailsladate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsLATime",
 			&detailslatime, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-// JBS			&detailslatime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsCRDate",
 			&detailscrdate, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-// JBS			&detailscrdate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsCRTime",
 			&detailscrtime, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-// JBS			&detailscrtime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsAttr",
 			&detailsattr, sizeof(BOOL));
-// JBS    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-// JBS			&detailsattr, sizeof(BOOL));
     if (hwndMain) {
       if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
 	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
