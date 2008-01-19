@@ -753,7 +753,8 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	HWND hwndMenu;
 
 	hwndMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), FID_MENU);
-	WinSetWindowULong(hwnd, 0, hwndMenu);
+        WinSetWindowULong(hwnd, 0, hwndMenu);
+        SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
 	SetConditionalCascade(hwndMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
 	SetConditionalCascade(hwndMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
       }

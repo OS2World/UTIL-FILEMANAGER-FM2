@@ -429,9 +429,12 @@ MENU  MAIN2_FRAME
     MENUITEM "",                  -1,   MIS_SEPARATOR
     MENUITEM "Compar~e directories...",IDM_COMPARE
     MENUITEM "",                  -1,   MIS_SEPARATOR
-    MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
-    MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
-    MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
+    SUBMENU  "Command ~line",         IDM_COMMANDLINESUBMENU
+    {
+      MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
+      MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
+      MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
+    }
   }
   SUBMENU "~Config",              IDM_CONFIGMENU
   {
