@@ -690,7 +690,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMP(pci->pszFileName), MPVOID);
 	}
 	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject))
-	  PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(40), MPVOID);
+	  PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(1048), MPVOID);
 	else
 	  PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(CCHMAXPATH), MPVOID);
       }
@@ -720,10 +720,10 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
 	  szSubject[retlen + 1] = 0;
-	  //chop_at_crnl(szSubject);
 	  bstrip(szSubject);
 	  pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
-	  WinSetWindowText(hwndMLE, szSubject);
+          WinSetWindowText(hwndMLE, szSubject);
+          pci->pszSubject = xstrdup(szSubject, pszSrcFile, __LINE__);
 	  len = strlen(szSubject);
 	  if (len)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
@@ -766,15 +766,16 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongName)) {
 
 	  CHAR longname[CCHMAXPATHCOMP];
-	LONG retlen;
+	  LONG retlen;
 
 	  *longname = 0;
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
 	  longname[retlen + 1] = 0;
-	  //chop_at_crnl(longname);
+	  chop_at_crnl(longname);
 	  pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
-	  WinSetWindowText(hwndMLE, longname);
-	  pci->pszFileName = xrealloc(pci->pszFileName, retlen + 1, pszSrcFile, __LINE__);
+          WinSetWindowText(hwndMLE, longname);
+          pci->pszLongName = xstrdup(longname, pszSrcFile, __LINE__);
+	  //pci->pszFileName = xrealloc(pci->pszFileName, retlen + 1, pszSrcFile, __LINE__);
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
 	else {
