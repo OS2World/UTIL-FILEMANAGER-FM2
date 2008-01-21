@@ -49,6 +49,7 @@
   16 Jan 08 SHL Update total/select counts with WM_TIMER only
   17 Jan 08 SHL Change hide not selected button to 3 state
   18 Jan 08 SHL Honor filters in actions
+  20 Jan 08 GKY Compare dialog now saves and restores size and position
 
 ***********************************************************************/
 
@@ -2080,6 +2081,19 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(hptr), MPVOID);
       cmp->hwnd = hwnd;
       WinSetWindowPtr(hwnd, QWL_USER, (PVOID)cmp);
+      {
+        SWP swp;
+        ULONG size = sizeof(SWP);
+
+        PrfQueryProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp, &size);
+        WinSetWindowPos(hwnd,
+                        HWND_TOP,
+                        swp.x,
+                        swp.y,
+                        swp.cx,
+                        swp.cy,
+                        swp.fl);
+      }
       SetCnrCols(hwndLeft, TRUE);
       SetCnrCols(hwndRight, TRUE);
       WinSendMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
@@ -2989,9 +3003,25 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case DID_OK:
+      {
+        SWP swp;
+        ULONG size = sizeof(SWP);
+
+        WinQueryWindowPos(hwnd, &swp);
+        PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
+                            size);
+      }
       WinDismissDlg(hwnd, 0);
       break;
     case DID_CANCEL:
+      {
+        SWP swp;
+        ULONG size = sizeof(SWP);
+
+        WinQueryWindowPos(hwnd, &swp);
+        PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
+                            size);
+      }
       WinDismissDlg(hwnd, 1);
       break;
 
