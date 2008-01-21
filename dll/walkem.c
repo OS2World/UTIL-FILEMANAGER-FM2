@@ -22,6 +22,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   25 Aug 07 SHL Correct #pragma alloc_text typos
   11 Nov 07 GKY Cancel now directly closes dialog even if directory path text has changed
+  20 Jan 08 GKY Walk & walk2 dialogs now save and restore size and position
 
 ***********************************************************************/
 
@@ -662,6 +663,19 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			CBID_EDIT,
 			EM_SETREADONLY, MPFROM2SHORT(TRUE, 0), MPVOID);
     }
+    {
+      SWP swp;
+      ULONG size = sizeof(SWP);
+
+      PrfQueryProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp, &size);
+      WinSetWindowPos(hwnd,
+                      HWND_TOP,
+                      swp.x,
+                      swp.y,
+                      swp.cx,
+                      swp.cy,
+                      swp.fl);
+    }
     PosOverOkay(hwnd);
     if (msg == UM_SETUP2)
       wa->nounwriteable = FALSE;
@@ -1142,6 +1156,14 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PrfWriteProfileString(fmprof, appname, "Targetdir", targetdir);
 	}
       }
+      {
+        SWP swp;
+        ULONG size = sizeof(SWP);
+
+        WinQueryWindowPos(hwnd, &swp);
+        PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
+                            size);
+      }
       if (wa->changed)
 	WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
       WinDismissDlg(hwnd, 1);
@@ -1155,6 +1177,14 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case DID_CANCEL:
+      {
+        SWP swp;
+        ULONG size = sizeof(SWP);
+
+        WinQueryWindowPos(hwnd, &swp);
+        PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
+                            size);
+      }
       if (wa->changed)
         WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
       free(wa);
@@ -1164,7 +1194,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CLOSE:
-    break;
+        break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
@@ -1261,6 +1291,19 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (oldproc)
 	WinSetWindowPtr(WinWindowFromID(hwnd, WALK2_PATH),
 			QWL_USER, (PVOID) oldproc);
+    }
+    {
+      SWP swp;
+      ULONG size = sizeof(SWP);
+
+      PrfQueryProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp, &size);
+      WinSetWindowPos(hwnd,
+                      HWND_TOP,
+                      swp.x,
+                      swp.y,
+                      swp.cx,
+                      swp.cy,
+                      swp.fl);
     }
     if (!*wa->szCurrentPath1)
       save_dir2(wa->szCurrentPath1);
@@ -1527,6 +1570,14 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSetDlgItemText(hwnd, WALK2_PATH, wa->szCurrentPath2);
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
+      {
+      SWP swp;
+      ULONG size = sizeof(SWP);
+
+      WinQueryWindowPos(hwnd, &swp);
+      PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
+                          size);
+      }
       WinDismissDlg(hwnd, 1);
       break;
 
@@ -1538,6 +1589,14 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case DID_CANCEL:
+      {
+      SWP swp;
+      ULONG size = sizeof(SWP);
+
+      WinQueryWindowPos(hwnd, &swp);
+      PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
+                          size);
+      }
       WinDismissDlg(hwnd, 0);
       break;
     }
