@@ -720,10 +720,11 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
 	  szSubject[retlen + 1] = 0;
-	  bstrip(szSubject);
-	  pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
-          WinSetWindowText(hwndMLE, szSubject);
-          pci->pszSubject = xstrdup(szSubject, pszSrcFile, __LINE__);
+          bstrip(szSubject);
+          if (pci->pszSubject != NullStr)
+            pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
+          else
+            pci->pszSubject = xstrdup(szSubject, pszSrcFile, __LINE__);
 	  len = strlen(szSubject);
 	  if (len)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
@@ -771,11 +772,13 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *longname = 0;
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
 	  longname[retlen + 1] = 0;
-	  chop_at_crnl(longname);
-	  pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+          chop_at_crnl(longname);
+          bstrip(longname);
           WinSetWindowText(hwndMLE, longname);
-          pci->pszLongName = xstrdup(longname, pszSrcFile, __LINE__);
-	  //pci->pszFileName = xrealloc(pci->pszFileName, retlen + 1, pszSrcFile, __LINE__);
+          if (pci->pszLongName != NullStr)
+            pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+          else
+            pci->pszLongName = xstrdup(longname, pszSrcFile, __LINE__);
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
 	else {
