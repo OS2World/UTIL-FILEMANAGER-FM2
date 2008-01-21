@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2007 Steven H. Levine
+# Copyright (c) 2002, 2008 Steven H. Levine
 
 # 24 May 05 SHL Add clean and cleanobj target
 # 16 Jun 05 SHL Workaround makeflags wierdness
@@ -16,6 +16,7 @@
 #               file from warpin\makefile because of some
 #               differences in how Watcom handles macros.
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
+# 21 Jan 08 SHL Add *.lrf to clean target
 
 # Environment - see makefile_pre.mk
 
@@ -93,6 +94,7 @@ clean:: .symbolic
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) clean
   cd ..
   -del *.exe
+  -del *.lrf
   -del *.map
   -del *.obj
   -del *.res
