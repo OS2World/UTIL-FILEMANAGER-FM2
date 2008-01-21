@@ -16,6 +16,7 @@
   17 Feb 06 GKY Add more drive types and no drive stat option
   10 Jan 08 SHL Add IDM_*SETTINGS for individual notebook pages
   12 Jan 08 SHL Add IDM_TOGGLEDRAGDIALOG
+  19 Jan 08 GKY Add IDM_COMMANDLINESUBMENU, IDM_SYSTEMSUBMENU & IDM_BOOKSELFSUBMENU
 
 ***********************************************************************/
 

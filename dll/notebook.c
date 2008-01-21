@@ -23,6 +23,7 @@
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
   10 Jan 08 SHL Remember last settings page
   10 Jan 08 SHL Rework page select logic
+  13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
   xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
 
 ***********************************************************************/

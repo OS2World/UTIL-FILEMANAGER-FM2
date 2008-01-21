@@ -20,6 +20,7 @@
   07 Aug 07 SHL Use BldQuotedFileName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   10 Jan 08 SHL Sync with CfgDlgProc mods
+  19 Jan 08 GKY Rework Utilities menu
 
 ***********************************************************************/
 

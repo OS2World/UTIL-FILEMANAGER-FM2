@@ -38,6 +38,7 @@
   10 Nov 07 GKY Get thousands separator from country info for file sizes.
   26 Nov 07 GKY Eliminate check of ext path on start up
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
+  13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
 
 ***********************************************************************/
 

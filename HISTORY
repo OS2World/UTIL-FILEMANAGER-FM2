@@ -8,12 +8,18 @@ New stuff's at the top.  This list is not necessarily complete.
  o Speed up Compare Directories filter redraw (Steven)
  o Rework Config menu.  Move some to submenu.  Add drag&drop dialog toggle. (Steven)
  o Rework Walk dialog.  Put entry field at the top. (Steven)
- o Get Subjectwidth/left working in the collector. (Gregg)
+ o Subjectwidth/left now works in the collector. (Gregg)
  o Change Config->Edit and Config->Palette menus to have no default (Steven)
  o Avoid spurious error reports for R/O directories on FAT volumes.  Ticket #116. (Steven)
  o Add immediate updates toggle to config menu.  Ticket #132. (Steven)
  o Fix toolbar to change background colors with color drag drop ticket #161 (Gregg) 
  o More Compare Directories rework.  Filters now honored by actions.  Tickets #191, #198 (Steven)
+ o Fix failure of direct edit of Subjects and LongNames (Gregg)
+ o Walk directories and walk directories2 now remeber size and position. (Gregg)
+ o Compare directories dialog remembers size and position. (Gregg)
+ o Individual directory containers can have different fonts & colors which are saved
+ and restored (Gregg)
+ o Moved command line, system and bookshelf to submenus on the utilities menu (Gregg)   
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2008 Steven H. Levine
 
   05 Jan 08 SHL Move dircnrs.c definitions here
+  13 Jan 08 GKY Add variables to DIRCNRDATA struct for Subjectwidth/Subjectleft.
 
 ***********************************************************************/
 

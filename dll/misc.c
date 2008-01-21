@@ -36,7 +36,9 @@
   05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   12 Jan 08 SHL Document SetConditionalCascade
+  13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
   xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
+  21 Jan 08 GKY Stop reallocating NullStr by direct editing of empty subject and longname strings.
 
 ***********************************************************************/
 
@@ -755,7 +757,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      pfealist->list[0].cbValue = 0;
 	    eaop.fpGEA2List = (PGEA2LIST) 0;
 	    eaop.fpFEA2List = pfealist;
-	    eaop.oError = 0L;
+	    eaop.oError = 0;
 	    rc = xDosSetPathInfo(pci->pszFileName, FIL_QUERYEASIZE,
 				 &eaop, sizeof(eaop), DSPI_WRTTHRU);
 	    DosFreeMem(pfealist);

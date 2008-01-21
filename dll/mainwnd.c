@@ -46,6 +46,8 @@
   16 Jan 08 SHL Add sync updates toggle
   16 Jan 08 GKY Fix changing background color on toolbar
   xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
+  17 Jan 08 GKY Add presparam save & restore for individual directory containers
+  19 Jan 08 GKY Rework Utilities menu
 
 ***********************************************************************/
 
@@ -3024,7 +3026,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
     for (x = 0; x < numsaves; x++) {
       sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, x);
       size = sizeof(SWP);
-      if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, &size)) {
+      if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, &size)) {
         if (!pszStateName || !strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)))
           PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
         sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, x);
