@@ -18,8 +18,10 @@ New stuff's at the top.  This list is not necessarily complete.
  o Walk directories and walk directories2 now remeber size and position. (Gregg)
  o Compare directories dialog remembers size and position. (Gregg)
  o Individual directory containers can have different fonts & colors which are saved
- and restored (Gregg)
+   and restored (Gregg)
  o Moved command line, system and bookshelf to submenus on the utilities menu (Gregg)   
+ o Restore no-prescan drives if restoring named state
+   This reverts to orginal behavior for named states
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,
