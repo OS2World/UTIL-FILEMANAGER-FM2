@@ -2931,7 +2931,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
    * 0x00000002 = no frame controls
    */
 
-  HWND hwndFrame = (HWND) 0, hwndClient;
+  HWND hwndFrame = (HWND) 0, hwndSysMenu, hwndClient;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
     FCF_SIZEBORDER | FCF_MINMAX | FCF_ICON | FCF_NOBYTEALIGN | FCF_ACCELTABLE;
   DIRCNRDATA *dcd;
@@ -2949,7 +2949,12 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 				 WC_TREECONTAINER,
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
-				 FM3ModHandle, TREE_FRAME, &hwndClient);
+                                 FM3ModHandle, TREE_FRAME, &hwndClient);
+  hwndSysMenu = WinWindowFromID(hwndFrame, FID_SYSMENU);
+  if (hwndSysMenu != NULLHANDLE)
+  WinSendMsg(hwndSysMenu, MM_SETITEMATTR,
+             MPFROM2SHORT(SC_CLOSE, TRUE),
+             MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
   if (hwndFrame && hwndClient) {
     dcd = xmalloc(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
@@ -2964,7 +2969,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       if (*(ULONG *) realappname == FM3UL) {
 	if (!WinCreateWindow(hwndFrame,
 			     WC_TREEOPENBUTTON,
-			     "O",
+                             "Op",
 			     WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
 			     ((swp.cx -
 			       WinQuerySysValue(HWND_DESKTOP,
