@@ -49,6 +49,7 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   30 Dec 07 GKY Use TestCDates for sort by date
   10 Jan 08 SHL Sync with CfgDlgProc mods
+  10 Feb 08 GKY Implement bubble help for bitmap menu items
 
 ***********************************************************************/
 

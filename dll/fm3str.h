@@ -16,6 +16,7 @@
   31 Mar 07 GKY Removed IDS_WC window class names
   06 Apr 07 GKY Add error message for drg work around
   26 Nov 07 GKY Added new readonly in editor & ext path
+  10 Feb 08 GKY Add strings to implement bubble help for bitmap menu items
 
 ***********************************************************************/
 

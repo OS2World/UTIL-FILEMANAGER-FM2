@@ -42,6 +42,7 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Jan 08 SHL Sync with CfgDlgProc mods
+  10 Feb 08 GKY Implement bubble help for bitmap menu items
 
 ***********************************************************************/
 

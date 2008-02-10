@@ -207,7 +207,7 @@ BOOL ParentIsDesktop(HWND hwnd, HWND hwndParent)
   return ret;
 }
 
-/* CheckDrive
+/** CheckDrive
  * @param chDrive drive letter
  * @param pszFileSystem pointer to buffer to return file system type or NULL
  * @param pulType pointer to long word to return drive flags or NULL

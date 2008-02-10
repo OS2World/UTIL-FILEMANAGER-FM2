@@ -2507,6 +2507,7 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_PRESPARAMCHANGED:
     PresParamChanged(hwnd, "ToolBar", mp1, mp2);
+    WinInvalidateRect(hwnd, NULL, TRUE);
     break;
 
   case UM_SETUP:

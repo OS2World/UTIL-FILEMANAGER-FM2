@@ -2448,7 +2448,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               free(urld);
 	    }
 	  }
-	}
+        }
+        //Move line to selection box at top of viewer
 	numsels = (SHORT) WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
 					    LM_QUERYITEMCOUNT, MPVOID,
 					    MPVOID);
@@ -2485,7 +2486,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    register ULONG x;
 
 	    width = ad->textsize - (whichline * 16);
-	    width = min(width, 16);
+            width = min(width, 16); //standard hexx line length
+            //use 80 as width * 5 gives inconsistent format on short lines
 	    s = xmalloc(80, pszSrcFile, __LINE__);
 	    if (!s)
 	      goto NoAdd;

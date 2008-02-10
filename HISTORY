@@ -1,6 +1,8 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.10 (pre)
+ o Removed the close buttton and menu item from the tree container which closed FM/2 (Gregg)
+ o Implement bubble help for bitmap menu items in collector and arc container (Gregg)
  o Correct/enhance settings notebook navigation, ticket #188  (Steven)
  o Reopen settings notebook to last selected page unless overridden, ticket #188 (Steven)
  o Correct Compare Directories select count regression (Steven)
@@ -12,14 +14,14 @@ New stuff's at the top.  This list is not necessarily complete.
  o Change Config->Edit and Config->Palette menus to have no default (Steven)
  o Avoid spurious error reports for R/O directories on FAT volumes.  Ticket #116. (Steven)
  o Add immediate updates toggle to config menu.  Ticket #132. (Steven)
- o Fix toolbar to change background colors with color drag drop ticket #161 (Gregg) 
+ o Fix toolbar to change background colors with color drag drop ticket #161 (Gregg)
  o More Compare Directories rework.  Filters now honored by actions.  Tickets #191, #198 (Steven)
  o Fix failure of direct edit of Subjects and LongNames (Gregg)
  o Walk directories and walk directories2 now remeber size and position. (Gregg)
  o Compare directories dialog remembers size and position. (Gregg)
  o Individual directory containers can have different fonts & colors which are saved
    and restored (Gregg)
- o Moved command line, system and bookshelf to submenus on the utilities menu (Gregg)   
+ o Moved command line, system and bookshelf to submenus on the utilities menu (Gregg)
  o Restore no-prescan drives if restoring named state
    This reverts to orginal behavior for named states
 
