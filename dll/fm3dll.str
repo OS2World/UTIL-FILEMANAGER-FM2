@@ -114,13 +114,13 @@ Collecting...
 File may not be a list.\r
 Continue to try to Collect from %s?
 Seek & scan in progress.
- Collector
+Collector
 
 FM/2:  Collector
-
-
-
-
+Seek and scan files
+See all files
+Clear the container contents (Nothing gets deleted)
+Remove the selected files from the container (Nothing gets deleted)
   **Archiver report:\n\n\n
 Say what?
 The archive you were viewing (%s) has become inaccessible.  Possible reasons:\r\r1. It's been erased.\r  a. If you were viewing it as a subarchive, you may have closed the parent archive.\r\r2. Something else has it open and is denying access.\r\r3. File system glitch (horrors) -- unlikely.
@@ -865,15 +865,15 @@ Check your system clock.
 
 
 
-
-
-
-
-
-
-
-
-
+Filter archive contents
+Set extract directory
+Rescan archive
+Check selected for viruses (requires an external virus checker)
+Test selected files
+Extract selected from archive
+Run executable
+Delete from archive
+View in default viewer
 Fatal Error:
 %s is not a valid directory\nDo you wish to delete it?
 Version:

@@ -66,6 +66,7 @@
 #include "filldir.h"			// EmptyCnr...
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
+#include "tmrsvcs.h"			// ITIMER_DESC
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -239,8 +240,8 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    s = GetPString(IDS_DIRCNRSORTHELP);
 	    break;
 	  case DIR_FILTER:
-	    s = GetPString(IDS_DIRCNRFILTERHELP);
-	    break;
+            s = GetPString(IDS_DIRCNRFILTERHELP);
+            break;
 	  default:
 	    break;
 	  }
@@ -443,8 +444,8 @@ MRESULT EXPENTRY CollectorClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				     MPARAM mp2)
+MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
+				     MPARAM mp1, MPARAM mp2)
 {
   ULONG size;
   DIRCNRDATA *dcd;
@@ -497,8 +498,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			 QWS_ID,
 			 COLLECTOROBJ_FRAME + (COLLECTOR_FRAME - dcd->id));
       dcd->hwndObject = hwnd;
-      if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(100); //05 Aug 07 GKY 250
+      // 09 Feb 08 SHL fixme to be sure applet does not really need this
+      // if (ParentIsDesktop(hwnd, dcd->hwndParent))
+      //	DosSleep(100); //05 Aug 07 GKY 250
     }
     else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -557,8 +559,15 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       ULONGLONG ullTotalBytes;
       CHAR fullname[CCHMAXPATH];
 
-      WinSetWindowText(WinWindowFromID(dcd->hwndClient, DIR_SELECTED),
-		       GetPString(IDS_COLLECTINGTEXT));
+      if (!hwndStatus) {
+	WinSetWindowText(WinWindowFromID(dcd->hwndClient, DIR_SELECTED),
+			 GetPString(IDS_COLLECTINGTEXT));
+      }
+      else {
+	if (WinQueryFocus(HWND_DESKTOP) == dcd->hwndCnr)
+	  WinSetWindowText(hwndStatus, GetPString(IDS_COLLECTINGTEXT));
+      }
+
       for (ulMaxFiles = 0; li->list[ulMaxFiles]; ulMaxFiles++) ;	// Count
 
       if (ulMaxFiles) {
@@ -571,6 +580,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  break;
 	}
 	else {
+	  ITIMER_DESC itdSleep = { 0 };		// 06 Feb 08 SHL
+	  InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
 	  pciFirst = pci;
 	  // 04 Jan 08 SHL fixme like comp.c if CM_ALLOCRECORD returns unexpected record count
 	  for (x = 0; li->list[x]; x++) {
@@ -604,6 +615,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      pci = (PCNRITEM) pci->rc.preccNextRecord;
 	    }
 	    else {
+	      // Oops - fixme to complain?
 	      pciT = pci;
 	      pci = (PCNRITEM) pci->rc.preccNextRecord;
 	      if (pciP)
@@ -611,11 +623,13 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      else
 		pciFirst = pci;
 	      FreeCnrItem(hwnd, pciT);
-	      ulMaxFiles--;
+	      ulMaxFiles--;		// Remember gone
 	    }
-	    DosSleep(0); //26 Aug 07 GKY 1
-	  }
+	    SleepIfNeeded(&itdSleep, 1);	// 09 Feb 08 SHL
+	    // DosSleep(0); //26 Aug 07 GKY 1	// 09 Feb 08 SHL
+	  } // for
 	  if (ulMaxFiles) {
+	    // Some files OK
 	    memset(&ri, 0, sizeof(RECORDINSERT));
 	    ri.cb = sizeof(RECORDINSERT);
 	    ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -895,9 +909,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       INT x;
 
       dcd->stopflag = 1;
-      // Allow rescan logic to quiesce
-      for (x = 0; x < 10 && dcd->amextracted; x++)
-	DosSleep(100); //05 Aug 07 GKY 250
+      // Allow other threads to honor stop request
+      for (x = 0; x < 100 && dcd->amextracted; x++)
+	DosSleep(10);
+      if (dcd->amextracted)
+	Runtime_Error(pszSrcFile, __LINE__, "still busy");
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
       free(dcd);
@@ -1127,18 +1143,28 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  else
 	    PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
 	}
-	if (!fMoreButtons)
-	  sprintf(s, " %s%s%s%s", GetPString(IDS_COLLECTORTEXT),
-		  (*dcd->mask.szMask || dcd->mask.antiattr ||
-		   dcd->mask.attrFile != ALLATTRS) ? "  (" : NullStr,
-		  (*dcd->mask.szMask) ? dcd->mask.szMask :
-		  (dcd->mask.antiattr ||
-		   dcd->mask.attrFile != ALLATTRS) ?
-		  GetPString(IDS_ATTRTEXT) : NullStr,
-		  (*dcd->mask.szMask || dcd->mask.antiattr ||
-		   dcd->mask.attrFile != ALLATTRS) ? ")" : NullStr);
-	else
-	  strcpy(s, GetPString(IDS_COLLECTORTEXT));
+	if (!fMoreButtons) {
+	  sprintf(s, " %s%s%s%s",
+		  dcd->amextracted ?
+		    GetPString(IDS_COLLECTINGTEXT) :
+		    GetPString(IDS_COLLECTORTEXT),
+		  *dcd->mask.szMask || dcd->mask.antiattr ||
+		    dcd->mask.attrFile != ALLATTRS ? "  (" : NullStr,
+		  *dcd->mask.szMask ?
+		    dcd->mask.szMask :
+		    dcd->mask.antiattr ||
+		     dcd->mask.attrFile != ALLATTRS ?
+		      GetPString(IDS_ATTRTEXT) : NullStr,
+		  *dcd->mask.szMask || dcd->mask.antiattr ||
+		    dcd->mask.attrFile != ALLATTRS ?
+		    ")" : NullStr);
+	}
+	else {
+	  strcpy(s,
+		dcd->amextracted ?
+		  GetPString(IDS_COLLECTINGTEXT) :
+		  GetPString(IDS_COLLECTORTEXT));
+	}
 	WinSetWindowText(hwndStatus, s);
 	if (!pci)
 	  pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS,
@@ -1288,14 +1314,14 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	WinSendMsg(hwnd, CM_SETCNRINFO, MPFROMP(&cnri),
 		   MPFROMLONG(CMA_XVERTSPLITBAR));
 
-	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1) {
+	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID)dcd) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	  return 0;
 	}
 	else
-	  DosSleep(32); //05 Aug 07 GKY 64
+	  DosSleep(32);		// Let object window get started
       }
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				DIR_FILTER), &dcd->mask, FALSE);
@@ -2610,7 +2636,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (!dcd->dontclose && ParentIsDesktop(hwnd, dcd->hwndParent))
 	PostMsg(hwnd, UM_FOLDUP, MPVOID, MPVOID);
       if (dcd->hwndObject) {
-	DosSleep(32); //05 Aug 07 GKY 64
+	DosSleep(32);			// Allow UM_FOLDUP to process
 	if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
@@ -2636,6 +2662,73 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   }
   else
       return PFNWPCnr(hwnd, msg, mp1, mp2);
+}
+
+MRESULT EXPENTRY CollectorMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				     MPARAM mp2)
+{
+  PFNWP oldMenuProc = WinQueryWindowPtr(hwnd, QWL_USER);
+  static short  sLastMenuitem;
+
+  switch (msg) {
+    case WM_MOUSEMOVE: {
+      if (fOtherHelp) {
+        RECTL rectl;
+        SHORT i, sCurrentMenuitem;
+        SHORT MenuItems = 5;
+        SHORT asMenuIDs[5] = {IDM_GREP,
+              IDM_SEEALL,
+              IDM_CLEARCNR,
+              IDM_REMOVE,
+              0};
+        char *szHelpString = NULL;
+
+
+        for (i=0; i<MenuItems; i++) {
+          sCurrentMenuitem = asMenuIDs[i];
+          oldMenuProc(hwnd,MM_QUERYITEMRECT,
+                      MPFROM2SHORT(asMenuIDs[i], FALSE),
+                      &rectl);
+
+        if (MOUSEMSG(&msg)->x > rectl.xLeft &&
+            MOUSEMSG(&msg)->x < rectl.xRight &&
+            MOUSEMSG(&msg)->y > rectl.yBottom &&
+            MOUSEMSG(&msg)->y < rectl.yTop)
+           break;
+        }                      // for
+
+
+         switch (sCurrentMenuitem) {
+         case 0:
+           break;
+         case IDM_GREP:
+           szHelpString = GetPString(IDS_COLMENUSEEKSCANHELP);
+           break;
+         case IDM_SEEALL:
+           szHelpString = GetPString(IDS_COLMENUSEEALLHELP);
+           break;
+         case IDM_CLEARCNR:
+           szHelpString = GetPString(IDS_COLMENUCLEARCNRHELP);
+           break;
+         case IDM_REMOVE:
+           szHelpString = GetPString(IDS_COLMENUREMOVECNRHELP);
+           break;
+         default:
+           break;
+         }
+
+        if (sLastMenuitem != sCurrentMenuitem && szHelpString) {
+          sLastMenuitem = sCurrentMenuitem;
+          MakeBubble(hwnd, TRUE, szHelpString);
+        }
+        else if (hwndBubble && !sCurrentMenuitem){
+          sLastMenuitem = sCurrentMenuitem;
+          WinDestroyWindow(hwndBubble);
+        }
+      }
+    }
+  }
+    return oldMenuProc(hwnd, msg, mp1, mp2);
 }
 
 HWND StartCollector(HWND hwndParent, INT flags)
@@ -2713,11 +2806,15 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	Collector = dcd->hwndCnr;
 	WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
 	WinSetWindowText(hwndFrame, GetPString(IDS_COLLECTORTITLETEXT));
-	if (FrameFlags & FCF_MENU) {
-	  if (!fToolbar) {
-	    HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
+        if (FrameFlags & FCF_MENU) {
+          PFNWP oldmenuproc;
+          HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
 
-	    if (hwndMenu) {
+	  oldmenuproc = WinSubclassWindow(hwndMenu, (PFNWP) CollectorMenuProc);
+	  WinSetWindowPtr(hwndMenu, QWL_USER, (PVOID) oldmenuproc);
+	  if (!fToolbar) {
+            if (hwndMenu) {
+
 	      WinSendMsg(hwndMenu,
 			 MM_DELETEITEM,
 			 MPFROM2SHORT(IDM_SEEALL, FALSE), MPVOID);
@@ -2736,8 +2833,12 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
 					 (PFNWP) CollectorCnrWndProc);
 	{
-	  USHORT ids[] = { DIR_TOTALS, DIR_SELECTED, DIR_VIEW, DIR_SORT,
-	    DIR_FILTER, 0
+	  USHORT ids[] = { DIR_TOTALS,
+			   DIR_SELECTED,
+			   DIR_VIEW,
+			   DIR_SORT,
+			   DIR_FILTER,
+			   0
 	  };
 
 	  CommonCreateTextChildren(dcd->hwndClient,

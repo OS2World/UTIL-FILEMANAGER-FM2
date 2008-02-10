@@ -130,6 +130,10 @@
 #define IDS_INSEEKSCANTEXT                                    115
 #define IDS_COLLECTORTEXT                                     116
 #define IDS_COLLECTORTITLETEXT                                118
+#define IDS_COLMENUSEEKSCANHELP                               119
+#define IDS_COLMENUSEEALLHELP                                 120
+#define IDS_COLMENUCLEARCNRHELP                               121
+#define IDS_COLMENUREMOVECNRHELP                              122
 #define IDS_ARCHIVERREPORTTEXT                                123
 #define IDS_SAYWHATTEXT                                       124
 #define IDS_ARCNOTTHERETEXT                                   125
@@ -851,6 +855,15 @@
 #define IDS_UPGRADETEXT                                       858
 #define IDS_PERNODETEXT                                       859
 #define IDS_USUALDISCTEXT                                     860
+#define IDS_ARCCNRFILTERMENUHELP                              867
+#define IDS_ARCCNRWALKDIRMENUHELP                             868
+#define IDS_ARCCNRRESCANMENUHELP                              869
+#define IDS_ARCCNRVIRUSMENUHELP                               870
+#define IDS_ARCCNRTESTMENUHELP                                871
+#define IDS_ARCCNREXTRACTMENUHELP                             872
+#define IDS_ARCCNREXECMENUHELP                                873
+#define IDS_ARCCNRDELETEMENUHELP                              874
+#define IDS_ARCCNRVIEWMENUHELP                                875
 #define IDS_FATALERRORTEXT                                    876
 #define IDS_EXTPATHNOTVALIDTEXT                               877
 #define IDS_VERSIONTEXT                                       878

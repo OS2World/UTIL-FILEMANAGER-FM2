@@ -3289,6 +3289,93 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       return PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
+MRESULT EXPENTRY ArcCnrMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				     MPARAM mp2)
+{
+  PFNWP oldMenuProc = WinQueryWindowPtr(hwnd, QWL_USER);
+  static short  sLastMenuitem;
+
+  switch (msg) {
+    case WM_MOUSEMOVE: {
+      if (fOtherHelp) {
+        RECTL rectl;
+        SHORT i, sCurrentMenuitem;
+        SHORT MenuItems = 10;
+        SHORT asMenuIDs[10] = {IDM_VIEW,
+              IDM_DELETE,
+              IDM_EXEC,
+              IDM_EXTRACT,
+              IDM_TEST,
+              IDM_VIRUSSCAN,
+              IDM_RESCAN,
+              IDM_WALKDIR,
+              IDM_FILTER,
+              0};
+        char *szHelpString = NULL;
+
+
+        for (i=0; i<MenuItems; i++) {
+          sCurrentMenuitem = asMenuIDs[i];
+          oldMenuProc(hwnd,MM_QUERYITEMRECT,
+                      MPFROM2SHORT(asMenuIDs[i], FALSE),
+                      &rectl);
+
+        if (MOUSEMSG(&msg)->x > rectl.xLeft &&
+            MOUSEMSG(&msg)->x < rectl.xRight &&
+            MOUSEMSG(&msg)->y > rectl.yBottom &&
+            MOUSEMSG(&msg)->y < rectl.yTop)
+           break;
+        }                      // for
+
+
+         switch (sCurrentMenuitem) {
+         case 0:
+           break;
+         case IDM_VIEW:
+           szHelpString = GetPString(IDS_ARCCNRVIEWMENUHELP);
+           break;
+         case IDM_DELETE:
+           szHelpString = GetPString(IDS_ARCCNRDELETEMENUHELP);
+           break;
+         case IDM_EXEC:
+           szHelpString = GetPString(IDS_ARCCNREXECMENUHELP);
+           break;
+         case IDM_EXTRACT:
+           szHelpString = GetPString(IDS_ARCCNREXTRACTMENUHELP);
+           break;
+         case IDM_TEST:
+           szHelpString = GetPString(IDS_ARCCNRTESTMENUHELP);
+           break;
+         case IDM_VIRUSSCAN:
+           szHelpString = GetPString(IDS_ARCCNRVIRUSMENUHELP);
+           break;
+         case IDM_RESCAN:
+           szHelpString = GetPString(IDS_ARCCNRRESCANMENUHELP);
+           break;
+         case IDM_WALKDIR:
+           szHelpString = GetPString(IDS_ARCCNRWALKDIRMENUHELP);
+           break;
+         case IDM_FILTER:
+           szHelpString = GetPString(IDS_ARCCNRFILTERMENUHELP);
+           break;
+         default:
+           break;
+         }
+
+        if (sLastMenuitem != sCurrentMenuitem && szHelpString) {
+          sLastMenuitem = sCurrentMenuitem;
+          MakeBubble(hwnd, TRUE, szHelpString);
+        }
+        else if (hwndBubble && !sCurrentMenuitem){
+          sLastMenuitem = sCurrentMenuitem;
+          WinDestroyWindow(hwndBubble);
+        }
+      }
+    }
+  }
+    return oldMenuProc(hwnd, msg, mp1, mp2);
+}
+
 HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 		 ARC_TYPE * sinfo)
 {
@@ -3463,9 +3550,13 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  WinSetWindowText(dcd->hwndExtract, dcd->directory);
 	  if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	    WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
-	  if (FrameFlags & FCF_MENU) {
+          if (FrameFlags & FCF_MENU) {
+            PFNWP oldmenuproc;
+            HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
+
+	    oldmenuproc = WinSubclassWindow(hwndMenu, (PFNWP) ArcCnrMenuProc);
+	    WinSetWindowPtr(hwndMenu, QWL_USER, (PVOID) oldmenuproc);
 	    if (!fToolbar) {
-	      HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
 
 	      if (hwndMenu) {
 		WinSendMsg(hwndMenu, MM_DELETEITEM,
