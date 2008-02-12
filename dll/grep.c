@@ -8,7 +8,7 @@
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2001, 2008 Steven H. Levine
 
-  12 Feb 03 SHL insert_grepfile: standardize EA math
+  12 Feb 03 SHL InsertGrepFile: standardize EA math
   12 Feb 03 SHL doonefile: standardize EA math
   25 May 05 SHL Rework for ULONGLONG
   25 May 05 SHL Rework for FillInRecordFromFFB
@@ -26,6 +26,7 @@
   26 Aug 07 GKY Improved performance of FillDups
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   21 Sep 07 GKY Fix trap on search that includes filenames that exceed maxpath
+  07 Feb 08 SHL Use ITIMER_DESC to control sleeps and reporting
 
 ***********************************************************************/
 
@@ -46,19 +47,39 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "tmrsvcs.h"			// ITIMER_DESC
 #include "fm3dll.h"
 
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
 
-static VOID doallsubdirs(GREP *grep, CHAR *searchPath, BOOL recursing,
-			 char **fle, int numfls);
-static INT domatchingfiles(GREP *grep, CHAR *path, char **fle, int numfls);
-static BOOL doonefile(GREP *grep, CHAR *fileName, FILEFINDBUF4L *pffb);
-static BOOL doinsertion(GREP *grep);
+static VOID DoAllSubdirs(GREP *grep,
+			 CHAR *searchPath,
+			 BOOL recursing,
+			 char **fle,
+			 UINT numfls,
+			 ITIMER_DESC *pitdSleep,
+			 ITIMER_DESC *pitdReport);
+static INT DoMatchingFiles(GREP *grep,
+			   CHAR *path,
+			   CHAR **fle,
+			   UINT numfls,
+			   ITIMER_DESC *pitdSleep,
+			   ITIMER_DESC *pitdReport);
+static BOOL DoOneFile(GREP *grep,
+		      CHAR *fileName,
+		      FILEFINDBUF4L *pffb,
+		      ITIMER_DESC *pitdSleep,
+		      ITIMER_DESC *pitdReport);
+static BOOL DoInsertion(GREP *grep,
+			ITIMER_DESC *pitdSleep,
+			ITIMER_DESC *pitdReport);
 static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4L *pffb);
-static VOID FillDupes(GREP *grep);
+static VOID FillDupes(GREP *grep,
+		      ITIMER_DESC *pitdSleep,
+		      ITIMER_DESC *pitdReport);
+
 static VOID FreeDupes(GREP *grep);
 
 #define GREPCHARS "*?[] \\"
@@ -68,10 +89,10 @@ static VOID FreeDupes(GREP *grep);
 
 static INT monthdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-ULONG SecsSince1980(FDATE * date, FTIME * time)
+ULONG SecsSince1980(FDATE *date, FTIME *time)
 {
   ULONG total = 0;
-  register int x;
+  UINT x;
 
   for (x = 1980; x < date->year + 1980; x++) {
     if (isleap(x))
@@ -97,7 +118,7 @@ ULONG SecsSince1980(FDATE * date, FTIME * time)
  * brute force methodology
  */
 
-static BOOL m_match(CHAR * string, CHAR * pattern, BOOL absolute, BOOL ignore,
+static BOOL m_match(CHAR *string, CHAR *pattern, BOOL absolute, BOOL ignore,
 		    LONG len)
 {
   // return TRUE if pattern found in string
@@ -213,8 +234,8 @@ static BOOL m_match(CHAR * string, CHAR * pattern, BOOL absolute, BOOL ignore,
   return FALSE;
 }
 
-static BOOL match(CHAR * string, CHAR * patterns, BOOL absolute, BOOL ignore,
-		  LONG len, ULONG numlines, CHAR * matched, BOOL matchall)
+static BOOL match(CHAR *string, CHAR *patterns, BOOL absolute, BOOL ignore,
+		  LONG len, ULONG numlines, CHAR *matched, BOOL matchall)
 {
   BOOL ret = FALSE;
   register CHAR *p;
@@ -234,14 +255,18 @@ static BOOL match(CHAR * string, CHAR * patterns, BOOL absolute, BOOL ignore,
   return ret;
 }
 
-VOID GrepThread(VOID * arg)
+VOID GrepThread(VOID *arg)
 {
   HAB ghab;
   HMQ ghmq;
   GREP grep;
-  register INT x, numfls;
-  static CHAR *fle[512];
+  UINT x;
+  UINT numfls;
+  static CHAR *fle[512];		// 06 Feb 08 SHL fixme to not be static
   CHAR *p, *pp, searchPath[CCHMAXPATH * 2];
+
+  ITIMER_DESC itdSleep = { 0 };		// 06 Feb 08 SHL
+  ITIMER_DESC itdReport = { 0 };
 
   if (!arg) {
     Runtime_Error(pszSrcFile, __LINE__, "no data");
@@ -260,10 +285,11 @@ VOID GrepThread(VOID * arg)
     if (ghmq) {
       WinCancelShutdown(ghmq, TRUE);
       IncrThreadUsage();
-      DosSleep(100); //05 Aug 07 GKY 128
-      WinSetWindowText(grep.hwndCurFile,
-		       GetPString((grep.finddupes) ?
-				  IDS_GREPDUPETEXT : IDS_GREPSCANTEXT));
+      // DosSleep(100); //05 Aug 07 GKY 128	// 07 Feb 08 SHL
+      // hwndStatus does not exist for applet
+      WinSetWindowText(hwndStatus ? hwndStatus : grep.hwndCurFile,
+		       GetPString(grep.finddupes ? IDS_GREPDUPETEXT :
+						   IDS_GREPSCANTEXT));
 
       pp = grep.searchPattern;
       while (*pp) {
@@ -292,15 +318,20 @@ VOID GrepThread(VOID * arg)
 	grep.antiattr |= MUST_HAVE_ARCHIVED;
 
       grep.anyexcludes = FALSE;
-      numfls = x = 0;
+      numfls = 0;
       fle[numfls++] = strtok(grep.tosearch, ";");
+
       while ((fle[numfls] = strtok(NULL, ";")) != NULL && numfls < 511) {
 	if (*fle[numfls] == '/')
 	  grep.anyexcludes = TRUE;
 	numfls++;
       }
 
-      while (x < numfls) {		// loop through search masks
+      InitITimer(&itdSleep, 500);	// Sleep every 500 mSec
+      InitITimer(&itdReport, 2000);	// Report every 2 sec
+
+      // loop through search masks
+      for (x = 0; x < numfls; x++) {
 
 	if (*fle[x] == '/')		// is an exclude mask only
 	  goto ExcludeSkip;
@@ -325,8 +356,8 @@ VOID GrepThread(VOID * arg)
 	    strcat(searchPath, ":\\");
 	    strcpy(grep.fileMask, p);
 	  }
-	  if (*p == '\\') {		// got a 'full' path
-
+	  if (*p == '\\') {
+	    // got a 'full' path
 	    CHAR temp;
 
 	    p++;
@@ -343,23 +374,25 @@ VOID GrepThread(VOID * arg)
 	if (*grep.stopflag)
 	  break;
 	// do single directory
-	domatchingfiles(&grep, searchPath, fle, numfls);
+	DoMatchingFiles(&grep, searchPath, fle, numfls, &itdSleep, &itdReport);
 	if (grep.dirFlag)		// do subdirs
-	  doallsubdirs(&grep, searchPath, FALSE, fle, numfls);
+	  DoAllSubdirs(&grep, searchPath, FALSE, fle, numfls, &itdSleep, &itdReport);
       ExcludeSkip:
 	if (*grep.stopflag)
 	  break;
-	x++;
 	if (WinIsWindow(grep.ghab, grep.hwndFiles))
-	  doinsertion(&grep);		// insert any remaining objects
-      } // while
+	  DoInsertion(&grep, &itdSleep, &itdReport);	// insert any remaining objects
+      } // for
 
       if (WinIsWindow(grep.ghab, grep.hwndFiles))
-	doinsertion(&grep);		// insert any remaining objects
+	DoInsertion(&grep, &itdSleep, &itdReport);	// insert any remaining objects
 
-      if (WinIsWindow(grep.ghab, grep.hwndFiles) && grep.finddupes &&
+      if (WinIsWindow(grep.ghab, grep.hwndFiles) &&
+	  grep.finddupes &&
 	  !*grep.stopflag)
-	FillDupes(&grep);
+      {
+	FillDupes(&grep, &itdSleep, &itdReport);
+      }
 
       if (!PostMsg(grep.hwndFiles, UM_CONTAINER_FILLED, MPVOID, MPVOID))	// tell window we're done
 	WinSendMsg(grep.hwndFiles, UM_CONTAINER_FILLED, MPVOID, MPVOID);
@@ -374,13 +407,14 @@ VOID GrepThread(VOID * arg)
     FreeDupes(&grep);
   if (grep.numlines && grep.matched)
     free(grep.matched);
+  // 07 Feb 08 SHL fixme to free grep here when not static
   DosPostEventSem(CompactSem);
 }
 
-static BOOL IsExcluded(char *name, char **fle, int numfls)
+static BOOL IsExcluded(CHAR *name, CHAR **fle, UINT numfls)
 {
-  int x;
-  char *n;
+  UINT x;
+  CHAR *n;
 
   n = strrchr(name, '\\');
   if (!n)
@@ -398,8 +432,13 @@ static BOOL IsExcluded(char *name, char **fle, int numfls)
   return FALSE;
 }
 
-static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
-			 char **fle, int numfls)
+static VOID DoAllSubdirs(GREP *grep,
+			 CHAR *searchPath,
+			 BOOL recursing,
+			 CHAR **fle,
+			 UINT numfls,
+			 ITIMER_DESC *pitdSleep,
+			 ITIMER_DESC *pitdReport)
 {
   // process all subdirectories
 
@@ -436,9 +475,31 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
 	   (ffb.achName[1] != '.' || ffb.achName[2]))) {
 	strcpy(p, ffb.achName);
 	if (!grep->anyexcludes || !IsExcluded(searchPath, fle, numfls)) {
-	  domatchingfiles(grep, searchPath, fle, numfls);
-	  doallsubdirs(grep, searchPath, TRUE, fle, numfls);
-	  DosSleep(0); //26 Aug 07 GKY 1
+	  // 07 Feb 08 SHL
+	  if (IsITimerExpired(pitdReport)) {
+	    if (!hwndStatus)
+	      WinSetWindowText(grep->hwndCurFile, searchPath);
+	    else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles) {
+	      CHAR s[CCHMAXPATH + 64];
+	      sprintf(s, "%s %s", GetPString(IDS_SCANNINGTEXT), searchPath);
+	      WinSetWindowText(hwndStatus, s);
+	    }
+	  }
+	  DoMatchingFiles(grep, searchPath, fle, numfls, pitdSleep, pitdReport);
+	  // 07 Feb 08 SHL
+	  if (IsITimerExpired(pitdReport)) {
+	    if (!hwndStatus)
+	      WinSetWindowText(grep->hwndCurFile, searchPath);
+	    else {
+	      if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles) {
+		CHAR s[CCHMAXPATH + 64];
+		sprintf(s, "%s %s", GetPString(IDS_SCANNINGTEXT), searchPath);
+		WinSetWindowText(hwndStatus, s);
+	      }
+	    }
+	  }
+	  DoAllSubdirs(grep, searchPath, TRUE, fle, numfls, pitdSleep, pitdReport);
+	  // DosSleep(0); //26 Aug 07 GKY 1	// 07 Feb 08 SHL
 	}
       }
       ulFindCnt = 1;
@@ -452,7 +513,16 @@ static VOID doallsubdirs(GREP * grep, CHAR * searchPath, BOOL recursing,
     *p = 0;
 }
 
-static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
+/**
+ * Scan for files matching filespecs in single directory
+ */
+
+static INT DoMatchingFiles(GREP *grep,
+			   CHAR *path,
+			   CHAR **fle,
+			   UINT numfls,
+			   ITIMER_DESC *pitdSleep,
+			   ITIMER_DESC *pitdReport)
 {
   // process all matching files in a directory
 
@@ -472,12 +542,7 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   if (!pffbArray)
     return 0;
 
-  // build filemask
   BldFullPathName(szFindPath, path, grep->fileMask);
-  // sprintf(szFindPath,
-  //	  "%s%s%s",
-  //	  path,
-  //	  (path[strlen(path) - 1] == '\\') ? NullStr : "\\", grep->fileMask);
 
   MakeFullName(szFindPath);
 
@@ -507,23 +572,38 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
 	if (*grep->stopflag)
 	  break;
 	if (*pffbFile->achName != '.' ||
-            (pffbFile->achName[1] && pffbFile->achName[1] != '.')) {
-          strcpy(p, pffbFile->achName);	// build filename
-          if (strlen(szFindPath) > CCHMAXPATH){   //21 Sep GKY check for pathnames that exceed maxpath
-            DosFindClose(findHandle);
-            free(pffbArray);
-            if (!fDone) {
-              fDone = TRUE;
-              saymsg(MB_OK | MB_ICONASTERISK,
-	             HWND_DESKTOP,
+	    (pffbFile->achName[1] && pffbFile->achName[1] != '.')) {
+	  strcpy(p, pffbFile->achName);	// build filename
+	  if (strlen(szFindPath) > CCHMAXPATH){
+	    // Complain if pathnames exceeds max
+	    DosFindClose(findHandle);
+	    free(pffbArray);
+	    if (!fDone) {
+	      fDone = TRUE;
+	      saymsg(MB_OK | MB_ICONASTERISK,
+		     HWND_DESKTOP,
 		     GetPString(IDS_WARNINGTEXT),
-                     "One or more of your files has a full path name that exceeds the OS/2 maximum");
-            }
+		     "One or more of your files has a full path name that exceeds the OS/2 maximum");
+	    }
 	    return 1;
-          }
+	  }
+
+	  // 07 Feb 08 SHL
+	  if (IsITimerExpired(pitdReport)) {
+	    if (!hwndStatus)
+	      WinSetWindowText(grep->hwndCurFile, szFindPath);
+	    else {
+	      if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles) {
+		CHAR s[CCHMAXPATH + 64];
+		sprintf(s, "%s %s", GetPString(IDS_SCANNINGTEXT), szFindPath);
+		WinSetWindowText(hwndStatus, s);
+	      }
+	    }
+	  }
+
 	  if (!grep->anyexcludes || !IsExcluded(szFindPath, fle, numfls)) {
 	    if (!grep->finddupes)
-	      doonefile(grep, szFindPath, pffbFile);
+	      DoOneFile(grep, szFindPath, pffbFile, pitdSleep, pitdReport);
 	    else if (!InsertDupe(grep, szFindPath, pffbFile)) {
 	      DosFindClose(findHandle);
 	      free(pffbArray);
@@ -537,7 +617,8 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
       } // for
       if (*grep->stopflag)
 	break;
-      DosSleep(0); //26 Aug 07 GKY 1
+      SleepIfNeeded(pitdSleep, 1);
+      // DosSleep(0); //26 Aug 07 GKY 1	// 07 Feb 08 SHL
       ulFindCnt = FilesToGet;
       rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
     } while (!rc);
@@ -555,9 +636,9 @@ static INT domatchingfiles(GREP * grep, CHAR * path, char **fle, int numfls)
   return 0;
 }
 
-static VOID freegreplist(GREP * grep)
+static VOID freegreplist(GREP *grep)
 {
-  INT x;
+  UINT x;
 
   if (grep) {
     if (grep->insertffb) {
@@ -577,31 +658,47 @@ static VOID freegreplist(GREP * grep)
   }
 }
 
-static BOOL doinsertion(GREP * grep)
+/**
+ * Insert record into container
+ */
+
+static BOOL DoInsertion(GREP *grep,
+			ITIMER_DESC *pitdSleep,
+			ITIMER_DESC *pitdReport)
 {
   RECORDINSERT ri;
   DIRCNRDATA *dcd;
   PCNRITEM pci, pciFirst;
-  INT x;
+  UINT x;
 
   if (!grep || !grep->toinsert || !grep->insertffb || !grep->dir)
     return FALSE;
+
   pci = WinSendMsg(grep->hwndFiles,
 		   CM_ALLOCRECORD,
 		   MPFROMLONG(EXTRA_RECORD_BYTES),
 		   MPFROMLONG(grep->toinsert));
-  // 04 Jan 08 SHL fixme to complain if CM_ALLOCRECORD fails
-  if (pci) {
-    // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
-    if (grep->sayfiles)
-      WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPINSERTINGTEXT));
+  if (!pci) {
+    Win_Error(grep->hwndFiles, grep->hwndFiles, pszSrcFile, __LINE__,
+	      "CM_ALLOCRECORD %u failed", grep->toinsert);
+  }
+  else {
+    if (grep->sayfiles) {
+      if (!hwndStatus)
+	WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPINSERTINGTEXT));
+      else {
+	if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+	  WinSetWindowText(hwndStatus, GetPString(IDS_GREPINSERTINGTEXT));
+      }
+    }
     pciFirst = pci;
     dcd = INSTDATA(grep->hwndFiles);
     for (x = 0; grep->insertffb[x]; x++) {
       FillInRecordFromFFB(grep->hwndFiles,
 			  pci, grep->dir[x], grep->insertffb[x], FALSE, dcd);
       pci = (PCNRITEM) pci->rc.preccNextRecord;
-    }
+      SleepIfNeeded(pitdSleep, 1);
+    } // for
     memset(&ri, 0, sizeof(RECORDINSERT));
     ri.cb = sizeof(RECORDINSERT);
     ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -616,8 +713,9 @@ static BOOL doinsertion(GREP * grep)
       dcd->ullTotalBytes += grep->insertedbytes;
       DosExitCritSec();
     }
-    if (grep->toinsert == FilesToGet)
-      DosSleep(0);  //26 Aug 07 GKY 1
+    SleepIfNeeded(pitdSleep, 1);
+    // if (grep->toinsert == FilesToGet)	// 07 Feb 08 SHL
+    //  DosSleep(0);  //26 Aug 07 GKY 1	// 07 Feb 08 SHL
     freegreplist(grep);
     PostMsg(grep->hwndFiles, UM_RESCAN, MPVOID, MPVOID);
     return TRUE;
@@ -626,19 +724,34 @@ static BOOL doinsertion(GREP * grep)
   return FALSE;
 }
 
-static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4L pffb)
+/**
+ * Insert file ffb and directory name into lists
+ */
+
+static BOOL InsertGrepFile(GREP *grep,
+			   CHAR *pszFileName,
+			   PFILEFINDBUF4L pffb,
+			   ITIMER_DESC *pitdSleep,
+			   ITIMER_DESC *pitdReport)
 {
   PSZ p;
   CHAR szDirectory[CCHMAXPATH];
 
-  if (WinIsWindow(grep->ghab, grep->hwndFiles)) {
+  if (!WinIsWindow(grep->ghab, grep->hwndFiles)) {
+    // Window closed - clean up and go away
+    freegreplist(grep);
+  }
+  else {
     grep->numfiles++;
-    strcpy(szDirectory, filename);
+    strcpy(szDirectory, pszFileName);
     p = strrchr(szDirectory, '\\');
+
     if (p) {
+      // Got directory
       if (p < szDirectory + 4)
-	p++;
+	p++;				// Include root backslash
       *p = 0;
+
       if (!grep->insertffb) {
 	// Allocate 1 extra for end marker?
 	grep->insertffb = xmallocz(sizeof(PFILEFINDBUF4L) * (FilesToGet + 1),
@@ -652,29 +765,38 @@ static BOOL insert_grepfile(GREP *grep, CHAR *filename, PFILEFINDBUF4L pffb)
 	  return FALSE;
 	}
       }
+
       grep->insertffb[grep->toinsert] =
 	xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);
       if (!grep->insertffb[grep->toinsert])
 	return FALSE;
       memcpy(grep->insertffb[grep->toinsert], pffb, sizeof(FILEFINDBUF4L));
+
       grep->dir[grep->toinsert] = xstrdup(szDirectory, pszSrcFile, __LINE__);
       if (!grep->dir) {
 	free(grep->insertffb[grep->toinsert]);
 	return FALSE;
       }
+
       grep->insertedbytes += pffb->cbFile + CBLIST_TO_EASIZE(pffb->cbList);
       grep->toinsert++;
       if (grep->toinsert == FilesToGet)
-	return doinsertion(grep);
+	return DoInsertion(grep, pitdSleep, pitdReport);
       return TRUE;
     }
   }
-  else
-    freegreplist(grep);
   return FALSE;
 }
 
-static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
+/**
+ * Check file matches search criteria
+ */
+
+static BOOL DoOneFile(GREP *grep,
+		      CHAR *pszFileName,
+		      FILEFINDBUF4L *pffb,
+		      ITIMER_DESC *pitdSleep,
+		      ITIMER_DESC *pitdReport)
 {
   // process a single file
   CHAR *input;
@@ -683,8 +805,14 @@ static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
   BOOL ret = FALSE, strmatch = FALSE;
 
   grep->fileCount++;
-  if (grep->sayfiles)
-    WinSetWindowText(grep->hwndCurFile, filename);
+  if (grep->sayfiles) {
+    if (!hwndStatus)
+      WinSetWindowText(grep->hwndCurFile, pszFileName);
+    else {
+      if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+	WinSetWindowText(hwndStatus, pszFileName);
+    }
+  }
 
   if (grep->greaterthan || grep->lessthan) {
 
@@ -723,7 +851,7 @@ static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
   }
 
   if ((!grep->searchEAs && !grep->searchFiles) || !*grep->searchPattern)	// just a find
-    return insert_grepfile(grep, filename, pffb);
+    return InsertGrepFile(grep, pszFileName, pffb, pitdSleep, pitdReport);
 
   if (grep->searchEAs) {
 
@@ -732,23 +860,25 @@ static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
     BOOL alltext;
     CHAR *data, temp;
 
-    head = GetFileEAs(filename, FALSE, TRUE);
+    head = GetFileEAs(pszFileName, FALSE, TRUE);
     if (head) {
       info = head;
       while (info && !strmatch) {
 	alltext = TRUE;
-	switch (*(USHORT *) info->value) {
+	switch (*(USHORT *)info->value) {
 	case EAT_ASCII:
 	  if (match(info->value + (sizeof(USHORT) * 2),
 		    grep->searchPattern, grep->absFlag,
-		    (grep->caseFlag == FALSE),
+		    grep->caseFlag == FALSE,
 		    info->cbValue - (sizeof(USHORT) * 2),
-		    grep->numlines, grep->matched, !grep->findifany)) {
+		    grep->numlines,
+		    grep->matched,
+		    !grep->findifany)) {
 	    strmatch = TRUE;
 	  }
 	  break;
 	case EAT_MVST:
-	  type = *(USHORT *) (info->value + (sizeof(USHORT) * 3));
+	  type = *(USHORT *)(info->value + (sizeof(USHORT) * 3));
 	  if (type == EAT_ASCII) {
 	    data = info->value + (sizeof(USHORT) * 4);
 	    len = *(USHORT *) data;
@@ -828,7 +958,7 @@ static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
 	info = info->next;
       }					// while
       Free_FEAList(head);
-      DosSleep(1);
+      // DosSleep(1);			// 07 Feb 08 SHL
     }
   }
 
@@ -837,7 +967,7 @@ static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
     if (input) {
       LONG len;
 
-      inputFile = _fsopen(filename, "rb", SH_DENYNO);
+      inputFile = _fsopen(pszFileName, "rb", SH_DENYNO);
       if (inputFile) {
 	pos = ftell(inputFile);
 	while (!feof(inputFile)) {
@@ -862,16 +992,16 @@ static BOOL doonefile(GREP *grep, CHAR *filename, FILEFINDBUF4L * pffb)
 	fclose(inputFile);
       }
       free(input);
-      DosSleep(1);
+      // DosSleep(1);			// 07 Feb 08 SHL
     }
   } // if
 
   if (strmatch)
-    ret = insert_grepfile(grep, filename, pffb);
+    ret = InsertGrepFile(grep, pszFileName, pffb, pitdSleep, pitdReport);
   return ret;
 }
 
-static LONG cr3tab[] = {	// CRC polynomial 0xEDB88320
+static LONG cr3tab[] = {		// CRC polynomial 0xEDB88320
 
   0x00000000, 0x77073096, 0xee0e612c, 0x990951ba,
   0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
@@ -939,7 +1069,7 @@ static LONG cr3tab[] = {	// CRC polynomial 0xEDB88320
   0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-LONG CRCBlock(register CHAR * str, register INT blklen, register LONG crc)
+LONG CRCBlock(register CHAR *str, register INT blklen, register LONG crc)
 {
   while (blklen--) {
     crc =
@@ -949,7 +1079,7 @@ LONG CRCBlock(register CHAR * str, register INT blklen, register LONG crc)
   return crc;
 }
 
-LONG CRCFile(CHAR * filename, INT * error)
+LONG CRCFile(CHAR *pszFileName, INT *error)
 {
   LONG CRC = -1L, len;
   FILE *fp;
@@ -960,7 +1090,7 @@ LONG CRCFile(CHAR * filename, INT * error)
   if (!buffer)
     *error = -1;
   else {
-    fp = _fsopen(filename, "rb", SH_DENYNO);
+    fp = _fsopen(pszFileName, "rb", SH_DENYNO);
     if (!fp)
       *error = -2;
     else {
@@ -970,10 +1100,10 @@ LONG CRCFile(CHAR * filename, INT * error)
 	  CRC = CRCBlock(buffer, len, CRC);
 	else
 	  break;
-	DosSleep(0); //26 Aug 07 GKY 1
+	// DosSleep(0); //26 Aug 07 GKY 1	// 07 Feb 08 SHL
       }
       fclose(fp);
-      DosSleep(1);
+      // DosSleep(1);			// 07 Feb 08 SHL
     }
     free(buffer);
   }
@@ -1000,7 +1130,7 @@ static VOID FreeDupes(GREP *grep)
   grep->dupesizes = grep->dupenames = NULL;
 }
 
-int comparenamesq(const void *v1, const void *v2)
+INT comparenamesq(const VOID *v1, const VOID *v2)
 {
   DUPES *d1 = *(DUPES **) v1;
   DUPES *d2 = *(DUPES **) v2;
@@ -1019,12 +1149,12 @@ int comparenamesq(const void *v1, const void *v2)
   return stricmp(p1, p2);
 }
 
-int comparenamesqe(const void *v1, const void *v2)
+INT comparenamesqe(const VOID *v1, const VOID *v2)
 {
   DUPES *d1 = *(DUPES **) v1;
   DUPES *d2 = *(DUPES **) v2;
   CHAR *p1, *p2, *p1e, *p2e, e1, e2;
-  int ret;
+  INT ret;
 
   p1 = strrchr(d1->name, '\\');
   if (p1)
@@ -1054,7 +1184,7 @@ int comparenamesqe(const void *v1, const void *v2)
   return ret;
 }
 
-int comparesizesq(const void *v1, const void *v2)
+INT comparesizesq(const void *v1, const void *v2)
 {
   DUPES *d1 = *(DUPES **) v1;
   DUPES *d2 = *(DUPES **) v2;
@@ -1062,7 +1192,7 @@ int comparesizesq(const void *v1, const void *v2)
   return (d1->size > d2->size) ? 1 : (d1->size == d2->size) ? 0 : -1;
 }
 
-int comparenamesb(const void *v1, const void *v2)
+INT comparenamesb(const void *v1, const void *v2)
 {
   DUPES *d1 = (DUPES *) v1;
   DUPES *d2 = *(DUPES **) v2;
@@ -1081,12 +1211,12 @@ int comparenamesb(const void *v1, const void *v2)
   return stricmp(p1, p2);
 }
 
-int comparenamesbe(const void *v1, const void *v2)
+INT comparenamesbe(const VOID *v1, const VOID *v2)
 {
   DUPES *d1 = (DUPES *) v1;
   DUPES *d2 = *(DUPES **) v2;
   CHAR *p1, *p2, *p1e, *p2e, e1, e2;
-  int ret;
+  INT ret;
 
   p1 = strrchr(d1->name, '\\');
   if (p1)
@@ -1116,7 +1246,7 @@ int comparenamesbe(const void *v1, const void *v2)
   return ret;
 }
 
-int comparesizesb(const void *v1, const void *v2)
+INT comparesizesb(const VOID *v1, const VOID *v2)
 {
   DUPES *d1 = (DUPES *) v1;
   DUPES *d2 = *(DUPES **) v2;
@@ -1124,58 +1254,74 @@ int comparesizesb(const void *v1, const void *v2)
   return (d1->size > d2->size) ? 1 : (d1->size == d2->size) ? 0 : -1;
 }
 
-static VOID FillDupes(GREP * grep)
+static VOID FillDupes(GREP *grep,
+		      ITIMER_DESC *pitdSleep,
+		      ITIMER_DESC *pitdReport)
 {
   DUPES *c, *i, **r;
   register CHAR *pc, *pi;
   CHAR **list = NULL;
   UINT numfiles = 0, numalloced = 0;
   INT error;
-  register ULONG x = 0, y = 0;
-  ULONG cntr = 1000;
+  ULONG x;
+  ULONG y;
+  // ULONG cntr = 1000;			// 09 Feb 08 SHL
 
-  if (grep->CRCdupes)
-    cntr = 100;
-  i = grep->dupehead;
-  while (i) {
-    x++;
-    i = i->next;
-  }
+  // if (grep->CRCdupes)		// 09 Feb 08 SHL
+  //  cntr = 100;			// 09 Feb 08 SHL
+  x = 0;
+  for (i = grep->dupehead; i; i = i->next)
+    x++;				// Count
+
   if (x) {
-    WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPESORTINGTEXT));
-    DosSleep(0);  //26 Aug 07 GKY 1
+    if (!hwndStatus)
+      WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPESORTINGTEXT));
+    else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+      WinSetWindowText(hwndStatus, GetPString(IDS_GREPDUPESORTINGTEXT));
+    // DosSleep(0);  //26 Aug 07 GKY 1	// 07 Feb 08 SHL
     grep->dupenames = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (!grep->nosizedupes)
       grep->dupesizes = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (grep->dupenames && (grep->nosizedupes || grep->dupesizes)) {
-      i = grep->dupehead;
-      while (i) {
+      y = 0;
+      for (i = grep->dupehead; i; i = i->next) {
 	grep->dupenames[y] = i;
 	if (!grep->nosizedupes)
 	  grep->dupesizes[y] = i;
-	i = i->next;
 	y++;
       }
-      grep->dupenames[y] = NULL;
+      grep->dupenames[y] = NULL;	// Mark end
       if (!grep->nosizedupes)
 	grep->dupesizes[y] = NULL;
-      DosSleep(0); //26 Aug 07 GKY 1
+
+      InitITimer(pitdSleep, 0);		// Reset rate estimator
+      SleepIfNeeded(pitdSleep, 1);
+      // DosSleep(0); //26 Aug 07 GKY 1	// 07 Feb 08 SHL
+
       qsort(grep->dupenames,
 	    x,
 	    sizeof(DUPES *),
-	    ((grep->ignoreextdupes) ? comparenamesqe : comparenamesq));
-      DosSleep(0); //26 Aug 07 GKY 1
+	    grep->ignoreextdupes ? comparenamesqe : comparenamesq);
+      SleepIfNeeded(pitdSleep, 1);
+      // DosSleep(0); //26 Aug 07 GKY 1	// 07 Feb 08 SHL
       if (!grep->nosizedupes) {
 	qsort(grep->dupesizes, x, sizeof(DUPES *), comparesizesq);
-	DosSleep(0); //26 Aug 07 GKY 1
+	SleepIfNeeded(pitdSleep, 1);
+	// DosSleep(0); //26 Aug 07 GKY 1	// 07 Feb 08 SHL
       }
-      WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
 
+      if (!hwndStatus)
+	WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+      else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+	WinSetWindowText(hwndStatus, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+
+      InitITimer(pitdSleep, 0);		// Reset rate estimator
       i = grep->dupehead;
       y = 0;
       while (i) {
 	if (*grep->stopflag)
 	  break;
+	SleepIfNeeded(pitdSleep, 1);	// 07 Feb 08 SHL
 	if (!(i->flags & GF_SKIPME)) {
 	  r = (DUPES **) bsearch(i, grep->dupenames, x, sizeof(DUPES *),
 				 ((grep->ignoreextdupes) ? comparenamesbe :
@@ -1215,8 +1361,12 @@ static VOID FillDupes(GREP * grep)
 	      }
 	      if (!AddToList((*r)->name, &list, &numfiles, &numalloced)) {
 		(*r)->flags |= GF_INSERTED;
-		if (grep->sayfiles)
-		  WinSetWindowText(grep->hwndFiles, (*r)->name);
+		if (grep->sayfiles) {
+		  if (!hwndStatus)
+		    WinSetWindowText(grep->hwndFiles, (*r)->name);
+		  else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+		    WinSetWindowText(hwndStatus, (*r)->name);
+		}
 		if ((*r)->size == i->size &&
 		    (i->date.year == (*r)->date.year &&
 		     i->date.month == (*r)->date.month &&
@@ -1276,8 +1426,12 @@ static VOID FillDupes(GREP * grep)
 		  }
 		}
 		if (!AddToList((*r)->name, &list, &numfiles, &numalloced)) {
-		  if (grep->sayfiles)
-		    WinSetWindowText(grep->hwndCurFile, (*r)->name);
+		  if (grep->sayfiles) {
+		    if (!hwndStatus)
+		      WinSetWindowText(grep->hwndCurFile, (*r)->name);
+		    else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+		      WinSetWindowText(hwndStatus, (*r)->name);
+		  }
 		  (*r)->flags |= GF_INSERTED;
 		  if (((grep->ignoreextdupes) ?
 		       comparenamesqe(r, &i) : comparenamesq(r, &i)))
@@ -1297,21 +1451,27 @@ static VOID FillDupes(GREP * grep)
 	}
 	i = i->next;
 	y++;
-	if (!(y % cntr)) {
-
+	// 08 Feb 08 SHL
+	if (IsITimerExpired(pitdReport)) {
 	  CHAR s[44];
-
 	  sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, grep->numfiles);
-	  WinSetWindowText(grep->hwndCurFile, s);
-	  DosSleep(1);		//05 Aug 07 GKY 128
+	  if (!hwndStatus)
+	    WinSetWindowText(grep->hwndCurFile, s);
+	  else {
+	    if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+	      WinSetWindowText(hwndStatus, s);
+	  }
 	}
-	DosSleep(0); //26 Aug 07 GKY 1
-      }
+	// DosSleep(0); //26 Aug 07 GKY 1
+      } // while
     }
     else {
-      // Insufficient memory - fall back
+      // Insufficient memory - fall back to slow method - fixme to saymsg?
       DosBeep(50, 100);
-      WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+      if (!hwndStatus)
+	WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+      else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+	WinSetWindowText(hwndStatus, GetPString(IDS_GREPDUPECOMPARINGTEXT));
       x = y = 0;
       if (grep->dupenames) {
 	free(grep->dupenames);
@@ -1321,18 +1481,23 @@ static VOID FillDupes(GREP * grep)
 	free(grep->dupesizes);
 	grep->dupesizes = NULL;
       }
+
+      InitITimer(pitdSleep, 0);		// Reset rate estimator
       i = grep->dupehead;
       while (i) {
 	if (*grep->stopflag)
 	  break;
+	SleepIfNeeded(pitdSleep, 1);
 	if (!(i->flags & GF_SKIPME)) {
-	  if (!(y % cntr)) {
-
+	  if (IsITimerExpired(pitdReport)) {
+	    // if (!(y % cntr)) { }
 	    CHAR s[44];
-
 	    sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, grep->numfiles);
-	    WinSetWindowText(grep->hwndCurFile, s);
-	    DosSleep(0); //26 Aug 07 GKY 1
+	    if (!hwndStatus)
+	      WinSetWindowText(grep->hwndCurFile, s);
+	    else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+	      WinSetWindowText(hwndStatus, s);
+	    // DosSleep(0); //26 Aug 07 GKY 1	// 07 Feb 08 SHL
 	  }
 	  y++;
 	  pi = strrchr(i->name, '\\');
@@ -1382,8 +1547,12 @@ static VOID FillDupes(GREP * grep)
 		  if (AddToList(i->name, &list, &numfiles, &numalloced))
 		    goto BreakOut;	// Failed
 		}
-		if (grep->sayfiles)
-		  WinSetWindowText(grep->hwndCurFile, pc);
+		if (grep->sayfiles) {
+		  if (!hwndStatus)
+		    WinSetWindowText(grep->hwndCurFile, pc);
+		  else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+		    WinSetWindowText(hwndStatus, pc);
+		}
 		c->flags |= GF_INSERTED;
 		i->flags |= GF_INSERTED;
 		if (!stricmp(pc, pi)) {
@@ -1391,21 +1560,23 @@ static VOID FillDupes(GREP * grep)
 		  i->flags |= GF_SKIPME;
 		}
 	      }
-	      else if (!(x % 100))
-		DosSleep(0);  //26 Aug 07 GKY 1
+	      // else if (!(x % 100))	// 07 Feb 08 SHL
+	      //	DosSleep(0);  //26 Aug 07 GKY 1	// 07 Feb 08 SHL
 	    }
 	    c = c->next;
 	  }
 	}
 	i = i->next;
-      }
+      } // while
     }
   }
 BreakOut:
   FreeDupes(grep);
   if (numfiles && list) {
     if (!PostMsg(grep->hwndFiles,
-		 WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(list)))
+		 WM_COMMAND,
+		 MPFROM2SHORT(IDM_COLLECTOR, 0),
+		 MPFROMP(list)))
       FreeList(list);
   }
   else
@@ -1442,9 +1613,9 @@ static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4L *pffb)
   return TRUE;
 }
 
-#pragma alloc_text(GREP,insert_grepfile,doonefile,doinsertion,freegreplist)
+#pragma alloc_text(GREP,InsertGrepFile,DoOneFile,DoInsertion,freegreplist)
 #pragma alloc_text(GREP,SecsSince1980,match,mmatch,GrepThread)
-#pragma alloc_text(GREP,doallsubdirs,domatchingfiles,InsertDupes,FreeDupes)
+#pragma alloc_text(GREP,DoAllSubdirs,DoMatchingFiles,InsertDupes,FreeDupes)
 
 #pragma alloc_text(DUPES,InsertDupe,FillDupes,FreeDupes,CRCFile,CRCBlock)
 #pragma alloc_text(DUPES,comparenamesq,comparenamesqe,comparenamesb)

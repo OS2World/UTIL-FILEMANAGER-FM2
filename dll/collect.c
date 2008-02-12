@@ -241,8 +241,8 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    s = GetPString(IDS_DIRCNRSORTHELP);
 	    break;
 	  case DIR_FILTER:
-            s = GetPString(IDS_DIRCNRFILTERHELP);
-            break;
+	    s = GetPString(IDS_DIRCNRFILTERHELP);
+	    break;
 	  default:
 	    break;
 	  }
@@ -1144,29 +1144,25 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  else
 	    PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
 	}
-	if (!fMoreButtons) {
-	  sprintf(s, " %s%s%s%s",
-		  dcd->amextracted ?
-		    GetPString(IDS_COLLECTINGTEXT) :
+	if (!dcd->amextracted) {
+	  if (!fMoreButtons) {
+	    sprintf(s, " %s%s%s%s",
 		    GetPString(IDS_COLLECTORTEXT),
-		  *dcd->mask.szMask || dcd->mask.antiattr ||
-		    dcd->mask.attrFile != ALLATTRS ? "  (" : NullStr,
-		  *dcd->mask.szMask ?
-		    dcd->mask.szMask :
-		    dcd->mask.antiattr ||
-		     dcd->mask.attrFile != ALLATTRS ?
-		      GetPString(IDS_ATTRTEXT) : NullStr,
-		  *dcd->mask.szMask || dcd->mask.antiattr ||
-		    dcd->mask.attrFile != ALLATTRS ?
-		    ")" : NullStr);
+		    *dcd->mask.szMask || dcd->mask.antiattr ||
+		      dcd->mask.attrFile != ALLATTRS ? "  (" : NullStr,
+		    *dcd->mask.szMask ?
+		      dcd->mask.szMask :
+		      dcd->mask.antiattr ||
+		       dcd->mask.attrFile != ALLATTRS ?
+			GetPString(IDS_ATTRTEXT) : NullStr,
+		    *dcd->mask.szMask || dcd->mask.antiattr ||
+		      dcd->mask.attrFile != ALLATTRS ?
+		      ")" : NullStr);
+	  }
+	  else
+	    strcpy(s, GetPString(IDS_COLLECTORTEXT));
+	  WinSetWindowText(hwndStatus, s);
 	}
-	else {
-	  strcpy(s,
-		dcd->amextracted ?
-		  GetPString(IDS_COLLECTINGTEXT) :
-		  GetPString(IDS_COLLECTORTEXT));
-	}
-	WinSetWindowText(hwndStatus, s);
 	if (!pci)
 	  pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS,
 			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
@@ -1218,8 +1214,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
 	}
 	else {
-	  if (hwndStatus2)
-	    WinSetWindowText(hwndStatus2, NullStr);
+	  if (hwndStatus2) {
+	    if (dcd->amextracted)
+	      WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
+	    else
+	      WinSetWindowText(hwndStatus2, NullStr);
+	  }
 	  if (fMoreButtons) {
 	    WinSetWindowText(hwndName, NullStr);
 	    WinSetWindowText(hwndDate, NullStr);
@@ -2674,58 +2674,58 @@ MRESULT EXPENTRY CollectorMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
   switch (msg) {
     case WM_MOUSEMOVE: {
       if (fOtherHelp) {
-        RECTL rectl;
-        SHORT i, sCurrentMenuitem;
-        SHORT MenuItems = 5;
-        SHORT asMenuIDs[5] = {IDM_GREP,
-              IDM_SEEALL,
-              IDM_CLEARCNR,
-              IDM_REMOVE,
-              0};
-        char *szHelpString = NULL;
+	RECTL rectl;
+	SHORT i, sCurrentMenuitem;
+	SHORT MenuItems = 5;
+	SHORT asMenuIDs[5] = {IDM_GREP,
+	      IDM_SEEALL,
+	      IDM_CLEARCNR,
+	      IDM_REMOVE,
+	      0};
+	char *szHelpString = NULL;
 
 
-        for (i=0; i<MenuItems; i++) {
-          sCurrentMenuitem = asMenuIDs[i];
-          oldMenuProc(hwnd,MM_QUERYITEMRECT,
-                      MPFROM2SHORT(asMenuIDs[i], FALSE),
-                      &rectl);
+	for (i=0; i<MenuItems; i++) {
+	  sCurrentMenuitem = asMenuIDs[i];
+	  oldMenuProc(hwnd,MM_QUERYITEMRECT,
+		      MPFROM2SHORT(asMenuIDs[i], FALSE),
+		      &rectl);
 
-        if (MOUSEMSG(&msg)->x > rectl.xLeft &&
-            MOUSEMSG(&msg)->x < rectl.xRight &&
-            MOUSEMSG(&msg)->y > rectl.yBottom &&
-            MOUSEMSG(&msg)->y < rectl.yTop)
-           break;
-        }                      // for
+	if (MOUSEMSG(&msg)->x > rectl.xLeft &&
+	    MOUSEMSG(&msg)->x < rectl.xRight &&
+	    MOUSEMSG(&msg)->y > rectl.yBottom &&
+	    MOUSEMSG(&msg)->y < rectl.yTop)
+	   break;
+	}                      // for
 
 
-         switch (sCurrentMenuitem) {
-         case 0:
-           break;
-         case IDM_GREP:
-           szHelpString = GetPString(IDS_COLMENUSEEKSCANHELP);
-           break;
-         case IDM_SEEALL:
-           szHelpString = GetPString(IDS_COLMENUSEEALLHELP);
-           break;
-         case IDM_CLEARCNR:
-           szHelpString = GetPString(IDS_COLMENUCLEARCNRHELP);
-           break;
-         case IDM_REMOVE:
-           szHelpString = GetPString(IDS_COLMENUREMOVECNRHELP);
-           break;
-         default:
-           break;
-         }
+	 switch (sCurrentMenuitem) {
+	 case 0:
+	   break;
+	 case IDM_GREP:
+	   szHelpString = GetPString(IDS_COLMENUSEEKSCANHELP);
+	   break;
+	 case IDM_SEEALL:
+	   szHelpString = GetPString(IDS_COLMENUSEEALLHELP);
+	   break;
+	 case IDM_CLEARCNR:
+	   szHelpString = GetPString(IDS_COLMENUCLEARCNRHELP);
+	   break;
+	 case IDM_REMOVE:
+	   szHelpString = GetPString(IDS_COLMENUREMOVECNRHELP);
+	   break;
+	 default:
+	   break;
+	 }
 
-        if (sLastMenuitem != sCurrentMenuitem && szHelpString) {
-          sLastMenuitem = sCurrentMenuitem;
-          MakeBubble(hwnd, TRUE, szHelpString);
-        }
-        else if (hwndBubble && !sCurrentMenuitem){
-          sLastMenuitem = sCurrentMenuitem;
-          WinDestroyWindow(hwndBubble);
-        }
+	if (sLastMenuitem != sCurrentMenuitem && szHelpString) {
+	  sLastMenuitem = sCurrentMenuitem;
+	  MakeBubble(hwnd, TRUE, szHelpString);
+	}
+	else if (hwndBubble && !sCurrentMenuitem){
+	  sLastMenuitem = sCurrentMenuitem;
+	  WinDestroyWindow(hwndBubble);
+	}
       }
     }
   }
@@ -2807,14 +2807,14 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	Collector = dcd->hwndCnr;
 	WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
 	WinSetWindowText(hwndFrame, GetPString(IDS_COLLECTORTITLETEXT));
-        if (FrameFlags & FCF_MENU) {
-          PFNWP oldmenuproc;
-          HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
+	if (FrameFlags & FCF_MENU) {
+	  PFNWP oldmenuproc;
+	  HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
 
 	  oldmenuproc = WinSubclassWindow(hwndMenu, (PFNWP) CollectorMenuProc);
 	  WinSetWindowPtr(hwndMenu, QWL_USER, (PVOID) oldmenuproc);
 	  if (!fToolbar) {
-            if (hwndMenu) {
+	    if (hwndMenu) {
 
 	      WinSendMsg(hwndMenu,
 			 MM_DELETEITEM,

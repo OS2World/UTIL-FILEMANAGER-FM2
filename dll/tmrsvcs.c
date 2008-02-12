@@ -20,20 +20,30 @@
 
 /**
  * Prepare interval timer descriptor for use
+ * Call with interval 0 to to reset internal estimators
  * @param pTD point to interval timer descriptor
  * @param interval_msec is the timer interval in msec or 0 to retain existing value
  */
 
 VOID InitITimer(ITIMER_DESC *pitd, UINT interval_msec)
 {
-  if (interval_msec)
+  if (interval_msec) {
+    // Assume starting new loop at similar rate
     pitd->interval_msec = interval_msec;
-  pitd->remaining = pitd->estimated;
+    pitd->remaining = pitd->estimated;
+  }
+  else {
+    // Assume loop rate is changing to a significantly lower value
+    pitd->remaining = 0;
+    pitd->estimated = 1;		// Force rate recalc
+  }
   DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &pitd->start_msec, sizeof(pitd->start_msec));
 }
 
 /**
  * Check timer interval expired
+ * Attempts to optimize calls to fetch QSV_MS_COUNT
+ * Caller should reinit if processing rate changes
  * @return TRUE if expired
  */
 

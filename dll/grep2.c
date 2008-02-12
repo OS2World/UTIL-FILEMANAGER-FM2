@@ -777,6 +777,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!hwndCollect)
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
+	// 07 Feb 08 SHL - fixme to malloc and free in thread
 	static GREP g;		// Passed to thread
 
 	p = xmalloc(8192 + 512, pszSrcFile, __LINE__);
@@ -914,9 +915,9 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	g.hwndFiles = hwndCollect;
 	g.hwnd = WinQueryWindow(hwndCollect, QW_PARENT);
 	g.hwndCurFile = WinWindowFromID(g.hwnd, DIR_SELECTED);
-	g.attrFile = ((DIRCNRDATA *) INSTDATA(hwndCollect))->mask.attrFile;
-	g.antiattr = ((DIRCNRDATA *) INSTDATA(hwndCollect))->mask.antiattr;
-	g.stopflag = &((DIRCNRDATA *) INSTDATA(hwndCollect))->stopflag;
+	g.attrFile = ((DIRCNRDATA *)INSTDATA(hwndCollect))->mask.attrFile;
+	g.antiattr = ((DIRCNRDATA *)INSTDATA(hwndCollect))->mask.antiattr;
+	g.stopflag = &((DIRCNRDATA *)INSTDATA(hwndCollect))->stopflag;
 	if (_beginthread(GrepThread, NULL, 524280, (PVOID) & g) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
@@ -924,11 +925,11 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
-	else
-	  DosSleep(100); //05 Aug 07 GKY 128
+	DosSleep(100); //05 Aug 07 GKY 128
 	free(p);
       }
       if (changed) {
+	// Grep mask list changed
 	SHORT x;
 
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,

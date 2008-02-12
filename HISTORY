@@ -24,6 +24,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Moved command line, system and bookshelf to submenus on the utilities menu (Gregg)
  o Restore no-prescan drives if restoring named state
    This reverts to orginal behavior for named states
+ o Rework collector progress reporting and improve performance (ticket #79)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

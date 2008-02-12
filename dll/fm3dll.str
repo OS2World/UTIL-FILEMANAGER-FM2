@@ -168,12 +168,12 @@ FM/2: Select a directory -- move target
 FM/2: Select a directory -- extract
 FM/2: Select directories to compare
 FM/2: Set directories
-DUPE: Reading files
-SCAN: Searching
+Find dups reading files
+Grep searching for files
 Inserting...
-DUPE: Sorting...
-DUPE: Comparing...
-DUPE: Checked %lu of %lu
+Find dups sorting...
+Find dups comparing...
+Checked %lu of %lu for dups
 Help
 Enter the desired text, then click Okay.
 Pick codepage:

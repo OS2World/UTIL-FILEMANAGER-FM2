@@ -197,7 +197,7 @@ void CommonCreateTextChildren(HWND hwnd, char *class, USHORT * ids)
 			      HWND_TOP, ids[x], NULL, NULL);
     if (!hwndTmp)
       Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
-  }					// for
+  } // for
 }
 
 void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
@@ -335,6 +335,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
   PFNWP oldproc;
 
   // Create a children of frame window
+  // Left status window
   hwndStatus = WinCreateWindow(hwndFrame,
 			       WC_STATUS,
 			       "Status",
@@ -354,6 +355,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
   if (!hwndStatus)
     Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
+  // Right status window
   hwndStatus2 = WinCreateWindow(hwndFrame,
 				WC_STATUS,
 				"Status2",
