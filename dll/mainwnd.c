@@ -5587,7 +5587,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       ULONG size = sizeof(SWP);
 
       WinQueryWindowPos(hwnd, &swp);
-      hwndTree = StartTreeCnr(hwnd, 0);
+      hwndTree = StartTreeCnr(hwnd, 4);
       if (!hwndTree)
 	WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
       else {

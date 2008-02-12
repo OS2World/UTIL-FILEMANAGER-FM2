@@ -2929,9 +2929,12 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
   /* bitmapped flags:
    * 0x00000001 = don't close app when window closes
    * 0x00000002 = no frame controls
+   * 0x00000004 = no close or move button
    */
 
-  HWND hwndFrame = (HWND) 0, hwndSysMenu, hwndClient;
+  HWND hwndFrame = NULLHANDLE;
+  HWND hwndSysMenu = NULLHANDLE;
+  HWND hwndClient;
   ULONG FrameFlags = FCF_TITLEBAR | FCF_SYSMENU |
     FCF_SIZEBORDER | FCF_MINMAX | FCF_ICON | FCF_NOBYTEALIGN | FCF_ACCELTABLE;
   DIRCNRDATA *dcd;
@@ -2950,11 +2953,17 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
                                  FM3ModHandle, TREE_FRAME, &hwndClient);
-  hwndSysMenu = WinWindowFromID(hwndFrame, FID_SYSMENU);
-  if (hwndSysMenu != NULLHANDLE)
-  WinSendMsg(hwndSysMenu, MM_SETITEMATTR,
-             MPFROM2SHORT(SC_CLOSE, TRUE),
-             MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
+  if (flags & 4) {
+    hwndSysMenu = WinWindowFromID(hwndFrame, FID_SYSMENU);
+    if (hwndSysMenu != NULLHANDLE)
+      WinSendMsg(hwndSysMenu, MM_SETITEMATTR,
+                 MPFROM2SHORT(SC_CLOSE, TRUE),
+                 MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
+    if (!fFreeTree)
+      WinSendMsg(hwndSysMenu, MM_SETITEMATTR,
+                 MPFROM2SHORT(SC_MOVE, TRUE),
+                 MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
+  }
   if (hwndFrame && hwndClient) {
     dcd = xmalloc(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
@@ -3057,8 +3066,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	// DbgMsg(pszSrcFile, __LINE__, "oldproc subclass %X", dcd->oldproc);	// 05 Jul 07 SHL
 	// fixme to document 01 test?
 	if (dcd->oldproc == 0)
-	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		     "WinSubclassWindow");
+	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	            "WinSubclassWindow");
 	if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
       }
