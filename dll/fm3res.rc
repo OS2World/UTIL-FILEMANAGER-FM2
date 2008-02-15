@@ -1374,8 +1374,7 @@ MENU COLLECTORFILE_POPUP
     MENUITEM "",                -1,               MIS_SEPARATOR
     MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
     MENUITEM "~Hide objects",   IDM_HIDEALL
-    MENUITEM "~Remove objects", IDM_REMOVE
-    MENUITEM "",                -1,               MIS_SEPARATOR
+    MENUITEM "",                  -1,                 MIS_SEPARATOR
     MENUITEM "~Multimedia\tCtrl + l", IDM_MCIPLAY
   }
   SUBMENU "~Edit",              IDM_EDITSUBMENU
@@ -1426,6 +1425,7 @@ MENU COLLECTORFILE_POPUP
 
 MENU COLLECTORDIR_POPUP
 {
+  MENUITEM "~Info...\tCtrl + i",    IDM_INFO
   MENUITEM "~Rename...\tCtrl + r",    IDM_RENAME
   SUBMENU  "~Copy",                   IDM_COPYMENU
   {
@@ -1442,14 +1442,6 @@ MENU COLLECTORDIR_POPUP
     MENUITEM "Move and ~rename...",IDM_WILDMOVE
     MENUITEM "",                      -1,           MIS_SEPARATOR
     MENUITEM "~WPS move...",           IDM_WPSMOVE
-  }
-  SUBMENU "~View",              IDM_VIEWSUBMENU
-  {
-    MENUITEM "~Info...\tCtrl + i",    IDM_INFO
-    MENUITEM "",                -1,               MIS_SEPARATOR
-    MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
-    MENUITEM "~Hide objects",   IDM_HIDEALL
-    MENUITEM "~Remove objects", IDM_REMOVE
   }
   SUBMENU "~Edit",            IDM_EDITSUBMENU
   {
@@ -1485,6 +1477,9 @@ MENU COLLECTORDIR_POPUP
     MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
     MENUITEM "Undelete...",     IDM_UNDELETE
     MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
+    MENUITEM "",                -1,               MIS_SEPARATOR
+    MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
+    MENUITEM "~Hide objects",   IDM_HIDEALL
   }
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "~Delete",            IDM_DELETESUBMENU
@@ -1526,11 +1521,16 @@ MENU COLLECTORCNR_POPUP
     MENUITEM "From ~clipboard",IDM_COLLECTFROMCLIP
     MENUITEM "From a ~list file",IDM_COLLECTSELECT
   }
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "Clear container",   IDM_CLEARCNR
+  MENUITEM "~Remove objects", IDM_REMOVE
+  MENUITEM "~Hide objects",   IDM_HIDEALL
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "Seek & scan files\tCtrl + g",   IDM_GREP
   MENUITEM "Stop seek & scan\tEsc",DID_CANCEL
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "~See all files...", IDM_SEEALL
+  MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   SUBMENU "Select\tCtrl + F8",    IDM_SELECTSUBMENU
   {
