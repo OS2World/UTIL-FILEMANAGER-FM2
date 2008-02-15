@@ -3665,8 +3665,8 @@ static VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy,
 	swp.x = 0;
       if (swp.y < 0)
 	swp.y = 0;
-      if (swp.x + swp.cx > Rectl.xRight - Rectl.xLeft)
-	swp.cx = Rectl.xRight - Rectl.xLeft;
+      if (swp.x + swp.cx > abs(Rectl.xRight - Rectl.xLeft))
+	swp.cx = abs(Rectl.xRight - Rectl.xLeft);
       WinSetWindowPos(hwndTree, HWND_TOP, swp.x, swp.y, swp.cx, swp.cy,
 		      SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_RESTORE);
     }
