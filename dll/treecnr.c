@@ -2953,7 +2953,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
                                  FM3ModHandle, TREE_FRAME, &hwndClient);
-  if (flags & 4) {
+  if (hwndParent != HWND_DESKTOP) {
     hwndSysMenu = WinWindowFromID(hwndFrame, FID_SYSMENU);
     if (hwndSysMenu != NULLHANDLE)
       WinSendMsg(hwndSysMenu, MM_SETITEMATTR,
