@@ -20,6 +20,7 @@
   27 Sep 07 SHL Correct ULONGLONG size formatting
   16 Nov 07 SHL Ensure fixup buffer sufficiently large
   30 Dec 07 GKY Use CommaFmtULL
+  16 Feb 08 GKY Changed _fsopen flag so a new list file can be created
 
 ***********************************************************************/
 
@@ -430,7 +431,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!pci || (INT) pci == -1)
 	  Runtime_Error(pszSrcFile, __LINE__, "no data");
 	else {
-	  fp = _fsopen(savename, "r+", SH_DENYWR);
+	  fp = _fsopen(savename, "w+", SH_DENYWR);
 	  if (!fp)
 	    Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
 	  else {
