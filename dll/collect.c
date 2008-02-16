@@ -44,6 +44,8 @@
   10 Jan 08 SHL Sync with CfgDlgProc mods
   10 Feb 08 GKY Implement bubble help for bitmap menu items
   15 Feb 08 SHL Sync with settings menu rework
+  15 Feb 08 GKY Fix attempt to free container items that were never inserted
+  15 Feb 08 GKY Fix "collect" so it updates recollected files and unhides them if needed
 
 ***********************************************************************/
 
@@ -590,17 +592,29 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  for (x = 0; li->list[x]; x++) {
 	    nm = 1;
 	    hdir = HDIR_CREATE;
-	    DosError(FERR_DISABLEHARDERR);
-	    if (*li->list[x] &&
+            DosError(FERR_DISABLEHARDERR);
+            if (FindCnrRecord(dcd->hwndCnr,
+			      li->list[x],
+			      NULL,
+			      FALSE,
+			      FALSE,
+                              TRUE)) {
+              pci = UpdateCnrRecord(dcd->hwndCnr, li->list[x], FALSE, dcd);
+              if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
+                pci->rc.flRecordAttr &= ~CRA_FILTERED;
+                WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
+                           MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
+              }
+              pci = (PCNRITEM) pci->rc.preccNextRecord;
+	      if (pciP)
+		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
+	      else
+                pciFirst = pci;
+            }
+	    else if (*li->list[x] &&
 		!DosQueryPathInfo(li->list[x], FIL_QUERYFULLNAME,
 				  fullname, sizeof(fullname)) &&
 		!IsRoot(fullname) &&
-		!FindCnrRecord(dcd->hwndCnr,
-			       fullname,
-			       NULL,
-			       FALSE,
-			       FALSE,
-			       TRUE) &&
 		!xDosFindFirst(fullname,
 			       &hdir,
 			       FILE_NORMAL | FILE_DIRECTORY |
@@ -608,14 +622,14 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			       FILE_HIDDEN | FILE_READONLY,
 			       &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL)) {
 	      DosFindClose(hdir);
-	      priority_normal();
-	      *fb4.achName = 0;
-	      ullTotalBytes = FillInRecordFromFFB(dcd->hwndCnr,
-						  pci,
-						  fullname, &fb4, FALSE, dcd);
-	      dcd->ullTotalBytes += ullTotalBytes;
-	      pciP = pci;
-	      pci = (PCNRITEM) pci->rc.preccNextRecord;
+              priority_normal();
+	        *fb4.achName = 0;
+	        ullTotalBytes = FillInRecordFromFFB(dcd->hwndCnr,
+		 				    pci,
+						    fullname, &fb4, FALSE, dcd);
+                dcd->ullTotalBytes += ullTotalBytes;
+	        pciP = pci;
+                pci = (PCNRITEM) pci->rc.preccNextRecord;
 	    }
 	    else {
 	      // Oops - fixme to complain?
@@ -624,8 +638,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      if (pciP)
 		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
 	      else
-		pciFirst = pci;
-	      FreeCnrItem(hwnd, pciT);
+                pciFirst = pci;
+              if (pciT)
+	        FreeCnrItemData(pciT); // FreeCnrItem(hwnd, pciT);
 	      ulMaxFiles--;		// Remember gone
 	    }
 	    SleepIfNeeded(&itdSleep, 1);	// 09 Feb 08 SHL
@@ -698,15 +713,31 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 		*p = 0;
 	    }
 	    /* fullname now contains name of file to collect */
-	    DosError(FERR_DISABLEHARDERR);
-	    if (IsFullName(fullname) &&
+            DosError(FERR_DISABLEHARDERR);
+            if (FindCnrRecord(dcd->hwndCnr,
+			      fullname,
+			      NULL,
+			      FALSE,
+			      FALSE,
+                              TRUE)) {
+              pci = UpdateCnrRecord(dcd->hwndCnr, fullname, FALSE, dcd);
+              if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
+                pci->rc.flRecordAttr &= ~CRA_FILTERED;
+                WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
+                           MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
+              }
+              /*pci = (PCNRITEM) pci->rc.preccNextRecord;
+	      if (pciP)
+		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
+	      else
+                pciFirst = pci;*/
+            }
+	    else if (IsFullName(fullname) &&
 		!IsRoot(fullname) &&
 		!DosQueryPathInfo(fullname,
 				  FIL_QUERYEASIZEL,
 				  &fs4,
-				  sizeof(fs4)) &&
-		!FindCnrRecord(dcd->hwndCnr,
-			       fullname, NULL, FALSE, FALSE, TRUE)) {
+				  sizeof(fs4)))  {
 	      /* collect it */
 	      pci = WinSendMsg(dcd->hwndCnr,
 			       CM_ALLOCRECORD,

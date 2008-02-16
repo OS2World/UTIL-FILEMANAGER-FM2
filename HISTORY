@@ -29,6 +29,11 @@ New stuff's at the top.  This list is not necessarily complete.
  o Add conditional cascade to main menu settings menu item (Steven)
  o Rework ResizeChildren to resize drive tree correctly (Steven)
  o Avoid trap in TreeCnrWndProc WM_SAVEAPPLICATION (Steven)
+ o Fix _fsopen failure when creating a new list file (Gregg)
+ o Stop collector from trying to remove container items that were never inserted (Gregg)
+ o Recollect of hidden items now updates the items and unhides them (Gregg)
+ o Put hide/remove etc menu options on collector "view" menu (Gregg)
+ o Fix trap in seeall cause by pathname(s) that exceed maxpath (Gregg)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,
