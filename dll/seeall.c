@@ -32,6 +32,7 @@
   27 Sep 07 SHL Correct ULONGLONG size formatting
   30 Dec 07 GKY Use CommaFmtULL
   30 Dec 07 GKY Use TestFDates for comparing by date
+  15 Feb 08 GKY Prevent trap on scan of drive containing files that exceed maxpath
 
 ***********************************************************************/
 
@@ -1892,8 +1893,9 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   ULONG ulBufBytes;
   ULONG x;
   APIRET rc;
+  static BOOL fDone;
 
-  filename = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
+  filename = xmalloc(CCHMAXPATH + 100, pszSrcFile, __LINE__);
   if (!filename)
     return;
 
@@ -1940,7 +1942,21 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	}
 	else {
 	  *enddir = 0;
-	  strcpy(enddir, pffbFile->achName);
+          strcpy(enddir, pffbFile->achName);
+          if (strlen(filename) > CCHMAXPATH) {
+	    // Complain if pathnames exceeds max
+	    DosFindClose(hdir);
+            free(pffbArray);
+            free(filename);
+	    if (!fDone) {
+	      fDone = TRUE;
+	      saymsg(MB_OK | MB_ICONASTERISK,
+		     HWND_DESKTOP,
+		     GetPString(IDS_WARNINGTEXT),
+		     "One or more of your files has a full path name that exceeds the OS/2 maximum");
+            }
+            return;
+	  }
 	  if (!ad->afalloc || ad->afheadcnt > ad->afalloc - 1) {
 
 	    ALLFILES *temp;
