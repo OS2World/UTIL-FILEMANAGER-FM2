@@ -39,6 +39,7 @@
   26 Nov 07 GKY Eliminate check of ext path on start up
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
   13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
+  12 Feb 08 SHL Compile OpenWatcom version into binary
 
 ***********************************************************************/
 
@@ -77,6 +78,15 @@
 
 extern int _CRT_init(void);
 extern void _CRT_term(void);
+
+#ifdef __WATCOMC__
+#define a(x) #x
+#define b(x) a(x)
+// Must be global to prevent warnings
+PSZ pszBuiltWith = "Built with OpenWatcom version " b(__WATCOMC__);
+#undef b
+#undef a
+#endif
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -830,9 +840,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
 		   WC_TOOLBACK,
-                   ToolBackProc,
-                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-                   sizeof(PVOID));
+		   ToolBackProc,
+		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+		   sizeof(PVOID));
   WinRegisterClass(hab,
 		   WC_DRIVEBACK,
 		   DriveBackProc,
@@ -1309,7 +1319,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SubjectLengthMax", &fSubjectLengthMax,
-                      &size);
+		      &size);
   if (fSubjectLengthMax)
     SubjectDisplayWidth = 0;
   else {
