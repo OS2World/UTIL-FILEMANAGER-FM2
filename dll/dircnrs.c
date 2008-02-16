@@ -33,6 +33,7 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Jan 08 SHL Sync with CfgDlgProc mods
   xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
+  15 Feb 08 SHL Sync with settings menu rework
 
 ***********************************************************************/
 
@@ -55,6 +56,7 @@
 #include "filldir.h"			// EmptyCnr...
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"			// CfgDlgProc
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -1831,7 +1833,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	break;
 
-      case IDM_NOTEBOOK:
+      case IDM_DIRCNRSETTINGS:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
 	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_DIRCNRSETTINGS), mp2);
 	else {

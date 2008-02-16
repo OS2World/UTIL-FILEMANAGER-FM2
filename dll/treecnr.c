@@ -43,6 +43,7 @@
   26 Aug 07 SHL Revert to DosSleep(0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Jan 08 SHL Sync with CfgDlgProc mods
+  15 Feb 08 SHL Sync with settings menu rework
 
 ***********************************************************************/
 
@@ -62,6 +63,7 @@
 #include "filldir.h"			// RemoveCnrItems...
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"			// CfgDlgProc
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -2372,16 +2374,16 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   IDM_SELECTSUBMENU);
 	break;
 
-      case IDM_NOTEBOOK:
+      case IDM_TREECNRVIEWSETTINGS:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
-	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_TREECNRSETTINGS), mp2);
+	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_TREECNRVIEWSETTINGS), mp2);
 	else {
 	  WinDlgBox(HWND_DESKTOP,
 		    hwnd,
 		    CfgDlgProc,
 		    FM3ModHandle,
 		    CFG_FRAME,
-		    MPFROMLONG(IDM_TREECNRSETTINGS));
+		    MPFROMLONG(IDM_TREECNRVIEWSETTINGS));
 	}
 	break;
 
@@ -2952,17 +2954,17 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 				 WC_TREECONTAINER,
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
-                                 FM3ModHandle, TREE_FRAME, &hwndClient);
+				 FM3ModHandle, TREE_FRAME, &hwndClient);
   if (hwndParent != HWND_DESKTOP) {
     hwndSysMenu = WinWindowFromID(hwndFrame, FID_SYSMENU);
     if (hwndSysMenu != NULLHANDLE)
       WinSendMsg(hwndSysMenu, MM_SETITEMATTR,
-                 MPFROM2SHORT(SC_CLOSE, TRUE),
-                 MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
+		 MPFROM2SHORT(SC_CLOSE, TRUE),
+		 MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
     if (!fFreeTree)
       WinSendMsg(hwndSysMenu, MM_SETITEMATTR,
-                 MPFROM2SHORT(SC_MOVE, TRUE),
-                 MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
+		 MPFROM2SHORT(SC_MOVE, TRUE),
+		 MPFROM2SHORT(MIA_DISABLED, MIA_DISABLED));
   }
   if (hwndFrame && hwndClient) {
     dcd = xmalloc(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
@@ -2978,7 +2980,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       if (*(ULONG *) realappname == FM3UL) {
 	if (!WinCreateWindow(hwndFrame,
 			     WC_TREEOPENBUTTON,
-                             "Op",
+			     "Op",
 			     WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
 			     ((swp.cx -
 			       WinQuerySysValue(HWND_DESKTOP,
@@ -3067,7 +3069,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	// fixme to document 01 test?
 	if (dcd->oldproc == 0)
 	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	            "WinSubclassWindow");
+		    "WinSubclassWindow");
 	if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
       }

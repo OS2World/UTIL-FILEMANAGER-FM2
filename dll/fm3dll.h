@@ -76,6 +76,7 @@
   05 Jan 08 SHL Move string.c definitions to strutil.h
   10 Jan 08 SHL Add UM_FIRSTTIME
   12 Jan 08 SHL Localize SpecialSelect to comp.c
+  14 Feb 08 SHL Refactor CfgDlgProc to notebook.h
 
 ***********************************************************************/
 
@@ -974,9 +975,6 @@ VOID WindowList(HWND hwnd);
 
 /* viewinf.c */
 MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* notebook.c */
-MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* commafmt.c */
 size_t commafmt(PSZ pszBuf, UINT cBufSize, LONG lNumber);

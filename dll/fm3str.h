@@ -740,7 +740,7 @@
 #define IDS_SELECTTYPEERRORTEXT                               740
 #define IDS_UNUSED1                                           741
 #define IDS_NOTEVIEWERS3TEXT                                  742
-#define IDS_NOTEVIEWERS4TEXT                                  743
+#define IDS_SPARE_743                                         743
 #define IDS_DEFDIRFILTERTITLETEXT                             744
 #define IDS_DEFCOLFILTERTITLETEXT                             745
 #define IDS_DONTFORGETTEXT                                    746

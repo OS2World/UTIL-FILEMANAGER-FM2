@@ -21,6 +21,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   10 Jan 08 SHL Sync with CfgDlgProc mods
   19 Jan 08 GKY Rework Utilities menu
+  14 Feb 08 SHL Rework to support settings menu conditional cascade
 
 ***********************************************************************/
 
@@ -42,6 +43,7 @@
 #include "arccnrs.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"			// CfgDlgProc
 #include "fm3dll.h"
 
 typedef struct
@@ -581,22 +583,35 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (pd->hwndMax)
 	  hwndFocus = pd->hwndMax;
 	else
-	  hwndFocus = (pd->hwndCurr == pd->hwndDir1) ?
-	    pd->hwndDir2 : pd->hwndDir1;
+	  hwndFocus = pd->hwndCurr == pd->hwndDir1 ?
+			pd->hwndDir2 : pd->hwndDir1;
       }
       WinSetFocus(HWND_DESKTOP, hwndFocus);
     }
     break;
 
   case IDM_NOTEBOOK:
-    // Indicate fm/2 lite
-    // 10 Jan 08 SHL fixme to have IDM_FM2LITE
+  case IDM_DIRCNRSETTINGS:
+  case IDM_DIRVIEWSETTINGS:
+  case IDM_DIRSORTSETTINGS:
+  case IDM_COLLECTORVIEWSETTINGS:
+  case IDM_COLLECTORSORTSETTINGS:
+  case IDM_ARCHIVERSETTINGS:
+  case IDM_TREECNRVIEWSETTINGS:
+  case IDM_TREECNRSORTSETTINGS:
+  case IDM_VIEWERSETTINGS:
+  case IDM_VIEWERSETTINGS2:
+  case IDM_COMPARESETTINGS:
+  case IDM_MONOLITHICSETTINGS:
+  case IDM_GENERALSETTINGS:
+  case IDM_SCANSETTINGS:
+  case IDM_BUBBLESSETTINGS:
     WinDlgBox(HWND_DESKTOP,
 	      hwnd,
 	      CfgDlgProc,
 	      FM3ModHandle,
 	      CFG_FRAME,
-	      MPFROMLONG(IDM_LITESETTINGS));
+	      MPFROMLONG(mp1));	// 15 Feb 08 SHL
     PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
     break;
 
@@ -754,8 +769,9 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	HWND hwndMenu;
 
 	hwndMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), FID_MENU);
-        WinSetWindowULong(hwnd, 0, hwndMenu);
-        SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
+	WinSetWindowULong(hwnd, QWL_USER, hwndMenu);
+	CfgMenuInit(hwndMenu, FALSE);	// 14 Feb 08 SHL
+	SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
 	SetConditionalCascade(hwndMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
 	SetConditionalCascade(hwndMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
       }

@@ -25,6 +25,8 @@ New stuff's at the top.  This list is not necessarily complete.
  o Restore no-prescan drives if restoring named state
    This reverts to orginal behavior for named states
  o Rework collector progress reporting and improve performance (ticket #79)
+ o Compile OpenWatcom version into binary
+ o Add conditional cascade to main menu settings menu item
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

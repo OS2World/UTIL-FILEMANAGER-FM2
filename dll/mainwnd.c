@@ -49,6 +49,7 @@
   17 Jan 08 GKY Add presparam save & restore for individual directory containers
   19 Jan 08 GKY Rework Utilities menu
   05 Feb 08 SHL Restore no-prescan drives if restoring named state
+  14 Feb 08 SHL Rework to support settings menu conditional cascade
 
 ***********************************************************************/
 
@@ -72,6 +73,7 @@
 #include "arccnrs.h"                    // BldQuotedFileName
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
+#include "notebook.h"			// CfgDlgProc CfgMenuInit
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -4689,11 +4691,20 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case IDM_NOTEBOOK:
   case IDM_DIRCNRSETTINGS:
-  case IDM_COLLECTORSETTINGS:
-  case IDM_TREECNRSETTINGS:
+  case IDM_DIRVIEWSETTINGS:
+  case IDM_DIRSORTSETTINGS:
+  case IDM_COLLECTORVIEWSETTINGS:
+  case IDM_COLLECTORSORTSETTINGS:
   case IDM_ARCHIVERSETTINGS:
+  case IDM_TREECNRVIEWSETTINGS:
+  case IDM_TREECNRSORTSETTINGS:
   case IDM_VIEWERSETTINGS:
+  case IDM_VIEWERSETTINGS2:
   case IDM_COMPARESETTINGS:
+  case IDM_MONOLITHICSETTINGS:
+  case IDM_GENERALSETTINGS:
+  case IDM_SCANSETTINGS:
+  case IDM_BUBBLESSETTINGS:
   case IDM_QUICKSETTINGS:
     WinDlgBox(HWND_DESKTOP,
 	      hwnd, CfgDlgProc, FM3ModHandle, CFG_FRAME, MPFROMLONG(mp1));
@@ -4980,10 +4991,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case IDM_HIDEMENU:
     {
-      HWND hwndMenu;
-
-      hwndMenu = WinQueryWindowULong(hwnd, QWL_USER);
-      MenuInvisible = (MenuInvisible) ? FALSE : TRUE;
+      HWND hwndMenu = WinQueryWindowULong(hwnd, QWL_USER);
+      MenuInvisible = MenuInvisible ? FALSE : TRUE;
       if (MenuInvisible) {
 	WinSetParent(hwndMenu, HWND_OBJECT, FALSE);
 	WinSetMenuItemText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
@@ -5518,6 +5527,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
     WinSendMsg(hwnd, UM_ADDTOMENU, MPVOID, MPVOID);
     SetToggleChecks(hwndMenu);
+    CfgMenuInit(hwndMenu, FALSE);	// 14 Feb 08 SHL
     SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
     SetConditionalCascade(hwndMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
     SetConditionalCascade(hwndMenu, IDM_AUTOVIEWSUBMENU, IDM_AUTOVIEW);

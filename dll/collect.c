@@ -43,6 +43,7 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Jan 08 SHL Sync with CfgDlgProc mods
   10 Feb 08 GKY Implement bubble help for bitmap menu items
+  15 Feb 08 SHL Sync with settings menu rework
 
 ***********************************************************************/
 
@@ -68,6 +69,7 @@
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
 #include "tmrsvcs.h"			// ITIMER_DESC
+#include "notebook.h"			// CfgDlgProc
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -1550,16 +1552,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	}
 	break;
 
-      case IDM_NOTEBOOK:
+      case IDM_COLLECTORVIEWSETTINGS:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
-	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_COLLECTORSETTINGS), mp2);
+	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_COLLECTORVIEWSETTINGS), mp2);
 	else {
 	  WinDlgBox(HWND_DESKTOP,
 		    hwnd,
 		    CfgDlgProc,
 		    FM3ModHandle,
 		    CFG_FRAME,
-		    MPFROMLONG(IDM_COLLECTORSETTINGS));
+		    MPFROMLONG(IDM_COLLECTORVIEWSETTINGS));
 	}
 	break;
 

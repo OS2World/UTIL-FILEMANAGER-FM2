@@ -25,6 +25,7 @@
   10 Jan 08 SHL Rework page select logic
   13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
   xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
+  15 Feb 08 SHL Rework to support settings menu conditional cascade.  Make more generic
 
 ***********************************************************************/
 
@@ -41,6 +42,7 @@
 #include "pathutil.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"
 #include "fm3dll.h"
 
 #pragma data_seg(DATA2)
@@ -48,6 +50,8 @@
 static PSZ pszSrcFile = __FILE__;
 
 static HWND hwndNotebook;
+
+static VOID SaveLastPageIndex(HWND hwnd);
 
 MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -655,7 +659,7 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     { // fixme these strings can be longer than CCHMAXPATH since
       // they contain args.
       CHAR szCLBuf[MAXCOMLINESTRG], szPathBuf[CCHMAXPATH];
-      PSZ  pszWorkBuf;
+      PSZ pszWorkBuf;
 
       pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
       WinQueryDlgItemText(hwnd, CFGH_RUNHTTPWORKDIR, CCHMAXPATH, szPathBuf);
@@ -2124,7 +2128,7 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  &dcd.detailsattr, sizeof(BOOL));
       dcd.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
       PrfWriteProfileData(fmprof, appname, "Collector.SubjectInLeftPane",
-	 		  &dcd.fSubjectInLeftPane, sizeof(BOOL));
+			  &dcd.fSubjectInLeftPane, sizeof(BOOL));
       dcd.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
       PrfWriteProfileData(fmprof, appname, "Collector.SubjectLengthMax",
 			  &dcd.fSubjectLengthMax, sizeof(BOOL));
@@ -2960,23 +2964,25 @@ struct
   ULONG ulPageId;
 } np[] = {
   { IDM_DIRCNRSETTINGS, CFGD_FRAME, IDS_NOTEDIRCNRS1TEXT, CfgDDlgProc, 0, 0, 0 },
-  { 0, CFG5_FRAME, IDS_NOTEDIRVIEW1TEXT, Cfg5DlgProc, 0, 0, 0},
-  { 0, CFG6_FRAME, IDS_NOTEDIRSORT1TEXT, Cfg6DlgProc, 0, 0, 0 },
-  { IDM_COLLECTORSETTINGS, CFG5_FRAME, IDS_NOTECOLVIEW1TEXT, Cfg7DlgProc, 0, 0, 0 },
-  { 0, CFG6_FRAME, IDS_NOTECOLSORT1TEXT, Cfg8DlgProc, 0, 0, 0 },
+  { IDM_DIRVIEWSETTINGS, CFG5_FRAME, IDS_NOTEDIRVIEW1TEXT, Cfg5DlgProc, 0, 0, 0},
+  { IDM_DIRSORTSETTINGS, CFG6_FRAME, IDS_NOTEDIRSORT1TEXT, Cfg6DlgProc, 0, 0, 0 },
+  { IDM_COLLECTORVIEWSETTINGS, CFG5_FRAME, IDS_NOTECOLVIEW1TEXT, Cfg7DlgProc, 0, 0, 0 },
+  { IDM_COLLECTORSORTSETTINGS, CFG6_FRAME, IDS_NOTECOLSORT1TEXT, Cfg8DlgProc, 0, 0, 0 },
   { IDM_ARCHIVERSETTINGS, CFGA_FRAME, IDS_NOTEARCHIVER1TEXT, CfgADlgProc, 0, 0, 0 },
-  { 0, CFGT_FRAME, IDS_NOTETREE1TEXT, CfgTDlgProc, 0, 0, 0 },
-  { 0, CFGTS_FRAME, IDS_NOTETREESORT1TEXT, CfgTSDlgProc, 0, 0, 0 },
-  { 0, CFGV_FRAME, IDS_NOTEVIEWERS1TEXT, CfgVDlgProc, 0, 0, 0 },
-  { IDM_VIEWERSETTINGS, CFGH_FRAME, IDS_NOTEVIEWERS3TEXT, CfgHDlgProc, 0, 0, 0 },
+  { IDM_TREECNRVIEWSETTINGS, CFGT_FRAME, IDS_NOTETREE1TEXT, CfgTDlgProc, 0, 0, 0 },
+  { IDM_TREECNRSORTSETTINGS, CFGTS_FRAME, IDS_NOTETREESORT1TEXT, CfgTSDlgProc, 0, 0, 0 },
+  { IDM_VIEWERSETTINGS, CFGV_FRAME, IDS_NOTEVIEWERS1TEXT, CfgVDlgProc, 0, 0, 0 },
+  { IDM_VIEWERSETTINGS2, CFGH_FRAME, IDS_NOTEVIEWERS3TEXT, CfgHDlgProc, 0, 0, 0 },
   { IDM_COMPARESETTINGS, CFGC_FRAME, IDS_NOTECOMPARE1TEXT, CfgCDlgProc, 0, 0, 0 },
-  { 0, CFGM_FRAME, IDS_NOTEMONOLITHIC1TEXT, CfgMDlgProc, 0, 0, 0 },
-  { 0, CFGG_FRAME, IDS_NOTEGENERAL1TEXT, CfgGDlgProc, 0, 0, 0 },
-  { 0, CFGS_FRAME, IDS_NOTESCANNING1TEXT, CfgSDlgProc, 0, 0, 0 },
-  { 0, CFGB_FRAME, IDS_NOTEBUBBLE1TEXT, CfgBDlgProc, 0, 0, 0 },
+  { IDM_MONOLITHICSETTINGS, CFGM_FRAME, IDS_NOTEMONOLITHIC1TEXT, CfgMDlgProc, 0, 0, 0 },
+  { IDM_GENERALSETTINGS, CFGG_FRAME, IDS_NOTEGENERAL1TEXT, CfgGDlgProc, 0, 0, 0 },
+  { IDM_SCANSETTINGS, CFGS_FRAME, IDS_NOTESCANNING1TEXT, CfgSDlgProc, 0, 0, 0 },
+  { IDM_BUBBLESSETTINGS, CFGB_FRAME, IDS_NOTEBUBBLE1TEXT, CfgBDlgProc, 0, 0, 0 },
   { IDM_QUICKSETTINGS, CFG9_FRAME, IDS_NOTEQUICK1TEXT, Cfg9DlgProc, 0, 0, 0 },
   { 0, 0, 0, NULL, 0, 0, 0 }	// usFrameId 0 is end marker
 };
+
+static PSZ pszIK_LastSettingsPage = "LastSettingsPage";
 
 MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -2984,31 +2990,43 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   USHORT attrib = BKA_FIRST;
   INT x;
   ULONG ulPageId;
-  ULONG ulSize;
-
-  static PSZ pszIK_LastSettingsPage = "LastSettingsPage";
-  static BOOL fInitDone;
-
-  static UINT uLastPageIndex;
+  UINT uPageIndex;
 
   switch (msg) {
   case WM_INITDLG:
     hwndNotebook = hwnd;
-    if (!fInitDone) {
-      ulSize = sizeof(uLastPageIndex);
-      PrfQueryProfileData(fmprof, appname, pszIK_LastSettingsPage, &uLastPageIndex, &ulSize);
-      fInitDone = TRUE;
-    }
-    if (mp2) {
-      // If fm/2 lite drop quick setting page
-      if (mp2 == MPFROMLONG(IDM_LITESETTINGS)) {
-	x = 0;
-	while (np[x].usFrameId && np[x].usFrameId != CFG9_FRAME)
-	  x++;
-	np[x].usFrameId = 0;
-	mp2 = 0;
+    uPageIndex = 0;
+
+    // If generic call, try to find conditional cascade default
+    // 15 Feb 08 SHL fixme to be gone when/if IDM_NOTEBOOK gone?
+    if (mp2 == MPFROMLONG(IDM_NOTEBOOK)) {
+      DbgMsg(pszSrcFile, __LINE__, "Trying to translate IDM_NOTEBOOK");
+      hwndTemp = WinQueryWindow(hwnd, QW_OWNER);
+      if (hwndTemp != HWND_DESKTOP) {
+	HWND hwndMenu;
+	// Owner is frame if not applet
+	hwndMenu = WinWindowFromID(hwndTemp, FID_MENU);
+	if (hwndMenu == NULLHANDLE)
+	  Runtime_Error(pszSrcFile, __LINE__, "FID_MENU");
+	else {
+	  MENUITEM mi;
+	  BOOL ok;
+	  memset(&mi, 0, sizeof(mi));
+	  ok = (BOOL)WinSendMsg(hwndMenu,
+				MM_QUERYITEM,
+				MPFROM2SHORT(IDM_NOTEBOOKSUBMENU, TRUE),
+				MPFROMP(&mi));
+	  if (!ok)
+	    Runtime_Error(pszSrcFile, __LINE__, "IDM_NOTEBOOKSUBMENU");
+	  else {
+	    mp2 = WinSendMsg(mi.hwndSubMenu, MM_QUERYDEFAULTITEMID, MPVOID, MPVOID);
+	    if (!mp2)
+	      Runtime_Error(pszSrcFile, __LINE__, "MM_QUERYDEFAULTITEMID");
+	  }
+	}
       }
     }
+
     PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     WinSendDlgItemMsg(hwnd,
 		      CFG_NOTEBOOK,
@@ -3022,6 +3040,8 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      CFG_NOTEBOOK,
 		      BKM_SETDIMENSIONS,
 		      MPFROM2SHORT(0, 0), MPFROMLONG(BKA_MINORTAB));
+
+    // Build and insert notebook pages
     for (x = 0; np[x].usFrameId; x++) {
       hwndTemp = WinLoadDlg(HWND_DESKTOP,
 			    HWND_DESKTOP,
@@ -3055,16 +3075,20 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  BKM_SETSTATUSLINETEXT,
 			  MPFROMLONG(np[x].ulPageId),
 			  MPFROMP(GetPString(np[x].ulTitle + 1)));
-	if (LONGFROMMP(mp2) == np[x].usMenuId) {
-	  uLastPageIndex = x;
-	}
+	if (LONGFROMMP(mp2) == np[x].usMenuId)
+	  uPageIndex = x;		// Remember selected page
       }
-    } // for
+    } // for pages
+
     // If quick settings page requested, assume request is for first time init
     // Turn to cfg page and show help
     // Page will not be available if running fm/2 lite or if load error
+    // 15 Feb 08 SHL fixme to do just once?
     if (mp2 == MPFROMLONG(IDM_QUICKSETTINGS) &&
-	x-- > 0 && np[x].hwnd && np[x].usFrameId == CFG9_FRAME) {
+	x-- > 0 &&
+	np[x].hwnd &&
+	np[x].usFrameId == CFG9_FRAME)
+    {
       // 10 Jan 08 SHL fixme to document what UM_SETDIR 1 means
       PostMsg(MainObjectHwnd, UM_SETDIR, MPFROMLONG(1), MPVOID);
       PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
@@ -3072,15 +3096,14 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(np[x].hwnd), MPVOID);
       PostMsg(np[x].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
     }
-    else {
-      if (uLastPageIndex >= x) {
-	Runtime_Error(pszSrcFile, __LINE__, "uLastPageIndex corrupted (%u)",
-		      uLastPageIndex);
-	uLastPageIndex = 0;
-      }
-      PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
-	      BKM_TURNTOPAGE, MPFROMLONG(np[uLastPageIndex].ulPageId), MPVOID);
+    else if (uPageIndex >= x) {
+      Runtime_Error(pszSrcFile, __LINE__, "uPageIndex corrupted (%u)",
+		    uPageIndex);
+      uPageIndex = 0;
     }
+    PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
+	    BKM_TURNTOPAGE, MPFROMLONG(np[uPageIndex].ulPageId), MPVOID);
+    // 15 Feb 08 SHL fixme to put focus on first field of page
 
   break;
 
@@ -3088,27 +3111,6 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp1)
       WinSetActiveWindow(HWND_DESKTOP, (HWND) mp1);
     break;
-
-  case WM_CONTROL:
-    switch (SHORT1FROMMP(mp1)) {
-    case CFG_NOTEBOOK:
-      switch (SHORT2FROMMP(mp1)) {
-      case BKN_PAGESELECTED:
-	if (mp2) {
-	  PAGESELECTNOTIFY *psn = mp2;
-	  ULONG id = psn->ulPageIdNew;
-	  UINT x;
-	  for (x = 0; np[x].usFrameId; x++) {
-	    if (np[x].ulPageId == id) {
-	      uLastPageIndex = x;	// Found it
-	      break;
-	    }
-	  }
-	}
-      } // switch BKN
-      break;
-    } // switch page
-    return 0;
 
   case UM_SETUP:
     WinSetActiveWindow(HWND_DESKTOP, WinQueryWindow(hwnd, QW_OWNER));
@@ -3123,6 +3125,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case DID_CANCEL:
       // Tell current page to undo itself in case changed and still alive
+      SaveLastPageIndex(hwnd);
       ulPageId = (ULONG) WinSendDlgItemMsg(hwnd,
 					 CFG_NOTEBOOK,
 					 BKM_QUERYPAGEID,
@@ -3132,8 +3135,6 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  CFG_NOTEBOOK,
 					  BKM_QUERYPAGEWINDOWHWND,
 					  MPFROMLONG(ulPageId), MPVOID);
-      PrfWriteProfileData(fmprof, FM3Str, pszIK_LastSettingsPage,
-			  (PVOID)&uLastPageIndex, sizeof(uLastPageIndex));
       if (hwndTemp)
 	WinSendMsg(hwndTemp, UM_UNDO, MPVOID, MPVOID);
 
@@ -3179,11 +3180,69 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hwndNotebook = (HWND) 0;
     break;
   case WM_CLOSE:
-    PrfWriteProfileData(fmprof, FM3Str, pszIK_LastSettingsPage,
-			(PVOID)&uLastPageIndex, sizeof(uLastPageIndex));
+    SaveLastPageIndex(hwnd);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
+}
+/**
+ * Initialize config submenu
+ * @param hwndMenu is window handle
+ * @param fIsLite is true if called for fm/2 lite
+ */
+
+VOID CfgMenuInit(HWND hwndMenu, BOOL fIsLite)
+{
+  UINT uPageIndex;
+  ULONG ulSize = sizeof(uPageIndex);
+  UINT x;
+  PrfQueryProfileData(fmprof, appname, pszIK_LastSettingsPage, &uPageIndex, &ulSize);
+  for (x = 0; x < uPageIndex && np[x].usFrameId; x++)
+    ;					// Search
+  if (np[x].usMenuId)
+    SetConditionalCascade(hwndMenu, IDM_NOTEBOOKSUBMENU, np[uPageIndex].usMenuId);
+  // If lite, delete excess items from menus and tables
+  if (fIsLite) {
+    WinSendMsg(hwndMenu,
+	       MM_DELETEITEM,
+	       MPFROM2SHORT(IDM_QUICKSETTINGS, FALSE), MPVOID);
+    // If fm/2 lite drop quick setting page
+    for (x = 0; np[x].usFrameId && np[x].usFrameId != CFG9_FRAME; x++)
+      ; // Scan
+    np[x].usFrameId = 0;
+  }
+}
+
+static VOID SaveLastPageIndex(HWND hwnd)
+{
+  HWND hwndOwner;
+  HWND hwndMenu;
+  UINT x;
+  ULONG ulPageId;
+
+  // Owner is frame if not applet
+  hwndOwner = WinQueryWindow(hwnd, QW_OWNER);
+  if (hwndOwner != HWND_DESKTOP) {
+    ulPageId = (ULONG)WinSendDlgItemMsg(hwnd,
+				       CFG_NOTEBOOK,
+				       BKM_QUERYPAGEID,
+				       MPFROMLONG(0),
+				       MPFROM2SHORT(BKA_TOP, 0));
+    if (!ulPageId)
+      Runtime_Error(pszSrcFile, __LINE__, "BKM_QUERYPAGEID");
+    else {
+      for (x = 0; np[x].usMenuId && np[x].ulPageId != ulPageId; x++)
+	; // Scan
+      if (!np[x].usMenuId)
+	Runtime_Error(pszSrcFile, __LINE__, "bad menu id %lu", ulPageId);
+      else {
+	PrfWriteProfileData(fmprof, FM3Str, pszIK_LastSettingsPage,
+			    (PVOID)&x, sizeof(x));
+	hwndMenu = WinWindowFromID(hwndOwner, FID_MENU);
+	SetConditionalCascade(hwndMenu, IDM_NOTEBOOKSUBMENU, np[x].usMenuId);
+      }
+    }
+  }
 }
 
 #pragma alloc_text(NOTEBOOK,CfgTDlgProc,CfgTSDlgProc,CfgMDlgProc)
@@ -3191,4 +3250,4 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #pragma alloc_text(NOTEBOOK3,CfgDDlgProc,Cfg5DlgProc,Cfg6DlgProc)
 #pragma alloc_text(NOTEBOOK4,Cfg7DlgProc,Cfg8DlgProc,CfgCDlgProc)
 #pragma alloc_text(NOTEBOOK5,CfgGDlgProc,CfgDlgProc,CfgBDlgProc)
-
+#pragma alloc_text(NOTEBOOK5,CfgMenuInit,SaveLastPageIndex)

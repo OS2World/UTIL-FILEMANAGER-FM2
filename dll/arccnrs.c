@@ -50,6 +50,7 @@
   30 Dec 07 GKY Use TestCDates for sort by date
   10 Jan 08 SHL Sync with CfgDlgProc mods
   10 Feb 08 GKY Implement bubble help for bitmap menu items
+  15 Feb 08 SHL Sync with settings menu rework
 
 ***********************************************************************/
 
@@ -78,6 +79,7 @@
 #include "filldir.h"			// EmptyCnr...
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"			// CfgDlgProc
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -2626,7 +2628,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		   IDM_SORTSUBMENU);
 	break;
 
-      case IDM_NOTEBOOK:
+      case IDM_ARCHIVERSETTINGS:
 	if (!ParentIsDesktop(dcd->hwndParent, dcd->hwndParent))
 	  PostMsg(dcd->hwndParent, msg, MPFROMLONG(IDM_ARCHIVERSETTINGS), mp2);
 	else {
@@ -3299,78 +3301,78 @@ MRESULT EXPENTRY ArcCnrMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
   switch (msg) {
     case WM_MOUSEMOVE: {
       if (fOtherHelp) {
-        RECTL rectl;
-        SHORT i, sCurrentMenuitem;
-        SHORT MenuItems = 10;
-        SHORT asMenuIDs[10] = {IDM_VIEW,
-              IDM_DELETE,
-              IDM_EXEC,
-              IDM_EXTRACT,
-              IDM_TEST,
-              IDM_VIRUSSCAN,
-              IDM_RESCAN,
-              IDM_WALKDIR,
-              IDM_FILTER,
-              0};
-        char *szHelpString = NULL;
+	RECTL rectl;
+	SHORT i, sCurrentMenuitem;
+	SHORT MenuItems = 10;
+	SHORT asMenuIDs[10] = {IDM_VIEW,
+	      IDM_DELETE,
+	      IDM_EXEC,
+	      IDM_EXTRACT,
+	      IDM_TEST,
+	      IDM_VIRUSSCAN,
+	      IDM_RESCAN,
+	      IDM_WALKDIR,
+	      IDM_FILTER,
+	      0};
+	char *szHelpString = NULL;
 
 
-        for (i=0; i<MenuItems; i++) {
-          sCurrentMenuitem = asMenuIDs[i];
-          oldMenuProc(hwnd,MM_QUERYITEMRECT,
-                      MPFROM2SHORT(asMenuIDs[i], FALSE),
-                      &rectl);
+	for (i=0; i<MenuItems; i++) {
+	  sCurrentMenuitem = asMenuIDs[i];
+	  oldMenuProc(hwnd,MM_QUERYITEMRECT,
+		      MPFROM2SHORT(asMenuIDs[i], FALSE),
+		      &rectl);
 
-        if (MOUSEMSG(&msg)->x > rectl.xLeft &&
-            MOUSEMSG(&msg)->x < rectl.xRight &&
-            MOUSEMSG(&msg)->y > rectl.yBottom &&
-            MOUSEMSG(&msg)->y < rectl.yTop)
-           break;
-        }                      // for
+	if (MOUSEMSG(&msg)->x > rectl.xLeft &&
+	    MOUSEMSG(&msg)->x < rectl.xRight &&
+	    MOUSEMSG(&msg)->y > rectl.yBottom &&
+	    MOUSEMSG(&msg)->y < rectl.yTop)
+	   break;
+	}                      // for
 
 
-         switch (sCurrentMenuitem) {
-         case 0:
-           break;
-         case IDM_VIEW:
-           szHelpString = GetPString(IDS_ARCCNRVIEWMENUHELP);
-           break;
-         case IDM_DELETE:
-           szHelpString = GetPString(IDS_ARCCNRDELETEMENUHELP);
-           break;
-         case IDM_EXEC:
-           szHelpString = GetPString(IDS_ARCCNREXECMENUHELP);
-           break;
-         case IDM_EXTRACT:
-           szHelpString = GetPString(IDS_ARCCNREXTRACTMENUHELP);
-           break;
-         case IDM_TEST:
-           szHelpString = GetPString(IDS_ARCCNRTESTMENUHELP);
-           break;
-         case IDM_VIRUSSCAN:
-           szHelpString = GetPString(IDS_ARCCNRVIRUSMENUHELP);
-           break;
-         case IDM_RESCAN:
-           szHelpString = GetPString(IDS_ARCCNRRESCANMENUHELP);
-           break;
-         case IDM_WALKDIR:
-           szHelpString = GetPString(IDS_ARCCNRWALKDIRMENUHELP);
-           break;
-         case IDM_FILTER:
-           szHelpString = GetPString(IDS_ARCCNRFILTERMENUHELP);
-           break;
-         default:
-           break;
-         }
+	 switch (sCurrentMenuitem) {
+	 case 0:
+	   break;
+	 case IDM_VIEW:
+	   szHelpString = GetPString(IDS_ARCCNRVIEWMENUHELP);
+	   break;
+	 case IDM_DELETE:
+	   szHelpString = GetPString(IDS_ARCCNRDELETEMENUHELP);
+	   break;
+	 case IDM_EXEC:
+	   szHelpString = GetPString(IDS_ARCCNREXECMENUHELP);
+	   break;
+	 case IDM_EXTRACT:
+	   szHelpString = GetPString(IDS_ARCCNREXTRACTMENUHELP);
+	   break;
+	 case IDM_TEST:
+	   szHelpString = GetPString(IDS_ARCCNRTESTMENUHELP);
+	   break;
+	 case IDM_VIRUSSCAN:
+	   szHelpString = GetPString(IDS_ARCCNRVIRUSMENUHELP);
+	   break;
+	 case IDM_RESCAN:
+	   szHelpString = GetPString(IDS_ARCCNRRESCANMENUHELP);
+	   break;
+	 case IDM_WALKDIR:
+	   szHelpString = GetPString(IDS_ARCCNRWALKDIRMENUHELP);
+	   break;
+	 case IDM_FILTER:
+	   szHelpString = GetPString(IDS_ARCCNRFILTERMENUHELP);
+	   break;
+	 default:
+	   break;
+	 }
 
-        if (sLastMenuitem != sCurrentMenuitem && szHelpString) {
-          sLastMenuitem = sCurrentMenuitem;
-          MakeBubble(hwnd, TRUE, szHelpString);
-        }
-        else if (hwndBubble && !sCurrentMenuitem){
-          sLastMenuitem = sCurrentMenuitem;
-          WinDestroyWindow(hwndBubble);
-        }
+	if (sLastMenuitem != sCurrentMenuitem && szHelpString) {
+	  sLastMenuitem = sCurrentMenuitem;
+	  MakeBubble(hwnd, TRUE, szHelpString);
+	}
+	else if (hwndBubble && !sCurrentMenuitem){
+	  sLastMenuitem = sCurrentMenuitem;
+	  WinDestroyWindow(hwndBubble);
+	}
       }
     }
   }
@@ -3551,9 +3553,9 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  WinSetWindowText(dcd->hwndExtract, dcd->directory);
 	  if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	    WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
-          if (FrameFlags & FCF_MENU) {
-            PFNWP oldmenuproc;
-            HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
+	  if (FrameFlags & FCF_MENU) {
+	    PFNWP oldmenuproc;
+	    HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);
 
 	    oldmenuproc = WinSubclassWindow(hwndMenu, (PFNWP) ArcCnrMenuProc);
 	    WinSetWindowPtr(hwndMenu, QWL_USER, (PVOID) oldmenuproc);

@@ -3,7 +3,7 @@
 
   $Id$
 
-  Global definitions
+  Resource item definitions
 
   Copyright (c) 1993-02 M. Kimes
   Copyright (c) 2003, 2008 Steven H.Levine
@@ -17,6 +17,10 @@
   10 Jan 08 SHL Add IDM_*SETTINGS for individual notebook pages
   12 Jan 08 SHL Add IDM_TOGGLEDRAGDIALOG
   19 Jan 08 GKY Add IDM_COMMANDLINESUBMENU, IDM_SYSTEMSUBMENU & IDM_BOOKSELFSUBMENU
+  15 Feb 08 SHL Add definitions to support settings menu conditional cascade
+  15 Feb 08 SHL Drop obsoletes
+
+  Align with spaces only - no tabs please
 
 ***********************************************************************/
 
@@ -416,7 +420,7 @@
 #define IDM_PARTITIONLVMG   1157
 #define IDM_PARTITIONFD     1158
 #define IDM_IGNOREMAIL      1159
-#define IDM_TOGGLEDRAGDIALOG	1160
+#define IDM_TOGGLEDRAGDIALOG 1160
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001
@@ -498,14 +502,24 @@
 #define IDM_AUTOVIEWMLE     3071
 #define IDM_PARTITIONSMENU 3072
 
-#define IDM_DIRCNRSETTINGS      3310
-#define IDM_COLLECTORSETTINGS   3311
-#define IDM_TREECNRSETTINGS     3312
-#define IDM_ARCHIVERSETTINGS    3313
-#define IDM_VIEWERSETTINGS      3314
-#define IDM_COMPARESETTINGS     3315
-#define IDM_QUICKSETTINGS       3316
-#define IDM_LITESETTINGS        3317
+#define IDM_NOTEBOOKSUBMENU             3310
+
+#define IDM_DIRCNRSETTINGS              3311
+#define IDM_DIRVIEWSETTINGS             3312
+#define IDM_DIRSORTSETTINGS             3313
+#define IDM_COLLECTORVIEWSETTINGS       3314
+#define IDM_COLLECTORSORTSETTINGS       3315
+#define IDM_ARCHIVERSETTINGS            3316
+#define IDM_TREECNRVIEWSETTINGS         3317
+#define IDM_TREECNRSORTSETTINGS         3318
+#define IDM_VIEWERSETTINGS              3319
+#define IDM_VIEWERSETTINGS2             3320
+#define IDM_COMPARESETTINGS             3321
+#define IDM_MONOLITHICSETTINGS          3322
+#define IDM_GENERALSETTINGS             3323
+#define IDM_SCANSETTINGS                3324
+#define IDM_BUBBLESSETTINGS             3325
+#define IDM_QUICKSETTINGS               3326
 
 #define IDM_DRIVESMENU      3899
 #define IDM_DRIVEA          3900
