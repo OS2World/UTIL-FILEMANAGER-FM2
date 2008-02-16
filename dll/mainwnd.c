@@ -50,6 +50,7 @@
   19 Jan 08 GKY Rework Utilities menu
   05 Feb 08 SHL Restore no-prescan drives if restoring named state
   14 Feb 08 SHL Rework to support settings menu conditional cascade
+  15 Feb 08 SHL Rework ResizeChildren to honor fNoTreeGap and resize drive tree better
 
 ***********************************************************************/
 
@@ -3661,14 +3662,27 @@ static VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy,
     AdjustSizeOfClient(NULL, &Rectl);
     WinQueryWindowPos(hwndTree, &swp);
     if (!(swp.fl & (SWP_MAXIMIZE | SWP_HIDE | SWP_MINIMIZE))) {
-      if (swp.y + swp.cy < Rectl.yTop - Rectl.yBottom)
-	swp.cy = (Rectl.yTop - Rectl.yBottom) - swp.y;
+
+      if (!fNoTreeGap) {
+	INT height = WinQuerySysValue(HWND_DESKTOP, SV_CYICON) * 2;
+	if (swp.y < height)
+	  swp.y = height;	// Force bottom to position
+      }
+      else
+	swp.y = 0;		// Force bottom to position
+
+      swp.cy = (Rectl.yTop - Rectl.yBottom) - swp.y;
+      if (swp.cy < 0)
+	swp.cy = 0;
+
       if (swp.x != 0)
-	swp.x = 0;
-      if (swp.y < 0)
-	swp.y = 0;
-      if (swp.x + swp.cx > abs(Rectl.xRight - Rectl.xLeft))
-	swp.cx = abs(Rectl.xRight - Rectl.xLeft);
+	swp.x = 0;		// Left align
+
+      // AdjustSizeOfClient can return bogus xRight values - fixme someday
+      if (Rectl.xRight >= Rectl.xLeft) {
+	if (swp.x + swp.cx > Rectl.xRight - Rectl.xLeft)
+	  swp.cx = Rectl.xRight - Rectl.xLeft;
+      }
       WinSetWindowPos(hwndTree, HWND_TOP, swp.x, swp.y, swp.cx, swp.cy,
 		      SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_RESTORE);
     }

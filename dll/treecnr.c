@@ -44,6 +44,7 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Jan 08 SHL Sync with CfgDlgProc mods
   15 Feb 08 SHL Sync with settings menu rework
+  15 Feb 08 SHL Avoid death if tree container 0 width
 
 ***********************************************************************/
 
@@ -2827,10 +2828,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinQueryWindowPos(dcd->hwndFrame, &swp);
       if (!(swp.fl & (SWP_MINIMIZE | SWP_MAXIMIZE | SWP_HIDE))) {
 	WinQueryWindowPos(dcd->hwndParent, &swpP);
-	ratio = (swpP.cx * 100) / swp.cx;
-	if (ratio > 0)
-	  PrfWriteProfileData(fmprof, appname, "TreeWindowRatio",
-			      &ratio, sizeof(INT));
+	if (swp.cx) {
+	  ratio = (swpP.cx * 100) / swp.cx;
+	  if (ratio > 0)
+	    PrfWriteProfileData(fmprof, appname, "TreeWindowRatio",
+				&ratio, sizeof(INT));
+	}
       }
     }
     else if (dcd && ParentIsDesktop(hwnd, dcd->hwndParent)) {
