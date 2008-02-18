@@ -2072,7 +2072,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				    DIR_FILTER), &dcd->mask, FALSE);
 	}
-	break;
+        break;
+
+      case IDM_UNHIDEALL:
+        WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
+        break;
 
       case IDM_HIDEALL:
 	if (fAutoView && hwndMain)
@@ -3289,8 +3293,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       HWND ret = StartMLEEditor(dcd->hwndParent,
 				(INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
-      if (mp2)
-	free((CHAR *)mp2);
+      xfree((CHAR *)mp2);
       return MRFROMLONG(ret);
     }
     return 0;

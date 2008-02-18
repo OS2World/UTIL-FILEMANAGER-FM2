@@ -1139,6 +1139,7 @@ MENU FILE_POPUP
 	 MENUITEM "",                -1,               MIS_SEPARATOR
 	 MENUITEM "U~pdate objects\tCtrl + u",IDM_UPDATE
 	 MENUITEM "~Hide objects",   IDM_HIDEALL
+         MENUITEM "~Unhide objects",   IDM_UNHIDEALL
 	 MENUITEM "",                -1,               MIS_SEPARATOR
 	 MENUITEM "~Multimedia\tCtrl + l", IDM_MCIPLAY
   }
@@ -1220,6 +1221,7 @@ MENU DIR_POPUP
 	 MENUITEM "",                      -1,           MIS_SEPARATOR
 	 MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
 	 MENUITEM "~Hide objects",         IDM_HIDEALL
+         MENUITEM "~Unhide objects",   IDM_UNHIDEALL
   }
   SUBMENU "~Edit",              IDM_EDITSUBMENU
   {
@@ -1410,6 +1412,7 @@ MENU COLLECTORFILE_POPUP
     MENUITEM "",                -1,               MIS_SEPARATOR
     MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
     MENUITEM "~Hide objects",   IDM_HIDEALL
+    MENUITEM "~Unhide objects",   IDM_UNHIDEALL
     MENUITEM "",                  -1,                 MIS_SEPARATOR
     MENUITEM "~Multimedia\tCtrl + l", IDM_MCIPLAY
   }
@@ -1516,6 +1519,7 @@ MENU COLLECTORDIR_POPUP
     MENUITEM "",                -1,               MIS_SEPARATOR
     MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
     MENUITEM "~Hide objects",   IDM_HIDEALL
+    MENUITEM "~Unhide objects",   IDM_UNHIDEALL
   }
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "~Delete",            IDM_DELETESUBMENU
@@ -1561,6 +1565,7 @@ MENU COLLECTORCNR_POPUP
   MENUITEM "Clear container",   IDM_CLEARCNR
   MENUITEM "~Remove objects", IDM_REMOVE
   MENUITEM "~Hide objects",   IDM_HIDEALL
+  MENUITEM "~Unhide objects",   IDM_UNHIDEALL
   MENUITEM "",                  -1,                 MIS_SEPARATOR
   MENUITEM "Seek & scan files\tCtrl + g",   IDM_GREP
   MENUITEM "Stop seek & scan\tEsc",DID_CANCEL
@@ -2050,6 +2055,7 @@ MENU SEEALL_FRAME
 		MENUITEM "~Real objects...",    IDM_OBJECT
 	 }
 	 MENUITEM "~Hide selected",        IDM_HIDEALL
+         MENUITEM "~Unhide objects",   IDM_UNHIDEALL
 	 MENUITEM "Remo~ve selected\tCtrl + r",  IDM_REMOVE
 	 SUBMENU "~Delete",                IDM_DELETESUBMENU
 	 {
@@ -2127,6 +2133,7 @@ MENU SEEALL_POPUP
 	 MENUITEM "~Real objects...",    IDM_OBJECT
   }
   MENUITEM "~Hide selected",        IDM_HIDEALL
+  MENUITEM "~Unhide objects",   IDM_UNHIDEALL
   MENUITEM "Remo~ve selected",      IDM_REMOVE
   SUBMENU "~Delete",                IDM_DELETESUBMENU
   {

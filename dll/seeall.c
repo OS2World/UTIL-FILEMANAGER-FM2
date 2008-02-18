@@ -1748,8 +1748,7 @@ VOID FindDupesThread(VOID * args)
 
 static VOID FilterList(HWND hwnd)
 {
-  register ULONG x, z;
-  BOOL ret;
+  ULONG x;
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   CHAR *p;
 
@@ -1765,7 +1764,16 @@ static VOID FilterList(HWND hwnd)
   *(ad->mask.prompt) = 0;
   ad->mask.fIsSeeAll = TRUE;
   if (WinDlgBox(HWND_DESKTOP, hwnd, PickMaskDlgProc,
-		FM3ModHandle, MSK_FRAME, MPFROMP(&ad->mask))) {
+                FM3ModHandle, MSK_FRAME, MPFROMP(&ad->mask)))
+    FilterAll(hwnd, ad);
+}
+
+static VOID FilterAll(HWND hwnd, ALLDATA *ad)
+{
+  ULONG x, z;
+  BOOL ret;
+
+  if (ad) {
     for (x = 0; x < ad->afheadcnt; x++) {
       ret = FALSE;
       if (ad->mask.pszMasks[1]) {
@@ -4040,6 +4048,12 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
 	  PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	}
+      }
+      break;
+    case IDM_UNHIDEALL:
+      {
+      ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
+      FilterAll(hwnd, ad);
       }
       break;
 
