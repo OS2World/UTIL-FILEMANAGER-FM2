@@ -798,8 +798,11 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             else
               pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
           }
-          else
+          else {
             pci->pszLongName = xmalloc(retlen + 1, pszSrcFile, __LINE__);
+            if (!pci->pszLongName)
+              return FALSE;
+          }
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
 	else {
