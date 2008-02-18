@@ -8,6 +8,9 @@ signal on novalue
 parse arg args
 wpi_file          =  strip(args)
 wis_file          =  'fm2.wis'
+if stream(wpi_file, 'c', 'query exists') == '' then  /* If target WPI file  does not exist, force WIS rebuild */
+   call SysFileDelete wis_file
+
 dummy_date_time   =  '-1'
 in_file   =  'bld_fm2_wpidirs.txt'
 out_file  =  'bld_fm2_wpidirs.in'
