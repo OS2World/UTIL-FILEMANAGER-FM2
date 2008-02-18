@@ -25,7 +25,8 @@
 
 // Spares are named IDS_SPARE_### here
 // Text in fm3dll.str will contain the notation Spare ###
-// Last string reserved for cvs id
+// Last string in fm3dll.str reserved for cvs id
+// Set IDS_NUMSTRS to max value here plus 2
 
 #define IDS_NUMSTRS                                           1009
 
@@ -738,9 +739,9 @@
 #define IDS_DAYTEXT                                           738
 #define IDS_TREEFILTERTITLETEXT                               739
 #define IDS_SELECTTYPEERRORTEXT                               740
-#define IDS_UNUSED1                                           741
+#define IDS_SPARE_741                                         741
 #define IDS_NOTEVIEWERS3TEXT                                  742
-#define IDS_SPARE_743                                         743
+#define IDS_SHUTDOWNSTATE                                     743
 #define IDS_DEFDIRFILTERTITLETEXT                             744
 #define IDS_DEFCOLFILTERTITLETEXT                             745
 #define IDS_DONTFORGETTEXT                                    746

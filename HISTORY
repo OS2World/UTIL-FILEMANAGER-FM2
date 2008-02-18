@@ -34,6 +34,8 @@ New stuff's at the top.  This list is not necessarily complete.
  o Recollect of hidden items now updates the items and unhides them (Gregg)
  o Put hide/remove etc menu options on collector "view" menu (Gregg)
  o Fix trap in seeall cause by pathname(s) that exceed maxpath (Gregg)
+ o Restore SaveDirCnrState internal state save logic - accidentally removed
+ o Move save shutdown state name to strings (IDS_SHUTDOWNSTATE, ShutdownState)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

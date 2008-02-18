@@ -26,6 +26,7 @@
   13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
   xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   15 Feb 08 SHL Rework to support settings menu conditional cascade.  Make more generic
+  16 Feb 08 SHL Restore SaveDirCnrState internal state save logic - accidentally removed
 
 ***********************************************************************/
 
@@ -1388,11 +1389,12 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "UnHilite",
 			&fUnHilite, sizeof(BOOL));
     {
-      BOOL dummy = WinQueryButtonCheckstate(hwnd, CFGD_SYNCUPDATES);
+      BOOL fOldSyncUpdates = WinQueryButtonCheckstate(hwnd, CFGD_SYNCUPDATES);
 
-      if (dummy != fSyncUpdates) {
-	fSyncUpdates = dummy;
+      if (fOldSyncUpdates != fSyncUpdates) {
+	fSyncUpdates = fOldSyncUpdates;
 	if (hwndMain && !strcmp(realappname, FM3Str)) {
+	  // Save state and restore to refresh windows with new settings
 	  if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
 	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
 	    PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
@@ -1407,7 +1409,7 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	     HWND_DESKTOP,
 	     GetPString(IDS_WARNINGTEXT),
 	     GetPString(IDS_SELECTTYPEERRORTEXT));
-    break;
+    break;				// WM_CLOSE
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
@@ -2602,8 +2604,6 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetWindowPos(hwndTree, HWND_TOP, 0, 0,
 			  swp.cx / 5, swp.cy, SWP_MOVE | SWP_SIZE);
 	}
-      }
-      if (hwndMain) {
 	if (MenuInvisible)
 	  WinSendMsg(hwndMain, WM_COMMAND,
 		     MPFROM2SHORT(IDM_HIDEMENU, 0), MPVOID);
@@ -2920,6 +2920,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     default:
       return 0;
     }
+    // Save new details settings and refresh windows
     PrfWriteProfileData(fmprof, appname, "DetailsLongname",
 			&detailslongname, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DetailsSubject",
@@ -2945,8 +2946,11 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "DetailsAttr",
 			&detailsattr, sizeof(BOOL));
     if (hwndMain) {
+      // Save state and restore to refresh windows with new settings
       if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
+	// Tell window procedure to close container windows
 	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
+	// Restore saved state
 	PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
       }
     }

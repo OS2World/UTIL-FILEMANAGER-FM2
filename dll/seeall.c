@@ -1746,6 +1746,8 @@ VOID FindDupesThread(VOID * args)
   }
 }
 
+static VOID FilterAll(HWND hwnd, ALLDATA *ad);
+
 static VOID FilterList(HWND hwnd)
 {
   ULONG x;

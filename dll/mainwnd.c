@@ -1815,10 +1815,10 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableMenuItem(hwndMenu, IDM_CHKDSK, FALSE);
 	}
 	/* fixme to be gone?
-	   if (!rdy || ~driveflags[iDrv] & DRIVE_CDROM) {
-	   WinEnableMenuItem(hwndMenu, IDM_CLOSETRAY, FALSE);
-	   }
-	 */
+	  if (!rdy || ~driveflags[iDrv] & DRIVE_CDROM) {
+	    WinEnableMenuItem(hwndMenu, IDM_CLOSETRAY, FALSE);
+	  }
+	*/
 	PopupMenu(hwnd, hwnd, hwndMenu);
       }
     }
@@ -2772,7 +2772,6 @@ BOOL CloseDirCnrChildren(HWND hwndClient)
  */
 
 #define STATE_NAME_MAX_BYTES    256
-#define FM2_STATE_AT_CLOSE "LastClose"
 
 INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 {
@@ -2796,7 +2795,7 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
     return -1;
   }
 
-  fIsShutDownState = strcmp(pszStateName, FM2_STATE_AT_CLOSE) == 0;
+  fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
   sprintf(szPrefix, "%s.", pszStateName);
 
   henum = WinBeginEnumWindows(hwndClient);
@@ -2964,6 +2963,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   BOOL fRestored = FALSE;
   DIRCNRDATA localdcd, *dcd;
   BOOL fIsShutDownState;
+  BOOL fDeleteState;
 
   if (!pszStateName || !*pszStateName) {
     Runtime_Error(pszSrcFile, __LINE__, "no name");
@@ -2975,8 +2975,12 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   }
 
   sprintf(szPrefix, "%s.", pszStateName);
-  fIsShutDownState = strcmp(pszStateName, FM2_STATE_AT_CLOSE) == 0;
 
+  // If restoring shutdown state bypass no-prescan drives
+  fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
+  // Delete saved state if restored saved state or internally saved state
+  fDeleteState = fIsShutDownState ||
+		 strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)) == 0;
 
   size = sizeof(SWP);
   sprintf(szKey, "%sMySizeLastTime", szPrefix);
@@ -2989,8 +2993,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   {
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpO);
   }
-  // If restoring saved shutdown state, forget info
-  if (fIsShutDownState)
+  // If restoring saved shutdown state or internally saved state, forget info
+  if (fDeleteState)
     PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
   WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpN);
   if (swpN.fl & (SWP_MINIMIZE | SWP_HIDE))
@@ -3000,7 +3004,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   size = sizeof(SWP);
   sprintf(szKey, "%sLastTreePos", szPrefix);
   if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, &size)) {
-    if (fIsShutDownState)
+    if (fDeleteState)
       PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
     swp.hwnd = hwndTree;
     TransformSwp(&swp, xtrans, ytrans);
@@ -3032,25 +3036,25 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   if (PrfQueryProfileData(fmprof,
 			  FM3Str, szKey, (PVOID) & numsaves, &size) && numsaves) {
-    if (fIsShutDownState)
+    if (fDeleteState)
       PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
     for (x = 0; x < numsaves; x++) {
       sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, x);
       size = sizeof(SWP);
       if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, &size)) {
-	if (fIsShutDownState)
+	if (fDeleteState)
 	  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, x);
 	size = sizeof(szDir);
 	if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size)) {
-	  // If drive marked no prescan, and restoring shutdown state
+	  // If restoring shutdown state and drive marked no prescan
 	  // bypass window restore
 	  if (fIsShutDownState &&
 	      driveflags[toupper(*szDir) - 'A'] & DRIVE_NOPRESCAN) {
 	    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	    continue;
 	  }
-	  if (fIsShutDownState)
+	  if (fDeleteState)
 	    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  localdcd.detailslongname = detailslongname;  // Set default
 	  size = sizeof(BOOL);
@@ -3062,7 +3066,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailssubject = detailssubject;  // Set default
@@ -3075,7 +3079,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailsea = detailsea;  // Set default
@@ -3088,7 +3092,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailssize = detailssize;  // Set default
@@ -3101,7 +3105,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailsicon = detailsicon;  // Set default
@@ -3114,7 +3118,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailsattr = detailsattr;  // Set default
@@ -3127,7 +3131,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailscrdate = detailscrdate;  // Set default
@@ -3139,7 +3143,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  (PVOID) & localdcd.detailscrdate,
 	      &size) && size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailscrtime = detailscrtime;  // Set default
@@ -3152,7 +3156,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailslwdate = detailslwdate;  // Set default
@@ -3165,7 +3169,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailslwtime = detailslwtime;  // Set default
@@ -3178,7 +3182,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailsladate = detailsladate;  // Set default
@@ -3191,7 +3195,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  localdcd.detailslatime = detailslatime;  // Set default
@@ -3204,7 +3208,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				  &size) &&
 	      size == sizeof(BOOL))
 	  {
-	    if (fIsShutDownState)
+	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
 	  sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
@@ -3241,7 +3245,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		  if (!dcd->sortFlags)
 		    dcd->sortFlags = SORT_PATHNAME;
 		}
-		if (fIsShutDownState)
+		if (fDeleteState)
 		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 		size = sizeof(MASK);
 		sprintf(szKey, "%sDirCnrFilter.%lu", szPrefix, x);
@@ -3254,7 +3258,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 			       UM_FILTER, MPFROMP(dcd->mask.szMask), MPVOID);
 		}
 		*(dcd->mask.prompt) = 0;
-		if (fIsShutDownState)
+		if (fDeleteState)
 		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 		size = sizeof(ULONG);
 		sprintf(szKey, "%sDirCnrView.%lu", szPrefix, x);
@@ -3281,7 +3285,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		    }
 		  }
 		}
-		if (fIsShutDownState)
+		if (fDeleteState)
 		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 		if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
 		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
@@ -4552,8 +4556,17 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       *szStateName = 0;
       WinQueryWindowText(hwndStatelist, STATE_NAME_MAX_BYTES, szStateName);
       bstrip(szStateName);
-      // Ignore request if blank or attempting to using illegal name
-      if (*szStateName && stricmp(szStateName, GetPString(IDS_STATETEXT))) {
+      // Complain if attempting to use reserved name
+      if (stricmp(szStateName, GetPString(IDS_STATETEXT)) == 0 ||
+	  stricmp(szStateName, GetPString(IDS_FM2TEMPTEXT)) == 0 ||
+	  stricmp(szStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0)
+      {
+	saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+	       GetPString(IDS_WARNINGTEXT),
+	       "\"%s\" is a reserved state name", szStateName);
+      }
+      // Ignore request if blank
+      else if (*szStateName) {
 	if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
 	  // Save
 	  INT nSaved = SaveDirCnrState(hwnd, szStateName);
@@ -5660,7 +5673,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP3:
     /* start remaining child windows */
     if (!fNoSaveState && fSaveState)
-      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(FM2_STATE_AT_CLOSE), MPVOID);
+      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(GetPString(IDS_SHUTDOWNSTATE)), MPVOID);
     PostMsg(MainObjectHwnd, UM_SETUP4, mp1, mp2);
     return 0;
 
@@ -5804,7 +5817,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinStoreWindowPos(FM2Str,
 			  "MainWindowPos", WinQueryWindow(hwnd, QW_PARENT));
 	if (!fNoSaveState && fSaveState)
-	  SaveDirCnrState(hwnd, FM2_STATE_AT_CLOSE);
+	  SaveDirCnrState(hwnd, GetPString(IDS_SHUTDOWNSTATE));
       }
     }
     break;
@@ -6263,7 +6276,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_RESTORE:
     {
       // Try to restore saved shutdown state
-      char *pszDefaultStateName = xstrdup(FM2_STATE_AT_CLOSE, pszSrcFile, __LINE__);
+      char *pszDefaultStateName = xstrdup(GetPString(IDS_SHUTDOWNSTATE),
+					  pszSrcFile, __LINE__);
       if (pszDefaultStateName) {
 	if (!PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszDefaultStateName), MPVOID))
 	  // 05 Feb 08 SHL fixme to complain?
