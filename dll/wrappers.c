@@ -322,7 +322,7 @@ FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
 
 VOID xfree(PVOID pv)
 {
-  if (pv)
+  if (pv && pv != NullStr)
     free(pv);
 }
 
@@ -356,13 +356,16 @@ PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 
 PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 {
-  PVOID pv = realloc(pvIn, cBytes);
+  if (pvIn != NullStr) {
+    PVOID pv = realloc(pvIn, cBytes);
 
-  if (!pv && cBytes)
-    Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
+    if (!pv && cBytes)
+      Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
 
-  return pv;
-
+    return pv;
+  }
+  else
+    return xmalloc(cBytes, pszSrcFile, uiLineNumber);
 }
 
 //== xstrdup() strdup with error checking ==
