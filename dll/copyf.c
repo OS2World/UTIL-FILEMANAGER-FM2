@@ -782,8 +782,8 @@ INT wipeallf(CHAR *string, ...)
     DosFindClose(search_handle);
   }
 
-  free(f);
-  free(ss);
+  xfree(f);
+  xfree(ss);
   free(str);
   return 0;
 }
@@ -855,8 +855,8 @@ INT unlink_allf(CHAR * string, ...)
     DosFindClose(search_handle);
   }
 
-  free(f);
-  free(ss);
+  xfree(f);
+  xfree(ss);
   free(str);
   return 0;
 }

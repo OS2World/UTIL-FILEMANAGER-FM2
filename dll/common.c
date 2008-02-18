@@ -585,8 +585,7 @@ MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  *lastfile = 0;
 	if (!PostMsg((fComments) ? hwndAutoMLE : hwndAutoview,
 		     UM_LOADFILE, MPFROMP(s), MPVOID)) {
-	  if (s)
-	    free(s);
+	  xfree(s);
 	}
       }
     }

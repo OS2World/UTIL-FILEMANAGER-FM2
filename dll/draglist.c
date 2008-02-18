@@ -721,7 +721,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
-      free(ppDItem);
+      xfree(ppDItem);
       ppDItem = NULL;			// Remember gone
       DosPostEventSem(CompactSem);
 
@@ -745,10 +745,8 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
       DosPostEventSem(CompactSem);
     }
   }
-  if (ppDItem)
-    free(ppDItem);
-  if (paDImgIcons)
-    free(paDImgIcons);
+  xfree(ppDItem);
+  xfree(paDImgIcons);
   return hDrop;
 }
 

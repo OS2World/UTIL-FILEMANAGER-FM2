@@ -93,6 +93,8 @@ UINT literal(PSZ pszBuf)
     return 0;
   cBufBytes = strlen(pszBuf) + 1;
   pszWork = pszOut = xmalloc(cBufBytes + 1, pszSrcFile, __LINE__);
+  if (!pszWork)
+    return 0;
 
   iBuf = 0;                                /* set index to first character */
   while (pszBuf[iBuf]) {

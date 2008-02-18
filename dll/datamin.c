@@ -65,8 +65,8 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CREATE:
     {
       PVOID pv = xmalloc(sizeof(tDataMin), pszSrcFile, __LINE__);
-
-      WinSetWindowPtr(hwnd, QWL_DATAMIN_PTR, pv);
+      if (pv)
+        WinSetWindowPtr(hwnd, QWL_DATAMIN_PTR, pv);
     }
     break;
 

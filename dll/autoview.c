@@ -891,8 +891,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_LOADFILE:
     stopflag++;
     if (!PostMsg(hwndAutoObj, msg, mp1, mp2)) {
-      if (mp1)
-	free((CHAR *) mp1);
+      xfree((CHAR *) mp1);
     }
     return 0;
 

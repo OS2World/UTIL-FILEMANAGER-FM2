@@ -304,8 +304,8 @@ VOID free_commands(VOID)
   info = cmdhead;
   while (info) {
     next = info->next;
-    free(info->title);
-    free(info->cl);
+    xfree(info->title);
+    xfree(info->cl);
     free(info);
     info = next;
   }
@@ -352,10 +352,8 @@ VOID load_commands(VOID)
 	info->title = xstrdup(title, pszSrcFile, __LINE__);
 	info->flags = atol(flags);
 	if (!info->cl || !info->title) {
-	  if (info->cl)
-	    free(info->cl);
-	  if (info->title)
-	    free(info->title);
+	  xfree(info->cl);
+	  xfree(info->title);
 	  free(info);
 	  break;
 	}
@@ -458,8 +456,8 @@ BOOL kill_command(CHAR * killme)
 	  if (info == cmdtail)
 	    cmdtail = info->prev;
 	}
-	free(info->cl);
-	free(info->title);
+	xfree(info->cl);
+	xfree(info->title);
 	free(info);
 	return TRUE;
       }
@@ -624,6 +622,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         APIRET ret;
 
         pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        if (!pszWorkBuf)
+          break; //already complained
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
@@ -720,6 +720,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         APIRET ret;
 
         pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        if (!pszWorkBuf)
+          break; //already complained
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);
@@ -822,6 +824,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         APIRET ret;
 
         pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        if (!pszWorkBuf)
+          break; //already complained
 	memset(&temp, 0, sizeof(COMMAND));
 	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
         NormalizeCmdLine(pszWorkBuf, temp.cl);

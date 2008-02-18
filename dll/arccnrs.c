@@ -1334,8 +1334,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      if (mp2)
-	free((CHAR *) mp2);
+      xfree((CHAR *) mp2);
       PostMsg(pdt->hwndClient, DM_RENDERCOMPLETE, MPFROMP(pdt),
 	      MPFROM2SHORT(usRes, 0));
     }

@@ -116,11 +116,10 @@ VOID free_associations(VOID)
   info = asshead;
   while (info) {
     next = info->next;
-    free(info->mask);
-    free(info->cl);
-    if (info->sig)
-      free(info->sig);
-    free(info);
+    xfree(info->mask);
+    xfree(info->cl);
+    xfree(info->sig);
+    xfree(info);
     info = next;
   }
   asshead = asstail = NULL;
@@ -176,11 +175,9 @@ VOID load_associations(VOID)
 	info->offset = atol(offset);
 	info->flags = atol(flags);
 	if (!info->cl || !info->mask) {
-	  if (info->cl)
-	    free(info->cl);
-	  if (info->mask)
-	    free(info->mask);
-	  free(info);
+	  xfree(info->cl);
+	  xfree(info->mask);
+	  xfree(info);
 	  break;
 	}
 	if (!asshead)
@@ -271,11 +268,9 @@ LINKASSOC *add_association(ASSOC * addme)
 	if (addme->flags)
 	  info->flags = addme->flags;
 	if (!info->cl || !info->mask) {
-	  if (info->cl)
-	    free(info->cl);
-	  if (info->mask)
-	    free(info->mask);
-	  free(info);
+	  xfree(info->cl);
+	  xfree(info->mask);
+	  xfree(info);
 	}
 	else {
 	  if (!asshead)			/* only item in list */
@@ -319,11 +314,10 @@ BOOL kill_association(ASSOC * killme)
 	  if (info == asstail)
 	    asstail = info->prev;
 	}
-	free(info->cl);
-	free(info->mask);
-	if (info->sig)
-	  free(info->sig);
-	free(info);
+	xfree(info->cl);
+	xfree(info->mask);
+	xfree(info->sig);
+	xfree(info);
 	return TRUE;
       }
       info = info->next;
@@ -645,6 +639,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  MPFROMSHORT(0), MPFROMSHORT(TRUE));
         }
         pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        if (!pszWorkBuf)
+          break; //already complained
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
@@ -734,6 +730,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	replace = FALSE;
 
         pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        if (!pszWorkBuf)
+          break; //already complained
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);
@@ -849,6 +847,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      LM_QUERYSELECTION,
                                       MPFROMSHORT(LIT_CURSOR), MPVOID);
         pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+        if (!pszWorkBuf)
+          break; //already complained
 	memset(&temp, 0, sizeof(ASSOC));
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
         WinQueryDlgItemText(hwnd, ASS_CL, sizeof(temp.cl), temp.cl);

@@ -146,7 +146,8 @@ static BOOL ProcessDir(HWND hwndCnr,
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.
    */
-  if (((!rc || rc == ERROR_NO_MORE_FILES) && (pffbArray->attrFile & FILE_DIRECTORY)) || strlen(pszFileName) < 4) {
+  if (((!rc || rc == ERROR_NO_MORE_FILES) && (pffbArray->attrFile & FILE_DIRECTORY)) ||
+      strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
       free(pffbArray);
       return FALSE;

@@ -733,8 +733,11 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             else
               pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
           }
-          else
+          else {
             pci->pszSubject = xmalloc(retlen + 1, pszSrcFile, __LINE__);
+            if (!pci->pszSubject)
+              return FALSE;
+          }
 	  len = strlen(szSubject);
 	  if (len)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;

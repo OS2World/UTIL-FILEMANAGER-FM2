@@ -202,6 +202,8 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PSZ pszWorkBuf;
 
       pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      if (!pszWorkBuf)
+        return 0; //already complained
       WinQueryDlgItemText(hwnd, CFGA_VIRUS, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, virus)){
@@ -467,6 +469,8 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PSZ pszWorkBuf;
 
       pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      if (!pszWorkBuf)
+        return 0; //already complained
       WinQueryDlgItemText(hwnd, CFGV_VIEWER, MAXCOMLINESTRG, szCLBuf);
       szCLBuf[MAXCOMLINESTRG - 1] = 0;
       if (strcmp(szCLBuf, viewer)){
@@ -656,12 +660,13 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CLOSE:
-    { // fixme these strings can be longer than CCHMAXPATH since
-      // they contain args.
+    {
       CHAR szCLBuf[MAXCOMLINESTRG], szPathBuf[CCHMAXPATH];
       PSZ pszWorkBuf;
 
       pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      if (!pszWorkBuf)
+        return 0; //already complained
       WinQueryDlgItemText(hwnd, CFGH_RUNHTTPWORKDIR, CCHMAXPATH, szPathBuf);
       szPathBuf[CCHMAXPATH - 1] = 0;
       bstrip(szPathBuf);
@@ -1274,6 +1279,8 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PSZ pszWorkBuf;
 
       pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      if (!pszWorkBuf)
+        return 0; //already complained
       WinQueryDlgItemText(hwnd, CFGC_DIRCOMPARE, MAXCOMLINESTRG, szCLBuf);
 	szCLBuf[MAXCOMLINESTRG - 1] = 0;
 	if (strcmp(szCLBuf, dircompare)){

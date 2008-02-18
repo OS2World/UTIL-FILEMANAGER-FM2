@@ -101,9 +101,6 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
     mask = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
     if (mask) {
       BldFullPathName(mask, path, "*");
-      // sprintf(mask,
-      //	 "%s%s*",
-      //	 path, (path[strlen(path) - 1] != '\\') ? "\\" : NullStr);
       enddir = strrchr(mask, '\\');
       enddir++;
       ulFindCnt = 1;

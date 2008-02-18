@@ -99,9 +99,13 @@ static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
   if (*szCmdLine){
     PSZ pszWorkBuf;
     pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
-    NormalizeCmdLine(pszWorkBuf, szCmdLine);
-    pszDest = xstrdup(szCmdLine, pszSrcFile, __LINE__);
-    xfree(pszWorkBuf);
+    if (pszWorkBuf) {
+      NormalizeCmdLine(pszWorkBuf, szCmdLine);
+      pszDest = xstrdup(pszWorkBuf, pszSrcFile, __LINE__);
+      xfree(pszWorkBuf);
+    }
+    else
+      pszDest = xstrdup(szCmdLine, pszSrcFile, __LINE__); // return the unexamined input on failure
   }
   else
     pszDest = NULL;
