@@ -45,12 +45,13 @@
   12 Jan 08 SHL Support drag&drop dialog toggle
   16 Jan 08 SHL Add sync updates toggle
   16 Jan 08 GKY Fix changing background color on toolbar
-  xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   17 Jan 08 GKY Add presparam save & restore for individual directory containers
+  19 Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   19 Jan 08 GKY Rework Utilities menu
   05 Feb 08 SHL Restore no-prescan drives if restoring named state
   14 Feb 08 SHL Rework to support settings menu conditional cascade
   15 Feb 08 SHL Rework ResizeChildren to honor fNoTreeGap and resize drive tree better
+  19 Feb 08 JBS Stop deleting "State at last FM/2 Close" from INI file so it be accessed from States combo box.
 
 ***********************************************************************/
 
@@ -2979,7 +2980,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   // If restoring shutdown state bypass no-prescan drives
   fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
   // Delete saved state if restored saved state or internally saved state
-  fDeleteState = fIsShutDownState ||
+  fDeleteState = /* fIsShutDownState || */
 		 strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)) == 0;
 
   size = sizeof(SWP);

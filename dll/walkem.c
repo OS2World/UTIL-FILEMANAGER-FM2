@@ -23,6 +23,7 @@
   25 Aug 07 SHL Correct #pragma alloc_text typos
   11 Nov 07 GKY Cancel now directly closes dialog even if directory path text has changed
   20 Jan 08 GKY Walk & walk2 dialogs now save and restore size and position
+  19 Feb 08 JBS Add "State at last FM/2 close" to the states combo box
 
 ***********************************************************************/
 
@@ -88,6 +89,10 @@ VOID fill_setups_list(VOID)
 		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		 MPFROMP(pld->path));
     }
+    WinSendMsg(hwndStatelist,
+	       LM_INSERTITEM,
+	       MPFROM2SHORT(LIT_SORTASCENDING, 0),
+	       MPFROMP(GetPString(IDS_SHUTDOWNSTATE)));
     WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
   }
 }
