@@ -89,10 +89,12 @@ VOID fill_setups_list(VOID)
 		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		 MPFROMP(pld->path));
     }
-    WinSendMsg(hwndStatelist,
-	       LM_INSERTITEM,
-	       MPFROM2SHORT(LIT_SORTASCENDING, 0),
-	       MPFROMP(GetPString(IDS_SHUTDOWNSTATE)));
+    if (fSaveState) {
+      WinSendMsg(hwndStatelist,
+	         LM_INSERTITEM,
+	         MPFROM2SHORT(LIT_SORTASCENDING, 0),
+	         MPFROMP(GetPString(IDS_SHUTDOWNSTATE)));
+    }
     WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
   }
 }
