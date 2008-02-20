@@ -214,12 +214,8 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
 
     switch (ulInfoLevel) {
       case FIL_STANDARD:
-	rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
-	if (rc == ERROR_INVALID_NAME) {
-	  // fixme to validate counts?
-	  fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross
-	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, sizeof(fs3), flOptions);
-	}
+	fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross 64K boundary
+	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
 	break;
 
       case FIL_STANDARDL:
