@@ -211,11 +211,21 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
     FILESTATUS3L fs3l;
     EAOP2 eaop2;
     APIRET rc;
+    BOOL crosses = ((ULONG)pInfoBuf ^
+                   ((ULONG)pInfoBuf + cbInfoBuf - 1)) &
+                   ~0xffff;
 
     switch (ulInfoLevel) {
       case FIL_STANDARD:
-	fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross 64K boundary
-	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
+        if (crosses)
+        {
+	  fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross 64K boundary
+       	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
+        }
+        else
+        {
+       	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
+        }
 	break;
 
       case FIL_STANDARDL:
