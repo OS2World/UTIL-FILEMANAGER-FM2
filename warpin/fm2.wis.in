@@ -21,6 +21,8 @@
    WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
    WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
 
+   22 Feb 08 JBS Ticket 231: Stop auto-select of FM/2 Utilities of already installed.
+
 -->
 <WARPIN VERSION 0.9.20>
 
@@ -30,6 +32,27 @@
       return '3'
    else
       return '5'
+</REXX>
+
+<REXX NAME=FM2UtilitiesSelect>
+   call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
+   call SysLoadFuncs
+   warpin_path = strip(SysIni(, 'WarpIN', 'Path'), 'T', '00'x)
+   database_file = warpin_path || '\DATBAS_' || left(SysBootDrive(), 1) || '.INI'
+   ver = "@@@FM2UTILS_VER@@@"  /* PACKAGEID (do not delete this comment, SED needs this */
+   do forever
+     parse var ver '\' major '\' minor '\' sublevel '\' revision
+     if revision = '' then
+       ver = ver || '\0'
+     else
+       leave
+   end
+   fm2_utils_app = "Netlabs\FM2 Utilities\FM2Utils" || ver
+   call SysIni database_file, fm2_utils_app, 'ALL:', 'keys.'
+   if keys.0 = 0 then
+   	return 'SELECT'
+   else
+   	return ''
 </REXX>
 
 <PCK INDEX=1
@@ -87,7 +110,7 @@ replacing your current version. See the readme for more information.
   TITLE="FM/2 Utilities"
   EXTERNAL="fm2utils@@@FM2UTILS_VER@@@.wpi"
   TARGET="$(1)\Utils"
-  SELECT
+  =("FM2UtilitiesSelect")
   CREATEOBJECT="WPFolder|FM/2 Utilities|<WP_DESKTOP>|OBJECTID=<FM2_Utilities>;"
   CREATEOBJECT="WPProgram|Make Object|<FM2_Utilities>|EXENAME=$(7)\makeobj.cmd;PARAMETERS=%*;OBJECTID=<FM2MakeObj>;"
   CREATEOBJECT="WPProgram|Image Viewer|<FM2_Utilities>|EXENAME=$(7)\image.exe;PARAMETERS=%*;OBJECTID=<FM2Imageexe>;"
@@ -102,7 +125,6 @@ be used with or without FM/2. Included are
 DELTREE, HPFSOPT, RENCASE, MOV, KILL/2,
 PTREE and many more.
 </PCK>
-
 
 </HEAD>
 
