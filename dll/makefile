@@ -195,7 +195,13 @@ all: chkexe &
 chkexe:
   @echo Checking required EXEs
   if not exist internal\mkstr.exe internal\mkstr.exe
+!ifndef DEBUG
   lxlite -c:exehdr internal\mkstr.exe >nul
+!else
+! ifeq DEBUG 0
+    lxlite -c:exehdr internal\mkstr.exe >nul
+! endif
+!endif
 
 !endif
 
@@ -238,10 +244,23 @@ $(BASERES).lrf: $(__MAKEFILES__)
 
 $(BASERES).dll: $(BASERES).res
   @if not exist $@ echo $@ missing
+!ifndef DEBUG
   lxlite $@ /x+ /b-
   lxlite $@ /c:minstub
+!else
+! ifeq DEBUG 0
+    lxlite $@ /x+ /b-
+    lxlite $@ /c:minstub
+! endif
+!endif
   $(RC) $(RCFLAGS2) $(BASERES).res $@
+!ifndef DEBUG
   lxlite $@ /x- /b-
+!else
+! ifeq DEBUG 0
+    lxlite $@ /x- /b-
+! endif
+!endif
   bldlevel $@
 
 !endif # MAKERES mode
@@ -264,7 +283,13 @@ ipf\fm3.hlp:
 # Run for each dependent
 lxlite: $(BASE).dll $(BASERES).dll .symbolic
 # !lxlite /x- /b- $?
+!ifndef DEBUG
    @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
+!else
+!  ifeq DEBUG 0
+     @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
+!  endif
+!endif
 
 cleanobj: .symbolic
   cd internal

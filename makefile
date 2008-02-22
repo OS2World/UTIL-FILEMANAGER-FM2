@@ -40,6 +40,7 @@ WARPIN_OPTS = $(WARPIN_OPTS) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
 
 !include makefile_pre.mk
 
+
 all: dll $(BASE) allexe .symbolic
 
 dist: all lxlite wpi .symbolic
@@ -75,12 +76,24 @@ wpi: .symbolic
 # makefile_post.mk contains lxlite target for $(BASE).exe
 # Apply to each *.mak for other exes
 lxlite:: *.mak .symbolic
-   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+!ifdef DEBUG
+!  ifeq DEBUG 0
+     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+!  endif
+!else
+     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+!endif
 
 # Apply to dlls
 lxlite:: .symbolic
   cd dll
+!ifdef DEBUG
+!  ifeq DEBUG 0
+     $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+!  endif
+!else
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+!endif
   cd ..
 
 cleanobj: .symbolic
