@@ -3,6 +3,10 @@
    FM2.WIS.IN is used as input to SED which then replaces/inserts
    various text and creates FM2.WIS during the FM/2 build process.
 
+Change log
+   22 Feb 08 JBS Ticket 231: Stop auto-select of FM/2 Utilities of already installed.
+   23 Feb 08 JBS Ticket 226: Add debugging support package
+
    NOTE: If a NON-EXTERNAL package (i.e. a package whose files
    will be staged before building the WPI file) with an index
    greater than 999 is used, then the REXX program BLD_FM2_WPIDIRS.CMD
@@ -20,8 +24,6 @@
 
    WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
    WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
-
-   22 Feb 08 JBS Ticket 231: Stop auto-select of FM/2 Utilities of already installed.
 
 -->
 <WARPIN VERSION 0.9.20>
@@ -124,6 +126,17 @@ collection of more than 60  utilities which may
 be used with or without FM/2. Included are
 DELTREE, HPFSOPT, RENCASE, MOV, KILL/2,
 PTREE and many more.
+</PCK>
+
+<PCK INDEX=10
+  PACKAGEID="Netlabs\FM2\FM2 Debugging support@@@FM2_VER@@@"
+  TITLE="FM/2 Debugging support"
+  TARGET="$(1)"
+  FIXED
+  CREATEOBJECT='WPProgram|FM/2^with logging|<FM3_Folder>|EXENAME=*;STARTUPDIR=$(1)\Debug;PARAMETERS=/c $(1)\Debug\LogFM2.cmd [Enter enter the name for a log file:];MINIMIZED=YES;OBJECTID=<FM2WithLogging>;'
+>This package contains files which support efforts
+to debug problems with FM/2. Normally they will
+not be needed.
 </PCK>
 
 </HEAD>

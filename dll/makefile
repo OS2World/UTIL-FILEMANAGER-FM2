@@ -74,6 +74,14 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
 
+!ifdef DEBUG                    #if DEBUG is defined
+!  ifeq DEBUG 1                 #if it is 1
+!    ifdef %PERLLIB             #if PRELLIB env. var is defined (i.e. Perl is installed?)
+SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for building SYM files
+!    endif	
+!  endif	
+!endif	
+
 # Some flags are order dependent - see OpenWatcom docs
 # -bc		console app
 # -bd		build target is a Dynamic Link Library (DLL)
@@ -166,7 +174,7 @@ all: &
      $(BASERES).dll &
      ipf\fm3.hlp &
      internal\mkstr.exe &
-     fm3res.str
+     fm3res.str $(SYMS)
 
 $(BASE).dll $(BASE).lib: $(OBJS) $(BASE).def $(BASE).lrf
   @echo $(LINK) @$(BASE).lrf @$(BASE).def
@@ -238,6 +246,20 @@ $(BASERES).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
    @%append $^@ name $(BASERES)
    @for %f in ($(BASERES).obj) do @%append $^@ file %f
+
+$(BASE).sym: $(BASE).map
+   @echo Processing: $?
+   -perl ..\debugtools\mapsymw.pl $?
+
+$(BASERES).sym: $(BASERES).map
+   @echo Processing: $?
+   -perl ..\debugtools\mapsymw.pl $?
+
+internal\mkstr.sym: internal\mkstr.map
+   @echo Processing: $?
+   cd internal
+   -perl ..\..\debugtools\mapsymw.pl mkstr.map
+   cd ..
 
 !else
 

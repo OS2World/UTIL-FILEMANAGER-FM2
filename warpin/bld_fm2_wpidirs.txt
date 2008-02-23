@@ -1,6 +1,9 @@
 ;
 ; $Id$
 ;
+;  Change log:
+;	23 Feb 08 JBS: Added lines for debugging support package (#10)
+;
 ;  This is a file which will be used to simplify the process of
 ;     -  incorporating new files
 ;     -  renaming files
@@ -106,4 +109,12 @@ FILE: views.tmp                  1  .  Tmplates
 
 FILE: shdwmgr.cmd              1  .  Utils
 
-;NOFILESPACKAGE: 10
+FILE: logfm2.cmd               10 .  Debug
+FILE: *.map                    10 .  Debug
+FILE: *.sym                    10 .  .
+FILE: *.map                    10 dll  Debug
+FILE: *.sym                    10 dll  .
+FILE: *.map                    10 dll\internal  Debug
+FILE: *.sym                    10 dll\internal  .
+
+;NOFILESPACKAGE: 100

@@ -4,6 +4,7 @@
 # 16 Aug 05 SHL Clean up
 # 16 Apr 06 SHL Add lxlite target
 # 02 Jun 07 SHL Convert to OpenWatcom
+# 23 Feb 08 JBS Add support for building SYM files (Ticket 226)
 
 !ifndef MAKERES
 
@@ -25,6 +26,10 @@ $(BASE).lrf: $(__MAKEFILES__) .explicit
 !endif
    @%append $^@ library dll\fm3dll.lib
    @%append $^@ library os2386.lib
+
+$(BASE).sym: $(BASE).map
+     @echo Processing: $?
+     -perl debugtools\mapsymw.pl $?
 
 !else
 
