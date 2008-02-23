@@ -35,6 +35,7 @@
 # 03 Jan 08 SHL Prepare for final, implending switch to wrc.exe
 # 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 # 05 Jan 08 SHL Sync with .c renames
+# 22 Feb 08 JBS Suppress lxlite processing when DEBUG=1
 
 # Environment:
 
