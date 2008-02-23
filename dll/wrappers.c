@@ -217,15 +217,12 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
 
     switch (ulInfoLevel) {
       case FIL_STANDARD:
-        if (crosses)
-        {
+        if (crosses) {
 	  fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross 64K boundary
        	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
         }
         else
-        {
        	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
-        }
 	break;
 
       case FIL_STANDARDL:
