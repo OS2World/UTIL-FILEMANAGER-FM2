@@ -17,6 +17,7 @@
 #               differences in how Watcom handles macros.
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
 # 21 Jan 08 SHL Add *.lrf to clean target
+# 22 Feb 08 JBS Suppress lxlite processing when DEBUG=1
 
 # Environment - see makefile_pre.mk
 
