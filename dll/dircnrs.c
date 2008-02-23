@@ -32,8 +32,9 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Jan 08 SHL Sync with CfgDlgProc mods
-  xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
+  19 Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   15 Feb 08 SHL Sync with settings menu rework
+  22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
 
 ***********************************************************************/
 

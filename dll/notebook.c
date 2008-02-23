@@ -24,9 +24,10 @@
   10 Jan 08 SHL Remember last settings page
   10 Jan 08 SHL Rework page select logic
   13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
-  xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
+  19 Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   15 Feb 08 SHL Rework to support settings menu conditional cascade.  Make more generic
   16 Feb 08 SHL Restore SaveDirCnrState internal state save logic - accidentally removed
+  22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
 
 ***********************************************************************/
 
