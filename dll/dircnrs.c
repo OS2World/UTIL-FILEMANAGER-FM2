@@ -1230,9 +1230,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     return 0;
 
-  case WM_PRESPARAMCHANGED:
-    PresParamChanged(hwnd, "DirCnr", mp1, mp2);
-    break;
+//   case WM_PRESPARAMCHANGED:
+//     PresParamChanged(hwnd, "DirCnr", mp1, mp2);
+//     break;
 
   case UM_UPDATERECORDLIST:
     if (dcd && mp1)
@@ -1426,7 +1426,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	CNRINFO cnri;
 
-	RestorePresParams(hwnd, "DirCnr");
+// 	RestorePresParams(hwnd, "DirCnr");
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
 	WinSendMsg(hwnd,

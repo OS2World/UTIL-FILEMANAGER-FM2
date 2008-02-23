@@ -52,6 +52,7 @@
   14 Feb 08 SHL Rework to support settings menu conditional cascade
   15 Feb 08 SHL Rework ResizeChildren to honor fNoTreeGap and resize drive tree better
   19 Feb 08 JBS Stop deleting "State at last FM/2 Close" from INI file so it be accessed from States combo box.
+  22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
 
 ***********************************************************************/
 
@@ -3212,9 +3213,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
-	  sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
-	  RestorePresParams(hwndClient, szKey);
-	  SavePresParams(hwndClient, "DirCnr");
+// 	  sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
+// 	  RestorePresParams(hwndClient, szKey);
+// 	  SavePresParams(hwndClient, "DirCnr");
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,
 				      MPFROMP(szDir), MPFROMLONG(1));
@@ -3222,6 +3223,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
 	    if (hwndC) {
 	      HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
+	      sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
+	      RestorePresParams(hwndCnr, szKey);
 	      dcd = WinQueryWindowPtr(hwndCnr, QWL_USER);
 	      if (dcd) {
 		dcd->detailslongname = localdcd.detailslongname;
@@ -4639,6 +4642,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	      sprintf(s, "%s.DirCnr.%lu.DetailsAttr", szStateName, x);
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+	      sprintf(s, "%s.DirCnr.%lu.DetailsIcon", szStateName, x);
+	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	      sprintf(s, "%s.DirCnr.%lu.DetailsLWDate", szStateName, x);
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	      sprintf(s, "%s.DirCnr.%lu.DetailsLWTime", szStateName, x);
@@ -4650,6 +4655,10 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      sprintf(s, "%s.DirCnr.%lu.DetailsCRDate", szStateName, x);
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	      sprintf(s, "%s.DirCnr.%lu.DetailsCRTime", szStateName, x);
+	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+	      sprintf(s, "%s.DirCnr.%lu.Backgroundcolor", szStateName, x);
+	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+	      sprintf(s, "%s.DirCnr.%lu.Fontnamesize", szStateName, x);
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
 	    }
 	    sprintf(s, "%s.LastTreePos", szStateName);

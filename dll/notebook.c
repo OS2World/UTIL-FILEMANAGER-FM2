@@ -1396,8 +1396,9 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndMain && !strcmp(realappname, FM3Str)) {
 	  // Save state and restore to refresh windows with new settings
 	  if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
-	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
-	    PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
+   	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
+// 	    PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
+	    PostMsg(MainObjectHwnd, UM_RESTORE, GetPString(IDS_FM2TEMPTEXT), MPVOID);
 	  }
 	}
       }
@@ -1820,9 +1821,6 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  SubjectDisplayWidth = 0;
 	PrfWriteProfileData(fmprof,
 			    appname, "SubjectDisplayWidth",
-			    &SubjectDisplayWidth, sizeof(ULONG));
-	PrfWriteProfileData(fmprof,
-			    appname, "DirCnr.SubjectDisplayWidth",
 			    &SubjectDisplayWidth, sizeof(ULONG));
     }
     break;
@@ -2365,7 +2363,6 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    appname,
 			    "CollectorflWindowAttr",
 			    &flWindowAttr, sizeof(ULONG));
-	PrfWriteProfileData(fmprof, appname, "DirCnr.Fontnamesize", NULL, 0);
 	PrfWriteProfileData(fmprof,
 			    appname, "Collector.Fontnamesize", NULL, 0);
       }
@@ -2420,11 +2417,6 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    appname,
 			    "CollectorflWindowAttr",
 			    &flWindowAttr, sizeof(ULONG));
-	PrfWriteProfileData(fmprof,
-			    appname,
-			    "DirCnr.Fontnamesize",
-			    GetPString(IDS_8HELVTEXT),
-			    strlen(GetPString(IDS_8HELVTEXT)) + 1);
 	PrfWriteProfileData(fmprof,
 			    appname,
 			    "Collector.Fontnamesize",
@@ -2483,9 +2475,6 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    &flWindowAttr, sizeof(ULONG));
 	PrfWriteProfileData(fmprof, appname, "CollectorflWindowAttr",
 			    &flWindowAttr, sizeof(ULONG));
-	PrfWriteProfileData(fmprof, appname, "DirCnr.Fontnamesize",
-			    GetPString(IDS_8HELVTEXT),
-			    strlen(GetPString(IDS_8HELVTEXT)) + 1);
 	PrfWriteProfileData(fmprof, appname, "Collector.Fontnamesize",
 			    GetPString(IDS_8HELVTEXT),
 			    strlen(GetPString(IDS_8HELVTEXT)) + 1);
@@ -2949,9 +2938,10 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // Save state and restore to refresh windows with new settings
       if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
 	// Tell window procedure to close container windows
-	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
+   	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
 	// Restore saved state
-	PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
+// 	PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
+	PostMsg(MainObjectHwnd, UM_RESTORE, GetPString(IDS_FM2TEMPTEXT), MPVOID);
       }
     }
     WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),
