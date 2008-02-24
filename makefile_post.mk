@@ -36,16 +36,35 @@ $(BASE).sym: $(BASE).map
 # Replace resources
 $(BASE).exe: $(BASE).res .explicit
   @if not exist $@ echo $@ missing
-  lxlite $@ /x+ /b-
-  lxlite $@ /c:minstub
+!ifdef DEBUG
+!  ifeq DEBUG 0
+     lxlite $@ /x+ /b-
+     lxlite $@ /c:minstub
+!  endif
+!else
+     lxlite $@ /x+ /b-
+     lxlite $@ /c:minstub
+!endif
   $(RC) $(RCFLAGS2) $(BASE).res $@
+!ifdef DEBUG
+!  ifeq DEBUG 0
+     lxlite $@ /x- /b-
+!  endif
+!else
   lxlite $@ /x- /b-
+!endif
   bldlevel $@
 
 !endif
 
 lxlite:: $(BASE).exe .symbolic .explicit
+!ifdef DEBUG
+!  ifeq DEBUG 0
+     lxlite /x- /b- $?
+!  endif
+!else
   lxlite /x- /b- $?
+!endif
 
 clean:: .symbolic .explicit
   -del $(BASE).exe
