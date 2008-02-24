@@ -996,7 +996,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(wk);
+	    xfree(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -1026,7 +1026,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(wk);
+	    xfree(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -1050,7 +1050,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
-      free(dcd);
+      xfree(dcd);
       DosPostEventSem(CompactSem);
     }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -1231,9 +1231,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     return 0;
 
-//   case WM_PRESPARAMCHANGED:
-//     PresParamChanged(hwnd, "DirCnr", mp1, mp2);
-//     break;
+   case WM_PRESPARAMCHANGED:
+     PresParamChanged(hwnd, "DirCnr", mp1, mp2);
+     break;
 
   case UM_UPDATERECORDLIST:
     if (dcd && mp1)
@@ -1427,7 +1427,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	CNRINFO cnri;
 
-// 	RestorePresParams(hwnd, "DirCnr");
+ 	RestorePresParams(hwnd, "DirCnr");
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
 	WinSendMsg(hwnd,
@@ -2546,7 +2546,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	    else
-	      free(li);
+	      xfree(li);
 	  }
 	}
 	break;
@@ -3333,7 +3333,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  0,
 			  SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
 	FreeList(dcd->lastselection);
-	free(dcd);
+	xfree(dcd);
 	DosPostEventSem(CompactSem);
       }
     }
@@ -3464,7 +3464,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	  free(dcd);
+	  xfree(dcd);
 	  hwndFrame = (HWND) 0;
 	}
 	else {
