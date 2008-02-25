@@ -2958,7 +2958,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   CHAR szKey[STATE_NAME_MAX_BYTES + 80];
   CHAR szDir[CCHMAXPATH];
   CHAR szPrefix[STATE_NAME_MAX_BYTES + 2];
-  HWND hwndDir, hwndC;
+  HWND hwndDir, hwndC, hwndPPSave = NULLHANDLE;
   SWP swp, swpO, swpN;
   ULONG size, numsaves = 0, x;
   double xtrans, ytrans;
@@ -2980,9 +2980,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 
   // If restoring shutdown state bypass no-prescan drives
   fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
-  // Delete saved state if restored saved state or internally saved state
-  fDeleteState = /* fIsShutDownState || */
-		 strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)) == 0;
+  // Delete saved state if internally saved state
+  fDeleteState = strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)) == 0;
 
   size = sizeof(SWP);
   sprintf(szKey, "%sMySizeLastTime", szPrefix);
@@ -3213,9 +3212,6 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    if (fDeleteState)
 	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 	  }
-// 	  sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
-// 	  RestorePresParams(hwndClient, szKey);
-// 	  SavePresParams(hwndClient, "DirCnr");
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,
 				      MPFROMP(szDir), MPFROMLONG(1));
@@ -3223,6 +3219,22 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
 	    if (hwndC) {
 	      HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
+	      if (!hwndPPSave) {
+                hwndPPSave = WinCreateWindow(hwndCnr,         // Create a window (used to save default presparams)
+				             WC_CONTAINER,
+				             NULL,
+				             CCS_AUTOPOSITION | CCS_MINIICONS |
+				             CCS_MINIRECORDCORE | ulCnrType |
+				             WS_VISIBLE,
+				             0,
+				             0,
+				             0,
+				             0,
+				             hwndCnr,
+				             HWND_TOP, (ULONG) -1, NULL, NULL);
+	        CopyPresParams(hwndPPSave, hwndC);
+	        RestorePresParams(hwndPPSave, "DirCnr");
+	      }
 	      sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
 	      RestorePresParams(hwndCnr, szKey);
 	      dcd = WinQueryWindowPtr(hwndCnr, QWL_USER);
@@ -3291,8 +3303,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		}
 		if (fDeleteState)
 		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
-		if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
-		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
+          	if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
+  		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
 	      }
 	    }
 	    fRestored = TRUE;
@@ -3324,6 +3336,10 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	}
       }
     } // for
+    if (hwndPPSave) {
+       SavePresParams(hwndPPSave, "DirCnr");
+       WinDestroyWindow(hwndPPSave);
+    }
   }
   return fRestored;
 }

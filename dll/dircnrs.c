@@ -1427,7 +1427,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	CNRINFO cnri;
 
- 	RestorePresParams(hwnd, "DirCnr");
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
 	WinSendMsg(hwnd,
@@ -1509,13 +1508,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP2:
     if (dcd)
-    {
       AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
-    }
-    else {
+    else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
-      return 0;
-    }
     return 0;
 
   case WM_MENUEND:
@@ -3468,6 +3463,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  hwndFrame = (HWND) 0;
 	}
 	else {
+          RestorePresParams(dcd->hwndCnr, "DirCnr");
 	  WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
 	  dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
 					   (PFNWP) DirCnrWndProc);
