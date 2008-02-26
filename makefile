@@ -44,7 +44,9 @@ WARPIN_OPTS = $(WARPIN_OPTS) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
 
 all: dll $(BASE) allexe .symbolic
 
-dist: all lxlite wpi .symbolic
+syms: exesyms dllsyms .symbolic
+
+dist: all syms lxlite wpi .symbolic
 
 # Only update resources
 res: .symbolic
@@ -58,6 +60,11 @@ dll: .symbolic
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
   cd ..
 
+dllsyms: .symbolic
+  cd dll
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) dllsyms
+  cd ..
+
 $(BASE): $(BASE).exe $(BASE).res .symbolic
 
 $(BASE).res: $(BASE).rc  icons\$(BASE).ico bitmaps\*.bmp
@@ -68,6 +75,13 @@ $(BASE).obj: $(BASE).c dll\version.h
 
 allexe: *.mak .symbolic
    @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT)
+
+# make SYM files
+
+exesyms: *.mak .symbolic
+   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) sym
+
+# make WPI files
 
 wpi: .symbolic
    cd warpin

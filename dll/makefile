@@ -74,13 +74,7 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
 
-!ifdef DEBUG                    #if DEBUG is defined
-!  ifeq DEBUG 1                 #if it is 1
-!    ifdef %PERLLIB             #if PRELLIB env. var is defined (i.e. Perl is installed?)
 SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for building SYM files
-!    endif	
-!  endif	
-!endif	
 
 # Some flags are order dependent - see OpenWatcom docs
 # -bc		console app
@@ -174,7 +168,9 @@ all: &
      $(BASERES).dll &
      ipf\fm3.hlp &
      internal\mkstr.exe &
-     fm3res.str $(SYMS)
+     fm3res.str
+
+dllsyms: $(SYMS) .symbolic
 
 $(BASE).dll $(BASE).lib: $(OBJS) $(BASE).def $(BASE).lrf
   @echo $(LINK) @$(BASE).lrf @$(BASE).def
@@ -248,18 +244,30 @@ $(BASERES).lrf: $(__MAKEFILES__)
    @for %f in ($(BASERES).obj) do @%append $^@ file %f
 
 $(BASE).sym: $(BASE).map
+!ifdef %PERLLIB
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
+!else
+   @echo PERL environment not found. Skipping SYM file
+!endif
 
 $(BASERES).sym: $(BASERES).map
+!ifdef %PERLLIB
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
+!else
+   @echo PERL environment not found. Skipping SYM file
+!endif
 
 internal\mkstr.sym: internal\mkstr.map
+!ifdef %PERLLIB
    @echo Processing: $?
    cd internal
    -perl ..\..\debugtools\mapsymw.pl mkstr.map
    cd ..
+!else
+   @echo PERL environment not found. Skipping SYM file
+!endif
 
 !else
 

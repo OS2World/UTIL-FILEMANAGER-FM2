@@ -9,7 +9,9 @@ BASE=vcollect
 
 !include makefile_pre.mk
 
-all: $(BASE).exe $(BASE).res $(SYMS) .symbolic
+all: $(BASE).exe $(BASE).res .symbolic
+
+sym: $(BASE).sym .symbolic
 
 $(BASE).res: $(BASE).rc dll\fm3dll.h icons\collect.ico bitmaps\*.bmp
 

@@ -9,7 +9,9 @@ BASE=vtree
 
 !include makefile_pre.mk
 
-all: $(BASE).exe $(BASE).res $(SYMS) .symbolic
+all: $(BASE).exe $(BASE).res .symbolic
+
+sym: $(BASE).sym .symbolic
 
 $(BASE).res: $(BASE).rc icons\tree.ico bitmaps\*.bmp
 

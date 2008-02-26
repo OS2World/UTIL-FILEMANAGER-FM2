@@ -9,7 +9,9 @@ BASE=dirsize
 
 !include makefile_pre.mk
 
-all: $(BASE).exe $(BASE).res $(SYMS) .symbolic
+all: $(BASE).exe $(BASE).res .symbolic
+
+sym: $(BASE).sym .symbolic
 
 $(BASE).res: dirsize.h dll\fm3dll.h $(BASE).rc $(BASE).dlg
 

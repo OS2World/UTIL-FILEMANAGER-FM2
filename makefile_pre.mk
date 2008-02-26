@@ -39,13 +39,7 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
 
-!ifdef DEBUG                    #if DEBUG is defined
-!  ifeq DEBUG 1                 #if it is 1
-!    ifdef %PERLLIB             #if PRELLIB env. var is defined (i.e. Perl is installed?)
 SYMS = $(BASE).sym              #set a target for building SYM files
-!    endif	
-!  endif	
-!endif	
 
 # Some flags are order dependent - see OpenWatcom docs
 # -bc		console app
