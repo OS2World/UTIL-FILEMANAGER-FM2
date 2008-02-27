@@ -7,6 +7,7 @@ Change log
    22 Feb 08 JBS Ticket 231: Stop auto-select of FM/2 Utilities of already installed.
    23 Feb 08 JBS Ticket 226: Add debugging support package
    24 Feb 08 JBS Ticket 226: Add debugging support package
+   26 Feb 08 JBS Ticket 226: Reset debgging package version to match FM2_VER
 
    NOTE: If a NON-EXTERNAL package (i.e. a package whose files
    will be staged before building the WPI file) with an index
@@ -130,7 +131,7 @@ PTREE and many more.
 </PCK>
 
 <PCK INDEX=10
-  PACKAGEID="Netlabs\FM2\FM2 Debugging support\1\0\0\0"
+  PACKAGEID="Netlabs\FM2\FM2 Debugging support@@@FM2_VER@@@"
   TITLE="FM/2 Debugging support"
   TARGET="$(1)"
   FIXED
