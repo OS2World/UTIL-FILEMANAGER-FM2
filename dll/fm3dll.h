@@ -124,6 +124,7 @@
 
 #include "dircnrs.h"	// 05 Jan 08 SHL fixme to be gone when DIRCNRDATA refs gone
 #include "makelist.h"	// 05 Jan 08 SHL fixme to be gone when LISTINFO refs gone
+#include "command.h"    // 01 Mar 08 GKY fixme to be gone when LINKCMDS refs gone
 
 #ifdef DEFINE_GLOBALS
 #pragma data_seg(GLOBAL1)
@@ -330,16 +331,6 @@ typedef struct
   long *origs;
 }
 COLORS;
-
-typedef struct LINKCMDS
-{
-  CHAR *cl;
-  CHAR *title;
-  ULONG flags;
-  struct LINKCMDS *next;
-  struct LINKCMDS *prev;
-}
-LINKCMDS;
 
 typedef struct
 {
@@ -928,13 +919,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
 HWND StartCollector(HWND hwndParent, INT flags);
 MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				     MPARAM mp2);
-
-/* command.c */
-VOID RunCommand(HWND hwnd, INT cx);
-VOID EditCommands(HWND hwnd);
-CHAR *command_title(INT cx);
-VOID load_commands(VOID);
+                                     MPARAM mp2);
 
 /* instant.c */
 MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);

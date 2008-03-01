@@ -94,14 +94,12 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 { // fixme for command line limit
   CHAR *szCmdLine;
+  PSZ pszWorkBuf;
 
   szCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!szCmdLine)
-          return NULL; //already complained
-  xfree(pszDest);
-  WinQueryDlgItemText(hwnd, id, sizeof(szCmdLine), szCmdLine);
-  if (*szCmdLine){
-    PSZ pszWorkBuf;
+  if (szCmdLine) {
+    xfree(pszDest);
+    WinQueryDlgItemText(hwnd, id, sizeof(szCmdLine), szCmdLine);
     pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
     if (pszWorkBuf) {
       NormalizeCmdLine(pszWorkBuf, szCmdLine);
@@ -110,10 +108,10 @@ static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
     }
     else
       pszDest = xstrdup(szCmdLine, pszSrcFile, __LINE__); // return the unexamined input on failure
+    xfree(szCmdLine);
   }
   else
     pszDest = NULL;
-  xfree(szCmdLine);
   return pszDest;
 }
 

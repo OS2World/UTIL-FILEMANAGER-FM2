@@ -274,9 +274,10 @@ VOID save_associations(VOID)
     info = asshead;
     while (info) {
       fprintf(fp,
-	      ";\n%0.*s\n%0.4096s\n%0.*s\n%lu\n%lu\n",
+	      ";\n%0.*s\n%0.*s\n%0.*s\n%lu\n%lu\n",
 	      CCHMAXPATH,
-	      info->mask,
+              info->mask,
+              MaxComLineStrg,
 	      info->pszCmdLine,
 	      CCHMAXPATH,
 	      (info->sig) ? info->sig : NullStr, info->offset, info->flags);
@@ -509,32 +510,37 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_UNDO:
     {
-      CHAR s[4096];
+      PSZ pszDisplayStr;
 
-      WinSendDlgItemMsg(hwnd, ASS_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-      info = asshead;
-      while (info) {
-	sprintf(s,
-		"%-12s \x1a %-24s %s%s%s",
-		info->mask,
-		info->pszCmdLine,
-		(info->sig && *info->sig) ?
-		"[" : NullStr,
-		(info->sig && *info->sig) ? info->sig : NullStr,
-		(info->sig && *info->sig) ? "]" : NullStr);
-	x = (SHORT) WinSendDlgItemMsg(hwnd,
-				      ASS_LISTBOX,
-				      LM_INSERTITEM,
-				      MPFROM2SHORT(LIT_END, 0), MPFROMP(s));
-	if (x >= 0)
-	  WinSendDlgItemMsg(hwnd,
-			    ASS_LISTBOX,
-			    LM_SETITEMHANDLE, MPFROMSHORT(x), MPFROMP(info));
-	info = info->next;
+      pszDisplayStr = xmallocz((CCHMAXPATH * 2) + MaxComLineStrg + 6,
+                               pszSrcFile, __LINE__);
+      if (pszDisplayStr) {
+        WinSendDlgItemMsg(hwnd, ASS_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
+        info = asshead;
+        while (info) {
+          sprintf(pszDisplayStr,
+                  "%-12s \x1a %-24s %s%s%s",
+                  info->mask,
+                  info->pszCmdLine,
+                  (info->sig && *info->sig) ?
+                  "[" : NullStr,
+                  (info->sig && *info->sig) ? info->sig : NullStr,
+                  (info->sig && *info->sig) ? "]" : NullStr);
+          x = (SHORT) WinSendDlgItemMsg(hwnd,
+                                        ASS_LISTBOX,
+                                        LM_INSERTITEM,
+                                        MPFROM2SHORT(LIT_END, 0), MPFROMP(pszDisplayStr));
+          if (x >= 0)
+            WinSendDlgItemMsg(hwnd,
+                              ASS_LISTBOX,
+                              LM_SETITEMHANDLE, MPFROMSHORT(x), MPFROMP(info));
+          info = info->next;
+        }
+        WinSendDlgItemMsg(hwnd,
+                          ASS_LISTBOX,
+                          LM_SELECTITEM, MPFROMSHORT(0), MPFROMSHORT(TRUE));
+        xfree(pszDisplayStr);
       }
-      WinSendDlgItemMsg(hwnd,
-			ASS_LISTBOX,
-			LM_SELECTITEM, MPFROMSHORT(0), MPFROMSHORT(TRUE));
     }
     return 0;
 

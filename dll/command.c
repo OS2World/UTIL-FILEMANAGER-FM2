@@ -42,6 +42,7 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 #include "pathutil.h"                   // NormalizeCmdLine
+#include "command.h"
 
 typedef struct
 {
@@ -307,7 +308,7 @@ VOID free_commands(VOID)
   while (info) {
     next = info->next;
     xfree(info->title);
-    xfree(info->cl);
+    xfree(info->pszCmdLine);
     xfree(info);
     info = next;
   }
@@ -318,57 +319,61 @@ VOID load_commands(VOID)
 {
   FILE *fp;
   LINKCMDS *info;
-  CHAR cl[1024];
+  PSZ pszCmdLine;
   CHAR title[100];
   CHAR flags[72];
 
   if (cmdhead)
     free_commands();
   cmdloaded = TRUE;
-  save_dir2(cl);
-  if (cl[strlen(cl) - 1] != '\\')
-    strcat(cl, "\\");
-  strcat(cl, "COMMANDS.DAT");
-  fp = _fsopen(cl, "r", SH_DENYWR);
-  if (fp) {
-    while (!feof(fp)) {
-      if (!xfgets_bstripcr(title, sizeof(title), fp, pszSrcFile, __LINE__))
-	break;
-      title[34] = 0;			// fixme to know why chopped this way?
-      bstripcr(title);
-      if (!*title || *title == ';')
-	continue;
-      if (!xfgets(cl, sizeof(cl), fp, pszSrcFile, __LINE__))
-	break;				/* error! */
-      if (!xfgets(flags, 72, fp, pszSrcFile, __LINE__))
-	break;				/* error! */
-      cl[1000] = 0;			// fixme to know why chopped this way?
-      bstripcr(cl);
-      flags[34] = 0;
-      bstripcr(flags);
-      if (!*cl)
-	continue;
-      info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
-      if (info) {
-	info->cl = xstrdup(cl, pszSrcFile, __LINE__);
-	info->title = xstrdup(title, pszSrcFile, __LINE__);
-	info->flags = atol(flags);
-	if (!info->cl || !info->title) {
-	  xfree(info->cl);
-	  xfree(info->title);
-	  xfree(info);
-	  break;
-	}
-	if (!cmdhead)
-	  cmdhead = info;
-	else {
-	  cmdtail->next = info;
-	  info->prev = cmdtail;
-	}
-	cmdtail = info;
+  pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (pszCmdLine) {
+    save_dir2(pszCmdLine);
+    if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
+      strcat(pszCmdLine, "\\");
+    strcat(pszCmdLine, "COMMANDS.DAT");
+    fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
+    if (fp) {
+      while (!feof(fp)) {
+        if (!xfgets_bstripcr(title, sizeof(title), fp, pszSrcFile, __LINE__))
+          break;
+        title[34] = 0;			// fixme to know why chopped this way?
+        bstripcr(title);
+        if (!*title || *title == ';')
+          continue;
+        if (!xfgets(pszCmdLine, MaxComLineStrg, fp, pszSrcFile, __LINE__))
+          break;				/* error! */
+        if (!xfgets(flags, 72, fp, pszSrcFile, __LINE__))
+          break;				/* error! */
+        pszCmdLine[MaxComLineStrg - 1] = 0;			// fixme to know why chopped this way?
+        bstripcr(pszCmdLine);
+        flags[34] = 0;
+        bstripcr(flags);
+        if (!pszCmdLine)
+          continue;
+        info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
+        if (info) {
+          info->pszCmdLine = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
+          info->title = xstrdup(title, pszSrcFile, __LINE__);
+          info->flags = atol(flags);
+          if (!info->pszCmdLine || !info->title) {
+            xfree(info->pszCmdLine);
+            xfree(info->title);
+            xfree(info);
+            break;
+          }
+          if (!cmdhead)
+            cmdhead = info;
+          else {
+            cmdtail->next = info;
+            info->prev = cmdtail;
+          }
+          cmdtail = info;
+        }
       }
+      xfree(pszCmdLine);
+      fclose(fp);
     }
-    fclose(fp);
   }
 }
 
@@ -391,8 +396,8 @@ VOID save_commands(VOID)
     info = cmdhead;
     while (info) {
       fprintf(fp,
-	      ";\n%0.34s\n%0.1000s\n%lu\n",
-	      info->title, info->cl, info->flags);
+	      ";\n%0.34s\n%0.*s\n%lu\n",
+	      info->title, MaxComLineStrg, info->pszCmdLine, info->flags);
       info = info->next;
     }
     fclose(fp);
@@ -416,12 +421,12 @@ LINKCMDS *add_command(COMMAND * addme)
   info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
   if (!info)
     return NULL;
-  info->cl = xstrdup(addme->pszCmdLine, pszSrcFile, __LINE__);
+  info->pszCmdLine = xstrdup(addme->pszCmdLine, pszSrcFile, __LINE__);
   info->title = xstrdup(addme->title, pszSrcFile, __LINE__);
   if (addme->flags)
     info->flags = addme->flags;
-  if (!info->cl || !info->title) {
-    xfree(info->cl);
+  if (!info->pszCmdLine || !info->title) {
+    xfree(info->pszCmdLine);
     xfree(info->title);
     xfree(info);
     return NULL;
@@ -458,7 +463,7 @@ BOOL kill_command(CHAR * killme)
 	  if (info == cmdtail)
 	    cmdtail = info->prev;
 	}
-	xfree(info->cl);
+	xfree(info->pszCmdLine);
 	xfree(info->title);
 	xfree(info);
 	return TRUE;
@@ -524,7 +529,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    Runtime_Error(pszSrcFile, __LINE__, "LM_QUERYITEMHANDLE");
 	    break;
 	  }
-	  WinSetDlgItemText(hwnd, CMD_CL, info->cl);
+	  WinSetDlgItemText(hwnd, CMD_CL, info->pszCmdLine);
 	  if (!(info->flags & 1023))
 	    WinCheckButton(hwnd, CMD_DEFAULT, TRUE);
 	  else {
@@ -547,7 +552,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    *env = 0;
 	    size = sizeof(env) - 1;
-	    if (PrfQueryProfileData(fmprof, FM3Str, info->cl, env, &size) &&
+	    if (PrfQueryProfileData(fmprof, FM3Str, info->pszCmdLine, env, &size) &&
 		*env)
 	      WinSetDlgItemText(hwnd, CMD_ENVIRON, env);
 	    else
@@ -1019,14 +1024,14 @@ VOID RunCommand(HWND hwnd, INT cx)
 	*fakelist = list[cntr];
 	fakelist[1] = NULL;
 	ExecOnList(hwnd,
-		   info->cl,
+		   info->pszCmdLine,
                    flags, NULL, fakelist, GetPString(IDS_EXECCMDTITLETEXT),
                    pszSrcFile, __LINE__);
       }
     }
     else
       ExecOnList(hwnd,
-		 info->cl,
+		 info->pszCmdLine,
                  flags, NULL, list, GetPString(IDS_EXECCMDTITLETEXT),
                  pszSrcFile, __LINE__);
   }

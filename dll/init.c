@@ -713,20 +713,29 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       fWantFirstTimeInit = TRUE;
     }
     else {
-      if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L))
-        saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING, "Check INI header failed");
-      fIniExisted = TRUE;
-      if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
-	fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
-	rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
-	if (rc) {
-	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		      GetPString(IDS_INIREADONLYTEXT), inipath);
-	  }
-
+      if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
+        saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,
+               "Check INI header failed will attempt to replace with backup \\
+               if backup fails or not found will open with new ini");
+        DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
+        DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
+        if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
+          DosCopy("FM3.INI", "FM3INI2.BAD", DCPY_EXISTING);
+          fWantFirstTimeInit = TRUE;
+        }
+      }
+      if (!fWantFirstTimeInit) {
+        fIniExisted = TRUE;
+        if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
+          fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
+          rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
+          if (rc) {
+            Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                        GetPString(IDS_INIREADONLYTEXT), inipath);
+          }
+        }
       }
     }
-
     fmprof = PrfOpenProfile((HAB)0, inipath);
     if (!fmprof) {
       strcpy(inipath, "FM3.INI");
@@ -737,7 +746,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     // 10 Jan 08 SHL post UM_FIRSTTIME to main window
     if (!fmprof) {
       Win_Error(NULLHANDLE, NULLHANDLE, pszSrcFile, __LINE__,
-		"PrfOpenProfile");
+                "PrfOpenProfile");
       return FALSE;
     }
   }

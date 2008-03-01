@@ -66,6 +66,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
+#include "command.h"                    // RunCommand
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

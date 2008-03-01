@@ -33,7 +33,5 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ArcFolderProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
-PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
 
 #endif // ARCCNRS_H

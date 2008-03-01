@@ -73,6 +73,7 @@
 #include "errutil.h"			// Runtime_Error
 #include "tmrsvcs.h"			// ITIMER_DESC
 #include "notebook.h"			// CfgDlgProc
+#include "command.h"                    // RunCommand
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

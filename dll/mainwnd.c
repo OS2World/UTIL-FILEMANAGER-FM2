@@ -74,10 +74,11 @@
 #include "tools.h"
 #include "comp.h"
 #include "datamin.h"
-#include "arccnrs.h"                    // BldQuotedFileName
+#include "pathutil.h"                    // BldQuotedFileName
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "notebook.h"			// CfgDlgProc CfgMenuInit
+#include "command.h"                    // LINKCMDS
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -1535,19 +1536,22 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_RESCAN:
     {
-      CHAR cl[1024];
+      PSZ pszCmdLine;
 
-      *cl = 0;
-      lbup = TRUE;
-      if (WinDlgBox(HWND_DESKTOP,
-		    hwnd,
-		    CmdLine2DlgProc,
-		    FM3ModHandle, EXEC2_FRAME, MPFROMP(cl))) {
-	lstrip(cl);
-	WinSetWindowText(hwnd, cl);
+      pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+      if (pszCmdLine) {
+        lbup = TRUE;
+        if (WinDlgBox(HWND_DESKTOP,
+	  	      hwnd,
+		      CmdLine2DlgProc,
+		      FM3ModHandle, EXEC2_FRAME, MPFROMP(pszCmdLine))) {
+	  lstrip(pszCmdLine);
+	WinSetWindowText(hwnd, pszCmdLine);
+        }
+        PostMsg(hwnd, UM_FOCUSME, MPVOID, MPVOID);
+        PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
+        xfree(pszCmdLine);
       }
-      PostMsg(hwnd, UM_FOCUSME, MPVOID, MPVOID);
-      PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     }
     return 0;
 

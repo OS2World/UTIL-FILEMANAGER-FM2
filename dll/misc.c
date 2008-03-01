@@ -56,9 +56,10 @@
 
 #include "fm3dlg.h"
 #include "fm3str.h"
-#include "pathutil.h"		   // BldQuotedFileName
+#include "pathutil.h"		    // BldQuotedFileName
 #include "errutil.h"		    // Dos_Error...
 #include "strutil.h"		    // GetPString
+#include "command.h"                // LINKCMDS
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -961,7 +962,8 @@ BOOL ViewHelp(CHAR * filename)
 INT ExecFile(HWND hwnd, CHAR * filename)
 {
   EXECARGS ex;
-  CHAR cl[1001], path[CCHMAXPATH], *p;
+  CHAR path[CCHMAXPATH], *p;
+  PSZ pszCmdLine;
   APIRET ret;
   static INT lastflags = 0;
 
@@ -979,23 +981,26 @@ INT ExecFile(HWND hwnd, CHAR * filename)
   }
   else
     *path = 0;
-  *cl = 0;
-  BldQuotedFileName(cl, filename);
-  memset(&ex, 0, sizeof(ex));
-  ex.flags = lastflags;
-  ex.commandline = cl;
-  *ex.path = 0;
-  *ex.environment = 0;
-  ret = WinDlgBox(HWND_DESKTOP, hwnd, CmdLineDlgProc, FM3ModHandle,
-		  EXEC_FRAME, &ex);
-  if (ret == 1) {
-    lastflags = ex.flags;
-    return runemf2(ex.flags, hwnd, pszSrcFile, __LINE__, path,
-		   *ex.environment ? ex.environment : NULL,
-		   "%s", cl) != -1;
+  pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (pszCmdLine) {
+    BldQuotedFileName(pszCmdLine, filename);
+    memset(&ex, 0, sizeof(ex));
+    ex.flags = lastflags;
+    ex.commandline = pszCmdLine;
+    *ex.path = 0;
+    *ex.environment = 0;
+    ret = WinDlgBox(HWND_DESKTOP, hwnd, CmdLineDlgProc, FM3ModHandle,
+                    EXEC_FRAME, &ex);
+    if (ret == 1) {
+      lastflags = ex.flags;
+      return runemf2(ex.flags, hwnd, pszSrcFile, __LINE__, path,
+                     *ex.environment ? ex.environment : NULL,
+                     "%s", pszCmdLine) != -1;
+    }
+    else if (ret != 0)
+      return -1;
+    xfree(pszCmdLine);
   }
-  else if (ret != 0)
-    return -1;
   return 0;
 }
 

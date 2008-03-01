@@ -92,7 +92,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
     Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     return -1;
   }
-  commandline = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+  commandline = xmalloc(MaxComLineStrg + 1, pszSrcFile, __LINE__);
   if (!commandline)
     return -1; //already complained
   *listfile = 0;
@@ -465,7 +465,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    switch (*(p + 1)) {
 	    case 'R':
 	    case 'r':
-	      if (pp + strlen(list[x]) > commandline + 1250)
+	      if (pp + strlen(list[x]) > commandline + MaxComLineStrg)
 		goto BreakOut;
 	      if (*(p + 1) == 'r') {
 		strcpy(pp, list[x]);
@@ -481,7 +481,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	    case 'f':
 	      if (*(p + 1) == 'F' && dot)
 		*dot = 0;
-	      if (pp + strlen(file) > commandline + 1250)
+	      if (pp + strlen(file) > commandline + MaxComLineStrg)
 		goto BreakOut;
 	      if (needs_quoting(file)) {
 		spaces = TRUE;
@@ -504,7 +504,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 
 	    case 'A':
 	    case 'a':
-	      if (pp + strlen(list[x]) > commandline + 1250)
+	      if (pp + strlen(list[x]) > commandline + MaxComLineStrg)
 		goto BreakOut;
 	      if (needs_quoting(list[x]) && !strchr(list[x], '\"')) {
 		spaces = TRUE;
@@ -533,7 +533,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 
 	    case 'e':
 	      if (ext) {
-		if (pp + strlen(ext) > commandline + 1250)
+		if (pp + strlen(ext) > commandline + MaxComLineStrg)
 		  goto BreakOut;
 		if (needs_quoting(ext)) {
 		  spaces = TRUE;

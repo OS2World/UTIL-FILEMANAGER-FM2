@@ -207,7 +207,9 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
                      GetPString(IDS_PROGRAMNOTFOUNDTEXT),
                      pszCmdLine_);
         if (ret == MBID_YES){
-          pszNewCmdLine = pszCmdLine_;
+          if (szArgs[0] != ' ')
+            strcat(pszNewCmdLine, " ");
+          strcat(pszNewCmdLine, szArgs);
       }
         else{
           fCancelAction = TRUE;
@@ -305,7 +307,9 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 		   GetPString(IDS_PROGRAMNOTFOUNDTEXT),
 		   pszCmdLine_);
       if (ret == MBID_YES) {
-	pszWorkBuf = pszCmdLine_;
+        if (szArgs[0] != ' ')
+          strcat(pszNewCmdLine, " ");
+        strcat(pszNewCmdLine, szArgs);
       }
       else {
 	fCancelAction = TRUE;

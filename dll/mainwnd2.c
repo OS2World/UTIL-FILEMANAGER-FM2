@@ -41,10 +41,11 @@
 #include "tools.h"
 #include "datamin.h"
 #include "comp.h"			// COMPARE
-#include "arccnrs.h"			// BldQuotedFileName
+#include "pathutil.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
+#include "command.h"                    // RunCommand
 #include "fm3dll.h"
 
 typedef struct
