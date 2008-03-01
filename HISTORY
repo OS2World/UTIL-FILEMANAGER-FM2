@@ -39,6 +39,16 @@ New stuff's at the top.  This list is not necessarily complete.
  o Add unhide menu option (Gregg)
  o Enable user settable command line length (Gregg)
  o Add presparams & update appearence of "Sizes" dialog (Gregg)
+ o Fix save and restore of non-default details view settings (John)
+ o The list of excluded drives in the parameters of the FM/2 object
+   are no longer overwritten during the FM/2 install (John)
+ o The FM/2 Utilities package will no longer be selected automatically
+   during the install if it has already been installed. (John)
+ o Add a "debugging support" package to the Warpin WPI file (John)
+ o The build process has been changed so that script is updated with the new
+   version number the first time the WPI file for that version is built (John)
+ o Changed the build process to skip LXLITE processing on debug builds (John)
+
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,
