@@ -244,30 +244,18 @@ $(BASERES).lrf: $(__MAKEFILES__)
    @for %f in ($(BASERES).obj) do @%append $^@ file %f
 
 $(BASE).sym: $(BASE).map
-!ifdef %PERLLIB
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
-!else
-   @echo PERL environment not found. Skipping SYM file
-!endif
 
 $(BASERES).sym: $(BASERES).map
-!ifdef %PERLLIB
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
-!else
-   @echo PERL environment not found. Skipping SYM file
-!endif
 
 internal\mkstr.sym: internal\mkstr.map
-!ifdef %PERLLIB
    @echo Processing: $?
    cd internal
    -perl ..\..\debugtools\mapsymw.pl mkstr.map
    cd ..
-!else
-   @echo PERL environment not found. Skipping SYM file
-!endif
 
 !else
 

@@ -28,8 +28,8 @@ $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%append $^@ library os2386.lib
 
 $(BASE).sym: $(BASE).map
-     @echo Processing: $?
-     -perl debugtools\mapsymw.pl $?
+   @echo Processing: $?
+   -perl debugtools\mapsymw.pl $?
 
 !else
 
