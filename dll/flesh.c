@@ -18,6 +18,7 @@
   01 Aug 07 SHL Sync with CNRITEM mods
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -133,8 +134,7 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 	}
       }
     }
-    if (var)
-      free(var);
+    xfree(var);
     pciL = (PCNRITEM) WinSendMsg(hwndCnr,
 				 CM_QUERYRECORD,
 				 MPFROMP(pciParent),

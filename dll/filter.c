@@ -13,6 +13,7 @@
   29 Jul 06 SHL Use xfgets_bstripcr
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -152,7 +153,7 @@ VOID load_masks(VOID)
 	    last = info;
 	  }
 	  else
-	    free(info);
+	    xfree(info);
 	}
       }
     }  //while
@@ -216,7 +217,7 @@ VOID add_mask(CHAR * mask)
 	last->next = info;
     }
     else
-      free(info);
+      xfree(info);
   }
 }
 
@@ -236,8 +237,8 @@ VOID remove_mask(CHAR * mask)
 	last->next = info->next;
       else
 	maskhead = info->next;
-      free(info->mask);
-      free(info);
+      xfree(info->mask);
+      xfree(info);
       break;
     }
     last = info;

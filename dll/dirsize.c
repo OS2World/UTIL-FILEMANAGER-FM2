@@ -30,6 +30,8 @@
   13 Aug 07 SHL ProcessDir: remove unneeded reallocs.  Sanitize code
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
 
 ***********************************************************************/
 
@@ -149,14 +151,14 @@ static BOOL ProcessDir(HWND hwndCnr,
   if (((!rc || rc == ERROR_NO_MORE_FILES) && (pffbArray->attrFile & FILE_DIRECTORY)) ||
       strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
-      free(pffbArray);
+      xfree(pffbArray);
       return FALSE;
     }
     pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES),
 		     MPFROMLONG(1));
     if (!pci) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
-      free(pffbArray);
+      xfree(pffbArray);
       return FALSE;
     }
     if (!rc) {
@@ -172,7 +174,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   } // if got something
   else {
     // No match
-    free(pffbArray);
+    xfree(pffbArray);
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
     return FALSE;
@@ -215,7 +217,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-    free(pffbArray);
+    xfree(pffbArray);
     return FALSE;
   }
 
@@ -277,7 +279,7 @@ static BOOL ProcessDir(HWND hwndCnr,
 	      GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
   }
 
-  free(pffbArray);
+  xfree(pffbArray);
 
   pci->cbFile = ullCurDirBytes;
   pci->easize = ullSubDirBytes;		// hack cough
@@ -455,7 +457,7 @@ static VOID FillCnrThread(VOID *args)
   }
   PostMsg(WinQueryWindow(hwndCnr, QW_PARENT),
 	  UM_CONTAINER_FILLED, MPVOID, MPVOID);
-  free(dirsize);
+  xfree(dirsize);
 }
 
 MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -482,9 +484,22 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(pState->hptr), MPVOID);
     {
       CHAR s[CCHMAXPATH + 81];
-
+      RestorePresParams(hwnd, "DirSizes");
       sprintf(s, GetPString(IDS_DIRSIZETITLETEXT), pState->szDirName);
       WinSetWindowText(hwnd, s);
+    }
+    {
+      SWP swp;
+      ULONG size = sizeof(SWP);
+
+      PrfQueryProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp, &size);
+      WinSetWindowPos(hwnd,
+                      HWND_TOP,
+                      swp.x,
+                      swp.y,
+                      swp.cx,
+                      swp.cy,
+                      swp.fl);
     }
     {
       DIRSIZE *dirsize;
@@ -501,7 +516,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  -1) {
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	free(dirsize);
+	xfree(dirsize);
 	WinDismissDlg(hwnd, 0);
 	break;
       }
@@ -613,6 +628,10 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     return 0;
 
+  case WM_PRESPARAMCHANGED:
+    PresParamChanged(hwnd, "DirSizes", mp1, mp2);
+    break;
+
   case WM_DRAWITEM:
     if (mp2) {
 
@@ -637,8 +656,10 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    INT boxHeight;
 	    p = strchr(pci->pszFileName, '\r');
 	    if (p) {
-	      // draw text
-	      if (!pci->cbFile)		// no size
+              // draw text
+              if (*(pci->pszLongName + 1) == 1)  // is root record
+	        GpiSetColor(oi->hps, CLR_DARKRED);
+	      else if (!pci->cbFile)		// no size
 		GpiSetColor(oi->hps, CLR_DARKGRAY);
 	      else if (!pci->easize)	// no size below
 		GpiSetColor(oi->hps, CLR_DARKBLUE);
@@ -653,7 +674,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      GpiQueryTextBox(oi->hps, strlen(pci->pszFileName),
 			      pci->pszFileName, TXTBOX_COUNT, aptl);
 	      boxHeight = aptl[TXTBOX_TOPRIGHT].y - aptl[TXTBOX_BOTTOMRIGHT].y;
-	      boxHeight -= 6;
+	      boxHeight -= 4;
 
 	      // Calculate nominal baseline of graph box
 	      // rclItem.yBottom is at center of icon because it is
@@ -661,7 +682,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      // Place text above graph box with a bit of whitespace between
 	      ptl.x = oi->rclItem.xLeft;
-	      ptl.y = yBottom + boxHeight + 8;	// 03 Aug 07 SHL
+	      ptl.y = yBottom + boxHeight + 6;	// 03 Aug 07 SHL
 	      // GpiMove(oi->hps, &ptl);
 	      GpiCharStringAt(oi->hps, &ptl, strlen(pci->pszFileName),
 			      pci->pszFileName);
@@ -675,7 +696,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft;
 	      ptl.y = yBottom + 2;
 	      GpiMove(oi->hps, &ptl);
-	      ptl.x = oi->rclItem.xLeft + 101;
+	      ptl.x = oi->rclItem.xLeft + 201;
 	      ptl.y = yBottom + boxHeight;
 	      GpiBox(oi->hps, DRO_OUTLINE, &ptl, 0, 0);
 	      // fill with gray
@@ -683,7 +704,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft + 1;
 	      ptl.y = yBottom + 3;
 	      GpiMove(oi->hps, &ptl);
-	      ptl.x = oi->rclItem.xLeft + 100;
+	      ptl.x = oi->rclItem.xLeft + 200;
 	      ptl.y = yBottom + boxHeight - 1;
 	      GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
@@ -692,7 +713,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft + 1;
 	      ptl.y = yBottom + 3;
 	      GpiMove(oi->hps, &ptl);
-	      ptl.x = oi->rclItem.xLeft + 100;
+	      ptl.x = oi->rclItem.xLeft + 200;
 	      GpiLine(oi->hps, &ptl);
 	      ptl.y = yBottom + boxHeight - 1;
 	      GpiLine(oi->hps, &ptl);
@@ -709,7 +730,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft + 2;
 	      ptl.y = yBottom + boxHeight;
 	      GpiMove(oi->hps, &ptl);
-	      ptl.x = oi->rclItem.xLeft + 103;
+	      ptl.x = oi->rclItem.xLeft + 203;
 	      GpiLine(oi->hps, &ptl);
 	      ptl.y = yBottom + boxHeight - 2;
 	      GpiLine(oi->hps, &ptl);
@@ -726,10 +747,10 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  GpiSetColor(oi->hps, CLR_DARKGREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_RED);
-		ptl.x = oi->rclItem.xLeft + 1;
+		ptl.x = oi->rclItem.xLeft + 2;
 		ptl.y = yBottom + 3;
 		GpiMove(oi->hps, &ptl);
-		ptl.x = oi->rclItem.xLeft + pci->flags;
+		ptl.x = oi->rclItem.xLeft + pci->flags * 2;
 		ptl.y = yBottom + boxHeight - 1;
 		GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
@@ -749,14 +770,14 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  ptl.y = yBottom + boxHeight - 1;
 		  GpiMove(oi->hps, &ptl);
 		}
-		ptl.x = oi->rclItem.xLeft + pci->flags;
+		ptl.x = oi->rclItem.xLeft + pci->flags * 2;
 		GpiLine(oi->hps, &ptl);
 		if (*(pci->pszLongName + 1) != 1) {
 		  GpiSetColor(oi->hps, CLR_DARKRED);
 		  ptl.x = oi->rclItem.xLeft + 2;
 		  ptl.y = yBottom + 3;
 		  GpiMove(oi->hps, &ptl);
-		  ptl.x = oi->rclItem.xLeft + pci->flags;
+		  ptl.x = oi->rclItem.xLeft + pci->flags * 2;
 		  GpiLine(oi->hps, &ptl);
 		}
 	      }
@@ -764,8 +785,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      // draw hash marks in box
 	      GpiSetColor(oi->hps, CLR_WHITE);
 	      clr = CLR_WHITE;
-	      for (x = 1; x < 10; x++) {
-		if (clr == CLR_WHITE && x * 10 > pci->flags) {
+	      for (x = 1; x < 20; x++) {
+		if (clr == CLR_WHITE && x * 10 > pci->flags * 2) {
 		  clr = CLR_BLACK;
 		  GpiSetColor(oi->hps, CLR_BLACK);
 		}
@@ -774,18 +795,28 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		GpiMove(oi->hps, &ptl);
 		switch (x) {
 		case 1:
-		case 3:
+                case 3:
+                case 5:
 		case 7:
-		case 9:
+                case 9:
+                case 11:
+                case 13:
+                case 15:
+                case 17:
+                case 19:
 		  ptl.y -= 1;
 		  break;
-		case 5:
+		case 10:
 		  ptl.y -= 4;
 		  break;
 		case 2:
 		case 4:
 		case 6:
-		case 8:
+                case 8:
+                case 12:
+                case 14:
+                case 16:
+                case 18:
 		  ptl.y -= 2;
 		  break;
 		}
@@ -942,6 +973,14 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case DID_OK:
     case DID_CANCEL:
+      {
+        SWP swp;
+        ULONG size = sizeof(SWP);
+
+        WinQueryWindowPos(hwnd, &swp);
+        PrfWriteProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp,
+                            size);
+      }
       pState = INSTDATA(hwnd);
       if (!pState)
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
@@ -972,7 +1011,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
       DosSleep(16); //05 Aug 07 GKY 33
-      free(pState);			// Let's hope no one is still looking
+      xfree(pState);			// Let's hope no one is still looking
     }
     DosPostEventSem(CompactSem);
     break;

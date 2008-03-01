@@ -13,6 +13,7 @@
   22 Jul 06 SHL AddToList optimize
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -67,13 +68,11 @@ VOID SortList(LISTINFO *li)
 VOID FreeListInfo(LISTINFO *li)
 {
   if (li) {
-    if (li->ulitemID)
-      free(li->ulitemID);
-    if (li->cbFile)
-      free(li->cbFile);
+    xfree(li->ulitemID);
+    xfree(li->cbFile);
     if (li->list)
       FreeList(li->list);
-    free(li);
+    xfree(li);
   }
 }
 
@@ -91,7 +90,7 @@ VOID FreeList(CHAR **list)
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
-    free(list);
+    xfree(list);
   }
   DosPostEventSem(CompactSem);
 }

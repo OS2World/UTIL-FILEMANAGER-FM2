@@ -12,6 +12,7 @@
   29 Jul 06 SHL Use xfgets
   31 Aug 06 SHL Use _fsopen to avoid noise complaints
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -82,7 +83,7 @@ VOID load_resources(VOID)
 	if (info) {
 	  info->res = xstrdup(s, pszSrcFile, __LINE__);
 	  if (!info->res)
-	    free(info);
+	    xfree(info);
 	  else {
 	    x++;
 	    info->next = NULL;
@@ -150,7 +151,7 @@ BOOL add_resource(CHAR * res)
   if (info) {
     info->res = xstrdup(res, pszSrcFile, __LINE__);
     if (!info->res)
-      free(info);
+      xfree(info);
     else {
       info->next = NULL;
       if (!reshead)
@@ -160,7 +161,7 @@ BOOL add_resource(CHAR * res)
       if (x > MAXNUMRES) {
 	info = reshead;
 	reshead = reshead->next;
-	free(info);
+	xfree(info);
       }
       return TRUE;
     }
@@ -183,8 +184,8 @@ BOOL remove_resource(CHAR * res)
 	last->next = info->next;
       else
 	reshead = info->next;
-      free(info->res);
-      free(info);
+      xfree(info->res);
+      xfree(info);
       return TRUE;
     }
     last = info;
@@ -200,8 +201,8 @@ VOID free_resources(VOID)
   info = reshead;
   while (info) {
     next = info->next;
-    free(info->res);
-    free(info);
+    xfree(info->res);
+    xfree(info);
     info = next;
   }
   reshead = NULL;
@@ -438,7 +439,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   GetPString(IDS_ERRORTEXT),
 		   "%s", GetPString(IDS_CANTSTARTNETUSETEXT));
 	  if (!mp2 || (ULONG) mp2 == 1041 || info->failedonce)
-	    free(info);
+	    xfree(info);
 	  break;
 	}
 	info = info->next;
@@ -727,7 +728,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       info = apphead;
       while (info) {
 	next = info->next;
-	free(info);
+	xfree(info);
 	info = next;
       }
       apphead = apptail = NULL;

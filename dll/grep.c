@@ -27,6 +27,7 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   21 Sep 07 GKY Fix trap on search that includes filenames that exceed maxpath
   07 Feb 08 SHL Use ITIMER_DESC to control sleeps and reporting
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -577,7 +578,7 @@ static INT DoMatchingFiles(GREP *grep,
 	  if (strlen(szFindPath) > CCHMAXPATH){
 	    // Complain if pathnames exceeds max
 	    DosFindClose(findHandle);
-	    free(pffbArray);
+	    xfree(pffbArray);
 	    if (!fDone) {
 	      fDone = TRUE;
 	      saymsg(MB_OK | MB_ICONASTERISK,
@@ -606,7 +607,7 @@ static INT DoMatchingFiles(GREP *grep,
 	      DoOneFile(grep, szFindPath, pffbFile, pitdSleep, pitdReport);
 	    else if (!InsertDupe(grep, szFindPath, pffbFile)) {
 	      DosFindClose(findHandle);
-	      free(pffbArray);
+	      xfree(pffbArray);
 	      return 1;
 	    }
 	  }
@@ -632,7 +633,7 @@ static INT DoMatchingFiles(GREP *grep,
 	      GetPString(IDS_CANTFINDDIRTEXT), szFindPath);
   }
 
-  free(pffbArray);
+  xfree(pffbArray);
   return 0;
 }
 
@@ -761,7 +762,7 @@ static BOOL InsertGrepFile(GREP *grep,
 	grep->dir = xmallocz(sizeof(CHAR *) * (FilesToGet + 1),
 			     pszSrcFile, __LINE__);
 	if (!grep->dir) {
-	  free(grep->insertffb);
+	  xfree(grep->insertffb);
 	  return FALSE;
 	}
       }
@@ -774,7 +775,7 @@ static BOOL InsertGrepFile(GREP *grep,
 
       grep->dir[grep->toinsert] = xstrdup(szDirectory, pszSrcFile, __LINE__);
       if (!grep->dir) {
-	free(grep->insertffb[grep->toinsert]);
+	xfree(grep->insertffb[grep->toinsert]);
 	return FALSE;
       }
 
@@ -991,7 +992,7 @@ static BOOL DoOneFile(GREP *grep,
 	}
 	fclose(inputFile);
       }
-      free(input);
+      xfree(input);
       // DosSleep(1);			// 07 Feb 08 SHL
     }
   } // if
@@ -1105,7 +1106,7 @@ LONG CRCFile(CHAR *pszFileName, INT *error)
       fclose(fp);
       // DosSleep(1);			// 07 Feb 08 SHL
     }
-    free(buffer);
+    xfree(buffer);
   }
   return CRC;
 }
@@ -1123,10 +1124,8 @@ static VOID FreeDupes(GREP *grep)
     i = next;
   }
   grep->dupehead = grep->dupelast = NULL;
-  if (grep->dupenames)
-    free(grep->dupenames);
-  if (grep->dupesizes)
-    free(grep->dupesizes);
+  xfree(grep->dupenames);
+  xfree(grep->dupesizes);
   grep->dupesizes = grep->dupenames = NULL;
 }
 
@@ -1473,14 +1472,10 @@ static VOID FillDupes(GREP *grep,
       else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
 	WinSetWindowText(hwndStatus, GetPString(IDS_GREPDUPECOMPARINGTEXT));
       x = y = 0;
-      if (grep->dupenames) {
-	free(grep->dupenames);
-	grep->dupenames = NULL;
-      }
-      if (grep->dupesizes) {
-	free(grep->dupesizes);
-	grep->dupesizes = NULL;
-      }
+      xfree(grep->dupenames);
+      grep->dupenames = NULL;
+      xfree(grep->dupesizes);
+      grep->dupesizes = NULL;
 
       InitITimer(pitdSleep, 0);		// Reset rate estimator
       i = grep->dupehead;
@@ -1594,7 +1589,7 @@ static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4L *pffb)
 
     info->name = xstrdup(dir, pszSrcFile, __LINE__);
     if (!info->name) {
-      free(info);
+      xfree(info);
       return FALSE;
     }
 

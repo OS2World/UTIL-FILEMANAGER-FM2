@@ -20,6 +20,7 @@
   13 Aug 07 SHL Avoid realloc - not needed; sanitize code
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   14 Aug 07 SHL Revert ProcessDir DosSleep to 0
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -105,7 +106,7 @@ static VOID ProcessDir(HWND hwndCnr,
 		      MPFROMLONG(1));
     if (!pciP) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
-      free(pffbArray);
+      xfree(pffbArray);
       return;
     }
     pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
@@ -130,7 +131,7 @@ static VOID ProcessDir(HWND hwndCnr,
     pciP->rc.flRecordAttr |= CRA_RECORDREADONLY;
   }
   else {
-    free(pffbArray);
+    xfree(pffbArray);
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
     return;
@@ -151,7 +152,7 @@ static VOID ProcessDir(HWND hwndCnr,
   ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pciP), MPFROMP(&ri))) {
-    free(pffbArray);
+    xfree(pffbArray);
     return;
   }
   hdir = HDIR_CREATE;
@@ -200,7 +201,7 @@ static VOID ProcessDir(HWND hwndCnr,
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
   }
 
-  free(pffbArray);
+  xfree(pffbArray);
   WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pciP),
 	     MPFROM2SHORT(1, 0));
 }
@@ -232,7 +233,7 @@ static VOID FillCnrsThread(VOID * args)
   }
   PostMsg(WinQueryWindow(dirsize->hwndCnr, QW_PARENT), UM_CONTAINER_FILLED,
 	  MPVOID, MPVOID);
-  free(dirsize);
+  xfree(dirsize);
 }
 
 MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -278,7 +279,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  -1) {
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	free(dirsize);
+	xfree(dirsize);
 	WinDismissDlg(hwnd, 0);
 	break;
       }
@@ -424,8 +425,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_DESTROY:
     objcnrwnd = (HWND) 0;
     data = INSTDATA(hwnd);
-    if (data)
-      free(data);
+    xfree(data);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);

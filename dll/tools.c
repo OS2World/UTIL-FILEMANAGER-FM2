@@ -16,6 +16,7 @@
   05 Sep 06 SHL docopyf filename args must be variables
   05 Sep 06 SHL Sync with standard source formatting
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -50,7 +51,7 @@ VOID load_quicktools(VOID)
 
   qtloaded = TRUE;
   for (x = 0; x < 50 && quicktool[x]; x++) {
-    free(quicktool[x]);
+    xfree(quicktool[x]);
     quicktool[x] = NULL;
   }
   if (!fToolbar) {
@@ -264,11 +265,9 @@ TOOL *del_tool(TOOL * tool)
 	  toolhead = info->next;
 	if (prev)
 	  prev->next = info->next;
-	if (info->help)
-	  free(info->help);
-	if (info->text)
-	  free(info->text);
-	free(info);
+	xfree(info->help);
+	xfree(info->text);
+	xfree(info);
 	fToolsChanged = TRUE;
 	break;
       }
@@ -364,11 +363,9 @@ TOOL *free_tools(VOID)
   tool = toolhead;
   while (tool) {
     next = tool->next;
-    if (tool->help)
-      free(tool->help);
-    if (tool->text)
-      free(tool->text);
-    free(tool);
+    xfree(tool->help);
+    xfree(tool->text);
+    xfree(tool);
     tool = next;
   }
   toolhead = NULL;
@@ -715,11 +712,9 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	tool = INSTDATA(hwnd);
 	if (tool) {			/* just editing strings... */
 	  istext = ((tool->flags & T_TEXT) != 0);
-	  if (tool->help)
-	    free(tool->help);
+	  xfree(tool->help);
 	  tool->help = NULL;
-	  if (tool->text)
-	    free(tool->text);
+	  xfree(tool->text);
 	  tool->text = NULL;
 	  if (*help)
 	    tool->help = xstrdup(help, pszSrcFile, __LINE__);

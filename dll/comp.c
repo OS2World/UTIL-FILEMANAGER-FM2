@@ -50,6 +50,8 @@
   17 Jan 08 SHL Change hide not selected button to 3 state
   18 Jan 08 SHL Honor filters in actions
   20 Jan 08 GKY Compare dialog now saves and restores size and position
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -75,6 +77,7 @@
 #include "tmrsvcs.h"			// IsITimerExpired
 #include "comp.h"
 #include "fm3dll.h"
+#include "notebook.h"                   // External compare/dircompare
 
 typedef struct
 {
@@ -139,9 +142,9 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	} while (!xDosFindNext(hdir, pffb, sizeof(FILEFINDBUF4L), &ulFindCnt, FIL_QUERYEASIZEL));
 	DosFindClose(hdir);
       }
-      free(mask);
+      xfree(mask);
     }
-    free(pffb);
+    xfree(pffb);
   }
 }
 
@@ -173,7 +176,7 @@ static VOID StartSnap(VOID *pargs)
 	fclose(fp);
       }
     }
-    free(sf);
+    xfree(sf);
   }
 }
 
@@ -677,7 +680,7 @@ static VOID ActionCnrThread(VOID *args)
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  free(cmp);
+  xfree(cmp);
 }
 
 VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset);
@@ -734,7 +737,7 @@ static VOID SelectCnrsThread(VOID *args)
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  free(cmp);
+  xfree(cmp);
 }
 
 /**
@@ -779,7 +782,7 @@ VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset)
 
   pciSa = xmalloc(sizeof(PCNRITEM) * numS, pszSrcFile, __LINE__);
   if (!pciSa) {
-    free(pciDa);
+    xfree(pciDa);
     return;
   }
 
@@ -812,8 +815,8 @@ Restart:
       slow = TRUE;
       goto Restart;
     }
-    free(pciDa);
-    free(pciSa);
+    xfree(pciDa);
+    xfree(pciSa);
     Runtime_Error(pszSrcFile, __LINE__, "numD %u != x %lu", numD, x);
     return;
   }
@@ -839,8 +842,8 @@ Restart:
       slow = TRUE;
       goto Restart;
     }
-    free(pciSa);
-    free(pciDa);
+    xfree(pciSa);
+    xfree(pciDa);
     Runtime_Error(pszSrcFile, __LINE__, "numS (%lu) != x (%lu)", numS, x);
     return;
   }
@@ -1283,8 +1286,8 @@ Restart:
     } // while
   }
 
-  free(pciSa);
-  free(pciDa);
+  xfree(pciSa);
+  xfree(pciDa);
 
   if (fUpdateHideButton) {
     if (WinQueryButtonCheckstate(hwnd,COMP_HIDENOTSELECTED) == 1)
@@ -1324,7 +1327,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
     return;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray) {
-    free(maskstr);
+    xfree(maskstr);
     return;
   }
   x = strlen(str);
@@ -1392,8 +1395,8 @@ Abort:
 	      GetPString(IDS_CANTFINDDIRTEXT), maskstr);
   }
 
-  free(maskstr);
-  free(pffbArray);
+  xfree(maskstr);
+  xfree(pffbArray);
 
   // DbgMsg(pszSrcFile, __LINE__, "FillDirList finish %s", str);
 }
@@ -1974,11 +1977,9 @@ static VOID FillCnrsThread(VOID *args)
 	  recsNeeded = recsGotten;
 	} // if insufficient resources
 
-	if (filesl)
-	  free(filesl);			// Free header - have already freed elements
+	  xfree(filesl);			// Free header - have already freed elements
 	filesl = NULL;
-	if (filesr)
-	  free(filesr);
+	  xfree(filesr);
 	filesr = NULL;
 
 	// Say inserting
@@ -2045,7 +2046,7 @@ static VOID FillCnrsThread(VOID *args)
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  free(cmp);
+  xfree(cmp);
   DosPostEventSem(CompactSem);
 
   // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread exit");
@@ -2606,7 +2607,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  WinDismissDlg(hwnd, 0);
-	  free(forthread);
+	  xfree(forthread);
 	}
 	else {
 	  WinEnableWindowUpdate(hwndLeft, FALSE);
@@ -2886,7 +2887,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (_beginthread(StartSnap, NULL, 65536, (PVOID)sf) == -1) {
 	      Runtime_Error(pszSrcFile, __LINE__,
 			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	      free(sf);
+	      xfree(sf);
 	    }
 	  }
 	}
@@ -2938,7 +2939,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(forthread);
+	    xfree(forthread);
 	  }
 	  else {
 	    WinEnableWindowUpdate(hwndLeft, FALSE);
@@ -3061,7 +3062,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(forthread);
+	    xfree(forthread);
 	  }
 	  else {
 	    WinEnableWindowUpdate(hwndLeft, FALSE);
@@ -3217,7 +3218,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!PostMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
-      free(cmp);
+      xfree(cmp);
     }
     EmptyCnr(hwndLeft);
     EmptyCnr(hwndRight);

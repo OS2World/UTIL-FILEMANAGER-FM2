@@ -28,6 +28,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   12 Jan 08 SHL Localize SpecialSelect in comp.c
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -256,7 +257,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    } // while
 	    fclose(inputFile);
 	  }
-	  free(input);
+	  xfree(input);
 	  DosSleep(1);
 	}
       }
@@ -359,7 +360,7 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    } // while
 	    fclose(inputFile);
 	  }
-	  free(input);
+	  xfree(input);
 	  DosSleep(1);
 	}
       }
@@ -610,10 +611,9 @@ VOID FreeCnrs(struct Cnr * Cnrs, INT numw)
   register INT z;
 
   for (z = 0; z < numw; z++) {
-    if (Cnrs[z].ss)
-      free(Cnrs[z].ss);
+    xfree(Cnrs[z].ss);
   }
-  free(Cnrs);
+  xfree(Cnrs);
   DosPostEventSem(CompactSem);
 }
 

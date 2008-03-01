@@ -39,6 +39,7 @@
   13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
   xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   21 Jan 08 GKY Stop reallocating NullStr by direct editing of empty subject and longname strings.
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -224,7 +225,7 @@ void PaintSTextWindow(HWND hwnd, HPS hps)
 	  GpiCharString(hps, strlen(p), p);
 	}
       }
-      free(s);
+      xfree(s);
     }
     if (releaseme)
       WinReleasePS(hps);
@@ -843,7 +844,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (filename) {
 		  if (!PostMsg(hwnd,
 			       UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		    free(filename);
+		    xfree(filename);
 		}
 		if (stricmp(testname, pci->pszFileName)) {
 		  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
@@ -851,7 +852,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  if (filename) {
 		    if (!PostMsg(hwnd,
 				 UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		      free(filename);
+		      xfree(filename);
 		  }
 		}
 	      }
@@ -2011,7 +2012,7 @@ void SaySort(HWND hwnd, INT sortflags, BOOL archive)
 				GetPString(IDS_NONE) : (sortflags & SORT_SUBJECT) ?
 				  GetPString(IDS_SUBJ) : GetPString(IDS_NAME));
     WinSetWindowText(hwnd, s);
-    free(s);
+    xfree(s);
   }
 }
 
@@ -2030,7 +2031,7 @@ void SayView(HWND hwnd, ULONG flWindowAttr)
 	    ((flWindowAttr & CV_MINI) &&
 	     !(flWindowAttr & CV_TEXT)) ? GetPString(IDS_MINI) : NullStr);
     WinSetWindowText(hwnd, s);
-    free(s);
+    xfree(s);
   }
 }
 
@@ -2050,7 +2051,7 @@ void SayFilter(HWND hwnd, MASK * mask, BOOL archive)
     if (!s[2])
       sprintf(s, "F:%s", GetPString(IDS_ALLTEXT));
     WinSetWindowText(hwnd, s);
-    free(s);
+    xfree(s);
   }
 }
 
@@ -2195,7 +2196,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
 	}
       }
       numswitches = y;
-      free(pswb);
+      xfree(pswb);
       DosPostEventSem(CompactSem);
     }
   }

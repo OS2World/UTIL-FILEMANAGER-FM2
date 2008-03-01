@@ -21,6 +21,7 @@
   16 Nov 07 SHL Ensure fixup buffer sufficiently large
   30 Dec 07 GKY Use CommaFmtULL
   16 Feb 08 GKY Changed _fsopen flag so a new list file can be created
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -185,7 +186,7 @@ CHAR **ListFromClipboardHab(HAB hab)
 	if (!p)
 	  p = strchr(pp, '\n');
       }
-      free(text);
+      xfree(text);
     }
   }
   return list;
@@ -838,9 +839,9 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
 			subject[1023] = 0;
 		      }
-		      free(pfealist);
+		      xfree(pfealist);
 		    }
-		    free(pgealist);
+		    xfree(pgealist);
 		  }
 		}
 		/* load the object's longname */
@@ -881,9 +882,9 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				  (sizeof(USHORT) * 2), CCHMAXPATHCOMP);
 			longname[CCHMAXPATHCOMP - 1] = 0;
 		      }
-		      free(pfealist);
+		      xfree(pfealist);
 		    }
-		    free(pgealist);
+		    xfree(pgealist);
 		  }
 		}
 

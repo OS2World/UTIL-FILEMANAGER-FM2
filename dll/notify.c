@@ -13,6 +13,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 
 ***********************************************************************/
@@ -189,7 +190,7 @@ HWND DoNotify(char *str)
       Win_Error2(hwndP, hwndP, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
     if (p != str)
-      free(p);
+      xfree(p);
     if (id > NOTE_MAX)
       id = NOTE_FRAME;
   }
@@ -253,7 +254,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  NOTE_LISTBOX,
 			  LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
 	PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
-	free((CHAR *) mp2);
+	xfree((CHAR *) mp2);
       }
       WinDismissDlg(hwnd, 0);
       break;
@@ -270,7 +271,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendDlgItemMsg(hwnd,
 			NOTE_LISTBOX,
 			LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
-      free((CHAR *) mp2);
+      xfree((CHAR *) mp2);
     }
     {
       HWND hwndActive;
@@ -471,7 +472,7 @@ BOOL AddNote(CHAR * note)
 	    once = TRUE;
 	  }
 	}
-	free(s);
+	xfree(s);
       }
     }
   }

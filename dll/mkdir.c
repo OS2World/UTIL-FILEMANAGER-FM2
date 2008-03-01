@@ -9,6 +9,7 @@
   Copyright (c) 2004, 2007 Steven H.Levine
 
   01 Aug 04 SHL Baseline
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -23,6 +24,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   // targetdirectoy
 #include "fm3dll.h"
 
 #pragma alloc_text(MKDIR,MassMkdir,SetDir,PMMkDir,SetTargetDir)

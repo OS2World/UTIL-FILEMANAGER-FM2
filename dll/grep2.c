@@ -19,6 +19,7 @@
   07 Jan 07 GKY Add remember search flags to seek and scan
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
   fixme for more excess locals to be gone
 
@@ -822,7 +823,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!*p) {
 	  DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
-	  free(p);
+	  xfree(p);
 	  break;
 	}
 	strcpy(g.tosearch, p);
@@ -921,12 +922,12 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (_beginthread(GrepThread, NULL, 524280, (PVOID) & g) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  free(p);
+	  xfree(p);
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
 	DosSleep(100); //05 Aug 07 GKY 128
-	free(p);
+	xfree(p);
       }
       if (changed) {
 	// Grep mask list changed

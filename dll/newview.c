@@ -28,6 +28,8 @@
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
   28 Dec 07 GKY Add mailrun to allow mailto by clicking on an email address in the viewer
   29 Dec 07 GKY Formated email address using "<mailto:"
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -48,6 +50,7 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   // httprun etc
 #include "fm3dll.h"
 
 #pragma data_seg(DATA2)
@@ -637,12 +640,9 @@ static VOID FreeViewerMem(HWND hwnd)
 
   if (ad) {
     ad->selected = ad->textsize = ad->numlines = ad->numalloc = 0;
-    if (ad->text)
-      free(ad->text);
-    if (ad->lines)
-      free(ad->lines);
-    if (ad->markedlines)
-      free(ad->markedlines);
+    xfree(ad->text);
+    xfree(ad->lines);
+    xfree(ad->markedlines);
     ad->text = NULL;
     ad->lines = NULL;
     ad->markedlines = NULL;
@@ -1201,10 +1201,8 @@ static VOID ReLineThread(VOID * args)
 	      whereiam = ad->lines[ad->cursored - 1];
 	    ad->found = 0;
 	    ad->selected = ad->numlines = ad->numalloc = 0;
-	    if (ad->lines)
-	      free(ad->lines);
-	    if (ad->markedlines)
-	      free(ad->markedlines);
+	    xfree(ad->lines);
+	    xfree(ad->markedlines);
 	    ad->lines = NULL;
 	    ad->markedlines = NULL;
 	    WinSetWindowText(WinWindowFromID(ad->hwndFrame,
@@ -1313,9 +1311,8 @@ static VOID ReLineThread(VOID * args)
 		ad->numlines++;
 	    }
 	    if (ad->numlines) {
-	      ad->markedlines = xmalloc(ad->numlines, pszSrcFile, __LINE__);
+	      ad->markedlines = xmallocz(ad->numlines, pszSrcFile, __LINE__);
 	      if (ad->markedlines) {
-		memset(ad->markedlines, 0, ad->numlines);
 		ad->selected = 0;
 	      }
               if ((*ftprun || fFtpRunWPSDefault) && !ad->ignoreftp &&
@@ -1371,12 +1368,9 @@ static VOID LoadFileThread(VOID * args)
 	  ad->busy++;
 	  priority_normal();
 	  if (*ad->filename) {
-	    if (ad->text)
-	      free(ad->text);
-	    if (ad->lines)
-	      free(ad->lines);
-	    if (ad->markedlines)
-	      free(ad->markedlines);
+	    xfree(ad->text);
+	    xfree(ad->lines);
+	    xfree(ad->markedlines);
 	    ad->text = NULL;
 	    ad->lines = NULL;
 	    ad->markedlines = NULL;
@@ -1425,7 +1419,7 @@ static VOID LoadFileThread(VOID * args)
 			      pszSrcFile,
 			      __LINE__,
 			      GetPString(IDS_ERRORREADINGTEXT), ad->filename);
-		    free(ad->text);
+		    xfree(ad->text);
 		    ad->text = NULL;
 		    ad->textsize = 0;
 		  }
@@ -2380,7 +2374,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       FM3ModHandle, URL_FRAME, urld);
 	      switch (ret) {
 	      case 0:
-                free(urld);
+                xfree(urld);
 		goto NoAdd;
 	      case 1:
                 if (*urld->url) {
@@ -2406,7 +2400,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                             "%s %s", httprun, urld->url);
                 }
-		free(urld);
+		xfree(urld);
 		goto NoAdd;
 	      case 2:
                 if (*urld->url){
@@ -2432,6 +2426,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                             "%s %s", ftprun, urld->url);
                 }
+                xfree(urld);
+		goto NoAdd;
               case 3:
                 if (*urld->url){
                   runemf2(SEPARATE | WINDOWED,
@@ -2440,12 +2436,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                           fLibPathStrictMailRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                           "%s %s", mailrun, urld->url);
                 }
-                free(urld);
+                xfree(urld);
                 goto NoAdd;
 	      default:
 		break;
 	      }
-              free(urld);
+              xfree(urld);
 	    }
 	  }
         }
@@ -2523,7 +2519,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  MPFROM2SHORT(numinserted, 0),
 				  MPFROMLONG(whichline));
 	    }
-	    free(s);
+	    xfree(s);
 	  }
 	}
 	if (!numsels)
@@ -3936,7 +3932,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	dontclose = ((ad->flags & 4) != 0) ? TRUE : FALSE;
 	FreeViewerMem(hwnd);
 	WinSetWindowPtr(hwnd, QWL_USER, NULL);
-	free(ad);
+	xfree(ad);
       }
       if (hwndRestore && hwndRestore != HWND_DESKTOP) {
 

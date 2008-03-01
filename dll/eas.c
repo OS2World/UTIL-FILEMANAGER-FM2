@@ -20,6 +20,7 @@
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -865,7 +866,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  if (pfea) {
 		    memcpy(pfea, pfealist->list,
 			   pfealist->cbList - sizeof(ULONG));
-		    free(eap->current->pfea);
+		    xfree(eap->current->pfea);
 		    eap->current->pfea = pfea;
 		    eap->current->name = eap->current->pfea->szName;
 		    eap->current->cbName = eap->current->pfea->cbName;
@@ -879,7 +880,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  DosFreeMem(pfealist);
 		}
 	      }
-	      free(s);
+	      xfree(s);
 	    }
 	  }
 	}
@@ -910,7 +911,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  eaop.oError = 0;
 	  rc = xDosSetPathInfo(eap->filename, FIL_QUERYEASIZE,
 			       &eaop, sizeof(eaop), DSPI_WRTTHRU);
-	  free(pfealist);
+	  xfree(pfealist);
 	  if (rc)
 	    Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 		      "xDosSetPathInfo");
@@ -918,8 +919,8 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    sSelect = 0;
 	    if (eap->current == eap->head) {
 	      eap->head = eap->head->next;
-	      free(eap->current->pfea);
-	      free(eap->current);
+	      xfree(eap->current->pfea);
+	      xfree(eap->current);
 	      eap->current = NULL;
 	    }
 	    else {
@@ -928,8 +929,8 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (info->next == eap->current) {
 		  sSelect++;
 		  info->next = eap->current->next;
-		  free(eap->current->pfea);
-		  free(eap->current);
+		  xfree(eap->current->pfea);
+		  xfree(eap->current);
 		  eap->current = NULL;
 		  break;
 		}
@@ -985,7 +986,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (eap) {
       if (eap->head)
 	Free_FEAList(eap->head);
-      free(eap);
+      xfree(eap);
       if (hptrIcon)
 	WinDestroyPointer(hptrIcon);
       hptrIcon = (HPOINTER) 0;
@@ -1272,13 +1273,13 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		  last = info;
 		}
 	      }
-	      free(pfealist);
+	      xfree(pfealist);
 	    }
-	    free(pgealist);
+	    xfree(pgealist);
 	  }
 	  ulEntry += ulCount;
 	} // while
-	free(pdena);
+	xfree(pdena);
 	DosPostEventSem(CompactSem);
       }
     }
@@ -1346,10 +1347,10 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		  last = info;
 		}
 		else
-		  free(pfealist);
+		  xfree(pfealist);
 	      }
 	      else {
-		free(pfealist);
+		xfree(pfealist);
 		if (!silentfail) {
 		  if (rc == ERROR_ACCESS_DENIED
 		      || rc == ERROR_SHARING_VIOLATION) {
@@ -1359,7 +1360,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 			     GetPString(IDS_CANTREADEATEXT), filename,
 			     pdena->szName);
 		    if (rc == MBID_CANCEL) {
-		      free(pgealist);
+		      xfree(pgealist);
 		      break;
 		    }
 		  }
@@ -1374,11 +1375,11 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		}
 	      }
 	    }
-	    free(pgealist);
+	    xfree(pgealist);
 	  }
 	  ulEntry += ulCount;
 	} // while
-	free(pdena);
+	xfree(pdena);
 	DosPostEventSem(CompactSem);
       }
     }
@@ -1395,8 +1396,8 @@ VOID Free_FEAList(HOLDFEA * pFEA)
   while (pFEA) {
     /* Free linked list */
     next = pFEA->next;
-    free(pFEA->pfea);
-    free(pFEA);
+    xfree(pFEA->pfea);
+    xfree(pFEA);
     pFEA = next;
   }
   DosPostEventSem(CompactSem);

@@ -16,6 +16,7 @@
   22 Jul 06 SHL Check more run time errors
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 Nov 07 SHL Report fixup buffer overflow
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -191,7 +192,7 @@ UINT literal(PSZ pszBuf)
 
   cBufBytes = pszOut - pszWork;                /* Calc string length excluding terminator */
   memcpy(pszBuf, pszWork, cBufBytes + 1);        /* Overwrite including terminator */
-  free(pszWork);
+  xfree(pszWork);
 
   return cBufBytes;                        /* Return string length */
 }

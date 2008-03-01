@@ -23,6 +23,7 @@
   25 Aug 07 SHL IconProc: do not use freed memory - random bad things happen
   27 Sep 07 SHL Correct ULONGLONG size formatting
   30 Dec 07 GKY Use CommaFmtULL
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -462,7 +463,7 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PFNWP oldproc = pis->oldproc;
       if (pis->lasthwndMenu)
 	WinDestroyWindow(pis->lasthwndMenu);
-      free(pis);
+      xfree(pis);
       return oldproc(hwnd, msg, mp1, mp2);
     }
     break;
@@ -881,8 +882,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     pfs = WinQueryWindowPtr(hwnd, QWL_USER);
-    if (pfs)
-      free(pfs);
+    xfree(pfs);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);

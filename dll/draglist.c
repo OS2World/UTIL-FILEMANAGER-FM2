@@ -18,8 +18,9 @@
   19 Apr 07 SHL Optimize DRAGITEM DRAGIMAGE array access
   21 Apr 07 SHL Avoid odd first time drag failure
   12 May 07 SHL Use dcd->ulItemsToUnHilite
-  05 Jul 07 FreeDragInfoData: suppress PMERR_SOURCE_SAME_AS_TARGET notices
+  05 Jul 07 SHL FreeDragInfoData: suppress PMERR_SOURCE_SAME_AS_TARGET notices
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xmallocz where appropriate
 
 ***********************************************************************/
 
@@ -304,7 +305,8 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	ppDItem = ppDITest;
 	ulNumDIAlloc += 4L;
       }
-      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      // Create & Initialize DRAGITEM
+      pDItem = xmallocz(sizeof(DRAGITEM), pszSrcFile, __LINE__);
       if (!pDItem)
 	break;				// Already complained
       ppDItem[ulNumfiles] = pDItem;
@@ -321,8 +323,6 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	pDImg->cxOffset = -16 + (ulNumfiles * 3);
 	pDImg->cyOffset = 0 + (ulNumfiles * 6);
       }
-      // Initialize DRAGITEM
-      memset(pDItem, 0, sizeof(DRAGITEM));
       pDItem->hwndItem = (hwndObj) ? hwndObj : hwndCnr;
       pDItem->hwndItem = hwndCnr;
       pDItem->ulItemID = (ULONG) pci;
@@ -393,13 +393,12 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	ppDItem = ppDITest;
 	ulNumDIAlloc += 5L;
       }
-      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      // Create & Initialize DRAGITEM
+      pDItem = xmallocz(sizeof(DRAGITEM), pszSrcFile, __LINE__);
       if (!pDItem)
 	break;
       ppDItem[ulNumfiles] = pDItem;
       dimgFakeIcon.hImage = hptrFile;
-      // Initialize DRAGITEM
-      memset(pDItem, 0, sizeof(DRAGITEM));
       pDItem->hwndItem = (hwndObj) ? hwndObj : hwndCnr;
       pDItem->hwndItem = hwndCnr;
       pDItem->ulItemID = (ULONG) pci;
@@ -434,13 +433,11 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	pDItem->fsControl |= DC_REMOVEABLEMEDIA;
       pDItem->fsSupportedOps = DO_COPYABLE;
       ulNumfiles++;
-
-      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      // Create & Initialize DRAGITEM
+      pDItem = xmallocz(sizeof(DRAGITEM), pszSrcFile, __LINE__);
       if (pDItem) {
 	ppDItem[ulNumfiles] = pDItem;
 	dimgFakeIcon.hImage = hptrFile;
-	// Initialize DRAGITEM
-	memset(pDItem, 0, sizeof(DRAGITEM));
 	pDItem->hwndItem = (hwndObj) ? hwndObj : hwndCnr;
 	pDItem->hwndItem = hwndCnr;
 	pDItem->ulItemID = ulSelect++;
@@ -640,7 +637,8 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	ppDItem = ppDITest;
 	ulNumDIAlloc += 4L;
       }
-      pDItem = xmalloc(sizeof(DRAGITEM), pszSrcFile, __LINE__);
+      // Create & Initialize DRAGITEM
+      pDItem = xmallocz(sizeof(DRAGITEM), pszSrcFile, __LINE__);
       if (!pDItem)
 	break;
       ppDItem[ulNumfiles] = pDItem;
@@ -655,9 +653,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	pDImg->cxOffset = -16 + (ulNumfiles * 3);
 	pDImg->cyOffset = 0 + (ulNumfiles * 6);
       }
-      memset(pDItem, 0, sizeof(DRAGITEM));
       pDItem->hwndItem = (hwndObj) ? hwndObj : hwnd;
-      // pDItem->hwndItem = hwnd;
       pDItem->ulItemID = (ULONG) ulSelect;
       pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
       ok = pDItem->hstrType;

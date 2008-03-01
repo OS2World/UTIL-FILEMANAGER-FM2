@@ -46,6 +46,7 @@
   15 Feb 08 SHL Sync with settings menu rework
   15 Feb 08 GKY Fix attempt to free container items that were never inserted
   15 Feb 08 GKY Fix "collect" so it updates recollected files and unhides them if needed
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -897,7 +898,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(wk);
+	    xfree(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -925,7 +926,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(wk);
+	    xfree(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -950,7 +951,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	Runtime_Error(pszSrcFile, __LINE__, "still busy");
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
-      free(dcd);
+      xfree(dcd);
     }
     DosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -1445,13 +1446,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_COLLECTFROMFILE:
     if (mp1) {
       if (!dcd) {
-	free(mp1);
+	xfree(mp1);
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       }
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
-	  free(mp1);
+	  xfree(mp1);
 	}
       }
     }
@@ -1577,7 +1578,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    p = xstrdup(filename, pszSrcFile, __LINE__);
 	    if (p) {
 	      if (!PostMsg(hwnd, UM_COLLECTFROMFILE, MPFROMP(p), MPVOID))
-		free(p);
+		xfree(p);
 	    }
 	  }
 	}
@@ -2087,7 +2088,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	    }
 	    else
-	      free(li);
+	      xfree(li);
 	  }
 	}
 	break;
@@ -2836,7 +2837,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	free(dcd);
+	xfree(dcd);
 	hwndFrame = (HWND) 0;
       }
       else {

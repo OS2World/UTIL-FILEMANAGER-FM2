@@ -45,6 +45,7 @@
   10 Jan 08 SHL Sync with CfgDlgProc mods
   15 Feb 08 SHL Sync with settings menu rework
   15 Feb 08 SHL Avoid death if tree container 0 width
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -564,7 +565,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (mp2)
 	  fTopDir = temptop;
       }
-      free((CHAR *) mp1);
+      xfree((CHAR *) mp1);
     }
     return 0;
 
@@ -796,7 +797,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(wk);
+	    xfree(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -827,7 +828,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    free(wk);
+	    xfree(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -845,7 +846,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       WinSendMsg(dcd->hwndCnr,
 		 UM_CLOSE, MPFROMLONG(dcd->dontclose != FALSE), MPVOID);
-      free(dcd);
+      xfree(dcd);
     }
     DosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -1716,7 +1717,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (dir) {
 	if (!PostMsg(dcd->hwndObject, UM_SHOWME, MPFROMP(dir), MPVOID))
-	  free(dir);
+	  xfree(dir);
       }
     }
     return 0;
@@ -2156,8 +2157,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       ret = StartMLEEditor(dcd->hwndParent, (INT) mp1, (CHAR *) mp2,
 			   dcd->hwndFrame);
-      if (mp2)
-	free((CHAR *) mp2);
+      xfree((CHAR *) mp2);
       return MRFROMLONG(ret);
     }
     return 0;
@@ -2226,7 +2226,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    apphead = info->next;
 	  if (apptail == info)
 	    apptail = info->prev;
-	  free(info);
+	  xfree(info);
 	  break;
 	}
 	info = info->next;
@@ -2747,7 +2747,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->hwnd = hwnd;
 	    li->list = BuildList(hwnd);
 	    if (!li->list || !li->list[0]) {
-	      free(li);
+	      xfree(li);
 	      break;
 	    }
 	    if (IsRoot(li->list[0])) {
@@ -2915,7 +2915,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       info = apphead;
       while (info) {
 	next = info->next;
-	free(info);
+	xfree(info);
 	info = next;
       }
       apphead = apptail = NULL;
@@ -3053,7 +3053,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	free(dcd);
+	xfree(dcd);
 	hwndFrame = (HWND) 0;
       }
       else {

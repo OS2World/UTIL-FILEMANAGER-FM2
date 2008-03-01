@@ -21,6 +21,8 @@
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
+  29 Feb 08 GKY Changes to enable user settable command line length
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -43,7 +45,7 @@
 
 typedef struct
 {
-  CHAR cl[MAXCOMLINESTRG];
+  PSZ pszCmdLine;
   INT flags;
   CHAR title[34];
 }
@@ -306,7 +308,7 @@ VOID free_commands(VOID)
     next = info->next;
     xfree(info->title);
     xfree(info->cl);
-    free(info);
+    xfree(info);
     info = next;
   }
   cmdhead = cmdtail = NULL;
@@ -354,7 +356,7 @@ VOID load_commands(VOID)
 	if (!info->cl || !info->title) {
 	  xfree(info->cl);
 	  xfree(info->title);
-	  free(info);
+	  xfree(info);
 	  break;
 	}
 	if (!cmdhead)
@@ -403,7 +405,7 @@ LINKCMDS *add_command(COMMAND * addme)
 {
   LINKCMDS *info;
 
-  if (!addme || !*addme->cl || !*addme->title)
+  if (!addme || !*addme->pszCmdLine || !*addme->title)
     return NULL;			// No data
   info = cmdhead;
   while (info) {
@@ -414,14 +416,14 @@ LINKCMDS *add_command(COMMAND * addme)
   info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
   if (!info)
     return NULL;
-  info->cl = xstrdup(addme->cl, pszSrcFile, __LINE__);
+  info->cl = xstrdup(addme->pszCmdLine, pszSrcFile, __LINE__);
   info->title = xstrdup(addme->title, pszSrcFile, __LINE__);
   if (addme->flags)
     info->flags = addme->flags;
   if (!info->cl || !info->title) {
     xfree(info->cl);
     xfree(info->title);
-    free(info);
+    xfree(info);
     return NULL;
   }
   if (!cmdhead)				/* only item in list */
@@ -458,7 +460,7 @@ BOOL kill_command(CHAR * killme)
 	}
 	xfree(info->cl);
 	xfree(info->title);
-	free(info);
+	xfree(info);
 	return TRUE;
       }
       info = info->next;
@@ -621,21 +623,26 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         PSZ pszWorkBuf;
         APIRET ret;
 
-        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
-        if (!pszWorkBuf)
-          break; //already complained
 	memset(&temp, 0, sizeof(COMMAND));
-	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        NormalizeCmdLine(pszWorkBuf, temp.cl);
-        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+        if (!temp.pszCmdLine)
+          break; //already complained
+        pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+        if (!pszWorkBuf) {
+          xfree(temp.pszCmdLine);
+          break; //already complained
+        }
+	WinQueryDlgItemText(hwnd, CMD_CL, MaxComLineStrg, temp.pszCmdLine);
+        NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
+        memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         xfree(pszWorkBuf);
-        if (!strchr(temp.cl, '%')){
+        if (!strchr(temp.pszCmdLine, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
                        NullStr,
                        GetPString(IDS_TOACTONSELECTEDTEXT));
           if (ret == MBID_YES)
-            strcat(temp.cl, " %a");
+            strcat(temp.pszCmdLine, " %a");
         }
 	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
 	if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
@@ -656,6 +663,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           temp.flags |= ONCE;
         if (fCancelAction){
           fCancelAction = FALSE;
+          xfree(temp.pszCmdLine);
           break;
         }
         else
@@ -675,7 +683,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
 	  bstripcr(env);
 	  if (*env) {
-	    PrfWriteProfileString(fmprof, FM3Str, temp.cl, env);
+	    PrfWriteProfileString(fmprof, FM3Str, temp.pszCmdLine, env);
 	  }
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
@@ -693,12 +701,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROMSHORT(x), MPFROMSHORT(TRUE));
 	    save_commands();
 	  }
-	}
+        }
+        xfree(temp.pszCmdLine);
       }
       x = (SHORT) WinSendDlgItemMsg(hwnd,
 				    CMD_LISTBOX,
 				    LM_QUERYSELECTION,
-				    MPFROMSHORT(LIT_FIRST), MPVOID);
+                                    MPFROMSHORT(LIT_FIRST), MPVOID);
       WinDismissDlg(hwnd, 0);
       break;
 
@@ -719,21 +728,26 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         PSZ pszWorkBuf;
         APIRET ret;
 
-        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
-        if (!pszWorkBuf)
+        memset(&temp, 0, sizeof(COMMAND));
+        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+        if (!temp.pszCmdLine)
           break; //already complained
-	memset(&temp, 0, sizeof(COMMAND));
-	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        NormalizeCmdLine(pszWorkBuf, temp.cl);
-        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+        if (!pszWorkBuf) {
+          xfree(temp.pszCmdLine);
+          break; //already complained
+        }
+	WinQueryDlgItemText(hwnd, CMD_CL, MaxComLineStrg, temp.pszCmdLine);
+        NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
+        memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         xfree(pszWorkBuf);
-        if (!strchr(temp.cl, '%')){
+        if (!strchr(temp.pszCmdLine, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
                        NullStr,
                        GetPString(IDS_TOACTONSELECTEDTEXT));
           if (ret == MBID_YES)
-            strcat(temp.cl, " %a");
+            strcat(temp.pszCmdLine, " %a");
         }
 	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
 	if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
@@ -754,6 +768,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           temp.flags |= ONCE;
         if (fCancelAction){
           fCancelAction = FALSE;
+          xfree(temp.pszCmdLine);
           break;
         }
         else
@@ -769,7 +784,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
 	  bstripcr(env);
 	  if (*env) {
-	    PrfWriteProfileString(fmprof, FM3Str, temp.cl, env);
+	    PrfWriteProfileString(fmprof, FM3Str, temp.pszCmdLine, env);
 	  }
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
@@ -787,7 +802,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROMSHORT(x), MPFROMSHORT(TRUE));
 	    save_commands();
 	  }
-	}
+        }
+        xfree(temp.pszCmdLine);
       }
       break;
 
@@ -817,31 +833,39 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       break;
+
     case CMD_REPLACE:
       { //Delete first
         PSZ pszWorkBuf;
         COMMAND temp;
         APIRET ret;
 
-        pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
-        if (!pszWorkBuf)
+        pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+        if (!pszWorkBuf) {
           break; //already complained
-	memset(&temp, 0, sizeof(COMMAND));
-	WinQueryDlgItemText(hwnd, CMD_CL, sizeof(temp.cl), temp.cl);
-        NormalizeCmdLine(pszWorkBuf, temp.cl);
-        memcpy(temp.cl, pszWorkBuf, strlen(pszWorkBuf) + 1);
+        }
+        memset(&temp, 0, sizeof(COMMAND));
+        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+        if (!temp.pszCmdLine) {
+          xfree(pszWorkBuf);
+          break; //already complained
+        }
+	WinQueryDlgItemText(hwnd, CMD_CL, MaxComLineStrg, temp.pszCmdLine);
+        NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
+        memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         xfree(pszWorkBuf);
         if (fCancelAction){
           fCancelAction = FALSE;
+          xfree(temp.pszCmdLine);
           break;
         }
-        if (!strchr(temp.cl, '%')){
+        if (!strchr(temp.pszCmdLine, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
                        NullStr,
                        GetPString(IDS_TOACTONSELECTEDTEXT));
           if (ret == MBID_YES)
-            strcat(temp.cl, " %a");
+            strcat(temp.pszCmdLine, " %a");
         }
         //remember item location in the list
         y = (SHORT) WinSendDlgItemMsg(hwnd,
@@ -895,7 +919,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
 	  bstripcr(env);
 	  if (*env) {
-	    PrfWriteProfileString(fmprof, FM3Str, temp.cl, env);
+	    PrfWriteProfileString(fmprof, FM3Str, temp.pszCmdLine, env);
 	  } //put item back in original place
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
@@ -946,6 +970,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             save_commands();
           }
         }
+        xfree(temp.pszCmdLine);
       }
       break;
     }

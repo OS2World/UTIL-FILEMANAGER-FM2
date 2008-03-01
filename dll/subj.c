@@ -13,6 +13,7 @@
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -55,7 +56,7 @@ INT Subject(HWND hwnd, CHAR * filename)
     pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
     pfealist = xmallocz(1024, pszSrcFile, __LINE__);
     if (pfealist)
-      free(pgealist);
+    xfree(pgealist);
     else {
       pfealist->cbList = 1024;
       eaop.fpGEA2List = pgealist;
@@ -63,7 +64,7 @@ INT Subject(HWND hwnd, CHAR * filename)
       eaop.oError = 0;
       rc = DosQueryPathInfo(filename, FIL_QUERYEASFROMLIST,
 			    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-      free(pgealist);
+      xfree(pgealist);
       if (!rc) {
 	pfea = &eaop.fpFEA2List->list[0];
 	value = pfea->szName + pfea->cbName + 1;
@@ -72,7 +73,7 @@ INT Subject(HWND hwnd, CHAR * filename)
 	  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
 	subject[1023] = 0;
       }
-      free(pfealist);
+      xfree(pfealist);
       if (rc == ERROR_SHARING_VIOLATION || rc == ERROR_ACCESS_DENIED) {
 	saymsg(MB_CANCEL,
 	       hwnd,

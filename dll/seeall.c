@@ -33,6 +33,8 @@
   30 Dec 07 GKY Use CommaFmtULL
   30 Dec 07 GKY Use TestFDates for comparing by date
   15 Feb 08 GKY Prevent trap on scan of drive containing files that exceed maxpath
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -53,6 +55,7 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   // targetdirectory
 #include "fm3dll.h"
 
 #pragma data_seg(DATA2)
@@ -1299,13 +1302,11 @@ static VOID FreeAllFilesList(HWND hwnd)
 
   if (ad->afhead && ad->afheadcnt) {
     for (x = 0; x < ad->afheadcnt; x++) {
-      if (ad->afhead[x].fullname)
-	free(ad->afhead[x].fullname);
+      xfree(ad->afhead[x].fullname);
     }
-    free(ad->afhead);
+    xfree(ad->afhead);
     ad->afhead = NULL;
-    if (ad->afindex)
-      free(ad->afindex);
+    xfree(ad->afindex);
     ad->afindex = NULL;
   }
   DosPostEventSem(CompactSem);
@@ -1859,7 +1860,7 @@ static ULONG RemoveDeleted(HWND hwnd)
 	  pAD->selected--;
 	  pAD->ullSelectedBytes -= pAD->afhead[y].cbFile;
 	}
-	free(pAD->afhead[y].fullname);
+	xfree(pAD->afhead[y].fullname);
       }
       memmove(&(pAD->afhead[x]), &(pAD->afhead[y]),
 	      (pAD->afheadcnt - y) * sizeof(ALLFILES));
@@ -1918,7 +1919,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   ulBufBytes = sizeof(FILEFINDBUF3L) * ulFindMax;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray) {
-    free(filename);
+    xfree(filename);
     return;
   }
 
@@ -1956,8 +1957,8 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
           if (strlen(filename) > CCHMAXPATH) {
 	    // Complain if pathnames exceeds max
 	    DosFindClose(hdir);
-            free(pffbArray);
-            free(filename);
+            xfree(pffbArray);
+            xfree(filename);
 	    if (!fDone) {
 	      fDone = TRUE;
 	      saymsg(MB_OK | MB_ICONASTERISK,
@@ -2024,8 +2025,8 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
   }
 
-  free(pffbArray);
-  free(filename);
+  xfree(pffbArray);
+  xfree(filename);
 }
 
 static VOID FindAllThread(VOID * args)
@@ -4265,7 +4266,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
       }
       FreeAllFilesList(hwnd);
-      free(pAD);
+      xfree(pAD);
     }
     break;
   }
@@ -4322,7 +4323,7 @@ HWND StartSeeAll(HWND hwndParent, BOOL standalone,	// called by applet
 #pragma alloc_text(SEEALL,comparedates,compareexts,SeeStatusProc)
 #pragma alloc_text(SEEALL,InitWindow,PaintLine,SeeAllWndProc)
 #pragma alloc_text(SEEALL,UpdateList,CollectList,ReSort,Mark)
-#pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList)
+#pragma alloc_text(SEEALL,BuildAList,RemoveDeleted,SeeFrameWndProc,FilterList,FilterAll)
 #pragma alloc_text(SEEALL2,SeeObjWndProc,MakeSeeObjWinThread,FindDupesThread,DupeDlgProc)
 #pragma alloc_text(SEEALL3,FreeAllFilesList,DoADir,FindAllThread,AFDrvsWndProc)
 #pragma alloc_text(SEEALL3,StartSeeAll)

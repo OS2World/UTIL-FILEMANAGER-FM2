@@ -17,6 +17,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -35,6 +37,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   // httprun etc
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
@@ -246,7 +249,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   if (rc || !temp) {
     Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
-    free(sel);
+    xfree(sel);
     DosPostEventSem(CompactSem);
     return FALSE;
   }
@@ -263,7 +266,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
       (LONG) WinSendMsg(h, MLM_EXPORT, MPFROMP(&here), MPFROMP(&sellen));
     if (sellen < 1) {
       Runtime_Error(pszSrcFile, __LINE__, "len < 1");
-      free(sel);
+      xfree(sel);
       DosPostEventSem(CompactSem);
       return FALSE;
     }
@@ -277,7 +280,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   case APPENDCLIP:
     SaveToClip(h, sel, TRUE);
     DosFreeMem(temp);
-    free(sel);
+    xfree(sel);
     MLEenable(h);
     DosPostEventSem(CompactSem);
     return TRUE;
@@ -298,7 +301,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
       _heap_check();
 #endif
       DosFreeMem(temp);
-      free(sel);
+      xfree(sel);
       MLEenable(h);
       DosPostEventSem(CompactSem);
       return TRUE;
@@ -371,7 +374,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     _heap_check();
 #endif
     DosFreeMem(temp);
-    free(sel);
+    xfree(sel);
     DosPostEventSem(CompactSem);
     MLEenable(h);
     return FALSE;
@@ -404,7 +407,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   _heap_check();
 #endif
   DosFreeMem(temp);
-  free(sel);
+  xfree(sel);
   DosPostEventSem(CompactSem);
   return TRUE;
 }
@@ -570,7 +573,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	  }
 	  else
 	    ret = FALSE;
-	  free(buffer);
+	  xfree(buffer);
 	}
 	DosFreeMem(hexbuff);
       }
@@ -766,7 +769,7 @@ VOID LoadThread(VOID * arg)
 #ifdef __DEBUG_ALLOC__
 	_heap_check();
 #endif
-	free(bkg);
+	xfree(bkg);
 	WinDestroyMsgQueue(thmq);
       }
       DecrThreadUsage();

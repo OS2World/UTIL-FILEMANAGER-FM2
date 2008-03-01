@@ -39,6 +39,7 @@
   13 Aug 07 SHL Sync code with other FilesToGet usage and optimize
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   04 Nov 07 GKY Use commaFmtULL to display large file sizes
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -305,9 +306,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	free(pfealist);
+	xfree(pfealist);
       }
-      free(pgealist);
+      xfree(pgealist);
     }
   }
   if (!pci->pszSubject)
@@ -352,9 +353,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszLongName = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	free(pfealist);
+	xfree(pfealist);
       }
-      free(pgealist);
+      xfree(pgealist);
     }
   }
   if (!pci->pszLongName)
@@ -534,9 +535,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	free(pfealist);
+	xfree(pfealist);
       }
-      free(pgealist);
+      xfree(pgealist);
     }
   }
   if (!pci->pszSubject)
@@ -582,9 +583,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 	    pci->pszLongName = xstrdup(p, pszSrcFile, __LINE__);
 	  }
 	}
-	free(pfealist);
+	xfree(pfealist);
       }
-      free(pgealist);
+      xfree(pgealist);
     }
   }
   if (!pci->pszLongName)
@@ -902,15 +903,10 @@ VOID ProcessDirectory(const HWND hwndCnr,
       } while (!rc);
 
       DosFindClose(hdir);
-
-      if (paffbFound) {
-	free(paffbFound);
-	paffbFound = NULL;
-      }
-      if (papffbSelected) {
-	free(papffbSelected);
-	papffbSelected = NULL;
-      }
+      xfree(paffbFound);
+      paffbFound = NULL;
+      xfree(papffbSelected);
+      papffbSelected = NULL;
 
       if (ulTotal && paffbTotal) {
 
@@ -997,14 +993,10 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		 MPFROM2SHORT(0, CMA_ERASE));
   }
 Abort:
-  if (paffbTotal)
-    free(paffbTotal);
-  if (pszFileSpec)
-    free(pszFileSpec);
-  if (paffbFound)
-    free(paffbFound);
-  if (papffbSelected)
-    free(papffbSelected);
+  xfree(paffbTotal);
+  xfree(pszFileSpec);
+  xfree(paffbFound);
+  xfree(papffbSelected);
 
   if (recurse) {
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),

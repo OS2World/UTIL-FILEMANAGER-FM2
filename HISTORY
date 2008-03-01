@@ -36,6 +36,9 @@ New stuff's at the top.  This list is not necessarily complete.
  o Fix trap in seeall cause by pathname(s) that exceed maxpath (Gregg)
  o Restore SaveDirCnrState internal state save logic - accidentally removed
  o Move save shutdown state name to strings (IDS_SHUTDOWNSTATE, ShutdownState)
+ o Add unhide menu option (Gregg)
+ o Enable user settable command line length (Gregg)
+ o Add presparams & update appearence of "Sizes" dialog (Gregg)
 
 3.09
  o Check program strings entered in assoc, commands & settings for quoting,

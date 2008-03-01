@@ -15,6 +15,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Nov 07 GKY Allow open of readonly files in the editor with warning
   26 Nov 07 GKY Add "Save as" menu option to editor
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -31,6 +33,7 @@
 #include "mle.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   // External viewers
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -1249,7 +1252,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetWindowPos(vw->hwndRestore, HWND_TOP, 0, 0, 0, 0, fl);
 	  }
 	}
-	free(vw);
+	xfree(vw);
       }
       if (!dontclose &&
 	  ParentIsDesktop(hwnd, WinQueryWindow(WinQueryWindow(hwnd,

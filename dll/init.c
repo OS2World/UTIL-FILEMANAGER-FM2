@@ -40,6 +40,8 @@
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
   13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
   12 Feb 08 SHL Compile OpenWatcom version into binary
+  29 Feb 08 GKY Changes to enable user settable command line length
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -70,6 +72,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "notebook.h"                   // command line variables (editor etc)
 
 #ifdef __IBMC__
 #pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
@@ -89,6 +92,8 @@ PSZ pszBuiltWith = "Built with OpenWatcom version " b(__WATCOMC__);
 #endif
 
 static PSZ pszSrcFile = __FILE__;
+
+BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset);
 
 VOID FindSwapperDat(VOID)
 {
@@ -708,6 +713,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       fWantFirstTimeInit = TRUE;
     }
     else {
+      if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L))
+        saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING, "Check INI header failed");
       fIniExisted = TRUE;
       if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
 	fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
@@ -950,6 +957,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fShowTarget = fDrivebarHelp = fCheckMM = TRUE;
   ulCnrType = CCS_EXTENDSEL;
   FilesToGet = FILESTOGET_MIN;
+  MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
   AutoviewHeight = 48;
   strcpy(printer, "PRN");
   prnwidth = 80;
@@ -974,6 +982,42 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
 
   // load preferences from profile (INI) file
+  size = sizeof(ULONG);
+  PrfQueryProfileData(fmprof, appname, "MaxComLineStrg", &MaxComLineStrg, &size);
+  if (MaxComLineStrg < CMDLNLNGTH_MIN)
+    MaxComLineStrg = CMDLNLNGTH_MIN;
+  else if (MaxComLineStrg > CMDLNLNGTH_MAX)
+    MaxComLineStrg = CMDLNLNGTH_MAX;
+  editor = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!editor)
+    return 0; //already complained
+  viewer = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!viewer)
+    return 0; //already complained
+  virus = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!virus)
+    return 0; //already complained
+  compare = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!compare)
+    return 0; //already complained
+  binview = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!binview)
+    return 0; //already complained
+  bined = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!bined)
+    return 0; //already complained
+  dircompare = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!dircompare)
+    return 0; //already complained
+  ftprun = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!ftprun)
+    return 0; //already complained
+  httprun = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!httprun)
+    return 0; //already complained
+  mailrun = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!mailrun)
+    return 0; //already complained
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowTarget", &fShowTarget, &size);
   size = sizeof(BOOL);
@@ -1185,34 +1229,34 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "ExtractPath", extractpath, &size);
   size = sizeof(printer);
   PrfQueryProfileData(fmprof, appname, "Printer", printer, &size);
-  size = sizeof(dircompare);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "DirCompare", dircompare,
 		      &size);
-  size = sizeof(viewer);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "Viewer", viewer, &size);
-  size = sizeof(editor);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "Editor", editor, &size);
-  size = sizeof(binview);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "BinView", binview, &size);
-  size = sizeof(bined);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "BinEd", bined, &size);
-  size = sizeof(compare);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "Compare", compare, &size);
-  size = sizeof(virus);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "Virus", virus, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FtpRunWPSDefault", &fFtpRunWPSDefault, &size);
-  size = sizeof(ftprun);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "FTPRun", ftprun, &size);
   if (!*ftprun)
     fFtpRunWPSDefault = TRUE;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "HttpRunWPSDefault", &fHttpRunWPSDefault, &size);
-  size = sizeof(httprun);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "HTTPRun", httprun, &size);
   if (!*httprun)
     fHttpRunWPSDefault = TRUE;
-  size = sizeof(mailrun);
+  size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "MailRun", mailrun, &size);
   size = sizeof(ftprundir);
   PrfQueryProfileData(fmprof, appname, "FtpRunDir", ftprundir, &size);
@@ -1439,6 +1483,47 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
     PostMsg(hwndClient, UM_SETUP, MPFROMLONG(argc), MPFROMP(argv));
   }
   return hwndFrame;
+}
+
+BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset)
+{
+  HFILE handle;
+  ULONG action;
+  ULONG len = strlen(signature);
+  ULONG l;
+  // CHAR buffer[80];
+  CHAR buffer[4096];			// 06 Oct 07 SHL Protect against NTFS defect
+  BOOL ret = FALSE;
+
+  DosError(FERR_DISABLEHARDERR);
+  if (DosOpen(filespec,
+	      &handle,
+	      &action,
+	      0,
+	      0,
+	      OPEN_ACTION_FAIL_IF_NEW |
+	      OPEN_ACTION_OPEN_IF_EXISTS,
+	      OPEN_FLAGS_FAIL_ON_ERROR |
+	      OPEN_FLAGS_NOINHERIT |
+	      OPEN_FLAGS_RANDOMSEQUENTIAL |
+	      OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0))
+    ret = FALSE;
+  else {
+    // Try signature match
+    l = len;
+    l = min(l, 79);
+    if (!DosChgFilePtr(handle,
+		       abs(offset),
+		       (offset >= 0) ?
+		       FILE_BEGIN : FILE_END, &len)) {
+      if (!DosRead(handle, buffer, l, &len) && len == l) {
+	if (!memcmp(signature, buffer, l))
+          ret = TRUE;			// Matched
+      }
+    }
+  }
+  DosClose(handle);			/* Either way, we're done for now */
+  return ret;				/* Return TRUE if matched */
 }
 
 int CheckVersion(int vermajor, int verminor)

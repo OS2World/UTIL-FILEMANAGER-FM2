@@ -77,6 +77,7 @@
   10 Jan 08 SHL Add UM_FIRSTTIME
   12 Jan 08 SHL Localize SpecialSelect to comp.c
   14 Feb 08 SHL Refactor CfgDlgProc to notebook.h
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -686,7 +687,6 @@ INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    CHAR * formatstring, ...);
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
           PROGTYPE * progt, ULONG fl, char *formatstring, ...);
-#define MAXCOMLINESTRG (2048)			/* used to build command line strings */
 #define RUNTYPE_MASK  0xf
 #define SYNCHRONOUS   1
 #define ASYNCHRONOUS  2
@@ -1178,17 +1178,11 @@ DATADEF CHAR *FM3Str, *FM2Str, *NullStr, *Default, *Settings,
   *HPFS, *JFS, *CDFS, *FAT32, *HPFS386, *NDFS32, *CBSIFS, *ISOFS, *RAMFS, *NTFS,
   *WPProgram, *FM3Folder, *FM3Tools;
 DATADEF RGB2 RGBGREY, RGBBLACK;
-DATADEF CHAR archiverbb2[CCHMAXPATH], StopPrinting, profile[CCHMAXPATH];
+DATADEF CHAR archiverbb2[CCHMAXPATH], StopPrinting, profile[CCHMAXPATH], extractpath[CCHMAXPATH],
+  lastextractpath[CCHMAXPATH];
 DATADEF CHAR appname[12], realappname[12];
-DATADEF CHAR editor[MAXCOMLINESTRG], viewer[MAXCOMLINESTRG], virus[MAXCOMLINESTRG],
-  compare[MAXCOMLINESTRG], extractpath[CCHMAXPATH],
-  lastextractpath[CCHMAXPATH], lasttoolbox[CCHMAXPATH],
-  HomePath[CCHMAXPATH], SwapperDat[CCHMAXPATH],
-  binview[MAXCOMLINESTRG], bined[MAXCOMLINESTRG], printer[CCHMAXPATH],
-  dircompare[MAXCOMLINESTRG], szDefArc[CCHMAXPATH],
-  ftprun[MAXCOMLINESTRG], ftprundir[CCHMAXPATH], httprun[MAXCOMLINESTRG],
-  httprundir[CCHMAXPATH], mailrundir[CCHMAXPATH],
-  mailrun[MAXCOMLINESTRG], targetdir[CCHMAXPATH];
+DATADEF CHAR  lasttoolbox[CCHMAXPATH], HomePath[CCHMAXPATH],
+  SwapperDat[CCHMAXPATH], printer[CCHMAXPATH], szDefArc[CCHMAXPATH];
 DATADEF HMODULE FM3DllHandle, FM3ModHandle;
 DATADEF CHAR *quicktool[50];
 DATADEF BOOL qtloaded;

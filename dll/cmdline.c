@@ -15,6 +15,7 @@
   22 Mar 07 GKY Use QWL_USER
   16 Jun 07 SHL Update for OpenWatcom
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -77,7 +78,7 @@ VOID load_cmdlines(BOOL big)
 	  x++;
 	  info->cl = xstrdup(s, pszSrcFile, __LINE__);
 	  if (!info->cl)
-	    free(info);
+	    xfree(info);
 	  else {
 	    info->next = NULL;
 	    if (!clhead)
@@ -154,7 +155,7 @@ BOOL add_cmdline(CHAR * cl, BOOL big)
   if (info) {
     info->cl = xstrdup(cl, pszSrcFile, __LINE__);
     if (!info->cl)
-      free(info);
+      xfree(info);
     else {
       info->next = NULL;
       if (!clhead)
@@ -164,7 +165,7 @@ BOOL add_cmdline(CHAR * cl, BOOL big)
       if (x > MAXNUMCLS) {
 	info = clhead;
 	clhead = clhead->next;
-	free(info);
+	xfree(info);
       }
       if (big)
 	clbig = clhead;
@@ -192,8 +193,8 @@ BOOL remove_cmdline(CHAR * cl, BOOL big)
 	last->next = info->next;
       else
 	clhead = info->next;
-      free(info->cl);
-      free(info);
+      xfree(info->cl);
+      xfree(info);
       if (big)
 	clbig = clhead;
       else
@@ -214,8 +215,8 @@ VOID free_cmdlines(BOOL big)
   info = clhead;
   while (info) {
     next = info->next;
-    free(info->cl);
-    free(info);
+    xfree(info->cl);
+    xfree(info);
     info = next;
   }
   clhead = NULL;

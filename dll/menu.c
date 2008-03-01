@@ -12,6 +12,7 @@
   22 Jul 06 SHL Check more run time errors
   29 Jul 06 SHL Use xfgets_bstripcr
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -66,9 +67,8 @@ VOID FreeMenuList(MENU * head)
   info = head;
   while (info) {
     next = info->next;
-    if (info->text)
-      free(info->text);
-    free(info);
+    xfree(info->text);
+    xfree(info);
     info = next;
   }
 }
@@ -106,7 +106,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	  info->size = sizeof(MENU);
 	  info->text = xstrdup(tokens[2], pszSrcFile, __LINE__);
 	  if (!info->text)
-	    free(info);
+	    xfree(info);
 	  else {
 	    if (!stricmp(tokens[0], "MENUITEM"))
 	      info->cmd = atoi(tokens[1]);
@@ -114,8 +114,8 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	      info->type = SEPARATOR;
 	    else {
 	      /* error! */
-	      free(info->text);
-	      free(info);
+	      xfree(info->text);
+	      xfree(info);
 	      info = NULL;
 	    }
 	    if (info) {

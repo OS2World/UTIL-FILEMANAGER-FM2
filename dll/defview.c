@@ -16,6 +16,7 @@
   09 Jun 07 SHL ShowMultimedia: Initialize hwnd so that OpenObject might work
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   20 Dec 07 GKY Open jpg files with OS2 object default since image.exe fails
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -33,6 +34,7 @@
 #include "fm3dlg.h"
 #include "arccnrs.h"			// StartArcCnr
 #include "errutil.h"			// Dos_Error...
+#include "notebook.h"                   // external viewers
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;

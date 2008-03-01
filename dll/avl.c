@@ -29,6 +29,7 @@
   19 Apr 07 SHL Add more drag/drop error checking
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   25 Aug 07 SHL load_archivers: add missing close on error path
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -235,7 +236,7 @@ static void free_arc_type(ARC_TYPE * pat)
     xfree(pat->createrecurse);
     xfree(pat->createwdirs);
     xfree(pat->movewdirs);
-    free(pat);
+    xfree(pat);
   }
 }
 
@@ -821,7 +822,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 hwnd,
 			 ArcReviewDlgProc,
 			 FM3ModHandle, AD_FRAME, MPFROMP(&ad))) {
-	    free(ad.info);
+	    xfree(ad.info);
 	  }
 	  else {
 	    // Find self - assume all archivers listed since we are editing

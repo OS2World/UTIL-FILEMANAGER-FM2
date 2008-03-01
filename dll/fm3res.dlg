@@ -30,6 +30,8 @@
   13 Aug 07 SHL Tweak scanning page
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the rigth to the left pane
   12 Jan 08 SHL Rework WALK_FRAME
+  29 Feb 08 GKY Changes to enable user settable command line length
+  29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
 
 ***********************************************************************/
 
@@ -2537,10 +2539,10 @@ BEGIN
                         WS_GROUP
         PUSHBUTTON      "~Expand", DSZ_EXPAND, 48, 4, 44, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Help", IDM_HELP, 96, 4, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Collapse", DSZ_COLLAPSE, 140, 4, 44, 14,
+        PUSHBUTTON      "~Help", IDM_HELP, 192, 4, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Collapse", DSZ_COLLAPSE, 96, 4, 44, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Save", DSZ_PRINT, 188, 4, 44, 14,
+        PUSHBUTTON      "~Save", DSZ_PRINT, 144, 4, 44, 14,
                         BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 337, 4, 40, 14,
                         BS_NOPOINTERFOCUS
@@ -2763,6 +2765,11 @@ BEGIN
                         10, WC_BUTTON, BS_AUTO3STATE | WS_TABSTOP | WS_VISIBLE
         AUTOCHECKBOX    "FM/~2 deletes dragged items", CFGG_FM2DELETES, 122,
                         68, 130, 10
+        LTEXT           "Command line length", -1, 122, 56, 60, 10, NOT WS_GROUP
+        CONTROL         "", CFGG_CMDLNLNGTH, 184, 56, 44, 10, WC_SPINBUTTON,
+                        SPBS_NUMERICONLY | SPBS_MASTER | SPBS_SERVANT |
+                        SPBS_JUSTCENTER | WS_TABSTOP | SPBS_FASTSPIN |
+                        WS_VISIBLE
         PUSHBUTTON      "~Help", IDM_HELP, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Undo", IDM_UNDO, 48, 4, 40, 14, BS_NOPOINTERFOCUS

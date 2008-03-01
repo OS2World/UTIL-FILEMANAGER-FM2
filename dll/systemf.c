@@ -19,6 +19,9 @@
   07 Jan 07 GKY Move error strings etc. to string file
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Changes to enable user settable command line length
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -36,6 +39,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   //targetdirectory
 #include "pathutil.h"
 #include "fm3dll.h"
 
@@ -79,7 +83,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 {
   /* executes the command once for all files in list */
 
-  char path[CCHMAXPATH], commandline[MAXCOMLINESTRG], modpath[CCHMAXPATH], listfile[CCHMAXPATH],
+  char path[CCHMAXPATH], *commandline, modpath[CCHMAXPATH], listfile[CCHMAXPATH],
        *p, *pp, drive, *file, *ext, *dot;
   register int x;
   BOOL spaces;
@@ -88,6 +92,9 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
     Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     return -1;
   }
+  commandline = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!commandline)
+    return -1; //already complained
   *listfile = 0;
   bstrip(command);
 
@@ -589,8 +596,10 @@ BreakOut:
 	strcpy(ex.title, prompt);
       ret = WinDlgBox(HWND_DESKTOP, hwnd, CmdLineDlgProc, FM3ModHandle,
 		      EXEC_FRAME, &ex);
-      if (ret != 1)
-	return (ret == 0) ? -1 : -2;
+      if (ret != 1) {
+        xfree(commandline);
+        return (ret == 0) ? -1 : -2;
+      }
     }
     else
       ex.flags = flags;
@@ -672,7 +681,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     hwnd = HWND_DESKTOP;
 
   rc = DosAllocMem((PVOID)&pszPgm,
-		   MAXCOMLINESTRG,
+		   MaxComLineStrg,
 		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
     Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
@@ -717,7 +726,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       temp = *p;
       if (temp) {
 	rc = DosAllocMem((PVOID)&pszArgs,
-			 MAXCOMLINESTRG * 2,
+			 MaxComLineStrg * 2,
 			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
 	if (rc)
 	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
@@ -850,7 +859,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     else {
       if (~type & FULLSCREEN)
 	type |= WINDOWED;
-      rc = DosAllocMem((PVOID) & pszArgs, MAXCOMLINESTRG * 2,
+      rc = DosAllocMem((PVOID) & pszArgs, MaxComLineStrg * 2,
 		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
       if (rc) {
 	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
@@ -1233,14 +1242,14 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
   if (child)
     ulOptions |= SAF_STARTCHILDAPP;
 
-  executable = xmallocz(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+  executable = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (executable) {
     va_start(parguments, formatstring);
     vsprintf(executable, formatstring, parguments);
     va_end(parguments);
     strip_lead_char(" \t", executable);
     if (*executable) {
-      parameters = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+      parameters = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
       if (parameters) {
 	p = executable;
 	wasquote = FALSE;
@@ -1292,7 +1301,7 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	      strcat(parameters, executable);
 	      strcpy(executable, GetCmdSpec(FALSE));
 	    }
-	    free(temp);
+	    xfree(temp);
 	  }
 	}
 
@@ -1306,10 +1315,10 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	pgd.pszExecutable = executable;
 	pgd.swpInitial.hwndInsertBehind = HWND_TOP;
 	happ = WinStartApp(hwndNotify, &pgd, NULL, NULL, ulOptions);
-	free(parameters);
+	xfree(parameters);
       }
     }
-    free(executable);
+    xfree(executable);
   }
   return happ;
 }

@@ -23,6 +23,8 @@
   07 Aug 07 SHL Use BldQuotedFileName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 SHL Revert to DosSleep(0)
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -46,6 +48,7 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   // External viewers
 #include "fm3dll.h"
 
 #pragma data_seg(DATA2)
@@ -94,7 +97,7 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 	      Runtime_Error(pszSrcFile, __LINE__,
 			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      FreeListInfo(wk->li);
-	      free(wk);
+	      xfree(wk);
 	    }
 	  }
 	  else
@@ -252,7 +255,7 @@ VOID Action(VOID * args)
 		  if (temp) {
 		    if (!PostMsg(Collector,
 				 UM_COLLECTFROMFILE, MPFROMP(temp), MPVOID))
-		      free(temp);
+		      xfree(temp);
 		  }
 		}
 		break;
@@ -960,7 +963,7 @@ VOID Action(VOID * args)
 
     if (wk->li)
       FreeListInfo(wk->li);
-    free(wk);
+    xfree(wk);
     DosPostEventSem(CompactSem);
   }
 }
@@ -1115,7 +1118,7 @@ VOID MassAction(VOID * args)
 	      p = szBuffer + strlen(szBuffer);
 	      for (x = 0; wk->li->list[x]; x++) {
 		strcpy(p, wk->li->list[x]);
-		free(wk->li->list[x]);
+		xfree(wk->li->list[x]);
 		wk->li->list[x] = xstrdup(szBuffer, pszSrcFile, __LINE__);
 	      }
 	      if (wk->li->list[0])
@@ -1295,7 +1298,7 @@ VOID MassAction(VOID * args)
 		  if (!PostMsg(wk->hwndCnr,
 			       UM_LOADFILE,
 			       MPFROMLONG(5 + viewtype), MPFROMP(temp)))
-		    free(temp);
+		    xfree(temp);
 		}
 		DosSleep(1);
 	      }
@@ -1340,7 +1343,7 @@ VOID MassAction(VOID * args)
 		  if (!PostMsg(wk->hwndCnr,
 			       UM_LOADFILE,
 			       MPFROMLONG(4 + viewtype), MPFROMP(temp)))
-		    free(temp);
+		    xfree(temp);
 		}
 		DosSleep(1);
 	      }
@@ -1603,7 +1606,7 @@ VOID MassAction(VOID * args)
     }
     if (wk->li)
       FreeListInfo(wk->li);
-    free(wk);
+    xfree(wk);
     DosPostEventSem(CompactSem);
   }
 }

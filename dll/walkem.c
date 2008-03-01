@@ -24,6 +24,8 @@
   11 Nov 07 GKY Cancel now directly closes dialog even if directory path text has changed
   20 Jan 08 GKY Walk & walk2 dialogs now save and restore size and position
   19 Feb 08 JBS Add "State at last FM/2 close" to the states combo box
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Refactor global command line variables to notebook.h
 
 ***********************************************************************/
 
@@ -42,6 +44,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notebook.h"                   // targetdirectory
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
@@ -336,7 +339,7 @@ VOID load_udirs(VOID)
 	if (info) {
 	  info->path = xstrdup(s, pszSrcFile, __LINE__);
 	  if (!info->path)
-	    free(info);
+	    xfree(info);
 	  else {
 	    info->next = NULL;
 	    if (!udirhead)
@@ -429,8 +432,8 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
 	      temp->next = info->next;
 	    else
 	      ldirhead = info->next;
-	    free(info->path);
-	    free(info);
+	    xfree(info->path);
+	    xfree(info);
 	    break;
 	  }
 	  temp = info;
@@ -442,7 +445,7 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
       if (info) {
 	info->path = xstrdup(path, pszSrcFile, __LINE__);
 	if (!info->path)
-	  free(info);
+	  xfree(info);
 	else {
 	  info->next = NULL;
 	  if (userdirs) {
@@ -483,8 +486,8 @@ BOOL remove_udir(CHAR * path)
 	  last->next = info->next;
 	else
 	  udirhead = info->next;
-	free(info->path);
-	free(info);
+	xfree(info->path);
+	xfree(info);
 	fUdirsChanged = TRUE;
 	return TRUE;
       }
@@ -500,8 +503,8 @@ BOOL remove_udir(CHAR * path)
 	  last->next = info->next;
 	else
 	  ldirhead = info->next;
-	free(info->path);
-	free(info);
+	xfree(info->path);
+	xfree(info);
 	return TRUE;
       }
       last = info;
@@ -524,8 +527,8 @@ BOOL remove_ldir(CHAR * path)
 	  last->next = info->next;
 	else
 	  ldirhead = info->next;
-	free(info->path);
-	free(info);
+	xfree(info->path);
+	xfree(info);
 	return TRUE;
       }
       last = info;
@@ -1194,7 +1197,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       if (wa->changed)
         WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
-      free(wa);
+      xfree(wa);
       WinDismissDlg(hwnd, 0);
       break;
     }

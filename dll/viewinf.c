@@ -13,6 +13,7 @@
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -156,7 +157,7 @@ static VOID FillListboxThread(VOID * args)
 	      break;
 	    p = strtok(NULL, ";");
 	  }
-	  free(holdenv);
+	  xfree(holdenv);
 	NoEnv:
 	  if (WinIsWindow(hab2, hwnd) && !repeating) {
 
@@ -172,7 +173,7 @@ static VOID FillListboxThread(VOID * args)
 		if (!PrfQueryProfileData(fmprof, FM3Str, key, holdenv, &size)) {
 		  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 			    "PrfQueryProfileData");
-		  free(holdenv);
+		  xfree(holdenv);
 		}
 		else
 		  goto Repeat;
@@ -187,7 +188,7 @@ static VOID FillListboxThread(VOID * args)
     DecrThreadUsage();
     WinTerminate(hab2);
   }
-  free(dummy);
+  xfree(dummy);
 }
 
 MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -265,7 +266,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (_beginthread(FillListboxThread, NULL, 65536, (PVOID) d) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  free(d);
+	  xfree(d);
 	  WinDismissDlg(hwnd, 0);
 	  return 0;
 	}

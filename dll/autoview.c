@@ -22,6 +22,7 @@
   27 Sep 07 SHL Correct ULONGLONG size formatting
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   30 Dec 07 GKY Use CommaFmtULL
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -411,9 +412,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    if (*obuff)
 		      WinSetWindowText(hwndAutoview, obuff);
 		  }
-		  free(obuff);
+		  xfree(obuff);
 		}
-		free(ibuff);
+		xfree(ibuff);
 	      }
 	      DosClose(handle);
 	    }
@@ -506,7 +507,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
 		if (*pszBuf)
 		  WinSetWindowText(hwndAutoview, pszBuf);
-		free(pszBuf);
+		xfree(pszBuf);
 	      }
 	    }
 	    if (!rc)
@@ -540,7 +541,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      eaop.oError = 0L;
 	      rc = DosQueryPathInfo((CHAR *) mp1, FIL_QUERYEASFROMLIST,
 				    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-	      free(pgealist);
+	      xfree(pgealist);
 	      if (!rc) {
 		pfea = &eaop.fpFEA2List->list[0];
 		if (pfea->cbName && pfea->cbValue) {
@@ -590,7 +591,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			break;
 		      }
 		      WinSetWindowText(hwndAutoMLE, pszBuf);
-		      free(pszBuf);
+		      xfree(pszBuf);
 		    }
 		  }
 		  else
@@ -604,12 +605,12 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		MLEsetchanged(hwndAutoMLE, FALSE);
 		MLEsetreadonly(hwndAutoMLE, FALSE);
 	      }
-	      free(pfealist);
+	      xfree(pfealist);
 	    }
 	  }
 	}
       }
-      free((CHAR *) mp1);
+      xfree((CHAR *) mp1);
     }
     return 0;
 
@@ -785,7 +786,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinQueryWindowText(hwnd, 32767, ea);
 	      PutComments(hwnd, currfile, ea);
 	      PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-	      free(ea);
+	      xfree(ea);
 	    }
 	  }
 	}
@@ -835,7 +836,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (cf) {
 	  stopflag++;
 	  if (!PostMsg(hwndAutoObj, UM_LOADFILE, MPFROMP(cf), MPVOID))
-	    free(cf);
+	    xfree(cf);
 	}
       }
       break;

@@ -22,6 +22,7 @@
   10 Jan 08 SHL Sync with CfgDlgProc mods
   19 Jan 08 GKY Rework Utilities menu
   14 Feb 08 SHL Rework to support settings menu conditional cascade
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -1346,8 +1347,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_DESTROY:
     hwndMain = (HWND) 0;
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
-    if (pd)
-      free(pd);
+    xfree(pd);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
     break;

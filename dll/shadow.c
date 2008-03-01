@@ -12,6 +12,7 @@
   16 Jun 07 SHL Update for OpenWatcom
   06 Aug 07 SHL Use BldFullPathName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -55,7 +56,7 @@ HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 	      objtitle,
 	      (path) ? ";STARTUPDIR=" : "", (path) ? path : "", objtitle);
       WinSetObjectData(obj, s);
-      free(s);
+      xfree(s);
     }
   }
   return obj;
@@ -156,7 +157,7 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
     obj = WinCreateObject("WPShadow",
 			  objtitle,
 			  s, (location) ? location : cnr, CO_FAILIFEXISTS);
-    free(s);
+    xfree(s);
   }
   return obj;
 }

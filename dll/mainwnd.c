@@ -53,6 +53,7 @@
   15 Feb 08 SHL Rework ResizeChildren to honor fNoTreeGap and resize drive tree better
   19 Feb 08 JBS Stop deleting "State at last FM/2 Close" from INI file so it be accessed from States combo box.
   22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -179,8 +180,7 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       RestoreDirCnrState(hwndMain, (char *)mp1, FALSE);
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), TRUE);
       fNoTileUpdate = FALSE;
-      if (mp1)
-	free((char *)mp1);
+      xfree((char *)mp1);
       if (fAutoTile)
 	TileChildren(hwndMain, TRUE);
       break;
@@ -509,7 +509,7 @@ static VOID ResizeTools(HWND hwnd)
       }
       WinSetMultWindowPos(WinQueryAnchorBlock(hwnd), &swp[2], numtools);
     }
-    free(swp);
+    xfree(swp);
   }
   WinInvalidateRect(hwnd, NULL, TRUE);
 }
@@ -1003,7 +1003,7 @@ MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		p = pp;
 	      }
 	    }
-	    free(s);
+	    xfree(s);
 	  }
 	}
 	if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE)) && swp.cx > 6 && swp.cy > 6) {
@@ -1605,8 +1605,7 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		       WINDOWED | ((fKeepCmdLine) ?
 				   SEPARATEKEEP : SEPARATE),
 		       directory, list, NULL, pszSrcFile, __LINE__);
-	    if (list)
-	      free(list);
+	    xfree(list);
 	    WinDestroyWindow(hwnd);
 	    break;
 	  }
@@ -6233,7 +6232,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  UM_RESTORE,
 				  MPFROMP(pszStateName),
 				  MPVOID)) {
-		  free(pszStateName);
+		  xfree(pszStateName);
 		}
 	      }
 	    }
@@ -6307,7 +6306,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pszDefaultStateName) {
 	if (!PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszDefaultStateName), MPVOID))
 	  // 05 Feb 08 SHL fixme to complain?
-	  free(pszDefaultStateName);
+	  xfree(pszDefaultStateName);
       }
     }
     return 0;

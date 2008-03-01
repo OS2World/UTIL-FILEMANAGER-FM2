@@ -23,6 +23,7 @@
   16 Jun 07 SHL Update for OpenWatcom
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
+  29 Feb 08 GKY Changes to enable user settable command line length
 
 ***********************************************************************/
 
@@ -92,13 +93,16 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 
 static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 { // fixme for command line limit
-  CHAR szCmdLine[MAXCOMLINESTRG];
+  CHAR *szCmdLine;
 
+  szCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+        if (!szCmdLine)
+          return NULL; //already complained
   xfree(pszDest);
   WinQueryDlgItemText(hwnd, id, sizeof(szCmdLine), szCmdLine);
   if (*szCmdLine){
     PSZ pszWorkBuf;
-    pszWorkBuf = xmalloc(MAXCOMLINESTRG, pszSrcFile, __LINE__);
+    pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
     if (pszWorkBuf) {
       NormalizeCmdLine(pszWorkBuf, szCmdLine);
       pszDest = xstrdup(pszWorkBuf, pszSrcFile, __LINE__);
@@ -109,6 +113,7 @@ static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
   }
   else
     pszDest = NULL;
+  xfree(szCmdLine);
   return pszDest;
 }
 

@@ -19,6 +19,7 @@
   02 Aug 07 SHL Sync with CNRITEM mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 SHL Change to DosSleep(0)
+  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 
@@ -744,7 +745,7 @@ MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  Broadcast(WinQueryAnchorBlock(hwnd),
 		    dcd->hwndParent, UM_UPDATERECORD, mp2, MPVOID);
-	  free(mp2);
+	  xfree(mp2);
 	}
       }
     }

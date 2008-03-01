@@ -9,6 +9,7 @@
 .*
 .* 01 Sep 06 GKY ADD new partition disks information
 .* 03 Mar 07 GKY Update that file systems other than HPFS support long names
+.* 29 Feb 08 GKY Document unhide menu item
 .*
 .***********************************************************************
 .*
@@ -187,8 +188,12 @@ rescan for special situations).
 :p.
 :hp6.Hide objects:ehp6. hides objects (removes them from view in the
 container) until you rescan, use the :link reftype=hd res=93400.Filter
-dialog:elink. or switch directories.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+dialog:elink. or switch directories or use Unhide (see below).
+:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:p.
+:hp6.Unhide objects:ehp6. unhides objects (restores them from view in the container)
+Unhide doesn't unhide items that are filtered by the current mask or attribute filters
+:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\playmm.bmp' align=center.
 :p.

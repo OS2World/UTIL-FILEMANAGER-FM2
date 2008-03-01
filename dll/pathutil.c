@@ -10,6 +10,8 @@
 
   05 Jan 08 SHL Move from arccnrs.c and comp.c to here
   06 Jan 08 GKY Add NormalizeCmdLine to check program strings on entry
+  29 Feb 08 GKY Use xfree where appropriate
+  29 Feb 08 GKY Changes to enable user settable command line length
 
 ***********************************************************************/
 
@@ -24,6 +26,8 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+
+static PSZ pszSrcFile = __FILE__;
 
 // #pragma data_seg(DATA1)
 
@@ -104,14 +108,14 @@ PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName)
  * Checks a command line for common errors (missing quotes, missing extension,
  * no space between exe and args etc)
  * Command line passed as pszCmdLine_
- * A pointer to a buffer of the size MAXCOMLINESTRG should be supplied in
+ * A pointer to a buffer of the size MaxComLineStrg should be supplied in
  * pszWorkBuf. This is where the quoted etc as necessary command
  * line string will be returned.
  */
 
 PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 {
-  char szCmdLine[MAXCOMLINESTRG], szArgs[MAXCOMLINESTRG];
+  char *szCmdLine, *szArgs;
   char *offset = '\0', *offsetexe, *offsetcom, *offsetcmd, *offsetbtm, *offsetbat;
   APIRET ret;
   ULONG ulAppType;
@@ -122,8 +126,16 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
   ULONG ulFindCount = 1;
   PSZ pszNewCmdLine = pszWorkBuf;
 
+  szCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!szCmdLine)
+    return pszCmdLine_; //already complained
+  szArgs = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!szArgs) {
+    xfree(szCmdLine);
+    return pszCmdLine_; //already complained
+  }
   bstrip(pszCmdLine_);
-  memset(pszWorkBuf, 0, MAXCOMLINESTRG);
+  memset(pszWorkBuf, 0, MaxComLineStrg);
   strcpy(szCmdLine, pszCmdLine_);
   if (szCmdLine[0] != '\0') {
     offsetexe = strstr(strlwr(pszCmdLine_), ".exe");
@@ -316,6 +328,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
       }
     }
   }
+  xfree(szArgs);
+  xfree(szCmdLine);
   return pszWorkBuf;
 }
 
