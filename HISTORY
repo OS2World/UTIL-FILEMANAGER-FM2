@@ -40,6 +40,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Enable user settable command line length (Gregg)
  o Add presparams & update appearence of "Sizes" dialog (Gregg)
  o Fix save and restore of non-default details view settings (John)
+ o The state at shutdown is now available (read-only) in the State combo box (John)
  o The list of excluded drives in the parameters of the FM/2 object
    are no longer overwritten during the FM/2 install (John)
  o The FM/2 Utilities package will no longer be selected automatically
