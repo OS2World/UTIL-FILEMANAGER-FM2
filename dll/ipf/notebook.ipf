@@ -680,7 +680,15 @@ key commands. Otherwise, the operation is performed without
 intervention by you, moving or copying the objects to the :hp6.:link
 reftype=hd res=100065.Target directory:elink.:ehp6. (if one is set, of
 course; otherwise, you're prompted anyway).
-
+:p.
+The :hp6.Set command line length:ehp6. spin button allow you to limit the
+number of characters you can place in a "command" that will ultimately be
+passed to your command shell. This setting is internal to FM/2 and does not
+effect the actual limit of your command shell. The minimum is 299 which is
+the CMD.EXE limit. The Default is 1023 which is the unexpanded limit for
+4OS2.EXE. We believe that some UNIX based shells (eg BASH) have much
+higher limits so the maximum is 32K. (The 1023 was also the hard
+coded limit in many place in FM/2).
 
 :h3 res=99960 name=PANEL_SCANPAGE.Scanning page
 :i1 id=aboutSCANP.Scanning page

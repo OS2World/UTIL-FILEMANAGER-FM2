@@ -5,6 +5,25 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+Fm/2 3.10 adds the ability to set the command line length
+to correspond to the command shell you are using. We have
+moved some menu items to submenus to reduce menu clutter
+while adding "unhide" to reveal previously hidden items and
+adding a settings notebook submenu to allow selection of the
+page you wish to visit. We have updated the look of several
+dialogs and containers including adding the ability to remember
+size location and presentation parameters. We have reworked
+the the save state on close so it will save the different
+states of mulyiple directory containers and in greater detail.
+This state can also be restore at anytime during a session by
+selecting it from the "States" drop down. We have provided better
+progress indicators to update the progress of long operations.
+We now provide both the SYM & MAP files in a seperate warpin
+package. This will allow interested individuals the tools needed
+to assist with analysing any problem that may occur. This
+package is not needed to run FM/2. As always this update
+provides some performance enhancements and defect fixes.
+
 FM/2 3.09 adds "mailto:" so you can configure the ability to
 double click an email address in the new viewer and have it
 open a new email using that address. The viewer page in the

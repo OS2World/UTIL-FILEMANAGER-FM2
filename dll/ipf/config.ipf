@@ -17,7 +17,8 @@ menu:elink. while the pointer is over an empty area of the container, or
 select the Views pulldown submenu.
 :p.
 The :link reftype=hd res=94600.Settings notebook:elink. is accessed from
-this menu.
+this menu. You can use the submenu to access the specific page you want
+otherwise it opens to the last page you accessed.
 :p.
 The :link reftype=hd res=100065.Set Target directory:elink. is the next menu
 item and can also be accessed using :color fc=default bc=palegray.Ctrl:color fc=default bc=default.+:color fc=default bc=palegray.T:color fc=default bc=default..

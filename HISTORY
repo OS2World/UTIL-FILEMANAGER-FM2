@@ -1,6 +1,6 @@
 New stuff's at the top.  This list is not necessarily complete.
 
-3.10 (pre)
+3.10
  o Removed the close buttton and menu item from the tree container which closed FM/2 (Gregg)
  o Implement bubble help for bitmap menu items in collector and arc container (Gregg)
  o Correct/enhance settings notebook navigation, ticket #188 (Steven)
