@@ -14,11 +14,11 @@ page you wish to visit. We have updated the look of several
 dialogs and containers including adding the ability to remember
 size location and presentation parameters. We have reworked
 the the save state on close so it will save the different
-states of mulyiple directory containers and in greater detail.
+states of multiple directory containers and in greater detail.
 This state can also be restore at anytime during a session by
 selecting it from the "States" drop down. We have provided better
 progress indicators to update the progress of long operations.
-We now provide both the SYM & MAP files in a seperate warpin
+We now provide both the SYM & MAP files in a separate warpin
 package. This will allow interested individuals the tools needed
 to assist with analysing any problem that may occur. This
 package is not needed to run FM/2. As always this update
@@ -500,4 +500,3 @@ others in the comp.os.os2.* hierarchy.
 Thanks and enjoy.
 
 $Id$
-
