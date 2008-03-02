@@ -1494,12 +1494,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosSleep(32); //05 Aug 07 GKY 64
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
-      SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				DIR_FILTER), &dcd->mask, FALSE);
-      SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-			      DIR_SORT), dcd->sortFlags, FALSE);
-      SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-			      DIR_VIEW), dcd->flWindowAttr);
+//       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+// 				DIR_FILTER), &dcd->mask, FALSE);
+//       SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+// 			      DIR_SORT), dcd->sortFlags, FALSE);
+//       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+// 			      DIR_VIEW), dcd->flWindowAttr);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1508,9 +1508,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP2:
-    if (dcd)
+    if (dcd) {
       AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
-    else
+      SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+  		DIR_FILTER), &dcd->mask, FALSE);
+      SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+  	      DIR_SORT), dcd->sortFlags, FALSE);
+      SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+  	      DIR_VIEW), dcd->flWindowAttr);
+    } else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     return 0;
 
