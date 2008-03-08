@@ -1035,63 +1035,44 @@ VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
 			   CHAR * directory, CHAR * keyroot,
 			   DIRCNRDATA * dcd, BOOL compare)
 {
-// JBS  CHAR s[CCHMAXPATH], *eos = s;
   BOOL *bool = NULL;
 
-// JBS  *s = 0;
-// JBS  if (keyroot) {
-// JBS    strcpy(s, keyroot);
-// JBS    strcat(s, ".");
-// JBS    eos = &s[strlen(s)];
-// JBS  }
   switch (cmd) {
   case IDM_SHOWLNAMES:
     bool = dcd ? &dcd->detailslongname : &detailslongname;
-// JBS    strcpy(eos, "DetailsLongname");
     break;
   case IDM_SHOWSUBJECT:
     bool = dcd ? &dcd->detailssubject : &detailssubject;
-// JBS    strcpy(eos, "DetailsSubject");
     break;
   case IDM_SHOWEAS:
     bool = dcd ? &dcd->detailsea : &detailsea;
-// JBS    strcpy(eos, "DetailsEA");
     break;
   case IDM_SHOWSIZE:
     bool = dcd ? &dcd->detailssize : &detailssize;
-// JBS    strcpy(eos, "DetailsSize");
     break;
   case IDM_SHOWICON:
     bool = dcd ? &dcd->detailsicon : &detailsicon;
-// JBS    strcpy(eos, "DetailsIcon");
     break;
   case IDM_SHOWLWDATE:
     bool = dcd ? &dcd->detailslwdate : &detailslwdate;
-// JBS    strcpy(eos, "DetailsLWDate");
     break;
   case IDM_SHOWLWTIME:
     bool = dcd ? &dcd->detailslwtime : &detailslwtime;
-// JBS    strcpy(eos, "DetailsLWTime");
     break;
   case IDM_SHOWLADATE:
     bool = dcd ? &dcd->detailsladate : &detailsladate;
-// JBS    strcpy(eos, "DetailsLADate");
     break;
   case IDM_SHOWLATIME:
     bool = dcd ? &dcd->detailslatime : &detailslatime;
-// JBS    strcpy(eos, "DetailsLATime");
     break;
   case IDM_SHOWCRDATE:
     bool = dcd ? &dcd->detailscrdate : &detailscrdate;
-// JBS    strcpy(eos, "DetailsCRDate");
     break;
   case IDM_SHOWCRTIME:
     bool = dcd ? &dcd->detailscrtime : &detailscrtime;
-// JBS    strcpy(eos, "DetailsCRTime");
     break;
   case IDM_SHOWATTR:
     bool = dcd ? &dcd->detailsattr : &detailsattr;
-// JBS    strcpy(eos, "DetailsAttr");
     break;
   default:
     if (hwndMenu)
@@ -1100,8 +1081,6 @@ VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
   }
   if (bool)
     *bool = *bool ? FALSE : TRUE;
-// JBS  if (*s && bool)
-// JBS    PrfWriteProfileData(fmprof, appname, s, bool, sizeof(BOOL));
   if (hwnd)
     AdjustCnrColsForPref(hwnd, directory, dcd, compare);
   if (hwndMenu)
@@ -1248,13 +1227,9 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   CHAR s[CCHMAXPATH], *eos = s;
   BOOL *bool;
 
-// JBS - No calls to LoadDetailsSwitches have a NULL keyroot.
-//  *s = 0;
-//  if (keyroot) {
-    strcpy(s, keyroot);
-    strcat(s, ".");
-    eos = &s[strlen(s)];
-//  }
+  strcpy(s, keyroot);
+  strcat(s, ".");
+  eos = &s[strlen(s)];
   strcpy(eos, "DetailsLongname");
   if (dcd)
     bool = &dcd->detailslongname;
