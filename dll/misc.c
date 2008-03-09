@@ -37,9 +37,11 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   12 Jan 08 SHL Document SetConditionalCascade
   13 Jan 08 GKY Get Subjectwidth/Subjectleft working in the collector.
-  xx Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
+  19 Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   21 Jan 08 GKY Stop reallocating NullStr by direct editing of empty subject and longname strings.
   29 Feb 08 GKY Use xfree where appropriate
+  08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
+                keys using a "DirCnr." prefix
 
 ***********************************************************************/
 

@@ -30,6 +30,8 @@
   22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Use xfree where appropriate
+  08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
+                keys using a "DirCnr." prefix
 
 ***********************************************************************/
 

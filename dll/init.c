@@ -42,6 +42,8 @@
   12 Feb 08 SHL Compile OpenWatcom version into binary
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
+                keys using a "DirCnr." prefix
 
 ***********************************************************************/
 
@@ -1344,46 +1346,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, FM3Str, "FM2Deletes", &fFM2Deletes, &size);
 
   LoadDetailsSwitches("DirCnr", NULL);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsLWDate", &detailslwdate, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsLWTime", &detailslwtime, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsLADate", &detailsladate, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsLATime", &detailslatime, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsCRDate", &detailscrdate, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsCRTime", &detailscrtime, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsLongname", &detailslongname, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsEA", &detailsea, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsSize", &detailssize, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsSubject", &detailssubject, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsAttr", &detailsattr, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "DetailsIcon", &detailsicon, &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "SubjectInLeftPane", &fSubjectInLeftPane,
-// 		      &size);
-//   size = sizeof(BOOL);
-//   PrfQueryProfileData(fmprof, appname, "SubjectLengthMax", &fSubjectLengthMax,
-// 		      &size);
-//   if (fSubjectLengthMax)
-//     SubjectDisplayWidth = 0;
-//   else {
-//     PrfQueryProfileData(fmprof, appname, "SubjectDisplayWidth",
-// 			&SubjectDisplayWidth, &size);
-//     if (SubjectDisplayWidth < 50)
-//       SubjectDisplayWidth = 0;
-//     else if (SubjectDisplayWidth > 1000)
-//       SubjectDisplayWidth = 1000;
-//   }
 
   /* load pointers and icons we use */
   hptrArrow = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE);
