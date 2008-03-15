@@ -17,6 +17,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 Nov 07 SHL Report fixup buffer overflow
   29 Feb 08 GKY Use xfree where appropriate
+  15 Mar 08 KOMH Fix wildcard for multiple dots
 
 ***********************************************************************/
 
@@ -197,7 +198,7 @@ UINT literal(PSZ pszBuf)
   return cBufBytes;                        /* Return string length */
 }
 
-/* Check wildcard match
+/** Check wildcard match
  * @parm pszBuf Buffer to check
  * @parm pszWildCard wildcard to match
  * @parm fNotFileSpec TRUE if generic match else filespec match
@@ -205,6 +206,82 @@ UINT literal(PSZ pszBuf)
  */
 
 BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
+              const BOOL fNotFileSpec)
+{
+    PSZ fstr = pszBuf;
+    PSZ fcard = pszWildCard;
+
+    while (*fstr && *fcard) {
+      switch (*fcard) {
+        case '*' :
+        {
+          PSZ fstr1;
+
+          // find next non-wild character in wildcard
+          while (*fcard && ( *fcard == '*' || *fcard == '?'))
+            fcard++;
+
+          // if last char of wildcard is *, it matches
+          if (!*fcard)
+            return TRUE;
+
+          fstr1 = fstr;
+          while (*fstr1) {
+            // skip until partition, match, or eos
+            while (*fstr1 && toupper( *fstr1 ) != toupper( *fcard ) &&
+                   (fNotFileSpec || ( *fstr1 != '/' && *fstr1 != '\\')))
+              fstr1++;
+
+            if (!*fstr1 || ( !fNotFileSpec && ( *fstr1 == '/' || *fstr1 == '\\')))
+              break;
+
+            if (wildcard( fstr1, fcard, fNotFileSpec ) == TRUE)
+              return TRUE;
+
+            fstr1++;
+          }
+
+          fstr = fstr1;
+          break;
+        }
+
+        case '?' :          // character substitution
+          fcard++;
+
+          if (fNotFileSpec || ( *fstr != '.' && *fstr != '/' && *fstr != '\\'))
+            fstr++;     // skip (match) next character
+          break;
+
+        default :
+          if (fNotFileSpec || (*fstr  != '/' && *fstr  != '\\') ||
+              (*fcard != '/' && *fcard != '\\')) {
+            if (toupper( *fstr ) != toupper( *fcard))
+              return FALSE;
+          }
+
+          fcard++;
+          fstr++;
+          break;
+      }
+    }
+
+    if (!*fstr) {
+        // remove trailing * and ?
+      while (*fcard && ( *fcard == '?' || *fcard == '*'))
+        fcard++;
+
+      if (!fNotFileSpec) {
+        // remove trailing .
+        while (*fcard && *fcard == '.')
+          fcard++;
+      }
+    }
+
+    return (*fstr == *fcard);
+}
+
+
+/*BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
 	      const BOOL fNotFileSpec)
 {
   const CHAR *fstr = pszBuf;
@@ -236,29 +313,29 @@ BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
 	reverse = TRUE;
       }
      switch (*fcard) { //fm2 standard forward search for all other cases
-      case '?':                                /* character substitution */
+      case '?':                                // character substitution /
 	fcard++;
 	if (fNotFileSpec || (*fstr != '.' && *fstr != '/' && *fstr != '\\'))
-	  fstr++;                                /* skip (match) next character */
+	  fstr++;                                // skip (match) next character
 	break;
 
       case '*':
-	/* find next non-wild character in wildcard */
+	// find next non-wild character in wildcard
 	while (*fcard && (*fcard == '?' || *fcard == '*'))
 	  fcard++;
-	if (!*fcard){                        /* if last char of wildcard is *, it matches */
+	if (!*fcard){                        // if last char of wildcard is *, it matches
 	  if (reverse){
 	    fstr = strrev(pszBuf);
 	    fcard = strrev(pszWildCard);
 	  }
 	  return TRUE;
 	}
-	/* skip until partition, match, or eos */
+	// skip until partition, match, or eos
 	while (*fstr && toupper(*fstr) != toupper(*fcard) &&
 	       (fNotFileSpec || (*fstr != '\\' &&
 	                         *fstr != '/' && *fstr != '.')))
 	  fstr++;
-	if (!fNotFileSpec && !*fstr)        /* implicit '.' */
+	if (!fNotFileSpec && !*fstr)        // implicit '.'
 	  if (*fcard == '.')
 	    fcard++;
 	break;
@@ -289,7 +366,7 @@ BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
     }
     return wmatch;
   }
-}
+} */
 
 
 // fixup - quote literal character array
