@@ -52,6 +52,7 @@
   20 Jan 08 GKY Compare dialog now saves and restores size and position
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  16 Mar 08 GKY Prevent trap caused by files that exceed maxpath length
 
 ***********************************************************************/
 
@@ -1314,6 +1315,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
   ULONG ulFindCnt;
   ULONG ulBufBytes = sizeof(FILEFINDBUF4L) * FilesToGet;
   APIRET rc;
+  static BOOL fDone;
 
   if (!str || !*str) {
     Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
@@ -1322,7 +1324,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
 
   // DbgMsg(pszSrcFile, __LINE__, "FillDirList start %s", str);
 
-  maskstr = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
+  maskstr = xmalloc(CCHMAXPATH + 100, pszSrcFile, __LINE__);
   if (!maskstr)
     return;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
@@ -1371,7 +1373,21 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
 	    strupr(pffbFile->achName);
 	  else if (fForceLower)
 	    strlwr(pffbFile->achName);
-	  memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
+          memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
+          if (strlen(maskstr) > CCHMAXPATH) {
+	    // Complain if pathnames exceeds max
+	    DosFindClose(hDir);
+            xfree(pffbArray);
+            xfree(maskstr);
+	    if (!fDone) {
+	      fDone = TRUE;
+	      saymsg(MB_OK | MB_ICONASTERISK,
+		     HWND_DESKTOP,
+		     GetPString(IDS_WARNINGTEXT),
+		     "One or more of your files has a full path name that exceeds the OS/2 maximum");
+            }
+            return;
+	  }
 	  if (AddToFileList(maskstr + skiplen,
 			    pffbFile, list, pnumfiles, pnumalloc)) {
 	    goto Abort;
