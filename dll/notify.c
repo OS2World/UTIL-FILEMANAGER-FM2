@@ -3,10 +3,10 @@
 
   $Id$
 
-  Notifications
+  Thread notes window and popup notification status line
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2006, 2008 Steven H.Levine
 
   17 Jul 06 SHL Use Win_Error
   22 Jul 06 SHL Check more run time errors
@@ -14,7 +14,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
-
+  16 Apr 08 SHL Comment and clean up logic
 
 ***********************************************************************/
 
@@ -39,7 +39,12 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-static HWND hwndNotify;
+static volatile HWND hwndNotify;	// 16 Apr 08 SHL
+
+/**
+ * Popup notification message window procedure
+ * Display timed message over status line
+ */
 
 MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -49,9 +54,8 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CREATE:
     showing++;
     {
-      MRESULT rc;
+      MRESULT rc = PFNWPStatic(hwnd, msg, mp1, mp2);
 
-      rc = PFNWPStatic(hwnd, msg, mp1, mp2);
       if (!WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER2, 5000)) {
 	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinStartTimer");
 	WinDestroyWindow(hwnd);
@@ -94,13 +98,11 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_PAINT:
     {
-      MRESULT mr;
-      HPS hps;
       SWP swp;
       POINTL ptl;
 
-      mr = PFNWPStatic(hwnd, msg, mp1, mp2);
-      hps = WinGetPS(hwnd);
+      MRESULT mr = PFNWPStatic(hwnd, msg, mp1, mp2);
+      HPS hps = WinGetPS(hwnd);
       if (hps) {
 	if (WinQueryWindowPos(hwnd, &swp)) {
 	  ptl.x = 0;
@@ -138,6 +140,10 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return PFNWPStatic(hwnd, msg, mp1, mp2);
 }
 
+/**
+ * Display timed notification window over status line
+ */
+
 HWND DoNotify(char *str)
 {
   char *p;
@@ -147,16 +153,16 @@ HWND DoNotify(char *str)
   static USHORT id = NOTE_FRAME;
 
   if (str && *str) {
-    /* figure out what size the window should be and where it should be */
-    hwndP = (hwndMain) ? WinQueryWindow(hwndMain, QW_PARENT) : HWND_DESKTOP;
+    // figure out what size the window should be and where it should be
+    hwndP = hwndMain ? WinQueryWindow(hwndMain, QW_PARENT) : HWND_DESKTOP;
     WinQueryWindowPos(hwndP, &swp);
     if (hwndStatus)
       WinQueryWindowPos(hwndStatus, &swpS);
     if (hwndStatus2)
       WinQueryWindowPos(hwndStatus2, &swpS2);
-    x = (hwndMain) ? ((hwndStatus) ? swpS.x - 1 :
+    x = hwndMain ? (hwndStatus ? swpS.x - 1 :
 		      WinQuerySysValue(HWND_DESKTOP, SV_CXSIZEBORDER)) : 0;
-    y = (hwndMain) ? ((hwndStatus) ? swpS.y - 1 :
+    y = hwndMain ? (hwndStatus ? swpS.y - 1 :
 		      WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER)) : 0;
     if (hwndMain && hwndStatus) {
       if (hwndStatus2)
@@ -166,9 +172,9 @@ HWND DoNotify(char *str)
     }
     else
       cx = (swp.cx - ((x * 2) + 4));
-    cy = (hwndMain) ? ((hwndStatus) ? swpS.cy + 2 : 28) : 28;
+    cy = hwndMain ? (hwndStatus ? swpS.cy + 2 : 28) : 28;
 
-    /* pretty-up the note by putting on a leading space */
+    // pretty-up the note by putting on a leading space
     if (*str != ' ') {
       p = xmalloc(strlen(str) + 2, pszSrcFile, __LINE__);
       if (!p)
@@ -200,10 +206,18 @@ HWND DoNotify(char *str)
   return hwnd;
 }
 
+/**
+ * Add message to thread notes window
+ */
+
 HWND Notify(char *str)
 {
-  return (HWND) WinSendMsg(MainObjectHwnd, UM_NOTIFY, MPFROMP(str), MPVOID);
+  return (HWND)WinSendMsg(MainObjectHwnd, UM_NOTIFY, MPFROMP(str), MPVOID);
 }
+
+/**
+ * Add error message to thread notes window
+ */
 
 VOID NotifyError(CHAR * filename, APIRET status)
 {
@@ -242,13 +256,18 @@ VOID NotifyError(CHAR * filename, APIRET status)
   Notify(errortext);
 }
 
+/**
+ * Thread notes dialog window dialog procedure
+ */
+
 MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   static HPOINTER hptrIcon = (HPOINTER) 0;
 
   switch (msg) {
   case WM_INITDLG:
-    if (hwndNotify != (HWND) 0) {
+    if (hwndNotify != (HWND)0) {
+      // Already have notes dialog - pass message on
       if (mp2) {
 	WinSendDlgItemMsg(hwndNotify,
 			  NOTE_LISTBOX,
@@ -261,9 +280,9 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     hwndNotify = hwnd;
     fThreadNotes = FALSE;
+    // Remember showing
     {
       BOOL dummy = TRUE;
-
       PrfWriteProfileData(fmprof,
 			  FM3Str, "ThreadNotes", &dummy, sizeof(BOOL));
     }
@@ -273,12 +292,13 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
       xfree((CHAR *) mp2);
     }
-    {
-      HWND hwndActive;
 
-      hwndActive = WinQueryActiveWindow(HWND_DESKTOP);
+    {
+      // Return focus
+      HWND hwndActive = WinQueryActiveWindow(HWND_DESKTOP);
       PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(hwndActive), MPVOID);
     }
+
     hptrIcon = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, NOTE_FRAME);
     if (hptrIcon)
       WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(hptrIcon), MPFROMLONG(0L));
@@ -347,27 +367,25 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_CONTAINER_FILLED:
     {
-      SHORT x, y;
-
-      x = (SHORT) WinSendDlgItemMsg(hwnd,
-				    NOTE_LISTBOX,
-				    LM_QUERYITEMCOUNT, MPVOID, MPVOID);
+      SHORT y;
+      SHORT x = (SHORT)WinSendDlgItemMsg(hwnd,
+					 NOTE_LISTBOX,
+					 LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (x > 60) {
-	for (y = 0; y < x - 50; y++)
+	for (y = 0; y < x - 50; y++) {
 	  WinSendDlgItemMsg(hwnd,
 			    NOTE_LISTBOX,
 			    LM_DELETEITEM, MPFROMSHORT(y), MPVOID);
+	}
       }
     }
     return 0;
 
   case UM_NOTIFY:
     {
-      SHORT x;
-
-      x = (SHORT) WinSendDlgItemMsg(hwnd,
-				    NOTE_LISTBOX,
-				    LM_QUERYITEMCOUNT, MPVOID, MPVOID);
+      SHORT x = (SHORT) WinSendDlgItemMsg(hwnd,
+					  NOTE_LISTBOX,
+					  LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (x > 0)
 	WinSendDlgItemMsg(hwnd,
 			  NOTE_LISTBOX,
@@ -406,33 +424,49 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
+/**
+ * Thread notes dialog window thread
+ */
+
 static VOID NoteThread(VOID * args)
 {
-  HAB hab2;
-  HMQ hmq2;
+  HAB hab = WinInitialize(0);
 
-  hab2 = WinInitialize(0);
-  if (hab2) {
-    hmq2 = WinCreateMsgQueue(hab2, 0);
-    if (hmq2) {
+  if (hab) {
+    HMQ hmq = WinCreateMsgQueue(hab, 0);
+    if (hmq) {
       if (!hwndNotify)
 	WinDlgBox(HWND_DESKTOP,
 		  HWND_DESKTOP,
-		  NoteWndProc, FM3ModHandle, NOTE_FRAME, (CHAR *) args);
-      WinDestroyMsgQueue(hmq2);
+		  NoteWndProc, FM3ModHandle, NOTE_FRAME, (CHAR *)args);
+      WinDestroyMsgQueue(hmq);
     }
-    WinTerminate(hab2);
+    WinTerminate(hab);
   }
 }
+
+/**
+ * Start thread notes dialog window thread
+ */
 
 VOID StartNotes(CHAR * note)
 {
   if (!hwndNotify) {
     if (_beginthread(NoteThread, NULL, 65536, (PVOID) note) == -1)
-      Runtime_Error(pszSrcFile, __LINE__,
-		    GetPString(IDS_COULDNTSTARTTHREADTEXT));
+      Runtime_Error2(pszSrcFile, __LINE__, IDS_COULDNTSTARTTHREADTEXT);
+    else {
+      USHORT i;
+      for (i = 0; !hwndNotify && i < 10; i++)
+	DosSleep(10);
+      if (!hwndNotify)
+	Runtime_Error(pszSrcFile, __LINE__, "Can not create Notify window");
+    }
   }
 }
+
+/**
+ * Add note to thread notes window or popup status window
+ */
 
 BOOL AddNote(CHAR * note)
 {
@@ -447,12 +481,6 @@ BOOL AddNote(CHAR * note)
       if (!hwndNotify) {
 	fThreadNotes = FALSE;
 	StartNotes(NULL);
-	if (!hwndNotify)
-	  DosSleep(16);//05 Aug 07 GKY 33
-	if (!hwndNotify)
-	  DosSleep(16);//05 Aug 07 GKY 33
-	if (!hwndNotify)
-	  DosSleep(16);//05 Aug 07 GKY 33
       }
       if (hwndNotify) {
 	s = xmalloc(strlen(p) + 14, pszSrcFile, __LINE__);
@@ -479,6 +507,10 @@ BOOL AddNote(CHAR * note)
   return ret;
 }
 
+/**
+ * Close thread notes window
+ */
+
 VOID EndNote(VOID)
 {
   if (hwndNotify)
@@ -486,19 +518,21 @@ VOID EndNote(VOID)
       WinSendMsg(hwndNotify, WM_CLOSE, MPVOID, MPVOID);
 }
 
+/**
+ * Pop up thread notes window
+ */
+
 VOID ShowNote(VOID)
 {
   if (!hwndNotify)
     StartNotes(NULL);
-  if (!hwndNotify)
-    DosSleep(16);//05 Aug 07 GKY 33
-  if (!hwndNotify)
-    DosSleep(16);//05 Aug 07 GKY 33
-  if (!hwndNotify)
-    DosSleep(16);//05 Aug 07 GKY 33
   if (hwndNotify)
     PostMsg(hwndNotify, UM_SHOWME, MPVOID, MPVOID);
 }
+
+/**
+ * Hide thread notes window
+ */
 
 VOID HideNote(VOID)
 {
