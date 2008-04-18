@@ -6,14 +6,14 @@
   Load bitmaps
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2007 Steven H.Levine
+  Copyright (c) 2006, 2007 Steven H. Levine
 
   22 Jul 06 SHL Check more run time errors
   16 Jan 07 SHL Check more run time errors
   16 Jan 07 SHL Sync variable names for sanity
   16 Jan 07 SHL Open bitmap file binary - no wonder the code does not work
   16 Jan 07 SHL Beautify with indent -i2
-
+  18 Apr 08 SHL LoadBitmapFromFile ensure pf initialized if no hPS
 ***********************************************************************/
 
 #include <stdlib.h>
@@ -60,6 +60,7 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
 
   if (!hPS) {
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "WinGetPS");
+    pf = NULL;
     goto ExitLoadBMP;
   }
 
