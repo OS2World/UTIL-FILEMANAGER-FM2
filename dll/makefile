@@ -36,10 +36,12 @@
 # 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 # 05 Jan 08 SHL Sync with .c renames
 # 22 Feb 08 JBS Suppress lxlite processing when DEBUG=1
+# 01 Mar 08 SHL Add missing dependencies.  Add WARNALL support
 
 # Environment:
 
 # DEBUG - not defined = release build, defined = debug build
+# WARNALL - add more warnings if defined
 
 BASE = fm3dll
 BASERES = fm3res
@@ -72,6 +74,10 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 DEBUG = $(%DEBUG)		# use value from environment
 DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
+!endif
+
+!ifdef %WARNALL			# if defined in environment
+WARNALL = $(%WARNALL)		# use value from environment
 !endif
 
 SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for building SYM files
@@ -107,6 +113,10 @@ CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -we -wx -zfp -zgp -zp4 -z
 CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -we -wx -zfp -zgp -zp4 -zq
 !else
 CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -we -wx -zfp -zgp -zp4 -zq
+!endif
+
+!ifdef WARNALL
+CFLAGS += -wcd14 -wcd726
 !endif
 
 # for fm3res only
@@ -294,7 +304,7 @@ $(BASERES).str: $(BASE).str fm3str.h version.h
 
 ipf: ipf\fm3.hlp .symbolic
 
-ipf\fm3.hlp:
+ipf\fm3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp ipf\makefile
   cd ipf
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) fm3.hlp
   cd..
