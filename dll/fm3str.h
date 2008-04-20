@@ -870,6 +870,7 @@
 #define IDS_EXTPATHNOTVALIDTEXT                               877
 #define IDS_VERSIONTEXT                                       878
 #define IDS_FM2LITETEXT                                       879
+#define IDS_CHANGECMDLINELENGTHDEFAULT                        880
 #define IDS_NODESMAXTEXT                                      882
 #define IDS_DECRYPT1TEXT                                      883
 #define IDS_DECRYPT2TEXT                                      884

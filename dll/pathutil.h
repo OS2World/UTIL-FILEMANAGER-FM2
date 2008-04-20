@@ -27,7 +27,7 @@ PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
 PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_);
 
-#define MAXCOMLINESTRGDEFAULT (2048) 			/* used to build command line strings */
+#define MAXCOMLINESTRGDEFAULT (1024) 			/* used to build command line strings */
 #define CMDLNLNGTH_MIN (299)
 #define CMDLNLNGTH_MAX (32768)
 

@@ -16,6 +16,7 @@
   16 Jun 07 SHL Update for OpenWatcom
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
+  20 Apr 08 GKY New variable names; Save and Load command lines of user set length
 
 ***********************************************************************/
 
@@ -34,171 +35,189 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "pathutil.h"                   // MaxCmdLineStr
 
 static PSZ pszSrcFile = __FILE__;
 
-#define MAXNUMCLS 250
+#define MAXNUMCMDLINES 250
 
-typedef struct LINKCLS
+typedef struct LINKCMDLINES
 {
-  CHAR *cl;
-  struct LINKCLS *next;
+  CHAR *cmdline;
+  struct LINKCMDLINES *next;
 }
-LINKCLS;
+LINKCMDLINES;
 
-static LINKCLS *clbig = NULL, *clsmall = NULL;
-static BOOL loadedbig = FALSE, loadedsmall = FALSE;
+static LINKCMDLINES *DoItYourselfCmdLine = NULL, *MiniCmdLine = NULL;
+static BOOL DoItYourselfLoaded = FALSE, MiniLoaded = FALSE;
 
-VOID load_cmdlines(BOOL big)
+VOID load_cmdlines(BOOL DoItYourself)
 {
-  /* load linked list of cmdlines from CMDLINES.DAT file */
+  /** load linked list of cmdlines from CMDLINES.DAT file
+   *  if DoItYourself = TRUE (main command line dialog)
+   *  else load from CMDMINI.DAT (mini command line at
+   *  bottom of main window).
+   */
 
   FILE *fp;
-  LINKCLS *info, *last = NULL, *clhead;
-  CHAR s[1024];
+  LINKCMDLINES *info, *last = NULL, *CmdLineHead;
+  PSZ pszCmdLine;
+  //CHAR s[1024];
   INT x = 0;
 
-  clhead = (big) ? clbig : clsmall;
-  if (big)
-    loadedbig = TRUE;
-  else
-    loadedsmall = TRUE;
-  save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, (big) ? "CMDLINES.DAT" : "CMDMINI.DAT");
-  fp = _fsopen(s, "r", SH_DENYWR);
-  if (fp) {
-    while (x < MAXNUMCLS && !feof(fp)) {
-      if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
-	break;
-      if (*s && *s != ';') {
-	info = xmalloc(sizeof(LINKCLS), pszSrcFile, __LINE__);
-	if (info) {
-	  x++;
-	  info->cl = xstrdup(s, pszSrcFile, __LINE__);
-	  if (!info->cl)
-	    xfree(info);
-	  else {
-	    info->next = NULL;
-	    if (!clhead)
-	      clhead = info;
-	    else
-	      last->next = info;
-	    last = info;
-	  }
-	}
+  pszCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (pszCmdLine) {
+    CmdLineHead = (DoItYourself) ? DoItYourselfCmdLine : MiniCmdLine;
+    if (DoItYourself)
+      DoItYourselfLoaded = TRUE;
+    else
+      MiniLoaded = TRUE;
+    save_dir2(pszCmdLine);
+    if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
+      strcat(pszCmdLine, "\\");
+    strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+    fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
+    if (fp) {
+      while (x < MAXNUMCMDLINES && !feof(fp)) {
+        if (!xfgets_bstripcr(pszCmdLine, MaxComLineStrg, fp, pszSrcFile, __LINE__))
+          break;
+        if (pszCmdLine && *pszCmdLine != ';') {
+          info = xmalloc(sizeof(LINKCMDLINES), pszSrcFile, __LINE__);
+          if (info) {
+            x++;
+            info->cmdline = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
+            if (!info->cmdline)
+              xfree(info);
+            else {
+              info->next = NULL;
+              if (!CmdLineHead)
+                CmdLineHead = info;
+              else
+                last->next = info;
+              last = info;
+            }
+          }
+        }
       }
+      fclose(fp);
     }
-    fclose(fp);
   }
-  if (big)
-    clbig = clhead;
+  xfree(pszCmdLine);
+  if (DoItYourself)
+    DoItYourselfCmdLine = CmdLineHead;
   else
-    clsmall = clhead;
+    MiniCmdLine = CmdLineHead;
 }
 
-VOID save_cmdlines(BOOL big)
+VOID save_cmdlines(BOOL DoItYourself)
 {
-  /* save linked list of cmdlines to CMDLINES.DAT file */
+  /** save linked list of cmdlines from CMDLINES.DAT file
+   *  if DoItYourself = TRUE (main command line dialog)
+   *  else load from CMDMINI.DAT (mini command line at
+   *  bottom of main window).
+   */
 
-  LINKCLS *info, *clhead;
+  LINKCMDLINES *info, *CmdLineHead;
   FILE *fp;
-  CHAR s[CCHMAXPATH + 14];
+  PSZ pszCmdLine;
+  //CHAR s[CCHMAXPATH + 14];
 
-  clhead = (big) ? clbig : clsmall;
-  if ((big && !loadedbig) || (!big && !loadedsmall))
+  CmdLineHead = (DoItYourself) ? DoItYourselfCmdLine : MiniCmdLine;
+  if ((DoItYourself && !DoItYourselfLoaded) || (!DoItYourself && !MiniLoaded))
     return;
-  save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, (big) ? "CMDLINES.DAT" : "CMDMINI.DAT");
-  if (clhead) {
-    fp = xfopen(s, "w", pszSrcFile, __LINE__);
+  pszCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!pszCmdLine)
+    return;
+  save_dir2(pszCmdLine);
+  if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
+    strcat(pszCmdLine, "\\");
+  strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+  if (CmdLineHead) {
+    fp = xfopen(pszCmdLine, "w", pszSrcFile, __LINE__);
     if (fp) {
       fputs(GetPString(IDS_COMMANDFILE2TEXT), fp);
-      info = clhead;
+      info = CmdLineHead;
       while (info) {
-	fprintf(fp, "%0.*s\n", 1000, info->cl);
+	fprintf(fp, "%0.*s\n", 1000, info->cmdline);
 	info = info->next;
       }
       fclose(fp);
     }
   }
   else
-    unlink(s);
-  if (big)
-    clbig = clhead;
+    unlink(pszCmdLine);
+  if (DoItYourself)
+    DoItYourselfCmdLine = CmdLineHead;
   else
-    clsmall = clhead;
+    MiniCmdLine = CmdLineHead;
 }
 
-BOOL add_cmdline(CHAR * cl, BOOL big)
+BOOL add_cmdline(CHAR *cmdline, BOOL DoItYourself)
 {
-  LINKCLS *info, *last = NULL, *clhead;
+  LINKCMDLINES *info, *last = NULL, *CmdLineHead;
   INT x = 0;
 
-  if (!cl || !*cl)
+  if (!cmdline || !*cmdline)
     return FALSE;
-  clhead = (big) ? clbig : clsmall;
-  if ((big && !loadedbig) || (!big && !loadedsmall))
-    load_cmdlines(big);
-  info = clhead;
+  CmdLineHead = (DoItYourself) ? DoItYourselfCmdLine : MiniCmdLine;
+  if ((DoItYourself && !DoItYourselfLoaded) || (!DoItYourself && !MiniLoaded))
+    load_cmdlines(DoItYourself);
+  info = CmdLineHead;
   while (info) {
-    if (!stricmp(info->cl, cl))
+    if (!stricmp(info->cmdline, cmdline))
       return FALSE;
     last = info;
     info = info->next;
     x++;
   }
-  info = xmalloc(sizeof(LINKCLS), pszSrcFile, __LINE__);
+  info = xmalloc(sizeof(LINKCMDLINES), pszSrcFile, __LINE__);
   if (info) {
-    info->cl = xstrdup(cl, pszSrcFile, __LINE__);
-    if (!info->cl)
+    info->cmdline = xstrdup(cmdline, pszSrcFile, __LINE__);
+    if (!info->cmdline)
       xfree(info);
     else {
       info->next = NULL;
-      if (!clhead)
-	clhead = info;
+      if (!CmdLineHead)
+	CmdLineHead = info;
       else
 	last->next = info;
-      if (x > MAXNUMCLS) {
-	info = clhead;
-	clhead = clhead->next;
+      if (x > MAXNUMCMDLINES) {
+	info = CmdLineHead;
+	CmdLineHead = CmdLineHead->next;
 	xfree(info);
       }
-      if (big)
-	clbig = clhead;
+      if (DoItYourself)
+	DoItYourselfCmdLine = CmdLineHead;
       else
-	clsmall = clhead;
+	MiniCmdLine = CmdLineHead;
       return TRUE;
     }
   }
   return FALSE;
 }
 
-BOOL remove_cmdline(CHAR * cl, BOOL big)
+BOOL remove_cmdline(CHAR *cmdline, BOOL DoItYourself)
 {
-  LINKCLS *info, *last = NULL, *clhead;
+  LINKCMDLINES *info, *last = NULL, *CmdLineHead;
 
-  if (!cl || !*cl)
+  if (!cmdline || !*cmdline)
     return FALSE;
-  if ((big && !loadedbig) || (!big && !loadedsmall))
-    load_cmdlines(big);
-  clhead = (big) ? clbig : clsmall;
-  info = clhead;
+  if ((DoItYourself && !DoItYourselfLoaded) || (!DoItYourself && !MiniLoaded))
+    load_cmdlines(DoItYourself);
+  CmdLineHead = (DoItYourself) ? DoItYourselfCmdLine : MiniCmdLine;
+  info = CmdLineHead;
   while (info) {
-    if (!stricmp(info->cl, cl)) {
+    if (!stricmp(info->cmdline, cmdline)) {
       if (last)
 	last->next = info->next;
       else
-	clhead = info->next;
-      xfree(info->cl);
+	CmdLineHead = info->next;
+      xfree(info->cmdline);
       xfree(info);
-      if (big)
-	clbig = clhead;
+      if (DoItYourself)
+	DoItYourselfCmdLine = CmdLineHead;
       else
-	clsmall = clhead;
+	MiniCmdLine = CmdLineHead;
       return TRUE;
     }
     last = info;
@@ -207,23 +226,23 @@ BOOL remove_cmdline(CHAR * cl, BOOL big)
   return FALSE;
 }
 
-VOID free_cmdlines(BOOL big)
+VOID free_cmdlines(BOOL DoItYourself)
 {
-  LINKCLS *info, *next, *clhead;
+  LINKCMDLINES *info, *next, *CmdLineHead;
 
-  clhead = (big) ? clbig : clsmall;
-  info = clhead;
+  CmdLineHead = (DoItYourself) ? DoItYourselfCmdLine : MiniCmdLine;
+  info = CmdLineHead;
   while (info) {
     next = info->next;
-    xfree(info->cl);
+    xfree(info->cmdline);
     xfree(info);
     info = next;
   }
-  clhead = NULL;
-  if (big)
-    clbig = clhead;
+  CmdLineHead = NULL;
+  if (DoItYourself)
+    DoItYourselfCmdLine = CmdLineHead;
   else
-    clsmall = clhead;
+    MiniCmdLine = CmdLineHead;
   DosPostEventSem(CompactSem);
 }
 
@@ -494,17 +513,17 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_RESCAN:
     WinSendDlgItemMsg(hwnd, EXEC_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-    if (!loadedbig)
+    if (!DoItYourselfLoaded)
       load_cmdlines(TRUE);
     {
-      LINKCLS *info;
+      LINKCMDLINES *info;
 
-      info = clbig;
+      info = DoItYourselfCmdLine;
       while (info) {
 	WinSendDlgItemMsg(hwnd,
 			  EXEC_LISTBOX,
 			  LM_INSERTITEM,
-			  MPFROM2SHORT(LIT_END, 0), MPFROMP(info->cl));
+			  MPFROM2SHORT(LIT_END, 0), MPFROMP(info->cmdline));
 	info = info->next;
       }
     }
@@ -749,15 +768,15 @@ MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_RESCAN:
     WinSendDlgItemMsg(hwnd, EXEC2_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-    if (!loadedsmall)
+    if (!MiniLoaded)
       load_cmdlines(FALSE);
     {
-      LINKCLS *info;
+      LINKCMDLINES *info;
 
-      info = clsmall;
+      info = MiniCmdLine;
       while (info) {
 	WinSendDlgItemMsg(hwnd, EXEC2_LISTBOX, LM_INSERTITEM,
-			  MPFROM2SHORT(LIT_END, 0), MPFROMP(info->cl));
+			  MPFROM2SHORT(LIT_END, 0), MPFROMP(info->cmdline));
 	info = info->next;
       }
     }

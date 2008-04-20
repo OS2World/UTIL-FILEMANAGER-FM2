@@ -44,6 +44,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
                 keys using a "DirCnr." prefix
+  20 Apr 08 GKY Change default cmd line length to 1024 Ask once if user wants to reset it.
 
 ***********************************************************************/
 
@@ -995,6 +996,23 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   // load preferences from profile (INI) file
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, appname, "MaxComLineStrg", &MaxComLineStrg, &size);
+  // Give user one chance to reset the default command line length to 1024 (4os2's unexpanded max)
+  if (MaxComLineStrg == 2048) {
+    BOOL MaxComLineChecked = FALSE;
+
+    size = sizeof(BOOL);
+    PrfQueryProfileData(fmprof, appname, "MaxComLineChecked", &MaxComLineChecked, &size);
+    if (!MaxComLineChecked) {
+      ret = saymsg(MB_YESNO,
+                   HWND_DESKTOP,
+                   NullStr,
+                   GetPString(IDS_CHANGECMDLINELENGTHDEFAULT));
+      if (ret == MBID_YES)
+        MaxComLineStrg = 1024;
+      MaxComLineChecked = TRUE;
+      PrfWriteProfileData(fmprof, appname, "MaxComLineChecked", &MaxComLineChecked, sizeof(BOOL));
+    }
+  }
   if (MaxComLineStrg < CMDLNLNGTH_MIN)
     MaxComLineStrg = CMDLNLNGTH_MIN;
   else if (MaxComLineStrg > CMDLNLNGTH_MAX)

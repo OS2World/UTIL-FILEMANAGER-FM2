@@ -878,7 +878,7 @@ Fatal Error:
 %s is not a valid directory\nDo you wish to delete it?
 Version:
 FM/2 Lite
-
+We previously set commandline length to 2048 in error. Do you wish to changed to our intended value of 1024?
 
 
 

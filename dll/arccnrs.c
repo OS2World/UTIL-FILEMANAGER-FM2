@@ -1537,7 +1537,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      x++;
 	      if (!li->list[x] || strlen(szBuffer) +
-		  strlen(li->list[x]) + 5 > 1024) {
+		  strlen(li->list[x]) + 5 > MaxComLineStrg) {
 		runemf2(SEPARATE | WINDOWED |
 			(fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
 			WAIT, hwnd, pszSrcFile, __LINE__,
