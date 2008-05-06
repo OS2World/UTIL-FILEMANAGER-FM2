@@ -5,7 +5,7 @@
 
   Wrappers with error checking
 
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2006, 2008 Steven H.Levine
 
   22 Jul 06 SHL Baseline
   29 Jul 06 SHL Add xgets_stripped
@@ -13,7 +13,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   06 Oct 07 SHL Add xDos...() wrappers to support systems wo/large file support (Gregg, Steven)
-  05 May 08 SHL Add Add FORTIFY support
+  05 May 08 SHL Add FORTIFY support
 
 ***********************************************************************/
 
