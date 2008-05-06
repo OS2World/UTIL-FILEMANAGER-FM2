@@ -37,11 +37,13 @@
 # 05 Jan 08 SHL Sync with .c renames
 # 22 Feb 08 JBS Suppress lxlite processing when DEBUG=1
 # 01 Mar 08 SHL Add missing dependencies.  Add WARNALL support
+# 05 May 08 SHL Add FORTIFY support
 
 # Environment:
 
 # DEBUG - not defined = release build, defined = debug build
 # WARNALL - add more warnings if defined
+# FORTIFY - build with FORTIFYed memory
 
 BASE = fm3dll
 BASERES = fm3res
@@ -78,6 +80,10 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 
 !ifdef %WARNALL			# if defined in environment
 WARNALL = $(%WARNALL)		# use value from environment
+!endif
+
+!ifdef %FORTIFY			# if defined in environment
+FORTIFY = $(%FORTIFY)		# use value from environment
 !endif
 
 SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for building SYM files
@@ -119,6 +125,10 @@ CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -we -wx -zfp -zgp -zp4 -z
 CFLAGS += -wcd14 -wcd726
 !endif
 
+!ifdef FORTIFY
+CFLAGS += -dFORTIFY
+!endif
+
 # for fm3res only
 CFLAGSR = -bt=os2 -mf -bd -bm         -olirs -s     -j -we -wx -zfp -zgp -zp4 -zq
 
@@ -154,7 +164,8 @@ OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        comp.obj copyf.obj datamin.obj defview.obj delims.obj dircnrs.obj &
        dirs.obj dirsize.obj draglist.obj droplist.obj eas.obj errutil.obj &
        extract.obj filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
-       fonts.obj fsopen.obj getnames.obj grep.obj grep2.obj info.obj inis.obj &
+       fonts.obj fortify.obj fsopen.obj &
+       getnames.obj grep.obj grep2.obj info.obj inis.obj &
        init.obj input.obj instant.obj key.obj killproc.obj literal.obj &
        loadbmp.obj mainwnd.obj mainwnd2.obj makelist.obj menu.obj misc.obj &
        mkdir.obj mle.obj newview.obj notebook.obj notify.obj objcnr.obj &

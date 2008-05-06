@@ -13,6 +13,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   06 Oct 07 SHL Add xDos...() wrappers to support systems wo/large file support (Gregg, Steven)
+  05 May 08 SHL Add Add FORTIFY support
 
 ***********************************************************************/
 
@@ -30,6 +31,8 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+
+#include "fortify.h"			// GetPString
 
 static PSZ pszSrcFile = __FILE__;
 
