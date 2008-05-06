@@ -336,7 +336,11 @@ VOID xfree(PVOID pv)
 
 PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 {
+# ifdef FORTIFY
+  PVOID pv = Fortify_malloc(cBytes, pszSrcFile, uiLineNumber);
+# else  
   PVOID pv = malloc(cBytes);
+# endif
 
   if (!pv)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
