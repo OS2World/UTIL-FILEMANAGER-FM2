@@ -80,6 +80,8 @@
 #include "fm3dll.h"
 #include "notebook.h"                   // External compare/dircompare
 
+#include "fortify.h"			// 06 May 08 SHL
+
 typedef struct
 {
   CHAR filename[CCHMAXPATH];
@@ -143,9 +145,9 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	} while (!xDosFindNext(hdir, pffb, sizeof(FILEFINDBUF4L), &ulFindCnt, FIL_QUERYEASIZEL));
 	DosFindClose(hdir);
       }
-      xfree(mask);
+      xfree(mask, pszSrcFile, __LINE__);
     }
-    xfree(pffb);
+    xfree(pffb, pszSrcFile, __LINE__);
   }
 }
 
@@ -177,7 +179,7 @@ static VOID StartSnap(VOID *pargs)
 	fclose(fp);
       }
     }
-    xfree(sf);
+    xfree(sf, pszSrcFile, __LINE__);
   }
 }
 
@@ -484,7 +486,7 @@ static VOID ActionCnrThread(VOID *args)
 			   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
 		pciD->flags = 0;	// Just on one side
 		if (pciD->pszSubject != NullStr) {
-		  xfree(pciD->pszSubject);
+		  xfree(pciD->pszSubject, pszSrcFile, __LINE__);
 		  pciD->pszSubject = NullStr;
 		}
 	      }
@@ -532,7 +534,7 @@ static VOID ActionCnrThread(VOID *args)
 	      // 02 Aug 07 SHL fixme to know if LongName transfer is correct?
 	      pciD->pszLongName = pciS->pszLongName;
 	      if (pciD->pszSubject != NullStr) {
-		xfree(pciD->pszSubject);
+		xfree(pciD->pszSubject, pszSrcFile, __LINE__);
 		pciD->pszSubject = NullStr;
 	      }
 	      pciD->attrFile = pciS->attrFile;
@@ -548,13 +550,13 @@ static VOID ActionCnrThread(VOID *args)
 	      pciD->easize = pciS->easize;
 
 	      if (pciS->pszFileName != NullStr) {
-		xfree(pciS->pszFileName);
+		xfree(pciS->pszFileName, pszSrcFile, __LINE__);
 		pciS->pszFileName = NullStr;
 		pciS->pszDisplayName = pciS->pszFileName;
 		pciS->rc.pszIcon = pciS->pszFileName;
 	      }
 	      if (pciS->pszSubject != NullStr) {
-		xfree(pciS->pszSubject);
+		xfree(pciS->pszSubject, pszSrcFile, __LINE__);
 		pciS->pszSubject = NullStr;
 	      }
 	      pciS->flags = 0;		// Just on one side
@@ -649,7 +651,7 @@ static VOID ActionCnrThread(VOID *args)
 
 	      // Forget status until we regenerate it
 	      if (pciS->pszSubject != NullStr) {
-		xfree(pciS->pszSubject);
+		xfree(pciS->pszSubject, pszSrcFile, __LINE__);
 		pciS->pszSubject = NullStr;
 	      }
 	      pciS->flags = CNRITEM_EXISTS;	// Now on both sides
@@ -681,7 +683,7 @@ static VOID ActionCnrThread(VOID *args)
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  xfree(cmp);
+  xfree(cmp, pszSrcFile, __LINE__);
 }
 
 VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset);
@@ -738,7 +740,7 @@ static VOID SelectCnrsThread(VOID *args)
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  xfree(cmp);
+  xfree(cmp, pszSrcFile, __LINE__);
 }
 
 /**
@@ -783,7 +785,7 @@ VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset)
 
   pciSa = xmalloc(sizeof(PCNRITEM) * numS, pszSrcFile, __LINE__);
   if (!pciSa) {
-    xfree(pciDa);
+    xfree(pciDa, pszSrcFile, __LINE__);
     return;
   }
 
@@ -816,8 +818,8 @@ Restart:
       slow = TRUE;
       goto Restart;
     }
-    xfree(pciDa);
-    xfree(pciSa);
+    xfree(pciDa, pszSrcFile, __LINE__);
+    xfree(pciSa, pszSrcFile, __LINE__);
     Runtime_Error(pszSrcFile, __LINE__, "numD %u != x %lu", numD, x);
     return;
   }
@@ -843,8 +845,8 @@ Restart:
       slow = TRUE;
       goto Restart;
     }
-    xfree(pciSa);
-    xfree(pciDa);
+    xfree(pciSa, pszSrcFile, __LINE__);
+    xfree(pciDa, pszSrcFile, __LINE__);
     Runtime_Error(pszSrcFile, __LINE__, "numS (%lu) != x (%lu)", numS, x);
     return;
   }
@@ -1287,8 +1289,8 @@ Restart:
     } // while
   }
 
-  xfree(pciSa);
-  xfree(pciDa);
+  xfree(pciSa, pszSrcFile, __LINE__);
+  xfree(pciDa, pszSrcFile, __LINE__);
 
   if (fUpdateHideButton) {
     if (WinQueryButtonCheckstate(hwnd,COMP_HIDENOTSELECTED) == 1)
@@ -1329,7 +1331,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
     return;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray) {
-    xfree(maskstr);
+    xfree(maskstr, pszSrcFile, __LINE__);
     return;
   }
   x = strlen(str);
@@ -1377,8 +1379,8 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
           if (strlen(maskstr) > CCHMAXPATH) {
 	    // Complain if pathnames exceeds max
 	    DosFindClose(hDir);
-            xfree(pffbArray);
-            xfree(maskstr);
+            xfree(pffbArray, pszSrcFile, __LINE__);
+            xfree(maskstr, pszSrcFile, __LINE__);
 	    if (!fDone) {
 	      fDone = TRUE;
 	      saymsg(MB_OK | MB_ICONASTERISK,
@@ -1411,8 +1413,8 @@ Abort:
 	      GetPString(IDS_CANTFINDDIRTEXT), maskstr);
   }
 
-  xfree(maskstr);
-  xfree(pffbArray);
+  xfree(maskstr, pszSrcFile, __LINE__);
+  xfree(pffbArray, pszSrcFile, __LINE__);
 
   // DbgMsg(pszSrcFile, __LINE__, "FillDirList finish %s", str);
 }
@@ -1443,8 +1445,17 @@ static VOID FillCnrsThread(VOID *args)
   CHAR szBuf[CCHMAXPATH];
   CNRINFO cnri;
 
+# ifdef FORTIFY
+  // 10 May 08 SHL fixme to suppress W111
+  Fortify_EnterScope();
+# endif
+
   if (!cmp) {
     Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+# ifdef FORTIFY
+    // 10 May 08 SHL fixme to suppress W111
+    Fortify_LeaveScope();
+# endif
     _endthread();
   }
 
@@ -1993,9 +2004,9 @@ static VOID FillCnrsThread(VOID *args)
 	  recsNeeded = recsGotten;
 	} // if insufficient resources
 
-	  xfree(filesl);			// Free header - have already freed elements
+	  xfree(filesl, pszSrcFile, __LINE__);			// Free header - have already freed elements
 	filesl = NULL;
-	  xfree(filesr);
+	  xfree(filesr, pszSrcFile, __LINE__);
 	filesr = NULL;
 
 	// Say inserting
@@ -2062,8 +2073,13 @@ static VOID FillCnrsThread(VOID *args)
     DecrThreadUsage();
     WinTerminate(hab);
   }
-  xfree(cmp);
+  xfree(cmp, pszSrcFile, __LINE__);
   DosPostEventSem(CompactSem);
+
+# ifdef FORTIFY
+  // 10 May 08 SHL fixme to suppress W111
+  Fortify_LeaveScope();
+# endif
 
   // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread exit");
 }
@@ -2623,7 +2639,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  WinDismissDlg(hwnd, 0);
-	  xfree(forthread);
+	  xfree(forthread, pszSrcFile, __LINE__);
 	}
 	else {
 	  WinEnableWindowUpdate(hwndLeft, FALSE);
@@ -2903,7 +2919,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (_beginthread(StartSnap, NULL, 65536, (PVOID)sf) == -1) {
 	      Runtime_Error(pszSrcFile, __LINE__,
 			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	      xfree(sf);
+	      xfree(sf, pszSrcFile, __LINE__);
 	    }
 	  }
 	}
@@ -2955,7 +2971,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(forthread);
+	    xfree(forthread, pszSrcFile, __LINE__);
 	  }
 	  else {
 	    WinEnableWindowUpdate(hwndLeft, FALSE);
@@ -3078,7 +3094,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(forthread);
+	    xfree(forthread, pszSrcFile, __LINE__);
 	  }
 	  else {
 	    WinEnableWindowUpdate(hwndLeft, FALSE);
@@ -3234,7 +3250,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!PostMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
-      xfree(cmp);
+      xfree(cmp, pszSrcFile, __LINE__);
     }
     EmptyCnr(hwndLeft);
     EmptyCnr(hwndRight);

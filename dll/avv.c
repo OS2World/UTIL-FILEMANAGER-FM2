@@ -82,7 +82,7 @@ static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 {
   CHAR sz[256];
 
-  xfree(pszDest);
+  xfree(pszDest, pszSrcFile, __LINE__);
   WinQueryDlgItemText(hwnd, id, sizeof(sz), sz);
   if (*sz)
     pszDest = xstrdup(sz, pszSrcFile, __LINE__);
@@ -98,17 +98,17 @@ static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
 
   szCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
   if (szCmdLine) {
-    xfree(pszDest);
+    xfree(pszDest, pszSrcFile, __LINE__);
     WinQueryDlgItemText(hwnd, id, sizeof(szCmdLine), szCmdLine);
     pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
     if (pszWorkBuf) {
       NormalizeCmdLine(pszWorkBuf, szCmdLine);
       pszDest = xstrdup(pszWorkBuf, pszSrcFile, __LINE__);
-      xfree(pszWorkBuf);
+      xfree(pszWorkBuf, pszSrcFile, __LINE__);
     }
     else
       pszDest = xstrdup(szCmdLine, pszSrcFile, __LINE__); // return the unexamined input on failure
-    xfree(szCmdLine);
+    xfree(szCmdLine, pszSrcFile, __LINE__);
   }
   else
     pszDest = NULL;

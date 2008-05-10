@@ -119,7 +119,7 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    y++;
 	  }
-	  xfree(pswb);
+	  xfree(pswb, pszSrcFile, __LINE__);
 	  DosPostEventSem(CompactSem);
 	}
       }

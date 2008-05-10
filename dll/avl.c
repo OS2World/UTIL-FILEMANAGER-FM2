@@ -221,22 +221,22 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
 static void free_arc_type(ARC_TYPE * pat)
 {
   if (pat) {
-    xfree(pat->id);
-    xfree(pat->ext);
-    xfree(pat->list);
-    xfree(pat->extract);
-    xfree(pat->create);
-    xfree(pat->move);
-    xfree(pat->delete);
-    xfree(pat->signature);
-    xfree(pat->startlist);
-    xfree(pat->endlist);
-    xfree(pat->exwdirs);
-    xfree(pat->test);
-    xfree(pat->createrecurse);
-    xfree(pat->createwdirs);
-    xfree(pat->movewdirs);
-    xfree(pat);
+    xfree(pat->id, pszSrcFile, __LINE__);
+    xfree(pat->ext, pszSrcFile, __LINE__);
+    xfree(pat->list, pszSrcFile, __LINE__);
+    xfree(pat->extract, pszSrcFile, __LINE__);
+    xfree(pat->create, pszSrcFile, __LINE__);
+    xfree(pat->move, pszSrcFile, __LINE__);
+    xfree(pat->delete, pszSrcFile, __LINE__);
+    xfree(pat->signature, pszSrcFile, __LINE__);
+    xfree(pat->startlist, pszSrcFile, __LINE__);
+    xfree(pat->endlist, pszSrcFile, __LINE__);
+    xfree(pat->exwdirs, pszSrcFile, __LINE__);
+    xfree(pat->test, pszSrcFile, __LINE__);
+    xfree(pat->createrecurse, pszSrcFile, __LINE__);
+    xfree(pat->createwdirs, pszSrcFile, __LINE__);
+    xfree(pat->movewdirs, pszSrcFile, __LINE__);
+    xfree(pat, pszSrcFile, __LINE__);
   }
 }
 
@@ -822,7 +822,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 hwnd,
 			 ArcReviewDlgProc,
 			 FM3ModHandle, AD_FRAME, MPFROMP(&ad))) {
-	    xfree(ad.info);
+	    xfree(ad.info, pszSrcFile, __LINE__);
 	  }
 	  else {
 	    // Find self - assume all archivers listed since we are editing

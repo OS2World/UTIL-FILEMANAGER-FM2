@@ -146,7 +146,7 @@ static VOID FillUndelListThread(VOID * arg)
     ;
   }
   DosForceDelete("$UDELETE.#$#");
-  xfree(undelinfo);
+  xfree(undelinfo, pszSrcFile, __LINE__);
   if (thmq) {
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
     if (killme)
@@ -168,7 +168,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     listdone = TRUE;
-    if (!mp2 || !*(CHAR *) mp2) {
+    if (!mp2 || !*(CHAR *)mp2) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       WinDismissDlg(hwnd, 0);
       break;
@@ -180,7 +180,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       CHAR s[CCHMAXPATH];
 
-      strcpy(s, (CHAR *) mp2);
+      strcpy(s, (CHAR *)mp2);
       if (s[strlen(s) - 1] != '\\')
 	strcat(s, "\\");
       strcat(s, "*");
@@ -220,7 +220,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  xfree(undelinfo);
+	  xfree(undelinfo, pszSrcFile, __LINE__);
 	  listdone = TRUE;
 	  WinDismissDlg(hwnd, 0);
 	}

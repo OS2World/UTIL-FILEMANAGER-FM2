@@ -181,7 +181,7 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       RestoreDirCnrState(hwndMain, (char *)mp1, FALSE);
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), TRUE);
       fNoTileUpdate = FALSE;
-      xfree((char *)mp1);
+      xfree((char *)mp1, pszSrcFile, __LINE__);
       if (fAutoTile)
 	TileChildren(hwndMain, TRUE);
       break;
@@ -510,7 +510,7 @@ static VOID ResizeTools(HWND hwnd)
       }
       WinSetMultWindowPos(WinQueryAnchorBlock(hwnd), &swp[2], numtools);
     }
-    xfree(swp);
+    xfree(swp, pszSrcFile, __LINE__);
   }
   WinInvalidateRect(hwnd, NULL, TRUE);
 }
@@ -1004,7 +1004,7 @@ MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		p = pp;
 	      }
 	    }
-	    xfree(s);
+	    xfree(s, pszSrcFile, __LINE__);
 	  }
 	}
 	if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE)) && swp.cx > 6 && swp.cy > 6) {
@@ -1550,7 +1550,7 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
         }
         PostMsg(hwnd, UM_FOCUSME, MPVOID, MPVOID);
         PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
-        xfree(pszCmdLine);
+        xfree(pszCmdLine, pszSrcFile, __LINE__);
       }
     }
     return 0;
@@ -1609,7 +1609,7 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		       WINDOWED | ((fKeepCmdLine) ?
 				   SEPARATEKEEP : SEPARATE),
 		       directory, list, NULL, pszSrcFile, __LINE__);
-	    xfree(list);
+	    xfree(list, pszSrcFile, __LINE__);
 	    WinDestroyWindow(hwnd);
 	    break;
 	  }
@@ -2237,7 +2237,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP:
     if (mp1)
-      strcpy(lastcmd, (CHAR *) mp1);
+      strcpy(lastcmd, (CHAR *)mp1);
     return 0;
 
   case UM_RESCAN:
@@ -5805,12 +5805,12 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp1) {
       if (fUserComboBox)
 	WinSetWindowText(WinWindowFromID(hwndUserlist, CBID_EDIT),
-			 (CHAR *) mp1);
-      if (add_udir(FALSE, (CHAR *) mp1)) {
+			 (CHAR *)mp1);
+      if (add_udir(FALSE, (CHAR *)mp1)) {
 	if (fUserComboBox && fAutoAddDirs) {
 	  WinSendMsg(hwndUserlist, LM_INSERTITEM,
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		     MPFROMP((CHAR *) mp1));
+		     MPFROMP((CHAR *)mp1));
 	}
       }
     }
@@ -5909,7 +5909,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_ADDTOMENU:
-    AddToMenu((CHAR *) mp1, WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+    AddToMenu((CHAR *)mp1, WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					    FID_MENU));
     return 0;
 
@@ -6236,7 +6236,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  UM_RESTORE,
 				  MPFROMP(pszStateName),
 				  MPVOID)) {
-		  xfree(pszStateName);
+		  xfree(pszStateName, pszSrcFile, __LINE__);
 		}
 	      }
 	    }
@@ -6310,7 +6310,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pszDefaultStateName) {
 	if (!PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszDefaultStateName), MPVOID))
 	  // 05 Feb 08 SHL fixme to complain?
-	  xfree(pszDefaultStateName);
+	  xfree(pszDefaultStateName, pszSrcFile, __LINE__);
       }
     }
     return 0;

@@ -131,8 +131,8 @@ static INT lookup_setup(PSZ name, UINT action)
 	  pldLast->next = pld->next;
 	else
 	  pFirstSetup = pld->next;
-	xfree(pld->path);
-	xfree(pld);
+	xfree(pld->path, pszSrcFile, __LINE__);
+	xfree(pld, pszSrcFile, __LINE__);
       }
       return 1;				// Found or added
     }
@@ -146,7 +146,7 @@ static INT lookup_setup(PSZ name, UINT action)
       return -1;
     pld->path = xstrdup(name, pszSrcFile, __LINE__);
     if (!pld->path) {
-      xfree(pld);
+      xfree(pld, pszSrcFile, __LINE__);
       return -1;
     }
     // Insert at front of list - drop down will sort
@@ -198,13 +198,13 @@ VOID load_setups(VOID)
   l = ulDataBytes;
   if (!PrfQueryProfileData(fmprof, FM3Str, pszLastSetups, pszBuf, &l)) {
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "PrfQueryProfileData");
-    xfree(pszBuf);
+    xfree(pszBuf, pszSrcFile, __LINE__);
     return;
   }
 
   if (ulDataBytes != l) {
     Runtime_Error(pszSrcFile, __LINE__, "PrfQueryProfileData reported %u expected %u", l, ulDataBytes);
-    xfree(pszBuf);
+    xfree(pszBuf, pszSrcFile, __LINE__);
     return;
   }
 
@@ -217,13 +217,13 @@ VOID load_setups(VOID)
   while (*psz) {
     pld = xmalloc(sizeof(LINKDIRS), pszSrcFile, __LINE__);
     if (!pld) {
-      xfree(pszBuf);
+      xfree(pszBuf, pszSrcFile, __LINE__);
       return;
     }
     pld->path = xstrdup(psz, pszSrcFile, __LINE__);
     if (!pld->path) {
-      xfree(pszBuf);
-      xfree(pld);
+      xfree(pszBuf, pszSrcFile, __LINE__);
+      xfree(pld, pszSrcFile, __LINE__);
       return;
     }
 
@@ -238,7 +238,7 @@ VOID load_setups(VOID)
       psz += strlen(psz) + 1;
   } // while
 
-  xfree(pszBuf);
+  xfree(pszBuf, pszSrcFile, __LINE__);
 
   fSetupsLoaded = TRUE;
 }
@@ -339,7 +339,7 @@ VOID load_udirs(VOID)
 	if (info) {
 	  info->path = xstrdup(s, pszSrcFile, __LINE__);
 	  if (!info->path)
-	    xfree(info);
+	    xfree(info, pszSrcFile, __LINE__);
 	  else {
 	    info->next = NULL;
 	    if (!udirhead)
@@ -432,8 +432,8 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
 	      temp->next = info->next;
 	    else
 	      ldirhead = info->next;
-	    xfree(info->path);
-	    xfree(info);
+	    xfree(info->path, pszSrcFile, __LINE__);
+	    xfree(info, pszSrcFile, __LINE__);
 	    break;
 	  }
 	  temp = info;
@@ -445,7 +445,7 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
       if (info) {
 	info->path = xstrdup(path, pszSrcFile, __LINE__);
 	if (!info->path)
-	  xfree(info);
+	  xfree(info, pszSrcFile, __LINE__);
 	else {
 	  info->next = NULL;
 	  if (userdirs) {
@@ -486,8 +486,8 @@ BOOL remove_udir(CHAR * path)
 	  last->next = info->next;
 	else
 	  udirhead = info->next;
-	xfree(info->path);
-	xfree(info);
+	xfree(info->path, pszSrcFile, __LINE__);
+	xfree(info, pszSrcFile, __LINE__);
 	fUdirsChanged = TRUE;
 	return TRUE;
       }
@@ -503,8 +503,8 @@ BOOL remove_udir(CHAR * path)
 	  last->next = info->next;
 	else
 	  ldirhead = info->next;
-	xfree(info->path);
-	xfree(info);
+	xfree(info->path, pszSrcFile, __LINE__);
+	xfree(info, pszSrcFile, __LINE__);
 	return TRUE;
       }
       last = info;
@@ -527,8 +527,8 @@ BOOL remove_ldir(CHAR * path)
 	  last->next = info->next;
 	else
 	  ldirhead = info->next;
-	xfree(info->path);
-	xfree(info);
+	xfree(info->path, pszSrcFile, __LINE__);
+	xfree(info, pszSrcFile, __LINE__);
 	return TRUE;
       }
       last = info;
@@ -657,7 +657,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     wa->size = (USHORT) sizeof(WALKER);
     WinSetWindowPtr(hwnd, QWL_USER, (PVOID) wa);
-    wa->szReturnPath = (CHAR *) mp2;
+    wa->szReturnPath = (CHAR *)mp2;
     {
       PFNWP oldproc;
 
@@ -1197,7 +1197,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       if (wa->changed)
         WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
-      xfree(wa);
+      xfree(wa, pszSrcFile, __LINE__);
       WinDismissDlg(hwnd, 0);
       break;
     }

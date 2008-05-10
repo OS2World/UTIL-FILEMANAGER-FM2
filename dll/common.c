@@ -577,16 +577,16 @@ MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       }
       else {
 	if (mp1) {
-	  if (!mp2 && !stricmp(lastfile, (CHAR *) mp1))
+	  if (!mp2 && !stricmp(lastfile, (CHAR *)mp1))
 	    return 0;
-	  strcpy(lastfile, (CHAR *) mp1);
+	  strcpy(lastfile, (CHAR *)mp1);
 	  s = xstrdup(lastfile, pszSrcFile, __LINE__);
 	}
 	else
 	  *lastfile = 0;
 	if (!PostMsg((fComments) ? hwndAutoMLE : hwndAutoview,
 		     UM_LOADFILE, MPFROMP(s), MPVOID)) {
-	  xfree(s);
+	  xfree(s, pszSrcFile, __LINE__);
 	}
       }
     }
@@ -726,16 +726,16 @@ MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	WinSendMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(CCHMAXPATH), MPVOID);
 	MLEdelete(WinWindowFromID(hwnd, CID_MLE),
-		  0, strlen((CHAR *) mp1) + 1);
-	WinSetDlgItemText(hwnd, CID_MLE, (CHAR *) mp1);
-	p = strrchr((CHAR *) mp1, '\\');
+		  0, strlen((CHAR *)mp1) + 1);
+	WinSetDlgItemText(hwnd, CID_MLE, (CHAR *)mp1);
+	p = strrchr((CHAR *)mp1, '\\');
 	if (p) {
 	  p++;
-	  MLEsetcurposa(WinWindowFromID(hwnd, CID_MLE), (p - (CHAR *) mp1));
-	  MLEsetcurposc(WinWindowFromID(hwnd, CID_MLE), strlen((CHAR *) mp1));
+	  MLEsetcurposa(WinWindowFromID(hwnd, CID_MLE), (p - (CHAR *)mp1));
+	  MLEsetcurposc(WinWindowFromID(hwnd, CID_MLE), strlen((CHAR *)mp1));
 	}
 	else
-	  MLEsetcurpos(WinWindowFromID(hwnd, CID_MLE), strlen((CHAR *) mp1));
+	  MLEsetcurpos(WinWindowFromID(hwnd, CID_MLE), strlen((CHAR *)mp1));
       }
       else if (mp2) {
 	if ((INT) mp1 == -1) {
@@ -745,7 +745,7 @@ MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  Broadcast(WinQueryAnchorBlock(hwnd),
 		    dcd->hwndParent, UM_UPDATERECORD, mp2, MPVOID);
-	  xfree(mp2);
+	  xfree(mp2, pszSrcFile, __LINE__);
 	}
       }
     }

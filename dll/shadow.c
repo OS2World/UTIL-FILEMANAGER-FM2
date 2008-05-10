@@ -56,7 +56,7 @@ HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 	      objtitle,
 	      (path) ? ";STARTUPDIR=" : "", (path) ? path : "", objtitle);
       WinSetObjectData(obj, s);
-      xfree(s);
+      xfree(s, pszSrcFile, __LINE__);
     }
   }
   return obj;
@@ -157,7 +157,7 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
     obj = WinCreateObject("WPShadow",
 			  objtitle,
 			  s, (location) ? location : cnr, CO_FAILIFEXISTS);
-    xfree(s);
+    xfree(s, pszSrcFile, __LINE__);
   }
   return obj;
 }

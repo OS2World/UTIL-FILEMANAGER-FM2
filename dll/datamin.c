@@ -170,7 +170,7 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       PVOID pv = WinQueryWindowPtr(hwnd, QWL_DATAMIN_PTR);
 
-      xfree(pv);
+      xfree(pv, pszSrcFile, __LINE__);
     }
     break;
   }

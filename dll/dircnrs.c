@@ -470,10 +470,10 @@ MRESULT EXPENTRY DirClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       DIRCNRDATA *dcd;
 
-      *(CHAR *) mp1 = 0;
+      *(CHAR *)mp1 = 0;
       dcd = WinQueryWindowPtr(WinWindowFromID(hwnd, DIR_CNR), QWL_USER);
       if (dcd)
-	strcpy((CHAR *) mp1, dcd->directory);
+	strcpy((CHAR *)mp1, dcd->directory);
       return MRFROMLONG(TRUE);
     }
     return 0;
@@ -729,7 +729,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       DosExitCritSec();
       if (mp1) {
 	strcpy(dcd->previous, dcd->directory);
-	strcpy(dcd->directory, (CHAR *) mp1);
+	strcpy(dcd->directory, (CHAR *)mp1);
       }
       MakeValidDir(dcd->directory);
       {
@@ -997,7 +997,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk);
+	    xfree(wk, pszSrcFile, __LINE__);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -1027,7 +1027,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk);
+	    xfree(wk, pszSrcFile, __LINE__);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -1051,7 +1051,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
-      xfree(dcd);
+      xfree(dcd, pszSrcFile, __LINE__);
       DosPostEventSem(CompactSem);
     }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -1214,7 +1214,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && mp1 && mp2) {
 
       COMPARE *cmp;
-      CHAR *leftdir = (CHAR *) mp1, *rightdir = (CHAR *) mp2;
+      CHAR *leftdir = (CHAR *)mp1, *rightdir = (CHAR *)mp2;
 
       if (!IsFile(leftdir) && !IsFile(rightdir)) {
 	cmp = xmallocz(sizeof(COMPARE), pszSrcFile, __LINE__);
@@ -1293,7 +1293,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR fullname[CCHMAXPATH];
 
       DosError(FERR_DISABLEHARDERR);
-      if (!DosQueryPathInfo((CHAR *) mp1,
+      if (!DosQueryPathInfo((CHAR *)mp1,
 			    FIL_QUERYFULLNAME, fullname, sizeof(fullname))) {
 	if (stricmp(dcd->directory, fullname)) {
 	  strcpy(dcd->previous, dcd->directory);
@@ -1539,12 +1539,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_OPENWINDOWFORME:
     if (dcd) {
-      if (mp1 && !IsFile((CHAR *) mp1)) {
+      if (mp1 && !IsFile((CHAR *)mp1)) {
 	OpenDirCnr(hwnd, dcd->hwndParent, dcd->hwndFrame, FALSE, (char *)mp1);
       }
       else if (mp1 && IsFile(mp1) == 1) {
 	StartArcCnr(HWND_DESKTOP,
-		    dcd->hwndFrame, (CHAR *) mp1, 4, (ARC_TYPE *) mp2);
+		    dcd->hwndFrame, (CHAR *)mp1, 4, (ARC_TYPE *) mp2);
       }
     }
     return 0;
@@ -1646,7 +1646,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (mp1) {
 	DosEnterCritSec();
-	SetMask((CHAR *) mp1, &dcd->mask);
+	SetMask((CHAR *)mp1, &dcd->mask);
 	DosExitCritSec();
       }
       dcd->suspendview = 1;
@@ -1682,7 +1682,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_NOTIFY:
     if (mp2)
-      Notify((CHAR *) mp2);
+      Notify((CHAR *)mp2);
     return 0;
 
   case UM_DRIVECMD:
@@ -2277,7 +2277,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_SWITCH:
 	if (mp2) {
 	  strcpy(dcd->previous, dcd->directory);
-	  strcpy(dcd->directory, (CHAR *) mp2);
+	  strcpy(dcd->directory, (CHAR *)mp2);
 	  DosEnterCritSec();
 	  dcd->stopflag++;
 	  DosExitCritSec();
@@ -2548,7 +2548,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	    else
-	      xfree(li);
+	      xfree(li, pszSrcFile, __LINE__);
 	  }
 	}
 	break;
@@ -3296,7 +3296,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       HWND ret = StartMLEEditor(dcd->hwndParent,
 				(INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
-      xfree((CHAR *)mp2);
+      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
       return MRFROMLONG(ret);
     }
     return 0;
@@ -3335,7 +3335,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  0,
 			  SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
 	FreeList(dcd->lastselection);
-	xfree(dcd);
+	xfree(dcd, pszSrcFile, __LINE__);
 	DosPostEventSem(CompactSem);
       }
     }
@@ -3466,7 +3466,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	  xfree(dcd);
+	  xfree(dcd, pszSrcFile, __LINE__);
 	  hwndFrame = (HWND) 0;
 	}
 	else {

@@ -51,7 +51,7 @@ VOID load_quicktools(VOID)
 
   qtloaded = TRUE;
   for (x = 0; x < 50 && quicktool[x]; x++) {
-    xfree(quicktool[x]);
+    xfree(quicktool[x], pszSrcFile, __LINE__);
     quicktool[x] = NULL;
   }
   if (!fToolbar) {
@@ -265,9 +265,9 @@ TOOL *del_tool(TOOL * tool)
 	  toolhead = info->next;
 	if (prev)
 	  prev->next = info->next;
-	xfree(info->help);
-	xfree(info->text);
-	xfree(info);
+	xfree(info->help, pszSrcFile, __LINE__);
+	xfree(info->text, pszSrcFile, __LINE__);
+	xfree(info, pszSrcFile, __LINE__);
 	fToolsChanged = TRUE;
 	break;
       }
@@ -363,9 +363,9 @@ TOOL *free_tools(VOID)
   tool = toolhead;
   while (tool) {
     next = tool->next;
-    xfree(tool->help);
-    xfree(tool->text);
-    xfree(tool);
+    xfree(tool->help, pszSrcFile, __LINE__);
+    xfree(tool->text, pszSrcFile, __LINE__);
+    xfree(tool, pszSrcFile, __LINE__);
     tool = next;
   }
   toolhead = NULL;
@@ -712,9 +712,9 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	tool = INSTDATA(hwnd);
 	if (tool) {			/* just editing strings... */
 	  istext = ((tool->flags & T_TEXT) != 0);
-	  xfree(tool->help);
+	  xfree(tool->help, pszSrcFile, __LINE__);
 	  tool->help = NULL;
-	  xfree(tool->text);
+	  xfree(tool->text, pszSrcFile, __LINE__);
 	  tool->text = NULL;
 	  if (*help)
 	    tool->help = xstrdup(help, pszSrcFile, __LINE__);
@@ -815,7 +815,7 @@ MRESULT EXPENTRY PickToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2) {
       CHAR s[133];
 
-      sprintf(s, GetPString(IDS_PICKTOOLTITLETEXT), (CHAR *) mp2);
+      sprintf(s, GetPString(IDS_PICKTOOLTITLETEXT), (CHAR *)mp2);
       WinSetWindowText(hwnd, s);
     }
     {

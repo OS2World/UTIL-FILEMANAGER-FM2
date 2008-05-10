@@ -1075,7 +1075,7 @@ FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile,
 	     UINT uiLineNumber);
 FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
 	      UINT uiLineNumber);
-VOID xfree(PVOID pv);
+VOID xfree(PVOID pv, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);

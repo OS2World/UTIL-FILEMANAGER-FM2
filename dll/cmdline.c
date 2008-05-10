@@ -87,7 +87,7 @@ VOID load_cmdlines(BOOL DoItYourself)
             x++;
             info->cmdline = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
             if (!info->cmdline)
-              xfree(info);
+              xfree(info, pszSrcFile, __LINE__);
             else {
               info->next = NULL;
               if (!CmdLineHead)
@@ -102,7 +102,7 @@ VOID load_cmdlines(BOOL DoItYourself)
       fclose(fp);
     }
   }
-  xfree(pszCmdLine);
+  xfree(pszCmdLine, pszSrcFile, __LINE__);
   if (DoItYourself)
     DoItYourselfCmdLine = CmdLineHead;
   else
@@ -174,7 +174,7 @@ BOOL add_cmdline(CHAR *cmdline, BOOL DoItYourself)
   if (info) {
     info->cmdline = xstrdup(cmdline, pszSrcFile, __LINE__);
     if (!info->cmdline)
-      xfree(info);
+      xfree(info, pszSrcFile, __LINE__);
     else {
       info->next = NULL;
       if (!CmdLineHead)
@@ -184,7 +184,7 @@ BOOL add_cmdline(CHAR *cmdline, BOOL DoItYourself)
       if (x > MAXNUMCMDLINES) {
 	info = CmdLineHead;
 	CmdLineHead = CmdLineHead->next;
-	xfree(info);
+	xfree(info, pszSrcFile, __LINE__);
       }
       if (DoItYourself)
 	DoItYourselfCmdLine = CmdLineHead;
@@ -212,8 +212,8 @@ BOOL remove_cmdline(CHAR *cmdline, BOOL DoItYourself)
 	last->next = info->next;
       else
 	CmdLineHead = info->next;
-      xfree(info->cmdline);
-      xfree(info);
+      xfree(info->cmdline, pszSrcFile, __LINE__);
+      xfree(info, pszSrcFile, __LINE__);
       if (DoItYourself)
 	DoItYourselfCmdLine = CmdLineHead;
       else
@@ -234,8 +234,8 @@ VOID free_cmdlines(BOOL DoItYourself)
   info = CmdLineHead;
   while (info) {
     next = info->next;
-    xfree(info->cmdline);
-    xfree(info);
+    xfree(info->cmdline, pszSrcFile, __LINE__);
+    xfree(info, pszSrcFile, __LINE__);
     info = next;
   }
   CmdLineHead = NULL;

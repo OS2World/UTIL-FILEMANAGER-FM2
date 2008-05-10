@@ -600,7 +600,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp1) {
       if (mp2) {
 	vw->ch = FALSE;
-	strcpy(vw->exportfilename, (CHAR *) mp2);
+	strcpy(vw->exportfilename, (CHAR *)mp2);
       }
     }
     else {
@@ -653,11 +653,11 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_LOADFILE:
-    if ((CHAR *) mp1) {
-//        switch_to(mp1);
+    if ((CHAR *)mp1) {
+      // switch_to(mp1);
       if (MLEbackgroundload(hwnd,
 			    UM_CONTAINER_FILLED,
-			    hwndMLE, (CHAR *) mp1, vw->hex) != -1) {
+			    hwndMLE, (CHAR *)mp1, vw->hex) != -1) {
 	vw->busy = TRUE;
 	WinEnableWindow(vw->hwndMenu, FALSE);
       }
@@ -1252,7 +1252,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetWindowPos(vw->hwndRestore, HWND_TOP, 0, 0, 0, 0, fl);
 	  }
 	}
-	xfree(vw);
+	xfree(vw, pszSrcFile, __LINE__);
       }
       if (!dontclose &&
 	  ParentIsDesktop(hwnd, WinQueryWindow(WinQueryWindow(hwnd,

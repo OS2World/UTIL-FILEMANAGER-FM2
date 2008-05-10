@@ -131,7 +131,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
     return pszCmdLine_; //already complained
   szArgs = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!szArgs) {
-    xfree(szCmdLine);
+    xfree(szCmdLine, pszSrcFile, __LINE__);
     return pszCmdLine_; //already complained
   }
   bstrip(pszCmdLine_);
@@ -332,8 +332,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
       }
     }
   }
-  xfree(szArgs);
-  xfree(szCmdLine);
+  xfree(szArgs, pszSrcFile, __LINE__);
+  xfree(szCmdLine, pszSrcFile, __LINE__);
   return pszWorkBuf;
 }
 

@@ -299,9 +299,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     if (mp1) {
       if (fAutoView) {
-	strcpy(currfile, (CHAR *) mp1);
+	strcpy(currfile, (CHAR *)mp1);
 	if (!fComments) {
-	  if (IsFile((CHAR *) mp1) == 1) {
+	  if (IsFile((CHAR *)mp1) == 1) {
 
 	    HFILE handle;
 	    ULONG olen, ibufflen, action, obufflen, l;
@@ -311,7 +311,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    CHAR buffer[4096];
 	    ARC_TYPE *info;
 
-	    if (!DosOpen((CHAR *) mp1,
+	    if (!DosOpen((CHAR *)mp1,
 			 &handle,
 			 &action,
 			 0,
@@ -412,9 +412,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    if (*obuff)
 		      WinSetWindowText(hwndAutoview, obuff);
 		  }
-		  xfree(obuff);
+		  xfree(obuff, pszSrcFile, __LINE__);
 		}
-		xfree(ibuff);
+		xfree(ibuff, pszSrcFile, __LINE__);
 	      }
 	      DosClose(handle);
 	    }
@@ -507,7 +507,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  Runtime_Error(pszSrcFile, __LINE__, pszBufOvfMsg);
 		if (*pszBuf)
 		  WinSetWindowText(hwndAutoview, pszBuf);
-		xfree(pszBuf);
+		xfree(pszBuf, pszSrcFile, __LINE__);
 	      }
 	    }
 	    if (!rc)
@@ -539,9 +539,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      eaop.fpGEA2List = pgealist;
 	      eaop.fpFEA2List = pfealist;
 	      eaop.oError = 0L;
-	      rc = DosQueryPathInfo((CHAR *) mp1, FIL_QUERYEASFROMLIST,
+	      rc = DosQueryPathInfo((CHAR *)mp1, FIL_QUERYEASFROMLIST,
 				    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-	      xfree(pgealist);
+	      xfree(pgealist, pszSrcFile, __LINE__);
 	      if (!rc) {
 		pfea = &eaop.fpFEA2List->list[0];
 		if (pfea->cbName && pfea->cbValue) {
@@ -591,7 +591,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			break;
 		      }
 		      WinSetWindowText(hwndAutoMLE, pszBuf);
-		      xfree(pszBuf);
+		      xfree(pszBuf, pszSrcFile, __LINE__);
 		    }
 		  }
 		  else
@@ -605,12 +605,12 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		MLEsetchanged(hwndAutoMLE, FALSE);
 		MLEsetreadonly(hwndAutoMLE, FALSE);
 	      }
-	      xfree(pfealist);
+	      xfree(pfealist, pszSrcFile, __LINE__);
 	    }
 	  }
 	}
       }
-      xfree((CHAR *) mp1);
+      xfree((CHAR *)mp1, pszSrcFile, __LINE__);
     }
     return 0;
 
@@ -786,7 +786,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinQueryWindowText(hwnd, 32767, ea);
 	      PutComments(hwnd, currfile, ea);
 	      PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-	      xfree(ea);
+	      xfree(ea, pszSrcFile, __LINE__);
 	    }
 	  }
 	}
@@ -836,7 +836,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (cf) {
 	  stopflag++;
 	  if (!PostMsg(hwndAutoObj, UM_LOADFILE, MPFROMP(cf), MPVOID))
-	    xfree(cf);
+	    xfree(cf, pszSrcFile, __LINE__);
 	}
       }
       break;
@@ -892,7 +892,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_LOADFILE:
     stopflag++;
     if (!PostMsg(hwndAutoObj, msg, mp1, mp2)) {
-      xfree((CHAR *) mp1);
+      xfree((CHAR *)mp1, pszSrcFile, __LINE__);
     }
     return 0;
 

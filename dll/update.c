@@ -642,7 +642,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
   }
   PostMsg(hwndCnr, UM_RESCAN, MPVOID, MPVOID);
   if (pciList) {
-    xfree(pciList);
+    xfree(pciList, pszSrcFile, __LINE__);
     DosPostEventSem(CompactSem);
   }
   return ret;

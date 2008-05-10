@@ -344,8 +344,8 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
 
 ExitLoadBMP:
 
-  xfree(pData);
-  xfree(pbmafh2);
+  xfree(pData, pszSrcFile, __LINE__);
+  xfree(pbmafh2, pszSrcFile, __LINE__);
   if (pf)
     fclose(pf);
   if (hPS)

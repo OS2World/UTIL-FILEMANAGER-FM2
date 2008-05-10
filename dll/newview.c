@@ -640,9 +640,9 @@ static VOID FreeViewerMem(HWND hwnd)
 
   if (ad) {
     ad->selected = ad->textsize = ad->numlines = ad->numalloc = 0;
-    xfree(ad->text);
-    xfree(ad->lines);
-    xfree(ad->markedlines);
+    xfree(ad->text, pszSrcFile, __LINE__);
+    xfree(ad->lines, pszSrcFile, __LINE__);
+    xfree(ad->markedlines, pszSrcFile, __LINE__);
     ad->text = NULL;
     ad->lines = NULL;
     ad->markedlines = NULL;
@@ -1201,8 +1201,8 @@ static VOID ReLineThread(VOID * args)
 	      whereiam = ad->lines[ad->cursored - 1];
 	    ad->found = 0;
 	    ad->selected = ad->numlines = ad->numalloc = 0;
-	    xfree(ad->lines);
-	    xfree(ad->markedlines);
+	    xfree(ad->lines, pszSrcFile, __LINE__);
+	    xfree(ad->markedlines, pszSrcFile, __LINE__);
 	    ad->lines = NULL;
 	    ad->markedlines = NULL;
 	    WinSetWindowText(WinWindowFromID(ad->hwndFrame,
@@ -1368,9 +1368,9 @@ static VOID LoadFileThread(VOID * args)
 	  ad->busy++;
 	  priority_normal();
 	  if (*ad->filename) {
-	    xfree(ad->text);
-	    xfree(ad->lines);
-	    xfree(ad->markedlines);
+	    xfree(ad->text, pszSrcFile, __LINE__);
+	    xfree(ad->lines, pszSrcFile, __LINE__);
+	    xfree(ad->markedlines, pszSrcFile, __LINE__);
 	    ad->text = NULL;
 	    ad->lines = NULL;
 	    ad->markedlines = NULL;
@@ -1419,7 +1419,7 @@ static VOID LoadFileThread(VOID * args)
 			      pszSrcFile,
 			      __LINE__,
 			      GetPString(IDS_ERRORREADINGTEXT), ad->filename);
-		    xfree(ad->text);
+		    xfree(ad->text, pszSrcFile, __LINE__);
 		    ad->text = NULL;
 		    ad->textsize = 0;
 		  }
@@ -2374,7 +2374,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       FM3ModHandle, URL_FRAME, urld);
 	      switch (ret) {
 	      case 0:
-                xfree(urld);
+                xfree(urld, pszSrcFile, __LINE__);
 		goto NoAdd;
 	      case 1:
                 if (*urld->url) {
@@ -2400,7 +2400,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                             "%s %s", httprun, urld->url);
                 }
-		xfree(urld);
+		xfree(urld, pszSrcFile, __LINE__);
 		goto NoAdd;
 	      case 2:
                 if (*urld->url){
@@ -2426,7 +2426,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                             "%s %s", ftprun, urld->url);
                 }
-                xfree(urld);
+                xfree(urld, pszSrcFile, __LINE__);
 		goto NoAdd;
               case 3:
                 if (*urld->url){
@@ -2436,12 +2436,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                           fLibPathStrictMailRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                           "%s %s", mailrun, urld->url);
                 }
-                xfree(urld);
+                xfree(urld, pszSrcFile, __LINE__);
                 goto NoAdd;
 	      default:
 		break;
 	      }
-              xfree(urld);
+              xfree(urld, pszSrcFile, __LINE__);
 	    }
 	  }
         }
@@ -2519,7 +2519,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  MPFROM2SHORT(numinserted, 0),
 				  MPFROMLONG(whichline));
 	    }
-	    xfree(s);
+	    xfree(s, pszSrcFile, __LINE__);
 	  }
 	}
 	if (!numsels)
@@ -3932,7 +3932,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	dontclose = ((ad->flags & 4) != 0) ? TRUE : FALSE;
 	FreeViewerMem(hwnd);
 	WinSetWindowPtr(hwnd, QWL_USER, NULL);
-	xfree(ad);
+	xfree(ad, pszSrcFile, __LINE__);
       }
       if (hwndRestore && hwndRestore != HWND_DESKTOP) {
 

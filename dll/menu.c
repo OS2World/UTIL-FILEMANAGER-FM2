@@ -67,8 +67,8 @@ VOID FreeMenuList(MENU * head)
   info = head;
   while (info) {
     next = info->next;
-    xfree(info->text);
-    xfree(info);
+    xfree(info->text, pszSrcFile, __LINE__);
+    xfree(info, pszSrcFile, __LINE__);
     info = next;
   }
 }
@@ -106,7 +106,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	  info->size = sizeof(MENU);
 	  info->text = xstrdup(tokens[2], pszSrcFile, __LINE__);
 	  if (!info->text)
-	    xfree(info);
+	    xfree(info, pszSrcFile, __LINE__);
 	  else {
 	    if (!stricmp(tokens[0], "MENUITEM"))
 	      info->cmd = atoi(tokens[1]);
@@ -114,8 +114,8 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	      info->type = SEPARATOR;
 	    else {
 	      /* error! */
-	      xfree(info->text);
-	      xfree(info);
+	      xfree(info->text, pszSrcFile, __LINE__);
+	      xfree(info, pszSrcFile, __LINE__);
 	      info = NULL;
 	    }
 	    if (info) {

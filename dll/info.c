@@ -100,7 +100,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR s[CCHMAXPATH * 2];
       ULONG type;
 
-      pszFileName = (CHAR *) mp2;
+      pszFileName = (CHAR *)mp2;
       WinSetWindowPtr(hwnd, QWL_USER, (PVOID) pszFileName);
       WinSendDlgItemMsg(hwnd,
 			INFO_LABEL,
@@ -463,7 +463,7 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PFNWP oldproc = pis->oldproc;
       if (pis->lasthwndMenu)
 	WinDestroyWindow(pis->lasthwndMenu);
-      xfree(pis);
+      xfree(pis, pszSrcFile, __LINE__);
       return oldproc(hwnd, msg, mp1, mp2);
     }
     break;
@@ -882,7 +882,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     pfs = WinQueryWindowPtr(hwnd, QWL_USER);
-    xfree(pfs);
+    xfree(pfs, pszSrcFile, __LINE__);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -892,14 +892,14 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
-    if (!mp2 || !isalpha(*(CHAR *) mp2))
+    if (!mp2 || !isalpha(*(CHAR *)mp2))
       WinDismissDlg(hwnd, 0);
     else {
 
       CHAR s[80];
 
-      WinSetWindowULong(hwnd, QWL_USER, (toupper(*(CHAR *) mp2) - 'A'));
-      sprintf(s, GetPString(IDS_DRIVEFLAGSTITLETEXT), toupper(*(CHAR *) mp2));
+      WinSetWindowULong(hwnd, QWL_USER, (toupper(*(CHAR *)mp2) - 'A'));
+      sprintf(s, GetPString(IDS_DRIVEFLAGSTITLETEXT), toupper(*(CHAR *)mp2));
       WinSetWindowText(hwnd, s);
 /*
 	WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOVABLE),FALSE);

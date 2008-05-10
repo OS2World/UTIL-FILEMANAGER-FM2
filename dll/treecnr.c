@@ -560,13 +560,13 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temptop = fTopDir;
 	  fTopDir = TRUE;
 	}
-	ShowTreeRec(dcd->hwndCnr, (CHAR *) mp1, fCollapseFirst, TRUE);
+	ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
 	dcd->suspendview = tempsusp;
 	fFollowTree = tempfollow;
 	if (mp2)
 	  fTopDir = temptop;
       }
-      xfree((CHAR *) mp1);
+      xfree((CHAR *)mp1, pszSrcFile, __LINE__);
     }
     return 0;
 
@@ -798,7 +798,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk);
+	    xfree(wk, pszSrcFile, __LINE__);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -829,7 +829,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk);
+	    xfree(wk, pszSrcFile, __LINE__);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -847,7 +847,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       WinSendMsg(dcd->hwndCnr,
 		 UM_CLOSE, MPFROMLONG(dcd->dontclose != FALSE), MPVOID);
-      xfree(dcd);
+      xfree(dcd, pszSrcFile, __LINE__);
     }
     DosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -1040,7 +1040,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && mp1 && mp2) {
 
       COMPARE *cmp;
-      CHAR *leftdir = (CHAR *) mp1, *rightdir = (CHAR *) mp2;
+      CHAR *leftdir = (CHAR *)mp1, *rightdir = (CHAR *)mp2;
 
       if (!IsFile(leftdir) && !IsFile(rightdir)) {
 	cmp = xmallocz(sizeof(COMPARE), pszSrcFile, __LINE__);
@@ -1714,11 +1714,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SHOWME:
     if (mp1 && dcd) {
-      CHAR *dir = xstrdup((CHAR *) mp1, pszSrcFile, __LINE__);
+      CHAR *dir = xstrdup((CHAR *)mp1, pszSrcFile, __LINE__);
 
       if (dir) {
 	if (!PostMsg(dcd->hwndObject, UM_SHOWME, MPFROMP(dir), MPVOID))
-	  xfree(dir);
+	  xfree(dir, pszSrcFile, __LINE__);
       }
     }
     return 0;
@@ -2006,7 +2006,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_OPENWINDOWFORME:
     if (dcd) {
-      if (mp1 && !IsFile((CHAR *) mp1))
+      if (mp1 && !IsFile((CHAR *)mp1))
 	OpenDirCnr(hwnd, dcd->hwndParent, dcd->hwndFrame, FALSE, (char *)mp1);
     }
     return 0;
@@ -2156,9 +2156,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       HWND ret;
 
-      ret = StartMLEEditor(dcd->hwndParent, (INT) mp1, (CHAR *) mp2,
+      ret = StartMLEEditor(dcd->hwndParent, (INT) mp1, (CHAR *)mp2,
 			   dcd->hwndFrame);
-      xfree((CHAR *) mp2);
+      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
       return MRFROMLONG(ret);
     }
     return 0;
@@ -2169,7 +2169,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_NOTIFY:
     if (mp2)
-      Notify((CHAR *) mp2);
+      Notify((CHAR *)mp2);
     return 0;
 
   case UM_FILTER:
@@ -2179,7 +2179,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (mp1) {
 	DosEnterCritSec();
-	SetMask((CHAR *) mp1, &dcd->mask);
+	SetMask((CHAR *)mp1, &dcd->mask);
 	DosExitCritSec();
       }
       dcd->suspendview = TRUE;
@@ -2192,7 +2192,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_DRIVECMD:
     if (mp1)
-      ShowTreeRec(hwnd, (CHAR *) mp1, FALSE, TRUE);
+      ShowTreeRec(hwnd, (CHAR *)mp1, FALSE, TRUE);
     return 0;
 
   case WM_APPTERMINATENOTIFY:
@@ -2227,7 +2227,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    apphead = info->next;
 	  if (apptail == info)
 	    apptail = info->prev;
-	  xfree(info);
+	  xfree(info, pszSrcFile, __LINE__);
 	  break;
 	}
 	info = info->next;
@@ -2748,7 +2748,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->hwnd = hwnd;
 	    li->list = BuildList(hwnd);
 	    if (!li->list || !li->list[0]) {
-	      xfree(li);
+	      xfree(li, pszSrcFile, __LINE__);
 	      break;
 	    }
 	    if (IsRoot(li->list[0])) {
@@ -2916,7 +2916,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       info = apphead;
       while (info) {
 	next = info->next;
-	xfree(info);
+	xfree(info, pszSrcFile, __LINE__);
 	info = next;
       }
       apphead = apptail = NULL;
@@ -3054,7 +3054,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	xfree(dcd);
+	xfree(dcd, pszSrcFile, __LINE__);
 	hwndFrame = (HWND) 0;
       }
       else {

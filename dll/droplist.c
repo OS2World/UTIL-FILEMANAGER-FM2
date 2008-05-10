@@ -483,15 +483,15 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
       SortList(li);
     }
     else {
-      xfree(pcbFile);
-      xfree(pulitemID);
+      xfree(pcbFile, pszSrcFile, __LINE__);
+      xfree(pulitemID, pszSrcFile, __LINE__);
       if (files)
 	FreeList(files);
     }
   }
   else {
-    xfree(pcbFile);
-    xfree(pulitemID);
+    xfree(pcbFile, pszSrcFile, __LINE__);
+    xfree(pulitemID, pszSrcFile, __LINE__);
     if (files)
       FreeList(files);
   }

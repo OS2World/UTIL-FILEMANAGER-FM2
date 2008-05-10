@@ -61,7 +61,7 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     if (mp2) {
       WinSetWindowPtr(hwnd, QWL_USER, mp2);
-      *(CHAR *) mp2 = 0;
+      *(CHAR *)mp2 = 0;
       {
 	CHAR *p;
 	CHAR *pp;
@@ -823,7 +823,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!*p) {
 	  DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
-	  xfree(p);
+	  xfree(p, pszSrcFile, __LINE__);
 	  break;
 	}
 	strcpy(g.tosearch, p);
@@ -922,12 +922,12 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (_beginthread(GrepThread, NULL, 524280, (PVOID) & g) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  xfree(p);
+	  xfree(p, pszSrcFile, __LINE__);
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
 	DosSleep(100); //05 Aug 07 GKY 128
-	xfree(p);
+	xfree(p, pszSrcFile, __LINE__);
       }
       if (changed) {
 	// Grep mask list changed

@@ -1335,7 +1335,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      xfree((CHAR *) mp2);
+      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
       PostMsg(pdt->hwndClient, DM_RENDERCOMPLETE, MPFROMP(pdt),
 	      MPFROM2SHORT(usRes, 0));
     }
@@ -1437,7 +1437,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (s) {
 	if (!dcd->info->extract) {
 	  Runtime_Error(pszSrcFile, __LINE__, "no extract");
-	  xfree(s);
+	  xfree(s, pszSrcFile, __LINE__);
 	  return 0;
 	}
 	runemf2(SEPARATE | WINDOWED | WAIT |
@@ -1467,7 +1467,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  p++;
 	}
 	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
-	xfree(s);
+	xfree(s, pszSrcFile, __LINE__);
 	if (IsFile(filename) == 1) {
 #if 1 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
 	  if (fViewChild && fArcStuffVisible)
@@ -1746,7 +1746,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    strcat(p, "\\");
 		  strcat(p, temp);
 		  li->list[x] = p;
-		  xfree(temp);
+		  xfree(temp, pszSrcFile, __LINE__);
 		}
 	      }
 	      if (fFolderAfterExtract) {
@@ -1993,7 +1993,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       FreeList(dcd->lastselection);
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
-      xfree(dcd);
+      xfree(dcd, pszSrcFile, __LINE__);
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -2540,7 +2540,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       ret = StartMLEEditor(dcd->hwndParent,
 			   (INT) mp1, (CHAR *) mp2, dcd->hwndFrame);
-      xfree((CHAR *) mp2);
+      xfree((CHAR *) mp2, pszSrcFile, __LINE__);
       return MRFROMLONG(ret);
     }
     return 0;
@@ -2907,7 +2907,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      for (x = 0; li->list && li->list[x]; x++) {
 		BldFullPathName(s, dcd->workdir, li->list[x]);
 		if (IsFile(s) != 1) {
-		  xfree(li->list[x]);
+		  xfree(li->list[x], pszSrcFile, __LINE__);
 		  li->list[x] = NULL;
 		  for (y = x; li->list[y]; y++)
 		    li->list[y] = li->list[y + 1];
@@ -2919,7 +2919,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		else {
 		  p = xstrdup(s, pszSrcFile, __LINE__);
 		  if (p) {
-		    xfree(li->list[x]);
+		    xfree(li->list[x], pszSrcFile, __LINE__);
 		    li->list[x] = p;
 		  }
 		}
@@ -2967,7 +2967,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	    else
-	      xfree(li);
+	      xfree(li, pszSrcFile, __LINE__);
 	  }
 	}
 	break;
@@ -3228,7 +3228,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (s) {
 	      if (!PostMsg(dcd->hwndObject, UM_ENTER, MPFROMP(s), MPVOID)) {
 		Runtime_Error(pszSrcFile, __LINE__, "post");
-		xfree(s);
+		xfree(s, pszSrcFile, __LINE__);
 	      }
 	    }
 	  }
@@ -3521,7 +3521,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	  xfree(dcd);
+	  xfree(dcd, pszSrcFile, __LINE__);
 	  hwndFrame = (HWND) 0;
 	}
 	else {

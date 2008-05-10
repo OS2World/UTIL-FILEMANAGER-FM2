@@ -307,7 +307,7 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
     PrfWriteProfileData(prof,
 			appname, tagname, ppresparams, ppresparams->cb + 4);
 
-  xfree(ppresparams);
+  xfree(ppresparams, pszSrcFile, __LINE__);
 }
 
 #endif // NEVER

@@ -354,7 +354,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	    DrgDeleteStrHandle(pDItem->hstrSourceName);
 	  if (pDItem->hstrTargetName)
 	    DrgDeleteStrHandle(pDItem->hstrTargetName);
-	  xfree(pDItem);
+	  xfree(pDItem, pszSrcFile, __LINE__);
 	  // Last item not yet count so only decrement by one less than loop count
 	  // Unhilite code will adjust this when unhighliting
 	  if (c > 1) {
@@ -423,7 +423,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	  DrgDeleteStrHandle(pDItem->hstrSourceName);
 	if (pDItem->hstrTargetName)
 	  DrgDeleteStrHandle(pDItem->hstrTargetName);
-	xfree(pDItem);
+	xfree(pDItem, pszSrcFile, __LINE__);
 	dcd->ulItemsToUnHilite = ulNumfiles + 1;	// +1 to ensure non-zero
 	break;
      }
@@ -469,7 +469,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	      DrgDeleteStrHandle(pDItem->hstrSourceName);
 	    if (pDItem->hstrTargetName)
 	      DrgDeleteStrHandle(pDItem->hstrTargetName);
-	    xfree(pDItem);
+	    xfree(pDItem, pszSrcFile, __LINE__);
 	    // Last item not yet count so only decrement by one less than loop count
 	    if (c > 1) {
 	      ulNumfiles--;
@@ -516,12 +516,12 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
       // pDInfo->hwndSource = hwndCnr;
       for (ulSelect = 0; ulSelect < ulNumfiles; ulSelect++) {
 	DrgSetDragitem(pDInfo, ppDItem[ulSelect], sizeof(DRAGITEM), ulSelect);
-	xfree(ppDItem[ulSelect]);
+	xfree(ppDItem[ulSelect], pszSrcFile, __LINE__);
       }
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
-      xfree(ppDItem);
+      xfree(ppDItem, pszSrcFile, __LINE__);
       ppDItem = NULL;			// Remember gone
       DosPostEventSem(CompactSem);
 
@@ -562,9 +562,9 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
   }
 
   if (ppDItem)
-    xfree(ppDItem);
+    xfree(ppDItem, pszSrcFile, __LINE__);
   if (paDImgIcons && paDImgIcons != &dimgFakeIcon)
-    xfree(paDImgIcons);
+    xfree(paDImgIcons, pszSrcFile, __LINE__);
   DosPostEventSem(CompactSem);
   MarkAll(hwndCnr, TRUE, FALSE, TRUE);
   return hDrop;
@@ -676,7 +676,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	  DrgDeleteStrHandle(pDItem->hstrSourceName);
 	if (pDItem->hstrTargetName)
 	  DrgDeleteStrHandle(pDItem->hstrTargetName);
-	xfree(pDItem);
+	xfree(pDItem, pszSrcFile, __LINE__);
 	// pDItem = NULL;	// Why bother, we can count - fixme to be gone
 	dcd->ulItemsToUnHilite = ulNumfiles + 1;
 	break;
@@ -717,7 +717,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
-      xfree(ppDItem);
+      xfree(ppDItem, pszSrcFile, __LINE__);
       ppDItem = NULL;			// Remember gone
       DosPostEventSem(CompactSem);
 
@@ -735,14 +735,14 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	dcd->ulItemsToUnHilite = 0;
 	FreeDragInfoData(hwnd, pDInfo);
       }
-      xfree(paDImgIcons);
+      xfree(paDImgIcons, pszSrcFile, __LINE__);
       paDImgIcons = NULL;		// Remember gone
       WinSetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
       DosPostEventSem(CompactSem);
     }
   }
-  xfree(ppDItem);
-  xfree(paDImgIcons);
+  xfree(ppDItem, pszSrcFile, __LINE__);
+  xfree(paDImgIcons, pszSrcFile, __LINE__);
   return hDrop;
 }
 

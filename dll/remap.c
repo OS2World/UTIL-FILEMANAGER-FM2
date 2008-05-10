@@ -83,7 +83,7 @@ VOID load_resources(VOID)
 	if (info) {
 	  info->res = xstrdup(s, pszSrcFile, __LINE__);
 	  if (!info->res)
-	    xfree(info);
+	    xfree(info, pszSrcFile, __LINE__);
 	  else {
 	    x++;
 	    info->next = NULL;
@@ -151,7 +151,7 @@ BOOL add_resource(CHAR * res)
   if (info) {
     info->res = xstrdup(res, pszSrcFile, __LINE__);
     if (!info->res)
-      xfree(info);
+      xfree(info, pszSrcFile, __LINE__);
     else {
       info->next = NULL;
       if (!reshead)
@@ -161,7 +161,7 @@ BOOL add_resource(CHAR * res)
       if (x > MAXNUMRES) {
 	info = reshead;
 	reshead = reshead->next;
-	xfree(info);
+	xfree(info, pszSrcFile, __LINE__);
       }
       return TRUE;
     }
@@ -184,8 +184,8 @@ BOOL remove_resource(CHAR * res)
 	last->next = info->next;
       else
 	reshead = info->next;
-      xfree(info->res);
-      xfree(info);
+      xfree(info->res, pszSrcFile, __LINE__);
+      xfree(info, pszSrcFile, __LINE__);
       return TRUE;
     }
     last = info;
@@ -201,8 +201,8 @@ VOID free_resources(VOID)
   info = reshead;
   while (info) {
     next = info->next;
-    xfree(info->res);
-    xfree(info);
+    xfree(info->res, pszSrcFile, __LINE__);
+    xfree(info, pszSrcFile, __LINE__);
     info = next;
   }
   reshead = NULL;
@@ -439,7 +439,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   GetPString(IDS_ERRORTEXT),
 		   "%s", GetPString(IDS_CANTSTARTNETUSETEXT));
 	  if (!mp2 || (ULONG) mp2 == 1041 || info->failedonce)
-	    xfree(info);
+	    xfree(info, pszSrcFile, __LINE__);
 	  break;
 	}
 	info = info->next;
@@ -728,7 +728,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       info = apphead;
       while (info) {
 	next = info->next;
-	xfree(info);
+	xfree(info, pszSrcFile, __LINE__);
 	info = next;
       }
       apphead = apptail = NULL;

@@ -66,7 +66,7 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
     if (len) {
       if (WinOpenClipbrd(hab)) {
 	if (append)
-	  clip = (CHAR *) WinQueryClipbrdData(hab, CF_TEXT);
+	  clip = (CHAR *)WinQueryClipbrdData(hab, CF_TEXT);
 	if (clip)
 	  len += strlen(clip) + 1;
 	if (!DosAllocSharedMem((PPVOID) & hold, (PSZ) NULL, len, PAG_COMMIT |
@@ -161,7 +161,7 @@ CHAR **ListFromClipboardHab(HAB hab)
   UINT numfiles = 0, numalloced = 0;
 
   if (WinOpenClipbrd(hab)) {
-    p = (CHAR *) WinQueryClipbrdData(hab, CF_TEXT);
+    p = (CHAR *)WinQueryClipbrdData(hab, CF_TEXT);
     if (p && *p)
       text = xstrdup(p, pszSrcFile, __LINE__);
     WinCloseClipbrd(hab);
@@ -186,7 +186,7 @@ CHAR **ListFromClipboardHab(HAB hab)
 	if (!p)
 	  p = strchr(pp, '\n');
       }
-      xfree(text);
+      xfree(text, pszSrcFile, __LINE__);
     }
   }
   return list;
@@ -839,9 +839,9 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
 			subject[1023] = 0;
 		      }
-		      xfree(pfealist);
+		      xfree(pfealist, pszSrcFile, __LINE__);
 		    }
-		    xfree(pgealist);
+		    xfree(pgealist, pszSrcFile, __LINE__);
 		  }
 		}
 		/* load the object's longname */
@@ -882,9 +882,9 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				  (sizeof(USHORT) * 2), CCHMAXPATHCOMP);
 			longname[CCHMAXPATHCOMP - 1] = 0;
 		      }
-		      xfree(pfealist);
+		      xfree(pfealist, pszSrcFile, __LINE__);
 		    }
-		    xfree(pgealist);
+		    xfree(pgealist, pszSrcFile, __LINE__);
 		  }
 		}
 

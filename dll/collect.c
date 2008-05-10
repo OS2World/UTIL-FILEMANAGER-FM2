@@ -683,7 +683,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       BOOL first = FALSE;
       size_t c;
 
-      fp = _fsopen((CHAR *) mp1, "r", SH_DENYNO);
+      fp = _fsopen((CHAR *)mp1, "r", SH_DENYNO);
       if (fp) {
 	while (!feof(fp)) {
 	  // Avoid too much noise if collecting from binary file - oops
@@ -768,7 +768,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	    APIRET ret = saymsg(MB_YESNO, dcd->hwndCnr,
 				GetPString(IDS_COLLECTNOLISTHDRTEXT),
 				GetPString(IDS_COLLECTNOLISTTEXT),
-				(CHAR *) mp1);
+				(CHAR *)mp1);
 
 	    if (ret == MBID_NO)
 	      break;
@@ -781,7 +781,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	fclose(fp);
       }
     }
-    xfree(mp1);
+    xfree(mp1, pszSrcFile, __LINE__);
     return 0;
 
   case UM_SELECT:
@@ -899,7 +899,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk);
+	    xfree(wk, pszSrcFile, __LINE__);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -927,7 +927,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk);
+	    xfree(wk, pszSrcFile, __LINE__);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -952,7 +952,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	Runtime_Error(pszSrcFile, __LINE__, "still busy");
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
-      xfree(dcd);
+      xfree(dcd, pszSrcFile, __LINE__);
     }
     DosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -1093,7 +1093,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_COMPARE:
     if (dcd && mp1 && mp2) {
       COMPARE *cmp;
-      CHAR *leftdir = (CHAR *) mp1, *rightdir = (CHAR *) mp2;
+      CHAR *leftdir = (CHAR *)mp1, *rightdir = (CHAR *)mp2;
 
       if (!IsFile(leftdir) && !IsFile(rightdir)) {
 	cmp = xmallocz(sizeof(COMPARE), pszSrcFile, __LINE__);
@@ -1390,11 +1390,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_OPENWINDOWFORME:
     if (dcd) {
-      if (mp1 && !IsFile((CHAR *) mp1))
+      if (mp1 && !IsFile((CHAR *)mp1))
 	OpenDirCnr(HWND_DESKTOP, hwndMain, dcd->hwndFrame, FALSE, (PSZ) mp1);
       else if (mp1 && IsFile(mp1) == 1)
 	StartArcCnr(HWND_DESKTOP,
-		    dcd->hwndFrame, (CHAR *) mp1, 4, (ARC_TYPE *) mp2);
+		    dcd->hwndFrame, (CHAR *)mp1, 4, (ARC_TYPE *) mp2);
     }
     return 0;
 
@@ -1447,13 +1447,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_COLLECTFROMFILE:
     if (mp1) {
       if (!dcd) {
-	xfree(mp1);
+	xfree(mp1, pszSrcFile, __LINE__);
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       }
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
-	  xfree(mp1);
+	  xfree(mp1, pszSrcFile, __LINE__);
 	}
       }
     }
@@ -1476,7 +1476,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_NOTIFY:
     if (mp2)
-      AddNote((CHAR *) mp2);
+      AddNote((CHAR *)mp2);
     return 0;
 
   case WM_COMMAND:
@@ -1579,7 +1579,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    p = xstrdup(filename, pszSrcFile, __LINE__);
 	    if (p) {
 	      if (!PostMsg(hwnd, UM_COLLECTFROMFILE, MPFROMP(p), MPVOID))
-		xfree(p);
+		xfree(p, pszSrcFile, __LINE__);
 	    }
 	  }
 	}
@@ -2089,7 +2089,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	    }
 	    else
-	      xfree(li);
+	      xfree(li, pszSrcFile, __LINE__);
 	  }
 	}
 	break;
@@ -2647,8 +2647,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       HWND ret;
 
       ret = StartMLEEditor(dcd->hwndParent,
-			   (INT) mp1, (CHAR *) mp2, dcd->hwndFrame);
-      xfree((CHAR *) mp2);
+			   (INT) mp1, (CHAR *)mp2, dcd->hwndFrame);
+      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
       return MRFROMLONG(ret);
     }
     return 0;
@@ -2838,7 +2838,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	xfree(dcd);
+	xfree(dcd, pszSrcFile, __LINE__);
 	hwndFrame = (HWND) 0;
       }
       else {

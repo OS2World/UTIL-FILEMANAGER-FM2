@@ -1302,11 +1302,11 @@ static VOID FreeAllFilesList(HWND hwnd)
 
   if (ad->afhead && ad->afheadcnt) {
     for (x = 0; x < ad->afheadcnt; x++) {
-      xfree(ad->afhead[x].fullname);
+      xfree(ad->afhead[x].fullname, pszSrcFile, __LINE__);
     }
-    xfree(ad->afhead);
+    xfree(ad->afhead, pszSrcFile, __LINE__);
     ad->afhead = NULL;
-    xfree(ad->afindex);
+    xfree(ad->afindex, pszSrcFile, __LINE__);
     ad->afindex = NULL;
   }
   DosPostEventSem(CompactSem);
@@ -1860,7 +1860,7 @@ static ULONG RemoveDeleted(HWND hwnd)
 	  pAD->selected--;
 	  pAD->ullSelectedBytes -= pAD->afhead[y].cbFile;
 	}
-	xfree(pAD->afhead[y].fullname);
+	xfree(pAD->afhead[y].fullname, pszSrcFile, __LINE__);
       }
       memmove(&(pAD->afhead[x]), &(pAD->afhead[y]),
 	      (pAD->afheadcnt - y) * sizeof(ALLFILES));
@@ -1919,7 +1919,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   ulBufBytes = sizeof(FILEFINDBUF3L) * ulFindMax;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray) {
-    xfree(filename);
+    xfree(filename, pszSrcFile, __LINE__);
     return;
   }
 
@@ -1957,8 +1957,8 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
           if (strlen(filename) > CCHMAXPATH) {
 	    // Complain if pathnames exceeds max
 	    DosFindClose(hdir);
-            xfree(pffbArray);
-            xfree(filename);
+            xfree(pffbArray, pszSrcFile, __LINE__);
+            xfree(filename, pszSrcFile, __LINE__);
 	    if (!fDone) {
 	      fDone = TRUE;
 	      saymsg(MB_OK | MB_ICONASTERISK,
@@ -2025,8 +2025,8 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
   }
 
-  xfree(pffbArray);
-  xfree(filename);
+  xfree(pffbArray, pszSrcFile, __LINE__);
+  xfree(filename, pszSrcFile, __LINE__);
 }
 
 static VOID FindAllThread(VOID * args)
@@ -2583,8 +2583,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP5:
     // fprintf(stderr,"Seeall: UM_SETUP5\n");
     if (pAD) {
-      if (mp1 && *((CHAR *) mp1))
-	strcpy(pAD->szFindPath, (CHAR *) mp1);
+      if (mp1 && *((CHAR *)mp1))
+	strcpy(pAD->szFindPath, (CHAR *)mp1);
       else {
 	if (!WinDlgBox(HWND_DESKTOP, hwnd, AFDrvsWndProc,
 		       FM3ModHandle, DRVS_FRAME, (PVOID) pAD)) {
@@ -2727,7 +2727,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (mp2) {
 	  strcat(s, " ");
-	  strcat(s, (CHAR *) mp2);
+	  strcat(s, (CHAR *)mp2);
 	}
 	WinSetWindowText(pAD->hwndStatus, s);
       }
@@ -2743,7 +2743,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  if (mp2) {
 	    strcat(s, " ");
-	    strcat(s, (CHAR *) mp2);
+	    strcat(s, (CHAR *)mp2);
 	  }
 	}
 	else if (pAD->afindexcnt) {
@@ -4266,7 +4266,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
       }
       FreeAllFilesList(hwnd);
-      xfree(pAD);
+      xfree(pAD, pszSrcFile, __LINE__);
     }
     break;
   }

@@ -153,7 +153,7 @@ VOID load_masks(VOID)
 	    last = info;
 	  }
 	  else
-	    xfree(info);
+	    xfree(info, pszSrcFile, __LINE__);
 	}
       }
     }  //while
@@ -217,7 +217,7 @@ VOID add_mask(CHAR * mask)
 	last->next = info;
     }
     else
-      xfree(info);
+      xfree(info, pszSrcFile, __LINE__);
   }
 }
 
@@ -237,8 +237,8 @@ VOID remove_mask(CHAR * mask)
 	last->next = info->next;
       else
 	maskhead = info->next;
-      xfree(info->mask);
-      xfree(info);
+      xfree(info->mask, pszSrcFile, __LINE__);
+      xfree(info, pszSrcFile, __LINE__);
       break;
     }
     last = info;

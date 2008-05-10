@@ -257,7 +257,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    } // while
 	    fclose(inputFile);
 	  }
-	  xfree(input);
+	  xfree(input, pszSrcFile, __LINE__);
 	  DosSleep(1);
 	}
       }
@@ -360,7 +360,7 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    } // while
 	    fclose(inputFile);
 	  }
-	  xfree(input);
+	  xfree(input, pszSrcFile, __LINE__);
 	  DosSleep(1);
 	}
       }
@@ -611,9 +611,9 @@ VOID FreeCnrs(struct Cnr * Cnrs, INT numw)
   register INT z;
 
   for (z = 0; z < numw; z++) {
-    xfree(Cnrs[z].ss);
+    xfree(Cnrs[z].ss, pszSrcFile, __LINE__);
   }
-  xfree(Cnrs);
+  xfree(Cnrs, pszSrcFile, __LINE__);
   DosPostEventSem(CompactSem);
 }
 

@@ -151,14 +151,14 @@ static BOOL ProcessDir(HWND hwndCnr,
   if (((!rc || rc == ERROR_NO_MORE_FILES) && (pffbArray->attrFile & FILE_DIRECTORY)) ||
       strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
-      xfree(pffbArray);
+      xfree(pffbArray, pszSrcFile, __LINE__);
       return FALSE;
     }
     pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES),
 		     MPFROMLONG(1));
     if (!pci) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
-      xfree(pffbArray);
+      xfree(pffbArray, pszSrcFile, __LINE__);
       return FALSE;
     }
     if (!rc) {
@@ -174,7 +174,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   } // if got something
   else {
     // No match
-    xfree(pffbArray);
+    xfree(pffbArray, pszSrcFile, __LINE__);
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
     return FALSE;
@@ -217,7 +217,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-    xfree(pffbArray);
+    xfree(pffbArray, pszSrcFile, __LINE__);
     return FALSE;
   }
 
@@ -279,7 +279,7 @@ static BOOL ProcessDir(HWND hwndCnr,
 	      GetPString(IDS_CANTFINDDIRTEXT), pszFileName);
   }
 
-  xfree(pffbArray);
+  xfree(pffbArray, pszSrcFile, __LINE__);
 
   pci->cbFile = ullCurDirBytes;
   pci->easize = ullSubDirBytes;		// hack cough
@@ -457,7 +457,7 @@ static VOID FillCnrThread(VOID *args)
   }
   PostMsg(WinQueryWindow(hwndCnr, QW_PARENT),
 	  UM_CONTAINER_FILLED, MPVOID, MPVOID);
-  xfree(dirsize);
+  xfree(dirsize, pszSrcFile, __LINE__);
 }
 
 MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -478,7 +478,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    strcpy(pState->szDirName, (CHAR *) mp2);
+    strcpy(pState->szDirName, (CHAR *)mp2);
     WinSetWindowPtr(hwnd, QWL_USER, (PVOID) pState);
     pState->hptr = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, DIRSIZE_ICON);
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(pState->hptr), MPVOID);
@@ -516,7 +516,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  -1) {
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	xfree(dirsize);
+	xfree(dirsize, pszSrcFile, __LINE__);
 	WinDismissDlg(hwnd, 0);
 	break;
       }
@@ -1011,7 +1011,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
       DosSleep(16); //05 Aug 07 GKY 33
-      xfree(pState);			// Let's hope no one is still looking
+      xfree(pState, pszSrcFile, __LINE__);			// Let's hope no one is still looking
     }
     DosPostEventSem(CompactSem);
     break;

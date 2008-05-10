@@ -62,6 +62,8 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 
+#include "fortify.h"			// 06 May 08 SHL
+
 static PSZ pszSrcFile = __FILE__;
 
 /**
@@ -306,9 +308,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	xfree(pfealist);
+	xfree(pfealist, pszSrcFile, __LINE__);
       }
-      xfree(pgealist);
+      xfree(pgealist, pszSrcFile, __LINE__);
     }
   }
   if (!pci->pszSubject)
@@ -353,9 +355,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszLongName = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	xfree(pfealist);
+	xfree(pfealist, pszSrcFile, __LINE__);
       }
-      xfree(pgealist);
+      xfree(pgealist, pszSrcFile, __LINE__);
     }
   }
   if (!pci->pszLongName)
@@ -535,9 +537,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	xfree(pfealist);
+	xfree(pfealist, pszSrcFile, __LINE__);
       }
-      xfree(pgealist);
+      xfree(pgealist, pszSrcFile, __LINE__);
     }
   }
   if (!pci->pszSubject)
@@ -583,9 +585,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 	    pci->pszLongName = xstrdup(p, pszSrcFile, __LINE__);
 	  }
 	}
-	xfree(pfealist);
+	xfree(pfealist, pszSrcFile, __LINE__);
       }
-      xfree(pgealist);
+      xfree(pgealist, pszSrcFile, __LINE__);
     }
   }
   if (!pci->pszLongName)
@@ -903,9 +905,9 @@ VOID ProcessDirectory(const HWND hwndCnr,
       } while (!rc);
 
       DosFindClose(hdir);
-      xfree(paffbFound);
+      xfree(paffbFound, pszSrcFile, __LINE__);
       paffbFound = NULL;
-      xfree(papffbSelected);
+      xfree(papffbSelected, pszSrcFile, __LINE__);
       papffbSelected = NULL;
 
       if (ulTotal && paffbTotal) {
@@ -993,10 +995,10 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		 MPFROM2SHORT(0, CMA_ERASE));
   }
 Abort:
-  xfree(paffbTotal);
-  xfree(pszFileSpec);
-  xfree(paffbFound);
-  xfree(papffbSelected);
+  xfree(paffbTotal, pszSrcFile, __LINE__);
+  xfree(pszFileSpec, pszSrcFile, __LINE__);
+  xfree(paffbFound, pszSrcFile, __LINE__);
+  xfree(papffbSelected, pszSrcFile, __LINE__);
 
   if (recurse) {
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),

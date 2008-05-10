@@ -326,10 +326,16 @@ FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
 
 //== xfree - safe free ==
 
-VOID xfree(PVOID pv)
+VOID xfree(PVOID pv, PCSZ pszSrcFile, UINT uiLineNumber)
 {
-  if (pv && pv != NullStr)
+  if (pv && pv != NullStr) {
+# ifdef FORTIFY
+    Fortify_free(pv, pszSrcFile, uiLineNumber);
+# else  
     free(pv);
+# endif
+
+  }
 }
 
 //== xmalloc() malloc with error checking ==
@@ -382,7 +388,11 @@ PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 
 PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
 {
+# ifdef FORTIFY
+  PSZ psz = Fortify_strdup(pszIn, pszSrcFile, uiLineNumber);
+# else  
   PSZ psz = strdup(pszIn);
+# endif
 
   if (!psz)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));

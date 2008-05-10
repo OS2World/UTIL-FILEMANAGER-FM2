@@ -92,7 +92,7 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					       &icf : NULL))) {
 	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinSetSysPointerData");
 	}
-	xfree(buff);
+	xfree(buff, pszSrcFile, __LINE__);
       }
       WinDismissDlg(hwnd, 1);
       break;

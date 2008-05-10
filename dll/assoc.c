@@ -118,10 +118,10 @@ VOID free_associations(VOID)
   info = asshead;
   while (info) {
     next = info->next;
-    xfree(info->mask);
-    xfree(info->pszCmdLine);
-    xfree(info->sig);
-    xfree(info);
+    xfree(info->mask, pszSrcFile, __LINE__);
+    xfree(info->pszCmdLine, pszSrcFile, __LINE__);
+    xfree(info->sig, pszSrcFile, __LINE__);
+    xfree(info, pszSrcFile, __LINE__);
     info = next;
   }
   asshead = asstail = NULL;
@@ -182,9 +182,9 @@ VOID load_associations(VOID)
 	info->offset = atol(offset);
 	info->flags = atol(flags);
 	if (!info->pszCmdLine || !info->mask) {
-	  xfree(info->pszCmdLine);
-	  xfree(info->mask);
-	  xfree(info);
+	  xfree(info->pszCmdLine, pszSrcFile, __LINE__);
+	  xfree(info->mask, pszSrcFile, __LINE__);
+	  xfree(info, pszSrcFile, __LINE__);
 	  break;
 	}
 	if (!asshead)
@@ -232,7 +232,7 @@ VOID display_associations(HWND hwnd, ASSOC *temp, LINKASSOC *info)
                         LM_SELECTITEM,
                         MPFROMSHORT(x), MPFROMSHORT(TRUE));
     }
-    xfree(pszDisplayStr);
+    xfree(pszDisplayStr, pszSrcFile, __LINE__);
   }
 }
 
@@ -312,9 +312,9 @@ LINKASSOC *add_association(ASSOC * addme)
 	if (addme->flags)
 	  info->flags = addme->flags;
 	if (!info->pszCmdLine || !info->mask) {
-	  xfree(info->pszCmdLine);
-	  xfree(info->mask);
-	  xfree(info);
+	  xfree(info->pszCmdLine, pszSrcFile, __LINE__);
+	  xfree(info->mask, pszSrcFile, __LINE__);
+	  xfree(info, pszSrcFile, __LINE__);
 	}
 	else {
 	  if (!asshead)			/* only item in list */
@@ -358,10 +358,10 @@ BOOL kill_association(ASSOC * killme)
 	  if (info == asstail)
 	    asstail = info->prev;
 	}
-	xfree(info->pszCmdLine);
-	xfree(info->mask);
-	xfree(info->sig);
-	xfree(info);
+	xfree(info->pszCmdLine, pszSrcFile, __LINE__);
+	xfree(info->mask, pszSrcFile, __LINE__);
+	xfree(info->sig, pszSrcFile, __LINE__);
+	xfree(info, pszSrcFile, __LINE__);
 	return TRUE;
       }
       info = info->next;
@@ -539,7 +539,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinSendDlgItemMsg(hwnd,
                           ASS_LISTBOX,
                           LM_SELECTITEM, MPFROMSHORT(0), MPFROMSHORT(TRUE));
-        xfree(pszDisplayStr);
+        xfree(pszDisplayStr, pszSrcFile, __LINE__);
       }
     }
     return 0;
@@ -694,7 +694,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         }
         pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
         if (!pszWorkBuf) {
-          xfree(temp.pszCmdLine);
+          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
           break; //already complained
         }
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
@@ -703,7 +703,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
           memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         }
-        xfree(pszWorkBuf);
+        xfree(pszWorkBuf, pszSrcFile, __LINE__);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -730,7 +730,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           temp.flags |= PROMPT;
         if (fCancelAction){
           fCancelAction = FALSE;
-          xfree(temp.pszCmdLine);
+          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
           break;
         }
         else
@@ -741,7 +741,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           display_associations(hwnd, &temp, info);
 	  save_associations();
         }
-        xfree(temp.pszCmdLine);
+        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
       }
       WinDismissDlg(hwnd, 1);
       break;
@@ -769,7 +769,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           break; //already complained
         pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
         if (!pszWorkBuf) {
-          xfree(temp.pszCmdLine);
+          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
           break; //already complained
         }
         WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
@@ -778,7 +778,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
           memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         }
-        xfree(pszWorkBuf);
+        xfree(pszWorkBuf, pszSrcFile, __LINE__);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -805,7 +805,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           temp.flags |= PROMPT;
         if (fCancelAction){
           fCancelAction = FALSE;
-          xfree(temp.pszCmdLine);
+          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
           break;
         }
         else
@@ -815,7 +815,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           display_associations(hwnd, &temp, info);
 	  save_associations();
 	}
-        xfree(temp.pszCmdLine);
+        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
       }
       break;
 
@@ -851,7 +851,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  save_associations();
         }
-        xfree(temp.pszCmdLine);
+        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
       }
 
       break;
@@ -873,7 +873,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                                       MPFROMSHORT(LIT_CURSOR), MPVOID);
         pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
         if (!pszWorkBuf) {
-          xfree(temp.pszCmdLine);
+          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
           break; //already complained
         }
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
@@ -882,7 +882,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
           memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         }
-        xfree(pszWorkBuf);
+        xfree(pszWorkBuf, pszSrcFile, __LINE__);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -909,7 +909,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           temp.flags |= PROMPT;
         if (fCancelAction){
           fCancelAction = FALSE;
-          xfree(temp.pszCmdLine);
+          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
           break;
         }
         else
@@ -918,7 +918,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           display_associations(hwnd, &temp, info);
 	  save_associations();
         }
-        xfree(temp.pszCmdLine);
+        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
       }
       {
 	ASSOC temp;
@@ -955,7 +955,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  save_associations();
         }
-        xfree(temp.pszCmdLine);
+        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
       }
       break;
     }

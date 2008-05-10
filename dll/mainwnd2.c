@@ -1348,7 +1348,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_DESTROY:
     hwndMain = (HWND) 0;
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
-    xfree(pd);
+    xfree(pd, pszSrcFile, __LINE__);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
     break;

@@ -134,7 +134,7 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 	}
       }
     }
-    xfree(var);
+    xfree(var, pszSrcFile, __LINE__);
     pciL = (PCNRITEM) WinSendMsg(hwndCnr,
 				 CM_QUERYRECORD,
 				 MPFROMP(pciParent),

@@ -106,7 +106,7 @@ static VOID ProcessDir(HWND hwndCnr,
 		      MPFROMLONG(1));
     if (!pciP) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
-      xfree(pffbArray);
+      xfree(pffbArray, pszSrcFile, __LINE__);
       return;
     }
     pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
@@ -131,7 +131,7 @@ static VOID ProcessDir(HWND hwndCnr,
     pciP->rc.flRecordAttr |= CRA_RECORDREADONLY;
   }
   else {
-    xfree(pffbArray);
+    xfree(pffbArray, pszSrcFile, __LINE__);
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
     return;
@@ -152,7 +152,7 @@ static VOID ProcessDir(HWND hwndCnr,
   ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pciP), MPFROMP(&ri))) {
-    xfree(pffbArray);
+    xfree(pffbArray, pszSrcFile, __LINE__);
     return;
   }
   hdir = HDIR_CREATE;
@@ -201,7 +201,7 @@ static VOID ProcessDir(HWND hwndCnr,
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
   }
 
-  xfree(pffbArray);
+  xfree(pffbArray, pszSrcFile, __LINE__);
   WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pciP),
 	     MPFROM2SHORT(1, 0));
 }
@@ -233,7 +233,7 @@ static VOID FillCnrsThread(VOID * args)
   }
   PostMsg(WinQueryWindow(dirsize->hwndCnr, QW_PARENT), UM_CONTAINER_FILLED,
 	  MPVOID, MPVOID);
-  xfree(dirsize);
+  xfree(dirsize, pszSrcFile, __LINE__);
 }
 
 MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -260,7 +260,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    data->dirname = (CHAR *) mp2;
+    data->dirname = (CHAR *)mp2;
     WinSetWindowPtr(hwnd, QWL_USER, (PVOID) data);
     if (*data->dirname)
       WinSetDlgItemText(hwnd, OBJCNR_DIR, data->dirname);
@@ -272,14 +272,14 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinDismissDlg(hwnd, 0);
 	break;
       }
-      dirsize->stopflag = (CHAR *) & data->stopflag;
+      dirsize->stopflag = (CHAR *)&data->stopflag;
       dirsize->filename = data->dirname;
       dirsize->hwndCnr = WinWindowFromID(hwnd, OBJCNR_CNR);
       if (_beginthread(FillCnrsThread, NULL, 65536 * 8, (PVOID) dirsize) ==
 	  -1) {
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	xfree(dirsize);
+	xfree(dirsize, pszSrcFile, __LINE__);
 	WinDismissDlg(hwnd, 0);
 	break;
       }
@@ -425,7 +425,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_DESTROY:
     objcnrwnd = (HWND) 0;
     data = INSTDATA(hwnd);
-    xfree(data);
+    xfree(data, pszSrcFile, __LINE__);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);

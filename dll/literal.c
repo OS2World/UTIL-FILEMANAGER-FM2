@@ -193,7 +193,7 @@ UINT literal(PSZ pszBuf)
 
   cBufBytes = pszOut - pszWork;                /* Calc string length excluding terminator */
   memcpy(pszBuf, pszWork, cBufBytes + 1);        /* Overwrite including terminator */
-  xfree(pszWork);
+  xfree(pszWork, pszSrcFile, __LINE__);
 
   return cBufBytes;                        /* Return string length */
 }
@@ -296,15 +296,15 @@ BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
       tcard[strlen(tcard) - 1] = 0;
       if (!(strchr(tcard, '?')) && !(strchr(tcard, '*'))){
 	if (strstr(fstr, tcard)){ //strstr match for *stuff* pattern no wildcards in "stuff"
-	  xfree(tcard);
+	  xfree(tcard, pszSrcFile, __LINE__);
 	  return TRUE;
 	}
 	else{
-	  xfree(tcard);
+	  xfree(tcard, pszSrcFile, __LINE__);
 	  return FALSE;
 	}
       }
-      xfree(tcard);
+      xfree(tcard, pszSrcFile, __LINE__);
     }
     else   //reverse search for *stuff pattern "stuff" can contain wildcards
       if (*fcard == '*' && fcard[strlen(fcard) - 1] != '*'){

@@ -213,7 +213,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           return 0; //already complained
       pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
       if (!pszWorkBuf) {
-        xfree(szCLBuf);
+        xfree(szCLBuf, pszSrcFile, __LINE__);
         return 0; //already complained
       }
       WinQueryDlgItemText(hwnd, CFGA_VIRUS, MaxComLineStrg, szCLBuf);
@@ -221,8 +221,8 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (strcmp(szCLBuf, virus)){
 	NormalizeCmdLine(pszWorkBuf, szCLBuf);
 	memcpy(virus, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        xfree(pszWorkBuf);
-        xfree(szCLBuf);
+        xfree(pszWorkBuf, pszSrcFile, __LINE__);
+        xfree(szCLBuf, pszSrcFile, __LINE__);
 	if (!strchr(virus, '%') && strlen(virus) > 3)
 	  strcat(virus, " %p");
       }
@@ -486,7 +486,7 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           return 0; //already complained
       pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
       if (!pszWorkBuf) {
-        xfree(szCLBuf);
+        xfree(szCLBuf, pszSrcFile, __LINE__);
         return 0; //already complained
       }
       WinQueryDlgItemText(hwnd, CFGV_VIEWER, MaxComLineStrg, szCLBuf);
@@ -521,8 +521,8 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!strchr(bined, '%') && strlen(bined) > 3)
 	  strcat(bined, " %a");
       }
-      xfree(pszWorkBuf);
-      xfree(szCLBuf);
+      xfree(pszWorkBuf, pszSrcFile, __LINE__);
+      xfree(szCLBuf, pszSrcFile, __LINE__);
       PrfWriteProfileString(fmprof, appname, "Viewer", viewer);
       PrfWriteProfileString(fmprof, appname, "Editor", editor);
       PrfWriteProfileString(fmprof, appname, "BinView", binview);
@@ -689,7 +689,7 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           return 0; //already complained
       pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
       if (!pszWorkBuf) {
-        xfree(szCLBuf);
+        xfree(szCLBuf, pszSrcFile, __LINE__);
         return 0; //already complained
       }
       WinQueryDlgItemText(hwnd, CFGH_RUNHTTPWORKDIR, CCHMAXPATH, szPathBuf);
@@ -722,8 +722,8 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	NormalizeCmdLine(pszWorkBuf, szCLBuf);
 	memcpy(mailrun, pszWorkBuf, strlen(pszWorkBuf) + 1);
       }
-      xfree(pszWorkBuf);
-      xfree(szCLBuf);
+      xfree(pszWorkBuf, pszSrcFile, __LINE__);
+      xfree(szCLBuf, pszSrcFile, __LINE__);
       PrfWriteProfileString(fmprof, appname, "HttpRunDir", httprundir);
       PrfWriteProfileString(fmprof, appname, "FtpRunDir", ftprundir);
       PrfWriteProfileString(fmprof, appname, "MailRunDir", mailrundir);
@@ -1325,7 +1325,7 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           return 0; //already complained
       pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
       if (!pszWorkBuf) {
-        xfree(szCLBuf);
+        xfree(szCLBuf, pszSrcFile, __LINE__);
         return 0; //already complained
       }
       WinQueryDlgItemText(hwnd, CFGC_DIRCOMPARE, MaxComLineStrg, szCLBuf);
@@ -1345,8 +1345,8 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         if (!strchr(compare, '%') && strlen(compare) > 3)
           strcat(compare, " %a");
       }
-      xfree(pszWorkBuf);
-      xfree(szCLBuf);
+      xfree(pszWorkBuf, pszSrcFile, __LINE__);
+      xfree(szCLBuf, pszSrcFile, __LINE__);
       PrfWriteProfileString(fmprof, appname, "Compare", compare);
       break;
     }

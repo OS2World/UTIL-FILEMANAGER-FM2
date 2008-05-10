@@ -56,7 +56,7 @@ INT Subject(HWND hwnd, CHAR * filename)
     pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
     pfealist = xmallocz(1024, pszSrcFile, __LINE__);
     if (pfealist)
-    xfree(pgealist);
+    xfree(pgealist, pszSrcFile, __LINE__);
     else {
       pfealist->cbList = 1024;
       eaop.fpGEA2List = pgealist;
@@ -64,7 +64,7 @@ INT Subject(HWND hwnd, CHAR * filename)
       eaop.oError = 0;
       rc = DosQueryPathInfo(filename, FIL_QUERYEASFROMLIST,
 			    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-      xfree(pgealist);
+      xfree(pgealist, pszSrcFile, __LINE__);
       if (!rc) {
 	pfea = &eaop.fpFEA2List->list[0];
 	value = pfea->szName + pfea->cbName + 1;
@@ -73,7 +73,7 @@ INT Subject(HWND hwnd, CHAR * filename)
 	  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
 	subject[1023] = 0;
       }
-      xfree(pfealist);
+      xfree(pfealist, pszSrcFile, __LINE__);
       if (rc == ERROR_SHARING_VIOLATION || rc == ERROR_ACCESS_DENIED) {
 	saymsg(MB_CANCEL,
 	       hwnd,

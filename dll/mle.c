@@ -249,7 +249,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   if (rc || !temp) {
     Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
-    xfree(sel);
+    xfree(sel, pszSrcFile, __LINE__);
     DosPostEventSem(CompactSem);
     return FALSE;
   }
@@ -266,7 +266,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
       (LONG) WinSendMsg(h, MLM_EXPORT, MPFROMP(&here), MPFROMP(&sellen));
     if (sellen < 1) {
       Runtime_Error(pszSrcFile, __LINE__, "len < 1");
-      xfree(sel);
+      xfree(sel, pszSrcFile, __LINE__);
       DosPostEventSem(CompactSem);
       return FALSE;
     }
@@ -280,7 +280,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   case APPENDCLIP:
     SaveToClip(h, sel, TRUE);
     DosFreeMem(temp);
-    xfree(sel);
+    xfree(sel, pszSrcFile, __LINE__);
     MLEenable(h);
     DosPostEventSem(CompactSem);
     return TRUE;
@@ -301,7 +301,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
       _heap_check();
 #endif
       DosFreeMem(temp);
-      xfree(sel);
+      xfree(sel, pszSrcFile, __LINE__);
       MLEenable(h);
       DosPostEventSem(CompactSem);
       return TRUE;
@@ -374,7 +374,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     _heap_check();
 #endif
     DosFreeMem(temp);
-    xfree(sel);
+    xfree(sel, pszSrcFile, __LINE__);
     DosPostEventSem(CompactSem);
     MLEenable(h);
     return FALSE;
@@ -407,7 +407,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   _heap_check();
 #endif
   DosFreeMem(temp);
-  xfree(sel);
+  xfree(sel, pszSrcFile, __LINE__);
   DosPostEventSem(CompactSem);
   return TRUE;
 }
@@ -573,7 +573,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	  }
 	  else
 	    ret = FALSE;
-	  xfree(buffer);
+	  xfree(buffer, pszSrcFile, __LINE__);
 	}
 	DosFreeMem(hexbuff);
       }
@@ -769,7 +769,7 @@ VOID LoadThread(VOID * arg)
 #ifdef __DEBUG_ALLOC__
 	_heap_check();
 #endif
-	xfree(bkg);
+	xfree(bkg, pszSrcFile, __LINE__);
 	WinDestroyMsgQueue(thmq);
       }
       DecrThreadUsage();

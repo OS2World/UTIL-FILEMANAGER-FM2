@@ -228,7 +228,7 @@ void PaintSTextWindow(HWND hwnd, HPS hps)
 	  GpiCharString(hps, strlen(p), p);
 	}
       }
-      xfree(s);
+      xfree(s, pszSrcFile, __LINE__);
     }
     if (releaseme)
       WinReleasePS(hps);
@@ -732,7 +732,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             if (retlen == 0) {
               psz = pci->pszSubject;
               pci->pszSubject = NullStr;
-              xfree(psz);
+              xfree(psz, pszSrcFile, __LINE__);
             }
             else
               pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
@@ -797,7 +797,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             if (retlen == 0) {
               psz = pci->pszLongName;
               pci->pszLongName = NullStr;
-              xfree(psz);
+              xfree(psz, pszSrcFile, __LINE__);
             }
             else
               pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
@@ -847,7 +847,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (filename) {
 		  if (!PostMsg(hwnd,
 			       UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		    xfree(filename);
+		    xfree(filename, pszSrcFile, __LINE__);
 		}
 		if (stricmp(testname, pci->pszFileName)) {
 		  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
@@ -855,7 +855,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  if (filename) {
 		    if (!PostMsg(hwnd,
 				 UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		      xfree(filename);
+		      xfree(filename, pszSrcFile, __LINE__);
 		  }
 		}
 	      }
@@ -1001,7 +1001,7 @@ INT ExecFile(HWND hwnd, CHAR * filename)
     }
     else if (ret != 0)
       return -1;
-    xfree(pszCmdLine);
+    xfree(pszCmdLine, pszSrcFile, __LINE__);
   }
   return 0;
 }
@@ -1994,7 +1994,7 @@ void SaySort(HWND hwnd, INT sortflags, BOOL archive)
 				GetPString(IDS_NONE) : (sortflags & SORT_SUBJECT) ?
 				  GetPString(IDS_SUBJ) : GetPString(IDS_NAME));
     WinSetWindowText(hwnd, s);
-    xfree(s);
+    xfree(s, pszSrcFile, __LINE__);
   }
 }
 
@@ -2013,7 +2013,7 @@ void SayView(HWND hwnd, ULONG flWindowAttr)
 	    ((flWindowAttr & CV_MINI) &&
 	     !(flWindowAttr & CV_TEXT)) ? GetPString(IDS_MINI) : NullStr);
     WinSetWindowText(hwnd, s);
-    xfree(s);
+    xfree(s, pszSrcFile, __LINE__);
   }
 }
 
@@ -2033,7 +2033,7 @@ void SayFilter(HWND hwnd, MASK * mask, BOOL archive)
     if (!s[2])
       sprintf(s, "F:%s", GetPString(IDS_ALLTEXT));
     WinSetWindowText(hwnd, s);
-    xfree(s);
+    xfree(s, pszSrcFile, __LINE__);
   }
 }
 
@@ -2178,7 +2178,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
 	}
       }
       numswitches = y;
-      xfree(pswb);
+      xfree(pswb, pszSrcFile, __LINE__);
       DosPostEventSem(CompactSem);
     }
   }

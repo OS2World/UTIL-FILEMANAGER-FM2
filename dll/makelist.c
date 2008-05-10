@@ -31,6 +31,8 @@
 #include "dircnrs.h"
 #include "fm3dll.h"			// 05 Jan 08 SHL fixme to be gone
 
+#include "fortify.h"			// 06 May 08 SHL
+
 static PSZ pszSrcFile = __FILE__;
 
 VOID SortList(LISTINFO *li)
@@ -68,11 +70,11 @@ VOID SortList(LISTINFO *li)
 VOID FreeListInfo(LISTINFO *li)
 {
   if (li) {
-    xfree(li->ulitemID);
-    xfree(li->cbFile);
+    xfree(li->ulitemID, pszSrcFile, __LINE__);
+    xfree(li->cbFile, pszSrcFile, __LINE__);
     if (li->list)
       FreeList(li->list);
-    xfree(li);
+    xfree(li, pszSrcFile, __LINE__);
   }
 }
 
@@ -90,7 +92,7 @@ VOID FreeList(CHAR **list)
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
-    xfree(list);
+    xfree(list, pszSrcFile, __LINE__);
   }
   DosPostEventSem(CompactSem);
 }
