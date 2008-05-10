@@ -12,6 +12,7 @@
   08 Feb 03 SHL Free list with free() since we don't
 		allocate list contents
   08 Apr 07 SHL Minor reformat
+  10 May 08 SHL Correct compare typo
 
 ***********************************************************************/
 
@@ -53,7 +54,7 @@ int main (int argc,char *argv[])
 	  list = malloc(sizeof(CHAR *) * 2);
 	  if (list &&
 	      insert_filename(HWND_DESKTOP,fullname,TRUE,FALSE) &&
-	      *fullname && *fullname == '*') {
+	      *fullname && *fullname != '*') {
 	    list[0] = fullname;
 	    list[1] = NULL;
 	  }
