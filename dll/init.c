@@ -537,7 +537,9 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   DosForceDelete("$FM2PLAY.$$$");
 
   EndNote();
+# ifdef FORTIFY
   Fortify_LeaveScope();
+# endif
   if (FM3ModHandle)
     DosFreeModule(FM3ModHandle);
 
@@ -604,7 +606,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (!rcq)
       ret = pfnResVersion(&RVMajor, &RVMinor);
   }
+# ifdef FORTIFY
   Fortify_EnterScope();
+# endif
   if (RVMajor < VERMAJOR || (RVMajor == VERMAJOR && RVMinor < VERMINOR)) {
     saymsg(MB_ENTER,
 	   HWND_DESKTOP,
