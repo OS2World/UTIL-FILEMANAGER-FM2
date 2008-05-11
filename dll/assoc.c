@@ -196,6 +196,7 @@ VOID load_associations(VOID)
 	asstail = info;
       }
     }
+    xfree(pszCmdLine, pszSrcFile, __LINE__);
     fclose(fp);
   }
 }

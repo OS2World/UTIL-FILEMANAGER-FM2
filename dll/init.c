@@ -76,6 +76,7 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 #include "notebook.h"                   // command line variables (editor etc)
+#include "fortify.h"
 
 #ifdef __IBMC__
 #pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
@@ -536,7 +537,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   DosForceDelete("$FM2PLAY.$$$");
 
   EndNote();
-
+  Fortify_LeaveScope();
   if (FM3ModHandle)
     DosFreeModule(FM3ModHandle);
 
@@ -603,7 +604,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (!rcq)
       ret = pfnResVersion(&RVMajor, &RVMinor);
   }
-
+  Fortify_EnterScope();
   if (RVMajor < VERMAJOR || (RVMajor == VERMAJOR && RVMinor < VERMINOR)) {
     saymsg(MB_ENTER,
 	   HWND_DESKTOP,

@@ -60,6 +60,7 @@
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"                    // RunCommand
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -3319,25 +3320,28 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       LastDir = (HWND) 0;
     if (dcd) {
       dcd->stopflag++;
+      //printf("%i %x %x %x\n", dcd->dontclose, dcd->hwndFrame, dcd->hwndObject, dcd);
       if (!dcd->dontclose && ParentIsDesktop(dcd->hwndFrame, (HWND) 0))
         PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
-      if (!dcd->hwndObject ||
-	  !PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID)) {
-	if (dcd->hwndObject)
-	  WinSetWindowPtr(dcd->hwndObject, QWL_USER, NULL);
-	WinSetWindowPtr(hwnd, QWL_USER, NULL);
-	if (dcd->hwndRestore)
-	  WinSetWindowPos(dcd->hwndRestore,
-			  HWND_TOP,
-			  0,
-			  0,
-			  0,
-			  0,
-			  SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
-	FreeList(dcd->lastselection);
-	xfree(dcd, pszSrcFile, __LINE__);
-	DosPostEventSem(CompactSem);
+      if (dcd->hwndObject) {
+          WinSetWindowPtr(dcd->hwndObject, QWL_USER, NULL);
+          PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
+      if (dcd->hwndRestore)
+        WinSetWindowPos(dcd->hwndRestore,
+                        HWND_TOP,
+                        0,
+                        0,
+                        0,
+                        0,
+                        SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+      //printf("%i %x %x %x\n", dcd->dontclose, dcd->hwndFrame, dcd->hwndObject, dcd);
+      FreeList(dcd->lastselection);
+      xfree(dcd, pszSrcFile, __LINE__);
+      WinSetWindowPtr(hwnd, QWL_USER, NULL);
+      //printf("%i %x %x %x\n", dcd->dontclose, dcd->hwndFrame, dcd->hwndObject, dcd);
+      //Fortify_LeaveScope();
+      DosPostEventSem(CompactSem);
     }
     WinDestroyWindow(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				    QW_PARENT));
@@ -3416,9 +3420,10 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
       if (idinc > 99)
 	idinc = 0;
       WinSetWindowUShort(hwndFrame, QWS_ID, id);
+      //Fortify_EnterScope();
       dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
       if (!dcd) {
-	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
+        PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	hwndFrame = (HWND) 0;
       }
       else {
@@ -3466,14 +3471,14 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	  xfree(dcd, pszSrcFile, __LINE__);
+          xfree(dcd, pszSrcFile, __LINE__);
 	  hwndFrame = (HWND) 0;
 	}
 	else {
           RestorePresParams(dcd->hwndCnr, "DirCnr");
 	  WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
 	  dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
-					   (PFNWP) DirCnrWndProc);
+                                           (PFNWP) DirCnrWndProc);
 	  {
 	    USHORT ids[] = { DIR_TOTALS, DIR_SELECTED, DIR_VIEW, DIR_SORT,
 	      DIR_FILTER, DIR_FOLDERICON, DIR_MAX, 0
