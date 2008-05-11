@@ -604,9 +604,11 @@ BreakOut:
     else
       ex.flags = flags;
     ex.flags &= (~PROMPT);
-    return runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
+    ret = runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
 		   (*ex.environment) ? ex.environment : NULL,
-		   "%s", commandline);
+                   "%s", commandline);
+    xfree(commandline, pszSrcFile, __LINE__);
+    return ret;
   }
 }
 

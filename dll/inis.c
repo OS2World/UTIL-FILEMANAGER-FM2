@@ -538,7 +538,8 @@ static BOOL EnumKeyNames(HWND hwndList, HINI hini, PSZ pAppName)
 	}
 	WinSendMsg(hwndList, LM_SELECTITEM, MPFROMSHORT(0),
 		   MPFROMSHORT(TRUE));
-	WinEnableWindowUpdate(hwndList, TRUE);
+        WinEnableWindowUpdate(hwndList, TRUE);
+        xfree(pData, pszSrcFile, __LINE__);
 	return TRUE;
       }
     }
