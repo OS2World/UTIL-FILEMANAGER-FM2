@@ -181,7 +181,7 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       RestoreDirCnrState(hwndMain, (char *)mp1, FALSE);
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), TRUE);
       fNoTileUpdate = FALSE;
-      xfree((char *)mp1, pszSrcFile, __LINE__);
+      //xfree((char *)mp1, pszSrcFile, __LINE__);
       if (fAutoTile)
 	TileChildren(hwndMain, TRUE);
       break;

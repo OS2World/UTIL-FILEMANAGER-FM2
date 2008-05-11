@@ -35,6 +35,7 @@
 
 #include "errutil.h"			// Dos_Error...
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 

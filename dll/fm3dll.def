@@ -285,5 +285,7 @@ export    InitFM3DLL_                                 .1,
          RootName_                                    .267,
          RunFM2Util_				      .268,
          xDosFindFirst_                               .269,
-         xDosFindNext_                                .270
+         xDosFindNext_                                .270,
+         xfree_                                       .271,
+         xmalloc_                                     .272
 

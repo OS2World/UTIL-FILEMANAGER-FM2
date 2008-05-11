@@ -16,7 +16,7 @@
 
 #define FORTIFY_BEFORE_SIZE      32  /* Bytes to allocate before block */
 #define FORTIFY_BEFORE_VALUE   0xA3  /* Fill value before block        */
-                      
+
 #define FORTIFY_AFTER_SIZE       32  /* Bytes to allocate after block  */
 #define FORTIFY_AFTER_VALUE    0xA5  /* Fill value after block         */
 
@@ -46,7 +46,7 @@
 /* #define FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
 
 /* #define FORTIFY_NO_PERCENT_P */       /* sprintf() doesn't support %p */
-/* #define FORTIFY_STRDUP       */       /* if you use non-ANSI strdup() */
+#define FORTIFY_STRDUP              /* if you use non-ANSI strdup() */
 
 // #include "_malloc.h"
 #ifdef __cplusplus

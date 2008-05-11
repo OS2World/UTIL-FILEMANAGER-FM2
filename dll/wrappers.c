@@ -331,7 +331,7 @@ VOID xfree(PVOID pv, PCSZ pszSrcFile, UINT uiLineNumber)
   if (pv && pv != NullStr) {
 # ifdef FORTIFY
     Fortify_free(pv, pszSrcFile, uiLineNumber);
-# else  
+# else
     free(pv);
 # endif
 
@@ -344,7 +344,7 @@ PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 {
 # ifdef FORTIFY
   PVOID pv = Fortify_malloc(cBytes, pszSrcFile, uiLineNumber);
-# else  
+# else
   PVOID pv = malloc(cBytes);
 # endif
 
@@ -358,11 +358,9 @@ PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 
 PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 {
-  PVOID pv = malloc(cBytes);
+  PVOID pv = xmalloc(cBytes, pszSrcFile, uiLineNumber);
 
-  if (!pv)
-    Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
-  else
+  if (pv)
     memset(pv, 0, cBytes);
 
   return pv;
@@ -373,7 +371,11 @@ PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 {
   if (pvIn != NullStr) {
-    PVOID pv = realloc(pvIn, cBytes);
+# ifdef FORTIFY
+  PVOID pv = Fortify_realloc(pvIn, cBytes, pszSrcFile, uiLineNumber);
+# else
+  PVOID pv = realloc(pvIn, cBytes);
+# endif
 
     if (!pv && cBytes)
       Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
@@ -390,7 +392,7 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
 {
 # ifdef FORTIFY
   PSZ psz = Fortify_strdup(pszIn, pszSrcFile, uiLineNumber);
-# else  
+# else
   PSZ psz = strdup(pszIn);
 # endif
 

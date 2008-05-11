@@ -50,6 +50,7 @@
 #include "strutil.h"			// GetPString
 #include "tmrsvcs.h"			// ITIMER_DESC
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 

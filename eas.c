@@ -26,6 +26,8 @@
 #include "dll\makelist.h"
 #include "dll\fm3dll.h"
 
+static PSZ pszSrcFile = __FILE__;
+
 int main (int argc,char *argv[])
 {
   HAB hab;
@@ -51,12 +53,12 @@ int main (int argc,char *argv[])
       if (InitFM3DLL(hab,argc,argv)) {
 	if (!list) {
 	  strcpy(fullname, "*");
-	  list = malloc(sizeof(CHAR *) * 2);
+	  list = xmalloc(sizeof(CHAR *) * 2, pszSrcFile, __LINE__);
 	  if (list &&
 	      insert_filename(HWND_DESKTOP,fullname,TRUE,FALSE) &&
 	      *fullname && *fullname != '*') {
-	    list[0] = fullname;
-	    list[1] = NULL;
+	   list[0] = fullname;
+	   list[1] = NULL;
 	  }
 	}
 	if (list) {
@@ -73,7 +75,7 @@ int main (int argc,char *argv[])
     WinTerminate(hab);
   }
   if (list)
-    free(list);
+    xfree(list, pszSrcFile, __LINE__);
   return 0;
 }
 

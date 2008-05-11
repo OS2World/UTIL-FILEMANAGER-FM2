@@ -3320,7 +3320,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       dcd->stopflag++;
       if (!dcd->dontclose && ParentIsDesktop(dcd->hwndFrame, (HWND) 0))
-	PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+        PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
       if (!dcd->hwndObject ||
 	  !PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID)) {
 	if (dcd->hwndObject)
