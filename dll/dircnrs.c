@@ -35,6 +35,8 @@
   19 Jan 08 JBS Ticket 150: fix/improve save and restore of dir cnr state at FM/2 close/reopen
   15 Feb 08 SHL Sync with settings menu rework
   22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
+  11 May 08 GKY Avoid using stale dcd after free
+  11 May 08 SHL Add stale dcd sanity checks
 
 ***********************************************************************/
 
@@ -58,7 +60,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
-#include "command.h"                    // RunCommand
+#include "command.h"			// RunCommand
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -601,7 +603,6 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
-      // DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
       li =
 	DoFileDrop(dcd->hwndCnr, dcd->directory, FALSE, MPVOID,
 		   MPFROMP(&cni));
@@ -1496,11 +1497,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
        SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
- 				DIR_FILTER), &dcd->mask, FALSE);
+				DIR_FILTER), &dcd->mask, FALSE);
        SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
- 			      DIR_SORT), dcd->sortFlags, FALSE);
+			      DIR_SORT), dcd->sortFlags, FALSE);
        SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
- 			      DIR_VIEW), dcd->flWindowAttr);
+			      DIR_VIEW), dcd->flWindowAttr);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1512,11 +1513,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-  		DIR_FILTER), &dcd->mask, FALSE);
+		DIR_FILTER), &dcd->mask, FALSE);
       SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-  	      DIR_SORT), dcd->sortFlags, FALSE);
+	      DIR_SORT), dcd->sortFlags, FALSE);
       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-  	      DIR_VIEW), dcd->flWindowAttr);
+	      DIR_VIEW), dcd->flWindowAttr);
     } else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     return 0;
@@ -1527,7 +1528,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HWND hwndMenu = (HWND) mp2;
 
       if (hwndMenu == DirCnrMenu ||
-	  hwndMenu == FileMenu || hwndMenu == DirMenu) {
+	  hwndMenu == FileMenu ||
+	  hwndMenu == DirMenu) {
 	MarkAll(hwnd, TRUE, FALSE, TRUE);
 	if (dcd->cnremphasized) {
 	  WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
@@ -2076,11 +2078,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				    DIR_FILTER), &dcd->mask, FALSE);
 	}
-        break;
+	break;
 
       case IDM_UNHIDEALL:
-        WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
-        break;
+	WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
+	break;
 
       case IDM_HIDEALL:
 	if (fAutoView && hwndMain)
@@ -2885,7 +2887,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
 
-	  // DbgMsg(pszSrcFile, __LINE__, "calling DoFileDrop");
 	  li = DoFileDrop(hwnd, dcd->directory, TRUE, mp1, mp2);
 	  CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
@@ -3320,26 +3321,25 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       LastDir = (HWND) 0;
     if (dcd) {
       dcd->stopflag++;
-      //printf("%i %x %x %x\n", dcd->dontclose, dcd->hwndFrame, dcd->hwndObject, dcd);
       if (!dcd->dontclose && ParentIsDesktop(dcd->hwndFrame, (HWND) 0))
-        PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+	PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
       if (dcd->hwndObject) {
-          WinSetWindowPtr(dcd->hwndObject, QWL_USER, NULL);
-          PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
+	  // Ensure object window destroy does not attempt duplicate clean up
+	  WinSetWindowPtr(dcd->hwndObject, QWL_USER, NULL);
+	  if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
+	    Win_Error(dcd->hwndObject, hwnd, pszSrcFile, __LINE__, "hwndObject WinPostMsg failed");
       }
       if (dcd->hwndRestore)
-        WinSetWindowPos(dcd->hwndRestore,
-                        HWND_TOP,
-                        0,
-                        0,
-                        0,
-                        0,
-                        SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
-      //printf("%i %x %x %x\n", dcd->dontclose, dcd->hwndFrame, dcd->hwndObject, dcd);
+	WinSetWindowPos(dcd->hwndRestore,
+			HWND_TOP,
+			0,
+			0,
+			0,
+			0,
+			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
       xfree(dcd, pszSrcFile, __LINE__);
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
-      //printf("%i %x %x %x\n", dcd->dontclose, dcd->hwndFrame, dcd->hwndObject, dcd);
       //Fortify_LeaveScope();
       DosPostEventSem(CompactSem);
     }
@@ -3357,8 +3357,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     DirMenu = DirCnrMenu = FileMenu = (HWND) 0;
     EmptyCnr(hwnd);
     break;
-  }
-  if (dcd && dcd->oldproc){
+  } // switch
+
+  if (dcd && dcd->oldproc) {
+      // 11 May 08 SHL fixme debug fortify
+      if ((ULONG)dcd->oldproc == 0xa9a9a9a9)
+	DbgMsg(pszSrcFile, __LINE__, "calling oldproc after dcd free msg %x mp1 %x mp2 %x", msg, mp1, mp2);
       return dcd->oldproc(hwnd, msg, mp1, mp2);
   }
   else
@@ -3423,7 +3427,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
       //Fortify_EnterScope();
       dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
       if (!dcd) {
-        PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
+	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	hwndFrame = (HWND) 0;
       }
       else {
@@ -3471,14 +3475,14 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-          xfree(dcd, pszSrcFile, __LINE__);
+	  xfree(dcd, pszSrcFile, __LINE__);
 	  hwndFrame = (HWND) 0;
 	}
 	else {
-          RestorePresParams(dcd->hwndCnr, "DirCnr");
+	  RestorePresParams(dcd->hwndCnr, "DirCnr");
 	  WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
 	  dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
-                                           (PFNWP) DirCnrWndProc);
+					   (PFNWP) DirCnrWndProc);
 	  {
 	    USHORT ids[] = { DIR_TOTALS, DIR_SELECTED, DIR_VIEW, DIR_SORT,
 	      DIR_FILTER, DIR_FOLDERICON, DIR_MAX, 0
