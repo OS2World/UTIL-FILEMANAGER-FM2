@@ -1,5 +1,5 @@
 
-/* $Id: $ */
+/* $Id$ */
 /* fortify.cxx - A fortified memory allocation shell - V2.2 */
 
 /*

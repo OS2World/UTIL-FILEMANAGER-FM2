@@ -1,5 +1,5 @@
 
-/* $Id: $ */
+/* $Id$ */
 /* fortify.h - V2.2 - All C & C++ source files to be fortified should #include this file */
 
 /*
