@@ -460,7 +460,7 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
 	      ldirhead = info;
 	    else
 	      last->next = info;
-	  }
+          }
 	  return TRUE;
 	}
       }

@@ -579,7 +579,7 @@ static INT DoMatchingFiles(GREP *grep,
 	  if (strlen(szFindPath) > CCHMAXPATH){
 	    // Complain if pathnames exceeds max
 	    DosFindClose(findHandle);
-	    xfree(pffbArray, pszSrcFile, __LINE__);
+	    //xfree(pffbArray, pszSrcFile, __LINE__);
 	    if (!fDone) {
 	      fDone = TRUE;
 	      saymsg(MB_OK | MB_ICONASTERISK,

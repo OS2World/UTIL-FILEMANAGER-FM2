@@ -51,6 +51,8 @@
 #include "notebook.h"                   // External viewers
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
@@ -77,7 +79,10 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
     case IDM_EXTRACT:
       {
 	li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
-	if (li) {
+        if (li) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	  if (wk) {
 	    wk->size = sizeof(WORKER);
@@ -97,7 +102,10 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 	      Runtime_Error(pszSrcFile, __LINE__,
 			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      FreeListInfo(wk->li);
-	      xfree(wk, pszSrcFile, __LINE__);
+              xfree(wk, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    }
 	  }
 	  else
@@ -964,6 +972,9 @@ VOID Action(VOID * args)
     if (wk->li)
       FreeListInfo(wk->li);
     xfree(wk, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     DosPostEventSem(CompactSem);
   }
 }
@@ -1607,6 +1618,9 @@ VOID MassAction(VOID * args)
     if (wk->li)
       FreeListInfo(wk->li);
     xfree(wk, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     DosPostEventSem(CompactSem);
   }
 }

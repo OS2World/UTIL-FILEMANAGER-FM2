@@ -2628,6 +2628,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			MPFROMLONG(CMA_CNRTITLE | CMA_FLWINDOWATTR));
       WinCheckButton(hwnd, COMP_HIDENOTSELECTED, 0);
       cmp->filling = TRUE;
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       forthread = xmalloc(sizeof(COMPARE), pszSrcFile, __LINE__);
       if (!forthread)
 	WinDismissDlg(hwnd, 0);
@@ -2639,7 +2642,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  WinDismissDlg(hwnd, 0);
-	  xfree(forthread, pszSrcFile, __LINE__);
+          xfree(forthread, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	}
 	else {
 	  WinEnableWindowUpdate(hwndLeft, FALSE);

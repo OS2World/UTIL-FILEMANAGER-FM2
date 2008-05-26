@@ -76,6 +76,8 @@
 #include "command.h"                    // RunCommand
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
@@ -884,7 +886,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (dcd) {
 	WORKER *wk;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -899,7 +903,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk, pszSrcFile, __LINE__);
+            xfree(wk, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -912,7 +919,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (dcd) {
 	WORKER *wk;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -927,7 +936,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(wk, pszSrcFile, __LINE__);
+            xfree(wk, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
@@ -953,6 +965,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
       xfree(dcd, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
+      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     DosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -2800,6 +2816,9 @@ HWND StartCollector(HWND hwndParent, INT flags)
   if (hwndFrame && hwndClient) {
     id = COLLECTOR_FRAME + idinc++;
     WinSetWindowUShort(hwndFrame, QWS_ID, id);
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
@@ -2838,7 +2857,10 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	xfree(dcd, pszSrcFile, __LINE__);
+        xfree(dcd, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	hwndFrame = (HWND) 0;
       }
       else {

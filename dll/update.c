@@ -454,7 +454,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						  filename[x],
 						  &ffb, partial, dcd);
 	      if (strlen(pci->pszFileName) < 4)
-	      SelectDriveIcon(pci);
+	        SelectDriveIcon(pci);
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
 	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -507,7 +507,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 							filename[x],
 							&ffb, partial, dcd);
 		    if (strlen(pci->pszFileName) < 4)
-		    SelectDriveIcon(pci);
+		      SelectDriveIcon(pci);
 		    memset(&ri, 0, sizeof(RECORDINSERT));
 		    ri.cb = sizeof(RECORDINSERT);
 		    ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -552,7 +552,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 						    filename[x],
 						    &ffb, partial, dcd);
 		if (strlen(pci->pszFileName) < 4)
-		SelectDriveIcon(pci);
+		  SelectDriveIcon(pci);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;

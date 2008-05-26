@@ -1738,9 +1738,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    *p = '\\';
 		  p++;
 		}
-		p =
-		  xmalloc(strlen(temp) + strlen(li->targetpath) + 2,
-			  pszSrcFile, __LINE__);
+		p = xmalloc(strlen(temp) + strlen(li->targetpath) + 2,
+			    pszSrcFile, __LINE__);
 		if (p) {
 		  strcpy(p, li->targetpath);
 		  if (p[strlen(p) - 1] != '\\')
@@ -1995,6 +1994,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FreeList(dcd->lastselection);
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       xfree(dcd, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -3439,6 +3441,9 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
       if (idinc > 512)
 	idinc = 0;
       WinSetWindowUShort(hwndFrame, QWS_ID, id);
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
       if (!dcd) {
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
@@ -3522,7 +3527,10 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	  xfree(dcd, pszSrcFile, __LINE__);
+          xfree(dcd, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	  hwndFrame = (HWND) 0;
 	}
 	else {

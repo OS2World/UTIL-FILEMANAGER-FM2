@@ -40,6 +40,8 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 typedef struct
 {
   CHAR *filename;
@@ -234,6 +236,9 @@ static VOID FillCnrsThread(VOID * args)
   PostMsg(WinQueryWindow(dirsize->hwndCnr, QW_PARENT), UM_CONTAINER_FILLED,
 	  MPVOID, MPVOID);
   xfree(dirsize, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 }
 
 MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -266,7 +271,9 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(hwnd, OBJCNR_DIR, data->dirname);
     {
       DIRSIZE *dirsize;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       dirsize = xmalloc(sizeof(DIRSIZE), pszSrcFile, __LINE__);
       if (!dirsize) {
 	WinDismissDlg(hwnd, 0);
@@ -279,7 +286,10 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  -1) {
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	xfree(dirsize, pszSrcFile, __LINE__);
+        xfree(dirsize, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	WinDismissDlg(hwnd, 0);
 	break;
       }

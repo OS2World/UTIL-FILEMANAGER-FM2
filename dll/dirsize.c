@@ -53,6 +53,8 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 typedef struct
 {
   CHAR *pszFileName;
@@ -473,6 +475,9 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     pState = xmallocz(sizeof(tState), pszSrcFile, __LINE__);
     if (!pState) {
       WinDismissDlg(hwnd, 0);
@@ -1012,6 +1017,9 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinDestroyPointer(pState->hptr);
       DosSleep(16); //05 Aug 07 GKY 33
       xfree(pState, pszSrcFile, __LINE__);			// Let's hope no one is still looking
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     }
     DosPostEventSem(CompactSem);
     break;

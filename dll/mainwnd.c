@@ -81,6 +81,8 @@
 #include "command.h"                    // LINKCMDS
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
@@ -201,6 +203,9 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case WM_DESTROY:
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
@@ -5744,6 +5749,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       fWantFirstTimeInit = FALSE;
       PostMsg(hwnd, WM_COMMAND, MPFROMLONG(IDM_QUICKSETTINGS), MPVOID);
     }
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     return 0;
   }
 
@@ -6327,9 +6335,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hwndMain = (HWND) 0;
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     break;
   }
-
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
