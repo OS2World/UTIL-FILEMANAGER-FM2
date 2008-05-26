@@ -2757,7 +2757,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2765,6 +2767,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->list = BuildList(hwnd);
 	    if (!li->list || !li->list[0]) {
 	      xfree(li, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	      break;
 	    }
 	    if (IsRoot(li->list[0])) {

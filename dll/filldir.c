@@ -253,7 +253,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
    */
   if (!*pffb->achName) {
     pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
-    strcpy(pci->pszFileName, pszDirectory);
+    //strcpy(pci->pszFileName, pszDirectory);
   }
   else {
     INT c = strlen(pszDirectory);

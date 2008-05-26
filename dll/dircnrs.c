@@ -1002,10 +1002,10 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
             xfree(wk, pszSrcFile, __LINE__);
+	    FreeListInfo((LISTINFO *) mp1);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
-	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
       }
@@ -1037,10 +1037,10 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
             xfree(wk, pszSrcFile, __LINE__);
+	    FreeListInfo((LISTINFO *) mp1);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
-	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
       }
@@ -2477,7 +2477,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2566,6 +2568,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    else
 	      xfree(li, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	  }
 	}
 	break;

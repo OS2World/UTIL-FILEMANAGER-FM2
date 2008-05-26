@@ -1710,7 +1710,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_COLLECTFROMCLIP:
 	{
 	  LISTINFO *li;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->list = ListFromClipboard(hwnd);
@@ -1759,7 +1761,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_COLLECTOR:
 	if (mp2) {
 	  LISTINFO *li;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->list = mp2;
@@ -2061,7 +2065,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	{
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2104,8 +2110,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      else if (fUnHilite)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	    }
-	    else
-	      xfree(li, pszSrcFile, __LINE__);
+            else
+              xfree(li, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	  }
 	}
 	break;

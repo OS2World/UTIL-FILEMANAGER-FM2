@@ -58,6 +58,8 @@
 #include "notebook.h"                   // targetdirectory
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
@@ -383,7 +385,9 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_PRINT:
 	{
 	  LISTINFO *li;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->hwndS = WinWindowFromID(hwndFrame, FID_CLIENT);

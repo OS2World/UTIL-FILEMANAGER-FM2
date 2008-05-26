@@ -34,6 +34,8 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 static PSZ pszSrcFile = __FILE__;
 
 static ULONG GetDropCount(HWND hwnd, MPARAM mp1);
@@ -464,6 +466,9 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
   } // for curitem
 
   if (files && numfiles && files[0] && pcbFile && pulitemID) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
     if (li) {
       li->type = Operation;

@@ -2896,7 +2896,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_VIRUSSCAN:
 	{
 	  LISTINFO *li;
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2969,8 +2971,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      else if (fUnHilite && SHORT1FROMMP(mp1) != IDM_EDIT)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
-	    else
+            else
 	      xfree(li, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	  }
 	}
 	break;

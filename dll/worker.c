@@ -78,11 +78,11 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
     case IDM_MOVE case IDM_COPY:
     case IDM_EXTRACT:
       {
-	li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
-        if (li) {
 # ifdef FORTIFY
   Fortify_EnterScope();
 # endif
+	li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
+        if (li) {
 	  wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	  if (wk) {
 	    wk->size = sizeof(WORKER);
