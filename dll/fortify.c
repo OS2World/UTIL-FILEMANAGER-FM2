@@ -41,6 +41,7 @@
  */
 
  /* 06 May 08 SHL Rework scope logic to be MT capable
+    26 May 08 SHL Show TID for leaking scope
  */
 
 #ifdef FORTIFY
@@ -65,9 +66,12 @@
 #if defined(__WATCOMC__) && defined(_MT)
 #define MT_SCOPES 1
 unsigned long Get_TID_Ordinal(void);
+// Get tib_ptib2 from TIB
+// Get thread id from TIB2
 #pragma aux Get_TID_Ordinal = \
- "mov eax, far ptr fs:[0x14]" \
- modify exact [eax] \
+ "mov ebx, fs:[0xc]" \
+ "mov eax, [ebx+0]" \
+ modify exact [eax ebx] \
  value [eax]
 #endif
 
@@ -251,7 +255,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
     int another_try;
 
 #ifdef MT_SCOPES
-    unsigned short ordinal;
+    unsigned ordinal;
 #endif
 
     /*
@@ -685,7 +689,7 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
 #ifdef MT_SCOPES
     ordinal = Get_TID_Ordinal();
-    if(ordinal < st_cScopes && st_pScopes[ordinal] > 0)
+    if (ordinal < st_cScopes && st_pScopes[ordinal] > 0)
 #else
     if(st_Scope > 0)
 #endif
@@ -1003,12 +1007,14 @@ Fortify_LeaveScope(const char *file, unsigned long line)
     FORTIFY_LOCK();
 
 #ifdef MT_SCOPES
-    // 06 May 08 SHL fixme to complain to leave without enter
+    // Complain on leave without enter 06 May 08 SHL
     ordinal = Get_TID_Ordinal();
     if (ordinal < st_cScopes && st_pScopes[ordinal] > 0)
 	st_pScopes[ordinal]--;
     else {
-	sprintf(st_Buffer, "\nFortify: attempting to leave scope before enter at %s.%lu\n", file, line);
+	sprintf(st_Buffer,
+		"\nFortify: attempting to leave scope before enter at %s.%lu in TID %u\n",
+		file, line, ordinal);	// 26 May 08 SHL
 	st_Output(st_Buffer);
     }
 #else
@@ -1030,7 +1036,13 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 	    if(count == 0)
 	    {
 		// Report just first occurrance
+#ifdef MT_SCOPES
+		sprintf(st_Buffer,
+			"\nFortify: Memory leak detected leaving scope at %s.%lu in TID %u\n",
+			file, line, ordinal);
+#else
 		sprintf(st_Buffer, "\nFortify: Memory leak detected leaving scope at %s.%lu\n", file, line);
+#endif
 		st_Output(st_Buffer);
 		sprintf(st_Buffer, "%10s %8s %s\n", "Address", "Size", "Allocator");
 		st_Output(st_Buffer);
@@ -1679,7 +1691,7 @@ st_PurgeDeallocatedScope(unsigned char Scope, const char *file, unsigned long li
     struct Header *curr, *next;
     unsigned long FreedBlocks = 0;
 #ifdef MT_SCOPES
-    unsigned short ordinal = Get_TID_Ordinal();
+    unsigned ordinal = Get_TID_Ordinal();
 #endif
 
     curr = st_DeallocatedHead;
