@@ -1232,7 +1232,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   strcpy(s, keyroot);
   strcat(s, ".");
   eos = &s[strlen(s)];
-  strcpy(eos, "DetailsLongname");
+  strcpy(eos, "DirCnr.DetailsLongname");
   if (dcd)
     bool = &dcd->detailslongname;
   else
@@ -1240,7 +1240,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailslongname;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsSubject");
+  strcpy(eos, "DirCnr.DetailsSubject");
   if (dcd)
     bool = &dcd->detailssubject;
   else
@@ -1248,7 +1248,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailssubject;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsEA");
+  strcpy(eos, "DirCnr.DetailsEA");
   if (dcd)
     bool = &dcd->detailsea;
   else
@@ -1256,7 +1256,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailsea;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsSize");
+  strcpy(eos, "DirCnr.DetailsSize");
   if (dcd)
     bool = &dcd->detailssize;
   else
@@ -1264,7 +1264,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailssize;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsIcon");
+  strcpy(eos, "DirCnr.DetailsIcon");
   if (dcd)
     bool = &dcd->detailsicon;
   else
@@ -1272,7 +1272,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailsicon;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsAttr");
+  strcpy(eos, "DirCnr.DetailsAttr");
   if (dcd)
     bool = &dcd->detailsattr;
   else
@@ -1280,7 +1280,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailsattr;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsCRDate");
+  strcpy(eos, "DirCnr.DetailsCRDate");
   if (dcd)
     bool = &dcd->detailscrdate;
   else
@@ -1288,7 +1288,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailscrdate;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsCRTime");
+  strcpy(eos, "DirCnr.DetailsCRTime");
   if (dcd)
     bool = &dcd->detailscrtime;
   else
@@ -1296,7 +1296,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailscrtime;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsLWDate");
+  strcpy(eos, "DirCnr.DetailsLWDate");
   if (dcd)
     bool = &dcd->detailslwdate;
   else
@@ -1304,7 +1304,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailslwdate;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsLWTime");
+  strcpy(eos, "DirCnr.DetailsLWTime");
   if (dcd)
     bool = &dcd->detailslwtime;
   else
@@ -1312,7 +1312,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailslwtime;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsLADate");
+  strcpy(eos, "DirCnr.DetailsLADate");
   if (dcd)
     bool = &dcd->detailsladate;
   else
@@ -1320,7 +1320,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailsladate;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "DetailsLATime");
+  strcpy(eos, "DirCnr.DetailsLATime");
   if (dcd)
     bool = &dcd->detailslatime;
   else
@@ -1328,7 +1328,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = detailslatime;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "SubjectInLeftPane");
+  strcpy(eos, "DirCnr.SubjectInLeftPane");
   if (dcd)
     bool = &dcd->fSubjectInLeftPane;
   else
@@ -1336,7 +1336,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
   *bool = fSubjectInLeftPane;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  strcpy(eos, "SubjectLengthMax");
+  strcpy(eos, "DirCnr.SubjectLengthMax");
   if (dcd)
     bool = &dcd->fSubjectLengthMax;
   else
@@ -1348,7 +1348,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
     if (dcd->fSubjectLengthMax)
       dcd->SubjectDisplayWidth = 0;
     else {
-      strcpy(eos, "SubjectDisplayWidth");
+      strcpy(eos, "DirCnr.SubjectDisplayWidth");
       bool = &dcd->SubjectDisplayWidth;
       *bool = SubjectDisplayWidth;
       size = sizeof(ULONG);
@@ -1363,7 +1363,7 @@ VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
     if (fSubjectLengthMax)
       SubjectDisplayWidth = 0;
     else {
-      strcpy(eos, "SubjectDisplayWidth");
+      strcpy(eos, "DirCnr.SubjectDisplayWidth");
       bool = &SubjectDisplayWidth;
       *bool = SubjectDisplayWidth;
       size = sizeof(ULONG);
