@@ -38,6 +38,7 @@
 # 22 Feb 08 JBS Suppress lxlite processing when DEBUG=1
 # 01 Mar 08 SHL Add missing dependencies.  Add WARNALL support
 # 05 May 08 SHL Add FORTIFY support
+# 26 May 08 SHL Update WARNALL to warn about more
 
 # Environment:
 
@@ -105,8 +106,6 @@ SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for buildin
 # -s		disable stack checks
 # -sg		generate calls to grow the stack
 # -st		touch stack through SS first
-# -wcd14	no reference to symbol
-# -wcd726	no reference to formal parameter
 # -we		treat warnings as errors
 # -wx		max warnings
 # -zfp		disable fs use
@@ -114,15 +113,26 @@ SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for buildin
 # -zp4		align 4
 # -zq		quiet
 
+# -wx excludes these
+# See GenCOptions() in openwatcom\bld\cc\c\coptions.c
+# -wce130	possible loss of precision
+# -wcd=303	no reference to formal parameter
+# -wcd=307	obsolete non-prototype declarator
+# -wcd=308	unprototyped function called
+# -wcd=309	unprototyped function called indirectly
+
 !ifdef DEBUG
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -we -wx -zfp -zgp -zp4 -zq
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -we -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq
 !else
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -we -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
 !endif
 
+# 26 May 08 SHL Was reversed
 !ifdef WARNALL
-CFLAGS += -wcd14 -wcd726
+CFLAGS += -wce=118 -wce=130 -wce=303 -wce=307 -wce=308 -wce=309
+!else
+CFLAGS += -we
 !endif
 
 !ifdef FORTIFY
