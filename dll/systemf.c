@@ -22,6 +22,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  26 May 08 SHL Use uiLineNumber correctly
 
 ***********************************************************************/
 
@@ -808,7 +809,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	if (rc) {
 	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
 		    GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
-		    pszPgm, pszCallingFile, __LINE__);
+		    pszPgm, pszCallingFile, uiLineNumber);	// 26 May 08 SHL
 	  DosFreeMem(pszPgm);
 	  if (pszArgs)
 	    DosFreeMem(pszArgs);
@@ -820,7 +821,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
-			  ulAppType, pszPgm, pszCallingFile, __LINE__);
+			  ulAppType, pszPgm, pszCallingFile, uiLineNumber);	// 26 May 08 SHL
 	    if (pszPgm)
 	      DosFreeMem(pszPgm);
 	    if (pszArgs)
@@ -832,7 +833,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
-			  ulAppType, pszPgm, pszCallingFile, __LINE__);
+			  ulAppType, pszPgm, pszCallingFile, uiLineNumber);	// 26 May 08 SHL
 	    if (pszPgm)
 	      DosFreeMem(pszPgm);
 	    if (pszArgs)
@@ -854,7 +855,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	if (ret) {
 	  Dos_Error(MB_ENTER,ret,hwnd,pszSrcFile,__LINE__,
 		    GetPString(IDS_DOSEXECPGMFAILEDTEXT), pszPgm,
-		    pszCallingFile, __LINE__);
+		    pszCallingFile, uiLineNumber);	// 26 May 08 SHL
 	}
       }
     }
@@ -945,7 +946,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       if (rc) {
 	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
 		  GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
-		  pszPgm, pszCallingFile, __LINE__);
+		  pszPgm, pszCallingFile, uiLineNumber);	// 26 May 08 SHL
 	DosFreeMem(pszPgm);
 	if (pszArgs)
 	  DosFreeMem(pszArgs);
@@ -957,7 +958,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	{
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
-			pszPgm, pszCallingFile, __LINE__);
+			pszPgm, pszCallingFile, uiLineNumber);	// 26 May 08 SHL
 	  DosFreeMem(pszPgm);
 	  if (pszArgs)
 	    DosFreeMem(pszArgs);
@@ -1127,7 +1128,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
 	Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
 		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs,
-		  pszCallingFile, __LINE__);
+		  pszCallingFile, uiLineNumber);	// 26 May 08 SHL
       }
       else if (type & WAIT) {
 	if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
