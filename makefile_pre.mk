@@ -11,6 +11,7 @@
 # 26 Sep 07 SHL Support USE_WRC from environment
 # 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 # 23 Jan 08 JBS Add support for building SYM files (Ticket 226)
+# 27 May 08 SHL Add WARNALL and FORTIFY support
 
 CC = wcc386
 LINK = wlink
@@ -39,6 +40,14 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
 
+!ifdef %WARNALL			# if defined in environment
+WARNALL = $(%WARNALL)		# use value from environment
+!endif
+
+!ifdef %FORTIFY			# if defined in environment
+FORTIFY = $(%FORTIFY)		# use value from environment
+!endif
+
 SYMS = $(BASE).sym              #set a target for building SYM files
 
 # Some flags are order dependent - see OpenWatcom docs
@@ -56,8 +65,6 @@ SYMS = $(BASE).sym              #set a target for building SYM files
 # -s		disable stack checks
 # -sg		generate calls to grow the stack
 # -st		touch stack through SS first
-# -wcd14	no reference to symbol
-# -wcd726	no reference to formal parameter
 # -we		treat warnings as errors
 # -wx		max warnings
 # -zfp		disable fs use
@@ -65,8 +72,26 @@ SYMS = $(BASE).sym              #set a target for building SYM files
 # -zp4		align 4
 # -zq		quiet
 
+# -wx excludes these
+# See GenCOptions() in openwatcom\bld\cc\c\coptions.c
+# -wce130	possible loss of precision
+# -wcd=303	no reference to formal parameter
+# -wcd=307	obsolete non-prototype declarator
+# -wcd=308	unprototyped function called
+# -wcd=309	unprototyped function called indirectly
+
 # We always compile with debug info to avoid needed a full rebuild just to debug
-CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -we -wx -zfp -zgp -zp4 -zq -hd
+CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zp4 -zq -hd
+
+!ifdef WARNALL
+CFLAGS += -wce=118 -wce=130 -wce=303 -wce=307 -wce=308 -wce=309
+!else
+CFLAGS += -we
+!endif
+
+!ifdef FORTIFY
+CFLAGS += -dFORTIFY
+!endif
 
 LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map
 !ifdef DEBUG
