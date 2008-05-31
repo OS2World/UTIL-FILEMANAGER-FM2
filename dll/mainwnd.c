@@ -2915,6 +2915,10 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
     sprintf(szKey, "%sMySizeLastTime", szPrefix);
     PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp, sizeof(SWP));
   }
+  else if (fIsShutDownState) {
+    sprintf(szKey, "%sNumDirsLastTime", szPrefix);
+    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & numsaves, sizeof(ULONG));
+  }
 
   return nSaved;
 }
