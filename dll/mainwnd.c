@@ -4590,111 +4590,123 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       bstrip(szStateName);
       // Complain if attempting to use reserved name
       if (stricmp(szStateName, GetPString(IDS_STATETEXT)) == 0 ||
-	  stricmp(szStateName, GetPString(IDS_FM2TEMPTEXT)) == 0 ||
-	  stricmp(szStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0)
+//        stricmp(szStateName, GetPString(IDS_FM2TEMPTEXT)) == 0 ||
+//	  stricmp(szStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0)
+	  stricmp(szStateName, GetPString(IDS_FM2TEMPTEXT)) == 0)
       {
 	saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 	       GetPString(IDS_WARNINGTEXT),
 	       "\"%s\" is a reserved state name", szStateName);
       }
       // Ignore request if blank
-      else if (*szStateName) {
-	if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
-	  // Save
-	  INT nSaved = SaveDirCnrState(hwnd, szStateName);
-	  if (nSaved > 0) {
-	    INT ret = add_setup(szStateName);
-	    if (ret == 0) {
-	      WinSendMsg(hwndStatelist, LM_INSERTITEM,
-			 MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
-	      save_setups();
-	    }
-	    else if (ret != 1) {
-	      saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
-		     GetPString(IDS_WARNINGTEXT),
-		     "\"%s\" state name add failed", szStateName);      // 15 Apr 07 SHL failed
-	      WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
-	    }
-	  }
-	  else {
-	    saymsg(MB_ENTER | MB_ICONASTERISK,
-		   hwnd,
-		   GetPString(IDS_WARNINGTEXT),
-		   nSaved == 0 ?
-		     "Nothing to save" :
-		     "State data save failed");
-	    WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
-	  }
+      else if (*szStateName)
+      {
+	BOOL fAbortOperation = FALSE;
+	if (!fNoSaveState && fSaveState && stricmp(szStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0)
+ 	{	
+	  if (saymsg(MB_YESNO | MB_DEFBUTTON2 | MB_ICONASTERISK, hwnd,
+	      GetPString(IDS_WARNINGTEXT),
+	      "\"%s\" is the state name used by 'Save directory container state'. Any changes to this state will last only until FM/2 closes or this setting is disabled. Proceed with this change?", szStateName) == MBID_NO)
+	      fAbortOperation = TRUE;
 	}
-	else {
-	  // Delete
-	  ULONG numsaves = 0, size, x;
-	  CHAR s[STATE_NAME_MAX_BYTES + 80];
+	if (!fAbortOperation) {
+          if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
+            // Save
+            INT nSaved = SaveDirCnrState(hwnd, szStateName);
+            if (nSaved > 0) {
+              INT ret = add_setup(szStateName);
+              if (ret == 0) {
+        	WinSendMsg(hwndStatelist, LM_INSERTITEM,
+        	           MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
+        	save_setups();
+              }
+              else if (ret != 1) {
+		saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+		       GetPString(IDS_WARNINGTEXT),
+        	       "\"%s\" state name add failed", szStateName);      // 15 Apr 07 SHL failed
+        	WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+              }
+            }
+	    else {
+        	    saymsg(MB_ENTER | MB_ICONASTERISK,
+        		   hwnd,
+        		   GetPString(IDS_WARNINGTEXT),
+        		   nSaved == 0 ?
+        		     "Nothing to save" :
+        		     "State data save failed");
+        	    WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+        	  }
+        	}
+        	else {
+        	  // Delete
+        	  ULONG numsaves = 0, size, x;
+        	  CHAR s[STATE_NAME_MAX_BYTES + 80];
 
-	  INT ret = remove_setup(szStateName);
-	  if (ret == 1)
-	    save_setups();
-	  sprintf(s, "%s.NumDirsLastTime", szStateName);
-	  size = sizeof(ULONG);
-	  if (!PrfQueryProfileData(fmprof,
-				   FM3Str,
-				   s,
-				   (PVOID)&numsaves,
-				   &size)) {
-	    saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
-		   GetPString(IDS_WARNINGTEXT),
-		   GetPString(IDS_DOESNTEXISTTEXT), szStateName);
-	  }
-	  else if (!size)
-	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
-	  else {
-	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
-	    for (x = 0; x < numsaves; x++) {
-	      sprintf(s, "%s.DirCnrPos.%lu", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnrDir.%lu", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnrSort.%lu", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnrFilter.%lu", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnrView.%lu", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsLongname", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsSubject", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsSize", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsEA", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsAttr", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsIcon", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsLWDate", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsLWTime", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsLADate", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsLATime", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsCRDate", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.DetailsCRTime", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.Backgroundcolor", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	      sprintf(s, "%s.DirCnr.%lu.Fontnamesize", szStateName, x);
-	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	    }
-	    sprintf(s, "%s.LastTreePos", szStateName);
-	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	    sprintf(s, "%s.MySizeLastTime", szStateName);
-	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
-	  }
-	  PostMsg(hwnd, UM_FILLSETUPLIST, MPVOID, MPVOID);
+        	  INT ret = remove_setup(szStateName);
+        	  if (ret == 1)
+        	    save_setups();
+        	  sprintf(s, "%s.NumDirsLastTime", szStateName);
+        	  size = sizeof(ULONG);
+        	  if (!PrfQueryProfileData(fmprof,
+        				   FM3Str,
+        				   s,
+        				   (PVOID)&numsaves,
+        				   &size)) {
+        	    saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+        		   GetPString(IDS_WARNINGTEXT),
+        		   GetPString(IDS_DOESNTEXISTTEXT), szStateName);
+        	  }
+        	  else if (!size)
+        	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+        	  else {
+        	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
+        	    for (x = 0; x < numsaves; x++) {
+        	      sprintf(s, "%s.DirCnrPos.%lu", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnrDir.%lu", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnrSort.%lu", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnrFilter.%lu", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnrView.%lu", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsLongname", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsSubject", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsSize", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsEA", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsAttr", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsIcon", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsLWDate", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsLWTime", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsLADate", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsLATime", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsCRDate", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.DetailsCRTime", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.Backgroundcolor", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	      sprintf(s, "%s.DirCnr.%lu.Fontnamesize", szStateName, x);
+        	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	    }
+        	    sprintf(s, "%s.LastTreePos", szStateName);
+        	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	    sprintf(s, "%s.MySizeLastTime", szStateName);
+        	    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+        	  }
+        	  PostMsg(hwnd, UM_FILLSETUPLIST, MPVOID, MPVOID);
+        	}
 	}
       }
     }
@@ -5710,8 +5722,12 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_SETUP3:
     /* start remaining child windows */
-    if (!fNoSaveState && fSaveState)
-      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(GetPString(IDS_SHUTDOWNSTATE)), MPVOID);
+    if (!fNoSaveState && fSaveState) {
+      PSZ pStatename = GetPString(IDS_SHUTDOWNSTATE);
+      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pStatename), MPVOID);
+      if (!add_setup(pStatename))
+      	save_setups();
+    }
     PostMsg(MainObjectHwnd, UM_SETUP4, mp1, mp2);
     return 0;
 
