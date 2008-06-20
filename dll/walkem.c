@@ -26,6 +26,7 @@
   19 Feb 08 JBS Add "State at last FM/2 close" to the states combo box
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  19 Jun 08 JBS Ticket 227: Allow temporary saving/deleting of the shutdown state of directory containers
 
 ***********************************************************************/
 
@@ -92,12 +93,6 @@ VOID fill_setups_list(VOID)
 		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		 MPFROMP(pld->path));
     }
-//     if (fSaveState) {
-//       WinSendMsg(hwndStatelist,
-// 	         LM_INSERTITEM,
-// 	         MPFROM2SHORT(LIT_SORTASCENDING, 0),
-// 	         MPFROMP(GetPString(IDS_SHUTDOWNSTATE)));
-//     }
     WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
   }
 }
