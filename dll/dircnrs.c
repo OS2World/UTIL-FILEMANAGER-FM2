@@ -37,6 +37,7 @@
   22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
   11 May 08 GKY Avoid using stale dcd after free
   11 May 08 SHL Add stale dcd sanity checks
+  21 Jun 08 GKY Fix columns to honor preferences on new container open.
 
 ***********************************************************************/
 
@@ -1510,13 +1511,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosSleep(32); //05 Aug 07 GKY 64
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
-       AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
-       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				DIR_FILTER), &dcd->mask, FALSE);
-       SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-			      DIR_SORT), dcd->sortFlags, FALSE);
-       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-			      DIR_VIEW), dcd->flWindowAttr);
+      PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
