@@ -287,6 +287,9 @@ VOID GrepThread(VOID *arg)
     if (ghmq) {
       WinCancelShutdown(ghmq, TRUE);
       IncrThreadUsage();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       // DosSleep(100); //05 Aug 07 GKY 128	// 07 Feb 08 SHL
       // hwndStatus does not exist for applet
       WinSetWindowText(hwndStatus ? hwndStatus : grep.hwndCurFile,
@@ -410,6 +413,9 @@ VOID GrepThread(VOID *arg)
   if (grep.numlines && grep.matched)
     free(grep.matched);
   // 07 Feb 08 SHL fixme to free grep here when not static
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
   DosPostEventSem(CompactSem);
 }
 
@@ -609,6 +615,9 @@ static INT DoMatchingFiles(GREP *grep,
 	    else if (!InsertDupe(grep, szFindPath, pffbFile)) {
 	      DosFindClose(findHandle);
 	      xfree(pffbArray, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	      return 1;
 	    }
 	  }
@@ -635,6 +644,9 @@ static INT DoMatchingFiles(GREP *grep,
   }
 
   xfree(pffbArray, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
   return 0;
 }
 
@@ -657,6 +669,9 @@ static VOID freegreplist(GREP *grep)
     grep->insertffb = NULL;
     grep->toinsert = 0L;
     grep->insertedbytes = 0L;
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
   }
 }
 
@@ -764,6 +779,9 @@ static BOOL InsertGrepFile(GREP *grep,
 			     pszSrcFile, __LINE__);
 	if (!grep->dir) {
 	  xfree(grep->insertffb, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	  return FALSE;
 	}
       }
@@ -776,7 +794,10 @@ static BOOL InsertGrepFile(GREP *grep,
 
       grep->dir[grep->toinsert] = xstrdup(szDirectory, pszSrcFile, __LINE__);
       if (!grep->dir) {
-	xfree(grep->insertffb[grep->toinsert], pszSrcFile, __LINE__);
+        xfree(grep->insertffb[grep->toinsert], pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	return FALSE;
       }
 
@@ -994,6 +1015,9 @@ static BOOL DoOneFile(GREP *grep,
 	fclose(inputFile);
       }
       xfree(input, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       // DosSleep(1);			// 07 Feb 08 SHL
     }
   } // if
@@ -1108,6 +1132,9 @@ LONG CRCFile(CHAR *pszFileName, INT *error)
       // DosSleep(1);			// 07 Feb 08 SHL
     }
     xfree(buffer, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
   }
   return CRC;
 }
@@ -1128,6 +1155,9 @@ static VOID FreeDupes(GREP *grep)
   xfree(grep->dupenames, pszSrcFile, __LINE__);
   xfree(grep->dupesizes, pszSrcFile, __LINE__);
   grep->dupesizes = grep->dupenames = NULL;
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 }
 
 INT comparenamesq(const VOID *v1, const VOID *v2)
@@ -1477,6 +1507,9 @@ static VOID FillDupes(GREP *grep,
       grep->dupenames = NULL;
       xfree(grep->dupesizes, pszSrcFile, __LINE__);
       grep->dupesizes = NULL;
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 
       InitITimer(pitdSleep, 0);		// Reset rate estimator
       i = grep->dupehead;
@@ -1591,6 +1624,9 @@ static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4L *pffb)
     info->name = xstrdup(dir, pszSrcFile, __LINE__);
     if (!info->name) {
       xfree(info, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       return FALSE;
     }
 

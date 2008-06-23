@@ -35,6 +35,7 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // External viewers
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -98,7 +99,9 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
         return (HWND) 0;
     }
   }
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   vw = xmallocz(sizeof(XMLEWNDPTR), pszSrcFile, __LINE__);
   if (!vw)
     return (HWND) 0;
@@ -890,6 +893,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fclose(fp);
 	  }
 	}
+        //printf("%s %s %d\n ",vw->exportfilename, __FILE__, __LINE__); fflush(stdout);
 	if (!MLEexportfile(hwndMLE,
 			   vw->exportfilename,
 			   vw->ExpandTabs,
@@ -1253,6 +1257,9 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
 	xfree(vw, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       }
       if (!dontclose &&
 	  ParentIsDesktop(hwnd, WinQueryWindow(WinQueryWindow(hwnd,

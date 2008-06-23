@@ -978,6 +978,6 @@ VOID EditAssociations(HWND hwnd)
   stop = 0;
 }
 
-#pragma alloc_text(ASSOC2,free_commands,load_associations,save_associations,display_associations)
+#pragma alloc_text(ASSOC2,free_associations,load_associations,save_associations,display_associations)
 #pragma alloc_text(ASSOC2,ExecAssociation,AssocTextProc)
 #pragma alloc_text(ASSOC,add_association,kill_association,AssocDlgProc,EditAssociations)

@@ -52,6 +52,7 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // httprun etc
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 
@@ -647,6 +648,9 @@ static VOID FreeViewerMem(HWND hwnd)
     ad->lines = NULL;
     ad->markedlines = NULL;
     DosPostEventSem(CompactSem);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
   }
 }
 
@@ -1088,6 +1092,9 @@ static VOID ClipboardThread(VOID * args)
     if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad) {
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
@@ -1203,6 +1210,9 @@ static VOID ReLineThread(VOID * args)
 	    ad->selected = ad->numlines = ad->numalloc = 0;
 	    xfree(ad->lines, pszSrcFile, __LINE__);
 	    xfree(ad->markedlines, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    ad->lines = NULL;
 	    ad->markedlines = NULL;
 	    WinSetWindowText(WinWindowFromID(ad->hwndFrame,
@@ -1371,6 +1381,9 @@ static VOID LoadFileThread(VOID * args)
 	    xfree(ad->text, pszSrcFile, __LINE__);
 	    xfree(ad->lines, pszSrcFile, __LINE__);
 	    xfree(ad->markedlines, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    ad->text = NULL;
 	    ad->lines = NULL;
 	    ad->markedlines = NULL;
@@ -1420,6 +1433,9 @@ static VOID LoadFileThread(VOID * args)
 			      __LINE__,
 			      GetPString(IDS_ERRORREADINGTEXT), ad->filename);
 		    xfree(ad->text, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		    ad->text = NULL;
 		    ad->textsize = 0;
 		  }
@@ -2375,6 +2391,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      switch (ret) {
 	      case 0:
                 xfree(urld, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		goto NoAdd;
 	      case 1:
                 if (*urld->url) {
@@ -2401,6 +2420,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             "%s %s", httprun, urld->url);
                 }
 		xfree(urld, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		goto NoAdd;
 	      case 2:
                 if (*urld->url){
@@ -2427,6 +2449,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             "%s %s", ftprun, urld->url);
                 }
                 xfree(urld, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		goto NoAdd;
               case 3:
                 if (*urld->url){
@@ -2437,11 +2462,17 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                           "%s %s", mailrun, urld->url);
                 }
                 xfree(urld, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
                 goto NoAdd;
 	      default:
 		break;
 	      }
               xfree(urld, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    }
 	  }
         }
@@ -2520,6 +2551,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  MPFROMLONG(whichline));
 	    }
 	    xfree(s, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	  }
 	}
 	if (!numsels)
@@ -3933,6 +3967,9 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FreeViewerMem(hwnd);
 	WinSetWindowPtr(hwnd, QWL_USER, NULL);
 	xfree(ad, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       }
       if (hwndRestore && hwndRestore != HWND_DESKTOP) {
 

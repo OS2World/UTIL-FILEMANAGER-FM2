@@ -2573,7 +2573,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				"mp1 %u unexpected", SHORT1FROMMP(mp1));
 		}
 		if (fUpdateHideButton) {
-		  USHORT state = WinQueryButtonCheckstate(hwnd,COMP_HIDENOTSELECTED);
+		  ULONG state = WinQueryButtonCheckstate(hwnd,COMP_HIDENOTSELECTED);
 		  if (state == 1) {
 		    WinCheckButton(hwnd, COMP_HIDENOTSELECTED, 2);
 		  }
@@ -2722,7 +2722,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_HIDENOTSELECTED:
     cmp = INSTDATA(hwnd);
     if (cmp) {
-      USHORT wasHidden = WinQueryButtonCheckstate(hwnd,
+      ULONG wasHidden = WinQueryButtonCheckstate(hwnd,
 						  COMP_HIDENOTSELECTED);
 
       // cmp->dcd.suspendview = 1;		// 12 Jan 08 SHL appears not to be used here

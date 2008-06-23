@@ -27,6 +27,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   19 Jun 08 JBS Ticket 227: Allow temporary saving/deleting of the shutdown state of directory containers
+  22 Jun 08 GKY Add free_?dir for fortify testing
 
 ***********************************************************************/
 
@@ -531,6 +532,34 @@ BOOL remove_ldir(CHAR * path)
     }
   }
   return FALSE;
+}
+
+VOID free_ldir(VOID)
+{
+  LINKDIRS *info, *next;
+
+  info = ldirhead;
+  while (info) {
+    next = info->next;
+    xfree(info->path, pszSrcFile, __LINE__);
+    xfree(info, pszSrcFile, __LINE__);
+    info = next;
+  }
+  ldirhead = NULL;
+}
+
+VOID free_udir(VOID)
+{
+  LINKDIRS *info, *next;
+
+  info = udirhead;
+  while (info) {
+    next = info->next;
+    xfree(info->path, pszSrcFile, __LINE__);
+    xfree(info, pszSrcFile, __LINE__);
+    info = next;
+  }
+  udirhead = NULL;
 }
 
 VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,

@@ -85,6 +85,8 @@ ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig);
 ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig);
 INT load_archivers(VOID);
 BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime);
+VOID free_arc_type(ARC_TYPE * pat);
+VOID free_archivers(VOID);
 
 // 05 Jan 08 SHL fixme for avl.c globals to be here
 

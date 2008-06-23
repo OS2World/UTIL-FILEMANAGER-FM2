@@ -44,6 +44,8 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 
+#include "fortify.h"
+
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
@@ -193,7 +195,7 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
       }
       break;
     }
-    pfealist->list[0].cbValue = (ULONG) (eaval -
+    pfealist->list[0].cbValue = /*(ULONG)*/ (eaval -
 					 (pfealist->list[0].szName +
 					  pfealist->list[0].cbName + 1));
     memset(&eaop, 0, sizeof(eaop));
@@ -415,6 +417,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  xfree(obuff, pszSrcFile, __LINE__);
 		}
 		xfree(ibuff, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	      }
 	      DosClose(handle);
 	    }
@@ -508,6 +513,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (*pszBuf)
 		  WinSetWindowText(hwndAutoview, pszBuf);
 		xfree(pszBuf, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	      }
 	    }
 	    if (!rc)
@@ -542,6 +550,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      rc = DosQueryPathInfo((CHAR *)mp1, FIL_QUERYEASFROMLIST,
 				    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
 	      xfree(pgealist, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	      if (!rc) {
 		pfea = &eaop.fpFEA2List->list[0];
 		if (pfea->cbName && pfea->cbValue) {
@@ -611,6 +622,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       xfree((CHAR *)mp1, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     }
     return 0;
 
@@ -787,6 +801,9 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      PutComments(hwnd, currfile, ea);
 	      PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	      xfree(ea, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    }
 	  }
 	}
@@ -837,6 +854,9 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  stopflag++;
 	  if (!PostMsg(hwndAutoObj, UM_LOADFILE, MPFROMP(cf), MPVOID))
 	    xfree(cf, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	}
       }
       break;
@@ -893,6 +913,9 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     stopflag++;
     if (!PostMsg(hwndAutoObj, msg, mp1, mp2)) {
       xfree((CHAR *)mp1, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     }
     return 0;
 

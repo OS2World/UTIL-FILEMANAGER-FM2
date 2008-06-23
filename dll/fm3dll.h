@@ -78,6 +78,7 @@
   12 Jan 08 SHL Localize SpecialSelect to comp.c
   14 Feb 08 SHL Refactor CfgDlgProc to notebook.h
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  22 Jun 08 GKY Changed some variable types to fix compiler warnings
 
 ***********************************************************************/
 
@@ -383,8 +384,8 @@ WORKER;
 typedef struct
 {
   USHORT size;
-  USHORT flags;
-  USHORT cmd;
+  ULONG flags;
+  ULONG cmd;
   USHORT dummy;
   CHAR *prompt;
   CHAR **list;
@@ -800,6 +801,8 @@ VOID save_udirs(VOID);
 BOOL add_udir(BOOL userdirs, PSZ inpath);
 BOOL remove_udir(PSZ path);
 BOOL remove_ldir(PSZ path);
+VOID free_udir(VOID);
+VOID free_ldir(VOID);
 VOID fill_setups_list(VOID);
 VOID load_setups(VOID);
 VOID save_setups(VOID);
@@ -828,6 +831,7 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile);
 VOID EditAssociations(HWND hwnd);
 VOID load_associations(VOID);
 VOID save_associations(VOID);
+VOID free_associations(VOID);
 
 /*draglist.c */
 HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,

@@ -33,6 +33,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -56,6 +57,9 @@ static VOID FillListboxThread(VOID * args)
 
   if (!dummy)
     return;
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   hwnd = dummy->hwnd;
   hab2 = WinInitialize(0);
   if (hab2) {
@@ -189,6 +193,9 @@ static VOID FillListboxThread(VOID * args)
     WinTerminate(hab2);
   }
   xfree(dummy, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 }
 
 MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

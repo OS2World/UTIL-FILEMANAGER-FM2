@@ -38,6 +38,7 @@
   11 May 08 GKY Avoid using stale dcd after free
   11 May 08 SHL Add stale dcd sanity checks
   21 Jun 08 GKY Fix columns to honor preferences on new container open.
+  22 Jun 08 GKY Included free_... functions for fortify checking
 
 ***********************************************************************/
 
@@ -63,6 +64,7 @@
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
 #include "fm3dll.h"
+#include "avl.h"                        // free_archivers
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
@@ -3314,6 +3316,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HWND ret = StartMLEEditor(dcd->hwndParent,
 				(INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
       xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       return MRFROMLONG(ret);
     }
     return 0;
@@ -3355,6 +3360,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FreeList(dcd->lastselection);
       xfree(dcd, pszSrcFile, __LINE__);
 # ifdef FORTIFY
+  free_commands();
+  free_associations();
+  free_udir();
+  free_ldir();
+  free_archivers();
   Fortify_LeaveScope();
 # endif
       WinSetWindowPtr(hwnd, QWL_USER, NULL);

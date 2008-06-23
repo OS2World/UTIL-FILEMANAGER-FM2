@@ -1144,7 +1144,7 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
       }
       break;
     }
-    pfealist->list[0].cbValue = (ULONG) (eaval -
+    pfealist->list[0].cbValue = /*(ULONG)*/ (eaval -
 					 (pfealist->list[0].szName +
 					  pfealist->list[0].cbName + 1));
     eaop.fpGEA2List = (PGEA2LIST) 0;

@@ -30,6 +30,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   25 Aug 07 SHL load_archivers: add missing close on error path
   29 Feb 08 GKY Use xfree where appropriate
+  22 Jun 08 GKY Added free_archivers fot fortify checking
 
 ***********************************************************************/
 
@@ -52,7 +53,6 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-static void free_arc_type(ARC_TYPE * pat);
 static void fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect);
 
 //=== quick_find_type() ===
@@ -216,9 +216,37 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
   return info;				/* Return signature, if any */
 }
 
+VOID free_archivers(VOID)
+{
+  ARC_TYPE *pat, *next;
+
+  pat = arcsighead;
+  while (pat) {
+    next = pat->next;
+    xfree(pat->id, pszSrcFile, __LINE__);
+    xfree(pat->ext, pszSrcFile, __LINE__);
+    xfree(pat->list, pszSrcFile, __LINE__);
+    xfree(pat->extract, pszSrcFile, __LINE__);
+    xfree(pat->create, pszSrcFile, __LINE__);
+    xfree(pat->move, pszSrcFile, __LINE__);
+    xfree(pat->delete, pszSrcFile, __LINE__);
+    xfree(pat->signature, pszSrcFile, __LINE__);
+    xfree(pat->startlist, pszSrcFile, __LINE__);
+    xfree(pat->endlist, pszSrcFile, __LINE__);
+    xfree(pat->exwdirs, pszSrcFile, __LINE__);
+    xfree(pat->test, pszSrcFile, __LINE__);
+    xfree(pat->createrecurse, pszSrcFile, __LINE__);
+    xfree(pat->createwdirs, pszSrcFile, __LINE__);
+    xfree(pat->movewdirs, pszSrcFile, __LINE__);
+    xfree(pat, pszSrcFile, __LINE__);
+    pat = next;
+  }
+  arcsighead = NULL;
+}
+
 //=== free_arc_type() free allocated ARC_TYPE ===
 
-static void free_arc_type(ARC_TYPE * pat)
+VOID free_arc_type(ARC_TYPE * pat)
 {
   if (pat) {
     xfree(pat->id, pszSrcFile, __LINE__);
@@ -1257,6 +1285,6 @@ BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
 }
 
 #pragma alloc_text(MISC9,quick_find_type,find_type)
-#pragma alloc_text(AVL,load_archivers, get_line_strip_comments, get_line_strip_white)
+#pragma alloc_text(AVL,load_archivers, get_line_strip_comments, get_line_strip_white, free_archivers)
 #pragma alloc_text(FMARCHIVE,SBoxDlgProc,SDlgListboxSubclassProc)
 #pragma alloc_text(ARCCNRS,ArcDateTime)

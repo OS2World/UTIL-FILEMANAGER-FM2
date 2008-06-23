@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2008 Steven H. Levine
 
   05 Jan 08 SHL Move makelist.c definitions here
+  22 Jun 08 GKY Change variable type to fix compiler warning
 
 ***********************************************************************/
 
@@ -58,7 +59,7 @@ typedef struct
 {
   HWND hwnd;
   HWND hwndS;
-  USHORT type;
+  ULONG type;
   USHORT id;
   INT flags;
   struct __arc_type__ *info;

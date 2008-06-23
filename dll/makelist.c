@@ -115,6 +115,9 @@ INT AddToFileList(CHAR *string, FILEFINDBUF4L *ffb4, FILELIST ***list,
 
       // Use plain realloc for speed
       // 06 Aug 07 SHL fixme to know why + 6
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       pflArray = realloc(*list, (*pnumalloced + 6) * sizeof(FILELIST *));
       if (!pflArray) {
 	Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));
@@ -166,6 +169,9 @@ INT AddToList(CHAR *string, CHAR ***list, UINT *pnumfiles, UINT *pnumalloced)
   if (string) {
     if (((*pnumfiles) + 3) > *pnumalloced) {
       // Use plain realloc for speed
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       ppsz = realloc(*list, (*pnumalloced + 6) * sizeof(CHAR *));
       if (!ppsz) {
 	Runtime_Error(pszSrcFile, __LINE__, "realloc");
@@ -215,6 +221,10 @@ CHAR **BuildList(HWND hwndCnr)
   }
   if (numalloc > numfiles + 1) {
     // Use plain realloc for speed
+
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     test = realloc(list, sizeof(CHAR *) * (numfiles + 1));
     if (!test)
       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));
@@ -266,6 +276,9 @@ CHAR **RemoveFromList(CHAR **list, CHAR *item)
 	  FreeList(list);
 	  list = NULL;
 	}
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	break;
       }
     }

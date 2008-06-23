@@ -32,6 +32,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -119,6 +120,9 @@ VOID PrintListThread(VOID * arg)
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
       if (li && li->list && li->list[0]) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	AddNote(GetPString(IDS_PRINTINGLISTTEXT));
 	for (x = 0; li->list[x]; x++) {
 	  if (rc == MBID_CANCEL)

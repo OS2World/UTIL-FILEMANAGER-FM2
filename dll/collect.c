@@ -784,6 +784,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       }
     }
     xfree(mp1, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     return 0;
 
   case UM_SELECT:
@@ -1463,13 +1466,19 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_COLLECTFROMFILE:
     if (mp1) {
       if (!dcd) {
-	xfree(mp1, pszSrcFile, __LINE__);
+        xfree(mp1, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       }
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 	  xfree(mp1, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	}
       }
     }
@@ -1595,7 +1604,10 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    p = xstrdup(filename, pszSrcFile, __LINE__);
 	    if (p) {
 	      if (!PostMsg(hwnd, UM_COLLECTFROMFILE, MPFROMP(p), MPVOID))
-		xfree(p, pszSrcFile, __LINE__);
+	        xfree(p, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	    }
 	  }
 	}
@@ -2674,6 +2686,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       ret = StartMLEEditor(dcd->hwndParent,
 			   (INT) mp1, (CHAR *)mp2, dcd->hwndFrame);
       xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       return MRFROMLONG(ret);
     }
     return 0;

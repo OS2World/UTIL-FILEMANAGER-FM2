@@ -9,6 +9,7 @@
   Copyright (c) 2008 Steven H. Levine
 
   01 Mar 08 GKY Move from fm3dll.h to here
+  22 Jun 08 GKY Moved free_commands here for fortify checking
 
 ***********************************************************************/
 
@@ -23,6 +24,7 @@ VOID RunCommand(HWND hwnd, INT cx);
 VOID EditCommands(HWND hwnd);
 CHAR *command_title(INT cx);
 VOID load_commands(VOID);
+VOID free_commands(VOID);
 
 typedef struct LINKCMDS
 {

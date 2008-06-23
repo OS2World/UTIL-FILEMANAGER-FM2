@@ -19,6 +19,7 @@
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   29 Feb 08 GKY Use xfree where appropriate
+  22 Jun 08 GKY Fixed memory buffer access after it had been freed
 
 ***********************************************************************/
 
@@ -39,6 +40,7 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // httprun etc
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -250,6 +252,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
     xfree(sel, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     DosPostEventSem(CompactSem);
     return FALSE;
   }
@@ -267,6 +272,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     if (sellen < 1) {
       Runtime_Error(pszSrcFile, __LINE__, "len < 1");
       xfree(sel, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       DosPostEventSem(CompactSem);
       return FALSE;
     }
@@ -281,6 +289,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     SaveToClip(h, sel, TRUE);
     DosFreeMem(temp);
     xfree(sel, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     MLEenable(h);
     DosPostEventSem(CompactSem);
     return TRUE;
@@ -302,6 +313,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
 #endif
       DosFreeMem(temp);
       xfree(sel, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       MLEenable(h);
       DosPostEventSem(CompactSem);
       return TRUE;
@@ -375,6 +389,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
 #endif
     DosFreeMem(temp);
     xfree(sel, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     DosPostEventSem(CompactSem);
     MLEenable(h);
     return FALSE;
@@ -408,6 +425,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
 #endif
   DosFreeMem(temp);
   xfree(sel, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
   DosPostEventSem(CompactSem);
   return TRUE;
 }
@@ -574,6 +594,9 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	  else
 	    ret = FALSE;
 	  xfree(buffer, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 	}
 	DosFreeMem(hexbuff);
       }
@@ -755,6 +778,9 @@ VOID LoadThread(VOID * arg)
       if (thmq) {
 	WinCancelShutdown(thmq, TRUE);
 	IncrThreadUsage();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	priority_normal();
 	if (bkg->hex == 1)
 	  fSuccess = MLEHexLoad(bkg->h, bkg->filename);
@@ -769,15 +795,26 @@ VOID LoadThread(VOID * arg)
 #ifdef __DEBUG_ALLOC__
 	_heap_check();
 #endif
-	xfree(bkg, pszSrcFile, __LINE__);
+        //xfree(bkg, pszSrcFile, __LINE__);
 	WinDestroyMsgQueue(thmq);
       }
       DecrThreadUsage();
       WinTerminate(thab);
+      xfree(bkg, pszSrcFile, __LINE__);
+      bkg = NULL;
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
       _endthread();
     }
     // fixme to be gone?
-    PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
+    if (bkg) {
+      PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
+      xfree(bkg, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
+    }
   }
 }
 

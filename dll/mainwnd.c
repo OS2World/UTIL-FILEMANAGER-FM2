@@ -55,6 +55,7 @@
   22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
   29 Feb 08 GKY Use xfree where appropriate
   19 Jun 08 JBS Ticket 227: Allow temporary saving/deleting of the shutdown state of directory containers
+  22 Jun 08 GKY Use free_... functions for fortify checking
 
 ***********************************************************************/
 
@@ -75,12 +76,13 @@
 #include "tools.h"
 #include "comp.h"
 #include "datamin.h"
-#include "pathutil.h"                    // BldQuotedFileName
+#include "pathutil.h"                   // BldQuotedFileName
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
-#include "notebook.h"                        // CfgDlgProc CfgMenuInit
+#include "notebook.h"                   // CfgDlgProc CfgMenuInit
 #include "command.h"                    // LINKCMDS
 #include "fm3dll.h"
+#include "avl.h"                        // free_archivers
 
 #include "fortify.h"
 
@@ -6354,6 +6356,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
 # ifdef FORTIFY
+  free_commands();
+  free_associations();
+  free_udir();
+  free_ldir();
+  free_archivers();
   Fortify_LeaveScope();
 # endif
     break;

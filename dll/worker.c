@@ -25,6 +25,7 @@
   26 Aug 07 SHL Revert to DosSleep(0)
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  22 Jun 08 GKY Made Felete move to xworkplace trash can  on systems that have it
 
 ***********************************************************************/
 
@@ -40,6 +41,7 @@
 #define INCL_WINHELP
 #define INCL_LONGLONG
 #define INCL_WINPOINTERS
+#define INCL_WINWORKPLACE
 
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -133,6 +135,9 @@ VOID Action(VOID * args)
   CHAR szQuotedFileName[CCHMAXPATH];
 
   if (wk) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     if (wk->li && wk->li->list && wk->li->list[0]) {
       hab2 = WinInitialize(0);
       if (hab2) {
@@ -264,6 +269,9 @@ VOID Action(VOID * args)
 		    if (!PostMsg(Collector,
 				 UM_COLLECTFROMFILE, MPFROMP(temp), MPVOID))
 		      xfree(temp, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		  }
 		}
 		break;
@@ -989,6 +997,9 @@ VOID MassAction(VOID * args)
   UINT numfiles = 0, numalloc = 0;
 
   if (wk) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     if (wk->li && wk->li->list && wk->li->list[0]) {
       hab2 = WinInitialize(0);
       if (hab2) {
@@ -1130,6 +1141,9 @@ VOID MassAction(VOID * args)
 	      for (x = 0; wk->li->list[x]; x++) {
 		strcpy(p, wk->li->list[x]);
 		xfree(wk->li->list[x], pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		wk->li->list[x] = xstrdup(szBuffer, pszSrcFile, __LINE__);
 	      }
 	      if (wk->li->list[0])
@@ -1310,6 +1324,9 @@ VOID MassAction(VOID * args)
 			       UM_LOADFILE,
 			       MPFROMLONG(5 + viewtype), MPFROMP(temp)))
 		    xfree(temp, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		}
 		DosSleep(1);
 	      }
@@ -1355,6 +1372,9 @@ VOID MassAction(VOID * args)
 			       UM_LOADFILE,
 			       MPFROMLONG(4 + viewtype), MPFROMP(temp)))
 		    xfree(temp, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 		}
 		DosSleep(1);
 	      }
@@ -1432,6 +1452,7 @@ VOID MassAction(VOID * args)
 	      FILESTATUS3 fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
 	      APIRET error;
+              HOBJECT hObjectdest, hObjectofObject;
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1555,15 +1576,29 @@ VOID MassAction(VOID * args)
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
 		  AddNote(prompt);
 		  DosError(FERR_DISABLEHARDERR);
-		  if (wk->li->type == IDM_DELETE)
-		    error = DosDelete(wk->li->list[x]);
+                  if (wk->li->type == IDM_DELETE){
+                    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+                    if (hObjectdest != NULLHANDLE){
+                      hObjectofObject = WinQueryObject(wk->li->list[x]);
+                      error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+                    }
+                    else
+                      error = DosDelete(wk->li->list[x]);
+                  }
 		  else
 		    error = DosForceDelete(wk->li->list[x]);
 		  if (error) {
 		    DosError(FERR_DISABLEHARDERR);
 		    make_deleteable(wk->li->list[x]);
-		    if (wk->li->type == IDM_DELETE)
-		      error = DosDelete(wk->li->list[x]);
+		    if (wk->li->type == IDM_DELETE){
+                      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+                      if (hObjectdest != NULLHANDLE){
+                        hObjectofObject = WinQueryObject(wk->li->list[x]);
+                        error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+                      }
+                      else
+                        error = DosDelete(wk->li->list[x]);
+                    }
 		    else
 		      error = DosForceDelete(wk->li->list[x]);
 		  }
