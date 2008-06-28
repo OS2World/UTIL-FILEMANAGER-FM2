@@ -17,6 +17,7 @@
   06 Apr 07 GKY Add error message for drg work around
   26 Nov 07 GKY Added new readonly in editor & ext path
   10 Feb 08 GKY Add strings to implement bubble help for bitmap menu items
+  28 Jun 08 JBS Add string for warning message for changing/deleting FN2SHUTDOWN state
 
 ***********************************************************************/
 
@@ -67,6 +68,7 @@
 #define IDS_ERRORTEXT                                         34
 #define IDS_CANTSTARTTEXT                                     35
 #define IDS_EXCEEDPMDRGLMT                                    36
+#define IDS_SHUTDOWNSTATE_WARNING                             37
 #define IDS_YOUAREHERETEXT                                    38
 #define IDS_FORCINGCOPYTEXT                                   39
 #define IDS_OUTOFMEMORY                                       40

@@ -2973,7 +2973,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   CHAR szKey[STATE_NAME_MAX_BYTES + 80];
   CHAR szDir[CCHMAXPATH];
   CHAR szPrefix[STATE_NAME_MAX_BYTES + 2];
-  HWND hwndDir, hwndC, hwndPPSave = NULLHANDLE;
+  HWND hwndDir, hwndC, hwndDir0 = NULLHANDLE, hwndPPSave = NULLHANDLE;
   SWP swp, swpO, swpN;
   ULONG size, numsaves = 0, x;
   double xtrans, ytrans;
@@ -3231,6 +3231,10 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
                                       UM_SETDIR,
                                       MPFROMP(szDir), MPFROMLONG(1));
           if (hwndDir) {
+
+            if (x == 0) {
+              hwndDir0 = hwndDir;
+            }
             hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
             if (hwndC) {
               HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
@@ -3333,7 +3337,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
                               swp.cx,
                               swp.cy,
                               swp.fl | SWP_MOVE |
-                              SWP_SIZE | SWP_SHOW | SWP_ZORDER |
+                              SWP_SIZE | SWP_SHOW |  SWP_ZORDER |
                               SWP_ACTIVATE);
             else if (swp.fl & (SWP_HIDE | SWP_MINIMIZE)) {
               WinSetWindowPos(hwndDir,
@@ -3354,6 +3358,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
     if (hwndPPSave) {
        SavePresParams(hwndPPSave, "DirCnr");
        WinDestroyWindow(hwndPPSave);
+    }
+    if (hwndDir0) {
+      WinSetFocus(HWND_DESKTOP, hwndDir0);
     }
   }
   return fRestored;
@@ -4606,7 +4613,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
          {
           if (saymsg(MB_YESNO | MB_DEFBUTTON2 | MB_ICONASTERISK, hwnd,
               GetPString(IDS_WARNINGTEXT),
-              "\"%s\" is the state name used by \"Save directory container state\". Any changes to this state will last only until FM/2 closes or this setting is disabled. Proceed with this change?", szStateName) == MBID_NO)
+              GetPString(IDS_SHUTDOWNSTATE_WARNING), szStateName) == MBID_NO)
               fAbortOperation = TRUE;
         }
         if (!fAbortOperation) {
