@@ -56,6 +56,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   19 Jun 08 JBS Ticket 227: Allow temporary saving/deleting of the shutdown state of directory containers
   22 Jun 08 GKY Use free_... functions for fortify checking
+  30 Jun 08 JBS Ticket 103: Fix restore of previous shutdown state when opening FM/2
 
 ***********************************************************************/
 
@@ -187,8 +188,8 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), TRUE);
       fNoTileUpdate = FALSE;
       //xfree((char *)mp1, pszSrcFile, __LINE__);
-      if (fAutoTile)
-        TileChildren(hwndMain, TRUE);
+//       if (fAutoTile)
+//         TileChildren(hwndMain, TRUE);
       break;
     default:
       Runtime_Error(pszSrcFile, __LINE__, "%u unexpected", mp2);
@@ -2823,10 +2824,10 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
           WinSendMsg(hwndC, UM_CONTAINERDIR, MPFROMP(szDir), MPVOID);
           if (*szDir) {
            // If saving shutdown state skip no prescan drives
-           if (fIsShutDownState &&
-               driveflags[toupper(*szDir) - 'A'] & DRIVE_NOPRESCAN) {
-             continue;
-           }
+            if (fIsShutDownState &&
+                driveflags[toupper(*szDir) - 'A'] & DRIVE_NOPRESCAN) {
+              continue;
+            }
             sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, numsaves);
             PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp,
                                 sizeof(SWP));
@@ -2973,9 +2974,10 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   CHAR szKey[STATE_NAME_MAX_BYTES + 80];
   CHAR szDir[CCHMAXPATH];
   CHAR szPrefix[STATE_NAME_MAX_BYTES + 2];
-  HWND hwndDir, hwndC, hwndDir0 = NULLHANDLE, hwndPPSave = NULLHANDLE;
+  HWND hwndDir, hwndC, hwndPPSave = NULLHANDLE;
   SWP swp, swpO, swpN;
-  ULONG size, numsaves = 0, x;
+  ULONG size, numsaves = 0;
+  LONG x;
   double xtrans, ytrans;
   BOOL fRestored = FALSE;
   DIRCNRDATA localdcd, *dcd;
@@ -3054,7 +3056,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
                           FM3Str, szKey, (PVOID) & numsaves, &size) && numsaves) {
     if (fDeleteState)
       PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
-    for (x = 0; x < numsaves; x++) {
+    for (x = numsaves - 1; x >= 0; x--) {
       sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, x);
       size = sizeof(SWP);
       if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, &size)) {
@@ -3231,10 +3233,6 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
                                       UM_SETDIR,
                                       MPFROMP(szDir), MPFROMLONG(1));
           if (hwndDir) {
-
-            if (x == 0) {
-              hwndDir0 = hwndDir;
-            }
             hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
             if (hwndC) {
               HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
@@ -3329,7 +3327,14 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
             fRestored = TRUE;
             swp.hwnd = hwndDir;
             TransformSwp(&swp, xtrans, ytrans);
-            if (!fAutoTile && !(swp.fl & (SWP_HIDE | SWP_MINIMIZE)))
+            if (swp.fl & (SWP_HIDE | SWP_MINIMIZE)) {
+              WinSetWindowPos(hwndDir,
+                              HWND_TOP, 0, 0, 0, 0, SWP_MINIMIZE | SWP_SHOW);
+              WinSetWindowUShort(hwndDir, QWS_XRESTORE, (USHORT) swp.x);
+              WinSetWindowUShort(hwndDir, QWS_CXRESTORE, (USHORT) swp.cx);
+              WinSetWindowUShort(hwndDir, QWS_YRESTORE, (USHORT) swp.y);
+              WinSetWindowUShort(hwndDir, QWS_CYRESTORE, (USHORT) swp.cy);
+            } else
               WinSetWindowPos(hwndDir,
                               HWND_TOP,
                               swp.x,
@@ -3339,18 +3344,6 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
                               swp.fl | SWP_MOVE |
                               SWP_SIZE | SWP_SHOW |  SWP_ZORDER |
                               SWP_ACTIVATE);
-            else if (swp.fl & (SWP_HIDE | SWP_MINIMIZE)) {
-              WinSetWindowPos(hwndDir,
-                              HWND_TOP, 0, 0, 0, 0, SWP_MINIMIZE | SWP_SHOW);
-              WinSetWindowUShort(hwndDir, QWS_XRESTORE, (USHORT) swp.x);
-              WinSetWindowUShort(hwndDir, QWS_CXRESTORE, (USHORT) swp.cx);
-              WinSetWindowUShort(hwndDir, QWS_YRESTORE, (USHORT) swp.y);
-              WinSetWindowUShort(hwndDir, QWS_CYRESTORE, (USHORT) swp.cy);
-            }
-            else
-              WinSetWindowPos(hwndDir,
-                              HWND_BOTTOM,
-                              0, 0, 0, 0, SWP_ZORDER | SWP_ACTIVATE);
           }
         }
       }
@@ -3358,9 +3351,6 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
     if (hwndPPSave) {
        SavePresParams(hwndPPSave, "DirCnr");
        WinDestroyWindow(hwndPPSave);
-    }
-    if (hwndDir0) {
-      WinSetFocus(HWND_DESKTOP, hwndDir0);
     }
   }
   return fRestored;
@@ -5754,8 +5744,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case UM_SETUP5:
-    if (fAutoTile)
-      TileChildren(hwnd, TRUE);
+//     if (fAutoTile)
+//       TileChildren(hwnd, TRUE);
     PostMsg(hwnd, UM_FILLUSERLIST, MPVOID, MPVOID);
     PostMsg(hwnd, UM_FILLSETUPLIST, MPVOID, MPVOID);
     PostMsg(hwnd, UM_FILLCMDLIST, MPVOID, MPVOID);
