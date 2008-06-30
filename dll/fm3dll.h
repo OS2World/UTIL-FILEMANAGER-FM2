@@ -801,7 +801,7 @@ VOID save_udirs(VOID);
 BOOL add_udir(BOOL userdirs, PSZ inpath);
 BOOL remove_udir(PSZ path);
 BOOL remove_ldir(PSZ path);
-VOID free_udir(VOID);
+VOID free_udirs(VOID);
 VOID free_ldir(VOID);
 VOID fill_setups_list(VOID);
 VOID load_setups(VOID);

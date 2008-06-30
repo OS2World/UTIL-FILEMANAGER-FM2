@@ -317,6 +317,8 @@ VOID load_udirs(VOID)
   LINKDIRS *last = NULL;
   CHAR s[CCHMAXPATH + 24];
 
+  if (udirhead)
+    free_udirs();
   loadedudirs = TRUE;
   fUdirsChanged = FALSE;
   save_dir2(s);
@@ -548,7 +550,7 @@ VOID free_ldir(VOID)
   ldirhead = NULL;
 }
 
-VOID free_udir(VOID)
+VOID free_udirs(VOID)
 {
   LINKDIRS *info, *next;
 

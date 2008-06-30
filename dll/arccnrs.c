@@ -342,7 +342,7 @@ static VOID FreeArcItemData(PARCITEM pai)
     free(psz);
 # endif
 # ifdef FORTIFY
-  Fortify_LeaveScope();
+  xFortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
   }
 }
