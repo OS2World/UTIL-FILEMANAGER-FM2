@@ -24,6 +24,7 @@
 #include "arccnrs.h"			// ArcObjWndProc
 #include "errutil.h"			// Win_Error
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -74,6 +75,9 @@ VOID MakeObjWin(VOID * args)
 	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	WinSetWindowPtr(ObjectHwnd, QWL_USER, args);
 	/* initially populate container */
 	WinSendMsg(ObjectHwnd, UM_SETUP, MPVOID, MPVOID);
@@ -85,6 +89,9 @@ VOID MakeObjWin(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
+# ifdef FORTIFY
+    xFortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
     WinTerminate(hab2);
   }
 }

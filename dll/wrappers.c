@@ -31,6 +31,9 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "command.h"
+#include "tools.h"
+#include "avl.h"
 
 #include "fortify.h"			// GetPString
 
@@ -402,5 +405,23 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
   return psz;
 }
 
-#pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc, xstrdup)
-#pragma alloc_text(WRAPPERS2,xDosSetPathInfo,xDosFindFirst,xDosFindNext)
+# ifdef FORTIFY
+unsigned char xFortify_LeaveScope(PCSZ pszSrcFile, UINT uiLineNumber)
+{
+  unsigned char ret;
+
+  free_commands();
+  free_associations();
+  free_udir();
+  free_ldir();
+  free_archivers();
+  free_tools();
+  ret = Fortify_LeaveScope(pszSrcFile, uiLineNumber);
+  load_commands();
+  load_udirs();
+  return ret;
+}
+# endif
+
+#pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc,xstrdup)
+#pragma alloc_text(WRAPPERS2,xDosSetPathInfo,xDosFindFirst,xDosFindNext,xFortify_LeaveScope)

@@ -667,6 +667,9 @@ static VOID MakeAutoWinThread(VOID * args)
 	  WinSendMsg(hwndParent, UM_CLOSE, MPVOID, MPVOID);
       }
       else {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	WinSetWindowULong(hwndAutoObj, QWL_USER, hwndParent);
 	priority_normal();
 	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
@@ -676,8 +679,11 @@ static VOID MakeAutoWinThread(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
-    else
-      WinTerminate(hab2);
+    // else
+    WinTerminate(hab2);
+# ifdef FORTIFY
+    xFortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
   }
 }
 

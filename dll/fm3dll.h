@@ -1084,6 +1084,7 @@ PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber);
+unsigned char xFortify_LeaveScope(PCSZ pszSrcFile, UINT uiLineNumber);
 
 //=====================================================================
 

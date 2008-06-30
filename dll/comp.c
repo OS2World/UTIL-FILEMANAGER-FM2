@@ -202,6 +202,9 @@ static VOID CompareFilesThread(VOID *args)
     if (hab2) {
       hmq2 = WinCreateMsgQueue(hab2, 0);
       if (hmq2) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	WinCancelShutdown(hmq2, TRUE);
 	IncrThreadUsage();
 	if (!IsFile(fc.file1) || IsRoot(fc.file1)) {
@@ -311,6 +314,9 @@ static VOID CompareFilesThread(VOID *args)
 	WinDestroyMsgQueue(hmq2);
       }
       WinTerminate(hab2);
+# ifdef FORTIFY
+      xFortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
     }
   }
 }
@@ -403,6 +409,9 @@ static VOID ActionCnrThread(VOID *args)
   if (hab) {
     hmq = WinCreateMsgQueue(hab, 0);
     if (hmq) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
       priority_normal();
@@ -681,9 +690,14 @@ static VOID ActionCnrThread(VOID *args)
     PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1), MPVOID);
     // PostMsg(cmp->hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DESELECTALL, 0), MPVOID);	// 18 Jan 08 SHL we can count now
     DecrThreadUsage();
+    xfree(cmp, pszSrcFile, __LINE__);
     WinTerminate(hab);
+# ifdef FORTIFY
+    xFortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
   }
-  xfree(cmp, pszSrcFile, __LINE__);
+  else
+    xfree(cmp, pszSrcFile, __LINE__);
 }
 
 VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset);
@@ -707,6 +721,9 @@ static VOID SelectCnrsThread(VOID *args)
   if (hab) {
     hmq = WinCreateMsgQueue(hab, 0);
     if (hmq) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
       priority_normal();
@@ -738,9 +755,14 @@ static VOID SelectCnrsThread(VOID *args)
       WinDestroyMsgQueue(hmq);
     }
     DecrThreadUsage();
+    xfree(cmp, pszSrcFile, __LINE__);
     WinTerminate(hab);
+# ifdef FORTIFY
+    xFortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
   }
-  xfree(cmp, pszSrcFile, __LINE__);
+  else
+    xfree(cmp, pszSrcFile, __LINE__);
 }
 
 /**
@@ -1931,12 +1953,20 @@ static VOID FillCnrsThread(VOID *args)
 
 	  } // if on both sides
 
-	  if (x <= 0)
+          if (x <= 0) {
+# ifdef FORTIFY
+            xfree(filesl[l++], pszSrcFile, __LINE__);
+# else
 	    free(filesl[l++]);		// Done with item on left
-
-	  if (x >= 0)
-	    free(filesr[r++]);		// Done with item on right
-
+# endif
+          }
+          if (x >= 0) {
+# ifdef FORTIFY
+            xfree(filesr[r++], pszSrcFile, __LINE__);
+# else
+            free(filesr[r++]);		// Done with item on right
+#endif
+          }
 	  // Ensure empty buffers point somewhere
 	  if (!pcil->pszFileName) {
 	    pcil->pszFileName = NullStr;
@@ -1955,7 +1985,6 @@ static VOID FillCnrsThread(VOID *args)
 	  pcir->pszLongName = NullStr;
 
 	  if (!pcil->pszSubject)
-	    pcil->pszSubject = NullStr;
 	  if (!pcir->pszSubject)
 	    pcir->pszSubject = NullStr;
 
@@ -1986,8 +2015,13 @@ static VOID FillCnrsThread(VOID *args)
 	    FreeCnrItemList(hwndLeft, pcil);
 	  }
 	  if (filesl) {
-	    for(; filesl[l]; l++)
-	      free(filesl[l]);
+            for(; filesl[l]; l++) {
+# ifdef FORTIFY
+              xfree(filesl[l], pszSrcFile, __LINE__);
+# else
+              free(filesl[l]);
+# endif
+            }
 	  }
 	  if (pcir) {
 	    if (pcirLast)
@@ -1997,8 +2031,13 @@ static VOID FillCnrsThread(VOID *args)
 	    FreeCnrItemList(hwndRight, pcir);
 	  }
 	  if (filesr) {
-	    for (; filesr[r]; r++)
-	      free(filesr[r]);
+            for (; filesr[r]; r++) {
+# ifdef FORTIFY
+              xfree(filesr[r], pszSrcFile, __LINE__);
+# else
+              free(filesr[r]);
+# endif
+            }
 	  }
 	  // Reduce count to match what is in containers
 	  recsNeeded = recsGotten;
@@ -2077,8 +2116,7 @@ static VOID FillCnrsThread(VOID *args)
   DosPostEventSem(CompactSem);
 
 # ifdef FORTIFY
-  // 10 May 08 SHL fixme to suppress W111
-  Fortify_LeaveScope();
+  xFortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
 
   // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread exit");

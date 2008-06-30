@@ -649,7 +649,7 @@ static VOID FreeViewerMem(HWND hwnd)
     ad->markedlines = NULL;
     DosPostEventSem(CompactSem);
 # ifdef FORTIFY
-  Fortify_LeaveScope();
+    xFortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
   }
 }

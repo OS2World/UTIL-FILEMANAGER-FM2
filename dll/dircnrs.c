@@ -3360,12 +3360,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FreeList(dcd->lastselection);
       xfree(dcd, pszSrcFile, __LINE__);
 # ifdef FORTIFY
-  free_commands();
-  free_associations();
-  free_udir();
-  free_ldir();
-  free_archivers();
-  Fortify_LeaveScope();
+      xFortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
       DosPostEventSem(CompactSem);

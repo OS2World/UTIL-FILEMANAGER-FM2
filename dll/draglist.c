@@ -713,7 +713,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
 		   "DrgSetDragitem");
 	}
-	free(ppDItem[ulSelect]);
+	xfree(ppDItem[ulSelect], pszSrcFile, __LINE__);
       }	// for
 #ifdef __DEBUG_ALLOC__
       _heap_check();

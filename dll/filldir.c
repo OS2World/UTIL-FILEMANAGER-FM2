@@ -1584,7 +1584,11 @@ VOID FreeCnrItemData(PCNRITEM pci)
 
     psz = pci->pszSubject;
     pci->pszSubject = NullStr;
+# ifdef FORTIFY
+    xfree(psz, pszSrcFile, __LINE__);
+# else
     free(psz);
+# endif
   }
 
   // +1 in case long name pointing after last backslash
@@ -1595,19 +1599,31 @@ VOID FreeCnrItemData(PCNRITEM pci)
       pci->pszLongName != pci->pszDisplayName + 1) {
     psz = pci->pszLongName;
     pci->pszLongName = NullStr;
+# ifdef FORTIFY
+    xfree(psz, pszSrcFile, __LINE__);
+# else
     free(psz);
+# endif
   }
 
   if (pci->pszFileName && pci->pszFileName != NullStr) {
     psz = pci->pszFileName;
     pci->pszFileName = NullStr;
+# ifdef FORTIFY
+    xfree(psz, pszSrcFile, __LINE__);
+# else
     free(psz);
+# endif
   }
 
   if (pci->pszFmtFileSize && pci->pszFmtFileSize != NullStr) {
     psz = pci->pszFmtFileSize;
     pci->pszFmtFileSize = NullStr;
+# ifdef FORTIFY
+    xfree(psz, pszSrcFile, __LINE__);
+# else
     free(psz);
+# endif
   }
 }
 

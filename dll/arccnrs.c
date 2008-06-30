@@ -336,7 +336,14 @@ static VOID FreeArcItemData(PARCITEM pai)
   if (pai->pszFileName && pai->pszFileName != NullStr) {
     psz = pai->pszFileName;
     pai->pszFileName = NullStr;
+# ifdef FORTIFY
+    xfree(psz, pszSrcFile, __LINE__);
+# else
     free(psz);
+# endif
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
   }
 }
 
@@ -1805,7 +1812,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    if (!li->list[x])
 		      li->list[x] = temp;
 		    else {
-		      free(temp);
+		      xfree(temp, pszSrcFile, __LINE__);
 		    }
 		  }
 		}
@@ -1815,7 +1822,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (!li->list[x])
 		  li->list[x] = temp;
 		else
-		  free(temp);
+		  xfree(temp, pszSrcFile, __LINE__);
 	      }
 	      if (li->type == IDM_VIEW || li->type == IDM_EDIT) {
 
