@@ -241,7 +241,7 @@ key.
 
 :h3 res=99833 name=PANEL_TCOPYKEY.Copy by keystrokes
 :i1 id=aboutCopyKeyTutorial.Copy by Keystrokes
-Place the dotted cursor on the object you want to rename (make it the
+Place the dotted cursor on the object you want to copy (make it the
 :hp1.current object:ehp1.). Press :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.c:color fc=default bc=default., the accelerator key
 for the Copy command, or pick "Copy" from the :hp1.Files menu:ehp1..
 :p.
