@@ -37,6 +37,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 
@@ -217,6 +218,9 @@ static VOID FillKillListThread(VOID * arg)
   thmq = WinCreateMsgQueue(thab, 0);
   WinCancelShutdown(thmq, TRUE);
   IncrThreadUsage();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
   strcpy(s, "$PSTAT#$.#$#");
@@ -284,6 +288,9 @@ static VOID FillKillListThread(VOID * arg)
       }
     }
     fclose(fp);
+# ifdef FORTIFY
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
   }
 Abort:
   DosForceDelete("$PSTAT#$.#$#");

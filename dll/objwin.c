@@ -90,7 +90,7 @@ VOID MakeObjWin(VOID * args)
       WinDestroyMsgQueue(hmq2);
     }
 # ifdef FORTIFY
-    xFortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
     WinTerminate(hab2);
   }

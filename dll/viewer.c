@@ -1257,9 +1257,6 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
 	xfree(vw, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
       }
       if (!dontclose &&
 	  ParentIsDesktop(hwnd, WinQueryWindow(WinQueryWindow(hwnd,
@@ -1269,6 +1266,9 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosExit(EXIT_PROCESS, 1);
       }
     }
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);

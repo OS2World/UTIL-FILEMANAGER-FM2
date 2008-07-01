@@ -6353,7 +6353,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
 # ifdef FORTIFY
-  Fortify_LeaveScope( pszSrcFile, __LINE__);
+  xFortify_LeaveScope( pszSrcFile, __LINE__);
 # endif
     break;
   }

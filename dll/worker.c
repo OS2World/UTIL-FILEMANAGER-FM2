@@ -134,10 +134,11 @@ VOID Action(VOID * args)
   CHAR szQuotedDirName[CCHMAXPATH];
   CHAR szQuotedFileName[CCHMAXPATH];
 
-  if (wk) {
+
 # ifdef FORTIFY
   Fortify_EnterScope();
 # endif
+  if (wk) {
     if (wk->li && wk->li->list && wk->li->list[0]) {
       hab2 = WinInitialize(0);
       if (hab2) {
@@ -269,9 +270,6 @@ VOID Action(VOID * args)
 		    if (!PostMsg(Collector,
 				 UM_COLLECTFROMFILE, MPFROMP(temp), MPVOID))
 		      xfree(temp, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 		  }
 		}
 		break;
@@ -996,10 +994,11 @@ VOID MassAction(VOID * args)
   register CHAR *p, *pp;
   UINT numfiles = 0, numalloc = 0;
 
-  if (wk) {
+
 # ifdef FORTIFY
   Fortify_EnterScope();
 # endif
+  if (wk) {
     if (wk->li && wk->li->list && wk->li->list[0]) {
       hab2 = WinInitialize(0);
       if (hab2) {
@@ -1141,9 +1140,6 @@ VOID MassAction(VOID * args)
 	      for (x = 0; wk->li->list[x]; x++) {
 		strcpy(p, wk->li->list[x]);
 		xfree(wk->li->list[x], pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 		wk->li->list[x] = xstrdup(szBuffer, pszSrcFile, __LINE__);
 	      }
 	      if (wk->li->list[0])
@@ -1324,9 +1320,6 @@ VOID MassAction(VOID * args)
 			       UM_LOADFILE,
 			       MPFROMLONG(5 + viewtype), MPFROMP(temp)))
 		    xfree(temp, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 		}
 		DosSleep(1);
 	      }
@@ -1372,9 +1365,6 @@ VOID MassAction(VOID * args)
 			       UM_LOADFILE,
 			       MPFROMLONG(4 + viewtype), MPFROMP(temp)))
 		    xfree(temp, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 		}
 		DosSleep(1);
 	      }

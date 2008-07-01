@@ -434,6 +434,9 @@ static VOID FillCnrThread(VOID *args)
     Runtime_Error(pszSrcFile, __LINE__, "no data");
     return;
   }
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 
   hwndCnr = dirsize->hwndCnr;
 
@@ -457,9 +460,13 @@ static VOID FillCnrThread(VOID *args)
     }
     WinTerminate(hab);
   }
+
+  xfree(dirsize, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+  //Fortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
   PostMsg(WinQueryWindow(hwndCnr, QW_PARENT),
 	  UM_CONTAINER_FILLED, MPVOID, MPVOID);
-  xfree(dirsize, pszSrcFile, __LINE__);
 }
 
 MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

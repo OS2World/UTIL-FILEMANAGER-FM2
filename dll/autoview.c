@@ -417,9 +417,6 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  xfree(obuff, pszSrcFile, __LINE__);
 		}
 		xfree(ibuff, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	      }
 	      DosClose(handle);
 	    }
@@ -513,9 +510,6 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (*pszBuf)
 		  WinSetWindowText(hwndAutoview, pszBuf);
 		xfree(pszBuf, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	      }
 	    }
 	    if (!rc)
@@ -550,9 +544,6 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      rc = DosQueryPathInfo((CHAR *)mp1, FIL_QUERYEASFROMLIST,
 				    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
 	      xfree(pgealist, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	      if (!rc) {
 		pfea = &eaop.fpFEA2List->list[0];
 		if (pfea->cbName && pfea->cbValue) {
@@ -682,7 +673,7 @@ static VOID MakeAutoWinThread(VOID * args)
     // else
     WinTerminate(hab2);
 # ifdef FORTIFY
-    xFortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
   }
 }

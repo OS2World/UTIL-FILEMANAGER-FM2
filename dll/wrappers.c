@@ -417,9 +417,6 @@ unsigned char xFortify_LeaveScope(PCSZ pszSrcFile, UINT uiLineNumber)
   free_archivers();
   free_tools();
   ret = Fortify_LeaveScope(pszSrcFile, uiLineNumber);
-  load_commands();
-  load_associations();
-  load_udirs();
   return ret;
 }
 # endif

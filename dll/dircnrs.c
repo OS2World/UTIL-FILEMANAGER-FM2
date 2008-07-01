@@ -2495,6 +2495,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strcpy(li->targetpath, dcd->directory);
 	      break;
 	    }
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 	    if (li->list) {
 	      if (SHORT1FROMMP(mp1) == IDM_COLLECTFROMFILE) {
 		if (!Collector) {
@@ -3360,7 +3363,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FreeList(dcd->lastselection);
       xfree(dcd, pszSrcFile, __LINE__);
 # ifdef FORTIFY
-      xFortify_LeaveScope(pszSrcFile, __LINE__);
+      Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
       DosPostEventSem(CompactSem);

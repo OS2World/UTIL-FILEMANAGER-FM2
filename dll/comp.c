@@ -315,7 +315,7 @@ static VOID CompareFilesThread(VOID *args)
       }
       WinTerminate(hab2);
 # ifdef FORTIFY
-      xFortify_LeaveScope(pszSrcFile, __LINE__);
+      Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
     }
   }
@@ -693,7 +693,7 @@ static VOID ActionCnrThread(VOID *args)
     xfree(cmp, pszSrcFile, __LINE__);
     WinTerminate(hab);
 # ifdef FORTIFY
-    xFortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
   }
   else
@@ -758,7 +758,7 @@ static VOID SelectCnrsThread(VOID *args)
     xfree(cmp, pszSrcFile, __LINE__);
     WinTerminate(hab);
 # ifdef FORTIFY
-    xFortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
   }
   else
@@ -2116,7 +2116,7 @@ static VOID FillCnrsThread(VOID *args)
   DosPostEventSem(CompactSem);
 
 # ifdef FORTIFY
-  xFortify_LeaveScope(pszSrcFile, __LINE__);
+  Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
 
   // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread exit");

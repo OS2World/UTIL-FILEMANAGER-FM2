@@ -76,7 +76,7 @@ VOID FreeListInfo(LISTINFO *li)
       FreeList(li->list);
     xfree(li, pszSrcFile, __LINE__);
 # ifdef FORTIFY
-  Fortify_LeaveScope();
+  //Fortify_LeaveScope();
 # endif
   }
 }
@@ -101,7 +101,7 @@ VOID FreeList(CHAR **list)
 #endif
     xfree(list, pszSrcFile, __LINE__);
 # ifdef FORTIFY
-  Fortify_LeaveScope();
+  //Fortify_LeaveScope();
 # endif
   }
   DosPostEventSem(CompactSem);

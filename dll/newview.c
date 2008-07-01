@@ -649,7 +649,7 @@ static VOID FreeViewerMem(HWND hwnd)
     ad->markedlines = NULL;
     DosPostEventSem(CompactSem);
 # ifdef FORTIFY
-    xFortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
   }
 }
@@ -940,6 +940,9 @@ static VOID SearchThread(VOID * args)
   if (hab2) {
     hmq2 = WinCreateMsgQueue(hab2, 0);
     if (hmq2) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
@@ -1067,6 +1070,9 @@ static VOID SearchThread(VOID * args)
 	}
       }
       WinDestroyMsgQueue(hmq2);
+# ifdef FORTIFY
+      Fortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
     }
     DecrThreadUsage();
     WinTerminate(hab2);
@@ -1168,6 +1174,9 @@ static VOID ClipboardThread(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
+# ifdef FORTIFY
+      Fortify_LeaveScope();
+# endif
     DecrThreadUsage();
     WinTerminate(hab2);
   }
@@ -1191,6 +1200,9 @@ static VOID ReLineThread(VOID * args)
     if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!ad)
 	Runtime_Error(pszSrcFile, __LINE__, "no data");
@@ -1210,9 +1222,6 @@ static VOID ReLineThread(VOID * args)
 	    ad->selected = ad->numlines = ad->numalloc = 0;
 	    xfree(ad->lines, pszSrcFile, __LINE__);
 	    xfree(ad->markedlines, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	    ad->lines = NULL;
 	    ad->markedlines = NULL;
 	    WinSetWindowText(WinWindowFromID(ad->hwndFrame,
@@ -1345,6 +1354,9 @@ static VOID ReLineThread(VOID * args)
     }
     DecrThreadUsage();
     WinTerminate(hab2);
+# ifdef FORTIFY
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
+# endif
   }
   DosPostEventSem(CompactSem);
   if (ad && !ad->stopflag) {
@@ -1468,7 +1480,7 @@ static VOID LoadFileThread(VOID * args)
     DecrThreadUsage();
     WinTerminate(hab2);
 # ifdef FORTIFY
-    xFortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
   }
   if (error)
@@ -3968,7 +3980,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowPtr(hwnd, QWL_USER, NULL);
 	xfree(ad, pszSrcFile, __LINE__);
 # ifdef FORTIFY
-      xFortify_LeaveScope(pszSrcFile, __LINE__);
+      Fortify_LeaveScope(pszSrcFile, __LINE__);
 # endif
       }
       if (hwndRestore && hwndRestore != HWND_DESKTOP) {
