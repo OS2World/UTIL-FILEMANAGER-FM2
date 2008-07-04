@@ -214,6 +214,9 @@ static VOID FillCnrsThread(VOID * args)
   HMQ hmq;
   DIRSIZE *dirsize = (DIRSIZE *)args;
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   if (!dirsize) {
     Runtime_Error(pszSrcFile, __LINE__, "no data");
     return;

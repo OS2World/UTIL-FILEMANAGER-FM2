@@ -34,6 +34,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -431,7 +432,9 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 static VOID NoteThread(VOID * args)
 {
   HAB hab = WinInitialize(0);
-
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   if (hab) {
     HMQ hmq = WinCreateMsgQueue(hab, 0);
     if (hmq) {
@@ -443,6 +446,9 @@ static VOID NoteThread(VOID * args)
     }
     WinTerminate(hab);
   }
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 /**
@@ -543,7 +549,6 @@ VOID HideNote(VOID)
 		    0, 0, 0, SWP_MINIMIZE | SWP_ZORDER | SWP_FOCUSDEACTIVATE);
 }
 
-#pragma alloc_text(NOTIFY,Notify,NotifyWndProc,StartNotify)
-#pragma alloc_text(NOTIFY,NotifyThread,NotifyError)
+#pragma alloc_text(NOTIFY,Notify,NotifyWndProc,StartNotify,NotifyError)
 #pragma alloc_text(NOTIFY2,AddNote,NoteThread,NoteWndProc)
 #pragma alloc_text(NOTIFY3,StartNotes,EndNote,HideNote,ShowNote)

@@ -112,6 +112,9 @@ VOID PrintListThread(VOID * arg)
       goto Abort;
     }
   }
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   priority_normal();
   hab2 = WinInitialize(0);
   if (hab2) {
@@ -120,9 +123,6 @@ VOID PrintListThread(VOID * arg)
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
       if (li && li->list && li->list[0]) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
 	AddNote(GetPString(IDS_PRINTINGLISTTEXT));
 	for (x = 0; li->list[x]; x++) {
 	  if (rc == MBID_CANCEL)
@@ -323,6 +323,9 @@ VOID PrintListThread(VOID * arg)
 Abort:
   if (li)
     FreeListInfo(li);
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

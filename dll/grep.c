@@ -275,6 +275,9 @@ VOID GrepThread(VOID *arg)
     return;
   }
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   grep = *(GREP *)arg;
   *grep.stopflag = 0;			// reset thread-killing flag
   DosError(FERR_DISABLEHARDERR);
@@ -287,9 +290,6 @@ VOID GrepThread(VOID *arg)
     if (ghmq) {
       WinCancelShutdown(ghmq, TRUE);
       IncrThreadUsage();
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
       // DosSleep(100); //05 Aug 07 GKY 128	// 07 Feb 08 SHL
       // hwndStatus does not exist for applet
       WinSetWindowText(hwndStatus ? hwndStatus : grep.hwndCurFile,
@@ -411,11 +411,7 @@ VOID GrepThread(VOID *arg)
   if (grep.dupehead)
     FreeDupes(&grep);
   if (grep.numlines && grep.matched) {
-# ifdef FORTIFY
-    xfree(grep.matched, pszSrcFile, __LINE__);
-# else
     free(grep.matched);
-# endif
   }
   // 07 Feb 08 SHL fixme to free grep here when not static
 # ifdef FORTIFY
@@ -662,21 +658,13 @@ static VOID freegreplist(GREP *grep)
   if (grep) {
     if (grep->insertffb) {
       for (x = 0; grep->insertffb[x]; x++) {
-# ifdef FORTIFY
-        xfree(grep->insertffb[x], pszSrcFile, __LINE__);
-# else
         free(grep->insertffb[x]);
-#endif
       }
       xfree(grep->insertffb, pszSrcFile, __LINE__);
     }
     if (grep->dir) {
       for (x = 0; grep->dir[x]; x++) {
-# ifdef FORTIFY
-        xfree(grep->dir[x], pszSrcFile, __LINE__);
-# else
         free(grep->dir[x]);
-# endif
       }
       xfree(grep->dir, pszSrcFile, __LINE__);
     }
@@ -1162,17 +1150,9 @@ static VOID FreeDupes(GREP *grep)
   while (i) {
     next = i->next;
     if (i->name) {
-# ifdef FORTIFY
-      xfree(i->name, pszSrcFile, __LINE__);
-# else
       free(i->name);
-# endif
     }
-# ifdef FORTIFY
-    xfree(i, pszSrcFile, __LINE__);
-# else
     free(i);
-# endif
     i = next;
   }
   grep->dupehead = grep->dupelast = NULL;

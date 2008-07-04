@@ -648,9 +648,6 @@ static VOID FreeViewerMem(HWND hwnd)
     ad->lines = NULL;
     ad->markedlines = NULL;
     DosPostEventSem(CompactSem);
-# ifdef FORTIFY
-    Fortify_LeaveScope(pszSrcFile, __LINE__);
-# endif
   }
 }
 
@@ -1071,7 +1068,7 @@ static VOID SearchThread(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
 # ifdef FORTIFY
-      Fortify_LeaveScope(pszSrcFile, __LINE__);
+      Fortify_LeaveScope();
 # endif
     }
     DecrThreadUsage();
@@ -1355,7 +1352,7 @@ static VOID ReLineThread(VOID * args)
     DecrThreadUsage();
     WinTerminate(hab2);
 # ifdef FORTIFY
-    Fortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope();
 # endif
   }
   DosPostEventSem(CompactSem);
@@ -1480,7 +1477,7 @@ static VOID LoadFileThread(VOID * args)
     DecrThreadUsage();
     WinTerminate(hab2);
 # ifdef FORTIFY
-    Fortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope();
 # endif
   }
   if (error)
@@ -2403,9 +2400,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      switch (ret) {
 	      case 0:
                 xfree(urld, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 		goto NoAdd;
 	      case 1:
                 if (*urld->url) {
@@ -2432,9 +2426,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             "%s %s", httprun, urld->url);
                 }
 		xfree(urld, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 		goto NoAdd;
 	      case 2:
                 if (*urld->url){
@@ -2461,9 +2452,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             "%s %s", ftprun, urld->url);
                 }
                 xfree(urld, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 		goto NoAdd;
               case 3:
                 if (*urld->url){
@@ -2474,17 +2462,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                           "%s %s", mailrun, urld->url);
                 }
                 xfree(urld, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
                 goto NoAdd;
 	      default:
 		break;
 	      }
               xfree(urld, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	    }
 	  }
         }
@@ -2563,9 +2545,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  MPFROMLONG(whichline));
 	    }
 	    xfree(s, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	  }
 	}
 	if (!numsels)
@@ -3979,9 +3958,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FreeViewerMem(hwnd);
 	WinSetWindowPtr(hwnd, QWL_USER, NULL);
 	xfree(ad, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-      Fortify_LeaveScope(pszSrcFile, __LINE__);
-# endif
       }
       if (hwndRestore && hwndRestore != HWND_DESKTOP) {
 

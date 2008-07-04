@@ -31,6 +31,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 
@@ -61,6 +62,9 @@ static VOID FillUndelListThread(VOID * arg)
   path = undelinfo->path;
   DosError(FERR_DISABLEHARDERR);
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   if (thab && thmq) {
@@ -157,6 +161,9 @@ static VOID FillUndelListThread(VOID * arg)
     DecrThreadUsage();
     WinTerminate(thab);
   }
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

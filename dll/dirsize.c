@@ -462,11 +462,11 @@ static VOID FillCnrThread(VOID *args)
   }
 
   xfree(dirsize, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  //Fortify_LeaveScope(pszSrcFile, __LINE__);
-# endif
   PostMsg(WinQueryWindow(hwndCnr, QW_PARENT),
 	  UM_CONTAINER_FILLED, MPVOID, MPVOID);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+# endif
 }
 
 MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

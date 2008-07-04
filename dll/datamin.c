@@ -41,6 +41,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 
@@ -980,6 +981,9 @@ static VOID dataminThread(VOID * pv)
   APIRET rc;
   USHORT id;
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   if (G_hevDataMin == NULLHANDLE) {
     // Create just once for any thread that might use it
     // Kernel will clean up on exit
@@ -1073,7 +1077,9 @@ static VOID dataminThread(VOID * pv)
 
   if (hab != NULLHANDLE)
     WinTerminate(hab);
-
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }					// dataminThread
 
 #pragma alloc_text(DATAMIN,DataDlgProc,MiniTimeProc)

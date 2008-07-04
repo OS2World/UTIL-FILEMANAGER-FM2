@@ -336,13 +336,9 @@ static VOID FreeArcItemData(PARCITEM pai)
   if (pai->pszFileName && pai->pszFileName != NullStr) {
     psz = pai->pszFileName;
     pai->pszFileName = NullStr;
-# ifdef FORTIFY
-    xfree(psz, pszSrcFile, __LINE__);
-# else
     free(psz);
-# endif
 # ifdef FORTIFY
-  Fortify_LeaveScope(pszSrcFile, __LINE__);
+  Fortify_LeaveScope();
 # endif
   }
 }

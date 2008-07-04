@@ -83,6 +83,9 @@ static VOID FillKillListThread2(VOID * arg)
   BUFFHEADER *pbh;
   MODINFO *pmi;
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   WinCancelShutdown(thmq, TRUE);
@@ -133,6 +136,9 @@ static VOID FillKillListThread2(VOID * arg)
   WinDestroyMsgQueue(thmq);
   DecrThreadUsage();
   WinTerminate(thab);
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 static VOID FillKillListThread3(VOID * arg)
@@ -146,6 +152,9 @@ static VOID FillKillListThread3(VOID * arg)
   QSPTRREC *pbh;
   QSLREC *pmi;
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   WinCancelShutdown(thmq, TRUE);
@@ -196,6 +205,9 @@ static VOID FillKillListThread3(VOID * arg)
   WinDestroyMsgQueue(thmq);
   DecrThreadUsage();
   WinTerminate(thab);
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 static VOID FillKillListThread(VOID * arg)
@@ -214,13 +226,13 @@ static VOID FillKillListThread(VOID * arg)
 
   DosError(FERR_DISABLEHARDERR);
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   WinCancelShutdown(thmq, TRUE);
   IncrThreadUsage();
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
   strcpy(s, "$PSTAT#$.#$#");
@@ -288,9 +300,6 @@ static VOID FillKillListThread(VOID * arg)
       }
     }
     fclose(fp);
-# ifdef FORTIFY
-    Fortify_LeaveScope(pszSrcFile, __LINE__);
-# endif
   }
 Abort:
   DosForceDelete("$PSTAT#$.#$#");
@@ -298,6 +307,9 @@ Abort:
   WinDestroyMsgQueue(thmq);
   DecrThreadUsage();
   WinTerminate(thab);
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

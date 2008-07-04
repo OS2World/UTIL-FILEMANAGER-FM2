@@ -637,6 +637,9 @@ static VOID MakeAutoWinThread(VOID * args)
 
   hab2 = WinInitialize(0);
   if (hab2) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     hmq2 = WinCreateMsgQueue(hab2, 128);
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
@@ -658,9 +661,6 @@ static VOID MakeAutoWinThread(VOID * args)
 	  WinSendMsg(hwndParent, UM_CLOSE, MPVOID, MPVOID);
       }
       else {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
 	WinSetWindowULong(hwndAutoObj, QWL_USER, hwndParent);
 	priority_normal();
 	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
@@ -673,7 +673,7 @@ static VOID MakeAutoWinThread(VOID * args)
     // else
     WinTerminate(hab2);
 # ifdef FORTIFY
-    Fortify_LeaveScope(pszSrcFile, __LINE__);
+    Fortify_LeaveScope();
 # endif
   }
 }

@@ -90,11 +90,7 @@ VOID FreeList(CHAR **list)
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
-# ifdef FORTIFY
-      xfree(list[x], pszSrcFile, __LINE__);
-# else
       free(list[x]);
-# endif
     }
 #ifdef __DEBUG_ALLOC__
     _heap_check();
@@ -269,11 +265,7 @@ CHAR **RemoveFromList(CHAR **list, CHAR *item)
   if (list && list[0] && item) {
     for (x = 0; list[x]; x++) {
       if (item == list[x]) {
-# ifdef FORTIFY
-        xfree(list[x], pszSrcFile, __LINE__);
-# else
         free(list[x]);
-# endif
 	list[x] = NULL;
 	for (y = x;; y++) {
 	  if (y != x && !list[y])

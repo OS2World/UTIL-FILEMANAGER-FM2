@@ -2475,9 +2475,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2566,9 +2563,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    else
 	      xfree(li, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	  }
 	}
 	break;
@@ -3362,9 +3356,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
       xfree(dcd, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-      Fortify_LeaveScope(pszSrcFile, __LINE__);
-# endif
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
     }

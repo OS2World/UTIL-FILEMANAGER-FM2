@@ -1131,6 +1131,9 @@ static VOID MakeSeeObjWinThread(VOID * args)
   if (ad) {
     hab2 = WinInitialize(0);
     if (hab2) {
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
       hmq2 = WinCreateMsgQueue(hab2, 256);
       if (hmq2) {
 	DosError(FERR_DISABLEHARDERR);
@@ -1162,7 +1165,10 @@ static VOID MakeSeeObjWinThread(VOID * args)
 	WinDestroyMsgQueue(hmq2);
       }
       else
-	WinTerminate(hab2);
+        WinTerminate(hab2);
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
     }
   }
 }
@@ -1638,6 +1644,9 @@ VOID FindDupesThread(VOID * args)
   HMQ hmq2 = (HMQ) 0;
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   if (!DosRequestMutexSem(ad->hmtxScan, SEM_INDEFINITE_WAIT)) {
     priority_normal();
     hab2 = WinInitialize(0);
@@ -1749,6 +1758,9 @@ VOID FindDupesThread(VOID * args)
     DecrThreadUsage();
     WinTerminate(hab2);
   }
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 static VOID FilterAll(HWND hwnd, ALLDATA *ad);
@@ -2042,6 +2054,9 @@ static VOID FindAllThread(VOID * args)
   HMQ hmq2 = (HMQ) 0;
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
   if (!DosRequestMutexSem(ad->hmtxScan, SEM_INDEFINITE_WAIT)) {
     priority_normal();
     hab2 = WinInitialize(0);
@@ -2101,6 +2116,9 @@ static VOID FindAllThread(VOID * args)
     DecrThreadUsage();
     WinTerminate(hab2);
   }
+# ifdef FORTIFY
+    Fortify_LeaveScope();
+# endif
 }
 
 MRESULT EXPENTRY AFDrvsWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
