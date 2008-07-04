@@ -2456,6 +2456,9 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CREATE:
     // fprintf(stderr,"Seeall: WM_CREATE\n");
     WinSetWindowPtr(hwnd, QWL_USER, NULL);
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
     pAD = xmallocz(sizeof(ALLDATA), pszSrcFile, __LINE__);
     if (pAD) {
       HWND hwndFrame;
@@ -4271,6 +4274,9 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       FreeAllFilesList(hwnd);
       xfree(pAD, pszSrcFile, __LINE__);
+# ifdef FORTIFY
+      Fortify_LeaveScope();
+# endif
     }
     break;
   }

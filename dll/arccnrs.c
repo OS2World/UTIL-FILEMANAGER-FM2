@@ -2546,12 +2546,16 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_LOADFILE:
     if (dcd && mp2) {
 
-      HWND ret;
+      HWND hwnd;
 
-      ret = StartMLEEditor(dcd->hwndParent,
-			   (INT) mp1, (CHAR *) mp2, dcd->hwndFrame);
-      xfree((CHAR *) mp2, pszSrcFile, __LINE__);
-      return MRFROMLONG(ret);
+      if ((INT)mp1 == 5 || (INT)mp1 == 13 || (INT)mp1 == 21)
+        hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
+                           (CHAR *)mp2, dcd->hwndFrame);
+      else
+        hwnd = StartMLEEditor(dcd->hwndParent,
+	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
+      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+      return MRFROMLONG(hwnd);
     }
     return 0;
 

@@ -2495,9 +2495,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strcpy(li->targetpath, dcd->directory);
 	      break;
 	    }
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
 	    if (li->list) {
 	      if (SHORT1FROMMP(mp1) == IDM_COLLECTFROMFILE) {
 		if (!Collector) {
@@ -3316,13 +3313,16 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_LOADFILE:
     if (dcd && mp2) {
 
-      HWND ret = StartMLEEditor(dcd->hwndParent,
-				(INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
+      HWND hwnd;
+
+      if ((INT)mp1 == 5 || (INT)mp1 == 13 || (INT)mp1 == 21)
+        hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
+                           (CHAR *)mp2, dcd->hwndFrame);
+      else
+        hwnd = StartMLEEditor(dcd->hwndParent,
+	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
       xfree((CHAR *)mp2, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
-      return MRFROMLONG(ret);
+      return MRFROMLONG(hwnd);
     }
     return 0;
 

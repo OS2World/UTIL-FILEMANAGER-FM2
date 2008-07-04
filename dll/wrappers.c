@@ -405,21 +405,6 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
   return psz;
 }
 
-# ifdef FORTIFY
-unsigned char xFortify_LeaveScope(PCSZ pszSrcFile, UINT uiLineNumber)
-{
-  unsigned char ret;
-
-  free_commands();
-  free_associations();
-  free_udirs();
-  free_ldir();
-  free_archivers();
-  free_tools();
-  ret = Fortify_LeaveScope(pszSrcFile, uiLineNumber);
-  return ret;
-}
-# endif
 
 #pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc,xstrdup)
-#pragma alloc_text(WRAPPERS2,xDosSetPathInfo,xDosFindFirst,xDosFindNext,xFortify_LeaveScope)
+#pragma alloc_text(WRAPPERS2,xDosSetPathInfo,xDosFindFirst,xDosFindNext)
