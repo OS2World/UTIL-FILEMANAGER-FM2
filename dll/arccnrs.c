@@ -1563,7 +1563,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case IDM_REFRESH:
 	case IDM_DELETE:
 	  {
-	    CHAR cl[1001], *endofit;
+            CHAR *endofit;
+            PSZ pszCmdLine;
 	    INT z;
 	    CHECKLIST ck;
 	    CHAR prompt[CCHMAXPATH + 257];
@@ -1589,25 +1590,29 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      break;
 	    li->list = ck.list;
 	    if (!li->list || !li->list[0])
-	      break;
-	    strcpy(cl, li->type == IDM_DELETE ?
+              break;
+            pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+            if (!pszCmdLine)
+              break;
+	    strcpy(pszCmdLine, li->type == IDM_DELETE ?
 			 dcd->info->delete :
 			 dcd->info->create);
-	    strcat(cl, " ");
-	    BldQuotedFileName(cl + strlen(cl), dcd->arcname);
-	    endofit = &cl[strlen(cl)];
+	    strcat(pszCmdLine, " ");
+	    BldQuotedFileName(pszCmdLine + strlen(pszCmdLine), dcd->arcname);
+	    endofit = &pszCmdLine[strlen(pszCmdLine)];
 	    z = 0;
 	    do {
 	      for (x = z; li->list[x] &&
-		strlen(cl) + strlen(li->list[x]) < 999; x++) {
-		strcat(cl, " ");
-		BldQuotedFileName(cl + strlen(cl), li->list[x]);
+		strlen(pszCmdLine) + strlen(li->list[x]) < 999; x++) {
+		strcat(pszCmdLine, " ");
+		BldQuotedFileName(pszCmdLine + strlen(pszCmdLine), li->list[x]);
 	      }
 	      z = x;
 	      runemf2(SEPARATE | WINDOWED | WAIT |
 		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-		      hwnd, pszSrcFile, __LINE__, NullStr, NULL, "%s", cl);
-	      *endofit = 0;
+		      hwnd, pszSrcFile, __LINE__, NullStr, NULL, "%s", pszCmdLine);
+              *endofit = 0;
+              free(pszCmdLine);
 	    } while (li->list[x]);
 	    PostMsg(dcd->hwndCnr, UM_RESCAN, MPFROMSHORT(1), MPVOID);
 	    Broadcast(WinQueryAnchorBlock(hwnd),
@@ -1630,7 +1635,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case IDM_EXTRACTWDIRS:
 	case IDM_EXTRACT:
 	  {
-	    CHAR cl[1001], *endofit, *ptr;
+            CHAR *endofit, *ptr;
+            PSZ pszCmdLine;
 	    INT z;
 
 	    if ((li->type == IDM_EXTRACT && !li->info->extract) ||
@@ -1690,8 +1696,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    if (!li->list || !li->list[0])
-	      break;
-	    strcpy(cl,
+              break;
+            pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+            if (!pszCmdLine)
+              break;
+	    strcpy(pszCmdLine,
 		   (li->type == IDM_EXTRACT ||
 		    ((li->type == IDM_VIEW ||
 		      li->type == IDM_VIEWTEXT ||
@@ -1705,15 +1714,15 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     !li->info->exwdirs)) ?
 		     li->info->extract :
 		     li->info->exwdirs);
-	     strcat(cl, " ");
-	     BldQuotedFileName(cl + strlen(cl), li->arcname);
-	     endofit = &cl[strlen(cl)];
+	     strcat(pszCmdLine, " ");
+	     BldQuotedFileName(pszCmdLine + strlen(pszCmdLine), li->arcname);
+	     endofit = &pszCmdLine[strlen(pszCmdLine)];
 	     z = 0;
 	     do {
 	       for (x = z; li->list[x] &&
-		   strlen(cl) + strlen(li->list[x]) < 999; x++) {
-		strcat(cl, " ");
-		BldQuotedFileName(cl + strlen(cl), li->list[x]);
+		   strlen(pszCmdLine) + strlen(li->list[x]) < 999; x++) {
+		strcat(pszCmdLine, " ");
+		BldQuotedFileName(pszCmdLine + strlen(pszCmdLine), li->list[x]);
 		ptr = li->list[x];
 		while (*ptr) {
 		  if (*ptr == '/')
@@ -1725,7 +1734,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      runemf2(SEPARATE | WINDOWED |
 		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
 		      WAIT, hwnd, pszSrcFile, __LINE__,
-		      li->targetpath, NULL, "%s", cl);
+		      li->targetpath, NULL, "%s", pszCmdLine);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
@@ -1812,9 +1821,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    }
 		  }
 		}
-		BldFullPathName(cl, li->targetpath, li->list[x]);
+		BldFullPathName(pszCmdLine, li->targetpath, li->list[x]);
 		temp = li->list[x];
-		li->list[x] = xstrdup(cl, pszSrcFile, __LINE__);
+                li->list[x] = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
+                free(pszCmdLine);
 		if (!li->list[x])
 		  li->list[x] = temp;
 		else

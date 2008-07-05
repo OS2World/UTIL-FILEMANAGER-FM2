@@ -812,6 +812,7 @@ VOID LoadThread(VOID * arg)
     else {
       PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
       free(bkg);
+      bkg = NULL;
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
