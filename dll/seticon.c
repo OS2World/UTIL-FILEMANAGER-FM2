@@ -25,6 +25,7 @@
 #include "fm3dlg.h"
 #include "errutil.h"			// Dos_Error...
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 
@@ -92,7 +93,7 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					       &icf : NULL))) {
 	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinSetSysPointerData");
 	}
-	xfree(buff, pszSrcFile, __LINE__);
+	free(buff);
       }
       WinDismissDlg(hwnd, 1);
       break;

@@ -1004,7 +1004,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            xfree(wk, pszSrcFile, __LINE__);
+            free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 # ifdef FORTIFY
   Fortify_LeaveScope();
@@ -1039,7 +1039,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            xfree(wk, pszSrcFile, __LINE__);
+            free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 # ifdef FORTIFY
   Fortify_LeaveScope();
@@ -2562,7 +2562,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
 	    else
-	      xfree(li, pszSrcFile, __LINE__);
+	      free(li);
 	  }
 	}
 	break;
@@ -3355,7 +3355,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
-      xfree(dcd, pszSrcFile, __LINE__);
+      free(dcd);
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
     }
@@ -3493,7 +3493,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-          xfree(dcd, pszSrcFile, __LINE__);
+          free(dcd);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

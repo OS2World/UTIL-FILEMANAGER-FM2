@@ -31,6 +31,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -56,7 +57,7 @@ INT Subject(HWND hwnd, CHAR * filename)
     pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
     pfealist = xmallocz(1024, pszSrcFile, __LINE__);
     if (pfealist)
-    xfree(pgealist, pszSrcFile, __LINE__);
+    free(pgealist);
     else {
       pfealist->cbList = 1024;
       eaop.fpGEA2List = pgealist;
@@ -64,7 +65,7 @@ INT Subject(HWND hwnd, CHAR * filename)
       eaop.oError = 0;
       rc = DosQueryPathInfo(filename, FIL_QUERYEASFROMLIST,
 			    (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-      xfree(pgealist, pszSrcFile, __LINE__);
+      free(pgealist);
       if (!rc) {
 	pfea = &eaop.fpFEA2List->list[0];
 	value = pfea->szName + pfea->cbName + 1;
@@ -73,7 +74,7 @@ INT Subject(HWND hwnd, CHAR * filename)
 	  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
 	subject[1023] = 0;
       }
-      xfree(pfealist, pszSrcFile, __LINE__);
+      free(pfealist);
       if (rc == ERROR_SHARING_VIOLATION || rc == ERROR_ACCESS_DENIED) {
 	saymsg(MB_CANCEL,
 	       hwnd,

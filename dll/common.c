@@ -40,6 +40,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -745,7 +746,7 @@ MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  Broadcast(WinQueryAnchorBlock(hwnd),
 		    dcd->hwndParent, UM_UPDATERECORD, mp2, MPVOID);
-	  xfree(mp2, pszSrcFile, __LINE__);
+	  free(mp2);
 	}
       }
     }

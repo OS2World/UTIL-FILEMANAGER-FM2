@@ -519,7 +519,7 @@ static VOID ResizeTools(HWND hwnd)
       }
       WinSetMultWindowPos(WinQueryAnchorBlock(hwnd), &swp[2], numtools);
     }
-    xfree(swp, pszSrcFile, __LINE__);
+    free(swp);
   }
   WinInvalidateRect(hwnd, NULL, TRUE);
 }
@@ -1013,7 +1013,7 @@ MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 p = pp;
               }
             }
-            xfree(s, pszSrcFile, __LINE__);
+            free(s);
           }
         }
         if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE)) && swp.cx > 6 && swp.cy > 6) {
@@ -1559,7 +1559,7 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
         }
         PostMsg(hwnd, UM_FOCUSME, MPVOID, MPVOID);
         PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
-        xfree(pszCmdLine, pszSrcFile, __LINE__);
+        free(pszCmdLine);
       }
     }
     return 0;
@@ -6261,7 +6261,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                                   UM_RESTORE,
                                   MPFROMP(pszStateName),
                                   MPVOID)) {
-                  xfree(pszStateName, pszSrcFile, __LINE__);
+                  free(pszStateName);
                 }
               }
             }
@@ -6335,7 +6335,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pszDefaultStateName) {
         if (!PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszDefaultStateName), MPVOID))
           // 05 Feb 08 SHL fixme to complain?
-          xfree(pszDefaultStateName, pszSrcFile, __LINE__);
+          free(pszDefaultStateName);
       }
     }
     return 0;

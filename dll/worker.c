@@ -104,7 +104,7 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 	      Runtime_Error(pszSrcFile, __LINE__,
 			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      FreeListInfo(wk->li);
-              xfree(wk, pszSrcFile, __LINE__);
+              free(wk);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -269,7 +269,7 @@ VOID Action(VOID * args)
 		  if (temp) {
 		    if (!PostMsg(Collector,
 				 UM_COLLECTFROMFILE, MPFROMP(temp), MPVOID))
-		      xfree(temp, pszSrcFile, __LINE__);
+		      free(temp);
 		  }
 		}
 		break;
@@ -977,7 +977,7 @@ VOID Action(VOID * args)
 
     if (wk->li)
       FreeListInfo(wk->li);
-    xfree(wk, pszSrcFile, __LINE__);
+    free(wk);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1139,7 +1139,7 @@ VOID MassAction(VOID * args)
 	      p = szBuffer + strlen(szBuffer);
 	      for (x = 0; wk->li->list[x]; x++) {
 		strcpy(p, wk->li->list[x]);
-		xfree(wk->li->list[x], pszSrcFile, __LINE__);
+		free(wk->li->list[x]);
 		wk->li->list[x] = xstrdup(szBuffer, pszSrcFile, __LINE__);
 	      }
 	      if (wk->li->list[0])
@@ -1319,7 +1319,7 @@ VOID MassAction(VOID * args)
 		  if (!PostMsg(wk->hwndCnr,
 			       UM_LOADFILE,
 			       MPFROMLONG(5 + viewtype), MPFROMP(temp)))
-		    xfree(temp, pszSrcFile, __LINE__);
+		    free(temp);
 		}
 		DosSleep(1);
 	      }
@@ -1364,7 +1364,7 @@ VOID MassAction(VOID * args)
 		  if (!PostMsg(wk->hwndCnr,
 			       UM_LOADFILE,
 			       MPFROMLONG(4 + viewtype), MPFROMP(temp)))
-		    xfree(temp, pszSrcFile, __LINE__);
+		    free(temp);
 		}
 		DosSleep(1);
 	      }
@@ -1642,7 +1642,7 @@ VOID MassAction(VOID * args)
     }
     if (wk->li)
       FreeListInfo(wk->li);
-    xfree(wk, pszSrcFile, __LINE__);
+    free(wk);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

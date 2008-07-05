@@ -26,6 +26,7 @@
 #include "menu.h"
 #include "errutil.h"			// Dos_Error...
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 
@@ -68,7 +69,7 @@ VOID FreeMenuList(MENU * head)
   while (info) {
     next = info->next;
     xfree(info->text, pszSrcFile, __LINE__);
-    xfree(info, pszSrcFile, __LINE__);
+    free(info);
     info = next;
   }
 }
@@ -106,7 +107,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	  info->size = sizeof(MENU);
 	  info->text = xstrdup(tokens[2], pszSrcFile, __LINE__);
 	  if (!info->text)
-	    xfree(info, pszSrcFile, __LINE__);
+	    free(info);
 	  else {
 	    if (!stricmp(tokens[0], "MENUITEM"))
 	      info->cmd = atoi(tokens[1]);
@@ -115,7 +116,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	    else {
 	      /* error! */
 	      xfree(info->text, pszSrcFile, __LINE__);
-	      xfree(info, pszSrcFile, __LINE__);
+	      free(info);
 	      info = NULL;
 	    }
 	    if (info) {

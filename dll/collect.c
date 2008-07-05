@@ -906,7 +906,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            xfree(wk, pszSrcFile, __LINE__);
+            free(wk);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -939,7 +939,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            xfree(wk, pszSrcFile, __LINE__);
+            free(wk);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -967,7 +967,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	Runtime_Error(pszSrcFile, __LINE__, "still busy");
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
-      xfree(dcd, pszSrcFile, __LINE__);
+      free(dcd);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1466,7 +1466,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_COLLECTFROMFILE:
     if (mp1) {
       if (!dcd) {
-        xfree(mp1, pszSrcFile, __LINE__);
+        free(mp1);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1475,7 +1475,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
-	  xfree(mp1, pszSrcFile, __LINE__);
+	  free(mp1);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1604,7 +1604,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    p = xstrdup(filename, pszSrcFile, __LINE__);
 	    if (p) {
 	      if (!PostMsg(hwnd, UM_COLLECTFROMFILE, MPFROMP(p), MPVOID))
-	        xfree(p, pszSrcFile, __LINE__);
+	        free(p);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -2123,7 +2123,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
 	    }
             else
-              xfree(li, pszSrcFile, __LINE__);
+              free(li);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -2690,7 +2690,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       else
         hwnd = StartMLEEditor(dcd->hwndParent,
 	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
-      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+      free((CHAR *)mp2);
       return MRFROMLONG(hwnd);
     }
     return 0;
@@ -2883,7 +2883,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-        xfree(dcd, pszSrcFile, __LINE__);
+        free(dcd);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

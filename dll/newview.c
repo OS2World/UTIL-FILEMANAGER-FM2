@@ -1441,7 +1441,7 @@ static VOID LoadFileThread(VOID * args)
 			      pszSrcFile,
 			      __LINE__,
 			      GetPString(IDS_ERRORREADINGTEXT), ad->filename);
-		    xfree(ad->text, pszSrcFile, __LINE__);
+		    free(ad->text);
 		    ad->text = NULL;
 		    ad->textsize = 0;
 		  }
@@ -2399,7 +2399,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       FM3ModHandle, URL_FRAME, urld);
 	      switch (ret) {
 	      case 0:
-                xfree(urld, pszSrcFile, __LINE__);
+                free(urld);
 		goto NoAdd;
 	      case 1:
                 if (*urld->url) {
@@ -2425,7 +2425,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                             "%s %s", httprun, urld->url);
                 }
-		xfree(urld, pszSrcFile, __LINE__);
+		free(urld);
 		goto NoAdd;
 	      case 2:
                 if (*urld->url){
@@ -2451,7 +2451,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                             "%s %s", ftprun, urld->url);
                 }
-                xfree(urld, pszSrcFile, __LINE__);
+                free(urld);
 		goto NoAdd;
               case 3:
                 if (*urld->url){
@@ -2461,12 +2461,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                           fLibPathStrictMailRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
                           "%s %s", mailrun, urld->url);
                 }
-                xfree(urld, pszSrcFile, __LINE__);
+                free(urld);
                 goto NoAdd;
 	      default:
 		break;
 	      }
-              xfree(urld, pszSrcFile, __LINE__);
+              free(urld);
 	    }
 	  }
         }
@@ -2544,7 +2544,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  MPFROM2SHORT(numinserted, 0),
 				  MPFROMLONG(whichline));
 	    }
-	    xfree(s, pszSrcFile, __LINE__);
+	    free(s);
 	  }
 	}
 	if (!numsels)
@@ -3957,7 +3957,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	dontclose = ((ad->flags & 4) != 0) ? TRUE : FALSE;
 	FreeViewerMem(hwnd);
 	WinSetWindowPtr(hwnd, QWL_USER, NULL);
-	xfree(ad, pszSrcFile, __LINE__);
+	free(ad);
       }
       if (hwndRestore && hwndRestore != HWND_DESKTOP) {
 

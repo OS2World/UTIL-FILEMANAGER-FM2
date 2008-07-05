@@ -74,7 +74,7 @@ VOID FreeListInfo(LISTINFO *li)
     xfree(li->cbFile, pszSrcFile, __LINE__);
     if (li->list)
       FreeList(li->list);
-    xfree(li, pszSrcFile, __LINE__);
+    free(li);
 # ifdef FORTIFY
   //Fortify_LeaveScope();
 # endif
@@ -95,7 +95,7 @@ VOID FreeList(CHAR **list)
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
-    xfree(list, pszSrcFile, __LINE__);
+    free(list);
 # ifdef FORTIFY
   //Fortify_LeaveScope();
 # endif

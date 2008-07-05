@@ -40,6 +40,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -866,7 +867,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  if (pfea) {
 		    memcpy(pfea, pfealist->list,
 			   pfealist->cbList - sizeof(ULONG));
-		    xfree(eap->current->pfea, pszSrcFile, __LINE__);
+		    free(eap->current->pfea);
 		    eap->current->pfea = pfea;
 		    eap->current->name = eap->current->pfea->szName;
 		    eap->current->cbName = eap->current->pfea->cbName;
@@ -880,7 +881,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  DosFreeMem(pfealist);
 		}
 	      }
-	      xfree(s, pszSrcFile, __LINE__);
+	      free(s);
 	    }
 	  }
 	}
@@ -911,7 +912,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  eaop.oError = 0;
 	  rc = xDosSetPathInfo(eap->filename, FIL_QUERYEASIZE,
 			       &eaop, sizeof(eaop), DSPI_WRTTHRU);
-	  xfree(pfealist, pszSrcFile, __LINE__);
+	  free(pfealist);
 	  if (rc)
 	    Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 		      "xDosSetPathInfo");
@@ -919,8 +920,8 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    sSelect = 0;
 	    if (eap->current == eap->head) {
 	      eap->head = eap->head->next;
-	      xfree(eap->current->pfea, pszSrcFile, __LINE__);
-	      xfree(eap->current, pszSrcFile, __LINE__);
+	      free(eap->current->pfea);
+	      free(eap->current);
 	      eap->current = NULL;
 	    }
 	    else {
@@ -929,8 +930,8 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (info->next == eap->current) {
 		  sSelect++;
 		  info->next = eap->current->next;
-		  xfree(eap->current->pfea, pszSrcFile, __LINE__);
-		  xfree(eap->current, pszSrcFile, __LINE__);
+		  free(eap->current->pfea);
+		  free(eap->current);
 		  eap->current = NULL;
 		  break;
 		}
@@ -986,7 +987,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (eap) {
       if (eap->head)
 	Free_FEAList(eap->head);
-      xfree(eap, pszSrcFile, __LINE__);
+      free(eap);
       if (hptrIcon)
 	WinDestroyPointer(hptrIcon);
       hptrIcon = (HPOINTER) 0;
@@ -1273,13 +1274,13 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		  last = info;
 		}
 	      }
-	      xfree(pfealist, pszSrcFile, __LINE__);
+	      free(pfealist);
 	    }
-	    xfree(pgealist, pszSrcFile, __LINE__);
+	    free(pgealist);
 	  }
 	  ulEntry += ulCount;
 	} // while
-	xfree(pdena, pszSrcFile, __LINE__);
+	free(pdena);
 	DosPostEventSem(CompactSem);
       }
     }
@@ -1347,10 +1348,10 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		  last = info;
 		}
 		else
-		  xfree(pfealist, pszSrcFile, __LINE__);
+		  free(pfealist);
 	      }
 	      else {
-		xfree(pfealist, pszSrcFile, __LINE__);
+		free(pfealist);
 		if (!silentfail) {
 		  if (rc == ERROR_ACCESS_DENIED
 		      || rc == ERROR_SHARING_VIOLATION) {
@@ -1360,7 +1361,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 			     GetPString(IDS_CANTREADEATEXT), filename,
 			     pdena->szName);
 		    if (rc == MBID_CANCEL) {
-		      xfree(pgealist, pszSrcFile, __LINE__);
+		      free(pgealist);
 		      break;
 		    }
 		  }
@@ -1375,11 +1376,11 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 		}
 	      }
 	    }
-	    xfree(pgealist, pszSrcFile, __LINE__);
+	    free(pgealist);
 	  }
 	  ulEntry += ulCount;
 	} // while
-	xfree(pdena, pszSrcFile, __LINE__);
+	free(pdena);
 	DosPostEventSem(CompactSem);
       }
     }
@@ -1397,7 +1398,7 @@ VOID Free_FEAList(HOLDFEA * pFEA)
     /* Free linked list */
     next = pFEA->next;
     xfree(pFEA->pfea, pszSrcFile, __LINE__);
-    xfree(pFEA, pszSrcFile, __LINE__);
+    free(pFEA);
     pFEA = next;
   }
   DosPostEventSem(CompactSem);

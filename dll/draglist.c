@@ -355,7 +355,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	    DrgDeleteStrHandle(pDItem->hstrSourceName);
 	  if (pDItem->hstrTargetName)
 	    DrgDeleteStrHandle(pDItem->hstrTargetName);
-	  xfree(pDItem, pszSrcFile, __LINE__);
+	  free(pDItem);
 	  // Last item not yet count so only decrement by one less than loop count
 	  // Unhilite code will adjust this when unhighliting
 	  if (c > 1) {
@@ -424,7 +424,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	  DrgDeleteStrHandle(pDItem->hstrSourceName);
 	if (pDItem->hstrTargetName)
 	  DrgDeleteStrHandle(pDItem->hstrTargetName);
-	xfree(pDItem, pszSrcFile, __LINE__);
+	free(pDItem);
 	dcd->ulItemsToUnHilite = ulNumfiles + 1;	// +1 to ensure non-zero
 	break;
      }
@@ -470,7 +470,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	      DrgDeleteStrHandle(pDItem->hstrSourceName);
 	    if (pDItem->hstrTargetName)
 	      DrgDeleteStrHandle(pDItem->hstrTargetName);
-	    xfree(pDItem, pszSrcFile, __LINE__);
+	    free(pDItem);
 	    // Last item not yet count so only decrement by one less than loop count
 	    if (c > 1) {
 	      ulNumfiles--;
@@ -561,11 +561,9 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
     if (pDInfo)
       FreeDragInfoData(hwndCnr, pDInfo);
   }
-
-  if (ppDItem)
-    xfree(ppDItem, pszSrcFile, __LINE__);
+  xfree(ppDItem, pszSrcFile, __LINE__);
   if (paDImgIcons && paDImgIcons != &dimgFakeIcon)
-    xfree(paDImgIcons, pszSrcFile, __LINE__);
+    free(paDImgIcons);
   DosPostEventSem(CompactSem);
   MarkAll(hwndCnr, TRUE, FALSE, TRUE);
   return hDrop;
@@ -677,7 +675,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	  DrgDeleteStrHandle(pDItem->hstrSourceName);
 	if (pDItem->hstrTargetName)
 	  DrgDeleteStrHandle(pDItem->hstrTargetName);
-	xfree(pDItem, pszSrcFile, __LINE__);
+	free(pDItem);
 	// pDItem = NULL;	// Why bother, we can count - fixme to be gone
 	dcd->ulItemsToUnHilite = ulNumfiles + 1;
 	break;

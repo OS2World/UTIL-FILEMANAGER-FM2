@@ -1441,7 +1441,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (s) {
 	if (!dcd->info->extract) {
 	  Runtime_Error(pszSrcFile, __LINE__, "no extract");
-	  xfree(s, pszSrcFile, __LINE__);
+	  free(s);
 	  return 0;
 	}
 	runemf2(SEPARATE | WINDOWED | WAIT |
@@ -1471,7 +1471,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  p++;
 	}
 	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
-	xfree(s, pszSrcFile, __LINE__);
+	free(s);
 	if (IsFile(filename) == 1) {
 #if 1 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
 	  if (fViewChild && fArcStuffVisible)
@@ -1749,7 +1749,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    strcat(p, "\\");
 		  strcat(p, temp);
 		  li->list[x] = p;
-		  xfree(temp, pszSrcFile, __LINE__);
+		  free(temp);
 		}
 	      }
 	      if (fFolderAfterExtract) {
@@ -1996,7 +1996,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       FreeList(dcd->lastselection);
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
-      xfree(dcd, pszSrcFile, __LINE__);
+      free(dcd);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -2550,7 +2550,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       else
         hwnd = StartMLEEditor(dcd->hwndParent,
 	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
-      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+      free((CHAR *)mp2);
       return MRFROMLONG(hwnd);
     }
     return 0;
@@ -2919,7 +2919,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      for (x = 0; li->list && li->list[x]; x++) {
 		BldFullPathName(s, dcd->workdir, li->list[x]);
 		if (IsFile(s) != 1) {
-		  xfree(li->list[x], pszSrcFile, __LINE__);
+		  free(li->list[x]);
 		  li->list[x] = NULL;
 		  for (y = x; li->list[y]; y++)
 		    li->list[y] = li->list[y + 1];
@@ -2931,7 +2931,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		else {
 		  p = xstrdup(s, pszSrcFile, __LINE__);
 		  if (p) {
-		    xfree(li->list[x], pszSrcFile, __LINE__);
+		    free(li->list[x]);
 		    li->list[x] = p;
 		  }
 		}
@@ -2979,7 +2979,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
             else
-	      xfree(li, pszSrcFile, __LINE__);
+	      free(li);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -3243,7 +3243,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (s) {
 	      if (!PostMsg(dcd->hwndObject, UM_ENTER, MPFROMP(s), MPVOID)) {
 		Runtime_Error(pszSrcFile, __LINE__, "post");
-		xfree(s, pszSrcFile, __LINE__);
+		free(s);
 	      }
 	    }
 	  }
@@ -3539,7 +3539,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-          xfree(dcd, pszSrcFile, __LINE__);
+          free(dcd);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

@@ -216,7 +216,7 @@ VOID CopyIniThread(VOID * args)
 							inirec->
 							app2 : inirec->app),
 						pCurrentK, pData, ulSize);
-			  xfree(pData, pszSrcFile, __LINE__);	/* free data */
+			  free(pData);	/* free data */
 			}
 		      }
 		      while (*pCurrentK)	/* next keyname */
@@ -224,7 +224,7 @@ VOID CopyIniThread(VOID * args)
 		      pCurrentK++;
 		    }
 		  }
-		  xfree(pDataK, pszSrcFile, __LINE__);		/* free keynames */
+		  free(pDataK);		/* free keynames */
 		}
 	      }
 	    }
@@ -260,7 +260,7 @@ VOID CopyIniThread(VOID * args)
 					((*inirec->key2) ?
 					 inirec->key2 : inirec->key),
 					pData, ulSize);
-		  xfree(pData, pszSrcFile, __LINE__);		/* free data */
+		  free(pData);		/* free data */
 		}
 	      }
 	    }
@@ -295,7 +295,7 @@ VOID CopyIniThread(VOID * args)
 	inirec->hwndSource != inirec->hwndDlg)
       PostMsg(inirec->hwndSource, WM_COMMAND, MPFROM2SHORT(INI_REFRESH, 0),
 	      MPVOID);
-    xfree(inirec, pszSrcFile, __LINE__);
+    free(inirec);
 # ifdef FORTIFY
     Fortify_LeaveScope();
 # endif
@@ -323,7 +323,7 @@ static VOID CompareIniThread(VOID * args)
       DecrThreadUsage();
       WinTerminate(hab2);
     }
-    xfree(inirec, pszSrcFile, __LINE__);
+    free(inirec);
   }
 }
 
@@ -412,7 +412,7 @@ static VOID BackupIniThread(VOID * args)
 				  PrfWriteProfileData(new, pCurrentA,
 						      pCurrentK, pData,
 						      ulSize);
-				xfree(pData, pszSrcFile, __LINE__);	/* free data */
+				free(pData);	/* free data */
 			      }
 			    }
 			    while (*pCurrentK)	/* next keyname */
@@ -420,7 +420,7 @@ static VOID BackupIniThread(VOID * args)
 			    pCurrentK++;
 			  }
 			}
-			xfree(pDataK, pszSrcFile, __LINE__);	/* free keynames */
+			free(pDataK);	/* free keynames */
 		      }
 		    }
 		    while (*pCurrentA)	/* next applname */
@@ -428,7 +428,7 @@ static VOID BackupIniThread(VOID * args)
 		    pCurrentA++;
 		  }
 		}
-		xfree(pDataA, pszSrcFile, __LINE__);		/* free applnames */
+		free(pDataA);		/* free applnames */
 	      }
 	    }
 	    CloseProfile(new, FALSE);
@@ -442,7 +442,7 @@ static VOID BackupIniThread(VOID * args)
     }
     xfree(prfp->pszUserName, pszSrcFile, __LINE__);
     xfree(prfp->pszSysName, pszSrcFile, __LINE__);
-    xfree(prfp, pszSrcFile, __LINE__);
+    free(prfp);
 # ifdef FORTIFY
     Fortify_LeaveScope();
 # endif
@@ -478,7 +478,7 @@ static VOID EnumAppNames(HWND hwndList, HINI hini)
 		   MPFROMSHORT(TRUE));
 	WinEnableWindowUpdate(hwndList, TRUE);
       }
-      xfree(pData, pszSrcFile, __LINE__);
+      free(pData);
     }
   }
 }
@@ -537,7 +537,7 @@ static BOOL EnumKeyNames(HWND hwndList, HINI hini, PSZ pAppName)
       if (!PrfQueryProfileString(hini, pAppName, NULL, "\0", pData, ulSize)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
 		  "PrfQueryProfileString");
-	xfree(pData, pszSrcFile, __LINE__);
+	free(pData);
       }
       else {
 	pCurrent = pData;
@@ -552,7 +552,7 @@ static BOOL EnumKeyNames(HWND hwndList, HINI hini, PSZ pAppName)
 	WinSendMsg(hwndList, LM_SELECTITEM, MPFROMSHORT(0),
 		   MPFROMSHORT(TRUE));
         WinEnableWindowUpdate(hwndList, TRUE);
-        xfree(pData, pszSrcFile, __LINE__);
+        free(pData);
 	return TRUE;
       }
     }
@@ -1329,7 +1329,7 @@ MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (p) {
 	    fixup(inidata->data, p, l, inidata->datalen);
 	    WinSetDlgItemText(hwnd, IAD_DATA, p);
-	    xfree(p, pszSrcFile, __LINE__);
+	    free(p);
 	  }
 	}
 	else
@@ -1492,7 +1492,7 @@ HWND StartIniEditor(HWND hwnd, CHAR * fname, INT flags)
       return (HWND) 0;
     hINI = PrfOpenProfile(useHab, filename);
     if (hINI == NULLHANDLE) {
-      xfree(filename, pszSrcFile, __LINE__);
+      free(filename);
       return (HWND) 0;
     }
     else
@@ -1543,7 +1543,7 @@ HWND StartIniEditor(HWND hwnd, CHAR * fname, INT flags)
       PostMsg(hwndClient, UM_INITIALSIZE, MPVOID, MPVOID);
   }
   else
-    xfree(filename, pszSrcFile, __LINE__);
+    free(filename);
   return hwndFrame;
 }
 
@@ -2040,7 +2040,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	strcpy(inidata->ininame, (CHAR *)mp1);
 	inidata->hini = PrfOpenProfile(WinQueryAnchorBlock(hwnd),
 				       inidata->ininame);
-	xfree(mp1, pszSrcFile, __LINE__);
+	free(mp1);
       }
       else
 	inidata->hini = HINI_USERPROFILE;
@@ -2357,7 +2357,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(CopyIniThread, NULL, 122880, (PVOID) inirec) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(inirec, pszSrcFile, __LINE__);
+	    free(inirec);
 	  }
 	}
       }
@@ -2377,7 +2377,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(inirec, pszSrcFile, __LINE__);
+	    free(inirec);
 	  }
 	}
       }
@@ -2417,13 +2417,13 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 hwnd,
 			 IntraIniProc,
 			 FM3ModHandle, INII_FRAME, (PVOID) inirec)) {
-	    xfree(inirec, pszSrcFile, __LINE__);
+	    free(inirec);
 	    break;
 	  }
 	  if (_beginthread(CopyIniThread, NULL, 122880, (PVOID) inirec) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	    xfree(inirec, pszSrcFile, __LINE__);
+	    free(inirec);
 	  }
 	}
       }
@@ -2461,13 +2461,13 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    prfp->pszUserName =
 	      xstrdup(inidata->ininame, pszSrcFile, __LINE__);
 	    if (!prfp->pszUserName)
-	      xfree(prfp, pszSrcFile, __LINE__);
+	      free(prfp);
 	    else {
 	      prfp->cchUserName = strlen(prfp->pszUserName);
 	      prfp->pszSysName = xstrdup(filename, pszSrcFile, __LINE__);
 	      if (!prfp->pszSysName) {
-		xfree(prfp->pszUserName, pszSrcFile, __LINE__);
-		xfree(prfp, pszSrcFile, __LINE__);
+		free(prfp->pszUserName);
+		free(prfp);
 	      }
 	      else {
 		prfp->cchSysName = strlen(prfp->pszSysName);
@@ -2475,9 +2475,9 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    == -1) {
 		  Runtime_Error(pszSrcFile, __LINE__,
 				GetPString(IDS_COULDNTSTARTTHREADTEXT));
-		  xfree(prfp->pszSysName, pszSrcFile, __LINE__);
-		  xfree(prfp->pszUserName, pszSrcFile, __LINE__);
-		  xfree(prfp, pszSrcFile, __LINE__);
+		  free(prfp->pszSysName);
+		  free(prfp->pszUserName);
+		  free(prfp);
 		}
 		else
 		  DosSleep(100); //05 Aug 07 GKY 250
@@ -2776,10 +2776,10 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	dontclose = inidata->dontclose;
 	if (inidata->hini != NULLHANDLE && *inidata->ininame)
 	  CloseProfile(inidata->hini, FALSE);
-	xfree(inidata->data, pszSrcFile, __LINE__);
+	free(inidata->data);
 	if (inidata->hwndPopup)
 	  WinDestroyWindow(inidata->hwndPopup);
-	xfree(inidata, pszSrcFile, __LINE__);
+	free(inidata);
       }
       if (!dontclose &&
 	  ParentIsDesktop(hwnd, WinQueryWindow(WinQueryWindow(hwnd,

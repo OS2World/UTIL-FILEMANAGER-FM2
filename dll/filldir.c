@@ -308,9 +308,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	xfree(pfealist, pszSrcFile, __LINE__);
+	free(pfealist);
       }
-      xfree(pgealist, pszSrcFile, __LINE__);
+      free(pgealist);
     }
   }
   if (!pci->pszSubject)
@@ -355,9 +355,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszLongName = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	xfree(pfealist, pszSrcFile, __LINE__);
+	free(pfealist);
       }
-      xfree(pgealist, pszSrcFile, __LINE__);
+      free(pgealist);
     }
   }
   if (!pci->pszLongName)
@@ -537,9 +537,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 	  if (*(USHORT *) value == EAT_ASCII)
 	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 	}
-	xfree(pfealist, pszSrcFile, __LINE__);
+	free(pfealist);
       }
-      xfree(pgealist, pszSrcFile, __LINE__);
+      free(pgealist);
     }
   }
   if (!pci->pszSubject)
@@ -585,9 +585,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 	    pci->pszLongName = xstrdup(p, pszSrcFile, __LINE__);
 	  }
 	}
-	xfree(pfealist, pszSrcFile, __LINE__);
+	free(pfealist);
       }
-      xfree(pgealist, pszSrcFile, __LINE__);
+      free(pgealist);
     }
   }
   if (!pci->pszLongName)

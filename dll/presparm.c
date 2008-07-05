@@ -22,6 +22,7 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "fortify.h"
 
 // static PSZ pszSrcFile = __FILE__;
 
@@ -307,7 +308,7 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
     PrfWriteProfileData(prof,
 			appname, tagname, ppresparams, ppresparams->cb + 4);
 
-  xfree(ppresparams, pszSrcFile, __LINE__);
+  free(ppresparams);
 }
 
 #endif // NEVER

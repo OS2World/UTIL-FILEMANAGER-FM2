@@ -35,6 +35,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -236,9 +237,9 @@ CHAR *GetLongName(CHAR * oldname, CHAR * longname)
 		    CCHMAXPATH - strlen(longname));
 	  longname[CCHMAXPATH - 1] = 0;
 	}
-	xfree(pfealist, pszSrcFile, __LINE__);
+	free(pfealist);
       }
-      xfree(pgealist, pszSrcFile, __LINE__);
+      free(pgealist);
     }
   }
   return longname;
@@ -711,7 +712,7 @@ INT wipeallf(CHAR *string, ...)
       if (IsRoot(str) || !IsFullName(str)) {
 	/* under no circumstances! */
 	Runtime_Error(pszSrcFile, __LINE__, "bad name %s", str);
-	xfree(str, pszSrcFile, __LINE__);
+	free(str);
 	return -1;
       }
       *p = temp;
@@ -738,7 +739,7 @@ INT wipeallf(CHAR *string, ...)
   if (!ss || !f) {
     xfree(ss, pszSrcFile, __LINE__);
     xfree(f, pszSrcFile, __LINE__);
-    xfree(str, pszSrcFile, __LINE__);
+    free(str);
     return -1;
   }
 
@@ -783,9 +784,9 @@ INT wipeallf(CHAR *string, ...)
     DosFindClose(search_handle);
   }
 
-  xfree(f, pszSrcFile, __LINE__);
-  xfree(ss, pszSrcFile, __LINE__);
-  xfree(str, pszSrcFile, __LINE__);
+  free(f);
+  free(ss);
+  free(str);
   return 0;
 }
 
@@ -832,7 +833,7 @@ INT unlink_allf(CHAR * string, ...)
   if (!ss || !f) {
     xfree(ss, pszSrcFile, __LINE__);
     xfree(f, pszSrcFile, __LINE__);
-    xfree(str, pszSrcFile, __LINE__);
+    free(str);
     return -1;
   }
 
@@ -856,9 +857,9 @@ INT unlink_allf(CHAR * string, ...)
     DosFindClose(search_handle);
   }
 
-  xfree(f, pszSrcFile, __LINE__);
-  xfree(ss, pszSrcFile, __LINE__);
-  xfree(str, pszSrcFile, __LINE__);
+  free(f);
+  free(ss);
+  free(str);
   return 0;
 }
 

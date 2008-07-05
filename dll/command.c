@@ -43,6 +43,7 @@
 #include "fm3dll.h"
 #include "pathutil.h"                   // NormalizeCmdLine
 #include "command.h"
+#include "fortify.h"
 
 typedef struct
 {
@@ -309,7 +310,7 @@ VOID free_commands(VOID)
     next = info->next;
     xfree(info->title, pszSrcFile, __LINE__);
     xfree(info->pszCmdLine, pszSrcFile, __LINE__);
-    xfree(info, pszSrcFile, __LINE__);
+    free(info);
     info = next;
   }
   cmdhead = cmdtail = NULL;
@@ -359,7 +360,7 @@ VOID load_commands(VOID)
           if (!info->pszCmdLine || !info->title) {
             xfree(info->pszCmdLine, pszSrcFile, __LINE__);
             xfree(info->title, pszSrcFile, __LINE__);
-            xfree(info, pszSrcFile, __LINE__);
+            free(info);
             break;
           }
           if (!cmdhead)
@@ -371,7 +372,7 @@ VOID load_commands(VOID)
           cmdtail = info;
         }
       }
-      xfree(pszCmdLine, pszSrcFile, __LINE__);
+      free(pszCmdLine);
       fclose(fp);
     }
   }
@@ -428,7 +429,7 @@ LINKCMDS *add_command(COMMAND * addme)
   if (!info->pszCmdLine || !info->title) {
     xfree(info->pszCmdLine, pszSrcFile, __LINE__);
     xfree(info->title, pszSrcFile, __LINE__);
-    xfree(info, pszSrcFile, __LINE__);
+    free(info);
     return NULL;
   }
   if (!cmdhead)				/* only item in list */
@@ -465,7 +466,7 @@ BOOL kill_command(CHAR * killme)
 	}
 	xfree(info->pszCmdLine, pszSrcFile, __LINE__);
 	xfree(info->title, pszSrcFile, __LINE__);
-	xfree(info, pszSrcFile, __LINE__);
+	free(info);
 	return TRUE;
       }
       info = info->next;
@@ -634,13 +635,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           break; //already complained
         pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
         if (!pszWorkBuf) {
-          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+          free(temp.pszCmdLine);
           break; //already complained
         }
 	WinQueryDlgItemText(hwnd, CMD_CL, MaxComLineStrg, temp.pszCmdLine);
         NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
         memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        xfree(pszWorkBuf, pszSrcFile, __LINE__);
+        free(pszWorkBuf);
         if (!strchr(temp.pszCmdLine, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -668,7 +669,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           temp.flags |= ONCE;
         if (fCancelAction){
           fCancelAction = FALSE;
-          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+          free(temp.pszCmdLine);
           break;
         }
         else
@@ -707,7 +708,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    save_commands();
 	  }
         }
-        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+        free(temp.pszCmdLine);
       }
       x = (SHORT) WinSendDlgItemMsg(hwnd,
 				    CMD_LISTBOX,
@@ -739,13 +740,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           break; //already complained
         pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
         if (!pszWorkBuf) {
-          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+          free(temp.pszCmdLine);
           break; //already complained
         }
 	WinQueryDlgItemText(hwnd, CMD_CL, MaxComLineStrg, temp.pszCmdLine);
         NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
         memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        xfree(pszWorkBuf, pszSrcFile, __LINE__);
+        free(pszWorkBuf);
         if (!strchr(temp.pszCmdLine, '%')){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
@@ -773,7 +774,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           temp.flags |= ONCE;
         if (fCancelAction){
           fCancelAction = FALSE;
-          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+          free(temp.pszCmdLine);
           break;
         }
         else
@@ -808,7 +809,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    save_commands();
 	  }
         }
-        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+        free(temp.pszCmdLine);
       }
       break;
 
@@ -852,16 +853,16 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         memset(&temp, 0, sizeof(COMMAND));
         temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
         if (!temp.pszCmdLine) {
-          xfree(pszWorkBuf, pszSrcFile, __LINE__);
+          free(pszWorkBuf);
           break; //already complained
         }
 	WinQueryDlgItemText(hwnd, CMD_CL, MaxComLineStrg, temp.pszCmdLine);
         NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
         memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        xfree(pszWorkBuf, pszSrcFile, __LINE__);
+        free(pszWorkBuf);
         if (fCancelAction){
           fCancelAction = FALSE;
-          xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+          free(temp.pszCmdLine);
           break;
         }
         if (!strchr(temp.pszCmdLine, '%')){
@@ -975,7 +976,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             save_commands();
           }
         }
-        xfree(temp.pszCmdLine, pszSrcFile, __LINE__);
+        free(temp.pszCmdLine);
       }
       break;
     }

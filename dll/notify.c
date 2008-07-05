@@ -197,7 +197,7 @@ HWND DoNotify(char *str)
       Win_Error2(hwndP, hwndP, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
     if (p != str)
-      xfree(p, pszSrcFile, __LINE__);
+      free(p);
     if (id > NOTE_MAX)
       id = NOTE_FRAME;
   }
@@ -274,7 +274,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  NOTE_LISTBOX,
 			  LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
 	PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
-	xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+	free((CHAR *)mp2);
       }
       WinDismissDlg(hwnd, 0);
       break;
@@ -291,7 +291,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendDlgItemMsg(hwnd,
 			NOTE_LISTBOX,
 			LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
-      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+      free((CHAR *)mp2);
     }
 
     {
@@ -504,9 +504,9 @@ BOOL AddNote(CHAR * note)
 	    }
 	    PostMsg(hwndNotify, UM_CONTAINER_FILLED, MPVOID, MPVOID);
 	    once = TRUE;
-	  }
+          }
+          free(s);
 	}
-	xfree(s, pszSrcFile, __LINE__);
       }
     }
   }

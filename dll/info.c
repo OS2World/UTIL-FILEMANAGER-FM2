@@ -43,6 +43,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -463,7 +464,7 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PFNWP oldproc = pis->oldproc;
       if (pis->lasthwndMenu)
 	WinDestroyWindow(pis->lasthwndMenu);
-      xfree(pis, pszSrcFile, __LINE__);
+      free(pis);
       return oldproc(hwnd, msg, mp1, mp2);
     }
     break;

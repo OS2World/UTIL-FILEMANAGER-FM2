@@ -50,6 +50,7 @@
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -264,7 +265,7 @@ VOID free_arc_type(ARC_TYPE * pat)
     xfree(pat->createrecurse, pszSrcFile, __LINE__);
     xfree(pat->createwdirs, pszSrcFile, __LINE__);
     xfree(pat->movewdirs, pszSrcFile, __LINE__);
-    xfree(pat, pszSrcFile, __LINE__);
+    free(pat);
   }
 }
 
@@ -850,7 +851,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 hwnd,
 			 ArcReviewDlgProc,
 			 FM3ModHandle, AD_FRAME, MPFROMP(&ad))) {
-	    xfree(ad.info, pszSrcFile, __LINE__);
+	    free(ad.info);
 	  }
 	  else {
 	    // Find self - assume all archivers listed since we are editing

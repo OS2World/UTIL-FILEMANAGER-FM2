@@ -153,7 +153,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   if (((!rc || rc == ERROR_NO_MORE_FILES) && (pffbArray->attrFile & FILE_DIRECTORY)) ||
       strlen(pszFileName) < 4) {
     if (*pchStopFlag) {
-      xfree(pffbArray, pszSrcFile, __LINE__);
+      free(pffbArray);
       return FALSE;
     }
     pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES),

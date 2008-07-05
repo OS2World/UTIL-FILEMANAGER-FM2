@@ -568,7 +568,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (mp2)
 	  fTopDir = temptop;
       }
-      xfree((CHAR *)mp1, pszSrcFile, __LINE__);
+      free((CHAR *)mp1);
     }
     return 0;
 
@@ -802,7 +802,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            xfree(wk, pszSrcFile, __LINE__);
+            free(wk);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -838,7 +838,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            xfree(wk, pszSrcFile, __LINE__);
+            free(wk);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -859,7 +859,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       WinSendMsg(dcd->hwndCnr,
 		 UM_CLOSE, MPFROMLONG(dcd->dontclose != FALSE), MPVOID);
-      xfree(dcd, pszSrcFile, __LINE__);
+      free(dcd);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1734,7 +1734,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (dir) {
 	if (!PostMsg(dcd->hwndObject, UM_SHOWME, MPFROMP(dir), MPVOID))
-	  xfree(dir, pszSrcFile, __LINE__);
+	  free(dir);
       }
     }
     return 0;
@@ -2178,7 +2178,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
         hwnd = StartMLEEditor(dcd->hwndParent,
 	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
-      xfree((CHAR *)mp2, pszSrcFile, __LINE__);
+      free((CHAR *)mp2);
       return MRFROMLONG(hwnd);
     }
     return 0;
@@ -2247,7 +2247,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    apphead = info->next;
 	  if (apptail == info)
 	    apptail = info->prev;
-	  xfree(info, pszSrcFile, __LINE__);
+	  free(info);
 	  break;
 	}
 	info = info->next;
@@ -2770,7 +2770,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->hwnd = hwnd;
 	    li->list = BuildList(hwnd);
 	    if (!li->list || !li->list[0]) {
-	      xfree(li, pszSrcFile, __LINE__);
+	      free(li);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -2941,7 +2941,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       info = apphead;
       while (info) {
 	next = info->next;
-	xfree(info, pszSrcFile, __LINE__);
+	free(info);
 	info = next;
       }
       apphead = apptail = NULL;
@@ -3082,7 +3082,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-        xfree(dcd, pszSrcFile, __LINE__);
+        free(dcd);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

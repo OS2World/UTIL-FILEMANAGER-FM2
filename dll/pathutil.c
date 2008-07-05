@@ -15,6 +15,7 @@
 
 ***********************************************************************/
 
+#include <stdlib.h>
 #include <string.h>
 
 #define INCL_WIN
@@ -26,6 +27,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -131,7 +133,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
     return pszCmdLine_; //already complained
   szArgs = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!szArgs) {
-    xfree(szCmdLine, pszSrcFile, __LINE__);
+    free(szCmdLine);
     return pszCmdLine_; //already complained
   }
   bstrip(pszCmdLine_);
@@ -332,8 +334,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
       }
     }
   }
-  xfree(szArgs, pszSrcFile, __LINE__);
-  xfree(szCmdLine, pszSrcFile, __LINE__);
+  free(szArgs);
+  free(szCmdLine);
   return pszWorkBuf;
 }
 

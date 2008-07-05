@@ -1256,7 +1256,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetWindowPos(vw->hwndRestore, HWND_TOP, 0, 0, 0, 0, fl);
 	  }
 	}
-	xfree(vw, pszSrcFile, __LINE__);
+	free(vw);
       }
       if (!dontclose &&
 	  ParentIsDesktop(hwnd, WinQueryWindow(WinQueryWindow(hwnd,

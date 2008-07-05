@@ -47,6 +47,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -257,7 +258,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    } // while
 	    fclose(inputFile);
 	  }
-	  xfree(input, pszSrcFile, __LINE__);
+	  free(input);
 	  DosSleep(1);
 	}
       }
@@ -360,7 +361,7 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    } // while
 	    fclose(inputFile);
 	  }
-	  xfree(input, pszSrcFile, __LINE__);
+	  free(input);
 	  DosSleep(1);
 	}
       }

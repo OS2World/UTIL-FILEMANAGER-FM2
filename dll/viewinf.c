@@ -161,7 +161,7 @@ static VOID FillListboxThread(VOID * args)
 	      break;
 	    p = strtok(NULL, ";");
 	  }
-	  xfree(holdenv, pszSrcFile, __LINE__);
+	  free(holdenv);
 	NoEnv:
 	  if (WinIsWindow(hab2, hwnd) && !repeating) {
 
@@ -177,7 +177,7 @@ static VOID FillListboxThread(VOID * args)
 		if (!PrfQueryProfileData(fmprof, FM3Str, key, holdenv, &size)) {
 		  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 			    "PrfQueryProfileData");
-		  xfree(holdenv, pszSrcFile, __LINE__);
+		  free(holdenv);
 		}
 		else
 		  goto Repeat;
@@ -192,7 +192,7 @@ static VOID FillListboxThread(VOID * args)
     DecrThreadUsage();
     WinTerminate(hab2);
   }
-  xfree(dummy, pszSrcFile, __LINE__);
+  free(dummy);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -273,7 +273,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (_beginthread(FillListboxThread, NULL, 65536, (PVOID) d) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  xfree(d, pszSrcFile, __LINE__);
+	  free(d);
 	  WinDismissDlg(hwnd, 0);
 	  return 0;
 	}

@@ -29,6 +29,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -56,7 +57,7 @@ HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 	      objtitle,
 	      (path) ? ";STARTUPDIR=" : "", (path) ? path : "", objtitle);
       WinSetObjectData(obj, s);
-      xfree(s, pszSrcFile, __LINE__);
+      free(s);
     }
   }
   return obj;
@@ -157,7 +158,7 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
     obj = WinCreateObject("WPShadow",
 			  objtitle,
 			  s, (location) ? location : cnr, CO_FAILIFEXISTS);
-    xfree(s, pszSrcFile, __LINE__);
+    free(s);
   }
   return obj;
 }

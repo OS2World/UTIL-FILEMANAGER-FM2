@@ -108,7 +108,7 @@ static VOID ProcessDir(HWND hwndCnr,
 		      MPFROMLONG(1));
     if (!pciP) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
-      xfree(pffbArray, pszSrcFile, __LINE__);
+      free(pffbArray);
       return;
     }
     pciP->pszFileName = xstrdup(filename, pszSrcFile, __LINE__);
@@ -133,7 +133,7 @@ static VOID ProcessDir(HWND hwndCnr,
     pciP->rc.flRecordAttr |= CRA_RECORDREADONLY;
   }
   else {
-    xfree(pffbArray, pszSrcFile, __LINE__);
+    free(pffbArray);
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
     return;
@@ -154,7 +154,7 @@ static VOID ProcessDir(HWND hwndCnr,
   ri.cRecordsInsert = 1;
   ri.fInvalidateRecord = TRUE;
   if (!WinSendMsg(hwndCnr, CM_INSERTRECORD, MPFROMP(pciP), MPFROMP(&ri))) {
-    xfree(pffbArray, pszSrcFile, __LINE__);
+    free(pffbArray);
     return;
   }
   hdir = HDIR_CREATE;
@@ -203,7 +203,7 @@ static VOID ProcessDir(HWND hwndCnr,
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
   }
 
-  xfree(pffbArray, pszSrcFile, __LINE__);
+  free(pffbArray);
   WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pciP),
 	     MPFROM2SHORT(1, 0));
 }
@@ -238,7 +238,7 @@ static VOID FillCnrsThread(VOID * args)
   }
   PostMsg(WinQueryWindow(dirsize->hwndCnr, QW_PARENT), UM_CONTAINER_FILLED,
 	  MPVOID, MPVOID);
-  xfree(dirsize, pszSrcFile, __LINE__);
+  free(dirsize);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -289,7 +289,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  -1) {
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-        xfree(dirsize, pszSrcFile, __LINE__);
+        free(dirsize);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

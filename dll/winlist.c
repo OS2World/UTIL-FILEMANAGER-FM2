@@ -23,6 +23,7 @@
 
 #include "fm3dlg.h"
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -119,7 +120,7 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    y++;
 	  }
-	  xfree(pswb, pszSrcFile, __LINE__);
+	  free(pswb);
 	  DosPostEventSem(CompactSem);
 	}
       }

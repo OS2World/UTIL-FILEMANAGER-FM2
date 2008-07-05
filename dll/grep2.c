@@ -824,7 +824,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!*p) {
 	  DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
-	  xfree(p, pszSrcFile, __LINE__);
+	  free(p);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -926,7 +926,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (_beginthread(GrepThread, NULL, 524280, (PVOID) & g) == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  xfree(p, pszSrcFile, __LINE__);
+	  free(p);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -934,7 +934,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	}
 	DosSleep(100); //05 Aug 07 GKY 128
-	xfree(p, pszSrcFile, __LINE__);
+	free(p);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

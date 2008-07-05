@@ -227,7 +227,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    == -1) {
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	  xfree(undelinfo, pszSrcFile, __LINE__);
+	  free(undelinfo);
 	  listdone = TRUE;
 	  WinDismissDlg(hwnd, 0);
 	}

@@ -41,6 +41,7 @@
 #include "errutil.h"			// Runtime_Error
 #include "fm3dll.h"
 #include "pathutil.h"                   // NormalizeCmdLine
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -104,11 +105,11 @@ static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
     if (pszWorkBuf) {
       NormalizeCmdLine(pszWorkBuf, szCmdLine);
       pszDest = xstrdup(pszWorkBuf, pszSrcFile, __LINE__);
-      xfree(pszWorkBuf, pszSrcFile, __LINE__);
+      free(pszWorkBuf);
     }
     else
       pszDest = xstrdup(szCmdLine, pszSrcFile, __LINE__); // return the unexamined input on failure
-    xfree(szCmdLine, pszSrcFile, __LINE__);
+    free(szCmdLine);
   }
   else
     pszDest = NULL;

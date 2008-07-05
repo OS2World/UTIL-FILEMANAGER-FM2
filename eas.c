@@ -74,8 +74,7 @@ int main (int argc,char *argv[])
     }
     WinTerminate(hab);
   }
-  if (list)
-    xfree(list, pszSrcFile, __LINE__);
+  xfree(list, pszSrcFile, __LINE__);
   return 0;
 }
 

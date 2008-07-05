@@ -251,7 +251,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   if (rc || !temp) {
     Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
-    xfree(sel, pszSrcFile, __LINE__);
+    free(sel);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -271,7 +271,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
       (LONG) WinSendMsg(h, MLM_EXPORT, MPFROMP(&here), MPFROMP(&sellen));
     if (sellen < 1) {
       Runtime_Error(pszSrcFile, __LINE__, "len < 1");
-      xfree(sel, pszSrcFile, __LINE__);
+      free(sel);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -288,7 +288,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   case APPENDCLIP:
     SaveToClip(h, sel, TRUE);
     DosFreeMem(temp);
-    xfree(sel, pszSrcFile, __LINE__);
+    free(sel);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -312,7 +312,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
       _heap_check();
 #endif
       DosFreeMem(temp);
-      xfree(sel, pszSrcFile, __LINE__);
+      free(sel);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -388,7 +388,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     _heap_check();
 #endif
     DosFreeMem(temp);
-    xfree(sel, pszSrcFile, __LINE__);
+    free(sel);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -424,7 +424,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   _heap_check();
 #endif
   DosFreeMem(temp);
-  xfree(sel, pszSrcFile, __LINE__);
+  free(sel);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -593,7 +593,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	  }
 	  else
 	    ret = FALSE;
-	  xfree(buffer, pszSrcFile, __LINE__);
+	  free(buffer);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -795,12 +795,13 @@ VOID LoadThread(VOID * arg)
 #ifdef __DEBUG_ALLOC__
 	_heap_check();
 #endif
-        //xfree(bkg, pszSrcFile, __LINE__);
 	WinDestroyMsgQueue(thmq);
       }
+      else
+        PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
       DecrThreadUsage();
       WinTerminate(thab);
-      xfree(bkg, pszSrcFile, __LINE__);
+      free(bkg);
       bkg = NULL;
 # ifdef FORTIFY
   Fortify_LeaveScope();
@@ -808,9 +809,9 @@ VOID LoadThread(VOID * arg)
       _endthread();
     }
     // fixme to be gone?
-    if (bkg) {
+    else {
       PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
-      xfree(bkg, pszSrcFile, __LINE__);
+      free(bkg);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

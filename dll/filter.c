@@ -30,6 +30,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(FILTER_DATA)
 
@@ -153,7 +154,7 @@ VOID load_masks(VOID)
 	    last = info;
 	  }
 	  else
-	    xfree(info, pszSrcFile, __LINE__);
+	    free(info);
 	}
       }
     }  //while
@@ -217,7 +218,7 @@ VOID add_mask(CHAR * mask)
 	last->next = info;
     }
     else
-      xfree(info, pszSrcFile, __LINE__);
+      free(info);
   }
 }
 
@@ -238,7 +239,7 @@ VOID remove_mask(CHAR * mask)
       else
 	maskhead = info->next;
       xfree(info->mask, pszSrcFile, __LINE__);
-      xfree(info, pszSrcFile, __LINE__);
+      free(info);
       break;
     }
     last = info;

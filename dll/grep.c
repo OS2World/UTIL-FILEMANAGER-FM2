@@ -615,7 +615,7 @@ static INT DoMatchingFiles(GREP *grep,
 	      DoOneFile(grep, szFindPath, pffbFile, pitdSleep, pitdReport);
 	    else if (!InsertDupe(grep, szFindPath, pffbFile)) {
 	      DosFindClose(findHandle);
-	      xfree(pffbArray, pszSrcFile, __LINE__);
+	      free(pffbArray);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -644,7 +644,7 @@ static INT DoMatchingFiles(GREP *grep,
 	      GetPString(IDS_CANTFINDDIRTEXT), szFindPath);
   }
 
-  xfree(pffbArray, pszSrcFile, __LINE__);
+  free(pffbArray);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -660,13 +660,13 @@ static VOID freegreplist(GREP *grep)
       for (x = 0; grep->insertffb[x]; x++) {
         free(grep->insertffb[x]);
       }
-      xfree(grep->insertffb, pszSrcFile, __LINE__);
+      free(grep->insertffb);
     }
     if (grep->dir) {
       for (x = 0; grep->dir[x]; x++) {
         free(grep->dir[x]);
       }
-      xfree(grep->dir, pszSrcFile, __LINE__);
+      free(grep->dir);
     }
     grep->dir = NULL;
     grep->insertffb = NULL;
@@ -781,7 +781,7 @@ static BOOL InsertGrepFile(GREP *grep,
 	grep->dir = xmallocz(sizeof(CHAR *) * (FilesToGet + 1),
 			     pszSrcFile, __LINE__);
 	if (!grep->dir) {
-	  xfree(grep->insertffb, pszSrcFile, __LINE__);
+	  free(grep->insertffb);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -797,7 +797,7 @@ static BOOL InsertGrepFile(GREP *grep,
 
       grep->dir[grep->toinsert] = xstrdup(szDirectory, pszSrcFile, __LINE__);
       if (!grep->dir) {
-        xfree(grep->insertffb[grep->toinsert], pszSrcFile, __LINE__);
+        free(grep->insertffb[grep->toinsert]);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1017,7 +1017,7 @@ static BOOL DoOneFile(GREP *grep,
 	}
 	fclose(inputFile);
       }
-      xfree(input, pszSrcFile, __LINE__);
+      free(input);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1134,7 +1134,7 @@ LONG CRCFile(CHAR *pszFileName, INT *error)
       fclose(fp);
       // DosSleep(1);			// 07 Feb 08 SHL
     }
-    xfree(buffer, pszSrcFile, __LINE__);
+    free(buffer);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
@@ -1627,7 +1627,7 @@ static BOOL InsertDupe(GREP *grep, CHAR *dir, FILEFINDBUF4L *pffb)
 
     info->name = xstrdup(dir, pszSrcFile, __LINE__);
     if (!info->name) {
-      xfree(info, pszSrcFile, __LINE__);
+      free(info);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif

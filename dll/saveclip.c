@@ -38,6 +38,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 #define MAX_PATTERN_BYTES 80
@@ -186,7 +187,7 @@ CHAR **ListFromClipboardHab(HAB hab)
 	if (!p)
 	  p = strchr(pp, '\n');
       }
-      xfree(text, pszSrcFile, __LINE__);
+      free(text);
     }
   }
   return list;
@@ -839,9 +840,9 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			  strncpy(subject, value + (sizeof(USHORT) * 2), 1023);
 			subject[1023] = 0;
 		      }
-		      xfree(pfealist, pszSrcFile, __LINE__);
+		      free(pfealist);
 		    }
-		    xfree(pgealist, pszSrcFile, __LINE__);
+		    free(pgealist);
 		  }
 		}
 		/* load the object's longname */
@@ -882,9 +883,9 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				  (sizeof(USHORT) * 2), CCHMAXPATHCOMP);
 			longname[CCHMAXPATHCOMP - 1] = 0;
 		      }
-		      xfree(pfealist, pszSrcFile, __LINE__);
+		      free(pfealist);
 		    }
-		    xfree(pgealist, pszSrcFile, __LINE__);
+		    free(pgealist);
 		  }
 		}
 

@@ -31,6 +31,7 @@
 
 #include "errutil.h"			// Dos_Error...
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -193,7 +194,7 @@ UINT literal(PSZ pszBuf)
 
   cBufBytes = pszOut - pszWork;                /* Calc string length excluding terminator */
   memcpy(pszBuf, pszWork, cBufBytes + 1);        /* Overwrite including terminator */
-  xfree(pszWork, pszSrcFile, __LINE__);
+  free(pszWork);
 
   return cBufBytes;                        /* Return string length */
 }
@@ -279,95 +280,6 @@ BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
 
     return (*fstr == *fcard);
 }
-
-
-/*BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
-	      const BOOL fNotFileSpec)
-{
-  const CHAR *fstr = pszBuf;
-  PSZ fcard = pszWildCard;
-  CHAR *tcard;
-  INT wmatch = TRUE;
-  BOOL reverse = FALSE;
-
-  while (wmatch && *fcard && *fstr) {
-    if (*fcard == '*' && fcard[strlen(fcard) - 1] == '*' && !reverse){
-      tcard  = xstrdup(fcard + 1, __FILE__, __LINE__);
-      tcard[strlen(tcard) - 1] = 0;
-      if (!(strchr(tcard, '?')) && !(strchr(tcard, '*'))){
-	if (strstr(fstr, tcard)){ //strstr match for *stuff* pattern no wildcards in "stuff"
-	  xfree(tcard, pszSrcFile, __LINE__);
-	  return TRUE;
-	}
-	else{
-	  xfree(tcard, pszSrcFile, __LINE__);
-	  return FALSE;
-	}
-      }
-      xfree(tcard, pszSrcFile, __LINE__);
-    }
-    else   //reverse search for *stuff pattern "stuff" can contain wildcards
-      if (*fcard == '*' && fcard[strlen(fcard) - 1] != '*'){
-	fstr = strrev(pszBuf);
-	fcard = strrev(pszWildCard);
-	reverse = TRUE;
-      }
-     switch (*fcard) { //fm2 standard forward search for all other cases
-      case '?':                                // character substitution /
-	fcard++;
-	if (fNotFileSpec || (*fstr != '.' && *fstr != '/' && *fstr != '\\'))
-	  fstr++;                                // skip (match) next character
-	break;
-
-      case '*':
-	// find next non-wild character in wildcard
-	while (*fcard && (*fcard == '?' || *fcard == '*'))
-	  fcard++;
-	if (!*fcard){                        // if last char of wildcard is *, it matches
-	  if (reverse){
-	    fstr = strrev(pszBuf);
-	    fcard = strrev(pszWildCard);
-	  }
-	  return TRUE;
-	}
-	// skip until partition, match, or eos
-	while (*fstr && toupper(*fstr) != toupper(*fcard) &&
-	       (fNotFileSpec || (*fstr != '\\' &&
-	                         *fstr != '/' && *fstr != '.')))
-	  fstr++;
-	if (!fNotFileSpec && !*fstr)        // implicit '.'
-	  if (*fcard == '.')
-	    fcard++;
-	break;
-
-      default:
-	if (!fNotFileSpec && ((*fstr == '/' || *fstr == '\\') &&
-	                      (*fcard == '/' || *fcard == '\\')))
-	  wmatch = TRUE;
-	else
-	  wmatch = (toupper(*fstr) == toupper(*fcard));
-	fstr++;
-	fcard++;
-	break;
-      }
-  }  //while
-
-  if ((*fcard && *fcard != '*') || *fstr){
-    if (reverse){
-      fstr = strrev(pszBuf);
-      fcard = strrev(pszWildCard);
-    }
-    return 0;
-  }
-  else {
-    if (reverse){
-      fstr = strrev(pszBuf);
-      fcard = strrev(pszWildCard);
-    }
-    return wmatch;
-  }
-} */
-
 
 // fixup - quote literal character array
 

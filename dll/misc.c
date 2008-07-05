@@ -66,6 +66,7 @@
 #include "strutil.h"		    // GetPString
 #include "command.h"                // LINKCMDS
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -231,7 +232,7 @@ void PaintSTextWindow(HWND hwnd, HPS hps)
 	  GpiCharString(hps, strlen(p), p);
 	}
       }
-      xfree(s, pszSrcFile, __LINE__);
+      free(s);
     }
     if (releaseme)
       WinReleasePS(hps);
@@ -850,7 +851,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (filename) {
 		  if (!PostMsg(hwnd,
 			       UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		    xfree(filename, pszSrcFile, __LINE__);
+		    free(filename);
 		}
 		if (stricmp(testname, pci->pszFileName)) {
 		  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
@@ -858,7 +859,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  if (filename) {
 		    if (!PostMsg(hwnd,
 				 UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		      xfree(filename, pszSrcFile, __LINE__);
+		      free(filename);
 		  }
 		}
 	      }
@@ -1004,7 +1005,7 @@ INT ExecFile(HWND hwnd, CHAR * filename)
     }
     else if (ret != 0)
       return -1;
-    xfree(pszCmdLine, pszSrcFile, __LINE__);
+    free(pszCmdLine);
   }
   return 0;
 }
@@ -1997,7 +1998,7 @@ void SaySort(HWND hwnd, INT sortflags, BOOL archive)
 				GetPString(IDS_NONE) : (sortflags & SORT_SUBJECT) ?
 				  GetPString(IDS_SUBJ) : GetPString(IDS_NAME));
     WinSetWindowText(hwnd, s);
-    xfree(s, pszSrcFile, __LINE__);
+    free(s);
   }
 }
 
@@ -2016,7 +2017,7 @@ void SayView(HWND hwnd, ULONG flWindowAttr)
 	    ((flWindowAttr & CV_MINI) &&
 	     !(flWindowAttr & CV_TEXT)) ? GetPString(IDS_MINI) : NullStr);
     WinSetWindowText(hwnd, s);
-    xfree(s, pszSrcFile, __LINE__);
+    free(s);
   }
 }
 
@@ -2036,7 +2037,7 @@ void SayFilter(HWND hwnd, MASK * mask, BOOL archive)
     if (!s[2])
       sprintf(s, "F:%s", GetPString(IDS_ALLTEXT));
     WinSetWindowText(hwnd, s);
-    xfree(s, pszSrcFile, __LINE__);
+    free(s);
   }
 }
 
@@ -2181,7 +2182,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
 	}
       }
       numswitches = y;
-      xfree(pswb, pszSrcFile, __LINE__);
+      free(pswb);
       DosPostEventSem(CompactSem);
     }
   }

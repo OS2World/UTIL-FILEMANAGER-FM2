@@ -43,6 +43,7 @@
 #include "notebook.h"                   //targetdirectory
 #include "pathutil.h"
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -598,7 +599,7 @@ BreakOut:
       ret = WinDlgBox(HWND_DESKTOP, hwnd, CmdLineDlgProc, FM3ModHandle,
 		      EXEC_FRAME, &ex);
       if (ret != 1) {
-        xfree(commandline, pszSrcFile, __LINE__);
+        free(commandline);
         return (ret == 0) ? -1 : -2;
       }
     }
@@ -608,7 +609,7 @@ BreakOut:
     ret = runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
 		   (*ex.environment) ? ex.environment : NULL,
                    "%s", commandline);
-    xfree(commandline, pszSrcFile, __LINE__);
+    free(commandline);
     return ret;
   }
 }
@@ -1304,7 +1305,7 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	      strcat(parameters, executable);
 	      strcpy(executable, GetCmdSpec(FALSE));
 	    }
-	    xfree(temp, pszSrcFile, __LINE__);
+	    free(temp);
 	  }
 	}
 
@@ -1318,10 +1319,10 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	pgd.pszExecutable = executable;
 	pgd.swpInitial.hwndInsertBehind = HWND_TOP;
 	happ = WinStartApp(hwndNotify, &pgd, NULL, NULL, ulOptions);
-	xfree(parameters, pszSrcFile, __LINE__);
+	free(parameters);
       }
     }
-    xfree(executable, pszSrcFile, __LINE__);
+    free(executable);
   }
   return happ;
 }

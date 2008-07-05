@@ -36,6 +36,7 @@
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
 #include "pathutil.h"                   // MaxCmdLineStr
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -87,7 +88,7 @@ VOID load_cmdlines(BOOL DoItYourself)
             x++;
             info->cmdline = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
             if (!info->cmdline)
-              xfree(info, pszSrcFile, __LINE__);
+              free(info);
             else {
               info->next = NULL;
               if (!CmdLineHead)
@@ -101,8 +102,8 @@ VOID load_cmdlines(BOOL DoItYourself)
       }
       fclose(fp);
     }
+    free(pszCmdLine);
   }
-  xfree(pszCmdLine, pszSrcFile, __LINE__);
   if (DoItYourself)
     DoItYourselfCmdLine = CmdLineHead;
   else
@@ -184,7 +185,7 @@ BOOL add_cmdline(CHAR *cmdline, BOOL DoItYourself)
       if (x > MAXNUMCMDLINES) {
 	info = CmdLineHead;
 	CmdLineHead = CmdLineHead->next;
-	xfree(info, pszSrcFile, __LINE__);
+	free(info);
       }
       if (DoItYourself)
 	DoItYourselfCmdLine = CmdLineHead;
@@ -213,7 +214,7 @@ BOOL remove_cmdline(CHAR *cmdline, BOOL DoItYourself)
       else
 	CmdLineHead = info->next;
       xfree(info->cmdline, pszSrcFile, __LINE__);
-      xfree(info, pszSrcFile, __LINE__);
+      free(info);
       if (DoItYourself)
 	DoItYourselfCmdLine = CmdLineHead;
       else
@@ -235,7 +236,7 @@ VOID free_cmdlines(BOOL DoItYourself)
   while (info) {
     next = info->next;
     xfree(info->cmdline, pszSrcFile, __LINE__);
-    xfree(info, pszSrcFile, __LINE__);
+    free(info);
     info = next;
   }
   CmdLineHead = NULL;

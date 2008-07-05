@@ -47,6 +47,7 @@
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"                    // RunCommand
 #include "fm3dll.h"
+#include "fortify.h"
 
 typedef struct
 {

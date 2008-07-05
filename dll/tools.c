@@ -34,6 +34,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
+#include "fortify.h"
 
 #pragma data_seg(DATA1)
 
@@ -51,7 +52,7 @@ VOID load_quicktools(VOID)
 
   qtloaded = TRUE;
   for (x = 0; x < 50 && quicktool[x]; x++) {
-    xfree(quicktool[x], pszSrcFile, __LINE__);
+    free(quicktool[x]);
     quicktool[x] = NULL;
   }
   if (!fToolbar) {
@@ -267,7 +268,7 @@ TOOL *del_tool(TOOL * tool)
 	  prev->next = info->next;
 	xfree(info->help, pszSrcFile, __LINE__);
 	xfree(info->text, pszSrcFile, __LINE__);
-	xfree(info, pszSrcFile, __LINE__);
+	free(info);
 	fToolsChanged = TRUE;
 	break;
       }
@@ -365,7 +366,7 @@ TOOL *free_tools(VOID)
     next = tool->next;
     xfree(tool->help, pszSrcFile, __LINE__);
     xfree(tool->text, pszSrcFile, __LINE__);
-    xfree(tool, pszSrcFile, __LINE__);
+    free(tool);
     tool = next;
   }
   toolhead = NULL;

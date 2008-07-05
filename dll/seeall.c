@@ -1314,7 +1314,7 @@ static VOID FreeAllFilesList(HWND hwnd)
     for (x = 0; x < ad->afheadcnt; x++) {
       xfree(ad->afhead[x].fullname, pszSrcFile, __LINE__);
     }
-    xfree(ad->afhead, pszSrcFile, __LINE__);
+    free(ad->afhead);
     ad->afhead = NULL;
     xfree(ad->afindex, pszSrcFile, __LINE__);
     ad->afindex = NULL;
@@ -1935,7 +1935,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
   ulBufBytes = sizeof(FILEFINDBUF3L) * ulFindMax;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray) {
-    xfree(filename, pszSrcFile, __LINE__);
+    free(filename);
     return;
   }
 
@@ -1973,8 +1973,8 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
           if (strlen(filename) > CCHMAXPATH) {
 	    // Complain if pathnames exceeds max
 	    DosFindClose(hdir);
-            xfree(pffbArray, pszSrcFile, __LINE__);
-            xfree(filename, pszSrcFile, __LINE__);
+            free(pffbArray);
+            free(filename);
 	    if (!fDone) {
 	      fDone = TRUE;
 	      saymsg(MB_OK | MB_ICONASTERISK,
@@ -2041,8 +2041,8 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	      GetPString(IDS_CANTFINDDIRTEXT), filename);
   }
 
-  xfree(pffbArray, pszSrcFile, __LINE__);
-  xfree(filename, pszSrcFile, __LINE__);
+  free(pffbArray);
+  free(filename);
 }
 
 static VOID FindAllThread(VOID * args)
@@ -4291,7 +4291,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
       }
       FreeAllFilesList(hwnd);
-      xfree(pAD, pszSrcFile, __LINE__);
+      free(pAD);
 # ifdef FORTIFY
       Fortify_LeaveScope();
 # endif

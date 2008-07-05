@@ -35,6 +35,7 @@
 #include "filldir.h"			// FillInRecordFromFFB
 #include "dircnrs.h"
 #include "fm3dll.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -642,7 +643,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
   }
   PostMsg(hwndCnr, UM_RESCAN, MPVOID, MPVOID);
   if (pciList) {
-    xfree(pciList, pszSrcFile, __LINE__);
+    free(pciList);
     DosPostEventSem(CompactSem);
   }
   return ret;
