@@ -11,6 +11,7 @@
 .* 03 Mar 07 GKY Update that file systems other than HPFS support long names
 .* 20 Mar 07 DG  Add description for Mommy make it stop
 .* 13 Aug 07 SHL Tweak scanning page
+.* 06 Jul 08 GKY Update delete/undelete to include the option of using the XWP trashcan
 .*
 .***********************************************************************
 .*
@@ -672,6 +673,14 @@ is permanent (unrecoverable) deletion.
 which makes the mouse pointer operate in one of 3 ways. If unselected,
 FM/2 will use a finger (the default). The "x" is a transparent pointer, and
 the "=" is the operating system default pointer.
+:p.
+:hp6.Delete = move to trashcan:ehp6. controls what happens to files when
+they are deleted. The default (not Checked) will keep the same behavior
+FM/2 has always had. It will move the files to the OS/2 Deldir if it is
+specified in config.sys. Otherwise it will simply delete the files
+permanently. If this is selected and you have the trashcan from Xworkplace
+or Eworkplace installed the files will be moved to the trashcan for possible
+later restore.
 :p.
 If the :hp6.Confirm target:ehp6. checkbox is checked, as it is by
 default, FM/2 allows you to confirm the target directory to be used when

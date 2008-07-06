@@ -47,6 +47,7 @@
   15 Feb 08 GKY Fix attempt to free container items that were never inserted
   15 Feb 08 GKY Fix "collect" so it updates recollected files and unhides them if needed
   29 Feb 08 GKY Use xfree where appropriate
+  06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
 
 ***********************************************************************/
 
@@ -1793,16 +1794,26 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_UNDELETE:
-	{
+        {
 	  PCNRITEM pci;
-	  CHAR path[CCHMAXPATH];
+          CHAR path[CCHMAXPATH];
+          HOBJECT hObject;
+          HWND hwndDesktop;
 
-	  pci = (PCNRITEM) CurrentRecord(hwnd);
-	  if (pci) {
-	    strcpy(path, pci->pszFileName);
-	    MakeValidDir(path);
-	    WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
-		      UNDEL_FRAME, MPFROMP(path));
+          hObject = WinQueryObject("<XWP_TRASHCAN>");
+          if (hObject != NULLHANDLE && fTrashCan) {
+            hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+	    WinSetFocus(HWND_DESKTOP, hwndDesktop);
+            WinOpenObject(hObject, 0, TRUE);
+          }
+          else {
+            pci = (PCNRITEM) CurrentRecord(hwnd);
+            if (pci && (INT) pci != -1) {
+              strcpy(path, pci->pszFileName);
+              MakeValidDir(path);
+              WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
+                        UNDEL_FRAME, MPFROMP(path));
+            }
 	  }
 	}
 	break;

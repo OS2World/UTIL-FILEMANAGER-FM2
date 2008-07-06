@@ -10,6 +10,7 @@
 .* 01 Sep 06 GKY ADD new partition disks information
 .* 03 Mar 07 GKY Update that file systems other than HPFS support long names
 .* 29 Feb 08 GKY Document unhide menu item
+.* 06 Jul 08 GKY Update delete/undelete to include option of using the XWP trashcan
 .*
 .***********************************************************************
 .*
@@ -362,12 +363,15 @@ appended if they already exist. :artwork runin name='\bitmaps\file.bmp'.
 :artwork name='..\..\bitmaps\delete.bmp' align=center.
 :p.
 :hp6.Delete:ehp6. deletes objects. If the :link reftype=hd
-res=92400.Confirm Delete:elink. toggle is on or one or more directories
+res=99950.Confirm Delete:elink. toggle is on or if one or more directories
 are among the selected objects, you get a dialog showing the selected
 objects and asking you to confirm that you really meant what you said.
 In that dialog you have a chance to remove some of the objects. If you
 have OS/2's Undelete enabled for the drive on which the objects reside, they
-may be recoverable. :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+may be recoverable. You also have the option of having the files moved to the
+Xworkplaces/Eworkplace trahshcan from which they may be restorable.:link reftype=hd
+res=99950.Delete = move to trashcan:elink.
+:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\permdel.bmp' align=center.
 :p.
@@ -745,7 +749,10 @@ written in this manner can be effectively used as Commands.
 
 :artwork name='..\..\bitmaps\undelete.bmp' align=center.
 :p.
-This leads to a dialog that interfaces with UNDELETE.COM to allow you to
+If you have res=99950.Delete = move to trashcan:elink. enabled undelete
+will open the trahscan to facilitate resoring files. You will need to
+rescan the directory containers in order to see the restored files. Otherwise,
+this leads to a dialog that interfaces with UNDELETE.COM to allow you to
 undelete files. The drive that will be operated on is determined by the
 highlighted object in the directory tree. This dialog filters out files
 that already exist on the disk. This only works if OS/2's del directories

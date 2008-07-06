@@ -29,9 +29,9 @@
   16 Feb 08 SHL Restore SaveDirCnrState internal state save logic - accidentally removed
   22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
   29 Feb 08 GKY Changes to enable user settable command line length
-  29 Feb 08 GKY Use xfree where appropriate
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
-                keys using a "DirCnr." prefix
+  keys using a "DirCnr." prefix
+  06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
 
 ***********************************************************************/
 
@@ -1114,6 +1114,7 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGG_FM2DELETES, fFM2Deletes);
     WinCheckButton(hwnd, CFGG_CONFIRMTARGET, fConfirmTarget);
     WinSetDlgItemText(hwnd, CFGG_TARGETDIR, targetdir);
+    WinCheckButton(hwnd, CFGG_TRASHCAN, fTrashCan);
     WinSendDlgItemMsg(hwnd, CFGG_CMDLNLNGTH, SPBM_SETCURRENTVALUE,
 		      MPFROMLONG(MaxComLineStrg), MPVOID);
     return 0;
@@ -1216,7 +1217,10 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			&fDefaultDeletePerm, sizeof(BOOL));
     fFM2Deletes = WinQueryButtonCheckstate(hwnd, CFGG_FM2DELETES);
     PrfWriteProfileData(fmprof, FM3Str, "FM2Deletes",
-			&fFM2Deletes, sizeof(BOOL));
+                        &fFM2Deletes, sizeof(BOOL));
+    fTrashCan = WinQueryButtonCheckstate(hwnd, CFGG_TRASHCAN);
+    PrfWriteProfileData(fmprof, FM3Str, "TrashCan",
+			&fTrashCan, sizeof(BOOL));
     fConfirmTarget = WinQueryButtonCheckstate(hwnd, CFGG_CONFIRMTARGET);
     PrfWriteProfileData(fmprof, appname, "ConfirmTarget",
                         &fConfirmTarget, sizeof(BOOL));

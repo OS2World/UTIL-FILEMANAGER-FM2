@@ -20,6 +20,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 SHL Change to DosSleep(0)
   29 Feb 08 GKY Use xfree where appropriate
+  06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
 
 ***********************************************************************/
 
@@ -236,8 +237,22 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     StartSeeAll(HWND_DESKTOP, FALSE, dv);
     break;
   case IDM_UNDELETE:
-    WinDlgBox(HWND_DESKTOP,
-	      hwnd, UndeleteDlgProc, FM3ModHandle, UNDEL_FRAME, MPFROMP(dv));
+    {
+      HOBJECT hObject;
+      HWND hwndDesktop;
+
+      hObject = WinQueryObject("<XWP_TRASHCAN>");
+      if (hObject != NULLHANDLE && fTrashCan) {
+        hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+        WinSetFocus(HWND_DESKTOP, hwndDesktop);
+        WinOpenObject(hObject, 0, TRUE);
+      }
+    else
+      WinDlgBox(HWND_DESKTOP,
+                hwnd,
+                UndeleteDlgProc,
+                FM3ModHandle, UNDEL_FRAME, MPFROMP(dv));
+    }
     break;
   case IDM_CHKDSK:
     runemf2(SEPARATE | WINDOWED,

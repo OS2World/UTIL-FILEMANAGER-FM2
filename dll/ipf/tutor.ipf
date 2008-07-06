@@ -8,6 +8,7 @@
 .* Copyright (c) 2006 Steven H.Levine
 .*
 .* 05 Jan 07 GKY Update extraction tutorial
+.* 06 Jul 08 GKY Update delete tutorial to include move to trashcan
 .*
 .***********************************************************************
 .*
@@ -346,9 +347,10 @@ cascade menu, and is the default.
 :artwork name='..\..\bitmaps\delete.bmp' align=left.
 :artwork name='..\..\bitmaps\permdel.bmp' align=left.
 :p.
-There are two styles of deleting under FM/2 -- a "regular" delete, that
+There are three styles of deleting under FM/2 -- a "regular" delete, that
 leaves the objects capable of being undeleted using OS/2's UNDELETE
-command or FM/2's Undelete Utility, and a "permanent" delete that does
+command or FM/2's Undelete Utility, or uses the Xworkplace/Eworkplace
+trashcan for file recovery, and a "permanent" delete that does
 not leave the object recoverable. "Permanent" deletions are usually
 faster than "recoverable" deletions. You can select which type you want
 to be the default in FM/2's internal :link reftype=hd res=94600.Settings
@@ -357,9 +359,7 @@ notebook:elink..
 Note&colon. You have to set up OS/2, using CONFIG.SYS, so that UNDELETE
 is enabled to do non-permanent deletions. See :link reftype=launch
 object='VIEW.EXE' data='CMDREF.INF UNDELETE'.UNDELETE:elink. in the OS/2
-online help. Note&colon. FM/2 does not use the "Trashcan" that comes with
-eWorkPlace or XWorkPlace for non-permanent deletions. If you wish to use the
-"Trashcan" you can drag the items directly to it from FM/2.
+online help.
 :p.
 You can delete objects in many ways&colon.
 :p.

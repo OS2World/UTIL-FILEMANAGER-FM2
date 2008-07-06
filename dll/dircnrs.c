@@ -39,6 +39,7 @@
   11 May 08 SHL Add stale dcd sanity checks
   21 Jun 08 GKY Fix columns to honor preferences on new container open.
   22 Jun 08 GKY Included free_... functions for fortify checking
+  06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
 
 ***********************************************************************/
 
@@ -52,6 +53,7 @@
 #define INCL_WIN
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
+#define INCL_WINWORKPLACE
 
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -2034,24 +2036,46 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_UNDELETE:
 	{
 	  PCNRITEM pci;
-	  CHAR path[CCHMAXPATH];
+          CHAR path[CCHMAXPATH];
+          HOBJECT hObject;
+          HWND hwndDesktop;
 
-	  pci = (PCNRITEM) CurrentRecord(hwnd);
-	  if (pci && (INT) pci != -1) {
-	    strcpy(path, pci->pszFileName);
-	    MakeValidDir(path);
-	    WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
-		      UNDEL_FRAME, MPFROMP(path));
+          hObject = WinQueryObject("<XWP_TRASHCAN>");
+          if (hObject != NULLHANDLE && fTrashCan) {
+            hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+	    WinSetFocus(HWND_DESKTOP, hwndDesktop);
+            WinOpenObject(hObject, 0, TRUE);
+          }
+          else {
+            pci = (PCNRITEM) CurrentRecord(hwnd);
+            if (pci && (INT) pci != -1) {
+              strcpy(path, pci->pszFileName);
+              MakeValidDir(path);
+              WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
+                        UNDEL_FRAME, MPFROMP(path));
+            }
 	  }
 	}
 	break;
 
       case IDM_UNDELETESPEC:
-	WinDlgBox(HWND_DESKTOP,
-		  hwnd,
-		  UndeleteDlgProc,
-		  FM3ModHandle, UNDEL_FRAME, MPFROMP(dcd->directory));
-	break;
+        {
+          HOBJECT hObject;
+          HWND hwndDesktop;
+
+          hObject = WinQueryObject("<XWP_TRASHCAN>");
+          if (hObject != NULLHANDLE && fTrashCan) {
+            hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+	    WinSetFocus(HWND_DESKTOP, hwndDesktop);
+            WinOpenObject(hObject, 0, TRUE);
+          }
+        else
+	  WinDlgBox(HWND_DESKTOP,
+		    hwnd,
+		    UndeleteDlgProc,
+                    FM3ModHandle, UNDEL_FRAME, MPFROMP(dcd->directory));
+        }
+        break;
 
       case IDM_RESORT:
 //	    WinSendMsg(hwnd,
