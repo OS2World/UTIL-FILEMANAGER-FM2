@@ -12,7 +12,6 @@
   16 Jun 07 SHL Update for OpenWatcom
   06 Aug 07 SHL Use BldFullPathName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 

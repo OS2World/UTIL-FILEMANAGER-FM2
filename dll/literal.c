@@ -16,7 +16,6 @@
   22 Jul 06 SHL Check more run time errors
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 Nov 07 SHL Report fixup buffer overflow
-  29 Feb 08 GKY Use xfree where appropriate
   15 Mar 08 KOMH Fix wildcard for multiple dots
 
 ***********************************************************************/

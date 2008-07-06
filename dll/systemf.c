@@ -19,7 +19,6 @@
   07 Jan 07 GKY Move error strings etc. to string file
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   26 May 08 SHL Use uiLineNumber correctly

@@ -13,7 +13,6 @@
   30 Mar 07 GKY Remove GetPString for window class names
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  29 Feb 08 GKY Use xfree where appropriate
   16 Apr 08 SHL Comment and clean up logic
 
 ***********************************************************************/

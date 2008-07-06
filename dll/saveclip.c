@@ -21,7 +21,6 @@
   16 Nov 07 SHL Ensure fixup buffer sufficiently large
   30 Dec 07 GKY Use CommaFmtULL
   16 Feb 08 GKY Changed _fsopen flag so a new list file can be created
-  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 

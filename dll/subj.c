@@ -13,7 +13,6 @@
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
-  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 

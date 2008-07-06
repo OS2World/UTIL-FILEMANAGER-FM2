@@ -45,7 +45,6 @@
   10 Jan 08 SHL Sync with CfgDlgProc mods
   15 Feb 08 SHL Sync with settings menu rework
   15 Feb 08 SHL Avoid death if tree container 0 width
-  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 

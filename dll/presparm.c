@@ -12,7 +12,6 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Dec 07 GKY Updated CopyPresParams to copy all parameter types
-  29 Feb 08 GKY Use xfree where appropriate
 
 ***********************************************************************/
 

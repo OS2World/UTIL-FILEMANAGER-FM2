@@ -23,7 +23,6 @@
   07 Aug 07 SHL Use BldQuotedFileName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 SHL Revert to DosSleep(0)
-  29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   22 Jun 08 GKY Made Felete move to xworkplace trash can  on systems that have it
 

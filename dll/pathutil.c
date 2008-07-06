@@ -10,7 +10,6 @@
 
   05 Jan 08 SHL Move from arccnrs.c and comp.c to here
   06 Jan 08 GKY Add NormalizeCmdLine to check program strings on entry
-  29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Changes to enable user settable command line length
 
 ***********************************************************************/
