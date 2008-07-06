@@ -4613,8 +4613,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             if (nSaved > 0) {
               INT ret = add_setup(szStateName);
               if (ret == 0) {
-                WinSendMsg(hwndStatelist, LM_INSERTITEM,
-                           MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
+//                WinSendMsg(hwndStatelist, LM_INSERTITEM,
+//                           MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
                 save_setups();
               }
               else if (ret != 1) {
@@ -5720,9 +5720,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP3:
     /* start remaining child windows */
     if (!fNoSaveState && fSaveState) {
-      PSZ pStatename = GetPString(IDS_SHUTDOWNSTATE);
-      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pStatename), MPVOID);
-      if (!add_setup(pStatename))
+      PSZ pszStatename = GetPString(IDS_SHUTDOWNSTATE);
+      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPVOID);
+      if (!add_setup(pszStatename))
               save_setups();
     }
     PostMsg(MainObjectHwnd, UM_SETUP4, mp1, mp2);
