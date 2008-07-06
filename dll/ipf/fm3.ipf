@@ -8,6 +8,7 @@
 .* Copyright (c) 2006 Steven H.Levine
 .*
 .* 24 Sep 06 GKY ADD Change to F1 help
+.* 06 Jul 08 GKY ADD FM2Shutdown state info
 .*
 .***********************************************************************
 .*
@@ -764,7 +765,10 @@ the FM/2 window (what directories are open, where the windows are located,
 etc.). You can add to this list by typing a name into the entry field,
 requesting a context menu on the entry field, then selecting :hp1.Save
 State as name:ehp1. from the context menu. FM/2 will save its current
-State under that name for later recall.
+State under that name for later recall. FM/2 provides one state automatically.
+It is called FM2Shutdown and it will restore FM/2 to the state it was in
+when it was last shutdown. This is the same state that is opened on start up
+if you have "Save state of dir windows" selected.
 :p.
 :artwork name='bitmaps\useradds.bmp' align=center.
 :p.
