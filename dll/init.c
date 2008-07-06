@@ -1367,6 +1367,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, FM3Str, "AutoView", &fAutoView, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "FM2Deletes", &fFM2Deletes, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "TrashCan", &fTrashCan, &size);
 
   LoadDetailsSwitches("DirCnr", NULL);
 
