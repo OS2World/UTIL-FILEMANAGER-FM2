@@ -18,7 +18,7 @@
   07 Jan 07 GKY Add remember search flags to seek and scan
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the right to the left pane
   11 Jan 08 SHL Correct all to 3 column tabs since dialog editors assume this
-  29 Feb 08 GKY Changes to enable user settable command line length  
+  29 Feb 08 GKY Changes to enable user settable command line length
 
 ***********************************************************************/
 
@@ -627,7 +627,7 @@
 #define CFGG_LINKSETSICON								25205
 #define CFGG_VERIFYWRITES								25206
 #define CFGG_DNDDLG										25207
-#define CFGG_DEFAULTDELETEPERM						25208
+#define CFGG_DEFAULTDELETEPERM	  					25208
 #define CFGG_PRINTER										25209
 #define CFGG_NODEAD										25210
 #define CFGG_BORING										25211
@@ -636,6 +636,7 @@
 #define CFGG_CONFIRMTARGET								25214
 #define CFGG_TARGETDIR									25215
 #define CFGG_CMDLNLNGTH                                                                 25216
+#define CFGG_TRASHCAN                                                                   25217
 
 #define CFGB_FRAME									25250
 #define CFGB_TOOLBARHELP								25251

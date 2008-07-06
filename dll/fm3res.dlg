@@ -2752,21 +2752,23 @@ BEGIN
                         106, 10
         AUTOCHECKBOX    "Con~firm target", CFGG_CONFIRMTARGET, 4, 56, 106,
                         10
-        LTEXT           "Target directory:", -1, 4, 44, 102, 8
-        ENTRYFIELD      "", CFGG_TARGETDIR, 6, 32, 246, 8, ES_MARGIN
+        LTEXT           "Target directory:", -1, 4, 34, 102, 8
+        ENTRYFIELD      "", CFGG_TARGETDIR, 6, 22, 246, 8, ES_MARGIN
         AUTOCHECKBOX    "~Link sets icon", CFGG_LINKSETSICON, 122, 128, 106,
                         10
         AUTOCHECKBOX    "~Verify disk writes", CFGG_VERIFYWRITES, 122, 116,
                         132, 10
         AUTOCHECKBOX    "~Drag&drop dialog", CFGG_DNDDLG, 122, 104, 106, 10
-        AUTOCHECKBOX    "Default delete ~perm.", CFGG_DEFAULTDELETEPERM, 122,
+        AUTOCHECKBOX    "Default delete ~permanent", CFGG_DEFAULTDELETEPERM, 122,
                         92, 106, 10
         CONTROL         "'Momm~y, make it stop!'", CFGG_NODEAD, 122, 80, 106,
                         10, WC_BUTTON, BS_AUTO3STATE | WS_TABSTOP | WS_VISIBLE
         AUTOCHECKBOX    "FM/~2 deletes dragged items", CFGG_FM2DELETES, 122,
                         68, 130, 10
-        LTEXT           "Command line length", -1, 122, 56, 60, 10, NOT WS_GROUP
-        CONTROL         "", CFGG_CMDLNLNGTH, 184, 56, 44, 10, WC_SPINBUTTON,
+        AUTOCHECKBOX    "Delete = move to trashcan", CFGG_TRASHCAN, 122, 56, 106,
+                        10
+        LTEXT           "Command line length:", -1, 122, 44, 60, 10, NOT WS_GROUP
+        CONTROL         "", CFGG_CMDLNLNGTH, 184, 46, 44, 10, WC_SPINBUTTON,
                         SPBS_NUMERICONLY | SPBS_MASTER | SPBS_SERVANT |
                         SPBS_JUSTCENTER | WS_TABSTOP | SPBS_FASTSPIN |
                         WS_VISIBLE
