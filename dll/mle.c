@@ -18,8 +18,8 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   17 Dec 07 GKY Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun
   29 Feb 08 GKY Refactor global command line variables to notebook.h
-  29 Feb 08 GKY Use xfree where appropriate
   22 Jun 08 GKY Fixed memory buffer access after it had been freed
+  06 Jul 08 GKY Rework LoadThread logic with Steven's help
 
 ***********************************************************************/
 
@@ -770,6 +770,10 @@ VOID LoadThread(VOID * arg)
 
   DosError(FERR_DISABLEHARDERR);
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
+
   bkg = (BKGLOAD *) arg;
   if (bkg) {
     thab = WinInitialize(0);
@@ -778,9 +782,6 @@ VOID LoadThread(VOID * arg)
       if (thmq) {
 	WinCancelShutdown(thmq, TRUE);
 	IncrThreadUsage();
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
 	priority_normal();
 	if (bkg->hex == 1)
 	  fSuccess = MLEHexLoad(bkg->h, bkg->filename);
@@ -801,23 +802,17 @@ VOID LoadThread(VOID * arg)
         PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
       DecrThreadUsage();
       WinTerminate(thab);
-      free(bkg);
-      bkg = NULL;
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
-      _endthread();
     }
-    // fixme to be gone?
     else {
+      // fixme to be gone? - can not PostMsg without HAB
       PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
-      free(bkg);
-      bkg = NULL;
+    }
+    free(bkg);
+  } // if bkg
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
-    }
-  }
+  _endthread();
 }
 
 INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
