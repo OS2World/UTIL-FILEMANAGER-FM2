@@ -104,10 +104,12 @@ lxlite:: .symbolic
   cd dll
 !ifdef DEBUG
 !  ifeq DEBUG 0
-     $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+#      $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+     $(MAKE) $(DEBUG_OPT) lxlite
 !  endif
 !else
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+#   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+  $(MAKE) $(DEBUG_OPT) lxlite
 !endif
   cd ..
 
