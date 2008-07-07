@@ -328,9 +328,12 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
 	// Need unique buffer 23 Jul 07 SHL
-	pci->pszLongName = xmalloc(2, pszSrcFile, __LINE__);
-	pci->pszLongName[0] = 0;	// Make null string
-	pci->pszLongName[1] = 1;	// Flag root - hack cough
+        pci->pszLongName = xmalloc(3, pszSrcFile, __LINE__);
+        if (pci->pszLongName) {
+          pci->pszLongName[0] = 0;	// Make null string
+          pci->pszLongName[1] = 1;	// Flag root - hack cough
+          pci->pszLongName[2] = 0;        // terminate anyway
+        }
       }
       else
 	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
@@ -1023,7 +1026,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
       DosSleep(16); //05 Aug 07 GKY 33
-      xfree(pState, pszSrcFile, __LINE__);			// Let's hope no one is still looking
+      xfree(pState, pszSrcFile, __LINE__); // Let's hope no one is still looking
 # ifdef FORTIFY
   Fortify_LeaveScope();
 # endif
