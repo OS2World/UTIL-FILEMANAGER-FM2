@@ -222,11 +222,11 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (strcmp(szCLBuf, virus)){
 	NormalizeCmdLine(pszWorkBuf, szCLBuf);
 	memcpy(virus, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        free(pszWorkBuf);
-        free(szCLBuf);
 	if (!strchr(virus, '%') && strlen(virus) > 3)
 	  strcat(virus, " %p");
       }
+      free(pszWorkBuf);
+      free(szCLBuf);
       if (!*virus)
 	strcpy(virus, "OS2SCAN.EXE %p /SUB /A");
       WinQueryDlgItemText(hwnd, CFGA_EXTRACTPATH, CCHMAXPATH, szPathBuf);
