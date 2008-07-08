@@ -6,12 +6,13 @@
   Object windows
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2006, 2008 Steven H.Levine
 
   26 Jul 06 SHL Check more run time errors
   02 Nov 06 SHL Comments
   30 Mar 07 GKY Remove GetPString for window class names
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  08 Jul 08 SHL Correct Fortify_LeaveScope usage and avoid spurious reports
 
 ***********************************************************************/
 
@@ -75,9 +76,9 @@ VOID MakeObjWin(VOID * args)
 	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#ifdef FORTIFY
+	Fortify_EnterScope();
+#endif
 	WinSetWindowPtr(ObjectHwnd, QWL_USER, args);
 	/* initially populate container */
 	WinSendMsg(ObjectHwnd, UM_SETUP, MPVOID, MPVOID);
@@ -86,12 +87,20 @@ VOID MakeObjWin(VOID * args)
 	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
 	  WinDispatchMsg(hab2, &qmsg2);
 	WinDestroyWindow(ObjectHwnd);
+#ifdef FORTIFY
+	{
+	  HWND hwndCnr = ((DIRCNRDATA *)args)->hwndCnr;
+	  USHORT i;
+	  // Allow container to close and free data
+	  for (i = 0; WinIsWindow(hab2, hwndCnr) && i < 10; i++) {
+            DosSleep(50);
+	  }
+	  Fortify_LeaveScope();
+	}
+#endif
       }
       WinDestroyMsgQueue(hmq2);
     }
-# ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
     WinTerminate(hab2);
   }
 }
