@@ -1,7 +1,7 @@
 New stuff's at the top.  This list is not necessarily complete.
 
 3.11
- o Fixed 2 traps in Dirsize, tickey 243 (Gregg Steven)
+ o Fixed 2 traps in Dirsize, ticket 243 (Gregg Steven)
  o Added the option of having delete move the files to the Xworkplace trashcan, ticket 43
    (Gregg)
  o Added fortify support fix several memory management issues, ticket 213 240 (Steven Gregg)
@@ -12,7 +12,7 @@ New stuff's at the top.  This list is not necessarily complete.
    (Gregg John)
  o Eliminated the "bare" ini key details setting names. They are now prefaced by the container
    name (ie DIRCNRS_) ticket 234 (John)
- o Made all command line lenghts obey user selected command line length, ticket 233 (Gregg)
+ o Made all command line lengths obey user selected command line length, ticket 233 (Gregg)
  o Added a state "FM2ShutDown" to the states dropdown box to allow easy return to the startup
    state, ticket 227 (John)
  o Fixed crash in compare directories if a file's name exceeded the OS/2 maximum, ticket 213
