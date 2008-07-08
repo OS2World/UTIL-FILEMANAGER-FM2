@@ -1609,9 +1609,9 @@ VOID FreeCnrItemData(PCNRITEM pci)
     pci->pszFmtFileSize = NullStr;
     free(psz);
   }
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+// # ifdef FORTIFY
+//   Fortify_LeaveScope();
+// # endif
 }
 
 /**
