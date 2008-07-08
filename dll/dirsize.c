@@ -32,6 +32,9 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
+  07 Jul 08 GKY Fixed trap in PMCTLS (strlen) inadequate memory allocation
+  07 Jul o8 GKY Fixed trap by no longer allocating pci->pszLongName as flag but pointing isroot
+                version to NullStr and all others to NULL.
 
 ***********************************************************************/
 
@@ -203,14 +206,12 @@ static BOOL ProcessDir(HWND hwndCnr,
   }
   // fixme to understand this - appears to be indirectly saving length, but why?
   pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
-  pci->pszLongName = pci->pszFileName;	// fixme to be sure?
   pci->rc.pszIcon = pci->pszFileName;
   pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
     strupr(pci->pszFileName);
   else if (fForceLower)
     strlwr(pci->pszFileName);
-  pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
   memset(&ri, 0, sizeof(RECORDINSERT));
   ri.cb = sizeof(RECORDINSERT);
   ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -307,33 +308,34 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     CHAR szSubDir[80];
     CHAR szAllDir[80];
     CHAR szBar[80];
+    CHAR szBuf[CCHMAXPATH * 2];
+
+# ifdef FORTIFY
+  Fortify_EnterScope();
+# endif
 
     // cbFile = currect directory usage in bytes
     // easize = subdirectory usage in bytes
     CommaFmtULL(szCurDir, sizeof(szCurDir), pci->cbFile, 'K');
     *szBar = 0;
-
+    pci->pszLongName = NULL;
     if (ullTotalBytes) {
       register UINT cBar;
 
       if (isroot) {
 	FSALLOCATE fsa;
-	APIRET rc;
+        APIRET rc;
 
-	memset(&fsa, 0, sizeof(fsa));
+
+        memset(&fsa, 0, sizeof(fsa));
 	rc = DosQueryFSInfo(toupper(*pci->pszFileName) - '@', FSIL_ALLOC, &fsa,
 			    sizeof(FSALLOCATE));
 	if (!rc) {
 	  fltPct = (ullTotalBytes * 100.0) /
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
-	// Need unique buffer 23 Jul 07 SHL
-        pci->pszLongName = xmalloc(3, pszSrcFile, __LINE__);
-        if (pci->pszLongName) {
-          pci->pszLongName[0] = 0;	// Make null string
-          pci->pszLongName[1] = 1;	// Flag root - hack cough
-          pci->pszLongName[2] = 0;        // terminate anyway
-        }
+        // Need unique buffer 23 Jul 07 SHL
+        pci->pszLongName = NullStr;
       }
       else
 	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
@@ -354,22 +356,17 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     CommaFmtULL(szSubDir, sizeof(szSubDir), pci->easize, 'K');
     CommaFmtULL(szAllDir, sizeof(szAllDir), pci->cbFile + pci->easize, 'K');
     c = pci->pszDisplayName - pci->pszFileName;
-    pci->pszFileName = xrealloc(pci->pszFileName,
-				CCHMAXPATH,
-				pszSrcFile,
-				__LINE__);	// 23 Jul 07 SHL
-    sprintf(pci->pszFileName + c,
-	    "  %s + %s = %s (%.02lf%%%s)\r%s",
+    sprintf(szBuf,
+	    "%s  %s + %s = %s (%.02lf%%%s)\r%s",
+	    pci->pszFileName,
 	    szCurDir,
 	    szSubDir,
 	    szAllDir,
 	    fltPct,
 	    isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr,
-	    szBar);
-    pci->pszFileName = xrealloc(pci->pszFileName,
-				strlen(pci->pszFileName) + 1,
-				pszSrcFile,
-				__LINE__);	// 23 Jul 07 SHL
+            szBar);
+    free(pci->pszFileName);
+    pci->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
     pci->pszDisplayName = pci->pszFileName + c;
     WinSendMsg(hwndCnr,
 	       CM_INVALIDATERECORD, MPFROMP(&pci), MPFROM2SHORT(1, 0));
@@ -672,7 +669,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    p = strchr(pci->pszFileName, '\r');
 	    if (p) {
               // draw text
-              if (*(pci->pszLongName + 1) == 1)  // is root record
+              if (pci->pszLongName == NullStr)  // is root record
 	        GpiSetColor(oi->hps, CLR_DARKRED);
 	      else if (!pci->cbFile)		// no size
 		GpiSetColor(oi->hps, CLR_DARKGRAY);
@@ -758,7 +755,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      // fill box with graph bar, flags is integer %
 	      if (pci->flags) {
-		if (*(pci->pszLongName + 1) == 1)	// is root record
+		if (pci->pszLongName == NullStr)	// is root record
 		  GpiSetColor(oi->hps, CLR_DARKGREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_RED);
@@ -770,7 +767,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		GpiBox(oi->hps, DRO_OUTLINEFILL, &ptl, 0, 0);
 
 		// draw highlights and shadows on graph
-		if (*(pci->pszLongName + 1) == 1)
+		if (pci->pszLongName == NullStr)
 		  GpiSetColor(oi->hps, CLR_GREEN);
 		else
 		  GpiSetColor(oi->hps, CLR_PALEGRAY);
@@ -787,7 +784,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 		ptl.x = oi->rclItem.xLeft + pci->flags * 2;
 		GpiLine(oi->hps, &ptl);
-		if (*(pci->pszLongName + 1) != 1) {
+		if (pci->pszLongName == NULL) {
 		  GpiSetColor(oi->hps, CLR_DARKRED);
 		  ptl.x = oi->rclItem.xLeft + 2;
 		  ptl.y = yBottom + 3;
@@ -838,7 +835,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		GpiLine(oi->hps, &ptl);
 	      } // for x
 	      return MRFROMLONG(TRUE);
-	    }
+            }
 	  }
 	}
       }
