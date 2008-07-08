@@ -57,6 +57,7 @@
   19 Jun 08 JBS Ticket 227: Allow temporary saving/deleting of the shutdown state of directory containers
   22 Jun 08 GKY Use free_... functions for fortify checking
   30 Jun 08 JBS Ticket 103: Fix restore of previous shutdown state when opening FM/2
+  07 Jul 08 JBS Ticket 242: Delete obsolete INI keys when re-saving a state
 
 ***********************************************************************/
 
