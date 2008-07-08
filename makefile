@@ -128,6 +128,7 @@ clean:: .symbolic
   -del *.map
   -del *.obj
   -del *.res
+  -del *.sym
   -del fm3res.str
 
 distclean: clean .symbolic

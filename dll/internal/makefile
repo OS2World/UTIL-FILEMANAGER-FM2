@@ -49,7 +49,7 @@ $(BASE).lrf: $(__MAKEFILES__)
 !endif
    @%write $^@ option map
    @%write $^@ name $(BASE)
-   @%write $^@ op desc '@$#SLAInc:3.09$#@$#$#1$#$# 01/10/2007 03:09:00      slamain::EN:US:0:U:@@FM/2 Strings Compiler'
+   @%write $^@ op desc '@$#SLAInc:3.11$#@$#$#1$#$# 07/08/2007 03:11:00      slamain::EN:US:0:U:@@FM/2 Strings Compiler'
    @%write $^@ file $(BASE).obj
    @%write $^@ library os2386.lib
 
@@ -58,6 +58,7 @@ clean: .symbolic
   -del $(BASE).lrf
   -del $(BASE).map
   -del $(BASE).obj
+  -del $(BASE).sym
 
 cleanobj: .symbolic
   -del $(BASE).obj

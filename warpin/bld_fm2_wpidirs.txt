@@ -114,7 +114,5 @@ FILE: *.map                    10 .  Debug
 FILE: *.sym                    10 .  .
 FILE: *.map                    10 dll  Debug
 FILE: *.sym                    10 dll  .
-FILE: *.map                    10 dll\internal  Debug
-FILE: *.sym                    10 dll\internal  .
 
 ;NOFILESPACKAGE: 100
