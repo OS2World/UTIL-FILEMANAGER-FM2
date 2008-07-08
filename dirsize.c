@@ -6,10 +6,11 @@
   Directory sizes applet
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   11 Jun 02 SHL Baseline
   06 Jan 04 SHL Total drives >4GB better
+  08 Jul 08 SHL Avoid WARNALL warning
 
 ***********************************************************************/
 
@@ -115,7 +116,7 @@ MRESULT EXPENTRY DirMainProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (!DosQueryFSInfo(toupper(*curdir) - '@',
 			    FSIL_ALLOC, &fsa, sizeof(FSALLOCATE))) {
-	  percentfree = fsa.cUnit ? (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
+	  percentfree = fsa.cUnit ? (USHORT)((fsa.cUnitAvail * 100) / fsa.cUnit) : 0;	// 27 May 08 SHL
 	  if (!percentfree && fsa.cUnitAvail)
 	    percentfree = 1;
 	  percentused = 100 - percentfree;
