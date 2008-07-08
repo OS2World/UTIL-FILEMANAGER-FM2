@@ -13,9 +13,9 @@ adding a settings notebook submenu to allow selection of the
 page you wish to visit. We have updated the look of several
 dialogs and containers including adding the ability to remember
 size location and presentation parameters. We have reworked
-the the save state on close so it will save the different
-states of multiple directory containers and in greater detail.
-This state can also be restore at anytime during a session by
+the save state on close so it will save the different states
+of multiple directory containers and in greater detail. This
+state can also be restored at anytime during a session by
 selecting it from the "States" drop down. We have provided better
 progress indicators to update the progress of long operations.
 We now provide both the SYM & MAP files in a separate warpin
