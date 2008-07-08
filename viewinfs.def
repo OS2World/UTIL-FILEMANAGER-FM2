@@ -4,6 +4,6 @@
 
 # 16 Jun 07 GKY Convert to OpenWatcom
 
-option description '@#SLAInc:3.10#@##1## 03/02/2008 03:10:00      SLAMain::EN:US:0:U:@@FM/2 View INFs MiniApp Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2005, 2008 Steven Levine and Associates, Inc.'
+option description '@#SLAInc:3.11#@##1## 07/08/2008 03:11:00      GKYBuild::EN:US:0:U:@@FM/2 View INFs MiniApp Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2005, 2008 Steven Levine and Associates, Inc.'
 
 option stack = 122840

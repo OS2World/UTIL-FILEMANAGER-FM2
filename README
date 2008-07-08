@@ -5,6 +5,20 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.11 adds the option of having delete move the objects
+to the Xworkplace trashcan. Undelete will open the trashcan
+so you can restore deleted files. The only short coming is you
+will need to rescan in order to see the restored file.
+We also added a reserved state which allows you to return
+FM/2 to the state it was in on start up (the shut down state).
+We have improved the filtering of file names that contain
+multiple periods and fixed FM/2's failure to always follow
+the details settings from the setup notebook. The primary
+task achieved for this release was the addition of fortify
+support which allowed us to fix a handful of memory usage
+related bugs. We fixed a few other minor issues see the
+history for more details.
+
 Fm/2 3.10 adds the ability to set the command line length
 to correspond to the command shell you are using. We have
 moved some menu items to submenus to reduce menu clutter
@@ -28,7 +42,7 @@ FM/2 3.09 adds "mailto:" so you can configure the ability to
 double click an email address in the new viewer and have it
 open a new email using that address. The viewer page in the
 settings notebook was split into 2 pages to facilitate the
-change. Additionally, We fixed some defects and enhance
+change. Additionally, We fixed some defects and enhanced
 performance in some areas such as commandline quoting.
 
 FM/2 3.08 has had changes to its file filtering logic.

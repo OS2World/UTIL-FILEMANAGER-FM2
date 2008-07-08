@@ -1,5 +1,25 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.11
+ o Fixed 2 traps in Dirsize, tickey 243 (Gregg Steven)
+ o Added the option of having delete move the files to the Xworkplace trashcan, ticket 43
+   (Gregg)
+ o Added fortify support fix several memory management issues, ticket 213 240 (Steven Gregg)
+ o Fixed multi dot file association/filtering logic, ticket 235 (KO Myung-Hun)
+ o The Newviewer (not the old MLE) is used to view files when view is selected from menus
+   ticket 241 (Gregg)
+ o Fixed issues with details view not following user selected settings, ticket 237 239
+   (Gregg John)
+ o Eliminated the "bare" ini key details setting names. They are now prefaced by the container
+   name (ie DIRCNRS_) ticket 234 (John)
+ o Made all command line lenghts obey user selected command line length, ticket 233 (Gregg)
+ o Added a state "FM2ShutDown" to the states dropdown box to allow easy return to the startup
+   state, ticket 227 (John)
+ o Fixed crash in compare directories if a file's name exceeded the OS/2 maximum, ticket 213
+   (Gregg)
+ o FM/2 reopens directory containers in the position they were closed in, ticket 103 (John)
+ o Add warnall suport (Steven)
+
 3.10
  o Removed the close buttton and menu item from the tree container which closed FM/2 (Gregg)
  o Implement bubble help for bitmap menu items in collector and arc container (Gregg)
