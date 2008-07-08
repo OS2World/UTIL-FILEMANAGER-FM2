@@ -4613,8 +4613,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             if (nSaved > 0) {
               INT ret = add_setup(szStateName);
               if (ret == 0) {
-//                WinSendMsg(hwndStatelist, LM_INSERTITEM,
-//                           MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
+                WinSendMsg(hwndStatelist, LM_INSERTITEM,
+                           MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(szStateName));
                 save_setups();
               }
               else if (ret != 1) {
