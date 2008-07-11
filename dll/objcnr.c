@@ -216,7 +216,7 @@ static VOID FillCnrsThread(VOID * args)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   if (!dirsize) {
     Runtime_Error(pszSrcFile, __LINE__, "no data");
     return;
@@ -241,7 +241,7 @@ static VOID FillCnrsThread(VOID * args)
   free(dirsize);
 # ifdef FORTIFY
   Fortify_LeaveScope();
-# endif
+#  endif
 }
 
 MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -274,9 +274,9 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(hwnd, OBJCNR_DIR, data->dirname);
     {
       DIRSIZE *dirsize;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_EnterScope();
+#      endif
       dirsize = xmalloc(sizeof(DIRSIZE), pszSrcFile, __LINE__);
       if (!dirsize) {
 	WinDismissDlg(hwnd, 0);
@@ -290,9 +290,9 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Runtime_Error(pszSrcFile, __LINE__,
 		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
         free(dirsize);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#       ifdef FORTIFY
+        Fortify_LeaveScope();
+#        endif
 	WinDismissDlg(hwnd, 0);
 	break;
       }

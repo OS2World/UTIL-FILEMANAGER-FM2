@@ -85,7 +85,7 @@ static VOID FillKillListThread2(VOID * arg)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   WinCancelShutdown(thmq, TRUE);
@@ -137,8 +137,8 @@ static VOID FillKillListThread2(VOID * arg)
   DecrThreadUsage();
   WinTerminate(thab);
 # ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
+  Fortify_LeaveScope();
+#  endif
 }
 
 static VOID FillKillListThread3(VOID * arg)
@@ -154,7 +154,7 @@ static VOID FillKillListThread3(VOID * arg)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   WinCancelShutdown(thmq, TRUE);
@@ -206,8 +206,8 @@ static VOID FillKillListThread3(VOID * arg)
   DecrThreadUsage();
   WinTerminate(thab);
 # ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
+  Fortify_LeaveScope();
+#  endif
 }
 
 static VOID FillKillListThread(VOID * arg)
@@ -228,7 +228,7 @@ static VOID FillKillListThread(VOID * arg)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   WinCancelShutdown(thmq, TRUE);
@@ -308,8 +308,8 @@ Abort:
   DecrThreadUsage();
   WinTerminate(thab);
 # ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
+  Fortify_LeaveScope();
+#  endif
 }
 
 MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

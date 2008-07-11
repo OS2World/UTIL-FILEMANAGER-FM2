@@ -252,9 +252,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
     free(sel);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     DosPostEventSem(CompactSem);
     return FALSE;
   }
@@ -272,9 +272,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     if (sellen < 1) {
       Runtime_Error(pszSrcFile, __LINE__, "len < 1");
       free(sel);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
       DosPostEventSem(CompactSem);
       return FALSE;
     }
@@ -289,9 +289,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     SaveToClip(h, sel, TRUE);
     DosFreeMem(temp);
     free(sel);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     MLEenable(h);
     DosPostEventSem(CompactSem);
     return TRUE;
@@ -313,9 +313,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
 #endif
       DosFreeMem(temp);
       free(sel);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
       MLEenable(h);
       DosPostEventSem(CompactSem);
       return TRUE;
@@ -389,9 +389,9 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
 #endif
     DosFreeMem(temp);
     free(sel);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     DosPostEventSem(CompactSem);
     MLEenable(h);
     return FALSE;
@@ -427,7 +427,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   free(sel);
 # ifdef FORTIFY
   Fortify_LeaveScope();
-# endif
+#  endif
   DosPostEventSem(CompactSem);
   return TRUE;
 }
@@ -594,9 +594,9 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	  else
 	    ret = FALSE;
 	  free(buffer);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_LeaveScope();
+#          endif
 	}
 	DosFreeMem(hexbuff);
       }
@@ -772,7 +772,7 @@ VOID LoadThread(VOID * arg)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
 
   bkg = (BKGLOAD *) arg;
   if (bkg) {
@@ -811,7 +811,7 @@ VOID LoadThread(VOID * arg)
   } // if bkg
 # ifdef FORTIFY
   Fortify_LeaveScope();
-# endif
+#  endif
   _endthread();
 }
 

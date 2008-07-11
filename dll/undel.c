@@ -64,7 +64,7 @@ static VOID FillUndelListThread(VOID * arg)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   thab = WinInitialize(0);
   thmq = WinCreateMsgQueue(thab, 0);
   if (thab && thmq) {
@@ -162,8 +162,8 @@ static VOID FillUndelListThread(VOID * arg)
     WinTerminate(thab);
   }
 # ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
+  Fortify_LeaveScope();
+#  endif
 }
 
 MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

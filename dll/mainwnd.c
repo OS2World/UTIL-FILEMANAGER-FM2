@@ -209,9 +209,9 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case WM_DESTROY:
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
@@ -5806,9 +5806,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       fWantFirstTimeInit = FALSE;
       PostMsg(hwnd, WM_COMMAND, MPFROMLONG(IDM_QUICKSETTINGS), MPVOID);
     }
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     return 0;
   }
 
@@ -6392,15 +6392,15 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hwndMain = (HWND) 0;
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
-# ifdef FORTIFY
-  free_commands();
-  free_associations();
-  free_udirs();
-  free_ldir();
-  free_archivers();
-  free_tools();
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      free_commands();
+      free_associations();
+      free_udirs();
+      free_ldir();
+      free_archivers();
+      free_tools();
+      Fortify_LeaveScope();
+#      endif
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);

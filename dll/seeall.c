@@ -385,9 +385,9 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_PRINT:
 	{
 	  LISTINFO *li;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_EnterScope();
+#          endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->hwndS = WinWindowFromID(hwndFrame, FID_CLIENT);
@@ -1129,11 +1129,11 @@ static VOID MakeSeeObjWinThread(VOID * args)
   QMSG qmsg2;
 
   if (ad) {
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     hab2 = WinInitialize(0);
     if (hab2) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
       hmq2 = WinCreateMsgQueue(hab2, 256);
       if (hmq2) {
 	DosError(FERR_DISABLEHARDERR);
@@ -1166,10 +1166,10 @@ static VOID MakeSeeObjWinThread(VOID * args)
       }
       else
         WinTerminate(hab2);
-# ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
     }
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
   }
 }
 
@@ -1646,7 +1646,7 @@ VOID FindDupesThread(VOID * args)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   if (!DosRequestMutexSem(ad->hmtxScan, SEM_INDEFINITE_WAIT)) {
     priority_normal();
     hab2 = WinInitialize(0);
@@ -1759,8 +1759,8 @@ VOID FindDupesThread(VOID * args)
     WinTerminate(hab2);
   }
 # ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
+  Fortify_LeaveScope();
+#  endif
 }
 
 static VOID FilterAll(HWND hwnd, ALLDATA *ad);
@@ -2056,7 +2056,7 @@ static VOID FindAllThread(VOID * args)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   if (!DosRequestMutexSem(ad->hmtxScan, SEM_INDEFINITE_WAIT)) {
     priority_normal();
     hab2 = WinInitialize(0);
@@ -2117,8 +2117,8 @@ static VOID FindAllThread(VOID * args)
     WinTerminate(hab2);
   }
 # ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
+  Fortify_LeaveScope();
+#  endif
 }
 
 MRESULT EXPENTRY AFDrvsWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -2474,9 +2474,9 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CREATE:
     // fprintf(stderr,"Seeall: WM_CREATE\n");
     WinSetWindowPtr(hwnd, QWL_USER, NULL);
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     pAD = xmallocz(sizeof(ALLDATA), pszSrcFile, __LINE__);
     if (pAD) {
       HWND hwndFrame;
@@ -4292,10 +4292,10 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       FreeAllFilesList(hwnd);
       free(pAD);
-# ifdef FORTIFY
-      Fortify_LeaveScope();
-# endif
     }
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     break;
   }
 

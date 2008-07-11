@@ -79,9 +79,9 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
     case IDM_MOVE case IDM_COPY:
     case IDM_EXTRACT:
       {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_EnterScope();
+#      endif
 	li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
         if (li) {
 	  wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
@@ -104,9 +104,9 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      FreeListInfo(wk->li);
               free(wk);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#             ifdef FORTIFY
+              Fortify_LeaveScope();
+#              endif
 	    }
 	  }
 	  else
@@ -117,6 +117,9 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
     }
   }
   FreeUndo();
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
 }
 
 #endif // defined(UNDO)
@@ -134,10 +137,10 @@ VOID Action(VOID * args)
   CHAR szQuotedFileName[CCHMAXPATH];
 
 
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
   if (wk) {
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     if (wk->li && wk->li->list && wk->li->list[0]) {
       hab2 = WinInitialize(0);
       if (hab2) {
@@ -977,9 +980,9 @@ VOID Action(VOID * args)
     if (wk->li)
       FreeListInfo(wk->li);
     free(wk);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     DosPostEventSem(CompactSem);
   }
 }
@@ -994,10 +997,10 @@ VOID MassAction(VOID * args)
   UINT numfiles = 0, numalloc = 0;
 
 
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
   if (wk) {
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     if (wk->li && wk->li->list && wk->li->list[0]) {
       hab2 = WinInitialize(0);
       if (hab2) {
@@ -1642,9 +1645,9 @@ VOID MassAction(VOID * args)
     if (wk->li)
       FreeListInfo(wk->li);
     free(wk);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     DosPostEventSem(CompactSem);
   }
 }

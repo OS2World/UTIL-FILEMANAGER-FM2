@@ -200,9 +200,9 @@ static VOID CompareFilesThread(VOID *args)
     fc = *(FCOMPARE *)args;
     hab2 = WinInitialize(0);
     if (hab2) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_EnterScope();
+#      endif
       hmq2 = WinCreateMsgQueue(hab2, 0);
       if (hmq2) {
 	WinCancelShutdown(hmq2, TRUE);
@@ -314,9 +314,9 @@ static VOID CompareFilesThread(VOID *args)
 	WinDestroyMsgQueue(hmq2);
       }
       WinTerminate(hab2);
-# ifdef FORTIFY
+#     ifdef FORTIFY
       Fortify_LeaveScope();
-# endif
+#      endif
     }
   }
 }
@@ -407,9 +407,9 @@ static VOID ActionCnrThread(VOID *args)
 
   hab = WinInitialize(0);
   if (hab) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     hmq = WinCreateMsgQueue(hab, 0);
     if (hmq) {
       WinCancelShutdown(hmq, TRUE);
@@ -692,9 +692,9 @@ static VOID ActionCnrThread(VOID *args)
     DecrThreadUsage();
     free(cmp);
     WinTerminate(hab);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_LeaveScope();
-# endif
+#    endif
   }
   else
     xfree(cmp, pszSrcFile, __LINE__);
@@ -719,9 +719,9 @@ static VOID SelectCnrsThread(VOID *args)
 
   hab = WinInitialize(0);
   if (hab) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     hmq = WinCreateMsgQueue(hab, 0);
     if (hmq) {
       WinCancelShutdown(hmq, TRUE);
@@ -757,9 +757,9 @@ static VOID SelectCnrsThread(VOID *args)
     DecrThreadUsage();
     free(cmp);
     WinTerminate(hab);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_LeaveScope();
-# endif
+#    endif
   }
   else
     free(cmp);
@@ -1470,14 +1470,14 @@ static VOID FillCnrsThread(VOID *args)
 # ifdef FORTIFY
   // 10 May 08 SHL fixme to suppress W111
   Fortify_EnterScope();
-# endif
+#  endif
 
   if (!cmp) {
     Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     // 10 May 08 SHL fixme to suppress W111
     Fortify_LeaveScope();
-# endif
+#    endif
     _endthread();
   }
 
@@ -2101,7 +2101,7 @@ static VOID FillCnrsThread(VOID *args)
 
 # ifdef FORTIFY
   Fortify_LeaveScope();
-# endif
+#  endif
 
   // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread exit");
 }
@@ -2650,9 +2650,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			MPFROMLONG(CMA_CNRTITLE | CMA_FLWINDOWATTR));
       WinCheckButton(hwnd, COMP_HIDENOTSELECTED, 0);
       cmp->filling = TRUE;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_EnterScope();
+#      endif
       forthread = xmalloc(sizeof(COMPARE), pszSrcFile, __LINE__);
       if (!forthread)
 	WinDismissDlg(hwnd, 0);
@@ -2665,9 +2665,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  WinDismissDlg(hwnd, 0);
           free(forthread);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_LeaveScope();
+#          endif
 	}
 	else {
 	  WinEnableWindowUpdate(hwndLeft, FALSE);

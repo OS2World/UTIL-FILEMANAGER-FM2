@@ -613,9 +613,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       free((CHAR *)mp1);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
     }
     return 0;
 
@@ -637,9 +637,9 @@ static VOID MakeAutoWinThread(VOID * args)
 
   hab2 = WinInitialize(0);
   if (hab2) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     hmq2 = WinCreateMsgQueue(hab2, 128);
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
@@ -672,9 +672,9 @@ static VOID MakeAutoWinThread(VOID * args)
     }
     // else
     WinTerminate(hab2);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_LeaveScope();
-# endif
+#    endif
   }
 }
 
@@ -798,9 +798,9 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      PutComments(hwnd, currfile, ea);
 	      PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	      free(ea);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#             ifdef FORTIFY
+              Fortify_LeaveScope();
+#              endif
 	    }
 	  }
 	}
@@ -851,9 +851,9 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  stopflag++;
 	  if (!PostMsg(hwndAutoObj, UM_LOADFILE, MPFROMP(cf), MPVOID))
 	    free(cf);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#           ifdef FORTIFY
+            Fortify_LeaveScope();
+#            endif
 	}
       }
       break;
@@ -910,9 +910,9 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     stopflag++;
     if (!PostMsg(hwndAutoObj, msg, mp1, mp2)) {
       xfree((CHAR *)mp1, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
     }
     return 0;
 

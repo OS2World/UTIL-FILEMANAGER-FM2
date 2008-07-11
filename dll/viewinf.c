@@ -58,7 +58,7 @@ static VOID FillListboxThread(VOID * args)
     return;
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   hwnd = dummy->hwnd;
   hab2 = WinInitialize(0);
   if (hab2) {
@@ -194,7 +194,7 @@ static VOID FillListboxThread(VOID * args)
   free(dummy);
 # ifdef FORTIFY
   Fortify_LeaveScope();
-# endif
+#  endif
 }
 
 MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

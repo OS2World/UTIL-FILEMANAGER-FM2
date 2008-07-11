@@ -983,7 +983,7 @@ static VOID dataminThread(VOID * pv)
 
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   if (G_hevDataMin == NULLHANDLE) {
     // Create just once for any thread that might use it
     // Kernel will clean up on exit
@@ -1077,9 +1077,9 @@ static VOID dataminThread(VOID * pv)
 
   if (hab != NULLHANDLE)
     WinTerminate(hab);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_LeaveScope();
-# endif
+#    endif
 }					// dataminThread
 
 #pragma alloc_text(DATAMIN,DataDlgProc,MiniTimeProc)

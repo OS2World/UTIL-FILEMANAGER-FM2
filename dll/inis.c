@@ -126,9 +126,9 @@ VOID CopyIniThread(VOID * args)
   CHAR userini[CCHMAXPATH], sysini[CCHMAXPATH];
 
   if (inirec) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     hab2 = WinInitialize(0);
     if (hab2) {
       hmq2 = WinCreateMsgQueue(hab2, 0);
@@ -296,9 +296,9 @@ VOID CopyIniThread(VOID * args)
       PostMsg(inirec->hwndSource, WM_COMMAND, MPFROM2SHORT(INI_REFRESH, 0),
 	      MPVOID);
     free(inirec);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_LeaveScope();
-# endif
+#    endif
   }
 }
 
@@ -341,9 +341,9 @@ static VOID BackupIniThread(VOID * args)
   CHAR userini[CCHMAXPATH], sysini[CCHMAXPATH];
 
   if (prfp) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     hab2 = WinInitialize(0);
     if (hab2) {
       hmq2 = WinCreateMsgQueue(hab2, 0);
@@ -443,9 +443,9 @@ static VOID BackupIniThread(VOID * args)
     xfree(prfp->pszUserName, pszSrcFile, __LINE__);
     xfree(prfp->pszSysName, pszSrcFile, __LINE__);
     free(prfp);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_LeaveScope();
-# endif
+#    endif
   }
 }
 

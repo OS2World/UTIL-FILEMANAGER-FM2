@@ -332,11 +332,11 @@ FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
 VOID xfree(PVOID pv, PCSZ pszSrcFile, UINT uiLineNumber)
 {
   if (pv && pv != NullStr) {
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_free(pv, pszSrcFile, uiLineNumber);
-# else
+#   else
     free(pv);
-# endif
+#    endif
 
   }
 }
@@ -349,7 +349,7 @@ PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
   PVOID pv = Fortify_malloc(cBytes, pszSrcFile, uiLineNumber);
 # else
   PVOID pv = malloc(cBytes);
-# endif
+#  endif
 
   if (!pv)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
@@ -374,11 +374,11 @@ PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber)
 {
   if (pvIn != NullStr) {
-# ifdef FORTIFY
-  PVOID pv = Fortify_realloc(pvIn, cBytes, pszSrcFile, uiLineNumber);
-# else
-  PVOID pv = realloc(pvIn, cBytes);
-# endif
+#   ifdef FORTIFY
+    PVOID pv = Fortify_realloc(pvIn, cBytes, pszSrcFile, uiLineNumber);
+#   else
+    PVOID pv = realloc(pvIn, cBytes);
+#    endif
 
     if (!pv && cBytes)
       Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
@@ -397,7 +397,7 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
   PSZ psz = Fortify_strdup(pszIn, pszSrcFile, uiLineNumber);
 # else
   PSZ psz = strdup(pszIn);
-# endif
+#  endif
 
   if (!psz)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));

@@ -433,7 +433,7 @@ static VOID NoteThread(VOID * args)
   HAB hab = WinInitialize(0);
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   if (hab) {
     HMQ hmq = WinCreateMsgQueue(hab, 0);
     if (hmq) {
@@ -446,8 +446,8 @@ static VOID NoteThread(VOID * args)
     WinTerminate(hab);
   }
 # ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
+  Fortify_LeaveScope();
+#  endif
 }
 
 /**

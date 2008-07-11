@@ -68,7 +68,7 @@ typedef struct
 
 typedef struct
 {
-  CHAR szDirName[CCHMAXPATH];
+  CHAR szDirName[CCHMAXPATH + 320];
   CHAR chStopFlag;
   BOOL dying;
   BOOL working;
@@ -308,11 +308,11 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     CHAR szSubDir[80];
     CHAR szAllDir[80];
     CHAR szBar[80];
-    CHAR szBuf[CCHMAXPATH * 2];
+    CHAR szBuf[CCHMAXPATH + 320];
 
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
 
     // cbFile = currect directory usage in bytes
     // easize = subdirectory usage in bytes
@@ -436,7 +436,7 @@ static VOID FillCnrThread(VOID *args)
   }
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
 
   hwndCnr = dirsize->hwndCnr;
 
@@ -466,7 +466,7 @@ static VOID FillCnrThread(VOID *args)
 	  UM_CONTAINER_FILLED, MPVOID, MPVOID);
 # ifdef FORTIFY
   Fortify_LeaveScope();
-# endif
+#  endif
 }
 
 MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -482,9 +482,9 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     pState = xmallocz(sizeof(tState), pszSrcFile, __LINE__);
     if (!pState) {
       WinDismissDlg(hwnd, 0);
@@ -1024,9 +1024,9 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinDestroyPointer(pState->hptr);
       DosSleep(16); //05 Aug 07 GKY 33
       xfree(pState, pszSrcFile, __LINE__); // Let's hope no one is still looking
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
     }
     DosPostEventSem(CompactSem);
     break;

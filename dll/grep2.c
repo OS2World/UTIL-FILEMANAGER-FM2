@@ -824,9 +824,9 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
 	  free(p);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_LeaveScope();
+#          endif
 	  break;
 	}
 	strcpy(g.tosearch, p);
@@ -926,17 +926,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  free(p);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_LeaveScope();
+#          endif
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
 	DosSleep(100); //05 Aug 07 GKY 128
 	free(p);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#       ifdef FORTIFY
+        Fortify_LeaveScope();
+#        endif
       }
       if (changed) {
 	// Grep mask list changed

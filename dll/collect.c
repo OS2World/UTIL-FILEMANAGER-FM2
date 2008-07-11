@@ -785,9 +785,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       }
     }
     xfree(mp1, pszSrcFile, __LINE__);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     return 0;
 
   case UM_SELECT:
@@ -890,9 +890,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (dcd) {
 	WORKER *wk;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#       ifdef FORTIFY
+        Fortify_EnterScope();
+#        endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -908,10 +908,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
             free(wk);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	    FreeListInfo((LISTINFO *) mp1);
+#           ifdef FORTIFY
+            Fortify_LeaveScope();
+#            endif
 	  }
 	}
       }
@@ -923,9 +923,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (dcd) {
 	WORKER *wk;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#       ifdef FORTIFY
+        Fortify_EnterScope();
+#        endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -941,10 +941,10 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
             free(wk);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
 	    FreeListInfo((LISTINFO *) mp1);
+#           ifdef FORTIFY
+            Fortify_LeaveScope();
+#            endif
 	  }
 	}
       }
@@ -969,9 +969,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
       free(dcd);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     DosPostEventSem(CompactSem);
@@ -1468,18 +1468,18 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (mp1) {
       if (!dcd) {
         free(mp1);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#       ifdef FORTIFY
+        Fortify_LeaveScope();
+#        endif
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       }
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
 	  free(mp1);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_LeaveScope();
+#          endif
 	}
       }
     }
@@ -1606,9 +1606,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (p) {
 	      if (!PostMsg(hwnd, UM_COLLECTFROMFILE, MPFROMP(p), MPVOID))
 	        free(p);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#               ifdef FORTIFY
+                Fortify_LeaveScope();
+#                endif
 	    }
 	  }
 	}
@@ -1723,9 +1723,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_COLLECTFROMCLIP:
 	{
 	  LISTINFO *li;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_EnterScope();
+#          endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->list = ListFromClipboard(hwnd);
@@ -1774,9 +1774,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_COLLECTOR:
 	if (mp2) {
 	  LISTINFO *li;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_EnterScope();
+#          endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->list = mp2;
@@ -2088,9 +2088,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	{
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_EnterScope();
+#          endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2135,9 +2135,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    }
             else
               free(li);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#             ifdef FORTIFY
+              Fortify_LeaveScope();
+#              endif
 	  }
 	}
 	break;
@@ -2853,9 +2853,9 @@ HWND StartCollector(HWND hwndParent, INT flags)
   if (hwndFrame && hwndClient) {
     id = COLLECTOR_FRAME + idinc++;
     WinSetWindowUShort(hwndFrame, QWS_ID, id);
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#    endif
     dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
@@ -2895,9 +2895,9 @@ HWND StartCollector(HWND hwndParent, INT flags)
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
         free(dcd);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#       ifdef FORTIFY
+        Fortify_LeaveScope();
+#        endif
 	hwndFrame = (HWND) 0;
       }
       else {

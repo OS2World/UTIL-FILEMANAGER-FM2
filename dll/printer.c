@@ -114,7 +114,7 @@ VOID PrintListThread(VOID * arg)
   }
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   priority_normal();
   hab2 = WinInitialize(0);
   if (hab2) {
@@ -323,9 +323,9 @@ VOID PrintListThread(VOID * arg)
 Abort:
   if (li)
     FreeListInfo(li);
-# ifdef FORTIFY
+#   ifdef FORTIFY
     Fortify_LeaveScope();
-# endif
+#    endif
 }
 
 MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

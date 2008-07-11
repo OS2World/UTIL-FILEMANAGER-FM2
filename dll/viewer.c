@@ -100,7 +100,7 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
   }
 # ifdef FORTIFY
   Fortify_EnterScope();
-# endif
+#  endif
   vw = xmallocz(sizeof(XMLEWNDPTR), pszSrcFile, __LINE__);
   if (!vw)
     return (HWND) 0;
@@ -1265,9 +1265,9 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosExit(EXIT_PROCESS, 1);
       }
     }
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#    endif
     break;
   }
   return WinDefWindowProc(hwnd, msg, mp1, mp2);

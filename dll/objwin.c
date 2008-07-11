@@ -76,9 +76,9 @@ VOID MakeObjWin(VOID * args)
 	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
-#ifdef FORTIFY
-	Fortify_EnterScope();
-#endif
+#       ifdef FORTIFY
+        Fortify_EnterScope();
+#        endif
 	WinSetWindowPtr(ObjectHwnd, QWL_USER, args);
 	/* initially populate container */
 	WinSendMsg(ObjectHwnd, UM_SETUP, MPVOID, MPVOID);
@@ -87,7 +87,7 @@ VOID MakeObjWin(VOID * args)
 	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
 	  WinDispatchMsg(hab2, &qmsg2);
 	WinDestroyWindow(ObjectHwnd);
-#ifdef FORTIFY
+#           ifdef FORTIFY
 	{
 	  HWND hwndCnr = ((DIRCNRDATA *)args)->hwndCnr;
 	  USHORT i;
@@ -97,7 +97,7 @@ VOID MakeObjWin(VOID * args)
 	  }
 	  Fortify_LeaveScope();
 	}
-#endif
+#            endif
       }
       WinDestroyMsgQueue(hmq2);
     }

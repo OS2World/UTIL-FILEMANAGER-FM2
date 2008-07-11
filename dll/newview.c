@@ -933,13 +933,13 @@ static VOID SearchThread(VOID * args)
   CHAR s[SEARCHSTRINGLEN], s2[SEARCHSTRINGLEN], *t, *n, markwith;
 
   priority_normal();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+#  endif
   hab2 = WinInitialize(0);
   if (hab2) {
     hmq2 = WinCreateMsgQueue(hab2, 0);
     if (hmq2) {
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
@@ -1067,13 +1067,14 @@ static VOID SearchThread(VOID * args)
 	}
       }
       WinDestroyMsgQueue(hmq2);
-# ifdef FORTIFY
-      Fortify_LeaveScope();
-# endif
     }
     DecrThreadUsage();
     WinTerminate(hab2);
   }
+
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
   DosPostEventSem(CompactSem);
 }
 
@@ -1089,15 +1090,15 @@ static VOID ClipboardThread(VOID * args)
   BOOL released = FALSE;
 
   priority_normal();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+#  endif
   hab2 = WinInitialize(0);
   if (hab2) {
     hmq2 = WinCreateMsgQueue(hab2, 0);
     if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad) {
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
@@ -1171,12 +1172,12 @@ static VOID ClipboardThread(VOID * args)
       }
       WinDestroyMsgQueue(hmq2);
     }
-# ifdef FORTIFY
-      Fortify_LeaveScope();
-# endif
     DecrThreadUsage();
     WinTerminate(hab2);
   }
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
   DosPostEventSem(CompactSem);
 }
 
@@ -1191,15 +1192,15 @@ static VOID ReLineThread(VOID * args)
   ULONG width, numlines, firstline = 1, cursored = 1;
 
   priority_normal();
+# ifdef FORTIFY
+  Fortify_EnterScope();
+#  endif
   hab2 = WinInitialize(0);
   if (hab2) {
     hmq2 = WinCreateMsgQueue(hab2, 0);
     if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!ad)
 	Runtime_Error(pszSrcFile, __LINE__, "no data");
@@ -1351,12 +1352,12 @@ static VOID ReLineThread(VOID * args)
     }
     DecrThreadUsage();
     WinTerminate(hab2);
-# ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
   }
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
   DosPostEventSem(CompactSem);
-  if (ad && !ad->stopflag) {
+  if (ad && !ad->stopflag) { //Fixme can't post message withou HAB GKY 7-10-08
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPFROMLONG(firstline),
 	    MPFROMLONG(cursored));
     ad->relining = FALSE;
@@ -1375,15 +1376,15 @@ static VOID LoadFileThread(VOID * args)
   APIRET rc;
   BOOL error = TRUE;
 
+# ifdef FORTIFY
+  Fortify_EnterScope();
+#  endif
   hab2 = WinInitialize(0);
   if (hab2) {
     hmq2 = WinCreateMsgQueue(hab2, 0);
     if (hmq2) {
       WinCancelShutdown(hmq2, TRUE);
       IncrThreadUsage();
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (ad) {
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
@@ -1476,11 +1477,11 @@ static VOID LoadFileThread(VOID * args)
     }
     DecrThreadUsage();
     WinTerminate(hab2);
-# ifdef FORTIFY
-    Fortify_LeaveScope();
-# endif
   }
-  if (error)
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
+  if (error) //fixme
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
   DosPostEventSem(CompactSem);
 }

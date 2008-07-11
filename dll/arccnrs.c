@@ -337,9 +337,6 @@ static VOID FreeArcItemData(PARCITEM pai)
     psz = pai->pszFileName;
     pai->pszFileName = NullStr;
     free(psz);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
   }
 }
 
@@ -2007,9 +2004,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FreeList(dcd->lastselection);
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       free(dcd);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#      endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -2913,9 +2910,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_VIRUSSCAN:
 	{
 	  LISTINFO *li;
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_EnterScope();
+#          endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2990,9 +2987,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    }
             else
 	      free(li);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#             ifdef FORTIFY
+              Fortify_LeaveScope();
+#              endif
 	  }
 	}
 	break;
@@ -3463,9 +3460,9 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
       if (idinc > 512)
 	idinc = 0;
       WinSetWindowUShort(hwndFrame, QWS_ID, id);
-# ifdef FORTIFY
-  Fortify_EnterScope();
-# endif
+#     ifdef FORTIFY
+      Fortify_EnterScope();
+#      endif
       dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
       if (!dcd) {
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
@@ -3550,9 +3547,9 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
           free(dcd);
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-# endif
+#         ifdef FORTIFY
+          Fortify_LeaveScope();
+#          endif
 	  hwndFrame = (HWND) 0;
 	}
 	else {

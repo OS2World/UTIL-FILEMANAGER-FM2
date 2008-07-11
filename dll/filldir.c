@@ -40,6 +40,7 @@
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   04 Nov 07 GKY Use commaFmtULL to display large file sizes
   29 Feb 08 GKY Use xfree where appropriate
+  07 Jul 08 SHL Use NULL rather than NullStr in FreeCnrItemData
 
 ***********************************************************************/
 
@@ -317,7 +318,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     pci->pszSubject = NullStr;
 
   // load the object's longname
-  pci->pszLongName = 0;
+  pci->pszLongName = NULL;
   if (fLoadLongnames &&
       dcd &&
       pffb->cbList > 4L &&
@@ -545,7 +546,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
   if (!pci->pszSubject)
     pci->pszSubject = NullStr;
 
-  pci->pszLongName = 0;
+  pci->pszLongName = NULL;
   if (fLoadLongnames &&
       dcd &&
       pfsa4->cbList > 4L &&
@@ -1581,9 +1582,9 @@ VOID FreeCnrItemData(PCNRITEM pci)
   // DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData %p", pci);
 
   if (pci->pszSubject && pci->pszSubject != NullStr) {
-
     psz = pci->pszSubject;
-    pci->pszSubject = NullStr;
+    // pci->pszSubject = NullStr;
+    pci->pszSubject = NULL;		// for debug
     free(psz);
   }
 
@@ -1594,24 +1595,24 @@ VOID FreeCnrItemData(PCNRITEM pci)
       pci->pszLongName != pci->pszDisplayName &&
       pci->pszLongName != pci->pszDisplayName + 1) {
     psz = pci->pszLongName;
-    pci->pszLongName = NullStr;
+    //pci->pszLongName = NullStr;
+    pci->pszLongName = NULL;
     free(psz);
   }
 
   if (pci->pszFileName && pci->pszFileName != NullStr) {
     psz = pci->pszFileName;
-    pci->pszFileName = NullStr;
+    //pci->pszFileName = NullStr;
+    pci->pszFileName = NULL;
     free(psz);
   }
 
   if (pci->pszFmtFileSize && pci->pszFmtFileSize != NullStr) {
     psz = pci->pszFmtFileSize;
-    pci->pszFmtFileSize = NullStr;
+    //pci->pszFmtFileSize = NullStr;
+    pci->pszFmtFileSize = NULL;
     free(psz);
   }
-// # ifdef FORTIFY
-//   Fortify_LeaveScope();
-// # endif
 }
 
 /**
