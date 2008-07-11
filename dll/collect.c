@@ -48,6 +48,9 @@
   15 Feb 08 GKY Fix "collect" so it updates recollected files and unhides them if needed
   29 Feb 08 GKY Use xfree where appropriate
   06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -138,7 +141,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (id == DIR_VIEW) {
 	      if (dcd) {
 		SetViewMenu(hwndButtonPopup, dcd->flWindowAttr);
-		SetDetailsSwitches(hwndButtonPopup, dcd);
+		SetDetailsSwitches(hwndButtonPopup, &dcd->ds);
 		CopyPresParams(hwndButtonPopup, hwnd);
 	      }
 
@@ -222,7 +225,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 							       QW_PARENT),
 						COLLECTOR_CNR), QWL_USER);
 	if (dcd)
-	  SetDetailsSwitches(hwndButtonPopup, dcd);
+	  SetDetailsSwitches(hwndButtonPopup, &dcd->ds);
       }
       return mr;
     }
@@ -1316,7 +1319,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	CNRINFO cnri;
 
 	RestorePresParams(hwnd, "Collector");
-	LoadDetailsSwitches("Collector", dcd);
+	LoadDetailsSwitches("Collector", &dcd->ds);
 
 	dcd->amextracted = FALSE;	// Say not busy
 	dcd->stopflag = 0;
@@ -1358,7 +1361,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
 			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
 	SetCnrCols(hwnd, FALSE);
-	AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
+	AdjustCnrColsForPref(hwnd, NULL, &dcd->ds, FALSE);
 
 	/* fix splitbar for collector container */
 	cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 32;
@@ -1447,7 +1450,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_DETAILSSETUP:
-	SetDetailsSwitches((HWND) mp2, dcd);
+	SetDetailsSwitches((HWND) mp2, &dcd->ds);
 	break;
 
       case IDM_COMMANDSMENU:
@@ -1951,7 +1954,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_SHOWATTR:
 	AdjustDetailsSwitches(hwnd, dcd->hwndLastMenu,
 			      SHORT1FROMMP(mp1), NULL,
-			      "Collector", dcd, FALSE);
+			      "Collector", &dcd->ds, FALSE);
 	break;
 
       case IDM_ICON:
@@ -2212,7 +2215,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (dcd->hwndLastMenu) {
 	    if (dcd->hwndLastMenu == CollectorCnrMenu) {
 	      SetViewMenu(dcd->hwndLastMenu, dcd->flWindowAttr);
-	      SetDetailsSwitches(dcd->hwndLastMenu, dcd);
+	      SetDetailsSwitches(dcd->hwndLastMenu, &dcd->ds);
 	      CopyPresParams(dcd->hwndLastMenu, hwnd);
 	      if (dcd->flWindowAttr & CV_MINI)
 		WinCheckMenuItem(dcd->hwndLastMenu, IDM_MINIICONS, TRUE);

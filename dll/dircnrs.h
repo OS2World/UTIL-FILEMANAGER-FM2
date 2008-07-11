@@ -10,6 +10,9 @@
 
   05 Jan 08 SHL Move dircnrs.c definitions here
   13 Jan 08 GKY Add variables to DIRCNRDATA struct for Subjectwidth/Subjectleft.
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -85,6 +88,16 @@ typedef struct
 }
 MASK;
 
+typedef struct DETAILS_SETTINGS
+{
+  BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
+    detailslongname, detailsea, detailssize, detailssubject,
+    detailslwdate, detailslwtime, detailsattr, detailsicon,
+    fSubjectInLeftPane, fSubjectLengthMax;
+  ULONG SubjectDisplayWidth;
+}
+DETAILS_SETTINGS;
+
 typedef struct DIRCNRDATA
 {
   USHORT size;
@@ -123,10 +136,7 @@ typedef struct DIRCNRDATA
   BOOL amextracted;
   INT lasthelp;
   INT sortFlags;
-  BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
-    detailslongname, detailsea, detailssize, detailssubject,
-    detailslwdate, detailslwtime, detailsattr, detailsicon,
-    fSubjectInLeftPane, fSubjectLengthMax, SubjectDisplayWidth;
+  DETAILS_SETTINGS ds;
   CHAR **lastselection;
   USHORT shiftstate;
   USHORT suspendview;

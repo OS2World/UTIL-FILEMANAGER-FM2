@@ -45,6 +45,9 @@
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
                 keys using a "DirCnr." prefix
   20 Apr 08 GKY Change default cmd line length to 1024 Ask once if user wants to reset it.
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -957,8 +960,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
    * set some defaults (note: everything else automatically initialized
    * to 0)
    */
-  detailssize = detailsea = detailslwdate = detailslwtime = detailsattr =
-    detailsicon = fAutoTile = fConfirmDelete = fLoadSubject = fUnHilite =
+  dsDirCnrDefault.detailssize = dsDirCnrDefault.detailsea = dsDirCnrDefault.detailslwdate =
+    dsDirCnrDefault.detailslwtime = dsDirCnrDefault.detailsattr = dsDirCnrDefault.detailsicon =
+    fAutoTile = fConfirmDelete = fLoadSubject = fUnHilite =
     fLoadLongnames = fToolbar = fSaveState = fGuessType = fToolbarHelp =
     fAutoAddDirs = fUseNewViewer = fDataToFore = fDataShowDrives =
     fSplitStatus = fDragndropDlg = fQuickArcFind = fKeepCmdLine =
@@ -1364,7 +1368,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "TrashCan", &fTrashCan, &size);
 
-  LoadDetailsSwitches("DirCnr", NULL);
+  LoadDetailsSwitches("DirCnr", &dsDirCnrDefault);
 
   /* load pointers and icons we use */
   hptrArrow = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE);

@@ -40,6 +40,9 @@
   21 Jun 08 GKY Fix columns to honor preferences on new container open.
   22 Jun 08 GKY Included free_... functions for fortify checking
   06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -104,7 +107,7 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 							       QW_PARENT),
 						DIR_CNR), QWL_USER);
 	if (dcd)
-	  SetDetailsSwitches(hwndButtonPopup, dcd);
+	  SetDetailsSwitches(hwndButtonPopup, &dcd->ds);
       }
       return mr;
     }
@@ -167,7 +170,7 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else if (id == DIR_VIEW) {
 	      if (dcd) {
 		SetViewMenu(hwndButtonPopup, dcd->flWindowAttr);
-		SetDetailsSwitches(hwndButtonPopup, dcd);
+		SetDetailsSwitches(hwndButtonPopup, &dcd->ds);
 	      }
 	    }
 	    else if (id == DIR_MAX) {
@@ -754,7 +757,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowText(WinWindowFromID(dcd->hwndFrame, FID_TITLEBAR), s);
       }
       RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
-      AdjustCnrColsForFSType(dcd->hwndCnr, dcd->directory, dcd);
+      AdjustCnrColsForFSType(dcd->hwndCnr, dcd->directory, &dcd->ds);
       dcd->ullTotalBytes = dcd->totalfiles =
 	dcd->selectedfiles = dcd->selectedbytes = 0;
       WinSetDlgItemText(dcd->hwndClient, DIR_TOTALS, "0 / 0k");
@@ -1525,7 +1528,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP2:
     if (dcd) {
-      AdjustCnrColsForPref(hwnd, NULL, dcd, FALSE);
+      AdjustCnrColsForPref(hwnd, NULL, &dcd->ds, FALSE);
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 		DIR_FILTER), &dcd->mask, FALSE);
       SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
@@ -1634,7 +1637,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_DETAILSSETUP:
-	SetDetailsSwitches((HWND) mp2, dcd);
+	SetDetailsSwitches((HWND) mp2, &dcd->ds);
 	break;
 
       case IDM_COMMANDSMENU:
@@ -2204,7 +2207,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	AdjustDetailsSwitches(hwnd,
 			      dcd->hwndLastMenu,
 			      SHORT1FROMMP(mp1),
-			      dcd->directory, NULL, dcd, FALSE);
+			      dcd->directory, NULL, &dcd->ds, FALSE);
 	break;
 
       case IDM_TREEVIEW:
@@ -3481,18 +3484,18 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	dcd->hwndClient = hwndClient;
 	dcd->hwndRestore = hwndRestore;
 	dcd->dontclose = ((flags & 1) != 0);
-	dcd->detailslongname = detailslongname;
-	dcd->detailssubject = detailssubject;
-	dcd->detailsea = detailsea;
-	dcd->detailssize = detailssize;
-	dcd->detailsicon = detailsicon;
-	dcd->detailsattr = detailsattr;
-	dcd->detailscrdate = detailscrdate;
-	dcd->detailscrtime = detailscrtime;
-	dcd->detailslwdate = detailslwdate;
-	dcd->detailslwtime = detailslwtime;
-	dcd->detailsladate = detailsladate;
-	dcd->detailslatime = detailslatime;
+	dcd->ds.detailslongname = dsDirCnrDefault.detailslongname;
+	dcd->ds.detailssubject = dsDirCnrDefault.detailssubject;
+	dcd->ds.detailsea = dsDirCnrDefault.detailsea;
+	dcd->ds.detailssize = dsDirCnrDefault.detailssize;
+	dcd->ds.detailsicon = dsDirCnrDefault.detailsicon;
+	dcd->ds.detailsattr = dsDirCnrDefault.detailsattr;
+	dcd->ds.detailscrdate = dsDirCnrDefault.detailscrdate;
+	dcd->ds.detailscrtime = dsDirCnrDefault.detailscrtime;
+	dcd->ds.detailslwdate = dsDirCnrDefault.detailslwdate;
+	dcd->ds.detailslwtime = dsDirCnrDefault.detailslwtime;
+	dcd->ds.detailsladate = dsDirCnrDefault.detailsladate;
+	dcd->ds.detailslatime = dsDirCnrDefault.detailslatime;
 	strcpy(dcd->directory, directory);
 	add_udir(FALSE, directory);
 	{

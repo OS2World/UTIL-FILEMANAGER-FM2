@@ -44,7 +44,9 @@
                 keys using a "DirCnr." prefix
   19 Jun 08 JBS Ticket 239: Fix LoadDetailsSwitches so INI file is read correctly and details
                 switches are set correctly.
-  21 Jun 08 GKY Fix LoadDetailsSwitches to actually use the keyroot value passed (change strcpy to strcat)
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -367,14 +369,13 @@ BOOL AdjustCnrColRO(HWND hwndCnr, CHAR * title, BOOL readonly, BOOL toggle)
   return FALSE;
 }
 
-VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
+VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds)
 {
   CHAR FileSystem[CCHMAXPATH];
   INT x;
   BOOL hasCreateDT;
   BOOL hasAccessDT;
   BOOL hasLongNames;
-  BOOL *pBool;
 
   if (!directory || !*directory)
     return;
@@ -409,73 +410,55 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd)
     hasAccessDT = FALSE;
     hasLongNames = FALSE;
   }
-  pBool = dcd ? &dcd->detailsladate : &detailsladate;
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_LADATE),
-		  *pBool ? hasAccessDT : FALSE,
+		  pds->detailsladate ? hasAccessDT : FALSE,
 		  FALSE);
-  pBool = dcd ? &dcd->detailslatime : &detailslatime;
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_LATIME),
-		  *pBool ? hasAccessDT : FALSE,
+		  pds->detailslatime ? hasAccessDT : FALSE,
 		  FALSE);
-  pBool = dcd ? &dcd->detailscrdate : &detailscrdate;
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_CRDATE),
-		  *pBool ? hasCreateDT : FALSE,
+		  pds->detailscrdate ? hasCreateDT : FALSE,
 		  FALSE);
-  pBool = dcd ? &dcd->detailscrtime : &detailscrtime;
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_CRTIME),
-		  *pBool ? hasCreateDT : FALSE,
+		  pds->detailscrtime ? hasCreateDT : FALSE,
 		  FALSE);
-  pBool = dcd ? &dcd->detailslongname : &detailslongname;
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_LNAME),
-		  *pBool ? hasLongNames : FALSE,
+		  pds->detailslongname ? hasLongNames : FALSE,
 		  FALSE);
   WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
 }
 
-VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd,
+VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds,
 			  BOOL compare)
 {
-  BOOL *bool;
 
-  bool = dcd ? &dcd->detailssubject : &detailssubject;
   AdjustCnrColVis(hwndCnr,
 		  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
-		  *bool,
+		  pds->detailssubject,
 		  FALSE);
 
-  bool = dcd ? &dcd->detailsattr : &detailsattr;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_ATTR), *bool, FALSE);
-  bool = dcd ? &dcd->detailsicon : &detailsicon;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_ICON), *bool, FALSE);
-  bool = dcd ? &dcd->detailslwdate : &detailslwdate;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_LWDATE), *bool, FALSE);
-  bool = dcd ? &dcd->detailslwtime : &detailslwtime;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_LWTIME), *bool, FALSE);
-  bool = dcd ? &dcd->detailsea : &detailsea;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_EA), *bool, FALSE);
-  bool = dcd ? &dcd->detailssize : &detailssize;
-  AdjustCnrColVis(hwndCnr, GetPString(IDS_SIZE), *bool, FALSE);
+  AdjustCnrColVis(hwndCnr, GetPString(IDS_ATTR), pds->detailsattr, FALSE);
+  AdjustCnrColVis(hwndCnr, GetPString(IDS_ICON), pds->detailsicon, FALSE);
+  AdjustCnrColVis(hwndCnr, GetPString(IDS_LWDATE), pds->detailslwdate, FALSE);
+  AdjustCnrColVis(hwndCnr, GetPString(IDS_LWTIME), pds->detailslwtime, FALSE);
+  AdjustCnrColVis(hwndCnr, GetPString(IDS_EA), pds->detailsea, FALSE);
+  AdjustCnrColVis(hwndCnr, GetPString(IDS_SIZE), pds->detailssize, FALSE);
 
   if (!directory) {
-    bool = dcd ? &dcd->detailsladate : &detailsladate;
-    AdjustCnrColVis(hwndCnr, GetPString(IDS_LADATE), *bool, FALSE);
-    bool = dcd ? &dcd->detailslatime : &detailslatime;
-    AdjustCnrColVis(hwndCnr, GetPString(IDS_LATIME), *bool, FALSE);
-    bool = dcd ? &dcd->detailscrdate : &detailscrdate;
-    AdjustCnrColVis(hwndCnr, GetPString(IDS_CRDATE), *bool, FALSE);
-    bool = dcd ? &dcd->detailscrtime : &detailscrtime;
-    AdjustCnrColVis(hwndCnr, GetPString(IDS_CRTIME), *bool, FALSE);
-    bool = dcd ? &dcd->detailslongname : &detailslongname;
-    AdjustCnrColVis(hwndCnr, GetPString(IDS_LNAME), *bool, FALSE);
+    AdjustCnrColVis(hwndCnr, GetPString(IDS_LADATE), pds->detailsladate, FALSE);
+    AdjustCnrColVis(hwndCnr, GetPString(IDS_LATIME), pds->detailslatime, FALSE);
+    AdjustCnrColVis(hwndCnr, GetPString(IDS_CRDATE), pds->detailscrdate, FALSE);
+    AdjustCnrColVis(hwndCnr, GetPString(IDS_CRTIME), pds->detailscrtime, FALSE);
+    AdjustCnrColVis(hwndCnr, GetPString(IDS_LNAME), pds->detailslongname, FALSE);
     WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
   }
   else
-    AdjustCnrColsForFSType(hwndCnr, directory, dcd);
+    AdjustCnrColsForFSType(hwndCnr, directory, pds);
 }
 
 BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
@@ -532,7 +515,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
     // Fill in column info for subjects
 
-    if (fSubjectInLeftPane) {
+    if (dsDirCnrDefault.fSubjectInLeftPane) {
       pfi = pfi->pNextFieldInfo;
       pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
       if (isCompCnr)
@@ -541,7 +524,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
       pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
 				  GetPString(IDS_SUBJ);
       pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
-      pfi->cxWidth = SubjectDisplayWidth;
+      pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
 
       // Store the current pfi value as that will be used to indicate the
       // last column in the lefthand container window (we have a splitbar)
@@ -561,7 +544,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
       pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
 				  GetPString(IDS_SUBJ);
       pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
-      pfi->cxWidth = SubjectDisplayWidth;
+      pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
     }
 
     // Fill in column information for the file size
@@ -1010,87 +993,76 @@ INT ExecFile(HWND hwnd, CHAR * filename)
   return 0;
 }
 
-VOID SetDetailsSwitches(HWND hwnd, DIRCNRDATA * dcd)
+VOID SetDetailsSwitches(HWND hwnd, DETAILS_SETTINGS * pds)
 {
-  WinCheckMenuItem(hwnd, IDM_SHOWLNAMES,
-		   dcd ? dcd->detailslongname : detailslongname);
-  WinCheckMenuItem(hwnd, IDM_SHOWSUBJECT,
-		   dcd ? dcd->detailssubject : detailssubject);
-  WinCheckMenuItem(hwnd, IDM_SHOWEAS, dcd ? dcd->detailsea : detailsea);
-  WinCheckMenuItem(hwnd, IDM_SHOWSIZE,
-		   dcd ? dcd->detailssize : detailssize);
-  WinCheckMenuItem(hwnd, IDM_SHOWICON,
-		   dcd ? dcd->detailsicon : detailsicon);
-  WinCheckMenuItem(hwnd, IDM_SHOWLWDATE,
-		   dcd ? dcd->detailslwdate : detailslwdate);
-  WinCheckMenuItem(hwnd, IDM_SHOWLWTIME,
-		   dcd ? dcd->detailslwtime : detailslwtime);
-  WinCheckMenuItem(hwnd, IDM_SHOWLADATE,
-		   dcd ? dcd->detailsladate : detailsladate);
-  WinCheckMenuItem(hwnd, IDM_SHOWLATIME,
-		   dcd ? dcd->detailslatime : detailslatime);
-  WinCheckMenuItem(hwnd, IDM_SHOWCRDATE,
-		   dcd ? dcd->detailscrdate : detailscrdate);
-  WinCheckMenuItem(hwnd, IDM_SHOWCRTIME,
-		   dcd ? dcd->detailscrtime : detailscrtime);
-  WinCheckMenuItem(hwnd, IDM_SHOWATTR,
-		   dcd ? dcd->detailsattr : detailsattr);
+  WinCheckMenuItem(hwnd, IDM_SHOWLNAMES, pds->detailslongname);
+  WinCheckMenuItem(hwnd, IDM_SHOWSUBJECT, pds->detailssubject);
+  WinCheckMenuItem(hwnd, IDM_SHOWEAS, pds->detailsea);
+  WinCheckMenuItem(hwnd, IDM_SHOWSIZE, pds->detailssize);
+  WinCheckMenuItem(hwnd, IDM_SHOWICON, pds->detailsicon);
+  WinCheckMenuItem(hwnd, IDM_SHOWLWDATE, pds->detailslwdate);
+  WinCheckMenuItem(hwnd, IDM_SHOWLWTIME, pds->detailslwtime);
+  WinCheckMenuItem(hwnd, IDM_SHOWLADATE, pds->detailsladate);
+  WinCheckMenuItem(hwnd, IDM_SHOWLATIME, pds->detailslatime);
+  WinCheckMenuItem(hwnd, IDM_SHOWCRDATE, pds->detailscrdate);
+  WinCheckMenuItem(hwnd, IDM_SHOWCRTIME, pds->detailscrtime);
+  WinCheckMenuItem(hwnd, IDM_SHOWATTR, pds->detailsattr);
 }
 
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
 			   CHAR * directory, CHAR * keyroot,
-			   DIRCNRDATA * dcd, BOOL compare)
+			   DETAILS_SETTINGS * pds, BOOL compare)
 {
   BOOL *bool = NULL;
 
   switch (cmd) {
   case IDM_SHOWLNAMES:
-    bool = dcd ? &dcd->detailslongname : &detailslongname;
+    bool = &pds->detailslongname;
     break;
   case IDM_SHOWSUBJECT:
-    bool = dcd ? &dcd->detailssubject : &detailssubject;
+    bool = &pds->detailssubject;
     break;
   case IDM_SHOWEAS:
-    bool = dcd ? &dcd->detailsea : &detailsea;
+    bool = &pds->detailsea;
     break;
   case IDM_SHOWSIZE:
-    bool = dcd ? &dcd->detailssize : &detailssize;
+    bool = &pds->detailssize;
     break;
   case IDM_SHOWICON:
-    bool = dcd ? &dcd->detailsicon : &detailsicon;
+    bool = &pds->detailsicon;
     break;
   case IDM_SHOWLWDATE:
-    bool = dcd ? &dcd->detailslwdate : &detailslwdate;
+    bool = &pds->detailslwdate;
     break;
   case IDM_SHOWLWTIME:
-    bool = dcd ? &dcd->detailslwtime : &detailslwtime;
+    bool = &pds->detailslwtime;
     break;
   case IDM_SHOWLADATE:
-    bool = dcd ? &dcd->detailsladate : &detailsladate;
+    bool = &pds->detailsladate;
     break;
   case IDM_SHOWLATIME:
-    bool = dcd ? &dcd->detailslatime : &detailslatime;
+    bool = &pds->detailslatime;
     break;
   case IDM_SHOWCRDATE:
-    bool = dcd ? &dcd->detailscrdate : &detailscrdate;
+    bool = &pds->detailscrdate;
     break;
   case IDM_SHOWCRTIME:
-    bool = dcd ? &dcd->detailscrtime : &detailscrtime;
+    bool = &pds->detailscrtime;
     break;
   case IDM_SHOWATTR:
-    bool = dcd ? &dcd->detailsattr : &detailsattr;
+    bool = &pds->detailsattr;
     break;
   default:
     if (hwndMenu)
-      SetDetailsSwitches(hwndMenu, dcd);
+      SetDetailsSwitches(hwndMenu, pds);
     return;
   }
   if (bool)
     *bool = *bool ? FALSE : TRUE;
   if (hwnd)
-    AdjustCnrColsForPref(hwnd, directory, dcd, compare);
+    AdjustCnrColsForPref(hwnd, directory, pds, compare);
   if (hwndMenu)
-    SetDetailsSwitches(hwndMenu, dcd);
+    SetDetailsSwitches(hwndMenu, pds);
 }
 
 /**
@@ -1227,156 +1199,81 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
   }
 }
 
-VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd)
+VOID LoadDetailsSwitches(CHAR * keyroot, DETAILS_SETTINGS * pds)
 {
   ULONG size;
   CHAR s[CCHMAXPATH], *eos = s;
-  BOOL *bool;
 
   strcpy(s, keyroot);
   strcat(s, ".");
   eos = &s[strlen(s)];
-  strcat(s, "DetailsLongname");
-  if (dcd)
-    bool = &dcd->detailslongname;
-  else
-    bool = &detailslongname;
-  *bool = detailslongname;
+  strcpy(eos, "DetailsLongname");
+  pds->detailslongname = dsDirCnrDefault.detailslongname;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailslongname, &size);
   strcpy(eos, "DetailsSubject");
-  if (dcd)
-    bool = &dcd->detailssubject;
-  else
-    bool = &detailssubject;
-  *bool = detailssubject;
+  pds->detailssubject = dsDirCnrDefault.detailssubject;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailssubject, &size);
   strcpy(eos, "DetailsEA");
-  if (dcd)
-    bool = &dcd->detailsea;
-  else
-    bool = &detailsea;
-  *bool = detailsea;
+  pds->detailsea = dsDirCnrDefault.detailsea;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailsea, &size);
   strcpy(eos, "DetailsSize");
-  if (dcd)
-    bool = &dcd->detailssize;
-  else
-    bool = &detailssize;
-  *bool = detailssize;
+  pds->detailssize = dsDirCnrDefault.detailssize;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailssize, &size);
   strcpy(eos, "DetailsIcon");
-  if (dcd)
-    bool = &dcd->detailsicon;
-  else
-    bool = &detailsicon;
-  *bool = detailsicon;
+  pds->detailsicon = dsDirCnrDefault.detailsicon;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailsicon, &size);
   strcpy(eos, "DetailsAttr");
-  if (dcd)
-    bool = &dcd->detailsattr;
-  else
-    bool = &detailsattr;
-  *bool = detailsattr;
+  pds->detailsattr = dsDirCnrDefault.detailsattr;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailsattr, &size);
   strcpy(eos, "DetailsCRDate");
-  if (dcd)
-    bool = &dcd->detailscrdate;
-  else
-    bool = &detailscrdate;
-  *bool = detailscrdate;
+  pds->detailscrdate = dsDirCnrDefault.detailscrdate;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailscrdate, &size);
   strcpy(eos, "DetailsCRTime");
-  if (dcd)
-    bool = &dcd->detailscrtime;
-  else
-    bool = &detailscrtime;
-  *bool = detailscrtime;
+  pds->detailscrtime = dsDirCnrDefault.detailscrtime;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailscrtime, &size);
   strcpy(eos, "DetailsLWDate");
-  if (dcd)
-    bool = &dcd->detailslwdate;
-  else
-    bool = &detailslwdate;
-  *bool = detailslwdate;
+  pds->detailslwdate = dsDirCnrDefault.detailslwdate;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailslwdate, &size);
   strcpy(eos, "DetailsLWTime");
-  if (dcd)
-    bool = &dcd->detailslwtime;
-  else
-    bool = &detailslwtime;
-  *bool = detailslwtime;
+  pds->detailslwtime = dsDirCnrDefault.detailslwtime;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailslwtime, &size);
   strcpy(eos, "DetailsLADate");
-  if (dcd)
-    bool = &dcd->detailsladate;
-  else
-    bool = &detailsladate;
-  *bool = detailsladate;
+  pds->detailsladate = dsDirCnrDefault.detailsladate;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailsladate, &size);
   strcpy(eos, "DetailsLATime");
-  if (dcd)
-    bool = &dcd->detailslatime;
-  else
-    bool = &detailslatime;
-  *bool = detailslatime;
+  pds->detailslatime = dsDirCnrDefault.detailslatime;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailslatime, &size);
   strcpy(eos, "SubjectInLeftPane");
-  if (dcd)
-    bool = &dcd->fSubjectInLeftPane;
-  else
-    bool = &fSubjectInLeftPane;
-  *bool = fSubjectInLeftPane;
+  pds->fSubjectInLeftPane = dsDirCnrDefault.fSubjectInLeftPane;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->fSubjectInLeftPane, &size);
   strcpy(eos, "SubjectLengthMax");
-  if (dcd)
-    bool = &dcd->fSubjectLengthMax;
-  else
-    bool = &fSubjectLengthMax;
-  *bool = fSubjectLengthMax;
+  pds->fSubjectLengthMax = dsDirCnrDefault.fSubjectLengthMax;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-  if (dcd) {
-    if (dcd->fSubjectLengthMax)
-      dcd->SubjectDisplayWidth = 0;
-    else {
-      strcpy(eos, "SubjectDisplayWidth");
-      bool = &dcd->SubjectDisplayWidth;
-      *bool = SubjectDisplayWidth;
-      size = sizeof(ULONG);
-      PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-      if (dcd->SubjectDisplayWidth < 50)
-	dcd->SubjectDisplayWidth = 0;
-      else if (dcd->SubjectDisplayWidth > 1000)
-	dcd->SubjectDisplayWidth = 1000;
-    }
-  }
+  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->fSubjectLengthMax, &size);
+  if (pds->fSubjectLengthMax)
+    pds->SubjectDisplayWidth = 0;
   else {
-    if (fSubjectLengthMax)
-      SubjectDisplayWidth = 0;
-    else {
-      strcpy(eos, "SubjectDisplayWidth");
-      bool = &SubjectDisplayWidth;
-      *bool = SubjectDisplayWidth;
-      size = sizeof(ULONG);
-      PrfQueryProfileData(fmprof, appname, s, (PVOID) bool, &size);
-      if (SubjectDisplayWidth < 50)
-	SubjectDisplayWidth = 0;
-      else if (SubjectDisplayWidth > 1000)
-	SubjectDisplayWidth = 1000;
-    }
+    strcpy(eos, "SubjectDisplayWidth");
+    pds->SubjectDisplayWidth = dsDirCnrDefault.SubjectDisplayWidth;
+    size = sizeof(ULONG);
+    PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->SubjectDisplayWidth, &size);
+    if (pds->SubjectDisplayWidth < 50)
+      pds->SubjectDisplayWidth = 0;
+    else if (pds->SubjectDisplayWidth > 1000)
+      pds->SubjectDisplayWidth = 1000;
   }
 }
 

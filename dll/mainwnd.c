@@ -58,6 +58,9 @@
   22 Jun 08 GKY Use free_... functions for fortify checking
   30 Jun 08 JBS Ticket 103: Fix restore of previous shutdown state when opening FM/2
   07 Jul 08 JBS Ticket 242: Delete obsolete INI keys when re-saving a state
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -2862,40 +2865,40 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
               PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & flWindowAttr,
                                   sizeof(ULONG));
               sprintf(szKey, "%sDirCnr.%lu.DetailsLongname", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslongname,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailslongname,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsSubject", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailssubject,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailssubject,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsSize", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailssize,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailssize,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsEA", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsea,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailsea,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsAttr", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsattr,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailsattr,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsIcon", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsicon,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailsicon,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsLWDate", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslwdate,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailslwdate,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsLWTime", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslwtime,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailslwtime,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsLADate", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailsladate,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailsladate,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsLATime", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailslatime,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailslatime,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsCRDate", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailscrdate,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailscrdate,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu.DetailsCRTime", szPrefix, numsaves);
-              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->detailscrtime,
+              PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->ds.detailscrtime,
                                   sizeof(BOOL));
               sprintf(szKey, "%sDirCnr.%lu", szPrefix, numsaves);
               SavePresParams(hwndDir, szKey);
@@ -3114,155 +3117,155 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           if (fDeleteState)
             PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
-          localdcd.detailslongname = detailslongname;  // Set default
+          localdcd.ds.detailslongname = dsDirCnrDefault.detailslongname;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsLongname", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID)&localdcd.detailslongname,
+                                  (PVOID)&localdcd.ds.detailslongname,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailssubject = detailssubject;  // Set default
+          localdcd.ds.detailssubject = dsDirCnrDefault.detailssubject;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsSubject", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID)&localdcd.detailssubject,
+                                  (PVOID)&localdcd.ds.detailssubject,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailsea = detailsea;  // Set default
+          localdcd.ds.detailsea = dsDirCnrDefault.detailsea;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsEA", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailsea,
+                                  (PVOID) & localdcd.ds.detailsea,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailssize = detailssize;  // Set default
+          localdcd.ds.detailssize = dsDirCnrDefault.detailssize;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsSize", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailssize,
+                                  (PVOID) & localdcd.ds.detailssize,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailsicon = detailsicon;  // Set default
+          localdcd.ds.detailsicon = dsDirCnrDefault.detailsicon;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsIcon", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailsicon,
+                                  (PVOID) & localdcd.ds.detailsicon,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailsattr = detailsattr;  // Set default
+          localdcd.ds.detailsattr = dsDirCnrDefault.detailsattr;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsAttr", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID)&localdcd.detailsattr,
+                                  (PVOID)&localdcd.ds.detailsattr,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailscrdate = detailscrdate;  // Set default
+          localdcd.ds.detailscrdate = dsDirCnrDefault.detailscrdate;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsCRDate", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailscrdate,
+                                  (PVOID) & localdcd.ds.detailscrdate,
               &size) && size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailscrtime = detailscrtime;  // Set default
+          localdcd.ds.detailscrtime = dsDirCnrDefault.detailscrtime;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsCRTime", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID)&localdcd.detailscrtime,
+                                  (PVOID)&localdcd.ds.detailscrtime,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailslwdate = detailslwdate;  // Set default
+          localdcd.ds.detailslwdate = dsDirCnrDefault.detailslwdate;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsLWDate", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailslwdate,
+                                  (PVOID) & localdcd.ds.detailslwdate,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailslwtime = detailslwtime;  // Set default
+          localdcd.ds.detailslwtime = dsDirCnrDefault.detailslwtime;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsLWTime", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailslwtime,
+                                  (PVOID) & localdcd.ds.detailslwtime,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailsladate = detailsladate;  // Set default
+          localdcd.ds.detailsladate = dsDirCnrDefault.detailsladate;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsLADate", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailsladate,
+                                  (PVOID) & localdcd.ds.detailsladate,
                                   &size) &&
               size == sizeof(BOOL))
           {
             if (fDeleteState)
               PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
           }
-          localdcd.detailslatime = detailslatime;  // Set default
+          localdcd.ds.detailslatime = dsDirCnrDefault.detailslatime;  // Set default
           size = sizeof(BOOL);
           sprintf(szKey, "%sDirCnr.%lu.DetailsLATime", szPrefix, x);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
-                                  (PVOID) & localdcd.detailslatime,
+                                  (PVOID) & localdcd.ds.detailslatime,
                                   &size) &&
               size == sizeof(BOOL))
           {
@@ -3296,18 +3299,18 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
               RestorePresParams(hwndCnr, szKey);
               dcd = WinQueryWindowPtr(hwndCnr, QWL_USER);
               if (dcd) {
-                dcd->detailslongname = localdcd.detailslongname;
-                dcd->detailssubject  = localdcd.detailssubject ;
-                dcd->detailsattr     = localdcd.detailsattr    ;
-                dcd->detailsea       = localdcd.detailsea      ;
-                dcd->detailssize     = localdcd.detailssize    ;
-                dcd->detailsicon     = localdcd.detailsicon    ;
-                dcd->detailscrdate   = localdcd.detailscrdate  ;
-                dcd->detailscrtime   = localdcd.detailscrtime  ;
-                dcd->detailsladate   = localdcd.detailsladate  ;
-                dcd->detailslatime   = localdcd.detailslatime  ;
-                dcd->detailslwdate   = localdcd.detailslwdate  ;
-                dcd->detailslwtime   = localdcd.detailslwtime  ;
+                dcd->ds.detailslongname = localdcd.ds.detailslongname;
+                dcd->ds.detailssubject  = localdcd.ds.detailssubject ;
+                dcd->ds.detailsattr     = localdcd.ds.detailsattr    ;
+                dcd->ds.detailsea       = localdcd.ds.detailsea      ;
+                dcd->ds.detailssize     = localdcd.ds.detailssize    ;
+                dcd->ds.detailsicon     = localdcd.ds.detailsicon    ;
+                dcd->ds.detailscrdate   = localdcd.ds.detailscrdate  ;
+                dcd->ds.detailscrtime   = localdcd.ds.detailscrtime  ;
+                dcd->ds.detailsladate   = localdcd.ds.detailsladate  ;
+                dcd->ds.detailslatime   = localdcd.ds.detailslatime  ;
+                dcd->ds.detailslwdate   = localdcd.ds.detailslwdate  ;
+                dcd->ds.detailslwtime   = localdcd.ds.detailslwtime  ;
                 size = sizeof(INT);
                 sprintf(szKey, "%sDirCnrSort.%lu", szPrefix, x);
                 if (PrfQueryProfileData(fmprof,

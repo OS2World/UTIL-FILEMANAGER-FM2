@@ -30,8 +30,11 @@
   22 Feb 08 JBS Ticket 230: Fix/improve various code related to state or presparam values in the INI file.
   29 Feb 08 GKY Changes to enable user settable command line length
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
-  keys using a "DirCnr." prefix
+                keys using a "DirCnr." prefix
   06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -1724,18 +1727,18 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinCheckButton(hwnd, CFG5_MINIICONS, TRUE);
       if (flWindowAttr & CA_DETAILSVIEWTITLES)
 	WinCheckButton(hwnd, CFG5_SHOWTITLES, TRUE);
-      WinCheckButton(hwnd, CFG5_SHOWLNAMES, detailslongname);
-      WinCheckButton(hwnd, CFG5_SHOWSUBJECT, detailssubject);
-      WinCheckButton(hwnd, CFG5_SHOWEAS, detailsea);
-      WinCheckButton(hwnd, CFG5_SHOWSIZE, detailssize);
-      WinCheckButton(hwnd, CFG5_SHOWICON, detailsicon);
-      WinCheckButton(hwnd, CFG5_SHOWLWDATE, detailslwdate);
-      WinCheckButton(hwnd, CFG5_SHOWLWTIME, detailslwtime);
-      WinCheckButton(hwnd, CFG5_SHOWLADATE, detailsladate);
-      WinCheckButton(hwnd, CFG5_SHOWLATIME, detailslatime);
-      WinCheckButton(hwnd, CFG5_SHOWCRDATE, detailscrdate);
-      WinCheckButton(hwnd, CFG5_SHOWCRTIME, detailscrtime);
-      WinCheckButton(hwnd, CFG5_SHOWATTR, detailsattr);
+      WinCheckButton(hwnd, CFG5_SHOWLNAMES, dsDirCnrDefault.detailslongname);
+      WinCheckButton(hwnd, CFG5_SHOWSUBJECT, dsDirCnrDefault.detailssubject);
+      WinCheckButton(hwnd, CFG5_SHOWEAS, dsDirCnrDefault.detailsea);
+      WinCheckButton(hwnd, CFG5_SHOWSIZE, dsDirCnrDefault.detailssize);
+      WinCheckButton(hwnd, CFG5_SHOWICON, dsDirCnrDefault.detailsicon);
+      WinCheckButton(hwnd, CFG5_SHOWLWDATE, dsDirCnrDefault.detailslwdate);
+      WinCheckButton(hwnd, CFG5_SHOWLWTIME, dsDirCnrDefault.detailslwtime);
+      WinCheckButton(hwnd, CFG5_SHOWLADATE, dsDirCnrDefault.detailsladate);
+      WinCheckButton(hwnd, CFG5_SHOWLATIME, dsDirCnrDefault.detailslatime);
+      WinCheckButton(hwnd, CFG5_SHOWCRDATE, dsDirCnrDefault.detailscrdate);
+      WinCheckButton(hwnd, CFG5_SHOWCRTIME, dsDirCnrDefault.detailscrtime);
+      WinCheckButton(hwnd, CFG5_SHOWATTR, dsDirCnrDefault.detailsattr);
       memset(&mask, 0, sizeof(mask));
       mask.attrFile = FILE_DIRECTORY | FILE_ARCHIVED | FILE_HIDDEN |
 	FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
@@ -1747,10 +1750,10 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
       strcpy(mask.prompt, GetPString(IDS_DEFDIRFILTERTITLETEXT));
       WinSetDlgItemText(hwnd, CFG5_FILTER, mask.szMask);
-      WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, fSubjectInLeftPane);
-      WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, fSubjectLengthMax);
+      WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, dsDirCnrDefault.fSubjectInLeftPane);
+      WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, dsDirCnrDefault.fSubjectLengthMax);
       WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETCURRENTVALUE,
-			MPFROMLONG(SubjectDisplayWidth), MPVOID);
+			MPFROMLONG(dsDirCnrDefault.SubjectDisplayWidth), MPVOID);
     }
     return 0;
 
@@ -1817,63 +1820,64 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  appname,
 			  "DirflWindowAttr", &flWindowAttr, sizeof(ULONG));
     }
-    detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
+    dsDirCnrDefault.detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-			&detailslongname, sizeof(BOOL));
-    detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
+			&dsDirCnrDefault.detailslongname, sizeof(BOOL));
+    dsDirCnrDefault.detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-			&detailssubject, sizeof(BOOL));
+			&dsDirCnrDefault.detailssubject, sizeof(BOOL));
+    dsDirCnrDefault.detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-			&detailsea, sizeof(BOOL));
-    detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
+			&dsDirCnrDefault.detailsea, sizeof(BOOL));
+    dsDirCnrDefault.detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-			&detailssize, sizeof(BOOL));
-    detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
+			&dsDirCnrDefault.detailssize, sizeof(BOOL));
+    dsDirCnrDefault.detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-			&detailsicon, sizeof(BOOL));
-    detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
+			&dsDirCnrDefault.detailsicon, sizeof(BOOL));
+    dsDirCnrDefault.detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-			&detailslwdate, sizeof(BOOL));
-    detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
+			&dsDirCnrDefault.detailslwdate, sizeof(BOOL));
+    dsDirCnrDefault.detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-			&detailslwtime, sizeof(BOOL));
-    detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
+			&dsDirCnrDefault.detailslwtime, sizeof(BOOL));
+    dsDirCnrDefault.detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-			&detailsladate, sizeof(BOOL));
-    detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
+			&dsDirCnrDefault.detailsladate, sizeof(BOOL));
+    dsDirCnrDefault.detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-			&detailslatime, sizeof(BOOL));
-    detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
+			&dsDirCnrDefault.detailslatime, sizeof(BOOL));
+    dsDirCnrDefault.detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-			&detailscrdate, sizeof(BOOL));
-    detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
+			&dsDirCnrDefault.detailscrdate, sizeof(BOOL));
+    dsDirCnrDefault.detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-			&detailscrtime, sizeof(BOOL));
-    detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
+			&dsDirCnrDefault.detailscrtime, sizeof(BOOL));
+    dsDirCnrDefault.detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-			&detailsattr, sizeof(BOOL));
-    fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
+			&dsDirCnrDefault.detailsattr, sizeof(BOOL));
+    dsDirCnrDefault.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
     PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectInLeftPane",
-			&fSubjectInLeftPane, sizeof(BOOL));
-    fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
+			&dsDirCnrDefault.fSubjectInLeftPane, sizeof(BOOL));
+    dsDirCnrDefault.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
     PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectLengthMax",
-			&fSubjectLengthMax, sizeof(BOOL));
+			&dsDirCnrDefault.fSubjectLengthMax, sizeof(BOOL));
     *mask.prompt = 0;
     PrfWriteProfileData(fmprof, appname, "DirFilter", &mask, sizeof(MASK));
     {
 	if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
 	  WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
-			    MPFROMP(&SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-	  if (SubjectDisplayWidth < 50)
-	    SubjectDisplayWidth = 0;
-	  else if (SubjectDisplayWidth > 1000)
-	    SubjectDisplayWidth = 1000;
+			    MPFROMP(&dsDirCnrDefault.SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
+	  if (dsDirCnrDefault.SubjectDisplayWidth < 50)
+	    dsDirCnrDefault.SubjectDisplayWidth = 0;
+	  else if (dsDirCnrDefault.SubjectDisplayWidth > 1000)
+	    dsDirCnrDefault.SubjectDisplayWidth = 1000;
 	}
 	else
-	  SubjectDisplayWidth = 0;
+	  dsDirCnrDefault.SubjectDisplayWidth = 0;
 	PrfWriteProfileData(fmprof,
 			    appname, "DirCnr.SubjectDisplayWidth",
-			    &SubjectDisplayWidth, sizeof(ULONG));
+			    &dsDirCnrDefault.SubjectDisplayWidth, sizeof(ULONG));
     }
     break;
   }
@@ -2055,26 +2059,26 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(hwnd, CFG5_FILTER, mask.szMask);
     }
     {
-      DIRCNRDATA dcd;
+      DETAILS_SETTINGS ds;
 
-      memset(&dcd, 0, sizeof(dcd));
-      LoadDetailsSwitches("Collector", &dcd);
-      WinCheckButton(hwnd, CFG5_SHOWLNAMES, dcd.detailslongname);
-      WinCheckButton(hwnd, CFG5_SHOWSUBJECT, dcd.detailssubject);
-      WinCheckButton(hwnd, CFG5_SHOWEAS, dcd.detailsea);
-      WinCheckButton(hwnd, CFG5_SHOWSIZE, dcd.detailssize);
-      WinCheckButton(hwnd, CFG5_SHOWICON, dcd.detailsicon);
-      WinCheckButton(hwnd, CFG5_SHOWLWDATE, dcd.detailslwdate);
-      WinCheckButton(hwnd, CFG5_SHOWLWTIME, dcd.detailslwtime);
-      WinCheckButton(hwnd, CFG5_SHOWLADATE, dcd.detailsladate);
-      WinCheckButton(hwnd, CFG5_SHOWLATIME, dcd.detailslatime);
-      WinCheckButton(hwnd, CFG5_SHOWCRDATE, dcd.detailscrdate);
-      WinCheckButton(hwnd, CFG5_SHOWCRTIME, dcd.detailscrtime);
-      WinCheckButton(hwnd, CFG5_SHOWATTR, dcd.detailsattr);
-      WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, dcd.fSubjectInLeftPane);
-      WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, dcd.fSubjectLengthMax);
+      memset(&ds, 0, sizeof(ds));
+      LoadDetailsSwitches("Collector", &ds);
+      WinCheckButton(hwnd, CFG5_SHOWLNAMES, ds.detailslongname);
+      WinCheckButton(hwnd, CFG5_SHOWSUBJECT, ds.detailssubject);
+      WinCheckButton(hwnd, CFG5_SHOWEAS, ds.detailsea);
+      WinCheckButton(hwnd, CFG5_SHOWSIZE, ds.detailssize);
+      WinCheckButton(hwnd, CFG5_SHOWICON, ds.detailsicon);
+      WinCheckButton(hwnd, CFG5_SHOWLWDATE, ds.detailslwdate);
+      WinCheckButton(hwnd, CFG5_SHOWLWTIME, ds.detailslwtime);
+      WinCheckButton(hwnd, CFG5_SHOWLADATE, ds.detailsladate);
+      WinCheckButton(hwnd, CFG5_SHOWLATIME, ds.detailslatime);
+      WinCheckButton(hwnd, CFG5_SHOWCRDATE, ds.detailscrdate);
+      WinCheckButton(hwnd, CFG5_SHOWCRTIME, ds.detailscrtime);
+      WinCheckButton(hwnd, CFG5_SHOWATTR, ds.detailsattr);
+      WinCheckButton(hwnd, CFG5_SUBJECTINLEFTPANE, ds.fSubjectInLeftPane);
+      WinCheckButton(hwnd, CFG5_SUBJECTLENGTHMAX, ds.fSubjectLengthMax);
       WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_SETCURRENTVALUE,
-			MPFROMLONG(dcd.SubjectDisplayWidth), MPVOID);
+			MPFROMLONG(ds.SubjectDisplayWidth), MPVOID);
 
     }
     return 0;
@@ -2146,68 +2150,68 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  &flWindowAttr, sizeof(ULONG));
     }
     {
-      DIRCNRDATA dcd;
+      DETAILS_SETTINGS ds;
 
-      memset(&dcd, 0, sizeof(dcd));
-      dcd.detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
+      memset(&ds, 0, sizeof(ds));
+      ds.detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsLongname",
-			  &dcd.detailslongname, sizeof(BOOL));
-      dcd.detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
+			  &ds.detailslongname, sizeof(BOOL));
+      ds.detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsSubject",
-			  &dcd.detailssubject, sizeof(BOOL));
-      dcd.detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWEAS);
+			  &ds.detailssubject, sizeof(BOOL));
+      ds.detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWEAS);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsEA",
-			  &dcd.detailsea, sizeof(BOOL));
-      dcd.detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
+			  &ds.detailsea, sizeof(BOOL));
+      ds.detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsSize",
-			  &dcd.detailssize, sizeof(BOOL));
-      dcd.detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
+			  &ds.detailssize, sizeof(BOOL));
+      ds.detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsIcon",
-			  &dcd.detailsicon, sizeof(BOOL));
-      dcd.detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
+			  &ds.detailsicon, sizeof(BOOL));
+      ds.detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsLWDate",
-			  &dcd.detailslwdate, sizeof(BOOL));
-      dcd.detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
+			  &ds.detailslwdate, sizeof(BOOL));
+      ds.detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsLWTime",
-			  &dcd.detailslwtime, sizeof(BOOL));
-      dcd.detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
+			  &ds.detailslwtime, sizeof(BOOL));
+      ds.detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsLADate",
-			  &dcd.detailsladate, sizeof(BOOL));
-      dcd.detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
+			  &ds.detailsladate, sizeof(BOOL));
+      ds.detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsLATime",
-			  &dcd.detailslatime, sizeof(BOOL));
-      dcd.detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
+			  &ds.detailslatime, sizeof(BOOL));
+      ds.detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsCRDate",
-			  &dcd.detailscrdate, sizeof(BOOL));
-      dcd.detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
+			  &ds.detailscrdate, sizeof(BOOL));
+      ds.detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsCRTime",
-			  &dcd.detailscrtime, sizeof(BOOL));
-      dcd.detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
+			  &ds.detailscrtime, sizeof(BOOL));
+      ds.detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
       PrfWriteProfileData(fmprof, appname, "Collector.DetailsAttr",
-			  &dcd.detailsattr, sizeof(BOOL));
-      dcd.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
+			  &ds.detailsattr, sizeof(BOOL));
+      ds.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
       PrfWriteProfileData(fmprof, appname, "Collector.SubjectInLeftPane",
-			  &dcd.fSubjectInLeftPane, sizeof(BOOL));
-      dcd.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
+			  &ds.fSubjectInLeftPane, sizeof(BOOL));
+      ds.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
       PrfWriteProfileData(fmprof, appname, "Collector.SubjectLengthMax",
-			  &dcd.fSubjectLengthMax, sizeof(BOOL));
+			  &ds.fSubjectLengthMax, sizeof(BOOL));
       *mask.prompt = 0;
       PrfWriteProfileData(fmprof,
 			  appname, "CollectorFilter", &mask, sizeof(MASK));
       {
 	if (!WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX)) {
 	  WinSendDlgItemMsg(hwnd, CFG5_SUBJECTDISPLAYWIDTH, SPBM_QUERYVALUE,
-			    MPFROMP(&dcd.SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
-	  if (dcd.SubjectDisplayWidth < 50)
-	    dcd.SubjectDisplayWidth = 0;
-	  else if (dcd.SubjectDisplayWidth > 1000)
-	    dcd.SubjectDisplayWidth = 1000;
+			    MPFROMP(&ds.SubjectDisplayWidth), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
+	  if (ds.SubjectDisplayWidth < 50)
+	    ds.SubjectDisplayWidth = 0;
+	  else if (ds.SubjectDisplayWidth > 1000)
+	    ds.SubjectDisplayWidth = 1000;
 	}
 	else
-	  dcd.SubjectDisplayWidth = 0;
+	  ds.SubjectDisplayWidth = 0;
 	PrfWriteProfileData(fmprof,
 			    appname, "Collector.SubjectDisplayWidth",
-			    &dcd.SubjectDisplayWidth, sizeof(ULONG));
+			    &ds.SubjectDisplayWidth, sizeof(ULONG));
       }
     }
     break;
@@ -2418,18 +2422,18 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PrfWriteProfileData(fmprof,
 			    appname, "Collector.Fontnamesize", NULL, 0);
       }
-      detailslongname = TRUE;
-      detailssubject = TRUE;
-      detailsea = TRUE;
-      detailssize = TRUE;
-      detailsicon = TRUE;
-      detailslwdate = TRUE;
-      detailslwtime = TRUE;
-      detailsladate = TRUE;
-      detailslatime = TRUE;
-      detailscrdate = TRUE;
-      detailscrtime = TRUE;
-      detailsattr = TRUE;
+      dsDirCnrDefault.detailslongname = TRUE;
+      dsDirCnrDefault.detailssubject = TRUE;
+      dsDirCnrDefault.detailsea = TRUE;
+      dsDirCnrDefault.detailssize = TRUE;
+      dsDirCnrDefault.detailsicon = TRUE;
+      dsDirCnrDefault.detailslwdate = TRUE;
+      dsDirCnrDefault.detailslwtime = TRUE;
+      dsDirCnrDefault.detailsladate = TRUE;
+      dsDirCnrDefault.detailslatime = TRUE;
+      dsDirCnrDefault.detailscrdate = TRUE;
+      dsDirCnrDefault.detailscrtime = TRUE;
+      dsDirCnrDefault.detailsattr = TRUE;
       if (hwndTree) {
 
 	CNRINFO cnri;
@@ -2475,18 +2479,18 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    GetPString(IDS_8HELVTEXT),
 			    strlen(GetPString(IDS_8HELVTEXT)) + 1);
       }
-      detailslongname = TRUE;
-      detailssubject = TRUE;
-      detailsea = TRUE;
-      detailssize = TRUE;
-      detailsicon = TRUE;
-      detailslwdate = TRUE;
-      detailslwtime = TRUE;
-      detailsladate = TRUE;
-      detailslatime = TRUE;
-      detailscrdate = TRUE;
-      detailscrtime = TRUE;
-      detailsattr = TRUE;
+      dsDirCnrDefault.detailslongname = TRUE;
+      dsDirCnrDefault.detailssubject = TRUE;
+      dsDirCnrDefault.detailsea = TRUE;
+      dsDirCnrDefault.detailssize = TRUE;
+      dsDirCnrDefault.detailsicon = TRUE;
+      dsDirCnrDefault.detailslwdate = TRUE;
+      dsDirCnrDefault.detailslwtime = TRUE;
+      dsDirCnrDefault.detailsladate = TRUE;
+      dsDirCnrDefault.detailslatime = TRUE;
+      dsDirCnrDefault.detailscrdate = TRUE;
+      dsDirCnrDefault.detailscrtime = TRUE;
+      dsDirCnrDefault.detailsattr = TRUE;
       if (hwndTree) {
 
 	CNRINFO cnri;
@@ -2563,8 +2567,8 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fArcStuffVisible = FALSE;
       fForceUpper = FALSE;
       fForceLower = FALSE;
-      detailslongname = FALSE;
-      detailssubject = FALSE;
+      dsDirCnrDefault.detailslongname = FALSE;
+      dsDirCnrDefault.detailssubject = FALSE;
       break;
 
     case CFG9_HECTOR:
@@ -2623,18 +2627,18 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PrfWriteProfileData(fmprof, appname, "CollectorflWindowAttr",
 			    &flWindowAttr, sizeof(ULONG));
       }
-      detailslongname = FALSE;
-      detailssubject = FALSE;
-      detailsea = TRUE;
-      detailssize = TRUE;
-      detailsicon = TRUE;
-      detailslwdate = TRUE;
-      detailslwtime = TRUE;
-      detailsladate = FALSE;
-      detailslatime = FALSE;
-      detailscrdate = FALSE;
-      detailscrtime = FALSE;
-      detailsattr = TRUE;
+      dsDirCnrDefault.detailslongname = FALSE;
+      dsDirCnrDefault.detailssubject = FALSE;
+      dsDirCnrDefault.detailsea = TRUE;
+      dsDirCnrDefault.detailssize = TRUE;
+      dsDirCnrDefault.detailsicon = TRUE;
+      dsDirCnrDefault.detailslwdate = TRUE;
+      dsDirCnrDefault.detailslwtime = TRUE;
+      dsDirCnrDefault.detailsladate = FALSE;
+      dsDirCnrDefault.detailslatime = FALSE;
+      dsDirCnrDefault.detailscrdate = FALSE;
+      dsDirCnrDefault.detailscrtime = FALSE;
+      dsDirCnrDefault.detailsattr = TRUE;
       sortFlags = SORT_FILENAME | SORT_DIRSFIRST;
       CollectorsortFlags = SORT_FILENAME | SORT_DIRSFIRST;
       if (hwndMain) {
@@ -2740,18 +2744,18 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PrfWriteProfileData(fmprof, appname, "CollectorflWindowAttr",
 			    &flWindowAttr, sizeof(ULONG));
       }
-      detailslongname = FALSE;
-      detailssubject = FALSE;
-      detailsea = TRUE;
-      detailssize = TRUE;
-      detailsicon = TRUE;
-      detailslwdate = TRUE;
-      detailslwtime = TRUE;
-      detailsladate = FALSE;
-      detailslatime = FALSE;
-      detailscrdate = FALSE;
-      detailscrtime = FALSE;
-      detailsattr = TRUE;
+      dsDirCnrDefault.detailslongname = FALSE;
+      dsDirCnrDefault.detailssubject = FALSE;
+      dsDirCnrDefault.detailsea = TRUE;
+      dsDirCnrDefault.detailssize = TRUE;
+      dsDirCnrDefault.detailsicon = TRUE;
+      dsDirCnrDefault.detailslwdate = TRUE;
+      dsDirCnrDefault.detailslwtime = TRUE;
+      dsDirCnrDefault.detailsladate = FALSE;
+      dsDirCnrDefault.detailslatime = FALSE;
+      dsDirCnrDefault.detailscrdate = FALSE;
+      dsDirCnrDefault.detailscrtime = FALSE;
+      dsDirCnrDefault.detailsattr = TRUE;
       sortFlags = SORT_FILENAME | SORT_DIRSFIRST;
       CollectorsortFlags = SORT_FILENAME | SORT_DIRSFIRST;
       if (hwndMain) {
@@ -2963,29 +2967,29 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     // Save new details settings and refresh windows
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-			&detailslongname, sizeof(BOOL));
+			&dsDirCnrDefault.detailslongname, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-			&detailssubject, sizeof(BOOL));
+			&dsDirCnrDefault.detailssubject, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-			&detailsea, sizeof(BOOL));
+			&dsDirCnrDefault.detailsea, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-			&detailssize, sizeof(BOOL));
+			&dsDirCnrDefault.detailssize, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-			&detailsicon, sizeof(BOOL));
+			&dsDirCnrDefault.detailsicon, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-			&detailslwdate, sizeof(BOOL));
+			&dsDirCnrDefault.detailslwdate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-			&detailslwtime, sizeof(BOOL));
+			&dsDirCnrDefault.detailslwtime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-			&detailsladate, sizeof(BOOL));
+			&dsDirCnrDefault.detailsladate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-			&detailslatime, sizeof(BOOL));
+			&dsDirCnrDefault.detailslatime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-			&detailscrdate, sizeof(BOOL));
+			&dsDirCnrDefault.detailscrdate, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-			&detailscrtime, sizeof(BOOL));
+			&dsDirCnrDefault.detailscrtime, sizeof(BOOL));
     PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-			&detailsattr, sizeof(BOOL));
+			&dsDirCnrDefault.detailsattr, sizeof(BOOL));
     if (hwndMain) {
       // Save state and restore to refresh windows with new settings
       if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {

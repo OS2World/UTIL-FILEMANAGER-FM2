@@ -79,6 +79,9 @@
   14 Feb 08 SHL Refactor CfgDlgProc to notebook.h
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   22 Jun 08 GKY Changed some variable types to fix compiler warnings
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -500,8 +503,8 @@ VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl);
 void PaintSTextWindow(HWND hwnd, HPS hps);
 BOOL AdjustCnrColVis(HWND hwndCnr, CHAR * title, BOOL visible, BOOL toggle);
 BOOL AdjustCnrColRO(HWND hwndCnr, CHAR * title, BOOL readonly, BOOL toggle);
-VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd);
-VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DIRCNRDATA * dcd,
+VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds);
+VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds,
 			  BOOL compare);
 BOOL SetCnrCols(HWND hwndCnr, BOOL compare);
 MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
@@ -511,14 +514,14 @@ VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL enable);
 BOOL ViewHelp(CHAR * filename);
 VOID CloseHelp(VOID);
 INT ExecFile(HWND hwnd, CHAR * filename);
-VOID SetDetailsSwitches(HWND hwnd, DIRCNRDATA * dcd);
+VOID SetDetailsSwitches(HWND hwnd, DETAILS_SETTINGS * pds);
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
-			   CHAR * directory, CHAR * keyroot, DIRCNRDATA * dcd,
+			   CHAR * directory, CHAR * keyroot, DETAILS_SETTINGS * pds,
 			   BOOL compare);
 VOID SetConditionalCascade(HWND hwndMenu, USHORT id, USHORT def);
 VOID SetSortChecks(HWND hwndMenu, INT sortflags);
 VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr);
-VOID LoadDetailsSwitches(CHAR * keyroot, DIRCNRDATA * dcd);
+VOID LoadDetailsSwitches(CHAR * keyroot, DETAILS_SETTINGS * pds);
 HWND FindDirCnr(HWND hwndParent);
 VOID HeapThread(VOID * dummy);
 VOID FixSwitchList(HWND hwnd, CHAR * text);
@@ -1135,16 +1138,14 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fLookInDir, fSwitchTree, fSwitchTreeOnFocus, fDrivebar,
   fSwitchTreeExpand, fCollapseFirst, fFilesInTree, fNoDead,
   fThreadNotes, fOkayMinimize, fRunning, fDullMin, fBlueLED,
-  fViewChild, fShowEnv, fLeaveTree, fNoFoldMenu, fSubjectInLeftPane,
+  fViewChild, fShowEnv, fLeaveTree, fNoFoldMenu,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
-  fSubjectLengthMax, fNoLargeFileSupport, fNoMailtoMailRun,
+  fNoLargeFileSupport, fNoMailtoMailRun,
   fHttpRunWPSDefault, fFtpRunWPSDefault, fLibPathStrictMailRun,
   fLibPathStrictHttpRun, fLibPathStrictFtpRun, fCancelAction, fTrashCan;
-DATADEF BOOL detailsladate, detailslatime, detailscrdate, detailscrtime,
-  detailslongname, detailsea, detailssize, detailssubject,
-  detailslwdate, detailslwtime, detailsattr, detailsicon;
+DATADEF DETAILS_SETTINGS dsDirCnrDefault;
 DATADEF PID mypid;
 DATADEF INT driveflags[26], driveserial[26];
 DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines;
@@ -1182,7 +1183,7 @@ DATADEF FILE *LogFileHandle;
 #define FILESTOGET_MIN  256
 #define FILESTOGET_MAX  4096
 
-DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL, SubjectDisplayWidth;
+DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL;
 DATADEF long prnwidth, prnlength, prntmargin, prnbmargin, prnlmargin,
   prnrmargin, prnspacing, prntabspaces;
 DATADEF BOOL prnpagenums, prnformat, prnformfeedbefore, prnformfeedafter,

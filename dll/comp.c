@@ -53,6 +53,9 @@
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   16 Mar 08 GKY Prevent trap caused by files that exceed maxpath length
+  11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -2262,9 +2265,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	cmp->dcd.hwndClient = hwnd;
 	cmp->dcd.mask.attrFile = (FILE_DIRECTORY | FILE_ARCHIVED |
 				  FILE_READONLY | FILE_SYSTEM | FILE_HIDDEN);
-	LoadDetailsSwitches("DirCmp", &cmp->dcd);
-	cmp->dcd.detailslongname = FALSE;
-	cmp->dcd.detailsicon = FALSE;	// TRUE;
+	LoadDetailsSwitches("DirCmp", &cmp->dcd.ds);
+	cmp->dcd.ds.detailslongname = FALSE;
+	cmp->dcd.ds.detailsicon = FALSE;	// TRUE;
       }
       memset(&cnri, 0, sizeof(CNRINFO));
       cnri.cb = sizeof(CNRINFO);
@@ -2286,10 +2289,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       AdjustCnrColRO(hwndLeft, GetPString(IDS_LONGNAMECOLTEXT), TRUE, FALSE);
       AdjustCnrColRO(hwndRight, GetPString(IDS_FILENAMECOLTEXT), TRUE, FALSE);
       AdjustCnrColRO(hwndRight, GetPString(IDS_LONGNAMECOLTEXT), TRUE, FALSE);
-      AdjustCnrColsForPref(hwndLeft, cmp->leftdir, &cmp->dcd, TRUE);
-      tempsubj = cmp->dcd.detailssubject;
-      cmp->dcd.detailssubject = FALSE;
-      AdjustCnrColsForPref(hwndRight, cmp->rightdir, &cmp->dcd, TRUE);
+      AdjustCnrColsForPref(hwndLeft, cmp->leftdir, &cmp->dcd.ds, TRUE);
+      tempsubj = cmp->dcd.ds.detailssubject;
+      cmp->dcd.ds.detailssubject = FALSE;
+      AdjustCnrColsForPref(hwndRight, cmp->rightdir, &cmp->dcd.ds, TRUE);
       if (*cmp->rightlist) {
 	AdjustCnrColVis(hwndRight, GetPString(IDS_LADATECOLTEXT), FALSE,
 			FALSE);
@@ -2300,7 +2303,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	AdjustCnrColVis(hwndRight, GetPString(IDS_CRTIMECOLTEXT), FALSE,
 			FALSE);
       }
-      cmp->dcd.detailssubject = tempsubj;
+      cmp->dcd.ds.detailssubject = tempsubj;
     }
     return 0;
 
@@ -2529,7 +2532,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (SHORT1FROMMP(mp1) == COMP_RIGHTDIR)
 		WinSendMsg(cmp->dcd.hwndLastMenu, MM_DELETEITEM,
 			   MPFROM2SHORT(IDM_SHOWSUBJECT, FALSE), MPVOID);
-	      SetDetailsSwitches(cmp->dcd.hwndLastMenu, &cmp->dcd);
+	      SetDetailsSwitches(cmp->dcd.hwndLastMenu, &cmp->dcd.ds);
 	      if (SHORT1FROMMP(mp1) == COMP_LEFTDIR)
 		WinSendMsg(cmp->dcd.hwndLastMenu, MM_DELETEITEM,
 			   MPFROM2SHORT(IDM_LOADLISTFILE, 0), MPVOID);
@@ -2901,14 +2904,14 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	dcd1 = cmp->dcd;
 	AdjustDetailsSwitches(hwndLeft,
 			      (HWND)0, SHORT1FROMMP(mp1),
-			      cmp->leftdir, "DirCmp", &cmp->dcd, TRUE);
-	tempsubj = cmp->dcd.detailssubject;
+			      cmp->leftdir, "DirCmp", &cmp->dcd.ds, TRUE);
+	tempsubj = cmp->dcd.ds.detailssubject;
 	cmp->dcd = dcd1;
-	cmp->dcd.detailssubject = FALSE;
+	cmp->dcd.ds.detailssubject = FALSE;
 	AdjustDetailsSwitches(hwndRight,
 			      cmp->dcd.hwndLastMenu, SHORT1FROMMP(mp1),
-			      cmp->rightdir, "DirCmp", &cmp->dcd, TRUE);
-	cmp->dcd.detailssubject = tempsubj;
+			      cmp->rightdir, "DirCmp", &cmp->dcd.ds, TRUE);
+	cmp->dcd.ds.detailssubject = tempsubj;
       }
       break;
 
