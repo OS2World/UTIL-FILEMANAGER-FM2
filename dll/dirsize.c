@@ -68,7 +68,7 @@ typedef struct
 
 typedef struct
 {
-  CHAR szDirName[CCHMAXPATH + 320];
+  CHAR szDirName[CCHMAXPATH];
   CHAR chStopFlag;
   BOOL dying;
   BOOL working;
