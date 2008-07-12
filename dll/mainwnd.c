@@ -61,6 +61,8 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  12 Jul 08 JBS Ticket 246: Allow saved directory container states to have no directory containers
+                (i.e. just a directory tree container).
 
 ***********************************************************************/
 
@@ -3096,7 +3098,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   size = sizeof(ULONG);
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   if (PrfQueryProfileData(fmprof,
-                          FM3Str, szKey, (PVOID) & numsaves, &size) && numsaves) {
+                          FM3Str, szKey, (PVOID) & numsaves, &size)) {
     if (fDeleteState)
       PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
     for (x = numsaves - 1; x >= 0; x--) {
@@ -4653,7 +4655,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (SHORT1FROMMP(mp1) == IDM_SAVEDIRCNRSTATE) {
             // Save
             INT nSaved = SaveDirCnrState(hwnd, szStateName);
-            if (nSaved > 0) {
+            if (nSaved >= 0) {
               INT ret = add_setup(szStateName);
               if (ret == 0) {
                 WinSendMsg(hwndStatelist, LM_INSERTITEM,
@@ -4671,8 +4673,6 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               saymsg(MB_ENTER | MB_ICONASTERISK,
                      hwnd,
                      GetPString(IDS_WARNINGTEXT),
-                     nSaved == 0 ?
-                     "Nothing to save" :
                      "State data save failed");
               WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
             }
@@ -6283,8 +6283,6 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                              IDS_PRFQUERYPROFILEDATA);
                 }
               }
-              else if (!numsaves)
-                Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
               else {
                 char *pszStateName;
                 if ((shiftstate & KC_SHIFT) == 0)
