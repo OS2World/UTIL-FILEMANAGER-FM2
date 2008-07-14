@@ -310,10 +310,6 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     CHAR szBar[80];
     CHAR szBuf[CCHMAXPATH + 320];
 
-#   ifdef FORTIFY
-    Fortify_EnterScope();
-#    endif
-
     // cbFile = currect directory usage in bytes
     // easize = subdirectory usage in bytes
     CommaFmtULL(szCurDir, sizeof(szCurDir), pci->cbFile, 'K');
@@ -375,7 +371,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
   else
     attrib = CMA_FIRST;
   pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
-			      MPFROM2SHORT(attrib, CMA_ITEMORDER));
+                              MPFROM2SHORT(attrib, CMA_ITEMORDER));
   while (pci && (INT) pci != -1) {
     if (*pchStopFlag)
       break;
@@ -683,7 +679,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      *p = 0;			// Make 1 line high
 
 	      // Calculate nominal graph box height based on font size
-	      GpiQueryTextBox(oi->hps, strlen(pci->pszFileName),
+	      GpiQueryTextBox(oi->hps, p - pci->pszFileName,
 			      pci->pszFileName, TXTBOX_COUNT, aptl);
 	      boxHeight = aptl[TXTBOX_TOPRIGHT].y - aptl[TXTBOX_BOTTOMRIGHT].y;
 	      boxHeight -= 4;
@@ -696,7 +692,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft;
 	      ptl.y = yBottom + boxHeight + 6;	// 03 Aug 07 SHL
 	      // GpiMove(oi->hps, &ptl);
-	      GpiCharStringAt(oi->hps, &ptl, strlen(pci->pszFileName),
+	      GpiCharStringAt(oi->hps, &ptl, p - pci->pszFileName,
 			      pci->pszFileName);
 
 	      *p = '\r';		// Restore
@@ -742,7 +738,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft + 2;
 	      ptl.y = yBottom + boxHeight;
 	      GpiMove(oi->hps, &ptl);
-	      ptl.x = oi->rclItem.xLeft + 203;
+	      ptl.x = oi->rclItem.xLeft + 201;
 	      GpiLine(oi->hps, &ptl);
 	      ptl.y = yBottom + boxHeight - 2;
 	      GpiLine(oi->hps, &ptl);
