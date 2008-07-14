@@ -52,6 +52,7 @@
   10 Feb 08 GKY Implement bubble help for bitmap menu items
   15 Feb 08 SHL Sync with settings menu rework
   29 Feb 08 GKY Use xfree where appropriate
+  14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
 
 ***********************************************************************/
 
@@ -1631,11 +1632,12 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case IDM_EXEC:
 	case IDM_EXTRACTWDIRS:
 	case IDM_EXTRACT:
+	case IDM_OPENDEFAULT:
+	case IDM_OPENSETTINGS:
 	  {
             CHAR *endofit, *ptr;
             PSZ pszCmdLine;
 	    INT z;
-
 	    if ((li->type == IDM_EXTRACT && !li->info->extract) ||
 		((li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
 		  li->type == IDM_VIEWBINARY || li->type == IDM_EDIT ||
@@ -1706,7 +1708,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      li->type == IDM_PRINT ||
 		      li->type == IDM_EDIT ||
 		      li->type == IDM_EDITTEXT ||
-		      (li->type == IDM_EDITBINARY &&
+		      li->type == IDM_OPENDEFAULT ||
+		      li->type == IDM_OPENSETTINGS ||
+		      (li->type == IDM_EDITBINARY &&		// JBS No way for this () to be true??
 		       li->type == IDM_MCIPLAY)) &&
 		     !li->info->exwdirs)) ?
 		     li->info->extract :
@@ -1800,10 +1804,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     li->type == IDM_EDITTEXT ||
 		     li->type == IDM_VIEWARCHIVE ||
 		     li->type == IDM_EDITBINARY ||
+		     li->type == IDM_OPENDEFAULT ||
+		     li->type == IDM_OPENSETTINGS ||
 		     li->type == IDM_MCIPLAY || li->type == IDM_PRINT) {
 
 	      CHAR *temp, *p;
-
 	      for (x = 0; li->list[x]; x++) {
 		if (!li->info->exwdirs) {
 		  temp = li->list[x];
@@ -1895,6 +1900,35 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   WINDOWED | SEPARATE, li->targetpath, li->list,
 			   NULL, pszSrcFile, __LINE__);
 	      }
+	      else if (li->type == IDM_OPENDEFAULT ||
+		       li->type == IDM_OPENSETTINGS) {
+		WORKER *wk;
+#       	ifdef FORTIFY
+        	Fortify_EnterScope();
+#        	endif
+		wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
+		if (!wk)
+	  	  FreeListInfo(li);
+		else {
+	  	  wk->size = sizeof(WORKER);
+        	  wk->hwndCnr = dcd->hwndCnr;
+        	  wk->hwndParent = dcd->hwndParent;
+        	  wk->hwndFrame = dcd->hwndFrame;
+        	  wk->hwndClient = dcd->hwndClient;
+        	  wk->li = li;
+        	  strcpy(wk->directory, dcd->directory);
+        	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
+        	    Runtime_Error(pszSrcFile, __LINE__,
+        			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+                    free(wk);
+        	    FreeListInfo((LISTINFO *) mp1);
+#                   ifdef FORTIFY
+                    Fortify_LeaveScope();
+#                   endif
+        	  }
+	}
+		
+	      }
 	      else {
 		if (li->hwnd) {
 
@@ -1981,7 +2015,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	}
       }
-      FreeListInfo(li);
+      if (li->type != IDM_OPENDEFAULT && li->type != IDM_OPENSETTINGS)
+      {
+      	FreeListInfo(li);
+      }
     }
     return 0;
 
@@ -2908,6 +2945,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_FIND:
       case IDM_EXEC:
       case IDM_VIRUSSCAN:
+      case IDM_OPENDEFAULT:
+      case IDM_OPENSETTINGS:
 	{
 	  LISTINFO *li;
 #         ifdef FORTIFY
@@ -2971,6 +3010,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    case IDM_EXEC:
 	    case IDM_PRINT:
 	    case IDM_VIRUSSCAN:
+	    case IDM_OPENDEFAULT:
+	    case IDM_OPENSETTINGS:
 	      strcpy(li->targetpath, dcd->workdir);
 	      break;
 	    default:
@@ -2987,9 +3028,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    }
             else
 	      free(li);
-#             ifdef FORTIFY
-              Fortify_LeaveScope();
-#              endif
+#           ifdef FORTIFY
+            Fortify_LeaveScope();
+#           endif
 	  }
 	}
 	break;

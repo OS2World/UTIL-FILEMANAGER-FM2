@@ -32,6 +32,7 @@
   16 Jan 08 SHL Add sync updates toggle
   19 Jan 08 GKY Rework Utilities menu
   14 Feb 08 SHL Add settings submenu.  Use new settings submenu definitions
+  14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
 
 ***********************************************************************/
 
@@ -719,8 +720,8 @@ ACCELTABLE  TREE_FRAME
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
   VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
-  VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
   VK_F7,       IDM_OPENSETTINGS,      VIRTUALKEY
+  VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
   VK_F8,       IDM_SHOWSELECT,        CONTROL,VIRTUALKEY
   VK_F10,      IDM_CONTEXTMENU,       SHIFT,VIRTUALKEY
 }
@@ -877,8 +878,8 @@ ACCELTABLE  DIR_FRAME
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
   VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
-  VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
   VK_F7,       IDM_OPENSETTINGS,      VIRTUALKEY
+  VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
   VK_F8,       IDM_SHOWSELECT,        CONTROL,VIRTUALKEY
   VK_F10,      IDM_CONTEXTMENU,       SHIFT,VIRTUALKEY
 }
@@ -1693,6 +1694,11 @@ MENU ARC_POPUP
   MENUITEM "~Print\tCtrl + p",          IDM_PRINT
   MENUITEM "~Delete\tCtrl + d",         IDM_DELETE
   MENUITEM "~Find\tCtrl + i",           IDM_FIND
+  SUBMENU  "~Open",             IDM_OPENSUBMENU
+  {
+	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
+  }
   MENUITEM "",                    -1,                   MIS_SEPARATOR
   SUBMENU "~Edit",                IDM_EDITSUBMENU
   {
@@ -1763,6 +1769,8 @@ ACCELTABLE  ARC_FRAME
   VK_BACKTAB, IDM_PREVWINDOW,       SHIFT,VIRTUALKEY
   VK_F1,      IDM_HELP,             VIRTUALKEY
   VK_F3,      SC_CLOSE,             SYSCOMMAND,VIRTUALKEY
+  VK_F6,      IDM_OPENDEFAULT,      VIRTUALKEY
+  VK_F7,      IDM_OPENSETTINGS,     VIRTUALKEY
   VK_F7,      IDM_SHOWSORT,         CONTROL,VIRTUALKEY
   VK_F8,      IDM_SHOWSELECT,       CONTROL,VIRTUALKEY
   VK_F10,     IDM_CONTEXTMENU,      SHIFT,VIRTUALKEY
