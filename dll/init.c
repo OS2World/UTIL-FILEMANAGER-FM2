@@ -649,10 +649,38 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
 
   /* set up default root names for temp archive goodies */
-  if (!fAmAV2)
-    strcpy(ArcTempRoot, "$FM$ARC$");
-  else
-    strcpy(ArcTempRoot, "$AV$ARC$");
+  env = getenv("TMP");
+  if (env != NULL) {
+    DosError(FERR_DISABLEHARDERR);
+    rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
+    if (!rc) {
+      if (fs3.attrFile & FILE_DIRECTORY) {
+        BldFullPathName(ArcTempRoot, env, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
+        pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
+        fUseTmp = TRUE;
+      }
+    }
+  }
+  else {
+    env = getenv("TEMP");
+    if (env != NULL) {
+      DosError(FERR_DISABLEHARDERR);
+      rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
+      if (!rc) {
+        if (fs3.attrFile & FILE_DIRECTORY) {
+          BldFullPathName(ArcTempRoot, env, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
+          pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
+          fUseTmp = TRUE;
+        }
+      }
+    }
+  }
+  if (!fUseTmp) {
+    if (!fAmAV2)
+      strcpy(ArcTempRoot, "$FM$ARC$");
+    else
+      strcpy(ArcTempRoot, "$AV$ARC$");
+  }
 
   /* initialize random number generator */
   srand(time(NULL) + clock());

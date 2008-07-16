@@ -25,6 +25,7 @@
   26 Aug 07 SHL Revert to DosSleep(0)
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   22 Jun 08 GKY Made Felete move to xworkplace trash can  on systems that have it
+  16 JUL 08 GKY Use TMP directory for temp files
 
 ***********************************************************************/
 
@@ -1066,7 +1067,27 @@ VOID MassAction(VOID * args)
 			  (needs_quoting(wk->li->list[x]) * 2));
 	      if (total > 1000) {
 
-		FILE *fp;
+                FILE *fp;
+                CHAR TempFile[CCHMAXPATH];
+
+                if (fUseTmp)
+                  BldFullPathName(TempFile, pTmpDir, "$FM2PLAY.$$$");
+                else
+                  strcpy(TempFile, "$FM2PLAY.$$$");
+
+		fp = xfopen(TempFile, "w", pszSrcFile, __LINE__);
+		if (fp) {
+		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
+		  for (x = 0; wk->li->list[x]; x++)
+		    fprintf(fp, "%s\n", wk->li->list[x]);
+		  fprintf(fp, ";end\n");
+                  fclose(fp);
+                  strrev(TempFile);
+                  strcat(TempFile, "@/");
+                  strrev(TempFile);
+		  RunFM2Util("FM2PLAY.EXE", TempFile);
+		}
+                /*FILE *fp;
 
 		fp = xfopen("$FM2PLAY.$$$", "w", pszSrcFile, __LINE__);
 		if (fp) {
@@ -1077,7 +1098,7 @@ VOID MassAction(VOID * args)
 		  fclose(fp);
 		  RunFM2Util("FM2PLAY.EXE", "/#$FM2PLAY.$$$");
 		  break;
-		}
+		}*/
 	      }
 	    }
 	    /* intentional fallthru */

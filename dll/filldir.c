@@ -196,10 +196,8 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
     char szFileName[CCHMAXPATH];
     char *psz;
 
-    psz = getenv("TMP");
-    if (!psz && *psz)
-      psz = getenv("TEMP");
-    if (psz && *psz) {
+    if (fUseTmp) {
+      psz = pTmpDir;
       strcpy(szFileName, psz);
       psz = szFileName + strlen(szFileName) - 1;
       if (*psz != '\\') {

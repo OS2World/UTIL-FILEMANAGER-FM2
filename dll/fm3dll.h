@@ -1109,7 +1109,7 @@ DATADEF HWND hwndMain, hwndTree, hwndStatus, hwndStatus2, hwndTrash,
 	     hwndAutoview, hwndAttr, hwndDate, hwndName, hwndBack,
 	     hwndLED, hwndLEDHdr, hwndAutoMLE, hwndCmdlist;
 DATADEF HBITMAP hbmLEDon, hbmLEDoff;
-DATADEF CHAR ArcTempRoot[9], ThousandsSeparator[2];
+DATADEF CHAR ArcTempRoot[CCHMAXPATH], ThousandsSeparator[2], *pTmpDir;
 DATADEF HPOINTER hptrArrow, hptrBusy, hptrLast, hptrDir, hptrFile, hptrRemote,
   hptrFloppy, hptrDrive, hptrRemovable, hptrCDROM,hptrVirtual,hptrRamdisk,
   hptrFinger, hptrApp, hptrDunno, hptrSystem, hptrHidden,
@@ -1142,7 +1142,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
-  fNoLargeFileSupport, fNoMailtoMailRun,
+  fNoLargeFileSupport, fNoMailtoMailRun, fUseTmp,
   fHttpRunWPSDefault, fFtpRunWPSDefault, fLibPathStrictMailRun,
   fLibPathStrictHttpRun, fLibPathStrictFtpRun, fCancelAction, fTrashCan;
 DATADEF DETAILS_SETTINGS dsDirCnrDefault;

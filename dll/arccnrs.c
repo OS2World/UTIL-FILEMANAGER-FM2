@@ -53,6 +53,8 @@
   15 Feb 08 SHL Sync with settings menu rework
   29 Feb 08 GKY Use xfree where appropriate
   14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
+  16 Jul 08 GKY Fix trap on viewing multiple files from an archive (misplaced free)
+  16 JUL 08 GKY Use TMP directory for temp files if present.
 
 ***********************************************************************/
 
@@ -421,7 +423,7 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   HFILE oldstdout;
   HFILE newstdout;
   CHAR s[CCHMAXPATH * 2], lonename[CCHMAXPATH + 2],
-       *nsize, *osize, *fdate, *fname, *p, *pp, arctemp[33];
+       *nsize, *osize, *fdate, *fname, *p, *pp, arctemp[CCHMAXPATH];
   BOOL gotstart;
   BOOL gotend;
   BOOL wasquote;
@@ -1497,6 +1499,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       register INT x;
 
       if (li && li->list && li->list[0]) {
+        printf("%x/r", li->type); fflush(stdout);
 	switch (li->type) {
 	case IDM_ARCHIVE:
 	case IDM_ARCHIVEM:
@@ -1721,7 +1724,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	     z = 0;
 	     do {
 	       for (x = z; li->list[x] &&
-		   strlen(pszCmdLine) + strlen(li->list[x]) < 999; x++) {
+		   strlen(pszCmdLine) + strlen(li->list[x]) < MaxComLineStrg - 1 ; x++) {
 		strcat(pszCmdLine, " ");
 		BldQuotedFileName(pszCmdLine + strlen(pszCmdLine), li->list[x]);
 		ptr = li->list[x];
@@ -1735,7 +1738,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      runemf2(SEPARATE | WINDOWED |
 		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
 		      WAIT, hwnd, pszSrcFile, __LINE__,
-		      li->targetpath, NULL, "%s", pszCmdLine);
+                      li->targetpath, NULL, "%s", pszCmdLine);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
@@ -1753,11 +1756,12 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 		p = xmalloc(strlen(temp) + strlen(li->targetpath) + 2,
 			    pszSrcFile, __LINE__);
-		if (p) {
-		  strcpy(p, li->targetpath);
+                if (p) {
+                  BldFullPathName(p, li->targetpath, temp);
+		  /*strcpy(p, li->targetpath);
 		  if (p[strlen(p) - 1] != '\\')
 		    strcat(p, "\\");
-		  strcat(p, temp);
+		  strcat(p, temp);*/
 		  li->list[x] = p;
 		  free(temp);
 		}
@@ -1822,16 +1826,16 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      xfree(temp, pszSrcFile, __LINE__);
 		    }
 		  }
-		}
+                }
 		BldFullPathName(pszCmdLine, li->targetpath, li->list[x]);
 		temp = li->list[x];
                 li->list[x] = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
-                free(pszCmdLine);
 		if (!li->list[x])
 		  li->list[x] = temp;
 		else
 		  xfree(temp, pszSrcFile, __LINE__);
-	      }
+              }
+              free(pszCmdLine);
 	      if (li->type == IDM_VIEW || li->type == IDM_EDIT) {
 
 		BOOL isit = TestBinary(li->list[0]);
@@ -1851,16 +1855,25 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      if (li->type == IDM_MCIPLAY) {
 
-		FILE *fp;
+                FILE *fp;
+                CHAR TempFile[CCHMAXPATH];
 
-		fp = xfopen("$FM2PLAY.$$$", "w", pszSrcFile, __LINE__);
+                if (fUseTmp)
+                  BldFullPathName(TempFile, pTmpDir, "$FM2PLAY.$$$");
+                else
+                  strcpy(TempFile, "$FM2PLAY.$$$");
+
+		fp = xfopen(TempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
 		  for (x = 0; li->list[x]; x++)
 		    fprintf(fp, "%s\n", li->list[x]);
 		  fprintf(fp, ";end\n");
-		  fclose(fp);
-		  RunFM2Util("FM2PLAY.EXE", "/@$FM2PLAY.$$$");
+                  fclose(fp);
+                  strrev(TempFile);
+                  strcat(TempFile, "@/");
+                  strrev(TempFile);
+		  RunFM2Util("FM2PLAY.EXE", TempFile);
 		}
 	      }
 	      else if (li->type == IDM_PRINT) {
@@ -1927,7 +1940,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #                   endif
         	  }
 	}
-		
+
 	      }
 	      else {
 		if (li->hwnd) {
@@ -2947,6 +2960,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_VIRUSSCAN:
       case IDM_OPENDEFAULT:
       case IDM_OPENSETTINGS:
+      case IDM_MCIPLAY:
 	{
 	  LISTINFO *li;
 #         ifdef FORTIFY
@@ -3011,7 +3025,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    case IDM_PRINT:
 	    case IDM_VIRUSSCAN:
 	    case IDM_OPENDEFAULT:
-	    case IDM_OPENSETTINGS:
+            case IDM_OPENSETTINGS:
+            case IDM_MCIPLAY:
 	      strcpy(li->targetpath, dcd->workdir);
 	      break;
 	    default:
@@ -3513,11 +3528,16 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->size = sizeof(DIRCNRDATA);
 	dcd->id = id;
 	dcd->type = ARC_FRAME;
-	save_dir2(dcd->workdir);
-	if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
-	  strcat(dcd->workdir, "\\");
-	sprintf(dcd->workdir + strlen(dcd->workdir), "%s.%03x",
-		ArcTempRoot, (clock() & 4095));
+        if (!fUseTmp) {
+          save_dir2(dcd->workdir);
+          if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
+            strcat(dcd->workdir, "\\");
+          sprintf(dcd->workdir + strlen(dcd->workdir), "%s.%03x",
+                  ArcTempRoot, (clock() & 4095));
+        }
+        else
+          sprintf(dcd->workdir, "%s.%03x",
+                  ArcTempRoot, (clock() & 4095));
 	strcpy(dcd->arcname, fullname);
 	if (*extractpath) {
 	  if (!strcmp(extractpath, "*")) {
