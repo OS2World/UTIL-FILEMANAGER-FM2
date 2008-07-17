@@ -33,6 +33,7 @@
   19 Jan 08 GKY Rework Utilities menu
   14 Feb 08 SHL Add settings submenu.  Use new settings submenu definitions
   14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
+  17 Jul 08 JBS Corrected a typo on the "Save state" context menu
 
 ***********************************************************************/
 
@@ -1976,7 +1977,7 @@ ACCELTABLE  MAIN_DRIVELIST
 
 MENU MAIN_SETUPLIST
 {
-  MENUITEM "~Save state as name\tCtrl + s",  IDM_SAVEDIRCNRSTATE
+  MENUITEM "S~ave state as name\tCtrl + a",  IDM_SAVEDIRCNRSTATE
   MENUITEM "~Delete state name\tCtrl + d",   IDM_DELETEDIRCNRSTATE
   MENUITEM "",                        -1,    MIS_SEPARATOR
   MENUITEM "~Help",                          IDM_HELPUSERLIST
