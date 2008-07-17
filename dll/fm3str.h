@@ -18,6 +18,7 @@
   26 Nov 07 GKY Added new readonly in editor & ext path
   10 Feb 08 GKY Add strings to implement bubble help for bitmap menu items
   28 Jun 08 JBS Add string for warning message for changing/deleting FN2SHUTDOWN state
+  17 Jul 08 JBS "Renumbered" IDS_SHUTDOWNSTATE because its old numbers was "in use"
 
 ***********************************************************************/
 
@@ -83,6 +84,7 @@
 #define IDS_10SYSPROTEXT                                      49
 #define IDS_8HELVTEXT                                         52
 #define IDS_6HELVTEXT                                         53
+#define IDS_SHUTDOWNSTATE                                     55
 #define IDS_HELPCMDTEXT                                       56
 #define IDS_FM2TEMPTEXT                                       57
 #define IDS_8TIMESNEWROMANTEXT                                58
@@ -743,7 +745,7 @@
 #define IDS_SELECTTYPEERRORTEXT                               740
 #define IDS_SPARE_741                                         741
 #define IDS_NOTEVIEWERS3TEXT                                  742
-#define IDS_SHUTDOWNSTATE                                     743
+#define IDS_NOTEVIEWERS4TEXT                                  743
 #define IDS_DEFDIRFILTERTITLETEXT                             744
 #define IDS_DEFCOLFILTERTITLETEXT                             745
 #define IDS_DONTFORGETTEXT                                    746

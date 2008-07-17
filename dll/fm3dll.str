@@ -53,7 +53,7 @@ Edit
 8.Helvetica
 6.Helvetica
 
-
+FM2Shutdown
 /HELP
 FM/2_Temp
 8.Times New Roman
@@ -741,7 +741,7 @@ FM/2:  Tree filter
 You have disabled the ability to select more than one object at a time in Directory Containers, the Collector and Archive Containers.  If that's not what you intended, return to the Settings notebook's DirCnrs page and correct the mistake.
 Spare 741
 Viewers ~2
-FM2Shutdown
+Internet associations
 FM/2: Default DirCnr filter
 FM/2: Default Collector filter
 Don't forget...
