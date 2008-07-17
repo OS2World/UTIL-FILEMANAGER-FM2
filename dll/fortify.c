@@ -42,6 +42,7 @@
 
  /* 06 May 08 SHL Rework scope logic to be MT capable
     26 May 08 SHL Show TID for leaking scope
+    17 Jul 08 SHL Add Fortify_SetOwner Fortify_ChangeOwner
  */
 
 #ifdef FORTIFY
@@ -63,8 +64,7 @@
 #include "fortify.h"
 
 
-#if defined(__WATCOMC__) && defined(_MT)
-#define MT_SCOPES 1
+#ifdef MT_SCOPES
 unsigned long Get_TID_Ordinal(void);
 // Get tib_ptib2 from TIB
 // Get thread id from TIB2
@@ -99,15 +99,14 @@ struct Header
     struct Header *Prev;        /* Previous link                     */
     struct Header *Next;        /* Next link                         */
     char          *Label;	/* User's Label (may be null)        */
-    unsigned char  Scope;       /* Scope level of the caller         */
+    unsigned char  Scope;       /* Scope level of the owner          */
     unsigned char  Allocator;   /* malloc/realloc/new/etc            */
 #   ifdef MT_SCOPES
-    unsigned short Ordinal;     /* TID ordinal of caller             */
+    unsigned short Owner;       /* TID ordinal of block owner        */
 #   endif
 };
 
 #define FORTIFY_HEADER_SIZE ROUND_UP(sizeof(struct Header), sizeof(unsigned short))
-
 
 
 /*
@@ -176,8 +175,9 @@ static Fortify_OutputFuncPtr st_Output    = st_DefaultOutput;
 static const char    *st_LastVerifiedFile = "unknown";
 static unsigned long  st_LastVerifiedLine;
 #ifdef MT_SCOPES
-static unsigned volatile st_cScopes;
-static unsigned volatile char*  st_pScopes;
+static unsigned volatile st_cOrdinals;		// Number of known threads
+static unsigned volatile char*  st_pScopes;	// Scope level of blocks allocated by thread
+static unsigned volatile long*  st_pOwners;	// Owner of blocks allocated by thread
 #else
 static unsigned char  st_Scope            = 0;
 #endif
@@ -415,6 +415,9 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 
 #   ifdef MT_SCOPES
     ordinal = Get_TID_Ordinal();
+    // In case owner overridden by Fortify_SetOwner
+    if (ordinal < st_cOrdinals)
+	ordinal = st_pOwners[ordinal];
 #   endif
 
     /*
@@ -427,8 +430,8 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
     h->Next      = st_AllocatedHead;
     h->Prev      = 0;
 #   ifdef MT_SCOPES
-    h->Scope     = ordinal < st_cScopes ? st_pScopes[ordinal] : 0;
-    h->Ordinal = ordinal;
+    h->Scope     = ordinal < st_cOrdinals ? st_pScopes[ordinal] : 0;
+    h->Owner = ordinal;
 #   else
     h->Scope     = st_Scope;
 #   endif
@@ -689,7 +692,7 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
 #ifdef MT_SCOPES
     ordinal = Get_TID_Ordinal();
-    if (ordinal < st_cScopes && st_pScopes[ordinal] > 0)
+    if (ordinal < st_cOrdinals && st_pScopes[ordinal] > 0)
 #else
     if(st_Scope > 0)
 #endif
@@ -976,10 +979,22 @@ Fortify_EnterScope(const char *file, unsigned long line)
 {
 #ifdef MT_SCOPES
     unsigned ordinal = Get_TID_Ordinal();
+    unsigned i;
+    unsigned c;
 
-    if (ordinal >= st_cScopes) {
-	st_pScopes = realloc((void*)st_pScopes, sizeof(*st_pScopes) * (st_cScopes = (ordinal + 1)));
-	st_pScopes[ordinal] = 0;
+    if (ordinal >= st_cOrdinals) {
+	// Expand arrays
+	FORTIFY_LOCK();
+	i = st_cOrdinals;
+	c = ordinal + 1;
+	st_pScopes = realloc((void*)st_pScopes, sizeof(*st_pScopes) * c);
+	st_pOwners = realloc((void*)st_pOwners, sizeof(*st_pOwners) * c);
+	for (; i <= ordinal; i++) {
+	    st_pScopes[i] = 0;		// Default to scope level 0
+	    st_pOwners[i] = i;		// Default block owner to self
+	}
+	st_cOrdinals = c;
+	FORTIFY_UNLOCK();
     }
     return(++st_pScopes[ordinal]);
 #else
@@ -1009,7 +1024,7 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 #ifdef MT_SCOPES
     // Complain on leave without enter 06 May 08 SHL
     ordinal = Get_TID_Ordinal();
-    if (ordinal < st_cScopes && st_pScopes[ordinal] > 0)
+    if (ordinal < st_cOrdinals && st_pScopes[ordinal] > 0)
 	st_pScopes[ordinal]--;
     else {
 	sprintf(st_Buffer,
@@ -1028,7 +1043,7 @@ Fortify_LeaveScope(const char *file, unsigned long line)
     while(curr)
     {
 #ifdef MT_SCOPES
-	if(curr->Ordinal == ordinal && ordinal < st_cScopes && curr->Scope > st_pScopes[ordinal])
+	if(curr->Owner == ordinal && ordinal < st_cOrdinals && curr->Scope > st_pScopes[ordinal])
 #else
 	if(curr->Scope > st_Scope)
 #endif
@@ -1070,7 +1085,7 @@ Fortify_LeaveScope(const char *file, unsigned long line)
      * we are still tracking
      */
 #ifdef MT_SCOPES
-    st_PurgeDeallocatedScope( ordinal < st_cScopes ? st_pScopes[ordinal] : 0,
+    st_PurgeDeallocatedScope( ordinal < st_cOrdinals ? st_pScopes[ordinal] : 0,
 			      file, line );
 #else
     st_PurgeDeallocatedScope( st_Scope, file, line );
@@ -1079,7 +1094,7 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 
     FORTIFY_UNLOCK();
 #ifdef MT_SCOPES
-    return(ordinal < st_cScopes ? st_pScopes[ordinal] : 0);
+    return(ordinal < st_cOrdinals ? st_pScopes[ordinal] : 0);
 #else
     return(st_Scope);
 #endif
@@ -1699,7 +1714,7 @@ st_PurgeDeallocatedScope(unsigned char Scope, const char *file, unsigned long li
     {
 	next = curr->Next;
 #ifdef MT_SCOPES
-	if(curr->Ordinal == ordinal && curr->Scope >= Scope)
+	if(curr->Owner == ordinal && curr->Scope >= Scope)
 #else
 	if(curr->Scope >= Scope)
 #endif
@@ -2397,5 +2412,61 @@ static Fortify_AutoLogFile Abracadabra;
 #endif /* FORTIFY_AUTOMATIC_LOG_FILE */
 
 #endif /* __cplusplus */
+
+#ifdef MT_SCOPES
+
+/**
+ * Set/reset owner of blocks allocated by this thread
+ * Use when worker thread will allocate blocks for another thread
+ * and other thread is known
+ * More efficient than Fortify_ChangeOwner
+ * @param lOwnerTID is new owner TID, -1 requests reset of self
+ */
+
+void Fortify_SetOwner(long lOwnerTID)
+{
+    unsigned ordinal = Get_TID_Ordinal();
+
+    if (ordinal >= st_cOrdinals) {
+	// Expand arrays
+        unsigned i;
+        unsigned c;
+	FORTIFY_LOCK();
+	i = st_cOrdinals;
+	c = ordinal + 1;
+	st_pScopes = realloc((void*)st_pScopes, sizeof(*st_pScopes) * c);
+	st_pOwners = realloc((void*)st_pOwners, sizeof(*st_pOwners) * c);
+	for (; i <= ordinal; i++) {
+	    st_pScopes[i] = 0;
+	    st_pOwners[i] = i;		// Block owner is self
+	}
+	st_cOrdinals = c;
+	FORTIFY_UNLOCK();
+    }
+    // Set owner for blocks allocated by this thread
+    st_pOwners[ordinal] = lOwnerTID != -1 ? lOwnerTID : ordinal;
+}
+
+/**
+ * Take ownership of block allocated by some other thread
+ * Allows scope enter/exit logic to correctly report leaks in 
+ * cross thread allocations
+ * @param pVoid is point to block allocated by Fortify
+ */
+
+void Fortify_ChangeOwner(void *pBlock)
+{
+    unsigned char *ptr = (unsigned char *)pBlock -
+			     FORTIFY_HEADER_SIZE -
+			     FORTIFY_ALIGNED_BEFORE_SIZE;
+    struct Header *h = (struct Header *)ptr;
+
+    unsigned ordinal = Get_TID_Ordinal();
+
+    h->Scope = ordinal < st_cOrdinals ? st_pScopes[ordinal] : 0;
+    h->Owner = ordinal;		// Take ownership
+}
+
+#endif // MT_SCOPES
 
 #endif /* FORTIFY */

@@ -26,13 +26,13 @@
  * material.
  */
 
-/*  
+/*
  *     If  you use this software at all, I'd love to hear from
  * you.   All  questions,  criticisms, suggestions, praise and
  * postcards are most welcome.
- * 
+ *
  *            email:    sbullen@cybergraphic.com.au
- * 
+ *
  *            snail:    Simon P. Bullen
  *                      PO BOX 12138
  *                      A'Beckett St.
@@ -40,11 +40,15 @@
  *                      Australia
  */
 
+ /* 06 May 08 SHL Rework scope logic to be MT capable
+    17 Jul 08 SHL Add Fortify_SetOwner Fortify_ChangeOwner
+ */
+
 #ifndef __FORTIFY_H__
 #define __FORTIFY_H__
 
 #include <stdlib.h>			// Must include before fortify defintions
-// 16 Jan 08 SHL Ensure 
+// 16 Jan 08 SHL Ensure
 #ifdef __BORLANDC__
 #ifdef __OS2__
 #include <alloc.h>			// Must include before fortify defintions
@@ -54,6 +58,10 @@
 
 /* the user's options */
 #include "ufortify.h"
+
+#if defined(__WATCOMC__) && defined(_MT)
+#define MT_SCOPES 1
+#endif
 
 /* Ensure the configuration parameters have sensible defaults */
 #ifndef FORTIFY_STORAGE
@@ -79,7 +87,7 @@
     #define FORTIFY_AFTER_VALUE                  0xA5
 #endif
 
-#ifndef FORTIFY_FILL_ON_ALLOCATE_VALUE    
+#ifndef FORTIFY_FILL_ON_ALLOCATE_VALUE
     #define FORTIFY_FILL_ON_ALLOCATE_VALUE       0xA7
 #endif
 
@@ -88,11 +96,11 @@
 #endif
 
 #ifndef FORTIFY_LOCK
-    #define FORTIFY_LOCK()   
+    #define FORTIFY_LOCK()
 #endif
 
 #ifndef FORTIFY_UNLOCK
-    #define FORTIFY_UNLOCK()  
+    #define FORTIFY_UNLOCK()
 #endif
 
 #ifndef FORTIFY_CHECKSUM_VALUE
@@ -112,7 +120,7 @@
  * Code to detect and configure for various compilers lives here.
  */
 
-#ifdef __GNUG__ 
+#ifdef __GNUG__
     /* GCC configuration */
     #define FORTIFY_PROVIDE_ARRAY_NEW
     #define FORTIFY_PROVIDE_ARRAY_DELETE
@@ -180,6 +188,11 @@ int   Fortify_SetFailRate(int Percent);
 Fortify_OutputFuncPtr Fortify_SetOutputFunc(Fortify_OutputFuncPtr Output);
 void  Fortify_Disable(const char *file, unsigned long line);
 
+#ifdef MT_SCOPES
+void  Fortify_SetOwner(long lOwnerTID);
+void  Fortify_ChangeOwner(void *pBlock);
+#endif
+
 /* Fortify versions of the ANSI C memory allocation functions */
 void *Fortify_malloc(size_t size, const char *file, unsigned long line);
 void *Fortify_realloc(void *ptr, size_t new_size, const char *file, unsigned long line);
@@ -241,7 +254,7 @@ extern int gbl_FortifyMagic;
     #define Fortify_LeaveScope()           Fortify_LeaveScope(__FILE__, __LINE__)
     #define Fortify_OutputStatistics()     Fortify_OutputStatistics(__FILE__, __LINE__)
     #define Fortify_GetCurrentAllocation() Fortify_GetCurrentAllocation(__FILE__, __LINE__)
-    #define Fortify_SetAllocationLimit(x)  Fortify_SetAllocationLimit(x, __FILE__, __LINE__)    
+    #define Fortify_SetAllocationLimit(x)  Fortify_SetAllocationLimit(x, __FILE__, __LINE__)
     #define Fortify_Disable()              Fortify_Disable(__FILE__, __LINE__)
 
     /* Fortify versions of the ANSI C memory allocation functions */
@@ -268,11 +281,12 @@ extern int gbl_FortifyMagic;
 
 #else /* Define the special fortify functions away to nothing */
 
+    // 17 Jul 08 SHL fixme to avoid spurious OpenWatcom warnings
     #define Fortify_CheckAllMemory()       0
     #define Fortify_ListAllMemory()        0
     #define Fortify_DumpAllMemory()        0
-    #define Fortify_CheckPointer(ptr)      1 
-    #define Fortify_LabelPointer(ptr,str)  
+    #define Fortify_CheckPointer(ptr)      1
+    #define Fortify_LabelPointer(ptr,str)
     #define Fortify_SetOutputFunc()        0
     #define Fortify_SetMallocFailRate(p)   0
     #define Fortify_EnterScope()           0
@@ -281,10 +295,12 @@ extern int gbl_FortifyMagic;
     #define Fortify_GetCurrentAllocation() 0
     #define Fortify_SetAllocationLimit(x)  0
     #define Fortify_Disable()              0
+    #define Fortify_SetOwner()		   0
+    #define Fortify_ChangeOwner		   0
 
-    #ifdef __cplusplus    
-        #define Fortify_New                    new
-        #define Fortify_Delete                 delete
+    #ifdef __cplusplus
+	#define Fortify_New                    new
+	#define Fortify_Delete                 delete
     #endif /* __cplusplus */
 
 #endif /*   FORTIFY     */
