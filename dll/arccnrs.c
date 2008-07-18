@@ -3518,7 +3518,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->size = sizeof(DIRCNRDATA);
 	dcd->id = id;
 	dcd->type = ARC_FRAME;
-        if (!fUseTmp) {
+        if (!pTmpDir) {
           save_dir2(dcd->workdir);
           if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
             strcat(dcd->workdir, "\\");

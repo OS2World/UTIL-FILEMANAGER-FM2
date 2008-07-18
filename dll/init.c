@@ -660,7 +660,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       if (fs3.attrFile & FILE_DIRECTORY) {
 	// 17 Jul 08 SHL fixme to check writable someday
         pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
-        fUseTmp = TRUE;
       }
     }
   }

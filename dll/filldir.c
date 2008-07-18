@@ -197,7 +197,7 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
     char szFileName[CCHMAXPATH];
     char *psz;
 
-    if (fUseTmp) {
+    if (pTmpDir) {
       psz = pTmpDir;
       strcpy(szFileName, psz);
       psz = szFileName + strlen(szFileName) - 1;

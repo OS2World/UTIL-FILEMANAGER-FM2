@@ -1143,7 +1143,7 @@ DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
   fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
   fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
   fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
-  fNoLargeFileSupport, fNoMailtoMailRun, fUseTmp,
+  fNoLargeFileSupport, fNoMailtoMailRun,
   fHttpRunWPSDefault, fFtpRunWPSDefault, fLibPathStrictMailRun,
   fLibPathStrictHttpRun, fLibPathStrictFtpRun, fCancelAction, fTrashCan;
 DATADEF DETAILS_SETTINGS dsDirCnrDefault;
