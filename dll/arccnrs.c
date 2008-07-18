@@ -338,7 +338,7 @@ static VOID FreeArcItemData(PARCITEM pai)
 
   if (pai->pszFileName && pai->pszFileName != NullStr) {
     psz = pai->pszFileName;
-    pai->pszFileName = NullStr;
+    pai->pszFileName = NULL;
     free(psz);
   }
 }
@@ -1473,7 +1473,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
 	free(s);
 	if (IsFile(filename) == 1) {
-#if 1 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
+#if 0 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
 	  if (fViewChild && fArcStuffVisible)
 	    DosSleep(100);  // Allow unzip session to finish closing 14 Mar 07 SHL
 #endif
@@ -1856,24 +1856,24 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (li->type == IDM_MCIPLAY) {
 
                 FILE *fp;
-                CHAR TempFile[CCHMAXPATH];
+                CHAR szTempFile[CCHMAXPATH];
 
                 if (fUseTmp)
-                  BldFullPathName(TempFile, pTmpDir, "$FM2PLAY.$$$");
+                  BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
                 else
-                  strcpy(TempFile, "$FM2PLAY.$$$");
+                  strcpy(szTempFile, "$FM2PLAY.$$$");
 
-		fp = xfopen(TempFile, "w", pszSrcFile, __LINE__);
+		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
 		  for (x = 0; li->list[x]; x++)
 		    fprintf(fp, "%s\n", li->list[x]);
 		  fprintf(fp, ";end\n");
                   fclose(fp);
-                  strrev(TempFile);
-                  strcat(TempFile, "@/");
-                  strrev(TempFile);
-		  RunFM2Util("FM2PLAY.EXE", TempFile);
+                  strrev(szTempFile);
+                  strcat(szTempFile, "@/");
+                  strrev(szTempFile);
+		  RunFM2Util("FM2PLAY.EXE", szTempFile);
 		}
 	      }
 	      else if (li->type == IDM_PRINT) {
@@ -1987,9 +1987,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		p++;
 	      }
 	      BldFullPathName(fullname, dcd->directory, li->list[x]);
-	      // sprintf(fullname, "%s%s%s", dcd->directory,
-	      //	      (dcd->directory[strlen(dcd->directory) - 1] == '\\') ?
-	      //	      NullStr : "\\", li->list[x]);
 	      if (IsFile(fullname) != -1)
 		if (AddToList(fullname, &list2, &numfiles, &numalloced))
 		  break;
@@ -1999,10 +1996,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  p++;
 		  if (*p) {
 		    BldFullPathName(fullname, dcd->directory, p);
-		    // sprintf(fullname, "%s%s%s", dcd->directory,
-		    //	    (dcd->directory[strlen(dcd->directory) - 1] ==
-		    //	       '\\') ? NullStr : "\\",
-		    //	    p);
 		    if (IsFile(fullname) != -1)
 		      if (AddToList(fullname, &list2, &numfiles, &numalloced))
 			break;
@@ -2055,7 +2048,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       free(dcd);
 #     ifdef FORTIFY
-      Fortify_LeaveScope();
+      //Fortify_LeaveScope();
 #      endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
@@ -3041,11 +3034,12 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      else if (fUnHilite && SHORT1FROMMP(mp1) != IDM_EDIT)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
-            else
+            else {
 	      free(li);
-#           ifdef FORTIFY
-            Fortify_LeaveScope();
-#           endif
+#             ifdef FORTIFY
+              Fortify_LeaveScope();
+#              endif
+            }
 	  }
 	}
 	break;

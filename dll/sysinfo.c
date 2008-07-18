@@ -23,6 +23,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dlg.h"
 #include "fm3dll.h"
 
@@ -33,7 +34,7 @@ static PSZ pszSrcFile = __FILE__;
 VOID RunRmview(VOID * arg)
 {
   HWND hwnd = (HWND) arg;
-  CHAR s[2048], *p;
+  CHAR s[2048], *p, szTempFile[CCHMAXPATH];
   HAB thab;
   HMQ thmq;
   FILE *fp;
@@ -47,8 +48,12 @@ VOID RunRmview(VOID * arg)
   if (thab && thmq) {
     if (!WinIsWindow(thab, hwnd))
       goto Abort;
-    unlinkf("%s", "$RMVIEW.#$#");
-    fp = xfopen("$RMVIEW.#$#", "w", pszSrcFile, __LINE__);
+    if (fUseTmp)
+      BldFullPathName(szTempFile, pTmpDir, "$RMVIEW.#$#");
+    else
+      strcpy(szTempFile, "$RMVIEW.#$#");
+    unlinkf("%s", szTempFile);
+    fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
     if (!fp)
       goto Abort;
     else {
@@ -61,7 +66,7 @@ VOID RunRmview(VOID * arg)
       DosDupHandle(fileno(fp), &oldstdout);
       runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
               hwnd, pszSrcFile, __LINE__,
-              NULL, NULL, "%s", "RMVIEW.EXE");
+              NULL, NULL, "%s", szTempFile);
       oldstdout = fileno(stdout);
       DosDupHandle(newstdout, &oldstdout);
       DosClose(newstdout);
@@ -69,7 +74,7 @@ VOID RunRmview(VOID * arg)
     }
     if (!WinIsWindow(thab, hwnd))
       goto Abort;
-    fp = xfopen("$RMVIEW.#$#", "r", pszSrcFile, __LINE__);
+    fp = xfopen(szTempFile, "r", pszSrcFile, __LINE__);
     if (fp) {
       xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__);
       xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__);
@@ -97,7 +102,8 @@ VOID RunRmview(VOID * arg)
     WinDestroyMsgQueue(thmq);
     WinTerminate(thab);
   }
-  DosForceDelete("$RMVIEW.#$#");
+  if (szTempFile)
+    DosForceDelete(szTempFile);
 }
 
 MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

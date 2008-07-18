@@ -36,6 +36,7 @@
 #include "procstat.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -235,7 +236,10 @@ static VOID FillKillListThread(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  strcpy(s, "$PSTAT#$.#$#");
+  if (fUseTmp)
+    BldFullPathName(s, pTmpDir, "$PSTAT#$.#$#");
+  else
+    strcpy(s, "$PSTAT#$.#$#");
   unlinkf("%s", s);
   fp = fopen(s, "w");
   if (!fp) {
@@ -302,7 +306,14 @@ static VOID FillKillListThread(VOID * arg)
     fclose(fp);
   }
 Abort:
-  DosForceDelete("$PSTAT#$.#$#");
+  if (fUseTmp) {
+    CHAR szTempFile[CCHMAXPATH];
+
+    BldFullPathName(szTempFile, pTmpDir, "$PSTAT#$.#$#");
+    DosForceDelete(szTempFile);
+  }
+  else
+    DosForceDelete("$PSTAT#$.#$#");
   PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
   WinDestroyMsgQueue(thmq);
   DecrThreadUsage();

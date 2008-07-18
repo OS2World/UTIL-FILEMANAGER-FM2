@@ -536,8 +536,14 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 			&ffb, sizeof(ffb), &num_matches));
     DosFindClose(search_handle);
   }
+  if (fUseTmp) {
+    CHAR szTempFile[CCHMAXPATH];
 
-  DosForceDelete("$FM2PLAY.$$$");
+    BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
+    DosForceDelete(szTempFile);
+  }
+  else
+    DosForceDelete("$FM2PLAY.$$$");
 
   EndNote();
   if (FM3ModHandle)

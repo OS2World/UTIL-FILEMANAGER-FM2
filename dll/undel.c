@@ -30,6 +30,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -47,7 +48,7 @@ struct tempstruct
 static VOID FillUndelListThread(VOID * arg)
 {
   HWND hwnd;
-  CHAR s[CCHMAXPATH * 2];
+  CHAR s[CCHMAXPATH * 2], szTempFile[CCHMAXPATH];
   CHAR *path;
   HAB thab;
   HMQ thmq;
@@ -71,8 +72,12 @@ static VOID FillUndelListThread(VOID * arg)
     WinCancelShutdown(thmq, TRUE);
     IncrThreadUsage();
     WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-    unlinkf("%s", "$UDELETE.#$#");
-    fp = xfopen("$UDELETE.#$#", "w", pszSrcFile, __LINE__);
+    if (fUseTmp)
+      BldFullPathName(szTempFile, pTmpDir, "$UDELETE.#$#");
+    else
+      strcpy(szTempFile, "$UDELETE.#$#");
+    unlinkf("%s", szTempFile);
+    fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
     if (!fp) {
       Win_Error(NULLHANDLE, hwnd, pszSrcFile, __LINE__,
 		GetPString(IDS_REDIRECTERRORTEXT));
@@ -102,7 +107,7 @@ static VOID FillUndelListThread(VOID * arg)
       DosClose(newstdout);
       fclose(fp);
     }
-    fp = xfopen("$UDELETE.#$#", "r", pszSrcFile, __LINE__);
+    fp = xfopen(szTempFile, "r", pszSrcFile, __LINE__);
     if (fp) {
       xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__);	// Skip 1st line
       while (!feof(fp)) {
@@ -149,7 +154,7 @@ static VOID FillUndelListThread(VOID * arg)
   Abort:
     ;
   }
-  DosForceDelete("$UDELETE.#$#");
+  DosForceDelete(szTempFile);
   xfree(undelinfo, pszSrcFile, __LINE__);
   if (thmq) {
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
