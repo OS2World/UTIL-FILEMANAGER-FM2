@@ -41,6 +41,7 @@
   04 Nov 07 GKY Use commaFmtULL to display large file sizes
   29 Feb 08 GKY Use xfree where appropriate
   07 Jul 08 SHL Use NULL rather than NullStr in FreeCnrItemData
+  16 JUL 08 GKY Use TMP directory for temp files
 
 ***********************************************************************/
 

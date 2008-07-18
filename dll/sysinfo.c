@@ -14,6 +14,7 @@
   26 Jul 06 SHL Report open errors
   29 Jul 06 SHL Use xfgets
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  16 JUL 08 GKY Use TMP directory for temp files
 
 ***********************************************************************/
 
@@ -48,10 +49,7 @@ VOID RunRmview(VOID * arg)
   if (thab && thmq) {
     if (!WinIsWindow(thab, hwnd))
       goto Abort;
-    if (fUseTmp)
-      BldFullPathName(szTempFile, pTmpDir, "$RMVIEW.#$#");
-    else
-      strcpy(szTempFile, "$RMVIEW.#$#");
+    BldFullPathName(szTempFile, pTmpDir, "$RMVIEW.#$#");
     unlinkf("%s", szTempFile);
     fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
     if (!fp)

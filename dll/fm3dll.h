@@ -82,6 +82,7 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  16 JUL 08 GKY Use TMP directory for temp files
 
 ***********************************************************************/
 

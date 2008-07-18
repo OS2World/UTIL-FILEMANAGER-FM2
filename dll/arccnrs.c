@@ -1858,11 +1858,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 FILE *fp;
                 CHAR szTempFile[CCHMAXPATH];
 
-                if (fUseTmp)
-                  BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
-                else
-                  strcpy(szTempFile, "$FM2PLAY.$$$");
-
+                BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
 		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");

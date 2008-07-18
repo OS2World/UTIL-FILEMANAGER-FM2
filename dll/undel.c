@@ -14,6 +14,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
+  16 JUL 08 GKY Use TMP directory for temp files
 
 ***********************************************************************/
 
@@ -72,10 +73,7 @@ static VOID FillUndelListThread(VOID * arg)
     WinCancelShutdown(thmq, TRUE);
     IncrThreadUsage();
     WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-    if (fUseTmp)
-      BldFullPathName(szTempFile, pTmpDir, "$UDELETE.#$#");
-    else
-      strcpy(szTempFile, "$UDELETE.#$#");
+    BldFullPathName(szTempFile, pTmpDir, "$UDELETE.#$#");
     unlinkf("%s", szTempFile);
     fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
     if (!fp) {

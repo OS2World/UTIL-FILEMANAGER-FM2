@@ -17,6 +17,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   02 Sep 07 GKY Replaced DosQProcStatus with DosQuerySysState to fix trap in thunk code
   02 Sep 07 SHL Expand FillKillListThread2 stack to avoid exception in __TNK
+  16 JUL 08 GKY Use TMP directory for temp files
 
 ***********************************************************************/
 
@@ -236,10 +237,7 @@ static VOID FillKillListThread(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  if (fUseTmp)
-    BldFullPathName(s, pTmpDir, "$PSTAT#$.#$#");
-  else
-    strcpy(s, "$PSTAT#$.#$#");
+  BldFullPathName(s, pTmpDir, "$PSTAT#$.#$#");
   unlinkf("%s", s);
   fp = fopen(s, "w");
   if (!fp) {
@@ -306,14 +304,8 @@ static VOID FillKillListThread(VOID * arg)
     fclose(fp);
   }
 Abort:
-  if (fUseTmp) {
-    CHAR szTempFile[CCHMAXPATH];
-
-    BldFullPathName(szTempFile, pTmpDir, "$PSTAT#$.#$#");
-    DosForceDelete(szTempFile);
-  }
-  else
-    DosForceDelete("$PSTAT#$.#$#");
+  BldFullPathName(s, pTmpDir, "$PSTAT#$.#$#");
+  DosForceDelete(s);
   PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
   WinDestroyMsgQueue(thmq);
   DecrThreadUsage();

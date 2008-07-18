@@ -1068,37 +1068,21 @@ VOID MassAction(VOID * args)
 	      if (total > 1000) {
 
                 FILE *fp;
-                CHAR TempFile[CCHMAXPATH];
+                CHAR szTempFile[CCHMAXPATH];
 
-                if (fUseTmp)
-                  BldFullPathName(TempFile, pTmpDir, "$FM2PLAY.$$$");
-                else
-                  strcpy(TempFile, "$FM2PLAY.$$$");
-
-		fp = xfopen(TempFile, "w", pszSrcFile, __LINE__);
+                BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
+		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
 		  for (x = 0; wk->li->list[x]; x++)
 		    fprintf(fp, "%s\n", wk->li->list[x]);
 		  fprintf(fp, ";end\n");
                   fclose(fp);
-                  strrev(TempFile);
-                  strcat(TempFile, "@/");
-                  strrev(TempFile);
-		  RunFM2Util("FM2PLAY.EXE", TempFile);
+                  strrev(szTempFile);
+                  strcat(szTempFile, "@/");
+                  strrev(szTempFile);
+		  RunFM2Util("FM2PLAY.EXE", szTempFile);
 		}
-                /*FILE *fp;
-
-		fp = xfopen("$FM2PLAY.$$$", "w", pszSrcFile, __LINE__);
-		if (fp) {
-		  fprintf(fp, "%s", ";FM/2-built FM2Play listfile\n");
-		  for (x = 0; wk->li->list[x]; x++)
-		    fprintf(fp, "%s\n", wk->li->list[x]);
-		  fprintf(fp, ";end\n");
-		  fclose(fp);
-		  RunFM2Util("FM2PLAY.EXE", "/#$FM2PLAY.$$$");
-		  break;
-		}*/
 	      }
 	    }
 	    /* intentional fallthru */

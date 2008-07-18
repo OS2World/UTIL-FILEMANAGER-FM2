@@ -48,6 +48,7 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  16 JUL 08 GKY Use TMP directory for temp files
   17 Jul 08 SHL Reduce code bulk in fUseTmp setup
 
 ***********************************************************************/
@@ -454,7 +455,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 {
   /* cleanup */
   static CHAR s[CCHMAXPATH];
-  CHAR *enddir;
+  CHAR *enddir, szTempFile[CCHMAXPATH];
   HDIR search_handle;
   ULONG num_matches;
   FILEFINDBUF3 ffb;
@@ -537,15 +538,8 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 			&ffb, sizeof(ffb), &num_matches));
     DosFindClose(search_handle);
   }
-  if (fUseTmp) {
-    CHAR szTempFile[CCHMAXPATH];
-
-    BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
-    DosForceDelete(szTempFile);
-  }
-  else
-    DosForceDelete("$FM2PLAY.$$$");
-
+  BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
+  DosForceDelete(szTempFile);
   EndNote();
   if (FM3ModHandle)
     DosFreeModule(FM3ModHandle);
@@ -665,18 +659,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (!rc) {
       if (fs3.attrFile & FILE_DIRECTORY) {
 	// 17 Jul 08 SHL fixme to check writable someday
-        BldFullPathName(ArcTempRoot, env, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
         pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
         fUseTmp = TRUE;
       }
     }
   }
-  if (!fUseTmp) {
-    if (!fAmAV2)
-      strcpy(ArcTempRoot, "$FM$ARC$");
-    else
-      strcpy(ArcTempRoot, "$AV$ARC$");
-  }
+  BldFullPathName(ArcTempRoot, env, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
 
   /* initialize random number generator */
   srand(time(NULL) + clock());
