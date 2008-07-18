@@ -48,6 +48,7 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  17 Jul 08 SHL Reduce code bulk in fUseTmp setup
 
 ***********************************************************************/
 
@@ -656,28 +657,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   /* set up default root names for temp archive goodies */
   env = getenv("TMP");
+  if (env == NULL)
+    env = getenv("TEMP");
   if (env != NULL) {
     DosError(FERR_DISABLEHARDERR);
     rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
     if (!rc) {
       if (fs3.attrFile & FILE_DIRECTORY) {
+	// 17 Jul 08 SHL fixme to check writable someday
         BldFullPathName(ArcTempRoot, env, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
         pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
         fUseTmp = TRUE;
-      }
-    }
-  }
-  else {
-    env = getenv("TEMP");
-    if (env != NULL) {
-      DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
-      if (!rc) {
-        if (fs3.attrFile & FILE_DIRECTORY) {
-          BldFullPathName(ArcTempRoot, env, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
-          pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
-          fUseTmp = TRUE;
-        }
       }
     }
   }
