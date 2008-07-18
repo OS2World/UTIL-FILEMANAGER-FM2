@@ -76,28 +76,28 @@ VOID MakeObjWin(VOID * args)
 	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
-#       ifdef FORTIFY
-        Fortify_EnterScope();
-#        endif
+#	ifdef FORTIFY
+	Fortify_EnterScope();
+#	endif
 	WinSetWindowPtr(ObjectHwnd, QWL_USER, args);
 	/* initially populate container */
+	// 18 Jul 08 SHL fixme to know if this really kills WM_CREATE
 	WinSendMsg(ObjectHwnd, UM_SETUP, MPVOID, MPVOID);
 	PostMsg(ObjectHwnd, UM_RESCAN, MPVOID, MPVOID);
 	priority_normal();
 	while (WinGetMsg(hab2, &qmsg2, (HWND) 0, 0, 0))
 	  WinDispatchMsg(hab2, &qmsg2);
 	WinDestroyWindow(ObjectHwnd);
-#           ifdef FORTIFY
+#	ifdef FORTIFY
 	{
+	  // Allow container to close and free data
 	  HWND hwndCnr = ((DIRCNRDATA *)args)->hwndCnr;
 	  USHORT i;
-	  // Allow container to close and free data
-	  for (i = 0; WinIsWindow(hab2, hwndCnr) && i < 10; i++) {
-            DosSleep(50);
-	  }
+	  for (i = 0; WinIsWindow(hab2, hwndCnr) && i < 10; i++)
+	    DosSleep(50);
 	  Fortify_LeaveScope();
 	}
-#            endif
+#	endif
       }
       WinDestroyMsgQueue(hmq2);
     }

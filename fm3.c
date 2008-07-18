@@ -9,6 +9,7 @@
   Copyright (c) 2008 Steven H.Levine
 
   05 Jan 08 SHL Sync
+  18 Jul 08 SHL Add Fortify support
 
 ***********************************************************************/
 
@@ -20,6 +21,7 @@
 
 #include "dll\tools.h"
 #include "dll\version.h"
+#include "dll\fortify.h"
 #include "dll\fm3dll.h"
 
 int main(int argc, char *argv[])
@@ -37,6 +39,9 @@ int main(int argc, char *argv[])
     if (hmq) {
       if (InitFM3DLL(hab, argc, argv)) {
 	if (CheckVersion(VERMAJOR, VERMINOR)) {
+#	  ifdef FORTIFY
+	  Fortify_EnterScope();
+#	  endif
 	  hwndFrame = StartFM3(hab, argc, argv);
 	  if (hwndFrame != (HWND) 0) {
 	    for (;;) {
@@ -59,6 +64,9 @@ int main(int argc, char *argv[])
 	      WinSendMsg(WinWindowFromID(hwndFrame, FID_CLIENT), WM_CLOSE,
 			 MPVOID, MPVOID);
 	  }
+#	  ifdef FORTIFY
+	  Fortify_LeaveScope();
+#	  endif
 	}
       }
       DosSleep(250L);

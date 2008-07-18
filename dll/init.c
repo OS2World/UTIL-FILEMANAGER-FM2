@@ -43,11 +43,11 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
-                keys using a "DirCnr." prefix
+		keys using a "DirCnr." prefix
   20 Apr 08 GKY Change default cmd line length to 1024 Ask once if user wants to reset it.
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
-                all the details view settings (both the global variables and those in the
-                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+		all the details view settings (both the global variables and those in the
+		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   16 JUL 08 GKY Use TMP directory for temp files
   17 Jul 08 SHL Reduce code bulk in fUseTmp setup
 
@@ -80,7 +80,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm3dll.h"
-#include "notebook.h"                   // command line variables (editor etc)
+#include "notebook.h"			// command line variables (editor etc)
 #include "fortify.h"
 
 #ifdef __IBMC__
@@ -659,11 +659,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (!rc) {
       if (fs3.attrFile & FILE_DIRECTORY) {
 	// 17 Jul 08 SHL fixme to check writable someday
-        pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
+	pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
       }
     }
   }
-  BldFullPathName(ArcTempRoot, env, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
+  BldFullPathName(ArcTempRoot, pTmpDir, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
 
   /* initialize random number generator */
   srand(time(NULL) + clock());
@@ -730,26 +730,26 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     }
     else {
       if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-        saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,
-               "Check INI header failed will attempt to replace with backup \\
-               if backup fails or not found will open with new ini");
-        DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
-        DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
-        if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-          DosCopy("FM3.INI", "FM3INI2.BAD", DCPY_EXISTING);
-          fWantFirstTimeInit = TRUE;
-        }
+	saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,
+	       "Check INI header failed will attempt to replace with backup \\
+	       if backup fails or not found will open with new ini");
+	DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
+	DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
+	if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
+	  DosCopy("FM3.INI", "FM3INI2.BAD", DCPY_EXISTING);
+	  fWantFirstTimeInit = TRUE;
+	}
       }
       if (!fWantFirstTimeInit) {
-        fIniExisted = TRUE;
-        if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
-          fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
-          rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
-          if (rc) {
-            Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                        GetPString(IDS_INIREADONLYTEXT), inipath);
-          }
-        }
+	fIniExisted = TRUE;
+	if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
+	  fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
+	  rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
+	  if (rc) {
+	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+			GetPString(IDS_INIREADONLYTEXT), inipath);
+	  }
+	}
       }
     }
     fmprof = PrfOpenProfile((HAB)0, inipath);
@@ -762,7 +762,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     // 10 Jan 08 SHL post UM_FIRSTTIME to main window
     if (!fmprof) {
       Win_Error(NULLHANDLE, NULLHANDLE, pszSrcFile, __LINE__,
-                "PrfOpenProfile");
+		"PrfOpenProfile");
       return FALSE;
     }
   }
@@ -1018,11 +1018,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     PrfQueryProfileData(fmprof, appname, "MaxComLineChecked", &MaxComLineChecked, &size);
     if (!MaxComLineChecked) {
       ret = saymsg(MB_YESNO,
-                   HWND_DESKTOP,
-                   NullStr,
-                   GetPString(IDS_CHANGECMDLINELENGTHDEFAULT));
+		   HWND_DESKTOP,
+		   NullStr,
+		   GetPString(IDS_CHANGECMDLINELENGTHDEFAULT));
       if (ret == MBID_YES)
-        MaxComLineStrg = 1024;
+	MaxComLineStrg = 1024;
       MaxComLineChecked = TRUE;
       PrfWriteProfileData(fmprof, appname, "MaxComLineChecked", &MaxComLineChecked, sizeof(BOOL));
     }
@@ -1524,7 +1524,7 @@ BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset)
 		       FILE_BEGIN : FILE_END, &len)) {
       if (!DosRead(handle, buffer, l, &len) && len == l) {
 	if (!memcmp(signature, buffer, l))
-          ret = TRUE;			// Matched
+	  ret = TRUE;			// Matched
       }
     }
   }

@@ -37,7 +37,7 @@
 #include "procstat.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "pathutil.h"                   // BldFullPathName
+#include "pathutil.h"			// BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -112,9 +112,9 @@ static VOID FillKillListThread2(VOID * arg)
 	    sprintf(s, "%04x ", ppi->pid);
 	    if (!stricmp(pmi->szModName, "SYSINIT"))
 	      GetDosPgmName(ppi->pid, s + strlen(s));
-            else {
+	    else {
 	      if (*pmi->szModName)
-                strcat(s, pmi->szModName);
+		strcat(s, pmi->szModName);
 	      else
 		strcat(s, GetPString(IDS_UNKNOWNPROCTEXT));
 	    }
@@ -181,9 +181,9 @@ static VOID FillKillListThread3(VOID * arg)
 	    sprintf(s, "%04x ", ppi->pid);
 	    if (!stricmp((CHAR *) pmi->pName, "SYSINIT"))
 	      GetDosPgmName(ppi->pid, s + strlen(s));
-            else {
+	    else {
 	      if (*pmi->pName)
-                strcat(s, (CHAR *) pmi->pName);
+		strcat(s, (CHAR *) pmi->pName);
 	      else
 		strcat(s, GetPString(IDS_UNKNOWNPROCTEXT));
 	    }
@@ -196,7 +196,7 @@ static VOID FillKillListThread3(VOID * arg)
 	      break;
 	  }
 	}
-	ppi = (QSPREC *) (ppi->pThrdRec + ppi->cTCB);
+	ppi = (QSPREC *) (ppi->pThrdRec + ppi->cTCB);	// 22 Jun 08 SHL fixme to know why this looks odd
       }					// while
     }
     DosFreeMem(pbh);
@@ -253,8 +253,8 @@ static VOID FillKillListThread(VOID * arg)
     oldstdout = fileno(stdout);
     DosDupHandle(fileno(fp), &oldstdout);
     rc = runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
-                 hwnd, pszSrcFile, __LINE__, NULL, NULL,
-                 "%s", "PSTAT.EXE /C");
+		 hwnd, pszSrcFile, __LINE__, NULL, NULL,
+		 "%s", "PSTAT.EXE /C");
     oldstdout = fileno(stdout);
     DosDupHandle(newstdout, &oldstdout);
     DosClose(newstdout);
@@ -362,7 +362,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fUseQProcStat = WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX);
       PrfWriteProfileData(fmprof,
 			  FM3Str,
-                          "UseQProcStat", &fUseQProcStat, sizeof(BOOL));
+			  "UseQProcStat", &fUseQProcStat, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
       if (WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX)) {
 	WinCheckButton(hwnd, KILL2_CHECKBOX, FALSE);
@@ -436,18 +436,18 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 NULL, 65536 + 8192, (PVOID)&hwnd) != -1)
 	  DosSleep(100);		// 05 Aug 07 GKY 250
 	else
-            WinDismissDlg(hwnd, 0);
+	    WinDismissDlg(hwnd, 0);
       }
       else if (fUseQSysState)
-        if (_beginthread(FillKillListThread3,
+	if (_beginthread(FillKillListThread3,
 			 NULL, 65536, (PVOID) & hwnd) != -1)
 	  DosSleep(100);//05 Aug 07 GKY 250
 	else
-            WinDismissDlg(hwnd, 0);
+	    WinDismissDlg(hwnd, 0);
       else {
 	if (_beginthread(FillKillListThread,
 			 NULL, 65536, (PVOID) & hwnd) != -1)
-	  DosSleep(100); 		// 05 Aug 07 GKY 250
+	  DosSleep(100);		// 05 Aug 07 GKY 250
 	else
 	  WinDismissDlg(hwnd, 0);
       }

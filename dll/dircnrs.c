@@ -41,8 +41,8 @@
   22 Jun 08 GKY Included free_... functions for fortify checking
   06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
-                all the details view settings (both the global variables and those in the
-                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+		all the details view settings (both the global variables and those in the
+		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
 
 ***********************************************************************/
 
@@ -69,7 +69,7 @@
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
 #include "fm3dll.h"
-#include "avl.h"                        // free_archivers
+#include "avl.h"			// free_archivers
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
@@ -597,6 +597,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_CREATE:
+    DbgMsg(pszSrcFile, __LINE__, "WM_CREATE mp1 %p mp2 %p", mp1, mp2);	// 18 Jul 08 SHL fixme
     break;
 
   case DM_PRINTOBJECT:
@@ -605,10 +606,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case DM_DISCARDOBJECT:
     dcd = INSTDATA(hwnd);
     if (fFM2Deletes && dcd) {
-
       LISTINFO *li;
       CNRDRAGINFO cni;
-
       cni.pRecord = NULL;
       cni.pDragInfo = (PDRAGINFO) mp1;
       li =
@@ -640,8 +639,14 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP:
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
+#     ifdef FORTIFY
+      Fortify_ChangeOwner(dcd);
+#     endif
       /* set unique id */
       WinSetWindowUShort(hwnd, QWS_ID, DIROBJ_FRAME + (DIR_FRAME - dcd->id));
       dcd->hwndObject = hwnd;
@@ -987,14 +992,12 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_MASSACTION:
     if (mp1) {
-
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (dcd) {
-
 	WORKER *wk;
-#       ifdef FORTIFY
-        Fortify_EnterScope();
-#        endif
+#	ifdef FORTIFY
+	Fortify_EnterScope();
+#	endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -1009,13 +1012,14 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            free(wk);
+	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
-#           ifdef FORTIFY
-            Fortify_LeaveScope();
-#            endif
 	  }
 	}
+#	ifdef FORTIFY
+	DosSleep(1);		 // Allow MassAction to take ownership
+	Fortify_LeaveScope();
+#	endif
       }
     }
     return 0;
@@ -1027,9 +1031,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (dcd) {
 
 	WORKER *wk;
-#       ifdef FORTIFY
-        Fortify_EnterScope();
-#        endif
+#	ifdef FORTIFY
+	Fortify_EnterScope();
+#	endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -1044,13 +1048,13 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            free(wk);
+	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
-#           ifdef FORTIFY
-            Fortify_LeaveScope();
-#            endif
 	  }
 	}
+#	ifdef FORTIFY
+	Fortify_LeaveScope();
+#	endif
       }
     }
     return 0;
@@ -1090,6 +1094,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   DIRCNRDATA *dcd = INSTDATA(hwnd);
 
   switch (msg) {
+  case WM_CREATE:
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#   endif
+    break;
+
   case DM_PRINTOBJECT:
     return MRFROMLONG(DRR_TARGET);
 
@@ -1241,6 +1251,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR *leftdir = (CHAR *)mp1, *rightdir = (CHAR *)mp2;
 
       if (!IsFile(leftdir) && !IsFile(rightdir)) {
+#	ifdef FORTIFY
+	Fortify_EnterScope();
+#	endif
 	cmp = xmallocz(sizeof(COMPARE), pszSrcFile, __LINE__);
 	if (cmp) {
 	  cmp->size = sizeof(COMPARE);
@@ -1252,6 +1265,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    HWND_DESKTOP,
 		    CompareDlgProc, FM3ModHandle, COMP_FRAME, MPFROMP(cmp));
 	}
+#	ifdef FORTIFY
+	Fortify_LeaveScope();
+#	endif
       }
     }
     return 0;
@@ -2039,46 +2055,46 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_UNDELETE:
 	{
 	  PCNRITEM pci;
-          CHAR path[CCHMAXPATH];
-          HOBJECT hObject;
-          HWND hwndDesktop;
+	  CHAR path[CCHMAXPATH];
+	  HOBJECT hObject;
+	  HWND hwndDesktop;
 
-          hObject = WinQueryObject("<XWP_TRASHCAN>");
-          if (hObject != NULLHANDLE && fTrashCan) {
-            hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+	  hObject = WinQueryObject("<XWP_TRASHCAN>");
+	  if (hObject != NULLHANDLE && fTrashCan) {
+	    hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
 	    WinSetFocus(HWND_DESKTOP, hwndDesktop);
-            WinOpenObject(hObject, 0, TRUE);
-          }
-          else {
-            pci = (PCNRITEM) CurrentRecord(hwnd);
-            if (pci && (INT) pci != -1) {
-              strcpy(path, pci->pszFileName);
-              MakeValidDir(path);
-              WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
-                        UNDEL_FRAME, MPFROMP(path));
-            }
+	    WinOpenObject(hObject, 0, TRUE);
+	  }
+	  else {
+	    pci = (PCNRITEM) CurrentRecord(hwnd);
+	    if (pci && (INT) pci != -1) {
+	      strcpy(path, pci->pszFileName);
+	      MakeValidDir(path);
+	      WinDlgBox(HWND_DESKTOP, hwnd, UndeleteDlgProc, FM3ModHandle,
+			UNDEL_FRAME, MPFROMP(path));
+	    }
 	  }
 	}
 	break;
 
       case IDM_UNDELETESPEC:
-        {
-          HOBJECT hObject;
-          HWND hwndDesktop;
+	{
+	  HOBJECT hObject;
+	  HWND hwndDesktop;
 
-          hObject = WinQueryObject("<XWP_TRASHCAN>");
-          if (hObject != NULLHANDLE && fTrashCan) {
-            hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+	  hObject = WinQueryObject("<XWP_TRASHCAN>");
+	  if (hObject != NULLHANDLE && fTrashCan) {
+	    hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
 	    WinSetFocus(HWND_DESKTOP, hwndDesktop);
-            WinOpenObject(hObject, 0, TRUE);
-          }
-        else
+	    WinOpenObject(hObject, 0, TRUE);
+	  }
+	else
 	  WinDlgBox(HWND_DESKTOP,
 		    hwnd,
 		    UndeleteDlgProc,
-                    FM3ModHandle, UNDEL_FRAME, MPFROMP(dcd->directory));
-        }
-        break;
+		    FM3ModHandle, UNDEL_FRAME, MPFROMP(dcd->directory));
+	}
+	break;
 
       case IDM_RESORT:
 //	    WinSendMsg(hwnd,
@@ -3337,11 +3353,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HWND hwnd;
 
       if ((INT)mp1 == 5 || (INT)mp1 == 13 || (INT)mp1 == 21)
-        hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
-                           (CHAR *)mp2, dcd->hwndFrame);
+	hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
+			   (CHAR *)mp2, dcd->hwndFrame);
       else
-        hwnd = StartMLEEditor(dcd->hwndParent,
-	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
+	hwnd = StartMLEEditor(dcd->hwndParent,
+			      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
       xfree((CHAR *)mp2, pszSrcFile, __LINE__);
       return MRFROMLONG(hwnd);
     }
@@ -3399,6 +3415,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDestroyWindow(FileMenu);
     DirMenu = DirCnrMenu = FileMenu = (HWND) 0;
     EmptyCnr(hwnd);
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#   endif
     break;
   } // switch
 
@@ -3439,9 +3458,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
     FrameFlags |= (FCF_TASKLIST | FCF_MENU);
   if (!hwndMain && !first) {
     if (DirCnrMenu) {
-
       MENUITEM mi;
-
       memset(&mi, 0, sizeof(mi));
       WinSendMsg(DirCnrMenu,
 		 MM_DELETEITEM, MPFROM2SHORT(IDM_DRIVESMENU, FALSE), MPVOID);
@@ -3469,7 +3486,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
       WinSetWindowUShort(hwndFrame, QWS_ID, id);
 #     ifdef FORTIFY
       Fortify_EnterScope();
-#      endif
+#     endif
       dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
       if (!dcd) {
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
@@ -3520,10 +3537,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-          free(dcd);
-#         ifdef FORTIFY
-          Fortify_LeaveScope();
-#          endif
+	  free(dcd);
 	  hwndFrame = (HWND) 0;
 	}
 	else {
@@ -3572,6 +3586,9 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  }
 	}
       }
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#     endif
     }
   }
   return hwndFrame;

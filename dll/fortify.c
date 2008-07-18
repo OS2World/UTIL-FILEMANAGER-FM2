@@ -42,7 +42,8 @@
 
  /* 06 May 08 SHL Rework scope logic to be MT capable
     26 May 08 SHL Show TID for leaking scope
-    17 Jul 08 SHL Add Fortify_SetOwner Fortify_ChangeOwner
+    17 Jul 08 SHL Add Fortify_SetOwner Fortify_ChangeOwner Fortify_ChangeScope
+    18 Jul 08 SHL Add FORTIFY_VERBOSE_SCOPE_ENTER_EXIT
  */
 
 #ifdef FORTIFY
@@ -176,8 +177,8 @@ static const char    *st_LastVerifiedFile = "unknown";
 static unsigned long  st_LastVerifiedLine;
 #ifdef MT_SCOPES
 static unsigned volatile st_cOrdinals;		// Number of known threads
-static unsigned volatile char*  st_pScopes;	// Scope level of blocks allocated by thread
-static unsigned volatile long*  st_pOwners;	// Owner of blocks allocated by thread
+static volatile unsigned char*  st_pScopes;	// Scope level of blocks allocated by thread
+static volatile unsigned long*  st_pOwners;	// Owner of blocks allocated by thread
 #else
 static unsigned char  st_Scope            = 0;
 #endif
@@ -996,7 +997,15 @@ Fortify_EnterScope(const char *file, unsigned long line)
 	st_cOrdinals = c;
 	FORTIFY_UNLOCK();
     }
-    return(++st_pScopes[ordinal]);
+    i = ++st_pScopes[ordinal];
+#   ifdef FORTIFY_VERBOSE_SCOPE_ENTER_EXIT
+    sprintf(st_Buffer,
+	    "Fortify: Entering scope %u in TID %u at %s.%lu\n",
+	    i, ordinal,
+	    file, line);	// 26 May 08 SHL
+    st_Output(st_Buffer);
+#   endif
+    return(i);
 #else
     return(++st_Scope);
 #endif
@@ -1024,19 +1033,20 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 #ifdef MT_SCOPES
     // Complain on leave without enter 06 May 08 SHL
     ordinal = Get_TID_Ordinal();
-    if (ordinal < st_cOrdinals && st_pScopes[ordinal] > 0)
+    if (ordinal < st_cOrdinals && st_pScopes[ordinal] > 0) {
 	st_pScopes[ordinal]--;
+    }
     else {
 	sprintf(st_Buffer,
-		"\nFortify: attempting to leave scope before enter at %s.%lu in TID %u\n",
-		file, line, ordinal);	// 26 May 08 SHL
+		"\nFortify: Attempting to leave scope before enter in TID %u at %s.%lu\n",
+		ordinal, file, line);	// 26 May 08 SHL
 	st_Output(st_Buffer);
     }
 #else
     if (st_Scope > 0)
 	st_Scope--;
     else {
-	sprintf(st_Buffer, "\nFortify: attempting to leave scope before enter at %s.%lu\n", file, line);
+	sprintf(st_Buffer, "\nFortify: Attempting to leave scope before enter at %s.%lu\n", file, line);
 	st_Output(st_Buffer);
     }
 #endif
@@ -1053,8 +1063,10 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 		// Report just first occurrance
 #ifdef MT_SCOPES
 		sprintf(st_Buffer,
-			"\nFortify: Memory leak detected leaving scope at %s.%lu in TID %u\n",
-			file, line, ordinal);
+			"\nFortify: Memory leak detected leaving scope %d in TID %u at %s.%lu\n",
+			ordinal < st_cOrdinals ? st_pScopes[ordinal] + 1 : 0,
+			ordinal,
+			file, line);
 #else
 		sprintf(st_Buffer, "\nFortify: Memory leak detected leaving scope at %s.%lu\n", file, line);
 #endif
@@ -1077,6 +1089,16 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 		"total", size, count, count * FORTIFY_OVERHEAD);
 	st_Output(st_Buffer);
     }
+#   ifdef FORTIFY_VERBOSE_SCOPE_ENTER_EXIT
+    else {
+	sprintf(st_Buffer,
+		"Fortify: Leaving scope %u in TID %u at %s.%lu\n",
+		ordinal < st_cOrdinals ? st_pScopes[ordinal] + 1 : 0,
+		ordinal,
+		file, line);	// 26 May 08 SHL
+	st_Output(st_Buffer);
+    }
+#   endif
 
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
     /*
@@ -2429,8 +2451,8 @@ void Fortify_SetOwner(long lOwnerTID)
 
     if (ordinal >= st_cOrdinals) {
 	// Expand arrays
-        unsigned i;
-        unsigned c;
+	unsigned i;
+	unsigned c;
 	FORTIFY_LOCK();
 	i = st_cOrdinals;
 	c = ordinal + 1;
@@ -2449,9 +2471,9 @@ void Fortify_SetOwner(long lOwnerTID)
 
 /**
  * Take ownership of block allocated by some other thread
- * Allows scope enter/exit logic to correctly report leaks in 
+ * Allows scope enter/exit logic to correctly report leaks in
  * cross thread allocations
- * @param pVoid is point to block allocated by Fortify
+ * @param pBlock points to block allocated by Fortify
  */
 
 void Fortify_ChangeOwner(void *pBlock)
@@ -2465,6 +2487,24 @@ void Fortify_ChangeOwner(void *pBlock)
 
     h->Scope = ordinal < st_cOrdinals ? st_pScopes[ordinal] : 0;
     h->Owner = ordinal;		// Take ownership
+    st_MakeHeaderValid(h);
+}
+
+/**
+ * Adjust scope level of allocated block
+ * Allows scope enter/exit logic to correctly report leaks in
+ * window procedure related allocations
+ * @param pBlock points to block allocated by Fortify
+ */
+
+void Fortify_ChangeScope(void *pBlock, int delta)
+{
+    unsigned char *ptr = (unsigned char *)pBlock -
+			     FORTIFY_HEADER_SIZE -
+			     FORTIFY_ALIGNED_BEFORE_SIZE;
+    struct Header *h = (struct Header *)ptr;
+    h->Scope += delta;
+    st_MakeHeaderValid(h);
 }
 
 #endif // MT_SCOPES

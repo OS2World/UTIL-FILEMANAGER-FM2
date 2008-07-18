@@ -9,6 +9,9 @@
  * recompiled, but nothing else.
  */
 
+ /* 18 Jul 08 SHL Add FORTIFY_VERBOSE_SCOPE_ENTER_EXIT
+ */
+
 // 28 Jan 08 SHL
 #define FORTIFY_STORAGE _export		/* storage for public functions   */
 
@@ -44,6 +47,7 @@
 #define FORTIFY_DEALLOCATED_MEMORY_LIMIT 1048576 /* Maximum amount of deallocated bytes to keep */
 /* #define FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
 /* #define FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
+#define FORTIFY_VERBOSE_SCOPE_ENTER_EXIT	/* Log all scope entry and exit */
 
 /* #define FORTIFY_NO_PERCENT_P */       /* sprintf() doesn't support %p */
 #define FORTIFY_STRDUP              /* if you use non-ANSI strdup() */

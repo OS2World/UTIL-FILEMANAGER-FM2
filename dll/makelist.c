@@ -14,6 +14,7 @@
   06 Apr 07 GKY Work around PM DragInfo and DrgFreeDISH limits
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
+  17 Jul 08 SHL Add SetListOwner for Fortify support
 
 ***********************************************************************/
 
@@ -259,7 +260,7 @@ CHAR **RemoveFromList(CHAR **list, CHAR *item)
   if (list && list[0] && item) {
     for (x = 0; list[x]; x++) {
       if (item == list[x]) {
-        free(list[x]);
+	free(list[x]);
 	list[x] = NULL;
 	for (y = x;; y++) {
 	  if (y != x && !list[y])
@@ -271,7 +272,7 @@ CHAR **RemoveFromList(CHAR **list, CHAR *item)
 	  list = NULL;
 	}
 #       ifdef FORTIFY
-        Fortify_LeaveScope();
+	Fortify_LeaveScope();
 #        endif
 	break;
       }
@@ -300,5 +301,25 @@ CHAR **CombineLists(CHAR **prime, CHAR **add)
   return prime;
 }
 
+#ifdef FORTIFY
+
+VOID SetListOwner(LISTINFO *li)
+{
+  if (li) {
+    CHAR **list = li->list;
+    if (list) {
+      UINT x;
+      for (x = 0; list[x]; x++)
+	Fortify_ChangeOwner(list[x]);
+    }
+    Fortify_ChangeOwner(li);
+  }
+}
+
+#endif // FORTIFY
+
 #pragma alloc_text(MAKELIST,AddToList,AddToFileList,BuildList,FreeListInfo,FreeList)
 #pragma alloc_text(MAKELIST,SortList,BuildArcList,RemoveFromList,CombineLists)
+#ifdef FORTIFY
+#pragma alloc_text(MAKELIST,SetListOwner)
+#endif // FORTIFY

@@ -24,7 +24,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   26 Aug 07 SHL Revert to DosSleep(0)
   29 Feb 08 GKY Refactor global command line variables to notebook.h
-  22 Jun 08 GKY Made Felete move to xworkplace trash can  on systems that have it
+  22 Jun 08 GKY Made Felete move to xworkplace trash can on systems that have it
   16 JUL 08 GKY Use TMP directory for temp files
 
 ***********************************************************************/
@@ -50,7 +50,7 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "notebook.h"                   // External viewers
+#include "notebook.h"			// External viewers
 #include "fm3dll.h"
 
 #include "fortify.h"
@@ -84,7 +84,7 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
       Fortify_EnterScope();
 #      endif
 	li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
-        if (li) {
+	if (li) {
 	  wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	  if (wk) {
 	    wk->size = sizeof(WORKER);
@@ -104,10 +104,10 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 	      Runtime_Error(pszSrcFile, __LINE__,
 			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	      FreeListInfo(wk->li);
-              free(wk);
-#             ifdef FORTIFY
-              Fortify_LeaveScope();
-#              endif
+	      free(wk);
+#	      ifdef FORTIFY
+	      Fortify_LeaveScope();
+#	       endif
 	    }
 	  }
 	  else
@@ -1000,8 +1000,9 @@ VOID MassAction(VOID * args)
 
   if (wk) {
 #   ifdef FORTIFY
+    // Fortify_ChangeOwner(wk);
     Fortify_EnterScope();
-#    endif
+#   endif
     if (wk->li && wk->li->list && wk->li->list[0]) {
       hab2 = WinInitialize(0);
       if (hab2) {
@@ -1067,20 +1068,20 @@ VOID MassAction(VOID * args)
 			  (needs_quoting(wk->li->list[x]) * 2));
 	      if (total > 1000) {
 
-                FILE *fp;
-                CHAR szTempFile[CCHMAXPATH];
+		FILE *fp;
+		CHAR szTempFile[CCHMAXPATH];
 
-                BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
+		BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
 		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
 		  for (x = 0; wk->li->list[x]; x++)
 		    fprintf(fp, "%s\n", wk->li->list[x]);
 		  fprintf(fp, ";end\n");
-                  fclose(fp);
-                  strrev(szTempFile);
-                  strcat(szTempFile, "@/");
-                  strrev(szTempFile);
+		  fclose(fp);
+		  strrev(szTempFile);
+		  strcat(szTempFile, "@/");
+		  strrev(szTempFile);
 		  RunFM2Util("FM2PLAY.EXE", szTempFile);
 		}
 	      }
@@ -1449,7 +1450,7 @@ VOID MassAction(VOID * args)
 	      FILESTATUS3 fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
 	      APIRET error;
-              HOBJECT hObjectdest, hObjectofObject;
+	      HOBJECT hObjectdest, hObjectofObject;
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1573,29 +1574,29 @@ VOID MassAction(VOID * args)
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
 		  AddNote(prompt);
 		  DosError(FERR_DISABLEHARDERR);
-                  if (wk->li->type == IDM_DELETE){
-                    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-                    if (hObjectdest != NULLHANDLE){
-                      hObjectofObject = WinQueryObject(wk->li->list[x]);
-                      error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-                    }
-                    else
-                      error = DosDelete(wk->li->list[x]);
-                  }
+		  if (wk->li->type == IDM_DELETE){
+		    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+		    if (hObjectdest != NULLHANDLE){
+		      hObjectofObject = WinQueryObject(wk->li->list[x]);
+		      error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+		    }
+		    else
+		      error = DosDelete(wk->li->list[x]);
+		  }
 		  else
 		    error = DosForceDelete(wk->li->list[x]);
 		  if (error) {
 		    DosError(FERR_DISABLEHARDERR);
 		    make_deleteable(wk->li->list[x]);
 		    if (wk->li->type == IDM_DELETE){
-                      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-                      if (hObjectdest != NULLHANDLE){
-                        hObjectofObject = WinQueryObject(wk->li->list[x]);
-                        error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-                      }
-                      else
-                        error = DosDelete(wk->li->list[x]);
-                    }
+		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+		      if (hObjectdest != NULLHANDLE){
+			hObjectofObject = WinQueryObject(wk->li->list[x]);
+			error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+		      }
+		      else
+			error = DosDelete(wk->li->list[x]);
+		    }
 		    else
 		      error = DosForceDelete(wk->li->list[x]);
 		  }

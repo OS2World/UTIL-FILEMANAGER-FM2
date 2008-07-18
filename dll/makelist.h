@@ -10,6 +10,7 @@
 
   05 Jan 08 SHL Move makelist.c definitions here
   22 Jun 08 GKY Change variable type to fix compiler warning
+  17 Jul 08 SHL Add SetListOwner for Fortify support
 
 ***********************************************************************/
 
@@ -82,5 +83,9 @@ VOID SortList(LISTINFO *li);
 CHAR **BuildArcList(HWND hwndCnr);
 CHAR **RemoveFromList(CHAR **list, CHAR *item);
 CHAR **CombineLists(CHAR **prime, CHAR **add);
+
+#ifdef FORTIFY
+VOID SetListOwner(LISTINFO *li);
+#endif // FORTIFY
 
 #endif // MAKELIST_H

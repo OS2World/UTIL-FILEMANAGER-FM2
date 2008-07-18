@@ -41,7 +41,7 @@
  */
 
  /* 06 May 08 SHL Rework scope logic to be MT capable
-    17 Jul 08 SHL Add Fortify_SetOwner Fortify_ChangeOwner
+    17 Jul 08 SHL Add Fortify_SetOwner Fortify_ChangeOwner Fortify_ChangeScope
  */
 
 #ifndef __FORTIFY_H__
@@ -189,8 +189,9 @@ Fortify_OutputFuncPtr Fortify_SetOutputFunc(Fortify_OutputFuncPtr Output);
 void  Fortify_Disable(const char *file, unsigned long line);
 
 #ifdef MT_SCOPES
-void  Fortify_SetOwner(long lOwnerTID);
-void  Fortify_ChangeOwner(void *pBlock);
+void Fortify_SetOwner(long lOwnerTID);
+void Fortify_ChangeOwner(void *pBlock);
+void Fortify_ChangeScope(void *pBlock, int delta);
 #endif
 
 /* Fortify versions of the ANSI C memory allocation functions */
@@ -227,15 +228,15 @@ extern int gbl_FortifyMagic;
      * This includes GNU G++ (2.6.0) and Borland C++ (4.02)
      */
     #ifdef FORTIFY_PROVIDE_ARRAY_NEW
-        void *operator new[](size_t size);
-        void *operator new[](size_t size, const char *file, unsigned long line);	// 16 Jan 08 SHL
+	void *operator new[](size_t size);
+	void *operator new[](size_t size, const char *file, unsigned long line);	// 16 Jan 08 SHL
     #endif
 
     /* Some compilers provide a different delete operator for deleting arrays.
      * This incldues GNU G++ (2.6.0)
      */
     #ifdef FORTIFY_PROVIDE_ARRAY_DELETE
-        void  operator delete[](void *pointer);
+	void  operator delete[](void *pointer);
     #endif
 
 #endif /* __cplusplus */
@@ -265,18 +266,18 @@ extern int gbl_FortifyMagic;
 
     /* Fortify versions of some non-ANSI C memory allocation functions */
     #ifdef FORTIFY_STRDUP
-        #define strdup(ptr)                Fortify_strdup(ptr, __FILE__, __LINE__)
+	#define strdup(ptr)                Fortify_strdup(ptr, __FILE__, __LINE__)
     #endif
 
     /* Fortify versions of new and delete */
     #ifdef __cplusplus
-        #define Fortify_New                new(__FILE__, __LINE__)
-        #define Fortify_Delete             for(gbl_FortifyMagic = 1, \
-                                               Fortify_PreDelete(__FILE__, __LINE__); \
-                                               gbl_FortifyMagic; Fortify_PostDelete()) \
-                                                       gbl_FortifyMagic = 0, delete
-        #define new                        Fortify_New
-        #define delete                     Fortify_Delete
+	#define Fortify_New                new(__FILE__, __LINE__)
+	#define Fortify_Delete             for(gbl_FortifyMagic = 1, \
+					       Fortify_PreDelete(__FILE__, __LINE__); \
+					       gbl_FortifyMagic; Fortify_PostDelete()) \
+						       gbl_FortifyMagic = 0, delete
+	#define new                        Fortify_New
+	#define delete                     Fortify_Delete
     #endif /* __cplusplus */
 
 #else /* Define the special fortify functions away to nothing */

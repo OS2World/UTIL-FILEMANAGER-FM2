@@ -41,12 +41,13 @@
   21 Jan 08 GKY Stop reallocating NullStr by direct editing of empty subject and longname strings.
   29 Feb 08 GKY Use xfree where appropriate
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
-                keys using a "DirCnr." prefix
+		keys using a "DirCnr." prefix
   19 Jun 08 JBS Ticket 239: Fix LoadDetailsSwitches so INI file is read correctly and details
-                switches are set correctly.
+		switches are set correctly.
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
-                all the details view settings (both the global variables and those in the
-                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+		all the details view settings (both the global variables and those in the
+		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  17 Jul 08 SHL Add GetTidForWindow for Fortify support
 
 ***********************************************************************/
 
@@ -54,7 +55,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
-#include <malloc.h>		     // _heapmin
+#include <malloc.h>			// _heapmin
 
 #define INCL_DOS
 #define INCL_WIN
@@ -63,11 +64,12 @@
 
 #include "fm3dlg.h"
 #include "fm3str.h"
-#include "pathutil.h"		    // BldQuotedFileName
-#include "errutil.h"		    // Dos_Error...
-#include "strutil.h"		    // GetPString
-#include "command.h"                // LINKCMDS
+#include "pathutil.h"			// BldQuotedFileName
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "command.h"			// LINKCMDS
 #include "fm3dll.h"
+#include "misc.h"
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
@@ -111,6 +113,41 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
     }
     return yes;
 }
+
+#ifdef FORTIFY
+
+/**
+ * Return tid for fm/2 window
+ * window must exist and must be created by fm/2
+ * @param hwnd is window handle
+ * @returns tid or -1 if error
+ */
+
+INT GetTidForWindow(HWND hwnd)
+{
+    PIB *ppib;
+    TIB *ptib;
+    LONG tid = -1;
+    APIRET rc = DosGetInfoBlocks(&ptib, &ppib);
+
+    if (rc) {
+      Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		"DosGetInfoBlocks");
+    }
+    else {
+      PID pid;
+      TID tid;
+      if (!WinQueryWindowProcess(hwnd, &pid, &tid))
+	Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinQueryWindowProcess failed for %X", hwnd);
+      else if (pid != ppib->pib_ulpid)
+	Runtime_Error(pszSrcFile, __LINE__, "hwnd %X not created by fm/2", hwnd);
+      else
+	tid = ptib->tib_ptib2->tib2_ultid;
+    }
+    return tid;
+}
+
+#endif // FORTIFY
 
 VOID SetShiftState(VOID)
 {
@@ -709,26 +746,26 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ULONG ealen;
 	  USHORT len;
 	  CHAR *eaval;
-          LONG retlen;
-          PSZ psz;
+	  LONG retlen;
+	  PSZ psz;
 
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
 	  szSubject[retlen + 1] = 0;
-          bstrip(szSubject);
-          if (pci->pszSubject != NullStr) {
-            if (retlen == 0) {
-              psz = pci->pszSubject;
-              pci->pszSubject = NullStr;
-              xfree(psz, pszSrcFile, __LINE__);
-            }
-            else
-              pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
-          }
-          else {
-            pci->pszSubject = xmalloc(retlen + 1, pszSrcFile, __LINE__);
-            if (!pci->pszSubject)
-              return FALSE;
-          }
+	  bstrip(szSubject);
+	  if (pci->pszSubject != NullStr) {
+	    if (retlen == 0) {
+	      psz = pci->pszSubject;
+	      pci->pszSubject = NullStr;
+	      xfree(psz, pszSrcFile, __LINE__);
+	    }
+	    else
+	      pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
+	  }
+	  else {
+	    pci->pszSubject = xmalloc(retlen + 1, pszSrcFile, __LINE__);
+	    if (!pci->pszSubject)
+	      return FALSE;
+	  }
 	  len = strlen(szSubject);
 	  if (len)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
@@ -771,29 +808,29 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongName)) {
 
 	  CHAR longname[CCHMAXPATHCOMP];
-          LONG retlen;
-          PSZ psz;
+	  LONG retlen;
+	  PSZ psz;
 
 	  *longname = 0;
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
 	  longname[retlen + 1] = 0;
-          chop_at_crnl(longname);
-          bstrip(longname);
-          WinSetWindowText(hwndMLE, longname);
-          if (pci->pszLongName != NullStr) {
-            if (retlen == 0) {
-              psz = pci->pszLongName;
-              pci->pszLongName = NullStr;
-              xfree(psz, pszSrcFile, __LINE__);
-            }
-            else
-              pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
-          }
-          else {
-            pci->pszLongName = xmalloc(retlen + 1, pszSrcFile, __LINE__);
-            if (!pci->pszLongName)
-              return FALSE;
-          }
+	  chop_at_crnl(longname);
+	  bstrip(longname);
+	  WinSetWindowText(hwndMLE, longname);
+	  if (pci->pszLongName != NullStr) {
+	    if (retlen == 0) {
+	      psz = pci->pszLongName;
+	      pci->pszLongName = NullStr;
+	      xfree(psz, pszSrcFile, __LINE__);
+	    }
+	    else
+	      pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+	  }
+	  else {
+	    pci->pszLongName = xmalloc(retlen + 1, pszSrcFile, __LINE__);
+	    if (!pci->pszLongName)
+	      return FALSE;
+	  }
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
 	else {
@@ -979,12 +1016,12 @@ INT ExecFile(HWND hwnd, CHAR * filename)
     *ex.path = 0;
     *ex.environment = 0;
     ret = WinDlgBox(HWND_DESKTOP, hwnd, CmdLineDlgProc, FM3ModHandle,
-                    EXEC_FRAME, &ex);
+		    EXEC_FRAME, &ex);
     if (ret == 1) {
       lastflags = ex.flags;
       return runemf2(ex.flags, hwnd, pszSrcFile, __LINE__, path,
-                     *ex.environment ? ex.environment : NULL,
-                     "%s", pszCmdLine) != -1;
+		     *ex.environment ? ex.environment : NULL,
+		     "%s", pszCmdLine) != -1;
     }
     else if (ret != 0)
       return -1;
@@ -2156,6 +2193,11 @@ BOOL SwitchCommand(HWND hwndMenu, USHORT cmd)
 #pragma alloc_text(MAINWND5,SetSysMenu)
 #pragma alloc_text(MISC1,BoxWindow,PaintRecessedWindow,PostMsg,PaintSTextWindow,IsFm2Window)
 #pragma alloc_text(MISC1,FixSwitchList,FindDirCnr,CurrentRecord,SetShiftState,AddToListboxBottom)
+
+#ifdef FORTIFY
+#pragma alloc_text(MISC1,GetTidForWindow)
+#endif // FORTIFY
+
 #pragma alloc_text(CNR_MISC1,AdjustCnrColVis,AdjustCnrColsForFSType)
 #pragma alloc_text(CNR_MISC1,AdjustCnrColsForPref,SetCnrCols)
 #pragma alloc_text(CNR_MISC2,CnrDirectEdit,OpenEdit)

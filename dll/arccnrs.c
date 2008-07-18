@@ -338,7 +338,7 @@ static VOID FreeArcItemData(PARCITEM pai)
 
   if (pai->pszFileName && pai->pszFileName != NullStr) {
     psz = pai->pszFileName;
-    pai->pszFileName = NULL;
+    pai->pszFileName = NULL;		// 08 Jul 08 SHL was NulStr
     free(psz);
   }
 }
@@ -1229,6 +1229,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   CHAR szQuotedMemberName[CCHMAXPATH];
 
   switch (msg) {
+  case WM_CREATE:
+    DbgMsg(pszSrcFile, __LINE__, "WM_CREATE mp1 %p mp2 %p", mp1, mp2);	// 18 Jul 08 SHL fixme
+    break;
+
   case DM_PRINTOBJECT:
   case DM_DISCARDOBJECT:
     dcd = INSTDATA(hwnd);
@@ -1346,12 +1350,18 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP:
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     }
     else {
+#     ifdef FORTIFY
+      Fortify_ChangeOwner(dcd);
+#     endif
       /* set unique id */
       WinSetWindowUShort(hwnd, QWS_ID, ARCOBJ_FRAME + (ARC_FRAME - dcd->id));
       dcd->hwndObject = hwnd;		// pass back hwnd
@@ -1499,7 +1509,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       register INT x;
 
       if (li && li->list && li->list[0]) {
-        printf("%x/r", li->type); fflush(stdout);
+	printf("%x/r", li->type); fflush(stdout);
 	switch (li->type) {
 	case IDM_ARCHIVE:
 	case IDM_ARCHIVEM:
@@ -1564,8 +1574,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case IDM_REFRESH:
 	case IDM_DELETE:
 	  {
-            CHAR *endofit;
-            PSZ pszCmdLine;
+	    CHAR *endofit;
+	    PSZ pszCmdLine;
 	    INT z;
 	    CHECKLIST ck;
 	    CHAR prompt[CCHMAXPATH + 257];
@@ -1591,10 +1601,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      break;
 	    li->list = ck.list;
 	    if (!li->list || !li->list[0])
-              break;
-            pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
-            if (!pszCmdLine)
-              break;
+	      break;
+	    pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+	    if (!pszCmdLine)
+	      break;
 	    strcpy(pszCmdLine, li->type == IDM_DELETE ?
 			 dcd->info->delete :
 			 dcd->info->create);
@@ -1612,8 +1622,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      runemf2(SEPARATE | WINDOWED | WAIT |
 		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
 		      hwnd, pszSrcFile, __LINE__, NullStr, NULL, "%s", pszCmdLine);
-              *endofit = 0;
-              free(pszCmdLine);
+	      *endofit = 0;
+	      free(pszCmdLine);
 	    } while (li->list[x]);
 	    PostMsg(dcd->hwndCnr, UM_RESCAN, MPFROMSHORT(1), MPVOID);
 	    Broadcast(WinQueryAnchorBlock(hwnd),
@@ -1638,8 +1648,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case IDM_OPENDEFAULT:
 	case IDM_OPENSETTINGS:
 	  {
-            CHAR *endofit, *ptr;
-            PSZ pszCmdLine;
+	    CHAR *endofit, *ptr;
+	    PSZ pszCmdLine;
 	    INT z;
 	    if ((li->type == IDM_EXTRACT && !li->info->extract) ||
 		((li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
@@ -1698,10 +1708,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    if (!li->list || !li->list[0])
-              break;
-            pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
-            if (!pszCmdLine)
-              break;
+	      break;
+	    pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+	    if (!pszCmdLine)
+	      break;
 	    strcpy(pszCmdLine,
 		   (li->type == IDM_EXTRACT ||
 		    ((li->type == IDM_VIEW ||
@@ -1738,7 +1748,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      runemf2(SEPARATE | WINDOWED |
 		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED) |
 		      WAIT, hwnd, pszSrcFile, __LINE__,
-                      li->targetpath, NULL, "%s", pszCmdLine);
+		      li->targetpath, NULL, "%s", pszCmdLine);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
@@ -1756,8 +1766,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 		p = xmalloc(strlen(temp) + strlen(li->targetpath) + 2,
 			    pszSrcFile, __LINE__);
-                if (p) {
-                  BldFullPathName(p, li->targetpath, temp);
+		if (p) {
+		  BldFullPathName(p, li->targetpath, temp);
 		  /*strcpy(p, li->targetpath);
 		  if (p[strlen(p) - 1] != '\\')
 		    strcat(p, "\\");
@@ -1826,16 +1836,16 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      xfree(temp, pszSrcFile, __LINE__);
 		    }
 		  }
-                }
+		}
 		BldFullPathName(pszCmdLine, li->targetpath, li->list[x]);
 		temp = li->list[x];
-                li->list[x] = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
+		li->list[x] = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
 		if (!li->list[x])
 		  li->list[x] = temp;
 		else
 		  xfree(temp, pszSrcFile, __LINE__);
-              }
-              free(pszCmdLine);
+	      }
+	      free(pszCmdLine);
 	      if (li->type == IDM_VIEW || li->type == IDM_EDIT) {
 
 		BOOL isit = TestBinary(li->list[0]);
@@ -1855,20 +1865,20 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      if (li->type == IDM_MCIPLAY) {
 
-                FILE *fp;
-                CHAR szTempFile[CCHMAXPATH];
+		FILE *fp;
+		CHAR szTempFile[CCHMAXPATH];
 
-                BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
+		BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
 		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
 		  for (x = 0; li->list[x]; x++)
 		    fprintf(fp, "%s\n", li->list[x]);
 		  fprintf(fp, ";end\n");
-                  fclose(fp);
-                  strrev(szTempFile);
-                  strcat(szTempFile, "@/");
-                  strrev(szTempFile);
+		  fclose(fp);
+		  strrev(szTempFile);
+		  strcat(szTempFile, "@/");
+		  strrev(szTempFile);
 		  RunFM2Util("FM2PLAY.EXE", szTempFile);
 		}
 	      }
@@ -1912,31 +1922,30 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      else if (li->type == IDM_OPENDEFAULT ||
 		       li->type == IDM_OPENSETTINGS) {
 		WORKER *wk;
-#       	ifdef FORTIFY
-        	Fortify_EnterScope();
-#        	endif
+#		ifdef FORTIFY
+		Fortify_EnterScope();
+#		endif
 		wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 		if (!wk)
-	  	  FreeListInfo(li);
+		  FreeListInfo(li);
 		else {
-	  	  wk->size = sizeof(WORKER);
-        	  wk->hwndCnr = dcd->hwndCnr;
-        	  wk->hwndParent = dcd->hwndParent;
-        	  wk->hwndFrame = dcd->hwndFrame;
-        	  wk->hwndClient = dcd->hwndClient;
-        	  wk->li = li;
-        	  strcpy(wk->directory, dcd->directory);
-        	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
-        	    Runtime_Error(pszSrcFile, __LINE__,
-        			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-                    free(wk);
-        	    FreeListInfo((LISTINFO *) mp1);
-#                   ifdef FORTIFY
-                    Fortify_LeaveScope();
-#                   endif
-        	  }
-	}
-
+		  wk->size = sizeof(WORKER);
+		  wk->hwndCnr = dcd->hwndCnr;
+		  wk->hwndParent = dcd->hwndParent;
+		  wk->hwndFrame = dcd->hwndFrame;
+		  wk->hwndClient = dcd->hwndClient;
+		  wk->li = li;
+		  strcpy(wk->directory, dcd->directory);
+		  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
+		    Runtime_Error(pszSrcFile, __LINE__,
+				  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+		    free(wk);
+		    FreeListInfo((LISTINFO *) mp1);
+		  }
+		}
+#		ifdef FORTIFY
+		Fortify_LeaveScope();
+#		endif
 	      }
 	      else {
 		if (li->hwnd) {
@@ -1953,6 +1962,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    }
 		    else
 		      viewtype = 0;
+#		    ifdef FORTIFY
+		    Fortify_EnterScope();
+#		    endif
 		    temp = xstrdup(li->list[x], pszSrcFile, __LINE__);
 		    if (temp) {
 		      if (!PostMsg(WinQueryWindow(li->hwnd, QW_PARENT),
@@ -1963,6 +1975,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					      viewtype), MPFROMP(temp)))
 			free(temp);
 		    }
+#		    ifdef FORTIFY
+		    DosSleep(1);	// Allow MassAction to take ownership
+		    Fortify_LeaveScope();
+#		    endif
 		  }
 		}
 	      }
@@ -2019,7 +2035,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       if (li->type != IDM_OPENDEFAULT && li->type != IDM_OPENSETTINGS)
       {
-      	FreeListInfo(li);
+	FreeListInfo(li);
       }
     }
     return 0;
@@ -2044,8 +2060,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       free(dcd);
 #     ifdef FORTIFY
-      //Fortify_LeaveScope();
-#      endif
+      Fortify_LeaveScope();
+#     endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
@@ -2591,11 +2607,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       HWND hwnd;
 
       if ((INT)mp1 == 5 || (INT)mp1 == 13 || (INT)mp1 == 21)
-        hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
-                           (CHAR *)mp2, dcd->hwndFrame);
+	hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
+			   (CHAR *)mp2, dcd->hwndFrame);
       else
-        hwnd = StartMLEEditor(dcd->hwndParent,
-	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
+	hwnd = StartMLEEditor(dcd->hwndParent,
+			      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
       free((CHAR *)mp2);
       return MRFROMLONG(hwnd);
     }
@@ -2952,9 +2968,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_MCIPLAY:
 	{
 	  LISTINFO *li;
-#         ifdef FORTIFY
-          Fortify_EnterScope();
-#          endif
+#	  ifdef FORTIFY
+	  Fortify_EnterScope();
+#	  endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -3014,8 +3030,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    case IDM_PRINT:
 	    case IDM_VIRUSSCAN:
 	    case IDM_OPENDEFAULT:
-            case IDM_OPENSETTINGS:
-            case IDM_MCIPLAY:
+	    case IDM_OPENSETTINGS:
+	    case IDM_MCIPLAY:
 	      strcpy(li->targetpath, dcd->workdir);
 	      break;
 	    default:
@@ -3030,13 +3046,13 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      else if (fUnHilite && SHORT1FROMMP(mp1) != IDM_EDIT)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
 	    }
-            else {
+	    else {
 	      free(li);
-#             ifdef FORTIFY
-              Fortify_LeaveScope();
-#              endif
-            }
+	    }
 	  }
+#	  ifdef FORTIFY
+	  Fortify_LeaveScope();
+#	  endif
 	}
 	break;
       }
@@ -3508,7 +3524,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
       WinSetWindowUShort(hwndFrame, QWS_ID, id);
 #     ifdef FORTIFY
       Fortify_EnterScope();
-#      endif
+#     endif
       dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
       if (!dcd) {
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
@@ -3518,16 +3534,16 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->size = sizeof(DIRCNRDATA);
 	dcd->id = id;
 	dcd->type = ARC_FRAME;
-        if (!pTmpDir) {
-          save_dir2(dcd->workdir);
-          if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
-            strcat(dcd->workdir, "\\");
-          sprintf(dcd->workdir + strlen(dcd->workdir), "%s.%03x",
-                  ArcTempRoot, (clock() & 4095));
-        }
-        else
-          sprintf(dcd->workdir, "%s.%03x",
-                  ArcTempRoot, (clock() & 4095));
+	if (!pTmpDir) {
+	  save_dir2(dcd->workdir);
+	  if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
+	    strcat(dcd->workdir, "\\");
+	  sprintf(dcd->workdir + strlen(dcd->workdir), "%s.%03x",
+		  ArcTempRoot, (clock() & 4095));
+	}
+	else
+	  sprintf(dcd->workdir, "%s.%03x",
+		  ArcTempRoot, (clock() & 4095));
 	strcpy(dcd->arcname, fullname);
 	if (*extractpath) {
 	  if (!strcmp(extractpath, "*")) {
@@ -3597,10 +3613,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		     IDS_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-          free(dcd);
-#         ifdef FORTIFY
-          Fortify_LeaveScope();
-#          endif
+	  free(dcd);
 	  hwndFrame = (HWND) 0;
 	}
 	else {
@@ -3691,6 +3704,9 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  }
 	}
       }
+#     ifdef FORTIFY
+      Fortify_LeaveScope();
+#     endif
     }
   }
   return hwndFrame;

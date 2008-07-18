@@ -65,7 +65,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
-#include "command.h"                    // RunCommand
+#include "command.h"			// RunCommand
 #include "fm3dll.h"
 
 #include "fortify.h"
@@ -543,6 +543,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_CREATE:
+    DbgMsg(pszSrcFile, __LINE__, "WM_CREATE mp1 %p mp2 %p", mp1, mp2);	// 18 Jul 08 SHL fixme
     break;
 
   case UM_SHOWME:
@@ -627,10 +628,16 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP:
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     else {
+#     ifdef FORTIFY
+      Fortify_ChangeOwner(dcd);
+#     endif
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
 	DosSleep(100); //05 Aug 07 GKY 250
@@ -784,9 +791,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	WORKER *wk;
-#       ifdef FORTIFY
-        Fortify_EnterScope();
-#        endif
+#	ifdef FORTIFY
+	Fortify_EnterScope();
+#	endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -801,28 +808,30 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            free(wk);
+	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
-#       ifdef FORTIFY
-        Fortify_LeaveScope();
-#        endif
+#	ifdef FORTIFY
+	Fortify_LeaveScope();
+#	endif
       }
     }
     return 0;
 
   case UM_ACTION:
+#   ifdef FORTIFY
+    Fortify_EnterScope();
+#   endif
     if (mp1) {
-
+#     ifdef FORTIFY
+      Fortify_ChangeOwner(mp1);
+#     endif
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!dcd)
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       else {
 	WORKER *wk;
-#       ifdef FORTIFY
-        Fortify_EnterScope();
-#        endif
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
 	if (!wk)
 	  FreeListInfo((LISTINFO *) mp1);
@@ -837,15 +846,15 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            free(wk);
+	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
 	}
-#      ifdef FORTIFY
-       Fortify_LeaveScope();
-#       endif
       }
     }
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#   endif
     return 0;
 
   case WM_CLOSE:
@@ -861,7 +870,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       free(dcd);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
-#      endif
+#     endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     DosPostEventSem(CompactSem);
@@ -878,6 +887,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   DIRCNRDATA *dcd = INSTDATA(hwnd);
 
   switch (msg) {
+  case WM_CREATE:
+    DbgMsg(pszSrcFile, __LINE__, "WM_CREATE mp1 %p mp2 %p", mp1, mp2);	// 18 Jul 08 SHL fixme
+    break;
+
   case DM_PRINTOBJECT:
     return MRFROMLONG(DRR_TARGET);
 
@@ -1171,8 +1184,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	/*
 	 * first time through -- set things up
 	 */
-
 	CNRINFO cnri;
+
+#	ifdef FORTIFY
+	Fortify_EnterScope();
+#	endif
 
 	RestorePresParams(hwnd, "TreeCnr");
 	memset(&cnri, 0, sizeof(CNRINFO));
@@ -2172,11 +2188,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HWND hwnd;
 
       if ((INT)mp1 == 5 || (INT)mp1 == 13 || (INT)mp1 == 21)
-        hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
-                           (CHAR *)mp2, dcd->hwndFrame);
+	hwnd = StartViewer(HWND_DESKTOP, (INT)mp1,
+			   (CHAR *)mp2, dcd->hwndFrame);
       else
-        hwnd = StartMLEEditor(dcd->hwndParent,
-	                      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
+	hwnd = StartMLEEditor(dcd->hwndParent,
+			      (INT)mp1, (CHAR *)mp2, dcd->hwndFrame);
       free((CHAR *)mp2);
       return MRFROMLONG(hwnd);
     }
@@ -2760,9 +2776,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  LISTINFO *li;
 	  ULONG action = UM_ACTION;
-#         ifdef FORTIFY
-          Fortify_EnterScope();
-#         endif
+#	  ifdef FORTIFY
+	  Fortify_EnterScope();
+#	  endif
 	  li = xmallocz(sizeof(LISTINFO), pszSrcFile, __LINE__);
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
@@ -2770,9 +2786,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->list = BuildList(hwnd);
 	    if (!li->list || !li->list[0]) {
 	      free(li);
-#             ifdef FORTIFY
-              Fortify_LeaveScope();
-#              endif
 	      break;
 	    }
 	    if (IsRoot(li->list[0])) {
@@ -2788,7 +2801,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case IDM_PERMDELETE:
 		mp1 = MPFROM2SHORT(IDM_INFO, SHORT2FROMMP(mp1));
 		li->type = IDM_INFO;
-		break;
 	      }
 	    }
 	    switch (SHORT1FROMMP(mp1)) {
@@ -2810,7 +2822,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    case IDM_EDITBINARY:
 	    case IDM_MCIPLAY:
 	      action = UM_MASSACTION;
-	      break;
 	    }
 	    if (SHORT1FROMMP(mp1) == IDM_SHADOW ||
 		SHORT1FROMMP(mp1) == IDM_SHADOW2)
@@ -2820,6 +2831,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      FreeListInfo(li);
 	    }
 	  }
+#	  ifdef FORTIFY
+	  Fortify_LeaveScope();
+#	  endif
 	}
 	break;
 
@@ -2934,9 +2948,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     TreeCnrMenu = FileMenu = DirMenu = (HWND) 0;
     EmptyCnr(hwnd);
     if (apphead) {
-
       APPNOTIFY *info, *next;
-
       info = apphead;
       while (info) {
 	next = info->next;
@@ -2945,8 +2957,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       apphead = apptail = NULL;
     }
-    break;
-  }
+#   ifdef FORTIFY
+    // if (dcd)
+    //  Fortify_ChangeScope(dcd, -1);
+    Fortify_LeaveScope();
+    // if (dcd)
+    //  Fortify_ChangeScope(dcd, -1);
+#   endif
+    break; // WM_DESTROY
+  } // switch
   if (dcd && dcd->oldproc){
       return dcd->oldproc(hwnd, msg, mp1, mp2);
   }
@@ -2997,7 +3016,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
   if (hwndFrame && hwndClient) {
 #   ifdef FORTIFY
     Fortify_EnterScope();
-#    endif
+#   endif
     dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
       Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_OUTOFMEMORY));
@@ -3006,7 +3025,6 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
     }
     else {
       SWP swp;
-
       WinQueryWindowPos(hwndFrame, &swp);
       if (*(ULONG *) realappname == FM3UL) {
 	if (!WinCreateWindow(hwndFrame,
@@ -3081,10 +3099,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-        free(dcd);
-#       ifdef FORTIFY
-        Fortify_LeaveScope();
-#        endif
+	free(dcd);
+	dcd = 0;
 	hwndFrame = (HWND) 0;
       }
       else {
@@ -3108,6 +3124,13 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	  WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
       }
     }
+#   ifdef FORTIFY
+    if (dcd)
+      Fortify_ChangeScope(dcd, -1);
+    Fortify_LeaveScope();
+    if (dcd)
+      Fortify_ChangeScope(dcd, +1);
+#   endif
   }
   return hwndFrame;
 }

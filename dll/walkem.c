@@ -3,6 +3,8 @@
 
   $Id$
 
+  Misc persistent lists support
+
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2005, 2007 Steven H. Levine
 
@@ -46,9 +48,10 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "notebook.h"                   // targetdirectory
+#include "notebook.h"			// targetdirectory
 #include "fm3dll.h"
 #include "fortify.h"
+#include "walkem.h"
 
 #pragma data_seg(DATA1)
 
@@ -309,6 +312,22 @@ INT remove_setup(PSZ name)
   return lookup_setup(name, LS_DELETE);
 }
 
+#ifdef FORTIFY
+
+VOID free_setups(VOID)
+{
+  LINKDIRS *pld = pFirstSetup;
+  while (pld) {
+    LINKDIRS *next = pld->next;
+    free(pld->path);
+    free(pld);
+    pld = next;
+  }
+  pFirstSetup = NULL;
+}
+
+#endif // FORTIFY
+
 VOID load_udirs(VOID)
 {
   /* load linked list of user directories from USERDIRS.DAT file */
@@ -459,7 +478,7 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
 	      ldirhead = info;
 	    else
 	      last->next = info;
-          }
+	  }
 	  return TRUE;
 	}
       }
@@ -706,12 +725,12 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       PrfQueryProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp, &size);
       WinSetWindowPos(hwnd,
-                      HWND_TOP,
-                      swp.x,
-                      swp.y,
-                      swp.cx,
-                      swp.cy,
-                      swp.fl);
+		      HWND_TOP,
+		      swp.x,
+		      swp.y,
+		      swp.cx,
+		      swp.cy,
+		      swp.fl);
     }
     PosOverOkay(hwnd);
     if (msg == UM_SETUP2)
@@ -1194,12 +1213,12 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       {
-        SWP swp;
-        ULONG size = sizeof(SWP);
+	SWP swp;
+	ULONG size = sizeof(SWP);
 
-        WinQueryWindowPos(hwnd, &swp);
-        PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
-                            size);
+	WinQueryWindowPos(hwnd, &swp);
+	PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
+			    size);
       }
       if (wa->changed)
 	WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
@@ -1215,15 +1234,15 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case DID_CANCEL:
       {
-        SWP swp;
-        ULONG size = sizeof(SWP);
+	SWP swp;
+	ULONG size = sizeof(SWP);
 
-        WinQueryWindowPos(hwnd, &swp);
-        PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
-                            size);
+	WinQueryWindowPos(hwnd, &swp);
+	PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
+			    size);
       }
       if (wa->changed)
-        WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
+	WinSendMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
       free(wa);
       WinDismissDlg(hwnd, 0);
       break;
@@ -1231,7 +1250,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CLOSE:
-        break;
+	break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
@@ -1335,12 +1354,12 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       PrfQueryProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp, &size);
       WinSetWindowPos(hwnd,
-                      HWND_TOP,
-                      swp.x,
-                      swp.y,
-                      swp.cx,
-                      swp.cy,
-                      swp.fl);
+		      HWND_TOP,
+		      swp.x,
+		      swp.y,
+		      swp.cx,
+		      swp.cy,
+		      swp.fl);
     }
     if (!*wa->szCurrentPath1)
       save_dir2(wa->szCurrentPath1);
@@ -1613,7 +1632,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowPos(hwnd, &swp);
       PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
-                          size);
+			  size);
       }
       WinDismissDlg(hwnd, 1);
       break;
@@ -1632,7 +1651,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowPos(hwnd, &swp);
       PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
-                          size);
+			  size);
       }
       WinDismissDlg(hwnd, 0);
       break;
