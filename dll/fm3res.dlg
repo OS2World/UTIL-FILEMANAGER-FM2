@@ -32,6 +32,7 @@
   12 Jan 08 SHL Rework WALK_FRAME
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
+  19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
 
 ***********************************************************************/
 
@@ -1387,7 +1388,7 @@ END
 DLGTEMPLATE CFG_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
     DIALOG  "FM/2:  Configuration", CFG_FRAME, 12, 6, 346, 204, WS_VISIBLE |
-            NOT WS_SAVEBITS, FCF_TITLEBAR
+            NOT WS_SAVEBITS, FCF_TITLEBAR | FCF_ACCELTABLE
     BEGIN
         CONTROL         "", CFG_NOTEBOOK, 4, 20, 336, 182, WC_NOTEBOOK,
                         BKS_BACKPAGESBR | BKS_MAJORTABRIGHT | BKS_SQUARETABS |

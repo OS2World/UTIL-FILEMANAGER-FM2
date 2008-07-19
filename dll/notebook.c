@@ -35,6 +35,7 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
 
 ***********************************************************************/
 
@@ -75,6 +76,31 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGA_FIND), FALSE);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_UNDO:
@@ -277,6 +303,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_SETTEXTLIMIT,
@@ -284,6 +311,31 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_OVERRIDESETLIMITS,
 		      MPFROMLONG(FILESTOGET_MAX), MPFROMLONG(FILESTOGET_MIN));
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_UNDO:
@@ -387,6 +439,7 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGV_VIEWER, EM_SETTEXTLIMIT,
@@ -399,6 +452,31 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      MPFROM2SHORT(MaxComLineStrg, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGV_FIND), FALSE);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_UNDO:
@@ -576,6 +654,31 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinEnableWindow(WinWindowFromID(hwnd, CFGH_FIND), FALSE);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_UNDO:
@@ -780,6 +883,31 @@ MRESULT EXPENTRY CfgBDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGB_OTHERHELP, fOtherHelp);
     return 0;
 
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
+
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case IDM_UNDO:
@@ -827,6 +955,31 @@ MRESULT EXPENTRY CfgTSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      CFG5_FILTER,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_FOCUSME:
@@ -1030,6 +1183,31 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGT_SHOWENV, fShowEnv);
     return 0;
 
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
+
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case IDM_UNDO:
@@ -1097,6 +1275,31 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, CFGG_CMDLNLNGTH, SPBM_OVERRIDESETLIMITS,
 		      MPFROMLONG(CMDLNLNGTH_MAX), MPFROMLONG(CMDLNLNGTH_MIN));
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_UNDO:
@@ -1254,6 +1457,31 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
+
   case UM_UNDO:
     WinSetDlgItemText(hwnd, CFGC_COMPARE, compare);
     WinSetDlgItemText(hwnd, CFGC_DIRCOMPARE, dircompare);
@@ -1373,6 +1601,7 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+
   switch (msg) {
   case WM_INITDLG:
     WinSendMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
@@ -1392,6 +1621,31 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGD_LEAVETREE, fLeaveTree);
     WinCheckButton(hwnd, CFGD_NOFOLDMENU, fNoFoldMenu);
     return 0;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
 
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
@@ -1475,6 +1729,31 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_UNDO:
@@ -1702,6 +1981,31 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
+
   case UM_FOCUSME:
     WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, CFG5_MINIICONS));
     return 0;
@@ -1891,6 +2195,31 @@ MRESULT EXPENTRY Cfg6DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
+
   case UM_UNDO:
     WinCheckButton(hwnd, CFG6_SORTFIRST, FALSE);
     WinCheckButton(hwnd, CFG6_SORTLAST, FALSE);
@@ -2016,6 +2345,31 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, CFG5_FILTER, EM_SETTEXTLIMIT,
 		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case UM_FOCUSME:
@@ -2226,6 +2580,31 @@ MRESULT EXPENTRY Cfg8DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
+
   case UM_UNDO:
     WinCheckButton(hwnd, CFG6_SORTFIRST, FALSE);
     WinCheckButton(hwnd, CFG6_SORTLAST, FALSE);
@@ -2344,6 +2723,31 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
+    break;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
     break;
 
   case WM_COMMAND:
@@ -3047,11 +3451,25 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   INT x;
   ULONG ulPageId;
   UINT uPageIndex;
+  HAB hab;
+  static HACCEL haccelCfg = NULLHANDLE;
 
   switch (msg) {
   case WM_INITDLG:
     hwndNotebook = hwnd;
     uPageIndex = 0;
+    hab = WinQueryAnchorBlock(hwnd);
+    if (haccelCfg == NULLHANDLE) {
+      haccelCfg = WinLoadAccelTable(hab, FM3ModHandle, CFG_FRAME);
+      if (haccelCfg == NULLHANDLE)
+        Win_Error(hwndNotebook, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+    }
+    if (haccelCfg != NULLHANDLE) {
+      if (!WinSetAccelTable(hab, haccelCfg, hwndNotebook))
+        Win_Error(hwndNotebook, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+      // else
+        // DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_DRIVELIST %x %x", hwndFrame, haccelDriveList);
+    }
 
     // If generic call, try to find conditional cascade default
     // 15 Feb 08 SHL fixme to be gone when/if IDM_NOTEBOOK gone?
@@ -3131,6 +3549,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  BKM_SETSTATUSLINETEXT,
 			  MPFROMLONG(np[x].ulPageId),
 			  MPFROMP(GetPString(np[x].ulTitle + 1)));
+			
 	if (LONGFROMMP(mp2) == np[x].usMenuId)
 	  uPageIndex = x;		// Remember selected page
       }
@@ -3172,6 +3591,31 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSetActiveWindow(HWND_DESKTOP, WinQueryWindow(hwnd, QW_OWNER));
     WinSetActiveWindow(HWND_DESKTOP, hwnd);
     return 0;
+
+  case WM_HELP:
+    PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, mp2);
+    break;
+
+  case WM_CHAR:
+    if (CHARMSG(&msg)->fs & KC_VIRTUALKEY) {
+      switch (CHARMSG(&msg)->vkey) {
+        case VK_F3:
+        case VK_ENTER:
+        case VK_NEWLINE:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_OK, MPVOID);
+          return 0;
+          break;
+        case VK_ESC:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)DID_CANCEL, MPVOID);
+          return 0;
+          break;
+        case VK_F1:
+          PostMsg(hwnd, WM_COMMAND, (MPARAM)IDM_HELP, MPVOID);
+          return 0;
+          break;
+      }
+    }
+    break;
 
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {

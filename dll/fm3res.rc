@@ -34,6 +34,7 @@
   14 Feb 08 SHL Add settings submenu.  Use new settings submenu definitions
   14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
   17 Jul 08 JBS Corrected a typo on the "Save state" context menu
+  19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
 
 ***********************************************************************/
 
@@ -2300,6 +2301,14 @@ ACCELTABLE NEWVIEW_FRAME
   VK_F11,      IDM_NEXTBLANKLINE,     VIRTUALKEY
   VK_F12,      IDM_PREVBLANKLINE,     VIRTUALKEY
   VK_ESC,      SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
+}
+
+ACCELTABLE  CFG_FRAME
+{
+  VK_F3,      DID_OK,                 VIRTUALKEY
+  VK_ENTER,   DID_OK,                 VIRTUALKEY
+  VK_NEWLINE, DID_OK,                 VIRTUALKEY
+  VK_ESC,     DID_CANCEL,             VIRTUALKEY
 }
 
 HELPTABLE ID_HELPTABLE
