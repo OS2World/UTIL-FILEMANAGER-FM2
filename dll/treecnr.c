@@ -1236,10 +1236,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
-	  return 0;
+	  // return 0;
 	}
 	else
 	  DosSleep(1);
+#	ifdef FORTIFY
+	Fortify_LeaveScope();
+#	endif
       }
     }
     return 0;

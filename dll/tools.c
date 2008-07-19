@@ -33,8 +33,8 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "fm3dll.h"
 #include "fortify.h"
+#include "fm3dll.h"
 
 #pragma data_seg(DATA1)
 
@@ -145,13 +145,27 @@ TOOL *load_tools(CHAR * filename)
 	  continue;
 	info = xmallocz(sizeof(TOOL), pszSrcFile, __LINE__);
 	if (info) {
+#	  ifdef FORTIFY
+          Fortify_SetOwner(info, 1);
+          Fortify_SetScope(info, 1);
+#	  endif
 	  if (*help) {
 	    literal(help);
-	    if (*help)
+	    if (*help) {
 	      info->help = xstrdup(help, pszSrcFile, __LINE__);
+#	      ifdef FORTIFY
+              Fortify_SetOwner(info->help, 1);
+              Fortify_SetScope(info->help, 1);
+#	      endif
+	    }
 	  }
-	  if (*text)
+	  if (*text) {
 	    info->text = xstrdup(text, pszSrcFile, __LINE__);
+#	    ifdef FORTIFY
+            Fortify_SetOwner(info->text, 1);
+            Fortify_SetScope(info->text, 1);
+#	    endif
+	  }
 	  info->flags = (atoi(flagstr) & (~(T_TEXT | T_EMPHASIZED)));
 	  info->id = (USHORT) atoi(idstr);
 	  info->next = NULL;
