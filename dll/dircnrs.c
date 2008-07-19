@@ -645,7 +645,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(dcd);
+      Fortify_BecomeOwner(dcd);		// We free dcd
 #     endif
       /* set unique id */
       WinSetWindowUShort(hwnd, QWS_ID, DIROBJ_FRAME + (DIR_FRAME - dcd->id));
@@ -1064,6 +1064,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_DESTROY:
+#   ifdef FORTIFY
+    DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %p", hwnd);	// 18 Jul 08 SHL fixme
+#   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
       if (dcd->hwndRestore)
@@ -1078,7 +1081,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       xfree(dcd, pszSrcFile, __LINE__);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
-#      endif
+#     endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
     }
@@ -3407,6 +3410,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
+#   ifdef FORTIFY
+    DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %p", hwnd);	// 18 Jul 08 SHL fixme
+#   endif
     if (DirMenu)
       WinDestroyWindow(DirMenu);
     if (DirCnrMenu)
@@ -3541,6 +3547,9 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	  hwndFrame = (HWND) 0;
 	}
 	else {
+#	  ifdef FORTIFY
+	  Fortify_ChangeScope(dcd, -1);
+#	  endif
 	  RestorePresParams(dcd->hwndCnr, "DirCnr");
 	  WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
 	  dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,

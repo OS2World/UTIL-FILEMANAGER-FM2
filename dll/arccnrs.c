@@ -1360,7 +1360,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     else {
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(dcd);
+      Fortify_BecomeOwner(dcd);
 #     endif
       /* set unique id */
       WinSetWindowUShort(hwnd, QWS_ID, ARCOBJ_FRAME + (ARC_FRAME - dcd->id));

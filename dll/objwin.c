@@ -24,8 +24,11 @@
 #include "fm3str.h"
 #include "arccnrs.h"			// ArcObjWndProc
 #include "errutil.h"			// Win_Error
-#include "fm3dll.h"
 #include "fortify.h"
+#ifdef FORTIFY
+#include "misc.h"			// GetTidForThread
+#endif
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -95,7 +98,15 @@ VOID MakeObjWin(VOID * args)
 	  USHORT i;
 	  for (i = 0; WinIsWindow(hab2, hwndCnr) && i < 10; i++)
 	    DosSleep(50);
-	  Fortify_LeaveScope();
+	  for (;;) {
+	    UCHAR scope = Fortify_LeaveScope();
+	    if ((CHAR)scope == 0)
+	      break;
+	    Runtime_Error(pszSrcFile, __LINE__, "Attempting to exit thread %u with scope non-zero (%u)",
+			  GetTidForThread(), scope);
+	    if ((CHAR)scope < 0)
+	      break;
+	  }
 	}
 #	endif
       }

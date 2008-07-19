@@ -20,6 +20,7 @@
 #endif
 
 #ifdef FORTIFY
+INT GetTidForThread(VOID);
 INT GetTidForWindow(HWND hwnd);
 #endif
 

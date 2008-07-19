@@ -62,9 +62,9 @@
 #include "filldir.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "fm3dll.h"
-
+#include "misc.h"			// GetTidForWindow
 #include "fortify.h"			// 06 May 08 SHL
+#include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -261,6 +261,18 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     if (pszDirectory[c - 1] != '\\')
       c2++;
     pci->pszFileName = xmalloc(c + c2, pszSrcFile, __LINE__);
+#   ifdef FORTIFY
+    {
+      unsigned tid = GetTidForWindow(hwndCnr);
+      // char buf[256];
+      if (tid == 1)
+	Fortify_ChangeScope(pci->pszFileName, -1);
+      else
+	Fortify_SetOwner(pci->pszFileName, 1);
+      // sprintf(buf, "Owner forced to %u", GetTidForWindow(hwndCnr));
+      // Fortify_LabelPointer(pci->pszFmtFileSize, buf);
+    }
+#   endif
     memcpy(pci->pszFileName, pszDirectory, c + 1);
     p = pci->pszFileName + c - 1;
     if (*p != '\\') {
@@ -352,8 +364,21 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  pfea = &eaop.fpFEA2List->list[0];
 	  value = pfea->szName + pfea->cbName + 1;
 	  value[pfea->cbValue] = 0;
-	  if (*(USHORT *) value == EAT_ASCII)
+	  if (*(USHORT *) value == EAT_ASCII) {
 	    pci->pszLongName = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
+#	    ifdef FORTIFY
+            {
+              unsigned tid = GetTidForWindow(hwndCnr);
+              // char buf[256];
+              if (tid == 1)
+	        Fortify_ChangeScope(pci->pszLongName, -1);
+              else
+	        Fortify_SetOwner(pci->pszLongName, 1);
+              // sprintf(buf, "Owner forced to %u", GetTidForWindow(hwndCnr));
+              // Fortify_LabelPointer(pci->pszFmtFileSize, buf);
+            }
+#	    endif
+	  }
 	}
 	free(pfealist);
       }
@@ -427,9 +452,21 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
   //comma format the file size for large file support
   {
-  CHAR szBuf[30];
+    CHAR szBuf[30];
     CommaFmtULL(szBuf, sizeof(szBuf), pffb->cbFile, ' ');
     pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
+#   ifdef FORTIFY
+    {
+      unsigned tid = GetTidForWindow(hwndCnr);
+      // char buf[256];
+      if (tid == 1)
+	Fortify_ChangeScope(pci->pszFmtFileSize, -1);
+      else
+	Fortify_SetOwner(pci->pszFmtFileSize, 1);
+      // sprintf(buf, "Owner forced to %u", GetTidForWindow(hwndCnr));
+      // Fortify_LabelPointer(pci->pszFmtFileSize, buf);
+    }
+#   endif
   }
 
   // now fill the darned thing in...

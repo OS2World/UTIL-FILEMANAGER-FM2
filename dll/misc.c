@@ -117,17 +117,17 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
 #ifdef FORTIFY
 
 /**
- * Return tid for fm/2 window
+ * Return thread ordinal for fm/2 window
  * window must exist and must be created by fm/2
  * @param hwnd is window handle
- * @returns tid or -1 if error
+ * @returns thread ordinal or -1 if error
  */
 
 INT GetTidForWindow(HWND hwnd)
 {
     PIB *ppib;
     TIB *ptib;
-    LONG tid = -1;
+    LONG ordinal = -1;
     APIRET rc = DosGetInfoBlocks(&ptib, &ppib);
 
     if (rc) {
@@ -142,9 +142,31 @@ INT GetTidForWindow(HWND hwnd)
       else if (pid != ppib->pib_ulpid)
 	Runtime_Error(pszSrcFile, __LINE__, "hwnd %X not created by fm/2", hwnd);
       else
-	tid = ptib->tib_ptib2->tib2_ultid;
+	ordinal = ptib->tib_ptib2->tib2_ultid;
     }
-    return tid;
+    return ordinal;
+}
+
+/**
+ * Return thread ordinal for current thread
+ * @returns thread ordinal or -1 if error
+ */
+
+INT GetTidForThread(VOID)
+{
+    PIB *ppib;
+    TIB *ptib;
+    LONG ordinal = -1;
+    APIRET rc = DosGetInfoBlocks(&ptib, &ppib);
+
+    if (rc) {
+      Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		"DosGetInfoBlocks");
+    }
+    else
+      ordinal = ptib->tib_ptib2->tib2_ultid;
+
+    return ordinal;
 }
 
 #endif // FORTIFY

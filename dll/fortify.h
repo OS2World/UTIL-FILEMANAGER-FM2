@@ -41,7 +41,10 @@
  */
 
  /* 06 May 08 SHL Rework scope logic to be MT capable
-    17 Jul 08 SHL Add Fortify_SetOwner Fortify_ChangeOwner Fortify_ChangeScope
+    17 Jul 08 SHL Add Fortify_PresetOwner Fortify_BecomeOwner Fortify_ChangeScope
+    18 Jul 08 SHL Rename Fortify_ChangeOwner to Fortify_BecomeOwner
+    18 Jul 08 SHL Add reworked Fortify_SetOwner
+    18 Jul 08 SHL Drop Fortify_PresetOwner
  */
 
 #ifndef __FORTIFY_H__
@@ -189,9 +192,13 @@ Fortify_OutputFuncPtr Fortify_SetOutputFunc(Fortify_OutputFuncPtr Output);
 void  Fortify_Disable(const char *file, unsigned long line);
 
 #ifdef MT_SCOPES
-void Fortify_SetOwner(long lOwnerTID);
-void Fortify_ChangeOwner(void *pBlock);
+#if 0 // 18 Jul 08 SHL fixme to be gone
+void Fortify_PresetOwner(long lOwnerTID);
+#endif
+void Fortify_BecomeOwner(void *pBlock);
+void Fortify_SetOwner(void *pBlock, unsigned ordinal);
 void Fortify_ChangeScope(void *pBlock, int delta);
+void Fortify_SetScope(void *pBlock, unsigned char scope);
 #endif
 
 /* Fortify versions of the ANSI C memory allocation functions */
@@ -296,8 +303,13 @@ extern int gbl_FortifyMagic;
     #define Fortify_GetCurrentAllocation() 0
     #define Fortify_SetAllocationLimit(x)  0
     #define Fortify_Disable()              0
-    #define Fortify_SetOwner()		   0
-    #define Fortify_ChangeOwner		   0
+#if 0 // 18 Jul 08 SHL fixme to be gone
+    #define Fortify_PresetOwner()	   0
+#endif
+    #define Fortify_BecomeOwner		   0
+    #define Fortify_SetOwner		   0
+    #define Fortify_ChangeScope		   0
+    #define Fortify_SetScope		   0
 
     #ifdef __cplusplus
 	#define Fortify_New                    new

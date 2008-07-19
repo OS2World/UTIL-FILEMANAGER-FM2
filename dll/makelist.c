@@ -310,9 +310,9 @@ VOID SetListOwner(LISTINFO *li)
     if (list) {
       UINT x;
       for (x = 0; list[x]; x++)
-	Fortify_ChangeOwner(list[x]);
+	Fortify_BecomeOwner(list[x]);
     }
-    Fortify_ChangeOwner(li);
+    Fortify_BecomeOwner(li);
   }
 }
 

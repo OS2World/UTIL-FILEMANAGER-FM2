@@ -636,7 +636,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     else {
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(dcd);
+      Fortify_BecomeOwner(dcd);
 #     endif
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
@@ -825,7 +825,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #   endif
     if (mp1) {
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(mp1);
+      Fortify_BecomeOwner(mp1);
 #     endif
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!dcd)

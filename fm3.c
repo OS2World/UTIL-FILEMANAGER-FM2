@@ -21,6 +21,7 @@
 
 #include "dll\tools.h"
 #include "dll\version.h"
+#include "dll\errutil.h"
 #include "dll\fortify.h"
 #include "dll\fm3dll.h"
 
@@ -65,7 +66,14 @@ int main(int argc, char *argv[])
 			 MPVOID, MPVOID);
 	  }
 #	  ifdef FORTIFY
-	  Fortify_LeaveScope();
+	  for (;;) {
+	    UCHAR scope = Fortify_LeaveScope();
+	    if ((CHAR)scope == 0)
+	      break;
+	    Runtime_Error(__FILE__, __LINE__, "Attempting to exit thread with scope non-zero (%u)", scope);
+	    if ((CHAR)scope < 0)
+	      break;
+	  }
 #	  endif
 	}
       }

@@ -1000,7 +1000,7 @@ VOID MassAction(VOID * args)
 
   if (wk) {
 #   ifdef FORTIFY
-    // Fortify_ChangeOwner(wk);
+    // Fortify_BecomeOwner(wk);
     Fortify_EnterScope();
 #   endif
     if (wk->li && wk->li->list && wk->li->list[0]) {

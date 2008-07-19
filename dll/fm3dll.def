@@ -3,6 +3,7 @@
 # Copyright (c) 2002, 2008 Steven H. Levine
 
 # 14 Jun 07 SHL Convert to OpenWatcom
+# 18 Jul 08 SHL Add Runtime_Error
 
 option description '@#SLAInc:3.11#@##1## 07/08/2008 03:11:00      GKYBuild::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2008 Steven Levine and Associates, Inc.'
 segment class 'DATA' readwrite loadoncall nonshared
@@ -287,5 +288,6 @@ export    InitFM3DLL_                                 .1,
          xDosFindFirst_                               .269,
          xDosFindNext_                                .270,
          xfree_                                       .271,
-         xmalloc_                                     .272
+         xmalloc_                                     .272,
+         Runtime_Error_                               .273
 

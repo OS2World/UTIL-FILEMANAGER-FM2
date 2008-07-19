@@ -23,6 +23,7 @@
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Use xfree where appropriate
+  18 Jul 08 SHL Add Fortify support
 
 ***********************************************************************/
 
@@ -354,6 +355,10 @@ VOID load_commands(VOID)
           continue;
         info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
         if (info) {
+#	  ifdef FORTIFY
+	  Fortify_SetOwner(info, 1);
+	  Fortify_SetScope(info, 1);
+#	  endif
           info->pszCmdLine = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
           info->title = xstrdup(title, pszSrcFile, __LINE__);
           info->flags = atol(flags);
@@ -363,6 +368,12 @@ VOID load_commands(VOID)
             free(info);
             break;
           }
+#	  ifdef FORTIFY
+	  Fortify_SetOwner(info->pszCmdLine, 1);
+	  Fortify_SetScope(info->pszCmdLine, 1);
+	  Fortify_SetOwner(info->title, 1);
+	  Fortify_SetScope(info->title, 1);
+#	  endif
           if (!cmdhead)
             cmdhead = info;
           else {

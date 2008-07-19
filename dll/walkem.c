@@ -30,6 +30,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   19 Jun 08 JBS Ticket 227: Allow temporary saving/deleting of the shutdown state of directory containers
   22 Jun 08 GKY Add free_?dir for fortify testing
+  18 Jul 08 SHL More Fortify support
 
 ***********************************************************************/
 
@@ -220,12 +221,23 @@ VOID load_setups(VOID)
       free(pszBuf);
       return;
     }
+
+#   ifdef FORTIFY
+    Fortify_SetOwner(pld, 1);
+    Fortify_SetScope(pld, 1);
+#   endif
+
     pld->path = xstrdup(psz, pszSrcFile, __LINE__);
     if (!pld->path) {
       free(pszBuf);
       free(pld);
       return;
     }
+
+#   ifdef FORTIFY
+    Fortify_SetOwner(pld->path, 1);
+    Fortify_SetScope(pld->path, 1);
+#   endif
 
     // Insert at front of list - drop down will sort
     pld->next = pFirstSetup;
@@ -354,11 +366,19 @@ VOID load_udirs(VOID)
       bstripcr(s);
       if (*s && *s != ';') {
 	info = xmalloc(sizeof(LINKDIRS), pszSrcFile, __LINE__);
+#	ifdef FORTIFY
+	Fortify_SetOwner(info, 1);
+	Fortify_SetScope(info, 1);
+#	endif
 	if (info) {
 	  info->path = xstrdup(s, pszSrcFile, __LINE__);
 	  if (!info->path)
 	    free(info);
 	  else {
+#	    ifdef FORTIFY
+	    Fortify_SetOwner(info->path, 1);
+	    Fortify_SetScope(info->path, 1);
+#	    endif
 	    info->next = NULL;
 	    if (!udirhead)
 	      udirhead = info;
@@ -461,10 +481,16 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
       // Append entry to end of user dirs list
       info = xmalloc(sizeof(LINKDIRS), pszSrcFile, __LINE__);
       if (info) {
+#	ifdef FORTIFY
+	Fortify_SetScope(info, 1);
+#	endif
 	info->path = xstrdup(path, pszSrcFile, __LINE__);
 	if (!info->path)
 	  free(info);
 	else {
+#	  ifdef FORTIFY
+	  Fortify_SetScope(info->path, 1);
+#	  endif
 	  info->next = NULL;
 	  if (userdirs) {
 	    fUdirsChanged = TRUE;

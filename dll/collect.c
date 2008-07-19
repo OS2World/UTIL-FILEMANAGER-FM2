@@ -512,7 +512,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(dcd);
+      Fortify_BecomeOwner(dcd);
 #     endif
       /* set unique id */
       WinSetWindowUShort(hwnd,
@@ -702,7 +702,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       size_t c;
 
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(mp1);
+      Fortify_BecomeOwner(mp1);
 #     endif
 
       fp = _fsopen((CHAR *)mp1, "r", SH_DENYNO);
@@ -910,7 +910,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 #   endif
     if (mp1) {
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(mp1);
+      Fortify_BecomeOwner(mp1);
 #     endif
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (dcd) {
@@ -947,7 +947,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 #   endif
     if (mp1) {
 #     ifdef FORTIFY
-      Fortify_ChangeOwner(mp1);
+      Fortify_BecomeOwner(mp1);
 #     endif
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (dcd) {
@@ -1495,7 +1495,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (mp1) {
 #     ifdef FORTIFY
       Fortify_EnterScope();
-      Fortify_ChangeOwner(mp1);
+      Fortify_BecomeOwner(mp1);
 #     endif
       if (!dcd)
 	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);

@@ -476,18 +476,18 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 (!pffbFile->achName[1] ||
 			  (pffbFile->achName[1] == '.' &&
 			   !pffbFile->achName[2]))))) {
-                    CommaFmtULL(szCmmaFmtFileSize,
-                                sizeof(szCmmaFmtFileSize),
-                                pffbFile->cbFile + CBLIST_TO_EASIZE(pffbFile->cbList),
-                                ' ');
+		    CommaFmtULL(szCmmaFmtFileSize,
+				sizeof(szCmmaFmtFileSize),
+				pffbFile->cbFile + CBLIST_TO_EASIZE(pffbFile->cbList),
+				' ');
 		    sprintf(p,
 			    "%s%-*.*s  %-8s  [%s%s%s%s]  %04lu/%02lu/%02lu "
 			      "%02lu:%02lu:%02lu\r",
 			    pffbFile->attrFile & FILE_DIRECTORY ? "\\" : " ",
 			    ml,
 			    ml,
-                            pffbFile->achName,
-                            szCmmaFmtFileSize,
+			    pffbFile->achName,
+			    szCmmaFmtFileSize,
 			    pffbFile->attrFile & FILE_READONLY ? "R" : "-",
 			    pffbFile->attrFile & FILE_ARCHIVED ? "A" : "-",
 			    pffbFile->attrFile & FILE_HIDDEN ? "H" : "-",
@@ -639,7 +639,7 @@ static VOID MakeAutoWinThread(VOID * args)
   if (hab2) {
 #   ifdef FORTIFY
     Fortify_EnterScope();
-#    endif
+#   endif
     hmq2 = WinCreateMsgQueue(hab2, 128);
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
@@ -674,7 +674,7 @@ static VOID MakeAutoWinThread(VOID * args)
     WinTerminate(hab2);
 #   ifdef FORTIFY
     Fortify_LeaveScope();
-#    endif
+#   endif
   }
 }
 
@@ -799,7 +799,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	      free(ea);
 #             ifdef FORTIFY
-              Fortify_LeaveScope();
+	      Fortify_LeaveScope();
 #              endif
 	    }
 	  }
@@ -852,7 +852,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!PostMsg(hwndAutoObj, UM_LOADFILE, MPFROMP(cf), MPVOID))
 	    free(cf);
 #           ifdef FORTIFY
-            Fortify_LeaveScope();
+	    Fortify_LeaveScope();
 #            endif
 	}
       }
