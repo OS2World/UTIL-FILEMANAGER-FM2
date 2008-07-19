@@ -8,6 +8,7 @@
 .* Copyright (c) 2007 Steven H.Levine
 .*
 .* 23 Sep 07 SHL Document quicklists keys
+.* 19 Jul 08 JBS Document new acceleator keys for settings dialog
 .*
 .***********************************************************************
 .*
@@ -234,6 +235,20 @@ Collector windows.
 :pd.Previous frame window
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Tab:color fc=default bc=default.
 :pd.Autoview window (if open)
+:eparml.
+:p.
+:hp2.FM/2 Settings dialog:ehp2.
+:parml compact tsize=20 break=none.
+:pt.:color fc=default bc=palegray.F1:color fc=default bc=default.
+:pd.Help
+:pt.:color fc=default bc=palegray.F3:color fc=default bc=default.
+:pd.Close (save changes)
+:pt.:color fc=default bc=palegray.Enter:color fc=default bc=default.
+:pd.Close (save changes)
+:pt.:color fc=default bc=palegray.Enter (Numpad):color fc=default bc=default.
+:pd.Close (save changes)
+:pt.:color fc=default bc=palegray.ESC:color fc=default bc=default.
+:pd.Close (discard changes)
 :eparml.
 :p.
 :hp2.FM/2-Lite monolithic window:ehp2.
