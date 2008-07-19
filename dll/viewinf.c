@@ -6,13 +6,14 @@
   Launch inf viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
   03 Nov 06 SHL Renames
   03 Nov 06 SHL Count thread usage
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 ***********************************************************************/
 
@@ -31,6 +32,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -539,11 +541,12 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else
 	      ViewHelp(p);
 	    break;
-	  }
-	  save_dir2(filename);
+          }
+          BldFullPathName(filename, pFM2SaveDirectory, "FM2VINF.CMD");
+	  /*save_dir2(filename);
 	  if (filename[strlen(filename) - 1] != '\\')
 	    strcat(filename, "\\");
-	  strcat(filename, "FM2VINF.CMD");
+	  strcat(filename, "FM2VINF.CMD");*/
 	  fp = xfopen(filename, "w", pszSrcFile, __LINE__);
 	  if (fp) {
 	    fprintf(fp, "@ECHO OFF\nSET FM2REF=");

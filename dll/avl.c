@@ -30,7 +30,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   25 Aug 07 SHL load_archivers: add missing close on error path
   29 Feb 08 GKY Use xfree where appropriate
-  22 Jun 08 GKY Added free_archivers fot fortify checking
+  22 Jun 08 GKY Added free_archivers for fortify checking
+  19 Jul 08 GKY ifdef Fortify free_archivers
 
 ***********************************************************************/
 
@@ -217,6 +218,8 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
   return info;				/* Return signature, if any */
 }
 
+# ifdef FORTIFY
+
 VOID free_archivers(VOID)
 {
   ARC_TYPE *pat, *next;
@@ -246,6 +249,8 @@ VOID free_archivers(VOID)
 }
 
 //=== free_arc_type() free allocated ARC_TYPE ===
+
+# endif
 
 VOID free_arc_type(ARC_TYPE * pat)
 {

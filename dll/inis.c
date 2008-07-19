@@ -25,6 +25,7 @@
   09 Jan 08 SHL Standardize PrfOpenProfile return checks
   09 Jan 08 SHL Use CloseProfile to avoid spurious system INI closes
   29 Feb 08 GKY Use xfree where appropriate
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use BldFullPathName
 
 ***********************************************************************/
 
@@ -45,6 +46,7 @@
 #include "mle.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -1133,11 +1135,12 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CloseProfile(testini, FALSE);
 	/* make copies of new inis */
 	*tempuserini = 0;
-	*tempsysini = 0;
-	save_dir2(tempuserini);
+        *tempsysini = 0;
+        BldFullPathName(tempuserini, pTmpDir ? pTmpDir : pFM2SaveDirectory, "TEMPUSER.INI");
+	/*save_dir2(tempuserini);
 	if (tempuserini[strlen(tempuserini) - 1] != '\\')
 	  strcat(tempuserini, "\\");
-	strcat(tempuserini, "TEMPUSER.INI");
+	strcat(tempuserini, "TEMPUSER.INI");*/
 	rc = DosCopy(userini, tempuserini, DCPY_EXISTING);
 	if (rc) {
 	  Dos_Error(MB_CANCEL,
@@ -1147,11 +1150,12 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    __LINE__,
 		    GetPString(IDS_COMPCOPYFAILEDTEXT), userini, tempuserini);
 	  break;
-	}
-	save_dir2(tempsysini);
+        }
+        BldFullPathName(tempsysini, pTmpDir ? pTmpDir : pFM2SaveDirectory, "TEMPSYS.INI");
+	/*save_dir2(tempsysini);
 	if (tempsysini[strlen(tempsysini) - 1] != '\\')
 	  strcat(tempsysini, "\\");
-	strcat(tempsysini, "TEMPSYS.INI");
+	strcat(tempsysini, "TEMPSYS.INI");*/
 	rc = DosCopy(sysini, tempsysini, DCPY_EXISTING);
 	if (rc) {
 	  Dos_Error(MB_CANCEL,

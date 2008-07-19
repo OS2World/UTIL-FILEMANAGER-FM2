@@ -6,7 +6,7 @@
   Load bitmaps
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2007 Steven H. Levine
+  Copyright (c) 2006, 2008 Steven H. Levine
 
   22 Jul 06 SHL Check more run time errors
   16 Jan 07 SHL Check more run time errors
@@ -14,6 +14,8 @@
   16 Jan 07 SHL Open bitmap file binary - no wonder the code does not work
   16 Jan 07 SHL Beautify with indent -i2
   18 Apr 08 SHL LoadBitmapFromFile ensure pf initialized if no hPS
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
+
 ***********************************************************************/
 
 #include <stdlib.h>
@@ -35,7 +37,8 @@ HBITMAP LoadBitmapFromFileNum(USHORT id)
 {
   char s[CCHMAXPATH];
 
-  save_dir2(s);
+  //save_dir2(s);
+  strcpy(s, pFM2SaveDirectory);
   sprintf(s + strlen(s), "\\%u.BMP", id);
   return LoadBitmapFromFile(s);
 }

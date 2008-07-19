@@ -54,7 +54,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
   16 Jul 08 GKY Fix trap on viewing multiple files from an archive (misplaced free)
-  16 JUL 08 GKY Use TMP directory for temp files if present.
+  16 Jul 08 GKY Use TMP directory for temp files if present. Use MakeTempName
 
 ***********************************************************************/
 
@@ -423,7 +423,7 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   HFILE oldstdout;
   HFILE newstdout;
   CHAR s[CCHMAXPATH * 2], lonename[CCHMAXPATH + 2],
-       *nsize, *osize, *fdate, *fname, *p, *pp, arctemp[CCHMAXPATH];
+       *nsize, *osize, *fdate, *fname, *p, *pp, *arctemp;
   BOOL gotstart;
   BOOL gotend;
   BOOL wasquote;
@@ -441,13 +441,17 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   info = *arcinfo;
   if (!info)
     info = find_type(arcname, NULL);
-  for (x = 0; x < 99; x++) {
+  arctemp = xmallocz(CCHMAXPATH, pszSrcFile, __LINE__);
+  MakeTempName(arctemp, ArcTempRoot, 2);
+  /*for (x = 0; x < 99; x++) {
     sprintf(arctemp, "%s.%03x", ArcTempRoot, (clock() & 4095L));
     if (IsFile(arctemp) == 1)
       DosSleep(rand() % 100);
     else
       break;
-  }
+  } */
+
+  //printf("%s\r", arctemp); fflush(stdout);
 
 ReTry:
 
@@ -507,15 +511,18 @@ ReTry:
     }
     else {
       fp = xfopen(arctemp, "w", pszSrcFile, __LINE__);
-      if (!fp)
-	return 0;
+      if (!fp) {
+        xfree(arctemp, pszSrcFile, __LINE__);
+        return 0;
+      }
       else {
 	newstdout = -1;
 	DosError(FERR_DISABLEHARDERR);
 	rc = DosDupHandle(fileno(stdout), &newstdout);
 	if (rc) {
 	  Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
-		    "DosDupHandle");
+                    "DosDupHandle");
+          xfree(arctemp, pszSrcFile, __LINE__);
 	  return 0;
 	}
 	else {
@@ -525,7 +532,8 @@ ReTry:
 	  if (rc) {
 	    Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
 		      "DosDupHandle");
-	    return 0;
+            xfree(arctemp, pszSrcFile, __LINE__);
+            return 0;
 	  }
 	  else {
 	    runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
@@ -785,6 +793,7 @@ ReTry:
 
     DosError(FERR_DISABLEHARDERR);
     DosForceDelete(arctemp);
+    xfree(arctemp, pszSrcFile, __LINE__);
   }
 
   if (numarcfiles)
@@ -1483,7 +1492,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// printf("%s %d UM_ENTER %s %s\n",__FILE__, __LINE__,filename, s); fflush(stdout);	// 10 Mar 07 SHL hang
 	free(s);
 	if (IsFile(filename) == 1) {
-#if 0 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
+#if 1 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
 	  if (fViewChild && fArcStuffVisible)
 	    DosSleep(100);  // Allow unzip session to finish closing 14 Mar 07 SHL
 #endif
@@ -1768,10 +1777,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    pszSrcFile, __LINE__);
 		if (p) {
 		  BldFullPathName(p, li->targetpath, temp);
-		  /*strcpy(p, li->targetpath);
-		  if (p[strlen(p) - 1] != '\\')
-		    strcat(p, "\\");
-		  strcat(p, temp);*/
 		  li->list[x] = p;
 		  free(temp);
 		}
@@ -3534,16 +3539,16 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->size = sizeof(DIRCNRDATA);
 	dcd->id = id;
 	dcd->type = ARC_FRAME;
-	if (!pTmpDir) {
-	  save_dir2(dcd->workdir);
-	  if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
+	if (!pTmpDir)
+          save_dir2(dcd->workdir);
+        MakeTempName(dcd->workdir, ArcTempRoot, 2);
+	  /*if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
 	    strcat(dcd->workdir, "\\");
 	  sprintf(dcd->workdir + strlen(dcd->workdir), "%s.%03x",
 		  ArcTempRoot, (clock() & 4095));
-	}
 	else
 	  sprintf(dcd->workdir, "%s.%03x",
-		  ArcTempRoot, (clock() & 4095));
+		  ArcTempRoot, (clock() & 4095));*/
 	strcpy(dcd->arcname, fullname);
 	if (*extractpath) {
 	  if (!strcmp(extractpath, "*")) {

@@ -6,7 +6,7 @@
   Copy functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H.Levine
+  Copyright (c) 2001, 2008 Steven H.Levine
 
   14 Sep 02 SHL Drop obsolete debug code
   14 Oct 02 SHL Drop obsolete debug code
@@ -18,6 +18,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   29 Feb 08 GKY Use xfree where appropriate
+  19 Jul 08 GKY Modify MakeTempName for use making temp directory names
 
 ***********************************************************************/
 
@@ -48,14 +49,28 @@ HOBJECT APIENTRY WinCopyObject(HOBJECT hObjectofObject,
 			       HOBJECT hObjectofDest, ULONG ulReserved);
 #endif
 
-char *MakeTempName(char *buffer)
+char *MakeTempName(char *buffer, char *temproot, INT type)
 {
   FILESTATUS3 fs3;
   APIRET rc;
   char *p, *o;
 
+  if (strlen(buffer) > 3 && buffer[strlen(buffer) - 1] != '\\')
+    strcat(buffer, "\\");
   p = o = buffer + strlen(buffer);
-  sprintf(p, "%08lx.%03lx", clock(), mypid);
+  switch (type) {
+  case 0:
+    sprintf(p, "%08lx.%03lx", rand() & 4095L, mypid);
+    break;
+  case 1:
+    sprintf(p, "%s%04lx.%03lx", "$FM2", rand() & 4095L, mypid);
+    break;
+  case 2:
+    sprintf(p, "%s.%03x", temproot, (rand() & 4095));
+    break;
+  default:
+    break;
+  }
   p = buffer + (strlen(buffer) - 1);
   for (;;) {
     DosError(FERR_DISABLEHARDERR);
@@ -509,7 +524,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
 	if (p)
 	  *p = 0;
 	strcat(dir, "\\");
-	MakeTempName(dir);
+	MakeTempName(dir, NULL, 0);
 	if (DosMove(fullnewname, dir))
 	  *dir = 0;
       }
@@ -893,5 +908,5 @@ INT unlinkf(CHAR * string, ...)
 
 #pragma alloc_text(LONGNAMES,TruncName,GetLongName,WriteLongName)
 #pragma alloc_text(LONGNAMES,ZapLongName,AdjustWildcardName)
-#pragma alloc_text(COPYF,default_disk,docopyf)
+#pragma alloc_text(COPYF,default_disk,docopyf,MakeTempName)
 #pragma alloc_text(UNLINKF,unlinkf,unlink_allf,make_deleteable,wipeallf)

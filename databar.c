@@ -6,7 +6,7 @@
   databar applet
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   Oct 15 21:42:56 2002 967 ______ databar.c
 

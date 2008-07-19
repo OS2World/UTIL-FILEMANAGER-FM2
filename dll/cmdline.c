@@ -6,7 +6,7 @@
   User defined commands support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -17,6 +17,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
   20 Apr 08 GKY New variable names; Save and Load command lines of user set length
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 ***********************************************************************/
 
@@ -73,10 +74,11 @@ VOID load_cmdlines(BOOL DoItYourself)
       DoItYourselfLoaded = TRUE;
     else
       MiniLoaded = TRUE;
-    save_dir2(pszCmdLine);
+    BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+    /*save_dir2(pszCmdLine);
     if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
       strcat(pszCmdLine, "\\");
-    strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+    strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");*/
     fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
     if (fp) {
       while (x < MAXNUMCMDLINES && !feof(fp)) {
@@ -129,10 +131,11 @@ VOID save_cmdlines(BOOL DoItYourself)
   pszCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!pszCmdLine)
     return;
-  save_dir2(pszCmdLine);
+  BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+  /*save_dir2(pszCmdLine);
   if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
     strcat(pszCmdLine, "\\");
-  strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+  strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");*/
   if (CmdLineHead) {
     fp = xfopen(pszCmdLine, "w", pszSrcFile, __LINE__);
     if (fp) {

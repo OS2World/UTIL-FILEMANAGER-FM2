@@ -69,7 +69,7 @@
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
 #include "fm3dll.h"
-#include "avl.h"			// free_archivers
+//#include "avl.h"			// free_archivers
 #ifdef FORTIFY
 #include "misc.h"			// GetTidForThread
 #endif

@@ -24,6 +24,7 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Use xfree where appropriate
   18 Jul 08 SHL Add Fortify support
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 ***********************************************************************/
 
@@ -330,10 +331,11 @@ VOID load_commands(VOID)
   cmdloaded = TRUE;
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (pszCmdLine) {
-    save_dir2(pszCmdLine);
+    BldFullPathName(pszCmdLine, pFM2SaveDirectory, "COMMANDS.DAT");
+    /*save_dir2(pszCmdLine);
     if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
       strcat(pszCmdLine, "\\");
-    strcat(pszCmdLine, "COMMANDS.DAT");
+    strcat(pszCmdLine, "COMMANDS.DAT");*/
     fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
     if (fp) {
       while (!feof(fp)) {
@@ -398,10 +400,11 @@ VOID save_commands(VOID)
   if (!cmdloaded || !cmdhead)
     return;
   info = cmdhead;
-  save_dir2(s);
+  BldFullPathName(s, pFM2SaveDirectory, "COMMANDS.DAT");
+  /*save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
-  strcat(s, "COMMANDS.DAT");
+  strcat(s, "COMMANDS.DAT");*/
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
     fputs(GetPString(IDS_COMMANDFILETEXT), fp);

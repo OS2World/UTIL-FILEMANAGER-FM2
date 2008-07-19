@@ -6,7 +6,7 @@
   Archive viewer applet
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2007 Steven H. Levine
+  Copyright (c) 2007, 2008 Steven H. Levine
 
   23 Sep 07 SHL Sync with standards
   23 Sep 07 SHL Get rid of statics

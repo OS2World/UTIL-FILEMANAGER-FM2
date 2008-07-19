@@ -6,7 +6,7 @@
   Misc persistent lists support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -31,6 +31,7 @@
   19 Jun 08 JBS Ticket 227: Allow temporary saving/deleting of the shutdown state of directory containers
   22 Jun 08 GKY Add free_?dir for fortify testing
   18 Jul 08 SHL More Fortify support
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 ***********************************************************************/
 
@@ -50,6 +51,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// targetdirectory
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 #include "walkem.h"
@@ -353,10 +355,11 @@ VOID load_udirs(VOID)
     free_udirs();
   loadedudirs = TRUE;
   fUdirsChanged = FALSE;
-  save_dir2(s);
+  BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
+  /*save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
-  strcat(s, "USERDIRS.DAT");
+  strcat(s, "USERDIRS.DAT");*/
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (!feof(fp)) {
@@ -402,10 +405,11 @@ VOID save_udirs(VOID)
   if (loadedudirs) {
     fUdirsChanged = FALSE;
     if (udirhead) {
-      save_dir2(s);
+      BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
+      /*save_dir2(s);
       if (s[strlen(s) - 1] != '\\')
 	strcat(s, "\\");
-      strcat(s, "USERDIRS.DAT");
+      strcat(s, "USERDIRS.DAT");*/
       fp = xfopen(s, "w", pszSrcFile, __LINE__);
       if (fp) {
 	fputs(GetPString(IDS_USERDEFDIRSTEXT), fp);
@@ -582,6 +586,8 @@ BOOL remove_ldir(CHAR * path)
   return FALSE;
 }
 
+# ifdef FORTIFY
+
 VOID free_ldir(VOID)
 {
   LINKDIRS *info, *next;
@@ -595,6 +601,8 @@ VOID free_ldir(VOID)
   }
   ldirhead = NULL;
 }
+
+# endif
 
 VOID free_udirs(VOID)
 {

@@ -17,6 +17,7 @@
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Use xfree where appropriate
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 **************************************************************************************/
 
@@ -141,10 +142,11 @@ VOID load_associations(VOID)
   if (asshead)
     free_associations();
   assloaded = TRUE;
-  save_dir2(mask);
+  BldFullPathName(mask, pFM2SaveDirectory, "ASSOC.DAT");
+  /*save_dir2(mask);
   if (mask[strlen(mask) - 1] != '\\')
     strcat(mask, "\\");
-  strcat(mask, "ASSOC.DAT");
+  strcat(mask, "ASSOC.DAT");*/
   fp = _fsopen(mask, "r", SH_DENYWR);
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!pszCmdLine) {
@@ -266,10 +268,11 @@ VOID save_associations(VOID)
     info = next;
   }
 #endif
-  save_dir2(s);
+  /*save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
-  strcat(s, "ASSOC.DAT");
+    strcat(s, "ASSOC.DAT");*/
+  BldFullPathName(s, pFM2SaveDirectory, "ASSOC.DAT");
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
     fputs(GetPString(IDS_ASSOCFILETEXT), fp);

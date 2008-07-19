@@ -21,6 +21,7 @@
   16 Nov 07 SHL Ensure fixup buffer sufficiently large
   30 Dec 07 GKY Use CommaFmtULL
   16 Feb 08 GKY Changed _fsopen flag so a new list file can be created
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 ***********************************************************************/
 
@@ -36,6 +37,7 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -236,10 +238,11 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FILE *fp;
 	CHAR s[CCHMAXPATH + 14];
 
-	save_dir2(s);
+        BldFullPathName(s, pFM2SaveDirectory, "PATTERNS.DAT");
+        /*save_dir2(s);
 	if (s[strlen(s) - 1] != '\\')
 	  strcat(s, "\\");
-	strcat(s, "PATTERNS.DAT");
+	strcat(s, "PATTERNS.DAT");*/
 	fp = _fsopen(s, "r", SH_DENYWR);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
@@ -266,10 +269,11 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sMax = (SHORT) WinSendDlgItemMsg(hwnd, SAV_LISTBOX,
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
-	save_dir2(szBuffer);
+        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+	/*save_dir2(szBuffer);
 	if (szBuffer[strlen(szBuffer) - 1] != '\\')
 	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");
+	strcat(szBuffer, "PATTERNS.DAT");*/
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
 	if (fp) {
 	  fputs(GetPString(IDS_LISTPATTERNTEXT), fp);
@@ -286,10 +290,11 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       else if (!sMax) {
-	save_dir2(szBuffer);
+        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+	/*save_dir2(szBuffer);
 	if (szBuffer[strlen(szBuffer) - 1] != '\\')
 	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");
+	strcat(szBuffer, "PATTERNS.DAT");*/
 	unlinkf("%s", szBuffer);
       }
     }
@@ -597,10 +602,11 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	FILE *fp;
 	CHAR s[CCHMAXPATH + 14];
 
-	save_dir2(s);
+        BldFullPathName(s, pFM2SaveDirectory, "PATTERNS.DAT");
+        /*save_dir2(s);
 	if (s[strlen(s) - 1] != '\\')
 	  strcat(s, "\\");
-	strcat(s, "PATTERNS.DAT");
+	strcat(s, "PATTERNS.DAT");*/
 	fp = _fsopen(s, "r", SH_DENYWR);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
@@ -628,10 +634,11 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				       SAV_LISTBOX,
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
-	save_dir2(szBuffer);
+        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+	/*save_dir2(szBuffer);
 	if (szBuffer[strlen(szBuffer) - 1] != '\\')
 	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");
+	strcat(szBuffer, "PATTERNS.DAT");*/
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
 	if (fp) {
 	  fputs(GetPString(IDS_LISTPATTERNTEXT), fp);
@@ -648,10 +655,11 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	}
       }
       else if (!sMax) {
-	save_dir2(szBuffer);
+        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+	/*save_dir2(szBuffer);
 	if (szBuffer[strlen(szBuffer) - 1] != '\\')
 	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");
+	strcat(szBuffer, "PATTERNS.DAT");*/
 	unlinkf("%s", szBuffer);
       }
     }

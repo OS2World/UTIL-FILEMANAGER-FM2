@@ -6,7 +6,7 @@
   Directory sizes
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL Use CBLIST_TO_EASIZE
@@ -33,8 +33,9 @@
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
   07 Jul 08 GKY Fixed trap in PMCTLS (strlen) inadequate memory allocation
-  07 Jul o8 GKY Fixed trap by no longer allocating pci->pszLongName as flag but pointing isroot
+  07 Jul 08 GKY Fixed trap by no longer allocating pci->pszLongName as flag but pointing isroot
                 version to NullStr and all others to NULL.
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory; use pTmpDir for temp files
 
 ***********************************************************************/
 
@@ -926,7 +927,11 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR szFileName[CCHMAXPATH];
 	FILE *fp;
 
-	save_dir2(szFileName);
+        if (pTmpDir)
+          strcpy(szFileName, pTmpDir);
+        else
+          strcpy(szFileName, pFM2SaveDirectory);
+	//save_dir2(szFileName);
 	sprintf(&szFileName[strlen(szFileName)], "\\%csizes.Rpt",
 		(pState) ? toupper(*pState->szDirName) : '+');
 	if (export_filename(hwnd, szFileName, FALSE) && *szFileName) {

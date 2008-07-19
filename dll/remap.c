@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Aug 05 SHL Renames
@@ -13,6 +13,7 @@
   31 Aug 06 SHL Use _fsopen to avoid noise complaints
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 ***********************************************************************/
 
@@ -29,6 +30,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -70,10 +72,11 @@ VOID load_resources(VOID)
   INT x = 0;
 
   loadedres = TRUE;
-  save_dir2(s);
+  BldFullPathName(s, pFM2SaveDirectory, "RESOURCE.DAT");
+  /*save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
-  strcat(s, "RESOURCE.DAT");
+  strcat(s, "RESOURCE.DAT");*/
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (x < MAXNUMRES && !feof(fp)) {
@@ -111,10 +114,11 @@ VOID save_resources(VOID)
 
   if (!loadedres)
     return;
-  save_dir2(s);
+  BldFullPathName(s, pFM2SaveDirectory, "RESOURCE.DAT");
+  /*save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
-  strcat(s, "RESOURCE.DAT");
+  strcat(s, "RESOURCE.DAT");*/
   if (reshead) {
     fp = xfopen(s, "w", pszSrcFile, __LINE__);
     if (fp) {

@@ -6,7 +6,7 @@
   System Interfaces
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2006 Steven H.Levine
+  Copyright (c) 2003, 2008 Steven H.Levine
 
   21 Nov 03 SHL Comments
   31 Jul 04 SHL Indent -i2
@@ -22,6 +22,7 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   26 May 08 SHL Use uiLineNumber correctly
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use MakeTempName
 
 ***********************************************************************/
 
@@ -180,24 +181,26 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	  if (!*listfile) {
 	    FILE *fp;
 
-	    save_dir2(listfile);
-	    if (listfile[strlen(listfile) - 1] != '\\')
-	      strcat(listfile, "\\");
-	    sprintf(&listfile[strlen(listfile)], "%s%03x",
-		    LISTTEMPROOT, (clock() & 4095));
-	    fp = xfopen(listfile, "w",pszSrcFile,__LINE__);
-	    if (fp) {
-	      for (x = 0; list[x]; x++)
-	      {
-		fputs(list[x], fp);
-		if (list[x + 1])
-		  fputc('\n', fp);
-	      }
-	      fclose(fp);
-	    }
-	  }
-	  strcpy(pp, listfile);
-	  pp += strlen(listfile);
+
+            strcpy(listfile, pTmpDir ? pTmpDir : pFM2SaveDirectory);
+            MakeTempName(listfile, "$FM2LI$T", 2);
+            /*if (listfile[strlen(listfile) - 1] != '\\')
+              strcat(listfile, "\\");
+            sprintf(&listfile[strlen(listfile)], "%s.%03x",
+                    LISTTEMPROOT, (clock() & 4095));*/
+            fp = xfopen(listfile, "w",pszSrcFile,__LINE__);
+            if (fp) {
+              for (x = 0; list[x]; x++)
+              {
+                fputs(list[x], fp);
+                if (list[x + 1])
+                  fputc('\n', fp);
+              }
+              fclose(fp);
+            }
+          }
+          strcpy(pp, listfile);
+          pp += strlen(listfile);
 	}
 	p += 2;
 	break;

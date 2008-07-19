@@ -83,6 +83,7 @@
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   16 JUL 08 GKY Use TMP directory for temp files
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use MakeTempName; Remove LISTTEMPROOT
 
 ***********************************************************************/
 
@@ -228,7 +229,7 @@ PDRAGINFO APIENTRY DrgReallocDraginfo(PDRAGINFO pdinfoOld, ULONG cditem);
 
 #define ALLATTRS                (FILE_NORMAL | FILE_DIRECTORY | FILE_ARCHIVED |\
 				 FILE_HIDDEN | FILE_READONLY | FILE_SYSTEM)
-#define LISTTEMPROOT            "$FM2LI$T."
+//#define LISTTEMPROOT            "$FM2LI$T"
 
 #include "fm3dll2.h"
 
@@ -629,6 +630,7 @@ char *to_delim(char *a, register char *delim);
 BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname);
 CHAR default_disk(VOID);
 APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...);
+char *MakeTempName(char *buffer, char *temproot, int type);
 
 #define COPY 0
 #define MOVE 1
@@ -1110,7 +1112,7 @@ DATADEF HWND hwndMain, hwndTree, hwndStatus, hwndStatus2, hwndTrash,
 	     hwndAutoview, hwndAttr, hwndDate, hwndName, hwndBack,
 	     hwndLED, hwndLEDHdr, hwndAutoMLE, hwndCmdlist;
 DATADEF HBITMAP hbmLEDon, hbmLEDoff;
-DATADEF CHAR ArcTempRoot[CCHMAXPATH], ThousandsSeparator[2], *pTmpDir;
+DATADEF CHAR ArcTempRoot[CCHMAXPATH], ThousandsSeparator[2], *pTmpDir, *pFM2SaveDirectory;
 DATADEF HPOINTER hptrArrow, hptrBusy, hptrLast, hptrDir, hptrFile, hptrRemote,
   hptrFloppy, hptrDrive, hptrRemovable, hptrCDROM,hptrVirtual,hptrRamdisk,
   hptrFinger, hptrApp, hptrDunno, hptrSystem, hptrHidden,

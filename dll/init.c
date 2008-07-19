@@ -50,6 +50,7 @@
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   16 JUL 08 GKY Use TMP directory for temp files
   17 Jul 08 SHL Reduce code bulk in fUseTmp setup
+  19 Jul 08 GKY Use pFM2SaveDirectory, MakeTempName and move temp files to TMP subdirectory if (TMP).
 
 ***********************************************************************/
 
@@ -513,12 +514,14 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
       DosFindClose(search_handle);
     }
   }
-
-  save_dir(s);
+  if (pTmpDir)
+    strcpy(s, pTmpDir);
+  else
+    save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
   enddir = &s[strlen(s)];
-  strcat(s, LISTTEMPROOT);
+  strcat(s, "$FM2LI$T");
   strcat(s, "???");
   search_handle = HDIR_CREATE;
   num_matches = 1;
@@ -540,6 +543,10 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   }
   BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
   DosForceDelete(szTempFile);
+  if (pTmpDir) {
+    wipeallf("%s\\*", pTmpDir);
+    DosDeleteDir(pTmpDir);
+  }
   EndNote();
   if (FM3ModHandle)
     DosFreeModule(FM3ModHandle);
@@ -649,7 +656,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     OS2ver[1] = 1;
   }
 
-  /* set up default root names for temp archive goodies */
+  // set up default root names for temp file storage and archive goodies
   env = getenv("TMP");
   if (env == NULL)
     env = getenv("TEMP");
@@ -658,14 +665,30 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
     if (!rc) {
       if (fs3.attrFile & FILE_DIRECTORY) {
-	// 17 Jul 08 SHL fixme to check writable someday
-	pTmpDir = xstrdup(env, pszSrcFile, __LINE__);
+        CHAR szTempName[CCHMAXPATH];
+        APIRET ret = 0;
+        // 17 Jul 08 SHL fixme to check writable someday
+        strcpy(szTempName, env);
+        //if (szTempName[strlen(szTempName) - 1] != '\\')
+	//  strcat(szTempName, "\\");
+        MakeTempName(szTempName, NULL, 1);
+        ret = DosCreateDir(szTempName, 0);
+        if (!ret) {
+          pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);
+        }
       }
     }
   }
   BldFullPathName(ArcTempRoot, pTmpDir, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
 
-  /* initialize random number generator */
+  //Save the FM2 save directory name. This is the location of the ini, dat files etc.
+  {
+    CHAR temp[CCHMAXPATH];
+    save_dir2(temp);
+    pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
+  }
+
+  // initialize random number generator
   srand(time(NULL) + clock());
 
   priority_bumped();

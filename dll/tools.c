@@ -17,6 +17,7 @@
   05 Sep 06 SHL Sync with standard source formatting
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
 
 ***********************************************************************/
 
@@ -33,6 +34,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
 #include "fortify.h"
 #include "fm3dll.h"
 
@@ -59,10 +61,11 @@ VOID load_quicktools(VOID)
     qtloaded = FALSE;
     return;
   }
-  save_dir2(s);
+  BldFullPathName(s, pFM2SaveDirectory, "QUICKTLS.DAT");
+  /*save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
-  strcat(s, "QUICKTLS.DAT");
+  strcat(s, "QUICKTLS.DAT");*/
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     x = 0;
@@ -92,10 +95,11 @@ VOID save_quicktools(VOID)
 
   if (!quicktool[0])
     return;
-  save_dir2(s);
+  BldFullPathName(s, pFM2SaveDirectory, "QUICKTLS.DAT");
+  /*save_dir2(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
-  strcat(s, "QUICKTLS.DAT");
+  strcat(s, "QUICKTLS.DAT");*/
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
     for (x = 0; quicktool[x] && x < 50; x++)
