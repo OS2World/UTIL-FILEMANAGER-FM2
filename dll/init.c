@@ -51,6 +51,7 @@
   16 JUL 08 GKY Use TMP directory for temp files
   17 Jul 08 SHL Reduce code bulk in fUseTmp setup
   19 Jul 08 GKY Use pFM2SaveDirectory, MakeTempName and move temp files to TMP subdirectory if (TMP).
+  20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 
 ***********************************************************************/
 
@@ -1084,6 +1085,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   mailrun = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!mailrun)
     return 0; //already complained
+  pszTreeEnvVarList = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+  if (!pszTreeEnvVarList)
+    return 0; //already complained
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowTarget", &fShowTarget, &size);
   size = sizeof(BOOL);
@@ -1175,6 +1179,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "ViewChild", &fViewChild, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowEnv", &fShowEnv, &size);
+  size = MaxComLineStrg;
+  PrfQueryProfileData(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LeaveTree", &fLeaveTree, &size);
   size = sizeof(BOOL);

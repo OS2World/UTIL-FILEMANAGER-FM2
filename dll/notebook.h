@@ -10,6 +10,7 @@
 
   14 Feb 08 SHL Refactor from fm3dll.h
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 
 ***********************************************************************/
 
@@ -36,7 +37,7 @@ VOID CfgMenuInit(HWND hwndMenu, BOOL fIsLite);
 #endif
 
 DATADEF CHAR *editor, *viewer, *virus, *compare, *binview, *bined,
-  *dircompare, *ftprun, *httprun, *mailrun;
+  *dircompare, *ftprun, *httprun, *mailrun, *pszTreeEnvVarList;
 DATADEF CHAR ftprundir[CCHMAXPATH], httprundir[CCHMAXPATH],
   mailrundir[CCHMAXPATH], targetdir[CCHMAXPATH];
 

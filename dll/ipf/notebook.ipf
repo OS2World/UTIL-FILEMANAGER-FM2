@@ -12,6 +12,7 @@
 .* 20 Mar 07 DG  Add description for Mommy make it stop
 .* 13 Aug 07 SHL Tweak scanning page
 .* 06 Jul 08 GKY Update delete/undelete to include the option of using the XWP trashcan
+.* 20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 .*
 .***********************************************************************
 .*
@@ -343,7 +344,8 @@ the two above switch events.
 :p.
 The :hp6.Show env. vars in Tree:ehp6. toggle determines whether FM/2
 shows a few environment variable lists (like PATH, DPATH and LIBPATH)
-in the Drive Tree.
+in the Drive Tree. Use the entry field to specify a blank-separated
+list of the desired environment variables.
 
 
 :h3 res=99990 name=PANEL_TREESORTPAGE.Tree sort/views page

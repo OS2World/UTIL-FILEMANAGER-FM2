@@ -33,6 +33,7 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
+  20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 
 ***********************************************************************/
 
@@ -1945,6 +1946,7 @@ BEGIN
                         4, 44, 132, 10
         AUTOCHECKBOX    "Show ~env. vars in Tree", CFGT_SHOWENV, 4, 32, 132,
                         10
+	ENTRYFIELD      "", CFGT_ENVVARLIST, 120, 32, 196, 8, ES_MARGIN | ES_AUTOSCROLL
         PUSHBUTTON      "~Help", IDM_HELP, 8, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Undo", IDM_UNDO, 48, 4, 40, 14, BS_NOPOINTERFOCUS

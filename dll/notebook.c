@@ -36,6 +36,7 @@
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
+  20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 
 ***********************************************************************/
 
@@ -1168,6 +1169,8 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
+    WinSendDlgItemMsg(hwnd, CFGT_ENVVARLIST, EM_SETTEXTLIMIT,
+		      MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     break;
 
@@ -1181,6 +1184,7 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGT_SWITCHTREE, fSwitchTree);
     WinCheckButton(hwnd, CFGT_SWITCHTREEEXPAND, fSwitchTreeExpand);
     WinCheckButton(hwnd, CFGT_SHOWENV, fShowEnv);
+    WinSetDlgItemText(hwnd, CFGT_ENVVARLIST, pszTreeEnvVarList);
     return 0;
 
   case WM_HELP:
@@ -1261,6 +1265,27 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
     fShowEnv = WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV);
     PrfWriteProfileData(fmprof, appname, "ShowEnv", &fShowEnv, sizeof(BOOL));
+    {
+      char * pszTemp = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+      if (pszTemp)
+      {
+        WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
+        strupr(pszTemp);
+        if (strcmp(pszTemp, pszTreeEnvVarList))
+        {
+          strcpy(pszTreeEnvVarList, pszTemp);
+          PrfWriteProfileString(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList);
+          if (hwndTree && fShowEnv) {
+            PostMsg(WinWindowFromID
+                    (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
+       	            MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          }
+        }
+        free(pszTemp);
+      } else {
+        // Report error?
+      }
+    }
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);

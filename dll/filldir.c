@@ -42,6 +42,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   07 Jul 08 SHL Use NULL rather than NullStr in FreeCnrItemData
   16 JUL 08 GKY Use TMP directory for temp files
+  20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 
 ***********************************************************************/
 
@@ -64,6 +65,7 @@
 #include "strutil.h"			// GetPString
 #include "misc.h"			// GetTidForWindow
 #include "fortify.h"			// 06 May 08 SHL
+#include "notebook.h"			// INI file fields
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
@@ -1383,7 +1385,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
 	char *p, *pp;
 
-	p = GetPString(IDS_ENVVARNAMES);
+        p = pszTreeEnvVarList;
 	while (*p == ' ')
 	  p++;
 	while (*p) {
