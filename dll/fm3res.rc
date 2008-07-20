@@ -35,6 +35,8 @@
   14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
   17 Jul 08 JBS Corrected a typo on the "Save state" context menu
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
+  20 Jul 08 GKY Add save/append filename to clipboard.
+                Change menu wording to make these easier to find
 
 ***********************************************************************/
 

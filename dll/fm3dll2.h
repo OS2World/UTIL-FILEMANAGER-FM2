@@ -19,6 +19,8 @@
   19 Jan 08 GKY Add IDM_COMMANDLINESUBMENU, IDM_SYSTEMSUBMENU & IDM_BOOKSELFSUBMENU
   15 Feb 08 SHL Add definitions to support settings menu conditional cascade
   15 Feb 08 SHL Drop obsoletes
+  20 Jul 08 GKY Add IDM_SAVETOCLIPFILENAME & IDM_APPENDTOCLIPFILENAME
+                to save/append just filename to clipboard
 
   Align with spaces only - no tabs please
 
