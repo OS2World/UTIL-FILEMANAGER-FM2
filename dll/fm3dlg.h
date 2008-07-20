@@ -19,6 +19,7 @@
   21 Aug 07 GKY Make Subject column in dircnr sizable and movable from the right to the left pane
   11 Jan 08 SHL Correct all to 3 column tabs since dialog editors assume this
   29 Feb 08 GKY Changes to enable user settable command line length
+  20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 
 ***********************************************************************/
 
@@ -601,6 +602,7 @@
 #define CFGT_VTREEOPENSWPS								25057
 #define CFGT_TOPDIR										25058
 #define CFGT_SHOWENV										25059
+#define CFGT_ENVVARLIST 									25060
 
 #define CFGC_FRAME										25100
 #define CFGC_COMPARE										25101
