@@ -26,6 +26,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   22 Jun 08 GKY Made Felete move to xworkplace trash can on systems that have it
   16 JUL 08 GKY Use TMP directory for temp files
+  20 Jul 08 GKY Add save/append filename to clipboard.
 
 ***********************************************************************/
 
@@ -1178,10 +1179,12 @@ VOID MassAction(VOID * args)
 	    break;
 
 	  case IDM_APPENDTOCLIP:
-	  case IDM_SAVETOCLIP:
+          case IDM_SAVETOCLIP:
+          case IDM_SAVETOCLIPFILENAME:
+          case IDM_APPENDTOCLIPFILENAME:
 	    ListToClipboardHab(hab2,
 			       wk->li->list,
-			       (wk->li->type == IDM_APPENDTOCLIP));
+			       wk->li->type);
 	    break;
 
 	  case IDM_ARCHIVEM:

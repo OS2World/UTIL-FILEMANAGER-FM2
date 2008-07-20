@@ -22,6 +22,7 @@
   30 Dec 07 GKY Use CommaFmtULL
   16 Feb 08 GKY Changed _fsopen flag so a new list file can be created
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
+  20 Jul 08 GKY Modify ListtoClipHab to provide either fullpath name or filename for save to clipboard
 
 ***********************************************************************/
 
@@ -98,26 +99,39 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
   return ret;
 }
 
-VOID ListToClipboard(HWND hwnd, CHAR ** list, BOOL append)
+VOID ListToClipboard(HWND hwnd, CHAR ** list, ULONG append)
 {
   HAB hab = WinQueryAnchorBlock(hwnd);
 
   ListToClipboardHab(hab, list, append);
 }
 
-VOID ListToClipboardHab(HAB hab, CHAR ** list, BOOL append)
+VOID ListToClipboardHab(HAB hab, CHAR ** list, ULONG append)
 {
-  CHAR *text = NULL, **clip = NULL;
+  CHAR *text = NULL, **clip = NULL, *p = NULL, temp[CCHMAXPATH];
   INT x;
   ULONG len = 0;
 
   if (list && list[0]) {
-    for (x = 0; list[x]; x++)
+    for (x = 0; list[x]; x++) {
+      if (append == IDM_SAVETOCLIPFILENAME ||
+          append == IDM_APPENDTOCLIPFILENAME) {
+        p = strrchr(list[x], '\\');
+        if (p) {
+          p++;
+          strcpy(temp, p);
+          free(list[x]);
+          list[x] = xstrdup(temp, __FILE__, __LINE__);
+        }
+      }
       len += strlen(list[x]) + 2;
+    }
     if (len)
       len++;
     if (len) {
-      if (append)
+      if (append == IDM_APPENDTOCLIP ||
+          append == IDM_APPENDTOCLIP2 ||
+          append == IDM_APPENDTOCLIPFILENAME)
 	clip = ListFromClipboardHab(hab);
       if (clip && clip[0]) {
 	for (x = 0; clip[x]; x++)
@@ -137,7 +151,8 @@ VOID ListToClipboardHab(HAB hab, CHAR ** list, BOOL append)
 	  for (x = 0; list[x]; x++) {
 	    strcat(text, list[x]);
 	    strcat(text, "\r\n");
-	  }
+          }
+          text[strlen(text) - 2] = 0;
 	  WinEmptyClipbrd(hab);
 	  if (!WinSetClipbrdData(hab, (ULONG) text, CF_TEXT, CFI_POINTER))
 	    DosFreeMem(text);

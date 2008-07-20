@@ -35,6 +35,8 @@
   15 Feb 08 GKY Prevent trap on scan of drive containing files that exceed maxpath
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  20 Jul 08 GKY Add save/append filename to clipboard.
+                Change menu wording to make these easier to find
 
 ***********************************************************************/
 
@@ -1048,9 +1050,11 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case IDM_SAVETOCLIP:
       case IDM_APPENDTOCLIP:
+      case IDM_SAVETOCLIPFILENAME:
+      case IDM_APPENDTOCLIPFILENAME:
 	if (list) {
 	  ListToClipboardHab(WinQueryAnchorBlock(hwnd),
-			     list, (SHORT1FROMMP(mp1) == IDM_APPENDTOCLIP));
+			     list, SHORT1FROMMP(mp1));
 	  FreeList(list);
 	}
 	break;
@@ -3330,8 +3334,12 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableMenuItem(pAD->hwndPopup, IDM_COLLECT,
 			  (rc == 0 && pAD->selected != 0));
 	WinEnableMenuItem(pAD->hwndPopup, IDM_SAVETOCLIP,
+                          (rc == 0 && pAD->selected != 0));
+        WinEnableMenuItem(pAD->hwndPopup, IDM_SAVETOCLIPFILENAME,
 			  (rc == 0 && pAD->selected != 0));
 	WinEnableMenuItem(pAD->hwndPopup, IDM_APPENDTOCLIP,
+                          (rc == 0 && pAD->selected != 0));
+        WinEnableMenuItem(pAD->hwndPopup, IDM_APPENDTOCLIPFILENAME,
 			  (rc == 0 && pAD->selected != 0));
 	WinEnableMenuItem(pAD->hwndPopup, IDM_SAVETOLIST,
 			  (rc == 0 && pAD->selected != 0));
@@ -3748,10 +3756,13 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableMenuItem((HWND) mp2, IDM_COLLECT, (rc == 0 &&
 						      pAD->selected != 0));
 	  WinEnableMenuItem((HWND) mp2, IDM_SAVETOCLIP, (rc == 0 &&
-							 pAD->selected != 0));
-	  WinEnableMenuItem((HWND) mp2, IDM_APPENDTOCLIP, (rc == 0 &&
-							   pAD->selected !=
-							   0));
+                                                         pAD->selected != 0));
+          WinEnableMenuItem((HWND) mp2, IDM_SAVETOCLIPFILENAME,
+			    (rc == 0 && pAD->selected != 0));
+          WinEnableMenuItem((HWND) mp2, IDM_APPENDTOCLIP,
+                            (rc == 0 && pAD->selected != 0));
+          WinEnableMenuItem((HWND) mp2, IDM_APPENDTOCLIPFILENAME,
+			    (rc == 0 && pAD->selected != 0));
 	  WinEnableMenuItem((HWND) mp2, IDM_SAVETOLIST,
 			    (rc == 0 && pAD->selected != 0));
 	  WinEnableMenuItem((HWND) mp2, IDM_REMOVE,
@@ -4097,7 +4108,9 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_COLLECT:
     case IDM_COLLECTOR:
     case IDM_SAVETOCLIP:
+    case IDM_SAVETOCLIPFILENAME:
     case IDM_APPENDTOCLIP:
+    case IDM_APPENDTOCLIPFILENAME:
     case IDM_SAVETOLIST:
     case IDM_INFO:
     case IDM_ATTRS:
@@ -4149,8 +4162,10 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	case IDM_DELETE:
 	case IDM_PERMDELETE:
-	case IDM_APPENDTOCLIP:
+        case IDM_APPENDTOCLIP:
+        case IDM_APPENDTOCLIPFILENAME:
 	case IDM_SAVETOCLIP:
+        case IDM_SAVETOCLIPFILENAME:
 	case IDM_SAVETOLIST:
 	case IDM_COLLECT:
 	case IDM_INFO:
@@ -4184,8 +4199,10 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		break;
 	      case IDM_DELETE:
 	      case IDM_PERMDELETE:
-	      case IDM_APPENDTOCLIP:
+              case IDM_APPENDTOCLIP:
+              case IDM_APPENDTOCLIPFILENAME:
 	      case IDM_SAVETOCLIP:
+              case IDM_SAVETOCLIPFILENAME:
 	      case IDM_SAVETOLIST:
 	      case IDM_INFO:
 	      case IDM_ATTRS:

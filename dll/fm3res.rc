@@ -717,7 +717,9 @@ ACCELTABLE  TREE_FRAME
   "+",         IDM_EXPAND,            SHIFT,CONTROL
   "+",         IDM_EXPAND,            CONTROL
   "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
   "[",         IDM_SAVETOCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME ALT
   VK_F1,       IDM_HELP,              VIRTUALKEY
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
@@ -871,7 +873,9 @@ ACCELTABLE  DIR_FRAME
   "|",         IDM_DESELECTALLDIRS,   SHIFT,CONTROL
   "\\",        IDM_DESELECTALL,       CONTROL
   "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
   "[",         IDM_SAVETOCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME,ALT
   "}",         IDM_DESELECTCLIP,      SHIFT,CONTROL
   "]",         IDM_SELECTCLIP,        CONTROL
   ";",         IDM_INVERT,            CONTROL
@@ -1169,10 +1173,12 @@ MENU FILE_POPUP
 	 MENUITEM "~Real objects...",IDM_OBJECT
 	 MENUITEM "~Shadows in folder...",IDM_SHADOW2
   }
-  SUBMENU "Save Lists",         IDM_SAVESUBMENU
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
-	 MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-	 MENUITEM "Append to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "Append full path(s)to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -1242,10 +1248,12 @@ MENU DIR_POPUP
   }
   MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
   MENUITEM "",                  -1,             MIS_SEPARATOR
-  SUBMENU "Save Lists",         IDM_SAVESUBMENU
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
-	 MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-	 MENUITEM "~Append to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Commands",           IDM_COMMANDSMENU
@@ -1291,10 +1299,12 @@ MENU TREE_POPUP
   MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
   MENUITEM "Create ~shadows...",IDM_SHADOW
   MENUITEM "",                  -1,             MIS_SEPARATOR
-  SUBMENU "Save ~Lists",        IDM_SAVESUBMENU
+  SUBMENU "Save ~Lists to clipboard/file",        IDM_SAVESUBMENU
   {
-	 MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-	 MENUITEM "~Append to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full paths to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -1442,10 +1452,12 @@ MENU COLLECTORFILE_POPUP
 	 MENUITEM "~Real objects...",IDM_OBJECT
 	 MENUITEM "~Shadows in folder...",IDM_SHADOW2
   }
-  SUBMENU "Save Lists",         IDM_SAVESUBMENU
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
-	 MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-	 MENUITEM "~Append to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -1501,10 +1513,12 @@ MENU COLLECTORDIR_POPUP
   }
   MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
   MENUITEM "",                  -1,             MIS_SEPARATOR
-  SUBMENU "Save Lists",         IDM_SAVESUBMENU
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
-	 MENUITEM "Save to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-	 MENUITEM "~Append to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -1666,9 +1680,11 @@ ACCELTABLE  COLLECTOR_FRAME
   "|",         IDM_DESELECTALLDIRS,   SHIFT,CONTROL
   "\\",        IDM_DESELECTALL,       CONTROL
   "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
   "[",         IDM_SAVETOCLIP,        CONTROL
   "}",         IDM_DESELECTCLIP,      SHIFT,CONTROL
   "]",         IDM_SELECTCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME,ALT
   ";",         IDM_INVERT,            CONTROL
   "'",         IDM_RESELECT,          CONTROL
   VK_F1,       IDM_HELP,              VIRTUALKEY
@@ -2050,8 +2066,10 @@ MENU SEEALL_FRAME
 	 MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
 	 MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
 	 MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
-	 MENUITEM "Save selected to clipboard\tCtrl + [",IDM_SAVETOCLIP
-	 MENUITEM "Append selected to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+	 MENUITEM "Save full path(s) to clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save selected to listfile\tCtrl + S",IDM_SAVETOLIST
 	 MENUITEM "Duplicates...",         IDM_DUPES
 	 SUBMENU  "~Open selected",        IDM_OPENSUBMENU
@@ -2128,8 +2146,10 @@ MENU SEEALL_POPUP
   MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
   MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
   MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
-  MENUITEM "Save selected to clipboard\tCtrl + [",IDM_SAVETOCLIP
-  MENUITEM "Append selected to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+  MENUITEM "Save full path(s) to clipboard\tCtrl + [",IDM_SAVETOCLIP
+  MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+  MENUITEM "Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+  MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
   MENUITEM "Save selected to listfile\tCtrl + S",IDM_SAVETOLIST
   MENUITEM "Duplicates...",         IDM_DUPES
   SUBMENU  "~Open selected",        IDM_OPENSUBMENU
@@ -2186,7 +2206,9 @@ ACCELTABLE SEEALL_FRAME
   "\\",        IDM_DESELECTALL,       CONTROL
   ";",         IDM_INVERT,            CONTROL
   "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
   "[",         IDM_SAVETOCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME,ALT
   VK_F1,       IDM_HELP,              VIRTUALKEY
   VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
   VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY

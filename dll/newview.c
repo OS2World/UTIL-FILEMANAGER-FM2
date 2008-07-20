@@ -30,6 +30,7 @@
   29 Dec 07 GKY Formated email address using "<mailto:"
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  20 Jul 08 GKY Change ListToClipboardHab call to match changes made to function
 
 ***********************************************************************/
 
@@ -1128,8 +1129,7 @@ static VOID ClipboardThread(VOID * args)
 		released = TRUE;
 		if (cmd == IDM_SAVETOCLIP || cmd == IDM_APPENDTOCLIP ||
 		    cmd == IDM_SAVETOCLIP2 || cmd == IDM_APPENDTOCLIP2)
-		  ListToClipboardHab(hab2, list, (cmd == IDM_APPENDTOCLIP ||
-						  cmd == IDM_APPENDTOCLIP2));
+		  ListToClipboardHab(hab2, list, cmd);
 		else {
 
 		  FILE *fp;

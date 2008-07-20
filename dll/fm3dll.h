@@ -777,10 +777,10 @@ VOID SetPresParamFromFattrs(HWND hwnd, FATTRS * fattrs,
 
 /* saveclip.c */
 BOOL SaveToClip(HWND hwnd, CHAR * text, BOOL append);
-VOID ListToClipboard(HWND hwnd, CHAR ** list, BOOL append);
+VOID ListToClipboard(HWND hwnd, CHAR ** list, ULONG append);
 CHAR **ListFromClipboard(HWND hwnd);
 BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append);
-VOID ListToClipboardHab(HAB hab, CHAR ** list, BOOL append);
+VOID ListToClipboardHab(HAB hab, CHAR ** list, ULONG append);
 CHAR **ListFromClipboardHab(HAB hab);
 MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				 MPARAM mp2);

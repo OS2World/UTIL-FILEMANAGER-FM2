@@ -48,6 +48,8 @@
 		all the details view settings (both the global variables and those in the
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   17 Jul 08 SHL Add GetTidForWindow for Fortify support
+  20 Jul 08 GKY Add save/append filename to clipboard.
+                Change menu wording to make these easier to find
 
 ***********************************************************************/
 
@@ -1649,6 +1651,7 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(DirMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(DirMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(DirMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIP);
+      SetConditionalCascade(DirMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(DirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(DirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(DirMenu, IDM_DELETESUBMENU,
@@ -1692,6 +1695,7 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(FileMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(FileMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(FileMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIP);
+      SetConditionalCascade(FileMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(FileMenu, IDM_VIEWSUBMENU, IDM_VIEW);
       SetConditionalCascade(FileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(FileMenu, IDM_COLLECTMENU, IDM_COLLECT);
@@ -1737,7 +1741,8 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorFileMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(CollectorFileMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(CollectorFileMenu, IDM_SAVESUBMENU,
-			    IDM_SAVETOCLIP);
+                            IDM_SAVETOCLIP);
+      SetConditionalCascade(CollectorFileMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(CollectorFileMenu, IDM_VIEWSUBMENU, IDM_VIEW);
       SetConditionalCascade(CollectorFileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(CollectorFileMenu, IDM_DELETESUBMENU,
@@ -1759,7 +1764,8 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorDirMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(CollectorDirMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(CollectorDirMenu, IDM_SAVESUBMENU,
-			    IDM_SAVETOCLIP);
+                            IDM_SAVETOCLIP);
+      SetConditionalCascade(CollectorDirMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(CollectorDirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(CollectorDirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(CollectorDirMenu, IDM_DELETESUBMENU,

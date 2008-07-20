@@ -43,6 +43,8 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
 		all the details view settings (both the global variables and those in the
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  20 Jul 08 GKY Add save/append filename to clipboard.
+                Change menu wording to make these easier to find
 
 ***********************************************************************/
 
@@ -850,7 +852,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (li->type) {
       case IDM_DOITYOURSELF:
       case IDM_APPENDTOCLIP:
+      case IDM_APPENDTOCLIPFILENAME:
       case IDM_SAVETOCLIP:
+      case IDM_SAVETOCLIPFILENAME:
       case IDM_ARCHIVE:
       case IDM_ARCHIVEM:
       case IDM_VIEWTEXT:
@@ -2514,7 +2518,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_EDITTEXT:
       case IDM_EDITBINARY:
       case IDM_SAVETOCLIP:
+      case IDM_SAVETOCLIPFILENAME:
       case IDM_APPENDTOCLIP:
+      case IDM_APPENDTOCLIPFILENAME:
       case IDM_ARCHIVE:
       case IDM_ARCHIVEM:
       case IDM_EXTRACT:
@@ -2575,8 +2581,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  StartCollector(dcd->hwndParent, 4);
 	      }
 	      switch (SHORT1FROMMP(mp1)) {
-	      case IDM_APPENDTOCLIP:
-	      case IDM_SAVETOCLIP:
+              case IDM_APPENDTOCLIP:
+              case IDM_APPENDTOCLIPFILENAME:
+              case IDM_SAVETOCLIP:
+              case IDM_SAVETOCLIPFILENAME:
 	      case IDM_ARCHIVE:
 	      case IDM_ARCHIVEM:
 	      case IDM_DELETE:

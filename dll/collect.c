@@ -51,6 +51,8 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
 		all the details view settings (both the global variables and those in the
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  20 Jul 08 GKY Add save/append filename to clipboard.
+                Change menu wording to make these easier to find
 
 ***********************************************************************/
 
@@ -534,6 +536,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       switch (li->type) {
       case IDM_DOITYOURSELF:
       case IDM_APPENDTOCLIP:
+      case IDM_APPENDTOCLIPFILENAME:
       case IDM_SAVETOCLIP:
       case IDM_ARCHIVE:
       case IDM_ARCHIVEM:
@@ -2117,7 +2120,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_EDITTEXT:
       case IDM_EDITBINARY:
       case IDM_SAVETOCLIP:
+      case IDM_SAVETOCLIPFILENAME:
       case IDM_APPENDTOCLIP:
+      case IDM_APPENDTOCLIPFILENAME:
       case IDM_ARCHIVE:
       case IDM_ARCHIVEM:
       case IDM_EXTRACT:
@@ -2138,8 +2143,10 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (li->list) {
 	      switch (SHORT1FROMMP(mp1)) {
 	      case IDM_DOITYOURSELF:
-	      case IDM_APPENDTOCLIP:
+              case IDM_APPENDTOCLIP:
+              case IDM_APPENDTOCLIPFILENAME:
 	      case IDM_SAVETOCLIP:
+              case IDM_SAVETOCLIPFILENAME:
 	      case IDM_ARCHIVE:
 	      case IDM_ARCHIVEM:
 	      case IDM_DELETE:
