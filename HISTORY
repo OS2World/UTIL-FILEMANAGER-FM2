@@ -1,5 +1,16 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.12
+ o When viewing archives, users can now select "Open (WPS) default" or "Open settings".
+   These options are available through the context menu and via the F6 and F7 keys.
+   Ticket 126. (John)
+ o The Settings notebook now responds to certain accelerator keys: F1 for help; F3
+   and both Enter keys for "Close and save" and ESC for "Close and discard changes".
+   Ticket 197. (John)
+ o For those who select "Show environment variables" in the Drivfe Tree, the list of
+   environment variables is now user-selectable on the "Tree" page of the Settings notebook.
+   Ticket 114. (John)
+
 3.11
  o Fixed 2 traps in Dirsize, ticket 243 (Gregg Steven)
  o Added the option of having delete move the files to the Xworkplace trashcan, ticket 43
