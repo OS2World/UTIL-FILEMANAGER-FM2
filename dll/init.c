@@ -52,6 +52,8 @@
   17 Jul 08 SHL Reduce code bulk in fUseTmp setup
   19 Jul 08 GKY Use pFM2SaveDirectory, MakeTempName and move temp files to TMP subdirectory if (TMP).
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
+  20 Jul 08 GKY Add support to delete orphaned tmp directories without deleting tmp of other
+                running sessions
 
 ***********************************************************************/
 
@@ -522,7 +524,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
   enddir = &s[strlen(s)];
-  strcat(s, "$FM2LI$T");
+  strcat(s, "$FM2LI$T.");
   strcat(s, "???");
   search_handle = HDIR_CREATE;
   num_matches = 1;
@@ -665,18 +667,51 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     DosError(FERR_DISABLEHARDERR);
     rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
     if (!rc) {
+      CHAR *enddir, *p, szTempName[CCHMAXPATH], temp[CCHMAXPATH];
+      FILEFINDBUF3 ffb;
+      HDIR search_handle;
+      ULONG num_matches, ul;
+
+      strcpy(szTempName, env);
+      if (szTempName[strlen(szTempName) - 1] != '\\')
+        strcat(szTempName, "\\");
+      enddir = &szTempName[strlen(szTempName)];
+      strcat(szTempName, "$FM2????.");
+      strcat(szTempName, "???");
+      search_handle = HDIR_CREATE;
+      num_matches = 1;
+      if (!DosFindFirst(szTempName,
+		        &search_handle,
+		        FILE_NORMAL | FILE_DIRECTORY |
+		        FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
+		        FILE_ARCHIVED,
+		        &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
+        do {
+          strcpy(enddir, ffb.achName);
+          p = strrchr(szTempName, '.');
+          if (p) {
+            p++;
+            ul = strtol(p, &p + 2, 16);
+            GetDosPgmName(ul, temp);
+            if (!strstr(temp, "FM/2") &&
+                !strstr(temp, "AV/2")) {
+              wipeallf("%s\\*", szTempName);
+              DosDeleteDir(szTempName);
+            }
+          }
+        }
+      while (!DosFindNext(search_handle,
+       	                  &ffb, sizeof(ffb), &num_matches));
+      DosFindClose(search_handle);
+    }
       if (fs3.attrFile & FILE_DIRECTORY) {
-        CHAR szTempName[CCHMAXPATH];
         APIRET ret = 0;
-        // 17 Jul 08 SHL fixme to check writable someday
         strcpy(szTempName, env);
-        //if (szTempName[strlen(szTempName) - 1] != '\\')
-	//  strcat(szTempName, "\\");
         MakeTempName(szTempName, NULL, 1);
         ret = DosCreateDir(szTempName, 0);
-        if (!ret) {
+        if (!ret) {   //check writable
           pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);
-        }
+        } //fixme to check freespace > 5 MB
       }
     }
   }

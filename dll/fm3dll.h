@@ -940,6 +940,8 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 /* killproc.c */
 MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+CHAR *GetDosPgmName(PID pid, CHAR * string);
+
 
 /* sysinfo.c */
 MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
