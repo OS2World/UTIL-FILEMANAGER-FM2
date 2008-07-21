@@ -48,6 +48,9 @@ if cfg.unattended = 0 then
 if cfg.userabort = 1 then
    signal NormalExit
 
+if cfg.operation = 'INSTALL' then
+   call UpdateFM2Ini
+
 cfg.action_taken = 0
 do f = 1 to cfg.file.0
    file_exists = stream(cfg.file.f.name, 'c' , 'query exists')
@@ -530,4 +533,13 @@ BackupFileIsOK: procedure expose (globals)
          end
       end
 return retval
+
+UpdateFM2Ini: procedure expose (globals)
+   parse source . . thispgm
+   thisdir = left(thispgm, lastpos('\', thispgm))
+   inifile = thisdir || 'fm3.ini'
+   EnvVarList = strip(SysIni(inifile, 'FM/3', 'TreeEnvVarList'))
+   if EnvVarList = '' | EnvVarList = 'ERROR:' then
+      call SysIni inifile, 'FM/3', 'TreeEnvVarList', 'PATH;DPATH;LIBPATH;HELP;BOOKSHELF;LIB;INCLUDE;LOCPATH;SMINCLUDE;LPATH;CODELPATH'
+return
 
