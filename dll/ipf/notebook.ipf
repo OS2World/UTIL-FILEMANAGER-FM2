@@ -344,8 +344,9 @@ the two above switch events.
 :p.
 The :hp6.Show env. vars in Tree:ehp6. toggle determines whether FM/2
 shows a few environment variable lists (like PATH, DPATH and LIBPATH)
-in the Drive Tree. Use the entry field to specify a blank-separated
-list of the desired environment variables.
+in the Drive Tree. Use the entry field to specify a semicolon-separated
+list of the desired environment variables. (e.g. PATH;LIBPATH;DPATH).
+Note that the pseudo-variable LIBPATH is also supported.
 
 
 :h3 res=99990 name=PANEL_TREESORTPAGE.Tree sort/views page

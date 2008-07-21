@@ -43,6 +43,7 @@
   07 Jul 08 SHL Use NULL rather than NullStr in FreeCnrItemData
   16 JUL 08 GKY Use TMP directory for temp files
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
+  21 Jul 08 JBS Ticket 114: Change env var separator from blank to semicolon
 
 ***********************************************************************/
 
@@ -1386,15 +1387,15 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	char *p, *pp;
 
         p = pszTreeEnvVarList;
-	while (*p == ' ')
+	while (*p == ';')
 	  p++;
 	while (*p) {
 	  *szFSType = 0;
 	  pp = szFSType;
-	  while (*p && *p != ' ')
+	  while (*p && *p != ';')
 	    *pp++ = *p++;
 	  *pp = 0;
-	  while (*p == ' ')
+	  while (*p == ';')
 	    p++;
 	  if (*szFSType &&
 	      (!stricmp(szFSType, "LIBPATH") || getenv(szFSType))) {
