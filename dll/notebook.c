@@ -1167,9 +1167,6 @@ MRESULT EXPENTRY CfgTSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  BOOL fShowEnvChanged = FALSE;
-  BOOL fTreeEnvVarListChanged = FALSE;
-
   switch (msg) {
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CFGT_ENVVARLIST, EM_SETTEXTLIMIT,
@@ -1262,35 +1259,31 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     fDCOpens = WinQueryButtonCheckstate(hwnd, CFGT_DCOPENS);
     PrfWriteProfileData(fmprof, FM3Str, "DoubleClickOpens", &fDCOpens,
 			sizeof(BOOL));
-    fShowEnvChanged = (fShowEnv != WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV));
+    if (hwndTree && fShowEnv != WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV))
+      PostMsg(WinWindowFromID
+	      (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
+	      MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
     fShowEnv = WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV);
     PrfWriteProfileData(fmprof, appname, "ShowEnv", &fShowEnv, sizeof(BOOL));
     {
-      char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1, pszSrcFile, __LINE__);
+      char * pszTemp = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
       if (pszTemp)
       {
         WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
         strupr(pszTemp);
-        if (strcmp(pszTemp, pszTreeEnvVarList)) {
-          fTreeEnvVarListChanged = TRUE;
+        if (strcmp(pszTemp, pszTreeEnvVarList))
+        {
           strcpy(pszTreeEnvVarList, pszTemp);
           PrfWriteProfileString(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList);
+          if (hwndTree && fShowEnv) {
+            PostMsg(WinWindowFromID
+                    (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
+       	            MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          }
         }
         free(pszTemp);
       } else {
-        Runtime_Error(pszSrcFile, __LINE__, "Unable to allocate memory");
-      }
-      if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged)))
-      {
-	PCNRITEM pci = WinSendMsg(WinWindowFromID
-	        (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), CM_QUERYRECORDEMPHASIS,
-			          MPFROMLONG(CMA_FIRST),
-			          MPFROMSHORT(CRA_SELECTED));
-        PostMsg(WinWindowFromID
-	        (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
-	        MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-        PostMsg(hwndTree, UM_SHOWME, MPFROMP(pci->pszFileName), MPVOID);
-
+        // Report error?
       }
     }
     break;
