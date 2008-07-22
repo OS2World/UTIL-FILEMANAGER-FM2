@@ -5,7 +5,7 @@
 # 14 Jun 07 SHL Convert to OpenWatcom
 # 18 Jul 08 SHL Add Runtime_Error
 
-option description '@#SLAInc:3.11#@##1## 07/08/2008 03:11:00      GKYBuild::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2008 Steven Levine and Associates, Inc.'
+option description '@#SLAInc:3.12#@##1## 07/21/2008 03:12:00      GKYBuild::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2008 Steven Levine and Associates, Inc.'
 segment class 'DATA' readwrite loadoncall nonshared
 segment class 'CODE' loadoncall
 option manyautodata

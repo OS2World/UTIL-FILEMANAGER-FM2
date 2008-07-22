@@ -5,6 +5,23 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.12 Fixes a bug introduced in 3.11 (trap when viewing
+multiple files from an archive at the same time). It also adds
+Open Default, Open Settings and via an accel key ctrl + l Open
+Multimedia (using FM2play.exe) to the archive viewer. FM/2 now
+uses the system TMP/TEMP directory for it temporary files and
+cleans up after a crash on the next restart. FM/2 creates a
+subdirectory of the pattern $FM2*.*. The settings notebook can
+now be closed using esc, F3 or enter; the last 2 save any
+changes that have been made. You can now select which environment
+variables to show when using show the environment in the drive
+tree. Just add or remove from the list on the "Tree" page of
+the notebook. It defaults initially to the current list. You can
+now save/append either a full pathname or just a filename or a
+list of either to the clipboard. We have changed the wording
+in the menus to make this easier to find. We fixed a few other
+minor issues see the history for more details.
+
 FM/2 3.11 adds the option of having delete move the objects
 to the Xworkplace trashcan. Undelete will open the trashcan
 so you can restore deleted files. The only short coming is you

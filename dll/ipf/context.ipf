@@ -313,7 +313,7 @@ object(s). :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmap
 You can also create :hp6.Real Objects:ehp6. for files
 :artwork runin name='\bitmaps\file.bmp'.
 :p.
-The save lists submenu allows you to save lists to the clipboard or a file
+The save lists to clipboard/file submenu allows you to save lists to the clipboard or a file
 :p.
 :artwork name='..\..\bitmaps\saveclip.bmp' align=center.
 :p.
@@ -321,7 +321,8 @@ The save lists submenu allows you to save lists to the clipboard or a file
 clipboard as a text list, one per line. This is a good way to transfer
 selections of files to other programs; for instance, you might copy a
 list of files to the clipboard and feed it to a terminal program to send
-the files over a modem or network.
+the files over a modem or network. You can save/append the full path names or
+just the filenames.
 :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\savelist.bmp' align=center.

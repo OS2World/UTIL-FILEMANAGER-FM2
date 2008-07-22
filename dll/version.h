@@ -49,11 +49,12 @@
   10 Jan 08 GKY v3.09 Release
   02 Mar 08 GKY v3.10 Release
   06 Jul 08 GKY v3.11 Release
+  21 Jul 08 GKY v3.12
 
 ***********************************************************************/
 
 #define VERMAJOR       3
-#define VERMINOR       11
+#define VERMINOR       12
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
 #define VERREALMINOR   " "__DATE__

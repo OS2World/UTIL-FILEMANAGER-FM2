@@ -103,9 +103,13 @@ Collector windows.
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.\:color fc=default bc=default.
 :pd.Deselect all
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.{:color fc=default bc=default.
-:pd.Append to clipboard
+:pd.Append full path(s) to clipboard
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.[:color fc=default bc=default.
-:pd.Save to clipboard
+:pd.Save full path(s) to clipboard
+:pt.:color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.{:color fc=default bc=default.
+:pd.Append filename(s) to clipboard
+:pt.:color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.[:color fc=default bc=default.
+:pd.Save filename(s) to clipboard
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.}:color fc=default bc=default.
 :pd.Deselect clipboard
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.]:color fc=default bc=default.
@@ -173,6 +177,10 @@ Collector windows.
 :pd.Virus scan
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.v:color fc=default bc=default.
 :pd.View
+:pt.:color fc=default bc=palegray.F6:color fc=default bc=default.
+:pd.Open default
+:pt.:color fc=default bc=palegray.F7:color fc=default bc=default.
+:pd.Open settings
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.w:color fc=default bc=default.
 :pd.Walk to new extract directory
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.X:color fc=default bc=default.
@@ -422,9 +430,13 @@ Collector windows.
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.;:color fc=default bc=default.
 :pd.Invert selection
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.{:color fc=default bc=default.
-:pd.Append to clipboard
+:pd.Append full path(s) to clipboard
 :pt.:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.[:color fc=default bc=default.
-:pd.Save to clipboard
+:pd.Save full path(s) to clipboard
+:pt.:color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.{:color fc=default bc=default.
+:pd.Append filename(s) to clipboard
+:pt.:color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.[:color fc=default bc=default.
+:pd.Save filename(s) to clipboard
 :pt.:color fc=default bc=palegray.F3:color fc=default bc=default.
 :pd.Close window
 :pt.:color fc=default bc=palegray.F6:color fc=default bc=default.
