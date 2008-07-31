@@ -37,6 +37,7 @@
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
+  31 Jul 08 JBS Ticket 114: Improved code to avoid traps.
 
 ***********************************************************************/
 
@@ -1289,8 +1290,12 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         PostMsg(WinWindowFromID
 	        (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
 	        MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-        PostMsg(hwndTree, UM_SHOWME, MPFROMP(pci->pszFileName), MPVOID);
-
+	pszTemp = xmalloc(strlen(pci->pszFileName) + 1, pszSrcFile, __LINE__);
+	if (pszTemp) {
+	  strcpy(pszTemp, pci->pszFileName);
+	  PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID);
+	  /* pszTemp is freed in the UM_SHOWME code */
+	}
       }
     }
     break;
