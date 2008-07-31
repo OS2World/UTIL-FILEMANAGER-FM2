@@ -34,6 +34,7 @@
   29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
+  31 Jul 08 JBS Added a missing mnemonic and replaced "Mommy make it stop!" with useful text.
 
 ***********************************************************************/
 
@@ -2763,12 +2764,12 @@ BEGIN
                         132, 10
         AUTOCHECKBOX    "~Drag&drop dialog", CFGG_DNDDLG, 122, 104, 106, 10
         AUTOCHECKBOX    "Default delete ~permanent", CFGG_DEFAULTDELETEPERM, 122,
-                        92, 106, 10
-        CONTROL         "'Momm~y, make it stop!'", CFGG_NODEAD, 122, 80, 106,
+                        92, 126, 10
+        CONTROL         "Mouse pointer (~3-state)", CFGG_NODEAD, 122, 80, 126,
                         10, WC_BUTTON, BS_AUTO3STATE | WS_TABSTOP | WS_VISIBLE
         AUTOCHECKBOX    "FM/~2 deletes dragged items", CFGG_FM2DELETES, 122,
                         68, 130, 10
-        AUTOCHECKBOX    "Delete = move to trashcan", CFGG_TRASHCAN, 122, 56, 106,
+        AUTOCHECKBOX    "Delete = move to ~trashcan", CFGG_TRASHCAN, 122, 56, 126,
                         10
         LTEXT           "Command line length:", -1, 122, 44, 60, 10, NOT WS_GROUP
         CONTROL         "", CFGG_CMDLNLNGTH, 184, 46, 44, 10, WC_SPINBUTTON,
