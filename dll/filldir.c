@@ -537,7 +537,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
-  strcpy(pci->pszFileName, pszFileName);
+  //strcpy(pci->pszFileName, pszFileName);
 
   // load the object's Subject, if required
   pci->pszSubject = NullStr;
@@ -1261,7 +1261,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      }
 	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
 	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	      strcpy(pci->pszFileName, szDrive);
+	      //strcpy(pci->pszFileName, szDrive);
 	      pci->pszDisplayName = pci->pszFileName;
 	      pci->rc.pszIcon = pci->pszDisplayName;
 	      pci->attrFile = FILE_DIRECTORY;
@@ -1274,7 +1274,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  else {
 	    // Removable volume
 	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	    strcpy(pci->pszFileName, szDrive);
+	    //strcpy(pci->pszFileName, szDrive);
 	    pci->pszDisplayName = pci->pszFileName;
 	    pci->rc.pszIcon = pci->pszDisplayName;
 	    pci->attrFile = FILE_DIRECTORY;
@@ -1285,7 +1285,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	else {
 	  pci->rc.hptrIcon = hptrDunno;
 	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	  strcpy(pci->pszFileName, szDrive);
+	  //strcpy(pci->pszFileName, szDrive);
 	  pci->pszDisplayName = pci->pszFileName;
 	  pci->rc.pszIcon = pci->pszFileName;
 	  pci->attrFile = FILE_DIRECTORY;
@@ -1297,7 +1297,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	// diskette drive (A or B)
 	pci->rc.hptrIcon = hptrFloppy;
 	pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	strcpy(pci->pszFileName, szDrive);
+	//strcpy(pci->pszFileName, szDrive);
 	pci->pszDisplayName = pci->pszFileName;
 	pci->rc.pszIcon = pci->pszDisplayName;
 	pci->attrFile = FILE_DIRECTORY;
@@ -1369,7 +1369,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     if (pciParent) {
       pciParent->flags |= RECFLAGS_ENV;
       pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
-      strcpy(pciParent->pszFileName, GetPString(IDS_ENVVARSTEXT));
+      //strcpy(pciParent->pszFileName, GetPString(IDS_ENVVARSTEXT));
       pciParent->pszDisplayName = pciParent->pszFileName;	// 03 Aug 07 SHL
       pciParent->rc.hptrIcon = hptrEnv;
       pciParent->rc.pszIcon = pciParent->pszFileName;
