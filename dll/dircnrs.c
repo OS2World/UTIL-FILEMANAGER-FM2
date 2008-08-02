@@ -45,6 +45,8 @@
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   20 Jul 08 GKY Add save/append filename to clipboard.
                 Change menu wording to make these easier to find
+  02 Aug 08 GKY Always pass temp variable point to treecnr UM_SHOWME to avoid
+                freeing dcd->directory early
 
 ***********************************************************************/
 
@@ -780,12 +782,18 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
       if (fSwitchTree && hwndTree) {
+        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+
 	if (hwndMain) {
-	  if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
-	    WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(dcd->directory), MPVOID);
+	  if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame && pszTempDir)
+            if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+              free(pszTempDir);
 	}
-	else
-	  WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(dcd->directory), MPVOID);
+        else {
+          if (pszTempDir)
+            if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+              free(pszTempDir);
+        }
       }
       dcd->firsttree = FALSE;
       // fixme to check errors
@@ -1333,8 +1341,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2) {
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-      if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory)
-	WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(dcd->directory), MPVOID);
+      if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
+        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+
+        if (pszTempDir) {
+          if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+            free(pszTempDir);
+        }
+      }
     }
     break;
 
@@ -1842,9 +1856,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_FINDINTREE:
-	if (hwndTree)
-	  WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(dcd->directory),
-		     MPFROMLONG(1L));
+        if (hwndTree) {
+          PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+
+          if (pszTempDir) {
+            if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
+                            MPFROMLONG(1L)))
+              free(pszTempDir);
+          }
+        }
 	break;
 
       case IDM_BEGINEDIT:

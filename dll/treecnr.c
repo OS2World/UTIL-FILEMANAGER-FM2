@@ -45,6 +45,8 @@
   10 Jan 08 SHL Sync with CfgDlgProc mods
   15 Feb 08 SHL Sync with settings menu rework
   15 Feb 08 SHL Avoid death if tree container 0 width
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
+  02 Aug 08 GKY Always pass temp variable point to UM_SHOWME to avoid freeing pci->pszFileName early
 
 ***********************************************************************/
 
@@ -673,7 +675,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       if (cnri.cRecords) {
 	sprintf(s, GetPString(IDS_NUMDRIVESTEXT), cnri.cRecords);
-	if (pci) {
+	if (pci && pci->pszFileName) {
 	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		DRIVE_REMOVABLE) ||
 	      driveserial[toupper(*pci->pszFileName) - 'A'] != -1) {
@@ -2353,20 +2355,27 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case IDM_FINDINTREE:
 	{
-	  CHAR dir[CCHMAXPATH];
+	  PSZ pszTempDir;
 	  PCNRITEM pci;
 
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  if (pci && (INT) pci != -1) {
-	    strcpy(dir, pci->pszFileName);
-	    MakeValidDir(dir);
+            pszTempDir = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
+            if (pszTempDir)
+	      MakeValidDir(pszTempDir);
 	  }
 	  else
-	    save_dir2(dir);
-	  if (WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
-			WalkAllDlgProc,
-			FM3ModHandle, WALK_FRAME, MPFROMP(dir)) && *dir)
-	    WinSendMsg(hwnd, UM_SHOWME, MPFROMP(dir), MPFROMLONG(1));
+            pszTempDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__);
+          if (pszTempDir) {
+            if (WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
+                          WalkAllDlgProc,
+                          FM3ModHandle, WALK_FRAME, MPFROMP(pszTempDir))) {
+              if (!WinSendMsg(hwnd, UM_SHOWME, MPFROMP(pszTempDir), MPFROMLONG(1)))
+                free(pszTempDir);
+            }
+            else
+              free(pszTempDir);
+          }
 	}
 	break;
 
@@ -2439,7 +2448,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    MakeValidDir(newpath);
 	  }
 	  else
-	    save_dir2(newpath);
+	    strcpy(newpath, pFM2SaveDirectory);
 	  if (!WinDlgBox(HWND_DESKTOP, dcd->hwndParent, WalkAllDlgProc,
 			 FM3ModHandle, WALK_FRAME,
 			 MPFROMP(newpath)) || !*newpath)
