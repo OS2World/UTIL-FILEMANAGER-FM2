@@ -1137,10 +1137,6 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*tempuserini = 0;
         *tempsysini = 0;
         BldFullPathName(tempuserini, pTmpDir ? pTmpDir : pFM2SaveDirectory, "TEMPUSER.INI");
-	/*save_dir2(tempuserini);
-	if (tempuserini[strlen(tempuserini) - 1] != '\\')
-	  strcat(tempuserini, "\\");
-	strcat(tempuserini, "TEMPUSER.INI");*/
 	rc = DosCopy(userini, tempuserini, DCPY_EXISTING);
 	if (rc) {
 	  Dos_Error(MB_CANCEL,
@@ -1152,10 +1148,6 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
         }
         BldFullPathName(tempsysini, pTmpDir ? pTmpDir : pFM2SaveDirectory, "TEMPSYS.INI");
-	/*save_dir2(tempsysini);
-	if (tempsysini[strlen(tempsysini) - 1] != '\\')
-	  strcat(tempsysini, "\\");
-	strcat(tempsysini, "TEMPSYS.INI");*/
 	rc = DosCopy(sysini, tempsysini, DCPY_EXISTING);
 	if (rc) {
 	  Dos_Error(MB_CANCEL,

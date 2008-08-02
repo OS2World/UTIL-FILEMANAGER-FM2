@@ -286,7 +286,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	else {
 	  char temp[CCHMAXPATH];
 
-	  save_dir2(temp);
+	  strcpy(temp, pFM2SaveDirectory);
 	  if (needs_quoting(temp) && !strchr(temp, '\"')) {
 	    spaces = TRUE;
 	    *pp = '\"';
@@ -338,7 +338,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 	else {
 	  char temp[CCHMAXPATH];
 
-	  save_dir2(temp);
+	  strcpy(temp, pFM2SaveDirectory);
 	  if (needs_quoting(temp) && !strchr(temp, '\"')) {
 	    spaces = TRUE;
 	    *pp = '\"';
@@ -800,7 +800,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    pszDirectory &&
 	    *pszDirectory)
 	{
-	  save_dir2(szSavedir);
+	  strcpy(szSavedir, pFM2SaveDirectory);
 	  switch_to(pszDirectory);
 	}
 	rc = DosQueryAppType(pszPgm,&ulAppType);
@@ -846,7 +846,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	}
 	memset(&results, 0, sizeof(results));
 	if (pszDirectory && *pszDirectory) {
-	  save_dir2(szSavedir);
+	  strcpy(szSavedir, pFM2SaveDirectory);
 	  switch_to(pszDirectory);
 	}
 	ret = DosExecPgm(szObject, sizeof(szObject),
@@ -937,7 +937,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  pszDirectory &&
 	  *pszDirectory)
       {
-	save_dir2(szSavedir);
+	strcpy(szSavedir, pFM2SaveDirectory);
 	switch_to(pszDirectory);
       }
       rc = DosQueryAppType(pszPgm,&ulAppType);
@@ -1103,7 +1103,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	sdata.PgmControl |= SSF_CONTROL_INVISIBLE;
 
       if (pszDirectory && *pszDirectory) {
-	save_dir2(szSavedir);
+	strcpy(szSavedir, pFM2SaveDirectory);
 	switch_to(pszDirectory);
       }
 

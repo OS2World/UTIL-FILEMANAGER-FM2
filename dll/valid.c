@@ -25,6 +25,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   30 Dec 07 GKY Change TestDates to TestFDates can compare by filename or FDATE/FTIME data
   30 Dec 07 GKY Add TestCDates to compare CNRITEMs by CDATE/CTIME data
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
 
 ***********************************************************************/
 
@@ -546,7 +547,7 @@ CHAR *MakeValidDir(CHAR * path)
     *path = (CHAR) ulDrv;
   }
   else
-    save_dir2(path);			// Fall back to fm3.ini drive or current dir - should never occur
+    strcpy(path, pFM2SaveDirectory);			// Fall back to fm3.ini drive or current dir - should never occur
   return path;
 }
 

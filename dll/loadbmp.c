@@ -37,7 +37,6 @@ HBITMAP LoadBitmapFromFileNum(USHORT id)
 {
   char s[CCHMAXPATH];
 
-  //save_dir2(s);
   strcpy(s, pFM2SaveDirectory);
   sprintf(s + strlen(s), "\\%u.BMP", id);
   return LoadBitmapFromFile(s);

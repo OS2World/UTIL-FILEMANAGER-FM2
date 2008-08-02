@@ -63,7 +63,8 @@
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   12 Jul 08 JBS Ticket 246: Allow saved directory container states to have no directory containers
 		(i.e. just a directory tree container).
-  18 Jul 08 SHL Use new Fortify feature to avoid spurious reports
+                18 Jul 08 SHL Use new Fortify feature to avoid spurious reports
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
 
 ***********************************************************************/
 
@@ -355,7 +356,7 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 	MakeValidDir(ret);
       }
       else
-	save_dir2(ret);
+	strcpy(ret, pFM2SaveDirectory);
     }
   }
   return hwndC;
@@ -4547,7 +4548,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	MakeValidDir(wa.szCurrentPath1);
       }
       else
-	save_dir2(wa.szCurrentPath1);
+	strcpy(wa.szCurrentPath1, pFM2SaveDirectory);
       TopWindowName(hwndMain, (HWND) 0, wa.szCurrentPath2);
       if (!*wa.szCurrentPath2)
 	strcpy(wa.szCurrentPath2, wa.szCurrentPath1);
@@ -5023,7 +5024,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	MakeValidDir(path);
       }
       else
-	save_dir2(path);
+	strcpy(path, pFM2SaveDirectory);
       WinDlgBox(HWND_DESKTOP, hwnd, InstantDlgProc, FM3ModHandle,
 		BAT_FRAME, MPFROMP(path));
     }
@@ -6232,7 +6233,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (!LastDir ||
 		    !WinSendMsg(WinQueryWindow(LastDir, QW_PARENT),
 				UM_CONTAINERDIR, MPFROMP(path), MPVOID))
-		  save_dir2(path);
+		  strcpy(path, pFM2SaveDirectory);
 		if (!PMMkDir(hwnd, path, TRUE)) {
 		  WinSetWindowText(hwndUL, GetPString(IDS_COMMONDIRTEXT));
 		  break;

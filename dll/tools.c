@@ -62,10 +62,6 @@ VOID load_quicktools(VOID)
     return;
   }
   BldFullPathName(s, pFM2SaveDirectory, "QUICKTLS.DAT");
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, "QUICKTLS.DAT");*/
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     x = 0;
@@ -96,10 +92,6 @@ VOID save_quicktools(VOID)
   if (!quicktool[0])
     return;
   BldFullPathName(s, pFM2SaveDirectory, "QUICKTLS.DAT");
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, "QUICKTLS.DAT");*/
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
     for (x = 0; quicktool[x] && x < 50; x++)

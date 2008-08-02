@@ -520,7 +520,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   if (pTmpDir)
     strcpy(s, pTmpDir);
   else
-    save_dir2(s);
+    strcpy(s, pFM2SaveDirectory);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");
   enddir = &s[strlen(s)];
@@ -755,7 +755,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     CHAR inipath[CCHMAXPATH];
 
     DosError(FERR_DISABLEHARDERR);
-    save_dir2(HomePath);
+    strcpy(HomePath, pFM2SaveDirectory);
     DosError(FERR_DISABLEHARDERR);
     memset(driveserial, -1, sizeof(driveserial));
     *inipath = 0;

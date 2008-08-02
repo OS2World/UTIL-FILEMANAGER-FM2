@@ -44,6 +44,7 @@
   16 JUL 08 GKY Use TMP directory for temp files
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   21 Jul 08 JBS Ticket 114: Change env var separator from blank to semicolon
+  02 Aug 08 GKY Remove redundant strcpys from inner loop
 
 ***********************************************************************/
 

@@ -931,7 +931,6 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           strcpy(szFileName, pTmpDir);
         else
           strcpy(szFileName, pFM2SaveDirectory);
-	//save_dir2(szFileName);
 	sprintf(&szFileName[strlen(szFileName)], "\\%csizes.Rpt",
 		(pState) ? toupper(*pState->szDirName) : '+');
 	if (export_filename(hwnd, szFileName, FALSE) && *szFileName) {

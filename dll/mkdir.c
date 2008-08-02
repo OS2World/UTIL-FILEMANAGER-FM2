@@ -10,6 +10,7 @@
 
   01 Aug 04 SHL Baseline
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
 
 ***********************************************************************/
 
@@ -153,7 +154,7 @@ Over:
   if (filename)
     strcpy(szBuff, filename);
   else
-    save_dir2(szBuff);
+    strcpy(szBuff, pFM2SaveDirectory);
   MakeValidDir(szBuff);
   if (*szBuff && szBuff[strlen(szBuff) - 1] != '\\')
     strcat(szBuff, "\\");

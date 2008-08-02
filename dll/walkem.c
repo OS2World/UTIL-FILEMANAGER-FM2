@@ -356,10 +356,6 @@ VOID load_udirs(VOID)
   loadedudirs = TRUE;
   fUdirsChanged = FALSE;
   BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, "USERDIRS.DAT");*/
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (!feof(fp)) {
@@ -406,10 +402,6 @@ VOID save_udirs(VOID)
     fUdirsChanged = FALSE;
     if (udirhead) {
       BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
-      /*save_dir2(s);
-      if (s[strlen(s) - 1] != '\\')
-	strcat(s, "\\");
-      strcat(s, "USERDIRS.DAT");*/
       fp = xfopen(s, "w", pszSrcFile, __LINE__);
       if (fp) {
 	fputs(GetPString(IDS_USERDEFDIRSTEXT), fp);
@@ -772,7 +764,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     else
       wa->nounwriteable = TRUE;
     if (!*wa->szReturnPath)
-      save_dir2(wa->szCurrentPath);
+      strcpy(wa->szCurrentPath, pFM2SaveDirectory);
     else {
       strcpy(wa->szCurrentPath, wa->szReturnPath);
       MakeFullName(wa->szCurrentPath);
@@ -1396,10 +1388,10 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      swp.fl);
     }
     if (!*wa->szCurrentPath1)
-      save_dir2(wa->szCurrentPath1);
+      strcpy(wa->szCurrentPath1, pFM2SaveDirectory);
     MakeFullName(wa->szCurrentPath1);
     if (!*wa->szCurrentPath2)
-      save_dir2(wa->szCurrentPath2);
+      strcpy(wa->szCurrentPath2, pFM2SaveDirectory);
     MakeFullName(wa->szCurrentPath2);
     WinSendDlgItemMsg(hwnd,
 		      WALK_PATH,

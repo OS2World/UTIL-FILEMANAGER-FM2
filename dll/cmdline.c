@@ -75,10 +75,6 @@ VOID load_cmdlines(BOOL DoItYourself)
     else
       MiniLoaded = TRUE;
     BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
-    /*save_dir2(pszCmdLine);
-    if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
-      strcat(pszCmdLine, "\\");
-    strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");*/
     fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
     if (fp) {
       while (x < MAXNUMCMDLINES && !feof(fp)) {
@@ -132,10 +128,6 @@ VOID save_cmdlines(BOOL DoItYourself)
   if (!pszCmdLine)
     return;
   BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
-  /*save_dir2(pszCmdLine);
-  if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
-    strcat(pszCmdLine, "\\");
-  strcat(pszCmdLine, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");*/
   if (CmdLineHead) {
     fp = xfopen(pszCmdLine, "w", pszSrcFile, __LINE__);
     if (fp) {

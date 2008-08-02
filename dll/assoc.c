@@ -143,10 +143,6 @@ VOID load_associations(VOID)
     free_associations();
   assloaded = TRUE;
   BldFullPathName(mask, pFM2SaveDirectory, "ASSOC.DAT");
-  /*save_dir2(mask);
-  if (mask[strlen(mask) - 1] != '\\')
-    strcat(mask, "\\");
-  strcat(mask, "ASSOC.DAT");*/
   fp = _fsopen(mask, "r", SH_DENYWR);
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!pszCmdLine) {
@@ -268,10 +264,6 @@ VOID save_associations(VOID)
     info = next;
   }
 #endif
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-    strcat(s, "ASSOC.DAT");*/
   BldFullPathName(s, pFM2SaveDirectory, "ASSOC.DAT");
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {

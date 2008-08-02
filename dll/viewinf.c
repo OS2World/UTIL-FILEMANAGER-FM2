@@ -543,10 +543,6 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
           }
           BldFullPathName(filename, pFM2SaveDirectory, "FM2VINF.CMD");
-	  /*save_dir2(filename);
-	  if (filename[strlen(filename) - 1] != '\\')
-	    strcat(filename, "\\");
-	  strcat(filename, "FM2VINF.CMD");*/
 	  fp = xfopen(filename, "w", pszSrcFile, __LINE__);
 	  if (fp) {
 	    fprintf(fp, "@ECHO OFF\nSET FM2REF=");

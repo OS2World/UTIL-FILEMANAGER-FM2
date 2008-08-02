@@ -135,10 +135,6 @@ VOID load_masks(VOID)
 
   loadedmasks = TRUE;
   BldFullPathName(s, pFM2SaveDirectory, "FILTER.DAT");
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, "FILTERS.DAT");*/
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (!feof(fp)) {
@@ -178,10 +174,6 @@ VOID save_masks(VOID)
     return;
   if (maskhead) {
     BldFullPathName(s, pFM2SaveDirectory, "FILTER.DAT");
-    /*save_dir2(s);
-    if (s[strlen(s) - 1] != '\\')
-      strcat(s, "\\");
-    strcat(s, "FILTERS.DAT");*/
     fp = xfopen(s, "w", pszSrcFile, __LINE__);
     if (fp) {
       fputs(GetPString(IDS_FILTERFILETEXT), fp);

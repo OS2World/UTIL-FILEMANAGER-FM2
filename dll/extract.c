@@ -13,6 +13,7 @@
   22 Mar 07 GKY Use QWL_USER
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
 
 ***********************************************************************/
 
@@ -174,7 +175,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
 	if (!*arcdata->extractdir)
-	  save_dir2(arcdata->extractdir);
+	  strcpy(arcdata->extractdir, pFM2SaveDirectory);
       }
       WinSetDlgItemText(hwnd, EXT_DIRECTORY, arcdata->extractdir);
       if (!arcdata->info->exwdirs)

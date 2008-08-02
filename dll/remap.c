@@ -73,10 +73,6 @@ VOID load_resources(VOID)
 
   loadedres = TRUE;
   BldFullPathName(s, pFM2SaveDirectory, "RESOURCE.DAT");
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, "RESOURCE.DAT");*/
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (x < MAXNUMRES && !feof(fp)) {
@@ -115,10 +111,6 @@ VOID save_resources(VOID)
   if (!loadedres)
     return;
   BldFullPathName(s, pFM2SaveDirectory, "RESOURCE.DAT");
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, "RESOURCE.DAT");*/
   if (reshead) {
     fp = xfopen(s, "w", pszSrcFile, __LINE__);
     if (fp) {

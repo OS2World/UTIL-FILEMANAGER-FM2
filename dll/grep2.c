@@ -270,10 +270,6 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinEnableWindow(WinWindowFromID(hwnd, GREP_NOSIZEDUPES), FALSE);
 
     BldFullPathName(s, pFM2SaveDirectory, "GREPMASK.DAT");
-    /*save_dir2(s);
-    if (s[strlen(s) - 1] != '\\')
-      strcat(s, "\\");
-    strcat(s, "GREPMASK.DAT");*/
     fp = _fsopen(s, "r", SH_DENYWR);
     if (fp) {
       while (!feof(fp)) {
@@ -951,10 +947,6 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    MPVOID, MPVOID);
         if (sSelect > 0) {
           BldFullPathName(s, pFM2SaveDirectory, "GREPMASK.DAT");
-	  /*save_dir2(s);
-	  if (s[strlen(s) - 1] != '\\')
-	    strcat(s, "\\");
-	  strcat(s, "GREPMASK.DAT");*/
 	  fp = xfopen(s, "w", pszSrcFile, __LINE__);
 	  if (fp) {
 	    fputs(GetPString(IDS_GREPFILETEXT), fp);

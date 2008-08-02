@@ -332,10 +332,6 @@ VOID load_commands(VOID)
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (pszCmdLine) {
     BldFullPathName(pszCmdLine, pFM2SaveDirectory, "COMMANDS.DAT");
-    /*save_dir2(pszCmdLine);
-    if (pszCmdLine[strlen(pszCmdLine) - 1] != '\\')
-      strcat(pszCmdLine, "\\");
-    strcat(pszCmdLine, "COMMANDS.DAT");*/
     fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
     if (fp) {
       while (!feof(fp)) {
@@ -401,10 +397,6 @@ VOID save_commands(VOID)
     return;
   info = cmdhead;
   BldFullPathName(s, pFM2SaveDirectory, "COMMANDS.DAT");
-  /*save_dir2(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
-  strcat(s, "COMMANDS.DAT");*/
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
     fputs(GetPString(IDS_COMMANDFILETEXT), fp);

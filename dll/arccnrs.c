@@ -55,6 +55,7 @@
   14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
   16 Jul 08 GKY Fix trap on viewing multiple files from an archive (misplaced free)
   16 Jul 08 GKY Use TMP directory for temp files if present. Use MakeTempName
+  19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
 
 ***********************************************************************/
 
@@ -3540,7 +3541,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->id = id;
 	dcd->type = ARC_FRAME;
 	if (!pTmpDir)
-          save_dir2(dcd->workdir);
+          strcpy(dcd->workdir, pFM2SaveDirectory);
         MakeTempName(dcd->workdir, ArcTempRoot, 2);
 	  /*if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
 	    strcat(dcd->workdir, "\\");
@@ -3588,7 +3589,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	    (isalpha(*dcd->directory) &&
 	     (driveflags[toupper(*dcd->directory) - 'A'] &
 	      DRIVE_NOTWRITEABLE)))
-	  save_dir2(dcd->directory);
+	  strcpy(dcd->directory, pFM2SaveDirectory);
 	dcd->hwndParent = hwndParent ? hwndParent : HWND_DESKTOP;
 	dcd->hwndFrame = hwndFrame;
 	dcd->hwndClient = hwndClient;

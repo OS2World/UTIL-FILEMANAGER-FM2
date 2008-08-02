@@ -254,10 +254,6 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR s[CCHMAXPATH + 14];
 
         BldFullPathName(s, pFM2SaveDirectory, "PATTERNS.DAT");
-        /*save_dir2(s);
-	if (s[strlen(s) - 1] != '\\')
-	  strcat(s, "\\");
-	strcat(s, "PATTERNS.DAT");*/
 	fp = _fsopen(s, "r", SH_DENYWR);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
@@ -285,10 +281,6 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
-	/*save_dir2(szBuffer);
-	if (szBuffer[strlen(szBuffer) - 1] != '\\')
-	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");*/
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
 	if (fp) {
 	  fputs(GetPString(IDS_LISTPATTERNTEXT), fp);
@@ -306,10 +298,6 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else if (!sMax) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
-	/*save_dir2(szBuffer);
-	if (szBuffer[strlen(szBuffer) - 1] != '\\')
-	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");*/
 	unlinkf("%s", szBuffer);
       }
     }
@@ -618,10 +606,6 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	CHAR s[CCHMAXPATH + 14];
 
         BldFullPathName(s, pFM2SaveDirectory, "PATTERNS.DAT");
-        /*save_dir2(s);
-	if (s[strlen(s) - 1] != '\\')
-	  strcat(s, "\\");
-	strcat(s, "PATTERNS.DAT");*/
 	fp = _fsopen(s, "r", SH_DENYWR);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
@@ -650,10 +634,6 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
-	/*save_dir2(szBuffer);
-	if (szBuffer[strlen(szBuffer) - 1] != '\\')
-	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");*/
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
 	if (fp) {
 	  fputs(GetPString(IDS_LISTPATTERNTEXT), fp);
@@ -671,10 +651,6 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       }
       else if (!sMax) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
-	/*save_dir2(szBuffer);
-	if (szBuffer[strlen(szBuffer) - 1] != '\\')
-	  strcat(szBuffer, "\\");
-	strcat(szBuffer, "PATTERNS.DAT");*/
 	unlinkf("%s", szBuffer);
       }
     }
