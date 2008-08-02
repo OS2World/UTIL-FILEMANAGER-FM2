@@ -27,6 +27,8 @@
   22 Jun 08 GKY Made Felete move to xworkplace trash can on systems that have it
   16 JUL 08 GKY Use TMP directory for temp files
   20 Jul 08 GKY Add save/append filename to clipboard.
+  02 Aug 08 GKY Limit use of "trash can" to local writable fixed drives or to trash can supported
+                drives list if it exists. Fix ability to deselect use of trash can.
 
 ***********************************************************************/
 
@@ -43,6 +45,7 @@
 #define INCL_LONGLONG
 #define INCL_WINPOINTERS
 #define INCL_WINWORKPLACE
+#define INCL_WINSHELLDATA
 
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -1452,8 +1455,10 @@ VOID MassAction(VOID * args)
 	      register INT x;
 	      FILESTATUS3 fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
-	      APIRET error;
-	      HOBJECT hObjectdest, hObjectofObject;
+	      APIRET error = 0;
+              HOBJECT hObjectdest, hObjectofObject;
+              BYTE G_abSupportedDrives[24] = {0};
+              ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1579,10 +1584,20 @@ VOID MassAction(VOID * args)
 		  DosError(FERR_DISABLEHARDERR);
 		  if (wk->li->type == IDM_DELETE){
 		    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-		    if (hObjectdest != NULLHANDLE){
-		      hObjectofObject = WinQueryObject(wk->li->list[x]);
-		      error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-		    }
+                    PrfQueryProfileData(HINI_USER,
+                                        "XWorkplace",
+                                        "TrashCan::Drives",
+                                        G_abSupportedDrives,
+                                        &cbSupportedDrives);
+                    if (hObjectdest != NULLHANDLE && fTrashCan &&
+                        (G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
+                                                1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
+                                                      (DRIVE_REMOVABLE | DRIVE_IGNORE |
+                                                      DRIVE_REMOTE | DRIVE_VIRTUAL |
+                                                      DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
+                        hObjectofObject = WinQueryObject(wk->li->list[x]);
+                        error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+                    }
 		    else
 		      error = DosDelete(wk->li->list[x]);
 		  }
@@ -1592,11 +1607,21 @@ VOID MassAction(VOID * args)
 		    DosError(FERR_DISABLEHARDERR);
 		    make_deleteable(wk->li->list[x]);
 		    if (wk->li->type == IDM_DELETE){
-		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-		      if (hObjectdest != NULLHANDLE){
-			hObjectofObject = WinQueryObject(wk->li->list[x]);
-			error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-		      }
+                      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+                      PrfQueryProfileData(HINI_USER,
+                                          "XWorkplace",
+                                          "TrashCan::Drives",
+                                          G_abSupportedDrives,
+                                          &cbSupportedDrives);
+                      if (hObjectdest != NULLHANDLE && fTrashCan &&
+                          (G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
+                                                  1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
+                                                        (DRIVE_REMOVABLE | DRIVE_IGNORE |
+                                                        DRIVE_REMOTE | DRIVE_VIRTUAL |
+                                                        DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
+                          hObjectofObject = WinQueryObject(wk->li->list[x]);
+                          error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+                      }
 		      else
 			error = DosDelete(wk->li->list[x]);
 		    }
