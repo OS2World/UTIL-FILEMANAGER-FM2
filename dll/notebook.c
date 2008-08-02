@@ -38,6 +38,7 @@
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   31 Jul 08 JBS Ticket 114: Improved code to avoid traps.
+  02 Aug 08 JBS Ticket 114: Improved code to avoid traps.
 
 ***********************************************************************/
 
@@ -1278,8 +1279,6 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           PrfWriteProfileString(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList);
         }
         free(pszTemp);
-      } else {
-        Runtime_Error(pszSrcFile, __LINE__, "Unable to allocate memory");
       }
       if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged)))
       {
@@ -1290,9 +1289,8 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         PostMsg(WinWindowFromID
 	        (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
 	        MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-	pszTemp = xmalloc(strlen(pci->pszFileName) + 1, pszSrcFile, __LINE__);
+	pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
 	if (pszTemp) {
-	  strcpy(pszTemp, pci->pszFileName);
 	  PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID);
 	  /* pszTemp is freed in the UM_SHOWME code */
 	}
