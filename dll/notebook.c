@@ -1269,8 +1269,7 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "ShowEnv", &fShowEnv, sizeof(BOOL));
     {
       char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1, pszSrcFile, __LINE__);
-      if (pszTemp)
-      {
+      if (pszTemp) {
         WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
         strupr(pszTemp);
         if (strcmp(pszTemp, pszTreeEnvVarList)) {
@@ -1291,7 +1290,8 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	        MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
 	if (pszTemp) {
-	  PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID);
+          if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
+            free(pszTemp);
 	  /* pszTemp is freed in the UM_SHOWME code */
 	}
       }
