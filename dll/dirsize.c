@@ -36,6 +36,9 @@
   07 Jul 08 GKY Fixed trap by no longer allocating pci->pszLongName as flag but pointing isroot
                 version to NullStr and all others to NULL.
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory; use pTmpDir for temp files
+  03 Aug 08 GKY Reworked FillInRecSizes to use pci->pszDisplayName for display names and
+                created a more consitent string for passing to DRAWITEM. Finally (I hope) fixed
+                the strlen trap.
 
 ***********************************************************************/
 
@@ -175,8 +178,8 @@ static BOOL ProcessDir(HWND hwndCnr,
       DosError(FERR_DISABLEHARDERR);
     pci->rc.hptrIcon = hptrDir;
     pci->attrFile = 0;
-    pci->pszDispAttr = NullStr;
-    pci->pszSubject = NullStr;
+    pci->pszDispAttr = NULL;
+    pci->pszSubject = NULL;
   } // if got something
   else {
     // No match
@@ -205,8 +208,8 @@ static BOOL ProcessDir(HWND hwndCnr,
       strcat(pp, sp);
     pci->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
   }
-  // fixme to understand this - appears to be indirectly saving length, but why?
-  pci->pszDisplayName = pci->pszFileName + strlen(pci->pszFileName);
+  // Use pszDisplayname for display so no need to save length of pszFileName 03 Aug 08 GKY
+  pci->pszDisplayName = pci->pszFileName;
   pci->rc.pszIcon = pci->pszFileName;
   pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
   if (fForceUpper)
@@ -304,20 +307,20 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
   if (pci) {
 
     float fltPct = 0.0;
-    USHORT c;
     CHAR szCurDir[80];
     CHAR szSubDir[80];
     CHAR szAllDir[80];
-    CHAR szBar[80];
-    CHAR szBuf[CCHMAXPATH + 320];
+    CHAR szBar[101];
+    CHAR szBuf[CCHMAXPATH + 341];
 
     // cbFile = currect directory usage in bytes
     // easize = subdirectory usage in bytes
     CommaFmtULL(szCurDir, sizeof(szCurDir), pci->cbFile, 'K');
-    *szBar = 0;
+    *szBar = NULL;
     pci->pszLongName = NULL;
+    memset(szBuf, 0, sizeof(szBuf));
     if (ullTotalBytes) {
-      register UINT cBar;
+      UINT cBar;
 
       if (isroot) {
 	FSALLOCATE fsa;
@@ -337,22 +340,17 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
       else
 	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
 
+      //Second line for graph reworked 03 AUG 08 GKY
+      memset(szBar, ' ', sizeof(szBar));
       cBar = (UINT) fltPct / 2;
-      if (cBar)
-	memset(szBar, '#', cBar);
-      if (cBar * 2 != (UINT) fltPct) {
-	szBar[cBar] = '=';
-	cBar++;
-      }
-      if (cBar < 50)
-	memset(szBar + cBar, ' ', 50 - cBar);
-      szBar[50] = 0;
+      if (cBar && cBar * 2 != (UINT) fltPct)
+        szBar[cBar] = '=';
+      szBar[100] = 0;
     }
 
     pci->flags = (ULONG) fltPct;
     CommaFmtULL(szSubDir, sizeof(szSubDir), pci->easize, 'K');
     CommaFmtULL(szAllDir, sizeof(szAllDir), pci->cbFile + pci->easize, 'K');
-    c = pci->pszDisplayName - pci->pszFileName;
     sprintf(szBuf,
 	    "%s  %s + %s = %s (%.02lf%%%s)\r%s",
 	    pci->pszFileName,
@@ -362,11 +360,10 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	    fltPct,
 	    isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr,
             szBar);
-    free(pci->pszFileName);
-    pci->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
-    pci->pszDisplayName = pci->pszFileName + c;
-    WinSendMsg(hwndCnr,
-	       CM_INVALIDATERECORD, MPFROMP(&pci), MPFROM2SHORT(1, 0));
+    pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+    // use DisplayName for display hopefully fixes "strlen" trap 02 AUG 08 GKY
+    if (pci->pszDisplayName)
+      WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pci), MPFROM2SHORT(1, 0));
     isroot = FALSE;
   }
   else
@@ -395,12 +392,12 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
     indent = 0;
   }
   if (pciParent) {
-    p = strchr(pciParent->pszFileName, '\r');
+    p = strchr(pciParent->pszDisplayName, '\r'); // GKY use display name for display
     if (p)
       *p = 0;
     fprintf(fp, "%*.*s%s %lu %s%s\n",
 	    indent * 2, indent * 2, " ",
-	    pciParent->pszFileName,
+	    pciParent->pszDisplayName,  //
 	    pciParent->attrFile,
 	    GetPString(IDS_FILETEXT), &"s"[pciParent->attrFile == 1]);
     if (p)
@@ -433,6 +430,7 @@ static VOID FillCnrThread(VOID *args)
   }
 # ifdef FORTIFY
   Fortify_EnterScope();
+  Fortify_BecomeOwner(dirsize);		// We free dirsize
 #  endif
 
   hwndCnr = dirsize->hwndCnr;
@@ -663,7 +661,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    LONG x;
 	    LONG yBottom;
 	    INT boxHeight;
-	    p = strchr(pci->pszFileName, '\r');
+	    p = strchr(pci->pszDisplayName, '\r');
 	    if (p) {
               // draw text
               if (pci->pszLongName == NullStr)  // is root record
@@ -680,8 +678,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      *p = 0;			// Make 1 line high
 
 	      // Calculate nominal graph box height based on font size
-	      GpiQueryTextBox(oi->hps, p - pci->pszFileName,
-			      pci->pszFileName, TXTBOX_COUNT, aptl);
+	      GpiQueryTextBox(oi->hps, p - pci->pszDisplayName,
+			      pci->pszDisplayName, TXTBOX_COUNT, aptl);
 	      boxHeight = aptl[TXTBOX_TOPRIGHT].y - aptl[TXTBOX_BOTTOMRIGHT].y;
 	      boxHeight -= 4;
 
@@ -693,8 +691,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ptl.x = oi->rclItem.xLeft;
 	      ptl.y = yBottom + boxHeight + 6;	// 03 Aug 07 SHL
 	      // GpiMove(oi->hps, &ptl);
-	      GpiCharStringAt(oi->hps, &ptl, p - pci->pszFileName,
-			      pci->pszFileName);
+	      GpiCharStringAt(oi->hps, &ptl, p - pci->pszDisplayName,
+			      pci->pszDisplayName);
 
 	      *p = '\r';		// Restore
 
@@ -851,8 +849,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *szFileName = 0;
 	  while (pci && (INT) pci != -1) {
 	    memset(szTemp, 0, sizeof(szTemp));
-	    strncpy(szTemp, pci->pszFileName,
-		    pci->pszDisplayName - pci->pszFileName);
+	    strcpy(szTemp, pci->pszFileName);
 	    strrev(szTemp);
 	    if (*szFileName && *szTemp != '\\')
 	      strcat(szFileName, "\\");
