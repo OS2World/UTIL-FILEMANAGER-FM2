@@ -1695,7 +1695,6 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(FileMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(FileMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(FileMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIP);
-      SetConditionalCascade(FileMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(FileMenu, IDM_VIEWSUBMENU, IDM_VIEW);
       SetConditionalCascade(FileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(FileMenu, IDM_COLLECTMENU, IDM_COLLECT);
@@ -1742,7 +1741,6 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorFileMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(CollectorFileMenu, IDM_SAVESUBMENU,
                             IDM_SAVETOCLIP);
-      SetConditionalCascade(CollectorFileMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(CollectorFileMenu, IDM_VIEWSUBMENU, IDM_VIEW);
       SetConditionalCascade(CollectorFileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(CollectorFileMenu, IDM_DELETESUBMENU,
@@ -1765,7 +1763,6 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorDirMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(CollectorDirMenu, IDM_SAVESUBMENU,
                             IDM_SAVETOCLIP);
-      SetConditionalCascade(CollectorDirMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(CollectorDirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(CollectorDirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(CollectorDirMenu, IDM_DELETESUBMENU,
