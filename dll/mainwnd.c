@@ -2523,13 +2523,15 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       HPS hps;
       RECTL rcl;
-      ULONG lColor;
+      ULONG lColor = NULL;
 
       hps = WinBeginPaint(hwnd, (HPS)0, NULL);
       if (hps) {
 	GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
 	WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
-			  sizeof(lColor), &lColor, 0);
+                          sizeof(lColor), &lColor, 0);
+        if (!lColor)
+          lColor = CLR_PALEGRAY;
 	WinQueryWindowRect(hwnd, &rcl);
 	WinFillRect(hps, &rcl, lColor);
 	WinEndPaint(hps);
