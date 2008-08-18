@@ -3600,7 +3600,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	np[x].usFrameId == CFG9_FRAME)
     {
       // 10 Jan 08 SHL fixme to document what UM_SETDIR 1 means
-      PostMsg(MainObjectHwnd, UM_SETDIR, MPFROMLONG(1), MPVOID);
+      //PostMsg(MainObjectHwnd, UM_SETDIR, MPFROMLONG(1), MPVOID);
       PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
 	      BKM_TURNTOPAGE, MPFROMLONG(np[x].ulPageId), MPVOID);
       PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(np[x].hwnd), MPVOID);
@@ -3655,6 +3655,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
+      SaveLastPageIndex(hwnd);
       WinDismissDlg(hwnd, 1);
       break;
 
@@ -3715,7 +3716,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hwndNotebook = (HWND) 0;
     break;
   case WM_CLOSE:
-    SaveLastPageIndex(hwnd);
+    //SaveLastPageIndex(hwnd);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
