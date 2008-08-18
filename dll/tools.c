@@ -769,7 +769,8 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 ((invisible) ? T_INVISIBLE : 0) |
 			 ((separator) ? T_SEPARATOR : 0) |
 			 ((myicon) ? T_MYICON : 0) | ((istext) ? T_TEXT : 0));
-	  add_tool(tool);
+          add_tool(tool);
+          save_tools(NULL);
 	  WinDismissDlg(hwnd, tool->id);
 	}
       }
@@ -1027,5 +1028,6 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
-#pragma alloc_text(TOOLS,load_tools,save_tools,add_tool,insert_tool,del_tool,free_tools,swap_tools,load_quicktools,save_quicktools)
+#pragma alloc_text(TOOLS,load_tools,save_tools,add_tool,insert_tool,del_tool,free_tools,swap_tools)
+#pragma alloc_text(TOOLS,load_quicktools,save_quicktools)
 #pragma alloc_text(TOOLS1,ReOrderToolsProc,PickToolProc,AddToolProc,ToolIODlgProc)
