@@ -23,6 +23,7 @@
   16 Feb 08 GKY Changed _fsopen flag so a new list file can be created
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   20 Jul 08 GKY Modify ListtoClipHab to provide either fullpath name or filename for save to clipboard
+  24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
 
 ***********************************************************************/
 

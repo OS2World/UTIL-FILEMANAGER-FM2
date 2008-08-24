@@ -18,6 +18,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
+  24 Aug 08 GKY Warn full drive on save of .DAT & .TLS files; prevent loss of existing file
 
 ***********************************************************************/
 

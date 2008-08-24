@@ -25,6 +25,7 @@
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
   29 Feb 08 GKY Changes to enable user settable command line length
   24 Aug 08 GKY Fix truncation of cmdline length to 3 characters is now MaxComLineStrg
+  24 Aug 08 GKY Warn full drive on save of .BB2 file; prevent loss of existing file
 
 ***********************************************************************/
 

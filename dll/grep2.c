@@ -20,6 +20,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
+  24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
 
   fixme for more excess locals to be gone
 

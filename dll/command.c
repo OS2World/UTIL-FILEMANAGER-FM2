@@ -25,6 +25,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   18 Jul 08 SHL Add Fortify support
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
+  24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
 
 ***********************************************************************/
 
