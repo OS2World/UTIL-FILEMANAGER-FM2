@@ -111,7 +111,7 @@ VOID save_resources(VOID)
   if (!loadedres)
     return;
   BldFullPathName(s, pFM2SaveDirectory, "RESOURCE.DAT");
-  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 0) == 2)
+  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   if (reshead) {
     fp = xfopen(s, "w", pszSrcFile, __LINE__);

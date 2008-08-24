@@ -181,7 +181,6 @@ LONG get_long_from_window(HWND hwnd, USHORT id)
   return atol(s);
 }
 
-#pragma alloc_text (AVV2,nonull,rewrite_archiverbb2,checkfile)
 
 // nonull - convert NULL pointer to empty string
 
@@ -224,6 +223,9 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
 	   GetPString(IDS_NOTETEXT), GetPString(IDS_SAVEARCBB2TEXT));
     archiverbb2 = GetPString(IDS_ARCHIVERBB2);
   }
+  /* Check space on drive*/
+  if (CheckDriveSpaceAvail(archiverbb2, ullDATFileSpaceNeeded * 4, 1) == 2) //* 4 is because this file is larger than other .dat files
+    return; //already gave error msg
 
   /* save a backup */
   psz = strrchr(archiverbb2, '.');
@@ -235,8 +237,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     DosMove(archiverbb2, sz);
     fpOld = fopen(sz, "r");		// OK for file not to exist
   }
-  if (CheckDriveSpaceAvail(archiverbb2, ullDATFileSpaceNeeded * 4, 0) == 2) //* 4 is because this file is larger than other .dat files
-    return; //already gave error msg
+
   fpNew = fopen(archiverbb2, "w");
 
   if (fpNew) {
@@ -401,7 +402,6 @@ static PSZ checkfile(PSZ file, INT * error)
   return p;
 }
 
-#pragma alloc_text (AVV3,check_archiver,ArcReviewDlgProc)
 
 static BOOL check_archiver(HWND hwnd, ARC_TYPE * info)
 {
@@ -966,3 +966,5 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 #pragma alloc_text(AVV,get_int_from_window,get_int2_from_window)
 #pragma alloc_text(AVV,get_long_from_window,get_int3_from_window)
 #pragma alloc_text(AVV,get_int4_from_window,free_and_strdup_quoted_from_window)
+#pragma alloc_text (AVV2,nonull,rewrite_archiverbb2,checkfile)
+#pragma alloc_text (AVV3,check_archiver,ArcReviewDlgProc)

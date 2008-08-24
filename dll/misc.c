@@ -2250,7 +2250,7 @@ INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
       return 0;
     }
     else {
-      if (ullFreeQty - ullSpaceNeeded > 0) {
+      if (ullFreeQty > ullSpaceNeeded) {
         ret = saymsg(MB_YESNO,
                      HWND_DESKTOP,
                      NullStr,

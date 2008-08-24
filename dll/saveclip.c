@@ -281,7 +281,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
-        if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 0) == 2)
+        if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 1) == 2)
           break; //already gave error msg
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
 	if (fp) {
@@ -636,7 +636,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
-        if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 0) == 2)
+        if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 1) == 2)
           break; //already gave error msg
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
 	if (fp) {

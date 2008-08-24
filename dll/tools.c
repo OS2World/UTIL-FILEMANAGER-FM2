@@ -92,7 +92,7 @@ VOID save_quicktools(VOID)
   if (!quicktool[0])
     return;
   BldFullPathName(s, pFM2SaveDirectory, "QUICKTLS.DAT");
-  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 0) == 2)
+  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
@@ -209,7 +209,7 @@ VOID save_tools(CHAR * filename)
     unlinkf("%s", filename);
     return;
   }
-  if (CheckDriveSpaceAvail(filename, ullDATFileSpaceNeeded, 0) == 2)
+  if (CheckDriveSpaceAvail(filename, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   fp = xfopen(filename, "w", pszSrcFile, __LINE__);
   if (fp) {
