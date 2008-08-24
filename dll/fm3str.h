@@ -115,6 +115,12 @@
 #define IDS_DRAGFILEOBJTEXT                                   83
 #define IDS_RESCANSUGGESTEDTEXT                               84
 #define IDS_DRIVESMENUTEXT                                    85
+#define IDS_DRIVESPACELIMITED                                 86
+#define IDS_TMPDRIVESPACELIMITED                              87
+#define IDS_SAVETMPDRIVESPACELIMITED                          88
+#define IDS_SAVEDRIVESPACELIMITED                             89
+#define IDS_DRIVESPACELIMITEDTMPSAVE                          90
+#define IDS_DRIVESPACEEXCEEDED                                91
 #define IDS_OPENCMDTEXT                                       93
 #define IDS_CLOSECMDTEXT                                      94
 #define IDS_SAVECMDTEXT                                       95

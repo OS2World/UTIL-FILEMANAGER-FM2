@@ -544,6 +544,8 @@ char *GetCmdSpec(BOOL dos);
 void Broadcast(HAB hab, HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame);
 BOOL SwitchCommand(HWND hwndMenu, USHORT cmd);
+INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
+                         ULONGLONG ullFreeSpaceWhenComplete);
 
 /* mainwnd.c */
 ULONG CountDirCnrs(HWND hwndParent);
@@ -1189,6 +1191,7 @@ DATADEF FILE *LogFileHandle;
 #define FILESTOGET_MAX  4096
 
 DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL;
+DATADEF ULONGLONG ullTmpSpaceNeeded;
 DATADEF long prnwidth, prnlength, prntmargin, prnbmargin, prnlmargin,
   prnrmargin, prnspacing, prntabspaces;
 DATADEF BOOL prnpagenums, prnformat, prnformfeedbefore, prnformfeedafter,

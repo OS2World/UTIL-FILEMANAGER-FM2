@@ -50,6 +50,7 @@
   17 Jul 08 SHL Add GetTidForWindow for Fortify support
   20 Jul 08 GKY Add save/append filename to clipboard.
                 Change menu wording to make these easier to find
+  23 Aug 08 GKY Add CheckDriveSpaceAvail To pre check drive space to prevent failures
 
 ***********************************************************************/
 
@@ -2215,9 +2216,70 @@ BOOL SwitchCommand(HWND hwndMenu, USHORT cmd)
   return ret;
 }
 
+/** CheckDriveSpaceAvail
+ *  Take space needed and checks that drive has at least 1000 bits in excess of the required space.
+ *  Returns 0 if sufficient space is available; 1 if the drive is full & 2 on abort of operation
+ *  when the drive would have less than ullFreeSpaceWhenComplete remaining or has insufficient space.
+ */
+
+INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
+                          ULONGLONG ullFreeSpaceWhenComplete)
+{
+  FSALLOCATE fsa;
+  ULONGLONG  ullFreeQty;
+  APIRET ret;
+
+  DosQueryFSInfo(toupper(*pTargetPath) - 'A' + 1, FSIL_ALLOC, &fsa, sizeof(FSALLOCATE));
+  ullFreeQty = (ULONGLONG) fsa.cUnitAvail * (fsa.cSectorUnit * fsa.cbSector);
+  if (ullFreeQty > ullSpaceNeeded + ullFreeSpaceWhenComplete)
+    return 0;
+  else if (ullFreeQty < ullSpaceNeeded + 1024) {
+    CHAR szKB[20];
+
+    if (ullFreeSpaceWhenComplete == 0)
+      ullSpaceNeeded = 0;
+    commafmt(szKB, sizeof(szKB),
+             (ULONG) ullFreeQty - ullSpaceNeeded);
+    if (ullFreeSpaceWhenComplete == 0) {
+      saymsg(MB_OK,
+	     HWND_DESKTOP,
+	     NullStr,
+             GetPString(IDS_DRIVESPACELIMITEDTMPSAVE),
+             pTargetPath,
+             szKB);
+      return 0;
+    }
+    else {
+      if (ullFreeQty - ullSpaceNeeded > 0) {
+        ret = saymsg(MB_YESNO,
+                     HWND_DESKTOP,
+                     NullStr,
+                     GetPString(IDS_DRIVESPACELIMITED),
+                     pTargetPath,
+                     szKB);
+        if (ret == MBID_YES)
+          return 0;
+        else
+          return 2;
+      }
+      else {
+        saymsg(MB_OK,
+               HWND_DESKTOP,
+               NullStr,
+               GetPString(IDS_DRIVESPACEEXCEEDED),
+               pTargetPath);
+        return 2;
+      }
+    }
+  }
+  else
+    return 1;
+}
+
 #pragma alloc_text(MAINWND5,SetSysMenu)
 #pragma alloc_text(MISC1,BoxWindow,PaintRecessedWindow,PostMsg,PaintSTextWindow,IsFm2Window)
 #pragma alloc_text(MISC1,FixSwitchList,FindDirCnr,CurrentRecord,SetShiftState,AddToListboxBottom)
+#pragma alloc_text(MISC1,CheckDriveSpaceAvail)
 
 #ifdef FORTIFY
 #pragma alloc_text(MISC1,GetTidForWindow)

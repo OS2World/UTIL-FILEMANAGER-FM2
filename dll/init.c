@@ -54,6 +54,8 @@
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   20 Jul 08 GKY Add support to delete orphaned tmp directories without deleting tmp of other
                 running sessions
+  23 Aug 08 GKY Check that space on TMP & FM2 save drives exceed 5 GiB; Done to allow user setting of
+                minimum size in future
 
 ***********************************************************************/
 
@@ -715,7 +717,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       }
     }
   }
-  BldFullPathName(ArcTempRoot, pTmpDir, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
 
   //Save the FM2 save directory name. This is the location of the ini, dat files etc.
   {
@@ -723,6 +724,43 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     save_dir2(temp);
     pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
   }
+  {
+    CHAR szKBTmp[20];
+
+    ullTmpSpaceNeeded = 5120000;
+    CommaFmtULL(szKBTmp, sizeof(szKBTmp),
+                ullTmpSpaceNeeded, 'M');
+    printf("%s\r", szKBTmp); fflush(stdout);
+    if (pTmpDir && CheckDriveSpaceAvail(pTmpDir, ullTmpSpaceNeeded, 0) == 1) {
+      if (CheckDriveSpaceAvail(pFM2SaveDirectory, ullTmpSpaceNeeded, 0) == 0){
+        ret = saymsg(MB_YESNO,
+                     HWND_DESKTOP,
+                     NullStr,
+                     GetPString(IDS_TMPDRIVESPACELIMITED),
+                     pTmpDir,
+                     szKBTmp);
+        if (ret == MBID_YES)
+          pTmpDir = pFM2SaveDirectory;
+      }
+      else
+        saymsg(MB_OK,
+               HWND_DESKTOP,
+               NullStr,
+               GetPString(IDS_SAVETMPDRIVESPACELIMITED),
+               pTmpDir,
+               szKBTmp,
+               pFM2SaveDirectory,
+               szKBTmp);
+    }
+    else if (CheckDriveSpaceAvail(pFM2SaveDirectory, ullTmpSpaceNeeded, 0) == 1)
+      saymsg(MB_OK,
+             HWND_DESKTOP,
+             NullStr,
+             GetPString(IDS_SAVEDRIVESPACELIMITED),
+             pFM2SaveDirectory,
+             szKBTmp);
+  }
+  BldFullPathName(ArcTempRoot, pTmpDir, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
 
   // initialize random number generator
   srand(time(NULL) + clock());
