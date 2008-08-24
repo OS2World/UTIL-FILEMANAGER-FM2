@@ -39,6 +39,7 @@
   03 Aug 08 GKY Reworked FillInRecSizes to use pci->pszDisplayName for display names and
                 created a more consitent string for passing to DRAWITEM. Finally (I hope) fixed
                 the strlen trap.
+  23 Aug 08 GKY Fix memory leak (failure to free cnritems)
 
 ***********************************************************************/
 
