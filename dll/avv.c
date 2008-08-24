@@ -24,6 +24,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   06 Jan 08 GKY Use NormalizeCmdLine to check program strings on entry
   29 Feb 08 GKY Changes to enable user settable command line length
+  24 Aug 08 GKY Fix truncation of cmdline length to 3 characters is now MaxComLineStrg
 
 ***********************************************************************/
 
@@ -100,7 +101,7 @@ static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest)
   szCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
   if (szCmdLine) {
     xfree(pszDest, pszSrcFile, __LINE__);
-    WinQueryDlgItemText(hwnd, id, sizeof(szCmdLine), szCmdLine);
+    WinQueryDlgItemText(hwnd, id, MaxComLineStrg, szCmdLine);
     pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
     if (pszWorkBuf) {
       NormalizeCmdLine(pszWorkBuf, szCmdLine);
@@ -234,7 +235,8 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     DosMove(archiverbb2, sz);
     fpOld = fopen(sz, "r");		// OK for file not to exist
   }
-
+  if (CheckDriveSpaceAvail(archiverbb2, ullDATFileSpaceNeeded * 4, 0) == 2) //* 4 is because this file is larger than other .dat files
+    return; //already gave error msg
   fpNew = fopen(archiverbb2, "w");
 
   if (fpNew) {
