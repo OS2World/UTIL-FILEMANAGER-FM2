@@ -785,7 +785,7 @@ VOID Action(VOID * args)
 			&& !(fs4.attrFile & FILE_DIRECTORY)) {
 
 		      FSALLOCATE fsa;
-		      ULONG clFreeBytes;
+		      ULONGLONG ullFreeBytes;
 		      CHAR *ptr;
 		      INT cntr;
 
@@ -794,10 +794,10 @@ VOID Action(VOID * args)
 		      if (!DosQueryFSInfo(toupper(*newname) - '@',
 					  FSIL_ALLOC,
 					  &fsa, sizeof(FSALLOCATE))) {
-			// Assume <2GB since file did not fit
-			clFreeBytes = fsa.cUnitAvail * fsa.cSectorUnit *
+			// Assume large file support
+			ullFreeBytes = (ULONGLONG) fsa.cUnitAvail * fsa.cSectorUnit *
 			  fsa.cbSector;
-			if (clFreeBytes) {
+			if (ullFreeBytes) {
 			  // Find item that will fit in available space
 			  for (cntr = x + 1; wk->li->list[cntr]; cntr++) {
 			    DosError(FERR_DISABLEHARDERR);
@@ -807,7 +807,7 @@ VOID Action(VOID * args)
 						  sizeof(fs4)) &&
 				!(fs4.attrFile & FILE_DIRECTORY) &&
 				// fixme to use CBLIST_TO_EASIZE?
-				fs4.cbFile + fs4.cbList <= clFreeBytes) {
+				fs4.cbFile + fs4.cbList <= ullFreeBytes) {
 			      // Swap with failing item
 			      ptr = wk->li->list[x];
 			      wk->li->list[x] = wk->li->list[cntr];
