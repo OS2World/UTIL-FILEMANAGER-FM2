@@ -58,6 +58,7 @@
 #include "dircnrs.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "filldir.h"			// EmptyCnr...
 #include "fm3dll.h"
 
 #include "fortify.h"
@@ -362,8 +363,13 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
             szBar);
     pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
     // use DisplayName for display hopefully fixes "strlen" trap 02 AUG 08 GKY
-    if (pci->pszDisplayName)
+    if (pci->pszDisplayName) {
+#     ifdef FORTIFY
+      Fortify_ChangeScope(pci->pszDisplayName, -1);
+      Fortify_ChangeScope(pci->pszFileName, -1);
+#     endif
       WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pci), MPFROM2SHORT(1, 0));
+    }
     isroot = FALSE;
   }
   else
@@ -1015,6 +1021,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     pState = INSTDATA(hwnd);
+    EmptyCnr(hwnd);
     if (pState) {
       pState->chStopFlag = (BYTE)0xff;
       if (pState->hptr)

@@ -647,7 +647,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP:
 #   ifdef FORTIFY
-    DbgMsg(pszSrcFile, __LINE__, "UM_SETUP hwnd %p TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL fixme
+    //DbgMsg(pszSrcFile, __LINE__, "UM_SETUP hwnd %p TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL fixme
     Fortify_EnterScope();
 #   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);

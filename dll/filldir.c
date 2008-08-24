@@ -1640,6 +1640,16 @@ VOID FreeCnrItemData(PCNRITEM pci)
     free(psz);
   }
 
+  if (pci->pszDisplayName &&
+      pci->pszDisplayName != NullStr &&
+      pci->pszDisplayName != pci->pszFileName &&
+      pci->pszDisplayName != strrchr(pci->pszFileName, '\\') &&
+      pci->pszDisplayName != strrchr(pci->pszFileName, '\\') + 1) {
+    psz = pci->pszDisplayName;
+    pci->pszDisplayName = NULL;		// for debug
+    free(psz);
+}
+
   if (pci->pszFileName && pci->pszFileName != NullStr) {
     psz = pci->pszFileName;
     // pci->pszFileName = NullStr;
