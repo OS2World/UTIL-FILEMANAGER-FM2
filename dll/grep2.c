@@ -947,6 +947,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    MPVOID, MPVOID);
         if (sSelect > 0) {
           BldFullPathName(s, pFM2SaveDirectory, "GREPMASK.DAT");
+          if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 0) == 2)
+            break; //already gave error msg
 	  fp = xfopen(s, "w", pszSrcFile, __LINE__);
 	  if (fp) {
 	    fputs(GetPString(IDS_GREPFILETEXT), fp);

@@ -444,15 +444,6 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
     info = find_type(arcname, NULL);
   arctemp = xmallocz(CCHMAXPATH, pszSrcFile, __LINE__);
   MakeTempName(arctemp, ArcTempRoot, 2);
-  /*for (x = 0; x < 99; x++) {
-    sprintf(arctemp, "%s.%03x", ArcTempRoot, (clock() & 4095L));
-    if (IsFile(arctemp) == 1)
-      DosSleep(rand() % 100);
-    else
-      break;
-  } */
-
-  //printf("%s\r", arctemp); fflush(stdout);
 
 ReTry:
 

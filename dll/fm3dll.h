@@ -1191,7 +1191,7 @@ DATADEF FILE *LogFileHandle;
 #define FILESTOGET_MAX  4096
 
 DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL;
-DATADEF ULONGLONG ullTmpSpaceNeeded;
+DATADEF ULONGLONG ullTmpSpaceNeeded, ullDATFileSpaceNeeded;
 DATADEF long prnwidth, prnlength, prntmargin, prnbmargin, prnlmargin,
   prnrmargin, prnspacing, prntabspaces;
 DATADEF BOOL prnpagenums, prnformat, prnformfeedbefore, prnformfeedafter,

@@ -1092,6 +1092,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   prnspacing = 1;
   prntabspaces = 8;
   CollectorsortFlags = sortFlags = SORT_DIRSFIRST;
+  ullDATFileSpaceNeeded = 10000;
 
   //Get default Country info
   {

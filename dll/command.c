@@ -397,6 +397,8 @@ VOID save_commands(VOID)
     return;
   info = cmdhead;
   BldFullPathName(s, pFM2SaveDirectory, "COMMANDS.DAT");
+  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 0) == 2)
+    return; //already gave error msg
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
     fputs(GetPString(IDS_COMMANDFILETEXT), fp);

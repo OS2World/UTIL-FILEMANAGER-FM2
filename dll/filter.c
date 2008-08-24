@@ -174,6 +174,8 @@ VOID save_masks(VOID)
     return;
   if (maskhead) {
     BldFullPathName(s, pFM2SaveDirectory, "FILTER.DAT");
+    if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 0) == 2)
+    return; //already gave error msg
     fp = xfopen(s, "w", pszSrcFile, __LINE__);
     if (fp) {
       fputs(GetPString(IDS_FILTERFILETEXT), fp);

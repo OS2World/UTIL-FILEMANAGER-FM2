@@ -128,6 +128,8 @@ VOID save_cmdlines(BOOL DoItYourself)
   if (!pszCmdLine)
     return;
   BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+  if (CheckDriveSpaceAvail(pszCmdLine, ullDATFileSpaceNeeded, 0) == 2)
+    return; //already gave error msg
   if (CmdLineHead) {
     fp = xfopen(pszCmdLine, "w", pszSrcFile, __LINE__);
     if (fp) {

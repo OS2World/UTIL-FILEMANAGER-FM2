@@ -402,6 +402,8 @@ VOID save_udirs(VOID)
     fUdirsChanged = FALSE;
     if (udirhead) {
       BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
+      if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 0) == 2)
+        return; //already gave error msg
       fp = xfopen(s, "w", pszSrcFile, __LINE__);
       if (fp) {
 	fputs(GetPString(IDS_USERDEFDIRSTEXT), fp);
