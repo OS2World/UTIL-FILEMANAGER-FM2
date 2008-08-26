@@ -56,6 +56,8 @@
   16 Jul 08 GKY Fix trap on viewing multiple files from an archive (misplaced free)
   16 Jul 08 GKY Use TMP directory for temp files if present. Use MakeTempName
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
+  25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
+                less than 10 KiB (It hangs and can't be closed)
 
 ***********************************************************************/
 
@@ -443,7 +445,14 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   if (!info)
     info = find_type(arcname, NULL);
   arctemp = xmallocz(CCHMAXPATH, pszSrcFile, __LINE__);
+  if (CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) == 1)
+    saymsg(MB_OK,
+           HWND_DESKTOP,
+           NullStr,
+           GetPString(IDS_ARCTMPDRIVESPACELIMITED),
+           ArcTempRoot);
   MakeTempName(arctemp, ArcTempRoot, 2);
+
 
 ReTry:
 
@@ -2134,9 +2143,10 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	pci = WinSendMsg(hwnd,
 			 CM_SEARCHSTRING,
 			 MPFROMP(&srch), MPFROMLONG(CMA_FIRST));
-	if (pci && (INT) pci != -1) {
+        if (pci && (INT) pci != -1) {
 
-	  USHORT attrib = CRA_CURSORED;
+          USHORT attrib = CRA_CURSORED;
+
 
 	  /* make found item current item */
 	  if (!stricmp(pci->pszFileName, dcd->szCommonName))
@@ -2280,7 +2290,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pci = WinSendMsg(hwnd,
 			   CM_QUERYRECORDEMPHASIS,
 			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-	  if (pci && (INT) pci != -1) {
+          if (pci && (INT) pci != -1) {
 	    if (fSplitStatus && hwndStatus2) {
 	      if (dcd->ullTotalBytes)
 		CommaFmtULL(tb, sizeof(tb), pci->cbFile, ' ');
@@ -2634,7 +2644,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (mp1 && !IsFile((CHAR *) mp1)) {
 	OpenDirCnr((HWND) 0, hwndMain, dcd->hwndFrame, FALSE, (char *)mp1);
       }
-      else if (mp1 && IsFile(mp1) == 1) {
+      else if (mp1 && IsFile(mp1) == 1 &&
+               CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2) {
 	StartArcCnr(HWND_DESKTOP,
 		    dcd->hwndFrame, (CHAR *) mp1, 4, (ARC_TYPE *) mp2);
       }
@@ -3364,6 +3375,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       WinDestroyWindow(ArcCnrMenu);
     ArcMenu = ArcCnrMenu = (HWND) 0;
     EmptyArcCnr(hwnd);
+#     ifdef FORTIFY
+    Fortify_LeaveScope();
+#     endif
     break;
   }
   if (dcd && dcd->oldproc){

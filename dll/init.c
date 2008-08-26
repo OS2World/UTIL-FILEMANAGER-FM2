@@ -713,7 +713,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
         ret = DosCreateDir(szTempName, 0);
         if (!ret) {   //check writable
           pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);
-        } //fixme to check freespace > 5 MB
+        }
       }
     }
   }
@@ -724,21 +724,16 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     save_dir2(temp);
     pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
   }
+  // Check free space on TMP and FM2 Save drives
   {
-    CHAR szKBTmp[20];
-
     ullTmpSpaceNeeded = 5120000;
-    CommaFmtULL(szKBTmp, sizeof(szKBTmp),
-                ullTmpSpaceNeeded, 'M');
-    printf("%s\r", szKBTmp); fflush(stdout);
     if (pTmpDir && CheckDriveSpaceAvail(pTmpDir, ullTmpSpaceNeeded, 0) == 1) {
       if (CheckDriveSpaceAvail(pFM2SaveDirectory, ullTmpSpaceNeeded, 0) == 0){
         ret = saymsg(MB_YESNO,
                      HWND_DESKTOP,
                      NullStr,
                      GetPString(IDS_TMPDRIVESPACELIMITED),
-                     pTmpDir,
-                     szKBTmp);
+                     pTmpDir);
         if (ret == MBID_YES)
           pTmpDir = pFM2SaveDirectory;
       }
@@ -748,17 +743,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
                NullStr,
                GetPString(IDS_SAVETMPDRIVESPACELIMITED),
                pTmpDir,
-               szKBTmp,
-               pFM2SaveDirectory,
-               szKBTmp);
+               pFM2SaveDirectory);
     }
     else if (CheckDriveSpaceAvail(pFM2SaveDirectory, ullTmpSpaceNeeded, 0) == 1)
       saymsg(MB_OK,
              HWND_DESKTOP,
              NullStr,
              GetPString(IDS_SAVEDRIVESPACELIMITED),
-             pFM2SaveDirectory,
-             szKBTmp);
+             pFM2SaveDirectory);
   }
   BldFullPathName(ArcTempRoot, pTmpDir, fAmAV2 ? "$AV$ARC$" : "$FM$ARC$");
 

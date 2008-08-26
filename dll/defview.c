@@ -17,6 +17,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   20 Dec 07 GKY Open jpg files with OS2 object default since image.exe fails
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
+                less than 10 KiB (It hangs and can't be closed)
 
 ***********************************************************************/
 
@@ -303,7 +305,8 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
     return;
   }
 
-  if (ExecAssociation(hwnd, filename) == -1) {
+  if (ExecAssociation(hwnd, filename) == -1 &&
+      CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2) {
     hwndArc = StartArcCnr((fExternalArcboxes || !swp ||
 			   strcmp(realappname, FM3Str)) ?
 			  HWND_DESKTOP :

@@ -53,6 +53,8 @@
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   20 Jul 08 GKY Add save/append filename to clipboard.
                 Change menu wording to make these easier to find
+  25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
+                less than 10 KiB (It hangs and can't be closed)
 
 ***********************************************************************/
 
@@ -1442,7 +1444,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (dcd) {
       if (mp1 && !IsFile((CHAR *)mp1))
 	OpenDirCnr(HWND_DESKTOP, hwndMain, dcd->hwndFrame, FALSE, (PSZ) mp1);
-      else if (mp1 && IsFile(mp1) == 1)
+      else if (mp1 && IsFile(mp1) == 1 &&
+               CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2)
 	StartArcCnr(HWND_DESKTOP,
 		    dcd->hwndFrame, (CHAR *)mp1, 4, (ARC_TYPE *) mp2);
     }

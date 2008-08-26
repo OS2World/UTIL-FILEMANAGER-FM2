@@ -47,6 +47,8 @@
                 Change menu wording to make these easier to find
   02 Aug 08 GKY Always pass temp variable point to treecnr UM_SHOWME to avoid
                 freeing dcd->directory early
+  25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
+                less than 10 KiB (It hangs and can't be closed)
 
 ***********************************************************************/
 
@@ -1603,7 +1605,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (mp1 && !IsFile((CHAR *)mp1)) {
 	OpenDirCnr(hwnd, dcd->hwndParent, dcd->hwndFrame, FALSE, (char *)mp1);
       }
-      else if (mp1 && IsFile(mp1) == 1) {
+      else if (mp1 && IsFile(mp1) == 1 &&
+               CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2) {
 	StartArcCnr(HWND_DESKTOP,
 		    dcd->hwndFrame, (CHAR *)mp1, 4, (ARC_TYPE *) mp2);
       }

@@ -85,12 +85,12 @@ Link
  [Rescan suggested]
 Dri~ves...
 The target path %s will have less then %s bytes of space remaining following this operation. Do you wish to continue?
-The TMP directory %s has less then %s of space. Do you wish to use the FM/2 save directory for temporary files? In any case you should free some space on this drive
-The TMP directory %s has less then %s of space & The FM/2 save directory %s has less then %s of space. You should free some space on these drives
-The FM2 save directory %s has less then %s of space. You should free some space on this drive
-The target path %s will have less then %s bytes of space remaining following this operation. You should free some space on this drive immediately
+The TMP directory %s has limited space remaining. Do you wish to use the FM/2 save directory for temporary files? In any case you should free some space on this drive
+The TMP directory %s & the FM/2 save directory %s both have limited space remaining. You should free some space on these drives
+The FM2 save directory %s has limited space remaining. You should free some space on this drive
+FM/2's TMP and/or save directory has limited space remaining. You should free some space on this drive immediately
 The target path %s has inadequate space remaining for the operation requested. Free some space and try again.
-
+The TMP directory %s has limited space remaining. This will limit your ability to view large files. You should free some space on this drive
 /OPEN
 /CLOSE
 /SAVE

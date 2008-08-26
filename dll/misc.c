@@ -2236,17 +2236,14 @@ INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
   else if (ullFreeQty < ullSpaceNeeded + 1024) {
     CHAR szKB[20];
 
-    if (ullFreeSpaceWhenComplete == 0)
-      ullSpaceNeeded = 0;
-    commafmt(szKB, sizeof(szKB),
-             (ULONG) ullFreeQty - ullSpaceNeeded);
+    CommaFmtULL(szKB, sizeof(szKB),
+                ullFreeQty - ullSpaceNeeded, ' ');
     if (ullFreeSpaceWhenComplete == 0) {
       saymsg(MB_OK,
 	     HWND_DESKTOP,
 	     NullStr,
              GetPString(IDS_DRIVESPACELIMITEDTMPSAVE),
-             pTargetPath,
-             szKB);
+             pTargetPath);
       return 0;
     }
     else {

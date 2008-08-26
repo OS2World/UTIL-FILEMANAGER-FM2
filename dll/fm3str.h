@@ -19,6 +19,7 @@
   10 Feb 08 GKY Add strings to implement bubble help for bitmap menu items
   28 Jun 08 JBS Add string for warning message for changing/deleting FN2SHUTDOWN state
   17 Jul 08 JBS "Renumbered" IDS_SHUTDOWNSTATE because its old numbers was "in use"
+  24 Aug 08 GKY Add strings for limited/inadequate drive space checks
 
 ***********************************************************************/
 
@@ -121,6 +122,7 @@
 #define IDS_SAVEDRIVESPACELIMITED                             89
 #define IDS_DRIVESPACELIMITEDTMPSAVE                          90
 #define IDS_DRIVESPACEEXCEEDED                                91
+#define IDS_ARCTMPDRIVESPACELIMITED                           92
 #define IDS_OPENCMDTEXT                                       93
 #define IDS_CLOSECMDTEXT                                      94
 #define IDS_SAVECMDTEXT                                       95
