@@ -68,8 +68,8 @@ from icon to text buttons and back again, and can display text below
 the icon buttons. Brief help appears on the title bar when the mouse
 passes over a toolbar button.
 :p.
-:hp1.Toolbox:ehp1. = a collection of buttons in a toolbar. FM/2 allows
-you to customize and save toolboxes which you can load into the toolbar
+:hp1.Toolbar:ehp1. = a collection of buttons in a toolbar. FM/2 allows
+you to customize and save toolbars which you can load into the toolbar
 as desired.
 :p.
 :hp1.:link reftype=hd res=99000.Databar:elink.:ehp1. = a window to which

@@ -1982,8 +1982,8 @@ MENU ID_BUTTONMENU
   MENUITEM "Edit any button...",      IDM_EDITANYTOOL
   MENUITEM "Reorder buttons...",      IDM_REORDERTOOLS
   MENUITEM "",                        -1,           MIS_SEPARATOR
-  MENUITEM "Save toolbox...",         IDM_SAVETOOLS
-  MENUITEM "Load toolbox...",         IDM_LOADTOOLS
+  MENUITEM "Save toolbar...",         IDM_SAVETOOLS
+  MENUITEM "Load toolbar...",         IDM_LOADTOOLS
   MENUITEM "",                        -1,           MIS_SEPARATOR
   MENUITEM "Help",                    IDM_HELP
 }

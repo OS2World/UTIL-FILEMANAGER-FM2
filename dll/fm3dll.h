@@ -569,7 +569,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID BuildDriveBarButtons(HWND hwndT);
 VOID ResizeDrives(HWND hwndT, long xwidth);
 BOOL CloseChildren(HWND hwndClient);
-VOID BuildTools(HWND hwndT, BOOL resize);
+// VOID BuildTools(HWND hwndT, BOOL resize);
 void BubbleHelp(HWND hwnd, BOOL other, BOOL data, BOOL above, char *help);
 VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help);
 MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
@@ -1178,7 +1178,7 @@ DATADEF RGB2 RGBGREY, RGBBLACK;
 DATADEF CHAR archiverbb2[CCHMAXPATH], StopPrinting, profile[CCHMAXPATH], extractpath[CCHMAXPATH],
   lastextractpath[CCHMAXPATH];
 DATADEF CHAR appname[12], realappname[12];
-DATADEF CHAR  lasttoolbox[CCHMAXPATH], HomePath[CCHMAXPATH],
+DATADEF CHAR  lasttoolbar[CCHMAXPATH], HomePath[CCHMAXPATH],
   SwapperDat[CCHMAXPATH], printer[CCHMAXPATH], szDefArc[CCHMAXPATH];
 DATADEF HMODULE FM3DllHandle, FM3ModHandle;
 DATADEF CHAR *quicktool[50];

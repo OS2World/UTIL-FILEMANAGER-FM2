@@ -33,7 +33,7 @@ add titles under the toolbar icons. Additional functions to edit the toolbar
 can be found on the context menu obtained by clicking :color fc=default bc=cyan.B2:color fc=default bc=default. over a tool icon
 on the toolbar (see :link reftype=hd res=91800.Toolbar:elink. for more information)
 You can switch between toolbars using the dialog that appears if you click :color fc=default bc=cyan.B2:color fc=default bc=default. over
-an area of "white space" on the toolbar or by selecting load toolbox from the previously
+an area of "white space" on the toolbar or by selecting load toolbar from the previously
 discussed context menu.
 :p.
 The :hp6.Autoview:ehp6. submenu controls the Autoview window. The
@@ -69,7 +69,7 @@ A Commands dropdown listbox (External command that have been added to FM/2).
 A Directory dropdown listbox (Directory names you've assigned in the
 :link reftype=hd res=91500.Walk Directories:elink. dialog).
 .br
-A Toolboxesdropdown listbox also appears if the :hp6.Toolbar:ehp6. is on.
+A Toolbars dropdown listbox also appears if the :hp6.Toolbar:ehp6. is on.
 :p.
 The :hp6.Toggle bottom buttons:ehp6. menu item turns off and on a row of
 buttons that appear just above the status line(s). The buttons display

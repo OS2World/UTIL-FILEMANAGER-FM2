@@ -117,14 +117,14 @@ TOOL *load_tools(CHAR * filename)
     return toolhead;
   }
   if (!filename || !*filename)
-    filename = (*lasttoolbox) ? lasttoolbox : "CMDS.TLS";
+    filename = (*lasttoolbar) ? lasttoolbar : "CMDS.TLS";
   if (*filename)
     fname = searchpath(filename);
   if (!fname || !*fname)
     fname = "FM3TOOLS.DAT";
   if (fname && *fname) {
     filename = fname;
-    strcpy(lasttoolbox, filename);
+    strcpy(lasttoolbar, filename);
     fp = _fsopen(filename, "r", SH_DENYWR);
     if (fp) {
       toolhead = free_tools();
@@ -186,14 +186,14 @@ VOID save_tools(CHAR * filename)
   TOOL *info;
 
   if (!filename)
-    filename = lasttoolbox;
+    filename = lasttoolbar;
   if (*filename)
     fname = searchpath(filename);
   if (fname && *fname)
     filename = fname;
   else {
-    if (*lasttoolbox)
-      filename = lasttoolbox;
+    if (*lasttoolbar)
+      filename = lasttoolbar;
     else
       filename = "FM3TOOLS.TLS";
     fname = searchpath(filename);
@@ -204,8 +204,8 @@ VOID save_tools(CHAR * filename)
   if (stristr(filename, "FM3TOOLS.DAT"))
     filename = "FM3TOOLS.TLS";
   if (toolhead && filename && *filename) {
-    strcpy(lasttoolbox, filename);
-    PrfWriteProfileString(fmprof, FM3Str, "LastToolBox", filename);
+    strcpy(lasttoolbar, filename);
+    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", filename);
   }
   if (!toolhead) {
     unlinkf("%s", filename);
@@ -910,7 +910,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowULong(hwnd, QWL_USER, TRUE);
     else {
       WinSetWindowULong(hwnd, QWL_USER, FALSE);
-      WinSetWindowText(hwnd, GetPString(IDS_LOADTOOLBOXTITLETEXT));
+      WinSetWindowText(hwnd, GetPString(IDS_LOADTOOLBARTITLETEXT));
     }
     WinSendDlgItemMsg(hwnd,
 		      SVBTN_ENTRY,
@@ -959,7 +959,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     WinSetDlgItemText(hwnd,
 		      SVBTN_CURRENT,
-		      (*lasttoolbox) ? lasttoolbox : "FM3TOOLS.DAT");
+		      (*lasttoolbar) ? lasttoolbar : "FM3TOOLS.DAT");
     break;
 
   case UM_SETUP:
@@ -1017,27 +1017,27 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	BOOL saving = WinQueryWindowULong(hwnd, QWL_USER);
 	CHAR temptools[CCHMAXPATH];
 
-	strcpy(temptools, lasttoolbox);
+	strcpy(temptools, lasttoolbar);
 	if (fToolsChanged)
 	  save_tools(NULL);
 	WinQueryDlgItemText(hwnd,
-			    SVBTN_ENTRY, sizeof(lasttoolbox), lasttoolbox);
-	if (*lasttoolbox) {
-	  if (!strchr(lasttoolbox, '.'))
-	    strcat(lasttoolbox, ".TLS");
+			    SVBTN_ENTRY, sizeof(lasttoolbar), lasttoolbar);
+	if (*lasttoolbar) {
+	  if (!strchr(lasttoolbar, '.'))
+	    strcat(lasttoolbar, ".TLS");
 	}
-	if (saving && *lasttoolbox)
+	if (saving && *lasttoolbar)
 	  save_tools(NULL);
 	else {
 	  if (!load_tools(NULL)) {
-	    strcpy(lasttoolbox, temptools);
+	    strcpy(lasttoolbar, temptools);
 	    if (!load_tools(NULL)) {
-	      *lasttoolbox = 0;
+	      *lasttoolbar = 0;
 	      load_tools(NULL);
 	    }
 	  }
 	}
-	PrfWriteProfileString(fmprof, FM3Str, "LastToolBox", lasttoolbox);
+	PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
       }
       WinDismissDlg(hwnd, 1);
       break;

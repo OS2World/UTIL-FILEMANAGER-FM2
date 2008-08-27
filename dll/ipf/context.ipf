@@ -750,7 +750,7 @@ written in this manner can be effectively used as Commands.
 
 :artwork name='..\..\bitmaps\undelete.bmp' align=center.
 :p.
-If you have res=99950.Delete = move to trashcan:elink. enabled undelete
+If you have :link reftype=hd res=99950.Delete = move to trashcan:elink. enabled undelete
 will open the trahscan to facilitate resoring files. You will need to
 rescan the directory containers in order to see the restored files. Otherwise,
 this leads to a dialog that interfaces with UNDELETE.COM to allow you to

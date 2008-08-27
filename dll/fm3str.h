@@ -53,7 +53,7 @@
 #define IDS_TOOLDROPHELP                                      16
 #define IDS_NEWDIRECTORYTEXT                                  17
 #define IDS_COMMONDIRTEXT                                     18
-#define IDS_TOOLBOXTEXT                                       19
+#define IDS_TOOLBARTEXT                                       19
 #define IDS_STATETEXT                                         20
 #define IDS_COMMANDSTEXT                                      21
 #define IDS_TREETEXT                                          22
@@ -581,7 +581,7 @@
 #define IDS_DUPLICATETEXT                                     553
 #define IDS_TOOLIDEXISTS                                      554
 #define IDS_PICKTOOLTITLETEXT                                 555
-#define IDS_LOADTOOLBOXTITLETEXT                              556
+#define IDS_LOADTOOLBARTITLETEXT                              556
 #define IDS_CANTFINDDIRTEXT                                   557
 #define IDS_NODIRSUNDERTEXT                                   558
 #define IDS_PMLIMITTEXT                                       559

@@ -330,7 +330,7 @@ The :hp1.Name:ehp1., :hp1.Date/Time:ehp1., and :hp1.Attributes:ehp1.
 bottom buttons display information about the current object as well as
 activate commands when clicked.
 :p.
-The :hp1."Toolboxes" quicklist:ehp1. only appears when the
+The :hp1."Toolbars" quicklist:ehp1. only appears when the
 :link reftype=hd res=91800.Toolbar:elink. is visible (see :link reftype=hd res=99400.Using
 quicklists:elink. section).
 :p.
@@ -467,7 +467,7 @@ that the hotspot of the mouse pointer itself should be over the button
 before releasing, not the icon being dragged (icons are slightly offset
 from the mouse pointer to give better target visibility). Target
 emphasis is provided in the form of a black outline around the button,
-and the arrow pointer turns into a hand when above a toolbox icon.
+and the arrow pointer turns into a hand when above a toolbar icon.
 :p.
 This toolbar submenu is a conditional cascade menu, meaning that if you
 click other than on the boxed arrow a default command is executed (the
@@ -479,7 +479,7 @@ the toolbar bitmap buttons).
 :p.
 Toolbar buttons are user-configurable. To change the toolbar, click
 mouse button two (usually the right button) while the mouse pointer is
-over a button to pop up a context menu. You can get the "Load Toolbox"
+over a button to pop up a context menu. You can get the "Load Toolbar"
 dialog by clicking :color fc=default bc=cyan.B2:color fc=default bc=default.
  on a blank area of the toolbar, and the "Add
 Button" dialog by chording on a blank area of the toolbar.
@@ -489,16 +489,16 @@ toolbar is kept in a file named FM3TOOLS.DAT. This file is an ASCII
 (plain text) file that contains information defining the toolbar. The
 file contains comments that explain its format.
 :p.
-FM/2 allows you to create customized toolboxes that can be loaded as
-required to provide toolboxes for specific activities. Although FM/2
+FM/2 allows you to create customized toolbars that can be loaded as
+required to provide toolbars for specific activities. Although FM/2
 provides ways to edit the toolbar internally, it's probably easier to
 load the definition files into a text editor and make the changes
 manually en masse.
 :p.
 If you'd like to see a different toolbar layout (and try out the Load
-Toolbox command), right-click on the toolbar, pick Load Toolbox from the
-resultant menu, and pick a toolbox from the listbox. Then you might try
-creating your own and saving it with the Save Toolbox command.
+Toolbar command), right-click on the toolbar, pick Load Toolbar from the
+resultant menu, and pick a toolbar from the listbox. Then you might try
+creating your own and saving it with the Save Toolbar command.
 :p.
 See also&colon.
 .br
@@ -511,6 +511,8 @@ See also&colon.
 :link reftype=hd res=94000.Save Tools:elink.
 .br
 :link reftype=hd res=94500.Load Tools:elink.
+.br
+:link reftype=hd res=94550.Manual edit of Toolbar files:elink.
 
 :h3 res=96300 name=PANEL_REORDERTOOLS.Reorder Tools
 :i1 id=aboutReorderTools.Reorder Tools
@@ -671,8 +673,8 @@ ID     Command                                              Droppable?
 4001   First Command                                        Y
 4002   Second Command                                       Y
 &period...
-4900   First Toolbox                                        N
-4901   Second Toolbox                                       N
+4900   First Toolbar                                        N
+4901   Second Toolbar                                       N
 &period...
 :exmp.
 Note&colon. Other Commands can also be used; just add to 4000 as required
@@ -681,40 +683,40 @@ to get the number of the command. For instance, Command 4 would be ID
 associated with them in FM/2's resources. Remember that if you change
 your Commands around, you need to resync the tools to the Commands...
 :p.
-Note&colon. Toolbox buttons on a toolbar cause the appropriate toolbox
+Note&colon. Toolbar buttons on a toolbar cause the appropriate toolbar
 to be loaded from QUICKTLS.DAT (one filename per line, blank lines and
 lines beginning with ";" ignored). The file named on the first line is
-the First Toolbox, and so forth. You can have up to 50 toolbox buttons
+the First Toolbar, and so forth. You can have up to 50 toolbar buttons
 defined (total).
 :p.
 This list isn't complete; ask me if you'd like a command added that
 doesn't appear, and I'll tell you if it can be added and what the ID is,
 if so.
 
-:h3 res=94000 name=PANEL_SAVETOOLS.Save Toolbox
-:i1 id=aboutSaveTools.Save Toolbox
+:h3 res=94000 name=PANEL_SAVETOOLS.Save Toolbar
+:i1 id=aboutSaveTools.Save Toolbar
 
-FM/2 allows you to save toolboxes (groups of tools) for later recall
-with the :link reftype=hd res=94500.Load Toolbox:elink. command.
+FM/2 allows you to save toolbars (groups of tools) for later recall
+with the :link reftype=hd res=94500.Load Toolbar:elink. command.
 :p.
-Type the name of the file to hold the toolbox definitions into the entry
+Type the name of the file to hold the toolbar definitions into the entry
 field below the listbox, or select a file displayed in the listbox (it
-will be overwritten). FM/2 saves the toolbox definitions into the file.
+will be overwritten). FM/2 saves the toolbar definitions into the file.
 :p.
 The files are given an extension of &period.TLS if you don't specify an
 extension. The listbox shows files in the FM/2 directory that have the
 extension .TLS (which is my way of suggesting that you follow this
 convention).
 
-:h3 res=94500 name=PANEL_LOADTOOLS.Load Toolbox
-:i1 id=aboutLoadTools.Load Toolbox
+:h3 res=94500 name=PANEL_LOADTOOLS.Load Toolbar
+:i1 id=aboutLoadTools.Load Toolbar
 
-FM/2 allows you to load toolboxes (groups of tools) which were saved
-with the :link reftype=hd res=94000.Save Toolbox:elink. command.
+FM/2 allows you to load toolbars (groups of tools) which were saved
+with the :link reftype=hd res=94000.Save Toolbar:elink. command.
 :p.
-Type the name of the file that holds the toolbox definitions into the
+Type the name of the file that holds the toolbar definitions into the
 entry field below the listbox, or select a file displayed in the
-listbox. FM/2 loads the toolbox definitions from the file and updates
+listbox. FM/2 loads the toolbar definitions from the file and updates
 the toolbar.
 :p.
 This allows you to have groups of specific-purpose buttons which you can
@@ -722,16 +724,92 @@ load for different types of activities. You don't have to use it, but
 it's there if you would like to do so.
 :p.
 Clicking :hp1.Okay:ehp1. without typing in or selecting a filename
-results in FM/2 reloading the default toolbox from FM3TOOLS.DAT.
+results in FM/2 reloading the default toolbar from FM3TOOLS.DAT.
 :p.
 If I may, here's how I'd recommend using this facility&colon.
 :p.
 First, save the full toolbar under a new name (perhaps ALL.TLS). Next,
 delete any buttons that you don't want in your customized toolbar.
 Finally, add any Command buttons that you do want in the customized
-toolbar and save the new toolbox (as <something>.TLS). By starting with
+toolbar and save the new toolbar (as <something>.TLS). By starting with
 the full toolbar, you'll spend more of your time deleting buttons you
 don't want (a trivial task) and less adding buttons.
+
+:h3 res=94550 name=PANEL_MANUALTOOLS.Manual edit of Toolbar files
+:i1 id=aboutManualTools.Manual edit of Toolbar files
+
+FM/2 can guide you through the processes of creating or customizing your toolbars.
+This is the recommended way to customize your toolbars. See :link reftype=hd res=91800.Toolbars:elink. for more information.
+:p.
+However you may choose to create or customize your toolbars manually. Toolbars
+are defined in files located in the FM/2 installation directory. These files
+have an extension of TLS. Any plain text editor may be used to create or edit
+these files.
+:note.The maximum line length is 80 characters for ANY line in a TLS file!
+:note.There can be no more than 50 TLS files!
+:warning.
+Incorrectly edited toolbar files may break your toolbars and possibly impair FM/2 as a whole.
+:ewarning.
+It is therefore recommended that you backup any TLS file before you edit it. Then, if you
+experience problems after your edits, you can simply restore the saved copy of the TLS file.
+:p.
+Another way to recover from corrupted TLS files is to execute the "Back up FM/2 Customizations
+and reset to defaults" icon in your FM/2 folder. However using "Back up FM/2 Customizations and reset to defaults" will revert :hp2.ALL:ehp2.
+customizations to FM/2 defaults, not just the toolbars!
+:p.
+The TLS files are made of of two kinds of lines: Comment lines and lines
+which define a button for the toolbar.
+:p.
+:hp7.Comment lines:ehp7.
+:ul compact.
+:li.Are optional. None are needed by FM/2. They are for user use.
+:li.Start with a semicolon in the first column, ";".
+:li.May be used before or after any set of (4) button definition lines.
+:sl compact.
+:li.Comment lines must NOT be placed within the four lines which constitute a button definition!
+:esl.
+:li.Properly placed comment lines are ignored by FM/2.
+:li.Uses:
+:ul compact.
+:li.To provide visual separation between sets of button definition lines, making the file more readble (to humans).
+:li.To provide a means of keeping comments/notes about the file and its buttons.
+:eul.
+:eul.
+:p.
+:hp7.Button definition lines:ehp7.
+:ul compact.
+:li.Each button is defined by four CONSECUTIVE lines.
+:sl compact.
+:li.If a comment line is placed within the four lines which define a button, FM/2 will ignore the entire button definition.
+:esl.
+:li.The first line contains the text for the bubble help. If bubble help is enabled, the text on this line will be displayed when the mouse is positioned over this button.
+:sl compact.
+:li.The bubble help text may include "\r" to break the help into multiple lines.
+:esl.
+:li.The second line contains the button text. This text is displayed only if either...
+:ul compact.
+:li.Tool titles is enabled.
+:li.There is no icon for the button.
+:eul.
+:li.The third line is a number indicating flags associated with the button.
+:sl compact.
+:li.0 means the button is non-droppable
+:li.1 means the button is droppable
+:li.4 means invisible
+:li.8 means a spacer follows this button
+:li.32 means there is a user-defined bitmap for the button.
+:ul compact.
+:li.The bitmap must be in a file named <id-number>.bmp where <id-number> is the id number specified by the fourth line of the button definition.
+:li.The bitmap file must be in the FM/2 directory
+:li.The bitmap must be 32x32 in size.
+:eul.
+:li.Add these numbers together to combine the attributes. For example 9 (i.e. 8 + 1) means droppable with a spacer following.
+:esl.
+:li.The fourth line is the ID number of the button. See
+:link reftype=hd res=96401.
+Tool ID's
+:elink. for more information.
+:eul.
 
 :h2 res=99400 name=PANEL_USERLISTS.Using quicklists
 :i1 id=aboutUserLists.Using quicklists
@@ -744,7 +822,7 @@ to&colon.
 :li.User-defined commands
 :li.Often used directories you've configured (see :link reftype=hd
 res=91500.Walk Directories dialog:elink.).
-:li.Toolboxes (if the Toolbar's on).
+:li.Toolbars (if the Toolbar's on).
 :eul.
 :artwork name='bitmaps\userlist.bmp' align=center.
 :p.
@@ -837,10 +915,10 @@ need to get real work done.
 :p.
 .br
 The last list (only present if the Toolbar is on) is a list of
-Toolboxes. You can select one from the list. FM/2 automatically
-maintains this list for you. Initially, the saved toolbox names are
+Toolbars. You can select one from the list. FM/2 automatically
+maintains this list for you. Initially, the saved toolbar names are
 read from disk (the FM/2 directory), and any you subsequently save
-are added to it on the fly. The FM/2 archive includes a few Toolboxes
+are added to it on the fly. The FM/2 archive includes a few Toolbars
 for you to look at and customize if you'd like.
 :p.
 :artwork name='bitmaps\usertool.bmp' align=center.
