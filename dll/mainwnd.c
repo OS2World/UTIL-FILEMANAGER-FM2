@@ -65,6 +65,7 @@
 		(i.e. just a directory tree container).
                 18 Jul 08 SHL Use new Fortify feature to avoid spurious reports
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
+  26 Aug 08 GKY Require unique ID plus text and help strings for all tools save toolbar on button delete
 
 ***********************************************************************/
 
@@ -1239,7 +1240,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     PICKBTN_FRAME, GetPString(IDS_DELETETEXT));
       if (id)
 	PostMsg(WinQueryWindow(hwnd, QW_PARENT), UM_SETUP,
-		MPFROM2SHORT(id, 0), MPVOID);
+                MPFROM2SHORT(id, 0), MPVOID);
       return 0;
 
     case IDM_EDITANYTOOL:               /* edit any button */
@@ -2557,7 +2558,8 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinShowWindow(WinWindowFromID(hwnd, id), FALSE);
 	if (fToolTitles)
 	  WinShowWindow(WinWindowFromID(hwnd, id + 25000), FALSE);
-	ResizeTools(hwnd);
+        ResizeTools(hwnd);
+        save_tools(NULL);
       }
     }
     return 0;

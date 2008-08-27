@@ -100,8 +100,8 @@ The TMP directory %s has limited space remaining. This will limit your ability t
 /FILTER
                                             FM/2 mini-command line help
 Type "/OPEN path" to open a new Directory Container.\r\rType "/CLOSE path" to close a Directory Container.\r\rType "/FILTER filter" to filter a Directory Container.\r\rType "/KEEP" or "/NOKEEP" to set the type of cmd window (autoclose or not).\r\rType "/SAVE" or "/NOSAVE" to save (or not) cmd lines between sessions.\r\r[Up arrow] or [down arrow] or [+] button for listbox of previous command lines, then [Delete] to remove one or [Enter] to reuse.\r\rOr type a command to be executed (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line.
-
-
+Some text is missing
+You need to provide both button text & help.
 8.Helvetica.Bold
 4.System VIO
 10.System VIO

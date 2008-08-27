@@ -20,6 +20,7 @@
   28 Jun 08 JBS Add string for warning message for changing/deleting FN2SHUTDOWN state
   17 Jul 08 JBS "Renumbered" IDS_SHUTDOWNSTATE because its old numbers was "in use"
   24 Aug 08 GKY Add strings for limited/inadequate drive space checks
+  26 Aug 08 GKY Error strings for require unique ID plus text and help strings for all tools
 
 ***********************************************************************/
 
@@ -132,6 +133,8 @@
 #define IDS_FILTERCMDTEXT                                     99
 #define IDS_FM2CMDHELPHDRTEXT                                 100
 #define IDS_FM2CMDHELPTEXT                                    101
+#define IDS_MISSINGTEXT                                       102
+#define IDS_TOOLHELPTEXTBLANK                                 103
 #define IDS_8HELVBOLDTEXT                                     104
 #define IDS_4SYSTEMVIOTEXT                                    105
 #define IDS_10SYSTEMVIOTEXT                                   106

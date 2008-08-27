@@ -19,6 +19,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT & .TLS files; prevent loss of existing file
+  26 Aug 08 GKY Require unique ID plus text and help strings for all tools save toolbar on button delete
 
 ***********************************************************************/
 
@@ -704,8 +705,10 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	CHAR help[81], text[81], idstr[7];
 	BOOL invisible, dropable, separator, istext, myicon;
-	TOOL *tool;
+        TOOL *tool;
+        BOOL BadID = FALSE;
 
+        help[0] = text[0] = NULL;
 	WinQueryDlgItemText(hwnd, ADDBTN_HELP, 80, help);
 	WinQueryDlgItemText(hwnd, ADDBTN_TEXT, 80, text);
 	if (WinQueryButtonCheckstate(hwnd, ADDBTN_DROPABLE))
@@ -732,10 +735,18 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  tool->help = NULL;
 	  xfree(tool->text, pszSrcFile, __LINE__);
 	  tool->text = NULL;
-	  if (*help)
+          if (*help && *text && help && text) {
 	    tool->help = xstrdup(help, pszSrcFile, __LINE__);
-	  if (*text)
-	    tool->text = xstrdup(text, pszSrcFile, __LINE__);
+            tool->text = xstrdup(text, pszSrcFile, __LINE__);
+          }
+          else {
+            saymsg(MB_ENTER,
+		   hwnd,
+		   GetPString(IDS_MISSINGTEXT),
+		   GetPString(IDS_TOOLHELPTEXTBLANK));
+            WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, ADDBTN_HELP));
+            break;
+          }
 	  tool->flags = (((dropable) ? T_DROPABLE : 0) |
 			 ((invisible) ? T_INVISIBLE : 0) |
 			 ((separator) ? T_SEPARATOR : 0) |
@@ -752,17 +763,20 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	tool = toolhead;
 	while (tool) {
-	  if (tool->id == (USHORT) atoi(idstr) && tool != tool) {
+          if (tool->id == (USHORT) atoi(idstr)) { // && tool != tool) {
 	    saymsg(MB_ENTER,
 		   hwnd,
 		   GetPString(IDS_DUPLICATETEXT),
 		   GetPString(IDS_TOOLIDEXISTS));
 	    WinSetDlgItemText(hwnd, ADDBTN_ID, NullStr);
-	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, ADDBTN_ID));
+            WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, ADDBTN_ID));
+            BadID =TRUE;
 	    break;
 	  }
 	  tool = tool->next;
-	}
+        }
+        if (BadID)
+          break;
 	tool = xmallocz(sizeof(TOOL), pszSrcFile, __LINE__);
 	if (tool) {
 	  if (*help)
