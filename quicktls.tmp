@@ -1,5 +1,5 @@
 ;
-;Sample quick toolboxes for FM/2
+;Sample quick toolbars for FM/2
 ;
 cmds.tls
 utils.tls
@@ -7,7 +7,7 @@ sort.tls
 select.tls
 config.tls
 files.tls
-select.tls
+views.tls
 fm3tools.dat
 ;
 ; $Id$

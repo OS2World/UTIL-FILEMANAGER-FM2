@@ -1,5 +1,10 @@
+; Fixed: Ticket 267
 ;
-;This file contains some command definitions for the FM/2 toolbar.
+; This file contains definitions for an FM/2 toolbar.
+;
+; To edit this file manually, see "Manual edit of toolbar files"
+; in the FM/2 help file.
+;
 ;
 View Files (Ctrl + v)
 View
@@ -86,17 +91,17 @@ Help
 8
 999
 ;
-Sort toolbox
+Sort toolbar
 Sort
 0
 4902
 ;
-Utility toolbox
+Utility toolbar
 Utils
 0
 4901
 ;
-Select toolbox
+Select toolbar
 Select
 0
 4903

@@ -1,5 +1,9 @@
+; Fixed: Ticket 267
 ;
-;This file contains some sorting definitions for the FM/2 toolbar.
+; This file contains definitions for an FM/2 toolbar.
+;
+; To edit this file manually, see "Manual edit of toolbar files"
+; in the FM/2 help file.
 ;
 ;
 Filter Container
@@ -33,12 +37,12 @@ Last
 3009
 ;
 Sort by create date
-Cr Date
+CrDate
 0
 3012
 ;
 Sort by lastwrite date
-Lw Date
+LwDate
 0
 3010
 ;
@@ -47,17 +51,17 @@ Rev
 8
 3015
 ;
-Command toolbox
+Commands toolbar
 Cmds
 0
 4900
 ;
-Utility toolbox
+Utility toolbar
 Utils
 0
 4901
 ;
-Select toolbox
+Select toolbar
 Select
 0
 4903

@@ -1,5 +1,9 @@
+; Fixed: Ticket 267
 ;
-;This file contains some selecting definitions for the FM/2 toolbar.
+; This file contains definitions for an FM/2 toolbar.
+;
+; To edit this file manually, see "Manual edit of toolbar files"
+; in the FM/2 help file.
 ;
 ;
 Select All
@@ -67,17 +71,17 @@ Reslct
 8
 10027
 ;
-Sort toolbox
+Sort toolbar
 Sort
 0
 4902
 ;
-Utility toolbox
+Utility toolbar
 Utils
 0
 4901
 ;
-Commands toolbox
+Commands toolbar
 Cmds
 0
 4900
