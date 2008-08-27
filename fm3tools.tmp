@@ -1,27 +1,8 @@
 ;
-;This file contains definitions for the FM/2 toolbar.
+; This file contains definitions for an FM/2 toolbar.
 ;
-;Each tool button has four lines that describe it.  The first line is
-;the help for the button.
-;
-;The second line is the text for the button (internally defined tools
-;have icons, and the text is ignored).
-;
-;The third line is a number indicating flags associated with the button.
-;A flag value of 0 means the button is non-droppable, 1 means the button
-;is droppable, 4 means invisible (5 both), 8 means non-droppable with a
-:spacer following, and 9 means droppable with a spacer following.
-;
-;The fourth line is the ID of the button (for internal commands only).
-;Note Commands begin at ID 4000, so a button with ID 4000 would cause
-;the first Command to be run and ID 4001 would run the second, and so on.
-;4900 marks the first "quick toolbox change" item, and you can
-;have up to 50 of them (these buttons load other toolboxes, see
-;online help).
-;
-;You can use \r in the help string to break the help into multiple lines.
-;
-;I suggest that you keep a backup copy of this file...
+; To edit this file manually, see "Manual edit of toolbar files"
+; in the FM/2 help file.
 ;
 ;
 Archive Files/Directories (Ctrl + A)
@@ -60,7 +41,7 @@ Delete
 1004
 ;
 Deselect All (Ctrl + \)
-Desel
+-All
 0
 10007
 ;
@@ -230,7 +211,7 @@ SeeAll
 1067
 ;
 Select All Files (Ctrl + /)
-Select
++All
 0
 10008
 ;
@@ -290,7 +271,7 @@ Last
 3009
 ;
 Sort by lastwrite date
-Date
+LwDate
 0
 3010
 ;
