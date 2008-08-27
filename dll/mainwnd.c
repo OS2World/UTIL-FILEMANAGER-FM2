@@ -106,6 +106,7 @@ static USHORT firsttool = 0;
 static BOOL CloseDirCnrChildren(HWND hwndClient);
 static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview);
 static VOID DeletePresParams(PSZ pszKeyroot);
+static VOID BuildTools(HWND hwndT, BOOL resize);
 
 static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 					  MPARAM mp2)
@@ -1290,7 +1291,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    SVBTN_FRAME,
 		    (PVOID) (SHORT1FROMMP(mp1) == IDM_SAVETOOLS) ?
 		    "TRUE" : NULL))
-	BuildTools(hwndToolback, TRUE);
+        PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
       break;
     }
     ResizeTools(WinQueryWindow(hwnd, QW_PARENT));
@@ -1409,7 +1410,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return PFNWPButton(hwnd, msg, mp1, mp2);
 }
 
-VOID BuildTools(HWND hwndT, BOOL resize)
+static VOID BuildTools(HWND hwndT, BOOL resize)
 {
   TOOL *tool;
   ULONG ctrlxpos = 18L;
@@ -1419,7 +1420,8 @@ VOID BuildTools(HWND hwndT, BOOL resize)
 
   henum = WinBeginEnumWindows(hwndT);
   while ((hwndTool = WinGetNextWindow(henum)) != NULLHANDLE)
-    WinDestroyWindow(hwndTool);
+    if (!WinDestroyWindow(hwndTool))
+      Runtime_Error(pszSrcFile, __LINE__, "Unable to destroy toolbar button");
   WinEndEnumWindows(henum);
   if (!fToolbar) {
     load_quicktools();
@@ -2564,6 +2566,10 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     return 0;
 
+  case UM_SETUP2:  /* Used to load a new a toolbar */
+    BuildTools(hwnd, TRUE);
+    return 0;
+
   case WM_CHORD:
     {
       USHORT id;
@@ -2583,7 +2589,7 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CONTEXTMENU:
     if (WinDlgBox(HWND_DESKTOP,
 		  hwnd, ToolIODlgProc, FM3ModHandle, SVBTN_FRAME, MPVOID))
-      BuildTools(hwnd, TRUE);
+      PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
     return MRFROMSHORT(TRUE);
 
   case WM_CLOSE:
@@ -2832,6 +2838,9 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
   fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
   sprintf(szPrefix, "%s.", pszStateName);
 
+  sprintf(szKey, "%sToolbar", szPrefix);
+  PrfWriteProfileString(fmprof, FM3Str, szKey, lasttoolbar);
+
   henum = WinBeginEnumWindows(hwndClient);
   while ((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
     if (hwndChild != hwndTree) {
@@ -3058,6 +3067,17 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   // Delete saved state if internally saved state
   fDeleteState = strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)) == 0;
 
+  size = (ULONG)0;
+  sprintf(szKey, "%sToolbar", szPrefix);
+  if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
+  {
+    if (fToolsChanged)
+      save_tools(NULL);
+    PrfQueryProfileData(fmprof, FM3Str, szKey, lasttoolbar, &size);
+    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
+    load_tools(NULL);
+    PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
+  }
   size = sizeof(SWP);
   sprintf(szKey, "%sMySizeLastTime", szPrefix);
   if (!PrfQueryProfileData(fmprof,
@@ -5106,7 +5126,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case IDM_TEXTTOOLS:
     SetMenuCheck(WinQueryWindowULong(hwnd, QWL_USER), SHORT1FROMMP(mp1),
 		 &fTextTools, TRUE, "TextTools");
-    BuildTools(hwndToolback, TRUE);
+    PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
     PostMsg(WinQueryWindow(hwnd, QW_PARENT), WM_UPDATEFRAME,
 	    MPFROMLONG(FCF_SIZEBORDER), MPVOID);
     break;
@@ -5114,7 +5134,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case IDM_TOOLTITLES:
     SetMenuCheck(WinQueryWindowULong(hwnd, QWL_USER), SHORT1FROMMP(mp1),
 		 &fToolTitles, TRUE, "ToolTitles");
-    BuildTools(hwndToolback, TRUE);
+    PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
     PostMsg(WinQueryWindow(hwnd, QW_PARENT), WM_UPDATEFRAME,
 	    MPFROMLONG(FCF_SIZEBORDER), MPVOID);
     break;
@@ -5200,13 +5220,13 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case IDM_CREATETOOL:
-    BuildTools(hwndToolback, TRUE);
+    PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
     break;
 
   case IDM_TOOLBAR:
     SetMenuCheck(WinQueryWindowULong(hwnd, QWL_USER),
 		 IDM_TOOLSUBMENU, &fToolbar, TRUE, "Toolbar");
-    BuildTools(hwndToolback, TRUE);
+    PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
     WinShowWindow(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				  MAIN_TOOLS), fToolbar);
     WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
@@ -5397,11 +5417,11 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!load_tools(quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]))
 	    load_tools(NULL);
 	  else {
-	    strcpy(lasttoolbox,
+	    strcpy(lasttoolbar,
 		   quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]);
-	    PrfWriteProfileString(fmprof, FM3Str, "LastToolBox", lasttoolbox);
+	    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
 	  }
-	  BuildTools(hwndToolback, TRUE);
+	  PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
 	}
       }
       else {
@@ -5715,8 +5735,6 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     /*
      * start up some initial children
      */
-    load_tools(NULL);
-    BuildTools(hwndToolback, TRUE);
     WinShowWindow(WinQueryWindow(hwnd, QW_PARENT), TRUE);
     PostMsg(MainObjectHwnd, UM_SETUP2, mp1, mp2);
     return 0;
@@ -5767,8 +5785,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 			  swp.fl | SWP_MOVE | SWP_SIZE | SWP_SHOW |
 			  SWP_ZORDER | SWP_ACTIVATE);
       }
-      ResizeTools(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				  MAIN_TOOLS));
+//       ResizeTools(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+// 				  MAIN_TOOLS));
     }
     PostMsg(MainObjectHwnd, UM_SETUP3, mp1, mp2);
     return 0;
@@ -5779,7 +5797,10 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       PSZ pszStatename = GetPString(IDS_SHUTDOWNSTATE);
       PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPVOID);
       if (!add_setup(pszStatename))
-	      save_setups();
+        save_setups();
+    } else {
+      load_tools(NULL);
+      PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
     }
     PostMsg(MainObjectHwnd, UM_SETUP4, mp1, mp2);
     return 0;
@@ -6036,9 +6057,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  priority_bumped();
 	  if (!foundit) {
 	    thisone = FALSE;
-	    p = strrchr(lasttoolbox, '\\');
+	    p = strrchr(lasttoolbar, '\\');
 	    if (!p)
-	      p = lasttoolbox;
+	      p = lasttoolbar;
 	    else
 	      p++;
 	    if (!stricmp(findbuf.achName, p))
@@ -6061,7 +6082,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	DosFindClose(hDir);
 	priority_bumped();
       }
-      WinSetWindowText(hwndButtonlist, GetPString(IDS_TOOLBOXTEXT));
+      WinSetWindowText(hwndButtonlist, GetPString(IDS_TOOLBARTEXT));
     }
     return 0;
 
@@ -6269,9 +6290,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strcat(path, ".TLS");
 	      load_tools(path);
 	      PrfWriteProfileString(fmprof,
-				    FM3Str, "LastToolBox", lasttoolbox);
-	      BuildTools(hwndToolback, TRUE);
-	      WinSetWindowText(hwndButtonlist, GetPString(IDS_TOOLBOXTEXT));
+				    FM3Str, "LastToolbar", lasttoolbar);
+	      PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
+	      WinSetWindowText(hwndButtonlist, GetPString(IDS_TOOLBARTEXT));
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_SETUPLIST) {
 	      CHAR szKey[80];

@@ -699,12 +699,11 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (!load_tools(quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]))
 	  load_tools(NULL);
 	else {
-	  strcpy(lasttoolbox,
+	  strcpy(lasttoolbar,
 		 quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]);
-	  PrfWriteProfileString(fmprof, FM3Str, "LastToolBox", lasttoolbox);
+	  PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
 	}
-	BuildTools(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-				   MAIN_TOOLS), TRUE);
+	PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
       }
     }
     else {
@@ -941,8 +940,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
     if (!hwndTree)
       PostMsg(hwnd, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
     load_tools(NULL);
-    BuildTools(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-			       MAIN_TOOLS), TRUE);
+    PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
     fRunning = TRUE;
     return 0;
 
