@@ -702,7 +702,6 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	else {
 	  strcpy(lasttoolbar,
 		 quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]);
-// 	  PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
 	  PrfWriteProfileString(fmprof, appname, "LastToolbar", lasttoolbar);
 	}
 	PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);

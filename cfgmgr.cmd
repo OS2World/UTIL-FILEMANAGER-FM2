@@ -580,8 +580,8 @@ UpdateFM2Ini: procedure expose (globals)
       end
    if SysIni(inifile, 'FM/3', 'FM2Shutdown.Toolbar') = 'ERROR:' then
   		call SysIni inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
-   if SysIni(inifile, 'FM/4', 'Toolbar') = 'ERROR:' then
-  		call SysIni inifile, 'FM/4', 'Toolbar', LastToolbar
+   if SysIni(inifile, 'FM/4', 'LastToolbar') = 'ERROR:' then
+  		call SysIni inifile, 'FM/4', 'LastToolbar', LastToolbar
 return
 
 Ticket267Fix: procedure expose (globals)

@@ -1403,7 +1403,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(mailrundir);
   PrfQueryProfileData(fmprof, appname, "MailRunDir", mailrundir, &size);
   size = sizeof(lasttoolbar);
-  PrfQueryProfileData(fmprof, FM3Str, "LastToolbar", lasttoolbar,
+  PrfQueryProfileData(fmprof, appname, "LastToolbar", lasttoolbar,
 		      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictHttpRun", &fLibPathStrictHttpRun,
