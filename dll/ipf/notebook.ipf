@@ -672,7 +672,7 @@ select the action a drag and drop should perform.
 default for the Delete context submenu. If this is checked, the default
 is permanent (unrecoverable) deletion.
 :p.
-:hp6.Mommy, make it stop!:ehp6. This button is a 3 state button (toggle)
+:hp6.Mouse pointer (3-state):ehp6. This button is a 3 state button (toggle)
 which makes the mouse pointer operate in one of 3 ways. If unselected,
 FM/2 will use a finger (the default). The "x" is a transparent pointer, and
 the "=" is the operating system default pointer.
