@@ -23,6 +23,7 @@
   19 Jan 08 GKY Rework Utilities menu
   14 Feb 08 SHL Rework to support settings menu conditional cascade
   29 Feb 08 GKY Use xfree where appropriate
+  27 Aug 08 JBS Ticket 259: Support saving/restoring toolbars with states
 
 ***********************************************************************/
 
@@ -701,7 +702,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	else {
 	  strcpy(lasttoolbar,
 		 quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]);
-	  PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
+// 	  PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
+	  PrfWriteProfileString(fmprof, appname, "LastToolbar", lasttoolbar);
 	}
 	PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
       }

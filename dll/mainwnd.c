@@ -66,6 +66,8 @@
                 18 Jul 08 SHL Use new Fortify feature to avoid spurious reports
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   26 Aug 08 GKY Require unique ID plus text and help strings for all tools save toolbar on button delete
+  27 Aug 08 JBS Ticket 259: Support saving/restoring toolbars with states
+  29 Aug 08 JBS Ticket 259: Support saving/restoring target directories with states (except the shutdown state)
 
 ***********************************************************************/
 
@@ -2838,8 +2840,15 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
   fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
   sprintf(szPrefix, "%s.", pszStateName);
 
-  sprintf(szKey, "%sToolbar", szPrefix);
-  PrfWriteProfileString(fmprof, FM3Str, szKey, lasttoolbar);
+  if (*lasttoolbar) {
+    sprintf(szKey, "%sToolbar", szPrefix);
+    PrfWriteProfileString(fmprof, FM3Str, szKey, lasttoolbar);
+  }
+
+  if (*targetdir && !fIsShutDownState) {
+    sprintf(szKey, "%sTargetDir", szPrefix);
+    PrfWriteProfileString(fmprof, FM3Str, szKey, targetdir);
+  }
 
   henum = WinBeginEnumWindows(hwndClient);
   while ((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
@@ -3077,6 +3086,14 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
     PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
     load_tools(NULL);
     PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
+  }
+  size = (ULONG)0;
+  sprintf(szKey, "%sTargetDir", szPrefix);
+  if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
+  {
+    PrfQueryProfileData(fmprof, FM3Str, szKey, targetdir, &size);
+    PrfWriteProfileString(fmprof, FM3Str, "TargetDir", targetdir);
+    SetTargetDir(NULL, TRUE);
   }
   size = sizeof(SWP);
   sprintf(szKey, "%sMySizeLastTime", szPrefix);

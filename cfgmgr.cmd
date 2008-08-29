@@ -14,6 +14,9 @@
            /UNATTENDED
                    Runs without user interaction/confirmation
 
+           /TOOLBARSONLY
+                   Process toolbar-related files only
+
    If CFGMGR.CMD is run without parameters, it will install a default
    configuration file ONLY if that configuration file does not already
    exist.
@@ -55,27 +58,30 @@ do f = 1 to cfg.file.0
    file_exists = stream(cfg.file.f.name, 'c' , 'query exists')
    if cfg.operation = 'INSTALL' then
       if file_exists \= '' then
-         do
-            if cfg.defaults = 1 then
-               if FilesAreDifferent(cfg.file.f.default, cfg.file.f.name) = 1 then
-                  do
-                     if cfg.unattended = 0 then
-                        do
-                           user_choice = PromptForReplaceOption(f)
-                           if user_choice == 'Q' then
-                              signal NormalExit
-                           if user_choice == 'N' then
-                              iterate
-                        end
-                     /* unattended = 1 or user_choice = 'Y' */
-                     cfg.errorcode = CfgAction( 'RESETTODEFAULT', f )
-                  end
+         if (cfg.toolbarsonly = 0 | cfg.file.f.toolbar = 1) then
+            do
+               if cfg.defaults = 1 then
+                  if FilesAreDifferent(cfg.file.f.default, cfg.file.f.name) = 1 then
+                     do
+                        if cfg.unattended = 0 then
+                           do
+                              user_choice = PromptForReplaceOption(f)
+                              if user_choice == 'Q' then
+                                 signal NormalExit
+                              if user_choice == 'N' then
+                                 iterate
+                           end
+                        /* unattended = 1 or user_choice = 'Y' */
+                        cfg.errorcode = CfgAction( 'RESETTODEFAULT', f )
+                     end
+                  else
+                     nop
                else
-                  nop
-            else
-               if (cfg.file.f.toolbar = 1) & (cfg.unattended = 1) then
-                  call Ticket267Fix cfg.file.f.name
-         end
+                  if (cfg.file.f.toolbar = 1) & (cfg.unattended = 1) then
+                     call Ticket267Fix cfg.file.f.name
+            end
+         else
+            nop
       else
         cfg.errorcode = CfgAction( 'INSTALLDEFAULT', f )
    else /* operation = deinstall */
@@ -165,6 +171,7 @@ Init: procedure expose (globals)
    cfg.errorcode     = 0
    cfg.defaults      = 0
    cfg.unattended    = 0
+   cfg.toolbarsonly  = 0
    cfg.actionmethod  = 'COPY'       /* The default method of backing up and restoring */
    cfg.backupdir     = '.\User_Config_Backup'
 
@@ -322,6 +329,8 @@ ProcessArgs: procedure expose (globals)
             cfg.unattended = 1
          when param = '/DEFAULTS' then
             cfg.defaults = 1
+         when param = '/TOOLBARSONLY' then
+            cfg.toolbarsonly = 1
          otherwise
             cfg.errorcode = 2
       end
@@ -569,8 +578,10 @@ UpdateFM2Ini: procedure expose (globals)
 	      	LastToolbar = LastToolbox
       	call SysIni inifile, 'FM/3', 'LastToolbar', LastToolbar
       end
-   if SysIni(inifile, 'FM/3', 'FM2Shudown.Toolbar') = 'ERROR:' then
+   if SysIni(inifile, 'FM/3', 'FM2Shutdown.Toolbar') = 'ERROR:' then
   		call SysIni inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
+   if SysIni(inifile, 'FM/4', 'Toolbar') = 'ERROR:' then
+  		call SysIni inifile, 'FM/4', 'Toolbar', LastToolbar
 return
 
 Ticket267Fix: procedure expose (globals)
