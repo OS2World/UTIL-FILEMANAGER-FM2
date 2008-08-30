@@ -691,17 +691,17 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
       }
     }
     else if (SHORT1FROMMP(mp1) >= IDM_QUICKTOOLSTART &&
-	     SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART + 50) {
+	     SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART + 51) {
       if (!qtloaded)
 	load_quicktools();
-      if (quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]) {
+      if (quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART - 1]) {
 	if (fToolsChanged)
 	  save_tools(NULL);
-	if (!load_tools(quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]))
+	if (!load_tools(quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART - 1]))
 	  load_tools(NULL);
 	else {
 	  strcpy(lasttoolbar,
-		 quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]);
+		 quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART - 1]);
 	  PrfWriteProfileString(fmprof, appname, "LastToolbar", lasttoolbar);
 	}
 	PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);

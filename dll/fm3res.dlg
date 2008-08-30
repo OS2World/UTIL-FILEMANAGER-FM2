@@ -858,7 +858,7 @@ BEGIN
                         BS_NOPOINTERFOCUS
         AUTOCHECKBOX    "~Separator", ADDBTN_SEPARATOR, 120, 50, 58, 10,
                         BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~User-defined bmp", ADDBTN_MYICON, 4, 38, 99, 10,
+        AUTOCHECKBOX    "Don't ~use FM2 defined bmp", ADDBTN_MYICON, 4, 38, 99, 10,
                         BS_NOPOINTERFOCUS
         ENTRYFIELD      "", ADDBTN_ID, 44, 26, 50, 8, ES_MARGIN | WS_GROUP
         PUSHBUTTON      "~Edit bmp", ADDBTN_EDITBMP, 174, 22, 40, 14

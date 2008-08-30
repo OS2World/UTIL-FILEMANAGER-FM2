@@ -470,7 +470,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  last->next = NULL;
 	toolhead = thead;
       }
-      fToolsChanged = TRUE;
+      save_tools(NULL);
       WinDismissDlg(hwnd, 1);
       break;
 
@@ -751,7 +751,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 ((invisible) ? T_INVISIBLE : 0) |
 			 ((separator) ? T_SEPARATOR : 0) |
 			 ((myicon) ? T_MYICON : 0) | ((istext) ? T_TEXT : 0));
-	  fToolsChanged = TRUE;
+          save_tools(NULL);
 	  WinDismissDlg(hwnd, 1);
 	  break;
 	}

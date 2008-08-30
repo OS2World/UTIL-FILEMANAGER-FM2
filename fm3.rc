@@ -15,6 +15,7 @@
   17 Feb 07 GKY Add more drive type bitmaps from David
   16 Aug 07 SHL Document AUTHOR_PICTURE
   04 Jan 08 SHL Sync with fm3dll.h mods
+  29 Aug 08 GKY Add bmps from David for the 7 predefined toolbars
 
 ***********************************************************************/
 
@@ -131,3 +132,11 @@ BITMAP IDM_UUDECODE         bitmaps\UDECODE.BMP
 
 #define AUTHOR_PICTURE		 26102               /* fm3dlg.h */
 BITMAP AUTHOR_PICTURE       bitmaps\HECTOR.BMP
+
+BITMAP IDM_CMDTOOLBAR       bitmaps\cmdstls.bmp
+BITMAP IDM_UTILSTOOLBAR     bitmaps\utilstls.bmp
+BITMAP IDM_SORTTOOLBAR      bitmaps\sorttls.bmp
+BITMAP IDM_SELECTTOOLBAR    bitmaps\selecttls.bmp
+BITMAP IDM_CONFIGTOOLBAR    bitmaps\configtls.bmp
+BITMAP IDM_FILESTOOLBAR     bitmaps\filestls.bmp
+BITMAP IDM_VIEWSTOOLBAR     bitmaps\viewstls.bmp

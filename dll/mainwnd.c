@@ -1219,7 +1219,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	tool = find_tool(id);
 	if (tool) {
 	  tool->flags |= T_INVISIBLE;
-	  fToolsChanged = TRUE;
+          save_tools(NULL);
 	}
       }
       break;
@@ -1229,8 +1229,8 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       while (tool) {
 	tool->flags &= (~T_INVISIBLE);
 	tool = tool->next;
-	fToolsChanged = TRUE;
       }
+      save_tools(NULL);
       break;
 
     case IDM_DELETEANYTOOL:             /* delete any button */
@@ -5425,17 +5425,17 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       else if (SHORT1FROMMP(mp1) >= IDM_QUICKTOOLSTART &&
-	       SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART + 50) {
+	       SHORT1FROMMP(mp1) < IDM_QUICKTOOLSTART + 51) {
 	if (!qtloaded)
 	  load_quicktools();
-	if (quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]) {
+	if (quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART - 1]) {
 	  if (fToolsChanged)
 	    save_tools(NULL);
-	  if (!load_tools(quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]))
+	  if (!load_tools(quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART - 1]))
 	    load_tools(NULL);
 	  else {
 	    strcpy(lasttoolbar,
-		   quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART]);
+		   quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART - 1]);
 	    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
 	  }
 	  PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
