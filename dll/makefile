@@ -27,7 +27,7 @@
 # 27 Jun 07 SHL Allow DEBUG set from command line or environment
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
-# 04 Jul 07 SHL Add missing .AUTODEPEND
+# 04 Jul 07 SHL Add missing .autodepend
 # 06 Aug 07 SHL Tweak CFLAGS for DEBUG builds
 # 26 Aug 07 SHL Clean *.lrf
 # 05 Sep 07 SHL Correct USE_WRC logic
@@ -39,6 +39,7 @@
 # 01 Mar 08 SHL Add missing dependencies.  Add WARNALL support
 # 05 May 08 SHL Add FORTIFY support
 # 26 May 08 SHL Update WARNALL to warn about more
+# 22 Jul 08 SHL Change from dllsyms to syms target for consistency
 
 # Environment:
 
@@ -162,7 +163,7 @@ RCFLAGS2 =
 !endif
 
 !ifndef MAKERES
-.c.obj: .AUTODEPEND
+.c.obj: .autodepend
   $(CC) $(CFLAGS) $*.c
 !else
   # !error "MAKERES mode"
@@ -201,7 +202,7 @@ all: &
      internal\mkstr.exe &
      fm3res.str
 
-dllsyms: $(SYMS) .symbolic
+syms: $(SYMS) .symbolic
 
 $(BASE).dll $(BASE).lib: $(OBJS) $(BASE).def $(BASE).lrf
   @echo $(LINK) @$(BASE).lrf @$(BASE).def
@@ -252,7 +253,7 @@ internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
   cd..
 
-$(BASERES).obj: $(BASERES).c .AUTODEPEND
+$(BASERES).obj: $(BASERES).c .autodepend
   $(CC) $(CFLAGSR) $(BASERES).c
 
 $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)

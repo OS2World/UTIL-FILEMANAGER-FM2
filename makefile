@@ -18,6 +18,9 @@
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
 # 21 Jan 08 SHL Add *.lrf to clean target
 # 22 Feb 08 JBS Suppress lxlite processing when DEBUG=1
+# 08 Jul 08 SHL Avoid extra work for wmake -a dist
+# 22 Jul 08 SHL Change from dll\dllsyms to dll\syms target for consistency
+# 22 Jul 08 SHL Pass FORTIFY options to subordinate makefiles
 
 # Environment - see makefile_pre.mk
 
@@ -41,12 +44,11 @@ WARPIN_OPTS = $(WARPIN_OPTS) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
 
 !include makefile_pre.mk
 
-
 all: dll $(BASE) allexe .symbolic
 
 syms: exesyms dllsyms .symbolic
 
-dist: all syms lxlite wpi .symbolic
+dist: lxlitedll $(BASE) lxliteexe syms wpi .symbolic
 
 # Only update resources
 res: .symbolic
@@ -57,29 +59,29 @@ res: .symbolic
 
 dll: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
   cd ..
 
 dllsyms: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) dllsyms
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) syms
   cd ..
 
 $(BASE): $(BASE).exe $(BASE).res .symbolic
 
-$(BASE).res: $(BASE).rc  icons\$(BASE).ico bitmaps\*.bmp
+$(BASE).res: $(BASE).rc  icons\$(BASE).ico bitmaps\*.bmp  .autodepend
 
-$(BASE).obj: $(BASE).c dll\version.h
+$(BASE).obj: $(BASE).c dll\version.h .autodepend
 
 # make EXE compenents
 
 allexe: *.mak .symbolic
-   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT)
+   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
 
 # make SYM files
 
 exesyms: *.mak .symbolic
-   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) sym
+   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) sym
 
 # make WPI files
 
@@ -88,28 +90,30 @@ wpi: .symbolic
    $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(WARPIN_OPTS)
    cd ..
 
+lxlite:: lxlitedll lxliteexe .symbolic
+
 # makefile_post.mk contains lxlite target for $(BASE).exe
 # Apply to each *.mak for other exes
-lxlite:: *.mak .symbolic
+lxliteexe: *.mak .symbolic
 !ifdef DEBUG
 !  ifeq DEBUG 0
-     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
 !  endif
 !else
-     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
 !endif
 
 # Apply to dlls
-lxlite:: .symbolic
+lxlitedll: .symbolic
   cd dll
 !ifdef DEBUG
 !  ifeq DEBUG 0
-#      $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
-     $(MAKE) $(DEBUG_OPT) lxlite
+      $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
+#     $(MAKE) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
 !  endif
 !else
-#   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
-  $(MAKE) $(DEBUG_OPT) lxlite
+   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
+#  $(MAKE) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
 !endif
   cd ..
 

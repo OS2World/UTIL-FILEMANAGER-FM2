@@ -12,6 +12,7 @@
 # 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 # 23 Jan 08 JBS Add support for building SYM files (Ticket 226)
 # 27 May 08 SHL Add WARNALL and FORTIFY support
+# 22 Jul 08 SHL Pass FORTIFY to subordinate makefiles
 
 CC = wcc386
 LINK = wlink
@@ -44,8 +45,13 @@ DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 WARNALL = $(%WARNALL)		# use value from environment
 !endif
 
-!ifdef %FORTIFY			# if defined in environment
-FORTIFY = $(%FORTIFY)		# use value from environment
+!ifdef FORTIFY				# if defined on wmake command line
+FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
+!else
+!ifdef %FORTIFY                 	# if defined in environment
+FORTIFY = $(%FORTIFY)           	# use value from environment
+FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
+!endif
 !endif
 
 SYMS = $(BASE).sym              #set a target for building SYM files
@@ -80,7 +86,7 @@ SYMS = $(BASE).sym              #set a target for building SYM files
 # -wcd=308	unprototyped function called
 # -wcd=309	unprototyped function called indirectly
 
-# We always compile with debug info to avoid needed a full rebuild just to debug
+# We always compile with debug info to avoid needing a full rebuild just to debug
 CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zp4 -zq -hd
 
 !ifdef WARNALL
