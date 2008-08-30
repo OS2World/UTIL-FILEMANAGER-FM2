@@ -489,8 +489,10 @@ static VOID ActionCnrThread(VOID *args)
 		RemoveCnrItems(hwndCnrD, pciD, 1, CMA_FREE | CMA_INVALIDATE);
 	      }
 	      else {
-		// Other side is not blank - update just this side
+		// Other side is not blank - blank just this side
 		FreeCnrItemData(pciS);
+		// 29 Aug 08 SHL Point pci fields at NullStr to sync with FreeCnrItemData mods
+		pciS->pszFileName = NullStr;
 		pciS->pszDisplayName = pciS->pszFileName;
 		pciS->rc.pszIcon = pciS->pszFileName;
 		pciS->flags = 0;	// Just on one side
