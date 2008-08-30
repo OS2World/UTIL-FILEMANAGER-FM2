@@ -2845,7 +2845,7 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
     PrfWriteProfileString(fmprof, FM3Str, szKey, lasttoolbar);
   }
 
-  if (*targetdir && !fIsShutDownState) {
+  if (!fIsShutDownState) {
     sprintf(szKey, "%sTargetDir", szPrefix);
     PrfWriteProfileString(fmprof, FM3Str, szKey, targetdir);
   }
