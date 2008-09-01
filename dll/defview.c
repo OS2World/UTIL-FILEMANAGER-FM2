@@ -126,7 +126,7 @@ BOOL ShowMultimedia(CHAR * filename)
 	            MMIO_READ | MMIO_NOIDENTIFY);
 	     if (!hmmio){
 	         DosFreeModule(MMIOModHandle);
-	         printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
+	         //printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
 	         return played;
 	     }
 	  }
