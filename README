@@ -27,8 +27,8 @@ you can use a text editor and/or file comparison utility like GFC
 to "merge" your changes, now found in the backup subdirectory,
 with the default files now found in the FM/2 directory. If you want
 more control over the operation of CFGMGR, then leave off the
-/UNATTENDED parameter. Without the /UNATTENDED parameter CFGMGR will
-ask your permission before replacing each file.
+/UNATTENDED parameter. Without the /UNATTENDED parameter CFGMGR
+will ask your permission before replacing each file.
 
 FM/2 3.12 Fixes a bug introduced in 3.11 (trap when viewing
 multiple files from an archive at the same time). It also adds
