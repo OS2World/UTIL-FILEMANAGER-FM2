@@ -1,8 +1,8 @@
 /*
-	$Id: $
-	
+::      $Id: $
+
    CFGMGR.CMD - manage installation, maintenance and deinstallation
-   				 of FM/2 configuration files
+                                 of FM/2 configuration files
 
    Optional Parameters:
 
@@ -137,36 +137,36 @@ exit cfg.errorcode
 /* Subroutines */
 Init: procedure expose (globals)
 
-	button.				= ''
-	
-	button.CMDS.helptext = 'Commands toolbar'
-	button.CMDS.text     = 'Cmds'
-	button.CMDS.id       = 4900
-	
-	button.UTILS.helptext = 'Utility toolbar'
-	button.UTILS.text     = 'Utils'
-	button.UTILS.id       = 4901
-	
-	button.SORT.helptext = 'Sort toolbar'
-	button.SORT.text     = 'Sort'
-	button.SORT.id       = 4902
-	
-	button.SELECT.helptext = 'Select toolbar'
-	button.SELECT.text     = 'Select'
-	button.SELECT.id       = 4903
-	
-	button.CONFIG.helptext = 'Configuration toolbar'
-	button.CONFIG.text     = 'Cmds'
-	button.CONFIG.id       = 4904
-	
-	button.FILES.helptext = 'Files toolbar'
-	button.FILES.text     = 'Files'
-	button.FILES.id       = 4905
-	
-	button.VIEWS.helptext = 'Views toolbar'
-	button.VIEWS.text     = 'Views'
-	button.VIEWS.id       = 4906
-	
+        button.                         = ''
+
+        button.CMDS.helptext = 'Commands toolbar'
+        button.CMDS.text     = 'Cmds'
+        button.CMDS.id       = 4900
+
+        button.UTILS.helptext = 'Utility toolbar'
+        button.UTILS.text     = 'Utils'
+        button.UTILS.id       = 4901
+
+        button.SORT.helptext = 'Sort toolbar'
+        button.SORT.text     = 'Sort'
+        button.SORT.id       = 4902
+
+        button.SELECT.helptext = 'Select toolbar'
+        button.SELECT.text     = 'Select'
+        button.SELECT.id       = 4903
+
+        button.CONFIG.helptext = 'Configuration toolbar'
+        button.CONFIG.text     = 'Cmds'
+        button.CONFIG.id       = 4904
+
+        button.FILES.helptext = 'Files toolbar'
+        button.FILES.text     = 'Files'
+        button.FILES.id       = 4905
+
+        button.VIEWS.helptext = 'Views toolbar'
+        button.VIEWS.text     = 'Views'
+        button.VIEWS.id       = 4906
+
    cfg.              = ''
    cfg.errorcode     = 0
    cfg.defaults      = 0
@@ -575,65 +575,65 @@ UpdateFM2Ini: procedure expose (globals)
          if LastToolBox = 'ERROR:' then
             LastToolbar = 'CMDS.TLS'
          else
-	      	LastToolbar = LastToolbox
-      	call SysIni inifile, 'FM/3', 'LastToolbar', LastToolbar
+                LastToolbar = LastToolbox
+        call SysIni inifile, 'FM/3', 'LastToolbar', LastToolbar
       end
    if SysIni(inifile, 'FM/3', 'FM2Shutdown.Toolbar') = 'ERROR:' then
-  		call SysIni inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
+                call SysIni inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
    if SysIni(inifile, 'FM/4', 'LastToolbar') = 'ERROR:' then
-  		call SysIni inifile, 'FM/4', 'LastToolbar', LastToolbar
+                call SysIni inifile, 'FM/4', 'LastToolbar', LastToolbar
 return
 
 Ticket267Fix: procedure expose (globals)
-	parse arg infile
-	fix_string = 'Fixed: Ticket 267'
-	abort_fix = 0
-	outfile = SysTempFilename('cfgmgr??.fix')
-	call lineout outfile, ';' fix_string
-	/* Read file, if comment has "already repaired" message then stop */
-	do while lines(infile) > 0
-		line = linein(infile)
-		if left(line, 1) = ';' then
-			if pos(fix_string, line) > 0 then
-				do
-					abort_fix = 1
-					leave
-				end
-			else
-				call lineout outfile, line
-		else if word(line, 1) = ':spacer' then
-			call lineout outfile, ';' || substr(line, 2)
-		else
-			do
-				tool.1 = line
-				tool.2 = linein(infile)
-				tool.3 = linein(infile)
-				tool.4 = linein(infile)
-				button_name = translate(tool.2)
-				if (button.button_name.text \= '') & (tool.4 >= 4900) & (tool.4 < 4950) then
-					do
-						call lineout outfile, button.button_name.helptext
-						call lineout outfile, button.button_name.text
-						call lineout outfile, tool.3
-						call lineout outfile, button.button_name.id
-					end
-				else
-					do
-						call lineout outfile, tool.1
-						call lineout outfile, tool.2
-						call lineout outfile, tool.3
-						call lineout outfile, tool.4
-					end
-			end					
-	end
-	call stream infile, 'c', 'close'
-	call stream outfile, 'c', 'close'
-	if abort_fix = 0 then
-		do
+        parse arg infile
+        fix_string = 'Fixed: Ticket 267'
+        abort_fix = 0
+        outfile = SysTempFilename('cfgmgr??.fix')
+        call lineout outfile, ';' fix_string
+        /* Read file, if comment has "already repaired" message then stop */
+        do while lines(infile) > 0
+                line = linein(infile)
+                if left(line, 1) = ';' then
+                        if pos(fix_string, line) > 0 then
+                                do
+                                        abort_fix = 1
+                                        leave
+                                end
+                        else
+                                call lineout outfile, line
+                else if word(line, 1) = ':spacer' then
+                        call lineout outfile, ';' || substr(line, 2)
+                else
+                        do
+                                tool.1 = line
+                                tool.2 = linein(infile)
+                                tool.3 = linein(infile)
+                                tool.4 = linein(infile)
+                                button_name = translate(tool.2)
+                                if (button.button_name.text \= '') & (tool.4 >= 4900) & (tool.4 < 4950) then
+                                        do
+                                                call lineout outfile, button.button_name.helptext
+                                                call lineout outfile, button.button_name.text
+                                                call lineout outfile, tool.3
+                                                call lineout outfile, button.button_name.id
+                                        end
+                                else
+                                        do
+                                                call lineout outfile, tool.1
+                                                call lineout outfile, tool.2
+                                                call lineout outfile, tool.3
+                                                call lineout outfile, tool.4
+                                        end
+                        end
+        end
+        call stream infile, 'c', 'close'
+        call stream outfile, 'c', 'close'
+        if abort_fix = 0 then
+                do
          'copy' infile cfg.backupdir         /* backup tls file */
-			'copy' outfile infile         		/* "install" new  tls file */
-			cfg.action_taken = 1
-		end
-	call SysFileDelete outfile
+                        'copy' outfile infile                   /* "install" new  tls file */
+                        cfg.action_taken = 1
+                end
+        call SysFileDelete outfile
 return
 
