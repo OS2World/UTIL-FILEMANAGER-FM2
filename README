@@ -5,6 +5,31 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.13: Many of the changes in this release are related to
+the toolbars. A new feature is that the current toolbar, along
+with the current Target directory, are now saved and restored
+with states. Toolbar code and documentation has been improved, new
+toolbar button bitmaps have been added and bugs have been fixed.
+
+The installation of FM/2 will not replace existing user
+customization files like the toolbar files. So, if this is not
+your first installation of FM/2, some of these improvements will
+not be available because of the old, pre v3.13 toolbar files. It
+is therefore recommended that you run the following:
+
+	CFGMGR /INSTALL /DEFAULTS /TOOLBARSONLY /UNATTENDED
+	
+CFGMGR is a REXX program located in the FM/2 installation directory.
+If run as given above it will copy your existing toolbar files into
+a "User_config_backup" subdirectory and then install FM/2 default
+toolbar files. If you have done some customizations of FM/2 toolbars
+you can use a text editor and/or file comparison utility like GFC
+to "merge" your changes, now found in the backup subdirectory,
+with the default files now found in the FM/2 directory. If you want
+more control over the operation of CFGMGR, then leave off the
+/UNATTENDED parameter. Without the /UNATTENDED parameter CFGMGR will
+ask your permission before replacing each file.
+
 FM/2 3.12 Fixes a bug introduced in 3.11 (trap when viewing
 multiple files from an archive at the same time). It also adds
 Open Default, Open Settings and via an accel key ctrl + l Open
