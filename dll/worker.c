@@ -1249,7 +1249,8 @@ VOID MassAction(VOID * args)
 		if (ad.arcname[strlen(ad.arcname) - 1] != '\\')
 		  strcat(ad.arcname, "\\");
 	      }
-	      if (!WinDlgBox(HWND_DESKTOP, wk->hwndFrame, ArchiveDlgProc, FM3ModHandle, ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	/* we blew it */
+              if (!WinDlgBox(HWND_DESKTOP, wk->hwndFrame, ArchiveDlgProc, FM3ModHandle,
+                             ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	/* we blew it */
 		break;
 	      // Provide extension so containers work
 	      pch = strrchr(ad.arcname, '\\');
