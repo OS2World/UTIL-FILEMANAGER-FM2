@@ -307,7 +307,7 @@ Init: procedure expose (globals)
    if length(thisdir) = 2 then
       thisdir = thisdir || '\'
    call directory thisdir
-   fm2ini = value('FM2INI',,'OS2ENVIRONMENT')
+   fm2ini = value('FM3INI',,'OS2ENVIRONMENT')
    if fm2ini = '' then
       if right(thisdir, 1) \= '\' then
       	cfg.inifile = thisdir || '\' || 'FM3.INI'
