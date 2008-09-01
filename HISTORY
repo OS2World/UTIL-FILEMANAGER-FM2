@@ -4,6 +4,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Trash can only used for drives that support it; it is not used as default Ticket 250 (Gregg)
  o Check disk space remaining for temp and user files; Fix several issues related to full drives.
    Tickets 154, 214, 268, 271 (Gregg)
+ o Added current toolbar and target directory to states. Ticket 259 (John)
  o Add BMP resources for the 7 FM2 provided toolbars & make it clear how to turn them off.
    Tickets 273, 274 (Gregg, David)
  o Fix problems with default toolbars and develop a seamless install saving user modifications.
@@ -14,7 +15,6 @@ New stuff's at the top.  This list is not necessarily complete.
  o Interface cleanup; Tickets 257, 258, 261, 262, 270 (Gregg)
  o Some additional bugs fixed; Tickets 254, 256, 278 & several without tickets (Gregg, Steven)
  o Developed a release validation assistant. Ticket 107 (John)
- o Added current toolbar and target directory to states. Ticket 259 (John)
 
 3.12
  o When viewing archives, users can now select "Open default" or "Open Settings".

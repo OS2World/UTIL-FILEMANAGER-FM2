@@ -10,9 +10,6 @@ the toolbars. A new feature is that the current toolbar, along
 with the current Target directory, are now saved and restored
 with states. Toolbar code and documentation has been improved, new
 toolbar button bitmaps have been added and bugs have been fixed.
-The delete = move to trash can is off by default (turn it on on the
-General settings notebook page). FM/2 now checks for adequate disk
-space to avoid data loss.
 
 The installation of FM/2 will not replace existing user
 customization files like the toolbar files. So, if this is not
@@ -32,6 +29,10 @@ with the default files now found in the FM/2 directory. If you want
 more control over the operation of CFGMGR, then leave off the
 /UNATTENDED parameter. Without the /UNATTENDED parameter CFGMGR
 will ask your permission before replacing each file.
+
+The delete = move to trash can is off by default (turn it on on the
+General settings notebook page). FM/2 now checks for adequate disk
+space to avoid data loss.
 
 We also fixed some additional bugs and provide some performance
 enhancements. If you have had trouble with "broken pipe" errors
