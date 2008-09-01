@@ -1,5 +1,5 @@
 /*
- * $Id: $
+ * $Id$
  *
  * ReleaseEdit: a program which will set the version number
  * 	and the date and time of a FM/2 release

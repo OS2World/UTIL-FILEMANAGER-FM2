@@ -1,5 +1,5 @@
 /*
- * $Id: $
+ * $Id$
  *
  * ReleaseTool: Provides a guide and assitance to the process
  *              of building a release version of FM/2.
