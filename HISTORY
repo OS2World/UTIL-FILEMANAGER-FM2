@@ -1,5 +1,21 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.13
+ o Trash can only used for drives that support it; it is not used as default Ticket 250 (Gregg)
+ o Check disk space remaining for temp and user files; Fix several issues related to full drives.
+   Tickets 154, 214, 268, 271 (Gregg)
+ o Add BMP resources for the 7 FM2 provided toolbars & make it clear how to turn them off.
+   Tickets 273, 274 (Gregg, David)
+ o Fix problems with default toolbars and develop a seamless install saving user modifications.
+   Ticket 267 (John)
+ o Fix issues with the toolbar button edit/add etc code. Tickets 260, 264, 266, 272, 275 (Gregg)
+ o Fix Dirsizes issues including a trap. Tickets 224, 255, 269 (Gregg)
+ o Performance optimizations. Tickets 252, 253 (Gregg)
+ o Interface cleanup; Tickets 257, 258, 261, 262, 270 (Gregg)
+ o Some additional bugs fixed; Tickets 254, 256, 278 & several without tickets (Gregg, Steven)
+ o Developed a release validation assistant. Ticket 107 (John)
+ o Added current toolbar and target directory to states. Ticket 259 (John)
+
 3.12
  o When viewing archives, users can now select "Open default" or "Open Settings".
    These options are available through the context menu and via the F6 and F7 keys.
@@ -22,7 +38,7 @@ New stuff's at the top.  This list is not necessarily complete.
 
 3.11
  o Fixed 2 traps in Dirsize, ticket 243 (Gregg Steven)
- o Added the option of having delete move the files to the Xworkplace trashcan, ticket 43
+ o Added the option of having delete move the files to the Xworkplace trash can, ticket 43
    (Gregg)
  o Added fortify support fix several memory management issues, ticket 213 240 (Steven Gregg)
  o Fixed multi dot file association/filtering logic, ticket 235 (KO Myung-Hun)
