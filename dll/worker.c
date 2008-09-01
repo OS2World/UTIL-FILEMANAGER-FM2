@@ -29,6 +29,7 @@
   20 Jul 08 GKY Add save/append filename to clipboard.
   02 Aug 08 GKY Limit use of "trash can" to local writable fixed drives or to trash can supported
                 drives list if it exists. Fix ability to deselect use of trash can.
+  01 Sep 08 GKY Add code to retry on Netdrives "pipe error"
 
 ***********************************************************************/
 

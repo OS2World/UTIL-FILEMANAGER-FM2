@@ -20,6 +20,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT & .TLS files; prevent loss of existing file
   26 Aug 08 GKY Require unique ID plus text and help strings for all tools save toolbar on button delete
+  01 Sep 08 GKY Save toolbars immediately on change.
 
 ***********************************************************************/
 

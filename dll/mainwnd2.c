@@ -24,6 +24,7 @@
   14 Feb 08 SHL Rework to support settings menu conditional cascade
   29 Feb 08 GKY Use xfree where appropriate
   27 Aug 08 JBS Ticket 259: Support saving/restoring toolbars with states
+  01 Sep 08 GKY Add bmps for default toolbars
 
 ***********************************************************************/
 

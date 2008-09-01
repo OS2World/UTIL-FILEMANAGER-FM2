@@ -68,6 +68,7 @@
   26 Aug 08 GKY Require unique ID plus text and help strings for all tools save toolbar on button delete
   27 Aug 08 JBS Ticket 259: Support saving/restoring toolbars with states
   29 Aug 08 JBS Ticket 259: Support saving/restoring target directories with states (except the shutdown state)
+  01 Sep 08 GKY Save toolbars immediately on change. Add bmps for default toolbars
 
 ***********************************************************************/
 

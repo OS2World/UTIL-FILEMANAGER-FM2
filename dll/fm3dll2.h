@@ -21,6 +21,7 @@
   15 Feb 08 SHL Drop obsoletes
   20 Jul 08 GKY Add IDM_SAVETOCLIPFILENAME & IDM_APPENDTOCLIPFILENAME
                 to save/append just filename to clipboard
+  01 Sep 08 GKY Add IDM_*TLS for icon resources for the default toolbars
 
   Align with spaces only - no tabs please
 

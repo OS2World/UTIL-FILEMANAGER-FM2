@@ -35,6 +35,7 @@
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   31 Jul 08 JBS Added a missing mnemonic and replaced "Mommy make it stop!" with useful text.
+  01 Sep 08 GKY Change User-defined BMP text to better match what it actually does.
 
 ***********************************************************************/
 
