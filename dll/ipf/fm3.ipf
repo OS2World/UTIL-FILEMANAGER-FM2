@@ -9,6 +9,7 @@
 .*
 .* 24 Sep 06 GKY ADD Change to F1 help
 .* 06 Jul 08 GKY ADD FM2Shutdown state info
+.* 01 Sep 08 GKY Change User-defined bmp (renamed) checkbox info to better describe what it does
 .*
 .***********************************************************************
 .*
