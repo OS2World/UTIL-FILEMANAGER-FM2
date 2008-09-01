@@ -1,5 +1,5 @@
 /*
-::      $Id$
+   $Id$
 
    CFGMGR.CMD - manage installation, maintenance and deinstallation
                                  of FM/2 configuration files
@@ -85,7 +85,7 @@ do f = 1 to cfg.file.0
                   else
                      nop
                else
-                  if (cfg.file.f.toolbar = 1) & (cfg.unattended = 1) then
+                  if (cfg.file.f.toolbar = 1) & (cfg.unattended = 1) & (translate(right(cfg.file.f.name, 13, ' ')) \= '\QUICKTLS.DAT') then
                      call Ticket267Fix cfg.file.f.name
             end
          else
@@ -136,9 +136,6 @@ ErrorExit:
    end
 
 NormalExit:
-say
-say cfg.pgmname' has ended.'
-say 'Time elapsed:' time('e')
 n = endlocal()
 exit cfg.errorcode
 
@@ -278,7 +275,7 @@ Init: procedure expose (globals)
    cfg.file.f.name    = '.\quicktls.dat'
    cfg.file.f.desc.1  = 'FM/2 toolbar list'
    cfg.file.f.desc.0  = 1
-   cfg.file.f.toolbar = 0
+   cfg.file.f.toolbar = 1
 
    f = f + 1
    cfg.file.f.default = '.\Tmplates\fatopt.tmp'
@@ -310,6 +307,15 @@ Init: procedure expose (globals)
    if length(thisdir) = 2 then
       thisdir = thisdir || '\'
    call directory thisdir
+   fm2ini = value('FM2INI',,'OS2ENVIRONMENT')
+   if fm2ini = '' then
+      if right(thisdir, 1) \= '\' then
+      	cfg.inifile = thisdir || '\' || 'FM3.INI'
+      else
+      	cfg.inifile = thisdir || 'FM3.INI'
+   else
+      cfg.inifile = fm2ini
+
    /* edit for correct directory here? */
 
    parse value SysTextScreenSize() with . cfg.screen_width
@@ -319,6 +325,11 @@ Init: procedure expose (globals)
 return
 
 ProcessArgs: procedure expose (globals)
+   parse arg args
+   if pos('/ToOlBaRsOnLy', args) > 0 then
+      cfg.specialiconrun = 1
+   else
+      cfg.specialiconrun = 0
    parse upper arg args
    do while args \= '' & cfg.errorcode = 0
       parse var args param args
@@ -453,27 +464,29 @@ PromptForReplaceOption: procedure expose (globals)
 return GetResponse(msg '(Y/n)?')
 
 Usage: procedure expose (globals)
-   say 'Proper usage of 'cfg.pgmname':'
+   say 'Proper usage of 'cfg.pgmname' (the order of the parameters is not important):'
    say
-   say cfg.pgmname' /INSTALL [/UNATTENDED]'
+   say cfg.pgmname' /INSTALL [/UNATTENDED] [/TOOLBARSONLY]'
    say '   This installs any missing configuration files with default values.'
    say
-   say cfg.pgmname' /INSTALL /DEFAULTS [/UNATTENDED]'
+   say cfg.pgmname' /INSTALL /DEFAULTS [/UNATTENDED] [/TOOLBARSONLY]'
    say '   This action backs up user-modified configuration files and replaces'
    say '   them with default values. Unless /UNATTENDED, you are asked to confirm'
    say '   this action.'
    say
-   say cfg.pgmname' /DEINSTALL /DEFAULTS [/UNATTENDED]'
+   say cfg.pgmname' /DEINSTALL /DEFAULTS [/UNATTENDED] [/TOOLBARSONLY]'
    say '   This reverses the action described above.'
    say
-   say cfg.pgmname' /DEINSTALL [/UNATTENDED]'
+   say cfg.pgmname' /DEINSTALL [/UNATTENDED] [/TOOLBARSONLY]'
    say '   This deletes all configuration files. Unless /UNATTENDED, you are asked'
    say '   to confirm this action. (This is action is automatically done during'
    say '   de-installation of FM/2. It is not an action users should normally take.)'
    say
    say 'The optional parameter /UNATTENDED means there will be NO user interaction'
    say '   or confirmation of the operation!!!'
-   say 'The order of the parameters is not important.'
+   say
+   say 'The optional parameter /TOOLBARSONLY means only toolbar-related files will'
+   say '   be processed.'
 return
 
 ProgramError: procedure expose (globals)
@@ -564,103 +577,99 @@ BackupFileIsOK: procedure expose (globals)
 return retval
 
 UpdateFM2Ini: procedure expose (globals)
-   parse source . . thispgm
-   thisdir = left(thispgm, lastpos('\', thispgm))
-   inifile = thisdir || 'fm3.ini'
-   EnvVarList = strip(SysIni(inifile, 'FM/3', 'TreeEnvVarList'))
+   EnvVarList = strip(SysIni(cfg.inifile, 'FM/3', 'TreeEnvVarList'))
    if EnvVarList = '' | EnvVarList = 'ERROR:' then
-      call SysIni inifile, 'FM/3', 'TreeEnvVarList', 'PATH;DPATH;LIBPATH;HELP;BOOKSHELF;LIB;INCLUDE;LOCPATH;SMINCLUDE;LPATH;CODELPATH'
-   LastToolbox = SysIni(inifile, 'FM/3', 'LastToolBox')
-   LastToolbar = SysIni(inifile, 'FM/3', 'LastToolbar')
+      call SysIni cfg.inifile, 'FM/3', 'TreeEnvVarList', 'PATH;DPATH;LIBPATH;HELP;BOOKSHELF;LIB;INCLUDE;LOCPATH;SMINCLUDE;LPATH;CODELPATH'
+   LastToolbox = SysIni(cfg.inifile, 'FM/3', 'LastToolBox')
+   LastToolbar = SysIni(cfg.inifile, 'FM/3', 'LastToolbar')
    if LastToolbar = 'ERROR:' then
       do
          if LastToolBox = 'ERROR:' then
             LastToolbar = 'CMDS.TLS'
          else
                 LastToolbar = LastToolbox
-        call SysIni inifile, 'FM/3', 'LastToolbar', LastToolbar
+        call SysIni cfg.inifile, 'FM/3', 'LastToolbar', LastToolbar
       end
-   if SysIni(inifile, 'FM/3', 'FM2Shutdown.Toolbar') = 'ERROR:' then
-                call SysIni inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
-   if SysIni(inifile, 'FM/4', 'LastToolbar') = 'ERROR:' then
-                call SysIni inifile, 'FM/4', 'LastToolbar', LastToolbar
+   if SysIni(cfg.inifile, 'FM/3', 'FM2Shutdown.Toolbar') = 'ERROR:' then
+                call SysIni cfg.inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
+   if SysIni(cfg.inifile, 'FM/4', 'LastToolbar') = 'ERROR:' then
+                call SysIni cfg.inifile, 'FM/4', 'LastToolbar', LastToolbar
 return
 
 Ticket267Fix: procedure expose (globals)
-        parse arg infile
-        fix_string = 'Fixed: Ticket 267'
-        abort_fix = 0
-        outfile = SysTempFilename('cfgmgr??.fix')
-        call lineout outfile, ';' fix_string
-        /* Read file, if comment has "already repaired" message then stop */
-        do while lines(infile) > 0
-                line = linein(infile)
-                if left(line, 1) = ';' then
-                        if pos(fix_string, line) > 0 then
-                                do
-                                        abort_fix = 1
-                                        leave
-                                end
-                        else
-                                call lineout outfile, line
-                else if word(line, 1) = ':spacer' then
-                        call lineout outfile, ';' || substr(line, 2)
-                else
-                        do
-                                tool.1 = line
-                                tool.2 = linein(infile)
-                                tool.3 = linein(infile)
-                                tool.4 = linein(infile)
-                                button_name = translate(tool.2)
-                                if (button.button_name.text \= '') & (tool.4 >= 4900) & (tool.4 < 4950) then
-                                        do
-                                                call lineout outfile, button.button_name.helptext
-                                                call lineout outfile, button.button_name.text
-                                                call lineout outfile, tool.3
-                                                call lineout outfile, button.button_name.id
-                                        end
-                                else
-                                        do
-                                                call lineout outfile, tool.1
-                                                call lineout outfile, tool.2
-                                                call lineout outfile, tool.3
-                                                call lineout outfile, tool.4
-                                        end
-                        end
-        end
-        call stream infile, 'c', 'close'
-        call stream outfile, 'c', 'close'
-        if abort_fix = 0 then
-                do
+   parse arg infile
+   fix_string = 'Fixed: Ticket 267'
+   abort_fix = 0
+   outfile = SysTempFilename('cfgmgr??.fix')
+   call lineout outfile, ';' fix_string
+   /* Read file, if comment has "already repaired" message then stop */
+   do while lines(infile) > 0
+      line = linein(infile)
+      if left(line, 1) = ';' then
+         if pos(fix_string, line) > 0 then
+            do
+               abort_fix = 1
+               leave
+            end
+         else
+            call lineout outfile, line
+      else if word(line, 1) = ':spacer' then
+         call lineout outfile, ';' || substr(line, 2)
+      else
+         do
+            tool.1 = line
+            tool.2 = linein(infile)
+            tool.3 = linein(infile)
+            tool.4 = linein(infile)
+            button_name = translate(tool.2)
+            if (button.button_name.text \= '') & (tool.4 >= 4900) & (tool.4 < 4950) then
+               do
+                  call lineout outfile, button.button_name.helptext
+                  call lineout outfile, button.button_name.text
+                  call lineout outfile, tool.3
+                  call lineout outfile, button.button_name.id
+               end
+            else
+               do
+                  call lineout outfile, tool.1
+                  call lineout outfile, tool.2
+                  call lineout outfile, tool.3
+                  call lineout outfile, tool.4
+               end
+         end
+   end
+   call stream infile, 'c', 'close'
+   call stream outfile, 'c', 'close'
+   if abort_fix = 0 then
+      do
          'copy' infile cfg.backupdir         /* backup tls file */
-                        'copy' outfile infile                   /* "install" new  tls file */
-                        cfg.action_taken = 1
-                end
-        call SysFileDelete outfile
+         'copy' outfile infile                   /* "install" new  tls file */
+         cfg.action_taken = 1
+      end
+   call SysFileDelete outfile
 return
 
 /*=== Error() Report ERROR, FAILURE etc. and exit ===*/
 
 Error:
-  say
-  parse source . . cmd
-  say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
-  if 'CONDITION'('D') \= '' then
-    say 'REXX reason =' 'CONDITION'('D')'.'
-  if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
-    say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
-  else if 'SYMBOL'('RC') == 'VAR' then
-    say 'RC =' RC'.'
-  say 'Source =' 'SOURCELINE'(SIGL)
+   say
+   parse source . . cmd
+   say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
+   if 'CONDITION'('D') \= '' then
+     say 'REXX reason =' 'CONDITION'('D')'.'
+   if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
+     say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
+   else if 'SYMBOL'('RC') == 'VAR' then
+     say 'RC =' RC'.'
+   say 'Source =' 'SOURCELINE'(SIGL)
 
-  if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
-    trace '?A'
-    say 'Exiting.'
-    call 'SYSSLEEP' 2
-    exit 'CONDITION'('C')
-  end
-
-  return
+   if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
+     trace '?A'
+     say 'Exiting.'
+     call 'SYSSLEEP' 2
+     exit 'CONDITION'('C')
+   end
+return
 
 /* end Error */
 
