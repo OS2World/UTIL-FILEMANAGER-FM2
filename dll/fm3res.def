@@ -4,7 +4,7 @@
 
 # 14 Jun 07 SHL Convert to OpenWatcom
 
-option description '@#SLAInc:3.12#@##1## 07/21/2008 03:12:00      GKYBuild::EN:US:0:U:@@FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2008 Steven Levine and Associates, Inc.'
+option description '@#SLAInc:3.13.0#@##1## 09/01/2008 03:13:00      GKYBuild::EN:US:0:U:@@FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2008 Steven Levine and Associates, Inc.'
 
 segment class 'DATA' readonly loadoncall shared
 segment class 'CODE' loadoncall
