@@ -14,9 +14,22 @@
  * 	   *.def, file_id.diz, dll\version.h, warpin\fm2.wis
  *
 */
+
+signal on Error
+signal on FAILURE name Error
+signal on Halt
+signal on NOTREADY name Error
+signal on NOVALUE name Error
+signal on SYNTAX name Error
+/*
+signal on novalue             /* for debugging */
+*/
+
 parse arg ver file .
-if ver = '' | stream(file, 'c', 'query exists') = '' then
-   signal Usage			/* and exit */
+if ver = '' | file = '' then
+   call Usage 0			/* and exit */
+else if stream(file, 'c', 'query exists') = '' then
+   call Usage 2			/* and exit */
 parse var ver major '.' minor '.' CSDLevel
 if CSDlevel = '' then
    CSDlevel = 0
@@ -62,10 +75,41 @@ end
 return
 
 Usage:
+   parse arg plus
 	say;say;say
-	lastline = sigl - 3
+	lastline = sigl - (14 + plus)
 	do i = 1 to lastline
 		say sourceline(i)
 	end
 exit
+
+/*=== Error() Report ERROR, FAILURE etc. and exit ===*/
+
+Error:
+  say
+  parse source . . cmd
+  say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
+  if 'CONDITION'('D') \= '' then
+    say 'REXX reason =' 'CONDITION'('D')'.'
+  if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
+    say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
+  else if 'SYMBOL'('RC') == 'VAR' then
+    say 'RC =' RC'.'
+  say 'Source =' 'SOURCELINE'(SIGL)
+
+  if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
+    trace '?A'
+    say 'Exiting.'
+    call 'SYSSLEEP' 2
+    exit 'CONDITION'('C')
+  end
+
+  return
+
+novalue:
+   say 'Uninitialized variable: ' || condition('D') || ' on line: 'sigl
+   say 'Line text: 'sourceline(sigl)
+   cfg.errorcode = 3
+   signal ErrorExit
+
 

@@ -22,7 +22,16 @@
 
 n = setlocal()
 
-signal on novalue
+signal on Error
+signal on FAILURE name Error
+signal on Halt
+signal on NOTREADY name Error
+signal on NOVALUE name Error
+signal on SYNTAX name Error
+/*
+signal on novalue             /* for debugging */
+*/
+
 
 globals = 'cmd prompt editor editorcmds'
 
@@ -471,46 +480,33 @@ BuildHobbesTxt: procedure expose (globals)
    say HobbesTxtFilename 'has been written.'
 return
 
-/*
-                          Upload Information Template for Hobbes.nmsu.edu
-                          ===============================================
+/*=== Error() Report ERROR, FAILURE etc. and exit ===*/
 
-        Archive Filename: fm2-3-12-0.wpi
-       Short Description: Mark Kimes FM/2 File Manager 3.12.0
-        Long Description: The package contains a warpin package for installing FM2.
-                          The FM2 source code is available on netlabs.
-      Proposed directory
-           for placement: os2/util/browser
+Error:
+  say
+  parse source . . cmd
+  say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
+  if 'CONDITION'('D') \= '' then
+    say 'REXX reason =' 'CONDITION'('D')'.'
+  if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
+    say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
+  else if 'SYMBOL'('RC') == 'VAR' then
+    say 'RC =' RC'.'
+  say 'Source =' 'SOURCELINE'(SIGL)
 
-               Your name: Gregg Young
-           Email address: ygk@qwest.net
-    Program contact name: (same)
-   Program contact email: (same)
-             Program URL: http://svn.netlabs.org/fm2
+  if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
+    trace '?A'
+    say 'Exiting.'
+    call 'SYSSLEEP' 2
+    exit 'CONDITION'('C')
+  end
 
-      Would you like the
-   contact email address
-    included in listings? yes
+  return
 
-Operating System/Version: OS/2 Warp 3.0 and up.
- Additional requirements:
+novalue:
+   say 'Uninitialized variable: ' || condition('D') || ' on line: 'sigl
+   say 'Line text: 'sourceline(sigl)
+   cfg.errorcode = 3
+   signal ErrorExit
 
-                Replaces: fm2-3-11-0.wpi
-*/
-/*
-			do 11
-				line = linein(HobbesTxtFilename)
-			end
-			name = strip(substr(line, wordpos(line, 3)))
-			line = linein(HobbesTxtFilename)
-			email = strip(substr(line, wordpos(line, 3)))
-			do 7
-				line = linein(HobbesTxtFilename)
-			end
-			OKtoListEmail = strip(substr(line, wordpos(line, 4)))
-			do 5
-				line = linein(HobbesTxtFilename)
-			end
-			replaced_wpi = word(line, 2)
-*/
 

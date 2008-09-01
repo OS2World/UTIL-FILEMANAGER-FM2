@@ -1,5 +1,5 @@
 /*
-::      $Id: $
+::      $Id$
 
    CFGMGR.CMD - manage installation, maintenance and deinstallation
                                  of FM/2 configuration files
@@ -29,8 +29,16 @@
 */
 
 n = setlocal()
-t = time('e')
-signal on novalue                 /* for debugging */
+
+signal on Error
+signal on FAILURE name Error
+signal on Halt
+signal on NOTREADY name Error
+signal on NOVALUE name Error
+signal on SYNTAX name Error
+/*
+signal on novalue             /* for debugging */
+*/
 
 call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
 call SysLoadFuncs
@@ -477,12 +485,6 @@ ProgramError: procedure expose (globals)
    say 'through the FM2USER group on Yahoo.'
 exit
 
-novalue:
-   say 'Uninitialized variable: ' || condition('D') || ' on line: 'sigl
-   say 'Line text: 'sourceline(sigl)
-   cfg.errorcode = 3
-   signal ErrorExit
-
 CfgAction: procedure expose (globals)
    parse arg action, f
    retval = 0
@@ -636,4 +638,36 @@ Ticket267Fix: procedure expose (globals)
                 end
         call SysFileDelete outfile
 return
+
+/*=== Error() Report ERROR, FAILURE etc. and exit ===*/
+
+Error:
+  say
+  parse source . . cmd
+  say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
+  if 'CONDITION'('D') \= '' then
+    say 'REXX reason =' 'CONDITION'('D')'.'
+  if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
+    say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
+  else if 'SYMBOL'('RC') == 'VAR' then
+    say 'RC =' RC'.'
+  say 'Source =' 'SOURCELINE'(SIGL)
+
+  if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
+    trace '?A'
+    say 'Exiting.'
+    call 'SYSSLEEP' 2
+    exit 'CONDITION'('C')
+  end
+
+  return
+
+/* end Error */
+
+novalue:
+   say 'Uninitialized variable: ' || condition('D') || ' on line: 'sigl
+   say 'Line text: 'sourceline(sigl)
+   cfg.errorcode = 3
+   signal ErrorExit
+
 
