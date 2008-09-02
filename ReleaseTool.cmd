@@ -344,7 +344,7 @@ DisplayMenu: procedure
          iterate
       if action < 0 then
          iterate
-      if action <= 19 then
+      if action <= 20 then
          leave
 	end
 return action
