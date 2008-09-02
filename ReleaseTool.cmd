@@ -235,6 +235,9 @@ do forever
             say 'Upload WPI file to distribution points.'
             say
             say 'Announce release to mailing lists, Usenet, etc.'
+            say
+            say 'Post a note to "Netlabs Community" <community@netlabs.org>'
+            say 'requesting that the release be moved to pub/fm2.'
          end
       when action = 20 then
          do /* Set next version */
