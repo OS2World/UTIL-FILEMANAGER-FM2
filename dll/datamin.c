@@ -40,6 +40,10 @@
 #include "datamin.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "commafmt.h"			// CommaFmtUL
+#include "killproc.h"			// KillDlgProc
+#include "sysinfo.h"			// SysInfoDlgProc
+#include "mainwnd.h"			// TopWindowName
 #include "fm3dll.h"
 #include "fortify.h"
 

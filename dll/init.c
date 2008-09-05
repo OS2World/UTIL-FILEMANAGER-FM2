@@ -43,11 +43,11 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
-		keys using a "DirCnr." prefix
+                keys using a "DirCnr." prefix
   20 Apr 08 GKY Change default cmd line length to 1024 Ask once if user wants to reset it.
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
-		all the details view settings (both the global variables and those in the
-		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+                all the details view settings (both the global variables and those in the
+                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   16 JUL 08 GKY Use TMP directory for temp files
   17 Jul 08 SHL Reduce code bulk in fUseTmp setup
   19 Jul 08 GKY Use pFM2SaveDirectory, MakeTempName and move temp files to TMP subdirectory if (TMP).
@@ -81,17 +81,37 @@
 #include "tools.h"
 #include "fm3str.h"
 #include "version.h"
-#include "pathutil.h"			// BldFullPathName
-#include "arccnrs.h"			// ArcClientWndProc
-#include "errutil.h"			// Dos_Error...
-#include "strutil.h"			// GetPString
+#include "pathutil.h"                   // BldFullPathName
+#include "arccnrs.h"                    // ArcClientWndProc
+#include "errutil.h"                    // Dos_Error...
+#include "strutil.h"                    // GetPString
+#include "valid.h"                      // ArgDriveFlags
+#include "autoview.h"                   // AutoViewProc
+#include "mainwnd.h"                    // BubbleProc, ChildButtonProc, DriveBackProc,
+                                        // DriveProc, LEDProc, MainWndProc, StatusProc
+                                        // ToolBackProc
+#include "collect.h"                    // CollectorClientWndProc, CollectorTextProc
+#include "getnames.h"                   // CustomFileDlg
+#include "notify.h"                     // EndNote
+#include "valid.h"                      // FillInDriveFlags, IsValidDir
+#include "inis.h"                       // IniProc
+#include "viewer.h"                     // MLEEditorProc
+#include "mainwnd2.h"                   // MainWndProc2
+#include "notify.h"                     // NotifyWndProc
+#include "treecnr.h"                    // OpenButtonProc
+#include "seeall.h"			// SeeAllWndProc, SeeStatusProc
+#include "init.h"
+#include "timer.h"			// StartTimer, StopTimer
+#include "treecnr.h"			// TreeClientWndProc, TreeStatProc
+#include "newview.h"			// ViewStatusProc, ViewWndProc
 #include "fm3dll.h"
-#include "notebook.h"			// command line variables (editor etc)
+#include "misc.h"                       // HeapThread, LoadDetailsSwitches
+#include "notebook.h"                   // command line variables (editor etc)
 #include "fortify.h"
 
 #ifdef __IBMC__
 #pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
-#pragma alloc_text(INIT1,StartFM3,FindSwapperDat)
+#pragma alloc_text(INIT1,StartFM3)
 #endif
 
 extern int _CRT_init(void);
@@ -107,6 +127,8 @@ PSZ pszBuiltWith = "Built with OpenWatcom version " b(__WATCOMC__);
 #endif
 
 static PSZ pszSrcFile = __FILE__;
+
+VOID FindSwapperDat(VOID);
 
 BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset);
 
@@ -129,26 +151,26 @@ VOID FindSwapperDat(VOID)
   if (*SwapperDat) {
     nm = 1;
     rc = DosFindFirst(SwapperDat,
-		      &hdir,
-		      FILE_NORMAL | FILE_ARCHIVED |
-		      FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-		      &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
+                      &hdir,
+                      FILE_NORMAL | FILE_ARCHIVED |
+                      FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+                      &ffb, sizeof(ffb), &nm, FIL_STANDARDL);
     if (rc && rc != ERROR_FILE_NOT_FOUND && rc != ERROR_PATH_NOT_FOUND) {
       FILEFINDBUF3 ffb;
       rc = DosFindFirst(SwapperDat,
-			&hdir,
-			FILE_NORMAL | FILE_ARCHIVED |
-			FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-			&ffb, sizeof(ffb), &nm, FIL_STANDARD);
+                        &hdir,
+                        FILE_NORMAL | FILE_ARCHIVED |
+                        FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+                        &ffb, sizeof(ffb), &nm, FIL_STANDARD);
       fNoLargeFileSupport = TRUE;
     }
     if (!rc) {
       DosFindClose(hdir);
       fp = fopen(SwapperDat, "r");
       if (fp) {
-	fclose(fp);
-	*SwapperDat = 0;
-	rc = 1;				// Force config.sys scan
+        fclose(fp);
+        *SwapperDat = 0;
+        rc = 1;                         // Force config.sys scan
       }
     }
     else
@@ -157,73 +179,73 @@ VOID FindSwapperDat(VOID)
   // If not defined in INI or INI wrong, scan config.sys for SWAPPATH statement
   if (rc) {
     if (DosQuerySysInfo(QSV_BOOT_DRIVE,
-			QSV_BOOT_DRIVE,
-			&nm,
-			sizeof(ULONG))) {
-      nm = 3;				// Assume drive C:
+                        QSV_BOOT_DRIVE,
+                        &nm,
+                        sizeof(ULONG))) {
+      nm = 3;                           // Assume drive C:
     }
     *filename = (CHAR) nm + '@';
     fp = xfsopen(filename, "r", SH_DENYNO, pszSrcFile, __LINE__);
     if (fp) {
       while (!feof(fp)) {
-	if (!xfgets(input, sizeof(input), fp, pszSrcFile, __LINE__))
-	  break;
-	lstrip(input);
-	if (!strnicmp(input, "SWAPPATH", 8)) {
-	  p = input + 8;
-	  while (*p == ' ')
-	    p++;
-	  if (*p == '=') {
-	    p++;
-	    stripcr(p);
-	    rstrip(p);
-	    while (*p == ' ')
-	      p++;
-	    if (*p == '\"') {
-	      p++;
-	      pp = p;
-	      while (*pp && *pp != '\"')
-		*pp += 1;
-	      if (*pp)
-		*pp = 0;
-	    }
-	    else {
-	      pp = strchr(p, ' ');
-	      if (pp)
-		*pp = 0;
-	    }
-	    if (*p) {
-	      strncpy(SwapperDat, p, CCHMAXPATH);
-	      SwapperDat[CCHMAXPATH - 1] = 0;
-	      BldFullPathName(SwapperDat, SwapperDat, "SWAPPER.DAT");
-	      hdir = HDIR_CREATE;
-	      nm = 1;
-	      rc = DosFindFirst(SwapperDat,
-				&hdir,
-				FILE_NORMAL | FILE_ARCHIVED |
-				FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-				&ffb, sizeof(ffb), &nm, FIL_STANDARD);
-	      if (rc){
-		FILEFINDBUF3 ffb;
-		rc = DosFindFirst(SwapperDat,
-				  &hdir,
-				  FILE_NORMAL | FILE_ARCHIVED |
-				  FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-				  &ffb, sizeof(ffb), &nm, FIL_STANDARD);
-		fNoLargeFileSupport = TRUE;
-	      }
-	      if (!rc) {
-		DosFindClose(hdir);
-		PrfWriteProfileString(fmprof,
-				      FM3Str, "SwapperDat", SwapperDat);
-	      }
-	      else
-		*SwapperDat = 0;
-	      break;
-	    }
-	  }
-	}				// if SWAPPATH
-      }					// while
+        if (!xfgets(input, sizeof(input), fp, pszSrcFile, __LINE__))
+          break;
+        lstrip(input);
+        if (!strnicmp(input, "SWAPPATH", 8)) {
+          p = input + 8;
+          while (*p == ' ')
+            p++;
+          if (*p == '=') {
+            p++;
+            stripcr(p);
+            rstrip(p);
+            while (*p == ' ')
+              p++;
+            if (*p == '\"') {
+              p++;
+              pp = p;
+              while (*pp && *pp != '\"')
+                *pp += 1;
+              if (*pp)
+                *pp = 0;
+            }
+            else {
+              pp = strchr(p, ' ');
+              if (pp)
+                *pp = 0;
+            }
+            if (*p) {
+              strncpy(SwapperDat, p, CCHMAXPATH);
+              SwapperDat[CCHMAXPATH - 1] = 0;
+              BldFullPathName(SwapperDat, SwapperDat, "SWAPPER.DAT");
+              hdir = HDIR_CREATE;
+              nm = 1;
+              rc = DosFindFirst(SwapperDat,
+                                &hdir,
+                                FILE_NORMAL | FILE_ARCHIVED |
+                                FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+                                &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+              if (rc){
+                FILEFINDBUF3 ffb;
+                rc = DosFindFirst(SwapperDat,
+                                  &hdir,
+                                  FILE_NORMAL | FILE_ARCHIVED |
+                                  FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
+                                  &ffb, sizeof(ffb), &nm, FIL_STANDARD);
+                fNoLargeFileSupport = TRUE;
+              }
+              if (!rc) {
+                DosFindClose(hdir);
+                PrfWriteProfileString(fmprof,
+                                      FM3Str, "SwapperDat", SwapperDat);
+              }
+              else
+                *SwapperDat = 0;
+              break;
+            }
+          }
+        }                               // if SWAPPATH
+      }                                 // while
       fclose(fp);
     }
   }
@@ -232,7 +254,7 @@ VOID FindSwapperDat(VOID)
 #ifdef __WATCOMC__
 
 unsigned APIENTRY LibMain(unsigned hModule,
-			  unsigned ulFlag)
+                          unsigned ulFlag)
 {
   CHAR *env;
   CHAR stringfile[CCHMAXPATH];
@@ -251,12 +273,12 @@ unsigned APIENTRY LibMain(unsigned hModule,
       DosError(FERR_DISABLEHARDERR);
       rc = DosQueryPathInfo(env, FIL_STANDARD, &fsa, sizeof(fsa));
       if (!rc) {
-	if (fsa.attrFile & FILE_DIRECTORY) {
-	  BldFullPathName(stringfile, env, "FM3RES.STR");
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
-	    strcpy(stringfile, "FM3RES.STR");
-	}
+        if (fsa.attrFile & FILE_DIRECTORY) {
+          BldFullPathName(stringfile, env, "FM3RES.STR");
+          DosError(FERR_DISABLEHARDERR);
+          if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
+            strcpy(stringfile, "FM3RES.STR");
+        }
       }
     }
     LoadStrings(stringfile);
@@ -346,7 +368,7 @@ unsigned APIENTRY LibMain(unsigned hModule,
 #else // __IBMC__
 
 unsigned long _System _DLL_InitTerm(unsigned long hModule,
-				    unsigned long ulFlag)
+                                    unsigned long ulFlag)
 {
   CHAR *env;
   CHAR stringfile[CCHMAXPATH];
@@ -364,12 +386,12 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
       DosError(FERR_DISABLEHARDERR);
       rc = DosQueryPathInfo(env, FIL_STANDARD, &fsa, sizeof(fsa));
       if (!rc) {
-	if (fsa.attrFile & FILE_DIRECTORY) {
-	  BldFullPathName(stringfile, env, "FM3RES.STR");
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
-	    strcpy(stringfile, "FM3RES.STR");
-	}
+        if (fsa.attrFile & FILE_DIRECTORY) {
+          BldFullPathName(stringfile, env, "FM3RES.STR");
+          DosError(FERR_DISABLEHARDERR);
+          if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
+            strcpy(stringfile, "FM3RES.STR");
+        }
       }
     }
     LoadStrings(stringfile);
@@ -500,22 +522,22 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
     search_handle = HDIR_CREATE;
     num_matches = 1L;
     if (!DosFindFirst(s,
-		      &search_handle,
-		      FILE_NORMAL | FILE_DIRECTORY |
-		      FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
-		      FILE_ARCHIVED,
-		      &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
+                      &search_handle,
+                      FILE_NORMAL | FILE_DIRECTORY |
+                      FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
+                      FILE_ARCHIVED,
+                      &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
       do {
-	strcpy(enddir, ffb.achName);
-	if (ffb.attrFile & FILE_DIRECTORY) {
-	  wipeallf("%s\\*", s);
-	  DosDeleteDir(s);
-	}
-	else
-	  unlinkf("%s", s);
+        strcpy(enddir, ffb.achName);
+        if (ffb.attrFile & FILE_DIRECTORY) {
+          wipeallf("%s\\*", s);
+          DosDeleteDir(s);
+        }
+        else
+          unlinkf("%s", s);
       }
       while (!DosFindNext(search_handle,
-			  &ffb, sizeof(ffb), &num_matches));
+                          &ffb, sizeof(ffb), &num_matches));
       DosFindClose(search_handle);
     }
   }
@@ -531,19 +553,19 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   search_handle = HDIR_CREATE;
   num_matches = 1;
   if (!DosFindFirst(s,
-		    &search_handle,
-		    FILE_NORMAL | FILE_DIRECTORY |
-		    FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
-		    FILE_ARCHIVED,
-		    &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
+                    &search_handle,
+                    FILE_NORMAL | FILE_DIRECTORY |
+                    FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
+                    FILE_ARCHIVED,
+                    &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
     do {
       if (!(ffb.attrFile & FILE_DIRECTORY)) {
-	strcpy(enddir, ffb.achName);
-	unlinkf("%s", s);
+        strcpy(enddir, ffb.achName);
+        unlinkf("%s", s);
       }
     }
     while (!DosFindNext(search_handle,
-			&ffb, sizeof(ffb), &num_matches));
+                        &ffb, sizeof(ffb), &num_matches));
     DosFindClose(search_handle);
   }
   BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
@@ -574,17 +596,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   ULONG RVMajor = 0;
   ULONG RVMinor = 0;
   ULONG ret = 0;
-  FILESTATUS3 fs3;			// 25 Aug 07 SHL
+  FILESTATUS3 fs3;                      // 25 Aug 07 SHL
   PSZ env;
   CHAR dllfile[CCHMAXPATH];
   ULONG size;
 
   if (!StringsLoaded()) {
     saymsg(MB_ENTER,
-	   HWND_DESKTOP,
-	   "Error",
-	   "FM3RES.STR isn't in right format, at least "
-	   "for this version of FM/2.");
+           HWND_DESKTOP,
+           "Error",
+           "FM3RES.STR isn't in right format, at least "
+           "for this version of FM/2.");
     return FALSE;
   }
 
@@ -595,25 +617,25 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
     if (!rc) {
       if (fs3.attrFile & FILE_DIRECTORY) {
-	BldFullPathName(dllfile, env, "FM3RES");	// 23 Aug 07 SHL
-	DosError(FERR_DISABLEHARDERR);
-	if (DosQueryPathInfo(dllfile, FIL_STANDARD, &fs3, sizeof(fs3)))
-	  strcpy(dllfile, "FM3RES");
+        BldFullPathName(dllfile, env, "FM3RES");        // 23 Aug 07 SHL
+        DosError(FERR_DISABLEHARDERR);
+        if (DosQueryPathInfo(dllfile, FIL_STANDARD, &fs3, sizeof(fs3)))
+          strcpy(dllfile, "FM3RES");
       }
     }
   }
   rcl = DosLoadModule(NULL, 0, dllfile, &FM3ModHandle);
   if (rcl) {
     saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
-	   HWND_DESKTOP,
-	   GetPString(IDS_ERRORTEXT), GetPString(IDS_FM3RESERROR1TEXT));
+           HWND_DESKTOP,
+           GetPString(IDS_ERRORTEXT), GetPString(IDS_FM3RESERROR1TEXT));
     return FALSE;
   }
   else {
     rc = DosExitList(EXLST_ADD, DeInitFM3DLL);
     if (rc) {
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	       "DosExitList");
+               "DosExitList");
     }
     rcq = DosQueryProcAddr(FM3ModHandle, 1, "ResVersion", &pfnResVersion);
     if (!rcq)
@@ -621,14 +643,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
   if (RVMajor < VERMAJOR || (RVMajor == VERMAJOR && RVMinor < VERMINOR)) {
     saymsg(MB_ENTER,
-	   HWND_DESKTOP,
-	   GetPString(IDS_ERRORTEXT),
-	   GetPString(IDS_FM3RESERROR2TEXT),
-	   !rcq ?
-	   GetPString(IDS_FM3RESERROR3TEXT) :
-	   !rcl ?
-	   GetPString(IDS_FM3RESERROR4TEXT) :
-	   GetPString(IDS_FM3RESERROR5TEXT), RVMajor, RVMinor, rcl, rcq, ret);
+           HWND_DESKTOP,
+           GetPString(IDS_ERRORTEXT),
+           GetPString(IDS_FM3RESERROR2TEXT),
+           !rcq ?
+           GetPString(IDS_FM3RESERROR3TEXT) :
+           !rcl ?
+           GetPString(IDS_FM3RESERROR4TEXT) :
+           GetPString(IDS_FM3RESERROR5TEXT), RVMajor, RVMinor, rcl, rcq, ret);
     return FALSE;
   }
 
@@ -646,17 +668,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (!strcmp(appname, FM3Str))
     DosSetMaxFH(100);
   else if (!strcmp(appname, "VDir") ||
-	   !strcmp(appname, "VTree") ||
-	   !strcmp(appname, "VCollect") ||
-	   !strcmp(appname, "SEEALL") || !strcmp(appname, "FM/4"))
+           !strcmp(appname, "VTree") ||
+           !strcmp(appname, "VCollect") ||
+           !strcmp(appname, "SEEALL") || !strcmp(appname, "FM/4"))
     DosSetMaxFH(60);
   else
     DosSetMaxFH(40);
 
   if (DosQuerySysInfo(QSV_VERSION_MAJOR,
-		      QSV_VERSION_MINOR,
-		      OS2ver,
-		      sizeof(OS2ver))) {
+                      QSV_VERSION_MINOR,
+                      OS2ver,
+                      sizeof(OS2ver))) {
     OS2ver[0] = 2;
     OS2ver[1] = 1;
   }
@@ -683,11 +705,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       search_handle = HDIR_CREATE;
       num_matches = 1;
       if (!DosFindFirst(szTempName,
-		        &search_handle,
-		        FILE_NORMAL | FILE_DIRECTORY |
-		        FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
-		        FILE_ARCHIVED,
-		        &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
+                        &search_handle,
+                        FILE_NORMAL | FILE_DIRECTORY |
+                        FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
+                        FILE_ARCHIVED,
+                        &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
         do {
           strcpy(enddir, ffb.achName);
           p = strrchr(szTempName, '.');
@@ -703,7 +725,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
           }
         }
       while (!DosFindNext(search_handle,
-       	                  &ffb, sizeof(ffb), &num_matches));
+                          &ffb, sizeof(ffb), &num_matches));
       DosFindClose(search_handle);
     }
       if (fs3.attrFile & FILE_DIRECTORY) {
@@ -762,21 +784,21 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   /* _heapmin() is done in a separate thread -- start it */
   if (_beginthread(HeapThread, NULL, 32768, NULL) == -1) {
     Runtime_Error(pszSrcFile, __LINE__,
-		  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+                  GetPString(IDS_COULDNTSTARTTHREADTEXT));
     return FALSE;
   }
 
   /* timer messages are sent from a separate thread -- start it */
   if (!StartTimer()) {
     Runtime_Error(pszSrcFile, __LINE__,
-		  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+                  GetPString(IDS_COULDNTSTARTTHREADTEXT));
     return FALSE;
   }
 
   /* Are we the workplace shell? */
   env = getenv("WORKPLACE_PROCESS");
   fWorkPlace = env != NULL &&
-	       (stricmp(env, "YES") == 0 || atoi(env) == 1);
+               (stricmp(env, "YES") == 0 || atoi(env) == 1);
 
   if ((!strchr(profile, '\\') && !strchr(profile, ':')) ||
       !(fmprof = PrfOpenProfile((HAB)0, profile)))
@@ -795,14 +817,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       DosError(FERR_DISABLEHARDERR);
       rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
       if (!rc) {
-	if (fs3.attrFile & FILE_DIRECTORY)
-	  BldFullPathName(inipath, inipath, profile);
+        if (fs3.attrFile & FILE_DIRECTORY)
+          BldFullPathName(inipath, inipath, profile);
       }
     }
     if (!env) {
       env = searchpath(profile);
       if (!env)
-	env = profile;
+        env = profile;
       strcpy(inipath, env);
     }
 
@@ -819,26 +841,26 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     }
     else {
       if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-	saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,
-	       "Check INI header failed will attempt to replace with backup \\
-	       if backup fails or not found will open with new ini");
-	DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
-	DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
-	if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-	  DosCopy("FM3.INI", "FM3INI2.BAD", DCPY_EXISTING);
-	  fWantFirstTimeInit = TRUE;
-	}
+        saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,
+               "Check INI header failed will attempt to replace with backup \\
+               if backup fails or not found will open with new ini");
+        DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
+        DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
+        if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
+          DosCopy("FM3.INI", "FM3INI2.BAD", DCPY_EXISTING);
+          fWantFirstTimeInit = TRUE;
+        }
       }
       if (!fWantFirstTimeInit) {
-	fIniExisted = TRUE;
-	if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
-	  fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
-	  rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
-	  if (rc) {
-	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-			GetPString(IDS_INIREADONLYTEXT), inipath);
-	  }
-	}
+        fIniExisted = TRUE;
+        if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
+          fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
+          rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
+          if (rc) {
+            Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                        GetPString(IDS_INIREADONLYTEXT), inipath);
+          }
+        }
       }
     }
     fmprof = PrfOpenProfile((HAB)0, inipath);
@@ -851,7 +873,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     // 10 Jan 08 SHL post UM_FIRSTTIME to main window
     if (!fmprof) {
       Win_Error(NULLHANDLE, NULLHANDLE, pszSrcFile, __LINE__,
-		"PrfOpenProfile");
+                "PrfOpenProfile");
       return FALSE;
     }
   }
@@ -860,10 +882,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof,
-		      FM3Str,
-		      "SeparateParms",
-		      &fSeparateParms,
-		      &size);
+                      FM3Str,
+                      "SeparateParms",
+                      &fSeparateParms,
+                      &size);
   if (!fSeparateParms)
     strcpy(appname, FM3Str);
 
@@ -881,7 +903,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   hini.pszHelpLibraryName = "FM3.HLP";
   hwndHelp = WinCreateHelpInstance(hab, &hini);
   if (!hwndHelp) {
-    static CHAR helppath[CCHMAXPATH];	// fixme to be local?
+    static CHAR helppath[CCHMAXPATH];   // fixme to be local?
 
     env = getenv("FM3INI");
     if (env) {
@@ -889,20 +911,20 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       DosError(FERR_DISABLEHARDERR);
       rc = DosQueryPathInfo(helppath, FIL_STANDARD, &fs3, sizeof(fs3));
       if (!rc) {
-	if (fs3.attrFile & FILE_DIRECTORY) {
-	  BldFullPathName(helppath, helppath, "FM3.HLP");
-	  hini.pszHelpLibraryName = helppath;
-	  hwndHelp = WinCreateHelpInstance(hab, &hini);
-	}
+        if (fs3.attrFile & FILE_DIRECTORY) {
+          BldFullPathName(helppath, helppath, "FM3.HLP");
+          hini.pszHelpLibraryName = helppath;
+          hwndHelp = WinCreateHelpInstance(hab, &hini);
+        }
       }
     }
   }
   if (!hwndHelp) {
     saymsg(MB_ENTER | MB_ICONEXCLAMATION,
-	   HWND_DESKTOP,
-	   GetPString(IDS_FM2TROUBLETEXT),
-	   GetPString(IDS_CANTLOADHELPTEXT),
-	   GetPString(IDS_NOHELPACCEPTTEXT));
+           HWND_DESKTOP,
+           GetPString(IDS_FM2TROUBLETEXT),
+           GetPString(IDS_CANTLOADHELPTEXT),
+           GetPString(IDS_NOHELPACCEPTTEXT));
   }
 
   /* a couple of default window procs so we don't have to look them up later */
@@ -928,133 +950,133 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   /* register window classes we use */
   WinRegisterClass(hab,
-		   WC_MAINWND,
-		   MainWndProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 8);
+                   WC_MAINWND,
+                   MainWndProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 8);
   WinRegisterClass(hab,
-		   WC_MAINWND2,
-		   MainWndProc2,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 4);
+                   WC_MAINWND2,
+                   MainWndProc2,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 4);
   WinRegisterClass(hab,
-		   WC_TREECONTAINER,
-		   TreeClientWndProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
+                   WC_TREECONTAINER,
+                   TreeClientWndProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   WC_DIRCONTAINER,
-		   DirClientWndProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
+                   WC_DIRCONTAINER,
+                   DirClientWndProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   WC_COLLECTOR,
-		   CollectorClientWndProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
+                   WC_COLLECTOR,
+                   CollectorClientWndProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   WC_ARCCONTAINER,
-		   ArcClientWndProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
+                   WC_ARCCONTAINER,
+                   ArcClientWndProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   WC_MLEEDITOR,
-		   MLEEditorProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
+                   WC_MLEEDITOR,
+                   MLEEditorProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   WC_INIEDITOR,
-		   IniProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
+                   WC_INIEDITOR,
+                   IniProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   WC_TOOLBACK,
-		   ToolBackProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_TOOLBACK,
+                   ToolBackProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_DRIVEBACK,
-		   DriveBackProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_DRIVEBACK,
+                   DriveBackProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_SEEALL,
-		   SeeAllWndProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID));
+                   WC_SEEALL,
+                   SeeAllWndProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_NEWVIEW,
-		   ViewWndProc,
-		   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID));
+                   WC_NEWVIEW,
+                   ViewWndProc,
+                   CS_SIZEREDRAW | CS_CLIPCHILDREN, sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_TOOLBUTTONS,
-		   ChildButtonProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_TOOLBUTTONS,
+                   ChildButtonProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_DRIVEBUTTONS,
-		   DriveProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_DRIVEBUTTONS,
+                   DriveProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_BUBBLE,
-		   BubbleProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG) * 2);
+                   WC_BUBBLE,
+                   BubbleProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG) * 2);
   WinRegisterClass(hab,
-		   WC_STATUS,
-		   StatusProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG));
+                   WC_STATUS,
+                   StatusProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG));
   WinRegisterClass(hab,
-		   WC_DIRSTATUS,
-		   DirTextProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG));
+                   WC_DIRSTATUS,
+                   DirTextProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG));
   WinRegisterClass(hab,
-		   WC_TREESTATUS,
-		   TreeStatProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG));
+                   WC_TREESTATUS,
+                   TreeStatProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG));
   WinRegisterClass(hab,
-		   WC_ARCSTATUS,
-		   ArcTextProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG));
+                   WC_ARCSTATUS,
+                   ArcTextProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG));
   WinRegisterClass(hab,
-		   WC_COLSTATUS,
-		   CollectorTextProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG));
+                   WC_COLSTATUS,
+                   CollectorTextProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG));
   WinRegisterClass(hab,
-		   WC_SEESTATUS,
-		   SeeStatusProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG));
+                   WC_SEESTATUS,
+                   SeeStatusProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG));
   WinRegisterClass(hab,
-		   WC_VIEWSTATUS,
-		   ViewStatusProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(ULONG));
+                   WC_VIEWSTATUS,
+                   ViewStatusProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(ULONG));
   WinRegisterClass(hab,
-		   WC_ERRORWND,
-		   NotifyWndProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_ERRORWND,
+                   NotifyWndProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_MINITIME,
-		   MiniTimeProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID) * 2);
+                   WC_MINITIME,
+                   MiniTimeProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID) * 2);
   WinRegisterClass(hab,
-		   WC_DATABAR,
-		   DataProc, CS_SIZEREDRAW, sizeof(PVOID));
+                   WC_DATABAR,
+                   DataProc, CS_SIZEREDRAW, sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_TREEOPENBUTTON,
-		   OpenButtonProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_TREEOPENBUTTON,
+                   OpenButtonProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_AUTOVIEW,
-		   AutoViewProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_AUTOVIEW,
+                   AutoViewProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
   WinRegisterClass(hab,
-		   WC_LED,
-		   LEDProc,
-		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
-		   sizeof(PVOID));
+                   WC_LED,
+                   LEDProc,
+                   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
+                   sizeof(PVOID));
 
   /*
    * set some defaults (note: everything else automatically initialized
@@ -1093,7 +1115,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   COUNTRYINFO CtryInfo   = {0};
 
   DosQueryCtryInfo(sizeof(CtryInfo), &Country,
-		   &CtryInfo, &ulInfoLen);
+                   &CtryInfo, &ulInfoLen);
   *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
   }
 
@@ -1108,11 +1130,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     PrfQueryProfileData(fmprof, appname, "MaxComLineChecked", &MaxComLineChecked, &size);
     if (!MaxComLineChecked) {
       ret = saymsg(MB_YESNO,
-		   HWND_DESKTOP,
-		   NullStr,
-		   GetPString(IDS_CHANGECMDLINELENGTHDEFAULT));
+                   HWND_DESKTOP,
+                   NullStr,
+                   GetPString(IDS_CHANGECMDLINELENGTHDEFAULT));
       if (ret == MBID_YES)
-	MaxComLineStrg = 1024;
+        MaxComLineStrg = 1024;
       MaxComLineChecked = TRUE;
       PrfWriteProfileData(fmprof, appname, "MaxComLineChecked", &MaxComLineChecked, sizeof(BOOL));
     }
@@ -1180,10 +1202,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, FM3Str, "Prnformat", &prnformat, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "Prnformfeedbefore",
-		      &prnformfeedbefore, &size);
+                      &prnformfeedbefore, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str,
-		      "Prnformfeedafter",&prnformfeedafter, &size);
+                      "Prnformfeedafter",&prnformfeedafter, &size);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, FM3Str, "Prntabspaces", &prntabspaces, &size);
   size = sizeof(ULONG);
@@ -1208,25 +1230,25 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "SwitchTree", &fSwitchTree, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SwitchTreeExpand",
-		      &fSwitchTreeExpand, &size);
+                      &fSwitchTreeExpand, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SwitchTreeOnFocus",
-		      &fSwitchTreeOnFocus, &size);
+                      &fSwitchTreeOnFocus, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "CollapseFirst",
-		      &fCollapseFirst, &size);
+                      &fCollapseFirst, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FilesInTree",
-		      &fFilesInTree, &size);
+                      &fFilesInTree, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "TopDir", &fTopDir, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "LookInDir", &fLookInDir, &size);
   PrfQueryProfileString(fmprof, appname, "DefArc", NULL, szDefArc,
-			sizeof(szDefArc));
+                        sizeof(szDefArc));
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, FM3Str, "AutoviewHeight",
-		      &AutoviewHeight, &size);
+                      &AutoviewHeight, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "KeepCmdLine", &fKeepCmdLine, &size);
   if (strcmp(realappname, "FM/4")) {
@@ -1258,7 +1280,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(ULONG);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SelectedAlways",
-		      &fSelectedAlways, &size);
+                      &fSelectedAlways, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "ToolbarHelp", &fToolbarHelp, &size);
   size = sizeof(BOOL);
@@ -1269,56 +1291,56 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "AutoAddDirs", &fAutoAddDirs, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname,
-		      "AutoAddAllDirs", &fAutoAddAllDirs, &size);
+                      "AutoAddAllDirs", &fAutoAddAllDirs, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UserListSwitches",
-		      &fUserListSwitches, &size);
+                      &fUserListSwitches, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "UseNewViewer",
-		      &fUseNewViewer, &size);
+                      &fUseNewViewer, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DefaultDeletePerm",
-		      &fDefaultDeletePerm, &size);
+                      &fDefaultDeletePerm, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "ExternalINIs",
-		      &fExternalINIs, &size);
+                      &fExternalINIs, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "ExternalCollector",
-		      &fExternalCollector, &size);
+                      &fExternalCollector, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "ExternalArcboxes",
-		      &fExternalArcboxes, &size);
+                      &fExternalArcboxes, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "ExternalViewer",
-		      &fExternalViewer, &size);
+                      &fExternalViewer, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UseQProcStat",
-		      &fUseQProcStat, &size);
+                      &fUseQProcStat, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UseQSysState",
-		      &fUseQSysState, &size);
+                      &fUseQSysState, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "DataMin", &fDataMin, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DataToFore", &fDataToFore, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DataShowDrives",
-		      &fDataShowDrives, &size);
+                      &fDataShowDrives, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DataInclRemote",
-		      &fDataInclRemote, &size);
+                      &fDataInclRemote, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "SplitStatus", &fSplitStatus, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FolderAfterExtract",
-		      &fFolderAfterExtract, &size);
+                      &fFolderAfterExtract, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "DullDatabar", &fDullMin, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "BlueLED", &fBlueLED, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ConfirmDelete",
-		      &fConfirmDelete, &size);
+                      &fConfirmDelete, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "SaveState", &fSaveState, &size);
   size = sizeof(BOOL);
@@ -1358,7 +1380,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "TreeSort", &TreesortFlags, &size);
   size = sizeof(INT);
   PrfQueryProfileData(fmprof, appname,
-		      "CollectorSort", &CollectorsortFlags, &size);
+                      "CollectorSort", &CollectorsortFlags, &size);
   size = sizeof(targetdir);
   PrfQueryProfileData(fmprof, appname, "Targetdir", targetdir, &size);
   if (!IsValidDir(targetdir))
@@ -1369,7 +1391,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "Printer", printer, &size);
   size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "DirCompare", dircompare,
-		      &size);
+                      &size);
   size = MaxComLineStrg;
   PrfQueryProfileData(fmprof, appname, "Viewer", viewer, &size);
   size = MaxComLineStrg;
@@ -1404,29 +1426,29 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "MailRunDir", mailrundir, &size);
   size = sizeof(lasttoolbar);
   PrfQueryProfileData(fmprof, appname, "LastToolbar", lasttoolbar,
-		      &size);
+                      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictHttpRun", &fLibPathStrictHttpRun,
-		      &size);
+                      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictFtpRun", &fLibPathStrictFtpRun,
-		      &size);
+                      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LibPathStrictMailRun", &fLibPathStrictMailRun,
-		      &size);
+                      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoMailtoMailRun", &fNoMailtoMailRun,
-		      &size);
+                      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FollowTree", &fFollowTree,
-		      &size);
+                      &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "StartMaximized",
-		      &fStartMaximized, &size);
+                      &fStartMaximized, &size);
   if (!fStartMaximized) {
     size = sizeof(BOOL);
     PrfQueryProfileData(fmprof, appname, "StartMinimized",
-			&fStartMinimized, &size);
+                        &fStartMinimized, &size);
   }
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DefaultCopy", &fCopyDefault, &size);
@@ -1434,33 +1456,33 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "IdleCopy", &fRealIdle, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ArcStuffVisible",
-		      &fArcStuffVisible, &size);
+                      &fArcStuffVisible, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "NoTreeGap", &fNoTreeGap, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "VTreeOpensWPS",
-		      &fVTreeOpensWPS, &size);
+                      &fVTreeOpensWPS, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "RemoteBug", &fRemoteBug, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "Drag&DropDlg",
-		      &fDragndropDlg, &size);
+                      &fDragndropDlg, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UserComboBox", &fUserComboBox, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "MinDirOnOpen", &fMinOnOpen, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "QuickArcFind",
-		      &fQuickArcFind, &size);
+                      &fQuickArcFind, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "NoRemovableScan",
-		      &fNoRemovableScan, &size);
+                      &fNoRemovableScan, &size);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, FM3Str, "NoBrokenNotify",
-		      &NoBrokenNotify, &size);
+                      &NoBrokenNotify, &size);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, appname, "ContainerType", &ulCnrType,
-		      &size);
+                      &size);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, appname, "FilesToGet", &FilesToGet, &size);
   if (FilesToGet < FILESTOGET_MIN)
@@ -1543,19 +1565,19 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
       fLogFile = TRUE;
     if (*argv[x] == '-') {
       if (!argv[x][1])
-	fNoSaveState = TRUE;
+        fNoSaveState = TRUE;
       else
-	strcpy(profile, &argv[x][1]);
+        strcpy(profile, &argv[x][1]);
     }
   }
 
   hwndFrame = WinCreateStdWindow(HWND_DESKTOP,
-				 WS_VISIBLE,
-				 &FrameFlags,
-				 WC_MAINWND,
-				 NULL,
-				 WS_VISIBLE | WS_ANIMATE,
-				 FM3ModHandle, MAIN_FRAME, &hwndClient);
+                                 WS_VISIBLE,
+                                 &FrameFlags,
+                                 WC_MAINWND,
+                                 NULL,
+                                 WS_VISIBLE | WS_ANIMATE,
+                                 FM3ModHandle, MAIN_FRAME, &hwndClient);
   if (hwndFrame) {
     WinSetWindowUShort(hwndFrame, QWS_ID, MAIN_FRAME);
     hwndMainMenu = WinWindowFromID(hwndFrame, FID_MENU);
@@ -1572,10 +1594,10 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
       rcl.xLeft += bsz;
       rcl.xRight -= bsz;
       WinSetWindowPos(hwndFrame,
-		      HWND_TOP,
-		      rcl.xLeft,
-		      rcl.yBottom,
-		      rcl.xRight - rcl.xLeft, rcl.yTop - rcl.yBottom, fl);
+                      HWND_TOP,
+                      rcl.xLeft,
+                      rcl.yBottom,
+                      rcl.xRight - rcl.xLeft, rcl.yTop - rcl.yBottom, fl);
     }
     if (fLogFile)
       LogFileHandle = _fsopen("FM2.LOG", "a+", SH_DENYWR);
@@ -1593,38 +1615,38 @@ BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset)
   ULONG len = strlen(signature);
   ULONG l;
   // CHAR buffer[80];
-  CHAR buffer[4096];			// 06 Oct 07 SHL Protect against NTFS defect
+  CHAR buffer[4096];                    // 06 Oct 07 SHL Protect against NTFS defect
   BOOL ret = FALSE;
 
   DosError(FERR_DISABLEHARDERR);
   if (DosOpen(filespec,
-	      &handle,
-	      &action,
-	      0,
-	      0,
-	      OPEN_ACTION_FAIL_IF_NEW |
-	      OPEN_ACTION_OPEN_IF_EXISTS,
-	      OPEN_FLAGS_FAIL_ON_ERROR |
-	      OPEN_FLAGS_NOINHERIT |
-	      OPEN_FLAGS_RANDOMSEQUENTIAL |
-	      OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0))
+              &handle,
+              &action,
+              0,
+              0,
+              OPEN_ACTION_FAIL_IF_NEW |
+              OPEN_ACTION_OPEN_IF_EXISTS,
+              OPEN_FLAGS_FAIL_ON_ERROR |
+              OPEN_FLAGS_NOINHERIT |
+              OPEN_FLAGS_RANDOMSEQUENTIAL |
+              OPEN_SHARE_DENYNONE | OPEN_ACCESS_READONLY, 0))
     ret = FALSE;
   else {
     // Try signature match
     l = len;
     l = min(l, 79);
     if (!DosChgFilePtr(handle,
-		       abs(offset),
-		       (offset >= 0) ?
-		       FILE_BEGIN : FILE_END, &len)) {
+                       abs(offset),
+                       (offset >= 0) ?
+                       FILE_BEGIN : FILE_END, &len)) {
       if (!DosRead(handle, buffer, l, &len) && len == l) {
-	if (!memcmp(signature, buffer, l))
-	  ret = TRUE;			// Matched
+        if (!memcmp(signature, buffer, l))
+          ret = TRUE;                   // Matched
       }
     }
   }
-  DosClose(handle);			/* Either way, we're done for now */
-  return ret;				/* Return TRUE if matched */
+  DosClose(handle);                     /* Either way, we're done for now */
+  return ret;                           /* Return TRUE if matched */
 }
 
 int CheckVersion(int vermajor, int verminor)

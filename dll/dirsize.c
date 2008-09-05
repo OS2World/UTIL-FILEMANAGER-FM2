@@ -60,6 +60,8 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "filldir.h"			// EmptyCnr...
+#include "dirsize.h"
+#include "select.h"			// ExpandAll
 #include "fm3dll.h"
 
 #include "fortify.h"

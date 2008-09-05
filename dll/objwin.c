@@ -28,9 +28,14 @@
 #ifdef FORTIFY
 #include "misc.h"			// GetTidForThread
 #endif
+#include "collect.h"			// CollectorObjWndProc
+#include "objwin.h"
+#include "treecnr.h"			// TreeObjWndProc
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
+
+static MRESULT EXPENTRY ObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 MRESULT EXPENTRY ObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {

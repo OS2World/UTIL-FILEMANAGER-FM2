@@ -24,6 +24,8 @@
 #include "makelist.h"			// LISTINFO
 #include "errutil.h"			// Runtime_Error
 #include "strutil.h"			// GetPString
+#include "defview.h"			// QuickView
+#include "attribs.h"
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;

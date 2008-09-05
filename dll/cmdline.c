@@ -36,6 +36,8 @@
 #include "mle.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "mainwnd.h"			// BubbleHelp
+#include "cmdline.h"			// CmdLineDlgProc, CmdLine2DlgProc
 #include "fm3dll.h"
 #include "pathutil.h"                   // MaxCmdLineStr
 #include "fortify.h"

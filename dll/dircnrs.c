@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -74,11 +73,33 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
+#include "worker.h"         		// Action, MassAction
+#include "misc.h"			// GetTidForThread, AdjustCnrColsForFSType, AdjustCnrColsForPref
+                                        // AdjustDetailsSwitches, CnrDirectEdit, OpenEdit, QuickPopup
+                                        // SayFilter, SaySort, SayView, SetCnrCols, SetDetailsSwitches
+                 			// SetSortChecks, SetViewMenu, SwitchCommand
+#include "chklist.h"			// CenterOverWindow, DropListProc
+#include "common.h"			// CommonCnrProc, CommonCreateTextChildren, CommonFrameWndProc
+                   			// CommonTextPaint
+#include "mainwnd.h"			// CountDirCnrs, MakeBubble, TopWindow
+#include "select.h"			// DeselectAll, HideAll, InvertAll, SelectAll, SelectList
+                   			// SpecialSelect2
+#include "dirsize.h"			// DirSizeProc
+#include "flesh.h"			// Flesh, Stubby, UnFlesh
+#include "valid.h"			// IsValidDir
+#include "objwin.h"			// MakeObjWin
+#include "notify.h"			// NotifyError
+#include "objcnr.h"			// ObjCnrDlgProc
+#include "draglist.h"			// PickUp
+#include "saveclip.h"			// SaveListDlgProc
+#include "findrec.h"			// ShowCnrRecord
+#include "sortcnr.h"			// SortDirCnr
+#include "seeall.h"			// StartSeeAll
+#include "update.h"			// UpdateCnrList, UpdateCnrRecord
+#include "walkem.h"			// add_udir
+#include "strips.h"			// chop_at_crnl
 #include "fm3dll.h"
 //#include "avl.h"			// free_archivers
-#ifdef FORTIFY
-#include "misc.h"			// GetTidForThread
-#endif
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

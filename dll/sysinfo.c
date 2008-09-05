@@ -26,6 +26,7 @@
 
 #include "pathutil.h"                   // BldFullPathName
 #include "fm3dlg.h"
+#include "sysinfo.h"
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

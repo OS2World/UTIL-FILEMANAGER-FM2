@@ -19,6 +19,9 @@
 #include <string.h>
 
 #include <os2.h>
+#include "strips.h"
+
+//static VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc);
 
 VOID chop_at_crnl(PSZ pszSrc)
 {
@@ -80,6 +83,7 @@ VOID remove_first_occurence_of_character(char *pszRemoveChar, char *pszSrc)
     memmove(pszStrLocation, pszStrLocation + 1, strlen(pszStrLocation) + 1);
 }
 
+#if 0    // JBS
 VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc)
 {
   PSZ pszStrLocation;
@@ -88,6 +92,7 @@ VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc)
   if (pszStrLocation)
     memmove(pszStrLocation, pszStrLocation + 1, strlen(pszStrLocation) + 1);
 }
+#endif
 
 #pragma alloc_text(MISC8,chop_at_crnl,convert_nl_to_nul,strip_trail_char,strip_lead_char)
 #pragma alloc_text(MISC8,remove_first_occurence_of_character,remove_last_occurence_of_character)
