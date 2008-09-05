@@ -40,6 +40,12 @@
 #include "filldir.h"			// RemoveCnrItems
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "autoview.h"			// AutoViewProc
+#include "mainwnd.h"			// BuildDriveBarButtons, TopWindow
+#include "common.h"
+#include "dirsize.h"			// DirSizeProc
+#include "info.h"			// DrvInfoProc, SetDrvProc
+#include "seeall.h"			// StartSeeAll
 #include "fm3dll.h"
 #include "fortify.h"
 

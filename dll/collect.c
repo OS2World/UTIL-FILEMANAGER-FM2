@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -82,7 +81,28 @@
 #include "tmrsvcs.h"			// ITIMER_DESC
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
+#include "worker.h"         		// Action, MassAction
+#include "notify.h"         		// AddNote
+#include "misc.h"         		// AdjustCnrColsForPref, AdjustDetailsSwitches, CnrDirectEdit,
+					// LoadDetailsSwitches, OpenEdit, QuickPopup, SayFilter
+					// SaySort, SayView, SetCnrCols, SetDetailsSwitches
+					// SetSortChecks, SetViewMenu, disable_menuitem
+#include "chklist.h"			// CenterOverWindow, DropListProc
+#include "collect.h"
+#include "common.h"			// CommonCnrProc, CommonCreateTextChildren, CommonFrameWndProc
+                   			// CommonTextPaint
+#include "select.h"			// DeselectAll, HideAll, RemoveAll, SelectAll, SelectList
+#include "dirsize.h"			// DirSizeProc
+#include "grep2.h"			// GrepDlgProc
+#include "mainwnd.h"			// MakeBubble
+#include "objwin.h"			// MakeObjWin
+#include "saveclip.h"			// SaveListDlgProc
+#include "findrec.h"			// ShowCnrRecord
+#include "sortcnr.h"			// SortCollectorCnr
+#include "seeall.h"			// StartSeeAll
+#include "update.h"			// UpdateCnrList, UpdateCnrRecord
 #include "fm3dll.h"
+#include "select.h"			// InvertAll
 
 #include "fortify.h"
 

@@ -16,9 +16,11 @@
 #include <string.h>
 #include <ctype.h>
 
-#define INCL_LONGLONG			// dircnrs.h
+#define INCL_LONGLONG                   // dircnrs.h
 
 #include "fm3dll.h"
+#include "dirs.h"
+#include "valid.h"                      // IsValidDir
 
 APIRET save_dir2(CHAR * curdir)
 {
@@ -32,9 +34,9 @@ APIRET save_dir2(CHAR * curdir)
     else {
       env = strrchr(curdir, '\\');
       if (env) {
-	*env = 0;
-	if (IsValidDir(curdir))
-	  return 0;
+        *env = 0;
+        if (IsValidDir(curdir))
+          return 0;
       }
     }
   }
@@ -49,7 +51,7 @@ APIRET save_dir(CHAR * curdir)
 
   *curdir = 0;
   ret = DosQCurDisk(&curdrive, &drivemap);
-  curdirlen = CCHMAXPATH - 4;		/* NOTE!!!!!!!!! */
+  curdirlen = CCHMAXPATH - 4;           /* NOTE!!!!!!!!! */
   ret += DosQCurDir(curdrive, &curdir[3], &curdirlen);
   *curdir = (CHAR) ('@' + (INT) curdrive);
   curdir[1] = ':';
@@ -70,10 +72,10 @@ APIRET switch_to(CHAR * s)
     if (ret || !(fsa.attrFile & FILE_DIRECTORY)) {
       p = strrchr(path, '\\');
       if (p)
-	*p = 0;
+        *p = 0;
       else {
-	strcpy(path, s);
-	break;
+        strcpy(path, s);
+        break;
       }
     }
     else
@@ -85,8 +87,8 @@ APIRET switch_to(CHAR * s)
 
     if (!DosQCurDisk(&curdrive, &drivemap)) {
       if ((CHAR) ((CHAR) curdrive + '@') != (CHAR) toupper(*HomePath) &&
-	  (CHAR) ((CHAR) curdrive + '@') != (CHAR) toupper(*path))
-	DosChDir("\\");
+          (CHAR) ((CHAR) curdrive + '@') != (CHAR) toupper(*path))
+        DosChDir("\\");
     }
     ret = DosSelectDisk(toupper(*path) - '@');
     return (ret) ? ret : DosChDir(path);

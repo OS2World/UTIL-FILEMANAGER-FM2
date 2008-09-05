@@ -32,6 +32,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "droplist.h"
 #include "fm3dll.h"
 
 #include "fortify.h"
@@ -39,6 +40,8 @@
 static PSZ pszSrcFile = __FILE__;
 
 static ULONG GetDropCount(HWND hwnd, MPARAM mp1);
+static BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
+		 char *buffer2, ULONG buflen2);
 
 BOOL CheckPmDrgLimit(PDRAGINFO pDInfo)
 {

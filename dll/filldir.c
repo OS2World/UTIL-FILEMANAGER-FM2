@@ -68,6 +68,8 @@
 #include "misc.h"			// GetTidForWindow
 #include "fortify.h"			// 06 May 08 SHL
 #include "notebook.h"			// INI file fields
+#include "flesh.h"			// FleshEnv, Stubby
+#include "update.h"			// SelectDriveIcon
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;

@@ -42,6 +42,9 @@
 #include "pathutil.h"			// BldFullPathName
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "autoview.h"
+#include "defview.h"			// DefaultView
+#include "valid.h"			// IsBinary
 #include "fm3dll.h"
 
 #include "fortify.h"
@@ -53,6 +56,10 @@ static PSZ pszSrcFile = __FILE__;
 static HWND hwndAutoObj;
 static CHAR stopflag;
 static CHAR currfile[CCHMAXPATH];
+
+static BOOL PutComments(HWND hwnd, CHAR * filename, CHAR * comments);
+static BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
+	     CHAR * data);
 
 BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
 	     CHAR * data)

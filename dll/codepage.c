@@ -24,6 +24,7 @@
 #include "fm3str.h"
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
+#include "codepage.h"
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
