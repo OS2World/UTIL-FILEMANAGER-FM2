@@ -12,11 +12,12 @@
 
 ***********************************************************************/
 
-#define INCL_DOS			// DosSleep
+#define INCL_DOS                        // DosSleep
 #define INCL_WIN
 
 #include "dll\fm3dlg.h"
 #include "dll\fm3dll.h"
+#include "dll\viewinf.h"                        // ViewInfProc
 
 int main(int argc, char *argv[])
 {
@@ -28,11 +29,11 @@ int main(int argc, char *argv[])
     hmq = WinCreateMsgQueue(hab, 256);
     if (hmq) {
       if (InitFM3DLL(hab, argc, argv)) {
-	WinDlgBox(HWND_DESKTOP,
-		  HWND_DESKTOP,
-		  ViewInfProc,
-		  FM3ModHandle,
-		  VINF_FRAME, ((argc > 1) ? MPFROMP("") : MPVOID));
+        WinDlgBox(HWND_DESKTOP,
+                  HWND_DESKTOP,
+                  ViewInfProc,
+                  FM3ModHandle,
+                  VINF_FRAME, ((argc > 1) ? MPFROMP("") : MPVOID));
       }
       DosSleep(250);
       WinDestroyMsgQueue(hmq);

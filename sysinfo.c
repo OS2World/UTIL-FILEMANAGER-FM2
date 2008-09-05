@@ -17,6 +17,7 @@
 
 #include "dll\fm3dlg.h"
 #include "dll\fm3dll.h"
+#include "dll\sysinfo.h"                        // SysInfoDlgProc
 
 int main(int argc, char *argv[])
 {
@@ -28,8 +29,8 @@ int main(int argc, char *argv[])
     hmq = WinCreateMsgQueue(hab, 256);
     if (hmq) {
       if (InitFM3DLL(hab, argc, argv)) {
-	WinDlgBox(HWND_DESKTOP, HWND_DESKTOP,
-		  SysInfoDlgProc, FM3ModHandle, SYS_FRAME, NULL);
+        WinDlgBox(HWND_DESKTOP, HWND_DESKTOP,
+                  SysInfoDlgProc, FM3ModHandle, SYS_FRAME, NULL);
       }
       WinDestroyMsgQueue(hmq);
     }

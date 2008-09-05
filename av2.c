@@ -23,6 +23,10 @@
 #include "dll\version.h"
 #include "dll\fm3str.h"
 #include "dll\arccnrs.h"
+#include "dll\assoc.h"			// ExecAssociation
+#include "dll\defview.h"		// ShowMultimedia
+#include "dll\inis.h"			// StartIniEditor
+#include "dll\dirs.h"			// switch_to
 #include "dll\fm3dll.h"
 
 HMTX av2Sem;

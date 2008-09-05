@@ -20,6 +20,7 @@
 
 #include "dll\tools.h"
 #include "dll\version.h"
+#include "dll\mainwnd2.h"			// StartFM32
 #include "dll\fm3dll.h"
 
 int main(int argc, char *argv[])

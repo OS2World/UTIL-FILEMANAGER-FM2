@@ -35,6 +35,9 @@
 #include "filldir.h"			// FileAttrToString...
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "flesh.h"
+#include "valid.h"			// IsValidDir
+#include "misc.h"			// LoadLibPath
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

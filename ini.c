@@ -16,6 +16,7 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
+#include "dll\inis.h"                   // StartIniEditor
 
 int main(int argc, char *argv[])
 {
@@ -30,12 +31,12 @@ int main(int argc, char *argv[])
     hmq = WinCreateMsgQueue(hab, 512);
     if (hmq) {
       if (InitFM3DLL(hab, argc, argv) &&
-	  ((hwndFrame =
-	    StartIniEditor(HWND_DESKTOP, argv[1], 0)) != (HWND) 0)) {
-	if (hwndHelp)
-	  WinAssociateHelpInstance(hwndHelp, hwndFrame);
-	while (WinGetMsg(hab, &qmsg, (HWND) 0, 0, 0))
-	  WinDispatchMsg(hab, &qmsg);
+          ((hwndFrame =
+            StartIniEditor(HWND_DESKTOP, argv[1], 0)) != (HWND) 0)) {
+        if (hwndHelp)
+          WinAssociateHelpInstance(hwndHelp, hwndFrame);
+        while (WinGetMsg(hab, &qmsg, (HWND) 0, 0, 0))
+          WinDispatchMsg(hab, &qmsg);
       }
       DosSleep(125L);
       WinDestroyMsgQueue(hmq);
