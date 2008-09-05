@@ -32,6 +32,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "pathutil.h"                   // BldFullPathName
+#include "walkem.h"			// FillPathListBox
 #include "fm3dll.h"
 #include "fortify.h"
 

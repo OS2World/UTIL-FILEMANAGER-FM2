@@ -22,6 +22,7 @@
 #define INCL_LONGLONG
 
 #include "pathutil.h"
+#include "strips.h"			// remove_first_occurence_of_character
 #include "fm3dll.h"			// needs_quoting
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -63,8 +64,7 @@ PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
 {
   UINT c = pszPathName ? strlen(pszPathName) : 0;
-  BOOL q = needs_quoting(pszPathName) ||
-	   needs_quoting(pszFileName);
+  BOOL q = needs_quoting(pszPathName) || needs_quoting(pszFileName);
   PSZ psz = pszFullPathName;
 
   if (q)

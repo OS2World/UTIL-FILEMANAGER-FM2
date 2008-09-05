@@ -39,6 +39,8 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // httprun etc
+#include "autoview.h"			// CreateHexDump
+#include "saveclip.h"			// SaveToClip
 #include "fm3dll.h"
 #include "fortify.h"
 

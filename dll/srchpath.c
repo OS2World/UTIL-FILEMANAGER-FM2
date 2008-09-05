@@ -24,6 +24,7 @@
 #include "fm3str.h"
 #include "pathutil.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
+#include "srchpath.h"
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;

@@ -51,6 +51,8 @@ LINKMASKS;
 static LINKMASKS *maskhead = NULL;
 static BOOL loadedmasks = FALSE;
 
+static VOID save_masks(VOID);
+
 INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
 {
 

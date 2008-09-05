@@ -48,6 +48,17 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"                    // RunCommand
+#include "misc.h"			// BoxWindow, FixSwitchList, SetConditionalCascade
+					// SetSysMenu
+#include "mainwnd.h"			// CloseChildren, MainWMCommand, MakeMainObjWin, ResizeDrives
+                    			// TopWindow
+#include "common.h"			// CommonCreateMainChildren, CommonMainWndProc
+#include "notify.h"			// HideNote
+#include "mainwnd2.h"
+#include "remap.h"			// RemapDlgProc
+#include "treecnr.h"			// StartTreeCnr
+#include "walkem.h"			// WalkTwoCmpDlgProc, WalkTwoSetDlgProc
+#include "dirs.h"			// switch_to
 #include "fm3dll.h"
 #include "fortify.h"
 
