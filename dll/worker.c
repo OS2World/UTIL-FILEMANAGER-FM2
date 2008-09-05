@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -56,6 +55,26 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// External viewers
+#include "worker.h"         		// Action
+#include "notify.h"         		// AddNote
+#include "copyf.h"               	// AdjustWildcardName, make_deleteable
+#include "attribs.h"			// AttrListDlgProc
+#include "chklist.h"			// CheckListProc
+#include "info.h"			// DrvInfoProc
+#include "extract.h"			// ExtractDlgProc
+#include "info.h"			// FileInfoProc
+#include "valid.h"			// GetDesktopName, IsNewer
+#include "saveclip.h"			// ListToClipboardHab
+#include "shadow.h"			// MakeShadows
+#include "mkdir.h"			// MassMkdir
+#include "uudecode.h"			// MergeDlgProc
+#include "objcnr.h"			// ObjCnrDlgProc
+#include "printer.h"			// PrintDlgProc, PrintListThread
+#include "rename.h"			// RenameProc
+#include "srchpath.h"			// RunFM2Util
+#include "mainwnd.h"			// TopWindowName
+#include "uudecode.h"			// UUD
+#include "walkem.h"			// WalkCopyDlgProc, WalkDlgProc, WalkMoveDlgProc
 #include "fm3dll.h"
 
 #include "fortify.h"

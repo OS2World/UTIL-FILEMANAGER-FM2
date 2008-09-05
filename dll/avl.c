@@ -50,6 +50,8 @@
 #include "avl.h"
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
+#include "avv.h"			// ArcReviewDlgProc, rewrite_archiverbb2
+#include "droplist.h"			// FullDrgName
 #include "fm3dll.h"
 #include "fortify.h"
 

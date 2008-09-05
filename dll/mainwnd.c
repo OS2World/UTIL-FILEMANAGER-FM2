@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -96,6 +95,34 @@
 #include "command.h"			// LINKCMDS
 #include "avl.h"			// free_archivers
 #include "walkem.h"			// free_setups...
+#include "key.h"         		// AboutDlgProc
+#include "menu.h"         		// AddToMenu
+#include "mainwnd.h"
+#include "cmdline.h"			// CmdLine2DlgProc, save_cmdlines
+#include "common.h"			// CommonCreateMainChildren, CommonDriveCmd, CommonMainWndProc
+#include "notify.h"			// DoNotify, HideNote, ShowNote
+#include "draglist.h"			// DragOne
+#include "chklist.h"			// DropListProc
+#include "avv.h"			// EditArchiverDefinition
+#include "assoc.h"			// EditAssociations
+#include "fm2cmd.h"			// FM2Command
+#include "misc.h"			// FindDirCnr, FixSwitchList, PaintSTextWindow,
+					// SetConditionalCascade, SetMenuCheck, SetSysMenu
+					// SwitchCommand
+#include "instant.h"			// InstantDlgProc
+#include "killproc.h"			// KillDlgProc
+#include "loadbmp.h"			// LoadBitmapFromFileNum
+#include "presparm.h"			// SavePresParams
+#include "treecnr.h"			// ShowTreeRec, StartTreeCnr
+#include "inis.h"			// StartIniEditor
+#include "sysinfo.h"			// SysInfoDlgProc
+#include "viewinf.h"			// ViewInfProc
+#include "walkem.h"			// WalkDlgProc, WalkTwoCmpDlgProc, add_setup, add_udir
+                   			// fill_setups_list, free_ldir, free_udirs, load_udirs
+                   			// remove_setup, remove_udir, save_setups, save_udirs
+#include "winlist.h"			// WindowList
+#include "cmdline.h"			// add_cmdline
+#include "assoc.h"			// free_associations
 #include "fm3dll.h"
 
 #include "fortify.h"

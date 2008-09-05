@@ -46,6 +46,8 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "select.h"
+#include "valid.h"			// TestCDates
 #include "fm3dll.h"
 #include "fortify.h"
 

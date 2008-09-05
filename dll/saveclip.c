@@ -40,10 +40,17 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "pathutil.h"                   // BldFullPathName
+#include "saveclip.h"
+#include "literal.h"			// fixup
 #include "fm3dll.h"
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
+
+//static VOID ListToClipboard(HWND hwnd, CHAR ** list, ULONG append);
+
+static BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append);
+
 #define MAX_PATTERN_BYTES 80
 
 BOOL SaveToClip(HWND hwnd, CHAR * text, BOOL append)
@@ -100,12 +107,14 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
   return ret;
 }
 
+#if 0	// JBS
 VOID ListToClipboard(HWND hwnd, CHAR ** list, ULONG append)
 {
   HAB hab = WinQueryAnchorBlock(hwnd);
 
   ListToClipboardHab(hab, list, append);
 }
+#endif
 
 VOID ListToClipboardHab(HAB hab, CHAR ** list, ULONG append)
 {
@@ -1005,6 +1014,6 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 }
 
 #pragma alloc_text(FMCLIPBOARDIN,SaveToClip,SaveToClipHab)
-#pragma alloc_text(FMCLIPBOARDOUT,ListToClipboard,ListToClipboardHab)
+#pragma alloc_text(FMCLIPBOARDOUT,ListToClipboardHab)
 #pragma alloc_text(FMCLIPBOARDOUT,ListFromClipboard,ListFromClipboardHab)
 #pragma alloc_text(SAVELIST,SaveListDlgProc,SaveAllListDlgProc)

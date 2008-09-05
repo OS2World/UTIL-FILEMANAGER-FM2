@@ -34,6 +34,8 @@
 #define INCL_LONGLONG
 
 #include "errutil.h"			// Dos_Error...
+#include "draglist.h"
+#include "valid.h"			// IsValidDrive
 #include "fm3dll.h"
 #include "fortify.h"
 

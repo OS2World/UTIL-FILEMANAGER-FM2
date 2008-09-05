@@ -24,6 +24,8 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "getnames.h"
+#include "walkem.h"			// load_udirs, remove_udir
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

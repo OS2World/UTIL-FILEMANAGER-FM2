@@ -27,12 +27,22 @@
 #include "pathutil.h"			// BldFullPathName
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "shadow.h"
 #include "fm3dll.h"
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
+
+static HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
+			 CHAR * cnr);
+static HOBJECT CreateFolderObject(CHAR * objtitle, CHAR * cnr);
+
+static HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
+			    CHAR * cnr);
+static HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
+			   BOOL executable, CHAR * cnr);
 
 HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 			    CHAR * cnr)

@@ -29,9 +29,12 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "errutil.h"			// Dos_Error...
+#include "loadbmp.h"
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
+
+static HBITMAP LoadBitmapFromFile(CHAR * pszFileName);
 
 HBITMAP LoadBitmapFromFileNum(USHORT id)
 {
