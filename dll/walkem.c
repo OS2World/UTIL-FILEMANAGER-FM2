@@ -53,14 +53,17 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// targetdirectory
 #include "pathutil.h"                   // BldFullPathName
+#include "walkem.h"
 #include "fm3dll.h"
 #include "fortify.h"
-#include "walkem.h"
 
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
 
+static MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+static VOID load_setups(VOID);
+static BOOL remove_ldir(PSZ path);
 
 typedef struct
 {

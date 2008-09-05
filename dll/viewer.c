@@ -33,7 +33,13 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // External viewers
+#include "colors.h"			// ColorDlgProc
+#include "mainwnd.h"			// FillClient
+#include "viewer.h"
+#include "codepage.h"			// PickCodepage
+#include "dirs.h"			// switch_to
 #include "fm3dll.h"
+#include "misc.h"			// SetMenuCheck, disable_menuitem
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

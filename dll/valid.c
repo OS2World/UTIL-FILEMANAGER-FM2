@@ -40,9 +40,13 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "valid.h"
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
+
+//static BOOL IsDesktop(HAB hab, HWND hwnd);
+//static BOOL IsFileSame(CHAR * filename1, CHAR * filename2);
 
 APIRET MakeFullName(char *pszFileName)
 {
@@ -179,6 +183,7 @@ BOOL IsNewer(char *file1, char *file2)
   return (TestFDates(file1, file2, NULL, NULL, NULL, NULL) > 0);
 }
 
+#if 0 	// JBS
 BOOL IsDesktop(HAB hab, HWND hwnd)
 {
   HWND hwndDesktop;
@@ -190,6 +195,7 @@ BOOL IsDesktop(HAB hab, HWND hwnd)
     return TRUE;
   return FALSE;
 }
+#endif
 
 BOOL ParentIsDesktop(HWND hwnd, HWND hwndParent)
 {
@@ -400,6 +406,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   return NonRemovable ? 0 : 1;
 }
 
+#if 0	// JBS
 BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 {
   /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
@@ -425,6 +432,7 @@ BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
   }
   return FALSE;
 }
+#endif
 
 INT IsFile(CHAR * filename)
 {

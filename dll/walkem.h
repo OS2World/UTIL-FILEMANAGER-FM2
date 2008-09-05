@@ -19,6 +19,32 @@
 #include <os2.h>
 #endif
 
+VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, PSZ path,
+		     BOOL nounwriteable);
+MRESULT EXPENTRY WalkCopyDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				 MPARAM mp2);
+MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+MRESULT EXPENTRY WalkExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				    MPARAM mp2);
+MRESULT EXPENTRY WalkMoveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				 MPARAM mp2);
+MRESULT EXPENTRY WalkTargetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				   MPARAM mp2);
+MRESULT EXPENTRY WalkTwoCmpDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				   MPARAM mp2);
+MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				   MPARAM mp2);
+INT add_setup(PSZ stateName);
+BOOL add_udir(BOOL userdirs, PSZ inpath);
+VOID fill_setups_list(VOID);
+VOID free_ldir(VOID);
+VOID free_udirs(VOID);
+VOID load_udirs(VOID);
+INT remove_setup(PSZ stateName);
+BOOL remove_udir(PSZ path);
+VOID save_setups(VOID);
+VOID save_udirs(VOID);
+
 #ifdef FORTIFY
 VOID free_setups(VOID);
 #endif

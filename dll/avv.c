@@ -41,6 +41,10 @@
 #include "fm3str.h"
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
+#include "avv.h"			// ArcReviewDlgProc
+#include "cmdline.h"			// CmdLineDlgProc
+#include "avv.h"
+#include "literal.h"			// fixup
 #include "fm3dll.h"
 #include "pathutil.h"                   // NormalizeCmdLine
 #include "fortify.h"

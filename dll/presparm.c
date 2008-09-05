@@ -18,12 +18,17 @@
 #include <string.h>
 
 #define INCL_WIN
-#define INCL_LONGLONG			// dircnrs.h
+#define INCL_LONGLONG                   // dircnrs.h
 
 #include "fm3dll.h"
+#include "presparm.h"
 #include "fortify.h"
 
 // static PSZ pszSrcFile = __FILE__;
+
+//static VOID IfNoParam(HWND hwnd, CHAR * keyroot, ULONG size, PVOID attrvalue);
+
+//static VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof);
 
 #ifdef NEVER
 /*
@@ -42,8 +47,8 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
   ppresparams = (PRESPARAMS *) xmalloc(PP_MAXBUF, pszSrcFile, __LINE__);
   if (!ppresparams)
     return;
-  ppresparams->cb = 0;			/* no entries yet */
-  pparam = ppresparams->aparam;		/* cast structure onto memory */
+  ppresparams->cb = 0;                  /* no entries yet */
+  pparam = ppresparams->aparam;         /* cast structure onto memory */
 
   /*
    * query every possible presentation parameter...
@@ -51,23 +56,23 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_FOREGROUNDCOLOR,
-				 PP_FOREGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
-  if (pparam->cb) {			/* was the param found? */
-    ppresparams->cb += 12;		/* used 12 bytes */
-    pparam = (PPARAM) (((ULONG) pparam) + 12);	/* advance 12 bytes to next memory location */
+                                 PP_FOREGROUNDCOLOR,
+                                 PP_FOREGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
+  if (pparam->cb) {                     /* was the param found? */
+    ppresparams->cb += 12;              /* used 12 bytes */
+    pparam = (PPARAM) (((ULONG) pparam) + 12);  /* advance 12 bytes to next memory location */
   }
 
   /* background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_BACKGROUNDCOLOR,
-				 PP_BACKGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_BACKGROUNDCOLOR,
+                                 PP_BACKGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -75,11 +80,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* hilited foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_HILITEFOREGROUNDCOLOR,
-				 PP_HILITEFOREGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_HILITEFOREGROUNDCOLOR,
+                                 PP_HILITEFOREGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -87,11 +92,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* hilited background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_HILITEBACKGROUNDCOLOR,
-				 PP_HILITEBACKGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_HILITEBACKGROUNDCOLOR,
+                                 PP_HILITEBACKGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -99,11 +104,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* disabled foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_DISABLEDFOREGROUNDCOLOR,
-				 PP_DISABLEDFOREGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_DISABLEDFOREGROUNDCOLOR,
+                                 PP_DISABLEDFOREGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -111,11 +116,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* disabled background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_DISABLEDBACKGROUNDCOLOR,
-				 PP_DISABLEDBACKGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_DISABLEDBACKGROUNDCOLOR,
+                                 PP_DISABLEDBACKGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -123,11 +128,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* border color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_BORDERCOLOR,
-				 PP_BORDERCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_BORDERCOLOR,
+                                 PP_BORDERCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -135,10 +140,10 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* font name & size -- maximum 44 bytes (32 for face name, 4 for point size) + 8 for data */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_FONTNAMESIZE,
-				 0,
-				 &pparam->id,
-				 36, (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_FONTNAMESIZE,
+                                 0,
+                                 &pparam->id,
+                                 36, (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += (pparam->cb + 8);
     pparam = (PPARAM) (((ULONG) pparam) + pparam->cb + 8);
@@ -146,11 +151,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* active color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_ACTIVECOLOR,
-				 PP_ACTIVECOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_ACTIVECOLOR,
+                                 PP_ACTIVECOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -158,11 +163,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* inactive color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_INACTIVECOLOR,
-				 PP_INACTIVECOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_INACTIVECOLOR,
+                                 PP_INACTIVECOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -170,12 +175,12 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* active text foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_ACTIVETEXTFGNDCOLOR,
-				 PP_ACTIVETEXTFGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab,
-				 QPF_NOINHERIT | QPF_PURERGBCOLOR);
+                                 PP_ACTIVETEXTFGNDCOLOR,
+                                 PP_ACTIVETEXTFGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab,
+                                 QPF_NOINHERIT | QPF_PURERGBCOLOR);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -183,12 +188,12 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* active text background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_ACTIVETEXTBGNDCOLOR,
-				 PP_ACTIVETEXTBGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab,
-				 QPF_NOINHERIT | QPF_PURERGBCOLOR);
+                                 PP_ACTIVETEXTBGNDCOLOR,
+                                 PP_ACTIVETEXTBGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab,
+                                 QPF_NOINHERIT | QPF_PURERGBCOLOR);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -196,12 +201,12 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* inactive text foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_INACTIVETEXTFGNDCOLOR,
-				 PP_INACTIVETEXTFGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab,
-				 QPF_NOINHERIT | QPF_PURERGBCOLOR);
+                                 PP_INACTIVETEXTFGNDCOLOR,
+                                 PP_INACTIVETEXTFGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab,
+                                 QPF_NOINHERIT | QPF_PURERGBCOLOR);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -209,12 +214,12 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* inactive text background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_INACTIVETEXTBGNDCOLOR,
-				 PP_INACTIVETEXTBGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab,
-				 QPF_NOINHERIT | QPF_PURERGBCOLOR);
+                                 PP_INACTIVETEXTBGNDCOLOR,
+                                 PP_INACTIVETEXTBGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab,
+                                 QPF_NOINHERIT | QPF_PURERGBCOLOR);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -222,10 +227,10 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* shadow color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_SHADOW, 0,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_SHADOW, 0,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -233,11 +238,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* menu foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_MENUFOREGROUNDCOLOR,
-				 PP_MENUFOREGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_MENUFOREGROUNDCOLOR,
+                                 PP_MENUFOREGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -245,11 +250,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* menu background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_MENUBACKGROUNDCOLOR,
-				 PP_MENUBACKGROUNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_MENUBACKGROUNDCOLOR,
+                                 PP_MENUBACKGROUNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -257,11 +262,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* menu hilite foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_MENUHILITEFGNDCOLOR,
-				 PP_MENUHILITEFGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_MENUHILITEFGNDCOLOR,
+                                 PP_MENUHILITEFGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -269,11 +274,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* menu hilite background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_MENUHILITEBGNDCOLOR,
-				 PP_MENUHILITEBGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_MENUHILITEBGNDCOLOR,
+                                 PP_MENUHILITEBGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -281,11 +286,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* menu disabled foreground color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_MENUDISABLEDFGNDCOLOR,
-				 PP_MENUDISABLEDFGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_MENUDISABLEDFGNDCOLOR,
+                                 PP_MENUDISABLEDFGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -293,11 +298,11 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   /* menu disabled background color -- takes 12 bytes */
   pparam->cb = WinQueryPresParam(hwnd,
-				 PP_MENUDISABLEDBGNDCOLOR,
-				 PP_MENUDISABLEDBGNDCOLORINDEX,
-				 &pparam->id,
-				 sizeof(LONG),
-				 (PVOID) pparam->ab, QPF_NOINHERIT);
+                                 PP_MENUDISABLEDBGNDCOLOR,
+                                 PP_MENUDISABLEDBGNDCOLORINDEX,
+                                 &pparam->id,
+                                 sizeof(LONG),
+                                 (PVOID) pparam->ab, QPF_NOINHERIT);
   if (pparam->cb) {
     ppresparams->cb += 12;
     pparam = (PPARAM) (((ULONG) pparam) + 12);
@@ -305,7 +310,7 @@ VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof)
 
   if (ppresparams->cb)
     PrfWriteProfileData(prof,
-			appname, tagname, ppresparams, ppresparams->cb + 4);
+                        appname, tagname, ppresparams, ppresparams->cb + 4);
 
   free(ppresparams);
 }
@@ -350,9 +355,9 @@ VOID CopyPresParams(HWND target, HWND source)
 
   while (AttrName[x]) {
     cbRetLen = WinQueryPresParam(source,
-				 AttrName[x],
-				 0,
-				 &AttrFound,
+                                 AttrName[x],
+                                 0,
+                                 &AttrFound,
                                  sizeof(AttrValue),
                                  &AttrValue, 0);
     //printf("%s %x\n", AttrValue, source); fflush(stdout);
@@ -364,7 +369,7 @@ VOID CopyPresParams(HWND target, HWND source)
 }
 
 VOID SetPresParams(HWND hwnd, RGB2 * back, RGB2 * fore, RGB2 * border,
-		   CHAR * font)
+                   CHAR * font)
 {
   if (font)
     WinSetPresParam(hwnd, PP_FONTNAMESIZE, strlen(font) + 1, (PVOID) font);
@@ -376,6 +381,7 @@ VOID SetPresParams(HWND hwnd, RGB2 * back, RGB2 * fore, RGB2 * border,
     WinSetPresParam(hwnd, PP_BORDERCOLOR, sizeof(RGB2), (PVOID) border);
 }
 
+#if 0   // JBS
 VOID IfNoParam(HWND hwnd, CHAR * keyroot, ULONG size, PVOID attrvalue)
 {
   ULONG fsize = 0;
@@ -385,13 +391,14 @@ VOID IfNoParam(HWND hwnd, CHAR * keyroot, ULONG size, PVOID attrvalue)
   if (!PrfQueryProfileSize(fmprof, appname, s, &fsize) || !fsize)
     WinSetPresParam(hwnd, PP_FONTNAMESIZE, size, (PVOID) attrvalue);
 }
+#endif
 
 VOID PresParamChanged(HWND hwnd, CHAR * keyroot, MPARAM mp1, MPARAM mp2)
 {
   ULONG AttrFound, AttrValue[64], cbRetLen;
 
   cbRetLen = WinQueryPresParam(hwnd, (ULONG) mp1, 0, &AttrFound,
-			       (ULONG) sizeof(AttrValue), &AttrValue, 0);
+                               (ULONG) sizeof(AttrValue), &AttrValue, 0);
   if (cbRetLen) {
 
     CHAR s[133];
@@ -457,7 +464,7 @@ VOID RestorePresParams(HWND hwnd, CHAR * keyroot)
   size = sizeof(AttrValue);
   sprintf(s, "%s.Fontnamesize", keyroot);
   if (PrfQueryProfileData(fmprof,
-			  appname, s, (PVOID) AttrValue, &size) && size)
+                          appname, s, (PVOID) AttrValue, &size) && size)
     WinSetPresParam(hwnd, PP_FONTNAMESIZE, size, (PVOID) AttrValue);
 }
 
@@ -475,9 +482,9 @@ VOID SavePresParams(HWND hwnd, CHAR *keyroot)
 
   while (AttrName[x]) {
     cbRetLen = WinQueryPresParam(hwnd,
-				 AttrName[x],
-				 0,
-				 &AttrFound,
+                                 AttrName[x],
+                                 0,
+                                 &AttrFound,
                                  sizeof(AttrValue),
                                  &AttrValue, 0);
     if (cbRetLen){
@@ -513,6 +520,6 @@ VOID SavePresParams(HWND hwnd, CHAR *keyroot)
   } //while
 }
 
-#pragma alloc_text(PRESPARAM,CopyPresParams,SetPresParams,IfNoParam)
+#pragma alloc_text(PRESPARAM,CopyPresParams,SetPresParams)
 #pragma alloc_text(PRESPARAM,PresParamChanged,RestorePresParams,SavePresParams)
 #pragma alloc_text(PRESPARAM,StoreWndPresParams)

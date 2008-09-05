@@ -22,6 +22,7 @@
 
 #include "fm3dlg.h"
 #include "fm3dll.h"
+#include "winlist.h"
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
@@ -39,7 +40,7 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     if (Me || !mp2) {
       if (Me)
-	PostMsg(Me, UM_FOCUSME, MPVOID, MPVOID);
+        PostMsg(Me, UM_FOCUSME, MPVOID, MPVOID);
       WinDismissDlg(hwnd, 0);
     }
     else {
@@ -53,82 +54,82 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowULong(hwnd, QWL_USER, *(HWND *) mp2);
       henum = WinBeginEnumWindows(*(HWND *) mp2);
       while ((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
-	id = WinQueryWindowUShort(hwndChild, QWS_ID);
-	if (!id)
-	  continue;
-	*wtext = ' ';
-	WinQueryWindowText(hwndChild, CCHMAXPATH, wtext + 1);
-	wtext[CCHMAXPATH] = 0;
-	sSelect =
-	  (SHORT) WinSendDlgItemMsg(hwnd, WLIST_LISTBOX, LM_INSERTITEM,
-				    MPFROM2SHORT(LIT_SORTASCENDING, 0),
-				    MPFROMP(wtext));
-	if (sSelect >= 0)
-	  WinSendDlgItemMsg(hwnd, WLIST_LISTBOX, LM_SETITEMHANDLE,
-			    MPFROM2SHORT(sSelect, 0),
-			    MPFROMLONG((ULONG) hwndChild));
+        id = WinQueryWindowUShort(hwndChild, QWS_ID);
+        if (!id)
+          continue;
+        *wtext = ' ';
+        WinQueryWindowText(hwndChild, CCHMAXPATH, wtext + 1);
+        wtext[CCHMAXPATH] = 0;
+        sSelect =
+          (SHORT) WinSendDlgItemMsg(hwnd, WLIST_LISTBOX, LM_INSERTITEM,
+                                    MPFROM2SHORT(LIT_SORTASCENDING, 0),
+                                    MPFROMP(wtext));
+        if (sSelect >= 0)
+          WinSendDlgItemMsg(hwnd, WLIST_LISTBOX, LM_SETITEMHANDLE,
+                            MPFROM2SHORT(sSelect, 0),
+                            MPFROMLONG((ULONG) hwndChild));
       }
       WinEndEnumWindows(henum);
 
       {
-	PSWBLOCK pswb;
-	ULONG ulSize, ulcEntries;
-	register INT i, y;
+        PSWBLOCK pswb;
+        ULONG ulSize, ulcEntries;
+        register INT i, y;
 
-	/* Get the switch list information */
-	ulcEntries = WinQuerySwitchList(0, NULL, 0);
-	ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4) *
-	  (LONG) sizeof(SWENTRY);
-	/* Allocate memory for list */
-	pswb = xmalloc((unsigned)ulSize, pszSrcFile, __LINE__);
-	if (pswb) {
-	  /* Put the info in the list */
-	  ulcEntries = WinQuerySwitchList(0, pswb, ulSize - sizeof(SWENTRY));
-	  /* do the dirty deed */
-	  y = 0;
-	  for (i = 0; i < pswb->cswentry; i++) {
-	    if (pswb->aswentry[i].swctl.uchVisibility == SWL_VISIBLE &&
-		pswb->aswentry[i].swctl.fbJump == SWL_JUMPABLE &&
-		((pswb->aswentry[i].swctl.idProcess == mypid &&
-		  (strnicmp(pswb->aswentry[i].swctl.szSwtitle,
-			    "FM/2", 4))) ||
-		 !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "AV/2", 4) ||
-		 !stricmp(pswb->aswentry[i].swctl.szSwtitle, "File Manager/2")
-		 || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "Collector")
-		 || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VTree", 5)
-		 || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VDir", 4)
-		 || (!strnicmp(pswb->aswentry[i].swctl.szSwtitle, FM2Str, 4)
-		     && strnicmp(pswb->aswentry[i].swctl.szSwtitle, "FM/2",
-				 4)))) {
-	      *wtext = '*';
-	      wtext[1] = 0;
-	      strcat(wtext, pswb->aswentry[i].swctl.szSwtitle);
-	      wtext[CCHMAXPATH] = 0;
-	      sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-						  WLIST_LISTBOX,
-						  LM_INSERTITEM,
-						  MPFROM2SHORT
-						  (LIT_SORTASCENDING, 0),
-						  MPFROMP(wtext));
-	      if (sSelect >= 0)
-		WinSendDlgItemMsg(hwnd,
-				  WLIST_LISTBOX,
-				  LM_SETITEMHANDLE,
-				  MPFROM2SHORT(sSelect, 0),
-				  MPFROMLONG(pswb->aswentry[i].swctl.hwnd));
-	    }
-	    y++;
-	  }
-	  free(pswb);
-	  DosPostEventSem(CompactSem);
-	}
+        /* Get the switch list information */
+        ulcEntries = WinQuerySwitchList(0, NULL, 0);
+        ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4) *
+          (LONG) sizeof(SWENTRY);
+        /* Allocate memory for list */
+        pswb = xmalloc((unsigned)ulSize, pszSrcFile, __LINE__);
+        if (pswb) {
+          /* Put the info in the list */
+          ulcEntries = WinQuerySwitchList(0, pswb, ulSize - sizeof(SWENTRY));
+          /* do the dirty deed */
+          y = 0;
+          for (i = 0; i < pswb->cswentry; i++) {
+            if (pswb->aswentry[i].swctl.uchVisibility == SWL_VISIBLE &&
+                pswb->aswentry[i].swctl.fbJump == SWL_JUMPABLE &&
+                ((pswb->aswentry[i].swctl.idProcess == mypid &&
+                  (strnicmp(pswb->aswentry[i].swctl.szSwtitle,
+                            "FM/2", 4))) ||
+                 !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "AV/2", 4) ||
+                 !stricmp(pswb->aswentry[i].swctl.szSwtitle, "File Manager/2")
+                 || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "Collector")
+                 || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VTree", 5)
+                 || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VDir", 4)
+                 || (!strnicmp(pswb->aswentry[i].swctl.szSwtitle, FM2Str, 4)
+                     && strnicmp(pswb->aswentry[i].swctl.szSwtitle, "FM/2",
+                                 4)))) {
+              *wtext = '*';
+              wtext[1] = 0;
+              strcat(wtext, pswb->aswentry[i].swctl.szSwtitle);
+              wtext[CCHMAXPATH] = 0;
+              sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+                                                  WLIST_LISTBOX,
+                                                  LM_INSERTITEM,
+                                                  MPFROM2SHORT
+                                                  (LIT_SORTASCENDING, 0),
+                                                  MPFROMP(wtext));
+              if (sSelect >= 0)
+                WinSendDlgItemMsg(hwnd,
+                                  WLIST_LISTBOX,
+                                  LM_SETITEMHANDLE,
+                                  MPFROM2SHORT(sSelect, 0),
+                                  MPFROMLONG(pswb->aswentry[i].swctl.hwnd));
+            }
+            y++;
+          }
+          free(pswb);
+          DosPostEventSem(CompactSem);
+        }
       }
 
       sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-					  WLIST_LISTBOX,
-					  LM_QUERYITEMCOUNT, MPVOID, MPVOID);
+                                          WLIST_LISTBOX,
+                                          LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sSelect <= 0)
-	WinDismissDlg(hwnd, 0);
+        WinDismissDlg(hwnd, 0);
     }
     PostMsg(hwnd, UM_FOCUSME, MPVOID, MPVOID);
     break;
@@ -154,8 +155,8 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case WLIST_LISTBOX:
       switch (SHORT2FROMMP(mp1)) {
       case LN_ENTER:
-	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(DID_OK, 0), MPVOID);
-	break;
+        PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(DID_OK, 0), MPVOID);
+        break;
       }
       break;
     }
@@ -167,70 +168,70 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case WLIST_CLOSE:
     case DID_OK:
       {
-	HWND hwndActive = (HWND) WinQueryWindowULong(hwnd, QWL_USER);
+        HWND hwndActive = (HWND) WinQueryWindowULong(hwnd, QWL_USER);
 
-	hwndActive = WinQueryActiveWindow(hwndActive);
-	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-					    WLIST_LISTBOX,
-					    LM_QUERYSELECTION,
-					    MPFROM2SHORT(LIT_FIRST, 0),
-					    MPVOID);
-	while (sSelect >= 0) {
+        hwndActive = WinQueryActiveWindow(hwndActive);
+        sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+                                            WLIST_LISTBOX,
+                                            LM_QUERYSELECTION,
+                                            MPFROM2SHORT(LIT_FIRST, 0),
+                                            MPVOID);
+        while (sSelect >= 0) {
 
-	  HWND HwndC;
+          HWND HwndC;
 
-	  HwndC = (HWND) WinSendDlgItemMsg(hwnd,
-					   WLIST_LISTBOX,
-					   LM_QUERYITEMHANDLE,
-					   MPFROM2SHORT(sSelect, 0), MPVOID);
-	  if (HwndC) {
+          HwndC = (HWND) WinSendDlgItemMsg(hwnd,
+                                           WLIST_LISTBOX,
+                                           LM_QUERYITEMHANDLE,
+                                           MPFROM2SHORT(sSelect, 0), MPVOID);
+          if (HwndC) {
 
-	    SWP swp;
+            SWP swp;
 
-	    WinQueryWindowPos(HwndC, &swp);
-	    if (SHORT1FROMMP(mp1) == DID_OK) {
-	      if (!(swp.fl & SWP_MINIMIZE) && (swp.cx == 0 || swp.cy == 0)) {
-		GetNextWindowPos((HWND) WinQueryWindowULong(hwnd, QWL_USER),
-				 &swp, NULL, NULL);
-		WinSetWindowPos(HwndC, HWND_TOP, swp.x, swp.y, swp.cx, swp.cy,
-				SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_ZORDER |
-				SWP_ACTIVATE | SWP_FOCUSACTIVATE);
-	      }
-	      else
-		WinSetWindowPos(HwndC, HWND_TOP, 0, 0, 0, 0,
-				SWP_RESTORE | SWP_SHOW | SWP_ZORDER |
-				SWP_ACTIVATE | SWP_FOCUSACTIVATE);
-	    }
-	    else if (SHORT1FROMMP(mp1) == WLIST_MINIMIZE) {
-	      WinSetWindowPos(HwndC, HWND_BOTTOM, 0, 0, 0, 0,
-			      SWP_MINIMIZE | SWP_DEACTIVATE |
-			      SWP_FOCUSDEACTIVATE | SWP_ZORDER);
-	      if (hwndActive == HwndC) {
-		WinSetWindowPos(WinWindowFromID(WinQueryWindow(hwndActive,
-							       QW_PARENT),
-						TREE_FRAME), HWND_TOP, 0, 0,
-				0, 0,
-				SWP_SHOW | SWP_RESTORE | SWP_ACTIVATE |
-				SWP_FOCUSACTIVATE | SWP_ZORDER);
-		hwndActive = (HWND) 0;
-	      }
-	    }
-	    else if (WinQueryWindowUShort(HwndC, QWS_ID) != TREE_FRAME)
-	      PostMsg(HwndC, WM_CLOSE, MPVOID, MPVOID);
-	  }
-	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd, WLIST_LISTBOX,
-					      LM_QUERYSELECTION,
-					      MPFROM2SHORT(sSelect, 0),
-					      MPVOID);
-	}
+            WinQueryWindowPos(HwndC, &swp);
+            if (SHORT1FROMMP(mp1) == DID_OK) {
+              if (!(swp.fl & SWP_MINIMIZE) && (swp.cx == 0 || swp.cy == 0)) {
+                GetNextWindowPos((HWND) WinQueryWindowULong(hwnd, QWL_USER),
+                                 &swp, NULL, NULL);
+                WinSetWindowPos(HwndC, HWND_TOP, swp.x, swp.y, swp.cx, swp.cy,
+                                SWP_MOVE | SWP_SIZE | SWP_SHOW | SWP_ZORDER |
+                                SWP_ACTIVATE | SWP_FOCUSACTIVATE);
+              }
+              else
+                WinSetWindowPos(HwndC, HWND_TOP, 0, 0, 0, 0,
+                                SWP_RESTORE | SWP_SHOW | SWP_ZORDER |
+                                SWP_ACTIVATE | SWP_FOCUSACTIVATE);
+            }
+            else if (SHORT1FROMMP(mp1) == WLIST_MINIMIZE) {
+              WinSetWindowPos(HwndC, HWND_BOTTOM, 0, 0, 0, 0,
+                              SWP_MINIMIZE | SWP_DEACTIVATE |
+                              SWP_FOCUSDEACTIVATE | SWP_ZORDER);
+              if (hwndActive == HwndC) {
+                WinSetWindowPos(WinWindowFromID(WinQueryWindow(hwndActive,
+                                                               QW_PARENT),
+                                                TREE_FRAME), HWND_TOP, 0, 0,
+                                0, 0,
+                                SWP_SHOW | SWP_RESTORE | SWP_ACTIVATE |
+                                SWP_FOCUSACTIVATE | SWP_ZORDER);
+                hwndActive = (HWND) 0;
+              }
+            }
+            else if (WinQueryWindowUShort(HwndC, QWS_ID) != TREE_FRAME)
+              PostMsg(HwndC, WM_CLOSE, MPVOID, MPVOID);
+          }
+          sSelect = (SHORT) WinSendDlgItemMsg(hwnd, WLIST_LISTBOX,
+                                              LM_QUERYSELECTION,
+                                              MPFROM2SHORT(sSelect, 0),
+                                              MPVOID);
+        }
       }
       WinDismissDlg(hwnd, 0);
       break;
 
     case IDM_HELP:
       if (hwndHelp)
-	WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
-		   MPFROM2SHORT(HELP_WINLIST, 0), MPFROMSHORT(HM_RESOURCEID));
+        WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
+                   MPFROM2SHORT(HELP_WINLIST, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
 
     case DID_CANCEL:
@@ -244,7 +245,7 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       Me = (HWND) 0;
     else
       WinSetWindowPos(Me, HWND_TOP, 0, 0, 0, 0,
-		      SWP_SHOW | SWP_RESTORE | SWP_ZORDER | SWP_ACTIVATE);
+                      SWP_SHOW | SWP_RESTORE | SWP_ZORDER | SWP_ACTIVATE);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -253,7 +254,7 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 VOID WindowList(HWND hwnd)
 {
   WinDlgBox(HWND_DESKTOP, HWND_DESKTOP, WinListDlgProc, FM3ModHandle,
-	    WLIST_FRAME, MPFROMP(&hwnd));
+            WLIST_FRAME, MPFROMP(&hwnd));
 }
 
 #pragma alloc_text(WINLIST,WindowList,WinListDlgProc)

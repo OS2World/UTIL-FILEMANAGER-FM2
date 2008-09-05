@@ -52,6 +52,18 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // httprun etc
+#include "colors.h"			// ColorDlgProc
+#include "defview.h"			// DefaultView
+#include "draglist.h"			// DragOne
+#include "mainwnd.h"			// FillClient, MakeBubble
+#include "valid.h"			// IsBinary
+#include "saveclip.h"			// ListToClipboardHab
+#include "codepage.h"			// PickCodepage
+#include "fonts.h"			// SetPresParamFromFattrs
+#include "newview.h"
+#include "strips.h"			// chop_at_crnl, convert_nl_to_nul
+                   			// remove_first_occurence_of_character
+#include "strips.h"			// strip_lead_char, strip_trail_char
 #include "fm3dll.h"
 #include "fortify.h"
 
