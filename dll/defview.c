@@ -37,7 +37,15 @@
 #include "arccnrs.h"			// StartArcCnr
 #include "errutil.h"			// Dos_Error...
 #include "notebook.h"                   // external viewers
+#include "defview.h"
+#include "info.h"			// DrvInfoProc
+#include "assoc.h"			// ExecAssociation
+#include "info.h"			// FileInfoProc
+#include "valid.h"			// IsExecutable
+#include "srchpath.h"			// RunFM2Util
+#include "inis.h"			// StartIniEditor
 #include "fm3dll.h"
+#include "misc.h"			// ExecFile, ViewHelp
 
 static PSZ pszSrcFile = __FILE__;
 

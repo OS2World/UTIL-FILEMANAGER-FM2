@@ -17,6 +17,7 @@
 
 #include "dll\fm3dlg.h"
 #include "dll\fm3dll.h"
+#include "dll\killproc.h"                       // KillDlgProc
 
 int main(int argc, char *argv[])
 {
@@ -29,8 +30,8 @@ int main(int argc, char *argv[])
     hmq = WinCreateMsgQueue(hab, 256);
     if (hmq) {
       if (InitFM3DLL(hab, argc, argv)) {
-	WinDlgBox(HWND_DESKTOP,
-		  HWND_DESKTOP, KillDlgProc, FM3ModHandle, KILL_FRAME, NULL);
+        WinDlgBox(HWND_DESKTOP,
+                  HWND_DESKTOP, KillDlgProc, FM3ModHandle, KILL_FRAME, NULL);
       }
       DosSleep(250L);
       WinDestroyMsgQueue(hmq);

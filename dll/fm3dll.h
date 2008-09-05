@@ -190,33 +190,6 @@ RGB2;
 typedef RGB2 *PRGB2;
 #endif
 
-/**************************************************/
-/* Lazy Drag API's.                               */
-/**************************************************/
-
-BOOL APIENTRY DrgLazyDrag(HWND hwndSource,
-			  PDRAGINFO pdinfo,
-			  PDRAGIMAGE pdimg, ULONG cdimg, PVOID pRsvd);
-
-BOOL APIENTRY DrgCancelLazyDrag(VOID);
-
-BOOL APIENTRY DrgLazyDrop(HWND hwndTarget,
-			  ULONG ulOperation, PPOINTL pptlDrop);
-
-PDRAGINFO APIENTRY DrgQueryDraginfoPtr(PDRAGINFO pRsvd);
-
-PDRAGINFO APIENTRY DrgQueryDraginfoPtrFromHwnd(HWND hwndSource);
-
-PDRAGINFO APIENTRY DrgQueryDraginfoPtrFromDragitem(PDRAGITEM pditem);
-
-ULONG APIENTRY DrgQueryDragStatus(VOID);
-
-PDRAGINFO APIENTRY DrgReallocDraginfo(PDRAGINFO pdinfoOld, ULONG cditem);
-
- /* Drag Status Flags */
-#define DGS_DRAGINPROGRESS         0x0001	/* Standard Drag in Progress. */
-#define DGS_LAZYDRAGINPROGRESS     0x0002	/* Lazy Drag in Progress.     */
-
 #define LINES_PER_ARCSIG        21	// Lines in each archiver.bb2 definition
 #define CON_COLS                6
 #define INSTDATA(h)             WinQueryWindowPtr((h),QWL_USER)
@@ -456,166 +429,9 @@ typedef struct
 }
 EXTRDATA;
 
-/* init.c */
-VOID FindSwapperDat(VOID);
-BOOL InitFM3DLL(HAB hab, int argc, char **argv);
-HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
-
-/* flesh.c */
-BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent);
-BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);
-BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent);
-BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
-
-/* valid.c */
-INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
-int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
-	       FDATE *datevar2, FTIME *timevar2);
-int TestCDates(CDATE *datevar1, CTIME *timevar1, CDATE *datevar2, CTIME *timevar2);
-BOOL IsNewer(char *file1, char *file2);
-BOOL IsRoot(CHAR * filename);
-BOOL IsFileSame(CHAR * filename1, CHAR * filename2);
-INT IsFile(CHAR * filename);
-BOOL IsFullName(CHAR * filename);
-BOOL IsValidDir(CHAR * test);
-BOOL IsValidDrive(CHAR drive);
-CHAR *MakeValidDir(CHAR * path);
-BOOL IsExecutable(CHAR * filename);
-VOID FillInDriveFlags(VOID * dummy);
-VOID DriveFlagsOne(INT x);
-VOID ArgDriveFlags(INT argc, CHAR ** argv);
-CHAR *assign_ignores(CHAR * s);
-BOOL needs_quoting(CHAR * f);
-BOOL IsBinary(CHAR * str, ULONG len);
-BOOL TestBinary(CHAR * filename);
-BOOL ParentIsDesktop(HWND hwnd, HWND hwndParent);
-BOOL IsDesktop(HAB hab, HWND hwnd);
-char *IsVowel(char a);
-VOID GetDesktopName(CHAR * objectpath, ULONG size);
-char *RootName(char *filename);
-APIRET MakeFullName(char *filename);
-
-/* misc.c */
-BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
-VOID SetShiftState(VOID);
-void EmphasizeButton(HWND hwnd, BOOL on);
-void DrawTargetEmphasis(HWND hwnd, BOOL on);
-void BoxWindow(HWND hwnd, HPS hps, LONG color);
-VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl);
-void PaintSTextWindow(HWND hwnd, HPS hps);
-BOOL AdjustCnrColVis(HWND hwndCnr, CHAR * title, BOOL visible, BOOL toggle);
-BOOL AdjustCnrColRO(HWND hwndCnr, CHAR * title, BOOL readonly, BOOL toggle);
-VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds);
-VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds,
-			  BOOL compare);
-BOOL SetCnrCols(HWND hwndCnr, BOOL compare);
-MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
-		  CHAR * savename);
-VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL enable);
-BOOL ViewHelp(CHAR * filename);
-VOID CloseHelp(VOID);
-INT ExecFile(HWND hwnd, CHAR * filename);
-VOID SetDetailsSwitches(HWND hwnd, DETAILS_SETTINGS * pds);
-VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
-			   CHAR * directory, CHAR * keyroot, DETAILS_SETTINGS * pds,
-			   BOOL compare);
-VOID SetConditionalCascade(HWND hwndMenu, USHORT id, USHORT def);
-VOID SetSortChecks(HWND hwndMenu, INT sortflags);
-VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr);
-VOID LoadDetailsSwitches(CHAR * keyroot, DETAILS_SETTINGS * pds);
-HWND FindDirCnr(HWND hwndParent);
-VOID HeapThread(VOID * dummy);
-VOID FixSwitchList(HWND hwnd, CHAR * text);
-VOID QuickPopup(HWND hwnd, DIRCNRDATA * dcd, HWND hwndMenu, USHORT id);
-PMINIRECORDCORE CurrentRecord(HWND hwndCnr);
-BOOL PostMsg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID OpenEdit(HWND hwnd);
-VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2);
-HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id);
-SHORT AddToListboxBottom(HWND hwnd, CHAR * str);
-VOID SetSysMenu(HWND hwndSysMenu);
-VOID LoadLibPath(CHAR * str, LONG len);
-void SaySort(HWND hwnd, INT sortflags, BOOL archive);
-void SayView(HWND hwnd, ULONG flWindowAttr);
-void SayFilter(HWND hwnd, MASK * mask, BOOL archive);
-void SetViewMenu(HWND hwndMenu, ULONG flWindowAttr);
-char *GetCmdSpec(BOOL dos);
-void Broadcast(HAB hab, HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame);
-BOOL SwitchCommand(HWND hwndMenu, USHORT cmd);
-INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
-                         ULONGLONG ullFreeSpaceWhenComplete);
-
-/* mainwnd.c */
-ULONG CountDirCnrs(HWND hwndParent);
-HWND TopWindow(HWND hwndParent, HWND exclude);
-HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret);
-HWND FindDirCnrByName(CHAR * directory, BOOL restore);
-MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID GetNextWindowPos(HWND hwndClient, PSWP pswp, ULONG * ulCntR,
-		      ULONG * ulNumMinChildrenR);
-VOID TileChildren(HWND hwndClient, BOOL absolute);
-VOID FillClient(HWND hwndClient, PSWP pswp, PRECTL prectl, BOOL avoidtree);
-MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				 MPARAM mp2);
-MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-INT SaveDirCnrState(HWND hwndClient, CHAR * name);
-MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID BuildDriveBarButtons(HWND hwndT);
-VOID ResizeDrives(HWND hwndT, long xwidth);
-BOOL CloseChildren(HWND hwndClient);
-// VOID BuildTools(HWND hwndT, BOOL resize);
-void BubbleHelp(HWND hwnd, BOOL other, BOOL data, BOOL above, char *help);
-VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help);
-MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID MakeMainObjWin(VOID * args);
-
-/* mainwnd2.c */
-MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY FileListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-HWND StartFM32(HAB hab, INT argc, CHAR ** argv);
-
-/* treecnr.c */
-MRESULT EXPENTRY TreeStatProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				   MPARAM mp2);
-HWND StartTreeCnr(HWND hwndParent, ULONG flags);
-MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
-		 BOOL maketop);
-MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* presparm.c */
-VOID StoreWndPresParams(HWND hwnd, CHAR * tagname, HINI prof);
-
-#ifdef INCL_GPI
-VOID SetPresParams(HWND hwnd, RGB2 * back, RGB2 * fore, RGB2 * border,
-		   CHAR * font);
-#endif
-VOID CopyPresParams(HWND target, HWND source);
-VOID IfNoParam(HWND hwnd, CHAR * keyroot, ULONG size, PVOID attrvalue);
-VOID PresParamChanged(HWND hwnd, CHAR * keyroot, MPARAM mp1, MPARAM mp2);
-VOID RestorePresParams(HWND hwnd, CHAR * keyroot);
-VOID SavePresParams(HWND hwnd, CHAR * keyroot);
-
-/* dirs.c */
-APIRET save_dir2(CHAR * curdir);
-APIRET save_dir(CHAR * curdir);
-APIRET switch_to(CHAR * s);
-
 /* strips.c */
-VOID chop_at_crnl(PSZ pszSrc);
-PSZ convert_nl_to_nul(PSZ pszSrc);
 void strip_lead_char(char *pszStripChars, char *pszSrc);
 void strip_trail_char(char *pszStripChars, char *pszSrc);
-VOID remove_first_occurence_of_character(char *pszRemoveChar, char *pszSrc);
-VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc);
-
 #define lstrip(s)         strip_lead_char(" \t",(s))
 #define rstrip(s)         strip_trail_char(" \t",(s))
 #define stripcr(s)        strip_trail_char("\r\n",(s))
@@ -624,13 +440,61 @@ VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc);
 // Strip leading and trailing white and trail cr/nl
 #define bstripcr(s)       (strip_lead_char(" \t",(s)),strip_trail_char("\r\n \t",(s)))
 
+/* init.c */
+BOOL InitFM3DLL(HAB hab, int argc, char **argv);
+
+/* valid.c */
+INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
+BOOL IsRoot(CHAR * filename);
+INT IsFile(CHAR * filename);
+BOOL IsFullName(CHAR * filename);
+CHAR *MakeValidDir(CHAR * path);
+CHAR *assign_ignores(CHAR * s);
+BOOL needs_quoting(CHAR * f);
+BOOL TestBinary(CHAR * filename);
+BOOL ParentIsDesktop(HWND hwnd, HWND hwndParent);
+char *IsVowel(char a);
+char *RootName(char *filename);
+APIRET MakeFullName(char *filename);
+
+/* misc.c */
+BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
+VOID SetShiftState(VOID);
+void DrawTargetEmphasis(HWND hwnd, BOOL on);
+VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl);
+VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr);
+PMINIRECORDCORE CurrentRecord(HWND hwndCnr);
+BOOL PostMsg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2);
+HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id);
+char *GetCmdSpec(BOOL dos);
+void Broadcast(HAB hab, HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame);
+INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
+                         ULONGLONG ullFreeSpaceWhenComplete);
+
+/* mainwnd.c */
+VOID GetNextWindowPos(HWND hwndClient, PSWP pswp, ULONG * ulCntR,
+		      ULONG * ulNumMinChildrenR);
+VOID TileChildren(HWND hwndClient, BOOL absolute);
+
+#ifdef INCL_GPI
+VOID SetPresParams(HWND hwnd, RGB2 * back, RGB2 * fore, RGB2 * border,
+		   CHAR * font);
+#endif
+VOID CopyPresParams(HWND target, HWND source);
+VOID PresParamChanged(HWND hwnd, CHAR * keyroot, MPARAM mp1, MPARAM mp2);
+VOID RestorePresParams(HWND hwnd, CHAR * keyroot);
+
+/* dirs.c */
+APIRET save_dir2(CHAR * curdir);
+APIRET save_dir(CHAR * curdir);
+
 /* delims.c */
 char *skip_delim(char *a, register char *delim);
 char *to_delim(char *a, register char *delim);
 
 /* copyf.c */
-BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname);
-CHAR default_disk(VOID);
 APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...);
 char *MakeTempName(char *buffer, char *temproot, int type);
 
@@ -639,21 +503,16 @@ char *MakeTempName(char *buffer, char *temproot, int type);
 #define WPSCOPY 2
 #define WPSMOVE 4
 INT unlinkf(CHAR * string, ...);
-INT unlink_allf(CHAR * string, ...);
 INT wipeallf(CHAR * string, ...);
-INT make_deleteable(CHAR * filename);
 CHAR *TruncName(CHAR * oldname, CHAR * buffer);
 CHAR *GetLongName(CHAR * oldname, CHAR * buffer);
-BOOL WriteLongName(CHAR * filename, CHAR * longname);
 
 /* mkdir.c */
 APIRET SetDir(HWND hwndClient, HWND hwnd, CHAR * dir, INT flags);
-APIRET MassMkdir(HWND hwndClient, CHAR * dir);
 BOOL PMMkDir(HWND hwnd, CHAR * filename, BOOL copy);
 void SetTargetDir(HWND hwnd, BOOL justshow);
 
 /* srchpath.c */
-INT RunFM2Util(CHAR *appname, CHAR *filename);
 CHAR *first_path(CHAR * path, CHAR * ret);
 CHAR *searchapath(CHAR * path, CHAR * filename);
 CHAR *searchpath(CHAR * filename);
@@ -662,8 +521,6 @@ CHAR *searchpath(CHAR * filename);
 UINT literal(PSZ pszBuf);
 BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
 	      const BOOL fNotFileSpec);
-PSZ fixup(const PCH pachInBuf, PSZ pszOutBuf, const UINT cBufBytes,
-	  const UINT cInBytes);
 
 /* stristr.c */
 CHAR *stristr(const CHAR * t, const CHAR * s);
@@ -672,21 +529,13 @@ CHAR *strnstr(register CHAR * t, CHAR * s, LONG len);
 CHAR *findstring(CHAR * findthis, ULONG lenthis, CHAR * findin,
 		 ULONG lenin, BOOL insensitive);
 
-/* avv.c */
-VOID rewrite_archiverbb2(CHAR * archiverbb2);
-MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				  MPARAM mp2);
-VOID EditArchiverDefinition(HWND hwnd);
-
 /* systemf.c */
-BOOL ShowSession(HWND hwnd, PID pid);
 INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
 	       CHAR ** list, CHAR * prompt, PCSZ pszCallingFile, UINT uiLineNumber);
 INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    CHAR * directory, CHAR * environment,
 	    CHAR * formatstring, ...);
-HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
-          PROGTYPE * progt, ULONG fl, char *formatstring, ...);
+
 #define RUNTYPE_MASK  0xf
 #define SYNCHRONOUS   1
 #define ASYNCHRONOUS  2
@@ -707,92 +556,42 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 #define SEAMLESS      32768
 #define CHILD         65536
 
-/* cmdline.c */
-BOOL add_cmdline(CHAR * cmdline, BOOL big);
-VOID save_cmdlines(BOOL big);
-MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY CmdLine2DlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				 MPARAM mp2);
-
 /* chklist.c */
 VOID PosOverOkay(HWND hwnd);
-VOID CenterOverWindow(HWND hwnd);
 BOOL PopupMenu(HWND hwndParent, HWND hwndOwner, HWND hwndMenu);
-MRESULT EXPENTRY CheckListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* eas.c */
-VOID HexDump(HWND hwnd, CHAR * value, ULONG cbValue);
 HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail);
-VOID Free_FEAList(HOLDFEA * pFEA);
 MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
-	     BOOL silentfail);
-
-/* inis.c */
-MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-HWND StartIniEditor(HWND hwnd, CHAR * filename, INT flags);
 
 /* subj.c */
 INT Subject(HWND hwnd, CHAR * filename);
 
-/* dirsize.c */
-MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
 /* getnames.c */
 BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok);
 BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite);
-MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* input.c */
 MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* select.c */
 VOID UnHilite(HWND hwndCnr, BOOL all, CHAR *** list, ULONG ulItemsToUnHilite);
-VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
-		PCNRITEM pciParent, CHAR * filename, CHAR ** list);
-VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * mask, CHAR * text,
-	       BOOL arc);
-VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * mask,
-		 CHAR * text, BOOL arc);
 VOID Deselect(HWND hwndCnr);
-VOID HideAll(HWND hwndCnr);
-VOID RemoveAll(HWND hwndCnr, ULONGLONG * ullTotalBytes, ULONG * totalfiles);
 VOID MarkAll(HWND hwndCnr, BOOL quitit, BOOL target, BOOL source);
 VOID SetMask(CHAR * str, MASK * mask);
-VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent);
-VOID InvertAll(HWND hwndCnr);
-VOID SpecialSelect2(HWND hwndParent, INT action);
 
 /* viewer.c */
-MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND StartMLEEditor(HWND hwnd, INT flags, CHAR * filename, HWND hwndRestore);
 
-/* codepage.c */
-INT PickCodepage(HWND hwnd);
-
 /* fonts.c */
-VOID SetFont(HWND hwnd);
 FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags);
-VOID SetPresParamFromFattrs(HWND hwnd, FATTRS * fattrs,
-			    SHORT sNominalPointSize, FIXED fxPointSize);
 
 /* saveclip.c */
-BOOL SaveToClip(HWND hwnd, CHAR * text, BOOL append);
-VOID ListToClipboard(HWND hwnd, CHAR ** list, ULONG append);
 CHAR **ListFromClipboard(HWND hwnd);
-BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append);
-VOID ListToClipboardHab(HAB hab, CHAR ** list, ULONG append);
 CHAR **ListFromClipboardHab(HAB hab);
-MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				 MPARAM mp2);
-MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				    MPARAM mp2);
 
 /* filter.c */
 INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg);
-BOOL FilterAttrs(PCNRITEM pci, MASK * mask);
-VOID save_masks(VOID);
 MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				 MPARAM mp2);
 
@@ -800,180 +599,46 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
-/* extract.c */
-MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
 /* walkem.c */
-VOID load_udirs(VOID);
-VOID save_udirs(VOID);
-BOOL add_udir(BOOL userdirs, PSZ inpath);
-BOOL remove_udir(PSZ path);
-BOOL remove_ldir(PSZ path);
-VOID free_udirs(VOID);
-VOID free_ldir(VOID);
-VOID fill_setups_list(VOID);
-VOID load_setups(VOID);
-VOID save_setups(VOID);
-INT add_setup(PSZ stateName);
-INT remove_setup(PSZ stateName);
-VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, PSZ path,
-		     BOOL nounwriteable);
-MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY WalkAllDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY WalkCopyDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				 MPARAM mp2);
-MRESULT EXPENTRY WalkMoveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				 MPARAM mp2);
-MRESULT EXPENTRY WalkExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				    MPARAM mp2);
-MRESULT EXPENTRY WalkTargetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				   MPARAM mp2);
-MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY WalkTwoCmpDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				   MPARAM mp2);
-MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				   MPARAM mp2);
-
-/* assoc.c */
-INT ExecAssociation(HWND hwnd, CHAR * datafile);
-VOID EditAssociations(HWND hwnd);
-VOID load_associations(VOID);
-VOID save_associations(VOID);
-VOID free_associations(VOID);
 
 /*draglist.c */
 HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 		CHAR * directory, BOOL moveok);
-HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok);
-HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok);
-BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd);
 
 /* droplist.c */
 void DropHelp(MPARAM mp1, MPARAM mp2, HWND hwnd, char *text);
 BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2);
 BOOL GetOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen);
-BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen);
-BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
-		 char *buffer2, ULONG buflen2);
 LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
 		     MPARAM mp1, MPARAM mp2);
 VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo);
 BOOL CheckPmDrgLimit(PDRAGINFO pDInfo);
 
 /* shadow.c */
-HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
-			    CHAR * cnr);
-HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
-			 CHAR * cnr);
-HOBJECT CreateFolderObject(CHAR * objtitle, CHAR * cnr);
-HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
-			   BOOL executable, CHAR * cnr);
-VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
-		 CHAR * foldername);
 VOID OpenObject(CHAR * filename, CHAR * type, HWND hwnd);
-BOOL RunSeamless(CHAR * exename, CHAR * args, HWND hwnd);
-
-/* printer.c */
-BOOL PrinterReady(CHAR * printdevname);
-BOOL SayPrinterReady(HWND hwnd);
-VOID PrintListThread(VOID * arg);
-MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* attribs.c */
-MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				 MPARAM mp2);
-
-/* rename.c */
-MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* findrec.c */
 PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
 		       BOOL partial, BOOL partmatch, BOOL noenv);
-PCNRITEM FindParentRecord(HWND hwndCnr, PCNRITEM pciC);
-VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi);
-
-/* update.c */
-HPOINTER SelectDriveIcon(PCNRITEM pci);
-PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
-			 DIRCNRDATA * dcd);
-BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
-		   DIRCNRDATA * dcd);
-
-/* info.c */
-MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 #if defined(__IBMC__)
 /* fsopen.c */
 FILE *_fsopen(CHAR * filename, CHAR * mode, INT sharemode, ...);
 #endif
 
-/* seticon.c */
-MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* objcnr.c */
-MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* sortcnr.c */
-SHORT APIENTRY SortTreeCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
-			   PVOID pStorage);
-SHORT APIENTRY SortDirCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
-			  PVOID pStorage);
-SHORT APIENTRY SortCollectorCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2,
-				PVOID pStorage);
-SHORT SortCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2, INT Sortflags);
-
 /* collect.c */
-MRESULT EXPENTRY CollectorClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-					MPARAM mp2);
-MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				   MPARAM mp2);
 HWND StartCollector(HWND hwndParent, INT flags);
-MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-                                     MPARAM mp2);
-
-/* instant.c */
-MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* undel.c */
 MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				 MPARAM mp2);
 
 /* killproc.c */
-MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 CHAR *GetDosPgmName(PID pid, CHAR * string);
 
-
-/* sysinfo.c */
-MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* objwin.c */
-MRESULT EXPENTRY ObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID MakeObjWin(VOID * args);
-
-/* progstup.c */
-MRESULT EXPENTRY ProgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* key.c */
-MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
 /* notify.c */
-MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND Notify(char *text);
-HWND DoNotify(char *text);
-VOID NotifyError(CHAR * filename, APIRET error);
-VOID StartNotes(CHAR * s);
-BOOL AddNote(CHAR * note);
-VOID EndNote(VOID);
-VOID ShowNote(VOID);
-VOID HideNote(VOID);
-
-/* winlist.c */
-VOID WindowList(HWND hwnd);
-
-/* viewinf.c */
-MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* commafmt.c */
 size_t commafmt(PSZ pszBuf, UINT cBufSize, LONG lNumber);
@@ -983,81 +648,21 @@ size_t CommaFmtULL(char *pszBuf, UINT cBufSize, ULONGLONG ullNumber,
 		   CHAR chPreferred);
 
 /* autoview.c */
-BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
-	     CHAR * data);
-BOOL PutComments(HWND hwnd, CHAR * filename, CHAR * comments);
-MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-ULONG CreateHexDump(CHAR * value, ULONG cbValue, CHAR * ret, ULONG retlen,
-		    ULONG startval, BOOL longlead);
-
-/* menu.c */
-BOOL AddToMenu(CHAR * filename, HWND hwndMenu);
-
-/* worker.c */
-VOID MassAction(VOID * args);
-VOID Action(VOID * args);
-
-/* fm2cmd.c */
-BOOL FM2Command(CHAR * directory, CHAR * command);
-
-/* seeall.c */
-MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY SeeStatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-HWND StartSeeAll(HWND hwndParent, BOOL standalone, CHAR * startpath);
+MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
+				 MPARAM mp2);
 
 /* newview.c */
-MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY ViewStatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
 		 HWND hwndRestore);
 
-/* colors.c */
-MRESULT EXPENTRY ColorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
 /* defview.c */
-BOOL ShowMultimedia(CHAR * filename);
-VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
-		 ULONG flags, CHAR * filename);
 VOID DefaultViewKeys(HWND hwnd, HWND hwndFrame, HWND hwndParent,
 		     SWP * swp, CHAR * filename);
-#define QuickView(h,f) DefaultView(h,(HWND)0,(HWND)0,NULL,0,f)
-#define QuickEdit(h,f) DefaultView(h,(HWND)0,(HWND)0,NULL,8,f)
-
-/* catalog.c */
-MRESULT EXPENTRY CatalogProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* uudecode.c */
-int UUD(char *filename, char *outname);
-MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* loadbmp.c */
-HBITMAP LoadBitmapFromFileNum(USHORT id);
-HBITMAP LoadBitmapFromFile(CHAR * pszFileName);
-
-/* remap.c */
-MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
-/* timer.c */
-BOOL StartTimer(void);
-void StopTimer(void);
-
-/* grep2.c */
-MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* common.c */
-MRESULT EXPENTRY CommonFrameWndProc(USHORT id,
-				    HWND hwnd,
-				    ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY CommonTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-void CommonTextPaint(HWND hwnd, HPS hps);
-void CommonCreateTextChildren(HWND hwnd, char *class, USHORT * ids);
-void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd);
-void CommonCreateMainChildren(HWND hwnd, SWP * swp);
-MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
-				   MPARAM mp2);
 MRESULT EXPENTRY CommonTextButton(HWND hwnd, ULONG msg, MPARAM mp1,
 				  MPARAM mp2);
-MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND OpenDirCnr(HWND hwnd, HWND hwndParent, HWND hwndRestore,
 		BOOL noautotile, char *directory);
 VOID IncrThreadUsage(VOID);

@@ -23,6 +23,7 @@
 #include "dll\version.h"
 #include "dll\errutil.h"
 #include "dll\fortify.h"
+#include "dll\init.h"			// StartFM3
 #include "dll\fm3dll.h"
 
 int main(int argc, char *argv[])
