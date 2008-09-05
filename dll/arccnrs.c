@@ -87,7 +87,25 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
+#include "worker.h"         		// Action, MassAction
+#include "avv.h"			// ArcReviewDlgProc, rewrite_archiverbb2
+#include "chklist.h"			// CenterOverWindow, CheckListProc
+#include "common.h"			// CommonCreateTextChildren, CommonFrameWndProc, CommonTextPaint
+#include "draglist.h"			// DragOne
+#include "valid.h"			// GetDesktopName, TestCDates
+#include "mainwnd.h"			// MakeBubble, TopWindowName
+#include "objwin.h"			// MakeObjWin
+#include "shadow.h"			// MakeShadows
+#include "objcnr.h"			// ObjCnrDlgProc
+#include "printer.h"			// PrintListThread
+#include "srchpath.h"			// RunFM2Util
+#include "misc.h"			// SayFilter, SaySort
+#include "select.h"			// SelectAll, SelectList
+#include "findrec.h"			// ShowCnrRecord
+#include "walkem.h"			// WalkExtractDlgProc
 #include "fm3dll.h"
+#include "misc.h"         		// AdjustCnrColVis, QuickPopup, SetSortChecks, SwitchCommand
+#include "select.h"			// DeselectAll, InvertAll
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

@@ -24,6 +24,9 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "copyf.h"			// AdjustWildcardName
+#include "rename.h"
+#include "valid.h"			// TestFDates
 #include "fm3dll.h"
 
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

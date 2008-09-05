@@ -17,6 +17,7 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "findrec.h"
 
 PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
 		       BOOL partial, BOOL partmatch, BOOL noenv)

@@ -29,6 +29,7 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "errutil.h"			// Dos_Error...
+#include "literal.h"
 #include "fm3dll.h"
 #include "fortify.h"
 

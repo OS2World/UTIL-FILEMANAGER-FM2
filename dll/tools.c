@@ -39,6 +39,7 @@
 #include "strutil.h"			// GetPString
 #include "pathutil.h"                   // BldFullPathName
 #include "fortify.h"
+#include "loadbmp.h"			// LoadBitmapFromFileNum
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

@@ -28,6 +28,11 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "getnames.h"			// CustomFileDlg
+#include "chklist.h"
+#include "info.h"			// FileInfoProc
+#include "defview.h"			// QuickView
+#include "valid.h"			// IsExecutable
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

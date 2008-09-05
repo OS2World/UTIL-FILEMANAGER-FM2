@@ -42,6 +42,11 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "attribs.h"			// AttrListDlgProc
+#include "defview.h"			// DefaultView
+#include "info.h"
+#include "valid.h"			// IsBinary
+#include "seticon.h"			// SetIconDlgProc
 #include "fm3dll.h"
 #include "fortify.h"
 

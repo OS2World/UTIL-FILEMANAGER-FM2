@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "commafmt.h"
 #include "fm3dll.h"
 
 size_t commafmt(char *pszBuf,	// Output buffer
