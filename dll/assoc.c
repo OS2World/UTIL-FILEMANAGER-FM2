@@ -37,6 +37,7 @@
 #include "pathutil.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "assoc.h"
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -68,6 +69,9 @@ static LINKASSOC *asshead = NULL, *asstail = NULL;
 static BOOL assloaded = FALSE, replace = FALSE;
 
 static PSZ pszSrcFile = __FILE__;
+
+static VOID load_associations(VOID);
+static VOID save_associations(VOID);
 
 MRESULT EXPENTRY AssocTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {

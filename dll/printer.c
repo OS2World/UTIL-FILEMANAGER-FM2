@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -31,6 +30,9 @@
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "notify.h"         		// AddNote
+#include "defview.h"			// QuickView
+#include "printer.h"
 #include "fm3dll.h"
 #include "fortify.h"
 
@@ -39,6 +41,9 @@
 static PSZ pszSrcFile = __FILE__;
 
 static HMTX PrintSem = 0;
+
+static BOOL PrinterReady(CHAR * printdevname);
+static BOOL SayPrinterReady(HWND hwnd);
 
 BOOL PrinterReady(CHAR * printdevname)
 {

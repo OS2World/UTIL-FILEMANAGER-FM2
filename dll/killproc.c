@@ -38,6 +38,8 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "pathutil.h"			// BldFullPathName
+#include "killproc.h"
+#include "systemf.h"			// ShowSession
 #include "fm3dll.h"
 #include "fortify.h"
 

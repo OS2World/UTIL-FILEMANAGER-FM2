@@ -11,7 +11,7 @@
   14 Sep 02 SHL Drop obsolete debug code
   14 Oct 02 SHL Drop obsolete debug code
   10 Nov 02 SHL docopyf - don't forget to terminate longname
-		optimize longname logic
+                optimize longname logic
   01 Aug 04 SHL Rework lstrip/rstrip usage
   28 May 05 SHL Drop debug code
   14 Jul 06 SHL Use Runtime_Error
@@ -33,20 +33,25 @@
 #define INCL_LONGLONG
 
 #include "fm3str.h"
-#include "errutil.h"			// Dos_Error...
-#include "strutil.h"			// GetPString
+#include "errutil.h"                    // Dos_Error...
+#include "strutil.h"                    // GetPString
+#include "copyf.h"
+#include "literal.h"                    // fixup
 #include "fm3dll.h"
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
+//static CHAR default_disk(VOID);
+//static INT unlink_allf(CHAR * string, ...);
+
 #ifndef WinMoveObject
 HOBJECT APIENTRY WinMoveObject(HOBJECT hObjectofObject,
-			       HOBJECT hObjectofDest, ULONG ulReserved);
+                               HOBJECT hObjectofDest, ULONG ulReserved);
 #endif
 #ifndef WinCopyObject
 HOBJECT APIENTRY WinCopyObject(HOBJECT hObjectofObject,
-			       HOBJECT hObjectofDest, ULONG ulReserved);
+                               HOBJECT hObjectofDest, ULONG ulReserved);
 #endif
 
 char *MakeTempName(char *buffer, char *temproot, INT type)
@@ -89,13 +94,13 @@ char *MakeTempName(char *buffer, char *temproot, INT type)
     if ((*p) + 1 < 'Z' + 1) {
       (*p)++;
       while (strchr("*?<>\":/\\|+=;,[]. ", *p))
-	(*p)++;
+        (*p)++;
       *p = toupper(*p);
     }
     else {
       p--;
       if (p >= o && *p == '.')
-	p--;
+        p--;
       goto Loop;
     }
   }
@@ -125,10 +130,10 @@ CHAR *TruncName(CHAR * oldname, CHAR * buffer)
   o = p;
   f = oldname + (f - buffer);
   strupr(buffer);
-  while (*f == '.')			/* skip leading '.'s */
+  while (*f == '.')                     /* skip leading '.'s */
     f++;
   s = f;
-  while (*f && *f != '.' && f < s + 8) {	/* skip past rootname */
+  while (*f && *f != '.' && f < s + 8) {        /* skip past rootname */
     *p = toupper(*f);
     p++;
     f++;
@@ -183,13 +188,13 @@ CHAR *TruncName(CHAR * oldname, CHAR * buffer)
     if ((*p) + 1 < 'Z' + 1) {
       (*p)++;
       while (strchr("*?<>\":/\\|+=;,[]. ", *p))
-	(*p)++;
+        (*p)++;
       *p = toupper(*p);
     }
     else {
       p--;
       if (p >= o && *p == '.')
-	p--;
+        p--;
       goto Loop;
     }
   }
@@ -217,7 +222,7 @@ CHAR *GetLongName(CHAR * oldname, CHAR * longname)
     value = longname;
     while (*value) {
       if (*value == '/')
-	*value = '\\';
+        *value = '\\';
       value++;
     }
     value = strrchr(longname, '\\');
@@ -234,25 +239,25 @@ CHAR *GetLongName(CHAR * oldname, CHAR * longname)
       pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
       pfealist = xmallocz(1536, pszSrcFile, __LINE__);
       if (pfealist) {
-	pfealist->cbList = 1024;
-	eaop.fpGEA2List = pgealist;
-	eaop.fpFEA2List = pfealist;
-	eaop.oError = 0L;
-	DosError(FERR_DISABLEHARDERR);
-	rc = DosQueryPathInfo(oldname,
-			      FIL_QUERYEASFROMLIST,
-			      (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-	if (!rc) {
-	  pfea = &eaop.fpFEA2List->list[0];
-	  value = pfea->szName + pfea->cbName + 1;
-	  value[pfea->cbValue] = 0;
-	  if (*(USHORT *) value == EAT_ASCII)
-	    strncat(longname,
-		    value + (sizeof(USHORT) * 2),
-		    CCHMAXPATH - strlen(longname));
-	  longname[CCHMAXPATH - 1] = 0;
-	}
-	free(pfealist);
+        pfealist->cbList = 1024;
+        eaop.fpGEA2List = pgealist;
+        eaop.fpFEA2List = pfealist;
+        eaop.oError = 0L;
+        DosError(FERR_DISABLEHARDERR);
+        rc = DosQueryPathInfo(oldname,
+                              FIL_QUERYEASFROMLIST,
+                              (PVOID) & eaop, (ULONG) sizeof(EAOP2));
+        if (!rc) {
+          pfea = &eaop.fpFEA2List->list[0];
+          value = pfea->szName + pfea->cbName + 1;
+          value[pfea->cbValue] = 0;
+          if (*(USHORT *) value == EAT_ASCII)
+            strncat(longname,
+                    value + (sizeof(USHORT) * 2),
+                    CCHMAXPATH - strlen(longname));
+          longname[CCHMAXPATH - 1] = 0;
+        }
+        free(pfealist);
       }
       free(pgealist);
     }
@@ -289,10 +294,10 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
   else
     ealen = sizeof(FEALIST) + 10;
   rc = DosAllocMem((PPVOID) & pfealist,
-		   ealen + 32L, OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+                   ealen + 32L, OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
+              GetPString(IDS_OUTOFMEMORY));
   else {
     memset(pfealist, 0, ealen + 1);
     pfealist->cbList = ealen;
@@ -316,7 +321,7 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
     eaop.oError = 0L;
     DosError(FERR_DISABLEHARDERR);
     rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE,
-			 &eaop, sizeof(eaop), DSPI_WRTTHRU);
+                         &eaop, sizeof(eaop), DSPI_WRTTHRU);
     DosFreeMem(pfealist);
     if (rc)
       return FALSE;
@@ -340,20 +345,21 @@ BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname)
       strcpy(dest, p + 1);
       p = strrchr(oldname, '\\');
       if (p && *(p + 1)) {
-	strcpy(srce, p + 1);
-	DosError(FERR_DISABLEHARDERR);
-	if (!DosEditName(1L, srce, dest, result, (ULONG) sizeof(result))) {
-	  p = strrchr(newname, '\\');
-	  p++;
-	  strcpy(p, result);
-	  ret = TRUE;
-	}
+        strcpy(srce, p + 1);
+        DosError(FERR_DISABLEHARDERR);
+        if (!DosEditName(1L, srce, dest, result, (ULONG) sizeof(result))) {
+          p = strrchr(newname, '\\');
+          p++;
+          strcpy(p, result);
+          ret = TRUE;
+        }
       }
     }
   }
   return ret;
 }
 
+#if 0   // JBS
 CHAR default_disk(VOID)
 {
   ULONG ulDriveNum, ulDriveMap;
@@ -362,6 +368,7 @@ CHAR default_disk(VOID)
   DosQCurDisk(&ulDriveNum, &ulDriveMap);
   return (CHAR) toupper((INT) ulDriveNum) + '@';
 }
+#endif
 
 #ifdef NEVER
 
@@ -384,19 +391,19 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
       /* build target name */
 
       if (fb.attrFile & FILE_DIRECTORY) {
-	DosError(FERR_ENABLEHARDERR);
-	rc = DosCreateDir();
-	if (rc == ERROR_INVALID_NAME || rc == ERROR_FILENAME_EXCED_RANGE) {
+        DosError(FERR_ENABLEHARDERR);
+        rc = DosCreateDir();
+        if (rc == ERROR_INVALID_NAME || rc == ERROR_FILENAME_EXCED_RANGE) {
 
-	  /* truncate directory name */
-	  /* create that directory */
-	  /* update containers for name used */
+          /* truncate directory name */
+          /* create that directory */
+          /* update containers for name used */
 
-	}
-	rc = docopyallf(type,, "%s",);	/* recurse */
+        }
+        rc = docopyallf(type,, "%s",);  /* recurse */
       }
       else
-	rc = docopyf(type,, "%s",);	/* copy file */
+        rc = docopyf(type,, "%s",);     /* copy file */
       DosError(FERR_DISABLEHARDERR);
     } while (!rc && !DosFindNext());
     DosFindClose(hdir);
@@ -433,18 +440,18 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
   vsprintf(fullnewname, newname, ap);
   va_end(ap);
 
-  if (!oldname || !*oldname || !*fullnewname)	/* bad string args */
+  if (!oldname || !*oldname || !*fullnewname)   /* bad string args */
     return (APIRET) - 1;
 
   DosError(FERR_DISABLEHARDERR);
   if (DosQueryPathInfo(oldname, FIL_STANDARDL, &st, sizeof(FILESTATUS3L)))
-    return (APIRET) - 2;		/* no source */
+    return (APIRET) - 2;                /* no source */
 
   AdjustWildcardName(oldname, fullnewname);
   MakeFullName(oldname);
   MakeFullName(fullnewname);
-  olddisk = toupper(*oldname);		/* source drive */
-  newdisk = toupper(*fullnewname);	/* destination drive */
+  olddisk = toupper(*oldname);          /* source drive */
+  newdisk = toupper(*fullnewname);      /* destination drive */
   if (!(driveflags[toupper(*oldname) - 'A'] & DRIVE_NOLONGNAMES))
     *longname = 0;
   else {
@@ -452,7 +459,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
     if (*longname) {
       p = RootName(longname);
       if (p != longname)
-	memmove(longname, p, strlen(p) + 1);
+        memmove(longname, p, strlen(p) + 1);
     }
   }
   /* If root name changed make sure longname EA goes away */
@@ -472,19 +479,19 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
       ret = ERROR_FILE_NOT_FOUND;
       hobjsrc = WinQueryObject(oldname);
       if (hobjsrc) {
-	strcpy(dir, fullnewname);
-	p = strrchr(dir, '\\');
-	if (p < dir + 3)
-	  p++;
-	*p = 0;
-	ret = ERROR_PATH_NOT_FOUND;
-	hobjdest = WinQueryObject(dir);
-	if (hobjdest) {
-	  ret = ERROR_GEN_FAILURE;
-	  hobjsrc = WinMoveObject(hobjsrc, hobjdest, 0);
-	  if (hobjsrc)
-	    ret = 0;
-	}
+        strcpy(dir, fullnewname);
+        p = strrchr(dir, '\\');
+        if (p < dir + 3)
+          p++;
+        *p = 0;
+        ret = ERROR_PATH_NOT_FOUND;
+        hobjdest = WinQueryObject(dir);
+        if (hobjdest) {
+          ret = ERROR_GEN_FAILURE;
+          hobjsrc = WinMoveObject(hobjsrc, hobjdest, 0);
+          if (hobjsrc)
+            ret = 0;
+        }
       }
     }
     return ret;
@@ -497,139 +504,139 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
       ret = ERROR_FILE_NOT_FOUND;
       hobjsrc = WinQueryObject(oldname);
       if (hobjsrc) {
-	strcpy(dir, fullnewname);
-	p = strrchr(dir, '\\');
-	if (p < dir + 3)
-	  p++;
-	*p = 0;
-	ret = ERROR_PATH_NOT_FOUND;
-	hobjdest = WinQueryObject(dir);
-	if (hobjdest) {
-	  ret = ERROR_GEN_FAILURE;
-	  hobjsrc = WinCopyObject(hobjsrc, hobjdest, 0);
-	  if (hobjsrc)
-	    ret = 0;
-	}
+        strcpy(dir, fullnewname);
+        p = strrchr(dir, '\\');
+        if (p < dir + 3)
+          p++;
+        *p = 0;
+        ret = ERROR_PATH_NOT_FOUND;
+        hobjdest = WinQueryObject(dir);
+        if (hobjdest) {
+          ret = ERROR_GEN_FAILURE;
+          hobjsrc = WinCopyObject(hobjsrc, hobjdest, 0);
+          if (hobjsrc)
+            ret = 0;
+        }
       }
     }
     return ret;
 
   case MOVE:
     *dir = 0;
-    if (olddisk == newdisk) {		/* same drive */
+    if (olddisk == newdisk) {           /* same drive */
       /* make temporary copy in case move fails */
       if (IsFile(fullnewname) != -1 && stricmp(oldname, fullnewname)) {
-	strcpy(dir, fullnewname);
-	p = strrchr(dir, '\\');
-	if (p)
-	  *p = 0;
-	strcat(dir, "\\");
-	MakeTempName(dir, NULL, 0);
-	if (DosMove(fullnewname, dir))
-	  *dir = 0;
+        strcpy(dir, fullnewname);
+        p = strrchr(dir, '\\');
+        if (p)
+          *p = 0;
+        strcat(dir, "\\");
+        MakeTempName(dir, NULL, 0);
+        if (DosMove(fullnewname, dir))
+          *dir = 0;
       }
       DosError(FERR_DISABLEHARDERR);
-      ret = DosMove(oldname, fullnewname);	/* move it */
-      if (ret && *dir) {		/* failed -- clean up */
-	DosError(FERR_DISABLEHARDERR);
-	if (!DosMove(dir, fullnewname))
-	  Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(dir), MPVOID);
+      ret = DosMove(oldname, fullnewname);      /* move it */
+      if (ret && *dir) {                /* failed -- clean up */
+        DosError(FERR_DISABLEHARDERR);
+        if (!DosMove(dir, fullnewname))
+          Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(dir), MPVOID);
       }
       else if (!ret && *dir) {
-	if (!IsFile(dir)) {
-	  if (!strchr(dir, '?') && !strchr(dir, '*'))
-	    wipeallf("%s\\*", dir);
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosDeleteDir(dir)) {
-	    make_deleteable(dir);
-	    DosDeleteDir(dir);
-	  }
-	}
-	else if (IsFile(dir) > 0) {
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosForceDelete(dir)) {
-	    make_deleteable(dir);
-	    DosForceDelete(dir);
-	  }
-	  if (zaplong)
-	    ZapLongName(dir);
-	  Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(dir), MPVOID);
-	}
+        if (!IsFile(dir)) {
+          if (!strchr(dir, '?') && !strchr(dir, '*'))
+            wipeallf("%s\\*", dir);
+          DosError(FERR_DISABLEHARDERR);
+          if (DosDeleteDir(dir)) {
+            make_deleteable(dir);
+            DosDeleteDir(dir);
+          }
+        }
+        else if (IsFile(dir) > 0) {
+          DosError(FERR_DISABLEHARDERR);
+          if (DosForceDelete(dir)) {
+            make_deleteable(dir);
+            DosForceDelete(dir);
+          }
+          if (zaplong)
+            ZapLongName(dir);
+          Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(dir), MPVOID);
+        }
       }
     }
-    else {				/* different drives */
+    else {                              /* different drives */
       DosError(FERR_DISABLEHARDERR);
-      ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);	/* <=-NOTE! */
+      ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);       /* <=-NOTE! */
       if (ret == ERROR_DISK_CHANGE) {
-	DosError(FERR_ENABLEHARDERR);
-	ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);
-	diskchange = TRUE;
+        DosError(FERR_ENABLEHARDERR);
+        ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);
+        diskchange = TRUE;
       }
       if (ret == ERROR_INVALID_NAME || ret == ERROR_FILENAME_EXCED_RANGE) {
-	if (TruncName(fullnewname, shortname)) {	/* make 8.3 filename */
-	  DosError(FERR_DISABLEHARDERR);
-	  ret = DosCopy(oldname, shortname, DCPY_EXISTING);
-	  if (!ret) {			/* success -- write longname ea */
-	    WriteLongName(shortname, fullnewname);
-	    strcpy(fullnewname, shortname);
-	    /* broadcast fixup msg to windows */
-	    Broadcast((HAB) 0,
-		      hwndMain, UM_UPDATERECORD, MPFROMP(shortname), MPVOID);
-	  }
-	}
+        if (TruncName(fullnewname, shortname)) {        /* make 8.3 filename */
+          DosError(FERR_DISABLEHARDERR);
+          ret = DosCopy(oldname, shortname, DCPY_EXISTING);
+          if (!ret) {                   /* success -- write longname ea */
+            WriteLongName(shortname, fullnewname);
+            strcpy(fullnewname, shortname);
+            /* broadcast fixup msg to windows */
+            Broadcast((HAB) 0,
+                      hwndMain, UM_UPDATERECORD, MPFROMP(shortname), MPVOID);
+          }
+        }
       }
       else if (!ret && *longname) {
 
-	CHAR fixname[CCHMAXPATH];
+        CHAR fixname[CCHMAXPATH];
 
-	strcpy(fixname, fullnewname);
-	p = strrchr(fixname, '\\');
-	if (p) {
-	  p++;
-	  *p = 0;
-	}
-	strcat(fixname, longname);
-	DosError(FERR_DISABLEHARDERR);
-	DosMove(fullnewname, fixname);
-	strcpy(fullnewname, fixname);
-	if (zaplong)
-	  ZapLongName(fixname);
-	Broadcast((HAB) 0,
-		  hwndMain, UM_UPDATERECORD, MPFROMP(fixname), MPVOID);
+        strcpy(fixname, fullnewname);
+        p = strrchr(fixname, '\\');
+        if (p) {
+          p++;
+          *p = 0;
+        }
+        strcat(fixname, longname);
+        DosError(FERR_DISABLEHARDERR);
+        DosMove(fullnewname, fixname);
+        strcpy(fullnewname, fixname);
+        if (zaplong)
+          ZapLongName(fixname);
+        Broadcast((HAB) 0,
+                  hwndMain, UM_UPDATERECORD, MPFROMP(fixname), MPVOID);
       }
-      if (!ret) {			/* double-check success */
-	DosError(FERR_DISABLEHARDERR);
-	rc = DosQueryPathInfo(fullnewname,
-			      FIL_STANDARDL, &st2, sizeof(FILESTATUS3L));
-	if (rc == ERROR_DISK_CHANGE) {
-	  DosError(FERR_ENABLEHARDERR);
-	  rc = DosQueryPathInfo(fullnewname,
-				FIL_STANDARDL, &st2, sizeof(FILESTATUS3L));
-	}
-	if (!rc && st2.cbFile == st.cbFile) {	/* seems to have worked... */
-	  DosError(FERR_DISABLEHARDERR);
-	  if (diskchange) {
-	    DosError(FERR_ENABLEHARDERR);
-	    DosQueryPathInfo(oldname, FIL_STANDARDL, &dummy, sizeof(FILESTATUS3L));	/* force disk change */
-	  }
-	  if (!(st2.attrFile & FILE_DIRECTORY))	/* erase file */
-	    unlinkf("%s", oldname);
-	  else {			/* remove directory */
-	    wipeallf("%s\\*", oldname);
-	    DosError(FERR_DISABLEHARDERR);
-	    if (DosDeleteDir(oldname)) {
-	      make_deleteable(oldname);
-	      DosDeleteDir(oldname);
-	    }
-	  }
-	}
+      if (!ret) {                       /* double-check success */
+        DosError(FERR_DISABLEHARDERR);
+        rc = DosQueryPathInfo(fullnewname,
+                              FIL_STANDARDL, &st2, sizeof(FILESTATUS3L));
+        if (rc == ERROR_DISK_CHANGE) {
+          DosError(FERR_ENABLEHARDERR);
+          rc = DosQueryPathInfo(fullnewname,
+                                FIL_STANDARDL, &st2, sizeof(FILESTATUS3L));
+        }
+        if (!rc && st2.cbFile == st.cbFile) {   /* seems to have worked... */
+          DosError(FERR_DISABLEHARDERR);
+          if (diskchange) {
+            DosError(FERR_ENABLEHARDERR);
+            DosQueryPathInfo(oldname, FIL_STANDARDL, &dummy, sizeof(FILESTATUS3L));     /* force disk change */
+          }
+          if (!(st2.attrFile & FILE_DIRECTORY)) /* erase file */
+            unlinkf("%s", oldname);
+          else {                        /* remove directory */
+            wipeallf("%s\\*", oldname);
+            DosError(FERR_DISABLEHARDERR);
+            if (DosDeleteDir(oldname)) {
+              make_deleteable(oldname);
+              DosDeleteDir(oldname);
+            }
+          }
+        }
       }
     }
     return ret;
 
   case COPY:
     DosError(FERR_DISABLEHARDERR);
-    ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);	/* <=-NOTE! */
+    ret = DosCopy(oldname, fullnewname, DCPY_EXISTING); /* <=-NOTE! */
     if (ret == ERROR_DISK_CHANGE) {
       DosError(FERR_ENABLEHARDERR);
       ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);
@@ -637,14 +644,14 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
     }
     if (ret == ERROR_INVALID_NAME || ret == ERROR_FILENAME_EXCED_RANGE) {
       if (TruncName(fullnewname, shortname)) {
-	DosError((diskchange) ? FERR_ENABLEHARDERR : FERR_DISABLEHARDERR);
-	ret = DosCopy(oldname, shortname, DCPY_EXISTING);
-	if (!ret) {
-	  WriteLongName(shortname, fullnewname);
-	  strcpy(fullnewname, shortname);
-	  Broadcast((HAB) 0,
-		    hwndMain, UM_UPDATERECORD, MPFROMP(shortname), MPVOID);
-	}
+        DosError((diskchange) ? FERR_ENABLEHARDERR : FERR_DISABLEHARDERR);
+        ret = DosCopy(oldname, shortname, DCPY_EXISTING);
+        if (!ret) {
+          WriteLongName(shortname, fullnewname);
+          strcpy(fullnewname, shortname);
+          Broadcast((HAB) 0,
+                    hwndMain, UM_UPDATERECORD, MPFROMP(shortname), MPVOID);
+        }
       }
     }
     else if (!ret && *longname) {
@@ -654,23 +661,23 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
       strcpy(fixname, fullnewname);
       p = strrchr(fixname, '\\');
       if (p) {
-	p++;
-	*p = 0;
+        p++;
+        *p = 0;
       }
       strcat(fixname, longname);
       DosError(FERR_DISABLEHARDERR);
       DosMove(fullnewname, fixname);
       if (zaplong)
-	ZapLongName(fixname);
+        ZapLongName(fixname);
       Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(fixname), MPVOID);
     }
     return ret;
 
-  default:				/* shouldn't happen */
+  default:                              /* shouldn't happen */
     Runtime_Error(pszSrcFile, __LINE__, "bad case %u", type);
     break;
   }
-  return (APIRET) - 3;			/* bad type */
+  return (APIRET) - 3;                  /* bad type */
 }
 
 INT make_deleteable(CHAR * filename)
@@ -716,7 +723,7 @@ INT wipeallf(CHAR *string, ...)
   if (!str)
     return -1;
 
-  {					/* safety net -- disallow deleting a root dir or partial name */
+  {                                     /* safety net -- disallow deleting a root dir or partial name */
     CHAR temp;
 
     p = strrchr(str, '\\');
@@ -725,17 +732,17 @@ INT wipeallf(CHAR *string, ...)
       temp = *p;
       *p = 0;
       if (IsRoot(str) || !IsFullName(str)) {
-	/* under no circumstances! */
-	Runtime_Error(pszSrcFile, __LINE__, "bad name %s", str);
-	free(str);
-	return -1;
+        /* under no circumstances! */
+        Runtime_Error(pszSrcFile, __LINE__, "bad name %s", str);
+        free(str);
+        return -1;
       }
       *p = temp;
     }
   }
 
   p = s;
-  p = strrchr(s, '\\');			/* strip s to just path */
+  p = strrchr(s, '\\');                 /* strip s to just path */
   if (!p)
     p = strrchr(s, ':');
   if (p) {
@@ -763,8 +770,8 @@ INT wipeallf(CHAR *string, ...)
 
   DosError(FERR_DISABLEHARDERR);
   if (!DosFindFirst(str, &search_handle, FILE_NORMAL | FILE_DIRECTORY |
-		     FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
-		     f, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+                     FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
+                     f, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
 
     strcpy(ss, s);
     p = &ss[strlen(ss)];
@@ -772,30 +779,30 @@ INT wipeallf(CHAR *string, ...)
     do {
       strcpy(p, f->achName);
       if (f->attrFile & FILE_DIRECTORY) {
-	if (strcmp(f->achName, ".") && strcmp(f->achName, "..")) {
-	  wipeallf("%s/%s", ss, mask);	/* recurse to wipe files */
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosDeleteDir(ss)) {	/* remove directory */
-	    make_deleteable(ss);
-	    DosError(FERR_DISABLEHARDERR);
-	    DosDeleteDir(ss);
-	  }
-	}
+        if (strcmp(f->achName, ".") && strcmp(f->achName, "..")) {
+          wipeallf("%s/%s", ss, mask);  /* recurse to wipe files */
+          DosError(FERR_DISABLEHARDERR);
+          if (DosDeleteDir(ss)) {       /* remove directory */
+            make_deleteable(ss);
+            DosError(FERR_DISABLEHARDERR);
+            DosDeleteDir(ss);
+          }
+        }
       }
       else {
-	DosError(FERR_DISABLEHARDERR);
-	if (DosForceDelete(ss)) {
-	  make_deleteable(ss);
-	  DosError(FERR_DISABLEHARDERR);
-	  rc = (INT) DosForceDelete(ss);
-	  if (rc)
-	    return rc;
-	}
+        DosError(FERR_DISABLEHARDERR);
+        if (DosForceDelete(ss)) {
+          make_deleteable(ss);
+          DosError(FERR_DISABLEHARDERR);
+          rc = (INT) DosForceDelete(ss);
+          if (rc)
+            return rc;
+        }
       }
       num_matches = 1;
       DosError(FERR_DISABLEHARDERR);
     } while (!DosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
-			  &num_matches));
+                          &num_matches));
     DosFindClose(search_handle);
   }
 
@@ -805,6 +812,7 @@ INT wipeallf(CHAR *string, ...)
   return 0;
 }
 
+#if 0   // JBS
 INT unlink_allf(CHAR * string, ...)
 {
   /* wildcard delete */
@@ -833,7 +841,7 @@ INT unlink_allf(CHAR * string, ...)
     return -1;
 
   p = s;
-  p = strrchr(s, '\\');			/* strip s to just path */
+  p = strrchr(s, '\\');                 /* strip s to just path */
   if (!p)
     p = strrchr(s, ':');
   if (p) {
@@ -857,7 +865,7 @@ INT unlink_allf(CHAR * string, ...)
 
   DosError(FERR_DISABLEHARDERR);
   if (!DosFindFirst(str, &search_handle, FILE_NORMAL, f,
-        	    sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
+                    sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD)) {
 
     strcpy(ss, s);
     p = &ss[strlen(ss)];
@@ -868,7 +876,7 @@ INT unlink_allf(CHAR * string, ...)
       num_matches = 1;
       DosError(FERR_DISABLEHARDERR);
     } while (!DosFindNext(search_handle, f, sizeof(FILEFINDBUF3),
-			  &num_matches));
+                          &num_matches));
     DosFindClose(search_handle);
   }
 
@@ -877,6 +885,7 @@ INT unlink_allf(CHAR * string, ...)
   free(str);
   return 0;
 }
+#endif
 
 INT unlinkf(CHAR * string, ...)
 {

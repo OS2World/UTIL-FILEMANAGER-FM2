@@ -23,6 +23,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "timer.h"
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;

@@ -33,6 +33,8 @@
 #include "errutil.h"			// Dos_Error...
 #include "filldir.h"			// FillInRecordFromFFB
 #include "dircnrs.h"
+#include "flesh.h"			// Flesh, Stubby
+#include "update.h"
 #include "fm3dll.h"
 #include "fortify.h"
 

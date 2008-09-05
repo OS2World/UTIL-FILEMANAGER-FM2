@@ -26,6 +26,8 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // targetdirectoy
+#include "mkdir.h"
+#include "walkem.h"			// WalkTargetDlgProc
 #include "fm3dll.h"
 
 #pragma alloc_text(MKDIR,MassMkdir,SetDir,PMMkDir,SetTargetDir)
