@@ -20,6 +20,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "arccnrs.h"			// ArcObjWndProc
@@ -31,7 +32,7 @@
 #include "collect.h"			// CollectorObjWndProc
 #include "objwin.h"
 #include "treecnr.h"			// TreeObjWndProc
-#include "fm3dll.h"
+
 
 static PSZ pszSrcFile = __FILE__;
 
