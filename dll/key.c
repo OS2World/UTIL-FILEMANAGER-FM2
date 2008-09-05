@@ -27,6 +27,7 @@
 #include "version.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "key.h"         		// AboutDlgProc
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)

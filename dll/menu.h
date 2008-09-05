@@ -34,4 +34,6 @@ MENU;
 #define SUBMENU   1
 #define SEPARATOR 2
 
+BOOL AddToMenu(CHAR * filename, HWND hwndMenu);
+
 #endif // MENU_H

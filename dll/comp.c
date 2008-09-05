@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -80,6 +79,13 @@
 #include "strutil.h"			// GetPString
 #include "tmrsvcs.h"			// IsITimerExpired
 #include "comp.h"
+#include "misc.h"         		// AddToListboxBottom, AdjustCnrColRO, AdjustCnrColVis, AdjustCnrColsForPref
+                                        // AdjustDetailsSwitches, LoadDetailsSwitches, SetCnrCols
+                                        // SetDetailsSwitches
+#include "select.h"			// Deselect, InvertAll
+#include "mkdir.h"			// MassMkdir
+#include "valid.h"			// TestCDates
+#include "walkem.h"			// WalkTwoCmpDlgProc
 #include "fm3dll.h"
 #include "notebook.h"                   // External compare/dircompare
 

@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -68,6 +67,25 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
+#include "worker.h"         		// Action, MassAction
+#include "mainwnd.h"			// BubbleHelp, FindDirCnrByName
+#include "misc.h"			// CnrDirectEdit, EmphasizeButton, FindDirCnr
+                 			// FindDirCnr, FixSwitchList, OpenEdit, QuickPopup
+                 			// SetSortChecks, SwitchCommand
+#include "common.h"			// CommonCnrProc, CommonDriveCmd, CommonFrameWndProc
+#include "valid.h"			// DriveFlagsOne, IsValidDrive
+#include "chklist.h"			// DropListProc
+#include "select.h"			// ExpandAll
+#include "findrec.h"			// FindParentRecord, ShowCnrRecord
+#include "flesh.h"			// Flesh, UnFlesh
+#include "notify.h"			// HideNote
+#include "objwin.h"			// MakeObjWin
+#include "notify.h"			// NotifyError
+#include "treecnr.h"
+#include "remap.h"			// RemapDlgProc
+#include "saveclip.h"			// SaveListDlgProc
+#include "update.h"			// SelectDriveIcon, UpdateCnrList, UpdateCnrRecord
+#include "sortcnr.h"			// SortTreeCnr
 #include "fm3dll.h"
 
 #include "fortify.h"

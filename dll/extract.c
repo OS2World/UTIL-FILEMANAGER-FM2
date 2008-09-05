@@ -28,6 +28,9 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "cmdline.h"			// CmdLineDlgProc
+#include "extract.h"
+#include "walkem.h"			// WalkExtractDlgProc
 #include "fm3dll.h"
 
 #pragma data_seg(DATA1)
