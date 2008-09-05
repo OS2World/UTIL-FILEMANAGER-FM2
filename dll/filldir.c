@@ -46,17 +46,15 @@
   21 Jul 08 JBS Ticket 114: Change env var separator from blank to semicolon
   02 Aug 08 GKY Remove redundant strcpys from inner loop
   23 Aug 08 GKY Free pszDisplayName when appropriate
-  01 Sep 08 GKY Updated FreeCnrItemData toprevent trap in strrchr if pci->pszFileName is NULL.
+  01 Sep 08 GKY Updated FreeCnrItemData to prevent trap in strrchr if pci->pszFileName is NULL.
+  05 Sep 08 SHL Correct FreeCnrItemData pszDisplayName pointer overlap check
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
+#include <malloc.h>			// _msize _heapchk
 #include <ctype.h>
-
-#if 0 // fixme to disable or to be configurable
-#include <malloc.h>			// _heapchk
-#endif
 
 #define INCL_DOS
 #define INCL_WIN
@@ -269,14 +267,12 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     pci->pszFileName = xmalloc(c + c2, pszSrcFile, __LINE__);
 #   ifdef FORTIFY
     {
-      unsigned tid = GetTidForWindow(hwndCnr);
-      // char buf[256];
-      if (tid == 1)
+      if (dcd->type != TREE_FRAME)
 	Fortify_ChangeScope(pci->pszFileName, -1);
-      else
+      else {
 	Fortify_SetOwner(pci->pszFileName, 1);
-      // sprintf(buf, "Owner forced to %u", GetTidForWindow(hwndCnr));
-      // Fortify_LabelPointer(pci->pszFmtFileSize, buf);
+	Fortify_SetScope(pci->pszFileName, 2);
+      }
     }
 #   endif
     memcpy(pci->pszFileName, pszDirectory, c + 1);
@@ -373,16 +369,13 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 	  if (*(USHORT *) value == EAT_ASCII) {
 	    pci->pszLongName = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 #	    ifdef FORTIFY
-            {
-              unsigned tid = GetTidForWindow(hwndCnr);
-              // char buf[256];
-              if (tid == 1)
-	        Fortify_ChangeScope(pci->pszLongName, -1);
-              else
-	        Fortify_SetOwner(pci->pszLongName, 1);
-              // sprintf(buf, "Owner forced to %u", GetTidForWindow(hwndCnr));
-              // Fortify_LabelPointer(pci->pszFmtFileSize, buf);
-            }
+	    {
+	      unsigned tid = GetTidForWindow(hwndCnr);
+	      if (tid == 1)
+		Fortify_ChangeScope(pci->pszLongName, -1);
+	      else
+		Fortify_SetOwner(pci->pszLongName, 1);
+	    }
 #	    endif
 	  }
 	}
@@ -464,13 +457,10 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 #   ifdef FORTIFY
     {
       unsigned tid = GetTidForWindow(hwndCnr);
-      // char buf[256];
       if (tid == 1)
 	Fortify_ChangeScope(pci->pszFmtFileSize, -1);
       else
 	Fortify_SetOwner(pci->pszFmtFileSize, 1);
-      // sprintf(buf, "Owner forced to %u", GetTidForWindow(hwndCnr));
-      // Fortify_LabelPointer(pci->pszFmtFileSize, buf);
     }
 #   endif
   }
@@ -528,10 +518,12 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
 } // FillInRecordFromFFB
 
-ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
+ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
+			      PCNRITEM pci,
 			      const PSZ pszFileName,
 			      const PFILESTATUS4L pfsa4,
-			      const BOOL partial, DIRCNRDATA * dcd)	// Optional
+			      const BOOL partial,
+			      DIRCNRDATA *dcd)	// Optional
 {
   HPOINTER hptr;
   CHAR *p;
@@ -690,9 +682,18 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 
   //comma format the file size for large file support
   {
-  CHAR szBuf[30];
+    CHAR szBuf[30];
     CommaFmtULL(szBuf, sizeof(szBuf), pfsa4->cbFile, ' ');
     pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
+#   ifdef FORTIFY
+    {
+      if (dcd && dcd->type == TREE_FRAME) {
+	// Will be freed in TreeCnrWndProc WM_DESTROY
+	// Fortify_SetOwner(pci->pszFmtFileSize, 1);
+	Fortify_SetScope(pci->pszFmtFileSize, 2);
+      }
+    }
+#   endif
   }
   pci->date.day = pfsa4->fdateLastWrite.day;
   pci->date.month = pfsa4->fdateLastWrite.month;
@@ -1288,7 +1289,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	else {
 	  pci->rc.hptrIcon = hptrDunno;
 	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	  //strcpy(pci->pszFileName, szDrive);
+	  // strcpy(pci->pszFileName, szDrive);	// 22 Jul 08 SHL No need to do this twice
+#	  ifdef FORTIFY
+	  // Will be freed by TreeCnrWndProc WM_DESTROY
+	  Fortify_SetScope(pci->pszFileName, 2);
+#	  endif
 	  pci->pszDisplayName = pci->pszFileName;
 	  pci->rc.pszIcon = pci->pszFileName;
 	  pci->attrFile = FILE_DIRECTORY;
@@ -1389,7 +1394,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
 	char *p, *pp;
 
-        p = pszTreeEnvVarList;
+	p = pszTreeEnvVarList;
 	while (*p == ';')
 	  p++;
 	while (*p) {
@@ -1641,21 +1646,26 @@ VOID FreeCnrItemData(PCNRITEM pci)
     pci->pszLongName = NULL;		// for debug
     free(psz);
   }
+
+  // Check double free
   if (!pci->pszFileName)
-    DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData pci->pszFileName is NULL");
-  if (pci->pszFileName &&
+    DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData pci->pszFileName already NULL");
+
+  // Bypass free if pszDisplayName points into pszFileName buffer
+  // 05 Sep 08 SHL Correct pointer overlap compare logic
+  if (pci->pszDisplayName != pci->pszFileName &&
       pci->pszDisplayName &&
-      pci->pszDisplayName != NullStr &&
-      pci->pszDisplayName != pci->pszFileName &&
-      pci->pszDisplayName != strrchr(pci->pszFileName, '\\') &&
-      pci->pszDisplayName != strrchr(pci->pszFileName, ':') &&
-      pci->pszDisplayName != strrchr(pci->pszFileName, ':') + 1 &&
-      pci->pszDisplayName != strrchr(pci->pszFileName, '\\') + 1) {
-    psz = pci->pszDisplayName;
-    //pci->pszDisplayName = NullStr;
-    pci->pszDisplayName = NULL;		// for debug
-    free(psz);
-}
+      pci->pszDisplayName != NullStr) {
+    if (!pci->pszFileName ||
+	pci->pszDisplayName < pci->pszFileName ||
+	pci->pszDisplayName >= pci->pszFileName + _msize(pci->pszFileName))
+    {
+      psz = pci->pszDisplayName;
+      // pci->pszDisplayName = NullStr;
+      pci->pszDisplayName = NULL;		// for debug
+      free(psz);
+    }
+  }
 
   if (pci->pszFileName && pci->pszFileName != NullStr) {
     psz = pci->pszFileName;
