@@ -48,6 +48,7 @@
   23 Aug 08 GKY Free pszDisplayName when appropriate
   01 Sep 08 GKY Updated FreeCnrItemData to prevent trap in strrchr if pci->pszFileName is NULL.
   05 Sep 08 SHL Correct FreeCnrItemData pszDisplayName pointer overlap check
+  08 Sep 08 SHL Remove extra pszLongName logic in FreeCnrItemData
 
 ***********************************************************************/
 
@@ -616,9 +617,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 	if (!rc) {
 	  pfea = &eaop.fpFEA2List->list[0];
 	  value = pfea->szName + pfea->cbName + 1;	// Point at EA value
-	  value[pfea->cbValue] = 0;			// Terminate
+	  value[pfea->cbValue] = 0;	// Terminate
 	  if (*(USHORT *) value == EAT_ASCII) {
-	    p = value + sizeof(USHORT) * 2;		// Point at value string
+	    p = value + sizeof(USHORT) * 2;	// Point at value string
 	    pci->pszLongName = xstrdup(p, pszSrcFile, __LINE__);
 	  }
 	}
@@ -789,7 +790,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 
   if (isalpha(*szDirBase) && szDirBase[1] == ':' && szDirBase[2] == '\\') {
     if ((driveflags[toupper(*szDirBase) - 'A'] & DRIVE_REMOTE) && fRemoteBug)
-      ulFindMax = 1;				// file system gets confused
+      ulFindMax = 1;			// file system gets confused
     else if (driveflags[toupper(*szDirBase) - 'A'] & DRIVE_ZIPSTREAM)
       ulFindMax = min(FilesToGet, 225);	// anything more is wasted
     else
@@ -1632,26 +1633,16 @@ VOID FreeCnrItemData(PCNRITEM pci)
 
   if (pci->pszSubject && pci->pszSubject != NullStr) {
     psz = pci->pszSubject;
-    //pci->pszSubject = NullStr;
-    pci->pszSubject = NULL;		// for debug
+    pci->pszSubject = NULL;		// Catch illegal references
     free(psz);
   }
 
-  // +1 in case long name pointing after last backslash
-  if (pci->pszLongName &&
-      pci->pszLongName != NullStr &&
-      pci->pszLongName != pci->pszFileName &&
-      pci->pszLongName != pci->pszDisplayName &&
-      pci->pszLongName != pci->pszDisplayName + 1) {
+  // 08 Sep 08 SHL Remove excess logic
+  if (pci->pszLongName && pci->pszLongName != NullStr) {
     psz = pci->pszLongName;
-    //pci->pszLongName = NullStr;
-    pci->pszLongName = NULL;		// for debug
+    pci->pszLongName = NULL;		// Catch illegal references
     free(psz);
   }
-
-  // Check double free
-  if (!pci->pszFileName)
-    DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData pci->pszFileName already NULL");
 
   // Bypass free if pszDisplayName points into pszFileName buffer
   // 05 Sep 08 SHL Correct pointer overlap compare logic
@@ -1663,23 +1654,24 @@ VOID FreeCnrItemData(PCNRITEM pci)
 	pci->pszDisplayName >= pci->pszFileName + _msize(pci->pszFileName))
     {
       psz = pci->pszDisplayName;
-      // pci->pszDisplayName = NullStr;
-      pci->pszDisplayName = NULL;		// for debug
+      pci->pszDisplayName = NULL;	// Catch illegal references
       free(psz);
     }
   }
 
+  // Catch extra calls to FreeCnrItemData
+  if (!pci->pszFileName)
+    DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData pci->pszFileName already NULL");
+
   if (pci->pszFileName && pci->pszFileName != NullStr) {
     psz = pci->pszFileName;
-    //pci->pszFileName = NullStr;
-    pci->pszFileName = NULL;		// for debug
+    pci->pszFileName = NULL;		// Catch illegal references
     free(psz);
   }
 
   if (pci->pszFmtFileSize && pci->pszFmtFileSize != NullStr) {
     psz = pci->pszFmtFileSize;
-    //pci->pszFmtFileSize = NullStr;
-    pci->pszFmtFileSize = NULL;		// for debug
+    pci->pszFmtFileSize = NULL;		// Catch illegal references
     free(psz);
   }
 }
@@ -1759,7 +1751,7 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       }
       while (pci) {
 	// 12 Sep 07 SHL dwg drivebar crash testing - ticket# ???
-	static PCNRITEM pciLast;		// 12 Sep 07 SHL
+	static PCNRITEM pciLast;	// 12 Sep 07 SHL
 	ULONG ulSize = sizeof(*pci);
 	ULONG ulAttr;
 	APIRET apiret = DosQueryMem((PVOID)pci, &ulSize, &ulAttr);
