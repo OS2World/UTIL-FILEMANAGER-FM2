@@ -53,8 +53,9 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   16 Mar 08 GKY Prevent trap caused by files that exceed maxpath length
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
-                all the details view settings (both the global variables and those in the
-                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+		all the details view settings (both the global variables and those in the
+		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  08 Sep 08 SHL Avoid aliased pszLongName pointer in ActionCnrThread IDM_MOVE
 
 ***********************************************************************/
 
@@ -79,15 +80,15 @@
 #include "strutil.h"			// GetPString
 #include "tmrsvcs.h"			// IsITimerExpired
 #include "comp.h"
-#include "misc.h"         		// AddToListboxBottom, AdjustCnrColRO, AdjustCnrColVis, AdjustCnrColsForPref
-                                        // AdjustDetailsSwitches, LoadDetailsSwitches, SetCnrCols
-                                        // SetDetailsSwitches
+#include "misc.h"		// AddToListboxBottom, AdjustCnrColRO, AdjustCnrColVis, AdjustCnrColsForPref
+					// AdjustDetailsSwitches, LoadDetailsSwitches, SetCnrCols
+					// SetDetailsSwitches
 #include "select.h"			// Deselect, InvertAll
 #include "mkdir.h"			// MassMkdir
 #include "valid.h"			// TestCDates
 #include "walkem.h"			// WalkTwoCmpDlgProc
 #include "fm3dll.h"
-#include "notebook.h"                   // External compare/dircompare
+#include "notebook.h"			// External compare/dircompare
 
 #include "fortify.h"			// 06 May 08 SHL
 
@@ -465,7 +466,7 @@ static VOID ActionCnrThread(VOID *args)
       pciD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
 			MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 
-      InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
+      InitITimer(&itdSleep, 500);	// Sleep every 500 mSec
 
       while (pciS && (INT)pciS != -1 && pciD && (INT)pciD != -1) {
 
@@ -551,8 +552,8 @@ static VOID ActionCnrThread(VOID *args)
 		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 		  pciD->pszDisplayName++;
 	      }
-	      // 02 Aug 07 SHL fixme to know if LongName transfer is correct?
 	      pciD->pszLongName = pciS->pszLongName;
+	      pciS->pszLongName = NullStr;	// 07 Sep 08 SHL avoid aliased pointer
 	      if (pciD->pszSubject != NullStr) {
 		xfree(pciD->pszSubject, pszSrcFile, __LINE__);
 		pciD->pszSubject = NullStr;
@@ -630,7 +631,7 @@ static VOID ActionCnrThread(VOID *args)
 			     GetPString(IDS_COMPCOPYFAILEDTEXT),
 			     pciS->pszFileName, szNewName);
 	      if (rc == MBID_CANCEL)
-		pciNextS = NULL;		// Cause loop to break
+		pciNextS = NULL;	// Cause loop to break
 	    }
 	    else {
 	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
@@ -890,7 +891,7 @@ Restart:
 
       if (!*pciSa[x]->pszFileName || !*pciDa[x]->pszFileName) {
 	// 12 Jan 08 SHL clear flags
-	pciSa[x]->flags = 0;	// File exists on one side only
+	pciSa[x]->flags = 0;		// File exists on one side only
 	pciDa[x]->flags = 0;
 	continue;
       }
@@ -1318,7 +1319,7 @@ Restart:
       WinSendMsg(hwndCnrD, CM_INVALIDATERECORD,
 		 MPFROMP(pciDa), MPFROM2SHORT((min(numD, 65535)), 0));
       numS -= min(numS, 65535);
-      SleepIfNeeded(&itdSleep, 0); // 12 Jan 08 SHL
+      SleepIfNeeded(&itdSleep, 0);	// 12 Jan 08 SHL
     } // while
   }
 
@@ -1408,20 +1409,20 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
 	    strupr(pffbFile->achName);
 	  else if (fForceLower)
 	    strlwr(pffbFile->achName);
-          memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
-          if (strlen(maskstr) > CCHMAXPATH) {
+	  memcpy(enddir, pffbFile->achName, pffbFile->cchName + 1);
+	  if (strlen(maskstr) > CCHMAXPATH) {
 	    // Complain if pathnames exceeds max
 	    DosFindClose(hDir);
-            free(pffbArray);
-            free(maskstr);
+	    free(pffbArray);
+	    free(maskstr);
 	    if (!fDone) {
 	      fDone = TRUE;
 	      saymsg(MB_OK | MB_ICONASTERISK,
 		     HWND_DESKTOP,
 		     GetPString(IDS_WARNINGTEXT),
 		     "One or more of your files has a full path name that exceeds the OS/2 maximum");
-            }
-            return;
+	    }
+	    return;
 	  }
 	  if (AddToFileList(maskstr + skiplen,
 			    pffbFile, list, pnumfiles, pnumalloc)) {
@@ -1964,12 +1965,12 @@ static VOID FillCnrsThread(VOID *args)
 
 	  } // if on both sides
 
-          if (x <= 0) {
+	  if (x <= 0) {
 	    free(filesl[l++]);		// Done with item on left
-          }
-          if (x >= 0) {
-            free(filesr[r++]);		// Done with item on right
-          }
+	  }
+	  if (x >= 0) {
+	    free(filesr[r++]);		// Done with item on right
+	  }
 	  // Ensure empty buffers point somewhere
 	  if (!pcil->pszFileName) {
 	    pcil->pszFileName = NullStr;
@@ -2018,9 +2019,9 @@ static VOID FillCnrsThread(VOID *args)
 	    FreeCnrItemList(hwndLeft, pcil);
 	  }
 	  if (filesl) {
-            for(; filesl[l]; l++) {
-              free(filesl[l]);
-            }
+	    for(; filesl[l]; l++) {
+	      free(filesl[l]);
+	    }
 	  }
 	  if (pcir) {
 	    if (pcirLast)
@@ -2030,15 +2031,15 @@ static VOID FillCnrsThread(VOID *args)
 	    FreeCnrItemList(hwndRight, pcir);
 	  }
 	  if (filesr) {
-            for (; filesr[r]; r++) {
-              free(filesr[r]);
-            }
+	    for (; filesr[r]; r++) {
+	      free(filesr[r]);
+	    }
 	  }
 	  // Reduce count to match what is in containers
 	  recsNeeded = recsGotten;
 	} // if insufficient resources
 
-	  xfree(filesl, pszSrcFile, __LINE__);			// Free header - have already freed elements
+	  xfree(filesl, pszSrcFile, __LINE__);	// Free header - have already freed elements
 	filesl = NULL;
 	  xfree(filesr, pszSrcFile, __LINE__);
 	filesr = NULL;
@@ -2145,17 +2146,17 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cmp->hwnd = hwnd;
       WinSetWindowPtr(hwnd, QWL_USER, (PVOID)cmp);
       {
-        SWP swp;
-        ULONG size = sizeof(SWP);
+	SWP swp;
+	ULONG size = sizeof(SWP);
 
-        PrfQueryProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp, &size);
-        WinSetWindowPos(hwnd,
-                        HWND_TOP,
-                        swp.x,
-                        swp.y,
-                        swp.cx,
-                        swp.cy,
-                        swp.fl);
+	PrfQueryProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp, &size);
+	WinSetWindowPos(hwnd,
+			HWND_TOP,
+			swp.x,
+			swp.y,
+			swp.cx,
+			swp.cy,
+			swp.fl);
       }
       SetCnrCols(hwndLeft, TRUE);
       SetCnrCols(hwndRight, TRUE);
@@ -2675,10 +2676,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  WinDismissDlg(hwnd, 0);
-          free(forthread);
-#         ifdef FORTIFY
-          Fortify_LeaveScope();
-#          endif
+	  free(forthread);
+#	  ifdef FORTIFY
+	  Fortify_LeaveScope();
+#	   endif
 	}
 	else {
 	  WinEnableWindowUpdate(hwndLeft, FALSE);
@@ -2733,14 +2734,14 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       WinSetDlgItemText(hwnd, COMP_NOTE,
 			GetPString(IDS_COMPHOLDFILTERINGTEXT));
-      // cmp->dcd.suspendview = 1;		// 12 Jan 08 SHL appears not to be used here
+      // cmp->dcd.suspendview = 1;	// 12 Jan 08 SHL appears not to be used here
       priority_idle();			// Don't hog resources
       WinSendMsg(hwndLeft, CM_FILTER, MPFROMP(Filter),
 		 MPFROMP(&cmp->dcd.mask));
       WinSendMsg(hwndRight, CM_FILTER, MPFROMP(Filter),
 		 MPFROMP(&cmp->dcd.mask));
       priority_normal();
-      // cmp->dcd.suspendview = 0;		// 12 Jan 08 SHL appears not to be used here
+      // cmp->dcd.suspendview = 0;	// 12 Jan 08 SHL appears not to be used here
       if (*cmp->dcd.mask.szMask) {
 	sprintf(s,
 		GetPString(IDS_COMPREADYFILTEREDTEXT),
@@ -2758,7 +2759,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG wasHidden = WinQueryButtonCheckstate(hwnd,
 						  COMP_HIDENOTSELECTED);
 
-      // cmp->dcd.suspendview = 1;		// 12 Jan 08 SHL appears not to be used here
+      // cmp->dcd.suspendview = 1;	// 12 Jan 08 SHL appears not to be used here
       if (wasHidden != 1) {
 	// Hide if not selected on both sides
 	BOOL needRefresh = FALSE;
@@ -2796,7 +2797,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(hwndRight, CM_FILTER, MPFROMP(Filter),
 		   MPFROMP(&cmp->dcd.mask));
       }
-      // cmp->dcd.suspendview = 0;		// 12 Jan 08 SHL appears not to be used here
+      // cmp->dcd.suspendview = 0;	// 12 Jan 08 SHL appears not to be used here
       if (*cmp->dcd.mask.szMask) {
 	sprintf(s,
 		GetPString(IDS_COMPREADYFILTEREDTEXT),
@@ -3073,23 +3074,23 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case DID_OK:
       {
-        SWP swp;
-        ULONG size = sizeof(SWP);
+	SWP swp;
+	ULONG size = sizeof(SWP);
 
-        WinQueryWindowPos(hwnd, &swp);
-        PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
-                            size);
+	WinQueryWindowPos(hwnd, &swp);
+	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
+			    size);
       }
       WinDismissDlg(hwnd, 0);
       break;
     case DID_CANCEL:
       {
-        SWP swp;
-        ULONG size = sizeof(SWP);
+	SWP swp;
+	ULONG size = sizeof(SWP);
 
-        WinQueryWindowPos(hwnd, &swp);
-        PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
-                            size);
+	WinQueryWindowPos(hwnd, &swp);
+	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
+			    size);
       }
       WinDismissDlg(hwnd, 1);
       break;
