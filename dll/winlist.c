@@ -20,9 +20,12 @@
 #define INCL_DOS
 #define INCL_WIN
 
-#include "fm3dlg.h"
 #include "fm3dll.h"
+#include "fm3dlg.h"
+#include "mainwnd.h"			// GetNextWindowPos
 #include "winlist.h"
+#include "wrappers.h"			// xmalloc
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

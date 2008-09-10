@@ -45,6 +45,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -63,8 +64,20 @@
 #include "newview.h"
 #include "strips.h"			// chop_at_crnl, convert_nl_to_nul
                    			// remove_first_occurence_of_character
-#include "strips.h"			// strip_lead_char, strip_trail_char
-#include "fm3dll.h"
+                   			// strip_lead_char, strip_trail_char
+#include "common.h"			// CommonTextButton, CommonTextProc, DecrThreadUsage
+                   			// IncrThreadUsage
+#include "systemf.h"			// ExecOnList
+#include "input.h"			// InputDlgProc
+#include "shadow.h"			// OpenObject
+#include "chklist.h"			// PopupMenu
+#include "viewer.h"			// StartMLEEditor
+#include "commafmt.h"			// commafmt
+#include "getnames.h"			// export_filename
+#include "literal.h"			// literal
+#include "wrappers.h"			// xrealloc
+#include "stristr.h"			// findstring
+#include "misc.h"			// PaintRecessedWindow
 #include "fortify.h"
 
 #pragma data_seg(DATA2)

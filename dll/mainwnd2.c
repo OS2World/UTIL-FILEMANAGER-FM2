@@ -38,6 +38,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
@@ -59,7 +60,12 @@
 #include "treecnr.h"			// StartTreeCnr
 #include "walkem.h"			// WalkTwoCmpDlgProc, WalkTwoSetDlgProc
 #include "dirs.h"			// switch_to
-#include "fm3dll.h"
+#include "filter.h"			// Filter
+#include "collect.h"			// StartCollector
+#include "select.h"			// UnHilite
+#include "valid.h"			// MakeValidDir
+#include "systemf.h"			// runemf2
+#include "wrappers.h"			// xfree
 #include "fortify.h"
 
 typedef struct

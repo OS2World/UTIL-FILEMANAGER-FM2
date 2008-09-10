@@ -36,6 +36,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG                   // dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"                    // Dos_Error...
@@ -47,7 +48,10 @@
 #include "systemf.h"
 #include "strips.h"			// convert_nl_to_nul, strip_lead_char
 #include "dirs.h"			// switch_to
-#include "fm3dll.h"
+#include "valid.h"			// MakeFullName
+#include "misc.h"			// GetCmdSpec
+#include "copyf.h"			// MakeTempName
+#include "wrappers.h"			// xfopen
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

@@ -17,6 +17,7 @@ Change log
 
 MRESULT EXPENTRY ViewStatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-
+HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
+		 HWND hwndRestore);
 
 #endif // NEWVIEW_H

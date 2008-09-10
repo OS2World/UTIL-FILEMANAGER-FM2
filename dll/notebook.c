@@ -50,6 +50,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG                   // dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"                   // BldQuotedFileName
@@ -59,8 +60,15 @@
 #include "getnames.h"                   // CustomFileDlg
 #include "mainwnd.h"                    // SaveDirCnrState
 #include "walkem.h"			// WalkExtractDlgProc
-#include "fm3dll.h"
+#include "valid.h"			// MakeFullName
+#include "filter.h"			// PickMaskDlgProc
+#include "avl.h"			// SBoxDlgProc
+#include "select.h"			// SetMask
+#include "mkdir.h"			// SetTargetDir
+#include "subj.h"			// Subject
 #include "misc.h"                       // LoadDetailsSwitches, SetConditionalCascade
+#include "strips.h"			// bstrip
+#include "wrappers.h"			// xmalloc
 #include "fortify.h"
 
 #pragma data_seg(DATA2)

@@ -22,6 +22,7 @@
 
 #include "fm3dll.h"
 #include "presparm.h"
+#include "wrappers.h"			// xmalloc
 #include "fortify.h"
 
 // static PSZ pszSrcFile = __FILE__;

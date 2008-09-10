@@ -47,6 +47,7 @@
 #define INCL_SHLERRORS			// PMERR_NOT_IN_IDX
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -54,7 +55,13 @@
 #include "notebook.h"			// targetdirectory
 #include "pathutil.h"                   // BldFullPathName
 #include "walkem.h"
-#include "fm3dll.h"
+#include "valid.h"			// MakeFullName
+#include "chklist.h"			// PosOverOkay
+#include "mkdir.h"			// SetDir
+#include "wrappers.h"			// xfgets
+#include "strips.h"			// bstrip
+#include "misc.h"			// CheckDriveSpaceAvail
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

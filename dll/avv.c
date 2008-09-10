@@ -36,17 +36,22 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "version.h"
 #include "fm3str.h"
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
-#include "avv.h"			// ArcReviewDlgProc
 #include "cmdline.h"			// CmdLineDlgProc
 #include "avv.h"
 #include "literal.h"			// fixup
-#include "fm3dll.h"
+#include "avl.h"			// SBoxDlgProc
+#include "wrappers.h"			// xfgets
 #include "pathutil.h"                   // NormalizeCmdLine
+#include "strips.h"			// bstrip
+#include "misc.h"			// CheckDriveSpaceAvail
+#include "srchpath.h"			// searchpath
+#include "systemf.h"			// runemf2
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
