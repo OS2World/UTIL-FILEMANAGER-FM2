@@ -71,6 +71,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"			// BldFullPathName
@@ -80,16 +81,30 @@
 #include "strutil.h"			// GetPString
 #include "tmrsvcs.h"			// IsITimerExpired
 #include "comp.h"
-#include "misc.h"		// AddToListboxBottom, AdjustCnrColRO, AdjustCnrColVis, AdjustCnrColsForPref
+#include "misc.h"			// AddToListboxBottom, AdjustCnrColRO, AdjustCnrColVis,
+					// AdjustCnrColsForPref, CurrentRecord,
 					// AdjustDetailsSwitches, LoadDetailsSwitches, SetCnrCols
 					// SetDetailsSwitches
-#include "select.h"			// Deselect, InvertAll
+#include "select.h"			// Deselect, Deselect, InvertAll
 #include "mkdir.h"			// MassMkdir
 #include "valid.h"			// TestCDates
 #include "walkem.h"			// WalkTwoCmpDlgProc
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "defview.h"			// DefaultViewKeys
+#include "draglist.h"			// DoFileDrag
+#include "systemf.h"			// ExecOnList
+#include "filter.h"			// Filter
+#include "mainwnd.h"			// GetNextWindowPos
+#include "shadow.h"			// OpenObject
+#include "chklist.h"			// PopupMenu
+#include "presparm.h"			// SetPresParams
+#include "collect.h"			// StartCollector
+#include "subj.h"			// Subject
+#include "copyf.h"			// docopyf
+#include "getnames.h"			// export_filename
+#include "wrappers.h"			// xDosFindNext
 #include "notebook.h"			// External compare/dircompare
-
+#include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"			// 06 May 08 SHL
 
 typedef struct

@@ -18,13 +18,16 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "fm2cmd.h"
 #include "mainwnd.h"			// FindDirCnrByName
-#include "fm3dll.h"
+#include "valid.h"			// MakeFullName
+#include "misc.h"			// PostMsg
+#include "delims.h"			// skip_delim
 
 #pragma data_seg(DATA2)
 

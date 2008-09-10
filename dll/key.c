@@ -22,13 +22,14 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "version.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "key.h"         		// AboutDlgProc
-#include "fm3dll.h"
+#include "misc.h"			// PostMsg
 
 #pragma data_seg(DATA1)
 

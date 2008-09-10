@@ -34,14 +34,19 @@
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "defview.h"                    // QuickView
-#include "fm3dll.h"
+#include "subj.h"			// Subject
+#include "wrappers.h"			// xDosSetPathInfo
 #include "eas.h"
+#include "strips.h"			// bstrip
+#include "valid.h"			// IsFile
+#include "misc.h"			// PaintRecessedWindow
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

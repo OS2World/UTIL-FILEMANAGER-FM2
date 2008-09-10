@@ -22,11 +22,17 @@
 #define INCL_DOS
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
-#include "fm3dll.h"
+#include "archive.h"
+#include "systemf.h"			// ExecOnList
+#include "chklist.h"			// PosOverOkay
+#include "getnames.h"			// export_filename
+#include "misc.h"			// PaintRecessedWindow
+#include "strips.h"			// bstrip
 
 static PSZ pszSrcFile = __FILE__;
 

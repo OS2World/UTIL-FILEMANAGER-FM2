@@ -41,6 +41,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "grep.h"
 #include "pathutil.h"                   // BldFullPathName
@@ -49,8 +50,13 @@
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "tmrsvcs.h"                    // ITIMER_DESC
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "valid.h"			// MakeFullName
+#include "literal.h"			// wildcard
+#include "wrappers.h"			// xDosFindNext
 #include "eas.h"                        // Free_FEAList
+#include "stristr.h"			// findstring
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 #pragma data_seg(DATA2)

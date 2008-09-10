@@ -24,6 +24,7 @@
 #define INCL_DOS
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -31,7 +32,14 @@
 #include "cmdline.h"			// CmdLineDlgProc
 #include "extract.h"
 #include "walkem.h"			// WalkExtractDlgProc
-#include "fm3dll.h"
+#include "droplist.h"			// AcceptOneDrop, DropHelp, GetOneDrop
+#include "misc.h"			// DrawTargetEmphasis
+#include "chklist.h"			// PosOverOkay
+#include "mkdir.h"			// SetDir
+#include "valid.h"			// MakeValidDir
+#include "systemf.h"			// runemf2
+#include "dirs.h"			// save_dir2
+#include "strips.h"			// bstrip
 
 #pragma data_seg(DATA1)
 

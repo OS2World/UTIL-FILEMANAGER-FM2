@@ -22,9 +22,11 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "menu.h"
 #include "errutil.h"			// Dos_Error...
-#include "fm3dll.h"
+#include "delims.h"			// skip_delim
+#include "wrappers.h"			// xfgets_bstripcr
 #include "fortify.h"
 
 #pragma data_seg(DATA2)
