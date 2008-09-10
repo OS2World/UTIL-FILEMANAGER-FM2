@@ -21,8 +21,14 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "..\version.h"
+#define INCL_LONGLONG
+#include <os2.h>
+
+#include "..\fm3dll.h"
 #include "..\fm3str.h"
+#include "..\version.h"
+
+static int  literal(char *fsource);
 
 /*
  * Creates indexed FM3RES.STR file from text file FM3DLL.STR.
@@ -66,7 +72,7 @@ int index(const char *s, const char c)
 #define HEX "0123456789ABCDEF"
 #define DEC "0123456789"
 
-int literal(char *fsource)
+int  literal(char *fsource)
 {
 
   register int wpos, w;

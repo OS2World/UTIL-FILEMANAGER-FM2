@@ -22,13 +22,16 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "instant.h"
-#include "fm3dll.h"
+#include "misc.h"			// GetCmdSpec
+#include "systemf.h"			// runemf2
+#include "strips.h"			// bstrip
 
 #pragma data_seg(DATA1)
 

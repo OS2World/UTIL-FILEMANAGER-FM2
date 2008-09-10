@@ -24,10 +24,15 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
-#include "pathutil.h"                   // BldFullPathName
-#include "fm3dlg.h"
-#include "sysinfo.h"
 #include "fm3dll.h"
+#include "fm3dlg.h"
+#include "pathutil.h"                   // BldFullPathName
+#include "sysinfo.h"
+#include "copyf.h"			// unlinkf
+#include "wrappers.h"			// xfgets
+#include "systemf.h"			// runemf2
+#include "misc.h"			// PostMsg
+#include "strips.h"			// bstrip
 
 #pragma data_seg(DATA1)
 

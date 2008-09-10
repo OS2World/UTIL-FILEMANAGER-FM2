@@ -27,6 +27,7 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "stristr.h"			// stristr
 
 #pragma alloc_text(FSOPEN,_fsopen)
 

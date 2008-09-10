@@ -58,6 +58,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -68,15 +69,17 @@
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
 #include "worker.h"         		// Action, MassAction
-#include "mainwnd.h"			// BubbleHelp, FindDirCnrByName
+#include "mainwnd.h"			// BubbleHelp, FindDirCnrByName, GetNextWindowPos
 #include "misc.h"			// CnrDirectEdit, EmphasizeButton, FindDirCnr
                  			// FindDirCnr, FixSwitchList, OpenEdit, QuickPopup
-                 			// SetSortChecks, SwitchCommand
+                 			// SetSortChecks, SwitchCommand, CheckMenu
+                 			// CurrentRecord, IsFm2Window
 #include "common.h"			// CommonCnrProc, CommonDriveCmd, CommonFrameWndProc
-#include "valid.h"			// DriveFlagsOne, IsValidDrive
+                   			// CommonTextProc
+#include "valid.h"			// CheckDrive, DriveFlagsOne, IsValidDrive
 #include "chklist.h"			// DropListProc
 #include "select.h"			// ExpandAll
-#include "findrec.h"			// FindParentRecord, ShowCnrRecord
+#include "findrec.h"			// FindCnrRecord, FindParentRecord, ShowCnrRecord
 #include "flesh.h"			// Flesh, UnFlesh
 #include "notify.h"			// HideNote
 #include "objwin.h"			// MakeObjWin
@@ -86,8 +89,21 @@
 #include "saveclip.h"			// SaveListDlgProc
 #include "update.h"			// SelectDriveIcon, UpdateCnrList, UpdateCnrRecord
 #include "sortcnr.h"			// SortTreeCnr
-#include "fm3dll.h"
-
+#include "droplist.h"			// AcceptOneDrop, CheckPmDrgLimit, DropHelp, GetOneDrop
+#include "presparm.h"			// CopyPresParams
+#include "defview.h"			// DefaultViewKeys
+#include "draglist.h"			// DoFileDrag
+#include "filter.h"			// Filter
+#include "shadow.h"			// OpenObject
+#include "mkdir.h"			// PMMkDir
+#include "collect.h"			// StartCollector
+#include "viewer.h"			// StartMLEEditor
+#include "newview.h"			// StartViewer
+#include "walkem.h"			// WalkAllDlgProc
+#include "commafmt.h"			// CommaFmtULL
+#include "wrappers.h"			// xDosFindFirst
+#include "systemf.h"			// runemf2
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

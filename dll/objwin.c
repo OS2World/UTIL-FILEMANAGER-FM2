@@ -26,9 +26,7 @@
 #include "arccnrs.h"			// ArcObjWndProc
 #include "errutil.h"			// Win_Error
 #include "fortify.h"
-#ifdef FORTIFY
 #include "misc.h"			// GetTidForThread
-#endif
 #include "collect.h"			// CollectorObjWndProc
 #include "objwin.h"
 #include "treecnr.h"			// TreeObjWndProc

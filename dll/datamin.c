@@ -34,6 +34,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "procstat.h"
@@ -44,7 +45,15 @@
 #include "killproc.h"			// KillDlgProc
 #include "sysinfo.h"			// SysInfoDlgProc
 #include "mainwnd.h"			// TopWindowName
-#include "fm3dll.h"
+#include "commafmt.h"			// CommaFmtUL
+#include "common.h"			// OpenDirCnr
+#include "shadow.h"			// OpenObject
+#include "chklist.h"			// PopupMenu
+#include "presparm.h"			// SetPresParams
+#include "undel.h"			// UndeleteDlgProc
+#include "misc.h"			// GetCmdSpec
+#include "wrappers.h"			// xDosFindFirst
+#include "systemf.h"			// runemf2
 #include "fortify.h"
 
 #pragma data_seg(DATA2)
