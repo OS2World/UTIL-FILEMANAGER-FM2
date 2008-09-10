@@ -21,12 +21,14 @@
 #define INCL_DOS
 #define INCL_LONGLONG
 
-#include "pathutil.h"
-#include "strips.h"			// remove_first_occurence_of_character
 #include "fm3dll.h"			// needs_quoting
 #include "fm3str.h"
+#include "pathutil.h"
+#include "strips.h"			// remove_first_occurence_of_character
+#include "valid.h"			// needs_quoting
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
+#include "wrappers.h"			// xmalloc
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

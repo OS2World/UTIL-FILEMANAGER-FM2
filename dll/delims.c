@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "delims.h"
+
 char *skip_delim(char *a, register char *delim)
 {
 

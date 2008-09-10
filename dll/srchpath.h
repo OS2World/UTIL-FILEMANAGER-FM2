@@ -16,6 +16,7 @@ Change log
 #define SRCHPATH_H
 
 INT RunFM2Util(CHAR *appname, CHAR *filename);
+CHAR *searchpath(CHAR * filename);
 
 
 #endif // SRCHPATH_H

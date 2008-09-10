@@ -41,6 +41,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG                   // dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -51,10 +52,20 @@
 #include "droplist.h"                   // FullDrgName
 #include "inis.h"
 #include "literal.h"			// fixup
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "draglist.h"			// FreeDragInfoData
+#include "input.h"			// InputDlgProc
+#include "valid.h"			// MakeFullName
+#include "notify.h"			// Notify
+#include "presparm.h"			// PresParamChanged
+#include "getnames.h"			// export_filename
+#include "copyf.h"			// unlinkf
 #include "eas.h"                        // HexDump
-#include "fortify.h"
+#include "strips.h"			// bstrip
 #include "misc.h"                       // BoxWindow
+#include "dirs.h"			// save_dir2
+#include "wrappers.h"			// xfopen
+#include "fortify.h"
 
 #pragma data_seg(DATA2)
 

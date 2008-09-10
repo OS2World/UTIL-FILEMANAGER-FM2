@@ -33,6 +33,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "mle.h"
 #include "fm3str.h"
@@ -41,7 +42,13 @@
 #include "notebook.h"                   // httprun etc
 #include "autoview.h"			// CreateHexDump
 #include "saveclip.h"			// SaveToClip
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "chklist.h"			// PosOverOkay
+#include "valid.h"			// TestBinary
+#include "strips.h"			// bstrip
+#include "systemf.h"			// runemf2
+#include "wrappers.h"			// xfopen
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

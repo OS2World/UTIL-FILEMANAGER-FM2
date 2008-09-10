@@ -30,8 +30,9 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "dircnrs.h"
+#include "misc.h"			// CurrentRecord
 #include "fm3dll.h"			// 05 Jan 08 SHL fixme to be gone
-
+#include "wrappers.h"			// xfree
 #include "fortify.h"			// 06 May 08 SHL
 
 static PSZ pszSrcFile = __FILE__;

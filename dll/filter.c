@@ -27,12 +27,19 @@
 #define INCL_DOS
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "pathutil.h"                   // BldFullPathName
-#include "fm3dll.h"
+#include "filter.h"
+#include "select.h"			// SetMask
+#include "literal.h"			// wildcard
+#include "strips.h"			// bstrip
+#include "misc.h"			// CheckDriveSpaceAvail
+#include "wrappers.h"			// xfgets_bstripcr
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 #pragma data_seg(FILTER_DATA)

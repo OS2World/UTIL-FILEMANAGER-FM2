@@ -37,6 +37,7 @@
 #define INCL_LONGLONG                   // dircnrs.h
 #define INCL_WINSTDCNR                  // makelist.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -46,8 +47,10 @@
 #include "pathutil.h"                   // BldFullPathName
 #include "walkem.h"                     // FillPathListBox
 #include "grep2.h"
-#include "fm3dll.h"
+#include "wrappers.h"			// xfgets
 #include "misc.h"                       // LoadLibPath
+#include "strips.h"			// bstrip
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

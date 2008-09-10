@@ -27,13 +27,21 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "pathutil.h"                   // BldFullPathName
 #include "walkem.h"			// FillPathListBox
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "valid.h"			// MakeFullName
+#include "undel.h"
+#include "copyf.h"			// unlinkf
+#include "wrappers.h"			// xfgets
+#include "strips.h"			// bstrip
+#include "misc.h"			// GetCmdSpec
+#include "systemf.h"			// runemf2
 #include "fortify.h"
 
 #pragma data_seg(DATA2)
