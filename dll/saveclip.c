@@ -34,21 +34,31 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "saveclip.h"
 #include "makelist.h"			// AddToList
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "pathutil.h"                   // BldFullPathName
-#include "saveclip.h"
 #include "literal.h"			// fixup
-#include "fm3dll.h"
+#include "subj.h"			// Subject
+#include "getnames.h"			// export_filename
+#include "copyf.h"			// unlinkf
+#include "wrappers.h"			// xfgets
+#include "strips.h"			// bstrip
+#include "misc.h"			// CheckDriveSpaceAvail
+#include "commafmt.h"			// CommaFmtULL
+#include "valid.h"			// IsRoot
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 
 //static VOID ListToClipboard(HWND hwnd, CHAR ** list, ULONG append);
 
+static CHAR **ListFromClipboardHab(HAB hab);
 static BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append);
 
 #define MAX_PATTERN_BYTES 80

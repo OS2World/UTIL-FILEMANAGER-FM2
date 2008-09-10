@@ -21,11 +21,12 @@
 #define INCL_GPI
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
 #include "colors.h"
-#include "fm3dll.h"
+#include "misc.h"			// PostMsg
 
 #pragma data_seg(DATA2)
 

@@ -20,13 +20,17 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "getnames.h"
 #include "walkem.h"			// load_udirs, remove_udir
-#include "fm3dll.h"
+#include "valid.h"			// MakeFullName
+#include "copyf.h"			// unlinkf
+#include "misc.h"			// PaintRecessedWindow
+#include "wrappers.h"			// xDosFindFirst
 
 #pragma data_seg(DATA1)
 

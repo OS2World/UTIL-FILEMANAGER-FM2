@@ -41,6 +41,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "filldir.h"			// RemoveCnrItems
 #include "makelist.h"			// AddToList
@@ -48,7 +49,13 @@
 #include "strutil.h"			// GetPString
 #include "select.h"
 #include "valid.h"			// TestCDates
-#include "fm3dll.h"
+#include "misc.h"			// CurrentRecord
+#include "findrec.h"			// FindCnrRecord
+#include "notify.h"			// Notify
+#include "literal.h"			// wildcard
+#include "wrappers.h"			// xrealloc
+#include "strips.h"			// bstrip
+#include "stristr.h"			// findstring
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

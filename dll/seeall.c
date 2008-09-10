@@ -51,6 +51,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"                   // BldQuotedFullPathName...
@@ -75,10 +76,23 @@
 #include "rename.h"                     // RenameProc
 #include "uudecode.h"                   // UUD
 #include "walkem.h"			// WalkCopyDlgProc, WalkMoveDlgProc
-#include "fm3dll.h"
+#include "archive.h"			// ArchiveDlgProc
+#include "common.h"			// CommonTextProc, DecrThreadUsage, IncrThreadUsage
+#include "defview.h"			// DefaultViewKeys
+#include "eas.h"			// DisplayEAsProc
+#include "mainwnd.h"			// GetNextWindowPos
+#include "filter.h"			// PickMaskDlgProc
+#include "avl.h"			// SBoxDlgProc
+#include "collect.h"			// StartCollector
+#include "subj.h"			// Subject
+#include "commafmt.h"			// commafmt
+#include "literal.h"			// wildcard
+#include "wrappers.h"			// xDosFindNext
 #include "seeall.h"
 #include "misc.h"                       // SetConditionalCascade
-
+#include "fonts.h"			// SetMLEFont
+#include "stristr.h"			// stristr
+#include "systemf.h"			// runemf2
 #include "fortify.h"
 
 #pragma data_seg(DATA2)

@@ -15,6 +15,7 @@ Change log
 #if !defined(SAVECLIP_H)
 #define SAVECLIP_H
 
+CHAR **ListFromClipboard(HWND hwnd);
 VOID ListToClipboardHab(HAB hab, CHAR ** list, ULONG append);
 MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				    MPARAM mp2);

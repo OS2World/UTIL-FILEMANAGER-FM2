@@ -45,14 +45,23 @@
 #define INCL_WINSTDDRAG
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "avl.h"
 #include "strutil.h"			// GetPString
 #include "errutil.h"			// Runtime_Error
 #include "avv.h"			// ArcReviewDlgProc, rewrite_archiverbb2
-#include "droplist.h"			// FullDrgName
-#include "fm3dll.h"
+#include "droplist.h"			// DropHelp, FullDrgName
+#include "misc.h"			// DrawTargetEmphasis
+#include "draglist.h"			// FreeDragInfoData
+#include "chklist.h"			// PosOverOkay
+#include "literal.h"			// literal
+#include "wrappers.h"			// xfgets
+#include "strips.h"			// bstrip
+#include "srchpath.h"			// searchpath
+#include "stristr.h"			// stristr
+#include "delims.h"			// to_delim
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
