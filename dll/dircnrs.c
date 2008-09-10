@@ -63,6 +63,7 @@
 #define INCL_LONGLONG
 #define INCL_WINWORKPLACE
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -77,11 +78,12 @@
 #include "misc.h"			// GetTidForThread, AdjustCnrColsForFSType, AdjustCnrColsForPref
                                         // AdjustDetailsSwitches, CnrDirectEdit, OpenEdit, QuickPopup
                                         // SayFilter, SaySort, SayView, SetCnrCols, SetDetailsSwitches
-                 			// SetSortChecks, SetViewMenu, SwitchCommand
+                 			// SetSortChecks, SetViewMenu, SwitchCommand, CheckMenu
+                 			// CurrentRecord, DrawTargetEmphasis, IsFm2Window
 #include "chklist.h"			// CenterOverWindow, DropListProc
 #include "common.h"			// CommonCnrProc, CommonCreateTextChildren, CommonFrameWndProc
-                   			// CommonTextPaint
-#include "mainwnd.h"			// CountDirCnrs, MakeBubble, TopWindow
+                   			// CommonTextPaint, CommonTextButton, CommonTextProc
+#include "mainwnd.h"			// CountDirCnrs, GetNextWindowPos, MakeBubble, TopWindow
 #include "select.h"			// DeselectAll, HideAll, InvertAll, SelectAll, SelectList
                    			// SpecialSelect2
 #include "dirsize.h"			// DirSizeProc
@@ -90,7 +92,7 @@
 #include "objwin.h"			// MakeObjWin
 #include "notify.h"			// NotifyError
 #include "objcnr.h"			// ObjCnrDlgProc
-#include "draglist.h"			// PickUp
+#include "draglist.h"			// DoFileDrag, FreeDragInfoData, PickUp
 #include "saveclip.h"			// SaveListDlgProc
 #include "findrec.h"			// ShowCnrRecord
 #include "sortcnr.h"			// SortDirCnr
@@ -98,8 +100,22 @@
 #include "update.h"			// UpdateCnrList, UpdateCnrRecord
 #include "walkem.h"			// add_udir
 #include "strips.h"			// chop_at_crnl
-#include "fm3dll.h"
-//#include "avl.h"			// free_archivers
+#include "droplist.h"			// AcceptOneDrop, CheckPmDrgLimit, DropHelp, GetOneDrop
+#include "presparm.h"			// CopyPresParams
+#include "defview.h"			// DefaultViewKeys
+#include "systemf.h"			// ExecOnList
+#include "filter.h"			// Filter
+#include "findrec.h"			// FindCnrRecord
+#include "input.h"			// InputDlgProc
+#include "shadow.h"			// OpenObject
+#include "mkdir.h"			// PMMkDir
+#include "collect.h"			// StartCollector
+#include "viewer.h"			// StartMLEEditor
+#include "newview.h"			// StartViewer
+#include "undel.h"			// UndeleteDlgProc
+#include "commafmt.h"			// commafmt
+#include "getnames.h"			// insert_filename
+#include "wrappers.h"			// xfree
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

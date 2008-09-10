@@ -17,6 +17,9 @@ Change log
 
 VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 		 ULONG flags, CHAR * filename);
+VOID DefaultViewKeys(HWND hwnd, HWND hwndFrame, HWND hwndParent,
+		     SWP * swp, CHAR * filename);
+
 #define QuickView(h,f) DefaultView(h,(HWND)0,(HWND)0,NULL,0,f)
 #define QuickEdit(h,f) DefaultView(h,(HWND)0,(HWND)0,NULL,8,f)
 

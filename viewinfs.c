@@ -15,8 +15,9 @@
 #define INCL_DOS                        // DosSleep
 #define INCL_WIN
 
-#include "dll\fm3dlg.h"
 #include "dll\fm3dll.h"
+#include "dll\fm3dlg.h"
+#include "dll\init.h"			// InitFM3DLL
 #include "dll\viewinf.h"                        // ViewInfProc
 
 int main(int argc, char *argv[])

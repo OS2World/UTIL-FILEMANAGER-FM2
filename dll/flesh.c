@@ -31,6 +31,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "filldir.h"			// FileAttrToString...
 #include "errutil.h"			// Dos_Error...
@@ -38,7 +39,9 @@
 #include "flesh.h"
 #include "valid.h"			// IsValidDir
 #include "misc.h"			// LoadLibPath
-#include "fm3dll.h"
+#include "findrec.h"			// FindCnrRecord
+#include "notify.h"			// Notify
+#include "wrappers.h"			// xfree
 
 #pragma data_seg(DATA1)
 

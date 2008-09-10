@@ -19,6 +19,7 @@
 #define INCL_DOS
 #define INCL_WIN
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// LISTINFO
@@ -26,7 +27,8 @@
 #include "strutil.h"			// GetPString
 #include "defview.h"			// QuickView
 #include "attribs.h"
-#include "fm3dll.h"
+#include "misc.h"			// PaintRecessedWindow
+#include "wrappers.h"			// xDosSetPathInfo
 
 static PSZ pszSrcFile = __FILE__;
 

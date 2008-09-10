@@ -54,6 +54,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "dircnrs.h"
@@ -62,8 +63,15 @@
 #include "filldir.h"			// EmptyCnr...
 #include "dirsize.h"
 #include "select.h"			// ExpandAll
-#include "fm3dll.h"
-
+#include "valid.h"			// CheckDrive
+#include "common.h"			// OpenDirCnr
+#include "shadow.h"			// OpenObject
+#include "presparm.h"			// PresParamChanged
+#include "commafmt.h"			// commafmt
+#include "getnames.h"			// export_filename
+#include "wrappers.h"			// xDosFindNext
+#include "dirs.h"			// save_dir2
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 typedef struct

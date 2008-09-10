@@ -18,10 +18,11 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "dll\fm3dll.h"
 #include "dll\tools.h"
 #include "dll\version.h"
 #include "dll\mainwnd2.h"			// StartFM32
-#include "dll\fm3dll.h"
+#include "dll\init.h"			// InitFM3DLL
 
 int main(int argc, char *argv[])
 {

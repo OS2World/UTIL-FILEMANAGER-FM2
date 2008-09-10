@@ -31,6 +31,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -38,8 +39,15 @@
 #include "strutil.h"			// GetPString
 #include "mainwnd.h"			// BubbleHelp
 #include "cmdline.h"			// CmdLineDlgProc, CmdLine2DlgProc
-#include "fm3dll.h"
+#include "chklist.h"			// PosOverOkay
 #include "pathutil.h"                   // MaxCmdLineStr
+#include "strips.h"			// bstrip
+#include "misc.h"			// CheckDriveSpaceAvail
+#include "srchpath.h"			// searchpath
+#include "wrappers.h"			// xfgets_bstripcr
+#include "valid.h"			// IsFile
+#include "dirs.h"			// save_dir2
+#include "systemf.h"
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

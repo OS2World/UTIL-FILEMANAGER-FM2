@@ -15,6 +15,7 @@ Change log
 #if !defined(INIT_H)
 #define INIT_H
 
+BOOL InitFM3DLL(HAB hab, int argc, char **argv);
 HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
 
 

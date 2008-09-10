@@ -76,6 +76,7 @@
 
 #define DEFINE_GLOBALS 1
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "datamin.h"
 #include "tools.h"
@@ -104,9 +105,16 @@
 #include "timer.h"			// StartTimer, StopTimer
 #include "treecnr.h"			// TreeClientWndProc, TreeStatProc
 #include "newview.h"			// ViewStatusProc, ViewWndProc
-#include "fm3dll.h"
+#include "subj.h"			// Subject
+#include "select.h"			// UnHilite
+#include "dirs.h"			// save_dir
+#include "copyf.h"			// unlinkf
+#include "wrappers.h"			// xDosSetPathInfo
 #include "misc.h"                       // HeapThread, LoadDetailsSwitches
 #include "notebook.h"                   // command line variables (editor etc)
+#include "strips.h"			// bstrip
+#include "killproc.h"			// GetDosPgmName
+#include "srchpath.h"			// searchpath
 #include "fortify.h"
 
 #ifdef __IBMC__
