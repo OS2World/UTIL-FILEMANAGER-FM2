@@ -18,8 +18,10 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
-#include "dll\seeall.h"                 // StartSeeAll
 #include "dll\fm3str.h"
+#include "dll\seeall.h"                 // StartSeeAll
+#include "dll\valid.h"			// IsFile
+#include "dll\init.h"			// InitFM3DLL
 
 int main(int argc, char *argv[])
 {

@@ -17,8 +17,10 @@
 #define INCL_DOS
 #define INCL_WIN
 
-#include "dll\fm3str.h"
 #include "dll\fm3dll.h"
+#include "dll\fm3str.h"
+#include "dll\init.h"			// InitFM3DLL
+#include "dll\collect.h"			// StartCollector
 
 int main(int argc, char *argv[])
 {

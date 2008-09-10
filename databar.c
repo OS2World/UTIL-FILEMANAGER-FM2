@@ -21,9 +21,10 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "dll\fm3dll.h"
 #include "dll\datamin.h"
 #include "dll\fm3dlg.h"
-#include "dll\fm3dll.h"
+#include "dll\init.h"			// InitFM3DLL
 
 #ifdef NEVER				// 05 Jan 08 SHL fixme to be gone?
 

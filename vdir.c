@@ -18,6 +18,9 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
+#include "dll\init.h"			// InitFM3DLL
+#include "dll\valid.h"			// IsFile
+#include "dll\dirs.h"			// save_dir
 
 int main(int argc, char *argv[])
 {

@@ -20,14 +20,19 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
-#include "dll\version.h"
+#include "dll\fm3dll.h"
 #include "dll\fm3str.h"
+#include "dll\version.h"
 #include "dll\arccnrs.h"
 #include "dll\assoc.h"			// ExecAssociation
 #include "dll\defview.h"		// ShowMultimedia
 #include "dll\inis.h"			// StartIniEditor
 #include "dll\dirs.h"			// switch_to
-#include "dll\fm3dll.h"
+#include "dll\viewer.h"			// StartMLEEditor
+#include "dll\getnames.h"			// insert_filename
+#include "dll\copyf.h"			// unlinkf
+#include "dll\init.h"			// InitFM3DLL
+#include "dll\valid.h"			// IsFile
 
 HMTX av2Sem;
 

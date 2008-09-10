@@ -22,9 +22,14 @@
 #define INCL_DOS
 #define INCL_WIN
 
+#include "dll\fm3dll.h"
 #include "dll\fm3dlg.h"
 #include "dll\makelist.h"
-#include "dll\fm3dll.h"
+#include "dll\eas.h"			// DisplayEAsProc
+#include "dll\init.h"			// InitFM3DLL
+#include "dll\valid.h"			// IsFile
+#include "dll\wrappers.h"			// xfree
+#include "dll\getnames.h"			// insert_filename
 
 static PSZ pszSrcFile = __FILE__;
 

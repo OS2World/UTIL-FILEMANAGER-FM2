@@ -20,9 +20,11 @@
 #define INCL_DOS
 #define INCL_WIN
 
+#include "dll\fm3dll.h"
 #include "dll\fm3dlg.h"
 #include "dirsize.h"
-#include "dll\fm3dll.h"
+#include "dll\valid.h"				// CheckDrive
+#include "dll\init.h"			// InitFM3DLL
 #include "dll\dirsize.h"                        // DirSizeProc
 
 MRESULT EXPENTRY DirMainProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

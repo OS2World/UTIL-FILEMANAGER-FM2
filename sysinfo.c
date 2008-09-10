@@ -15,8 +15,9 @@
 #define INCL_DOS
 #define INCL_WIN
 
-#include "dll\fm3dlg.h"
 #include "dll\fm3dll.h"
+#include "dll\fm3dlg.h"
+#include "dll\init.h"			// InitFM3DLL
 #include "dll\sysinfo.h"                        // SysInfoDlgProc
 
 int main(int argc, char *argv[])
