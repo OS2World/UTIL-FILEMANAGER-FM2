@@ -5,7 +5,7 @@
  *    John Small
  *    jsmall@os2world.net
  *
- * Hostory
+ * History
  *    09 Oct 07 jbs: Changed the "find Warpin" code so that it will no longer
  *       mistakenly find a WIC.EXE on the PATH which may not be Warpin's
  *       WIC.EXE
