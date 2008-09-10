@@ -34,6 +34,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -41,12 +42,18 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "autoview.h"			// AutoViewProc
-#include "mainwnd.h"			// BuildDriveBarButtons, TopWindow
+#include "mainwnd.h"			// BuildDriveBarButtons, GetNextWindowPos, TopWindow
 #include "common.h"
 #include "dirsize.h"			// DirSizeProc
 #include "info.h"			// DrvInfoProc, SetDrvProc
 #include "seeall.h"			// StartSeeAll
-#include "fm3dll.h"
+#include "misc.h"			// Broadcast
+#include "valid.h"			// CheckDrive
+#include "mkdir.h"			// PMMkDir
+#include "presparm.h"			// SetPresParams
+#include "undel.h"			// UndeleteDlgProc
+#include "systemf.h"			// runemf2
+#include "wrappers.h"			// xfree
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

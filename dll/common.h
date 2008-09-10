@@ -24,7 +24,13 @@ MRESULT EXPENTRY CommonFrameWndProc(USHORT id,
 				    ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
+MRESULT EXPENTRY CommonTextButton(HWND hwnd, ULONG msg, MPARAM mp1,
+				  MPARAM mp2);
 void CommonTextPaint(HWND hwnd, HPS hps);
-
+MRESULT EXPENTRY CommonTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+VOID DecrThreadUsage(VOID);
+VOID IncrThreadUsage(VOID);
+HWND OpenDirCnr(HWND hwnd, HWND hwndParent, HWND hwndRestore,
+		BOOL noautotile, char *directory);
 
 #endif // COMMON_H

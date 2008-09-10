@@ -62,6 +62,7 @@
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "filldir.h"
 #include "errutil.h"			// Dos_Error...
@@ -71,7 +72,13 @@
 #include "notebook.h"			// INI file fields
 #include "flesh.h"			// FleshEnv, Stubby
 #include "update.h"			// SelectDriveIcon
-#include "fm3dll.h"
+#include "valid.h"			// CheckDrive
+#include "filter.h"			// Filter
+#include "subj.h"			// Subject
+#include "copyf.h"			// unlinkf
+#include "literal.h"			// wildcard
+#include "commafmt.h"			// CommaFmtULL
+#include "wrappers.h"			// xDosFindNext
 
 static PSZ pszSrcFile = __FILE__;
 

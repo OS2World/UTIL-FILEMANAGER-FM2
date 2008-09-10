@@ -28,12 +28,14 @@
 #include <os2.h>
 
 #include "fm3dll.h"
+#include "wrappers.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "command.h"
 #include "tools.h"
 #include "avl.h"
+#include "strips.h"			// bstrip
 
 #include "fortify.h"			// GetPString
 

@@ -29,11 +29,14 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "droplist.h"
-#include "fm3dll.h"
+#include "draglist.h"			// FreeDragInfoData
+#include "misc.h"			// IsFm2Window
+#include "wrappers.h"			// xrealloc
 
 #include "fortify.h"
 

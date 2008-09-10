@@ -17,6 +17,7 @@ Change log
 
 VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 		 CHAR * foldername);
+VOID OpenObject(CHAR * filename, CHAR * type, HWND hwnd);
 BOOL RunSeamless(CHAR * exename, CHAR * args, HWND hwnd);
 
 

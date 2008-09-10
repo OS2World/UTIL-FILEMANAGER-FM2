@@ -64,6 +64,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"                   // BldQuotedFileName
@@ -74,7 +75,13 @@
 #include "defview.h"                    // QuickView
 #include "copyf.h"			// WriteLongName
 #include "strips.h"			// chop_at_crnl
-#include "fm3dll.h"
+#include "valid.h"			// CheckDrive
+#include "presparm.h"			// CopyPresParams
+#include "systemf.h"			// ExecOnList
+#include "viewer.h"			// StartMLEEditor
+#include "subj.h"			// Subject
+#include "wrappers.h"			// xDosSetPathInfo
+#include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"
 #include "misc.h"
 

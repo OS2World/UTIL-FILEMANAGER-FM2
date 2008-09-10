@@ -36,6 +36,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -45,8 +46,13 @@
 #include "autoview.h"
 #include "defview.h"			// DefaultView
 #include "valid.h"			// IsBinary
-#include "fm3dll.h"
-
+#include "misc.h"			// CheckMenu
+#include "common.h"			// CommonTextButton
+#include "presparm.h"			// CopyPresParams
+#include "eas.h"			// DisplayEAsProc
+#include "chklist.h"			// PopupMenu
+#include "wrappers.h"			// xDosSetPathInfo
+#include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
