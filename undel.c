@@ -17,8 +17,12 @@
 
 #define INCL_DOS
 
-#include "dll\fm3dlg.h"
 #include "dll\fm3dll.h"
+#include "dll\fm3dlg.h"
+#include "dll\undel.h"			// UndeleteDlgProc
+#include "dll\init.h"			// InitFM3DLL
+#include "dll\valid.h"			// MakeValidDir
+#include "dll\dirs.h"			// save_dir
 
 int main(int argc, char *argv[])
 {

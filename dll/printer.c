@@ -25,6 +25,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// AddToList
@@ -33,7 +34,12 @@
 #include "notify.h"         		// AddNote
 #include "defview.h"			// QuickView
 #include "printer.h"
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "chklist.h"			// PosOverOkay
+#include "strips.h"			// bstrip
+#include "valid.h"			// IsFile
+#include "wrappers.h"			// xfopen
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

@@ -44,6 +44,10 @@
 #include "valid.h"			// IsExecutable
 #include "srchpath.h"			// RunFM2Util
 #include "inis.h"			// StartIniEditor
+#include "systemf.h"			// ExecOnList
+#include "shadow.h"			// OpenObject
+#include "viewer.h"			// StartMLEEditor
+#include "newview.h"			// StartViewer
 #include "fm3dll.h"
 #include "misc.h"			// ExecFile, ViewHelp
 

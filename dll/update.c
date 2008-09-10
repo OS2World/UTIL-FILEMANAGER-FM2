@@ -29,13 +29,17 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "filldir.h"			// FillInRecordFromFFB
 #include "dircnrs.h"
 #include "flesh.h"			// Flesh, Stubby
 #include "update.h"
-#include "fm3dll.h"
+#include "findrec.h"			// FindCnrRecord
+#include "valid.h"			// IsFullName
+#include "wrappers.h"			// xDosFindFirst
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
