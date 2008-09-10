@@ -25,6 +25,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "seticon.h"
 #include "fm3dll.h"
+#include "wrappers.h"			// xfsopen
 #include "fortify.h"
 
 #pragma data_seg(DATA2)

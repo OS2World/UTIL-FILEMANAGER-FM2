@@ -27,14 +27,19 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "pathutil.h"                   // BldFullPathName
-#include "valid.h"			// FillInDriveFlags
+#include "valid.h"			// CheckDrive, FillInDriveFlags
 #include "remap.h"
-#include "fm3dll.h"
+#include "wrappers.h"			// xfgets
+#include "strips.h"			// bstrip
+#include "misc.h"			// CheckDriveSpaceAvail
+#include "systemf.h"			// runemf2
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

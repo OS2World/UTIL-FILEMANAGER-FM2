@@ -21,6 +21,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -28,7 +29,10 @@
 #include "notebook.h"                   // targetdirectoy
 #include "mkdir.h"
 #include "walkem.h"			// WalkTargetDlgProc
-#include "fm3dll.h"
+#include "misc.h"			// Broadcast
+#include "valid.h"			// IsFullName
+#include "dirs.h"			// save_dir2
+#include "input.h"			// InputDlgProc
 
 #pragma alloc_text(MKDIR,MassMkdir,SetDir,PMMkDir,SetTargetDir)
 

@@ -37,16 +37,19 @@
 #define INCL_DOSDEVIOCTL		// DosDevIOCtl
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "valid.h"
-#include "fm3dll.h"
+#include "dirs.h"			// save_dir2
+#include "strips.h"			// bstrip
 
 static PSZ pszSrcFile = __FILE__;
 
 //static BOOL IsDesktop(HAB hab, HWND hwnd);
 //static BOOL IsFileSame(CHAR * filename1, CHAR * filename2);
+//static char *IsVowel(char a);
 
 APIRET MakeFullName(char *pszFileName)
 {
@@ -942,10 +945,12 @@ BOOL TestBinary(CHAR * filename)
   return FALSE;
 }
 
+#if 0	// JBS
 char *IsVowel(char a)
 {
   return (strchr("aeiouAEIOU", a) != NULL) ? "n" : NullStr;
 }
+#endif
 
 VOID GetDesktopName(CHAR * objectpath, ULONG size)
 {

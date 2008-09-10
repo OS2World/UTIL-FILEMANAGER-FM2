@@ -27,6 +27,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -38,8 +39,14 @@
 #include "viewer.h"
 #include "codepage.h"			// PickCodepage
 #include "dirs.h"			// switch_to
-#include "fm3dll.h"
+#include "input.h"			// InputDlgProc
+#include "valid.h"			// ParentIsDesktop
+#include "chklist.h"			// PopupMenu
+#include "newview.h"			// StartViewer
+#include "getnames.h"			// export_filename
 #include "misc.h"			// SetMenuCheck, disable_menuitem
+#include "fonts.h"			// SetMLEFont
+#include "wrappers.h"			// xfopen
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
