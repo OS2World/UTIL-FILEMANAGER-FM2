@@ -17,6 +17,9 @@ Change log
 
 PSZ fixup(const PCH pachInBuf, PSZ pszOutBuf, const UINT cBufBytes,
 	  const UINT cInBytes);
+UINT literal(PSZ pszBuf);
+BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
+	      const BOOL fNotFileSpec);
 
 
 #endif // LITERAL_H

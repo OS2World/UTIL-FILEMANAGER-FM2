@@ -23,6 +23,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// AddToList
@@ -33,7 +34,8 @@
 #include "info.h"			// FileInfoProc
 #include "defview.h"			// QuickView
 #include "valid.h"			// IsExecutable
-#include "fm3dll.h"
+#include "walkem.h"			// WalkAllDlgProc
+#include "misc.h"			// PaintRecessedWindow
 
 #pragma data_seg(DATA1)
 

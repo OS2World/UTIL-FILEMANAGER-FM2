@@ -15,6 +15,7 @@ Change log
 #if !defined(FONTS_H)
 #define FONTS_H
 
+FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags);
 VOID SetPresParamFromFattrs(HWND hwnd, FATTRS * fattrs,
 			    SHORT sNominalPointSize, FIXED fxPointSize);
 

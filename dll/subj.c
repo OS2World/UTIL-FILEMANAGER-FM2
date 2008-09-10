@@ -25,11 +25,15 @@
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "fm3dll.h"
+#include "input.h"			// InputDlgProc
+#include "subj.h"
+#include "wrappers.h"			// xDosSetPathInfo
+#include "strips.h"			// bstrip
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

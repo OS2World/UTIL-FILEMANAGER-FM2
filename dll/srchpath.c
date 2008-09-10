@@ -25,9 +25,13 @@
 #include "pathutil.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
 #include "srchpath.h"
+#include "systemf.h"			// runemf2
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;
+
+// static CHAR *first_path(CHAR * path, CHAR * ret);
+static CHAR *searchapath(CHAR * path, CHAR * filename);
 
 #pragma data_seg(DATA1)
 
@@ -68,6 +72,7 @@ INT RunFM2Util(CHAR *appname, CHAR *filename)
     return ret;
 }
 
+#if 0	// JBS
 CHAR *first_path(CHAR * path, CHAR * ret)
 {
 
@@ -90,6 +95,7 @@ CHAR *first_path(CHAR * path, CHAR * ret)
   }
   return ret;
 }
+#endif
 
 /**
  * Search for file in name PATH env variable

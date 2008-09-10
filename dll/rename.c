@@ -20,6 +20,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -27,7 +28,9 @@
 #include "copyf.h"			// AdjustWildcardName
 #include "rename.h"
 #include "valid.h"			// TestFDates
-#include "fm3dll.h"
+#include "mkdir.h"			// SetDir
+#include "commafmt.h"			// CommaFmtULL
+#include "strips.h"			// bstrip
 
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {

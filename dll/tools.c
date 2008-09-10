@@ -32,6 +32,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "tools.h"
 #include "fm3str.h"
@@ -40,7 +41,16 @@
 #include "pathutil.h"                   // BldFullPathName
 #include "fortify.h"
 #include "loadbmp.h"			// LoadBitmapFromFileNum
-#include "fm3dll.h"
+#include "copyf.h"			// docopyf
+#include "literal.h"			// literal
+#include "wrappers.h"			// xfgets
+#include "misc.h"			// CheckDriveSpaceAvail
+#include "srchpath.h"			// searchpath
+#include "stristr.h"			// stristr
+#include "valid.h"			// IsFile
+#include "systemf.h"			// runemf2
+#include "dirs.h"			// save_dir2
+#include "strips.h"			// bstrip
 
 #pragma data_seg(DATA1)
 
