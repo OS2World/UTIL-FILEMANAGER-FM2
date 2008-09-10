@@ -1,4 +1,10 @@
-/* ShdwMgr: Create Shadows for FM/2 installation */
+/*
+ * $Id$
+ *
+ * ShdwMgr: Create Shadows for FM/2 installation */
+ *
+ */
+
 call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
 call SysLoadFuncs
 
