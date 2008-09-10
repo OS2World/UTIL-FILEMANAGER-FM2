@@ -83,6 +83,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
@@ -100,6 +101,7 @@
 #include "mainwnd.h"
 #include "cmdline.h"			// CmdLine2DlgProc, save_cmdlines
 #include "common.h"			// CommonCreateMainChildren, CommonDriveCmd, CommonMainWndProc
+					// CommonTextButton
 #include "notify.h"			// DoNotify, HideNote, ShowNote
 #include "draglist.h"			// DragOne
 #include "chklist.h"			// DropListProc
@@ -108,7 +110,8 @@
 #include "fm2cmd.h"			// FM2Command
 #include "misc.h"			// FindDirCnr, FixSwitchList, PaintSTextWindow,
 					// SetConditionalCascade, SetMenuCheck, SetSysMenu
-					// SwitchCommand
+					// SwitchCommand, CheckMenu, DrawTargetEmphasis
+					// IsFm2Window
 #include "instant.h"			// InstantDlgProc
 #include "killproc.h"			// KillDlgProc
 #include "loadbmp.h"			// LoadBitmapFromFileNum
@@ -123,8 +126,19 @@
 #include "winlist.h"			// WindowList
 #include "cmdline.h"			// add_cmdline
 #include "assoc.h"			// free_associations
-#include "fm3dll.h"
-
+#include "droplist.h"			// AcceptOneDrop, CheckPmDrgLimit, DropHelp, GetOneDrop
+#include "common.h"			// CommonTextProc
+#include "presparm.h"			// CopyPresParams
+#include "systemf.h"			// ExecOnList
+#include "shadow.h"			// OpenObject
+#include "mkdir.h"			// PMMkDir
+#include "collect.h"			// StartCollector
+#include "select.h"			// UnHilite
+#include "strips.h"			// bstrip
+#include "commafmt.h"			// CommaFmtULL
+#include "valid.h"			// IsFullName
+#include "dirs.h"			// save_dir2
+#include "wrappers.h"			// xfree
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

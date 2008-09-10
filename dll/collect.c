@@ -69,6 +69,7 @@
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -86,7 +87,8 @@
 #include "misc.h"         		// AdjustCnrColsForPref, AdjustDetailsSwitches, CnrDirectEdit,
 					// LoadDetailsSwitches, OpenEdit, QuickPopup, SayFilter
 					// SaySort, SayView, SetCnrCols, SetDetailsSwitches
-					// SetSortChecks, SetViewMenu, disable_menuitem
+					// SetSortChecks, SetViewMenu, disable_menuitem, CheckMenu
+					// CurrentRecord, DrawTargetEmphasis, IsFm2Window
 #include "chklist.h"			// CenterOverWindow, DropListProc
 #include "collect.h"
 #include "common.h"			// CommonCnrProc, CommonCreateTextChildren, CommonFrameWndProc
@@ -101,9 +103,25 @@
 #include "sortcnr.h"			// SortCollectorCnr
 #include "seeall.h"			// StartSeeAll
 #include "update.h"			// UpdateCnrList, UpdateCnrRecord
-#include "fm3dll.h"
+#include "droplist.h"			// CheckPmDrgLimit
+#include "common.h"			// CommonTextButton, CommonTextProc
+#include "presparm.h"			// CopyPresParams
+#include "defview.h"			// DefaultViewKeys
+#include "draglist.h"			// DoFileDrag, FreeDragInfoData
+#include "systemf.h"			// ExecOnList
+#include "filter.h"			// Filter
+#include "findrec.h"			// FindCnrRecord
+#include "shadow.h"			// OpenObject
+#include "mkdir.h"			// PMMkDir
+#include "valid.h"			// ParentIsDesktop
+#include "viewer.h"			// StartMLEEditor
+#include "newview.h"			// StartViewer
+#include "undel.h"			// UndeleteDlgProc
+#include "commafmt.h"			// commafmt
+#include "getnames.h"			// insert_filename
 #include "select.h"			// InvertAll
-
+#include "strips.h"			// bstrip
+#include "wrappers.h"			// xDosFindFirst
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

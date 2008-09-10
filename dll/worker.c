@@ -47,6 +47,7 @@
 #define INCL_WINWORKPLACE
 #define INCL_WINSHELLDATA
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "comp.h"			// FCOMPARE
@@ -75,8 +76,15 @@
 #include "mainwnd.h"			// TopWindowName
 #include "uudecode.h"			// UUD
 #include "walkem.h"			// WalkCopyDlgProc, WalkDlgProc, WalkMoveDlgProc
-#include "fm3dll.h"
-
+#include "archive.h"			// ArchiveDlgProc
+#include "misc.h"			// Broadcast
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "eas.h"			// DisplayEAsProc
+#include "systemf.h"			// ExecOnList
+#include "avl.h"			// SBoxDlgProc
+#include "subj.h"			// Subject
+#include "stristr.h"			// stristr
+#include "wrappers.h"			// xfopen
 #include "fortify.h"
 
 #pragma data_seg(DATA2)

@@ -28,7 +28,10 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "shadow.h"
+#include "input.h"			// InputDlgProc
 #include "fm3dll.h"
+#include "valid.h"			// IsFile
+#include "wrappers.h"			// xmalloc
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

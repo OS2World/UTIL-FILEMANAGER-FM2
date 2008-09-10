@@ -33,10 +33,13 @@
 #define INCL_SHLERRORS
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "errutil.h"			// Dos_Error...
 #include "draglist.h"
 #include "valid.h"			// IsValidDrive
-#include "fm3dll.h"
+#include "misc.h"			// IsFm2Window
+#include "select.h"			// MarkAll
+#include "wrappers.h"			// xrealloc
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

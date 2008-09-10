@@ -28,9 +28,11 @@
 #define INCL_GPI
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "errutil.h"			// Dos_Error...
 #include "loadbmp.h"
-#include "fm3dll.h"
+#include "wrappers.h"			// xfree
+#include "dirs.h"			// save_dir2
 
 static PSZ pszSrcFile = __FILE__;
 
