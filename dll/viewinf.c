@@ -28,14 +28,19 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "pathutil.h"                   // BldFullPathName
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
 #include "viewinf.h"
 #include "misc.h"                       // ViewHelp
+#include "strips.h"			// bstrip
+#include "systemf.h"			// runemf2
+#include "dirs.h"			// save_dir2
+#include "wrappers.h"			// xfopen
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

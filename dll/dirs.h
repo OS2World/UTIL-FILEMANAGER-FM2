@@ -15,6 +15,8 @@ Change log
 #if !defined(DIRS_H)
 #define DIRS_H
 
+APIRET save_dir(CHAR * curdir);
+APIRET save_dir2(CHAR * curdir);
 APIRET switch_to(CHAR * s);
 
 

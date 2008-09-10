@@ -28,9 +28,10 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "errutil.h"			// Dos_Error...
 #include "literal.h"
-#include "fm3dll.h"
+#include "wrappers.h"			// xmalloc
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;

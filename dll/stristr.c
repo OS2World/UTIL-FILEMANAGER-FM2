@@ -17,11 +17,16 @@
 
 #include <os2.h>
 
-CHAR *stristr(register CHAR * t, CHAR * s)
+#include "stristr.h"
+
+// static CHAR *strnistr(register CHAR * t, CHAR * s, LONG len);
+
+CHAR *stristr(const register CHAR * t, const CHAR * s)
+// CHAR *stristr(register CHAR * t, CHAR * s)
 {
   /* case-insensitive strstr() */
 
-  register CHAR *t1, *s1;
+  const register CHAR *t1, *s1;
 
   while (*t) {
     t1 = t;
@@ -35,12 +40,13 @@ CHAR *stristr(register CHAR * t, CHAR * s)
       }
     }
     if (!*s1)
-      return t1;
+      return (CHAR *)t1;
     t = t1 + 1;
   }
   return NULL;
 }
 
+#if 0	// JBS
 CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
 {
   /* case-insensitive strnstr() */
@@ -65,6 +71,7 @@ CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
   }
   return NULL;
 }
+#endif
 
 CHAR *strnstr(register CHAR * t, CHAR * s, LONG len)
 {

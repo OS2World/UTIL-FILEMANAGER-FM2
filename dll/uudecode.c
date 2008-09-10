@@ -26,6 +26,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG                   // dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"                   // AddToList
@@ -33,7 +34,10 @@
 #include "strutil.h"                    // GetPString
 #include "defview.h"
 #include "uudecode.h"
-#include "fm3dll.h"
+#include "getnames.h"			// export_filename
+#include "valid.h"			// IsFile
+#include "misc.h"			// PaintRecessedWindow
+#include "wrappers.h"			// xfgets
 
 static PSZ pszSrcFile = __FILE__;
 

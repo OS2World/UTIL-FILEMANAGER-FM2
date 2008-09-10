@@ -37,6 +37,7 @@
 #define INCL_GPI
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// AddToList
@@ -45,9 +46,18 @@
 #include "attribs.h"			// AttrListDlgProc
 #include "defview.h"			// DefaultView
 #include "info.h"
-#include "valid.h"			// IsBinary
+#include "valid.h"			// CheckDrive, IsBinary
 #include "seticon.h"			// SetIconDlgProc
-#include "fm3dll.h"
+#include "droplist.h"			// AcceptOneDrop, DropHelp, GetOneDrop
+#include "eas.h"			// DisplayEAsProc
+#include "misc.h"			// DrawTargetEmphasis
+#include "notify.h"			// Notify
+#include "shadow.h"			// OpenObject
+#include "chklist.h"			// PopupMenu
+#include "presparm.h"			// SetPresParams
+#include "strips.h"			// bstrip
+#include "commafmt.h"			// CommaFmtULL
+#include "wrappers.h"			// xDosFindFirst
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

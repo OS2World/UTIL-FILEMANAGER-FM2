@@ -78,6 +78,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "arccnrs.h"			// StartArcCnr
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -91,21 +92,40 @@
 #include "avv.h"			// ArcReviewDlgProc, rewrite_archiverbb2
 #include "chklist.h"			// CenterOverWindow, CheckListProc
 #include "common.h"			// CommonCreateTextChildren, CommonFrameWndProc, CommonTextPaint
-#include "draglist.h"			// DragOne
+                   			// CommonTextButton
+#include "draglist.h"			// DoFileDrag, DragOne
 #include "valid.h"			// GetDesktopName, TestCDates
-#include "mainwnd.h"			// MakeBubble, TopWindowName
+#include "mainwnd.h"			// GetNextWindowPos, MakeBubble, TopWindowName
 #include "objwin.h"			// MakeObjWin
 #include "shadow.h"			// MakeShadows
 #include "objcnr.h"			// ObjCnrDlgProc
 #include "printer.h"			// PrintListThread
 #include "srchpath.h"			// RunFM2Util
-#include "misc.h"			// SayFilter, SaySort
+#include "misc.h"			// Broadcast, CheckMenu, CurrentRecord, SayFilter, SaySort
+                 			// DrawTargetEmphasis, IsFm2Window
 #include "select.h"			// SelectAll, SelectList
 #include "findrec.h"			// ShowCnrRecord
 #include "walkem.h"			// WalkExtractDlgProc
-#include "fm3dll.h"
+#include "droplist.h"			// AcceptOneDrop, CheckPmDrgLimit, DropHelp, GetOneDrop
+#include "archive.h"			// ArchiveDlgProc
+#include "common.h"			// CommonTextProc
+#include "presparm.h"			// CopyPresParams
+#include "defview.h"			// DefaultViewKeys
+#include "systemf.h"			// ExecOnList
+#include "filter.h"			// PickMaskDlgProc
+#include "avl.h"			// SBoxDlgProc
+#include "mkdir.h"			// SetDir
+#include "collect.h"			// StartCollector
+#include "viewer.h"			// StartMLEEditor
+#include "newview.h"			// StartViewer
+#include "commafmt.h"			// commafmt
+#include "copyf.h"			// unlinkf
+#include "literal.h"			// wildcard
+#include "wrappers.h"			// xrealloc
 #include "misc.h"         		// AdjustCnrColVis, QuickPopup, SetSortChecks, SwitchCommand
 #include "select.h"			// DeselectAll, InvertAll
+#include "strips.h"			// bstrip
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
