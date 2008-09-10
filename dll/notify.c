@@ -32,7 +32,10 @@
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "notify.h"
+#include "presparm.h"			// SetPresParams
 #include "fm3dll.h"
+#include "wrappers.h"			// xmalloc
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 #pragma data_seg(DATA1)

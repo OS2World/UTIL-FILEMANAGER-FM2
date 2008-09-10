@@ -16,5 +16,8 @@ Change log
 #define MKDIR_H
 
 APIRET MassMkdir(HWND hwndClient, CHAR * dir);
+BOOL PMMkDir(HWND hwnd, CHAR * filename, BOOL copy);
+APIRET SetDir(HWND hwndClient, HWND hwnd, CHAR * dir, INT flags);
+void SetTargetDir(HWND hwnd, BOOL justshow);
 
 #endif // MKDIR_H

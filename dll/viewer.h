@@ -16,6 +16,7 @@ Change log
 #define VIEWER_H
 
 MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+HWND StartMLEEditor(HWND hwnd, INT flags, CHAR * filename, HWND hwndRestore);
 
 
 #endif // VIEWER_H

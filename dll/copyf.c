@@ -32,15 +32,22 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3str.h"
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "copyf.h"
 #include "literal.h"                    // fixup
-#include "fm3dll.h"
+#include "misc.h"			// Broadcast
+#include "valid.h"			// MakeFullName
+#include "wrappers.h"			// xDosSetPathInfo
+#include "strips.h"			// bstrip
 #include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
+
+static CHAR *GetLongName(CHAR * oldname, CHAR * buffer);
+static CHAR *TruncName(CHAR * oldname, CHAR * buffer);
 
 //static CHAR default_disk(VOID);
 //static INT unlink_allf(CHAR * string, ...);

@@ -32,6 +32,7 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "procstat.h"
@@ -40,7 +41,12 @@
 #include "pathutil.h"			// BldFullPathName
 #include "killproc.h"
 #include "systemf.h"			// ShowSession
-#include "fm3dll.h"
+#include "common.h"			// DecrThreadUsage, IncrThreadUsage
+#include "notify.h"			// Notify
+#include "copyf.h"			// unlinkf
+#include "wrappers.h"			// xfgets
+#include "stristr.h"			// stristr
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 #pragma data_seg(DATA2)

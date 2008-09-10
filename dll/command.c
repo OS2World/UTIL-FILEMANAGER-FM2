@@ -37,15 +37,22 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
 #include "arccnrs.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "fm3dll.h"
+#include "droplist.h"			// AcceptOneDrop, DropHelp, GetOneDrop
+#include "misc.h"			// DrawTargetEmphasis
+#include "systemf.h"			// ExecOnList
+#include "getnames.h"			// insert_filename
+#include "wrappers.h"			// xfgets
 #include "pathutil.h"                   // NormalizeCmdLine
 #include "command.h"
+#include "strips.h"			// bstrip
+#include "dirs.h"			// save_dir2
 #include "fortify.h"
 
 typedef struct

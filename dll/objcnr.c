@@ -34,14 +34,17 @@
 #define INCL_DOSERRORS
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "objcnr.h"
-#include "fm3dll.h"
+#include "notify.h"			// Notify
+#include "wrappers.h"			// xDosFindNext
 #include "select.h"                     // ExpandAll
-
+#include "valid.h"			// IsRoot
+#include "misc.h"			// PostMsg
 #include "fortify.h"
 
 typedef struct
