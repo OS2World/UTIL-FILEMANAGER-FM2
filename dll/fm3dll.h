@@ -84,6 +84,7 @@
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   16 JUL 08 GKY Use TMP directory for temp files
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use MakeTempName; Remove LISTTEMPROOT
+  xx Sep 08 JBS Ticket 187 (Refactor fm2dll.h): All function declarations moved to other include files.
 
 ***********************************************************************/
 
