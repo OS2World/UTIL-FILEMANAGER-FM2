@@ -1,4 +1,22 @@
 
+/***********************************************************************
+
+$Id$
+
+Function declarations neither called or defined in FM/2 source files
+
+Copyright (c) 1993-98 M. Kimes
+Copyright (c) 2008 Steven H. Levine
+
+Change log
+
+***********************************************************************/
+
+#if !defined(OBSOLETE_H)
+#define OBSOLETE_H
+
+
+
 /**************************************************/
 /* Lazy Drag API's.                               */
 /**************************************************/
@@ -32,3 +50,5 @@ MRESULT EXPENTRY FileListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 BOOL FilterAttrs(PCNRITEM pci, MASK * mask);
 MRESULT EXPENTRY ProgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+
+#endif // OBSOLETE_H
