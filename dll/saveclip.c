@@ -117,7 +117,7 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
   return ret;
 }
 
-#if 0	// JBS
+#if 0	// JBS	11 Sep 08
 VOID ListToClipboard(HWND hwnd, CHAR ** list, ULONG append)
 {
   HAB hab = WinQueryAnchorBlock(hwnd);

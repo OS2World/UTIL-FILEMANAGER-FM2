@@ -110,7 +110,7 @@ VOID SetPresParamFromFattrs(HWND hwnd, FATTRS * fattrs,
   WinSetPresParam(hwnd, PP_FONTNAMESIZE, strlen(s) + 1, s);
 }
 
-#if 0   // JBS
+#if 0   // JBS	11 Sep 08
 VOID SetFont(HWND hwnd)
 {
 

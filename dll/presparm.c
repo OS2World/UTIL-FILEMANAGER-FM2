@@ -382,7 +382,7 @@ VOID SetPresParams(HWND hwnd, RGB2 * back, RGB2 * fore, RGB2 * border,
     WinSetPresParam(hwnd, PP_BORDERCOLOR, sizeof(RGB2), (PVOID) border);
 }
 
-#if 0   // JBS
+#if 0   // JBS	11 Sep 08
 VOID IfNoParam(HWND hwnd, CHAR * keyroot, ULONG size, PVOID attrvalue)
 {
   ULONG fsize = 0;

@@ -186,7 +186,7 @@ BOOL IsNewer(char *file1, char *file2)
   return (TestFDates(file1, file2, NULL, NULL, NULL, NULL) > 0);
 }
 
-#if 0 	// JBS
+#if 0 	// JBS	11 Sep 08
 BOOL IsDesktop(HAB hab, HWND hwnd)
 {
   HWND hwndDesktop;
@@ -409,7 +409,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   return NonRemovable ? 0 : 1;
 }
 
-#if 0	// JBS
+#if 0	// JBS	11 Sep 08
 BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 {
   /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
@@ -945,7 +945,7 @@ BOOL TestBinary(CHAR * filename)
   return FALSE;
 }
 
-#if 0	// JBS
+#if 0	// JBS	11 Sep 08
 char *IsVowel(char a)
 {
   return (strchr("aeiouAEIOU", a) != NULL) ? "n" : NullStr;

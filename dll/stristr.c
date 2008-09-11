@@ -46,7 +46,7 @@ CHAR *stristr(const register CHAR * t, const CHAR * s)
   return NULL;
 }
 
-#if 0	// JBS
+#if 0	// JBS	11 Sep 08
 CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
 {
   /* case-insensitive strnstr() */

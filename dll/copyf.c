@@ -366,7 +366,7 @@ BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname)
   return ret;
 }
 
-#if 0   // JBS
+#if 0   // JBS	11 Sep 08
 CHAR default_disk(VOID)
 {
   ULONG ulDriveNum, ulDriveMap;
@@ -819,7 +819,7 @@ INT wipeallf(CHAR *string, ...)
   return 0;
 }
 
-#if 0   // JBS
+#if 0   // JBS	11 Sep 08
 INT unlink_allf(CHAR * string, ...)
 {
   /* wildcard delete */

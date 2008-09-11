@@ -83,7 +83,7 @@ VOID remove_first_occurence_of_character(char *pszRemoveChar, char *pszSrc)
     memmove(pszStrLocation, pszStrLocation + 1, strlen(pszStrLocation) + 1);
 }
 
-#if 0    // JBS
+#if 0    // JBS	11 Sep 08
 VOID remove_last_occurence_of_character(char *pszRemoveChar, char *pszSrc)
 {
   PSZ pszStrLocation;

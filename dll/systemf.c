@@ -1245,7 +1245,7 @@ ObjectInterrupt:
 }
 
 //== Exec() Start application with WinStartApp ==
-#if 0  //JBS
+#if 0  // JBS	11 Sep 08
 HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
           PROGTYPE *progt, ULONG fl, char *formatstring,...)
 {

@@ -72,7 +72,7 @@ INT RunFM2Util(CHAR *appname, CHAR *filename)
     return ret;
 }
 
-#if 0	// JBS
+#if 0	// JBS	11 Sep 08
 CHAR *first_path(CHAR * path, CHAR * ret)
 {
 
