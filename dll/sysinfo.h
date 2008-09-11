@@ -1,14 +1,14 @@
 
 /***********************************************************************
 
-$Id: $
+  $Id$
 
-<<<description here>>>
+  <<<description here>>>
 
-Copyright (c) 1993-98 M. Kimes
-Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2008 Steven H. Levine
 
-Change log
+  Change log
 
 ***********************************************************************/
 
