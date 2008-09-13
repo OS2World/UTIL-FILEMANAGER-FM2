@@ -28,6 +28,12 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "arccnrs.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...

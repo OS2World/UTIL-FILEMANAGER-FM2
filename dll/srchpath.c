@@ -20,13 +20,14 @@
 #define INCL_DOS
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
 #include "srchpath.h"
 #include "systemf.h"			// runemf2
-#include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
 
 static PSZ pszSrcFile = __FILE__;
 

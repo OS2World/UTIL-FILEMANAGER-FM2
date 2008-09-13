@@ -22,6 +22,9 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"
+#include "filldir.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"			// BldFullPathName
@@ -29,7 +32,7 @@
 #include "strutil.h"			// GetPString
 #include "shadow.h"
 #include "input.h"			// InputDlgProc
-#include "fm3dll.h"
+#include "defview.h"			// Data declaration(s)
 #include "valid.h"			// IsFile
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"

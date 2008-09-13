@@ -52,6 +52,12 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "arccnrs.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "worker.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"                   // BldQuotedFullPathName...

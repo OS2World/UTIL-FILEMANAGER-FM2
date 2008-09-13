@@ -42,6 +42,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3str.h"
 #include "filldir.h"			// RemoveCnrItems
 #include "makelist.h"			// AddToList

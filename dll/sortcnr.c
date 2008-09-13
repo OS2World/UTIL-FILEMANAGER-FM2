@@ -20,6 +20,10 @@
 #define INCL_WIN
 
 #include "fm3dll.h"
+#include "dircnrs.h"			// Data declaration(s)
+#include "treecnr.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "collect.h"			// Data declarations
 #include "sortcnr.h"
 #include "valid.h"                      // TestCDates
 
