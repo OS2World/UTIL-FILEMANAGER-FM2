@@ -33,6 +33,9 @@
 #include <os2.h>
 #include <os2me.h>
 
+#include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "arccnrs.h"			// StartArcCnr
 #include "errutil.h"			// Dos_Error...
@@ -48,10 +51,14 @@
 #include "shadow.h"			// OpenObject
 #include "viewer.h"			// StartMLEEditor
 #include "newview.h"			// StartViewer
-#include "fm3dll.h"
+#include "mainwnd.h"			// Data declaration(s)
 #include "misc.h"			// ExecFile, ViewHelp
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL2)
+CHAR *Default;
 
 BOOL ShowMultimedia(CHAR * filename)
 {

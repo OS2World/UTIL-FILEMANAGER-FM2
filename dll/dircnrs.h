@@ -168,4 +168,10 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 #define DATADEF extern
 #endif
 
+// Data declarations
+extern HWND DirCnrMenu;
+extern HWND hwndAttr;
+extern HWND hwndDate;
+extern INT sortFlags;
+
 #endif // DIRCNRS_H

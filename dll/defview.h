@@ -25,5 +25,7 @@ VOID DefaultViewKeys(HWND hwnd, HWND hwndFrame, HWND hwndParent,
 
 BOOL ShowMultimedia(CHAR * filename);
 
+// Data declarations
+extern CHAR *Default;
 
 #endif // DEFVIEW_H

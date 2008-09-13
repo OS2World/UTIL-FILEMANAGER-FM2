@@ -35,6 +35,11 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "info.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "inis.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "defview.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "procstat.h"
@@ -56,16 +61,24 @@
 #include "systemf.h"			// runemf2
 #include "fortify.h"
 
-#pragma data_seg(DATA2)
-
-static PSZ pszSrcFile = __FILE__;
-
 APIRET16 APIENTRY16 Dos16MemAvail(PULONG pulAvailMem);
 
 static volatile HEV G_hevDataMin = NULLHANDLE;
 static volatile HWND G_hwndSingle = NULLHANDLE;
 
 static VOID dataminThread(VOID * pv);
+
+// Data definitions
+#pragma data_seg(GLOBAL1)
+HWND DataHwnd;
+BOOL fDataInclRemote;
+BOOL fDataShowDrives;
+BOOL fDataToFore;
+BOOL fDullMin;
+
+#pragma data_seg(DATA2)
+
+static PSZ pszSrcFile = __FILE__;
 
 long MINI_X = 208, MINI_Y = 16;
 

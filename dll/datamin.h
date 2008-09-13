@@ -38,4 +38,11 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND CreateDataBar(HWND hwndParent, ULONG fl);
 
+// Data declarations
+extern HWND DataHwnd;
+extern BOOL fDataInclRemote;
+extern BOOL fDataShowDrives;
+extern BOOL fDataToFore;
+extern BOOL fDullMin;
+
 #endif // DATAMIN_H

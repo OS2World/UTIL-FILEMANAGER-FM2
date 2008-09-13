@@ -64,6 +64,12 @@
 #define INCL_WINWORKPLACE
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "treecnr.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -117,6 +123,15 @@
 #include "getnames.h"			// insert_filename
 #include "wrappers.h"			// xfree
 #include "fortify.h"
+
+// Data definitions
+#pragma data_seg(GLOBAL1)
+HWND DirCnrMenu;
+HWND hwndAttr;
+HWND hwndDate;
+
+#pragma data_seg(GLOBAL2)
+INT sortFlags;
 
 #pragma data_seg(DATA1)
 
