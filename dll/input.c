@@ -21,11 +21,13 @@
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
+#include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "input.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "input.h"
 #include "fm3dll.h"
 
 static PSZ pszSrcFile = __FILE__;

@@ -16,6 +16,8 @@
 
 #define MAINWND_H
 
+#include "colors.h"		// typedef for RGB2
+
 void BubbleHelp(HWND hwnd, BOOL other, BOOL data, BOOL above, char *help);
 MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID BuildDriveBarButtons(HWND hwndT);

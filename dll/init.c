@@ -63,6 +63,7 @@
 #include <string.h>
 #include <share.h>
 #include <process.h>
+#include <time.h>
 
 #define INCL_DOS
 #define INCL_WIN
@@ -77,13 +78,14 @@
 #define DEFINE_GLOBALS 1
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "init.h"
 #include "mkdir.h"			// Data declaration(s)
 #include "dircnrs.h"			// Data declaration(s)
 #include "comp.h"			// Data declaration(s)
 #include "cmdline.h"			// Data declaration(s)
 #include "fm2cmd.h"			// Data declaration(s)
 #include "printer.h"                    // Data declaration(s)
-#include "init.h"                       // Data declaration(s)
 #include "flesh.h"                      // Data declaration(s)
 #include "worker.h"                     // Data declaration(s)
 #include "filldir.h"                    // Data declaration(s)
@@ -145,7 +147,7 @@ PSZ pszBuiltWith = "Built with OpenWatcom version " b(__WATCOMC__);
 #undef a
 #endif
 
-VOID FindSwapperDat(VOID);
+static VOID FindSwapperDat(VOID);
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
