@@ -64,6 +64,7 @@
 #define INCL_WINWORKPLACE
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
 #include "mainwnd2.h"			// Data declaration(s)
 #include "grep.h"			// Data declaration(s)
 #include "info.h"			// Data declaration(s)

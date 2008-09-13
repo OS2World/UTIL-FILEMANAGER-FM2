@@ -69,6 +69,15 @@ typedef struct _CNRITEM
 }
 CNRITEM, *PCNRITEM;
 
+// Compare directory flags
+#define CNRITEM_SMALLER   0x00010000	// file exists in both containers and this one is smaller
+#define CNRITEM_LARGER    0x00020000
+#define CNRITEM_NEWER     0x00040000
+#define CNRITEM_OLDER     0x00080000
+#define CNRITEM_EXISTS    0x00100000	// file exists in both containers
+
+#define EXTRA_RECORD_BYTES      (sizeof(CNRITEM) - sizeof(MINIRECORDCORE))
+
 typedef struct
 {
   CHAR szMask[CCHMAXPATH];

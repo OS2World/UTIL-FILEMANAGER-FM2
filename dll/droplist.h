@@ -15,6 +15,8 @@
 #if !defined(DROPLIST_H)
 #define DROPLIST_H
 
+#include "makelist.h"		// typedef for LISTINFO
+
 BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2);
 BOOL CheckPmDrgLimit(PDRAGINFO pDInfo);
 LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
