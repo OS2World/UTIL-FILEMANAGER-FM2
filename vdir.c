@@ -18,6 +18,8 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
+#include "dll\mainwnd.h"		// Data declaration(s)
+#include "dll\notebook.h"		// Data declaration(s)
 #include "dll\init.h"			// InitFM3DLL
 #include "dll\valid.h"			// IsFile
 #include "dll\dirs.h"			// save_dir

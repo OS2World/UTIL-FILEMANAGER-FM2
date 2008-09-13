@@ -18,6 +18,7 @@
 #define INCL_DOS
 
 #include "dll\fm3dll.h"
+#include "dll\mainwnd.h"		// Data declaration(s)
 #include "dll\fm3dlg.h"
 #include "dll\undel.h"			// UndeleteDlgProc
 #include "dll\init.h"			// InitFM3DLL

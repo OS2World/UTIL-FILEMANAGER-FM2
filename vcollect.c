@@ -18,9 +18,11 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
+#include "dll\mainwnd.h"		// Data declaration(s)
+#include "dll\notebook.h"		// Data declaration(s)
 #include "dll\fm3str.h"
 #include "dll\init.h"			// InitFM3DLL
-#include "dll\collect.h"			// StartCollector
+#include "dll\collect.h"		// StartCollector
 
 int main(int argc, char *argv[])
 {
