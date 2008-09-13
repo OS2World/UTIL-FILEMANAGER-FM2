@@ -37,7 +37,6 @@ TOOL;
 #define T_TEXT        0x00000010
 #define T_MYICON      0x00000020
 
-extern TOOL *toolhead;
 
 VOID load_quicktools(VOID);
 VOID save_quicktools(VOID);
@@ -56,5 +55,12 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY PickToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+
+// Data declarations
+extern BOOL fToolsChanged;
+extern CHAR lasttoolbar[CCHMAXPATH];
+extern BOOL qtloaded;
+extern CHAR *quicktool[50];
+extern TOOL *toolhead;
 
 #endif // TOOLS_H

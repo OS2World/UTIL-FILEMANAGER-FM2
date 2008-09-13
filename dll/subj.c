@@ -26,6 +26,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "info.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -36,7 +38,11 @@
 #include "strips.h"			// bstrip
 #include "fortify.h"
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL2)
+CHAR *SUBJECT;
 
 INT Subject(HWND hwnd, CHAR * filename)
 {

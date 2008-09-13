@@ -21,6 +21,8 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "mainwnd.h"			// Data declaration(s)
+#include "datamin.h"			// Data declaration(s)
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString

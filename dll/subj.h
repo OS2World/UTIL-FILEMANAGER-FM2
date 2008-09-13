@@ -17,5 +17,7 @@
 
 INT Subject(HWND hwnd, CHAR * filename);
 
+// Data declarations
+extern CHAR *SUBJECT;
 
 #endif // SUBJ_H

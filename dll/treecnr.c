@@ -59,6 +59,10 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -105,10 +109,29 @@
 #include "systemf.h"			// runemf2
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
+#include "init.h"			// GetTidForWindow
+
+// Data definitions
+
+#pragma data_seg(GLOBAL1)
+HWND LastDir;
+HWND TreeCnrMenu;
+INT driveserial[26];
+BOOL fDCOpens;
+BOOL fDummy;
+BOOL fFollowTree;
+BOOL fTopDir;
+HPOINTER hptrDunno;
+HWND hwndMainMenu;
+
+#pragma data_seg(GLOBAL2)
+ULONG FM3UL;
+INT TreesortFlags;
 
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
+static BOOL fOkayMinimize;
 
 APIRET16 APIENTRY16 Dos16MemAvail(PULONG pulAvailMem);
 

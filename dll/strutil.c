@@ -17,8 +17,10 @@
 #include <stdio.h>
 #include <share.h>
 
-#include "strutil.h"
+#include "fm3dll.h"
 #include "fm3str.h"
+#include "init.h"			// Data declaration(s)
+#include "strutil.h"
 #include "version.h"
 
 extern PSZ NullStr;			// 05 Jan 08 SHL fixme to be in some .h

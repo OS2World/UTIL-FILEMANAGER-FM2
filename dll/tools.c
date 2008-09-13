@@ -33,6 +33,10 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "arccnrs.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "tools.h"
 #include "fm3str.h"
@@ -52,11 +56,19 @@
 #include "dirs.h"			// save_dir2
 #include "strips.h"			// bstrip
 
+// Data definitions
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
 
+#pragma data_seg(GLOBAL1)
+BOOL fToolsChanged;
 TOOL *toolhead = NULL;
+
+#pragma data_seg(GLOBAL2)
+CHAR lasttoolbar[CCHMAXPATH];
+BOOL qtloaded;
+CHAR *quicktool[50];
 
 //== load_quicktools() build *.tls array ==
 

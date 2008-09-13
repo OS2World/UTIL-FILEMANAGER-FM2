@@ -24,5 +24,17 @@ MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY TreeStatProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+// Data declarations
+extern ULONG FM3UL;
+extern HWND LastDir;
+extern HWND TreeCnrMenu;
+extern INT TreesortFlags;
+extern INT driveserial[26];
+extern BOOL fDCOpens;
+extern BOOL fDummy;
+extern BOOL fFollowTree;
+extern BOOL fTopDir;
+extern HPOINTER hptrDunno;
+extern HWND hwndMainMenu;
 
 #endif // TREECNR_H
