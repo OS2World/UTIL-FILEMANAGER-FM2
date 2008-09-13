@@ -19,9 +19,11 @@
 #define INCL_LONGLONG
 
 #include "dll\fm3dll.h"
+#include "dll\mainwnd.h"		// Data declaration(s)
+#include "dll\notebook.h"		// Data declaration(s)
 #include "dll\tools.h"
 #include "dll\version.h"
-#include "dll\mainwnd2.h"			// StartFM32
+#include "dll\mainwnd2.h"		// StartFM32
 #include "dll\init.h"			// InitFM3DLL
 
 int main(int argc, char *argv[])

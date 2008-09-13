@@ -48,6 +48,11 @@
 #define INCL_WINSHELLDATA
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "arccnrs.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "defview.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "comp.h"			// FCOMPARE
@@ -86,6 +91,10 @@
 #include "stristr.h"			// stristr
 #include "wrappers.h"			// xfopen
 #include "fortify.h"
+
+// Data definitions
+#pragma data_seg(GLOBAL2)
+FILE *LogFileHandle;
 
 #pragma data_seg(DATA2)
 

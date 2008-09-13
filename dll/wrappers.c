@@ -28,6 +28,7 @@
 #include <os2.h>
 
 #include "fm3dll.h"
+#include "init.h"			// Data declaration(s)
 #include "wrappers.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -39,7 +40,11 @@
 
 #include "fortify.h"			// GetPString
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL1)
+BOOL fNoLargeFileSupport;
 
 APIRET xDosFindFirst(PSZ pszFileSpec,
 		     PHDIR phdir,

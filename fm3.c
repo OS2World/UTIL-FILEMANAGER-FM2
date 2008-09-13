@@ -19,12 +19,14 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "dll\fm3dll.h"
+#include "dll\mainwnd.h"			// Data declaration(s)
 #include "dll\tools.h"
 #include "dll\version.h"
 #include "dll\errutil.h"
 #include "dll\fortify.h"
 #include "dll\init.h"			// StartFM3
-#include "dll\fm3dll.h"
+#include "dll\notebook.h"		// Data declaration(s)
 
 int main(int argc, char *argv[])
 {

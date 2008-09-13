@@ -19,4 +19,7 @@
 VOID Action(VOID * args);
 VOID MassAction(VOID * args);
 
+// Data declarations
+extern FILE *LogFileHandle;
+
 #endif	// WORKER_H

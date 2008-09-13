@@ -53,5 +53,7 @@ PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber);
 
+// Data declarations
+extern BOOL fNoLargeFileSupport;
 
 #endif // WRAPPERS_H

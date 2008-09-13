@@ -18,6 +18,8 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
+#include "dll\mainwnd.h"		// Data declaration(s)
+#include "dll\notebook.h"		// Data declaration(s)
 #include "dll\fm3str.h"
 #include "dll\seeall.h"                 // StartSeeAll
 #include "dll\valid.h"			// IsFile

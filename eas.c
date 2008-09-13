@@ -23,6 +23,8 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
+#include "dll\notebook.h"			// Data declaration(s)
+#include "dll\mainwnd.h"			// Data declaration(s)
 #include "dll\fm3dlg.h"
 #include "dll\makelist.h"
 #include "dll\eas.h"			// DisplayEAsProc
