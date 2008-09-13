@@ -48,6 +48,10 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "arccnrs.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -64,14 +68,6 @@
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
 
-#pragma data_seg(DATA1)
-
-static PSZ pszSrcFile = __FILE__;
-
-static MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-static VOID load_setups(VOID);
-static BOOL remove_ldir(PSZ path);
-
 typedef struct
 {
   USHORT size;
@@ -82,6 +78,14 @@ typedef struct
 }
 WALKER;
 
+static MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+static VOID load_setups(VOID);
+static BOOL remove_ldir(PSZ path);
+
+// Data definitions
+#pragma data_seg(DATA1)
+
+static PSZ pszSrcFile = __FILE__;
 static CHAR WalkFont[CCHMAXPATH] = "";
 static ULONG WalkFontSize = sizeof(WalkFont);
 
@@ -94,6 +98,14 @@ static LINKDIRS *pFirstSetup;
 static const PSZ pszLastSetups = "LastSetups";
 // 18 Aug 07 SHL fixme to stop supporting old style 1 year from now?
 static const ULONG ulOldSetupsBytes = 100 * 13;	// Prior to 3.0.7
+
+#pragma data_seg(GLOBAL1)
+BOOL fUdirsChanged;
+BOOL loadedudirs;
+
+#pragma data_seg(GLOBAL2)
+LINKDIRS *ldirhead;
+LINKDIRS *udirhead;
 
 /**
  * Fill States drop down list with known state names

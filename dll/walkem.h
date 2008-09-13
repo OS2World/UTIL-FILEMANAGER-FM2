@@ -50,4 +50,10 @@ VOID save_udirs(VOID);
 VOID free_setups(VOID);
 #endif
 
+// Data declarations
+extern BOOL fUdirsChanged;
+extern LINKDIRS *ldirhead;
+extern BOOL loadedudirs;
+extern LINKDIRS *udirhead;
+
 #endif // WALKEM_H

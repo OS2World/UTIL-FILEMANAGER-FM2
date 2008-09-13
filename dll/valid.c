@@ -38,18 +38,35 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "treecnr.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "valid.h"
 #include "dirs.h"			// save_dir2
 #include "strips.h"			// bstrip
+#include "init.h"			// GetTidForWindow
 
-static PSZ pszSrcFile = __FILE__;
 
 //static BOOL IsDesktop(HAB hab, HWND hwnd);
 //static BOOL IsFileSame(CHAR * filename1, CHAR * filename2);
 //static char *IsVowel(char a);
+
+// Data definitions
+static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL2)
+CHAR *CDFS;
+CHAR *FAT32;
+CHAR *HPFS;
+CHAR *HPFS386;
+CHAR *ISOFS;
+CHAR *JFS;
+CHAR *NDFS32;
+CHAR *NTFS;
+CHAR *RAMFS;
 
 APIRET MakeFullName(char *pszFileName)
 {

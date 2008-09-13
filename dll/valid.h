@@ -40,4 +40,15 @@ int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
 CHAR *assign_ignores(CHAR * s);
 BOOL needs_quoting(CHAR * f);
 
+// Data declarations
+extern CHAR *CDFS;
+extern CHAR *FAT32;
+extern CHAR *HPFS;
+extern CHAR *HPFS386;
+extern CHAR *ISOFS;
+extern CHAR *JFS;
+extern CHAR *NTFS;
+extern CHAR *NDFS32;
+extern CHAR *RAMFS;
+
 #endif	// VALID_H

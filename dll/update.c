@@ -30,6 +30,10 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "init.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "filldir.h"			// FillInRecordFromFFB

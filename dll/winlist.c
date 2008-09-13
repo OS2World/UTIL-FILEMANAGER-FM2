@@ -21,6 +21,10 @@
 #define INCL_WIN
 
 #include "fm3dll.h"
+#include "killproc.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "newview.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "mainwnd.h"			// GetNextWindowPos
 #include "winlist.h"
