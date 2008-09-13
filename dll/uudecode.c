@@ -27,6 +27,8 @@
 #define INCL_LONGLONG                   // dircnrs.h
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "worker.h"			// typedef WORKER
 #include "notebook.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"

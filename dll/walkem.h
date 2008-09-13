@@ -19,6 +19,22 @@
 #include <os2.h>
 #endif
 
+typedef struct
+{
+  USHORT size;
+  USHORT dummy;
+  CHAR szCurrentPath1[CCHMAXPATH];
+  CHAR szCurrentPath2[CCHMAXPATH];
+}
+WALK2;
+
+typedef struct LINKDIRS
+{
+  CHAR *path;
+  struct LINKDIRS *next;
+}
+LINKDIRS;
+
 VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, PSZ path,
 		     BOOL nounwriteable);
 MRESULT EXPENTRY WalkAllDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);

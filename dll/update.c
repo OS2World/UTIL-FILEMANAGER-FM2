@@ -30,6 +30,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "update.h"
 #include "init.h"			// Data declaration(s)
 #include "notebook.h"			// Data declaration(s)
 #include "info.h"			// Data declaration(s)
@@ -39,7 +41,6 @@
 #include "filldir.h"			// FillInRecordFromFFB
 #include "dircnrs.h"
 #include "flesh.h"			// Flesh, Stubby
-#include "update.h"
 #include "findrec.h"			// FindCnrRecord
 #include "valid.h"			// IsFullName
 #include "wrappers.h"			// xDosFindFirst

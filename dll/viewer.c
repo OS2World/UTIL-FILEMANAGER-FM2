@@ -28,6 +28,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "viewer.h"
 #include "mainwnd2.h"			// Data declaration(s)
 #include "collect.h"			// Data declaration(s)
 #include "grep.h"			// Data declaration(s)
@@ -41,7 +43,6 @@
 #include "notebook.h"                   // External viewers
 #include "colors.h"			// ColorDlgProc
 #include "mainwnd.h"			// FillClient
-#include "viewer.h"
 #include "codepage.h"			// PickCodepage
 #include "dirs.h"			// switch_to
 #include "input.h"			// InputDlgProc

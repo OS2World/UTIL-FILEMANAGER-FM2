@@ -37,6 +37,7 @@
 #include <ctype.h>
 #include <share.h>
 #include <process.h>			// _beginthread
+#include <time.h>
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -48,6 +49,7 @@
 #define INCL_WINSHELLDATA
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
 #include "mainwnd2.h"			// Data declaration(s)
 #include "arccnrs.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)

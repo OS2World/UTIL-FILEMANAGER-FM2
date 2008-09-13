@@ -15,6 +15,8 @@
 #if !defined(UPDATE_H)
 #define UPDATE_H
 
+#include "dircnrs.h"			// typedef's for DIRCNRDATA, etc.
+
 HPOINTER SelectDriveIcon(PCNRITEM pci);
 BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		   DIRCNRDATA * dcd);

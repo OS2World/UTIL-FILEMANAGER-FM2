@@ -16,6 +16,34 @@
 
 #define WORKER_H
 
+#include "makelist.h"			// typedef LISTINFO
+
+typedef struct {
+
+  CHAR *source;
+  CHAR target[CCHMAXPATH];
+  BOOL rename;
+  BOOL skip;
+  BOOL dontask;
+  BOOL overold;
+  BOOL overnew;
+  BOOL overwrite;
+}
+MOVEIT;
+
+typedef struct
+{
+  USHORT size;
+  USHORT dummy;
+  CHAR directory[CCHMAXPATH];
+  HWND hwndParent;
+  HWND hwndFrame;
+  HWND hwndClient;
+  HWND hwndCnr;
+  LISTINFO *li;
+}
+WORKER;
+
 VOID Action(VOID * args);
 VOID MassAction(VOID * args);
 
