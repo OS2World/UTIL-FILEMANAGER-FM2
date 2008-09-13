@@ -35,6 +35,7 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
 #include "mainwnd2.h"			// Data declaration(s)
 #include "killproc.h"			// Data declaration(s)
 #include "collect.h"			// Data declaration(s)

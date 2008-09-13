@@ -16,6 +16,19 @@
 
 #define CHKLIST_H
 
+#define CHECK_FILES 1
+
+typedef struct
+{
+  USHORT size;
+  ULONG flags;
+  ULONG cmd;
+  USHORT dummy;
+  CHAR *prompt;
+  CHAR **list;
+}
+CHECKLIST;
+
 VOID CenterOverWindow(HWND hwnd);
 MRESULT EXPENTRY CheckListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
