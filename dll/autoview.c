@@ -37,6 +37,12 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "killproc.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "avl.h"			// Data declaration(s)
+#include "inis.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -55,17 +61,24 @@
 #include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"
 
-#pragma data_seg(DATA1)
-
-static PSZ pszSrcFile = __FILE__;
-
-static HWND hwndAutoObj;
-static CHAR stopflag;
-static CHAR currfile[CCHMAXPATH];
-
 static BOOL PutComments(HWND hwnd, CHAR * filename, CHAR * comments);
 static BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
 	     CHAR * data);
+
+// Data definitions
+#pragma data_seg(GLOBAL1)
+HWND hwndAutoMLE;
+
+#pragma data_seg(GLOBAL2)
+ULONG AutoviewHeight;
+
+#pragma data_seg(DATA1)
+static PSZ pszSrcFile = __FILE__;
+
+static HWND AutoMenu;
+static HWND hwndAutoObj;
+static CHAR stopflag;
+static CHAR currfile[CCHMAXPATH];
 
 BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
 	     CHAR * data)

@@ -22,4 +22,8 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 ULONG CreateHexDump(CHAR * value, ULONG cbValue, CHAR * ret, ULONG retlen,
                     ULONG startval, BOOL longlead);
 
+// Data declarations
+extern HWND hwndAutoMLE;
+extern ULONG AutoviewHeight;
+
 #endif	// AUTOVIEW_H

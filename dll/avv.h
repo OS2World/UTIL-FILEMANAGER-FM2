@@ -21,4 +21,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 VOID EditArchiverDefinition(HWND hwnd);
 VOID rewrite_archiverbb2(CHAR * archiverbb2);
 
+// Data declarations
+extern CHAR archiverbb2[CCHMAXPATH];
+
 #endif	// AVV_H

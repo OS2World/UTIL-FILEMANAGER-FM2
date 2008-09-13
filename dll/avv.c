@@ -37,6 +37,10 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "arccnrs.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "version.h"
 #include "fm3str.h"
@@ -54,6 +58,7 @@
 #include "systemf.h"			// runemf2
 #include "fortify.h"
 
+// Data definitions
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
@@ -66,8 +71,10 @@ static PSZ nonull(PSZ a);
 static PSZ free_and_strdup_from_window(HWND hwnd, USHORT id, PSZ pszDest);
 static PSZ free_and_strdup_quoted_from_window(HWND hwnd, USHORT id, PSZ pszDest);
 
-//=== EditArchiverDefinition() Select archiver to edit definition ===
+#pragma data_seg(GLOBAL2)
+CHAR archiverbb2[CCHMAXPATH];
 
+//=== EditArchiverDefinition() Select archiver to edit definition ===
 VOID EditArchiverDefinition(HWND hwnd)
 {
   ARCDUMP ad;

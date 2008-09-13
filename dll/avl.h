@@ -89,10 +89,12 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID free_arc_type(ARC_TYPE * pat);
 VOID free_archivers(VOID);
 
-// 05 Jan 08 SHL fixme for avl.c globals to be here
+// Data declarations
+extern ARC_TYPE *arcsighead;
+extern UINT arcsigs_header_lines;
+extern UINT arcsigs_trailer_line_num;
+extern BOOL arcsigsloaded;
+extern BOOL arcsigsmodified;
 
-#ifdef DEFINE_GLOBALS
-#pragma data_seg(GLOBAL1)
-#endif
 
 #endif // AVL_H

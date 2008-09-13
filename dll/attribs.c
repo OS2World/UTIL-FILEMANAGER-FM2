@@ -20,6 +20,9 @@
 #define INCL_WIN
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// LISTINFO

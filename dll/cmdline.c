@@ -32,6 +32,11 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "arccnrs.h"			// Data declaration(s)
+#include "fm2cmd.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -50,8 +55,6 @@
 #include "systemf.h"
 #include "fortify.h"
 
-static PSZ pszSrcFile = __FILE__;
-
 #define MAXNUMCMDLINES 250
 
 typedef struct LINKCMDLINES
@@ -63,6 +66,13 @@ LINKCMDLINES;
 
 static LINKCMDLINES *DoItYourselfCmdLine = NULL, *MiniCmdLine = NULL;
 static BOOL DoItYourselfLoaded = FALSE, MiniLoaded = FALSE;
+
+// Data definitions
+static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL1)
+BOOL fSaveBigCmds;
+
 
 VOID load_cmdlines(BOOL DoItYourself)
 {

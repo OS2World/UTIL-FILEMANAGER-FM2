@@ -24,6 +24,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// AddToList

@@ -46,6 +46,10 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "valid.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "avl.h"
@@ -64,12 +68,18 @@
 #include "delims.h"			// to_delim
 #include "fortify.h"
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
-
 static void fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect);
 
-//=== quick_find_type() ===
+#pragma data_seg(GLOBAL1)
+ARC_TYPE *arcsighead;
+UINT arcsigs_header_lines;		// Header comments line count in archiver.bb2
+UINT arcsigs_trailer_line_num;		// Trailer comments start line number (1..n)
+BOOL arcsigsloaded;
+BOOL arcsigsmodified;
 
+//=== quick_find_type() ===
 ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig)
 {
   ARC_TYPE *info, *found = NULL;
