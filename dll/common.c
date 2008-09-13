@@ -35,6 +35,15 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "killproc.h"			// Data declaration(s)
+#include "collect.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "inis.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "treecnr.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -56,9 +65,14 @@
 #include "wrappers.h"			// xfree
 #include "fortify.h"
 
+// Data definitions
 #pragma data_seg(DATA1)
-
 static PSZ pszSrcFile = __FILE__;
+static HWND hwndLED;
+static HWND hwndLEDHdr;
+
+#pragma data_seg(GLOBAL1)
+HWND hwndBack;
 
 MRESULT EXPENTRY CommonFrameWndProc(USHORT id,
 				    HWND hwnd,

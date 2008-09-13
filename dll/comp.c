@@ -72,6 +72,10 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "inis.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"			// BldFullPathName
@@ -115,7 +119,11 @@ typedef struct
 }
 SNAPSTUFF;
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL1)
+BOOL fSelectedAlways;
 
 //=== SnapShot() Write directory tree to file and recurse if requested ===
 

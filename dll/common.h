@@ -33,4 +33,7 @@ VOID IncrThreadUsage(VOID);
 HWND OpenDirCnr(HWND hwnd, HWND hwndParent, HWND hwndRestore,
 		BOOL noautotile, char *directory);
 
+// Data declarations
+extern HWND hwndBack;
+
 #endif // COMMON_H

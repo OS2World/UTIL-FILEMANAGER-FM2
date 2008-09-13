@@ -24,4 +24,9 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
 HWND StartCollector(HWND hwndParent, INT flags);
 
+// Data declarations
+extern HWND CollectorCnrMenu;
+extern INT CollectorsortFlags;
+extern HWND hwndStatus2;
+
 #endif	// COLLECT_H

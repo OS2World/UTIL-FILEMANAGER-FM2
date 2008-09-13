@@ -36,10 +36,8 @@ typedef struct LINKCMDS
 }
 LINKCMDS;
 
-// 01 Mar 08 GKY fixme for command.c globals to be here
-
-#ifdef DEFINE_GLOBALS
-#pragma data_seg(GLOBAL1)
-#endif
+// Data declarations
+extern BOOL cmdloaded;
+extern LINKCMDS *cmdhead;
 
 #endif // COMMAND_H

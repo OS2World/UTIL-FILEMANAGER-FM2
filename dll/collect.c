@@ -70,6 +70,9 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "dircnrs.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -124,8 +127,15 @@
 #include "wrappers.h"			// xDosFindFirst
 #include "fortify.h"
 
-#pragma data_seg(DATA1)
+// Data definitions
+#pragma data_seg(GLOBAL1)
+HWND CollectorCnrMenu;
+HWND hwndStatus2;
 
+#pragma data_seg(GLOBAL2)
+INT CollectorsortFlags;
+
+#pragma data_seg(DATA1)
 static PSZ pszSrcFile = __FILE__;
 
 MRESULT EXPENTRY CollectorFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,

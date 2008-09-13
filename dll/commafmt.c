@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "fm3dll.h"
+#include "init.h"			// Data declaration(s)
 #include "commafmt.h"
 
 size_t commafmt(char *pszBuf,	// Output buffer

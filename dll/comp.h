@@ -28,10 +28,6 @@
 
 #include "dircnrs.h"			// DIRCNRDATA
 
-#ifdef DEFINE_GLOBALS
-#pragma data_seg(GLOBAL1)
-#endif
-
 typedef struct
 {
   USHORT size;
@@ -74,5 +70,8 @@ COMPARE;
 
 MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+
+// Data declarations
+extern BOOL fSelectedAlways;
 
 #endif // COMP_H
