@@ -32,6 +32,11 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "draglist.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3str.h"
 #include "filldir.h"			// FileAttrToString...
 #include "errutil.h"			// Dos_Error...
@@ -43,9 +48,14 @@
 #include "notify.h"			// Notify
 #include "wrappers.h"			// xfree
 
+// Data definitions
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL1)
+ULONG NoBrokenNotify;
+BOOL fFilesInTree;
 
 BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 {

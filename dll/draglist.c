@@ -34,6 +34,9 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "errutil.h"			// Dos_Error...
 #include "draglist.h"
 #include "valid.h"			// IsValidDrive
@@ -42,7 +45,16 @@
 #include "wrappers.h"			// xrealloc
 #include "fortify.h"
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL1)
+HPOINTER hptrDir;
+HPOINTER hptrFile;
+HPOINTER hptrLast;
+
+#pragma data_seg(GLOBAL2)
+CHAR *DRMDRFLIST;
 
 /**
  * Delete drag item string handles.

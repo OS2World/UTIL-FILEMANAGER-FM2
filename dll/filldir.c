@@ -63,6 +63,10 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "draglist.h"			// Data declaration(s)
+#include "treecnr.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "newview.h"			// Data declaration(s)
 #include "fm3str.h"
 #include "filldir.h"
 #include "errutil.h"			// Dos_Error...
@@ -79,8 +83,21 @@
 #include "literal.h"			// wildcard
 #include "commafmt.h"			// CommaFmtULL
 #include "wrappers.h"			// xDosFindNext
+#include "init.h"			// GetTidForWindow
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+static BOOL fFirstTime;
+
+#pragma data_seg(GLOBAL1)
+HPOINTER hptrEnv;
+HPOINTER hptrHidden;
+HPOINTER hptrReadonly;
+HPOINTER hptrSystem;
+
+#pragma data_seg(GLOBAL2)
+CHAR *FM3Tools;
+CHAR *WPProgram;
 
 /**
  * Return display string given standard file attribute mask

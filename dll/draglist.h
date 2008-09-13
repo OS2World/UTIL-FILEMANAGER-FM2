@@ -21,5 +21,10 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok);
 VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo);
 BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd);
 
+// Data declarations
+extern CHAR *DRMDRFLIST;
+extern HPOINTER hptrDir;
+extern HPOINTER hptrFile;
+extern HPOINTER hptrLast;
 
 #endif // DRAGLIST_H

@@ -30,6 +30,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "avl.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString

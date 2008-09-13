@@ -49,4 +49,12 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
 VOID FreeCnrItemData(PCNRITEM pci);
 INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
 
+// Data declarations
+extern CHAR *FM3Tools;
+extern CHAR *WPProgram;
+extern HPOINTER hptrEnv;
+extern HPOINTER hptrHidden;
+extern HPOINTER hptrReadonly;
+extern HPOINTER hptrSystem;
+
 #endif // FILLDIR_H

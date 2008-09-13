@@ -20,5 +20,8 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent);
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent);
 BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
 
+// Data declarations
+extern ULONG NoBrokenNotify;
+extern BOOL fFilesInTree;
 
 #endif // FLESH_H
