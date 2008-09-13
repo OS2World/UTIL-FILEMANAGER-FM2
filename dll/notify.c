@@ -27,22 +27,30 @@
 #define INCL_GPI
 #define INCL_LONGLONG                   // dircnrs.h
 
+#include "fm3dll.h"
+#include "collect.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"                    // Dos_Error...
 #include "strutil.h"                    // GetPString
 #include "notify.h"
 #include "presparm.h"			// SetPresParams
-#include "fm3dll.h"
+#include "mainwnd.h"			// Data declaration(s)
 #include "wrappers.h"			// xmalloc
 #include "misc.h"			// PostMsg
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
-
 static volatile HWND hwndNotify;        // 16 Apr 08 SHL
+
+#pragma data_seg(GLOBAL1)
+BOOL fThreadNotes;
 
 VOID StartNotes(CHAR * s);
 

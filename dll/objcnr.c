@@ -35,6 +35,11 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "draglist.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"                    // Dos_Error...

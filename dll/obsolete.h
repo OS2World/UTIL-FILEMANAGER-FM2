@@ -50,5 +50,15 @@ MRESULT EXPENTRY FileListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 BOOL FilterAttrs(PCNRITEM pci, MASK * mask);
 MRESULT EXPENTRY ProgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+#pragma data_seg(GLOBAL2)
+INT butxsize;
+INT butysize;
+BOOL fUseMCI;
+
+#pragma data_seg(GLOBAL1)
+HPOINTER hptrCommon;
+HWND hwndTrash;
+USHORT nodes;
+
 
 #endif // OBSOLETE_H

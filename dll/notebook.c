@@ -51,6 +51,14 @@
 #define INCL_LONGLONG                   // dircnrs.h
 
 #include "fm3dll.h"
+#include "dircnrs.h"			// Data declaration(s)
+#include "mainwnd2.h"			// Data declaration(s)
+#include "comp.h"			// Data declaration(s)
+#include "newview.h"			// Data declaration(s)
+#include "datamin.h"			// Data declaration(s)
+#include "arccnrs.h"			// Data declaration(s)
+#include "treecnr.h"			// Data declaration(s)
+#include "collect.h"			// Data declarations
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"                   // BldQuotedFileName
@@ -71,13 +79,104 @@
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
 
+static VOID SaveLastPageIndex(HWND hwnd);
+
+// Data defintions
+#pragma data_seg(GLOBAL1)
+HWND Collector;
+DETAILS_SETTINGS dsDirCnrDefault;
+BOOL fAutoAddAllDirs;
+BOOL fAutoAddDirs;
+BOOL fBlueLED;
+BOOL fCancelAction;
+BOOL fCheckMM;
+BOOL fCollapseFirst;
+BOOL fConfirmDelete;
+BOOL fConfirmTarget;
+BOOL fCopyDefault;
+BOOL fCustomFileDlg;
+BOOL fDataMin;
+BOOL fDontMoveMouse;
+BOOL fDragndropDlg;
+BOOL fDrivebarHelp;
+BOOL fExternalArcboxes;
+BOOL fExternalCollector;
+BOOL fExternalINIs;
+BOOL fExternalViewer;
+BOOL fFM2Deletes;
+BOOL fFolderAfterExtract;
+BOOL fForceLower;
+BOOL fForceUpper;
+BOOL fGuessType;
+BOOL fLeaveTree;
+BOOL fLibPathStrictFtpRun;
+BOOL fLibPathStrictHttpRun;
+BOOL fLibPathStrictMailRun;
+BOOL fLinkSetsIcon;
+BOOL fLoadLongnames;
+BOOL fLoadSubject;
+BOOL fLookInDir;
+BOOL fMinOnOpen;
+BOOL fNoDead;
+BOOL fNoFoldMenu;
+BOOL fNoIconsDirs;
+BOOL fNoIconsFiles;
+BOOL fNoMailtoMailRun;
+BOOL fNoRemovableScan;
+BOOL fNoSearch;
+BOOL fNoTreeGap;
+BOOL fOtherHelp;
+BOOL fQuickArcFind;
+BOOL fRealIdle;
+BOOL fRemoteBug;
+BOOL fSaveState;
+BOOL fSeparateParms;
+BOOL fShowEnv;
+BOOL fShowTarget;
+BOOL fStartMaximized;
+BOOL fStartMinimized;
+BOOL fSwitchTree;
+BOOL fSwitchTreeExpand;
+BOOL fSwitchTreeOnFocus;
+BOOL fSyncUpdates;
+BOOL fTileBackwards;
+BOOL fToolbarHelp;
+BOOL fTrashCan;
+BOOL fUnHilite;
+BOOL fUseNewViewer;
+BOOL fUserListSwitches;
+BOOL fVTreeOpensWPS;
+BOOL fVerify;
+BOOL fViewChild;
+HINI fmprof;
+ULONG fwsAnimate;
+HWND hwndHelp;
+HWND hwndMain;
+
+#pragma data_seg(GLOBAL2)
+CHAR *pszTreeEnvVarList;
+ULONG FilesToGet;
+CHAR appname[12];
+CHAR *bined;
+CHAR *binview;
+CHAR *compare;
+CHAR *dircompare;
+CHAR *editor;
+CHAR extractpath[CCHMAXPATH];
+CHAR *ftprun;
+CHAR ftprundir[CCHMAXPATH];
+CHAR httprundir[CCHMAXPATH];
+CHAR mailrundir[CCHMAXPATH];
+CHAR szDefArc[CCHMAXPATH];
+ULONG ulCnrType;
+CHAR *viewer;
+CHAR *virus;
+
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
-
 static HWND hwndNotebook;
 
-static VOID SaveLastPageIndex(HWND hwnd);
 
 MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {

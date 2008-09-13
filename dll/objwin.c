@@ -21,6 +21,7 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "arccnrs.h"			// ArcObjWndProc

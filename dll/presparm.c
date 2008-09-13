@@ -21,6 +21,7 @@
 #define INCL_LONGLONG                   // dircnrs.h
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
 #include "presparm.h"
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"

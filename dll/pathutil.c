@@ -22,6 +22,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"			// needs_quoting
+#include "notebook.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3str.h"
 #include "pathutil.h"
 #include "strips.h"			// remove_first_occurence_of_character

@@ -26,6 +26,8 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// AddToList
@@ -42,6 +44,7 @@
 #include "misc.h"			// PostMsg
 #include "fortify.h"
 
+// Data definitions
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
@@ -50,6 +53,23 @@ static HMTX PrintSem = 0;
 
 static BOOL PrinterReady(CHAR * printdevname);
 static BOOL SayPrinterReady(HWND hwnd);
+
+#pragma data_seg(GLOBAL2)
+CHAR StopPrinting;
+CHAR printer[CCHMAXPATH];
+BOOL prnalt;
+long prnbmargin;
+BOOL prnformat;
+BOOL prnformfeedafter;
+BOOL prnformfeedbefore;
+long prnlength;
+long prnlmargin;
+BOOL prnpagenums;
+long prnrmargin;
+long prnspacing;
+long prntabspaces;
+long prntmargin;
+long prnwidth;
 
 BOOL PrinterReady(CHAR * printdevname)
 {

@@ -25,4 +25,7 @@ VOID NotifyError(CHAR * filename, APIRET error);
 MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID ShowNote(VOID);
 
+// Data declarations
+extern BOOL fThreadNotes;
+
 #endif	// NOTIFY_H
