@@ -15,6 +15,18 @@
 #if !defined(EXTRACT_H)
 #define EXTRACT_H
 
+typedef struct
+{
+  USHORT size;
+  ARC_TYPE *info;
+  CHAR *arcname;
+  CHAR masks[257];
+  CHAR command[257];
+  CHAR extractdir[CCHMAXPATH];
+  INT ret;
+}
+EXTRDATA;
+
 MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 
