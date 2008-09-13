@@ -12,7 +12,7 @@
 
 ***********************************************************************/
 
-#include "dirsize.h"
+#include "dll\dirsize.h"
 
 DLGTEMPLATE DIRSIZE_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN

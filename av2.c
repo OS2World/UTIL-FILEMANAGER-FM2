@@ -21,6 +21,10 @@
 #define INCL_LONGLONG
 
 #include "dll\fm3dll.h"
+#include "dll\mainwnd.h"		// Data declaration(s)
+#include "dll\init.h"			// Data declaration(s)
+#include "dll\notebook.h"		// Data declaration(s)
+#include "dll\arccnrs.h"
 #include "dll\fm3str.h"
 #include "dll\version.h"
 #include "dll\arccnrs.h"

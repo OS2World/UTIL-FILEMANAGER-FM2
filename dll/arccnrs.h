@@ -34,4 +34,12 @@ MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ArcFolderProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+// Data declarations
+extern HWND ArcCnrMenu;
+extern HWND ArcMenu;
+extern CHAR ArcTempRoot[CCHMAXPATH];
+extern BOOL fArcStuffVisible;
+extern CHAR lastextractpath[CCHMAXPATH];
+extern ULONGLONG ullDATFileSpaceNeeded;
+
 #endif // ARCCNRS_H

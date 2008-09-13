@@ -22,6 +22,8 @@
 #define INCL_LONGLONG
 
 #include "dll\fm3dll.h"
+#include "dll\notebook.h"			// Data declaration(s)
+#include "dll\notebook.h"		// Data declaration(s)
 #include "dll\datamin.h"
 #include "dll\fm3dlg.h"
 #include "dll\init.h"			// InitFM3DLL

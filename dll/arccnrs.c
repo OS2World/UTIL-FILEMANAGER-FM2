@@ -79,6 +79,11 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "arccnrs.h"			// StartArcCnr
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -129,9 +134,19 @@
 #include "fortify.h"
 
 #pragma data_seg(DATA1)
-
 static INT DefArcSortFlags;
+
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+#pragma data_seg(GLOBAL1)
+HWND ArcCnrMenu;
+HWND ArcMenu;
+CHAR ArcTempRoot[CCHMAXPATH];
+BOOL fArcStuffVisible;
+
+#pragma data_seg(GLOBAL2)
+CHAR lastextractpath[CCHMAXPATH];
+ULONGLONG ullDATFileSpaceNeeded;
 
 static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)

@@ -14,7 +14,7 @@
 ***********************************************************************/
 
 #include "dll\fm3dll.h"
-#include "dirsize.h"
+#include "dll\dirsize.h"
 
 DEFAULTICON                 icons\DIRSIZE.ICO
 
