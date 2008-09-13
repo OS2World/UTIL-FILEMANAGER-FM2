@@ -52,6 +52,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "seeall.h"
 #include "mainwnd2.h"			// Data declaration(s)
 #include "grep.h"			// Data declaration(s)
 #include "arccnrs.h"			// Data declaration(s)
@@ -94,7 +96,6 @@
 #include "commafmt.h"			// commafmt
 #include "literal.h"			// wildcard
 #include "wrappers.h"			// xDosFindNext
-#include "seeall.h"
 #include "misc.h"                       // SetConditionalCascade
 #include "fonts.h"			// SetMLEFont
 #include "stristr.h"			// stristr

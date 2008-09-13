@@ -21,8 +21,9 @@
 #define INCL_LONGLONG                   // dircnrs.h
 
 #include "fm3dll.h"
-#include "notebook.h"			// Data declaration(s)
+#include "colors.h"			// typedef RGB2
 #include "presparm.h"
+#include "notebook.h"			// Data declaration(s)
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
 

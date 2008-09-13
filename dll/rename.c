@@ -21,6 +21,9 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "worker.h"			// typedef MOVEIT
+#include "rename.h"
 #include "notebook.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
@@ -28,7 +31,6 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "copyf.h"			// AdjustWildcardName
-#include "rename.h"
 #include "valid.h"			// TestFDates
 #include "mkdir.h"			// SetDir
 #include "commafmt.h"			// CommaFmtULL

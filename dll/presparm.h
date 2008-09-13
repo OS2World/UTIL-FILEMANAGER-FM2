@@ -15,6 +15,20 @@
 #if !defined(PRESPARM_H)
 #define PRESPARM_H
 
+// PMBITMAP_INCLUDED - IBM Toolkit
+// INCL_GPIBITMAPS - OpenWatcom Toolkit
+// #if !defined(PMBITMAP_INCLUDED) && !defined(INCL_GPIBITMAPS)
+// typedef struct _RGB2		/* rgb2 */
+// {
+//   BYTE bBlue;			/* Blue component of the color definition */
+//   BYTE bGreen;			/* Green component of the color definition */
+//   BYTE bRed;			/* Red component of the color definition  */
+//   BYTE fcOptions;		/* Reserved, must be zero                 */
+// }
+// RGB2;
+// typedef RGB2 *PRGB2;
+// #endif
+
 VOID CopyPresParams(HWND target, HWND source);
 VOID PresParamChanged(HWND hwnd, CHAR * keyroot, MPARAM mp1, MPARAM mp2);
 VOID RestorePresParams(HWND hwnd, CHAR * keyroot);

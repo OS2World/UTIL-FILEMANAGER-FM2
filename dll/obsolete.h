@@ -4,6 +4,7 @@
 $Id$
 
 Function declarations neither called or defined in FM/2 source files
+These can be deleted after a year of disuse, i.e. Sep 2009
 
 Copyright (c) 1993-98 M. Kimes
 Copyright (c) 2008 Steven H. Levine
@@ -14,8 +15,6 @@ Change log
 
 #if !defined(OBSOLETE_H)
 #define OBSOLETE_H
-
-
 
 /**************************************************/
 /* Lazy Drag API's.                               */
