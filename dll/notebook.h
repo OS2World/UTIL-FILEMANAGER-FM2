@@ -26,6 +26,8 @@
 // #endif
 // #endif
 
+#include "dircnrs.h"		// typedef for DETAILS_SETTINGS
+
 MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 VOID CfgMenuInit(HWND hwndMenu, BOOL fIsLite);

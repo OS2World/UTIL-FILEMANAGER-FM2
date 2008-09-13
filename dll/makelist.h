@@ -39,7 +39,8 @@
 #endif
 #endif
 
-#include "avl.h"			// ARC_TYPE
+#include "avl.h"			// typedef ARC_TYPE
+#include "arccnrs.h"			// typedef ARCITEM, PARCITEM
 
 typedef struct
 {

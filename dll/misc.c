@@ -65,6 +65,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "misc.h"
 #include "killproc.h"			// Data declaration(s)
 #include "comp.h"			// Data declaration(s)
 #include "treecnr.h"			// Data declaration(s)
@@ -93,7 +95,9 @@
 #include "wrappers.h"			// xDosSetPathInfo
 #include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"
-#include "misc.h"
+
+#define CONTAINER_COLUMNS       13	/* Number of columns in details view */
+#define MS_POPUP          0x00000010L
 
 // Data definitions
 #pragma data_seg(GLOBAL1)

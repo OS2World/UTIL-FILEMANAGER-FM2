@@ -19,6 +19,8 @@
 #include <os2.h>
 #endif
 
+#include "dircnrs.h"		// typedef for DETAILS_SETTINGS
+
 #ifdef FORTIFY
 INT GetTidForThread(VOID);
 INT GetTidForWindow(HWND hwnd);

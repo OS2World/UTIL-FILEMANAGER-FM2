@@ -22,6 +22,8 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "mkdir.h"
 #include "common.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)
 #include "info.h"			// Data declaration(s)
@@ -31,7 +33,6 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"                   // targetdirectoy
-#include "mkdir.h"
 #include "walkem.h"			// WalkTargetDlgProc
 #include "misc.h"			// Broadcast
 #include "valid.h"			// IsFullName
