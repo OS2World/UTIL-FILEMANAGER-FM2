@@ -28,6 +28,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "undel.h"
 #include "init.h"			// Data declaration(s)
 #include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
@@ -38,7 +40,6 @@
 #include "walkem.h"			// FillPathListBox
 #include "common.h"			// DecrThreadUsage, IncrThreadUsage
 #include "valid.h"			// MakeFullName
-#include "undel.h"
 #include "copyf.h"			// unlinkf
 #include "wrappers.h"			// xfgets
 #include "strips.h"			// bstrip

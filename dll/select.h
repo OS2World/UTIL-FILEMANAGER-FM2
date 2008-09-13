@@ -15,6 +15,8 @@
 #if !defined(SELECT_H)
 #define SELECT_H
 
+#include "dircnrs.h"			// typedef for CNRITEM, PCNRITEM
+
 VOID Deselect(HWND hwndCnr);
 VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * mask,
 		 CHAR * text, BOOL arc);

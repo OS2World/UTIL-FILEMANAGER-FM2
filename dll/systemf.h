@@ -15,13 +15,6 @@
 #if !defined(SYSTEMF_H)
 #define SYSTEMF_H
 
-INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
-	       CHAR ** list, CHAR * prompt, PCSZ pszCallingFile, UINT uiLineNumber);
-BOOL ShowSession(HWND hwnd, PID pid);
-INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
-	    CHAR * directory, CHAR * environment,
-	    CHAR * formatstring, ...);
-
 #define RUNTYPE_MASK  0xf
 #define SYNCHRONOUS   1
 #define ASYNCHRONOUS  2
@@ -42,6 +35,24 @@ INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 #define SEAMLESS      32768
 #define CHILD         65536
 
+typedef struct
+{
+  ULONG flags;
+  CHAR *commandline;
+  CHAR path[CCHMAXPATH];
+  CHAR environment[1001];
+  CHAR tempprompt[128];
+  CHAR title[80];
+  BOOL dropped;
+}
+EXECARGS;
+
+INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
+	       CHAR ** list, CHAR * prompt, PCSZ pszCallingFile, UINT uiLineNumber);
+BOOL ShowSession(HWND hwnd, PID pid);
+INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
+	    CHAR * directory, CHAR * environment,
+	    CHAR * formatstring, ...);
 
 
 #endif // SYSTEMF_H

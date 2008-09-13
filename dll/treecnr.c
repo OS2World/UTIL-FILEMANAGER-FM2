@@ -59,6 +59,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "treecnr.h"
 #include "mainwnd2.h"			// Data declaration(s)
 #include "grep.h"			// Data declaration(s)
 #include "dircnrs.h"			// Data declaration(s)
@@ -88,7 +90,6 @@
 #include "notify.h"			// HideNote
 #include "objwin.h"			// MakeObjWin
 #include "notify.h"			// NotifyError
-#include "treecnr.h"
 #include "remap.h"			// RemapDlgProc
 #include "saveclip.h"			// SaveListDlgProc
 #include "update.h"			// SelectDriveIcon, UpdateCnrList, UpdateCnrRecord
