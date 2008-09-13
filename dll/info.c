@@ -38,6 +38,11 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "draglist.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "inis.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// AddToList
@@ -60,9 +65,12 @@
 #include "wrappers.h"			// xDosFindFirst
 #include "fortify.h"
 
+// Data definitions
 #pragma data_seg(DATA1)
-
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL1)
+INT driveflags[26];
 
 CHAR *FlagMsg(CHAR drive, CHAR * buffer)
 {

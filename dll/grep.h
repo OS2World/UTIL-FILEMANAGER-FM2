@@ -86,6 +86,8 @@ typedef struct
 }
 GREP;
 
+// Data declarations
 extern volatile CHAR diegrep;
+extern HWND hwndStatus;
 
 #endif // GREP_H

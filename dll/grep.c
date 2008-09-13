@@ -42,6 +42,8 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3str.h"
 #include "grep.h"
 #include "pathutil.h"                   // BldFullPathName
@@ -58,10 +60,6 @@
 #include "stristr.h"			// findstring
 #include "misc.h"			// PostMsg
 #include "fortify.h"
-
-#pragma data_seg(DATA2)
-
-static PSZ pszSrcFile = __FILE__;
 
 static VOID DoAllSubdirs(GREP *grep,
                          CHAR *searchPath,
@@ -96,7 +94,14 @@ static VOID FreeDupes(GREP *grep);
 #define isleap(year) ((((year%4)==0) && ((year%100)!=0)) || \
         ((year%400)==0))
 
+// Data definitions
+#pragma data_seg(DATA2)
+static PSZ pszSrcFile = __FILE__;
 static INT monthdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+#pragma data_seg(GLOBAL1)
+HWND hwndStatus;
+
 
 ULONG SecsSince1980(FDATE *date, FTIME *time)
 {

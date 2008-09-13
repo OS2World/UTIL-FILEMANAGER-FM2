@@ -443,120 +443,10 @@ EXTRDATA;
 
 //=====================================================================
 
-#ifdef DEFINE_GLOBALS
-#define DATADEF
-#else
-#define DATADEF extern
-#endif
-
-DATADEF ARC_TYPE *arcsighead;
-DATADEF BOOL arcsigsloaded;
-DATADEF BOOL arcsigsmodified;
-DATADEF UINT arcsigs_header_lines;	// Header comments line count in archiver.bb2
-DATADEF UINT arcsigs_trailer_line_num;	// Trailer comments start line number (1..n)
-
-DATADEF USHORT nodes, shiftstate;
-DATADEF HEV CompactSem;
-DATADEF HWND hwndMain, hwndTree, hwndStatus, hwndStatus2, hwndTrash,
-	     hwndButtonlist, hwndDrivelist, hwndStatelist, hwndUserlist,
-	     hwndAutoview, hwndAttr, hwndDate, hwndName, hwndBack,
-	     hwndLED, hwndLEDHdr, hwndAutoMLE, hwndCmdlist;
-DATADEF HBITMAP hbmLEDon, hbmLEDoff;
-DATADEF CHAR ArcTempRoot[CCHMAXPATH], ThousandsSeparator[2], *pTmpDir, *pFM2SaveDirectory;
-DATADEF HPOINTER hptrArrow, hptrBusy, hptrLast, hptrDir, hptrFile, hptrRemote,
-  hptrFloppy, hptrDrive, hptrRemovable, hptrCDROM,hptrVirtual,hptrRamdisk,
-  hptrFinger, hptrApp, hptrDunno, hptrSystem, hptrHidden,
-  hptrReadonly, hptrNS, hptrZipstrm, hptrArc, hptrArt, hptrEW,
-  hptrCommon, hptrEnv;
-DATADEF PFNWP PFNWPCnr, PFNWPFrame, PFNWPButton, PFNWPStatic, PFNWPMLE;
-DATADEF BOOL fLoadSubject, fLoadLongnames, fForceUpper, fForceLower,
-  fSyncUpdates, fAutoTile, fDontMoveMouse, loadedudirs,
-  fUnHilite, fWorkPlace, fConfirmDelete, fToolbar,
-  fToolsChanged, MenuInvisible, fFreeTree, fFollowTree,
-  fNoIconsFiles, fNoIconsDirs, fVerify, fDCOpens,
-  fLinkSetsIcon, fSaveState, fTextTools, fCopyDefault,
-  fToolTitles, fLogFile, fRealIdle, fNoSaveState, fUseQSysState,
-  fSplitStatus, fArcStuffVisible, fUseMCI, fAmAV2,
-  fNoTreeGap, fDummy, fVTreeOpensWPS, fUseQProcStat,
-  fStartMinimized, fStartMaximized, fRemoteBug, fReminimize,
-  fDragndropDlg, fMinOnOpen, fUserComboBox,
-  fQuickArcFind, fNoRemovableScan, fAutoView, fDataMin,
-  fDataToFore, fDataShowDrives, fDataInclRemote,
-  fExternalArcboxes, fExternalViewer, fExternalCollector,
-  fExternalINIs, fDefaultDeletePerm, fIniExisted, fUseNewViewer,
-  fTileBackwards, fFolderAfterExtract, fUserListSwitches,
-  fGuessType, fAutoAddDirs, fUdirsChanged, fSelectedAlways,
-  fToolbarHelp, fComments, fMoreButtons, fNoSearch, fOtherHelp,
-  fKeepCmdLine, fAmClosing, fSeparateParms, fTopDir,
-  fLookInDir, fSwitchTree, fSwitchTreeOnFocus, fDrivebar,
-  fSwitchTreeExpand, fCollapseFirst, fFilesInTree, fNoDead,
-  fThreadNotes, fOkayMinimize, fRunning, fDullMin, fBlueLED,
-  fViewChild, fShowEnv, fLeaveTree, fNoFoldMenu,
-  fCustomFileDlg, fSaveMiniCmds, fSaveBigCmds, fNoTileUpdate,
-  fFM2Deletes, fAutoAddAllDirs, fConfirmTarget, fChangeTarget,
-  fFirstTime, fShowTarget, fNoFinger, fDrivebarHelp, fCheckMM,
-  fNoLargeFileSupport, fNoMailtoMailRun,
-  fHttpRunWPSDefault, fFtpRunWPSDefault, fLibPathStrictMailRun,
-  fLibPathStrictHttpRun, fLibPathStrictFtpRun, fCancelAction, fTrashCan;
-DATADEF DETAILS_SETTINGS dsDirCnrDefault;
-DATADEF PID mypid;
-DATADEF INT driveflags[26], driveserial[26];
-DATADEF ULONG NoBrokenNotify, fwsAnimate, OS2ver[2], DriveLines;
-DATADEF HINI fmprof;
-DATADEF HELPINIT hini;
-DATADEF HWND hwndHelp, LastDir, AboutBox, DirMenu, FileMenu, TreeMenu,
-  ArcMenu, DirCnrMenu, TreeCnrMenu, ArcCnrMenu,
-  CollectorCnrMenu, CollectorFileMenu, CollectorDirMenu,
-  Collector, MainPopupMenu, DataHwnd, AutoMenu, hwndBubble,
-  hwndToolback, MainObjectHwnd, hwndMainMenu;
-
-#ifdef DEFINE_GLOBALS
-#pragma data_seg(GLOBAL2)
-#endif
-
-DATADEF CHAR *FM3Str, *FM2Str, *NullStr, *Default, *Settings,
-  *DRM_OS2FILE, *DRM_FM2ARCMEMBER, *DRF_FM2ARCHIVE,
-  *DRMDRFLIST, *DRMDRFOS2FILE, *DRMDRFFM2ARC,
-  *DRM_FM2INIRECORD, *DRF_FM2INI, *SUBJECT, *LONGNAME,
-  *HPFS, *JFS, *CDFS, *FAT32, *HPFS386, *NDFS32, *CBSIFS, *ISOFS, *RAMFS, *NTFS,
-  *WPProgram, *FM3Folder, *FM3Tools;
-DATADEF RGB2 RGBGREY, RGBBLACK;
-DATADEF CHAR archiverbb2[CCHMAXPATH], StopPrinting, profile[CCHMAXPATH], extractpath[CCHMAXPATH],
-  lastextractpath[CCHMAXPATH];
-DATADEF CHAR appname[12], realappname[12];
-DATADEF CHAR  lasttoolbar[CCHMAXPATH], HomePath[CCHMAXPATH],
-  SwapperDat[CCHMAXPATH], printer[CCHMAXPATH], szDefArc[CCHMAXPATH];
-DATADEF HMODULE FM3DllHandle, FM3ModHandle;
-DATADEF CHAR *quicktool[50];
-DATADEF BOOL qtloaded;
-DATADEF INT sortFlags, TreesortFlags, CollectorsortFlags;
-DATADEF INT butxsize, butysize;
-DATADEF FILE *LogFileHandle;
 
 #define FILESTOGET_MIN  256
 #define FILESTOGET_MAX  4096
 
-DATADEF ULONG ulCnrType, FilesToGet, AutoviewHeight, TreeWidth, FM3UL;
-DATADEF ULONGLONG ullTmpSpaceNeeded, ullDATFileSpaceNeeded;
-DATADEF long prnwidth, prnlength, prntmargin, prnbmargin, prnlmargin,
-  prnrmargin, prnspacing, prntabspaces;
-DATADEF BOOL prnpagenums, prnformat, prnformfeedbefore, prnformfeedafter,
-  prnalt;
-DATADEF LINKDIRS *udirhead, *ldirhead;
-DATADEF LINKCMDS *cmdhead, *cmdtail;
-DATADEF BOOL cmdloaded;
-DATADEF CHAR *WC_OBJECTWINDOW, *WC_BUBBLE, *WC_TOOLBUTTONS, *WC_DRIVEBUTTONS, *WC_DIRCONTAINER,
-  *WC_DIRSTATUS, *WC_TREECONTAINER, *WC_TREEOPENBUTTON, *WC_TREESTATUS, *WC_MAINWND,
-  *WC_MAINWND2, *WC_AUTOVIEW, *WC_LED, *WC_COLLECTOR, *WC_COLSTATUS, *WC_STATUS, *WC_TOOLBACK,
-  *WC_DRIVEBACK, *WC_ARCCONTAINER, *WC_ARCSTATUS, *WC_MLEEDITOR, *WC_INIEDITOR, *WC_SEEALL,
-  *WC_NEWVIEW, *WC_SEESTATUS, *WC_VIEWSTATUS, *WC_ERRORWND, *WC_MINITIME, *WC_DATABAR;
-
-#ifdef DEFINE_GLOBALS
-#pragma data_seg(GLOBAL3)
-#endif
-
-DATADEF BOOL fWantFirstTimeInit;
-DATADEF LONG standardcolors[16];
 
 #ifdef INCL_MMIOOS2
 #pragma pack(4)
@@ -574,12 +464,6 @@ typedef MMIOCLOSE *PMMIOCLOSE;
 #pragma pack()
 #endif
 
-#ifdef DEFINE_GLOBALS
-#pragma data_seg(GLOBAL4)
-#endif
-
-DATADEF HSWITCH switches[499];
-DATADEF ULONG numswitches;
 
 #define priority_idle()     DosSetPriority(PRTYS_THREAD,PRTYC_IDLETIME,30L,0L)
 #define priority_normal()   DosSetPriority(PRTYS_THREAD,PRTYC_REGULAR,0L,0L)

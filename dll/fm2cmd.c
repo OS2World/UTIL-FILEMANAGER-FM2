@@ -19,6 +19,7 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "notebook.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -28,6 +29,11 @@
 #include "valid.h"			// MakeFullName
 #include "misc.h"			// PostMsg
 #include "delims.h"			// skip_delim
+
+// Data definitions
+#pragma data_seg(GLOBAL1)
+BOOL fKeepCmdLine;
+BOOL fSaveMiniCmds;
 
 #pragma data_seg(DATA2)
 

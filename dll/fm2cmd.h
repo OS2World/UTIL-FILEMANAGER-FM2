@@ -17,5 +17,8 @@
 
 BOOL FM2Command(CHAR * directory, CHAR * command);
 
+// Data declarations
+extern BOOL fKeepCmdLine;
+extern BOOL fSaveMiniCmds;
 
 #endif // FM2CMD_H

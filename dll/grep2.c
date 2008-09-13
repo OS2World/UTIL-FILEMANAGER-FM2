@@ -38,6 +38,11 @@
 #define INCL_WINSTDCNR                  // makelist.h
 
 #include "fm3dll.h"
+#include "arccnrs.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
