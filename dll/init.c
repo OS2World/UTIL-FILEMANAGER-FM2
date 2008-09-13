@@ -145,6 +145,8 @@ PSZ pszBuiltWith = "Built with OpenWatcom version " b(__WATCOMC__);
 #undef a
 #endif
 
+VOID FindSwapperDat(VOID);
+
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
 static CHAR *WC_MAINWND;
@@ -221,7 +223,6 @@ CHAR *WC_TREECONTAINER;
 CHAR *WC_TREEOPENBUTTON;
 CHAR *WC_TREESTATUS;
 CHAR *WC_VIEWSTATUS;
-VOID FindSwapperDat(VOID);
 CHAR profile[CCHMAXPATH];
 ULONGLONG ullTmpSpaceNeeded;
 
