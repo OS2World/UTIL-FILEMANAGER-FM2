@@ -42,4 +42,42 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND TopWindow(HWND hwndParent, HWND exclude);
 HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret);
 
+// Data declarations
+extern ULONG AutoviewHeight;
+extern ULONG DriveLines;
+extern HMODULE FM3ModHandle;
+extern CHAR *FM3Str;
+extern HWND MainPopupMenu;
+extern HWND MainObjectHwnd;
+extern BOOL MenuInvisible;
+extern PFNWP PFNWPStatic;
+extern PFNWP PFNWPButton;
+extern RGB2 RGBGREY;
+extern BOOL fAmClosing;
+extern BOOL fAutoTile;
+extern BOOL fAutoView;
+extern BOOL fComments;
+extern BOOL fDrivebar;
+extern BOOL fFreeTree;
+extern BOOL fMoreButtons;
+extern BOOL fNoFinger;
+extern BOOL fNoSaveState;
+extern BOOL fNoTileUpdate;
+extern BOOL fRunning;
+extern BOOL fSplitStatus;
+extern BOOL fTextTools;
+extern BOOL fToolTitles;
+extern BOOL fToolbar;
+extern BOOL fUserComboBox;
+extern HBITMAP hbmLEDoff;
+extern HBITMAP hbmLEDon;
+extern HPOINTER hptrFinger;
+extern HWND hwndAutoview;
+extern HWND hwndBubble;
+extern HWND hwndName;
+extern HWND hwndStatelist;
+extern HWND hwndToolback;
+extern HWND hwndTree;
+extern USHORT shiftstate;
+
 #endif	// MAINWND_H

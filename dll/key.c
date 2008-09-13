@@ -23,6 +23,8 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "version.h"
@@ -30,6 +32,10 @@
 #include "strutil.h"			// GetPString
 #include "key.h"         		// AboutDlgProc
 #include "misc.h"			// PostMsg
+
+// Data declarations
+#pragma data_seg(GLOBAL1)
+static HWND AboutBox;
 
 #pragma data_seg(DATA1)
 

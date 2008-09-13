@@ -77,6 +77,18 @@
 #define DEFINE_GLOBALS 1
 
 #include "fm3dll.h"
+#include "mkdir.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "comp.h"			// Data declaration(s)
+#include "cmdline.h"			// Data declaration(s)
+#include "fm2cmd.h"			// Data declaration(s)
+#include "printer.h"                    // Data declaration(s)
+#include "init.h"                       // Data declaration(s)
+#include "flesh.h"                      // Data declaration(s)
+#include "worker.h"                     // Data declaration(s)
+#include "filldir.h"                    // Data declaration(s)
+#include "defview.h"                    // Data declaration(s)
+#include "draglist.h"                   // Data declaration(s)
 #include "fm3dlg.h"
 #include "datamin.h"
 #include "tools.h"
@@ -100,21 +112,20 @@
 #include "mainwnd2.h"                   // MainWndProc2
 #include "notify.h"                     // NotifyWndProc
 #include "treecnr.h"                    // OpenButtonProc
-#include "seeall.h"			// SeeAllWndProc, SeeStatusProc
-#include "init.h"
-#include "timer.h"			// StartTimer, StopTimer
-#include "treecnr.h"			// TreeClientWndProc, TreeStatProc
-#include "newview.h"			// ViewStatusProc, ViewWndProc
-#include "subj.h"			// Subject
-#include "select.h"			// UnHilite
-#include "dirs.h"			// save_dir
-#include "copyf.h"			// unlinkf
-#include "wrappers.h"			// xDosSetPathInfo
+#include "seeall.h"                     // SeeAllWndProc, SeeStatusProc
+#include "timer.h"                      // StartTimer, StopTimer
+#include "treecnr.h"                    // TreeClientWndProc, TreeStatProc
+#include "newview.h"                    // ViewStatusProc, ViewWndProc
+#include "subj.h"                       // Subject
+#include "select.h"                     // UnHilite
+#include "dirs.h"                       // save_dir
+#include "copyf.h"                      // unlinkf
+#include "wrappers.h"                   // xDosSetPathInfo
 #include "misc.h"                       // HeapThread, LoadDetailsSwitches
 #include "notebook.h"                   // command line variables (editor etc)
-#include "strips.h"			// bstrip
-#include "killproc.h"			// GetDosPgmName
-#include "srchpath.h"			// searchpath
+#include "strips.h"                     // bstrip
+#include "killproc.h"                   // GetDosPgmName
+#include "srchpath.h"                   // searchpath
 #include "fortify.h"
 
 #ifdef __IBMC__
@@ -134,9 +145,85 @@ PSZ pszBuiltWith = "Built with OpenWatcom version " b(__WATCOMC__);
 #undef a
 #endif
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+static CHAR *WC_MAINWND;
 
+#pragma data_seg(GLOBAL1)
+ULONG OS2ver[2];
+PFNWP PFNWPCnr;
+PFNWP PFNWPMLE;
+CHAR ThousandsSeparator[2];
+BOOL fAmAV2;
+BOOL fChangeTarget;
+BOOL fIniExisted;
+BOOL fLogFile;
+BOOL fReminimize;
+BOOL fWantFirstTimeInit;
+HPOINTER hptrApp;
+HPOINTER hptrArc;
+HPOINTER hptrArrow;
+HPOINTER hptrArt;
+HPOINTER hptrBusy;
+HPOINTER hptrCDROM;
+HPOINTER hptrDrive;
+HPOINTER hptrEW;
+HPOINTER hptrFloppy;
+HPOINTER hptrNS;
+HPOINTER hptrRamdisk;
+HPOINTER hptrRemote;
+HPOINTER hptrRemovable;
+HPOINTER hptrVirtual;
+HPOINTER hptrZipstrm;
+CHAR *pFM2SaveDirectory;
+CHAR *pTmpDir;
+
+#pragma data_seg(GLOBAL2)
+CHAR *CBSIFS;
+CHAR *DRF_FM2ARCHIVE;
+CHAR *DRMDRFFM2ARC;
+CHAR *DRMDRFOS2FILE;
+CHAR *DRM_FM2ARCMEMBER;
+CHAR *DRM_OS2FILE;
+CHAR *FM2Str;
+HMODULE FM3DllHandle;
+CHAR *FM3Folder;
+CHAR HomePath[CCHMAXPATH];
+CHAR *LONGNAME;
+CHAR *NullStr;
+CHAR *Settings;
+CHAR SwapperDat[CCHMAXPATH];
+CHAR *WC_ARCCONTAINER;
+CHAR *WC_ARCSTATUS;
+CHAR *WC_AUTOVIEW;
+CHAR *WC_BUBBLE;
+CHAR *WC_COLLECTOR;
+CHAR *WC_COLSTATUS;
+CHAR *WC_DATABAR;
+CHAR *WC_DIRCONTAINER;
+CHAR *WC_DIRSTATUS;
+CHAR *WC_DRIVEBACK;
+CHAR *WC_DRIVEBUTTONS;
+CHAR *WC_ERRORWND;
+CHAR *WC_INIEDITOR;
+CHAR *WC_LED;
+CHAR *WC_MAINWND2;
+CHAR *WC_MINITIME;
+CHAR *WC_MLEEDITOR;
+CHAR *WC_NEWVIEW;
+CHAR *WC_OBJECTWINDOW;
+CHAR *WC_SEEALL;
+CHAR *WC_SEESTATUS;
+CHAR *WC_STATUS;
+CHAR *WC_TOOLBACK;
+CHAR *WC_TOOLBUTTONS;
+CHAR *WC_TREECONTAINER;
+CHAR *WC_TREEOPENBUTTON;
+CHAR *WC_TREESTATUS;
+CHAR *WC_VIEWSTATUS;
 VOID FindSwapperDat(VOID);
+CHAR profile[CCHMAXPATH];
+ULONGLONG ullTmpSpaceNeeded;
 
 BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset);
 

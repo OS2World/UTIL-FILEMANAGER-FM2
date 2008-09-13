@@ -29,6 +29,7 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "init.h"			// Data declaration(s)
 #include "errutil.h"			// Dos_Error...
 #include "loadbmp.h"
 #include "wrappers.h"			// xfree

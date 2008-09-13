@@ -33,6 +33,9 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "init.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "procstat.h"
@@ -49,9 +52,15 @@
 #include "misc.h"			// PostMsg
 #include "fortify.h"
 
+// Data definitions
 #pragma data_seg(DATA2)
 
 static PSZ pszSrcFile = __FILE__;
+
+#pragma data_seg(GLOBAL1)
+BOOL fUseQProcStat;
+BOOL fUseQSysState;
+PID mypid;
 
 CHAR *GetDosPgmName(PID pid, CHAR * string)
 {

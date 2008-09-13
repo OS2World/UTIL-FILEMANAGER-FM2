@@ -18,5 +18,9 @@
 CHAR *GetDosPgmName(PID pid, CHAR * string);
 MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+// Data declarations
+extern BOOL fUseQSysState;
+extern BOOL fUseQProcStat;
+extern PID mypid;
 
 #endif // KILLPROC_H
