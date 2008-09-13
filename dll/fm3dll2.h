@@ -27,57 +27,6 @@
 
 ***********************************************************************/
 
-#define COLR_WHITE          0
-#define COLR_BLACK          1
-#define COLR_BLUE           2
-#define COLR_RED            3
-#define COLR_PINK           4
-#define COLR_GREEN          5
-#define COLR_CYAN           6
-#define COLR_YELLOW         7
-#define COLR_DARKGRAY       8
-#define COLR_DARKBLUE       9
-#define COLR_DARKRED        10
-#define COLR_DARKPINK       11
-#define COLR_DARKGREEN      12
-#define COLR_DARKCYAN       13
-#define COLR_BROWN          14
-#define COLR_PALEGRAY       15
-
-#define SORT_FIRSTEXTENSION 0x00000001
-#define SORT_LASTEXTENSION  0x00000002
-#define SORT_SIZE           0x00000004
-#define SORT_EASIZE         0x00000008
-#define SORT_LWDATE         0x00000010
-#define SORT_LADATE         0x00000020
-#define SORT_CRDATE         0x00000040
-#define SORT_DIRSFIRST      0x00000080
-#define SORT_DIRSLAST       0x00000100
-#define SORT_FILENAME       0x00000200
-#define SORT_REVERSE        0x00000400
-#define SORT_PATHNAME       0x00000800
-#define SORT_NOSORT         0x00001000
-#define SORT_SUBJECT        0x00002000
-
-#define DRIVE_REMOVABLE     0x00000001
-#define DRIVE_NOTWRITEABLE  0x00000002
-#define DRIVE_IGNORE        0x00000004
-#define DRIVE_CDROM         0x00000008
-#define DRIVE_NOLONGNAMES   0x00000010
-#define DRIVE_REMOTE        0x00000020
-#define DRIVE_BOOT          0x00000040
-#define DRIVE_INVALID       0x00000080
-#define DRIVE_NOPRESCAN     0x00000100
-#define DRIVE_ZIPSTREAM     0x00000200
-#define DRIVE_NOLOADICONS   0x00000400
-#define DRIVE_NOLOADSUBJS   0x00000800
-#define DRIVE_NOLOADLONGS   0x00001000
-#define DRIVE_SLOW          0x00002000
-#define DRIVE_INCLUDEFILES  0x00004000
-#define DRIVE_VIRTUAL       0x00008000
-#define DRIVE_NOSTATS       0x00010000
-#define DRIVE_RAMDISK       0x00020000
-
 #define MAIN_FRAME          1
 #define MAIN_STATUS         2
 #define MAIN_TOOLS          3
@@ -661,41 +610,135 @@
 #define IDM_SELECTSAMECONTENT 10038
 #define IDM_UNHIDEALL         10039
 
-#define CHECK_FILES 1
+// #define PP_MAX    PP_MENUDISABLEBGNDCOLORINDEX	// Unused, 13 Sep 08 JBS
+// #define PP_MAXBUF 384				// Unused, 13 Sep 08 JBS
 
 #ifndef MM_PORTHOLEINIT
-#  define MM_PORTHOLEINIT   0x01fb
+#define MM_PORTHOLEINIT   0x01fb
 #endif
-#ifndef MS_POPUP
-#  define MS_POPUP          0x00000010L
+// #ifndef CCS_MINIICONS	defined in Open Watcom headers
+// #define CCS_MINIICONS     0x0800
+// #endif
+// #ifndef CRA_SOURCE			// defined in Open Watcom headers
+// #define CRA_SOURCE        0x00004000
+// #endif
+// #ifndef CV_EXACTMATCH		// defined as CV_EXACTLENGTH in Open Watcom headers
+// #define CV_EXACTMATCH     0x10000000
+// #endif
+// #ifndef CBN_SETFOCUS			// Unused, 13 Sep 08 JBS
+// #define CBN_SETFOCUS      20
+// #endif
+// #ifndef CBN_KILLFOCUS		// Unused, 13 Sep 08 JBS
+// #define CBN_KILLFOCUS     21
+// #endif
+// #ifndef CN_VERIFYEDIT		// defined in Open Watcom headers
+// #define CN_VERIFYEDIT     134
+// #endif
+// #ifndef CN_PICKUP			// defined in Open Watcom headers
+// #define CN_PICKUP         135
+// #endif
+// #ifndef CN_DROPNOTIFY		// defined in Open Watcom headers
+// #define CN_DROPNOTIFY     136
+// #endif
+// #ifndef CN_GRIDRESIZED		// defined in Open Watcom headers
+// #define CN_GRIDRESIZED    137
+// #endif
+#ifndef BKS_MERLINSTYLE	
+#define BKS_MERLINSTYLE   0x0800
 #endif
-#ifndef CCS_MINIICONS
-#  define CCS_MINIICONS     0x0800
-#endif
-#ifndef CRA_SOURCE
-#  define CRA_SOURCE        0x00004000
-#endif
-#ifndef CV_EXACTMATCH
-#  define CV_EXACTMATCH     0x10000000
-#endif
-#ifndef CBN_SETFOCUS
-#  define CBN_SETFOCUS      20
-#endif
-#ifndef CBN_KILLFOCUS
-#  define CBN_KILLFOCUS     21
-#endif
-#ifndef CN_VERIFYEDIT
-#  define CN_VERIFYEDIT     134
-#endif
-#ifndef CN_PICKUP
-#  define CN_PICKUP         135
-#endif
-#ifndef CN_DROPNOTIFY
-#  define CN_DROPNOTIFY     136
-#endif
-#ifndef CN_GRIDRESIZED
-#  define CN_GRIDRESIZED    137
-#endif
-#ifndef BKS_MERLINSTYLE
-#  define BKS_MERLINSTYLE   0x0800
-#endif
+
+// User messages
+#define UM_PAINT            (WM_USER)
+#define UM_SETUP            (WM_USER + 1)
+#define UM_RESCAN           (WM_USER + 2)
+#define UM_INITIALSIZE      (WM_USER + 3)
+#define UM_CONTROL          (WM_USER + 4)
+#define UM_COMMAND          (WM_USER + 5)
+#define UM_SIZE             (WM_USER + 6)
+#define UM_FOCUSME          (WM_USER + 7)
+#define UM_FIXEDITNAME      (WM_USER + 8)
+#define UM_UPDATERECORD     (WM_USER + 9)
+#define UM_SETDIR           (WM_USER + 10)
+#define UM_CONTAINER_FILLED (WM_USER + 11)
+#define UM_STRETCH          (WM_USER + 12)
+#define UM_LOADFILE         (WM_USER + 13)
+#define UM_MOUSEMOVE        (WM_USER + 14)
+#define UM_ENTER            (WM_USER + 15)
+#define UM_CLOSE            (WM_USER + 16)
+#define UM_ACTION           (WM_USER + 17)
+#define UM_MASSACTION       (WM_USER + 18)
+#define UM_UPDATERECORDLIST (WM_USER + 19)
+#define UM_FILESMENU        (WM_USER + 20)
+#define UM_SELECT           (WM_USER + 21)
+#define UM_VIEWSMENU        (WM_USER + 22)
+#define UM_CONTAINERHWND    (WM_USER + 23)
+#define UM_OPENWINDOWFORME  (WM_USER + 24)
+#define UM_FOLDUP           (WM_USER + 25)
+#define UM_INITMENU         (WM_USER + 26)
+#define UM_COMPARE          (WM_USER + 27)
+#define UM_EXPAND           (WM_USER + 28)
+#define UM_REPLACEFOCUS     (WM_USER + 29)
+#define UM_UNDO             (WM_USER + 30)
+#define UM_RENDER           (WM_USER + 31)
+// #define UM_BUTTON2DOWN      (WM_USER + 32)		// Unused, 13 Sep 08 JBS
+// #define UM_BUTTON2UP        (WM_USER + 33)		// Unused, 13 Sep 08 JBS
+#define UM_COLLECTFROMFILE  (WM_USER + 34)
+#define UM_TIMER            (WM_USER + 35)
+// #define UM_HELPON           (WM_USER + 36)		// Unused, 13 Sep 08 JBS
+#define UM_SETUP2           (WM_USER + 37)
+#define UM_SETUP3           (WM_USER + 38)
+#define UM_CONTEXTMENU      (WM_USER + 39)
+#define UM_FILLUSERLIST     (WM_USER + 40)
+#define UM_CONTAINERDIR     (WM_USER + 41)
+#define UM_SETUP4           (WM_USER + 42)
+#define UM_FILLSETUPLIST    (WM_USER + 43)
+#define UM_ARRANGEICONS     (WM_USER + 44)
+#define UM_SETUP5           (WM_USER + 45)
+#define UM_NOTIFY           (WM_USER + 46)
+// #define UM_INSERTRECORD     (WM_USER + 47)		// Unused, 13 Sep 08 JBS
+#define UM_ADDTOMENU        (WM_USER + 48)
+#define UM_COLLECT          (WM_USER + 49)
+#define UM_RESTOREDC        (WM_USER + 50)
+#define UM_MINIMIZE         (WM_USER + 51)
+#define UM_MAXIMIZE         (WM_USER + 52)
+#define UM_BUTTON1MOTIONSTART (WM_USER + 53)
+#define UM_SETUP6           (WM_USER + 54)
+#define UM_FILLBUTTONLIST   (WM_USER + 55)
+#define UM_SETUSERLISTNAME  (WM_USER + 56)
+#define UM_FILTER           (WM_USER + 57)
+#define UM_SORTRECORD       (WM_USER + 58)
+// #define UM_SIZE2            (WM_USER + 59)		// Unused, 13 Sep 08 JBS
+#define UM_RESTORE          (WM_USER + 60)
+#define UM_TOPDIR           (WM_USER + 61)
+#define UM_SHOWME           (WM_USER + 62)
+#define UM_RESCAN2          (WM_USER + 63)
+#define UM_BUILDDRIVEBAR    (WM_USER + 64)
+#define UM_THREADUSE        (WM_USER + 65)
+#define UM_DRIVECMD         (WM_USER + 66)
+#define UM_ADVISEFOCUS      (WM_USER + 67)
+#define UM_FIXCNRMLE        (WM_USER + 68)
+#define UM_FLESH            (WM_USER + 69)
+#define UM_FILLCMDLIST      (WM_USER + 70)
+#define UM_CLICKED          (WM_USER + 71)
+#define UM_CLICKED3         (WM_USER + 72)
+#define UM_HIDENOTSELECTED  (WM_USER + 73)
+#define UM_FIRSTTIME	    (WM_USER + 74)
+
+#define COLR_WHITE          0
+#define COLR_BLACK          1
+#define COLR_BLUE           2
+#define COLR_RED            3
+#define COLR_PINK           4
+#define COLR_GREEN          5
+#define COLR_CYAN           6
+#define COLR_YELLOW         7
+#define COLR_DARKGRAY       8
+#define COLR_DARKBLUE       9
+#define COLR_DARKRED        10
+#define COLR_DARKPINK       11
+#define COLR_DARKGREEN      12
+#define COLR_DARKCYAN       13
+#define COLR_BROWN          14
+#define COLR_PALEGRAY       15
+
+
