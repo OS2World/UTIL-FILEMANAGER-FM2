@@ -15,11 +15,13 @@
 ***********************************************************************/
 
 #include <ctype.h>
+#include <time.h>
 
 #define INCL_DOS
 #define INCL_WIN
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
 #include "notebook.h"			// Data declaration(s)
 #include "info.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)

@@ -81,6 +81,8 @@ typedef struct
 }
 ARCDUMP;
 
+#define LINES_PER_ARCSIG        21	// Lines in each archiver.bb2 definition
+
 ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig);
 ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig);
 INT load_archivers(VOID);

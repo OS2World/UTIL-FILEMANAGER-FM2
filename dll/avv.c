@@ -31,12 +31,14 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
 #include "arccnrs.h"			// Data declaration(s)
 #include "notebook.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)

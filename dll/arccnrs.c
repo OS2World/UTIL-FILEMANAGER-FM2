@@ -79,12 +79,15 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
+#include "arccnrs.h"
+#include "makelist.h"			// Typedef
+#include "colors.h"			// Typedef
 #include "mainwnd2.h"			// Data declaration(s)
 #include "grep.h"			// Data declaration(s)
 #include "dircnrs.h"			// Data declaration(s)
 #include "info.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)
-#include "arccnrs.h"			// StartArcCnr
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -132,6 +135,12 @@
 #include "strips.h"			// bstrip
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
+
+#define ARCFLAGS_REALDIR    0x00000001
+#define ARCFLAGS_PSEUDODIR  0x00000002
+#define CON_COLS                6
+#define EXTRA_ARCRECORD_BYTES   (sizeof(ARCITEM) - sizeof(MINIRECORDCORE))
+
 
 #pragma data_seg(DATA1)
 static INT DefArcSortFlags;

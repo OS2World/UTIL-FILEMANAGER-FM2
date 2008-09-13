@@ -26,6 +26,26 @@
 
 #include "avl.h"			// ARC_TYPE
 
+#pragma pack(1)
+
+typedef struct _ARCITEM
+{				// ARCHIVE CONTAINER RECORD STRUCTURE
+  MINIRECORDCORE rc;		// Base information
+  HWND hwndCnr;			/* Container holding this record */
+  PSZ pszFileName;		// Points to full path name or NullStr
+  PSZ pszDisplayName;		// Points to displayable part of path name  - used by CFA_STRING
+  CHAR szDate[40];		// File's assembled date
+  PSZ pszDate;			// Pointer to date
+  CDATE date;			// if we know date format
+  CTIME time;			// if we know time format
+  ULONGLONG cbFile;		// File's original size
+  ULONGLONG cbComp;		// File's compressed size
+  ULONG flags;
+}
+ARCITEM, *PARCITEM;
+
+#pragma pack()
+
 MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				  MPARAM mp2);
 HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
