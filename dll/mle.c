@@ -34,6 +34,9 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "init.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
 #include "fm3dlg.h"
 #include "mle.h"
 #include "fm3str.h"

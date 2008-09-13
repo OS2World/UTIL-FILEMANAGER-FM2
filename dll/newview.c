@@ -46,6 +46,11 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "mainwnd2.h"			// Data declaration(s)
+#include "collect.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
@@ -80,8 +85,20 @@
 #include "misc.h"			// PaintRecessedWindow
 #include "fortify.h"
 
-#pragma data_seg(DATA2)
+// Data definitions
+#pragma data_seg(GLOBAL1)
+HEV CompactSem;
+BOOL fFtpRunWPSDefault;
+BOOL fHttpRunWPSDefault;
 
+#pragma data_seg(GLOBAL2)
+CHAR *httprun;
+CHAR *mailrun;
+
+#pragma data_seg(GLOBAL3)
+LONG standardcolors[16];
+
+#pragma data_seg(DATA2)
 static PSZ pszSrcFile = __FILE__;
 
 #define VF_SELECTED     0x01

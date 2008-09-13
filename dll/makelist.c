@@ -25,13 +25,14 @@
 #define INCL_WIN
 #define INCL_LONGLONG
 
+#include "fm3dll.h"			// 05 Jan 08 SHL fixme to be gone
 #include "fm3str.h"
 #include "makelist.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "dircnrs.h"
 #include "misc.h"			// CurrentRecord
-#include "fm3dll.h"			// 05 Jan 08 SHL fixme to be gone
+#include "newview.h"			// Data declarations
 #include "wrappers.h"			// xfree
 #include "fortify.h"			// 06 May 08 SHL
 

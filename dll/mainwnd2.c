@@ -39,6 +39,12 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "killproc.h"			// Data declaration(s)
+#include "grep.h"			// Data declaration(s)
+#include "autoview.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "worker.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "tools.h"
@@ -80,7 +86,15 @@ typedef struct
 }
 PERSON1DATA;
 
+// Data definitions
 static PSZ pszSrcFile = __FILE__;
+static ULONG TreeWidth;
+
+#pragma data_seg(GLOBAL1)
+PFNWP PFNWPFrame;
+
+#pragma data_seg(GLOBAL2)
+CHAR realappname[12];
 
 static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
 					  MPARAM mp2)

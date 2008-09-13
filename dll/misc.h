@@ -74,4 +74,15 @@ BOOL SwitchCommand(HWND hwndMenu, USHORT cmd);
 BOOL ViewHelp(CHAR * filename);
 VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL enable);
 
+// Data declarations
+extern HWND CollectorDirMenu;
+extern HWND CollectorFileMenu;
+extern HWND DirMenu;
+extern HWND FileMenu;
+extern HWND TreeMenu;
+extern BOOL fDefaultDeletePerm;
+extern BOOL fWorkPlace;
+extern ULONG numswitches;
+extern HSWITCH switches[499];
+
 #endif // MISC_H

@@ -65,6 +65,16 @@
 #define INCL_LONGLONG
 
 #include "fm3dll.h"
+#include "killproc.h"			// Data declaration(s)
+#include "comp.h"			// Data declaration(s)
+#include "treecnr.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "dircnrs.h"			// Data declaration(s)
+#include "newview.h"			// Data declarations
+#include "collect.h"			// data declaration(s)
+#include "notebook.h"			// data declaration(s)
+#include "arccnrs.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "pathutil.h"                   // BldQuotedFileName
@@ -85,8 +95,21 @@
 #include "fortify.h"
 #include "misc.h"
 
-#pragma data_seg(DATA1)
+// Data definitions
+#pragma data_seg(GLOBAL1)
+HWND CollectorDirMenu;
+HWND CollectorFileMenu;
+HWND DirMenu;
+HWND FileMenu;
+HWND TreeMenu;
+BOOL fDefaultDeletePerm;
+BOOL fWorkPlace;
 
+#pragma data_seg(GLOBAL4)
+ULONG numswitches;
+HSWITCH switches[499];
+
+#pragma data_seg(DATA1)
 static PSZ pszSrcFile = __FILE__;
 
 #ifndef BEGIN_LIBPATH

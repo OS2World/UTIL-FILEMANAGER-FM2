@@ -22,6 +22,10 @@
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
+#include "common.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
+#include "info.h"			// Data declaration(s)
+#include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -33,6 +37,10 @@
 #include "valid.h"			// IsFullName
 #include "dirs.h"			// save_dir2
 #include "input.h"			// InputDlgProc
+
+// Data definitions
+#pragma data_seg(GLOBAL2)
+CHAR targetdir[CCHMAXPATH];
 
 #pragma alloc_text(MKDIR,MassMkdir,SetDir,PMMkDir,SetTargetDir)
 

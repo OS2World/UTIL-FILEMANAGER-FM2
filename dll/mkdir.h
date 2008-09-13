@@ -20,4 +20,7 @@ BOOL PMMkDir(HWND hwnd, CHAR * filename, BOOL copy);
 APIRET SetDir(HWND hwndClient, HWND hwnd, CHAR * dir, INT flags);
 void SetTargetDir(HWND hwnd, BOOL justshow);
 
+// Data declarations
+extern CHAR targetdir[CCHMAXPATH];
+
 #endif // MKDIR_H
