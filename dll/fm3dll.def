@@ -14,7 +14,7 @@ import DOSQPROCSTATUS DOSCALLS.154
 #       DOSQUERYSYSSTATE DOSCALLS.368
 
 export    InitFM3DLL_                                 .1,
-          FindSwapperDat_                             .2,
+# JBS     FindSwapperDat_                             .2,
           StartFM3_                                   .3,
           saymsg_                                     .4,
           Win_Error_                                  .5,

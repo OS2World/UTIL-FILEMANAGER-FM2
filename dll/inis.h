@@ -15,6 +15,8 @@
 #if !defined(INIS_H)
 #define INIS_H
 
+#include "colors.h"			// typedef RGB2
+
 MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 HWND StartIniEditor(HWND hwnd, CHAR * filename, INT flags);
 

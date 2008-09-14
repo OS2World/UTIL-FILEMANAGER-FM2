@@ -18,6 +18,7 @@
 #define INCL_WIN
 
 #include "dll\fm3dll.h"
+#include "dll\fm3dll2.h"		// #define's for UM_*, control id's, etc.
 #include "dll\mainwnd.h"		// Data declaration(s)
 #include "dll\notebook.h"		// Data declaration(s)
 #include "dll\fm3str.h"

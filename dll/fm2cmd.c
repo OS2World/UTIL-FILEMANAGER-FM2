@@ -31,6 +31,10 @@
 #include "misc.h"			// PostMsg
 #include "delims.h"			// skip_delim
 
+
+static VOID fullname(CHAR * directory, CHAR * name);
+static VOID parse(CHAR * command, CHAR * key, CHAR * rest);
+
 // Data definitions
 #pragma data_seg(GLOBAL1)
 BOOL fKeepCmdLine;
