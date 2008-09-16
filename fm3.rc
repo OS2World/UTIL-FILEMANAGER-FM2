@@ -19,7 +19,6 @@
 
 ***********************************************************************/
 
-#include "dll\fm3dll.h"
 #include "dll\fm3dll2.h"
 
 DEFAULTICON                 icons\FM3.ICO
@@ -131,7 +130,7 @@ BITMAP IDM_WPSCOPY          bitmaps\WPSCOPYB.BMP
 BITMAP IDM_WPSMOVE          bitmaps\WPSMOVEB.BMP
 BITMAP IDM_UUDECODE         bitmaps\UDECODE.BMP
 
-#define AUTHOR_PICTURE		 26102               /* fm3dlg.h */
+#define AUTHOR_PICTURE           26102               /* fm3dlg.h */
 BITMAP AUTHOR_PICTURE       bitmaps\HECTOR.BMP
 
 BITMAP IDM_CMDTOOLBAR       bitmaps\cmdstls.bmp

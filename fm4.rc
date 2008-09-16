@@ -17,7 +17,6 @@
 
 ***********************************************************************/
 
-#include "dll\fm3dll.h"
 #include "dll\fm3dll2.h"
 
 DEFAULTICON                 icons\FM4.ICO
