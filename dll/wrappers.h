@@ -32,13 +32,6 @@ APIRET xDosSetPathInfo(PSZ   pszPathName,
 		       PVOID pInfoBuf,
 		       ULONG cbInfoBuf,
 		       ULONG flOptions);
-APIRET xDosFindFirst(PSZ pszFileSpec,
-		     PHDIR phdir,
-		     ULONG  flAttribute,
-		     PVOID  pfindbuf,
-		     ULONG  cbBuf,
-		     PULONG pcFileNames,
-		     ULONG  ulInfoLevel);
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 	   UINT uiLineNumber);
 PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
