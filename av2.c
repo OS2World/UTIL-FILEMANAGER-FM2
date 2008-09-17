@@ -10,6 +10,7 @@
 
   23 Sep 07 SHL Sync with standards
   23 Sep 07 SHL Get rid of statics
+  17 Sep 08 JBS Convert to use of wrapped DosFind... (i.e. xDosFind...)
 
 ***********************************************************************/
 
@@ -37,6 +38,7 @@
 #include "dll\copyf.h"			// unlinkf
 #include "dll\init.h"			// InitFM3DLL
 #include "dll\valid.h"			// IsFile
+#include "dll\wrappers.h"		// xDosFind...
 
 HMTX av2Sem;
 
@@ -61,7 +63,7 @@ VOID APIENTRY deinit(ULONG why)
       strcat(s, "*");
       search_handle = HDIR_CREATE;
       num_matches = 1;
-      if (!DosFindFirst(s,
+      if (!xDosFindFirst(s,
 			&search_handle,
 			FILE_NORMAL | FILE_DIRECTORY | FILE_SYSTEM |
 			FILE_READONLY | FILE_HIDDEN | FILE_ARCHIVED,
@@ -77,8 +79,8 @@ VOID APIENTRY deinit(ULONG why)
 	  }
 	  else
 	    unlinkf("%s", s);
-	} while (!DosFindNext(search_handle,
-			      &ffb3, sizeof(FILEFINDBUF3), &num_matches));
+	} while (!xDosFindNext(search_handle,
+			      &ffb3, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD));
 	DosFindClose(search_handle);
       }
     }
