@@ -3,11 +3,15 @@
    FM2.WIS.IN is used as input to SED which then replaces/inserts
    various text and creates FM2.WIS during the FM/2 build process.
 
+   $Id$
+
 Change log
    22 Feb 08 JBS Ticket 231: Stop auto-select of FM/2 Utilities of already installed.
    23 Feb 08 JBS Ticket 226: Add debugging support package
    24 Feb 08 JBS Ticket 226: Add debugging support package
-   26 Feb 08 JBS Ticket 226: Reset debgging package version to match FM2_VER
+   26 Feb 08 JBS Ticket 226: Reset debugging package version to match FM2_VER
+   06 Oct 08 JBS Ticket 287: Fix syntax of the required version attribute of Warpin tag
+   			     in Warpin script.
 
    NOTE: If a NON-EXTERNAL package (i.e. a package whose files
    will be staged before building the WPI file) with an index
@@ -17,18 +21,18 @@ Change log
          WPI.max_package_number_length = 3
    will need to be changed accordingly.
 
-   NOTE: If a PACKAGEID line below ever has a '-' added to it, then the
+   NOTE: If a PACKAGEId line below ever has a '-' added to it, then the
    SED command in warpin\makefile will have to change. Right now the SED
    command first replaces the @@@FM2*_VER@@@ string in tha PACKAGEID's
    below with the filename version strings (e.g. -3-6-0) and then it
    replaces the '-' with backslashes. In summary, don't use '-' in these
    PACKAGEID's if possible.
 
-   WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
-   WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
+   WARPIN VERSION="0.9.20" is required for PACKAGEID's with revision levels.
+   WARPIN VERSION="0.9.9"  is required for EXTRACTFROMPCK.
 
 -->
-<WARPIN VERSION 0.9.20>
+<WARPIN VERSION="0.9.20">
 
 <HEAD>
 <REXX NAME=UtilsCheck>
@@ -103,8 +107,8 @@ Change log
 >This package contains the base File Manager/2 (FM/2) package.
 
 The FM/2 base package must be installed to a drive with long filename support!
-This is the first release of FM/2 that was build with OpenWatcom. Changing
-compilers can introduce unexpected problems so you may want to install this
+Since v3.6 FM/2 has been built using OpenWatcom. Changing compilers can
+introduce unexpected problems. So you may want to install this
 package to a location different than your current install for testing before
 replacing your current version. See the readme for more information.
 </PCK>
