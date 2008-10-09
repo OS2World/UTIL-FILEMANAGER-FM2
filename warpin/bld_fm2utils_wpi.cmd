@@ -1,6 +1,8 @@
-/*  BLD_FM2UTILS_WPI - Create a Warpin archive (WPI) for installation of FM/2 */
-
 /*
+ * $Id: $
+ *
+ * BLD_FM2UTILS_WPI - Create a Warpin archive (WPI) for installation of FM/2
+ *
  * Author
  *    John Small
  *    jsmall@os2world.net

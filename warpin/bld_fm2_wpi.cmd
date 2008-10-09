@@ -1,6 +1,8 @@
-/*  BLD_FM2_WPI - Create a Warpin archive (WPI) for installation of FM/2 */
-
 /*
+ *	$Id: $
+ *
+ * BLD_FM2_WPI - Create a Warpin archive (WPI) for installation of FM/2
+ *
  * Author
  *    John Small
  *    jsmall@os2world.net
@@ -72,13 +74,6 @@ call Init strip(args)
 if WPI.scriptonly == 0 then
 /* Add the files to the WPI   */
    do
-/*
-      if stream(WPI.archivename, 'c', 'query exists') \= '' then
-         if archive_previous_WPI == 1 then
-            'ren 'WPI.archivename WPI.archivename || '.' || time('S')
-         else
-            'del 'WPI.archivename
-*/
       do p = 1 to WPI.pkg.0
          call SysFileTree WPI.pkg.p.dir || '\*', 'pkgfilelist.', 'FOS'
          if pkgfilelist.0 = 0 then
@@ -100,10 +95,6 @@ if WPI.scriptonly == 0 then
       if rc \= 0 then
          call ErrorExit 4 rc
    end
-
-/*
-call Deinit
-*/
 
 /* Exit routines */
 if WPI.retval = 0 then
@@ -182,18 +173,12 @@ Init: procedure expose (globals)
    end
 return
 
-/*
-Deinit: procedure expose (globals)
-return
-*/
-
 novalue:
    say 'Error: Uninitialized value: ' || condition('D') || ' encountered on line 'sigl':'
    say '   'sourceline(sigl)
    call ErrorExit 1
 
 /*=== Error() Report ERROR, FAILURE etc. and exit ===*/
-
 Error:
   say
   parse source . . cmd

@@ -1,4 +1,5 @@
 /*
+ * $Id: $
  *
  * REXX code to create and populate directories in preparation for the creation of the
  * FM/2 Warpin archive (WPI file).
@@ -8,7 +9,6 @@
  *    -  Add logic to read script to determine
  *       -  Number of packages
  *       -  Package numbers
- *    -  Add logic to copy only if the source is newer
  *    -  Document errors internally (Error. ?)
  *    -  Display more descriptive error messages to user
  *

@@ -11,6 +11,8 @@
 #               dependant of the WPI target.
 # 10 Dec 07 SHL Add missing makefile dependencies
 # 10 Dec 07 SHL Set FM2_VER for 3.9.0
+# 07 Oct 08 JBS Changed SED command to use script file and to eliminate
+#               extraneous blank lines with the included files.
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
 FM2_VER=-3-13-0                  # default value
@@ -60,9 +62,8 @@ checkfiles: .symbolic
    @echo Checking to see if files have been changed...
     ckfiles fm2$(FM2_VER).wpi
 
-fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile
-   sed -e "/@@@include fm2utils.doc@@@/r fm2utils\fm2utils.doc" -e "s/@@@include fm2utils.doc@@@//" -e "/@@@include license.txt@@@/r fm2utils\license.txt" -e "s/@@@include license.txt@@@//" -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -e "/PACKAGEID/s/-/\\/g" fm2.wis.in >fm2.wis
-#  sed  -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "/PACKAGEID/s/-/\\/g" fm2.wis.in >fm2.wis
+fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile sed.in
+   sed -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -f sed.in fm2.wis.in | sed "/@@@include/{s/@@@include//;N;s/\n//}" >fm2.wis
 
 fm2$(FM2_VER).wpi:: bld_fm2_wpidirs.in makefile
    @echo Staging files for WPI file...

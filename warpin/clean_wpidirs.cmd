@@ -1,4 +1,10 @@
-/* REXX program to delete FM/2 Warpin WPI file staging directories */
+/*
+ * $Id: $
+ *
+ * REXX program to empty FM/2 Warpin WPI file staging directories
+ *
+ */
+
 call RxFuncAdd 'SysFileTree', 'REXXUTIL', 'SysFileTree'
 call SysFileTree 'PACKAGE.*', 'pkgdirs.', 'DO'
 do p = 1 to pkgdirs.0
