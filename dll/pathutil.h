@@ -19,7 +19,6 @@
 
 #if !defined(OS2_INCLUDED)
 #include <os2.h>
-#else
 #endif
 
 PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);

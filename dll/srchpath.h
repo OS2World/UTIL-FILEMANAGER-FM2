@@ -10,12 +10,14 @@
 
   Change log
 
+  04 Oct 08 JBS Make searchapath function non-static
 ***********************************************************************/
 
 #if !defined(SRCHPATH_H)
 #define SRCHPATH_H
 
 INT RunFM2Util(CHAR *appname, CHAR *filename);
+CHAR *searchapath(CHAR * path, CHAR * filename);
 CHAR *searchpath(CHAR * filename);
 
 

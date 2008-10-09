@@ -11,6 +11,7 @@
   22 Apr 07 GKY Add RunFM2Util to find and run apps from the FM2Utilities
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   23 Aug 07 SHL Comments
+  04 Oct 08 JBS Make searchapath non-static
 
 ***********************************************************************/
 
@@ -23,16 +24,15 @@
 #include "fm3dll.h"
 #include "fm3dlg.h"
 #include "fm3str.h"
+#include "srchpath.h"
 #include "pathutil.h"			// BldQuotedFileName
 #include "errutil.h"			// Dos_Error...
-#include "srchpath.h"
 #include "systemf.h"			// runemf2
 #include "notebook.h"			// Data declaration(s)
 
 static PSZ pszSrcFile = __FILE__;
 
 // static CHAR *first_path(CHAR * path, CHAR * ret);
-static CHAR *searchapath(CHAR * path, CHAR * filename);
 
 #pragma data_seg(DATA1)
 
