@@ -47,8 +47,8 @@
 ;A blank line with a definition entry will be treats as either an empty string
 ;or the number 0, depending on what content is expected for the definition line.
 
-;Note that all archiver command strings should include the archiver's parameter to
-;prevent it from prompting for input!  Also note that archive types are checked
+;Note that all archiver command strings should include the archiver's parameter(s)
+;which prevent it from prompting for input!  Also note that archive types are checked
 ;in order of their listing in this file.  Finally, this file is set up for
 ;the archivers I had lying around. If yours are different versions, you may
 ;have to modify this file.  All archivers are OS/2 (or FAPI) versions.
@@ -60,7 +60,7 @@
 ;02-31-98  23:55:32     mm-dd-yy hh:mm:ss       1
 ;31 Feb 98 23:55:32     dd-Mmm- yy hh:mm:ss     2
 ;31 Feb 98  11:55p      dd Mmm yy hh:mmA        3
-;98-02-31 23:55:32      yy-mm-dd mm:mm:ss       4
+;98-02-31 23:55:32      yy-mm-dd hh:mm:ss       4
 ;31-02-98  23:55        dd-mm-yy hh:mm          5
 
 ; Dash (-) and slash (/) separators are both supported.
