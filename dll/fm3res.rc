@@ -281,13 +281,13 @@ MENU  MAIN_FRAME
 	 MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG	// 12 Jan 08 SHL
 	 MENUITEM "Toggle ~immediate updates",IDM_SYNCUPDATES		// 16 Jan 08 SHL
 	 MENUITEM "",                  -1,           MIS_SEPARATOR
-	 SUBMENU "~Edit",							-1
+	 SUBMENU "~Edit",		IDM_CFGEDITSUBMENU
 	 {
 		MENUITEM "Edit ~associations...",IDM_EDITASSOC
 		MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
 		MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
 	 }
-	 SUBMENU "~Palette",							-1
+	 SUBMENU "~Palette",		IDM_CFGPALETTESUBMENU
 	 {
 		 MENUITEM "~Font palette",     IDM_FONTPALETTE
 		 MENUITEM "~Color palette",    IDM_COLORPALETTE
