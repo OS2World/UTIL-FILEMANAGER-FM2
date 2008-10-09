@@ -40,6 +40,7 @@
 # 05 May 08 SHL Add FORTIFY support
 # 26 May 08 SHL Update WARNALL to warn about more
 # 22 Jul 08 SHL Change from dllsyms to syms target for consistency
+# 06 Oct 08 SHL Add missing -dDEBUG= to CFLAGS; rework lxlite suppress logic
 
 # Environment:
 
@@ -123,8 +124,8 @@ SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for buildin
 # -wcd=309	unprototyped function called indirectly
 
 !ifdef DEBUG
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
-CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq -d$DEBUG_OPT
+CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq -d$DEBUG_OPT
 !else
 CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
 !endif
@@ -234,11 +235,7 @@ chkexe:
   if not exist internal\mkstr.exe internal\mkstr.exe
 !ifndef DEBUG
   lxlite -c:exehdr internal\mkstr.exe >nul
-!else
-! ifeq DEBUG 0
-    lxlite -c:exehdr internal\mkstr.exe >nul
 ! endif
-!endif
 
 !endif
 
@@ -298,19 +295,10 @@ $(BASERES).dll: $(BASERES).res
 !ifndef DEBUG
   lxlite $@ /x+ /b-
   lxlite $@ /c:minstub
-!else
-! ifeq DEBUG 0
-    lxlite $@ /x+ /b-
-    lxlite $@ /c:minstub
-! endif
 !endif
   $(RC) $(RCFLAGS2) $(BASERES).res $@
 !ifndef DEBUG
   lxlite $@ /x- /b-
-!else
-! ifeq DEBUG 0
-    lxlite $@ /x- /b-
-! endif
 !endif
   bldlevel $@
 
@@ -336,10 +324,6 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
 # !lxlite /x- /b- $?
 !ifndef DEBUG
    @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
-!else
-!  ifeq DEBUG 0
-     @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
-!  endif
 !endif
 
 cleanobj: .symbolic

@@ -79,11 +79,6 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
   ULONG oldemphasis = 0;
   APIRET status;
 
-#ifdef DEBUG
-  BOOL existed = FALSE, updated = FALSE, added = FALSE, deleted =
-    FALSE, found = FALSE;
-#endif
-
   if (!filename || !*filename)
     return (PCNRITEM) NULL;
   if (IsFullName(filename)) {
@@ -98,9 +93,6 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 FILE_HIDDEN | FILE_SYSTEM,
 			 &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
   if (!status) {
-#ifdef DEBUG
-    existed = TRUE;
-#endif
     /* file exists */
     DosFindClose(hDir);
     if (!dcd)
@@ -135,9 +127,6 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			filename, (PCNRITEM) NULL, partial, FALSE, TRUE);
   Update:
     if (pci) {				/* update record? */
-#ifdef DEBUG
-      found = TRUE;
-#endif
       if ((!fForceUpper && !fForceLower && strcmp(pci->pszFileName, filename)) ||
 	  pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
 	  pci->easize != CBLIST_TO_EASIZE(ffb.cbList) || pci->date.day !=
@@ -149,9 +138,6 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	  pci->ladate.year != ffb.fdateLastAccess.year + 1980 || pci->latime.seconds !=
 	  ffb.ftimeLastAccess.twosecs * 2 || pci->latime.minutes !=
 	  ffb.ftimeLastAccess.minutes || pci->latime.hours != ffb.ftimeLastAccess.hours) {	/* changed; update */
-#ifdef DEBUG
-	updated = TRUE;
-#endif
 	*ffb.achName = 0;
 	ffb.cchName = 0;
 	FillInRecordFromFFB(hwndCnr, pci, filename, &ffb, partial, dcd);
@@ -175,9 +161,6 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	return pci;
     }
     else {				/* add record */
-#ifdef DEBUG
-      added = TRUE;
-#endif
       if (dcd->type == DIR_FRAME) {
 
 	RECORDINSERT ri;
@@ -313,10 +296,6 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 				TRUE)) !=
 	   NULL && (INT) pci != -1 && strlen(pci->pszFileName) > 3) {
     /* file doesn't exist; delete record */
-#ifdef DEBUG
-    found = TRUE;
-    deleted = TRUE;
-#endif
     if (!dcd)
       dcd = INSTDATA(hwndCnr);
     if (pci->rc.flRecordAttr & CRA_SELECTED)
@@ -329,16 +308,6 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
     pci = NULL;
     PostMsg(hwndCnr, UM_RESCAN, MPVOID, MPVOID);
   }
-#ifdef DEBUG
-  {
-    char s[CCHMAXPATH + 80];
-
-    sprintf(s, "%s:%s%s%s%s%s", filename, (existed) ? " Existed" : "",
-	    (updated) ? " Updated" : "", (added) ? " Added" : "",
-	    (deleted) ? " Deleted" : "", (found) ? " Found" : "");
-    WinSetWindowText(WinQueryWindow(hwndMain, QW_PARENT), s);
-  }
-#endif
   return pci;
 }
 

@@ -518,13 +518,6 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
 
 ReTry:
 
-#ifdef DEBUG
-  if (info && info->id)
-    WinSetWindowText(WinQueryWindow
-		     (WinQueryWindow(hwndCnr, QW_PARENT), QW_PARENT),
-		     info->id);
-#endif
-
   tinfo = NULL;
   numarcfiles = counter = highest = 0;
   gotstart = gotend = FALSE;
@@ -728,15 +721,6 @@ ReTry:
 
 	    RECORDINSERT ri;
 	    PARCITEM pai;
-
-#ifdef DEBUG
-	    saymsg(MB_ENTER, hwndCnr, DEBUG_STRING,
-		   "fname: %s\r\rpp: %s\r\rp: %s\r\rlonename: %s\r\rhighest: %ld\r\rx: %ld\r\rfdate: %s",
-		   fname ? fname : "NULL",
-		   pp ? pp : "NULL",
-		   p ? p : "NULL",
-		   lonename, highest, x, (fdate) ? fdate : "NULL");
-#endif
 
 	    pai = WinSendMsg(hwndCnr,
 			     CM_ALLOCRECORD,
