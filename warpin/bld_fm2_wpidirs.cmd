@@ -1,5 +1,5 @@
 /*
- * $Id: $
+ * $Id$
  *
  * REXX code to create and populate directories in preparation for the creation of the
  * FM/2 Warpin archive (WPI file).

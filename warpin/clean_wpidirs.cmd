@@ -1,5 +1,5 @@
 /*
- * $Id: $
+ * $Id$
  *
  * REXX program to empty FM/2 Warpin WPI file staging directories
  *

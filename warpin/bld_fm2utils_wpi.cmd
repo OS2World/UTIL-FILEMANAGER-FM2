@@ -1,5 +1,5 @@
 /*
- * $Id: $
+ * $Id$
  *
  * BLD_FM2UTILS_WPI - Create a Warpin archive (WPI) for installation of FM/2
  *
