@@ -296,7 +296,7 @@ The FM/2 INI file \"%s\" can not be marked read/write.
 FM/2: Help
 The program "%s" not found. Are the Path and Filename correct? Do you wish to save it anyway?
 "%s" doesn't appear to be executable. Do you wish to save it anyway?
-"%s" isn't an exe file and has no extension. FM2 requires an extension for executing a program.
+"%s" doesn't appear to exist as an exe, com, cmd, bat or bmt file and has no extension. FM2 requires an extension for executing a program.
 "%s" doesn't have a standard executable file extension.\nSave as corrected "%s"? (Yes)\nAs entered (No)\nEdit it (Cancel)
 "%s" has quoting in the program arguments which may or may not be correct.
 For a command to act on selected files it must be followed by "%%a". Should I add it?

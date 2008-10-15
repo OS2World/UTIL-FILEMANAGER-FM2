@@ -11,6 +11,9 @@
   05 Jan 08 SHL Move from arccnrs.c and comp.c to here
   06 Jan 08 GKY Add NormalizeCmdLine to check program strings on entry
   29 Feb 08 GKY Changes to enable user settable command line length
+  15 Oct 08 GKY Fix NormalizeCmdLine to check all 5 executible extensions when no extension provided;
+                use searchapath to check for existance of file types not checked by DosQAppType;
+                close DosFind.
 
 ***********************************************************************/
 
@@ -25,6 +28,7 @@
 #include "notebook.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)
 #include "fm3str.h"
+#include "srchpath.h"                   // searchapath
 #include "pathutil.h"
 #include "strips.h"			// remove_first_occurence_of_character
 #include "valid.h"			// needs_quoting
@@ -125,6 +129,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
   APIRET ret;
   ULONG ulAppType;
   char *pszChar;
+  char *FullPath;
   FILEFINDBUF3 FindBuffer;
   ULONG ulResultBufLen = sizeof(FILEFINDBUF3);
   HDIR hdirFindHandle = HDIR_CREATE;
@@ -180,26 +185,15 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	       NullStr,
 	       GetPString(IDS_QUOTESINARGSTEXT),
 	       pszCmdLine_);
-      if (!offsetexe) {
+      if (!offsetexe && !offsetcom) {
 	ret = DosFindFirst(szCmdLine, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
 			   ulResultBufLen, &ulFindCount, FIL_STANDARD);
-	if (ret) {
-	  pszChar = szCmdLine;
-	  while (pszChar) {
-	    if (*pszChar == ' ') {
-	      *pszChar = '\0';
-	      strcat(szCmdLine, ".exe");
-	      ret = DosQueryAppType(szCmdLine, &ulAppType);
-	      //printf("%d %s\n", ret, szCmdLine); fflush(stdout);
-	      if (!ret) {
-		strcpy(szArgs, pszCmdLine_ + strlen(szCmdLine) - 3);
-		break;
-	      }
-	    }
-	    strcpy(szCmdLine, pszCmdLine_);
-	    pszChar++;
-	  }
-	}
+        if (ret) {
+          FullPath = searchapath("PATH", szCmdLine);
+          if (*FullPath != 0)
+            ret = 0;
+        }
+        DosFindClose(hdirFindHandle);
       }
       else
 	ret = DosQueryAppType(szCmdLine, &ulAppType);
@@ -228,14 +222,44 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
       }
 
     }
+    // if it doesn't have an extension try it with all the standard ones and add if found
     else if (szCmdLine && (!strchr(szCmdLine, '.') ||
-			 strrchr(szCmdLine, '.' ) < strrchr(szCmdLine, '\\'))) {
+			   strrchr(szCmdLine, '.' ) < strrchr(szCmdLine, '\\'))) {
       if (!strchr(szCmdLine, ' ')) {
+        // strip quotes readded by BuildQuotedFileName
 	while (strchr(szCmdLine, '\"'))
 	  remove_first_occurence_of_character("\"", szCmdLine);
-	strcat(szCmdLine, ".exe");
-	ret = DosFindFirst(szCmdLine, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
-			   ulResultBufLen, &ulFindCount, FIL_STANDARD);
+        ret = DosQueryAppType(szCmdLine, &ulAppType);
+        if (!ret)
+          strcat(szCmdLine, ".exe");
+        else {
+          strcat(szCmdLine, ".com");
+          ret = DosQueryAppType(szCmdLine, &ulAppType);
+          if (ret) {
+            offset = strrchr(szCmdLine, '.' );
+            *offset = 0;
+            strcat(szCmdLine, ".cmd");
+            FullPath = searchapath("PATH", szCmdLine);
+            if (*FullPath != 0)
+              ret = 0;
+            else {
+              offset = strrchr(szCmdLine, '.' );
+              *offset = 0;
+              strcat(szCmdLine, ".bat");
+              FullPath = searchapath("PATH", szCmdLine);
+              if (*FullPath != 0)
+                ret = 0;
+              else {
+                offset = strrchr(szCmdLine, '.' );
+                *offset = 0;
+                strcat(szCmdLine, ".bmt");
+                FullPath = searchapath("PATH", szCmdLine);
+                if (*FullPath != 0)
+                  ret = 0;
+              }
+            }
+          }
+        }
 	//printf("%d", ret); fflush(stdout);
       }
       else {
@@ -243,14 +267,50 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	while (pszChar) {
 	  while (strchr(szCmdLine, '\"'))
 	    remove_first_occurence_of_character("\"", szCmdLine);
-	  if (*pszChar == ' ') {
+	  if (*pszChar == ' ') { //test at every space for the end of the filename
 	    *pszChar = '\0';
-	    strcat(szCmdLine, ".exe");
-	    ret = DosQueryAppType(szCmdLine, &ulAppType);
+            ret = DosQueryAppType(szCmdLine, &ulAppType);
+            if (!ret) {
+              strcat(szCmdLine, ".exe");
+              break;
+            }
+            else {
+              strcat(szCmdLine, ".com");
+              ret = DosQueryAppType(szCmdLine, &ulAppType);
+              if (ret) {
+                offset = strrchr(szCmdLine, '.' );
+                *offset = 0;
+                strcat(szCmdLine, ".cmd");
+                FullPath = searchapath("PATH", szCmdLine);
+                if (*FullPath != 0) {
+                  ret = 0;
+                  break;
+                }
+                else {
+                  offset = strrchr(szCmdLine, '.' );
+                  *offset = 0;
+                  strcat(szCmdLine, ".bat");
+                  FullPath = searchapath("PATH", szCmdLine);
+                  if (*FullPath != 0) {
+                    ret = 0;
+                    break;
+                  }
+                  else {
+                    offset = strrchr(szCmdLine, '.' );
+                    *offset = 0;
+                    strcat(szCmdLine, ".bmt");
+                    FullPath = searchapath("PATH", szCmdLine);
+                    if (*FullPath != 0) {
+                      ret = 0;
+                      break;
+                    }
+                  }
+                }
+              }
+              else
+                break;
+            }
 	    //printf("%d %s\n", ret, szCmdLine); fflush(stdout);
-	    if (!ret) {
-	      break;
-	    }
 	  }
 	  strcpy(szCmdLine, pszCmdLine_);
 	  pszChar++;
@@ -272,7 +332,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
           strcat(pszNewCmdLine, " ");
         strcat(pszNewCmdLine, szArgs);
       }
-      else {
+      else { // fail if no extension can be found we require one
         ret = saymsg(MB_OK,
                      HWND_DESKTOP,
                      NullStr,
@@ -282,7 +342,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
           pszNewCmdLine = pszCmdLine_;
       }
     }
-    else {
+    else { // file has a nonstandard extension for executible
       pszChar = strrchr(szCmdLine, '.');
       while (pszChar && *pszChar !=' ') {
 	pszChar++;
@@ -301,8 +361,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	     GetPString(IDS_QUOTESINARGSTEXT),
 	     pszCmdLine_);
     ret = DosFindFirst(szCmdLine, &hdirFindHandle, FILE_NORMAL, &FindBuffer,
-			 ulResultBufLen, &ulFindCount, FIL_STANDARD);
-
+                       ulResultBufLen, &ulFindCount, FIL_STANDARD);
+    DosFindClose(hdirFindHandle);
     BldQuotedFileName(pszNewCmdLine, szCmdLine);
     //printf("%d %s ", ret, szCmdLine); fflush(stdout);
     if (ret) {

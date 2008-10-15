@@ -26,6 +26,7 @@
   18 Jul 08 SHL Add Fortify support
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
+  15 Oct 08 GKY Prevent asking to add %a on NormalizeCmdLine abort
 
 ***********************************************************************/
 
@@ -669,7 +670,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
         memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         free(pszWorkBuf);
-        if (!strchr(temp.pszCmdLine, '%')){
+        if (!strchr(temp.pszCmdLine, '%') && !fCancelAction){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
                        NullStr,
@@ -774,7 +775,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
         memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
         free(pszWorkBuf);
-        if (!strchr(temp.pszCmdLine, '%')){
+        if (!strchr(temp.pszCmdLine, '%') && !fCancelAction){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
                        NullStr,
@@ -892,7 +893,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           free(temp.pszCmdLine);
           break;
         }
-        if (!strchr(temp.pszCmdLine, '%')){
+        if (!strchr(temp.pszCmdLine, '%') && !fCancelAction){
           ret = saymsg(MB_YESNO,
                        HWND_DESKTOP,
                        NullStr,
