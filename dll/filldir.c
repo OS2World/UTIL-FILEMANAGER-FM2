@@ -49,6 +49,7 @@
   01 Sep 08 GKY Updated FreeCnrItemData to prevent trap in strrchr if pci->pszFileName is NULL.
   05 Sep 08 SHL Correct FreeCnrItemData pszDisplayName pointer overlap check
   08 Sep 08 SHL Remove extra pszLongName logic in FreeCnrItemData
+  18 Oct 08 GKY Scan drives in 4 passes (local, virtual, remote, flagged slow) to speed tree scans
 
 ***********************************************************************/
 
@@ -1133,6 +1134,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   APIRET rc;
   BOOL drivesbuilt = FALSE;
   ULONG startdrive = 3;
+  LONG TestFlags[3];
 
   static BOOL didonce = FALSE;
 
@@ -1312,9 +1314,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    pci->attrFile = FILE_DIRECTORY;
 	    pci->pszDispAttr = FileAttrToString(pci->attrFile);
 	  }
-	  SelectDriveIcon(pci);
+          SelectDriveIcon(pci);
+#	  ifdef FORTIFY
+	  // Will be freed by TreeCnrWndProc WM_DESTROY
+	  Fortify_SetScope(pci->pszFileName, 2);
+#	  endif
 	}
-	else {
+        else {
 	  pci->rc.hptrIcon = hptrDunno;
 	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	  // strcpy(pci->pszFileName, szDrive);	// 22 Jul 08 SHL No need to do this twice
@@ -1473,52 +1479,58 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	FreeCnrItem(hwndCnr, pciParent);
     }
   } // if show env
-
+  TestFlags[0] = DRIVE_SLOW | DRIVE_VIRTUAL | DRIVE_REMOTE;
+  TestFlags[1] = DRIVE_VIRTUAL;
+  TestFlags[2] = DRIVE_REMOTE;
+  TestFlags[3] = DRIVE_SLOW;
   x = 0;
-  pci = (PCNRITEM) WinSendMsg(hwndCnr,
-			      CM_QUERYRECORD,
-			      MPVOID,
-			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-  while (pci && (INT)pci != -1) {
-    pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
-				    CM_QUERYRECORD,
-				    MPFROMP(pci),
-				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-    if (!(pci->flags & RECFLAGS_ENV)) {
-      if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum ||
-	  toupper(*pci->pszFileName) > 'B')
-      {
-	if (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_INVALID) &&
-	    !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOPRESCAN) &&
-	    (!fNoRemovableScan ||
-	     !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_REMOVABLE)))
-	{
-	  if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
-	    WinSendMsg(hwndCnr,
-		       CM_INVALIDATERECORD,
-		       MPFROMP(&pci),
-		       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	    goto SkipBadRec;
-	  }
-	}
+  // Scan drives in 4 passes based on TestFlags
+  for (x = 0; x < 4; x++) {
+    pci = (PCNRITEM) WinSendMsg(hwndCnr,
+                                CM_QUERYRECORD,
+                                MPVOID,
+                                MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+    while (pci && (INT)pci != -1) {
+      pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
+                                      CM_QUERYRECORD,
+                                      MPFROMP(pci),
+                                      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+      if (!(pci->flags & RECFLAGS_ENV)) {
+        if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum ||
+            toupper(*pci->pszFileName) > 'B') {
+          if (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_INVALID) &&
+              !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOPRESCAN) &&
+              (!fNoRemovableScan ||
+              !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_REMOVABLE)) &&
+              (x == 0 ? (!(TestFlags[x] & (driveflags[toupper(*pci->pszFileName) - 'A']))) :
+               x == 3 ? (TestFlags[x] & (driveflags[toupper(*pci->pszFileName) - 'A'])) :
+               ((TestFlags[x] & (driveflags[toupper(*pci->pszFileName) - 'A'])) &&
+                !((driveflags[toupper(*pci->pszFileName) - 'A']) & DRIVE_SLOW)))) {
+            if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
+              WinSendMsg(hwndCnr,
+                         CM_INVALIDATERECORD,
+                         MPFROMP(&pci),
+                         MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+              goto SkipBadRec;
+            }
+          }
+        }
+        else {
+          WinSendMsg(hwndCnr,
+                     CM_INVALIDATERECORD,
+                     MPFROMP(&pci),
+                     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+        }
+        WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
+                                   MAIN_DRIVELIST),
+                   LM_INSERTITEM,
+                   MPFROM2SHORT(LIT_SORTASCENDING, 0),
+                   MPFROMP(pci->pszFileName));
       }
-      else {
-	WinSendMsg(hwndCnr,
-		   CM_INVALIDATERECORD,
-		   MPFROMP(&pci),
-		   MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-      }
-
-      WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-				 MAIN_DRIVELIST),
-		 LM_INSERTITEM,
-		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		 MPFROMP(pci->pszFileName));
-    }
-  SkipBadRec:
-    x++;
-    pci = pciNext;
-  } // while
+    SkipBadRec:
+      pci = pciNext;
+    } // while
+  } // for
   if (hwndParent)
     WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
 			       MAIN_DRIVELIST), LM_SELECTITEM,
