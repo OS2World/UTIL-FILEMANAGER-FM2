@@ -655,7 +655,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
    */
 
   /**
-   * type bitmapped flag -- see FM3DLL.H
+   * type bitmapped flag -- see systemf.h
    */
 
   va_list parguments;
