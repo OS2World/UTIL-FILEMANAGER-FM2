@@ -46,6 +46,8 @@
   15 Feb 08 SHL Avoid death if tree container 0 width
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   02 Aug 08 GKY Always pass temp variable point to UM_SHOWME to avoid freeing pci->pszFileName early
+  19 Oct 08 GKY Fixed logic for greying menu items (Format etc) on remote and virtual drives (it was reversed)
+  19 Oct 08 GKY Fixed context menu to be "drives" menu on unformatted drives
 
 ***********************************************************************/
 
@@ -57,6 +59,7 @@
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_LONGLONG
+#define INCL_DOSERRORS
 
 #include "fm3dll.h"
 #include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
@@ -1107,10 +1110,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       PCNRITEM pci;
       HWND menuHwnd = (HWND) 0;
+      FSALLOCATE fsa;
 
       pci = (PCNRITEM) CurrentRecord(hwnd);
       if (pci && (INT) pci != -1) {
-	if (IsRoot(pci->pszFileName))
+        if (IsRoot(pci->pszFileName) || !DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
+                                                       FSIL_ALLOC, &fsa,
+                                                       sizeof(FSALLOCATE)))
 	  menuHwnd = CheckMenu(hwndMainMenu, &TreeMenu, TREE_POPUP);
 	else {
 	  menuHwnd = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
@@ -2149,7 +2155,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      && (driveflags[chDrvU - 'A'] & DRIVE_REMOVABLE) != 0;
 	    writeable = rdy
 	      && !(driveflags[chDrvU - 'A'] & DRIVE_NOTWRITEABLE);
-	    remote = rdy && (driveflags[chDrvU - 'A'] & (DRIVE_REMOTE || DRIVE_VIRTUAL)) != 0;
+	    remote = rdy && (driveflags[chDrvU - 'A'] & (DRIVE_REMOTE || DRIVE_VIRTUAL)) == 0;
 	    underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
 
 	    CopyPresParams((HWND) mp2, hwndMainMenu);
