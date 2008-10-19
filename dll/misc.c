@@ -1689,7 +1689,6 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(DirMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(DirMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(DirMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIP);
-      SetConditionalCascade(DirMenu, IDM_SAVESUBMENU, IDM_SAVETOCLIPFILENAME);
       SetConditionalCascade(DirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(DirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(DirMenu, IDM_DELETESUBMENU,
