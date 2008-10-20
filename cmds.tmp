@@ -1,10 +1,6 @@
 ; Fixed: Ticket 267
 ;
-; This file contains definitions for an FM/2 toolbar.
-;
-; To edit this file manually, see "Manual edit of toolbar files"
-; in the FM/2 help file.
-;
+;This file contains some command definitions for the FM/2 toolbar.
 ;
 View Files (Ctrl + v)
 View
@@ -41,11 +37,6 @@ Move
 9
 1001
 ;
-Make Directory (Ctrl + M)
-MkDir
-0
-1026
-;
 Archive Files/Directories (Ctrl + A)
 Archive
 1
@@ -71,11 +62,6 @@ Filter
 0
 5001
 ;
-Rescan (Ctrl + R)
-Rescan
-0
-5021
-;
 Window Dialog (Ctrl + W)
 Windws
 0
@@ -91,19 +77,49 @@ Help
 8
 999
 ;
-Sort toolbar
-Sort
+Make Directory (Ctrl + M)
+MkDir
 0
-4902
+1026
+;
+Rescan (Ctrl + R)
+Rescan
+0
+5021
+;
+Print Files (Ctrl + p)
+Print
+9
+1007
+;
+Exit FM2 (Ctrl + F3)
+Exit
+8
+1111
 ;
 Utility toolbar
 Utils
 0
 4901
 ;
+Sort toolbar
+Sort
+0
+4902
+;
 Select toolbar
 Select
 0
 4903
 ;
-; 	$Id$
+Configuration toolbar
+Config
+0
+4904
+;
+Files toolbar
+Files
+0
+4905
+;
+;     $Id$

@@ -1,9 +1,6 @@
 ; Fixed: Ticket 267
 ;
-; This file contains definitions for an FM/2 toolbar.
-;
-; To edit this file manually, see "Manual edit of toolbar files"
-; in the FM/2 help file.
+;This file contains some selecting definitions for the FM/2 toolbar.
 ;
 ;
 Select All
@@ -11,79 +8,109 @@ Select All
 0
 10006
 ;
+Deselect All
+-All
+8
+10007
+;
 Select Files
 +Files
 0
 10008
+;
+Deselect Files
+-Files
+8
+10009
 ;
 Select Dirs
 +Dirs
 0
 10010
 ;
+Deselect Dirs
+-Dirs
+8
+10011
+;
+Reselect
+Reslct
+0
+10027
+;
+Invert selections
+Invert
+8
+10014
+;
 Select List
 +List
 0
 10033
 ;
-Select Mask
-+Mask
-8
-10012
-;
 Select Clipboard
 +Clip
-8
+0
 10028
-;
-Deselect All
--All
-0
-10007
-;
-Deselect Dirs
--Dirs
-0
-10011
-;
-Deselect Files
--Files
-0
-10009
-;
-Deselect Mask
--Mask
-8
-10013
 ;
 Deselect Clipboard
 -Clip
 8
 10029
 ;
-Invert selections
-Invert
+Select Mask
++Mask
 0
-10014
+10012
 ;
-Reselect
-Reslct
+Deselect Mask
+-Mask
 8
-10027
+10013
 ;
-Sort toolbar
-Sort
+Make Directory (Ctrl + M)
+MakeDir
 0
-4902
+1026
+;
+Rescan (Ctrl + R)
+Rescan
+0
+5021
+;
+Print Files (Ctrl + p)
+Print
+9
+1007
+;
+Exit FM2 (Ctrl + F3)
+Exit
+8
+1111
+;
+Commands toolbar
+Cmds
+0
+4900
 ;
 Utility toolbar
 Utils
 0
 4901
 ;
-Commands toolbar
-Cmds
+Sort toolbar
+Sort
 0
-4900
+4902
+;
+Configuration toolbar
+Config
+0
+4904
+;
+Files toolbar
+Files
+0
+4905
 ;
 ; $Id$
