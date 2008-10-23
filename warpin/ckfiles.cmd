@@ -6,6 +6,8 @@
  * If so, appropriate lines are written to bld_wpi_dirs.in so that
  * these files can first be staged and then added to the WPI file.
  *
+ * Change log:
+ * 	23 Oct 08 JBS Ticket 293: Improved support for -a wmake option
  */
 
 call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
@@ -13,8 +15,8 @@ call SysLoadFuncs
 
 signal on novalue
 
-parse arg args
-wpi_file          =  strip(args)
+parse arg '"MAKEOPTS=' make_args '"' wpi_file
+wpi_file          =  strip(wpi_file)
 wis_file          =  'fm2.wis'
 if stream(wpi_file, 'c', 'query exists') == '' then  /* If target WPI file  does not exist, force WIS rebuild */
    call SysFileDelete wis_file
@@ -31,12 +33,13 @@ if in_file_date_time = dummy_date_time then
       say 'Fatal Error: input file, 'in_file' NOT found.'
       say
       say 'Exiting...'
-      return
+      return 1
    end
 out_file_date_time = GetDate(out_file)
 wpi_file_date_time = GetDate(wpi_file)
 
-if in_file_date_time > out_file_date_time | ,
+if pos('A', translate(make_args)) > 0 | ,
+   in_file_date_time > out_file_date_time | ,
    out_file_date_time = dummy_date_time  | ,
    wpi_file_date_time = dummy_date_time         then
    do

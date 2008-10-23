@@ -1,4 +1,5 @@
-# warpin\makefile - build the FM/2 Warpin installation file: FM2.WIS
+# warpin\makefile - build the FM/2 Warpin installation file: FM2$(FM2_VER).WPI
+
 # $Id$
 
 # 28 Apr 07 SHL Add clean target
@@ -13,6 +14,8 @@
 # 10 Dec 07 SHL Set FM2_VER for 3.9.0
 # 07 Oct 08 JBS Changed SED command to use script file and to eliminate
 #               extraneous blank lines with the included files.
+# 23 Oct 08 JBS Ticket 293: Add "chksed" target to check for sufficient SED and GREP and
+#               improve support for -a option in the checkfiles target.
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
 FM2_VER=-3-13-0                  # default value
@@ -60,9 +63,12 @@ wpi: checkfiles fm2.wis fm2$(FM2_VER).wpi fm2utils$(FM2UTILS_VER).wpi .symbolic
 
 checkfiles: .symbolic
    @echo Checking to see if files have been changed...
-    ckfiles fm2$(FM2_VER).wpi
+    ckfiles "MAKEOPTS=$(__MAKEOPTS__)" fm2$(FM2_VER).wpi
 
-fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile sed.in
+chksed: .symbolic
+   @sed -V <nul 2>&1 | grep -i "GNU sed" >nul 2>&1 || (@echo. & @echo GNU SED and GREP required and not found on the PATH. & @echo.)
+
+fm2.wis: chksed fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile sed.in
    sed -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -f sed.in fm2.wis.in | sed "/@@@include/{s/@@@include//;N;s/\n//}" >fm2.wis
 
 fm2$(FM2_VER).wpi:: bld_fm2_wpidirs.in makefile
