@@ -12,6 +12,7 @@ Change log
    26 Feb 08 JBS Ticket 226: Reset debugging package version to match FM2_VER
    06 Oct 08 JBS Ticket 287: Fix syntax of the required version attribute of Warpin tag
    			     in Warpin script.
+   23 Oct 08 JBS Ticket 292: Fix parameters field of Helpfile Viewer icon.
 
    NOTE: If a NON-EXTERNAL package (i.e. a package whose files
    will be staged before building the WPI file) with an index
@@ -88,7 +89,7 @@ Change log
   CREATEOBJECT="WPProgram|EA Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\EAS.EXE;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=EA Viewer;OBJECTID=<FM/2_EAVIEW>;"
   CREATEOBJECT="WPProgram|FM/2 Utilities command line|<FM3_Tools>|EXENAME=*;STARTUPDIR=?:\;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/K $(1)\SETENV.CMD"
   CREATEOBJECT="WPProgram|Global File Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\GLOBAL.EXE;TITLE=Global File Viewer;STARTUPDIR=$(1);OBJECTID=<FM/2_SEEALL>;"
-  CREATEOBJECT="WPProgram|Helpfile Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;STARTUPDIR=$(1);TITLE=Helpfile Viewer;OBJECTID=<FM2ViewInf>;"
+  CREATEOBJECT="WPProgram|Helpfile Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;PARAMETERS=**;STARTUPDIR=$(1);TITLE=Helpfile Viewer;OBJECTID=<FM2ViewInf>;"
   CREATEOBJECT="WPProgram|INI Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\INI.EXE;STARTUPDIR=$(1);PROGTYPE=PM;PARAMETERS=%*;ASSOCFILTER=*.INI,,;OBJECTID=<FM/2_INIVIEW>;"
   CREATEOBJECT="WPProgram|Process Killer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\KILLPROC.EXE;PARAMETERS=%*;TITLE=Process Killer;STARTUPDIR=$(1);OBJECTID=<FM/2_KILLPROC>;"
   CREATEOBJECT="WPProgram|Undeleter|<FM3_Tools>|EXENAME=$(1)\FM2Tools\UNDEL.EXE;PARAMETERS=%*;TITLE=Undeleter;STARTUPDIR=$(1);OBJECTID=<FM/2_UNDEL>;"
