@@ -13,6 +13,14 @@
 # 23 Jan 08 JBS Add support for building SYM files (Ticket 226)
 # 27 May 08 SHL Add WARNALL and FORTIFY support
 # 22 Jul 08 SHL Pass FORTIFY to subordinate makefiles
+# 06 Oct 08 SHL Pass DEBUG in CFLAGS; clean up USE_RC usage
+
+# Environment: see dll\makefile
+
+# DEBUG - not defined = release build, defined = debug build
+# WARNALL - add more warnings if defined
+# FORTIFY - build with FORTIFYed memory
+# USE_RC - build with rc.exe if defined, other build with wrc.exe
 
 CC = wcc386
 LINK = wlink
@@ -20,12 +28,10 @@ LINK = wlink
 !ifndef USE_RC			# if not defined on command line
 !ifdef %USE_RC			# if defined in environment
 USE_RC = $(%USE_RC)
-!else
-USE_RC = 0
 !endif
 !endif
 
-!if $(USE_RC)
+!ifdef USE_RC
 RC = rc
 !else
 RC = wrc
@@ -101,11 +107,12 @@ CFLAGS += -dFORTIFY
 
 LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map
 !ifdef DEBUG
+CFLAGS += -d$DEBUG_OPT
 LFLAGS += debug dwarf all
 !endif
 
 # rc Includes can be in current director or dll subdirectory
-!if $(USE_RC)
+!ifdef USE_RC
 RCFLAGS = -r -i dll
 RCFLAGS2 = -x2
 !else
@@ -118,7 +125,7 @@ RCFLAGS2 =-ad
 .SUFFIXES:
 .SUFFIXES: .obj .c .res .rc .ipf .sym .map
 
-!if $(USE_RC)
+!ifdef USE_RC
 .rc.res:
    $(RC) $(RCFLAGS) $*.rc
    ren $*.res $*.res

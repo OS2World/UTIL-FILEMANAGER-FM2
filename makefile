@@ -21,8 +21,9 @@
 # 08 Jul 08 SHL Avoid extra work for wmake -a dist
 # 22 Jul 08 SHL Change from dll\dllsyms to dll\syms target for consistency
 # 22 Jul 08 SHL Pass FORTIFY options to subordinate makefiles
+# 25 Oct 08 SHL Sanitize DEBUG usage
 
-# Environment - see makefile_pre.mk
+# Environment - see makefile_pre.mk and dll\makefile
 
 BASE = fm3
 
@@ -76,46 +77,36 @@ $(BASE).obj: $(BASE).c dll\version.h .autodepend
 # make EXE compenents
 
 allexe: *.mak .symbolic
-   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
+  @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
 
 # make SYM files
 
 exesyms: *.mak .symbolic
-   @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) sym
+  @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) sym
 
 # make WPI files
 
 wpi: .symbolic
-   cd warpin
-   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(WARPIN_OPTS)
-   cd ..
+  cd warpin
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(WARPIN_OPTS)
+  cd ..
 
 lxlite:: lxlitedll lxliteexe .symbolic
 
 # makefile_post.mk contains lxlite target for $(BASE).exe
 # Apply to each *.mak for other exes
 lxliteexe: *.mak .symbolic
-!ifdef DEBUG
-!  ifeq DEBUG 0
-     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
-!  endif
-!else
-     @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
+!ifndef DEBUG
+  @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
 !endif
 
 # Apply to dlls
 lxlitedll: .symbolic
+!ifndef DEBUG
   cd dll
-!ifdef DEBUG
-!  ifeq DEBUG 0
-      $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
-#     $(MAKE) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
-!  endif
-!else
-   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
-#  $(MAKE) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
-!endif
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
   cd ..
+!endif
 
 cleanobj: .symbolic
   cd dll

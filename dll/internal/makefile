@@ -5,6 +5,7 @@
 
 # 14 Jun 07 SHL Convert to OpenWatcom
 # 27 Jun 07 SHL Support DEBUG set from command line or environment
+# 25 Oct 08 SHL Rework dependencies to avoid target dependent build failures
 
 BASE=mkstr
 
@@ -32,9 +33,11 @@ CFLAGS = -bt=os2 -mf -bm -d2 -olirs -s -j -wx -zfp -zgp -zq -hd
 
 all: $(BASE).exe .symbolic
 
+syms: $(BASE).sym .symbolic
+
 $(BASE).obj: $(BASE).c .AUTODEPEND
 
-$(BASE).exe: $(BASE).obj $(BASE).lrf
+$(BASE).exe $(BASE).map: $(BASE).obj $(BASE).lrf
   $(LINK) @$(BASE).lrf
   bldlevel $@
 
@@ -52,6 +55,15 @@ $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ op desc '@$#SLAInc:3.13.0$#@$#$#1$#$# 09/01/2008 03:13:00      slamain::EN:US:0:U:@@FM/2 Strings Compiler'
    @%write $^@ file $(BASE).obj
    @%write $^@ library os2386.lib
+
+lxlite: $(BASE).exe .symbolic
+!ifndef DEBUG
+  lxlite /x- /b- $?
+!endif
+
+$(BASE).sym: $(BASE).map
+   @echo Processing: $?
+   -perl ..\..\debugtools\mapsymw.pl $(BASE).map
 
 clean: .symbolic
   -del $(BASE).exe

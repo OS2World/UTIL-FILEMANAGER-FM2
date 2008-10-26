@@ -5,6 +5,7 @@
 # 16 Apr 06 SHL Add lxlite target
 # 02 Jun 07 SHL Convert to OpenWatcom
 # 23 Feb 08 JBS Add support for building SYM files (Ticket 226)
+# 25 Oct 08 JBS Rework DEBUG usage to match what C code expects
 
 !ifndef MAKERES
 
@@ -36,21 +37,12 @@ $(BASE).sym: $(BASE).map
 # Replace resources
 $(BASE).exe: $(BASE).res .explicit
   @if not exist $@ echo $@ missing
-!ifdef DEBUG
-!  ifeq DEBUG 0
-     lxlite $@ /x+ /b-
-     lxlite $@ /c:minstub
-!  endif
-!else
+!ifndef DEBUG
      lxlite $@ /x+ /b-
      lxlite $@ /c:minstub
 !endif
   $(RC) $(RCFLAGS2) $(BASE).res $@
-!ifdef DEBUG
-!  ifeq DEBUG 0
-     lxlite $@ /x- /b-
-!  endif
-!else
+!ifndef DEBUG
   lxlite $@ /x- /b-
 !endif
   bldlevel $@
@@ -58,11 +50,7 @@ $(BASE).exe: $(BASE).res .explicit
 !endif
 
 lxlite:: $(BASE).exe .symbolic .explicit
-!ifdef DEBUG
-!  ifeq DEBUG 0
-     lxlite /x- /b- $?
-!  endif
-!else
+!ifndef DEBUG
   lxlite /x- /b- $?
 !endif
 
