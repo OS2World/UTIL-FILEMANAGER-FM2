@@ -410,7 +410,7 @@ the Drive Tree.
 :p.
 :artwork name='bitmaps\openbutt.bmp' align=center.
 :p.
-Other alternatives are to select the :hp1.Open->New FM/2 Window:ehp1.
+Other alternatives are to select the :hp1.New FM/2 Window:ehp1.
 command from the :hp1.Files menu:ehp1. with the Drive Tree active,
 (preferred) a context menu obtained on the directory you want to open
 (remember, you get a context menu by clicking mouse button 2 on an
@@ -477,6 +477,21 @@ get a submenu of items you can select (the other choices are Text
 Toolbar, which will cause the toolbar to appear as "normal" buttons with
 text on them, or Toolbar Titles, which will cause text to appear below
 the toolbar bitmap buttons).
+:p.
+If you would like to select a different toolbar layout, FM/2 comes with
+several default toolbar layouts. These toolbar layouts can be selected several
+different ways.  First, one can select one of the toolbar layout icons
+found on the right side of the toolbar. It is the fastest way to select a
+different toolbar layout.  However, only the default toolbar layouts can be
+accessed from the toolbar.
+:p.
+One can also try out the Load Toolbar command by right-clicking on a blank
+area of the toolbar and selecting one of the toolbar layouts found in the
+"Load Toolbar" box.
+:p.
+Lastly, one can select "Toolbars" from the user selection lists.  These
+last two methods contain a listing of all the toolbar layouts (default
+and custome toolbar layouts).
 :p.
 Toolbar buttons are user-configurable. To change the toolbar, click
 mouse button two (usually the right button) while the mouse pointer is
