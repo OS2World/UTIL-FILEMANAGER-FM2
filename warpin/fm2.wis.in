@@ -13,6 +13,7 @@ Change log
    06 Oct 08 JBS Ticket 287: Fix syntax of the required version attribute of Warpin tag
    			     in Warpin script.
    23 Oct 08 JBS Ticket 292: Fix parameters field of Helpfile Viewer icon.
+   28 Oct 08 JBS Ticket 294: Add support for new object icons.
 
    NOTE: If a NON-EXTERNAL package (i.e. a package whose files
    will be staged before building the WPI file) with an index
@@ -78,8 +79,8 @@ Change log
   CREATEOBJECT="WPProgram|FM/2 Lite|<FM3_Folder>|EXENAME=$(1)\fm4.exe;STARTUPDIR=$(1);CCVIEW=YES;TITLE=FM/2 LITE;OBJECTID=<FM/2 LITE>;"
   CREATEOBJECT="WPFolder|FM/2 Tools|<FM3_Folder>|ICONFILE=$(1)\icons\toolbox.ICO;ICONNFILE=1,$(1)\icons\toolbox2.ICO;OBJECTID=<FM3_Tools>;"
   CREATEOBJECT="WPFolder|FM/2 Docs|<FM3_Folder>|ICONFILE=$(1)\icons\docs.ICO;ICONNFILE=1,$(1)\icons\docs2.ICO;OBJECTID=<FM3_Docs>;"
-  CREATEOBJECT="WPProgram|Back up FM/2 Customizations^ and reset to defaults|<FM3_Folder>|EXENAME=*;PARAMETERS=/c cfgmgr /INSTALL /DEFAULTS /UNATTENDED;STARTUPDIR=$(1);PROGTYPE=WINDOWABLEVIO;MINIMIZED=YES;OBJECTID=<FM/2_RESET_TO_DEFAULTS>;"
-  CREATEOBJECT="WPProgram|Reverse last reset of^FM/2 Customizations|<FM3_Folder>|EXENAME=*;PARAMETERS=/c cfgmgr /DEINSTALL /DEFAULTS /UNATTENDED;STARTUPDIR=$(1);PROGTYPE=WINDOWABLEVIO;MINIMIZED=YES;OBJECTID=<FM/2_REVERSE_RESET_TO_DEFAULTS>;"
+  CREATEOBJECT="WPProgram|Back up FM/2 Customizations^ and reset to defaults|<FM3_Folder>|EXENAME=*;PARAMETERS=/c cfgmgr /INSTALL /DEFAULTS /UNATTENDED;STARTUPDIR=$(1);PROGTYPE=WINDOWABLEVIO;MINIMIZED=YES;ICONFILE=$(1)\Icons\backup.ico;OBJECTID=<FM/2_RESET_TO_DEFAULTS>;"
+  CREATEOBJECT="WPProgram|Reverse last reset of^FM/2 Customizations|<FM3_Folder>|ICONFILE=$(1)\icons\restore.ico;EXENAME=*;PARAMETERS=/c cfgmgr /DEINSTALL /DEFAULTS /UNATTENDED;STARTUPDIR=$(1);PROGTYPE=WINDOWABLEVIO;MINIMIZED=YES;OBJECTID=<FM/2_REVERSE_RESET_TO_DEFAULTS>;"
   CREATEOBJECT="WPProgram|FM/2 Online Help|<FM3_Docs>|EXENAME=VIEW.EXE;PARAMETERS=$(1)\FM3.HLP;OBJECTID=<FM3HELP>;"
   CREATEOBJECT="WPProgram|Archive Viewer/2|<FM3_Tools>|EXENAME=$(1)\FM2Tools\AV2.EXE;PROGTYPE=PM;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=Archive Viewer/2;OBJECTID=<FM/2_AV/2>;"
   CREATEOBJECT="WPProgram|Bookshelf Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;TITLE=Bookshelf Viewer;STARTUPDIR=$(1);OBJECTID=<FM/2_BOOKSHELF>;"
@@ -89,11 +90,11 @@ Change log
   CREATEOBJECT="WPProgram|EA Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\EAS.EXE;PARAMETERS=%*;STARTUPDIR=$(1);TITLE=EA Viewer;OBJECTID=<FM/2_EAVIEW>;"
   CREATEOBJECT="WPProgram|FM/2 Utilities command line|<FM3_Tools>|EXENAME=*;STARTUPDIR=?:\;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/K $(1)\SETENV.CMD"
   CREATEOBJECT="WPProgram|Global File Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\GLOBAL.EXE;TITLE=Global File Viewer;STARTUPDIR=$(1);OBJECTID=<FM/2_SEEALL>;"
-  CREATEOBJECT="WPProgram|Helpfile Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;PARAMETERS=**;STARTUPDIR=$(1);TITLE=Helpfile Viewer;OBJECTID=<FM2ViewInf>;"
+  CREATEOBJECT="WPProgram|Helpfile Viewer|<FM3_Tools>|ICONFILE=$(1)\icons\viewhlps.ico;EXENAME=$(1)\FM2Tools\VIEWINFS.EXE;PARAMETERS=**;STARTUPDIR=$(1);TITLE=Helpfile Viewer;OBJECTID=<FM2ViewInf>;"
   CREATEOBJECT="WPProgram|INI Viewer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\INI.EXE;STARTUPDIR=$(1);PROGTYPE=PM;PARAMETERS=%*;ASSOCFILTER=*.INI,,;OBJECTID=<FM/2_INIVIEW>;"
   CREATEOBJECT="WPProgram|Process Killer|<FM3_Tools>|EXENAME=$(1)\FM2Tools\KILLPROC.EXE;PARAMETERS=%*;TITLE=Process Killer;STARTUPDIR=$(1);OBJECTID=<FM/2_KILLPROC>;"
   CREATEOBJECT="WPProgram|Undeleter|<FM3_Tools>|EXENAME=$(1)\FM2Tools\UNDEL.EXE;PARAMETERS=%*;TITLE=Undeleter;STARTUPDIR=$(1);OBJECTID=<FM/2_UNDEL>;"
-  CREATEOBJECT="WPProgram|Seek and scan|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VCOLLECT.EXE;TITLE=Seek and scan;PARAMETERS=**;STARTUPDIR=$(1);OBJECTID=<FM/2_VSEEK>;"
+  CREATEOBJECT="WPProgram|Seek and scan|<FM3_Tools>|ICONFILE=$(1)\icons\seekscan.ico;EXENAME=$(1)\FM2Tools\VCOLLECT.EXE;TITLE=Seek and scan;PARAMETERS=**;STARTUPDIR=$(1);OBJECTID=<FM/2_VSEEK>;"
   CREATEOBJECT="WPProgram|Visual Directory|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VDIR.EXE;PARAMETERS=%*;STARTUPDIR=$(1);OBJECTID=<FM/2_VDIR>;"
   CREATEOBJECT="WPProgram|Visual Tree|<FM3_Tools>|EXENAME=$(1)\FM2Tools\VTREE.EXE;TITLE=Visual Tree;STARTUPDIR=$(1);OBJECTID=<FM/2_VTREE>;"
   EXECUTE="$(1)\cfgmgr /INSTALL /UNATTENDED"
@@ -140,7 +141,7 @@ PTREE and many more.
   TITLE="FM/2 Debugging support"
   TARGET="$(1)"
   FIXED
-  CREATEOBJECT='WPProgram|FM/2^with logging|<FM3_Folder>|EXENAME=*;STARTUPDIR=$(1)\Debug;PARAMETERS=/c $(1)\Debug\LogFM2.cmd [Enter enter the name for a log file:];MINIMIZED=YES;OBJECTID=<FM2WithLogging>;'
+  CREATEOBJECT='WPProgram|FM/2^with logging|<FM3_Folder>|ICONFILE=$(1)\icons\logging.ico;EXENAME=*;STARTUPDIR=$(1)\Debug;PARAMETERS=/c $(1)\Debug\LogFM2.cmd [Enter enter the name for a log file:];MINIMIZED=YES;OBJECTID=<FM2WithLogging>;'
 >This package contains files which support efforts
 to debug problems with FM/2. Normally they will
 not be needed.

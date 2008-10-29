@@ -3,6 +3,7 @@
 ;
 ;  Change log:
 ;	23 Feb 08 JBS: Added lines for debugging support package (#10)
+;	28 Oct 08 JBS: Added lines for new icons (ticket 294)
 ;
 ;  This is a file which will be used to simplify the process of
 ;     -  incorporating new files
@@ -71,6 +72,11 @@ FILE: fm2fldr.ico                1  Icons    Icons
 FILE: fm2fldr2.ico               1  Icons    Icons
 FILE: toolbox.ico                1  Icons    Icons
 FILE: toolbox2.ico               1  Icons    Icons
+FILE: backup.ico                 1  Icons    Icons
+FILE: logging.ico                1  Icons    Icons
+FILE: restore.ico                1  Icons    Icons
+FILE: seekscan.ico               1  Icons    Icons
+FILE: viewhlps.ico               1  Icons    Icons
 
 FILE: av2.exe                    1  .  FM2Tools
 FILE: databar.exe                1  .  FM2Tools
