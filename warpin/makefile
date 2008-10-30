@@ -80,10 +80,6 @@ fm2$(FM2_VER).wpi: bld_fm2_wpidirs.in makefile
    @echo Creating/updating the WPI file
    bld_fm2_wpi fm2$(FM2_VER).wpi
 
-# fm2$(FM2_VER).wpi:: fm2.wis makefile
-#    @echo Inserting the new Warpin script into the WPI file...
-#    bld_fm2_wpi fm2$(FM2_VER).wpi /SCRIPT
-
 fm2utils$(FM2UTILS_VER).wpi: bld_fm2utils_wpi.cmd fm2utils.wis fm2utils\fm2utils.doc fm2utils\license.txt ..\shdwmgr.cmd makefile
    @echo Building FM2Utils
    bld_fm2utils_wpi fm2utils$(FM2UTILS_VER).wpi

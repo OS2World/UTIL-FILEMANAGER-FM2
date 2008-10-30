@@ -8,9 +8,10 @@
  *    jsmall@os2world.net
  *
  * History
- *    09 Oct 07 jbs: Changed the "find Warpin" code so that it will no longer
+ *    09 Oct 07 JBS: Changed the "find Warpin" code so that it will no longer
  *       mistakenly find a WIC.EXE on the PATH which may not be Warpin's
  *       WIC.EXE
+ *    30 Oct 08 JBS: Deleted WPI script addtion. (Now done solely by makefile.
  *
  * Requirements/assumptions
  *    -  This program should reside in the Warpin subdirectory of the
@@ -85,15 +86,6 @@ if WPI.scriptonly == 0 then
       end
       if delete_files_afterwards = 1 then
          call clean_wpidirs
-   end
-   do
-      /* Add the script file to the WPI   */
-      /*
-      'eautil 'WPI.scriptname' NUL /s'
-      */
-      WPI.WIC_pgm WPI.archivename' -s 'WPI.scriptname
-      if rc \= 0 then
-         call ErrorExit 4 rc
    end
 
 /* Exit routines */
