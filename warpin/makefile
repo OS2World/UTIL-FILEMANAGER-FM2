@@ -16,6 +16,8 @@
 #               extraneous blank lines with the included files.
 # 23 Oct 08 JBS Ticket 293: Add "chksed" target to check for sufficient SED and GREP and
 #               improve support for -a option in the checkfiles target.
+# 30 Oct 08 JBS Code improvements, including condensed script-related code and
+#		eliminated occasional duplicate addition of the script to the WPI file
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
 FM2_VER=-3-13-0                  # default value
@@ -55,11 +57,10 @@ BUILD_FM2UTILS=0                 # use default value if not defined via env. or 
 all: wpi .symbolic
 
 !ifeq BUILD_FM2UTILS 0
-wpi: checkfiles fm2.wis fm2$(FM2_VER).wpi .symbolic
+wpi: chksed checkfiles fm2$(FM2_VER).wpi fm2.wis .symbolic
 !else
-wpi: checkfiles fm2.wis fm2$(FM2_VER).wpi fm2utils$(FM2UTILS_VER).wpi .symbolic
+wpi: chksed checkfiles fm2$(FM2_VER).wpi fm2.wis fm2utils$(FM2UTILS_VER).wpi .symbolic
 !endif
-
 
 checkfiles: .symbolic
    @echo Checking to see if files have been changed...
@@ -68,18 +69,20 @@ checkfiles: .symbolic
 chksed: .symbolic
    @sed -V <nul 2>&1 | grep -i "GNU sed" >nul 2>&1 || (@echo. & @echo GNU SED and GREP required and not found on the PATH. & @echo.)
 
-fm2.wis: chksed fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile sed.in
+fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile sed.in
+   @echo Inserting the new Warpin script into the WPI file...
    sed -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -f sed.in fm2.wis.in | sed "/@@@include/{s/@@@include//;N;s/\n//}" >fm2.wis
+   bld_fm2_wpi fm2$(FM2_VER).wpi /SCRIPT
 
-fm2$(FM2_VER).wpi:: bld_fm2_wpidirs.in makefile
+fm2$(FM2_VER).wpi: bld_fm2_wpidirs.in makefile
    @echo Staging files for WPI file...
    bld_fm2_wpidirs
    @echo Creating/updating the WPI file
    bld_fm2_wpi fm2$(FM2_VER).wpi
 
-fm2$(FM2_VER).wpi:: fm2.wis makefile
-   @echo Inserting the new Warpin script into the WPI file...
-   bld_fm2_wpi fm2$(FM2_VER).wpi /SCRIPT
+# fm2$(FM2_VER).wpi:: fm2.wis makefile
+#    @echo Inserting the new Warpin script into the WPI file...
+#    bld_fm2_wpi fm2$(FM2_VER).wpi /SCRIPT
 
 fm2utils$(FM2UTILS_VER).wpi: bld_fm2utils_wpi.cmd fm2utils.wis fm2utils\fm2utils.doc fm2utils\license.txt ..\shdwmgr.cmd makefile
    @echo Building FM2Utils
