@@ -193,7 +193,7 @@ When this happens, this dialog appears. You'll be given as much
 information as possible, including the text of what the archiver had to
 say about the archive when it was asked to list its contents, presented
 in an MLE, and allowed four choices&colon. :link reftype=hd
-res=94200.Edit the archiver details:elink., Test the archive (if you
+res=94300.Edit the archiver details:elink., Test the archive (if you
 have told FM/2 how to test archives with this archiver in ARCHIVER.BB2),
 View the archive, or Cancel the whole thing.
 :p.

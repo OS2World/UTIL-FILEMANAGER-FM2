@@ -127,41 +127,55 @@ internal Settings notebook.
 
 .im command.ipf
 
-:h2 res=94200 name=PANEL_AD_FRAME.Editing Archiver Details
-:i1 id=aboutEditArc.Editing Archiver Details
+:h2 res=94200 name=PANEL_AD_FRAME.Editing Archivers
+:i1 id=aboutEditArc.Editing Archivers
 :p.
-This dialog box, which you can reach from the Config menu, allows you to
-the details of your :link reftype=hd res=100015.archiver:elink.. On the right side are a series of buttons to manage your archivers&colon.
+This dialog box, which you can reach from the Config menu, allows you to manage your
+:link reftype=hd res=100015.archivers:elink..
 :p.
-:hp1.Up&colon.:ehp1. Moves the highlighted archiver up in the archive list.
+On the left side is a list of the currently defined archivers for FM/2. On the right side are a series of buttons&colon.
+:dl compact.
+:dthd.:hp2.Up:ehp2.:ddhd.Moves the highlighted archiver up in the archive list. (See note below.)
+:dthd.:hp2.Down:ehp2.:ddhd.Moves the highlighted archiver down in the archive list. (See note below.)
+:dthd.:hp2.Add:ehp2.:ddhd.Add brings up a blank archiver details box so you can define a new archiver type.
+:dthd.:hp2.Delete:ehp2.:ddhd.Deletes the archiver description of the highlighted archiver.
+:dthd.:hp2.Revert:ehp2.:ddhd.Revert undoes all changes made during the current session. It will not undo changes once the new ARCHIVER.BB2 has been written.
+:edl.
+:note.When FM/2 determines which archiver to use on a file, they are checked in order of this listing.
 :p.
-:hp1.Down&colon.:ehp1. Moves the highlighted archiver down in the archive list.
+The specifics of which archivers FM/2 can use and how FM/2 will use them are stored in a file named
+:link reftype=hd res=100130.ARCHIVER&period.BB2:elink..
+This file is located in the FM/2 installation directory and may be edited manually with a text editor.
 :p.
-:hp1.Add&colon.:ehp1. Add brings up a blank archiver details box so you can define a new archiver type.
+Alternatively FM/2 also provides a GUI which can be used to edit a specific archiver. Simply select
+the archiver you wish to edit and select the
+:hp2.Edit button:ehp2.
+at the bottom.
 :p.
-:hp1.Delete&colon.:ehp1. Deletes the archiver description of the highlighted archiver.
-:p.
-:hp1.Revert&colon.:ehp1. Revert undoes all changes made during the current session. It will not undo changes once the new ARCHIVER.BB2 has been written.
-:p.
+When the
+:hp2.Cancel button:ehp2.
+is selected a dialog asking you if you wish to rewrite
+ARCHIVER.BB2 will appear if changes have been made.
 
-To open the Archiver details box to edit an existing archiver highlight the archiver and select Okay.
-Entry boxes are present for all the twenty one fields represented in ARCHIVER.BB2
-(the text file that contains control information about your archivers,
-which FM/2 uses to interface with the archivers). It's probably as easy for most people to edit
-:link reftype=hd res=100130.ARCHIVER&period.BB2:elink. directly with a text editor.
-The Cancel button will bring up a dialog asking you if you wish to rewrite ARCHIVER.BB2
-select yes if you do. The new file will be written one generation of backup is kept it is
-named Archiver.BAK
+:h3 res=94300 name=PANEL_ARCFLDS.Archiver Details Fields
+:i1 id=aboutArcFlds.Archiver Details Fields
 :p.
-:hp1.NOTE&colon.:ehp1. The simplest method to ensure that your archivers
-work properly with FM/2 is to make sure they're in a directory named in
-your PATH= statement, and check the names of the files to make sure they
-match what's on your system (i.e. UNZIP.EXE in both ARCHIVER.BB2 and on
-your hard disk, not UNZIP.EXE in one and UNZIP32.EXE in another). Alternatively, full path names can be used in ARCHIVER.BB2.
+:hp2.
+.ce Archiver Details: General Notes
+:ehp2.
+:note.In order for an archiver to work properly, make sure
+:ol compact.
+:li.the program(s) is/are in a directory named in your PATH. (Alternatively, full path names can be used.)
+:li.the DLL's the programs need, if any, are in the LIBPATH.
+:li.the names of the programs are entered correctly.
+:li.the command syntax is correct and does not prompt for further input.
+:li.the start and end of list strings, if any, are correct.
+:li.the signature and signature position, if any, are correct.
+:eol.
 :p.
-In the event that you attempt to list an archive and FM/2 feels you've
-probably bungled the entry in ARCHIVER.BB2, you'll be given an
-opportunity to use this dialog to fix the entry. In this case, you'll
+In the event that an error occurs when you attempt to list an archive,
+you'll be given an
+opportunity to use this dialog to fix the entry. In this case, you will
 see the listbox at the right of the dialog filled with the listing of
 the archive that your archiver made. You can highlight a line and click
 the << button next to the Start List or End List fields to move the line
@@ -173,27 +187,21 @@ filenames. The filename field in particular is extremely important. If
 it's too high, FM/2 finds no files. If it's "in range" but wrong, FM/2 gets
 the wrong fields for filenames.
 :p.
-You may still need to refer to your archiver's documentation, or run it
-to get the help on its command syntax. FM/2 can't do everything for you,
-but it holds your hand as best it can.
-:p.
-Refer to the ARCHIVER.BB2 file that came with FM/2 for additional
-information and an example.
+FM/2 can't do everything for you. You may still need to refer to your
+archiver's documentation and/or run it
+to get the help on its command syntax, the format used when listing the
+contents of archives and/or its signature info.
 :p.
 When you've completed editing the archiver's details, click Okay. FM/2
-will ask you if you want to rewrite ARCHIVER.BB2 (be sure you save the
-original copy for its complete notes; FM/2 will back it up one version to
-ARCHIVER.BAK). If you don't rewrite ARCHIVER.BB2, changes are good only
+will ask you if you want to rewrite ARCHIVER.BB2. If you don't
+rewrite ARCHIVER.BB2, changes are good only
 for the current session (handy for testing).
 :p.
-You can also get to this dialog box from Select Files' Config submenu.
+One generation of backup for ARCHIVER.BB2 is kept. It is named Archiver.BAK.
 :p.
-See also&colon.
-:p.
-:link reftype=hd res=94300.Archiver Details Fields:elink.
-
-:h3 res=94300 name=PANEL_ARCFLDS.Archiver Details Fields
-:i1 id=aboutArcFlds.Archiver Details Fields
+:hp2.
+.ce Archiver Details: Fields
+:ehp2.
 :p.
 :hp2.ID:ehp2. This field contains an ID for the archiver; something for
 human consumption. It's a good idea to include the version number of the
@@ -286,8 +294,6 @@ the beginning.
 the line of an archive listing is the file name.
 Archive listing fields are numbered from 0.
 The file name position item consists of 4 subfields separated by commas.
-All subfields must be present and correct for FM/2 to get the right
-file names from the archive listing.
 The first is the field number.
 The second is a flag which is set to 1 to indicate that the file
 name is the last field on the line.
@@ -327,8 +333,8 @@ If this isn't available or you don't care about it, you can enter a -1
 to disable detection of this field entirely.
 :p.
 :hp2.Date Pos(ition):ehp2. This field tells FM/2 which field on
-the line of an archive listing is where the time/datestring is. If this
-isn't available or you don't care about it, you can enter a -1 to
+the line of an archive listing is the date/time string. If this
+isn't available or if you don't care about it, you can enter a -1 to
 disable detection of this field entirely. You can optionally follow this
 number with a comma and another number that indicates the type of the
 date from any of the formats in the following list&colon.
@@ -336,9 +342,9 @@ date from any of the formats in the following list&colon.
 :xmp.
  0 = No date in data
  1 = 02-08-96  23&colon.55&colon.32 mm-dd-yy hh&colon.mm&colon.ss
- 2 = 8 Feb 96  23&colon.55&colon.32 dd-Mmm-yy hh&colon.mm&colon.ss
+ 2 = 8 Feb 96  23&colon.55&colon.32 dd Mmm yy hh&colon.mm&colon.ss
  3 = 8 Feb 96  11&colon.55p   dd Mmm yy hh&colon.mmA
- 4 = 96-02-08  23&colon.55&colon.32 yy-mm-dd mm&colon.mm&colon.ss
+ 4 = 96-02-08  23&colon.55&colon.32 yy-mm-dd hh&colon.mm&colon.ss
  5 = 31-02-98  23&colon.55    dd-mm-yy hh&colon.mm
 :exmp.
 :p.
@@ -362,8 +368,7 @@ files in the archiver listing (see example below). You can use the
 into this field.
 :p.
 Here's an example of an ARC listing (5.12mpl, command "ARC l"; you may
-need to widen the help windows for this to look right...):
-:p.
+need to widen the help windows for this to look right...)&colon.
 :xmp.
 Name           Length     Date
 ============  ========  =========    <--this line is start-of-list
@@ -384,71 +389,81 @@ what all those fields mean.
 :h4 res=100130 name=PANEL_ARCBB2.ARCHIVER.BB2 Structure
 :i1 id=aboutArcBB2.ArchiverBB2 Structure
 :p.
-The first line in the file is the number of lines/definition in the archiver.bb2 file. It is very important; do not change.  It allows modifications to the
-file format to be transparent to older programs.
-
-Format for this archiver.bb2 file (each entry has 21 lines)&colon.
+ARCHIVER.BB2 is a text file and can be viewd or edited with any text editor. It contains are three types of lines&colon.
+:ol compact.
+:li.The first line in the file is the number of lines per archiver definition in the ARCHIVER.BB2 file.
+It is very important; do not change it.
+It allows modifications to the file format to be transparent to older programs.
+:li.Comment lines.
+:ul compact.
+:li.Comment lines are optional but recommended.
+:li.A semicolon in column 1 marks a comment line.
+:li.Comment lines may appear anywhere :hp3.except:ehp3. within the lines of an archiver definition entry.
+:li.Comments are ignored and are used to provide human-readable notes and/or "white space" for visually separating blocks of lines.
+:eul.
+:li.Lines which provide a definitions for archivers.
+:ol compact.
+:li.Each archiver is defined by a set of :hp2.consecutive:ehp2. lines.
+:li.The number of these lines is set by the first line of the file. Currently it is 21.
+:li.Each line is described below.
+:ol compact.
+:li.archiver id  string for human consumption (e.g. ARC, LHARC, PKZIP)
+:li.normal extension for archives without period  (e.g. ZIP, ARC, LZH)
+:li.offset into file to signature (0-based, leave blank if no signature)
+:li.list command
+:li.extract command
+:li.extract with directories command
+:li.test archive command
+:li.add/create command
+:li.add/create with paths command
+:li.add/create and recurse command
+:li.move command
+:li.move with paths command
+:li.delete command
+:li.signature (case sensitive, leading spaces count!)
+:li.startlist string
+:li.endlist string
+:li.old size position (0-based, -1 = not available)
+:li.new size position  (0-based, -1 = not available)
+:li.file date/time, specified by two comma-separated numbers&colon.
+:ol compact.
+:li.position (0-based, -1 = not available)
+:li.type code&colon.
+:dl compact.
+:dthd.0:ddhd.No date in the data
+:dthd.1:ddhd.mm-dd-yy hh&colon.mm&colon.ss    (e.g. 02-31-98  23&colon.55&colon.32)
+:dthd.2:ddhd.dd Mmm yy hh&colon.mm&colon.ss   (e.g. 31 Feb 98 23&colon.55&colon.32)
+:dthd.3:ddhd.dd Mmm yy hh&colon.mmA     (e.g. 31 Feb 98  11&colon.55p)
+:dthd.4:ddhd.yy-mm-dd hh&colon.mm&colon.ss    (e.g. 98-02-31 23&colon.55&colon.32)
+:dthd.5:ddhd.dd-mm-yy hh&colon.mm       (e.g. 31-02-98  23&colon.55)
+:edl.
+:eol.
+:li.number of elements/fields in dates (e.g. "03 June 92" would be 3)
+:li.file name, specified by up to four comma-separated numbers (only the first number is required)&colon.
+:ol compact.
+:li.0-based position number of the file name (required; -1 = last pos on the line). See ZOO entry for an example of -1 in file name position
+:li.1 = name starts at filename-position (previous number on this line) and extends to the end of the line (0 = otherwise; n/a w/ position = -1), See LH entry for an example of this
+:li.1 = the file name starts at the second character of the field (0 otherwise).
+:li.1 = two lines for each file listed with file name on first line (0 otherwise). See RAR 2.00 entry for an example of this
+:eol.
+:eol.
+:eol.
+:eol.
 :p.
-1st line&colon. archiver id (i.e. ARC, LHARC, PKZIP, etc.) for human consumption
+Additional notes:
+:ul compact.
+:li.All archiver command strings should specify a command which does :hp2.not:ehp2. prompt for further input!
+:li.Archiver definition entries that contain numeric values may have trailing comments.
+:li.Archiver definition lines that contain strings do not support trailing comments.
+:li.Blank lines are ignored except within a 21 line archiver definition entry.
+:li.A blank line within a definition entry will be treated as either an empty string
+or the number 0, depending on what content is expected for the definition line.
+:eul.
 :p.
-2nd line&colon.  normal extension for archives without period  (i.e ZIP, ARC, LZH)
-:p.
-3rd line&colon.  offset into file to signature (leave blank if no signature)
-:p.
-4th line&colon.  list command
-:p.
-5th line&colon.  extract command
-:p.
-6th line&colon.  extract with directories command
-:p.
-7th line&colon.  test archive command
-:p.
-8th line&colon.  add/create command
-:p.
-9th line&colon.  add/create with paths command
-:p.
-10th line&colon.  add/create and recurse command
-:p.
-11th line&colon.  move command
-:p.
-12th line&colon.  move with paths command
-:p.
-13th line&colon.  delete command
-:p.
-14th line&colon.  signature (case sensitive, leading spaces count!)
-:p.
-15th line&colon.  startlist string
-:p.
-16th line&colon.  endlist string
-:p.
-17th line&colon.  old size position (0-based, -1 = not available)
-:p.
-18th line&colon.  new size position  (0-based, -1 = not available)
-:p.
-19th line&colon.  file date position (0-based, -1 = not available) [,type of date (0 for none)]
-:p.
-20th line&colon.  number of elements in dates (for "03 June 92" would be 3)
-:p.
-21st line&colon.  file name position (absolutely required, of course; -1 = last pos)[,name is last (1 = TRUE, n/a w/ -1 pos)[name is next line (1 = TRUE)[,name is first line, then rest of data (1 = TRUE)]]]
-:p.
-see ZOO entry for example of -1 in file name position
-:p.
-see LH entry for example of name is last
-:p.
-see RAR 2.00 entry for example of name is first
-:p.
-check listings generated by these programs for clarification
-:p.
-A semicolon marks a comment.  They may appear at any point *except*
-within the 21 lines of an archiver definition entry.  Comments are ignored.
-Archiver definition entries that contain numeric values may have trailing comments. Archiver definition lines that contain strings do not support trailing comments.
-:p.
-Blank lines are ignored except within a 21 line archiver definition entry. A blank line with a definition entry will be treats as either an empty string or the number 0, depending on what content is expected for the definition line.
-:p.
-Note that all archiver command strings should include the archiver's parameter to
-prevent it from prompting for input!  Also note that archive types are checked
-in order of their listing in this file.  Finally, this file is set up for
-the archivers I had lying around. If yours are different versions, you may
-have to modify this file.  All archivers are OS/2 (or FAPI) versions.
-DOS archivers may work with FM/2, but it'll be up to you to set them up.
+For additional information see&colon.
+:ul compact.
+:li.Help for :link reftype=hd res=94300.Archiver Details:elink.
+:li.The ARCHIVER.TMP file, located in the TMPLATES subdirectory of where FM/2 is installed. (This is the default version
+of ARCHIVER.BB2 which is distributed with FM/2.)
+:eul.
 
