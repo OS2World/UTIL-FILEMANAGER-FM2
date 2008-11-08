@@ -23,6 +23,8 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   26 May 08 SHL Use uiLineNumber correctly
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use MakeTempName
+  08 Nov 08 GKY Post an event semaphore to WaitChildThread to fix hang caused by viewer trying
+                to open a file before the archiver process closes. (Ticket 58)
 
 ***********************************************************************/
 
@@ -1178,6 +1180,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
           }
         }
         else {
+          ULONG clPosted;
+
+          DosResetEventSem(hWaitChildSem, &clPosted);
           for (ctr = 0;; ctr++)
           {
             if (ctr < 20) {
@@ -1209,7 +1214,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
               //     __FILE__, __LINE__,ptib->tib_ordinal,pTermInfo->usSessID,pTermInfo->usRC,rq.pid, rq.ulData); fflush(stdout);
 
             if (pTermInfo->usSessID == ulSessID) {
-              DosPostEventSem(hWaitChildSem);
+              DosPostEventSem(hWaitChildSem); //Posted to WaitChildThread (arccnrs.c)
                 break;                    // Our session is done
             }
 

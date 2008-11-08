@@ -58,6 +58,8 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
                 less than 10 KiB (It hangs and can't be closed)
+  08 Nov 08 GKY Add WaitChildThread to fix hang caused by viewer trying to open a file before
+                the archiver process closes. (Ticket 58)
 
 ***********************************************************************/
 
@@ -164,10 +166,10 @@ typedef struct {
 }
 WAITCHILD;
 
+// Creates a thread to wait for a child process to complete then posts a message and closes
 VOID WaitChildThread(VOID * arg)
 {
   WAITCHILD *WaitChild;
-  ULONG clPosted;
   HAB thab;
   CHAR *filename;
 
@@ -186,7 +188,6 @@ VOID WaitChildThread(VOID * arg)
       priority_normal();
       DosWaitEventSem(hWaitChildSem, SEM_INDEFINITE_WAIT);
       priority_bumped();
-      DosResetEventSem(hWaitChildSem, &clPosted);
       if (IsFile(WaitChild->filename) == 1)
         PostMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
       DecrThreadUsage();
@@ -1584,8 +1585,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *p = '\\';
 	  p++;
 	}
-	//printf("%s %d UM_ENTER %s %x\n",__FILE__, __LINE__,WaitChild->filename, dcd->hwndCnr); fflush(stdout);	// 10 Mar 07 SHL hang
-        free(s);
+	free(s);
         WaitChild->hwndCnr = dcd->hwndCnr;
         rc = _beginthread(WaitChildThread, NULL, 65536, WaitChild);
         if (rc == -1)
@@ -1596,8 +1596,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (fViewChild && fArcStuffVisible)
 	    DosSleep(100);  // Allow unzip session to finish closing 14 Mar 07 SHL
 #endif
-          //DosWaitEventSem(hWaitChildSem, SEM_INDEFINITE_WAIT);
-	  //WinSendMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(WaitChild->filename), MPVOID);
+	  //WinSendMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
 
       }
     }
