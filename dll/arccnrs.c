@@ -168,11 +168,13 @@ typedef struct {
   CHAR   *pszDirectory;
   CHAR   *pszEnvironment;
   CHAR   formatstring[40];       //Usally "%s"
-  CHAR   CmdLine[1024];    //Use sprintf to format multipart command line into single string
+  CHAR   CmdLine[1024];          //Use sprintf to format multipart command line into single string
 }
 WAITCHILD;
 
-// Creates a thread to wait for a child process to complete then posts a message and closes
+/** Creates a thread to wait for a child process to complete then posts a message and closes
+ *  This function should only be used for runemf2 calls that include the WAIT flag
+ */
 VOID WaitChildThread(VOID * arg)
 {
   WAITCHILD *WaitChild;
@@ -192,12 +194,11 @@ VOID WaitChildThread(VOID * arg)
     thab = WinInitialize(0);
     if (thab) {
       IncrThreadUsage();
-      priority_bumped(); //normal();
+      priority_normal();
       ret = runemf2(WaitChild->RunFlags, WaitChild->hwndClient, pszSrcFile, __LINE__,
                     WaitChild->pszDirectory, WaitChild->pszEnvironment,
                     WaitChild->formatstring, WaitChild->CmdLine);
       if (ret != -1) {
-        //priority_bumped();
         if (IsFile(WaitChild->filename) == 1)
           PostMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
       }

@@ -1209,7 +1209,6 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
               //     __FILE__, __LINE__,ptib->tib_ordinal,pTermInfo->usSessID,pTermInfo->usRC,rq.pid, rq.ulData); fflush(stdout);
 
             if (pTermInfo->usSessID == ulSessID) {
-              priority_bumped();
               break;                    // Our session is done
             }
 
