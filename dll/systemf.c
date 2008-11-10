@@ -62,8 +62,6 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-HEV hWaitChildSem;
-
 //static HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 //          PROGTYPE * progt, ULONG fl, char *formatstring, ...);
 
@@ -693,7 +691,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 # define TERMQ_BASE_NAME "\\QUEUES\\FM3WAIT"
   static char szTermQName[30];
   static HQUEUE hTermQ;
-  //static HEV hTermQSem;
+  static HEV hTermQSem;
 
   if (pszDirectory && *pszDirectory) {
     if (!DosQueryPathInfo(pszDirectory,
@@ -1081,9 +1079,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
             Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosCreateQueue");
           }
           else {
-            rc = DosCreateEventSem(NULL,(PHEV)&hWaitChildSem,0,FALSE);
+            rc = DosCreateEventSem(NULL,(PHEV)&hTermQSem,0,FALSE);
             if (rc) {
-                hWaitChildSem = (HEV)0;     // Try to survive
+                hTermQSem = (HEV)0;     // Try to survive
                 DosCloseQueue(hTermQ);
                 hTermQ = (HQUEUE)0;     // Try to survive
                 DosExitCritSec();
@@ -1092,7 +1090,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
             // if (!rc) fprintf(stderr,"%s %d qcreated ptib %x hTermQ %x\n",__FILE__, __LINE__,ptib,hTermQ);
           }
         } // if 1st time
-        useTermQ = hTermQ && hWaitChildSem;
+        useTermQ = hTermQ && hTermQSem;
         if (!rc)
           DosExitCritSec();
       } // if wait
@@ -1133,7 +1131,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       //       sdata.Length , sdata.Related, sdata.FgBg, sdata.PgmName,
       //     sdata.PgmInputs, sdata.TermQ, sdata.InheritOpt,
       //   sdata.SessionType, szTermQName,
-      //   hTermQ, hWaitChildSem); fflush(stdout);
+      //   hTermQ, ); fflush(stdout);
       ret = DosStartSession(&sdata, &ulSessID, &sessPID);
 
       // if (type & WAIT) {
@@ -1180,14 +1178,11 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
           }
         }
         else {
-          ULONG clPosted;
-
-          DosResetEventSem(hWaitChildSem, &clPosted);
           for (ctr = 0;; ctr++)
           {
             if (ctr < 20) {
               rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
-                                DCWW_NOWAIT, &bPriority, hWaitChildSem);
+                                DCWW_NOWAIT, &bPriority, hTermQSem);
               if (rc == ERROR_QUE_EMPTY) {
                 DosSleep(50);//05 Aug 07 GKY 100
                 continue;
@@ -1214,8 +1209,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
               //     __FILE__, __LINE__,ptib->tib_ordinal,pTermInfo->usSessID,pTermInfo->usRC,rq.pid, rq.ulData); fflush(stdout);
 
             if (pTermInfo->usSessID == ulSessID) {
-              DosPostEventSem(hWaitChildSem); //Posted to WaitChildThread (arccnrs.c)
-                break;                    // Our session is done
+              priority_bumped();
+              break;                    // Our session is done
             }
 
             // Requeue session for other thread

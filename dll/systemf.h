@@ -47,8 +47,6 @@ typedef struct
 }
 EXECARGS;
 
-extern HEV hWaitChildSem;
-
 INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
 	       CHAR ** list, CHAR * prompt, PCSZ pszCallingFile, UINT uiLineNumber);
 BOOL ShowSession(HWND hwnd, PID pid);

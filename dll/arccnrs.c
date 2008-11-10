@@ -161,8 +161,14 @@ ULONGLONG ullDATFileSpaceNeeded;
 
 typedef struct {
 
-  CHAR filename[CCHMAXPATH];
-  HWND hwndCnr;
+  CHAR   filename[CCHMAXPATH];   //file passed as MP1 message parameter (file selected)
+  HWND   hwndCnr;                //hwnd you want the message posted to
+  HWND   hwndClient;             //hwnd calling this thread; NULL will work
+  ULONG  RunFlags;               //runemf2 flags see systemf.h
+  CHAR   *pszDirectory;
+  CHAR   *pszEnvironment;
+  CHAR   formatstring[40];       //Usally "%s"
+  CHAR   CmdLine[1024];    //Use sprintf to format multipart command line into single string
 }
 WAITCHILD;
 
@@ -172,6 +178,7 @@ VOID WaitChildThread(VOID * arg)
   WAITCHILD *WaitChild;
   HAB thab;
   CHAR *filename;
+  INT ret;
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -185,14 +192,20 @@ VOID WaitChildThread(VOID * arg)
     thab = WinInitialize(0);
     if (thab) {
       IncrThreadUsage();
-      priority_normal();
-      DosWaitEventSem(hWaitChildSem, SEM_INDEFINITE_WAIT);
-      priority_bumped();
-      if (IsFile(WaitChild->filename) == 1)
-        PostMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
+      priority_bumped(); //normal();
+      ret = runemf2(WaitChild->RunFlags, WaitChild->hwndClient, pszSrcFile, __LINE__,
+                    WaitChild->pszDirectory, WaitChild->pszEnvironment,
+                    WaitChild->formatstring, WaitChild->CmdLine);
+      if (ret != -1) {
+        //priority_bumped();
+        if (IsFile(WaitChild->filename) == 1)
+          PostMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
+      }
       DecrThreadUsage();
       WinTerminate(thab);
     }
+    xfree(WaitChild->pszDirectory, pszSrcFile, __LINE__);
+    xfree(WaitChild->pszEnvironment, pszSrcFile, __LINE__);
     free(WaitChild);
   } // if WaitChild
 # ifdef FORTIFY
@@ -1559,14 +1572,19 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  free(s);
 	  return 0;
 	}
-	runemf2(SEPARATE | ASYNCHRONOUS | WAIT |
+        sprintf(WaitChild->CmdLine, "%s %s %s",
+		                    dcd->info->exwdirs ? dcd->info->exwdirs :
+				    dcd->info->extract,
+		                    BldQuotedFileName(szQuotedArcName, dcd->arcname),
+		                    BldQuotedFileName(szQuotedMemberName, s));
+        /*runemf2(SEPARATE | ASYNCHRONOUS | WAIT |
                 (fArcStuffVisible ? 0 : BACKGROUND),
-		dcd->hwndClient, pszSrcFile, __LINE__, dcd->workdir, NULL,
+		, pszSrcFile, __LINE__, dcd->workdir, NULL,
 		"%s %s %s",
 		dcd->info->exwdirs ? dcd->info->exwdirs :
 				     dcd->info->extract,
 		BldQuotedFileName(szQuotedArcName, dcd->arcname),
-		BldQuotedFileName(szQuotedMemberName, s));
+		BldQuotedFileName(szQuotedMemberName, s));*/
 	if (!dcd->info->exwdirs) {
 	  p = s;
 	  p = strrchr(s, '\\');
@@ -1585,7 +1603,13 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *p = '\\';
 	  p++;
 	}
-	free(s);
+        free(s);
+        WaitChild->RunFlags = SEPARATE | ASYNCHRONOUS | WAIT |
+                              (fArcStuffVisible ? 0 : BACKGROUND);
+        WaitChild->hwndClient = dcd->hwndClient;
+        WaitChild->pszDirectory = xstrdup(dcd->workdir, pszSrcFile, __LINE__);
+        WaitChild->pszEnvironment = NULL;
+        strcpy(WaitChild->formatstring, "%s");
         WaitChild->hwndCnr = dcd->hwndCnr;
         rc = _beginthread(WaitChildThread, NULL, 65536, WaitChild);
         if (rc == -1)
