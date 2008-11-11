@@ -23,8 +23,6 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   26 May 08 SHL Use uiLineNumber correctly
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use MakeTempName
-  08 Nov 08 GKY Post an event semaphore to WaitChildThread to fix hang caused by viewer trying
-                to open a file before the archiver process closes. (Ticket 58)
 
 ***********************************************************************/
 
@@ -1085,7 +1083,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
                 DosCloseQueue(hTermQ);
                 hTermQ = (HQUEUE)0;     // Try to survive
                 DosExitCritSec();
-                Dos_Error(MB_ENTER,rc,HWND_DESKTOP,pszSrcFile,__LINE__,"DosCreateEventSem");
+                Dos_Error(MB_ENTER,rc,HWND_DESKTOP,pszSrcFile,__LINE__,"DoCreateEventSem");
             }
             // if (!rc) fprintf(stderr,"%s %d qcreated ptib %x hTermQ %x\n",__FILE__, __LINE__,ptib,hTermQ);
           }
@@ -1131,7 +1129,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       //       sdata.Length , sdata.Related, sdata.FgBg, sdata.PgmName,
       //     sdata.PgmInputs, sdata.TermQ, sdata.InheritOpt,
       //   sdata.SessionType, szTermQName,
-      //   hTermQ, ); fflush(stdout);
+      //   hTermQ, hTermQSem); fflush(stdout);
       ret = DosStartSession(&sdata, &ulSessID, &sessPID);
 
       // if (type & WAIT) {
@@ -1169,7 +1167,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
             DosSleep(100);//05 Aug 07 GKY 200
             if (DosSetSession(ulSessID, &sd))   // Check if session gone (i.e. finished)
               break;
-            if (ctr > 20) {
+            if (ctr > 10) {
               //   printf("%s %d thread 0x%x showing slow sess %u pid 0x%x\n",
               //        __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,sessPID); fflush(stdout); // 12 Mar 07 SHL
               ShowSession(hwnd, sessPID);       // Show every 2 seconds
@@ -1205,12 +1203,11 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
               continue;
             }
 
-              //printf("%s %d DosReadQueue thread 0x%x sess %u sessRC %u rq.pid 0x%x rq.data 0x%x\n",
-              //     __FILE__, __LINE__,ptib->tib_ordinal,pTermInfo->usSessID,pTermInfo->usRC,rq.pid, rq.ulData); fflush(stdout);
+            //  printf("%s %d DosReadQueue thread 0x%x sess %u sessRC %u rq.pid 0x%x rq.data 0x%x\n",
+            //       __FILE__, __LINE__,ptib->tib_ordinal,pTermInfo->usSessID,pTermInfo->usRC,rq.pid, rq.ulData); fflush(stdout);
 
-            if (pTermInfo->usSessID == ulSessID) {
+            if (pTermInfo->usSessID == ulSessID)
               break;                    // Our session is done
-            }
 
             // Requeue session for other thread
             {
