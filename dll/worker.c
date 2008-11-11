@@ -594,8 +594,6 @@ VOID Action(VOID * args)
               case IDM_RENAME:
                 {
 
-                  INT iCounter = 0;
-
                   if (!*wk->li->targetpath && (wk->li->type == IDM_MOVE ||
                                                wk->li->type == IDM_COPY ||
                                                wk->li->type == IDM_WPSMOVE ||
@@ -869,12 +867,6 @@ VOID Action(VOID * args)
                           goto Retry;
                         if (rc == MBID_ABORT)
                           goto Abort;
-                      }
-                      else if (rc == ERROR_PIPE_NOT_CONNECTED && iCounter < 25) {
-                        DbgMsg(pszSrcFile, __LINE__, "ERROR_PIPE_NOT_CONNECTED retries %i", iCounter);
-                        iCounter ++;
-                        DosSleep(200);
-                        goto Retry;
                       }
                       else {
                         if (LogFileHandle)
