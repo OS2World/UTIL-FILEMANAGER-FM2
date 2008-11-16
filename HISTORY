@@ -1,5 +1,19 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.14
+ o New toolbar and drive icons (David)
+ o Updated toolbars they all include buttons to switch to any other provided toolbar (David)
+ o Right click on unformatted drive now provides the drives context menu Ticket 279 (Gregg)
+ o Corrected the menu items available for remote, virtual and removable drives
+   Eliminated instances of multiple menu defaults. Ticket 290 (Gregg)
+ o Added new icons for some objects in the FM/2 folder. Ticket 292, 294 (David, John)
+ o Enhanced scan speed for initial and complete rescan of drive tree. Ticket 25 (Gregg)
+ o Fixed typo that had changed the the filters data file from filters.dat to filter.dat;
+   It is now filters.dat which it was originally. (Gregg)
+ o Help file clean up, minor corrections updates and new icons. (David, John)
+ o Some additional bug fixes. Tickets 163, 187, 286, 289, 2, 58, 282, 285, 287, 293
+   (Gregg, John, Steven)
+
 3.13
  o Trash can only used for drives that support it; it is not used as default Ticket 250 (Gregg)
  o Check disk space remaining for temp and user files; Fix several issues related to full drives.

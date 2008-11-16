@@ -5,6 +5,27 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.14: This release updates many of the icons and bitmaps
+used in FM/2. In addition, more updates have been made to the
+toolbars to activate the new toolbars follow the instruction for
+using CFGMGR in the section about version 3.13. One other change
+may require some user intervention. Inadvertently the expected
+name of the filters data file was change in version 3.12 from
+filters.dat to filter.dat. We have corrected this, however, this
+means your filters may be spread across 2 different files or may
+seem to have disappeared. If they have disappeared go to the FM/2
+directory and rename the file filter.dat to filters.dat. This should
+restore your saved filters. If you find you have both filter.dat and
+filters.dat use a text editor to add the contents of filter.dat
+to filters.dat.
+
+This release also contains some menu changes with unformatted drives
+using the "drives" context menu, the elimination of more than one
+default on some submenus and menu items such as "format" being
+disabled for network drives and enabled for removables. Some of the
+changes should make FM/2 more responsive (Let us know if you notice
+a difference). We have also included some bug fixes.
+
 FM/2 3.13: Many of the changes in this release are related to
 the toolbars. A new feature is that the current toolbar, along
 with the current Target directory, are now saved and restored
