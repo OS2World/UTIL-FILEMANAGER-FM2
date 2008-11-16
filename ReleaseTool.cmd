@@ -18,6 +18,13 @@
  *    wpi filenames
  *    warpin packageid/database version number(s)
  *
+ * This program uses the following enviromental variables
+ *    SVN_EDITOR to set the text editor that is called
+ *    SVN_TESTER to call a cmd file that copies files to your test directory
+ *               and changes to that directory
+ *    SVN_KILL allows you to set a program to kill any running version of FM/2
+ *             killpid is used as default (must be in path)
+ *
 */
 
 n = setlocal()
@@ -33,7 +40,7 @@ signal on novalue             /* for debugging */
 */
 
 
-globals = 'cmd prompt editor editorcmds'
+globals = 'cmd prompt editor editorcmds killpid tester killtarget'
 
 parse arg ver next_ver
 if (pos('?', ver) > 0 | pos('h', ver) > 0) then
@@ -132,9 +139,18 @@ do forever
             'wmake -a all'
          end
       when action = 7 then
-         do /* Test built code */
-            call NotYet action
-            say 'Test the built code.'
+      do /* Test built code */
+          if tester == '' then
+              do
+                  call NotYet action
+                  say 'Test the built code.'
+              end
+          else
+              do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
+                    to test directory and change to that directory must type exit to return here*/
+                  killpid killtarget
+                  cmd tester
+              end
          end
       when action = 8 then
          do /* Commit code */
@@ -159,14 +175,23 @@ do forever
          end
       when action = 11 then
          do /* Test the binaries */
-            call NotYet action
-            say 'Test the binaries.'
-            say
-            say 'At a minimum you should run all the exes and do some'
-            say 'basic file manipulation with each.'
-            say
-            say 'You should, where possible, also verify that any bugs'
-            say 'that were fixed for the release are working as expected.'
+            if tester == '' then
+              do
+                  call NotYet action
+                  say 'Test the binaries.'
+                  say
+                  say 'At a minimum you should run all the exes and do some'
+                  say 'basic file manipulation with each.'
+                  say
+                  say 'You should, where possible, also verify that any bugs'
+                  say 'that were fixed for the release are working as expected.'
+              end
+          else
+              do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
+                    to test directory and change to that directory must type exit to return here*/
+                  killpid killtarget
+                  cmd tester
+              end
          end
       when action = 12 then
          do /* Lxlite */
@@ -174,10 +199,19 @@ do forever
          end
       when action = 13 then
          do /* Test the release code */
-            call NotYet action
-            say 'Test the (compressed) release code.'
-            say
-            say 'Verify that all exe''s continue to load and run after being compressed.'
+            if tester == '' then
+              do
+                  call NotYet action
+                  say 'Test the (compressed) release code.'
+                  say
+                  say 'Verify that all exe''s continue to load and run after being compressed.'
+              end
+          else
+              do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
+                    to test directory and change to that directory must type exit to return here*/
+                  killpid killtarget
+                  cmd tester
+              end
          end
       when action = 14 then
          do /* Build distro */
@@ -301,9 +335,14 @@ Init: procedure expose (globals)
       editorcmds = "'3'"
    else
       editorcmds = ""
-		
+
    cmd 		= value('COMSPEC',,'OS2ENVIRONMENT')
    prompt 	= value('PROMPT',,'OS2ENVIRONMENT')
+   tester       = value('SVN_TESTER',,'OS2ENVIRONMENT')
+   killpid      = value('SVN_KILL',,'OS2ENVIRONMENT')
+   if killpid == '' then
+       killpid      = 'killpid'
+   killtarget  = ' FM/2'
 return
 
 DisplayMenu: procedure
