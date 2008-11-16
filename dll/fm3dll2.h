@@ -108,6 +108,7 @@
 #define TREE_FRAME          300
 #define TREE_CNR            301
 #define TREE_TOTALS         302
+#define TREE_OPENCNR        303
 #define TREEOBJ_FRAME       400
 
 #define COLLECTOR_FRAME     450
@@ -645,7 +646,7 @@
 // #ifndef CN_GRIDRESIZED		// defined in Open Watcom headers
 // #define CN_GRIDRESIZED    137
 // #endif
-#ifndef BKS_MERLINSTYLE	
+#ifndef BKS_MERLINSTYLE
 #define BKS_MERLINSTYLE   0x0800
 #endif
 

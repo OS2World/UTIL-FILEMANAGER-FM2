@@ -3105,8 +3105,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       if (*(ULONG *) realappname == FM3UL) {
 	if (!WinCreateWindow(hwndFrame,
 			     WC_TREEOPENBUTTON,
-			     "Op",
-			     WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
+                             "#303",
+			     WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS | BS_BITMAP,
 			     ((swp.cx -
 			       WinQuerySysValue(HWND_DESKTOP,
 						SV_CXMINMAXBUTTON)) -
