@@ -128,12 +128,16 @@ RCFLAGS2 =-ad
 
 !ifdef USE_RC
 .rc.res:
-   @echo. & echo Compiling resource: $*.rc & echo.
+   @echo.
+   @echo Compiling resource: $*.rc
+   @echo.
    $(RC) $(RCFLAGS) $*.rc
    ren $*.res $*.res
 !else
 .rc.res: .AUTODEPEND
-   @echo. & echo Compiling resource: $*.rc & echo.
+   @echo.
+   @echo Compiling resource: $*.rc
+   @echo.
   $(RC) $(RCFLAGS) $*.rc
 !endif
 

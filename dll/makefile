@@ -255,7 +255,9 @@ $(BASERES).obj: $(BASERES).c .autodepend
   $(CC) $(CFLAGSR) $(BASERES).c
 
 $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
-  @echo. & echo Compiling resource: $* & echo.
+  @echo.
+  @echo Compiling resource: $*
+  @echo.
   $(RC) $(RCFLAGS) $*
 !if $(USE_RC)
   ren $*.res $*.res
@@ -266,7 +268,9 @@ $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
 $(BASERES).dll $(BASERES).lib: $(BASERES).res $(BASERES).obj $(BASERES).def $(BASERES).lrf
   @echo $(LINK) @$(BASERES).lrf @$(BASERES).def
   $(LINK) @$(BASERES).lrf @$(BASERES).def
-  @echo. & echo Compiling resource: $@ & echo.
+  @echo.
+  @echo Compiling resource: $@
+  @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $@
   bldlevel $@
 
@@ -299,7 +303,9 @@ $(BASERES).dll: $(BASERES).res
   lxlite $@ /x+ /b-
   lxlite $@ /c:minstub
 !endif
-  @echo. & echo Compiling resource: $@ & echo.
+  @echo.
+  @echo Compiling resource: $@
+  @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $@
 !ifndef DEBUG
   lxlite $@ /x- /b-
