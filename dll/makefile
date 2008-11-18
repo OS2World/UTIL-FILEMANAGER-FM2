@@ -41,6 +41,7 @@
 # 26 May 08 SHL Update WARNALL to warn about more
 # 22 Jul 08 SHL Change from dllsyms to syms target for consistency
 # 06 Oct 08 SHL Add missing -dDEBUG= to CFLAGS; rework lxlite suppress logic
+# 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 
 # Environment:
 
@@ -66,9 +67,9 @@ USE_RC = 0
 !endif
 
 !if $(USE_RC)
-RC = rc
+RC = rc -n
 !else
-RC = wrc
+RC = wrc -q
 !endif
 
 # Keep this code in sync with makefile_pre.mk
@@ -254,6 +255,7 @@ $(BASERES).obj: $(BASERES).c .autodepend
   $(CC) $(CFLAGSR) $(BASERES).c
 
 $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
+  @echo. & echo Compiling resource: $* & echo.
   $(RC) $(RCFLAGS) $*
 !if $(USE_RC)
   ren $*.res $*.res
@@ -264,6 +266,7 @@ $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
 $(BASERES).dll $(BASERES).lib: $(BASERES).res $(BASERES).obj $(BASERES).def $(BASERES).lrf
   @echo $(LINK) @$(BASERES).lrf @$(BASERES).def
   $(LINK) @$(BASERES).lrf @$(BASERES).def
+  @echo. & echo Compiling resource: $@ & echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $@
   bldlevel $@
 
@@ -296,6 +299,7 @@ $(BASERES).dll: $(BASERES).res
   lxlite $@ /x+ /b-
   lxlite $@ /c:minstub
 !endif
+  @echo. & echo Compiling resource: $@ & echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $@
 !ifndef DEBUG
   lxlite $@ /x- /b-

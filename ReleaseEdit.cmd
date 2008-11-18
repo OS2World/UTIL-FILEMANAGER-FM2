@@ -13,6 +13,11 @@
  * 	which need a version number and/or date/time:
  * 	   *.def, file_id.diz, dll\version.h, warpin\fm2.wis
  *
+ * Change log:
+ * 	18 Nov 08 JBS Ticket 297: Various build improvements/corrections
+ *    	- Use SysTempFilename instead of hard-coded temp file name
+ *       - Commented out support for changing version in FM2.WIS
+ *
 */
 
 signal on Error
@@ -39,9 +44,14 @@ warpin_db_ver = (major + 0) || '\\' || (minor + 0) || '\\' || (CSDlevel + 0)
 warpin_makefile_ver  = major || '-' || minor || '-' || CSDlevel
 ext = substr(translate(file), lastpos('.', file) +1)   /* if no extension, ext <-- uppercase(file) */
 parse value date('s') with year 5 month 7 day
-tmpfile = 'redit.bak'   /* If SysTempFilename is used, SysLoadFuncs first */
-'@if exist' tmpfile 'del' tmpfile
+call RxFuncAdd 'SysTempFilename', 'REXXUTIL', 'SysTempFilename'
+tmpfile = SysTempFilename('redittmp.???')
 'copy' file tmpfile
+if rc \= 0 then
+   do
+      say;say 'Unable to copy to ' || tmpfile || '!! Proceesing aborted.'
+      exit 1
+   end
 'del' file
 select
    when ext = 'DEF' then
@@ -55,10 +65,6 @@ select
    when ext = 'DIZ' then
       do
          'sed -r "/FM\/2 v/s/(FM\/2 v)[0-9]+\.[0-9.]+/\1' || ver || '/" ' || tmpfile || ' >' file
-      end
-   when ext = 'WIS' then
-      do
-         'sed -r -e "s/(PACKAGEID=.*Base\\)[0-9\]+/\1' || warpin_db_ver || '/" -e "s/(PACKAGEID=.*Debugging support\\)[0-9\]+/\1' || warpin_db_ver || '/" ' || tmpfile || ' >' file
       end
    when right(ext, length(mkstr_makefile)) = mkstr_makefile then
       do

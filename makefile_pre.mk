@@ -14,6 +14,7 @@
 # 27 May 08 SHL Add WARNALL and FORTIFY support
 # 22 Jul 08 SHL Pass FORTIFY to subordinate makefiles
 # 06 Oct 08 SHL Pass DEBUG in CFLAGS; clean up USE_RC usage
+# 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 
 # Environment: see dll\makefile
 
@@ -32,9 +33,9 @@ USE_RC = $(%USE_RC)
 !endif
 
 !ifdef USE_RC
-RC = rc
+RC = rc -n
 !else
-RC = wrc
+RC = wrc -q
 !endif
 
 # Keep this code in sync with dll\makefile
@@ -127,10 +128,12 @@ RCFLAGS2 =-ad
 
 !ifdef USE_RC
 .rc.res:
+   @echo. & echo Compiling resource: $*.rc & echo.
    $(RC) $(RCFLAGS) $*.rc
    ren $*.res $*.res
 !else
 .rc.res: .AUTODEPEND
+   @echo. & echo Compiling resource: $*.rc & echo.
   $(RC) $(RCFLAGS) $*.rc
 !endif
 

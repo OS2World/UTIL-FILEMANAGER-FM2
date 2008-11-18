@@ -6,6 +6,7 @@
 # 02 Jun 07 SHL Convert to OpenWatcom
 # 23 Feb 08 JBS Add support for building SYM files (Ticket 226)
 # 25 Oct 08 JBS Rework DEBUG usage to match what C code expects
+# 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 
 !ifndef MAKERES
 
@@ -15,6 +16,7 @@
 
 $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   $(LINK) @$(BASE).lrf @$(BASE).def
+  @echo. & echo Compiling resource: $@ & echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
   bldlevel $@
 
@@ -41,6 +43,7 @@ $(BASE).exe: $(BASE).res .explicit
      lxlite $@ /x+ /b-
      lxlite $@ /c:minstub
 !endif
+  @echo. & echo Compiling resource: $@ & echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
 !ifndef DEBUG
   lxlite $@ /x- /b-

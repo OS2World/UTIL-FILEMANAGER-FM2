@@ -22,6 +22,7 @@
 # 22 Jul 08 SHL Change from dll\dllsyms to dll\syms target for consistency
 # 22 Jul 08 SHL Pass FORTIFY options to subordinate makefiles
 # 25 Oct 08 SHL Sanitize DEBUG usage
+# 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 
 # Environment - see makefile_pre.mk and dll\makefile
 
@@ -49,23 +50,23 @@ all: dll $(BASE) allexe .symbolic
 
 syms: exesyms dllsyms .symbolic
 
-dist: lxlitedll $(BASE) lxliteexe syms wpi .symbolic
+dist: all syms lxlite wpi .symbolic
 
 # Only update resources
 res: .symbolic
   @echo Updating resources only
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) MAKERES=1
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) MAKERES=1
 
 # make DLL components
 
 dll: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
   cd ..
 
 dllsyms: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) syms
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) syms
   cd ..
 
 $(BASE): $(BASE).exe $(BASE).res .symbolic
@@ -77,18 +78,18 @@ $(BASE).obj: $(BASE).c dll\version.h .autodepend
 # make EXE compenents
 
 allexe: *.mak .symbolic
-  @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
+  @for %f in ($<) do $(MAKE) -h -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT)
 
 # make SYM files
 
 exesyms: *.mak .symbolic
-  @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) sym
+  @for %f in ($<) do $(MAKE) -h -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) sym
 
 # make WPI files
 
 wpi: .symbolic
   cd warpin
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(WARPIN_OPTS)
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(WARPIN_OPTS)
   cd ..
 
 lxlite:: lxlitedll lxliteexe .symbolic
@@ -97,26 +98,26 @@ lxlite:: lxlitedll lxliteexe .symbolic
 # Apply to each *.mak for other exes
 lxliteexe: *.mak .symbolic
 !ifndef DEBUG
-  @for %f in ($<) do $(MAKE) -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
+  @for %f in ($<) do $(MAKE) -h -f %f $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
 !endif
 
 # Apply to dlls
 lxlitedll: .symbolic
 !ifndef DEBUG
   cd dll
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
   cd ..
 !endif
 
 cleanobj: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) cleanobj
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) cleanobj
   cd ..
   -del *.obj
 
 clean:: .symbolic
   cd dll
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) clean
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) clean
   cd ..
   -del *.exe
   -del *.lrf
@@ -128,7 +129,7 @@ clean:: .symbolic
 
 distclean: clean .symbolic
   cd warpin
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) distclean
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) distclean
   cd ..
 
 !include makefile_post.mk

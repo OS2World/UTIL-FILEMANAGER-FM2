@@ -18,12 +18,21 @@
  *    wpi filenames
  *    warpin packageid/database version number(s)
  *
- * This program uses the following enviromental variables
+ * This program uses the following enviromental variables, if set
  *    SVN_EDITOR to set the text editor that is called
  *    SVN_TESTER to call a cmd file that copies files to your test directory
  *               and changes to that directory
  *    SVN_KILL allows you to set a program to kill any running version of FM/2
  *             killpid is used as default (must be in path)
+ *
+ * Change log:
+ * 	18 Nov 08 JBS Ticket 297: Various build improvements/corrections
+ * 		- Use same file list for option 8 and option 20
+ * 		- Set the file list for option 8 and option 20 once, in Init routine
+ * 		- Removed fm2.wis from the file list for option 8 and option 20 (not needed)
+ * 		- Added optional commit to option 20
+ * 		- Removed extraneous 'pause' in option 20
+ * 		- Fixed a bug in option 0 (run a command shell)
  *
 */
 
@@ -40,7 +49,7 @@ signal on novalue             /* for debugging */
 */
 
 
-globals = 'cmd prompt editor editorcmds killpid tester killtarget'
+globals = 'cmd prompt editor editorcmds killpid tester killtarget version_filelist'
 
 parse arg ver next_ver
 if (pos('?', ver) > 0 | pos('h', ver) > 0) then
@@ -61,13 +70,16 @@ do forever
          say
          if entry \= 'N' then
             do
+               signal off Error
                '@'cmd '/c 'action
+               signal on Error
                action = -1					/* Skip SELECT below */
             end
       end
    select
       when action = 0 then
          do /* Open a command line */
+            signal off Error
             if right(translate(cmd), 8) = '4OS2.EXE' then
                '@' || cmd 'prompt [''exit'' to return to ReleaseTool]' || prompt
             else
@@ -75,6 +87,7 @@ do forever
                   '@set prompt=[''exit'' to return to ReleaseTool]' || prompt
                   '@' || cmd
                end
+            signal on Error
          end
       when action = 1 then
          do /* Ensure all work (by others) is comitted */
@@ -110,17 +123,13 @@ do forever
             call SysCls
             if strip(ver) = '' then
                ver = GetVer('the pending release')
-            filelist = 'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def eas.def'
-            filelist = filelist 'fm3.def fm4.def global.def ini.def killproc.def sysinfo.def'
-            filelist = filelist 'undel.def vcollect.def vdir.def viewinfs.def vtree.def'
-            filelist = filelist 'warpin\fm2.wis file_id.diz dll\version.h warpin\makefile dll\internal\makefile'
-            do f = 1 to words(filelist)
-               call ReleaseEdit ver word(filelist, f)
+            do f = 1 to words(version_filelist)
+               call ReleaseEdit ver word(version_filelist, f)
                say
             end
-            filelist = 'HISTORY README'
-            do f = 1 to words(filelist)
-               file = word(filelist, f)
+            version_filelist2 = 'HISTORY README'
+            do f = 1 to words(version_filelist2)
+               file = word(version_filelist2, f)
                call SysCls
 					say;say;say
             	say 'Next, edit the' file 'file.'
@@ -154,10 +163,7 @@ do forever
          end
       when action = 8 then
          do /* Commit code */
-            svn_cmd = 'svn commit'
-            say;say;say
-            say 'Online and OK to execute: 'svn_cmd'? (Y/n)'
-            if translate(SysGetKey()) \= 'N' then svn_cmd
+            call CommitifOK
          end
       when action = 9 then
          do /* Apply tag */
@@ -176,7 +182,7 @@ do forever
       when action = 11 then
          do /* Test the binaries */
             if tester == '' then
-              do
+               do
                   call NotYet action
                   say 'Test the binaries.'
                   say
@@ -185,13 +191,13 @@ do forever
                   say
                   say 'You should, where possible, also verify that any bugs'
                   say 'that were fixed for the release are working as expected.'
-              end
-          else
-              do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
+               end
+            else
+               do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
                     to test directory and change to that directory must type exit to return here*/
                   killpid killtarget
                   cmd tester
-              end
+               end
          end
       when action = 12 then
          do /* Lxlite */
@@ -200,13 +206,13 @@ do forever
       when action = 13 then
          do /* Test the release code */
             if tester == '' then
-              do
-                  call NotYet action
+            	do
+             		call NotYet action
                   say 'Test the (compressed) release code.'
                   say
                   say 'Verify that all exe''s continue to load and run after being compressed.'
-              end
-          else
+               end
+            else
               do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
                     to test directory and change to that directory must type exit to return here*/
                   killpid killtarget
@@ -216,9 +222,7 @@ do forever
       when action = 14 then
          do /* Build distro */
             call SysCls
-            if strip(ver) = '' then
-               ver = GetVer('the pending release')
-            'wmake dist FM2_VER=-' || WPI_ver(ver)
+            'wmake dist'
          end
       when action = 15 then
          do /* Zip distro */
@@ -275,25 +279,19 @@ do forever
          end
       when action = 20 then
          do /* Set next version */
-            if strip(next_ver) = '' then
-               next_ver = GetVer('the next release')
-            filelist = 'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def eas.def fm3.def fm4.def global.def ini.def killproc.def sysinfo.def undel.def vcollect.def vdir.def viewinfs.def vtree.def warpin\fm2.wis file_id.diz dll\version.h'
-            do f = 1 to words(filelist)
-               call ReleaseEdit next_ver word(filelist, f)
+            next_ver = GetVer('the next release')
+            do f = 1 to words(version_filelist)
+               call ReleaseEdit next_ver word(version_filelist, f)
                say
-               '@pause'
             end
+            call CommitifOK version_filelist
          end
-/*
-      when action = 21 then
-         do
-         end
-*/
    	otherwise
    		nop
    end
   	say;say;say
-  	'@pause'		
+  	if action \= 0 then
+  		'@pause'		
 end
 
 n = endlocal()
@@ -328,21 +326,28 @@ Init: procedure expose (globals)
 	action = 0
 
 	editor = value('SVN_EDITOR',,'OS2ENVIRONMENT')
-	if editor == '' then
-		editor = 'tedit'
-   upperwrd1 = translate(word(editor, 1))
-   if upperwrd1 = 'EPM' | upperwrd1 = 'EPM.EXE' then
-      editorcmds = "'3'"
-   else
-      editorcmds = ""
-
    cmd 		= value('COMSPEC',,'OS2ENVIRONMENT')
    prompt 	= value('PROMPT',,'OS2ENVIRONMENT')
    tester       = value('SVN_TESTER',,'OS2ENVIRONMENT')
    killpid      = value('SVN_KILL',,'OS2ENVIRONMENT')
+
+   editorcmds = ""
+	if editor == '' then
+		editor = 'tedit'
+   else
+   	do
+   		upperwrd1 = translate(word(editor, 1))
+     		if upperwrd1 = 'EPM' | upperwrd1 = 'EPM.EXE' then
+      		editorcmds = "'3'"
+      end		
    if killpid == '' then
        killpid      = 'killpid'
    killtarget  = ' FM/2'
+	version_filelist = 'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def'
+	version_filelist = version_filelist 'dll\version.h eas.def fm3.def fm4.def global.def ini.def'
+	version_filelist = version_filelist 'killproc.def sysinfo.def undel.def vcollect.def vdir.def'
+	version_filelist = version_filelist 'viewinfs.def vtree.def file_id.diz'
+	version_filelist = version_filelist 'warpin\makefile dll\internal\makefile'
 return
 
 DisplayMenu: procedure
@@ -551,4 +556,10 @@ novalue:
    cfg.errorcode = 3
    signal ErrorExit
 
-
+CommitIfOK: procedure
+	parse arg filelist
+   svn_cmd = 'svn commit'
+   say;say;say
+   say 'Online and OK to execute: 'svn_cmd'? (Y/n)'
+   if translate(SysGetKey()) \= 'N' then svn_cmd filelist
+return
