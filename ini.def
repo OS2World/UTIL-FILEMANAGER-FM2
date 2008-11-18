@@ -4,6 +4,6 @@
 
 # 16 Jun 07 GKY Convert to OpenWatcom
 
-option description '@#SLAInc:3.14.0#@##1## 11/16/2008 03:14:00      GKYBuild::EN:US:0:U:@@FM/2 INI Editor MiniApp Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2005, 2008 Steven Levine and Associates, Inc.'
+option description '@#SLAInc:3.15.0#@##1## 11/18/2008 03:15:00      GKYBuild::EN:US:0:U:@@FM/2 INI Editor MiniApp Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2005, 2008 Steven Levine and Associates, Inc.'
 
 option stack = 0x60000

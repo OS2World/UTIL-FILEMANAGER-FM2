@@ -54,7 +54,7 @@
 ***********************************************************************/
 
 #define VERMAJOR       3
-#define VERMINOR       14
+#define VERMINOR       15
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
 #define VERREALMINOR   " "__DATE__
