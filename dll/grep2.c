@@ -750,17 +750,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         DosQCurDisk(&ulDriveNum, &ulDriveMap);
         *new = 0;
         for (x = 2; x < 26; x++) {
+          incl = FALSE;
           if (ulDriveMap & (1L << x)) {
-            incl = FALSE;
             switch (SHORT1FROMMP(mp1)) {
             case GREP_ALLHDS:
-              if (!(driveflags[x] & (DRIVE_REMOVABLE | DRIVE_IGNORE)))
+              if (!(driveflags[x] & (DRIVE_REMOVABLE | DRIVE_IGNORE | DRIVE_RAMDISK)))
                 incl = TRUE;
               break;
             case GREP_LOCALHDS:
               if (!(driveflags[x] &
                     (DRIVE_REMOVABLE | DRIVE_IGNORE | DRIVE_REMOTE |
-                     DRIVE_VIRTUAL)))
+                     DRIVE_VIRTUAL | DRIVE_RAMDISK)))
                 incl = TRUE;
               break;
             case GREP_REMOTEHDS:
