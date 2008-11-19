@@ -42,6 +42,7 @@
 # 22 Jul 08 SHL Change from dllsyms to syms target for consistency
 # 06 Oct 08 SHL Add missing -dDEBUG= to CFLAGS; rework lxlite suppress logic
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
+# 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 
 # Environment:
 
@@ -210,7 +211,6 @@ $(BASE).dll $(BASE).lib: $(OBJS) $(BASE).def $(BASE).lrf
   @echo $(LINK) @$(BASE).lrf @$(BASE).def
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
-  bldlevel $@
 
 $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -272,7 +272,6 @@ $(BASERES).dll $(BASERES).lib: $(BASERES).res $(BASERES).obj $(BASERES).def $(BA
   @echo Compiling resource: $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $@
-  bldlevel $@
 
 $(BASERES).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -310,7 +309,6 @@ $(BASERES).dll: $(BASERES).res
 !ifndef DEBUG
   lxlite $@ /x- /b-
 !endif
-  bldlevel $@
 
 !endif # MAKERES mode
 

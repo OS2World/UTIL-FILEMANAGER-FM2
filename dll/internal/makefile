@@ -6,6 +6,7 @@
 # 14 Jun 07 SHL Convert to OpenWatcom
 # 27 Jun 07 SHL Support DEBUG set from command line or environment
 # 25 Oct 08 SHL Rework dependencies to avoid target dependent build failures
+# 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 
 BASE=mkstr
 
@@ -39,7 +40,6 @@ $(BASE).obj: $(BASE).c .AUTODEPEND
 
 $(BASE).exe $(BASE).map: $(BASE).obj $(BASE).lrf
   $(LINK) @$(BASE).lrf
-  bldlevel $@
 
 $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ system os2v2

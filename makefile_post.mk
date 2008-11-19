@@ -7,6 +7,7 @@
 # 23 Feb 08 JBS Add support for building SYM files (Ticket 226)
 # 25 Oct 08 JBS Rework DEBUG usage to match what C code expects
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
+# 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 
 !ifndef MAKERES
 
@@ -20,7 +21,6 @@ $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   @echo Compiling resource: $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
-  bldlevel $@
 
 $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%write $^@ $(LFLAGS)
@@ -52,7 +52,6 @@ $(BASE).exe: $(BASE).res .explicit
 !ifndef DEBUG
   lxlite $@ /x- /b-
 !endif
-  bldlevel $@
 
 !endif
 
