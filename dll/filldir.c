@@ -1137,8 +1137,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   ULONG startdrive = 3;
   static LONG whenToCheck[] = {
     0,
-    DRIVE_VIRTUAL,
     DRIVE_REMOTE,
+    DRIVE_VIRTUAL,
     DRIVE_SLOW};
   USHORT checked[26] = { 0 };
   static BOOL didonce = FALSE;
@@ -1503,8 +1503,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      ~flags & DRIVE_NOPRESCAN &&
 	      !checked[drvNum] &&
 	      (!fNoRemovableScan || (~flags & DRIVE_REMOVABLE)) &&
-	      (flags & (DRIVE_SLOW | DRIVE_VIRTUAL | DRIVE_REMOTE)) ==
-		whenToCheck[x])
+	      (x < 3 ? (flags & (DRIVE_SLOW | DRIVE_VIRTUAL | DRIVE_REMOTE)) ==
+               whenToCheck[x] : flags & DRIVE_SLOW))
 	  {
 	    if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
 	      WinSendMsg(hwndCnr,
