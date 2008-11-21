@@ -145,6 +145,7 @@ do forever
          end
       when action = 6 then
          do /* Ensure the edits build */
+            'set WARNALL=1'
             'wmake -a all'
          end
       when action = 7 then
@@ -177,7 +178,9 @@ do forever
          end
       when action = 10 then
          do /* Build for the release */
-            'set FORTIFY=& set DEBUG=& wmake -a all'
+            'set FORTIFY='
+            'set DEBUG='
+            'wmake -a all'
          end
       when action = 11 then
          do /* Test the binaries */
@@ -348,6 +351,7 @@ Init: procedure expose (globals)
 	version_filelist = version_filelist 'killproc.def sysinfo.def undel.def vcollect.def vdir.def'
 	version_filelist = version_filelist 'viewinfs.def vtree.def file_id.diz'
 	version_filelist = version_filelist 'warpin\makefile dll\internal\makefile'
+	version_filelist = version_filelist 'dll\copyright.c dll\fm3res.rc dll\fm3res.dlg'
 return
 
 DisplayMenu: procedure
@@ -375,7 +379,7 @@ DisplayMenu: procedure
       say '17. Wiki updates.'
       say '18. TRAC updates.'
       say '19. Upload to distribution points and announce release.'
-      say '20. Set next version.'
+      say '20. Set next version (no HISTORY or README update).'
       say
       call charout , 'Enter the number of your choice (''X'' to exit; ''0'' to open a command line): '
       action = strip(translate(linein()))

@@ -45,6 +45,8 @@
 #include "fm3dll2.h"
 #include "fm3dlg.h"
 
+#define IDS_COPYRIGHT 1
+
 ICON        MAIN_FRAME          ..\icons\FM3.ICO
 ICON        MAIN2_FRAME         ..\icons\FM4.ICO
 ICON        DIR_FRAME           icons\DIR.ICO
@@ -2334,6 +2336,14 @@ ACCELTABLE  CFG_FRAME
   VK_NEWLINE, DID_OK,                 VIRTUALKEY
   VK_ESC,     DID_CANCEL,             VIRTUALKEY
 }
+
+STRINGTABLE
+  BEGIN
+    IDS_COPYRIGHT, "Copyright (c) 1993, 1998 M. Kimes, " \
+                     "Copyright (c) 2001, 2008 Steven Levine and Associates, Inc." \
+                     "All rights reserved";
+  END
+
 
 HELPTABLE ID_HELPTABLE
 {

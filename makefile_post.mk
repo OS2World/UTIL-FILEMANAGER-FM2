@@ -15,7 +15,7 @@
 # Common parameters go in .lrf
 # Executable specific paramters go in .def
 
-$(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
+$(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def dll\copyright.obj .explicit
   $(LINK) @$(BASE).lrf @$(BASE).def
   @echo.
   @echo Compiling resource: $@
@@ -26,6 +26,7 @@ $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%write $^@ $(LFLAGS)
    @%append $^@ name $(BASE)
    @%append $^@ file $(BASE).obj
+   @%append $^@ file dll\copyright.obj
 !ifdef %EXCEPTQ
     @%append $^@ file exceptq.lib
 !endif
