@@ -26,10 +26,7 @@
  *            - all fields read from have default values
  *            - support for environment variables
  *          - edits length of all fields in option description
- *       - added support for changing copyright years in:
- *          - dll\copyright.c
- *          - dll\fm3res.rc
- *          - dll\fm3res.dlg (About box)
+ *       - added support for changing copyright years
  *       - improved error handling: tmp file renamed back to deleted file
  *       - improved "usage" routine
  *
@@ -70,6 +67,7 @@ globals = 'repository copyright_year_marker copyright_year_marker_len'
 repository = 'option_descriptions.txt'
 mkstr_makefile  = 'DLL\INTERNAL\MAKEFILE'
 warpin_makefile = 'WARPIN\MAKEFILE'
+copyright_h     = 'DLL\COPYRIGHT.H'
 parse value date('s') with year 5 month 7 day
 last_year = year - 1
 
@@ -82,7 +80,7 @@ if rc \= 0 then
       say;say 'Unable to copy to ' || tmpfile || '!! Proceesing aborted.'
       exit 1
    end
-if wordpos(ext, 'C RC DLG') = 0 then
+if wordpos(ext, 'H') = 0 then
    'del' file
 
 /* Process the request */
@@ -126,25 +124,25 @@ select
          option_description = "option description '" || option_description || "'"
          'sed -r -e "/option description/s' || sed_separator || '.*' || sed_separator || option_description || sed_separator || '" ' || tmpfile || ' >' file
       end
-   when wordpos(ext, 'C RC DLG') > 0 then
-      do
-         signal off error
-         'grep -E "Copyright.*' || last_year || '[^,]" ' || file || ' >nul && del ' || file || ' && sed -r -e "/Copyright.*' || last_year || '[^,]/s/' || last_year || '/' || year || '/" ' || tmpfile || ' >' file
-         signal on error
-      end
    when ext = 'H' then
       do
-         'sed -r -e "/#define[ \t]+VERMAJOR/s/(#define[ \t]+VERMAJOR[ \t]+)[^ \t]+/\1' || major || '/g" -e "/#define[ \t]+VERMINOR/s/(#define[ \t]+VERMINOR[ \t]+)[^ \t]+/\1' || minor || '/g" ' || tmpfile || ' >' file
+         if translate(file) = copyright_h then
+            'grep -E "^#define.*COPYRIGHT_YEAR.*' || year || '" ' || file || ' >nul || del ' || file || ' && sed -r -e "/#define.*COPYRIGHT_YEAR/s/[0-9]+/' || year || '/" ' || tmpfile || ' >' file
+         else
+            do /* change below to delete and then update version.h only if version is different? */
+               'del' file
+               'sed -r -e "/#define[ \t]+VERMAJOR/s/(#define[ \t]+VERMAJOR[ \t]+)[^ \t]+/\1' || major || '/g" -e "/#define[ \t]+VERMINOR/s/(#define[ \t]+VERMINOR[ \t]+)[^ \t]+/\1' || minor || '/g" ' || tmpfile || ' >' file
+            end
       end
    when ext = 'DIZ' then
       do
          'sed -r "/FM\/2 v/s/(FM\/2 v)[0-9]+\.[0-9.]+/\1' || ver || '/" ' || tmpfile || ' >' file
       end
-   when right(ext, length(mkstr_makefile)) = mkstr_makefile then
+   when ext = mkstr_makefile then
       do
          'sed -r -e "/desc/s/(SLAInc:).*(\$#@\$#\$#1\$#\$# )[0-9/]+ [0-9:]+/\1' || ver || '\2' || month || '\/' || day || '\/' || year right(major, 2, '0') || ':' || right(minor, 2, '0') || ':' || right(CSDlevel, 2, '0') || '/" ' || tmpfile || ' >' file
       end
-   when right(ext, length(warpin_makefile)) = warpin_makefile then
+   when ext = warpin_makefile then
       do
          warpin_db_ver = (major + 0) || '\\' || (minor + 0) || '\\' || (CSDlevel + 0)
          warpin_makefile_ver  = major || '-' || minor || '-' || CSDlevel
@@ -227,7 +225,7 @@ Error:
   if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
     trace '?A'
     say 'Exiting.'
-    'ren' tmpfile file
+    'if exist' tmpfile 'move' tmpfile file
     call 'SYSSLEEP' 2
     exit 'CONDITION'('C')
   end

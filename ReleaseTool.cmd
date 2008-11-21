@@ -26,13 +26,13 @@
  *             killpid is used as default (must be in path)
  *
  * Change log:
- * 	18 Nov 08 JBS Ticket 297: Various build improvements/corrections
- * 		- Use same file list for option 8 and option 20
- * 		- Set the file list for option 8 and option 20 once, in Init routine
- * 		- Removed fm2.wis from the file list for option 8 and option 20 (not needed)
- * 		- Added optional commit to option 20
- * 		- Removed extraneous 'pause' in option 20
- * 		- Fixed a bug in option 0 (run a command shell)
+ *    18 Nov 08 JBS Ticket 297: Various build improvements/corrections
+ *       - Use same file list for option 8 and option 20
+ *       - Set the file list for option 8 and option 20 once, in Init routine
+ *       - Removed fm2.wis from the file list for option 8 and option 20 (not needed)
+ *       - Added optional commit to option 20
+ *       - Removed extraneous 'pause' in option 20
+ *       - Fixed a bug in option 0 (run a command shell)
  *
 */
 
@@ -53,7 +53,7 @@ globals = 'cmd prompt editor editorcmds killpid tester killtarget version_fileli
 
 parse arg ver next_ver
 if (pos('?', ver) > 0 | pos('h', ver) > 0) then
-   signal Usage		/* and exit */
+   signal Usage      /* and exit */
 
 call Init
 
@@ -73,7 +73,7 @@ do forever
                signal off Error
                '@'cmd '/c 'action
                signal on Error
-               action = -1					/* Skip SELECT below */
+               action = -1             /* Skip SELECT below */
             end
       end
    select
@@ -131,15 +131,15 @@ do forever
             do f = 1 to words(version_filelist2)
                file = word(version_filelist2, f)
                call SysCls
-					say;say;say
-            	say 'Next, edit the' file 'file.'
-            	say
-            	say 'Include descriptions of salient changes to FM/2.'
-            	say
-            	say 'And be sure to update the version number to' ver
-					say
-					'@pause'
-					editor file editorcmds
+               say;say;say
+               say 'Next, edit the' file 'file.'
+               say
+               say 'Include descriptions of salient changes to FM/2.'
+               say
+               say 'And be sure to update the version number to' ver
+               say
+               '@pause'
+               editor file editorcmds
             end
             call BuildHobbesTxt(ver)
          end
@@ -209,8 +209,8 @@ do forever
       when action = 13 then
          do /* Test the release code */
             if tester == '' then
-            	do
-             		call NotYet action
+               do
+                  call NotYet action
                   say 'Test the (compressed) release code.'
                   say
                   say 'Verify that all exe''s continue to load and run after being compressed.'
@@ -289,12 +289,12 @@ do forever
             end
             call CommitifOK version_filelist
          end
-   	otherwise
-   		nop
+      otherwise
+         nop
    end
-  	say;say;say
-  	if action \= 0 then
-  		'@pause'		
+   say;say;say
+   if action \= 0 then
+      '@pause'
 end
 
 n = endlocal()
@@ -314,11 +314,11 @@ novalue:
 exit
 
 Usage:
-	say;say;say
-	lastline = sigl - 10
-	do i = 1 to lastline
-		say sourceline(i)
-	end
+   say;say;say
+   lastline = sigl - 10
+   do i = 1 to lastline
+      say sourceline(i)
+   end
 exit
 
 /*** Subroutines ***/
@@ -326,45 +326,45 @@ Init: procedure expose (globals)
    call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
    call SysLoadFuncs
 
-	action = 0
+   action = 0
 
-	editor = value('SVN_EDITOR',,'OS2ENVIRONMENT')
-   cmd 		= value('COMSPEC',,'OS2ENVIRONMENT')
-   prompt 	= value('PROMPT',,'OS2ENVIRONMENT')
+   editor = value('SVN_EDITOR',,'OS2ENVIRONMENT')
+   cmd      = value('COMSPEC',,'OS2ENVIRONMENT')
+   prompt   = value('PROMPT',,'OS2ENVIRONMENT')
    tester       = value('SVN_TESTER',,'OS2ENVIRONMENT')
    killpid      = value('SVN_KILL',,'OS2ENVIRONMENT')
 
    editorcmds = ""
-	if editor == '' then
-		editor = 'tedit'
+   if editor == '' then
+      editor = 'tedit'
    else
-   	do
-   		upperwrd1 = translate(word(editor, 1))
-     		if upperwrd1 = 'EPM' | upperwrd1 = 'EPM.EXE' then
-      		editorcmds = "'3'"
-      end		
+      do
+         upperwrd1 = translate(word(editor, 1))
+         if upperwrd1 = 'EPM' | upperwrd1 = 'EPM.EXE' then
+            editorcmds = "'3'"
+      end
    if killpid == '' then
        killpid      = 'killpid'
    killtarget  = ' FM/2'
-	version_filelist = 'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def'
-	version_filelist = version_filelist 'dll\version.h eas.def fm3.def fm4.def global.def ini.def'
-	version_filelist = version_filelist 'killproc.def sysinfo.def undel.def vcollect.def vdir.def'
-	version_filelist = version_filelist 'viewinfs.def vtree.def file_id.diz'
-	version_filelist = version_filelist 'warpin\makefile dll\internal\makefile'
-	version_filelist = version_filelist 'dll\copyright.c dll\fm3res.rc dll\fm3res.dlg'
+   version_filelist = 'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def'
+   version_filelist = version_filelist 'dll\version.h eas.def fm3.def fm4.def global.def ini.def'
+   version_filelist = version_filelist 'killproc.def sysinfo.def undel.def vcollect.def vdir.def'
+   version_filelist = version_filelist 'viewinfs.def vtree.def file_id.diz'
+   version_filelist = version_filelist 'warpin\makefile dll\internal\makefile'
+   version_filelist = version_filelist 'dll\copyright.h'
 return
 
 DisplayMenu: procedure
-	do forever
-   	call SysCls
-   	say;say;say
-   	say 'Release Tasks'
-   	say
-   	say '1.  Ensure all work for this release is committed.'
-   	say '2.  Verify completed tickets are marked closed.'
-   	say '3.  (svn) update local files.'
-   	say '4.  Check (svn) status of local files.'
-   	say '5.  Edit various files with version #''s and date''s.'
+   do forever
+      call SysCls
+      say;say;say
+      say 'Release Tasks'
+      say
+      say '1.  Ensure all work for this release is committed.'
+      say '2.  Verify completed tickets are marked closed.'
+      say '3.  (svn) update local files.'
+      say '4.  Check (svn) status of local files.'
+      say '5.  Edit various files with version #''s and date''s.'
       say '6.  Ensure the edits build.'
       say '7.  Test built code.'
       say '8.  Commit code.'
@@ -394,23 +394,23 @@ DisplayMenu: procedure
          iterate
       if action <= 20 then
          leave
-	end
+   end
 return action
 
 NotYet: procedure
-	parse arg action
-	call SysCls
-	say;say;say
-	say 'This option, ' || action || ', has not yet been (and may never be) automated.'
-	say
-	say 'You will have to do this manually. See instructions below:'
-	say;say;say
+   parse arg action
+   call SysCls
+   say;say;say
+   say 'This option, ' || action || ', has not yet been (and may never be) automated.'
+   say
+   say 'You will have to do this manually. See instructions below:'
+   say;say;say
 return
 
 GetVer: procedure
-	parse arg ver_text
-	say
-	say 'Please enter the version (x.yy.zz) for' ver_text ':'
+   parse arg ver_text
+   say
+   say 'Please enter the version (x.yy.zz) for' ver_text ':'
    parse value linein() with major '.' minor '.' CSDlevel
    if minor    = '' then
       minor    = 0
@@ -422,7 +422,7 @@ GetVer: procedure
 return major || '.' || minor || '.' || CSDlevel
 
 Tag_ver: procedure
-	parse arg ver
+   parse arg ver
    parse var ver major '.' minor '.' CSDlevel
 return major || '_' || right(minor, 2, '0') || '_' || right(CSDlevel, 2, 0)
 
@@ -431,77 +431,77 @@ WPI_ver: procedure
 return translate(Tag_ver(ver), '-', '_')
 
 BuildHobbesTxt: procedure expose (globals)
-	parse arg ver
-	wpi_version = WPI_ver(ver)
-	HobbesTxtFilename = 'FM2-' || wpi_version || '.txt'
-	if stream(HobbesTxtFilename, 'c', 'query exists') \= '' then
-		do
-			say;say;say
-			say HobbesTxtFilename 'already exists!'
-			call charout , 'Do you want to replace this file? (y/N) '
-			if translate(SysGetKey()) \= 'Y' then
-				do
-					say;say;
-					say HobbesTxtFilename 'update aborted.'
-					return
-			   end
-			call SysFileDelete HobbesTxtFilename
-		end
-	/* Prompt for user input (name, email, permission to email, previous version) here? */
-	default_name 				= 'Gregg Young'
-	default_email 				= 'ygk@qwest.net'
-	default_OKtoListEmail 	= 'yes'
-	entry = ''
-	do until (entry = 'Y' | entry = '0d'x)
-   	say;say
-   	say 'You will now be prompted for potentially variable fields within' HobbesTxtFilename
-   	say
-   	say 'A default value will be given for most fields.'
-   	say 'To accept the default just press the Enter key.'
-   	say
-   	call charout , 'Name of the relaser (default:' default_name '): '
-   	entry = strip(linein())
-   	if entry = '' then
-   		name = default_name
-   	else
-   		name = entry
-   	say;say
-   	call charout , 'Email address of the relaser (default:' default_email '): '
-   	entry = strip(linein())
-   	if entry = '' then
-   		email = default_email
-   	else
-   		email = entry
-   	say;say
-   	call charout , 'OK to list email address of the relaser (default:' default_OKtoListEmail '): '
-   	entry = strip(linein())
-   	if entry = '' then
-   		OKtoListEmail = default_OKtoListEmail
-   	else
-   		if translate(left(entry, 1)) = translate(left(default_OKtoListEmail, 1)) then
-   			OKtoListEmail = default_OKtoListEmail
-   		else
-   			if left(default_OKtoListEmail, 1) = 'y' then
-   				OKtoListEmail = 'no'
-   			else
-   				OKtoListEmail = 'yes'
-   	say;say
-   	replaced_ver = WPI_Ver(GetVer('version to be replaced'))
-   	replaced_ver_wpi = 'fm2-' || replaced_ver || '.wpi'
-   	say;say
-   	say 'Data entered:'
-   	say '  Name of releaser  :' name
-   	say '  Email of releaser :' email
-   	say '  OK to list email  :' OKtoListEmail
-   	say '  WPI to be replaced:' replaced_ver_wpi
-   	say;say
-   	call charout , 'OK to proceed with file write? (Y/n) '
-   	entry = translate(SysGetKey())
-   	say;say 'Hex(key):' c2x(entry)
-	end
-	
-	rm1 = 73
-	rm2 = 25
+   parse arg ver
+   wpi_version = WPI_ver(ver)
+   HobbesTxtFilename = 'FM2-' || wpi_version || '.txt'
+   if stream(HobbesTxtFilename, 'c', 'query exists') \= '' then
+      do
+         say;say;say
+         say HobbesTxtFilename 'already exists!'
+         call charout , 'Do you want to replace this file? (y/N) '
+         if translate(SysGetKey()) \= 'Y' then
+            do
+               say;say;
+               say HobbesTxtFilename 'update aborted.'
+               return
+            end
+         call SysFileDelete HobbesTxtFilename
+      end
+   /* Prompt for user input (name, email, permission to email, previous version) here? */
+   default_name            = 'Gregg Young'
+   default_email           = 'ygk@qwest.net'
+   default_OKtoListEmail   = 'yes'
+   entry = ''
+   do until (entry = 'Y' | entry = '0d'x)
+      say;say
+      say 'You will now be prompted for potentially variable fields within' HobbesTxtFilename
+      say
+      say 'A default value will be given for most fields.'
+      say 'To accept the default just press the Enter key.'
+      say
+      call charout , 'Name of the relaser (default:' default_name '): '
+      entry = strip(linein())
+      if entry = '' then
+         name = default_name
+      else
+         name = entry
+      say;say
+      call charout , 'Email address of the relaser (default:' default_email '): '
+      entry = strip(linein())
+      if entry = '' then
+         email = default_email
+      else
+         email = entry
+      say;say
+      call charout , 'OK to list email address of the relaser (default:' default_OKtoListEmail '): '
+      entry = strip(linein())
+      if entry = '' then
+         OKtoListEmail = default_OKtoListEmail
+      else
+         if translate(left(entry, 1)) = translate(left(default_OKtoListEmail, 1)) then
+            OKtoListEmail = default_OKtoListEmail
+         else
+            if left(default_OKtoListEmail, 1) = 'y' then
+               OKtoListEmail = 'no'
+            else
+               OKtoListEmail = 'yes'
+      say;say
+      replaced_ver = WPI_Ver(GetVer('version to be replaced'))
+      replaced_ver_wpi = 'fm2-' || replaced_ver || '.wpi'
+      say;say
+      say 'Data entered:'
+      say '  Name of releaser  :' name
+      say '  Email of releaser :' email
+      say '  OK to list email  :' OKtoListEmail
+      say '  WPI to be replaced:' replaced_ver_wpi
+      say;say
+      call charout , 'OK to proceed with file write? (Y/n) '
+      entry = translate(SysGetKey())
+      say;say 'Hex(key):' c2x(entry)
+   end
+
+   rm1 = 73
+   rm2 = 25
    call lineout HobbesTxtFilename, right('Upload Information Template for Hobbes.nmsu.edu', rm1)
    call lineout HobbesTxtFilename, right(copies('=', length('Upload Information Template for Hobbes.nmsu.edu')), rm1)
    call lineout HobbesTxtFilename, ''
@@ -561,7 +561,7 @@ novalue:
    signal ErrorExit
 
 CommitIfOK: procedure
-	parse arg filelist
+   parse arg filelist
    svn_cmd = 'svn commit'
    say;say;say
    say 'Online and OK to execute: 'svn_cmd'? (Y/n)'

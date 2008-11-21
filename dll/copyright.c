@@ -5,9 +5,10 @@
  *
  * Change Log:
  *    21 Nov 08 JBS Initial addition to SVN repository
+ *    21 Nov 08 JBS Added use of copyright.h
  *
  */
-static char szCopyRight[] = "Copyright (c) 1993, 1998 M. Kimes, " \
-                     "Copyright (c) 2001, 2008 Steven Levine and Associates, Inc." \
-                     "All rights reserved";
+
+#include "copyright.h"
+static char szCopyRight[] = COPYRIGHT_STRING;
 

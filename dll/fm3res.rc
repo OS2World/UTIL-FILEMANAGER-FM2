@@ -37,6 +37,7 @@
   19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
   20 Jul 08 GKY Add save/append filename to clipboard.
                 Change menu wording to make these easier to find
+  21 Nov 08 JBS Ticket 297: Added STRINGTABLE with COPYRIGHT_STRING
 
 ***********************************************************************/
 
@@ -44,8 +45,7 @@
 
 #include "fm3dll2.h"
 #include "fm3dlg.h"
-
-#define IDS_COPYRIGHT 1
+#include "copyright.h"
 
 ICON        MAIN_FRAME          ..\icons\FM3.ICO
 ICON        MAIN2_FRAME         ..\icons\FM4.ICO
@@ -2339,9 +2339,7 @@ ACCELTABLE  CFG_FRAME
 
 STRINGTABLE
   BEGIN
-    IDS_COPYRIGHT, "Copyright (c) 1993, 1998 M. Kimes, " \
-                     "Copyright (c) 2001, 2008 Steven Levine and Associates, Inc." \
-                     "All rights reserved";
+    IDS_COPYRIGHT, COPYRIGHT_STRING;
   END
 
 

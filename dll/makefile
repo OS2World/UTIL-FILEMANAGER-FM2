@@ -43,6 +43,7 @@
 # 06 Oct 08 SHL Add missing -dDEBUG= to CFLAGS; rework lxlite suppress logic
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
+# 21 Nov 08 JBS Ticket 297: Added support for copyright.c and copyright.h
 
 # Environment:
 
@@ -223,7 +224,7 @@ $(BASE).lrf: $(__MAKEFILES__)
 !endif
   @%append $^@ library os2386.lib
 
-copyright.obj: copyright.c
+copyright.obj: copyright.c copyright.h
   $(CC) $(COPYRIGHT_CFLAGS) copyright.c
 
 !else
@@ -259,7 +260,7 @@ internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
 $(BASERES).obj: $(BASERES).c .autodepend
   $(CC) $(CFLAGSR) $(BASERES).c
 
-$(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h $(ICONS)
+$(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h copyright.h $(ICONS)
   @echo.
   @echo Compiling resource: $*
   @echo.

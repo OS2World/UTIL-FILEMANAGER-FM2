@@ -36,11 +36,13 @@
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   31 Jul 08 JBS Added a missing mnemonic and replaced "Mommy make it stop!" with useful text.
   01 Sep 08 GKY Change User-defined BMP text to better match what it actually does.
+  21 Nov 08 JBS Ticket 297: Added use of COPYRIGHT_YEAR in About dialog
 
 ***********************************************************************/
 
 DLGINCLUDE 1 fm3dlg.h
 DLGINCLUDE 2 fm3dll2.h
+DLGINCLUDE 3 copyright.h
 
 DLGTEMPLATE MSK_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
@@ -1042,7 +1044,7 @@ BEGIN
                         DT_VCENTER | NOT WS_GROUP
         CTEXT           "All rights reserved", -1, 10, 88, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
-        CTEXT           "Copyright ¸ 1998, 2007", -1, 10, 80, 164, 8,
+        CTEXT           "Copyright ¸ 1998, " COPYRIGHT_YEAR, -1, 10, 80, 164, 8,
                         DT_VCENTER | NOT WS_GROUP
         CTEXT           "Steven Levine and Associates, Inc.", -1, 10, 72,
                         164, 8, DT_VCENTER | NOT WS_GROUP
