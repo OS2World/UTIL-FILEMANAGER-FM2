@@ -51,6 +51,7 @@
   08 Sep 08 SHL Remove extra pszLongName logic in FreeCnrItemData
   18 Oct 08 GKY Scan drives in 4 passes (local, virtual, remote, flagged slow) to speed tree scans
   19 Nov 08 SHL Correct and sanitize 4 pass scan logic
+  21 Nov 08 SHL FillTreeCnr: ensure any unchecked drives checked in pass 4
 
 ***********************************************************************/
 
@@ -1503,8 +1504,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      ~flags & DRIVE_NOPRESCAN &&
 	      !checked[drvNum] &&
 	      (!fNoRemovableScan || (~flags & DRIVE_REMOVABLE)) &&
-	      (x < 3 ? (flags & (DRIVE_SLOW | DRIVE_VIRTUAL | DRIVE_REMOTE)) ==
-               whenToCheck[x] : flags & DRIVE_SLOW))
+	      (x == 3 ||
+		(flags & (DRIVE_SLOW | DRIVE_VIRTUAL | DRIVE_REMOTE)) ==
+		  whenToCheck[x]))
 	  {
 	    if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
 	      WinSendMsg(hwndCnr,
