@@ -131,6 +131,7 @@ CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq -d
 !else
 CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
 !endif
+COPYRIGHT_CFLAGS = -bt=os2 -mf -bm -s -j -zfp -zgp -zp4 -zq -hd
 
 # 26 May 08 SHL Was reversed
 !ifdef WARNALL
@@ -207,7 +208,7 @@ all: &
 
 syms: $(SYMS) .symbolic
 
-$(BASE).dll $(BASE).lib: $(OBJS) $(BASE).def $(BASE).lrf
+$(BASE).dll $(BASE).lib: $(OBJS) $(BASE).def $(BASE).lrf copyright.obj
   @echo $(LINK) @$(BASE).lrf @$(BASE).def
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
@@ -216,10 +217,14 @@ $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
    @%append $^@ name $(BASE)
    @for %f in ($(OBJS)) do @%append $^@ file %f
+   @%append $^@ file copyright.obj
 !ifdef %EXCEPTQ
     @%append $^@ file exceptq.lib
 !endif
   @%append $^@ library os2386.lib
+
+copyright.obj: copyright.c
+  $(CC) $(COPYRIGHT_CFLAGS) copyright.c
 
 !else
 
