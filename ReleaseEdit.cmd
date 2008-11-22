@@ -63,23 +63,28 @@ if ver = '' | file = '' then
    call Usage           /* and exit */
 else if stream(file, 'c', 'query exists') = '' then
    call Usage           /* and exit */
-/* Set extension, if none set it to uppercase(file) */
-ext = substr(translate(file), lastpos('.', file) +1)
 parse var ver major '.' minor '.' CSDLevel
 if CSDlevel = '' then
    CSDlevel = 0
 
+if datatype(major) \= 'NUM' | datatype(minor) \= 'NUM' | datatype(CSDlevel) \= 'NUM' then
+   call Usage
+ver = major || '.' || minor || '.' || CSDlevel
+
+/* Set extension, if none set it to uppercase(file) */
+ext = substr(translate(file), lastpos('.', file) +1)
+
 /* Prepare temporary file */
 call RxFuncAdd 'SysTempFilename', 'REXXUTIL', 'SysTempFilename'
 tmpfile = SysTempFilename('redittmp.???')
-'copy' file tmpfile
+'@copy' file tmpfile '1>nul 2>nul'
 if rc \= 0 then
    do
       say;say 'Unable to copy to ' || tmpfile || '!! Proceesing aborted.'
       exit 1
    end
 if wordpos(ext, 'H') = 0 then
-   'del' file
+   '@del' file '1>nul 2>nul'
 
 /* Set fixed strings */
 globals = 'repository copyright_year_marker copyright_year_marker_len'
@@ -104,7 +109,7 @@ select
                '@pause'
                signal exit_routine
             end
-
+         say 'Processing file:' file
          copyright_year_marker = 'copyright-year'
          copyright_year_marker_len = length(copyright_year_marker)
 
@@ -145,23 +150,30 @@ select
    when ext = 'H' then
       do
          if translate(file) = copyright_h then
-            'grep -E "^#define.*COPYRIGHT_YEAR.*' || year || '" ' || file || ' >nul || del ' || file || ' && sed -r -e "/#define.*COPYRIGHT_YEAR/s/[0-9]+/' || year || '/" ' || tmpfile || ' >' file
+            do
+               say 'Processing file:' file
+               'grep -E "^#define.*COPYRIGHT_YEAR.*' || year || '" ' || file || ' >nul || del ' || file || ' && sed -r -e "/#define.*COPYRIGHT_YEAR/s/[0-9]+/' || year || '/" ' || tmpfile || ' >' file
+            end
          else
             do /* change below to delete and then update version.h only if version is different? */
-               'del' file
+               say 'Processing file:' file
+               '@del' file '1>nul 2>nul'
                'sed -r -e "/#define[ \t]+VERMAJOR/s/(#define[ \t]+VERMAJOR[ \t]+)[^ \t]+/\1' || major || '/g" -e "/#define[ \t]+VERMINOR/s/(#define[ \t]+VERMINOR[ \t]+)[^ \t]+/\1' || minor || '/g" ' || tmpfile || ' >' file
             end
       end
    when ext = 'DIZ' then
       do
+         say 'Processing file:' file
          'sed -r "/FM\/2 v/s/(FM\/2 v)[0-9]+\.[0-9.]+/\1' || ver || '/" ' || tmpfile || ' >' file
       end
    when ext = mkstr_makefile then
       do
+         say 'Processing file:' file
          'sed -r -e "/desc/s/(SLAInc:).*(\$#@\$#\$#1\$#\$# )[0-9/]+ [0-9:]+/\1' || ver || '\2' || month || '\/' || day || '\/' || year right(major, 2, '0') || ':' || right(minor, 2, '0') || ':' || right(CSDlevel, 2, '0') || '/" ' || tmpfile || ' >' file
       end
    when ext = warpin_makefile then
       do
+         say 'Processing file:' file
          warpin_db_ver = (major + 0) || '\\' || (minor + 0) || '\\' || (CSDlevel + 0)
          warpin_makefile_ver  = major || '-' || minor || '-' || CSDlevel
          'sed -r -e "/FM2_VER=-/s/(FM2_VER=-)[-0-9]+/\1' || warpin_makefile_ver || '/" ' || tmpfile || ' >' file

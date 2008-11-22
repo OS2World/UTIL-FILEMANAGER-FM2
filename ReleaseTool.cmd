@@ -49,7 +49,7 @@ signal on novalue             /* for debugging */
 */
 
 
-globals = 'cmd prompt editor editorcmds killpid tester killtarget version_filelist pager'
+globals = 'cmd prompt editor editorcmds killpid tester killtarget version_filelist pager prev_action'
 
 parse arg ver next_ver
 if (pos('?', ver) > 0 | pos('h', ver) > 0) then
@@ -75,6 +75,7 @@ do forever
                signal on Error
                action = -1             /* Skip SELECT below */
             end
+         prev_action = action
       end
    select
       when action = 0 then
@@ -88,6 +89,7 @@ do forever
                   '@' || cmd
                end
             signal on Error
+            prev_action = action
          end
       when action = 1 then
          do /* Ensure all work (by others) is comitted */
@@ -95,11 +97,13 @@ do forever
             say 'Notify programmers to commit their work for this release.'
             say
             say 'Use the Netlabs FM/2 Developer''s mailing list and wait 24 hours.'
+            prev_action = action
          end
       when action = 2 then
          do /* Verify completed tickets are marked closed */
             call NotYet action
             say 'Check for committed work.'
+            prev_action = action
          end
       when action = 3 then
          do /* Ensure all work (by others) is local */
@@ -107,6 +111,7 @@ do forever
             say;say;say
             say 'Online and OK to execute: 'svn_cmd'? (Y/n)'
             if translate(SysGetKey()) \= 'N' then svn_cmd
+            prev_action = action
          end
       when action = 4 then
          do /* Ensure all local source is up to date */
@@ -117,6 +122,7 @@ do forever
             say;say;say
             say 'Online and OK to execute: 'svn_cmd'? (Y/n)'
             if translate(SysGetKey()) \= 'N' then svn_cmd
+            prev_action = action
          end
       when action = 5 then
          do /* Edit version #'s and date/time stamps (ReleaseTool) */
@@ -142,29 +148,33 @@ do forever
                editor file editorcmds
             end
             call BuildHobbesTxt(ver)
+            prev_action = action
          end
       when action = 6 then
          do /* Ensure the edits build */
             'set WARNALL=1'
             'wmake -a all |' pager
+            prev_action = action
          end
       when action = 7 then
-      do /* Test built code */
-          if tester == '' then
-              do
+         do /* Test built code */
+            if tester == '' then
+               do
                   call NotYet action
                   say 'Test the built code.'
-              end
-          else
-              do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
+               end
+             else
+               do  /*kills FM/2 using killpid from FM/2 utils (must be in path) and run cmd to copy files
                     to test directory and change to that directory must type exit to return here*/
                   killpid killtarget
                   cmd tester
-              end
+               end
+            prev_action = action
          end
       when action = 8 then
          do /* Commit code */
             call CommitifOK
+            prev_action = action
          end
       when action = 9 then
          do /* Apply tag */
@@ -175,12 +185,15 @@ do forever
             say;say;say
             say 'Online and OK to execute: 'svn_cmd'? (y/N)'
             if translate(SysGetKey()) = 'Y' then svn_cmd
+            prev_action = action
          end
       when action = 10 then
          do /* Build for the release */
+            'set WARNALL='
             'set FORTIFY='
             'set DEBUG='
             'wmake -a all'
+            prev_action = action
          end
       when action = 11 then
          do /* Test the binaries */
@@ -201,10 +214,12 @@ do forever
                   killpid killtarget
                   cmd tester
                end
+            prev_action = action
          end
       when action = 12 then
          do /* Lxlite */
             'wmake lxlite'
+            prev_action = action
          end
       when action = 13 then
          do /* Test the release code */
@@ -221,11 +236,13 @@ do forever
                   killpid killtarget
                   cmd tester
               end
+            prev_action = action
          end
       when action = 14 then
          do /* Build distro */
             call SysCls
             'wmake dist'
+            prev_action = action
          end
       when action = 15 then
          do /* Zip distro */
@@ -234,11 +251,13 @@ do forever
                ver = GetVer('the pending release')
             zip_ver = translate(ver, '-', '.')
             'zip -j9 fm2-' || zip_ver || ' warpin\fm2-' || zip_ver || '.wpi'
+            prev_action = action
          end
       when action = 16 then
          do /* Zip FM/2 Utilities' */
             call NotYet action
             say 'If FM/2 Utilities have been updated, then zip them up.'
+            prev_action = action
          end
       when action = 17 then
          do /* Wiki updates */
@@ -251,6 +270,7 @@ do forever
             say '   Update "WikiStart" with the new version:' ver
             say
             say '   Update "RBuild" with the new tag: FM2-' || translate(ver, '-', '.')
+            prev_action = action
          end
       when action = 18 then
          do /* TRAC updates */
@@ -269,6 +289,7 @@ do forever
             say '   move any residual tickets to a future milestone.'
             say '   (TRAC can move the tickets in bulk when you mark'
             say '   the version milestone complete.)'
+            prev_action = action
          end
       when action = 19 then
          do /* Upload to distribution points and announce. */
@@ -279,6 +300,7 @@ do forever
             say
             say 'Post a note to "Netlabs Community" <community@netlabs.org>'
             say 'requesting that the release be moved to pub/fm2.'
+            prev_action = action
          end
       when action = 20 then
          do /* Set next version */
@@ -288,6 +310,7 @@ do forever
                say
             end
             call CommitifOK version_filelist
+            prev_action = action
          end
       otherwise
          nop
@@ -357,17 +380,18 @@ Init: procedure expose (globals)
       pager = 'less'
    else
       pager = 'more'
+   prev_action = 'N/A'
 return
 
-DisplayMenu: procedure
+DisplayMenu: procedure expose (globals)
    do forever
       call SysCls
       say;say;say
-      say 'Release Tasks'
+      say 'Release Tasks' || copies(' ', 35) || 'Previous action:' prev_action
       say
       say '1.  Ensure all work for this release is committed.'
       say '2.  Verify completed tickets are marked closed.'
-      say '3.  (svn) update local files.'
+      say '3.  (SVN) Update local files.'
       say '4.  Check (svn) status of local files.'
       say '5.  Edit various files with version #''s and date''s.'
       say '6.  Ensure the edits build. (WARNALL build)'
@@ -414,13 +438,23 @@ return
 
 GetVer: procedure
    parse arg ver_text
+ver_retry:
    say
    say 'Please enter the version (x.yy.zz) for' ver_text ':'
-   parse value linein() with major '.' minor '.' CSDlevel
+   ver_value = linein()
+   parse var major '.' minor '.' CSDlevel
    if minor    = '' then
       minor    = 0
    if CSDlevel = '' then
       CSDlevel = 0
+   if datatype(major) \= 'NUM' | datatype(minor \= 'NUM') | datatype(CSDlevel) \= 'NUM' then
+      do
+         say 'Error: Invalid version entered:' ver_value
+         say;
+         say 'Try again.'
+         signal ver_retry
+      end
+   /* The following will remove leading zeros */
    major = major + 0
    minor = minor + 0
    CSDlevel = CSDlevel + 0
