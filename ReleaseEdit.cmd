@@ -32,6 +32,8 @@
  *
 */
 
+n = setlocal()
+
 signal on Error
 signal on FAILURE name Error
 signal on Halt
@@ -50,6 +52,11 @@ signal on novalue             /* for debugging */
 */
 sed_separator = '&'
 
+/* Change to proper directory */
+parse source . . thispgm
+thisdir = left(thispgm, lastpos('\', thispgm)) || '.'
+call directory thisdir
+
 /* Process parameters */
 parse arg ver file .
 if ver = '' | file = '' then
@@ -61,15 +68,6 @@ ext = substr(translate(file), lastpos('.', file) +1)
 parse var ver major '.' minor '.' CSDLevel
 if CSDlevel = '' then
    CSDlevel = 0
-
-/* Set fixed strings */
-globals = 'repository copyright_year_marker copyright_year_marker_len'
-repository = 'option_descriptions.txt'
-mkstr_makefile  = 'DLL\INTERNAL\MAKEFILE'
-warpin_makefile = 'WARPIN\MAKEFILE'
-copyright_h     = 'DLL\COPYRIGHT.H'
-parse value date('s') with year 5 month 7 day
-last_year = year - 1
 
 /* Prepare temporary file */
 call RxFuncAdd 'SysTempFilename', 'REXXUTIL', 'SysTempFilename'
@@ -83,10 +81,30 @@ if rc \= 0 then
 if wordpos(ext, 'H') = 0 then
    'del' file
 
+/* Set fixed strings */
+globals = 'repository copyright_year_marker copyright_year_marker_len'
+repository = 'option_descriptions.txt'
+mkstr_makefile  = 'DLL\INTERNAL\MAKEFILE'
+warpin_makefile = 'WARPIN\MAKEFILE'
+copyright_h     = 'DLL\COPYRIGHT.H'
+parse value date('s') with year 5 month 7 day
+last_year = year - 1
+
 /* Process the request */
 select
    when ext = 'DEF' then
       do
+         if stream(repository, 'c', 'query exists') = '' then
+            do
+               say 'Error! Unable to locate repository file:' repository
+               say
+               say 'Unable to proceed with request.'
+               say
+               '@if not exist' file 'copy' tmpfile file '>nul 2>nul'
+               '@pause'
+               signal exit_routine
+            end
+
          copyright_year_marker = 'copyright-year'
          copyright_year_marker_len = length(copyright_year_marker)
 
@@ -99,7 +117,7 @@ select
          build          = GetFromRepository( 'build', '0', 7 )
          processor_type = GetFromRepository( 'processor_type', 'U', 1 )
          fixpack_ver    = GetFromRepository( 'fixpack_ver', '', 11 )
-         description    = GetFromRepository( 'desc.' || left(file, pos('.', file) - 1), '', 79 )
+         description    = GetFromRepository( 'desc.' || left(file, pos('.', file) - 1), '', 579 /* i.e. disable length check */ )
          call stream repository, 'c', 'close'
 
          option_description = '@#' || vendor || ':' || revision || '#@##1## ' || ,
@@ -151,7 +169,9 @@ select
    otherwise
       nop         /* Or error message or usage info? */
 end
+exit_routine:
 '@if exist' tmpfile 'del' tmpfile
+n = endlocal()
 return
 
 /* Subroutines */

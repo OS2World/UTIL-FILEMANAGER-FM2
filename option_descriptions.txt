@@ -12,7 +12,12 @@
 ;       desc.av2=
 ; and the description for dll\fm3dll.def starts with:
 ;       desc.dll\fm3dll=
+;
 ; EVERY def file needs an entry for the description in this file.
+;
+; NOTE: In the copyright portion of the description, use the
+; string "copyright-year" as a placeholder for the current year.
+; ReleaseEdit with replace it with the current year.
 ;
 ; NOTE: If a description requires a '&', then ReleaseEdit.cmd
 ; will have to be modified to use a different separator for the
@@ -46,20 +51,20 @@ buildhost=%HOSTNAME%
 language_code=EN
 country_code=US
 processor_type=U
-desc.av2=FM/2 Archive Viewer MiniApp
-desc.databar=FM/2 Databar MiniApp
-desc.dirsize=FM/2 Directory Sizes MiniApp
-desc.eas=FM/2 EA Editor MiniApp
-desc.fm3=F(ile) M(anager)/2
-desc.fm4=F(ile) M(anager)/2 Lite
-desc.global=FM/2 Global MiniApp
-desc.ini=FM/2 INI Editor MiniApp
-desc.killproc=FM/2 Kill Process MiniApp
-desc.sysinfo=FM/2 SysInfo MiniApp
-desc.undel=FM/2 Undelete MiniApp
-desc.vcollect=FM/2 Collector MiniApp
-desc.vdir=FM/2 View Directory MiniApp
-desc.viewinfs=FM/2 View INFs MiniApp
-desc.vtree=FM/2 Tree View MiniApp
-desc.dll\fm3dll=FM/2 Runtime DLL
-desc.dll\fm3res=FM/2 Runtime Resource DLL
+desc.av2=FM/2 Archive Viewer MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.databar=FM/2 Databar MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.dirsize=FM/2 Directory Sizes MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.eas=FM/2 EA Editor MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.fm3=F(ile) M(anager)/2 Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.fm4=F(ile) M(anager)/2 Lite Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.global=FM/2 Global MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.ini=FM/2 INI Editor MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.killproc=FM/2 Kill Process MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.sysinfo=FM/2 SysInfo MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.undel=FM/2 Undelete MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.vcollect=FM/2 Collector MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.vdir=FM/2 View Directory MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.viewinfs=FM/2 View INFs MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.vtree=FM/2 Tree View MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.dll\fm3dll=FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.dll\fm3res=FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
