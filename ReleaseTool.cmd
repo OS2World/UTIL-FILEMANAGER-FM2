@@ -49,7 +49,7 @@ signal on novalue             /* for debugging */
 */
 
 
-globals = 'cmd prompt editor editorcmds killpid tester killtarget version_filelist'
+globals = 'cmd prompt editor editorcmds killpid tester killtarget version_filelist pager'
 
 parse arg ver next_ver
 if (pos('?', ver) > 0 | pos('h', ver) > 0) then
@@ -146,7 +146,7 @@ do forever
       when action = 6 then
          do /* Ensure the edits build */
             'set WARNALL=1'
-            'wmake -a all'
+            'wmake -a all |' pager
          end
       when action = 7 then
       do /* Test built code */
@@ -352,6 +352,11 @@ Init: procedure expose (globals)
    version_filelist = version_filelist 'viewinfs.def vtree.def file_id.diz'
    version_filelist = version_filelist 'warpin\makefile dll\internal\makefile'
    version_filelist = version_filelist 'dll\copyright.h'
+
+   if SysSearchPath( 'PATH', 'less.exe') \= '' then
+      pager = 'less'
+   else
+      pager = 'more'
 return
 
 DisplayMenu: procedure
@@ -365,7 +370,7 @@ DisplayMenu: procedure
       say '3.  (svn) update local files.'
       say '4.  Check (svn) status of local files.'
       say '5.  Edit various files with version #''s and date''s.'
-      say '6.  Ensure the edits build.'
+      say '6.  Ensure the edits build. (WARNALL build)'
       say '7.  Test built code.'
       say '8.  Commit code.'
       say '9.  Apply tag.'
