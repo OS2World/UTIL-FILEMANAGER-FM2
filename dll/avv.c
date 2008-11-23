@@ -26,6 +26,7 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   24 Aug 08 GKY Fix truncation of cmdline length to 3 characters is now MaxComLineStrg
   24 Aug 08 GKY Warn full drive on save of .BB2 file; prevent loss of existing file
+  23 Nov 08 JBS Support use of CMD files in archiver definitions
 
 ***********************************************************************/
 
@@ -401,20 +402,16 @@ static PSZ checkfile(PSZ file, INT * error)
     *error = 1;
   else {
     ret = (INT) DosQueryAppType(p, &apptype);
-    if (ret)
-      *error = -1;
-    else {
-      apptype &= (~FAPPTYP_32BIT);
-      if (!apptype ||
-	  (apptype == FAPPTYP_NOTWINDOWCOMPAT) ||
-	  (apptype == FAPPTYP_WINDOWCOMPAT) ||
-	  (apptype & FAPPTYP_BOUND) ||
-	  (apptype & FAPPTYP_WINDOWAPI) || (apptype & FAPPTYP_DOS)) {
-	*error = 0;
-      }
-      else
-	*error = 2;
-    }
+    apptype &= (~FAPPTYP_32BIT);
+    if (!apptype ||
+        (apptype == FAPPTYP_NOTWINDOWCOMPAT) ||
+        (apptype == FAPPTYP_WINDOWCOMPAT) ||
+        (apptype & FAPPTYP_BOUND) ||
+        (apptype & FAPPTYP_WINDOWAPI) || (apptype & FAPPTYP_DOS)) {
+       *error = 0;
+     }
+     else
+       *error = 2;
   }
   if (pp)
     *pp = ' ';
@@ -927,7 +924,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (hwndHelp)
 	WinSendMsg(hwndHelp,
 		   HM_DISPLAY_HELP,
-		   MPFROM2SHORT(HELP_EDITARC, 0), MPFROMSHORT(HM_RESOURCEID));
+		   MPFROM2SHORT(HELP_ARCFIELDS, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
 
     case DID_CANCEL:
