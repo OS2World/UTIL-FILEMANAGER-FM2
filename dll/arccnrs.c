@@ -60,6 +60,7 @@
                 less than 10 KiB (It hangs and can't be closed)
   08 Nov 08 GKY Add WaitChildThread to fix hang caused by viewer trying to open a file before
                 the archiver process closes. (Ticket 58)
+  23 Nov 08 JBS Ticket 284: Support archivers with no Start or End of list strings
 
 ***********************************************************************/
 
@@ -551,7 +552,7 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   BOOL gotend;
   BOOL wasquote;
   BOOL nomove = FALSE;			// fixme to be gone?
-  INT highest = 0, x, counter = 0, numarcfiles = 0;
+  INT highest = 0, fieldnum, counter = 0, numarcfiles = 0;
   PARCITEM lastpai;
   ARC_TYPE *info;
   ARC_TYPE *tinfo;
@@ -669,7 +670,12 @@ ReTry:
     fp = _fsopen(arctemp, "r", SH_DENYWR);
 
     if (fp) {
-      gotstart = !info->startlist || !*info->startlist;	// If list has no start marker
+      gotstart = !info->startlist ||		// If list has no start marker
+      		 !*info->startlist ||
+      		 (stricmp(info->startlist, "*#* None *#*") == 0);
+//       gotend =   !info->endlist ||
+//       		 !*info->endlist ||	// If list has no end marker
+//       		 (stricmp(info->endlist, "*#* None *#*") == 0);	
 
       while (!feof(fp) && !gotend && !*pStopFlag) {
 	if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
@@ -700,7 +706,7 @@ ReTry:
 	  nsize = NULL;
 	  osize = fdate = NullStr;
 	  p = s;
-	  for (x = 0; x <= highest; x++) {
+	  for (fieldnum = 0; fieldnum <= highest; fieldnum++) {
 	    pp = p;
 	    while (*pp && (*pp == ' ' || *pp == '\t'))	/* skip leading */
 	      pp++;
@@ -709,7 +715,7 @@ ReTry:
 	    wasquote = FALSE;
 	    p = pp;
 	    while (*p && (wasquote ||
-			  ((x != info->fnpos || !info->nameislast) ?
+			  ((fieldnum != info->fnpos || !info->nameislast) ?
 			   (*p != ' ' && *p != '\t') : TRUE))) {
 	      if (*p == '\"') {
 		if (!wasquote) {
@@ -730,11 +736,11 @@ ReTry:
 	      *p = 0;
 	      p++;
 	    }
-	    if (x == info->nsizepos)
+	    if (fieldnum == info->nsizepos)
 	      nsize = pp;
-	    else if (x == info->osizepos)
+	    else if (fieldnum == info->osizepos)
 	      osize = pp;
-	    else if (x == info->fdpos) {
+	    else if (fieldnum == info->fdpos) {
 	      fdate = pp;
 	      if (info->fdflds > 1 && info->fdflds < 24) {
 		INT y;
@@ -747,7 +753,7 @@ ReTry:
 		      p++;
 		    while (*p && (*p != ' ' && *p != '\t'))
 		      p++;
-		    x++;
+		    fieldnum++;
 		  }
 		  if (*p) {
 		    *p = 0;
@@ -756,7 +762,7 @@ ReTry:
 		}
 	      }
 	    }
-	    else if (x == info->fnpos) {
+	    else if (fieldnum == info->fnpos) {
 	      fname = pp;
 	      if (pp && *pp == '*' && !*(pp + 1))	/* workaround for LH.EXE */
 		fname = NULL;
@@ -848,7 +854,7 @@ ReTry:
       if (*pStopFlag)
 	numarcfiles = 0;		// Request close
       else if (!numarcfiles || !gotstart
-	       || (!gotend && info->endlist && *info->endlist)) {
+	       || (!gotend && info->endlist && *info->endlist && (stricmp(info->endlist, "*#* None *#*")))) {
 	// Oops
 	ARCDUMP ad;
 	CHAR errstr[CCHMAXPATH + 256];
