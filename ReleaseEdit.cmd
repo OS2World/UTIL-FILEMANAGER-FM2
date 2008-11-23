@@ -163,9 +163,6 @@ select
          processor_type = GetFromRepository( 'processor_type', 'U', 1 )
          fixpack_ver    = GetFromRepository( 'fixpack_ver', '', 11 )
          description    = GetFromRepository( 'desc.' || left(file, pos('.', file) - 1), '', 579 /* i.e. disable length check */ )
-         signal off NOTREADY
-         call stream repository, 'c', 'close'
-         signal on NOTREADY name Error
 
          option_description = '@#' || vendor || ':' || revision || '#@##1## ' || ,
                               month || '/' || day || '/' || year || ' ' || ,  /* or day month year? */
