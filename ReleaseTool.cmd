@@ -9,17 +9,14 @@
  * the relevant number from the menu.
  *
  * Usage:
- *    ReleaseTool [<this-version-number>] [<next-version-number>]
+ *    ReleaseTool [trace=<trace-option>]
  *
- *    where the version number(s) are optional and of the form x.y.z
- *
- * This program will reformat the version numbers to suit their use:
- *    tag names
- *    wpi filenames
- *    warpin packageid/database version number(s)
+ *    where
+ *       <trace-option> is a valid comnbination of trace options:
+ *          '? a c e f i l n o r'. This is an OPTIONAL parameter.
  *
  * This program uses the following enviromental variables, if set
- *    SVN_EDITOR to set the text editor that is called
+ *    SVN_EDITOR or EDITOR to set the text editor that is called
  *    SVN_TESTER to call a cmd file that copies files to your test directory
  *               and changes to that directory
  *    SVN_KILL allows you to set a program to kill any running version of FM/2
@@ -33,6 +30,11 @@
  *       - Added optional commit to option 20
  *       - Removed extraneous 'pause' in option 20
  *       - Fixed a bug in option 0 (run a command shell)
+ *    22 Nov 08 JBS Ticket 297
+ *       - Fix bugs in version edits
+ *       - Support for an optional trace parameter.
+ *       - Support for EDITOR env var
+ *       - Improved "usage" routine
  *
 */
 
@@ -49,11 +51,23 @@ signal on novalue             /* for debugging */
 */
 
 
-globals = 'cmd prompt editor editorcmds killpid tester killtarget version_filelist pager prev_action'
+globals = 'ver cmd prompt editor editorcmds killpid tester killtarget version_filelist pager prev_action'
 
-parse arg ver next_ver
-if (pos('?', ver) > 0 | pos('h', ver) > 0) then
-   signal Usage      /* and exit */
+parse arg args
+p = pos('TRACE=', translate(args))
+if p > 0 then
+   do
+      args = args || ' ' /* make sure there's a space at the end */
+      traceopt = substr(args, p+6, pos(' ', args, p+5) - (p+6))
+      args = delstr(args, p, 6+length(traceopt))
+      if traceopt \= '' then
+         if verify(translate(traceopt), '?ACEFILNOR') = 0 & length(traceopt) < 3 then
+            trace value traceopt
+   end
+else
+   traceopt = ''
+if strip(args) \= '' then  /* trace= is the only supported parameter */
+   call Usage
 
 call Init
 
@@ -130,7 +144,7 @@ do forever
             if strip(ver) = '' then
                ver = GetVer('the pending release')
             do f = 1 to words(version_filelist)
-               call ReleaseEdit ver word(version_filelist, f)
+               call ReleaseEdit ver word(version_filelist, f) 'trace=' || traceopt
                say
             end
             version_filelist2 = 'HISTORY README'
@@ -306,7 +320,7 @@ do forever
          do /* Set next version */
             next_ver = GetVer('the next release')
             do f = 1 to words(version_filelist)
-               call ReleaseEdit next_ver word(version_filelist, f)
+               call ReleaseEdit next_ver word(version_filelist, f) 'trace=' || traceopt
                say
             end
             call CommitifOK version_filelist
@@ -338,9 +352,16 @@ exit
 
 Usage:
    say;say;say
-   lastline = sigl - 10
-   do i = 1 to lastline
-      say sourceline(i)
+   i = 1
+   do forever
+      srcline = sourceline(i)
+      if pos('CHANGE LOG', translate(srcline)) > 0 then
+         leave
+      else
+         say srcline
+      i = i + 1
+      if (i // 22) = 0 then
+         '@pause'
    end
 exit
 
@@ -350,15 +371,13 @@ Init: procedure expose (globals)
    call SysLoadFuncs
 
    action = 0
+   ver = ''
 
    editor = value('SVN_EDITOR',,'OS2ENVIRONMENT')
-   cmd      = value('COMSPEC',,'OS2ENVIRONMENT')
-   prompt   = value('PROMPT',,'OS2ENVIRONMENT')
-   tester       = value('SVN_TESTER',,'OS2ENVIRONMENT')
-   killpid      = value('SVN_KILL',,'OS2ENVIRONMENT')
-
    editorcmds = ""
-   if editor == '' then
+   if editor = '' then
+      editor = value('EDITOR',,'OS2ENVIRONMENT')
+   if editor = '' then
       editor = 'tedit'
    else
       do
@@ -366,9 +385,14 @@ Init: procedure expose (globals)
          if upperwrd1 = 'EPM' | upperwrd1 = 'EPM.EXE' then
             editorcmds = "'3'"
       end
+   cmd      = value('COMSPEC',,'OS2ENVIRONMENT')
+   prompt   = value('PROMPT',,'OS2ENVIRONMENT')
+   tester       = value('SVN_TESTER',,'OS2ENVIRONMENT')
+   killpid      = value('SVN_KILL',,'OS2ENVIRONMENT')
    if killpid == '' then
        killpid      = 'killpid'
    killtarget  = ' FM/2'
+
    version_filelist = 'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def'
    version_filelist = version_filelist 'dll\version.h eas.def fm3.def fm4.def global.def ini.def'
    version_filelist = version_filelist 'killproc.def sysinfo.def undel.def vcollect.def vdir.def'
@@ -442,12 +466,12 @@ ver_retry:
    say
    say 'Please enter the version (x.yy.zz) for' ver_text ':'
    ver_value = linein()
-   parse var major '.' minor '.' CSDlevel
+   parse var ver_value major '.' minor '.' CSDlevel
    if minor    = '' then
       minor    = 0
    if CSDlevel = '' then
       CSDlevel = 0
-   if datatype(major) \= 'NUM' | datatype(minor \= 'NUM') | datatype(CSDlevel) \= 'NUM' then
+   if datatype(major) \= 'NUM' | datatype(minor) \= 'NUM' | datatype(CSDlevel) \= 'NUM' then
       do
          say 'Error: Invalid version entered:' ver_value
          say;
@@ -536,7 +560,6 @@ BuildHobbesTxt: procedure expose (globals)
       say;say
       call charout , 'OK to proceed with file write? (Y/n) '
       entry = translate(SysGetKey())
-      say;say 'Hex(key):' c2x(entry)
    end
 
    rm1 = 73

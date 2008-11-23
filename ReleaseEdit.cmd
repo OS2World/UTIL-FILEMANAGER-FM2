@@ -1,17 +1,24 @@
 /*
  * $Id$
  *
- * ReleaseEdit: a program which will set the version number
- *    and the date and time of a FM/2 release
+ * ReleaseEdit: a program which will edit a file and set the version
+ *    number and the date of an FM/2 release as appropriate for that file.
+ *    This program operates non-interactively.
  *
  * Usage:
- *    ReleaseEdit <version> <relative-filename>
+ *    ReleaseEdit <version> <relative-filename> [trace=<trace-option>]
  *
- *    where <version> is x.y.z
+ *    where
+ *       <version> is in the form x.y.z or x.y (where x, y and z are numbers)
+ *       <relative-filename> is ONE of the files (i.e. no wildcards)
+ *          which need a version number and/or date set. For example:
+ *             *.def, file_id.diz, dll\version.h, warpin\fm2.wis
+ *       <trace-option> is a valid comnbination of trace options:
+ *          '? a c e f i l n o r'. This is an OPTIONAL parameter.
  *
- *    and <relative-filename> is ONE of the files (i.e. no wildcards)
- *    which need a version number and/or date/time:
- *       *.def, file_id.diz, dll\version.h, warpin\fm2.wis
+ * Examples:
+ *    ReleaseEdit 3.15.0 av2.def
+ *    ReleaseEdit 3.15.0 fm3.def trace=i
  *
  * Change log:
  *    18 Nov 08 JBS Ticket 297: Various build improvements/corrections
@@ -29,10 +36,27 @@
  *       - added support for changing copyright years
  *       - improved error handling: tmp file renamed back to deleted file
  *       - improved "usage" routine
+ *    22 Nov 08 JBS Ticket 297
+ *       - Fix bugs in version edits and added
+ *       - Support for an optional trace parameter.
+ *       - Improved "usage" routine
+ *       - Suppressed output of 'del' commands
  *
 */
 
 n = setlocal()
+
+parse arg args
+p = pos('TRACE=', translate(args))
+if p > 0 then
+   do
+      args = args || ' ' /* make sure there's a space at the end */
+      traceopt = substr(args, p+6, pos(' ', args, p+5) - (p+6))
+      args = delstr(args, p, 6+length(traceopt))
+      if traceopt \= '' then
+         if verify(translate(traceopt), '?ACEFILNOR') = 0 & length(traceopt) < 3 then
+            trace value traceopt
+   end
 
 signal on Error
 signal on FAILURE name Error
@@ -43,7 +67,6 @@ signal on SYNTAX name Error
 /*
 signal on novalue             /* for debugging */
 */
-
 /*
    sed_separator:
      - used only for SED edits of DEF file descriptions
@@ -58,7 +81,7 @@ thisdir = left(thispgm, lastpos('\', thispgm)) || '.'
 call directory thisdir
 
 /* Process parameters */
-parse arg ver file .
+parse var args ver file .
 if ver = '' | file = '' then
    call Usage           /* and exit */
 else if stream(file, 'c', 'query exists') = '' then
@@ -152,7 +175,7 @@ select
          if translate(file) = copyright_h then
             do
                say 'Processing file:' file
-               'grep -E "^#define.*COPYRIGHT_YEAR.*' || year || '" ' || file || ' >nul || del ' || file || ' && sed -r -e "/#define.*COPYRIGHT_YEAR/s/[0-9]+/' || year || '/" ' || tmpfile || ' >' file
+               'grep -E "^#define.*COPYRIGHT_YEAR.*' || year || '" ' || file || ' >nul || del ' || file || '>nul 2>nul && sed -r -e "/#define.*COPYRIGHT_YEAR/s/[0-9]+/' || year || '/" ' || tmpfile || ' >' file
             end
          else
             do /* change below to delete and then update version.h only if version is different? */
@@ -182,7 +205,7 @@ select
       nop         /* Or error message or usage info? */
 end
 exit_routine:
-'@if exist' tmpfile 'del' tmpfile
+'@if exist' tmpfile 'del' tmpfile '>nul 2>nul'
 n = endlocal()
 return
 
@@ -238,6 +261,8 @@ Usage:
          exit
       say srcline
       i = i + 1
+      if (i // 22) = 0 then
+         '@pause'
    end
 
 /*=== Error() Report ERROR, FAILURE etc. and exit ===*/
