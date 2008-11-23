@@ -41,10 +41,23 @@
  *       - Support for an optional trace parameter.
  *       - Improved "usage" routine
  *       - Suppressed output of 'del' commands
+ *    23 Nov 08 JBS Improved handling of invalid or missing <trace-option>
+ *       and a 'NOTREADY' condition when closing the repository.
  *
 */
 
 n = setlocal()
+
+/*
+   sed_separator:
+     - used only for SED edits of DEF file descriptions
+     - MUST be a character not found in ANY DEF file description!
+     - MUST be a character acceptable to SED as a separator
+*/
+sed_separator = '&'
+
+call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
+call SysLoadFuncs
 
 parse arg args
 p = pos('TRACE=', translate(args))
@@ -56,7 +69,19 @@ if p > 0 then
       if traceopt \= '' then
          if verify(translate(traceopt), '?ACEFILNOR') = 0 & length(traceopt) < 3 then
             trace value traceopt
+         else
+            call Usage
+      else
+         do
+            parse source . called_as .
+            if called_as = 'COMMAND' then
+               call Usage
+            else
+               nop /* traceopt = '' OK for ReleaseEdit because it is usually called from ReleaseTool? */
+         end
    end
+else
+   traceopt = ''
 
 signal on Error
 signal on FAILURE name Error
@@ -67,13 +92,6 @@ signal on SYNTAX name Error
 /*
 signal on novalue             /* for debugging */
 */
-/*
-   sed_separator:
-     - used only for SED edits of DEF file descriptions
-     - MUST be a character not found in ANY DEF file description!
-     - MUST be a character acceptable to SED as a separator
-*/
-sed_separator = '&'
 
 /* Change to proper directory */
 parse source . . thispgm
@@ -98,7 +116,6 @@ ver = major || '.' || minor || '.' || CSDlevel
 ext = substr(translate(file), lastpos('.', file) +1)
 
 /* Prepare temporary file */
-call RxFuncAdd 'SysTempFilename', 'REXXUTIL', 'SysTempFilename'
 tmpfile = SysTempFilename('redittmp.???')
 '@copy' file tmpfile '1>nul 2>nul'
 if rc \= 0 then
@@ -146,7 +163,9 @@ select
          processor_type = GetFromRepository( 'processor_type', 'U', 1 )
          fixpack_ver    = GetFromRepository( 'fixpack_ver', '', 11 )
          description    = GetFromRepository( 'desc.' || left(file, pos('.', file) - 1), '', 579 /* i.e. disable length check */ )
+         signal off NOTREADY
          call stream repository, 'c', 'close'
+         signal on NOTREADY name Error
 
          option_description = '@#' || vendor || ':' || revision || '#@##1## ' || ,
                               month || '/' || day || '/' || year || ' ' || ,  /* or day month year? */

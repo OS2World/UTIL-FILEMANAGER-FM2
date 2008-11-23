@@ -35,6 +35,7 @@
  *       - Support for an optional trace parameter.
  *       - Support for EDITOR env var
  *       - Improved "usage" routine
+ *    23 Nov 08 JBS Improved handling of invalid or missing <trace-option>
  *
 */
 
@@ -63,6 +64,16 @@ if p > 0 then
       if traceopt \= '' then
          if verify(translate(traceopt), '?ACEFILNOR') = 0 & length(traceopt) < 3 then
             trace value traceopt
+         else
+            call Usage
+      else
+         do
+            parse source . called_as .
+            if called_as = 'COMMAND' then
+               call Usage
+            else
+               nop /* traceopt = '' OK for ReleaseEdit because it is usually called from ReleaseTool? */
+         end
    end
 else
    traceopt = ''
