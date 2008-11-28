@@ -56,5 +56,6 @@ extern HPOINTER hptrEnv;
 extern HPOINTER hptrHidden;
 extern HPOINTER hptrReadonly;
 extern HPOINTER hptrSystem;
+extern volatile INT  StubbyScanCount;
 
 #endif // FILLDIR_H

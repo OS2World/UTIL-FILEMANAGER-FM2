@@ -805,7 +805,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 CM_SCROLLWINDOW, MPFROMSHORT(CMA_VERTICAL), MPFROMLONG(-1));
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW,
-		 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
+                 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
+      while (StubbyScanCount !=0)
+        DosSleep(100);
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);
@@ -1688,10 +1690,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PCNRITEM pci = (PCNRITEM) mp2;
 	  BOOL wasFollowing;
 
-	  DosEnterCritSec();
+	  //DosEnterCritSec(); //GKY 11-28-08
 	  wasFollowing = fFollowTree;
 	  fFollowTree = FALSE;
-	  DosExitCritSec();
+	  //DosExitCritSec();
 	  if (pci && (INT) pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
 	    WinSendMsg(hwnd,
 		       CM_SETRECORDEMPHASIS,
@@ -1729,9 +1731,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		MarkAll(hwnd, TRUE, FALSE, TRUE);
 	    }
 	  }
-	  DosEnterCritSec();
+	  //DosEnterCritSec(); //GKY 11-28-08
 	  fFollowTree = wasFollowing;
-	  DosExitCritSec();
+	  //DosExitCritSec();
 	}
 	break;
 

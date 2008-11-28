@@ -19,6 +19,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
+  24 Nov 08 GKY remove redundant code and minor speed up of Stubby
 
 ***********************************************************************/
 
@@ -250,6 +251,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   APIRET rc, prc;
   BOOL isadir = FALSE, isremote = FALSE, includefiles = fFilesInTree;
   ULONG ddepth = 3;
+  ULONG drvNum;
+  ULONG flags;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
 
   if (!pciParent || !*pciParent->pszFileName || !hwndCnr)
@@ -265,17 +268,21 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   if (!isalpha(*str) || str[1] != ':' || str[2] != '\\')
     MakeFullName(str);
 
+  drvNum = toupper(*pciParent->pszFileName) - 'A';
+  flags = driveflags[drvNum];
   if (!isalpha(*str) ||
       str[1] != ':' ||
-      str[2] != '\\' || ((driveflags[toupper(*str) - 'A'] & DRIVE_IGNORE)))
+      str[2] != '\\' || ((flags & DRIVE_IGNORE)))
     return FALSE;
 
-  if (isalpha(*str) && driveflags[toupper(*str) - 'A'] & DRIVE_INCLUDEFILES)
+  //if (isalpha(*str) &&  // redundant check GKY 11/24/08
+  if (flags & DRIVE_INCLUDEFILES)
     includefiles = TRUE;
 
-  if (!isalpha(*str) ||
+  /*if (!isalpha(*str) ||   // redundant check GKY 11/24/08
       str[1] != ':' ||
-      str[2] != '\\' || ((driveflags[toupper(*str) - 'A'] & DRIVE_REMOTE)))
+      str[2] != '\\' || */
+  if (flags & DRIVE_REMOTE)
     isremote = TRUE;
 
   if (isremote) {
@@ -428,45 +435,47 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 
       if (isadir) {
 
-	PCNRITEM pci;
+        PCNRITEM pci;
 
-	pci = WinSendMsg(hwndCnr,
-			 CM_ALLOCRECORD,
-			 MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1));
-	if (!pci) {
-	  Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
-		    GetPString(IDS_RECORDALLOCFAILEDTEXT));
-	}
-	else {
-	  RECORDINSERT ri;
-	  pci->pszFileName = NullStr;
-	  pci->pszDisplayName = pci->pszFileName;
-	  pci->rc.pszIcon = pci->pszDisplayName;
-	  memset(&ri, 0, sizeof(RECORDINSERT));
-	  ri.cb = sizeof(RECORDINSERT);
-	  ri.pRecordOrder = (PRECORDCORE) CMA_END;
-	  ri.pRecordParent = (PRECORDCORE) pciParent;
-	  ri.zOrder = (ULONG) CMA_TOP;
-	  ri.cRecordsInsert = 1L;
-	  ri.fInvalidateRecord = TRUE;
-	  if (!WinSendMsg(hwndCnr,
-			  CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-	    DosSleep(50); //05 Aug 07 GKY 100
-	    WinSetFocus(HWND_DESKTOP, hwndCnr);
-	    if (WinIsWindow((HAB)0, hwndCnr)) {
-	      if (!WinSendMsg(hwndCnr,
-			      CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-		Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
-			  GetPString(IDS_RECORDINSERTFAILEDTEXT));
-		FreeCnrItem(hwndCnr, pci);
-	      }
-	      else
-		ret = TRUE;
-	    }
-	  }
-	  else
-	    ret = TRUE;
-	}
+        if (WinIsWindow((HAB)0, hwndCnr)) {
+          pci = WinSendMsg(hwndCnr,
+                           CM_ALLOCRECORD,
+                           MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1));
+          if (!pci) {
+            Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
+                      GetPString(IDS_RECORDALLOCFAILEDTEXT));
+          }
+          else {
+            RECORDINSERT ri;
+            pci->pszFileName = NullStr;
+            pci->pszDisplayName = pci->pszFileName;
+            pci->rc.pszIcon = pci->pszDisplayName;
+            memset(&ri, 0, sizeof(RECORDINSERT));
+            ri.cb = sizeof(RECORDINSERT);
+            ri.pRecordOrder = (PRECORDCORE) CMA_END;
+            ri.pRecordParent = (PRECORDCORE) pciParent;
+            ri.zOrder = (ULONG) CMA_TOP;
+            ri.cRecordsInsert = 1L;
+            ri.fInvalidateRecord = TRUE;
+            if (!WinSendMsg(hwndCnr,
+                            CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
+              DosSleep(50); //05 Aug 07 GKY 100
+              WinSetFocus(HWND_DESKTOP, hwndCnr);
+              if (WinIsWindow((HAB)0, hwndCnr)) {
+                if (!WinSendMsg(hwndCnr,
+                                CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
+                  Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
+                            GetPString(IDS_RECORDINSERTFAILEDTEXT));
+                  FreeCnrItem(hwndCnr, pci);
+                }
+                else
+                  ret = TRUE;
+              }
+            }
+            else
+              ret = TRUE;
+          }
+        }
       }
       else if (toupper(*str) > 'B' && str[1] == ':' && str[2] == '\\' &&
 	       !str[3]) {

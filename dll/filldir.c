@@ -52,6 +52,8 @@
   18 Oct 08 GKY Scan drives in 4 passes (local, virtual, remote, flagged slow) to speed tree scans
   19 Nov 08 SHL Correct and sanitize 4 pass scan logic
   21 Nov 08 SHL FillTreeCnr: ensure any unchecked drives checked in pass 4
+  24 Nov 08 GKY Add StubyScanThread to treecnr scan/rescan drives all on separate threads
+  24 Nov 08 GKY Replace 4 pass drive scan code with StubyScanThread multithread scan
 
 ***********************************************************************/
 
@@ -59,6 +61,7 @@
 #include <string.h>
 #include <malloc.h>			// _msize _heapchk
 #include <ctype.h>
+#include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -88,6 +91,9 @@
 #include "commafmt.h"			// CommaFmtULL
 #include "wrappers.h"			// xDosFindNext
 #include "init.h"			// GetTidForWindow
+#include "common.h"                     // IncrThreadUsage
+
+VOID StubbyScanThread(VOID * arg);
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
@@ -102,6 +108,17 @@ HPOINTER hptrSystem;
 #pragma data_seg(GLOBAL2)
 CHAR *FM3Tools;
 CHAR *WPProgram;
+volatile INT  StubbyScanCount;
+
+typedef struct {
+
+  PCNRITEM    pci;
+  HWND        hwndCnr;                //hwnd you want the message posted to
+  HWND        hwndDrivesList;
+  BOOL        RamDrive;
+
+}
+STUBBYSCAN;
 
 /**
  * Return display string given standard file attribute mask
@@ -159,6 +176,56 @@ const PSZ FileAttrToString(ULONG fileAttr)
 
   return apszAttrString[fileAttr];
 
+}
+
+VOID StubbyScanThread(VOID * arg)
+{
+  STUBBYSCAN *StubbyScan;
+  HAB thab;
+  HMQ hmq = (HMQ) 0;
+  BOOL ret;
+
+  DosError(FERR_DISABLEHARDERR);
+
+# ifdef FORTIFY
+  Fortify_EnterScope();
+#  endif
+
+  StubbyScan = (STUBBYSCAN *) arg;
+  if (StubbyScan &&StubbyScan->pci && StubbyScan->pci->pszFileName && StubbyScan->hwndCnr) {
+    thab = WinInitialize(0);
+    if (thab) {
+      hmq = WinCreateMsgQueue(thab, 0);
+      if (hmq) {
+        IncrThreadUsage();
+        priority_normal();
+        StubbyScanCount ++;
+        ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+        if (ret == 0 && !StubbyScan->RamDrive) {
+          if (WinIsWindow((HAB)0, StubbyScan->hwndCnr))
+            WinSendMsg(StubbyScan->hwndCnr,
+                       CM_INVALIDATERECORD,
+                       MPFROMP(&StubbyScan->pci),
+                       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+        }
+        if (WinIsWindow((HAB)0, StubbyScan->hwndDrivesList))
+          WinSendMsg(StubbyScan->hwndDrivesList,
+                     LM_INSERTITEM,
+                     MPFROM2SHORT(LIT_SORTASCENDING, 0),
+                     MPFROMP(StubbyScan->pci->pszFileName));
+        StubbyScanCount --;
+        WinDestroyMsgQueue(hmq);
+      }
+      DecrThreadUsage();
+      WinTerminate(thab);
+    }
+    free(StubbyScan);
+  } // if StubbyScan
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
+
+  _endthread();
 }
 
 static HPOINTER IDFile(PSZ p)
@@ -1136,12 +1203,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   APIRET rc;
   BOOL drivesbuilt = FALSE;
   ULONG startdrive = 3;
-  static LONG whenToCheck[] = {
-    0,
-    DRIVE_REMOTE,
-    DRIVE_VIRTUAL,
-    DRIVE_SLOW};
-  USHORT checked[26] = { 0 };
   static BOOL didonce = FALSE;
 
   fDummy = TRUE;
@@ -1485,58 +1546,64 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	FreeCnrItem(hwndCnr, pciParent);
     }
   } // if show env
-  // Scan drives in 4 passes checking fastest to slowest
-  for (x = 0; x < 4; x++) {
+  {
+    STUBBYSCAN *StubbyScan;
+    HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
+                                          MAIN_DRIVELIST);
+
+    //AddDrive = TRUE;
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				CM_QUERYRECORD,
-				MPVOID,
-				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+                                CM_QUERYRECORD,
+                                MPVOID,
+                                MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+
     while (pci && (INT)pci != -1) {
+      StubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
+      if (!StubbyScan)
+        break;
+      StubbyScan->pci = pci;
+      StubbyScan->hwndCnr = hwndCnr;
+      StubbyScan->hwndDrivesList = hwndDrivesList;
+      StubbyScan->RamDrive = FALSE;
       pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
-				      CM_QUERYRECORD,
-				      MPFROMP(pci),
-				      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+                                      CM_QUERYRECORD,
+                                      MPFROMP(pci),
+                                      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
       if (~pci->flags & RECFLAGS_ENV) {
-	ULONG drvNum = toupper(*pci->pszFileName) - 'A';	// 0..25
-	if (drvNum == ulCurDriveNum || drvNum >= 2) {
-	  ULONG flags = driveflags[drvNum];	// Speed up
-	  if (~flags & DRIVE_INVALID &&
-	      ~flags & DRIVE_NOPRESCAN &&
-	      !checked[drvNum] &&
-	      (!fNoRemovableScan || (~flags & DRIVE_REMOVABLE)) &&
-	      (x == 3 ||
-		(flags & (DRIVE_SLOW | DRIVE_VIRTUAL | DRIVE_REMOTE)) ==
-		  whenToCheck[x]))
-	  {
-	    if (!Stubby(hwndCnr, pci) && !DRIVE_RAMDISK) {
-	      WinSendMsg(hwndCnr,
-			 CM_INVALIDATERECORD,
-			 MPFROMP(&pci),
-			 MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	      goto SkipBadRec;
-	    }
-	    checked[drvNum] = TRUE;
-	  } // if this pass
-	}
-	else {
-	  WinSendMsg(hwndCnr,
-		     CM_INVALIDATERECORD,
-		     MPFROMP(&pci),
-		     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	}
-	if (x == 0) {
-	  // Add to drives drop down
-	  WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-				     MAIN_DRIVELIST),
-		     LM_INSERTITEM,
-		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		     MPFROMP(pci->pszFileName));
-	}
+        ULONG drvNum = toupper(*pci->pszFileName) - 'A';	// 0..25
+        if (drvNum == ulCurDriveNum || drvNum >= 2) {
+          ULONG flags = driveflags[drvNum];	// Speed up
+          if (~flags & DRIVE_INVALID &&
+              ~flags & DRIVE_NOPRESCAN &&
+              (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE))
+          {
+            if (DRIVE_RAMDISK)
+              StubbyScan->RamDrive = TRUE;
+            rc = _beginthread(StubbyScanThread, NULL, 65536, StubbyScan);
+            if (rc == -1)
+              Runtime_Error(pszSrcFile, __LINE__,
+                            GetPString(IDS_COULDNTSTARTTHREADTEXT));
+          } // if drive for scanning
+          else
+            WinSendMsg(hwndDrivesList,
+                       LM_INSERTITEM,
+                       MPFROM2SHORT(LIT_SORTASCENDING, 0),
+                       MPFROMP(pci->pszFileName));
+        }
+        else {
+          WinSendMsg(hwndCnr,
+                     CM_INVALIDATERECORD,
+                     MPFROMP(&pci),
+                     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+          WinSendMsg(hwndDrivesList,
+                     LM_INSERTITEM,
+                     MPFROM2SHORT(LIT_SORTASCENDING, 0),
+                     MPFROMP(pci->pszFileName));
+        }
       }
-    SkipBadRec:
       pci = pciNext;
     } // while
-  } // for
+  }
   if (hwndParent)
     WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
 			       MAIN_DRIVELIST), LM_SELECTITEM,
@@ -1702,9 +1769,12 @@ VOID FreeCnrItemData(PCNRITEM pci)
     }
   }
 
-  // Catch extra calls to FreeCnrItemData
-  if (!pci->pszFileName)
-    DbgMsg(pszSrcFile, __LINE__, "FreeCnrItemData pci->pszFileName already NULL");
+  // 08 Sep 08 SHL Remove excess logic
+  if (pci->pszLongName && pci->pszLongName != NullStr) {
+    psz = pci->pszLongName;
+    pci->pszLongName = NULL;		// Catch illegal references
+    free(psz);
+  }
 
   if (pci->pszFileName && pci->pszFileName != NullStr) {
     psz = pci->pszFileName;
@@ -1801,7 +1871,7 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	if (apiret)
 	  Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
 		    "DosQueryMem failed pci %p pciLast %p", pci, pciLast);
-	FreeCnrItemData(pci);
+        FreeCnrItemData(pci);
 	pciLast = pci;
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (remaining && --remaining == 0)
@@ -1824,6 +1894,6 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 }
 
 #pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
-#pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString)
+#pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString,StubbyScanThread)
 #pragma alloc_text(EMPTYCNR,EmptyCnr,FreeCnrItemData,FreeCnrItem,FreeCnrItemList,RemoveCnrItems)
 
