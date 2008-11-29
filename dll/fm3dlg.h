@@ -20,6 +20,8 @@
   11 Jan 08 SHL Correct all to 3 column tabs since dialog editors assume this
   29 Feb 08 GKY Changes to enable user settable command line length
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
+  29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path.
 
 ***********************************************************************/
 
@@ -137,6 +139,7 @@
 #define EXT_HELP											20510
 #define EXT_REMEMBER										20511
 #define EXT_AWDIRS										20512
+#define EXT_FILENAMEEXT                                                                         20513
 
 #define ARCH_FRAME										20600
 #define ARCH_ARCNAME										20601

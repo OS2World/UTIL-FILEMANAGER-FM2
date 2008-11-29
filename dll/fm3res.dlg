@@ -37,6 +37,8 @@
   31 Jul 08 JBS Added a missing mnemonic and replaced "Mommy make it stop!" with useful text.
   01 Sep 08 GKY Change User-defined BMP text to better match what it actually does.
   21 Nov 08 JBS Ticket 297: Added use of COPYRIGHT_YEAR in About dialog
+  29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path to extract dialog.
 
 ***********************************************************************/
 
@@ -1263,7 +1265,7 @@ BEGIN
         LTEXT           "Mask:", -1, 4, 109, 28, 8, NOT WS_GROUP
         LTEXT           "Command Line:", -1, 4, 74, 72, 8, NOT WS_GROUP
         LTEXT           "Filename:", -1, 4, 53, 56, 8, NOT WS_GROUP
-        LTEXT           "Extract Directory:", -1, 4, 31, 93, 8, NOT WS_GROUP
+        LTEXT           "Extract Directory:", -1, 4, 31, 50, 8, NOT WS_GROUP
         ENTRYFIELD      "", EXT_MASK, 36, 109, 144, 8, ES_MARGIN | WS_GROUP
         AUTORADIOBUTTON "~Normal", EXT_NORMAL, 5, 88, 43, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP | WS_TABSTOP
@@ -1271,9 +1273,11 @@ BEGIN
         AUTORADIOBUTTON "With ~Paths", EXT_WDIRS, 49, 88, 55, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
-        AUTOCHECKBOX "~Always Paths", EXT_AWDIRS, 115, 88, 65, 10,
+        AUTOCHECKBOX    "~Always Paths", EXT_AWDIRS, 115, 88, 65, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"
+        AUTOCHECKBOX    "~Filename as extract path", EXT_FILENAMEEXT, 55, 31, 85, 10,
+                        BS_NOPOINTERFOCUS
         ENTRYFIELD      "", EXT_COMMAND, 6, 63, 174, 8, ES_MARGIN | WS_GROUP
         PUSHBUTTON      "~See", EXT_SEE, 148, 73, 34, 11
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica.Bold"

@@ -14,6 +14,8 @@
   19 Apr 07 SHL Sync with AcceptOneDrop GetOneDrop mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
+  29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path.
 
 ***********************************************************************/
 
@@ -97,17 +99,20 @@ MRESULT EXPENTRY ExtractTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   EXTRDATA *arcdata = NULL;
+  ULONG size = sizeof(BOOL);
+  BOOL fFileNameExtPath;
 
   switch (msg) {
   case WM_INITDLG:
     WinSetWindowPtr(hwnd, QWL_USER, mp2);
     arcdata = (EXTRDATA *) mp2;
     {
-      ULONG size = sizeof(BOOL);
+      ULONG sizet;
       BOOL fRemember = FALSE;
       BOOL fDirectory = FALSE;
       PFNWP oldproc;
 
+      fFileNameExtPath = FALSE;
       oldproc = WinSubclassWindow(WinWindowFromID(hwnd, EXT_DIRECTORY),
 				  (PFNWP) ExtractTextProc);
       if (oldproc)
@@ -116,9 +121,12 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PrfQueryProfileData(fmprof, FM3Str, "RememberExt",
 			  (PVOID) & fRemember, &size);
       PrfQueryProfileData(fmprof, FM3Str, "DirectoryExt",
-			  (PVOID) & fDirectory, &size);
+                          (PVOID) & fDirectory, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "FileNamePathExt",
+                          (PVOID) & fFileNameExtPath, &size);
       WinCheckButton(hwnd, EXT_REMEMBER, fRemember);
       WinCheckButton(hwnd, EXT_AWDIRS, fDirectory);
+      WinCheckButton(hwnd, EXT_FILENAMEEXT, fFileNameExtPath);
       WinSendDlgItemMsg(hwnd, EXT_DIRECTORY, EM_SETTEXTLIMIT,
 			MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
       WinSendDlgItemMsg(hwnd, EXT_COMMAND, EM_SETTEXTLIMIT,
@@ -130,7 +138,25 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (arcdata->arcname && *arcdata->arcname)
 	WinSetDlgItemText(hwnd, EXT_FILENAME, arcdata->arcname);
       else
-	WinSetDlgItemText(hwnd, EXT_FILENAME, GetPString(IDS_EXTVARIOUSTEXT));
+        WinSetDlgItemText(hwnd, EXT_FILENAME, GetPString(IDS_EXTVARIOUSTEXT));
+
+      if (fFileNameExtPath && arcdata->arcname) {
+
+        CHAR FileName[CCHMAXPATH];
+        PSZ p;
+
+        strcpy(FileName, arcdata->arcname);
+        p = strrchr(FileName, '.');
+        if (p)
+          *p = 0;
+        else {
+          p = FileName + strlen(arcdata->arcname);
+          p--;
+          *p = 0;
+        }
+        strcpy(arcdata->extractdir, FileName);
+        WinSetDlgItemText(hwnd, EXT_DIRECTORY, arcdata->extractdir);
+      }
       if (fDirectory) {
 	WinSendDlgItemMsg(hwnd, EXT_WDIRS, BM_SETCHECK,
 			  MPFROM2SHORT(TRUE, 0), MPVOID);
@@ -146,13 +172,13 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	CHAR textdir[CCHMAXPATH];
 
-	size = sizeof(textdir);
+	sizet = sizeof(textdir);
 	*textdir = 0;
 	PrfQueryProfileData(fmprof, FM3Str, "Ext_ExtractDir",
 			    (PVOID) textdir, &size);
 	if (*textdir && !IsFile(textdir))
 	  strcpy(arcdata->extractdir, textdir);
-	size = sizeof(textdir);
+	sizet = sizeof(textdir);
 	*textdir = 0;
 	PrfQueryProfileData(fmprof, FM3Str, "Ext_Mask", (PVOID) textdir,
 			    &size);
@@ -197,10 +223,10 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!arcdata->info->exwdirs)
 	WinEnableWindow(WinWindowFromID(hwnd, EXT_WDIRS), FALSE);
       else if (fRemember) {
-	size = sizeof(BOOL);
+	//size = sizeof(BOOL);
 	fRemember = FALSE;
 	PrfQueryProfileData(fmprof, FM3Str, "Ext_WDirs",
-			    (PVOID) & fRemember, &size);
+			    (PVOID) &fRemember, &size);
 	if (fRemember)
 	  PostMsg(WinWindowFromID(hwnd, EXT_WDIRS), BM_CLICK, MPVOID, MPVOID);
       }
@@ -226,7 +252,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	BOOL fRemember = WinQueryButtonCheckstate(hwnd, EXT_REMEMBER);
 
 	PrfWriteProfileData(fmprof, FM3Str, "RememberExt",
-			    (PVOID) & fRemember, sizeof(BOOL));
+			    (PVOID) &fRemember, size);
       }
       break;
 
@@ -235,7 +261,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	BOOL fDirectory = WinQueryButtonCheckstate(hwnd, EXT_AWDIRS);
 
 	PrfWriteProfileData(fmprof, FM3Str, "DirectoryExt",
-			    (PVOID) & fDirectory, sizeof(BOOL));
+			    (PVOID) &fDirectory, size);
 
 	if (fDirectory) {
 	  WinSendDlgItemMsg(hwnd, EXT_WDIRS, BM_SETCHECK,
@@ -247,6 +273,70 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROM2SHORT(TRUE, 0), MPVOID);
 	  WinSetDlgItemText(hwnd, EXT_COMMAND, arcdata->info->extract);
 	}
+      }
+      break;
+
+    case EXT_FILENAMEEXT:
+      {
+	BOOL fFileNameExtPath = WinQueryButtonCheckstate(hwnd, EXT_FILENAMEEXT);
+
+	PrfWriteProfileData(fmprof, FM3Str, "FileNamePathExt",
+                            (PVOID) &fFileNameExtPath, size);
+        if (fFileNameExtPath && arcdata->arcname) {
+          CHAR FileName[CCHMAXPATH];
+          PSZ p;
+
+          strcpy(FileName, arcdata->arcname);
+          p = strrchr(FileName, '.');
+          if (p)
+           *p = 0;
+          else {
+            p = FileName + strlen(arcdata->arcname);
+            p--;
+            *p = 0;
+          }
+          strcpy(arcdata->extractdir, FileName);
+          WinSetDlgItemText(hwnd, EXT_DIRECTORY, arcdata->extractdir);
+        }
+        else {
+          *arcdata->extractdir = 0;
+          if (*extractpath) {
+            if (arcdata->arcname && *arcdata->arcname &&
+                !strcmp(extractpath, "*")) {
+
+              CHAR *p;
+
+              strcpy(arcdata->extractdir, arcdata->arcname);
+              p = strrchr(arcdata->extractdir, '\\');
+              if (p) {
+                if (p < arcdata->extractdir + 3)
+                  p++;
+                *p = 0;
+              }
+            }
+            else
+              strcpy(arcdata->extractdir, extractpath);
+          }
+          if (!*arcdata->extractdir) {
+            if (*lastextractpath)
+              strcpy(arcdata->extractdir, lastextractpath);
+            else if (arcdata->arcname && *arcdata->arcname) {
+
+              CHAR *p;
+
+              strcpy(arcdata->extractdir, arcdata->arcname);
+              p = strrchr(arcdata->extractdir, '\\');
+              if (p) {
+                if (p < arcdata->extractdir + 3)
+                  p++;
+                *p = 0;
+              }
+            }
+            if (!*arcdata->extractdir)
+              strcpy(arcdata->extractdir, pFM2SaveDirectory);
+          }
+          WinSetDlgItemText(hwnd, EXT_DIRECTORY, arcdata->extractdir);
+        }
       }
       break;
 
@@ -324,7 +414,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	bstrip(s);
 	if (*s) {
 	  if (!SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
-				     QW_OWNER), hwnd, s, 0)) {
+                                     QW_OWNER), hwnd, s, fFileNameExtPath ? 1:0)) {
 	    strcpy(arcdata->extractdir, s);
 	    WinSetDlgItemText(hwnd, EXT_DIRECTORY, s);
 	    if ((!isalpha(*s) || s[1] != ':') && *s != '.')
@@ -339,7 +429,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    PrfWriteProfileString(fmprof, FM3Str, "Ext_ExtractDir", s);
 	    fRemember = WinQueryButtonCheckstate(hwnd, EXT_WDIRS);
 	    PrfWriteProfileData(fmprof, FM3Str, "Ext_WDirs",
-				(PVOID) & fRemember, sizeof(BOOL));
+				(PVOID) &fRemember, size);
 	    fRemember = TRUE;
 	  }
 	  *s = 0;
