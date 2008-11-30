@@ -25,6 +25,7 @@
 #include "strutil.h"                    // GetPString
 #include "fonts.h"
 #include "fm3dll.h"
+#include "init.h"                       // Global semaphore
 
 //static VOID SetFont(HWND hwnd);
 
