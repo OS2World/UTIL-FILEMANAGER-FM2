@@ -48,6 +48,7 @@
                 freeing dcd->directory early
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
                 less than 10 KiB (It hangs and can't be closed)
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -797,14 +798,17 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
      */
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
-      DosEnterCritSec();
+      //DosEnterCritSec(); //GKY 11-29-08
+      DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
       if (dcd->stopflag)
 	dcd->stopflag--;
       if (dcd->stopflag) {
-	DosExitCritSec();
+        DosReleaseMutexSem(hmtxFM2Globals);
+        //DosExitCritSec();
 	return 0;
       }
-      DosExitCritSec();
+      DosReleaseMutexSem(hmtxFM2Globals);
+      //DosExitCritSec();
       if (mp1) {
 	strcpy(dcd->previous, dcd->directory);
 	strcpy(dcd->directory, (CHAR *)mp1);
@@ -1418,14 +1422,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (stricmp(dcd->directory, fullname)) {
 	  strcpy(dcd->previous, dcd->directory);
 	  strcpy(dcd->directory, fullname);
-	  DosEnterCritSec();
+	  //DosEnterCritSec(); //GKY 11-27-08
 	  dcd->stopflag++;
-	  DosExitCritSec();
+	  //DosExitCritSec();
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
-	    DosEnterCritSec();
+	    //DosEnterCritSec(); //GKY 11-27-08
 	    dcd->stopflag--;
-	    DosExitCritSec();
+	    //DosExitCritSec();
 	  }
 	  else if (*dcd->directory) {
 	    if (hwndMain)
@@ -2285,13 +2289,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_RESCAN:
-	DosEnterCritSec();
+	//DosEnterCritSec(); //GKY 11-27-08
 	dcd->stopflag++;
-	DosExitCritSec();
+	//DosExitCritSec();
 	if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPVOID)) {
-	  DosEnterCritSec();
+	  //DosEnterCritSec(); //GKY 11-27-08
 	  dcd->stopflag--;
-	  DosExitCritSec();
+	  //DosExitCritSec();
 	}
 	break;
 
@@ -2423,14 +2427,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (mp2) {
 	  strcpy(dcd->previous, dcd->directory);
 	  strcpy(dcd->directory, (CHAR *)mp2);
-	  DosEnterCritSec();
+	  //DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-	  DosExitCritSec();
+	  //DosExitCritSec();
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
-	    DosEnterCritSec();
+	    //DosEnterCritSec(); // GKY 11-27-08
 	    dcd->stopflag--;
-	    DosExitCritSec();
+	    //DosExitCritSec();
 	  }
 	  else if (*dcd->directory) {
 	    if (hwndMain)
@@ -2457,15 +2461,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (stricmp(dcd->directory, tempname2)) {
 	      strcpy(dcd->previous, dcd->directory);
 	      strcpy(dcd->directory, tempname2);
-	      DosEnterCritSec();
+	      //DosEnterCritSec(); // GKY 11-27-08
 	      dcd->stopflag++;
-	      DosExitCritSec();
+	      //DosExitCritSec();
 	      if (!PostMsg(dcd->hwndObject,
 			   UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 		strcpy(dcd->directory, dcd->previous);
-		DosEnterCritSec();
+		//DosEnterCritSec();// GKY 11-27-08
 		dcd->stopflag--;
-		DosExitCritSec();
+		//DosExitCritSec();
 	      }
 	      else if (*dcd->directory) {
 		if (hwndMain)
@@ -2489,14 +2493,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(tempname, dcd->directory);
 	    strcpy(dcd->directory, dcd->previous);
 	    strcpy(dcd->previous, tempname);
-	    DosEnterCritSec();
+	    //DosEnterCritSec(); // GKY 11-27-08
 	    dcd->stopflag++;
-	    DosExitCritSec();
+	    //DosExitCritSec();
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
-	      DosEnterCritSec();
+	      //DosEnterCritSec(); // GKY 11-27-08
 	      dcd->stopflag--;
-	      DosExitCritSec();
+	      //DosExitCritSec();
 	    }
 	    else if (*dcd->directory) {
 	      if (hwndMain)
@@ -2526,14 +2530,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (stricmp(newdir, dcd->directory)) {
 	    strcpy(dcd->previous, dcd->directory);
 	    strcpy(dcd->directory, newdir);
-	    DosEnterCritSec();
+	    //DosEnterCritSec(); //GKY 11-27-08
 	    dcd->stopflag++;
-	    DosExitCritSec();
+	    //DosExitCritSec();
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
-	      DosEnterCritSec();
+	      //DosEnterCritSec(); // GKY 11-27-08
 	      dcd->stopflag--;
-	      DosExitCritSec();
+	      //DosExitCritSec();
 	    }
 	    else if (*dcd->directory) {
 	      if (hwndMain)
@@ -3362,14 +3366,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		else {
 		  strcpy(dcd->previous, dcd->directory);
 		  strcpy(dcd->directory, pci->pszFileName);
-		  DosEnterCritSec();
+		  //DosEnterCritSec();  // GKY 11-27-08
 		  dcd->stopflag++;
-		  DosExitCritSec();
+		  //DosExitCritSec();
 		  if (!PostMsg(dcd->hwndObject,
 			       UM_RESCAN, MPVOID, MPFROMLONG(1))) {
-		    DosEnterCritSec();
+		    //DosEnterCritSec();  // GKY 11-27-08
 		    dcd->stopflag--;
-		    DosExitCritSec();
+		    //DosExitCritSec();
 		  }
 		  else if (*dcd->directory) {
 		    if (hwndMain)
@@ -3409,14 +3413,14 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				   GetPString(IDS_RESCANSUGGESTEDTEXT));
 	      }
 	      else {
-		DosEnterCritSec();
+		//DosEnterCritSec();  // GKY 11-27-08
 		dcd->stopflag++;
-		DosExitCritSec();
+		//DosExitCritSec();
 		if (!PostMsg(dcd->hwndObject,
 			     UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
-		  DosEnterCritSec();
+		  //DosEnterCritSec(); // GKY 11-27-08
 		  dcd->stopflag--;
-		  DosExitCritSec();
+		  //DosExitCritSec();
 		}
 		else if (*dcd->directory) {
 		  if (hwndMain)

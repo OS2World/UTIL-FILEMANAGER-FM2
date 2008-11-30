@@ -68,6 +68,7 @@
   27 Aug 08 JBS Ticket 259: Support saving/restoring toolbars with states
   29 Aug 08 JBS Ticket 259: Support saving/restoring target directories with states (except the shutdown state)
   01 Sep 08 GKY Save toolbars immediately on change. Add bmps for default toolbars
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -1400,10 +1401,12 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_CONTEXTMENU:
-    DosEnterCritSec();
+    //DosEnterCritSec(); //GKY 11-29-08
+    DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
     if (!hwndMenu)
       hwndMenu = WinLoadMenu(hwnd, FM3ModHandle, ID_BUTTONMENU);
-    DosExitCritSec();
+    DosReleaseMutexSem(hmtxFM2Globals);
+    //DosExitCritSec();
     SetPresParams(hwndMenu, NULL, NULL, NULL, GetPString(IDS_10SYSPROTEXT));
     if (PopupMenu(hwnd, hwnd, hwndMenu))
       WinShowWindow(hwndMenu, TRUE);

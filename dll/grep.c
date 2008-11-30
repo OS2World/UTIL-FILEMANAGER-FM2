@@ -28,6 +28,7 @@
   21 Sep 07 GKY Fix trap on search that includes filenames that exceed maxpath
   07 Feb 08 SHL Use ITIMER_DESC to control sleeps and reporting
   29 Feb 08 GKY Use xfree where appropriate
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -61,6 +62,7 @@
 #include "stristr.h"			// findstring
 #include "misc.h"			// PostMsg
 #include "fortify.h"
+#include "init.h"                       // Golbal semaphore
 
 static VOID DoAllSubdirs(GREP *grep,
                          CHAR *searchPath,
@@ -742,9 +744,11 @@ static BOOL DoInsertion(GREP *grep,
     WinSendMsg(grep->hwndFiles,
                CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
     if (dcd) {
-      DosEnterCritSec();
+      //DosEnterCritSec(); //GKY 11-29-08
+      DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
       dcd->ullTotalBytes += grep->insertedbytes;
-      DosExitCritSec();
+      DosReleaseMutexSem(hmtxFM2Globals);
+      //DosExitCritSec();
     }
     SleepIfNeeded(pitdSleep, 1);
     // if (grep->toinsert == FilesToGet)        // 07 Feb 08 SHL

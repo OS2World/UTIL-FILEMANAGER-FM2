@@ -56,6 +56,7 @@
                 running sessions
   23 Aug 08 GKY Check that space on TMP & FM2 save drives exceed 5 GiB; Done to allow user setting of
                 minimum size in future
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -154,6 +155,7 @@ static PSZ pszSrcFile = __FILE__;
 static CHAR *WC_MAINWND;
 
 #pragma data_seg(GLOBAL1)
+HMTX hmtxFM2Globals;
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
 PFNWP PFNWPMLE;
@@ -1175,6 +1177,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
                    LEDProc,
                    CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
                    sizeof(PVOID));
+
+  DosCreateMutexSem("\\SEM\\GLOBAL1", &hmtxFM2Globals, 0L, FALSE);
 
   /*
    * set some defaults (note: everything else automatically initialized

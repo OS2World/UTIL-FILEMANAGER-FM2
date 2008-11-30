@@ -48,6 +48,7 @@
   02 Aug 08 GKY Always pass temp variable point to UM_SHOWME to avoid freeing pci->pszFileName early
   19 Oct 08 GKY Fixed logic for greying menu items (Format etc) on remote and virtual drives (it was reversed)
   19 Oct 08 GKY Fixed context menu to be "drives" menu on unformatted drives
+  28 Nov 08 GKY Remove unneeded DosEnterCriSec calls
 
 ***********************************************************************/
 

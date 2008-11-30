@@ -9,6 +9,7 @@
   Copyright (c) 2008 Steven H. Levine
 
   Change log
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -89,5 +90,6 @@ extern CHAR *pFM2SaveDirectory;
 extern CHAR *pTmpDir;
 extern CHAR profile[CCHMAXPATH];
 extern ULONGLONG ullTmpSpaceNeeded;
+extern HMTX hmtxFM2Globals;
 
 #endif // INIT_H
