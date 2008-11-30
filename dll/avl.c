@@ -32,6 +32,9 @@
   29 Feb 08 GKY Use xfree where appropriate
   22 Jun 08 GKY Added free_archivers for fortify checking
   19 Jul 08 GKY ifdef Fortify free_archivers
+  29 Nov 08 GKY Add ini entry for LastArchiver so the previous archiver is selected in the
+                Select archive dialog if no default is provided.
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -79,6 +82,8 @@ UINT arcsigs_header_lines;		// Header comments line count in archiver.bb2
 UINT arcsigs_trailer_line_num;		// Trailer comments start line number (1..n)
 BOOL arcsigsloaded;
 BOOL arcsigsmodified;
+
+#define ARCHIVER_LINE_BYTES	256
 
 //=== quick_find_type() ===
 ARC_TYPE *quick_find_type(CHAR * filespec, ARC_TYPE * topsig)
@@ -162,6 +167,11 @@ static VOID fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect)
   }					// while scanning
 
   // Try to reselect last selection unless user wants default selection
+  if (sOldSelect == LIT_NONE) {
+    ULONG size = sizeof(SHORT);
+
+    PrfQueryProfileData(fmprof, appname, "LastArchiver", &sOldSelect, &size);
+  }
   if (sOldSelect != LIT_NONE && !found) {
     SHORT sItemCount =
       (SHORT) WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_QUERYITEMCOUNT,
@@ -300,8 +310,6 @@ static UINT cur_line_num;	// Input file line counter
 
 //=== get_line_strip_comments() read line, strip comments and whitespace ===
 
-#define ARCHIVER_LINE_BYTES	256
-
 static PSZ get_line_strip_comments(PSZ pszIn, FILE * fp)
 {
   PSZ psz = xfgets(pszIn, ARCHIVER_LINE_BYTES, fp, pszSrcFile, __LINE__);
@@ -358,14 +366,17 @@ INT load_archivers(VOID)
   arcsigs_header_lines = 0;
   arcsigs_trailer_line_num = 0;
 
-  DosEnterCritSec();
+  //DosEnterCritSec(); //GKY 11-29-08
+  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
   psz = searchpath(GetPString(IDS_ARCHIVERBB2));
   if (!psz || !*psz) {
-    DosExitCritSec();
+    DosReleaseMutexSem(hmtxFM2Globals);
+    //DosExitCritSec();
     return -1;
   }
   fp = _fsopen(psz, "r", SH_DENYWR);
-  DosExitCritSec();
+  DosReleaseMutexSem(hmtxFM2Globals);
+  //DosExitCritSec();
   if (!fp)
     return -2;
   strcpy(archiverbb2, psz);		// Remember full path
@@ -817,7 +828,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  MPFROM2SHORT(sSelect, 255), MPFROMP(szItemText));
 	if (!*szItemText)
 	  pat = NULL;
-	else {
+        else {
 	  for (; pat; pat = pat->next) {
 	    if (pat->id && !strcmp(szItemText, pat->id))
 	      break;			// Found it
@@ -838,6 +849,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  MPFROMSHORT(LIT_NONE), FALSE);
 	return 0;
       }
+      PrfWriteProfileData(fmprof, appname, "LastArchiver", &sSelect, sizeof(SHORT));
       sLastSelect = sSelect;
       WinDismissDlg(hwnd, TRUE);
       return 0;
@@ -857,8 +869,10 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  ASEL_LISTBOX,
 					  LM_QUERYSELECTION,
 					  MPFROMSHORT(LIT_FIRST), MPVOID);
-      if (sSelect != LIT_NONE)
-	sLastSelect = sSelect;
+      if (sSelect != LIT_NONE) {
+        sLastSelect = sSelect;
+        PrfWriteProfileData(fmprof, appname, "LastArchiver", &sSelect, sizeof(SHORT));
+      }
       *ppatReturn = NULL;
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);	// fixme to understand why needed
       return 0;
