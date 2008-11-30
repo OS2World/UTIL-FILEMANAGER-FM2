@@ -2285,9 +2285,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       BOOL tempsusp = dcd->suspendview;
 
       if (mp1) {
-	DosEnterCritSec();
+	//DosEnterCritSec(); // GKY 11-30-08 moved to SetMask
 	SetMask((CHAR *)mp1, &dcd->mask);
-	DosExitCritSec();
+	//DosExitCritSec();
       }
       dcd->suspendview = TRUE;
       dcd->mask.attrFile |= FILE_DIRECTORY;

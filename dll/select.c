@@ -528,6 +528,7 @@ VOID SetMask(PSZ maskstr, MASK * mask)
   UINT x;
   PSZ p;
 
+  DosEnterCritSec();
   if (maskstr)
     strcpy(mask->szMask, maskstr);	// Got new mask string
   // Build array of pointers
@@ -544,6 +545,7 @@ VOID SetMask(PSZ maskstr, MASK * mask)
     }
   }					// for
   mask->pszMasks[x] = NULL;		// Mark end
+  DosExitCritSec();
 }
 
 VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)

@@ -1766,9 +1766,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PCNRITEM pci;
 
       if (mp1) {
-	DosEnterCritSec();
+	//DosEnterCritSec(); // GKY 11-30-08 moved to SetMask
 	SetMask((CHAR *)mp1, &dcd->mask);
-	DosExitCritSec();
+	//DosExitCritSec();
       }
       dcd->suspendview = 1;
       WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));

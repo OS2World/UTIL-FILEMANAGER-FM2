@@ -9,6 +9,7 @@
   Copyright (c) 2008 Steven H. Levine
 
   05 Jan 08 SHL Sync
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -120,13 +121,15 @@ VOID SetFont(HWND hwnd)
   CHAR szFamily[CCHMAXPATH],
     *szTitle = GetPString(IDS_SETFONTTITLETEXT), *szPreview;
 
-  DosEnterCritSec();
+  //DosEnterCritSec(); //GKY 11-30-08
+  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
   szPreview = GetPString(IDS_BLURB1TEXT + counter++);
   if (strcmp(szPreview, "0")) {
     counter = 0;
     szPreview = GetPString(IDS_BLURB1TEXT + counter++);
   }
-  DosExitCritSec();
+  DosReleaseMutexSem(hmtxFM2Globals);
+  //DosExitCritSec();
   memset(&fontdlg, 0, sizeof(fontdlg)); /* initialize all fields */
   hps = WinGetPS(hwnd);
   GpiQueryFontMetrics(hps, sizeof(FONTMETRICS), &fm);
@@ -181,13 +184,15 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
 
   if ((flags & 1) && !fattrs)
     return fattrs;
-  DosEnterCritSec();
+  //DosEnterCritSec(); //GKY 11-30-08
+  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
   szPreview = GetPString(IDS_BLURB1TEXT + counter++);
   if (strcmp(szPreview, "0")) {
     counter = 0;
     szPreview = GetPString(IDS_BLURB1TEXT + counter++);
   }
-  DosExitCritSec();
+  DosReleaseMutexSem(hmtxFM2Globals);
+  //DosExitCritSec();
   memset(&fontDlg, 0, sizeof(fontDlg)); /* initialize all fields */
   /*
    * Get the current font attributes

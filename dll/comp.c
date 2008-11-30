@@ -2752,9 +2752,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     cmp = INSTDATA(hwnd);
     if (cmp) {
       if (mp1) {
-	DosEnterCritSec();
+	//DosEnterCritSec(); // GKY 11-30-08 moved to SetMask
 	SetMask((CHAR *)mp1, &cmp->dcd.mask);
-	DosExitCritSec();
+	//DosExitCritSec();
       }
       WinSetDlgItemText(hwnd, COMP_NOTE,
 			GetPString(IDS_COMPHOLDFILTERINGTEXT));

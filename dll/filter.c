@@ -622,9 +622,9 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(mask->szMask, test);
 	    add_mask(test);
 	    save_masks();
-	    DosEnterCritSec();
+	    //DosEnterCritSec(); // GKY 11-30-08 moved to SetMask
 	    SetMask(mask->szMask, mask);
-	    DosExitCritSec();
+	    //DosExitCritSec();
 	    WinDismissDlg(hwnd, 1);
 	  }
 	  else {
@@ -646,9 +646,9 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  if (SHORT1FROMMP(mp1) == DID_OK) {
 	    *mask->szMask = 0;
-	    DosEnterCritSec();
+	    //DosEnterCritSec(); // GKY 11-30-08 moved to SetMask
 	    SetMask(mask->szMask, mask);
-	    DosExitCritSec();
+	    //DosExitCritSec();
 	    WinDismissDlg(hwnd, 1);
 	  }
 	  else
