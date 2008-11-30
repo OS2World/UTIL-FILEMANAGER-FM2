@@ -61,6 +61,8 @@
   08 Nov 08 GKY Add WaitChildThread to fix hang caused by viewer trying to open a file before
                 the archiver process closes. (Ticket 58)
   23 Nov 08 JBS Ticket 284: Support archivers with no Start or End of list strings
+  29 Nov 08 GKY Add flag to tell CheckListProc file is in an archive so it won't try to open it.
+  29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
 
 ***********************************************************************/
 
@@ -675,7 +677,7 @@ ReTry:
       		 (stricmp(info->startlist, "*#* None *#*") == 0);
 //       gotend =   !info->endlist ||
 //       		 !*info->endlist ||	// If list has no end marker
-//       		 (stricmp(info->endlist, "*#* None *#*") == 0);	
+//       		 (stricmp(info->endlist, "*#* None *#*") == 0);
 
       while (!feof(fp) && !gotend && !*pStopFlag) {
 	if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
@@ -1726,7 +1728,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ck.size = sizeof(ck);
 	    ck.list = li->list;
 	    ck.cmd = li->type;
-	    ck.prompt = prompt;
+            ck.prompt = prompt;
+            ck.flags = CHECK_ARCHIVE;
 	    sprintf(prompt, GetPString(IDS_ARCCNRDELREFTEXT),
 		    (li->type == IDM_DELETE) ?
 		    GetPString(IDS_DELETELOWERTEXT) :
@@ -1823,7 +1826,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  x--;
 		}
 	      }
-	      if (exfiles && numfiles) {
+              if (exfiles && numfiles) {
 
 		CHECKLIST ckl;
 		CHAR prompt[(CCHMAXPATH * 2) + 256];
@@ -1832,7 +1835,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		ckl.size = sizeof(ckl);
 		ckl.list = exfiles;
 		ckl.prompt = prompt;
-		ckl.cmd = li->type;
+                ckl.cmd = li->type;
+                ckl.flags = CHECK_ARCHIVE;
 		sprintf(prompt,
 			GetPString(IDS_REPLACEWARNTEXT),
 			&"s"[numfiles == 1],
@@ -2616,9 +2620,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  if (!SetDir(dcd->hwndParent, hwnd, s, 0)) {
 	    if (stricmp(dcd->directory, s)) {
-	      DosEnterCritSec();
-	      strcpy(lastextractpath, s);
-	      DosExitCritSec();
+              //DosEnterCritSec();  //GKY 11-29-08
+              DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
+              strcpy(lastextractpath, s);
+              DosReleaseMutexSem(hmtxFM2Globals);
+	      //DosExitCritSec();
 	    }
 	    strcpy(dcd->directory, s);
 	    if ((!isalpha(*s) || s[1] != ':') && *s != '.')
@@ -3054,10 +3060,12 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_SWITCH:
 	if (mp2) {
 	  if (stricmp(dcd->directory, (CHAR *) mp2)) {
-	    DosEnterCritSec();
+            //DosEnterCritSec(); //GKY 11-29-08
+            DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
 	    strcpy(lastextractpath, (CHAR *) mp2);
-	    MakeValidDir(lastextractpath);
-	    DosExitCritSec();
+            MakeValidDir(lastextractpath);
+            DosReleaseMutexSem(hmtxFM2Globals);
+	    //DosExitCritSec();
 	  }
 	  strcpy(dcd->directory, (CHAR *) mp2);
 	  MakeValidDir(dcd->directory);
@@ -3707,9 +3715,11 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	    strcpy(dcd->directory, extractpath);
 	}
 	if (!*dcd->directory && *lastextractpath) {
-	  DosEnterCritSec();
-	  strcpy(dcd->directory, lastextractpath);
-	  DosExitCritSec();
+          //DosEnterCritSec();  //GKY 11-29-08
+          DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
+          strcpy(dcd->directory, lastextractpath);
+          DosReleaseMutexSem(hmtxFM2Globals);
+	  //DosExitCritSec();
 	}
 	if (!*dcd->directory) {
 	  if (!ParentIsDesktop(hwndParent, hwndParent))

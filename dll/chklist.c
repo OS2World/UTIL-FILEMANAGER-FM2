@@ -12,6 +12,7 @@
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  29 Nov 08 GKY Add flag to tell CheckListProc file is in an archive so it won't try to open it.
 
 ***********************************************************************/
 
@@ -170,8 +171,9 @@ MRESULT EXPENTRY CheckListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (x >= 0) {
 	    *szBuffer = 0;
 	    WinSendDlgItemMsg(hwnd, CHECK_LISTBOX, LM_QUERYITEMTEXT,
-			      MPFROM2SHORT(x, CCHMAXPATH), MPFROMP(szBuffer));
-	    if (*szBuffer)
+                              MPFROM2SHORT(x, CCHMAXPATH), MPFROMP(szBuffer));
+            cl = WinQueryWindowPtr(hwnd, QWL_USER);
+	    if (*szBuffer && !(cl->flags & CHECK_ARCHIVE))
 	      QuickView(hwnd, szBuffer);
 	  }
 	}

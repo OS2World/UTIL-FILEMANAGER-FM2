@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2008 Steven H. Levine
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
+  29 Nov 08 GKY Add flag to tell CheckListProc file is in an archive so it won't try to open it.
 
 ***********************************************************************/
 
@@ -16,7 +17,8 @@
 
 #define CHKLIST_H
 
-#define CHECK_FILES 1
+#define CHECK_FILES 1    //CHECKLIST flag
+#define CHECK_ARCHIVE 2  //CHECKLIST flag file in archive
 
 typedef struct
 {
