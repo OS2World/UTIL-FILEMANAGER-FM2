@@ -3719,13 +3719,12 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	    strcpy(dcd->directory, extractpath);
         }
         if (!*dcd->directory && fFileNameCnrPath && dcd->arcname) {
-
           strcpy(fullname, dcd->arcname);
           p = strrchr(fullname, '.');
           if (p)
            *p = 0;
           else {
-            p = fullname + strlen(dcd->arcname);
+            p = fullname + strlen(fullname);
             p--;
             *p = 0;
           }
@@ -3752,7 +3751,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  }
 	}
 	if (!*dcd->directory ||
-	    IsFile(dcd->directory) ||
+	    (IsFile(dcd->directory) == 1) ||
 	    (isalpha(*dcd->directory) &&
 	     (driveflags[toupper(*dcd->directory) - 'A'] &
 	      DRIVE_NOTWRITEABLE)))
@@ -3763,7 +3762,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->amextracted = (flags & 1) != 0;
 	dcd->dontclose = (flags & 4) != 0;
 	dcd->info = info;
-	dcd->sortFlags = DefArcSortFlags;
+        dcd->sortFlags = DefArcSortFlags;
 	{
 	  PFNWP oldproc;
 
@@ -3875,7 +3874,9 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 			    SWP_SIZE | SWP_MOVE | SWP_SHOW | SWP_ZORDER |
 			    SWP_ACTIVATE);
 	  }
-	}
+        }
+        if (IsFile(dcd->directory) == -1)
+          SetDir(dcd->hwndFrame, dcd->hwndCnr, dcd->directory, 1);
       }
 #     ifdef FORTIFY
       Fortify_LeaveScope();
