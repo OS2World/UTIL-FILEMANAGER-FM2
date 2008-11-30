@@ -9,6 +9,8 @@
   Copyright (c) 2001, 2008 Steven H. Levine
 
   05 Jan 08 SHL Move arccnrs.c definitions here
+  30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path to arc container.
 
 ***********************************************************************/
 
@@ -61,5 +63,6 @@ extern CHAR ArcTempRoot[CCHMAXPATH];
 extern BOOL fArcStuffVisible;
 extern CHAR lastextractpath[CCHMAXPATH];
 extern ULONGLONG ullDATFileSpaceNeeded;
+extern BOOL fFileNameCnrPath;
 
 #endif // ARCCNRS_H

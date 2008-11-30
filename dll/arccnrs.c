@@ -63,6 +63,8 @@
   23 Nov 08 JBS Ticket 284: Support archivers with no Start or End of list strings
   29 Nov 08 GKY Add flag to tell CheckListProc file is in an archive so it won't try to open it.
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path to arc container.
 
 ***********************************************************************/
 
@@ -157,6 +159,7 @@ HWND ArcCnrMenu;
 HWND ArcMenu;
 CHAR ArcTempRoot[CCHMAXPATH];
 BOOL fArcStuffVisible;
+BOOL fFileNameCnrPath;
 
 #pragma data_seg(GLOBAL2)
 CHAR lastextractpath[CCHMAXPATH];
@@ -1817,7 +1820,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      UINT numfiles = 0, numalloc = 0;
 
 	      for (x = 0; li->list[x]; x++) {
-		BldFullPathName(fullname, li->targetpath, li->list[x]);
+                BldFullPathName(fullname, li->targetpath, li->list[x]);
+                //Check if file already exists on disk warn if it does.
 		if (IsFile(fullname) != -1) {
 		  AddToList(li->list[x], &exfiles, &numfiles, &numalloc);
 		  li->list = RemoveFromList(li->list, li->list[x]);
@@ -1849,7 +1853,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 		else if (ckl.list)
 		  li->list = CombineLists(li->list, ckl.list);
-	      }
+	      } // end check and warn
 	    }
 	    if (!li->list || !li->list[0])
 	      break;
@@ -3713,7 +3717,20 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  }
 	  else
 	    strcpy(dcd->directory, extractpath);
-	}
+        }
+        if (!*dcd->directory && fFileNameCnrPath && dcd->arcname) {
+
+          strcpy(fullname, dcd->arcname);
+          p = strrchr(fullname, '.');
+          if (p)
+           *p = 0;
+          else {
+            p = fullname + strlen(dcd->arcname);
+            p--;
+            *p = 0;
+          }
+          strcpy(dcd->directory, fullname);
+        }
 	if (!*dcd->directory && *lastextractpath) {
           //DosEnterCritSec();  //GKY 11-29-08
           DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);

@@ -318,9 +318,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               strcpy(arcdata->extractdir, extractpath);
           }
           if (!*arcdata->extractdir) {
-            if (*lastextractpath)
-              strcpy(arcdata->extractdir, lastextractpath);
-            else if (arcdata->arcname && *arcdata->arcname) {
+            if (arcdata->arcname && *arcdata->arcname) {
 
               CHAR *p;
 

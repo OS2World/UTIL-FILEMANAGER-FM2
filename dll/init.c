@@ -57,6 +57,8 @@
   23 Aug 08 GKY Check that space on TMP & FM2 save drives exceed 5 GiB; Done to allow user setting of
                 minimum size in future
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path to arc container.
 
 ***********************************************************************/
 
@@ -1489,6 +1491,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     *targetdir = 0;
   size = sizeof(extractpath);
   PrfQueryProfileData(fmprof, appname, "ExtractPath", extractpath, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "FileNamePathCnr", &fFileNameCnrPath, &size);
   size = sizeof(printer);
   PrfQueryProfileData(fmprof, appname, "Printer", printer, &size);
   size = MaxComLineStrg;

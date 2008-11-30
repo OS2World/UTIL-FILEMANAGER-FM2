@@ -283,10 +283,17 @@ archiver windows in the foreground. Normally it runs them in the
 background, minimized, so you'd have to use the task list to pull them
 to the foreground if you want to see them.
 :p.
+The :hp6.Use archive name as extract path in container:ehp6.allows
+you to have FM/2 create an extract path based on the archive name.
+The path is made as a subdirectory to the directory the archive
+is in. If a directory is listed in Ext. Path it over rides this setting.
+The setting only effects the arc container. The extract dialog has a
+separate setting for this function.
+:p.
 The :hp6.A/Virus:ehp6. field allow you to enter the command line
-(PATH/ANTIVIRUS&period.EXE parameters) for your antivirus software
+(PATH/ANTIVIRUS.EXE parameters) for your antivirus software
 This must be done to enable virus checking of archives from FM/2.
-NVCC&period.EXE &percent.p /C is one possible command line option
+NVCC.EXE &percent.p /C is one possible command line option
 if you are using Norman Antivirus.
 :p.
 The :hp6.Ext. Path:ehp6. field, if anything is in it, gives the default

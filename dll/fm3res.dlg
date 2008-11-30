@@ -38,7 +38,7 @@
   01 Sep 08 GKY Change User-defined BMP text to better match what it actually does.
   21 Nov 08 JBS Ticket 297: Added use of COPYRIGHT_YEAR in About dialog
   29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
-                for the extract path to extract dialog.
+                for the extract path to extract dialog and arc container.
 
 ***********************************************************************/
 
@@ -1807,6 +1807,8 @@ BEGIN
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"
         AUTOCHECKBOX    "Show archiver activity", CFGA_ARCSTUFFVISIBLE, 4,
                         74, 112, 10
+        AUTOCHECKBOX    "~Use archive name as extract path in container (Ext. Path over rides this setting)",
+                        CFGA_FILENAMEPATH, 4, 54, 312, 10
         LTEXT           "A/Virus:", -1, 4, 34, 48, 8
         ENTRYFIELD      "", CFGA_VIRUS, 54, 34, 196, 8, ES_MARGIN
         LTEXT           "Ext. Path:", -1, 4, 22, 48, 8, NOT WS_GROUP

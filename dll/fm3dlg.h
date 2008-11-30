@@ -22,6 +22,8 @@
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path.
+  30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path to arc container.
 
 ***********************************************************************/
 
@@ -714,7 +716,8 @@
 #define CFGA_ARCSTUFFVISIBLE							25375
 #define CFGA_VIRUS										25376
 #define CFGA_EXTRACTPATH								25377
-#define CFGA_FIND											25378
+#define CFGA_FIND	   									25378
+#define CFGA_FILENAMEPATH                                                               25379
 
 #define CFG5_FRAME										25500
 #define CFG5_ICON											25501

@@ -26,14 +26,16 @@ This can create a problem if the archive contains files of the same name in
 different paths (i.e. the last of theses files extracted will over write the
 ones extracted earlier). :hp1.With Paths:ehp1. will extract the archive including the
 any directories in the archive structure. This can be made the default by checking the
-:hp1.Always Paths:ehp1. box. Refgardless of which method is the default you may
-select the other option on a one time basis without change the default for future archives.
+:hp1.Always Paths:ehp1. box. Regardless of which method is the default you may
+select the other option on a one time basis without changing the default for future archives.
 If you only wish to extract certain files you can select masks (i.e *.txt) for the files
 you wish to extract. The command line box allows you to change or add extraction options.
 See the help files for your archiver (e.g. zip.exe) for more information.
 You can select the extraction directory (the directory to which the files will be extracted.
-The default is the current directory or you can set a specific directory as the  on
-the Archiver page of the Setting Notebook. You can use the :hp1.Walk:ehp1. button
+The default is the current directory or you can set a specific directory as the default on
+the Archiver page of the Setting Notebook. You can set the :hp1.Filename as extract path :ehp1.
+to have FM/2 create an extract path based on the archive name.The path is made as a subdirectory
+to the directory the archive is in. You can use the :hp1.Walk:ehp1. button
 find the directory you wish to extract to or you can type a path directly into the listbox.
 If the path you type in doesn't exist FM/2 will offer to create it for you.
 You can also drag file system objects onto the Extract Directory entryfield
@@ -56,8 +58,8 @@ Notes&colon.
 I have a copy of ARC.EXE here that's 'broken' in that it won't extract
 files unless given a DOS filemask (for instance, to extract all files
 you need to enter *.* (not *) in the masks field). FM/2 normally gives
-:hp2.no:ehp2. filemasks as the argument when you want to extract
-everything, which every other archiver in the world understands.
+:hp2."*":ehp2. as the argument when you want to extract
+everything, which most other archiver in the world understand.
 :p.
 The ZIP/UNZIP programs are case sensitive even though OS/2 itself is
 not, so, for example, trying to extract "*.PKT" when the file inside the
@@ -81,9 +83,9 @@ link-dragging them onto the archive object, or dragging them onto an
 :p.
 FM/2 will ask you for the type of the archive by presenting you with a
 listbox from which to pick an archiver.
-After that, another dialog appears to let you modify how the archive
-will be created. Additional masks may be entered (remember that the ZIP
-and UNZIP programs are case sensitive), the archiver command line
+After that, another dialog appears to let you modify how the archive that
+will be created. Additional masks may be entered (remember that some versions
+of ZIP and UNZIP programs are case sensitive), the archiver command line
 tweaked, and so forth. Click :hp1.Okay:ehp1. to create the archive, or
 :hp1.Cancel:ehp1. if you change your mind.
 :p.

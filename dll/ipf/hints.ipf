@@ -86,8 +86,10 @@ is in, start a drag from the recessed text field next to the :link
 reftype=hd res=91900.Folder button:elink. and drop onto the Folder
 button. If you always want the extract directory to be the same as the
 directory in which the archive resides, enter * in the Ext. Path field
-of the internal Settings Notebook's :link reftype=hd res=99940.Archivers
-page:elink..
+of the internal Settings Notebook's or if you want FM/2 to create a subdirectory
+based on the archiver name leave Ext. Path blank and check the box Use archive
+name as extract path in container (Ext. Path over rides this setting)
+:link reftype=hd res=99940.Archivers page:elink..
 :p.
 You can drag files or directories onto an archive object in a Directory
 Container, and FM/2 will display the :link reftype=hd

@@ -39,6 +39,8 @@
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   31 Jul 08 JBS Ticket 114: Improved code to avoid traps.
   02 Aug 08 JBS Ticket 114: Improved code to avoid traps.
+  30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
+                for the extract path to arc container.
 
 ***********************************************************************/
 
@@ -223,6 +225,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGA_FOLDERAFTEREXTRACT, fFolderAfterExtract);
     WinCheckButton(hwnd, CFGA_QUICKARCFIND, fQuickArcFind);
     WinCheckButton(hwnd, CFGA_DEFARC, (*szDefArc != 0));
+    WinCheckButton(hwnd, CFGA_FILENAMEPATH, fFileNameCnrPath);
     WinSetDlgItemText(hwnd, CFGA_DEFARCNAME, szDefArc);
     WinSetDlgItemText(hwnd, CFGA_VIRUS, virus);
     WinSetDlgItemText(hwnd, CFGA_EXTRACTPATH, extractpath);
@@ -331,6 +334,10 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof,
                         appname,
                         "ArcStuffVisible", &fArcStuffVisible, sizeof(BOOL));
+    fFileNameCnrPath = WinQueryButtonCheckstate(hwnd, CFGA_FILENAMEPATH);
+    PrfWriteProfileData(fmprof,
+                        appname,
+                        "FileNamePathCnr", &fFileNameCnrPath, sizeof(BOOL));
     fFolderAfterExtract = WinQueryButtonCheckstate(hwnd,
                                                    CFGA_FOLDERAFTEREXTRACT);
     PrfWriteProfileData(fmprof,

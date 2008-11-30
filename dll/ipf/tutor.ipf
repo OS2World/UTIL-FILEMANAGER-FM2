@@ -438,7 +438,8 @@ the archive object) and then dragging the objects to be added onto the
 To extract from an archive, first place the cursor on the file
 (make it the :hp1.current object:ehp1.), then select the :hp1.Extract:ehp1.
 command from the :hp1.Files:ehp1. menu, the context menu
-fc=default bc=cyan.B2:color fc=default bc=default., or press the :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+fc=default bc=cyan.B2:color fc=default bc=default., or press the
+:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
  + :color fc=default bc=palegray.x:color fc=default bc=default. accelerator key.
 key.
 :p.
