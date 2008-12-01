@@ -18,6 +18,10 @@
 #               improve support for -a option in the checkfiles target.
 # 30 Oct 08 JBS Code improvements, including condensed script-related code and
 #               eliminated occasional duplicate addition of the script to the WPI file
+# 01 Dec 08 JBS SED.IN is now rewritten (via WMAKE's write/append) every time the Warpin
+#               script needs to be built. This allows the version strings to be included
+#               in SED.IN which, in turn, means the SED command line is much simplified.
+#               Therefore SED.IN has now been removed from the SVN repository.
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
 FM2_VER=-3-15-0                  # default value
@@ -70,8 +74,21 @@ chksed: .symbolic
    @sed -V <nul 2>&1 | grep -i "GNU sed" >nul 2>&1 || (@echo. & @echo GNU SED and GREP required and not found on the PATH. & @echo.)
 
 fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile sed.in
+   @echo Resetting SED commands
+   @%write  sed.in s/@@@FM2_VER@@@/$(FM2_VER)/
+   @%append sed.in s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/
+   @%append sed.in /@@@include fm2utils.doc@@@/{
+   @%append sed.in s/@@@include fm2utils.doc@@@/@@@include/
+   @%append sed.in r fm2utils\fm2utils.doc
+   @%append sed.in }
+   @%append sed.in /@@@include license.txt@@@/{
+   @%append sed.in s/@@@include license.txt@@@/@@@include/
+   @%append sed.in r fm2utils\license.txt
+   @%append sed.in }
+   @%append sed.in /PACKAGEID/s/-/\\/g
+   @%append sed.in /@@@include/{s/@@@include//;N;s/\n//}
    @echo Inserting the new Warpin script into the WPI file...
-   sed -e "s/@@@FM2_VER@@@/$(FM2_VER)/" -e "s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/" -f sed.in fm2.wis.in | sed "/@@@include/{s/@@@include//;N;s/\n//}" >fm2.wis
+   sed -f sed.in fm2.wis.in >fm2.wis
    bld_fm2_wpi fm2$(FM2_VER).wpi /SCRIPT
 
 fm2$(FM2_VER).wpi: bld_fm2_wpidirs.in makefile
