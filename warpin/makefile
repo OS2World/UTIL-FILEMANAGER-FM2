@@ -73,7 +73,7 @@ checkfiles: .symbolic
 chksed: .symbolic
    @sed -V <nul 2>&1 | grep -i "GNU sed" >nul 2>&1 || (@echo. & @echo GNU SED and GREP required and not found on the PATH. & @echo.)
 
-fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile sed.in
+fm2.wis: fm2.wis.in fm2utils\fm2utils.doc fm2utils\license.txt makefile
    @echo Resetting SED commands
    @%write  sed.in s/@@@FM2_VER@@@/$(FM2_VER)/
    @%append sed.in s/@@@FM2UTILS_VER@@@/$(FM2UTILS_VER)/
