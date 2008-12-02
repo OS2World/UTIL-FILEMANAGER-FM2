@@ -65,6 +65,7 @@
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path to arc container.
+  02 Dec 08 JBS Ticket 284: Changed string indicating no Start/End of list strings.
 
 ***********************************************************************/
 
@@ -147,7 +148,8 @@
 #define ARCFLAGS_PSEUDODIR  0x00000002
 #define CON_COLS                6
 #define EXTRA_ARCRECORD_BYTES   (sizeof(ARCITEM) - sizeof(MINIRECORDCORE))
-
+#define NO_START_OF_ARCHIVER_LIST_STRING "None"
+#define NO_END_OF_ARCHIVER_LIST_STRING   NO_START_OF_ARCHIVER_LIST_STRING
 
 #pragma data_seg(DATA1)
 static INT DefArcSortFlags;
@@ -677,10 +679,7 @@ ReTry:
     if (fp) {
       gotstart = !info->startlist ||		// If list has no start marker
       		 !*info->startlist ||
-      		 (stricmp(info->startlist, "*#* None *#*") == 0);
-//       gotend =   !info->endlist ||
-//       		 !*info->endlist ||	// If list has no end marker
-//       		 (stricmp(info->endlist, "*#* None *#*") == 0);
+      		 (stricmp(info->startlist, NO_START_OF_ARCHIVER_LIST_STRING) == 0);
 
       while (!feof(fp) && !gotend && !*pStopFlag) {
 	if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
@@ -859,7 +858,7 @@ ReTry:
       if (*pStopFlag)
 	numarcfiles = 0;		// Request close
       else if (!numarcfiles || !gotstart
-	       || (!gotend && info->endlist && *info->endlist && (stricmp(info->endlist, "*#* None *#*")))) {
+	       || (!gotend && info->endlist && *info->endlist && (stricmp(info->endlist, NO_END_OF_ARCHIVER_LIST_STRING)))) {
 	// Oops
 	ARCDUMP ad;
 	CHAR errstr[CCHMAXPATH + 256];

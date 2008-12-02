@@ -169,7 +169,7 @@ ARCHIVER.BB2 will appear if changes have been made.
 :li.the DLL's the programs need, if any, are in the LIBPATH.
 :li.the names of the programs are entered correctly.
 :li.the command syntax is correct and does not prompt for further input.
-:li.the start and end of list strings, if any, are correct.
+:li.the start and end of list strings are correct.
 :li.the signature and signature position, if any, are correct.
 :eol.
 :p.
@@ -366,25 +366,69 @@ into this field.
 files in the archiver listing (see example below). You can use the
 :hp2.<<:ehp2. button to insert a selected line directly from the listbox
 into this field.
+:note.A few archivers, like TAR, do not have Start-of-list and/or End-of-list strings.
+For these archivers use the string&colon.
+.br
+:lm margin=5.:color fc=blue.None:color fc=default.:lm margin=1.
+.br
+for the Start-of-list and/or End-of-list strings.
 :p.
-Here's an example of an ARC listing (5.12mpl, command "ARC l"; you may
+Here's an example of a listing of a ZIP file. You may
 need to widen the help windows for this to look right...)&colon.
 :xmp.
-Name           Length     Date
-============  ========  =========    <--this line is start-of-list
-MAKEFILE           374  28 Nov 89
-QSORT.C          14279  29 Nov 89
-QSORT.EXE        24629  29 Nov 89
-STUFF.H            371  29 Nov 89
-        ====  ========               <--this line is end-of-list
-Total      4     39653
+ Length   Method    Size  Ratio   Date   Time   CRC-32    Name
+--------  ------  ------- -----   ----   ----   ------    ----     <-- Start-of-list
+    2201  Defl&colon.N      978  56%  09-13-08 02&colon.54  f85e9c1b  fm3.c
+     405  Defl&colon.N      283  30%  11-22-08 23&colon.47  718f2fa2  fm3.def
+  192744  Defl&colon.N    61541  68%  12-02-08 04&colon.15  2b72b37b  fm3.exe
+     176  Defl&colon.N      129  27%  11-30-08 21&colon.59  5db66032  FM3.INI
+     171  Defl&colon.N      122  29%  12-02-08 04&colon.15  3d2bc616  fm3.lrf
+   14680  Defl&colon.N     2366  84%  12-02-08 04&colon.15  a9fee027  fm3.map
+    3276  Defl&colon.N     1951  40%  11-30-08 15&colon.15  35c6c7ac  fm3.obj
+    6237  Defl&colon.N     1553  75%  11-18-08 05&colon.43  6ed9c658  fm3.rc
+  198905  Defl&colon.N    56365  72%  11-22-08 23&colon.05  1e982a85  fm3.res
+--------          -------  ---                            -------  <-- End-of-list
+  418795           125288  70%                            9 files
 :exmp.
-:p.
-Note the filename is in position 0, old length in position 1, and the
-date starts in position 2, with 3 parts, and there's no new length
-field (so it'd be -1). Compare that to the archiver entry for
-ARC 5.12mpl in the "stock" ARCHIVER.BB2 and you should get a feel for
-what all those fields mean.
+This listing "parsed" into FM/2 archiver details fields&colon.
+:table cols='15 10 50' rules=vert frame=rules.
+:row.
+:c.FM/2 Archiver detail field
+:c.Value
+:c.Notes
+:row.
+:c.FName Pos
+:c.7,1,0,0
+:c.7&colon. The filename starts in field 7 (start counting from 0!)
+:row.
+:c.
+:c.
+:c.1&colon. If there are spaces in the filename, it extends to the end of the line
+:row.
+:c.
+:c.
+:c.0&colon. No special bracketing characters
+:row.
+:c.
+:c.
+:c.0&colon. The listing does not use two lines per file.
+:row.
+:c.OldSz Pos
+:c.0
+:c.The uncompressed size of the file is in field 0.
+:row.
+:c.NumDateFlds
+:c.2
+:c.The date and time consume 2 fields.
+:row.
+:c.Date Pos
+:c.4,1
+:c.The date/time data starts in field 2 and the format is mm-dd-yy hh&colon.ss.
+:row.
+:c.NewSz Pos
+:c.2
+:c.The compressed size of the file is in field 2.
+:etable.
 
 :h4 res=100130 name=PANEL_ARCBB2.ARCHIVER.BB2 Structure
 :i1 id=aboutArcBB2.ArchiverBB2 Structure
