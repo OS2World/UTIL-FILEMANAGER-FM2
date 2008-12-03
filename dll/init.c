@@ -157,7 +157,7 @@ static PSZ pszSrcFile = __FILE__;
 static CHAR *WC_MAINWND;
 
 #pragma data_seg(GLOBAL1)
-HMTX hmtxDeleteDir;
+HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
@@ -1184,7 +1184,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (DosCreateMutexSem("\\SEM\\GLOBAL1", &hmtxFM2Globals, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               "DosCreateMutexSem");
-  if (DosCreateMutexSem("\\SEM\\DELETDIR", &hmtxDeleteDir, 0L, FALSE))
+  if (DosCreateMutexSem("\\SEM\\DELETE1", &hmtxFM2Delete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               "DosCreateMutexSem");
   /*

@@ -91,6 +91,6 @@ extern CHAR *pTmpDir;
 extern CHAR profile[CCHMAXPATH];
 extern ULONGLONG ullTmpSpaceNeeded;
 extern HMTX hmtxFM2Globals;
-extern HMTX hmtxDeleteDir;
+extern HMTX hmtxFM2Delete;
 
 #endif // INIT_H

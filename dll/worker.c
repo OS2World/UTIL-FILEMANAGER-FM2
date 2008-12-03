@@ -1604,10 +1604,9 @@ VOID MassAction(VOID * args)
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
                 if (fsa.attrFile & FILE_DIRECTORY) {
-                  //priority_bumped();
-                  DosRequestMutexSem(hmtxDeleteDir, SEM_INDEFINITE_WAIT);
 		  sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
+                  DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
 		  AddNote(prompt);
 		  error = (APIRET) wipeallf("%s%s*",
 					    wk->li->list[x],
@@ -1621,8 +1620,7 @@ VOID MassAction(VOID * args)
 		    error = DosDeleteDir(wk->li->list[x]);
 		  else
                     DosDeleteDir(wk->li->list[x]);
-                  DosReleaseMutexSem(hmtxDeleteDir);
-                  //priority_normal();
+                  DosReleaseMutexSem(hmtxFM2Delete);
 		}
 		else {
 		  sprintf(prompt,
@@ -1645,11 +1643,17 @@ VOID MassAction(VOID * args)
                         hObjectofObject = WinQueryObject(wk->li->list[x]);
                         error = WinMoveObject(hObjectofObject, hObjectdest, 0);
                     }
-		    else
-		      error = DosDelete(wk->li->list[x]);
+                    else {
+                      DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+                      error = DosDelete(wk->li->list[x]);
+                      DosReleaseMutexSem(hmtxFM2Delete);
+                    }
 		  }
-		  else
-		    error = DosForceDelete(wk->li->list[x]);
+		  else {
+                    DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+                    error = DosForceDelete(wk->li->list[x]);
+                    DosReleaseMutexSem(hmtxFM2Delete);
+                  }
 		  if (error) {
 		    DosError(FERR_DISABLEHARDERR);
 		    make_deleteable(wk->li->list[x]);
@@ -1669,11 +1673,17 @@ VOID MassAction(VOID * args)
                           hObjectofObject = WinQueryObject(wk->li->list[x]);
                           error = WinMoveObject(hObjectofObject, hObjectdest, 0);
                       }
-		      else
-			error = DosDelete(wk->li->list[x]);
+		      else {
+                        DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+                        error = DosDelete(wk->li->list[x]);
+                        DosReleaseMutexSem(hmtxFM2Delete);
+                      }
 		    }
-		    else
-		      error = DosForceDelete(wk->li->list[x]);
+		    else {
+                      DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+                      error = DosForceDelete(wk->li->list[x]);
+                      DosReleaseMutexSem(hmtxFM2Delete);
+                    }
 		  }
 		}
 		if (error) {
@@ -1698,7 +1708,7 @@ VOID MassAction(VOID * args)
 			  GetPString(IDS_DELETEDTEXT), wk->li->list[x]);
 		  AddNote(prompt);
 		}
-		if ((fSyncUpdates  && !(fsa.attrFile & FILE_DIRECTORY)) ||
+		if (fSyncUpdates ||
 		    AddToList(wk->li->list[x], &files, &numfiles, &numalloc))
 		  Broadcast(hab2,
 			    wk->hwndCnr,
