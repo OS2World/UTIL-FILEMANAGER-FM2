@@ -69,6 +69,8 @@
   29 Aug 08 JBS Ticket 259: Support saving/restoring target directories with states (except the shutdown state)
   01 Sep 08 GKY Save toolbars immediately on change. Add bmps for default toolbars
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  03 Dec 08 GKY Use StubbyScanCount to prevent scan of "last" directory container prior to
+                tree scan completion; prevents duplicate directory names in tree.
 
 ***********************************************************************/
 
@@ -148,6 +150,7 @@
 #include "dirs.h"                       // save_dir2
 #include "wrappers.h"                   // xfree
 #include "fortify.h"
+#include "filldir.h"                    // StubbyScanCount
 
 static BOOL CloseDirCnrChildren(HWND hwndClient);
 static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview);
@@ -5926,8 +5929,12 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       for (x = 1; x < argc; x++) {
         if (*argv[x] == '/' || *argv[x] == ';')
           continue;
-        if (!IsFile(argv[x]) && !FindDirCnrByName(argv[x], FALSE))
+        if (!IsFile(argv[x]) && !FindDirCnrByName(argv[x], FALSE)) {
+          DosSleep(10); // Give time for StubbyScanThreads to start
+          while (StubbyScanCount !=0)
+            DosSleep(50);
           OpenDirCnr((HWND) 0, hwndMain, hwndTree, TRUE, argv[x]);
+        }
       }
     }
     PostMsg(MainObjectHwnd, UM_SETUP5, MPVOID, MPVOID);
