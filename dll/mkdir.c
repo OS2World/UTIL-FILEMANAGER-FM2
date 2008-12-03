@@ -43,8 +43,6 @@
 #pragma data_seg(GLOBAL2)
 CHAR targetdir[CCHMAXPATH];
 
-#pragma alloc_text(MKDIR,MassMkdir,SetDir,PMMkDir,SetTargetDir)
-
 APIRET MassMkdir(HWND hwndClient, CHAR * dir)
 {
   APIRET last, was = 0;
@@ -243,3 +241,5 @@ void SetTargetDir(HWND hwnd, BOOL justshow)
     WinSetWindowText(hwndBack, temp);
   }
 }
+
+#pragma alloc_text(MKDIR,MassMkdir,SetDir,PMMkDir,SetTargetDir)

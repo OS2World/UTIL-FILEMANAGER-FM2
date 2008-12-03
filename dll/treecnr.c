@@ -808,7 +808,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 CM_SCROLLWINDOW,
                  MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
       while (StubbyScanCount !=0)
-        DosSleep(100);
+        DosSleep(50);
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);

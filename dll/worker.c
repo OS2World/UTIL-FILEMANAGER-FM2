@@ -1604,17 +1604,16 @@ VOID MassAction(VOID * args)
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
                 if (fsa.attrFile & FILE_DIRECTORY) {
-		  sprintf(prompt,
+		  /*sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
+		  AddNote(prompt);*/ //Duplicate call 12-03-08 GKY
                   DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-		  AddNote(prompt);
 		  error = (APIRET) wipeallf("%s%s*",
 					    wk->li->list[x],
 					    (*wk->li->list[x] &&
 					     wk->li->
-					     list[x][strlen(wk->li->list[x]) -
-						     1] !=
-					     '\\') ? "\\" : NullStr);
+                                             list[x][strlen(wk->li->list[x]) - 1]
+                                             != '\\') ? "\\" : NullStr);
 		  DosError(FERR_DISABLEHARDERR);
 		  if (!error)
 		    error = DosDeleteDir(wk->li->list[x]);
@@ -1623,9 +1622,9 @@ VOID MassAction(VOID * args)
                   DosReleaseMutexSem(hmtxFM2Delete);
 		}
 		else {
-		  sprintf(prompt,
+		  /*sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
-		  AddNote(prompt);
+		  AddNote(prompt); */  //Duplicate call 12-03-08 GKY
 		  DosError(FERR_DISABLEHARDERR);
 		  if (wk->li->type == IDM_DELETE){
 		    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");

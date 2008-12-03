@@ -993,9 +993,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      ri.pRecordParent = (PRECORDCORE) pciParent;
 	      ri.zOrder = (ULONG) CMA_TOP;
 	      ri.cRecordsInsert = ulSelCnt;
-	      ri.fInvalidateRecord =
-		!fSyncUpdates && dcd && dcd->type == DIR_FRAME ?
-		  FALSE : TRUE;
+	      ri.fInvalidateRecord = TRUE;
+	       // !fSyncUpdates && dcd && dcd->type == DIR_FRAME ? FALSE : TRUE; //fSyncUpdates always TRUE 12-1-08 GKY
 	      if (!WinSendMsg(hwndCnr,
 			      CM_INSERTRECORD,
 			      MPFROMP(pciFirst), MPFROMP(&ri))) {
@@ -1009,7 +1008,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		  ok = FALSE;
 		  ullTotalBytes = 0;
 		  if (WinIsWindow((HAB) 0, hwndCnr))
-		    FreeCnrItemList(hwndCnr, pciFirst);
+                    FreeCnrItemList(hwndCnr, pciFirst);
 		}
 	      // }
 	      }
@@ -1101,7 +1100,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		ok = FALSE;
 		ullTotalBytes = 0;
 		if (WinIsWindow((HAB) 0, hwndCnr))
-		  FreeCnrItemList(hwndCnr, pciFirst);
+                  FreeCnrItemList(hwndCnr, pciFirst);
 	      }
 	    }
 	  }
@@ -1559,7 +1558,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				CM_QUERYRECORD,
 				MPVOID,
 				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-
     while (pci && (INT)pci != -1) {
       StubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
       if (!StubbyScan)
