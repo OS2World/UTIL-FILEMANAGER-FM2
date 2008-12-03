@@ -480,7 +480,7 @@ VOID Action(VOID * args)
 			       ex.command,
 			       ex.arcname,
 			       maskspaces ? "\"" : NullStr,
-			       *ex.masks ? ex.masks : "*",
+			       *ex.masks ? ex.masks : "\"*\"",
 			       maskspaces ? "\"" : NullStr) &&
 		      !stricmp(ex.extractdir, wk->directory)) {
 		    if (WinIsWindow(hab2, wk->hwndCnr))
@@ -1603,7 +1603,9 @@ VOID MassAction(VOID * args)
 		DosQueryPathInfo(wk->li->list[x],
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
-		if (fsa.attrFile & FILE_DIRECTORY) {
+                if (fsa.attrFile & FILE_DIRECTORY) {
+                  //priority_bumped();
+                  DosRequestMutexSem(hmtxDeleteDir, SEM_INDEFINITE_WAIT);
 		  sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
 		  AddNote(prompt);
@@ -1618,7 +1620,9 @@ VOID MassAction(VOID * args)
 		  if (!error)
 		    error = DosDeleteDir(wk->li->list[x]);
 		  else
-		    DosDeleteDir(wk->li->list[x]);
+                    DosDeleteDir(wk->li->list[x]);
+                  DosReleaseMutexSem(hmtxDeleteDir);
+                  //priority_normal();
 		}
 		else {
 		  sprintf(prompt,
@@ -1694,7 +1698,7 @@ VOID MassAction(VOID * args)
 			  GetPString(IDS_DELETEDTEXT), wk->li->list[x]);
 		  AddNote(prompt);
 		}
-		if (fSyncUpdates ||
+		if ((fSyncUpdates  && !(fsa.attrFile & FILE_DIRECTORY)) ||
 		    AddToList(wk->li->list[x], &files, &numfiles, &numalloc))
 		  Broadcast(hab2,
 			    wk->hwndCnr,
