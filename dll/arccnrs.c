@@ -66,6 +66,8 @@
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path to arc container.
   02 Dec 08 JBS Ticket 284: Changed string indicating no Start/End of list strings.
+  03 Dec 08 GKY Subdirectory from the arcname for the extract path only created if an "extract"
+                menu option is selected.
 
 ***********************************************************************/
 
@@ -1818,6 +1820,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      CHAR **exfiles = NULL;
 	      UINT numfiles = 0, numalloc = 0;
 
+              if (li->targetpath && fFileNameCnrPath &&
+                  stricmp(lastextractpath, li->targetpath)) {
+                strcpy(lastextractpath, li->targetpath);
+                SetDir(dcd->hwndParent, hwnd, li->targetpath, 1);
+              }
 	      for (x = 0; li->list[x]; x++) {
                 BldFullPathName(fullname, li->targetpath, li->list[x]);
                 //Check if file already exists on disk warn if it does.
@@ -3009,6 +3016,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_ARCEXTRACTEXIT:
       case IDM_ARCEXTRACT:
+        if (dcd->directory && fFileNameCnrPath &&
+            stricmp(lastextractpath, dcd->directory)) {
+          strcpy(lastextractpath, dcd->directory);
+          SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
+        }
 	if (dcd->info->extract)
 	  runemf2(SEPARATE | WINDOWED | ASYNCHRONOUS |
 		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
@@ -3021,6 +3033,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_ARCEXTRACTWDIRSEXIT:
       case IDM_ARCEXTRACTWDIRS:
+        if (dcd->directory && fFileNameCnrPath &&
+            stricmp(lastextractpath, dcd->directory)) {
+          strcpy(lastextractpath, dcd->directory);
+          SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
+        }
 	if (dcd->info->exwdirs)
 	  runemf2(SEPARATE | WINDOWED | ASYNCHRONOUS |
 		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
@@ -3874,8 +3891,6 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 			    SWP_ACTIVATE);
 	  }
         }
-        if (IsFile(dcd->directory) == -1)
-          SetDir(dcd->hwndFrame, dcd->hwndCnr, dcd->directory, 1);
       }
 #     ifdef FORTIFY
       Fortify_LeaveScope();
