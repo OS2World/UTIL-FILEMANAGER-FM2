@@ -574,7 +574,8 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	// 02 Aug 07 SHL rc check was wrong
 	if (RemoveCnrItems(hwndCnr, pci, 1,
 			   CMA_FREE |
-			     numremain == 1 ? CMA_INVALIDATE : 0) != -1) {
+                           numremain == 1 ? CMA_INVALIDATE : 0) != -1) {
+          pci = NULL;
 	  numremain--;
 	  repos = TRUE;
 	}

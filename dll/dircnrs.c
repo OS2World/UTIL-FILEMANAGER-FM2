@@ -779,14 +779,14 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    CM_QUERYRECORD,
 			    MPFROMP(pci),
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-	  if (!pciC) {
-	    Stubby(dcd->hwndCnr, pci);
-	    DosSleep(0); //26 Aug 07 GKY 1
+          if (!pciC) {
+            Stubby(dcd->hwndCnr, pci);
+	    //DosSleep(1); //26 Aug 07 GKY 1
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
 			 CM_QUERYRECORD,
-			 MPFROMP(pci), MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+                         MPFROMP(pci), MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
       }
       dcd->firsttree = TRUE;
     }
@@ -843,7 +843,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (fSwitchTree && hwndTree) {
         PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
-	if (hwndMain) {
+        if (hwndMain) {
 	  if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame && pszTempDir)
             if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
               free(pszTempDir);
@@ -3655,7 +3655,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	      ids[6] = 0;
 	    CommonCreateTextChildren(dcd->hwndClient,
 				     WC_DIRSTATUS, ids);
-	  }
+          }
 	  if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	    WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
 	  if (FrameFlags & FCF_TASKLIST) {
