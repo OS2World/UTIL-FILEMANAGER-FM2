@@ -157,6 +157,7 @@ static PSZ pszSrcFile = __FILE__;
 static CHAR *WC_MAINWND;
 
 #pragma data_seg(GLOBAL1)
+HEV  DriveScanStart;
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
 ULONG OS2ver[2];
@@ -1187,6 +1188,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (DosCreateMutexSem("\\SEM\\DELETE1", &hmtxFM2Delete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               "DosCreateMutexSem");
+  if (DosCreateEventSem("\\SEM32\\DRIVESCAN", &DriveScanStart, 0L, FALSE))
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              GetPString(IDS_CREATESEMFAILED));
   /*
    * set some defaults (note: everything else automatically initialized
    * to 0)

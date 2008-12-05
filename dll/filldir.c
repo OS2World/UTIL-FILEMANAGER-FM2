@@ -119,6 +119,7 @@ typedef struct {
   HWND        hwndCnr;			// hwnd you want the message posted to
   HWND        hwndDrivesList;
   BOOL        RamDrive;
+  BOOL        FirstDrive;
 }
 STUBBYSCAN;
 
@@ -216,7 +217,14 @@ VOID StubbyScanThread(VOID * arg)
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(StubbyScan->pci->pszFileName));
 	}
-	StubbyScanCount--;
+        StubbyScanCount--;
+        if (StubbyScan->FirstDrive) {
+          priority_critical();
+          DbgMsg(pszSrcFile, __LINE__, "StubbyScanCount %i", StubbyScanCount);
+          while (StubbyScanCount != 0)
+            DosSleep(50);
+          DosPostEventSem(DriveScanStart);
+        }
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -963,7 +971,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  // One or more entries selected
 	  if (stopflag && *stopflag)
 	    goto Abort;
-	  if (fSyncUpdates) {
+          if (fSyncUpdates) {
 	    pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
 				  MPFROMLONG(EXTRA_RECORD_BYTES),
 				  MPFROMLONG(ulSelCnt));
@@ -1016,7 +1024,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    if (ok) {
 	      ullReturnBytes += ullTotalBytes;
 	      ulReturnFiles += ulSelCnt;
-	    }
+            }
 	  } // if sync updates
 	  else {
 	    // Append newly selected entries to aggregate list
@@ -1551,13 +1559,15 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   {
     STUBBYSCAN *StubbyScan;
     HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-					  MAIN_DRIVELIST);
+                                          MAIN_DRIVELIST);
+    PULONG pulPostCt;
+    BOOL FirstDrive = TRUE;
 
-    //AddDrive = TRUE;
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
 				MPVOID,
-				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+                                MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+    StubbyScanCount ++;
     while (pci && (INT)pci != -1) {
       StubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
       if (!StubbyScan)
@@ -1566,6 +1576,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       StubbyScan->hwndCnr = hwndCnr;
       StubbyScan->hwndDrivesList = hwndDrivesList;
       StubbyScan->RamDrive = FALSE;
+      StubbyScan->FirstDrive = FALSE;
       pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				      CM_QUERYRECORD,
 				      MPFROMP(pci),
@@ -1579,11 +1590,15 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE))
 	  {
 	    if (DRIVE_RAMDISK)
-	      StubbyScan->RamDrive = TRUE;
+              StubbyScan->RamDrive = TRUE;
+            if (FirstDrive)
+              StubbyScan->FirstDrive = TRUE;
 	    rc = _beginthread(StubbyScanThread, NULL, 65536, StubbyScan);
 	    if (rc == -1)
 	      Runtime_Error(pszSrcFile, __LINE__,
-			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
+                            GetPString(IDS_COULDNTSTARTTHREADTEXT));
+            else
+              FirstDrive = FALSE;
 	  } // if drive for scanning
 	  else
 	    WinSendMsg(hwndDrivesList,
@@ -1604,6 +1619,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
       pci = pciNext;
     } // while
+    StubbyScanCount --;
   }
   if (hwndParent)
     WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),

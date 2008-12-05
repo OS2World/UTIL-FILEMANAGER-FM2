@@ -92,5 +92,6 @@ extern CHAR profile[CCHMAXPATH];
 extern ULONGLONG ullTmpSpaceNeeded;
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
+extern HEV  DriveScanStart;
 
 #endif // INIT_H
