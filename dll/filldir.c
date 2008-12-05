@@ -222,7 +222,6 @@ VOID StubbyScanThread(VOID * arg)
         StubbyScanCount--;
         if (StubbyScan->FirstDrive) {
           priority_critical();
-          DbgMsg(pszSrcFile, __LINE__, "StubbyScanCount %i", StubbyScanCount);
           while (StubbyScanCount != 0)
             DosSleep(50);
           DosPostEventSem(DriveScanStart);
@@ -1562,7 +1561,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     STUBBYSCAN *StubbyScan;
     HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
                                           MAIN_DRIVELIST);
-    PULONG pulPostCt;
     BOOL FirstDrive = TRUE;
 
     pci = (PCNRITEM) WinSendMsg(hwndCnr,

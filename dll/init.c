@@ -164,6 +164,7 @@ ULONG OS2ver[2];
 PFNWP PFNWPCnr;
 PFNWP PFNWPMLE;
 CHAR ThousandsSeparator[2];
+BOOL fInitialDriveScan;
 BOOL fAmAV2;
 BOOL fChangeTarget;
 BOOL fIniExisted;
@@ -1191,6 +1192,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (DosCreateEventSem("\\SEM32\\DRIVESCAN", &DriveScanStart, 0L, FALSE))
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               GetPString(IDS_CREATESEMFAILED));
+  fInitialDriveScan = TRUE;
+
   /*
    * set some defaults (note: everything else automatically initialized
    * to 0)

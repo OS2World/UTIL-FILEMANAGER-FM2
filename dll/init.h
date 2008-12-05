@@ -65,6 +65,7 @@ extern CHAR *WC_TREECONTAINER;
 extern CHAR *WC_TREEOPENBUTTON;
 extern CHAR *WC_TREESTATUS;
 extern CHAR *WC_VIEWSTATUS;
+extern BOOL fInitialDriveScan;
 extern BOOL fAmAV2;
 extern BOOL fChangeTarget;
 extern BOOL fIniExisted;
