@@ -58,6 +58,8 @@
   28 Nov 08 SHL StubbyScanThread: add else lost in translation
   30 Nov 08 SHL StubbyScanThread: restore else - we want all drives listed
   30 Nov 08 SHL FreeCnrItemData: report double free with Runtime_Error
+  04 Dec 08 GKY Use event semaphore to prevent scan of "last" directory container prior to
+                tree scan completion; prevents duplicate directory names in tree.
 
 ***********************************************************************/
 
