@@ -233,25 +233,25 @@ VOID display_associations(HWND hwnd, ASSOC *temp, LINKASSOC *info)
   if (*szEnviroment)
     PrfWriteProfileString(fmprof, FM3Str, temp->pszCmdLine, szEnviroment);
   pszDisplayStr = xmallocz((CCHMAXPATH * 2) + MaxComLineStrg + 6,
-                           pszSrcFile, __LINE__);
+			   pszSrcFile, __LINE__);
   if (pszDisplayStr) {
     sprintf(pszDisplayStr, "%-12s \x1a %-24s %s%s%s", temp->mask,
-            temp->pszCmdLine, (*temp->sig) ?
-            "[" : NullStr, (*temp->sig) ? temp->sig : NullStr,
-            (*temp->sig) ? "]" : NullStr);
+	    temp->pszCmdLine, (*temp->sig) ?
+	    "[" : NullStr, (*temp->sig) ? temp->sig : NullStr,
+	    (*temp->sig) ? "]" : NullStr);
     x = (SHORT) WinSendDlgItemMsg(hwnd,
-                                  ASS_LISTBOX,
-                                  LM_INSERTITEM,
-                                  MPFROM2SHORT(LIT_END, 0), MPFROMP(pszDisplayStr));
+				  ASS_LISTBOX,
+				  LM_INSERTITEM,
+				  MPFROM2SHORT(LIT_END, 0), MPFROMP(pszDisplayStr));
     if (x >= 0) {
       WinSendDlgItemMsg(hwnd,
-                        ASS_LISTBOX,
-                        LM_SETITEMHANDLE,
-                        MPFROMSHORT(x), MPFROMP(info));
+			ASS_LISTBOX,
+			LM_SETITEMHANDLE,
+			MPFROMSHORT(x), MPFROMP(info));
       WinSendDlgItemMsg(hwnd,
-                        ASS_LISTBOX,
-                        LM_SELECTITEM,
-                        MPFROMSHORT(x), MPFROMSHORT(TRUE));
+			ASS_LISTBOX,
+			LM_SELECTITEM,
+			MPFROMSHORT(x), MPFROMSHORT(TRUE));
     }
     free(pszDisplayStr);
   }
@@ -296,8 +296,8 @@ VOID save_associations(VOID)
       fprintf(fp,
 	      ";\n%0.*s\n%0.*s\n%0.*s\n%lu\n%lu\n",
 	      CCHMAXPATH,
-              info->mask,
-              MaxComLineStrg,
+	      info->mask,
+	      MaxComLineStrg,
 	      info->pszCmdLine,
 	      CCHMAXPATH,
 	      (info->sig) ? info->sig : NullStr, info->offset, info->flags);
@@ -421,9 +421,9 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 	exclude = TRUE;
       }
       else
-        exclude = FALSE;
-        didmatch = wildcard((strchr(p, '\\') ||
-                             strchr(p, ':')) ? datafile : file, p, FALSE);
+	exclude = FALSE;
+	didmatch = wildcard((strchr(p, '\\') ||
+			     strchr(p, ':')) ? datafile : file, p, FALSE);
       if (exclude && didmatch)
 	didmatch = FALSE;
       if (didmatch) {
@@ -479,8 +479,8 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 	rc = ExecOnList(hwnd,
 			info->pszCmdLine,
 			flags,
-                        NULL, list, GetPString(IDS_EXECASSOCTITLETEXT),
-                        pszSrcFile, __LINE__);
+			NULL, list, GetPString(IDS_EXECASSOCTITLETEXT),
+			pszSrcFile, __LINE__);
 	if (rc != -1 && dieafter)
 	  PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
 	return rc;
@@ -533,33 +533,33 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PSZ pszDisplayStr;
 
       pszDisplayStr = xmallocz((CCHMAXPATH * 2) + MaxComLineStrg + 6,
-                               pszSrcFile, __LINE__);
+			       pszSrcFile, __LINE__);
       if (pszDisplayStr) {
-        WinSendDlgItemMsg(hwnd, ASS_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-        info = asshead;
-        while (info) {
-          sprintf(pszDisplayStr,
-                  "%-12s \x1a %-24s %s%s%s",
-                  info->mask,
-                  info->pszCmdLine,
-                  (info->sig && *info->sig) ?
-                  "[" : NullStr,
-                  (info->sig && *info->sig) ? info->sig : NullStr,
-                  (info->sig && *info->sig) ? "]" : NullStr);
-          x = (SHORT) WinSendDlgItemMsg(hwnd,
-                                        ASS_LISTBOX,
-                                        LM_INSERTITEM,
-                                        MPFROM2SHORT(LIT_END, 0), MPFROMP(pszDisplayStr));
-          if (x >= 0)
-            WinSendDlgItemMsg(hwnd,
-                              ASS_LISTBOX,
-                              LM_SETITEMHANDLE, MPFROMSHORT(x), MPFROMP(info));
-          info = info->next;
-        }
-        WinSendDlgItemMsg(hwnd,
-                          ASS_LISTBOX,
-                          LM_SELECTITEM, MPFROMSHORT(0), MPFROMSHORT(TRUE));
-        xfree(pszDisplayStr, pszSrcFile, __LINE__);
+	WinSendDlgItemMsg(hwnd, ASS_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
+	info = asshead;
+	while (info) {
+	  sprintf(pszDisplayStr,
+		  "%-12s \x1a %-24s %s%s%s",
+		  info->mask,
+		  info->pszCmdLine,
+		  (info->sig && *info->sig) ?
+		  "[" : NullStr,
+		  (info->sig && *info->sig) ? info->sig : NullStr,
+		  (info->sig && *info->sig) ? "]" : NullStr);
+	  x = (SHORT) WinSendDlgItemMsg(hwnd,
+					ASS_LISTBOX,
+					LM_INSERTITEM,
+					MPFROM2SHORT(LIT_END, 0), MPFROMP(pszDisplayStr));
+	  if (x >= 0)
+	    WinSendDlgItemMsg(hwnd,
+			      ASS_LISTBOX,
+			      LM_SETITEMHANDLE, MPFROMSHORT(x), MPFROMP(info));
+	  info = info->next;
+	}
+	WinSendDlgItemMsg(hwnd,
+			  ASS_LISTBOX,
+			  LM_SELECTITEM, MPFROMSHORT(0), MPFROMSHORT(TRUE));
+	xfree(pszDisplayStr, pszSrcFile, __LINE__);
       }
     }
     return 0;
@@ -682,8 +682,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR filename[CCHMAXPATH + 9], szfilename[CCHMAXPATH + 9];
 
 	*filename = 0;
-        if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
-          BldQuotedFileName(szfilename, filename);
+	if (insert_filename(hwnd, filename, 2, FALSE) && *filename) {
+	  BldQuotedFileName(szfilename, filename);
 	  strcat(szfilename, " %a");
 	  WinSetDlgItemText(hwnd, ASS_CL, szfilename);
 	}
@@ -693,14 +693,14 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       {
 	ASSOC temp;
-        CHAR dummy[34];
-        PSZ pszWorkBuf;
-        replace = FALSE;
+	CHAR dummy[34];
+	PSZ pszWorkBuf;
+	replace = FALSE;
 
-        memset(&temp, 0, sizeof(ASSOC));
-        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!temp.pszCmdLine)
-          break; //already complained
+	memset(&temp, 0, sizeof(ASSOC));
+	temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!temp.pszCmdLine)
+	  break; //already complained
 
 	{
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
@@ -711,19 +711,19 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  ASS_LISTBOX,
 					  LM_SELECTITEM,
 					  MPFROMSHORT(0), MPFROMSHORT(TRUE));
-        }
-        pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!pszWorkBuf) {
-          free(temp.pszCmdLine);
-          break; //already complained
-        }
+	}
+	pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!pszWorkBuf) {
+	  free(temp.pszCmdLine);
+	  break; //already complained
+	}
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
-        WinQueryDlgItemText(hwnd, ASS_CL, MaxComLineStrg, temp.pszCmdLine);
-        if (strcmp(temp.pszCmdLine, "<>")) {
-          NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
-          memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        }
-        free(pszWorkBuf);
+	WinQueryDlgItemText(hwnd, ASS_CL, MaxComLineStrg, temp.pszCmdLine);
+	if (strcmp(temp.pszCmdLine, "<>")) {
+	  NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
+	  memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	}
+	free(pszWorkBuf);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -747,21 +747,21 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-          temp.flags |= PROMPT;
-        if (fCancelAction){
-          fCancelAction = FALSE;
-          free(temp.pszCmdLine);
-          break;
-        }
-        else
+	  temp.flags |= PROMPT;
+	if (fCancelAction){
+	  fCancelAction = FALSE;
+	  free(temp.pszCmdLine);
+	  break;
+	}
+	else
 	info = add_association(&temp);
 	if (!info)
 	  WinDismissDlg(hwnd, 1);	/* Runtime_Error(pszSrcFile, __LINE__, "add_association"); */
-        else {
-          display_associations(hwnd, &temp, info);
+	else {
+	  display_associations(hwnd, &temp, info);
 	  save_associations();
-        }
-        free(temp.pszCmdLine);
+	}
+	free(temp.pszCmdLine);
       }
       WinDismissDlg(hwnd, 1);
       break;
@@ -779,26 +779,26 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case ASS_ADD:
       {
 	ASSOC temp;
-        CHAR dummy[34];
-        PSZ pszWorkBuf;
-        replace = FALSE;
+	CHAR dummy[34];
+	PSZ pszWorkBuf;
+	replace = FALSE;
 
-        memset(&temp, 0, sizeof(ASSOC));
-        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!temp.pszCmdLine)
-          break; //already complained
-        pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!pszWorkBuf) {
-          free(temp.pszCmdLine);
-          break; //already complained
-        }
-        WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
-        WinQueryDlgItemText(hwnd, ASS_CL, MaxComLineStrg, temp.pszCmdLine);
-        if (strcmp(temp.pszCmdLine, "<>")) {
-          NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
-          memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        }
-        free(pszWorkBuf);
+	memset(&temp, 0, sizeof(ASSOC));
+	temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!temp.pszCmdLine)
+	  break; //already complained
+	pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!pszWorkBuf) {
+	  free(temp.pszCmdLine);
+	  break; //already complained
+	}
+	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
+	WinQueryDlgItemText(hwnd, ASS_CL, MaxComLineStrg, temp.pszCmdLine);
+	if (strcmp(temp.pszCmdLine, "<>")) {
+	  NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
+	  memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	}
+	free(pszWorkBuf);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -822,32 +822,32 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-          temp.flags |= PROMPT;
-        if (fCancelAction){
-          fCancelAction = FALSE;
-          free(temp.pszCmdLine);
-          break;
-        }
-        else
-          info = add_association(&temp);
+	  temp.flags |= PROMPT;
+	if (fCancelAction){
+	  fCancelAction = FALSE;
+	  free(temp.pszCmdLine);
+	  break;
+	}
+	else
+	  info = add_association(&temp);
 	//Add will fail if mask is not changed
 	if (info) {
-          display_associations(hwnd, &temp, info);
+	  display_associations(hwnd, &temp, info);
 	  save_associations();
 	}
-        free(temp.pszCmdLine);
+	free(temp.pszCmdLine);
       }
       break;
 
     case ASS_DELETE:
       {
 	ASSOC temp;
-        CHAR dummy[34];
+	CHAR dummy[34];
 
-        memset(&temp, 0, sizeof(ASSOC));
-        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!temp.pszCmdLine)
-          break; //already complained
+	memset(&temp, 0, sizeof(ASSOC));
+	temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!temp.pszCmdLine)
+	  break; //already complained
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
@@ -870,8 +870,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROMSHORT(LIT_NONE), MPFROMSHORT(FALSE));
 	  }
 	  save_associations();
-        }
-        free(temp.pszCmdLine);
+	}
+	free(temp.pszCmdLine);
       }
 
       break;
@@ -879,30 +879,30 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       {
 	ASSOC temp;
-        CHAR dummy[34];
-        PSZ pszWorkBuf;
-        replace = TRUE;
+	CHAR dummy[34];
+	PSZ pszWorkBuf;
+	replace = TRUE;
 
-        memset(&temp, 0, sizeof(ASSOC));
-        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!temp.pszCmdLine)
-          break; //already complained
+	memset(&temp, 0, sizeof(ASSOC));
+	temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!temp.pszCmdLine)
+	  break; //already complained
 	y = (SHORT) WinSendDlgItemMsg(hwnd,
 				      ASS_LISTBOX,
 				      LM_QUERYSELECTION,
-                                      MPFROMSHORT(LIT_CURSOR), MPVOID);
-        pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!pszWorkBuf) {
-          free(temp.pszCmdLine);
-          break; //already complained
-        }
+				      MPFROMSHORT(LIT_CURSOR), MPVOID);
+	pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!pszWorkBuf) {
+	  free(temp.pszCmdLine);
+	  break; //already complained
+	}
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
-        WinQueryDlgItemText(hwnd, ASS_CL, MaxComLineStrg, temp.pszCmdLine);
-        if (strcmp(temp.pszCmdLine, "<>")) {
-          NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
-          memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
-        }
-        free(pszWorkBuf);
+	WinQueryDlgItemText(hwnd, ASS_CL, MaxComLineStrg, temp.pszCmdLine);
+	if (strcmp(temp.pszCmdLine, "<>")) {
+	  NormalizeCmdLine(pszWorkBuf, temp.pszCmdLine);
+	  memcpy(temp.pszCmdLine, pszWorkBuf, strlen(pszWorkBuf) + 1);
+	}
+	free(pszWorkBuf);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
 	if (*temp.sig) {
@@ -926,33 +926,33 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-          temp.flags |= PROMPT;
-        if (fCancelAction){
-          fCancelAction = FALSE;
-          free(temp.pszCmdLine);
-          break;
-        }
-        else
+	  temp.flags |= PROMPT;
+	if (fCancelAction){
+	  fCancelAction = FALSE;
+	  free(temp.pszCmdLine);
+	  break;
+	}
+	else
 	  info = add_association(&temp);
 	if (info) {
-          display_associations(hwnd, &temp, info);
+	  display_associations(hwnd, &temp, info);
 	  save_associations();
-        }
-        free(temp.pszCmdLine);
+	}
+	free(temp.pszCmdLine);
       }
       {
 	ASSOC temp;
-        CHAR dummy[34];
+	CHAR dummy[34];
 
-        temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
-        if (!temp.pszCmdLine)
-          break; //already complained
+	temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
+	if (!temp.pszCmdLine)
+	  break; //already complained
 	WinSendDlgItemMsg(hwnd,
 			  ASS_LISTBOX,
 			  LM_SELECTITEM, MPFROMSHORT(y), MPFROMSHORT(TRUE));
-        memset(temp.sig, 0, sizeof(temp.sig));
-        memset(temp.mask, 0, sizeof(temp.mask));
-        temp.offset = 0;
+	memset(temp.sig, 0, sizeof(temp.sig));
+	memset(temp.mask, 0, sizeof(temp.mask));
+	temp.offset = 0;
 	WinQueryDlgItemText(hwnd, ASS_MASK, sizeof(temp.mask), temp.mask);
 	WinQueryDlgItemText(hwnd, ASS_SIG, sizeof(temp.sig), temp.sig);
 	rstrip(temp.sig);
@@ -974,8 +974,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROMSHORT(x - 1), MPFROMSHORT(TRUE));
 	  }
 	  save_associations();
-        }
-        free(temp.pszCmdLine);
+	}
+	free(temp.pszCmdLine);
       }
       break;
     }

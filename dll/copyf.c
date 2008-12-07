@@ -351,7 +351,7 @@ BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname)
   if (strchr(newname, '*') || strchr(newname, '?')) {
 
     CHAR srce[CCHMAXPATHCOMP], dest[CCHMAXPATHCOMP], result[CCHMAXPATHCOMP],
-      *p;
+	 *p;
 
     p = strrchr(newname, '\\');
     if (p && *(p + 1)) {
@@ -360,7 +360,7 @@ BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname)
       if (p && *(p + 1)) {
         strcpy(srce, p + 1);
         DosError(FERR_DISABLEHARDERR);
-        if (!DosEditName(1L, srce, dest, result, (ULONG) sizeof(result))) {
+        if (!DosEditName(1L, srce, dest, (PBYTE)result, (ULONG)sizeof(result))) {
           p = strrchr(newname, '\\');
           p++;
           strcpy(p, result);

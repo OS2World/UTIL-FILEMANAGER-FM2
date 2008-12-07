@@ -1116,7 +1116,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG ulDirLen = CCHMAXPATH;
 	APIRET rc;
 
-	rc = DosQCurDir(toupper(*szBuffer) - '@', &szBuff[3], &ulDirLen);
+	rc = DosQCurDir(toupper(*szBuffer) - '@', (PBYTE)&szBuff[3], &ulDirLen);
 	if (!rc) {
 	  strcpy(wa->szCurrentPath, "C:\\");
 	  *wa->szCurrentPath = toupper(*szBuffer);
@@ -1514,7 +1514,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG ulDirLen = CCHMAXPATH;
 	APIRET rc;
 
-	rc = DosQCurDir(toupper(*szBuffer) - '@', &szBuff[3], &ulDirLen);
+	rc = DosQCurDir(toupper(*szBuffer) - '@', (PBYTE)&szBuff[3], &ulDirLen);
 	if (!rc) {
 	  strcpy(wa->szCurrentPath1, "C:\\");
 	  *wa->szCurrentPath1 = toupper(*szBuffer);
@@ -1579,7 +1579,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG ulDirLen = CCHMAXPATH;
 	APIRET rc;
 
-	rc = DosQCurDir(toupper(*szBuffer) - '@', &szBuff[3], &ulDirLen);
+	rc = DosQCurDir(toupper(*szBuffer) - '@', (PBYTE)&szBuff[3], &ulDirLen);
 	if (!rc) {
 	  strcpy(wa->szCurrentPath2, "C:\\");
 	  *wa->szCurrentPath2 = toupper(*szBuffer);

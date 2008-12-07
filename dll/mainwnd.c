@@ -2929,7 +2929,7 @@ INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
 
   if (!pszStateName || !*pszStateName) {
     Runtime_Error(pszSrcFile, __LINE__, "no data");
-      return -1;
+    return -1;
   }
   if (strlen(pszStateName) > sizeof(szPrefix) - 2) {
     Runtime_Error(pszSrcFile, __LINE__, "SaveDirCnrState");
@@ -6542,6 +6542,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
+#   ifdef FORTIFY
+    DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 22 Jul 08 SHL fixme
+#   endif
     hwndMain = (HWND) 0;
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);

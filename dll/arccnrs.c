@@ -636,8 +636,8 @@ ReTry:
     else {
       fp = xfopen(arctemp, "w", pszSrcFile, __LINE__);
       if (!fp) {
-        xfree(arctemp, pszSrcFile, __LINE__);
-        return 0;
+	xfree(arctemp, pszSrcFile, __LINE__);
+	return 0;
       }
       else {
 	newstdout = -1;
@@ -645,8 +645,8 @@ ReTry:
 	rc = DosDupHandle(fileno(stdout), &newstdout);
 	if (rc) {
 	  Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
-                    "DosDupHandle");
-          xfree(arctemp, pszSrcFile, __LINE__);
+		    "DosDupHandle");
+	  xfree(arctemp, pszSrcFile, __LINE__);
 	  return 0;
 	}
 	else {
@@ -656,8 +656,8 @@ ReTry:
 	  if (rc) {
 	    Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
 		      "DosDupHandle");
-            xfree(arctemp, pszSrcFile, __LINE__);
-            return 0;
+	    xfree(arctemp, pszSrcFile, __LINE__);
+	    return 0;
 	  }
 	  else {
 	    runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
@@ -811,6 +811,12 @@ ReTry:
 		  fname[strlen(fname) - 1] == '/')
 		pai->flags = ARCFLAGS_REALDIR;
 	      pai->pszFileName = xstrdup(fname,pszSrcFile, __LINE__);
+#	      ifdef FORTIFY
+	      // Will be freed by WM_DESTROY
+	      Fortify_SetOwner(pai->pszFileName, 1);
+	      // Fortify_ChangeScope(pai->pszFileName, -1);
+#	      endif
+
 	      pai->pszDisplayName = pai->pszFileName;
 	      pai->rc.pszIcon = pai->pszDisplayName;
 	      if (fdate)
@@ -1655,7 +1661,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       register INT x;
 
       if (li && li->list && li->list[0]) {
-	printf("%x/r", li->type); fflush(stdout);
+	// printf("%x/r", li->type); fflush(stdout);	// 24 Sep 08 SHL
 	switch (li->type) {
 	case IDM_ARCHIVE:
 	case IDM_ARCHIVEM:
@@ -3705,19 +3711,25 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	hwndFrame = (HWND) 0;
       }
       else {
+#	ifdef FORTIFY
+	// Will be freed by WM_DESTROY
+	Fortify_ChangeScope(dcd, -1);
+#	endif
 	dcd->size = sizeof(DIRCNRDATA);
 	dcd->id = id;
 	dcd->type = ARC_FRAME;
 	if (!pTmpDir)
-          strcpy(dcd->workdir, pFM2SaveDirectory);
-        MakeTempName(dcd->workdir, ArcTempRoot, 2);
-	  /*if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
+	  strcpy(dcd->workdir, pFM2SaveDirectory);
+	MakeTempName(dcd->workdir, ArcTempRoot, 2);
+#if 0 // 06 Sep 08 SHL fixme to be gone
+	if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
 	    strcat(dcd->workdir, "\\");
 	  sprintf(dcd->workdir + strlen(dcd->workdir), "%s.%03x",
 		  ArcTempRoot, (clock() & 4095));
 	else
 	  sprintf(dcd->workdir, "%s.%03x",
-		  ArcTempRoot, (clock() & 4095));*/
+		  ArcTempRoot, (clock() & 4095));
+#endif // 06 Sep 08 SHL fixme to be gone
 	strcpy(dcd->arcname, fullname);
 	if (*extractpath) {
 	  if (!strcmp(extractpath, "*")) {

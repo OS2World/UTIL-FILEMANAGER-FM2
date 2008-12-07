@@ -47,7 +47,7 @@ INT RunFM2Util(CHAR *appname, CHAR *filename)
 
     rc = DosSearchPath(SEARCH_IGNORENETERRS |SEARCH_ENVIRONMENT |
 		       SEARCH_CUR_DIRECTORY,"PATH",
-		       appname, fbuf, CCHMAXPATH - 1);
+		       appname, (PBYTE)fbuf, CCHMAXPATH - 1);
       if (rc != 0) {
 	if (rc != 2){
 	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -56,7 +56,7 @@ INT RunFM2Util(CHAR *appname, CHAR *filename)
 	}
 	else {
 	rc = DosSearchPath(0, "UTILS;..\\FM2Utils",
-			   appname, fbuf, CCHMAXPATH - 1);
+			   appname, (PBYTE)fbuf, CCHMAXPATH - 1);
 	    if (rc != 0 && rc != 2){
 	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 			"DosSearchPath", appname);
@@ -120,7 +120,7 @@ CHAR *searchapath(CHAR *pathvar, CHAR *filename)
   *fbuf = 0;
   if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 		    SEARCH_CUR_DIRECTORY,
-		    pathvar, filename, fbuf, CCHMAXPATH - 1))
+		    pathvar, filename, (PBYTE)fbuf, CCHMAXPATH - 1))
     *fbuf = 0;
   return fbuf;
 }

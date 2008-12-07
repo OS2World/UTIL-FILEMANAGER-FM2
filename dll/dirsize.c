@@ -1019,7 +1019,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else {
 	if (pState->working) {
 	  pState->dying = TRUE;
-	  pState->chStopFlag = (BYTE)0xff;
+	  pState->chStopFlag = (CHAR)0xff;
 	  DosBeep(1000, 100);		// Complain?
 	}
 	else
@@ -1032,7 +1032,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     pState = INSTDATA(hwnd);
     if (pState)
-      pState->chStopFlag = (BYTE)0xff;
+      pState->chStopFlag = (CHAR)0xff;
     DosSleep(1);
     break;
 
@@ -1040,7 +1040,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     pState = INSTDATA(hwnd);
     EmptyCnr(hwnd);
     if (pState) {
-      pState->chStopFlag = (BYTE)0xff;
+      pState->chStopFlag = (CHAR)0xff;
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
       DosSleep(16); //05 Aug 07 GKY 33

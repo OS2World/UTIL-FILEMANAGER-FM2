@@ -89,7 +89,9 @@ INT load_archivers(VOID);
 BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime);
 MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID free_arc_type(ARC_TYPE * pat);
+# ifdef FORTIFY
 VOID free_archivers(VOID);
+#endif
 
 // Data declarations
 extern ARC_TYPE *arcsighead;

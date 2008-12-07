@@ -206,16 +206,18 @@ VOID CopyIniThread(VOID * args)
         if (hiniFrom && hiniTo && (*inirec->app2 || hiniFrom != hiniTo)) {
 
           PVOID pDataK, pData;
-          PBYTE pCurrentK;
+          PSZ pCurrentK;
           ULONG ulSize = 0L;
 
           if (inirec->action == IDM_MOVE || inirec->action == IDM_COPY) {
             if (!*inirec->key) {
               if (inirec->confirm &&
-                  PrfQueryProfileSize(hiniFrom, (PSZ) ((*inirec->app2) ?
-                                                    inirec->app2 : inirec->
-                                                    app), NULL,
-                                      (PULONG) & ulSize) && ulSize) {
+                  PrfQueryProfileSize(hiniFrom,
+				      (PSZ)((*inirec->app2) ?
+                                        inirec->app2 : inirec->	app),
+				      NULL,
+				      &ulSize)
+		  && ulSize) {
                 if (saymsg
                     (MB_YESNOCANCEL, HWND_DESKTOP,
                      GetPString(IDS_CONFIRMTEXT),
@@ -238,7 +240,7 @@ VOID CopyIniThread(VOID * args)
                     while (*pCurrentK) {
                       if (PrfQueryProfileSize(hiniTo, inirec->app,
                                               pCurrentK,
-                                              (PULONG) & ulSize) && ulSize) {
+                                              (PULONG)&ulSize) && ulSize) {
                         pData = xmalloc(ulSize, pszSrcFile, __LINE__);
                         if (pData) {
                           /* get data */
@@ -369,7 +371,7 @@ static VOID BackupIniThread(VOID * args)
   HINI orig = NULLHANDLE;
   HINI new;
   PVOID pDataA, pDataK, pData;
-  PBYTE pCurrentA, pCurrentK;
+  PSZ pCurrentA, pCurrentK;
   ULONG ulSize;
   PRFPROFILE cprfp;
   CHAR userini[CCHMAXPATH], sysini[CCHMAXPATH];

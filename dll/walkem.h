@@ -63,6 +63,7 @@ VOID save_setups(VOID);
 VOID save_udirs(VOID);
 
 #ifdef FORTIFY
+VOID free_ldir(VOID);
 VOID free_setups(VOID);
 #endif
 

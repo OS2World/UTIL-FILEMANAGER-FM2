@@ -1101,10 +1101,10 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       sdata.TraceOpt = SSF_TRACEOPT_NONE;
       sdata.PgmName = pszPgm;
       if (*pszArgs)
-        sdata.PgmInputs = pszArgs;
+        sdata.PgmInputs = (PBYTE)pszArgs;
       if (useTermQ)
-        sdata.TermQ = szTermQName;
-      sdata.Environment = pszEnvironment;
+        sdata.TermQ = (PBYTE)szTermQName;
+      sdata.Environment = (PBYTE)pszEnvironment;
       sdata.InheritOpt = SSF_INHERTOPT_PARENT;
       sdata.SessionType = ulAppType;
       sdata.ObjectBuffer = szObject;
