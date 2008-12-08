@@ -5,17 +5,18 @@
 # 14 Jun 07 SHL Convert to OpenWatcom
 # 18 Jul 08 SHL Add Runtime_Error
 # 17 Sep 08 JBS Commented out (# JBS) unneeded exports
+# 08 Dec 08 SHL Ticket 307: Add process dump support
 
 option description '@#SLAInc:3.15.0#@##1## 11/18/2008 03:15:00      GKYBuild::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes Copyright (c) 2001, 2008 Steven Levine and Associates, Inc.'
 segment class 'DATA' readwrite loadoncall nonshared
 segment class 'CODE' loadoncall
 option manyautodata
 
-import DOSQPROCSTATUS DOSCALLS.154
-#       DOSQUERYSYSSTATE DOSCALLS.368
+import DOSQPROCSTATUS DOSCALLS.154,
+       DOSDUMPPROCESS DOSCALLS.113
 
 export    InitFM3DLL_                                 .1,
-# JBS     FindSwapperDat_                             .2,
+#         FindSwapperDat_                             .2, // 13 Sep 08 JBS
           StartFM3_                                   .3,
 # JBS          saymsg_                                     .4,
 # JBS          Win_Error_                                  .5,

@@ -44,6 +44,7 @@
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 # 21 Nov 08 JBS Ticket 297: Added support for copyright.c and copyright.h
+# 08 Dec 08 SHL Ticket 307: Add process dump support
 
 # Environment:
 
@@ -178,7 +179,8 @@ OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        avl.obj avv.obj chklist.obj cmdline.obj codepage.obj &
        collect.obj colors.obj commafmt.obj command.obj common.obj &
        comp.obj copyf.obj datamin.obj defview.obj delims.obj dircnrs.obj &
-       dirs.obj dirsize.obj draglist.obj droplist.obj eas.obj errutil.obj &
+       dirs.obj dirsize.obj draglist.obj droplist.obj dumputil.obj &
+       eas.obj errutil.obj &
        extract.obj filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
        fonts.obj fortify.obj fsopen.obj &
        getnames.obj grep.obj grep2.obj info.obj inis.obj &
