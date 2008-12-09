@@ -188,7 +188,7 @@
 #define priority_normal()   DosSetPriority(PRTYS_THREAD,PRTYC_REGULAR,0L,0L)
 // #define priority_tweaked()  DosSetPriority(PRTYS_THREAD,PRTYC_REGULAR,1L,0L)			// Unused, 13 Sep 08 JBS
 #define priority_bumped()   DosSetPriority(PRTYS_THREAD,PRTYC_REGULAR,3L,0L)
-#define priority_critical() DosSetPriority(PRTYS_THREAD,PRTYC_FOREGROUNDSERVER,2L,0L)	// Unused, 13 Sep 08 JBS
+// #define priority_critical() DosSetPriority(PRTYS_THREAD,PRTYC_FOREGROUNDSERVER,2L,0L)	// Unused, 13 Sep 08 JBS
 // #define priority_max()      DosSetPriority(PRTYS_THREAD,PRTYC_FOREGROUNDSERVER,31L,0L)	// Unused, 13 Sep 08 JBS
 
 #define INSTDATA(h)         WinQueryWindowPtr((h),QWL_USER)
