@@ -409,7 +409,7 @@ VOID Action(VOID * args)
 			    GetPString(IDS_UUDECODECOMPLETETEXT),
 			    wk->li->list[x]);
 		    AddNote(message);
-		    if (fSyncUpdates ||
+		    if (//fSyncUpdates ||
 			AddToList(outname, &files, &numfiles, &numalloc))
 		      Broadcast(hab2,
 				wk->hwndCnr,
@@ -503,7 +503,7 @@ VOID Action(VOID * args)
 		  if (!ret)
 		    goto Abort;
 		  if (ret == 1) {
-		    if (fSyncUpdates ||
+		    if (//fSyncUpdates ||
 			AddToList(wk->li->list[x],
 				  &files, &numfiles, &numalloc))
 		      Broadcast(hab2,
@@ -899,14 +899,14 @@ VOID Action(VOID * args)
                                 moved,
                                 wk->li->list[x],
                                 GetPString(IDS_TOTEXT), newname);
-                      if (fSyncUpdates ||
+                      if (//fSyncUpdates ||
                           AddToList(wk->li->list[x],
                                     &files, &numfiles, &numalloc))
                         Broadcast(hab2,
                                   wk->hwndCnr,
                                   UM_UPDATERECORD,
                                   MPFROMP(wk->li->list[x]), MPVOID);
-                      if (fSyncUpdates ||
+                      if (//fSyncUpdates ||
                           AddToList(newname, &files, &numfiles, &numalloc))
                         Broadcast(hab2,
                                   wk->hwndCnr,
