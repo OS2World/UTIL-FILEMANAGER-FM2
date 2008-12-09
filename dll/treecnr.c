@@ -801,7 +801,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!dcd)
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     else {
-      PULONG pulPostCt;
+      //PULONG pulPostCt;
 
       RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
       WinSendMsg(dcd->hwndCnr,
@@ -809,16 +809,18 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW,
                  MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
-      if (!fInitialDriveScan) {
-        DosWaitEventSem(DriveScanStart, 20000);
-        pulPostCt = xmallocz(sizeof(ULONG), pszSrcFile, __LINE__);
+      //if (!fInitialDriveScan) {
+        //DosWaitEventSem(DriveScanStart, 20000);
+         while (StubbyScanCount != 0)
+            DosSleep(50);
+        /*pulPostCt = xmallocz(sizeof(ULONG), pszSrcFile, __LINE__);
         if (pulPostCt) {
           DosResetEventSem(DriveScanStart, pulPostCt);
           free(pulPostCt);
-        }
-      }
-      else
-        fInitialDriveScan = FALSE;
+        } */
+      //}
+      //else
+      //  fInitialDriveScan = FALSE;
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);

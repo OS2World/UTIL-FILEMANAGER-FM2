@@ -82,4 +82,6 @@ extern HWND hwndToolback;
 extern HWND hwndTree;
 extern USHORT shiftstate;
 
+#define STATE_NAME_MAX_BYTES    256
+
 #endif	// MAINWND_H

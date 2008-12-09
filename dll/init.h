@@ -32,6 +32,10 @@ extern CHAR HomePath[CCHMAXPATH];
 extern CHAR *LONGNAME;
 extern CHAR *NullStr;
 extern ULONG OS2ver[2];
+extern ULONG sizeBool;
+extern ULONG sizeUlong;
+extern ULONG sizeInt;
+extern ULONG sizePvoid;
 extern PFNWP PFNWPCnr;
 extern PFNWP PFNWPMLE;
 extern CHAR *Settings;
@@ -72,6 +76,7 @@ extern BOOL fIniExisted;
 extern BOOL fLogFile;
 extern BOOL fReminimize;
 extern BOOL fWantFirstTimeInit;
+extern BOOL fDrivetoSkip[26];
 extern HPOINTER hptrApp;
 extern HPOINTER hptrArc;
 extern HPOINTER hptrArrow;
@@ -93,6 +98,6 @@ extern CHAR profile[CCHMAXPATH];
 extern ULONGLONG ullTmpSpaceNeeded;
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
-extern HEV  DriveScanStart;
+//extern HEV  DriveScanStart;
 
 #endif // INIT_H

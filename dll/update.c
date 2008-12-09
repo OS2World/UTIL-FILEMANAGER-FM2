@@ -188,8 +188,15 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 MPFROMP(pci), MPFROMP(&ri)) && ullTotalBytes) {
 	    dcd->ullTotalBytes += ullTotalBytes;
 	    PostMsg(hwndCnr, UM_RESCAN, MPVOID, MPVOID);
-	    if (pci->attrFile & FILE_DIRECTORY)
-	      Stubby(hwndCnr, pci);
+            if (pci->attrFile & FILE_DIRECTORY) {
+              if (fInitialDriveScan)
+                Stubby(hwndCnr, pci);
+              else {
+                while (StubbyScanCount != 0)
+                  DosSleep(50);
+                Stubby(hwndCnr, pci);
+              }
+            }
 	  }
 	}
       }
@@ -281,8 +288,14 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 			 MPFROMP(pci), MPFROMP(&ri)) && ullTotalBytes) {
 	    if (dcd->type == DIR_FRAME) {
 	      dcd->ullTotalBytes += ullTotalBytes;
-	    }
-	    Stubby(hwndCnr, pci);
+            }
+            if (fInitialDriveScan)
+              Stubby(hwndCnr, pci);
+            else {
+              while (StubbyScanCount != 0)
+                DosSleep(50);
+              Stubby(hwndCnr, pci);
+            }
 	  }
 	}
       }
@@ -449,8 +462,15 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		  numremain++;
 		}
 		repos = TRUE;
-		if (pci->attrFile & FILE_DIRECTORY)
-		  Stubby(hwndCnr, pci);
+                if (pci->attrFile & FILE_DIRECTORY) {
+                  if (fInitialDriveScan)
+                    Stubby(hwndCnr, pci);
+                  else {
+                    while (StubbyScanCount != 0)
+                      DosSleep(50);
+                    Stubby(hwndCnr, pci);
+                  }
+                }
 	      }
 	      else
 		FreeCnrItem(hwndCnr, pci);
@@ -547,8 +567,14 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		    if (dcd->type == DIR_FRAME)
 		      dcd->ullTotalBytes += ullTotalBytes;
 		  }
-		  repos = TRUE;
-		  Stubby(hwndCnr, pci);
+                  repos = TRUE;
+                  if (fInitialDriveScan)
+                    Stubby(hwndCnr, pci);
+                  else {
+                    while (StubbyScanCount != 0)
+                      DosSleep(50);
+                    Stubby(hwndCnr, pci);
+                  }
 		}
 		else
 		  FreeCnrItem(hwndCnr, pci);

@@ -121,7 +121,6 @@ typedef struct {
   HWND        hwndCnr;			// hwnd you want the message posted to
   HWND        hwndDrivesList;
   BOOL        RamDrive;
-  BOOL        FirstDrive;
 }
 STUBBYSCAN;
 
@@ -218,14 +217,10 @@ VOID StubbyScanThread(VOID * arg)
 		     LM_INSERTITEM,
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(StubbyScan->pci->pszFileName));
-	}
-        StubbyScanCount--;
-        if (StubbyScan->FirstDrive) {
-          priority_critical();
-          while (StubbyScanCount != 0)
-            DosSleep(50);
-          DosPostEventSem(DriveScanStart);
         }
+        StubbyScanCount--;
+        if (StubbyScanCount == 0)
+          fInitialDriveScan = FALSE;
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -358,6 +353,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
   CHAR *p;
   HPOINTER hptr;
+  ULONG flags;
 
   pci->hwndCnr = hwndCnr;
 
@@ -394,13 +390,13 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     p++;
     memcpy(p, pffb->achName, pffb->cchName + 1);
   }
-
+  flags = driveflags[toupper(*pci->pszFileName) - 'A'];
   // load the object's Subject, if required
-  pci->pszSubject = NullStr;
+  // pci->pszSubject = NullStr; dubplicate see below 12-05-08 GKY
   if (pffb->cbList > 4L &&
       dcd && fLoadSubject &&
       (isalpha(*pci->pszFileName) &&
-       !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADSUBJS)))
+       !(flags & DRIVE_NOLOADSUBJS)))
   {
     APIRET rc;
     EAOP2 eaop;
@@ -446,8 +442,8 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
       dcd &&
       pffb->cbList > 4L &&
       isalpha(*pci->pszFileName) &&
-      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLONGNAMES &&
-      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADLONGS)
+      ~flags & DRIVE_NOLONGNAMES &&
+      ~flags & DRIVE_NOLOADLONGS)
   {
     APIRET rc;
     EAOP2 eaop;
@@ -507,7 +503,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   if (pffb->attrFile & FILE_DIRECTORY) {
     // is directory
     if (fNoIconsDirs ||
-	(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADICONS) ||
+	(flags & DRIVE_NOLOADICONS) ||
 	!isalpha(*pci->pszFileName)) {
       hptr = (HPOINTER) 0;
     }
@@ -517,7 +513,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   else {
     // is file
     if (fNoIconsFiles ||
-	(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADICONS) ||
+	(flags & DRIVE_NOLOADICONS) ||
 	!isalpha(*pci->pszFileName)) {
       hptr = (HPOINTER) 0;
     }
@@ -530,12 +526,10 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
   if (!hptr) {
     hptr = pffb->attrFile & FILE_DIRECTORY ?
-      hptrDir : pffb->attrFile & FILE_SYSTEM ?
-		  hptrSystem :
-		    pffb->attrFile & FILE_HIDDEN ?
-		    hptrHidden :
-		    pffb->attrFile & FILE_READONLY ?
-		      hptrReadonly : hptrFile;
+           hptrDir : pffb->attrFile & FILE_SYSTEM ?
+           hptrSystem : pffb->attrFile & FILE_HIDDEN ?
+           hptrHidden : pffb->attrFile & FILE_READONLY ?
+	   hptrReadonly : hptrFile;
   }
 
   // Tell container what part of pathname to display
@@ -637,20 +631,21 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 {
   HPOINTER hptr;
   CHAR *p;
+  ULONG flags;
 
   // fill in a container record from a FILESTATUS4L structure
 
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
   //strcpy(pci->pszFileName, pszFileName);
-
+  flags = driveflags[toupper(*pci->pszFileName) - 'A'];
   // load the object's Subject, if required
-  pci->pszSubject = NullStr;
+  //pci->pszSubject = NullStr;
   if (pfsa4->cbList > 4 &&
       dcd &&
       fLoadSubject &&
       (!isalpha(*pci->pszFileName) ||
-       !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADSUBJS)))
+       !(flags & DRIVE_NOLOADSUBJS)))
   {
     APIRET rc;
     EAOP2 eaop;
@@ -695,8 +690,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
       dcd &&
       pfsa4->cbList > 4L &&
       isalpha(*pci->pszFileName) &&
-      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLONGNAMES &&
-      ~driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADLONGS)
+      ~flags & DRIVE_NOLONGNAMES &&
+      ~flags & DRIVE_NOLOADLONGS)
   {
     APIRET rc;
     EAOP2 eaop;
@@ -745,7 +740,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 
   if (pfsa4->attrFile & FILE_DIRECTORY) {
     if (fNoIconsDirs ||
-	(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADICONS) ||
+	(flags & DRIVE_NOLOADICONS) ||
 	!isalpha(*pci->pszFileName)) {
       hptr = (HPOINTER) 0;
     }
@@ -754,7 +749,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   }
   else {
     if (fNoIconsFiles ||
-	(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOLOADICONS) ||
+	(flags & DRIVE_NOLOADICONS) ||
 	!isalpha(*pci->pszFileName)) {
       hptr = IDFile(pci->pszFileName);
     }
@@ -1271,13 +1266,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
       CHAR s[80];
       ULONG flags = 0;
-      ULONG size = sizeof(ULONG);
 
       *szDrive = (CHAR)x + 'A';		// Build path spec
 
       sprintf(s, "%c.DriveFlags", toupper(*szDrive));
-      if (PrfQueryProfileData(fmprof, appname, s, &flags, &size) &&
-	  size == sizeof(ULONG)) {
+      if (PrfQueryProfileData(fmprof, appname, s, &flags, &sizeUlong)) {
 	driveflags[toupper(*szDrive) - 'A'] |= flags;
       }
 
@@ -1561,7 +1554,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     STUBBYSCAN *StubbyScan;
     HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
                                           MAIN_DRIVELIST);
-    BOOL FirstDrive = TRUE;
 
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
@@ -1576,7 +1568,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       StubbyScan->hwndCnr = hwndCnr;
       StubbyScan->hwndDrivesList = hwndDrivesList;
       StubbyScan->RamDrive = FALSE;
-      StubbyScan->FirstDrive = FALSE;
       pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				      CM_QUERYRECORD,
 				      MPFROMP(pci),
@@ -1587,18 +1578,14 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  ULONG flags = driveflags[drvNum];	// Speed up
 	  if (~flags & DRIVE_INVALID &&
 	      ~flags & DRIVE_NOPRESCAN &&
-	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE))
+	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE) && !fDrivetoSkip[drvNum])
 	  {
 	    if (DRIVE_RAMDISK)
               StubbyScan->RamDrive = TRUE;
-            if (FirstDrive)
-              StubbyScan->FirstDrive = TRUE;
 	    rc = _beginthread(StubbyScanThread, NULL, 65536, StubbyScan);
 	    if (rc == -1)
 	      Runtime_Error(pszSrcFile, __LINE__,
                             GetPString(IDS_COULDNTSTARTTHREADTEXT));
-            else
-              FirstDrive = FALSE;
 	  } // if drive for scanning
 	  else
 	    WinSendMsg(hwndDrivesList,
@@ -1615,11 +1602,14 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		     LM_INSERTITEM,
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(pci->pszFileName));
-	}
+        }
+        fDrivetoSkip[drvNum] = FALSE;
       }
       pci = pciNext;
     } // while
-    StubbyScanCount --;
+    StubbyScanCount--;
+    if (StubbyScanCount == 0)
+      fInitialDriveScan = FALSE;
   }
   if (hwndParent)
     WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
