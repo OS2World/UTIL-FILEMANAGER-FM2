@@ -1266,11 +1266,12 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
       CHAR s[80];
       ULONG flags = 0;
+      ULONG size = sizeof(ULONG);
 
       *szDrive = (CHAR)x + 'A';		// Build path spec
 
       sprintf(s, "%c.DriveFlags", toupper(*szDrive));
-      if (PrfQueryProfileData(fmprof, appname, s, &flags, &sizeUlong)) {
+      if (PrfQueryProfileData(fmprof, appname, s, &flags, &size)) {
 	driveflags[toupper(*szDrive) - 'A'] |= flags;
       }
 
