@@ -3,17 +3,21 @@
 
   $Id$
 
-  <<<description here>>>
+  Wrappers with error checking
 
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2008 Steven H. Levine
 
-  Change log
+  08 Dec 08 SHL Add missing OS2_INCLUDED check
 
 ***********************************************************************/
 
 #if !defined(WRAPPERS_H)
 #define WRAPPERS_H
+
+#if !defined(OS2_INCLUDED)
+#include <os2.h>
+#endif
 
 APIRET xDosFindFirst(PSZ pszFileSpec,
 		     PHDIR phdir,
