@@ -1905,7 +1905,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 	      }
 	      z = x;
-	      runemf2(SEPARATE | WINDOWED | ASYNCHRONOUS |
+	      runemf2(SEPARATE | WINDOWED | WAIT |
                       (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
                       hwnd, pszSrcFile, __LINE__,
 		      li->targetpath, NULL, "%s", pszCmdLine);
