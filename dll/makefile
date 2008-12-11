@@ -45,12 +45,14 @@
 # 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 # 21 Nov 08 JBS Ticket 297: Added support for copyright.c and copyright.h
 # 08 Dec 08 SHL Ticket 307: Add process dump support
+# 10 Dec 08 SHL Ticket 26: Add exception handler and exceptq support
 
-# Environment:
+# Environment: see makefile_pre.mk
 
 # DEBUG - not defined = release build, defined = debug build
 # WARNALL - add more warnings if defined
 # FORTIFY - build with FORTIFYed memory
+# USE_RC - build with rc.exe if defined, other build with wrc.exe
 
 BASE = fm3dll
 BASERES = fm3res
@@ -180,8 +182,8 @@ OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        collect.obj colors.obj commafmt.obj command.obj common.obj &
        comp.obj copyf.obj datamin.obj defview.obj delims.obj dircnrs.obj &
        dirs.obj dirsize.obj draglist.obj droplist.obj dumputil.obj &
-       eas.obj errutil.obj &
-       extract.obj filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
+       eas.obj errutil.obj excputil.obj extract.obj &
+       filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
        fonts.obj fortify.obj fsopen.obj &
        getnames.obj grep.obj grep2.obj info.obj inis.obj &
        init.obj input.obj instant.obj key.obj killproc.obj literal.obj &
