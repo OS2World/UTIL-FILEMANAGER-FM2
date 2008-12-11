@@ -18,6 +18,6 @@
 #include <os2.h>
 #endif
 
-VOID DumpProcess(VOID);
+VOID DbgDumpProcess(VOID);
 
-#endif // DUMPUTIL_HPP
+#endif // DUMPUTIL_H

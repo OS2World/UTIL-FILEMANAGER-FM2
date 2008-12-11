@@ -27,7 +27,7 @@ static PSZ pszSrcFile = __FILE__;
  * @note Need to import DosDumpProcess = DOSCALLS.113
  */
 
-VOID DumpProcess(VOID)
+VOID DbgDumpProcess(VOID)
 {
   APIRET apiret = DosDumpProcess(DDP_PERFORMPROCDUMP, 0, 0);
   // Use DbgMsg to report errors - Dos_Error probably unsafe here
