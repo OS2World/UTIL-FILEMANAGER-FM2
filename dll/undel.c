@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2008 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   24 May 05 SHL Rework Win_Error usage
@@ -15,13 +15,14 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
   16 JUL 08 GKY Use TMP directory for temp files
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -36,7 +37,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "pathutil.h"                   // BldFullPathName
+#include "pathutil.h"			// BldFullPathName
 #include "walkem.h"			// FillPathListBox
 #include "common.h"			// DecrThreadUsage, IncrThreadUsage
 #include "valid.h"			// MakeFullName
@@ -46,6 +47,7 @@
 #include "misc.h"			// GetCmdSpec
 #include "systemf.h"			// runemf2
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 #pragma data_seg(DATA2)
 
@@ -238,10 +240,12 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	sprintf(s,
 		GetPString(IDS_UNDELETETITLETEXT), toupper(*undelinfo->path));
 	WinSetWindowText(hwnd, s);
-	if (_beginthread(FillUndelListThread, NULL, 65536, (PVOID) undelinfo)
-	    == -1) {
-	  Runtime_Error(pszSrcFile, __LINE__,
-			GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	if (xbeginthread(FillUndelListThread,
+			 65536,
+			 undelinfo,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  free(undelinfo);
 	  listdone = TRUE;
 	  WinDismissDlg(hwnd, 0);

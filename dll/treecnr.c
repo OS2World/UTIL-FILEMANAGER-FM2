@@ -1,3 +1,4 @@
+
 /***********************************************************************
 
   $Id$
@@ -49,13 +50,14 @@
   19 Oct 08 GKY Fixed logic for greying menu items (Format etc) on remote and virtual drives (it was reversed)
   19 Oct 08 GKY Fixed context menu to be "drives" menu on unformatted drives
   28 Nov 08 GKY Remove unneeded DosEnterCriSec calls
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -78,14 +80,14 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
-#include "worker.h"         		// Action, MassAction
+#include "worker.h"		// Action, MassAction
 #include "mainwnd.h"			// BubbleHelp, FindDirCnrByName, GetNextWindowPos
 #include "misc.h"			// CnrDirectEdit, EmphasizeButton, FindDirCnr
-                 			// FindDirCnr, FixSwitchList, OpenEdit, QuickPopup
-                 			// SetSortChecks, SwitchCommand, CheckMenu
-                 			// CurrentRecord, IsFm2Window
+				// FindDirCnr, FixSwitchList, OpenEdit, QuickPopup
+				// SetSortChecks, SwitchCommand, CheckMenu
+				// CurrentRecord, IsFm2Window
 #include "common.h"			// CommonCnrProc, CommonDriveCmd, CommonFrameWndProc
-                   			// CommonTextProc
+				// CommonTextProc
 #include "valid.h"			// CheckDrive, DriveFlagsOne, IsValidDrive
 #include "chklist.h"			// DropListProc
 #include "select.h"			// ExpandAll
@@ -115,6 +117,7 @@
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
 #include "init.h"			// GetTidForWindow
+#include "excputil.h"			// xbeginthread
 
 // Data definitions
 
@@ -613,6 +616,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SHOWME:
     // DbgMsg(pszSrcFile, __LINE__, "UM_SHOWME mp1 %p mp2 %p", mp1, mp2);	// 14 Aug 07 SHL fixme
     if (mp1) {
+#     ifdef FORTIFY
+      Fortify_BecomeOwner(mp1);
+#     endif
       dcd = INSTDATA(hwnd);
       // DbgMsg(pszSrcFile, __LINE__, "UM_SHOWME dcd %p", dcd);	// 14 Aug 07 SHL fixme
       if (dcd) {
@@ -808,16 +814,16 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 CM_SCROLLWINDOW, MPFROMSHORT(CMA_VERTICAL), MPFROMLONG(-1));
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW,
-                 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
+		 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
       //if (!fInitialDriveScan) {
-        //DosWaitEventSem(DriveScanStart, 20000);
-         while (StubbyScanCount != 0)
-            DosSleep(50);
-        /*pulPostCt = xmallocz(sizeof(ULONG), pszSrcFile, __LINE__);
-        if (pulPostCt) {
-          DosResetEventSem(DriveScanStart, pulPostCt);
-          free(pulPostCt);
-        } */
+	//DosWaitEventSem(DriveScanStart, 20000);
+	 while (StubbyScanCount != 0)
+	    DosSleep(50);
+	/*pulPostCt = xmallocz(sizeof(ULONG), pszSrcFile, __LINE__);
+	if (pulPostCt) {
+	  DosResetEventSem(DriveScanStart, pulPostCt);
+	  free(pulPostCt);
+	} */
       //}
       //else
       //  fInitialDriveScan = FALSE;
@@ -883,9 +889,12 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  wk->hwndClient = dcd->hwndClient;
 	  wk->li = (LISTINFO *) mp1;
 	  strcpy(wk->directory, dcd->directory);
-	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(MassAction,
+			   122880,
+			   wk,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
@@ -921,9 +930,12 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  wk->hwndClient = dcd->hwndClient;
 	  wk->li = (LISTINFO *) mp1;
 	  strcpy(wk->directory, dcd->directory);
-	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(Action,
+			   122880,
+			   wk,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
@@ -1129,9 +1141,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       pci = (PCNRITEM) CurrentRecord(hwnd);
       if (pci && (INT) pci != -1) {
-        if (IsRoot(pci->pszFileName) || !DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
-                                                       FSIL_ALLOC, &fsa,
-                                                       sizeof(FSALLOCATE)))
+	if (IsRoot(pci->pszFileName) || !DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
+						       FSIL_ALLOC, &fsa,
+						       sizeof(FSALLOCATE)))
 	  menuHwnd = CheckMenu(hwndMainMenu, &TreeMenu, TREE_POPUP);
 	else {
 	  menuHwnd = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
@@ -1255,6 +1267,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP:
+#   ifdef FORTIFY
+    // Balance WM_DESTROY
+    Fortify_EnterScope();
+#   endif
+
     if (!dcd) {
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1313,11 +1330,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROMP(&cnri),
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
 			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
-	if (_beginthread(MakeObjWin, NULL, 327680, (PVOID) dcd) == -1) {
-	  Runtime_Error(pszSrcFile, __LINE__,
-			GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	if (xbeginthread(MakeObjWin,
+			 327680,
+			 dcd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
-	  // return 0;
 	}
 	else
 	  DosSleep(1);
@@ -2439,22 +2458,22 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  pci = (PCNRITEM) CurrentRecord(hwnd);
 	  if (pci && (INT) pci != -1) {
-            pszTempDir = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
-            if (pszTempDir)
+	    pszTempDir = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
+	    if (pszTempDir)
 	      MakeValidDir(pszTempDir);
 	  }
 	  else
-            pszTempDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__);
-          if (pszTempDir) {
-            if (WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
-                          WalkAllDlgProc,
-                          FM3ModHandle, WALK_FRAME, MPFROMP(pszTempDir))) {
-              if (!WinSendMsg(hwnd, UM_SHOWME, MPFROMP(pszTempDir), MPFROMLONG(1)))
-                free(pszTempDir);
-            }
-            else
-              free(pszTempDir);
-          }
+	    pszTempDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__);
+	  if (pszTempDir) {
+	    if (WinDlgBox(HWND_DESKTOP, dcd->hwndParent,
+			  WalkAllDlgProc,
+			  FM3ModHandle, WALK_FRAME, MPFROMP(pszTempDir))) {
+	      if (!WinSendMsg(hwnd, UM_SHOWME, MPFROMP(pszTempDir), MPFROMLONG(1)))
+		free(pszTempDir);
+	    }
+	    else
+	      free(pszTempDir);
+	  }
 	}
 	break;
 
@@ -3030,6 +3049,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
+#   ifdef FORTIFY
+    DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL fixme
+#   endif
     if (TreeCnrMenu)
       WinDestroyWindow(TreeCnrMenu);
     if (DirMenu)
@@ -3049,11 +3071,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       apphead = apptail = NULL;
     }
 #   ifdef FORTIFY
-    // if (dcd)
-    //  Fortify_ChangeScope(dcd, -1);
     Fortify_LeaveScope();
-    // if (dcd)
-    //  Fortify_ChangeScope(dcd, -1);
 #   endif
     break; // WM_DESTROY
   } // switch
@@ -3120,7 +3138,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       if (*(ULONG *) realappname == FM3UL) {
 	if (!WinCreateWindow(hwndFrame,
 			     WC_TREEOPENBUTTON,
-                             "#303",
+			     "#303",
 			     WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS | BS_BITMAP,
 			     ((swp.cx -
 			       WinQuerySysValue(HWND_DESKTOP,

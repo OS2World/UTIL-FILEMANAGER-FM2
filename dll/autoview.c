@@ -23,13 +23,14 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   30 Dec 07 GKY Use CommaFmtULL
   29 Feb 08 GKY Use xfree where appropriate
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -61,6 +62,7 @@
 #include "wrappers.h"			// xDosSetPathInfo
 #include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"
+#include "excputil.h"			// 06 May 08 SHL added
 
 static BOOL PutComments(HWND hwnd, CHAR * filename, CHAR * comments);
 static BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
@@ -715,9 +717,11 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       MRESULT mr;
 
       if (!hwndAutoObj) {
-	if (_beginthread(MakeAutoWinThread, NULL, 65536, (PVOID) hwnd) == -1) {
-	  Runtime_Error(pszSrcFile, __LINE__,
-			GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	if (xbeginthread(MakeAutoWinThread,
+			 65536,
+			 (PVOID)hwnd,
+			 pszSrcFile,
+			 __LINE__) == -1) {
 	  PostMsg(hwnd, UM_CLOSE, MPVOID, MPVOID);
 	}
       }

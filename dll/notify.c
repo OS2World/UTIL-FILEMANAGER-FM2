@@ -13,6 +13,7 @@
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 Apr 08 SHL Comment and clean up logic
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -20,7 +21,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stddef.h>                     // _threadid
-#include <process.h>                    // _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -43,6 +44,7 @@
 #include "wrappers.h"			// xmalloc
 #include "misc.h"			// PostMsg
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 #pragma data_seg(DATA1)
 
@@ -71,25 +73,25 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       MRESULT rc = PFNWPStatic(hwnd, msg, mp1, mp2);
 
       if (!WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER2, 5000)) {
-        Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinStartTimer");
-        WinDestroyWindow(hwnd);
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinStartTimer");
+	WinDestroyWindow(hwnd);
       }
       else {
 
-        RGB2 rgb2F, rgb2;
+	RGB2 rgb2F, rgb2;
 
-        memset(&rgb2F, 0, sizeof(RGB2));
-        rgb2F.bRed = (BYTE)65;
-        rgb2.bRed = rgb2.bGreen = rgb2.bBlue = (BYTE)255;
-        rgb2.fcOptions = 0;
-        SetPresParams(hwnd, &rgb2, &rgb2F, &rgb2, GetPString(IDS_8HELVTEXT));
-        if (hwndMain) {
-          if (hwndStatus)
-            WinShowWindow(hwndStatus, FALSE);
-          if (hwndStatus2)
-            WinShowWindow(hwndStatus2, FALSE);
-        }
-        PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
+	memset(&rgb2F, 0, sizeof(RGB2));
+	rgb2F.bRed = (BYTE)65;
+	rgb2.bRed = rgb2.bGreen = rgb2.bBlue = (BYTE)255;
+	rgb2.fcOptions = 0;
+	SetPresParams(hwnd, &rgb2, &rgb2F, &rgb2, GetPString(IDS_8HELVTEXT));
+	if (hwndMain) {
+	  if (hwndStatus)
+	    WinShowWindow(hwndStatus, FALSE);
+	  if (hwndStatus2)
+	    WinShowWindow(hwndStatus2, FALSE);
+	}
+	PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
       }
       return rc;
     }
@@ -118,16 +120,16 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       MRESULT mr = PFNWPStatic(hwnd, msg, mp1, mp2);
       HPS hps = WinGetPS(hwnd);
       if (hps) {
-        if (WinQueryWindowPos(hwnd, &swp)) {
-          ptl.x = 0;
-          ptl.y = 0;
-          GpiMove(hps, &ptl);
-          GpiSetColor(hps, CLR_RED);
-          ptl.x = swp.cx - 1;
-          ptl.y = swp.cy - 1;
-          GpiBox(hps, DRO_OUTLINE, &ptl, 2, 2);
-        }
-        WinReleasePS(hwnd);
+	if (WinQueryWindowPos(hwnd, &swp)) {
+	  ptl.x = 0;
+	  ptl.y = 0;
+	  GpiMove(hps, &ptl);
+	  GpiSetColor(hps, CLR_RED);
+	  ptl.x = swp.cx - 1;
+	  ptl.y = swp.cy - 1;
+	  GpiBox(hps, DRO_OUTLINE, &ptl, 2, 2);
+	}
+	WinReleasePS(hwnd);
       }
       return mr;
     }
@@ -145,9 +147,9 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     showing--;
     if (!showing && hwndMain) {
       if (hwndStatus)
-        WinShowWindow(hwndStatus, TRUE);
+	WinShowWindow(hwndStatus, TRUE);
       if (hwndStatus2)
-        WinShowWindow(hwndStatus2, TRUE);
+	WinShowWindow(hwndStatus2, TRUE);
     }
     break;
   }
@@ -175,14 +177,14 @@ HWND DoNotify(char *str)
     if (hwndStatus2)
       WinQueryWindowPos(hwndStatus2, &swpS2);
     x = hwndMain ? (hwndStatus ? swpS.x - 1 :
-                      WinQuerySysValue(HWND_DESKTOP, SV_CXSIZEBORDER)) : 0;
+		      WinQuerySysValue(HWND_DESKTOP, SV_CXSIZEBORDER)) : 0;
     y = hwndMain ? (hwndStatus ? swpS.y - 1 :
-                      WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER)) : 0;
+		      WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER)) : 0;
     if (hwndMain && hwndStatus) {
       if (hwndStatus2)
-        cx = swpS2.cx + swpS.cx + 8;
+	cx = swpS2.cx + swpS.cx + 8;
       else
-        cx = swpS.cx + 6;
+	cx = swpS.cx + 6;
     }
     else
       cx = (swp.cx - ((x * 2) + 4));
@@ -192,20 +194,20 @@ HWND DoNotify(char *str)
     if (*str != ' ') {
       p = xmalloc(strlen(str) + 2, pszSrcFile, __LINE__);
       if (!p)
-        p = str;
+	p = str;
       else {
-        strcpy(p + 1, str);
-        *p = ' ';
+	strcpy(p + 1, str);
+	*p = ' ';
       }
     }
     else
       p = str;
 
     hwnd = WinCreateWindow(hwndP,
-                           WC_ERRORWND,
-                           p,
-                           SS_TEXT | DT_LEFT | DT_VCENTER | WS_VISIBLE,
-                           x, y, cx, cy, hwndP, HWND_TOP, id++, NULL, NULL);
+			   WC_ERRORWND,
+			   p,
+			   SS_TEXT | DT_LEFT | DT_VCENTER | WS_VISIBLE,
+			   x, y, cx, cy, hwndP, HWND_TOP, id++, NULL, NULL);
     if (!hwndP)
       Win_Error2(hwndP, hwndP, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
 
@@ -257,7 +259,7 @@ VOID NotifyError(CHAR * filename, APIRET status)
       strcat(errortext, GetPString(IDS_UNFORMATEDTEXT));
     else if (status == 107)
       sprintf(&errortext[strlen(errortext)],
-              GetPString(IDS_PHANTOMTEXT), toupper(*filename));
+	      GetPString(IDS_PHANTOMTEXT), toupper(*filename));
     else if (status == 19)
       strcat(errortext, GetPString(IDS_DISKWRITEPROTEXTTEXT));
     else if (status == 108)
@@ -283,11 +285,11 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (hwndNotify != (HWND)0) {
       // Already have notes dialog - pass message on
       if (mp2) {
-        WinSendDlgItemMsg(hwndNotify,
-                          NOTE_LISTBOX,
-                          LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
-        PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
-        free((CHAR *)mp2);
+	WinSendDlgItemMsg(hwndNotify,
+			  NOTE_LISTBOX,
+			  LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
+	PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
+	free((CHAR *)mp2);
       }
       WinDismissDlg(hwnd, 0);
       break;
@@ -298,12 +300,12 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       BOOL dummy = TRUE;
       PrfWriteProfileData(fmprof,
-                          FM3Str, "ThreadNotes", &dummy, sizeof(BOOL));
+			  FM3Str, "ThreadNotes", &dummy, sizeof(BOOL));
     }
     if (mp2) {
       WinSendDlgItemMsg(hwnd,
-                        NOTE_LISTBOX,
-                        LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
+			NOTE_LISTBOX,
+			LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
       free((CHAR *)mp2);
     }
 
@@ -321,24 +323,24 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_FOCUSME:
     {
       ULONG size = sizeof(SWP),
-        fl = SWP_ZORDER | SWP_FOCUSDEACTIVATE | SWP_SHOW;
+	fl = SWP_ZORDER | SWP_FOCUSDEACTIVATE | SWP_SHOW;
       SWP swp;
 
       if (PrfQueryProfileData(fmprof,
-                              FM3Str, "NoteWndSwp", (PVOID) & swp, &size)) {
-        if (swp.fl & (SWP_HIDE | SWP_MINIMIZE)) {
-          fl |= SWP_MINIMIZE;
-          fl &= (~SWP_SHOW);
-        }
-        else
-          fl |= (SWP_MOVE | SWP_SIZE);
+			      FM3Str, "NoteWndSwp", (PVOID) & swp, &size)) {
+	if (swp.fl & (SWP_HIDE | SWP_MINIMIZE)) {
+	  fl |= SWP_MINIMIZE;
+	  fl &= (~SWP_SHOW);
+	}
+	else
+	  fl |= (SWP_MOVE | SWP_SIZE);
       }
       WinSetWindowPos(hwnd, HWND_BOTTOM, swp.x, swp.y, swp.cx, swp.cy, fl);
       if (fl & SWP_MINIMIZE) {
-        WinSetWindowUShort(hwnd, QWS_XRESTORE, (USHORT) swp.x);
-        WinSetWindowUShort(hwnd, QWS_CXRESTORE, (USHORT) swp.cx);
-        WinSetWindowUShort(hwnd, QWS_YRESTORE, (USHORT) swp.y);
-        WinSetWindowUShort(hwnd, QWS_CYRESTORE, (USHORT) swp.cy);
+	WinSetWindowUShort(hwnd, QWS_XRESTORE, (USHORT) swp.x);
+	WinSetWindowUShort(hwnd, QWS_CXRESTORE, (USHORT) swp.cx);
+	WinSetWindowUShort(hwnd, QWS_YRESTORE, (USHORT) swp.y);
+	WinSetWindowUShort(hwnd, QWS_CYRESTORE, (USHORT) swp.cy);
       }
     }
     if (mp1)
@@ -352,25 +354,25 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowPos(hwnd, &swp);
       if (!(swp.fl & (SWP_MINIMIZE | SWP_HIDE))) {
-        szbx = SysVal(SV_CXSIZEBORDER);
-        szby = SysVal(SV_CYSIZEBORDER);
-        titl = SysVal(SV_CYTITLEBAR);
-        WinSetWindowPos(WinWindowFromID(hwnd, NOTE_LISTBOX),
-                        HWND_TOP,
-                        szbx,
-                        szby,
-                        swp.cx - (szbx * 2L),
-                        (swp.cy - titl) - (szby * 2L), SWP_MOVE | SWP_SIZE);
+	szbx = SysVal(SV_CXSIZEBORDER);
+	szby = SysVal(SV_CYSIZEBORDER);
+	titl = SysVal(SV_CYTITLEBAR);
+	WinSetWindowPos(WinWindowFromID(hwnd, NOTE_LISTBOX),
+			HWND_TOP,
+			szbx,
+			szby,
+			swp.cx - (szbx * 2L),
+			(swp.cy - titl) - (szby * 2L), SWP_MOVE | SWP_SIZE);
       }
       if (!(swp.fl & SWP_MAXIMIZE)) {
-        if (swp.fl & (SWP_MINIMIZE | SWP_HIDE)) {
-          swp.x = WinQueryWindowUShort(hwnd, QWS_XRESTORE);
-          swp.y = WinQueryWindowUShort(hwnd, QWS_YRESTORE);
-          swp.cx = WinQueryWindowUShort(hwnd, QWS_CXRESTORE);
-          swp.cy = WinQueryWindowUShort(hwnd, QWS_CYRESTORE);
-        }
-        PrfWriteProfileData(fmprof,
-                            FM3Str, "NoteWndSwp", (PVOID) & swp, sizeof(SWP));
+	if (swp.fl & (SWP_MINIMIZE | SWP_HIDE)) {
+	  swp.x = WinQueryWindowUShort(hwnd, QWS_XRESTORE);
+	  swp.y = WinQueryWindowUShort(hwnd, QWS_YRESTORE);
+	  swp.cx = WinQueryWindowUShort(hwnd, QWS_CXRESTORE);
+	  swp.cy = WinQueryWindowUShort(hwnd, QWS_CYRESTORE);
+	}
+	PrfWriteProfileData(fmprof,
+			    FM3Str, "NoteWndSwp", (PVOID) & swp, sizeof(SWP));
       }
     }
     return 0;
@@ -383,14 +385,14 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       SHORT y;
       SHORT x = (SHORT)WinSendDlgItemMsg(hwnd,
-                                         NOTE_LISTBOX,
-                                         LM_QUERYITEMCOUNT, MPVOID, MPVOID);
+					 NOTE_LISTBOX,
+					 LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (x > 60) {
-        for (y = 0; y < x - 50; y++) {
-          WinSendDlgItemMsg(hwnd,
-                            NOTE_LISTBOX,
-                            LM_DELETEITEM, MPFROMSHORT(y), MPVOID);
-        }
+	for (y = 0; y < x - 50; y++) {
+	  WinSendDlgItemMsg(hwnd,
+			    NOTE_LISTBOX,
+			    LM_DELETEITEM, MPFROMSHORT(y), MPVOID);
+	}
       }
     }
     return 0;
@@ -398,21 +400,21 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_NOTIFY:
     {
       SHORT x = (SHORT) WinSendDlgItemMsg(hwnd,
-                                          NOTE_LISTBOX,
-                                          LM_QUERYITEMCOUNT, MPVOID, MPVOID);
+					  NOTE_LISTBOX,
+					  LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (x > 0)
-        WinSendDlgItemMsg(hwnd,
-                          NOTE_LISTBOX,
-                          LM_SETTOPINDEX, MPFROMSHORT(x), MPVOID);
+	WinSendDlgItemMsg(hwnd,
+			  NOTE_LISTBOX,
+			  LM_SETTOPINDEX, MPFROMSHORT(x), MPVOID);
     }
     return 0;
 
   case UM_SHOWME:
     WinSetWindowPos(hwnd,
-                    HWND_TOP,
-                    0,
-                    0,
-                    0, 0, SWP_SHOW | SWP_RESTORE | SWP_ZORDER | SWP_ACTIVATE);
+		    HWND_TOP,
+		    0,
+		    0,
+		    0, 0, SWP_SHOW | SWP_RESTORE | SWP_ZORDER | SWP_ACTIVATE);
     return 0;
 
   case WM_COMMAND:
@@ -426,7 +428,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (hwndNotify == hwnd) {
       fThreadNotes = FALSE;
       PrfWriteProfileData(fmprof,
-                          FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
+			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
       hwndNotify = (HWND) 0;
     }
     if (hptrIcon)
@@ -452,9 +454,9 @@ static VOID NoteThread(VOID * args)
     HMQ hmq = WinCreateMsgQueue(hab, 0);
     if (hmq) {
       if (!hwndNotify)
-        WinDlgBox(HWND_DESKTOP,
-                  HWND_DESKTOP,
-                  NoteWndProc, FM3ModHandle, NOTE_FRAME, (CHAR *)args);
+	WinDlgBox(HWND_DESKTOP,
+		  HWND_DESKTOP,
+		  NoteWndProc, FM3ModHandle, NOTE_FRAME, (CHAR *)args);
       WinDestroyMsgQueue(hmq);
     }
     WinTerminate(hab);
@@ -471,14 +473,17 @@ static VOID NoteThread(VOID * args)
 VOID StartNotes(CHAR * note)
 {
   if (!hwndNotify) {
-    if (_beginthread(NoteThread, NULL, 65536, (PVOID) note) == -1)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_COULDNTSTARTTHREADTEXT);
-    else {
+    if (xbeginthread(NoteThread,
+		     65536,
+		     note,
+		     pszSrcFile,
+		     __LINE__) != -1)
+    {
       USHORT i;
       for (i = 0; !hwndNotify && i < 10; i++)
-        DosSleep(10);
+	DosSleep(10);
       if (!hwndNotify)
-        Runtime_Error(pszSrcFile, __LINE__, "Can not create Notify window");
+	Runtime_Error(pszSrcFile, __LINE__, "Can not create Notify window");
     }
   }
 }
@@ -498,28 +503,28 @@ BOOL AddNote(CHAR * note)
       p++;
     if (*p) {
       if (!hwndNotify) {
-        fThreadNotes = FALSE;
-        StartNotes(NULL);
+	fThreadNotes = FALSE;
+	StartNotes(NULL);
       }
       if (hwndNotify) {
-        s = xmalloc(strlen(p) + 14, pszSrcFile, __LINE__);
-        if (s) {
-          sprintf(s, "%08lx  %s", _threadid, p);
-          while (!once) {
-            if ((SHORT) WinSendDlgItemMsg(hwndNotify,
-                                          NOTE_LISTBOX,
-                                          LM_INSERTITEM,
-                                          MPFROM2SHORT(LIT_END, 0),
-                                          MPFROMP(s)) >= 0) {
-              ret = TRUE;
-              PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
-              break;
-            }
-            PostMsg(hwndNotify, UM_CONTAINER_FILLED, MPVOID, MPVOID);
-            once = TRUE;
-          }
-          free(s);
-        }
+	s = xmalloc(strlen(p) + 14, pszSrcFile, __LINE__);
+	if (s) {
+	  sprintf(s, "%08lx  %s", _threadid, p);
+	  while (!once) {
+	    if ((SHORT) WinSendDlgItemMsg(hwndNotify,
+					  NOTE_LISTBOX,
+					  LM_INSERTITEM,
+					  MPFROM2SHORT(LIT_END, 0),
+					  MPFROMP(s)) >= 0) {
+	      ret = TRUE;
+	      PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
+	      break;
+	    }
+	    PostMsg(hwndNotify, UM_CONTAINER_FILLED, MPVOID, MPVOID);
+	    once = TRUE;
+	  }
+	  free(s);
+	}
       }
     }
   }
@@ -557,9 +562,9 @@ VOID HideNote(VOID)
 {
   if (hwndNotify)
     WinSetWindowPos(hwndNotify,
-                    HWND_BOTTOM,
-                    0,
-                    0, 0, 0, SWP_MINIMIZE | SWP_ZORDER | SWP_FOCUSDEACTIVATE);
+		    HWND_BOTTOM,
+		    0,
+		    0, 0, 0, SWP_MINIMIZE | SWP_ZORDER | SWP_FOCUSDEACTIVATE);
 }
 
 #pragma alloc_text(NOTIFY,Notify,NotifyWndProc,StartNotify,NotifyError)

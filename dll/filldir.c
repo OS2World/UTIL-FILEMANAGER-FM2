@@ -59,7 +59,8 @@
   30 Nov 08 SHL StubbyScanThread: restore else - we want all drives listed
   30 Nov 08 SHL FreeCnrItemData: report double free with Runtime_Error
   04 Dec 08 GKY Use event semaphore to prevent scan of "last" directory container prior to
-                tree scan completion; prevents duplicate directory names in tree.
+		tree scan completion; prevents duplicate directory names in tree.
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -67,7 +68,7 @@
 #include <string.h>
 #include <malloc.h>			// _msize _heapchk
 #include <ctype.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -98,6 +99,7 @@
 #include "wrappers.h"			// xDosFindNext
 #include "init.h"			// GetTidForWindow
 #include "common.h"			// IncrThreadUsage
+#include "excputil.h"			// xbeginthread
 
 VOID StubbyScanThread(VOID * arg);
 
@@ -217,10 +219,10 @@ VOID StubbyScanThread(VOID * arg)
 		     LM_INSERTITEM,
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(StubbyScan->pci->pszFileName));
-        }
-        StubbyScanCount--;
-        if (StubbyScanCount == 0)
-          fInitialDriveScan = FALSE;
+	}
+	StubbyScanCount--;
+	if (StubbyScanCount == 0)
+	  fInitialDriveScan = FALSE;
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -232,7 +234,7 @@ VOID StubbyScanThread(VOID * arg)
   Fortify_LeaveScope();
 #  endif
 
-  _endthread();
+  // _endthread();			// 10 Dec 08 SHL
 }
 
 static HPOINTER IDFile(PSZ p)
@@ -526,9 +528,9 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
   if (!hptr) {
     hptr = pffb->attrFile & FILE_DIRECTORY ?
-           hptrDir : pffb->attrFile & FILE_SYSTEM ?
-           hptrSystem : pffb->attrFile & FILE_HIDDEN ?
-           hptrHidden : pffb->attrFile & FILE_READONLY ?
+	   hptrDir : pffb->attrFile & FILE_SYSTEM ?
+	   hptrSystem : pffb->attrFile & FILE_HIDDEN ?
+	   hptrHidden : pffb->attrFile & FILE_READONLY ?
 	   hptrReadonly : hptrFile;
   }
 
@@ -967,7 +969,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  // One or more entries selected
 	  if (stopflag && *stopflag)
 	    goto Abort;
-          if (fSyncUpdates) {
+	  if (fSyncUpdates) {
 	    pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
 				  MPFROMLONG(EXTRA_RECORD_BYTES),
 				  MPFROMLONG(ulSelCnt));
@@ -1012,7 +1014,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		  ok = FALSE;
 		  ullTotalBytes = 0;
 		  if (WinIsWindow((HAB) 0, hwndCnr))
-                    FreeCnrItemList(hwndCnr, pciFirst);
+		    FreeCnrItemList(hwndCnr, pciFirst);
 		}
 	      // }
 	      }
@@ -1020,7 +1022,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    if (ok) {
 	      ullReturnBytes += ullTotalBytes;
 	      ulReturnFiles += ulSelCnt;
-            }
+	    }
 	  } // if sync updates
 	  else {
 	    // Append newly selected entries to aggregate list
@@ -1104,7 +1106,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		ok = FALSE;
 		ullTotalBytes = 0;
 		if (WinIsWindow((HAB) 0, hwndCnr))
-                  FreeCnrItemList(hwndCnr, pciFirst);
+		  FreeCnrItemList(hwndCnr, pciFirst);
 	      }
 	    }
 	  }
@@ -1552,23 +1554,23 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     }
   } // if show env
   {
-    STUBBYSCAN *StubbyScan;
+    STUBBYSCAN *stubbyScan;
     HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-                                          MAIN_DRIVELIST);
+					  MAIN_DRIVELIST);
 
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
 				MPVOID,
-                                MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
     StubbyScanCount ++;
     while (pci && (INT)pci != -1) {
-      StubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
-      if (!StubbyScan)
+      stubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
+      if (!stubbyScan)
 	break;
-      StubbyScan->pci = pci;
-      StubbyScan->hwndCnr = hwndCnr;
-      StubbyScan->hwndDrivesList = hwndDrivesList;
-      StubbyScan->RamDrive = FALSE;
+      stubbyScan->pci = pci;
+      stubbyScan->hwndCnr = hwndCnr;
+      stubbyScan->hwndDrivesList = hwndDrivesList;
+      stubbyScan->RamDrive = FALSE;
       pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				      CM_QUERYRECORD,
 				      MPFROMP(pci),
@@ -1582,11 +1584,15 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE) && !fDrivetoSkip[drvNum])
 	  {
 	    if (DRIVE_RAMDISK)
-              StubbyScan->RamDrive = TRUE;
-	    rc = _beginthread(StubbyScanThread, NULL, 65536, StubbyScan);
-	    if (rc == -1)
-	      Runtime_Error(pszSrcFile, __LINE__,
-                            GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	      stubbyScan->RamDrive = TRUE;
+	    if (xbeginthread(StubbyScanThread,
+			     65536,
+			     stubbyScan,
+			     pszSrcFile,
+			     __LINE__) == -1)
+	    {
+	      xfree(stubbyScan, pszSrcFile, __LINE__);
+	    }
 	  } // if drive for scanning
 	  else
 	    WinSendMsg(hwndDrivesList,
@@ -1603,8 +1609,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		     LM_INSERTITEM,
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(pci->pszFileName));
-        }
-        fDrivetoSkip[drvNum] = FALSE;
+	}
+	fDrivetoSkip[drvNum] = FALSE;
       }
       pci = pciNext;
     } // while

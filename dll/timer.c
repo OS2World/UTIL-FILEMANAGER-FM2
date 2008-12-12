@@ -6,14 +6,15 @@
   Timer thread
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H. Levine
+  Copyright (c) 2006, 2008 Steven H. Levine
 
   22 Jul 06 SHL Check more run time errors
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -29,6 +30,7 @@
 #include "strutil.h"			// GetPString
 #include "timer.h"
 #include "misc.h"			// PostMsg
+#include "excputil.h"			// xbeginthread
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -70,11 +72,11 @@ static void TimerThread(void *args)
 
 BOOL StartTimer(void)
 {
-  INT rc = _beginthread(TimerThread, NULL, 32768, (PVOID) 0);
-
-  if (rc == -1)
-    Runtime_Error(pszSrcFile, __LINE__,
-		  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+  INT rc = xbeginthread(TimerThread,
+			32768,
+			(PVOID)0,
+			pszSrcFile,
+			__LINE__);
 
   return rc != -1;
 }

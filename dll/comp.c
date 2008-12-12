@@ -1,3 +1,4 @@
+
 /***********************************************************************
 
   $Id$
@@ -56,6 +57,7 @@
 		all the details view settings (both the global variables and those in the
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   08 Sep 08 SHL Avoid aliased pszLongName pointer in ActionCnrThread IDM_MOVE
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -63,7 +65,7 @@
 #include <string.h>
 #include <share.h>
 #include <io.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _endthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -110,7 +112,8 @@
 #include "wrappers.h"			// xDosFindNext
 #include "notebook.h"			// External compare/dircompare
 #include "commafmt.h"			// CommaFmtULL
-#include "fortify.h"			// 06 May 08 SHL
+#include "fortify.h"			// 06 May 08 SHL added
+#include "excputil.h"			// xbeginthread
 
 typedef struct
 {
@@ -384,9 +387,12 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinDismissDlg(hwnd, 0);
 	break;
       }
-      if (_beginthread(CompareFilesThread, NULL, 65536, (PVOID)fc) == -1) {
-	Runtime_Error(pszSrcFile, __LINE__,
-		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
+      if (xbeginthread(CompareFilesThread,
+		       65536,
+		       fc,
+		       pszSrcFile,
+		       __LINE__) == -1)
+      {
 	WinDismissDlg(hwnd, 0);
       }
     }
@@ -1514,7 +1520,7 @@ static VOID FillCnrsThread(VOID *args)
     // 10 May 08 SHL fixme to suppress W111
     Fortify_LeaveScope();
 #    endif
-    _endthread();
+    return;				// 10 Dec 08 SHL was _endthread
   }
 
   // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread enter");
@@ -2695,10 +2701,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else {
 	*forthread = *cmp;
 	forthread->cmp = cmp;
-	if (_beginthread(FillCnrsThread, NULL, 122880, (PVOID)forthread) ==
-	    -1) {
-	  Runtime_Error(pszSrcFile, __LINE__,
-			GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	if (xbeginthread(FillCnrsThread,
+			 122880,
+			 forthread,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  WinDismissDlg(hwnd, 0);
 	  free(forthread);
 #	  ifdef FORTIFY
@@ -2980,9 +2988,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else
 	      strcpy(sf->dirname, cmp->rightdir);
 	    sf->recurse = cmp->includesubdirs;
-	    if (_beginthread(StartSnap, NULL, 65536, (PVOID)sf) == -1) {
-	      Runtime_Error(pszSrcFile, __LINE__,
-			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	    if (xbeginthread(StartSnap,
+			     65536,
+			     sf,
+			     pszSrcFile,
+			     __LINE__) == -1)
+	    {
 	      free(sf);
 	    }
 	  }
@@ -3031,10 +3042,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *forthread = *cmp;
 	  forthread->cmp = cmp;
 	  forthread->action = SHORT1FROMMP(mp1);
-	  if (_beginthread(ActionCnrThread, NULL, 122880, (PVOID)forthread)
-	      == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(ActionCnrThread,
+			   122880,
+			   forthread,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    free(forthread);
 	  }
 	  else {
@@ -3154,10 +3167,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *forthread = *cmp;
 	  forthread->cmp = cmp;
 	  forthread->action = SHORT1FROMMP(mp1);
-	  if (_beginthread(SelectCnrsThread, NULL, 65536, (PVOID)forthread)
-	      == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(SelectCnrsThread,
+			   65536,
+			   forthread,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    free(forthread);
 	  }
 	  else {

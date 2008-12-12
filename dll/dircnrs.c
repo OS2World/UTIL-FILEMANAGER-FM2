@@ -1,3 +1,4 @@
+
 /***********************************************************************
 
   $Id$
@@ -43,12 +44,13 @@
 		all the details view settings (both the global variables and those in the
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   20 Jul 08 GKY Add save/append filename to clipboard.
-                Change menu wording to make these easier to find
+		Change menu wording to make these easier to find
   02 Aug 08 GKY Always pass temp variable point to treecnr UM_SHOWME to avoid
-                freeing dcd->directory early
+		freeing dcd->directory early
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
-                less than 10 KiB (It hangs and can't be closed)
+		less than 10 KiB (It hangs and can't be closed)
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -56,7 +58,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -82,18 +84,18 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
-#include "worker.h"         		// Action, MassAction
+#include "worker.h"		// Action, MassAction
 #include "misc.h"			// GetTidForThread, AdjustCnrColsForFSType, AdjustCnrColsForPref
-                                        // AdjustDetailsSwitches, CnrDirectEdit, OpenEdit, QuickPopup
-                                        // SayFilter, SaySort, SayView, SetCnrCols, SetDetailsSwitches
-                 			// SetSortChecks, SetViewMenu, SwitchCommand, CheckMenu
-                 			// CurrentRecord, DrawTargetEmphasis, IsFm2Window
+					// AdjustDetailsSwitches, CnrDirectEdit, OpenEdit, QuickPopup
+					// SayFilter, SaySort, SayView, SetCnrCols, SetDetailsSwitches
+				// SetSortChecks, SetViewMenu, SwitchCommand, CheckMenu
+				// CurrentRecord, DrawTargetEmphasis, IsFm2Window
 #include "chklist.h"			// CenterOverWindow, DropListProc
 #include "common.h"			// CommonCnrProc, CommonCreateTextChildren, CommonFrameWndProc
-                   			// CommonTextPaint, CommonTextButton, CommonTextProc
+				// CommonTextPaint, CommonTextButton, CommonTextProc
 #include "mainwnd.h"			// CountDirCnrs, GetNextWindowPos, MakeBubble, TopWindow
 #include "select.h"			// DeselectAll, HideAll, InvertAll, SelectAll, SelectList
-                   			// SpecialSelect2
+				// SpecialSelect2
 #include "dirsize.h"			// DirSizeProc
 #include "flesh.h"			// Flesh, Stubby, UnFlesh
 #include "valid.h"			// IsValidDir
@@ -125,6 +127,7 @@
 #include "getnames.h"			// insert_filename
 #include "wrappers.h"			// xfree
 #include "fortify.h"
+#include "excputil.h"			// 06 May 08 SHL added
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -710,6 +713,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
 #     ifdef FORTIFY
       Fortify_BecomeOwner(dcd);		// We free dcd
+      if (GetTidForThread() != 1)
+      Fortify_ChangeScope(dcd, -1);
 #     endif
       /* set unique id */
       WinSetWindowUShort(hwnd, QWS_ID, DIROBJ_FRAME + (DIR_FRAME - dcd->id));
@@ -719,6 +724,11 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
+#   ifdef FORTIFY
+    // TID 1 will free data
+    if (GetTidForThread() != 1)
+      Fortify_LeaveScope();
+#   endif
     return 0;
 
   case UM_RESCAN2:
@@ -779,14 +789,14 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    CM_QUERYRECORD,
 			    MPFROMP(pci),
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-          if (!pciC) {
-            Stubby(dcd->hwndCnr, pci);
+	  if (!pciC) {
+	    Stubby(dcd->hwndCnr, pci);
 	    //DosSleep(1); //26 Aug 07 GKY 1
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
 			 CM_QUERYRECORD,
-                         MPFROMP(pci), MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+			 MPFROMP(pci), MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
       }
       dcd->firsttree = TRUE;
     }
@@ -803,8 +813,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (dcd->stopflag)
 	dcd->stopflag--;
       if (dcd->stopflag) {
-        DosReleaseMutexSem(hmtxFM2Globals);
-        //DosExitCritSec();
+	DosReleaseMutexSem(hmtxFM2Globals);
+	//DosExitCritSec();
 	return 0;
       }
       DosReleaseMutexSem(hmtxFM2Globals);
@@ -841,18 +851,18 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
       if (fSwitchTree && hwndTree) {
-        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
-        if (hwndMain) {
+	if (hwndMain) {
 	  if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame && pszTempDir)
-            if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-              free(pszTempDir);
+	    if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+	      free(pszTempDir);
 	}
-        else {
-          if (pszTempDir)
-            if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-              free(pszTempDir);
-        }
+	else {
+	  if (pszTempDir)
+	    if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+	      free(pszTempDir);
+	}
       }
       dcd->firsttree = FALSE;
       // fixme to check errors
@@ -1084,11 +1094,14 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  wk->hwndClient = dcd->hwndClient;
 	  wk->li = (LISTINFO *) mp1;
 	  strcpy(wk->directory, dcd->directory);
-	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(MassAction,
+			   122880,
+			   wk,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    free(wk);
-	    FreeListInfo((LISTINFO *) mp1);
+	    FreeListInfo((LISTINFO *)mp1);
 	  }
 	}
 #	ifdef FORTIFY
@@ -1120,7 +1133,12 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  wk->hwndClient = dcd->hwndClient;
 	  wk->li = (LISTINFO *) mp1;
 	  strcpy(wk->directory, dcd->directory);
-	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
+	  if (xbeginthread(Action,
+			   122880,
+			   wk,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    Runtime_Error(pszSrcFile, __LINE__,
 			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	    free(wk);
@@ -1143,7 +1161,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL fixme
 #   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
-    if (dcd) {
+    if (!dcd)
+      Runtime_Error(pszSrcFile, __LINE__, "no data");
+    else {
       if (dcd->hwndRestore)
 	WinSetWindowPos(dcd->hwndRestore,
 			HWND_TOP,
@@ -1154,12 +1174,13 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
       xfree(dcd, pszSrcFile, __LINE__);
-#     ifdef FORTIFY
-      Fortify_LeaveScope();
-#     endif
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
     }
+#   ifdef FORTIFY
+    Fortify_LeaveScope();
+#   endif
+    // 22 Jul 08 SHL fixme to understand
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
     break;
@@ -1401,12 +1422,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
       if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
-        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
-        if (pszTempDir) {
-          if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-            free(pszTempDir);
-        }
+	if (pszTempDir) {
+	  if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+	    free(pszTempDir);
+	}
       }
     }
     break;
@@ -1608,7 +1629,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
 			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
 	SetCnrCols(hwnd, FALSE);
-	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1) {
+	if (xbeginthread(MakeObjWin,
+			 245760,
+			 dcd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1663,7 +1689,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	OpenDirCnr(hwnd, dcd->hwndParent, dcd->hwndFrame, FALSE, (char *)mp1);
       }
       else if (mp1 && IsFile(mp1) == 1 &&
-               CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2) {
+	       CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2) {
 	StartArcCnr(HWND_DESKTOP,
 		    dcd->hwndFrame, (CHAR *)mp1, 4, (ARC_TYPE *) mp2);
       }
@@ -1916,15 +1942,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_FINDINTREE:
-        if (hwndTree) {
-          PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+	if (hwndTree) {
+	  PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
-          if (pszTempDir) {
-            if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
-                            MPFROMLONG(1L)))
-              free(pszTempDir);
-          }
-        }
+	  if (pszTempDir) {
+	    if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
+			    MPFROMLONG(1L)))
+	      free(pszTempDir);
+	  }
+	}
 	break;
 
       case IDM_BEGINEDIT:
@@ -2661,10 +2687,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  StartCollector(dcd->hwndParent, 4);
 	      }
 	      switch (SHORT1FROMMP(mp1)) {
-              case IDM_APPENDTOCLIP:
-              case IDM_APPENDTOCLIPFILENAME:
-              case IDM_SAVETOCLIP:
-              case IDM_SAVETOCLIPFILENAME:
+	      case IDM_APPENDTOCLIP:
+	      case IDM_APPENDTOCLIPFILENAME:
+	      case IDM_SAVETOCLIP:
+	      case IDM_SAVETOCLIPFILENAME:
 	      case IDM_ARCHIVE:
 	      case IDM_ARCHIVEM:
 	      case IDM_DELETE:
@@ -3655,7 +3681,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	      ids[6] = 0;
 	    CommonCreateTextChildren(dcd->hwndClient,
 				     WC_DIRSTATUS, ids);
-          }
+	  }
 	  if (!PostMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID))
 	    WinSendMsg(dcd->hwndCnr, UM_SETUP, MPVOID, MPVOID);
 	  if (FrameFlags & FCF_TASKLIST) {

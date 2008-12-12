@@ -6,7 +6,7 @@
   Minimized data bar
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2006 Steven H. Levine
+  Copyright (c) 2001, 2008 Steven H. Levine
 
   14 Sep 02 SHL Handle large partitions
   16 Oct 02 SHL Handle large partitions better
@@ -20,13 +20,14 @@
   30 Mar 07 GKY Remove GetPString for window class names
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   02 Sep 07 GKY Replaced DosQProcStatus with DosQuerySysState to fix trap in thunk code
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -61,6 +62,7 @@
 #include "wrappers.h"			// xDosFindFirst
 #include "systemf.h"			// runemf2
 #include "fortify.h"
+#include "excputil.h"			// 06 May 08 SHL added
 
 APIRET16 APIENTRY16 Dos16MemAvail(PULONG pulAvailMem);
 
@@ -94,7 +96,7 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       PVOID pv = xmalloc(sizeof(tDataMin), pszSrcFile, __LINE__);
       if (pv)
-        WinSetWindowPtr(hwnd, QWL_DATAMIN_PTR, pv);
+	WinSetWindowPtr(hwnd, QWL_DATAMIN_PTR, pv);
     }
     break;
 
@@ -107,8 +109,8 @@ MRESULT EXPENTRY MiniTimeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  G_hwndSingle = hwnd;
 	  rc = DosPostEventSem(G_hevDataMin);
 	  if (rc) {
-              Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                        GetPString(IDS_POSTSEMFAILED));
+	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+			GetPString(IDS_POSTSEMFAILED));
 	  }
 	}
       }
@@ -353,9 +355,12 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0, 0, x, y, SWP_SHOW | SWP_SIZE | SWP_ZORDER);
       WinShowWindow(WinQueryWindow(hwnd, QW_PARENT), TRUE);
       if (numdrives) {
-	if (_beginthread(dataminThread, NULL, 32768, (PVOID) hwnd) == -1) {
-	  Runtime_Error(pszSrcFile, __LINE__,
-			GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	if (xbeginthread(dataminThread,
+			 32768,
+			 (PVOID)hwnd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	}
       }
@@ -455,8 +460,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  env = "WINOS2.COM";
 	  type = SEPARATE | FULLSCREEN;
 	}
-        runemf2(type, hwnd, pszSrcFile, __LINE__,
-                path, NULL, "%s", env);
+	runemf2(type, hwnd, pszSrcFile, __LINE__,
+		path, NULL, "%s", env);
       }
       break;
 
@@ -478,8 +483,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (G_hevDataMin != NULLHANDLE) {
 	rc = DosPostEventSem(G_hevDataMin);
 	if (rc) {
-            Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                      GetPString(IDS_POSTSEMFAILED));
+	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		      GetPString(IDS_POSTSEMFAILED));
 	}
       }
 
@@ -1016,8 +1021,8 @@ static VOID dataminThread(VOID * pv)
     // Kernel will clean up on exit
     rc = DosCreateEventSem(NULL, (PHEV) & G_hevDataMin, 0L, FALSE);
     if (rc) {
-        Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  GetPString(IDS_CREATESEMFAILED));
+	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  GetPString(IDS_CREATESEMFAILED));
       busy = FALSE;
     }
   }
@@ -1086,14 +1091,14 @@ static VOID dataminThread(VOID * pv)
 
       rc = DosWaitEventSem(G_hevDataMin, 20000L);
       if (rc && rc != ERROR_TIMEOUT) {
-          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                    GetPString(IDS_POSTSEMFAILED));
+	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    GetPString(IDS_POSTSEMFAILED));
       }
 
       rc = DosResetEventSem(G_hevDataMin, &clPosted);
       if (rc && rc != ERROR_ALREADY_RESET) {
-          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                    GetPString(IDS_POSTSEMFAILED));
+	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    GetPString(IDS_POSTSEMFAILED));
       }
     }
 

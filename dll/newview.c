@@ -31,12 +31,13 @@
   29 Feb 08 GKY Use xfree where appropriate
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   20 Jul 08 GKY Change ListToClipboardHab call to match changes made to function
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
-#include <process.h>
+// #include <process.h>			// 10 Dec 08 SHL
 #include <limits.h>
 #include <share.h>
 
@@ -69,10 +70,10 @@
 #include "fonts.h"			// SetPresParamFromFattrs
 #include "newview.h"
 #include "strips.h"			// chop_at_crnl, convert_nl_to_nul
-                   			// remove_first_occurence_of_character
-                   			// strip_lead_char, strip_trail_char
+				// remove_first_occurence_of_character
+				// strip_lead_char, strip_trail_char
 #include "common.h"			// CommonTextButton, CommonTextProc, DecrThreadUsage
-                   			// IncrThreadUsage
+				// IncrThreadUsage
 #include "systemf.h"			// ExecOnList
 #include "input.h"			// InputDlgProc
 #include "shadow.h"			// OpenObject
@@ -85,6 +86,7 @@
 #include "stristr.h"			// findstring
 #include "misc.h"			// PaintRecessedWindow
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -225,7 +227,7 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
   }
   pszCharCounter = pszSrc;
   while (*pszCharCounter && *pszCharCounter != ' ' && *pszCharCounter != '\r' &&
-         *pszCharCounter != '\n' && *pszCharCounter != '\"')
+	 *pszCharCounter != '\n' && *pszCharCounter != '\"')
     pszCharCounter++;
   *pszCharCounter = 0;
   if (!stristr(pszSrc, "<mailto:") && !fNoMailtoMailRun) {
@@ -287,15 +289,15 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
 			    MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
 	  p++;
-        }
+	}
       }
       while (p && *p && p < e);
       p = urld->line;
       if (mailstr(p, "@", e - p)) {
-        pp = mailstr(p, "@", e - p);
-        strcpy(urld->url, pp);
-        WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
-	  	          MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
+	pp = mailstr(p, "@", e - p);
+	strcpy(urld->url, pp);
+	WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
+			  MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
       }
       *urld->url = 0;
       count = (SHORT) WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_QUERYITEMCOUNT,
@@ -360,11 +362,11 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  WinDismissDlg(hwnd, 2);
 		  break;
 		}
-              }
-              else if (strchr(urld->url, '@')) {
+	      }
+	      else if (strchr(urld->url, '@')) {
 		  WinDismissDlg(hwnd, 3);
 		  break;
-              }
+	      }
 	    }
 	  }
 	}
@@ -443,10 +445,10 @@ static CHAR **BuildAList(HWND hwnd)
 	    e = p = ad->lines[x];
 	    while (*e != '\r' && *e != '\n' && e < ad->text + ad->textsize)
 	      e++;
-            /* fixme to be gone?
-               if((*e == '\r' || *e == '\n') && e > p)
-               e--;
-            */
+	    /* fixme to be gone?
+	       if((*e == '\r' || *e == '\n') && e > p)
+	       e--;
+	    */
 	    width = e - p;
 	  }
 	  else {
@@ -829,9 +831,9 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
 			 e - ad->lines[whichline])) {
 	    GpiSetColor(hps, standardcolors[ad->colors[COLORS_HTTPFORE]]);
 	    GpiSetBackColor(hps, standardcolors[ad->colors[COLORS_HTTPBACK]]);
-          }
+	  }
 
-          if (ad->mailin && whichline != ad->cursored - 1
+	  if (ad->mailin && whichline != ad->cursored - 1
 	      && (!ad->markedlines
 		  || !(ad->markedlines[whichline] & (VF_SELECTED | VF_FOUND)))
 	      && strnstr(ad->lines[whichline], "@",e - ad->lines[whichline])) {
@@ -893,9 +895,9 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
 	      && strnstr(ad->lines[whichline], "http://",e - ad->lines[whichline])) {
 	    GpiSetColor(hps, standardcolors[ad->colors[COLORS_HTTPFORE]]);
 	    GpiSetBackColor(hps, standardcolors[ad->colors[COLORS_HTTPBACK]]);
-          }
+	  }
 
-          if (ad->mailin && whichline != ad->cursored - 1
+	  if (ad->mailin && whichline != ad->cursored - 1
 	      && (!ad->markedlines
 		  || !(ad->markedlines[whichline] & (VF_SELECTED | VF_FOUND)))
 	      &&  strnstr(ad->lines[whichline], "@",e - ad->lines[whichline])) {
@@ -1375,14 +1377,14 @@ static VOID ReLineThread(VOID * args)
 	      if (ad->markedlines) {
 		ad->selected = 0;
 	      }
-              if ((*ftprun || fFtpRunWPSDefault) && !ad->ignoreftp &&
-                  strstr(ad->text, "ftp://"))
+	      if ((*ftprun || fFtpRunWPSDefault) && !ad->ignoreftp &&
+		  strstr(ad->text, "ftp://"))
 		ad->ftpin = TRUE;
-              if ((*httprun || fHttpRunWPSDefault) && !ad->ignorehttp &&
-                  strstr(ad->text, "http://"))
-                ad->httpin = TRUE;
-              if (*mailrun && !ad->ignoremail && strstr(ad->text, "@"))
-                ad->mailin = TRUE;
+	      if ((*httprun || fHttpRunWPSDefault) && !ad->ignorehttp &&
+		  strstr(ad->text, "http://"))
+		ad->httpin = TRUE;
+	      if (*mailrun && !ad->ignoremail && strstr(ad->text, "@"))
+		ad->mailin = TRUE;
 	    }
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
@@ -1499,12 +1501,14 @@ static VOID LoadFileThread(VOID * args)
 			ad->hex = TRUE;
 		    }
 		    if (ad->textsize) {
-		      if (_beginthread
-			  (ReLineThread, NULL, 524288, (PVOID) hwnd) == -1)
-			Runtime_Error(pszSrcFile, __LINE__,
-				      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-		      else
+		      if (xbeginthread(ReLineThread,
+				       524288,
+				       (PVOID)hwnd,
+				       pszSrcFile,
+				       __LINE__) != -1)
+		      {
 			error = FALSE;
+		      }
 		    }
 		  }
 		}
@@ -1955,10 +1959,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	oldproc = WinSubclassWindow(hwndFrame, ViewFrameWndProc);
 	WinSetWindowPtr(hwndFrame, QWL_USER, (PVOID) oldproc);
 	ad->hps = InitWindow(hwnd);
-	if (_beginthread(LoadFileThread, NULL, 524288, (PVOID) hwnd) == -1)
-	  Runtime_Error(pszSrcFile, __LINE__,
-			GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	else {
+	if (xbeginthread(LoadFileThread,
+			 524288,
+			 (PVOID)hwnd,
+			 pszSrcFile,
+			 __LINE__) != -1)
+	{
 	  WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
 	  DosSleep(16); //05 Aug 07 GKY 32
 	  return (MRESULT) 1;
@@ -2069,9 +2075,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  newwidth != ad->oldwidth && ad->text && ad->textsize) {
 	ad->oldwidth = newwidth;
 	if (!ad->relining) {
-	  if (_beginthread(ReLineThread, NULL, 524288, (PVOID) hwnd) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(ReLineThread,
+			   524288,
+			   (PVOID)hwnd,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    DosReleaseMutexSem(ad->ScanSem);
 	    WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
 	    return 0;
@@ -2423,13 +2432,13 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    e--;
 	  width = e - p;
 	  if (!width)
-            goto NoAdd;
+	    goto NoAdd;
 
 	  if ((ad->httpin && (*httprun || fHttpRunWPSDefault) &&
 	       strnstr(ad->lines[whichline], "http://", width)) ||
 	      (ad->ftpin && (*ftprun || fFtpRunWPSDefault) &&
-               strnstr(ad->lines[whichline], "ftp://", width)) ||
-              (ad->mailin && *mailrun && mailstr(ad->lines[whichline], "@", width))) {
+	       strnstr(ad->lines[whichline], "ftp://", width)) ||
+	      (ad->mailin && *mailrun && mailstr(ad->lines[whichline], "@", width))) {
 
 	    USHORT ret;
 	    URLDATA *urld;
@@ -2443,78 +2452,78 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       FM3ModHandle, URL_FRAME, urld);
 	      switch (ret) {
 	      case 0:
-                free(urld);
+		free(urld);
 		goto NoAdd;
 	      case 1:
-                if (*urld->url) {
-                  if (fHttpRunWPSDefault) {
-                    CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
+		if (*urld->url) {
+		  if (fHttpRunWPSDefault) {
+		    CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
 
-                    size = sizeof(WPSDefaultHttpRun);
-                    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                        "DefaultBrowserExe", WPSDefaultHttpRun, &size);
-                    size = sizeof(WPSDefaultHttpRunDir);
-                    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                        "DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
-                    runemf2(SEPARATE | WINDOWED,
-                            hwnd, pszSrcFile, __LINE__,
-                            WPSDefaultHttpRunDir,
-                            fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
-                            "%s %s", WPSDefaultHttpRun, urld->url);
-                  }
-                  else
-                    runemf2(SEPARATE | WINDOWED,
-                            hwnd, pszSrcFile, __LINE__,
-                            httprundir,
-                            fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
-                            "%s %s", httprun, urld->url);
-                }
+		    size = sizeof(WPSDefaultHttpRun);
+		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+					"DefaultBrowserExe", WPSDefaultHttpRun, &size);
+		    size = sizeof(WPSDefaultHttpRunDir);
+		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+					"DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
+		    runemf2(SEPARATE | WINDOWED,
+			    hwnd, pszSrcFile, __LINE__,
+			    WPSDefaultHttpRunDir,
+			    fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    "%s %s", WPSDefaultHttpRun, urld->url);
+		  }
+		  else
+		    runemf2(SEPARATE | WINDOWED,
+			    hwnd, pszSrcFile, __LINE__,
+			    httprundir,
+			    fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    "%s %s", httprun, urld->url);
+		}
 		free(urld);
 		goto NoAdd;
 	      case 2:
-                if (*urld->url){
-                  if (fFtpRunWPSDefault) {
-                    CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
+		if (*urld->url){
+		  if (fFtpRunWPSDefault) {
+		    CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
 
-                    size = sizeof(WPSDefaultFtpRun);
-                    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                        "DefaultBrowserExe", WPSDefaultFtpRun, &size);
-                    size = sizeof(WPSDefaultFtpRunDir);
-                    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                        "DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
-                    runemf2(SEPARATE | WINDOWED,
-                            hwnd, pszSrcFile, __LINE__,
-                            WPSDefaultFtpRunDir,
-                            fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
-                            "%s %s", WPSDefaultFtpRun, urld->url);
-                  }
-                  else
-                    runemf2(SEPARATE | WINDOWED,
-                            hwnd, pszSrcFile, __LINE__,
-                            ftprundir,
-                            fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
-                            "%s %s", ftprun, urld->url);
-                }
-                free(urld);
+		    size = sizeof(WPSDefaultFtpRun);
+		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+					"DefaultBrowserExe", WPSDefaultFtpRun, &size);
+		    size = sizeof(WPSDefaultFtpRunDir);
+		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+					"DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
+		    runemf2(SEPARATE | WINDOWED,
+			    hwnd, pszSrcFile, __LINE__,
+			    WPSDefaultFtpRunDir,
+			    fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    "%s %s", WPSDefaultFtpRun, urld->url);
+		  }
+		  else
+		    runemf2(SEPARATE | WINDOWED,
+			    hwnd, pszSrcFile, __LINE__,
+			    ftprundir,
+			    fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    "%s %s", ftprun, urld->url);
+		}
+		free(urld);
 		goto NoAdd;
-              case 3:
-                if (*urld->url){
-                  runemf2(SEPARATE | WINDOWED,
-                          hwnd, pszSrcFile, __LINE__,
-                          mailrundir,
-                          fLibPathStrictMailRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
-                          "%s %s", mailrun, urld->url);
-                }
-                free(urld);
-                goto NoAdd;
+	      case 3:
+		if (*urld->url){
+		  runemf2(SEPARATE | WINDOWED,
+			  hwnd, pszSrcFile, __LINE__,
+			  mailrundir,
+			  fLibPathStrictMailRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			  "%s %s", mailrun, urld->url);
+		}
+		free(urld);
+		goto NoAdd;
 	      default:
 		break;
 	      }
-              free(urld);
+	      free(urld);
 	    }
 	  }
-        }
-        //Move line to selection box at top of viewer
+	}
+	//Move line to selection box at top of viewer
 	numsels = (SHORT) WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
 					    LM_QUERYITEMCOUNT, MPVOID,
 					    MPVOID);
@@ -2551,8 +2560,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    register ULONG x;
 
 	    width = ad->textsize - (whichline * 16);
-            width = min(width, 16); //standard hexx line length
-            //use 80 as width * 5 gives inconsistent format on short lines
+	    width = min(width, 16); //standard hexx line length
+	    //use 80 as width * 5 gives inconsistent format on short lines
 	    s = xmalloc(80, pszSrcFile, __LINE__);
 	    if (!s)
 	      goto NoAdd;
@@ -3323,8 +3332,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	dummy[0] = ad->filename;
 	dummy[1] = NULL;
-        ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
-                   pszSrcFile, __LINE__);
+	ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
+		   pszSrcFile, __LINE__);
       }
       else
 	StartMLEEditor(ad->hwndParent, 4, ad->filename, ad->hwndFrame);
@@ -3336,7 +3345,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ad->ignoreftp = (ad->ignoreftp) ? FALSE : TRUE;
       ad->ftpin = FALSE;
       if (ad->text && (*ftprun || fFtpRunWPSDefault) &&
-          !ad->ignoreftp && strstr(ad->text, "ftp://"))
+	  !ad->ignoreftp && strstr(ad->text, "ftp://"))
 	ad->ftpin = TRUE;
       IgnoreFTP = ad->ignoreftp;
       PrfWriteProfileData(fmprof, appname, "Viewer.IgnoreFTP",
@@ -3543,10 +3552,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      appname,
 				      "Viewer.Searchtext",
 				      (PVOID) ad->searchtext);
-	      if (_beginthread(SearchThread, NULL, 524288, (PVOID) hwnd) ==
-		  -1)
-		Runtime_Error(pszSrcFile, __LINE__,
-			      GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	      xbeginthread(SearchThread,
+			   524288,
+			   (PVOID)hwnd,
+			   pszSrcFile,
+			   __LINE__);
 	    }
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
@@ -3780,10 +3790,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!rc) {
 	  if (!ad->busy) {
 	    ad->cliptype = SHORT1FROMMP(mp1);
-	    if (_beginthread(ClipboardThread, NULL, 524288, (PVOID) hwnd) ==
-		-1)
-	      Runtime_Error(pszSrcFile, __LINE__,
-			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	    xbeginthread(ClipboardThread,
+			 524288,
+			 (PVOID)hwnd,
+			 pszSrcFile,
+			 __LINE__);
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
 	}
@@ -4107,8 +4118,8 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
 			    (PVOID) & IgnoreFTP, &size);
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof, appname, "Viewer.IgnoreHTTP",
-                            (PVOID) & IgnoreHTTP, &size);
-        size = sizeof(BOOL);
+			    (PVOID) & IgnoreHTTP, &size);
+	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof, appname, "Viewer.IgnoreMail",
 			    (PVOID) & IgnoreMail, &size);
 	memset(&Fattrs, 0, sizeof(FATTRS));

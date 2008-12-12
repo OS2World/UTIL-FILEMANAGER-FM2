@@ -1,3 +1,4 @@
+
 /***********************************************************************
 
   $Id$
@@ -27,11 +28,12 @@
   16 JUL 08 GKY Use TMP directory for temp files
   20 Jul 08 GKY Add save/append filename to clipboard.
   02 Aug 08 GKY Limit use of "trash can" to local writable fixed drives or to trash can supported
-                drives list if it exists. Fix ability to deselect use of trash can.
+		drives list if it exists. Fix ability to deselect use of trash can.
   01 Sep 08 GKY Add code to retry on Netdrives "pipe error"
   04 Dec 08 GKY Add a DosSleep to allow file extract to complete before rescan
   04 Dec 08 GKY Add mutex semaphore and disable fSyncUpdates for file deletes to prevent the creation
-                on dead CNRITEMS.
+		on dead CNRITEMS.
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -39,7 +41,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
-#include <process.h>			// _beginthread
+#include <process.h>			// _beginthread	// 10 Dec 08 SHL
 #include <time.h>
 
 #define INCL_DOS
@@ -66,9 +68,9 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// External viewers
-#include "worker.h"         		// Action
-#include "notify.h"         		// AddNote
-#include "copyf.h"               	// AdjustWildcardName, make_deleteable
+#include "worker.h"			// Action
+#include "notify.h"			// AddNote
+#include "copyf.h"			// AdjustWildcardName, make_deleteable
 #include "attribs.h"			// AttrListDlgProc
 #include "chklist.h"			// CheckListProc
 #include "info.h"			// DrvInfoProc
@@ -96,6 +98,7 @@
 #include "stristr.h"			// stristr
 #include "wrappers.h"			// xfopen
 #include "fortify.h"
+#include "excputil.h"			// 06 May 08 SHL added
 
 // Data definitions
 #pragma data_seg(GLOBAL2)
@@ -123,7 +126,8 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 
   if (undo->type && undo->list && undo->list[0]) {
     switch (undo->type) {
-    case IDM_MOVE case IDM_COPY:
+    case IDM_MOVE:
+    case IDM_COPY:
     case IDM_EXTRACT:
       {
 #     ifdef FORTIFY
@@ -146,9 +150,12 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 	      li->type = IDM_PERMDELETE;
 	      break;
 	    }
-	    if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
-	      Runtime_Error(pszSrcFile, __LINE__,
-			    GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	    if (xbeginthread(MassAction,
+			     122880,
+			     wk,
+			     pszSrcFile,
+			     __LINE__) == -1)
+	    {
 	      FreeListInfo(wk->li);
 	      free(wk);
 #	      ifdef FORTIFY
@@ -161,7 +168,7 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 	}
       }
       break;
-    }
+    } // switch
   }
   FreeUndo();
 # ifdef FORTIFY
@@ -476,7 +483,7 @@ VOID Action(VOID * args)
 		  }
 		  if (needs_quoting(ex.masks) && !strchr(ex.masks, '\"'))
 		    maskspaces = TRUE;
-                  if (!runemf2(SEPARATE | WINDOWED | WAIT |
+		  if (!runemf2(SEPARATE | WINDOWED | WAIT |
 			       fArcStuffVisible ? 0 : (BACKGROUND | MINIMIZED),
 			       HWND_DESKTOP, pszSrcFile, __LINE__, ex.extractdir, NULL,
 			       "%s %s %s%s%s",
@@ -485,9 +492,9 @@ VOID Action(VOID * args)
 			       maskspaces ? "\"" : NullStr,
 			       *ex.masks ? ex.masks : "\"*\"",
 			       maskspaces ? "\"" : NullStr) &&
-                      !stricmp(ex.extractdir, wk->directory)) {
-                    DosSleep(100); // wait for runemf2 to complete so rescan will actually show something
-                    if (WinIsWindow((HAB) 0, wk->hwndCnr))
+		      !stricmp(ex.extractdir, wk->directory)) {
+		    DosSleep(100); // wait for runemf2 to complete so rescan will actually show something
+		    if (WinIsWindow((HAB) 0, wk->hwndCnr))
 		      WinSendMsg(wk->hwndCnr,
 				 WM_COMMAND,
 				 MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
@@ -595,326 +602,326 @@ VOID Action(VOID * args)
 	      case IDM_WPSCOPY:
 	      case IDM_MOVE:
 	      case IDM_COPY:
-              case IDM_RENAME:
-                {
+	      case IDM_RENAME:
+		{
 
-                  if (!*wk->li->targetpath && (wk->li->type == IDM_MOVE ||
-                                               wk->li->type == IDM_COPY ||
-                                               wk->li->type == IDM_WPSMOVE ||
-                                               wk->li->type == IDM_WPSCOPY)) {
+		  if (!*wk->li->targetpath && (wk->li->type == IDM_MOVE ||
+					       wk->li->type == IDM_COPY ||
+					       wk->li->type == IDM_WPSMOVE ||
+					       wk->li->type == IDM_WPSCOPY)) {
 
-                    APIRET rc = 1;
+		    APIRET rc = 1;
 
-                    usedtarget = FALSE;
-                    if (hwndMain) {
-                      if (!*targetdir)
-                        TopWindowName(hwndMain,
-                                      wk->hwndFrame, wk->li->targetpath);
-                      else {
-                        strcpy(wk->li->targetpath, targetdir);
-                        usedtarget = TRUE;
-                      }
-                    }
-                    if (!*wk->li->targetpath)
-                      strcpy(wk->li->targetpath, wk->directory);
-                    if (!*wk->li->targetpath) {
-                      strcpy(wk->li->targetpath, wk->li->list[0]);
-                      p = strrchr(wk->li->targetpath, '\\');
-                      if (p) {
-                        if (*(p - 1) == ':')
-                          p++;
-                        *p = 0;
-                      }
-                    }
-                    MakeValidDir(wk->li->targetpath);
-                    if (fConfirmTarget ||
-                        (!*targetdir && strcmp(realappname, "FM/4"))) {
-                    RetryPath:
-                      usedtarget = FALSE;
-                      if (wk->li->type == IDM_MOVE ||
-                          wk->li->type == IDM_WPSMOVE) {
-                        rc = WinDlgBox(HWND_DESKTOP,
-                                       wk->hwndFrame,
-                                       WalkMoveDlgProc,
-                                       FM3ModHandle,
-                                       WALK_FRAME, MPFROMP(wk->li->targetpath));
-                      }
-                      else if (wk->li->type == IDM_COPY ||
-                               wk->li->type == IDM_WPSCOPY) {
-                        rc = WinDlgBox(HWND_DESKTOP,
-                                       wk->hwndFrame,
-                                       WalkCopyDlgProc,
-                                       FM3ModHandle,
-                                       WALK_FRAME, MPFROMP(wk->li->targetpath));
-                      }
-                      else
-                        rc = WinDlgBox(HWND_DESKTOP,
-                                       wk->hwndFrame,
-                                       WalkDlgProc,
-                                       FM3ModHandle,
-                                       WALK_FRAME, MPFROMP(wk->li->targetpath));
-                    }
-                    if (!rc || !*wk->li->targetpath)
-                      goto Abort;
-                    if (driveflags[toupper(*wk->li->targetpath) - 'A'] &
-                        DRIVE_NOTWRITEABLE) {
-                      saymsg(MB_CANCEL,
-                             wk->hwndFrame,
-                             GetPString(IDS_ERRORTEXT),
-                             "%s", GetPString(IDS_NOTWRITENOTARGETTEXT));
-                      goto RetryPath;
-                    }
-                  }
-                Retry:
-                  {
-                    CHAR newname[CCHMAXPATH], *moving, *move, *moved;
-                    APIRET rc;
-                    INT type;
-                    FILESTATUS4L fs4;
-                    BOOL isnewer, existed;
+		    usedtarget = FALSE;
+		    if (hwndMain) {
+		      if (!*targetdir)
+			TopWindowName(hwndMain,
+				      wk->hwndFrame, wk->li->targetpath);
+		      else {
+			strcpy(wk->li->targetpath, targetdir);
+			usedtarget = TRUE;
+		      }
+		    }
+		    if (!*wk->li->targetpath)
+		      strcpy(wk->li->targetpath, wk->directory);
+		    if (!*wk->li->targetpath) {
+		      strcpy(wk->li->targetpath, wk->li->list[0]);
+		      p = strrchr(wk->li->targetpath, '\\');
+		      if (p) {
+			if (*(p - 1) == ':')
+			  p++;
+			*p = 0;
+		      }
+		    }
+		    MakeValidDir(wk->li->targetpath);
+		    if (fConfirmTarget ||
+			(!*targetdir && strcmp(realappname, "FM/4"))) {
+		    RetryPath:
+		      usedtarget = FALSE;
+		      if (wk->li->type == IDM_MOVE ||
+			  wk->li->type == IDM_WPSMOVE) {
+			rc = WinDlgBox(HWND_DESKTOP,
+				       wk->hwndFrame,
+				       WalkMoveDlgProc,
+				       FM3ModHandle,
+				       WALK_FRAME, MPFROMP(wk->li->targetpath));
+		      }
+		      else if (wk->li->type == IDM_COPY ||
+			       wk->li->type == IDM_WPSCOPY) {
+			rc = WinDlgBox(HWND_DESKTOP,
+				       wk->hwndFrame,
+				       WalkCopyDlgProc,
+				       FM3ModHandle,
+				       WALK_FRAME, MPFROMP(wk->li->targetpath));
+		      }
+		      else
+			rc = WinDlgBox(HWND_DESKTOP,
+				       wk->hwndFrame,
+				       WalkDlgProc,
+				       FM3ModHandle,
+				       WALK_FRAME, MPFROMP(wk->li->targetpath));
+		    }
+		    if (!rc || !*wk->li->targetpath)
+		      goto Abort;
+		    if (driveflags[toupper(*wk->li->targetpath) - 'A'] &
+			DRIVE_NOTWRITEABLE) {
+		      saymsg(MB_CANCEL,
+			     wk->hwndFrame,
+			     GetPString(IDS_ERRORTEXT),
+			     "%s", GetPString(IDS_NOTWRITENOTARGETTEXT));
+		      goto RetryPath;
+		    }
+		  }
+		Retry:
+		  {
+		    CHAR newname[CCHMAXPATH], *moving, *move, *moved;
+		    APIRET rc;
+		    INT type;
+		    FILESTATUS4L fs4;
+		    BOOL isnewer, existed;
 
-                    type = (wk->li->type == IDM_RENAME) ? MOVE :
-                      (wk->li->type == IDM_MOVE) ? MOVE :
-                      (wk->li->type == IDM_WPSMOVE) ? WPSMOVE :
-                      (wk->li->type == IDM_WPSCOPY) ? WPSCOPY : COPY;
-                    moving = (wk->li->type == IDM_RENAME) ?
-                      GetPString(IDS_RENAMINGTEXT) :
-                      (wk->li->type == IDM_MOVE ||
-                       wk->li->type == IDM_WPSMOVE) ?
-                      GetPString(IDS_MOVINGTEXT) : GetPString(IDS_COPYINGTEXT);
-                    move = (wk->li->type == IDM_RENAME) ?
-                      GetPString(IDS_RENAMETEXT) :
-                      (wk->li->type == IDM_MOVE ||
-                       wk->li->type == IDM_WPSMOVE) ?
-                      GetPString(IDS_MOVETEXT) : GetPString(IDS_COPYTEXT);
-                    moved = (wk->li->type == IDM_RENAME) ?
-                      GetPString(IDS_RENAMEDTEXT) :
-                      (wk->li->type == IDM_MOVE ||
-                       wk->li->type == IDM_WPSMOVE) ?
-                      GetPString(IDS_MOVEDTEXT) : GetPString(IDS_COPIEDTEXT);
-                    if (*wk->li->targetpath) {
-                      strcpy(newname, wk->li->targetpath);
-                      if (newname[strlen(newname) - 1] != '\\')
-                        strcat(newname, "\\");
-                      if (plen)
-                        p = wk->li->list[x] + plen;
-                      else {
-                        p = strrchr(wk->li->list[x], '\\');
-                        if (p)
-                          p++;
-                        else
-                          p = wk->li->list[x];
-                      }
-                      strcat(newname, p);
-                    }
-                    else
-                      strcpy(newname, wk->li->list[x]);
-                    if ((wildcarding || wk->li->type == IDM_RENAME) &&
-                        *wildname) {
+		    type = (wk->li->type == IDM_RENAME) ? MOVE :
+		      (wk->li->type == IDM_MOVE) ? MOVE :
+		      (wk->li->type == IDM_WPSMOVE) ? WPSMOVE :
+		      (wk->li->type == IDM_WPSCOPY) ? WPSCOPY : COPY;
+		    moving = (wk->li->type == IDM_RENAME) ?
+		      GetPString(IDS_RENAMINGTEXT) :
+		      (wk->li->type == IDM_MOVE ||
+		       wk->li->type == IDM_WPSMOVE) ?
+		      GetPString(IDS_MOVINGTEXT) : GetPString(IDS_COPYINGTEXT);
+		    move = (wk->li->type == IDM_RENAME) ?
+		      GetPString(IDS_RENAMETEXT) :
+		      (wk->li->type == IDM_MOVE ||
+		       wk->li->type == IDM_WPSMOVE) ?
+		      GetPString(IDS_MOVETEXT) : GetPString(IDS_COPYTEXT);
+		    moved = (wk->li->type == IDM_RENAME) ?
+		      GetPString(IDS_RENAMEDTEXT) :
+		      (wk->li->type == IDM_MOVE ||
+		       wk->li->type == IDM_WPSMOVE) ?
+		      GetPString(IDS_MOVEDTEXT) : GetPString(IDS_COPIEDTEXT);
+		    if (*wk->li->targetpath) {
+		      strcpy(newname, wk->li->targetpath);
+		      if (newname[strlen(newname) - 1] != '\\')
+			strcat(newname, "\\");
+		      if (plen)
+			p = wk->li->list[x] + plen;
+		      else {
+			p = strrchr(wk->li->list[x], '\\');
+			if (p)
+			  p++;
+			else
+			  p = wk->li->list[x];
+		      }
+		      strcat(newname, p);
+		    }
+		    else
+		      strcpy(newname, wk->li->list[x]);
+		    if ((wildcarding || wk->li->type == IDM_RENAME) &&
+			*wildname) {
 
-                      CHAR testname[CCHMAXPATH];
+		      CHAR testname[CCHMAXPATH];
 
-                      strcpy(testname, wildname);
-                      if (AdjustWildcardName(newname, testname))
-                        strcpy(newname, testname);
-                    }
-                    existed = (IsFile(newname) != -1);
-                    isnewer = IsNewer(wk->li->list[x], newname);
-                    /*
-                       {
-                       char temp[CCHMAXPATH * 3];
-                       sprintf(temp,"Target: %s\rSource: %s\rOverold: %lu\rOvernew: %lu\rIsNewer: %lu\rExisted: %lu",newname,wk->li->list[x],overold,overnew,isnewer,existed);
-                       saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
-                       }
-                     */
-                    if (existed && wk->li->type != IDM_RENAME && dontask) {
-                      if (!overold && !overnew)
-                        break;
-                      if (!overold && !isnewer)
-                        break;
-                      if (!overnew && isnewer)
-                        break;
-                    }
-                    if ((wk->li->type == IDM_RENAME &&
-                         (!dontask || !*wildname)) ||
-                        (!dontask && existed) ||
-                        (!dontask && wildcarding) ||
-                        (IsFile(newname) == 0 && IsFile(wk->li->list[x]) > 0)) {
+		      strcpy(testname, wildname);
+		      if (AdjustWildcardName(newname, testname))
+			strcpy(newname, testname);
+		    }
+		    existed = (IsFile(newname) != -1);
+		    isnewer = IsNewer(wk->li->list[x], newname);
+		    /*
+		       {
+		       char temp[CCHMAXPATH * 3];
+		       sprintf(temp,"Target: %s\rSource: %s\rOverold: %lu\rOvernew: %lu\rIsNewer: %lu\rExisted: %lu",newname,wk->li->list[x],overold,overnew,isnewer,existed);
+		       saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
+		       }
+		     */
+		    if (existed && wk->li->type != IDM_RENAME && dontask) {
+		      if (!overold && !overnew)
+			break;
+		      if (!overold && !isnewer)
+			break;
+		      if (!overnew && isnewer)
+			break;
+		    }
+		    if ((wk->li->type == IDM_RENAME &&
+			 (!dontask || !*wildname)) ||
+			(!dontask && existed) ||
+			(!dontask && wildcarding) ||
+			(IsFile(newname) == 0 && IsFile(wk->li->list[x]) > 0)) {
 
-                      MOVEIT mv;
+		      MOVEIT mv;
 
-                      memset(&mv, 0, sizeof(MOVEIT));
-                      mv.rename = (wk->li->type == IDM_RENAME);
-                      mv.source = wk->li->list[x];
-                      strcpy(mv.target, newname);
-                      rc = WinDlgBox(HWND_DESKTOP,
-                                     wk->hwndFrame,
-                                     RenameProc,
-                                     FM3ModHandle, REN_FRAME, (PVOID) & mv);
-                      if (!rc)
-                        goto Abort;
-                      DosSleep(1);
-                      if (mv.skip || !*mv.target)
-                        break;
-                      if (mv.dontask)
-                        dontask = TRUE;
-                      if (mv.overold)
-                        overold = TRUE;
-                      if (mv.overnew)
-                        overnew = TRUE;
-                      if (wildcarding || wk->li->type == IDM_RENAME) {
-                        p = strrchr(mv.target, '\\');
-                        if (p && (strchr(p, '*') || strchr(p, '?'))) {
-                          strcpy(wildname, mv.target);
-                          AdjustWildcardName(wk->li->list[x], mv.target);
-                        }
-                        else
-                          *wildname = 0;
-                      }
-                      strcpy(newname, mv.target);
-                      existed = (IsFile(newname) != -1);
-                      isnewer = IsNewer(wk->li->list[x], newname);
-                      if (!mv.overwrite) {
-                        if (existed && wk->li->type != IDM_RENAME && dontask) {
-                          if (!overold && !overnew)
-                            break;
-                          if (!overold && !isnewer)
-                            break;
-                          if (!overnew && isnewer)
-                            break;
-                        }
-                      }
-                    }
-                    if (!strcmp(wk->li->list[x], newname) ||
-                        (wk->li->type == IDM_COPY &&
-                         !stricmp(wk->li->list[x], newname)))
-                      break;
-                    sprintf(message,
-                            " %s \"%s\" %s\"%s\"%s",
-                            moving,
-                            wk->li->list[x],
-                            GetPString(IDS_TOTEXT),
-                            newname,
-                            (usedtarget) ? GetPString(IDS_TOTARGETTEXT) :
-                            NullStr);
-                    AddNote(message);
-                    if (plen) {
-                      /* make directory/ies, if required */
+		      memset(&mv, 0, sizeof(MOVEIT));
+		      mv.rename = (wk->li->type == IDM_RENAME);
+		      mv.source = wk->li->list[x];
+		      strcpy(mv.target, newname);
+		      rc = WinDlgBox(HWND_DESKTOP,
+				     wk->hwndFrame,
+				     RenameProc,
+				     FM3ModHandle, REN_FRAME, (PVOID) & mv);
+		      if (!rc)
+			goto Abort;
+		      DosSleep(1);
+		      if (mv.skip || !*mv.target)
+			break;
+		      if (mv.dontask)
+			dontask = TRUE;
+		      if (mv.overold)
+			overold = TRUE;
+		      if (mv.overnew)
+			overnew = TRUE;
+		      if (wildcarding || wk->li->type == IDM_RENAME) {
+			p = strrchr(mv.target, '\\');
+			if (p && (strchr(p, '*') || strchr(p, '?'))) {
+			  strcpy(wildname, mv.target);
+			  AdjustWildcardName(wk->li->list[x], mv.target);
+			}
+			else
+			  *wildname = 0;
+		      }
+		      strcpy(newname, mv.target);
+		      existed = (IsFile(newname) != -1);
+		      isnewer = IsNewer(wk->li->list[x], newname);
+		      if (!mv.overwrite) {
+			if (existed && wk->li->type != IDM_RENAME && dontask) {
+			  if (!overold && !overnew)
+			    break;
+			  if (!overold && !isnewer)
+			    break;
+			  if (!overnew && isnewer)
+			    break;
+			}
+		      }
+		    }
+		    if (!strcmp(wk->li->list[x], newname) ||
+			(wk->li->type == IDM_COPY &&
+			 !stricmp(wk->li->list[x], newname)))
+		      break;
+		    sprintf(message,
+			    " %s \"%s\" %s\"%s\"%s",
+			    moving,
+			    wk->li->list[x],
+			    GetPString(IDS_TOTEXT),
+			    newname,
+			    (usedtarget) ? GetPString(IDS_TOTARGETTEXT) :
+			    NullStr);
+		    AddNote(message);
+		    if (plen) {
+		      /* make directory/ies, if required */
 
-                      CHAR dirpart[CCHMAXPATH];
+		      CHAR dirpart[CCHMAXPATH];
 
-                      strcpy(dirpart, newname);
-                      p = strrchr(dirpart, '\\');
-                      if (p) {
-                        *p = 0;
-                        if (p > dirpart + 3)
-                          MassMkdir((hwndMain) ? hwndMain : wk->hwndCnr,
-                                    dirpart);
-                      }
-                    }
-                    if (fRealIdle)
-                      priority_idle();
-                    rc = docopyf(type, wk->li->list[x], "%s", newname);
-                    priority_normal();
-                    if (rc) {
-                      if ((rc == ERROR_DISK_FULL ||
-                           rc == ERROR_HANDLE_DISK_FULL) &&
-                          isalpha(*newname) &&
-                          (driveflags[toupper(*newname) - 'A'] &
-                           DRIVE_REMOVABLE)
-                          && !(driveflags[toupper(*newname) - 'A'] &
-                               DRIVE_NOTWRITEABLE)
-                          && toupper(*newname) != toupper(*wk->li->list[x])
-                          && !DosQueryPathInfo(wk->li->list[x], FIL_QUERYEASIZEL,
-                                               &fs4, sizeof(fs4))
-                          && !(fs4.attrFile & FILE_DIRECTORY)) {
+		      strcpy(dirpart, newname);
+		      p = strrchr(dirpart, '\\');
+		      if (p) {
+			*p = 0;
+			if (p > dirpart + 3)
+			  MassMkdir((hwndMain) ? hwndMain : wk->hwndCnr,
+				    dirpart);
+		      }
+		    }
+		    if (fRealIdle)
+		      priority_idle();
+		    rc = docopyf(type, wk->li->list[x], "%s", newname);
+		    priority_normal();
+		    if (rc) {
+		      if ((rc == ERROR_DISK_FULL ||
+			   rc == ERROR_HANDLE_DISK_FULL) &&
+			  isalpha(*newname) &&
+			  (driveflags[toupper(*newname) - 'A'] &
+			   DRIVE_REMOVABLE)
+			  && !(driveflags[toupper(*newname) - 'A'] &
+			       DRIVE_NOTWRITEABLE)
+			  && toupper(*newname) != toupper(*wk->li->list[x])
+			  && !DosQueryPathInfo(wk->li->list[x], FIL_QUERYEASIZEL,
+					       &fs4, sizeof(fs4))
+			  && !(fs4.attrFile & FILE_DIRECTORY)) {
 
-                        FSALLOCATE fsa;
-                        ULONGLONG ullFreeBytes;
-                        CHAR *ptr;
-                        INT cntr;
+			FSALLOCATE fsa;
+			ULONGLONG ullFreeBytes;
+			CHAR *ptr;
+			INT cntr;
 
-                        Notify(GetPString(IDS_FITTINGTEXT));
-                        DosError(FERR_DISABLEHARDERR);
-                        if (!DosQueryFSInfo(toupper(*newname) - '@',
-                                            FSIL_ALLOC,
-                                            &fsa, sizeof(FSALLOCATE))) {
-                          // Assume large file support
-                          ullFreeBytes = (ULONGLONG) fsa.cUnitAvail * fsa.cSectorUnit *
-                            fsa.cbSector;
-                          if (ullFreeBytes) {
-                            // Find item that will fit in available space
-                            for (cntr = x + 1; wk->li->list[cntr]; cntr++) {
-                              DosError(FERR_DISABLEHARDERR);
-                              if (!DosQueryPathInfo(wk->li->list[cntr],
-                                                    FIL_QUERYEASIZEL,
-                                                    &fs4,
-                                                    sizeof(fs4)) &&
-                                  !(fs4.attrFile & FILE_DIRECTORY) &&
-                                  // fixme to use CBLIST_TO_EASIZE?
-                                  fs4.cbFile + fs4.cbList <= ullFreeBytes) {
-                                // Swap with failing item
-                                ptr = wk->li->list[x];
-                                wk->li->list[x] = wk->li->list[cntr];
-                                wk->li->list[cntr] = ptr;
-                                goto Retry;
-                              }
-                            }
-                            Notify(GetPString(IDS_COULDNTFITTEXT));
-                          }
-                        }
-                        rc = saymsg(MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION,
-                                    wk->hwndFrame,
-                                    GetPString(IDS_DISKFULLTEXT),
-                                    "%s", GetPString(IDS_ANOTHERDISKTEXT));
-                        if (rc == MBID_RETRY)
-                          goto Retry;
-                        if (rc == MBID_ABORT)
-                          goto Abort;
-                      }
-                      else {
-                        if (LogFileHandle)
-                          fprintf(LogFileHandle,
-                                  GetPString(IDS_LOGTOFAILEDTEXT),
-                                  move, wk->li->list[x], newname, rc);
-                        rc = Dos_Error(MB_ENTERCANCEL,
-                                       rc,
-                                       wk->hwndFrame,
-                                       pszSrcFile,
-                                       __LINE__,
-                                       "%s %s \"%s\" %s\"%s\" %s.",
-                                       move,
-                                       GetPString(IDS_OFTEXT),
-                                       wk->li->list[x],
-                                       GetPString(IDS_TOTEXT),
-                                       newname, GetPString(IDS_FAILEDTEXT));
-                        if (rc == MBID_CANCEL)
-                          goto Abort;
-                      }
-                    }
-                    else {
-                      if (LogFileHandle)
-                        fprintf(LogFileHandle,
-                                "%s \"%s\" %s\"%s\"\n",
-                                moved,
-                                wk->li->list[x],
-                                GetPString(IDS_TOTEXT), newname);
-                      if (//fSyncUpdates ||
-                          AddToList(wk->li->list[x],
-                                    &files, &numfiles, &numalloc))
-                        Broadcast(hab2,
-                                  wk->hwndCnr,
-                                  UM_UPDATERECORD,
-                                  MPFROMP(wk->li->list[x]), MPVOID);
-                      if (//fSyncUpdates ||
-                          AddToList(newname, &files, &numfiles, &numalloc))
-                        Broadcast(hab2,
-                                  wk->hwndCnr,
-                                  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
-                    }
-                  }
-                  break;
-                }
+			Notify(GetPString(IDS_FITTINGTEXT));
+			DosError(FERR_DISABLEHARDERR);
+			if (!DosQueryFSInfo(toupper(*newname) - '@',
+					    FSIL_ALLOC,
+					    &fsa, sizeof(FSALLOCATE))) {
+			  // Assume large file support
+			  ullFreeBytes = (ULONGLONG) fsa.cUnitAvail * fsa.cSectorUnit *
+			    fsa.cbSector;
+			  if (ullFreeBytes) {
+			    // Find item that will fit in available space
+			    for (cntr = x + 1; wk->li->list[cntr]; cntr++) {
+			      DosError(FERR_DISABLEHARDERR);
+			      if (!DosQueryPathInfo(wk->li->list[cntr],
+						    FIL_QUERYEASIZEL,
+						    &fs4,
+						    sizeof(fs4)) &&
+				  !(fs4.attrFile & FILE_DIRECTORY) &&
+				  // fixme to use CBLIST_TO_EASIZE?
+				  fs4.cbFile + fs4.cbList <= ullFreeBytes) {
+				// Swap with failing item
+				ptr = wk->li->list[x];
+				wk->li->list[x] = wk->li->list[cntr];
+				wk->li->list[cntr] = ptr;
+				goto Retry;
+			      }
+			    }
+			    Notify(GetPString(IDS_COULDNTFITTEXT));
+			  }
+			}
+			rc = saymsg(MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION,
+				    wk->hwndFrame,
+				    GetPString(IDS_DISKFULLTEXT),
+				    "%s", GetPString(IDS_ANOTHERDISKTEXT));
+			if (rc == MBID_RETRY)
+			  goto Retry;
+			if (rc == MBID_ABORT)
+			  goto Abort;
+		      }
+		      else {
+			if (LogFileHandle)
+			  fprintf(LogFileHandle,
+				  GetPString(IDS_LOGTOFAILEDTEXT),
+				  move, wk->li->list[x], newname, rc);
+			rc = Dos_Error(MB_ENTERCANCEL,
+				       rc,
+				       wk->hwndFrame,
+				       pszSrcFile,
+				       __LINE__,
+				       "%s %s \"%s\" %s\"%s\" %s.",
+				       move,
+				       GetPString(IDS_OFTEXT),
+				       wk->li->list[x],
+				       GetPString(IDS_TOTEXT),
+				       newname, GetPString(IDS_FAILEDTEXT));
+			if (rc == MBID_CANCEL)
+			  goto Abort;
+		      }
+		    }
+		    else {
+		      if (LogFileHandle)
+			fprintf(LogFileHandle,
+				"%s \"%s\" %s\"%s\"\n",
+				moved,
+				wk->li->list[x],
+				GetPString(IDS_TOTEXT), newname);
+		      if (//fSyncUpdates ||
+			  AddToList(wk->li->list[x],
+				    &files, &numfiles, &numalloc))
+			Broadcast(hab2,
+				  wk->hwndCnr,
+				  UM_UPDATERECORD,
+				  MPFROMP(wk->li->list[x]), MPVOID);
+		      if (//fSyncUpdates ||
+			  AddToList(newname, &files, &numfiles, &numalloc))
+			Broadcast(hab2,
+				  wk->hwndCnr,
+				  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
+		    }
+		  }
+		  break;
+		}
 
 	      case IDM_COMPARE:
 		if ((!IsFile(wk->li->targetpath) ||
@@ -1109,7 +1116,7 @@ VOID MassAction(VOID * args)
 
 	      if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 				SEARCH_CUR_DIRECTORY,
-				"PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
+				"PATH", "FM2PLAY.EXE", (PBYTE)fbuf, CCHMAXPATH - 1))
 		total += strlen("..\\FM2UTILS\\FM2PLAY.EXE ");
 	      else
 		total = strlen(fbuf);
@@ -1158,7 +1165,7 @@ VOID MassAction(VOID * args)
 	      else {
 		if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 				  SEARCH_CUR_DIRECTORY,
-				  "PATH", "FM2PLAY.EXE", fbuf, CCHMAXPATH - 1))
+				  "PATH", "FM2PLAY.EXE", (PBYTE)fbuf, CCHMAXPATH - 1))
 		  strcpy(szBuffer, "UTILS\\FM2PLAY.EXE");
 		else
 		  strcpy(szBuffer, "FM2PLAY.EXE");
@@ -1228,9 +1235,9 @@ VOID MassAction(VOID * args)
 	    break;
 
 	  case IDM_APPENDTOCLIP:
-          case IDM_SAVETOCLIP:
-          case IDM_SAVETOCLIPFILENAME:
-          case IDM_APPENDTOCLIPFILENAME:
+	  case IDM_SAVETOCLIP:
+	  case IDM_SAVETOCLIPFILENAME:
+	  case IDM_APPENDTOCLIPFILENAME:
 	    ListToClipboardHab(hab2,
 			       wk->li->list,
 			       wk->li->type);
@@ -1284,8 +1291,8 @@ VOID MassAction(VOID * args)
 		if (ad.arcname[strlen(ad.arcname) - 1] != '\\')
 		  strcat(ad.arcname, "\\");
 	      }
-              if (!WinDlgBox(HWND_DESKTOP, wk->hwndFrame, ArchiveDlgProc, FM3ModHandle,
-                             ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	/* we blew it */
+	      if (!WinDlgBox(HWND_DESKTOP, wk->hwndFrame, ArchiveDlgProc, FM3ModHandle,
+			     ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	/* we blew it */
 		break;
 	      // Provide extension so containers work
 	      pch = strrchr(ad.arcname, '\\');
@@ -1472,12 +1479,14 @@ VOID MassAction(VOID * args)
 			  FM3ModHandle, PRN_FRAME, MPFROMP(wk->li))) {
 	      if (wk->li && wk->li->list && wk->li->list[0]) {
 		strcpy(wk->li->targetpath, printer);
-		if (_beginthread(PrintListThread, NULL, 65536, (PVOID) wk->li)
-		    == -1)
-		  Runtime_Error(pszSrcFile, __LINE__,
-				GetPString(IDS_COULDNTSTARTTHREADTEXT));
-		else
-		  wk->li = NULL;	/* prevent LISTINFO li from being freed */
+		if (xbeginthread(PrintListThread,
+				 65536,
+				 wk->li,
+				 pszSrcFile,
+				 __LINE__) != -1)
+		{
+		  wk->li = NULL;	// prevent LISTINFO li from being freed here
+		}
 	      }
 	    }
 	    break;
@@ -1503,9 +1512,9 @@ VOID MassAction(VOID * args)
 	      FILESTATUS3 fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
 	      APIRET error = 0;
-              HOBJECT hObjectdest, hObjectofObject;
-              BYTE G_abSupportedDrives[24] = {0};
-              ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
+	      HOBJECT hObjectdest, hObjectofObject;
+	      BYTE G_abSupportedDrives[24] = {0};
+	      ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1600,98 +1609,98 @@ VOID MassAction(VOID * args)
 		wk->li->list = cl.list;
 		if (!wk->li->list || !wk->li->list[0])
 		  break;
-              }
-              DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+	      }
+	      DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
 	      for (x = 0; wk->li->list[x]; x++) {
 		fsa.attrFile = 0;
 		DosError(FERR_DISABLEHARDERR);
 		DosQueryPathInfo(wk->li->list[x],
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
-                if (fsa.attrFile & FILE_DIRECTORY) {
+		if (fsa.attrFile & FILE_DIRECTORY) {
 		  /*sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
 		  AddNote(prompt);*/ //Duplicate call 12-03-08 GKY
-                  DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+		  DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
 		  error = (APIRET) wipeallf("%s%s*",
 					    wk->li->list[x],
 					    (*wk->li->list[x] &&
 					     wk->li->
-                                             list[x][strlen(wk->li->list[x]) - 1]
-                                             != '\\') ? "\\" : NullStr);
+					     list[x][strlen(wk->li->list[x]) - 1]
+					     != '\\') ? "\\" : NullStr);
 		  DosError(FERR_DISABLEHARDERR);
 		  if (!error)
 		    error = DosDeleteDir(wk->li->list[x]);
 		  else
-                    DosDeleteDir(wk->li->list[x]);
-                  DosReleaseMutexSem(hmtxFM2Delete);
+		    DosDeleteDir(wk->li->list[x]);
+		  DosReleaseMutexSem(hmtxFM2Delete);
 		}
-                else {
-                  DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08
+		else {
+		  DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08
 		  /*sprintf(prompt,
 			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
 		  AddNote(prompt); */  //Duplicate call 12-03-08 GKY
 		  DosError(FERR_DISABLEHARDERR);
 		  if (wk->li->type == IDM_DELETE){
 		    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-                    PrfQueryProfileData(HINI_USER,
-                                        "XWorkplace",
-                                        "TrashCan::Drives",
-                                        G_abSupportedDrives,
-                                        &cbSupportedDrives);
-                    if (hObjectdest != NULLHANDLE && fTrashCan &&
-                        (G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
-                                                1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
-                                                      (DRIVE_REMOVABLE | DRIVE_IGNORE |
-                                                      DRIVE_REMOTE | DRIVE_VIRTUAL |
-                                                      DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
-                        hObjectofObject = WinQueryObject(wk->li->list[x]);
-                        error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-                    }
-                    else {
-                      //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-                      error = DosDelete(wk->li->list[x]);
-                      //DosReleaseMutexSem(hmtxFM2Delete);
-                    }
+		    PrfQueryProfileData(HINI_USER,
+					"XWorkplace",
+					"TrashCan::Drives",
+					G_abSupportedDrives,
+					&cbSupportedDrives);
+		    if (hObjectdest != NULLHANDLE && fTrashCan &&
+			(G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
+						1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
+						      (DRIVE_REMOVABLE | DRIVE_IGNORE |
+						      DRIVE_REMOTE | DRIVE_VIRTUAL |
+						      DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
+			hObjectofObject = WinQueryObject(wk->li->list[x]);
+			error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+		    }
+		    else {
+		      //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+		      error = DosDelete(wk->li->list[x]);
+		      //DosReleaseMutexSem(hmtxFM2Delete);
+		    }
 		  }
 		  else {
-                    //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-                    error = DosForceDelete(wk->li->list[x]);
-                    //DosReleaseMutexSem(hmtxFM2Delete);
-                  }
+		    //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+		    error = DosForceDelete(wk->li->list[x]);
+		    //DosReleaseMutexSem(hmtxFM2Delete);
+		  }
 		  if (error) {
 		    DosError(FERR_DISABLEHARDERR);
 		    make_deleteable(wk->li->list[x]);
 		    if (wk->li->type == IDM_DELETE){
-                      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-                      PrfQueryProfileData(HINI_USER,
-                                          "XWorkplace",
-                                          "TrashCan::Drives",
-                                          G_abSupportedDrives,
-                                          &cbSupportedDrives);
-                      if (hObjectdest != NULLHANDLE && fTrashCan &&
-                          (G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
-                                                  1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
-                                                        (DRIVE_REMOVABLE | DRIVE_IGNORE |
-                                                        DRIVE_REMOTE | DRIVE_VIRTUAL |
-                                                        DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
-                          hObjectofObject = WinQueryObject(wk->li->list[x]);
-                          error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-                      }
+		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+		      PrfQueryProfileData(HINI_USER,
+					  "XWorkplace",
+					  "TrashCan::Drives",
+					  G_abSupportedDrives,
+					  &cbSupportedDrives);
+		      if (hObjectdest != NULLHANDLE && fTrashCan &&
+			  (G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
+						  1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
+							(DRIVE_REMOVABLE | DRIVE_IGNORE |
+							DRIVE_REMOTE | DRIVE_VIRTUAL |
+							DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
+			  hObjectofObject = WinQueryObject(wk->li->list[x]);
+			  error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+		      }
 		      else {
-                       // DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-                        error = DosDelete(wk->li->list[x]);
-                       // DosReleaseMutexSem(hmtxFM2Delete);
-                      }
+		       // DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+			error = DosDelete(wk->li->list[x]);
+		       // DosReleaseMutexSem(hmtxFM2Delete);
+		      }
 		    }
 		    else {
-                      //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-                      error = DosForceDelete(wk->li->list[x]);
-                      //DosReleaseMutexSem(hmtxFM2Delete);
-                    }
+		      //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
+		      error = DosForceDelete(wk->li->list[x]);
+		      //DosReleaseMutexSem(hmtxFM2Delete);
+		    }
 		  }
-                  DosReleaseMutexSem(hmtxFM2Delete);
-                }
+		  DosReleaseMutexSem(hmtxFM2Delete);
+		}
 		if (error) {
 		  if (LogFileHandle)
 		    fprintf(LogFileHandle,
@@ -1715,13 +1724,13 @@ VOID MassAction(VOID * args)
 		  AddNote(prompt);
 		}
 		if (//fSyncUpdates ||
-                    AddToList(wk->li->list[x], &files, &numfiles, &numalloc)) {
+		    AddToList(wk->li->list[x], &files, &numfiles, &numalloc)) {
 		  Broadcast(hab2,
 			    wk->hwndCnr,
 			    UM_UPDATERECORD,
-                            MPFROMP(wk->li->list[x]), MPVOID);
-                }
-              }
+			    MPFROMP(wk->li->list[x]), MPVOID);
+		}
+	      } // for
 	    }
 	    break;
 	  } // switch
@@ -1740,8 +1749,7 @@ VOID MassAction(VOID * args)
 	WinTerminate(hab2);
       }
     }
-    if (wk->li)
-      FreeListInfo(wk->li);
+    FreeListInfo(wk->li);
     free(wk);
 #   ifdef FORTIFY
     Fortify_LeaveScope();

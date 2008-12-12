@@ -6,7 +6,7 @@
   Object containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   24 May 05 SHL Rework for CNRITEM.szSubject
   13 Jul 06 SHL Use Runtime_Error
@@ -21,13 +21,14 @@
   13 Aug 07 SHL Move #pragma alloc_text to end for OpenWatcom compat
   14 Aug 07 SHL Revert ProcessDir DosSleep to 0
   29 Feb 08 GKY Use xfree where appropriate
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <process.h>                    // _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -52,6 +53,7 @@
 #include "valid.h"			// IsRoot
 #include "misc.h"			// PostMsg
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 typedef struct
 {
@@ -77,9 +79,9 @@ static PSZ pszSrcFile = __FILE__;
 static HWND objcnrwnd;
 
 static VOID ProcessDir(HWND hwndCnr,
-                       CHAR *filename,
-                       PCNRITEM pciParent,
-                       CHAR *stopflag)
+		       CHAR *filename,
+		       PCNRITEM pciParent,
+		       CHAR *stopflag)
 {
   CHAR maskstr[CCHMAXPATH], *endpath, *p;
   ULONG ulFindCnt, ulFindMax;
@@ -103,9 +105,9 @@ static VOID ProcessDir(HWND hwndCnr,
   hdir = HDIR_CREATE;
   ulFindCnt = 1;
   rc = xDosFindFirst(filename, &hdir,
-                     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-                     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-                     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
+		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
   if (!rc)
     DosFindClose(hdir);
   // work around furshluginer FAT root bug
@@ -114,9 +116,9 @@ static VOID ProcessDir(HWND hwndCnr,
 
   if ((!rc && (pffbArray->attrFile & FILE_DIRECTORY))) {
     pciP = WinSendMsg(hwndCnr,
-                      CM_ALLOCRECORD,
-                      MPFROMLONG(EXTRA_RECORD_BYTES),
-                      MPFROMLONG(1));
+		      CM_ALLOCRECORD,
+		      MPFROMLONG(EXTRA_RECORD_BYTES),
+		      MPFROMLONG(1));
     if (!pciP) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
       free(pffbArray);
@@ -131,9 +133,9 @@ static VOID ProcessDir(HWND hwndCnr,
     else {
       p = strrchr(pciP->pszFileName, '\\');
       if (!p)
-        pciP->pszDisplayName = pciP->pszFileName;
+	pciP->pszDisplayName = pciP->pszFileName;
       else if (*(p + 1))
-        p++;
+	p++;
       pciP->pszDisplayName = p;
     }
     pciP->rc.pszIcon = pciP->pszDisplayName;
@@ -146,7 +148,7 @@ static VOID ProcessDir(HWND hwndCnr,
   else {
     free(pffbArray);
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              GetPString(IDS_CANTFINDDIRTEXT), filename);
+	      GetPString(IDS_CANTFINDDIRTEXT), filename);
     return;
   }
 
@@ -176,9 +178,9 @@ static VOID ProcessDir(HWND hwndCnr,
     ulFindMax = FilesToGet;
   ulFindCnt = ulFindMax;
   rc = xDosFindFirst(maskstr, &hdir,
-                     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
-                     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
-                     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
+		     FILE_NORMAL | FILE_READONLY | FILE_ARCHIVED |
+		     FILE_SYSTEM | FILE_HIDDEN | MUST_HAVE_DIRECTORY,
+		     pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
   if (!rc) {
     PFILEFINDBUF3L pffbFile;
     ULONG x;
@@ -186,23 +188,23 @@ static VOID ProcessDir(HWND hwndCnr,
     while (!rc) {
       pffbFile = pffbArray;
       for (x = 0; x < ulFindCnt; x++) {
-        if (*stopflag)
-          break;
-        if ((pffbFile->attrFile & FILE_DIRECTORY) &&
-            // Skip . and ..
-            (pffbFile->achName[0] != '.' ||
-             (pffbFile->achName[1] &&
-              (pffbFile->achName[1] != '.' || pffbFile->achName[2])))) {
-          strcpy(endpath, pffbFile->achName);
-          ProcessDir(hwndCnr, maskstr, pciP, stopflag);
-        }
-        if (!pffbFile->oNextEntryOffset)
-          break;
-        pffbFile = (PFILEFINDBUF3L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
+	if (*stopflag)
+	  break;
+	if ((pffbFile->attrFile & FILE_DIRECTORY) &&
+	    // Skip . and ..
+	    (pffbFile->achName[0] != '.' ||
+	     (pffbFile->achName[1] &&
+	      (pffbFile->achName[1] != '.' || pffbFile->achName[2])))) {
+	  strcpy(endpath, pffbFile->achName);
+	  ProcessDir(hwndCnr, maskstr, pciP, stopflag);
+	}
+	if (!pffbFile->oNextEntryOffset)
+	  break;
+	pffbFile = (PFILEFINDBUF3L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
       DosSleep(0);                      // Let's others at same priority get some work done
       if (*stopflag)
-        break;
+	break;
       ulFindCnt = ulFindMax;
       rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt, FIL_STANDARDL);
     } // while
@@ -211,12 +213,12 @@ static VOID ProcessDir(HWND hwndCnr,
 
   if (rc && rc != ERROR_NO_MORE_FILES) {
     Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              GetPString(IDS_CANTFINDDIRTEXT), filename);
+	      GetPString(IDS_CANTFINDDIRTEXT), filename);
   }
 
   free(pffbArray);
   WinSendMsg(hwndCnr, CM_INVALIDATERECORD, MPFROMP(&pciP),
-             MPFROM2SHORT(1, 0));
+	     MPFROM2SHORT(1, 0));
 }
 
 static VOID FillCnrsThread(VOID * args)
@@ -241,14 +243,14 @@ static VOID FillCnrsThread(VOID * args)
     if (hmq) {
       WinCancelShutdown(hmq, TRUE);
       ProcessDir(dirsize->hwndCnr, dirsize->filename, (PCNRITEM) NULL,
-                 dirsize->stopflag);
+		 dirsize->stopflag);
       DosPostEventSem(CompactSem);
       WinDestroyMsgQueue(hmq);
     }
     WinTerminate(hab);
   }
   PostMsg(WinQueryWindow(dirsize->hwndCnr, QW_PARENT), UM_CONTAINER_FILLED,
-          MPVOID, MPVOID);
+	  MPVOID, MPVOID);
   free(dirsize);
 # ifdef FORTIFY
   Fortify_LeaveScope();
@@ -264,7 +266,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (objcnrwnd) {
       Runtime_Error(pszSrcFile, __LINE__, "objcnrwnd set");
       WinSetWindowPos(objcnrwnd, HWND_TOP, 0, 0, 0, 0,
-                      SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+		      SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       WinDismissDlg(hwnd, 0);
       break;
     }
@@ -290,25 +292,27 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #      endif
       dirsize = xmalloc(sizeof(DIRSIZE), pszSrcFile, __LINE__);
       if (!dirsize) {
-        WinDismissDlg(hwnd, 0);
-        break;
+	WinDismissDlg(hwnd, 0);
+	break;
       }
       dirsize->stopflag = (CHAR *)&data->stopflag;
       dirsize->filename = data->dirname;
       dirsize->hwndCnr = WinWindowFromID(hwnd, OBJCNR_CNR);
-      if (_beginthread(FillCnrsThread, NULL, 65536 * 8, (PVOID) dirsize) ==
-          -1) {
-        Runtime_Error(pszSrcFile, __LINE__,
-                      GetPString(IDS_COULDNTSTARTTHREADTEXT));
-        free(dirsize);
+      if (xbeginthread(FillCnrsThread,
+		       65536 * 8,
+		       dirsize,
+		       pszSrcFile,
+		       __LINE__) == -1)
+      {
+	free(dirsize);
 #       ifdef FORTIFY
-        Fortify_LeaveScope();
+	Fortify_LeaveScope();
 #        endif
-        WinDismissDlg(hwnd, 0);
-        break;
+	WinDismissDlg(hwnd, 0);
+	break;
       }
       else
-        data->working = TRUE;
+	data->working = TRUE;
     }
     PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     break;
@@ -321,17 +325,17 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       memset(&cnri, 0, sizeof(CNRINFO));
       cnri.cb = sizeof(CNRINFO);
       WinSendDlgItemMsg(hwnd, OBJCNR_CNR, CM_QUERYCNRINFO,
-                        MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
+			MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       cnri.cyLineSpacing = 0;
       cnri.cxTreeIndent = 12L;
       cnri.pszCnrTitle = GetPString(IDS_WORKINGTEXT);
       cnri.flWindowAttr = CV_TREE | CV_FLOW |
-        CA_CONTAINERTITLE | CA_TITLESEPARATOR | CA_TREELINE;
+	CA_CONTAINERTITLE | CA_TITLESEPARATOR | CA_TREELINE;
       if (WinQueryWindowUShort(hwnd, QWS_ID) == QTREE_FRAME)
-        cnri.flWindowAttr |= CV_MINI;
+	cnri.flWindowAttr |= CV_MINI;
       WinSendDlgItemMsg(hwnd, OBJCNR_CNR, CM_SETCNRINFO, MPFROMP(&cnri),
-                        MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
-                                   CMA_CXTREEINDENT));
+			MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
+				   CMA_CXTREEINDENT));
     }
     return 0;
 
@@ -339,36 +343,36 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSetDlgItemText(hwnd, OBJCNR_NOTE, NullStr);
 //      WinEnableWindowUpdate(WinWindowFromID(hwnd,OBJCNR_CNR),TRUE);
     WinSendDlgItemMsg(hwnd, OBJCNR_CNR, CM_INVALIDATERECORD, MPVOID,
-                      MPFROM2SHORT(0, CMA_ERASE | CMA_INVALIDATE));
+		      MPFROM2SHORT(0, CMA_ERASE | CMA_INVALIDATE));
     data = INSTDATA(hwnd);
     if (data) {
       data->working = FALSE;
       if (data->dying)
-        WinDismissDlg(hwnd, 0);
+	WinDismissDlg(hwnd, 0);
       {
-        PCNRITEM pci;
-        USHORT id;
+	PCNRITEM pci;
+	USHORT id;
 
-        id = WinQueryWindowUShort(hwnd, QWS_ID);
-        pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, OBJCNR_CNR,
-                                           CM_QUERYRECORD,
-                                           MPVOID,
-                                           MPFROM2SHORT(CMA_FIRST,
-                                                        CMA_ITEMORDER));
-        if (pci && (INT) pci != -1) {
-          ExpandAll(WinWindowFromID(hwnd, OBJCNR_CNR), TRUE, pci);
-          if (id == QTREE_FRAME)
-            pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, OBJCNR_CNR,
-                                               CM_QUERYRECORD,
-                                               MPFROMP(pci),
-                                               MPFROM2SHORT(CMA_FIRSTCHILD,
-                                                            CMA_ITEMORDER));
-        }
-        if ((!pci || (INT) pci == -1) && id == QTREE_FRAME) {
-          Notify(GetPString(IDS_NODIRSUNDERTEXT));
-          WinDismissDlg(hwnd, 0);
-          break;
-        }
+	id = WinQueryWindowUShort(hwnd, QWS_ID);
+	pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, OBJCNR_CNR,
+					   CM_QUERYRECORD,
+					   MPVOID,
+					   MPFROM2SHORT(CMA_FIRST,
+							CMA_ITEMORDER));
+	if (pci && (INT) pci != -1) {
+	  ExpandAll(WinWindowFromID(hwnd, OBJCNR_CNR), TRUE, pci);
+	  if (id == QTREE_FRAME)
+	    pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, OBJCNR_CNR,
+					       CM_QUERYRECORD,
+					       MPFROMP(pci),
+					       MPFROM2SHORT(CMA_FIRSTCHILD,
+							    CMA_ITEMORDER));
+	}
+	if ((!pci || (INT) pci == -1) && id == QTREE_FRAME) {
+	  Notify(GetPString(IDS_NODIRSUNDERTEXT));
+	  WinDismissDlg(hwnd, 0);
+	  break;
+	}
       }
     }
     return 0;
@@ -378,10 +382,10 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case OBJCNR_CNR:
       if (SHORT2FROMMP(mp1) == CN_ENTER) {
 
-        PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
+	PCNRITEM pci = (PCNRITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
 
-        if (pci && (INT) pci != -1)
-          WinSendDlgItemMsg(hwnd, DID_OK, BM_CLICK, MPVOID, MPVOID);
+	if (pci && (INT) pci != -1)
+	  WinSendDlgItemMsg(hwnd, DID_OK, BM_CLICK, MPVOID, MPVOID);
       }
       break;
     }
@@ -392,18 +396,18 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_HELP:
       if (hwndHelp) {
 
-        USHORT id;
+	USHORT id;
 
-        id = WinQueryWindowUShort(hwnd, QWS_ID);
+	id = WinQueryWindowUShort(hwnd, QWS_ID);
 
-        if (id == QTREE_FRAME)
-          WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
-                     MPFROM2SHORT(HELP_QUICKTREE, 0),
-                     MPFROMSHORT(HM_RESOURCEID));
-        else
-          WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
-                     MPFROM2SHORT(HELP_OBJECTPATH, 0),
-                     MPFROMSHORT(HM_RESOURCEID));
+	if (id == QTREE_FRAME)
+	  WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
+		     MPFROM2SHORT(HELP_QUICKTREE, 0),
+		     MPFROMSHORT(HM_RESOURCEID));
+	else
+	  WinSendMsg(hwndHelp, HM_DISPLAY_HELP,
+		     MPFROM2SHORT(HELP_OBJECTPATH, 0),
+		     MPFROMSHORT(HM_RESOURCEID));
       }
       break;
 
@@ -412,35 +416,35 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       data = INSTDATA(hwnd);
       if (data) {
 
-        PCNRITEM pci;
+	PCNRITEM pci;
 
-        if (data->working) {
-          Runtime_Error(pszSrcFile, __LINE__, "working unexpected");
-          break;
-        }
-        if (SHORT1FROMMP(mp1) == OBJCNR_DESKTOP) {
-          WinDismissDlg(hwnd, 2);
-          break;
-        }
-        pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, OBJCNR_CNR,
-                                           CM_QUERYRECORDEMPHASIS,
-                                           MPFROMLONG(CMA_FIRST),
-                                           MPFROMSHORT(CRA_CURSORED));
-        if (pci && (INT) pci != -1)
-          strcpy(data->dirname, pci->pszFileName);
-        WinDismissDlg(hwnd, 1);
+	if (data->working) {
+	  Runtime_Error(pszSrcFile, __LINE__, "working unexpected");
+	  break;
+	}
+	if (SHORT1FROMMP(mp1) == OBJCNR_DESKTOP) {
+	  WinDismissDlg(hwnd, 2);
+	  break;
+	}
+	pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, OBJCNR_CNR,
+					   CM_QUERYRECORDEMPHASIS,
+					   MPFROMLONG(CMA_FIRST),
+					   MPFROMSHORT(CRA_CURSORED));
+	if (pci && (INT) pci != -1)
+	  strcpy(data->dirname, pci->pszFileName);
+	WinDismissDlg(hwnd, 1);
       }
       break;
 
     case DID_CANCEL:
       data = INSTDATA(hwnd);
       if (data) {
-        if (data->working) {
-          data->dying = (CHAR)TRUE;
-          data->stopflag = (CHAR)0xff;
-          break;
-        }
-        WinDismissDlg(hwnd, 0);
+	if (data->working) {
+	  data->dying = (CHAR)TRUE;
+	  data->stopflag = (CHAR)0xff;
+	  break;
+	}
+	WinDismissDlg(hwnd, 0);
       }
       break;
     }

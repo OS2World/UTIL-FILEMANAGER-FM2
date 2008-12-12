@@ -34,19 +34,20 @@
   29 Feb 08 GKY Add presparams & update appearence of "Sizes" dialog
   07 Jul 08 GKY Fixed trap in PMCTLS (strlen) inadequate memory allocation
   07 Jul 08 GKY Fixed trap by no longer allocating pci->pszLongName as flag but pointing isroot
-                version to NullStr and all others to NULL.
+		version to NullStr and all others to NULL.
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory; use pTmpDir for temp files
   03 Aug 08 GKY Reworked FillInRecSizes to use pci->pszDisplayName for display names and
-                created a more consitent string for passing to DRAWITEM. Finally (I hope) fixed
-                the strlen trap.
+		created a more consitent string for passing to DRAWITEM. Finally (I hope) fixed
+		the strlen trap.
   23 Aug 08 GKY Fix memory leak (failure to free cnritems)
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -79,6 +80,7 @@
 #include "dirs.h"			// save_dir2
 #include "misc.h"			// PostMsg
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 typedef struct
 {
@@ -141,9 +143,9 @@ static BOOL ProcessDir(HWND hwndCnr,
   CheckDrive(toupper(*pszFileName), FileSystem, NULL);
   /*if (!stricmp(FileSystem, NTFS)) {
     saymsg(MB_OK,
-           HWND_DESKTOP,
-           NullStr,
-           GetPString(IDS_NTFSDRIVERFAILSTEXT));
+	   HWND_DESKTOP,
+	   NullStr,
+	   GetPString(IDS_NTFSDRIVERFAILSTEXT));
     return FALSE;
   } */
   ulBufBytes = sizeof(FILEFINDBUF4L) * FilesToGet;
@@ -342,18 +344,18 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 
       if (isroot) {
 	FSALLOCATE fsa;
-        APIRET rc;
+	APIRET rc;
 
 
-        memset(&fsa, 0, sizeof(fsa));
+	memset(&fsa, 0, sizeof(fsa));
 	rc = DosQueryFSInfo(toupper(*pci->pszFileName) - '@', FSIL_ALLOC, &fsa,
 			    sizeof(FSALLOCATE));
 	if (!rc) {
 	  fltPct = (ullTotalBytes * 100.0) /
 	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
 	}
-        // Need unique buffer 23 Jul 07 SHL
-        pci->pszLongName = NullStr;
+	// Need unique buffer 23 Jul 07 SHL
+	pci->pszLongName = NullStr;
       }
       else
 	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
@@ -362,7 +364,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
       memset(szBar, ' ', sizeof(szBar));
       cBar = (UINT) fltPct / 2;
       if (cBar && cBar * 2 != (UINT) fltPct)
-        szBar[cBar] = '=';
+	szBar[cBar] = '=';
       szBar[100] = 0;
     }
 
@@ -377,7 +379,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	    szAllDir,
 	    fltPct,
 	    isroot ? GetPString(IDS_OFDRIVETEXT) : NullStr,
-            szBar);
+	    szBar);
     pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
     // use DisplayName for display hopefully fixes "strlen" trap 02 AUG 08 GKY
     if (pci->pszDisplayName) {
@@ -392,7 +394,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
   else
     attrib = CMA_FIRST;
   pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
-                              MPFROM2SHORT(attrib, CMA_ITEMORDER));
+			      MPFROM2SHORT(attrib, CMA_ITEMORDER));
   while (pci && (INT) pci != -1) {
     if (*pchStopFlag)
       break;
@@ -524,12 +526,12 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       PrfQueryProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp, &size);
       WinSetWindowPos(hwnd,
-                      HWND_TOP,
-                      swp.x,
-                      swp.y,
-                      swp.cx,
-                      swp.cy,
-                      swp.fl);
+		      HWND_TOP,
+		      swp.x,
+		      swp.y,
+		      swp.cx,
+		      swp.cy,
+		      swp.fl);
     }
     {
       DIRSIZE *dirsize;
@@ -542,10 +544,12 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dirsize->pchStopFlag = (CHAR *)&pState->chStopFlag;
       dirsize->pszFileName = pState->szDirName;
       dirsize->hwndCnr = WinWindowFromID(hwnd, DSZ_CNR);
-      if (_beginthread(FillCnrThread, NULL, 122880L * 5, (PVOID)dirsize) ==
-	  -1) {
-	Runtime_Error(pszSrcFile, __LINE__,
-		      GetPString(IDS_COULDNTSTARTTHREADTEXT));
+      if (xbeginthread(FillCnrThread,
+		       122880 * 5,
+		       dirsize,
+		       pszSrcFile,
+		       __LINE__) == -1)
+      {
 	xfree(dirsize, pszSrcFile, __LINE__);
 	WinDismissDlg(hwnd, 0);
 	break;
@@ -686,9 +690,9 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    INT boxHeight;
 	    p = strchr(pci->pszDisplayName, '\r');
 	    if (p) {
-              // draw text
-              if (pci->pszLongName == NullStr)  // is root record
-	        GpiSetColor(oi->hps, CLR_DARKRED);
+	      // draw text
+	      if (pci->pszLongName == NullStr)  // is root record
+		GpiSetColor(oi->hps, CLR_DARKRED);
 	      else if (!pci->cbFile)		// no size
 		GpiSetColor(oi->hps, CLR_DARKGRAY);
 	      else if (!pci->easize)	// no size below
@@ -825,15 +829,15 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		GpiMove(oi->hps, &ptl);
 		switch (x) {
 		case 1:
-                case 3:
-                case 5:
+		case 3:
+		case 5:
 		case 7:
-                case 9:
-                case 11:
-                case 13:
-                case 15:
-                case 17:
-                case 19:
+		case 9:
+		case 11:
+		case 13:
+		case 15:
+		case 17:
+		case 19:
 		  ptl.y -= 1;
 		  break;
 		case 10:
@@ -842,18 +846,18 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		case 2:
 		case 4:
 		case 6:
-                case 8:
-                case 12:
-                case 14:
-                case 16:
-                case 18:
+		case 8:
+		case 12:
+		case 14:
+		case 16:
+		case 18:
 		  ptl.y -= 2;
 		  break;
 		}
 		GpiLine(oi->hps, &ptl);
 	      } // for x
 	      return MRFROMLONG(TRUE);
-            }
+	    }
 	  }
 	}
       }
@@ -947,10 +951,10 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR szFileName[CCHMAXPATH];
 	FILE *fp;
 
-        if (pTmpDir)
-          strcpy(szFileName, pTmpDir);
-        else
-          strcpy(szFileName, pFM2SaveDirectory);
+	if (pTmpDir)
+	  strcpy(szFileName, pTmpDir);
+	else
+	  strcpy(szFileName, pFM2SaveDirectory);
 	sprintf(&szFileName[strlen(szFileName)], "\\%csizes.Rpt",
 		(pState) ? toupper(*pState->szDirName) : '+');
 	if (export_filename(hwnd, szFileName, FALSE) && *szFileName) {
@@ -1006,12 +1010,12 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
     case DID_CANCEL:
       {
-        SWP swp;
-        ULONG size = sizeof(SWP);
+	SWP swp;
+	ULONG size = sizeof(SWP);
 
-        WinQueryWindowPos(hwnd, &swp);
-        PrfWriteProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp,
-                            size);
+	WinQueryWindowPos(hwnd, &swp);
+	PrfWriteProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp,
+			    size);
       }
       pState = INSTDATA(hwnd);
       if (!pState)

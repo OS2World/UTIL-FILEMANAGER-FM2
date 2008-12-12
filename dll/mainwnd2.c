@@ -25,13 +25,14 @@
   29 Feb 08 GKY Use xfree where appropriate
   27 Aug 08 JBS Ticket 259: Support saving/restoring toolbars with states
   01 Sep 08 GKY Add bmps for default toolbars
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -59,7 +60,7 @@
 #include "misc.h"			// BoxWindow, FixSwitchList, SetConditionalCascade
 					// SetSysMenu
 #include "mainwnd.h"			// CloseChildren, MainWMCommand, MakeMainObjWin, ResizeDrives
-                    			// TopWindow
+				// TopWindow
 #include "common.h"			// CommonCreateMainChildren, CommonMainWndProc
 #include "notify.h"			// HideNote
 #include "mainwnd2.h"
@@ -74,6 +75,7 @@
 #include "systemf.h"			// runemf2
 #include "wrappers.h"			// xfree
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 typedef struct
 {
@@ -770,9 +772,12 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
     WinSetWindowUShort(hwnd, QWL_USER + 10, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 12, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 16, 0);
-    if (_beginthread(MakeMainObjWin, NULL, 245760, MPVOID) == -1) {
-      Runtime_Error(pszSrcFile, __LINE__,
-		    GetPString(IDS_COULDNTSTARTTHREADTEXT));
+    if (xbeginthread(MakeMainObjWin,
+		     245760,
+		     MPVOID,
+		     pszSrcFile,
+		     __LINE__) == -1)
+    {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       return 0;
     }

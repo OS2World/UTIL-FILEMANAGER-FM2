@@ -6,7 +6,7 @@
   MLE text editor/viewer
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   16 Apr 06 SHL MLEexportfile: rework to avoid wrap problems
@@ -20,6 +20,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   22 Jun 08 GKY Fixed memory buffer access after it had been freed
   06 Jul 08 GKY Rework LoadThread logic with Steven's help
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -27,7 +28,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -54,20 +55,21 @@
 #include "wrappers.h"			// xfopen
 #include "misc.h"			// PostMsg
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 static PSZ pszSrcFile = __FILE__;
 
 #define FAKEROT 1
 #define DOROT13(c)     (!isalpha((c)))?(c):((((c) >= (char) 'A') && \
-        ((c) <= (char) 'M')) || (((c) >= (char) 'a') && ((c) <= (char) 'm')))?((c) + (char) 0xd)\
-        :((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
-        ((c) - (char) 0xd):(c)
+	((c) <= (char) 'M')) || (((c) >= (char) 'a') && ((c) <= (char) 'm')))?((c) + (char) 0xd)\
+	:((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
+	((c) - (char) 0xd):(c)
 
 /*((FAKEROT==0)?(c):(FAKEROT==1)?(!isalpha((c)))?(c):((((c) >= (char) 'A') && \
-        ((c) <= (char) 'M')) || (((c) >= (char) 'a') && ((c) <= (char) 'm')))?((c) + (char) 0xd)\
-        :((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
-        ((c) - (char) 0xd):(c):((c) >= (char) '!') ? ((((c) + (char) 47) > (char) '~') ? ((c) - (char) 47) :\
-        ((c) + (char) 47)) : (c))*/
+	((c) <= (char) 'M')) || (((c) >= (char) 'a') && ((c) <= (char) 'm')))?((c) + (char) 0xd)\
+	:((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
+	((c) - (char) 0xd):(c):((c) >= (char) '!') ? ((((c) + (char) 47) > (char) '~') ? ((c) - (char) 47) :\
+	((c) + (char) 47)) : (c))*/
 
 LONG MLEgetlinetext(HWND h, LONG l, CHAR * buf, INT maxlen)
 {
@@ -195,47 +197,47 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	temp[len] = 0;
 	bstripcr(temp);
 	if (*temp) {
-          if (ftp) {
-            if (fFtpRunWPSDefault) {
-              CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
+	  if (ftp) {
+	    if (fFtpRunWPSDefault) {
+	      CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
 
-              size = sizeof(WPSDefaultFtpRun);
-              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                  "DefaultBrowserExe", WPSDefaultFtpRun, &size);
-              size = sizeof(WPSDefaultFtpRunDir);
-              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                  "DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
-              runemf2(SEPARATE | WINDOWED,
-                      h, pszSrcFile, __LINE__,
-                      WPSDefaultFtpRunDir,
-                      fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
-                      "%s %s", WPSDefaultFtpRun, temp);
-            }
-            else
-              runemf2(SEPARATE | WINDOWED,
-                      h, pszSrcFile, __LINE__,
-                      ftprundir, NULL, "%s %s", ftprun, temp);
-          }
-          else
-            if (fHttpRunWPSDefault) {
-              CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
+	      size = sizeof(WPSDefaultFtpRun);
+	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+				  "DefaultBrowserExe", WPSDefaultFtpRun, &size);
+	      size = sizeof(WPSDefaultFtpRunDir);
+	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+				  "DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
+	      runemf2(SEPARATE | WINDOWED,
+		      h, pszSrcFile, __LINE__,
+		      WPSDefaultFtpRunDir,
+		      fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+		      "%s %s", WPSDefaultFtpRun, temp);
+	    }
+	    else
+	      runemf2(SEPARATE | WINDOWED,
+		      h, pszSrcFile, __LINE__,
+		      ftprundir, NULL, "%s %s", ftprun, temp);
+	  }
+	  else
+	    if (fHttpRunWPSDefault) {
+	      CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
 
-              size = sizeof(WPSDefaultHttpRun);
-              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                  "DefaultBrowserExe", WPSDefaultHttpRun, &size);
-              size = sizeof(WPSDefaultHttpRunDir);
-              PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
-                                  "DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
-              runemf2(SEPARATE | WINDOWED,
-                      h, pszSrcFile, __LINE__,
-                      WPSDefaultHttpRunDir,
-                      fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
-                      "%s %s", WPSDefaultHttpRun, temp);
-            }
-            else
-              runemf2(SEPARATE | WINDOWED,
-                      h, pszSrcFile, __LINE__,
-                      httprundir, NULL, "%s %s", httprun, temp);
+	      size = sizeof(WPSDefaultHttpRun);
+	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+				  "DefaultBrowserExe", WPSDefaultHttpRun, &size);
+	      size = sizeof(WPSDefaultHttpRunDir);
+	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+				  "DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
+	      runemf2(SEPARATE | WINDOWED,
+		      h, pszSrcFile, __LINE__,
+		      WPSDefaultHttpRunDir,
+		      fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+		      "%s %s", WPSDefaultHttpRun, temp);
+	    }
+	    else
+	      runemf2(SEPARATE | WINDOWED,
+		      h, pszSrcFile, __LINE__,
+		      httprundir, NULL, "%s %s", httprun, temp);
 	}
       }
       DosFreeMem(temp);
@@ -608,7 +610,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	    ret = FALSE;
 	  free(buffer);
 #         ifdef FORTIFY
-          Fortify_LeaveScope();
+	  Fortify_LeaveScope();
 #          endif
 	}
 	DosFreeMem(hexbuff);
@@ -812,7 +814,7 @@ VOID LoadThread(VOID * arg)
 	WinDestroyMsgQueue(thmq);
       }
       else
-        PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
+	PostMsg(bkg->hwndReport, bkg->msg, MPVOID, MPVOID);
       DecrThreadUsage();
       WinTerminate(thab);
     }
@@ -825,7 +827,7 @@ VOID LoadThread(VOID * arg)
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
-  _endthread();
+  // _endthread();			// 10 Dec 08 SHL
 }
 
 INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
@@ -836,7 +838,6 @@ INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
    */
 
   BKGLOAD *bkg;
-  INT rc;
 
   bkg = xmallocz(sizeof(BKGLOAD), pszSrcFile, __LINE__);
   if (!bkg)
@@ -847,11 +848,11 @@ INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
   bkg->msg = msg;
   bkg->h = h;
   strcpy(bkg->filename, filename);
-  rc = _beginthread(LoadThread, NULL, 65536, bkg);
-  if (rc == -1)
-    Runtime_Error(pszSrcFile, __LINE__,
-		  GetPString(IDS_COULDNTSTARTTHREADTEXT));
-  return rc;
+  return xbeginthread(LoadThread,
+		      65536,
+		      bkg,
+		      pszSrcFile,
+		      __LINE__);
 }
 
 BOOL MLEloadfile(HWND h, CHAR * filename)

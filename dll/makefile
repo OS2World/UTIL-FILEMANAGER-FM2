@@ -41,6 +41,7 @@
 # 26 May 08 SHL Update WARNALL to warn about more
 # 22 Jul 08 SHL Change from dllsyms to syms target for consistency
 # 06 Oct 08 SHL Add missing -dDEBUG= to CFLAGS; rework lxlite suppress logic
+# 25 Oct 08 SHL Rework dependencies to avoid target dependent build failures
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 # 21 Nov 08 JBS Ticket 297: Added support for copyright.c and copyright.h
@@ -66,12 +67,10 @@ LINK = wlink
 !ifndef USE_RC			# if not defined on command line
 !ifdef %USE_RC			# if defined in environment
 USE_RC = $(%USE_RC)
-!else
-USE_RC = 0
 !endif
 !endif
 
-!if $(USE_RC)
+!ifdef USE_RC
 RC = rc -n
 !else
 RC = wrc -q
@@ -135,11 +134,13 @@ CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq -d
 !else
 CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
 !endif
+# Omit -bd so exes can use copyright.obj
 COPYRIGHT_CFLAGS = -bt=os2 -mf -bm -s -j -zfp -zgp -zp4 -zq -hd
 
 # 26 May 08 SHL Was reversed
 !ifdef WARNALL
 CFLAGS += -wce=118 -wce=130 -wce=303 -wce=307 -wce=308 -wce=309
+COPYRIGHT_CFLAGS += -wce=118 -wce=130 -wce=303 -wce=307 -wce=308 -wce=309
 !else
 CFLAGS += -we
 !endif
@@ -160,7 +161,7 @@ LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
 !endif
 
 # rc Includes can be in current director or dll subdirectory
-!if $(USE_RC)
+!ifdef USE_RC
 RCFLAGS = -r -i dll
 RCFLAGS2 = -x2
 !else
@@ -180,7 +181,8 @@ RCFLAGS2 =
 OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        avl.obj avv.obj chklist.obj cmdline.obj codepage.obj &
        collect.obj colors.obj commafmt.obj command.obj common.obj &
-       comp.obj copyf.obj datamin.obj defview.obj delims.obj dircnrs.obj &
+       comp.obj copyf.obj copyright.obj &
+       datamin.obj defview.obj delims.obj dircnrs.obj &
        dirs.obj dirsize.obj draglist.obj droplist.obj dumputil.obj &
        eas.obj errutil.obj excputil.obj extract.obj &
        filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
@@ -208,12 +210,11 @@ all: &
      $(BASERES).res &
      $(BASERES).dll &
      ipf\fm3.hlp &
-     internal\mkstr.exe &
-     fm3res.str
+     $(BASERES).str
 
 syms: $(SYMS) .symbolic
 
-$(BASE).dll $(BASE).lib: $(OBJS) $(BASE).def $(BASE).lrf copyright.obj
+$(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf copyright.obj
   @echo $(LINK) @$(BASE).lrf @$(BASE).def
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
@@ -222,44 +223,27 @@ $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
    @%append $^@ name $(BASE)
    @for %f in ($(OBJS)) do @%append $^@ file %f
-   @%append $^@ file copyright.obj
-!ifdef %EXCEPTQ
-    @%append $^@ file exceptq.lib
-!endif
   @%append $^@ library os2386.lib
 
-copyright.obj: copyright.c copyright.h
+copyright.obj: copyright.c .AUTODEPEND
   $(CC) $(COPYRIGHT_CFLAGS) copyright.c
 
-!else
+!else # MAKERES defined
 
 # MAKERES mode - build resources only
 
-all: chkexe &
-     $(BASERES).res &
+all: $(BASERES).res &
      $(BASERES).dll &
      ipf\fm3.hlp &
-     fm3res.str
+     $(BASERES).str
 
-chkexe:
-  @echo Checking required EXEs
-  if not exist internal\mkstr.exe internal\mkstr.exe
-!ifndef DEBUG
-  lxlite -c:exehdr internal\mkstr.exe >nul
-! endif
-
-!endif
+!endif # MAKERES
 
 # Update resources only
 
 res:
   @echo Updating resources only
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) MAKERES=1
-
-internal\mkstr.exe: internal\mkstr.c version.h fm3str.h
-  cd internal
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
-  cd..
 
 $(BASERES).obj: $(BASERES).c .autodepend
   $(CC) $(CFLAGSR) $(BASERES).c
@@ -269,13 +253,13 @@ $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h copyright.h $(ICONS)
   @echo Compiling resource: $*
   @echo.
   $(RC) $(RCFLAGS) $*
-!if $(USE_RC)
+!ifdef USE_RC
   ren $*.res $*.res
 !endif
 
 !ifndef MAKERES
 
-$(BASERES).dll $(BASERES).lib: $(BASERES).res $(BASERES).obj $(BASERES).def $(BASERES).lrf
+$(BASERES).dll $(BASERES).lib $(BASERES).map: $(BASERES).res $(BASERES).obj $(BASERES).def $(BASERES).lrf
   @echo $(LINK) @$(BASERES).lrf @$(BASERES).def
   $(LINK) @$(BASERES).lrf @$(BASERES).def
   @echo.
@@ -296,13 +280,18 @@ $(BASERES).sym: $(BASERES).map
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
 
+internal\mkstr.exe: .symbolic
+  cd internal
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
+  cd..
+
 internal\mkstr.sym: internal\mkstr.map
    @echo Processing: $?
    cd internal
    -perl ..\..\debugtools\mapsymw.pl mkstr.map
    cd ..
 
-!else
+!else # MAKERES defined
 
 # MAKERES mode - build resources only
 
@@ -320,12 +309,16 @@ $(BASERES).dll: $(BASERES).res
   lxlite $@ /x- /b-
 !endif
 
-!endif # MAKERES mode
+internal\mkstr.exe: .symbolic
+  @echo Checking required EXEs
+  if not exist internal\mkstr.exe internal\mkstr.exe
+
+!endif # MAKERES
 
 # For testing new code
 tmp.obj: tmp.c
 
-$(BASERES).str: $(BASE).str fm3str.h version.h
+$(BASERES).str: $(BASE).str fm3str.h version.h internal\mkstr.exe
   internal\mkstr
   # ren $(BASERES).str $(BASERES).str
   copy $(BASERES).str ..\ /v
@@ -341,7 +334,10 @@ ipf\fm3.hlp: ipf\*.ipf ipf\bitmaps\*.bmp ipf\makefile
 lxlite: $(BASE).dll $(BASERES).dll .symbolic
 # !lxlite /x- /b- $?
 !ifndef DEBUG
-   @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
+  @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
+  cd internal
+  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
+  cd ..
 !endif
 
 cleanobj: .symbolic
@@ -363,4 +359,4 @@ clean: .symbolic
   -del *.obj
   -del *.res
   -del *.sym
-  -del fm3res.str
+  -del $(BASERES).str

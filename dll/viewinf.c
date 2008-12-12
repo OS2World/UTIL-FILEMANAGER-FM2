@@ -14,6 +14,7 @@
   03 Nov 06 SHL Count thread usage
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -22,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
-#include <process.h>                    // _beginthread
+// #include <process.h>                    // _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -46,6 +47,7 @@
 #include "dirs.h"			// save_dir2
 #include "wrappers.h"			// xfopen
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 #pragma data_seg(DATA1)
 
@@ -282,9 +284,12 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         d->hwnd = hwnd;
         if (help)
           d->help = 1;
-        if (_beginthread(FillListboxThread, NULL, 65536, (PVOID) d) == -1) {
-          Runtime_Error(pszSrcFile, __LINE__,
-                        GetPString(IDS_COULDNTSTARTTHREADTEXT));
+        if (xbeginthread(FillListboxThread,
+			 65536,
+			 d,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
           free(d);
           WinDismissDlg(hwnd, 0);
           return 0;

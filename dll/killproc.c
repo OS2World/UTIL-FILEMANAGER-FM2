@@ -6,7 +6,7 @@
   Kill a process
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2006 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   14 Jul 06 SHL Use Runtime_Error
@@ -18,13 +18,14 @@
   02 Sep 07 GKY Replaced DosQProcStatus with DosQuerySysState to fix trap in thunk code
   02 Sep 07 SHL Expand FillKillListThread2 stack to avoid exception in __TNK
   16 JUL 08 GKY Use TMP directory for temp files
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <process.h>
+// #include <process.h>
 #include <limits.h>
 
 #define INCL_DOS
@@ -52,6 +53,7 @@
 #include "stristr.h"			// stristr
 #include "misc.h"			// PostMsg
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 // Data definitions
 #pragma data_seg(DATA2)
@@ -450,24 +452,39 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case KILL_RESCAN:
       listdone = FALSE;
       if (fUseQProcStat) {
-	if (_beginthread(FillKillListThread2,
-			 NULL, 65536 + 8192, (PVOID)&hwnd) != -1)
-	  DosSleep(100);		// 05 Aug 07 GKY 250
+	if (xbeginthread(FillKillListThread2,
+			 65536 + 8192,
+			 &hwnd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
+	  WinDismissDlg(hwnd, 0);
+	}
 	else
-	    WinDismissDlg(hwnd, 0);
+	  DosSleep(100);		// 05 Aug 07 GKY 250
       }
       else if (fUseQSysState)
-	if (_beginthread(FillKillListThread3,
-			 NULL, 65536, (PVOID) & hwnd) != -1)
-	  DosSleep(100);//05 Aug 07 GKY 250
-	else
-	    WinDismissDlg(hwnd, 0);
-      else {
-	if (_beginthread(FillKillListThread,
-			 NULL, 65536, (PVOID) & hwnd) != -1)
-	  DosSleep(100);		// 05 Aug 07 GKY 250
-	else
+	if (xbeginthread(FillKillListThread3,
+			 65536,
+			 &hwnd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  WinDismissDlg(hwnd, 0);
+	}
+	else
+	  DosSleep(100);//05 Aug 07 GKY 250
+      else {
+	if (xbeginthread(FillKillListThread,
+			 65536,
+			 &hwnd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
+	  WinDismissDlg(hwnd, 0);
+	}
+	else
+	  DosSleep(100);		// 05 Aug 07 GKY 250
       }
       break;
 

@@ -57,17 +57,18 @@
   16 Jul 08 GKY Use TMP directory for temp files if present. Use MakeTempName
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
-                less than 10 KiB (It hangs and can't be closed)
+		less than 10 KiB (It hangs and can't be closed)
   08 Nov 08 GKY Add WaitChildThread to fix hang caused by viewer trying to open a file before
-                the archiver process closes. (Ticket 58)
+		the archiver process closes. (Ticket 58)
   23 Nov 08 JBS Ticket 284: Support archivers with no Start or End of list strings
   29 Nov 08 GKY Add flag to tell CheckListProc file is in an archive so it won't try to open it.
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
-                for the extract path to arc container.
+		for the extract path to arc container.
   02 Dec 08 JBS Ticket 284: Changed string indicating no Start/End of list strings.
   03 Dec 08 GKY Subdirectory from the arcname for the extract path only created if an "extract"
-                menu option is selected.
+		menu option is selected.
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -77,7 +78,7 @@
 #include <direct.h>			// rmdir
 #include <share.h>			// SH_DENYWR
 #include <limits.h>			// ULONG_MAX
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread	// 10 Dec 08 SHL
 
 #if 0
 #include <malloc.h>			// _heapchk
@@ -106,11 +107,11 @@
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
-#include "worker.h"         		// Action, MassAction
+#include "worker.h"		// Action, MassAction
 #include "avv.h"			// ArcReviewDlgProc, rewrite_archiverbb2
 #include "chklist.h"			// CenterOverWindow, CheckListProc
 #include "common.h"			// CommonCreateTextChildren, CommonFrameWndProc, CommonTextPaint
-                   			// CommonTextButton
+				// CommonTextButton
 #include "draglist.h"			// DoFileDrag, DragOne
 #include "valid.h"			// GetDesktopName, TestCDates
 #include "mainwnd.h"			// GetNextWindowPos, MakeBubble, TopWindowName
@@ -120,7 +121,7 @@
 #include "printer.h"			// PrintListThread
 #include "srchpath.h"			// RunFM2Util
 #include "misc.h"			// Broadcast, CheckMenu, CurrentRecord, SayFilter, SaySort
-                 			// DrawTargetEmphasis, IsFm2Window
+				// DrawTargetEmphasis, IsFm2Window
 #include "select.h"			// SelectAll, SelectList
 #include "findrec.h"			// ShowCnrRecord
 #include "walkem.h"			// WalkExtractDlgProc
@@ -140,11 +141,12 @@
 #include "copyf.h"			// unlinkf
 #include "literal.h"			// wildcard
 #include "wrappers.h"			// xrealloc
-#include "misc.h"         		// AdjustCnrColVis, QuickPopup, SetSortChecks, SwitchCommand
+#include "misc.h"		// AdjustCnrColVis, QuickPopup, SetSortChecks, SwitchCommand
 #include "select.h"			// DeselectAll, InvertAll
 #include "strips.h"			// bstrip
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
+#include "excputil.h"			// 06 May 08 SHL added
 
 #define ARCFLAGS_REALDIR    0x00000001
 #define ARCFLAGS_PSEUDODIR  0x00000002
@@ -206,11 +208,11 @@ VOID WaitChildThread(VOID * arg)
       IncrThreadUsage();
       priority_normal();
       ret = runemf2(WaitChild->RunFlags, WaitChild->hwndClient, pszSrcFile, __LINE__,
-                    WaitChild->pszDirectory, WaitChild->pszEnvironment,
-                    WaitChild->formatstring, WaitChild->CmdLine);
+		    WaitChild->pszDirectory, WaitChild->pszEnvironment,
+		    WaitChild->formatstring, WaitChild->CmdLine);
       if (ret != -1) {
-        if (IsFile(WaitChild->filename) == 1)
-          PostMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
+	if (IsFile(WaitChild->filename) == 1)
+	  PostMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
       }
       DecrThreadUsage();
       WinTerminate(thab);
@@ -222,7 +224,7 @@ VOID WaitChildThread(VOID * arg)
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
-  _endthread();
+  // _endthread();			// 10 Dec 08 SHL
 }
 
 static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
@@ -577,10 +579,10 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   arctemp = xmallocz(CCHMAXPATH, pszSrcFile, __LINE__);
   if (CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) == 1)
     saymsg(MB_OK,
-           HWND_DESKTOP,
-           NullStr,
-           GetPString(IDS_ARCTMPDRIVESPACELIMITED),
-           ArcTempRoot);
+	   HWND_DESKTOP,
+	   NullStr,
+	   GetPString(IDS_ARCTMPDRIVESPACELIMITED),
+	   ArcTempRoot);
   MakeTempName(arctemp, ArcTempRoot, 2);
 
 
@@ -680,8 +682,8 @@ ReTry:
 
     if (fp) {
       gotstart = !info->startlist ||		// If list has no start marker
-      		 !*info->startlist ||
-      		 (stricmp(info->startlist, NO_START_OF_ARCHIVER_LIST_STRING) == 0);
+		 !*info->startlist ||
+		 (stricmp(info->startlist, NO_START_OF_ARCHIVER_LIST_STRING) == 0);
 
       while (!feof(fp) && !gotend && !*pStopFlag) {
 	if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
@@ -1580,24 +1582,23 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       CHAR *s = (CHAR *) mp1, *p, *pp; // filename[CCHMAXPATH];
       WAITCHILD *WaitChild;
-      APIRET rc;
 
       WaitChild = xmallocz(sizeof(WAITCHILD), pszSrcFile, __LINE__);
       if (!WaitChild)
-        return 0;
+	return 0;
       if (s) {
 	if (!dcd->info->extract) {
 	  Runtime_Error(pszSrcFile, __LINE__, "no extract");
 	  free(s);
 	  return 0;
 	}
-        sprintf(WaitChild->CmdLine, "%s %s %s",
-		                    dcd->info->exwdirs ? dcd->info->exwdirs :
+	sprintf(WaitChild->CmdLine, "%s %s %s",
+				    dcd->info->exwdirs ? dcd->info->exwdirs :
 				    dcd->info->extract,
-		                    BldQuotedFileName(szQuotedArcName, dcd->arcname),
-		                    BldQuotedFileName(szQuotedMemberName, s));
-        /*runemf2(SEPARATE | ASYNCHRONOUS | WAIT |
-                (fArcStuffVisible ? 0 : BACKGROUND),
+				    BldQuotedFileName(szQuotedArcName, dcd->arcname),
+				    BldQuotedFileName(szQuotedMemberName, s));
+	/*runemf2(SEPARATE | ASYNCHRONOUS | WAIT |
+		(fArcStuffVisible ? 0 : BACKGROUND),
 		, pszSrcFile, __LINE__, dcd->workdir, NULL,
 		"%s %s %s",
 		dcd->info->exwdirs ? dcd->info->exwdirs :
@@ -1622,25 +1623,19 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *p = '\\';
 	  p++;
 	}
-        free(s);
-        WaitChild->RunFlags = SEPARATE | ASYNCHRONOUS | WAIT |
-                              (fArcStuffVisible ? 0 : BACKGROUND);
-        WaitChild->hwndClient = dcd->hwndClient;
-        WaitChild->pszDirectory = xstrdup(dcd->workdir, pszSrcFile, __LINE__);
-        WaitChild->pszEnvironment = NULL;
-        strcpy(WaitChild->formatstring, "%s");
-        WaitChild->hwndCnr = dcd->hwndCnr;
-        rc = _beginthread(WaitChildThread, NULL, 65536, WaitChild);
-        if (rc == -1)
-          Runtime_Error(pszSrcFile, __LINE__,
-	                GetPString(IDS_COULDNTSTARTTHREADTEXT));
-	//if (IsFile(filename) == 1) {
-#if 0 // 06 Oct 07 SHL fixme to be gone - set to 0 for ticket #58 testing
-	  if (fViewChild && fArcStuffVisible)
-	    DosSleep(100);  // Allow unzip session to finish closing 14 Mar 07 SHL
-#endif
-	  //WinSendMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
-
+	free(s);
+	WaitChild->RunFlags = SEPARATE | ASYNCHRONOUS | WAIT |
+			      (fArcStuffVisible ? 0 : BACKGROUND);
+	WaitChild->hwndClient = dcd->hwndClient;
+	WaitChild->pszDirectory = xstrdup(dcd->workdir, pszSrcFile, __LINE__);
+	WaitChild->pszEnvironment = NULL;
+	strcpy(WaitChild->formatstring, "%s");
+	WaitChild->hwndCnr = dcd->hwndCnr;
+	xbeginthread(WaitChildThread,
+		     65536,
+		     WaitChild,
+		     pszSrcFile,
+		     __LINE__);
       }
     }
     return 0;
@@ -1706,8 +1701,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (!li->list[x] || strlen(szBuffer) +
 		  strlen(li->list[x]) + 5 > MaxComLineStrg) {
 		runemf2(SEPARATE | WINDOWED | ASYNCHRONOUS |
-                        (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-                        hwnd, pszSrcFile, __LINE__,
+			(fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+			hwnd, pszSrcFile, __LINE__,
 			NULL, NULL, "%s", szBuffer);
 		*p = 0;
 	      }
@@ -1738,8 +1733,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ck.size = sizeof(ck);
 	    ck.list = li->list;
 	    ck.cmd = li->type;
-            ck.prompt = prompt;
-            ck.flags = CHECK_ARCHIVE;
+	    ck.prompt = prompt;
+	    ck.flags = CHECK_ARCHIVE;
 	    sprintf(prompt, GetPString(IDS_ARCCNRDELREFTEXT),
 		    (li->type == IDM_DELETE) ?
 		    GetPString(IDS_DELETELOWERTEXT) :
@@ -1826,14 +1821,14 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      CHAR **exfiles = NULL;
 	      UINT numfiles = 0, numalloc = 0;
 
-              if (li->targetpath && fFileNameCnrPath &&
-                  stricmp(lastextractpath, li->targetpath)) {
-                strcpy(lastextractpath, li->targetpath);
-                SetDir(dcd->hwndParent, hwnd, li->targetpath, 1);
-              }
+	      if (li->targetpath && fFileNameCnrPath &&
+		  stricmp(lastextractpath, li->targetpath)) {
+		strcpy(lastextractpath, li->targetpath);
+		SetDir(dcd->hwndParent, hwnd, li->targetpath, 1);
+	      }
 	      for (x = 0; li->list[x]; x++) {
-                BldFullPathName(fullname, li->targetpath, li->list[x]);
-                //Check if file already exists on disk warn if it does.
+		BldFullPathName(fullname, li->targetpath, li->list[x]);
+		//Check if file already exists on disk warn if it does.
 		if (IsFile(fullname) != -1) {
 		  AddToList(li->list[x], &exfiles, &numfiles, &numalloc);
 		  li->list = RemoveFromList(li->list, li->list[x]);
@@ -1842,7 +1837,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  x--;
 		}
 	      }
-              if (exfiles && numfiles) {
+	      if (exfiles && numfiles) {
 
 		CHECKLIST ckl;
 		CHAR prompt[(CCHMAXPATH * 2) + 256];
@@ -1851,8 +1846,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		ckl.size = sizeof(ckl);
 		ckl.list = exfiles;
 		ckl.prompt = prompt;
-                ckl.cmd = li->type;
-                ckl.flags = CHECK_ARCHIVE;
+		ckl.cmd = li->type;
+		ckl.flags = CHECK_ARCHIVE;
 		sprintf(prompt,
 			GetPString(IDS_REPLACEWARNTEXT),
 			&"s"[numfiles == 1],
@@ -1906,8 +1901,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      z = x;
 	      runemf2(SEPARATE | WINDOWED | WAIT |
-                      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-                      hwnd, pszSrcFile, __LINE__,
+		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+		      hwnd, pszSrcFile, __LINE__,
 		      li->targetpath, NULL, "%s", pszCmdLine);
 	      *endofit = 0;
 	    } while (li->list[x]);
@@ -2040,12 +2035,16 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      else if (li->type == IDM_PRINT) {
 		strcpy(li->targetpath, printer);
-		if (_beginthread(PrintListThread, NULL, 65536, (PVOID) li) !=
-		    -1) {
-		  Runtime_Error(pszSrcFile, __LINE__,
-				GetPString(IDS_COULDNTSTARTTHREADTEXT));
-		  li = NULL;
+		// 10 Dec 08 SHL correct error handling - looked backward
+		if (xbeginthread(PrintListThread,
+				 65536,
+				 li,
+				 pszSrcFile,
+				 __LINE__) != -1)
+		{
+		  li = NULL;		// Ensure not freed here
 		}
+
 	      }
 	      else if (li->type == IDM_VIEWARCHIVE) {
 
@@ -2092,9 +2091,12 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  wk->hwndClient = dcd->hwndClient;
 		  wk->li = li;
 		  strcpy(wk->directory, dcd->directory);
-		  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
-		    Runtime_Error(pszSrcFile, __LINE__,
-				  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+		  if (xbeginthread(Action,
+				   122880,
+				   wk,
+				   pszSrcFile,
+				   __LINE__) == -1)
+		  {
 		    free(wk);
 		    FreeListInfo((LISTINFO *) mp1);
 		  }
@@ -2187,7 +2189,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 	  break;
-	}
+	} // switch
       }
       if (li->type != IDM_OPENDEFAULT && li->type != IDM_OPENSETTINGS)
       {
@@ -2293,9 +2295,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	pci = WinSendMsg(hwnd,
 			 CM_SEARCHSTRING,
 			 MPFROMP(&srch), MPFROMLONG(CMA_FIRST));
-        if (pci && (INT) pci != -1) {
+	if (pci && (INT) pci != -1) {
 
-          USHORT attrib = CRA_CURSORED;
+	  USHORT attrib = CRA_CURSORED;
 
 
 	  /* make found item current item */
@@ -2440,7 +2442,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pci = WinSendMsg(hwnd,
 			   CM_QUERYRECORDEMPHASIS,
 			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-          if (pci && (INT) pci != -1) {
+	  if (pci && (INT) pci != -1) {
 	    if (fSplitStatus && hwndStatus2) {
 	      if (dcd->ullTotalBytes)
 		CommaFmtULL(tb, sizeof(tb), pci->cbFile, ' ');
@@ -2593,9 +2595,12 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	}
 	WinSendMsg(hwnd, CM_SORTRECORD, MPFROMP(ArcSort), MPFROMP(dcd));
-	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID) dcd) == -1) {
-	  Runtime_Error(pszSrcFile, __LINE__,
-			GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	if (xbeginthread(MakeObjWin,
+			 245760,
+			 dcd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 	  return 0;
 	}
@@ -2636,10 +2641,10 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  if (!SetDir(dcd->hwndParent, hwnd, s, 0)) {
 	    if (stricmp(dcd->directory, s)) {
-              //DosEnterCritSec();  //GKY 11-29-08
-              DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-              strcpy(lastextractpath, s);
-              DosReleaseMutexSem(hmtxFM2Globals);
+	      //DosEnterCritSec();  //GKY 11-29-08
+	      DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
+	      strcpy(lastextractpath, s);
+	      DosReleaseMutexSem(hmtxFM2Globals);
 	      //DosExitCritSec();
 	    }
 	    strcpy(dcd->directory, s);
@@ -2670,8 +2675,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       CHAR *filename = mp1;
       printf("%s %d UM_ENTER %s\n",__FILE__, __LINE__, filename); fflush(stdout);
       if (IsFile(filename) != 1) {
-        free(mp1);
-        return 0;
+	free(mp1);
+	return 0;
       }
       WinQueryWindowPos(dcd->hwndFrame, &swp);
       DefaultViewKeys(hwnd, dcd->hwndFrame, dcd->hwndParent, &swp, filename);
@@ -2802,7 +2807,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	OpenDirCnr((HWND) 0, hwndMain, dcd->hwndFrame, FALSE, (char *)mp1);
       }
       else if (mp1 && IsFile(mp1) == 1 &&
-               CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2) {
+	       CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2) {
 	StartArcCnr(HWND_DESKTOP,
 		    dcd->hwndFrame, (CHAR *) mp1, 4, (ARC_TYPE *) mp2);
       }
@@ -3022,11 +3027,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_ARCEXTRACTEXIT:
       case IDM_ARCEXTRACT:
-        if (dcd->directory && fFileNameCnrPath &&
-            stricmp(lastextractpath, dcd->directory)) {
-          strcpy(lastextractpath, dcd->directory);
-          SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
-        }
+	if (dcd->directory && fFileNameCnrPath &&
+	    stricmp(lastextractpath, dcd->directory)) {
+	  strcpy(lastextractpath, dcd->directory);
+	  SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
+	}
 	if (dcd->info->extract)
 	  runemf2(SEPARATE | WINDOWED | ASYNCHRONOUS |
 		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
@@ -3039,11 +3044,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_ARCEXTRACTWDIRSEXIT:
       case IDM_ARCEXTRACTWDIRS:
-        if (dcd->directory && fFileNameCnrPath &&
-            stricmp(lastextractpath, dcd->directory)) {
-          strcpy(lastextractpath, dcd->directory);
-          SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
-        }
+	if (dcd->directory && fFileNameCnrPath &&
+	    stricmp(lastextractpath, dcd->directory)) {
+	  strcpy(lastextractpath, dcd->directory);
+	  SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
+	}
 	if (dcd->info->exwdirs)
 	  runemf2(SEPARATE | WINDOWED | ASYNCHRONOUS |
 		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
@@ -3086,11 +3091,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_SWITCH:
 	if (mp2) {
 	  if (stricmp(dcd->directory, (CHAR *) mp2)) {
-            //DosEnterCritSec(); //GKY 11-29-08
-            DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
+	    //DosEnterCritSec(); //GKY 11-29-08
+	    DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
 	    strcpy(lastextractpath, (CHAR *) mp2);
-            MakeValidDir(lastextractpath);
-            DosReleaseMutexSem(hmtxFM2Globals);
+	    MakeValidDir(lastextractpath);
+	    DosReleaseMutexSem(hmtxFM2Globals);
 	    //DosExitCritSec();
 	  }
 	  strcpy(dcd->directory, (CHAR *) mp2);
@@ -3745,24 +3750,24 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  }
 	  else
 	    strcpy(dcd->directory, extractpath);
-        }
-        if (!*dcd->directory && fFileNameCnrPath && dcd->arcname) {
-          strcpy(fullname, dcd->arcname);
-          p = strrchr(fullname, '.');
-          if (p)
-           *p = 0;
-          else {
-            p = fullname + strlen(fullname);
-            p--;
-            *p = 0;
-          }
-          strcpy(dcd->directory, fullname);
-        }
+	}
+	if (!*dcd->directory && fFileNameCnrPath && dcd->arcname) {
+	  strcpy(fullname, dcd->arcname);
+	  p = strrchr(fullname, '.');
+	  if (p)
+	   *p = 0;
+	  else {
+	    p = fullname + strlen(fullname);
+	    p--;
+	    *p = 0;
+	  }
+	  strcpy(dcd->directory, fullname);
+	}
 	if (!*dcd->directory && *lastextractpath) {
-          //DosEnterCritSec();  //GKY 11-29-08
-          DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-          strcpy(dcd->directory, lastextractpath);
-          DosReleaseMutexSem(hmtxFM2Globals);
+	  //DosEnterCritSec();  //GKY 11-29-08
+	  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
+	  strcpy(dcd->directory, lastextractpath);
+	  DosReleaseMutexSem(hmtxFM2Globals);
 	  //DosExitCritSec();
 	}
 	if (!*dcd->directory) {
@@ -3790,7 +3795,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->amextracted = (flags & 1) != 0;
 	dcd->dontclose = (flags & 4) != 0;
 	dcd->info = info;
-        dcd->sortFlags = DefArcSortFlags;
+	dcd->sortFlags = DefArcSortFlags;
 	{
 	  PFNWP oldproc;
 
@@ -3902,7 +3907,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 			    SWP_SIZE | SWP_MOVE | SWP_SHOW | SWP_ZORDER |
 			    SWP_ACTIVATE);
 	  }
-        }
+	}
       }
 #     ifdef FORTIFY
       Fortify_LeaveScope();

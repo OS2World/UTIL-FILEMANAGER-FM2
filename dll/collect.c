@@ -1,3 +1,4 @@
+
 /***********************************************************************
 
   $Id$
@@ -51,9 +52,10 @@
 		all the details view settings (both the global variables and those in the
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   20 Jul 08 GKY Add save/append filename to clipboard.
-                Change menu wording to make these easier to find
+		Change menu wording to make these easier to find
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
-                less than 10 KiB (It hangs and can't be closed)
+		less than 10 KiB (It hangs and can't be closed)
+  10 Dec 08 SHL Integrate exception handler support
 
 ***********************************************************************/
 
@@ -62,7 +64,7 @@
 #include <ctype.h>
 #include <share.h>
 #include <limits.h>
-#include <process.h>			// _beginthread
+// #include <process.h>			// _beginthread
 
 #define INCL_DOS			// QSV_MS_COUNT
 #define INCL_WIN
@@ -86,9 +88,9 @@
 #include "tmrsvcs.h"			// ITIMER_DESC
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
-#include "worker.h"         		// Action, MassAction
-#include "notify.h"         		// AddNote
-#include "misc.h"         		// AdjustCnrColsForPref, AdjustDetailsSwitches, CnrDirectEdit,
+#include "worker.h"		// Action, MassAction
+#include "notify.h"		// AddNote
+#include "misc.h"		// AdjustCnrColsForPref, AdjustDetailsSwitches, CnrDirectEdit,
 					// LoadDetailsSwitches, OpenEdit, QuickPopup, SayFilter
 					// SaySort, SayView, SetCnrCols, SetDetailsSwitches
 					// SetSortChecks, SetViewMenu, disable_menuitem, CheckMenu
@@ -96,7 +98,7 @@
 #include "chklist.h"			// CenterOverWindow, DropListProc
 #include "collect.h"
 #include "common.h"			// CommonCnrProc, CommonCreateTextChildren, CommonFrameWndProc
-                   			// CommonTextPaint
+				// CommonTextPaint
 #include "select.h"			// DeselectAll, HideAll, RemoveAll, SelectAll, SelectList
 #include "dirsize.h"			// DirSizeProc
 #include "grep2.h"			// GrepDlgProc
@@ -127,6 +129,7 @@
 #include "strips.h"			// bstrip
 #include "wrappers.h"			// xDosFindFirst
 #include "fortify.h"
+#include "excputil.h"			// xbeginthread
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -980,9 +983,12 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  wk->hwndClient = dcd->hwndClient;
 	  wk->li = (LISTINFO *) mp1;
 	  strcpy(wk->directory, dcd->directory);
-	  if (_beginthread(MassAction, NULL, 122880, (PVOID) wk) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(MassAction,
+			   122880,
+			   wk,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
@@ -1017,9 +1023,12 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  wk->hwndClient = dcd->hwndClient;
 	  wk->li = (LISTINFO *) mp1;
 	  strcpy(wk->directory, dcd->directory);
-	  if (_beginthread(Action, NULL, 122880, (PVOID) wk) == -1) {
-	    Runtime_Error(pszSrcFile, __LINE__,
-			  GetPString(IDS_COULDNTSTARTTHREADTEXT));
+	  if (xbeginthread(Action,
+			   122880,
+			   wk,
+			   pszSrcFile,
+			   __LINE__) == -1)
+	  {
 	    free(wk);
 	    FreeListInfo((LISTINFO *) mp1);
 	  }
@@ -1451,7 +1460,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	WinSendMsg(hwnd, CM_SETCNRINFO, MPFROMP(&cnri),
 		   MPFROMLONG(CMA_XVERTSPLITBAR));
 
-	if (_beginthread(MakeObjWin, NULL, 245760, (PVOID)dcd) == -1) {
+	if (xbeginthread(MakeObjWin,
+			 245760,
+			 dcd,
+			 pszSrcFile,
+			 __LINE__) == -1)
+	{
 	  Runtime_Error(pszSrcFile, __LINE__,
 			GetPString(IDS_COULDNTSTARTTHREADTEXT));
 	  PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1494,7 +1508,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (mp1 && !IsFile((CHAR *)mp1))
 	OpenDirCnr(HWND_DESKTOP, hwndMain, dcd->hwndFrame, FALSE, (PSZ) mp1);
       else if (mp1 && IsFile(mp1) == 1 &&
-               CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2)
+	       CheckDriveSpaceAvail(ArcTempRoot, ullDATFileSpaceNeeded, ullTmpSpaceNeeded) != 2)
 	StartArcCnr(HWND_DESKTOP,
 		    dcd->hwndFrame, (CHAR *)mp1, 4, (ARC_TYPE *) mp2);
     }
@@ -2195,10 +2209,10 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (li->list) {
 	      switch (SHORT1FROMMP(mp1)) {
 	      case IDM_DOITYOURSELF:
-              case IDM_APPENDTOCLIP:
-              case IDM_APPENDTOCLIPFILENAME:
+	      case IDM_APPENDTOCLIP:
+	      case IDM_APPENDTOCLIPFILENAME:
 	      case IDM_SAVETOCLIP:
-              case IDM_SAVETOCLIPFILENAME:
+	      case IDM_SAVETOCLIPFILENAME:
 	      case IDM_ARCHIVE:
 	      case IDM_ARCHIVEM:
 	      case IDM_DELETE:
