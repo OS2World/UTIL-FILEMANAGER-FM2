@@ -3173,22 +3173,22 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   // Delete saved state if internally saved state
   fDeleteState = strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)) == 0;
 
-  size = (ULONG)0;
+  //size = (ULONG)0;
   sprintf(szKey, "%sToolbar", szPrefix);
-  if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
+  //if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
   {
     if (fToolsChanged)
       save_tools(NULL);
-    PrfQueryProfileData(fmprof, FM3Str, szKey, lasttoolbar, &size);
+    PrfQueryProfileString(fmprof, FM3Str, szKey, NULL, lasttoolbar, sizeof(lasttoolbar));
     PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
     load_tools(NULL);
     PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
   }
-  size = (ULONG)0;
+  //size = (ULONG)0;
   sprintf(szKey, "%sTargetDir", szPrefix);
-  if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
+  //if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
   {
-    PrfQueryProfileData(fmprof, FM3Str, szKey, targetdir, &size);
+    PrfQueryProfileString(fmprof, FM3Str, szKey, NULL, targetdir, sizeof(targetdir));
     PrfWriteProfileString(fmprof, FM3Str, "TargetDir", targetdir);
     SetTargetDir(NULL, TRUE);
   }
@@ -3280,6 +3280,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailssubject = dsDirCnrDefault.detailssubject;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsSubject", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3291,6 +3292,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailsea = dsDirCnrDefault.detailsea;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsEA", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3302,6 +3304,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailssize = dsDirCnrDefault.detailssize;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsSize", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3313,6 +3316,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailsicon = dsDirCnrDefault.detailsicon;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsIcon", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3324,6 +3328,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailsattr = dsDirCnrDefault.detailsattr;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsAttr", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3335,6 +3340,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailscrdate = dsDirCnrDefault.detailscrdate;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsCRDate", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3346,6 +3352,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailscrtime = dsDirCnrDefault.detailscrtime;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsCRTime", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3357,6 +3364,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailslwdate = dsDirCnrDefault.detailslwdate;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsLWDate", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3368,6 +3376,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailslwtime = dsDirCnrDefault.detailslwtime;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsLWTime", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3379,6 +3388,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailsladate = dsDirCnrDefault.detailsladate;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsLADate", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3390,6 +3400,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
           }
           localdcd.ds.detailslatime = dsDirCnrDefault.detailslatime;  // Set default
           sprintf(szKey, "%sDirCnr.%lu.DetailsLATime", szPrefix, x);
+          size = sizeof(BOOL);
           if (PrfQueryProfileData(fmprof,
                                   FM3Str,
                                   szKey,
@@ -3411,7 +3422,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
                                              WC_CONTAINER,
                                              NULL,
                                              CCS_AUTOPOSITION | CCS_MINIICONS |
-                                             CCS_MINIRECORDCORE | ulCnrType, //| WS_VISIBLE,
+                                             CCS_MINIRECORDCORE | ulCnrType,
                                              0,
                                              0,
                                              0,
