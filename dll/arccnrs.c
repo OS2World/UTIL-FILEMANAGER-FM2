@@ -2067,7 +2067,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       (li->type == IDM_VIEWBINARY && *binview) ||
 		       (li->type == IDM_EDITTEXT && *editor) ||
 		       (li->type == IDM_EDITBINARY && *bined)) {
-		DosSleep(32); //05 Aug 07 GKY 100
+		//DosSleep(32); // Added WAIT to runemf2 12-12-08 GKY
 		ExecOnList(hwnd, ((li->type == IDM_VIEWTEXT) ? viewer :
 				  (li->type == IDM_VIEWBINARY) ? binview :
 				  (li->type == IDM_EDITTEXT) ? editor :
