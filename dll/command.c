@@ -1020,8 +1020,6 @@ VOID RunCommand(HWND hwnd, INT cx)
   LINKCMDS *info;
 
   list = BuildList(hwnd);
-  if (!list || !list[0])
-    return;
   x = 0;
   info = cmdhead;
   while (info) {
@@ -1043,7 +1041,17 @@ VOID RunCommand(HWND hwnd, INT cx)
     else
       flags |= SEPARATE;
     flags &= ~(KEEP | DIEAFTER);
-    if ((flags & ONCE) && list && list[0]) {
+    if (!strchr(info->pszCmdLine, '%')) {
+      CHAR *fakelist[2];
+
+      *fakelist = "C";
+      fakelist[1] = NULL;
+      ExecOnList(hwnd,
+         	 info->pszCmdLine,
+                 flags, NULL, fakelist, GetPString(IDS_EXECCMDTITLETEXT),
+                 pszSrcFile, __LINE__);
+    }
+    else if ((flags & ONCE) && list && list[0]) {
 
       CHAR *fakelist[2];
       INT cntr;
@@ -1058,11 +1066,13 @@ VOID RunCommand(HWND hwnd, INT cx)
                    pszSrcFile, __LINE__);
       }
     }
-    else
+    else if (list && list[0])
       ExecOnList(hwnd,
 		 info->pszCmdLine,
                  flags, NULL, list, GetPString(IDS_EXECCMDTITLETEXT),
                  pszSrcFile, __LINE__);
+    else
+      return;
   }
   FreeList(list);
   DosPostEventSem(CompactSem);
