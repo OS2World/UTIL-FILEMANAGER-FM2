@@ -3041,8 +3041,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dcd->stopflag++;
     if (dcd && dcd->hwndObject) {
       /* kill object window */
-      if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
-	WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
+      if (WinIsWindow((HAB) 0, dcd->hwndObject)) {
+        if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
+          WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
+      }
     }
     else
       WinSendMsg(hwnd, UM_CLOSE, MPFROMLONG(1), MPVOID);
