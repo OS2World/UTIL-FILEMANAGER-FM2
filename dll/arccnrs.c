@@ -173,14 +173,17 @@ ULONGLONG ullDATFileSpaceNeeded;
 
 typedef struct {
 
-  CHAR   filename[CCHMAXPATH];   //file passed as MP1 message parameter (file selected)
   HWND   hwndCnr;                //hwnd you want the message posted to
   HWND   hwndClient;             //hwnd calling this thread; NULL will work
   ULONG  RunFlags;               //runemf2 flags see systemf.h
-  CHAR   *pszDirectory;
-  CHAR   *pszEnvironment;
+  ULONG  msg;                    //Message to post
+  UINT   uiLineNumber;
+  PCSZ   pszSrcFile;
+  CHAR   filename[CCHMAXPATH];   //file passed as MP1 message parameter (file selected)
+  CHAR   *pszDirectory;          //Execution directory
+  CHAR   *pszEnvironment;        //Enviroment -- NULL passes current
+  CHAR   *pszCmdLine;             //Use sprintf to format multipart command line into single string
   CHAR   formatstring[40];       //Usally "%s"
-  CHAR   CmdLine[1024];          //Use sprintf to format multipart command line into single string
 }
 WAITCHILD;
 
@@ -207,18 +210,20 @@ VOID WaitChildThread(VOID * arg)
     if (thab) {
       IncrThreadUsage();
       priority_normal();
-      ret = runemf2(WaitChild->RunFlags, WaitChild->hwndClient, pszSrcFile, __LINE__,
+      ret = runemf2(WaitChild->RunFlags, WaitChild->hwndClient,
+                    WaitChild->pszSrcFile, WaitChild->uiLineNumber,
 		    WaitChild->pszDirectory, WaitChild->pszEnvironment,
-		    WaitChild->formatstring, WaitChild->CmdLine);
+		    WaitChild->formatstring, WaitChild->pszCmdLine);
       if (ret != -1) {
 	if (IsFile(WaitChild->filename) == 1)
-	  PostMsg(WaitChild->hwndCnr, UM_ENTER, MPFROMP(filename), MPVOID);
+	  PostMsg(WaitChild->hwndCnr, WaitChild->msg, MPFROMP(filename), MPVOID);
       }
       DecrThreadUsage();
       WinTerminate(thab);
     }
     xfree(WaitChild->pszDirectory, pszSrcFile, __LINE__);
     xfree(WaitChild->pszEnvironment, pszSrcFile, __LINE__);
+    xfree(WaitChild->pszCmdLine, pszSrcFile, __LINE__);
     free(WaitChild);
   } // if WaitChild
 # ifdef FORTIFY
@@ -1584,6 +1589,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WAITCHILD *WaitChild;
 
       WaitChild = xmallocz(sizeof(WAITCHILD), pszSrcFile, __LINE__);
+      WaitChild->pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
       if (!WaitChild)
 	return 0;
       if (s) {
@@ -1592,19 +1598,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  free(s);
 	  return 0;
 	}
-	sprintf(WaitChild->CmdLine, "%s %s %s",
-				    dcd->info->exwdirs ? dcd->info->exwdirs :
-				    dcd->info->extract,
-				    BldQuotedFileName(szQuotedArcName, dcd->arcname),
-				    BldQuotedFileName(szQuotedMemberName, s));
-	/*runemf2(SEPARATE | ASYNCHRONOUS | WAIT |
-		(fArcStuffVisible ? 0 : BACKGROUND),
-		, pszSrcFile, __LINE__, dcd->workdir, NULL,
-		"%s %s %s",
-		dcd->info->exwdirs ? dcd->info->exwdirs :
-				     dcd->info->extract,
+        sprintf(WaitChild->pszCmdLine, "%s %s %s",
+                dcd->info->exwdirs ? dcd->info->exwdirs :
+		dcd->info->extract,
 		BldQuotedFileName(szQuotedArcName, dcd->arcname),
-		BldQuotedFileName(szQuotedMemberName, s));*/
+		BldQuotedFileName(szQuotedMemberName, s));
 	if (!dcd->info->exwdirs) {
 	  p = s;
 	  p = strrchr(s, '\\');
@@ -1626,7 +1624,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	free(s);
 	WaitChild->RunFlags = SEPARATE | ASYNCHRONOUS | WAIT |
 			      (fArcStuffVisible ? 0 : BACKGROUND);
-	WaitChild->hwndClient = dcd->hwndClient;
+        WaitChild->hwndClient = dcd->hwndClient;
+        WaitChild->msg = UM_ENTER;
+        WaitChild->uiLineNumber = __LINE__;
+        WaitChild->pszSrcFile = pszSrcFile;
 	WaitChild->pszDirectory = xstrdup(dcd->workdir, pszSrcFile, __LINE__);
 	WaitChild->pszEnvironment = NULL;
 	strcpy(WaitChild->formatstring, "%s");
@@ -1899,11 +1900,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  ptr++;
 		}
 	      }
-	      z = x;
-	      runemf2(SEPARATE | WINDOWED | WAIT |
-		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-		      hwnd, pszSrcFile, __LINE__,
-		      li->targetpath, NULL, "%s", pszCmdLine);
+              z = x;
+              runemf2(SEPARATE | WINDOWED | WAIT |
+                      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+                      hwnd, pszSrcFile, __LINE__,
+                      li->targetpath, NULL, "%s", pszCmdLine);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
