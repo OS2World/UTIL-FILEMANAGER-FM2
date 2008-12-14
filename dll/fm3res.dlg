@@ -1954,7 +1954,7 @@ BEGIN
                         132, 10
         AUTOCHECKBOX    "E~xpand curr. after switch", CFGT_SWITCHTREEEXPAND,
                         4, 44, 132, 10
-        AUTOCHECKBOX    "Show ~env. vars in Tree", CFGT_SHOWENV, 4, 32, 132,
+        AUTOCHECKBOX    "Show ~env. vars in Tree", CFGT_SHOWENV, 4, 32, 110,
                         10
 	ENTRYFIELD      "", CFGT_ENVVARLIST, 120, 32, 196, 8, ES_MARGIN | ES_AUTOSCROLL
         PUSHBUTTON      "~Help", IDM_HELP, 8, 4, 40, 14, BS_NOPOINTERFOCUS |
