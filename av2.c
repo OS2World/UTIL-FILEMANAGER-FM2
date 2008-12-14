@@ -11,20 +11,22 @@
   23 Sep 07 SHL Sync with standards
   23 Sep 07 SHL Get rid of statics
   17 Sep 08 JBS Convert to use of wrapped DosFind... (i.e. xDosFind...)
+  14 Dec 08 SHL Add exception handler support
 
 ***********************************************************************/
 
-#include <stdlib.h>
+#include <stdlib.h>			// getenv
 #include <string.h>
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_LONGLONG
+#define INCL_DOSEXCEPTIONS		// XCTP_...
+#define INCL_DOSERRORS			// NO_ERROR
 
 #include "dll\fm3dll.h"
-#include "dll\mainwnd.h"		// Data declaration(s)
-#include "dll\init.h"			// Data declaration(s)
-#include "dll\notebook.h"		// Data declaration(s)
+#include "dll\mainwnd.h"		// hwndBubble
+#include "dll\notebook.h"		// appname hwndHelp
 #include "dll\arccnrs.h"
 #include "dll\fm3str.h"
 #include "dll\version.h"
@@ -34,11 +36,15 @@
 #include "dll\inis.h"			// StartIniEditor
 #include "dll\dirs.h"			// switch_to
 #include "dll\viewer.h"			// StartMLEEditor
-#include "dll\getnames.h"			// insert_filename
+#include "dll\getnames.h"		// insert_filename
 #include "dll\copyf.h"			// unlinkf
 #include "dll\init.h"			// InitFM3DLL
 #include "dll\valid.h"			// IsFile
 #include "dll\wrappers.h"		// xDosFind...
+#include "dll\errutil.h"		// Error reporting
+#include "dll\excputil.h"		// Exception handlers
+
+static PSZ pszSrcFile = __FILE__;
 
 HMTX av2Sem;
 
@@ -96,15 +102,24 @@ int main(int argc, char *argv[])
   HAB hab;
   HMQ hmq;
   QMSG qmsg;
-  HWND hwndFrame = (HWND) 0;
-  static CHAR fullname[CCHMAXPATH];	// 23 Sep 07 SHL fixme to not be static
-  CHAR *thisarg = NULL;
-  INT x;
+  HWND hwndFrame = 0;
+  CHAR fullname[CCHMAXPATH] = { 0 };	// 14 Dec 08 SHL was static
+  PSZ thisarg = NULL;
+  UINT x;
+  APIRET regRet;
+  EXCEPTIONREGISTRATIONRECORD regRec = { NULL, NULL };
 
-  *fullname = 0;
   strcpy(appname, "AV/2");
   fAmAV2 = TRUE;
   DosError(FERR_DISABLEHARDERR);
+
+  regRec.ExceptionHandler = HandleException;
+  regRet = DosSetExceptionHandler(&regRec);
+  if (regRet != NO_ERROR) {
+    DbgMsg(pszSrcFile, __LINE__,
+	   "DosSetExceptionHandler failed with error %u", regRet);
+  }
+
   for (x = 1; x < argc; x++) {
     if (!strchr("/;,`\'", *argv[x]) &&
 	!thisarg &&
@@ -115,9 +130,12 @@ int main(int argc, char *argv[])
       break;
     }
   }
+
   DosExitList(EXLST_ADD, deinit);
+
   if (DosOpenMutexSem("\\SEM32\\AV2", &av2Sem))
     DosCreateMutexSem("\\SEM32\\AV2", &av2Sem, DC_SEM_SHARED, FALSE);
+
   if (thisarg) {
     if (DosQueryPathInfo(thisarg,
 			 FIL_QUERYFULLNAME, fullname, sizeof(fullname)))
@@ -148,6 +166,7 @@ int main(int argc, char *argv[])
       }
     }
   }
+
   hab = WinInitialize(0);
   if (hab) {
     hmq = WinCreateMsgQueue(hab, 1024);

@@ -23,13 +23,11 @@
 #define INCL_DOSERRORS			// NO_ERROR
 
 #include "dll\fm3dll.h"
-#include "dll\mainwnd.h"		// Data declaration(s)
-#include "dll\tools.h"
-#include "dll\version.h"
-#include "dll\errutil.h"
-#include "dll\fortify.h"
+#include "dll\mainwnd.h"		// hwndBubble
+#include "dll\version.h"		// VER...
 #include "dll\init.h"			// StartFM3
-#include "dll\notebook.h"		// Data declaration(s)
+#include "dll\notebook.h"		// appname
+#include "dll\fortify.h"
 #include "dll\errutil.h"		// Error reporting
 #include "dll\excputil.h"		// Exception handlers
 
@@ -98,7 +96,7 @@ int main(int argc, char *argv[])
 	    if ((CHAR)scope < 0)
 	      break;
 	  }
-          Fortify_DumpAllMemory();
+	  Fortify_DumpAllMemory();
 #	  endif
 	}
       }

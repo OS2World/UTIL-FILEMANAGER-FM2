@@ -9,6 +9,7 @@
   Copyright (c) 2007, 2008 Steven H.Levine
 
   05 Jan 08 SHL Sync
+  14 Dec 08 SHL Add exception handler support
 
 ***********************************************************************/
 
@@ -16,14 +17,20 @@
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_DOSEXCEPTIONS		// XCTP_...
+#define INCL_DOSERRORS			// NO_ERROR
 
 #include "dll\fm3dll.h"
-#include "dll\fm3dll2.h"		// #define's for UM_*, control id's, etc.
+#include "dll\fm3dll2.h"		// IDM_GREP
 #include "dll\mainwnd.h"		// Data declaration(s)
 #include "dll\notebook.h"		// Data declaration(s)
 #include "dll\fm3str.h"
 #include "dll\init.h"			// InitFM3DLL
 #include "dll\collect.h"		// StartCollector
+#include "dll\errutil.h"		// Error reporting
+#include "dll\excputil.h"		// Exception handlers
+
+static PSZ pszSrcFile = __FILE__;
 
 int main(int argc, char *argv[])
 {
@@ -31,17 +38,28 @@ int main(int argc, char *argv[])
   HMQ hmq;
   QMSG qmsg;
   HWND hwndFrame;
-  int x;
+  UINT x;
   BOOL seekandscan = FALSE;
+  APIRET regRet;
+  EXCEPTIONREGISTRATIONRECORD regRec = { NULL, NULL };
 
   strcpy(appname, "VCOLLECT");
   DosError(FERR_DISABLEHARDERR);
+
+  regRec.ExceptionHandler = HandleException;
+  regRet = DosSetExceptionHandler(&regRec);
+  if (regRet != NO_ERROR) {
+    DbgMsg(pszSrcFile, __LINE__,
+	   "DosSetExceptionHandler failed with error %u", regRet);
+  }
+
   for (x = 1; x < argc; x++) {
     if (*argv[x] == '*' && argv[x][1] == '*') {
       seekandscan = TRUE;
       break;
     }
   }
+
   hab = WinInitialize(0);
   if (hab) {
     hmq = WinCreateMsgQueue(hab, 1024);

@@ -6,32 +6,35 @@
   EA viewer applet
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2002, 2007 Steven H.Levine
+  Copyright (c) 2002, 2008 Steven H.Levine
 
   16 Oct 02 SHL Reformat
   08 Feb 03 SHL Free list with free() since we don't
 		allocate list contents
   08 Apr 07 SHL Minor reformat
   10 May 08 SHL Correct compare typo
+  14 Dec 08 SHL Add exception handler support
 
 ***********************************************************************/
 
-#include <stdlib.h>
 #include <string.h>
 
 #define INCL_DOS
 #define INCL_WIN
+#define INCL_DOSEXCEPTIONS		// XCTP_...
+#define INCL_DOSERRORS			// NO_ERROR
 
 #include "dll\fm3dll.h"
-#include "dll\notebook.h"			// Data declaration(s)
-#include "dll\mainwnd.h"			// Data declaration(s)
+#include "dll\mainwnd.h"		// FM3ModHandle
 #include "dll\fm3dlg.h"
-#include "dll\makelist.h"
+#include "dll\makelist.h"		// AddToList
 #include "dll\eas.h"			// DisplayEAsProc
 #include "dll\init.h"			// InitFM3DLL
 #include "dll\valid.h"			// IsFile
-#include "dll\wrappers.h"			// xfree
-#include "dll\getnames.h"			// insert_filename
+#include "dll\wrappers.h"		// xfree
+#include "dll\getnames.h"		// insert_filename
+#include "dll\errutil.h"		// Error reporting
+#include "dll\excputil.h"		// Exception handlers
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -41,9 +44,21 @@ int main (int argc,char *argv[])
   HMQ hmq;
   CHAR fullname[CCHMAXPATH];
   CHAR **list = NULL;
-  UINT x,numfiles = 0,numalloc = 0;
+  UINT x;
+  UINT numfiles = 0;
+  UINT numalloc = 0;
+  APIRET regRet;
+  EXCEPTIONREGISTRATIONRECORD regRec = { NULL, NULL };
 
   DosError(FERR_DISABLEHARDERR);
+
+  regRec.ExceptionHandler = HandleException;
+  regRet = DosSetExceptionHandler(&regRec);
+  if (regRet != NO_ERROR) {
+    DbgMsg(pszSrcFile, __LINE__,
+	   "DosSetExceptionHandler failed with error %u", regRet);
+  }
+
   for(x = 1; x < argc; x++) {
     if (!strchr("/;,`\'",*argv[x]) && IsFile(argv[x]) != -1) {
       if (DosQueryPathInfo(argv[x],
@@ -53,6 +68,7 @@ int main (int argc,char *argv[])
       AddToList(fullname,&list,&numfiles,&numalloc);
     }
   }
+
   hab = WinInitialize(0);
   if (hab) {
     hmq = WinCreateMsgQueue(hab,384);
