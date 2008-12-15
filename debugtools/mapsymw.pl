@@ -1,7 +1,7 @@
 #!perl -w
 # mapsymw - mapsym Watcom map files
 
-# Copyright (c) 2007 Steven Levine and Associates, Inc.
+# Copyright (c) 2007, 2008 Steven Levine and Associates, Inc.
 # All rights reserved.
 
 # $TLIB$: $ &(#) %n - Ver %v, %f $
@@ -17,6 +17,7 @@
 # 30 Jul 07 SHL Auto-trim libstdc++ symbols from libc06x maps
 # 09 Aug 07 SHL Generate dummy symbol for interior segments with no symbols
 # 08 Nov 07 SHL Drop leading keywords from function definitions
+# 14 Dec 08 SHL Ensure symbols sorted by value - some apps care
 
 # mapsym requires each segment to have at least 1 symbol
 # mapsym requires 32 bit segments to have at least 1 symbol with offset > 65K
@@ -33,7 +34,7 @@ use Getopt::Std;
 use File::Spec;
 use File::Basename;
 
-our $g_version = '0.2';
+our $g_version = '0.3';
 
 our $g_cmdname;
 our $g_tmpdir;
@@ -88,10 +89,10 @@ sub mapsym {
   my $symcnt = 0;
   my $is32bit;
   my %segsinfo;
+  my %syms;
   my $segnum;
   my $offset;
   my $segaddr;
-  my $imp;
 
   my $segfmt;
   my $symfmt;
@@ -115,7 +116,7 @@ sub mapsym {
     # Skip don't cares
     next if /^=/;
     next if /^ /;
-    next if /^ /;
+    next if /^$/;
 
     if ($state eq 'segments') {
       # In
@@ -137,7 +138,9 @@ sub mapsym {
 	$segaddr = "$segnum:$offset";
 
 	if (!$segcnt) {
+	  # First segment - determine address size (16/32 bit)
 	  $is32bit = length($offset) == 8;
+	  # Output title
 	  print WRKFILE "\n";
 	  if ($is32bit) {
 	    print WRKFILE " Start         Length     Name                   Class\n";
@@ -164,7 +167,7 @@ sub mapsym {
       # Out
       # 0        1         2         3         4         5         6
       # 123456789012345678901234567890123456789012345678901234567890
-      #  Address         Publics by Value
+      #   Address         Publics by Value
       #  0000:00000000  Imp  WinEmptyClipbrd      (PMWIN.733)
       #  0002:0001ED40       __towlower_dummy
       if (/^([[:xdigit:]]+):([[:xdigit:]]+)[+*]?\s+(\w+)$/) {
@@ -182,14 +185,13 @@ sub mapsym {
 	}
 
 	my $n = hex $offset;
+	# Remember max symbol offset
 	$seginfo->{max_offset} = $n if $n > $seginfo->{max_offset};
 	$seginfo->{symcnt}++;
 
 	$segsinfo{$1} = $seginfo;
 
 	$segaddr = "$segnum:$offset";
-
-	$imp = $segnum eq '0000' ? 'Imp' : '';
 
 	# Convert C++ symbols to something mapsym will accept
 
@@ -212,7 +214,7 @@ sub mapsym {
 	s/^_//;			# Drop leading _ (cdecl)
 	s/_$//;			# Drop trailing _ (watcall)
 
-	# Prune to avoid mapsym overflows
+	# Prune some libc symbols to avoid mapsym overflows
 	if ($mapid =~ /libc06/) {
 	  # 0001:000b73e0  __ZNSt7codecvtIcc11__mbstate_tEC2Ej
 	  # next if / [0-9A-F]{4}:[0-9A-F]{8} {7}S/;
@@ -220,15 +222,17 @@ sub mapsym {
 	}
 
 	if (!$symcnt) {
+	  # First symbol - output title
 	  print WRKFILE "\n";
 	  if ($is32bit) {
-	    print WRKFILE " Address         Publics by Value\n";
+	    print WRKFILE "  Address         Publics by Value\n";
 	  } else {
-	    print WRKFILE " Address     Publics by Value\n";
+	    print WRKFILE "  Address     Publics by Value\n";
 	  }
 	}
 
-	printf WRKFILE $symfmt, $segaddr, $imp, $_;
+	$syms{$segaddr} = $_;
+
 	$symcnt++;
       }
     } # if addresses
@@ -263,19 +267,24 @@ sub mapsym {
 	} else {
 	  $segaddr = "$segnum:0000";
 	}
-	$imp = '';
-	printf WRKFILE $symfmt, $segaddr, $imp, $_;
+	$syms{$segaddr} = $_;
 	$symcnt++;
       } elsif ($is32bit && $seginfo->{max_offset} < 0x10000) {
 	warn "32 bit segment $segnum is smaller than 64K - generating dummy symbol\n";
 	$_ = "Seg${segnum}_dummy";
 	$segaddr = "$segnum:00010000";
-	$imp = '';
-	printf WRKFILE $symfmt, $segaddr, $imp, $_;
+	$syms{$segaddr} = $_;
 	$symcnt++;
       }
     }
   } # foreach
+
+  @keys = sort keys %syms;
+  foreach $segaddr (@keys) {
+    my $sym = $syms{$segaddr};
+    my $imp = substr($segaddr, 0, 4) eq '0000' ? 'Imp' : '';
+    printf WRKFILE $symfmt, $segaddr, $imp, $sym;
+  }
 
   close WRKFILE;
 
