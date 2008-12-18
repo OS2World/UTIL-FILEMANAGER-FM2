@@ -23,6 +23,7 @@
 # 22 Jul 08 SHL Pass FORTIFY options to subordinate makefiles
 # 25 Oct 08 SHL Sanitize DEBUG usage
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
+# 14 Dec 08 SHL Build fm3.sym
 
 # Environment - see makefile_pre.mk and dll\makefile
 
@@ -48,7 +49,7 @@ WARPIN_OPTS = $(WARPIN_OPTS) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
 
 all: dll $(BASE) allexe .symbolic
 
-syms: exesyms dllsyms .symbolic
+syms: fm3.sym exesyms dllsyms .symbolic
 
 dist: all syms lxlite wpi .symbolic
 
