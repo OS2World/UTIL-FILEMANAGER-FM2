@@ -65,7 +65,7 @@ typedef struct
 {
   PSZ pszCmdLine;
   INT flags;
-  CHAR title[34];
+  CHAR title[100];
 }
 COMMAND;
 
@@ -344,7 +344,7 @@ VOID load_commands(VOID)
   LINKCMDS *info;
   PSZ pszCmdLine;
   CHAR title[100];
-  CHAR flags[72];
+  CHAR flags[34];
 
   if (cmdhead)
     free_commands();
@@ -357,18 +357,17 @@ VOID load_commands(VOID)
       while (!feof(fp)) {
         if (!xfgets_bstripcr(title, sizeof(title), fp, pszSrcFile, __LINE__))
           break;
-        title[34] = 0;			// fixme to know why chopped this way?
-        bstripcr(title);
+        title[strlen(title)] = 0;			// Match size to entry file max
         if (!*title || *title == ';')
           continue;
-        if (!xfgets(pszCmdLine, MaxComLineStrg, fp, pszSrcFile, __LINE__))
+        if (!xfgets_bstripcr(pszCmdLine, MaxComLineStrg, fp, pszSrcFile, __LINE__))
           break;				/* error! */
-        if (!xfgets(flags, 72, fp, pszSrcFile, __LINE__))
+        if (!xfgets_bstripcr(flags, sizeof(flags), fp, pszSrcFile, __LINE__))
           break;				/* error! */
-        pszCmdLine[MaxComLineStrg - 1] = 0;			// fixme to know why chopped this way?
-        bstripcr(pszCmdLine);
+        pszCmdLine[strlen(pszCmdLine)] = 0;			// fixme to know why chopped this way?
+        //bstripcr(pszCmdLine);
         flags[34] = 0;
-        bstripcr(flags);
+        //bstripcr(flags);
         if (!pszCmdLine)
           continue;
         info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
@@ -425,7 +424,7 @@ VOID save_commands(VOID)
     info = cmdhead;
     while (info) {
       fprintf(fp,
-	      ";\n%0.34s\n%0.*s\n%lu\n",
+	      ";\n%0.99s\n%0.*s\n%lu\n",
 	      info->title, MaxComLineStrg, info->pszCmdLine, info->flags);
       info = info->next;
     }
@@ -512,9 +511,9 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     WinSendDlgItemMsg(hwnd, CMD_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
     WinSendDlgItemMsg(hwnd, CMD_CL, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(1000, 0), MPVOID);
+		      MPFROM2SHORT(MaxComLineStrg - 1, 0), MPVOID);
     WinSendDlgItemMsg(hwnd, CMD_TITLE, EM_SETTEXTLIMIT,
-		      MPFROM2SHORT(33, 0), MPVOID);
+		      MPFROM2SHORT(99, 0), MPVOID);
     WinSetDlgItemText(hwnd, CMD_CL, NullStr);
     WinSetDlgItemText(hwnd, CMD_TITLE, NullStr);
     WinCheckButton(hwnd, CMD_DEFAULT, TRUE);
@@ -843,9 +842,9 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case CMD_DELETE:
       {
-	CHAR temp[34];
+	CHAR temp[100];
 
-	WinQueryDlgItemText(hwnd, CMD_TITLE, 34, temp);
+	WinQueryDlgItemText(hwnd, CMD_TITLE, 100, temp);
 	bstrip(temp);
 	if (!kill_command(temp))
 	  Runtime_Error(pszSrcFile, __LINE__, "kill_command");
