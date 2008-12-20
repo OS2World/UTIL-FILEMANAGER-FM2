@@ -6,7 +6,7 @@
   Input dialog procecedure
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   28 May 05 SHL Use saymsg
   14 Jul 06 SHL Use Runtime_Error

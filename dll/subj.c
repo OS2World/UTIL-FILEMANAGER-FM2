@@ -6,7 +6,7 @@
   Edit .subject EAs
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error

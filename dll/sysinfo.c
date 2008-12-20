@@ -6,7 +6,7 @@
   System Info Display
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2002, 2006 Steven H.Levine
+  Copyright (c) 2002, 2008 Steven H.Levine
 
   16 Oct 02 SHL Baseline
   08 Feb 03 SHL Enable display

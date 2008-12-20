@@ -6,7 +6,7 @@
   Make directory dialog
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Baseline
   29 Feb 08 GKY Refactor global command line variables to notebook.h
@@ -43,6 +43,8 @@
 #pragma data_seg(GLOBAL2)
 CHAR targetdir[CCHMAXPATH];
 
+static PSZ pszSrcFile = __FILE__;
+
 APIRET MassMkdir(HWND hwndClient, CHAR * dir)
 {
   APIRET last, was = 0;
@@ -69,8 +71,10 @@ APIRET MassMkdir(HWND hwndClient, CHAR * dir)
     else
       was = 0;
     last = DosCreateDir(s, NULL);
-    if (!last)
+    if (!last) {
       Broadcast((HAB) 0, hwndClient, UM_UPDATERECORD, MPFROMP(s), MPVOID);
+      DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", s);
+    }
     else if (last == ERROR_ACCESS_DENIED) {
       if (!IsFile(s))
 	last = 0;

@@ -6,7 +6,7 @@
   Edit presentation parameters
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2006, 2008 Steven H.Levine
 
   22 Jul 06 SHL Check more run time errors
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat

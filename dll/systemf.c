@@ -1122,24 +1122,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
         strcpy(szSavedir, pFM2SaveDirectory);
         switch_to(pszDirectory);
       }
-
-      // printf("%s %d DosStartsession thread 0x%x data\n ",
-      //       __FILE__, __LINE__,ptib->tib_ordinal); fflush(stdout);   // 10 Mar 07 SHL hang
-      // printf(" %d %d %d %s %s %s %d %d\n %s %x %x\n",
-      //       sdata.Length , sdata.Related, sdata.FgBg, sdata.PgmName,
-      //     sdata.PgmInputs, sdata.TermQ, sdata.InheritOpt,
-      //   sdata.SessionType, szTermQName,
-      //   hTermQ, hTermQSem); fflush(stdout);
       ret = DosStartSession(&sdata, &ulSessID, &sessPID);
 
-      // if (type & WAIT) {
-      // printf("%s %d DosStartession thread 0x%x rc = %d sess = %u pid = 0x%x\n",
-      //        __FILE__, __LINE__, ptib->tib_ordinal,ret, ulSessID, sessPID); fflush(stdout);  // 10 Mar 07 SHL hang
-      // }
-      // else {
-      // printf("%s %d DosStartession thread 0x%x nowait rc = %d\n",
-      //      __FILE__, __LINE__, ptib->tib_ordinal,ret); fflush(stdout);       // 10 Mar 07 SHL hang
-      // }
 
       if (pszDirectory && *pszDirectory)
         switch_to(szSavedir);
@@ -1155,8 +1139,6 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 
         if (!useTermQ) {
           STATUSDATA sd;
-          // Could not create queue - fallback - fixme to be gone?
-          // printf("%s %d waiting wo/termq\n", __FILE__, __LINE__); fflush(stdout);    // 12 Mar 07 SHL hang
 
           memset(&sd, 0, sizeof(sd));
           sd.Length = (USHORT) sizeof(sd);
@@ -1168,8 +1150,6 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
             if (DosSetSession(ulSessID, &sd))   // Check if session gone (i.e. finished)
               break;
             if (ctr > 10) {
-              //   printf("%s %d thread 0x%x showing slow sess %u pid 0x%x\n",
-              //        __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,sessPID); fflush(stdout); // 12 Mar 07 SHL
               ShowSession(hwnd, sessPID);       // Show every 2 seconds
               ctr = 0;
             }
@@ -1188,8 +1168,6 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
             }
             else {
               if (ctr == 20) {
-                // printf("%s %d thread 0x%x showing slow sess %u pid 0x%x\n",
-                //       __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,sessPID); fflush(stdout);
                 ShowSession(hwnd, sessPID);             // Show long running session
               }
               rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,

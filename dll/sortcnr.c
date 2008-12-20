@@ -6,7 +6,7 @@
   Sort container items
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2007 Steven H. Levine
+  Copyright (c) 2005, 2008 Steven H. Levine
 
   24 May 05 SHL Rework for CNRITEM.szSubject
   25 May 05 SHL Rework with ULONGLONG

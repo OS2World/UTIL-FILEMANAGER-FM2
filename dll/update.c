@@ -423,7 +423,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	    FillInRecordFromFFB(hwndCnr,
 				pci, filename[x], &ffb, partial, dcd);
 	    if (IsRoot(pci->pszFileName))
-	    SelectDriveIcon(pci);
+	      SelectDriveIcon(pci);
 	    WinSendMsg(hwndCnr,
 		       CM_SETRECORDEMPHASIS,
 		       MPFROMP(pci),

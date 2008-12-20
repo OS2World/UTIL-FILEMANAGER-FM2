@@ -6,7 +6,7 @@
   Edit ICON EA
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2007 Steven H.Levine
+  Copyright (c) 2006, 2008 Steven H.Levine
 
   17 Jul 06 SHL Use Runtime_Error
   22 Mar 06 GKY Use QWL_USER
