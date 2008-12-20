@@ -6,7 +6,7 @@
   Set colors
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006 Steven H. Levine
+  Copyright (c) 2006, 2008 Steven H. Levine
 
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER

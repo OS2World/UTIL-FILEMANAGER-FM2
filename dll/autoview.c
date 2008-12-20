@@ -337,8 +337,6 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    HFILE handle;
 	    ULONG olen, ibufflen, action, obufflen, l;
 	    CHAR *ibuff, *obuff, *p;
-	    // 06 Oct 07 SHL Protect against NTFS driver small buffer defect
-	    // CHAR buffer[80];
 	    CHAR buffer[4096];
 	    ARC_TYPE *info;
 
@@ -353,7 +351,6 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 OPEN_ACCESS_READONLY, 0)) {
 	      ibufflen = AutoviewHeight < 96 ? 512 : 3072;
 	      // 06 Oct 07 SHL protect against NTFS driver small buffer defect
-	      // ibuff = xmalloc(ibufflen + 2, pszSrcFile, __LINE__);	// 05 Nov 07 SHL
 	      ibuff = xmalloc(max(ibufflen + 2, 4096), pszSrcFile, __LINE__);
 	      if (ibuff) {
 		// Depends on CreateHexDump line width

@@ -6,7 +6,7 @@
   archiver.bb2 editor
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   31 Jul 04 SHL ArcReviewDlgProc: correct nameis... decodes
   01 Aug 04 SHL Localize functions

@@ -6,7 +6,7 @@
   attributes editor
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2006 Steven H.Levine
+  Copyright (c) 2006, 2008 Steven H.Levine
 
   14 Jul 06 SHL Use Runtime_Error
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat

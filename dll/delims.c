@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H.Levine
+  Copyright (c) 2003, 2008 Steven H.Levine
 
   Delimit chars
 
