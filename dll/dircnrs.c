@@ -700,7 +700,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       while (list[numentries])
 	numentries++;
       if (numentries)
-	UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
+        UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
     }
     return 0;
 
@@ -791,7 +791,6 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
 	  if (!pciC) {
 	    Stubby(dcd->hwndCnr, pci);
-	    //DosSleep(1); //26 Aug 07 GKY 1
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
@@ -1939,7 +1938,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    StartSeeAll(HWND_DESKTOP, FALSE, dirname);
 	  }
 	}
-	break;
+        break;
 
       case IDM_FINDINTREE:
 	if (hwndTree) {
@@ -2119,6 +2118,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_COLLECT:
+      case IDM_GREP:
 	if (!Collector) {
 
 	  HWND hwndC;
@@ -2145,7 +2145,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  StartCollector(dcd->hwndParent, 4);
-	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
+        if (SHORT1FROMMP(mp1) == IDM_GREP)
+          PostMsg(Collector, WM_COMMAND,
+                  MPFROM2SHORT(IDM_GREP, 0), MPVOID);
+        else
+	  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
 	break;
 
       case IDM_COLLECTOR:
@@ -3601,7 +3605,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 				   &FrameFlags,
 				   WC_DIRCONTAINER,
 				   NULL,
-				   WS_VISIBLE | fwsAnimate,
+                                   WS_VISIBLE | fwsAnimate,
 				   FM3ModHandle, DIR_FRAME, &hwndClient);
     if (hwndFrame && hwndClient) {
       id = DIR_FRAME + idinc++;
@@ -3649,8 +3653,8 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 				       WC_CONTAINER,
 				       NULL,
 				       CCS_AUTOPOSITION | CCS_MINIICONS |
-				       CCS_MINIRECORDCORE | ulCnrType |
-				       WS_VISIBLE,
+				       CCS_MINIRECORDCORE | ulCnrType, // |
+				       //WS_VISIBLE,
 				       0,
 				       0,
 				       0,
@@ -3710,7 +3714,8 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 			    swp.cy,
 			    SWP_SIZE | SWP_MOVE | SWP_SHOW | SWP_ZORDER |
 			    SWP_ACTIVATE);
-	  }
+          }
+          WinShowWindow(dcd->hwndCnr, TRUE);
 	}
       }
 #     ifdef FORTIFY
