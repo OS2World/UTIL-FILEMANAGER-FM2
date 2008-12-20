@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H. Levine
+  Copyright (c) 2004, 2008 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -281,8 +281,11 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         size = sizeof(BOOL);
 	PrfWriteProfileData(fmprof, FM3Str, "FileNamePathExt",
                             fRemember ? FALSE : (PVOID) &fFileNameExtPath, size);
-        if (fRemember)
+        if (fRemember) {
+          WinSendDlgItemMsg(hwnd, EXT_FILENAMEEXT, BM_SETCHECK,
+			    MPFROM2SHORT(FALSE, 0), MPVOID);
           break;
+        }
         if (fFileNameExtPath && arcdata->arcname) {
           CHAR FileName[CCHMAXPATH];
           PSZ p;
