@@ -141,13 +141,6 @@ static BOOL ProcessDir(HWND hwndCnr,
   *pullTotalBytes = 0;			// In case we fail
 
   CheckDrive(toupper(*pszFileName), FileSystem, NULL);
-  /*if (!stricmp(FileSystem, NTFS)) {
-    saymsg(MB_OK,
-	   HWND_DESKTOP,
-	   NullStr,
-	   GetPString(IDS_NTFSDRIVERFAILSTEXT));
-    return FALSE;
-  } */
   ulBufBytes = sizeof(FILEFINDBUF4L) * FilesToGet;
   pffbArray = xmalloc(ulBufBytes, pszSrcFile, __LINE__);
   if (!pffbArray)
@@ -161,7 +154,6 @@ static BOOL ProcessDir(HWND hwndCnr,
 
   hdir = HDIR_CREATE;
   ulFindCnt = 1;
-  // memset(pffbArray, 0, sizeof(FILEFINDBUF4L));	// 11 Aug 07 SHL bypass memset
   DosError(FERR_DISABLEHARDERR);
   // Check directory exists
   rc = xDosFindFirst(pszFileName, &hdir,
@@ -716,15 +708,13 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      // Place text above graph box with a bit of whitespace between
 	      ptl.x = oi->rclItem.xLeft;
-	      ptl.y = yBottom + boxHeight + 6;	// 03 Aug 07 SHL
-	      // GpiMove(oi->hps, &ptl);
+	      ptl.y = yBottom + boxHeight + 6;
 	      GpiCharStringAt(oi->hps, &ptl, p - pci->pszDisplayName,
 			      pci->pszDisplayName);
 
 	      *p = '\r';		// Restore
 
 	      // draw the graph box
-	      // GpiQueryTextBox(oi->hps, 1, "#", TXTBOX_COUNT, aptl);	// 03 Aug 07 SHL
 	      // draw black outline
 	      GpiSetColor(oi->hps, CLR_BLACK);
 	      ptl.x = oi->rclItem.xLeft;

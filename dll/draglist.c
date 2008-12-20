@@ -6,7 +6,7 @@
   Drag drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2007 Steven H.Levine
+  Copyright (c) 2001, 2008 Steven H.Levine
 
   16 Oct 02 SHL DoFileDrag: don't free stack
   26 Jul 06 SHL Check more run time errors

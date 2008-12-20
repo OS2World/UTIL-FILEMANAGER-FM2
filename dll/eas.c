@@ -6,7 +6,7 @@
   Display/edit EAs
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2006 Steven H. Levine
+  Copyright (c) 2004, 2008 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Indent -i2
@@ -1303,8 +1303,6 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
       DosClose(handle);
   }
   else {
-    //Runtime_Error(pszSrcFile, __LINE__, "why here", filename);
-    //03 AUG 07 GKY This isn't an error it is for processing Readonly files
     /* try it without opening it */
     if (!DosQueryPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & fsa4,
                           (ULONG) sizeof(fsa4)) &&
@@ -1344,7 +1342,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
               if (!rc) {
                 info = xmalloc(sizeof(HOLDFEA), pszSrcFile, __LINE__);
                 if (info) {
-        // 29 Nov 07 GKY One short (EA search crash)
+               // 29 Nov 07 GKY One short (EA search crash)
                   info->pfea =
                     xmalloc(eaop.fpFEA2List->cbList - sizeof(ULONG) + 1,
                             pszSrcFile, __LINE__);

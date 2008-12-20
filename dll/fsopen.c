@@ -6,7 +6,7 @@
   _fsopen for IBMC
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2007 Steven H. Levine
+  Copyright (c) 2007 2008 Steven H. Levine
 
   15 Oct 02 SHL Baseline
   05 Jun 07 SHL Update for OpenWatcom

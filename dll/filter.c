@@ -6,7 +6,7 @@
   Filter mask select dialog
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2008 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   22 Jul 06 SHL Check more run time errors

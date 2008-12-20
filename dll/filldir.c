@@ -212,8 +212,8 @@ VOID StubbyScanThread(VOID * arg)
 	    WinSendMsg(StubbyScan->hwndCnr,
 		       CM_INVALIDATERECORD,
 		       MPFROMP(&StubbyScan->pci),
-		       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	}
+                       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+          }
 	if (WinIsWindow((HAB)0, StubbyScan->hwndDrivesList)) {
 	  WinSendMsg(StubbyScan->hwndDrivesList,
 		     LM_INSERTITEM,
@@ -991,8 +991,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		pci = (PCNRITEM) pci->rc.preccNextRecord;
 		ullTotalBytes += ullBytes;
 	      } // for
-	      // 13 Aug 07 SHL ulSelCnt checked already?
-	      // if (ulSelCnt) {
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
 	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -1322,27 +1320,25 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      strcmp(szFSType, FAT32) &&
 	      strcmp(szFSType, NDFS32) &&
 	      strcmp(szFSType, RAMFS) &&
-	      strcmp(szFSType, NTFS) &&
+              strcmp(szFSType, NTFS) &&
 	      strcmp(szFSType, HPFS386)) {
 	    driveflags[x] |= DRIVE_NOLONGNAMES;
 	  }
 
 	  if (!strcmp(szFSType, CDFS) || !strcmp(szFSType,ISOFS)) {
 	    removable = 1;
-	    driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
-			     DRIVE_CDROM;
+	    driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE | DRIVE_CDROM;
 	  }
-	  else if (!stricmp(szFSType, CBSIFS)) {
+	  if (!stricmp(szFSType, CBSIFS)) {
 	    driveflags[x] |= DRIVE_ZIPSTREAM;
 	    driveflags[x] &= ~DRIVE_REMOTE;
 	    if (ulDriveType & DRIVE_REMOVABLE)
 	      driveflags[x] |= DRIVE_REMOVABLE;
 	    if (!(ulDriveType & DRIVE_NOLONGNAMES))
 	      driveflags[x] &= ~DRIVE_NOLONGNAMES;
-	  }
+          }
 
 	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
-	  // if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum)	// 23 Jul 07 SHL
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
 	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
 
@@ -1369,7 +1365,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      }
 	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
 	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	      //strcpy(pci->pszFileName, szDrive);
 	      pci->pszDisplayName = pci->pszFileName;
 	      pci->rc.pszIcon = pci->pszDisplayName;
 	      pci->attrFile = FILE_DIRECTORY;
@@ -1382,7 +1377,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  else {
 	    // Removable volume
 	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	    //strcpy(pci->pszFileName, szDrive);
 	    pci->pszDisplayName = pci->pszFileName;
 	    pci->rc.pszIcon = pci->pszDisplayName;
 	    pci->attrFile = FILE_DIRECTORY;
@@ -1397,7 +1391,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	else {
 	  pci->rc.hptrIcon = hptrDunno;
 	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	  // strcpy(pci->pszFileName, szDrive);	// 22 Jul 08 SHL No need to do this twice
 #	  ifdef FORTIFY
 	  // Will be freed by TreeCnrWndProc WM_DESTROY
 	  Fortify_SetScope(pci->pszFileName, 2);
@@ -1413,7 +1406,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	// diskette drive (A or B)
 	pci->rc.hptrIcon = hptrFloppy;
 	pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	//strcpy(pci->pszFileName, szDrive);
 	pci->pszDisplayName = pci->pszFileName;
 	pci->rc.pszIcon = pci->pszDisplayName;
 	pci->attrFile = FILE_DIRECTORY;
@@ -1485,7 +1477,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     if (pciParent) {
       pciParent->flags |= RECFLAGS_ENV;
       pciParent->pszFileName = xstrdup(GetPString(IDS_ENVVARSTEXT), pszSrcFile, __LINE__);
-      //strcpy(pciParent->pszFileName, GetPString(IDS_ENVVARSTEXT));
       pciParent->pszDisplayName = pciParent->pszFileName;	// 03 Aug 07 SHL
       pciParent->rc.hptrIcon = hptrEnv;
       pciParent->rc.pszIcon = pciParent->pszFileName;

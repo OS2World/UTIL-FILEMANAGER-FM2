@@ -6,7 +6,7 @@
   Drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2007 Steven H.Levine
+  Copyright (c) 2003, 2008 Steven H.Levine
 
   22 Nov 02 SHL Baseline
   08 Feb 03 SHL DropHelp: calc EA size consistently
@@ -245,7 +245,6 @@ BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2)
       if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL))
 	ret = TRUE;
 
-      // FreeDragInfoData(hwnd, pDInfo);	// 20 Apr 07 SHL
       DrgFreeDraginfo(pDInfo);
     }
   }
