@@ -371,9 +371,6 @@ unsigned APIENTRY LibMain(unsigned hModule,
 
   switch (ulFlag) {
   case 0:
-    // 14 Jun 07 SHL Already done for us
-    // if (_CRT_init() == -1)
-    //   return 0UL;
     FM3DllHandle = hModule;
     strcpy(stringfile, "FM3RES.STR");
     env = getenv("FM3INI");
@@ -464,8 +461,6 @@ unsigned APIENTRY LibMain(unsigned hModule,
     if (fmprof)
       PrfCloseProfile(fmprof);
     DosError(FERR_ENABLEHARDERR);
-    // 14 Jun 07 SHL Already done for us
-    // _CRT_term();
     break;
   default:
     return 0UL;
@@ -1208,7 +1203,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
-    fShowTarget = fDrivebarHelp = fCheckMM = TRUE;
+    fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan = TRUE;
   ulCnrType = CCS_EXTENDSEL;
   FilesToGet = FILESTOGET_MIN;
   MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
@@ -1444,7 +1439,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     ULONG drvNum;
     INT x;
 
-    fInitialDriveScan = TRUE;
     sprintf(szKey, "%s.NumDirsLastTime", GetPString(IDS_SHUTDOWNSTATE));
     size = sizeof(ULONG);
     if (PrfQueryProfileData(fmprof,
@@ -1698,7 +1692,6 @@ BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset)
   ULONG action;
   ULONG len = strlen(signature);
   ULONG l;
-  // CHAR buffer[80];
   CHAR buffer[4096];                    // 06 Oct 07 SHL Protect against NTFS defect
   BOOL ret = FALSE;
 

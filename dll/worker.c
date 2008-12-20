@@ -910,14 +910,14 @@ VOID Action(VOID * args)
 			  AddToList(wk->li->list[x],
 				    &files, &numfiles, &numalloc))
 			Broadcast(hab2,
-				  wk->hwndCnr,
+			          wk->hwndCnr,
 				  UM_UPDATERECORD,
-				  MPFROMP(wk->li->list[x]), MPVOID);
+                                  MPFROMP(wk->li->list[x]), MPVOID);
 		      if (//fSyncUpdates ||
 			  AddToList(newname, &files, &numfiles, &numalloc))
 			Broadcast(hab2,
-				  wk->hwndCnr,
-				  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
+			          wk->hwndCnr,
+                                  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
 		    }
 		  }
 		  break;
@@ -925,7 +925,7 @@ VOID Action(VOID * args)
 
 	      case IDM_COMPARE:
 		if ((!IsFile(wk->li->targetpath) ||
-		     IsRoot(wk->li->targetpath)) &&
+                     IsRoot(wk->li->targetpath)) &&
 		    (!IsFile(wk->li->list[x]) || IsRoot(wk->li->list[x]))) {
 		  if (!*dircompare && WinIsWindow(hab2, wk->hwndCnr))
 		    WinSendMsg(wk->hwndCnr,
@@ -1021,7 +1021,8 @@ VOID Action(VOID * args)
 	  if (files) {
 	    Broadcast(hab2,
 		      wk->hwndCnr,
-		      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
+                      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
+           // DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", *files);
 	    FreeList(files);
 	  }
 
@@ -1087,7 +1088,7 @@ VOID MassAction(VOID * args)
 	  case IDM_UPDATE:
 	    Broadcast(hab2,
 		      wk->hwndCnr,
-		      UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
+                      UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
 	    break;
 
 	  case IDM_EAS:
@@ -1210,7 +1211,7 @@ VOID MassAction(VOID * args)
 	      if (wk->li->list[0])
 		Broadcast(hab2,
 			  wk->hwndCnr,
-			  UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
+                          UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
 	    }
 	    break;
 
@@ -1230,7 +1231,7 @@ VOID MassAction(VOID * args)
 	      }
 	      Broadcast(hab2,
 			wk->hwndCnr,
-			UM_UPDATERECORD, MPFROMP(wk->li->targetpath), MPVOID);
+                        UM_UPDATERECORD, MPFROMP(wk->li->targetpath), MPVOID);
 	    }
 	    break;
 
@@ -1499,7 +1500,7 @@ VOID MassAction(VOID * args)
 	      if (wk->li && wk->li->list && wk->li->list[0])
 		Broadcast(hab2,
 			  wk->hwndCnr,
-			  UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
+                          UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
 	    }
 	    break;
 
@@ -1514,7 +1515,7 @@ VOID MassAction(VOID * args)
 	      APIRET error = 0;
 	      HOBJECT hObjectdest, hObjectofObject;
 	      BYTE G_abSupportedDrives[24] = {0};
-	      ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
+              ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1618,10 +1619,6 @@ VOID MassAction(VOID * args)
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
 		if (fsa.attrFile & FILE_DIRECTORY) {
-		  /*sprintf(prompt,
-			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
-		  AddNote(prompt);*/ //Duplicate call 12-03-08 GKY
-		  DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
 		  error = (APIRET) wipeallf("%s%s*",
 					    wk->li->list[x],
 					    (*wk->li->list[x] &&
@@ -1633,15 +1630,11 @@ VOID MassAction(VOID * args)
 		    error = DosDeleteDir(wk->li->list[x]);
 		  else
 		    DosDeleteDir(wk->li->list[x]);
-		  DosReleaseMutexSem(hmtxFM2Delete);
 		}
-		else {
-		  DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08
-		  /*sprintf(prompt,
-			  GetPString(IDS_DELETINGTEXT), wk->li->list[x]);
-		  AddNote(prompt); */  //Duplicate call 12-03-08 GKY
+                else {
+
 		  DosError(FERR_DISABLEHARDERR);
-		  if (wk->li->type == IDM_DELETE){
+		  if (wk->li->type == IDM_DELETE) {
 		    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
 		    PrfQueryProfileData(HINI_USER,
 					"XWorkplace",
@@ -1657,19 +1650,15 @@ VOID MassAction(VOID * args)
 			hObjectofObject = WinQueryObject(wk->li->list[x]);
 			error = WinMoveObject(hObjectofObject, hObjectdest, 0);
 		    }
-		    else {
-		      //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-		      error = DosDelete(wk->li->list[x]);
-		      //DosReleaseMutexSem(hmtxFM2Delete);
+                    else {
+                      error = DosDelete(wk->li->list[x]);
 		    }
 		  }
-		  else {
-		    //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-		    error = DosForceDelete(wk->li->list[x]);
-		    //DosReleaseMutexSem(hmtxFM2Delete);
+                  else {
+                    error = DosForceDelete(wk->li->list[x]); ;
 		  }
-		  if (error) {
-		    DosError(FERR_DISABLEHARDERR);
+                  if (error) {
+                    DosError(FERR_DISABLEHARDERR);
 		    make_deleteable(wk->li->list[x]);
 		    if (wk->li->type == IDM_DELETE){
 		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
@@ -1687,16 +1676,12 @@ VOID MassAction(VOID * args)
 			  hObjectofObject = WinQueryObject(wk->li->list[x]);
 			  error = WinMoveObject(hObjectofObject, hObjectdest, 0);
 		      }
-		      else {
-		       // DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-			error = DosDelete(wk->li->list[x]);
-		       // DosReleaseMutexSem(hmtxFM2Delete);
+                      else {
+                        error = DosDelete(wk->li->list[x]);
 		      }
 		    }
-		    else {
-		      //DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
-		      error = DosForceDelete(wk->li->list[x]);
-		      //DosReleaseMutexSem(hmtxFM2Delete);
+                    else {
+                      error = DosForceDelete(wk->li->list[x]);
 		    }
 		  }
 		  DosReleaseMutexSem(hmtxFM2Delete);
@@ -1737,7 +1722,7 @@ VOID MassAction(VOID * args)
 	  if (files) {
 	    Broadcast(hab2,
 		      wk->hwndCnr,
-		      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
+                      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
 	    FreeList(files);
 	  }
 	  if (WinIsWindow(hab2, wk->hwndCnr))

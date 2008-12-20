@@ -6,7 +6,7 @@
   File name manipulation routines
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2002, 2007 Steven H.Levine
+  Copyright (c) 2002, 2008 Steven H.Levine
 
   23 Nov 02 SHL RootName: rework for sanity
   27 Nov 02 SHL MakeFullName: correct typo
@@ -318,7 +318,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   if (pulType && (!strcmp(pfsn, CDFS) || !strcmp(pfsn, ISOFS)))
       *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
   if (pulType && !strcmp(pfsn, NTFS))
-      *pulType |= DRIVE_NOTWRITEABLE;
+    *pulType |= DRIVE_NOTWRITEABLE;
   if (pulType && !strcmp(pfsn, NDFS32)){
         *pulType |= DRIVE_VIRTUAL;
     }
@@ -738,7 +738,7 @@ VOID DriveFlagsOne(INT x)
     removable = 1;
     driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE | DRIVE_CDROM);
   }
-  else if (!stricmp(FileSystem, CBSIFS)) {
+  if (!stricmp(FileSystem, CBSIFS)) {
     driveflags[x] |= DRIVE_ZIPSTREAM;
     driveflags[x] &= (~DRIVE_REMOTE);
     if (drvtype & DRIVE_REMOVABLE)
@@ -943,7 +943,6 @@ BOOL TestBinary(CHAR * filename)
   ULONG ulAction;
   ULONG len;
   APIRET rc;
-  // CHAR buff[512];
   CHAR buff[4096];			// 06 Oct 07 SHL protect against NTFS defect
 
   if (filename) {
