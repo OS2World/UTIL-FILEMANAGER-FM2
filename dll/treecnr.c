@@ -692,8 +692,10 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       while (list[numentries])
 	numentries++;
-      if (numentries)
-	UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
+      if (numentries) {
+        //DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", *list);
+        UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
+      }
     }
     return 0;
 
@@ -807,26 +809,14 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!dcd)
       Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
     else {
-      //PULONG pulPostCt;
-
       RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW, MPFROMSHORT(CMA_VERTICAL), MPFROMLONG(-1));
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW,
 		 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
-      //if (!fInitialDriveScan) {
-	//DosWaitEventSem(DriveScanStart, 20000);
 	 while (StubbyScanCount != 0)
 	    DosSleep(50);
-	/*pulPostCt = xmallocz(sizeof(ULONG), pszSrcFile, __LINE__);
-	if (pulPostCt) {
-	  DosResetEventSem(DriveScanStart, pulPostCt);
-	  free(pulPostCt);
-	} */
-      //}
-      //else
-      //  fInitialDriveScan = FALSE;
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);
@@ -1190,8 +1180,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR *filename;
 
       filename = mp1;
-      if (filename)
-	UpdateCnrRecord(hwnd, filename, TRUE, dcd);
+      if (filename) {
+        //DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", filename);
+        UpdateCnrRecord(hwnd, filename, TRUE, dcd);
+      }
     }
     return 0;
 
@@ -1324,12 +1316,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	cnri.flWindowAttr &= (~(CA_MIXEDTARGETEMPH | CA_ORDEREDTARGETEMPH));
 	cnri.flWindowAttr |= CV_FLOW;
-	dcd->flWindowAttr = cnri.flWindowAttr;
+        dcd->flWindowAttr = cnri.flWindowAttr;
 	WinSendMsg(hwnd,
 		   CM_SETCNRINFO,
 		   MPFROMP(&cnri),
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
-			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
+                              CMA_CXTREEINDENT | CMA_PSORTRECORD));
 	if (xbeginthread(MakeObjWin,
 			 327680,
 			 dcd,
@@ -1821,7 +1813,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		DosBeep(250, 100);
 	      }
 	    }
-	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
+            else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
 	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir)
 		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 	    }
@@ -1971,8 +1963,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		driveflags[x] &= (~DRIVE_REMOTE);
 	      }
 	      if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS))
-		driveflags[x] |= (DRIVE_REMOVABLE |
-				  DRIVE_NOTWRITEABLE | DRIVE_CDROM);
+		driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE | DRIVE_CDROM);
 	      if(!strcmp(FileSystem,NTFS))
 		driveflags[x] |= DRIVE_NOTWRITEABLE;
 	      if (strcmp(FileSystem, HPFS) &&
@@ -1982,10 +1973,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcmp(FileSystem, RAMFS) &&
 		  strcmp(FileSystem, FAT32) &&
 		  strcmp(FileSystem, NDFS32) &&
-		  strcmp(FileSystem, NTFS) &&
+                  strcmp(FileSystem, NTFS) &&
 		  strcmp(FileSystem, HPFS386)) {
 		driveflags[x] |= DRIVE_NOLONGNAMES;
-	      }
+              }
 	      SelectDriveIcon(pciP);
 	      WinSendMsg(hwnd,
 			 CM_INVALIDATERECORD,
@@ -2655,6 +2646,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_COLLECT:
+      case IDM_GREP:
 	if (!Collector) {
 
 	  HWND hwndC;
@@ -2689,6 +2681,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  StartCollector(dcd->hwndParent, 4);
+        if (SHORT1FROMMP(mp1) == IDM_GREP)
+          PostMsg(Collector, WM_COMMAND,
+                  MPFROM2SHORT(IDM_GREP, 0), MPVOID);
+        else
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
 	break;
 
@@ -3199,7 +3195,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 				     WC_CONTAINER,
 				     NULL,
 				     CCS_AUTOPOSITION | CCS_MINIICONS |
-				     CCS_MINIRECORDCORE | WS_VISIBLE,
+				     CCS_MINIRECORDCORE, //| WS_VISIBLE,
 				     0,
 				     0,
 				     0,
