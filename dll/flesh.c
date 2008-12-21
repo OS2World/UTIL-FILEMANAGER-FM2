@@ -279,9 +279,11 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   if (flags & DRIVE_INCLUDEFILES)
     includefiles = TRUE;
 
-  /*if (!isalpha(*str) ||   // redundant check GKY 11/24/08
+#if 0
+  if (!isalpha(*str) ||   // redundant check GKY 11/24/08
       str[1] != ':' ||
-      str[2] != '\\' || */
+      str[2] != '\\' ||
+#endif
   if (flags & DRIVE_REMOTE)
     isremote = TRUE;
 
@@ -366,7 +368,6 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	(*(pciParent->pszFileName + 2)) == '\\' && !(*(pciParent->pszFileName + 3))) {
 
       CHAR s[132];
-
       sprintf(s,
 	      GetPString(IDS_NOSUBDIRSTEXT),
 	      total, toupper(*pciParent->pszFileName));
@@ -382,9 +383,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   if (!rc) {
     DosFindClose(hDir);
     if (nm) {
-
-      register PBYTE fb = (PBYTE) & ffb[0];
-
+      PBYTE fb = (PBYTE)&ffb[0];
       for (len = 0; len < nm; len++) {
 	pffb = (PFILEFINDBUF3) fb;
 	if (!includefiles && !(pffb->attrFile & FILE_DIRECTORY)) {
@@ -429,7 +428,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	  break;
 	}
 	fb += pffb->oNextEntryOffset;
-      }
+      } // for
 
     Interruptus:
 
@@ -455,13 +454,15 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
             ri.pRecordOrder = (PRECORDCORE) CMA_END;
             ri.pRecordParent = (PRECORDCORE) pciParent;
             ri.zOrder = (ULONG) CMA_TOP;
-            ri.cRecordsInsert = 1L;
+            ri.cRecordsInsert = 1;
             ri.fInvalidateRecord = TRUE;
+            DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD \"%s\" %.255s", hwndCnr, pci->pszFileName, pffb->achName); // 18 Dec 08 SHL fixme debug
             if (!WinSendMsg(hwndCnr,
                             CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
               DosSleep(50); //05 Aug 07 GKY 100
               WinSetFocus(HWND_DESKTOP, hwndCnr);
               if (WinIsWindow((HAB)0, hwndCnr)) {
+                DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD %s", hwndCnr, pci->pszFileName); // 18 Dec 08 SHL fixme debug
                 if (!WinSendMsg(hwndCnr,
                                 CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
                   Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
@@ -505,4 +506,4 @@ None:
   return ret;
 }
 
-#pragma alloc_text(FLESH,Flesh,FleshEnv,Unflesh,Stubby)
+#pragma alloc_text(FLESH,Flesh,FleshEnv,UnFlesh,Stubby)
