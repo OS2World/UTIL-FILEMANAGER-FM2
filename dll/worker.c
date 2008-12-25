@@ -678,7 +678,7 @@ VOID Action(VOID * args)
 		    APIRET rc;
 		    INT type;
 		    FILESTATUS4L fs4;
-		    BOOL isnewer, existed;
+		    BOOL isnewer, existed, fResetVerify = FALSE;
 
 		    type = (wk->li->type == IDM_RENAME) ? MOVE :
 		      (wk->li->type == IDM_MOVE) ? MOVE :
@@ -804,7 +804,12 @@ VOID Action(VOID * args)
 			    newname,
 			    (usedtarget) ? GetPString(IDS_TOTARGETTEXT) :
 			    NullStr);
-		    AddNote(message);
+                    AddNote(message);
+                    if (fVerify && (driveflags[toupper(*wk->li->targetpath) - 'A'] & DRIVE_WRITEVERIFYOFF) |
+                        (driveflags[toupper(*wk->li->list[x]) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+                      DosSetVerify(FALSE);
+                      fResetVerify = TRUE;
+                    }
 		    if (plen) {
 		      /* make directory/ies, if required */
 
@@ -821,7 +826,11 @@ VOID Action(VOID * args)
 		    }
 		    if (fRealIdle)
 		      priority_idle();
-		    rc = docopyf(type, wk->li->list[x], "%s", newname);
+                    rc = docopyf(type, wk->li->list[x], "%s", newname);
+                    if (fResetVerify) {
+                      DosSetVerify(fVerify);
+                      fResetVerify = FALSE;
+                    }
 		    priority_normal();
 		    if (rc) {
 		      if ((rc == ERROR_DISK_FULL ||
@@ -906,14 +915,14 @@ VOID Action(VOID * args)
 				moved,
 				wk->li->list[x],
 				GetPString(IDS_TOTEXT), newname);
-		      if (//fSyncUpdates ||
+		      if ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(wk->li->list[x],
 				    &files, &numfiles, &numalloc))
 			Broadcast(hab2,
 			          wk->hwndCnr,
 				  UM_UPDATERECORD,
                                   MPFROMP(wk->li->list[x]), MPVOID);
-		      if (//fSyncUpdates ||
+		      if ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(newname, &files, &numfiles, &numalloc))
 			Broadcast(hab2,
 			          wk->hwndCnr,
@@ -1018,10 +1027,11 @@ VOID Action(VOID * args)
 
 	Abort:
 
-	  if (files) {
-	    Broadcast(hab2,
-		      wk->hwndCnr,
-                      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
+          if (files) {
+            if (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED)
+	      Broadcast(hab2,
+		        wk->hwndCnr,
+                        UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
            // DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", *files);
 	    FreeList(files);
 	  }
@@ -1610,7 +1620,9 @@ VOID MassAction(VOID * args)
 		wk->li->list = cl.list;
 		if (!wk->li->list || !wk->li->list[0])
 		  break;
-	      }
+              }
+              if (fVerify && driveflags[toupper(*wk->li->list[0]) - 'A'] & DRIVE_WRITEVERIFYOFF)
+                DosSetVerify(FALSE);
 	      DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
 	      for (x = 0; wk->li->list[x]; x++) {
 		fsa.attrFile = 0;
@@ -1697,8 +1709,10 @@ VOID MassAction(VOID * args)
 				pszSrcFile,
 				__LINE__,
 				GetPString(IDS_DELETEFAILED2TEXT),
-				wk->li->list[x]) == MBID_CANCEL)
-		    break;
+				wk->li->list[x]) == MBID_CANCEL) {
+                    DosSetVerify(fVerify);
+                    break;
+                  }
 		}
 		else {
 		  if (LogFileHandle)
@@ -1716,7 +1730,9 @@ VOID MassAction(VOID * args)
 			    MPFROMP(wk->li->list[x]), MPVOID);
 		}
 	      } // for
-	    }
+            }
+            if (fVerify)
+              DosSetVerify(fVerify);
 	    break;
 	  } // switch
 	  if (files) {

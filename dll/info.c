@@ -981,7 +981,11 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, DVS_INCLUDEFILES,
 		     ((driveflags[drive] & DRIVE_INCLUDEFILES) != 0));
       WinCheckButton(hwnd,DVS_NOSTATS,
-		     ((driveflags[drive] & DRIVE_NOSTATS) != 0));
+                     ((driveflags[drive] & DRIVE_NOSTATS) != 0));
+      WinCheckButton(hwnd,DVS_WRITEVERIFYOFF,
+                     ((driveflags[drive] & DRIVE_WRITEVERIFYOFF) != 0));
+      WinCheckButton(hwnd,DVS_RSCANNED,
+		     ((driveflags[drive] & DRIVE_RSCANNED) != 0));
     }
     return 0;
 
@@ -1021,19 +1025,27 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd,DVS_NOSTATS))
 	  driveflags[drive] |= DRIVE_NOSTATS;
 	else
-	  driveflags[drive] &= (~DRIVE_NOSTATS);
+          driveflags[drive] &= (~DRIVE_NOSTATS);
+        if (WinQueryButtonCheckstate(hwnd,DVS_WRITEVERIFYOFF))
+          driveflags[drive] |= DRIVE_WRITEVERIFYOFF;
+	else
+	  driveflags[drive] &= (~DRIVE_WRITEVERIFYOFF);
+        if (WinQueryButtonCheckstate(hwnd,DVS_RSCANNED))
+	  driveflags[drive] |= DRIVE_RSCANNED;
+	else
+	  driveflags[drive] &= (~DRIVE_RSCANNED);
 	{
 	  ULONG flags;
-	  CHAR s[80];
+          CHAR FlagKey[80];
 
-	  sprintf(s, "%c.DriveFlags", (CHAR) (drive + 'A'));
+          sprintf(FlagKey, "%c.DriveFlags", (CHAR) (drive + 'A'));
 	  flags = driveflags[drive];
 	  flags &= (~(DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE |
 		      DRIVE_IGNORE | DRIVE_CDROM |
-		      DRIVE_NOLONGNAMES | DRIVE_REMOTE |
+                      DRIVE_REMOTE | DRIVE_RSCANNED |
 		      DRIVE_BOOT | DRIVE_INVALID | DRIVE_ZIPSTREAM |
 		      DRIVE_VIRTUAL  | DRIVE_RAMDISK));
-	  PrfWriteProfileData(fmprof, appname, s, &flags, sizeof(ULONG));
+          PrfWriteProfileData(fmprof, appname, FlagKey, &flags, sizeof(ULONG));
 	}
       }
       WinDismissDlg(hwnd, 1);

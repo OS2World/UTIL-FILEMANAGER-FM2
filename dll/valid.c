@@ -67,6 +67,7 @@ CHAR *JFS;
 CHAR *NDFS32;
 CHAR *NTFS;
 CHAR *RAMFS;
+BOOL fVerifyOffChecked[26];
 
 APIRET MakeFullName(char *pszFileName)
 {
@@ -597,7 +598,7 @@ BOOL IsExecutable(CHAR * filename)
       strcpy(fname, filename);
       strcat(fname, ".");
       ret = DosQueryAppType(fname, &apptype);
-    }
+    } //fixme protectonly BMT GKY 23 Dec 08
     if ((!ret && (!apptype ||
 		  (apptype &
 		   (FAPPTYP_NOTWINDOWCOMPAT |
@@ -690,7 +691,8 @@ VOID DriveFlagsOne(INT x)
   driveserial[x] = -1;
   driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		    DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-		    DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
+                    DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
+                    DRIVE_WRITEVERIFYOFF);
   if (removable != -1) {
     struct
     {
@@ -750,26 +752,27 @@ VOID DriveFlagsOne(INT x)
 
 VOID FillInDriveFlags(VOID * dummy)
 {
-  ULONG ulDriveNum, ulDriveMap;
+  ULONG ulDriveNum, ulDriveMap, size;
   register INT x;
 
   for (x = 0; x < 26; x++)
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
+                      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
+                      DRIVE_WRITEVERIFYOFF);
   memset(driveserial, -1, sizeof(driveserial));
   DosError(FERR_DISABLEHARDERR);
   DosQCurDisk(&ulDriveNum, &ulDriveMap);
   for (x = 0; x < 26; x++) {
     if (ulDriveMap & (1 << x) && !(driveflags[x] & DRIVE_IGNORE)) {
       {
-	CHAR s[80];
-	ULONG flags = 0, size = sizeof(ULONG);
+        ULONG flags = 0, size = sizeof(ULONG);
+        CHAR FlagKey[80];
 
-	sprintf(s, "%c.DriveFlags", (CHAR) (x + 'A'));
-	if (PrfQueryProfileData(fmprof, appname, s, &flags, &size) &&
-	    size == sizeof(ULONG))
-	  driveflags[x] |= flags;
+          sprintf(FlagKey, "%c.DriveFlags", (CHAR) (x + 'A'));
+          if (PrfQueryProfileData(fmprof, appname, FlagKey, &flags, &size) &&
+              size == sizeof(ULONG))
+            driveflags[x] |= flags;
       }
 
       if (x > 1) {
@@ -794,6 +797,24 @@ VOID FillInDriveFlags(VOID * dummy)
 		    (PVOID) & startdrive, (ULONG) sizeof(ULONG));
     if (startdrive)
       driveflags[startdrive - 1] |= DRIVE_BOOT;
+  }
+  {
+    INT x;
+    CHAR Key[80];
+
+    for (x = 2; x < 26; x++) {
+      sprintf(Key, "%c.VerifyOffChecked", (CHAR) (x + 'A'));
+      size = sizeof(BOOL);
+      PrfQueryProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], &size);
+      if (!fVerifyOffChecked[x]) {
+        if (driveflags[x] & DRIVE_REMOVABLE)
+          driveflags[x] |= DRIVE_WRITEVERIFYOFF;
+        if (!(driveflags[x] & DRIVE_IGNORE | DRIVE_INVALID)) {
+          fVerifyOffChecked[x] = TRUE;
+          PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
+        }
+      }
+    }
   }
 }
 

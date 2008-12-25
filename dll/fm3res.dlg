@@ -1914,21 +1914,26 @@ BEGIN
             WS_SAVEBITS
     BEGIN
         AUTOCHECKBOX    "Load Subjects", CFGS_LOADSUBJECTS, 4, 128, 106, 10
-        AUTOCHECKBOX    "Load Longnames", CFGS_LOADLONGNAMES, 4, 116, 106,
-                        10
-        AUTOCHECKBOX    "Load file icons", CFGS_NOICONSFILES, 4, 104, 106,
-                        10
+        AUTOCHECKBOX    "Load Longnames", CFGS_LOADLONGNAMES, 4, 116, 106, 10
+        AUTOCHECKBOX    "Load file icons", CFGS_NOICONSFILES, 4, 104, 106, 10
         AUTOCHECKBOX    "Load dir icons", CFGS_NOICONSDIRS, 4, 92, 106, 10
         AUTOCHECKBOX    "Uppercase names", CFGS_FORCEUPPER, 4, 80, 106, 10
         AUTOCHECKBOX    "Lowercase names", CFGS_FORCELOWER, 4, 68, 106, 10
         AUTOCHECKBOX    "Remote find bug", CFGS_REMOTEBUG, 4, 56, 106, 10
-        AUTOCHECKBOX    "Don't scan removables", CFGS_NOREMOVABLESCAN, 4, 44,
-                        106, 10
+        AUTOCHECKBOX    "Don't scan removables", CFGS_NOREMOVABLESCAN, 4, 44, 106, 10
         LTEXT           "Find count", -1, 4, 28, 54, 12, NOT WS_GROUP
         CONTROL         "", CFGS_FILESTOGET, 44, 30, 64, 12, WC_SPINBUTTON,
                         SPBS_NUMERICONLY | SPBS_MASTER | SPBS_SERVANT |
                         SPBS_JUSTCENTER | WS_TABSTOP | SPBS_FASTSPIN |
                         WS_VISIBLE
+        LTEXT           "Recurse scan at startup:", -1, 130, 128, 106, 10, NOT WS_GROUP
+        AUTOCHECKBOX    "Local hard drives", CFGS_RSCANLOCAL, 136, 116, 106, 10
+        AUTOCHECKBOX    "Remote drives", CFGS_RSCANREMOTE, 136, 104, 106, 10
+        AUTOCHECKBOX    "Virtual drives", CFGS_RSCANVIRTUAL, 136, 92, 106, 10
+        AUTOCHECKBOX    "Slow drives of drive types selected", CFGS_RSCANSLOW,
+                        142, 80, 136, 10
+        AUTOCHECKBOX    "Read only drives of drive types selected", CFGS_RSCANNOWRITE,
+                        142, 68, 136, 10
         PUSHBUTTON      "~Help", IDM_HELP, 120, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Undo", IDM_UNDO, 168, 4, 40, 14, BS_NOPOINTERFOCUS
@@ -2033,47 +2038,51 @@ BEGIN
     DIALOG  "FM/2: Drive flags", DVS_FRAME, 12, 6, 218, 136, WS_VISIBLE,
             FCF_TITLEBAR
     BEGIN
-        CHECKBOX       "Virtual Drive", DVS_VIRTUAL, 4, 122, 94, 10,
+        CHECKBOX       "Virtual Drive", DVS_VIRTUAL, 4, 126, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Removable", DVS_REMOVABLE, 4, 110, 94, 10,
+        CHECKBOX        "Removable", DVS_REMOVABLE, 4, 114, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "RAMDISK", DVS_RAMDISK, 4, 98, 94, 10,
+        CHECKBOX        "RAMDISK", DVS_RAMDISK, 4, 102, 98, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Remote Drive", DVS_REMOTE, 4, 86, 94, 10,
+        CHECKBOX        "Remote Drive", DVS_REMOTE, 4, 90, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "CD-ROM", DVS_CDROM, 4, 74, 94, 10,
+        CHECKBOX        "CD-ROM", DVS_CDROM, 4, 78, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Zipstream", DVS_ZIPSTREAM, 4, 62, 94, 10,
+        CHECKBOX        "Zipstream", DVS_ZIPSTREAM, 4, 66, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Ignore", DVS_IGNORE, 4, 50, 94, 10,
+        CHECKBOX        "Ignore", DVS_IGNORE, 4, 54, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Boot drive", DVS_BOOT, 4, 38, 94, 10,
+        CHECKBOX        "Boot drive", DVS_BOOT, 4, 42, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Invalid", DVS_INVALID, 4, 26, 94, 10,
+        CHECKBOX        "Invalid", DVS_INVALID, 4, 30, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Not writeable", DVS_NOTWRITEABLE, 106, 122, 94, 10,
+        CHECKBOX        "Recursive scan done", DVS_RSCANNED, 4, 18, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "~No longnames", DVS_NOLONGNAMES, 106, 110, 94, 10,
+        CHECKBOX        "Not writeable", DVS_NOTWRITEABLE, 106, 126, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        AUTOCHECKBOX    "No ~Prescan", DVS_NOPRESCAN, 106, 98, 94, 10,
+        CHECKBOX        "~No longnames", DVS_NOLONGNAMES, 106, 114, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
-        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 86, 94,10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 74, 94,10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 62,106, 10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Slo~w drive", DVS_SLOW, 106, 50, 94, 10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 38,106, 10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~No drive stats", DVS_NOSTATS, 106, 26,106, 10, BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
+        AUTOCHECKBOX    "No ~Prescan", DVS_NOPRESCAN, 106, 102, 94, 10,
+                        BS_NOPOINTERFOCUS | NOT WS_TABSTOP
+        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 90, 94,10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 78, 94,10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 66,106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Slo~w drive", DVS_SLOW, 106, 54, 94, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 42,106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "~No drive stats", DVS_NOSTATS, 106, 30, 106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Write ~verify off", DVS_WRITEVERIFYOFF, 106, 18, 106, 10, BS_NOPOINTERFOCUS
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 64, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "~Undo", IDM_UNDO, 118, 4, 40, 14, BS_NOPOINTERFOCUS
@@ -2769,8 +2778,8 @@ BEGIN
         ENTRYFIELD      "", CFGG_TARGETDIR, 6, 22, 246, 8, ES_MARGIN
         AUTOCHECKBOX    "~Link sets icon", CFGG_LINKSETSICON, 122, 128, 106,
                         10
-        AUTOCHECKBOX    "~Verify disk writes", CFGG_VERIFYWRITES, 122, 116,
-                        132, 10
+        AUTOCHECKBOX    "~Verify disk writes (also check individual driveflags)",
+                        CFGG_VERIFYWRITES, 122, 116, 162, 10
         AUTOCHECKBOX    "~Drag&drop dialog", CFGG_DNDDLG, 122, 104, 106, 10
         AUTOCHECKBOX    "Default delete ~permanent", CFGG_DEFAULTDELETEPERM, 122,
                         92, 126, 10

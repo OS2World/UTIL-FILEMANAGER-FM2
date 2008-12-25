@@ -65,6 +65,7 @@
 #include <string.h>
 #include <share.h>
 #include <io.h>
+#include <ctype.h>
 // #include <process.h>			// _endthread
 
 #define INCL_DOS
@@ -114,6 +115,7 @@
 #include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"			// 06 May 08 SHL added
 #include "excputil.h"			// xbeginthread
+#include "info.h"                       // driveflags
 
 typedef struct
 {
@@ -548,171 +550,197 @@ static VOID ActionCnrThread(VOID *args)
 	    }
 	    break;
 
-	  case IDM_MOVE:
-	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-	      BldFullPathName(szNewName, cmp->leftdir, pciS->pszDisplayName);
-	    else
-	      BldFullPathName(szNewName, cmp->rightdir, pciS->pszDisplayName);
-	    // Make directory if required
-	    strcpy(szDirName, szNewName);
-	    p = strrchr(szDirName, '\\');
-	    if (p) {
-	      if (p > szDirName + 2)
-		p++;
-	      *p = 0;
-	      if (IsFile(szDirName) == -1)
-		MassMkdir(hwndMain, szDirName);
-	    }
-	    rc = docopyf(MOVE, pciS->pszFileName, "%s", szNewName);
-	    if (!rc && stricmp(pciS->pszFileName, szNewName)) {
-	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
-			 MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      if (pciD->rc.flRecordAttr & CRA_SELECTED)
-		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
-			   MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      FreeCnrItemData(pciD);
-	      pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
-	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
-		pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->leftdir);
-		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
-		  pciD->pszDisplayName++;
-	      }
-	      else {
-		pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->rightdir);
-		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
-		  pciD->pszDisplayName++;
-	      }
-	      pciD->pszLongName = pciS->pszLongName;
-	      pciS->pszLongName = NullStr;	// 07 Sep 08 SHL avoid aliased pointer
-	      if (pciD->pszSubject != NullStr) {
-		xfree(pciD->pszSubject, pszSrcFile, __LINE__);
-		pciD->pszSubject = NullStr;
-	      }
-	      pciD->attrFile = pciS->attrFile;
-	      pciD->pszDispAttr = pciS->pszDispAttr;
-	      pciD->flags = 0;		// Just on one side
-	      pciD->date = pciS->date;
-	      pciD->time = pciS->time;
-	      pciD->ladate = pciS->ladate;
-	      pciD->latime = pciS->latime;
-	      pciD->crdate = pciS->crdate;
-	      pciD->crtime = pciS->crtime;
-	      pciD->cbFile = pciS->cbFile;
-	      pciD->easize = pciS->easize;
+          case IDM_MOVE:
+            {
+              BOOL fResetVerify = FALSE;
 
-	      if (pciS->pszFileName != NullStr) {
-		xfree(pciS->pszFileName, pszSrcFile, __LINE__);
-		pciS->pszFileName = NullStr;
-		pciS->pszDisplayName = pciS->pszFileName;
-		pciS->rc.pszIcon = pciS->pszFileName;
-	      }
-	      if (pciS->pszSubject != NullStr) {
-		xfree(pciS->pszSubject, pszSrcFile, __LINE__);
-		pciS->pszSubject = NullStr;
-	      }
-	      pciS->flags = 0;		// Just on one side
+              if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
+                BldFullPathName(szNewName, cmp->leftdir, pciS->pszDisplayName);
+              else
+                BldFullPathName(szNewName, cmp->rightdir, pciS->pszDisplayName);
+              // Make directory if required
+              strcpy(szDirName, szNewName);
+              p = strrchr(szDirName, '\\');
+              if (fVerify && (driveflags[toupper(*szNewName) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+                              driveflags[toupper(*pciS->pszFileName) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+                DosSetVerify(FALSE);
+                fResetVerify = TRUE;
+              }
+              if (p) {
+                if (p > szDirName + 2)
+                  p++;
+                *p = 0;
+                if (IsFile(szDirName) == -1)
+                  MassMkdir(hwndMain, szDirName);
+              }
+              rc = docopyf(MOVE, pciS->pszFileName, "%s", szNewName);
+              if (fResetVerify) {
+                DosSetVerify(fVerify);
+                fResetVerify = FALSE;
+              }
+              if (!rc && stricmp(pciS->pszFileName, szNewName)) {
+                WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
+                           MPFROM2SHORT(FALSE, CRA_SELECTED));
+                if (pciD->rc.flRecordAttr & CRA_SELECTED)
+                  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
+                             MPFROM2SHORT(FALSE, CRA_SELECTED));
+                FreeCnrItemData(pciD);
+                pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
+                if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
+                  pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->leftdir);
+                  if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
+                    pciD->pszDisplayName++;
+                }
+                else {
+                  pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->rightdir);
+                  if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
+                    pciD->pszDisplayName++;
+                }
+                pciD->pszLongName = pciS->pszLongName;
+                pciS->pszLongName = NullStr;	// 07 Sep 08 SHL avoid aliased pointer
+                if (pciD->pszSubject != NullStr) {
+                  xfree(pciD->pszSubject, pszSrcFile, __LINE__);
+                  pciD->pszSubject = NullStr;
+                }
+                pciD->attrFile = pciS->attrFile;
+                pciD->pszDispAttr = pciS->pszDispAttr;
+                pciD->flags = 0;		// Just on one side
+                pciD->date = pciS->date;
+                pciD->time = pciS->time;
+                pciD->ladate = pciS->ladate;
+                pciD->latime = pciS->latime;
+                pciD->crdate = pciS->crdate;
+                pciD->crtime = pciS->crtime;
+                pciD->cbFile = pciS->cbFile;
+                pciD->easize = pciS->easize;
 
-	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
-			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+                if (pciS->pszFileName != NullStr) {
+                  xfree(pciS->pszFileName, pszSrcFile, __LINE__);
+                  pciS->pszFileName = NullStr;
+                  pciS->pszDisplayName = pciS->pszFileName;
+                  pciS->rc.pszIcon = pciS->pszFileName;
+                }
+                if (pciS->pszSubject != NullStr) {
+                  xfree(pciS->pszSubject, pszSrcFile, __LINE__);
+                  pciS->pszSubject = NullStr;
+                }
+                pciS->flags = 0;		// Just on one side
 
-	      WinSendMsg(hwndCnrD, CM_INVALIDATERECORD, MPFROMP(&pciD),
-			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+                WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
+                           MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
 
-	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
-		cmp->cmp->totalleft--;
-	      else
-		cmp->cmp->totalright--;
-	    }
-	    else if (rc) {
-	      rc = Dos_Error(MB_ENTERCANCEL,
-			     rc,
-			     HWND_DESKTOP,
-			     pszSrcFile,
-			     __LINE__,
-			     GetPString(IDS_COMPMOVEFAILEDTEXT),
-			     pciS->pszFileName, szNewName);
-	      if (rc == MBID_CANCEL)	// Cause loop to break
-		pciNextS = NULL;
-	    }
-	    break;
+                WinSendMsg(hwndCnrD, CM_INVALIDATERECORD, MPFROMP(&pciD),
+                           MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
 
-	  case IDM_COPY:
-	    if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
-	      BldFullPathName(szNewName, cmp->leftdir, pciS->pszDisplayName);
-	    else
-	      BldFullPathName(szNewName, cmp->rightdir, pciS->pszDisplayName);
-	    // Make directory if required
-	    strcpy(szDirName, szNewName);
-	    p = strrchr(szDirName, '\\');
-	    if (p) {
-	      if (p > szDirName + 2)
-		p++;
-	      *p = 0;
-	      if (IsFile(szDirName) == -1)
-		MassMkdir(hwndMain, szDirName);
-	    }
-	    rc = docopyf(COPY, pciS->pszFileName, "%s", szNewName);
-	    if (rc) {
-	      rc = Dos_Error(MB_ENTERCANCEL,
-			     rc,
-			     HWND_DESKTOP,
-			     pszSrcFile,
-			     __LINE__,
-			     GetPString(IDS_COMPCOPYFAILEDTEXT),
-			     pciS->pszFileName, szNewName);
-	      if (rc == MBID_CANCEL)
-		pciNextS = NULL;	// Cause loop to break
-	    }
-	    else {
-	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
-			 MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      if (pciD->rc.flRecordAttr & CRA_SELECTED)
-		WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
-			   MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      // 12 Jan 08 SHL
-	      if (pciD->pszFileName == NullStr) {
-		if (hwndCnrD == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
-		  cmp->totalleft++;
-		else
-		  cmp->totalright++;
-	      }
-	      FreeCnrItemData(pciD);
-	      pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
-	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
-		pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->leftdir);
-		if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
-		  pciD->pszDisplayName++;
-	      }
-	      else {
-		pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->rightdir);
-		if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
-		  pciD->pszDisplayName++;
-	      }
-	      pciD->attrFile = pciS->attrFile;
-	      pciD->pszDispAttr = pciS->pszDispAttr;
-	      pciD->flags = CNRITEM_EXISTS;	// Now on both sides
-	      pciD->date = pciS->date;
-	      pciD->time = pciS->time;
-	      pciD->ladate = pciS->ladate;
-	      pciD->latime = pciS->latime;
-	      pciD->crdate = pciS->crdate;
-	      pciD->crtime = pciS->crtime;
-	      pciD->cbFile = pciS->cbFile;
-	      pciD->easize = pciS->easize;
+                if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
+                  cmp->cmp->totalleft--;
+                else
+                  cmp->cmp->totalright--;
+              }
+              else if (rc) {
+                rc = Dos_Error(MB_ENTERCANCEL,
+                               rc,
+                               HWND_DESKTOP,
+                               pszSrcFile,
+                               __LINE__,
+                               GetPString(IDS_COMPMOVEFAILEDTEXT),
+                               pciS->pszFileName, szNewName);
+                if (rc == MBID_CANCEL)	// Cause loop to break
+                  pciNextS = NULL;
+              }
+              break;
+            }
 
-	      // Forget status until we regenerate it
-	      if (pciS->pszSubject != NullStr) {
-		xfree(pciS->pszSubject, pszSrcFile, __LINE__);
-		pciS->pszSubject = NullStr;
-	      }
-	      pciS->flags = CNRITEM_EXISTS;	// Now on both sides
+          case IDM_COPY:
+            {
+              BOOL fResetVerify = FALSE;
 
-	      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
-			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
-	      WinSendMsg(hwndCnrD, CM_INVALIDATERECORD, MPFROMP(&pciD),
-			 MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
-	    }
-	    break;
+              if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR))
+                BldFullPathName(szNewName, cmp->leftdir, pciS->pszDisplayName);
+              else
+                BldFullPathName(szNewName, cmp->rightdir, pciS->pszDisplayName);
+              // Make directory if required
+              strcpy(szDirName, szNewName);
+              p = strrchr(szDirName, '\\');
+              if (fVerify && (driveflags[toupper(*szNewName) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+                                driveflags[toupper(*pciS->pszFileName) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+                DosSetVerify(FALSE);
+                fResetVerify = TRUE;
+              }
+              if (p) {
+                if (p > szDirName + 2)
+                  p++;
+                *p = 0;
+                if (IsFile(szDirName) == -1)
+                  MassMkdir(hwndMain, szDirName);
+              }
+              rc = docopyf(COPY, pciS->pszFileName, "%s", szNewName);
+              if (fResetVerify) {
+                DosSetVerify(fVerify);
+                fResetVerify = FALSE;
+              }
+              if (rc) {
+                rc = Dos_Error(MB_ENTERCANCEL,
+                               rc,
+                               HWND_DESKTOP,
+                               pszSrcFile,
+                               __LINE__,
+                               GetPString(IDS_COMPCOPYFAILEDTEXT),
+                               pciS->pszFileName, szNewName);
+                if (rc == MBID_CANCEL)
+                  pciNextS = NULL;	// Cause loop to break
+              }
+              else {
+                WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
+                           MPFROM2SHORT(FALSE, CRA_SELECTED));
+                if (pciD->rc.flRecordAttr & CRA_SELECTED)
+                  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
+                             MPFROM2SHORT(FALSE, CRA_SELECTED));
+                // 12 Jan 08 SHL
+                if (pciD->pszFileName == NullStr) {
+                  if (hwndCnrD == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
+                    cmp->totalleft++;
+                  else
+                    cmp->totalright++;
+                }
+                FreeCnrItemData(pciD);
+                pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
+                if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR)) {
+                  pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->leftdir);
+                  if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
+                    pciD->pszDisplayName++;
+                }
+                else {
+                  pciD->pszDisplayName = pciD->pszFileName + strlen(cmp->rightdir);
+                  if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
+                    pciD->pszDisplayName++;
+                }
+                pciD->attrFile = pciS->attrFile;
+                pciD->pszDispAttr = pciS->pszDispAttr;
+                pciD->flags = CNRITEM_EXISTS;	// Now on both sides
+                pciD->date = pciS->date;
+                pciD->time = pciS->time;
+                pciD->ladate = pciS->ladate;
+                pciD->latime = pciS->latime;
+                pciD->crdate = pciS->crdate;
+                pciD->crtime = pciS->crtime;
+                pciD->cbFile = pciS->cbFile;
+                pciD->easize = pciS->easize;
+
+                // Forget status until we regenerate it
+                if (pciS->pszSubject != NullStr) {
+                  xfree(pciS->pszSubject, pszSrcFile, __LINE__);
+                  pciS->pszSubject = NullStr;
+                }
+                pciS->flags = CNRITEM_EXISTS;	// Now on both sides
+
+                WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
+                           MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+                WinSendMsg(hwndCnrD, CM_INVALIDATERECORD, MPFROMP(&pciD),
+                           MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+              }
+              break;
+            }
 
 	  default:
 	    break;

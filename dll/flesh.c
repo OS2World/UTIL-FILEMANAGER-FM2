@@ -48,6 +48,7 @@
 #include "findrec.h"			// FindCnrRecord
 #include "notify.h"			// Notify
 #include "wrappers.h"			// xfree
+#include "excputil.h"			// xbeginthread
 
 // Data definitions
 #pragma data_seg(DATA1)
@@ -189,17 +190,46 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
     if (driveflags[toupper(*pciParent->pszFileName) - 'A'] &
 	DRIVE_INCLUDEFILES)
       includefiles = TRUE;
-    ProcessDirectory(hwndCnr,
-		     pciParent,
-		     pciParent->pszFileName,
-		     includefiles,	// filestoo
-		     TRUE,		// recurse
-		     TRUE,		// partial
-		     NULL,		// stop flag
-		     dcd,
-		     NULL,		// total files
-		     NULL);		// total bytes
+    if (fInitialDriveScan) {
+      PROCESSDIR *ProcessDir;
+
+      ProcessDir = xmallocz(sizeof(PROCESSDIR), pszSrcFile, __LINE__);
+      if (!ProcessDir)
+        return FALSE;
+      ProcessDir->hwndCnr = hwndCnr;
+      ProcessDir->pciParent = pciParent;
+      ProcessDir->szDirBase = pciParent->pszFileName;
+      ProcessDir->filestoo = includefiles;
+      ProcessDir->recurse = TRUE;
+      ProcessDir->partial = TRUE;
+      ProcessDir->stopflag = NULL;
+      ProcessDir->dcd = dcd;
+      ProcessDir->pulTotalFiles = NULL;
+      ProcessDir->pullTotalBytes = NULL;
+
+      if (xbeginthread(ProcessDirectoryThread,
+                       65536,
+                       ProcessDir,
+                       pszSrcFile,
+                       __LINE__) == -1)
+      {
+        xfree(ProcessDir, pszSrcFile, __LINE__);
+      }
+    }
+    else  {
+      ProcessDirectory(hwndCnr,
+                       pciParent,
+                       pciParent->pszFileName,
+                       includefiles,	// filestoo
+                       TRUE,		// recurse
+                       TRUE,		// partial
+                       NULL,		// stop flag
+                       dcd,
+                       NULL,		// total files
+                       NULL);		// total bytes
+    }
   }
+  driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
   return TRUE;
 }
 
@@ -456,13 +486,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
             ri.zOrder = (ULONG) CMA_TOP;
             ri.cRecordsInsert = 1;
             ri.fInvalidateRecord = TRUE;
-            DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD \"%s\" %.255s", hwndCnr, pci->pszFileName, pffb->achName); // 18 Dec 08 SHL fixme debug
+            //DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD \"%s\" %.255s", hwndCnr, pci->pszFileName, pffb->achName); // 18 Dec 08 SHL fixme debug
             if (!WinSendMsg(hwndCnr,
                             CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
               DosSleep(50); //05 Aug 07 GKY 100
               WinSetFocus(HWND_DESKTOP, hwndCnr);
               if (WinIsWindow((HAB)0, hwndCnr)) {
-                DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD %s", hwndCnr, pci->pszFileName); // 18 Dec 08 SHL fixme debug
+                //DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD %s", hwndCnr, pci->pszFileName); // 18 Dec 08 SHL fixme debug
                 if (!WinSendMsg(hwndCnr,
                                 CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
                   Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,

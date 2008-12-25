@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define INCL_WIN
 #define INCL_DOS
@@ -39,6 +40,8 @@
 #include "strips.h"			// bstrip
 
 #include "fortify.h"			// GetPString
+#include "info.h"                       // driveflags
+#include "notebook.h"                   // fVerify
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
@@ -225,9 +228,13 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
     EAOP2 eaop2;
     APIRET rc;
     BOOL crosses = ((ULONG)pInfoBuf ^
-                   ((ULONG)pInfoBuf + cbInfoBuf - 1)) &
-                   ~0xffff;
+                    ((ULONG)pInfoBuf + cbInfoBuf - 1)) & ~0xffff;
+    BOOL fResetVerify = FALSE;
 
+    if (fVerify && driveflags[toupper(*pszPathName) - 'A'] & DRIVE_WRITEVERIFYOFF) {
+      DosSetVerify(FALSE);
+      fResetVerify = TRUE;
+    }
     switch (ulInfoLevel) {
       case FIL_STANDARD:
         if (crosses) {
@@ -280,7 +287,10 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
 	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
 	rc = ERROR_INVALID_PARAMETER;
     } // switch
-
+    if (fResetVerify) {
+      DosSetVerify(fVerify);
+      fResetVerify = FALSE;
+    }
     return rc;
 }
 

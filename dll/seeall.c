@@ -612,7 +612,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  APIRET rc;
 	  INT type;
 	  FILESTATUS4L fs4;
-	  BOOL isnewer, existed;
+	  BOOL isnewer, existed, fResetVerify = FALSE;
 
 	  for (x = 0; list[x]; x++) {
 	  Retry:
@@ -730,7 +730,12 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS),
 			     message);
 	    if (fRealIdle)
-	      priority_idle();
+              priority_idle();
+            if (fVerify && (driveflags[toupper(*list[x]) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+                            driveflags[toupper(*newname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+              DosSetVerify(FALSE);
+              fResetVerify = TRUE;
+            }
 	    if (plen) {
 	      /* make directory/ies, if required */
 
@@ -744,7 +749,11 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  MassMkdir((hwndMain) ? hwndMain : (HWND) 0, dirpart);
 	      }
 	    }
-	    rc = docopyf(type, list[x], "%s", newname);
+            rc = docopyf(type, list[x], "%s", newname);
+            if (fResetVerify) {
+              DosSetVerify(fVerify);
+              fResetVerify = FALSE;
+            }
 	    priority_normal();
 	    if (rc) {
 	      if ((rc == ERROR_DISK_FULL ||

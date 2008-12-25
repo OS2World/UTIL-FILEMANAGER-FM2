@@ -1944,7 +1944,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN |
 				DRIVE_NOLOADICONS | DRIVE_NOLOADSUBJS |
 				DRIVE_NOLOADLONGS | DRIVE_INCLUDEFILES |
-				DRIVE_SLOW | DRIVE_NOSTATS);
+                                DRIVE_SLOW | DRIVE_NOSTATS |
+                                DRIVE_WRITEVERIFYOFF);
 
 	      if (removable == 1)
 		driveflags[x] |= DRIVE_REMOVABLE;
@@ -2739,7 +2740,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      {
 		driveflags[toupper(*pci->pszFileName) - 'A'] &=
 		  (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
-		   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS | DRIVE_NOSTATS);
+                   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS | DRIVE_NOSTATS |
+                   DRIVE_WRITEVERIFYOFF);
 		DriveFlagsOne(toupper(*pci->pszFileName) - 'A');
 		driveflag = driveflags[toupper(*pci->pszFileName) - 'A'];
 		if (driveflag & DRIVE_INVALID)

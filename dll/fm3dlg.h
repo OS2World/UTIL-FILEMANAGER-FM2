@@ -688,14 +688,15 @@
 #define CFGH_FTPRUN										25347
 #define CFGH_RUNFTPWORKDIR								25348
 #define CFGH_RUNHTTPWORKDIR							25349
+#define CFGH_LIBPATHSTRICTMAILRUN					25350
 #define CFGH_RUNMAILWORKDIR							25351
 #define CFGH_MAILRUN										25352
 #define CFGH_HTTPRUNWPSDEFAULT						25354
 #define CFGH_FTPRUNWPSDEFAULT							25355
 #define CFGH_LIBPATHSTRICTHTTPRUN					25357
 #define CFGH_LIBPATHSTRICTFTPRUN						25358
-#define CFGH_FIND											25359
-#define CFGH_LIBPATHSTRICTMAILRUN					25360
+#define CFGH_FIND							     	25359
+
 
 #define CFGS_FRAME										25360
 #define CFGS_LOADSUBJECTS								25361
@@ -705,19 +706,24 @@
 #define CFGS_FORCEUPPER									25365
 #define CFGS_FORCELOWER									25366
 #define CFGS_REMOTEBUG									25367
-#define CFGS_NOREMOVABLESCAN							25368
+#define CFGS_NOREMOVABLESCAN							        25368
 #define CFGS_FILESTOGET									25369
+#define CFGS_RSCANLOCAL                                                                 25370
+#define CFGS_RSCANREMOTE                                                                25371
+#define CFGS_RSCANVIRTUAL                                                               25372
+#define CFGS_RSCANSLOW                                                                  25373
+#define CFGS_RSCANNOWRITE                                                               25374
 
-#define CFGA_FRAME										25370
-#define CFGA_QUICKARCFIND								25371
-#define CFGA_DEFARCNAME									25372
-#define CFGA_DEFARC										25373
-#define CFGA_FOLDERAFTEREXTRACT						25374
-#define CFGA_ARCSTUFFVISIBLE							25375
-#define CFGA_VIRUS										25376
-#define CFGA_EXTRACTPATH								25377
-#define CFGA_FIND	   									25378
-#define CFGA_FILENAMEPATH                                                               25379
+#define CFGA_FRAME										25380
+#define CFGA_QUICKARCFIND								25381
+#define CFGA_DEFARCNAME									25382
+#define CFGA_DEFARC										25383
+#define CFGA_FOLDERAFTEREXTRACT						25384
+#define CFGA_ARCSTUFFVISIBLE							25385
+#define CFGA_VIRUS										25386
+#define CFGA_EXTRACTPATH								25387
+#define CFGA_FIND	   									25388
+#define CFGA_FILENAMEPATH                                                               25389
 
 #define CFG5_FRAME										25500
 #define CFG5_ICON											25501
@@ -901,6 +907,8 @@
 #define DVS_VIRTUAL										27016
 #define DVS_NOSTATS										27017
 #define DVS_RAMDISK										27018
+#define DVS_WRITEVERIFYOFF									27019
+#define DVS_RSCANNED										27020
 
 #define MRG_FRAME											27100
 #define MRG_LISTBOX										27101

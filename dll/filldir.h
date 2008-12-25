@@ -48,6 +48,7 @@ VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
 VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
 VOID FreeCnrItemData(PCNRITEM pci);
 INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
+VOID ProcessDirectoryThread(VOID * arg);
 
 // Data declarations
 extern CHAR *FM3Tools;
@@ -56,6 +57,22 @@ extern HPOINTER hptrEnv;
 extern HPOINTER hptrHidden;
 extern HPOINTER hptrReadonly;
 extern HPOINTER hptrSystem;
-extern volatile INT  StubbyScanCount;
+extern volatile INT StubbyScanCount;
+extern volatile INT ProcessDirCount;
+
+typedef struct {
+
+  HWND     hwndCnr;
+  PCNRITEM pciParent;
+  CHAR     *szDirBase;
+  BOOL     filestoo;
+  BOOL     recurse;
+  BOOL     partial;
+  CHAR           *stopflag;
+  DIRCNRDATA     *dcd;	              // Optional
+  ULONG          *pulTotalFiles;       // Optional
+  PULONGLONG     pullTotalBytes;      // Optional
+}
+PROCESSDIR;
 
 #endif // FILLDIR_H

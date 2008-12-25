@@ -50,5 +50,6 @@ extern CHAR *JFS;
 extern CHAR *NTFS;
 extern CHAR *NDFS32;
 extern CHAR *RAMFS;
+extern BOOL fVerifyOffChecked[26];
 
 #endif	// VALID_H

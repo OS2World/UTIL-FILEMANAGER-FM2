@@ -3418,7 +3418,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				      MPFROMP(szDir), MPFROMLONG(1));
 	  if (hwndDir) {
 	    hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
-	    if (hwndC) {
+            if (hwndC) {
 	      HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
 	      if (!hwndPPSave) {
 		hwndPPSave = WinCreateWindow(hwndCnr,         // Create a window (used to save default presparams)
@@ -3494,18 +3494,18 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				   MPFROMP(&cnri),
 				   MPFROMLONG(sizeof(CNRINFO)))) {
 		      cnri.flWindowAttr = dcd->flWindowAttr;
-		      WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
-				 CM_SETCNRINFO,
-				 MPFROMP(&cnri),
-				 MPFROMLONG(CMA_FLWINDOWATTR));
+                      WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
+                                 CM_SETCNRINFO,
+                                 MPFROMP(&cnri),
+                                 MPFROMLONG(CMA_FLWINDOWATTR));
 		    }
 		  }
 		}
 		if (fDeleteState)
 		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
-		  if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
-		    WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
-	      }
+		if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
+		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
+              }
 	    }
 	    fRestored = TRUE;
 	    swp.hwnd = hwndDir;
@@ -5702,7 +5702,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     hwndDrivelist = WinCreateWindow(hwndFrame,
 				    WC_COMBOBOX,
 				    (PSZ) NULL,
-				    WS_VISIBLE | CBS_DROPDOWN,
+                                    //WS_VISIBLE |
+                                    CBS_DROPDOWN,
 				    (swp.x +
 				     WinQuerySysValue(HWND_DESKTOP,
 						      SV_CXSIZEBORDER)),

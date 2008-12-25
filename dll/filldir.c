@@ -117,6 +117,7 @@ HPOINTER hptrSystem;
 CHAR *FM3Tools;
 CHAR *WPProgram;
 volatile INT StubbyScanCount;
+volatile INT ProcessDirCount;
 
 typedef struct {
   PCNRITEM    pci;
@@ -203,17 +204,43 @@ VOID StubbyScanThread(VOID * arg)
     if (thab) {
       hmq = WinCreateMsgQueue(thab, 0);
       if (hmq) {
+        StubbyScanCount++;
 	IncrThreadUsage();
 	priority_normal();
-	StubbyScanCount++;
-	ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-	if (ret == 0 && !StubbyScan->RamDrive) {
-	  if (WinIsWindow((HAB)0, StubbyScan->hwndCnr))
+        ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+        //DbgMsg(pszSrcFile, __LINE__, "Stubby %i ", ret);
+        if (ret == 1) {
+          if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
 	    WinSendMsg(StubbyScan->hwndCnr,
 		       CM_INVALIDATERECORD,
 		       MPFROMP(&StubbyScan->pci),
                        MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+            if (fRScanLocal) {
+              if (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
+                    ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
+                     (fRScanRemote ? 0 : DRIVE_REMOTE) |
+                     (fRScanSlow ? 0 : DRIVE_SLOW) |
+                     (fRScanVirtual ? 0 : DRIVE_VIRTUAL)))
+                  && fInitialDriveScan) {
+                WinSendMsg(StubbyScan->hwndCnr, CM_EXPANDTREE, MPFROMP(StubbyScan->pci), MPVOID);
+                //DbgMsg(pszSrcFile, __LINE__, "expanded %x %s", StubbyScan->hwndCnr, StubbyScan->pci->pszFileName);
+                WinSendMsg(StubbyScan->hwndCnr, CM_COLLAPSETREE, MPFROMP(StubbyScan->pci), MPVOID);
+              }
+            }
+            else  if ((fRScanRemote && (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
+                      DRIVE_REMOTE)) ||
+                      (fRScanVirtual && (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
+                                         DRIVE_VIRTUAL)) && fInitialDriveScan) {
+              if (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
+                    ((fRScanNoWrite ? NULL : DRIVE_NOTWRITEABLE) |
+                     (fRScanSlow ? NULL : DRIVE_SLOW)))) {
+                WinSendMsg(StubbyScan->hwndCnr, CM_EXPANDTREE, MPFROMP(StubbyScan->pci), MPVOID);
+                //DbgMsg(pszSrcFile, __LINE__, "expanded %x %s", StubbyScan->hwndCnr, StubbyScan->pci->pszFileName);
+                WinSendMsg(StubbyScan->hwndCnr, CM_COLLAPSETREE, MPFROMP(StubbyScan->pci), MPVOID);
+              }
+            }
           }
+        }
 	if (WinIsWindow((HAB)0, StubbyScan->hwndDrivesList)) {
 	  WinSendMsg(StubbyScan->hwndDrivesList,
 		     LM_INSERTITEM,
@@ -221,8 +248,13 @@ VOID StubbyScanThread(VOID * arg)
 		     MPFROMP(StubbyScan->pci->pszFileName));
 	}
 	StubbyScanCount--;
-	if (StubbyScanCount == 0)
-	  fInitialDriveScan = FALSE;
+       /* if (StubbyScanCount == 0) {
+          if (fInitialDriveScan) {
+            WinShowWindow(StubbyScan->hwndCnr, TRUE);
+            WinShowWindow(StubbyScan->hwndDrivesList, TRUE);
+          }
+          fInitialDriveScan = FALSE;
+        }*/
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -230,6 +262,53 @@ VOID StubbyScanThread(VOID * arg)
     }
     free(StubbyScan);
   } // if StubbyScan
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
+
+  // _endthread();			// 10 Dec 08 SHL
+}
+
+VOID ProcessDirectoryThread(VOID * arg)
+{
+  PROCESSDIR *ProcessDir;
+  HAB thab;
+  HMQ hmq = (HMQ) 0;
+  //BOOL ret;
+
+  DosError(FERR_DISABLEHARDERR);
+
+# ifdef FORTIFY
+  Fortify_EnterScope();
+#  endif
+
+  ProcessDir = (PROCESSDIR *)arg;
+  if (ProcessDir && ProcessDir->pciParent && ProcessDir->pciParent->pszFileName && ProcessDir->hwndCnr) {
+    thab = WinInitialize(0);
+    if (thab) {
+      hmq = WinCreateMsgQueue(thab, 0);
+      if (hmq) {
+        ProcessDirCount ++;
+	IncrThreadUsage();
+        priority_normal();
+        ProcessDirectory(ProcessDir->hwndCnr,
+                         ProcessDir->pciParent,
+                         ProcessDir->szDirBase,
+                         ProcessDir->filestoo,
+                         ProcessDir->recurse,
+                         ProcessDir->partial,
+                         ProcessDir->stopflag,
+                         ProcessDir->dcd,	                // Optional
+                         ProcessDir->pulTotalFiles,	// Optional
+                         ProcessDir->pullTotalBytes);	// Optional
+        ProcessDirCount --;
+	WinDestroyMsgQueue(hmq);
+      }
+      DecrThreadUsage();
+      WinTerminate(thab);
+    }
+    free(ProcessDir);
+  } // if ProcessDir
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
@@ -1152,8 +1231,15 @@ Abort:
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     while (pci && (INT)pci != -1) {
-      if (pci->attrFile & FILE_DIRECTORY)
-	Stubby(hwndCnr, pci);
+      if ((pci->attrFile & FILE_DIRECTORY))
+        if (fInitialDriveScan)
+          Stubby(hwndCnr, pci);
+        else {
+          while (StubbyScanCount != 0)
+            DosSleep(50);
+          Stubby(hwndCnr, pci);
+        }
+        //Stubby(hwndCnr, pci);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
@@ -1216,7 +1302,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   for (x = 0; x < 26; x++) {
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS);
+                      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
+                      DRIVE_WRITEVERIFYOFF);
   }
   memset(driveserial, -1, sizeof(driveserial));
 
@@ -1337,7 +1424,17 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    if (!(ulDriveType & DRIVE_NOLONGNAMES))
 	      driveflags[x] &= ~DRIVE_NOLONGNAMES;
           }
+          if (!fVerifyOffChecked[x]) {
+            if (driveflags[x] & DRIVE_REMOVABLE)
+              driveflags[x] |= DRIVE_WRITEVERIFYOFF;
+            if (!(driveflags[x] & DRIVE_IGNORE | DRIVE_INVALID)) {
+              CHAR Key[80];
 
+              sprintf(Key, "%c.VerifyOffChecked", (CHAR) (x + 'A'));
+              fVerifyOffChecked[x] = TRUE;
+              PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
+            }
+          }
 	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
 	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
@@ -1606,8 +1703,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       pci = pciNext;
     } // while
     StubbyScanCount--;
-    if (StubbyScanCount == 0)
-      fInitialDriveScan = FALSE;
   }
   if (hwndParent)
     WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
@@ -1701,9 +1796,16 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
     }
   }
-
   didonce = TRUE;
-
+  if (fInitialDriveScan) {
+    HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
+					  MAIN_DRIVELIST);
+    while (StubbyScanCount != 0 || ProcessDirCount != 0)
+      DosSleep(50);
+    WinShowWindow(hwndCnr, TRUE);
+    WinShowWindow(hwndDrivesList, TRUE);
+    fInitialDriveScan = FALSE;
+  }
 } // FillTreeCnr
 
 

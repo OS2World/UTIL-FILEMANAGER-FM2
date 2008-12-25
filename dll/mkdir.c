@@ -43,7 +43,7 @@
 #pragma data_seg(GLOBAL2)
 CHAR targetdir[CCHMAXPATH];
 
-static PSZ pszSrcFile = __FILE__;
+//static PSZ pszSrcFile = __FILE__;
 
 APIRET MassMkdir(HWND hwndClient, CHAR * dir)
 {
@@ -73,7 +73,7 @@ APIRET MassMkdir(HWND hwndClient, CHAR * dir)
     last = DosCreateDir(s, NULL);
     if (!last) {
       Broadcast((HAB) 0, hwndClient, UM_UPDATERECORD, MPFROMP(s), MPVOID);
-      DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", s);
+      //DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", s);
     }
     else if (last == ERROR_ACCESS_DENIED) {
       if (!IsFile(s))
@@ -99,6 +99,7 @@ APIRET SetDir(HWND hwndClient, HWND hwnd, CHAR * dir, INT flags)
   CHAR s[CCHMAXPATH], *p;
   APIRET ret = 0, error;
   INT isfile;
+  BOOL fResetVerify = FALSE;
 
   if (DosQueryPathInfo(dir, FIL_QUERYFULLNAME, s, sizeof(s)))
     strcpy(s, dir);
@@ -140,7 +141,15 @@ APIRET SetDir(HWND hwndClient, HWND hwnd, CHAR * dir, INT flags)
 		 GetPString(IDS_NODIRCREATEDIRTEXT), s) != MBID_YES)
 	return -3;
     }
-    error = MassMkdir(hwndClient, s);
+    if (fVerify && driveflags[toupper(*s) - 'A'] & DRIVE_WRITEVERIFYOFF) {
+      DosSetVerify(FALSE);
+      fResetVerify = TRUE;
+    }
+    error = MassMkdir(hwnd, s);
+    if (fResetVerify) {
+      DosSetVerify(fVerify);
+      fResetVerify = FALSE;
+    }
     if (error) {
       Dos_Error(MB_CANCEL,
 		error,
@@ -164,6 +173,7 @@ BOOL PMMkDir(HWND hwnd, CHAR * filename, BOOL copy)
   STRINGINPARMS sip;
   CHAR szBuff[CCHMAXPATH];
   APIRET error;
+  BOOL fResetVerify = FALSE;
 
 Over:
   sip.help = GetPString(IDS_MKDIRHELPTEXT);
@@ -189,7 +199,15 @@ Over:
 	     GetPString(IDS_DIRNAMEERRORTEXT), szBuff);
       goto Over;
     }
+    if (fVerify && driveflags[toupper(*szBuff) - 'A'] & DRIVE_WRITEVERIFYOFF) {
+      DosSetVerify(FALSE);
+      fResetVerify = TRUE;
+    }
     error = MassMkdir(hwnd, szBuff);
+    if (fResetVerify) {
+      DosSetVerify(fVerify);
+      fResetVerify = FALSE;
+    }
     if (error)
       Dos_Error(MB_ENTER,
 		error,

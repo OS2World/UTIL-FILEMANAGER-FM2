@@ -1548,6 +1548,16 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "RemoteBug", &fRemoteBug, &size);
   size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "RScanLocal", &fRScanLocal, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "RScanRemote", &fRScanRemote, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "RScanVirtual", &fRScanVirtual, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "RScanSlow", &fRScanSlow, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "RScanNoWrite", &fRScanNoWrite, &size);
+  size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "Drag&DropDlg", &fDragndropDlg, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UserComboBox", &fUserComboBox, &size);

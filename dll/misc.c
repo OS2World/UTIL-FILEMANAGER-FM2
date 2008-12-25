@@ -95,6 +95,7 @@
 #include "wrappers.h"			// xDosSetPathInfo
 #include "commafmt.h"			// CommaFmtULL
 #include "fortify.h"
+#include "info.h"                       // driveflags
 
 #define CONTAINER_COLUMNS       13	/* Number of columns in details view */
 #define MS_POPUP          0x00000010L
@@ -797,6 +798,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
       CHAR szData[CCHMAXPATH], testname[CCHMAXPATH];
       HWND hwndMLE = WinWindowFromID(hwnd, CID_MLE);
+      BOOL fResetVerify = FALSE;
 
       if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
         if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject)) {
@@ -924,6 +926,11 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 DosBeep(50, 100);       /* exists; disallow */
                 return (MRESULT) FALSE;
               }
+              if (fVerify && (driveflags[toupper(*szData) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+                              driveflags[toupper(*testname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+                DosSetVerify(FALSE);
+                fResetVerify = TRUE;
+              }
               if (docopyf(MOVE, szData, "%s", testname))
                 Runtime_Error(pszSrcFile, __LINE__, "docopyf");
               else {
@@ -944,6 +951,10 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                       free(filename);
                   }
                 }
+              }
+              if (fResetVerify) {
+                DosSetVerify(fVerify);
+                fResetVerify = FALSE;
               }
             }
           }

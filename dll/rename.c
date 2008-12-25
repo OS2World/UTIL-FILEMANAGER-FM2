@@ -16,6 +16,7 @@
 ***********************************************************************/
 
 #include <string.h>
+#include <ctype.h>
 
 #define INCL_WIN
 #define INCL_LONGLONG
@@ -35,6 +36,7 @@
 #include "mkdir.h"			// SetDir
 #include "commafmt.h"			// CommaFmtULL
 #include "strips.h"			// bstrip
+#include "info.h"                       // driveflags
 
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -237,7 +239,8 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	CHAR newexist[CCHMAXPATH], fullname[CCHMAXPATH];
 	INT was;
-	APIRET rc;
+        APIRET rc;
+        BOOL fResetVerify = FALSE;
 
 	*newexist = 0;
 	WinQueryDlgItemText(hwnd, REN_TARGET, CCHMAXPATH, newexist);
@@ -246,8 +249,17 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       FIL_QUERYFULLNAME, fullname, sizeof(fullname)))
 	    strcpy(fullname, newexist);
 	  was = IsFile(fullname);
-	  if (was == -1) {
-	    rc = docopyf(MOVE, mv->target, "%s", fullname);
+          if (was == -1) {
+            if (fVerify && (driveflags[toupper(*mv->target) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+                              driveflags[toupper(*fullname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+              DosSetVerify(FALSE);
+              fResetVerify = TRUE;
+            }
+            rc = docopyf(MOVE, mv->target, "%s", fullname);
+            if (fResetVerify) {
+              DosSetVerify(fVerify);
+              fResetVerify = FALSE;
+            }
 	    if (rc) {
 	      if ((LONG) rc > 0)
 		Dos_Error(MB_CANCEL,

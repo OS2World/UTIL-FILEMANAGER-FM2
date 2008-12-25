@@ -81,6 +81,7 @@
 #include "strips.h"			// bstrip
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
+#include "info.h"                       // driveflags
 
 static VOID SaveLastPageIndex(HWND hwnd);
 
@@ -132,6 +133,11 @@ BOOL fOtherHelp;
 BOOL fQuickArcFind;
 BOOL fRealIdle;
 BOOL fRemoteBug;
+BOOL fRScanLocal;
+BOOL fRScanRemote;
+BOOL fRScanVirtual;
+BOOL fRScanSlow;
+BOOL fRScanNoWrite;
 BOOL fSaveState;
 BOOL fSeparateParms;
 BOOL fShowEnv;
@@ -468,6 +474,11 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGS_FORCELOWER, fForceLower);
     WinCheckButton(hwnd, CFGS_FORCEUPPER, fForceUpper);
     WinCheckButton(hwnd, CFGS_NOREMOVABLESCAN, fNoRemovableScan);
+    WinCheckButton(hwnd, CFGS_RSCANLOCAL, fRScanLocal);
+    WinCheckButton(hwnd, CFGS_RSCANREMOTE, fRScanRemote);
+    WinCheckButton(hwnd, CFGS_RSCANVIRTUAL, fRScanVirtual);
+    WinCheckButton(hwnd, CFGS_RSCANSLOW, fRScanSlow);
+    WinCheckButton(hwnd, CFGS_RSCANNOWRITE, fRScanNoWrite);
     WinCheckButton(hwnd, CFGS_REMOTEBUG, fRemoteBug);
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_SETCURRENTVALUE,
                       MPFROMLONG(FilesToGet), MPVOID);
@@ -526,6 +537,21 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                         sizeof(BOOL));
     fRemoteBug = WinQueryButtonCheckstate(hwnd, CFGS_REMOTEBUG);
     PrfWriteProfileData(fmprof, appname, "RemoteBug", &fRemoteBug,
+                        sizeof(BOOL));
+    fRScanLocal = WinQueryButtonCheckstate(hwnd, CFGS_RSCANLOCAL);
+    PrfWriteProfileData(fmprof, appname, "RScanLocal", &fRScanLocal,
+                        sizeof(BOOL));
+    fRScanRemote = WinQueryButtonCheckstate(hwnd, CFGS_RSCANREMOTE);
+    PrfWriteProfileData(fmprof, appname, "RScanRemote", &fRScanRemote,
+                        sizeof(BOOL));
+    fRScanVirtual = WinQueryButtonCheckstate(hwnd, CFGS_RSCANVIRTUAL);
+    PrfWriteProfileData(fmprof, appname, "RScanVirtual", &fRScanVirtual,
+                        sizeof(BOOL));
+    fRScanSlow = WinQueryButtonCheckstate(hwnd, CFGS_RSCANSLOW);
+    PrfWriteProfileData(fmprof, appname, "RScanSlow", &fRScanSlow,
+                        sizeof(BOOL));
+    fRScanNoWrite = WinQueryButtonCheckstate(hwnd, CFGS_RSCANNOWRITE);
+    PrfWriteProfileData(fmprof, appname, "RScanNoWrite", &fRScanNoWrite,
                         sizeof(BOOL));
     fNoRemovableScan = WinQueryButtonCheckstate(hwnd, CFGS_NOREMOVABLESCAN);
     PrfWriteProfileData(fmprof, FM3Str, "NoRemovableScan", &fNoRemovableScan,
@@ -3272,8 +3298,8 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fNoIconsDirs = FALSE;
       fFolderAfterExtract = FALSE;
       fVerify = TRUE;
-      fNoSearch = TRUE;
       DosSetVerify(TRUE);
+      fNoSearch = TRUE;
       fForceUpper = FALSE;
       fForceLower = TRUE;
       fArcStuffVisible = TRUE;
