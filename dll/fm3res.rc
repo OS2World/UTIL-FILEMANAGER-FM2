@@ -38,6 +38,7 @@
   20 Jul 08 GKY Add save/append filename to clipboard.
                 Change menu wording to make these easier to find
   21 Nov 08 JBS Ticket 297: Added STRINGTABLE with COPYRIGHT_STRING
+  26 Dec 08 GKY Rework MLE menus (add "view") so toggle word wrap isn't buried on a submenu.
 
 ***********************************************************************/
 
@@ -1857,29 +1858,28 @@ MENU MLE_FRAME
 	 {
 		MENUITEM "~Find first...\tCtrl + f",    MLE_FINDFIRST
 		MENUITEM "Find ~next\tCtrl + n",        MLE_FINDNEXT
-		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "",                      -1,   MIS_SEPARATOR
 		MENUITEM "~Insensitive\tCtrl + I",      MLE_SENSITIVE
-		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "",                      -1,   MIS_SEPARATOR
 		MENUITEM "~Jump to line #\tCtrl + j",   MLE_JUMP
 	 }
-  SUBMENU "~Config",                      -1
+  SUBMENU "~View",                      -1
 	 {
 		MENUITEM "Set ~font...\tF2",        MLE_SETFONT
 		MENUITEM "Set ~code page...",       MLE_CODEPAGE
 		MENUITEM "",                        -1,    MIS_SEPARATOR
-		SUBMENU  "F~ormat control",         -1
-		{
-		  MENUITEM "~Tab width...",         MLE_TAB
-		  MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
-		  MENUITEM "",                      -1,     MIS_SEPARATOR
-		  MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
-		  MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
-		  MENUITEM "",                      -1,     MIS_SEPARATOR
-		  MENUITEM "~Wrap on\tCtrl + w",          MLE_TOGWRAP
-		}
+		MENUITEM "~Wrap on\tCtrl + w",      MLE_TOGWRAP
 		MENUITEM "Co~lors...",              IDM_COLORPALETTE
 	 }
-	 SUBMENU "~Help",                      -1
+  SUBMENU "~Config",                      -1
+	 {
+	        MENUITEM "~Tab width...",         MLE_TAB
+		MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
+		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
+		MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
+	 }
+  SUBMENU "~Help",                      -1
 	 {
 		MENUITEM "~Help\tF1",              IDM_HELP
 		MENUITEM "~About",                  MLE_ABOUT
@@ -1918,22 +1918,21 @@ MENU MLE_POPUP
 		MENUITEM "",                      -1,     MIS_SEPARATOR
 		MENUITEM "~Jump to line #\tCtrl + j",   MLE_JUMP
 	 }
-  SUBMENU "Config",                      -1
+  SUBMENU "~View",                      -1
 	 {
 		MENUITEM "Set ~font...\tF2",        MLE_SETFONT
 		MENUITEM "Set ~code page...",       MLE_CODEPAGE
 		MENUITEM "",                        -1,    MIS_SEPARATOR
-		SUBMENU  "F~ormat control",         -1
-		{
-		  MENUITEM "~Tab width...",         MLE_TAB
-		  MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
-		  MENUITEM "",                      -1,     MIS_SEPARATOR
-		  MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
-		  MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
-		  MENUITEM "",                      -1,     MIS_SEPARATOR
-		  MENUITEM "~Wrap on\tCtrl + w",          MLE_TOGWRAP
-		}
+		MENUITEM "~Wrap on\tCtrl + w",      MLE_TOGWRAP
 		MENUITEM "Co~lors...",              IDM_COLORPALETTE
+	 }
+  SUBMENU "~Config",                      -1
+	 {
+	        MENUITEM "~Tab width...",         MLE_TAB
+		MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
+		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
+		MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
 	 }
 	 MENUITEM "View as http",          MLE_VIEWHTTP
 	 MENUITEM "View as ftp",           MLE_VIEWFTP
