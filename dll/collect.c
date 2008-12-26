@@ -56,6 +56,7 @@
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
 		less than 10 KiB (It hangs and can't be closed)
   10 Dec 08 SHL Integrate exception handler support
+  26 Dec 08 GKY Fixed DROPHELP to check for copy as default is action is DO_DEFAULT
 
 ***********************************************************************/
 
@@ -2360,6 +2361,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  numitems = DrgQueryDragitemCount(pDInfo);
 	  usOperation = pDInfo->usOperation;
+          if (usOperation == DO_DEFAULT)
+            usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
 	  FreeDragInfoData(hwnd, pDInfo);
 	  saymsg(MB_ENTER | MB_ICONASTERISK,
 		 hwnd,

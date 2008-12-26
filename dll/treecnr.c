@@ -51,6 +51,8 @@
   19 Oct 08 GKY Fixed context menu to be "drives" menu on unformatted drives
   28 Nov 08 GKY Remove unneeded DosEnterCriSec calls
   10 Dec 08 SHL Integrate exception handler support
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  26 Dec 08 GKY Implemented DROPHELP for the tree container
 
 ***********************************************************************/
 
@@ -1416,6 +1418,44 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  DrgAccessDraginfo(pDInfo);
 	  DrgFreeDraginfo(pDInfo);
+	}
+        return 0;
+
+      case CN_DROPHELP:
+	if (mp2) {
+
+	  PDRAGINFO pDInfo;
+	  PCNRITEM pci;
+	  ULONG numitems;
+	  USHORT usOperation;
+
+	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
+	  pDInfo = (PDRAGINFO) ((PCNRDRAGINFO) mp2)->pDragInfo;
+	  if (!DrgAccessDraginfo(pDInfo)) {
+	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		      GetPString(IDS_DROPERRORTEXT));
+	  }
+	  else {
+	    numitems = DrgQueryDragitemCount(pDInfo);
+            usOperation = pDInfo->usOperation;
+            if (usOperation == DO_DEFAULT)
+              usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
+	    FreeDragInfoData(hwnd, pDInfo);
+	    saymsg(MB_ENTER | MB_ICONASTERISK,
+		   hwnd,
+		   GetPString(IDS_DROPHELPHDRTEXT),
+		   GetPString(IDS_DROPHELPTEXT),
+		   numitems,
+		   &"s"[numitems == 1L],
+		   pci ? NullStr : GetPString(IDS_NOTEXT),
+		   pci ? NullStr : " ",
+		   pci ? pci->pszFileName : NullStr,
+		   pci ? " " : NullStr,
+		   GetPString((usOperation == DO_MOVE) ?
+			      IDS_MOVETEXT :
+			      (usOperation == DO_LINK) ?
+			      IDS_LINKTEXT : IDS_COPYTEXT));
+	  }
 	}
 	return 0;
 

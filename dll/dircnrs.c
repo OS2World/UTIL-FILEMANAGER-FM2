@@ -51,6 +51,7 @@
 		less than 10 KiB (It hangs and can't be closed)
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   10 Dec 08 SHL Integrate exception handler support
+  26 Dec 08 GKY Fixed DROPHELP to check for copy as default is action is DO_DEFAULT
 
 ***********************************************************************/
 
@@ -2912,7 +2913,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 	    numitems = DrgQueryDragitemCount(pDInfo);
-	    usOperation = pDInfo->usOperation;
+            usOperation = pDInfo->usOperation;
+            if (usOperation == DO_DEFAULT)
+              usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
 	    FreeDragInfoData(hwnd, pDInfo);
 	    saymsg(MB_ENTER | MB_ICONASTERISK,
 		   hwnd,
@@ -2924,10 +2927,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   pci ? NullStr : " ",
 		   pci ? pci->pszFileName : NullStr,
 		   pci ? " " : NullStr,
-		   GetPString((usOperation == DO_COPY) ?
-			      IDS_COPYTEXT :
+		   GetPString((usOperation == DO_MOVE) ?
+			      IDS_MOVETEXT :
 			      (usOperation == DO_LINK) ?
-			      IDS_LINKTEXT : IDS_MOVETEXT));
+			      IDS_LINKTEXT : IDS_COPYTEXT));
 	  }
 	}
 	return 0;
