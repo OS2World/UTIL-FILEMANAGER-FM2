@@ -1427,7 +1427,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
           if (!fVerifyOffChecked[x]) {
             if (driveflags[x] & DRIVE_REMOVABLE)
               driveflags[x] |= DRIVE_WRITEVERIFYOFF;
-            if (!(driveflags[x] & DRIVE_IGNORE | DRIVE_INVALID)) {
+            if (!(driveflags[x] & DRIVE_INVALID)) {
               CHAR Key[80];
 
               sprintf(Key, "%c.VerifyOffChecked", (CHAR) (x + 'A'));

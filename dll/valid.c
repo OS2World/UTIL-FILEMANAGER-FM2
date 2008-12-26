@@ -809,7 +809,7 @@ VOID FillInDriveFlags(VOID * dummy)
       if (!fVerifyOffChecked[x]) {
         if (driveflags[x] & DRIVE_REMOVABLE)
           driveflags[x] |= DRIVE_WRITEVERIFYOFF;
-        if (!(driveflags[x] & DRIVE_IGNORE | DRIVE_INVALID)) {
+        if (!(driveflags[x] & DRIVE_INVALID)) {
           fVerifyOffChecked[x] = TRUE;
           PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
         }
