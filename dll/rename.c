@@ -12,6 +12,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   27 Sep 07 SHL Correct ULONGLONG size formatting
   30 Dec 07 GKY Use TestFDates for comparing dates
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 

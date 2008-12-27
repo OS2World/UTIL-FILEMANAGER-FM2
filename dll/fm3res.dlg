@@ -39,6 +39,8 @@
   21 Nov 08 JBS Ticket 297: Added use of COPYRIGHT_YEAR in About dialog
   29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path to extract dialog and arc container.
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
 
 ***********************************************************************/
 

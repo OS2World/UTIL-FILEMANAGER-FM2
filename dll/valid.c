@@ -26,6 +26,7 @@
   30 Dec 07 GKY Change TestDates to TestFDates can compare by filename or FDATE/FTIME data
   30 Dec 07 GKY Add TestCDates to compare CNRITEMs by CDATE/CTIME data
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 

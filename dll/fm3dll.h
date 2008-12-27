@@ -86,6 +86,9 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use MakeTempName; Remove LISTTEMPROOT
   xx Sep 08 JBS Ticket 187 (Refactor fm2dll.h): All function declarations and data
                 definitions/declarations moved to other include files.
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
+                to prevent duplicate directory names in tree following a copy before initial scan.
 
 ***********************************************************************/
 

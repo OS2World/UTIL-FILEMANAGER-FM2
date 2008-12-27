@@ -58,6 +58,7 @@
 		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   08 Sep 08 SHL Avoid aliased pszLongName pointer in ActionCnrThread IDM_MOVE
   10 Dec 08 SHL Integrate exception handler support
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis.
 
 ***********************************************************************/
 

@@ -61,6 +61,8 @@
   04 Dec 08 GKY Use event semaphore to prevent scan of "last" directory container prior to
 		tree scan completion; prevents duplicate directory names in tree.
   10 Dec 08 SHL Integrate exception handler support
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
 
 ***********************************************************************/
 

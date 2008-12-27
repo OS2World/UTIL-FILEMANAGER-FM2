@@ -9,6 +9,7 @@
   Copyright (c) 2001, 2008 Steven H. Levine
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 

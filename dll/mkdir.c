@@ -11,6 +11,7 @@
   01 Aug 04 SHL Baseline
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 

@@ -24,6 +24,9 @@
   27 Sep 07 SHL Correct ULONGLONG size formatting
   30 Dec 07 GKY Use CommaFmtULL
   29 Feb 08 GKY Use xfree where appropriate
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
+                to prevent duplicate directory names in tree following a copy before initial scan.
 
 ***********************************************************************/
 

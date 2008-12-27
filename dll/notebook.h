@@ -11,6 +11,7 @@
   14 Feb 08 SHL Refactor from fm3dll.h
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
+  25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
 
 ***********************************************************************/
 

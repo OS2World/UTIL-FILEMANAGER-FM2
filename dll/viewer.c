@@ -356,8 +356,8 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!WinCreateWindow(hwnd,
 			 WC_MLE,
 			 (PSZ) NULL,
-			 MLS_HSCROLL | MLS_VSCROLL | MLS_BORDER |
-			 WS_VISIBLE,
+			 MLS_VSCROLL | MLS_BORDER |
+			 WS_VISIBLE | MLS_HSCROLL,
 			 0,
 			 0,
 			 0, 0, hwnd, HWND_TOP, MLE_MLE, MPVOID, MPVOID)) {
@@ -461,7 +461,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       MLEsetlimit(hwndMLE, -1);
       MLEsetformat(hwndMLE, MLFIE_NOTRANS);
       WinSetSysValue(HWND_DESKTOP, SV_INSERTMODE, TRUE);
-      vw->fWrap = TRUE;
+      vw->fWrap = FALSE;
       vw->fStripTrail = TRUE;
       vw->fStripTrailLines = TRUE;
       vw->srch.fInsensitive = TRUE;

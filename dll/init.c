@@ -60,6 +60,7 @@
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
 		for the extract path to arc container.
   10 Dec 08 SHL Integrate exception handler support
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 

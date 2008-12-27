@@ -14,6 +14,7 @@
   01 Sep 07 GKY Add xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   06 Oct 07 SHL Add xDos...() wrappers to support systems wo/large file support (Gregg, Steven)
   05 May 08 SHL Add FORTIFY support
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 

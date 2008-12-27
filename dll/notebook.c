@@ -41,6 +41,7 @@
   02 Aug 08 JBS Ticket 114: Improved code to avoid traps.
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path to arc container.
+  25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
 
 ***********************************************************************/
 

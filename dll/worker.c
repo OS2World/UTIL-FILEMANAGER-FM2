@@ -34,6 +34,9 @@
   04 Dec 08 GKY Add mutex semaphore and disable fSyncUpdates for file deletes to prevent the creation
 		on dead CNRITEMS.
   10 Dec 08 SHL Integrate exception handler support
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
+                to prevent duplicate directory names in tree following a copy before initial scan.
 
 ***********************************************************************/
 

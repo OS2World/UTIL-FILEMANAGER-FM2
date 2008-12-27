@@ -20,6 +20,9 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
   24 Nov 08 GKY remove redundant code and minor speed up of Stubby
+  25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
+  25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
+                to prevent duplicate directory names in tree following a copy before initial scan.
 
 ***********************************************************************/
 

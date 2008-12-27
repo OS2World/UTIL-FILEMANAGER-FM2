@@ -24,6 +24,10 @@
                 for the extract path.
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path to arc container.
+  25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
+  25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
+                to prevent duplicate directory names in tree following a copy before initial scan.
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 

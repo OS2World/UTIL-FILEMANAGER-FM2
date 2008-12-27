@@ -38,6 +38,7 @@
   20 Jul 08 GKY Add save/append filename to clipboard.
 		Change menu wording to make these easier to find
   10 Dec 08 SHL Integrate exception handler support
+  25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
 
 ***********************************************************************/
 
