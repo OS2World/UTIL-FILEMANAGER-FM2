@@ -73,6 +73,7 @@
   04 Dec 08 GKY Use event semaphore to prevent scan of "last" directory container prior to
 		tree scan completion; prevents duplicate directory names in tree.
   10 Dec 08 SHL Integrate exception handler support
+  28 Dec 08 GKY Added Databar to utilities menu
 
 ***********************************************************************/
 
@@ -5297,6 +5298,10 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  MPFROM2SHORT(IDM_SEEALL, 0), MPVOID);
       }
     }
+    break;
+
+  case IDM_DATABAR:
+    CreateDataBar(HWND_DESKTOP, 0);
     break;
 
   case IDM_TOOLLEFT:

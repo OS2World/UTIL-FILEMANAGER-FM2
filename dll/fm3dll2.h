@@ -23,6 +23,7 @@
                 to save/append just filename to clipboard
   01 Sep 08 GKY Add IDM_*TLS for icon resources for the default toolbars
   27 Dec 08 GKY Add refresh removable media to tree container menus
+  28 Dec 08 GKY Added Databar to utilities menu
 
   Align with spaces only - no tabs please
 
@@ -377,6 +378,7 @@
 #define IDM_TOGGLEDRAGDIALOG 1160
 #define IDM_SAVETOCLIPFILENAME 1161
 #define IDM_APPENDTOCLIPFILENAME 1162
+#define IDM_DATABAR         1163
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001

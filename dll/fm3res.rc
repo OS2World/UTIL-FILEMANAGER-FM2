@@ -40,6 +40,7 @@
   21 Nov 08 JBS Ticket 297: Added STRINGTABLE with COPYRIGHT_STRING
   26 Dec 08 GKY Rework MLE menus (add "view") so toggle word wrap isn't buried on a submenu.
   27 Dec 08 GKY Add refresh removable media to tree container menus
+  28 Dec 08 GKY Added Databar to utilities menu
 
 ***********************************************************************/
 
@@ -220,6 +221,7 @@ MENU  MAIN_FRAME
 	 MENUITEM "~Seek & scan files",IDM_GREP
 	 MENUITEM "See ~all files",    IDM_SEEALL
 	 MENUITEM "Compar~e directories...",IDM_COMPARE
+         MENUITEM "DataBar",           IDM_DATABAR
 	 MENUITEM "",                  -1,               MIS_SEPARATOR
 	 MENUITEM "~INI viewer",       IDM_INIVIEWER
 	 MENUITEM "~Kill processes",   IDM_KILLPROC
