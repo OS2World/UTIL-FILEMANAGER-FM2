@@ -9,6 +9,8 @@
   Find records
 
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  28 Dec 08 GKY Containers will only scroll to the right if needed to show end of selected
+                item and will scroll left to eliminate space after a selected item. Ticket 204
 
 ***********************************************************************/
 
@@ -130,7 +132,7 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
 	     MPFROMLONG((rclViewport.yTop - rcl.yTop) - 4));
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
-	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xLeft - 4));
+	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));
 }
 
 #pragma alloc_text(FINDREC,FindCnrRecord,FindParentRecord,ShowCnrRecord)
