@@ -2620,6 +2620,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		"%s", "FDISKPM.EXE");
 	break;
 
+      case IDM_REFRESHREMOVABLES:
+        runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
+                HWND_DESKTOP, pszSrcFile, __LINE__, NULL, NULL,
+                "%s", "LVM.EXE /RediscoverPRM");
+         PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+	break;
+
       case IDM_SORTNAME:
       case IDM_SORTFILENAME:
       case IDM_SORTSIZE:

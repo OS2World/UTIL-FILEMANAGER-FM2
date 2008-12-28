@@ -375,7 +375,9 @@ MENU  MAIN2_FRAME
 	 MENUITEM "~Mini icons",             IDM_MINIICONS
 	 MENUITEM "",                  -1,                 MIS_SEPARATOR
 	 MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
+         MENUITEM "",                -1,       MIS_SEPARATOR
 	 MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
+         MENUITEM "~Refresh Removable Media",  IDM_REFRESHREMOVABLES
 	 MENUITEM "",                  -1,                 MIS_SEPARATOR
 	 MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
 	 MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
@@ -1020,7 +1022,10 @@ MENU TREECNR_POPUP
 {
   MENUITEM "~Mini icons",       IDM_MINIICONS
   MENUITEM "~Toggle icons",     IDM_TEXT
+  MENUITEM "",                -1,       MIS_SEPARATOR
   MENUITEM "~Rescan\tCtrl + R",   IDM_RESCAN
+  MENUITEM "~Refresh Removable Media",  IDM_REFRESHREMOVABLES
+  MENUITEM "",                -1,       MIS_SEPARATOR
   MENUITEM "~Filter...\tCtrl + f",IDM_FILTER
   MENUITEM "Res~ort",           IDM_RESORT
   MENUITEM "~Collapse\tCtrl + _",IDM_COLLAPSEALL
@@ -1321,7 +1326,10 @@ MENU TREE_POPUP
   MENUITEM "~Collect\tCtrl + C",  IDM_COLLECT
   MENUITEM "~Archive...\tCtrl + A",IDM_ARCHIVE
   MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
+  MENUITEM "",                -1,       MIS_SEPARATOR
   MENUITEM "~Rescan",           IDM_UPDATE
+  MENUITEM "~Refresh Removable Media",  IDM_REFRESHREMOVABLES
+  MENUITEM "",                -1,       MIS_SEPARATOR
   SUBMENU  "E~xpand/Collapse",  IDM_EXPANDSUBMENU
   {
 	 MENUITEM "~Expand\tCtrl + +",  IDM_EXPAND
