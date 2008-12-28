@@ -61,6 +61,9 @@
 		for the extract path to arc container.
   10 Dec 08 SHL Integrate exception handler support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
+  28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
+                and have no default choice.
 
 ***********************************************************************/
 
@@ -1230,6 +1233,22 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   DosQueryCtryInfo(sizeof(CtryInfo), &Country,
 		   &CtryInfo, &ulInfoLen);
   *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
+  }
+  { // Check for the existance of various partitioning tools to set up menu items
+    CHAR *FullPath;
+    ULONG ulAppType;
+
+    FullPath = searchapath("PATH", "LVMGUI.CMD");
+    if (*FullPath)
+      fLVMGui = TRUE;
+    if (!DosQueryAppType("DFSOS2.EXE", &ulAppType))
+      fDFSee = TRUE;
+    if (!DosQueryAppType("MINILVM.EXE", &ulAppType))
+      fMiniLVM = TRUE;
+    if (!DosQueryAppType("FDISK.EXE", &ulAppType))
+      fFDisk = TRUE;
+    if (!DosQueryAppType("LVM.EXE", &ulAppType))
+      fLVM = TRUE;
   }
 
   // load preferences from profile (INI) file

@@ -53,6 +53,9 @@
   10 Dec 08 SHL Integrate exception handler support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   26 Dec 08 GKY Implemented DROPHELP for the tree container
+  27 Dec 08 GKY Add refresh removable media to tree container menus
+  28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
+                and have no default choice.
 
 ***********************************************************************/
 
@@ -131,6 +134,11 @@ BOOL fDCOpens;
 BOOL fDummy;
 BOOL fFollowTree;
 BOOL fTopDir;
+BOOL fLVMGui;
+BOOL fDFSee;
+BOOL fFDisk;
+BOOL fMiniLVM;
+BOOL fLVM;
 HPOINTER hptrDunno;
 HWND hwndMainMenu;
 
@@ -2197,6 +2205,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_INITMENU:
   case WM_INITMENU:
     if (dcd) {
+
       switch (SHORT1FROMMP(mp1)) {
       case IDM_FILESMENU:
 	{
@@ -2207,7 +2216,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    BOOL rdy;
 	    BOOL writeable;
 	    BOOL removable;
-	    BOOL remote;
+	    BOOL local;
 	    BOOL underenv;
 	    CHAR chDrvU;
 	    CHAR szDrv[CCHMAXPATH];
@@ -2221,7 +2230,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      && (driveflags[chDrvU - 'A'] & DRIVE_REMOVABLE) != 0;
 	    writeable = rdy
 	      && !(driveflags[chDrvU - 'A'] & DRIVE_NOTWRITEABLE);
-	    remote = rdy && (driveflags[chDrvU - 'A'] & (DRIVE_REMOTE || DRIVE_VIRTUAL)) == 0;
+            local = rdy && (!(driveflags[chDrvU - 'A'] & (DRIVE_REMOTE | DRIVE_VIRTUAL)));
 	    underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
 
 	    CopyPresParams((HWND) mp2, hwndMainMenu);
@@ -2244,12 +2253,16 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_SHOWALLFILES, rdy);
 	    WinEnableMenuItem((HWND) mp2, IDM_UNDELETE, writeable);
 
-	    WinEnableMenuItem((HWND) mp2, IDM_CHKDSK, writeable && !remote);
-	    WinEnableMenuItem((HWND) mp2, IDM_FORMAT, writeable && !remote);
-	    WinEnableMenuItem((HWND) mp2, IDM_OPTIMIZE, writeable && !remote);
-	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONSMENU, !remote);
+	    WinEnableMenuItem((HWND) mp2, IDM_CHKDSK, writeable && local);
+	    WinEnableMenuItem((HWND) mp2, IDM_FORMAT, writeable && local);
+	    WinEnableMenuItem((HWND) mp2, IDM_OPTIMIZE, writeable && local);
+            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONSMENU, local);
+            WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
+            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
+            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 
-	    WinEnableMenuItem((HWND) mp2, IDM_DETACH, remote);
+	    WinEnableMenuItem((HWND) mp2, IDM_DETACH, !local);
 
 	    WinEnableMenuItem((HWND) mp2, IDM_EJECT, removable);
 
@@ -2274,6 +2287,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 IDM_MINIICONS, ((dcd->flWindowAttr & CV_MINI) != 0));
 	CopyPresParams((HWND) mp2, hwndMainMenu);
 	WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
+        WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
+        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
+        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 	break;
 
       case IDM_COMMANDSMENU:

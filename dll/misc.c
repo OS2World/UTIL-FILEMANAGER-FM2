@@ -51,6 +51,7 @@
                 Change menu wording to make these easier to find
   23 Aug 08 GKY Add CheckDriveSpaceAvail To pre check drive space to prevent failures
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
 
 ***********************************************************************/
 
@@ -1728,6 +1729,9 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
         WinSendMsg(TreeMenu, MM_DELETEITEM,
                    MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
       }
+      if (!fLVM)
+        WinSendMsg(TreeMenu, MM_DELETEITEM,
+                   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
     }
     else if (hwndMenu == &ArcMenu) {
       WinSetWindowUShort(ArcMenu, QWS_ID, IDM_FILESMENU);
@@ -1757,6 +1761,9 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
         WinSendMsg(FileMenu, MM_DELETEITEM,
                    MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
       }
+      if (!fLVM)
+        WinSendMsg(FileMenu, MM_DELETEITEM,
+                   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
     }
     else if (hwndMenu == &DirCnrMenu) {
       WinSetWindowUShort(DirCnrMenu, QWS_ID, IDM_VIEWSMENU);
@@ -1768,7 +1775,9 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
     }
     else if (hwndMenu == &TreeCnrMenu) {
       WinSetWindowUShort(TreeCnrMenu, QWS_ID, IDM_VIEWSMENU);
-      SetConditionalCascade(TreeCnrMenu, IDM_PARTITIONSMENU, IDM_PARTITION);
+      if (!fLVM)
+        WinSendMsg(TreeCnrMenu, MM_DELETEITEM,
+                   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
     }
     else if (hwndMenu == &ArcCnrMenu) {
       WinSetWindowUShort(ArcCnrMenu, QWS_ID, IDM_VIEWSMENU);
