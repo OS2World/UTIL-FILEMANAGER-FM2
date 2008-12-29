@@ -2636,9 +2636,8 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hps = WinBeginPaint(hwnd, (HPS)0, NULL);
       if (hps) {
 	GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
-	WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
-			  sizeof(lColor), &lColor, 0);
-	if (!lColor)
+        if (!(WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
+                                sizeof(lColor), &lColor, 0)))
 	  lColor = CLR_PALEGRAY;
 	WinQueryWindowRect(hwnd, &rcl);
 	WinFillRect(hps, &rcl, lColor);

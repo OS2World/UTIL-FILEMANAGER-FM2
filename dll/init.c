@@ -761,9 +761,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     return FALSE;
   }
 
-  ArgDriveFlags(argc, argv);
-  FillInDriveFlags(NULL);
-
   if (!*profile)
     strcpy(profile, "FM3.INI");
   mypid = getpid();
@@ -986,6 +983,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       return FALSE;
     }
   }
+
+  ArgDriveFlags(argc, argv);
+  FillInDriveFlags(NULL);
 
   FindSwapperDat();
 
