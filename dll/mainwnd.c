@@ -2603,7 +2603,6 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_CREATE:
     hwndToolback = hwnd;
-    RestorePresParams(hwnd, "ToolBar");
     break;
 
   case WM_MOUSEMOVE:
@@ -2625,20 +2624,17 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      FID_CLIENT), msg, mp1, mp2);
 
   case WM_PAINT:
-
-    PaintRecessedWindow(hwnd, (HPS)0, TRUE, FALSE);
-
     {
       HPS hps;
       RECTL rcl;
-      ULONG lColor = NULL;
+      ULONG lColor = 0L;
 
       hps = WinBeginPaint(hwnd, (HPS)0, NULL);
       if (hps) {
-	GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
-        if (!(WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
-                                sizeof(lColor), &lColor, 0)))
-	  lColor = CLR_PALEGRAY;
+        GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
+        if (!WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
+                               sizeof(lColor), &lColor, 0))
+          lColor = 0x00CCCCCCL; //Palegray
 	WinQueryWindowRect(hwnd, &rcl);
 	WinFillRect(hps, &rcl, lColor);
 	WinEndPaint(hps);
@@ -2657,6 +2653,7 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       USHORT id;
       TOOL *tool;
 
+      RestorePresParams(hwnd, "ToolBar");
       id = SHORT1FROMMP(mp1);
       tool = find_tool(id);
       if (tool) {
