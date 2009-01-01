@@ -61,6 +61,7 @@
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
+#include "valid.h"                      // IsFile
 
 #pragma data_seg(DATA1)
 
@@ -213,8 +214,9 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     GrepInfo = mp2;
-    if (GrepInfo->szGrepPath)
+    if (GrepInfo->szGrepPath && IsFile(GrepInfo->szGrepPath) == 0) {
       BldFullPathName(lastmask, GrepInfo->szGrepPath, "*");
+    }
     WinSetWindowULong(hwnd, QWL_USER, *(HWND *) GrepInfo->hwnd);
     WinSendDlgItemMsg(hwnd,
 		      GREP_MASK,
