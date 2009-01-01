@@ -1036,7 +1036,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	   GetPString(IDS_NOHELPACCEPTTEXT));
   }
 
-  /* a couple of default window procs so we don't have to look them up later */
+  // a couple of default window procs so we don't have to look them up later
   if (WinQueryClassInfo(hab, WC_CONTAINER, &clinfo))
     PFNWPCnr = clinfo.pfnWindowProc;
   // saymsg(MB_ENTER,HWND_DESKTOP,"Container flags:","%08lx",clinfo.flClassStyle);
@@ -1238,17 +1238,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     CHAR *FullPath;
     ULONG ulAppType;
 
-    FullPath = searchapath("PATH", "LVMGUI.CMD");
-    if (*FullPath)
-      fLVMGui = TRUE;
+      FullPath = searchapath("PATH", "LVMGUI.CMD");
+      if (*FullPath)
+        fLVMGui = TRUE;
     if (!DosQueryAppType("DFSOS2.EXE", &ulAppType))
       fDFSee = TRUE;
-    if (!DosQueryAppType("MINILVM.EXE", &ulAppType))
-      fMiniLVM = TRUE;
-    if (!DosQueryAppType("FDISK.EXE", &ulAppType))
-      fFDisk = TRUE;
-    if (!DosQueryAppType("LVM.EXE", &ulAppType))
-      fLVM = TRUE;
+      if (!DosQueryAppType("MINILVM.EXE", &ulAppType))
+        fMiniLVM = TRUE;
+      if (!DosQueryAppType("FDISK.EXE", &ulAppType))
+        fFDisk = TRUE;
+      if (!DosQueryAppType("LVM.EXE", &ulAppType))
+        fLVM = TRUE;
   }
 
   // load preferences from profile (INI) file
@@ -1577,6 +1577,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "RScanSlow", &fRScanSlow, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "RScanNoWrite", &fRScanNoWrite, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "EjectRemovableScan", &fEjectRemovableScan, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "EjectCDScan", &fEjectCDScan, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "EjectFlpyScan", &fEjectFlpyScan, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "Drag&DropDlg", &fDragndropDlg, &size);
   size = sizeof(BOOL);

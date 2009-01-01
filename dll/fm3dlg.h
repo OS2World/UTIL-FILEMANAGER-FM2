@@ -717,6 +717,9 @@
 #define CFGS_RSCANVIRTUAL                                                               25372
 #define CFGS_RSCANSLOW                                                                  25373
 #define CFGS_RSCANNOWRITE                                                               25374
+#define CFGS_EJECTREMOVABLESCAN                                                         25375
+#define CFGS_EJECTCDSCAN                                                                25376
+#define CFGS_EJECTFLPYSCAN                                                              25377
 
 #define CFGA_FRAME										25380
 #define CFGA_QUICKARCFIND								25381

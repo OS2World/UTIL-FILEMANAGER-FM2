@@ -367,7 +367,12 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       parm[1] = (BYTE) (*dv - 'A');
       DosError(FERR_DISABLEHARDERR);
       DosDevIOCtl(-1L,
-		  8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
+                  8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
+      if (cmd == IDM_EJECT &&
+          (fEjectFlpyScan ? TRUE : parm[1] > 1) &&
+          (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&
+          (fEjectRemovableScan ? TRUE : (parm[1] < 2 || driveflags[parm[1]] & DRIVE_CDROM)))
+        PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
     }
     break;
   }

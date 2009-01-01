@@ -1928,7 +1928,7 @@ BEGIN
                         SPBS_NUMERICONLY | SPBS_MASTER | SPBS_SERVANT |
                         SPBS_JUSTCENTER | WS_TABSTOP | SPBS_FASTSPIN |
                         WS_VISIBLE
-        LTEXT           "Recurse scan at startup:", -1, 130, 128, 106, 10, NOT WS_GROUP
+        GROUPBOX        "Recurse scan at startup:", -1, 130, 65, 166, 70, NOT WS_GROUP
         AUTOCHECKBOX    "Local hard drives", CFGS_RSCANLOCAL, 136, 116, 106, 10
         AUTOCHECKBOX    "Remote drives", CFGS_RSCANREMOTE, 136, 104, 106, 10
         AUTOCHECKBOX    "Virtual drives", CFGS_RSCANVIRTUAL, 136, 92, 106, 10
@@ -1936,9 +1936,13 @@ BEGIN
                         142, 80, 136, 10
         AUTOCHECKBOX    "Read only drives of drive types selected", CFGS_RSCANNOWRITE,
                         142, 68, 136, 10
-        PUSHBUTTON      "~Help", IDM_HELP, 120, 4, 40, 14, BS_NOPOINTERFOCUS |
+        GROUPBOX        "Drive tree rescan on media eject from:", -1, 130, 16, 166, 45, NOT WS_GROUP
+        AUTOCHECKBOX    "Removable drives", CFGS_EJECTREMOVABLESCAN, 136, 44, 106, 10
+        AUTOCHECKBOX    "CD/DVD drives", CFGS_EJECTCDSCAN, 136, 32, 106, 10
+        AUTOCHECKBOX    "Floppy drives", CFGS_EJECTFLPYSCAN, 136, 20, 106, 10
+        PUSHBUTTON      "~Help", IDM_HELP, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
-        PUSHBUTTON      "~Undo", IDM_UNDO, 168, 4, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Undo", IDM_UNDO, 52, 4, 40, 14, BS_NOPOINTERFOCUS
     END
 END
 

@@ -104,6 +104,9 @@ BOOL fDataMin;
 BOOL fDontMoveMouse;
 BOOL fDragndropDlg;
 BOOL fDrivebarHelp;
+BOOL fEjectCDScan;
+BOOL fEjectFlpyScan;
+BOOL fEjectRemovableScan;
 BOOL fExternalArcboxes;
 BOOL fExternalCollector;
 BOOL fExternalINIs;
@@ -474,13 +477,16 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGS_LOADLONGNAMES, fLoadLongnames);
     WinCheckButton(hwnd, CFGS_FORCELOWER, fForceLower);
     WinCheckButton(hwnd, CFGS_FORCEUPPER, fForceUpper);
+    WinCheckButton(hwnd, CFGS_REMOTEBUG, fRemoteBug);
     WinCheckButton(hwnd, CFGS_NOREMOVABLESCAN, fNoRemovableScan);
     WinCheckButton(hwnd, CFGS_RSCANLOCAL, fRScanLocal);
     WinCheckButton(hwnd, CFGS_RSCANREMOTE, fRScanRemote);
     WinCheckButton(hwnd, CFGS_RSCANVIRTUAL, fRScanVirtual);
     WinCheckButton(hwnd, CFGS_RSCANSLOW, fRScanSlow);
     WinCheckButton(hwnd, CFGS_RSCANNOWRITE, fRScanNoWrite);
-    WinCheckButton(hwnd, CFGS_REMOTEBUG, fRemoteBug);
+    WinCheckButton(hwnd, CFGS_EJECTREMOVABLESCAN, fEjectRemovableScan);
+    WinCheckButton(hwnd, CFGS_EJECTCDSCAN, fEjectCDScan);
+    WinCheckButton(hwnd, CFGS_EJECTFLPYSCAN, fEjectFlpyScan);
     WinSendDlgItemMsg(hwnd, CFGS_FILESTOGET, SPBM_SETCURRENTVALUE,
                       MPFROMLONG(FilesToGet), MPVOID);
     return 0;
@@ -555,7 +561,16 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "RScanNoWrite", &fRScanNoWrite,
                         sizeof(BOOL));
     fNoRemovableScan = WinQueryButtonCheckstate(hwnd, CFGS_NOREMOVABLESCAN);
-    PrfWriteProfileData(fmprof, FM3Str, "NoRemovableScan", &fNoRemovableScan,
+    PrfWriteProfileData(fmprof, appname, "NoRemovableScan", &fNoRemovableScan,
+                        sizeof(BOOL));
+    fEjectRemovableScan = WinQueryButtonCheckstate(hwnd, CFGS_EJECTREMOVABLESCAN);
+    PrfWriteProfileData(fmprof, appname, "EjectRemovableScan", &fEjectRemovableScan,
+                        sizeof(BOOL));
+    fEjectCDScan = WinQueryButtonCheckstate(hwnd, CFGS_EJECTCDSCAN);
+    PrfWriteProfileData(fmprof, appname, "EjectCDScan", &fEjectCDScan,
+                        sizeof(BOOL));
+    fEjectFlpyScan = WinQueryButtonCheckstate(hwnd, CFGS_EJECTFLPYSCAN);
+    PrfWriteProfileData(fmprof, appname, "EjectFlpyScan", &fEjectFlpyScan,
                         sizeof(BOOL));
     fNoIconsFiles = WinQueryButtonCheckstate(hwnd, CFGS_NOICONSFILES);
     fNoIconsFiles = (fNoIconsFiles) ? FALSE : TRUE;
@@ -3675,8 +3690,9 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             Runtime_Error(pszSrcFile, __LINE__, "IDM_NOTEBOOKSUBMENU");
           else {
             mp2 = WinSendMsg(mi.hwndSubMenu, MM_QUERYDEFAULTITEMID, MPVOID, MPVOID);
-            if (!mp2)
-              Runtime_Error(pszSrcFile, __LINE__, "MM_QUERYDEFAULTITEMID");
+            //if (!mp2)
+            //  mp2 = MPFROMLONG(IDM_QUICKSETTINGS);
+              //Runtime_Error(pszSrcFile, __LINE__, "MM_QUERYDEFAULTITEMID");
           }
         }
       }
