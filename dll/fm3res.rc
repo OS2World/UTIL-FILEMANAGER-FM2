@@ -1342,6 +1342,7 @@ MENU TREE_POPUP
   {
 	 MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
 	 MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
+	 MENUITEM "~Seek & scan files",IDM_GREP
 	 MENUITEM "~Undelete...",    IDM_UNDELETE
 	 MENUITEM "",                -1,       MIS_SEPARATOR
 	 MENUITEM "~Check disk...",  IDM_CHKDSK

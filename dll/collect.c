@@ -1382,7 +1382,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	       CM_INVALIDATERECORD,
 	       MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
     disable_menuitem(WinWindowFromID(WinQueryWindow(hwndMain, QW_PARENT),
-				     FID_MENU), IDM_GREP, FALSE);
+                                     FID_MENU), IDM_GREP, FALSE);
+    disable_menuitem(TreeMenu, IDM_GREP, FALSE);
+    disable_menuitem(DirMenu, IDM_GREP, FALSE);
     PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
     if (dcd) {
       dcd->stopflag = 0;
@@ -1934,14 +1936,27 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		 GetPString(IDS_WARNINGTEXT),
 		 "Collector busy - please try again later");
 	}
-	else {
-	  if (WinDlgBox(HWND_DESKTOP, hwnd, GrepDlgProc,
-			FM3ModHandle, GREP_FRAME, (PVOID) & hwnd)) {
-	    dcd->amextracted = TRUE;	// Say busy scanning
-	    disable_menuitem(WinWindowFromID
-			     (WinQueryWindow(hwndMain, QW_PARENT), FID_MENU),
-			     IDM_GREP, TRUE);
-	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
+        else {
+          GREPINFO *GrepInfo;
+
+          GrepInfo = xmallocz(sizeof(GREPINFO), pszSrcFile, __LINE__);
+          if (GrepInfo) {
+            GrepInfo->hwnd = &hwnd;
+            if (mp2)
+              GrepInfo->szGrepPath = mp2;
+            if (WinDlgBox(HWND_DESKTOP, hwnd, GrepDlgProc,
+                          FM3ModHandle, GREP_FRAME, (PVOID) GrepInfo)) {
+              free(GrepInfo);
+              dcd->amextracted = TRUE;	// Say busy scanning
+              disable_menuitem(WinWindowFromID
+                               (WinQueryWindow(hwndMain, QW_PARENT), FID_MENU),
+                               IDM_GREP, TRUE);
+              disable_menuitem(TreeMenu, IDM_GREP, TRUE);
+              disable_menuitem(DirMenu, IDM_GREP, TRUE);
+              PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
+            }
+            else
+              free(GrepInfo);
 	  }
 	}
 	break;

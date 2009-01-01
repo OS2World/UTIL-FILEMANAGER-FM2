@@ -2746,9 +2746,19 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  StartCollector(dcd->hwndParent, 4);
-        if (SHORT1FROMMP(mp1) == IDM_GREP)
-          PostMsg(Collector, WM_COMMAND,
-                  MPFROM2SHORT(IDM_GREP, 0), MPVOID);
+        if (SHORT1FROMMP(mp1) == IDM_GREP) {
+          PCNRITEM pci = NULL;
+
+          pci = WinSendMsg(hwnd,
+                           CM_QUERYRECORDEMPHASIS,
+                           MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
+          if (pci && (INT) pci != -1)
+            PostMsg(Collector, WM_COMMAND,
+                    MPFROM2SHORT(IDM_GREP, 0), MPFROMP(pci->pszFileName));
+          else
+            PostMsg(Collector, WM_COMMAND,
+                    MPFROM2SHORT(IDM_GREP, 0), MPVOID);
+        }
         else
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
 	break;

@@ -17,5 +17,13 @@
 
 MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+typedef struct {
+
+  HWND     *hwnd;
+  CHAR     *szGrepPath;
+  CHAR     *szGrepText;
+}
+GREPINFO;
+
 
 #endif // GREP2_H

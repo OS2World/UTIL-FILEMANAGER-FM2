@@ -187,6 +187,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   CHAR s[8192 + 14];
   CHAR simple[8192];
   CHAR path[CCHMAXPATH];
+  GREPINFO *GrepInfo;
 
   static CHAR lastmask[8192] = "*";
   static CHAR lasttext[4096] = "";
@@ -199,7 +200,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static BOOL changed = FALSE;
   static BOOL findifany = TRUE;
   static BOOL gRemember = FALSE;
-  ULONG size = sizeof(BOOL);
+  ULONG size;
   static UINT newer = 0;
   static UINT older = 0;
   static ULONG greater = 0;
@@ -211,7 +212,10 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    WinSetWindowULong(hwnd, QWL_USER, *(HWND *) mp2);
+    GrepInfo = mp2;
+    if (GrepInfo->szGrepPath)
+      BldFullPathName(lastmask, GrepInfo->szGrepPath, "*");
+    WinSetWindowULong(hwnd, QWL_USER, *(HWND *) GrepInfo->hwnd);
     WinSendDlgItemMsg(hwnd,
 		      GREP_MASK,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(8192, 0), MPVOID);
@@ -231,21 +235,28 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(34, 0), MPVOID);
     WinSetDlgItemText(hwnd, GREP_MASK, lastmask);
     WinSendDlgItemMsg(hwnd,
-		      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
+                      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
+    size = sizeof(BOOL);
     PrfQueryProfileData(fmprof, FM3Str, "RememberFlagsGrep",
 			(PVOID) & gRemember, &size);
     WinCheckButton(hwnd, GREP_REMEMBERFLAGS, gRemember);
     if (gRemember) {
+      size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Recurse",
-			  (PVOID) & recurse, &size);
+                          (PVOID) & recurse, &size);
+      size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Absolute",
-			  (PVOID) & absolute, &size);
+                          (PVOID) & absolute, &size);
+      size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Case",
-			  (PVOID) & sensitive, &size);
+                          (PVOID) & sensitive, &size);
+      size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Sayfiles",
-			  (PVOID) & sayfiles, &size);
+                          (PVOID) & sayfiles, &size);
+      size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Searchfiles",
-			  (PVOID) & searchFiles, &size);
+                          (PVOID) & searchFiles, &size);
+      size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
 			  (PVOID) & searchEAs, &size);
     }
