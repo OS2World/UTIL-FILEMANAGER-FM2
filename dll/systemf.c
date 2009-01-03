@@ -981,7 +981,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
         {
           Runtime_Error(pszSrcFile, __LINE__,
                         GetPString(IDS_APPTYPEUNEXPECTEDTEXT),
-                        pszPgm, pszCallingFile, uiLineNumber);  // 26 May 08 SHL
+                        ulAppType, pszPgm, pszCallingFile, uiLineNumber);  // 26 May 08 SHL
           DosFreeMem(pszPgm);
           if (pszArgs)
             DosFreeMem(pszArgs);
