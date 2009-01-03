@@ -70,6 +70,7 @@ extern BOOL fAmAV2;
 extern BOOL fChangeTarget;
 extern BOOL fIniExisted;
 extern BOOL fLogFile;
+extern BOOL fProtectOnly;
 extern BOOL fReminimize;
 extern BOOL fWantFirstTimeInit;
 extern BOOL fDrivetoSkip[26];

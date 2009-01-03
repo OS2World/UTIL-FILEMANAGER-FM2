@@ -813,6 +813,10 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	WinSetWindowULong(hwnd, QWL_USER, hwndMenu);
 	CfgMenuInit(hwndMenu, FALSE);	// 14 Feb 08 SHL
 	SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
+        if (fProtectOnly) {
+          WinEnableMenuItem(hwndMenu, IDM_DOSCOMMANDLINE, FALSE);
+          WinEnableMenuItem(hwndMenu, IDM_WINFULLSCREEN, FALSE);
+        }
 	SetConditionalCascade(hwndMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
 	SetConditionalCascade(hwndMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
       }

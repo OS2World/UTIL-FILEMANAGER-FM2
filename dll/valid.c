@@ -599,20 +599,42 @@ BOOL IsExecutable(CHAR * filename)
       strcpy(fname, filename);
       strcat(fname, ".");
       ret = DosQueryAppType(fname, &apptype);
-    } //fixme protectonly BMT GKY 23 Dec 08
-    if ((!ret && (!apptype ||
-		  (apptype &
-		   (FAPPTYP_NOTWINDOWCOMPAT |
-		    FAPPTYP_WINDOWCOMPAT |
-		    FAPPTYP_WINDOWAPI |
-		    FAPPTYP_BOUND |
-		    FAPPTYP_DOS |
-		    FAPPTYP_WINDOWSREAL |
-		    FAPPTYP_WINDOWSPROT |
-		    FAPPTYP_32BIT |
-		    0x1000)))) ||
-	(p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT"))))
+    }
+    if (!fProtectOnly) {
+      if ((!ret && (!apptype ||
+                    (apptype &
+                     (FAPPTYP_NOTWINDOWCOMPAT |
+                      FAPPTYP_WINDOWCOMPAT |
+                      FAPPTYP_WINDOWAPI |
+                      FAPPTYP_BOUND |
+                      FAPPTYP_DOS |
+                      FAPPTYP_WINDOWSREAL |
+                      FAPPTYP_WINDOWSPROT |
+                      FAPPTYP_32BIT |
+                      0x1000)))) ||
+          (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT") || !stricmp(p, ".BMT"))))
+        return TRUE;
+    }
+    else if ((!ret && (!apptype ||
+                       (apptype &
+                        (FAPPTYP_WINDOWSREAL |
+                         FAPPTYP_WINDOWSPROT |
+                         FAPPTYP_32BIT |
+                         0x1000)))) ||
+             (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BMT"))))
       return TRUE;
+    if (fProtectOnly && (apptype &
+                       (FAPPTYP_NOTWINDOWCOMPAT |
+                        FAPPTYP_WINDOWCOMPAT |
+                        FAPPTYP_WINDOWAPI |
+                        FAPPTYP_BOUND |
+                        FAPPTYP_DOS)) &&
+        (p && (!stricmp(p, ".EXE") || !stricmp(p, ".COM"))))
+      saymsg(MB_OK,
+             HWND_DESKTOP,
+             NullStr,
+             GetPString(IDS_NOTPROTECTONLYEXE),
+             filename);
   }
   return FALSE;
 }

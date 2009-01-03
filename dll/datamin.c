@@ -383,6 +383,10 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckMenuItem(hwndMenu, MINI_SHOW, fDataShowDrives);
       WinCheckMenuItem(hwndMenu, MINI_BORING, fDullMin);
       WinCheckMenuItem(hwndMenu, MINI_INCLREMOTE, fDataInclRemote);
+      if (fProtectOnly) {
+        WinEnableMenuItem(hwndMenu, IDM_DOSCOMMANDLINE, FALSE);
+        WinEnableMenuItem(hwndMenu, IDM_WINFULLSCREEN, FALSE);
+      }
       NoFloat = TRUE;
       if (!PopupMenu(hwnd, hwnd, hwndMenu))
 	NoFloat = FALSE;

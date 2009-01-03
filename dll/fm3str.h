@@ -84,6 +84,7 @@
 #define IDS_DELETETEXT                                        47
 #define IDS_EDITTEXT                                          48
 #define IDS_10SYSPROTEXT                                      49
+#define IDS_NOTPROTECTONLYEXE                                 50
 #define IDS_8HELVTEXT                                         52
 #define IDS_6HELVTEXT                                         53
 #define IDS_SHUTDOWNSTATE                                     55

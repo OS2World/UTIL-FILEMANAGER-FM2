@@ -673,6 +673,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   char szObject[32] = "", *p, szSavedir[CCHMAXPATH];
   BOOL useTermQ = FALSE;
   char szTempdir[CCHMAXPATH];
+  BOOL fNoErrorMsg = FALSE;
 
   typedef struct {
     USHORT usSessID;
@@ -727,6 +728,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     while ((p = convert_nl_to_nul(p)) != NULL)
       ; // loop
   }
+
+  if (!stricmp(pszCallingFile, "init.c"))
+    fNoErrorMsg = TRUE;
 
   if (!*pszPgm) {
     p = GetCmdSpec(FALSE);
@@ -871,7 +875,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
                          pszPgm, pszEnvironment, &results, pszPgm);
         if (pszDirectory && *pszDirectory)
           switch_to(szSavedir);
-        if (ret) {
+        if (ret && !fNoErrorMsg) {
           Dos_Error(MB_ENTER,ret,hwnd,pszSrcFile,__LINE__,
                     GetPString(IDS_DOSEXECPGMFAILEDTEXT), pszPgm,
                     pszCallingFile, uiLineNumber);      // 26 May 08 SHL
@@ -1129,6 +1133,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
         switch_to(szSavedir);
 
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
+        if (!fNoErrorMsg)
         Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
                   GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs,
                   pszCallingFile, uiLineNumber);        // 26 May 08 SHL

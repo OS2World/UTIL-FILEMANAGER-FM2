@@ -139,6 +139,7 @@
 #include "srchpath.h"                   // searchpath
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
+#include "systemf.h"                    // runemf2
 
 #ifdef __IBMC__
 #pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
@@ -175,6 +176,7 @@ BOOL fAmAV2;
 BOOL fChangeTarget;
 BOOL fIniExisted;
 BOOL fLogFile;
+BOOL fProtectOnly;
 BOOL fReminimize;
 BOOL fWantFirstTimeInit;
 BOOL fDrivetoSkip[26];
@@ -697,13 +699,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   CLASSINFO clinfo;
   APIRET rc;
-  APIRET rcl = 1;
-  APIRET rcq = 1;
-  PFN pfnResVersion = (PFN)NULL;
-  ULONG RVMajor = 0;
-  ULONG RVMinor = 0;
-  ULONG ret = 0;
-  FILESTATUS3 fs3;                      // 25 Aug 07 SHL
+  APIRET rcl;
+  APIRET rcq;
+  PFN pfnResVersion;
+  ULONG RVMajor;
+  ULONG RVMinor;
+  ULONG ret;
+  FILESTATUS3 fs3;
   PSZ env;
   CHAR dllfile[CCHMAXPATH];
   ULONG size;
@@ -731,6 +733,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       }
     }
   }
+
   rcl = DosLoadModule(NULL, 0, dllfile, &FM3ModHandle);
   if (rcl) {
     saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
@@ -738,16 +741,22 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	   GetPString(IDS_ERRORTEXT), GetPString(IDS_FM3RESERROR1TEXT));
     return FALSE;
   }
-  else {
+
     rc = DosExitList(EXLST_ADD, DeInitFM3DLL);
     if (rc) {
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	       "DosExitList");
     }
+
     rcq = DosQueryProcAddr(FM3ModHandle, 1, "ResVersion", &pfnResVersion);
     if (!rcq)
       ret = pfnResVersion(&RVMajor, &RVMinor);
+  else {
+    ret = 0;
+    RVMajor = 0;
+    RVMinor = 0;
   }
+
   if (RVMajor < VERMAJOR || (RVMajor == VERMAJOR && RVMinor < VERMINOR)) {
     saymsg(MB_ENTER,
 	   HWND_DESKTOP,
@@ -833,16 +842,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       DosFindClose(search_handle);
     }
       if (fs3.attrFile & FILE_DIRECTORY) {
-	APIRET ret = 0;
 	strcpy(szTempName, env);
 	MakeTempName(szTempName, NULL, 1);
-	ret = DosCreateDir(szTempName, 0);
-	if (!ret) {   //check writable
-	  pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);
+	rc = DosCreateDir(szTempName, 0);
+	if (!rc)
+	  pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);	// if writable
 	}
       }
     }
-  }
 
   //Save the FM2 save directory name. This is the location of the ini, dat files etc.
   {
@@ -1238,17 +1245,28 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     CHAR *FullPath;
     ULONG ulAppType;
 
-      FullPath = searchapath("PATH", "LVMGUI.CMD");
-      if (*FullPath)
-        fLVMGui = TRUE;
+    FullPath = searchapath("PATH", "LVMGUI.CMD");
+    if (*FullPath)
+      fLVMGui = TRUE;
     if (!DosQueryAppType("DFSOS2.EXE", &ulAppType))
       fDFSee = TRUE;
-      if (!DosQueryAppType("MINILVM.EXE", &ulAppType))
-        fMiniLVM = TRUE;
-      if (!DosQueryAppType("FDISK.EXE", &ulAppType))
-        fFDisk = TRUE;
-      if (!DosQueryAppType("LVM.EXE", &ulAppType))
-        fLVM = TRUE;
+    if (!DosQueryAppType("MINILVM.EXE", &ulAppType))
+      fMiniLVM = TRUE;
+    if (!DosQueryAppType("FDISK.EXE", &ulAppType))
+      fFDisk = TRUE;
+    if (!DosQueryAppType("LVM.EXE", &ulAppType))
+      fLVM = TRUE;
+
+    // Check to see if we are running protect only
+    if (!DosQueryAppType(GetCmdSpec(TRUE), &ulAppType)) {
+      ret = runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED,
+                    (HWND) 0, pszSrcFile, __LINE__, NULL, NULL,
+                    "%s /C exit", GetCmdSpec(TRUE));
+      if (ret == ERROR_SMG_INVALID_PROGRAM_TYPE)
+        fProtectOnly = TRUE;
+    }
+    else
+      fProtectOnly = TRUE;
   }
 
   // load preferences from profile (INI) file
@@ -1466,8 +1484,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       for (x = numsaves - 1; x >= 0; x--) {
 	sprintf(szKey, "%s.DirCnrDir.%lu", GetPString(IDS_SHUTDOWNSTATE), x);
 	size = sizeof(szDir);
-	if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size)) {
-	  drvNum = toupper(*szDir) - 'A';
+        if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size) &&
+            (fSwitchTreeOnFocus || fSwitchTree)) {
+          drvNum = toupper(*szDir) - 'A';
 	  fDrivetoSkip[drvNum] = TRUE;
 	}
       }
