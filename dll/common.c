@@ -350,7 +350,7 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
   case IDM_UNLOCK:
   case IDM_EJECT:
     {
-      BYTE parm[2];
+      UCHAR parm[2];
       ULONG plen = sizeof(parm), dlen = 0L;
 
       switch (SHORT1FROMMP(cmd)) {
@@ -364,7 +364,7 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
 	parm[0] = 2;
 	break;
       }
-      parm[1] = (BYTE) (*dv - 'A');
+      parm[1] = *dv - 'A';
       DosError(FERR_DISABLEHARDERR);
       DosDevIOCtl(-1L,
                   8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
