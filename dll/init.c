@@ -1470,25 +1470,21 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "ConfirmDelete", &fConfirmDelete, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "SaveState", &fSaveState, &size);
-  if (fSaveState) {
+  if (fSaveState && (fSwitchTreeOnFocus || fSwitchTree)) {
     ULONG numsaves = 0;
     CHAR szKey[STATE_NAME_MAX_BYTES + 80];
     CHAR szDir[CCHMAXPATH];
     ULONG drvNum;
-    INT x;
 
     sprintf(szKey, "%s.NumDirsLastTime", GetPString(IDS_SHUTDOWNSTATE));
     size = sizeof(ULONG);
     if (PrfQueryProfileData(fmprof,
 			    FM3Str, szKey, (PVOID) &numsaves, &size)) {
-      for (x = numsaves - 1; x >= 0; x--) {
-	sprintf(szKey, "%s.DirCnrDir.%lu", GetPString(IDS_SHUTDOWNSTATE), x);
-	size = sizeof(szDir);
-        if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size) &&
-            (fSwitchTreeOnFocus || fSwitchTree)) {
-          drvNum = toupper(*szDir) - 'A';
-	  fDrivetoSkip[drvNum] = TRUE;
-	}
+      sprintf(szKey, "%s.DirCnrDir.0", GetPString(IDS_SHUTDOWNSTATE));
+      size = sizeof(szDir);
+      if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size)) {
+        drvNum = toupper(*szDir) - 'A';
+        fDrivetoSkip[drvNum] = TRUE;
       }
     }
   }
