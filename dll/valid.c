@@ -600,6 +600,18 @@ BOOL IsExecutable(CHAR * filename)
       strcat(fname, ".");
       ret = DosQueryAppType(fname, &apptype);
     }
+    if (apptype & (FAPPTYP_DLL |
+                   FAPPTYP_PHYSDRV |
+                   FAPPTYP_VIRTDRV |
+                   FAPPTYP_PROTDLL))
+      return FALSE;
+    if (apptype == 0x000b && (!p ||
+        (stricmp(p, ".EXE") &&
+         stricmp(p, ".COM") &&
+         stricmp(p, ".CMD") &&
+         stricmp(p, ".BAT") &&
+         stricmp(p, ".BMT"))))
+      return FALSE;
     if (!fProtectOnly) {
       if ((!ret && (!apptype ||
                     (apptype &
@@ -611,24 +623,24 @@ BOOL IsExecutable(CHAR * filename)
                       FAPPTYP_WINDOWSREAL |
                       FAPPTYP_WINDOWSPROT |
                       FAPPTYP_32BIT |
-                      0x1000)))) ||
+                      FAPPTYP_WINDOWSPROT31)))) ||
           (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT") || !stricmp(p, ".BMT"))))
         return TRUE;
     }
     else if ((!ret && (!apptype ||
                        (apptype &
-                        (FAPPTYP_WINDOWSREAL |
-                         FAPPTYP_WINDOWSPROT |
-                         FAPPTYP_32BIT |
-                         0x1000)))) ||
+                        (FAPPTYP_NOTWINDOWCOMPAT |
+                         FAPPTYP_WINDOWCOMPAT |
+                         FAPPTYP_WINDOWAPI |
+                         FAPPTYP_BOUND |
+                         FAPPTYP_32BIT)))) ||
              (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BMT"))))
       return TRUE;
     if (fProtectOnly && (apptype &
-                       (FAPPTYP_NOTWINDOWCOMPAT |
-                        FAPPTYP_WINDOWCOMPAT |
-                        FAPPTYP_WINDOWAPI |
-                        FAPPTYP_BOUND |
-                        FAPPTYP_DOS)) &&
+                         (FAPPTYP_DOS |
+                          FAPPTYP_WINDOWSREAL |
+                          FAPPTYP_WINDOWSPROT |
+                          FAPPTYP_WINDOWSPROT31)) &&
         (p && (!stricmp(p, ".EXE") || !stricmp(p, ".COM"))))
       saymsg(MB_OK,
              HWND_DESKTOP,
