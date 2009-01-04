@@ -1,4 +1,5 @@
 21
+;
 ;The first line is the number of lines/definition in this archiver.bb2 file...
 ;It is very important; do not change.  It allows modifications to the
 ;file format to be transparent to older programs.
@@ -117,7 +118,7 @@ PK\x03\x04
 2
 4,1
 2
-7,1
+7,1,0,0
 ;
 ;
 ; Entry #2 - PKZIP 2.50 named PKZip (true OS/2 executable).
@@ -136,13 +137,13 @@ PKZIP.EXE /add /move /nofix
 PKZIP.EXE /add /move /path /nofix
 PKZIP.EXE /delete /nofix
 PK\x03\x04\x14
- ------  ------   ----- -----    ----   ----   -------- ----  ----
- ------          ------ -----                                 ----
+------  ------   ----- -----    ----   ----   -------- ----  ----
+------          ------ -----                                 ----
 0
 2
-4
+4,0
 2
-8,1
+8,1,0,0
 ;
 ; Entry #3 - InfoZip unzipsfx self-extractors.
 ;
@@ -160,13 +161,13 @@ UNZIP.EXE -to
 
 ZIP.EXE -d
 unzipsfx
- ------  ------   ----  -----   ----    ----   ------     ----
- ------          ------  ---                              -------
+------  ------   ----  -----   ----    ----   ------     ----
+------          ------  ---                              -------
 0
 2
 4,1
 2
-7,1
+7,1,0,0
 ;
 ;
 ; Entry #4 - PKWare PKZIP self-extractors type 1.
@@ -185,13 +186,13 @@ PKZIP.EXE /add /move /nofix
 PKZIP.EXE /add /move /path /nofix
 PKZIP.EXE /delete /nofix
 PK\x03\x04
- ------  ------   ----- -----   ----    ----   ------  ----  ----
- ------          ------  ---                                 -------
+------  ------   ----- -----   ----    ----   ------  ----  ----
+------          ------  ---                                 -------
 0
 2
-4
+4,0
 2
-8
+8,0,0,0
 ;
 ; Entry #5 - is for PKWare PKZIP self-extractors type 2.
 ;
@@ -209,13 +210,13 @@ PKZIP.EXE /add /move /nofix
 PKZIP.EXE /add /move /path /nofix
 PKZIP.EXE /delete /nofix
 PK\x03\x04
- ------  ------   ----- -----   ----    ----   ------  ----  ----
- ------          ------  ---                                 -------
+------  ------   ----- -----   ----    ----   ------  ----  ----
+------          ------  ---                                 -------
 0
 2
-4
+4,0
 2
-8
+8,0,0,0
 ;
 ;
 ; Entry #6 - PKWare PKZIP self-extractors type 3.
@@ -234,80 +235,105 @@ PKZIP.EXE /add /move /nofix
 PKZIP.EXE /add /move /path /nofix
 PKZIP.EXE /delete /nofix
 PK\x03\x04
- ------  ------   ----- -----   ----    ----   ------  ----  ----
- ------          ------  ---                                 -------
+------  ------   ----- -----   ----    ----   ------  ----  ----
+------          ------  ---                                 -------
 0
 2
-4
+4,0
 2
-8
+8,0,0,0
 ;
-; Entry #7 - TAR 1.1.0.
 ;
-TAR 1.1.0
+; Entry #7 - TAR 1.15.1 from Gregg Young
+;
+TAR 1.15.1 (or higher)
 TAR
 257
-Tar.exe -tv -f
+Tar.exe -tvf
+Tar.exe --wildcards -xpf
+Tar.exe --wildcards -xpf
 
-Tar.exe -xpf
 
-Tar.exe -rpYf
+Tar.exe --no-recursion -rpf
 Tar.exe -rpf
-Tar.exe --help
 
-
+Tar.exe --remove-files -rpf
 Tar.exe --delete -f
 ustar
+None
+None
+2
+-1
+3,0
+2
+5,1,0,0
+;
+; Entry #8 - TAR 1.1.0.
+;
+TAR 1.10
+TAR
+257
+tar110.exe -tvf
+Tar110.exe -xpf
+Tar110.exe -xpf
+
+Tar110.exe -rpyf
+Tar110.exe -rpf
+Tar110.exe --help
 
 
+Tar110.exe --delete -f
+ustar
+<None>
+<None>
 2
 -1
 3,0
 4
-7,0,0,0
+7,1,0,0
 ;
-; Entry #8 - GZIP (GZ).
+; Entry #9 - GZIP (GZ).
 ;
-GZIP (GZ)
+GZIP (GZ) (req. GZIP & TAR 1.15+)
 GZ
 0
-gzip.exe -l -v
-gzip.exe -d
+gzip.exe -lv
+gzipe.cmd
 
 gzip.exe -t
 gzip.exe
-
+gzip.exe
 gzip.exe -r
-
-
+gzip.exe
+gzip.exe
 
 \x1f\x8b
-method  crc     date  time  compressed  uncompr. ratio uncompressed_name
-
-6
-5
-2,0
-3
-8,0,0,0
+None
+None
+2
+-1
+3,4
+2
+5,1,0,0
 ;
-; Entry #9 - GZIP (Z).
+; Entry #10 - GZIP (Z).
 ;
 GZIP (Z)
 Z
 0
-gzip.exe -l -v
-gzip.exe -d
+gzip.exe -lv
+gzipe.cmd
 
 gzip.exe -t
-gzip.exe
-
+gzip.exe -9 -s .z
+gzip.exe -9 -s .z
 gzip.exe -r
 
 
 
 \x1f\x8b
 method  crc     date  time  compressed  uncompr. ratio uncompressed_name
-
+None
 6
 5
 2,0
@@ -315,55 +341,55 @@ method  crc     date  time  compressed  uncompr. ratio uncompressed_name
 8,0,0,0
 ;
 ;
-; Entry #10 - TAR 1.15.1 from Gregg Young
+; Entry #11 (tar.gz)
 ;
-TAR 1.15.1
-TAR
-257
-Tar.exe -tv -f
+TAR.GZ (Req. TAR 1.15+ & GZIP)
+tar.gz
+0
+tar.exe -tzvf
+tar.exe -xzpvf
+tar.exe -xzpvf
 
-Tar.exe -xpf
-
-Tar.exe -rpYf
-Tar.exe -rpf
-Tar.exe --help
-
-
-Tar.exe --delete -f
-ustar
+tar.exe -rzpf
+tar.exe -rpf
 
 
+
+tar.exe -z --delete -f
+\x1f\x8b
+None
+None
 2
 -1
 3,0
 2
-5,0,0,0
+5,1,0,0
 ;
-; Entry #11 - Unarj 2.10 ported by Scott Dudley.
+; Entry #13 (tar.bz2)
 ;
-(Un)Arj 2.10
-
+TAR.BZ2 (Req. TAR 1.15+ & BZIP2)
+tar.bz2
 0
-UNARJ.EXE l
-UNARJ.EXE e
-UNARJ.EXE x
-UNARJ.EXE t
+tar.exe -tjvf
+tar.exe -xjpvf
+tar.exe -xjpvf
+
+tar.exe -crjpf
+tar.exe -rjpf
 
 
 
-
-
-
-\x60\xea
------------- ---------- ---------- ----- ----------------- -------- ---- ------
------------- ---------- ---------- ----- -----------------
-1
+tar.exe -j --delete -f
+BZh
+None
+None
 2
-4,4
-1
-0
+-1
+3,0
+2
+5,1,0,0
 ;
-; Entry #12 - Unarj 2.30 demo version.
+; Entry #14 - Unarj 2.30 demo version.
 ; Don't use Unarj 2.41; it's broken.
 ;
 (Un)Arj 2.30 demo
@@ -379,16 +405,16 @@ UNARJ.EXE t
 
 
 
-\x60\xea
+`\xea
 ------------ ---------- ---------- ----- ----------------- -------- -----------
 ------------ ---------- ---------- ----- -----------------
 1
 2
-4
+4,0
 1
-0
+0,0,0,0
 ;
-; Entry #13 - Arj 2.00 (DOS).
+; Entry #15 - Arj 2.00 (DOS).
 ; Note that other programs that use this control file may not be able to
 ; handle calling a DOS archiver correctly!  FM/2 is the only one that I
 ; know of which can at this time.  This means you may need to keep FM/2's
@@ -407,16 +433,16 @@ ARJ.EXE a -y -r
 ARJ.EXE m -y -e
 ARJ.EXE m -y
 ARJ.EXE d -y
-\x60\xea
+`\xea
 ------------ ---------- ---------- ----- ----------------- -------- ---- ------
 ------------ ---------- ---------- -----
 1
 2
-4
+4,0
 1
-0
+0,0,0,0
 ;
-; Entry #14 (RAR v.3.5)
+; Entry #16 (RAR v.3.5)
 ;
 RAR v.3.5
 RAR
@@ -440,7 +466,7 @@ Rar!\x1a\x07
 2
 0,0,0,1
 ;
-; Entry #15 - RAR/2 v2, provided by Eugene Roshal.
+; Entry #17 - RAR/2 v2, provided by Eugene Roshal.
 ;
 RAR/2 v2
 RAR
@@ -460,11 +486,11 @@ Rar!\x1a\x07
 ------------------------------------------------------------------------------
 0
 1
-3
+3,0
 1
 0,0,0,1
 ;
-; Entry #16 - RAR/2 v.1.53beta OS/2 SFX.
+; Entry #18 - RAR/2 v.1.53beta OS/2 SFX.
 ;
 RAR/2 v.1.53beta OS/2 SFX
 
@@ -484,11 +510,11 @@ Rar!\x1a\x07
 ------------------------------------------------------------------------------
 1
 2
-4
+4,0
 1
 0,0,0,1
 ;
-; Entry #17 - RAR v.1.53 DOS SFX.
+; Entry #19 - RAR v.1.53 DOS SFX.
 ;
 RAR v.1.53 DOS SFX
 
@@ -508,11 +534,11 @@ Rar!\x1a\x07
 ------------------------------------------------------------------------------
 1
 2
-4
+4,0
 1
 0,0,0,1
 ;
-; Entry #18 - RAR v.2.00 SFX.
+; Entry #20 - RAR v.2.00 SFX.
 ;
 RAR v.2.00 SFX
 
@@ -532,12 +558,12 @@ RSFXjr
 ------------------------------------------------------------------------------
 1
 2
-4
+4,0
 1
 0,0,0,1
 ;
 ;
-; Entry #19 - LHarc 2.22.
+; Entry #21 - LHarc 2.22.
 ; Supposedly fixes bugs in earlier versions.
 ; Actually seems to have done so.  Good work, Peter.
 ;
@@ -555,15 +581,15 @@ LH.EXE /o m
 
 LH.EXE /o d
 -lh
-  -------- --------  -----------------------------------------
-  --------          -----------------------------------------
+-------- --------  -----------------------------------------
+--------          -----------------------------------------
 0
 -1
 1,4
 1
-2,1
+2,1,0,0
 ;
-; Entry #20 - LHarc 2.22 using LH32 executable.
+; Entry #22 - LHarc 2.22 using LH32 executable.
 ;
 LHarc-32 2.22
 LZH
@@ -579,15 +605,15 @@ LH32.EXE /o m
 
 LH32.EXE /o d
 -lh
-  -------- --------  -----------------------------------------
-  --------          -----------------------------------------
+-------- --------  -----------------------------------------
+--------          -----------------------------------------
 0
 -1
 1,4
 1
-2,1
+2,1,0,0
 ;
-; Entry #21 - LHarc 2.22 self-extractors..
+; Entry #23 - LHarc 2.22 self-extractors..
 ;
 LHarc 2.22 SE
 LZH
@@ -603,15 +629,15 @@ LH.EXE /o m
 
 LH.EXE /o d
 -lh
-  -------- --------  -----------------------------------------
-  --------          -----------------------------------------
+-------- --------  -----------------------------------------
+--------          -----------------------------------------
 0
 -1
 1,4
 1
-2,1
+2,1,0,0
 ;
-; Entry #22 - LHA 2.12 (DOS) self-extractors.
+; Entry #24 - LHA 2.12 (DOS) self-extractors.
 ; LH 2.22 seems to recognize them
 ;
 LHarc 2.12 DOS SE
@@ -628,15 +654,15 @@ LH.EXE /o m
 
 LH.EXE /o d
 -lh
-  -------- --------  -----------------------------------------
-  --------          -----------------------------------------
+-------- --------  -----------------------------------------
+--------          -----------------------------------------
 0
 -1
 1,4
 1
-2,1
+2,1,0,0
 ;
-; Entry #23 - LHA 2.12 (DOS) self-extractors.
+; Entry #25 - LHA 2.12 (DOS) self-extractors.
 ; LH 2.22 seems to recognize them
 ;
 LHarc 2.12 DOS SE
@@ -653,15 +679,15 @@ LH.EXE /o m
 
 LH.EXE /o d
 $LHarc's SFX
-  -------- --------  -----------------------------------------
-  --------          -----------------------------------------
+-------- --------  -----------------------------------------
+--------          -----------------------------------------
 0
 -1
 1,4
 1
-2,1
+2,1,0,0
 ;
-; Entry #24 - LHA 2.13L (DOS) self-extractors.
+; Entry #26 - LHA 2.13L (DOS) self-extractors.
 ; LH 2.22 seems to recognize them
 ;
 LHarc 2.13 DOS SE
@@ -678,15 +704,15 @@ LH.EXE /o m
 
 LH.EXE /o d
 LHA's SFX 2.13L (c) Yoshi, 1991\r\n
-  -------- --------  -----------------------------------------
-  --------          -----------------------------------------
+-------- --------  -----------------------------------------
+--------          -----------------------------------------
 0
 -1
 1,4
 1
-2,1
+2,1,0,0
 ;
-; Entry #25 - LH2 2.11.
+; Entry #27 - LH2 2.11.
 ; NOTE:  sometimes will put a file into an archive more than once, necessitating
 ; deleting both.  EAs not handled well, but at least they're handled.
 ;
@@ -704,15 +730,15 @@ LH.EXE /o m
 
 LH.EXE /o d
 -lh
-  -------- -------- -----------------------------------------
-  --------          -----------------------------------------
+-------- -------- -----------------------------------------
+--------          -----------------------------------------
 0
 -1
+1,0
 1
-1
-2,1
+2,1,0,0
 ;
-; Entry #26 - ZIP 1.9/UNZIP 5.0 (available in 32-bit versions).
+; Entry #28 - ZIP 1.9/UNZIP 5.0 (available in 32-bit versions).
 ;ZIP/UNZIP should work with PKZIP 2.04 files.  Saves EAs well.  Won't
 ;extract a file stored with path without the path (actually, this seems
 ;to be fixed now.  Maybe.  There are dozens of versions floating around;
@@ -739,15 +765,15 @@ ZIP.EXE -mj9g
 ZIP.EXE -m9g
 ZIP.EXE -d
 PK\x03\x04
- ------  ------   ----  -----   ----    ----   ------     ----
- ------          ------  ---                              -------
+------  ------   ----  -----   ----    ----   ------     ----
+------          ------  ---                              -------
 0
 2
 4,1
 2
-7,1
+7,1,0,0
 ;
-; Entry #27 - ZIP 1.9/UNZIP 5.0 using *32 executables.
+; Entry #29 - ZIP 1.9/UNZIP 5.0 using *32 executables.
 ;
 Zip/UnZip-32 1.9/5.0
 ZIP
@@ -763,15 +789,15 @@ ZIP32.EXE -mj9g
 ZIP32.EXE -m9g
 ZIP32.EXE -d
 PK\x03\x04
- ------  ------   ----  -----   ----    ----   ------     ----
- ------          ------  ---                              -------
+------  ------   ----  -----   ----    ----   ------     ----
+------          ------  ---                              -------
 0
 2
 4,1
 2
-7,1
+7,1,0,0
 ;
-; Entry #28 - ZIP 1.9/UNZIP 5.0, using the -l listing format.
+; Entry #30 - ZIP 1.9/UNZIP 5.0, using the -l listing format.
 ; (the -v long format can sometimes result in the old length field
 ; being crammed together with the Method field, resulting in an
 ; unparsable format).  Some info, like old length, will be missing,
@@ -791,15 +817,15 @@ ZIP.EXE -mj9g
 ZIP.EXE -m9g
 ZIP.EXE -d
 PK\x03\x04
- ------    ----    ----    ----
- ------                    -------
+------    ----    ----    ----
+------                    -------
 -1
 0
 1,1
 2
-3,1
+3,1,0,0
 ;
-; Entry #29 - Zoo 2.1.
+; Entry #31 - Zoo 2.1.
 ; NOTE:  Bug in Zoo 2.1 seems to cause files stored with paths to
 ; be extracted with paths even when you don't ask it to do so...
 ;
@@ -823,11 +849,11 @@ ZOO.EXE -delete
 2
 3,2
 3
--1
+-1,0,0,0
 ;
 ;----------------- Older, less used archivers --------------
 ;
-; Entry #30 - ARC 5.12mpl.
+; Entry #32 - ARC 5.12mpl.
 ;
 Arc 5.12mpl
 ARC
@@ -844,14 +870,14 @@ ARC.EXE mwn
 ARC.EXE dwn
 \x1a
 ============  ========  =========
-        ====  ========
+====  ========
 1
 -1
 2,3
 3
-0
+0,0,0,0
 ;
-; Entry #31 - ARC2 (6.0).
+; Entry #33 - ARC2 (6.0).
 ; Note that I don't actually have a copy of this...
 ;
 Arc 6.0
@@ -869,14 +895,14 @@ ARC.EXE mwn
 ARC.EXE dwn
 \x1a
 =================  ========  =========
-             ====  ========
+====  ========
 1
 -1
-2
+2,0
 3
-0
+0,0,0,0
 ;
-; Entry #32 - ARC2 (6.0) using ARC2 executable.
+; Entry #34 - ARC2 (6.0) using ARC2 executable.
 ;
 Arc 6.0
 ARC
@@ -893,14 +919,14 @@ ARC2.EXE mwn
 ARC2.EXE dwn
 \x1a
 =================  ========  =========
-             ====  ========
+====  ========
 1
 -1
-2
+2,0
 3
-0
+0,0,0,0
 ;
-; Entry #33 (CABExtract 1.0)
+; Entry #35 (CABExtract 1.0)
 ;
 CABExtract 1.0
 CAB
@@ -920,11 +946,11 @@ MSCF
 
 0
 -1
--1,0        ; Suppress date/time
+-1,0
 2
 5,1,0,0
 ;
-; Entry #34 (Untgz Ver 0.95)
+; Entry #36 (Untgz Ver 0.95)
 ; Supplied by Gregg Young
 ;
 Untgz Ver 0.95
