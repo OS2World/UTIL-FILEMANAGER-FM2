@@ -34,9 +34,12 @@ content.
 :h2 res=91600 name=PANEL_GREP.Seek and scan
 :i1 id=aboutGrep.Seek and scan
 :i1 id=aboutGrepDupe.Find duplicate files
-This dialog, accessed from the Utilities menu or a Collector context menu, allows you to
+This dialog, accessed from the Utilities menu, a Collector context menu,
+a Drives context menu or directories context menu allows you to
 search for files (by filemasks and, optionally, text within the files)
-and :link reftype=hd res=90100.Collects:elink. the files found.
+and :link reftype=hd res=90100.Collects:elink. the files found. When
+selected from the drives or directories menu the cursored drive or
+directory is inserted as the root for the search.
 :p.
 :hp1.In a hurry?  See the :ehp1.:hp9.quicky:ehp9.:hp1. instructions at
 the bottom.:ehp1.

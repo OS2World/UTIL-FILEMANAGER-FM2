@@ -635,7 +635,9 @@ from one dialog, so it has minimal impact and provides a safety net.
 The :hp6.Verify disk writes:ehp6. toggle turns system-level write
 verification on and off. This is like typing :link reftype=launch
 object='CMD.EXE' data='/C HELP VERIFY'.VERIFY ON:elink. or VERIFY OFF at
-a command line.
+a command line. Write verify can be turned off on a per drive basis
+using the drive's drive flags. This feature was added since some USB
+removables fail to work properly with write verify on.
 :p.
 The :hp6.Don't move my mouse!:ehp6. toggle keeps FM/2 from moving your
 mouse (to place it in the center of a popup menu or over the Okay button
@@ -771,9 +773,9 @@ upgrade the LAN software -- most of these bugs have been fixed in newer
 versions.
 :p.
 If you turn this toggle off (it's on by default) and FM/2 starts
-behaving strangely, turn it back off. If FM/2 traps and you can't get
+behaving strangely, turn it back on. If FM/2 traps and you can't get
 to the settings page, disconnect from the network, start FM/2, then
-turn off the toggle. If that's not possible for some reason, use
+turn on the toggle. If that's not possible for some reason, use
 FM/2's INI editor to view FM3.INI and delete the "RemoteBug" keyword
 from the INI (which will cause FM/2 to revert to the default setting).
 :p.
@@ -792,12 +794,27 @@ for in one system call. The higher this number, the faster FM/2 works
 at a time -- unfortunately, the FSDs that can benefit the most from this,
 network FSDs, are the ones most often broken), but the more memory is
 temporarily consumed as a container is filled. If you habitually work
-with directories containing great numbers of files and have sufficient
+with directories containing large numbers of files and have sufficient
 memory, boosting this may be a good idea. On the other hand, if you are
 extremely limited in memory (less than 16 megs), reducing this might be
-the thing to do. The range is 512 to 4096, with 4096 being the default.
-
-
+the thing to do. The DosFind buffer limits the number of files it can find
+at a time to between 1500-2000. The only advantage of a larger number is it
+reduces the number of times the find stops to insert records into the container
+The range is 256 to 4096, with 256 being the default.
+:p.
+The :hp6.Recurse scan at startup:ehp6. section allow you to choose the drive types
+want to have a full recurse scan when the tree container is started. This is the same
+scan that occurs when you press the plus sign by the drive for the first time. The
+advantage is the tree expand is quiker. The disadvantage is startup is slower. Local
+drives are on by default the others are off. Slow drives and nonwrite drives are only
+scanned for the drive type(s) you have selected (ie if you have a slow virtual drive
+you must select both virtual drives and slow drives for it to be scanned on startup).
+:p.
+The :hp6.Rescan tree on media eject:ehp6. section allow you to choose the drive types
+where a rescan of the tree container is initiated by ejecting the drive media. This keeps
+the container in better sync with reality. It is on for removables by default but off for
+CD/DVDs and floppies.
+:p.
 :h3 res=100070 name=PANEL_BUBBLEPAGE.Bubble help page
 :i1 id=aboutBUBBLEP.Bubble help page
 

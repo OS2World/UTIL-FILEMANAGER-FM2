@@ -167,6 +167,7 @@ static VOID FindSwapperDat(VOID);
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
 static CHAR *WC_MAINWND;
+unsigned __MaxThreads = {48};
 
 #pragma data_seg(GLOBAL1)
 HMTX hmtxFM2Delete;

@@ -5,6 +5,47 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.15: This release turns on some new features by default
+don't panic they can all be turned off if you don't like them.
+The first is recursive scanning on start up. This slows the initial
+scan a bit but speeds expansion of the tree later. It is on for
+local hard drives and can be turned on for other drive types. The
+second new feature is an automatic rescan of the drive tree on
+eject of removable media keeping the tree container more current.
+Both of these features can be turn on or off on the scanning page
+of the notebook. The third new feature actually turns write verify
+off on a per drive basis. This is to address the fact that many
+USB removables fail or worse (hangs/traps) when write verify is on.
+We turn it off by default for removables other than standard floppies.
+If you want it on/off for a given drive edit that drive's drive flags
+accordingly. The global write verify selector is unchanged and the
+drive flags have no effect if it is off.
+
+We have some additional new items we hope you will find useful. We
+have added the ability to have the extract commands create a
+subdirectory based on the archive file name for the extraction target.
+Seek and Scan has been added to the drives and directories context
+menu and when select from there will add the drive or directory as
+the root for the search. We also added refresh removable media so
+you can scan for newly inserted drives from the tree container
+We did some additional work on the main menus like adding Databar
+to the utilities menu and we now gray out items that are unavailable
+or inappropriate and un-grayed some items that were inappropriately
+turned off. We reorganized the internal editor menus as well.
+
+We made changes to the archiver code so that archivers that don't
+have specific start/end list strings will work (ie TAR.EXE). We
+have included the commands for .tar .tar.gz and .tar.bz in archiver.tmp
+(gzip.exe and/or bzip.exe must be in the path) These only work with tar 1.15
+or higher. You can either replace archiver.bb2 with the archiver.tmp or if
+you have made changes to archiver.bb2 you can cut and paste the new archiver
+definitions into an appropriate position in your existing archiver.bb2
+
+Numerous fixes to minor interface appearance and behavior are also include.
+We have added exceptq support to make it easier to track down defects. We
+also eliminated the cause of three rare traps including one associated with
+deleting directories. See the history file for more details.
+
 FM/2 3.14: This release updates many of the icons and bitmaps
 used in FM/2. In addition, more updates have been made to the
 toolbars to activate the new toolbars follow the instruction for

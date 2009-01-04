@@ -86,6 +86,11 @@ not be shown when FM2 is minimized to a databar. The purpose for this flag is fo
 virtual drives such as netdrives, where multiple drives and/or directories can be
 mounted making the stats meaningless at best.
 :p.
+:hp6.Write verify off:ehp6. Checking this button will turn write verify off for
+this drive only. If write verify is off globally it has no effect. This was added
+because some USB removable fail when write verify is on. The flag is set by default
+for writable removable drives.
+:p.
 You get this dialog by selecting Edit->Drive flags from a context menu
 requested on a drive (root directory) in the Drive Tree or VTree window.
 :p.

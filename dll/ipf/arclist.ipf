@@ -27,7 +27,10 @@ informational fields above that, there's an entry field at the bottom of
 the window that shows the current :hp1.extract directory:ehp1.. This is
 the directory in which any extracted files will be placed. (Extraction
 refers to copying files from the archive onto your disk as normal
-files.)  To change the extract directory, enter a new directory into the
+files.)  You can set the extraction directory to be a subdirectory, based
+on the archive name, of the directory the archive is in or set a default
+extract directory on the archive page of the settings notebook.
+To change the extract directory, enter a new directory into the
 entry field (if it doesn't already exist you'll get an option to create
 it), drag a directory onto the entry field, or click the folder button
 with :color fc=default bc=cyan.B1:color fc=default bc=default..

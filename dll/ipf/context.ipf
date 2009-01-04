@@ -395,6 +395,11 @@ can cause changes that FM/2 cannot know about automatically. This
 command will ensure that your display is current.
 :artwork runin name='\bitmaps\drive.bmp'.
 :p.
+:hp6.Refresh removable media:ehp6. calls LVM.EXE to find new drives and then
+rescans all the drives in the tree container. This item will not appear if
+LVM.EXE isn't found in your PATH.
+:artwork runin name='\bitmaps\drive.bmp'.
+:p.
 :hp6.Expand:ehp6. expands the tree from the point where the context menu
 was requested to the bottom of the branch. This isn't the same as clicking
 the [+] symbol as it expands :hp1.all:ehp1. branches.
@@ -405,13 +410,6 @@ menu was requested to the bottom of the branch. This isn't the same as
 clicking the [-] symbol as it collapses :hp1.all:ehp1. branches.
 :artwork runin name='\bitmaps\drive.bmp'.
 :p.
-The Miscellaneous cascade menu appears on directory and drive context menus
-The following appear on this cascade.
-:p.
-:hp6.:link reftype=hd res=95200.Sizes:elink.:ehp6. brings up a dialog
-showing how many bytes are in the selected directory and its
-subdirectories. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
-:p.
 :artwork name='..\..\bitmaps\mkdir.bmp' align=center.
 :p.
 :hp6.Make Directory:ehp6. allows you to create new directories. The
@@ -420,10 +418,26 @@ as a starting point for convenience. Directories may be created many
 levels deep in one pass.
 :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
+The Miscellaneous cascade menu appears on directory and drive context menus
+The following appear on this cascade.
+:p.
+:hp6.:link reftype=hd res=95200.Sizes:elink.:ehp6. brings up a dialog
+showing how many bytes are in the selected directory and its
+subdirectories. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:p.
 :hp6.Show all files:ehp6. is a command available on drive and directory objects
 and in the container menu of Directory Containers. It invokes the
 :link reftype=hd res=98500.See all files:elink. window and shows all
 the files in the directory and all its subdirectories.
+:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:p.
+:artwork name='..\..\bitmaps\find.bmp' align=center.
+:p.
+:hp6.Seek and scan files:ehp6. is a command available on drive and directory objects
+and in the container menu of Directory Containers. It invokes the
+:link reftype=hd res=91600.Seek and scan files:elink. opens a dialog for specifying
+the search parameters the drive or directy this is selected from is inserted as the
+root for the search.
 :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 :hp6.:link reftype=hd res=92500.Undelete Files:elink.:ehp6.
@@ -441,14 +455,15 @@ disk.:ehp8. This is available only in context menus requested on drives
 (root directories). :artwork runin name='\bitmaps\drive.bmp'.
 :p.
 :hp6.Partition Disks:ehp6. has four choices for partitioning tools.
-They are minilvm, DFSee, LVMGUI and FDISKPM.  Any of these
+They are minilvm, DFSee, LVMGUI and FDISKPM.  We check for these tools
+at start up and gray out any that aren't found in your PATH. Any of these
 will allow you to modify the partitions on your hard drives.
 :hp8.Extreme caution should be exercised; read the help!:ehp8.
 :p.
 Minilvm is a partitioning tool which is avalable with eCS and is probably
-the easiest to use for LVM type system. If you choose partition Disks it is the default.
-DFSee is a share ware tool with a much wider range of features but must be obtained
-from Hobbes and installed in the system path to work. LVMGUI is the IBM provided GUI tool for
+the easiest to use for LVM type system. DFSee is a share ware tool with
+a much wider range of features but must be obtained from Hobbes and installed
+in the system path to work. LVMGUI is the IBM provided GUI tool for
 Disk management. It is a JAVA based program and earily versions only work with JAVA 1.1.8.
 FDISKPM is the partition management tool for preLVM systems and should not be used
 on LVM based sytems. :artwork runin name='\bitmaps\drive.bmp'.
@@ -536,11 +551,15 @@ display.
 :p.
 :artwork name='..\..\bitmaps\rescan.bmp' align=center.
 :p.
-:hp6.Rescan:ehp6. rescans the directory associated with a container, or
-the drive from the current object down in a tree container. FM/2 tries
+:hp6.Rescan:ehp6. rescans the directory associated with a directory container,
+or all the drives in the tree container. FM/2 tries
 very hard to keep all its windows up to date, but things outside FM/2
 can cause changes that FM/2 cannot know about automatically. This
 command will ensure that your display is current.
+:p.
+:hp6.Refresh removable media:ehp6. calls LVM.EXE to find new drives and then
+rescans all the drives in the tree container. This item will not appear if
+LVM.EXE isn't found in your PATH.
 :p.
 :hp6.Parent:ehp6. moves directory containers to the previous (parent)
 directory.
@@ -650,15 +669,15 @@ the listbox. Names are added automatically. Up to 200 names can be
 stored in this manner (kept on disk between sessions in a file named
 RESOURCE.DAT).
 :p.
-:hp6.Partition Disks:ehp6. has four choices for partitioning tools.
-They are minilvm, DFSee, LVMGUI and FDISKPM.  Any of these
-will allow you to modify the partitions on your hard drives.
-:hp8.Extreme caution should be exercised; read the help!:ehp8.
+:hp6.Partition Disks:ehp6. has up to four choices for partitioning tools.
+They are minilvm, DFSee, LVMGUI and FDISKPM. We gray out any that are not
+found in your PATH. Any of these will allow you to modify the partitions
+on your hard drives. :hp8.Extreme caution should be exercised; read the help!:ehp8.
 :p.
 Minilvm is a partitioning tool which is avalable with eCS and is probably
-the easiest to use for LVM type system. If you choose partition Disks it is the default.
-DFSee is a share ware tool with a much wider range of features but must be obtained
-from Hobbes and installed in the system path to work. LVMGUI is the IBM provided GUI tool for
+the easiest to use for LVM type system. DFSee is a share ware tool with
+a much wider range of features but must be obtained from Hobbes and installed
+in the system path to work. LVMGUI is the IBM provided GUI tool for
 Disk management. It is a JAVA based program and earily versions only work with JAVA 1.1.8.
 FDISKPM is the partition management tool for preLVM systems and should not be used
 on LVM based sytems.

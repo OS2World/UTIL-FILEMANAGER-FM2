@@ -958,8 +958,6 @@ bottom right corner of the FM/2 window toggles the quicklists on and off.
 
 .im folder.ipf
 
-.im databar.ipf
-
 .im tutor.ipf
 
 .im expert.ipf

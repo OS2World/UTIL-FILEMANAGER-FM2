@@ -2785,7 +2785,7 @@ BEGIN
         ENTRYFIELD      "", CFGG_TARGETDIR, 6, 22, 246, 8, ES_MARGIN
         AUTOCHECKBOX    "~Link sets icon", CFGG_LINKSETSICON, 122, 128, 106,
                         10
-        AUTOCHECKBOX    "~Verify disk writes (also check individual driveflags)",
+        AUTOCHECKBOX    "~Verify disk writes (also check individual drive flags)",
                         CFGG_VERIFYWRITES, 122, 116, 162, 10
         AUTOCHECKBOX    "~Drag&drop dialog", CFGG_DNDDLG, 122, 104, 106, 10
         AUTOCHECKBOX    "Default delete ~permanent", CFGG_DEFAULTDELETEPERM, 122,

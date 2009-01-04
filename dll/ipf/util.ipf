@@ -9,6 +9,8 @@ FM/2 offers several utilities to make your life a little easier&colon.
 .br
 :link reftype=hd res=98500.See all files:elink.
 .br
+:link reftype=hd res=99000.Databar:elink.
+.br
 :link reftype=hd res=94900.Compare directories:elink.
 .br
 :link reftype=hd res=92500.Undelete Files:elink.
@@ -32,6 +34,8 @@ For convenience, you can also get to the :hp2.System Clock:ehp2. object,
 :hp2.System Setup:ehp2. folder, and command line windows from this menu.
 
 .im collect.ipf
+
+.im databar.ipf
 
 .im comp.ipf
 
