@@ -1218,7 +1218,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
-    fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan = TRUE;
+    fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
+    fEjectRemovableScan = fRScanLocal = TRUE;
   ulCnrType = CCS_EXTENDSEL;
   FilesToGet = FILESTOGET_MIN;
   MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
