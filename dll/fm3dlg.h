@@ -28,6 +28,7 @@
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
                 to prevent duplicate directory names in tree following a copy before initial scan.
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  01 Jan 09 GKY Add option to rescan tree container on eject of removable media
 
 ***********************************************************************/
 

@@ -1,5 +1,38 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.15
+ o Added the option to turn write verify off on a per drive basis; it is turned off on nonfloppy
+ removables by default to address reports of hangs with FAT32 usb drives and of FAT USB
+ drives behaving as read only devices. Ticket 318/323 (Gregg)
+ o Seek and scan can now be started from the drives or directories context menus. Doing so
+ will use the drive/directory as the root for the search. Ticket 167 (Gregg)
+ o Added "DataBar" menu item to utilities menu. Ticket 280 (Gregg)
+ o Eliminated the need for achiver list to have start and end list strings; this allows it to
+ work with tar for example. Ticket 284 (John)
+ o Add setup for using latest tar including for .tar.gz and .tar.bz files (gzip and/or bzip must
+ also be in your path) to archiver.tmp (John)
+ o Added check for protectonly systems will gray out dos/win command line menu items and causes
+ Dos/Win executables to be opened in a viewer since they will fail anyway. Ticket 325 (Gregg)
+ o Added the option to rescan the drive tree on media eject (see scanning page of config notebook)
+ Ticket 48 (Gregg)
+ o Added Refresh removable media item to tree container menus Ticket 54 (Gregg)
+ o Grayed out partition tool menu item where the tool is not avalable in the path; removed partition
+ submenu default selection. Ticket 36 (Gregg)
+ o Added option to recursively scan selected drives at startup Ticket 322 (Gregg)
+ o Moved toggle word wrap in the MLE editor to "View" menu from a "Config" submenu Ticket 160
+ (Gregg)
+ o Added option to create extract directory from archive name Ticket 22 (Gregg)
+ o Added drop help to the tree container; fixed drop help to show the correct action on DO_DEFAULT
+ Ticket 320, 324
+ o Fixed seek and scan drive selection code so nonexistant drives aren't selected Ticket 301, 303
+ (Gregg)
+ o Several interface appearence/behavior issues were addressed Ticket 283, 305, 306, 311, 312
+ 313, 316, 321, 328, 329, 330, 332 (Gregg)
+ o Fixed traps associated with deleting directories; closing a container after its
+ associated drive had been ejected and trying to execute a dll. Ticket 304, 317, 331 (Gregg)
+ o Added exceptq and process dump functionality to simplify defect reporting
+ Ticket 26, 307 (Steven)
+
 3.14
  o New toolbar and drive icons (David)
  o Updated toolbars they all include buttons to switch to any other provided toolbar (David)

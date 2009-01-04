@@ -26,6 +26,8 @@
   27 Aug 08 JBS Ticket 259: Support saving/restoring toolbars with states
   01 Sep 08 GKY Add bmps for default toolbars
   10 Dec 08 SHL Integrate exception handler support
+  03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
+                Dos/Win programs from being inserted into the execute dialog with message why.
 
 ***********************************************************************/
 

@@ -56,6 +56,7 @@
   27 Dec 08 GKY Add refresh removable media to tree container menus
   28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
                 and have no default choice.
+  01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
 
 ***********************************************************************/
 

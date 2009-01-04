@@ -27,6 +27,10 @@
   30 Dec 07 GKY Add TestCDates to compare CNRITEMs by CDATE/CTIME data
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
+                Dos/Win programs from being inserted into the execute dialog with message why.
+  03 Jan 08 GKY Modify IsExecutable to prevent some text files from being treated as executable
+                and prevent dlls from being loaded into execute dialog.
 
 ***********************************************************************/
 
@@ -610,7 +614,7 @@ BOOL IsExecutable(CHAR * filename)
          stricmp(p, ".COM") &&
          stricmp(p, ".CMD") &&
          stricmp(p, ".BAT") &&
-         stricmp(p, ".BMT"))))
+         stricmp(p, ".BTM"))))
       return FALSE;
     if (!fProtectOnly) {
       if ((!ret && (!apptype ||
@@ -624,7 +628,7 @@ BOOL IsExecutable(CHAR * filename)
                       FAPPTYP_WINDOWSPROT |
                       FAPPTYP_32BIT |
                       FAPPTYP_WINDOWSPROT31)))) ||
-          (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT") || !stricmp(p, ".BMT"))))
+          (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT") || !stricmp(p, ".BTM"))))
         return TRUE;
     }
     else if ((!ret && (!apptype ||
@@ -634,7 +638,7 @@ BOOL IsExecutable(CHAR * filename)
                          FAPPTYP_WINDOWAPI |
                          FAPPTYP_BOUND |
                          FAPPTYP_32BIT)))) ||
-             (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BMT"))))
+             (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BTM"))))
       return TRUE;
     if (fProtectOnly && (apptype &
                          (FAPPTYP_DOS |

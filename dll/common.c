@@ -21,6 +21,7 @@
   26 Aug 07 SHL Change to DosSleep(0)
   29 Feb 08 GKY Use xfree where appropriate
   06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
+  01 Jan 09 GKY Add option to rescan tree container on eject of removable media
 
 ***********************************************************************/
 

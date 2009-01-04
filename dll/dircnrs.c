@@ -52,6 +52,7 @@
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   10 Dec 08 SHL Integrate exception handler support
   26 Dec 08 GKY Fixed DROPHELP to check for copy as default is action is DO_DEFAULT
+  01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
 
 ***********************************************************************/
 

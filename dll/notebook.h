@@ -12,6 +12,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
+  01 Jan 09 GKY Add option to rescan tree container on eject of removable media
 
 ***********************************************************************/
 

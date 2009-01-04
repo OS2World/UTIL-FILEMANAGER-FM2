@@ -10,6 +10,8 @@
 
   Change log
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
+                Dos/Win programs from being inserted into the execute dialog with message why.
 
 ***********************************************************************/
 

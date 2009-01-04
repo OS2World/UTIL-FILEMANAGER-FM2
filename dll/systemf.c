@@ -23,6 +23,8 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   26 May 08 SHL Use uiLineNumber correctly
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use MakeTempName
+  03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
+                Dos/Win programs from being inserted into the execute dialog with message why.
 
 ***********************************************************************/
 

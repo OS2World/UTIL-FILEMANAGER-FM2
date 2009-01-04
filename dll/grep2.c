@@ -22,6 +22,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   10 Dec 08 SHL Integrate exception handler support
+  01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
 
   fixme for more excess locals to be gone
 

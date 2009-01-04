@@ -42,6 +42,7 @@
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path to arc container.
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
+  01 Jan 09 GKY Add option to rescan tree container on eject of removable media
 
 ***********************************************************************/
 

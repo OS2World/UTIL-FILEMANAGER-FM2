@@ -21,6 +21,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   02 Sep 07 GKY Replaced DosQProcStatus with DosQuerySysState to fix trap in thunk code
   10 Dec 08 SHL Integrate exception handler support
+  03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
+                Dos/Win programs from being inserted into the execute dialog with message why.
 
 ***********************************************************************/
 

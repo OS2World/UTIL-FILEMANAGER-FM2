@@ -74,6 +74,9 @@
 		tree scan completion; prevents duplicate directory names in tree.
   10 Dec 08 SHL Integrate exception handler support
   28 Dec 08 GKY Added Databar to utilities menu
+  30 Dec 08 GKY Initialize tool bar background color to palegray not black
+  03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
+                Dos/Win programs from being inserted into the execute dialog with message why.
 
 ***********************************************************************/
 

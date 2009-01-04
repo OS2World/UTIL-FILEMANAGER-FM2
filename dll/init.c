@@ -64,6 +64,10 @@
   28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
   28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
                 and have no default choice.
+  01 Jan 09 GKY Add option to rescan tree container on eject of removable media
+  03 Jan 09 GKY Avoid dbl scan of drive on startup by checking for first rescan drive.
+  03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
+                Dos/Win programs from being inserted into the execute dialog with message why.
 
 ***********************************************************************/
 

@@ -41,6 +41,7 @@
   26 Dec 08 GKY Rework MLE menus (add "view") so toggle word wrap isn't buried on a submenu.
   27 Dec 08 GKY Add refresh removable media to tree container menus
   28 Dec 08 GKY Added Databar to utilities menu
+  01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
 
 ***********************************************************************/
 
