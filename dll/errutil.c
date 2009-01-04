@@ -27,6 +27,7 @@
   14 Aug 07 SHL Add GetMSecTimer
   14 Aug 07 SHL Use GetMSecTimer in DbgMsg
   05 Jan 08 SHL Renamed from error.c to match errutil.h
+  18 Dec 08 SHL Show thread id in DbgMsg
 
 ***********************************************************************/
 
@@ -35,8 +36,9 @@
 #include <stdarg.h>
 
 #define INCL_DOS
-#define INCL_DOSERRORS
 #define INCL_WIN
+#define INCL_DOSERRORS
+#define INCL_DOSPROCESS			// PPIB PTIB
 
 #include "errutil.h"
 #include "strutil.h"			// GetPString
@@ -59,6 +61,10 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL
 
 VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
+  PIB *ppib;
+  TIB *ptib;
+  ULONG ultid;
+  APIRET apiret;
   va_list va;
 
 #if 1 // fixme to be selectable
@@ -80,8 +86,14 @@ VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
 #endif
 
+  apiret = DosGetInfoBlocks(&ptib, &ppib);
+  if (apiret)
+    ultid = 0;
+  else
+    ultid = ptib->tib_ptib2->tib2_ultid;
+
   // OK for source file name to be null
-  fprintf(stderr, "%s %u", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo);
+  fprintf(stderr, "%s %u (%lu)", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo, ultid);
   // If format null want just file and line
   if (pszFmt) {
     fputc(' ', stderr);
