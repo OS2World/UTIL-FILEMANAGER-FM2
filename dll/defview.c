@@ -19,6 +19,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
                 less than 10 KiB (It hangs and can't be closed)
+  05 Jan 09 GKY Use TestBinary so that text veiwer isn't used for hex files by default
 
 ***********************************************************************/
 

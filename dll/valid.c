@@ -6,7 +6,7 @@
   File name manipulation routines
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2002, 2008 Steven H.Levine
+  Copyright (c) 2002, 2009 Steven H.Levine
 
   23 Nov 02 SHL RootName: rework for sanity
   27 Nov 02 SHL MakeFullName: correct typo
@@ -29,8 +29,10 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
-  03 Jan 08 GKY Modify IsExecutable to prevent some text files from being treated as executable
+  03 Jan 09 GKY Modify IsExecutable to prevent some text files from being treated as executable
                 and prevent dlls from being loaded into execute dialog.
+  05 Jan 09 GKY Fix IsBinary to recognize values above \xc4 (maybe lower) as positive.
+                When these high codes were it text files they showed as hex in new view.
 
 ***********************************************************************/
 
@@ -990,7 +992,6 @@ BOOL IsBinary(register CHAR * str, ULONG len)
       if ((UINT) str[x] < ' ' && str[x] != '\r' && str[x] != '\n' && str[x] != '\t'
 	  && str[x] != '\x1b' && str[x] != '\x1a' && str[x] != '\x07'
           && str[x] != '\x0c') {
-        //DbgMsg(pszSrcFile, __LINE__, "IsBinary str %x x %x len %x", str[x], x, len);
         return TRUE;
       }
       x++;
