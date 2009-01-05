@@ -58,8 +58,8 @@
 #define VERMINOR       15
 // Ensure VERREALMINOR nul for non-beta releases
 // #define VERREALMINOR   ""
-// #define VERREALMINOR   " "__DATE__
-#define VERREALMINOR   "pre (shl) " __DATE__ " " __TIME__
+#define VERREALMINOR   " "__DATE__
+// #define VERREALMINOR    __DATE__ " " __TIME__
 
 #define APPNAME         "FM2"
 

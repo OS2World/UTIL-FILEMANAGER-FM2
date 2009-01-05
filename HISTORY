@@ -7,7 +7,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Seek and scan can now be started from the drives or directories context menus. Doing so
  will use the drive/directory as the root for the search. Ticket 167 (Gregg)
  o Added "DataBar" menu item to utilities menu. Ticket 280 (Gregg)
- o Eliminated the need for achiver list to have start and end list strings; this allows it to
+ o Eliminated the need for archiver list to have start and end list strings; this allows it to
  work with tar for example. Ticket 284 (John)
  o Add setup for using latest tar including for .tar.gz and .tar.bz files (gzip and/or bzip must
  also be in your path) to archiver.tmp (John)
