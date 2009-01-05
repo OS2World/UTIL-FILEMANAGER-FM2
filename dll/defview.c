@@ -339,23 +339,43 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 	    p = ".";
 	  if (stricmp(p, ".INI") || !StartIniEditor(hwndParent, filename, 4)) {
 	    if (stricmp(p, ".HLP") || !ViewHelp(filename)) {
-	    ViewIt:
-	      if (*viewer) {
-		dummy[0] = filename;
-		dummy[1] = NULL;
-		ExecOnList(hwnd,
-			   viewer,
-			   WINDOWED | SEPARATE |
-	                   ((fViewChild) ? CHILD : 0), NULL, dummy, NULL,
-	                   pszSrcFile, __LINE__);
-	      }
-	      else if (fUseNewViewer) {
-	        if (fExternalViewer || strcmp(realappname, FM3Str))
-	          hwndParent = HWND_DESKTOP;
-	        StartViewer(hwndParent, 5, filename, hwndFrame);
-	      }
-	      else
-		StartMLEEditor(hwndParent, 5, filename, hwndFrame);
+            ViewIt:
+              if (TestBinary(filename)) {
+                if (*binview) {
+                  dummy[0] = filename;
+                  dummy[1] = NULL;
+                  ExecOnList(hwnd,
+                             binview,
+                             WINDOWED | SEPARATE |
+                             ((fViewChild) ? CHILD : 0), NULL, dummy, NULL,
+                             pszSrcFile, __LINE__);
+                }
+                else if (fUseNewViewer) {
+                  if (fExternalViewer || strcmp(realappname, FM3Str))
+                    hwndParent = HWND_DESKTOP;
+                  StartViewer(hwndParent, 5, filename, hwndFrame);
+                }
+                else
+                  StartMLEEditor(hwndParent, 5, filename, hwndFrame);
+              }
+              else {
+                if (*viewer) {
+                  dummy[0] = filename;
+                  dummy[1] = NULL;
+                  ExecOnList(hwnd,
+                             viewer,
+                             WINDOWED | SEPARATE |
+                             ((fViewChild) ? CHILD : 0), NULL, dummy, NULL,
+                             pszSrcFile, __LINE__);
+                }
+                else if (fUseNewViewer) {
+                  if (fExternalViewer || strcmp(realappname, FM3Str))
+                    hwndParent = HWND_DESKTOP;
+                  StartViewer(hwndParent, 5, filename, hwndFrame);
+                }
+                else
+                  StartMLEEditor(hwndParent, 5, filename, hwndFrame);
+              }
 	    }
 	  }
 	}

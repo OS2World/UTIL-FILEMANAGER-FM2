@@ -987,10 +987,12 @@ BOOL IsBinary(register CHAR * str, ULONG len)
 
   if (str) {
     while (x < len) {
-      if (str[x] < ' ' && str[x] != '\r' && str[x] != '\n' && str[x] != '\t'
-	  && str[x] != '\x1b' && str[x] != '\x1a' && str[x] != '\07'
-	  && str[x] != '\x0c')
-	return TRUE;
+      if ((UINT) str[x] < ' ' && str[x] != '\r' && str[x] != '\n' && str[x] != '\t'
+	  && str[x] != '\x1b' && str[x] != '\x1a' && str[x] != '\x07'
+          && str[x] != '\x0c') {
+        //DbgMsg(pszSrcFile, __LINE__, "IsBinary str %x x %x len %x", str[x], x, len);
+        return TRUE;
+      }
       x++;
     }
   }
