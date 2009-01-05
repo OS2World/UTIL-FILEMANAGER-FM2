@@ -36,6 +36,7 @@
  *       - Support for EDITOR env var
  *       - Improved "usage" routine
  *    23 Nov 08 JBS Improved handling of invalid or missing <trace-option>
+ *    04 Jan 09 JBS Fixed bug in option 9: Apply tag
  *
 */
 
@@ -206,7 +207,7 @@ do forever
             call SysCls
             if strip(ver) = '' then
                ver = GetVer('the pending release')
-            svn_cmd = 'svn copy -m"Tag release FM2-' || Tag_ver(ver) || '" http://svn.netlabs.org/repos/fm2/trunk http://svn.netlabs.org/repos/fm2/tags/FM2-' || tag_ver
+            svn_cmd = 'svn copy -m"Tag release FM2-' || Tag_ver(ver) || '" http://svn.netlabs.org/repos/fm2/trunk http://svn.netlabs.org/repos/fm2/tags/FM2-' || Tag_ver(ver)
             say;say;say
             say 'Online and OK to execute: 'svn_cmd'? (y/N)'
             if translate(SysGetKey()) = 'Y' then svn_cmd
