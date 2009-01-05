@@ -43,6 +43,7 @@
  *       - Suppressed output of 'del' commands
  *    23 Nov 08 JBS Improved handling of invalid or missing <trace-option>
  *       and a 'NOTREADY' condition when closing the repository.
+ *    05 Jan 09 JBS Added code to reset VERREALMINOR to nul in dll\version.h
  *
 */
 
@@ -197,7 +198,7 @@ select
             do /* change below to delete and then update version.h only if version is different? */
                say 'Processing file:' file
                '@del' file '1>nul 2>nul'
-               'sed -r -e "/#define[ \t]+VERMAJOR/s/(#define[ \t]+VERMAJOR[ \t]+)[^ \t]+/\1' || major || '/g" -e "/#define[ \t]+VERMINOR/s/(#define[ \t]+VERMINOR[ \t]+)[^ \t]+/\1' || minor || '/g" ' || tmpfile || ' >' file
+               'sed -r -e "/#define[ \t]+VERMAJOR/s/(#define[ \t]+VERMAJOR[ \t]+)[^ \t]+/\1' || major || '/g" -e "/#define[ \t]+VERMINOR/s/(#define[ \t]+VERMINOR[ \t]+)[^ \t]+/\1' || minor || '/g" -e "/^[ \t]*#define[ \t]+VERREALMINOR/s/(#define[ \t]+VERREALMINOR).*/\1/g" ' || tmpfile || ' >' file
             end
       end
    when ext = 'DIZ' then
