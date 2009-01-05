@@ -179,14 +179,16 @@ not be needed.
 <PAGE INDEX=5 TYPE=README>
 <NEXTBUTTON TARGET=6>~Next</NEXTBUTTON>
 <TEXT>FM/2 Utilities: A short description of each utility is included at the end of the readme below. A special note of thanks to Mark Kimes for making these utilities freely available.</TEXT>
-<README>@@@include fm2utils.doc@@@
+<README>
+@@@include fm2utils.doc@@@
 </README>
 </PAGE>
 
 <PAGE INDEX=6 TYPE=README>
 <NEXTBUTTON TARGET=7>~I agree</NEXTBUTTON>
 <TEXT>FM/2 Utilities: By pressing the "I agree" button, you agree to all terms and conditions of the license agreement below.</TEXT>
-<README>@@@include license.txt@@@
+<README>
+@@@include license.txt@@@
 </README>
 </PAGE>
 

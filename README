@@ -29,7 +29,7 @@ menu and when select from there will add the drive or directory as
 the root for the search. We also added refresh removable media so
 you can scan for newly inserted drives from the tree container
 We did some additional work on the main menus like adding Databar
-to the utilities menu and we now gray out items that are unavailable
+to the utilities menu and we now grayed out items that are unavailable
 or inappropriate and un-grayed some items that were inappropriately
 turned off. We reorganized the internal editor menus as well.
 
@@ -37,11 +37,13 @@ We made changes to the archiver code so that archivers that don't
 have specific start/end list strings will work (ie TAR.EXE). We
 have included the commands for .tar .tar.gz and .tar.bz in archiver.tmp
 (gzip.exe and/or bzip.exe must be in the path) These only work with tar 1.15
-or higher. You can either replace archiver.bb2 with the archiver.tmp or if
-you have made changes to archiver.bb2 you can cut and paste the new archiver
-definitions into an appropriate position in your existing archiver.bb2
+or higher. We included a separate entry for TAR 1.10 but versions of TAR prior
+to 1.15 don't work for tar.gz/bz2 files. You can either replace archiver.bb2
+with the archiver.tmp or if you have made changes to archiver.bb2 you can cut
+and paste the new archiver definitions into an appropriate position in your
+existing archiver.bb2
 
-Numerous fixes to minor interface appearance and behavior are also include.
+Numerous fixes to minor interface appearance and behavior issues are also include.
 We have added exceptq support to make it easier to track down defects. We
 also eliminated the cause of three rare traps including one associated with
 deleting directories. See the history file for more details.
