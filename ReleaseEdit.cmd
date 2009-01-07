@@ -43,7 +43,12 @@
  *       - Suppressed output of 'del' commands
  *    23 Nov 08 JBS Improved handling of invalid or missing <trace-option>
  *       and a 'NOTREADY' condition when closing the repository.
- *    05 Jan 09 JBS Added code to set VERREALMINOR to default in dll\version.h
+ *    06 Jan 09 JBS Added code to set VERREALMINOR in dll\version.h
+ *       a) to value of FM2_VERREALMINOR environment variable, if set
+ *       b) to " "__DATE__ if FM2_VERREALMINOR environment variable is not set
+ *       NOTE: FM2_VERREALMINOR, if set, must have an even number (including 0)
+ *       of double quotes. SED seems to choke on an odd number, even if they are
+ *       propoerly escaped.
  *
 */
 
@@ -197,8 +202,13 @@ select
          else
             do /* change below to delete and then update version.h only if version is different? */
                say 'Processing file:' file
+               fm2_verrealminor = value('FM2_VERREALMINOR',, 'OS2ENVIRONMENT')
+               if fm2_verrealminor = '' then
+                  fm2_verrealminor = '\" \"__DATE__'
+               else
+                  fm2_verrealminor = EscapeSEDString(fm2_verrealminor)
                '@del' file '1>nul 2>nul'
-               'sed -r -e "/#define[ \t]+VERMAJOR/s/(#define[ \t]+VERMAJOR[ \t]+)[^ \t]+/\1' || major || '/g" -e "/#define[ \t]+VERMINOR/s/(#define[ \t]+VERMINOR[ \t]+)[^ \t]+/\1' || minor || '/g" -e "/^[ \t]*#define[ \t]+VERREALMINOR/s/(#define[ \t]+VERREALMINOR).*/\1 \" \"__DATE__/g" ' || tmpfile || ' >' file
+               'sed -r -e "/#define[ \t]+VERMAJOR/s/(#define[ \t]+VERMAJOR[ \t]+)[^ \t]+/\1' || major || '/g" -e "/#define[ \t]+VERMINOR/s/(#define[ \t]+VERMINOR[ \t]+)[^ \t]+/\1' || minor || '/g" -e "/^[ \t]*#define[ \t]+VERREALMINOR/s/(#define[ \t]+VERREALMINOR).*/\1 ' || fm2_verrealminor || '/g" ' || tmpfile || ' >' file
             end
       end
    when ext = 'DIZ' then
@@ -281,6 +291,35 @@ Usage:
       if (i // 22) = 0 then
          '@pause'
    end
+
+EscapeSEDString: procedure
+  parse arg SEDString
+  SEDString = SEDString || '00'x
+  escape_chars = '\/"'
+  escape_char  = '\'
+  escaped_string = ''
+  next_char = left(SEDString, 1)
+  do i = 1 to length(SEDString)
+     this_char = substr(SEDString, i, 1)
+     if this_char = escape_char then
+        do
+           next_char = substr(SEDString, i + 1, 1)
+           if pos(next_char, escape_chars) > 0 then
+              do
+                 escaped_string = escaped_string || this_char || next_char
+                 i = i + 1
+              end
+           else
+              escaped_string = escaped_string || escape_char || this_char
+        end
+     else
+        if pos(this_char, escape_chars) > 0 then
+           escaped_string = escaped_string || escape_char || this_char
+        else
+           if this_char \= '00'x then
+              escaped_string = escaped_string || this_char
+  end
+return escaped_string
 
 /*=== Error() Report ERROR, FAILURE etc. and exit ===*/
 
