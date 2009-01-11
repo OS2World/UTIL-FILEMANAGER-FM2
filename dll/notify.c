@@ -14,6 +14,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 Apr 08 SHL Comment and clean up logic
   10 Dec 08 SHL Integrate exception handler support
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -83,8 +84,9 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	memset(&rgb2F, 0, sizeof(RGB2));
 	rgb2F.bRed = (BYTE)65;
 	rgb2.bRed = rgb2.bGreen = rgb2.bBlue = (BYTE)255;
-	rgb2.fcOptions = 0;
-	SetPresParams(hwnd, &rgb2, &rgb2F, &rgb2, GetPString(IDS_8HELVTEXT));
+        rgb2.fcOptions = 0;
+        //fixme to allow user to change presparams 1-10-09 GKY
+	SetPresParams(hwnd, &rgb2, &rgb2F, &rgb2, FNT_8HELVETICA);
 	if (hwndMain) {
 	  if (hwndStatus)
 	    WinShowWindow(hwndStatus, FALSE);

@@ -68,6 +68,7 @@
   03 Jan 09 GKY Avoid dbl scan of drive on startup by checking for first rescan drive.
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
+  11 Jan 09 GKY Move strings that shouldn't be translated (font names etc) compile time variables
 
 ***********************************************************************/
 
@@ -204,6 +205,7 @@ CHAR *pFM2SaveDirectory;
 CHAR *pTmpDir;
 
 #pragma data_seg(GLOBAL2)
+CHAR *ARCHIVERBB2;
 CHAR *CBSIFS;
 CHAR *DRF_FM2ARCHIVE;
 CHAR *DRMDRFFM2ARC;
@@ -213,6 +215,15 @@ CHAR *DRM_OS2FILE;
 CHAR *FM2Str;
 HMODULE FM3DllHandle;
 CHAR *FM3Folder;
+CHAR *FNT_6HELVETICA;
+CHAR *FNT_8HELVETICA;
+CHAR *FNT_8HELVETICABOLD;
+CHAR *FNT_10SYSTEMMONOTEXT;
+CHAR *FNT_10SYSTEMPROPORT;
+CHAR *FNT_2SYSTEMVIO;
+CHAR *FNT_4SYSTEMVIO;
+CHAR *FNT_10SYSTEMVIO;
+CHAR *FNT_8TIMESNEWROMAN;
 CHAR HomePath[CCHMAXPATH];
 CHAR *LONGNAME;
 CHAR *NullStr;
@@ -430,6 +441,15 @@ unsigned APIENTRY LibMain(unsigned hModule,
     NDFS32 = "NDFS32";
     RAMFS = "RAMFS";
     NTFS = "NTFS";
+    FNT_6HELVETICA       =  "6.Helvetica";
+    FNT_8HELVETICA       =  "8.Helvetica";
+    FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";
+    FNT_10SYSTEMMONOTEXT =  "10.System Monospaced";
+    FNT_10SYSTEMPROPORT  =  "10.System Proportional";
+    FNT_2SYSTEMVIO       =  "2.System VIO";
+    FNT_4SYSTEMVIO       =  "4.System VIO";
+    FNT_10SYSTEMVIO      =  "10.System VIO";
+    FNT_8TIMESNEWROMAN   =  "8.Times New Roman";
     WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
     WC_BUBBLE          =  "WC_BUBBLE";
     WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
@@ -541,6 +561,15 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     NDFS32 = "NDFS32";
     RAMFS = "RAMFS";
     NTFS = "NTFS";
+    FNT_6HELVETICA       =  "6.Helvetica";
+    FNT_8HELVETICA       =  "8.Helvetica";
+    FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";
+    FNT_10SYSTEMMONOTEXT =  "10.System Monospaced";
+    FNT_10SYSTEMPROPORT  =  "10.System Proportional";
+    FNT_2SYSTEMVIO       =  "2.System VIO";
+    FNT_4SYSTEMVIO       =  "4.System VIO";
+    FNT_10SYSTEMVIO      =  "10.System VIO";
+    FNT_8TIMESNEWROMAN   =  "8.Times New Roman";
     WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
     WC_BUBBLE          =  "WC_BUBBLE";
     WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";

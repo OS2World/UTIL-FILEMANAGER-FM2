@@ -27,6 +27,7 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
                 to prevent duplicate directory names in tree following a copy before initial scan.
+  11 Jan 08 GKY Add Write verify off and recures scan to drive info display when appropriate.
 
 ***********************************************************************/
 
@@ -87,7 +88,7 @@ CHAR *FlagMsg(CHAR drive, CHAR * buffer)
     p = buffer;
     if (isalpha(drive)) {
       if (driveflags[toupper(drive) - 'A']) {
-	for (x = IDS_FLREMOVABLETEXT; x < IDS_FLRAMDISKTEXT + 1; x++) {
+	for (x = IDS_FLREMOVABLETEXT; x < IDS_FLRECURSESCANDONETEXT + 1; x++) {
 	  if (driveflags[toupper(drive) - 'A'] &
 	      (1 << (x - IDS_FLREMOVABLETEXT))) {
 	    if (once) {

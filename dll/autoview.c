@@ -24,6 +24,7 @@
   30 Dec 07 GKY Use CommaFmtULL
   29 Feb 08 GKY Use xfree where appropriate
   10 Dec 08 SHL Integrate exception handler support
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -723,9 +724,10 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       mr = PFNWPStatic(hwnd, msg, mp1, mp2);
+      //fixme to allow user to change presparams 1-10-09 GKY
       SetPresParams(hwnd,
 		    &RGBGREY,
-		    &RGBBLACK, &RGBGREY, GetPString(IDS_4SYSTEMVIOTEXT));
+		    &RGBBLACK, &RGBGREY, FNT_4SYSTEMVIO);
       stopflag = 0;
       return mr;
     }

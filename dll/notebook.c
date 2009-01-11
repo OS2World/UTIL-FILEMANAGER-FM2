@@ -43,6 +43,7 @@
                 for the extract path to arc container.
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -84,6 +85,7 @@
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
 #include "info.h"                       // driveflags
+#include "init.h"                       // font strings
 
 static VOID SaveLastPageIndex(HWND hwnd);
 
@@ -3074,11 +3076,12 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             appname,
                             "CollectorflWindowAttr",
                             &flWindowAttr, sizeof(ULONG));
+        //fixme to allow user to change presparams 1-10-09 GKY
         PrfWriteProfileData(fmprof,
                             appname,
                             "Collector.Fontnamesize",
-                            GetPString(IDS_8HELVTEXT),
-                            strlen(GetPString(IDS_8HELVTEXT)) + 1);
+                            FNT_8HELVETICA,
+                            strlen(FNT_8HELVETICA) + 1);
       }
       dsDirCnrDefault.detailslongname = TRUE;
       dsDirCnrDefault.detailssubject = TRUE;
@@ -3132,9 +3135,10 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                             &flWindowAttr, sizeof(ULONG));
         PrfWriteProfileData(fmprof, appname, "CollectorflWindowAttr",
                             &flWindowAttr, sizeof(ULONG));
+        //fixme to allow user to change presparams 1-10-09 GKY
         PrfWriteProfileData(fmprof, appname, "Collector.Fontnamesize",
-                            GetPString(IDS_8HELVTEXT),
-                            strlen(GetPString(IDS_8HELVTEXT)) + 1);
+                            FNT_8HELVETICA,
+                            strlen(FNT_8HELVETICA) + 1);
       }
       if (hwndTree) {
 
@@ -3691,7 +3695,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             Runtime_Error(pszSrcFile, __LINE__, "IDM_NOTEBOOKSUBMENU");
           else {
             mp2 = WinSendMsg(mi.hwndSubMenu, MM_QUERYDEFAULTITEMID, MPVOID, MPVOID);
-            //if (!mp2)
+            //if (!mp2) // causes spurious error message on new installs GKY 1-9-09
             //  mp2 = MPFROMLONG(IDM_QUICKSETTINGS);
               //Runtime_Error(pszSrcFile, __LINE__, "MM_QUERYDEFAULTITEMID");
           }

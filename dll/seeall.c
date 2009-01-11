@@ -39,6 +39,8 @@
 		Change menu wording to make these easier to find
   10 Dec 08 SHL Integrate exception handler support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  11 Jan 08 GKY Change flag on GetMLEFont to 3 from 11 to give a larger selection of mono spaced fonts
 
 ***********************************************************************/
 
@@ -3334,10 +3336,11 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!pAD->hwndPopup) {
 	pAD->hwndPopup =
 	  WinLoadMenu(HWND_DESKTOP, FM3ModHandle, SEEALL_POPUP);
-	if (pAD->hwndPopup) {
+        if (pAD->hwndPopup) {
+          //fixme to allow user to change presparams 1-10-09 GKY
 	  WinSetPresParam(pAD->hwndPopup, PP_FONTNAMESIZE,
-			  (ULONG) strlen(GetPString(IDS_8HELVTEXT)) + 1,
-			  (PVOID) GetPString(IDS_8HELVTEXT));
+			  strlen(FNT_8HELVETICA) + 1,
+			  FNT_8HELVETICA);
 	  SetConditionalCascade(pAD->hwndPopup,
 				IDM_DELETESUBMENU,
 				(fDefaultDeletePerm) ?
@@ -4013,7 +4016,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case IDM_FONTPALETTE:
-      SetMLEFont(hwnd, &pAD->fattrs, 11);
+      SetMLEFont(hwnd, &pAD->fattrs, 3);
       PrfWriteProfileData(fmprof,
 			  appname,
 			  "Seeall.Fattrs", &pAD->fattrs, sizeof(pAD->fattrs));

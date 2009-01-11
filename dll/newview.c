@@ -32,6 +32,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   20 Jul 08 GKY Change ListToClipboardHab call to match changes made to function
   10 Dec 08 SHL Integrate exception handler support
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -1812,10 +1813,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
+        //fixme to allow user to change presparams 1-10-09 GKY
 	WinSetPresParam(temphwnd,
 			PP_FONTNAMESIZE,
-			strlen(GetPString(IDS_8HELVTEXT)) + 1,
-			(PVOID) GetPString(IDS_8HELVTEXT));
+			strlen(FNT_8HELVETICA) + 1,
+			FNT_8HELVETICA);
       }
       temphwnd = WinCreateWindow(hwndFrame,
 				 WC_BUTTON,
@@ -1832,10 +1834,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
+        //fixme to allow user to change presparams 1-10-09 GKY
 	WinSetPresParam(temphwnd,
 			PP_FONTNAMESIZE,
-			strlen(GetPString(IDS_8HELVTEXT)) + 1,
-			(PVOID) GetPString(IDS_8HELVTEXT));
+			strlen(FNT_8HELVETICA) + 1,
+			FNT_8HELVETICA);
       }
       WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER5, 1000L);
     }
@@ -2623,11 +2626,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!ad->hwndPopup) {
 	ad->hwndPopup =
 	  WinLoadMenu(HWND_DESKTOP, FM3ModHandle, NEWVIEW_POPUP);
-	if (ad->hwndPopup)
+        if (ad->hwndPopup)
+          //fixme to allow user to change presparams 1-10-09 GKY
 	  WinSetPresParam(ad->hwndPopup,
 			  PP_FONTNAMESIZE,
-			  strlen(GetPString(IDS_8HELVTEXT)) + 1,
-			  GetPString(IDS_8HELVTEXT));
+			  strlen(FNT_8HELVETICA) + 1,
+			  FNT_8HELVETICA);
       }
       if (ad->hwndPopup) {
 

@@ -22,6 +22,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -173,8 +174,8 @@ MRESULT EXPENTRY CommonTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DIR_SORT:
       case DIR_VIEW:
       case DIR_FILTER:
-
-      SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVTEXT));
+      //fixme to allow user to change presparams 1-10-09 GKY
+      SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
       return rc;
     }
   }
@@ -353,6 +354,7 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     {
       UCHAR parm[2];
       ULONG plen = sizeof(parm), dlen = 0L;
+      APIRET rc;
 
       switch (SHORT1FROMMP(cmd)) {
       case IDM_LOCK:
@@ -367,8 +369,8 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       }
       parm[1] = *dv - 'A';
       DosError(FERR_DISABLEHARDERR);
-      DosDevIOCtl(-1L,
-                  8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
+      rc = DosDevIOCtl(-1L, 8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
+      DbgMsg(pszSrcFile, __LINE__, "Eject parm %i %i rc %i", parm[0], parm[1], rc);
       if (cmd == IDM_EJECT &&
           (fEjectFlpyScan ? TRUE : parm[1] > 1) &&
           (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&

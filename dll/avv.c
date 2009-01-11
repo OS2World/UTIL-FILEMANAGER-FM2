@@ -27,6 +27,7 @@
   24 Aug 08 GKY Fix truncation of cmdline length to 3 characters is now MaxComLineStrg
   24 Aug 08 GKY Warn full drive on save of .BB2 file; prevent loss of existing file
   23 Nov 08 JBS Support use of CMD files in archiver definitions
+  11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -241,7 +242,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     saymsg(MB_ENTER | MB_ICONASTERISK,
 	   HWND_DESKTOP,
 	   GetPString(IDS_NOTETEXT), GetPString(IDS_SAVEARCBB2TEXT));
-    archiverbb2 = GetPString(IDS_ARCHIVERBB2);
+    archiverbb2 = ARCHIVERBB2;
   }
   /* Check space on drive*/
   if (CheckDriveSpaceAvail(archiverbb2, ullDATFileSpaceNeeded * 4, 1) == 2) //* 4 is because this file is larger than other .dat files
@@ -268,7 +269,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
 
     fprintf(fpNew,
 	    ";\n; %s file written by FM/2 v%d.%02d on %u/%u/%u %u:%02u:%02u\n;\n",
-	    GetPString(IDS_ARCHIVERBB2),
+	    ARCHIVERBB2,
 	    VERMAJOR, VERMINOR,
 	    tm->tm_mon + 1, tm->tm_mday, tm->tm_year + 1900,
 	    tm->tm_hour, tm->tm_min, tm->tm_sec);
@@ -287,7 +288,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     }
     else {
       // Write default header
-      fputs(GetPString(IDS_ARCHIVERBB2TEXT), fpNew);
+      fputs(ARCHIVERBB2, fpNew);
     }
     pat = arcsighead;
     while (pat) {
@@ -913,7 +914,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  PSZ ab2;
 
-	  ab2 = searchpath(GetPString(IDS_ARCHIVERBB2));	// Rewrite without alerting
+	  ab2 = searchpath(ARCHIVERBB2);	// Rewrite without alerting
 	  rewrite_archiverbb2(ab2);
 	}
       }

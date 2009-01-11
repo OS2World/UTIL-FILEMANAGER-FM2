@@ -15,6 +15,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   10 Dec 08 SHL Integrate exception handler support
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -251,10 +252,11 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
       }
       else {
+        //fixme to allow user to change presparams 1-10-09 GKY
         WinSetPresParam(WinWindowFromID(hwnd, VINF_LISTBOX),
                         PP_FONTNAMESIZE,
-                        strlen(GetPString(IDS_10SYSTEMMONOTEXT)) + 1,
-                        (PVOID) GetPString(IDS_10SYSTEMMONOTEXT));
+                        strlen("10.System Monospaced") + 1,
+                        "10.System Monospaced");
       }
       WinSetWindowText(hwnd, GetPString(IDS_VIEWHELPFILESTEXT));
       WinShowWindow(WinWindowFromID(hwnd, VINF_SRCH), FALSE);

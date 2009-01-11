@@ -589,20 +589,20 @@ You are actually writing a command (batch) file that will be run once and then d
 0
 DosStartSession failed to run "%s %s"\n called from %s %d.
 DosExecPgm failed for %s.\n called from %s %d.
-We are all Books of Blood.
-"Is THIS your card?"
-I'm a victim of coicumstance!
-"Abbot!  ABBOT!!"
-Neils was Bohring.
-"You gonna eat that?"
-"'YOU CAN GO NOW,' said a voice."
-"Sometimes we forget to blink."
-"He's in hell with his neck broken."
-"Then the geek bit off his head."
-"I was a Teenage Toadsucker"
-"Whatever's in him rustles as it leaves."
-"The scream alone is worth it."
-0
+A Quick Brown Fox Jumps Over The Lazy Dog.
+
+
+
+
+
+
+
+
+
+
+
+
+
 Italic
 Outline
 Bold
@@ -837,6 +837,8 @@ InclFiles
 Virtual
 No stats
 Ram disk
+Write verify off
+Recursive scan done
  Can't query volume info drive %c:
  Can't query allocation info drive %c:
  Drive %c: inaccessible.  Flags:  %s
@@ -849,8 +851,6 @@ You must check at least one criterion or Cancel the operation.
 FM/2: Trouble...
 Can't load help.%s
   I'll continue, but you should find FM3.HLP and place it into FM/2's working directory.
-
-
                         EXE/DLL Mismatch warning!
 The EXE file you're running is of a newer version than the DLL.  Please re-extract _all_ the files from the distribution archive so that FM/2 can run properly (overwrite existing files while unpacking, and be sure that no parts of FM/2 are running while you unpack).
 

@@ -3,6 +3,7 @@
  *
  * Change Log:
  *    21 Nov 08 JBS Initial add to SVN respository
+ *    11 Jan 08 GKY Moved #define IDS_COPYRIGHT 1 to fm3str.h
  *
  */
 
@@ -13,5 +14,3 @@
                      COPYRIGHT_YEAR \
                      " Steven Levine and Associates, Inc." \
                      "All rights reserved"
-
-#define IDS_COPYRIGHT 1

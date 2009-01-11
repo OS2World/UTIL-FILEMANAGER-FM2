@@ -10,6 +10,7 @@
 
   05 Jan 08 SHL Sync
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  10 Jan 09 GKY Removed rotating strings for font samples as part of StringTable conversion
 
 ***********************************************************************/
 
@@ -31,7 +32,6 @@
 
 #pragma data_seg(DATA1)
 
-static INT counter = 0;
 
 /*
  *   Convert vector font size using point size and fAttrs structure and
@@ -124,11 +124,7 @@ VOID SetFont(HWND hwnd)
 
   //DosEnterCritSec(); //GKY 11-30-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-  szPreview = GetPString(IDS_BLURB1TEXT + counter++);
-  if (strcmp(szPreview, "0")) {
-    counter = 0;
-    szPreview = GetPString(IDS_BLURB1TEXT + counter++);
-  }
+  szPreview = GetPString(IDS_BLURB1TEXT);
   DosReleaseMutexSem(hmtxFM2Globals);
   //DosExitCritSec();
   memset(&fontdlg, 0, sizeof(fontdlg)); /* initialize all fields */
@@ -187,11 +183,7 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
     return fattrs;
   //DosEnterCritSec(); //GKY 11-30-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-  szPreview = GetPString(IDS_BLURB1TEXT + counter++);
-  if (strcmp(szPreview, "0")) {
-    counter = 0;
-    szPreview = GetPString(IDS_BLURB1TEXT + counter++);
-  }
+  szPreview = GetPString(IDS_BLURB1TEXT);
   DosReleaseMutexSem(hmtxFM2Globals);
   //DosExitCritSec();
   memset(&fontDlg, 0, sizeof(fontDlg)); /* initialize all fields */

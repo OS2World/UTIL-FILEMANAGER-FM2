@@ -77,6 +77,7 @@
   30 Dec 08 GKY Initialize tool bar background color to palegray not black
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -1002,7 +1003,8 @@ VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
     lyScreen = WinQuerySysValue(HWND_DESKTOP, SV_CYSCREEN);
     lxScreen = WinQuerySysValue(HWND_DESKTOP, SV_CXSCREEN);
     WinSetWindowULong(hwndBubble, QWL_USER, hwnd);
-    SetPresParams(hwndBubble, NULL, NULL, NULL, GetPString(IDS_8HELVTEXT));
+    //fixme to allow user to change presparams 1-10-09 GKY
+    SetPresParams(hwndBubble, NULL, NULL, NULL, FNT_8HELVETICA);
     hps = WinGetPS(hwndBubble);
     p = help;
     tptl.x = tptl.y = 0;
@@ -1225,9 +1227,10 @@ MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinReleasePS(hps);
 	break;
       default:
+        //fixme to allow user to change presparams 1-10-09 GKY
 	SetPresParams(hwnd,
 		      &RGBGREY,
-		      &RGBBLACK, &RGBGREY, GetPString(IDS_6HELVTEXT));
+		      &RGBBLACK, &RGBGREY, FNT_6HELVETICA );
 	break;
       }
       return mr;
@@ -1417,7 +1420,8 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       hwndMenu = WinLoadMenu(hwnd, FM3ModHandle, ID_BUTTONMENU);
     DosReleaseMutexSem(hmtxFM2Globals);
     //DosExitCritSec();
-    SetPresParams(hwndMenu, NULL, NULL, NULL, GetPString(IDS_10SYSPROTEXT));
+    //fixme to allow user to change font 1-10-09 GKY
+    SetPresParams(hwndMenu, NULL, NULL, NULL, FNT_10SYSTEMPROPORT);
     if (PopupMenu(hwnd, hwnd, hwndMenu))
       WinShowWindow(hwndMenu, TRUE);
     return MRFROMSHORT(TRUE);
@@ -1614,12 +1618,13 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
       else {
 	SetPresParams(hwndTool,
 		      &RGBGREY,
-		      &RGBBLACK, &RGBGREY, GetPString(IDS_2SYSTEMVIOTEXT));
+		      &RGBBLACK, &RGBGREY, FNT_2SYSTEMVIO);
       }
     }
     ctrlxpos += ((tool->flags & T_TEXT) ? 55L : 33L);
+    //fixme to allow user to change presparams 1-10-09 GKY
     SetPresParams(WinWindowFromID(hwndT, tool->id),
-		  NULL, NULL, NULL, GetPString(IDS_8HELVTEXT));
+		  NULL, NULL, NULL, FNT_8HELVETICA);
     tool = tool->next;
   }                                     // while tool
 
@@ -1794,8 +1799,9 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       memset(&rgb, 0, sizeof(rgb));
       rgb.bRed = (BYTE)128;
+      //fixme to allow user to change presparams 1-10-09 GKY
       SetPresParams(hwnd,
-		    &RGBGREY, &rgb, &RGBGREY, GetPString(IDS_8HELVTEXT));
+		    &RGBGREY, &rgb, &RGBGREY, FNT_8HELVETICA);
       SetTargetDir(hwnd, TRUE);
     }
     return 0;
@@ -2268,10 +2274,11 @@ VOID BuildDriveBarButtons(HWND hwndT)
 	  if (!hwndB)
 	    Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
 		       IDS_WINCREATEWINDOW);
-	  else {
+          else {
+            //fixme to allow user to change presparams 1-10-09 GKY
 	    SetPresParams(hwndB,
 			  &RGBGREY,
-			  &RGBBLACK, &RGBGREY, GetPString(IDS_6HELVTEXT));
+			  &RGBBLACK, &RGBGREY, FNT_6HELVETICA);
 	    WinSetWindowPos(hwndB, HWND_BOTTOM, 0, 0, 0, 0, SWP_ZORDER);
 	  }
 	  y++;
@@ -2330,10 +2337,10 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CREATE:
     {
       MRESULT mr = PFNWPStatic(hwnd, msg, mp1, mp2);
-
+      //fixme to allow user to change presparams 1-10-09 GKY
       SetPresParams(hwnd,
 		    &RGBGREY,
-		    &RGBBLACK, &RGBGREY, GetPString(IDS_8HELVBOLDTEXT));
+		    &RGBBLACK, &RGBGREY, FNT_8HELVETICABOLD);
       return mr;
     }
 
@@ -5617,10 +5624,11 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     }
     else {
       WinSubclassWindow(WinWindowFromID(hwndFrame, IDM_IDEALSIZE),
-			IdealButtonProc);
+                        IdealButtonProc);
+      //fixme to allow user to change presparams 1-10-09 GKY
       SetPresParams(WinWindowFromID(hwndFrame,
 				    IDM_IDEALSIZE),
-		    NULL, NULL, NULL, GetPString(IDS_10SYSTEMVIOTEXT));
+		    NULL, NULL, NULL, FNT_10SYSTEMVIO);
     }
 
     hwndTmp = WinCreateWindow(hwndFrame,
@@ -5720,8 +5728,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 				    HWND_TOP, MAIN_DRIVELIST, NULL, NULL);
     if (!hwndDrivelist)
       Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    //fixme to allow user to change presparams 1-10-09 GKY
     SetPresParams(hwndDrivelist,
-		  NULL, NULL, NULL, GetPString(IDS_10SYSTEMMONOTEXT));
+		  NULL, NULL, NULL, "10.System Monospaced");
     hwndButtonlist = WinCreateWindow(hwndFrame,
 				     WC_COMBOBOX,
 				     (PSZ) NULL,

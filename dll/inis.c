@@ -27,6 +27,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use BldFullPathName
   10 Dec 08 SHL Integrate exception handler support
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -1937,30 +1938,30 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_ACTION:
     SetPresParams(WinWindowFromID(hwnd, INI_APPHDR),
 		  &RGBGREY,
-		  &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVBOLDTEXT));
+		  &RGBBLACK, &RGBBLACK, FNT_8HELVETICABOLD);
     SetPresParams(WinWindowFromID(hwnd, INI_KEYHDR),
 		  &RGBGREY,
-		  &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVBOLDTEXT));
+		  &RGBBLACK, &RGBBLACK, FNT_8HELVETICABOLD);
     SetPresParams(WinWindowFromID(hwnd, INI_DATAHDR),
 		  &RGBGREY,
-		  &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVBOLDTEXT));
+		  &RGBBLACK, &RGBBLACK, FNT_8HELVETICABOLD);
     SetPresParams(WinWindowFromID(hwnd, INI_NUMAPPS),
 		  &RGBGREY,
-		  &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVBOLDTEXT));
+		  &RGBBLACK, &RGBBLACK, FNT_8HELVETICABOLD);
     SetPresParams(WinWindowFromID(hwnd, INI_NUMKEYS),
 		  &RGBGREY,
-		  &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVBOLDTEXT));
+		  &RGBBLACK, &RGBBLACK, FNT_8HELVETICABOLD);
     SetPresParams(WinWindowFromID(hwnd, INI_NUMDATA),
 		  &RGBGREY,
-		  &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVBOLDTEXT));
+		  &RGBBLACK, &RGBBLACK, FNT_8HELVETICABOLD);
     if (!WinSetPresParam(WinWindowFromID(hwnd, INI_DATALIST),
 			 PP_FONTNAMESIZE,
-			 (ULONG) strlen(GetPString(IDS_5SYSTEMVIOTEXT)) + 1,
-			 (PVOID) GetPString(IDS_5SYSTEMVIOTEXT)))
+			 strlen(FNT_10SYSTEMMONOTEXT) + 1,
+			 FNT_10SYSTEMMONOTEXT))
       WinSetPresParam(WinWindowFromID(hwnd, INI_DATALIST),
 		      PP_FONTNAMESIZE,
-		      (ULONG) strlen(GetPString(IDS_10SYSTEMMONOTEXT)) + 1,
-		      (PVOID) GetPString(IDS_10SYSTEMMONOTEXT));
+		      strlen(FNT_10SYSTEMMONOTEXT) + 1,
+		      FNT_10SYSTEMMONOTEXT);
     RestorePresParams(hwnd, "IniUtil");
     return 0;
 

@@ -23,6 +23,7 @@
   10 Dec 08 SHL Integrate exception handler support
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -229,8 +230,9 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     DataHwnd = WinQueryWindow(hwnd, QW_PARENT);
     NoFloat = FALSE;
     Positioned = FALSE;
+    //fixme to allow user to change presparams 1-10-09 GKY
     SetPresParams(hwnd,
-		  &RGBGREY, &RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVTEXT));
+		  &RGBGREY, &RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
     {
       int c;
       long x = 3;

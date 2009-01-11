@@ -12,6 +12,7 @@
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
+  11 Jan 09 GKY Move strings that shouldn't be translated (font names etc) compile time variables
 
 ***********************************************************************/
 
@@ -22,6 +23,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv);
 HWND StartFM3(HAB hab, INT argc, CHAR ** argv);
 
 // Data declarations
+extern CHAR *ARCHIVERBB2;
 extern CHAR *CBSIFS;
 extern CHAR *DRMDRFFM2ARC;
 extern CHAR *DRF_FM2ARCHIVE;
@@ -39,6 +41,15 @@ extern PFNWP PFNWPMLE;
 extern CHAR *Settings;
 extern CHAR SwapperDat[CCHMAXPATH];
 extern CHAR ThousandsSeparator[2];
+extern CHAR *FNT_6HELVETICA;
+extern CHAR *FNT_8HELVETICA;
+extern CHAR *FNT_8HELVETICABOLD;
+extern CHAR *FNT_10SYSTEMMONOTEXT;
+extern CHAR *FNT_10SYSTEMPROPORT;
+extern CHAR *FNT_2SYSTEMVIO;
+extern CHAR *FNT_4SYSTEMVIO;
+extern CHAR *FNT_10SYSTEMVIO;
+extern CHAR *FNT_8TIMESNEWROMAN;
 extern CHAR *WC_ARCCONTAINER;
 extern CHAR *WC_ARCSTATUS;
 extern CHAR *WC_AUTOVIEW;

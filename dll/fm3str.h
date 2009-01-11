@@ -23,6 +23,9 @@
   26 Aug 08 GKY Error strings for require unique ID plus text and help strings for all tools
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
+  10 Jan 09 GKY Removed rotating strings for font samples as part of StringTable conversion
+  11 Jan 08 GKY Move strings that will need translating to stringtable from sting file cut to
+                255 where necessary
 
 ***********************************************************************/
 
@@ -593,34 +596,11 @@
 #define IDS_REXXCOMMENT                                       562
 #define IDS_INSTANTHELPTITLETEXT                              563
 #define IDS_INSTANTHELPTEXT                                   564
-/* inserted three codepages in v3.02 */
-#define IDS_CODEPAGES1                                        565
-#define IDS_CODEPAGES2                                        566
-#define IDS_CODEPAGES3                                        567
-#define IDS_CODEPAGES4                                        568
-#define IDS_CODEPAGES5                                        569
-#define IDS_CODEPAGES6                                        570
-#define IDS_CODEPAGES7                                        571
-#define IDS_CODEPAGES8                                        572
-#define IDS_CODEPAGES9                                        573
-#define IDS_CODEPAGES10                                       574
-#define IDS_CODEPAGES11                                       575
-#define IDS_CODEPAGES12                                       576
-#define IDS_CODEPAGES13                                       577
-#define IDS_CODEPAGES14                                       578
-#define IDS_CODEPAGES15                                       579
-#define IDS_CODEPAGES16                                       580
-#define IDS_CODEPAGES17                                       581
-#define IDS_CODEPAGES18                                       582
-#define IDS_CODEPAGES19                                       583
-#define IDS_CODEPAGES20                                       584
-#define IDS_CODEPAGES21                                       585
-#define IDS_CODEPAGES22                                       586
-#define IDS_CODEPAGES23                                       587
-#define IDS_CODEPAGES24                                       588
+//Moved codepages to a character array in codepage.c 11 Jan 09 GKY
 #define IDS_DOSSTARTSESSIONFAILEDTEXT                         589
 #define IDS_DOSEXECPGMFAILEDTEXT                              590
-#define IDS_BLURB1TEXT                                        591       // 591 to 604 used by fonts.c
+#define IDS_BLURB1TEXT                                        591 // Other font test strings removed 11 Jan 09 GKY move to StrinTable
+#define IDS_COPYRIGHT                                         592
 #define IDS_ITALICTEXT                                        605
 #define IDS_OUTLINETEXT                                       606
 #define IDS_BOLDTEXT                                          607
@@ -741,6 +721,7 @@
 #define IDS_UNKNOWNBYTESTEXT                                  722
 #define IDS_DATABARTITLETEXT                                  723
 #define IDS_NTFSDRIVERFAILSTEXT                               724
+//Must be ordered & sequential
 #define IDS_SUNDAY                                            725
 #define IDS_MONDAY                                            726
 #define IDS_TUESDAY                                           727
@@ -748,6 +729,7 @@
 #define IDS_THURSDAY                                          729
 #define IDS_FRIDAY                                            730
 #define IDS_SATURDAY                                          731
+//End O & S
 #define IDS_SWAPTITLETEXT                                     732
 #define IDS_MEMTITLETEXT                                      733
 #define IDS_PROCSTITLETEXT                                    734
@@ -837,6 +819,7 @@
 #define IDS_DELETEFAILED2TEXT                                 818
 #define IDS_DELETEDTEXT                                       819
 #define IDS_OPSCOMPLETETEXT                                   820
+//Drive flag strings these must remain in order and be sequential to work
 #define IDS_FLREMOVABLETEXT                                   821
 #define IDS_FLNOTWRITEABLETEXT                                822
 #define IDS_FLIGNORETEXT                                      823
@@ -855,26 +838,29 @@
 #define IDS_FLVIRTUALTEXT                                     836
 #define IDS_FLNOSTATSTEXT                                     837
 #define IDS_FLRAMDISKTEXT                                     838
-#define IDS_CANTQUERYVOLTEXT                                  839
-#define IDS_CANTQUERYALLOCTEXT                                840
-#define IDS_DRIVEINACCESSIBLETEXT                             841
-#define IDS_DROPCHGICONHELPTEXT                               842
-#define IDS_DRIVEFLAGSTITLETEXT                               843
-#define IDS_SIZEINCLEASTEXT                                   844
-#define IDS_ENVVARNAMES                                       845
-#define IDS_ENVVARSTEXT                                       846
-#define IDS_CHECKONETEXT                                      847
-#define IDS_FM2TROUBLETEXT                                    848
-#define IDS_CANTLOADHELPTEXT                                  849
-#define IDS_NOHELPACCEPTTEXT                                  850
-#define IDS_NOHELPABORTTEXT                                   851
+#define IDS_FLWRITEVERIFYOFFTEXT                              839
+#define IDS_FLRECURSESCANDONETEXT                             840
+//End drive flag strings
+#define IDS_CANTQUERYVOLTEXT                                  841
+#define IDS_CANTQUERYALLOCTEXT                                842
+#define IDS_DRIVEINACCESSIBLETEXT                             843
+#define IDS_DROPCHGICONHELPTEXT                               844
+#define IDS_DRIVEFLAGSTITLETEXT                               845
+#define IDS_SIZEINCLEASTEXT                                   846
+#define IDS_ENVVARNAMES                                       847
+#define IDS_ENVVARSTEXT                                       848
+#define IDS_CHECKONETEXT                                      849
+#define IDS_FM2TROUBLETEXT                                    850
+#define IDS_CANTLOADHELPTEXT                                  851
+#define IDS_NOHELPACCEPTTEXT                                  852
+//#define IDS_NOHELPABORTTEXT                                   851 //Not used
 #define IDS_MISMATCHTITLETEXT                                 853
 #define IDS_MISMATCHTEXT                                      854
 #define IDS_CHECKSYSTEMCLOCKTEXT                              856
 #define IDS_NOTICETITLETEXT                                   857
-#define IDS_UPGRADETEXT                                       858
-#define IDS_PERNODETEXT                                       859
-#define IDS_USUALDISCTEXT                                     860
+#define IDS_UPGRADETEXT                                       858 //Not used
+#define IDS_PERNODETEXT                                       859 //Not used
+#define IDS_USUALDISCTEXT                                     860 //Not used
 #define IDS_ARCCNRFILTERMENUHELP                              867
 #define IDS_ARCCNRWALKDIRMENUHELP                             868
 #define IDS_ARCCNRRESCANMENUHELP                              869
@@ -889,10 +875,10 @@
 #define IDS_VERSIONTEXT                                       878
 #define IDS_FM2LITETEXT                                       879
 #define IDS_CHANGECMDLINELENGTHDEFAULT                        880
-#define IDS_NODESMAXTEXT                                      882
-#define IDS_DECRYPT1TEXT                                      883
-#define IDS_DECRYPT2TEXT                                      884
-#define IDS_DECRYPT3TEXT                                      885
+#define IDS_NODESMAXTEXT                                      882 //Not used
+#define IDS_DECRYPT1TEXT                                      883 //Not used
+#define IDS_DECRYPT2TEXT                                      884 //Not used
+#define IDS_DECRYPT3TEXT                                      885 //Not used
 #define IDS_SOURCEISATEXT                                     886
 #define IDS_DIRECTORYTEXT                                     887
 #define IDS_SORRYTEXT                                         888
@@ -1015,3 +1001,35 @@
 #define IDS_STATSMEANINGLESSTEXT                             1005
 #define IDS_EDITREADONLYFILETEXT                             1006
 #define IDS_EDITREADONLYFILETEXT2                            1007
+
+//The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
+//This was done as part of the conversion to a StringTable where strings are limited to 255
+#define IDS_SUGGEST1TEXT1                                   10000
+#define IDS_SUGGEST1TEXT2                                   10001
+#define IDS_ARCHIVERBB2TEXT1                                10010
+#define IDS_ARCHIVERBB2TEXT2                                10011
+#define IDS_ARCHIVERBB2TEXT3                                10012
+#define IDS_ARCHIVERBB2TEXT4                                10013
+#define IDS_ARCHIVERBB2TEXT5                                10014
+#define IDS_ARCHIVERBB2TEXT6                                10015
+#define IDS_ARCHIVERBB2TEXT7                                10016
+#define IDS_INIBINARYDATASKIPTEXT1                          10020
+#define IDS_INIBINARYDATASKIPTEXT2                          10021
+#define IDS_INSTANTHELPTEXT1                                10030
+#define IDS_INSTANTHELPTEXT2                                10031
+#define IDS_FSDERRORTEXT1                                   10040
+#define IDS_FSDERRORTEXT2                                   10041
+#define IDS_LANERRORTEXT1                                   10050
+#define IDS_LANERRORTEXT2                                   10051
+#define IDS_MAKESHADOWHELPTEXT1                             10060
+#define IDS_MAKESHADOWHELPTEXT2                             10061
+#define IDS_UNDELETEHELPTEXT1                               10070
+#define IDS_UNDELETEHELPTEXT2                               10071
+#define IDS_KILLPROCHELPTEXT1                               10080
+#define IDS_KILLPROCHELPTEXT2                               10081
+#define IDS_ARCNOTTHERETEXT1                                10090
+#define IDS_ARCNOTTHERETEXT2                                10091
+#define IDS_FM2CMDHELPTEXT1                                 10100
+#define IDS_FM2CMDHELPTEXT2                                 10101
+#define IDS_FM2CMDHELPTEXT3                                 10102
+//End of cut string that existed when we converted to a StringTable 11 Jan 09 GKY

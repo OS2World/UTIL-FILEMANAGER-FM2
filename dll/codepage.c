@@ -10,6 +10,7 @@
 
   14 Jul 06 SHL Use Runtime_Error
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  11 Jan 09 GKY Moved codepage names to a character array here from the string file.
 
 ***********************************************************************/
 
@@ -34,6 +35,29 @@
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
+static CHAR *CodePage[23] = {"437 USA",
+"850 Multilingual",
+"852 Latin 2",
+"857 Turkish",
+"860 Portuguese",
+"861 Iceland",
+"863 French-Canadian",
+"865 Nordic",
+"866 Russian OS/2",
+"878 Russian KOI8-R",
+"932 Japan",
+"934 Korea",
+"936 China",
+"938 Taiwan",
+"942 Japan SAA",
+"944 Korea SAA",
+"946 China SAA",
+"948 Taiwan SAA",
+"949 Korea KS",
+"950 Taiwan (Big 5)",
+"1004 DTP/Win",
+"1251 Russian Win",
+"1381 China GB"};
 
 MRESULT EXPENTRY PickCodePageDlgBox(HWND hwnd, ULONG msg, MPARAM mp1,
 				    MPARAM mp2)
@@ -49,10 +73,8 @@ MRESULT EXPENTRY PickCodePageDlgBox(HWND hwnd, ULONG msg, MPARAM mp1,
       char *p;
 
       cp = WinQueryCp(WinQueryWindowULong(hwnd, QWL_HMQ));
-      for (sSelect = 0;
-	   (p = GetPString(IDS_CODEPAGES1 + sSelect)) != NULL; sSelect++) {
-	if (!strcmp(p, "0"))
-	  break;
+      for (sSelect = 0; sSelect < 23; sSelect++) {
+        p = CodePage[sSelect];
 	WinSendDlgItemMsg(hwnd,
 			  PICK_LISTBOX,
 			  LM_INSERTITEM, MPFROMSHORT(LIT_END), MPFROMP(p));
@@ -126,8 +148,7 @@ MRESULT EXPENTRY PickCodePageDlgBox(HWND hwnd, ULONG msg, MPARAM mp1,
 					     LM_QUERYSELECTION,
 					     MPFROMSHORT(LIT_FIRST), MPVOID);
 	if (sSelect >= 0)
-	  WinSetDlgItemText(hwnd,
-			    PICK_INPUT, GetPString(IDS_CODEPAGES1 + sSelect));
+	  WinSetDlgItemText(hwnd, PICK_INPUT, CodePage[sSelect]);
 	break;
       case LN_ENTER:
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(DID_OK, 0), MPVOID);
@@ -149,7 +170,8 @@ MRESULT EXPENTRY PickCodePageDlgBox(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (!*s)
 	  Runtime_Error(pszSrcFile, __LINE__, "no input");
 	else {
-	  for (x = 0; (p = GetPString(IDS_CODEPAGES1 + x)) != NULL; x++) {
+          for (x = 0; x < 23; x++) {
+            p = CodePage[x];
 	    if (!stricmp(s, p)) {
 	      WinDismissDlg(hwnd, atoi(p));
 	      break;

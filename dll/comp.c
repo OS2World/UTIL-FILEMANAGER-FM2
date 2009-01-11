@@ -59,6 +59,7 @@
   08 Sep 08 SHL Avoid aliased pszLongName pointer in ActionCnrThread IDM_MOVE
   10 Dec 08 SHL Integrate exception handler support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis.
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -2228,10 +2229,11 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 0
 		       };
 	UINT x;
-	for (x = 0; ids[x]; x++) {
+        for (x = 0; ids[x]; x++) {
+          //fixme to allow user to change presparams 1-10-09 GKY
 	  SetPresParams(WinWindowFromID(hwnd, ids[x]),
 			&RGBGREY,
-			&RGBBLACK, &RGBBLACK, GetPString(IDS_8HELVTEXT));
+			&RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
 	}
       }
       WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER, 500);

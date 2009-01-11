@@ -57,6 +57,7 @@
   28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
                 and have no default choice.
   01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
+  11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -173,9 +174,10 @@ MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       MRESULT rc;
 
       rc = PFNWPButton(hwnd, msg, mp1, mp2);
+      //fixme to allow user to change presparams 1-10-09 GKY
       WinSetPresParam(hwnd, PP_FONTNAMESIZE,
-		      strlen(GetPString(IDS_8TIMESNEWROMANTEXT)) + 1,
-		      (PVOID) GetPString(IDS_8TIMESNEWROMANTEXT));
+		      strlen(FNT_8TIMESNEWROMAN) + 1,
+		      FNT_8TIMESNEWROMAN);
       return rc;
     }
 

@@ -35,6 +35,7 @@
   29 Nov 08 GKY Add ini entry for LastArchiver so the previous archiver is selected in the
                 Select archive dialog if no default is provided.
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
 
 ***********************************************************************/
 
@@ -367,7 +368,7 @@ INT load_archivers(VOID)
 
   //DosEnterCritSec(); //GKY 11-29-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-  psz = searchpath(GetPString(IDS_ARCHIVERBB2));
+  psz = searchpath(ARCHIVERBB2);
   if (!psz || !*psz) {
     DosReleaseMutexSem(hmtxFM2Globals);
     //DosExitCritSec();
@@ -859,7 +860,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   hwnd,
 		   GetPString(IDS_ADCHANGESINMEMTEXT),
 		   GetPString(IDS_ADREWRITETEXT), NullStr) == MBID_YES) {
-	  PSZ ab2 = searchpath(GetPString(IDS_ARCHIVERBB2));	// Rewrite without prompting
+	  PSZ ab2 = searchpath(ARCHIVERBB2);	// Rewrite without prompting
 
 	  rewrite_archiverbb2(ab2);
 	}
