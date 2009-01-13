@@ -441,6 +441,7 @@ unsigned APIENTRY LibMain(unsigned hModule,
     NDFS32 = "NDFS32";
     RAMFS = "RAMFS";
     NTFS = "NTFS";
+    ARCHIVERBB2 = "ARCHIVER.BB2";
     FNT_6HELVETICA       =  "6.Helvetica";
     FNT_8HELVETICA       =  "8.Helvetica";
     FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";
@@ -561,6 +562,7 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     NDFS32 = "NDFS32";
     RAMFS = "RAMFS";
     NTFS = "NTFS";
+    ARCHIVERBB2 = "ARCHIVER.BB2";
     FNT_6HELVETICA       =  "6.Helvetica";
     FNT_8HELVETICA       =  "8.Helvetica";
     FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";
