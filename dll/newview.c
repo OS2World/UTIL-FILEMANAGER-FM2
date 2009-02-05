@@ -6,7 +6,7 @@
   New internal viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   01 Dec 03 SHL Comments
   02 Dec 03 SHL Correct WM_VSCROLL math
@@ -518,7 +518,7 @@ MRESULT EXPENTRY ViewStatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if ((!hwndBubble || WinQueryWindowULong(hwndBubble, QWL_USER) != hwnd)
 	    && !WinQueryCapture(HWND_DESKTOP)) {
 
-	  char *s = NULL;
+	  PCSZ s = NULL;
 
 	  switch (id) {
 	  case NEWVIEW_STATUS2:
@@ -1813,7 +1813,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
-        //fixme to allow user to change presparams 1-10-09 GKY
+	//fixme to allow user to change presparams 1-10-09 GKY
 	WinSetPresParam(temphwnd,
 			PP_FONTNAMESIZE,
 			strlen(FNT_8HELVETICA) + 1,
@@ -1834,7 +1834,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
 		   IDS_WINCREATEWINDOW);
       else {
-        //fixme to allow user to change presparams 1-10-09 GKY
+	//fixme to allow user to change presparams 1-10-09 GKY
 	WinSetPresParam(temphwnd,
 			PP_FONTNAMESIZE,
 			strlen(FNT_8HELVETICA) + 1,
@@ -2626,8 +2626,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!ad->hwndPopup) {
 	ad->hwndPopup =
 	  WinLoadMenu(HWND_DESKTOP, FM3ModHandle, NEWVIEW_POPUP);
-        if (ad->hwndPopup)
-          //fixme to allow user to change presparams 1-10-09 GKY
+	if (ad->hwndPopup)
+	  //fixme to allow user to change presparams 1-10-09 GKY
 	  WinSetPresParam(ad->hwndPopup,
 			  PP_FONTNAMESIZE,
 			  strlen(FNT_8HELVETICA) + 1,
@@ -3698,12 +3698,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      GetPString(IDS_NVLINEJUMPTEXT) : GetPString(IDS_NVBYTEJUMPTEXT);
 	    sip.ret = s;
 	    *s = 0;
-	    sip.prompt = ss;
 	    sip.inputlen = 34;
 	    sip.title = (SHORT1FROMMP(mp1) == IDM_GOTOLINE) ?
 	      GetPString(IDS_NVLINEJUMPTITLETEXT) :
 	      GetPString(IDS_NVBYTEJUMPTITLETEXT);
-	    sprintf(sip.prompt,
+	    sprintf(ss,
 		    GetPString(IDS_NVJUMPTEXT),
 		    (SHORT1FROMMP(mp1) == IDM_GOTOLINE) ?
 		    GetPString(IDS_LINETEXT) :
@@ -3713,6 +3712,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    0,
 		    (SHORT1FROMMP(mp1) == IDM_GOTOLINE) ?
 		    ad->numlines : ad->textsize - 1);
+	    sip.prompt = ss;
 	    WinDlgBox(HWND_DESKTOP,
 		      hwnd, InputDlgProc, FM3ModHandle, STR_FRAME, &sip);
 	    if (*s) {

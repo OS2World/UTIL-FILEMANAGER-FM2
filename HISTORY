@@ -1,5 +1,9 @@
 New stuff's at the top.  This list is not necessarily complete.
 
+3.16
+ o Correct walk, compare and dirsizes dialog setups to ignore saved dialog size
+ o Move translatable strings to fm3dll.rc STRINGTABLE to support NLS translations
+
 3.15
  o Added the option to turn write verify off on a per drive basis; it is turned off on nonfloppy
  removables by default to address reports of hangs with FAT32 usb drives and of FAT USB

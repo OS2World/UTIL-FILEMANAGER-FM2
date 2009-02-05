@@ -6,7 +6,7 @@
   Utility windows and mouse positioning
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2008 Steven H.Levine
+  Copyright (c) 2005, 2009 Steven H.Levine
 
   10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
   14 Jul 06 SHL Use Runtime_Error
@@ -171,8 +171,8 @@ MRESULT EXPENTRY CheckListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (x >= 0) {
 	    *szBuffer = 0;
 	    WinSendDlgItemMsg(hwnd, CHECK_LISTBOX, LM_QUERYITEMTEXT,
-                              MPFROM2SHORT(x, CCHMAXPATH), MPFROMP(szBuffer));
-            cl = WinQueryWindowPtr(hwnd, QWL_USER);
+			      MPFROM2SHORT(x, CCHMAXPATH), MPFROMP(szBuffer));
+	    cl = WinQueryWindowPtr(hwnd, QWL_USER);
 	    if (*szBuffer && !(cl->flags & CHECK_ARCHIVE))
 	      QuickView(hwnd, szBuffer);
 	  }
@@ -450,8 +450,8 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fdlg.cbSize = (ULONG) sizeof(FILEDLG);
 	    fdlg.fl = FDS_HELPBUTTON | FDS_CENTER |
 	      FDS_OPEN_DIALOG | FDS_CUSTOM;
-	    fdlg.pszTitle = GetPString(IDS_NEWTARGETTEXT);
-	    fdlg.pszOKButton = GetPString(IDS_CHANGETEXT);
+	    fdlg.pszTitle = (PSZ)GetPString(IDS_NEWTARGETTEXT);
+	    fdlg.pszOKButton = (PSZ)GetPString(IDS_CHANGETEXT);
 	    *drive = *cl->prompt;
 	    drive[1] = ':';
 	    drive[2] = 0;

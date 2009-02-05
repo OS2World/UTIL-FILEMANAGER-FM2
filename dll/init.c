@@ -6,7 +6,7 @@
   Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -63,12 +63,13 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
   28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
-                and have no default choice.
+		and have no default choice.
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   03 Jan 09 GKY Avoid dbl scan of drive on startup by checking for first rescan drive.
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
-                Dos/Win programs from being inserted into the execute dialog with message why.
+		Dos/Win programs from being inserted into the execute dialog with message why.
   11 Jan 09 GKY Move strings that shouldn't be translated (font names etc) compile time variables
+  03 Feb 09 SHL Switch to STRINGTABLE
 
 ***********************************************************************/
 
@@ -386,29 +387,9 @@ VOID FindSwapperDat(VOID)
 unsigned APIENTRY LibMain(unsigned hModule,
 			  unsigned ulFlag)
 {
-  CHAR *env;
-  CHAR stringfile[CCHMAXPATH];
-  FILESTATUS3 fsa;
-  APIRET rc;
-
   switch (ulFlag) {
   case 0:
     FM3DllHandle = hModule;
-    strcpy(stringfile, "FM3RES.STR");
-    env = getenv("FM3INI");
-    if (env) {
-      DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(env, FIL_STANDARD, &fsa, sizeof(fsa));
-      if (!rc) {
-	if (fsa.attrFile & FILE_DIRECTORY) {
-	  BldFullPathName(stringfile, env, "FM3RES.STR");
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
-	    strcpy(stringfile, "FM3RES.STR");
-	}
-      }
-    }
-    LoadStrings(stringfile);
 
     DosError(FERR_DISABLEHARDERR);
     /* strings here to prevent multiple occurences in DLL */
@@ -505,31 +486,11 @@ unsigned APIENTRY LibMain(unsigned hModule,
 unsigned long _System _DLL_InitTerm(unsigned long hModule,
 				    unsigned long ulFlag)
 {
-  CHAR *env;
-  CHAR stringfile[CCHMAXPATH];
-  FILESTATUS3 fsa;
-  APIRET rc;
-
   switch (ulFlag) {
   case 0:
     if (_CRT_init() == -1)
       return 0UL;
     FM3DllHandle = hModule;
-    strcpy(stringfile, "FM3RES.STR");
-    env = getenv("FM3INI");
-    if (env) {
-      DosError(FERR_DISABLEHARDERR);
-      rc = DosQueryPathInfo(env, FIL_STANDARD, &fsa, sizeof(fsa));
-      if (!rc) {
-	if (fsa.attrFile & FILE_DIRECTORY) {
-	  BldFullPathName(stringfile, env, "FM3RES.STR");
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosQueryPathInfo(stringfile, FIL_STANDARD, &fsa, sizeof(fsa)))
-	    strcpy(stringfile, "FM3RES.STR");
-	}
-      }
-    }
-    LoadStrings(stringfile);
 
     DosError(FERR_DISABLEHARDERR);
     /* strings here to prevent multiple occurences in DLL */
@@ -745,15 +706,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PSZ env;
   CHAR dllfile[CCHMAXPATH];
   ULONG size;
-
-  if (!StringsLoaded()) {
-    saymsg(MB_ENTER,
-	   HWND_DESKTOP,
-	   "Error",
-	   "FM3RES.STR isn't in right format, at least "
-	   "for this version of FM/2.");
-    return FALSE;
-  }
 
   strcpy(dllfile, "FM3RES");
   env = getenv("FM3INI");
@@ -1050,7 +1002,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   hini.hmodAccelActionBarModule = (HMODULE) 0;
   hini.idAccelTable = 0;
   hini.idActionBar = 0;
-  hini.pszHelpWindowTitle = GetPString(IDS_FM2HELPTITLETEXT);
+  hini.pszHelpWindowTitle = (PSZ)GetPString(IDS_FM2HELPTITLETEXT);
   hini.fShowPanelId = CMIC_HIDE_PANEL_ID;
   hini.pszHelpLibraryName = "FM3.HLP";
   hwndHelp = WinCreateHelpInstance(hab, &hini);
@@ -1297,10 +1249,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     // Check to see if we are running protect only
     if (!DosQueryAppType(GetCmdSpec(TRUE), &ulAppType)) {
       ret = runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED,
-                    (HWND) 0, pszSrcFile, __LINE__, NULL, NULL,
-                    "%s /C exit", GetCmdSpec(TRUE));
+		    (HWND) 0, pszSrcFile, __LINE__, NULL, NULL,
+		    "%s /C exit", GetCmdSpec(TRUE));
       if (ret == ERROR_SMG_INVALID_PROGRAM_TYPE)
-        fProtectOnly = TRUE;
+	fProtectOnly = TRUE;
     }
     else
       fProtectOnly = TRUE;

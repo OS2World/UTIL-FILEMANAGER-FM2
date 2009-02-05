@@ -6,7 +6,7 @@
   grep dialog for collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H. Levine
+  Copyright (c) 2004, 2009 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
@@ -83,8 +83,8 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowPtr(hwnd, QWL_USER, mp2);
       *(CHAR *)mp2 = 0;
       {
-	CHAR *p;
-	CHAR *pp;
+	PCSZ p;
+	PSZ pp;
 
 	p = GetPString(IDS_ENVVARNAMES);
 	while (*p == ' ')
@@ -238,7 +238,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(34, 0), MPVOID);
     WinSetDlgItemText(hwnd, GREP_MASK, lastmask);
     WinSendDlgItemMsg(hwnd,
-                      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
+		      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
     size = sizeof(BOOL);
     PrfQueryProfileData(fmprof, FM3Str, "RememberFlagsGrep",
 			(PVOID) & gRemember, &size);
@@ -246,19 +246,19 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (gRemember) {
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Recurse",
-                          (PVOID) & recurse, &size);
+			  (PVOID) & recurse, &size);
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Absolute",
-                          (PVOID) & absolute, &size);
+			  (PVOID) & absolute, &size);
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Case",
-                          (PVOID) & sensitive, &size);
+			  (PVOID) & sensitive, &size);
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Sayfiles",
-                          (PVOID) & sayfiles, &size);
+			  (PVOID) & sayfiles, &size);
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Searchfiles",
-                          (PVOID) & searchFiles, &size);
+			  (PVOID) & searchFiles, &size);
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
 			  (PVOID) & searchEAs, &size);

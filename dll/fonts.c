@@ -6,7 +6,7 @@
   Font support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2009 Steven H. Levine
 
   05 Jan 08 SHL Sync
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
@@ -75,7 +75,7 @@ VOID ConvertVectorFontSize(FIXED fxPointSize, PFATTRS pfattrs)
 }                                       /* end ConvertVectorPointSize() */
 
 VOID SetPresParamFromFattrs(HWND hwnd, FATTRS * fattrs,
-                            SHORT sNominalPointSize, FIXED fxPointSize)
+			    SHORT sNominalPointSize, FIXED fxPointSize)
 {
 
   CHAR s[CCHMAXPATH * 2];
@@ -86,7 +86,7 @@ VOID SetPresParamFromFattrs(HWND hwnd, FATTRS * fattrs,
     sprintf(s, "%hd.", FIXEDINT(fxPointSize));
     if ((((USHORT) FIXEDFRAC(fxPointSize) * 100) / 65536) > 0)
       sprintf(&s[strlen(s)], "%hd.",
-              ((USHORT) FIXEDFRAC(fxPointSize) * 100) / 65536);
+	      ((USHORT) FIXEDFRAC(fxPointSize) * 100) / 65536);
   }
   strcat(s, fattrs->szFacename);
   if (fattrs->fsSelection & FATTR_SEL_ITALIC) {
@@ -124,7 +124,11 @@ VOID SetFont(HWND hwnd)
 
   //DosEnterCritSec(); //GKY 11-30-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-  szPreview = GetPString(IDS_BLURB1TEXT);
+  szPreview = GetPString(IDS_BLURB1TEXT + counter++);
+  if (strcmp(szPreview, "0") == 0) {
+    counter = 0;
+    szPreview = GetPString(IDS_BLURB1TEXT + counter++);
+  }
   DosReleaseMutexSem(hmtxFM2Globals);
   //DosExitCritSec();
   memset(&fontdlg, 0, sizeof(fontdlg)); /* initialize all fields */
@@ -156,7 +160,7 @@ VOID SetFont(HWND hwnd)
     ConvertVectorFontSize(fontdlg.fxPointSize, &fontdlg.fAttrs);
   WinReleasePS(fontdlg.hpsScreen);
   SetPresParamFromFattrs(hwnd, &fontdlg.fAttrs, fontdlg.sNominalPointSize,
-                         fontdlg.fxPointSize);
+			 fontdlg.fxPointSize);
 }
 #endif
 
@@ -176,14 +180,16 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   FONTDLG fontDlg;
   HPS hps;
   FONTMETRICS fontMetrics;
-  CHAR szFamily[CCHMAXPATH], *szPreview;
+  CHAR szFamily[CCHMAXPATH];
+  PCSZ pcszPreview;
   static FIXED fxPointSize = 0; /* keep track of this for vector fonts */
 
   if ((flags & 1) && !fattrs)
     return fattrs;
   //DosEnterCritSec(); //GKY 11-30-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-  szPreview = GetPString(IDS_BLURB1TEXT);
+  // 12 Jan 09 SHL fixme to do multiple previews or rename to IDS_BLURBTEXT
+  pcszPreview = GetPString(IDS_BLURB1TEXT);
   DosReleaseMutexSem(hmtxFM2Globals);
   //DosExitCritSec();
   memset(&fontDlg, 0, sizeof(fontDlg)); /* initialize all fields */
@@ -193,14 +199,14 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   hps = WinGetPS(hwndMLE);
   if (!(flags & 1))
     WinSendMsg(hwndMLE, MLM_QUERYFONT,
-               MPFROMP((PFATTRS) & (fontDlg.fAttrs)), NULL);
+	       MPFROMP((PFATTRS) & (fontDlg.fAttrs)), NULL);
   else
     memcpy(&fontDlg.fAttrs, fattrs, sizeof(FATTRS));
 
   /* create system default font */
 
   GpiCreateLogFont(hps, (PSTR8) fontDlg.fAttrs.szFacename, 1,
-                   &(fontDlg.fAttrs));
+		   &(fontDlg.fAttrs));
   GpiSetCharSet(hps, 1);
   GpiQueryFontMetrics(hps, sizeof(FONTMETRICS), &fontMetrics);
   GpiSetCharSet(hps, LCID_DEFAULT);
@@ -214,8 +220,8 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   fontDlg.hpsScreen = WinGetScreenPS(HWND_DESKTOP);     /* Screen presentation space */
   fontDlg.hpsPrinter = NULLHANDLE;      /* Printer presentation space */
 
-  fontDlg.pszTitle = GetPString(IDS_SETVIEWERFONTTITLETEXT);
-  fontDlg.pszPreview = szPreview;
+  fontDlg.pszTitle = (PSZ)GetPString(IDS_SETVIEWERFONTTITLETEXT);
+  fontDlg.pszPreview = (PSZ)pcszPreview;
   fontDlg.pszPtSizeList = NULL;         /* Application provided size list  */
   fontDlg.pfnDlgProc = NULL;            /* Dialog subclass procedure       */
   strcpy(szFamily, fontMetrics.szFamilyname);   /* Family name of font        */

@@ -6,7 +6,7 @@
   Drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H.Levine
+  Copyright (c) 2003, 2009 Steven H.Levine
 
   22 Nov 02 SHL Baseline
   08 Feb 03 SHL DropHelp: calc EA size consistently
@@ -271,7 +271,7 @@ static ULONG GetDropCount(HWND hwnd, MPARAM mp1)
   return numitems;
 }
 
-void DropHelp(MPARAM mp1, MPARAM mp2, HWND hwnd, char *text)
+void DropHelp(MPARAM mp1, MPARAM mp2, HWND hwnd, PCSZ text)
 {
   ULONG numitems;
 
@@ -280,7 +280,7 @@ void DropHelp(MPARAM mp1, MPARAM mp2, HWND hwnd, char *text)
 	 hwnd, GetPString(IDS_FM2DROPHELPTEXT), text, numitems, numitems);
 }
 
-LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
+LISTINFO *DoFileDrop(HWND hwndCnr, PCSZ directory, BOOL arcfilesok,
 		     MPARAM mp1, MPARAM mp2)
 {
   /* builds a list from the dropped files */
@@ -423,8 +423,8 @@ LISTINFO *DoFileDrop(HWND hwndCnr, CHAR * directory, BOOL arcfilesok,
       if (numfiles + 2 > numalloc) {
 
 	CHAR **test;
-        PULONG pltest;
-        PULONGLONG plltest;
+	PULONG pltest;
+	PULONGLONG plltest;
 
 	numalloc += 12;
 	test =

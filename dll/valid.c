@@ -28,11 +28,11 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
-                Dos/Win programs from being inserted into the execute dialog with message why.
+		Dos/Win programs from being inserted into the execute dialog with message why.
   03 Jan 09 GKY Modify IsExecutable to prevent some text files from being treated as executable
-                and prevent dlls from being loaded into execute dialog.
+		and prevent dlls from being loaded into execute dialog.
   05 Jan 09 GKY Fix IsBinary to recognize values above \xc4 (maybe lower) as positive.
-                When these high codes were it text files they showed as hex in new view.
+		When these high codes were it text files they showed as hex in new view.
 
 ***********************************************************************/
 
@@ -120,7 +120,7 @@ char *RootName(char *filename)
    */
 
 int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
-               FDATE *datevar2, FTIME *timevar2)
+	       FDATE *datevar2, FTIME *timevar2)
 {
   int comp = 0;
   FILESTATUS3 fs3o, fs3n;
@@ -139,7 +139,7 @@ int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
   }
   if (&datevar1 && &datevar2 && &timevar1 && &timevar2) {
     comp = (datevar2->year >
-            datevar1->year) ? 1 :
+	    datevar1->year) ? 1 :
       (datevar2->year <
        datevar1->year) ? -1 :
       (datevar2->month >
@@ -172,13 +172,13 @@ int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
    */
 
 int TestCDates(CDATE *datevar1, CTIME *timevar1,
-               CDATE *datevar2, CTIME *timevar2)
+	       CDATE *datevar2, CTIME *timevar2)
 {
   int comp = 0;
 
   if (&datevar1 && &datevar2 && &timevar1 && &timevar2) {
     comp = (datevar2->year >
-            datevar1->year) ? 1 :
+	    datevar1->year) ? 1 :
       (datevar2->year <
        datevar1->year) ? -1 :
       (datevar2->month >
@@ -211,7 +211,7 @@ BOOL IsNewer(char *file1, char *file2)
   return (TestFDates(file1, file2, NULL, NULL, NULL, NULL) > 0);
 }
 
-#if 0 	// JBS	11 Sep 08
+#if 0	// JBS	11 Sep 08
 BOOL IsDesktop(HAB hab, HWND hwnd)
 {
   HWND hwndDesktop;
@@ -328,10 +328,10 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   if (pulType && !strcmp(pfsn, NTFS))
     *pulType |= DRIVE_NOTWRITEABLE;
   if (pulType && !strcmp(pfsn, NDFS32)){
-        *pulType |= DRIVE_VIRTUAL;
+	*pulType |= DRIVE_VIRTUAL;
     }
   if (pulType && !strcmp(pfsn, RAMFS)){
-        *pulType |= DRIVE_RAMDISK;
+	*pulType |= DRIVE_RAMDISK;
     }
   if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV &&
       (strcmp(pfsn, CDFS) || strcmp(pfsn, ISOFS))) {
@@ -358,10 +358,10 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 	(!strcmp(pfsn, HPFS) ||
 	 !strcmp(pfsn, JFS) ||
 	 !strcmp(pfsn, FAT32) ||
-         !strcmp(pfsn, RAMFS) ||
-         !strcmp(pfsn, NDFS32) ||
-         !strcmp(pfsn, NTFS) ||
-         !strcmp(pfsn, HPFS386))) {
+	 !strcmp(pfsn, RAMFS) ||
+	 !strcmp(pfsn, NDFS32) ||
+	 !strcmp(pfsn, NTFS) ||
+	 !strcmp(pfsn, HPFS386))) {
       *pulType &= ~DRIVE_NOLONGNAMES;
     }
 
@@ -400,12 +400,12 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   clDataBytes = sizeof(NonRemovable);
   NonRemovable = 1;			// Preset as non removable
   DosError(FERR_DISABLEHARDERR);
-  rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE, &parmPkt.Cmd,	/*  Address of the command-specific argument list. */
-		   sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
-		   &clParmBytes,	/*  Pointer to the length of parameters. */
-		   &NonRemovable,	/*  Address of the data area. */
-		   sizeof(NonRemovable),	/*  Length, in bytes, of pData. */
-		   &clDataBytes);	/*  Pointer to the length of data. */
+  rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE, &parmPkt.Cmd,	/* Address of the command-specific argument list. */
+		   sizeof(parmPkt.Cmd),	/* Length, in bytes, of pParams. */
+		   &clParmBytes,	/* Pointer to the length of parameters. */
+		   &NonRemovable,	/* Address of the data area. */
+		   sizeof(NonRemovable),	/* Length, in bytes, of pData. */
+		   &clDataBytes);	/* Pointer to the length of data. */
 
   if (!rc && NonRemovable) {
     // Could be USB so check BPB flags
@@ -413,12 +413,12 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
     clDataBytes = sizeof(dataPkt);
     memset(&dataPkt, 0xff, sizeof(dataPkt));
     DosError(FERR_DISABLEHARDERR);
-    rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS, &parmPkt.Cmd,	/*  Address of the command-specific argument list. */
-		     sizeof(parmPkt.Cmd),	/*  Length, in bytes, of pParams. */
-		     &clParmBytes,	/*  Pointer to the length of parameters. */
-		     &dataPkt,		/*  Address of the data area. */
-		     sizeof(dataPkt),	/*  Length, in bytes, of pData. */
-		     &clDataBytes);	/*  Pointer to the length of data. */
+    rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS, &parmPkt.Cmd,	/* Address of the command-specific argument list. */
+		     sizeof(parmPkt.Cmd),	/* Length, in bytes, of pParams. */
+		     &clParmBytes,	/* Pointer to the length of parameters. */
+		     &dataPkt,		/* Address of the data area. */
+		     sizeof(dataPkt),	/* Length, in bytes, of pData. */
+		     &clDataBytes);	/* Pointer to the length of data. */
 
     if (!rc && (dataPkt.bpb.fsDeviceAttr & BPB_REMOVABLE_MEDIA))
       NonRemovable = 0;
@@ -437,7 +437,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 #if 0	// JBS	11 Sep 08
 BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 {
-  /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
+  /* returns: -1 (error), 0 (is a directory), or 1 (is a file) */
 
   FILESTATUS3L fsa1, fsa2;
   APIRET ret;
@@ -462,9 +462,9 @@ BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 }
 #endif
 
-INT IsFile(CHAR * filename)
+INT IsFile(PCSZ filename)
 {
-  /* returns:  -1 (error), 0 (is a directory), or 1 (is a file) */
+  /* returns: -1 (error), 0 (is a directory), or 1 (is a file) */
 
   FILESTATUS3 fsa;
   APIRET ret;
@@ -486,7 +486,7 @@ BOOL IsFullName(CHAR * filename)
     (isalpha(*filename) && filename[1] == ':' && filename[2] == '\\') : 0;
 }
 
-BOOL IsRoot(CHAR * filename)
+BOOL IsRoot(PCSZ filename)
 {
   return (filename && isalpha(*filename) && filename[1] == ':' &&
 	  filename[2] == '\\' && !filename[3]);
@@ -607,52 +607,52 @@ BOOL IsExecutable(CHAR * filename)
       ret = DosQueryAppType(fname, &apptype);
     }
     if (apptype & (FAPPTYP_DLL |
-                   FAPPTYP_PHYSDRV |
-                   FAPPTYP_VIRTDRV |
-                   FAPPTYP_PROTDLL))
+		   FAPPTYP_PHYSDRV |
+		   FAPPTYP_VIRTDRV |
+		   FAPPTYP_PROTDLL))
       return FALSE;
     if (apptype == 0x000b && (!p ||
-        (stricmp(p, ".EXE") &&
-         stricmp(p, ".COM") &&
-         stricmp(p, ".CMD") &&
-         stricmp(p, ".BAT") &&
-         stricmp(p, ".BTM"))))
+	(stricmp(p, ".EXE") &&
+	 stricmp(p, ".COM") &&
+	 stricmp(p, ".CMD") &&
+	 stricmp(p, ".BAT") &&
+	 stricmp(p, ".BTM"))))
       return FALSE;
     if (!fProtectOnly) {
       if ((!ret && (!apptype ||
-                    (apptype &
-                     (FAPPTYP_NOTWINDOWCOMPAT |
-                      FAPPTYP_WINDOWCOMPAT |
-                      FAPPTYP_WINDOWAPI |
-                      FAPPTYP_BOUND |
-                      FAPPTYP_DOS |
-                      FAPPTYP_WINDOWSREAL |
-                      FAPPTYP_WINDOWSPROT |
-                      FAPPTYP_32BIT |
-                      FAPPTYP_WINDOWSPROT31)))) ||
-          (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT") || !stricmp(p, ".BTM"))))
-        return TRUE;
+		    (apptype &
+		     (FAPPTYP_NOTWINDOWCOMPAT |
+		      FAPPTYP_WINDOWCOMPAT |
+		      FAPPTYP_WINDOWAPI |
+		      FAPPTYP_BOUND |
+		      FAPPTYP_DOS |
+		      FAPPTYP_WINDOWSREAL |
+		      FAPPTYP_WINDOWSPROT |
+		      FAPPTYP_32BIT |
+		      FAPPTYP_WINDOWSPROT31)))) ||
+	  (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT") || !stricmp(p, ".BTM"))))
+	return TRUE;
     }
     else if ((!ret && (!apptype ||
-                       (apptype &
-                        (FAPPTYP_NOTWINDOWCOMPAT |
-                         FAPPTYP_WINDOWCOMPAT |
-                         FAPPTYP_WINDOWAPI |
-                         FAPPTYP_BOUND |
-                         FAPPTYP_32BIT)))) ||
-             (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BTM"))))
+		       (apptype &
+			(FAPPTYP_NOTWINDOWCOMPAT |
+			 FAPPTYP_WINDOWCOMPAT |
+			 FAPPTYP_WINDOWAPI |
+			 FAPPTYP_BOUND |
+			 FAPPTYP_32BIT)))) ||
+	     (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BTM"))))
       return TRUE;
     if (fProtectOnly && (apptype &
-                         (FAPPTYP_DOS |
-                          FAPPTYP_WINDOWSREAL |
-                          FAPPTYP_WINDOWSPROT |
-                          FAPPTYP_WINDOWSPROT31)) &&
-        (p && (!stricmp(p, ".EXE") || !stricmp(p, ".COM"))))
+			 (FAPPTYP_DOS |
+			  FAPPTYP_WINDOWSREAL |
+			  FAPPTYP_WINDOWSPROT |
+			  FAPPTYP_WINDOWSPROT31)) &&
+	(p && (!stricmp(p, ".EXE") || !stricmp(p, ".COM"))))
       saymsg(MB_OK,
-             HWND_DESKTOP,
-             NullStr,
-             GetPString(IDS_NOTPROTECTONLYEXE),
-             filename);
+	     HWND_DESKTOP,
+	     NullStr,
+	     GetPString(IDS_NOTPROTECTONLYEXE),
+	     filename);
   }
   return FALSE;
 }
@@ -732,8 +732,8 @@ VOID DriveFlagsOne(INT x)
   driveserial[x] = -1;
   driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		    DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-                    DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
-                    DRIVE_WRITEVERIFYOFF);
+		    DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
+		    DRIVE_WRITEVERIFYOFF);
   if (removable != -1) {
     struct
     {
@@ -799,21 +799,21 @@ VOID FillInDriveFlags(VOID * dummy)
   for (x = 0; x < 26; x++)
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-                      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
-                      DRIVE_WRITEVERIFYOFF);
+		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
+		      DRIVE_WRITEVERIFYOFF);
   memset(driveserial, -1, sizeof(driveserial));
   DosError(FERR_DISABLEHARDERR);
   DosQCurDisk(&ulDriveNum, &ulDriveMap);
   for (x = 0; x < 26; x++) {
     if (ulDriveMap & (1 << x) && !(driveflags[x] & DRIVE_IGNORE)) {
       {
-        ULONG flags = 0, size = sizeof(ULONG);
-        CHAR FlagKey[80];
+	ULONG flags = 0, size = sizeof(ULONG);
+	CHAR FlagKey[80];
 
-          sprintf(FlagKey, "%c.DriveFlags", (CHAR) (x + 'A'));
-          if (PrfQueryProfileData(fmprof, appname, FlagKey, &flags, &size) &&
-              size == sizeof(ULONG))
-            driveflags[x] |= flags;
+	  sprintf(FlagKey, "%c.DriveFlags", (CHAR) (x + 'A'));
+	  if (PrfQueryProfileData(fmprof, appname, FlagKey, &flags, &size) &&
+	      size == sizeof(ULONG))
+	    driveflags[x] |= flags;
       }
 
       if (x > 1) {
@@ -848,12 +848,12 @@ VOID FillInDriveFlags(VOID * dummy)
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], &size);
       if (!fVerifyOffChecked[x]) {
-        if (driveflags[x] & DRIVE_REMOVABLE)
-          driveflags[x] |= DRIVE_WRITEVERIFYOFF;
-        if (!(driveflags[x] & DRIVE_INVALID)) {
-          fVerifyOffChecked[x] = TRUE;
-          PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
-        }
+	if (driveflags[x] & DRIVE_REMOVABLE)
+	  driveflags[x] |= DRIVE_WRITEVERIFYOFF;
+	if (!(driveflags[x] & DRIVE_INVALID)) {
+	  fVerifyOffChecked[x] = TRUE;
+	  PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
+	}
       }
     }
   }
@@ -971,7 +971,7 @@ CHAR *assign_ignores(CHAR * s)
   return s;
 }
 
-BOOL needs_quoting(register CHAR * f)
+BOOL needs_quoting(PCSZ f)
 {
   register CHAR *p = " &|<>";
 
@@ -991,8 +991,8 @@ BOOL IsBinary(register CHAR * str, ULONG len)
     while (x < len) {
       if ((UINT) str[x] < ' ' && str[x] != '\r' && str[x] != '\n' && str[x] != '\t'
 	  && str[x] != '\x1b' && str[x] != '\x1a' && str[x] != '\x07'
-          && str[x] != '\x0c') {
-        return TRUE;
+	  && str[x] != '\x0c') {
+	return TRUE;
       }
       x++;
     }

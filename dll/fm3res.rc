@@ -6,7 +6,7 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H. Levine
+  Copyright (c) 2003, 2009 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   04 Nov 03 SHL Drop obsoletes
@@ -2355,12 +2355,12 @@ ACCELTABLE  CFG_FRAME
 
 STRINGTABLE
   BEGIN
-    IDS_COPYRIGHT, COPYRIGHT_STRING;
-    IDS_OPENBUTTONHELP                   "Click this button to open a Directory\rContainer for the highlighted directory\rin the Drive Tree below.  Or click B2 to\rWalk to a directory to open.  Or drop an\robject here to open its directory."
-    IDS_OPENDROPHELP                     "Dropping here will open a Directory container for the item."
-    IDS_IDEALBUTTONHELP                  "Click this button to set FM/2's window\rsize to an ""ideal"" size."
-    IDS_LEDHELP                          "This control indicates how\rmany background threads\rare currently active.\rB1 = show list of active threads\rB2 = close list of active threads\rB3 or chord = FM/2 open windows dialog"
-    IDS_WALKBUTTONHELP                   "B1 = Open new directory\rB2 = Change directories\rB3 = Tile child windows"
+    IDS_COPYRIGHT                         COPYRIGHT_STRING
+    IDS_OPENBUTTONHELP                    "Click this button to open a Directory\rContainer for the highlighted directory\rin the Drive Tree below.  Or click B2 to\rWalk to a directory to open.  Or drop an\robject here to open its directory."
+    IDS_OPENDROPHELP                      "Dropping here will open a Directory container for the item."
+    IDS_IDEALBUTTONHELP                   "Click this button to set FM/2's window\rsize to an ""ideal"" size."
+    IDS_LEDHELP                           "This control indicates how\rmany background threads\rare currently active.\rB1 = show list of active threads\rB2 = close list of active threads\rB3 or chord = FM/2 open windows dialog"
+    IDS_WALKBUTTONHELP                    "B1 = Open new directory\rB2 = Change directories\rB3 = Tile child windows"
     IDS_QUICKBUTTONHELP                   "B1 = Toggle quicklists\rB2 = Toggle toolbar\rB3 = Toggle drive buttons\r"
     IDS_ATTRSBUTTONHELP                   "This window shows the current\ritem's attributes.\rClick to change date\rand/or attributes."
     IDS_INFOBUTTONHELP                    "This window shows the current\ritem's date and time.\rClick to get detailed\rinformation on item."
@@ -2817,7 +2817,7 @@ STRINGTABLE
     IDS_EXTABPROMPTTEXT                   "Expand tabs to # spaces?"
     IDS_EXTABTITLETEXT                    "FM/2: Set tabstop space equivalants"
     IDS_VIEWABOUTTITLETEXT                "About This Thing"
-    IDS_VIEWABOUTTEXT                     "FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2007 Steven Levine and Associates, Inc.\rAll Rights Reserved"
+    IDS_VIEWABOUTTEXT                     "FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2009 Steven Levine and Associates, Inc.\rAll Rights Reserved"
     IDS_LANERRORTITLETEXT                 "LAN Error report"
     IDS_LANERROR2TITLETEXT                "Don't forget"
     IDS_LANERROR2TEXT                     "To notify your LAN supplier of their bug.  I can't guarantee FM/2 to work properly with broken FSDs.  If you are a user on a LAN, ask your system administrator to report the bug to the LAN supplier for you."
@@ -2925,7 +2925,7 @@ STRINGTABLE
     IDS_INICANTOPENINITEXT                "Can't open ""%s"" as an OS/2 INI file.\rNote:  If you receive a WIN 1302 error, it indicates that the INI file is corrupt."
     IDS_INIDELETEKEYTEXT                  "Do you want to delete keyname ""%s""?"
     IDS_INIDELETEAPPTEXT                  "Do you want to delete application ""%s""?"
-    IDS_INIABOUTTEXT                      "FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2007 Steven Levine and Associates, Inc.\rAll Rights Reserved"
+    IDS_INIABOUTTEXT                      "FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2009 Steven Levine and Associates, Inc.\rAll Rights Reserved"
     IDS_INITITLETEXT                      "FM/2: INI ""%s"""
     IDS_INISEARCHHELPTEXT                 "Enter the characters to find.\r\rInput is case insensitive. Leading\rspaces are not stripped. Find\rnexts are made after the current\ritem, find firsts always start at\rthe top.  Beep means no (more)\rmatches."
     IDS_INISEARCHPROMPTTEXT               "String to find:"
@@ -3270,6 +3270,7 @@ STRINGTABLE
     IDS_EDITREADONLYFILETEXT              "%s is marked Read Only\n You will need to change its name to save.\n Select: yes to continue, no to open in viewer"
     IDS_EDITREADONLYFILETEXT2             "%s is marked Read Only\n You will need to change its name to save."
 
+    // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on what I've seen while scanning your drives, I would like to suggest the following Parameters for your FM/2 program object (explanation:  each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2"
     IDS_SUGGEST1TEXT2                     " (see READ.ME), and the '%%*' on the end just enables drag-and-drop to the program object%s):\r\r""%s""\r\rWould you like me to automagically place this in the Parameters field of the FM/2 program objects (note:  existing Parameters will be replaced)?"
     IDS_ARCHIVERBB2TEXT1                  ";format for this archiver.bb2 file (each entry has 21 lines):\n;\n; 1st line:  ID of archiver (like ARC, LHARC, PKZIP, etc.; human consumption)\n; 2nd line:  normal extension for archives (like ZIP, ARC, LZH; note no period)\n; 3rd line:  offset into"

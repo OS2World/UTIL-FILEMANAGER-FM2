@@ -6,7 +6,7 @@
   Misc persistent lists support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2009 Steven H. Levine
 
   17 Jul 08 SHL Baseline
 
@@ -51,7 +51,7 @@ MRESULT EXPENTRY WalkTwoCmpDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
 MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
-INT add_setup(PSZ stateName);
+INT add_setup(PCSZ stateName);
 BOOL add_udir(BOOL userdirs, PSZ inpath);
 VOID fill_setups_list(VOID);
 VOID free_ldir(VOID);

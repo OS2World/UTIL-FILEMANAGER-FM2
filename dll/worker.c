@@ -6,7 +6,7 @@
   Worker thread
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   16 Oct 02 SHL Comments
   18 Oct 02 SHL MassAction:Archive - force extension so file found
@@ -36,7 +36,7 @@
   10 Dec 08 SHL Integrate exception handler support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
-                to prevent duplicate directory names in tree following a copy before initial scan.
+		to prevent duplicate directory names in tree following a copy before initial scan.
 
 ***********************************************************************/
 
@@ -677,7 +677,8 @@ VOID Action(VOID * args)
 		  }
 		Retry:
 		  {
-		    CHAR newname[CCHMAXPATH], *moving, *move, *moved;
+		    CHAR newname[CCHMAXPATH];
+		    PCSZ moving, move, moved;
 		    APIRET rc;
 		    INT type;
 		    FILESTATUS4L fs4;
@@ -807,12 +808,12 @@ VOID Action(VOID * args)
 			    newname,
 			    (usedtarget) ? GetPString(IDS_TOTARGETTEXT) :
 			    NullStr);
-                    AddNote(message);
-                    if (fVerify && (driveflags[toupper(*wk->li->targetpath) - 'A'] & DRIVE_WRITEVERIFYOFF) |
-                        (driveflags[toupper(*wk->li->list[x]) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
-                      DosSetVerify(FALSE);
-                      fResetVerify = TRUE;
-                    }
+		    AddNote(message);
+		    if (fVerify && (driveflags[toupper(*wk->li->targetpath) - 'A'] & DRIVE_WRITEVERIFYOFF) |
+			(driveflags[toupper(*wk->li->list[x]) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+		      DosSetVerify(FALSE);
+		      fResetVerify = TRUE;
+		    }
 		    if (plen) {
 		      /* make directory/ies, if required */
 
@@ -829,11 +830,11 @@ VOID Action(VOID * args)
 		    }
 		    if (fRealIdle)
 		      priority_idle();
-                    rc = docopyf(type, wk->li->list[x], "%s", newname);
-                    if (fResetVerify) {
-                      DosSetVerify(fVerify);
-                      fResetVerify = FALSE;
-                    }
+		    rc = docopyf(type, wk->li->list[x], "%s", newname);
+		    if (fResetVerify) {
+		      DosSetVerify(fVerify);
+		      fResetVerify = FALSE;
+		    }
 		    priority_normal();
 		    if (rc) {
 		      if ((rc == ERROR_DISK_FULL ||
@@ -922,14 +923,14 @@ VOID Action(VOID * args)
 			  AddToList(wk->li->list[x],
 				    &files, &numfiles, &numalloc))
 			Broadcast(hab2,
-			          wk->hwndCnr,
+				  wk->hwndCnr,
 				  UM_UPDATERECORD,
-                                  MPFROMP(wk->li->list[x]), MPVOID);
+				  MPFROMP(wk->li->list[x]), MPVOID);
 		      if ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(newname, &files, &numfiles, &numalloc))
 			Broadcast(hab2,
-			          wk->hwndCnr,
-                                  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
+				  wk->hwndCnr,
+				  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
 		    }
 		  }
 		  break;
@@ -937,7 +938,7 @@ VOID Action(VOID * args)
 
 	      case IDM_COMPARE:
 		if ((!IsFile(wk->li->targetpath) ||
-                     IsRoot(wk->li->targetpath)) &&
+		     IsRoot(wk->li->targetpath)) &&
 		    (!IsFile(wk->li->list[x]) || IsRoot(wk->li->list[x]))) {
 		  if (!*dircompare && WinIsWindow(hab2, wk->hwndCnr))
 		    WinSendMsg(wk->hwndCnr,
@@ -1030,12 +1031,12 @@ VOID Action(VOID * args)
 
 	Abort:
 
-          if (files) {
-            if (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED)
+	  if (files) {
+	    if (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED)
 	      Broadcast(hab2,
-		        wk->hwndCnr,
-                        UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
-           // DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", *files);
+			wk->hwndCnr,
+			UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
+	   // DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", *files);
 	    FreeList(files);
 	  }
 
@@ -1101,7 +1102,7 @@ VOID MassAction(VOID * args)
 	  case IDM_UPDATE:
 	    Broadcast(hab2,
 		      wk->hwndCnr,
-                      UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
+		      UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
 	    break;
 
 	  case IDM_EAS:
@@ -1224,7 +1225,7 @@ VOID MassAction(VOID * args)
 	      if (wk->li->list[0])
 		Broadcast(hab2,
 			  wk->hwndCnr,
-                          UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
+			  UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
 	    }
 	    break;
 
@@ -1244,7 +1245,7 @@ VOID MassAction(VOID * args)
 	      }
 	      Broadcast(hab2,
 			wk->hwndCnr,
-                        UM_UPDATERECORD, MPFROMP(wk->li->targetpath), MPVOID);
+			UM_UPDATERECORD, MPFROMP(wk->li->targetpath), MPVOID);
 	    }
 	    break;
 
@@ -1513,7 +1514,7 @@ VOID MassAction(VOID * args)
 	      if (wk->li && wk->li->list && wk->li->list[0])
 		Broadcast(hab2,
 			  wk->hwndCnr,
-                          UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
+			  UM_UPDATERECORDLIST, MPFROMP(wk->li->list), MPVOID);
 	    }
 	    break;
 
@@ -1528,7 +1529,7 @@ VOID MassAction(VOID * args)
 	      APIRET error = 0;
 	      HOBJECT hObjectdest, hObjectofObject;
 	      BYTE G_abSupportedDrives[24] = {0};
-              ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
+	      ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1623,9 +1624,9 @@ VOID MassAction(VOID * args)
 		wk->li->list = cl.list;
 		if (!wk->li->list || !wk->li->list[0])
 		  break;
-              }
-              if (fVerify && driveflags[toupper(*wk->li->list[0]) - 'A'] & DRIVE_WRITEVERIFYOFF)
-                DosSetVerify(FALSE);
+	      }
+	      if (fVerify && driveflags[toupper(*wk->li->list[0]) - 'A'] & DRIVE_WRITEVERIFYOFF)
+		DosSetVerify(FALSE);
 	      DosRequestMutexSem(hmtxFM2Delete, SEM_INDEFINITE_WAIT); // Prevent race 12-3-08 GKY
 	      for (x = 0; wk->li->list[x]; x++) {
 		fsa.attrFile = 0;
@@ -1646,7 +1647,7 @@ VOID MassAction(VOID * args)
 		  else
 		    DosDeleteDir(wk->li->list[x]);
 		}
-                else {
+		else {
 
 		  DosError(FERR_DISABLEHARDERR);
 		  if (wk->li->type == IDM_DELETE) {
@@ -1665,15 +1666,15 @@ VOID MassAction(VOID * args)
 			hObjectofObject = WinQueryObject(wk->li->list[x]);
 			error = WinMoveObject(hObjectofObject, hObjectdest, 0);
 		    }
-                    else {
-                      error = DosDelete(wk->li->list[x]);
+		    else {
+		      error = DosDelete(wk->li->list[x]);
 		    }
 		  }
-                  else {
-                    error = DosForceDelete(wk->li->list[x]); ;
+		  else {
+		    error = DosForceDelete(wk->li->list[x]); ;
 		  }
-                  if (error) {
-                    DosError(FERR_DISABLEHARDERR);
+		  if (error) {
+		    DosError(FERR_DISABLEHARDERR);
 		    make_deleteable(wk->li->list[x]);
 		    if (wk->li->type == IDM_DELETE){
 		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
@@ -1691,12 +1692,12 @@ VOID MassAction(VOID * args)
 			  hObjectofObject = WinQueryObject(wk->li->list[x]);
 			  error = WinMoveObject(hObjectofObject, hObjectdest, 0);
 		      }
-                      else {
-                        error = DosDelete(wk->li->list[x]);
+		      else {
+			error = DosDelete(wk->li->list[x]);
 		      }
 		    }
-                    else {
-                      error = DosForceDelete(wk->li->list[x]);
+		    else {
+		      error = DosForceDelete(wk->li->list[x]);
 		    }
 		  }
 		  DosReleaseMutexSem(hmtxFM2Delete);
@@ -1713,9 +1714,9 @@ VOID MassAction(VOID * args)
 				__LINE__,
 				GetPString(IDS_DELETEFAILED2TEXT),
 				wk->li->list[x]) == MBID_CANCEL) {
-                    DosSetVerify(fVerify);
-                    break;
-                  }
+		    DosSetVerify(fVerify);
+		    break;
+		  }
 		}
 		else {
 		  if (LogFileHandle)
@@ -1733,15 +1734,15 @@ VOID MassAction(VOID * args)
 			    MPFROMP(wk->li->list[x]), MPVOID);
 		}
 	      } // for
-            }
-            if (fVerify)
-              DosSetVerify(fVerify);
+	    }
+	    if (fVerify)
+	      DosSetVerify(fVerify);
 	    break;
 	  } // switch
 	  if (files) {
 	    Broadcast(hab2,
 		      wk->hwndCnr,
-                      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
+		      UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
 	    FreeList(files);
 	  }
 	  if (WinIsWindow(hab2, wk->hwndCnr))

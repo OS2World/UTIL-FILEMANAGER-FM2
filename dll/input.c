@@ -6,7 +6,7 @@
   Input dialog procecedure
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2008 Steven H. Levine
+  Copyright (c) 2005, 2009 Steven H. Levine
 
   28 May 05 SHL Use saymsg
   14 Jul 06 SHL Use Runtime_Error
@@ -36,7 +36,7 @@ MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   // mp2 points at a structure of type STRINGINPARMS
   STRINGINPARMS *psip;
-  PSZ psz;
+  PCSZ psz;
 
   switch (msg) {
   case WM_INITDLG:

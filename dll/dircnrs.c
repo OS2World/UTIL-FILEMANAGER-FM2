@@ -6,7 +6,7 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -362,7 +362,7 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_MOUSEMOVE:
     {
       USHORT id = WinQueryWindowUShort(hwnd, QWS_ID);
-      char *s = NULL;
+      PCSZ s = NULL;
 
       if (fOtherHelp) {
 	if ((!hwndBubble ||
@@ -702,7 +702,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       while (list[numentries])
 	numentries++;
       if (numentries)
-        UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
+	UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
     }
     return 0;
 
@@ -1940,7 +1940,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    StartSeeAll(HWND_DESKTOP, FALSE, dirname);
 	  }
 	}
-        break;
+	break;
 
       case IDM_FINDINTREE:
 	if (hwndTree) {
@@ -2146,21 +2146,21 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
 	else
-          StartCollector(dcd->hwndParent, 4);
-        if (SHORT1FROMMP(mp1) == IDM_GREP) {
-          PCNRITEM pci = NULL;
+	  StartCollector(dcd->hwndParent, 4);
+	if (SHORT1FROMMP(mp1) == IDM_GREP) {
+	  PCNRITEM pci = NULL;
 
-          pci = WinSendMsg(hwnd,
-                           CM_QUERYRECORDEMPHASIS,
-                           MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-          if (pci && (INT) pci != -1)
-            PostMsg(Collector, WM_COMMAND,
-                    MPFROM2SHORT(IDM_GREP, 0), MPFROMP(pci->pszFileName));
-          else
-            PostMsg(Collector, WM_COMMAND,
-                    MPFROM2SHORT(IDM_GREP, 0), MPVOID);
-        }
-        else
+	  pci = WinSendMsg(hwnd,
+			   CM_QUERYRECORDEMPHASIS,
+			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
+	  if (pci && (INT) pci != -1)
+	    PostMsg(Collector, WM_COMMAND,
+		    MPFROM2SHORT(IDM_GREP, 0), MPFROMP(pci->pszFileName));
+	  else
+	    PostMsg(Collector, WM_COMMAND,
+		    MPFROM2SHORT(IDM_GREP, 0), MPVOID);
+	}
+	else
 	  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
 	break;
 
@@ -2924,9 +2924,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 	    numitems = DrgQueryDragitemCount(pDInfo);
-            usOperation = pDInfo->usOperation;
-            if (usOperation == DO_DEFAULT)
-              usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
+	    usOperation = pDInfo->usOperation;
+	    if (usOperation == DO_DEFAULT)
+	      usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
 	    FreeDragInfoData(hwnd, pDInfo);
 	    saymsg(MB_ENTER | MB_ICONASTERISK,
 		   hwnd,
@@ -3619,7 +3619,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 				   &FrameFlags,
 				   WC_DIRCONTAINER,
 				   NULL,
-                                   WS_VISIBLE | fwsAnimate,
+				   WS_VISIBLE | fwsAnimate,
 				   FM3ModHandle, DIR_FRAME, &hwndClient);
     if (hwndFrame && hwndClient) {
       id = DIR_FRAME + idinc++;
@@ -3728,8 +3728,8 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 			    swp.cy,
 			    SWP_SIZE | SWP_MOVE | SWP_SHOW | SWP_ZORDER |
 			    SWP_ACTIVATE);
-          }
-          WinShowWindow(dcd->hwndCnr, TRUE);
+	  }
+	  WinShowWindow(dcd->hwndCnr, TRUE);
 	}
       }
 #     ifdef FORTIFY

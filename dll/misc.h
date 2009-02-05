@@ -6,7 +6,7 @@
   Misc utility functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2009 Steven H. Levine
 
   17 Jul 08 SHL Baseline
 
@@ -26,32 +26,32 @@ INT GetTidForThread(VOID);
 INT GetTidForWindow(HWND hwnd);
 #endif
 
-SHORT AddToListboxBottom(HWND hwnd, CHAR * str);
-BOOL AdjustCnrColRO(HWND hwndCnr, CHAR * title, BOOL readonly, BOOL toggle);
-BOOL AdjustCnrColVis(HWND hwndCnr, CHAR * title, BOOL visible, BOOL toggle);
-VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds);
-VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds,
+SHORT AddToListboxBottom(HWND hwnd, PCSZ str);
+BOOL AdjustCnrColRO(HWND hwndCnr, PCSZ title, BOOL readonly, BOOL toggle);
+BOOL AdjustCnrColVis(HWND hwndCnr, PCSZ title, BOOL visible, BOOL toggle);
+VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds);
+VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds,
 			  BOOL compare);
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
-			   CHAR * directory, CHAR * keyroot, DETAILS_SETTINGS * pds,
+			   PCSZ directory, PCSZ keyroot, DETAILS_SETTINGS * pds,
 			   BOOL compare);
 void BoxWindow(HWND hwnd, HPS hps, LONG color);
 void Broadcast(HAB hab, HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
-                         ULONGLONG ullFreeSpaceWhenComplete);
+INT CheckDriveSpaceAvail(PCSZ pTargetPath, ULONGLONG ullSpaceNeeded,
+			 ULONGLONG ullFreeSpaceWhenComplete);
 HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id);
 MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 PMINIRECORDCORE CurrentRecord(HWND hwndCnr);
 void DrawTargetEmphasis(HWND hwnd, BOOL on);
 void EmphasizeButton(HWND hwnd, BOOL on);
-INT ExecFile(HWND hwnd, CHAR * filename);
+INT ExecFile(HWND hwnd, PCSZ filename);
 HWND FindDirCnr(HWND hwndParent);
-VOID FixSwitchList(HWND hwnd, CHAR * text);
+VOID FixSwitchList(HWND hwnd, PCSZ text);
 char *GetCmdSpec(BOOL dos);
 VOID HeapThread(VOID * dummy);
 BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
-VOID LoadDetailsSwitches(CHAR * keyroot, DETAILS_SETTINGS * pds);
-VOID LoadLibPath(CHAR * str, LONG len);
+VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS * pds);
+VOID LoadLibPath(PSZ str, LONG len);
 VOID OpenEdit(HWND hwnd);
 VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl);
 void PaintSTextWindow(HWND hwnd, HPS hps);
@@ -65,7 +65,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL compare);
 VOID SetConditionalCascade(HWND hwndMenu, USHORT id, USHORT def);
 VOID SetDetailsSwitches(HWND hwnd, DETAILS_SETTINGS * pds);
 BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
-		  CHAR * savename);
+		  PCSZ savename);
 VOID SetShiftState(VOID);
 VOID SetSortChecks(HWND hwndMenu, INT sortflags);
 VOID SetSysMenu(HWND hwndSysMenu);
@@ -73,7 +73,7 @@ void SetViewMenu(HWND hwndMenu, ULONG flWindowAttr);
 VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr);
 void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame);
 BOOL SwitchCommand(HWND hwndMenu, USHORT cmd);
-BOOL ViewHelp(CHAR * filename);
+BOOL ViewHelp(PCSZ filename);
 VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL enable);
 
 // Data declarations

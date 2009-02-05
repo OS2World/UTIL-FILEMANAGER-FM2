@@ -6,7 +6,7 @@
   <<<description here>>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2009 Steven H. Levine
 
   Change log
 
@@ -47,12 +47,12 @@ typedef struct
 }
 EXECARGS;
 
-INT ExecOnList(HWND hwnd, CHAR * command, INT flags, CHAR * tpath,
-	       CHAR ** list, CHAR * prompt, PCSZ pszCallingFile, UINT uiLineNumber);
+INT ExecOnList(HWND hwnd, PSZ command, INT flags, PSZ tpath,
+	       PSZ *list, PCSZ prompt, PCSZ pszCallingFile, UINT uiLineNumber);
 BOOL ShowSession(HWND hwnd, PID pid);
 INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
-	    CHAR * directory, CHAR * environment,
-	    CHAR * formatstring, ...);
+	    PSZ directory, PSZ environment,
+	    PSZ formatstring, ...);
 
 
 #endif // SYSTEMF_H

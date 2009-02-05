@@ -6,7 +6,7 @@
   Directory sizes
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL Use CBLIST_TO_EASIZE
@@ -517,6 +517,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
 
       PrfQueryProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp, &size);
+      swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
 		      swp.x,

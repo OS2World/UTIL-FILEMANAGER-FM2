@@ -6,7 +6,7 @@
   archiver.bb2 editor
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2009 Steven H.Levine
 
   31 Jul 04 SHL ArcReviewDlgProc: correct nameis... decodes
   01 Aug 04 SHL Localize functions
@@ -405,10 +405,10 @@ static PSZ checkfile(PSZ file, INT * error)
     ret = (INT) DosQueryAppType(p, &apptype);
     apptype &= (~FAPPTYP_32BIT);
     if (!apptype ||
-        (apptype == FAPPTYP_NOTWINDOWCOMPAT) ||
-        (apptype == FAPPTYP_WINDOWCOMPAT) ||
-        (apptype & FAPPTYP_BOUND) ||
-        (apptype & FAPPTYP_WINDOWAPI) || (apptype & FAPPTYP_DOS)) {
+	(apptype == FAPPTYP_NOTWINDOWCOMPAT) ||
+	(apptype == FAPPTYP_WINDOWCOMPAT) ||
+	(apptype & FAPPTYP_BOUND) ||
+	(apptype & FAPPTYP_WINDOWAPI) || (apptype & FAPPTYP_DOS)) {
        *error = 0;
      }
      else
@@ -424,7 +424,7 @@ static BOOL check_archiver(HWND hwnd, ARC_TYPE * info)
 {
   BOOL noStart = FALSE, noEnd = FALSE, badPos = FALSE;
   INT badList = 0, badCreate = 0, badExtract = 0;
-  static PSZ aerrors[3];
+  static PCSZ aerrors[3];
 
   aerrors[0] = GetPString(IDS_STARTLISTEMPTYTEXT);
   aerrors[1] = GetPString(IDS_ENDLISTEMPTYTEXT);

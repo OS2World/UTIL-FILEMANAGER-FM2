@@ -6,7 +6,7 @@
   Object containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2008 Steven H. Levine
+  Copyright (c) 2005, 2009 Steven H. Levine
 
   24 May 05 SHL Rework for CNRITEM.szSubject
   13 Jul 06 SHL Use Runtime_Error
@@ -328,7 +328,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       cnri.cyLineSpacing = 0;
       cnri.cxTreeIndent = 12L;
-      cnri.pszCnrTitle = GetPString(IDS_WORKINGTEXT);
+      cnri.pszCnrTitle = (PSZ)GetPString(IDS_WORKINGTEXT);
       cnri.flWindowAttr = CV_TREE | CV_FLOW |
 	CA_CONTAINERTITLE | CA_TITLESEPARATOR | CA_TREELINE;
       if (WinQueryWindowUShort(hwnd, QWS_ID) == QTREE_FRAME)

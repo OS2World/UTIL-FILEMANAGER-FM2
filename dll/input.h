@@ -6,7 +6,7 @@
   <<<description here>>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2009 Steven H. Levine
 
   Change log
 
@@ -17,10 +17,10 @@
 
 typedef struct
 {
-  CHAR *title;			/* title of dialog */
-  CHAR *prompt;			/* prompt to user */
+  PCSZ title;			/* title of dialog */
+  PCSZ prompt;			/* prompt to user */
   CHAR *ret;			/* buffer out, default in */
-  CHAR *help;			/* help text */
+  PCSZ help;			/* help text */
   INT inputlen;			/* max len of ret */
 }
 STRINGINPARMS;

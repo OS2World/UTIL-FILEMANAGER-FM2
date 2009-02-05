@@ -5,7 +5,7 @@
   Thread notes window and popup notification status line
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2008 Steven H.Levine
+  Copyright (c) 2006, 2009 Steven H.Levine
 
   17 Jul 06 SHL Use Win_Error
   22 Jul 06 SHL Check more run time errors
@@ -84,8 +84,8 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	memset(&rgb2F, 0, sizeof(RGB2));
 	rgb2F.bRed = (BYTE)65;
 	rgb2.bRed = rgb2.bGreen = rgb2.bBlue = (BYTE)255;
-        rgb2.fcOptions = 0;
-        //fixme to allow user to change presparams 1-10-09 GKY
+	rgb2.fcOptions = 0;
+	//fixme to allow user to change presparams 1-10-09 GKY
 	SetPresParams(hwnd, &rgb2, &rgb2F, &rgb2, FNT_8HELVETICA);
 	if (hwndMain) {
 	  if (hwndStatus)
@@ -162,7 +162,7 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
  * Display timed notification window over status line
  */
 
-HWND DoNotify(char *str)
+HWND DoNotify(PCSZ str)
 {
   char *p;
   HWND hwnd = (HWND) 0, hwndP;
@@ -196,14 +196,14 @@ HWND DoNotify(char *str)
     if (*str != ' ') {
       p = xmalloc(strlen(str) + 2, pszSrcFile, __LINE__);
       if (!p)
-	p = str;
+	p = (PSZ)str;
       else {
 	strcpy(p + 1, str);
 	*p = ' ';
       }
     }
     else
-      p = str;
+      p = (PSZ)str;
 
     hwnd = WinCreateWindow(hwndP,
 			   WC_ERRORWND,
@@ -228,7 +228,7 @@ HWND DoNotify(char *str)
  * Add message to thread notes window
  */
 
-HWND Notify(char *str)
+HWND Notify(PCSZ str)
 {
   return (HWND)WinSendMsg(MainObjectHwnd, UM_NOTIFY, MPFROMP(str), MPVOID);
 }
@@ -237,7 +237,7 @@ HWND Notify(char *str)
  * Add error message to thread notes window
  */
 
-VOID NotifyError(CHAR * filename, APIRET status)
+VOID NotifyError(PCSZ filename, APIRET status)
 {
   CHAR errortext[512];
 
@@ -494,9 +494,10 @@ VOID StartNotes(CHAR * note)
  * Add note to thread notes window or popup status window
  */
 
-BOOL AddNote(CHAR * note)
+BOOL AddNote(PCSZ note)
 {
-  CHAR *s, *p;
+  PSZ s;
+  PCSZ p;
   BOOL once = FALSE, ret = FALSE;
 
   if ((fThreadNotes || hwndNotify) && note && *note) {

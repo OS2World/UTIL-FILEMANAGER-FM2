@@ -6,7 +6,7 @@
   Archive containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   11 Jun 02 SHL Ensure archive name not garbage
   22 May 03 SHL ArcObjWndProc: fix UM_RESCAN now that we understand it
@@ -211,7 +211,7 @@ VOID WaitChildThread(VOID * arg)
       IncrThreadUsage();
       priority_normal();
       ret = runemf2(WaitChild->RunFlags, WaitChild->hwndClient,
-                    WaitChild->pszSrcFile, WaitChild->uiLineNumber,
+		    WaitChild->pszSrcFile, WaitChild->uiLineNumber,
 		    WaitChild->pszDirectory, WaitChild->pszEnvironment,
 		    WaitChild->formatstring, WaitChild->pszCmdLine);
       if (ret != -1) {
@@ -1074,7 +1074,7 @@ MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_MOUSEMOVE:
     {
       USHORT id = WinQueryWindowUShort(hwnd, QWS_ID);
-      char *s = NULL;
+      PCSZ s = NULL;
 
       if (fOtherHelp) {
 	if ((!hwndBubble ||
@@ -1598,8 +1598,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  free(s);
 	  return 0;
 	}
-        sprintf(WaitChild->pszCmdLine, "%s %s %s",
-                dcd->info->exwdirs ? dcd->info->exwdirs :
+	sprintf(WaitChild->pszCmdLine, "%s %s %s",
+		dcd->info->exwdirs ? dcd->info->exwdirs :
 		dcd->info->extract,
 		BldQuotedFileName(szQuotedArcName, dcd->arcname),
 		BldQuotedFileName(szQuotedMemberName, s));
@@ -1624,10 +1624,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	free(s);
 	WaitChild->RunFlags = SEPARATE | ASYNCHRONOUS | WAIT |
 			      (fArcStuffVisible ? 0 : BACKGROUND);
-        WaitChild->hwndClient = dcd->hwndClient;
-        WaitChild->msg = UM_ENTER;
-        WaitChild->uiLineNumber = __LINE__;
-        WaitChild->pszSrcFile = pszSrcFile;
+	WaitChild->hwndClient = dcd->hwndClient;
+	WaitChild->msg = UM_ENTER;
+	WaitChild->uiLineNumber = __LINE__;
+	WaitChild->pszSrcFile = pszSrcFile;
 	WaitChild->pszDirectory = xstrdup(dcd->workdir, pszSrcFile, __LINE__);
 	WaitChild->pszEnvironment = NULL;
 	strcpy(WaitChild->formatstring, "%s");
@@ -1900,11 +1900,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  ptr++;
 		}
 	      }
-              z = x;
-              runemf2(SEPARATE | WINDOWED | WAIT |
-                      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
-                      hwnd, pszSrcFile, __LINE__,
-                      li->targetpath, NULL, "%s", pszCmdLine);
+	      z = x;
+	      runemf2(SEPARATE | WINDOWED | WAIT |
+		      (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
+		      hwnd, pszSrcFile, __LINE__,
+		      li->targetpath, NULL, "%s", pszCmdLine);
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
@@ -2530,36 +2530,36 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    pfiFirst = pfi;
 	    pfi->flData = CFA_STRING | CFA_LEFT | CFA_FIREADONLY;
 	    pfi->flTitle = CFA_CENTER;
-	    pfi->pTitleData = GetPString(IDS_FILENAMECOLTEXT);
+	    pfi->pTitleData = (PSZ)GetPString(IDS_FILENAMECOLTEXT);
 	    pfi->offStruct = FIELDOFFSET(ARCITEM, pszDisplayName);
 	    pfiLastLeftCol = pfi;
 	    pfi = pfi->pNextFieldInfo;
 	    pfi->flData =
 	      CFA_ULONG | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
 	    pfi->flTitle = CFA_CENTER;
-	    pfi->pTitleData = GetPString(IDS_OLDSIZECOLTEXT);
+	    pfi->pTitleData = (PSZ)GetPString(IDS_OLDSIZECOLTEXT);
 	    pfi->offStruct = FIELDOFFSET(ARCITEM, cbFile);
 	    pfi = pfi->pNextFieldInfo;
 	    pfi->flData =
 	      CFA_ULONG | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
 	    pfi->flTitle = CFA_CENTER;
-	    pfi->pTitleData = GetPString(IDS_NEWSIZECOLTEXT);
+	    pfi->pTitleData = (PSZ)GetPString(IDS_NEWSIZECOLTEXT);
 	    pfi->offStruct = FIELDOFFSET(ARCITEM, cbComp);
 	    pfi = pfi->pNextFieldInfo;
 	    pfi->flData =
 	      CFA_STRING | CFA_CENTER | CFA_SEPARATOR | CFA_FIREADONLY;
 	    pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
-	    pfi->pTitleData = GetPString(IDS_DATETIMECOLTEXT);
+	    pfi->pTitleData = (PSZ)GetPString(IDS_DATETIMECOLTEXT);
 	    pfi->offStruct = FIELDOFFSET(ARCITEM, pszDate);
 	    pfi = pfi->pNextFieldInfo;
 	    pfi->flData = CFA_DATE | CFA_RIGHT | CFA_FIREADONLY;
 	    pfi->flTitle = CFA_CENTER;
-	    pfi->pTitleData = GetPString(IDS_DATECOLTEXT);
+	    pfi->pTitleData = (PSZ)GetPString(IDS_DATECOLTEXT);
 	    pfi->offStruct = FIELDOFFSET(ARCITEM, date);
 	    pfi = pfi->pNextFieldInfo;
 	    pfi->flData = CFA_TIME | CFA_RIGHT | CFA_FIREADONLY;
 	    pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
-	    pfi->pTitleData = GetPString(IDS_TIMECOLTEXT);
+	    pfi->pTitleData = (PSZ)GetPString(IDS_TIMECOLTEXT);
 	    pfi->offStruct = FIELDOFFSET(ARCITEM, time);
 	    memset(&fii, 0, sizeof(FIELDINFOINSERT));
 	    fii.cb = sizeof(FIELDINFOINSERT);
@@ -3584,7 +3584,7 @@ MRESULT EXPENTRY ArcCnrMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      IDM_WALKDIR,
 	      IDM_FILTER,
 	      0};
-	char *szHelpString = NULL;
+	PCSZ szHelpString = NULL;
 
 
 	for (i=0; i<MenuItems; i++) {

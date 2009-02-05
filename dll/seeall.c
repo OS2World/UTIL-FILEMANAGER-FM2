@@ -6,7 +6,7 @@
   See all matching files
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   25 Nov 03 SHL StartSeeAll: avoid forgetting startpath
@@ -611,7 +611,8 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	/* intentional fallthru */
       case IDM_RENAME:
 	{
-	  CHAR newname[CCHMAXPATH], *moving, *move, *moved;
+	  CHAR newname[CCHMAXPATH];
+	  PCSZ moving, move, moved;
 	  APIRET rc;
 	  INT type;
 	  FILESTATUS4L fs4;
@@ -733,12 +734,12 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS),
 			     message);
 	    if (fRealIdle)
-              priority_idle();
-            if (fVerify && (driveflags[toupper(*list[x]) - 'A'] & DRIVE_WRITEVERIFYOFF ||
-                            driveflags[toupper(*newname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
-              DosSetVerify(FALSE);
-              fResetVerify = TRUE;
-            }
+	      priority_idle();
+	    if (fVerify && (driveflags[toupper(*list[x]) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+			    driveflags[toupper(*newname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+	      DosSetVerify(FALSE);
+	      fResetVerify = TRUE;
+	    }
 	    if (plen) {
 	      /* make directory/ies, if required */
 
@@ -752,11 +753,11 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  MassMkdir((hwndMain) ? hwndMain : (HWND) 0, dirpart);
 	      }
 	    }
-            rc = docopyf(type, list[x], "%s", newname);
-            if (fResetVerify) {
-              DosSetVerify(fVerify);
-              fResetVerify = FALSE;
-            }
+	    rc = docopyf(type, list[x], "%s", newname);
+	    if (fResetVerify) {
+	      DosSetVerify(fVerify);
+	      fResetVerify = FALSE;
+	    }
 	    priority_normal();
 	    if (rc) {
 	      if ((rc == ERROR_DISK_FULL ||
@@ -3336,8 +3337,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!pAD->hwndPopup) {
 	pAD->hwndPopup =
 	  WinLoadMenu(HWND_DESKTOP, FM3ModHandle, SEEALL_POPUP);
-        if (pAD->hwndPopup) {
-          //fixme to allow user to change presparams 1-10-09 GKY
+	if (pAD->hwndPopup) {
+	  //fixme to allow user to change presparams 1-10-09 GKY
 	  WinSetPresParam(pAD->hwndPopup, PP_FONTNAMESIZE,
 			  strlen(FNT_8HELVETICA) + 1,
 			  FNT_8HELVETICA);

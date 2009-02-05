@@ -6,7 +6,7 @@
   Misc persistent lists support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2008 Steven H. Levine
+  Copyright (c) 2005, 2009 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -139,7 +139,7 @@ VOID fill_setups_list(VOID)
 #define LS_ADD		1
 #define LS_DELETE	2
 
-static INT lookup_setup(PSZ name, UINT action)
+static INT lookup_setup(PCSZ name, UINT action)
 {
   LINKDIRS *pld;
   LINKDIRS *pldLast = NULL;
@@ -335,7 +335,7 @@ VOID save_setups(VOID)
  * @return same as lookup_setup
  */
 
-INT add_setup(PSZ name)
+INT add_setup(PCSZ name)
 {
   return lookup_setup(name, LS_ADD);
 }
@@ -427,7 +427,7 @@ VOID save_udirs(VOID)
     if (udirhead) {
       BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
       if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
-        return; //already gave error msg
+	return; //already gave error msg
       fp = xfopen(s, "w", pszSrcFile, __LINE__);
       if (fp) {
 	fputs(GetPString(IDS_USERDEFDIRSTEXT), fp);
@@ -776,6 +776,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
 
       PrfQueryProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp, &size);
+      swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
 		      swp.x,
@@ -1405,6 +1406,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
 
       PrfQueryProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp, &size);
+      swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
 		      swp.x,

@@ -6,7 +6,7 @@
   <<description here>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
 
@@ -16,12 +16,12 @@
 
 #define NOTIFY_H
 
-BOOL AddNote(CHAR * note);
-HWND DoNotify(char *text);
+BOOL AddNote(PCSZ note);
+HWND DoNotify(PCSZ text);
 VOID EndNote(VOID);
 VOID HideNote(VOID);
-HWND Notify(char *text);
-VOID NotifyError(CHAR * filename, APIRET error);
+HWND Notify(PCSZ text);
+VOID NotifyError(PCSZ filename, APIRET error);
 MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID ShowNote(VOID);
 

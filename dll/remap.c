@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2009 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Aug 05 SHL Renames
@@ -426,8 +426,8 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    pgd.Length = sizeof(pgd);
 	    pgd.progt.progc = PROG_WINDOWABLEVIO;
 	    pgd.progt.fbVisible = SHE_VISIBLE;
-	    pgd.pszTitle = (info->attach) ? GetPString(IDS_ATTACHREQTEXT) :
-	      GetPString(IDS_DETACHREQTEXT);
+	    pgd.pszTitle = info->attach ? (PSZ)GetPString(IDS_ATTACHREQTEXT) :
+					  (PSZ)GetPString(IDS_DETACHREQTEXT);
 	    pgd.pszExecutable = p;
 	    pgd.pszParameters = params;
 	    pgd.pszStartupDir = NULL;
@@ -542,7 +542,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		pgd.Length = sizeof(pgd);
 		pgd.progt.progc = PROG_WINDOWABLEVIO;
 		pgd.progt.fbVisible = SHE_VISIBLE;
-		pgd.pszTitle = GetPString(IDS_DETACHREQTEXT);
+		pgd.pszTitle = (PSZ)GetPString(IDS_DETACHREQTEXT);
 		pgd.pszExecutable = p;
 		pgd.pszParameters = params;
 		pgd.pszStartupDir = NULL;
@@ -647,7 +647,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      pgd.Length = sizeof(pgd);
 	      pgd.progt.progc = PROG_WINDOWABLEVIO;
 	      pgd.progt.fbVisible = SHE_VISIBLE;
-	      pgd.pszTitle = GetPString(IDS_ATTACHREQTEXT);
+	      pgd.pszTitle = (PSZ)GetPString(IDS_ATTACHREQTEXT);
 	      pgd.pszExecutable = p;
 	      pgd.pszParameters = params;
 	      pgd.pszStartupDir = NULL;

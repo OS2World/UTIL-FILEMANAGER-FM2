@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -76,7 +76,7 @@
   28 Dec 08 GKY Added Databar to utilities menu
   30 Dec 08 GKY Initialize tool bar background color to palegray not black
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
-                Dos/Win programs from being inserted into the execute dialog with message why.
+		Dos/Win programs from being inserted into the execute dialog with message why.
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
 ***********************************************************************/
@@ -941,7 +941,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
   return oldproc(hwnd, msg, mp1, mp2);
 }
 
-void BubbleHelp(HWND hwnd, BOOL other, BOOL drive, BOOL above, char *help)
+void BubbleHelp(HWND hwnd, BOOL other, BOOL drive, BOOL above, PCSZ help)
 {
   if (help && *help &&
       ((drive && fDrivebarHelp) ||
@@ -953,7 +953,7 @@ void BubbleHelp(HWND hwnd, BOOL other, BOOL drive, BOOL above, char *help)
   }
 }
 
-VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
+VOID MakeBubble(HWND hwnd, BOOL above, PCSZ help)
 {
   if (!hwnd || !help || !*help)
     return;
@@ -996,7 +996,7 @@ VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
     HPS hps;
     POINTL aptl[TXTBOX_COUNT], ptl, tptl;
     LONG lxScreen, sx, sy, extra = 0, lyScreen;
-    char *p, *pp, *wp;
+    CHAR *p, *pp, *wp;
     SWP swp;
 
     WinQueryWindowPos(hwnd, &swp);
@@ -1006,7 +1006,8 @@ VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help)
     //fixme to allow user to change presparams 1-10-09 GKY
     SetPresParams(hwndBubble, NULL, NULL, NULL, FNT_8HELVETICA);
     hps = WinGetPS(hwndBubble);
-    p = help;
+    // 03 Feb 09 SHL fixme to not overwrite?
+    p = (PSZ)help;
     tptl.x = tptl.y = 0;
     while (p && *p) {
       wp = NULL;
@@ -1227,7 +1228,7 @@ MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinReleasePS(hps);
 	break;
       default:
-        //fixme to allow user to change presparams 1-10-09 GKY
+	//fixme to allow user to change presparams 1-10-09 GKY
 	SetPresParams(hwnd,
 		      &RGBGREY,
 		      &RGBBLACK, &RGBGREY, FNT_6HELVETICA );
@@ -1321,7 +1322,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	id = (USHORT) WinDlgBox(HWND_DESKTOP, hwnd,
 				PickToolProc, FM3ModHandle,
-				PICKBTN_FRAME, GetPString(IDS_HIDETEXT));
+				PICKBTN_FRAME, (PSZ)GetPString(IDS_HIDETEXT));
       if (id) {
 	tool = find_tool(id);
 	if (tool) {
@@ -1347,7 +1348,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	id =
 	  (USHORT) WinDlgBox(HWND_DESKTOP, hwnd, PickToolProc, FM3ModHandle,
-			     PICKBTN_FRAME, GetPString(IDS_DELETETEXT));
+			     PICKBTN_FRAME, (PSZ)GetPString(IDS_DELETETEXT));
       if (id)
 	PostMsg(WinQueryWindow(hwnd, QW_PARENT), UM_SETUP,
 		MPFROM2SHORT(id, 0), MPVOID);
@@ -1360,7 +1361,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	id =
 	  (USHORT) WinDlgBox(HWND_DESKTOP, hwnd, PickToolProc, FM3ModHandle,
-			     PICKBTN_FRAME, GetPString(IDS_EDITTEXT));
+			     PICKBTN_FRAME, (PSZ)GetPString(IDS_EDITTEXT));
       if (id) {
 	tool = find_tool(id);
 	if (tool) {
@@ -2274,8 +2275,8 @@ VOID BuildDriveBarButtons(HWND hwndT)
 	  if (!hwndB)
 	    Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
 		       IDS_WINCREATEWINDOW);
-          else {
-            //fixme to allow user to change presparams 1-10-09 GKY
+	  else {
+	    //fixme to allow user to change presparams 1-10-09 GKY
 	    SetPresParams(hwndB,
 			  &RGBGREY,
 			  &RGBBLACK, &RGBGREY, FNT_6HELVETICA);
@@ -2403,7 +2404,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     shiftstate = (SHORT2FROMMP(mp2) & (KC_ALT | KC_SHIFT | KC_CTRL));
     {
       USHORT id = WinQueryWindowUShort(hwnd, QWS_ID);
-      char *s = NULL;
+      PCSZ s = NULL;
 
       if (fOtherHelp) {
 	if ((!hwndBubble || WinQueryWindowULong(hwndBubble, QWL_USER) != hwnd)
@@ -2641,10 +2642,10 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       hps = WinBeginPaint(hwnd, (HPS)0, NULL);
       if (hps) {
-        GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
-        if (!WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
-                               sizeof(lColor), &lColor, 0))
-          lColor = 0x00CCCCCCL; //Palegray
+	GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
+	if (!WinQueryPresParam(hwnd, PP_BACKGROUNDCOLOR, 0, NULL,
+			       sizeof(lColor), &lColor, 0))
+	  lColor = 0x00CCCCCCL; //Palegray
 	WinQueryWindowRect(hwnd, &rcl);
 	WinFillRect(hps, &rcl, lColor);
 	WinEndPaint(hps);
@@ -2922,7 +2923,7 @@ BOOL CloseDirCnrChildren(HWND hwndClient)
  * @seealso RestoreDirCnrState
  */
 
-INT SaveDirCnrState(HWND hwndClient, PSZ pszStateName)
+INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
 {
   HENUM henum;
   HWND hwndChild, hwndDir, hwndC;
@@ -3425,7 +3426,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				      MPFROMP(szDir), MPFROMLONG(1));
 	  if (hwndDir) {
 	    hwndC = WinWindowFromID(hwndDir, FID_CLIENT);
-            if (hwndC) {
+	    if (hwndC) {
 	      HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
 	      if (!hwndPPSave) {
 		hwndPPSave = WinCreateWindow(hwndCnr,         // Create a window (used to save default presparams)
@@ -3501,10 +3502,10 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 				   MPFROMP(&cnri),
 				   MPFROMLONG(sizeof(CNRINFO)))) {
 		      cnri.flWindowAttr = dcd->flWindowAttr;
-                      WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
-                                 CM_SETCNRINFO,
-                                 MPFROMP(&cnri),
-                                 MPFROMLONG(CMA_FLWINDOWATTR));
+		      WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
+				 CM_SETCNRINFO,
+				 MPFROMP(&cnri),
+				 MPFROMLONG(CMA_FLWINDOWATTR));
 		    }
 		  }
 		}
@@ -3512,7 +3513,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
 		if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
 		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
-              }
+	      }
 	    }
 	    fRestored = TRUE;
 	    swp.hwnd = hwndDir;
@@ -5624,7 +5625,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     }
     else {
       WinSubclassWindow(WinWindowFromID(hwndFrame, IDM_IDEALSIZE),
-                        IdealButtonProc);
+			IdealButtonProc);
       //fixme to allow user to change presparams 1-10-09 GKY
       SetPresParams(WinWindowFromID(hwndFrame,
 				    IDM_IDEALSIZE),
@@ -5714,8 +5715,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     hwndDrivelist = WinCreateWindow(hwndFrame,
 				    WC_COMBOBOX,
 				    (PSZ) NULL,
-                                    //WS_VISIBLE |
-                                    CBS_DROPDOWN,
+				    //WS_VISIBLE |
+				    CBS_DROPDOWN,
 				    (swp.x +
 				     WinQuerySysValue(HWND_DESKTOP,
 						      SV_CXSIZEBORDER)),
@@ -5920,7 +5921,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP3:
     /* start remaining child windows */
     if (!fNoSaveState && fSaveState) {
-      PSZ pszStatename = GetPString(IDS_SHUTDOWNSTATE);
+      PCSZ pszStatename = GetPString(IDS_SHUTDOWNSTATE);
       PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPVOID);
       if (!add_setup(pszStatename))
 	save_setups();

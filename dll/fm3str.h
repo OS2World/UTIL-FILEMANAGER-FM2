@@ -3,10 +3,10 @@
 
   $Id$
 
-  Index for fm3dll.str (source) fm3res.str (compiled)
+  Index for STRINGTABLE items in fm3res.rc
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2002, 2006 Steven H. Levine
+  Copyright (c) 2002, 2009 Steven H. Levine
 
   21 May 04 SHL Adjust IDS_NUMSTRS
   22 Jul 06 SHL Drop unused
@@ -22,10 +22,11 @@
   24 Aug 08 GKY Add strings for limited/inadequate drive space checks
   26 Aug 08 GKY Error strings for require unique ID plus text and help strings for all tools
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
-                Dos/Win programs from being inserted into the execute dialog with message why.
+		Dos/Win programs from being inserted into the execute dialog with message why.
   10 Jan 09 GKY Removed rotating strings for font samples as part of StringTable conversion
   11 Jan 08 GKY Move strings that will need translating to stringtable from sting file cut to
-                255 where necessary
+		255 where necessary
+  04 Feb 09 SHL Switch to STRINGTABLE
 
 ***********************************************************************/
 
@@ -33,11 +34,6 @@
 #define VERMINORBREAK                                         02
 
 // Spares are named IDS_SPARE_### here
-// Text in fm3dll.str will contain the notation Spare ###
-// Last string in fm3dll.str reserved for cvs id
-// Set IDS_NUMSTRS to max value here plus 2
-
-#define IDS_NUMSTRS                                           1009
 
 #define IDS_OPENBUTTONHELP                                    0
 #define IDS_OPENDROPHELP                                      1

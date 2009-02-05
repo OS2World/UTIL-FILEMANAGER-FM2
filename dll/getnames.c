@@ -6,7 +6,7 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2008 Steven H. Levine
+  Copyright (c) 2006, 2009 Steven H. Levine
 
   23 Aug 06 SHL Comments
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
@@ -228,16 +228,16 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
   fdlg.cbSize = (ULONG) sizeof(FILEDLG);
   fdlg.fl = FDS_CENTER | FDS_OPEN_DIALOG;
   if (!loadit) {
-    fdlg.pszTitle = GetPString(IDS_ENTERFILEINSERTTEXT);
-    fdlg.pszOKButton = GetPString(IDS_INSERTTEXT);
+    fdlg.pszTitle = (PSZ)GetPString(IDS_ENTERFILEINSERTTEXT);
+    fdlg.pszOKButton = (PSZ)GetPString(IDS_INSERTTEXT);
   }
   else if (loadit == TRUE) {
-    fdlg.pszTitle = GetPString(IDS_ENTERFILELOADTEXT);
-    fdlg.pszOKButton = GetPString(IDS_LOADTEXT);
+    fdlg.pszTitle = (PSZ)GetPString(IDS_ENTERFILELOADTEXT);
+    fdlg.pszOKButton = (PSZ)GetPString(IDS_LOADTEXT);
   }
   else {
-    fdlg.pszTitle = GetPString(IDS_ENTERFILETEXT);
-    fdlg.pszOKButton = GetPString(IDS_OKAYTEXT);
+    fdlg.pszTitle = (PSZ)GetPString(IDS_ENTERFILETEXT);
+    fdlg.pszOKButton = (PSZ)GetPString(IDS_OKAYTEXT);
   }
   if (IsFullName(filename)) {
     *drive = *filename;
@@ -332,8 +332,8 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
   memset(&fdlg, 0, sizeof(FILEDLG));
   fdlg.cbSize = sizeof(FILEDLG);
   fdlg.fl = FDS_CENTER | FDS_OPEN_DIALOG;
-  fdlg.pszTitle = GetPString(IDS_EXPORTNAMETITLETEXT);
-  fdlg.pszOKButton = GetPString(IDS_OKAYTEXT);
+  fdlg.pszTitle = (PSZ)GetPString(IDS_EXPORTNAMETITLETEXT);
+  fdlg.pszOKButton = (PSZ)GetPString(IDS_OKAYTEXT);
   if (IsFullName(filename)) {
     *drive = *filename;
     drive[1] = ':';

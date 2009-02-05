@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2008 Steven H. Levine
+# Copyright (c) 2002, 2009 Steven H. Levine
 
 # 22 May 03 SHL Correct icon dependencies
 # 21 Nov 03 SHL Correct ipf dependents
@@ -47,6 +47,9 @@
 # 21 Nov 08 JBS Ticket 297: Added support for copyright.c and copyright.h
 # 08 Dec 08 SHL Ticket 307: Add process dump support
 # 10 Dec 08 SHL Ticket 26: Add exception handler and exceptq support
+# 14 Dec 08 SHL Drop copyright.c support - it's gone
+# 18 Dec 08 SHL Avoid extra fm3res.str builds
+# 04 Feb 09 SHL Drop mkstr and fm3*.str now that we use STRINGTABLE
 
 # Environment: see makefile_pre.mk
 
@@ -94,7 +97,7 @@ WARNALL = $(%WARNALL)		# use value from environment
 FORTIFY = $(%FORTIFY)		# use value from environment
 !endif
 
-SYMS = $(BASE).sym $(BASERES).sym internal\mkstr.sym  #set a targets for building SYM files
+SYMS = $(BASE).sym $(BASERES).sym # targets for building SYM files
 
 # Some flags are order dependent - see OpenWatcom docs
 # -bc		console app
@@ -134,13 +137,10 @@ CFLAGS =  -bt=os2 -mf -bd -bm -hd -d2        -s -sg -j -wx -zfp -zgp -zp4 -zq -d
 !else
 CFLAGS =  -bt=os2 -mf -bd -bm -hd -d1 -olirs -s -sg -j -wx -zfp -zgp -zp4 -zq
 !endif
-# Omit -bd so exes can use copyright.obj
-COPYRIGHT_CFLAGS = -bt=os2 -mf -bm -s -j -zfp -zgp -zp4 -zq -hd
 
 # 26 May 08 SHL Was reversed
 !ifdef WARNALL
 CFLAGS += -wce=118 -wce=130 -wce=303 -wce=307 -wce=308 -wce=309
-COPYRIGHT_CFLAGS += -wce=118 -wce=130 -wce=303 -wce=307 -wce=308 -wce=309
 !else
 CFLAGS += -we
 !endif
@@ -181,7 +181,7 @@ RCFLAGS2 =
 OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        avl.obj avv.obj chklist.obj cmdline.obj codepage.obj &
        collect.obj colors.obj commafmt.obj command.obj common.obj &
-       comp.obj copyf.obj copyright.obj &
+       comp.obj copyf.obj &
        datamin.obj defview.obj delims.obj dircnrs.obj &
        dirs.obj dirsize.obj draglist.obj droplist.obj dumputil.obj &
        eas.obj errutil.obj excputil.obj extract.obj &
@@ -209,12 +209,11 @@ all: &
      $(BASE).dll &
      $(BASERES).res &
      $(BASERES).dll &
-     ipf\fm3.hlp &
-     $(BASERES).str
+     ipf\fm3.hlp
 
 syms: $(SYMS) .symbolic
 
-$(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf copyright.obj
+$(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
   @echo $(LINK) @$(BASE).lrf @$(BASE).def
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
@@ -225,17 +224,13 @@ $(BASE).lrf: $(__MAKEFILES__)
    @for %f in ($(OBJS)) do @%append $^@ file %f
   @%append $^@ library os2386.lib
 
-copyright.obj: copyright.c .AUTODEPEND
-  $(CC) $(COPYRIGHT_CFLAGS) copyright.c
-
 !else # MAKERES defined
 
 # MAKERES mode - build resources only
 
 all: $(BASERES).res &
      $(BASERES).dll &
-     ipf\fm3.hlp &
-     $(BASERES).str
+     ipf\fm3.hlp
 
 !endif # MAKERES
 
@@ -280,17 +275,6 @@ $(BASERES).sym: $(BASERES).map
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
 
-internal\mkstr.exe: .symbolic
-  cd internal
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT)
-  cd..
-
-internal\mkstr.sym: internal\mkstr.map
-   @echo Processing: $?
-   cd internal
-   -perl ..\..\debugtools\mapsymw.pl mkstr.map
-   cd ..
-
 !else # MAKERES defined
 
 # MAKERES mode - build resources only
@@ -309,19 +293,10 @@ $(BASERES).dll: $(BASERES).res
   lxlite $@ /x- /b-
 !endif
 
-internal\mkstr.exe: .symbolic
-  @echo Checking required EXEs
-  if not exist internal\mkstr.exe internal\mkstr.exe
-
 !endif # MAKERES
 
 # For testing new code
 tmp.obj: tmp.c
-
-$(BASERES).str: $(BASE).str fm3str.h version.h internal\mkstr.exe
-  internal\mkstr
-  # ren $(BASERES).str $(BASERES).str
-  copy $(BASERES).str ..\ /v
 
 ipf: ipf\fm3.hlp .symbolic
 
@@ -335,21 +310,13 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
 # !lxlite /x- /b- $?
 !ifndef DEBUG
   @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
-  cd internal
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) lxlite
-  cd ..
 !endif
 
 cleanobj: .symbolic
-  cd internal
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) cleanobj
-  cd..
   -del *.obj
 
 clean: .symbolic
-  cd internal
-  $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) clean
-  cd ..\ipf
+  cd ipf
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) clean
   cd..
   -del *.dll
@@ -359,4 +326,3 @@ clean: .symbolic
   -del *.obj
   -del *.res
   -del *.sym
-  -del $(BASERES).str

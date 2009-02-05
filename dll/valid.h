@@ -6,7 +6,7 @@
   <<description here>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
@@ -24,10 +24,10 @@ VOID FillInDriveFlags(VOID * dummy);
 VOID GetDesktopName(CHAR * objectpath, ULONG size);
 BOOL IsBinary(CHAR * str, ULONG len);
 BOOL IsExecutable(CHAR * filename);
-INT IsFile(CHAR * filename);
+INT IsFile(PCSZ filename);
 BOOL IsFullName(CHAR * filename);
 BOOL IsNewer(char *file1, char *file2);
-BOOL IsRoot(CHAR * filename);
+BOOL IsRoot(PCSZ filename);
 BOOL IsValidDir(CHAR * test);
 BOOL IsValidDrive(CHAR drive);
 APIRET MakeFullName(char *filename);
@@ -39,7 +39,7 @@ int TestCDates(CDATE *datevar1, CTIME *timevar1, CDATE *datevar2, CTIME *timevar
 int TestFDates(char *file1, char *file2, FDATE *datevar1, FTIME *timevar1,
 	       FDATE *datevar2, FTIME *timevar2);
 CHAR *assign_ignores(CHAR * s);
-BOOL needs_quoting(CHAR * f);
+BOOL needs_quoting(PCSZ f);
 
 // Data declarations
 extern CHAR *CDFS;

@@ -6,7 +6,7 @@
   Path handling utility functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   05 Jan 08 SHL Move from fm3dll.h to here
   29 Feb 08 GKY Changes to enable user settable command line length
@@ -23,10 +23,10 @@
 
 PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
 PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
-PSZ BldQuotedFileName(PSZ pszQuotedFileName, PSZ pszFileName);
+PSZ BldQuotedFileName(PSZ pszQuotedFileName, PCSZ pszFileName);
 PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_);
 
-#define MAXCOMLINESTRGDEFAULT (1024) 			/* used to build command line strings */
+#define MAXCOMLINESTRGDEFAULT (1024)			/* used to build command line strings */
 #define CMDLNLNGTH_MIN (299)
 #define CMDLNLNGTH_MAX (32768)
 

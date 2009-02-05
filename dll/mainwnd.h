@@ -6,9 +6,10 @@
   <<description here>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
+  04 Feb 09 SHL Convert args to const to match GetPString mods
 
 ***********************************************************************/
 
@@ -18,7 +19,7 @@
 
 #include "colors.h"		// typedef for RGB2
 
-void BubbleHelp(HWND hwnd, BOOL other, BOOL data, BOOL above, char *help);
+void BubbleHelp(HWND hwnd, BOOL other, BOOL data, BOOL above, PCSZ help);
 MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID BuildDriveBarButtons(HWND hwndT);
 MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1,
@@ -34,10 +35,10 @@ VOID GetNextWindowPos(HWND hwndClient, PSWP pswp, ULONG * ulCntR,
 MRESULT EXPENTRY LEDProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID MakeBubble(HWND hwnd, BOOL above, CHAR * help);
+VOID MakeBubble(HWND hwnd, BOOL above, PCSZ help);
 VOID MakeMainObjWin(VOID * args);
 VOID ResizeDrives(HWND hwndT, long xwidth);
-INT SaveDirCnrState(HWND hwndClient, CHAR * name);
+INT SaveDirCnrState(HWND hwndClient, PCSZ name);
 MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID TileChildren(HWND hwndClient, BOOL absolute);
 MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
@@ -82,6 +83,6 @@ extern HWND hwndToolback;
 extern HWND hwndTree;
 extern USHORT shiftstate;
 
-#define STATE_NAME_MAX_BYTES    256
+#define STATE_NAME_MAX_BYTES 256
 
 #endif	// MAINWND_H

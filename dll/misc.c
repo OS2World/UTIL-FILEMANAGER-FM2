@@ -5,7 +5,7 @@
   Misc GUI support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H. Levine
+  Copyright (c) 2003, 2009 Steven H. Levine
 
   11 Jun 03 SHL Add JFS and FAT32 support
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -40,15 +40,15 @@
   21 Jan 08 GKY Stop reallocating NullStr by direct editing of empty subject and longname strings.
   29 Feb 08 GKY Use xfree where appropriate
   08 Mar 08 JBS Ticket 230: Replace prefixless INI keys for default directory containers with
-                keys using a "DirCnr." prefix
+		keys using a "DirCnr." prefix
   19 Jun 08 JBS Ticket 239: Fix LoadDetailsSwitches so INI file is read correctly and details
-                switches are set correctly.
+		switches are set correctly.
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
-                all the details view settings (both the global variables and those in the
-                DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+		all the details view settings (both the global variables and those in the
+		DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
   17 Jul 08 SHL Add GetTidForWindow for Fortify support
   20 Jul 08 GKY Add save/append filename to clipboard.
-                Change menu wording to make these easier to find
+		Change menu wording to make these easier to find
   23 Aug 08 GKY Add CheckDriveSpaceAvail To pre check drive space to prevent failures
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
@@ -140,7 +140,7 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
 
     if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                "DosGetInfoBlocks");
+		"DosGetInfoBlocks");
       yes = FALSE;
     }
     else {
@@ -151,8 +151,8 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
       // Check say same thread too, if requested
       // OK for window to be dead - just return FALSE
       yes = WinQueryWindowProcess(hwnd, &pid, &tid) &&
-            pid == ppib->pib_ulpid &&
-            (!chkTid || tid == ptib->tib_ptib2->tib2_ultid);
+	    pid == ppib->pib_ulpid &&
+	    (!chkTid || tid == ptib->tib_ptib2->tib2_ultid);
     }
     return yes;
 }
@@ -175,17 +175,17 @@ INT GetTidForWindow(HWND hwnd)
 
     if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                "DosGetInfoBlocks");
+		"DosGetInfoBlocks");
     }
     else {
       PID pid;
       TID tid;
       if (!WinQueryWindowProcess(hwnd, &pid, &tid))
-        Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinQueryWindowProcess failed for %X", hwnd);
+	Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinQueryWindowProcess failed for %X", hwnd);
       else if (pid != ppib->pib_ulpid)
-        Runtime_Error(pszSrcFile, __LINE__, "hwnd %X not created by fm/2", hwnd);
+	Runtime_Error(pszSrcFile, __LINE__, "hwnd %X not created by fm/2", hwnd);
       else
-        ordinal = ptib->tib_ptib2->tib2_ultid;
+	ordinal = ptib->tib_ptib2->tib2_ultid;
     }
     return ordinal;
 }
@@ -204,7 +204,7 @@ INT GetTidForThread(VOID)
 
     if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                "DosGetInfoBlocks");
+		"DosGetInfoBlocks");
     }
     else
       ordinal = ptib->tib_ptib2->tib2_ultid;
@@ -311,30 +311,30 @@ void PaintSTextWindow(HWND hwnd, HPS hps)
       *s = 0;
       WinQueryWindowText(hwnd, CCHMAXPATH, s);
       if (*s) {
-        rcl.xRight -= 3;
-        p = s;
-        GpiQueryTextBox(hps, 3, "...", TXTBOX_COUNT, aptl);
-        len = aptl[TXTBOX_TOPRIGHT].x;
-        do {
-          GpiQueryTextBox(hps, strlen(p), p, TXTBOX_COUNT, aptl);
-          if (aptl[TXTBOX_TOPRIGHT].x > (rcl.xRight - (p != s ? len : 0)))
-            p++;
-          else
-            break;
-        }
-        while (*p);
-        if (*p) {
-          GpiSetMix(hps, FM_OVERPAINT);
-          GpiSetColor(hps, CLR_BLACK);
-          ptl.x = 3;
-          ptl.y = ((rcl.yTop / 2) -
-                   ((aptl[TXTBOX_TOPRIGHT].y +
-                     aptl[TXTBOX_BOTTOMLEFT].y) / 2));
-          GpiMove(hps, &ptl);
-          if (p != s)
-            GpiCharString(hps, 3, "...");
-          GpiCharString(hps, strlen(p), p);
-        }
+	rcl.xRight -= 3;
+	p = s;
+	GpiQueryTextBox(hps, 3, "...", TXTBOX_COUNT, aptl);
+	len = aptl[TXTBOX_TOPRIGHT].x;
+	do {
+	  GpiQueryTextBox(hps, strlen(p), p, TXTBOX_COUNT, aptl);
+	  if (aptl[TXTBOX_TOPRIGHT].x > (rcl.xRight - (p != s ? len : 0)))
+	    p++;
+	  else
+	    break;
+	}
+	while (*p);
+	if (*p) {
+	  GpiSetMix(hps, FM_OVERPAINT);
+	  GpiSetColor(hps, CLR_BLACK);
+	  ptl.x = 3;
+	  ptl.y = ((rcl.yTop / 2) -
+		   ((aptl[TXTBOX_TOPRIGHT].y +
+		     aptl[TXTBOX_BOTTOMLEFT].y) / 2));
+	  GpiMove(hps, &ptl);
+	  if (p != s)
+	    GpiCharString(hps, 3, "...");
+	  GpiCharString(hps, strlen(p), p);
+	}
       }
       free(s);
     }
@@ -415,26 +415,26 @@ VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl)
   }
 }
 
-BOOL AdjustCnrColVis(HWND hwndCnr, CHAR * title, BOOL visible, BOOL toggle)
+BOOL AdjustCnrColVis(HWND hwndCnr, PCSZ title, BOOL visible, BOOL toggle)
 {
   PFIELDINFO pfi = (PFIELDINFO) WinSendMsg(hwndCnr,
-                                           CM_QUERYDETAILFIELDINFO,
-                                           MPVOID, MPFROMSHORT(CMA_FIRST));
+					   CM_QUERYDETAILFIELDINFO,
+					   MPVOID, MPFROMSHORT(CMA_FIRST));
 
   while (pfi) {
     if (!strcmp(pfi->pTitleData, title)) {
       if (toggle) {
-        if (pfi->flData & CFA_INVISIBLE)
-          pfi->flData &= (~CFA_INVISIBLE);
-        else
-          pfi->flData |= CFA_INVISIBLE;
-        return !(pfi->flData & CFA_INVISIBLE);
+	if (pfi->flData & CFA_INVISIBLE)
+	  pfi->flData &= (~CFA_INVISIBLE);
+	else
+	  pfi->flData |= CFA_INVISIBLE;
+	return !(pfi->flData & CFA_INVISIBLE);
       }
       else {
-        if (visible)
-          pfi->flData &= (~CFA_INVISIBLE);
-        else
-          pfi->flData |= CFA_INVISIBLE;
+	if (visible)
+	  pfi->flData &= (~CFA_INVISIBLE);
+	else
+	  pfi->flData |= CFA_INVISIBLE;
       }
       return TRUE;
     }
@@ -443,26 +443,26 @@ BOOL AdjustCnrColVis(HWND hwndCnr, CHAR * title, BOOL visible, BOOL toggle)
   return FALSE;
 }
 
-BOOL AdjustCnrColRO(HWND hwndCnr, CHAR * title, BOOL readonly, BOOL toggle)
+BOOL AdjustCnrColRO(HWND hwndCnr, PCSZ title, BOOL readonly, BOOL toggle)
 {
   PFIELDINFO pfi = (PFIELDINFO) WinSendMsg(hwndCnr,
-                                           CM_QUERYDETAILFIELDINFO,
-                                           MPVOID, MPFROMSHORT(CMA_FIRST));
+					   CM_QUERYDETAILFIELDINFO,
+					   MPVOID, MPFROMSHORT(CMA_FIRST));
 
   while (pfi) {
     if (!strcmp(pfi->pTitleData, title)) {
       if (toggle) {
-        if (pfi->flData & CFA_FIREADONLY)
-          pfi->flData &= (~CFA_FIREADONLY);
-        else
-          pfi->flData |= CFA_FIREADONLY;
-        return (pfi->flData & CFA_FIREADONLY);
+	if (pfi->flData & CFA_FIREADONLY)
+	  pfi->flData &= (~CFA_FIREADONLY);
+	else
+	  pfi->flData |= CFA_FIREADONLY;
+	return (pfi->flData & CFA_FIREADONLY);
       }
       else {
-        if (!readonly)
-          pfi->flData &= (~CFA_FIREADONLY);
-        else
-          pfi->flData |= CFA_FIREADONLY;
+	if (!readonly)
+	  pfi->flData &= (~CFA_FIREADONLY);
+	else
+	  pfi->flData |= CFA_FIREADONLY;
       }
       return TRUE;
     }
@@ -471,7 +471,7 @@ BOOL AdjustCnrColRO(HWND hwndCnr, CHAR * title, BOOL readonly, BOOL toggle)
   return FALSE;
 }
 
-VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds)
+VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds)
 {
   CHAR FileSystem[CCHMAXPATH];
   INT x;
@@ -484,12 +484,12 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * p
   x = CheckDrive(toupper(*directory), FileSystem, NULL);
   if (x != -1) {
     if (!stricmp(FileSystem, HPFS) ||
-        !stricmp(FileSystem, JFS) ||
-        !stricmp(FileSystem, FAT32) ||
-        !stricmp(FileSystem, RAMFS) ||
-        !stricmp(FileSystem, NDFS32) ||
-        !stricmp(FileSystem, NTFS) ||
-        !stricmp(FileSystem, HPFS386)) {
+	!stricmp(FileSystem, JFS) ||
+	!stricmp(FileSystem, FAT32) ||
+	!stricmp(FileSystem, RAMFS) ||
+	!stricmp(FileSystem, NDFS32) ||
+	!stricmp(FileSystem, NTFS) ||
+	!stricmp(FileSystem, HPFS386)) {
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
       hasLongNames = TRUE;
@@ -513,36 +513,36 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * p
     hasLongNames = FALSE;
   }
   AdjustCnrColVis(hwndCnr,
-                  GetPString(IDS_LADATE),
-                  pds->detailsladate ? hasAccessDT : FALSE,
-                  FALSE);
+		  GetPString(IDS_LADATE),
+		  pds->detailsladate ? hasAccessDT : FALSE,
+		  FALSE);
   AdjustCnrColVis(hwndCnr,
-                  GetPString(IDS_LATIME),
-                  pds->detailslatime ? hasAccessDT : FALSE,
-                  FALSE);
+		  GetPString(IDS_LATIME),
+		  pds->detailslatime ? hasAccessDT : FALSE,
+		  FALSE);
   AdjustCnrColVis(hwndCnr,
-                  GetPString(IDS_CRDATE),
-                  pds->detailscrdate ? hasCreateDT : FALSE,
-                  FALSE);
+		  GetPString(IDS_CRDATE),
+		  pds->detailscrdate ? hasCreateDT : FALSE,
+		  FALSE);
   AdjustCnrColVis(hwndCnr,
-                  GetPString(IDS_CRTIME),
-                  pds->detailscrtime ? hasCreateDT : FALSE,
-                  FALSE);
+		  GetPString(IDS_CRTIME),
+		  pds->detailscrtime ? hasCreateDT : FALSE,
+		  FALSE);
   AdjustCnrColVis(hwndCnr,
-                  GetPString(IDS_LNAME),
-                  pds->detailslongname ? hasLongNames : FALSE,
-                  FALSE);
+		  GetPString(IDS_LNAME),
+		  pds->detailslongname ? hasLongNames : FALSE,
+		  FALSE);
   WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
 }
 
-VOID AdjustCnrColsForPref(HWND hwndCnr, CHAR * directory, DETAILS_SETTINGS * pds,
-                          BOOL compare)
+VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds,
+			  BOOL compare)
 {
 
   AdjustCnrColVis(hwndCnr,
-                  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
-                  pds->detailssubject,
-                  FALSE);
+		  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+		  pds->detailssubject,
+		  FALSE);
 
   AdjustCnrColVis(hwndCnr, GetPString(IDS_ATTR), pds->detailsattr, FALSE);
   AdjustCnrColVis(hwndCnr, GetPString(IDS_ICON), pds->detailsicon, FALSE);
@@ -571,7 +571,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
   // Allocate storage for container column data
 
   pfi = WinSendMsg(hwndCnr, CM_ALLOCDETAILFIELDINFO,
-                   MPFROMLONG(CONTAINER_COLUMNS), NULL);
+		   MPFROMLONG(CONTAINER_COLUMNS), NULL);
 
   if (!pfi) {
     Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCDETAILFIELDINFO");
@@ -591,7 +591,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
     pfi->flData = CFA_BITMAPORICON | CFA_CENTER | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
-    pfi->pTitleData = GetPString(IDS_ICON);
+    pfi->pTitleData = (PSZ)GetPString(IDS_ICON);
     pfi->offStruct = FIELDOFFSET(MINIRECORDCORE, hptrIcon);
 
     pfiIconCol = pfi;
@@ -604,7 +604,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
     pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
     pfi->flTitle = CFA_LEFT;
-    pfi->pTitleData = GetPString(IDS_FILENAME);
+    pfi->pTitleData = (PSZ)GetPString(IDS_FILENAME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszDisplayName);
 
     // Fill in column information for the longname.
@@ -612,7 +612,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_LEFT;
     pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
-    pfi->pTitleData = GetPString(IDS_LNAME);
+    pfi->pTitleData = (PSZ)GetPString(IDS_LNAME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszLongName);
 
     // Fill in column info for subjects
@@ -621,10 +621,10 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
       pfi = pfi->pNextFieldInfo;
       pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
       if (isCompCnr)
-        pfi->flData |= CFA_FIREADONLY;
+	pfi->flData |= CFA_FIREADONLY;
       pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
-      pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
-                                  GetPString(IDS_SUBJ);
+      pfi->pTitleData = isCompCnr ? (PSZ)GetPString(IDS_STATUS) :
+				    (PSZ)GetPString(IDS_SUBJ);
       pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
       pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
 
@@ -641,10 +641,10 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
       pfi = pfi->pNextFieldInfo;
       pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
       if (isCompCnr)
-        pfi->flData |= CFA_FIREADONLY;
+	pfi->flData |= CFA_FIREADONLY;
       pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
-      pfi->pTitleData = isCompCnr ? GetPString(IDS_STATUS) :
-                                  GetPString(IDS_SUBJ);
+      pfi->pTitleData = isCompCnr ? (PSZ)GetPString(IDS_STATUS) :
+				    (PSZ)GetPString(IDS_SUBJ);
       pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
       pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
     }
@@ -655,7 +655,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_SIZE);
+    pfi->pTitleData = (PSZ)GetPString(IDS_SIZE);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszFmtFileSize);
 
 
@@ -664,7 +664,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_ULONG | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_EA);
+    pfi->pTitleData = (PSZ)GetPString(IDS_EA);
     pfi->offStruct = FIELDOFFSET(CNRITEM, easize);
 
     // Fill in the column information for the file attribute
@@ -672,7 +672,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_CENTER | CFA_SEPARATOR | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER | CFA_FITITLEREADONLY;
-    pfi->pTitleData = GetPString(IDS_ATTR);
+    pfi->pTitleData = (PSZ)GetPString(IDS_ATTR);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszDispAttr);
 
     // Fill in column information for last write file date
@@ -680,7 +680,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_DATE | CFA_RIGHT | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_LWDATE);
+    pfi->pTitleData = (PSZ)GetPString(IDS_LWDATE);
     pfi->offStruct = FIELDOFFSET(CNRITEM, date);
 
     // Fill in column information for the last write file time
@@ -688,7 +688,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_TIME | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_LWTIME);
+    pfi->pTitleData = (PSZ)GetPString(IDS_LWTIME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, time);
 
     // Fill in column information for last access file date
@@ -696,7 +696,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_DATE | CFA_RIGHT | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_LADATE);
+    pfi->pTitleData = (PSZ)GetPString(IDS_LADATE);
     pfi->offStruct = FIELDOFFSET(CNRITEM, ladate);
 
     // Fill in column information for the last access file time
@@ -704,7 +704,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_TIME | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_LATIME);
+    pfi->pTitleData = (PSZ)GetPString(IDS_LATIME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, latime);
 
     // Fill in column information for create file date
@@ -712,7 +712,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_DATE | CFA_RIGHT | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_CRDATE);
+    pfi->pTitleData = (PSZ)GetPString(IDS_CRDATE);
     pfi->offStruct = FIELDOFFSET(CNRITEM, crdate);
 
     // Fill in column information for the create file time
@@ -720,7 +720,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_TIME | CFA_RIGHT | CFA_FIREADONLY;
     pfi->flTitle = CFA_CENTER;
-    pfi->pTitleData = GetPString(IDS_CRTIME);
+    pfi->pTitleData = (PSZ)GetPString(IDS_CRTIME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, crtime);
 
     // Use the CM_INSERTDETAILFIELDINFO message to tell the container
@@ -736,7 +736,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     fii.fInvalidateFieldInfo = TRUE;
 
     if (!WinSendMsg(hwndCnr, CM_INSERTDETAILFIELDINFO, MPFROMP(pfiFirst),
-                    MPFROMP(&fii))) {
+		    MPFROMP(&fii))) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_INSERTDETAILFIELDINFO");
       fSuccess = FALSE;
     }
@@ -755,12 +755,12 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     cnri.pFieldInfoObject = pfiIconCol;
     size = sizeof(LONG);
     PrfQueryProfileData(fmprof,
-                        appname, "CnrSplitBar", &cnri.xVertSplitbar, &size);
+			appname, "CnrSplitBar", &cnri.xVertSplitbar, &size);
     if (cnri.xVertSplitbar <= 0)
       cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 32;
     if (!WinSendMsg(hwndCnr, CM_SETCNRINFO, MPFROMP(&cnri),
-                    MPFROMLONG(CMA_PFIELDINFOLAST | CMA_PFIELDINFOOBJECT |
-                               CMA_XVERTSPLITBAR))) {
+		    MPFROMLONG(CMA_PFIELDINFOLAST | CMA_PFIELDINFOOBJECT |
+			       CMA_XVERTSPLITBAR))) {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_SETCNRINFO");
       fSuccess = FALSE;
     }
@@ -778,19 +778,19 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 
       if (pci &&
-          (INT) pci != -1 &&
-          !IsRoot(pci->pszFileName) &&
-          !(pci->flags & RECFLAGS_ENV) && !(pci->flags & RECFLAGS_UNDERENV)) {
-        if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName)) {
-          PostMsg(hwnd, UM_FIXEDITNAME, MPFROMP(pci->pszFileName), MPVOID);
-        }
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject))
-          PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(1048), MPVOID);
-        else
-          PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(CCHMAXPATH), MPVOID);
+	  (INT) pci != -1 &&
+	  !IsRoot(pci->pszFileName) &&
+	  !(pci->flags & RECFLAGS_ENV) && !(pci->flags & RECFLAGS_UNDERENV)) {
+	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName)) {
+	  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMP(pci->pszFileName), MPVOID);
+	}
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject))
+	  PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(1048), MPVOID);
+	else
+	  PostMsg(hwnd, UM_FIXCNRMLE, MPFROMLONG(CCHMAXPATH), MPVOID);
       }
       else
-        PostMsg(hwnd, CM_CLOSEEDIT, MPVOID, MPVOID);
+	PostMsg(hwnd, CM_CLOSEEDIT, MPVOID, MPVOID);
     }
     break;
 
@@ -803,164 +803,164 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       BOOL fResetVerify = FALSE;
 
       if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
-        if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject)) {
+	if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject)) {
 
-          APIRET rc;
-          EAOP2 eaop;
-          PFEA2LIST pfealist = NULL;
-          CHAR szSubject[1048];
-          ULONG ealen;
-          USHORT len;
-          CHAR *eaval;
-          LONG retlen;
-          PSZ psz;
+	  APIRET rc;
+	  EAOP2 eaop;
+	  PFEA2LIST pfealist = NULL;
+	  CHAR szSubject[1048];
+	  ULONG ealen;
+	  USHORT len;
+	  CHAR *eaval;
+	  LONG retlen;
+	  PSZ psz;
 
-          retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
-          szSubject[retlen + 1] = 0;
-          bstrip(szSubject);
-          if (pci->pszSubject != NullStr) {
-            if (retlen == 0) {
-              psz = pci->pszSubject;
-              pci->pszSubject = NullStr;
-              xfree(psz, pszSrcFile, __LINE__);
-            }
-            else
-              pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
-          }
-          else {
-            pci->pszSubject = xmalloc(retlen + 1, pszSrcFile, __LINE__);
-            if (!pci->pszSubject)
-              return FALSE;
-          }
-          len = strlen(szSubject);
-          if (len)
-            ealen = sizeof(FEA2LIST) + 9 + len + 4;
-          else
-            ealen = sizeof(FEALIST) + 9;
-          rc = DosAllocMem((PPVOID) & pfealist, ealen + 64,
-                           OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
-          if (rc)
-            Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile,
-                      __LINE__, GetPString(IDS_OUTOFMEMORY));
-          else {
-            memset(pfealist, 0, ealen + 1);
-            pfealist->cbList = ealen;
-            pfealist->list[0].oNextEntryOffset = 0;
-            pfealist->list[0].fEA = 0;
-            pfealist->list[0].cbName = 8;
-            strcpy(pfealist->list[0].szName, SUBJECT);
-            if (len) {
-              eaval = pfealist->list[0].szName + 9;
-              *(USHORT *) eaval = (USHORT) EAT_ASCII;
-              eaval += sizeof(USHORT);
-              *(USHORT *) eaval = (USHORT) len;
-              eaval += sizeof(USHORT);
-              memcpy(eaval, szSubject, len);
-              pfealist->list[0].cbValue = len + (sizeof(USHORT) * 2);
-            }
-            else
-              pfealist->list[0].cbValue = 0;
-            eaop.fpGEA2List = (PGEA2LIST) 0;
-            eaop.fpFEA2List = pfealist;
-            eaop.oError = 0;
-            rc = xDosSetPathInfo(pci->pszFileName, FIL_QUERYEASIZE,
-                                 &eaop, sizeof(eaop), DSPI_WRTTHRU);
-            DosFreeMem(pfealist);
-            if (rc)
-              return FALSE;
-          }
-          return (MRESULT) TRUE;
-        }
-        else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongName)) {
+	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
+	  szSubject[retlen + 1] = 0;
+	  bstrip(szSubject);
+	  if (pci->pszSubject != NullStr) {
+	    if (retlen == 0) {
+	      psz = pci->pszSubject;
+	      pci->pszSubject = NullStr;
+	      xfree(psz, pszSrcFile, __LINE__);
+	    }
+	    else
+	      pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
+	  }
+	  else {
+	    pci->pszSubject = xmalloc(retlen + 1, pszSrcFile, __LINE__);
+	    if (!pci->pszSubject)
+	      return FALSE;
+	  }
+	  len = strlen(szSubject);
+	  if (len)
+	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
+	  else
+	    ealen = sizeof(FEALIST) + 9;
+	  rc = DosAllocMem((PPVOID) & pfealist, ealen + 64,
+			   OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+	  if (rc)
+	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile,
+		      __LINE__, GetPString(IDS_OUTOFMEMORY));
+	  else {
+	    memset(pfealist, 0, ealen + 1);
+	    pfealist->cbList = ealen;
+	    pfealist->list[0].oNextEntryOffset = 0;
+	    pfealist->list[0].fEA = 0;
+	    pfealist->list[0].cbName = 8;
+	    strcpy(pfealist->list[0].szName, SUBJECT);
+	    if (len) {
+	      eaval = pfealist->list[0].szName + 9;
+	      *(USHORT *) eaval = (USHORT) EAT_ASCII;
+	      eaval += sizeof(USHORT);
+	      *(USHORT *) eaval = (USHORT) len;
+	      eaval += sizeof(USHORT);
+	      memcpy(eaval, szSubject, len);
+	      pfealist->list[0].cbValue = len + (sizeof(USHORT) * 2);
+	    }
+	    else
+	      pfealist->list[0].cbValue = 0;
+	    eaop.fpGEA2List = (PGEA2LIST) 0;
+	    eaop.fpFEA2List = pfealist;
+	    eaop.oError = 0;
+	    rc = xDosSetPathInfo(pci->pszFileName, FIL_QUERYEASIZE,
+				 &eaop, sizeof(eaop), DSPI_WRTTHRU);
+	    DosFreeMem(pfealist);
+	    if (rc)
+	      return FALSE;
+	  }
+	  return (MRESULT) TRUE;
+	}
+	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongName)) {
 
-          CHAR longname[CCHMAXPATHCOMP];
-          LONG retlen;
-          PSZ psz;
+	  CHAR longname[CCHMAXPATHCOMP];
+	  LONG retlen;
+	  PSZ psz;
 
-          *longname = 0;
-          retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
-          longname[retlen + 1] = 0;
-          chop_at_crnl(longname);
-          bstrip(longname);
-          WinSetWindowText(hwndMLE, longname);
-          if (pci->pszLongName != NullStr) {
-            if (retlen == 0) {
-              psz = pci->pszLongName;
-              pci->pszLongName = NullStr;
-              xfree(psz, pszSrcFile, __LINE__);
-            }
-            else
-              pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
-          }
-          else {
-            pci->pszLongName = xmalloc(retlen + 1, pszSrcFile, __LINE__);
-            if (!pci->pszLongName)
-              return FALSE;
-          }
-          return (MRESULT) WriteLongName(pci->pszFileName, longname);
-        }
-        else {
-          WinQueryWindowText(hwndMLE, sizeof(szData), szData);
-          if (strchr(szData, '?') ||
-              strchr(szData, '*') || IsRoot(pci->pszFileName))
-            return (MRESULT) FALSE;
-          /* If the text changed, rename the file system object. */
-          chop_at_crnl(szData);
-          bstrip(szData);
-          if (!IsFullName(szData))
-            Runtime_Error(pszSrcFile, __LINE__, "bad name");
-          else {
-            if (DosQueryPathInfo(szData,
-                                 FIL_QUERYFULLNAME,
-                                 testname, sizeof(testname)))
-                return FALSE;
-            if (DosQueryPathInfo(pci->pszFileName,
-                                 FIL_QUERYFULLNAME,
-                                 szData,
-                                 sizeof(szData)))
-            {
-              pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
-              strcpy(szData, pci->pszFileName);
-            }
-            WinSetWindowText(hwndMLE, szData);
-            if (strcmp(szData, testname)) {
-              if (stricmp(szData, testname) && IsFile(testname) != -1) {
-                DosBeep(50, 100);       /* exists; disallow */
-                return (MRESULT) FALSE;
-              }
-              if (fVerify && (driveflags[toupper(*szData) - 'A'] & DRIVE_WRITEVERIFYOFF ||
-                              driveflags[toupper(*testname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
-                DosSetVerify(FALSE);
-                fResetVerify = TRUE;
-              }
-              if (docopyf(MOVE, szData, "%s", testname))
-                Runtime_Error(pszSrcFile, __LINE__, "docopyf");
-              else {
-                CHAR *filename;
+	  *longname = 0;
+	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
+	  longname[retlen + 1] = 0;
+	  chop_at_crnl(longname);
+	  bstrip(longname);
+	  WinSetWindowText(hwndMLE, longname);
+	  if (pci->pszLongName != NullStr) {
+	    if (retlen == 0) {
+	      psz = pci->pszLongName;
+	      pci->pszLongName = NullStr;
+	      xfree(psz, pszSrcFile, __LINE__);
+	    }
+	    else
+	      pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+	  }
+	  else {
+	    pci->pszLongName = xmalloc(retlen + 1, pszSrcFile, __LINE__);
+	    if (!pci->pszLongName)
+	      return FALSE;
+	  }
+	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
+	}
+	else {
+	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
+	  if (strchr(szData, '?') ||
+	      strchr(szData, '*') || IsRoot(pci->pszFileName))
+	    return (MRESULT) FALSE;
+	  /* If the text changed, rename the file system object. */
+	  chop_at_crnl(szData);
+	  bstrip(szData);
+	  if (!IsFullName(szData))
+	    Runtime_Error(pszSrcFile, __LINE__, "bad name");
+	  else {
+	    if (DosQueryPathInfo(szData,
+				 FIL_QUERYFULLNAME,
+				 testname, sizeof(testname)))
+		return FALSE;
+	    if (DosQueryPathInfo(pci->pszFileName,
+				 FIL_QUERYFULLNAME,
+				 szData,
+				 sizeof(szData)))
+	    {
+	      pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+	      strcpy(szData, pci->pszFileName);
+	    }
+	    WinSetWindowText(hwndMLE, szData);
+	    if (strcmp(szData, testname)) {
+	      if (stricmp(szData, testname) && IsFile(testname) != -1) {
+		DosBeep(50, 100);       /* exists; disallow */
+		return (MRESULT) FALSE;
+	      }
+	      if (fVerify && (driveflags[toupper(*szData) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+			      driveflags[toupper(*testname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+		DosSetVerify(FALSE);
+		fResetVerify = TRUE;
+	      }
+	      if (docopyf(MOVE, szData, "%s", testname))
+		Runtime_Error(pszSrcFile, __LINE__, "docopyf");
+	      else {
+		CHAR *filename;
 
-                filename = xstrdup(testname, pszSrcFile, __LINE__);
-                if (filename) {
-                  if (!PostMsg(hwnd,
-                               UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-                    free(filename);
-                }
-                if (stricmp(testname, pci->pszFileName)) {
-                  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
-                  filename = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
-                  if (filename) {
-                    if (!PostMsg(hwnd,
-                                 UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-                      free(filename);
-                  }
-                }
-              }
-              if (fResetVerify) {
-                DosSetVerify(fVerify);
-                fResetVerify = FALSE;
-              }
-            }
-          }
-        }
+		filename = xstrdup(testname, pszSrcFile, __LINE__);
+		if (filename) {
+		  if (!PostMsg(hwnd,
+			       UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
+		    free(filename);
+		}
+		if (stricmp(testname, pci->pszFileName)) {
+		  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
+		  filename = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
+		  if (filename) {
+		    if (!PostMsg(hwnd,
+				 UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
+		      free(filename);
+		  }
+		}
+	      }
+	      if (fResetVerify) {
+		DosSetVerify(fVerify);
+		fResetVerify = FALSE;
+	      }
+	    }
+	  }
+	}
       }
     }
     return FALSE;
@@ -971,36 +971,36 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 
       if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
-        WinSendMsg(hwnd,
-                   CM_INVALIDATERECORD,
-                   MPFROMP(&pci),
-                   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
-        if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName))
-          PostMsg(hwnd, UM_SORTRECORD, MPVOID, MPVOID);
+	WinSendMsg(hwnd,
+		   CM_INVALIDATERECORD,
+		   MPFROMP(&pci),
+		   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+	if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName))
+	  PostMsg(hwnd, UM_SORTRECORD, MPVOID, MPVOID);
       }
       else {
-        USHORT cmd = 0;
+	USHORT cmd = 0;
 
-        if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName))
-          cmd = IDM_SORTSMARTNAME;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, cbFile))
-          cmd = IDM_SORTSIZE;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, easize))
-          cmd = IDM_SORTEASIZE;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, date))
-          cmd = IDM_SORTLWDATE;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, time))
-          cmd = IDM_SORTLWDATE;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, ladate))
-          cmd = IDM_SORTLADATE;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, latime))
-          cmd = IDM_SORTLADATE;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, crdate))
-          cmd = IDM_SORTCRDATE;
-        else if (pfi->offStruct == FIELDOFFSET(CNRITEM, crtime))
-          cmd = IDM_SORTCRDATE;
-        if (cmd)
-          PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(cmd, 0), MPVOID);
+	if (!pfi || pfi->offStruct == FIELDOFFSET(CNRITEM, pszDisplayName))
+	  cmd = IDM_SORTSMARTNAME;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, cbFile))
+	  cmd = IDM_SORTSIZE;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, easize))
+	  cmd = IDM_SORTEASIZE;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, date))
+	  cmd = IDM_SORTLWDATE;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, time))
+	  cmd = IDM_SORTLWDATE;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, ladate))
+	  cmd = IDM_SORTLADATE;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, latime))
+	  cmd = IDM_SORTLADATE;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, crdate))
+	  cmd = IDM_SORTCRDATE;
+	else if (pfi->offStruct == FIELDOFFSET(CNRITEM, crtime))
+	  cmd = IDM_SORTCRDATE;
+	if (cmd)
+	  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(cmd, 0), MPVOID);
       }
     }
     break;
@@ -1009,7 +1009,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 }
 
 BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
-                  CHAR * savename)
+		  PCSZ savename)
 {
   if (toggle) {
     *bool = *bool ? FALSE : TRUE;
@@ -1017,8 +1017,8 @@ BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
       PrfWriteProfileData(fmprof, appname, savename, bool, sizeof(BOOL));
   }
   WinSendMsg(hwndMenu, MM_SETITEMATTR,
-             MPFROM2SHORT(id, 1),
-             MPFROM2SHORT(MIA_CHECKED, (*bool ? MIA_CHECKED : 0)));
+	     MPFROM2SHORT(id, 1),
+	     MPFROM2SHORT(MIA_CHECKED, (*bool ? MIA_CHECKED : 0)));
   return *bool;
 }
 
@@ -1027,13 +1027,13 @@ BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
 VOID disable_menuitem(HWND hwndMenu, USHORT id, BOOL disable)
 {
   WinSendMsg(hwndMenu, MM_SETITEMATTR,
-             MPFROM2SHORT(id, TRUE),
-             MPFROM2SHORT(MIA_DISABLED, (disable ? MIA_DISABLED : 0)));
+	     MPFROM2SHORT(id, TRUE),
+	     MPFROM2SHORT(MIA_DISABLED, (disable ? MIA_DISABLED : 0)));
 }
 
 //== ViewHelp() invoke view.exe, return TRUE if OK ==
 
-BOOL ViewHelp(CHAR * filename)
+BOOL ViewHelp(PCSZ filename)
 {
   CHAR s[CCHMAXPATH + 81];
   CHAR szQuotedFileName[CCHMAXPATH];
@@ -1050,9 +1050,9 @@ BOOL ViewHelp(CHAR * filename)
     }
     fclose(fp);
     ret = runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
-                  NULL, NULL,
-                  "VIEW.EXE \"%s\"",
-                  BldQuotedFileName(szQuotedFileName, filename));
+		  NULL, NULL,
+		  "VIEW.EXE \"%s\"",
+		  BldQuotedFileName(szQuotedFileName, filename));
   }
 
   return (ret != -1);
@@ -1060,7 +1060,7 @@ BOOL ViewHelp(CHAR * filename)
 
 //== ExecFile() run file, return 1 if OK 0 if skipped -1 if can't run ==
 
-INT ExecFile(HWND hwnd, CHAR * filename)
+INT ExecFile(HWND hwnd, PCSZ filename)
 {
   EXECARGS ex;
   CHAR path[CCHMAXPATH], *p;
@@ -1091,12 +1091,12 @@ INT ExecFile(HWND hwnd, CHAR * filename)
     *ex.path = 0;
     *ex.environment = 0;
     ret = WinDlgBox(HWND_DESKTOP, hwnd, CmdLineDlgProc, FM3ModHandle,
-                    EXEC_FRAME, &ex);
+		    EXEC_FRAME, &ex);
     if (ret == 1) {
       lastflags = ex.flags;
       return runemf2(ex.flags, hwnd, pszSrcFile, __LINE__, path,
-                     *ex.environment ? ex.environment : NULL,
-                     "%s", pszCmdLine) != -1;
+		     *ex.environment ? ex.environment : NULL,
+		     "%s", pszCmdLine) != -1;
     }
     else if (ret != 0)
       return -1;
@@ -1122,8 +1122,8 @@ VOID SetDetailsSwitches(HWND hwnd, DETAILS_SETTINGS * pds)
 }
 
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
-                           CHAR * directory, CHAR * keyroot,
-                           DETAILS_SETTINGS * pds, BOOL compare)
+			   PCSZ directory, PCSZ keyroot,
+			   DETAILS_SETTINGS * pds, BOOL compare)
 {
   BOOL *bool = NULL;
 
@@ -1192,12 +1192,12 @@ VOID SetConditionalCascade(HWND hwndMenu, USHORT id, USHORT def)
   mi.afAttribute = 0;
   mi.afStyle = MIS_TEXT;
   if (WinSendMsg(hwndMenu,
-                 MM_QUERYITEM,
-                 MPFROM2SHORT(id, TRUE),
-                 MPFROMP(&mi)))
+		 MM_QUERYITEM,
+		 MPFROM2SHORT(id, TRUE),
+		 MPFROMP(&mi)))
   {
     WinSetWindowBits(mi.hwndSubMenu, QWL_STYLE, MS_CONDITIONALCASCADE,
-                     MS_CONDITIONALCASCADE);
+		     MS_CONDITIONALCASCADE);
     WinSendMsg(mi.hwndSubMenu, MM_SETDEFAULTITEMID, MPFROMSHORT(def), MPVOID);
     WinCheckMenuItem(mi.hwndSubMenu, def, TRUE);
   }
@@ -1274,44 +1274,44 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
     mit.hwndSubMenu = hwndMenu;
   else
     WinSendMsg(hwndMenu, MM_QUERYITEM,
-               MPFROM2SHORT(IDM_COMMANDSMENU, TRUE), MPFROMP(&mit));
+	       MPFROM2SHORT(IDM_COMMANDSMENU, TRUE), MPFROMP(&mit));
   if (mit.hwndSubMenu) {
     numitems = (SHORT) WinSendMsg(mit.hwndSubMenu, MM_QUERYITEMCOUNT,
-                                  MPVOID, MPVOID);
+				  MPVOID, MPVOID);
     WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM, MPFROMSHORT(-1), MPVOID);
     for (x = 0; x < numitems; x++)
       WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM,
-                 MPFROMSHORT((SHORT) (x + IDM_COMMANDSTART)), MPVOID);
+		 MPFROMSHORT((SHORT) (x + IDM_COMMANDSTART)), MPVOID);
     if (hwndCnr && cmdhead) {
       x = 0;
       info = cmdhead;
       while (info) {
 
-        CHAR s[CCHMAXPATH + 24];
+	CHAR s[CCHMAXPATH + 24];
 
-        sprintf(s,
-                "%s%s%s",
-                info->title,
-                x < 20 ? "\tCtrl + " : NullStr,
-                x < 20 && x > 9 ? "Shift + " : NullStr);
-        if (x < 20)
-          sprintf(&s[strlen(s)], "%d",
-                  ((x % 10) + 1) == 10 ? 0 : (x % 10) + 1);
-        mi.id = IDM_COMMANDSTART + x;
-        mi.afAttribute = (info->flags & ONCE ? MIA_CHECKED : 0) |
-                         (info->flags & PROMPT ? MIA_FRAMED : 0);
-        mi.afStyle = MIS_TEXT;
-        if (!(x % 24) && x && info->next)
-          mi.afStyle |= MIS_BREAK;
-        WinSendMsg(mit.hwndSubMenu, MM_INSERTITEM, MPFROMP(&mi), MPFROMP(s));
-        x++;
-        info = info->next;
+	sprintf(s,
+		"%s%s%s",
+		info->title,
+		x < 20 ? "\tCtrl + " : NullStr,
+		x < 20 && x > 9 ? "Shift + " : NullStr);
+	if (x < 20)
+	  sprintf(&s[strlen(s)], "%d",
+		  ((x % 10) + 1) == 10 ? 0 : (x % 10) + 1);
+	mi.id = IDM_COMMANDSTART + x;
+	mi.afAttribute = (info->flags & ONCE ? MIA_CHECKED : 0) |
+			 (info->flags & PROMPT ? MIA_FRAMED : 0);
+	mi.afStyle = MIS_TEXT;
+	if (!(x % 24) && x && info->next)
+	  mi.afStyle |= MIS_BREAK;
+	WinSendMsg(mit.hwndSubMenu, MM_INSERTITEM, MPFROMP(&mi), MPFROMP(s));
+	x++;
+	info = info->next;
       }
     }
   }
 }
 
-VOID LoadDetailsSwitches(CHAR * keyroot, DETAILS_SETTINGS * pds)
+VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS * pds)
 {
   ULONG size;
   CHAR s[CCHMAXPATH], *eos = s;
@@ -1400,7 +1400,7 @@ HWND FindDirCnr(HWND hwndParent)
     if (hwndDir) {
       hwndDir = WinWindowFromID(hwndDir, DIR_CNR);
       if (hwndDir)
-        break;
+	break;
       hwndDir = (HWND) 0;
     }
   }
@@ -1417,19 +1417,19 @@ VOID HeapThread(VOID * dummy)
   rc = DosCreateEventSem(NULL, &CompactSem, 0L, FALSE);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              "DosCreateEventSem");
+	      "DosCreateEventSem");
   else {
     priority_normal();
     for (;;) {
       if (DosWaitEventSem(CompactSem, SEM_INDEFINITE_WAIT))
-        break;
+	break;
       _heapmin();
       DosResetEventSem(CompactSem, &postcount);
     }
   }
 }
 
-VOID FixSwitchList(HWND hwnd, CHAR * text)
+VOID FixSwitchList(HWND hwnd, PCSZ text)
 {
   HSWITCH hswitch;
   SWCNTRL swctl;
@@ -1448,24 +1448,24 @@ VOID QuickPopup(HWND hwnd, DIRCNRDATA * dcd, HWND hwndMenu, USHORT id)
   dcd->hwndLastMenu = hwndMenu;
   if (dcd->hwndLastMenu && !dcd->cnremphasized) {
     WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
-               MPFROM2SHORT(TRUE, CRA_SOURCE));
+	       MPFROM2SHORT(TRUE, CRA_SOURCE));
     dcd->cnremphasized = TRUE;
   }
   if (dcd->flWindowAttr & CV_MINI)
     WinCheckMenuItem(dcd->hwndLastMenu, IDM_MINIICONS, TRUE);
   if (!WinPopupMenu(hwnd, hwnd, dcd->hwndLastMenu,
-                    8, 8, 0,
-                    PU_HCONSTRAIN | PU_VCONSTRAIN |
-                    PU_KEYBOARD | PU_MOUSEBUTTON1)) {
+		    8, 8, 0,
+		    PU_HCONSTRAIN | PU_VCONSTRAIN |
+		    PU_KEYBOARD | PU_MOUSEBUTTON1)) {
     if (dcd->cnremphasized) {
       WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPVOID,
-                 MPFROM2SHORT(FALSE, CRA_SOURCE));
+		 MPFROM2SHORT(FALSE, CRA_SOURCE));
       dcd->cnremphasized = FALSE;
     }
   }
   else
     WinSendMsg(dcd->hwndLastMenu, MM_SELECTITEM,
-               MPFROM2SHORT(id, TRUE), MPFROM2SHORT(0, FALSE));
+	       MPFROM2SHORT(id, TRUE), MPFROM2SHORT(0, FALSE));
 }
 
 PMINIRECORDCORE CurrentRecord(HWND hwndCnr)
@@ -1475,8 +1475,8 @@ PMINIRECORDCORE CurrentRecord(HWND hwndCnr)
 
   for (;;) {
     pmi = (PMINIRECORDCORE) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
-                                       MPFROMLONG(CMA_FIRST),
-                                       MPFROMSHORT(attrib));
+				       MPFROMLONG(CMA_FIRST),
+				       MPFROMSHORT(attrib));
     if ((!pmi || (INT) pmi == -1) && attrib == CRA_SELECTED)    /* punt */
       attrib = CRA_CURSORED;
     else
@@ -1495,14 +1495,14 @@ BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!IsFm2Window(h, 1)) {
       QMSG qmsg;
       for (;;) {
-        DosSleep(1);
-        rc = WinPostMsg(h, msg, mp1, mp2);
-        if (rc)
-          break;                        // OK
-        if (!WinIsWindow((HAB) 0, h))
-          break;                        // Window gone
-        if (WinPeekMsg((HAB) 0, &qmsg, (HWND) 0, 0, 0, PM_NOREMOVE))
-          break;                        // Queue has message(s)
+	DosSleep(1);
+	rc = WinPostMsg(h, msg, mp1, mp2);
+	if (rc)
+	  break;                        // OK
+	if (!WinIsWindow((HAB) 0, h))
+	  break;                        // Window gone
+	if (WinPeekMsg((HAB) 0, &qmsg, (HWND) 0, 0, 0, PM_NOREMOVE))
+	  break;                        // Queue has message(s)
       }                  // for
     }
   }
@@ -1516,9 +1516,9 @@ VOID OpenEdit(HWND hwnd)
   PFIELDINFO pfi;
 
   pci = (PCNRITEM) WinSendMsg(hwnd,
-                              CM_QUERYRECORDEMPHASIS,
-                              MPFROMLONG(CMA_FIRST),
-                              MPFROMSHORT(CRA_CURSORED));
+			      CM_QUERYRECORDEMPHASIS,
+			      MPFROMLONG(CMA_FIRST),
+			      MPFROMSHORT(CRA_CURSORED));
   if (pci && (INT) pci != -1) {
     memset(&ced, 0, sizeof(ced));
     ced.cb = sizeof(ced);
@@ -1526,37 +1526,37 @@ VOID OpenEdit(HWND hwnd)
     ced.id = WinQueryWindowUShort(hwnd, QWS_ID);
     ced.pRecord = (PRECORDCORE) pci;
     pfi = (PFIELDINFO) WinSendMsg(hwnd,
-                                  CM_QUERYDETAILFIELDINFO,
-                                  MPVOID, MPFROMSHORT(CMA_FIRST));
+				  CM_QUERYDETAILFIELDINFO,
+				  MPVOID, MPFROMSHORT(CMA_FIRST));
     if (!pfi)
       WinSendMsg(hwnd, CM_OPENEDIT, MPFROMP(&ced), MPVOID);
     else {
       while (pfi && (INT) pfi != -1 &&
-             pfi->offStruct != FIELDOFFSET(CNRITEM, pszFileName))
-        pfi = (PFIELDINFO) WinSendMsg(hwnd,
-                                      CM_QUERYDETAILFIELDINFO,
-                                      MPFROMP(pfi), MPFROMSHORT(CMA_NEXT));
+	     pfi->offStruct != FIELDOFFSET(CNRITEM, pszFileName))
+	pfi = (PFIELDINFO) WinSendMsg(hwnd,
+				      CM_QUERYDETAILFIELDINFO,
+				      MPFROMP(pfi), MPFROMSHORT(CMA_NEXT));
       if (pfi && (INT) pfi != -1) {
-        ced.pFieldInfo = pfi;
-        {
-          CNRINFO cnri;
+	ced.pFieldInfo = pfi;
+	{
+	  CNRINFO cnri;
 
-          memset(&cnri, 0, sizeof(CNRINFO));
-          cnri.cb = sizeof(CNRINFO);
-          WinSendMsg(hwnd,
-                     CM_QUERYCNRINFO,
-                     MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
-          if (cnri.flWindowAttr & CV_DETAIL)
-            ced.id = CID_LEFTDVWND;
-        }
-        WinSendMsg(hwnd, CM_OPENEDIT, MPFROMP(&ced), MPVOID);
+	  memset(&cnri, 0, sizeof(CNRINFO));
+	  cnri.cb = sizeof(CNRINFO);
+	  WinSendMsg(hwnd,
+		     CM_QUERYCNRINFO,
+		     MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
+	  if (cnri.flWindowAttr & CV_DETAIL)
+	    ced.id = CID_LEFTDVWND;
+	}
+	WinSendMsg(hwnd, CM_OPENEDIT, MPFROMP(&ced), MPVOID);
       }
     }
   }
 }
 
 #ifdef NEVER
-VOID QuickView(HWND hwnd, CHAR * filename)
+VOID QuickView(HWND hwnd, PCSZ filename)
 {
   if (filename && IsFile(filename) == 1) {
     if (TestBinary(filename) && *binview) {
@@ -1566,7 +1566,7 @@ VOID QuickView(HWND hwnd, CHAR * filename)
       list[0] = filename;
       list[1] = NULL;
       ExecOnList(hwnd, binview, WINDOWED | SEPARATE, NULL, list, NULL,
-                 pszSrcFile, __LINE__);
+		 pszSrcFile, __LINE__);
       return;
     }
     else if (*viewer) {
@@ -1576,8 +1576,8 @@ VOID QuickView(HWND hwnd, CHAR * filename)
       list[0] = filename;
       list[1] = NULL;
       ExecOnList(hwnd, viewer,
-                 WINDOWED | SEPARATE | (fViewChild ? CHILD : 0),
-                 NULL, list, NULL, pszSrcFile, __LINE__);
+		 WINDOWED | SEPARATE | (fViewChild ? CHILD : 0),
+		 NULL, list, NULL, pszSrcFile, __LINE__);
       return;
     }
     StartMLEEditor(HWND_DESKTOP, 5, filename, (HWND) 0);
@@ -1594,7 +1594,7 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
       list[0] = filename;
       list[1] = NULL;
       ExecOnList(hwnd, bined, WINDOWED | SEPARATE, NULL, list, NULL,
-                 pszSrcFile, __LINE__);
+		 pszSrcFile, __LINE__);
       return;
     }
     else if (*editor) {
@@ -1604,7 +1604,7 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
       list[0] = filename;
       list[1] = NULL;
       ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, list, NULL,
-                 pszSrcFile, __LINE__);
+		 pszSrcFile, __LINE__);
       return;
     }
     StartMLEEditor(HWND_DESKTOP, 4, filename, (HWND) 0);
@@ -1636,13 +1636,13 @@ VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2)
       mi.iPosition = MIT_END;
       mi.afStyle = MIS_TEXT;
       WinSendMsg(hwndMenu, MM_QUERYITEM,
-                 MPFROM2SHORT(IDM_FILESMENU, TRUE), MPFROMP(&mi));
+		 MPFROM2SHORT(IDM_FILESMENU, TRUE), MPFROMP(&mi));
       if (!DefMenu)
-        DefMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, DEFMENU);
+	DefMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, DEFMENU);
       hwndNow = mi.hwndSubMenu;
       mi.hwndSubMenu = hwndNew;
       if (!mi.hwndSubMenu)
-        mi.hwndSubMenu = DefMenu;
+	mi.hwndSubMenu = DefMenu;
       WinSetParent(hwndNow, WinQueryObjectWindow(HWND_DESKTOP), FALSE);
       WinSetOwner(hwndNow, WinQueryObjectWindow(HWND_DESKTOP));
       WinSetOwner(mi.hwndSubMenu, hwndMenu);
@@ -1667,13 +1667,13 @@ VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2)
       mi.iPosition = MIT_END;
       mi.afStyle = MIS_TEXT;
       WinSendMsg(hwndMenu, MM_QUERYITEM,
-                 MPFROM2SHORT(IDM_VIEWSMENU, TRUE), MPFROMP(&mi));
+		 MPFROM2SHORT(IDM_VIEWSMENU, TRUE), MPFROMP(&mi));
       if (!DefMenu)
-        DefMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, DEFMENU);
+	DefMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, DEFMENU);
       hwndNow = mi.hwndSubMenu;
       mi.hwndSubMenu = hwndNew;
       if (!mi.hwndSubMenu)
-        mi.hwndSubMenu = DefMenu;
+	mi.hwndSubMenu = DefMenu;
       WinSetParent(hwndNow, WinQueryObjectWindow(HWND_DESKTOP), FALSE);
       WinSetOwner(hwndNow, WinQueryObjectWindow(HWND_DESKTOP));
       WinSetOwner(mi.hwndSubMenu, hwndMenu);
@@ -1705,14 +1705,14 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(DirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(DirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(DirMenu, IDM_DELETESUBMENU,
-                            fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(DirMenu, IDM_MISCSUBMENU, IDM_SIZES);
       SetConditionalCascade(DirMenu, IDM_OPENSUBMENU, IDM_OPENWINDOW);
       if (fWorkPlace) {
-        WinSendMsg(DirMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
-        WinSendMsg(DirMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
+	WinSendMsg(DirMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
+	WinSendMsg(DirMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
       }
     }
     else if (hwndMenu == &TreeMenu) {
@@ -1724,14 +1724,14 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(TreeMenu, IDM_MISCSUBMENU, IDM_SIZES);
       SetConditionalCascade(TreeMenu, IDM_OPENSUBMENU, IDM_OPENWINDOW);
       if (fWorkPlace) {
-        WinSendMsg(TreeMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
-        WinSendMsg(TreeMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
+	WinSendMsg(TreeMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
+	WinSendMsg(TreeMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
       }
       if (!fLVM)
-        WinSendMsg(TreeMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
+	WinSendMsg(TreeMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
     }
     else if (hwndMenu == &ArcMenu) {
       WinSetWindowUShort(ArcMenu, QWS_ID, IDM_FILESMENU);
@@ -1739,8 +1739,8 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(ArcMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(ArcMenu, IDM_VIEWSUBMENU, IDM_VIEW);
       if (fWorkPlace)
-        WinSendMsg(ArcMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_FOLDERAFTEREXTRACT, TRUE), MPVOID);
+	WinSendMsg(ArcMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_FOLDERAFTEREXTRACT, TRUE), MPVOID);
     }
     else if (hwndMenu == &FileMenu) {
       WinSetWindowUShort(FileMenu, QWS_ID, IDM_FILESMENU);
@@ -1752,87 +1752,87 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(FileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(FileMenu, IDM_COLLECTMENU, IDM_COLLECT);
       SetConditionalCascade(FileMenu, IDM_DELETESUBMENU,
-                            fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(FileMenu, IDM_OPENSUBMENU, IDM_OPENDEFAULT);
       SetConditionalCascade(FileMenu, IDM_OBJECTSUBMENU, IDM_SHADOW);
       if (fWorkPlace) {
-        WinSendMsg(FileMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
-        WinSendMsg(FileMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
+	WinSendMsg(FileMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
+	WinSendMsg(FileMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
       }
       if (!fLVM)
-        WinSendMsg(FileMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
+	WinSendMsg(FileMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
     }
     else if (hwndMenu == &DirCnrMenu) {
       WinSetWindowUShort(DirCnrMenu, QWS_ID, IDM_VIEWSMENU);
       SetConditionalCascade(DirCnrMenu, IDM_MISCSUBMENU, IDM_SIZES);
       SetConditionalCascade(DirCnrMenu, IDM_OPENSUBMENU, IDM_OPENSETTINGSME);
       if (fWorkPlace)
-        WinSendMsg(DirCnrMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
+	WinSendMsg(DirCnrMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
     }
     else if (hwndMenu == &TreeCnrMenu) {
       WinSetWindowUShort(TreeCnrMenu, QWS_ID, IDM_VIEWSMENU);
       if (!fLVM)
-        WinSendMsg(TreeCnrMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
+	WinSendMsg(TreeCnrMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_REFRESHREMOVABLES, TRUE), MPVOID);
     }
     else if (hwndMenu == &ArcCnrMenu) {
       WinSetWindowUShort(ArcCnrMenu, QWS_ID, IDM_VIEWSMENU);
       SetConditionalCascade(ArcCnrMenu, IDM_EXTRACTSUBMENU, IDM_ARCEXTRACT);
       if (fWorkPlace)
-        WinSendMsg(ArcCnrMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_FOLDERAFTEREXTRACT, TRUE), MPVOID);
+	WinSendMsg(ArcCnrMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_FOLDERAFTEREXTRACT, TRUE), MPVOID);
     }
     else if (hwndMenu == &CollectorCnrMenu) {
       WinSetWindowUShort(CollectorCnrMenu, QWS_ID, IDM_VIEWSMENU);
       SetConditionalCascade(CollectorCnrMenu, IDM_COLLECTMENU,
-                            IDM_COLLECTFROMCLIP);
+			    IDM_COLLECTFROMCLIP);
     }
     else if (hwndMenu == &CollectorFileMenu) {
       WinSetWindowUShort(CollectorFileMenu, QWS_ID, IDM_FILESMENU);
       SetConditionalCascade(CollectorFileMenu, IDM_COMMANDSMENU,
-                            IDM_DOITYOURSELF);
+			    IDM_DOITYOURSELF);
       SetConditionalCascade(CollectorFileMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(CollectorFileMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(CollectorFileMenu, IDM_SAVESUBMENU,
-                            IDM_SAVETOCLIP);
+			    IDM_SAVETOCLIP);
       SetConditionalCascade(CollectorFileMenu, IDM_VIEWSUBMENU, IDM_VIEW);
       SetConditionalCascade(CollectorFileMenu, IDM_EDITSUBMENU, IDM_EDIT);
       SetConditionalCascade(CollectorFileMenu, IDM_DELETESUBMENU,
-                            fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(CollectorFileMenu, IDM_OPENSUBMENU,
-                            IDM_OPENDEFAULT);
+			    IDM_OPENDEFAULT);
       SetConditionalCascade(CollectorFileMenu, IDM_OBJECTSUBMENU, IDM_SHADOW);
       if (fWorkPlace) {
-        WinSendMsg(CollectorFileMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
-        WinSendMsg(CollectorFileMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
+	WinSendMsg(CollectorFileMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
+	WinSendMsg(CollectorFileMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
       }
     }
     else if (hwndMenu == &CollectorDirMenu) {
       WinSetWindowUShort(CollectorDirMenu, QWS_ID, IDM_FILESMENU);
       SetConditionalCascade(CollectorDirMenu, IDM_COMMANDSMENU,
-                            IDM_DOITYOURSELF);
+			    IDM_DOITYOURSELF);
       SetConditionalCascade(CollectorDirMenu, IDM_COPYMENU, IDM_COPY);
       SetConditionalCascade(CollectorDirMenu, IDM_MOVEMENU, IDM_MOVE);
       SetConditionalCascade(CollectorDirMenu, IDM_SAVESUBMENU,
-                            IDM_SAVETOCLIP);
+			    IDM_SAVETOCLIP);
       SetConditionalCascade(CollectorDirMenu, IDM_VIEWSUBMENU, IDM_INFO);
       SetConditionalCascade(CollectorDirMenu, IDM_EDITSUBMENU, IDM_ATTRS);
       SetConditionalCascade(CollectorDirMenu, IDM_DELETESUBMENU,
-                            fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
+			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(CollectorDirMenu, IDM_MISCSUBMENU, IDM_SIZES);
       SetConditionalCascade(CollectorDirMenu, IDM_OPENSUBMENU,
-                            IDM_OPENWINDOW);
+			    IDM_OPENWINDOW);
       if (fWorkPlace) {
-        WinSendMsg(CollectorDirMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
-        WinSendMsg(CollectorDirMenu, MM_DELETEITEM,
-                   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
+	WinSendMsg(CollectorDirMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OPENSUBMENU, TRUE), MPVOID);
+	WinSendMsg(CollectorDirMenu, MM_DELETEITEM,
+		   MPFROM2SHORT(IDM_OBJECTSUBMENU, TRUE), MPVOID);
       }
     }
     else if (hwndMenu == &MainPopupMenu) {
@@ -1845,12 +1845,12 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
   return *hwndMenu;
 }
 
-SHORT AddToListboxBottom(HWND hwnd, CHAR * str)
+SHORT AddToListboxBottom(HWND hwnd, PCSZ str)
 {
   SHORT ln;
 
   ln = (SHORT) WinSendMsg(hwnd, LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0),
-                          MPFROMP(str));
+			  MPFROMP(str));
   if (ln)
     WinSendMsg(hwnd, LM_SELECTITEM, MPFROM2SHORT(ln, 0), MPVOID);
   return ln;
@@ -1861,7 +1861,7 @@ VOID SetSysMenu(HWND hwndSysMenu)
   CHAR s[128], *p;
 
   if (WinSendMsg(hwndSysMenu, MM_QUERYITEMTEXT,
-                 MPFROM2SHORT(SC_RESTORE, 128), MPFROMP(s))) {
+		 MPFROM2SHORT(SC_RESTORE, 128), MPFROMP(s))) {
     p = strchr(s, '\t');
     if (p) {
       p++;
@@ -1870,7 +1870,7 @@ VOID SetSysMenu(HWND hwndSysMenu)
     }
   }
   if (WinSendMsg(hwndSysMenu, MM_QUERYITEMTEXT,
-                 MPFROM2SHORT(SC_CLOSE, 128), MPFROMP(s))) {
+		 MPFROM2SHORT(SC_CLOSE, 128), MPFROMP(s))) {
     p = strchr(s, '\t');
     if (p) {
       p++;
@@ -1879,7 +1879,7 @@ VOID SetSysMenu(HWND hwndSysMenu)
     }
   }
   if (WinSendMsg(hwndSysMenu, MM_QUERYITEMTEXT,
-                 MPFROM2SHORT(SC_MOVE, 128), MPFROMP(s))) {
+		 MPFROM2SHORT(SC_MOVE, 128), MPFROMP(s))) {
     p = strchr(s, '\t');
     if (p) {
       p++;
@@ -1888,7 +1888,7 @@ VOID SetSysMenu(HWND hwndSysMenu)
     }
   }
   if (WinSendMsg(hwndSysMenu, MM_QUERYITEMTEXT,
-                 MPFROM2SHORT(SC_SIZE, 128), MPFROMP(s))) {
+		 MPFROM2SHORT(SC_SIZE, 128), MPFROMP(s))) {
     p = strchr(s, '\t');
     if (p) {
       p++;
@@ -1897,7 +1897,7 @@ VOID SetSysMenu(HWND hwndSysMenu)
     }
   }
   if (WinSendMsg(hwndSysMenu, MM_QUERYITEMTEXT,
-                 MPFROM2SHORT(SC_MINIMIZE, 128), MPFROMP(s))) {
+		 MPFROM2SHORT(SC_MINIMIZE, 128), MPFROMP(s))) {
     p = strchr(s, '\t');
     if (p) {
       p++;
@@ -1906,8 +1906,8 @@ VOID SetSysMenu(HWND hwndSysMenu)
     }
   }
   if (WinSendMsg(hwndSysMenu,
-                 MM_QUERYITEMTEXT,
-                 MPFROM2SHORT(SC_MAXIMIZE, 128), MPFROMP(s))) {
+		 MM_QUERYITEMTEXT,
+		 MPFROM2SHORT(SC_MAXIMIZE, 128), MPFROMP(s))) {
     p = strchr(s, '\t');
     if (p) {
       p++;
@@ -1916,7 +1916,7 @@ VOID SetSysMenu(HWND hwndSysMenu)
     }
   }
   if (WinSendMsg(hwndSysMenu,
-                 MM_QUERYITEMTEXT, MPFROM2SHORT(SC_HIDE, 128), MPFROMP(s))) {
+		 MM_QUERYITEMTEXT, MPFROM2SHORT(SC_HIDE, 128), MPFROMP(s))) {
     p = strchr(s, '\t');
     if (p) {
       p++;
@@ -1926,7 +1926,7 @@ VOID SetSysMenu(HWND hwndSysMenu)
   }
 }
 
-VOID LoadLibPath(CHAR * str, LONG len)
+VOID LoadLibPath(PSZ str, LONG len)
 {
   ULONG ver[2];
   CHAR configsys[] = "C:\\CONFIG.SYS";
@@ -1939,36 +1939,36 @@ VOID LoadLibPath(CHAR * str, LONG len)
   if (str && len) {
     *str = 0;
     if (DosQuerySysInfo(QSV_BOOT_DRIVE,
-                        QSV_BOOT_DRIVE, (PVOID) ver, (ULONG) sizeof(ULONG)))
+			QSV_BOOT_DRIVE, (PVOID) ver, (ULONG) sizeof(ULONG)))
       ver[0] = 3L;
     *configsys = (CHAR) ver[0] + '@';
     if (!DosQuerySysInfo(QSV_VERSION_MAJOR,
-                         QSV_VERSION_MINOR,
-                         (PVOID) ver, (ULONG) sizeof(ver)) && ver[1] >= 30)
+			 QSV_VERSION_MINOR,
+			 (PVOID) ver, (ULONG) sizeof(ver)) && ver[1] >= 30)
       warp = TRUE;
     *var = *beg = *end = 0;
     if (warp) {
       if (!DosLoadModule(var, sizeof(var), "DOSCALL1.DLL", &hmod)) {
-        if (!DosQueryProcAddr(hmod,
-                              ORD_DOS32QUERYEXTLIBPATH,
-                              NULL, (PFN *) & DQELIBPATH)) {
-          DQELIBPATH(beg, BEGIN_LIBPATH);
-          DQELIBPATH(end, END_LIBPATH);
-        }
-        DosFreeModule(hmod);
+	if (!DosQueryProcAddr(hmod,
+			      ORD_DOS32QUERYEXTLIBPATH,
+			      NULL, (PFN *) & DQELIBPATH)) {
+	  DQELIBPATH(beg, BEGIN_LIBPATH);
+	  DQELIBPATH(end, END_LIBPATH);
+	}
+	DosFreeModule(hmod);
       }
       *var = 0;
     }
     fp = xfopen(configsys, "r", pszSrcFile, __LINE__);
     if (fp) {
       while (!feof(fp)) {
-        if (!xfgets_bstripcr(var, sizeof(var), fp, pszSrcFile, __LINE__))
-          break;
-        if (!strnicmp(var, "LIBPATH=", 8)) {
-          memmove(var, var + 8, strlen(var + 8) + 1);
-          lstrip(var);
-          break;
-        }
+	if (!xfgets_bstripcr(var, sizeof(var), fp, pszSrcFile, __LINE__))
+	  break;
+	if (!strnicmp(var, "LIBPATH=", 8)) {
+	  memmove(var, var + 8, strlen(var + 8) + 1);
+	  lstrip(var);
+	  break;
+	}
       }
       fclose(fp);
     }
@@ -1984,7 +1984,7 @@ void SetViewMenu(HWND hwndMenu, ULONG flWindowAttr)
   WinCheckMenuItem(hwndMenu, IDM_MINIICONS, ((flWindowAttr & CV_MINI)));
   WinCheckMenuItem(hwndMenu, IDM_TEXT, ((flWindowAttr & CV_TEXT)));
   WinCheckMenuItem(hwndMenu, IDM_ICON, ((flWindowAttr & CV_ICON) &&
-                                        !(flWindowAttr & CV_TREE)));
+					!(flWindowAttr & CV_TREE)));
   WinCheckMenuItem(hwndMenu, IDM_TREEVIEW, ((flWindowAttr & CV_TREE)));
   WinCheckMenuItem(hwndMenu, IDM_DETAILS, ((flWindowAttr & CV_DETAIL)));
   WinCheckMenuItem(hwndMenu, IDM_NAME, ((flWindowAttr & CV_NAME)));
@@ -1997,23 +1997,23 @@ void SaySort(HWND hwnd, INT sortflags, BOOL archive)
   s = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
   if (s) {
     sprintf(s, "S:%s%s",
-            sortflags & SORT_REVERSE ? "^" : NullStr,
-            (sortflags & SORT_FIRSTEXTENSION) ?
-              GetPString(IDS_FIRSTX) : (sortflags & SORT_LASTEXTENSION) ?
-                GetPString(IDS_LASTX) : (sortflags & SORT_SIZE) ?
-                  "Size" : (sortflags & SORT_EASIZE) ?
-                    (archive == 0) ?
-                      GetPString(IDS_EASIZE) : GetPString(IDS_CSIZE) :
-                    (sortflags & SORT_LWDATE) ?
-                      (archive == 0) ?
-                        GetPString(IDS_LWDATE) : GetPString(IDS_DATE) :
-                        (sortflags & SORT_LADATE) ?
-                          GetPString(IDS_LADATE) : (sortflags & SORT_CRDATE) ?
-                            GetPString(IDS_CRDATE) :
-                            (sortflags & SORT_PATHNAME) ?
-                              GetPString(IDS_PATH) : (sortflags & SORT_NOSORT) ?
-                                GetPString(IDS_NONE) : (sortflags & SORT_SUBJECT) ?
-                                  GetPString(IDS_SUBJ) : GetPString(IDS_NAME));
+	    sortflags & SORT_REVERSE ? "^" : NullStr,
+	    (sortflags & SORT_FIRSTEXTENSION) ?
+	      GetPString(IDS_FIRSTX) : (sortflags & SORT_LASTEXTENSION) ?
+		GetPString(IDS_LASTX) : (sortflags & SORT_SIZE) ?
+		  "Size" : (sortflags & SORT_EASIZE) ?
+		    (archive == 0) ?
+		      GetPString(IDS_EASIZE) : GetPString(IDS_CSIZE) :
+		    (sortflags & SORT_LWDATE) ?
+		      (archive == 0) ?
+			GetPString(IDS_LWDATE) : GetPString(IDS_DATE) :
+			(sortflags & SORT_LADATE) ?
+			  GetPString(IDS_LADATE) : (sortflags & SORT_CRDATE) ?
+			    GetPString(IDS_CRDATE) :
+			    (sortflags & SORT_PATHNAME) ?
+			      GetPString(IDS_PATH) : (sortflags & SORT_NOSORT) ?
+				GetPString(IDS_NONE) : (sortflags & SORT_SUBJECT) ?
+				  GetPString(IDS_SUBJ) : GetPString(IDS_NAME));
     WinSetWindowText(hwnd, s);
     free(s);
   }
@@ -2026,13 +2026,13 @@ void SayView(HWND hwnd, ULONG flWindowAttr)
   s = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
   if (s) {
     sprintf(s, "V:%s%s",
-            (flWindowAttr & CV_TREE) ? GetPString(IDS_TREE) :
-            (flWindowAttr & CV_NAME) ? GetPString(IDS_NAME) :
-            (flWindowAttr & CV_DETAIL) ? GetPString(IDS_DETAIL) :
-            (flWindowAttr & CV_TEXT) ? GetPString(IDS_TEXT) :
-            GetPString(IDS_ICON),
-            ((flWindowAttr & CV_MINI) &&
-             !(flWindowAttr & CV_TEXT)) ? GetPString(IDS_MINI) : NullStr);
+	    (flWindowAttr & CV_TREE) ? GetPString(IDS_TREE) :
+	    (flWindowAttr & CV_NAME) ? GetPString(IDS_NAME) :
+	    (flWindowAttr & CV_DETAIL) ? GetPString(IDS_DETAIL) :
+	    (flWindowAttr & CV_TEXT) ? GetPString(IDS_TEXT) :
+	    GetPString(IDS_ICON),
+	    ((flWindowAttr & CV_MINI) &&
+	     !(flWindowAttr & CV_TEXT)) ? GetPString(IDS_MINI) : NullStr);
     WinSetWindowText(hwnd, s);
     free(s);
   }
@@ -2045,12 +2045,12 @@ void SayFilter(HWND hwnd, MASK * mask, BOOL archive)
   s = xmalloc(CCHMAXPATH * 2, pszSrcFile, __LINE__);
   if (s) {
     sprintf(s, "F:%s%s",
-            mask->szMask,
-            (!archive && (mask->attrFile != ALLATTRS ||
-                          mask->antiattr != 0)) ? " " : NullStr,
-            (!archive && (mask->attrFile != ALLATTRS ||
-                          mask->antiattr !=
-                          0)) ? GetPString(IDS_ATTRTEXT) : NullStr);
+	    mask->szMask,
+	    (!archive && (mask->attrFile != ALLATTRS ||
+			  mask->antiattr != 0)) ? " " : NullStr,
+	    (!archive && (mask->attrFile != ALLATTRS ||
+			  mask->antiattr !=
+			  0)) ? GetPString(IDS_ATTRTEXT) : NullStr);
     if (!s[2])
       sprintf(s, "F:%s", GetPString(IDS_ALLTEXT));
     WinSetWindowText(hwnd, s);
@@ -2099,19 +2099,19 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
   MENUITEM mi;
 
   sItemCount = (SHORT) WinSendMsg(hwndMenu,
-                                  MM_QUERYITEMCOUNT, MPVOID, MPVOID);
+				  MM_QUERYITEMCOUNT, MPVOID, MPVOID);
 
   /* clean out old additions */
   while ((SHORT) WinSendMsg(hwndMenu,
-                            MM_DELETEITEM,
-                            MPFROM2SHORT(IDM_SWITCHSTART + x++,
-                                         TRUE), MPVOID) < sItemCount)
+			    MM_DELETEITEM,
+			    MPFROM2SHORT(IDM_SWITCHSTART + x++,
+					 TRUE), MPVOID) < sItemCount)
     sItemCount--;
   x = 0;
   while ((SHORT) WinSendMsg(hwndMenu,
-                            MM_DELETEITEM,
-                            MPFROM2SHORT(IDM_WINDOWSTART + x++,
-                                         TRUE), MPVOID) < sItemCount)
+			    MM_DELETEITEM,
+			    MPFROM2SHORT(IDM_WINDOWSTART + x++,
+					 TRUE), MPVOID) < sItemCount)
     sItemCount--;
 
   x = 0;
@@ -2126,20 +2126,20 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
     memset(&mi, 0, sizeof(mi));
     while ((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
       if (WinQueryWindowUShort(hwndChild, QWS_ID) && hwndChild != hwndFrame) {
-        *wtext = 0;
-        WinQueryWindowText(hwndChild, CCHMAXPATH + 8, wtext);
-        if (*wtext) {
-          wtext[CCHMAXPATH + 7] = 0;
-          mi.afStyle = MIS_TEXT;
-          if (!((x + sItemCount) % 28))
-            mi.afStyle |= MIS_BREAK;
-          mi.id = IDM_WINDOWSTART + x;
-          mi.iPosition = MIT_END;
-          if ((SHORT) WinSendMsg(hwndMenu,
-                                 MM_INSERTITEM,
-                                 MPFROMP(&mi), MPFROMP(wtext)) >= 0)
-            x++;
-        }
+	*wtext = 0;
+	WinQueryWindowText(hwndChild, CCHMAXPATH + 8, wtext);
+	if (*wtext) {
+	  wtext[CCHMAXPATH + 7] = 0;
+	  mi.afStyle = MIS_TEXT;
+	  if (!((x + sItemCount) % 28))
+	    mi.afStyle |= MIS_BREAK;
+	  mi.id = IDM_WINDOWSTART + x;
+	  mi.iPosition = MIT_END;
+	  if ((SHORT) WinSendMsg(hwndMenu,
+				 MM_INSERTITEM,
+				 MPFROMP(&mi), MPFROMP(wtext)) >= 0)
+	    x++;
+	}
       }
     }
     WinEndEnumWindows(henum);
@@ -2166,37 +2166,37 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
       /* do the dirty deed */
       memset(&mi, 0, sizeof(mi));
       for (i = 0; i < pswb->cswentry; i++) {
-        if (pswb->aswentry[i].swctl.uchVisibility == SWL_VISIBLE &&
-            pswb->aswentry[i].swctl.fbJump == SWL_JUMPABLE &&
-            (pswb->aswentry[i].swctl.idProcess != mypid ||
-             !hwndFrame ||
-             pswb->aswentry[i].swctl.hwnd != hwndFrame) &&
-            (pswb->aswentry[i].swctl.idProcess != mypid ||
-             !hwndTopFrame ||
-             pswb->aswentry[i].swctl.hwnd != hwndTopFrame ||
-             !WinIsChild(hwndFrame, hwndTop))) {
-          if (!strnicmp(pswb->aswentry[i].swctl.szSwtitle, "AV/2", 4)
-              || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "File Manager/2")
-              || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "Collector")
-              || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VTree", 5)
-              || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VDir", 4)
-              || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, FM2Str, 4)) {
-            mi.afStyle = MIS_TEXT;
-            if (x && !(x % 28))
-              mi.afStyle |= MIS_BREAK;
-            mi.id = IDM_SWITCHSTART + y;
-            mi.iPosition = MIT_END;
-            switches[y] = pswb->aswentry[i].hswitch;
-            if ((SHORT) WinSendMsg(hwndMenu,
-                                   MM_INSERTITEM,
-                                   MPFROMP(&mi),
-                                   MPFROMP(pswb->aswentry[i].
-                                           swctl.szSwtitle)) >= 0) {
-              y++;
-              x++;
-            }
-          }
-        }
+	if (pswb->aswentry[i].swctl.uchVisibility == SWL_VISIBLE &&
+	    pswb->aswentry[i].swctl.fbJump == SWL_JUMPABLE &&
+	    (pswb->aswentry[i].swctl.idProcess != mypid ||
+	     !hwndFrame ||
+	     pswb->aswentry[i].swctl.hwnd != hwndFrame) &&
+	    (pswb->aswentry[i].swctl.idProcess != mypid ||
+	     !hwndTopFrame ||
+	     pswb->aswentry[i].swctl.hwnd != hwndTopFrame ||
+	     !WinIsChild(hwndFrame, hwndTop))) {
+	  if (!strnicmp(pswb->aswentry[i].swctl.szSwtitle, "AV/2", 4)
+	      || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "File Manager/2")
+	      || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "Collector")
+	      || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VTree", 5)
+	      || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VDir", 4)
+	      || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, FM2Str, 4)) {
+	    mi.afStyle = MIS_TEXT;
+	    if (x && !(x % 28))
+	      mi.afStyle |= MIS_BREAK;
+	    mi.id = IDM_SWITCHSTART + y;
+	    mi.iPosition = MIT_END;
+	    switches[y] = pswb->aswentry[i].hswitch;
+	    if ((SHORT) WinSendMsg(hwndMenu,
+				   MM_INSERTITEM,
+				   MPFROMP(&mi),
+				   MPFROMP(pswb->aswentry[i].
+					   swctl.szSwtitle)) >= 0) {
+	      y++;
+	      x++;
+	    }
+	  }
+	}
       }
       numswitches = y;
       free(pswb);
@@ -2223,43 +2223,43 @@ BOOL SwitchCommand(HWND hwndMenu, USHORT cmd)
       mi.iPosition = MIT_END;
       mi.afStyle = MIS_TEXT;
       if (WinSendMsg(hwndMenu,
-                     MM_QUERYITEM,
-                     MPFROM2SHORT(IDM_WINDOWSMENU, TRUE), MPFROMP(&mi)))
-        hwndSubMenu = mi.hwndSubMenu;
+		     MM_QUERYITEM,
+		     MPFROM2SHORT(IDM_WINDOWSMENU, TRUE), MPFROMP(&mi)))
+	hwndSubMenu = mi.hwndSubMenu;
     }
     else
       hwndSubMenu = hwndMenu;
     if (hwndSubMenu) {
       *s = 0;
       if (WinSendMsg(hwndSubMenu,
-                     MM_QUERYITEMTEXT,
-                     MPFROM2SHORT(cmd, CCHMAXPATH + 8), MPFROMP(s)) && *s) {
+		     MM_QUERYITEMTEXT,
+		     MPFROM2SHORT(cmd, CCHMAXPATH + 8), MPFROMP(s)) && *s) {
 
-        HENUM henum;
-        CHAR checkText[CCHMAXPATH + 8];
-        SWP swp;
+	HENUM henum;
+	CHAR checkText[CCHMAXPATH + 8];
+	SWP swp;
 
-        s[CCHMAXPATH + 7] = 0;
-        henum = WinBeginEnumWindows(hwndMain);
-        while ((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
-          if (WinQueryWindowUShort(hwndChild, QWS_ID)) {
-            *checkText = 0;
-            WinQueryWindowText(hwndChild, CCHMAXPATH + 8, checkText);
-            checkText[CCHMAXPATH + 7] = 0;
-            if (!stricmp(checkText, s)) {
-              if (WinQueryWindowPos(hwndChild, &swp)) {
-                if (swp.fl & (SWP_MINIMIZE | SWP_HIDE))
-                  WinSetWindowPos(hwndChild,
-                                  HWND_TOP,
-                                  0, 0, 0, 0, SWP_RESTORE | SWP_ZORDER);
-              }
-              WinSetActiveWindow(HWND_DESKTOP, hwndChild);
-              ret = TRUE;
-              break;
-            }
-          }
-        }
-        WinEndEnumWindows(henum);
+	s[CCHMAXPATH + 7] = 0;
+	henum = WinBeginEnumWindows(hwndMain);
+	while ((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
+	  if (WinQueryWindowUShort(hwndChild, QWS_ID)) {
+	    *checkText = 0;
+	    WinQueryWindowText(hwndChild, CCHMAXPATH + 8, checkText);
+	    checkText[CCHMAXPATH + 7] = 0;
+	    if (!stricmp(checkText, s)) {
+	      if (WinQueryWindowPos(hwndChild, &swp)) {
+		if (swp.fl & (SWP_MINIMIZE | SWP_HIDE))
+		  WinSetWindowPos(hwndChild,
+				  HWND_TOP,
+				  0, 0, 0, 0, SWP_RESTORE | SWP_ZORDER);
+	      }
+	      WinSetActiveWindow(HWND_DESKTOP, hwndChild);
+	      ret = TRUE;
+	      break;
+	    }
+	  }
+	}
+	WinEndEnumWindows(henum);
       }
     }
   }
@@ -2279,8 +2279,8 @@ BOOL SwitchCommand(HWND hwndMenu, USHORT cmd)
  *  when the drive would have less than ullFreeSpaceWhenComplete remaining or has insufficient space.
  */
 
-INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
-                          ULONGLONG ullFreeSpaceWhenComplete)
+INT CheckDriveSpaceAvail(PCSZ pTargetPath, ULONGLONG ullSpaceNeeded,
+			  ULONGLONG ullFreeSpaceWhenComplete)
 {
   FSALLOCATE fsa;
   ULONGLONG  ullFreeQty;
@@ -2294,35 +2294,35 @@ INT CheckDriveSpaceAvail(CHAR *pTargetPath, ULONGLONG ullSpaceNeeded,
     CHAR szKB[20];
 
     CommaFmtULL(szKB, sizeof(szKB),
-                ullFreeQty - ullSpaceNeeded, ' ');
+		ullFreeQty - ullSpaceNeeded, ' ');
     if (ullFreeSpaceWhenComplete == 0) {
       saymsg(MB_OK,
-             HWND_DESKTOP,
-             NullStr,
-             GetPString(IDS_DRIVESPACELIMITEDTMPSAVE),
-             pTargetPath);
+	     HWND_DESKTOP,
+	     NullStr,
+	     GetPString(IDS_DRIVESPACELIMITEDTMPSAVE),
+	     pTargetPath);
       return 0;
     }
     else {
       if (ullFreeQty > ullSpaceNeeded) {
-        ret = saymsg(MB_YESNO,
-                     HWND_DESKTOP,
-                     NullStr,
-                     GetPString(IDS_DRIVESPACELIMITED),
-                     pTargetPath,
-                     szKB);
-        if (ret == MBID_YES)
-          return 0;
-        else
-          return 2;
+	ret = saymsg(MB_YESNO,
+		     HWND_DESKTOP,
+		     NullStr,
+		     GetPString(IDS_DRIVESPACELIMITED),
+		     pTargetPath,
+		     szKB);
+	if (ret == MBID_YES)
+	  return 0;
+	else
+	  return 2;
       }
       else {
-        saymsg(MB_OK,
-               HWND_DESKTOP,
-               NullStr,
-               GetPString(IDS_DRIVESPACEEXCEEDED),
-               pTargetPath);
-        return 2;
+	saymsg(MB_OK,
+	       HWND_DESKTOP,
+	       NullStr,
+	       GetPString(IDS_DRIVESPACEEXCEEDED),
+	       pTargetPath);
+	return 2;
       }
     }
   }

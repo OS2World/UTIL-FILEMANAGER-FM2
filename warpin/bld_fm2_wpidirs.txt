@@ -4,6 +4,7 @@
 ;  Change log:
 ;	23 Feb 08 JBS: Added lines for debugging support package (#10)
 ;	28 Oct 08 JBS: Added lines for new icons (ticket 294)
+;       04 Feb 09 SHL: Drop fm3res.str
 ;
 ;  This is a file which will be used to simplify the process of
 ;     -  incorporating new files
@@ -55,7 +56,6 @@ FILE: fm3.exe                    1  .        .
 FILE: fm3.hlp                    1  dll\ipf  .
 FILE: fm3dll.dll                 1  dll      .
 FILE: fm3res.dll                 1  dll      .
-FILE: fm3res.str                 1  dll      .
 FILE: fm4.exe                    1  .        .
 FILE: cfgmgr.cmd                 1  .        .
 FILE: utilsmgr.cmd               1  .        .

@@ -6,7 +6,7 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -55,7 +55,7 @@
   26 Dec 08 GKY Implemented DROPHELP for the tree container
   27 Dec 08 GKY Add refresh removable media to tree container menus
   28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
-                and have no default choice.
+		and have no default choice.
   01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
 
@@ -247,12 +247,10 @@ VOID ShowTreeRec(HWND hwndCnr,
 		   CM_QUERYRECORDEMPHASIS,
 		   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
   if (pci && (INT) pci != -1 && !stricmp(pci->pszFileName, dirname)) {
-    // DbgMsg(pszSrcFile, __LINE__, "already at %s collapse %u maketop %u", dirname, collapsefirst, maketop);	// 14 Aug 07 SHL fixme
     quickbail = TRUE;			// Bypass repositioning
     goto MakeTop;
   }
   WinEnableWindowUpdate(hwndCnr, FALSE);
-  // DbgMsg(pszSrcFile, __LINE__, "finding %s collapse %u maketop %u", dirname, collapsefirst, maketop);	// 14 Aug 07 SHL fixme
   pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
   if (!pci || (INT) pci == -1) {
     *szDir = *dirname;
@@ -284,16 +282,14 @@ VOID ShowTreeRec(HWND hwndCnr,
     } // for
     pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
   }
-  // DbgMsg(pszSrcFile, __LINE__, "found");	// 14 Aug 07 SHL fixme
   if (pci && (INT) pci != -1) {
     if (~pci->rc.flRecordAttr & CRA_CURSORED) {
       if (collapsefirst) {
-	// DbgMsg(pszSrcFile, __LINE__, "collapsing");	// 14 Aug 07 SHL fixme
 	pciP = WinSendMsg(hwndCnr,
 			  CM_QUERYRECORD,
 			  MPVOID, MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 	while (pciP && (INT) pciP != -1) {
-#if 1 // // 05 Jan 08 SHL fixme to be sure this is correct code
+#if 1 // 05 Jan 08 SHL fixme to be sure this is correct code
 	  if (pciP->rc.flRecordAttr & CRA_EXPANDED) {
 	    // collapse top level of all branches
 	    WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciP), MPVOID);
@@ -316,7 +312,6 @@ VOID ShowTreeRec(HWND hwndCnr,
 	} // while
       }
       /* expand all parent branches */
-      // DbgMsg(pszSrcFile, __LINE__, "expanding parents");	// 14 Aug 07 SHL fixme
       pciToSelect = pci;
       for (;;) {
 	pciP = WinSendMsg(hwndCnr,
@@ -335,16 +330,13 @@ VOID ShowTreeRec(HWND hwndCnr,
     }
     /* make record visible */
   MakeTop:
-    // DbgMsg(pszSrcFile, __LINE__, "moving into view");	// 14 Aug 07 SHL fixme
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
       if (fTopDir || maketop) {
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
       }
       if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) {
-	// DbgMsg(pszSrcFile, __LINE__, "expanding current");	// 14 Aug 07 SHL fixme
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-	// DbgMsg(pszSrcFile, __LINE__, "expanded");	// 14 Aug 07 SHL fixme
       }
       if (!quickbail) {
 	WinSendMsg(hwndCnr,
@@ -354,7 +346,6 @@ VOID ShowTreeRec(HWND hwndCnr,
       }
     }
   }
-  // DbgMsg(pszSrcFile, __LINE__, "done");	// 14 Aug 07 SHL fixme
   WinEnableWindowUpdate(hwndCnr, TRUE);
   // DosSleep(1);			// Let GUI update
 }
@@ -539,7 +530,6 @@ MRESULT EXPENTRY TreeFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
 {
-
   switch (msg) {
   case UM_CONTAINERHWND:
     return MRFROMLONG(WinWindowFromID(hwnd, TREE_CNR));
@@ -622,18 +612,12 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   DIRCNRDATA *dcd;
 
   switch (msg) {
-  case WM_CREATE:
-    DbgMsg(pszSrcFile, __LINE__, "WM_CREATE mp1 %p mp2 %p", mp1, mp2);	// 18 Jul 08 SHL fixme
-    break;
-
   case UM_SHOWME:
-    // DbgMsg(pszSrcFile, __LINE__, "UM_SHOWME mp1 %p mp2 %p", mp1, mp2);	// 14 Aug 07 SHL fixme
     if (mp1) {
 #     ifdef FORTIFY
       Fortify_BecomeOwner(mp1);
 #     endif
       dcd = INSTDATA(hwnd);
-      // DbgMsg(pszSrcFile, __LINE__, "UM_SHOWME dcd %p", dcd);	// 14 Aug 07 SHL fixme
       if (dcd) {
 	BOOL tempsusp, tempfollow, temptop;
 
@@ -705,10 +689,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       while (list[numentries])
 	numentries++;
-      if (numentries) {
-        //DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", *list);
-        UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
-      }
+      if (numentries)
+	UpdateCnrList(dcd->hwndCnr, list, numentries, TRUE, dcd);
     }
     return 0;
 
@@ -980,10 +962,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   DIRCNRDATA *dcd = INSTDATA(hwnd);
 
   switch (msg) {
-  case WM_CREATE:
-    DbgMsg(pszSrcFile, __LINE__, "WM_CREATE mp1 %p mp2 %p", mp1, mp2);	// 18 Jul 08 SHL fixme
-    break;
-
   case DM_PRINTOBJECT:
     return MRFROMLONG(DRR_TARGET);
 
@@ -1189,13 +1167,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_UPDATERECORD:
     if (dcd && mp1) {
-
       CHAR *filename;
-
       filename = mp1;
       if (filename) {
-        //DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", filename);
-        UpdateCnrRecord(hwnd, filename, TRUE, dcd);
+	UpdateCnrRecord(hwnd, filename, TRUE, dcd);
       }
     }
     return 0;
@@ -1329,12 +1304,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	cnri.flWindowAttr &= (~(CA_MIXEDTARGETEMPH | CA_ORDEREDTARGETEMPH));
 	cnri.flWindowAttr |= CV_FLOW;
-        dcd->flWindowAttr = cnri.flWindowAttr;
+	dcd->flWindowAttr = cnri.flWindowAttr;
 	WinSendMsg(hwnd,
 		   CM_SETCNRINFO,
 		   MPFROMP(&cnri),
 		   MPFROMLONG(CMA_FLWINDOWATTR | CMA_LINESPACING |
-                              CMA_CXTREEINDENT | CMA_PSORTRECORD));
+			      CMA_CXTREEINDENT | CMA_PSORTRECORD));
 	if (xbeginthread(MakeObjWin,
 			 327680,
 			 dcd,
@@ -1430,7 +1405,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DrgAccessDraginfo(pDInfo);
 	  DrgFreeDraginfo(pDInfo);
 	}
-        return 0;
+	return 0;
 
       case CN_DROPHELP:
 	if (mp2) {
@@ -1448,9 +1423,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 	    numitems = DrgQueryDragitemCount(pDInfo);
-            usOperation = pDInfo->usOperation;
-            if (usOperation == DO_DEFAULT)
-              usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
+	    usOperation = pDInfo->usOperation;
+	    if (usOperation == DO_DEFAULT)
+	      usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
 	    FreeDragInfoData(hwnd, pDInfo);
 	    saymsg(MB_ENTER | MB_ICONASTERISK,
 		   hwnd,
@@ -1864,7 +1839,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		DosBeep(250, 100);
 	      }
 	    }
-            else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
+	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
 	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir)
 		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 	    }
@@ -1995,8 +1970,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN |
 				DRIVE_NOLOADICONS | DRIVE_NOLOADSUBJS |
 				DRIVE_NOLOADLONGS | DRIVE_INCLUDEFILES |
-                                DRIVE_SLOW | DRIVE_NOSTATS |
-                                DRIVE_WRITEVERIFYOFF);
+				DRIVE_SLOW | DRIVE_NOSTATS |
+				DRIVE_WRITEVERIFYOFF);
 
 	      if (removable == 1)
 		driveflags[x] |= DRIVE_REMOVABLE;
@@ -2025,10 +2000,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcmp(FileSystem, RAMFS) &&
 		  strcmp(FileSystem, FAT32) &&
 		  strcmp(FileSystem, NDFS32) &&
-                  strcmp(FileSystem, NTFS) &&
+		  strcmp(FileSystem, NTFS) &&
 		  strcmp(FileSystem, HPFS386)) {
 		driveflags[x] |= DRIVE_NOLONGNAMES;
-              }
+	      }
 	      SelectDriveIcon(pciP);
 	      WinSendMsg(hwnd,
 			 CM_INVALIDATERECORD,
@@ -2233,7 +2208,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      && (driveflags[chDrvU - 'A'] & DRIVE_REMOVABLE) != 0;
 	    writeable = rdy
 	      && !(driveflags[chDrvU - 'A'] & DRIVE_NOTWRITEABLE);
-            local = rdy && (!(driveflags[chDrvU - 'A'] & (DRIVE_REMOTE | DRIVE_VIRTUAL)));
+	    local = rdy && (!(driveflags[chDrvU - 'A'] & (DRIVE_REMOTE | DRIVE_VIRTUAL)));
 	    underenv = (pci->flags & RECFLAGS_UNDERENV) != 0;
 
 	    CopyPresParams((HWND) mp2, hwndMainMenu);
@@ -2259,11 +2234,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_CHKDSK, writeable && local);
 	    WinEnableMenuItem((HWND) mp2, IDM_FORMAT, writeable && local);
 	    WinEnableMenuItem((HWND) mp2, IDM_OPTIMIZE, writeable && local);
-            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONSMENU, local);
-            WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
-            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
-            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
-            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
+	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONSMENU, local);
+	    WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
+	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
+	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 
 	    WinEnableMenuItem((HWND) mp2, IDM_DETACH, !local);
 
@@ -2290,10 +2265,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 IDM_MINIICONS, ((dcd->flWindowAttr & CV_MINI) != 0));
 	CopyPresParams((HWND) mp2, hwndMainMenu);
 	WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
-        WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
-        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
-        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
-        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
+	WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
+	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
+	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 	break;
 
       case IDM_COMMANDSMENU:
@@ -2451,7 +2426,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    pgd.Length = sizeof(pgd);
 	    pgd.progt.progc = PROG_WINDOWABLEVIO;
 	    pgd.progt.fbVisible = SHE_VISIBLE;
-	    pgd.pszTitle = GetPString(IDS_DETACHREQUESTTEXT);
+	    pgd.pszTitle = (PSZ)GetPString(IDS_DETACHREQUESTTEXT);
 	    pgd.pszExecutable = p;
 	    pgd.pszParameters = params;
 	    pgd.pszStartupDir = NULL;
@@ -2641,10 +2616,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_REFRESHREMOVABLES:
-        runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
-                HWND_DESKTOP, pszSrcFile, __LINE__, NULL, NULL,
-                "%s", "LVM.EXE /RediscoverPRM");
-         PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+	runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
+		HWND_DESKTOP, pszSrcFile, __LINE__, NULL, NULL,
+		"%s", "LVM.EXE /RediscoverPRM");
+	 PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	break;
 
       case IDM_SORTNAME:
@@ -2749,20 +2724,20 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  StartCollector(dcd->hwndParent, 4);
-        if (SHORT1FROMMP(mp1) == IDM_GREP) {
-          PCNRITEM pci = NULL;
+	if (SHORT1FROMMP(mp1) == IDM_GREP) {
+	  PCNRITEM pci = NULL;
 
-          pci = WinSendMsg(hwnd,
-                           CM_QUERYRECORDEMPHASIS,
-                           MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-          if (pci && (INT) pci != -1)
-            PostMsg(Collector, WM_COMMAND,
-                    MPFROM2SHORT(IDM_GREP, 0), MPFROMP(pci->pszFileName));
-          else
-            PostMsg(Collector, WM_COMMAND,
-                    MPFROM2SHORT(IDM_GREP, 0), MPVOID);
-        }
-        else
+	  pci = WinSendMsg(hwnd,
+			   CM_QUERYRECORDEMPHASIS,
+			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
+	  if (pci && (INT) pci != -1)
+	    PostMsg(Collector, WM_COMMAND,
+		    MPFROM2SHORT(IDM_GREP, 0), MPFROMP(pci->pszFileName));
+	  else
+	    PostMsg(Collector, WM_COMMAND,
+		    MPFROM2SHORT(IDM_GREP, 0), MPVOID);
+	}
+	else
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
 	break;
 
@@ -2817,8 +2792,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      {
 		driveflags[toupper(*pci->pszFileName) - 'A'] &=
 		  (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
-                   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS | DRIVE_NOSTATS |
-                   DRIVE_WRITEVERIFYOFF);
+		   DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS | DRIVE_NOSTATS |
+		   DRIVE_WRITEVERIFYOFF);
 		DriveFlagsOne(toupper(*pci->pszFileName) - 'A');
 		driveflag = driveflags[toupper(*pci->pszFileName) - 'A'];
 		if (driveflag & DRIVE_INVALID)
@@ -3117,8 +3092,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && dcd->hwndObject) {
       /* kill object window */
       if (WinIsWindow((HAB) 0, dcd->hwndObject)) {
-        if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
-          WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
+	if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
+	  WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
     }
     else
@@ -3301,7 +3276,6 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 			   GetPString(IDS_TREETEXT));
 	}
 	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr, TreeCnrWndProc);
-	// DbgMsg(pszSrcFile, __LINE__, "oldproc subclass %X", dcd->oldproc);	// 05 Jul 07 SHL
 	// fixme to document 01 test?
 	if (dcd->oldproc == 0)
 	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
