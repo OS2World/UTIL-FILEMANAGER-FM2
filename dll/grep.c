@@ -29,6 +29,7 @@
   07 Feb 08 SHL Use ITIMER_DESC to control sleeps and reporting
   29 Feb 08 GKY Use xfree where appropriate
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -1518,7 +1519,8 @@ static VOID FillDupes(GREP *grep,
     }
     else {
       // Insufficient memory - fall back to slow method - fixme to saymsg?
-      DosBeep(50, 100);
+      if (!fErrorBeepOff)
+        DosBeep(50, 100);
       if (!hwndStatus)
         WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
       else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)

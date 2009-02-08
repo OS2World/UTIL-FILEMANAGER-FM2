@@ -13,6 +13,7 @@
   17 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -222,7 +223,8 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      DosBeep(50, 100);
+      if (!fAlertBeepOff)
+        DosBeep(50, 100);
       break;
 
     case IDM_HELP:
@@ -271,7 +273,7 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                      NULL, NULL, GetPString(IDS_ARCEXECHELPTEXT),
                      pszSrcFile, __LINE__);
 	}
-	else
+	else if (!fErrorBeepOff)
 	  DosBeep(50, 100);
       }
       break;

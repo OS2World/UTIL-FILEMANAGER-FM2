@@ -21,6 +21,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   29 Feb 08 GKY Use xfree where appropriate
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -156,14 +157,16 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           WinDismissDlg(hwnd, 0);
         else {
           if (CheckEA(head, s)) {
-            DosBeep(50, 100);
+            if (!fAlertBeepOff)
+              DosBeep(50, 100);
             WinSetDlgItemText(hwnd, EAC_TEXT,
                               GetPString(IDS_EANAMEEXISTSTEXT));
             break;
           }
           for (x = 0; *forbidden[x]; x++) {
             if (!strcmp(forbidden[x], s)) {
-              DosBeep(50, 100);
+              if (!fAlertBeepOff)
+                DosBeep(50, 100);
               WinSetDlgItemText(hwnd, EAC_TEXT,
                                 GetPString(IDS_EANAMERESERVEDTEXT));
               return 0;
@@ -176,7 +179,8 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           for (x = 0; *restypes[x].name; x++) {
             if (!strcmp(restypes[x].name, s)) {
               if (type != restypes[x].type) {
-                DosBeep(50, 100);
+                if (!fAlertBeepOff)
+                  DosBeep(50, 100);
                 WinSetDlgItemText(hwnd, EAC_TEXT,
                                   GetPString(IDS_EAWRONGTYPETEXT));
                 return 0;

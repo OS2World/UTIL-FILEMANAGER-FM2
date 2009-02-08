@@ -75,6 +75,7 @@ VOID FreeMenuList(MENU * head)
   }
 }
 
+// fixme why do I exist since the only call passes no filename and FM3MENU.DAT doesn't exist. GKY 1-30-09
 BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 {
   FILE *fp;
@@ -133,7 +134,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
       }
       else {
 	// fixme to complain?
-	// saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tokenization failed");
+	// saymsg(MB_ENTER, HWND_DESKTOP, GetPString(IDS_DEBUG_STRING), "Tokenization failed");
       }
     }
     fclose(fp);

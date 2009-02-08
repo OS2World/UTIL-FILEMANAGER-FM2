@@ -25,6 +25,8 @@
   29 Feb 08 GKY Use xfree where appropriate
   10 Dec 08 SHL Integrate exception handler support
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Add *DateFormat functions to format dates bassed on locale
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -451,7 +453,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else if (!IsFile(currfile)) {
 
 	    static FILEFINDBUF4L ffb[130];
-	    CHAR fullname[CCHMAXPATH + 4], szCmmaFmtFileSize[81];
+	    CHAR fullname[CCHMAXPATH + 4], szCmmaFmtFileSize[81], szDate[11];
 	    HDIR hdir = HDIR_CREATE;
 	    ULONG x, nm, ml, mc, bufflen;
 	    PBYTE fb;
@@ -461,10 +463,6 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    APIRET rc;
 
 	    BldFullPathName(fullname, currfile, "*");
-	    //sprintf(fullname,
-	    //        "%s%s*",
-	    //        currfile,
-	    //        (currfile[strlen(currfile) - 1] == '\\') ? "" : "\\");
 	    DosError(FERR_DISABLEHARDERR);
 	    nm = sizeof(ffb) / sizeof(FILEFINDBUF4L);
 	    if (AutoviewHeight < 96)
@@ -506,10 +504,11 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    CommaFmtULL(szCmmaFmtFileSize,
 				sizeof(szCmmaFmtFileSize),
 				pffbFile->cbFile + CBLIST_TO_EASIZE(pffbFile->cbList),
-				' ');
+                                ' ');
+                    FDateFormat(szDate, pffbFile->fdateLastWrite);
 		    sprintf(p,
-			    "%s%-*.*s  %-8s  [%s%s%s%s]  %04lu/%02lu/%02lu "
-			      "%02lu:%02lu:%02lu\r",
+			    "%s%-*.*s  %-8s  [%s%s%s%s]  %s "
+			      "%02lu%s%02lu%s%02lu\r",
 			    pffbFile->attrFile & FILE_DIRECTORY ? "\\" : " ",
 			    ml,
 			    ml,
@@ -519,11 +518,9 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    pffbFile->attrFile & FILE_ARCHIVED ? "A" : "-",
 			    pffbFile->attrFile & FILE_HIDDEN ? "H" : "-",
 			    pffbFile->attrFile & FILE_SYSTEM ? "S" : "-",
-			    pffbFile->fdateLastWrite.year + 1980,
-			    pffbFile->fdateLastWrite.month,
-			    pffbFile->fdateLastWrite.day,
-			    pffbFile->ftimeLastWrite.hours,
-			    pffbFile->ftimeLastWrite.minutes,
+			    szDate,
+			    pffbFile->ftimeLastWrite.hours, TimeSeparator,
+			    pffbFile->ftimeLastWrite.minutes, TimeSeparator,
 			    pffbFile->ftimeLastWrite.twosecs * 2);
 		    p += strlen(p);
 		  }
@@ -682,8 +679,8 @@ static VOID MakeAutoWinThread(VOID * args)
 				    0L,
 				    0L, 0L, HWND_TOP, OBJ_FRAME, NULL, NULL);
       if (!hwndAutoObj) {
-	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
 	if (!PostMsg(hwndParent, UM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(hwndParent, UM_CLOSE, MPVOID, MPVOID);
       }

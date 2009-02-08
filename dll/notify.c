@@ -15,6 +15,8 @@
   16 Apr 08 SHL Comment and clean up logic
   10 Dec 08 SHL Integrate exception handler support
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -211,7 +213,8 @@ HWND DoNotify(PCSZ str)
 			   SS_TEXT | DT_LEFT | DT_VCENTER | WS_VISIBLE,
 			   x, y, cx, cy, hwndP, HWND_TOP, id++, NULL, NULL);
     if (!hwndP)
-      Win_Error2(hwndP, hwndP, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwndP, hwndP, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
 
     if (p != str)
       free(p);
@@ -267,10 +270,12 @@ VOID NotifyError(PCSZ filename, APIRET status)
     else if (status == 108)
       strcat(errortext, GetPString(IDS_DISKLOCKEDTEXT));
   }
-  DosBeep(250, 10);
-  DosBeep(500, 10);
-  DosBeep(250, 10);
-  DosBeep(500, 10);
+  if (!fErrorBeepOff) {
+    DosBeep(250, 10);
+    DosBeep(500, 10);
+    DosBeep(250, 10);
+    DosBeep(500, 10);
+  }
   Notify(errortext);
 }
 

@@ -14,6 +14,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
   10 Nov 07 GKY Get thousands separator from country info for file sizes.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
 
 ***********************************************************************/
 
@@ -171,4 +172,97 @@ size_t CommaFmtUL(char *pszBuf,	// Output buffer
   return c;
 }
 
-#pragma alloc_text(MISC8,commafmt,CommaFmtU64)
+VOID DateFormat(PSZ pszBuf, CDATE Date)
+{
+  switch(ulDateFmt) {
+
+  case 3:
+
+    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+            Date.day, DateSeparator, Date.month);
+    break;
+
+  case 2:
+
+    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+            Date.month, DateSeparator, Date.day);
+    break;
+
+  case 1:
+
+    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
+            Date.month, DateSeparator, Date.year);
+    break;
+
+  case 0:
+  default:
+
+    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
+            Date.day, DateSeparator, Date.year);
+    break;
+  }
+}
+
+VOID FDateFormat(PSZ pszBuf, FDATE Date)
+{
+  switch(ulDateFmt) {
+
+  case 3:
+
+    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year + 1980, DateSeparator,
+            Date.day, DateSeparator, Date.month);
+    break;
+
+  case 2:
+
+    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year + 1980, DateSeparator,
+            Date.month, DateSeparator, Date.day);
+    break;
+
+  case 1:
+
+    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
+            Date.month, DateSeparator, Date.year + 1980);
+    break;
+
+  case 0:
+  default:
+
+    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
+            Date.day, DateSeparator, Date.year + 1980);
+    break;
+  }
+}
+
+VOID DTDateFormat(PSZ pszBuf, DATETIME Date)
+{
+  switch(ulDateFmt) {
+
+  case 3:
+
+    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+            Date.day, DateSeparator, Date.month);
+    break;
+
+  case 2:
+
+    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+            Date.month, DateSeparator, Date.day);
+    break;
+
+  case 1:
+
+    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
+            Date.month, DateSeparator, Date.year);
+    break;
+
+  case 0:
+  default:
+
+    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
+            Date.day, DateSeparator, Date.year);
+    break;
+  }
+}
+
+#pragma alloc_text(MISC8,commafmt,CommaFmtUL,CommaFmtULL)

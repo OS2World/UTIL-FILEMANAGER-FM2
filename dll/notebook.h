@@ -13,6 +13,7 @@
   20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -31,6 +32,7 @@ extern ULONG FilesToGet;
 extern CHAR appname[12];
 extern DETAILS_SETTINGS dsDirCnrDefault;
 extern CHAR extractpath[CCHMAXPATH];
+extern BOOL fAlertBeepOff;
 extern BOOL fAutoAddAllDirs;
 extern BOOL fAutoAddDirs;
 extern BOOL fBlueLED;
@@ -48,6 +50,7 @@ extern BOOL fDrivebarHelp;
 extern BOOL fEjectCDScan;
 extern BOOL fEjectFlpyScan;
 extern BOOL fEjectRemovableScan;
+extern BOOL fErrorBeepOff;
 extern BOOL fExternalArcboxes;
 extern BOOL fExternalCollector;
 extern BOOL fExternalINIs;

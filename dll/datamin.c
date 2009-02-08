@@ -24,6 +24,8 @@
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
 
 ***********************************************************************/
 
@@ -259,7 +261,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     3,
 			     MINI_X,
 			     MINI_Y, hwnd, HWND_TOP, ids[c], NULL, NULL)) {
-	  Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                    PCSZ_WINCREATEWINDOW);
 	}
 	x += (MINI_X + 4);
       }
@@ -317,8 +320,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 SS_TEXT | DT_CENTER | DT_VCENTER |
 				 WS_VISIBLE, x, y, MINI_X, MINI_Y, hwnd,
 				 HWND_TOP, MINI_DRIVEA + c, NULL, NULL)) {
-	      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__,
-			 IDS_WINCREATEWINDOW);
+	      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+			PCSZ_WINCREATEWINDOW);
 	    }
 	    numdrives++;
 	    x += (MINI_X + 4);
@@ -746,21 +749,22 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_TIMER:
     {
-      CHAR s[134];
+      CHAR s[134], szDate[11];
       DATETIME dt;
 
       if (fDataToFore && !NoFloat)
 	WinSetWindowPos(WinQueryWindow(hwnd, QW_PARENT),
 			HWND_TOP, 0, 0, 0, 0, SWP_ZORDER);
       if (counter && (counter % 19) && (counter % 20)) {
-	if (!DosGetDateTime(&dt)) {
+        if (!DosGetDateTime(&dt)) {
+          DTDateFormat(szDate, dt);
 	  sprintf(s,
-		  " %02hu:%02hu:%02hu  %s %04u/%02u/%02u",
-		  dt.hours,
-		  dt.minutes,
+		  " %02hu%s%02hu%s%02hu  %s %s",
+		  dt.hours, TimeSeparator,
+		  dt.minutes, TimeSeparator,
 		  dt.seconds,
 		  GetPString(IDS_SUNDAY + dt.weekday),
-		  dt.year, dt.month, dt.day);
+		  szDate);
 	  WinSetDlgItemText(hwnd, MINI_TIME, s);
 	}
       }
@@ -943,7 +947,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  " %lu %s%s, ",
 		  numdays, GetPString(IDS_DAYTEXT), &"s"[numdays == 1L]);
 	nummins = val % (60L * 24L);
-	sprintf(s + strlen(s), " %lu:%02lu", nummins / 60, nummins % 60);
+	sprintf(s + strlen(s), " %lu%s%02lu", nummins / 60, TimeSeparator, nummins % 60);
 	WinSetDlgItemText(hwnd, MINI_TIME, s);
       }
     }

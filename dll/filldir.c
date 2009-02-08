@@ -63,6 +63,7 @@
   10 Dec 08 SHL Integrate exception handler support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -1055,8 +1056,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 				  MPFROMLONG(EXTRA_RECORD_BYTES),
 				  MPFROMLONG(ulSelCnt));
 	    if (!pciFirst) {
-	      Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-			 IDS_CMALLOCRECERRTEXT);
+	      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+		        GetPString(IDS_CMALLOCRECERRTEXT));
 	      ok = FALSE;
 	      ullTotalBytes = 0;
 	    }
@@ -1088,8 +1089,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD,
 				MPFROMP(pciFirst), MPFROMP(&ri))) {
-		  Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-			     IDS_CMINSERTERRTEXT);
+		  Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+			    GetPString(IDS_CMINSERTERRTEXT));
 		  ok = FALSE;
 		  ullTotalBytes = 0;
 		  if (WinIsWindow((HAB) 0, hwndCnr))
@@ -1147,8 +1148,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
 			      MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulTotal));
 	if (!pciFirst) {
-	  Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-		     IDS_CMALLOCRECERRTEXT);
+	  Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    GetPString(IDS_CMALLOCRECERRTEXT));
 	  ok = FALSE;
 	  ullTotalBytes = 0;
 	}
@@ -1180,8 +1181,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      WinSetFocus(HWND_DESKTOP, hwndCnr);
 	      if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
 			      MPFROMP(pciFirst), MPFROMP(&ri))) {
-		Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-			   IDS_CMINSERTERRTEXT);
+		Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+			  GetPString(IDS_CMINSERTERRTEXT));
 		ok = FALSE;
 		ullTotalBytes = 0;
 		if (WinIsWindow((HAB) 0, hwndCnr))
@@ -1325,7 +1326,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     Dos_Error(MB_CANCEL,
 	      rc,
 	      HWND_DESKTOP,
-	      pszSrcFile, __LINE__, GetPString(IDS_FILLDIRQCURERRTEXT));
+              pszSrcFile, __LINE__, PCSZ_FILLDIRQCURERRTEXT);
     exit(0);
   }
 
@@ -1343,7 +1344,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   }
 
   if (!pciFirst) {
-    Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, IDS_CMALLOCRECERRTEXT);
+    Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, GetPString(IDS_CMALLOCRECERRTEXT));
     // 04 Jan 08 SHL fixme not just up and die
     exit(0);
   }
@@ -1536,8 +1537,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     if (!WinSendMsg(hwndCnr,
 		    CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri)))
     {
-      Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-		 IDS_CMINSERTERRTEXT);
+      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+	        GetPString(IDS_CMINSERTERRTEXT));
     }
   }
 
@@ -1627,8 +1628,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      if (!WinSendMsg(hwndCnr,
 			      CM_INSERTRECORD,
 			      MPFROMP(pci), MPFROMP(&ri))) {
-		Win_Error2(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-			   IDS_CMINSERTERRTEXT);
+		Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+			  GetPString(IDS_CMINSERTERRTEXT));
 		FreeCnrItem(hwndCnr, pci);
 	      }
 	    }
@@ -1907,7 +1908,6 @@ VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
   FreeCnrItemData(pci);
 
   if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1))) {
-    // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
     Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      "CM_FREERECORD hwnd %x pci %p file %s",
 	      hwnd, pci,
@@ -1933,7 +1933,6 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
 
   if (usCount) {
     if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(usCount))) {
-      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMFREEERRTEXT);
       Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD hwnd %x pci %p cnt %u", hwnd, pci, usCount);
     }
   }
@@ -1992,7 +1991,6 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
   if (remaining != - 1) {
     remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pciFirst), MPFROM2SHORT(usCnt, usFlags));
     if (remaining == -1) {
-      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
       Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pci %p cnt %u", hwnd, pciFirst, usCnt);
     }
   }

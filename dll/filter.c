@@ -16,6 +16,8 @@
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -405,7 +407,8 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     swpL.y + swpL.cy + 4,
 			     50,
 			     swpE.cy, hwnd, HWND_TOP, 65535, NULL, NULL)) {
-	  Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                    PCSZ_WINCREATEWINDOW);
 	}
 	if (!WinCreateWindow(hwnd,
 			     WC_ENTRYFIELD,
@@ -416,7 +419,8 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     swpL.y + swpL.cy + 4,
 			     swpL.cx - 54,
 			     swpE.cy, hwnd, HWND_TOP, MSK_TEXT, NULL, NULL)) {
-	  Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                    PCSZ_WINCREATEWINDOW);
 	}
 	WinSendDlgItemMsg(hwnd,
 			  MSK_TEXT,
@@ -651,7 +655,7 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    //DosExitCritSec();
 	    WinDismissDlg(hwnd, 1);
 	  }
-	  else
+	  else if (!fAlertBeepOff)
 	    DosBeep(50, 100);		// MSK_DELETE
 	}
       }

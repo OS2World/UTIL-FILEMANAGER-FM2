@@ -58,6 +58,9 @@
 		and have no default choice.
   01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -1219,14 +1222,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
 					   MAIN_STATUS), pci->pszFileName);
-	if (fMoreButtons && hwndName) {
+        if (fMoreButtons && hwndName) {
+          CHAR szDate[11];
+
+          DateFormat(szDate, pci->date);
 	  WinSetWindowText(hwndName, pci->pszFileName);
-	  sprintf(str,
-		  "%04u/%02u/%02u %02u:%02u:%02u",
-		  pci->date.year,
-		  pci->date.month,
-		  pci->date.day,
-		  pci->time.hours, pci->time.minutes, pci->time.seconds);
+	  sprintf(str, "%s %02u%s%02u%s%02u", szDate,
+                  pci->time.hours, TimeSeparator,
+                  pci->time.minutes, TimeSeparator, pci->time.seconds);
 	  WinSetWindowText(hwndDate, str);
 	  WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	}
@@ -1836,7 +1839,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
 		UnFlesh(hwnd, pci);
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-		DosBeep(250, 100);
+                if (!fAlertBeepOff)
+		  DosBeep(250, 100);
 	      }
 	    }
 	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
@@ -1904,7 +1908,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  !(pci->rc.flRecordAttr & CRA_INUSE) &&
 	  !(pci->flags & RECFLAGS_ENV) && IsFullName(pci->pszFileName)) {
 	if (driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_INVALID) {
-	  DosBeep(50, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(50, 100);
 	  if (hwndStatus)
 	    WinSetWindowText(hwndStatus, GetPString(IDS_RESCANSUGTEXT));
 	  return 0;
@@ -3207,8 +3212,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 			     WinQuerySysValue(HWND_DESKTOP,
 					      SV_CYMINMAXBUTTON), hwndFrame,
 					      HWND_TOP, IDM_OPENWINDOW, NULL, NULL)) {
-	  Win_Error2(hwndFrame, hwndParent, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndFrame, hwndParent, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 	}
       }
       else {
@@ -3224,8 +3229,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 							      SV_CXSIZEBORDER)
 					     * 2), 22, hwndFrame, HWND_TOP,
 			     MAIN_STATUS, NULL, NULL)) {
-	  Win_Error2(hwndFrame, hwndParent, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndFrame, hwndParent, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 	}
       }
       memset(dcd, 0, sizeof(DIRCNRDATA));
@@ -3257,8 +3262,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 				     hwndClient,
 				     HWND_TOP, (ULONG) TREE_CNR, NULL, NULL);
       if (!dcd->hwndCnr) {
-	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(hwndClient, hwndClient, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	free(dcd);
 	dcd = 0;

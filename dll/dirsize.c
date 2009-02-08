@@ -41,6 +41,7 @@
 		the strlen trap.
   23 Aug 08 GKY Fix memory leak (failure to free cnritems)
   10 Dec 08 SHL Integrate exception handler support
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -630,7 +631,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_SORTRECORD, MPFROMP(SortSizeCnr),
 		      MPVOID);
-    DosBeep(500, 25);			// Wake up user
+    if (!fAlertBeepOff)
+      DosBeep(500, 25);			// Wake up user
     return 0;
 
   case WM_ADJUSTWINDOWPOS:
@@ -1015,7 +1017,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (pState->working) {
 	  pState->dying = TRUE;
 	  pState->chStopFlag = (CHAR)0xff;
-	  DosBeep(1000, 100);		// Complain?
+          if (!fAlertBeepOff)
+	    DosBeep(1000, 100);		// Complain?
 	}
 	else
 	  WinDismissDlg(hwnd, 0);

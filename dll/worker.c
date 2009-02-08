@@ -37,6 +37,7 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
 		to prevent duplicate directory names in tree following a copy before initial scan.
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -1018,7 +1019,7 @@ VOID Action(VOID * args)
 		      (x != 1) ?
 		      GetPString(IDS_ARETEXT) : GetPString(IDS_ISTEXT));
 	      Notify(message);
-	      if (toupper(*wk->li->targetpath) < 'C')
+	      if (toupper(*wk->li->targetpath) < 'C' && !fAlertBeepOff)
 		DosBeep(1000, 25);	// Wake up user
 	      DosSleep(16);//05 Aug 07 GKY 33
 	      if (wk->li->type == IDM_WPSMOVE || wk->li->type == IDM_WPSCOPY)
@@ -1612,7 +1613,7 @@ VOID MassAction(VOID * args)
 			  &"s"[hs == 1],
 			  (hs > 1) ?
 			  GetPString(IDS_ARETEXT) : GetPString(IDS_ISTEXT));
-		if (ro || hs || sysdir)
+		if ((ro || hs || sysdir) && !fAlertBeepOff)
 		  DosBeep(300, 100);	// Wake up user
 		strcat(prompt, GetPString(IDS_DELPROMPT6TEXT));
 		error = WinDlgBox(HWND_DESKTOP,

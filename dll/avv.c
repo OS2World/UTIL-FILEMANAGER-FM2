@@ -266,7 +266,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     fprintf(fpNew, "%u\n", LINES_PER_ARCSIG);
     t = time(NULL);
     tm = localtime(&t);
-
+    //fixme to use DateFmt from locale
     fprintf(fpNew,
 	    ";\n; %s file written by FM/2 v%d.%02d on %u/%u/%u %u:%02u:%02u\n;\n",
 	    ARCHIVERBB2,

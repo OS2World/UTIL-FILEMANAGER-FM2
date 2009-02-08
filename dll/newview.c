@@ -33,6 +33,8 @@
   20 Jul 08 GKY Change ListToClipboardHab call to match changes made to function
   10 Dec 08 SHL Integrate exception handler support
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -1094,7 +1096,8 @@ static VOID SearchThread(VOID * args)
 	    }
 	    DosReleaseMutexSem(ad->ScanSem);
 	    if (!ad->stopflag && firstline == ULONG_MAX) {
-	      DosBeep(50, 50);
+              if (!fAlertBeepOff)
+	        DosBeep(50, 50);
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
 			       GetPString(IDS_NOMATCHINGTEXT));
@@ -1204,7 +1207,8 @@ static VOID ClipboardThread(VOID * args)
 	    else {
 	      DosReleaseMutexSem(ad->ScanSem);
 	      released = TRUE;
-	      DosBeep(50, 100);
+              if (!fAlertBeepOff)
+	        DosBeep(50, 100);
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
 			       GetPString(IDS_NVNOLINESSELTEXT));
@@ -1748,7 +1752,8 @@ MRESULT EXPENTRY FindStrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MLM_EXPORT, MPFROMP(&here), MPFROMLONG(&len));
 	s[SEARCHSTRINGLEN - 1] = 0;
 	if (!*s) {
-	  DosBeep(250, 100);		// Complain
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);		// Complain
 	  break;
 	}
 	strcpy(ad->searchtext, s);
@@ -1810,8 +1815,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 hwndFrame,
 				 HWND_TOP, IDM_PREVBLANKLINE, NULL, NULL);
       if (!temphwnd)
-	Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
       else {
 	//fixme to allow user to change presparams 1-10-09 GKY
 	WinSetPresParam(temphwnd,
@@ -1831,8 +1836,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 hwndFrame,
 				 HWND_TOP, IDM_NEXTBLANKLINE, NULL, NULL);
       if (!temphwnd)
-	Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
       else {
 	//fixme to allow user to change presparams 1-10-09 GKY
 	WinSetPresParam(temphwnd,
@@ -1895,8 +1900,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  HWND_TOP,
 					  NEWVIEW_STATUS1, NULL, NULL);
 	if (!ad->hwndStatus1)
-	  Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndStatus2 = WinCreateWindow(hwndFrame,
 					  WC_VIEWSTATUS,
@@ -1911,8 +1916,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  HWND_TOP,
 					  NEWVIEW_STATUS2, NULL, NULL);
 	if (!ad->hwndStatus2)
-	  Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndStatus3 = WinCreateWindow(hwndFrame,
 					  WC_VIEWSTATUS,
@@ -1927,8 +1932,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  HWND_TOP,
 					  NEWVIEW_STATUS3, NULL, NULL);
 	if (!ad->hwndStatus3)
-	  Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndListbox = WinCreateWindow(hwndFrame,
 					  WC_LISTBOX,
@@ -1942,8 +1947,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					  HWND_TOP,
 					  NEWVIEW_LISTBOX, NULL, NULL);
 	if (!ad->hwndListbox)
-	  Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndDrag = WinCreateWindow(hwndFrame,
 				       WC_VIEWSTATUS,
@@ -1956,8 +1961,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       hwndFrame,
 				       HWND_TOP, NEWVIEW_DRAG, NULL, NULL);
 	if (!ad->hwndDrag)
-	  Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 
 	oldproc = WinSubclassWindow(hwndFrame, ViewFrameWndProc);
 	WinSetWindowPtr(hwndFrame, QWL_USER, (PVOID) oldproc);
@@ -3620,7 +3625,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    WinSetPointer(HWND_DESKTOP, hptrArrow);
-	    if (x >= ad->numlines)
+	    if (x >= ad->numlines && !fAlertBeepOff)
 	      DosBeep(50, 100);
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
@@ -3691,7 +3696,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (!numlines)
 	      break;
 	    if (ad->numlines <= numlines) {
-	      DosBeep(500, 100);
+              if (!fAlertBeepOff)
+	        DosBeep(500, 100);
 	      break;
 	    }
 	    sip.help = (SHORT1FROMMP(mp1) == IDM_GOTOLINE) ?

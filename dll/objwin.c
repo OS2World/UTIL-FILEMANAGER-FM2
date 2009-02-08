@@ -13,6 +13,7 @@
   30 Mar 07 GKY Remove GetPString for window class names
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Jul 08 SHL Correct Fortify_LeaveScope usage and avoid spurious reports
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -32,7 +33,7 @@
 #include "collect.h"			// CollectorObjWndProc
 #include "objwin.h"
 #include "treecnr.h"			// TreeObjWndProc
-
+#include "strutil.h"                    // GetPString
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -82,8 +83,8 @@ VOID MakeObjWin(VOID * args)
 				   0L,
 				   0L, 0L, HWND_TOP, OBJ_FRAME, NULL, NULL);
       if (!ObjectHwnd)
-	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
       else {
 #	ifdef FORTIFY
 	Fortify_EnterScope();

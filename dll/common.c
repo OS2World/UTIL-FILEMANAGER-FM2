@@ -23,6 +23,7 @@
   06 Jul 08 GKY Update delete/undelete to include move to and open XWP trashcan
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -229,7 +230,8 @@ void CommonCreateTextChildren(HWND hwnd, char *class, USHORT * ids)
     hwndTmp = WinCreateWindow(hwnd, class, s, attrs, 0, 0, 0, 0, hwnd,
 			      HWND_TOP, ids[x], NULL, NULL);
     if (!hwndTmp)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
   } // for
 }
 
@@ -406,7 +408,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			       20,
 			       hwndFrame, HWND_TOP, MAIN_STATUS, NULL, NULL);
   if (!hwndStatus)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   // Right status window
   hwndStatus2 = WinCreateWindow(hwndFrame,
@@ -427,7 +430,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 				hwndFrame,
 				HWND_TOP, MAIN_STATUS2, NULL, NULL);
   if (!hwndStatus2)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndAttr = WinCreateWindow(hwndFrame,
 			     WC_STATUS,
@@ -445,7 +449,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 					       SV_CXSIZEBORDER) * 2),
 			     20, hwndFrame, HWND_TOP, IDM_ATTRS, NULL, NULL);
   if (!hwndAttr)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndDate = WinCreateWindow(hwndFrame,
 			     WC_STATUS,
@@ -463,7 +468,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 					       SV_CXSIZEBORDER) * 2),
 			     20, hwndFrame, HWND_TOP, IDM_INFO, NULL, NULL);
   if (!hwndDate)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndName = WinCreateWindow(hwndFrame,
 			     WC_STATUS,
@@ -481,7 +487,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 					       SV_CXSIZEBORDER) * 2),
 			     20, hwndFrame, HWND_TOP, IDM_RENAME, NULL, NULL);
   if (!hwndName)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndTmp = WinCreateWindow(hwndFrame,
 			    WC_TOOLBACK,
@@ -498,7 +505,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 					      SV_CXSIZEBORDER) * 2),
 			    30, hwndFrame, HWND_TOP, MAIN_TOOLS, NULL, NULL);
   if (!hwndTmp)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndBack = WinCreateWindow(hwndFrame,
 			     WC_DRIVEBACK,
@@ -517,7 +525,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			     hwndFrame, HWND_TOP, MAIN_DRIVES, NULL, NULL);
 
   if (!hwndBack)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndLED = WinCreateWindow(hwndFrame,
 			    WC_LED,
@@ -528,7 +537,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			    12,
 			    12, hwndFrame, HWND_TOP, MAIN_LED, NULL, NULL);
   if (!hwndLED)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndLEDHdr = WinCreateWindow(hwndFrame,
 			       WC_LED,
@@ -541,7 +551,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			       12,
 			       hwndFrame, HWND_TOP, MAIN_LEDHDR, NULL, NULL);
   if (!hwndLEDHdr)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndAutoview = WinCreateWindow(hwndFrame,
 				 WC_AUTOVIEW,
@@ -561,7 +572,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 				 hwndFrame,
 				 HWND_TOP, MAIN_AUTOVIEW, NULL, NULL);
   if (!hwndAutoview)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   hwndAutoMLE = WinCreateWindow(hwndFrame,
 				// GetPString(IDS_WCAUTOVIEW),
@@ -582,7 +594,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 				hwndFrame,
 				HWND_TOP, MAIN_AUTOVIEWMLE, NULL, NULL);
   if (!hwndAutoMLE)
-    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+              PCSZ_WINCREATEWINDOW);
 
   oldproc = WinSubclassWindow(hwndAutoMLE, AutoViewProc);
   WinSetWindowPtr(hwndAutoMLE, QWL_USER, (PVOID) oldproc);

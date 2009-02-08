@@ -28,6 +28,9 @@
   14 Aug 07 SHL Use GetMSecTimer in DbgMsg
   05 Jan 08 SHL Renamed from error.c to match errutil.h
   18 Dec 08 SHL Show thread id in DbgMsg
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -39,10 +42,12 @@
 #define INCL_WIN
 #define INCL_DOSERRORS
 #define INCL_DOSPROCESS			// PPIB PTIB
+#define INCL_LONGLONG
 
 #include "errutil.h"
 #include "strutil.h"			// GetPString
 #include "fm3str.h"
+#include "notebook.h"                   // fErrorBeepOff
 
 #pragma data_seg(GLOBAL2)
 PSZ DEBUG_STRING;
@@ -134,8 +139,10 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
     fflush(stderr);
   }
 
-  if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed");		// Assume simple function name
+  if (strchr(szMsg, ' ') == NULL) {
+    strcat(szMsg, " ");
+    strcat(szMsg, GetPString(IDS_FAILEDTEXT));		// Assume simple function name
+  }
 
   DosErrClass(ulRC, &Class, &action, &Locus);
 
@@ -184,14 +191,14 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 
 } // Dos_Error
 
-//== Dos_Error2: report Dos...() error using passed message id ===
+/*== Dos_Error2: report Dos...() error using passed message id ===
 
 INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	       PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 {
   return Dos_Error(mb_type, ulRC, hwndOwner, pszSrcFile, uSrcLineNo,
 		   GetPString(idMsg));
-} // Dos_Error2
+} // Dos_Error2 */
 
 /**
  * Format last PM error into passed buffer
@@ -223,8 +230,10 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
     fflush(stderr);
   }
 
-  if (strchr(pszBuf, ' ') == NULL)
-    strcat(pszBuf, " failed");		// Assume simple function name
+  if (strchr(pszBuf, ' ') == NULL) {
+    strcat(pszBuf, " ");
+    strcat(pszBuf, GetPString(IDS_FAILEDTEXT));		// Assume simple function name
+  }
 
   // Append file name and line number and trailing space
   sprintf(pszBuf + strlen(pszBuf),
@@ -302,13 +311,15 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
     fflush(stderr);
   }
 
-  if (strchr(szMsg, ' ') == NULL)
-    strcat(szMsg, " failed");		// Assume simple function name
+  if (strchr(szMsg, ' ') == NULL) {
+    strcat(szMsg, " ");
+    strcat(szMsg, GetPString(IDS_FAILEDTEXT));		// Assume simple function name
+  }
 
   sprintf(szMsg + strlen(szMsg),
 	  GetPString(IDS_GENERR1TEXT), pszSrcFile, uSrcLineNo);
 
-  showMsg(MB_ICONEXCLAMATION, HWND_DESKTOP, DEBUG_STRING, szMsg, TRUE);
+  showMsg(MB_ICONEXCLAMATION, HWND_DESKTOP, GetPString(IDS_DEBUG_STRING), szMsg, TRUE);
 
 } // Runtime_Error
 
@@ -357,8 +368,8 @@ static APIRET showMsg(ULONG mb_type, HWND hwndOwner,
 
   if (!hwndOwner)
     hwndOwner = HWND_DESKTOP;
-
-  DosBeep(250, 100);
+  if (!fErrorBeepOff)
+    DosBeep(250, 100);
 
   return WinMessageBox(HWND_DESKTOP,	// Parent
 		       hwndOwner,
@@ -385,14 +396,14 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner,
 
 } // Win_Error
 
-//== Win_Error2: report Win...() error using passed message id ===
+/*== Win_Error2: report Win...() error using passed message id ===
 
 VOID Win_Error2(HWND hwndErr, HWND hwndOwner,
 		PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 {
   Win_Error(hwndErr, hwndOwner, pszSrcFile, uSrcLineNo, GetPString(idMsg));
 
-} // Win_Error2
+} // Win_Error2 */
 
 /**
   * Output PM error messsage to stderr
@@ -416,8 +427,8 @@ VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
   fputc('\n', stderr);
   fputc('\n', stderr);
   fflush(stderr);
-
-  DosBeep(250, 100);
+  if (!fErrorBeepOff)
+    DosBeep(250, 100);
 
 } // Win_Error_NoMsgBox
 

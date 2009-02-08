@@ -13,6 +13,9 @@
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
   11 Jan 09 GKY Move strings that shouldn't be translated (font names etc) compile time variables
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  07 Feb 09 GKY Move repeated strings to PCSZs.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
 
 ***********************************************************************/
 
@@ -41,6 +44,10 @@ extern PFNWP PFNWPMLE;
 extern CHAR *Settings;
 extern CHAR SwapperDat[CCHMAXPATH];
 extern CHAR ThousandsSeparator[2];
+extern CHAR DateSeparator[2];
+extern CHAR TimeSeparator[2];
+extern ULONG ulTimeFmt;
+extern ULONG ulDateFmt;
 extern CHAR *FNT_6HELVETICA;
 extern CHAR *FNT_8HELVETICA;
 extern CHAR *FNT_8HELVETICABOLD;
@@ -50,6 +57,12 @@ extern CHAR *FNT_2SYSTEMVIO;
 extern CHAR *FNT_4SYSTEMVIO;
 extern CHAR *FNT_10SYSTEMVIO;
 extern CHAR *FNT_8TIMESNEWROMAN;
+extern PCSZ PCSZ_WINCREATEWINDOW;
+extern PCSZ PCSZ_INIQUERYPRFTEXT;
+extern PCSZ PCSZ_FILLDIRQCURERRTEXT;
+extern PCSZ PCSZ_STARDOTEXE;
+extern PCSZ PCSZ_STARDOTINI;
+extern PCSZ PCSZ_STARDOTLST;
 extern CHAR *WC_ARCCONTAINER;
 extern CHAR *WC_ARCSTATUS;
 extern CHAR *WC_AUTOVIEW;

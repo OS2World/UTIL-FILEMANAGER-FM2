@@ -69,6 +69,8 @@
   03 Dec 08 GKY Subdirectory from the arcname for the extract path only created if an "extract"
 		menu option is selected.
   10 Dec 08 SHL Integrate exception handler support
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -524,8 +526,8 @@ static VOID RemoveArcItems(HWND hwnd, PARCITEM paiFirst, USHORT usCnt, USHORT us
   if (remaining != - 1) {
     remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&paiFirst), MPFROM2SHORT(usCnt, usFlags));
     if (remaining == -1) {
-      // Win_Error2(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,IDS_CMREMOVEERRTEXT);
-      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pai %p cnt %u", hwnd, paiFirst, usCnt);
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pai %p cnt %u",
+                hwnd, paiFirst, usCnt);
     }
   }
 }
@@ -890,8 +892,9 @@ ReTry:
 	    info = tinfo;
 	    goto ReTry;
 	  }
-	} while (tinfo);
-	DosBeep(750, 50);		// wake up user
+        } while (tinfo);
+        if (!fAlertBeepOff)
+	  DosBeep(750, 50);		// wake up user
 	sprintf(errstr, GetPString(IDS_ARCERRORINFOTEXT),
 		arcname,
 		!gotstart ? GetPString(IDS_NOGOTSTARTTEXT) : NullStr,
@@ -3370,9 +3373,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  LISTINFO *li;
 
-	  DosBeep(500, 100);		// fixme to know why beep?
+	  //DosBeep(500, 100);		// fixme to know why beep?
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
-	  DosBeep(50, 100);		// fixme to know why beep?
+	  //DosBeep(50, 100);		// fixme to know why beep?
 	  CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    li->type = li->type == DO_MOVE ? IDM_ARCHIVEM : IDM_ARCHIVE;
@@ -3816,8 +3819,8 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 				       hwndClient,
 				       HWND_TOP, (ULONG) ARC_CNR, NULL, NULL);
 	if (!dcd->hwndCnr) {
-	  Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndClient, hwndClient, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	  free(dcd);
 	  hwndFrame = (HWND) 0;

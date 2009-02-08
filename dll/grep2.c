@@ -23,6 +23,7 @@
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   10 Dec 08 SHL Integrate exception handler support
   01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
   fixme for more excess locals to be gone
 
@@ -156,7 +157,8 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, ENV_NAME, CCHMAXPATH, p);
 	bstrip(p);
 	if (!*p) {
-	  DosBeep(50, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, ENV_NAME));
 	}
 	else {
@@ -850,7 +852,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, p);
 	bstrip(p);
 	if (!*p) {
-	  DosBeep(50, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
 	  free(p);
 #         ifdef FORTIFY

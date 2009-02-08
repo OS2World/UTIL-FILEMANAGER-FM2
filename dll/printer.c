@@ -13,6 +13,7 @@
   03 Nov 06 SHL Count thread usage
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -497,7 +498,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, PRN_WIDTH, sizeof(s), s);
 	  if (atol(s) < 24 || atol(s) > 4096) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_WIDTH));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prnwidth = atol(s);
@@ -507,7 +509,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, PRN_LENGTH, sizeof(s), s);
 	  if (atol(s) < 24 || atol(s) > 4096) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_LENGTH));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prnlength = atol(s);
@@ -517,7 +520,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, PRN_LMARGIN, sizeof(s), s);
 	  if (atol(s) < 0 || atol(s) > prnwidth - 1) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_LMARGIN));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prnlmargin = atol(s);
@@ -527,7 +531,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, PRN_RMARGIN, sizeof(s), s);
 	  if (atol(s) < 0 || atol(s) > (prnwidth - prnlmargin) - 1) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_RMARGIN));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prnrmargin = atol(s);
@@ -538,7 +543,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (atol(s) < 1 ||
 	      atol(s) > prnwidth - ((prnlmargin + prnrmargin) - 1)) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_TABSPACES));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prntabspaces = atol(s);
@@ -548,7 +554,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, PRN_TMARGIN, sizeof(s), s);
 	  if (atol(s) < 0 || atol(s) > prnlength - 1) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_TMARGIN));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prntmargin = atol(s);
@@ -558,7 +565,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, PRN_BMARGIN, sizeof(s), s);
 	  if (atol(s) < 0 || atol(s) > (prnlength - prntmargin) - 1) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_BMARGIN));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prnbmargin = atol(s);
@@ -569,7 +577,8 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (atol(s) < 1 ||
 	      atol(s) > ((prnlength - prntmargin) - prnbmargin) - 1) {
 	    WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, PRN_SPACING));
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	  prnspacing = atol(s);

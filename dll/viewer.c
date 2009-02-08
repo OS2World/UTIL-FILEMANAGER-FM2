@@ -16,6 +16,8 @@
   26 Nov 07 GKY Allow open of readonly files in the editor with warning
   26 Nov 07 GKY Add "Save as" menu option to editor
   29 Feb 08 GKY Refactor global command line variables to notebook.h
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -361,7 +363,8 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 0,
 			 0,
 			 0, 0, hwnd, HWND_TOP, MLE_MLE, MPVOID, MPVOID)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     else {
       PFNWP oldproc;
@@ -700,7 +703,8 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_COMMAND:
     if (vw->busy && SHORT1FROMMP(mp1) != MLE_QUIT) {
-      DosBeep(50, 100);
+      if (!fAlertBeepOff)
+        DosBeep(50, 100);
       return 0;
     }
     switch (SHORT1FROMMP(mp1)) {
@@ -806,7 +810,8 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case MLE_TOGGLEREADONLY:
       if (vw->busy || vw->hex == 1) {
-	DosBeep(50, 100);
+        if (!fAlertBeepOff)
+	  DosBeep(50, 100);
       }
       else {
 	/* I dunno why I gotta reset the colors... */
@@ -1087,8 +1092,9 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	sip.inputlen = 34;
 	sip.title = GetPString(IDS_NVLINEJUMPTITLETEXT);
 	numlines = MLEnumlines(hwndMLE);
-	if (!numlines)
-	  DosBeep(50, 100);
+        if (!numlines)
+          if (!fAlertBeepOff)
+	    DosBeep(50, 100);
 	else {
 	  sprintf(ss,
 		  GetPString(IDS_NVJUMPTEXT),

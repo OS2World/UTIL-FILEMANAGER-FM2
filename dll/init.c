@@ -70,6 +70,9 @@
 		Dos/Win programs from being inserted into the execute dialog with message why.
   11 Jan 09 GKY Move strings that shouldn't be translated (font names etc) compile time variables
   03 Feb 09 SHL Switch to STRINGTABLE
+  07 Feb 09 GKY Move repeated strings to PCSZs.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -178,6 +181,10 @@ ULONG OS2ver[2];
 PFNWP PFNWPCnr;
 PFNWP PFNWPMLE;
 CHAR ThousandsSeparator[2];
+CHAR DateSeparator[2];
+CHAR TimeSeparator[2];
+ULONG ulTimeFmt;
+ULONG ulDateFmt;
 BOOL fInitialDriveScan;
 BOOL fAmAV2;
 BOOL fChangeTarget;
@@ -228,6 +235,12 @@ CHAR *FNT_8TIMESNEWROMAN;
 CHAR HomePath[CCHMAXPATH];
 CHAR *LONGNAME;
 CHAR *NullStr;
+PCSZ PCSZ_WINCREATEWINDOW;
+PCSZ PCSZ_INIQUERYPRFTEXT;
+PCSZ PCSZ_FILLDIRQCURERRTEXT;
+PCSZ PCSZ_STARDOTEXE;
+PCSZ PCSZ_STARDOTINI;
+PCSZ PCSZ_STARDOTLST;
 CHAR *Settings;
 CHAR SwapperDat[CCHMAXPATH];
 CHAR *WC_ARCCONTAINER;
@@ -432,6 +445,12 @@ unsigned APIENTRY LibMain(unsigned hModule,
     FNT_4SYSTEMVIO       =  "4.System VIO";
     FNT_10SYSTEMVIO      =  "10.System VIO";
     FNT_8TIMESNEWROMAN   =  "8.Times New Roman";
+    PCSZ_WINCREATEWINDOW = "WinCreateWindow";
+    PCSZ_INIQUERYPRFTEXT =  "PrfQueryProfile";
+    PCSZ_FILLDIRQCURERRTEXT = "DosQCurDisk";
+    PCSZ_STARDOTEXE    =  "*.EXE";
+    PCSZ_STARDOTINI    =  "*.INI";
+    PCSZ_STARDOTLST    =  "*.LST";
     WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
     WC_BUBBLE          =  "WC_BUBBLE";
     WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
@@ -533,6 +552,12 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     FNT_4SYSTEMVIO       =  "4.System VIO";
     FNT_10SYSTEMVIO      =  "10.System VIO";
     FNT_8TIMESNEWROMAN   =  "8.Times New Roman";
+    PCSZ_WINCREATEWINDOW = "WinCreateWindow";
+    PCSZ_INIQUERYPRFTEXT =  "PrfQueryProfile";
+    PCSZ_FILLDIRQCURERRTEXT = "DosQCurDisk";
+    PCSZ_STARDOTEXE    =  "*.EXE";
+    PCSZ_STARDOTINI    =  "*.INI";
+    PCSZ_STARDOTLST    =  "*.LST";
     WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
     WC_BUBBLE          =  "WC_BUBBLE";
     WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
@@ -934,17 +959,16 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (!*inipath)
       strcpy(inipath, profile);
     DosError(FERR_DISABLEHARDERR);
-
+    // fixme to check for backup if ini not found GKY 1-30-09
     rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
     if (rc) {
       if (rc == ERROR_FILE_NOT_FOUND)
       fWantFirstTimeInit = TRUE;
     }
-    else {
+    else { //Check the ini file header and restore from backup if corupted
       if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-	saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,
-	       "Check INI header failed will attempt to replace with backup \\
-	       if backup fails or not found will open with new ini");
+	saymsg(MB_ENTER,HWND_DESKTOP, GetPString(IDS_DEBUG_STRING),
+	       GetPString(IDS_INIFAILURETEXT));
 	DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
 	DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
 	if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
@@ -1226,9 +1250,21 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   ULONG ulInfoLen  = 0;
   COUNTRYINFO CtryInfo   = {0};
 
-  DosQueryCtryInfo(sizeof(CtryInfo), &Country,
-		   &CtryInfo, &ulInfoLen);
-  *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
+  if (!DosQueryCtryInfo(sizeof(CtryInfo), &Country, &CtryInfo, &ulInfoLen)) {
+    *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
+    strcpy(DateSeparator, CtryInfo.szDateSeparator);
+    strcpy(TimeSeparator, CtryInfo.szTimeSeparator);
+    ulDateFmt = CtryInfo.fsDateFmt;
+    ulTimeFmt = CtryInfo.fsTimeFmt;
+    //DbgMsg(pszSrcFile, __LINE__, "Date Fmt %x", ulDateFmt);
+  }
+  else {
+    strcpy(ThousandsSeparator, ",");
+    strcpy(DateSeparator, "/");
+    strcpy(TimeSeparator, ":");
+    ulDateFmt = 0;
+    ulTimeFmt = 0;
+  }
   }
   { // Check for the existance of various partitioning tools to set up menu items
     CHAR *FullPath;
@@ -1363,6 +1399,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, FM3Str, "NoDead", &fNoDead, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "NoFinger", &fNoFinger, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "AlertBeepOff", &fAlertBeepOff, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ErrorBeepOff", &fErrorBeepOff, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SwitchTree", &fSwitchTree, &size);
   size = sizeof(BOOL);

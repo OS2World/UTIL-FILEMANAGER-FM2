@@ -16,6 +16,8 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   10 Dec 08 SHL Integrate exception handler support
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -249,7 +251,8 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                            swp.cx,
                            swp.cy,
                            hwnd, HWND_TOP, VINF_LISTBOX, NULL, NULL)) {
-        Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+        Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                  PCSZ_WINCREATEWINDOW);
       }
       else {
         //fixme to allow user to change presparams 1-10-09 GKY
@@ -437,7 +440,8 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                                             MPFROM2SHORT(LIT_FIRST, 0),
                                             MPVOID);
         if (sSelect == LIT_NONE) {
-          DosBeep(50, 100);
+          if (!fAlertBeepOff)
+            DosBeep(50, 100);
           break;
         }
 #ifdef BUGFIXED
@@ -537,7 +541,8 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                                             MPFROM2SHORT(LIT_FIRST, 0),
                                             MPVOID);
         if (sSelect < 0) {
-          DosBeep(50, 100);
+          if (!fAlertBeepOff)
+            DosBeep(50, 100);
         }
         else {
           if (help) {
@@ -549,13 +554,15 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                               MPFROMP(text));
             p = strchr(text, '>');
             if (!p) {
-              DosBeep(50, 100);
+              if (!fAlertBeepOff)
+                DosBeep(50, 100);
               break;
             }
             p++;
             bstrip(p);
             if (!*p)
-              DosBeep(50, 100);
+              if (!fAlertBeepOff)
+                DosBeep(50, 100);
             else
               ViewHelp(p);
             break;

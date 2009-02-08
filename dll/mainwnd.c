@@ -78,6 +78,7 @@
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
 		Dos/Win programs from being inserted into the execute dialog with message why.
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -359,8 +360,8 @@ VOID MakeMainObjWin(VOID * args)
 				       0L,
 				       0L, HWND_TOP, OBJ_FRAME, NULL, NULL);
       if (!MainObjectHwnd)
-	Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
       else {
 	WinSetWindowPtr(MainObjectHwnd, QWL_USER, args);
 #       ifdef FORTIFY
@@ -990,8 +991,8 @@ VOID MakeBubble(HWND hwnd, BOOL above, PCSZ help)
 			       0,
 			       HWND_DESKTOP, HWND_TOP, MAIN_HELP, NULL, NULL);
   if (!hwndBubble)
-    Win_Error2(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	       IDS_WINCREATEWINDOW);
+    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_WINCREATEWINDOW);
   else {
     HPS hps;
     POINTL aptl[TXTBOX_COUNT], ptl, tptl;
@@ -1598,8 +1599,8 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
 				 2, 54, 24, hwndT, HWND_TOP, tool->id, NULL,
 				 NULL);
       if (!hwndTool)
-	Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
       tool->flags |= T_TEXT;
     }
     if (fToolTitles && !fTextTools) {
@@ -1614,8 +1615,8 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
 				 hwndT,
 				 HWND_TOP, tool->id + 25000, NULL, NULL);
       if (!hwndTool)
-	Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
       else {
 	SetPresParams(hwndTool,
 		      &RGBGREY,
@@ -1639,15 +1640,15 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
 			     14,
 			     13, hwndT, HWND_TOP, IDM_TOOLLEFT, NULL, NULL);
   if (!hwndTool)
-    Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
-	       IDS_WINCREATEWINDOW);
+    Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_WINCREATEWINDOW);
   hwndTool =
     WinCreateWindow(hwndT, WC_BUTTON, "#6011",
 		    BS_NOPOINTERFOCUS | BS_BITMAP | BS_PUSHBUTTON, 1, 4, 14,
 		    13, hwndT, HWND_TOP, IDM_TOOLRIGHT, NULL, NULL);
   if (!hwndTool)
-    Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
-	       IDS_WINCREATEWINDOW);
+    Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_WINCREATEWINDOW);
   if (resize)
     ResizeTools(hwndT);
 }
@@ -2257,8 +2258,8 @@ VOID BuildDriveBarButtons(HWND hwndT)
 				18,
 				hwndT, HWND_TOP, y + IDM_DRIVEA, NULL, NULL);
 	if (!hwndB)
-	  Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 	else {
 	  WinSetWindowPos(hwndB, HWND_BOTTOM, 0, 0, 0, 0, SWP_ZORDER);
 	  sprintf(s, "%c:", (CHAR) x + 'A');
@@ -2273,8 +2274,8 @@ VOID BuildDriveBarButtons(HWND hwndT)
 				  hwndT,
 				  HWND_TOP, y + IDM_DRIVEATEXT, NULL, NULL);
 	  if (!hwndB)
-	    Win_Error2(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		       IDS_WINCREATEWINDOW);
+	    Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		      PCSZ_WINCREATEWINDOW);
 	  else {
 	    //fixme to allow user to change presparams 1-10-09 GKY
 	    SetPresParams(hwndB,
@@ -2528,7 +2529,8 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				swp.cy,
 				hwnd, HWND_TOP, COMMAND_BUTTON, NULL, NULL);
 	if (!hwndB)
-	  Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                    PCSZ_WINCREATEWINDOW);
 	hwndE = WinCreateWindow(hwnd,
 				WC_ENTRYFIELD,
 				NULL,
@@ -2539,7 +2541,8 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				swp.cy,
 				hwnd, HWND_TOP, COMMAND_LINE, NULL, NULL);
 	if (!hwndE)
-	  Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                    PCSZ_WINCREATEWINDOW);
 	if (!hwndE || !hwndB) {
 	  PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	  return 0;
@@ -5621,7 +5624,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 			 WinQuerySysValue(HWND_DESKTOP,
 					  SV_CYMINMAXBUTTON),
 			 hwnd, HWND_TOP, IDM_IDEALSIZE, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     else {
       WinSubclassWindow(WinWindowFromID(hwndFrame, IDM_IDEALSIZE),
@@ -5642,7 +5646,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 			      24,
 			      22, hwnd, HWND_TOP, IDM_OPENWALK, NULL, NULL);
     if (!hwndTmp)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
 
     hwndTmp = WinCreateWindow(hwndFrame,
 			      WC_BUTTON,
@@ -5654,7 +5659,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 			      24,
 			      22, hwnd, HWND_TOP, IDM_USERLIST, NULL, NULL);
     if (!hwndTmp)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
 
     hwndUserlist = WinCreateWindow(hwndFrame,
 				   WC_COMBOBOX,
@@ -5673,7 +5679,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 				      2)) - 64L), 60L, hwndFrame, HWND_TOP,
 				   MAIN_USERLIST, NULL, NULL);
     if (!hwndUserlist)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     hwndCmdlist = WinCreateWindow(hwndFrame,
 				  WC_COMBOBOX,
 				  (PSZ) NULL,
@@ -5691,7 +5698,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 				   64L), 60L, hwndFrame, HWND_TOP,
 				  MAIN_CMDLIST, NULL, NULL);
     if (!hwndCmdlist)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     WinSetWindowText(hwndCmdlist, GetPString(IDS_COMMANDSTEXT));
     hwndStatelist = WinCreateWindow(hwndFrame,
 				    WC_COMBOBOX,
@@ -5710,7 +5718,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 				       2)) - 64L), 60L, hwndFrame, HWND_TOP,
 				    MAIN_SETUPLIST, NULL, NULL);
     if (!hwndStatelist)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
 
     hwndDrivelist = WinCreateWindow(hwndFrame,
 				    WC_COMBOBOX,
@@ -5728,10 +5737,11 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 				    hwndFrame,
 				    HWND_TOP, MAIN_DRIVELIST, NULL, NULL);
     if (!hwndDrivelist)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     //fixme to allow user to change presparams 1-10-09 GKY
     SetPresParams(hwndDrivelist,
-		  NULL, NULL, NULL, "10.System Monospaced");
+		  NULL, NULL, NULL, FNT_10SYSTEMMONOTEXT);
     hwndButtonlist = WinCreateWindow(hwndFrame,
 				     WC_COMBOBOX,
 				     (PSZ) NULL,
@@ -5747,7 +5757,8 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 				     164L, 60L, hwndFrame, HWND_TOP,
 				     MAIN_BUTTONLIST, NULL, NULL);
     if (!hwndButtonlist)
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     WinSendMsg(WinWindowFromID(hwndUserlist, CBID_EDIT),
 	       EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
     WinSendMsg(WinWindowFromID(hwndStatelist, CBID_EDIT),
@@ -6441,8 +6452,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 GetPString(IDS_DOESNTEXISTTEXT), path);
 		}
 		else {
-		  Win_Error2(hwnd, hwnd, __FILE__, __LINE__,
-			     IDS_PRFQUERYPROFILEDATA);
+		  Win_Error(hwnd, hwnd, __FILE__, __LINE__,
+			    PCSZ_INIQUERYPRFTEXT);
 		}
 	      }
 	      else {

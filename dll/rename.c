@@ -13,6 +13,8 @@
   27 Sep 07 SHL Correct ULONGLONG size formatting
   30 Dec 07 GKY Use TestFDates for comparing dates
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
 
 ***********************************************************************/
 
@@ -85,7 +87,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (mv) {
 
 	FILESTATUS3L fs1, fs2;
-	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH], szCmmaFmtFileSize[81];
+	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH], szCmmaFmtFileSize[81], szDate[11];
 	INT sourceexists = 0, targetexists = 0,
 	    sourcenewer = 0, sourcesmaller = 0;
 
@@ -102,17 +104,15 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!DosQueryPathInfo(mv->source, FIL_STANDARDL, &fs1, sizeof(fs1))) {
           CommaFmtULL(szCmmaFmtFileSize,
                       sizeof(szCmmaFmtFileSize), fs1.cbFile, ' ');
-	  sprintf(s,
-		  " %s%s %ss %04u/%02u/%02u %02u:%02u:%02u",
+          FDateFormat(szDate, fs1.fdateLastWrite);
+	  sprintf(s, " %s%s %ss %s %02u%s%02u%s%02u",
 		  fs1.attrFile & FILE_DIRECTORY ?
 		    GetPString(IDS_DIRBRKTTEXT) : NullStr,
 		  szCmmaFmtFileSize,
 		  GetPString(IDS_BYTETEXT),
-		  fs1.fdateLastWrite.year + 1980,
-		  fs1.fdateLastWrite.month,
-		  fs1.fdateLastWrite.day,
-		  fs1.ftimeLastWrite.hours,
-		  fs1.ftimeLastWrite.minutes, fs1.ftimeLastWrite.twosecs * 2);
+		  szDate,
+		  fs1.ftimeLastWrite.hours, TimeSeparator,
+		  fs1.ftimeLastWrite.minutes, TimeSeparator, fs1.ftimeLastWrite.twosecs * 2);
 	  WinSetDlgItemText(hwnd, REN_SOURCEINFO, s);
 	  sourceexists = 1;
 	  if (fs1.attrFile & FILE_DIRECTORY)
@@ -130,17 +130,15 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!DosQueryPathInfo(chkname, FIL_STANDARDL, &fs2, sizeof(fs2))) {
           CommaFmtULL(szCmmaFmtFileSize,
                       sizeof(szCmmaFmtFileSize), fs2.cbFile, ' ');
-	  sprintf(s,
-		  " %s%s %ss %04u/%02u/%02u %02u:%02u:%02u",
+          FDateFormat(szDate, fs2.fdateLastWrite);
+	  sprintf(s, " %s%s %ss %s %02u%s%02u%s%02u",
 		  fs2.attrFile & FILE_DIRECTORY ?
 		    GetPString(IDS_DIRBRKTTEXT) : NullStr,
 		  szCmmaFmtFileSize,
 		  GetPString(IDS_BYTETEXT),
-		  fs2.fdateLastWrite.year + 1980,
-		  fs2.fdateLastWrite.month,
-		  fs2.fdateLastWrite.day,
-		  fs2.ftimeLastWrite.hours,
-		  fs2.ftimeLastWrite.minutes, fs2.ftimeLastWrite.twosecs * 2);
+		  szDate,
+		  fs2.ftimeLastWrite.hours, TimeSeparator,
+		  fs2.ftimeLastWrite.minutes, TimeSeparator, fs2.ftimeLastWrite.twosecs * 2);
 	  WinSetDlgItemText(hwnd, REN_TARGETINFO, s);
 	  targetexists = 1;
 	  if (fs2.attrFile & (FILE_DIRECTORY))
@@ -326,7 +324,8 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *p = 0;
 	    if (SetDir(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				      QW_OWNER), hwnd, path, 0)) {
-	      DosBeep(250, 100);
+              if (!fAlertBeepOff)
+	        DosBeep(250, 100);
 	      WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, REN_TARGET));
 	      break;
 	    }
@@ -334,7 +333,8 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDismissDlg(hwnd, 1);
 	}
 	else {
-	  DosBeep(250, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, REN_TARGET));
 	}
       }

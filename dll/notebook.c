@@ -44,6 +44,8 @@
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Move repeated strings to PCSZs.
 
 ***********************************************************************/
 
@@ -93,6 +95,7 @@ static VOID SaveLastPageIndex(HWND hwnd);
 #pragma data_seg(GLOBAL1)
 HWND Collector;
 DETAILS_SETTINGS dsDirCnrDefault;
+BOOL fAlertBeepOff;
 BOOL fAutoAddAllDirs;
 BOOL fAutoAddDirs;
 BOOL fBlueLED;
@@ -110,6 +113,7 @@ BOOL fDrivebarHelp;
 BOOL fEjectCDScan;
 BOOL fEjectFlpyScan;
 BOOL fEjectRemovableScan;
+BOOL fErrorBeepOff;
 BOOL fExternalArcboxes;
 BOOL fExternalCollector;
 BOOL fExternalINIs;
@@ -267,6 +271,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!WinDlgBox(HWND_DESKTOP, hwnd,
 			 SBoxDlgProc, FM3ModHandle, ASEL_FRAME,
 			 (PVOID) & pat) || !pat || !pat->id || !*pat->id) {
+            if (!fAlertBeepOff)
 	    DosBeep(250, 100);          // Complain
 	    WinCheckButton(hwnd, CFGA_DEFARC, FALSE);
 	  }
@@ -309,7 +314,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	USHORT id;
 	HWND hwndFocus;
 
-	strcpy(filename, "*.EXE");
+	strcpy(filename, PCSZ_STARDOTEXE);
 	hwndFocus = WinQueryFocus(HWND_DESKTOP);
 	if (hwndFocus) {
 	  id = WinQueryWindowUShort(hwndFocus, QWS_ID);
@@ -700,7 +705,7 @@ MRESULT EXPENTRY CfgVDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	USHORT id;
 	HWND hwndFocus;
 
-	strcpy(filename, "*.EXE");
+	strcpy(filename, PCSZ_STARDOTEXE);
 	hwndFocus = WinQueryFocus(HWND_DESKTOP);
 	if (hwndFocus) {
 	  id = WinQueryWindowUShort(hwndFocus, QWS_ID);
@@ -908,7 +913,7 @@ MRESULT EXPENTRY CfgHDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	USHORT id;
 	HWND hwndFocus;
 
-	strcpy(filename, "*.EXE");
+	strcpy(filename, PCSZ_STARDOTEXE);
 	hwndFocus = WinQueryFocus(HWND_DESKTOP);
 	if (hwndFocus) {
 	  id = WinQueryWindowUShort(hwndFocus, QWS_ID);
@@ -1510,6 +1515,8 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGG_IDLECOPY, fRealIdle);
     WinCheckButton(hwnd, CFGG_DNDDLG, fDragndropDlg);
     WinCheckButton(hwnd, CFGG_DEFAULTDELETEPERM, fDefaultDeletePerm);
+    WinCheckButton(hwnd, CFGG_ERRORBEEPOFF, fErrorBeepOff);
+    WinCheckButton(hwnd, CFGG_ALERTBEEPOFF, fAlertBeepOff);
     {
       long th = fNoFinger ? 2 : (fNoDead ? 1 : 0);
       WinCheckButton(hwnd, CFGG_NODEAD, th);
@@ -1628,7 +1635,13 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			&fTrashCan, sizeof(BOOL));
     fConfirmTarget = WinQueryButtonCheckstate(hwnd, CFGG_CONFIRMTARGET);
     PrfWriteProfileData(fmprof, appname, "ConfirmTarget",
-			&fConfirmTarget, sizeof(BOOL));
+                        &fConfirmTarget, sizeof(BOOL));
+    fAlertBeepOff = WinQueryButtonCheckstate(hwnd, CFGG_ALERTBEEPOFF);
+    PrfWriteProfileData(fmprof, appname, "AlertBeepOff",
+                        &fAlertBeepOff, sizeof(BOOL));
+    fErrorBeepOff = WinQueryButtonCheckstate(hwnd, CFGG_ERRORBEEPOFF);
+    PrfWriteProfileData(fmprof, appname, "ErrorBeepOff",
+			&fErrorBeepOff, sizeof(BOOL));
     {
       WinSendDlgItemMsg(hwnd, CFGG_CMDLNLNGTH, SPBM_QUERYVALUE,
 			MPFROMP(&MaxComLineStrg), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
@@ -1727,7 +1740,7 @@ MRESULT EXPENTRY CfgCDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	USHORT id;
 	HWND hwndFocus;
 
-	strcpy(filename, "*.EXE");
+	strcpy(filename, PCSZ_STARDOTEXE);
 	hwndFocus = WinQueryFocus(HWND_DESKTOP);
 	if (hwndFocus) {
 	  id = WinQueryWindowUShort(hwndFocus, QWS_ID);

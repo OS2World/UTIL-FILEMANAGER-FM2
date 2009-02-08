@@ -15,6 +15,7 @@
   01 Sep 06 SHL Back to fgets for now - avoid excess error messages
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -342,14 +343,16 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         *szBuffer = 0;
         WinQueryDlgItemText(hwnd, MRG_TARGETNAME, CCHMAXPATH, szBuffer);
         if (!*szBuffer) {
-          DosBeep(50, 100);
+          if (!fAlertBeepOff)
+            DosBeep(50, 100);
           WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, MRG_TARGETNAME));
           break;
         }
         if (DosQueryPathInfo(szBuffer,
                              FIL_QUERYFULLNAME,
                              wk->li->targetpath, CCHMAXPATH)) {
-          DosBeep(50, 100);
+          if (!fAlertBeepOff)
+            DosBeep(50, 100);
           WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, MRG_TARGETNAME));
           break;
         }

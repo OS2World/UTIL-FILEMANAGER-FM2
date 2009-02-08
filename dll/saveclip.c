@@ -24,6 +24,9 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   20 Jul 08 GKY Modify ListtoClipHab to provide either fullpath name or filename for save to clipboard
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Move repeated strings to PCSZs.
 
 ***********************************************************************/
 
@@ -375,7 +378,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*savename = 0;
 	WinQueryDlgItemText(hwnd, SAV_FILENAME, CCHMAXPATH, savename);
 	if (!*savename)
-	  strcpy(savename, "*.LST");
+	  strcpy(savename, PCSZ_STARDOTLST);
 	if (export_filename(hwnd, savename, 1) && *savename) {
 	  if (!strchr(savename, '.'))
 	    strcat(savename, ".LST");
@@ -400,7 +403,8 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, SAV_PATTERN, 80, pattern);
 	if (!*pattern) {
 	  WinEnableWindow(hwnd, TRUE);
-	  DosBeep(150, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(150, 100);
 	  break;
 	}
 	{
@@ -436,7 +440,8 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	literal(pattern);
 	if (!*pattern) {
 	  WinEnableWindow(hwnd, TRUE);
-	  DosBeep(250, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);
 	  break;
 	}
 	PrfWriteProfileString(fmprof, appname, "SaveToListPattern", pattern);
@@ -445,7 +450,8 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	bstrip(savename);
 	if (!*savename) {
 	  WinEnableWindow(hwnd, TRUE);
-	  DosBeep(100, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(100, 100);
 	  break;
 	}
 	if (stricmp(savename, "PRN") &&
@@ -505,17 +511,20 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      fprintf(fp, "%u", pci->easize);
 		      break;
 		    case 'd':
-		    case 'D':
-		      fprintf(fp,
-			      "%04u/%02u/%02u",
-			      pci->date.year, pci->date.month, pci->date.day);
-		      break;
+                    case 'D':
+                      {
+                        CHAR szDate[11];
+
+                        DateFormat(szDate, pci->date);
+		        fprintf(fp,"%s", szDate);
+                        break;
+                      }
 		    case 't':
 		    case 'T':
 		      fprintf(fp,
-			      "%02u:%02u:%02u",
-			      pci->time.hours,
-			      pci->time.minutes, pci->time.seconds);
+			      "%02u%s%02u%s%02u",
+			      pci->time.hours, TimeSeparator,
+			      pci->time.minutes, TimeSeparator, pci->time.seconds);
 		      break;
 		    case 'l':
 		      fputs(pci->pszLongName, fp);
@@ -730,7 +739,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	*savename = 0;
 	WinQueryDlgItemText(hwnd, SAV_FILENAME, CCHMAXPATH, savename);
 	if (!*savename)
-	  strcpy(savename, "*.LST");
+	  strcpy(savename, PCSZ_STARDOTLST);
 	if (export_filename(hwnd, savename, 1) && *savename) {
 	  if (!strchr(savename, '.'))
 	    strcat(savename, ".LST");
@@ -757,7 +766,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	WinQueryDlgItemText(hwnd, SAV_PATTERN, 80, pattern);
 	if (!*pattern) {
 	  WinEnableWindow(hwnd, TRUE);
-	  DosBeep(150, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(150, 100);
 	  break;
 	}
 	{
@@ -793,7 +803,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	literal(pattern);
 	if (!*pattern) {
 	  WinEnableWindow(hwnd, TRUE);
-	  DosBeep(250, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);
 	  break;
 	}
 	PrfWriteProfileString(fmprof, appname, "SaveToListPattern", pattern);
@@ -802,7 +813,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	bstrip(savename);
 	if (!*savename) {
 	  WinEnableWindow(hwnd, TRUE);
-	  DosBeep(100, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(100, 100);
 	  break;
 	}
 	if (stricmp(savename, "PRN") &&
@@ -944,19 +956,22 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		      fprintf(fp, "%u", CBLIST_TO_EASIZE(ffb4.cbList));
 		      break;
 		    case 'd':
-		    case 'D':
-		      fprintf(fp,
-			      "%04u/%02u/%02u",
-			      ffb4.fdateLastWrite.year + 1980,
-			      ffb4.fdateLastWrite.month,
-			      ffb4.fdateLastWrite.day);
-		      break;
+                    case 'D':
+                      {
+                        CHAR szDate[11];
+
+                        FDateFormat(szDate, ffb4.fdateLastWrite);
+		        fprintf(fp,"%s", szDate);
+                        break;
+                      }
 		    case 't':
 		    case 'T':
 		      fprintf(fp,
-			      "%02u:%02u:%02u",
-			      ffb4.ftimeLastWrite.hours,
-			      ffb4.ftimeLastWrite.minutes,
+			      "%02u%s%02u%s%02u",
+                              ffb4.ftimeLastWrite.hours,
+                              TimeSeparator,
+                              ffb4.ftimeLastWrite.minutes,
+                              TimeSeparator,
 			      ffb4.ftimeLastWrite.twosecs * 2);
 		      break;
 		    case 'l':

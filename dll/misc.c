@@ -52,6 +52,7 @@
   23 Aug 08 GKY Add CheckDriveSpaceAvail To pre check drive space to prevent failures
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -924,8 +925,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    WinSetWindowText(hwndMLE, szData);
 	    if (strcmp(szData, testname)) {
-	      if (stricmp(szData, testname) && IsFile(testname) != -1) {
-		DosBeep(50, 100);       /* exists; disallow */
+              if (stricmp(szData, testname) && IsFile(testname) != -1) {
+                if (!fAlertBeepOff)
+		  DosBeep(50, 100);       /* exists; disallow */
 		return (MRESULT) FALSE;
 	      }
 	      if (fVerify && (driveflags[toupper(*szData) - 'A'] & DRIVE_WRITEVERIFYOFF ||

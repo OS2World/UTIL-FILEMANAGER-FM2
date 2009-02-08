@@ -60,6 +60,7 @@
   10 Dec 08 SHL Integrate exception handler support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis.
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
 
 ***********************************************************************/
 
@@ -141,6 +142,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
+  CHAR  szCmmaFmtFileSize[81], szDate[11];
 
   // 13 Aug 07 SHL fimxe to use FileToGet
   pffb = xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);
@@ -160,21 +162,24 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 			 pffb, sizeof(FILEFINDBUF4L), &ulFindCnt, FIL_QUERYEASIZEL)) {
 	do {
 	  strcpy(enddir, pffb->achName);
-	  if (!(pffb->attrFile & FILE_DIRECTORY))
-	    // 27 Sep 07 SHL fixme to use CommaFmtULL
+          if (!(pffb->attrFile & FILE_DIRECTORY)) {
+            CommaFmtULL(szCmmaFmtFileSize,
+                        sizeof(szCmmaFmtFileSize), pffb->cbFile, ' ');
+            FDateFormat(szDate, pffb->fdateLastWrite);
 	    fprintf(fp,
-		    "\"%s\",%u,%llu,%04u/%02u/%02u,%02u:%02u:%02u,%lu,%lu,N\n",
+		    "\"%s\",%u,%s,%s,%02u%s%02u%s%02u,%lu,%lu,N\n",
 		    mask,
 		    enddir - mask,
-		    pffb->cbFile,
-		    (pffb->fdateLastWrite.year + 1980),
-		    pffb->fdateLastWrite.month,
-		    pffb->fdateLastWrite.day,
-		    pffb->ftimeLastWrite.hours,
-		    pffb->ftimeLastWrite.minutes,
+		    szCmmaFmtFileSize,
+		    szDate,
+                    pffb->ftimeLastWrite.hours,
+                    TimeSeparator,
+                    pffb->ftimeLastWrite.minutes,
+                    TimeSeparator,
 		    pffb->ftimeLastWrite.twosecs,
 		    pffb->attrFile,
-		    pffb->cbList > 4 ? pffb->cbList / 2 : 0);
+                    pffb->cbList > 4 ? pffb->cbList / 2 : 0);
+          }
 	  // Skip . and ..
 	  else if (recurse &&
 		   (pffb->achName[0] != '.' ||

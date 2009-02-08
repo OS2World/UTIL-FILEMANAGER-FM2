@@ -28,6 +28,8 @@
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
                 to prevent duplicate directory names in tree following a copy before initial scan.
   11 Jan 08 GKY Add Write verify off and recures scan to drive info display when appropriate.
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
 
 ***********************************************************************/
 
@@ -656,7 +658,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (pfs && *pfs->szFileName) {
       CHAR s[97];
       CHAR szCmmaFmtFileSize[81], szCmmaFmtEASize[81];
-      CHAR szCmmaFmtFileEASize[81], szCmmaFmtFileEASizeK[81];
+      CHAR szCmmaFmtFileEASize[81], szCmmaFmtFileEASizeK[81], szDate[11];
       FILEFINDBUF4L fs;
       HDIR hdir = HDIR_CREATE;
       ULONG apptype = 1;
@@ -674,7 +676,8 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// Not found
 	SHORT sSelect, numitems;
 
-	DosBeep(250, 100);		// Wake up user
+        if (!fAlertBeepOff)
+	  DosBeep(250, 100);		// Wake up user
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    FLE_NAME,
 					    LM_QUERYSELECTION,
@@ -695,35 +698,29 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       else {
-	DosFindClose(hdir);
-	sprintf(s,
-		"%04u/%02u/%02u  %02u:%02u:%02u",
-		1980 + fs.fdateLastWrite.year,
-		fs.fdateLastWrite.month,
-		fs.fdateLastWrite.day,
-		fs.ftimeLastWrite.hours,
-		fs.ftimeLastWrite.minutes, fs.ftimeLastWrite.twosecs * 2);
+        DosFindClose(hdir);
+        FDateFormat(szDate, fs.fdateLastWrite);
+	sprintf(s, "%s  %02u%s%02u%s%02u",
+		szDate,
+		fs.ftimeLastWrite.hours, TimeSeparator,
+		fs.ftimeLastWrite.minutes, TimeSeparator, fs.ftimeLastWrite.twosecs * 2);
 	WinSetDlgItemText(hwnd, FLE_LASTWRITE, s);
 	if (fs.fdateCreation.year &&
-	    fs.fdateCreation.month && fs.fdateCreation.day) {
-	  sprintf(s,
-		  "%04u/%02u/%02u  %02u:%02u:%02u",
-		  1980 + fs.fdateCreation.year,
-		  fs.fdateCreation.month,
-		  fs.fdateCreation.day,
-		  fs.ftimeCreation.hours,
-		  fs.ftimeCreation.minutes, fs.ftimeCreation.twosecs * 2);
+            fs.fdateCreation.month && fs.fdateCreation.day) {
+          FDateFormat(szDate, fs.fdateCreation);
+	  sprintf(s, "%s  %02u%s%02u%s%02u",
+		  szDate,
+		  fs.ftimeCreation.hours, TimeSeparator,
+		  fs.ftimeCreation.minutes, TimeSeparator, fs.ftimeCreation.twosecs * 2);
 	  WinSetDlgItemText(hwnd, FLE_CREATE, s);
 	}
 	if (fs.fdateLastAccess.year &&
-	    fs.fdateLastAccess.month && fs.fdateLastAccess.day) {
-	  sprintf(s,
-		  "%04u/%02u/%02u  %02u:%02u:%02u",
-		  1980 + fs.fdateLastAccess.year,
-		  fs.fdateLastAccess.month,
-		  fs.fdateLastAccess.day,
-		  fs.ftimeLastAccess.hours,
-		  fs.ftimeLastAccess.minutes, fs.ftimeLastAccess.twosecs * 2);
+            fs.fdateLastAccess.month && fs.fdateLastAccess.day) {
+          FDateFormat(szDate, fs.fdateLastAccess);
+	  sprintf(s, "%s  %02u%s%02u%s%02u",
+		  szDate,
+		  fs.ftimeLastAccess.hours, TimeSeparator,
+		  fs.ftimeLastAccess.minutes, TimeSeparator, fs.ftimeLastAccess.twosecs * 2);
 	  WinSetDlgItemText(hwnd, FLE_LASTACCESS, s);
 	}
         CommaFmtULL(szCmmaFmtFileSize,

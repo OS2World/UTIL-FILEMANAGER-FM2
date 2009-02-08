@@ -27,6 +27,7 @@
   11 Jan 08 GKY Move strings that will need translating to stringtable from sting file cut to
 		255 where necessary
   04 Feb 09 SHL Switch to STRINGTABLE
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -86,6 +87,7 @@
 #define IDS_EDITTEXT                                          48
 #define IDS_10SYSPROTEXT                                      49
 #define IDS_NOTPROTECTONLYEXE                                 50
+#define IDS_INIFAILURETEXT                                    51
 #define IDS_8HELVTEXT                                         52
 #define IDS_6HELVTEXT                                         53
 #define IDS_SHUTDOWNSTATE                                     55
@@ -592,7 +594,8 @@
 #define IDS_REXXCOMMENT                                       562
 #define IDS_INSTANTHELPTITLETEXT                              563
 #define IDS_INSTANTHELPTEXT                                   564
-//Moved codepages to a character array in codepage.c 11 Jan 09 GKY
+//Moved codepages to a character array in codepage.c 11 Jan 09 GKY 565-588
+#define IDS_DEBUG_STRING                                      565
 #define IDS_DOSSTARTSESSIONFAILEDTEXT                         589
 #define IDS_DOSEXECPGMFAILEDTEXT                              590
 #define IDS_BLURB1TEXT                                        591 // Other font test strings removed 11 Jan 09 GKY move to StrinTable
@@ -621,7 +624,6 @@
 #define IDS_INICANTOPENSYSTEXT                                626
 #define IDS_INIPRFRESETFAILEDTEXT                             627
 #define IDS_INISWAPOS2INISTITLETEXT                           628
-#define IDS_INIQUERYPRFFAILEDTEXT                             629
 #define IDS_SUCCESSTEXT                                       630
 #define IDS_INIEDITINITITLETEXT                               631
 #define IDS_INIBINARYDATASKIPTEXT                             632
@@ -951,12 +953,8 @@
 #define IDS_TOOLFILETEXT                                      959
 #define IDS_TREESTATUSSTARTTEXT                               960
 #define IDS_GREPFILETEXT                                      961
-#define IDS_WINCREATEWINDOW                                   962
 #define IDS_CMINSERTERRTEXT                                   963
 #define IDS_CMALLOCRECERRTEXT                                 964
-#define IDS_PRFQUERYPROFILESIZE                               965
-#define IDS_PRFQUERYPROFILEDATA                               966
-#define IDS_FILLDIRQCURERRTEXT                                967
 #define IDS_NOWINDOWTEXT                                      968
 #define IDS_2SYSTEMVIOTEXT                                    969
 #define IDS_MAKEARCTITLETEXT                                  970

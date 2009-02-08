@@ -29,6 +29,7 @@
                 to prevent duplicate directory names in tree following a copy before initial scan.
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -649,6 +650,8 @@
 #define CFGG_TARGETDIR									25215
 #define CFGG_CMDLNLNGTH                                                                 25216
 #define CFGG_TRASHCAN                                                                   25217
+#define CFGG_ALERTBEEPOFF                                                               25218
+#define CFGG_ERRORBEEPOFF                                                               25219
 
 #define CFGB_FRAME									25250
 #define CFGB_TOOLBARHELP								25251

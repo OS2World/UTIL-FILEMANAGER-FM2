@@ -44,6 +44,7 @@
   01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
   11 Jan 08 GKY Move strings that will need translating to stringtable from sting file cut to
                 255 where necessary
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -2405,6 +2406,7 @@ STRINGTABLE
     IDS_DELETETEXT                        "Delete"
     IDS_EDITTEXT                          "Edit"
     IDS_NOTPROTECTONLYEXE                 "The file %s is a Dos or Windows executible, however Dos and WinOS2 are not currently activated on this system."
+    IDS_INIFAILURETEXT                    "Check INI header failed will attempt to replace with backup if backup fails or not found will open with new ini"
     IDS_SHUTDOWNSTATE                     "FM2Shutdown"
     IDS_HELPCMDTEXT                       "/HELP"
     IDS_FM2TEMPTEXT                       "FM/2_Temp"
@@ -2449,7 +2451,7 @@ STRINGTABLE
     IDS_KEEPCMDTEXT                       "/KEEP"
     IDS_NOKEEPCMDTEXT                     "/NOKEEP"
     IDS_FILTERCMDTEXT                     "/FILTER"
-    IDS_FM2CMDHELPHDRTEXT                 "                                            FM/2 mini-command line help"
+    IDS_FM2CMDHELPHDRTEXT                 "FM/2 mini-command line help"
     IDS_MISSINGTEXT                       "Some text is missing"
     IDS_TOOLHELPTEXTBLANK                 "You need to provide both button text & help."
     IDS_COLSELECTEDHELP                   "This window shows you how many objects\rand how many bytes are selected.\rDrop on me to collect objects.\rClick me for the select menu."
@@ -2659,10 +2661,11 @@ STRINGTABLE
     IDS_ENVPATHERRORTEXT                  "Environment variable %s is not set.  This variable should be set in CONFIG.SYS to point to all directories containing %s files."
     IDS_NOFILESFOUNDTEXT                  "No files found."
     IDS_VIEWHELPFILESTEXT                 "FM/2: View HELP files"
+    IDS_DEBUG_STRING                      "Debug -- please report to author"
     IDS_GENERR1TEXT                       "\nModule: %s Line number: %u"
-    IDS_GENERR2TEXT                       "                                  Error Message Information"
+    IDS_GENERR2TEXT                       "Error Message Information"
     IDS_DOSERR1TEXT                       "\nModule: %s Line number: %u\nOS/2 error: %d\nClass: %s\nAction: %s\nLocation: %s"
-    IDS_DOSERR2TEXT                       "                                  OS/2 Error Message Information"
+    IDS_DOSERR2TEXT                       "OS/2 Error Message Information"
     IDS_ERRCLASS1TEXT                     "Out of resource"
     IDS_ERRCLASS2TEXT                     "Temporary situation"
     IDS_ERRCLASS3TEXT                     "Authorization failed"
@@ -2914,7 +2917,6 @@ STRINGTABLE
     IDS_INICANTOPENSYSTEXT                "Requested system profile ""%s"" can't be opened."
     IDS_INIPRFRESETFAILEDTEXT             "PrfReset failed."
     IDS_INISWAPOS2INISTITLETEXT           "FM/2: Swap OS/2 INIs "
-    IDS_INIQUERYPRFFAILEDTEXT             "PrfQueryProfile failed."
     IDS_SUCCESSTEXT                       "Success!"
     IDS_INIEDITINITITLETEXT               "FM/2: Edit INI entry"
     IDS_INIAPPKEYEXISTSTEXT               "App/keyname pair already exists in the INI file."
@@ -3135,7 +3137,7 @@ STRINGTABLE
     IDS_FM2TROUBLETEXT                    "FM/2: Trouble..."
     IDS_CANTLOADHELPTEXT                  "Can't load help.%s"
     IDS_NOHELPACCEPTTEXT                  "  I'll continue, but you should find FM3.HLP and place it into FM/2's working directory."
-    IDS_MISMATCHTITLETEXT                 "                        EXE/DLL Mismatch warning!"
+    IDS_MISMATCHTITLETEXT                 "EXE/DLL Mismatch warning!"
     IDS_MISMATCHTEXT                      "The EXE file you're running is from a newer version than the DLL. Please reinstall _all_ the files from the warpin archive so that FM/2 can run properly (overwrite existing files, and be sure that no parts of FM/2 are running while you reinstall)."
     IDS_CHECKSYSTEMCLOCKTEXT              "Check your system clock."
     IDS_NOTICETITLETEXT                   "Requests Pending"
@@ -3228,12 +3230,8 @@ STRINGTABLE
     IDS_TOOLFILETEXT                      "; Fixed: Ticket 267\n;\n; This file contains definitions for an FM/2 toolbar.\n;\n; To edit this file manually, see ""Manual edit of toolbar files""\n; in the FM/2 help file.\n;\n;\n"
     IDS_TREESTATUSSTARTTEXT               " [%c:  \"%s\"  SN: %08lx%s]"
     IDS_GREPFILETEXT                      "; FM/2 seek and scan mask file, one mask set per line\n"
-    IDS_WINCREATEWINDOW                   "WinCreateWindow"
     IDS_CMINSERTERRTEXT                   "Record insert failed"
     IDS_CMALLOCRECERRTEXT                 "Record allocation failed"
-    IDS_PRFQUERYPROFILESIZE               "PrfQueryProfileSize"
-    IDS_PRFQUERYPROFILEDATA               "PrfQueryProfileData"
-    IDS_FILLDIRQCURERRTEXT                "DosQCurDisk failed"
     IDS_NOWINDOWTEXT                      "No window"
     IDS_MAKEARCTITLETEXT                  "FM/2: Makearc\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32"
     IDS_MAKEARCUSAGETEXT                  "Usage:\r\rMAKEARC <file or directory to archive>\r"
@@ -3249,7 +3247,7 @@ STRINGTABLE
     IDS_CLEARTARGETTITLETEXT              "Clear Target directory?"
     IDS_CLEARTARGETTEXT                   "Do you want to clear the Target directory (in other words, have no preset Target directory)?"
     IDS_TARGETDIRTITLETEXT                "Target:\32"
-    IDS_SUGGESTTITLETEXT                  "                        FM/2 startup suggestion:\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32"
+    IDS_SUGGESTTITLETEXT                  "FM/2 startup suggestion:\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32"
     IDS_SUGGEST2TEXT                      " -- this includes one or more drives you had excluded, by the way"
     IDS_NOTEBUBBLE1TEXT                   "~Bubbles"
     IDS_NOTEBUBBLE2TEXT                   "Bubble help settings"

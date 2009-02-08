@@ -41,6 +41,9 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   11 Jan 08 GKY Change flag on GetMLEFont to 3 from 11 to give a larger selection of mono spaced fonts
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -1027,7 +1030,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      &"s"[hs == 1],
 		      (hs > 1) ?
 		      GetPString(IDS_ARETEXT) : GetPString(IDS_ISTEXT));
-	    if (ro || hs || sysdir)
+	    if ((ro || hs || sysdir) && !fAlertBeepOff)
 	      DosBeep(300, 100);
 	    strcat(prompt, GetPString(IDS_DELPROMPT6TEXT));
 	    if (!WinDlgBox(HWND_DESKTOP,
@@ -1149,7 +1152,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  path : NullStr,
 		x != 1 ? GetPString(IDS_ARETEXT) : GetPString(IDS_ISTEXT));
 	WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS), message);
-	if (toupper(*path) < 'C')
+	if (toupper(*path) < 'C' && !fAlertBeepOff)
 	  DosBeep(1000, 25);
 	DosSleep(16);			// 05 Aug 07 GKY 33
 	break;
@@ -1209,8 +1212,8 @@ static VOID MakeSeeObjWinThread(VOID * args)
 				  0,
 				  0, 0, HWND_TOP, SEEALL_OBJ, NULL, NULL);
 	if (!hwndObj) {
-	  Win_Error2(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		     IDS_WINCREATEWINDOW);
+	  Win_Error(HWND_OBJECT, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    PCSZ_WINCREATEWINDOW);
 	  if (!PostMsg(ad->hwndClient, WM_CLOSE, MPVOID, MPVOID))
 	    WinSendMsg(ad->hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	}
@@ -1651,18 +1654,6 @@ static int comparedates(const void *v1, const void *v2)
   ret = TestFDates(NULL, NULL,
 		  &d2->date, &d2->time,
 		  &d1->date, &d1->time);
-    /*(d1->date.year > d2->date.year) ? 1 :
-    (d1->date.year < d2->date.year) ? -1 :
-    (d1->date.month > d2->date.month) ? 1 :
-    (d1->date.month < d2->date.month) ? -1 :
-    (d1->date.day > d2->date.day) ? 1 :
-    (d1->date.day < d2->date.day) ? -1 :
-    (d1->time.hours > d2->time.hours) ? 1 :
-    (d1->time.hours < d2->time.hours) ? -1 :
-    (d1->time.minutes > d2->time.minutes) ? 1 :
-    (d1->time.minutes < d2->time.minutes) ? -1 :
-    (d1->time.twosecs > d2->time.twosecs) ? 1 :
-    (d1->time.twosecs < d2->time.twosecs) ? -1 : 0;*/
 
   if (!ret)
     ret = comparenames(v1, v2);
@@ -2335,7 +2326,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 {
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   POINTL ptl;
-  CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81];
+  CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81], szDate[11];
   ULONG len, y;
 
   y = (ad->invertsort) ? (ad->afindexcnt - 1) - whichfile : whichfile;
@@ -2370,9 +2361,10 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 		    standardcolors[Colors[COLORS_NORMALBACK]]);
   }
   CommaFmtULL(szCmmaFmtFileSize,
-	      sizeof(szCmmaFmtFileSize), ad->afindex[y]->cbFile, ' ');
+              sizeof(szCmmaFmtFileSize), ad->afindex[y]->cbFile, ' ');
+  FDateFormat(szDate, ad->afindex[y]->date);
   len = sprintf(szBuff,
-		"%c%-*.*s  %-12s  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
+		"%c%-*.*s  %-12s  %c%c%c%c%c  %s %02u%s%02u%s%02u ",
 		whichfile == ad->cursored - 1 ? '>' : ' ',
 		ad->fullnames ? ad->longestw : ad->longest,
 		ad->fullnames ? ad->longestw : ad->longest,
@@ -2384,11 +2376,9 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 		"-H"[((ad->afindex[y]->attrFile & FILE_HIDDEN) != 0)],
 		"-S"[((ad->afindex[y]->attrFile & FILE_SYSTEM) != 0)],
 		"-D"[((ad->afindex[y]->attrFile & FILE_DIRECTORY) != 0)],
-		ad->afindex[y]->date.year + 1980,
-		ad->afindex[y]->date.month,
-		ad->afindex[y]->date.day,
-		ad->afindex[y]->time.hours,
-		ad->afindex[y]->time.minutes,
+                szDate,
+		ad->afindex[y]->time.hours, TimeSeparator,
+		ad->afindex[y]->time.minutes, TimeSeparator,
 		ad->afindex[y]->time.twosecs * 2);
   GpiCharStringAt(hps, &ptl, len, szBuff);
   GpiQueryCurrentPosition(hps, &ptl);
@@ -2652,8 +2642,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    HWND_TOP,
 					    SEEALL_STATUS, NULL, NULL);
 	  if (!pAD->hwndStatus)
-	    Win_Error2(hwndFrame, hwnd, pszSrcFile, __LINE__,
-		       IDS_WINCREATEWINDOW);
+	    Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
+		      PCSZ_WINCREATEWINDOW);
 	  else {
 	    PFNWP oldproc;
 
@@ -3439,11 +3429,13 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pAD->cursored = 1;
       pAD->multiplier = 1;
       if (!pAD->afindexcnt) {
-	DosBeep(250, 50);
+        if (!fAlertBeepOff)
+	  DosBeep(250, 50);
 	PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
       }
       else {
-	DosBeep(1000, 25);
+        if (!fAlertBeepOff)
+	  DosBeep(1000, 25);
 	WinInvalidateRect(hwnd, NULL, FALSE);
 	PostMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
       }
@@ -3466,7 +3458,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       POINTL ptl;
       register ULONG x;
       ULONG y, len, numlines;
-      CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81];
+      CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81], szDate[11];
       BOOL inverted, hidsys, reado, wascursored;
 
       hpsp = WinBeginPaint(hwnd, pAD->hps, &Rectl);
@@ -3554,10 +3546,11 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      standardcolors[Colors
 					     [COLORS_CURSOREDNORMALBACK]]);
 	    CommaFmtULL(szCmmaFmtFileSize,
-			sizeof(szCmmaFmtFileSize), pAD->afindex[y]->cbFile, ' ');
+                        sizeof(szCmmaFmtFileSize), pAD->afindex[y]->cbFile, ' ');
+            FDateFormat(szDate, pAD->afindex[y]->date);
 	    len =
 	      sprintf(szBuff,
-		      "%c%-*.*s  %-12s  %c%c%c%c%c  %04u/%02u/%02u %02u:%02u:%02u ",
+		      "%c%-*.*s  %-12s  %c%c%c%c%c  %s %02u%s%02u%s%02u ",
 		      wascursored ? '>' : ' ',
 		      pAD->fullnames ? pAD->longestw : pAD->longest,
 		      pAD->fullnames ? pAD->longestw : pAD->longest,
@@ -3569,11 +3562,10 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    0)],
 		      "-H"[((pAD->afindex[y]->attrFile & FILE_HIDDEN) != 0)],
 		      "-S"[((pAD->afindex[y]->attrFile & FILE_SYSTEM) != 0)],
-		      "-D"[((pAD->afindex[y]->attrFile & FILE_DIRECTORY) !=
-			    0)], pAD->afindex[y]->date.year + 1980,
-		      pAD->afindex[y]->date.month, pAD->afindex[y]->date.day,
-		      pAD->afindex[y]->time.hours,
-		      pAD->afindex[y]->time.minutes,
+                      "-D"[((pAD->afindex[y]->attrFile & FILE_DIRECTORY) != 0)],
+                      szDate,
+		      pAD->afindex[y]->time.hours, TimeSeparator,
+		      pAD->afindex[y]->time.minutes, TimeSeparator,
 		      pAD->afindex[y]->time.twosecs * 2);
 	    GpiCharStringAt(hpsp, &ptl, len, szBuff);
 	    GpiQueryCurrentPosition(hpsp, &ptl);

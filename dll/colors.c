@@ -11,6 +11,7 @@
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -150,7 +151,7 @@ MRESULT EXPENTRY ColorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (WinQueryButtonCheckstate(hwnd, SHORT1FROMMP(mp1))) {
 	co->colors[co->currentcolor] = (LONG) (SHORT1FROMMP(mp1) -
 					       COLOR_FIRST);
-	DosBeep(1000, 1);		// fixme to be gone?
+	//DosBeep(1000, 1);		// fixme to be gone?
       }
       break;
 

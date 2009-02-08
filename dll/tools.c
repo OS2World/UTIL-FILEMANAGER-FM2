@@ -21,6 +21,7 @@
   24 Aug 08 GKY Warn full drive on save of .DAT & .TLS files; prevent loss of existing file
   26 Aug 08 GKY Require unique ID plus text and help strings for all tools save toolbar on button delete
   01 Sep 08 GKY Save toolbars immediately on change.
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -783,7 +784,8 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*idstr = 0;
 	WinQueryDlgItemText(hwnd, ADDBTN_ID, 6, idstr);
 	if (!(USHORT) atoi(idstr)) {
-	  DosBeep(250, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);
 	  break;
 	}
 	tool = toolhead;
@@ -831,7 +833,8 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*idstr = 0;
 	WinQueryDlgItemText(hwnd, ADDBTN_ID, 6, idstr);
 	if (!(USHORT) atoi(idstr)) {
-	  DosBeep(250, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);
 	  break;
 	}
 	sprintf(filename, "%u.BMP", atoi(idstr));

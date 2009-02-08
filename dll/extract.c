@@ -16,6 +16,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path.
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
 
 ***********************************************************************/
 
@@ -451,7 +452,8 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      DosBeep(50, 100);			// Complain a refuse to quit
+      if (!fErrorBeepOff)
+        DosBeep(50, 100);			// Complain a refuse to quit
       break;
 
     case IDM_HELP:

@@ -58,6 +58,10 @@
   10 Dec 08 SHL Integrate exception handler support
   26 Dec 08 GKY Fixed DROPHELP to check for copy as default is action is DO_DEFAULT
   01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  07 Feb 09 GKY Move repeated strings to PCSZs.
 
 ***********************************************************************/
 
@@ -876,7 +880,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	{
 	  CHAR filename[CCHMAXPATH], *p, *pp;
 
-	  strcpy(filename, "*.LST");
+	  strcpy(filename, PCSZ_STARDOTLST);
 	  size = CCHMAXPATH;
 	  PrfQueryProfileData(fmprof, appname, "SaveToListName", filename,
 			      &size);
@@ -1263,7 +1267,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_RESCAN:
     if (dcd) {
       CNRINFO cnri;
-      CHAR s[CCHMAXPATH + 69], tb[81], tf[81], *p;
+      CHAR s[CCHMAXPATH + 69], tb[81], tf[81], szDate[11], *p;
       PCNRITEM pci = NULL;
 
       memset(&cnri, 0, sizeof(CNRINFO));
@@ -1331,11 +1335,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		p = pci->pszFileName;
 	    }
 	    CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
-	    if (!fMoreButtons) {
-	      sprintf(s, " %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
-		      tb, pci->date.year, pci->date.month,
-		      pci->date.day, pci->time.hours, pci->time.minutes,
-		      pci->time.seconds, pci->pszDispAttr, p);
+            if (!fMoreButtons) {
+              DateFormat(szDate, pci->date);
+	      sprintf(s, " %s  %s %02u%s%02u%s%02u  [%s]  %s",
+		      tb, szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
+		      TimeSeparator, pci->time.seconds, pci->pszDispAttr, p);
 	    }
 	    else {
 	      if (pci->cbFile + pci->easize > 1024)
@@ -1349,11 +1353,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    fStatus2Used = TRUE;
 	  }
 	  if (fMoreButtons) {
-	    WinSetWindowText(hwndName, pci->pszFileName);
-	    sprintf(s, "%04u/%02u/%02u %02u:%02u:%02u",
-		    pci->date.year, pci->date.month,
-		    pci->date.day, pci->time.hours, pci->time.minutes,
-		    pci->time.seconds);
+            WinSetWindowText(hwndName, pci->pszFileName);
+            DateFormat(szDate, pci->date);
+	    sprintf(s, "%s %02u%s%02u%s%02u",
+		    szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
+		    TimeSeparator, pci->time.seconds);
 	    WinSetWindowText(hwndDate, s);
 	    WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	  }
@@ -1378,7 +1382,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case UM_CONTAINER_FILLED:
-    DosBeep(1000, 50);			// Wake up user?
+    if (!fAlertBeepOff)
+      DosBeep(1000, 50);			// Wake up user?
     WinSendMsg(hwnd,
 	       CM_INVALIDATERECORD,
 	       MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
@@ -1685,7 +1690,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	{
 	  CHAR filename[CCHMAXPATH], *p, *pp;
 
-	  strcpy(filename, "*.LST");
+	  strcpy(filename, PCSZ_STARDOTLST);
 	  size = CCHMAXPATH;
 	  PrfQueryProfileData(fmprof, appname, "SaveToListName",
 			      filename, &size);
@@ -2669,7 +2674,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (mp2) {
 	  PNOTIFYRECORDEMPHASIS pre = mp2;
 	  PCNRITEM pci;
-	  CHAR s[CCHMAXPATH + 91], tb[81], tf[81], *p;
+	  CHAR s[CCHMAXPATH + 91], tb[81], tf[81], szDate[11], *p;
 
 	  pci = (PCNRITEM) ((pre) ? pre->pRecord : NULL);
 	  if (!pci) {
@@ -2719,12 +2724,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		      p = pci->pszFileName;
 		  }
 		  CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
-		  if (!fMoreButtons)
-		    sprintf(s, " %s  %04u/%02u/%02u %02u:%02u:%02u  [%s]  %s",
-			    tb, pci->date.year,
-			    pci->date.month, pci->date.day, pci->time.hours,
-			    pci->time.minutes, pci->time.seconds,
-			    pci->pszDispAttr, p);
+                  if (!fMoreButtons) {
+                    DateFormat(szDate, pci->date);
+		    sprintf(s, " %s  %s %02u%s%02u%s%02u  [%s]  %s",
+			    tb, szDate, pci->time.hours, TimeSeparator,
+			    pci->time.minutes, TimeSeparator, pci->time.seconds,
+                            pci->pszDispAttr, p);
+                  }
 		  else {
 		    if (pci->cbFile + pci->easize > 1024)
 		      CommaFmtULL(tf, sizeof(tf), pci->cbFile + pci->easize,
@@ -2738,11 +2744,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		  WinSetWindowText(hwndStatus2, s);
 		}
 		if (fMoreButtons) {
-		  WinSetWindowText(hwndName, pci->pszFileName);
-		  sprintf(s, "%04u/%02u/%02u %02u:%02u:%02u",
-			  pci->date.year, pci->date.month,
-			  pci->date.day, pci->time.hours, pci->time.minutes,
-			  pci->time.seconds);
+                  WinSetWindowText(hwndName, pci->pszFileName);
+                  DateFormat(szDate, pci->date);
+		  sprintf(s, "%s %02u%s%02u%s%02u",
+			  szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
+			  TimeSeparator, pci->time.seconds);
 		  WinSetWindowText(hwndDate, s);
 		  WinSetWindowText(hwndAttr, pci->pszDispAttr);
 		}
@@ -3022,8 +3028,8 @@ HWND StartCollector(HWND hwndParent, INT flags)
 				     HWND_TOP,
 				     (ULONG) COLLECTOR_CNR, NULL, NULL);
       if (!dcd->hwndCnr) {
-	Win_Error2(hwndClient, hwndClient, pszSrcFile, __LINE__,
-		   IDS_WINCREATEWINDOW);
+	Win_Error(hwndClient, hwndClient, pszSrcFile, __LINE__,
+		  PCSZ_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	free(dcd);
 	hwndFrame = (HWND) 0;

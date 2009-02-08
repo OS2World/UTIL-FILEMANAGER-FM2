@@ -28,6 +28,9 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use BldFullPathName
   10 Dec 08 SHL Integrate exception handler support
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
+  07 Feb 09 GKY Move repeated strings to PCSZs.
+  07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
 
 ***********************************************************************/
 
@@ -700,7 +703,8 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	*s = 0;
 	WinQueryWindowText(hwndMLE, 8192, s);
 	if (!*s) {
-	  DosBeep(250, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);
 	  break;
 	}
 	else {
@@ -721,7 +725,8 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	numitems = (SHORT) WinSendMsg(inidata->hwndApp,
 				      LM_QUERYITEMCOUNT, MPVOID, MPVOID);
 	if (!numitems) {
-	  DosBeep(250, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(250, 100);
 	  break;
 	}
 	else {
@@ -929,14 +934,16 @@ MRESULT EXPENTRY IntraIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, INII_NEWAPP, CCHMAXPATH, inirec->app2);
 	bstrip(inirec->app2);
 	if (!*inirec->app2) {
-	  DosBeep(50, 100);
+          if (!fAlertBeepOff)
+	    DosBeep(50, 100);
 	  break;
 	}
 	if (*inirec->key) {
 	  WinQueryDlgItemText(hwnd, INII_NEWKEY, CCHMAXPATH, inirec->key2);
 	  bstrip(inirec->key2);
 	  if (!*inirec->key2) {
-	    DosBeep(50, 100);
+            if (!fAlertBeepOff)
+	      DosBeep(50, 100);
 	    break;
 	  }
 	}
@@ -1004,7 +1011,7 @@ MRESULT EXPENTRY ChangeIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  *filename = 0;
-	strcat(filename, "*.INI");
+	strcat(filename, PCSZ_STARDOTINI);
 	if (insert_filename(hwnd, filename, TRUE, FALSE) && *filename)
 	  WinSetDlgItemText(hwnd, id, filename);
       }
@@ -1113,7 +1120,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  *filename = 0;
-	strcat(filename, "*.INI");
+	strcat(filename, PCSZ_STARDOTINI);
 	if (insert_filename(hwnd, filename, TRUE, FALSE) && *filename)
 	  WinSetDlgItemText(hwnd, id, filename);
       }
@@ -1144,8 +1151,8 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	prfp.pszUserName = (PSZ) olduserini;
 	prfp.pszSysName = (PSZ) oldsysini;
 	if (!PrfQueryProfile(WinQueryAnchorBlock(hwnd), &prfp)) {
-	  Win_Error(hwnd, hwnd, __FILE__, __LINE__,
-		    GetPString(IDS_INIQUERYPRFFAILEDTEXT));
+          Win_Error(hwnd, hwnd, __FILE__, __LINE__,
+                    PCSZ_INIQUERYPRFTEXT);
 	  break;
 	}
 	WinQueryDlgItemText(hwnd, INIR_USERPROFILE, CCHMAXPATH, userini);
@@ -1640,7 +1647,8 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       inidata = WinQueryWindowPtr(WinQueryWindow(hwnd, QW_PARENT), QWL_USER);
       if (!inidata || !*inidata->ininame || !*inidata->applname ||
 	  !inidata->keyname) {
-	DosBeep(50, 100);
+        if (!fAlertBeepOff)
+	  DosBeep(50, 100);
 	break;
       }
       hptrINI = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, INI_FRAME);
@@ -1834,34 +1842,40 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	(hwnd, WC_LISTBOX, (PSZ) NULL,
 	 WS_VISIBLE | LS_HORZSCROLL | LS_NOADJUSTPOS, 0, 0, 0, 0, hwnd,
 	 HWND_TOP, INI_APPLIST, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow
 	(hwnd, WC_LISTBOX, (PSZ) NULL,
 	 WS_VISIBLE | LS_HORZSCROLL | LS_NOADJUSTPOS, 0, 0, 0, 0, hwnd,
 	 HWND_TOP, INI_KEYLIST, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow
 	(hwnd, WC_LISTBOX, (PSZ) NULL,
 	 WS_VISIBLE | LS_HORZSCROLL | LS_NOADJUSTPOS, 0, 0, 0, 0, hwnd,
 	 HWND_TOP, INI_DATALIST, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow(hwnd, WC_STATIC, (PSZ) NULL, WS_VISIBLE | SS_TEXT |
 			 DT_CENTER | DT_VCENTER, 0, 0, 0, 0, hwnd, HWND_TOP,
 			 INI_NUMAPPS, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow(hwnd, WC_STATIC, (PSZ) NULL, WS_VISIBLE | SS_TEXT |
 			 DT_CENTER | DT_VCENTER, 0, 0, 0, 0, hwnd, HWND_TOP,
 			 INI_NUMKEYS, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow(hwnd, WC_STATIC, (PSZ) NULL, WS_VISIBLE | SS_TEXT |
 			 DT_CENTER | DT_VCENTER, 0, 0, 0, 0, hwnd, HWND_TOP,
 			 INI_NUMDATA, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow(hwnd,
 			 WC_STATIC,
@@ -1870,7 +1884,8 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 DT_CENTER | DT_VCENTER,
 			 0,
 			 0, 0, 0, hwnd, HWND_TOP, INI_APPHDR, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow(hwnd,
 			 WC_STATIC,
@@ -1879,7 +1894,8 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 DT_CENTER | DT_VCENTER,
 			 0,
 			 0, 0, 0, hwnd, HWND_TOP, INI_KEYHDR, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
     if (!WinCreateWindow(hwnd,
 			 WC_STATIC,
@@ -1888,7 +1904,8 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 DT_CENTER | DT_VCENTER,
 			 0,
 			 0, 0, 0, hwnd, HWND_TOP, INI_DATAHDR, NULL, NULL)) {
-      Win_Error2(hwnd, hwnd, pszSrcFile, __LINE__, IDS_WINCREATEWINDOW);
+      Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                PCSZ_WINCREATEWINDOW);
     }
 
     inidata->hwndApp = WinWindowFromID(hwnd, INI_APPLIST);
@@ -2271,9 +2288,12 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinSetWindowText(hwndStatus2, inidata->ininame);
 	}
       }
-      else
-	WinSetWindowText(WinQueryWindow(hwnd, QW_PARENT),
-			 GetPString(IDS_INIQUERYPRFFAILEDTEXT));
+      else {
+        CHAR s[100];
+
+        sprintf(s, PCSZ_INIQUERYPRFTEXT, GetPString(IDS_FAILEDTEXT));
+        WinSetWindowText(WinQueryWindow(hwnd, QW_PARENT), s);
+      }
       return 0;
     }
 
@@ -2326,7 +2346,8 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			InputDlgProc, FM3ModHandle, STR_FRAME, &sip)) {
 	    rstrip(tofind);
 	    if (!*tofind) {
-	      DosBeep(50, 100);
+              if (!fAlertBeepOff)
+	        DosBeep(50, 100);
 	      break;
 	    }
 	  }
@@ -2351,7 +2372,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     LM_SELECTITEM,
 		     MPFROM2SHORT(x, 0), MPFROM2SHORT(TRUE, 0));
 	}
-	else
+	else if (!fAlertBeepOff)
 	  DosBeep(250, 100);
       }
       break;
@@ -2369,7 +2390,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDlgBox(HWND_DESKTOP,
 		    hwnd,
 		    FilterIniProc, FM3ModHandle, IAF_FRAME, (PVOID) inidata);
-	else
+	else if (!fAlertBeepOff)
 	  DosBeep(50, 100);
       }
       break;
@@ -2492,7 +2513,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  *filename = 0;
-	strcat(filename, "*.INI");
+	strcat(filename, PCSZ_STARDOTINI);
 	if (export_filename(hwnd, filename, TRUE)) {
 
 	  PPRFPROFILE prfp;
@@ -2633,7 +2654,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  *filename = 0;
-	strcat(filename, "*.INI");
+	strcat(filename, PCSZ_STARDOTINI);
 	if (insert_filename(hwnd,
 			    filename,
 			    TRUE,
