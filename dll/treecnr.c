@@ -1223,7 +1223,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
 					   MAIN_STATUS), pci->pszFileName);
         if (fMoreButtons && hwndName) {
-          CHAR szDate[11];
+          CHAR szDate[DATE_BUF_BYTES];
 
           DateFormat(szDate, pci->date);
 	  WinSetWindowText(hwndName, pci->pszFileName);

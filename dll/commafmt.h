@@ -16,16 +16,18 @@
 #if !defined(COMMAFMT_H)
 #define COMMAFMT_H
 
+#define DATE_BUF_BYTES 11
+
 size_t CommaFmtUL(char *pszBuf, UINT cBufSize, ULONG ullNumber,
 		  CHAR chPreferred);
 size_t CommaFmtULL(char *pszBuf, UINT cBufSize, ULONGLONG ullNumber,
 		   CHAR chPreferred);
 size_t commafmt(PSZ pszBuf, UINT cBufSize, LONG lNumber);
 
-VOID DateFormat(PSZ pszBuf, CDATE Date);
+VOID DateFormat(CHAR szBuf[DATE_BUF_BYTES], CDATE Date);
 
-VOID FDateFormat(PSZ pszBuf, FDATE Date);
+VOID FDateFormat(CHAR szBuf[DATE_BUF_BYTES], FDATE Date);
 
-VOID DTDateFormat(PSZ pszBuf, DATETIME Date);
+VOID DTDateFormat(CHAR szBuf[DATE_BUF_BYTES], DATETIME Date);
 
 #endif // COMMAFMT_H

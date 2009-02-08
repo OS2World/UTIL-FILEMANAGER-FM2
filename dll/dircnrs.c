@@ -1473,7 +1473,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
 
       CNRINFO cnri;
-      CHAR s[CCHMAXPATH * 2], tf[81], tb[81], szDate[11];
+      CHAR s[CCHMAXPATH * 2], tf[81], tb[81], szDate[DATE_BUF_BYTES];
       PCNRITEM pci;
 
       memset(&cnri, 0, sizeof(CNRINFO));
@@ -3349,7 +3349,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  WinSetWindowText(hwndStatus2, s);
 		}
                 if (fMoreButtons) {
-                  CHAR szDate[11];
+                  CHAR szDate[DATE_BUF_BYTES];
 
                   WinSetWindowText(hwndName, pci->pszFileName);
                   DateFormat(szDate, pci->date);

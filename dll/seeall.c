@@ -2326,7 +2326,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 {
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   POINTL ptl;
-  CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81], szDate[11];
+  CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
   ULONG len, y;
 
   y = (ad->invertsort) ? (ad->afindexcnt - 1) - whichfile : whichfile;
@@ -3458,7 +3458,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       POINTL ptl;
       register ULONG x;
       ULONG y, len, numlines;
-      CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81], szDate[11];
+      CHAR szBuff[CCHMAXPATH + 80], szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
       BOOL inverted, hidsys, reado, wascursored;
 
       hpsp = WinBeginPaint(hwnd, pAD->hps, &Rectl);

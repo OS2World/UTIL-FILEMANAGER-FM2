@@ -513,7 +513,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    case 'd':
                     case 'D':
                       {
-                        CHAR szDate[11];
+                        CHAR szDate[DATE_BUF_BYTES];
 
                         DateFormat(szDate, pci->date);
 		        fprintf(fp,"%s", szDate);
@@ -958,7 +958,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		    case 'd':
                     case 'D':
                       {
-                        CHAR szDate[11];
+                        CHAR szDate[DATE_BUF_BYTES];
 
                         FDateFormat(szDate, ffb4.fdateLastWrite);
 		        fprintf(fp,"%s", szDate);

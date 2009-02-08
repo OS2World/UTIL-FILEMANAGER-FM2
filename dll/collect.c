@@ -1267,7 +1267,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_RESCAN:
     if (dcd) {
       CNRINFO cnri;
-      CHAR s[CCHMAXPATH + 69], tb[81], tf[81], szDate[11], *p;
+      CHAR s[CCHMAXPATH + 69], tb[81], tf[81], szDate[DATE_BUF_BYTES] *p;
       PCNRITEM pci = NULL;
 
       memset(&cnri, 0, sizeof(CNRINFO));
@@ -2674,7 +2674,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (mp2) {
 	  PNOTIFYRECORDEMPHASIS pre = mp2;
 	  PCNRITEM pci;
-	  CHAR s[CCHMAXPATH + 91], tb[81], tf[81], szDate[11], *p;
+	  CHAR s[CCHMAXPATH + 91], tb[81], tf[81], szDate[DATE_BUF_BYTES], *p;
 
 	  pci = (PCNRITEM) ((pre) ? pre->pRecord : NULL);
 	  if (!pci) {

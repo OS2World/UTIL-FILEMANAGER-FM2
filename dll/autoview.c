@@ -453,7 +453,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else if (!IsFile(currfile)) {
 
 	    static FILEFINDBUF4L ffb[130];
-	    CHAR fullname[CCHMAXPATH + 4], szCmmaFmtFileSize[81], szDate[11];
+	    CHAR fullname[CCHMAXPATH + 4], szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
 	    HDIR hdir = HDIR_CREATE;
 	    ULONG x, nm, ml, mc, bufflen;
 	    PBYTE fb;

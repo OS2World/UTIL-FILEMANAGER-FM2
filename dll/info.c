@@ -658,7 +658,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (pfs && *pfs->szFileName) {
       CHAR s[97];
       CHAR szCmmaFmtFileSize[81], szCmmaFmtEASize[81];
-      CHAR szCmmaFmtFileEASize[81], szCmmaFmtFileEASizeK[81], szDate[11];
+      CHAR szCmmaFmtFileEASize[81], szCmmaFmtFileEASizeK[81], szDate[DATE_BUF_BYTES];
       FILEFINDBUF4L fs;
       HDIR hdir = HDIR_CREATE;
       ULONG apptype = 1;

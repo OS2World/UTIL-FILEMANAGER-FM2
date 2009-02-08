@@ -87,7 +87,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (mv) {
 
 	FILESTATUS3L fs1, fs2;
-	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH], szCmmaFmtFileSize[81], szDate[11];
+	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH], szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
 	INT sourceexists = 0, targetexists = 0,
 	    sourcenewer = 0, sourcesmaller = 0;
 

@@ -749,7 +749,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_TIMER:
     {
-      CHAR s[134], szDate[11];
+      CHAR s[134], szDate[DATE_BUF_BYTES];
       DATETIME dt;
 
       if (fDataToFore && !NoFloat)

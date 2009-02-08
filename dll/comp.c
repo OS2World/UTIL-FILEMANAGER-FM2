@@ -142,7 +142,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
-  CHAR  szCmmaFmtFileSize[81], szDate[11];
+  CHAR  szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
 
   // 13 Aug 07 SHL fimxe to use FileToGet
   pffb = xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);

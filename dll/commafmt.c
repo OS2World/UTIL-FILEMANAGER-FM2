@@ -172,94 +172,94 @@ size_t CommaFmtUL(char *pszBuf,	// Output buffer
   return c;
 }
 
-VOID DateFormat(PSZ pszBuf, CDATE Date)
+VOID DateFormat(CHAR szBuf[DATE_BUF_BYTES], CDATE Date)
 {
   switch(ulDateFmt) {
 
   case 3:
 
-    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+    sprintf(szBuf, "%04u%s%02u%s%02u", Date.year, DateSeparator,
             Date.day, DateSeparator, Date.month);
     break;
 
   case 2:
 
-    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+    sprintf(szBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
             Date.month, DateSeparator, Date.day);
     break;
 
   case 1:
 
-    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
+    sprintf(szBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
             Date.month, DateSeparator, Date.year);
     break;
 
   case 0:
   default:
 
-    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
+    sprintf(szBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
             Date.day, DateSeparator, Date.year);
     break;
   }
 }
 
-VOID FDateFormat(PSZ pszBuf, FDATE Date)
+VOID FDateFormat(CHAR szBuf[DATE_BUF_BYTES], FDATE Date)
 {
   switch(ulDateFmt) {
 
   case 3:
 
-    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year + 1980, DateSeparator,
+    sprintf(szBuf, "%04u%s%02u%s%02u",	Date.year + 1980, DateSeparator,
             Date.day, DateSeparator, Date.month);
     break;
 
   case 2:
 
-    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year + 1980, DateSeparator,
+    sprintf(szBuf, "%04u%s%02u%s%02u",	Date.year + 1980, DateSeparator,
             Date.month, DateSeparator, Date.day);
     break;
 
   case 1:
 
-    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
+    sprintf(szBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
             Date.month, DateSeparator, Date.year + 1980);
     break;
 
   case 0:
   default:
 
-    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
+    sprintf(szBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
             Date.day, DateSeparator, Date.year + 1980);
     break;
   }
 }
 
-VOID DTDateFormat(PSZ pszBuf, DATETIME Date)
+VOID DTDateFormat(CHAR szBuf[DATE_BUF_BYTES], DATETIME Date)
 {
   switch(ulDateFmt) {
 
   case 3:
 
-    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+    sprintf(szBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
             Date.day, DateSeparator, Date.month);
     break;
 
   case 2:
 
-    sprintf(pszBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
+    sprintf(szBuf, "%04u%s%02u%s%02u",	Date.year, DateSeparator,
             Date.month, DateSeparator, Date.day);
     break;
 
   case 1:
 
-    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
+    sprintf(szBuf, "%02u%s%02u%s%04u",	Date.day, DateSeparator,
             Date.month, DateSeparator, Date.year);
     break;
 
   case 0:
   default:
 
-    sprintf(pszBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
+    sprintf(szBuf, "%02u%s%02u%s%04u",	Date.month, DateSeparator,
             Date.day, DateSeparator, Date.year);
     break;
   }
