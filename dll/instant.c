@@ -59,7 +59,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     if (!mp2) {
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
       break;
     }
@@ -111,7 +111,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  tlen =
 	    (LONG) WinSendMsg(hwndMLE, MLM_QUERYTEXTLENGTH, MPVOID, MPVOID);
 	  if (!tlen)
-	    Runtime_Error(pszSrcFile, __LINE__, "no data");
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  else {
 	    WinSendMsg(hwndMLE, MLM_SETIMPORTEXPORT,
 		       MPFROMP(bat), MPFROMLONG(mem));
@@ -128,7 +128,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      rstrip(bat);
 	    }
 	    if (!*bat)
-	      Runtime_Error(pszSrcFile, __LINE__, "no data");
+	      Runtime_Error(pszSrcFile, __LINE__, NULL);
 	    else {
 	      sprintf(s, "%s%sFMTMP%d.CMD", path,
 		      (path[strlen(path) - 1] == '\\') ? "" : "\\",

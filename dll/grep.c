@@ -287,7 +287,7 @@ VOID GrepThread(VOID *arg)
   ITIMER_DESC itdReport = { 0 };
 
   if (!arg) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
 

@@ -1126,14 +1126,14 @@ VOID MassAction(VOID * args)
 
 	  case IDM_MCIPLAY:
 	    {
-	      register INT x;
-	      register ULONG total;
+	      INT x, MaxFM2playStrLen = 24;
+	      ULONG total;
 	      CHAR fbuf[CCHMAXPATH];
 
 	      if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 				SEARCH_CUR_DIRECTORY,
-				"PATH", "FM2PLAY.EXE", (PBYTE)fbuf, CCHMAXPATH - 1))
-		total += strlen("..\\FM2UTILS\\FM2PLAY.EXE ");
+				PCSZ_PATH, PCSZ_FM2PLAYEXE, (PBYTE)fbuf, CCHMAXPATH - 1))
+		total += MaxFM2playStrLen;
 	      else
 		total = strlen(fbuf);
 	      for (x = 0; wk->li->list[x]; x++)
@@ -1144,7 +1144,7 @@ VOID MassAction(VOID * args)
 		FILE *fp;
 		CHAR szTempFile[CCHMAXPATH];
 
-		BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
+		BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
 		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
@@ -1155,7 +1155,7 @@ VOID MassAction(VOID * args)
 		  strrev(szTempFile);
 		  strcat(szTempFile, "@/");
 		  strrev(szTempFile);
-		  RunFM2Util("FM2PLAY.EXE", szTempFile);
+		  RunFM2Util(PCSZ_FM2PLAYEXE, szTempFile);
 		}
 	      }
 	    }
@@ -1181,10 +1181,10 @@ VOID MassAction(VOID * args)
 	      else {
 		if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 				  SEARCH_CUR_DIRECTORY,
-				  "PATH", "FM2PLAY.EXE", (PBYTE)fbuf, CCHMAXPATH - 1))
+				  PCSZ_PATH, PCSZ_FM2PLAYEXE, (PBYTE)fbuf, CCHMAXPATH - 1))
 		  strcpy(szBuffer, "UTILS\\FM2PLAY.EXE");
 		else
-		  strcpy(szBuffer, "FM2PLAY.EXE");
+		  strcpy(szBuffer, PCSZ_FM2PLAYEXE);
 	      }
 	      p = &szBuffer[strlen(szBuffer)];
 	      strcat(szBuffer, " ");

@@ -374,7 +374,7 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       break;
 
     case DID_CANCEL:
@@ -1253,7 +1253,7 @@ static VOID ReLineThread(VOID * args)
       IncrThreadUsage();
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!ad)
-	Runtime_Error(pszSrcFile, __LINE__, "no data");
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (!DosRequestMutexSem(ad->ScanSem, SEM_INDEFINITE_WAIT)) {
 	  ad->relining = TRUE;
@@ -1863,7 +1863,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP:
     if (!ad)
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       CHAR s[CCHMAXPATH + 8];
       APIRET rc;
@@ -1878,7 +1878,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       rc = DosCreateMutexSem(NULL, &ad->ScanSem, 0L, FALSE);
       if (rc)
 	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		  "DosCreateMutexSem");
+		  PCSZ_DOSCREATEMUTEXSEM);
       else {
 	PFNWP oldproc;
 	HWND hwndFrame = ad->hwndFrame;

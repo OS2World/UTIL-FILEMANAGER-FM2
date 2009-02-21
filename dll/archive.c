@@ -191,7 +191,7 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_COMMAND:
     arcdata = (DIRCNRDATA *) WinQueryWindowPtr(hwnd, QWL_USER);
     if (!arcdata) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       return 0;
     }
     switch (SHORT1FROMMP(mp1)) {

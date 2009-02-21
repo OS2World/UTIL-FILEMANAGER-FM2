@@ -21,8 +21,8 @@
 #include <os2.h>
 #endif
 
-PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
-PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName);
+PSZ BldFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName);
+PSZ BldQuotedFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName);
 PSZ BldQuotedFileName(PSZ pszQuotedFileName, PCSZ pszFileName);
 PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_);
 

@@ -848,7 +848,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         USHORT control;
 
         if (!eap->head || !*eap->filename)
-          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+          Runtime_Error(pszSrcFile, __LINE__, NULL);
         else {
           switch (*(USHORT *) eap->current->value) {
           case EAT_EA:
@@ -872,7 +872,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               *s = 0;
               WinQueryDlgItemText(hwnd, control, 32767, (PCH) s);
               if (!*s)
-                Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+                Runtime_Error(pszSrcFile, __LINE__, NULL);
               else {
                 PFEA2LIST pfealist;
 

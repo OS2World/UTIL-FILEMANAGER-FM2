@@ -28,6 +28,7 @@
 #include "fm3dll.h"
 #include "info.h"			// Data declaration(s)
 #include "mainwnd.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
@@ -93,7 +94,7 @@ INT Subject(HWND hwnd, CHAR * filename)
       }
       else if (rc) {
 	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		  "DosQueryPathInfo");
+		  PCSZ_DOSQUERYPATHINFO);
 	return 2;			// Error
       }
     }

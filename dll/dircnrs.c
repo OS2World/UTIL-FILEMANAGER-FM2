@@ -1167,7 +1167,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       if (dcd->hwndRestore)
 	WinSetWindowPos(dcd->hwndRestore,
@@ -3047,7 +3047,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		wasemphasized = TRUE;
 	    }
 	    else if (!*dcd->directory) {
-	      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	      Runtime_Error(pszSrcFile, __LINE__, NULL);
 	      break;
 	    }
 	    else if (IsRoot(dcd->directory)) {

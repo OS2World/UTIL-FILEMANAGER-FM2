@@ -96,7 +96,7 @@ VOID load_cmdlines(BOOL DoItYourself)
       DoItYourselfLoaded = TRUE;
     else
       MiniLoaded = TRUE;
-    BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+    BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? PCSZ_CMDLINESDAT : PCSZ_CMDMINIDAT);
     fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
     if (fp) {
       while (x < MAXNUMCMDLINES && !feof(fp)) {
@@ -149,7 +149,7 @@ VOID save_cmdlines(BOOL DoItYourself)
   pszCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!pszCmdLine)
     return;
-  BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? "CMDLINES.DAT" : "CMDMINI.DAT");
+  BldFullPathName(pszCmdLine, pFM2SaveDirectory, (DoItYourself) ? PCSZ_CMDLINESDAT : PCSZ_CMDMINIDAT);
   if (CheckDriveSpaceAvail(pszCmdLine, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   if (CmdLineHead) {
@@ -442,7 +442,8 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 FAPPTYP_WINDOWSPROT | FAPPTYP_32BIT | 0x1000)))) {
 	p = strchr(executable, '.');
 	if (p) {
-	  if (!stricmp(p, ".BAT") || !stricmp(p, ".CMD")) {
+          if (!stricmp(p, PCSZ_DOTBAT) || !stricmp(p, PCSZ_DOTCMD) ||
+              !stricmp(p, PCSZ_DOTBTM)) {
 	    WinSetDlgItemText(hwnd,
 			      EXEC_WARNING2,
 			      GetPString(IDS_RUNTHRUCMDEXETEXT));

@@ -612,11 +612,11 @@ BOOL IsExecutable(CHAR * filename)
 		   FAPPTYP_PROTDLL))
       return FALSE;
     if (apptype == 0x000b && (!p ||
-	(stricmp(p, ".EXE") &&
-	 stricmp(p, ".COM") &&
-	 stricmp(p, ".CMD") &&
-	 stricmp(p, ".BAT") &&
-	 stricmp(p, ".BTM"))))
+	(stricmp(p, PCSZ_DOTEXE) &&
+	 stricmp(p, PCSZ_DOTCOM) &&
+	 stricmp(p, PCSZ_DOTCMD) &&
+	 stricmp(p, PCSZ_DOTBAT) &&
+	 stricmp(p, PCSZ_DOTBTM))))
       return FALSE;
     if (!fProtectOnly) {
       if ((!ret && (!apptype ||
@@ -630,7 +630,7 @@ BOOL IsExecutable(CHAR * filename)
 		      FAPPTYP_WINDOWSPROT |
 		      FAPPTYP_32BIT |
 		      FAPPTYP_WINDOWSPROT31)))) ||
-	  (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BAT") || !stricmp(p, ".BTM"))))
+	  (p && (!stricmp(p, PCSZ_DOTCMD) || !stricmp(p, PCSZ_DOTBAT) || !stricmp(p, PCSZ_DOTBTM))))
 	return TRUE;
     }
     else if ((!ret && (!apptype ||
@@ -640,14 +640,15 @@ BOOL IsExecutable(CHAR * filename)
 			 FAPPTYP_WINDOWAPI |
 			 FAPPTYP_BOUND |
 			 FAPPTYP_32BIT)))) ||
-	     (p && (!stricmp(p, ".CMD") || !stricmp(p, ".BTM"))))
+	     (p && (!stricmp(p, PCSZ_DOTCMD) || !stricmp(p, PCSZ_DOTBTM))))
       return TRUE;
     if (fProtectOnly && (apptype &
 			 (FAPPTYP_DOS |
 			  FAPPTYP_WINDOWSREAL |
 			  FAPPTYP_WINDOWSPROT |
 			  FAPPTYP_WINDOWSPROT31)) &&
-	(p && (!stricmp(p, ".EXE") || !stricmp(p, ".COM"))))
+        (p && (!stricmp(p, PCSZ_DOTEXE) || !stricmp(p, PCSZ_DOTCOM) ||
+               !stricmp(p, PCSZ_DOTBAT))))
       saymsg(MB_OK,
 	     HWND_DESKTOP,
 	     NullStr,
@@ -1065,7 +1066,7 @@ VOID GetDesktopName(CHAR * objectpath, ULONG size)
 			       "\0",
 			       (PVOID) objectpath, sizeof(objectpath))) {
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		"PrfQueryProfileString");
+		PCSZ_PRFQUERYPROFILESTRING);
       *objectpath = 0;
     }
     else if (!*objectpath || IsFile(objectpath)) {

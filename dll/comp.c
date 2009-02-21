@@ -448,7 +448,7 @@ static VOID ActionCnrThread(VOID *args)
   ITIMER_DESC itdSleep = { 0 };
 
   if (!cmp) {
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
 
@@ -788,7 +788,7 @@ static VOID SelectCnrsThread(VOID *args)
   HMQ hmq;
 
   if (!cmp) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
 
@@ -1419,7 +1419,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
   static BOOL fDone;
 
   if (!str || !*str) {
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
 
@@ -1550,7 +1550,7 @@ static VOID FillCnrsThread(VOID *args)
 #  endif
 
   if (!cmp) {
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
 #   ifdef FORTIFY
     // 10 May 08 SHL fixme to suppress W111
     Fortify_LeaveScope();
@@ -2201,7 +2201,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     cmp = (COMPARE *)mp2;
     if (!cmp) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
     }
     else {
@@ -2333,7 +2333,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       cmp = INSTDATA(hwnd);
       if (!cmp)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	cmp->dcd.size = sizeof(DIRCNRDATA);
 	cmp->dcd.type = DIR_FRAME;
@@ -2998,7 +2998,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (cmp) {
 	CHAR fullname[CCHMAXPATH];
 
-	strcpy(fullname, "*.PMD");
+	strcpy(fullname, PCSZ_STARDOTPMD);
 	if (insert_filename(HWND_DESKTOP, fullname, TRUE, FALSE) &&
 	    *fullname && !strchr(fullname, '*') && !strchr(fullname, '?')) {
 	  strcpy(cmp->rightlist, fullname);
@@ -3014,7 +3014,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SNAPSTUFF *sf;
 	CHAR fullname[CCHMAXPATH];
 
-	strcpy(fullname, "*.PMD");
+	strcpy(fullname, PCSZ_STARDOTPMD);
 	if (export_filename(HWND_DESKTOP, fullname, 1) && *fullname &&
 	    !strchr(fullname, '*') && !strchr(fullname, '?')) {
 	  sf = xmallocz(sizeof(SNAPSTUFF), pszSrcFile, __LINE__);
@@ -3194,7 +3194,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_INVERT:
       cmp = INSTDATA(hwnd);
       if (!cmp)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	COMPARE *forthread;
 
@@ -3275,7 +3275,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case COMP_COLLECT:
       cmp = INSTDATA(hwnd);
       if (!cmp)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	CHAR **listl;
 	CHAR **listr = NULL;

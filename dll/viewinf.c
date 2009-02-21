@@ -98,7 +98,7 @@ static VOID FillListboxThread(VOID * args)
                GetPString(IDS_SYSERRORTEXT),
                GetPString(IDS_ENVPATHERRORTEXT),
                (dummy->help) ? "HELP" : "BOOKSHELF",
-               (dummy->help) ? ".HLP" : ".INF");
+               (dummy->help) ? PCSZ_DOTHLP : PCSZ_DOTINF);
         goto NoEnv;
       }
       else {
@@ -193,7 +193,7 @@ static VOID FillListboxThread(VOID * args)
               if (holdenv) {
                 if (!PrfQueryProfileData(fmprof, FM3Str, key, holdenv, &size)) {
                   Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-                            "PrfQueryProfileData");
+                            PCSZ_PRFQUERYPROFILEDATA);
                   free(holdenv);
                 }
                 else
@@ -258,8 +258,8 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         //fixme to allow user to change presparams 1-10-09 GKY
         WinSetPresParam(WinWindowFromID(hwnd, VINF_LISTBOX),
                         PP_FONTNAMESIZE,
-                        strlen("10.System Monospaced") + 1,
-                        "10.System Monospaced");
+                        strlen(FNT_10SYSTEMMONOTEXT) + 1,
+                        FNT_10SYSTEMMONOTEXT);
       }
       WinSetWindowText(hwnd, GetPString(IDS_VIEWHELPFILESTEXT));
       WinShowWindow(WinWindowFromID(hwnd, VINF_SRCH), FALSE);

@@ -368,7 +368,7 @@ INT load_archivers(VOID)
 
   //DosEnterCritSec(); //GKY 11-29-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-  psz = searchpath(ARCHIVERBB2);
+  psz = searchpath(PCSZ_ARCHIVERBB2);
   if (!psz || !*psz) {
     DosReleaseMutexSem(hmtxFM2Globals);
     //DosExitCritSec();
@@ -780,7 +780,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!arcsigsloaded)
       load_archivers();
     if (!(ARC_TYPE **) mp2) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
       break;
     }
@@ -860,7 +860,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   hwnd,
 		   GetPString(IDS_ADCHANGESINMEMTEXT),
 		   GetPString(IDS_ADREWRITETEXT), NullStr) == MBID_YES) {
-	  PSZ ab2 = searchpath(ARCHIVERBB2);	// Rewrite without prompting
+	  PSZ ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without prompting
 
 	  rewrite_archiverbb2(ab2);
 	}

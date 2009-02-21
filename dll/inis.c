@@ -500,9 +500,9 @@ static VOID EnumAppNames(HWND hwndList, HINI hini)
   WinSendMsg(hwndList, LM_DELETEALL, NULL, NULL);
   if (!PrfQueryProfileSize(hini, NULL, NULL, (PULONG) & ulSize))
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      "PrfQueryProfileSize");
+	      PCSZ_PRFQUERYPROFILESIZE);
   else if (!ulSize)
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
   else {
     pData = xmalloc(ulSize, pszSrcFile, __LINE__);
     if (pData) {
@@ -534,14 +534,14 @@ static CHAR *GetKeyData(HWND hwndList, HINI hini, PSZ pAppName,
   *datalen = 0L;
   if (!PrfQueryProfileSize(hini, pAppName, pKeyName, (PULONG) & ulKeySize))
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      "PrfQueryProfileSize");
+	      PCSZ_PRFQUERYPROFILESIZE);
   else {
     pKeyData = xmalloc(ulKeySize + 1L, pszSrcFile, __LINE__);
     if (pKeyData) {
       if (!PrfQueryProfileData
 	  (hini, pAppName, pKeyName, pKeyData, (PULONG) & ulKeySize))
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "PrfQueryProfileData");
+		  PCSZ_PRFQUERYPROFILEDATA);
       else {
 	HexDump(hwndList, pKeyData, ulKeySize);
 	{
@@ -570,15 +570,15 @@ static BOOL EnumKeyNames(HWND hwndList, HINI hini, PSZ pAppName)
   WinSendMsg(hwndList, LM_DELETEALL, NULL, NULL);
   if (!PrfQueryProfileSize(hini, pAppName, NULL, (PULONG) & ulSize))
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      "PrfQueryProfileSize");
+	      PCSZ_PRFQUERYPROFILESIZE);
   else {
     if (!ulSize)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     pData = xmalloc(ulSize + 1L, pszSrcFile, __LINE__);
     if (pData) {
       if (!PrfQueryProfileString(hini, pAppName, NULL, "\0", pData, ulSize)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "PrfQueryProfileString");
+		  PCSZ_PRFQUERYPROFILESTRING);
 	free(pData);
       }
       else {
@@ -693,7 +693,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	CHAR s[8193], app[1024];
 	register CHAR *p;
@@ -780,7 +780,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    MPFROM2SHORT(LIT_FIRST, 0),
 					    MPVOID);
 	if (sSelect < 0)
-	  Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	else {
 	  *s = 0;
 	  WinSendDlgItemMsg(hwnd, IAF_LISTBOX, LM_QUERYITEMTEXT,
@@ -816,7 +816,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *s = 0;
 	  WinQueryWindowText(hwndMLE, 8192, s);
 	  if (!*s)
-	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  else {
 	    fp = xfopen(filename, "w", pszSrcFile, __LINE__);
 	    if (fp) {
@@ -1410,7 +1410,7 @@ MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case EN_KILLFOCUS:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	CHAR s[CCHMAXPATH], applname[CCHMAXPATH];
 	BOOL appchanged = FALSE, keychanged = FALSE;
@@ -1460,7 +1460,7 @@ MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	inidata = INSTDATA(hwnd);
 	if (!inidata) {
-	  Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  break;
 	}
 	inidata->isbinary = WinQueryButtonCheckstate(hwnd, IAD_ISBINARY);
@@ -1933,7 +1933,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else if (hwndStatus) {
 	if (*inidata->ininame) {
 	  WinSetWindowText(hwndStatus, GetPString(IDS_INTERNALINIVIEWERTEXT));
@@ -1989,7 +1989,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_RESCAN:
     inidata = INSTDATA(hwnd);
     if (!inidata)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else if (mp1) {
       SHORT sSelect;
       BOOL inprofile;
@@ -2042,7 +2042,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_INITIALSIZE:                  /* kludge */
     inidata = INSTDATA(hwnd);
     if (!inidata)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else
       inidata->dontclose = TRUE;
     return 0;
@@ -2084,7 +2084,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     /* load initial file */
     inidata = INSTDATA(hwnd);
     if (!inidata)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       if (mp1) {
 	strcpy(inidata->ininame, (CHAR *)mp1);
@@ -2142,7 +2142,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    (HPS) 0, FALSE, FALSE);
 	inidata = INSTDATA(hwnd);
 	if (!inidata)
-	  Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	else if (inidata->hwndCurrent)
 	  BoxWindow(inidata->hwndCurrent, (HPS) 0, CLR_RED);
       }
@@ -2158,7 +2158,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case LN_SETFOCUS:
 	inidata = INSTDATA(hwnd);
 	if (!inidata)
-	  Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	else {
 	  if (inidata->hwndCurrent)
 	    BoxWindow(inidata->hwndCurrent, (HPS) 0, CLR_PALEGRAY);
@@ -2179,7 +2179,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  inidata = INSTDATA(hwnd);
 	  if (!inidata || !inidata->hini) {
-	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
 	    break;
 	  }
 	  WinSendMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
@@ -2259,7 +2259,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP:
     inidata = INSTDATA(hwnd);
     if (!inidata)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       PRFPROFILE prfp;
       CHAR sysini[CCHMAXPATH + 81];
@@ -2307,7 +2307,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case VK_DELETE:
 	  inidata = INSTDATA(hwnd);
 	  if (!inidata)
-	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  else {
 	    SHORT cmd = inidata->hwndCurrent &&
 			WinQueryWindowUShort(inidata->hwndCurrent, QWS_ID) ==
@@ -2327,7 +2327,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_FINDFIRST:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else if (inidata->hwndCurrent) {
 	STRINGINPARMS sip;
 	static CHAR tofind[258] = "";
@@ -2380,7 +2380,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_FILTER:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	SHORT numitems = (SHORT)WinSendDlgItemMsg(hwnd,
 						  INI_APPLIST,
@@ -2400,7 +2400,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_MOVE:
       inidata = INSTDATA(hwnd);
       if (!inidata || !*inidata->ininame)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else if (mp2) {
 	INIREC *inirec = xmallocz(sizeof(INIREC), pszSrcFile, __LINE__);
 	if (inirec) {
@@ -2423,7 +2423,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_COMPARE:
       inidata = INSTDATA(hwnd);
       if (!inidata || !*inidata->ininame)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else if (mp2) {
 	INIREC *inirec = xmalloc(sizeof(INIREC), pszSrcFile, __LINE__);
 	if (inirec) {
@@ -2448,7 +2448,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_RENAMEKEY:
       inidata = INSTDATA(hwnd);
       if (!inidata) {
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
 	break;
       }
       if (!*inidata->ininame ||
@@ -2494,7 +2494,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_BACKUPINI:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else if (*inidata->ininame) {
 	// 09 Jan 08 SHL fixme to complain
 	CHAR filename[CCHMAXPATH], *p;
@@ -2555,7 +2555,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_CHANGEINI:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (WinDlgBox(HWND_DESKTOP,
 		      hwnd,
@@ -2571,7 +2571,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_SWAPINI:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (WinDlgBox(HWND_DESKTOP,
 		      hwnd,
@@ -2587,7 +2587,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_NEXTWINDOW:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	inidata->currid++;
 	if (inidata->currid > INI_DATALIST)
@@ -2599,7 +2599,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_PREVWINDOW:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	inidata->currid--;
 	if (inidata->currid < INI_APPLIST)
@@ -2611,7 +2611,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_CONFIRM:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	inidata->confirm = (inidata->confirm) ? FALSE : TRUE;
 	WinCheckMenuItem(inidata->hwndMenu, INI_CONFIRM, inidata->confirm);
@@ -2623,7 +2623,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_ADDENTRY:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	inidata->edit = (SHORT1FROMMP(mp1) == INI_EDITENTRY);
 	WinDlgBox(HWND_DESKTOP,
@@ -2634,7 +2634,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_OTHERPROFILE:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	CHAR filename[CCHMAXPATH + 81], *p;
 	FILESTATUS3 fsa;
@@ -2685,7 +2685,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_USERPROFILE:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (inidata->hini && *inidata->ininame)
 	  CloseProfile(inidata->hini, FALSE);
@@ -2700,7 +2700,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_SYSTEMPROFILE:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (inidata->hini && *inidata->ininame)
 	  CloseProfile(inidata->hini, FALSE);
@@ -2715,7 +2715,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_REFRESH:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	WinSendMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
 	EnumAppNames(WinWindowFromID(hwnd, INI_APPLIST), inidata->hini);
@@ -2725,7 +2725,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_DELETEKEY:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else if (*inidata->applname && *inidata->keyname) {
 
 	SHORT keyindex = inidata->keyindex;
@@ -2761,7 +2761,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case INI_DELETEAPP:
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       // 09 Jan 08 SHL fixme to complain?
       else if (*inidata->applname) {
 
@@ -2835,7 +2835,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       inidata = INSTDATA(hwnd);
       if (!inidata)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	dontclose = inidata->dontclose;
 	if (inidata->hini != NULLHANDLE && *inidata->ininame)

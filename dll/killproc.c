@@ -269,7 +269,7 @@ static VOID FillKillListThread(VOID * arg)
     newstdout = -1;
     rc = DosDupHandle(fileno(stdout), &newstdout);
     if (rc)
-      Dos_Error(MB_CANCEL, rc, hwnd, __FILE__, __LINE__, "DosDupHandle");
+      Dos_Error(MB_CANCEL, rc, hwnd, __FILE__, __LINE__, PCSZ_DOSDUPHANDLE);
     oldstdout = fileno(stdout);
     DosDupHandle(fileno(fp), &oldstdout);
     rc = runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,

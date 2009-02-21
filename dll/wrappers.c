@@ -338,7 +338,7 @@ FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile,
 FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
 	      UINT uiLineNumber)
 {
-  FILE *fp = _fsopen((PSZ) pszFileName, (PSZ) pszMode, fSharemode);
+  FILE *fp = _fsopen(pszFileName, pszMode, fSharemode);
 
   if (!fp)
     Runtime_Error(pszSrcFile, uiLineNumber, "_fsopen");

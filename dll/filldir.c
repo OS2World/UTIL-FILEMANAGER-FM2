@@ -335,21 +335,25 @@ static HPOINTER IDFile(PSZ p)
 
     cmp = *(ULONG *) cmps;
 
-    if (cmp == *(ULONG *) ".EXE" || cmp == *(ULONG *) ".CMD" ||
-	cmp == *(ULONG *) ".BAT" || cmp == *(ULONG *) ".COM")
+    if (cmp == *(ULONG *) PCSZ_DOTEXE || cmp == *(ULONG *) PCSZ_DOTCMD ||
+        cmp == *(ULONG *) PCSZ_DOTBAT || cmp == *(ULONG *) PCSZ_DOTCOM ||
+        cmp == *(ULONG *) PCSZ_DOTBTM)
       hptr = hptrApp;
     else if (cmp == *(ULONG *) ".ZIP" || cmp == *(ULONG *) ".LZH" ||
 	     cmp == *(ULONG *) ".ARJ" || cmp == *(ULONG *) ".ARC" ||
 	     cmp == *(ULONG *) ".ZOO" || cmp == *(ULONG *) ".RAR" ||
 	     cmp == *(ULONG *) ".TAR" || cmp == *(ULONG *) ".TGZ" ||
-	     cmp == *(ULONG *) ".GZ" || cmp == *(ULONG *) ".Z" ||
+	     cmp == *(ULONG *) ".GZ"  || cmp == *(ULONG *) ".Z"   ||
 	     cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2")
       hptr = hptrArc;
-    else if (cmp == *(ULONG *) ".BMP" || cmp == *(ULONG *) ".ICO" ||
-	     cmp == *(ULONG *) ".PTR" || cmp == *(ULONG *) ".GIF" ||
+    else if (cmp == *(ULONG *) PCSZ_DOTBMP  ||
+             cmp == *(ULONG *) PCSZ_DOTICO  ||
+             cmp == *(ULONG *) PCSZ_DOTPTR  ||
+             cmp == *(ULONG *) PCSZ_DOTJPEG ||
+             cmp == *(ULONG *) PCSZ_DOTJPG  ||
+             cmp == *(ULONG *) ".GIF" ||
 	     cmp == *(ULONG *) ".TIF" || cmp == *(ULONG *) ".PCX" ||
 	     cmp == *(ULONG *) ".TGA" || cmp == *(ULONG *) ".XBM" ||
-	     cmp == *(ULONG *) ".JPEG" || cmp == *(ULONG *) ".JPG" ||
 	     cmp == *(ULONG *) ".PNG" || cmp == *(ULONG *) ".PSD" ||
 	     cmp == *(ULONG *) ".LGO" || cmp == *(ULONG *) ".EPS" ||
 	     cmp == *(ULONG *) ".RLE" || cmp == *(ULONG *) ".RAS" ||

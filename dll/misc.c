@@ -141,7 +141,7 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
 
     if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		"DosGetInfoBlocks");
+		PCSZ_DOSGETINFOBLOCKS);
       yes = FALSE;
     }
     else {
@@ -176,7 +176,7 @@ INT GetTidForWindow(HWND hwnd)
 
     if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		"DosGetInfoBlocks");
+		PCSZ_DOSGETINFOBLOCKS);
     }
     else {
       PID pid;
@@ -205,7 +205,7 @@ INT GetTidForThread(VOID)
 
     if (rc) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		"DosGetInfoBlocks");
+		PCSZ_DOSGETINFOBLOCKS);
     }
     else
       ordinal = ptib->tib_ptib2->tib2_ultid;

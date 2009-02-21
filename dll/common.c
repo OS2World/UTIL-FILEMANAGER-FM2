@@ -206,7 +206,7 @@ void CommonCreateTextChildren(HWND hwnd, char *class, USHORT * ids)
   HWND hwndTmp;
 
   if (!hwnd || !class || !ids) {
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
 

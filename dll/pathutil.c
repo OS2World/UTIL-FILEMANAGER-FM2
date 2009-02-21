@@ -36,6 +36,7 @@
 #include "strutil.h"			// GetPString
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
+#include "stristr.h"                    //stristr
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -50,7 +51,7 @@ static PSZ pszSrcFile = __FILE__;
  *
  */
 
-PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
+PSZ BldFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName)
 {
   UINT c = pszPathName ? strlen(pszPathName) : 0;
   if (c > 0) {
@@ -69,7 +70,7 @@ PSZ BldFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
  * @returns pointer to quoted path name in caller's buffer
  */
 
-PSZ BldQuotedFullPathName(PSZ pszFullPathName, PSZ pszPathName, PSZ pszFileName)
+PSZ BldQuotedFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName)
 {
   UINT c = pszPathName ? strlen(pszPathName) : 0;
   BOOL q = needs_quoting(pszPathName) || needs_quoting(pszFileName);
@@ -145,11 +146,11 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
   memset(pszWorkBuf, 0, MaxComLineStrg);
   strcpy(szCmdLine, pszCmdLine_);
   if (szCmdLine[0] != '\0') {
-    offsetexe = strstr(strlwr(pszCmdLine_), ".exe");
-    offsetcmd = strstr(strlwr(pszCmdLine_), ".cmd");
-    offsetcom = strstr(strlwr(pszCmdLine_), ".com");
-    offsetbtm = strstr(strlwr(pszCmdLine_), ".btm");
-    offsetbat = strstr(strlwr(pszCmdLine_), ".bat");
+    offsetexe = stristr(pszCmdLine_, PCSZ_DOTEXE);
+    offsetcmd = stristr(pszCmdLine_, PCSZ_DOTCMD);
+    offsetcom = stristr(pszCmdLine_, PCSZ_DOTCOM);
+    offsetbtm = stristr(pszCmdLine_, PCSZ_DOTBTM);
+    offsetbat = stristr(pszCmdLine_, PCSZ_DOTBAT);
     if (offsetexe)
       offset = offsetexe;
     else {
@@ -183,7 +184,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	       GetPString(IDS_QUOTESINARGSTEXT),
 	       pszCmdLine_);
       if (!offsetexe && !offsetcom) {
-	FullPath = searchapath("PATH", szCmdLine);
+	FullPath = searchapath(PCSZ_PATH, szCmdLine);
 	if (*FullPath)
 	  ret = 0;
       }
@@ -223,27 +224,27 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	  remove_first_occurence_of_character("\"", szCmdLine);
 	ret = DosQueryAppType(szCmdLine, &ulAppType); // exe automatically appended
 	if (!ret)
-	  strcat(szCmdLine, ".exe");
+	  strcat(szCmdLine, PCSZ_DOTEXE);
 	else {
-	  strcat(szCmdLine, ".com");
+	  strcat(szCmdLine, PCSZ_DOTCOM);
 	  ret = DosQueryAppType(szCmdLine, &ulAppType);
 	  if (ret) {
 	    offset = strrchr(szCmdLine, '.' );
 	    *offset = 0;
-	    strcat(szCmdLine, ".cmd");
-	    FullPath = searchapath("PATH", szCmdLine);
+	    strcat(szCmdLine, PCSZ_DOTCMD);
+	    FullPath = searchapath(PCSZ_PATH, szCmdLine);
 	    if (*FullPath)
 	      ret = 0;
 	    else {
 	      *offset = 0;
-	      strcat(szCmdLine, ".bat");
-	      FullPath = searchapath("PATH", szCmdLine);
+	      strcat(szCmdLine, PCSZ_DOTBAT);
+	      FullPath = searchapath(PCSZ_PATH, szCmdLine);
 	      if (*FullPath)
 		ret = 0;
 	      else {
 		*offset = 0;
-		strcat(szCmdLine, ".bmt");
-		FullPath = searchapath("PATH", szCmdLine);
+		strcat(szCmdLine, PCSZ_DOTBTM);
+		FullPath = searchapath(PCSZ_PATH, szCmdLine);
 		if (*FullPath)
 		  ret = 0;
 	      }
@@ -261,33 +262,33 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	    *pszChar = '\0';
 	    ret = DosQueryAppType(szCmdLine, &ulAppType);
 	    if (!ret) {
-	      strcat(szCmdLine, ".exe");
+	      strcat(szCmdLine, PCSZ_DOTEXE);
 	      break;
 	    }
 	    else {
-	      strcat(szCmdLine, ".com");
+	      strcat(szCmdLine, PCSZ_DOTCOM);
 	      ret = DosQueryAppType(szCmdLine, &ulAppType);
 	      if (ret) {
 		offset = strrchr(szCmdLine, '.' );
 		*offset = 0;
-		strcat(szCmdLine, ".cmd");
-		FullPath = searchapath("PATH", szCmdLine);
+		strcat(szCmdLine, PCSZ_DOTCMD);
+		FullPath = searchapath(PCSZ_PATH, szCmdLine);
 		if (*FullPath) {
 		  ret = 0;
 		  break;
 		}
 		else {
 		  *offset = 0;
-		  strcat(szCmdLine, ".bat");
-		  FullPath = searchapath("PATH", szCmdLine);
+		  strcat(szCmdLine, PCSZ_DOTBAT);
+		  FullPath = searchapath(PCSZ_PATH, szCmdLine);
 		  if (*FullPath) {
 		    ret = 0;
 		    break;
 		  }
 		  else {
 		    *offset = 0;
-		    strcat(szCmdLine, ".bmt");
-		    FullPath = searchapath("PATH", szCmdLine);
+		    strcat(szCmdLine, PCSZ_DOTBTM);
+		    FullPath = searchapath(PCSZ_PATH, szCmdLine);
 		    if (*FullPath) {
 		      ret = 0;
 		      break;
@@ -348,7 +349,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	     NullStr,
 	     GetPString(IDS_QUOTESINARGSTEXT),
 	     pszCmdLine_);
-    FullPath = searchapath("PATH", szCmdLine);
+    FullPath = searchapath(PCSZ_PATH, szCmdLine);
     BldQuotedFileName(pszNewCmdLine, szCmdLine);
     //printf("%d %s ", ret, szCmdLine); fflush(stdout);
     if (!*FullPath) {

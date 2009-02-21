@@ -109,7 +109,7 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
   BOOL spaces;
 
   if (!command || !*command) {
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return -1;
   }
   commandline = xmalloc(MaxComLineStrg + 1, pszSrcFile, __LINE__);
@@ -738,7 +738,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     p = GetCmdSpec(FALSE);
     strcpy(pszPgm, p);
     if (!*pszPgm) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       return -1;
     }
   }
@@ -928,16 +928,24 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       if (p) {
 	char temp[CCHMAXPATH + 1];
 
-	if (!stricmp(p, ".BAT")) {
-	  strcpy(temp, pszPgm);
-	  strcpy(pszPgm, pszArgs);
-	  strcpy(pszArgs, "/C ");
-	  strcat(pszArgs, temp);
-	  strcat(pszArgs, " ");
-	  strcat(pszArgs, pszPgm);
-	  strcpy(pszPgm, GetCmdSpec(TRUE));             // DOS
+        if (!stricmp(p, PCSZ_DOTBAT)) {
+          if (!fProtectOnly) {
+            strcpy(temp, pszPgm);
+            strcpy(pszPgm, pszArgs);
+            strcpy(pszArgs, "/C ");
+            strcat(pszArgs, temp);
+            strcat(pszArgs, " ");
+            strcat(pszArgs, pszPgm);
+            strcpy(pszPgm, GetCmdSpec(TRUE));             // DOS
+          }
+          else
+            saymsg(MB_OK,
+                   HWND_DESKTOP,
+                   NullStr,
+                   GetPString(IDS_NOTPROTECTONLYEXE),
+                   pszPgm);
 	}
-	else if (!stricmp(p, ".CMD") || !stricmp(p, ".BTM")) {
+	else if (!stricmp(p, PCSZ_DOTCMD) || !stricmp(p, PCSZ_DOTBTM)) {
 	  // Assume 4OS2 is BTM
 	  strcpy(temp, pszPgm);
 	  strcpy(pszPgm, pszArgs);
@@ -1285,21 +1293,30 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 	if (*p)
 	  strcpy(parameters, p);
 
-	if (p && (!stricmp(p, ".BAT") || !stricmp(p, ".CMD"))) {
+        if (p && (!stricmp(p, PCSZ_DOTBAT) || !stricmp(p, PCSZ_DOTCMD) ||
+                  !stricmp(p, PCSZ_DOTBTM))) {
 	  char *temp;
 
 	  temp = xmalloc(CCHMAXPATH * 2,pszSrcFile,__LINE__);
 	  if (temp) {
-	    if (!stricmp(p, ".BAT")) {
-	      strcpy(temp, executable);
-	      strcpy(executable, parameters);
-	      strcpy(parameters, "/C ");
-	      strcat(parameters, temp);
-	      strcat(parameters, " ");
-	      strcat(parameters, executable);
-	      strcpy(executable, GetCmdSpec(TRUE));
+            if (!stricmp(p, PCSZ_DOTBAT)) {
+              if (!fProtectOnly) {
+                strcpy(temp, executable);
+                strcpy(executable, parameters);
+                strcpy(parameters, "/C ");
+                strcat(parameters, temp);
+                strcat(parameters, " ");
+                strcat(parameters, executable);
+                strcpy(executable, GetCmdSpec(TRUE));
+              }
+              else
+                saymsg(MB_OK,
+                       HWND_DESKTOP,
+                       NullStr,
+                       GetPString(IDS_NOTPROTECTONLYEXE),
+                       filename);
 	    }
-	    else if (!stricmp(p, ".CMD")) {
+	    else if (!stricmp(p, PCSZ_DOTCMD) || !stricmp(p, PCSZ_DOTBTM)) {
 	      strcpy(temp, executable);
 	      strcpy(executable, parameters);
 	      strcpy(parameters, "/C ");

@@ -171,7 +171,7 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
       }
       else
        Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DosQueryPathInfo");
+		 PCSZ_DOSQUERYPATHINFO);
     }
 
     rc = DosQueryPathInfo(buffer, FIL_STANDARD, &fsa3, sizeof(fsa3));
@@ -179,7 +179,7 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
       ret = TRUE;
     else {
 	Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DosQueryPathInfo");
+		  PCSZ_DOSQUERYPATHINFO);
 	*buffer = 0;
     }
   }

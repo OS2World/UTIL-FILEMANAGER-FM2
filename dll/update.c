@@ -341,7 +341,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
   if (!dcd)
     dcd = INSTDATA(hwndCnr);
   if (!dcd) {
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return ret;
   }
   if (!filename || !howmany || !filename[0])

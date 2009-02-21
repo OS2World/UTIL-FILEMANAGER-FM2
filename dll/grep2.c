@@ -301,7 +301,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinEnableWindow(WinWindowFromID(hwnd, GREP_CRCDUPES), FALSE);
     WinEnableWindow(WinWindowFromID(hwnd, GREP_NOSIZEDUPES), FALSE);
 
-    BldFullPathName(s, pFM2SaveDirectory, "GREPMASK.DAT");
+    BldFullPathName(s, pFM2SaveDirectory, PCSZ_GREPMASKDAT);
     fp = _fsopen(s, "r", SH_DENYWR);
     if (fp) {
       while (!feof(fp)) {
@@ -807,7 +807,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       hwndCollect = WinQueryWindowULong(hwnd, QWL_USER);
       if (!hwndCollect)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	// 07 Feb 08 SHL - fixme to malloc and free in thread
 	static GREP g;          // Passed to thread
@@ -982,7 +982,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    LM_QUERYITEMCOUNT,
 					    MPVOID, MPVOID);
 	if (sSelect > 0) {
-	  BldFullPathName(s, pFM2SaveDirectory, "GREPMASK.DAT");
+	  BldFullPathName(s, pFM2SaveDirectory, PCSZ_GREPMASKDAT);
 	  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
 	    break; //already gave error msg
 	  fp = xfopen(s, "w", pszSrcFile, __LINE__);

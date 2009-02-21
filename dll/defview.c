@@ -140,8 +140,8 @@ BOOL ShowMultimedia(CHAR * filename)
 	      p = ".";
 	     /* printf("%s %d %s\n",
 	      __FILE__, __LINE__, p); fflush(stdout);*/
-	  if (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC") ||
-	       !stricmp(p, ".JPG") || !stricmp(p, ".JPEG")){
+	  if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC) ||
+	       !stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG)){
 	     hmmio = pMMIOOpen(filename,
 	            &mmioinfo,
 	            MMIO_READ | MMIO_NOIDENTIFY);
@@ -192,7 +192,7 @@ BOOL ShowMultimedia(CHAR * filename)
 	      p = ".";
 	     /* printf("%s %d %s\n",
 	      __FILE__, __LINE__, p); fflush(stdout);*/
-	  if (!stricmp(p, ".JPG") || !stricmp(p, ".JPEG"))
+	  if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
 	    OpenObject(filename, Default, hwnd);  //Image fails to display these
 	  else       // is an image that can be translated
 	    RunFM2Util("IMAGE.EXE", filename);
@@ -205,10 +205,10 @@ BOOL ShowMultimedia(CHAR * filename)
 	      p = ".";
 	     /* printf("%s %d %s\n",
 	      __FILE__, __LINE__, p); fflush(stdout);*/
-	  if (!stricmp(p, ".OGG") || !stricmp(p, ".MP3") || !stricmp(p, ".FLAC"))
+	  if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC))
 	      OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
 	  else
-	    RunFM2Util("FM2PLAY.EXE", filename);
+	    RunFM2Util(PCSZ_FM2PLAYEXE, filename);
 	  played = TRUE;
     }
   }
@@ -339,7 +339,7 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 	  if (!p)
 	    p = ".";
 	  if (stricmp(p, ".INI") || !StartIniEditor(hwndParent, filename, 4)) {
-	    if (stricmp(p, ".HLP") || !ViewHelp(filename)) {
+	    if (stricmp(p, PCSZ_DOTHLP) || !ViewHelp(filename)) {
             ViewIt:
               if (TestBinary(filename)) {
                 if (*binview) {

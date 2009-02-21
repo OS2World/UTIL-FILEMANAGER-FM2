@@ -3676,11 +3676,11 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (haccelCfg == NULLHANDLE) {
       haccelCfg = WinLoadAccelTable(hab, FM3ModHandle, CFG_FRAME);
       if (haccelCfg == NULLHANDLE)
-	Win_Error(hwndNotebook, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+	Win_Error(hwndNotebook, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINLOADACCELTABLE);
     }
     if (haccelCfg != NULLHANDLE) {
       if (!WinSetAccelTable(hab, haccelCfg, hwndNotebook))
-	Win_Error(hwndNotebook, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	Win_Error(hwndNotebook, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
       // else
 	// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_DRIVELIST %x %x", hwndFrame, haccelDriveList);
     }

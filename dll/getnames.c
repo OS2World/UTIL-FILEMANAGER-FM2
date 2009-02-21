@@ -24,6 +24,7 @@
 #include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
 #include "notebook.h"			// Data declaration(s)
 #include "info.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "mainwnd.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
@@ -262,7 +263,7 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
       }
     }
     if (!loadit || loadit == TRUE)
-      strcat(fdlg.szFullFile, "*.TXT");
+      strcat(fdlg.szFullFile, PCSZ_STARDOTTXT);
     else
       strcat(fdlg.szFullFile, "*");
   }
@@ -355,7 +356,7 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
 	*p = 0;
       }
     }
-    strcat(fdlg.szFullFile, "*.TXT");
+    strcat(fdlg.szFullFile, PCSZ_STARDOTTXT);
   }
   else
     strcpy(fdlg.szFullFile, filename);

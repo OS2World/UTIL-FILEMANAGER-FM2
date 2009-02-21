@@ -387,7 +387,7 @@ MRESULT EXPENTRY MergeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             list = test;
         }
         if (!list || !list[0]) {
-          Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+          Runtime_Error(pszSrcFile, __LINE__, NULL);
           break;
         }
         else {

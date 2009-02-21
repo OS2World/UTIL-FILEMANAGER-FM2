@@ -48,6 +48,7 @@
 #include "strutil.h"			// GetPString
 #include "fm3str.h"
 #include "notebook.h"                   // fErrorBeepOff
+#include "init.h"                       // Data declares
 
 #pragma data_seg(GLOBAL2)
 PSZ DEBUG_STRING;
@@ -294,6 +295,7 @@ ULONG GetMSecTimer(void)
 }
 
 //== Runtime_Error: report runtime library error using passed message string ===
+//If pszFmt is NULL a No Data error message is returned GKY 20 Feb 09 (Replaces Runtime_Error2)
 
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
@@ -301,6 +303,8 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
   va_list va;
 
   // Format caller's message
+  if (!pszFmt)
+    pszFmt = PCSZ_NODATA;
   va_start(va, pszFmt);
   szMsg[sizeof(szMsg) - 1] = 0;
   vsprintf(szMsg, pszFmt, va);
@@ -325,13 +329,13 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
 //== Runtime_Error2: report runtime library error using passed message id ===
 
-VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
+/*VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
 {
   Runtime_Error(pszSrcFile, uSrcLineNo, GetPString(idMsg));
 
 } // Runtime_Error2
 
-// fixme to be rename to Misc_Error
+// fixme to be rename to Misc_Error */
 
 //=== saymsg: report misc error using passed message ===
 

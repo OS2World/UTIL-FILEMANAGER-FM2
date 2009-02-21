@@ -87,7 +87,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 
   // fixme to complain?
   if (!hwndMenu) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return ret;
   }
   if (!filename)

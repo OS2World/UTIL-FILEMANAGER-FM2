@@ -89,7 +89,7 @@ VOID load_quicktools(VOID)
     qtloaded = FALSE;
     return;
   }
-  BldFullPathName(s, pFM2SaveDirectory, "QUICKTLS.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_QUICKTLSDAT);
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     x = 0;
@@ -119,7 +119,7 @@ VOID save_quicktools(VOID)
 
   if (!quicktool[0])
     return;
-  BldFullPathName(s, pFM2SaveDirectory, "QUICKTLS.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_QUICKTLSDAT);
   if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
@@ -147,7 +147,7 @@ TOOL *load_tools(CHAR * filename)
   if (*filename)
     fname = searchpath(filename);
   if (!fname || !*fname)
-    fname = "FM3TOOLS.DAT";
+    fname = (PSZ) PCSZ_FM3TOOLSDAT;
   if (fname && *fname) {
     filename = fname;
     strcpy(lasttoolbar, filename);
@@ -227,7 +227,7 @@ VOID save_tools(CHAR * filename)
       filename = fname;
   }
 
-  if (stristr(filename, "FM3TOOLS.DAT"))
+  if (stristr(filename, PCSZ_FM3TOOLSDAT))
     filename = "FM3TOOLS.TLS";
   if (toolhead && filename && *filename) {
     strcpy(lasttoolbar, filename);
@@ -987,7 +987,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     WinSetDlgItemText(hwnd,
 		      SVBTN_CURRENT,
-		      (*lasttoolbar) ? lasttoolbar : "FM3TOOLS.DAT");
+		      (*lasttoolbar) ? lasttoolbar : PCSZ_FM3TOOLSDAT);
     break;
 
   case UM_SETUP:
@@ -1052,7 +1052,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    SVBTN_ENTRY, sizeof(lasttoolbar), lasttoolbar);
 	if (*lasttoolbar) {
 	  if (!strchr(lasttoolbar, '.'))
-	    strcat(lasttoolbar, ".TLS");
+	    strcat(lasttoolbar, PCSZ_DOTTLS);
 	}
 	if (saving && *lasttoolbar)
 	  save_tools(NULL);

@@ -68,7 +68,7 @@
 #include "excputil.h"			// 06 May 08 SHL added
 
 static BOOL PutComments(HWND hwnd, CHAR * filename, CHAR * comments);
-static BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
+static BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
 	     CHAR * data);
 
 // Data definitions
@@ -86,7 +86,7 @@ static HWND hwndAutoObj;
 static CHAR stopflag;
 static CHAR currfile[CCHMAXPATH];
 
-BOOL WriteEA(HWND hwnd, CHAR * filename, CHAR * eaname, USHORT type,
+BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
 	     CHAR * data)
 {
   /* save an ea to disk */
@@ -254,7 +254,7 @@ BOOL PutComments(HWND hwnd, CHAR * filename, CHAR * comments)
     if (!*p)
       comments = NULL;
   }
-  return WriteEA(hwnd, filename, ".COMMENTS", EAT_MVMT, comments);
+  return WriteEA(hwnd, filename, PCSZ_DOTCOMMENTS, EAT_MVMT, comments);
 }
 
 static PSZ pszBufOvfMsg = "Buffer overflow";
@@ -555,7 +555,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pgealist = xmallocz(sizeof(GEA2LIST) + 64, pszSrcFile, __LINE__);
 	  if (pgealist) {
 	    pgea = &pgealist->list[0];
-	    strcpy(pgea->szName, ".COMMENTS");
+	    strcpy(pgea->szName, PCSZ_DOTCOMMENTS);
 	    pgea->cbName = strlen(pgea->szName);
 	    pgea->oNextEntryOffset = 0L;
 	    pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);

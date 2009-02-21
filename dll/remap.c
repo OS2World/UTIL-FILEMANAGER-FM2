@@ -87,7 +87,7 @@ VOID load_resources(VOID)
   INT x = 0;
 
   loadedres = TRUE;
-  BldFullPathName(s, pFM2SaveDirectory, "RESOURCE.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_RESOURCEDAT);
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (x < MAXNUMRES && !feof(fp)) {
@@ -125,7 +125,7 @@ VOID save_resources(VOID)
 
   if (!loadedres)
     return;
-  BldFullPathName(s, pFM2SaveDirectory, "RESOURCE.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_RESOURCEDAT);
   if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   if (reshead) {

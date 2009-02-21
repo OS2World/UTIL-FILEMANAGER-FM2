@@ -244,7 +244,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     if (!mp2) {
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
     }
     else {
@@ -280,7 +280,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FILE *fp;
 	CHAR s[CCHMAXPATH + 14];
 
-        BldFullPathName(s, pFM2SaveDirectory, "PATTERNS.DAT");
+        BldFullPathName(s, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
 	fp = _fsopen(s, "r", SH_DENYWR);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
@@ -307,7 +307,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sMax = (SHORT) WinSendDlgItemMsg(hwnd, SAV_LISTBOX,
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
-        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+        BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
         if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 1) == 2)
           break; //already gave error msg
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
@@ -326,7 +326,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       else if (!sMax) {
-        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+        BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
 	unlinkf("%s", szBuffer);
       }
     }
@@ -381,7 +381,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(savename, PCSZ_STARDOTLST);
 	if (export_filename(hwnd, savename, 1) && *savename) {
 	  if (!strchr(savename, '.'))
-	    strcat(savename, ".LST");
+	    strcat(savename, PCSZ_DOTLST);
 	  WinSetDlgItemText(hwnd, SAV_FILENAME, savename);
 	}
       }
@@ -456,7 +456,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (stricmp(savename, "PRN") &&
 	    strnicmp(savename, "\\DEV\\LPT", 8) && !strchr(savename, '.'))
-	  strcat(savename, ".LST");
+	  strcat(savename, PCSZ_DOTLST);
 	PrfWriteProfileString(fmprof, appname, "SaveToListName", savename);
 	pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				    CM_QUERYRECORDEMPHASIS,
@@ -470,7 +470,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
 	if (!pci || (INT) pci == -1)
-	  Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	else {
 	  fp = _fsopen(savename, "w+", SH_DENYWR);
 	  if (!fp)
@@ -604,7 +604,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
   switch (msg) {
   case WM_INITDLG:
     if (!mp2) {
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
     }
     else {
@@ -640,7 +640,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	FILE *fp;
 	CHAR s[CCHMAXPATH + 14];
 
-        BldFullPathName(s, pFM2SaveDirectory, "PATTERNS.DAT");
+        BldFullPathName(s, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
 	fp = _fsopen(s, "r", SH_DENYWR);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
@@ -668,7 +668,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				       SAV_LISTBOX,
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
       if (sMax > 0) {
-        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+        BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
         if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 1) == 2)
           break; //already gave error msg
 	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
@@ -687,7 +687,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	}
       }
       else if (!sMax) {
-        BldFullPathName(szBuffer, pFM2SaveDirectory, "PATTERNS.DAT");
+        BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
 	unlinkf("%s", szBuffer);
       }
     }
@@ -742,7 +742,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  strcpy(savename, PCSZ_STARDOTLST);
 	if (export_filename(hwnd, savename, 1) && *savename) {
 	  if (!strchr(savename, '.'))
-	    strcat(savename, ".LST");
+	    strcat(savename, PCSZ_DOTLST);
 	  WinSetDlgItemText(hwnd, SAV_FILENAME, savename);
 	}
       }
@@ -819,10 +819,10 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	}
 	if (stricmp(savename, "PRN") &&
 	    strnicmp(savename, "\\DEV\\LPT", 8) && !strchr(savename, '.'))
-	  strcat(savename, ".LST");
+	  strcat(savename, PCSZ_DOTLST);
 	PrfWriteProfileString(fmprof, appname, "SaveToListName", savename);
 	if (!list || !list[0])
-	  Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	else {
 	  fp = _fsopen(savename, "r+", SH_DENYWR);
 	  if (!fp)

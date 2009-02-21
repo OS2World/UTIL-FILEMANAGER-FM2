@@ -242,7 +242,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     saymsg(MB_ENTER | MB_ICONASTERISK,
 	   HWND_DESKTOP,
 	   GetPString(IDS_NOTETEXT), GetPString(IDS_SAVEARCBB2TEXT));
-    archiverbb2 = ARCHIVERBB2;
+    archiverbb2 = (PSZ) PCSZ_ARCHIVERBB2;
   }
   /* Check space on drive*/
   if (CheckDriveSpaceAvail(archiverbb2, ullDATFileSpaceNeeded * 4, 1) == 2) //* 4 is because this file is larger than other .dat files
@@ -250,11 +250,11 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
 
   /* save a backup */
   psz = strrchr(archiverbb2, '.');
-  if (psz && !stricmp(psz, ".BB2")) {
+  if (psz && !stricmp(psz, PCSZ_DOTBB2)) {
     strcpy(psz, ".BAK");
     DosDelete(archiverbb2);
     strcpy(sz, archiverbb2);
-    strcpy(psz, ".BB2");
+    strcpy(psz, PCSZ_DOTBB2);
     DosMove(archiverbb2, sz);
     fpOld = fopen(sz, "r");		// OK for file not to exist
   }
@@ -269,7 +269,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     //fixme to use DateFmt from locale
     fprintf(fpNew,
 	    ";\n; %s file written by FM/2 v%d.%02d on %u/%u/%u %u:%02u:%02u\n;\n",
-	    ARCHIVERBB2,
+	    PCSZ_ARCHIVERBB2,
 	    VERMAJOR, VERMINOR,
 	    tm->tm_mon + 1, tm->tm_mday, tm->tm_year + 1900,
 	    tm->tm_hour, tm->tm_min, tm->tm_sec);
@@ -288,7 +288,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     }
     else {
       // Write default header
-      fputs(ARCHIVERBB2, fpNew);
+      fputs(PCSZ_ARCHIVERBB2, fpNew);
     }
     pat = arcsighead;
     while (pat) {
@@ -914,7 +914,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  PSZ ab2;
 
-	  ab2 = searchpath(ARCHIVERBB2);	// Rewrite without alerting
+	  ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without alerting
 	  rewrite_archiverbb2(ab2);
 	}
       }

@@ -703,11 +703,11 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelDriveList == NULLHANDLE) {
 		haccelDriveList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_DRIVELIST);
 		if (haccelDriveList == NULLHANDLE)
-		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINLOADACCELTABLE);
 	    }
 	    if (haccelDriveList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelDriveList, hwndFrame))
-		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
 	      // else
 		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_DRIVELIST %x %x", hwndFrame, haccelDriveList);
 	    }
@@ -716,11 +716,11 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelSetupList == NULLHANDLE) {
 		haccelSetupList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_SETUPLIST);
 		if (haccelSetupList == NULLHANDLE)
-		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINLOADACCELTABLE);
 	    }
 	    if (haccelSetupList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelSetupList, hwndFrame))
-		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
 	      // else
 		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_SETUPLIST %x %x", hwndFrame, haccelSetupList);
 	    }
@@ -729,11 +729,11 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelCmdList == NULLHANDLE) {
 		haccelCmdList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_CMDLIST);
 		if (haccelCmdList == NULLHANDLE)
-		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINLOADACCELTABLE);
 	    }
 	    if (haccelCmdList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelCmdList, hwndFrame))
-		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
 	      // else
 		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_CMDLIST %x %x", hwndFrame, haccelCmdList);
 	    }
@@ -742,11 +742,11 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelUserList == NULLHANDLE) {
 		haccelUserList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_USERLIST);
 		if (haccelUserList == NULLHANDLE)
-		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINLOADACCELTABLE);
 	    }
 	    if (haccelUserList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelUserList, hwndFrame))
-		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
 	      // else
 		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_USERLIST %x %x", hwndFrame, haccelUserList);
 	    }
@@ -755,11 +755,11 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelButtonList == NULLHANDLE) {
 		haccelButtonList = WinLoadAccelTable(hab, FM3ModHandle, MAIN_BUTTONLIST);
 		if (haccelButtonList == NULLHANDLE)
-		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinLoadAccelTable");
+		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINLOADACCELTABLE);
 	    }
 	    if (haccelButtonList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelButtonList, hwndFrame))
-		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
 	      // else
 		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_BUTTONLIST %x %x", hwndFrame, haccelButtonList);
 	    }
@@ -777,7 +777,7 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	case MAIN_BUTTONLIST:
 	  if (haccelSaved != NULLHANDLE) {
 	    if (!WinSetAccelTable(hab, haccelSaved, hwndFrame))
-	      Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, "WinSetAccelTable");
+	      Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
 	    // else
 	      // DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable SAVED %x %x", hwndFrame, haccelSaved);
 	  }
@@ -2940,7 +2940,7 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
   BOOL fIsShutDownState;
 
   if (!pszStateName || !*pszStateName) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return -1;
   }
   if (strlen(pszStateName) > sizeof(szPrefix) - 2) {
@@ -4846,7 +4846,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     GetPString(IDS_DOESNTEXISTTEXT), szStateName);
 	    }
 	    else if (!size)
-	      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	      Runtime_Error(pszSrcFile, __LINE__, NULL);
 	    else {
 	      PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0L);
 	      for (x = 0; x < numsaves; x++) {
@@ -5497,7 +5497,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	hwndCnr = (HWND) WinSendMsg(WinWindowFromID(hwndCnr, FID_CLIENT),
 				    UM_CONTAINERHWND, MPVOID, MPVOID);
 	if (!hwndCnr) {
-	  Runtime_Error2(pszSrcFile, __LINE__, IDS_NOWINDOWTEXT);
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  break;
 	}
 	x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
@@ -6426,7 +6426,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetFocus(HWND_DESKTOP, hwndTree);
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_BUTTONLIST) {
-	      strcat(path, ".TLS");
+	      strcat(path, PCSZ_DOTTLS);
 	      load_tools(path);
 	      PrfWriteProfileString(fmprof,
 				    FM3Str, "LastToolbar", lasttoolbar);

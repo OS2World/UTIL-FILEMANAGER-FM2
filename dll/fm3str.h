@@ -320,7 +320,6 @@
 #define IDS_MAYDAYTEXT                                        287
 #define IDS_ASKABOUTUNDELETEHELPTEXT                          288
 #define IDS_UNDELETETITLETEXT                                 289
-#define IDS_NODATATEXT                                        290
 #define IDS_COULDNTSTARTTHREADTEXT                            291
 #define IDS_UNDELETEHELPTITLETEXT                             292
 #define IDS_UNDELETEHELPTEXT                                  293

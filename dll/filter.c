@@ -150,7 +150,7 @@ VOID load_masks(VOID)
   CHAR s[CCHMAXPATH + 24];
 
   loadedmasks = TRUE;
-  BldFullPathName(s, pFM2SaveDirectory, "FILTERS.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_FILTERSDAT);
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (!feof(fp)) {
@@ -189,7 +189,7 @@ VOID save_masks(VOID)
   if (!loadedmasks)
     return;
   if (maskhead) {
-    BldFullPathName(s, pFM2SaveDirectory, "FILTERS.DAT");
+    BldFullPathName(s, pFM2SaveDirectory, PCSZ_FILTERSDAT);
     if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
     fp = xfopen(s, "w", pszSrcFile, __LINE__);

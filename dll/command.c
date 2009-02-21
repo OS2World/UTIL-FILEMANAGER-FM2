@@ -351,7 +351,7 @@ VOID load_commands(VOID)
   cmdloaded = TRUE;
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (pszCmdLine) {
-    BldFullPathName(pszCmdLine, pFM2SaveDirectory, "COMMANDS.DAT");
+    BldFullPathName(pszCmdLine, pFM2SaveDirectory, PCSZ_COMMANDSDAT);
     fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
     if (fp) {
       while (!feof(fp)) {
@@ -415,7 +415,7 @@ VOID save_commands(VOID)
   if (!cmdloaded || !cmdhead)
     return;
   info = cmdhead;
-  BldFullPathName(s, pFM2SaveDirectory, "COMMANDS.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_COMMANDSDAT);
   if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   fp = xfopen(s, "w", pszSrcFile, __LINE__);

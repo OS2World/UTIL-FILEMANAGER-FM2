@@ -145,7 +145,7 @@ static INT lookup_setup(PCSZ name, UINT action)
   LINKDIRS *pldLast = NULL;
 
   if (!name || !*name) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return -1;
   }
 
@@ -207,7 +207,7 @@ VOID load_setups(VOID)
     if ((eid & 0xffff) != PMERR_NOT_IN_IDX) {
       // Get error info back
       PrfQueryProfileSize(fmprof, FM3Str, pszLastSetups, &ulDataBytes);
-      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "PrfQueryProfileSize");
+      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_PRFQUERYPROFILESIZE);
     }
     else
       fSetupsLoaded = TRUE;		// Nothing saved
@@ -215,7 +215,7 @@ VOID load_setups(VOID)
   }
 
   if (ulDataBytes == 0) {
-    Runtime_Error(pszSrcFile, __LINE__, "PrfQueryProfileSize reported 0 bytes");
+    Runtime_Error(pszSrcFile, __LINE__, PCSZ_PRFQUERYPROFILESIZE);
     return;
   }
 
@@ -224,7 +224,7 @@ VOID load_setups(VOID)
     return;
   l = ulDataBytes;
   if (!PrfQueryProfileData(fmprof, FM3Str, pszLastSetups, pszBuf, &l)) {
-    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "PrfQueryProfileData");
+    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_PRFQUERYPROFILEDATA);
     free(pszBuf);
     return;
   }
@@ -379,7 +379,7 @@ VOID load_udirs(VOID)
     free_udirs();
   loadedudirs = TRUE;
   fUdirsChanged = FALSE;
-  BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_USERDIRSDAT);
   fp = _fsopen(s, "r", SH_DENYWR);
   if (fp) {
     while (!feof(fp)) {
@@ -425,7 +425,7 @@ VOID save_udirs(VOID)
   if (loadedudirs) {
     fUdirsChanged = FALSE;
     if (udirhead) {
-      BldFullPathName(s, pFM2SaveDirectory, "USERDIRS.DAT");
+      BldFullPathName(s, pFM2SaveDirectory, PCSZ_USERDIRSDAT);
       if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
 	return; //already gave error msg
       fp = xfopen(s, "w", pszSrcFile, __LINE__);
@@ -744,7 +744,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     okay = FALSE;
     *lastdir = 0;
     if (!mp2) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
       break;
     }

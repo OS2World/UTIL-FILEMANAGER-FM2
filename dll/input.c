@@ -41,7 +41,7 @@ MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   switch (msg) {
   case WM_INITDLG:
     if (!mp2) {
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
       break;
     }

@@ -700,7 +700,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
       hwndCnr = (HWND) WinSendMsg(WinWindowFromID(hwndCnr, FID_CLIENT),
 				  UM_CONTAINERHWND, MPVOID, MPVOID);
       if (!hwndCnr) {
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NOWINDOWTEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
 	break;
       }
       x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;

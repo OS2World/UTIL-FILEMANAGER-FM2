@@ -2622,7 +2622,6 @@ STRINGTABLE
     IDS_MAYDAYTEXT                        "Mayday!"
     IDS_ASKABOUTUNDELETEHELPTEXT          "\r\rWould you like help on UNDELETE?"
     IDS_UNDELETETITLETEXT                 "FM/2: Undelete files drive %c:"
-    IDS_NODATATEXT                        "No data."
     IDS_COULDNTSTARTTHREADTEXT            "Could not start thread."
     IDS_UNDELETEHELPTITLETEXT             "Undelete:"
     IDS_INIREADONLYTEXT                   "The FM/2 INI file \"%s\" can not be marked read/write."

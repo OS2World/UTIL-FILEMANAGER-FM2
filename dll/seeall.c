@@ -3128,7 +3128,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       list = BuildAList(hwnd);
       if (!list)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	WinSetWindowText(pAD->hwndStatus, GetPString(IDS_DRAGGINGFILESTEXT));
 	DragList(hwnd, (HWND) 0, list, TRUE);
@@ -3931,7 +3931,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_COMMAND:
     if (!pAD) {
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       return 0;
     }
     switch (SHORT1FROMMP(mp1)) {
@@ -4250,7 +4250,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    CHAR **list = BuildAList(hwnd);
 
 	    if (!list)
-	      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	      Runtime_Error(pszSrcFile, __LINE__, NULL);
 	    else {
 	      switch (SHORT1FROMMP(mp1)) {
 	      case IDM_COLLECT:

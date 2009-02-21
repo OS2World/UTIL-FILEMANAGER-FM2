@@ -163,7 +163,7 @@ VOID load_associations(VOID)
   if (asshead)
     free_associations();
   assloaded = TRUE;
-  BldFullPathName(mask, pFM2SaveDirectory, "ASSOC.DAT");
+  BldFullPathName(mask, pFM2SaveDirectory, PCSZ_ASSOCDAT);
   fp = _fsopen(mask, "r", SH_DENYWR);
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!pszCmdLine) {
@@ -285,7 +285,7 @@ VOID save_associations(VOID)
     info = next;
   }
 #endif
-  BldFullPathName(s, pFM2SaveDirectory, "ASSOC.DAT");
+  BldFullPathName(s, pFM2SaveDirectory, PCSZ_ASSOCDAT);
   if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   fp = xfopen(s, "w", pszSrcFile, __LINE__);

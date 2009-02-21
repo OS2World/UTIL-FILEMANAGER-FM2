@@ -30,6 +30,7 @@
 #include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
 #include "notebook.h"			// Data declaration(s)
 #include "mainwnd.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "makelist.h"			// AddToList
@@ -141,7 +142,7 @@ VOID PrintListThread(VOID * arg)
   if (!PrintSem) {
     if (DosCreateMutexSem(NULL, &PrintSem, 0, FALSE)) {
       Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		"DosCreateMutexSem");
+		PCSZ_DOSCREATEMUTEXSEM);
       goto Abort;
     }
   }
@@ -424,7 +425,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd, PRN_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
     li = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!li)
-      Runtime_Error(pszSrcFile, __LINE__, "no data");
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       INT x;
 
@@ -472,7 +473,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       li = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!li)
-	Runtime_Error(pszSrcFile, __LINE__, "no data");
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	prnformat = WinQueryButtonCheckstate(hwnd, PRN_FORMAT);
 	PrfWriteProfileData(fmprof, FM3Str, "Prnformat",

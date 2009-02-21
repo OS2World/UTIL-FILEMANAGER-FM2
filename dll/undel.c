@@ -193,7 +193,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     listdone = TRUE;
     if (!mp2 || !*(CHAR *)mp2) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);
       break;
     }
@@ -307,7 +307,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strset(s, 0);
 	  WinQueryDlgItemText(hwnd, UNDEL_DRIVELIST, 3, s);
 	  if (!isalpha(*s)) {
-	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  }
 	  else {
 	    drive = toupper(*s);

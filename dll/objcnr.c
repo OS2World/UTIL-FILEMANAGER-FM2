@@ -231,7 +231,7 @@ static VOID FillCnrsThread(VOID * args)
   Fortify_EnterScope();
 #  endif
   if (!dirsize) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
 

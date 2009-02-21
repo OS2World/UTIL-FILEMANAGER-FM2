@@ -443,7 +443,7 @@ static VOID FillCnrThread(VOID *args)
   ULONGLONG ull;
 
   if (!dirsize) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
 # ifdef FORTIFY
@@ -938,7 +938,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // Save button
       pState = INSTDATA(hwnd);
       if (!pState)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 
 	CHAR szFileName[CCHMAXPATH];
@@ -1012,7 +1012,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       pState = INSTDATA(hwnd);
       if (!pState)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (pState->working) {
 	  pState->dying = TRUE;

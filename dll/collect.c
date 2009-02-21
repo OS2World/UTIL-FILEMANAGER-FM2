@@ -1576,7 +1576,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       Fortify_BecomeOwner(mp1);
 #     endif
       if (!dcd)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
 	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
@@ -2995,7 +2995,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
 #   endif
     dcd = xmallocz(sizeof(DIRCNRDATA), pszSrcFile, __LINE__);
     if (!dcd) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
       hwndFrame = (HWND) 0;
     }

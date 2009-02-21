@@ -29,6 +29,7 @@
 #include "errutil.h"			// Dos_Error...
 #include "systemf.h"			// runemf2
 #include "notebook.h"			// Data declaration(s)
+#include "init.h"			// Data declaration(s)
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -39,19 +40,19 @@ static PSZ pszSrcFile = __FILE__;
 //== RunFM2Util() Find and run an app from the FM2utilities ==
 //== Search PATH plus 2 default install dirs ==
 
-INT RunFM2Util(CHAR *appname, CHAR *filename)
+INT RunFM2Util(PCSZ appname, CHAR *filename)
 {
     CHAR fbuf[CCHMAXPATH];
     CHAR szQuotedFileName[CCHMAXPATH];
     APIRET rc, ret = -1;
 
     rc = DosSearchPath(SEARCH_IGNORENETERRS |SEARCH_ENVIRONMENT |
-		       SEARCH_CUR_DIRECTORY,"PATH",
+		       SEARCH_CUR_DIRECTORY, PCSZ_PATH,
 		       appname, (PBYTE)fbuf, CCHMAXPATH - 1);
       if (rc != 0) {
 	if (rc != 2){
 	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DosSearchPath", appname);
+		  PCSZ_DOSSEARCHPATH, appname);
 	return ret;
 	}
 	else {
@@ -59,7 +60,7 @@ INT RunFM2Util(CHAR *appname, CHAR *filename)
 			   appname, (PBYTE)fbuf, CCHMAXPATH - 1);
 	    if (rc != 0 && rc != 2){
 	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-			"DosSearchPath", appname);
+			PCSZ_DOSSEARCHPATH, appname);
 	      return ret;
 	    }
       }
@@ -103,7 +104,7 @@ CHAR *first_path(CHAR * path, CHAR * ret)
  * 23 Aug 07 SHL fixme to be MT safe
  */
 
-CHAR *searchapath(CHAR *pathvar, CHAR *filename)
+CHAR *searchapath(PCSZ pathvar, PCSZ filename)
 {
   static CHAR fbuf[CCHMAXPATH];
 
@@ -112,8 +113,9 @@ CHAR *searchapath(CHAR *pathvar, CHAR *filename)
 
     FILESTATUS3 fsa;
 
-    if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)))
-      return filename;
+    strcpy(fbuf, filename);
+    if (!DosQueryPathInfo(fbuf, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)))
+      return fbuf;
     *fbuf = 0;
     return fbuf;
   }
@@ -125,13 +127,13 @@ CHAR *searchapath(CHAR *pathvar, CHAR *filename)
   return fbuf;
 }
 
-CHAR *searchpath(CHAR * filename)
+CHAR *searchpath(PCSZ filename)
 {
   CHAR *found;
 
   if (!filename)
     return "";
-  found = searchapath("PATH", filename);
+  found = searchapath(PCSZ_PATH, filename);
   if (!*found) {
     found = searchapath("DPATH", filename);
     if (!*found)

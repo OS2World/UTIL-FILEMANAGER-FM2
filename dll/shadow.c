@@ -37,6 +37,7 @@
 #include "valid.h"			// IsFile
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
+#include "init.h"			// Data declaration(s)
 
 #pragma data_seg(DATA1)
 
@@ -90,12 +91,11 @@ HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
   if (!cnr)
     return obj;
   BldFullPathName(s, path, objtitle);
-  // sprintf(s, "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
   p = strrchr(objtitle, '.');
   if (p) {
-    if (!stricmp(p, ".ICO"))
+    if (!stricmp(p, PCSZ_DOTICO))
       p = type[1];
-    else if (!stricmp(p, ".BMP"))
+    else if (!stricmp(p, PCSZ_DOTBMP))
       p = type[2];
     else
       p = type[0];
@@ -153,12 +153,10 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
       CHAR *p, temp[CCHMAXPATH + 1];
 
       BldFullPathName(temp, path, objtitle);
-      // sprintf(temp,
-      //	      "%s%s%s", (path) ? path : "", (path) ? "\\" : "", objtitle);
       p = strrchr(temp, '.');
       if (p) {
 	*p = 0;
-	strcat(p, ".ICO");
+	strcat(p, PCSZ_DOTICO);
 	if (IsFile(temp) == 1)
 	  sprintf(&s[strlen(s)], ";ICONFILE=%s", temp);
       }
@@ -228,7 +226,8 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	  apt = 0;
 	p = strrchr(list[x], '.');
 	if (p) {
-	  if (!stricmp(p, ".BAT") || !stricmp(p, ".CMD"))
+          if (!stricmp(p, PCSZ_DOTBAT) || !stricmp(p, PCSZ_DOTCMD) ||
+              !stricmp(p, PCSZ_DOTBTM))
 	    apt |= FAPPTYP_BOUND;
 	}
 	*szBuffer = 0;

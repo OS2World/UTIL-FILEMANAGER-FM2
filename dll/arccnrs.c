@@ -338,7 +338,7 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
 
     pdcd = WinQueryWindowPtr(hwndCnr, QWL_USER);
     if (!pdcd) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       return ret;
     }
   }
@@ -601,7 +601,7 @@ ReTry:
   lastpai = NULL;
   *pullTotalBytes = 0;
   if (!info || !info->list)
-    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
   else {
     RemoveArcItems(hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
     *arcinfo = info;
@@ -654,7 +654,7 @@ ReTry:
 	rc = DosDupHandle(fileno(stdout), &newstdout);
 	if (rc) {
 	  Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
-		    "DosDupHandle");
+		    PCSZ_DOSDUPHANDLE);
 	  xfree(arctemp, pszSrcFile, __LINE__);
 	  return 0;
 	}
@@ -664,7 +664,7 @@ ReTry:
 	  rc = DosDupHandle(fileno(fp), &oldstdout);
 	  if (rc) {
 	    Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
-		      "DosDupHandle");
+		      PCSZ_DOSDUPHANDLE);
 	    xfree(arctemp, pszSrcFile, __LINE__);
 	    return 0;
 	  }
@@ -1497,7 +1497,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     }
     else {
@@ -2023,7 +2023,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		FILE *fp;
 		CHAR szTempFile[CCHMAXPATH];
 
-		BldFullPathName(szTempFile, pTmpDir, "$FM2PLAY.$$$");
+		BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
 		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
@@ -2034,7 +2034,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strrev(szTempFile);
 		  strcat(szTempFile, "@/");
 		  strrev(szTempFile);
-		  RunFM2Util("FM2PLAY.EXE", szTempFile);
+		  RunFM2Util(PCSZ_FM2PLAYEXE, szTempFile);
 		}
 	      }
 	      else if (li->type == IDM_PRINT) {
@@ -2476,7 +2476,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_SETUP:
     if (!dcd) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       return 0;
     }

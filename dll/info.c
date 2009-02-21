@@ -391,7 +391,7 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static BOOL emphasized = FALSE;
 
   if (!pis) {
-    Runtime_Error(pszSrcFile, __LINE__, "no data");
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
     if (msg != WM_DESTROY)
       return WinDefWindowProc(hwnd, msg, mp1, mp2);
   }
@@ -463,7 +463,7 @@ MRESULT EXPENTRY IconProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     pis->lasthwndMenu = WinLoadMenu(hwnd, FM3ModHandle, FLE_FRAME);
     if (pis->lasthwndMenu) {
       p = strrchr(pis->pfs->szFileName, '.');
-      if (!p || (stricmp(p, ".ICO") && stricmp(p, ".PTR")))
+      if (!p || (stricmp(p, PCSZ_DOTICO) && stricmp(p, PCSZ_DOTPTR)))
 	WinSendMsg(pis->lasthwndMenu,
 		   MM_DELETEITEM,
 		   MPFROM2SHORT(IDM_SELECTALL, TRUE), MPVOID);
@@ -597,7 +597,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case LN_SELECT:
 	pfs = WinQueryWindowPtr(hwnd, QWL_USER);
 	if (!pfs) {
-	  Runtime_Error(pszSrcFile, __LINE__, "no data");
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  WinDismissDlg(hwnd, 1);
 	}
 	else {

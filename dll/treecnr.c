@@ -670,7 +670,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_EXPAND:
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       BOOL tempsusp = dcd->suspendview;
 
@@ -685,7 +685,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_UPDATERECORDLIST:
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd || !mp1)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       INT numentries = 0;
       CHAR **list = (CHAR **) mp1;
@@ -703,7 +703,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
 #     ifdef FORTIFY
       Fortify_BecomeOwner(dcd);
@@ -717,7 +717,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_RESCAN2:
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     // Bypass if not running integrated (i.e if vtree)
     else if (hwndStatus &&
 	     dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
@@ -805,7 +805,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
      */
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
       WinSendMsg(dcd->hwndCnr,
@@ -860,7 +860,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!dcd)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	WORKER *wk;
 #	ifdef FORTIFY
@@ -904,7 +904,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #     endif
       dcd = WinQueryWindowPtr(hwnd, QWL_USER);
       if (!dcd)
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	WORKER *wk;
 	wk = xmallocz(sizeof(WORKER), pszSrcFile, __LINE__);
@@ -1256,7 +1256,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #   endif
 
     if (!dcd) {
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       return 0;
     }
@@ -1362,7 +1362,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  CM_QUERYRECORDFROMRECT,
 				  MPFROMLONG(CMA_FIRST), MPFROMP(&pqr));
       if (!pci || (INT) pci == -1)
-	break; //Probable B3 click on white space Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	break; //Probable B3 click on white space
       else {
 	memset(&nr, 0, sizeof(nr));
 	nr.hwndCnr = hwnd;
@@ -1529,13 +1529,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PCNRITEM pci;
 
 	  if (!pcd) {
-	    Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
 	    break;
 	  }
 	  else {
 	    pci = (PCNRITEM) pcd->pRecord;
 	    if (!pci || (INT) pci == -1) {
-	      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	      Runtime_Error(pszSrcFile, __LINE__, NULL);
 	      break;
 	    }
 	    if (pci->flags & (RECFLAGS_ENV | RECFLAGS_NODRAG)) {
@@ -2300,10 +2300,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_COMMAND:
     if (!mp1)
-      Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       if (!dcd) {
-	Runtime_Error2(pszSrcFile, __LINE__, IDS_NODATATEXT);
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
 	FreeListInfo((LISTINFO *) mp1);
       }
       else {

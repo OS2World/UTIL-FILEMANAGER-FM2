@@ -482,13 +482,9 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    strcpy(cl->prompt, filename);
 		    PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
 		  }
-// else saymsg(MB_ENTER,hwnd,DEBUG_STRING,"DosQueryPathInfo FIL_STANDARDL failed");
 		}
-// else saymsg(MB_ENTER,hwnd,DEBUG_STRING,"DosQueryPathInfo FIL_QUERYFULLNAME failed");
 	      }
-// else saymsg(MB_ENTER,hwnd,DEBUG_STRING,"lReturn = %lu lSRC = %lu",fdlg.lReturn,fdlg.lSRC);
 	    }
-// else saymsg(MB_ENTER,hwnd,DEBUG_STRING,"WinFileDlg failed");
 	  }
 	}
       }
