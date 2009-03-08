@@ -33,7 +33,7 @@
 
 #include "fm3dll.h"
 #include "init.h"			// Data declaration(s)
-#include "commafmt.h"
+#include "i18nutil.h"
 
 size_t commafmt(char *pszBuf,	// Output buffer
 		UINT cBufSize,	// Buffer size, including nul

@@ -180,14 +180,14 @@ RCFLAGS2 =
 
 OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        avl.obj avv.obj chklist.obj cmdline.obj codepage.obj &
-       collect.obj colors.obj commafmt.obj command.obj common.obj &
+       collect.obj colors.obj command.obj common.obj &
        comp.obj copyf.obj &
        datamin.obj defview.obj delims.obj dircnrs.obj &
        dirs.obj dirsize.obj draglist.obj droplist.obj dumputil.obj &
        eas.obj errutil.obj excputil.obj extract.obj &
        filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
        fonts.obj fortify.obj fsopen.obj &
-       getnames.obj grep.obj grep2.obj info.obj inis.obj &
+       getnames.obj grep.obj grep2.obj i18nutil.obj info.obj inis.obj &
        init.obj input.obj instant.obj key.obj killproc.obj literal.obj &
        loadbmp.obj mainwnd.obj mainwnd2.obj makelist.obj menu.obj misc.obj &
        mkdir.obj mle.obj newview.obj notebook.obj notify.obj objcnr.obj &
