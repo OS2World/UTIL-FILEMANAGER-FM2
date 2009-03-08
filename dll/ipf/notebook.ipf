@@ -13,6 +13,7 @@
 .* 13 Aug 07 SHL Tweak scanning page
 .* 06 Jul 08 GKY Update delete/undelete to include the option of using the XWP trashcan
 .* 20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
+.* 08 Mar 09 GKY Added option to turn alert and/or error beeps off
 .*
 .***********************************************************************
 .*
@@ -701,6 +702,13 @@ key commands. Otherwise, the operation is performed without
 intervention by you, moving or copying the objects to the :hp6.:link
 reftype=hd res=100065.Target directory:elink.:ehp6. (if one is set, of
 course; otherwise, you're prompted anyway).
+:p.
+If the :hp6.Alert beep off:ehp6. checkbox is checked, FM/2 will not beep to
+alert the user that something (e.g. a file search using Seek and Scan) has
+completed.
+:p.
+If the :hp6.No beep on error:ehp6. checkbox is checked, FM/2 will post an error
+dialog but will not beep to alert the user that something has failed.
 :p.
 The :hp6.Set command line length:ehp6. spin button allow you to limit the
 number of characters you can place in a "command" that will ultimately be
