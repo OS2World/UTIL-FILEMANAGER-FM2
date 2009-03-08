@@ -53,6 +53,9 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
 
 ***********************************************************************/
 
@@ -96,7 +99,7 @@
 #include "viewer.h"			// StartMLEEditor
 #include "subj.h"			// Subject
 #include "wrappers.h"			// xDosSetPathInfo
-#include "commafmt.h"			// CommaFmtULL
+#include "i18nutil.h"			// CommaFmtULL
 #include "fortify.h"
 #include "info.h"                       // driveflags
 
@@ -1313,7 +1316,7 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
   }
 }
 
-VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS * pds)
+VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds)
 {
   ULONG size;
   CHAR s[CCHMAXPATH], *eos = s;
@@ -1390,6 +1393,46 @@ VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS * pds)
       pds->SubjectDisplayWidth = 1000;
   }
 }
+
+VOID WriteDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds)
+{
+  CHAR s[CCHMAXPATH], *eos = s;
+
+  strcpy(s, keyroot);
+  strcat(s, ".");
+  eos = &s[strlen(s)];
+  strcpy(eos, "DetailsLongname");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslongname, sizeof(BOOL));
+  strcpy(eos, "DetailsSubject");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailssubject, sizeof(BOOL));
+  strcpy(eos, "DetailsEA");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsea, sizeof(BOOL));
+  strcpy(eos, "DetailsSize");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailssize, sizeof(BOOL));
+  strcpy(eos, "DetailsIcon");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsicon, sizeof(BOOL));
+  strcpy(eos, "DetailsAttr");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsattr, sizeof(BOOL));
+  strcpy(eos, "DetailsCRDate");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailscrdate, sizeof(BOOL));
+  strcpy(eos, "DetailsCRTime");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailscrtime, sizeof(BOOL));
+  strcpy(eos, "DetailsLWDate");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslwdate, sizeof(BOOL));
+  strcpy(eos, "DetailsLWTime");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslwtime, sizeof(BOOL));
+  strcpy(eos, "DetailsLADate");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsladate, sizeof(BOOL));
+  strcpy(eos, "DetailsLATime");
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslatime, sizeof(BOOL));
+  strcpy(eos, "SubjectInLeftPane");
+  PrfWriteProfileData(fmprof, appname, s, &pds->fSubjectInLeftPane, sizeof(BOOL));
+  strcpy(eos, "SubjectLengthMax");
+  PrfWriteProfileData(fmprof, appname, s, &pds->fSubjectLengthMax, sizeof(BOOL));
+  strcpy(eos, "SubjectDisplayWidth");
+  PrfWriteProfileData(fmprof, appname, s, &pds->SubjectDisplayWidth, sizeof(ULONG));
+}
+
 
 HWND FindDirCnr(HWND hwndParent)
 {
@@ -2179,7 +2222,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
 	     !WinIsChild(hwndFrame, hwndTop))) {
 	  if (!strnicmp(pswb->aswentry[i].swctl.szSwtitle, "AV/2", 4)
 	      || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "File Manager/2")
-	      || !stricmp(pswb->aswentry[i].swctl.szSwtitle, "Collector")
+	      || !stricmp(pswb->aswentry[i].swctl.szSwtitle, PCSZ_COLLECTOR)
 	      || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VTree", 5)
 	      || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, "VDir", 4)
 	      || !strnicmp(pswb->aswentry[i].swctl.szSwtitle, FM2Str, 4)) {
@@ -2348,7 +2391,7 @@ INT CheckDriveSpaceAvail(PCSZ pTargetPath, ULONGLONG ullSpaceNeeded,
 #pragma alloc_text(MISC2,SetDetailsSwitches,SetViewMenu)
 #pragma alloc_text(MISC3,SetupCommandMenu,AdjustDetailsSwitches)
 #pragma alloc_text(MISC3,ViewHelp,GetCmdSpec)
-#pragma alloc_text(MISC3,ExecFile,SetConditionalCascade,LoadDetailsSwitches)
+#pragma alloc_text(MISC3,ExecFile,SetConditionalCascade,LoadDetailsSwitches,WriteDetailsSwitches)
 #pragma alloc_text(MISC4,PortholeInit,CheckMenu,Broadcast,SetupWinList,SwitchCommand)
 #pragma alloc_text(MISC6,DrawTargetEmphasis,EmphasizeButton)
 #pragma alloc_text(MISC_LIBPATH,LoadLibPath)

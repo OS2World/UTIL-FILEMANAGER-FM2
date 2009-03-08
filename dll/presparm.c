@@ -12,6 +12,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Dec 07 GKY Updated CopyPresParams to copy all parameter types
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -372,7 +373,7 @@ VOID CopyPresParams(HWND target, HWND source)
 }
 
 VOID SetPresParams(HWND hwnd, RGB2 * back, RGB2 * fore, RGB2 * border,
-                   CHAR * font)
+                   PCSZ font)
 {
   if (font)
     WinSetPresParam(hwnd, PP_FONTNAMESIZE, strlen(font) + 1, (PVOID) font);
@@ -396,7 +397,7 @@ VOID IfNoParam(HWND hwnd, CHAR * keyroot, ULONG size, PVOID attrvalue)
 }
 #endif
 
-VOID PresParamChanged(HWND hwnd, CHAR * keyroot, MPARAM mp1, MPARAM mp2)
+VOID PresParamChanged(HWND hwnd, PCSZ keyroot, MPARAM mp1, MPARAM mp2)
 {
   ULONG AttrFound, AttrValue[64], cbRetLen;
 
@@ -434,7 +435,7 @@ VOID PresParamChanged(HWND hwnd, CHAR * keyroot, MPARAM mp1, MPARAM mp2)
   }
 }
 
-VOID RestorePresParams(HWND hwnd, CHAR * keyroot)
+VOID RestorePresParams(HWND hwnd, PCSZ keyroot)
 {
   CHAR s[81];
   ULONG AttrValue[64], size;
@@ -474,7 +475,7 @@ VOID RestorePresParams(HWND hwnd, CHAR * keyroot)
   /** SavePresParams
    * Save the presentation parameters used by RestorePresParams
    */
-VOID SavePresParams(HWND hwnd, CHAR *keyroot)
+VOID SavePresParams(HWND hwnd, PCSZ keyroot)
 {
 
 

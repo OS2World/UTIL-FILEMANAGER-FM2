@@ -31,6 +31,7 @@
   07 Feb 09 GKY Move repeated strings to PCSZs.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -1974,11 +1975,11 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!WinSetPresParam(WinWindowFromID(hwnd, INI_DATALIST),
 			 PP_FONTNAMESIZE,
 			 strlen(FNT_10SYSTEMMONOTEXT) + 1,
-			 FNT_10SYSTEMMONOTEXT))
+			 (PVOID) FNT_10SYSTEMMONOTEXT))
       WinSetPresParam(WinWindowFromID(hwnd, INI_DATALIST),
 		      PP_FONTNAMESIZE,
 		      strlen(FNT_10SYSTEMMONOTEXT) + 1,
-		      FNT_10SYSTEMMONOTEXT);
+		      (PVOID) FNT_10SYSTEMMONOTEXT);
     RestorePresParams(hwnd, "IniUtil");
     return 0;
 

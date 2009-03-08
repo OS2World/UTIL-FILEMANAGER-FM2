@@ -27,6 +27,7 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Move repeated strings to PCSZs.
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
 
 ***********************************************************************/
 
@@ -56,7 +57,7 @@
 #include "wrappers.h"			// xfgets
 #include "strips.h"			// bstrip
 #include "misc.h"			// CheckDriveSpaceAvail
-#include "commafmt.h"			// CommaFmtULL
+#include "i18nutil.h"			// CommaFmtULL
 #include "valid.h"			// IsRoot
 #include "dirs.h"			// save_dir2
 #include "fortify.h"

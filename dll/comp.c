@@ -61,6 +61,7 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis.
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
 
 ***********************************************************************/
 
@@ -115,7 +116,7 @@
 #include "getnames.h"			// export_filename
 #include "wrappers.h"			// xDosFindNext
 #include "notebook.h"			// External compare/dircompare
-#include "commafmt.h"			// CommaFmtULL
+#include "i18nutil.h"			// CommaFmtULL
 #include "fortify.h"			// 06 May 08 SHL added
 #include "excputil.h"			// xbeginthread
 #include "info.h"                       // driveflags

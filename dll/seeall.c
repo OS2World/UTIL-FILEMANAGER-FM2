@@ -44,6 +44,8 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -100,7 +102,7 @@
 #include "avl.h"			// SBoxDlgProc
 #include "collect.h"			// StartCollector
 #include "subj.h"			// Subject
-#include "commafmt.h"			// commafmt
+#include "i18nutil.h"			// commafmt
 #include "literal.h"			// wildcard
 #include "wrappers.h"			// xDosFindNext
 #include "misc.h"			// SetConditionalCascade
@@ -3331,7 +3333,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  //fixme to allow user to change presparams 1-10-09 GKY
 	  WinSetPresParam(pAD->hwndPopup, PP_FONTNAMESIZE,
 			  strlen(FNT_8HELVETICA) + 1,
-			  FNT_8HELVETICA);
+			  (PVOID) FNT_8HELVETICA);
 	  SetConditionalCascade(pAD->hwndPopup,
 				IDM_DELETESUBMENU,
 				(fDefaultDeletePerm) ?

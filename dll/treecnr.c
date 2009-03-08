@@ -61,6 +61,9 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
 
 ***********************************************************************/
 
@@ -121,7 +124,7 @@
 #include "viewer.h"			// StartMLEEditor
 #include "newview.h"			// StartViewer
 #include "walkem.h"			// WalkAllDlgProc
-#include "commafmt.h"			// CommaFmtULL
+#include "i18nutil.h"			// CommaFmtULL
 #include "wrappers.h"			// xDosFindFirst
 #include "systemf.h"			// runemf2
 #include "dirs.h"			// save_dir2
@@ -180,7 +183,7 @@ MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       //fixme to allow user to change presparams 1-10-09 GKY
       WinSetPresParam(hwnd, PP_FONTNAMESIZE,
 		      strlen(FNT_8TIMESNEWROMAN) + 1,
-		      FNT_8TIMESNEWROMAN);
+		      (PVOID) FNT_8TIMESNEWROMAN);
       return rc;
     }
 
@@ -1114,7 +1117,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_PRESPARAMCHANGED:
-    PresParamChanged(hwnd, "TreeCnr", mp1, mp2);
+    PresParamChanged(hwnd, PCSZ_TREECNR, mp1, mp2);
     break;
 
   case UM_FILESMENU:
@@ -1271,7 +1274,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Fortify_EnterScope();
 #	endif
 
-	RestorePresParams(hwnd, "TreeCnr");
+	RestorePresParams(hwnd, PCSZ_TREECNR);
 	memset(&cnri, 0, sizeof(CNRINFO));
 	cnri.cb = sizeof(CNRINFO);
 	WinSendMsg(hwnd,
@@ -2308,7 +2311,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COMMAND, mp1, mp2)) {
-	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
+	  Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
 	  FreeListInfo((LISTINFO *) mp1);
 	}
 	else
@@ -2599,31 +2602,31 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_PARTITION:
 	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
 		NULL, NULL,
-		"%s", "MINILVM.EXE");
+		"%s", PCSZ_MINILVMEXE);
 	break;
 
       case IDM_PARTITIONDF:
 	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
 		NULL, NULL,
-		"%s", "DFSOS2.EXE");
+		"%s", PCSZ_DFSOS2EXE);
 	break;
 
       case IDM_PARTITIONLVMG:
 	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
 		NULL, NULL,
-		"%s", "LVMGUI.CMD");
+		"%s", PCSZ_LVMGUICMD);
 	break;
 
       case IDM_PARTITIONFD:
 	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
 		NULL, NULL,
-		"%s", "FDISKPM.EXE");
+		"%s", PCSZ_FDISKPMEXE);
 	break;
 
       case IDM_REFRESHREMOVABLES:
 	runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
 		HWND_DESKTOP, pszSrcFile, __LINE__, NULL, NULL,
-		"%s", "LVM.EXE /RediscoverPRM");
+		"%s %s", PCSZ_LVMEXE, "/RediscoverPRM");
 	 PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	break;
 
@@ -2992,7 +2995,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		SHORT1FROMMP(mp1) == IDM_SHADOW2)
 	      *li->targetpath = 0;
 	    if (!PostMsg(dcd->hwndObject, action, MPFROMP(li), MPVOID)) {
-	      Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
+	      Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
 	      FreeListInfo(li);
 	    }
 	  }

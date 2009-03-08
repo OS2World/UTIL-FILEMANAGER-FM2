@@ -9,6 +9,7 @@
   Copyright (c) 2008, 2009 Steven H. Levine
 
   17 Jul 08 SHL Baseline
+  08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
 
 ***********************************************************************/
 
@@ -50,7 +51,8 @@ VOID FixSwitchList(HWND hwnd, PCSZ text);
 char *GetCmdSpec(BOOL dos);
 VOID HeapThread(VOID * dummy);
 BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
-VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS * pds);
+VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds);
+VOID WriteDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds);
 VOID LoadLibPath(PSZ str, LONG len);
 VOID OpenEdit(HWND hwnd);
 VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl);

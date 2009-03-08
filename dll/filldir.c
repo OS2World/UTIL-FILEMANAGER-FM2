@@ -64,6 +64,8 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -98,7 +100,7 @@
 #include "subj.h"			// Subject
 #include "copyf.h"			// unlinkf
 #include "literal.h"			// wildcard
-#include "commafmt.h"			// CommaFmtULL
+#include "i18nutil.h"			// CommaFmtULL
 #include "wrappers.h"			// xDosFindNext
 #include "init.h"			// GetTidForWindow
 #include "common.h"			// IncrThreadUsage
@@ -1609,7 +1611,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  while (*p == ';')
 	    p++;
 	  if (*szFSType &&
-	      (!stricmp(szFSType, "LIBPATH") || getenv(szFSType))) {
+	      (!stricmp(szFSType, PCSZ_LIBPATH) || getenv(szFSType))) {
 	    pci = WinSendMsg(hwndCnr,
 			     CM_ALLOCRECORD,
 			     MPFROMLONG(EXTRA_RECORD_BYTES),

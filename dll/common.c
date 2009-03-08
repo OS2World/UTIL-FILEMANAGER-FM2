@@ -24,6 +24,7 @@
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -198,7 +199,7 @@ void CommonTextPaint(HWND hwnd, HPS hps)
   }
 }
 
-void CommonCreateTextChildren(HWND hwnd, char *class, USHORT * ids)
+void CommonCreateTextChildren(HWND hwnd, PCSZ class, USHORT * ids)
 {
   int x;
   CHAR s[33];
@@ -372,7 +373,6 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       parm[1] = *dv - 'A';
       DosError(FERR_DISABLEHARDERR);
       rc = DosDevIOCtl(-1L, 8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
-      DbgMsg(pszSrcFile, __LINE__, "Eject parm %i %i rc %i", parm[0], parm[1], rc);
       if (cmd == IDM_EJECT &&
           (fEjectFlpyScan ? TRUE : parm[1] > 1) &&
           (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&

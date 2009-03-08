@@ -57,6 +57,8 @@
   07 Feb 09 GKY Move repeated strings to PCSZs.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -129,7 +131,7 @@
 #include "viewer.h"			// StartMLEEditor
 #include "newview.h"			// StartViewer
 #include "undel.h"			// UndeleteDlgProc
-#include "commafmt.h"			// commafmt
+#include "i18nutil.h"			// commafmt
 #include "getnames.h"			// insert_filename
 #include "wrappers.h"			// xfree
 #include "fortify.h"
@@ -1377,7 +1379,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
    case WM_PRESPARAMCHANGED:
-     PresParamChanged(hwnd, "DirCnr", mp1, mp2);
+     PresParamChanged(hwnd, PCSZ_DIRCNR, mp1, mp2);
      break;
 
   case UM_UPDATERECORDLIST:
@@ -1822,7 +1824,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp1) {
       if (dcd) {
 	if (!PostMsg(dcd->hwndObject, UM_COMMAND, mp1, mp2)) {
-	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
+	  Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
 	  FreeListInfo((LISTINFO *) mp1);
 	}
 	else
@@ -2740,7 +2742,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  SHORT1FROMMP(mp1) == IDM_SHADOW2)
 		*li->targetpath = 0;
 	      if (!PostMsg(dcd->hwndObject, action, MPFROMP(li), MPVOID)) {
-		Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
+		Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
 		FreeListInfo(li);
 	      }
 	      else if (fUnHilite)
@@ -3696,7 +3698,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 #	  ifdef FORTIFY
 	  Fortify_ChangeScope(dcd, -1);
 #	  endif
-	  RestorePresParams(dcd->hwndCnr, "DirCnr");
+	  RestorePresParams(dcd->hwndCnr, PCSZ_DIRCNR);
 	  WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
 	  dcd->oldproc = WinSubclassWindow(dcd->hwndCnr,
 					   (PFNWP) DirCnrWndProc);

@@ -1040,7 +1040,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (rc)
 	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		    "xDosFindFirst");
+		    "DosFindFirst");
 	else if (~findbuf.attrFile & FILE_DIRECTORY)
 	  Runtime_Error(pszSrcFile, __LINE__, "not a directory");
 	else {
@@ -1089,7 +1089,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (rc)
 	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		    "xDosFindFirst");
+		    "DosFindFirst");
 	else if (~findbuf.attrFile & FILE_DIRECTORY)
 	  Runtime_Error(pszSrcFile, __LINE__, "not a directory");
 	else {

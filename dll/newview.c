@@ -35,6 +35,8 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -82,7 +84,7 @@
 #include "shadow.h"			// OpenObject
 #include "chklist.h"			// PopupMenu
 #include "viewer.h"			// StartMLEEditor
-#include "commafmt.h"			// commafmt
+#include "i18nutil.h"			// commafmt
 #include "getnames.h"			// export_filename
 #include "literal.h"			// literal
 #include "wrappers.h"			// xrealloc
@@ -1822,7 +1824,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetPresParam(temphwnd,
 			PP_FONTNAMESIZE,
 			strlen(FNT_8HELVETICA) + 1,
-			FNT_8HELVETICA);
+			(PVOID) FNT_8HELVETICA);
       }
       temphwnd = WinCreateWindow(hwndFrame,
 				 WC_BUTTON,
@@ -1843,7 +1845,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetPresParam(temphwnd,
 			PP_FONTNAMESIZE,
 			strlen(FNT_8HELVETICA) + 1,
-			FNT_8HELVETICA);
+			(PVOID) FNT_8HELVETICA);
       }
       WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER5, 1000L);
     }
@@ -2468,22 +2470,22 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
 
 		    size = sizeof(WPSDefaultHttpRun);
-		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultBrowserExe", WPSDefaultHttpRun, &size);
 		    size = sizeof(WPSDefaultHttpRunDir);
-		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
 		    runemf2(SEPARATE | WINDOWED,
 			    hwnd, pszSrcFile, __LINE__,
 			    WPSDefaultHttpRunDir,
-			    fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    fLibPathStrictHttpRun ? pLibPathStrict : NULL,
 			    "%s %s", WPSDefaultHttpRun, urld->url);
 		  }
 		  else
 		    runemf2(SEPARATE | WINDOWED,
 			    hwnd, pszSrcFile, __LINE__,
 			    httprundir,
-			    fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    fLibPathStrictHttpRun ? pLibPathStrict : NULL,
 			    "%s %s", httprun, urld->url);
 		}
 		free(urld);
@@ -2494,22 +2496,22 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
 
 		    size = sizeof(WPSDefaultFtpRun);
-		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultBrowserExe", WPSDefaultFtpRun, &size);
 		    size = sizeof(WPSDefaultFtpRunDir);
-		    PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
 		    runemf2(SEPARATE | WINDOWED,
 			    hwnd, pszSrcFile, __LINE__,
 			    WPSDefaultFtpRunDir,
-			    fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    fLibPathStrictFtpRun ? pLibPathStrict : NULL,
 			    "%s %s", WPSDefaultFtpRun, urld->url);
 		  }
 		  else
 		    runemf2(SEPARATE | WINDOWED,
 			    hwnd, pszSrcFile, __LINE__,
 			    ftprundir,
-			    fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			    fLibPathStrictFtpRun ? pLibPathStrict : NULL,
 			    "%s %s", ftprun, urld->url);
 		}
 		free(urld);
@@ -2519,7 +2521,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  runemf2(SEPARATE | WINDOWED,
 			  hwnd, pszSrcFile, __LINE__,
 			  mailrundir,
-			  fLibPathStrictMailRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+			  fLibPathStrictMailRun ? pLibPathStrict : NULL,
 			  "%s %s", mailrun, urld->url);
 		}
 		free(urld);
@@ -2636,7 +2638,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetPresParam(ad->hwndPopup,
 			  PP_FONTNAMESIZE,
 			  strlen(FNT_8HELVETICA) + 1,
-			  FNT_8HELVETICA);
+			  (PVOID) FNT_8HELVETICA);
       }
       if (ad->hwndPopup) {
 

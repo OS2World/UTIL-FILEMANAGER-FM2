@@ -18,6 +18,7 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -259,7 +260,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinSetPresParam(WinWindowFromID(hwnd, VINF_LISTBOX),
                         PP_FONTNAMESIZE,
                         strlen(FNT_10SYSTEMMONOTEXT) + 1,
-                        FNT_10SYSTEMMONOTEXT);
+                        (PVOID) FNT_10SYSTEMMONOTEXT);
       }
       WinSetWindowText(hwnd, GetPString(IDS_VIEWHELPFILESTEXT));
       WinShowWindow(WinWindowFromID(hwnd, VINF_SRCH), FALSE);

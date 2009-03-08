@@ -62,6 +62,8 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   07 Feb 09 GKY Move repeated strings to PCSZs.
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -129,7 +131,7 @@
 #include "viewer.h"			// StartMLEEditor
 #include "newview.h"			// StartViewer
 #include "undel.h"			// UndeleteDlgProc
-#include "commafmt.h"			// commafmt
+#include "i18nutil.h"			// commafmt
 #include "getnames.h"			// insert_filename
 #include "select.h"			// InvertAll
 #include "strips.h"			// bstrip
@@ -1203,7 +1205,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     break;
 
   case WM_PRESPARAMCHANGED:
-    PresParamChanged(hwnd, "Collector", mp1, mp2);
+    PresParamChanged(hwnd, PCSZ_COLLECTOR, mp1, mp2);
     break;
 
   case UM_COMPARE:
@@ -1414,8 +1416,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	CNRINFO cnri;
 
-	RestorePresParams(hwnd, "Collector");
-	LoadDetailsSwitches("Collector", &dcd->ds);
+	RestorePresParams(hwnd, PCSZ_COLLECTOR);
+	LoadDetailsSwitches(PCSZ_COLLECTOR, &dcd->ds);
 
 	dcd->amextracted = FALSE;	// Say not busy
 	dcd->stopflag = 0;
@@ -1579,7 +1581,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
-	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
+	  Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
 	}
       }
       free(mp1);
@@ -1594,7 +1596,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (mp1) {
       if (dcd) {
 	if (!PostMsg(dcd->hwndObject, UM_COMMAND, mp1, mp2)) {
-	  Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
+	  Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
 	  FreeListInfo((LISTINFO *) mp1);
 	}
 	else
@@ -2081,7 +2083,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_SHOWATTR:
 	AdjustDetailsSwitches(hwnd, dcd->hwndLastMenu,
 			      SHORT1FROMMP(mp1), NULL,
-			      "Collector", &dcd->ds, FALSE);
+			      PCSZ_COLLECTOR, &dcd->ds, FALSE);
 	break;
 
       case IDM_ICON:
@@ -2261,7 +2263,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		  li->type == IDM_SHADOW2)
 		*li->targetpath = 0;
 	      if (!PostMsg(dcd->hwndObject, action, MPFROMP(li), MPVOID)) {
-		Runtime_Error(pszSrcFile, __LINE__, "PostMsg");
+		Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
 		FreeListInfo(li);
 	      }
 	      else if (fUnHilite)

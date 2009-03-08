@@ -42,6 +42,8 @@
   23 Aug 08 GKY Fix memory leak (failure to free cnritems)
   10 Dec 08 SHL Integrate exception handler support
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -75,7 +77,7 @@
 #include "common.h"			// OpenDirCnr
 #include "shadow.h"			// OpenObject
 #include "presparm.h"			// PresParamChanged
-#include "commafmt.h"			// commafmt
+#include "i18nutil.h"			// commafmt
 #include "getnames.h"			// export_filename
 #include "wrappers.h"			// xDosFindNext
 #include "dirs.h"			// save_dir2
@@ -509,7 +511,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(pState->hptr), MPVOID);
     {
       CHAR s[CCHMAXPATH + 81];
-      RestorePresParams(hwnd, "DirSizes");
+      RestorePresParams(hwnd, PCSZ_DIRSIZES);
       sprintf(s, GetPString(IDS_DIRSIZETITLETEXT), pState->szDirName);
       WinSetWindowText(hwnd, s);
     }
@@ -658,7 +660,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_PRESPARAMCHANGED:
-    PresParamChanged(hwnd, "DirSizes", mp1, mp2);
+    PresParamChanged(hwnd, PCSZ_DIRSIZES, mp1, mp2);
     break;
 
   case WM_DRAWITEM:

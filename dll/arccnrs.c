@@ -71,6 +71,8 @@
   10 Dec 08 SHL Integrate exception handler support
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -80,7 +82,6 @@
 #include <direct.h>			// rmdir
 #include <share.h>			// SH_DENYWR
 #include <limits.h>			// ULONG_MAX
-// #include <process.h>			// _beginthread	// 10 Dec 08 SHL
 
 #if 0
 #include <malloc.h>			// _heapchk
@@ -139,7 +140,7 @@
 #include "collect.h"			// StartCollector
 #include "viewer.h"			// StartMLEEditor
 #include "newview.h"			// StartViewer
-#include "commafmt.h"			// commafmt
+#include "i18nutil.h"			// commafmt
 #include "copyf.h"			// unlinkf
 #include "literal.h"			// wildcard
 #include "wrappers.h"			// xrealloc
@@ -231,7 +232,6 @@ VOID WaitChildThread(VOID * arg)
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
-  // _endthread();			// 10 Dec 08 SHL
 }
 
 static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
@@ -2356,7 +2356,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     break;
 
   case WM_PRESPARAMCHANGED:
-    PresParamChanged(hwnd, "ArcCnr", mp1, mp2);
+    PresParamChanged(hwnd, PCSZ_ARCCNR, mp1, mp2);
     break;
 
   case UM_UPDATERECORD:
@@ -2512,7 +2512,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    return 0;
 	  }
 	}
-	RestorePresParams(hwnd, "ArcCnr");
+	RestorePresParams(hwnd, PCSZ_ARCCNR);
 	dcd->mask.fNoAttribs = TRUE;
 	dcd->mask.fNoDirs = TRUE;
 	*dcd->mask.prompt = 0;

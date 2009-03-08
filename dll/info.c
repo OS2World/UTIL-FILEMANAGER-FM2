@@ -30,6 +30,7 @@
   11 Jan 08 GKY Add Write verify off and recures scan to drive info display when appropriate.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
 
 ***********************************************************************/
 
@@ -68,7 +69,7 @@
 #include "chklist.h"			// PopupMenu
 #include "presparm.h"			// SetPresParams
 #include "strips.h"			// bstrip
-#include "commafmt.h"			// CommaFmtULL
+#include "i18nutil.h"			// CommaFmtULL
 #include "wrappers.h"			// xDosFindFirst
 #include "fortify.h"
 

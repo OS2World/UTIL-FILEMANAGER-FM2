@@ -15,6 +15,7 @@
   05 Nov 07 GKY Use commafmtULL to display file sizes for large file support
   10 Nov 07 GKY Get thousands separator from country info for file sizes.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  08 Mar 09 GKY Renamed commafmt.h/c i18nutil.h/c
 
 ***********************************************************************/
 

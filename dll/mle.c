@@ -21,6 +21,7 @@
   22 Jun 08 GKY Fixed memory buffer access after it had been freed
   06 Jul 08 GKY Rework LoadThread logic with Steven's help
   10 Dec 08 SHL Integrate exception handler support
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -202,15 +203,15 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	      CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
 
 	      size = sizeof(WPSDefaultFtpRun);
-	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultBrowserExe", WPSDefaultFtpRun, &size);
 	      size = sizeof(WPSDefaultFtpRunDir);
-	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
 	      runemf2(SEPARATE | WINDOWED,
 		      h, pszSrcFile, __LINE__,
 		      WPSDefaultFtpRunDir,
-		      fLibPathStrictFtpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+		      fLibPathStrictFtpRun ? pLibPathStrict : NULL,
 		      "%s %s", WPSDefaultFtpRun, temp);
 	    }
 	    else
@@ -223,15 +224,15 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	      CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
 
 	      size = sizeof(WPSDefaultHttpRun);
-	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultBrowserExe", WPSDefaultHttpRun, &size);
 	      size = sizeof(WPSDefaultHttpRunDir);
-	      PrfQueryProfileData(HINI_USERPROFILE, "WPURLDEFAULTSETTINGS",
+	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
 	      runemf2(SEPARATE | WINDOWED,
 		      h, pszSrcFile, __LINE__,
 		      WPSDefaultHttpRunDir,
-		      fLibPathStrictHttpRun ? "SET LIBPATHSTRICT=TRUE" : NULL,
+		      fLibPathStrictHttpRun ? pLibPathStrict : NULL,
 		      "%s %s", WPSDefaultHttpRun, temp);
 	    }
 	    else

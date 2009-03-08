@@ -26,6 +26,7 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
+  08 Mar 09 GKY Renamed commafmt.h i18nutil.h
 
 ***********************************************************************/
 
@@ -53,11 +54,10 @@
 #include "datamin.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "commafmt.h"			// CommaFmtUL
+#include "i18nutil.h"			// CommaFmtUL
 #include "killproc.h"			// KillDlgProc
 #include "sysinfo.h"			// SysInfoDlgProc
 #include "mainwnd.h"			// TopWindowName
-#include "commafmt.h"			// CommaFmtUL
 #include "common.h"			// OpenDirCnr
 #include "shadow.h"			// OpenObject
 #include "chklist.h"			// PopupMenu

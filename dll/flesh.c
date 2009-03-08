@@ -23,6 +23,7 @@
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
                 to prevent duplicate directory names in tree following a copy before initial scan.
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -80,7 +81,7 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
     UnFlesh(hwndCnr, pciParent);
   if (*path) {
     path[strlen(path) - 1] = 0;
-    if (!stricmp(path, "LIBPATH")) {
+    if (!stricmp(path, PCSZ_LIBPATH)) {
       var = xmalloc(65536, pszSrcFile, __LINE__);
       if (var)
 	LoadLibPath(var, 65536);

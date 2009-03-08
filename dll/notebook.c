@@ -46,6 +46,8 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Move repeated strings to PCSZs.
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
 
 ***********************************************************************/
 
@@ -2337,47 +2339,19 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  "DirflWindowAttr", &flWindowAttr, sizeof(ULONG));
     }
     dsDirCnrDefault.detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-			&dsDirCnrDefault.detailslongname, sizeof(BOOL));
     dsDirCnrDefault.detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-			&dsDirCnrDefault.detailssubject, sizeof(BOOL));
-    dsDirCnrDefault.detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-			&dsDirCnrDefault.detailsea, sizeof(BOOL));
+    dsDirCnrDefault.detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWEAS);
     dsDirCnrDefault.detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-			&dsDirCnrDefault.detailssize, sizeof(BOOL));
     dsDirCnrDefault.detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-			&dsDirCnrDefault.detailsicon, sizeof(BOOL));
     dsDirCnrDefault.detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-			&dsDirCnrDefault.detailslwdate, sizeof(BOOL));
     dsDirCnrDefault.detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-			&dsDirCnrDefault.detailslwtime, sizeof(BOOL));
     dsDirCnrDefault.detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-			&dsDirCnrDefault.detailsladate, sizeof(BOOL));
     dsDirCnrDefault.detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-			&dsDirCnrDefault.detailslatime, sizeof(BOOL));
     dsDirCnrDefault.detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-			&dsDirCnrDefault.detailscrdate, sizeof(BOOL));
     dsDirCnrDefault.detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-			&dsDirCnrDefault.detailscrtime, sizeof(BOOL));
     dsDirCnrDefault.detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-			&dsDirCnrDefault.detailsattr, sizeof(BOOL));
     dsDirCnrDefault.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectInLeftPane",
-			&dsDirCnrDefault.fSubjectInLeftPane, sizeof(BOOL));
     dsDirCnrDefault.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
-    PrfWriteProfileData(fmprof, appname, "DirCnr.SubjectLengthMax",
-			&dsDirCnrDefault.fSubjectLengthMax, sizeof(BOOL));
     *mask.prompt = 0;
     PrfWriteProfileData(fmprof, appname, "DirFilter", &mask, sizeof(MASK));
     {
@@ -2391,10 +2365,8 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  dsDirCnrDefault.SubjectDisplayWidth = 0;
-	PrfWriteProfileData(fmprof,
-			    appname, "DirCnr.SubjectDisplayWidth",
-			    &dsDirCnrDefault.SubjectDisplayWidth, sizeof(ULONG));
     }
+    WriteDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -2628,7 +2600,7 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       DETAILS_SETTINGS ds;
 
       memset(&ds, 0, sizeof(ds));
-      LoadDetailsSwitches("Collector", &ds);
+      LoadDetailsSwitches(PCSZ_COLLECTOR, &ds);
       WinCheckButton(hwnd, CFG5_SHOWLNAMES, ds.detailslongname);
       WinCheckButton(hwnd, CFG5_SHOWSUBJECT, ds.detailssubject);
       WinCheckButton(hwnd, CFG5_SHOWEAS, ds.detailsea);
@@ -2720,47 +2692,19 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       memset(&ds, 0, sizeof(ds));
       ds.detailslongname = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLNAMES);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsLongname",
-			  &ds.detailslongname, sizeof(BOOL));
       ds.detailssubject = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSUBJECT);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsSubject",
-			  &ds.detailssubject, sizeof(BOOL));
       ds.detailsea = WinQueryButtonCheckstate(hwnd, CFG5_SHOWEAS);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsEA",
-			  &ds.detailsea, sizeof(BOOL));
       ds.detailssize = WinQueryButtonCheckstate(hwnd, CFG5_SHOWSIZE);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsSize",
-			  &ds.detailssize, sizeof(BOOL));
       ds.detailsicon = WinQueryButtonCheckstate(hwnd, CFG5_SHOWICON);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsIcon",
-			  &ds.detailsicon, sizeof(BOOL));
       ds.detailslwdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWDATE);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsLWDate",
-			  &ds.detailslwdate, sizeof(BOOL));
       ds.detailslwtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLWTIME);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsLWTime",
-			  &ds.detailslwtime, sizeof(BOOL));
       ds.detailsladate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLADATE);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsLADate",
-			  &ds.detailsladate, sizeof(BOOL));
       ds.detailslatime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWLATIME);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsLATime",
-			  &ds.detailslatime, sizeof(BOOL));
       ds.detailscrdate = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRDATE);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsCRDate",
-			  &ds.detailscrdate, sizeof(BOOL));
       ds.detailscrtime = WinQueryButtonCheckstate(hwnd, CFG5_SHOWCRTIME);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsCRTime",
-			  &ds.detailscrtime, sizeof(BOOL));
       ds.detailsattr = WinQueryButtonCheckstate(hwnd, CFG5_SHOWATTR);
-      PrfWriteProfileData(fmprof, appname, "Collector.DetailsAttr",
-			  &ds.detailsattr, sizeof(BOOL));
       ds.fSubjectInLeftPane = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTINLEFTPANE);
-      PrfWriteProfileData(fmprof, appname, "Collector.SubjectInLeftPane",
-			  &ds.fSubjectInLeftPane, sizeof(BOOL));
       ds.fSubjectLengthMax = WinQueryButtonCheckstate(hwnd, CFG5_SUBJECTLENGTHMAX);
-      PrfWriteProfileData(fmprof, appname, "Collector.SubjectLengthMax",
-			  &ds.fSubjectLengthMax, sizeof(BOOL));
       *mask.prompt = 0;
       PrfWriteProfileData(fmprof,
 			  appname, "CollectorFilter", &mask, sizeof(MASK));
@@ -2775,10 +2719,8 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  ds.SubjectDisplayWidth = 0;
-	PrfWriteProfileData(fmprof,
-			    appname, "Collector.SubjectDisplayWidth",
-			    &ds.SubjectDisplayWidth, sizeof(ULONG));
       }
+    WriteDetailsSwitches(PCSZ_COLLECTOR, &ds);
     }
     break;
   }
@@ -3093,7 +3035,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PrfWriteProfileData(fmprof,
 			    appname,
 			    "Collector.Fontnamesize",
-			    FNT_8HELVETICA,
+			    (PVOID) FNT_8HELVETICA,
 			    strlen(FNT_8HELVETICA) + 1);
       }
       dsDirCnrDefault.detailslongname = TRUE;
@@ -3150,7 +3092,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    &flWindowAttr, sizeof(ULONG));
 	//fixme to allow user to change presparams 1-10-09 GKY
 	PrfWriteProfileData(fmprof, appname, "Collector.Fontnamesize",
-			    FNT_8HELVETICA,
+			    (PVOID) FNT_8HELVETICA,
 			    strlen(FNT_8HELVETICA) + 1);
       }
       if (hwndTree) {
@@ -3584,30 +3526,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       return 0;
     }
     // Save new details settings and refresh windows
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLongname",
-			&dsDirCnrDefault.detailslongname, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSubject",
-			&dsDirCnrDefault.detailssubject, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsEA",
-			&dsDirCnrDefault.detailsea, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsSize",
-			&dsDirCnrDefault.detailssize, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsIcon",
-			&dsDirCnrDefault.detailsicon, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWDate",
-			&dsDirCnrDefault.detailslwdate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLWTime",
-			&dsDirCnrDefault.detailslwtime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLADate",
-			&dsDirCnrDefault.detailsladate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsLATime",
-			&dsDirCnrDefault.detailslatime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRDate",
-			&dsDirCnrDefault.detailscrdate, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsCRTime",
-			&dsDirCnrDefault.detailscrtime, sizeof(BOOL));
-    PrfWriteProfileData(fmprof, appname, "DirCnr.DetailsAttr",
-			&dsDirCnrDefault.detailsattr, sizeof(BOOL));
+    WriteDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault);
     if (hwndMain) {
       // Save state and restore to refresh windows with new settings
       if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
