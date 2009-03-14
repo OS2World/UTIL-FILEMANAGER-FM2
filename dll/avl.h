@@ -28,15 +28,6 @@
 #endif
 #endif
 
-#if defined(__IBMC__)
-#if __IBMC__ != 430
-#error VAC365 required for long long support
-#endif
-#if !defined(_LONG_LONG)
-#error Long long support not enabled
-#endif
-#endif
-
 typedef struct __arc_type__
 {
   CHAR *id;			// User id

@@ -124,15 +124,6 @@
 #endif
 #endif // OS2_INCLUDED
 
-#if defined(__IBMC__)
-#if __IBMC__ != 430
-#error VAC365 required for long long support
-#endif
-#if !defined(_LONG_LONG)
-#error Long long support not enabled
-#endif
-#endif
-
 #define DIR_SPLITBAR_OFFSET     18 * 12	/* Pixel offset of details splitbar */
 
 #define ALLATTRS                (FILE_NORMAL | FILE_DIRECTORY | FILE_ARCHIVED |\

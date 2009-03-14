@@ -155,11 +155,6 @@
 #include "excputil.h"			// xbeginthread
 #include "systemf.h"                    // runemf2
 
-#ifdef __IBMC__
-#pragma alloc_text(INIT,LibMain,InitFM3DLL,DeInitFM3DLL)
-#pragma alloc_text(INIT1,StartFM3)
-#endif
-
 extern int _CRT_init(void);
 extern void _CRT_term(void);
 
@@ -468,8 +463,6 @@ VOID FindSwapperDat(VOID)
   }
 }
 
-#ifdef __WATCOMC__
-
 unsigned APIENTRY LibMain(unsigned hModule,
 			  unsigned ulFlag)
 {
@@ -494,161 +487,6 @@ unsigned APIENTRY LibMain(unsigned hModule,
   }
   return 1UL;
 }
-
-#else // __IBMC__
-
-unsigned long _System _DLL_InitTerm(unsigned long hModule,
-				    unsigned long ulFlag)
-{
-  switch (ulFlag) {
-  case 0:
-    if (_CRT_init() == -1)
-      return 0UL;
-    FM3DllHandle = hModule;
-
-    DosError(FERR_DISABLEHARDERR);
-    /* strings here to prevent multiple occurences in DLL */
-    FM2Str = "FM/2";
-    FM3Str = "FM/3";
-    NullStr = "";
-    Default = "DEFAULT";
-    Settings = "SETTINGS";
-    WPProgram = "WPProgram";
-    FM3Folder = "<FM3_Folder>";
-    FM3Tools = "<FM3_Tools>";
-    DRM_OS2FILE = "DRM_OS2FILE";
-    DRM_FM2ARCMEMBER = "DRM_FM2ARCMEMBER";
-    DRF_FM2ARCHIVE = "DRF_FM2ARCHIVE";
-    DRMDRFLIST = "<DRM_OS2FILE,DRF_UNKNOWN>,"
-      "<DRM_DISCARD,DRF_UNKNOWN>," "<DRM_PRINT,DRF_UNKNOWN>";
-    DRMDRFOS2FILE = "<DRM_OS2FILE,DRF_UNKNOWN>";
-    DRMDRFFM2ARC = "<DRM_FM2ARCMEMBER,DRF_FM2ARCHIVE>";
-    DRM_FM2INIRECORD = "DRM_FM2INIRECORD";
-    DRF_FM2INI = "DRF_FM2INI";
-    SUBJECT = ".SUBJECT";
-    LONGNAME = ".LONGNAME";
-    HPFS = "HPFS";
-    JFS = "JFS";
-    CDFS = "CDFS";
-    ISOFS = "ISOFS";
-    FAT32 = "FAT32";
-    HPFS386 = "HPFS386";
-    CBSIFS = "CBSIFS";
-    NDFS32 = "NDFS32";
-    RAMFS = "RAMFS";
-    NTFS = "NTFS";
-    PCSZ_ARCHIVERBB2 = "ARCHIVER.BB2";
-    PCSZ_ASSOCDAT    = "ASSOC.DAT";
-    PCSZ_CMDLINESDAT = "CMDLINES.DAT";
-    PCSZ_CMDMINIDAT  = "CMDMINI.DAT";
-    PCSZ_COMMANDSDAT = "COMMANDS.DAT";
-    PCSZ_FILTERSDAT  = "FILTERS.DAT";
-    PCSZ_GREPMASKDAT = "GREPMASK.DAT";
-    PCSZ_PATTERNSDAT = "PATTERNS.DAT";
-    PCSZ_RESOURCEDAT = "RESOURCE.DAT";
-    PCSZ_QUICKTLSDAT = "QUICKTLS.DAT";
-    PCSZ_FM3TOOLSDAT = "FM3TOOLS.DAT";
-    PCSZ_USERDIRSDAT = "USERDIRS.DAT";
-    PCSZ_FM2PLAYEXE  = "FM2PLAY.EXE";
-    PCSZ_FM2PLAYTEMP = "$FM2PLAY.$$$";
-    FNT_6HELVETICA       =  "6.Helvetica";
-    FNT_8HELVETICA       =  "8.Helvetica";
-    FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";
-    FNT_10SYSTEMMONOTEXT =  "10.System Monospaced";
-    FNT_10SYSTEMPROPORT  =  "10.System Proportional";
-    FNT_2SYSTEMVIO       =  "2.System VIO";
-    FNT_4SYSTEMVIO       =  "4.System VIO";
-    FNT_10SYSTEMVIO      =  "10.System VIO";
-    FNT_8TIMESNEWROMAN   =  "8.Times New Roman";
-    PCSZ_DOSCREATEMUTEXSEM =  "DosCreateMutexSem";
-    PCSZ_DOSDUPHANDLE    =  "DosDupHandle";
-    PCSZ_DOSGETINFOBLOCKS = "DosGetInfoBlocks";
-    PCSZ_DOSQUERYPATHINFO = "DosQueryPathInfo";
-    PCSZ_DOSSEARCHPATH    = "DosSearchPath";
-    PCSZ_WINCREATEWINDOW = "WinCreateWindow";
-    PCSZ_WINLOADACCELTABLE  = "WinLoadAccelTable";
-    PCSZ_WINSETACCELTABLE  =  "WinSetAccelTable";
-    PCSZ_INIQUERYPRFTEXT =  "PrfQueryProfile";
-    PCSZ_PRFQUERYPROFILEDATA = "PrfQueryProfileData";
-    PCSZ_PRFQUERYPROFILESIZE = "PrfQueryProfileSize";
-    PCSZ_PRFQUERYPROFILESTRING = "PrfQueryProfileString";
-    PCSZ_FILLDIRQCURERRTEXT = "DosQCurDisk";
-    PCSZ_NODATA  =  "No Data";
-    PCSZ_STARDOTEXE    =  "*.EXE";
-    PCSZ_STARDOTINI    =  "*.INI";
-    PCSZ_STARDOTLST    =  "*.LST";
-    PCSZ_STARDOTPMD    =  "*.PMD";
-    PCSZ_STARDOTTXT    =  "*.TXT";
-    PCSZ_DOTEXE   =  ".EXE";
-    PCSZ_DOTCOM   =  ".COM";
-    PCSZ_DOTCMD   =  ".CMD";
-    PCSZ_DOTBTM   =  ".BTM";
-    PCSZ_DOTBAT   =  ".BAT";
-    PCSZ_DOTLST   =  ".LST";
-    PCSZ_DOTTLS   =  ".TLS";
-    PCSZ_DOTHLP   =  ".HLP";
-    PCSZ_DOTINF   =  ".INF";
-    PCSZ_DOTMP3   =  ".MP3";
-    PCSZ_DOTOGG   =  ".OGG";
-    PCSZ_DOTFLAC  =  ".FLAC";
-    PCSZ_DOTJPEG  =  ".JPEG";
-    PCSZ_DOTJPG   =  ".JPG";
-    PCSZ_DOTICO   =  ".ICO";
-    PCSZ_DOTPTR   =  ".PTR";
-    PCSZ_DOTBB2   =  ".BB2";
-    PCSZ_DOTBMP   =  ".BMP";
-    PCSZ_DOTCOMMENTS   =  ".COMMENTS";
-    PCSZ_PATH     =  "PATH";
-    WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
-    WC_BUBBLE          =  "WC_BUBBLE";
-    WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
-    WC_DRIVEBUTTONS    =  "WC_DRIVEBUTTONS";
-    WC_DIRCONTAINER    =  "WC_DIRCONTAINER";
-    WC_DIRSTATUS       =  "WC_DIRSTATUS";
-    WC_TREECONTAINER   =  "WC_TREECONTAINER";
-    WC_TREEOPENBUTTON  =  "WC_TREEOPENBUTTON";
-    WC_TREESTATUS      =  "WC_TREESTATUS";
-    WC_MAINWND         =  "WC_MAINWND";
-    WC_MAINWND2        =  "WC_MAINWND2";
-    WC_AUTOVIEW        =  "WC_AUTOVIEW";
-    WC_LED             =  "WC_LED";
-    WC_COLLECTOR       =  "WC_COLLECTOR";
-    WC_COLSTATUS       =  "WC_COLSTATUS";
-    WC_STATUS          =  "WC_STATUS";
-    WC_TOOLBACK        =  "WC_TOOLBACK";
-    WC_DRIVEBACK       =  "WC_DRIVEBACK";
-    WC_ARCCONTAINER    =  "WC_ARCCONTAINER";
-    WC_ARCSTATUS       =  "WC_ARCSTATUS";
-    WC_MLEEDITOR       =  "WC_MLEEDITOR";
-    WC_INIEDITOR       =  "WC_INIEDITOR";
-    WC_SEEALL          =  "WC_SEEALL";
-    WC_NEWVIEW         =  "WC_NEWVIEW";
-    WC_SEESTATUS       =  "WC_SEESTATUS";
-    WC_VIEWSTATUS      =  "WC_VIEWSTATUS";
-    WC_ERRORWND        =  "WC_ERRORWND";
-    WC_MINITIME        =  "WC_MINITIME";
-    WC_DATABAR         =  "WC_DATABAR";
-
-    /* end of strings */
-    memset(&RGBBLACK, 0, sizeof(RGB2));
-    RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = (BYTE)204;
-    RGBGREY.fcOptions = 0;
-    FM3UL = *(ULONG *)FM3Str;
-    break;
-  case 1:
-    StopPrinting = 1;
-    if (fmprof)
-      PrfCloseProfile(fmprof);
-    DosError(FERR_ENABLEHARDERR);
-    _CRT_term();
-    break;
-  default:
-    return 0UL;
-  }
-  return 1UL;
-}
-
-#endif // __IBMC__
 
 VOID APIENTRY DeInitFM3DLL(ULONG why)
 {
@@ -676,13 +514,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 
   if (fToolsChanged)
     save_tools(NULL);
-
-#  ifdef __IBMC__
-  _fcloseall();
-# else // __WATCOMC__
   fcloseall();
-# endif
-
   save_dir(s);
   if (s[strlen(s) - 1] != '\\')
     strcat(s, "\\");

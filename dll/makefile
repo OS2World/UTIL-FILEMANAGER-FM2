@@ -186,7 +186,7 @@ OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        dirs.obj dirsize.obj draglist.obj droplist.obj dumputil.obj &
        eas.obj errutil.obj excputil.obj extract.obj &
        filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
-       fonts.obj fortify.obj fsopen.obj &
+       fonts.obj fortify.obj &
        getnames.obj grep.obj grep2.obj i18nutil.obj info.obj inis.obj &
        init.obj input.obj instant.obj key.obj killproc.obj literal.obj &
        loadbmp.obj mainwnd.obj mainwnd2.obj makelist.obj menu.obj misc.obj &

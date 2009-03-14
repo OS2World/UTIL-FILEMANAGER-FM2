@@ -33,15 +33,6 @@
 #endif
 #endif
 
-#if defined(__IBMC__)
-#if __IBMC__ != 430
-#error VAC365 required for long long support
-#endif
-#if !defined(_LONG_LONG)
-#error Long long support not enabled
-#endif
-#endif
-
 #include "avl.h"			// ARC_TYPE
 
 #define CBLIST_TO_EASIZE(cb) ((cb) > 4 ? (cb) / 2 : 0)	// FILEFINDBUF4L.cbList to logical EA size

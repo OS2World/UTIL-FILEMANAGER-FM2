@@ -17,15 +17,6 @@
 #if !defined(MAKELIST_H)
 #define MAKELIST_H
 
-#if defined(__IBMC__)
-#if __IBMC__ != 430
-#error VAC365 required for long long support
-#endif
-#if !defined(_LONG_LONG)
-#error Long long support not enabled
-#endif
-#endif
-
 #if !defined(OS2_INCLUDED)
 #define INCL_WINSTDCNR			// avl.h
 #define INCL_LONGLONG
