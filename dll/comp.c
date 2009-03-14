@@ -62,6 +62,8 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c & String Table
 
 ***********************************************************************/
 
@@ -523,7 +525,7 @@ static VOID ActionCnrThread(VOID *args)
 	  // Source name not blank
 	  switch (cmp->action) {
 	  case IDM_DELETE:
-	    if (!unlinkf("%s", pciS->pszFileName)) {
+	    if (!unlinkf(pciS->pszFileName)) {
 	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
 
@@ -581,7 +583,7 @@ static VOID ActionCnrThread(VOID *args)
 		if (IsFile(szDirName) == -1)
 		  MassMkdir(hwndMain, szDirName);
 	      }
-	      rc = docopyf(MOVE, pciS->pszFileName, "%s", szNewName);
+	      rc = docopyf(MOVE, pciS->pszFileName, szNewName);
 	      if (fResetVerify) {
 		DosSetVerify(fVerify);
 		fResetVerify = FALSE;
@@ -682,7 +684,7 @@ static VOID ActionCnrThread(VOID *args)
 		if (IsFile(szDirName) == -1)
 		  MassMkdir(hwndMain, szDirName);
 	      }
-	      rc = docopyf(COPY, pciS->pszFileName, "%s", szNewName);
+	      rc = docopyf(COPY, pciS->pszFileName, szNewName);
 	      if (fResetVerify) {
 		DosSetVerify(fVerify);
 		fResetVerify = FALSE;
@@ -1486,7 +1488,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
 	      saymsg(MB_OK | MB_ICONASTERISK,
 		     HWND_DESKTOP,
 		     GetPString(IDS_WARNINGTEXT),
-		     "One or more of your files has a full path name that exceeds the OS/2 maximum");
+		     GetPString(IDS_LENGTHEXCEEDSMAXPATHTEXT));
 	    }
 	    return;
 	  }
@@ -1809,8 +1811,7 @@ static VOID FillCnrsThread(VOID *args)
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
 			       MPFROMLONG(recsNeeded));
 	if (!pcilFirst) {
-	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
-		    recsNeeded);
+	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
 	  recsNeeded = 0;
 	}
       }
@@ -1819,8 +1820,7 @@ static VOID FillCnrsThread(VOID *args)
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
 			       MPFROMLONG(recsNeeded));
 	if (!pcirFirst) {
-	  Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
-		    recsNeeded);
+	  Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
 	  recsNeeded = 0;
 	  FreeCnrItemList(hwndLeft, pcilFirst);
 	}

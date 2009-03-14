@@ -54,7 +54,6 @@ INT tokenize(CHAR * str, INT max, CHAR ** tokens)
 	break;
       *p = 0;
       p++;
-      // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"\"%s\"\r\r%d",tokens[x - 1],x);
       if (!*p)
 	break;
     }
@@ -93,10 +92,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
   if (!filename)
     filename = "FM3MENU.DAT";
   fp = _fsopen(filename, "r", SH_DENYWR);
-  if (!fp) {
-    // else saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Couldn't open %s",filename);
-  }
-  else {
+  if (fp)  {
     while (!feof(fp)) {
       if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
 	break;
@@ -131,10 +127,6 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	    }
 	  }
 	}
-      }
-      else {
-	// fixme to complain?
-	// saymsg(MB_ENTER, HWND_DESKTOP, GetPString(IDS_DEBUG_STRING), "Tokenization failed");
       }
     }
     fclose(fp);

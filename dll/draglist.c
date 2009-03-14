@@ -21,6 +21,7 @@
   05 Jul 07 SHL FreeDragInfoData: suppress PMERR_SOURCE_SAME_AS_TARGET notices
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xmallocz where appropriate
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -54,7 +55,7 @@ HPOINTER hptrFile;
 HPOINTER hptrLast;
 
 #pragma data_seg(GLOBAL2)
-CHAR *DRMDRFLIST;
+PCSZ DRMDRFLIST = "<DRM_OS2FILE,DRF_UNKNOWN>," "<DRM_DISCARD,DRF_UNKNOWN>," "<DRM_PRINT,DRF_UNKNOWN>";
 
 /**
  * Delete drag item string handles.

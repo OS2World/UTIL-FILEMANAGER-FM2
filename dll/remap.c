@@ -451,7 +451,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else if ((ULONG) mp2 == 1041)
 	    saymsg(MB_CANCEL | MB_ICONEXCLAMATION, hwnd,
 		   GetPString(IDS_ERRORTEXT),
-		   "%s", GetPString(IDS_CANTSTARTNETUSETEXT));
+		   GetPString(IDS_CANTSTARTNETUSETEXT));
 	  if (!mp2 || (ULONG) mp2 == 1041 || info->failedonce)
 	    free(info);
 	  break;
@@ -749,7 +749,7 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       saymsg(MB_YESNOCANCEL,
 	     HWND_DESKTOP,
 	     GetPString(IDS_NOTICETITLETEXT),
-	     "%s", GetPString(IDS_REMAPNOTICETEXT));
+	     GetPString(IDS_REMAPNOTICETEXT));
     }
     free_resources();
     loadedres = FALSE;

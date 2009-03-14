@@ -64,6 +64,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
+  14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
 
 ***********************************************************************/
 
@@ -623,6 +624,10 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #     ifdef FORTIFY
       Fortify_BecomeOwner(mp1);
 #     endif
+      if (StubbyScanCount != 0) { //prevent treeswitch from hanging fm2 during startup GKY 3-14-09
+        DosSleep(50);
+        PostMsg(hwndTree, UM_SHOWME, mp1, MPVOID);
+      }
       dcd = INSTDATA(hwnd);
       if (dcd) {
 	BOOL tempsusp, tempfollow, temptop;
@@ -1463,7 +1468,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgAccessDraginfo");
+		      PCSZ_DRGACCESSDRAGINFO);
 	    return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
 	  }
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
@@ -1592,7 +1597,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				   FM3ModHandle, DND_FRAME, MPFROMP(&cl));
 	      if (li->type == DID_ERROR)
 		  Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
-			    "Drag & Drop Dialog");
+			    GetPString(IDS_DRAGDROPDIALOGTEXT));
 	      if (!li->type) {
 		FreeListInfo(li);
 		return 0;
@@ -2087,16 +2092,16 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      ULONG size = sizeof(ULONG), flWindowAttr = CV_ICON;
 	      CHAR s[33];
 
-	      strcpy(s, "ICON");
+	      strcpy(s, PCSZ_ICON);
 	      PrfQueryProfileData(fmprof,
 				  appname,
 				  "DirflWindowAttr",
 				  (PVOID) & flWindowAttr, &size);
 	      if (flWindowAttr & CV_DETAIL) {
 		if (IsRoot(pci->pszFileName))
-		  strcpy(s, "TREE");
+		  strcpy(s, PCSZ_TREE);
 		else
-		  strcpy(s, "DETAILS");
+		  strcpy(s, Details);
 	      }
 	      OpenObject(pci->pszFileName, s, dcd->hwndFrame);
 	      return 0;

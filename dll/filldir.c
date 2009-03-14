@@ -65,7 +65,9 @@
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
-  08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Additional strings move to PCSZs
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
 
 ***********************************************************************/
 
@@ -119,8 +121,8 @@ HPOINTER hptrReadonly;
 HPOINTER hptrSystem;
 
 #pragma data_seg(GLOBAL2)
-CHAR *FM3Tools;
-CHAR *WPProgram;
+PCSZ FM3Tools   = "<FM3_Tools>";
+PCSZ WPProgram  = "WPProgram";
 volatile INT StubbyScanCount;
 volatile INT ProcessDirCount;
 
@@ -251,8 +253,8 @@ VOID StubbyScanThread(VOID * arg)
 		     LM_INSERTITEM,
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(StubbyScan->pci->pszFileName));
-	}
-	StubbyScanCount--;
+        }
+        StubbyScanCount--;
        /* if (StubbyScanCount == 0) {
           if (fInitialDriveScan) {
             WinShowWindow(StubbyScan->hwndCnr, TRUE);
@@ -415,7 +417,7 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
       if (fp) {
 	fclose(fp);
 	hptr3 = WinLoadFileIcon(szFileName, FALSE);
-	unlinkf("%s", szFileName);
+	unlinkf(szFileName);
 	if (!hptr2)
 	  hptr2 = hptr3;
 	else if (hptr3 == hptr3) {
@@ -1241,13 +1243,13 @@ Abort:
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     while (pci && (INT)pci != -1) {
       if ((pci->attrFile & FILE_DIRECTORY))
-        if (fInitialDriveScan)
+        //if (fInitialDriveScan)
           Stubby(hwndCnr, pci);
-        else {
+        /*else {
           while (StubbyScanCount != 0)
             DosSleep(50);
           Stubby(hwndCnr, pci);
-        }
+        } */
         //Stubby(hwndCnr, pci);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
@@ -1658,7 +1660,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
 				MPVOID,
-				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+                                MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
     StubbyScanCount ++;
     while (pci && (INT)pci != -1) {
       stubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
@@ -1678,7 +1680,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  ULONG flags = driveflags[drvNum];	// Speed up
 	  if (~flags & DRIVE_INVALID &&
 	      ~flags & DRIVE_NOPRESCAN &&
-	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE) && !fDrivetoSkip[drvNum])
+	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) //&& !fDrivetoSkip[drvNum])
 	  {
 	    if (DRIVE_RAMDISK)
 	      stubbyScan->RamDrive = TRUE;
@@ -1707,7 +1709,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(pci->pszFileName));
 	}
-	fDrivetoSkip[drvNum] = FALSE;
+	//fDrivetoSkip[drvNum] = FALSE;
       }
       pci = pciNext;
     } // while

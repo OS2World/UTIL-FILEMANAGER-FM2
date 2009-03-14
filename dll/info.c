@@ -236,15 +236,14 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  (fsa.cSectorUnit * fsa.cbSector), 'K');
 	      CommaFmtULL(szUnits, sizeof(szUnits),
 			  (ULONGLONG) fsa.cUnitAvail, ' ');
-	      sprintf(s,
-		      "%s, %s, %s %s%s",
-		      szMB, szKB, szUnits,
-		      GetPString(IDS_UNITTEXT), &"s"[fsa.cUnitAvail == 1L]);
+	      sprintf(s, "%s, %s, %s %s%s",
+	              szMB, szKB, szUnits,
+	              GetPString(IDS_UNITTEXT), &"s"[fsa.cUnitAvail == 1L]);
 	      WinSetDlgItemText(hwnd, INFO_AVAILABLE, s);
 	      sprintf(s,
-		      GetPString(IDS_SECTORSTEXT),
-		      fsa.cbSector,
-		      fsa.cSectorUnit, &"s"[fsa.cSectorUnit == 1L]);
+	              GetPString(IDS_SECTORSTEXT),
+	              fsa.cbSector,
+	              fsa.cSectorUnit, &"s"[fsa.cSectorUnit == 1L]);
 	      WinSetDlgItemText(hwnd, INFO_ALLOCUNITS, s);
 
 	      percentfree = (fsa.cUnitAvail && fsa.cUnit) ?
@@ -274,16 +273,16 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    else {
 	      sprintf(FileSystem,
-		      GetPString(IDS_CANTQUERYVOLTEXT),
-		      toupper(*pszFileName));
+	              GetPString(IDS_CANTQUERYVOLTEXT),
+	              toupper(*pszFileName));
 	      Notify(FileSystem);
 	      WinDismissDlg(hwnd, 0);
 	    }
 	  }
 	  else {
 	    sprintf(FileSystem,
-		    GetPString(IDS_CANTQUERYALLOCTEXT),
-		    toupper(*pszFileName));
+	            GetPString(IDS_CANTQUERYALLOCTEXT),
+	            toupper(*pszFileName));
 	    Notify(FileSystem);
 	    WinDismissDlg(hwnd, 0);
 	  }
@@ -291,8 +290,8 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  FlagMsg(*pszFileName, s);
 	  sprintf(FileSystem,
-		  GetPString(IDS_DRIVEINACCESSIBLETEXT),
-		  toupper(*pszFileName), s);
+	          GetPString(IDS_DRIVEINACCESSIBLETEXT),
+	          toupper(*pszFileName), s);
 	  Notify(FileSystem);
 	  WinDismissDlg(hwnd, 0);
 	}

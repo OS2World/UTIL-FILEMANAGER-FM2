@@ -28,6 +28,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Move repeated strings to PCSZs.
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -328,7 +329,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else if (!sMax) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
-	unlinkf("%s", szBuffer);
+	unlinkf(szBuffer);
       }
     }
     return 0;
@@ -689,7 +690,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       }
       else if (!sMax) {
         BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
-	unlinkf("%s", szBuffer);
+	unlinkf(szBuffer);
       }
     }
     return 0;

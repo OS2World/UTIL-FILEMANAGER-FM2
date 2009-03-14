@@ -32,6 +32,8 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  14 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -85,8 +87,8 @@
 HELPINIT hini;
 
 #pragma data_seg(GLOBAL2)
-CHAR *DRF_FM2INI;
-CHAR *DRM_FM2INIRECORD;
+PCSZ DRF_FM2INI  = "DRF_FM2INI";
+PCSZ DRM_FM2INIRECORD  = "DRM_FM2INIRECORD";
 RGB2 RGBBLACK;
 
 #pragma data_seg(DATA2)
@@ -196,7 +198,7 @@ VOID CopyIniThread(VOID * args)
 	  hiniFrom = PrfOpenProfile(hab2, inirec->filename1);
 	  if (hiniFrom == NULLHANDLE) {
 	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		      "PrfOpenProfile failed for %s", inirec->filename1);
+		      PCSZ_PRFOPENPROFILEFAILED, inirec->filename1);
 	  }
 	}
 	if (hiniTo == NULLHANDLE) {
@@ -206,7 +208,7 @@ VOID CopyIniThread(VOID * args)
 	    hiniTo = PrfOpenProfile(hab2, inirec->filename2);
 	    if (hiniTo == NULLHANDLE) {
 	      Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-			"PrfOpenProfile failed for %s", inirec->filename2);
+			PCSZ_PRFOPENPROFILEFAILED, inirec->filename2);
 	    }
 	  }
 	}
@@ -409,13 +411,13 @@ static VOID BackupIniThread(VOID * args)
 	  orig = PrfOpenProfile(hab2, prfp->pszUserName);
 	if (orig == NULLHANDLE) {
 	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		    "PrfOpenProfile failed for %s", prfp->pszUserName);
+		    PCSZ_PRFOPENPROFILEFAILED, prfp->pszUserName);
 	}
 	else {
 	  new = PrfOpenProfile(hab2, prfp->pszSysName);
 	  if (new == NULLHANDLE) {
 	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		      "PrfOpenProfile failed for %s", prfp->pszSysName);
+		      PCSZ_PRFOPENPROFILEFAILED, prfp->pszSysName);
 	  }
 	  else {
 	    ulSize = 0;
@@ -1691,7 +1693,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (!DrgAccessDraginfo(pDInfo)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DrgAccessDraginfo");
+		  PCSZ_DRGACCESSDRAGINFO);
       }
       else {
 	pDItem = DrgQueryDragitemPtr(pDInfo,0);
@@ -1730,7 +1732,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (!DrgAccessDraginfo(pDInfo)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DrgAccessDraginfo");
+		  PCSZ_DRGACCESSDRAGINFO);
 	return 0;
       }
       numitems = DrgQueryDragitemCount(pDInfo);
@@ -2097,7 +2099,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	inidata->hini = HINI_USERPROFILE;
       if (inidata->hini == NULLHANDLE) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "PrfOpenProfile failed for %s", inidata->ininame);
+		  PCSZ_PRFOPENPROFILEFAILED, inidata->ininame);
       }
       else {
 	WinSendMsg(hwnd, UM_SETUP, MPVOID, MPVOID);

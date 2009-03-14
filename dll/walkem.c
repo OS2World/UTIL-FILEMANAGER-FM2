@@ -320,7 +320,6 @@ VOID save_setups(VOID)
   if (!PrfWriteProfileData(fmprof,
 			   FM3Str,
 			    pszLastSetups, pszBuf, ulBufBytes)) {
-    // Win_Error(pszSrcFile, __LINE__, HWND_DESKTOP, HWND_DESKTOP, "PrfWriteProfileData");
     ERRORID eid = WinGetLastError((HAB)0);
     if ((eid & 0xffff) != PMERR_NOT_IN_IDX)
       Runtime_Error(pszSrcFile, __LINE__, "PrfWriteProfileData returned %u", eid);

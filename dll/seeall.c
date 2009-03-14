@@ -46,6 +46,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -282,7 +283,7 @@ MRESULT EXPENTRY DupeDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  saymsg(MB_ENTER,
 		 hwnd,
 		 GetPString(IDS_ERRORTEXT),
-		 "%s", GetPString(IDS_CHECKONETEXT));
+		 GetPString(IDS_CHECKONETEXT));
 	else
 	  WinDismissDlg(hwnd, flags);
       }
@@ -610,7 +611,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  saymsg(MB_CANCEL,
 		 hwndFrame,
 		 GetPString(IDS_ERRORTEXT),
-		 "%s", GetPString(IDS_NOTWRITENOTARGETTEXT));
+		 GetPString(IDS_NOTWRITENOTARGETTEXT));
 	  goto RetryPath;
 	}
 	/* intentional fallthru */
@@ -758,7 +759,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  MassMkdir((hwndMain) ? hwndMain : (HWND) 0, dirpart);
 	      }
 	    }
-	    rc = docopyf(type, list[x], "%s", newname);
+	    rc = docopyf(type, list[x], newname);
 	    if (fResetVerify) {
 	      DosSetVerify(fVerify);
 	      fResetVerify = FALSE;
@@ -813,7 +814,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		rc = saymsg(MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION,
 			    hwndFrame,
 			    GetPString(IDS_DISKFULLTEXT),
-			    "%s", GetPString(IDS_ANOTHERDISKTEXT));
+			    GetPString(IDS_ANOTHERDISKTEXT));
 		if (rc == MBID_RETRY)
 		  goto Retry;
 		if (rc == MBID_ABORT) {
@@ -935,10 +936,10 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    switch (SHORT1FROMMP(mp1)) {
 	    case IDM_OPENSETTINGS:
-	      s = Settings;
+	      s = (PSZ) Settings;
 	      break;
 	    default:
-	      s = Default;
+	      s = (PSZ) Default;
 	      break;
 	    }
 	    OpenObject(list[x], s, hwndFrame);
@@ -1578,7 +1579,6 @@ static BOOL UpdateList(HWND hwnd, CHAR **list)
 	      ad->afheadcnt++;
 	    }
 	    else {
-	      // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Strdup failed.");
 	      ad->stopflag = 1;
 	      break;
 	    }
@@ -2033,7 +2033,7 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	      saymsg(MB_OK | MB_ICONASTERISK,
 		     HWND_DESKTOP,
 		     GetPString(IDS_WARNINGTEXT),
-		     "One or more of your files has a full path name that exceeds the OS/2 maximum");
+		     GetPString(IDS_LENGTHEXCEEDSMAXPATHTEXT));
 	    }
 	    return;
 	  }

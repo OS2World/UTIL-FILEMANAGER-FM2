@@ -10,6 +10,7 @@
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -42,15 +43,16 @@ CHAR *assign_ignores(CHAR * s);
 BOOL needs_quoting(PCSZ f);
 
 // Data declarations
-extern CHAR *CDFS;
-extern CHAR *FAT32;
-extern CHAR *HPFS;
-extern CHAR *HPFS386;
-extern CHAR *ISOFS;
-extern CHAR *JFS;
-extern CHAR *NTFS;
-extern CHAR *NDFS32;
-extern CHAR *RAMFS;
+extern PCSZ CDFS;
+extern PCSZ FAT32;
+extern PCSZ HPFS;
+extern PCSZ HPFS386;
+extern PCSZ ISOFS;
+extern PCSZ JFS;
+extern PCSZ NTFS;
+extern PCSZ NDFS32;
+extern PCSZ RAMFS;
+extern PCSZ CBSIFS;
 extern BOOL fVerifyOffChecked[26];
 
 #endif	// VALID_H

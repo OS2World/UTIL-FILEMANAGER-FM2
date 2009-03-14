@@ -20,6 +20,7 @@
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
                 less than 10 KiB (It hangs and can't be closed)
   05 Jan 09 GKY Use TestBinary so that text veiwer isn't used for hex files by default
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -60,7 +61,7 @@
 static PSZ pszSrcFile = __FILE__;
 
 #pragma data_seg(GLOBAL2)
-CHAR *Default;
+PCSZ Default  = "DEFAULT";
 
 BOOL ShowMultimedia(CHAR * filename)
 {
@@ -123,48 +124,35 @@ BOOL ShowMultimedia(CHAR * filename)
   }
 
   /* attempt to identify the file using MMPM/2 */
-  //printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
   memset( &mmioinfo, '\0', sizeof(MMIOINFO) );
   /*Eliminate non multimedia files*/
   hmmio = pMMIOOpen(filename,
 	            &mmioinfo,
-	            MMIO_READ);
-#if 0
-  printf("%s %d %d %d %d %d\n",
-	  __FILE__, __LINE__,mmioinfo.ulFlags, mmioinfo.ulErrorRet,
-	 mmioinfo.pIOProc, mmioinfo.aulInfo); fflush(stdout);
-#endif
-	 if (!hmmio) {
-	     p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
-	  if (!p)
-	      p = ".";
-	     /* printf("%s %d %s\n",
-	      __FILE__, __LINE__, p); fflush(stdout);*/
-	  if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC) ||
-	       !stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG)){
-	     hmmio = pMMIOOpen(filename,
-	            &mmioinfo,
-	            MMIO_READ | MMIO_NOIDENTIFY);
-	     if (!hmmio){
-	         DosFreeModule(MMIOModHandle);
-	         //printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
-	         return played;
-	     }
-	  }
-	  else {
-	     DosFreeModule(MMIOModHandle);
-	        // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
-	         return played;
-	  }
-	 }
-	 if (!hmmio) {
-	         DosFreeModule(MMIOModHandle);
-	        // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
-	         return played;
-	     }
-
+                    MMIO_READ);
+  if (!hmmio) {
+    p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
+    if (!p)
+      p = ".";
+    if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC) ||
+         !stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG)) {
+       hmmio = pMMIOOpen(filename,
+              &mmioinfo,
+              MMIO_READ | MMIO_NOIDENTIFY);
+       if (!hmmio){
+           DosFreeModule(MMIOModHandle);
+           return played;
+       }
+    }
+    else {
+       DosFreeModule(MMIOModHandle);
+           return played;
+    }
+  }
+  if (!hmmio) {
+          DosFreeModule(MMIOModHandle);
+          return played;
+  }
   rc1 = pMMIOGetInfo(hmmio, &mmioinfo, 0L);
-  // printf("%s %d\n ", __FILE__, __LINE__); fflush(stdout);
   memset(&mmFormatInfo, 0, sizeof(MMFORMATINFO));
   mmFormatInfo.ulStructLen = sizeof(MMFORMATINFO);
   rc = pMMIOIdentifyFile(filename,
@@ -172,13 +160,6 @@ BOOL ShowMultimedia(CHAR * filename)
 			 &mmFormatInfo,
 	                 &fccStorageSystem, 0L,
 	                 MMIO_FORCE_IDENTIFY_FF);
-#if 0
-   printf("%s %d %d %d %d\n %d %d %d %s\n",
-	  __FILE__, __LINE__,mmioinfo.ulFlags,
-	  mmioinfo.pIOProc, mmioinfo.aulInfo,
-	  mmFormatInfo.fccIOProc, mmFormatInfo.fccIOProc,
-	  mmFormatInfo.ulIOProcType, mmFormatInfo.szDefaultFormatExt); fflush(stdout);
-#endif
   /* free module handle */
   rc1 = pMMIOClose(hmmio, 0L);
   DosFreeModule(MMIOModHandle);
@@ -190,8 +171,6 @@ BOOL ShowMultimedia(CHAR * filename)
       p = strrchr(filename, '.');
 	  if (!p)
 	      p = ".";
-	     /* printf("%s %d %s\n",
-	      __FILE__, __LINE__, p); fflush(stdout);*/
 	  if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
 	    OpenObject(filename, Default, hwnd);  //Image fails to display these
 	  else       // is an image that can be translated
@@ -203,8 +182,6 @@ BOOL ShowMultimedia(CHAR * filename)
 	p = strrchr(filename, '.');
 	  if (!p)
 	      p = ".";
-	     /* printf("%s %d %s\n",
-	      __FILE__, __LINE__, p); fflush(stdout);*/
 	  if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC))
 	      OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
 	  else

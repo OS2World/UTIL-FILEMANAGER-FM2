@@ -244,7 +244,7 @@ void SetTargetDir(HWND hwnd, BOOL justshow)
 	  saymsg(MB_YESNOCANCEL,
 		 hwnd,
 		 GetPString(IDS_CLEARTARGETTITLETEXT),
-		 "%s", GetPString(IDS_CLEARTARGETTEXT)) == MBID_YES) {
+		 GetPString(IDS_CLEARTARGETTEXT)) == MBID_YES) {
 	*targetdir = 0;
 	PrfWriteProfileString(fmprof, appname, "Targetdir", NULL);
       }

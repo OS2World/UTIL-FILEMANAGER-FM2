@@ -36,6 +36,7 @@
                 Select archive dialog if no default is provided.
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
+  08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
 
@@ -697,7 +698,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
     if (pDInfo) {
       if (!DrgAccessDraginfo(pDInfo)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DrgAccessDraginfo");
+		  PCSZ_DRGACCESSDRAGINFO);
       }
       else {
 	pDItem = DrgQueryDragitemPtr(pDInfo, 0);
@@ -733,7 +734,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
     if (pDInfo) {
       if (!DrgAccessDraginfo(pDInfo)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		  "DrgAccessDraginfo");
+		  PCSZ_DRGACCESSDRAGINFO);
       }
       else {
 	pDItem = DrgQueryDragitemPtr(pDInfo, 0);

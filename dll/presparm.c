@@ -364,8 +364,6 @@ VOID CopyPresParams(HWND target, HWND source)
                                  &AttrFound,
                                  sizeof(AttrValue),
                                  &AttrValue, 0);
-    //printf("%s %x\n", AttrValue, source); fflush(stdout);
-    //printf("%x\n", AttrValue); fflush(stdout);
     if (cbRetLen)
       WinSetPresParam(target, AttrName[x], cbRetLen, (PVOID) AttrValue);
     x++;

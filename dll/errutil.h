@@ -10,6 +10,7 @@
 
   05 Jan 08 SHL Move from fm3dll.h to here
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Remove Dos_Error2 (unused) and Runtime_Error2 (no advantage over using Runtime_Error)
 
 ***********************************************************************/
 
@@ -23,19 +24,13 @@
 VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
-//INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner, PCSZ pszSrcFile,
-//	       UINT uSrcLineNo, UINT idMsg);
 ULONG GetMSecTimer(void);
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
 VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg);
 APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...);
 VOID Win_Error(HWND hwndErr, HWND hwndOwner,
 	       PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
-//VOID Win_Error2(HWND hwndErr, HWND hwndOwner, PCSZ pszSrcFile,
-//		UINT uSrcLineNo, UINT idMsg);
 VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
 			PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...);
-
-extern PSZ DEBUG_STRING;
 
 #endif // ERRUTIL_H

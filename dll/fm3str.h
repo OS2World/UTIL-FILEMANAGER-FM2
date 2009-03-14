@@ -28,6 +28,7 @@
 		255 where necessary
   04 Feb 09 SHL Switch to STRINGTABLE
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  14 Mar 09 GKY Remove variables that were transferred to PCSZs
 
 ***********************************************************************/
 
@@ -88,12 +89,7 @@
 #define IDS_10SYSPROTEXT                                      49
 #define IDS_NOTPROTECTONLYEXE                                 50
 #define IDS_INIFAILURETEXT                                    51
-#define IDS_8HELVTEXT                                         52
-#define IDS_6HELVTEXT                                         53
-#define IDS_SHUTDOWNSTATE                                     55
 #define IDS_HELPCMDTEXT                                       56
-#define IDS_FM2TEMPTEXT                                       57
-#define IDS_8TIMESNEWROMANTEXT                                58
 #define IDS_DETACHREQUESTTEXT                                 59
 #define IDS_DIRCNRTOTALHELP                                   60
 #define IDS_DIRCNRSELECTEDHELP                                61
@@ -994,6 +990,12 @@
 #define IDS_STATSMEANINGLESSTEXT                             1005
 #define IDS_EDITREADONLYFILETEXT                             1006
 #define IDS_EDITREADONLYFILETEXT2                            1007
+#define IDS_EDITREADONLYFILETEXT3                            1008
+#define IDS_LENGTHEXCEEDSMAXPATHTEXT                         1009
+#define IDS_STATEADDFAILEDTEXT                               1010
+#define IDS_STATEDATASAVEFAILED                              1011
+#define IDS_STATERESERVENAMETEXT                             1012
+#define IDS_DRAGDROPDIALOGTEXT                               1013
 
 //The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 //This was done as part of the conversion to a StringTable where strings are limited to 255

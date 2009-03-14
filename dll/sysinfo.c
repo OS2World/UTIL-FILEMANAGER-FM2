@@ -15,6 +15,7 @@
   29 Jul 06 SHL Use xfgets
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 JUL 08 GKY Use TMP directory for temp files
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -60,7 +61,7 @@ VOID RunRmview(VOID * arg)
     if (!WinIsWindow(thab, hwnd))
       goto Abort;
     BldFullPathName(szTempFile, pTmpDir, "$RMVIEW.#$#");
-    unlinkf("%s", szTempFile);
+    unlinkf(szTempFile);
     fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
     if (!fp)
       goto Abort;

@@ -191,7 +191,6 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
       else
 	ret = DosQueryAppType(szCmdLine, &ulAppType);
       BldQuotedFileName(pszNewCmdLine, szCmdLine);
-      //printf("%d A", ret); fflush(stdout);
       if (ret) {
 	ret = saymsg(MB_YESNO,
 		     HWND_DESKTOP,
@@ -251,7 +250,6 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	    }
 	  }
 	}
-	//printf("%d", ret); fflush(stdout);
       }
       else {
 	pszChar = szCmdLine;
@@ -299,7 +297,6 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	      else
 		break;
 	    }
-	    //printf("%d %s\n", ret, szCmdLine); fflush(stdout);
 	  }
 	  strcpy(szCmdLine, pszCmdLine_);
 	  pszChar++;
@@ -351,7 +348,6 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	     pszCmdLine_);
     FullPath = searchapath(PCSZ_PATH, szCmdLine);
     BldQuotedFileName(pszNewCmdLine, szCmdLine);
-    //printf("%d %s ", ret, szCmdLine); fflush(stdout);
     if (!*FullPath) {
       ret = saymsg(MB_YESNO,
 		   HWND_DESKTOP,

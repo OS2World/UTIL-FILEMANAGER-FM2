@@ -84,8 +84,6 @@ BOOL ShowSession(HWND hwnd, PID pid)
 	rc = WinSwitchToProgram(hswitch);
       if (!rc)
 	return TRUE;
-      // else saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Failed: %lu/%lx",rc,rc);
-
     }
   }
   return FALSE;

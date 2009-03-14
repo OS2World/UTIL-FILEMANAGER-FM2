@@ -73,6 +73,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -614,7 +615,7 @@ ReTry:
       highest = info->fnpos;
     if (highest > 50) {
       saymsg(MB_ENTER | MB_ICONEXCLAMATION, HWND_DESKTOP,
-	     GetPString(IDS_SHAMETEXT), "%s", GetPString(IDS_BUNGEDUPTEXT));
+	     GetPString(IDS_SHAMETEXT), GetPString(IDS_BUNGEDUPTEXT));
     }
     if (info->fnpos == -1)
       highest = 32767;
@@ -806,7 +807,7 @@ ReTry:
 			     MPFROMLONG(EXTRA_ARCRECORD_BYTES),
 			     MPFROMLONG(1L));
 	    if (!pai) {
-	      Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD");
+	      Runtime_Error(pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
 	      break;
 	    }
 	    else {
@@ -1416,13 +1417,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *filename = 0;
 	  len = DrgQueryStrName(pdt->hstrSelectedRMF, CCHMAXPATH, filename);
 	  filename[len] = 0;
-	  if (!strnicmp(filename, "OS2FILE,", 8)) {
-	    // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"RMF = \"%s\"",filename);
-	  }
-	  else {
+	  if (strnicmp(filename, "OS2FILE,", 8)) {
 	    *filename = 0;
-	    len =
-	      DrgQueryStrName(pdt->hstrRenderToName, CCHMAXPATH, filename);
+	    len = DrgQueryStrName(pdt->hstrRenderToName, CCHMAXPATH, filename);
 	    filename[len] = 0;
 	    if (len && *filename) {
 	      psz = xstrdup(filename, pszSrcFile, __LINE__);
@@ -1430,9 +1427,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		PostMsg(hwnd, UM_RENDER, MPFROMP(pdt), MPFROMP(psz));
 		return (MRESULT) TRUE;
 	      }
-	    }
-	    else {
-	      // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"No render-to name given.");
 	    }
 	  }
 	}
@@ -1458,7 +1452,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      CCHMAXPATH, membername);
 	membername[len] = 0;
 	if (*membername && len && filename) {
-	  unlinkf("%s", filename);
+	  unlinkf(filename);
 	  strcpy(construct, filename);
 	  p = strrchr(filename, '\\');
 	  if (!p)
@@ -1468,7 +1462,6 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      p++;
 	    *p = 0;
 	  }
-	  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%s %s %s\r[%s]",dcd->info->extract,dcd->arcname,membername,construct);
 	  runemf2(SEPARATE | WINDOWED | ASYNCHRONOUS | WAIT |
 		  (fArcStuffVisible ? 0 : BACKGROUND | MINIMIZED),
 		  dcd->hwndClient, pszSrcFile, __LINE__, construct, NULL,
@@ -1479,7 +1472,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  BldFullPathName(construct, construct, membername);
 	  if (IsFile(construct) != -1) {
 	    rename(construct, filename);
-	    unlinkf("%s", construct);
+	    unlinkf(construct);
 	    if (IsFile(filename) != -1)
 	      usRes = DMFL_RENDEROK;
 	  }
@@ -2677,7 +2670,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       SWP swp;
       CHAR *filename = mp1;
-      printf("%s %d UM_ENTER %s\n",__FILE__, __LINE__, filename); fflush(stdout);
+      //printf("%s %d UM_ENTER %s\n",__FILE__, __LINE__, filename); fflush(stdout);
       if (IsFile(filename) != 1) {
 	free(mp1);
 	return 0;

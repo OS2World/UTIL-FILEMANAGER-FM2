@@ -661,8 +661,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			 MPFROMLONG(EXTRA_RECORD_BYTES),
 			 MPFROMLONG(ulMaxFiles));
 	if (!pci) {
-	  Runtime_Error(pszSrcFile, __LINE__, "CM_ALLOCRECORD %u failed",
-			ulMaxFiles);
+	  Runtime_Error(pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
 	  break;
 	}
 	else {
@@ -2379,7 +2378,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgAccessDraginfo");
+		      PCSZ_DRGACCESSDRAGINFO);
 	    return 0;
 	  }
 	  numitems = DrgQueryDragitemCount(pDInfo);
@@ -2429,7 +2428,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgAccessDraginfo");
+		      PCSZ_DRGACCESSDRAGINFO);
 	    return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
 	  }
 	  if (pci) {
@@ -2543,7 +2542,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				     DND_FRAME, MPFROMP(&cl));
 		if (li->type == DID_ERROR)
 		  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
-			    "Drag & Drop Dialog");
+			    GetPString(IDS_DRAGDROPDIALOGTEXT));
 		if (!li->type) {
 		  FreeListInfo(li);
 		  return 0;

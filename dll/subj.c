@@ -13,6 +13,7 @@
   06 Aug 07 GKY Increase Subject EA to 1024
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -43,7 +44,7 @@
 static PSZ pszSrcFile = __FILE__;
 
 #pragma data_seg(GLOBAL2)
-CHAR *SUBJECT;
+PCSZ SUBJECT  = ".SUBJECT";
 
 INT Subject(HWND hwnd, CHAR * filename)
 {

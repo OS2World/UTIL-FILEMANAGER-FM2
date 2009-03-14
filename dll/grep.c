@@ -30,6 +30,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Additional strings move to String Table
 
 ***********************************************************************/
 
@@ -602,13 +603,12 @@ static INT DoMatchingFiles(GREP *grep,
           if (strlen(szFindPath) > CCHMAXPATH){
             // Complain if pathnames exceeds max
             DosFindClose(findHandle);
-            //xfree(pffbArray, pszSrcFile, __LINE__);
             if (!fDone) {
               fDone = TRUE;
               saymsg(MB_OK | MB_ICONASTERISK,
                      HWND_DESKTOP,
                      GetPString(IDS_WARNINGTEXT),
-                     "One or more of your files has a full path name that exceeds the OS/2 maximum");
+                     GetPString(IDS_LENGTHEXCEEDSMAXPATHTEXT));
             }
             return 1;
           }
@@ -716,7 +716,7 @@ static BOOL DoInsertion(GREP *grep,
                    MPFROMLONG(grep->toinsert));
   if (!pci) {
     Win_Error(grep->hwndFiles, grep->hwndFiles, pszSrcFile, __LINE__,
-              "CM_ALLOCRECORD %u failed", grep->toinsert);
+              PCSZ_CM_ALLOCRECORD);
   }
   else {
     if (grep->sayfiles) {
@@ -1514,7 +1514,6 @@ static VOID FillDupes(GREP *grep,
               WinSetWindowText(hwndStatus, s);
           }
         }
-        // DosSleep(0); //26 Aug 07 GKY 1
       } // while
     }
     else {

@@ -18,6 +18,7 @@
   09 Mar 07 GKY Cleanup SelectDriveIcon using "driveflag =" from Steven
   02 Aug 07 SHL Sync with CNRITEM mods
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
 
 ***********************************************************************/
 
@@ -189,13 +190,13 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	    dcd->ullTotalBytes += ullTotalBytes;
 	    PostMsg(hwndCnr, UM_RESCAN, MPVOID, MPVOID);
             if (pci->attrFile & FILE_DIRECTORY) {
-              if (fInitialDriveScan)
+              /*if (fInitialDriveScan)
                 Stubby(hwndCnr, pci);
               else {
                 while (StubbyScanCount != 0)
-                  DosSleep(50);
-                Stubby(hwndCnr, pci);
-              }
+                  DosSleep(50);*/
+              Stubby(hwndCnr, pci);
+              //}
             }
 	  }
 	}
@@ -289,13 +290,13 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR * filename, BOOL partial,
 	    if (dcd->type == DIR_FRAME) {
 	      dcd->ullTotalBytes += ullTotalBytes;
             }
-            if (fInitialDriveScan)
+            /*if (fInitialDriveScan)
               Stubby(hwndCnr, pci);
             else {
               while (StubbyScanCount != 0)
-                DosSleep(50);
-              Stubby(hwndCnr, pci);
-            }
+                DosSleep(50);*/
+            Stubby(hwndCnr, pci);
+            //}
 	  }
 	}
       }
@@ -463,13 +464,13 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		}
 		repos = TRUE;
                 if (pci->attrFile & FILE_DIRECTORY) {
-                  if (fInitialDriveScan)
+                  /*if (fInitialDriveScan)
                     Stubby(hwndCnr, pci);
                   else {
                     while (StubbyScanCount != 0)
-                      DosSleep(50);
-                    Stubby(hwndCnr, pci);
-                  }
+                      DosSleep(50);*/
+                Stubby(hwndCnr, pci);
+                 // }
                 }
 	      }
 	      else
@@ -568,13 +569,13 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		      dcd->ullTotalBytes += ullTotalBytes;
 		  }
                   repos = TRUE;
-                  if (fInitialDriveScan)
+                  /*if (fInitialDriveScan)
                     Stubby(hwndCnr, pci);
                   else {
                     while (StubbyScanCount != 0)
-                      DosSleep(50);
-                    Stubby(hwndCnr, pci);
-                  }
+                      DosSleep(50);*/
+                  Stubby(hwndCnr, pci);
+                  //}
 		}
 		else
 		  FreeCnrItem(hwndCnr, pci);

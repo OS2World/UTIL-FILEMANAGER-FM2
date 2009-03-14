@@ -107,8 +107,7 @@ BOOL FM2Command(CHAR * directory, CHAR * command)
     }
     else if (!stricmp(key, GetPString(IDS_HELPCMDTEXT))) {
       saymsg(MB_ENTER, (hwndMain) ? hwndMain : HWND_DESKTOP,
-	     GetPString(IDS_FM2CMDHELPHDRTEXT), "%s",
-	     GetPString(IDS_FM2CMDHELPTEXT));
+	     GetPString(IDS_FM2CMDHELPHDRTEXT), GetPString(IDS_FM2CMDHELPTEXT));
       ret = TRUE;
     }
     else if (!stricmp(key, GetPString(IDS_FILTERCMDTEXT))) {

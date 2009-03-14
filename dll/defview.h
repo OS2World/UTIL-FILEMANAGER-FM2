@@ -9,6 +9,7 @@
   Copyright (c) 2008 Steven H. Levine
 
   Change log
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -42,6 +43,6 @@ VOID DefaultViewKeys(HWND hwnd, HWND hwndFrame, HWND hwndParent,
 BOOL ShowMultimedia(CHAR * filename);
 
 // Data declarations
-extern CHAR *Default;
+extern PCSZ Default;
 
 #endif // DEFVIEW_H

@@ -56,6 +56,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -938,7 +939,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		DosSetVerify(FALSE);
 		fResetVerify = TRUE;
 	      }
-	      if (docopyf(MOVE, szData, "%s", testname))
+	      if (docopyf(MOVE, szData, testname))
 		Runtime_Error(pszSrcFile, __LINE__, "docopyf");
 	      else {
 		CHAR *filename;
@@ -1402,35 +1403,50 @@ VOID WriteDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds)
   strcat(s, ".");
   eos = &s[strlen(s)];
   strcpy(eos, "DetailsLongname");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailslongname, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslongname : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsSubject");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailssubject, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailssubject : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsEA");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailsea, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsea : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsSize");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailssize, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailssize : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsIcon");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailsicon, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsicon : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsAttr");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailsattr, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsattr : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsCRDate");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailscrdate, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailscrdate : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsCRTime");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailscrtime, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailscrtime : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsLWDate");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailslwdate, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslwdate : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsLWTime");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailslwtime, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslwtime : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsLADate");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailsladate, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsladate : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "DetailsLATime");
-  PrfWriteProfileData(fmprof, appname, s, &pds->detailslatime, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslatime : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "SubjectInLeftPane");
-  PrfWriteProfileData(fmprof, appname, s, &pds->fSubjectInLeftPane, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->fSubjectInLeftPane : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "SubjectLengthMax");
-  PrfWriteProfileData(fmprof, appname, s, &pds->fSubjectLengthMax, sizeof(BOOL));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->fSubjectLengthMax : NULL,
+                      pds ? sizeof(BOOL) : 0);
   strcpy(eos, "SubjectDisplayWidth");
-  PrfWriteProfileData(fmprof, appname, s, &pds->SubjectDisplayWidth, sizeof(ULONG));
+  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->SubjectDisplayWidth : NULL,
+                      pds ? sizeof(ULONG) : 0);
 }
 
 

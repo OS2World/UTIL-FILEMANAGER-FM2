@@ -22,6 +22,7 @@
   14 Aug 07 SHL Revert ProcessDir DosSleep to 0
   29 Feb 08 GKY Use xfree where appropriate
   10 Dec 08 SHL Integrate exception handler support
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -120,7 +121,7 @@ static VOID ProcessDir(HWND hwndCnr,
 		      MPFROMLONG(EXTRA_RECORD_BYTES),
 		      MPFROMLONG(1));
     if (!pciP) {
-      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
+      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
       free(pffbArray);
       return;
     }

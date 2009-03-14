@@ -181,7 +181,7 @@ static BOOL ProcessDir(HWND hwndCnr,
     pci = WinSendMsg(hwndCnr, CM_ALLOCRECORD, MPFROMLONG(EXTRA_RECORD_BYTES),
 		     MPFROMLONG(1));
     if (!pci) {
-      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, "CM_ALLOCRECORD");
+      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
       xfree(pffbArray, pszSrcFile, __LINE__);
       return FALSE;
     }
@@ -893,14 +893,14 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ULONG flWindowAttr = CV_ICON;
 	    CHAR s[33];
 
-	    strcpy(s, "ICON");
+	    strcpy(s, PCSZ_ICON);
 	    PrfQueryProfileData(fmprof, appname, "DirflWindowAttr",
 				(PVOID) & flWindowAttr, &size);
 	    if (flWindowAttr & CV_DETAIL) {
 	      if (IsRoot(szFileName))
-		strcpy(s, "TREE");
+		strcpy(s, PCSZ_TREE);
 	      else
-		strcpy(s, "DETAILS");
+		strcpy(s, Details);
 	    }
 	    OpenObject(szFileName, s, hwnd);
 	  }

@@ -19,6 +19,7 @@
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Modify MakeTempName for use making temp directory names
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -416,7 +417,7 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
         rc = docopyallf(type,, "%s",);  /* recurse */
       }
       else
-        rc = docopyf(type,, "%s",);     /* copy file */
+       // docopyf changed this won't work rc = docopyf(type,, "%s",);     /* copy file */
       DosError(FERR_DISABLEHARDERR);
     } while (!rc && !DosFindNext());
     DosFindClose(hdir);
@@ -428,7 +429,7 @@ APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
 
 #endif
 
-APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
+APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 {
   /*
    * returns:
@@ -439,32 +440,26 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
    *   anything else: API return
    */
 
-  CHAR fullnewname[CCHMAXPATH + 1], longname[CCHMAXPATH],
-    shortname[CCHMAXPATH];
+  CHAR longname[CCHMAXPATH], shortname[CCHMAXPATH];
   CHAR olddisk, newdisk, dir[CCHMAXPATH], *p, *pp;
   APIRET ret = -1, rc;
   FILESTATUS3L st, st2, dummy;
   BOOL diskchange = FALSE, zaplong = FALSE;
-  va_list ap;
 
-  *fullnewname = *shortname = *dir = 0;
+  *shortname = *dir = 0;
 
-  va_start(ap, newname);
-  vsprintf(fullnewname, newname, ap);
-  va_end(ap);
-
-  if (!oldname || !*oldname || !*fullnewname)   /* bad string args */
+  if (!oldname || !*oldname || !*newname)   /* bad string args */
     return (APIRET) - 1;
 
   DosError(FERR_DISABLEHARDERR);
   if (DosQueryPathInfo(oldname, FIL_STANDARDL, &st, sizeof(FILESTATUS3L)))
     return (APIRET) - 2;                /* no source */
 
-  AdjustWildcardName(oldname, fullnewname);
+  AdjustWildcardName(oldname, newname);
   MakeFullName(oldname);
-  MakeFullName(fullnewname);
+  MakeFullName(newname);
   olddisk = toupper(*oldname);          /* source drive */
-  newdisk = toupper(*fullnewname);      /* destination drive */
+  newdisk = toupper(*newname);      /* destination drive */
   if (!(driveflags[toupper(*oldname) - 'A'] & DRIVE_NOLONGNAMES))
     *longname = 0;
   else {
@@ -477,7 +472,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
   }
   /* If root name changed make sure longname EA goes away */
   p = RootName(oldname);
-  pp = RootName(fullnewname);
+  pp = RootName(newname);
   if (stricmp(p, pp)) {
     zaplong = TRUE;
   }
@@ -492,7 +487,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
       ret = ERROR_FILE_NOT_FOUND;
       hobjsrc = WinQueryObject(oldname);
       if (hobjsrc) {
-        strcpy(dir, fullnewname);
+        strcpy(dir, newname);
         p = strrchr(dir, '\\');
         if (p < dir + 3)
           p++;
@@ -517,7 +512,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
       ret = ERROR_FILE_NOT_FOUND;
       hobjsrc = WinQueryObject(oldname);
       if (hobjsrc) {
-        strcpy(dir, fullnewname);
+        strcpy(dir, newname);
         p = strrchr(dir, '\\');
         if (p < dir + 3)
           p++;
@@ -538,21 +533,21 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
     *dir = 0;
     if (olddisk == newdisk) {           /* same drive */
       /* make temporary copy in case move fails */
-      if (IsFile(fullnewname) != -1 && stricmp(oldname, fullnewname)) {
-        strcpy(dir, fullnewname);
+      if (IsFile(newname) != -1 && stricmp(oldname, newname)) {
+        strcpy(dir, newname);
         p = strrchr(dir, '\\');
         if (p)
           *p = 0;
         strcat(dir, "\\");
         MakeTempName(dir, NULL, 0);
-        if (DosMove(fullnewname, dir))
+        if (DosMove(newname, dir))
           *dir = 0;
       }
       DosError(FERR_DISABLEHARDERR);
-      ret = DosMove(oldname, fullnewname);      /* move it */
+      ret = DosMove(oldname, newname);      /* move it */
       if (ret && *dir) {                /* failed -- clean up */
         DosError(FERR_DISABLEHARDERR);
-        if (!DosMove(dir, fullnewname))
+        if (!DosMove(dir, newname))
           Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(dir), MPVOID);
       }
       else if (!ret && *dir) {
@@ -579,19 +574,19 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
     }
     else {                              /* different drives */
       DosError(FERR_DISABLEHARDERR);
-      ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);       /* <=-NOTE! */
+      ret = DosCopy(oldname, newname, DCPY_EXISTING);       /* <=-NOTE! */
       if (ret == ERROR_DISK_CHANGE) {
         DosError(FERR_ENABLEHARDERR);
-        ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);
+        ret = DosCopy(oldname, newname, DCPY_EXISTING);
         diskchange = TRUE;
       }
       if (ret == ERROR_INVALID_NAME || ret == ERROR_FILENAME_EXCED_RANGE) {
-        if (TruncName(fullnewname, shortname)) {        /* make 8.3 filename */
+        if (TruncName(newname, shortname)) {        /* make 8.3 filename */
           DosError(FERR_DISABLEHARDERR);
           ret = DosCopy(oldname, shortname, DCPY_EXISTING);
           if (!ret) {                   /* success -- write longname ea */
-            WriteLongName(shortname, fullnewname);
-            strcpy(fullnewname, shortname);
+            WriteLongName(shortname, newname);
+            strcpy(newname, shortname);
             /* broadcast fixup msg to windows */
             Broadcast((HAB) 0,
                       hwndMain, UM_UPDATERECORD, MPFROMP(shortname), MPVOID);
@@ -602,7 +597,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
 
         CHAR fixname[CCHMAXPATH];
 
-        strcpy(fixname, fullnewname);
+        strcpy(fixname, newname);
         p = strrchr(fixname, '\\');
         if (p) {
           p++;
@@ -610,8 +605,8 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
         }
         strcat(fixname, longname);
         DosError(FERR_DISABLEHARDERR);
-        DosMove(fullnewname, fixname);
-        strcpy(fullnewname, fixname);
+        DosMove(newname, fixname);
+        strcpy(newname, fixname);
         if (zaplong)
           ZapLongName(fixname);
         Broadcast((HAB) 0,
@@ -619,11 +614,11 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
       }
       if (!ret) {                       /* double-check success */
         DosError(FERR_DISABLEHARDERR);
-        rc = DosQueryPathInfo(fullnewname,
+        rc = DosQueryPathInfo(newname,
                               FIL_STANDARDL, &st2, sizeof(FILESTATUS3L));
         if (rc == ERROR_DISK_CHANGE) {
           DosError(FERR_ENABLEHARDERR);
-          rc = DosQueryPathInfo(fullnewname,
+          rc = DosQueryPathInfo(newname,
                                 FIL_STANDARDL, &st2, sizeof(FILESTATUS3L));
         }
         if (!rc && st2.cbFile == st.cbFile) {   /* seems to have worked... */
@@ -633,7 +628,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
             DosQueryPathInfo(oldname, FIL_STANDARDL, &dummy, sizeof(FILESTATUS3L));     /* force disk change */
           }
           if (!(st2.attrFile & FILE_DIRECTORY)) /* erase file */
-            unlinkf("%s", oldname);
+            unlinkf(oldname);
           else {                        /* remove directory */
             wipeallf("%s\\*", oldname);
             DosError(FERR_DISABLEHARDERR);
@@ -649,19 +644,19 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
 
   case COPY:
     DosError(FERR_DISABLEHARDERR);
-    ret = DosCopy(oldname, fullnewname, DCPY_EXISTING); /* <=-NOTE! */
+    ret = DosCopy(oldname, newname, DCPY_EXISTING); /* <=-NOTE! */
     if (ret == ERROR_DISK_CHANGE) {
       DosError(FERR_ENABLEHARDERR);
-      ret = DosCopy(oldname, fullnewname, DCPY_EXISTING);
+      ret = DosCopy(oldname, newname, DCPY_EXISTING);
       diskchange = TRUE;
     }
     if (ret == ERROR_INVALID_NAME || ret == ERROR_FILENAME_EXCED_RANGE) {
-      if (TruncName(fullnewname, shortname)) {
+      if (TruncName(newname, shortname)) {
         DosError((diskchange) ? FERR_ENABLEHARDERR : FERR_DISABLEHARDERR);
         ret = DosCopy(oldname, shortname, DCPY_EXISTING);
         if (!ret) {
-          WriteLongName(shortname, fullnewname);
-          strcpy(fullnewname, shortname);
+          WriteLongName(shortname, newname);
+          strcpy(newname, shortname);
           Broadcast((HAB) 0,
                     hwndMain, UM_UPDATERECORD, MPFROMP(shortname), MPVOID);
         }
@@ -671,7 +666,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
 
       CHAR fixname[CCHMAXPATH];
 
-      strcpy(fixname, fullnewname);
+      strcpy(fixname, newname);
       p = strrchr(fixname, '\\');
       if (p) {
         p++;
@@ -679,7 +674,7 @@ APIRET docopyf(INT type, CHAR * oldname, CHAR * newname, ...)
       }
       strcat(fixname, longname);
       DosError(FERR_DISABLEHARDERR);
-      DosMove(fullnewname, fixname);
+      DosMove(newname, fixname);
       if (zaplong)
         ZapLongName(fixname);
       Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(fixname), MPVOID);
@@ -900,29 +895,23 @@ INT unlink_allf(CHAR * string, ...)
 }
 #endif
 
-INT unlinkf(CHAR * string, ...)
+INT unlinkf(CHAR *string)
 {
-  CHAR buffer[CCHMAXPATH];
-  va_list ap;
 
-  va_start(ap, string);
-  vsprintf(buffer, string, ap);
-  va_end(ap);
-
-  if (!strstr(buffer, ArcTempRoot)) {
+  if (!strstr(string, ArcTempRoot)) {
     DosError(FERR_DISABLEHARDERR);
-    if (DosDelete(buffer)) {
-      make_deleteable(buffer);
+    if (DosDelete(string)) {
+      make_deleteable(string);
       DosError(FERR_DISABLEHARDERR);
-      return DosDelete(buffer);
+      return DosDelete(string);
     }
   }
   else {
     DosError(FERR_DISABLEHARDERR);
-    if (DosForceDelete(buffer)) {
-      make_deleteable(buffer);
+    if (DosForceDelete(string)) {
+      make_deleteable(string);
       DosError(FERR_DISABLEHARDERR);
-      return DosForceDelete(buffer);
+      return DosForceDelete(string);
     }
   }
   return 0;

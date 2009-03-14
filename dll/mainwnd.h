@@ -10,6 +10,7 @@
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
   04 Feb 09 SHL Convert args to const to match GetPString mods
+  08 Mar 09 GKY Additional strings move to PCSZs & String Table
 
 ***********************************************************************/
 
@@ -49,7 +50,7 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret);
 extern ULONG AutoviewHeight;
 extern ULONG DriveLines;
 extern HMODULE FM3ModHandle;
-extern CHAR *FM3Str;
+extern PCSZ FM3Str;
 extern HWND MainPopupMenu;
 extern HWND MainObjectHwnd;
 extern BOOL MenuInvisible;

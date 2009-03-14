@@ -22,6 +22,7 @@
   26 Aug 08 GKY Require unique ID plus text and help strings for all tools save toolbar on button delete
   01 Sep 08 GKY Save toolbars immediately on change.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -234,7 +235,7 @@ VOID save_tools(CHAR * filename)
     PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", filename);
   }
   if (!toolhead) {
-    unlinkf("%s", filename);
+    unlinkf(filename);
     return;
   }
   if (CheckDriveSpaceAvail(filename, ullDATFileSpaceNeeded, 1) == 2)

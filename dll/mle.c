@@ -891,7 +891,6 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
   BOOL fWrap = MLEgetwrap(h);
   APIRET rc;
 
-  // saymsg(MB_ENTER,h,DEBUG_STRING,"len = %ld",MLEgetlen(h));
   if (!MLEgetlen(h))			/* nothing to save; forget it */
     return TRUE;
 
@@ -983,7 +982,6 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
 	  }
 	}
 	strcat(buffer, "\n");
-	// buffer = translate_out(buffer,4095,h,filename);
 	if (fwrite(buffer, 1, strlen(buffer), fp) < 1) {
 	  saymsg(MB_ENTER,
 		 h, GetPString(IDS_ARGHTEXT), GetPString(IDS_WRITEERRORTEXT));

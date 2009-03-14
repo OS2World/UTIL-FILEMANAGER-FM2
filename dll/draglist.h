@@ -9,6 +9,7 @@
   Copyright (c) 2008 Steven H. Levine
 
   Change log
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -22,7 +23,7 @@ VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo);
 BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd);
 
 // Data declarations
-extern CHAR *DRMDRFLIST;
+extern PCSZ DRMDRFLIST;
 extern HPOINTER hptrDir;
 extern HPOINTER hptrFile;
 extern HPOINTER hptrLast;

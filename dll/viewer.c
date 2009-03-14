@@ -18,6 +18,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  08 Mar 09 GKY Additional strings move to String Table
 
 ***********************************************************************/
 
@@ -794,7 +795,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
 	    if (vw->fileattrreadonly) {
 	      temp = saymsg(MB_OKCANCEL | MB_ICONEXCLAMATION,
-			    hwnd, NullStr, "File is readonly and has not been saved");
+			    hwnd, NullStr, GetPString(IDS_EDITREADONLYFILETEXT3));
 	      if (temp == MBID_CANCEL)
 		return 0;
 	    }
@@ -916,7 +917,6 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fclose(fp);
 	  }
 	}
-	//printf("%s %s %d\n ",vw->exportfilename, __FILE__, __LINE__); fflush(stdout);
 	if (!MLEexportfile(hwndMLE,
 			   vw->exportfilename,
 			   vw->ExpandTabs,
@@ -1247,7 +1247,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     WM_COMMAND, MPFROM2SHORT(MLE_EXPORTFILE, 0), MPVOID);
 	  if (vw->fileattrreadonly) {
 	    temp = saymsg(MB_OKCANCEL | MB_ICONEXCLAMATION,
-			  hwnd, NullStr, "File is readonly and has not been saved");
+			  hwnd, NullStr, GetPString(IDS_EDITREADONLYFILETEXT3));
 	    if (temp == MBID_CANCEL)
 		return 0;
 	  }

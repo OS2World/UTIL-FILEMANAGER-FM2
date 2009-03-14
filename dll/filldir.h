@@ -10,6 +10,7 @@
 
   05 Jan 08 SHL Split from fm3dll.h
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -52,8 +53,8 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
 VOID ProcessDirectoryThread(VOID * arg);
 
 // Data declarations
-extern CHAR *FM3Tools;
-extern CHAR *WPProgram;
+extern PCSZ FM3Tools;
+extern PCSZ WPProgram;
 extern HPOINTER hptrEnv;
 extern HPOINTER hptrHidden;
 extern HPOINTER hptrReadonly;

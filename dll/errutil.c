@@ -31,6 +31,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Remove Dos_Error2 (unused) and Runtime_Error2 (no advantage over using Runtime_Error)
 
 ***********************************************************************/
 
@@ -49,9 +50,6 @@
 #include "fm3str.h"
 #include "notebook.h"                   // fErrorBeepOff
 #include "init.h"                       // Data declares
-
-#pragma data_seg(GLOBAL2)
-PSZ DEBUG_STRING;
 
 #pragma data_seg(DATA1)
 
@@ -192,15 +190,6 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 
 } // Dos_Error
 
-/*== Dos_Error2: report Dos...() error using passed message id ===
-
-INT Dos_Error2(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
-	       PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
-{
-  return Dos_Error(mb_type, ulRC, hwndOwner, pszSrcFile, uSrcLineNo,
-		   GetPString(idMsg));
-} // Dos_Error2 */
-
 /**
  * Format last PM error into passed buffer
  */
@@ -327,16 +316,6 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
 } // Runtime_Error
 
-//== Runtime_Error2: report runtime library error using passed message id ===
-
-/*VOID Runtime_Error2(PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
-{
-  Runtime_Error(pszSrcFile, uSrcLineNo, GetPString(idMsg));
-
-} // Runtime_Error2
-
-// fixme to be rename to Misc_Error */
-
 //=== saymsg: report misc error using passed message ===
 
 APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
@@ -400,15 +379,6 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner,
 
 } // Win_Error
 
-/*== Win_Error2: report Win...() error using passed message id ===
-
-VOID Win_Error2(HWND hwndErr, HWND hwndOwner,
-		PCSZ pszSrcFile, UINT uSrcLineNo, UINT idMsg)
-{
-  Win_Error(hwndErr, hwndOwner, pszSrcFile, uSrcLineNo, GetPString(idMsg));
-
-} // Win_Error2 */
-
 /**
   * Output PM error messsage to stderr
   * This does to same reporting as Win_Error, but bypasses the
@@ -436,4 +406,4 @@ VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
 
 } // Win_Error_NoMsgBox
 
-#pragma alloc_text(ERROR,Win_Error,Dos_Error,saymsg,showMsg,GetHiresTimeer)
+#pragma alloc_text(ERROR,Win_Error,Dos_Error,saymsg,showMsg,Runtime_Error,GetMSecTimer)

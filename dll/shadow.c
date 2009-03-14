@@ -12,6 +12,7 @@
   16 Jun 07 SHL Update for OpenWatcom
   06 Aug 07 SHL Use BldFullPathName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  08 Mar 09 GKY Additional strings move to PCSZs declare change
 
 ***********************************************************************/
 
@@ -269,7 +270,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
   }
 }
 
-VOID OpenObject(CHAR * filename, CHAR * type, HWND hwnd)
+VOID OpenObject(CHAR *filename, PCSZ type, HWND hwnd)
 {
   HOBJECT hWPSObject;
 

@@ -10,6 +10,7 @@
 
   23 Aug 06 SHL Comments
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -388,7 +389,7 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
 		 hwnd,
 		 filename,
 		 GetPString(IDS_EXISTSERASETEXT), filename) == MBID_YES)
-	unlinkf("%s", filename);
+	unlinkf(filename);
     }
   }
   p = filename;

@@ -4065,7 +4065,6 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
     hwndParent = HWND_DESKTOP;
   if (ParentIsDesktop(hwndParent, hwndParent))
     FrameFlags |= FCF_TASKLIST;
-  // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"\"%s\"\r\rparent %s desktop",filename,(ParentIsDesktop(hwndParent,hwndParent)) ? "is" : "isn't");
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 0,
 				 &FrameFlags,

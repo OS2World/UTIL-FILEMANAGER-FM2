@@ -80,7 +80,7 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
-  08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Additional strings move to PCSZs & String Table
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
 
 ***********************************************************************/
@@ -206,7 +206,7 @@ USHORT shiftstate;
 
 #pragma data_seg(GLOBAL2)
 HMODULE FM3ModHandle;
-CHAR *FM3Str;
+PCSZ FM3Str  = "FM/3";
 RGB2 RGBGREY;
 
 #pragma data_seg(DATA1)
@@ -426,8 +426,7 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
     if (hwndParent) {
       henum = WinBeginEnumWindows(hwndMain);
       while ((hwndC = WinGetNextWindow(henum)) != NULLHANDLE) {
-	 //saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tree = %lu\rExclude = %lu\rFound = %lu",hwndTree,exclude,hwndC);
-	if (hwndC != exclude && hwndC != hwndTree) {
+	 if (hwndC != exclude && hwndC != hwndTree) {
 	  id = WinQueryWindowUShort(hwndC, QWS_ID);
 	  if (id) {
 	    hwndClient = WinWindowFromID(hwndC, FID_CLIENT);
@@ -445,7 +444,6 @@ HWND TopWindowName(HWND hwndParent, HWND exclude, CHAR * ret)
 		if (WinSendMsg(hwndClient,
 			       UM_CONTAINERDIR, MPFROMP(ret), MPVOID)) {
 		  MakeValidDir(ret);
-		  //saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Tree = %lu\rExclude = %lu\rFound = %lu\r\"%s\"",hwndTree,exclude,hwndC,ret);
 		  WinEndEnumWindows(henum);
 		  return hwndC;
 		}
@@ -697,8 +695,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  haccelSaved = WinQueryAccelTable(hab, hwndFrame);
 	  if (haccelSaved == NULLHANDLE)
 	    Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinQueryAccelTable");
-	  // else
-	    // DbgMsg(pszSrcFile, __LINE__, "WinQueryAccelTable SAVED %x", haccelSaved);
 	}
 	if (haccelSaved != NULLHANDLE) {
 	  switch (id) {
@@ -711,8 +707,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelDriveList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelDriveList, hwndFrame))
 		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
-	      // else
-		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_DRIVELIST %x %x", hwndFrame, haccelDriveList);
 	    }
 	    break;
 	  case MAIN_SETUPLIST:
@@ -724,8 +718,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelSetupList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelSetupList, hwndFrame))
 		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
-	      // else
-		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_SETUPLIST %x %x", hwndFrame, haccelSetupList);
 	    }
 	    break;
 	  case MAIN_CMDLIST:
@@ -737,8 +729,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelCmdList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelCmdList, hwndFrame))
 		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
-	      // else
-		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_CMDLIST %x %x", hwndFrame, haccelCmdList);
 	    }
 	    break;
 	  case MAIN_USERLIST:
@@ -750,8 +740,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelUserList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelUserList, hwndFrame))
 		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
-	      // else
-		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_USERLIST %x %x", hwndFrame, haccelUserList);
 	    }
 	    break;
 	  case MAIN_BUTTONLIST:
@@ -763,8 +751,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (haccelButtonList != NULLHANDLE) {
 	      if (!WinSetAccelTable(hab, haccelButtonList, hwndFrame))
 		Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
-	      // else
-		// DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable MAIN_BUTTONLIST %x %x", hwndFrame, haccelButtonList);
 	    }
 	    break;
 	  } // switch
@@ -781,8 +767,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (haccelSaved != NULLHANDLE) {
 	    if (!WinSetAccelTable(hab, haccelSaved, hwndFrame))
 	      Win_Error(hwndFrame, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_WINSETACCELTABLE);
-	    // else
-	      // DbgMsg(pszSrcFile, __LINE__, "WinSetAccelTable SAVED %x %x", hwndFrame, haccelSaved);
 	  }
 	  break;
 	} // switch
@@ -864,9 +848,8 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case WM_BEGINDRAG:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
-    // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"%u %s %u",id,(id == CBID_EDIT) ? "TRUE" : "FALSE",WinQueryWindowUShort(WinQueryWindow(hwnd,QW_PARENT),QWS_ID) == MAIN_USERLIST);
     if (id == CBID_EDIT &&
-	WinQueryWindowUShort(WinQueryWindow(hwnd, QW_PARENT), QWS_ID) ==
+        WinQueryWindowUShort(WinQueryWindow(hwnd, QW_PARENT), QWS_ID) ==
 	MAIN_USERLIST) {
 
       CHAR path[CCHMAXPATH];
@@ -874,7 +857,6 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
       *path = 0;
       WinQueryWindowText(hwnd, CCHMAXPATH, path);
       bstrip(path);
-      // saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,"Dragging: %s",path);
       if (*path && !IsRoot(path))
 	DragOne(hwnd, (HWND) 0, path, FALSE);
       return 0;
@@ -2096,7 +2078,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       FM3ModHandle, DND_FRAME, MPFROMP(&cl));
 	  if (li->type == DID_ERROR)
 		  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
-			    "Drag & Drop Dialog");
+			    GetPString(IDS_DRAGDROPDIALOGTEXT));
 	  if (!li->type) {
 	    FreeListInfo(li);
 	    return 0;
@@ -2951,7 +2933,7 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
     return -1;
   }
 
-  fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
+  fIsShutDownState = strcmp(pszStateName, PCSZ_SHUTDOWNSTATE) == 0;
   sprintf(szPrefix, "%s.", pszStateName);
 
   if (*lasttoolbar) {
@@ -3130,9 +3112,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   sprintf(szPrefix, "%s.", pszStateName);
 
   // If restoring shutdown state bypass no-prescan drives
-  fIsShutDownState = strcmp(pszStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0;
+  fIsShutDownState = strcmp(pszStateName, PCSZ_SHUTDOWNSTATE) == 0;
   // Delete saved state if internally saved state
-  fDeleteState = strcmp(pszStateName, GetPString(IDS_FM2TEMPTEXT)) == 0;
+  fDeleteState = strcmp(pszStateName, PCSZ_FM2TEMPTEXT) == 0;
 
   //size = (ULONG)0;
   sprintf(szKey, "%sToolbar", szPrefix);
@@ -3222,24 +3204,13 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	  // bypass window restore
 	  if (fIsShutDownState &&
 	      driveflags[toupper(*szDir) - 'A'] & DRIVE_NOPRESCAN) {
-	    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+            PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+            sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
+            WriteDetailsSwitches(szKey, NULL);
 	    continue;
 	  }
 	  if (fDeleteState)
 	    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
-	  localdcd.ds.detailslongname = dsDirCnrDefault.detailslongname;  // Set default
-	  sprintf(szKey, "%sDirCnr.%lu.DetailsLongname", szPrefix, x);
-	  size = sizeof(BOOL);
-	  if (PrfQueryProfileData(fmprof,
-				  FM3Str,
-				  szKey,
-				  (PVOID) &localdcd.ds.detailslongname,
-				  &size))
-	  {
-	    if (fDeleteState)
-	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
-	  }
-
           sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
           LoadDetailsSwitches(szKey, &localdcd.ds);
           if (fDeleteState)
@@ -3266,7 +3237,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		CopyPresParams(hwndPPSave, hwndC);
 		RestorePresParams(hwndPPSave, PCSZ_DIRCNR);
 	      }
-	      sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
+	      //sprintf(szKey, "%sDirCnr.%lu", szPrefix, x);
 	      RestorePresParams(hwndCnr, szKey);
 	      dcd = WinQueryWindowPtr(hwndCnr, QWL_USER);
 	      if (dcd) {
@@ -4604,16 +4575,16 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       bstrip(szStateName);
       // Complain if attempting to use reserved name
       if (stricmp(szStateName, GetPString(IDS_STATETEXT)) == 0 ||
-	  stricmp(szStateName, GetPString(IDS_FM2TEMPTEXT)) == 0)
+	  stricmp(szStateName, PCSZ_FM2TEMPTEXT) == 0)
       {
 	saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 	       GetPString(IDS_WARNINGTEXT),
-	       "\"%s\" is a reserved state name", szStateName);
+	       GetPString(IDS_STATERESERVENAMETEXT), szStateName);
       }
       // Ignore request if blank
       else if (*szStateName) {
 	BOOL fAbortOperation = FALSE;
-	if (!fNoSaveState && fSaveState && stricmp(szStateName, GetPString(IDS_SHUTDOWNSTATE)) == 0)
+	if (!fNoSaveState && fSaveState && stricmp(szStateName, PCSZ_SHUTDOWNSTATE) == 0)
 	 {
 	  if (saymsg(MB_YESNO | MB_DEFBUTTON2 | MB_ICONASTERISK, hwnd,
 	      GetPString(IDS_WARNINGTEXT),
@@ -4634,7 +4605,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      else if (ret != 1) {
 		saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 		       GetPString(IDS_WARNINGTEXT),
-		       "\"%s\" state name add failed", szStateName);      // 15 Apr 07 SHL failed
+		       GetPString(IDS_STATEADDFAILEDTEXT), szStateName);      // 15 Apr 07 SHL failed
 		WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
 	      }
 	    }
@@ -4642,7 +4613,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      saymsg(MB_ENTER | MB_ICONASTERISK,
 		     hwnd,
 		     GetPString(IDS_WARNINGTEXT),
-		     "State data save failed");
+		     GetPString(IDS_STATEDATASAVEFAILED));
 	      WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
 	    }
 	  }
@@ -5731,7 +5702,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP3:
     /* start remaining child windows */
     if (!fNoSaveState && fSaveState) {
-      PCSZ pszStatename = GetPString(IDS_SHUTDOWNSTATE);
+      PCSZ pszStatename = PCSZ_SHUTDOWNSTATE;
       PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPVOID);
       if (!add_setup(pszStatename))
 	save_setups();
@@ -5886,7 +5857,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinStoreWindowPos(FM2Str,
 			  "MainWindowPos", WinQueryWindow(hwnd, QW_PARENT));
 	if (!fNoSaveState && fSaveState)
-	  SaveDirCnrState(hwnd, GetPString(IDS_SHUTDOWNSTATE));
+	  SaveDirCnrState(hwnd, PCSZ_SHUTDOWNSTATE);
       }
     }
     break;
@@ -6343,8 +6314,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_RESTORE:
     {
       // Try to restore saved shutdown state
-      char *pszDefaultStateName = xstrdup(GetPString(IDS_SHUTDOWNSTATE),
-					  pszSrcFile, __LINE__);
+      char *pszDefaultStateName = xstrdup(PCSZ_SHUTDOWNSTATE, pszSrcFile, __LINE__);
       if (pszDefaultStateName) {
 	if (!PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszDefaultStateName), MPVOID))
 	  // 05 Feb 08 SHL fixme to complain?

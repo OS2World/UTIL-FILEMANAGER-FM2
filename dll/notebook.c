@@ -1918,10 +1918,10 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	fSyncUpdates = fOldSyncUpdates;
 	if (hwndMain && !strcmp(realappname, FM3Str)) {
 	  // Save state and restore to refresh windows with new settings
-	  if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
+	  if (SaveDirCnrState(hwndMain, PCSZ_FM2TEMPTEXT) > 0) {
 	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
 //          PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
-	    PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ)GetPString(IDS_FM2TEMPTEXT), MPVOID);
+	    PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ) PCSZ_FM2TEMPTEXT, MPVOID);
 	  }
 	}
       }
@@ -3529,11 +3529,11 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WriteDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault);
     if (hwndMain) {
       // Save state and restore to refresh windows with new settings
-      if (SaveDirCnrState(hwndMain, GetPString(IDS_FM2TEMPTEXT)) > 0) {
+      if (SaveDirCnrState(hwndMain, PCSZ_FM2TEMPTEXT) > 0) {
 	// Tell window procedure to close container windows
 	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
 	// Restore saved state
-	PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ)GetPString(IDS_FM2TEMPTEXT), MPVOID);
+	PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ) PCSZ_FM2TEMPTEXT, MPVOID);
       }
     }
     WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),

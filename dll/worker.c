@@ -38,6 +38,8 @@
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
 		to prevent duplicate directory names in tree following a copy before initial scan.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -583,19 +585,19 @@ VOID Action(VOID * args)
 
 		  switch (wk->li->type) {
 		  case IDM_OPENICON:
-		    s = "ICON";
+		    s = (PSZ) PCSZ_ICON;
 		    break;
 		  case IDM_OPENDETAILS:
-		    s = "DETAILS";
+		    s = (PSZ) Details;
 		    break;
 		  case IDM_OPENTREE:
-		    s = "TREE";
+		    s = (PSZ) PCSZ_TREE;
 		    break;
 		  case IDM_OPENSETTINGS:
-		    s = Settings;
+		    s = (PSZ) Settings;
 		    break;
 		  default:
-		    s = Default;
+		    s = (PSZ) Default;
 		    break;
 		  }
 		  OpenObject(wk->li->list[x], s, wk->hwndFrame);
@@ -672,7 +674,7 @@ VOID Action(VOID * args)
 		      saymsg(MB_CANCEL,
 			     wk->hwndFrame,
 			     GetPString(IDS_ERRORTEXT),
-			     "%s", GetPString(IDS_NOTWRITENOTARGETTEXT));
+			     GetPString(IDS_NOTWRITENOTARGETTEXT));
 		      goto RetryPath;
 		    }
 		  }
@@ -732,13 +734,6 @@ VOID Action(VOID * args)
 		    }
 		    existed = (IsFile(newname) != -1);
 		    isnewer = IsNewer(wk->li->list[x], newname);
-		    /*
-		       {
-		       char temp[CCHMAXPATH * 3];
-		       sprintf(temp,"Target: %s\rSource: %s\rOverold: %lu\rOvernew: %lu\rIsNewer: %lu\rExisted: %lu",newname,wk->li->list[x],overold,overnew,isnewer,existed);
-		       saymsg(MB_ENTER,HWND_DESKTOP,DEBUG_STRING,temp);
-		       }
-		     */
 		    if (existed && wk->li->type != IDM_RENAME && dontask) {
 		      if (!overold && !overnew)
 			break;
@@ -831,7 +826,7 @@ VOID Action(VOID * args)
 		    }
 		    if (fRealIdle)
 		      priority_idle();
-		    rc = docopyf(type, wk->li->list[x], "%s", newname);
+		    rc = docopyf(type, wk->li->list[x], newname);
 		    if (fResetVerify) {
 		      DosSetVerify(fVerify);
 		      fResetVerify = FALSE;
@@ -887,7 +882,7 @@ VOID Action(VOID * args)
 			rc = saymsg(MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION,
 				    wk->hwndFrame,
 				    GetPString(IDS_DISKFULLTEXT),
-				    "%s", GetPString(IDS_ANOTHERDISKTEXT));
+				    GetPString(IDS_ANOTHERDISKTEXT));
 			if (rc == MBID_RETRY)
 			  goto Retry;
 			if (rc == MBID_ABORT)
@@ -1037,7 +1032,6 @@ VOID Action(VOID * args)
 	      Broadcast(hab2,
 			wk->hwndCnr,
 			UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);
-	   // DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", *files);
 	    FreeList(files);
 	  }
 

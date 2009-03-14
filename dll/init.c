@@ -74,6 +74,10 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  14 Mar 09 GKY PCSZ strings moved to compile time initialization
+  14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring replaces check for
+                saved drive containers.
 
 ***********************************************************************/
 
@@ -172,7 +176,6 @@ static VOID FindSwapperDat(VOID);
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
-static CHAR *WC_MAINWND;
 unsigned __MaxThreads = {48};
 
 #pragma data_seg(GLOBAL1)
@@ -194,7 +197,7 @@ BOOL fLogFile;
 BOOL fProtectOnly;
 BOOL fReminimize;
 BOOL fWantFirstTimeInit;
-BOOL fDrivetoSkip[26];
+//BOOL fDrivetoSkip[26];
 HPOINTER hptrApp;
 HPOINTER hptrArc;
 HPOINTER hptrArrow;
@@ -214,125 +217,133 @@ CHAR *pFM2SaveDirectory;
 CHAR *pTmpDir;
 
 #pragma data_seg(GLOBAL2)
-PCSZ PCSZ_ARCHIVERBB2;
-PCSZ PCSZ_ASSOCDAT;
-PCSZ PCSZ_CMDLINESDAT;
-PCSZ PCSZ_CMDMINIDAT;
-PCSZ PCSZ_COMMANDSDAT;
-PCSZ PCSZ_FILTERSDAT;
-PCSZ PCSZ_GREPMASKDAT;
-PCSZ PCSZ_PATTERNSDAT;
-PCSZ PCSZ_RESOURCEDAT;
-PCSZ PCSZ_QUICKTLSDAT;
-PCSZ PCSZ_FM3TOOLSDAT;
-PCSZ PCSZ_USERDIRSDAT;
-PCSZ PCSZ_FM2PLAYEXE;
-PCSZ PCSZ_FM2PLAYTEMP;
-PCSZ PCSZ_LVMGUICMD;
-PCSZ PCSZ_DFSOS2EXE;
-PCSZ PCSZ_MINILVMEXE;
-PCSZ PCSZ_FDISKPMEXE;
-PCSZ PCSZ_LVMEXE;
-PCSZ PCSZ_ARCCNR;
-PCSZ PCSZ_COLLECTOR;
-PCSZ PCSZ_DIRCNR;
-PCSZ PCSZ_DIRSIZES;
-PCSZ PCSZ_TOOLBAR;
-PCSZ PCSZ_TREECNR;
-CHAR *CBSIFS;
-CHAR *DRF_FM2ARCHIVE;
-CHAR *DRMDRFFM2ARC;
-CHAR *DRMDRFOS2FILE;
-CHAR *DRM_FM2ARCMEMBER;
-CHAR *DRM_OS2FILE;
-CHAR *FM2Str;
+PCSZ PCSZ_ARCHIVERBB2 = "ARCHIVER.BB2";
+PCSZ PCSZ_ASSOCDAT    = "ASSOC.DAT";
+PCSZ PCSZ_CMDLINESDAT = "CMDLINES.DAT";
+PCSZ PCSZ_CMDMINIDAT  = "CMDMINI.DAT";
+PCSZ PCSZ_COMMANDSDAT = "COMMANDS.DAT";
+PCSZ PCSZ_FILTERSDAT  = "FILTERS.DAT";
+PCSZ PCSZ_GREPMASKDAT = "GREPMASK.DAT";
+PCSZ PCSZ_PATTERNSDAT = "PATTERNS.DAT";
+PCSZ PCSZ_RESOURCEDAT = "RESOURCE.DAT";
+PCSZ PCSZ_QUICKTLSDAT = "QUICKTLS.DAT";
+PCSZ PCSZ_FM3TOOLSDAT = "FM3TOOLS.DAT";
+PCSZ PCSZ_USERDIRSDAT = "USERDIRS.DAT";
+PCSZ PCSZ_FM2PLAYEXE  = "FM2PLAY.EXE";
+PCSZ PCSZ_FM2PLAYTEMP = "$FM2PLAY.$$$";
+PCSZ PCSZ_LVMGUICMD   = "LVMGUI.CMD";
+PCSZ PCSZ_DFSOS2EXE   = "DFSOS2.EXE";
+PCSZ PCSZ_MINILVMEXE  = "MINILVM.EXE";
+PCSZ PCSZ_FDISKPMEXE  = "FDISKPM.EXE";
+PCSZ PCSZ_LVMEXE      = "LVM.EXE";
+PCSZ PCSZ_ARCCNR      = "ArcCnr";
+PCSZ PCSZ_COLLECTOR   = "Collector";
+PCSZ PCSZ_DIRCNR      = "DirCnr";
+PCSZ PCSZ_DIRSIZES    = "DirSizes";
+PCSZ PCSZ_TOOLBAR     = "ToolBar";
+PCSZ PCSZ_TREECNR     = "TreeCnr";
+PCSZ PCSZ_SHUTDOWNSTATE    =  "FM2Shutdown";
+PCSZ PCSZ_FM2TEMPTEXT      =  "FM/2_Temp";
+PCSZ DRF_FM2ARCHIVE   = "DRF_FM2ARCHIVE";
+PCSZ DRMDRFFM2ARC     = "<DRM_FM2ARCMEMBER,DRF_FM2ARCHIVE>";
+PCSZ DRMDRFOS2FILE    = "<DRM_OS2FILE,DRF_UNKNOWN>";
+PCSZ DRM_FM2ARCMEMBER = "DRM_FM2ARCMEMBER";
+PCSZ DRM_OS2FILE      = "DRM_OS2FILE";
+PCSZ FM2Str           = "FM/2";
 HMODULE FM3DllHandle;
-CHAR *FM3Folder;
-PCSZ FNT_6HELVETICA;
-PCSZ FNT_8HELVETICA;
-PCSZ FNT_8HELVETICABOLD;
-PCSZ FNT_10SYSTEMMONOTEXT;
-PCSZ FNT_10SYSTEMPROPORT;
-PCSZ FNT_2SYSTEMVIO;
-PCSZ FNT_4SYSTEMVIO;
-PCSZ FNT_10SYSTEMVIO;
-PCSZ FNT_8TIMESNEWROMAN;
+PCSZ FM3Folder        = "<FM3_Folder>";
+PCSZ FNT_6HELVETICA       =  "6.Helvetica";
+PCSZ FNT_8HELVETICA       =  "8.Helvetica";
+PCSZ FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";
+PCSZ FNT_10SYSTEMMONOTEXT =  "10.System Monospaced";
+PCSZ FNT_10SYSTEMPROPORT  =  "10.System Proportional";
+PCSZ FNT_2SYSTEMVIO       =  "2.System VIO";
+PCSZ FNT_4SYSTEMVIO       =  "4.System VIO";
+PCSZ FNT_10SYSTEMVIO      =  "10.System VIO";
+PCSZ FNT_8TIMESNEWROMAN   =  "8.Times New Roman";
 CHAR HomePath[CCHMAXPATH];
-CHAR *LONGNAME;
-CHAR *NullStr;
-PCSZ PCSZ_DOSCREATEMUTEXSEM;
-PCSZ PCSZ_DOSDUPHANDLE;
-PCSZ PCSZ_DOSGETINFOBLOCKS;
-PCSZ PCSZ_DOSQUERYPATHINFO;
-PCSZ PCSZ_DOSSEARCHPATH;
-PCSZ PCSZ_POSTMSG;
-PCSZ PCSZ_WINCREATEWINDOW;
-PCSZ PCSZ_WINLOADACCELTABLE;
-PCSZ PCSZ_WINSETACCELTABLE;
-PCSZ PCSZ_INIQUERYPRFTEXT;
-PCSZ PCSZ_PRFQUERYPROFILEDATA;
-PCSZ PCSZ_PRFQUERYPROFILESIZE;
-PCSZ PCSZ_PRFQUERYPROFILESTRING;
-PCSZ PCSZ_FILLDIRQCURERRTEXT;
-PCSZ PCSZ_NODATA;
-PCSZ PCSZ_STARDOTEXE;
-PCSZ PCSZ_STARDOTINI;
-PCSZ PCSZ_STARDOTLST;
-PCSZ PCSZ_STARDOTPMD;
-PCSZ PCSZ_STARDOTTXT;
-PCSZ PCSZ_DOTEXE;
-PCSZ PCSZ_DOTCOM;
-PCSZ PCSZ_DOTCMD;
-PCSZ PCSZ_DOTBTM;
-PCSZ PCSZ_DOTBAT;
-PCSZ PCSZ_DOTLST;
-PCSZ PCSZ_DOTTLS;
-PCSZ PCSZ_DOTHLP;
-PCSZ PCSZ_DOTINF;
-PCSZ PCSZ_DOTMP3;
-PCSZ PCSZ_DOTOGG;
-PCSZ PCSZ_DOTFLAC;
-PCSZ PCSZ_DOTJPEG;
-PCSZ PCSZ_DOTJPG;
-PCSZ PCSZ_DOTICO;
-PCSZ PCSZ_DOTPTR;
-PCSZ PCSZ_DOTBB2;
-PCSZ PCSZ_DOTBMP;
-PCSZ PCSZ_DOTCOMMENTS;
-PCSZ PCSZ_PATH;
-PCSZ PCSZ_LIBPATH;
-CHAR *pLibPathStrict;
-PCSZ PCSZ_WPURLDEFAULTSETTINGS;
-CHAR *Settings;
+PCSZ LONGNAME             = ".LONGNAME";
+CHAR *NullStr             = "";
+PCSZ PCSZ_CM_ALLOCRECORD  = "CM_ALLOCRECORD";
+PCSZ PCSZ_DOSCREATEMUTEXSEM =  "DosCreateMutexSem";
+PCSZ PCSZ_DOSDUPHANDLE    =  "DosDupHandle";
+PCSZ PCSZ_DOSGETINFOBLOCKS = "DosGetInfoBlocks";
+PCSZ PCSZ_DOSQUERYPATHINFO = "DosQueryPathInfo";
+PCSZ PCSZ_DOSSEARCHPATH    = "DosSearchPath";
+PCSZ PCSZ_DRGACCESSDRAGINFO = "DrgAccessDraginfo";
+PCSZ PCSZ_POSTMSG          = "PostMsg";
+PCSZ PCSZ_WINCREATEWINDOW  = "WinCreateWindow";
+PCSZ PCSZ_WINLOADACCELTABLE  = "WinLoadAccelTable";
+PCSZ PCSZ_WINSETACCELTABLE  =  "WinSetAccelTable";
+PCSZ PCSZ_INIQUERYPRFTEXT =  "PrfQueryProfile";
+PCSZ PCSZ_PRFOPENPROFILEFAILED = "PrfOpenProfile failed for %s";
+PCSZ PCSZ_PRFQUERYPROFILEDATA = "PrfQueryProfileData";
+PCSZ PCSZ_PRFQUERYPROFILESIZE = "PrfQueryProfileSize";
+PCSZ PCSZ_PRFQUERYPROFILESTRING = "PrfQueryProfileString";
+PCSZ PCSZ_FILLDIRQCURERRTEXT = "DosQCurDisk";
+PCSZ PCSZ_NODATA  =  "No Data";
+PCSZ PCSZ_STARDOTEXE    =  "*.EXE";
+PCSZ PCSZ_STARDOTINI    =  "*.INI";
+PCSZ PCSZ_STARDOTLST    =  "*.LST";
+PCSZ PCSZ_STARDOTPMD    =  "*.PMD";
+PCSZ PCSZ_STARDOTTXT    =  "*.TXT";
+PCSZ PCSZ_DOTEXE   =  ".EXE";
+PCSZ PCSZ_DOTCOM   =  ".COM";
+PCSZ PCSZ_DOTCMD   =  ".CMD";
+PCSZ PCSZ_DOTBTM   =  ".BTM";
+PCSZ PCSZ_DOTBAT   =  ".BAT";
+PCSZ PCSZ_DOTLST   =  ".LST";
+PCSZ PCSZ_DOTTLS   =  ".TLS";
+PCSZ PCSZ_DOTHLP   =  ".HLP";
+PCSZ PCSZ_DOTINF   =  ".INF";
+PCSZ PCSZ_DOTMP3   =  ".MP3";
+PCSZ PCSZ_DOTOGG   =  ".OGG";
+PCSZ PCSZ_DOTFLAC  =  ".FLAC";
+PCSZ PCSZ_DOTJPEG  =  ".JPEG";
+PCSZ PCSZ_DOTJPG   =  ".JPG";
+PCSZ PCSZ_DOTICO   =  ".ICO";
+PCSZ PCSZ_DOTPTR   =  ".PTR";
+PCSZ PCSZ_DOTBB2   =  ".BB2";
+PCSZ PCSZ_DOTBMP   =  ".BMP";
+PCSZ PCSZ_DOTCOMMENTS   =  ".COMMENTS";
+PCSZ PCSZ_PATH     =  "PATH";
+PCSZ PCSZ_LIBPATH       =  "LIBPATH";
+CHAR *pLibPathStrict = "SET LIBPATHSTRICT=TRUE";
+PCSZ PCSZ_WPURLDEFAULTSETTINGS = "WPURLDEFAULTSETTINGS";
+PCSZ Settings      = "SETTINGS";
+PCSZ Details       = "DETAILS";
+PCSZ PCSZ_TREE     = "TREE";
+PCSZ PCSZ_ICON     = "ICON";
 CHAR SwapperDat[CCHMAXPATH];
-PCSZ WC_ARCCONTAINER;
-PCSZ WC_ARCSTATUS;
-PCSZ WC_AUTOVIEW;
-PCSZ WC_BUBBLE;
-PCSZ WC_COLLECTOR;
-PCSZ WC_COLSTATUS;
-PCSZ WC_DATABAR;
-PCSZ WC_DIRCONTAINER;
-PCSZ WC_DIRSTATUS;
-PCSZ WC_DRIVEBACK;
-PCSZ WC_DRIVEBUTTONS;
-PCSZ WC_ERRORWND;
-PCSZ WC_INIEDITOR;
-PCSZ WC_LED;
-PCSZ WC_MAINWND2;
-PCSZ WC_MINITIME;
-PCSZ WC_MLEEDITOR;
-PCSZ WC_NEWVIEW;
-PCSZ WC_OBJECTWINDOW;
-PCSZ WC_SEEALL;
-PCSZ WC_SEESTATUS;
-PCSZ WC_STATUS;
-PCSZ WC_TOOLBACK;
-PCSZ WC_TOOLBUTTONS;
-PCSZ WC_TREECONTAINER;
-PCSZ WC_TREEOPENBUTTON;
-PCSZ WC_TREESTATUS;
-PCSZ WC_VIEWSTATUS;
+PCSZ WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
+PCSZ WC_BUBBLE          =  "WC_BUBBLE";
+PCSZ WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
+PCSZ WC_DRIVEBUTTONS    =  "WC_DRIVEBUTTONS";
+PCSZ WC_DIRCONTAINER    =  "WC_DIRCONTAINER";
+PCSZ WC_DIRSTATUS       =  "WC_DIRSTATUS";
+PCSZ WC_TREECONTAINER   =  "WC_TREECONTAINER";
+PCSZ WC_TREEOPENBUTTON  =  "WC_TREEOPENBUTTON";
+PCSZ WC_TREESTATUS      =  "WC_TREESTATUS";
+PCSZ WC_MAINWND         =  "WC_MAINWND";
+PCSZ WC_MAINWND2        =  "WC_MAINWND2";
+PCSZ WC_AUTOVIEW        =  "WC_AUTOVIEW";
+PCSZ WC_LED             =  "WC_LED";
+PCSZ WC_COLLECTOR       =  "WC_COLLECTOR";
+PCSZ WC_COLSTATUS       =  "WC_COLSTATUS";
+PCSZ WC_STATUS          =  "WC_STATUS";
+PCSZ WC_TOOLBACK        =  "WC_TOOLBACK";
+PCSZ WC_DRIVEBACK       =  "WC_DRIVEBACK";
+PCSZ WC_ARCCONTAINER    =  "WC_ARCCONTAINER";
+PCSZ WC_ARCSTATUS       =  "WC_ARCSTATUS";
+PCSZ WC_MLEEDITOR       =  "WC_MLEEDITOR";
+PCSZ WC_INIEDITOR       =  "WC_INIEDITOR";
+PCSZ WC_SEEALL          =  "WC_SEEALL";
+PCSZ WC_NEWVIEW         =  "WC_NEWVIEW";
+PCSZ WC_SEESTATUS       =  "WC_SEESTATUS";
+PCSZ WC_VIEWSTATUS      =  "WC_VIEWSTATUS";
+PCSZ WC_ERRORWND        =  "WC_ERRORWND";
+PCSZ WC_MINITIME        =  "WC_MINITIME";
+PCSZ WC_DATABAR         =  "WC_DATABAR";
 CHAR profile[CCHMAXPATH];
 ULONGLONG ullTmpSpaceNeeded;
 
@@ -467,149 +478,10 @@ unsigned APIENTRY LibMain(unsigned hModule,
     FM3DllHandle = hModule;
 
     DosError(FERR_DISABLEHARDERR);
-    /* strings here to prevent multiple occurences in DLL */
-    FM2Str = "FM/2";
-    FM3Str = "FM/3";
-    NullStr = "";
-    Default = "DEFAULT";
-    Settings = "SETTINGS";
-    WPProgram = "WPProgram";
-    FM3Folder = "<FM3_Folder>";
-    FM3Tools = "<FM3_Tools>";
-    DRM_OS2FILE = "DRM_OS2FILE";
-    DRM_FM2ARCMEMBER = "DRM_FM2ARCMEMBER";
-    DRF_FM2ARCHIVE = "DRF_FM2ARCHIVE";
-    DRMDRFLIST = "<DRM_OS2FILE,DRF_UNKNOWN>,"
-      "<DRM_DISCARD,DRF_UNKNOWN>," "<DRM_PRINT,DRF_UNKNOWN>";
-    DRMDRFOS2FILE = "<DRM_OS2FILE,DRF_UNKNOWN>";
-    DRMDRFFM2ARC = "<DRM_FM2ARCMEMBER,DRF_FM2ARCHIVE>";
-    DRM_FM2INIRECORD = "DRM_FM2INIRECORD";
-    DRF_FM2INI = "DRF_FM2INI";
-    SUBJECT = ".SUBJECT";
-    LONGNAME = ".LONGNAME";
-    HPFS = "HPFS";
-    JFS = "JFS";
-    CDFS = "CDFS";
-    ISOFS = "ISOFS";
-    FAT32 = "FAT32";
-    HPFS386 = "HPFS386";
-    CBSIFS = "CBSIFS";
-    NDFS32 = "NDFS32";
-    RAMFS = "RAMFS";
-    NTFS = "NTFS";
-    PCSZ_ARCHIVERBB2 = "ARCHIVER.BB2";
-    PCSZ_ASSOCDAT    = "ASSOC.DAT";
-    PCSZ_CMDLINESDAT = "CMDLINES.DAT";
-    PCSZ_CMDMINIDAT  = "CMDMINI.DAT";
-    PCSZ_COMMANDSDAT = "COMMANDS.DAT";
-    PCSZ_FILTERSDAT  = "FILTERS.DAT";
-    PCSZ_GREPMASKDAT = "GREPMASK.DAT";
-    PCSZ_PATTERNSDAT = "PATTERNS.DAT";
-    PCSZ_RESOURCEDAT = "RESOURCE.DAT";
-    PCSZ_QUICKTLSDAT = "QUICKTLS.DAT";
-    PCSZ_FM3TOOLSDAT = "FM3TOOLS.DAT";
-    PCSZ_USERDIRSDAT = "USERDIRS.DAT";
-    PCSZ_FM2PLAYEXE  = "FM2PLAY.EXE";
-    PCSZ_FM2PLAYTEMP = "$FM2PLAY.$$$";
-    PCSZ_LVMGUICMD   = "LVMGUI.CMD";
-    PCSZ_DFSOS2EXE   = "DFSOS2.EXE";
-    PCSZ_MINILVMEXE  = "MINILVM.EXE";
-    PCSZ_FDISKPMEXE  = "FDISKPM.EXE";
-    PCSZ_LVMEXE      = "LVM.EXE";
-    PCSZ_ARCCNR      = "ArcCnr";
-    PCSZ_COLLECTOR   = "Collector";
-    PCSZ_DIRCNR      = "DirCnr";
-    PCSZ_DIRSIZES    = "DirSizes";
-    PCSZ_TOOLBAR     = "ToolBar";
-    PCSZ_TREECNR     = "TreeCnr";
-    FNT_6HELVETICA       =  "6.Helvetica";
-    FNT_8HELVETICA       =  "8.Helvetica";
-    FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";
-    FNT_10SYSTEMMONOTEXT =  "10.System Monospaced";
-    FNT_10SYSTEMPROPORT  =  "10.System Proportional";
-    FNT_2SYSTEMVIO       =  "2.System VIO";
-    FNT_4SYSTEMVIO       =  "4.System VIO";
-    FNT_10SYSTEMVIO      =  "10.System VIO";
-    FNT_8TIMESNEWROMAN   =  "8.Times New Roman";
-    PCSZ_DOSCREATEMUTEXSEM =  "DosCreateMutexSem";
-    PCSZ_DOSDUPHANDLE    =  "DosDupHandle";
-    PCSZ_DOSGETINFOBLOCKS = "DosGetInfoBlocks";
-    PCSZ_DOSQUERYPATHINFO = "DosQueryPathInfo";
-    PCSZ_DOSSEARCHPATH    = "DosSearchPath";
-    PCSZ_POSTMSG          = "PostMsg";
-    PCSZ_WINCREATEWINDOW  = "WinCreateWindow";
-    PCSZ_WINLOADACCELTABLE  = "WinLoadAccelTable";
-    PCSZ_WINSETACCELTABLE  =  "WinSetAccelTable";
-    PCSZ_INIQUERYPRFTEXT =  "PrfQueryProfile";
-    PCSZ_PRFQUERYPROFILEDATA = "PrfQueryProfileData";
-    PCSZ_PRFQUERYPROFILESIZE = "PrfQueryProfileSize";
-    PCSZ_PRFQUERYPROFILESTRING = "PrfQueryProfileString";
-    PCSZ_FILLDIRQCURERRTEXT = "DosQCurDisk";
-    PCSZ_NODATA  =  "No Data";
-    PCSZ_STARDOTEXE    =  "*.EXE";
-    PCSZ_STARDOTINI    =  "*.INI";
-    PCSZ_STARDOTLST    =  "*.LST";
-    PCSZ_STARDOTPMD    =  "*.PMD";
-    PCSZ_STARDOTTXT    =  "*.TXT";
-    PCSZ_DOTEXE   =  ".EXE";
-    PCSZ_DOTCOM   =  ".COM";
-    PCSZ_DOTCMD   =  ".CMD";
-    PCSZ_DOTBTM   =  ".BTM";
-    PCSZ_DOTBAT   =  ".BAT";
-    PCSZ_DOTLST   =  ".LST";
-    PCSZ_DOTTLS   =  ".TLS";
-    PCSZ_DOTHLP   =  ".HLP";
-    PCSZ_DOTINF   =  ".INF";
-    PCSZ_DOTMP3   =  ".MP3";
-    PCSZ_DOTOGG   =  ".OGG";
-    PCSZ_DOTFLAC  =  ".FLAC";
-    PCSZ_DOTJPEG  =  ".JPEG";
-    PCSZ_DOTJPG   =  ".JPG";
-    PCSZ_DOTICO   =  ".ICO";
-    PCSZ_DOTPTR   =  ".PTR";
-    PCSZ_DOTBB2   =  ".BB2";
-    PCSZ_DOTBMP   =  ".BMP";
-    PCSZ_DOTCOMMENTS   =  ".COMMENTS";
-    PCSZ_PATH     =  "PATH";
-    PCSZ_LIBPATH       =  "LIBPATH";
-    pLibPathStrict = "SET LIBPATHSTRICT=TRUE";
-    PCSZ_WPURLDEFAULTSETTINGS = "WPURLDEFAULTSETTINGS";
-    WC_OBJECTWINDOW    =  "WC_OBJECTWINDOW";
-    WC_BUBBLE          =  "WC_BUBBLE";
-    WC_TOOLBUTTONS     =  "WC_TOOLBUTTONS";
-    WC_DRIVEBUTTONS    =  "WC_DRIVEBUTTONS";
-    WC_DIRCONTAINER    =  "WC_DIRCONTAINER";
-    WC_DIRSTATUS       =  "WC_DIRSTATUS";
-    WC_TREECONTAINER   =  "WC_TREECONTAINER";
-    WC_TREEOPENBUTTON  =  "WC_TREEOPENBUTTON";
-    WC_TREESTATUS      =  "WC_TREESTATUS";
-    WC_MAINWND         =  "WC_MAINWND";
-    WC_MAINWND2        =  "WC_MAINWND2";
-    WC_AUTOVIEW        =  "WC_AUTOVIEW";
-    WC_LED             =  "WC_LED";
-    WC_COLLECTOR       =  "WC_COLLECTOR";
-    WC_COLSTATUS       =  "WC_COLSTATUS";
-    WC_STATUS          =  "WC_STATUS";
-    WC_TOOLBACK        =  "WC_TOOLBACK";
-    WC_DRIVEBACK       =  "WC_DRIVEBACK";
-    WC_ARCCONTAINER    =  "WC_ARCCONTAINER";
-    WC_ARCSTATUS       =  "WC_ARCSTATUS";
-    WC_MLEEDITOR       =  "WC_MLEEDITOR";
-    WC_INIEDITOR       =  "WC_INIEDITOR";
-    WC_SEEALL          =  "WC_SEEALL";
-    WC_NEWVIEW         =  "WC_NEWVIEW";
-    WC_SEESTATUS       =  "WC_SEESTATUS";
-    WC_VIEWSTATUS      =  "WC_VIEWSTATUS";
-    WC_ERRORWND        =  "WC_ERRORWND";
-    WC_MINITIME        =  "WC_MINITIME";
-    WC_DATABAR         =  "WC_DATABAR";
-
-    /* end of strings */
     memset(&RGBBLACK, 0, sizeof(RGB2));
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = (BYTE)204;
     RGBGREY.fcOptions = 0;
     FM3UL = *(ULONG *)FM3Str;
-    DEBUG_STRING = "Debug -- please report to author";
     break;
   case 1:
     StopPrinting = 1;
@@ -762,7 +634,6 @@ unsigned long _System _DLL_InitTerm(unsigned long hModule,
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = (BYTE)204;
     RGBGREY.fcOptions = 0;
     FM3UL = *(ULONG *)FM3Str;
-    DEBUG_STRING = "Debug -- please report to author";
     break;
   case 1:
     StopPrinting = 1;
@@ -834,7 +705,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 	  DosDeleteDir(s);
 	}
 	else
-	  unlinkf("%s", s);
+	  unlinkf(s);
       }
       while (!DosFindNext(search_handle,
 			  &ffb, sizeof(ffb), &num_matches));
@@ -861,7 +732,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
     do {
       if (!(ffb.attrFile & FILE_DIRECTORY)) {
 	strcpy(enddir, ffb.achName);
-	unlinkf("%s", s);
+	unlinkf(s);
       }
     }
     while (!DosFindNext(search_handle,
@@ -1167,7 +1038,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     // 10 Jan 08 SHL post UM_FIRSTTIME to main window
     if (!fmprof) {
       Win_Error(NULLHANDLE, NULLHANDLE, pszSrcFile, __LINE__,
-		"PrfOpenProfile");
+		PCSZ_PRFOPENPROFILEFAILED, inipath);
       return FALSE;
     }
   }
@@ -1227,19 +1098,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   // a couple of default window procs so we don't have to look them up later
   if (WinQueryClassInfo(hab, WC_CONTAINER, &clinfo))
     PFNWPCnr = clinfo.pfnWindowProc;
-  // saymsg(MB_ENTER,HWND_DESKTOP,"Container flags:","%08lx",clinfo.flClassStyle);
   if (WinQueryClassInfo(hab, WC_FRAME, &clinfo))
     PFNWPFrame = clinfo.pfnWindowProc;
-  // saymsg(MB_ENTER,HWND_DESKTOP,"Frame flags:","%08lx",clinfo.flClassStyle);
   if (WinQueryClassInfo(hab, WC_BUTTON, &clinfo))
     PFNWPButton = clinfo.pfnWindowProc;
-  // saymsg(MB_ENTER,HWND_DESKTOP,"Button flags:","%08lx",clinfo.flClassStyle);
   if (WinQueryClassInfo(hab, WC_STATIC, &clinfo))
     PFNWPStatic = clinfo.pfnWindowProc;
-  // saymsg(MB_ENTER,HWND_DESKTOP,"Static flags:","%08lx",clinfo.flClassStyle);
   if (WinQueryClassInfo(hab, WC_MLE, &clinfo))
     PFNWPMLE = clinfo.pfnWindowProc;
-  // saymsg(MB_ENTER,HWND_DESKTOP,"MLE flags:","%08lx",clinfo.flClassStyle);
   if (!PFNWPCnr || !PFNWPFrame || !PFNWPButton || !PFNWPStatic || !PFNWPMLE) {
     Runtime_Error(pszSrcFile, __LINE__, "WinQueryClassInfo");
     return FALSE;
@@ -1666,7 +1532,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "BlueLED", &fBlueLED, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ConfirmDelete", &fConfirmDelete, &size);
-  size = sizeof(BOOL);
+  /*size = sizeof(BOOL);   Replaced by UM_SHOWME check 3/14/09 GKY
   PrfQueryProfileData(fmprof, FM3Str, "SaveState", &fSaveState, &size);
   if (fSaveState && (fSwitchTreeOnFocus || fSwitchTree) &&
       (!strcmp(realappname, FM3Str) || !strcmp(realappname, "FM/4"))) {
@@ -1677,13 +1543,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (!strcmp(realappname, "FM/4"))
       strcpy(szKey, "FM/4 Dir1");
     else
-      sprintf(szKey, "%s.DirCnrDir.0", GetPString(IDS_SHUTDOWNSTATE));
+      sprintf(szKey, "%s.DirCnrDir.0", PCSZ_SHUTDOWNSTATE);
     size = sizeof(szDir);
     if (PrfQueryProfileData(fmprof, appname, szKey, szDir, &size)) {
       drvNum = toupper(*szDir) - 'A';
       fDrivetoSkip[drvNum] = TRUE;
     }
-  }
+  } */
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SyncUpdates", &fSyncUpdates, &size);
   size = sizeof(BOOL);

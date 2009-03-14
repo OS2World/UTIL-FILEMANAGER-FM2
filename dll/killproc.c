@@ -19,6 +19,7 @@
   02 Sep 07 SHL Expand FillKillListThread2 stack to avoid exception in __TNK
   16 JUL 08 GKY Use TMP directory for temp files
   10 Dec 08 SHL Integrate exception handler support
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
 
 ***********************************************************************/
 
@@ -258,7 +259,7 @@ static VOID FillKillListThread(VOID * arg)
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
   BldFullPathName(s, pTmpDir, "$PSTAT#$.#$#");
-  unlinkf("%s", s);
+  unlinkf(s);
   fp = fopen(s, "w");
   if (!fp) {
     Win_Error(NULLHANDLE, HWND_DESKTOP, __FILE__, __LINE__,

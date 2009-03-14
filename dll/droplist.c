@@ -20,6 +20,7 @@
   10 Jun 07 GKY Add CheckPmDrgLimit including IsFm2Window as part of work around PM drag limit
   02 Aug 07 SHL Lock in DoFileDrop sanity checks
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -58,7 +59,7 @@ BOOL CheckPmDrgLimit(PDRAGINFO pDInfo)
      */
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		      "DrgAccessDraginfo");
+		      PCSZ_DRGACCESSDRAGINFO);
 	    return FALSE;
 	  }
 	  else if (IsFm2Window(pDInfo->hwndSource, FALSE)) {
@@ -154,12 +155,6 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
     buffer[blen] = 0;
     len = DrgQueryStrName(pDItem->hstrSourceName,
 			  buflen - blen, buffer + blen);
-    if(!len) {
-      // DbgMsg(pszSrcFile, __LINE__, "0x%x %d %d", pDItem->hstrSourceName,
-      //           buflen - blen, buffer + blen);
-      // Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-      //         "DrgQueryStrName");
-    }
     buffer[blen + len] = 0;
     {					/* be sure we get full pathname of file/directory */
       char szTemp[CCHMAXPATH + 2];
@@ -201,7 +196,7 @@ BOOL GetOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen)
   if (pDInfo) {
     if (!DrgAccessDraginfo(pDInfo)) {
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		"DrgAccessDraginfo");
+		PCSZ_DRGACCESSDRAGINFO);
     }
     else {
       numitems = DrgQueryDragitemCount(pDInfo);
@@ -236,7 +231,7 @@ BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2)
   if (pDInfo) {
     if (!DrgAccessDraginfo(pDInfo)) {
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		"DrgAccessDraginfo");
+		PCSZ_DRGACCESSDRAGINFO);
     }
     else {
       pDItem = DrgQueryDragitemPtr(pDInfo, 0);
@@ -260,7 +255,7 @@ static ULONG GetDropCount(HWND hwnd, MPARAM mp1)
   if (pDInfo) {
     if (!DrgAccessDraginfo(pDInfo)) {
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      "DrgAccessDraginfo");
+	        PCSZ_DRGACCESSDRAGINFO);
       numitems = 0;			// Oh well
     }
     else {
@@ -311,7 +306,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, PCSZ directory, BOOL arcfilesok,
   }
   if (!DrgAccessDraginfo(pDInfo)) {
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-	    "DrgAccessDraginfo");
+	      PCSZ_DRGACCESSDRAGINFO);
     numitems = 0;			// Avoid death
   }
   else {

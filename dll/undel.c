@@ -16,6 +16,8 @@
   29 Feb 08 GKY Use xfree where appropriate
   16 JUL 08 GKY Use TMP directory for temp files
   10 Dec 08 SHL Integrate exception handler support
+  08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -88,7 +90,7 @@ static VOID FillUndelListThread(VOID * arg)
     IncrThreadUsage();
     WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
     BldFullPathName(szTempFile, pTmpDir, "$UDELETE.#$#");
-    unlinkf("%s", szTempFile);
+    unlinkf(szTempFile);
     fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
     if (!fp) {
       Win_Error(NULLHANDLE, hwnd, pszSrcFile, __LINE__,
@@ -140,7 +142,7 @@ static VOID FillUndelListThread(VOID * arg)
 	    rstrip(s);
 	    strcat(s, GetPString(IDS_ASKABOUTUNDELETEHELPTEXT));
 	    temp = saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
-			  hwnd, GetPString(IDS_ERRORTEXT), "%s", s);
+			  hwnd, GetPString(IDS_ERRORTEXT), s);
 	    if (temp == MBID_YES)
 	      runemf2(BACKGROUND | INVISIBLE | SEPARATE | WINDOWED,
 		      hwnd, pszSrcFile, __LINE__,

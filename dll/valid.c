@@ -33,6 +33,7 @@
 		and prevent dlls from being loaded into execute dialog.
   05 Jan 09 GKY Fix IsBinary to recognize values above \xc4 (maybe lower) as positive.
 		When these high codes were it text files they showed as hex in new view.
+  08 Mar 09 GKY Additional strings move to PCSZs
 
 ***********************************************************************/
 
@@ -65,15 +66,16 @@
 static PSZ pszSrcFile = __FILE__;
 
 #pragma data_seg(GLOBAL2)
-CHAR *CDFS;
-CHAR *FAT32;
-CHAR *HPFS;
-CHAR *HPFS386;
-CHAR *ISOFS;
-CHAR *JFS;
-CHAR *NDFS32;
-CHAR *NTFS;
-CHAR *RAMFS;
+PCSZ HPFS = "HPFS";
+PCSZ JFS = "JFS";
+PCSZ CDFS = "CDFS";
+PCSZ ISOFS = "ISOFS";
+PCSZ FAT32 = "FAT32";
+PCSZ HPFS386 = "HPFS386";
+PCSZ CBSIFS = "CBSIFS";
+PCSZ NDFS32 = "NDFS32";
+PCSZ RAMFS = "RAMFS";
+PCSZ NTFS = "NTFS";
 BOOL fVerifyOffChecked[26];
 
 APIRET MakeFullName(char *pszFileName)

@@ -1258,10 +1258,8 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
               eaop.fpGEA2List = pgealist;
               eaop.fpFEA2List = pfealist;
               eaop.oError = 0;
-              // saymsg(MB_ENTER,HWND_DESKTOP,"Debug1","\"%s\" %ld",pdena->szName,ulEntry);
-              rc =
-                DosQueryFileInfo(handle, FIL_QUERYEASFROMLIST, (PVOID) & eaop,
-                                 (ULONG) sizeof(EAOP2));
+              rc = DosQueryFileInfo(handle, FIL_QUERYEASFROMLIST, (PVOID) & eaop,
+                                    (ULONG) sizeof(EAOP2));
               if (rc) {
                 if (!silentfail) {
                   Dos_Error(MB_ENTER,
@@ -1340,7 +1338,6 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
               eaop.fpGEA2List = pgealist;
               eaop.fpFEA2List = pfealist;
               eaop.oError = 0;
-              // saymsg(MB_ENTER,HWND_DESKTOP,"Debug2","\"%s\" %ld",pdena->szName,ulEntry);
               rc = DosQueryPathInfo(filename, FIL_QUERYEASFROMLIST,
                                     (PVOID) & eaop, (ULONG) sizeof(EAOP2));
               if (!rc) {

@@ -59,6 +59,7 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
 
 ***********************************************************************/
 
@@ -862,12 +863,12 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	if (hwndMain) {
 	  if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame && pszTempDir)
-	    if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	      free(pszTempDir);
 	}
 	else {
 	  if (pszTempDir)
-	    if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	      free(pszTempDir);
 	}
       }
@@ -1432,7 +1433,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
 	if (pszTempDir) {
-	  if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	    free(pszTempDir);
 	}
       }
@@ -1954,7 +1955,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
 	  if (pszTempDir) {
-	    if (!WinSendMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
+	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
 			    MPFROMLONG(1L)))
 	      free(pszTempDir);
 	  }
@@ -2601,13 +2602,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_OPENICONME:
-	OpenObject(dcd->directory, "ICON", dcd->hwndFrame);
+	OpenObject(dcd->directory, PCSZ_ICON, dcd->hwndFrame);
 	break;
       case IDM_OPENDETAILSME:
-	OpenObject(dcd->directory, "DETAILS", dcd->hwndFrame);
+	OpenObject(dcd->directory, Details, dcd->hwndFrame);
 	break;
       case IDM_OPENTREEME:
-	OpenObject(dcd->directory, "TREE", dcd->hwndFrame);
+	OpenObject(dcd->directory, PCSZ_TREE, dcd->hwndFrame);
 	break;
       case IDM_OPENSETTINGSME:
 	OpenObject(dcd->directory, Settings, dcd->hwndFrame);
@@ -2970,7 +2971,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-		      "DrgAccessDraginfo");
+		      PCSZ_DRGACCESSDRAGINFO);
 	      return (MRFROM2SHORT(DOR_NEVERDROP, 0));
 	  }
 	  if (*dcd->directory &&
@@ -3108,7 +3109,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				   DND_FRAME, MPFROMP(&cl));
 	      if (li->type == DID_ERROR)
 		  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
-			    "Drag & Drop Dialog");
+			    GetPString(IDS_DRAGDROPDIALOGTEXT));
 	      if (!li->type) {
 		FreeListInfo(li);
 		return 0;
