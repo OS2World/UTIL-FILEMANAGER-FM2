@@ -84,7 +84,7 @@ VOID APIENTRY deinit(ULONG why)
 	    DosDeleteDir(s);
 	  }
 	  else
-	    unlinkf("%s", s);
+	    unlinkf(s);
 	} while (!xDosFindNext(search_handle,
 			      &ffb3, sizeof(FILEFINDBUF3), &num_matches, FIL_STANDARD));
 	DosFindClose(search_handle);
