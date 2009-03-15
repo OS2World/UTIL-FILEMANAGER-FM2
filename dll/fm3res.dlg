@@ -1840,7 +1840,7 @@ BEGIN
                         10
         AUTOCHECKBOX    "Selected ~always", CFGD_SELECTEDALWAYS, 4, 82, 106,
                         10
-        AUTOCHECKBOX    "N~o container search", CFGD_NOSEARCH, 4, 70, 106,
+        AUTOCHECKBOX    "N~o extended container search", CFGD_NOSEARCH, 4, 70, 106,
                         10
         AUTOCHECKBOX    "Multi~ple select cnrs", CFGD_MULTIPLESEL, 4, 58,
                         106, 10
