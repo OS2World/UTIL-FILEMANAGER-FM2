@@ -8,6 +8,7 @@
 # 25 Oct 08 JBS Rework DEBUG usage to match what C code expects
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
+# 14 Dec 08 SHL Drop EXCEPTQ support - will not be used
 
 !ifndef MAKERES
 
@@ -16,6 +17,7 @@
 # Executable specific paramters go in .def
 
 $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
+  @echo Linking $(BASE).exe
   $(LINK) @$(BASE).lrf @$(BASE).def
   @echo.
   @echo Compiling resource: $@
@@ -26,13 +28,10 @@ $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%write $^@ $(LFLAGS)
    @%append $^@ name $(BASE)
    @%append $^@ file $(BASE).obj
-!ifdef %EXCEPTQ
-    @%append $^@ file exceptq.lib
-!endif
    @%append $^@ library dll\fm3dll.lib
    @%append $^@ library os2386.lib
 
-$(BASE).sym: $(BASE).map
+$(BASE).sym: $(BASE).map .explicit
    @echo Processing: $?
    -perl debugtools\mapsymw.pl $?
 
