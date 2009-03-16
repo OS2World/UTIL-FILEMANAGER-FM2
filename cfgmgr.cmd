@@ -2,7 +2,7 @@
    $Id$
 
    CFGMGR.CMD - manage installation, maintenance and deinstallation
-                                 of FM/2 configuration files
+                of FM/2 configuration files
 
    Optional Parameters:
 
@@ -587,13 +587,44 @@ UpdateFM2Ini: procedure expose (globals)
          if LastToolBox = 'ERROR:' then
             LastToolbar = 'CMDS.TLS'
          else
-                LastToolbar = LastToolbox
+            LastToolbar = LastToolbox
         call SysIni cfg.inifile, 'FM/3', 'LastToolbar', LastToolbar
       end
    if SysIni(cfg.inifile, 'FM/3', 'FM2Shutdown.Toolbar') = 'ERROR:' then
                 call SysIni cfg.inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
    if SysIni(cfg.inifile, 'FM/4', 'LastToolbar') = 'ERROR:' then
                 call SysIni cfg.inifile, 'FM/4', 'LastToolbar', LastToolbar
+   do /* Copy old details keys to new names */
+      /* Check for old/new version numbers first? */
+      StateNames = SysIni(cfg.inifile, 'FM/3', 'LastSetups')
+      KeyFragments = 'Dir Filter Pos Sort View'
+      NumKeyFragments = words(KeyFragments)
+      null = '00'x
+      if StateNames = 'ERROR:' then
+         StateNames = 'FM2Shutdown' || null
+      else
+         if pos('FM2Shutdown' || null, StateNames) = 0 then
+            StateNames = StateNames || 'FM2Shutdown' || null
+      do while StateNames \= ''
+         parse var StateNames StateName (null) StateNames
+         NumDirCnrs = SysIni(cfg.inifile, 'FM/3', StateName || '.NumDirsLastTime')
+         if NumDirCnrs \= 'ERROR:' then
+            do
+               NumDirCnrs = c2d(reverse(NumDirCnrs)) - 1  /* for 0 to num-1 loop */
+               do d = 0 to NumDirCnrs
+                  do f = 1 to NumKeyFragments
+                     frag = word(KeyFragments, f)
+                     OldKey = StateName || '.DirCnr' || frag || '.' || d
+                     OldKeyValue = SysIni(cfg.inifile, 'FM/3', OldKey)
+                     NewKey = StateName || '.DirCnr.' || d || '.' || frag
+                     NewKeyValue = SysIni(cfg.inifile, 'FM/3', NewKey)
+                     if (OldKeyValue \= 'ERROR:' & NewKeyValue = 'ERROR:') then
+                        rcx = SysIni(cfg.inifile, 'FM/3', NewKey, OldKeyValue)
+                  end
+               end
+            end
+      end
+   end
 return
 
 Ticket267Fix: procedure expose (globals)
