@@ -1317,7 +1317,12 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
   }
 }
 
-VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds)
+/**
+ * Loads all the detail switches from the ini file
+ * state if TRUE skips global only settings
+ * keyroot shouldn't pass trailing dot
+ */
+VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds, BOOL state)
 {
   ULONG size;
   CHAR s[CCHMAXPATH], *eos = s;
@@ -1373,29 +1378,36 @@ VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds)
   pds->detailslatime = dsDirCnrDefault.detailslatime;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->detailslatime, &size);
-  strcpy(eos, "SubjectInLeftPane");
-  pds->fSubjectInLeftPane = dsDirCnrDefault.fSubjectInLeftPane;
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->fSubjectInLeftPane, &size);
-  strcpy(eos, "SubjectLengthMax");
-  pds->fSubjectLengthMax = dsDirCnrDefault.fSubjectLengthMax;
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->fSubjectLengthMax, &size);
-  if (pds->fSubjectLengthMax)
-    pds->SubjectDisplayWidth = 0;
-  else {
-    strcpy(eos, "SubjectDisplayWidth");
-    pds->SubjectDisplayWidth = dsDirCnrDefault.SubjectDisplayWidth;
-    size = sizeof(ULONG);
-    PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->SubjectDisplayWidth, &size);
-    if (pds->SubjectDisplayWidth < 50)
+  if (!state) {
+    strcpy(eos, "SubjectInLeftPane");
+    pds->fSubjectInLeftPane = dsDirCnrDefault.fSubjectInLeftPane;
+    size = sizeof(BOOL);
+    PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->fSubjectInLeftPane, &size);
+    strcpy(eos, "SubjectLengthMax");
+    pds->fSubjectLengthMax = dsDirCnrDefault.fSubjectLengthMax;
+    size = sizeof(BOOL);
+    PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->fSubjectLengthMax, &size);
+    if (pds->fSubjectLengthMax)
       pds->SubjectDisplayWidth = 0;
-    else if (pds->SubjectDisplayWidth > 1000)
-      pds->SubjectDisplayWidth = 1000;
+    else {
+      strcpy(eos, "SubjectDisplayWidth");
+      pds->SubjectDisplayWidth = dsDirCnrDefault.SubjectDisplayWidth;
+      size = sizeof(ULONG);
+      PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->SubjectDisplayWidth, &size);
+      if (pds->SubjectDisplayWidth < 50)
+        pds->SubjectDisplayWidth = 0;
+      else if (pds->SubjectDisplayWidth > 1000)
+        pds->SubjectDisplayWidth = 1000;
+    }
   }
 }
 
-VOID WriteDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds)
+/**
+ * Writes all the detail switches to the ini file
+ * state if TRUE skips global only settings
+ * keyroot shouldn't pass trailing dot
+ */
+VOID WriteDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds, BOOL state)
 {
   CHAR s[CCHMAXPATH], *eos = s;
 
@@ -1403,52 +1415,108 @@ VOID WriteDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds)
   strcat(s, ".");
   eos = &s[strlen(s)];
   strcpy(eos, "DetailsLongname");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslongname : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslongname, sizeof(BOOL));
   strcpy(eos, "DetailsSubject");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailssubject : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailssubject, sizeof(BOOL));
   strcpy(eos, "DetailsEA");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsea : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsea, sizeof(BOOL));
   strcpy(eos, "DetailsSize");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailssize : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailssize, sizeof(BOOL));
   strcpy(eos, "DetailsIcon");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsicon : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsicon, sizeof(BOOL));
   strcpy(eos, "DetailsAttr");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsattr : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsattr, sizeof(BOOL));
   strcpy(eos, "DetailsCRDate");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailscrdate : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailscrdate, sizeof(BOOL));
   strcpy(eos, "DetailsCRTime");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailscrtime : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailscrtime, sizeof(BOOL));
   strcpy(eos, "DetailsLWDate");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslwdate : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslwdate, sizeof(BOOL));
   strcpy(eos, "DetailsLWTime");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslwtime : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslwtime, sizeof(BOOL));
   strcpy(eos, "DetailsLADate");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailsladate : NULL,
-                      pds ? sizeof(BOOL) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailsladate, sizeof(BOOL));
   strcpy(eos, "DetailsLATime");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->detailslatime : NULL,
-                      pds ? sizeof(BOOL) : 0);
-  strcpy(eos, "SubjectInLeftPane");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->fSubjectInLeftPane : NULL,
-                      pds ? sizeof(BOOL) : 0);
-  strcpy(eos, "SubjectLengthMax");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->fSubjectLengthMax : NULL,
-                      pds ? sizeof(BOOL) : 0);
-  strcpy(eos, "SubjectDisplayWidth");
-  PrfWriteProfileData(fmprof, appname, s, pds ? &pds->SubjectDisplayWidth : NULL,
-                      pds ? sizeof(ULONG) : 0);
+  PrfWriteProfileData(fmprof, appname, s, &pds->detailslatime, sizeof(BOOL));
+  if (!state) {
+    strcpy(eos, "SubjectInLeftPane");
+    PrfWriteProfileData(fmprof, appname, s, &pds->fSubjectInLeftPane, sizeof(BOOL));
+    strcpy(eos, "SubjectLengthMax");
+    PrfWriteProfileData(fmprof, appname, s, &pds->fSubjectLengthMax, sizeof(BOOL));
+    strcpy(eos, "SubjectDisplayWidth");
+    PrfWriteProfileData(fmprof, appname, s, &pds->SubjectDisplayWidth, sizeof(ULONG));
+  }
 }
 
+/**
+ * Removes the ini entries when a state is deleted
+ * statename should be NULL for the shutdown state
+ * (avoids removing global state settings like toolbar)
+ * keyroot shouldn't pass the trailing dot
+ */
+VOID RemoveCnrSwitches(PCSZ keyroot, PCSZ statename)
+{
+  CHAR s[CCHMAXPATH], *eos = s;
+
+  strcpy(s, keyroot);
+  strcat(s, ".");
+  eos = &s[strlen(s)];
+  DeletePresParams(s);
+  strcpy(eos, "DetailsLongname");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsSubject");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsEA");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsSize");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsIcon");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsAttr");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsCRDate");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsCRTime");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsLWDate");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsLWTime");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsLADate");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "DetailsLATime");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "SubjectInLeftPane");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "SubjectLengthMax");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "SubjectDisplayWidth");
+  PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+  strcpy(eos, "Pos");;
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  strcpy(eos, "Sort");
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  strcpy(eos, "Filter");
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  strcpy(eos, "View");
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  strcpy(eos, "Dir");
+  PrfWriteProfileString(fmprof, FM3Str, s, NULL);
+  if (statename && strstr(s, ".0.")) {
+    strcpy(s, statename);
+    strcat(s, ".");
+    eos = &s[strlen(s)];
+    strcpy(eos, "LastTreePos");
+    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+    strcpy(eos, "MySizeLastTime");
+    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+    strcpy(eos, "Toolbar");
+    PrfWriteProfileString(fmprof, FM3Str, s, NULL);
+    strcpy(eos, "TargetDir");
+    PrfWriteProfileString(fmprof, FM3Str, s, NULL);
+  }
+
+}
 
 HWND FindDirCnr(HWND hwndParent)
 {

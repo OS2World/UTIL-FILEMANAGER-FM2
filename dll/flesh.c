@@ -269,7 +269,7 @@ BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
 
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 {
-  /*
+  /**
    * this code is full of workarounds for screwed up LANs.
    * let's hope all the current LAN programmers fall into
    * a black hole and make way for people who can get it right...

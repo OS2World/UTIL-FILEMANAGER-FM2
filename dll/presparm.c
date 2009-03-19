@@ -13,6 +13,7 @@
   22 Nov 07 GKY Use CopyPresParams to fix presparam inconsistencies in menus
   10 Dec 07 GKY Updated CopyPresParams to copy all parameter types
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  19 Mar 09 GKY Moved DeletePresParams from mainwnd.c
 
 ***********************************************************************/
 
@@ -520,6 +521,33 @@ VOID SavePresParams(HWND hwnd, PCSZ keyroot)
     }
     x++;
   } //while
+}
+
+VOID DeletePresParams(PCSZ Keyroot)
+{
+  PSZ apszPPNames[] =
+  {
+    "Backgroundcolor",
+    "Foregroundcolor",
+    "Hilitebackgroundcolor",
+    "Hiliteforegroundcolor",
+    "Bordercolor",
+    "Fontnamesize"
+  };
+
+  ULONG ulSize, ulArraySize = sizeof(apszPPNames) / sizeof(PSZ), x;
+  CHAR  pchKeyroot[CCHMAXPATH];
+  CHAR  *eos;
+
+  strcpy(pchKeyroot, Keyroot);
+  eos = pchKeyroot + strlen(pchKeyroot);
+
+  for (x = 0; x < ulArraySize; x++) {
+    strcpy(eos, apszPPNames[x]);
+    if (PrfQueryProfileSize(fmprof, appname, pchKeyroot, &ulSize) && ulSize) {
+      PrfWriteProfileData(fmprof, appname, pchKeyroot, NULL, ulSize);
+    }
+  }
 }
 
 #pragma alloc_text(PRESPARAM,CopyPresParams,SetPresParams)

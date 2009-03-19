@@ -64,6 +64,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   08 Mar 09 GKY Additional strings move to PCSZs in init.c & String Table
+  15 Mar 09 GKY Use WriteDetailsSwitchs to save detail switch changes to the ini file.
 
 ***********************************************************************/
 
@@ -2342,7 +2343,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	cmp->dcd.hwndClient = hwnd;
 	cmp->dcd.mask.attrFile = (FILE_DIRECTORY | FILE_ARCHIVED |
 				  FILE_READONLY | FILE_SYSTEM | FILE_HIDDEN);
-	LoadDetailsSwitches("DirCmp", &cmp->dcd.ds);
+	LoadDetailsSwitches(PCSZ_DIRCMP, &cmp->dcd.ds, FALSE);
 	cmp->dcd.ds.detailslongname = FALSE;
 	cmp->dcd.ds.detailsicon = FALSE;	// TRUE;
       }
@@ -2983,14 +2984,15 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	dcd1 = cmp->dcd;
 	AdjustDetailsSwitches(hwndLeft,
 			      (HWND)0, SHORT1FROMMP(mp1),
-			      cmp->leftdir, "DirCmp", &cmp->dcd.ds, TRUE);
+			      cmp->leftdir, PCSZ_DIRCMP, &cmp->dcd.ds, TRUE);
 	tempsubj = cmp->dcd.ds.detailssubject;
 	cmp->dcd = dcd1;
 	cmp->dcd.ds.detailssubject = FALSE;
 	AdjustDetailsSwitches(hwndRight,
 			      cmp->dcd.hwndLastMenu, SHORT1FROMMP(mp1),
-			      cmp->rightdir, "DirCmp", &cmp->dcd.ds, TRUE);
-	cmp->dcd.ds.detailssubject = tempsubj;
+			      cmp->rightdir, PCSZ_DIRCMP, &cmp->dcd.ds, TRUE);
+        cmp->dcd.ds.detailssubject = tempsubj;
+        WriteDetailsSwitches(PCSZ_DIRCMP, &cmp->dcd.ds, TRUE);
       }
       break;
 

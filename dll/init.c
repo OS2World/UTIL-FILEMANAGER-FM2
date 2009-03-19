@@ -234,6 +234,7 @@ PCSZ PCSZ_LVMEXE      = "LVM.EXE";
 PCSZ PCSZ_ARCCNR      = "ArcCnr";
 PCSZ PCSZ_COLLECTOR   = "Collector";
 PCSZ PCSZ_DIRCNR      = "DirCnr";
+PCSZ PCSZ_DIRCMP      = "DirCmp";
 PCSZ PCSZ_DIRSIZES    = "DirSizes";
 PCSZ PCSZ_TOOLBAR     = "ToolBar";
 PCSZ PCSZ_TREECNR     = "TreeCnr";
@@ -1519,7 +1520,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "TrashCan", &fTrashCan, &size);
 
-  LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault);
+  LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 
   /* load pointers and icons we use */
   hptrArrow = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE);

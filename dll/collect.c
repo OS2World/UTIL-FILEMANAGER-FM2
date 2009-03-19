@@ -1416,7 +1416,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	CNRINFO cnri;
 
 	RestorePresParams(hwnd, PCSZ_COLLECTOR);
-	LoadDetailsSwitches(PCSZ_COLLECTOR, &dcd->ds);
+	LoadDetailsSwitches(PCSZ_COLLECTOR, &dcd->ds, FALSE);
 
 	dcd->amextracted = FALSE;	// Say not busy
 	dcd->stopflag = 0;

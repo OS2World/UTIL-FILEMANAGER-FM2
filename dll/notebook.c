@@ -2366,7 +2366,7 @@ MRESULT EXPENTRY Cfg5DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  dsDirCnrDefault.SubjectDisplayWidth = 0;
     }
-    WriteDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault);
+    WriteDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -2600,7 +2600,7 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       DETAILS_SETTINGS ds;
 
       memset(&ds, 0, sizeof(ds));
-      LoadDetailsSwitches(PCSZ_COLLECTOR, &ds);
+      LoadDetailsSwitches(PCSZ_COLLECTOR, &ds, FALSE);
       WinCheckButton(hwnd, CFG5_SHOWLNAMES, ds.detailslongname);
       WinCheckButton(hwnd, CFG5_SHOWSUBJECT, ds.detailssubject);
       WinCheckButton(hwnd, CFG5_SHOWEAS, ds.detailsea);
@@ -2720,7 +2720,7 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  ds.SubjectDisplayWidth = 0;
       }
-    WriteDetailsSwitches(PCSZ_COLLECTOR, &ds);
+    WriteDetailsSwitches(PCSZ_COLLECTOR, &ds, FALSE);
     }
     break;
   }
@@ -3526,7 +3526,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       return 0;
     }
     // Save new details settings and refresh windows
-    WriteDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault);
+    WriteDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
     if (hwndMain) {
       // Save state and restore to refresh windows with new settings
       if (SaveDirCnrState(hwndMain, PCSZ_FM2TEMPTEXT) > 0) {
