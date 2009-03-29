@@ -83,6 +83,8 @@
   08 Mar 09 GKY Additional strings move to PCSZs & String Table
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
   19 Mar 09 GKY Moved DeletePresParams to presparam.c
+  28 Mar 09 GKY Add RemoveOldCnrSwitches to remove pre 3.16 style ini keys;
+                add State.version key for check
 
 ***********************************************************************/
 
@@ -2944,6 +2946,8 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
   if (!fIsShutDownState) {
     sprintf(szKey, "%sTargetDir", szPrefix);
     PrfWriteProfileString(fmprof, FM3Str, szKey, targetdir);
+    sprintf(szKey, "%sVersion", szPrefix);
+    PrfWriteProfileString(fmprof, FM3Str, szKey, "3.16");
   }
 
   henum = WinBeginEnumWindows(hwndClient);
@@ -3010,11 +3014,22 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
   WinEndEnumWindows(henum);
 
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
-  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &previous_numsaves, &ulTemp))
+  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &previous_numsaves, &ulTemp)) {
+    ULONG size = 0;
+
+    sprintf(szKey, "%sVersion", szPrefix);
+    PrfQueryProfileSize(fmprof, FM3Str, szKey, &size);
+    if (!size && fSaveState) {
+      for (ulTemp = 0; ulTemp < previous_numsaves; ulTemp++)
+        RemoveOldCnrSwitches(szPrefix, ulTemp);
+       sprintf(szKey, "%sVersion", szPrefix);
+       PrfWriteProfileString(fmprof, FM3Str, szKey, "3.16");
+      }
     for (ulTemp = numsaves; ulTemp < previous_numsaves; ulTemp++) {
       sprintf(szKeyBase, "%sDirCnr.%lu", szPrefix, ulTemp);
       RemoveCnrSwitches(szKeyBase, NULL);
     }
+  }
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   if (numsaves) {
     PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, sizeof(ULONG));
@@ -3198,6 +3213,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	  if (fIsShutDownState &&
 	      driveflags[toupper(*szDir) - 'A'] & DRIVE_NOPRESCAN) {
             RemoveCnrSwitches(szKeyBase, NULL);
+            RemoveOldCnrSwitches(szPrefix, x);
 	    continue;
 	  }
           LoadDetailsSwitches(szKeyBase, &localdcd.ds, TRUE);
@@ -4624,6 +4640,10 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               for (x = 0; x < numsaves; x++) {
                 sprintf(szKeyBase, "%s.DirCnr.%lu", szStateName, x);
                 RemoveCnrSwitches(szKeyBase, szStateName);
+                size = 0;
+                sprintf(szKey, "%sVersion", szStateName);
+                if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
+                  RemoveOldCnrSwitches(szStateName, x);
 	      }
 	    }
 	    PostMsg(hwnd, UM_FILLSETUPLIST, MPVOID, MPVOID);

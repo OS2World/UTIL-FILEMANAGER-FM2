@@ -57,6 +57,8 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  28 Mar 09 GKY Add RemoveOldCnrSwitches to remove pre 3.16 style ini keys;
+                add State.version key for check
 
 ***********************************************************************/
 
@@ -1486,12 +1488,17 @@ VOID RemoveCnrSwitches(PCSZ keyroot, PCSZ statename)
   PrfWriteProfileData(fmprof, appname, s, NULL, 0);
   strcpy(eos, "DetailsLATime");
   PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+
+#ifdef NEVER
+  // activate this code if we ever allow setting of subject location/length per container GKY 3-28-09
   strcpy(eos, "SubjectInLeftPane");
   PrfWriteProfileData(fmprof, appname, s, NULL, 0);
   strcpy(eos, "SubjectLengthMax");
   PrfWriteProfileData(fmprof, appname, s, NULL, 0);
   strcpy(eos, "SubjectDisplayWidth");
   PrfWriteProfileData(fmprof, appname, s, NULL, 0);
+#endif
+
   strcpy(eos, "Pos");;
   PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
   strcpy(eos, "Sort");
@@ -1516,6 +1523,26 @@ VOID RemoveCnrSwitches(PCSZ keyroot, PCSZ statename)
     PrfWriteProfileString(fmprof, FM3Str, s, NULL);
   }
 
+}
+
+/**
+ * Removes the pre 3.16 style ini entries when a state is deleted
+ */
+VOID RemoveOldCnrSwitches(PCSZ szPrefix, ULONG ulTemp)
+{
+  CHAR szKey[STATE_NAME_MAX_BYTES + 80];
+
+  sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, ulTemp);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  sprintf(szKey, "%sDirCnrSort.%lu", szPrefix, ulTemp);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  sprintf(szKey, "%sDirCnrFilter.%lu", szPrefix, ulTemp);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  sprintf(szKey, "%sDirCnrView.%lu", szPrefix, ulTemp);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, ulTemp);
+  PrfWriteProfileString(fmprof, FM3Str, szKey, NULL);
+  sprintf(szKey, "%sDirCnr.%lu.", szPrefix, ulTemp);
 }
 
 HWND FindDirCnr(HWND hwndParent)

@@ -54,6 +54,7 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid);
 VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds, BOOL state);
 VOID WriteDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds, BOOL state);
 VOID RemoveCnrSwitches(PCSZ keyroot, PCSZ statename);
+VOID RemoveOldCnrSwitches(PCSZ szPrefix, ULONG ulTemp);
 VOID LoadLibPath(PSZ str, LONG len);
 VOID OpenEdit(HWND hwnd);
 VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl);
