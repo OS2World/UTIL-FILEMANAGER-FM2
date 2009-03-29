@@ -63,6 +63,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  12 Mar 09 SHL Use common SearchContainer
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
 
 ***********************************************************************/
@@ -624,8 +625,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       Fortify_BecomeOwner(mp1);
 #     endif
       if (StubbyScanCount != 0) { //prevent treeswitch from hanging fm2 during startup GKY 3-14-09
-        DosSleep(50);
-        PostMsg(hwndTree, UM_SHOWME, mp1, MPVOID);
+	DosSleep(50);
+	PostMsg(hwndTree, UM_SHOWME, mp1, MPVOID);
       }
       dcd = INSTDATA(hwnd);
       if (dcd) {
@@ -970,6 +971,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   static APPNOTIFY *apphead = NULL, *apptail = NULL;
   DIRCNRDATA *dcd = INSTDATA(hwnd);
+  PCNRITEM pci;
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -999,72 +1001,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DELETE, 0), MPVOID);
 	break;
-      }
+      } // switch
     }
-    if (shiftstate || fNoSearch)
-      break;
-    if (SHORT1FROMMP(mp1) & KC_CHAR) {
 
-      ULONG thistime, len;
-      SEARCHSTRING srch;
-      PCNRITEM pci;
+    if (SearchContainer(hwnd, msg, mp1, mp2))
+      return (MRESULT)TRUE;		// Avoid default handler
 
-      if (!dcd)
-	break;
-      switch (SHORT1FROMMP(mp2)) {
-      case '\x1b':
-      case '\r':
-      case '\n':
-	dcd->lasttime = 0;
-	*dcd->szCommonName = 0;
-	break;
-      default:
-	thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
-	if (thistime > dcd->lasttime + 1250)
-	  *dcd->szCommonName = 0;
-	dcd->lasttime = thistime;
-	if (SHORT1FROMMP(mp2) == ' ' && !*dcd->szCommonName)
-	  break;
-      KbdRetry:
-	len = strlen(dcd->szCommonName);
-	if (len >= CCHMAXPATH - 1) {
-	  *dcd->szCommonName = 0;
-	  len = 0;
-	}
-	dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
-	dcd->szCommonName[len + 1] = 0;
-	memset(&srch, 0, sizeof(SEARCHSTRING));
-	srch.cb = (ULONG) sizeof(SEARCHSTRING);
-	srch.pszSearch = (PSZ) dcd->szCommonName;
-	srch.fsPrefix = TRUE;
-	srch.fsCaseSensitive = FALSE;
-	srch.usView = CV_ICON;
-	pci = WinSendMsg(hwnd,
-			 CM_SEARCHSTRING,
-			 MPFROMP(&srch), MPFROMLONG(CMA_FIRST));
-	if (pci && (INT) pci != -1) {
-	  /* make found item current item */
-	  WinSendMsg(hwnd,
-		     CM_SETRECORDEMPHASIS,
-		     MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
-	  /* make sure that record shows in viewport */
-	  ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
-	  return (MRESULT) TRUE;
-	}
-	else {
-	  if (SHORT1FROMMP(mp2) == ' ') {
-	    dcd->szCommonName[len] = 0;
-	    break;
-	  }
-	  *dcd->szCommonName = 0;
-	  dcd->lasttime = 0;
-	  if (len)			// retry as first letter if no match
-	    goto KbdRetry;
-	}
-	break;
-      }
-    }
-    break;
+    break;				// Let default handler see key
 
   case WM_MOUSEMOVE:
   case WM_BUTTON1UP:
@@ -1126,7 +1069,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_FILESMENU:
     {
-      PCNRITEM pci;
       HWND menuHwnd = (HWND) 0;
       FSALLOCATE fsa;
 
@@ -1229,14 +1171,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
 					   MAIN_STATUS), pci->pszFileName);
-        if (fMoreButtons && hwndName) {
-          CHAR szDate[DATE_BUF_BYTES];
+	if (fMoreButtons && hwndName) {
+	  CHAR szDate[DATE_BUF_BYTES];
 
-          DateFormat(szDate, pci->date);
+	  DateFormat(szDate, pci->date);
 	  WinSetWindowText(hwndName, pci->pszFileName);
 	  sprintf(str, "%s %02u%s%02u%s%02u", szDate,
-                  pci->time.hours, TimeSeparator,
-                  pci->time.minutes, TimeSeparator, pci->time.seconds);
+		  pci->time.hours, TimeSeparator,
+		  pci->time.minutes, TimeSeparator, pci->time.seconds);
 	  WinSetWindowText(hwndDate, str);
 	  WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	}
@@ -1846,7 +1788,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
 		UnFlesh(hwnd, pci);
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-                if (!fAlertBeepOff)
+		if (!fAlertBeepOff)
 		  DosBeep(250, 100);
 	      }
 	    }
@@ -1915,7 +1857,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  !(pci->rc.flRecordAttr & CRA_INUSE) &&
 	  !(pci->flags & RECFLAGS_ENV) && IsFullName(pci->pszFileName)) {
 	if (driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_INVALID) {
-          if (!fAlertBeepOff)
+	  if (!fAlertBeepOff)
 	    DosBeep(50, 100);
 	  if (hwndStatus)
 	    WinSetWindowText(hwndStatus, GetPString(IDS_RESCANSUGTEXT));

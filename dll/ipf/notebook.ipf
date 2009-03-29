@@ -14,6 +14,7 @@
 .* 06 Jul 08 GKY Update delete/undelete to include the option of using the XWP trashcan
 .* 20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 .* 08 Mar 09 GKY Added option to turn alert and/or error beeps off
+.* 12 Mar 09 SHL Update container search description
 .*
 .***********************************************************************
 .*
@@ -102,17 +103,23 @@ Directory Container window the old window is restored.
 The :hp6.Selected Always:ehp6. toggle (NOT RECOMMENDED!) causes FM/2 to
 use selected object(s) (rather than keying on the current object).
 :p.
-The :hp6.No container search:ehp6. toggle, if checked, prevents FM/2
+The :hp6.No extended container search:ehp6. toggle, if checked, prevents FM/2
 from performing extended searching in containers -- instead, the
 standard OS/2 method is used, where the cursor moves to the nearest
 object starting with the depressed letter and the object is selected.
-Note that you can get this standard effect with this toggle left on by
-pressing the :color fc=default bc=palegray.Shift:color fc=default bc=default. key along with the letter. Container searching
-allows you to enter multiple characters which are searched for at the
-start of filenames. The record is made the current (cursored) object.
-If the record matches all the letters typed exactly, it is also
-selected. A pause of more than about two seconds in typing resets the
-search string. :hp1.Warning:ehp1.&colon. this doesn't work right on
+Note that you override the configured value of this feature by
+pressing the :color fc=default bc=palegray.Shift:color fc=default bc=default.
+key along with the letter.
+Extended container searching allows you to enter multiple characters which
+are searched for at the	start of filenames.
+The record is made the current (cursored) object.
+The leading backslash can be omitted from directory names where there is no ambiguity.
+If the record matches all the letters typed exactly, it is also	selected.
+A pause of more than about two seconds in typing resets the search string. 
+The Escape key clears the search string.
+Backspace deletes the last character from the search string.
+Space toggles the object selection unless it matches a space in the object name.
+:hp1.Warning:ehp1.&colon. this doesn't work right on
 some versions of Warp, where the OS/2 CM_SEARCHSTRING container
 message's behavior is buggy. It's not dangerous, it just doesn't
 produce the expected results.

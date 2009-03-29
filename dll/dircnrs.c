@@ -1225,6 +1225,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case VK_INSERT:
 	if ((shiftstate & KC_CTRL) == KC_CTRL)
 	  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_MKDIR, 0), MPVOID);
+	// Alt-Insert - create file
 	else if ((shiftstate & KC_ALT) == KC_ALT)
 	  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_CREATE, 0), MPVOID);
 	break;
@@ -1238,9 +1239,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       case VK_HOME:
 	if ((shiftstate & KC_CTRL) == KC_CTRL && dcd) {
-
 	  CHAR s[CCHMAXPATH], *p;
-
 	  strcpy(s, dcd->directory);
 	  p = strchr(s, '\\');
 	  if (p) {
@@ -1258,75 +1257,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DELETE, 0), MPVOID);
 	break;
-      }
+      } // switch
     }
-    if (shiftstate || fNoSearch)
-      break;
-    if (SHORT1FROMMP(mp1) & KC_CHAR) {
 
-      ULONG thistime, len;
-      SEARCHSTRING srch;
-      PCNRITEM pci;
-
-      if (!dcd)
-	break;
-      switch (SHORT1FROMMP(mp2)) {
-      case '\x1b':
-      case '\r':
-      case '\n':
-	dcd->lasttime = 0;
-	*dcd->szCommonName = 0;
-	break;
-      default:
-	thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
-	if (thistime > dcd->lasttime + 1250)
-	  *dcd->szCommonName = 0;
-	dcd->lasttime = thistime;
-	if (SHORT1FROMMP(mp2) == ' ' && !dcd->szCommonName)
-	  break;
-      KbdRetry:
-	len = strlen(dcd->szCommonName);
-	if (len >= CCHMAXPATH - 1) {
-	  *dcd->szCommonName = 0;
-	  len = 0;
-	}
-	dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
-	dcd->szCommonName[len + 1] = 0;
-	memset(&srch, 0, sizeof(SEARCHSTRING));
-	srch.cb = (ULONG) sizeof(SEARCHSTRING);
-	srch.pszSearch = (PSZ) dcd->szCommonName;
-	srch.fsPrefix = TRUE;
-	srch.fsCaseSensitive = FALSE;
-	srch.usView = CV_ICON;
-	pci = WinSendMsg(hwnd, CM_SEARCHSTRING, MPFROMP(&srch),
-			 MPFROMLONG(CMA_FIRST));
-	if (pci && (INT) pci != -1) {
-
-	  USHORT attrib = CRA_CURSORED;
-
-	  /* make found item current item */
-	  if (!stricmp(pci->pszFileName, dcd->szCommonName))
-	    attrib |= CRA_SELECTED;
-	  WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
-		     MPFROM2SHORT(TRUE, attrib));
-	  /* make sure that record shows in viewport */
-	  ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
-	  return (MRESULT) TRUE;
-	}
-	else {
-	  if (SHORT1FROMMP(mp2) == ' ') {
-	    dcd->szCommonName[len] = 0;
-	    break;
-	  }
-	  *dcd->szCommonName = 0;
-	  dcd->lasttime = 0;
-	  if (len)			// retry as first letter if no match
-	    goto KbdRetry;
-	}
-	break;
-      }
-    }
-    break;
+    if (SearchContainer(hwnd, msg, mp1, mp2))
+      return (MRESULT)TRUE;		// Avoid default handler
+    break;				// Let default handler see key too
 
   case WM_MOUSEMOVE:
   case WM_BUTTON1UP:
@@ -1506,18 +1442,18 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (pci && (INT) pci != -1) {
 	    if (fSplitStatus && hwndStatus2) {
 	      CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
-              if (!fMoreButtons) {
-                DateFormat(szDate, pci->date);
+	      if (!fMoreButtons) {
+		DateFormat(szDate, pci->date);
 		sprintf(s, " %s  %s %02u%s%02u%s%02u  [%s]  %s",
 			tb,
 			szDate,
-                        pci->time.hours,
-                        TimeSeparator,
-                        pci->time.minutes,
-                        TimeSeparator,
+			pci->time.hours,
+			TimeSeparator,
+			pci->time.minutes,
+			TimeSeparator,
 			pci->time.seconds,
-                        pci->pszDispAttr, pci->pszFileName);
-              }
+			pci->pszDispAttr, pci->pszFileName);
+	      }
 	      else {
 		*tf = 0;
 		if (pci->cbFile + pci->easize > 1024) {
@@ -1532,13 +1468,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else
 	      WinSetWindowText(hwndStatus2, NullStr);
 	    if (fMoreButtons) {
-              WinSetWindowText(hwndName, pci->pszFileName);
-              DateFormat(szDate, pci->date);
+	      WinSetWindowText(hwndName, pci->pszFileName);
+	      DateFormat(szDate, pci->date);
 	      sprintf(s, "%s %02u%s%02u%s%02u",
-                      szDate,
-                      pci->time.hours, TimeSeparator,
-                      pci->time.minutes, TimeSeparator,
-                      pci->time.seconds);
+		      szDate,
+		      pci->time.hours, TimeSeparator,
+		      pci->time.minutes, TimeSeparator,
+		      pci->time.seconds);
 	      WinSetWindowText(hwndDate, s);
 	      WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	    }
@@ -2834,8 +2770,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (rc) {
 		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 			  GetPString(IDS_CANTFINDDIRTEXT),
-                          pci->pszFileName);
-                if (!fErrorBeepOff)
+			  pci->pszFileName);
+		if (!fErrorBeepOff)
 		  DosBeep(250,100);
 		driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
 		UnFlesh(hwnd, pci);
@@ -3330,10 +3266,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (pci->rc.flRecordAttr & CRA_CURSORED) {
 		if (fSplitStatus && hwndStatus2) {
 		  CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
-                  if (!fMoreButtons) {
-                    CHAR date[11];
+		  if (!fMoreButtons) {
+		    CHAR date[11];
 
-                    DateFormat(date, pci->date);
+		    DateFormat(date, pci->date);
 		    sprintf(s, " %s  %s %02u%s%02u%s%02u  [%s]  %s",
 			    tb, date, pci->time.hours, TimeSeparator,
 			    pci->time.minutes, TimeSeparator, pci->time.seconds,
@@ -3351,13 +3287,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  }
 		  WinSetWindowText(hwndStatus2, s);
 		}
-                if (fMoreButtons) {
-                  CHAR szDate[DATE_BUF_BYTES];
+		if (fMoreButtons) {
+		  CHAR szDate[DATE_BUF_BYTES];
 
-                  WinSetWindowText(hwndName, pci->pszFileName);
-                  DateFormat(szDate, pci->date);
+		  WinSetWindowText(hwndName, pci->pszFileName);
+		  DateFormat(szDate, pci->date);
 		  sprintf(s, "%s %02u%s%02u%s%02u",
-                          szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
+			  szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
 			  TimeSeparator, pci->time.seconds);
 		  WinSetWindowText(hwndDate, s);
 		  WinSetWindowText(hwndAttr, pci->pszDispAttr);
@@ -3584,6 +3520,125 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   else
       return PFNWPCnr(hwnd, msg, mp1, mp2);
+}
+
+/**
+ * Search container for matching text
+ * @return TRUE if key completely handled here
+ */
+
+MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+{
+  DIRCNRDATA *dcd = INSTDATA(hwnd);
+  ULONG thistime;
+  UINT len;
+  SEARCHSTRING srch;
+  PCNRITEM pci;
+  USHORT key;
+
+  if (!dcd)
+    return FALSE;
+
+  // Just to be safe, caller has probably already checked
+  if (SHORT1FROMMP(mp1) & KC_KEYUP)
+    return FALSE;
+
+  // Just to be safe, caller has probably already cached
+  shiftstate = (SHORT1FROMMP(mp1) & (KC_SHIFT | KC_ALT | KC_CTRL));
+
+  // If not plain character or suppressed
+  // Shift toggles configured setting
+  if (shiftstate & (KC_ALT | KC_CTRL) || (shiftstate & KC_SHIFT ? !fNoSearch : fNoSearch))
+    return FALSE;
+
+  if (SHORT1FROMMP(mp1) & KC_VIRTUALKEY) {
+    key = SHORT2FROMMP(mp2);
+    if (key == VK_BACKSPACE)
+      key = '\x8';
+    else if (key == VK_ESC)
+      key = '\x1b';
+    else
+      return FALSE;
+  }
+  else if (SHORT1FROMMP(mp1) & KC_CHAR)
+    key = SHORT1FROMMP(mp2);
+  else
+    return FALSE;
+
+  thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
+  if (thistime > dcd->lasttime + 1500)
+    *dcd->szCommonName = 0;		// 1.5 seconds
+  dcd->lasttime = thistime;
+
+  switch (key) {
+  case '\x1b':			// Esc
+    *dcd->szCommonName = 0;
+    break;
+  default:
+    if (key == ' ' && !*dcd->szCommonName)
+      break;			// Let PM see space to allow select toggle
+    len = strlen(dcd->szCommonName);
+    if (key == '\x8') {
+      // Backspace
+      if (len) {
+	len--;
+	dcd->szCommonName[len] = 0;	// Chop
+      }
+    }
+    else {
+      if (len >= CCHMAXPATH - 1) {
+	if (!fErrorBeepOff)
+	  DosBeep(250,100);
+	  // WinAlarm(hwnd,WA_WARNING);
+      }
+      else {
+	dcd->szCommonName[len] = toupper(key);
+	dcd->szCommonName[len + 1] = 0;
+      }
+    }
+    // Case insensitive search
+    memset(&srch, 0, sizeof(SEARCHSTRING));
+    srch.cb = (ULONG) sizeof(SEARCHSTRING);
+    srch.pszSearch = (PSZ) dcd->szCommonName;
+    srch.fsPrefix = TRUE;
+    srch.fsCaseSensitive = FALSE;
+    srch.usView = CV_ICON;
+    pci = WinSendMsg(hwnd, CM_SEARCHSTRING, MPFROMP(&srch),
+		     MPFROMLONG(CMA_FIRST));
+    if (pci && (INT) pci != -1) {
+      /* Got match make found item current item */
+      USHORT attrib = CRA_CURSORED;
+      if (!stricmp(pci->pszDisplayName, dcd->szCommonName))
+	attrib |= CRA_SELECTED;
+      WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
+		 MPFROM2SHORT(TRUE, attrib));
+      /* make sure that record shows in viewport */
+      ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
+      return (MRESULT)TRUE;
+    }
+    else {
+      if (key == ' ')
+	return FALSE;			// Let PM see space to toggle select
+      // No match
+      // Erase non-matching last character, len is not yet incremented
+      dcd->szCommonName[len] = 0;
+      if (len == 0 && key != '\\') {
+	// Let's see if user forgot leading backslash
+	// key = SHORT1FROMMP(mp2);
+	if (SearchContainer(hwnd, msg, mp1, MPFROM2SHORT('\\', 0))) {
+	  if (SearchContainer(hwnd, msg, mp1, mp2))
+	    return (MRESULT)TRUE;
+	}
+      }
+#if 0 // 15 Mar 09 SHL fixme to not hang
+      if (!fErrorBeepOff)
+	DosBeep(250,100);
+	// WinAlarm(hwnd,WA_WARNING);
+#endif
+    }
+  } // switch
+
+  return FALSE;				// Let PM see key
 }
 
 HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,

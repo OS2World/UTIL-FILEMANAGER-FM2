@@ -159,6 +159,8 @@ MRESULT EXPENTRY DirFolderProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY DirMaxProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+
 // 05 Jan 08 SHL fixme for dircnrs.c globals to be here
 
 #ifdef DEFINE_GLOBALS

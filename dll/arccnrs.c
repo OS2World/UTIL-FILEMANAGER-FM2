@@ -74,6 +74,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  12 Mar 09 SHL Use common SearchContainer
 
 ***********************************************************************/
 
@@ -2243,7 +2244,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case WM_CHAR:
     shiftstate = (SHORT1FROMMP(mp1) & (KC_SHIFT | KC_ALT | KC_CTRL));
     if (SHORT1FROMMP(mp1) & KC_KEYUP)
-      return (MRESULT) TRUE;
+      return (MRESULT)TRUE;
     if (SHORT1FROMMP(mp1) & KC_VIRTUALKEY) {
       switch (SHORT2FROMMP(mp2)) {
       case VK_DELETE:
@@ -2251,76 +2252,10 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
       }
     }
-    if (shiftstate || fNoSearch)
-      break;
-    if (SHORT1FROMMP(mp1) & KC_CHAR) {
 
-      ULONG thistime, len;
-      SEARCHSTRING srch;
-      PCNRITEM pci;
-
-      if (!dcd)
-	break;
-      switch (SHORT1FROMMP(mp2)) {
-      case '\x1b':
-      case '\r':
-      case '\n':
-	dcd->lasttime = 0;
-	*dcd->szCommonName = 0;
-	break;
-      default:
-	thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
-	if (thistime > dcd->lasttime + 1250)
-	  *dcd->szCommonName = 0;
-	dcd->lasttime = thistime;
-	if (SHORT1FROMMP(mp2) == ' ' && !*dcd->szCommonName)
-	  break;
-      KbdRetry:
-	len = strlen(dcd->szCommonName);
-	if (len >= CCHMAXPATH - 1) {
-	  *dcd->szCommonName = 0;
-	  len = 0;
-	}
-	dcd->szCommonName[len] = toupper(SHORT1FROMMP(mp2));
-	dcd->szCommonName[len + 1] = 0;
-	memset(&srch, 0, sizeof(SEARCHSTRING));
-	srch.cb = (ULONG) sizeof(SEARCHSTRING);
-	srch.pszSearch = dcd->szCommonName;
-	srch.fsPrefix = TRUE;
-	srch.fsCaseSensitive = FALSE;
-	srch.usView = CV_ICON;
-	pci = WinSendMsg(hwnd,
-			 CM_SEARCHSTRING,
-			 MPFROMP(&srch), MPFROMLONG(CMA_FIRST));
-	if (pci && (INT) pci != -1) {
-
-	  USHORT attrib = CRA_CURSORED;
-
-
-	  /* make found item current item */
-	  if (!stricmp(pci->pszFileName, dcd->szCommonName))
-	    attrib |= CRA_SELECTED;
-	  WinSendMsg(hwnd,
-		     CM_SETRECORDEMPHASIS,
-		     MPFROMP(pci), MPFROM2SHORT(TRUE, attrib));
-	  /* make sure that record shows in viewport */
-	  ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
-	  return (MRESULT) TRUE;
-	}
-	else {
-	  if (SHORT1FROMMP(mp2) == ' ') {
-	    dcd->szCommonName[len] = 0;
-	    break;
-	  }
-	  *dcd->szCommonName = 0;
-	  dcd->lasttime = 0;
-	  if (len)			// retry as first letter if no match
-	    goto KbdRetry;
-	}
-	break;
-      }
-    }
-    break;
+    if (SearchContainer(hwnd, msg, mp1, mp2))
+    	return (MRESULT)TRUE;		// Avoid default handler
+    break;				// Let default handler see key too
 
   case WM_MOUSEMOVE:
   case WM_BUTTON1UP:

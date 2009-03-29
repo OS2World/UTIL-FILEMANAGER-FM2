@@ -11,6 +11,8 @@
 .* 03 Mar 07 GKY Update that file systems other than HPFS support long names
 .* 29 Feb 08 GKY Document unhide menu item
 .* 06 Jul 08 GKY Update delete/undelete to include option of using the XWP trashcan
+.* 13 Mar 09 SHL Update extended container search docs
+.* 13 Mar 09 SHL Get rid of spurious backslashes in name='..' keywords
 .*
 .***********************************************************************
 .*
@@ -62,8 +64,8 @@ Commands are listed in the order they appear on the file object context
 menu. Some commands apply to file, directory and drive objects. Others apply to
 only one or two types of objects. Items not appearing on the file object menus
 are inserted at the relative point they appear in the directory and/or drive menu.
-Small icons appear with each entry to indicate which types of objects file :artwork runin name='\bitmaps\file.bmp'.
-directory :artwork runin name='\bitmaps\fldr.bmp'. and/or drive :artwork runin name='\bitmaps\drive.bmp'. they are associated with.
+Small icons appear with each entry to indicate which types of objects file :artwork runin name='bitmaps\file.bmp'.
+directory :artwork runin name='bitmaps\fldr.bmp'. and/or drive :artwork runin name='bitmaps\drive.bmp'. they are associated with.
 (Note that not all commands are available for all objects on all drives;
 CD-ROM drives obviously wouldn't allow Delete and Move commands, for
 instance, since they're read-only drives. In this case the command(s) are grayed out)
@@ -78,7 +80,7 @@ objects. You are notified of conflicts as they occur. An easier method
 for renaming one object is to point at its text, hold down the :color fc=default bc=palegray.Alt:color fc=default bc=default. key,
 and click mouse button one; however, this command allows you to use
 wildcards when renaming if you desire.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\copier.bmp' align=center. :artwork name='..\..\bitmaps\mover.bmp' align=center.
 :p.
@@ -87,20 +89,20 @@ res=90000.Drag and drop:elink. is recommended over using the menu
 commands for moving and copying.:ehp2. When using the menu commands, the
 :link reftype=hd res=91500.Walk Directories:elink. dialog appears to allow
 you to select a target directory.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :hp6.Copy and rename:ehp6. and :hp6.Move and rename:ehp6. allow you to
 change the names of the destination files as you copy and move using
 the standard rename dialog. You can also copy or move with wildcarding,
 like you can from the command line (COPY thisfile.txt *.bak) by using
 wildcards in the filename portion of the destination.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :hp6.Copy and preserve:ehp6. and :hp6.Move and preserve:ehp6. are only
 available in the Collector and See all files windows. These commands
 copy or move the selected files but preserve the directory relationship
 of the files. The effect of this can be non-obvious, so use with care.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 Let's say you select three files&colon. G&colon.\FOO\BAR\DUDE,
 G&colon.\FOO\BAR\WOW\DUDE and G&colon.\FOO\BAR\RUFF\DUDE. If you select
@@ -115,14 +117,14 @@ F&colon., the results would be the same.
 :hp6.:link reftype=hd res=99995.Merge:elink.:ehp6. lets you merge
 several files together into a single file (you get to set the order of
 the files to be merged and the name of the file to which they're
-merged). :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+merged). :artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :hp6.WPS Copy:ehp6. and :hp6.WPS Move:ehp6. work like their standard
 counterparts, except that WPS techniques are used. There is more
 overhead using this method, so only use it when you need it -- for
 example, when moving a directory containing a program suite to
 maintain the link between program objects and the program executables
-in the directory. :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+in the directory. :artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\view.bmp' align=center.
 :p.
@@ -130,30 +132,30 @@ The :hp6.View:ehp6. conditional cascade submenu allows you to view the
 current object. Since this is a conditional cascade submenu, you can
 click on the button to get a list of choices or click elsewhere to get
 a default viewing action (noted below).
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Autoview:ehp6. views objects through the :link reftype=hd
 res=92200.configured viewer:elink.. This is the default for the
 Files->View conditional cascade submenu when a file is the current
 object. When you select Autoview, FM/2 guesses whether the file is text
 or binary data and views it accordingly.
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 :hp6.as text:ehp6. causes FM/2 to view the current file object as text,
 using the :link reftype=hd res=97000.configured text viewer:elink. or
 the internal if none is configured.
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 :hp6.as binary:ehp6. causes FM/2 to view the current file object as
 binary data, using the :link reftype=hd res=97000.configured binary
 viewer:elink. or the internal if none is configured. Binary data is
 usually viewed as a :link reftype=hd res=98800.hex dump:elink..
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :hp6.as archive:ehp6. causes FM/2 to open the file in the :link reftype=hd
-res=90200.Archive Container:elink. :artwork runin name='\bitmaps\file.bmp'.
+res=90200.Archive Container:elink. :artwork runin name='bitmaps\file.bmp'.
 (only works for archive file types where the underlying program (i.e. Infozip for .zip files)
 is defined in archiver.bb2 and the program is in the system path.)
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 :artwork name='..\..\bitmaps\info.bmp' align=center.
 :p.
@@ -174,27 +176,27 @@ ICONEDIT program, or find them pre-drawn in several collections of icons
 and pointers freely available on the internet. This is the default command for
 the Files->View conditional cascade submenu when the current object is a
 directory. (Note: Info is the first item on the drives menu)
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Quick Tree:ehp6. appears in Directory Containers. You can use this
 to quickly select a subdirectory into which to switch the Directory
 Container. Obviously, if there are no subdirectories to select from,
 FM/2 will ignore this command except to tell you.
-:artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :hp6.Update objects:ehp6. updates objects by refreshing the information
 FM/2 has on them from disk to make sure it's current (an alternative to
 rescan for special situations).
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Hide objects:ehp6. hides objects (removes them from view in the
 container) until you rescan, use the :link reftype=hd res=93400.Filter
 dialog:elink. or switch directories or use Unhide (see below).
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :hp6.Unhide objects:ehp6. unhides objects (restores them from view in the container)
 Unhide doesn't unhide items that are filtered by the current mask or attribute filters
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\playmm.bmp' align=center.
 :p.
@@ -210,7 +212,7 @@ supports the /# command line switch. To test your version of
 FM2PLAY.EXE, run FM2PLAY /? and see if /# is listed as a supported
 switch. If not, upgrade to a new version of the FM/2 Utilities.
 
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 :artwork name='..\..\bitmaps\edit.bmp' align=center.
 :p.
@@ -218,29 +220,29 @@ The :hp6.Edit:ehp6. conditional cascade submenu allows you to edit the
 current object. Since this is a conditional cascade submenu, you can
 click on the button to get a list of choices or click elsewhere to get a
 default editing action (noted below).
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Autoedit:ehp6. edits objects through the :link reftype=hd
 res=92200.configured editor:elink.. This is the default for the
 Files->Edit conditional cascade submenu when a file is the current
 object. When you select Autoedit, FM/2 guesses whether the file is text
 or binary data and edits it accordingly.
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 :hp6.as text:ehp6. causes FM/2 to edit the current file object as text,
 using the :link reftype=hd res=97000.configured text editor:elink. or
 the internal if none is configured.
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 :hp6.as binary:ehp6. causes FM/2 to edit the current file object as
 binary data, using the :link reftype=hd res=97000.configured binary
 editor:elink.. Binary data is usually edited as a :link reftype=hd
 res=98800.hex dump:elink.. No default binary editor is provided at
 this time, but that may change.
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 Edit :link reftype=hd res=99980.Drive flags:elink. is found on the drives context
-menu. :artwork runin name='\bitmaps\drive.bmp'.
+menu. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\attrlist.bmp' align=center.
 :p.
@@ -248,20 +250,20 @@ menu. :artwork runin name='\bitmaps\drive.bmp'.
 dialog that sets objects' attributes and (optionally) date/time. This is
 the default for the Files->Edit conditional cascade submenu when a
 directory is the current object.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\ea.bmp' align=center.
 :p.
 :hp6.:link reftype=hd res=95000.Extended Attributes:elink.:ehp6. allows
 you to view an object's extended attributes (EAs) and to edit and add
 text attributes.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Subject:ehp6. allows you to give an object a description. This
 makes use of the same EA (.SUBJECT) that the WPS uses for object
 descriptions -- you can see and edit it on the File page of an object's
 Settings notebook.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\print.bmp' align=center.
 :p.
@@ -273,7 +275,7 @@ told FM/2 to use, or you may wind up with FM/2's printing thread blocked
 for eternity awaiting access to a nonexistent or inaccessible device.
 Actually, if using the standard WPS, it's recommended that you simply
 drag files to the printer object and drop them instead of using this
-command. :artwork runin name='\bitmaps\file.bmp'.
+command. :artwork runin name='bitmaps\file.bmp'.
 :p.
 :artwork name='..\..\bitmaps\opend.bmp' align=center.
 :p.
@@ -281,17 +283,17 @@ The :hp6.Open:ehp6. conditional cascade submenu allows you to open the
 current object. Since this is a conditional cascade submenu, you can
 click on the button to get a list of choices or click elsewhere to get a
 default open action for files is to either run them (executable files) or open them
-based on their file association. :artwork runin name='\bitmaps\file.bmp'.
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+based on their file association. :artwork runin name='bitmaps\file.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 The :hp6.Settings notebook:ehp6. option opens the object's WPS properties notebooks.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 Open a directory or drive as a WPS Folder in either :hp6.icon, details or tree:ehp6. view
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 Open a new FM/2 window (container; the default for directories and drives).
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 Opening a file's Default view will honor any OS/2 associations that you have
 setup. Remember that :color fc=default bc=palegray.F6:color fc=default bc=default. or :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + double-click opens an object's
@@ -304,14 +306,14 @@ WPS Settings notebook.
 Next is a conditional cascade submenu called :hp6.Create Objects:ehp6.,
 with Shadows as the default command. Create shadows appears as a
 a top level menu item on the drives object menu.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.:link reftype=hd res=93600.Shadow:elink.:ehp6. builds WPS shadow
 objects on your desktop or :hp6.Shadows in folders:ehp6. for selected
-object(s). :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+object(s). :artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 You can also create :hp6.Real Objects:ehp6. for files
-:artwork runin name='\bitmaps\file.bmp'.
+:artwork runin name='bitmaps\file.bmp'.
 :p.
 The save lists to clipboard/file submenu allows you to save lists to the clipboard or a file
 :p.
@@ -323,43 +325,43 @@ selections of files to other programs; for instance, you might copy a
 list of files to the clipboard and feed it to a terminal program to send
 the files over a modem or network. You can save/append the full path names or
 just the filenames.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\savelist.bmp' align=center.
 :p.
 :hp6.:link reftype=hd res=96000.Save to list file:elink.:ehp6. lets you
 save selected objects as a list to a text file. Lists can include file
 sizes, subjects, etc.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\collect.bmp' align=center.
 :p.
 :hp6.Collect File(s):ehp6. calls up the :link reftype=hd
 res=90100.Collector:elink. and places the selected files and directories
 into it. You can also open the Collector and drag things into it.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Collect List in file(s):ehp6. collects the files listed inside the
 selected files (see :hp6.Save to list file:ehp6. above). The filename
 should be the first item on each line of the list. If spaces are
 contained in the filenames, enclose the filenames in "quote marks."
 Filenames must be full pathnames (d&colon.\path\filename). Directories as
-well as files can be Collected. :artwork runin name='\bitmaps\file.bmp'.
+well as files can be Collected. :artwork runin name='bitmaps\file.bmp'.
 :p.
 :artwork name='..\..\bitmaps\archive.bmp' align=center.
 :p.
 :hp6.:link reftype=hd res=90300.Archive:elink.:ehp6. allows you to build
 an archive containing the selected object(s).
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\extract.bmp' align=center.
 :p.
 :hp6.:link reftype=hd res=91000.Extract:elink.:ehp6. allows you to
-extract files from selected archives. :artwork runin name='\bitmaps\file.bmp'.
+extract files from selected archives. :artwork runin name='bitmaps\file.bmp'.
 :p.
 :hp6.UUDecode:ehp6. decodes files that were encoded with UUEncode, a
 common protocol on the Internet. Files created by UUDecoding are
-appended if they already exist. :artwork runin name='\bitmaps\file.bmp'.
+appended if they already exist. :artwork runin name='bitmaps\file.bmp'.
 :p.
 :artwork name='..\..\bitmaps\delete.bmp' align=center.
 :p.
@@ -372,7 +374,7 @@ have OS/2's Undelete enabled for the drive on which the objects reside, they
 may be recoverable. You also have the option of having the files moved to the
 Xworkplaces/Eworkplace trahshcan from which they may be restorable.:link reftype=hd
 res=99950.Delete = move to trashcan:elink.
-:artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+:artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\permdel.bmp' align=center.
 :p.
@@ -385,7 +387,7 @@ be recovered :hp1.if:ehp1. you use the Delete command above rather than
 this Permanent Delete command :hp1.and:ehp1. have Undelete enabled (type
 :link reftype=launch object='CMD.EXE' data='/C HELP UNDELETE'.HELP
 UNDELETE:elink. at a command line for more information on enabling
-Undelete). :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmaps\fldr.bmp'.
+Undelete). :artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\rescan.bmp' align=center.
 :p.
@@ -393,22 +395,22 @@ Undelete). :artwork runin name='\bitmaps\file.bmp'. :artwork runin name='\bitmap
 very hard to keep all its windows up to date, but things outside FM/2
 can cause changes that FM/2 cannot know about automatically. This
 command will ensure that your display is current.
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Refresh removable media:ehp6. calls LVM.EXE to find new drives and then
 rescans all the drives in the tree container. This item will not appear if
 LVM.EXE isn't found in your PATH.
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Expand:ehp6. expands the tree from the point where the context menu
 was requested to the bottom of the branch. This isn't the same as clicking
 the [+] symbol as it expands :hp1.all:ehp1. branches.
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Collapse:ehp6. collapses the tree from the point where the context
 menu was requested to the bottom of the branch. This isn't the same as
 clicking the [-] symbol as it collapses :hp1.all:ehp1. branches.
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :artwork name='..\..\bitmaps\mkdir.bmp' align=center.
 :p.
@@ -416,43 +418,43 @@ clicking the [-] symbol as it collapses :hp1.all:ehp1. branches.
 name of the directory where you requested the context menu is filled in
 as a starting point for convenience. Directories may be created many
 levels deep in one pass.
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 The Miscellaneous cascade menu appears on directory and drive context menus
 The following appear on this cascade.
 :p.
 :hp6.:link reftype=hd res=95200.Sizes:elink.:ehp6. brings up a dialog
 showing how many bytes are in the selected directory and its
-subdirectories. :artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+subdirectories. :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Show all files:ehp6. is a command available on drive and directory objects
 and in the container menu of Directory Containers. It invokes the
 :link reftype=hd res=98500.See all files:elink. window and shows all
 the files in the directory and all its subdirectories.
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
-:artwork name='..\..\bitmaps\find.bmp' align=center.
+:artwork name='bitmaps\find.bmp' align=center.
 :p.
 :hp6.Seek and scan files:ehp6. is a command available on drive and directory objects
 and in the container menu of Directory Containers. It invokes the
 :link reftype=hd res=91600.Seek and scan files:elink. opens a dialog for specifying
 the search parameters the drive or directy this is selected from is inserted as the
 root for the search.
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.:link reftype=hd res=92500.Undelete Files:elink.:ehp6.
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Check Disk:ehp6. runs PMCHKDSK.EXE on the selected drive. This
 tests the drive and can correct some deficiencies. This is available
 only in context menus requested on drives (root directories). Note
 that OS/2 cannot correct defects on disks that are in use by the
-system or programs (including FM/2). :artwork runin name='\bitmaps\drive.bmp'.
+system or programs (including FM/2). :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Format Disk:ehp6. runs PMFORMAT.EXE on the selected drive.
 :hp8.Formatting a disk will destroy any information already on the
 disk.:ehp8. This is available only in context menus requested on drives
-(root directories). :artwork runin name='\bitmaps\drive.bmp'.
+(root directories). :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Partition Disks:ehp6. has four choices for partitioning tools.
 They are minilvm, DFSee, LVMGUI and FDISKPM.  We check for these tools
@@ -466,7 +468,7 @@ a much wider range of features but must be obtained from Hobbes and installed
 in the system path to work. LVMGUI is the IBM provided GUI tool for
 Disk management. It is a JAVA based program and earily versions only work with JAVA 1.1.8.
 FDISKPM is the partition management tool for preLVM systems and should not be used
-on LVM based sytems. :artwork runin name='\bitmaps\drive.bmp'.
+on LVM based sytems. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Optimize:ehp6. runs a .CMD file with the name <Filesystem>OPT.CMD,
 giving the drive to optimize as a command line argument. Therefore, for
@@ -481,23 +483,23 @@ system, even to call other programs than those supplied. Always be sure
 to check the disk before trying to optimize it, and (in the case of the
 FAT optimizer) it's a good idea to back up first. You shouldn't run the
 FAT optimizer on compressed drives -- use the utilities that came with
-your compression program instead. :artwork runin name='\bitmaps\drive.bmp'.
+your compression program instead. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Detach:ehp6. detaches a network drive.
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Eject:ehp6. ejects removable media from drives (for instance,
 opens the door of a CD ROM drive).
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Lock:ehp6. locks a removable drive.
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Unlock:ehp6. unlocks a removable drive.
-:artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.:link reftype=hd res=90900.Drive Info:elink.:ehp6. is the first menu item on the drives
-context menu. :artwork runin name='\bitmaps\drive.bmp'.
+context menu. :artwork runin name='bitmaps\drive.bmp'.
 
 :h2 res=93710 name=PANEL_CONTEXTCNR.Context menus affecting containers
 :i1 id=aboutContextCnr.Context menus affecting containers
@@ -785,7 +787,7 @@ can be undeleted in subdirectories as well.
 :p.
 You can always go directly to UNDELETE.COM if you have the need for more
 control. This is provided only for convenience.
-:artwork runin name='\bitmaps\fldr.bmp'. :artwork runin name='\bitmaps\drive.bmp'.
+:artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 .br
 
 .im rename.ipf
