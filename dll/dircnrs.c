@@ -59,7 +59,10 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  12 Mar 09 SHL Use common SearchContainer
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
+  29 Mar 09 SHL Keep more keys away from PM if extended search in progress
+  29 Mar 09 SHL Increase extended search timeout to 3 seconds
 
 ***********************************************************************/
 
@@ -3541,7 +3544,7 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   // Just to be safe, caller has probably already checked
   if (SHORT1FROMMP(mp1) & KC_KEYUP)
-    return FALSE;
+    return FALSE;			// Let PM process key
 
   // Just to be safe, caller has probably already cached
   shiftstate = (SHORT1FROMMP(mp1) & (KC_SHIFT | KC_ALT | KC_CTRL));
@@ -3549,7 +3552,7 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   // If not plain character or suppressed
   // Shift toggles configured setting
   if (shiftstate & (KC_ALT | KC_CTRL) || (shiftstate & KC_SHIFT ? !fNoSearch : fNoSearch))
-    return FALSE;
+    return FALSE;			// Let PM process key
 
   if (SHORT1FROMMP(mp1) & KC_VIRTUALKEY) {
     key = SHORT2FROMMP(mp2);
@@ -3558,7 +3561,7 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     else if (key == VK_ESC)
       key = '\x1b';
     else
-      return FALSE;
+      return FALSE;				// Let PM process key
   }
   else if (SHORT1FROMMP(mp1) & KC_CHAR)
     key = SHORT1FROMMP(mp2);
@@ -3566,8 +3569,8 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return FALSE;
 
   thistime = WinQueryMsgTime(WinQueryAnchorBlock(hwnd));
-  if (thistime > dcd->lasttime + 1500)
-    *dcd->szCommonName = 0;		// 1.5 seconds
+  if (thistime > dcd->lasttime + 3000)
+    *dcd->szCommonName = 0;		// 3 seconds since last character
   dcd->lasttime = thistime;
 
   switch (key) {
@@ -3576,7 +3579,7 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
   default:
     if (key == ' ' && !*dcd->szCommonName)
-      break;			// Let PM see space to allow select toggle
+      break;			// Let PM process space to allow select toggle
     len = strlen(dcd->szCommonName);
     if (key == '\x8') {
       // Backspace
@@ -3618,7 +3621,7 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     else {
       if (key == ' ')
-	return FALSE;			// Let PM see space to toggle select
+	return FALSE;			// Let PM process space to toggle select
       // No match
       // Erase non-matching last character, len is not yet incremented
       dcd->szCommonName[len] = 0;
@@ -3627,9 +3630,11 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	// key = SHORT1FROMMP(mp2);
 	if (SearchContainer(hwnd, msg, mp1, MPFROM2SHORT('\\', 0))) {
 	  if (SearchContainer(hwnd, msg, mp1, mp2))
-	    return (MRESULT)TRUE;
+	    return (MRESULT)TRUE;	// Grab key from PM
 	}
       }
+      if (*dcd->szCommonName)
+	return (MRESULT)TRUE;		// Have partial match, grab key from PM
 #if 0 // 15 Mar 09 SHL fixme to not hang
       if (!fErrorBeepOff)
 	DosBeep(250,100);
@@ -3638,7 +3643,7 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
   } // switch
 
-  return FALSE;				// Let PM see key
+  return FALSE;				// Let PM process key
 }
 
 HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
