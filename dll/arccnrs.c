@@ -428,11 +428,11 @@ static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg)
       for (x = 0; dcd->mask.pszMasks[x]; x++) {
 	if (*dcd->mask.pszMasks[x]) {
 	  if (*dcd->mask.pszMasks[x] != '/') {
-	    if (wildcard(r->pszFileName, dcd->mask.pszMasks[x], FALSE))
+	    if (wildcard(r->pszFileName, dcd->mask.pszMasks[x], TRUE))
 	      ret = TRUE;
 	  }
 	  else {
-	    if (wildcard(r->pszFileName, dcd->mask.pszMasks[x] + 1, FALSE)) {
+	    if (wildcard(r->pszFileName, dcd->mask.pszMasks[x] + 1, TRUE)) {
 	      ret = FALSE;
 	      break;
 	    }
@@ -441,7 +441,7 @@ static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg)
       }
     }
     else {
-      if (wildcard(r->pszFileName, dcd->mask.szMask, FALSE))
+      if (wildcard(r->pszFileName, dcd->mask.szMask, TRUE))
 	ret = TRUE;
     }
   }
@@ -1557,6 +1557,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  memset(&mask, 0, sizeof(MASK));
 	  mask.fNoAttribs = TRUE;
 	  mask.fNoDirs = TRUE;
+	  mask.fText = TRUE;
 	  strcpy(mask.prompt,
 		 GetPString((SHORT1FROMMP(mp1) == IDM_SELECTMASK) ?
 			    IDS_SELECTFILTERTEXT : IDS_DESELECTFILTERTEXT));
@@ -1569,7 +1570,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else
 	      DeselectAll(dcd->hwndCnr, TRUE, TRUE, mask.szMask, NULL, FALSE);
 	  }
-	}
+        }
+        break;
 
       case IDM_INVERT:
 	InvertAll(dcd->hwndCnr);

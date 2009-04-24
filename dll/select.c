@@ -228,12 +228,12 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    else
 	      pszToMatch = file;
 	    if (*Mask.pszMasks[x] != '/') {
-	      if (wildcard(pszToMatch, Mask.pszMasks[x], FALSE)) {
+              if (wildcard(pszToMatch, Mask.pszMasks[x], TRUE)) {
 		markit = TRUE;
 	      }
 	    }
 	    else {
-	      if (wildcard(pszToMatch, Mask.pszMasks[x] + 1, FALSE)) {
+	      if (wildcard(pszToMatch, Mask.pszMasks[x] + 1, TRUE)) {
 		markit = FALSE;
 		break;
 	      }
@@ -332,11 +332,11 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    else
 	      pszToMatch = file;
 	    if (*Mask.pszMasks[x] != '/') {
-	      if (wildcard(pszToMatch, Mask.pszMasks[x], FALSE))
+	      if (wildcard(pszToMatch, Mask.pszMasks[x], TRUE))
 		unmarkit = TRUE;
 	    }
 	    else {
-	      if (wildcard(pszToMatch, Mask.pszMasks[x] + 1, FALSE)) {
+	      if (wildcard(pszToMatch, Mask.pszMasks[x] + 1, TRUE)) {
 		unmarkit = FALSE;
 		break;
 	      }
