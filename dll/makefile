@@ -214,7 +214,7 @@ all: &
 syms: $(SYMS) .symbolic
 
 $(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
-  @echo $(LINK) @$(BASE).lrf @$(BASE).def
+  @echo Linking $(BASE).dll
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
 
@@ -255,7 +255,7 @@ $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h copyright.h $(ICONS)
 !ifndef MAKERES
 
 $(BASERES).dll $(BASERES).lib $(BASERES).map: $(BASERES).res $(BASERES).obj $(BASERES).def $(BASERES).lrf
-  @echo $(LINK) @$(BASERES).lrf @$(BASERES).def
+  @echo Linking $(BASERES).dll
   $(LINK) @$(BASERES).lrf @$(BASERES).def
   @echo.
   @echo Compiling resource: $@
