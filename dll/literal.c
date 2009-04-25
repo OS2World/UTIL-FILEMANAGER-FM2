@@ -17,6 +17,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 Nov 07 SHL Report fixup buffer overflow
   15 Mar 08 KOMH Fix wildcard for multiple dots
+  24 Apr 09 SHL Rework wildcard for clarity
 
 ***********************************************************************/
 
@@ -203,83 +204,86 @@ UINT literal(PSZ pszBuf)
 /** Check wildcard match
  * @parm pszBuf Buffer to check
  * @parm pszWildCard wildcard to match
- * @parm fNotFileSpec TRUE if generic match else filespec match
+ * @parm fIgnorePathSep TRUE if match ignores path separators
  * @return TRUE if matched else FALSE
+ * @fixme need to rework to scan from right to left if not ignoring path separators
  */
 
-BOOL wildcard(const PSZ pszBuf, const PSZ pszWildCard,
-              const BOOL fNotFileSpec)
+BOOL wildcard(const PSZ pszBufIn, const PSZ pszWildCardIn,
+	      const BOOL fIgnorePathSep)
 {
-    PSZ fstr = pszBuf;
-    PSZ fcard = pszWildCard;
+    PSZ pszBuf = pszBufIn;
+    PSZ pszWild = pszWildCardIn;
 
-    while (*fstr && *fcard) {
-      switch (*fcard) {
+    while (*pszBuf && *pszWild) {
+      switch (*pszWild) {
         case '*' :
         {
-          PSZ fstr1;
+	  PSZ pszLook;
 
           // find next non-wild character in wildcard
-          while (*fcard && ( *fcard == '*' || *fcard == '?'))
-            fcard++;
+	  while (*pszWild && ( *pszWild == '*' || *pszWild == '?'))
+	    pszWild++;
 
-          // if last char of wildcard is *, it matches
-          if (!*fcard)
+	  // if last char of wildcard is *, got match
+	  if (!*pszWild)
             return TRUE;
 
-          fstr1 = fstr;
-          while (*fstr1) {
-            // skip until partition, match, or eos
-            while (*fstr1 && toupper( *fstr1 ) != toupper( *fcard ) &&
-                   (fNotFileSpec || ( *fstr1 != '/' && *fstr1 != '\\')))
-              fstr1++;
+	  pszLook = pszBuf;
+	  while (*pszLook) {
+	    // scan until match, eos or path separator (maybe)
+	    while (*pszLook && toupper(*pszLook) != toupper(*pszWild) &&
+		   (fIgnorePathSep || ( *pszLook != '/' && *pszLook != '\\')))
+	      pszLook++;
 
-            if (!*fstr1 || ( !fNotFileSpec && ( *fstr1 == '/' || *fstr1 == '\\')))
+	    // If eos or path separator (maybe), stop scan
+	    if (!*pszLook || (!fIgnorePathSep && (*pszLook == '/' || *pszLook == '\\')))
               break;
 
-            if (wildcard( fstr1, fcard, fNotFileSpec ) == TRUE)
+	    // Not ignoring path separators, match next path component
+	    if (wildcard(pszLook, pszWild, fIgnorePathSep) == TRUE)
               return TRUE;
 
-            fstr1++;
-          }
+	    pszLook++;
+	  } // while
 
-          fstr = fstr1;
+	  pszBuf = pszLook;
           break;
         }
 
         case '?' :          // character substitution
-          fcard++;
+	  pszWild++;
 
-          if (fNotFileSpec || ( *fstr != '.' && *fstr != '/' && *fstr != '\\'))
-            fstr++;     // skip (match) next character
+	  if (fIgnorePathSep || (*pszBuf != '.' && *pszBuf != '/' && *pszBuf != '\\'))
+	    pszBuf++;     // skip (match) next character
           break;
 
         default :
-          if (fNotFileSpec || (*fstr  != '/' && *fstr  != '\\') ||
-              (*fcard != '/' && *fcard != '\\')) {
-            if (toupper( *fstr ) != toupper( *fcard))
+	  if (fIgnorePathSep || (*pszBuf  != '/' && *pszBuf  != '\\') ||
+	      (*pszWild != '/' && *pszWild != '\\')) {
+	    if (toupper( *pszBuf ) != toupper( *pszWild))
               return FALSE;
           }
 
-          fcard++;
-          fstr++;
+	  pszWild++;
+	  pszBuf++;
           break;
-      }
-    }
+      } // switch
+    } // while
 
-    if (!*fstr) {
-        // remove trailing * and ?
-      while (*fcard && ( *fcard == '?' || *fcard == '*'))
-        fcard++;
+    if (!*pszBuf) {
+      // Skip trailing * and ?
+      while (*pszWild && (*pszWild == '?' || *pszWild == '*'))
+	pszWild++;
 
-      if (!fNotFileSpec) {
+      if (!fIgnorePathSep) {
         // remove trailing .
-        while (*fcard && *fcard == '.')
-          fcard++;
+	while (*pszWild && *pszWild == '.')
+	  pszWild++;
       }
     }
 
-    return (*fstr == *fcard);
+    return (*pszBuf == *pszWild);
 }
 
 // fixup - quote literal character array

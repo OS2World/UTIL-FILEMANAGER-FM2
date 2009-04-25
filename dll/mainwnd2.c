@@ -458,6 +458,10 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
   case IDM_HELPKEYS:
   case IDM_HELPMOUSE:
   case IDM_HELP:
+  case IDM_FONTPALETTE:
+  case IDM_HICOLORPALETTE:
+  case IDM_COLORPALETTE:
+  case IDM_SYSTEMCLOCK:
     return MainWMCommand(hwnd, msg, mp1, mp2);
 
   case IDM_REMAP:
