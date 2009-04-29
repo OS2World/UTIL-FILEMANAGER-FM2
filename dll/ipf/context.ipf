@@ -610,7 +610,7 @@ used to sort. FM/2 maintains separate sort criteria for Drive Tree,
 Collector, Directory Container and Archive Container windows. See
 :link reftype=hd res=97200.Directory Container sort page:elink. and
 :link reftype=hd res=97400.Collector Container sort page:elink.. Note
-that Ctrl + F7 will call up the Sort menu for a given container. The
+that &CtrlKey. + F7 will call up the Sort menu for a given container. The
 internal :link reftype=hd res=94600.Settings notebook:elink. can be
 used to set the default for subsequently opened Directory Containers --
 the context menu item sets the sort for _this_ container only.

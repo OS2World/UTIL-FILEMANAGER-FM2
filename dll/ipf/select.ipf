@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help - Selection features
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002, 2009 Steven H.Levine
+.*
+.* 29 Apr 09 SHL Update formatting
+.*
+.***********************************************************************
+.*
 :h2 res=99100 name=PANEL_SELECTION.Selection
 :i1 id=aboutSelection.Selection
 :artwork name='..\..\bitmaps\select.bmp' align=center.
@@ -14,14 +27,17 @@ only the Select command will be discussed to save space and avoid
 repetition.
 :p.
 :hp1.Select All:ehp1. Selects all objects in a container.
+:p.
 :hp1.Deselect All:ehp1. has an accelerator :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.\:color fc=default bc=default..
 :p.
 :hp1.Select All Files:ehp1. Selects all the file objects in a
 container. The accelerator key :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray./:color fc=default bc=default. is assigned to this command.
 :p.
 :hp1.Select All Dirs:ehp1. Selects all the directory objects in a
-container. The accelerator key Shift + :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.?:color fc=default bc=default. is assigned to this
-command :hp1.Deselect All Dirs:ehp1. has an accelerator :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.|:color fc=default bc=default.
+container. The accelerator key &ShiftKey. + :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.?:color fc=default bc=default. is assigned to this
+command
+:p.
+:hp1.Deselect All Dirs:ehp1. has an accelerator :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.|:color fc=default bc=default.
 :p.
 :hp1.Select Mask:ehp1. Allows you to select files that match a filemask.
 The same dialog is used for this command that's used for the :link
@@ -35,8 +51,9 @@ default filemask built by FM/2 (*.BAK).
 :hp1.Select clipboard:ehp1. If the OS/2 clipboard contains a list of files
 (such as can be created with the :hp1.Save to clipboard:ehp1. command),
 you can select any files present in both the container and the list with
-this command. The accelerator for this command is :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.]:color fc=default bc=default.. The
-accelerator for the Deselect clipboard command is :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.}:color fc=default bc=default..
+this command. The accelerator for this command is :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.]:color fc=default bc=default..
+:p.
+The accelerator for the Deselect clipboard command is :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.}:color fc=default bc=default..
 :p.
 :hp1.Select List:ehp1. If you've saved a list to a file (such as can be
 created with the :link reftype=hd res=96000.Save to list file:elink.

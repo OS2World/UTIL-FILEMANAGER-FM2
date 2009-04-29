@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help - Configuration dialogs usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002, 2009 Steven H.Levine
+.*
+.* 29 Apr 09 SHL Update formatting
+.*
+.***********************************************************************
+.*
 :h1 res=92000 name=PANEL_CONFIG.Config Menu
 :i1 id=aboutConfig.Config Menu
 
@@ -152,9 +165,6 @@ the archiver you wish to edit and select the
 :hp2.Edit:ehp2. button at the bottom.
 :p.
 When the
-.* 29 Apr 09 SHL  fixme to know why this displays with fc red - probably a view.exe defect
-.* :hp2.Cancel:ehp2. button
-:color fc=default.
 &CancelButton. button
 is selected a dialog asking you if you wish to rewrite
 ARCHIVER.BB2 will appear if changes have been made.

@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help - Container filtering
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002, 2009 Steven H.Levine
+.*
+.* 29 Apr 09 SHL Update formatting
+.*
+.***********************************************************************
+.*
 :h2 res=93400 name=PANEL_FILTER.Filter container
 :i1 id=aboutFilter.Filter container
 :artwork name='..\..\bitmaps\filter.bmp' align=center.
@@ -80,7 +93,7 @@ be listed before inclusions to attain the desired effect.
 not appear in your containers unless you have the ReadOnly attribute on
 (checked). If you copy these files to your hard drive the ReadOnly
 attribute goes with them; use the menu command
-:hp1.Files->Edit->Attribs:ehp1. (Ctrl + a accelerator) to reset it (you
+:hp1.Files->Edit->Attribs:ehp1. (&CtrlKey. + a accelerator) to reset it (you
 can do this to multiple files at once).
 :p.
 This dialog also appears when you are selecting or deselecting file system

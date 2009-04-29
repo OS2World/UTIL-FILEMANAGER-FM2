@@ -408,7 +408,7 @@ There are several ways to open a Directory Container.
 :p.
 The most common is to double-click a directory in the Drive Tree. If no
 Directory Container windows are open, one is created. If one or more
-Directory Container windows are already open, hold down the Shift key
+Directory Container windows are already open, hold down the &ShiftKey. key
 while double-clicking (see picture below) -- otherwise the default
 action is to switch the most recently used Directory Container to the
 new directory rather than open a new one.
@@ -461,7 +461,7 @@ Now, if that's not enough ways to open a Directory Container, I give up --
 go on back to Windoze and the Billy-mandated one way. &colon.-)
 :p.
 You can also open directories from their objects in a Directory Container
-via context menu, accelerator key, Files menu or using the Shift modifier while
+via context menu, accelerator key, Files menu or using the &ShiftKey. key modifier while
 double-clicking.
 
 :h2 res=91800 name=PANEL_TOOLBAR.Toolbar
@@ -925,7 +925,7 @@ to the right of the Folder button) and drop the dragged folder on this
 list.
 :p.
 Selecting a directory name from the list results in FM/2 opening a new
-Directory Container for that path (hold down the Shift key while
+Directory Container for that path (hold down the &ShiftKey. key while
 selecting the path to cause the current Directory Container to switch
 instead). You can reverse this action with the :hp1.Quicklist
 switches:ehp1. toggle in the :link reftype=hd res=98400.Settings
