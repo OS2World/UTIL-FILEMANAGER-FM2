@@ -30,7 +30,7 @@ res=90600.Editing Commandline:elink., except for :hp1.Each:ehp1., which
 means that the command will be run once for each selected file, and
 :hp1.Prompt:ehp1., which means that the command will display a dialog
 that allows the user to edit the command line before running), then
-click :hp1.Add.:ehp1. Clicking Okay will also add a new command provided that the 
+click :hp1.Add.:ehp1. Clicking &OkayButton. will also add a new command provided that the 
 command's title has been changed.
 :p.
 To delete a command, select it in the listbox, then click
@@ -68,7 +68,7 @@ your mind.
 :p.
 In reality, you don't need to move everything to the right listbox. You
 can move only what you want moved to the top of the list, then click
-Okay. Anything remaining in the left listbox is added to the end of
+&OkayButton.. Anything remaining in the left listbox is added to the end of
 what's in the right listbox.
 :p.
 The :hp1.<<Remove:ehp1. button can be used to move selected items from

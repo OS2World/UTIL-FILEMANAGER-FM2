@@ -10,16 +10,28 @@
 .* 24 Sep 06 GKY ADD Change to F1 help
 .* 06 Jul 08 GKY ADD FM2Shutdown state info
 .* 01 Sep 08 GKY Change User-defined bmp (renamed) checkbox info to better describe what it does
+.* 29 Apr 09 SHL Start usinging nameits to ensure standard formatting
 .*
 .***********************************************************************
 .*
 :userdoc.
 :title.File Manager/2 Help File
 :docprof toc=123456.
-:body.
+.* :body.
 :ctrldef.
-:ctrl ctrlid=new1 controls='ESC CONTENTS INDEX SEARCH FORWARD BACK' coverpage.
+.* :ctrl ctrlid=new1 controls='ESC CONTENTS INDEX SEARCH FORWARD BACK' coverpage.
+:ctrl ctrlid=new1 controls='Esc Contents Index Search Forward Back' coverpage.
 :ectrldef.
+
+.* Define nameit symbols here
+.nameit symbol=ShiftKey text=':color fc=default bc=palegray.Shift:color bc=default.'
+.nameit symbol=CtrlKey text=':color fc=default bc=palegray.Ctrl:color bc=default.'
+
+.* Symbols used in in-line text - italics
+.nameit symbol=OkayButton text=':hp1.Okay:ehp1.'
+.nameit symbol=CancelButton text=':hp1.Cancel:ehp1.'
+
+.* Symbols used in lists - underline, italics
 
 :h1 res=93200 name=PANEL_HOWTOUSEHELP.How to use FM/2's help (Read me first!)
 :i1 id=aboutHowToUseHelp.How to use FM/2's help (Read me first!)
@@ -152,7 +164,7 @@ icons or smaller "mini-icons" to save space.
 Details view can show a great deal of information about file system
 objects, and you can customize what is shown with the :hp2.Details
 Setup:ehp2. submenu (:link reftype=hd res=93800.Views
-menu:elink. or a Directory Container:link reftype=hd
+menu:elink. or a Directory Container :link reftype=hd
 res=93700.context menu:elink.).
 :p.
 You can also place some limits on the amount of detail that FM/2 provides
@@ -541,7 +553,7 @@ change your mind.
 :p.
 In reality, you don't need to move everything to the right listbox. You
 can move only what you want moved to the top of the list, then click
-Okay. Anything remaining in the left listbox is added to the end of
+&OkayButton.. Anything remaining in the left listbox is added to the end of
 what's in the right listbox.
 :p.
 The :hp1.<<Remove:ehp1. button can be used to move selected items from
@@ -551,8 +563,8 @@ the right listbox to the bottom of the left listbox.
 :i1 id=aboutEditTool.Edit Tool
 
 This dialog allows you to change the help and text strings and flags
-associated with a button. Edit as desired, then click Okay. Click
-Cancel if you change your mind.
+associated with a button. Edit as desired, then click &OkayButton.. Click
+&CancelButton. if you change your mind.
 :p.
 The :hp1.Help:ehp1. field should contain text to remind you what the
 button's command does. For example, a button that deletes files and
@@ -586,8 +598,8 @@ this button. See the :link reftype=hd res=96401.Tool IDs:elink. topic.
 This dialog is accessed from the context menu of a tool button, or if you
 turn on the toolbar when there are no tools defined.
 :p.
-To add a tool, fill in the fields as appropriate and click Okay. Click
-Cancel if you change your mind.
+To add a tool, fill in the fields as appropriate and click &OkayButton.. Click
+&CancelButton. if you change your mind.
 :p.
 The :hp1.Help:ehp1. field should contain text to remind you what the
 button's command does. For example, a button that deletes files and

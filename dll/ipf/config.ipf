@@ -27,7 +27,7 @@ Five menu items to toggle various FM/2 functions on and off are next.
 The first two :link reftype=hd res=91800.Toolbar:elink. and :hp6.Autoview:ehp6.
 have submenus.
 :p.
-The:hp6.Toolbar:ehp6. submenu default is to toggle the toolbar on and off
+The :hp6.Toolbar:ehp6. submenu default is to toggle the toolbar on and off
 The other two items allow you to make the toolbar text only or you can
 add titles under the toolbar icons. Additional functions to edit the toolbar
 can be found on the context menu obtained by clicking :color fc=default bc=cyan.B2:color fc=default bc=default. over a tool icon
@@ -116,7 +116,7 @@ target directory to be each time based on open Directory Containers or
 the currently selected directory in the Drive Tree.
 :p.
 If you have a Target directory already set and wish to clear it,
-select this command, click Cancel at the :link reftype=hd res=91500.Walk
+select this command, click &CancelButton. at the :link reftype=hd res=91500.Walk
 Directories:elink. dialog that appears, and answer Yes to the question
 subsequently asked.
 :p.
@@ -149,11 +149,13 @@ This file is located in the FM/2 installation directory and may be edited manual
 :p.
 Alternatively FM/2 also provides a GUI which can be used to edit a specific archiver. Simply select
 the archiver you wish to edit and select the
-:hp2.Edit button:ehp2.
-at the bottom.
+:hp2.Edit:ehp2. button at the bottom.
 :p.
 When the
-:hp2.Cancel button:ehp2.
+.* 29 Apr 09 SHL  fixme to know why this displays with fc red - probably a view.exe defect
+.* :hp2.Cancel:ehp2. button
+:color fc=default.
+&CancelButton. button
 is selected a dialog asking you if you wish to rewrite
 ARCHIVER.BB2 will appear if changes have been made.
 
@@ -192,7 +194,7 @@ archiver's documentation and/or run it
 to get the help on its command syntax, the format used when listing the
 contents of archives and/or its signature info.
 :p.
-When you've completed editing the archiver's details, click Okay. FM/2
+When you've completed editing the archiver's details, click &OkayButton.. FM/2
 will ask you if you want to rewrite ARCHIVER.BB2. If you don't
 rewrite ARCHIVER.BB2, changes are good only
 for the current session (handy for testing).

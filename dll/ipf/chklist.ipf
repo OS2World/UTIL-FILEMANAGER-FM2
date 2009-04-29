@@ -4,7 +4,7 @@ On occasion you may be asked to check a list of objects. You'll be
 presented with a list of highlighted objects in a listbox. To remove an
 object from the list, unhighlight it (:hp6.hint:ehp6.&colon. hold down
 the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while clicking to unhighlight a single item). When you've
-got the list the way you want it, click Okay. Click Cancel to abort the
+got the list the way you want it, click &OkayButton.. Click &CancelButton. to abort the
 action.
 :p.
 Since this dialog may appear for more than one reason, additional

@@ -44,7 +44,7 @@ of the dialog, and if it's a human-editable type the appropriate control
 will appear to display it; otherwise, a :link reftype=hd res=98800.hex
 dump:elink. is shown in a listbox. If you edit the EA, a Change button
 can be clicked to save your changes. You can delete EAs, but do so with
-extreme caution and at your own risk. Otherwise, click Okay when done.
+extreme caution and at your own risk. Otherwise, click &OkayButton. when done.
 :p.
 If you're viewing EAs for more than one object, you can change the
 current object by scrolling the listbox containing the names of the
@@ -63,8 +63,8 @@ list of commands that you can run on selected files, if desired.
 :h3 res=95100 name=PANEL_ADDEA.Adding an Extended Attribute
 :i1 id=aboutADDEA.Adding an Extended Attribute
 To add an extended attribute (EA), enter its name in the top entry
-field, then select a type for it from the radio buttons. Click Okay to
-create it, Cancel to abort.
+field, then select a type for it from the radio buttons. Click &OkayButton. to
+create it, &CancelButton. to abort.
 :p.
 OS/2 defines several Standard Extended Attributes (EAs):
 :p.

@@ -76,7 +76,7 @@ Note that each line of the MLE is a separate search string. If any of
 the strings are found, FM/2 will consider a match to be made. You can
 enter up to 4096 characters in this MLE, and as many lines as you like
 within that limitation. Note that a "line break," for our purposes
-here, is created when you press :color fc=default bc=palegray. Enter:color fc=default bc=default. in the MLE; word wrap is not
+here, is created when you press :color fc=default bc=palegray.Enter:color fc=default bc=default. in the MLE; word wrap is not
 a consideration.
 :p.
 Simple regular expressions are supported. These can be briefly
@@ -295,7 +295,7 @@ See also&colon. :link reftype=hd res=91600.Seek and Scan:elink.
 
 :h3 res=98600 name=PANEL_DRVSWND.Pick drives
 
-Highlight the drive(s) to list, then click Okay. Click Cancel to abort.
+Highlight the drive(s) to list, then click &OkayButton.. Click &CancelButton. to abort.
 :p.
 FM/2 will quickly load all the files on the selected drives into an ugly
 but fast custom control list for you to further examine and manipulate.

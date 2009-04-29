@@ -19,7 +19,7 @@ you picked the command).
 :p.
 If you select one of these subdirectories, the Directory Container
 window will switch to look into that directory. You can click
-Cancel if you change your mind.
+&CancelButton. if you change your mind.
 :p.
 This might be useful when you want to move to the bottom of a long
 subdirectory chain in one step.

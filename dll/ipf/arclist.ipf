@@ -202,7 +202,7 @@ View the archive, or Cancel the whole thing.
 :p.
 Generally speaking, first Test the archive. If the archive is okay or
 if the test won't run at all, the problem is most likely in your archive
-information record in ARCHIVER.BB2. You can View the archive to assure
+information recorded in ARCHIVER.BB2. You can View the archive to assure
 yourself that it is, in fact, an archive, and perhaps hunt down the
 signature so you can add it to ARCHIVER.BB2 if it's not a listed archive
 type.

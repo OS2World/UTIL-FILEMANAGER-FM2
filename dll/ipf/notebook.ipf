@@ -648,7 +648,7 @@ using the drive's drive flags. This feature was added since some USB
 removables fail to work properly with write verify on.
 :p.
 The :hp6.Don't move my mouse!:ehp6. toggle keeps FM/2 from moving your
-mouse (to place it in the center of a popup menu or over the Okay button
+mouse (to place it in the center of a popup menu or over the &OkayButton. button
 in some dialogs). Some people like the help, others don't. Take your
 pick.
 :p.

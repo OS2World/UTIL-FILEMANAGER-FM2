@@ -82,7 +82,7 @@ See also&colon.
 To add an INI record, fill in the three entry fields on the screen. The
 appname and keyname pair, together, should form a unique ID, or you'll
 end up replacing existing data rather than adding new data. Then click
-Okay. Click Cancel to abort.
+&OkayButton.. Click &CancelButton. to abort.
 :p.
 You can check the :hp1.:link reftype=hd res=99500.Use
 \-encoding:elink.:ehp1. checkbox if you want to enter or edit binary
@@ -136,8 +136,8 @@ applications or application+keynames.
 :p.
 A dialog is presented where you enter the new application name (and
 keyname if copying or renaming a specific application+keyname pair).
-Once you've filled in the new name(s), click Okay to perform the
-operation. Click Cancel if you change your mind.
+Once you've filled in the new name(s), click &OkayButton. to perform the
+operation. Click &CancelButton. if you change your mind.
 
 :h3 res=99700 name=PANEL_FILTERINI.Filter INIs
 :i1 id=aboutFilterINI.Filter INIs

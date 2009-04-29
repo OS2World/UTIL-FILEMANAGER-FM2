@@ -8,6 +8,7 @@
 .* Copyright (c) 2008 Steven H.Levine
 .*
 .* 18 Jan 08 SHL Update hide not selected documentation
+.* 29 Apr 09 SHL Update view usage
 .*
 .***********************************************************************
 .*
@@ -52,6 +53,10 @@ The row of :hp1.Actions&colon.:ehp1. pushbuttons allow you to
 :p.
 You can double-click a file to view it, or request a context menu on it to
 compare it to its counterpart in the other directory.
+:p.
+When viewing a file, the standard &ShiftKey. and &CtrlKey. key modifiers described in
+:link reftype=hd res=100040.Mouse click help:elink. apply.
+:p.
 To use an external compare utility, define it on the
 :link reftype=hd res=98400.Compare Settings:elink.notebook page.
 :p.
