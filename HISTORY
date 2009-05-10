@@ -1,13 +1,13 @@
-New stuffs at the top.  This list is not necessarily complete.
+New stuff at the top.  This list is not necessarily complete.
 
 3.16
- o Correct walk, compare and dirsizes dialog setups to ignore saved dialog size 
+ o Correct walk, compare and dirsizes dialog setups to ignore saved dialog size
  Ticket 342 (Steven)
- o Move translatable strings to fm3dll.rc STRINGTABLE to support NLS translations 
+ o Move translatable strings to fm3dll.rc STRINGTABLE to support NLS translations
  Tickets 6, 81, 340 (Steven, Gregg)
  o Support backspace in directory container type to search allow longer time between
  key strokes in type to search Ticket 348 (Steven)
- o Filtering and select/deselect mask now work in archive containers that have 
+ o Filtering and select/deselect mask now work in archive containers that have
  pathnames Tickets 358, 359 (Gregg)
  o Date formatting and "thousand separator" should now reflect the system locale settings
  Tickets 28, 82 (Gregg)
