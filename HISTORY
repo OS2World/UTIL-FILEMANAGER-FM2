@@ -1,9 +1,25 @@
-New stuff's at the top.  This list is not necessarily complete.
+New stuffs at the top.  This list is not necessarily complete.
 
 3.16
- o Correct walk, compare and dirsizes dialog setups to ignore saved dialog size
- o Move translatable strings to fm3dll.rc STRINGTABLE to support NLS translations
- o Support backspace in directory container type to search
+ o Correct walk, compare and dirsizes dialog setups to ignore saved dialog size 
+ Ticket 342 (Steven)
+ o Move translatable strings to fm3dll.rc STRINGTABLE to support NLS translations 
+ Tickets 6, 81, 340 (Steven, Gregg)
+ o Support backspace in directory container type to search allow longer time between
+ key strokes in type to search Ticket 348 (Steven)
+ o Filtering and select/deselect mask now work in archive containers that have 
+ pathnames Tickets 358, 359 (Gregg)
+ o Date formatting and "thousand separator" should now reflect the system locale settings
+ Tickets 28, 82 (Gregg)
+ o Resolved a rare hang during startup drive scanning Ticket 361 (Gregg)
+ o Fixed failure of some system based toolbar buttons in FM/2 lite Ticket 352 (Gregg)
+ o Compare directories now remembers changes to details settings Ticket 346 (Gregg)
+ o EA checkbox on directory container notebook page now works Ticket 344 (Gregg)
+ o Error/Alert beeps can now be turned off in the settings notebook Ticket 341 (Gregg)
+ o Improve identification of text verses binary files when opening viewers Tickets 326, 338
+ (Gregg)
+ o Removed VAC 3.65 specific code Ticket 350 (Gregg)
+ o Reworked detail switches handling for saved states Tickets 343, 345, 347 (Gregg, John)
 
 3.15
  o Added the option to turn write verify off on a per drive basis; it is turned off on nonfloppy
@@ -21,7 +37,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Added the option to rescan the drive tree on media eject (see scanning page of config notebook)
  Ticket 48 (Gregg)
  o Added Refresh removable media item to tree container menus Ticket 54 (Gregg)
- o Grayed out partition tool menu item where the tool is not avalable in the path; removed partition
+ o Grayed out partition tool menu item where the tool is not available in the path; removed partition
  submenu default selection. Ticket 36 (Gregg)
  o Added option to recursively scan selected drives at startup Ticket 322 (Gregg)
  o Moved toggle word wrap in the MLE editor to "View" menu from a "Config" submenu Ticket 160
@@ -29,9 +45,9 @@ New stuff's at the top.  This list is not necessarily complete.
  o Added option to create extract directory from archive name Ticket 22 (Gregg)
  o Added drop help to the tree container; fixed drop help to show the correct action on DO_DEFAULT
  Ticket 320, 324
- o Fixed seek and scan drive selection code so nonexistant drives aren't selected Ticket 301, 303
+ o Fixed seek and scan drive selection code so nonexistent drives aren't selected Ticket 301, 303
  (Gregg)
- o Several interface appearence/behavior issues were addressed Ticket 283, 305, 306, 311, 312
+ o Several interface appearance/behavior issues were addressed Ticket 283, 305, 306, 311, 312
  313, 316, 321, 328, 329, 330, 332 (Gregg)
  o Fixed traps associated with deleting directories; closing a container after its
  associated drive had been ejected and trying to execute a dll. Ticket 304, 317, 331 (Gregg)
@@ -106,10 +122,10 @@ New stuff's at the top.  This list is not necessarily complete.
  o Fixed crash in compare directories if a file's name exceeded the OS/2 maximum, ticket 213
    (Gregg)
  o FM/2 reopens directory containers in the position they were closed in, ticket 103 (John)
- o Add warnall suport (Steven)
+ o Add warnall support (Steven)
 
 3.10
- o Removed the close buttton and menu item from the tree container which closed FM/2 (Gregg)
+ o Removed the close button and menu item from the tree container which closed FM/2 (Gregg)
  o Implement bubble help for bitmap menu items in collector and arc container (Gregg)
  o Correct/enhance settings notebook navigation, ticket #188 (Steven)
  o Reopen settings notebook to last selected page unless overridden, ticket #188 (Steven)
@@ -125,13 +141,13 @@ New stuff's at the top.  This list is not necessarily complete.
  o Fix toolbar to change background colors with color drag drop ticket #161 (Gregg)
  o More Compare Directories rework.  Filters now honored by actions.  Tickets #191, #198 (Steven)
  o Fix failure of direct edit of Subjects and LongNames (Gregg)
- o Walk directories and walk directories2 now remeber size and position. (Gregg)
+ o Walk directories and walk directories2 now remember size and position. (Gregg)
  o Compare directories dialog remembers size and position. (Gregg)
  o Individual directory containers can have different fonts & colors which are saved
    and restored (Gregg)
  o Moved command line, system and bookshelf to submenus on the utilities menu (Gregg)
  o Restore no-prescan drives if restoring named state
-   This reverts to orginal behavior for named states
+   This reverts to original behavior for named states
  o Rework collector progress reporting and improve performance (ticket #79)
  o Compile OpenWatcom version into binary (Steven)
  o Add conditional cascade to main menu settings menu item (Steven)
@@ -146,7 +162,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Move save shutdown state name to strings (IDS_SHUTDOWNSTATE, ShutdownState)
  o Add unhide menu option (Gregg)
  o Enable user settable command line length (Gregg)
- o Add presparams & update appearence of "Sizes" dialog (Gregg)
+ o Add presparams & update appearance of "Sizes" dialog (Gregg)
  o Fix save and restore of non-default details view settings (John)
  o The state at shutdown is now available (read-only) in the States combo box (John)
  o The list of excluded drives in the parameters of the FM/2 object
@@ -163,7 +179,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Check program strings entered in assoc, commands & settings for quoting,
  file extension, space before args and existence on entry. (Gregg)
  o Add TestFDate and TestCDate for date compare and sort functions (Gregg)
- o Use commaFMTULL for formating additional file, EA etc size information(Gregg)
+ o Use commaFMTULL for formatting additional file, EA etc size information(Gregg)
  o Give LIBPATHSTRICT option for mailto & run FTP/HTTP (Gregg)
  o Add "mailto" option in new viewer (Gregg)
  o Make WPURLDEFAULTSETTINGS the fall back for ftp/httprun (Gregg)
@@ -186,7 +202,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Cancel in walk directories dialog now directly closes dialog even if
    directory path text has changed (Gregg)
  o Fixed seek and scan crash caused by file names that exceed maxpath(Gregg)
- o Fixed INVALID_NAME error caused by FILEFIND buffer crossing a 64k boundry (Steven)
+ o Fixed INVALID_NAME error caused by FILEFIND buffer crossing a 64k boundary (Steven)
  o Added 32 bit DosQuerySysState API (Gregg)
  o Warpin build will not attempt to use wrong wic.exe (John)
  o Make directory now always lists current directory (not subdirectories)
@@ -225,7 +241,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Avoid exception when exiting File/Directory Object Information dialog (Steven)
  o Fix a fast viewer text file load failure. (Gregg)
  o Reversed behavior of horizontal scroll bar in fast viewer bar present with unwrapped text
-   absent with wrapped tex and hex
+   absent with wrapped text and hex
  o Add accelerator support to quicklist windows (Steven)
 
 3.06
@@ -338,7 +354,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Preserve archiver.bbs comments
 
 3.04 pre9:
- o Add archiver defintion add/delete/move support
+ o Add archiver definition add/delete/move support
 
 3.04 pre8:
  o Avoid toolbar window list trap (action 9010)
@@ -355,7 +371,7 @@ New stuff's at the top.  This list is not necessarily complete.
 
 3.04 pre5:
  o Support archivers with no list headers (tar)
- o Support archivers that onl extract with directories (tar)
+ o Support archivers that only extract with directories (tar)
  o Disable menus for not ready volumes
  o Correct missing collector view button window updates
  o Correct fallback logic in MakeValidDir()
@@ -691,7 +707,7 @@ New stuff's at the top.  This list is not necessarily complete.
    viewer.
  o Added WWW and FTP component launching to internal viewers per
    user request.  BTW, testpm.exe from the FM/2 Utilities is handy for
-   deciphering the arguments to FTPPM.EXE, which are a bit bizaare and
+   deciphering the arguments to FTPPM.EXE, which are a bit bizarre and
    undocumented.  Just rename FTPPM.EXE to FTPPM.BAK, copy TESTPM.EXE
    to FTPPM.EXE in the same directory, open the FTP object's Settings
    notebook, then open the FTP object's program and compare the
@@ -766,7 +782,7 @@ New stuff's at the top.  This list is not necessarily complete.
    focus from the MLE after making a change saves the new EA.  Note:  if
    a .COMMENTS EA is damaged, FM/2 won't let you edit it in this window
    for safety (maybe some strange program wanted it that way).  You can
-   fix it in the EA viewer (Ctrl + Shift + E) if you know it's an anomoly.
+   fix it in the EA viewer (Ctrl + Shift + E) if you know it's an anomaly.
    Use the Ctrl + Tab accelerator key to switch focus to the Autoview
    MLE if you're keyboarding.  FM/2 supports .COMMENTS EAs up to 32767
    characters in length.  Each line of the MLE (newline, not wrap)
@@ -832,7 +848,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o "Thread busy" LED added per user request.
  o Toolbar buttons now allow you to use different bitmaps of your own
    design.  Notes:  using user-defined bitmaps in the toolbar can slow
-   loading of FM/2 slightly, but probably not noticably unless you
+   loading of FM/2 slightly, but probably not noticeably unless you
    replace all of them.  Request a context menu on a toolbar button and
    pick "Edit button" to get the dialog where you tell FM/2 to use a
    user-defined bitmap.
@@ -997,10 +1013,10 @@ New stuff's at the top.  This list is not necessarily complete.
    activate the Filter dialog (DirView and ColView pages) by setting the
    focus to the Filter: entryfield, so that the "general" filter is
    changed.
- o Help file improvements (a neverending saga).
+ o Help file improvements (a never ending saga).
 
 2.38:
- o Walk Directories dialog will now display non-writeable drives unless
+ o Walk Directories dialog will now display non-writable drives unless
    the directory selection is for an action that requires writing to the
    selected directory (for example, copy or move, set extract directory,
    etc.).
@@ -1027,7 +1043,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o When a background task that FM/2 is waiting on takes more than about
    two seconds to complete its job, FM/2 will switch it to the
    foreground.  This means that if an archive is encrypted (passworded),
-   you'll get the oportunity to enter a password without having to
+   you'll get the opportunity to enter a password without having to
    resort to the Window List to manually bring the window to the
    foreground.
 
@@ -1322,7 +1338,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Added "Ideal size" System Menu command and titlebar button -- an
    alternative to maximizing.
  o More work on help file hypertext links using suggestions from a
-   registered user.  Added a labelled bitmap showing the layout of FM/2
+   registered user.  Added a labeled bitmap showing the layout of FM/2
    windows.
  o Worked around weird bugs in Sizes and deleting toolbar buttons that
    shouldn't be bugs but nonetheless cause problems on some machines.
@@ -1363,7 +1379,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Hmmm...Warp has broken the DM_DROPHELP message within an application
    -- the passed DRAGINFO structure is inaccessible (apparently already
    deallocated).  An appropriate error message will be displayed, and
-   the code's still there so that when IBM fixes it it'll automagically
+   the code's still there so that when IBM fixes it it'll automatically
    start working again.
 
 2.15:
@@ -1455,7 +1471,7 @@ New stuff's at the top.  This list is not necessarily complete.
  o Found and fixed bug in Collector's Seek & Scan that could cause FM/2
    to trap.
  o Added a Settings notebook containing global toggles and such.
-   Slower than the menus, but Ron Hester asked for it, and I allus do
+   Slower than the menus, but Ron Hester asked for it, and I always do
    what Ron says...
  o Return of the weirding ... but that'd be telling.
  o Added optional split status line.

@@ -1,9 +1,21 @@
  ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
  ³  F(ile) M(anager)/2 is free software from Mark Kimes ³
  ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
- ³      READ.ME file -- read before installing          ³
  ³       See end of document for contact info           ³
  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+FM/2 3.16: This release makes changes that should allow FM/2 to be 
+translated into different languages. It also adds date and number 
+formatting based on the system locale settings. We now need to find 
+some individuals who are interested in doing the translations. 
+Currently, double bit character sets are not supported in FM/2.
+
+We have also fixed multiple minor annoyances such as improving
+detection of text verses binary files when opening viewers and
+filtering/(de)select mask now works for archives with pathnames.
+We added the ability to turn error/alert beeps on and off in the 
+settings notebook (General page) and changes to the details switches
+in compare directories are now saved. See the history for more details.
 
 FM/2 3.15: This release turns on some new features by default
 don't panic they can all be turned off if you don't like them.
@@ -25,11 +37,11 @@ We have some additional new items we hope you will find useful. We
 have added the ability to have the extract commands create a
 subdirectory based on the archive file name for the extraction target.
 Seek and Scan has been added to the drives and directories context
-menu and when select from there will add the drive or directory as
+menu and when selected from there will add the drive or directory as
 the root for the search. We also added refresh removable media so
 you can scan for newly inserted drives from the tree container
 We did some additional work on the main menus like adding Databar
-to the utilities menu and we now grayed out items that are unavailable
+to the utilities menu and we now gray out items that are unavailable
 or inappropriate and un-grayed some items that were inappropriately
 turned off. We reorganized the internal editor menus as well.
 
@@ -152,7 +164,7 @@ selecting it from the "States" drop down. We have provided better
 progress indicators to update the progress of long operations.
 We now provide both the SYM & MAP files in a separate warpin
 package. This will allow interested individuals the tools needed
-to assist with analysing any problem that may occur. This
+to assist with analyzing any problem that may occur. This
 package is not needed to run FM/2. As always this update
 provides some performance enhancements and defect fixes.
 
@@ -167,7 +179,7 @@ FM/2 3.08 has had changes to its file filtering logic.
 It now searches for the last extension if a mask like *.zip
 is used. This change was made to over come the problem with
 associations failing on files with multiple ".". You can
-also seach for a complete string within the file names by
+also search for a complete string within the file names by
 using the pattern *stuff* (stuff can't contain an * or ?).
 If "stuff" contains an * or ? the old method of searching
 (character by character)is used.Large (>4GiB) file support
@@ -374,7 +386,7 @@ How to get started using FM/2:
 Please read the following sections in the online help when
 you start FM/2 for the first time: "How to use FM/2's Help,"
 "Terminology" and "General Help," then "Hints." A peek at
-the labelled "Window Layouts" pictures would probably be a
+the labeled "Window Layouts" pictures would probably be a
 good idea, too. The rest you can browse as you get time/feel
 the need; for instance, if you want to know what a toggle
 does, read the help under Settings notebook for that page
@@ -439,7 +451,7 @@ PROCESS KILLER: Lets you kill off renegade processes. An
 English version of PSTAT.EXE must be on your PATH. Filename
 KILLPROC.EXE.
 
-UNDELETER: Lets you undelete files (via interface with
+UNDELETE: Lets you undelete files (via interface with
 UNDELETE.COM). Drag a file system object onto it and it'll
 let you undelete files for that drive. Filename UNDEL.EXE.
 
@@ -600,21 +612,47 @@ Support:
 There is a Yahoo group devoted to fm/2 at:
 
   http://groups.yahoo.com/group/fm2user/
+  
+  This group is now closed but it still contains some useful information
+  
+There is a new mailing list at:
+  
+  fm2-user@netlabs.org
+  
+  To subscribe send an email to:
+  
+  fm2-user-subscribe@netlabs.org
+  
+  The subject and body can be empty.
+  
+  This group is mirrored on Gmane at:
+  
+  http://dir.gmane.org/gmane.org.netlabs.fm2.user
 
 You will find lots of friendly folks ready to help.
 
-FM/2 is moving to Netlabs (thanks Adrian).
+FM/2 has moved to Netlabs (thanks Adrian).
 
 Check it out at
 
   http://svn.netlabs.org/fm2
 
-Not everything is in place yet, but this is the place to
-enter defect tickets and enhancement requests (username netlabs,
-password guest; please include a valid email so we can contact you
-if we need more information). Eventually, the mailing list and the
-file archives will all move to the Netlabs server where you can
-find the source code.
+To create a ticket reporting a defect or requesting an enhancement.
+You must be logged into TRAC. Please login with your Netlabs login id. 
+If you do not have a login id, you can request one at 
+http://www.netlabs.org/en/site/member/member.xml. 
+If you have troubles acquiring a Netlabs login id send an e-mail to 
+Netlabs Community Mailing List <community@netlabs.org>.
+
+You can also browse the source at this site.
+
+To obtain the source from the SVN use something like the following to check out the trunk
+
+  mkdir fm2_workspace
+  cd fm2_workspace
+  svn checkout http://svn.netlabs.org/repos/fm2/trunk trunk
+  
+If you wish commit access please contact us directly.  
 
 You can reach us directly at:
 
@@ -626,8 +664,9 @@ You can reach us directly at:
   Gregg Young
   ygk@qwest.net
 
-We also monitor the comp.os.os2.apps newsgroup and several
-others in the comp.os.os2.* hierarchy.
+We also monitor the comp.os.os2.apps newsgroup, several
+others in the comp.os.os2.* hierarchy and other groups where 
+release announcements are made. 
 
 Thanks and enjoy.
 
