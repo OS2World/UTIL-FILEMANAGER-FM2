@@ -22,14 +22,14 @@ a test, and may indicate that the file is already in use and thus OS/2
 may not allow it to be renamed, moved or copied. You can use this
 information display to make decisions more easily.
 :p.
-After entering the new target name, click :hp1.Okay:ehp1.. If the new
+After entering the new target name, click &OkayButton.. If the new
 target name exists, the display will be updated to reflect the new
 information. You can, at that point, enter a new name to avoid the
 conflict or click :hp1.Overwrite:ehp1. (which will destroy the old
 target file, keeping in mind that you can't overwrite a file with
 itself). :hp1.Skip:ehp1. can be used to skip one file when you are renaming
 several in one action; nothing will be done for that file. Click
-:hp1.Cancel:ehp1. if you change your mind and want to abort the whole
+&CancelButton. if you change your mind and want to abort the whole
 thing.
 :p.
 The :hp1.Rename Existing:ehp1. button allows you to rename (move) the
@@ -37,7 +37,7 @@ existing file system object which is causing a naming conflict. For
 example, if you are trying to copy a file to "C&colon.\MYFILE" and a
 "C&colon.\MYFILE" already exists, you could change the target name as
 desired, click :hp1.Rename Existing:ehp1. to rename (move) the existing
-file out of the way, then click :hp1.Okay:ehp1. to continue the copy
+file out of the way, then click &OkayButton. to continue the copy
 operation.
 :p.
 The :hp1.Overwrite if target older or same:ehp1., :hp1. Overwrite if

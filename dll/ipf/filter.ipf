@@ -38,7 +38,7 @@ the listbox by highlighting it and clicking :hp1.Delete:ehp1..
 Multiple filemasks can be used by separating the masks with semi-colons.
 :p.
 "No filemask" can be quickly entered by just clicking the
-:hp1.Clear:ehp1. and :hp1.Okay:ehp1. buttons, or "*" can be used.
+:hp1.Clear:ehp1. and &OkayButton. buttons, or "*" can be used.
 :p.
 Wildcard matching is not case-sensitive.
 :p.

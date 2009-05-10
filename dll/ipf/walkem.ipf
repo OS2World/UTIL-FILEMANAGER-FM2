@@ -20,7 +20,7 @@ only directories that you add to it. To add a directory, click
 :hp1.Add:ehp1. when the desired directory name is displayed in the
 entry field at the bottom of the window. To delete a directory,
 highlight it and click :hp1.Delete:ehp1.. To switch to one of these
-user-defined directories, highlight it and click :hp1.Okay:ehp1. or
+user-defined directories, highlight it and click &OkayButton. or
 double-click the directory. You can add up to 100 directories.
 :p.
 You can also select directories from the Recent directories drop-down
@@ -29,6 +29,6 @@ automatically as you traverse your drives. Just drop down the list
 and click the directory of choice.
 :p.
 When the desired directory is displayed in the bottom entry field of
-the dialog, click :hp1.Okay:ehp1. to exit. Click :hp1.Cancel:ehp1. to
+the dialog, click &OkayButton. to exit. Click &CancelButton. to
 exit without selecting a directory.
 

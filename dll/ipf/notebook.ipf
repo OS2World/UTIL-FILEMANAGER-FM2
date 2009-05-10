@@ -30,7 +30,7 @@ via a popup menu requested on container whitespace (or the Views pulldown
 menu).
 :p.
 Note that settings changes generally don't take effect until you close
-the notebook by clicking the :hp1.Okay:ehp1. button. The
+the notebook by clicking the &OkayButton. button. The
 :hp1.Undo:ehp1. button will restore things to the way they were before
 you started fiddling about. The :hp1.Quick:ehp1. page is a notable
 exception.
@@ -108,7 +108,7 @@ from performing extended searching in containers -- instead, the
 standard OS/2 method is used, where the cursor moves to the nearest
 object starting with the depressed letter and the object is selected.
 Note that you override the configured value of this feature by
-pressing the :color fc=default bc=palegray.Shift:color fc=default bc=default.
+pressing the &ShiftKey.
 key along with the letter.
 Extended container searching allows you to enter multiple characters which
 are searched for at the	start of filenames.
@@ -553,8 +553,8 @@ the main FM/2 monolithic frame window.
 :p.
 The :hp6.Quicklist switches:ehp6. toggle reverses the operation of the
 user directory quicklist control -- if you click an item in the dropdown
-list without holding down :color fc=default bc=palegray.Shift:color fc=default bc=default., the last used Directory Container
-switches, if you hold down :color fc=default bc=palegray.Shift:color fc=default bc=default. while clicking, a new Directory
+list without holding down &ShiftKey., the last used Directory Container
+switches, if you hold down &ShiftKey. while clicking, a new Directory
 Container is opened.
 :p.
 The :hp6.Recent Dirs:ehp6. toggle is a 3-position toggle. If checked,
@@ -662,8 +662,8 @@ a compare of the target with the dropped objects.
 :p.
 If :hp6.Default action Copy:ehp6. is checked, FM/2's windows perform a
 copy rather than move by default (note the highlighting on the mouse
-pointer as your cue). Instead of pressing the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key to change a drag
-from a move to a copy, you'll need to press the :color fc=default bc=palegray.Shift:color fc=default bc=default. key to change a
+pointer as your cue). Instead of pressing the &CtrlKey. key to change a drag
+from a move to a copy, you'll need to press the &ShiftKey. key to change a
 drag from a copy to a move (don't ask me why as this is simply the standard OS/2 behavior.)
 I remind you that pressing :color fc=default bc=palegray.F1:color fc=default bc=default.
 when you have a target in an FM/2 window

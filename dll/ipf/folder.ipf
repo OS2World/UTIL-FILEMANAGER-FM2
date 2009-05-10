@@ -17,15 +17,15 @@ Go to parent directory
 :hp2.:color fc=default bc=cyan.B2:color fc=default bc=default.&colon.:ehp2.
 Context menu
 .br
-:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.Ctrl:color fc=default bc=default.&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+&CtrlKey.&colon.:ehp2.
 .br
 Go to previous directory
 .br
-:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.SHIFT:color fc=default bc=default.&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+&ShiftKey.&colon.:ehp2.
 .br
 Walk directories
 .br
-:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.ALT:color fc=default bc=default.&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B1:color fc=default bc=default.+:color fc=default bc=palegray.Alt:color fc=default bc=default.&colon.:ehp2.
 .br
 Child window dialog
 .br
@@ -44,7 +44,7 @@ Walk directories
 .br
 Child window dialog
 .br
-:hp2.:color fc=default bc=cyan.B3:color fc=default bc=default.:color fc=default bc=cyan.Chord:color fc=default bc=default.&colon.:ehp2.
+:hp2.:color fc=default bc=cyan.B3:color fc=default bc=default. or :color fc=default bc=cyan.Chord:color fc=default bc=default.&colon.:ehp2.
 .br
 Rescan archive
 :p.

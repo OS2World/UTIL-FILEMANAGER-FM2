@@ -143,7 +143,7 @@ key.
 :h3 res=99813 name=PANEL_TRENAMEKEY.Rename by keystrokes
 :i1 id=aboutRenameKeyTutorial.Rename by Keystrokes
 Place the dotted cursor on the object you want to rename (make it the
-:hp1.current object:ehp1.). Press :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+:hp1.current object:ehp1.). Press &CtrlKey.
 + :color fc=default bc=palegray.r:color fc=default bc=default., the accelerator key
 for the Rename command, or pick "Rename" from the :hp1.Files menu:ehp1..
 :p.
@@ -200,7 +200,7 @@ key.
 :h3 res=99823 name=PANEL_TMOVEKEY.Move by keystrokes
 :i1 id=aboutMoveKeyTutorial.Move by Keystrokes
 Place the dotted cursor on the object you want to move (make it the
-:hp1.current object:ehp1.). Press :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.m:color fc=default bc=default., the accelerator key
+:hp1.current object:ehp1.). Press &CtrlKey. + :color fc=default bc=palegray.m:color fc=default bc=default., the accelerator key
 for the Move command, or pick "Move" from the :hp1.Files menu:ehp1..
 :p.
 A dialog known as the :link reftype=hd res=91500.Walk Directories:elink.
@@ -227,10 +227,10 @@ Please select a method to learn about&colon.
 :artwork name='bitmaps\tcopy.bmp' align=left.
 :p.
 To copy a file system object using drag and drop, press and hold the
-:color fc=default bc=palegray.Ctrl:color fc=default bc=default. key, then "grab" a file system object with the mouse by placing the
+&CtrlKey. key, then "grab" a file system object with the mouse by placing the
 mouse pointer on top of the object and depressing and holding mouse
 button 2 (:color fc=default bc=cyan.B2:color fc=default bc=default., usually the right button).
-Still holding :color fc=default bc=cyan.B2:color fc=default bc=default. and :color fc=default bc=palegray.Ctrl:color fc=default bc=default.,
+Still holding :color fc=default bc=cyan.B2:color fc=default bc=default. and &CtrlKey.,
 "drag" the object to its destination (for instance, onto a directory in
 the Drive Tree), and then release :color fc=default bc=cyan.B2:color fc=default bc=default.. During a copy drag, the dragged
 object is "ghosted" rather than solid as during a move drag.
@@ -243,7 +243,7 @@ key.
 :h3 res=99833 name=PANEL_TCOPYKEY.Copy by keystrokes
 :i1 id=aboutCopyKeyTutorial.Copy by Keystrokes
 Place the dotted cursor on the object you want to copy (make it the
-:hp1.current object:ehp1.). Press :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.c:color fc=default bc=default., the accelerator key
+:hp1.current object:ehp1.). Press &CtrlKey. + :color fc=default bc=palegray.c:color fc=default bc=default., the accelerator key
 for the Copy command, or pick "Copy" from the :hp1.Files menu:ehp1..
 :p.
 A dialog known as the :link reftype=hd res=91500.Walk Directories:elink.
@@ -269,7 +269,7 @@ you to specify a new name for the new, "cloned" copy of the object.
 To compare file system objects, link-drag one object onto another.
 :p.
 A link drag is initiated by placing the mouse cursor on the object to
-be dragged, holding down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. and :color fc=default bc=palegray.Shift:color fc=default bc=default. keys, and clicking mouse
+be dragged, holding down the &CtrlKey. and &ShiftKey. keys, and clicking mouse
 button 2 (:color fc=default bc=cyan.B2:color fc=default bc=default., usually the right button). While still holding the keys
 and :color fc=default bc=cyan.B2:color fc=default bc=default., move the mouse to drag the object over the target object, then
 release :color fc=default bc=cyan.B2:color fc=default bc=default.. During a link drag, a rubber-band line appears between the
@@ -292,7 +292,7 @@ res=90400.Associations:elink. to allow you to assign special viewer
 programs or actions to different file types.
 :p.
 You can also invoke viewing directly from the :hp1.Files:ehp1., :link
-reftype=hd res=93700.context:elink. menus, or by pressing the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.v:color fc=default bc=default.
+reftype=hd res=93700.context:elink. menus, or by pressing the &CtrlKey. + :color fc=default bc=palegray.v:color fc=default bc=default.
 accelerator key. In this case, no other default actions will be taken
 even if one might be "obvious" -- the object will simply be viewed. If,
 for example, you wanted to view an executable, this is the method you'd
@@ -324,13 +324,13 @@ Container for a directory object, see the :link reftype=hd
 res=98900.Opening a Directory Container:elink. section).
 :p.
 To open an object's default WPS "view," use the F6 accelerator key, or
-press the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while double-clicking the object. The same type of
+press the &CtrlKey. key while double-clicking the object. The same type of
 "open" will be done on the object that would be done if you directly
 double-clicked the object in a WPS folder object (remember, WPS folders
 are just visual representations of directories).
 :p.
 To open a file system object's WPS Settings notebook directly, use the
-:color fc=default bc=palegray.F7:color fc=default bc=default. accelerator key, or press the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. and :color fc=default bc=palegray.Shift:color fc=default bc=default. keys while
+:color fc=default bc=palegray.F7:color fc=default bc=default. accelerator key, or press the &CtrlKey. and &ShiftKey. keys while
 double-clicking the object.
 :p.
 For directory objects, you have the choice of WPS view type to open, as
@@ -371,9 +371,9 @@ written by the author of FM/2.)
 :hp1.Files or context menu:ehp1. Select the :hp1.Delete:ehp1. command
 or pick the type of delete from the cascade menu.
 :p.
-:hp1.Keyboard:ehp1. The :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.
+:hp1.Keyboard:ehp1. The &CtrlKey. + :color fc=default bc=palegray.
 d:color fc=default bc=default. accelerator key performs a "regular"
-delete, :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.D:color fc=default bc=default. (also written as just ":color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.D:color fc=default bc=default." -- accelerator
+delete, &ShiftKey. + &CtrlKey. + :color fc=default bc=palegray.D:color fc=default bc=default. (also written as just "&CtrlKey. + :color fc=default bc=palegray.D:color fc=default bc=default." -- accelerator
 keys are case sensitive) performs a permanent delete.
 
 :h2 res=99880 name=PANEL_TMKDIR.Make directory tutorial
@@ -384,13 +384,13 @@ To create a directory, use FM/2's Make Directory command.
 :p.
 You can pick this command from the :hp1.Files:ehp1. menu or a
 :hp1.context:ehp1. menu (under the Miscellaneous cascade menu). You can
-click the button on FM/2's toolbar. Or you can use the :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+click the button on FM/2's toolbar. Or you can use the &ShiftKey. + &CtrlKey.
 + :color fc=default bc=palegray.M:color fc=default bc=default. accelerator key.
 :p.
 FM/2 presents you with a small dialog box in which you can type the name
 of the directory that you want to create -- FM/2 will try to fill in the
 entry field with a guess at the first part (parent directories) of what you want, but you can
-delete that if desired (:color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.Home:color fc=default bc=default., then touch the
+delete that if desired (&ShiftKey. + :color fc=default bc=palegray.Home:color fc=default bc=default., then touch the
 :color fc=default bc=palegray.Del:color fc=default bc=default. key to do it quickly).
 :p.
 The directory created can be many levels deep. FM/2 will create
@@ -439,7 +439,7 @@ To extract from an archive, first place the cursor on the file
 (make it the :hp1.current object:ehp1.), then select the :hp1.Extract:ehp1.
 command from the :hp1.Files:ehp1. menu, the context menu
 fc=default bc=cyan.B2:color fc=default bc=default., or press the
-:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+&CtrlKey.
  + :color fc=default bc=palegray.x:color fc=default bc=default. accelerator key.
 key.
 :p.
@@ -471,16 +471,16 @@ if it is. Then INI and HLP files are checked by extensions and viewed as
 such. If all else fails, FM/2 views the file using the configured or
 internal viewer.
 :p.
-In the Drive Tree, holding down the  :color fc=default bc=palegray.Shift:color fc=default bc=default. key while double-clicking
+In the Drive Tree, holding down the  &ShiftKey. key while double-clicking
 causes a new FM/2 Directory Container to be opened, and holding down
-the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while double-clicking causes a WPS folder to be opened.
+the &CtrlKey. key while double-clicking causes a WPS folder to be opened.
 :p.
-In Directory Containers, holding down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while double-clicking
+In Directory Containers, holding down the &CtrlKey. key while double-clicking
 causes the default WPS open to be performed on the object (this honors
 WPS associations, runs executables, opens folders in their default view,
 or opens the Settings notebook for the object -- whatever
 double-clicking on the object in the WPS would do). Holding down the
-:color fc=default bc=palegray.Shift:color fc=default bc=default. key while double-clicking causes file objects to be directly Viewed,
+&ShiftKey. key while double-clicking causes file objects to be directly Viewed,
 bypassing the steps listed above for file objects (for directory
 objects this causes a new FM/2 container to be opened).
 :p.

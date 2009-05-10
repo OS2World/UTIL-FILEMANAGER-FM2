@@ -47,7 +47,7 @@ When a menu command leads to a dialog, the command name is followed by
 dots (i.e. "Attributes..."). In cases where commands have :link
 reftype=hd res=100005.accelerator key equivalents:elink., the :link
 reftype=hd res=97700.accelerator key:elink. is listed after the command
-(i.e. "Info...   :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.i:color fc=default bc=default.").
+(i.e. "Info...   &CtrlKey. +  :color fc=default bc=palegray.i:color fc=default bc=default.").
 :p.
 :hp2.See also&colon.:ehp2.
 .br
@@ -296,8 +296,8 @@ Open a new FM/2 window (container; the default for directories and drives).
 :artwork runin name='bitmaps\fldr.bmp'. :artwork runin name='bitmaps\drive.bmp'.
 :p.
 Opening a file's Default view will honor any OS/2 associations that you have
-setup. Remember that :color fc=default bc=palegray.F6:color fc=default bc=default. or :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + double-click opens an object's
-default WPS view, and :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + double-click opens an object's
+setup. Remember that :color fc=default bc=palegray.F6:color fc=default bc=default. or &CtrlKey. + double-click opens an object's
+default WPS view, and &CtrlKey. + &ShiftKey. + double-click opens an object's
 WPS Settings notebook.
 :p.
 :artwork name='..\..\bitmaps\object.bmp' align=center.
@@ -621,7 +621,7 @@ unfiltered files in all other open Directory Containers (available only
 in Directory Containers). To give you an idea how this might be
 helpful, imagine that you just hit the :color fc=default bc=palegray.Enter:color fc=default bc=default. key in the middle of
 typing a copy command, when you were reaching for the backslash key to
-complete a path. Before you realize what's happening and can hit :color fc=default bc=palegray.Ctrl:color fc=default bc=default.+:color fc=default bc=palegray.C:color fc=default bc=default.,
+complete a path. Before you realize what's happening and can hit &CtrlKey.+:color fc=default bc=palegray.C:color fc=default bc=default.,
 you copied fifty files from a data directory to the root directory of
 your boot drive (you shoulda used FM/2! &colon.-). Now you want to get rid of
 them, but you don't want to pick each one. Open the data directory and
@@ -630,7 +630,7 @@ the root directory. You're done.
 :p.
 These powerful selection tools are where a file manager really outshines
 command line file management, so be sure to take a look at them. Note
-that :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F8:color fc=default bc=default. will call up the Select menu for a given container.
+that &CtrlKey. + :color fc=default bc=palegray.F8:color fc=default bc=default. will call up the Select menu for a given container.
 :p.
 :hp6.:link reftype=hd res=100065.Set Target directory:elink.:ehp6. and
 :hp6.:link reftype=hd res=94600.Settings notebook:elink.:ehp6. are also on this menu.
@@ -719,8 +719,8 @@ encoder:elink., so that \x1b would be interpreted as an ESCAPE
 character, \r\n as a carriage return and linefeed "newline," and \\ is
 required to get a single '\' character.
 :p.
-When everything's set as you want it, click :hp1.Okay:ehp1. to save the
-list. Click :hp1.Cancel:ehp1. if you change your mind.
+When everything's set as you want it, click &OkayButton. to save the
+list. Click &CancelButton. if you change your mind.
 :p.
 Metastrings and their meanings (note&colon. these are different from those
 used in command lines)&colon.

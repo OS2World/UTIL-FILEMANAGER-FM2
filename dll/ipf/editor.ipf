@@ -22,7 +22,7 @@ margin. Single selections and swipe selections are supported, as well
 as select and deselect all (under the :hp1.Select:ehp1. pulldown
 submenu) and select/deselect all "found" lines (see :hp1.Search:ehp1.
 below). Keyboard selection is performed with the spacebar, or you can
-hold down the :color fc=default bc=palegray.Shift:color fc=default bc=default.
+hold down the &ShiftKey.
 key while moving the cursored selection with the
 :color fc=default bc=palegray.arrow:color fc=default bc=default. keys. Discontiguous lines can be selected.
 :p.

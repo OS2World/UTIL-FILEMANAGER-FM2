@@ -244,9 +244,8 @@ effect).
 :p.
 You could, of course, also select "Move" from the :hp1.:link reftype=hd
 res=93300.Files:elink.:ehp1. menu, a context menu, click the Move
-toolbar button, or type the accelerator key :color fc=default bc=palegray.Ctrl
-:color fc=default bc=default. + :color fc=default bc=palegray.m :color fc=default bc=default.
-(hold the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key down and type
+toolbar button, or type the accelerator key &CtrlKey. + :color fc=default bc=palegray.m :color fc=default bc=default.
+(hold the  &CtrlKey. key down and type
 :color fc=default bc=palegray.m:color fc=default bc=default.). In this case, you'll get the :link reftype=hd
 res=91500.Walk Directories:elink. dialog where you can enter a target
 directory.
@@ -260,7 +259,7 @@ res=99820.Move:elink. tutorial.
 .br
 The procedure for copying file system objects is very similar to that
 for moving them. When you begin to drag the object, and until you
-release it, hold down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key.
+release it, hold down the &CtrlKey. key.
 You'll notice that the dragged icon is "ghosted" to give visual feedback that a copy, not a
 move, is being performed. Note that you can copy a file onto an archive
 file as well as into a directory. You can also "clone" a file by dropping
@@ -269,7 +268,7 @@ dialog that will allow you to change the name, creating a file exactly
 like the other with a different name.
 :p.
 As for move above, there is a "Copy" menu item, a toolbar button,
-and :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +
+and &CtrlKey. +
 :color fc=default bc=palegray.c:color fc=default bc=default. is the accelerator key.
 :p.
 If you'd like more detail, go to the :link reftype=hd
@@ -280,8 +279,8 @@ res=99830.Copy:elink. tutorial.
 :hp1.Comparing file system objects&colon.:ehp1.
 .br
 There is one other type of drag and drop operation called a "link drag."
-To link drag, hold down the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
-and  :color fc=default bc=palegray.Shift:color fc=default bc=default.  keys while dragging.
+To link drag, hold down the  &CtrlKey.
+and  &ShiftKey.  keys while dragging.
 You'll see a "rubber band line" extend from where you grabbed the icon
 to the mouse pointer as a visual cue. Link dragging is usually used
 within FM/2 to do compare operations (see also :link reftype=hd
@@ -426,16 +425,16 @@ Other alternatives are to select the :hp1.New FM/2 Window:ehp1.
 command from the :hp1.Files menu:ehp1. with the Drive Tree active,
 (preferred) a context menu obtained on the directory you want to open
 (remember, you get a context menu by clicking mouse button 2 on an
-object) or the accelerator key  :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+object) or the accelerator key  &CtrlKey.
  + :color fc=default bc=palegray.o:color fc=default bc=default..
 :p.
 :artwork name='bitmaps\openmenu.bmp' align=center.
 :p.
 Yet another alternative is to invoke the :hp1.Utilities->Open Directory
-Container:ehp1. command (:color fc=default bc=palegray.Ctrl
+Container:ehp1. command (&CtrlKey.
 + :color fc=default bc=palegray.O:color fc=default bc=default. accelerator
 -- remember, that ":color fc=default bc=palegray.O:color fc=default bc=default."
-needs to be uppercase, so use :color fc=default bc=palegray.Shift:color fc=default bc=default.
+needs to be uppercase, so use &ShiftKey.
 if necessary (:color fc=default bc=palegray.Caps Lock:color fc=default bc=default. off)).
 Using this command invokes the :link reftype=hd res=91500. Walk Directories:elink. dialog
 and lets you pick the directory to open.
@@ -452,7 +451,7 @@ Container for that object's directory.
 Finally, if you have the Drivebar on (see the :link reftype=hd
 res=92000.Config menu:elink. topic) and a 3-button mouse, you can click
 :color fc=default bc=cyan.B3:color fc=default bc=default.  (or hold down
-:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+&CtrlKey.
 while clicking :color fc=default bc=cyan.B2:color fc=default bc=default. )
 on one of the drive icons to open a Directory Container for that drive (unless one already exists, in
 which case it'll be surfaced and activated).
@@ -548,7 +547,7 @@ This dialog, accessed from the context menu of a tool button, allows you
 to rearrange the order of the toolbar's tool buttons. You take selected
 items from the left listbox and Add them to the end of the right listbox
 with the :hp1.Add>>:ehp1. button. When you've moved everything to the
-right listbox, click :hp1.Okay:ehp1.. Click :hp1.Cancel:ehp1. if you
+right listbox, click &OkayButton.. Click &CancelButton. if you
 change your mind.
 :p.
 In reality, you don't need to move everything to the right listbox. You
@@ -754,7 +753,7 @@ This allows you to have groups of specific-purpose buttons which you can
 load for different types of activities. You don't have to use it, but
 it's there if you would like to do so.
 :p.
-Clicking :hp1.Okay:ehp1. without typing in or selecting a filename
+Clicking &OkayButton. without typing in or selecting a filename
 results in FM/2 reloading the default toolbar from FM3TOOLS.DAT.
 :p.
 If I may, here's how I'd recommend using this facility&colon.
@@ -896,7 +895,7 @@ more flexible than the way DOS-think file managers do things.
 To "edit" a State, first recall it, then change what you want, then
 delete the State name, then save it again.
 :p.
-Holding down the  :color fc=default bc=palegray.Shift:color fc=default bc=default.
+Holding down the  &ShiftKey.
  key while selecting a state name prevents FM/2 from closing windows that are already open.
 :p.
 :artwork name='bitmaps\userstat.bmp' align=center.
@@ -935,7 +934,7 @@ directories that you visit during a session. You can add them as above
 to make them permanent if you desire.
 :p.
 Selecting the :hp1.<New directory>:ehp1. item from this list allows you
-to create a new directory (same as using the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +
+to create a new directory (same as using the  &CtrlKey. +
 :color fc=default bc=palegray.M:color fc=default bc=default. accelerator key).
 :p.
 The commonly used directory list, in combination with the State list,

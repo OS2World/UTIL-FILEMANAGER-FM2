@@ -182,7 +182,7 @@ that drive to the entry field.
 The file search is performed using the current Collector Filter's
 attribute values.
 :p.
-Click :hp6.Okay:ehp6. when ready to search, or :hp6.Cancel:ehp6. to exit
+Click &OkayButton. when ready to search, or &CancelButton. to exit
 without searching. Note that this function is designed to run in the
 background while you're doing other work, rather than running full-tilt
 and making you wait for it.
@@ -209,8 +209,8 @@ will then build the filemask for you from that list of directories.
 :p.
 Some of the most frequently encountered environment variable names are
 displayed in the listbox. If you select one, its name is placed in the
-entry field for you. You can also type in a name. Click :hp1.Okay:ehp1.
-when you have entered the desired name, or click :hp1.Cancel:ehp1. if
+entry field for you. You can also type in a name. Click &OkayButton.
+when you have entered the desired name, or click &CancelButton. if
 you changed your mind and don't wish to use an environment variable
 name.
 
@@ -220,7 +220,7 @@ name.
 FM/2 can present a window listing all the files on one or more drives.
 This command is part of the :link reftype=hd res=90100.Collector:elink.,
 and can be accessed from the Utilities menu or the Collector's context menu.
-Selecting :hp1.Miscellaneous->Show allfiles:ehp1. (:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+Selecting :hp1.Miscellaneous->Show allfiles:ehp1. (&CtrlKey.
  + :color fc=default bc=palegray.S:color fc=default bc=default.) from a Drive
 Tree directory's context menu will also get you here.
 :p.
@@ -249,7 +249,7 @@ as well as select and deselect all, and select and deselect based on
 masks and/or attributes.
 :p.
 Keyboard selection is performed with the :color fc=default bc=palegray.spacebar:color fc=default bc=default.
-, or you can hold down the :color fc=default bc=palegray.Shift:color fc=default bc=default.  key while
+, or you can hold down the &ShiftKey.  key while
 moving the cursored selection with the  :color fc=default bc=palegray.arrow:color fc=default bc=default. keys.
 You can press the first letter of a file (as displayed; if fullnames are
 on, you must type the first letter of the full filename, including path)

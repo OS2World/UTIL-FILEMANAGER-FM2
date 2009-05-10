@@ -10,8 +10,8 @@ at the internal :link reftype=hd res=94600.Settings Notebook:elink.
 and its help to see how you can customize FM/2's behavior to your taste.
 :p.
 The rest?  Drag and drop works as you might expect from the WPS, except
-that link-dragging (holding :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
- + :color fc=default bc=palegray.Shift:color fc=default bc=default. while dragging) is used to do
+that link-dragging (holding &CtrlKey.
+ + &ShiftKey. while dragging) is used to do
 comparing within FM/2 (still creates shadows when dropping on WPS
 objects). Direct renaming works as expected. Context menus can be
 requested on objects for other functions. Double-clicking opens objects

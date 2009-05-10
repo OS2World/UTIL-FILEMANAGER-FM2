@@ -34,7 +34,7 @@ this menu. You can use the submenu to access the specific page you want
 otherwise it opens to the last page you accessed.
 :p.
 The :link reftype=hd res=100065.Set Target directory:elink. is the next menu
-item and can also be accessed using :color fc=default bc=palegray.Ctrl:color fc=default bc=default.+:color fc=default bc=palegray.T:color fc=default bc=default..
+item and can also be accessed using &CtrlKey.+:color fc=default bc=palegray.T:color fc=default bc=default..
 :p.
 Five menu items to toggle various FM/2 functions on and off are next.
 The first two :link reftype=hd res=91800.Toolbar:elink. and :hp6.Autoview:ehp6.
@@ -60,7 +60,7 @@ be autoviewed -- either the file's .COMMENTS EA or the start of the
 file's contents (similar to the *nix HEAD program). When .COMMENTS EAs
 are being viewed, you can edit them and the changes will be saved when
 you switch the focus from the Autoview window. You can reach this
-editable Autoview window with the  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.Tab:color fc=default bc=default. hotkey if you are allergic
+editable Autoview window with the  &CtrlKey. +  :color fc=default bc=palegray.Tab:color fc=default bc=default. hotkey if you are allergic
 to your mouse.
 :p.
 Clicking the contents Autoview window with :color fc=default bc=cyan.B1:color fc=default bc=default. causes the file to be

@@ -25,7 +25,7 @@ The current window within the main window is surrounded by a red line.
 If the Drive Tree is active and the current window, the Directory
 Container that will be affected by double-clicking a directory in the
 Tree is surrounded by a dark red line. :color fc=default bc=palegray.Tab:color fc=default bc=default.
- and :color fc=default bc=palegray.Shift:color fc=default bc=default. -:color fc=default bc=palegray.Tab:color fc=default bc=default. can be used
+ and &ShiftKey. -:color fc=default bc=palegray.Tab:color fc=default bc=default. can be used
 to switch between the windows.
 :p.
 Other topics that might be of interest&colon.

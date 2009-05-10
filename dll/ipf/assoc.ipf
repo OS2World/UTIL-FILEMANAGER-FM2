@@ -46,9 +46,9 @@ buttons and checkboxes that control session type as desired (these are
 explained in more detail in the help for :link reftype=hd
 res=90600.Editing Commandline:elink. except for :hp1.Prompt:ehp1.,
 which causes a dialog to appear that allows editing the command line
-before it is run), then click :hp1.Add:ehp1.. :hp1.Okay:ehp1. also
+before it is run), then click :hp1.Add:ehp1.. &OkayButton. also
 adds any changes you have make then closes the dialog. If you wish to close
-without save choose :hp1.Cancel:ehp1.
+without save choose &CancelButton.
 :p.
 To delete an association, select it in the listbox, then click
 :hp1.Del:ehp1.. You should be aware that the association deleted is
@@ -118,7 +118,7 @@ and stand to gain considerably.
 :i1 id=aboutOS2Associations.Accessing OS/2's associations
 You can access OS/2's associations for a file system object at any time
 by pressing the :color fc=default bc=palegray.F6:color fc=default bc=default.
- key or holding down :color fc=default bc=palegray.Ctrl:color fc=default bc=default. while double-clicking the
+ key or holding down &CtrlKey. while double-clicking the
 object. This causes a default WPS open to be performed on the object.
 :p.
 If you want to access OS/2's associations by an unaugmented double-click,

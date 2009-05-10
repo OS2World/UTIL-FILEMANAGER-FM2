@@ -106,7 +106,7 @@ searched on entry for a topic of interest (like typing "VIEW inffile
 topic" at a command line).
 :p.
 When you're done with the dialog, press :color fc=default bc=palegray.Esc:color fc=default bc=default.
- or click :hp1.Cancel:ehp1.. Any open .INF files remain open until you close them
+ or click &CancelButton.. Any open .INF files remain open until you close them
 (hint&colon. :color fc=default bc=palegray.F3:color fc=default bc=default. will close an .INF file).
 :p.
 Note&colon. this dialog is shared by the :hp2.:link reftype=hd
@@ -135,7 +135,7 @@ This is an internal addition; your CONFIG.SYS and environment are not
 modified.
 :p.
 When you're done with the dialog, press :color fc=default bc=palegray.Esc:color fc=default bc=default.
- or click :hp1.Cancel:ehp1.. Any open .HLP file will remain open until you close it.
+ or click &CancelButton.. Any open .HLP file will remain open until you close it.
 :p.
 Note&colon. this dialog is shared by the :hp2.:link reftype=hd
 res=94800.View Bookshelf:elink.:ehp2. and :hp2.View Helpfiles:ehp2.

@@ -6,7 +6,7 @@ the listbox at the top of the dialog) and set the Target (the file that
 will contain the merged files). The :hp1.Merge:ehp1. command is under
 the :hp1.Files->Copy:ehp1. conditional cascade menu.
 :p.
-When you click :hp1.Okay:ehp1., each file, in order, is appended to the
+When you click &OkayButton., each file, in order, is appended to the
 Target filename. The merged files are not deleted. If :hp1.Append:ehp1.
 is checked, the Target file is appended if it exists; otherwise, it's
 overwritten by the first merge file. If :hp1.Binary:ehp1. is checked,
@@ -21,5 +21,5 @@ dialog first came up.
 :p.
 If you want to edit a file, double-click it in the listbox.
 :p.
-When you're done, click :hp1.Okay:ehp1.. If you changed your mind, click
-:hp1.Cancel:ehp1..
+When you're done, click &OkayButton.. If you changed your mind, click
+&CancelButton..

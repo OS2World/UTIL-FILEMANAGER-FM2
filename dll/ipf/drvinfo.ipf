@@ -20,7 +20,7 @@ FM/2 will show you information about the drive from which you chose the
 :hp1.Info:ehp1. command in a context menu or files menu.
 :p.
 For writable drives, you can change the drive's :hp1.label:ehp1. here
-by changing the text in the entry field and clicking :hp1.Okay:ehp1..
+by changing the text in the entry field and clicking &OkayButton..
 :p.
 The dialog box shows you the type of file system, volume label, total
 and available space on the drive (megabytes, kilobytes and units), tells
@@ -117,6 +117,6 @@ You can edit an object's EAs or WPS Settings notebook (Properties) by
 clicking the appropriate button. If you want to see inside a file,
 double-click it in the listbox.
 :p.
-Click :hp1.Okay:ehp1. when you're through examining the objects.
+Click &OkayButton. when you're through examining the objects.
 
 

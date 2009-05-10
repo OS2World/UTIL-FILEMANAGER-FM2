@@ -9,7 +9,7 @@ to be used when printing occurs.
 The listbox at the top of the dialog contains the files that are to be
 printed. You can unhighlight (deselect) any files that you do
 :hp1.not:ehp1. want to print. :hp6.Hint:ehp6.&colon. you might need to
-hold down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default. key while clicking to unhighlight the first file.
+hold down the &CtrlKey. key while clicking to unhighlight the first file.
 :p.
 At the bottom of the dialog you can tell FM/2 whether to use
 :hp1.formatted printing:ehp1., which performs pagination for you, or to
@@ -30,7 +30,7 @@ the line spacing used (1 for single-spaced, 2 for double-spaced, etc.),
 and tell FM/2 if it needs to send a formfeed before and/or after each
 file it prints.
 :p.
-Click :hp1.Okay:ehp1. when you're ready to print. Click :hp1.Cancel:ehp1.
+Click &OkayButton. when you're ready to print. Click &CancelButton.
 if you changed your mind and don't want to print anything.
 :p.
 :hp6.Notes&colon.:ehp6.

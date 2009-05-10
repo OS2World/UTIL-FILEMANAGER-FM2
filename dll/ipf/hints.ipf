@@ -20,7 +20,7 @@ dialog allowing you to specify a name for a new directory into which to
 place the files.
 :p.
 To set the label of a drive, pick :link reftype=hd
-res=90900.Files->Info:elink. (:color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.i:color fc=default bc=default. accelerator) on the root of the
+res=90900.Files->Info:elink. (&CtrlKey. + :color fc=default bc=palegray.i:color fc=default bc=default. accelerator) on the root of the
 drive in the Drive Tree container. You'll find :hp1.Format:ehp1. and
 :hp1.Chkdsk:ehp1. in that menu, too, under the :hp1.Miscellaneous:ehp1.
 submenu.
@@ -40,7 +40,7 @@ non-US users, as non-ASCII characters might show up improperly.
 :p.
 To invoke an OS/2 WPS association rather than an FM/2 internal
 association, try Open->Default from a context menu on the file object
-(F6 accelerator) or holding down the :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+(F6 accelerator) or holding down the &CtrlKey.
  key while double-clicking the object. Alternatively, use <> as the command line for an :link
 reftype=hd res=90400.association:elink. and it'll open the object's
 default WPS view, which will run the program associated with the object
@@ -116,7 +116,7 @@ specify different printers using LPT? (i.e. LPT1, LPT2, LPT3, etc.).
 :p.
 If nothing shows in a Directory Container, Archive Container, the
 Collector or Drive Tree although you :hp1.know:ehp1. there's something
-in it, check your Filter (:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+in it, check your Filter (&CtrlKey.
  + :color fc=default bc=palegray.f:color fc=default bc=default. accelerator). The Filter button for
 the appropriate container will show the current filter status for the
 current container (F&colon.<All> means everything is visible, <Attr>
@@ -136,19 +136,19 @@ Directory Container is "looking" into. They behave, for drag and drop
 and requesting context menus, like empty container space (whitespace).
 :p.
 To begin a direct edit of the current file's name using the keyboard,
-use :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.F10
-:color fc=default bc=default.. To end (complete) the direct edit, use  :color fc=default bc=palegray.Ctrl:color fc=default bc=default. +  :color fc=default bc=palegray.F11:color fc=default bc=default.. To
+use &CtrlKey. + :color fc=default bc=palegray.F10
+:color fc=default bc=default.. To end (complete) the direct edit, use  &CtrlKey. +  :color fc=default bc=palegray.F11:color fc=default bc=default.. To
 cancel an edit underway, use :color fc=default bc=palegray.Esc:color fc=default bc=default..
 :p.
 PM uses several :color fc=default bc=palegray.ALT:color fc=default bc=default. + :color fc=default bc=palegray.F?:color fc=default bc=default. accelerators to control frame windows. However,
 this applies to the current frame window, which can be within the main
-FM/2 window when run monolithically. Add :color fc=default bc=palegray.Ctrl:color fc=default bc=default. to these accelerators to
-affect the main window in that case. For example, :color fc=default bc=palegray.Ctrl:color fc=default bc=default.  + :color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.F9:color fc=default bc=default. will
+FM/2 window when run monolithically. Add &CtrlKey. to these accelerators to
+affect the main window in that case. For example, &CtrlKey.  + :color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.F9:color fc=default bc=default. will
 minimize the main FM/2 window, while :color fc=default bc=palegray.Alt:color fc=default bc=default.  + :color fc=default bc=palegray.F9:color fc=default bc=default.  will minimize whichever
 frame window has the focus.
 :p.
 If you have the bottom buttons turned on in FM/2 and have a 3-button
-mouse, clicking the  :color fc=default bc=cyan.B3:color fc=default bc=default. (or holding down :color fc=default bc=palegray.Ctrl:color fc=default bc=default.  while clicking
+mouse, clicking the  :color fc=default bc=cyan.B3:color fc=default bc=default. (or holding down &CtrlKey.  while clicking
 :color fc=default bc=cyan.B1:color fc=default bc=default.) on them will change your sort type.
 :p.
 Problem with ZIP or EZ drive -- slow scanning&colon. See :link
@@ -162,12 +162,12 @@ is one of those never-fixed OS/2 bugs. Try :hp1.unchecking:ehp1. the
 Immediate updates toggle in the Settings notebook. This usually works
 around this bug.
 :p.
-To find any directory in the Drive Tree quickly, type  :color fc=default bc=palegray.Ctrl:color fc=default bc=default.  +
-:color fc=default bc=palegray.Shift:color fc=default bc=default.  +  :color fc=default bc=palegray.F:color fc=default bc=default.
+To find any directory in the Drive Tree quickly, type  &CtrlKey.  +
+&ShiftKey.  +  :color fc=default bc=palegray.F:color fc=default bc=default.
 with the Drive Tree active, then type in the pathname of the directory
 that you want to find. To find the directory of a Directory Container
-in the Drive Tree, type :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.Shift:color fc=default bc=default. + :color fc=default bc=palegray.F:color fc=default bc=default. with the Directory Container
-active.
+in the Drive Tree, type &CtrlKey. + &ShiftKey.+ 
+:color fc=default bc=palegray.F:color fc=default bc=default. with the Directory Container active.
 :p.
 The :link reftype=hd res=90100.Collector:elink. can search for files
 based on a variety of criteria. The search function can also find
@@ -204,7 +204,7 @@ there.
 If you want to directly execute a self-extracting archive (or anything
 else, for that matter -- I mention self-extracting archives because FM/2
 will attempt to view them rather than run them when you double-click
-them), press :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.
+them), press &CtrlKey. + :color fc=default bc=palegray.
 F5:color fc=default bc=default.. This brings up the :link reftype=hd
 res=90600.Command line:elink. dialog with the cursored file in the entry
 field.

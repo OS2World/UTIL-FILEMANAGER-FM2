@@ -45,8 +45,8 @@ If you check the :hp1.Remember...:ehp1. checkbox, this dialog will
 remember some of its settings for the next time you use it. Uncheck
 it and it'll forget them and use the defaults.
 :p.
-Click :hp1.Okay:ehp1. to begin extracting from the archive, or
-:hp1.Cancel:ehp1. if you change your mind.
+Click &OkayButton. to begin extracting from the archive, or
+&CancelButton. if you change your mind.
 :p.
 You can also extract files from the archive in the :link reftype=hd
 res=90200.Archive Container:elink. window using that window's menus;
@@ -86,8 +86,8 @@ listbox from which to pick an archiver.
 After that, another dialog appears to let you modify how the archive that
 will be created. Additional masks may be entered (remember that some versions
 of ZIP and UNZIP programs are case sensitive), the archiver command line
-tweaked, and so forth. Click :hp1.Okay:ehp1. to create the archive, or
-:hp1.Cancel:ehp1. if you change your mind.
+tweaked, and so forth. Click &OkayButton. to create the archive, or
+&CancelButton. if you change your mind.
 :p.
 Note that the archive name may be an existing archive, in which case
 it's modified by adding the new files. If some of the files are

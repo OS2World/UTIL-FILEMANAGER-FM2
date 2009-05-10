@@ -46,7 +46,7 @@ about six seconds of every minute the time/date field displays the
 elapsed system time (how long the system's been up). You can click the
 time/date field with :color fc=default bc=cyan.B1:color fc=default bc=default. to cause this info to show up briefly at any
 time, or double-click to open the System Clock's Settings window to
-allow you to adjust the time (hold down :color fc=default bc=palegray.Shift:color fc=default bc=default. while clicking to get the
+allow you to adjust the time (hold down &ShiftKey. while clicking to get the
 clock itself).
 :p.
 You can move the databar by clicking and holding  :color fc=default bc=cyan.B1:color fc=default bc=default. on the databar and

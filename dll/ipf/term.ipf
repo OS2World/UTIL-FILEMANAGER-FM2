@@ -99,7 +99,7 @@ object names as well as Subject and Longname fields in Details view.
 :hp1.Default action:ehp1. = what happens when you double-click an
 object in a container (or put the cursor on it with the :color fc=default bc=palegray.arrow:color fc=default bc=default. keys
 and press :color fc=default bc=palegray.Enter:color fc=default bc=default.)  The default action may sometimes be modified by
-the Shift state of the keyboard (if you hold down :color fc=default bc=palegray.Shift:color fc=default bc=default. or :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+the Shift state of the keyboard (if you hold down &ShiftKey. or &CtrlKey.
 while double-clicking or pressing :color fc=default bc=palegray.Enter:color fc=default bc=default.). The
 :link reftype=hd res=90000.General Help:elink. topic explains default actions in detail.
 :p.
@@ -107,8 +107,8 @@ while double-clicking or pressing :color fc=default bc=palegray.Enter:color fc=d
 combinations that allow you to quickly give a program a command without
 going through menus or toolbars. For example, FM/2's accelerator key to
 get help is :color fc=default bc=palegray.F1:color fc=default bc=default.. Note that accelerators are case sensitive, so
-that :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.m:color fc=default bc=default. isn't the same as :color fc=default bc=palegray.Ctrl:color fc=default bc=default. + :color fc=default bc=palegray.M:color fc=default bc=default. -- you'll need to hold down
-the :color fc=default bc=palegray.Shift:color fc=default bc=default. key or set :color fc=default bc=palegray.Caps Lock:color fc=default bc=default. to get the latter.
+that &CtrlKey. + :color fc=default bc=palegray.m:color fc=default bc=default. isn't the same as &CtrlKey. + :color fc=default bc=palegray.M:color fc=default bc=default. -- you'll need to hold down
+the &ShiftKey. key or set :color fc=default bc=palegray.Caps Lock:color fc=default bc=default. to get the latter.
 :p.
 :hp1.:link reftype=hd res=97600.Drive Tree:elink.:ehp1. = the special
 window that's always open in FM/2 displaying your drives in "tree"
@@ -245,7 +245,7 @@ submenus have arrows that are not buttons; clicking anywhere on one of
 thse items opens the submenu.
 :p.
 Notice that listed beside "FM/2 Window" is the :link reftype=hd
-res=100005.accelerator key:elink. :color fc=default bc=palegray.Ctrl:color fc=default bc=default.
+res=100005.accelerator key:elink. &CtrlKey.
  + :color fc=default bc=palegray.o:color fc=default bc=default.. This is the command to open
 a new FM/2 window, and is the fastest way to input a command.
 :p.

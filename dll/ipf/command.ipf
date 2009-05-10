@@ -63,7 +63,7 @@ This dialog, accessed from the Edit Commands dialog, allows you to
 rearrange the order of Commands. You take selected items from the left
 listbox and Add them to the end of the right listbox with the
 :hp1.Add>>:ehp1. button. When you've moved everything to the right
-listbox, click :hp1.Okay:ehp1.. Click :hp1.Cancel:ehp1. if you change
+listbox, click &OkayButton.. Click &CancelButton. if you change
 your mind.
 :p.
 In reality, you don't need to move everything to the right listbox. You

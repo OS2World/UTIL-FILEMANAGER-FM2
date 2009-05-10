@@ -35,4 +35,4 @@ assigned to the controls of the dialog.
 :p.
 If you want to see inside a file, double-click it in the listbox.
 :p.
-Click :hp1.Okay:ehp1. when done, or :hp1.Cancel:ehp1. to abort.
+Click &OkayButton. when done, or &CancelButton. to abort.

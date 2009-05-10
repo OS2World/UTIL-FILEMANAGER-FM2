@@ -29,10 +29,12 @@ Note&colon. FM/2 automatically stores command lines you use here for
 you if the :hp1.Save command line:ehp1. checkbox is checked. You can
 get to them by clicking the :hp1.V:ehp1. button beside the entry field.
 Up to 250 command lines can be stored in this manner, kept in a file
-named CMDLINES.DAT between sessions. Pressing the :color fc=default bc=palegray.Delete:color fc=default bc=default.
+named CMDLINES.DAT between sessions. Pressing the 
+:color fc=default bc=palegray.Delete:color fc=default bc=default.
  key (or clicking the :hp1.Del:ehp1. button that appears) while one of the
-names in the listbox is highlighted will remove it. Pressing :color fc=default bc=palegray.Ctrl
-:color fc=default bc=default. + :color fc=default bc=palegray.Delete:color fc=default bc=default.. will remove (wipe) all entries.
+names in the listbox is highlighted will remove it. Pressing &CtrlKey. 
++ :color fc=default bc=palegray.Delete:color fc=default bc=default.. 
+will remove (wipe) all entries.
 :p.
 Tech note&colon. FM/2 picks the directory in which to start the process
 using the following criteria&colon.

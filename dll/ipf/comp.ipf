@@ -32,9 +32,8 @@ of the container title. You can change both directories simultaneously
 by clicking the :hp6.Dirs:ehp6. button. You can include all the files
 in all subdirectories by checking the :hp6.Include subdirs:ehp6. button.
 :p.
-This dialog is reached by :hp1.link-dropping:ehp1. (:color fc=default bc=palegray.Ctrl:color fc=default bc=default.
- + :color fc=default bc=palegray.Shift:color fc=default bc=default. held
-down while dragging and dropping) one directory object onto another
+This dialog is reached by :hp1.link-dropping:ehp1. (&CtrlKey.
+ + &ShiftKey. held down while dragging and dropping) one directory object onto another
 directory object, or by selecting :hp1.Utilities->Compare
 directories:ehp1. from the main window's pulldown menu.
 :p.
@@ -64,7 +63,8 @@ Several selection/deselection techniques are available via pushbuttons
 to enable you to select files based on their comparison. The pushbuttons
 operate on both containers. You can also select and deselect files in
 the containers manually with the mouse or keyboard.
-:hp2.Hint&colon.:ehp2. mouse selection of multiple files works slightly differently when you hold down :color fc=default bc=palegray.Ctrl:color fc=default bc=default. while clicking.
+:hp2.Hint&colon.:ehp2. mouse selection of multiple files works slightly differently 
+when you hold down &CtrlKey. while clicking.
 :p.
 :hp2.The selection and deselection buttons are&colon.:ehp2.
 :p.
@@ -151,6 +151,6 @@ directory structure of your drives. See also :link reftype=hd
 res=91500.Walk Directories:elink..
 :p.
 When the desired directories are displayed in the entry fields of
-the dialog, click :hp1.Okay:ehp1. to exit. Click :hp1.Cancel:ehp1. to
+the dialog, click &OkayButton. to exit. Click &CancelButton. to
 exit without selecting directories.
 
