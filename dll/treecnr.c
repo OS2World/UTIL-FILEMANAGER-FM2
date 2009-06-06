@@ -742,6 +742,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR tb[64];
       CHAR szFree[64];
       CNRINFO cnri;
+      CHAR FileSystem[CCHMAXPATH * 2];
+      CHAR szTmpLabel[CCHMAXPATH];
+      ULONG type;
 
       strcpy(s, GetPString(IDS_TREETEXT));
       memset(&cnri, 0, sizeof(CNRINFO));
@@ -772,11 +775,19 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      else
 		*szFree = 0;
-	      driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
-	      sprintf(&s[strlen(s)],
-		      GetPString(IDS_TREESTATUSSTARTTEXT),
-		      toupper(*pci->pszFileName),
-		      volser.volumelabel, volser.serial, szFree);
+              driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
+              if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 || fShowSysType)
+                strcpy(FileSystem, "");
+              if (fShowLabel)
+                strcpy(szTmpLabel, "");
+              else
+                strcpy(szTmpLabel, volser.volumelabel);
+
+	      sprintf(s,
+                      GetPString(fShowSysType ? IDS_TREESTATUSSTART1TEXT : fShowLabel
+                                 ? IDS_TREESTATUSSTART2TEXT : IDS_TREESTATUSSTARTTEXT),
+		      toupper(*pci->pszFileName), FileSystem,
+		      szTmpLabel, volser.serial, szFree);
 	      if (!fMoreButtons) {
 		if (*dcd->mask.szMask ||
 		    (dcd->mask.attrFile != ALLATTRS ||

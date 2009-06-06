@@ -947,9 +947,11 @@
 #define IDS_ASSOCFILETEXT                                     958
 #define IDS_TOOLFILETEXT                                      959
 #define IDS_TREESTATUSSTARTTEXT                               960
-#define IDS_GREPFILETEXT                                      961
-#define IDS_CMINSERTERRTEXT                                   963
-#define IDS_CMALLOCRECERRTEXT                                 964
+#define IDS_TREESTATUSSTART1TEXT                              961
+#define IDS_TREESTATUSSTART2TEXT                              962
+#define IDS_GREPFILETEXT                                      963
+#define IDS_CMINSERTERRTEXT                                   964
+#define IDS_CMALLOCRECERRTEXT                                 965
 #define IDS_NOWINDOWTEXT                                      968
 #define IDS_2SYSTEMVIOTEXT                                    969
 #define IDS_MAKEARCTITLETEXT                                  970
