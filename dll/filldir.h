@@ -45,7 +45,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 			      DIRCNRDATA *pdcd);
 ULONGLONG FillInRecordFromFSA(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszFileName, const PFILESTATUS4L pfsa4,
-			      const BOOL partial, DIRCNRDATA *pdcd);
+			      const BOOL partial, CHAR *szFSType, DIRCNRDATA *pdcd);
 VOID FreeCnrItem(HWND hwnd, PCNRITEM pci);
 VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
 VOID FreeCnrItemData(PCNRITEM pci);

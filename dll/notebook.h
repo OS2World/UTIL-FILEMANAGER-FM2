@@ -89,6 +89,8 @@ extern BOOL fRScanNoWrite;
 extern BOOL fSaveState;
 extern BOOL fSeparateParms;
 extern BOOL fShowEnv;
+extern BOOL fShowLabel;
+extern BOOL fShowSysType;
 extern BOOL fShowTarget;
 extern BOOL fStartMaximized;
 extern BOOL fStartMinimized;

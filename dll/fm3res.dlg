@@ -1953,7 +1953,7 @@ BEGIN
     DIALOG  "", CFGT_FRAME, 0, 0, 258, 142, NOT FS_DLGBORDER | NOT
             WS_SAVEBITS
     BEGIN
-        AUTOCHECKBOX    "~Follow Drive Tree", CFGT_FOLLOWTREE, 4, 128, 132,
+        AUTOCHECKBOX    "~Follow Drive Tree", CFGT_FOLLOWTREE, 4, 128, 112,
                         10, WS_GROUP
         AUTOCHECKBOX    "~Double-click opens", CFGT_DCOPENS, 4, 116, 132, 10
         AUTOCHECKBOX    "~Treetop on expand", CFGT_TOPDIR, 4, 104, 132, 10
@@ -1969,6 +1969,9 @@ BEGIN
                         4, 44, 132, 10
         AUTOCHECKBOX    "Show ~env. vars in Tree", CFGT_SHOWENV, 4, 32, 110,
                         10
+        CONTROL         "Show file system type \"x\" or drive label \"=\" in tree(~3-state)", 
+                        CFGT_SYSTYPELABEL, 122, 128, 196, 10, 
+                        WC_BUTTON, BS_AUTO3STATE | WS_TABSTOP | WS_VISIBLE                
 	ENTRYFIELD      "", CFGT_ENVVARLIST, 120, 32, 196, 8, ES_MARGIN | ES_AUTOSCROLL
         PUSHBUTTON      "~Help", IDM_HELP, 8, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP

@@ -154,6 +154,8 @@ BOOL fRScanNoWrite;
 BOOL fSaveState;
 BOOL fSeparateParms;
 BOOL fShowEnv;
+BOOL fShowLabel;
+BOOL fShowSysType;
 BOOL fShowTarget;
 BOOL fStartMaximized;
 BOOL fStartMinimized;
@@ -1361,6 +1363,10 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGT_SWITCHTREEEXPAND, fSwitchTreeExpand);
     WinCheckButton(hwnd, CFGT_SHOWENV, fShowEnv);
     WinSetDlgItemText(hwnd, CFGT_ENVVARLIST, pszTreeEnvVarList);
+    {
+      long th = fShowLabel ? 2 : (fShowSysType ? 1 : 0);
+      WinCheckButton(hwnd, CFGT_SYSTYPELABEL, th);
+    }
     return 0;
 
   case WM_HELP:
@@ -1410,64 +1416,73 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CLOSE:
-    fVTreeOpensWPS = WinQueryButtonCheckstate(hwnd, CFGT_VTREEOPENSWPS);
-    PrfWriteProfileData(fmprof, FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS,
-			sizeof(BOOL));
-    fCollapseFirst = WinQueryButtonCheckstate(hwnd, CFGT_COLLAPSEFIRST);
-    PrfWriteProfileData(fmprof, appname, "CollapseFirst", &fCollapseFirst,
-			sizeof(BOOL));
-    fSwitchTreeOnFocus = WinQueryButtonCheckstate(hwnd,
-						  CFGT_SWITCHTREEONFOCUS);
-    PrfWriteProfileData(fmprof, appname, "SwitchTreeOnFocus",
-			&fSwitchTreeOnFocus, sizeof(BOOL));
-    fSwitchTreeExpand = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREEEXPAND);
-    PrfWriteProfileData(fmprof, appname, "SwitchTreeExpand",
-			&fSwitchTreeExpand, sizeof(BOOL));
-    fSwitchTree = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREE);
-    PrfWriteProfileData(fmprof, appname, "SwitchTree", &fSwitchTree,
-			sizeof(BOOL));
-    fFollowTree = WinQueryButtonCheckstate(hwnd, CFGT_FOLLOWTREE);
-    PrfWriteProfileData(fmprof, appname, "FollowTree", &fFollowTree,
-			sizeof(BOOL));
-    fTopDir = WinQueryButtonCheckstate(hwnd, CFGT_TOPDIR);
-    PrfWriteProfileData(fmprof, appname, "TopDir", (PVOID) & fTopDir,
-			sizeof(BOOL));
-    fDCOpens = WinQueryButtonCheckstate(hwnd, CFGT_DCOPENS);
-    PrfWriteProfileData(fmprof, FM3Str, "DoubleClickOpens", &fDCOpens,
-			sizeof(BOOL));
-    fShowEnvChanged = (fShowEnv != WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV));
-    fShowEnv = WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV);
-    PrfWriteProfileData(fmprof, appname, "ShowEnv", &fShowEnv, sizeof(BOOL));
     {
-      char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1, pszSrcFile, __LINE__);
-      if (pszTemp) {
-	WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
-	strupr(pszTemp);
-	if (strcmp(pszTemp, pszTreeEnvVarList)) {
-	  fTreeEnvVarListChanged = TRUE;
-	  strcpy(pszTreeEnvVarList, pszTemp);
-	  PrfWriteProfileString(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList);
-	}
-	free(pszTemp);
-      }
-      if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged)))
+      long test;
+  
+      test = WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPELABEL);
+      fShowSysType = (test == 1);
+      fShowLabel = (test == 2);
+      PrfWriteProfileData(fmprof, FM3Str, "ShowSysType", &fShowSysType, sizeof(BOOL));
+      PrfWriteProfileData(fmprof,	FM3Str, "ShowLabel", &fShowLabel, sizeof(BOOL));
+      fVTreeOpensWPS = WinQueryButtonCheckstate(hwnd, CFGT_VTREEOPENSWPS);
+      PrfWriteProfileData(fmprof, FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS,
+                          sizeof(BOOL));
+      fCollapseFirst = WinQueryButtonCheckstate(hwnd, CFGT_COLLAPSEFIRST);
+      PrfWriteProfileData(fmprof, appname, "CollapseFirst", &fCollapseFirst,
+                          sizeof(BOOL));
+      fSwitchTreeOnFocus = WinQueryButtonCheckstate(hwnd,
+                                                    CFGT_SWITCHTREEONFOCUS);
+      PrfWriteProfileData(fmprof, appname, "SwitchTreeOnFocus",
+                          &fSwitchTreeOnFocus, sizeof(BOOL));
+      fSwitchTreeExpand = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREEEXPAND);
+      PrfWriteProfileData(fmprof, appname, "SwitchTreeExpand",
+                          &fSwitchTreeExpand, sizeof(BOOL));
+      fSwitchTree = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREE);
+      PrfWriteProfileData(fmprof, appname, "SwitchTree", &fSwitchTree,
+                          sizeof(BOOL));
+      fFollowTree = WinQueryButtonCheckstate(hwnd, CFGT_FOLLOWTREE);
+      PrfWriteProfileData(fmprof, appname, "FollowTree", &fFollowTree,
+                          sizeof(BOOL));
+      fTopDir = WinQueryButtonCheckstate(hwnd, CFGT_TOPDIR);
+      PrfWriteProfileData(fmprof, appname, "TopDir", (PVOID) & fTopDir,
+                          sizeof(BOOL));
+      fDCOpens = WinQueryButtonCheckstate(hwnd, CFGT_DCOPENS);
+      PrfWriteProfileData(fmprof, FM3Str, "DoubleClickOpens", &fDCOpens,
+                          sizeof(BOOL));
+      fShowEnvChanged = (fShowEnv != WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV));
+      fShowEnv = WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV);
+      PrfWriteProfileData(fmprof, appname, "ShowEnv", &fShowEnv, sizeof(BOOL));
       {
-	PCNRITEM pci = WinSendMsg(WinWindowFromID
-		(WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), CM_QUERYRECORDEMPHASIS,
-				  MPFROMLONG(CMA_FIRST),
-				  MPFROMSHORT(CRA_SELECTED));
-	PostMsg(WinWindowFromID
-		(WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
-		MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-	pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
-	if (pszTemp) {
-	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
-	    free(pszTemp);
-	  /* pszTemp is freed in the UM_SHOWME code */
-	}
+        char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1, pszSrcFile, __LINE__);
+        if (pszTemp) {
+          WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
+          strupr(pszTemp);
+          if (strcmp(pszTemp, pszTreeEnvVarList)) {
+            fTreeEnvVarListChanged = TRUE;
+            strcpy(pszTreeEnvVarList, pszTemp);
+            PrfWriteProfileString(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList);
+          }
+          free(pszTemp);
+        }
+        if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged)))
+        {
+          PCNRITEM pci = WinSendMsg(WinWindowFromID
+                  (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), CM_QUERYRECORDEMPHASIS,
+                                    MPFROMLONG(CMA_FIRST),
+                                    MPFROMSHORT(CRA_SELECTED));
+          PostMsg(WinWindowFromID
+                  (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
+                  MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
+          if (pszTemp) {
+            if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
+              free(pszTemp);
+            /* pszTemp is freed in the UM_SHOWME code */
+          }
+        }
       }
+      break;
     }
-    break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }

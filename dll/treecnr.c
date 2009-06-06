@@ -815,14 +815,14 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (!dcd)
       Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
+      while (StubbyScanCount != 0)
+	DosSleep(50);
       RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW, MPFROMSHORT(CMA_VERTICAL), MPFROMLONG(-1));
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW,
 		 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
-	 while (StubbyScanCount != 0)
-	    DosSleep(50);
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);

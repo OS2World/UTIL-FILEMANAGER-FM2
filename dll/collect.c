@@ -834,7 +834,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      if (pci) {
 		dcd->ullTotalBytes += FillInRecordFromFSA(dcd->hwndCnr, pci,
 							  fullname,
-							  &fs4, FALSE, dcd);
+							  &fs4, FALSE, NULL, dcd);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;

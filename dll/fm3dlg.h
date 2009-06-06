@@ -604,16 +604,17 @@
 #define CFG_NOTEBOOK										25001
 
 #define CFGT_FRAME										25050
-#define CFGT_SWITCHTREEONFOCUS						25051
+#define CFGT_SWITCHTREEONFOCUS						                25051
 #define CFGT_SWITCHTREE									25052
-#define CFGT_SWITCHTREEEXPAND							25053
+#define CFGT_SWITCHTREEEXPAND							        25053
 #define CFGT_COLLAPSEFIRST								25054
-#define CFGT_DCOPENS										25055
+#define CFGT_DCOPENS									25055
 #define CFGT_FOLLOWTREE									25056
 #define CFGT_VTREEOPENSWPS								25057
-#define CFGT_TOPDIR										25058
-#define CFGT_SHOWENV										25059
-#define CFGT_ENVVARLIST 									25060
+#define CFGT_TOPDIR									25058
+#define CFGT_SHOWENV									25059
+#define CFGT_ENVVARLIST 								25060
+#define CFGT_SYSTYPELABEL                                                               25061
 
 #define CFGC_FRAME										25100
 #define CFGC_COMPARE										25101

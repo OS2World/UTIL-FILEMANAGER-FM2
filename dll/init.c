@@ -1308,7 +1308,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowEnv", &fShowEnv, &size);
   PrfQueryProfileString(fmprof, appname, "TreeEnvVarList", "PATH;DPATH;LIBPATH;HELP;BOOKSHELF;",
-			pszTreeEnvVarList, MaxComLineStrg);
+                        pszTreeEnvVarList, MaxComLineStrg);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ShowSysType", &fShowSysType, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "ShowLabel", &fShowLabel, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LeaveTree", &fLeaveTree, &size);
   size = sizeof(BOOL);
