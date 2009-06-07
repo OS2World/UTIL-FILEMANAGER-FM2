@@ -131,7 +131,7 @@ typedef struct {
   PCNRITEM    pci;
   HWND        hwndCnr;			// hwnd you want the message posted to
   HWND        hwndDrivesList;
-  BOOL        RamDrive;
+  //BOOL        RamDrive;
 }
 STUBBYSCAN;
 
@@ -1702,7 +1702,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       stubbyScan->pci = pci;
       stubbyScan->hwndCnr = hwndCnr;
       stubbyScan->hwndDrivesList = hwndDrivesList;
-      stubbyScan->RamDrive = FALSE;
+      //stubbyScan->RamDrive = FALSE;
       pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				      CM_QUERYRECORD,
 				      MPFROMP(pci),
@@ -1715,8 +1715,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      ~flags & DRIVE_NOPRESCAN &&
 	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) //&& !fDrivetoSkip[drvNum])
 	  {
-	    if (DRIVE_RAMDISK)
-	      stubbyScan->RamDrive = TRUE;
+	    //if (DRIVE_RAMDISK)
+	    //  stubbyScan->RamDrive = TRUE;
 	    if (xbeginthread(StubbyScanThread,
 			     65536,
 			     stubbyScan,

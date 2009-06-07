@@ -4692,11 +4692,21 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case IDM_BLINK:
-    WinSetWindowPos(WinQueryWindow(hwnd, QW_PARENT), HWND_TOP, 0, 0, 0, 0,
-		    SWP_MINIMIZE);
-    WinSetWindowPos(WinQueryWindow(hwnd, QW_PARENT), HWND_TOP, 0, 0, 0, 0,
-		    SWP_RESTORE | SWP_ZORDER);
-    break;
+    {
+      BOOL changed = FALSE;
+
+      if (fDataMin) {
+        fDataMin = FALSE;
+        changed = TRUE;
+      }
+      WinSetWindowPos(WinQueryWindow(hwnd, QW_PARENT), HWND_TOP, 0, 0, 0, 0,
+                      SWP_MINIMIZE);
+      WinSetWindowPos(WinQueryWindow(hwnd, QW_PARENT), HWND_TOP, 0, 0, 0, 0,
+                      SWP_RESTORE | SWP_ZORDER);
+      if (changed)
+        fDataMin = TRUE;
+      break;
+    }
 
   case DID_CANCEL:
     {
