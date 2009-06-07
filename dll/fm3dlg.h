@@ -30,6 +30,7 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  06 Jun 09 GKY Add option to show file system type or drive label in tree
 
 ***********************************************************************/
 

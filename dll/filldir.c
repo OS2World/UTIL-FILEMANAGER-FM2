@@ -68,6 +68,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
+  06 Jun 09 GKY Add option to show file system type or drive label in tree
 
 ***********************************************************************/
 

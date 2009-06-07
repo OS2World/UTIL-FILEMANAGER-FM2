@@ -11,6 +11,7 @@
   05 Jan 08 SHL Split from fm3dll.h
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   08 Mar 09 GKY Additional strings move to PCSZs
+  06 Jun 09 GKY Add option to show file system type or drive label in tree
 
 ***********************************************************************/
 

@@ -64,6 +64,7 @@
   07 Feb 09 GKY Move repeated strings to PCSZs.
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  06 Jun 09 GKY Add option to show file system type or drive label in tree
 
 ***********************************************************************/
 
