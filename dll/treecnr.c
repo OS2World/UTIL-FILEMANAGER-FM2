@@ -343,7 +343,12 @@ VOID ShowTreeRec(HWND hwndCnr,
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
       }
       if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) {
-	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
+        if (!(driveflags[toupper(*pciToSelect->pszFileName) - 'A'] & DRIVE_RSCANNED)) {
+          WinSendMsg(hwndCnr, UM_RESCAN, MPFROMP(pciToSelect), MPVOID);
+          WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
+        }
+        else
+          WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
       }
       if (!quickbail) {
 	WinSendMsg(hwndCnr,
