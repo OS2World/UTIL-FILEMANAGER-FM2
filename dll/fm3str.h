@@ -29,6 +29,7 @@
   04 Feb 09 SHL Switch to STRINGTABLE
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   14 Mar 09 GKY Remove variables that were transferred to PCSZs
+  06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
 
 ***********************************************************************/
 

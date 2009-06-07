@@ -78,6 +78,7 @@
   14 Mar 09 GKY PCSZ strings moved to compile time initialization
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring replaces check for
                 saved drive containers.
+  06 Jun 09 GKY Add option to show file system type or drive label in tree
 
 ***********************************************************************/
 

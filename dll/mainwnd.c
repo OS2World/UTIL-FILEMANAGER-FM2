@@ -85,6 +85,7 @@
   19 Mar 09 GKY Moved DeletePresParams to presparam.c
   28 Mar 09 GKY Add RemoveOldCnrSwitches to remove pre 3.16 style ini keys;
                 add State.version key for check
+  07 Jun 09 GKY Fix IDM_BLINK to not leave a DataBar? on the screen when fDataMin is TRUE.
 
 ***********************************************************************/
 

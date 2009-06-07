@@ -48,6 +48,7 @@
   07 Feb 09 GKY Move repeated strings to PCSZs.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
+  06 Jun 09 GKY Add option to show file system type or drive label in tree
 
 ***********************************************************************/
 
