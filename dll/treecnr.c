@@ -65,7 +65,10 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   12 Mar 09 SHL Use common SearchContainer
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
-
+  06 Jun 09 GKY Add option to show file system type or drive label in tree
+  06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
+  07 Jun 09 GKY Fixed double names in tree container when collapsed tree is accessed
+                before recursive scan
 ***********************************************************************/
 
 #include <stdlib.h>
@@ -787,12 +790,21 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 strcpy(szTmpLabel, "");
               else
                 strcpy(szTmpLabel, volser.volumelabel);
-
-	      sprintf(s,
-                      GetPString(fShowSysType ? IDS_TREESTATUSSTART1TEXT : fShowLabel
-                                 ? IDS_TREESTATUSSTART2TEXT : IDS_TREESTATUSSTARTTEXT),
-		      toupper(*pci->pszFileName), FileSystem,
-		      szTmpLabel, volser.serial, szFree);
+              if (fSplitStatus)
+                sprintf(s,
+                        GetPString(fShowSysType ? IDS_TREESTATUSSTART1TEXT : fShowLabel
+                                   ? IDS_TREESTATUSSTART2TEXT : IDS_TREESTATUSSTARTTEXT),
+                        toupper(*pci->pszFileName), FileSystem,
+                        szTmpLabel, volser.serial, szFree);
+              else {
+                strcat(s, " [");
+                sprintf(&s[strlen(s)],
+                        GetPString(fShowSysType ? IDS_TREESTATUSSTART1TEXT : fShowLabel
+                                   ? IDS_TREESTATUSSTART2TEXT : IDS_TREESTATUSSTARTTEXT),
+                        toupper(*pci->pszFileName), FileSystem,
+                        szTmpLabel, volser.serial, szFree);
+                strcat(s, "]");
+              }
 	      if (!fMoreButtons) {
 		if (*dcd->mask.szMask ||
 		    (dcd->mask.attrFile != ALLATTRS ||
