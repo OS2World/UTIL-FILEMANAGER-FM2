@@ -615,7 +615,9 @@
 #define CFGT_TOPDIR									25058
 #define CFGT_SHOWENV									25059
 #define CFGT_ENVVARLIST 								25060
-#define CFGT_SYSTYPELABEL                                                               25061
+#define CFGT_SYSTYPE                                                                    25061
+#define CFGT_LABEL                                                                      25062
+#define CFGT_DRIVEONLY                                                                  25063
 
 #define CFGC_FRAME										25100
 #define CFGC_COMPARE										25101

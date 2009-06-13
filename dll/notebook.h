@@ -89,6 +89,7 @@ extern BOOL fRScanSlow;
 extern BOOL fRScanNoWrite;
 extern BOOL fSaveState;
 extern BOOL fSeparateParms;
+extern BOOL fShowDriveOnly;
 extern BOOL fShowEnv;
 extern BOOL fShowLabel;
 extern BOOL fShowSysType;

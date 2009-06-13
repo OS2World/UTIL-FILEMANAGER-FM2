@@ -363,15 +363,15 @@ in the Drive Tree. Use the entry field to specify a semicolon-separated
 list of the desired environment variables. (e.g. PATH;LIBPATH;DPATH).
 Note that the pseudo-variable LIBPATH is also supported.
 :p.
-:hp6.Show file system type or drive label in tree (3-state button):ehp6. This
-setting allows you to list either the file system type or the drive label 
-following the drive letter in the tree container. The status line at the bottom 
+:hp6.Show in tree beside drive letter (radiobuttons):ehp6. This
+setting allows you to list either the file system type, the drive label or nothing 
+beside the drive letter in the tree container. The status line at the bottom 
 left lists the information you choose not to list in the tree in addition
 to the drive's serial number and the amount of free space. When split status line
 is selected on the :link reftype=hd res=97000."Monolithic":elink. notebook page, 
-the total number of drives only appears when an empty removable drive is selected. 
-The total number of drives preceeds the drive description for all drives if 
-the status lines aren't split.
+the total number of drives is moved to the end of the line and maybe truncated
+depending on window size and screen resolution.The total number of drives 
+preceeds the drive description for all drives if the status lines aren't split.
 
 :h3 res=99990 name=PANEL_TREESORTPAGE.Tree sort/views page
 :i1 id=aboutTREESP.Tree sort/views page

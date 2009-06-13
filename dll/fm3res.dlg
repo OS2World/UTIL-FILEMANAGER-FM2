@@ -1970,9 +1970,10 @@ BEGIN
                         4, 44, 132, 10
         AUTOCHECKBOX    "Show ~env. vars in Tree", CFGT_SHOWENV, 4, 32, 110,
                         10
-        CONTROL         "Show file system type \"x\" or drive label \"=\" in tree(~3-state)", 
-                        CFGT_SYSTYPELABEL, 122, 128, 196, 10, 
-                        WC_BUTTON, BS_AUTO3STATE | WS_TABSTOP | WS_VISIBLE                
+        GROUPBOX        "Show in tree beside drive letter", -1, 140, 99, 126, 45, NOT WS_GROUP                
+        AUTORADIOBUTTON "Drive letter only", CFGT_DRIVEONLY, 152, 128, 106, 10, WS_GROUP
+        AUTORADIOBUTTON "File system type", CFGT_SYSTYPE, 152, 116, 106, 10
+        AUTORADIOBUTTON "Drive label", CFGT_LABEL, 152, 104, 106, 10                
 	ENTRYFIELD      "", CFGT_ENVVARLIST, 120, 32, 196, 8, ES_MARGIN | ES_AUTOSCROLL
         PUSHBUTTON      "~Help", IDM_HELP, 8, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP

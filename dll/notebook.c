@@ -154,6 +154,7 @@ BOOL fRScanSlow;
 BOOL fRScanNoWrite;
 BOOL fSaveState;
 BOOL fSeparateParms;
+BOOL fShowDriveOnly;
 BOOL fShowEnv;
 BOOL fShowLabel;
 BOOL fShowSysType;
@@ -1345,6 +1346,7 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   BOOL fShowEnvChanged = FALSE;
   BOOL fTreeEnvVarListChanged = FALSE;
+  BOOL fShowSysTypeLabelChanged = FALSE;
 
   switch (msg) {
   case WM_INITDLG:
@@ -1364,10 +1366,9 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGT_SWITCHTREEEXPAND, fSwitchTreeExpand);
     WinCheckButton(hwnd, CFGT_SHOWENV, fShowEnv);
     WinSetDlgItemText(hwnd, CFGT_ENVVARLIST, pszTreeEnvVarList);
-    {
-      long th = fShowLabel ? 2 : (fShowSysType ? 1 : 0);
-      WinCheckButton(hwnd, CFGT_SYSTYPELABEL, th);
-    }
+    WinCheckButton(hwnd, CFGT_DRIVEONLY, fShowDriveOnly);
+    WinCheckButton(hwnd, CFGT_SYSTYPE, fShowSysType);
+    WinCheckButton(hwnd, CFGT_LABEL, fShowLabel);
     return 0;
 
   case WM_HELP:
@@ -1418,11 +1419,14 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_CLOSE:
     {
-      long test;
-  
-      test = WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPELABEL);
-      fShowSysType = (test == 1);
-      fShowLabel = (test == 2);
+
+      if ((fShowSysType != WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE)) ||
+          (fShowLabel = WinQueryButtonCheckstate(hwnd, CFGT_LABEL)))
+        fShowSysTypeLabelChanged = TRUE;
+      fShowSysType = WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE);
+      fShowLabel = WinQueryButtonCheckstate(hwnd, CFGT_LABEL);
+      fShowDriveOnly = WinQueryButtonCheckstate(hwnd, CFGT_DRIVEONLY);
+      PrfWriteProfileData(fmprof, FM3Str, "ShowDriveOnly", &fShowDriveOnly, sizeof(BOOL));
       PrfWriteProfileData(fmprof, FM3Str, "ShowSysType", &fShowSysType, sizeof(BOOL));
       PrfWriteProfileData(fmprof,	FM3Str, "ShowLabel", &fShowLabel, sizeof(BOOL));
       fVTreeOpensWPS = WinQueryButtonCheckstate(hwnd, CFGT_VTREEOPENSWPS);
@@ -1465,8 +1469,8 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           }
           free(pszTemp);
         }
-        if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged)))
-        {
+        if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged) ||
+                        fShowSysTypeLabelChanged)) {
           PCNRITEM pci = WinSendMsg(WinWindowFromID
                   (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), CM_QUERYRECORDEMPHASIS,
                                     MPFROMLONG(CMA_FIRST),

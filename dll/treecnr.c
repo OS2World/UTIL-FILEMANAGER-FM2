@@ -784,18 +784,25 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      else
 		*szFree = 0;
               driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
-              if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 || fShowSysType)
+              if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 ||
+                  fShowSysType)
                 strcpy(FileSystem, "");
               if (fShowLabel)
                 strcpy(szTmpLabel, "");
               else
                 strcpy(szTmpLabel, volser.volumelabel);
-              if (fSplitStatus)
+              if (fSplitStatus) {
+                CHAR temp[CCHMAXPATH] = " [";
+
+                strcat(temp, s);
+                strcat(temp, "]");
                 sprintf(s,
                         GetPString(fShowSysType ? IDS_TREESTATUSSTART1TEXT : fShowLabel
                                    ? IDS_TREESTATUSSTART2TEXT : IDS_TREESTATUSSTARTTEXT),
                         toupper(*pci->pszFileName), FileSystem,
                         szTmpLabel, volser.serial, szFree);
+                strcat(s, temp);
+              }
               else {
                 strcat(s, " [");
                 sprintf(&s[strlen(s)],
