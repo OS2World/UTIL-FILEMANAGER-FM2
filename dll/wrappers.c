@@ -15,6 +15,7 @@
   06 Oct 07 SHL Add xDos...() wrappers to support systems wo/large file support (Gregg, Steven)
   05 May 08 SHL Add FORTIFY support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  17 Jun 09 SHL Correct missing rc set
 
 ***********************************************************************/
 
@@ -196,7 +197,7 @@ APIRET xDosQueryPathInfo (PSZ pszPathName, ULONG ulInfoLevel, PVOID pInfoBuf, UL
     } // switch
   }
   else
-    DosQueryPathInfo (pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf);
+    rc = DosQueryPathInfo (pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf);
 
   return rc;
 }
