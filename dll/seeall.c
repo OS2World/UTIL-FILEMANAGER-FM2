@@ -146,7 +146,7 @@ ALLFILES;
 #define DP_CRCS         0x0008
 #define DP_EXTS         0x0010
 
-#define FIXED_FONT_LCID 5
+#define SEEALLFILECNR_FONT_LCID 15
 
 #define COLORS_MAX                   8
 
@@ -2285,8 +2285,8 @@ static HPS InitWindow(HWND hwnd)
 		      GPIA_ASSOC);
     if (hps) {
       GpiSetCp(hps, (ULONG) ad->fattrs.usCodePage);
-      GpiCreateLogFont(hps, NULL, FIXED_FONT_LCID, &ad->fattrs);
-      GpiSetCharSet(hps, FIXED_FONT_LCID);
+      GpiCreateLogFont(hps, NULL, SEEALLFILECNR_FONT_LCID, &ad->fattrs);
+      GpiSetCharSet(hps, SEEALLFILECNR_FONT_LCID);
       GpiQueryFontMetrics(hps, sizeof(FontMetrics), &FontMetrics);
       ad->fattrs.lAveCharWidth = FontMetrics.lAveCharWidth;
       ad->fattrs.lMaxBaselineExt = FontMetrics.lMaxBaselineExt;
@@ -4000,7 +4000,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      appname,
 			      "Seeall.Codepage",
 			      &pAD->fattrs.usCodePage, sizeof(USHORT));
-	  GpiDeleteSetId(pAD->hps, FIXED_FONT_LCID);
+	  GpiDeleteSetId(pAD->hps, SEEALLFILECNR_FONT_LCID);
 	  GpiAssociate(pAD->hps, 0);
 	  GpiDestroyPS(pAD->hps);
 	  pAD->hps = InitWindow(hwnd);
@@ -4016,7 +4016,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  appname,
 			  "Seeall.Fattrs", &pAD->fattrs, sizeof(pAD->fattrs));
       Fattrs = pAD->fattrs;
-      GpiDeleteSetId(pAD->hps, FIXED_FONT_LCID);
+      GpiDeleteSetId(pAD->hps, SEEALLFILECNR_FONT_LCID);
       GpiAssociate(pAD->hps, 0);
       GpiDestroyPS(pAD->hps);
       pAD->hps = InitWindow(hwnd);
@@ -4360,7 +4360,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg(pAD->hwndObj, WM_CLOSE, MPVOID, MPVOID);
       }
       if (pAD->hps) {
-	GpiDeleteSetId(pAD->hps, FIXED_FONT_LCID);
+	GpiDeleteSetId(pAD->hps, SEEALLFILECNR_FONT_LCID);
 	GpiAssociate(pAD->hps, 0);
 	GpiDestroyPS(pAD->hps);
       }

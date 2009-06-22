@@ -114,7 +114,7 @@ static PSZ pszSrcFile = __FILE__;
 #define VF_HTTP         0x04
 #define VF_FTP          0x08
 
-#define FIXED_FONT_LCID 5
+#define NEWVIEWMLE_FONT_LCID 5
 
 #define COLORS_MAX                   14
 
@@ -716,8 +716,8 @@ static HPS InitWindow(HWND hwnd)
 		      GPIA_ASSOC);
     if (hps) {
       GpiSetCp(hps, (ULONG) ad->fattrs.usCodePage);
-      GpiCreateLogFont(hps, NULL, FIXED_FONT_LCID, &ad->fattrs);
-      GpiSetCharSet(hps, FIXED_FONT_LCID);
+      GpiCreateLogFont(hps, NULL, NEWVIEWMLE_FONT_LCID, &ad->fattrs);
+      GpiSetCharSet(hps, NEWVIEWMLE_FONT_LCID);
       GpiQueryFontMetrics(hps, (long)sizeof(FONTMETRICS), &FontMetrics);
       ad->fattrs.lAveCharWidth = FontMetrics.lAveCharWidth;
       ad->fattrs.lMaxBaselineExt = FontMetrics.lMaxBaselineExt;
@@ -3778,7 +3778,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      appname,
 			      "Viewer.Codepage",
 			      &ad->fattrs.usCodePage, sizeof(USHORT));
-	  GpiDeleteSetId(ad->hps, FIXED_FONT_LCID);
+	  GpiDeleteSetId(ad->hps, NEWVIEWMLE_FONT_LCID);
 	  GpiAssociate(ad->hps, 0);
 	  GpiDestroyPS(ad->hps);
 	  ad->hps = InitWindow(hwnd);
@@ -3946,7 +3946,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PrfWriteProfileData(fmprof, appname, "Viewer.Fattrs",
 			      &ad->fattrs, sizeof(FATTRS));
 	  Fattrs = ad->fattrs;
-	  GpiDeleteSetId(ad->hps, FIXED_FONT_LCID);
+	  GpiDeleteSetId(ad->hps, NEWVIEWMLE_FONT_LCID);
 	  GpiAssociate(ad->hps, 0);
 	  GpiDestroyPS(ad->hps);
 	  ad->hps = InitWindow(hwnd);
@@ -4016,7 +4016,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (ad->busy)
 	  DosSleep(100); //05 Aug 07 GKY 128
 	if (ad->hps) {
-	  GpiDeleteSetId(ad->hps, FIXED_FONT_LCID);
+	  GpiDeleteSetId(ad->hps, NEWVIEWMLE_FONT_LCID);
 	  GpiAssociate(ad->hps, 0);
 	  GpiDestroyPS(ad->hps);
 	}
