@@ -156,8 +156,8 @@ BOOL fSaveState;
 BOOL fSeparateParms;
 BOOL fShowDriveOnly;
 BOOL fShowEnv;
-BOOL fShowLabel;
-BOOL fShowSysType;
+BOOL fShowDriveLabelInTree;
+BOOL fShowFSTypeInTree;
 BOOL fShowTarget;
 BOOL fStartMaximized;
 BOOL fStartMinimized;
@@ -1367,8 +1367,8 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGT_SHOWENV, fShowEnv);
     WinSetDlgItemText(hwnd, CFGT_ENVVARLIST, pszTreeEnvVarList);
     WinCheckButton(hwnd, CFGT_DRIVEONLY, fShowDriveOnly);
-    WinCheckButton(hwnd, CFGT_SYSTYPE, fShowSysType);
-    WinCheckButton(hwnd, CFGT_LABEL, fShowLabel);
+    WinCheckButton(hwnd, CFGT_SYSTYPE, fShowFSTypeInTree);
+    WinCheckButton(hwnd, CFGT_LABEL, fShowDriveLabelInTree);
     return 0;
 
   case WM_HELP:
@@ -1420,15 +1420,17 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     {
 
-      if ((fShowSysType != WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE)) ||
-          (fShowLabel = WinQueryButtonCheckstate(hwnd, CFGT_LABEL)))
+      if ((fShowFSTypeInTree != WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE)) ||
+          (fShowDriveLabelInTree != WinQueryButtonCheckstate(hwnd, CFGT_LABEL)))
         fShowSysTypeLabelChanged = TRUE;
-      fShowSysType = WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE);
-      fShowLabel = WinQueryButtonCheckstate(hwnd, CFGT_LABEL);
+      fShowFSTypeInTree = WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE);
+      fShowDriveLabelInTree = WinQueryButtonCheckstate(hwnd, CFGT_LABEL);
       fShowDriveOnly = WinQueryButtonCheckstate(hwnd, CFGT_DRIVEONLY);
       PrfWriteProfileData(fmprof, FM3Str, "ShowDriveOnly", &fShowDriveOnly, sizeof(BOOL));
-      PrfWriteProfileData(fmprof, FM3Str, "ShowSysType", &fShowSysType, sizeof(BOOL));
-      PrfWriteProfileData(fmprof,	FM3Str, "ShowLabel", &fShowLabel, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, FM3Str, "ShowFSTypeInTree",
+                          &fShowFSTypeInTree, sizeof(BOOL));
+      PrfWriteProfileData(fmprof,	FM3Str, "ShowDriveLabelInTree",
+                          &fShowDriveLabelInTree, sizeof(BOOL));
       fVTreeOpensWPS = WinQueryButtonCheckstate(hwnd, CFGT_VTREEOPENSWPS);
       PrfWriteProfileData(fmprof, FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS,
                           sizeof(BOOL));
@@ -1458,7 +1460,8 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fShowEnv = WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV);
       PrfWriteProfileData(fmprof, appname, "ShowEnv", &fShowEnv, sizeof(BOOL));
       {
-        char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1, pszSrcFile, __LINE__);
+        char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1,
+                                 pszSrcFile, __LINE__);
         if (pszTemp) {
           WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
           strupr(pszTemp);
@@ -1472,17 +1475,18 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged) ||
                         fShowSysTypeLabelChanged)) {
           PCNRITEM pci = WinSendMsg(WinWindowFromID
-                  (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), CM_QUERYRECORDEMPHASIS,
+                                    (WinWindowFromID(hwndTree, FID_CLIENT),
+                                     TREE_CNR), CM_QUERYRECORDEMPHASIS,
                                     MPFROMLONG(CMA_FIRST),
                                     MPFROMSHORT(CRA_SELECTED));
-          PostMsg(WinWindowFromID
-                  (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR), WM_COMMAND,
-                  MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          PostMsg(WinWindowFromID(WinWindowFromID(hwndTree, FID_CLIENT),
+                                  TREE_CNR), WM_COMMAND,
+                                  MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
           pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
           if (pszTemp) {
             if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
               free(pszTemp);
-            /* pszTemp is freed in the UM_SHOWME code */
+            // pszTemp is freed in the UM_SHOWME code
           }
         }
       }

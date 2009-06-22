@@ -1313,9 +1313,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "ShowDriveOnly", &fShowDriveOnly, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ShowSysType", &fShowSysType, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "ShowFSTypeInTree", &fShowFSTypeInTree, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ShowLabel", &fShowLabel, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "ShowDriveLabelInTree", &fShowDriveLabelInTree, &size);
+  if (!fShowDriveOnly && !fShowFSTypeInTree && !fShowDriveLabelInTree)
+    fShowDriveOnly = TRUE;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LeaveTree", &fLeaveTree, &size);
   size = sizeof(BOOL);

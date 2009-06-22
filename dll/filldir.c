@@ -876,7 +876,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   }
   else
     p = pci->pszFileName;
-  if (szFSType && (fShowSysType || fShowLabel)) {
+  if (szFSType && (fShowFSTypeInTree || fShowDriveLabelInTree)) {
     strcpy(szBuf, p);
     strcat(szBuf, " [");
     strcat(szBuf, szFSType);
@@ -1456,7 +1456,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
               PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
             }
           }
-          if (strcmp(volser.volumelabel, "") != 0 && FSInfo && fShowLabel)
+          if (strcmp(volser.volumelabel, "") != 0 && FSInfo && fShowDriveLabelInTree)
             strcpy(szFSType, volser.volumelabel);
 	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
@@ -1486,7 +1486,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
               sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
               pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-              if (fShowSysType || fShowLabel) {
+              if (fShowFSTypeInTree || fShowDriveLabelInTree) {
                 strcat(szDrive, " [");
                 strcat(szDrive, szFSType);
                 strcat(szDrive, "]");
@@ -1504,7 +1504,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  else {
             // Removable volume
             pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-            if (fShowSysType || fShowLabel) {
+            if (fShowFSTypeInTree || fShowDriveLabelInTree) {
               strcat(szDrive, " [");
               strcat(szDrive, szFSType);
               strcat(szDrive, "]");
@@ -1524,7 +1524,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	else {
           pci->rc.hptrIcon = hptrDunno;
           pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-          if (fShowSysType || fShowLabel) {
+          if (fShowFSTypeInTree || fShowDriveLabelInTree) {
             strcat(szDrive, " [");
             strcat(szDrive, szFSType);
             strcat(szDrive, "]");
@@ -1545,7 +1545,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	// diskette drive (A or B)
         pci->rc.hptrIcon = hptrFloppy;
         pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-        if (fShowSysType || fShowLabel)
+        if (fShowFSTypeInTree || fShowDriveLabelInTree)
           strcat(szDrive, "  [Floppy]");
 	pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
         szDrive[3] = 0;
