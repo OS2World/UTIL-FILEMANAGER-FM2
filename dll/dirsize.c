@@ -331,7 +331,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
     // cbFile = currect directory usage in bytes
     // easize = subdirectory usage in bytes
     CommaFmtULL(szCurDir, sizeof(szCurDir), pci->cbFile, 'K');
-    *szBar = NULL;
+    *szBar = 0;
     pci->pszLongName = NULL;
     memset(szBuf, 0, sizeof(szBuf));
     if (ullTotalBytes) {

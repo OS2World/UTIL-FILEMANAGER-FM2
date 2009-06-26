@@ -124,40 +124,6 @@ BEGIN
     END
 END
 
-#if 0 // 12 Jan 08 SHL fixme to be gone
-DLGTEMPLATE WALK_FRAME LOADONCALL MOVEABLE DISCARDABLE
-BEGIN
-    DIALOG  "FM/2: Select a directory", WALK_FRAME, -50, -86, 314, 168,
-            FS_MOUSEALIGN, FCF_TITLEBAR
-    BEGIN
-        CTEXT           "", WALK_HELP, 8, 158, 297, 8
-                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
-                        PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
-        ICON            DID_OK, -1, 178, 21, 20, 16
-        GROUPBOX        "User List:", -1, 168, 19, 143, 124, NOT WS_GROUP
-        GROUPBOX        "", -1, 4, 2, 308, 18, NOT WS_GROUP
-        ENTRYFIELD      "", WALK_PATH, 6, 4, 302, 10, WS_GROUP
-        LISTBOX         WALK_DRIVELIST, 4, 38, 24, 116, LS_NOADJUSTPOS |
-                        WS_GROUP
-                        PRESPARAMS PP_FONTNAMESIZE, "10.System Monospaced"
-        LISTBOX         WALK_DIRLIST, 30, 38, 134, 116, LS_NOADJUSTPOS |
-                        LS_HORZSCROLL
-        PUSHBUTTON      "Okay", DID_OK, 8, 20, 40, 14, WS_GROUP
-        PUSHBUTTON      "~Help", IDM_HELP, 64, 20, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Cancel", DID_CANCEL, 122, 20, 40, 14
-        CONTROL         "", WALK_RECENT, 168, 10, 143, 144, WC_COMBOBOX,
-                        CBS_DROPDOWN | LS_HORZSCROLL | WS_GROUP | WS_TABSTOP |
-                        WS_VISIBLE
-        LISTBOX         WALK_USERLIST, 171, 38, 137, 96, LS_NOADJUSTPOS |
-                        LS_HORZSCROLL | WS_GROUP
-        PUSHBUTTON      "~Add", WALK_ADD, 214, 22, 40, 14, BS_NOPOINTERFOCUS |
-                        WS_GROUP
-        PUSHBUTTON      "~Delete", WALK_DELETE, 265, 22, 40, 14,
-                        BS_NOPOINTERFOCUS
-    END
-END
-#endif // 12 Jan 08 SHL
-
 DLGTEMPLATE AD_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
     DIALOG  "FM/2: Archiver Details", AD_FRAME, 12, 6, 367, 196, NOT

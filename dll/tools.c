@@ -735,7 +735,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         TOOL *tool;
         BOOL BadID = FALSE;
 
-        help[0] = text[0] = NULL;
+        help[0] = text[0] = 0;
 	WinQueryDlgItemText(hwnd, ADDBTN_HELP, 80, help);
 	WinQueryDlgItemText(hwnd, ADDBTN_TEXT, 80, text);
 	if (WinQueryButtonCheckstate(hwnd, ADDBTN_DROPABLE))

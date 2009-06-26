@@ -241,8 +241,8 @@ VOID StubbyScanThread(VOID * arg)
                       (fRScanVirtual && (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
                                          DRIVE_VIRTUAL)) && fInitialDriveScan) {
               if (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                    ((fRScanNoWrite ? NULL : DRIVE_NOTWRITEABLE) |
-                     (fRScanSlow ? NULL : DRIVE_SLOW)))) {
+                    ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
+                     (fRScanSlow ? 0 : DRIVE_SLOW)))) {
                 WinSendMsg(StubbyScan->hwndCnr, CM_EXPANDTREE, MPFROMP(StubbyScan->pci), MPVOID);
                 //DbgMsg(pszSrcFile, __LINE__, "expanded %x %s", StubbyScan->hwndCnr, StubbyScan->pci->pszFileName);
                 WinSendMsg(StubbyScan->hwndCnr, CM_COLLAPSETREE, MPFROMP(StubbyScan->pci), MPVOID);
