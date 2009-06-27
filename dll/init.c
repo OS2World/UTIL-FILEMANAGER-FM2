@@ -249,6 +249,7 @@ PCSZ DRM_OS2FILE      = "DRM_OS2FILE";
 PCSZ FM2Str           = "FM/2";
 HMODULE FM3DllHandle;
 PCSZ FM3Folder        = "<FM3_Folder>";
+PCSZ FNT_HELVETICA        =  "Helvetica";
 PCSZ FNT_6HELVETICA       =  "6.Helvetica";
 PCSZ FNT_8HELVETICA       =  "8.Helvetica";
 PCSZ FNT_8HELVETICABOLD   =  "8.Helvetica.Bold";

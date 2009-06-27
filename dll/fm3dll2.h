@@ -484,7 +484,7 @@
 
 #define IDM_DRIVESMENU      3899
 #define IDM_DRIVEA          3900
-#define IDM_DRIVEATEXT      3950
+// Drive button IDs use 3900 - 3925
 
 #define IDM_COMMANDSMENU    4000
 #define IDM_COMMANDSTART    4001

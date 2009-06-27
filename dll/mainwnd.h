@@ -20,6 +20,9 @@
 
 #include "colors.h"		// typedef for RGB2
 
+#define DRIVE_BUTTON_WIDTH 28
+#define	DRIVE_BUTTON_HEIGTH 21
+
 void BubbleHelp(HWND hwnd, BOOL other, BOOL data, BOOL above, PCSZ help);
 MRESULT EXPENTRY BubbleProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID BuildDriveBarButtons(HWND hwndT);

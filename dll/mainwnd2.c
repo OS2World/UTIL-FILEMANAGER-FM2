@@ -203,12 +203,12 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
 		       ((prectl->xRight -
 			 (WinQuerySysValue(HWND_DESKTOP,
 					   SV_CYSIZEBORDER) * 2)) - 4));
-	  prectl->yTop -= (16 * (DriveLines * 18));
+	  prectl->yTop -= (16 * (DriveLines * 22));
 	  prectl->yTop -= 2;
 	  if (fAutoView) {
 	    AutoviewHeight = min(AutoviewHeight,
 				 (prectl->yTop - prectl->yBottom) - 116);
-	    AutoviewHeight = max(AutoviewHeight, 36);
+	    AutoviewHeight = max(AutoviewHeight, 44);
 	    prectl->yBottom += (AutoviewHeight + 6);
 	  }
 	}
@@ -221,7 +221,7 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
       SHORT sCount, soldCount;
       PSWP pswp, pswpClient, pswpNew;
       SWP swpClient;
-      ULONG theight = 48L, dheight = 20, bheight = 20, sheight = 20;
+      ULONG theight = 48L, dheight = DRIVE_BUTTON_HEIGTH + 2, bheight = 20, sheight = 20;
       LONG width, lastx;
 
       sCount = (SHORT) ((oldproc) ? oldproc(hwnd, msg, mp1, mp2) :
@@ -327,7 +327,7 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pswpNew->y += (bheight + 4);
 	pswpNew->cx = pswpClient->cx - 6;
 	AutoviewHeight = min(AutoviewHeight, pswpClient->cy - 116);
-	AutoviewHeight = max(AutoviewHeight, 36);
+	AutoviewHeight = max(AutoviewHeight, 44);
 	pswpNew->cy = AutoviewHeight;
 	pswpClient->y += (AutoviewHeight + 6);
 	pswpClient->cy -= (AutoviewHeight + 6);

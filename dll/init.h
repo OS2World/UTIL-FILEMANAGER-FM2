@@ -78,6 +78,7 @@ extern CHAR DateSeparator[2];
 extern CHAR TimeSeparator[2];
 extern ULONG ulTimeFmt;
 extern ULONG ulDateFmt;
+extern PCSZ FNT_HELVETICA;
 extern PCSZ FNT_6HELVETICA;
 extern PCSZ FNT_8HELVETICA;
 extern PCSZ FNT_8HELVETICABOLD;
