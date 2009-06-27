@@ -24,6 +24,7 @@
   01 Sep 08 GKY Add IDM_*TLS for icon resources for the default toolbars
   27 Dec 08 GKY Add refresh removable media to tree container menus
   28 Dec 08 GKY Added Databar to utilities menu
+  27 Jun 09 GKY Remove IDM_DRIVEATEXT (3950) Drivebar update
 
   Align with spaces only - no tabs please
 

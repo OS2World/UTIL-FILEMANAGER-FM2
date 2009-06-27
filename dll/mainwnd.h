@@ -11,6 +11,8 @@
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
   04 Feb 09 SHL Convert args to const to match GetPString mods
   08 Mar 09 GKY Additional strings move to PCSZs & String Table
+  21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
+                letter windows; Use button ID to identify drive letter for processing.
 
 ***********************************************************************/
 

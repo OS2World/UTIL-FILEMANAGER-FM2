@@ -28,6 +28,8 @@
   10 Dec 08 SHL Integrate exception handler support
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
                 Dos/Win programs from being inserted into the execute dialog with message why.
+  21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
+                letter windows; Use button ID to identify drive letter for processing.
 
 ***********************************************************************/
 
