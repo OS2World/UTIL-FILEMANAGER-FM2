@@ -34,6 +34,7 @@
 #include "literal.h"
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
+#include "init.h"                       // Strings
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -320,7 +321,7 @@ PSZ fixup(const PCH pachIn, PSZ pszOutBuf, const UINT cBufBytes,
 	  *pchOut++ = 'b';
 	}
 	else {
-	  sprintf(pchOut, "\\x%02x", (UCHAR)*pchIn);
+	  sprintf(pchOut, "%sx%02x", PCSZ_BACKSLASH, (UCHAR)*pchIn);
 	  pchOut += 4;
 	}
 	pchIn++;

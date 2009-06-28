@@ -3660,15 +3660,6 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	if (!pTmpDir)
 	  strcpy(dcd->workdir, pFM2SaveDirectory);
 	MakeTempName(dcd->workdir, ArcTempRoot, 2);
-#if 0 // 06 Sep 08 SHL fixme to be gone
-	if (dcd->workdir[strlen(dcd->workdir) - 1] != '\\')
-	    strcat(dcd->workdir, "\\");
-	  sprintf(dcd->workdir + strlen(dcd->workdir), "%s.%03x",
-		  ArcTempRoot, (clock() & 4095));
-	else
-	  sprintf(dcd->workdir, "%s.%03x",
-		  ArcTempRoot, (clock() & 4095));
-#endif // 06 Sep 08 SHL fixme to be gone
 	strcpy(dcd->arcname, fullname);
 	if (*extractpath) {
 	  if (!strcmp(extractpath, "*")) {

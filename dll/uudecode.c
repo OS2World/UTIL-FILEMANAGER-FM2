@@ -42,6 +42,7 @@
 #include "valid.h"			// IsFile
 #include "misc.h"			// PaintRecessedWindow
 #include "wrappers.h"			// xfgets
+#include "init.h"                       // Strings
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -97,7 +98,7 @@ int UUD(char *filename, CHAR * dest)
       *p = 0;
     }
     else
-      strcat(build, "\\");
+      strcat(build, PCSZ_BACKSLASH);
     strncat(build, dest, CCHMAXPATH - strlen(dest));
     strcpy(dest, build);
   }

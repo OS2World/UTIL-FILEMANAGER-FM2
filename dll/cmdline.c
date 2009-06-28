@@ -19,6 +19,7 @@
   20 Apr 08 GKY New variable names; Save and Load command lines of user set length
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -402,9 +403,10 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!*commandline)
 	return 0;
       if (*ex->path) {
-	strcpy(executable, ex->path);
-	if (executable[strlen(executable) - 1] != '\\')
-	  strcat(executable, "\\");
+        strcpy(executable, ex->path);
+        AddBackslashToPath(executable);
+	//if (executable[strlen(executable) - 1] != '\\')
+	//  strcat(executable, "\\");
       }
       else
 	*executable = 0;

@@ -88,7 +88,7 @@ APIRET switch_to(CHAR * s)
     if (!DosQCurDisk(&curdrive, &drivemap)) {
       if ((CHAR) ((CHAR) curdrive + '@') != (CHAR) toupper(*HomePath) &&
           (CHAR) ((CHAR) curdrive + '@') != (CHAR) toupper(*path))
-        DosChDir("\\");
+        DosChDir(PCSZ_BACKSLASH);
     }
     ret = DosSelectDisk(toupper(*path) - '@');
     return (ret) ? ret : DosChDir(path);

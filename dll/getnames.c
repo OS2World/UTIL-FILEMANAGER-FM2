@@ -11,6 +11,7 @@
   23 Aug 06 SHL Comments
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -37,6 +38,7 @@
 #include "copyf.h"			// unlinkf
 #include "misc.h"			// PaintRecessedWindow
 #include "wrappers.h"			// xDosFindFirst
+#include "pathutil.h"                   // AddBackslashToPath
 
 #pragma data_seg(DATA1)
 
@@ -178,9 +180,10 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      LM_QUERYITEMTEXT,
 			      MPFROM2SHORT(sSelect,
 					   CCHMAXPATH), MPFROMP(szBuffer));
-	    if (*szBuffer) {
-	      if (szBuffer[strlen(szBuffer) - 1] != '\\')
-		strcat(szBuffer, "\\");
+            if (*szBuffer) {
+              AddBackslashToPath(szBuffer);
+	      //if (szBuffer[strlen(szBuffer) - 1] != '\\')
+	      //  strcat(szBuffer, "\\");
 	      *szTemp = 0;
 	      WinQueryDlgItemText(hwnd, 258, CCHMAXPATH, szTemp);
 	      p = strrchr(szTemp, '\\');

@@ -19,6 +19,15 @@
 #include <os2.h>
 #endif
 
+APIRET xDosAllocSharedMem(PPVOID ppb,
+                          PSZ pszName,
+                          ULONG cb,
+                          ULONG flag);
+
+APIRET xDosAllocMem(PPVOID ppb,
+                    ULONG cb,
+                    ULONG flag);
+
 APIRET xDosFindFirst(PSZ pszFileSpec,
 		     PHDIR phdir,
 		     ULONG  flAttribute,

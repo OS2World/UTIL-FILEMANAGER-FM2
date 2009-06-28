@@ -44,6 +44,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -84,6 +85,7 @@
 #include "misc.h"			// PostMsg
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
+#include "pathutil.h"                   // AddBackslashToPath
 
 typedef struct
 {
@@ -150,8 +152,9 @@ static BOOL ProcessDir(HWND hwndCnr,
     return FALSE;			// Error already reported
 
   strcpy(maskstr, pszFileName);
-  if (maskstr[strlen(maskstr) - 1] != '\\')
-    strcat(maskstr, "\\");
+  AddBackslashToPath(maskstr);
+  //if (maskstr[strlen(maskstr) - 1] != '\\')
+  //  strcat(maskstr, "\\");
   pEndMask = &maskstr[strlen(maskstr)];	// Point after last backslash
   strcat(maskstr, "*");
 
@@ -872,9 +875,10 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  while (pci && (INT) pci != -1) {
 	    memset(szTemp, 0, sizeof(szTemp));
 	    strcpy(szTemp, pci->pszFileName);
-	    strrev(szTemp);
-	    if (*szFileName && *szTemp != '\\')
-	      strcat(szFileName, "\\");
+            strrev(szTemp);
+            AddBackslashToPath(szFileName);
+	    //if (*szFileName && *szTemp != '\\')
+	    //  strcat(szFileName, "\\");
 	    strcat(szFileName, szTemp);
 	    pci = WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYRECORD,
 				    MPFROMP(pci),
@@ -950,7 +954,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(szFileName, pTmpDir);
 	else
 	  strcpy(szFileName, pFM2SaveDirectory);
-	sprintf(&szFileName[strlen(szFileName)], "\\%csizes.Rpt",
+	sprintf(&szFileName[strlen(szFileName)], "%s%csizes.Rpt", PCSZ_BACKSLASH,
 		(pState) ? toupper(*pState->szDirName) : '+');
 	if (export_filename(hwnd, szFileName, FALSE) && *szFileName) {
 	  if (stricmp(szFileName, "PRN") &&

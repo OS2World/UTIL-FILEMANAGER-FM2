@@ -366,7 +366,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (p)
 	  strcpy(simple, p);
 	else if (*s) {
-	  strcpy(simple, "\\");
+	  strcpy(simple, PCSZ_BACKSLASH);
 	  strcat(simple, s);
 	  *s = 0;
 	}
@@ -589,7 +589,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      lLen += strlen(path);
 	      if (s[strlen(s) - 1] != '\\') {
 		lLen++;
-		strcat(s, "\\");
+		strcat(s, PCSZ_BACKSLASH);
 	      }
 	      rstrip(s);
 	      if (*s) {
@@ -646,7 +646,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  lLen += strlen(path);
 	  if (s[strlen(s) - 1] != '\\') {
 	    lLen++;
-	    strcat(s, "\\");
+	    strcat(s, PCSZ_BACKSLASH);
 	  }
 	  rstrip(s);
 	  if (*s) {

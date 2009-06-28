@@ -20,6 +20,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Modify MakeTempName for use making temp directory names
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -49,7 +50,8 @@
 #include "valid.h"			// MakeFullName
 #include "wrappers.h"			// xDosSetPathInfo
 #include "strips.h"			// bstrip
-#include "fortify.h"
+#include "fortify.h"                    
+#include "pathutil.h"                   // AddBackslashToPath
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -74,8 +76,10 @@ char *MakeTempName(char *buffer, char *temproot, INT type)
   APIRET rc;
   char *p, *o;
 
-  if (strlen(buffer) > 3 && buffer[strlen(buffer) - 1] != '\\')
-    strcat(buffer, "\\");
+
+  if (strlen(buffer) > 3) // && buffer[strlen(buffer) - 1] != '\\')
+    AddBackslashToPath(buffer);
+    //strcat(buffer, "\\");
   p = o = buffer + strlen(buffer);
   switch (type) {
   case 0:
@@ -281,7 +285,7 @@ CHAR *GetLongName(CHAR * oldname, CHAR * longname)
 
 BOOL ZapLongName(char *filename)
 {
-  return WriteLongName(filename, "");
+  return WriteLongName(filename, NullStr);
 }
 
 BOOL WriteLongName(CHAR * filename, CHAR * longname)
@@ -307,8 +311,8 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
     ealen = sizeof(FEA2LIST) + 10 + len + 4;
   else
     ealen = sizeof(FEALIST) + 10;
-  rc = DosAllocMem((PPVOID) & pfealist,
-                   ealen + 32L, OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+  rc = xDosAllocMem((PPVOID) & pfealist,
+                    ealen + 32L, OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               GetPString(IDS_OUTOFMEMORY));
@@ -535,10 +539,11 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
       /* make temporary copy in case move fails */
       if (IsFile(newname) != -1 && stricmp(oldname, newname)) {
         strcpy(dir, newname);
-        p = strrchr(dir, '\\');
-        if (p)
-          *p = 0;
-        strcat(dir, "\\");
+        AddBackslashToPath(dir);
+        //p = strrchr(dir, '\\');
+        //if (p)
+        //  *p = 0;
+        //strcat(dir, "\\");
         MakeTempName(dir, NULL, 0);
         if (DosMove(newname, dir))
           *dir = 0;

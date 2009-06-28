@@ -51,6 +51,34 @@ static PSZ pszSrcFile = __FILE__;
 #pragma data_seg(GLOBAL1)
 BOOL fNoLargeFileSupport;
 
+APIRET xDosAllocSharedMem(PPVOID ppb,
+                          PSZ pszName,
+                          ULONG cb,
+                          ULONG flag)
+{
+  APIRET rc; ;
+
+  rc = DosAllocSharedMem(ppb, pszName, cb, flag | OBJ_ANY);
+  DbgMsg(pszSrcFile, __LINE__, "ppb %p", *ppb);
+  if (rc)
+    rc = DosAllocSharedMem(ppb, pszName, cb, flag);
+  return rc;
+}
+
+APIRET xDosAllocMem(PPVOID ppb,
+                    ULONG cb,
+                    ULONG flag)
+{
+  APIRET rc;
+
+  rc = DosAllocMem(ppb, cb, flag | OBJ_ANY);
+  DbgMsg(pszSrcFile, __LINE__, "ppb %p %x", *ppb, rc);
+  if (rc)
+    rc = DosAllocMem(ppb, cb, flag);
+  DbgMsg(pszSrcFile, __LINE__, "ppb %p", *ppb);
+  return rc;
+}
+
 APIRET xDosFindFirst(PSZ pszFileSpec,
 		     PHDIR phdir,
 		     ULONG flAttribute,

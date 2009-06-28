@@ -517,11 +517,12 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 					      SV_CXSIZEBORDER),
 			     (swp->cy -
 			      WinQuerySysValue(HWND_DESKTOP,
-					       SV_CYSIZEBORDER)) - 30,
+                                               SV_CYSIZEBORDER)) -
+                             (DRIVE_BUTTON_HEIGHT),
 			     swp->cx -
 			     (WinQuerySysValue(HWND_DESKTOP,
 					       SV_CXSIZEBORDER) * 2),
-			     30,
+			     DRIVE_BUTTON_HEIGHT,
 			     hwndFrame, HWND_TOP, MAIN_DRIVES, NULL, NULL);
 
   if (!hwndBack)
@@ -858,7 +859,7 @@ HWND OpenDirCnr(HWND hwnd, HWND hwndParent, HWND hwndRestore,
 	    "VDIR.EXE %s%s\"%s%s\"",
 	    (*s) ? s : NullStr, (*s) ? " " : NullStr,
 	    directory,
-	    (directory[strlen(directory) - 1] == '\\') ? "\\" : NullStr);
+	    (directory[strlen(directory) - 1] == '\\') ? PCSZ_BACKSLASH : NullStr);
   }
   return hwndDir;
 }

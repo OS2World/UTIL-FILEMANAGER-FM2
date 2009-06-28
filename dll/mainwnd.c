@@ -1890,9 +1890,11 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_PAINT:
     {
       HPS hps; 
-      POINTL aptl[4] = { 0, 0, DRIVE_BUTTON_WIDTH - 1, DRIVE_BUTTON_HEIGTH - 1,
-      0, 0, 27, 20}; //The last 2 numbers should be the width and heigth of the bitmap
+      POINTL aptl[4] = {0, 0, DRIVE_BUTTON_WIDTH - 1, DRIVE_BUTTON_HEIGHT - 1,
+      0, 0, DRIVE_BUTTON_WIDTH - 1, DRIVE_BUTTON_HEIGHT - 1};
+      //The last 2 numbers should be the width and height of the bitmap
       HBITMAP hbm;
+      PBITMAPINFOHEADER    pbmpData;
       POINTL ptlStart;
       ULONG x, iconid;
       FATTRS fat;
@@ -1919,18 +1921,28 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      ZIPSTREAM_ICON : DRIVE_ICON;
 	}
 	else
-	  iconid = FLOPPY_ICON;
+          iconid = FLOPPY_ICON;
       hps = WinBeginPaint(hwnd, (HPS) 0, NULL);
       if (hps) {
         hbm = GpiLoadBitmap(hps, 0, iconid, 0, 0);
-        if (hbm)
+        if (hbm) {
+          pbmpData = xmallocz(sizeof(PBITMAPINFOHEADER), pszSrcFile, __LINE__);
+          if (pbmpData) {
+            GpiQueryBitmapParameters(hbm, pbmpData);
+            aptl[1].x = pbmpData->cx;
+            aptl[1].y = pbmpData->cy;
+            aptl[3].x = pbmpData->cx;
+            aptl[3].y = pbmpData->cy;
+            free(pbmpData);
+          }
           GpiWCBitBlt(hps, hbm, 4L, aptl, ROP_SRCCOPY, BBO_PAL_COLORS);
-          memset(&fat, 0, sizeof(fat));
-          fat.usRecordLength = sizeof(FATTRS);
-          fat.fsSelection = FATTR_SEL_BOLD ;
-          fat.usCodePage = 850;
-          fat.fsFontUse = FATTR_FONTUSE_NOMIX;
-          strcpy(fat.szFacename , FNT_HELVETICA);
+        }
+        memset(&fat, 0, sizeof(fat));
+        fat.usRecordLength = sizeof(FATTRS);
+        fat.fsSelection = FATTR_SEL_BOLD ;
+        fat.usCodePage = 850;
+        fat.fsFontUse = FATTR_FONTUSE_NOMIX;
+        strcpy(fat.szFacename , FNT_HELVETICA);
         x = GpiCreateLogFont(hps, NULL, DRIVEBAR_FONT_LCID, &fat);
         if (x != GPI_ERROR) {
           GpiSetCharSet(hps, DRIVEBAR_FONT_LCID);
@@ -1939,7 +1951,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           GpiSetCharBox( hps, &sizfCharBox );
           GpiSetColor(hps, iconid == RAMDISK_ICON ? CLR_YELLOW : CLR_DARKBLUE);
           ptlStart.x = 1L;  //Char box position
-          ptlStart.y = 7L;
+          ptlStart.y = 8L;
           GpiCharStringAt(hps, &ptlStart, strlen(szDrv), szDrv);
           GpiDeleteSetId(hps, DRIVEBAR_FONT_LCID);
         }
@@ -1988,7 +2000,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR chDrv = *szDrv;
 	UINT iDrv;
 
-        strcat(szDrv, "\\");
+        strcat(szDrv, PCSZ_BACKSLASH);
 	MakeValidDir(szDrv);
 	// Disable menus if MakeValidDir changes drive letter fixme this section doesn't do anything see treecnt.c
 	rdy = toupper(*szDrv) == toupper(chDrv);
@@ -2035,7 +2047,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     *szDrv = id - IDM_DRIVEA + 'A';
     strcpy(szDrv + 1, ":");
     if (isalpha(*szDrv)) {
-      strcat(szDrv, "\\");
+      strcat(szDrv, PCSZ_BACKSLASH);
       if (!FindDirCnrByName(szDrv, TRUE))
 	OpenDirCnr((HWND) 0, hwndMain, hwndTree, FALSE, szDrv);
     }
@@ -2050,7 +2062,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     *szDrv = id - IDM_DRIVEA + 'A';
     strcpy(szDrv + 1, ":");
     if (isalpha(*szDrv)) {
-      strcat(szDrv, "\\");
+      strcat(szDrv, PCSZ_BACKSLASH);
       CommonDriveCmd(hwnd, szDrv, SHORT1FROMMP(mp1));
     }
     return 0;
@@ -2119,7 +2131,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CheckPmDrgLimit(cnd.pDragInfo);
       if (li) {
 	strcpy(li->targetpath, szDrv);
-	strcat(li->targetpath, "\\");
+	strcat(li->targetpath, PCSZ_BACKSLASH);
 	if (li->list && li->list[0] && IsRoot(li->list[0]))
 	  li->type = DO_LINK;
 	else if (fDragndropDlg && (!*li->arcname || !li->info)) {
@@ -2281,7 +2293,7 @@ VOID BuildDriveBarButtons(HWND hwndT)
 				0,
 				0,
 				DRIVE_BUTTON_WIDTH,
-				DRIVE_BUTTON_HEIGTH,
+				DRIVE_BUTTON_HEIGHT,
 				hwndT, HWND_TOP, x + IDM_DRIVEA, NULL, NULL);
 	if (!hwndB)
 	  Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -2298,7 +2310,7 @@ VOID BuildDriveBarButtons(HWND hwndT)
 
 VOID ResizeDrives(HWND hwndT, long xwidth)
 {
-  register ULONG ctrlxpos = 2, ctrlypos = 0, ctrlxsize;
+  register ULONG ctrlxpos = 1, ctrlypos = 0, ctrlxsize;
   HENUM henum;
   HWND hwndB;
   RECTL rcl;
@@ -2309,19 +2321,19 @@ VOID ResizeDrives(HWND hwndT, long xwidth)
   if (!xwidth) {
     WinQueryWindowRect(hwndT, &rcl);
     xwidth = rcl.xRight - ((WinQuerySysValue(HWND_DESKTOP,
-					     SV_CYSIZEBORDER) * 2) + 2);
+					     SV_CYSIZEBORDER) * 2) + 1);
   }
   henum = WinBeginEnumWindows(hwndT);
   while ((hwndB = WinGetNextWindow(henum)) != NULLHANDLE) {
     ctrlxsize = DRIVE_BUTTON_WIDTH;
     WinSetWindowPos(hwndB,
 		    HWND_TOP,
-                    ctrlxpos, ctrlypos, ctrlxsize, DRIVE_BUTTON_HEIGTH, SWP_MOVE | SWP_SHOW);
+                    ctrlxpos, ctrlypos, ctrlxsize, DRIVE_BUTTON_HEIGHT, SWP_MOVE | SWP_SHOW);
     ctrlxpos += (ctrlxsize + 2);
-    if (ctrlxpos + (DRIVE_BUTTON_WIDTH + 4 + ((fShowTarget && DriveLines == 0) ?
+    if (ctrlxpos + (DRIVE_BUTTON_WIDTH + 2 + ((fShowTarget && DriveLines == 0) ?
                           256 : 0)) > xwidth) {
-      ctrlxpos = 2;
-      ctrlypos += DRIVE_BUTTON_HEIGTH;
+      ctrlxpos = 1;
+      ctrlypos += DRIVE_BUTTON_HEIGHT;
       DriveLines++;
     }
   }
@@ -3997,7 +4009,7 @@ static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 			 ((prectl->xRight -
 			   (WinQuerySysValue(HWND_DESKTOP,
 					     SV_CYSIZEBORDER) * 2)) - 4));
-	    prectl->yTop -= (16 * (DriveLines * DRIVE_BUTTON_HEIGTH));
+	    prectl->yTop -= (16 * (DriveLines * DRIVE_BUTTON_HEIGHT));
 	  }
 	  if (fUserComboBox) {
 	    if (!aheight) {
@@ -4026,7 +4038,7 @@ static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       SHORT sCount, soldCount;
       PSWP pswp, pswpClient, pswpNew;
       SWP swpClient;
-      LONG theight = 48L, dheight = DRIVE_BUTTON_HEIGTH + 2, width, sheight = 20, bheight = 20;
+      LONG theight = 48L, dheight = DRIVE_BUTTON_HEIGHT, width, sheight = 20, bheight = 20;
 
       sCount = (SHORT) oldproc(hwnd, msg, mp1, mp2);
       soldCount = sCount;
@@ -4135,12 +4147,12 @@ static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	pswpNew->hwnd = WinWindowFromID(hwnd, MAIN_DRIVES);
 	pswpNew->hwndInsertBehind = HWND_BOTTOM;
 	pswpNew->x = swpClient.x + 2;
-	dheight += ((dheight - 2) * DriveLines);
-	pswpNew->y = (swpClient.y + swpClient.cy) - (dheight - 2);
+	dheight += ((dheight) * DriveLines);
+	pswpNew->y = (swpClient.y + swpClient.cy) - (dheight);
 	if (fToolbar)
 	  pswpNew->y -= theight;
 	pswpNew->cx = swpClient.cx - 4;
-	pswpNew->cy = dheight - 4;
+	pswpNew->cy = dheight;
 	pswpClient->cy -= dheight;
 	sCount++;
       }

@@ -200,10 +200,6 @@ int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
 
 	    strcpy(listfile, pTmpDir ? pTmpDir : pFM2SaveDirectory);
 	    MakeTempName(listfile, "$FM2LI$T", 2);
-	    /*if (listfile[strlen(listfile) - 1] != '\\')
-	      strcat(listfile, "\\");
-	    sprintf(&listfile[strlen(listfile)], "%s.%03x",
-		    LISTTEMPROOT, (clock() & 4095));*/
 	    fp = xfopen(listfile, "w",pszSrcFile,__LINE__);
 	    if (fp) {
 	      for (x = 0; list[x]; x++)
@@ -669,8 +665,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   ULONG ulAppType;
   PID sessPID;
   BOOL wasquote;
-  char *pszPgm, *pszArgs = NULL;
-  char szObject[32] = "", *p, szSavedir[CCHMAXPATH];
+  char *p, *pszPgm, *pszArgs = NULL;
+  char szObject[32] = "";
+  char szSavedir[CCHMAXPATH];
   BOOL useTermQ = FALSE;
   char szTempdir[CCHMAXPATH];
   BOOL fNoErrorMsg = FALSE;
@@ -703,9 +700,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  rc = DosAllocMem((PVOID)&pszPgm,
-		   MaxComLineStrg,
-		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  rc = xDosAllocMem((PVOID)&pszPgm,
+		    MaxComLineStrg,
+		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
     Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
     return -1;
@@ -751,9 +748,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       p++;
       temp = *p;
       if (temp) {
-	rc = DosAllocMem((PVOID)&pszArgs,
-			 MaxComLineStrg * 2,
-			 PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+	rc = xDosAllocMem((PVOID)&pszArgs,
+			  MaxComLineStrg * 2,
+			  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
 	if (rc)
 	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
       }
@@ -885,8 +882,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     else {
       if (~type & FULLSCREEN)
 	type |= WINDOWED;
-      rc = DosAllocMem((PVOID) & pszArgs, MaxComLineStrg * 2,
-		       PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+      rc = xDosAllocMem((PVOID) & pszArgs, MaxComLineStrg * 2,
+		        PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
       if (rc) {
 	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
 	DosFreeMem(pszPgm);

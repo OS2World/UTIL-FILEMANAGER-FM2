@@ -63,6 +63,7 @@
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
   29 Mar 09 SHL Keep more keys away from PM if extended search in progress
   29 Mar 09 SHL Increase extended search timeout to 3 seconds
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -140,6 +141,7 @@
 #include "wrappers.h"			// xfree
 #include "fortify.h"
 #include "excputil.h"			// 06 May 08 SHL added
+#include "pathutil.h"                   // AddBackslashToPath
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -1814,9 +1816,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      INT test;
 	      PCNRITEM pci;
 
-	      strcpy(newfile, dcd->directory);
-	      if (newfile[strlen(newfile) - 1] != '\\')
-		strcat(newfile, "\\");
+              strcpy(newfile, dcd->directory);
+              AddBackslashToPath(newfile);
+	      //if (newfile[strlen(newfile) - 1] != '\\')
+	      //  strcat(newfile, "\\");
 	      strcat(newfile, sip.ret);
 	      test = IsFile(newfile);
 	      if (test != 1)
@@ -2439,9 +2442,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  CHAR tempname1[CCHMAXPATH], tempname2[CCHMAXPATH];
 
-	  strcpy(tempname1, dcd->directory);
-	  if (tempname1[strlen(tempname1) - 1] != '\\')
-	    strcat(tempname1, "\\");
+          strcpy(tempname1, dcd->directory);
+          AddBackslashToPath(tempname1);
+	  //if (tempname1[strlen(tempname1) - 1] != '\\')
+	  //  strcat(tempname1, "\\");
 	  strcat(tempname1, "..");
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQueryPathInfo(tempname1,

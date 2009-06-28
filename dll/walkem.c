@@ -33,6 +33,7 @@
   18 Jul 08 SHL More Fortify support
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -680,7 +681,7 @@ VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
     // Fill directory listbox
     sprintf(szTemp,
 	    "%s%s*",
-	    pszPath, (pszPath[strlen(pszPath) - 1] == '\\') ? "" : "\\");
+	    pszPath, (pszPath[strlen(pszPath) - 1] == '\\') ? NullStr : PCSZ_BACKSLASH);
     DosError(FERR_DISABLEHARDERR);
     if (!DosFindFirst(szTemp,
 		      &hDir,
@@ -1145,9 +1146,10 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	bstrip(szBuffer);
 	if (*szBuffer) {
-	  strcpy(szBuff, wa->szCurrentPath);
-	  if (szBuff[strlen(szBuff) - 1] != '\\')
-	    strcat(szBuff, "\\");
+          strcpy(szBuff, wa->szCurrentPath);
+          AddBackslashToPath(szBuff);
+	  //if (szBuff[strlen(szBuff) - 1] != '\\')
+	  //  strcat(szBuff, "\\");
 	  strcat(szBuff, szBuffer);
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);
@@ -1538,9 +1540,10 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	bstrip(szBuffer);
 	if (*szBuffer) {
-	  strcpy(szBuff, wa->szCurrentPath1);
-	  if (szBuff[strlen(szBuff) - 1] != '\\')
-	    strcat(szBuff, "\\");
+          strcpy(szBuff, wa->szCurrentPath1);
+          AddBackslashToPath(szBuff);
+	  //if (szBuff[strlen(szBuff) - 1] != '\\')
+	  //  strcat(szBuff, "\\");
 	  strcat(szBuff, szBuffer);
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);
@@ -1603,9 +1606,10 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	bstrip(szBuffer);
 	if (*szBuffer) {
-	  strcpy(szBuff, wa->szCurrentPath2);
-	  if (szBuff[strlen(szBuff) - 1] != '\\')
-	    strcat(szBuff, "\\");
+          strcpy(szBuff, wa->szCurrentPath2);
+          AddBackslashToPath(szBuff);
+	  //if (szBuff[strlen(szBuff) - 1] != '\\')
+	  //  strcat(szBuff, "\\");
 	  strcat(szBuff, szBuffer);
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);

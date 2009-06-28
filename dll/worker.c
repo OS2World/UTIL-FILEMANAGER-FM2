@@ -40,6 +40,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   08 Mar 09 GKY Additional strings move to PCSZs
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -229,7 +230,7 @@ VOID Action(VOID * args)
 	      *p = 0;
 	    }
 	    else
-	      strcat(wk->li->targetpath, "\\");
+	      strcat(wk->li->targetpath, PCSZ_BACKSLASH);
 	    sprintf(wk->li->targetpath + strlen(wk->li->targetpath),
 		    "MERGE.%03x", (clock() & 4095L));
 	    if (!WinDlgBox(HWND_DESKTOP,
@@ -707,9 +708,10 @@ VOID Action(VOID * args)
 		       wk->li->type == IDM_WPSMOVE) ?
 		      GetPString(IDS_MOVEDTEXT) : GetPString(IDS_COPIEDTEXT);
 		    if (*wk->li->targetpath) {
-		      strcpy(newname, wk->li->targetpath);
-		      if (newname[strlen(newname) - 1] != '\\')
-			strcat(newname, "\\");
+                      strcpy(newname, wk->li->targetpath);
+                      AddBackslashToPath(newname);
+		      //if (newname[strlen(newname) - 1] != '\\')
+		      //  strcat(newname, "\\");
 		      if (plen)
 			p = wk->li->list[x] + plen;
 		      else {
@@ -1208,9 +1210,10 @@ VOID MassAction(VOID * args)
 	      }
 	      if (wk->li->type == IDM_MCIPLAY)
 		break;
-	      strcpy(szBuffer, wk->li->targetpath);
-	      if (wk->li->targetpath[strlen(wk->li->targetpath) - 1] != '\\')
-		strcat(szBuffer, "\\");
+              strcpy(szBuffer, wk->li->targetpath);
+              AddBackslashToPath(wk->li->targetpath);
+	      //if (wk->li->targetpath[strlen(wk->li->targetpath) - 1] != '\\')
+	      //  strcat(szBuffer, "\\");
 	      p = szBuffer + strlen(szBuffer);
 	      for (x = 0; wk->li->list[x]; x++) {
 		strcpy(p, wk->li->list[x]);
@@ -1269,10 +1272,11 @@ VOID MassAction(VOID * args)
 		ad.namecanchange = 0;
 	      }
 	      else {
-		if (*wk->li->targetpath && !IsFile(wk->li->targetpath))
-		  if (wk->li->targetpath[strlen(wk->li->targetpath) - 1] !=
-		      '\\')
-		    strcat(wk->li->targetpath, "\\");
+                if (*wk->li->targetpath && !IsFile(wk->li->targetpath))
+                  AddBackslashToPath(wk->li->targetpath);
+		  //if (wk->li->targetpath[strlen(wk->li->targetpath) - 1] !=
+		  //    '\\')
+		  //  strcat(wk->li->targetpath, "\\");
 		ad.namecanchange = 1;
 	      }
 	      strcpy(ad.arcname, wk->li->targetpath);
@@ -1297,9 +1301,10 @@ VOID MassAction(VOID * args)
 			       !ad.info->createrecurse))
 		break;
 	      if (!*wk->li->targetpath && *wk->directory) {
-		strcpy(ad.arcname, wk->directory);
-		if (ad.arcname[strlen(ad.arcname) - 1] != '\\')
-		  strcat(ad.arcname, "\\");
+                strcpy(ad.arcname, wk->directory);
+                AddBackslashToPath(ad.arcname);
+		//if (ad.arcname[strlen(ad.arcname) - 1] != '\\')
+		//  strcat(ad.arcname, "\\");
 	      }
 	      if (!WinDlgBox(HWND_DESKTOP, wk->hwndFrame, ArchiveDlgProc, FM3ModHandle,
 			     ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	/* we blew it */
@@ -1635,7 +1640,7 @@ VOID MassAction(VOID * args)
 					    (*wk->li->list[x] &&
 					     wk->li->
 					     list[x][strlen(wk->li->list[x]) - 1]
-					     != '\\') ? "\\" : NullStr);
+					     != '\\') ? PCSZ_BACKSLASH : NullStr);
 		  DosError(FERR_DISABLEHARDERR);
 		  if (!error)
 		    error = DosDeleteDir(wk->li->list[x]);

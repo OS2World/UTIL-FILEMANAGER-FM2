@@ -798,9 +798,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
               if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 ||
                   fShowFSTypeInTree)
-                strcpy(FileSystem, "");
+                strcpy(FileSystem, NullStr);
               if (fShowDriveLabelInTree)
-                strcpy(szTmpLabel, "");
+                strcpy(szTmpLabel, NullStr);
               else
                 strcpy(szTmpLabel, volser.volumelabel);
               if (fSplitStatus) {

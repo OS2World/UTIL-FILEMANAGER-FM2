@@ -9,6 +9,7 @@
   Command processing
 
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -30,6 +31,7 @@
 #include "valid.h"			// MakeFullName
 #include "misc.h"			// PostMsg
 #include "delims.h"			// skip_delim
+#include "pathutil.h"                   // AddBackslashToPath
 
 
 static VOID fullname(CHAR * directory, CHAR * name);
@@ -54,8 +56,9 @@ static VOID fullname(CHAR * directory, CHAR * name)
   if (!strchr(name, ':')) {
     if (*name != '\\' && *name != '/') {
       strcpy(temp, directory);
-      if (directory[strlen(directory) - 1] != '\\')
-	strcat(temp, "\\");
+      AddBackslashToPath(directory);
+      //if (directory[strlen(directory) - 1] != '\\')
+      //  strcat(temp, "\\");
     }
     else {
       *temp = *directory;

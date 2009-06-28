@@ -33,6 +33,8 @@
 #include "misc.h"			// GetCmdSpec
 #include "systemf.h"			// runemf2
 #include "strips.h"			// bstrip
+#include "wrappers.h"                   // xDosAllocMem
+#include "init.h"                       // Strings
 
 #pragma data_seg(DATA1)
 
@@ -100,8 +102,8 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	mem = MLEgetlen(hwndMLE);
 	if (mem) {
-	  rc = DosAllocMem((PVOID) & bat, mem,
-			   PAG_COMMIT | PAG_READ | PAG_WRITE);
+	  rc = xDosAllocMem((PVOID) & bat, mem,
+			    PAG_COMMIT | PAG_READ | PAG_WRITE);
 	  if (rc || !bat) {
 	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		      GetPString(IDS_OUTOFMEMORY));
@@ -131,7 +133,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      Runtime_Error(pszSrcFile, __LINE__, NULL);
 	    else {
 	      sprintf(s, "%s%sFMTMP%d.CMD", path,
-		      (path[strlen(path) - 1] == '\\') ? "" : "\\",
+		      (path[strlen(path) - 1] == '\\') ? NullStr : PCSZ_BACKSLASH,
 		      batches++);
 	      fp = fopen(s, "w");
 	      if (!fp)
@@ -143,7 +145,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 		fprintf(fp, "%s%c:%s\n", rexx, toupper(*path), rexx);
 		fprintf(fp, "%sCD \"%s%s\"%s\n", rexx, path,
-			(strlen(path) < 3) ? "\\" : "", rexx);
+			(strlen(path) < 3) ? PCSZ_BACKSLASH : NullStr, rexx);
 		fprintf(fp, "%s", bat);
 		fprintf(fp, "\n%sDEL \"%s\"%s\n", rexx, s, rexx);
 		fclose(fp);
@@ -168,8 +170,8 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  hwnd,
 		  GetPString(IDS_INSTANTHELPTITLETEXT),
 		  GetPString(IDS_INSTANTHELPTEXT),
-		  path, (strlen(path) < 3) ? "\\" : "", path,
-		  (path[strlen(path) - 1] == '\\') ? "" : "\\", batches);
+		  path, (strlen(path) < 3) ? PCSZ_BACKSLASH : NullStr, path,
+		  (path[strlen(path) - 1] == '\\') ? NullStr : PCSZ_BACKSLASH, batches);
       if (rc == MBID_YES)
 	runemf2(WINDOWED | INVISIBLE | BACKGROUND,
                 hwnd, pszSrcFile, __LINE__, NULL, NULL,

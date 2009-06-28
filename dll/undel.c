@@ -18,6 +18,7 @@
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   08 Mar 09 GKY Additional strings move to PCSZs
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -207,8 +208,9 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR s[CCHMAXPATH];
 
       strcpy(s, (CHAR *)mp2);
-      if (s[strlen(s) - 1] != '\\')
-	strcat(s, "\\");
+      AddBackslashToPath(s);
+      //if (s[strlen(s) - 1] != '\\')
+      //  strcat(s, "\\");
       strcat(s, "*");
       WinSetDlgItemText(hwnd, UNDEL_ENTRY, s);
       WinCheckButton(hwnd, UNDEL_SUBDIRS, TRUE);

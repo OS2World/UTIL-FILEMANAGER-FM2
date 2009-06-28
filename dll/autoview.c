@@ -135,8 +135,8 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
     return ret;
   }
 
-  rc = DosAllocMem((PPVOID) & pfealist, ealen, PAG_COMMIT | PAG_READ |
-		   PAG_WRITE | OBJ_TILE);
+  rc = xDosAllocMem((PPVOID) & pfealist, ealen, PAG_COMMIT | PAG_READ |
+	            PAG_WRITE | OBJ_TILE);
   if (rc || !pfealist)
     Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
@@ -328,7 +328,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     *currfile = 0;
     stopflag--;
     if (fAutoView) {
-      WinSetWindowText((fComments) ? hwndAutoMLE : hwndAutoview, "");
+      WinSetWindowText((fComments) ? hwndAutoMLE : hwndAutoview, NullStr);
       MLEsetreadonly(hwndAutoMLE, TRUE);
       MLEsetchanged(hwndAutoMLE, FALSE);
     }
@@ -393,8 +393,8 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      }
 		      if (info) {
 			sprintf(p, "**%s%s%s\n",
-				info->id ? info->id : "",
-				info->id ? " " : "",
+				info->id ? info->id : NullStr,
+				info->id ? " " : NullStr,
 				GetPString(IDS_ARCHIVETEXT));
 			p += strlen(p);
 		      }
@@ -510,7 +510,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    sprintf(p,
 			    "%s%-*.*s  %-8s  [%s%s%s%s]  %s "
 			      "%02lu%s%02lu%s%02lu\r",
-			    pffbFile->attrFile & FILE_DIRECTORY ? "\\" : " ",
+			    pffbFile->attrFile & FILE_DIRECTORY ? PCSZ_BACKSLASH : " ",
 			    ml,
 			    ml,
 			    pffbFile->achName,

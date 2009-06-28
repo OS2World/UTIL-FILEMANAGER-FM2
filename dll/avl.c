@@ -649,9 +649,9 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 	  ditem.ulItemID = 1;
 	  ditem.hstrType = DrgAddStrHandle(DRT_UNKNOWN);
 	  ditem.hstrRMF = DrgAddStrHandle(DRMDRF_LBOX);
-	  ditem.hstrContainerName = DrgAddStrHandle("");
-	  ditem.hstrSourceName = DrgAddStrHandle("");
-	  ditem.hstrTargetName = DrgAddStrHandle("");
+	  ditem.hstrContainerName = DrgAddStrHandle(NullStr);
+	  ditem.hstrSourceName = DrgAddStrHandle(NullStr);
+	  ditem.hstrTargetName = DrgAddStrHandle(NullStr);
 	  // ditem.fsControl = 0;
 	  ditem.fsSupportedOps = DO_MOVEABLE;
 

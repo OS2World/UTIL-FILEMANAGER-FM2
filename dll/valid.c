@@ -56,6 +56,7 @@
 #include "dirs.h"			// save_dir2
 #include "strips.h"			// bstrip
 #include "init.h"			// GetTidForWindow
+#include "wrappers.h"                    // xDosAllocMem
 
 
 //static BOOL IsDesktop(HAB hab, HWND hwnd);
@@ -294,8 +295,8 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
     *pulType = 0;
 
 # define BUFFER_BYTES 8192
-  rc = DosAllocMem(&pvBuffer, BUFFER_BYTES,
-		PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  rc = xDosAllocMem(&pvBuffer, BUFFER_BYTES,
+		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));

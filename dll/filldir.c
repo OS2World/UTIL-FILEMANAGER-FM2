@@ -69,6 +69,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -109,6 +110,7 @@
 #include "common.h"			// IncrThreadUsage
 #include "excputil.h"			// xbeginthread
 #include "fm3dlg.h"                     // INFO_LABEL
+#include "pathutil.h"                   // AddBackslashToPath
 
 VOID StubbyScanThread(VOID * arg);
 
@@ -967,7 +969,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
    */
 
   PSZ pszFileSpec;
-  INT t;
+  //INT t;
   PFILEFINDBUF4L paffbFound;
   PFILEFINDBUF4L *papffbSelected;
   PFILEFINDBUF4L pffbFile;
@@ -982,7 +984,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
   ULONGLONG ullTotalBytes;
   ULONG ulReturnFiles = 0;
   ULONGLONG ullReturnBytes = 0;
-  PCH pchEndPath;
+  //PCH pchEndPath;
   APIRET rc;
   PCNRITEM pci;
   PCNRITEM pciFirst;
@@ -1012,14 +1014,15 @@ VOID ProcessDirectory(const HWND hwndCnr,
   papffbSelected = xmalloc(sizeof(PFILEFINDBUF4L) * ulFindMax, pszSrcFile, __LINE__);
 
   if (paffbFound && papffbSelected && pszFileSpec) {
-    t = strlen(szDirBase);
-    memcpy(pszFileSpec, szDirBase, t + 1);
-    pchEndPath = pszFileSpec + t;
-    if (*(pchEndPath - 1) != '\\') {
-      memcpy(pchEndPath, "\\", 2);
-      pchEndPath++;
-    }
-    memcpy(pchEndPath, "*", 2);
+    //t = strlen(szDirBase);
+    strcpy(pszFileSpec, szDirBase);
+    AddBackslashToPath(pszFileSpec);
+    //pchEndPath = pszFileSpec + t;
+    //if (*(pchEndPath - 1) != '\\') {
+    //  memcpy(pchEndPath, "\\", 2);
+    //  pchEndPath++;
+    //}
+    strcat(pszFileSpec, "*");
     DosError(FERR_DISABLEHARDERR);
     ulFindCnt = ulFindMax;
     rc = xDosFindFirst(pszFileSpec,
@@ -1032,7 +1035,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       &ulFindCnt,
 		       FIL_QUERYEASIZEL);
     priority_normal();
-    *pchEndPath = 0;			// Chop off wildcard
+    pszFileSpec[strlen(pszFileSpec) - 1] = 0;     // Chop off wildcard
+    //*pchEndPath = 0;			
     if (!rc) {
       do {
 	/*
@@ -1456,7 +1460,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
               PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
             }
           }
-          if (strcmp(volser.volumelabel, "") != 0 && FSInfo && fShowDriveLabelInTree)
+          if (strcmp(volser.volumelabel, NullStr) != 0 && FSInfo && fShowDriveLabelInTree)
             strcpy(szFSType, volser.volumelabel);
 	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)

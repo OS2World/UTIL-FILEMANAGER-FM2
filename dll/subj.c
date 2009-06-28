@@ -124,8 +124,8 @@ INT Subject(HWND hwnd, CHAR * filename)
 	ealen = sizeof(FEA2LIST) + 9 + len + 4;
       else
 	ealen = sizeof(FEALIST) + 9;
-      rc = DosAllocMem((PPVOID) & pfealist, ealen + 1L,
-		       OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+      rc = xDosAllocMem((PPVOID) & pfealist, ealen + 1L,
+		        OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
       if (rc)
 	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 		  GetPString(IDS_OUTOFMEMORY));

@@ -151,7 +151,7 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
 	*p = 0;
 	p++;
 	strcpy(szFile, p);
-	strcat(szDir, "\\");
+	strcat(szDir, PCSZ_BACKSLASH);
       }
       else {
 	strcpy(szFile, filename);
@@ -808,7 +808,7 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
 	  *p = 0;
 	  p++;
 	  strcpy(szFile, p);
-	  strcat(szDir, "\\");
+	  strcat(szDir, PCSZ_BACKSLASH);
 	}
 	else {
 	  strcpy(szFile, pci->pszFileName);

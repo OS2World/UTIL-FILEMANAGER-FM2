@@ -23,6 +23,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Additional strings move to PCSZs
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -55,6 +56,7 @@
 #include "misc.h"			// PostMsg
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
+#include "pathutil.h"                   // AddBackslashToPath
 
 typedef struct
 {
@@ -99,8 +101,9 @@ static VOID ProcessDir(HWND hwndCnr,
   if (!pffbArray)
     return;                             // Error already reported
   strcpy(maskstr, filename);
-  if (maskstr[strlen(maskstr) - 1] != '\\')
-    strcat(maskstr, "\\");
+  AddBackslashToPath(maskstr);
+  //if (maskstr[strlen(maskstr) - 1] != '\\')
+  //  strcat(maskstr, "\\");
   endpath = &maskstr[strlen(maskstr)];
   strcat(maskstr, "*");
   hdir = HDIR_CREATE;

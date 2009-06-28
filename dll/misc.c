@@ -844,8 +844,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
 	  else
 	    ealen = sizeof(FEALIST) + 9;
-	  rc = DosAllocMem((PPVOID) & pfealist, ealen + 64,
-			   OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+	  rc = xDosAllocMem((PPVOID) & pfealist, ealen + 64,
+			    OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
 	  if (rc)
 	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile,
 		      __LINE__, GetPString(IDS_OUTOFMEMORY));

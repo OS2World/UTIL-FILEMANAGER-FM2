@@ -223,7 +223,7 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
       SHORT sCount, soldCount;
       PSWP pswp, pswpClient, pswpNew;
       SWP swpClient;
-      ULONG theight = 48L, dheight = DRIVE_BUTTON_HEIGTH + 2, bheight = 20, sheight = 20;
+      ULONG theight = 48L, dheight = DRIVE_BUTTON_HEIGHT, bheight = 20, sheight = 20;
       LONG width, lastx;
 
       sCount = (SHORT) ((oldproc) ? oldproc(hwnd, msg, mp1, mp2) :
@@ -309,12 +309,12 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
       *pswpNew = *pswpClient;
       pswpNew->hwnd = WinWindowFromID(hwnd, MAIN_DRIVES);
       pswpNew->x = swpClient.x + 2;
-      dheight += ((dheight - 2) * DriveLines);
-      pswpNew->y = (swpClient.y + swpClient.cy) - (dheight - 2);
+      dheight += ((dheight) * DriveLines);
+      pswpNew->y = (swpClient.y + swpClient.cy) - (dheight);
       if (fToolbar)
 	pswpNew->y -= theight;
       pswpNew->cx = swpClient.cx - 4;
-      pswpNew->cy = dheight - 4;
+      pswpNew->cy = dheight;
       pswpClient->cy -= dheight;
       pswpClient->cy -= 2;
       sCount++;

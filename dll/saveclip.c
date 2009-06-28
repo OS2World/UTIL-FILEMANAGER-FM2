@@ -99,7 +99,7 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
 	  clip = (CHAR *)WinQueryClipbrdData(hab, CF_TEXT);
 	if (clip)
 	  len += strlen(clip) + 1;
-	if (!DosAllocSharedMem((PPVOID) & hold, (PSZ) NULL, len, PAG_COMMIT |
+	if (!xDosAllocSharedMem((PPVOID) &hold, (PSZ) NULL, len, PAG_COMMIT |
 			       OBJ_GIVEABLE | PAG_READ | PAG_WRITE)) {
 	  *hold = 0;
 	  if (clip)
@@ -168,8 +168,8 @@ VOID ListToClipboardHab(HAB hab, CHAR ** list, ULONG append)
 	len++;
       }
       if (WinOpenClipbrd(hab)) {
-	if (!DosAllocSharedMem((PPVOID) & text, (PSZ) NULL, len, PAG_COMMIT |
-			       OBJ_GIVEABLE | PAG_READ | PAG_WRITE)) {
+	if (!xDosAllocSharedMem((PPVOID) &text, (PSZ) NULL, len, PAG_COMMIT |
+			        OBJ_GIVEABLE | PAG_READ | PAG_WRITE)) {
 	  *text = 0;
 	  if (clip && clip[0]) {
 	    for (x = 0; clip[x]; x++) {
@@ -241,7 +241,8 @@ CHAR **ListFromClipboardHab(HAB hab)
 MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   HWND hwndCnr;
-  CHAR savename[CCHMAXPATH] = "", pattern[81];
+  CHAR savename[CCHMAXPATH] = "";
+  CHAR pattern[81];
 
   switch (msg) {
   case WM_INITDLG:
@@ -601,7 +602,8 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 {
 
   CHAR **list;
-  CHAR savename[CCHMAXPATH] = "", pattern[81];
+  CHAR savename[CCHMAXPATH] = "";
+  CHAR pattern[81];
 
   switch (msg) {
   case WM_INITDLG:

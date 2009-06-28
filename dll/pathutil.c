@@ -40,6 +40,13 @@
 
 static PSZ pszSrcFile = __FILE__;
 
+PSZ AddBackslashToPath(PSZ pszPathName)
+{
+  if (pszPathName[strlen(pszPathName) - 1] != '\\')
+    strcat(pszPathName,  PCSZ_BACKSLASH);
+  return pszPathName;
+}
+
 // #pragma data_seg(DATA1)
 
 /**

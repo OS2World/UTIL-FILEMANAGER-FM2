@@ -132,7 +132,7 @@ CHAR *searchpath(PCSZ filename)
   CHAR *found;
 
   if (!filename)
-    return "";
+    return NullStr;
   found = searchapath(PCSZ_PATH, filename);
   if (!*found) {
     found = searchapath("DPATH", filename);

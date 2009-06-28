@@ -197,8 +197,8 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             APIRET rc;
 
             ealen = sizeof(FEA2LIST) + strlen(s) + 64;
-            rc = DosAllocMem((PPVOID) & pfealist, ealen + 1,
-                             OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+            rc = xDosAllocMem((PPVOID) & pfealist, ealen + 1,
+                              OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
             if (rc)
               Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
                         GetPString(IDS_OUTOFMEMORY));
@@ -1063,8 +1063,8 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
     return (PVOID) pfealist;
   }
 
-  rc = DosAllocMem((PPVOID) & pfealist, ealen,
-                   OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+  rc = xDosAllocMem((PPVOID) & pfealist, ealen,
+                    OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               GetPString(IDS_OUTOFMEMORY));

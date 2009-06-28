@@ -44,7 +44,7 @@ HBITMAP LoadBitmapFromFileNum(USHORT id)
   char s[CCHMAXPATH];
 
   strcpy(s, pFM2SaveDirectory);
-  sprintf(s + strlen(s), "\\%u.BMP", id);
+  sprintf(s + strlen(s), "%s%u.BMP", PCSZ_BACKSLASH, id);
   return LoadBitmapFromFile(s);
 }
 

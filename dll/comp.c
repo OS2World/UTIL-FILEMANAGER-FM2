@@ -65,6 +65,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   08 Mar 09 GKY Additional strings move to PCSZs in init.c & String Table
   15 Mar 09 GKY Use WriteDetailsSwitchs to save detail switch changes to the ini file.
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -2898,9 +2899,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (cmp->hwndCalling == hwndLeft)
 	    strcpy(ofile, cmp->rightdir);
 	  else
-	    strcpy(ofile, cmp->leftdir);
-	  if (ofile[strlen(ofile) - 1] != '\\')
-	    strcat(ofile, "\\");
+            strcpy(ofile, cmp->leftdir);
+          AddBackslashToPath(ofile);
+	  //if (ofile[strlen(ofile) - 1] != '\\')
+	  //  strcat(ofile, "\\");
 	  strcat(ofile, pci->pszDisplayName);
 	  if (*compare) {
 	    CHAR *fakelist[3];

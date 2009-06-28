@@ -47,6 +47,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -646,9 +647,10 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	       SHORT1FROMMP(mp1) == IDM_WPSMOVE) ?
 	      GetPString(IDS_MOVEDTEXT) : GetPString(IDS_COPIEDTEXT);
 	    if (*path) {
-	      strcpy(newname, path);
-	      if (newname[strlen(newname) - 1] != '\\')
-		strcat(newname, "\\");
+              strcpy(newname, path);
+              AddBackslashToPath(newname);
+	      //if (newname[strlen(newname) - 1] != '\\')
+	      //  strcat(newname, "\\");
 	      if (plen)
 		p = list[x] + plen;
 	      else {
@@ -1057,7 +1059,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					list[x],
 					(*list[x] &&
 					 list[x][strlen(list[x]) - 1] !=
-					 '\\') ? "\\" : NullStr);
+					 '\\') ? PCSZ_BACKSLASH : NullStr);
 	      DosError(FERR_DISABLEHARDERR);
 	      if (!error)
 		error = DosDeleteDir(list[x]);

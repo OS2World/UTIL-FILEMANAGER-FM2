@@ -79,6 +79,7 @@
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring replaces check for
                 saved drive containers.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -280,6 +281,7 @@ PCSZ PCSZ_PRFQUERYPROFILESIZE = "PrfQueryProfileSize";
 PCSZ PCSZ_PRFQUERYPROFILESTRING = "PrfQueryProfileString";
 PCSZ PCSZ_FILLDIRQCURERRTEXT = "DosQCurDisk";
 PCSZ PCSZ_NODATA  =  "No Data";
+PCSZ PCSZ_BACKSLASH     = "\\";
 PCSZ PCSZ_STARDOTEXE    =  "*.EXE";
 PCSZ PCSZ_STARDOTINI    =  "*.INI";
 PCSZ PCSZ_STARDOTLST    =  "*.LST";
@@ -519,8 +521,9 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
     save_tools(NULL);
   fcloseall();
   save_dir(s);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
+  AddBackslashToPath(s);
+  //if (s[strlen(s) - 1] != '\\')
+  //  strcat(s, "\\");
   enddir = &s[strlen(s)];
   if (*ArcTempRoot) {
     strcat(s, ArcTempRoot);
@@ -551,8 +554,9 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
     strcpy(s, pTmpDir);
   else
     strcpy(s, pFM2SaveDirectory);
-  if (s[strlen(s) - 1] != '\\')
-    strcat(s, "\\");
+  AddBackslashToPath(s);
+  //if (s[strlen(s) - 1] != '\\')
+  //  strcat(s, "\\");
   enddir = &s[strlen(s)];
   strcat(s, "$FM2LI$T.");
   strcat(s, "???");
@@ -698,8 +702,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       ULONG num_matches, ul;
 
       strcpy(szTempName, env);
-      if (szTempName[strlen(szTempName) - 1] != '\\')
-	strcat(szTempName, "\\");
+      AddBackslashToPath(szTempName);
+      //if (szTempName[strlen(szTempName) - 1] != '\\')
+      //  strcat(szTempName, "\\");
       enddir = &szTempName[strlen(szTempName)];
       strcat(szTempName, "$FM2????.");
       strcat(szTempName, "???");

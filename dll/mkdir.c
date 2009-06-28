@@ -12,6 +12,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -39,6 +40,7 @@
 #include "valid.h"			// IsFullName
 #include "dirs.h"			// save_dir2
 #include "input.h"			// InputDlgProc
+#include "pathutil.h"                   // AddBackslashToPath
 
 // Data definitions
 #pragma data_seg(GLOBAL2)
@@ -184,8 +186,9 @@ Over:
   else
     strcpy(szBuff, pFM2SaveDirectory);
   MakeValidDir(szBuff);
-  if (*szBuff && szBuff[strlen(szBuff) - 1] != '\\')
-    strcat(szBuff, "\\");
+  AddBackslashToPath(szBuff);
+  //if (*szBuff && szBuff[strlen(szBuff) - 1] != '\\')
+  //  strcat(szBuff, "\\");
   sip.prompt = GetPString(IDS_MKDIRPROMPTTEXT);
   sip.inputlen = CCHMAXPATH - 1;
   sip.title = GetPString(IDS_MKDIRTITLETEXT);
@@ -256,9 +259,9 @@ void SetTargetDir(HWND hwnd, BOOL justshow)
       sprintf(temp,
 	      "%s%s%s%s",
 	      GetPString(IDS_TARGETDIRTITLETEXT),
-	      (*targetdir) ? "" : "<",
+	      (*targetdir) ? NullStr : "<",
 	      (*targetdir) ?
-	      targetdir : GetPString(IDS_NONE), (*targetdir) ? "" : ">");
+	      targetdir : GetPString(IDS_NONE), (*targetdir) ? NullStr : ">");
     else
       *temp = 0;
     WinSetWindowText(hwndBack, temp);

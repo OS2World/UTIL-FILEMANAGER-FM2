@@ -31,6 +31,7 @@
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to String Table
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -474,8 +475,9 @@ static VOID DoAllSubdirs(GREP *grep,
   CHAR *p = NULL;
 
   // add a mask to search path
-  if (searchPath[strlen(searchPath) - 1] != '\\')
-    strcat(searchPath, "\\");
+  AddBackslashToPath(searchPath);
+  //if (searchPath[strlen(searchPath) - 1] != '\\')
+  //  strcat(searchPath, "\\");
   strcat(searchPath, "*");
   // step through all subdirectories
   DosError(FERR_DISABLEHARDERR);

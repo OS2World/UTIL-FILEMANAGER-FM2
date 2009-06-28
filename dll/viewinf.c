@@ -19,6 +19,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
 
 ***********************************************************************/
 
@@ -120,8 +121,9 @@ static VOID FillListboxThread(VOID * args)
               ULONG nm;
 
               strcpy(mask, p);
-              if (mask[strlen(mask) - 1] != '\\')
-                strcat(mask, "\\");
+              AddBackslashToPath(mask);
+              //if (mask[strlen(mask) - 1] != '\\')
+              //  strcat(mask, "\\");
               enddir = mask + strlen(mask);
               if (dummy->help)
                 strcat(mask, "*.HLP");

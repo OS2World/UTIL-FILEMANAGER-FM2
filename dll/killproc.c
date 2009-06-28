@@ -115,8 +115,8 @@ static VOID FillKillListThread2(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  rc = DosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
@@ -184,8 +184,8 @@ static VOID FillKillListThread3(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  rc = DosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		   PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));

@@ -70,10 +70,10 @@ HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
     if (s) {
       sprintf(s,
 	      "EXENAME=%s%s%s%s%s;PARAMETERS=%%*;OBJECTID=<FM2_%s>",
-	      (path) ? path : "",
-	      (path) ? "\\" : "",
+	      (path) ? path : NullStr,
+	      (path) ? PCSZ_BACKSLASH : NullStr,
 	      objtitle,
-	      (path) ? ";STARTUPDIR=" : "", (path) ? path : "", objtitle);
+	      (path) ? ";STARTUPDIR=" : NullStr, (path) ? path : NullStr, objtitle);
       WinSetObjectData(obj, s);
       free(s);
     }
@@ -111,8 +111,8 @@ HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
     sprintf(s2,
 	    "%s%s%sOBJECTID=<FM2_%s>",
 	    objtitle,
-	    (p == type[1]) ? "ICONFILE=" : "",
-	    (p == type[1]) ? s : "", (p == type[1]) ? ";" : "", objtitle);
+	    (p == type[1]) ? "ICONFILE=" : NullStr,
+	    (p == type[1]) ? s : NullStr, (p == type[1]) ? ";" : NullStr, objtitle);
     WinSetObjectData(obj, s2);
   }
   return obj;
@@ -149,7 +149,7 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
   if (s) {
     sprintf(s,
 	    "SHADOWID=%s%s%s",
-	    (path) ? path : "", (path) ? "\\" : "", objtitle);
+	    (path) ? path : NullStr, (path) ? PCSZ_BACKSLASH : NullStr, objtitle);
     {					/* find an icon for it if possible */
       CHAR *p, temp[CCHMAXPATH + 1];
 
@@ -165,9 +165,9 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
     if (executable)
       sprintf(&s[strlen(s)],
 	      ";EXENAME=%s%s%s%s%s;PARAMETERS=%%*",
-	      (path) ? path : "",
-	      (path) ? "\\" : "",
-	      objtitle, (path) ? ";STARTUPDIR=" : "", (path) ? path : "");
+	      (path) ? path : NullStr,
+	      (path) ? PCSZ_BACKSLASH : NullStr,
+	      objtitle, (path) ? ";STARTUPDIR=" : NullStr, (path) ? path : NullStr);
     strcat(s, ";NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO");
     sprintf(&s[strlen(s)], ";OBJECTID=<FM2_%s>", objtitle);
     obj = WinCreateObject("WPShadow",
