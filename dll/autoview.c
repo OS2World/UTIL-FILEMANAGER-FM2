@@ -28,6 +28,7 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates bassed on locale
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -136,7 +137,7 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
   }
 
   rc = xDosAllocMem((PPVOID) & pfealist, ealen, PAG_COMMIT | PAG_READ |
-	            PAG_WRITE | OBJ_TILE);
+	            PAG_WRITE, pszSrcFile, __LINE__);
   if (rc || !pfealist)
     Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));

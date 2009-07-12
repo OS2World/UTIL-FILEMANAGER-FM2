@@ -69,6 +69,9 @@
   06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
   07 Jun 09 GKY Fixed double names in tree container when collapsed tree is accessed
                 before recursive scan
+  12 Jul 09 GKY Add option to show file system type or drive label in tree
+                (get NOPRESCAN drives working)
+
 ***********************************************************************/
 
 #include <stdlib.h>
@@ -273,14 +276,8 @@ VOID ShowTreeRec(HWND hwndCnr,
       if (pciP && (INT) pciP != -1) {
 	if (!stricmp(dirname, pciP->pszFileName))
 	  break;			// Found it
-        if (~pciP->rc.flRecordAttr & CRA_EXPANDED) {
-          if (!(driveflags[toupper(*pciP->pszFileName) - 'A'] & DRIVE_RSCANNED)) {
-            WinSendMsg(hwndCnr, UM_RESCAN, MPFROMP(pciP), MPVOID);
-            WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
-          }
-          else
-            WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
-        }
+        if (~pciP->rc.flRecordAttr & CRA_EXPANDED)
+          WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
 	strcpy(szDir, dirname);
 	if (p - szDir >= strlen(szDir))
 	  break;			// Not root dir
@@ -335,14 +332,8 @@ VOID ShowTreeRec(HWND hwndCnr,
 			  MPFROMP(pciToSelect),
 			  MPFROM2SHORT(CMA_PARENT, CMA_ITEMORDER));
 	if (pciP && (INT) pciP != -1) {
-          if (!(pciP->rc.flRecordAttr & CRA_EXPANDED)) {
-            if (!(driveflags[toupper(*pciP->pszFileName) - 'A'] & DRIVE_RSCANNED)) {
-              WinSendMsg(hwndCnr, UM_RESCAN, MPFROMP(pciP), MPVOID);
-              WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
-            }
-            else
-              WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
-          }
+          if (!(pciP->rc.flRecordAttr & CRA_EXPANDED)) 
+            WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
 	  pciToSelect = pciP;
 	}
 	else
@@ -357,14 +348,8 @@ VOID ShowTreeRec(HWND hwndCnr,
       if (fTopDir || maketop) {
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
       }
-      if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) {
-        if (!(driveflags[toupper(*pciToSelect->pszFileName) - 'A'] & DRIVE_RSCANNED)) {
-          WinSendMsg(hwndCnr, UM_RESCAN, MPFROMP(pciToSelect), MPVOID);
-          WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-        }
-        else
-          WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-      }
+      if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) 
+        WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
       if (!quickbail) {
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
@@ -374,7 +359,6 @@ VOID ShowTreeRec(HWND hwndCnr,
     }
   }
   WinEnableWindowUpdate(hwndCnr, TRUE);
-  //DosSleep(1);			// Let GUI update
 }
 
 MRESULT EXPENTRY TreeTitleWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
@@ -1828,8 +1812,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     volser.serial)) {
 		  if (Flesh(hwnd, pci) &&
 		      SHORT2FROMMP(mp1) == CN_EXPANDTREE &&
-		      !dcd->suspendview && fTopDir)
-		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+                      !dcd->suspendview && fTopDir) {
+                    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+                    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+                  }
 		}
 		driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
 	      }
@@ -1842,11 +1828,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir)
-		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+              if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir){
+                PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+                //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+              }
 	    }
-	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview)
-	      WinSendMsg(hwnd, UM_FILTER, MPVOID, MPVOID);
+            if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview){
+              WinSendMsg(hwnd, UM_FILTER, MPVOID, MPVOID);
+              //DbgMsg(pszSrcFile, __LINE__, "UM_FILTER %p pci %p", hwnd, pci);
+            }
 	  }
 	}
 	break;
@@ -1941,7 +1931,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    CHAR volumelength;
 	    CHAR volumelabel[CCHMAXPATH];
 	  }
-	  volser;
+          volser;
+          CHAR FileSystem[CCHMAXPATH];
+          CHAR szBuf[CCHMAXPATH];
 
 	  pciL = pciP = pci;
 	  for (;;) {
@@ -1964,7 +1956,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    INT removable, x = (INT) (toupper(*pci->pszFileName) - 'A');
 	    ULONG drvtype;
-	    CHAR FileSystem[CCHMAXPATH];
 
 	    DosError(FERR_DISABLEHARDERR);
 	    removable = CheckDrive(toupper(*pciP->pszFileName),
@@ -2007,11 +1998,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcmp(FileSystem, HPFS386)) {
 		driveflags[x] |= DRIVE_NOLONGNAMES;
 	      }
-	      SelectDriveIcon(pciP);
-	      WinSendMsg(hwnd,
-			 CM_INVALIDATERECORD,
-			 MPFROMP(&pciP),
-			 MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+              SelectDriveIcon(pciP);
 	      if (hwndMain)
 		PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
 	    }
@@ -2021,7 +2008,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  status = DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
 				  FSIL_VOLSER, &volser,
 				  (ULONG) sizeof(volser));
-	  if (!status) {
+          if (!status) {
 	    if (!volser.serial ||
 		driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		volser.serial) {
@@ -2035,7 +2022,26 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
 	    if (!pciL)
 	      Flesh(hwnd, pciP);
-	  }
+            if (fShowFSTypeInTree) {
+              strcpy(szBuf, pciP->pszFileName);
+              strcat(szBuf, " [");
+              strcat(szBuf, FileSystem);
+              strcat(szBuf, "]");
+              pciP->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+              }
+            else if (fShowDriveLabelInTree) {
+              strcpy(szBuf, pciP->pszFileName);
+              strcat(szBuf, " [");
+              strcat(szBuf, volser.volumelabel);
+              strcat(szBuf, "]");
+              pciP->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+            }
+            pciP->rc.pszIcon = pciP->pszDisplayName;
+            WinSendMsg(hwnd,
+                       CM_INVALIDATERECORD,
+                       MPFROMP(&pciP),
+                       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+          }
 	  else {
 	    driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
 	    UnFlesh(hwnd, pci);
@@ -2355,6 +2361,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
       dcd->suspendview = tempsusp;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
+      //DbgMsg(pszSrcFile, __LINE__, "UM_RESCAN %p pci %s", hwnd, (CHAR *) mp1);
     }
     return 0;
 
@@ -2621,8 +2628,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_REFRESHREMOVABLES:
 	runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
 		HWND_DESKTOP, pszSrcFile, __LINE__, NULL, NULL,
-		"%s %s", PCSZ_LVMEXE, "/RediscoverPRM");
-	 PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+                "%s %s", PCSZ_LVMEXE, "/RediscoverPRM");
+	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	break;
 
       case IDM_SORTNAME:

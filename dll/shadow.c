@@ -13,6 +13,7 @@
   06 Aug 07 SHL Use BldFullPathName
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Mar 09 GKY Additional strings move to PCSZs declare change
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -223,7 +224,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	ULONG apt;
 	CHAR *p, *pp, szDir[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1];
 
-	if (DosQueryAppType(list[x], &apt))
+	if (xDosQueryAppType(list[x], &apt))
 	  apt = 0;
 	p = strrchr(list[x], '.');
 	if (p) {

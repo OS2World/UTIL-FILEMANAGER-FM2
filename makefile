@@ -24,6 +24,7 @@
 # 25 Oct 08 SHL Sanitize DEBUG usage
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 14 Dec 08 SHL Build fm3.sym
+# 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 
 # Environment - see makefile_pre.mk and dll\makefile
 
@@ -75,6 +76,15 @@ $(BASE): $(BASE).exe $(BASE).res .symbolic
 $(BASE).res: $(BASE).rc  icons\$(BASE).ico bitmaps\*.bmp  .autodepend
 
 $(BASE).obj: $(BASE).c dll\version.h .autodepend
+
+highmem: .symbolic
+!ifdef HIMEM
+  cd dll  
+  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) loadhigh
+  cd ..
+!else
+  @echo "HIMEM not set"
+!endif  
 
 # make EXE compenents
 

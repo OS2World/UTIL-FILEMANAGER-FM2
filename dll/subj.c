@@ -14,6 +14,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   08 Mar 09 GKY Additional strings move to PCSZs
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -125,7 +126,7 @@ INT Subject(HWND hwnd, CHAR * filename)
       else
 	ealen = sizeof(FEALIST) + 9;
       rc = xDosAllocMem((PPVOID) & pfealist, ealen + 1L,
-		        OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+		        PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
       if (rc)
 	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 		  GetPString(IDS_OUTOFMEMORY));

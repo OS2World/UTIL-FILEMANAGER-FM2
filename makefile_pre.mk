@@ -15,6 +15,7 @@
 # 22 Jul 08 SHL Pass FORTIFY to subordinate makefiles
 # 06 Oct 08 SHL Pass DEBUG in CFLAGS; clean up USE_RC usage
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
+# 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 
 # Environment: see dll\makefile
 
@@ -22,6 +23,7 @@
 # WARNALL - add more warnings if defined
 # FORTIFY - build with FORTIFYed memory
 # USE_RC - build with rc.exe if defined, other build with wrc.exe
+# HIMEM - build with changes to allow loading in high memory
 
 CC = wcc386
 LINK = wlink
@@ -58,6 +60,15 @@ FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
 !ifdef %FORTIFY                 	# if defined in environment
 FORTIFY = $(%FORTIFY)           	# use value from environment
 FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
+!endif
+!endif
+
+!ifdef HIMEM			# if defined on wmake command line
+HIMEM_OPT =  HIMEM=$(HIMEM)
+!else
+!ifdef %HIMEM			# if defined in environment
+HIMEM = $(%HIMEM)		# use value from environment
+HIMEM_OPT =  HIMEM=$(HIMEM)
 !endif
 !endif
 

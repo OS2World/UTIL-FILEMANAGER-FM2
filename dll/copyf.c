@@ -21,6 +21,7 @@
   19 Jul 08 GKY Modify MakeTempName for use making temp directory names
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -312,7 +313,8 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
   else
     ealen = sizeof(FEALIST) + 10;
   rc = xDosAllocMem((PPVOID) & pfealist,
-                    ealen + 32L, OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+                    ealen + 32L, PAG_COMMIT | PAG_READ | PAG_WRITE,
+                    pszSrcFile, __LINE__);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               GetPString(IDS_OUTOFMEMORY));

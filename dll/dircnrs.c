@@ -803,8 +803,14 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    CM_QUERYRECORD,
 			    MPFROMP(pci),
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-	  if (!pciC) {
-	    Stubby(dcd->hwndCnr, pci);
+          if (!pciC) {
+            if (fInitialDriveScan)
+              Stubby(dcd->hwndCnr, pci);
+            else {
+              while (StubbyScanCount != 0)
+                DosSleep(50);
+              Stubby(dcd->hwndCnr, pci);
+            }
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
@@ -1610,7 +1616,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 	      DIR_SORT), dcd->sortFlags, FALSE);
       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-	      DIR_VIEW), dcd->flWindowAttr);
+                              DIR_VIEW), dcd->flWindowAttr);
+      //DbgMsg(pszSrcFile, __LINE__, "UM_SETUP2 %p pci %p", hwnd, dcd);
     } else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     return 0;
@@ -2796,18 +2803,24 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     volser.serial)) {
 		  if (Flesh(hwnd, pci) &&
 		      SHORT2FROMMP(mp1) == CN_EXPANDTREE &&
-		      !dcd->suspendview && fTopDir)
-		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+                      !dcd->suspendview && fTopDir) {
+                    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+                    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+                  }
 		}
 		driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
 	      }
 	    }
 	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir)
+              if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir) {
 		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+                //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+              }
 	    }
-	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview)
+            if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview) {
 	      WinSendMsg(hwnd, UM_FILTER, MPVOID, MPVOID);
+              //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+            }
 	  }
 	}
 	break;

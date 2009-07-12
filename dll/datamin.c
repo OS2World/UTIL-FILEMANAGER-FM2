@@ -27,6 +27,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -852,7 +853,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	APIRET rc;
 
 	rc = xDosAllocMem((PVOID)&pbh, USHRT_MAX + 4096,
-	            	  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+                          PAG_COMMIT | PAG_READ | PAG_WRITE,
+                          pszSrcFile, __LINE__);
 	if (rc)
 	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 		    GetPString(IDS_OUTOFMEMORY));
@@ -891,7 +893,8 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	APIRET rc;
 
 	rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-			  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+                          PAG_COMMIT | PAG_READ | PAG_WRITE,
+                          pszSrcFile, __LINE__);
 	if (rc)
 	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
 		    GetPString(IDS_OUTOFMEMORY));

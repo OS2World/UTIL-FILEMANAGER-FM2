@@ -13,7 +13,9 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   15 Oct 08 GKY Fix NormalizeCmdLine to check all 5 executible extensions when no extension provided;
 		use searchapath to check for existance of file types not checked by DosQAppType;
-		close DosFind.
+                close DosFind.
+  28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -196,7 +198,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	  ret = 0;
       }
       else
-	ret = DosQueryAppType(szCmdLine, &ulAppType);
+	ret = xDosQueryAppType(szCmdLine, &ulAppType);
       BldQuotedFileName(pszNewCmdLine, szCmdLine);
       if (ret) {
 	ret = saymsg(MB_YESNO,
@@ -228,12 +230,12 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	// strip quotes readded by BuildQuotedFileName
 	while (strchr(szCmdLine, '\"'))
 	  remove_first_occurence_of_character("\"", szCmdLine);
-	ret = DosQueryAppType(szCmdLine, &ulAppType); // exe automatically appended
+	ret = xDosQueryAppType(szCmdLine, &ulAppType); // exe automatically appended
 	if (!ret)
 	  strcat(szCmdLine, PCSZ_DOTEXE);
 	else {
 	  strcat(szCmdLine, PCSZ_DOTCOM);
-	  ret = DosQueryAppType(szCmdLine, &ulAppType);
+	  ret = xDosQueryAppType(szCmdLine, &ulAppType);
 	  if (ret) {
 	    offset = strrchr(szCmdLine, '.' );
 	    *offset = 0;
@@ -265,14 +267,14 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	    remove_first_occurence_of_character("\"", szCmdLine);
 	  if (*pszChar == ' ') { //test at every space for the end of the filename
 	    *pszChar = '\0';
-	    ret = DosQueryAppType(szCmdLine, &ulAppType);
+	    ret = xDosQueryAppType(szCmdLine, &ulAppType);
 	    if (!ret) {
 	      strcat(szCmdLine, PCSZ_DOTEXE);
 	      break;
 	    }
 	    else {
 	      strcat(szCmdLine, PCSZ_DOTCOM);
-	      ret = DosQueryAppType(szCmdLine, &ulAppType);
+	      ret = xDosQueryAppType(szCmdLine, &ulAppType);
 	      if (ret) {
 		offset = strrchr(szCmdLine, '.' );
 		*offset = 0;

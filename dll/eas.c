@@ -22,6 +22,7 @@
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   29 Feb 08 GKY Use xfree where appropriate
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -198,7 +199,8 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
             ealen = sizeof(FEA2LIST) + strlen(s) + 64;
             rc = xDosAllocMem((PPVOID) & pfealist, ealen + 1,
-                              OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+                              PAG_COMMIT | PAG_READ | PAG_WRITE,
+                              pszSrcFile, __LINE__);
             if (rc)
               Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
                         GetPString(IDS_OUTOFMEMORY));
@@ -1064,7 +1066,7 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
   }
 
   rc = xDosAllocMem((PPVOID) & pfealist, ealen,
-                    OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+                    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               GetPString(IDS_OUTOFMEMORY));

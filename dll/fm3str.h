@@ -30,6 +30,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   14 Mar 09 GKY Remove variables that were transferred to PCSZs
   06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
+  06 Jul 09 SHL Error message for Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
 
 ***********************************************************************/
 
@@ -999,6 +1000,7 @@
 #define IDS_STATEDATASAVEFAILED                              1011
 #define IDS_STATERESERVENAMETEXT                             1012
 #define IDS_DRAGDROPDIALOGTEXT                               1013
+#define IDS_ERROREATYPETEXT                                  1014
 
 //The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 //This was done as part of the conversion to a StringTable where strings are limited to 255

@@ -28,6 +28,7 @@
   24 Aug 08 GKY Warn full drive on save of .BB2 file; prevent loss of existing file
   23 Nov 08 JBS Support use of CMD files in archiver definitions
   11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -402,7 +403,7 @@ static PSZ checkfile(PSZ file, INT * error)
   if (!p || !*p)
     *error = 1;
   else {
-    ret = (INT) DosQueryAppType(p, &apptype);
+    ret = (INT) xDosQueryAppType(p, &apptype);
     apptype &= (~FAPPTYP_32BIT);
     if (!apptype ||
 	(apptype == FAPPTYP_NOTWINDOWCOMPAT) ||

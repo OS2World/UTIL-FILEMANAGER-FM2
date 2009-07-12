@@ -50,6 +50,7 @@
 # 14 Dec 08 SHL Drop copyright.c support - it's gone
 # 18 Dec 08 SHL Avoid extra fm3res.str builds
 # 04 Feb 09 SHL Drop mkstr and fm3*.str now that we use STRINGTABLE
+# 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 
 # Environment: see makefile_pre.mk
 
@@ -57,6 +58,7 @@
 # WARNALL - add more warnings if defined
 # FORTIFY - build with FORTIFYed memory
 # USE_RC - build with rc.exe if defined, other build with wrc.exe
+# HIMEM - build with changes to allow loading in high memory
 
 BASE = fm3dll
 BASERES = fm3res
@@ -95,6 +97,10 @@ WARNALL = $(%WARNALL)		# use value from environment
 
 !ifdef %FORTIFY			# if defined in environment
 FORTIFY = $(%FORTIFY)		# use value from environment
+!endif
+
+!ifdef %HIMEM			# if defined in environment
+HIMEM = $(%HIMEM)		# use value from environment
 !endif
 
 SYMS = $(BASE).sym $(BASERES).sym # targets for building SYM files
@@ -147,6 +153,10 @@ CFLAGS += -we
 
 !ifdef FORTIFY
 CFLAGS += -dFORTIFY
+!endif
+
+!ifdef HIMEM
+CFLAGS += -dHIMEM
 !endif
 
 # for fm3res only
@@ -210,7 +220,7 @@ all: &
      $(BASERES).res &
      $(BASERES).dll &
      ipf\fm3.hlp
-
+     
 syms: $(SYMS) .symbolic
 
 $(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
@@ -311,6 +321,10 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
 !ifndef DEBUG
   @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
 !endif
+
+# Run for each dependent
+loadhigh: $(BASE).dll $(BASERES).dll .symbolic
+  @for %f in ($(BASE).dll $(BASERES).dll) do !exehdr /hi %f
 
 cleanobj: .symbolic
   -del *.obj

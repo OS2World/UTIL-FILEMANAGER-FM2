@@ -75,6 +75,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   12 Mar 09 SHL Use common SearchContainer
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -630,7 +631,7 @@ ReTry:
     if (p)
       *p = 0;
     DosError(FERR_DISABLEHARDERR);
-    if (!DosQueryAppType(s, &apptype) &&
+    if (!xDosQueryAppType(s, &apptype) &&
 	(apptype & FAPPTYP_DOS ||
 	 apptype & FAPPTYP_WINDOWSREAL ||
 	 apptype & FAPPTYP_WINDOWSPROT ||

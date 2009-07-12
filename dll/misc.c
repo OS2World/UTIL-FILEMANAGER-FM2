@@ -59,6 +59,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Mar 09 GKY Add RemoveOldCnrSwitches to remove pre 3.16 style ini keys;
                 add State.version key for check
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -845,7 +846,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else
 	    ealen = sizeof(FEALIST) + 9;
 	  rc = xDosAllocMem((PPVOID) & pfealist, ealen + 64,
-			    OBJ_TILE | PAG_COMMIT | PAG_READ | PAG_WRITE);
+			    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
 	  if (rc)
 	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile,
 		      __LINE__, GetPString(IDS_OUTOFMEMORY));

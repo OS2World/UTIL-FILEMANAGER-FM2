@@ -88,6 +88,8 @@
   07 Jun 09 GKY Fix IDM_BLINK to not leave a DataBar? on the screen when fDataMin is TRUE.
   21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
                 letter windows; Use button ID to identify drive letter for processing.
+  12 Jul 09 GKY Removed duplicate UM_SETUP2 message from RestoreDirCnrState caused dbl dir
+                listings in tree
 
 ***********************************************************************/
 
@@ -3324,8 +3326,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		    }
 		  }
 		}
-		if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
-		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
+		//if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL)) //These were being called twice
+		//  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL); //causing dup dir names in tree
 	      }
 	    }
 	    fRestored = TRUE;

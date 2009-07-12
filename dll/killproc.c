@@ -20,6 +20,7 @@
   16 JUL 08 GKY Use TMP directory for temp files
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -116,7 +117,7 @@ static VOID FillKillListThread2(VOID * arg)
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
   rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
@@ -185,7 +186,7 @@ static VOID FillKillListThread3(VOID * arg)
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
   rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
   if (rc)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));

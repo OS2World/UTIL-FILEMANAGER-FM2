@@ -12,6 +12,7 @@
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -103,7 +104,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	mem = MLEgetlen(hwndMLE);
 	if (mem) {
 	  rc = xDosAllocMem((PVOID) & bat, mem,
-			    PAG_COMMIT | PAG_READ | PAG_WRITE);
+			    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
 	  if (rc || !bat) {
 	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		      GetPString(IDS_OUTOFMEMORY));

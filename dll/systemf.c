@@ -25,6 +25,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory or pTmpDir and use MakeTempName
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
 		Dos/Win programs from being inserted into the execute dialog with message why.
+  12 Jul 09 GKY Allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -700,9 +701,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  rc = xDosAllocMem((PVOID)&pszPgm,
-		    MaxComLineStrg,
-		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+  rc = DosAllocMem((PVOID)&pszPgm,
+		   MaxComLineStrg,
+		   PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc) {
     Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
     return -1;
@@ -748,9 +749,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       p++;
       temp = *p;
       if (temp) {
-	rc = xDosAllocMem((PVOID)&pszArgs,
-			  MaxComLineStrg * 2,
-			  PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+	rc = DosAllocMem((PVOID)&pszArgs,
+			 MaxComLineStrg * 2,
+			 PAG_COMMIT | PAG_READ | PAG_WRITE);
 	if (rc)
 	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
       }
@@ -882,8 +883,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     else {
       if (~type & FULLSCREEN)
 	type |= WINDOWED;
-      rc = xDosAllocMem((PVOID) & pszArgs, MaxComLineStrg * 2,
-		        PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+      rc = DosAllocMem((PVOID) & pszArgs, MaxComLineStrg * 2,
+		       PAG_COMMIT | PAG_READ | PAG_WRITE);
       if (rc) {
 	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
 	DosFreeMem(pszPgm);
@@ -1074,6 +1075,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       if (~type & WAIT)
 	useTermQ = FALSE;
       else {
+# ifdef HIMEM
+        useTermQ = FALSE;
+# else
 	rc = 0;
 	DosEnterCritSec();
 	if (!hTermQ) {
@@ -1096,10 +1100,11 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    }
 	    // if (!rc) fprintf(stderr,"%s %d qcreated ptib %x hTermQ %x\n",__FILE__, __LINE__,ptib,hTermQ);
 	  }
-	} // if 1st time
-	useTermQ = hTermQ && hTermQSem;
+        } // if 1st time
+        useTermQ = hTermQ && hTermQSem;
 	if (!rc)
-	  DosExitCritSec();
+          DosExitCritSec();
+# endif
       } // if wait
 
       memset(&sdata,0,sizeof(sdata));
@@ -1139,9 +1144,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 
       if (ret && ret != ERROR_SMG_START_IN_BACKGROUND) {
 	if (!fNoErrorMsg)
-	Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
+          Dos_Error(MB_CANCEL,ret,hwnd,pszSrcFile,__LINE__,
 		  GetPString(IDS_DOSSTARTSESSIONFAILEDTEXT),pszPgm,pszArgs,
-		  pszCallingFile, uiLineNumber);        // 26 May 08 SHL
+                    pszCallingFile, uiLineNumber);        // 26 May 08 SHL
       }
       else if (type & WAIT) {
 	if (!(type & (BACKGROUND | MINIMIZED | INVISIBLE)))
@@ -1156,7 +1161,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  sd.BondInd = SET_SESSION_UNCHANGED;
 	  for (ctr = 0;; ctr++)
 	  {
-	    DosSleep(100);//05 Aug 07 GKY 200
+            DosSleep(50);//05 Aug 07 GKY 200
 	    if (DosSetSession(ulSessID, &sd))   // Check if session gone (i.e. finished)
 	      break;
 	    if (ctr > 10) {
@@ -1170,16 +1175,16 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  {
 	    if (ctr < 20) {
 	      rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
-				DCWW_NOWAIT, &bPriority, hTermQSem);
+                                DCWW_NOWAIT, &bPriority, hTermQSem);
 	      if (rc == ERROR_QUE_EMPTY) {
 		DosSleep(50);//05 Aug 07 GKY 100
 		continue;
 	      }
 	    }
 	    else {
-	      if (ctr == 20) {
+              if (ctr == 20) {
 		ShowSession(hwnd, sessPID);             // Show long running session
-	      }
+              }
 	      rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
 				DCWW_WAIT, &bPriority, 0);
 	    }

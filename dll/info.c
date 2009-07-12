@@ -31,6 +31,8 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Remove code to update recursive scan setting which isn't user setable
 
 ***********************************************************************/
 
@@ -755,7 +757,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinCheckButton(hwnd, FLE_HIDDEN, ((fs.attrFile & FILE_HIDDEN) != 0));
 	WinCheckButton(hwnd, FLE_SYSTEM, ((fs.attrFile & FILE_SYSTEM) != 0));
 	DosError(FERR_DISABLEHARDERR);
-	if (!DosQueryAppType(pfs->szFileName, &apptype)) {
+	if (!xDosQueryAppType(pfs->szFileName, &apptype)) {
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2FS), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2WIN), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2PM), TRUE);
@@ -1031,10 +1033,6 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           driveflags[drive] |= DRIVE_WRITEVERIFYOFF;
 	else
 	  driveflags[drive] &= (~DRIVE_WRITEVERIFYOFF);
-        if (WinQueryButtonCheckstate(hwnd,DVS_RSCANNED))
-	  driveflags[drive] |= DRIVE_RSCANNED;
-	else
-	  driveflags[drive] &= (~DRIVE_RSCANNED);
 	{
 	  ULONG flags;
           CHAR FlagKey[80];

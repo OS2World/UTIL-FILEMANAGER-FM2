@@ -9,6 +9,7 @@
   Copyright (c) 2008 Steven H. Levine
 
   08 Dec 08 SHL Add missing OS2_INCLUDED check
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -19,6 +20,8 @@
 #include <os2.h>
 #endif
 
+APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags);
+
 APIRET xDosAllocSharedMem(PPVOID ppb,
                           PSZ pszName,
                           ULONG cb,
@@ -26,7 +29,9 @@ APIRET xDosAllocSharedMem(PPVOID ppb,
 
 APIRET xDosAllocMem(PPVOID ppb,
                     ULONG cb,
-                    ULONG flag);
+                    ULONG flag,
+                    PCSZ pszSrcFile,
+	            UINT uiLineNumber);
 
 APIRET xDosFindFirst(PSZ pszFileSpec,
 		     PHDIR phdir,

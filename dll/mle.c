@@ -22,6 +22,7 @@
   06 Jul 08 GKY Rework LoadThread logic with Steven's help
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -180,7 +181,7 @@ VOID MLEinternet(HWND h, BOOL ftp)
   if (len) {
     len++;
     rc = xDosAllocMem((PVOID) & temp, 4096,
-		      PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+		      PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
     if (rc || !temp)
       Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 		GetPString(IDS_OUTOFMEMORY));
@@ -263,7 +264,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   if (!sel)
     return FALSE;
   rc = xDosAllocMem((PVOID) & temp, 32768L,
-	 	    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+	 	    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
   if (rc || !temp) {
     Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
@@ -535,7 +536,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
     DosChgFilePtr(handle, 0, FILE_BEGIN, &action);
     if (len) {
       rc = xDosAllocMem((PVOID) & hexbuff, 50001,
-		        PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+		        PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
       if (rc || !hexbuff) {
 	Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 		  GetPString(IDS_OUTOFMEMORY));
@@ -664,7 +665,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
     fseek(fp, 0L, SEEK_SET);
     if (len && len != -1) {
       rc = xDosAllocMem((PVOID) & buffer,
-		        50000L, PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+		        50000L, PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
       if (rc || !buffer) {
 	Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 		  GetPString(IDS_OUTOFMEMORY));
@@ -916,7 +917,7 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
   }
 
   rc = xDosAllocMem((PVOID) & buffer, 4096L,
-		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
   if (rc || !buffer) {
     Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));

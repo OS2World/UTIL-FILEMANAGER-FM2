@@ -65,6 +65,8 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  12 Jul 09 GKY Add szFSType to FillInRecordFromFSA use to bypass EA scan and size formatting
+                for tree container
 
 ***********************************************************************/
 
@@ -835,7 +837,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      if (pci) {
 		dcd->ullTotalBytes += FillInRecordFromFSA(dcd->hwndCnr, pci,
 							  fullname,
-							  &fs4, FALSE, NULL, dcd);
+							  &fs4, FALSE, 0, dcd);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;

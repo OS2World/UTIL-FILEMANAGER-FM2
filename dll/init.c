@@ -80,6 +80,7 @@
                 saved drive containers.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -1148,17 +1149,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     FullPath = searchapath(PCSZ_PATH, PCSZ_LVMGUICMD);
     if (*FullPath)
       fLVMGui = TRUE;
-    if (!DosQueryAppType(PCSZ_DFSOS2EXE, &ulAppType))
+    if (!xDosQueryAppType(PCSZ_DFSOS2EXE, &ulAppType))
       fDFSee = TRUE;
-    if (!DosQueryAppType(PCSZ_MINILVMEXE, &ulAppType))
+    if (!xDosQueryAppType(PCSZ_MINILVMEXE, &ulAppType))
       fMiniLVM = TRUE;
-    if (!DosQueryAppType(PCSZ_FDISKPMEXE, &ulAppType))
+    if (!xDosQueryAppType(PCSZ_FDISKPMEXE, &ulAppType))
       fFDisk = TRUE;
-    if (!DosQueryAppType(PCSZ_LVMEXE, &ulAppType))
+    if (!xDosQueryAppType(PCSZ_LVMEXE, &ulAppType))
       fLVM = TRUE;
 
     // Check to see if we are running protect only
-    if (!DosQueryAppType(GetCmdSpec(TRUE), &ulAppType)) {
+    if (!xDosQueryAppType(GetCmdSpec(TRUE), &ulAppType)) {
       ret = runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED,
 		    (HWND) 0, pszSrcFile, __LINE__, NULL, NULL,
 		    "%s /C exit", GetCmdSpec(TRUE));

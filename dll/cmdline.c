@@ -20,6 +20,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -433,7 +434,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
-      if (DosQueryAppType(executable, &apptype) ||
+      if (xDosQueryAppType(executable, &apptype) ||
 	  (apptype && !(apptype &
 			(FAPPTYP_NOTWINDOWCOMPAT |
 			 FAPPTYP_WINDOWCOMPAT |

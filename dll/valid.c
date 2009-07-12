@@ -34,6 +34,7 @@
   05 Jan 09 GKY Fix IsBinary to recognize values above \xc4 (maybe lower) as positive.
 		When these high codes were it text files they showed as hex in new view.
   08 Mar 09 GKY Additional strings move to PCSZs
+  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
@@ -296,7 +297,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 
 # define BUFFER_BYTES 8192
   rc = xDosAllocMem(&pvBuffer, BUFFER_BYTES,
-		    PAG_COMMIT | OBJ_TILE | PAG_READ | PAG_WRITE);
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
   if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      GetPString(IDS_OUTOFMEMORY));
@@ -600,14 +601,14 @@ BOOL IsExecutable(CHAR * filename)
     DosError(FERR_DISABLEHARDERR);
     p = strrchr(filename, '.');
     if (p)
-      ret = DosQueryAppType(filename, &apptype);
+      ret = xDosQueryAppType(filename, &apptype);
     else {
 
       char fname[CCHMAXPATH + 2];
 
       strcpy(fname, filename);
       strcat(fname, ".");
-      ret = DosQueryAppType(fname, &apptype);
+      ret = xDosQueryAppType(fname, &apptype);
     }
     if (apptype & (FAPPTYP_DLL |
 		   FAPPTYP_PHYSDRV |

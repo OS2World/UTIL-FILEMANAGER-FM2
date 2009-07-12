@@ -70,6 +70,9 @@
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  06 Jul 09 SHL Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
+  12 Jul 09 GKY Add szFSType to FillInRecordFromFSA use to bypass EA scan and size formatting
+                for tree container
 
 ***********************************************************************/
 
@@ -219,34 +222,27 @@ VOID StubbyScanThread(VOID * arg)
 	IncrThreadUsage();
 	priority_normal();
         ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-        //DbgMsg(pszSrcFile, __LINE__, "Stubby %i ", ret);
+	//DbgMsg(pszSrcFile, __LINE__, "Stubby %i ", ret);
         if (ret == 1) {
           if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
 	    WinSendMsg(StubbyScan->hwndCnr,
 		       CM_INVALIDATERECORD,
 		       MPFROMP(&StubbyScan->pci),
                        MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-            if (fRScanLocal) {
-              if (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                    ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
-                     (fRScanRemote ? 0 : DRIVE_REMOTE) |
-                     (fRScanSlow ? 0 : DRIVE_SLOW) |
-                     (fRScanVirtual ? 0 : DRIVE_VIRTUAL)))
-                  && fInitialDriveScan) {
-                WinSendMsg(StubbyScan->hwndCnr, CM_EXPANDTREE, MPFROMP(StubbyScan->pci), MPVOID);
-                //DbgMsg(pszSrcFile, __LINE__, "expanded %x %s", StubbyScan->hwndCnr, StubbyScan->pci->pszFileName);
-                WinSendMsg(StubbyScan->hwndCnr, CM_COLLAPSETREE, MPFROMP(StubbyScan->pci), MPVOID);
-              }
-            }
-            else  if ((fRScanRemote && (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                      DRIVE_REMOTE)) ||
-                      (fRScanVirtual && (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                                         DRIVE_VIRTUAL)) && fInitialDriveScan) {
+            if ((fRScanLocal &&
+                (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
+                   ((DRIVE_REMOTE | DRIVE_VIRTUAL)))) ||
+                 (fRScanRemote &&
+                  (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
+                   DRIVE_REMOTE)) ||
+                 (fRScanVirtual &&
+                  (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
+                   DRIVE_VIRTUAL))) && fInitialDriveScan) {
               if (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
                     ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
                      (fRScanSlow ? 0 : DRIVE_SLOW)))) {
                 WinSendMsg(StubbyScan->hwndCnr, CM_EXPANDTREE, MPFROMP(StubbyScan->pci), MPVOID);
-                //DbgMsg(pszSrcFile, __LINE__, "expanded %x %s", StubbyScan->hwndCnr, StubbyScan->pci->pszFileName);
+                //DbgMsg(pszSrcFile, __LINE__, "expanded %x %p", StubbyScan->hwndCnr, StubbyScan->pci);
                 WinSendMsg(StubbyScan->hwndCnr, CM_COLLAPSETREE, MPFROMP(StubbyScan->pci), MPVOID);
               }
             }
@@ -259,13 +255,6 @@ VOID StubbyScanThread(VOID * arg)
 		     MPFROMP(StubbyScan->pci->pszFileName));
         }
         StubbyScanCount--;
-       /* if (StubbyScanCount == 0) {
-          if (fInitialDriveScan) {
-            WinShowWindow(StubbyScan->hwndCnr, TRUE);
-            WinShowWindow(StubbyScan->hwndDrivesList, TRUE);
-          }
-          fInitialDriveScan = FALSE;
-        }*/
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -438,11 +427,112 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
 
 } // IsDefaultIcon
 
+static VOID FetchCommonEAs(PCNRITEM pci)
+{
+  ULONG flags = driveflags[toupper(*pci->pszFileName) - 'A'];
+  BOOL fLoadSubjectForDrive = fLoadSubject && ~flags & DRIVE_NOLOADSUBJS;
+  BOOL fLoadLongNameForDrive = fLoadLongnames &&  ~flags & DRIVE_NOLONGNAMES &&
+			       ~flags & DRIVE_NOLOADLONGS;
+  if (fLoadSubjectForDrive || fLoadLongNameForDrive) {
+    // Allocate space to hold GEA2s and .SUBJECT and .LONGNAME strings
+    PGEA2LIST pgealist = xmallocz(sizeof(GEA2LIST) + sizeof(GEA2) + 64, pszSrcFile, __LINE__);
+    if (pgealist) {
+      APIRET rc;
+      PFEA2LIST pfealist;
+      ULONG offset;
+      PGEA2 pgeaPrev = NULL;
+      PGEA2 pgea = pgealist->list;	// Point at first available
+      EAOP2 eaop;
+      UINT state;
+      //DbgMsg(pszSrcFile, __LINE__, "pszFileName %s", pci->pszFileName);
+      for (state = 0; state < 2; state++) {
+	PCSZ pcsz;
+	switch (state) {
+	case 0:
+	  pcsz = fLoadSubjectForDrive ? SUBJECT : NULL;
+	  break;
+	case 1:
+	  pcsz = fLoadLongNameForDrive ? LONGNAME : NULL;
+	  break;
+	}
+	if (pcsz) {
+	  if (pgeaPrev) {
+	    pgeaPrev->oNextEntryOffset = (PSZ)pgea - (PSZ)pgeaPrev;
+	    //DbgMsg(pszSrcFile, __LINE__, "pgea %p oNextEntryOffset %u", pgeaPrev, pgeaPrev->oNextEntryOffset);
+	  }
+	  strcpy(pgea->szName, pcsz);
+	  pgea->cbName = strlen(pgea->szName);
+	  pgea->oNextEntryOffset = 0;
+	  //DbgMsg(pszSrcFile, __LINE__, "pgea %p cbName %u szName %s", pgea, pgea->cbName, pgea->szName);
+	  offset = sizeof(GEA2) + pgea->cbName;	// Calc length including null
+	  offset = (offset + 3) & ~3;		// Doubleword align
+	  pgeaPrev = pgea;
+	  pgea = (PGEA2)((PSZ)pgea + offset);	// Point at next available
+	}
+      } // for
+
+      pgealist->cbList = (PSZ)pgea - (PSZ)pgealist;
+      //DbgMsg(pszSrcFile, __LINE__, "pgealist %p cbList %u", pgealist, pgealist->cbList);
+
+      pfealist = xmallocz(4096, pszSrcFile, __LINE__);
+      if (pfealist) {
+	pfealist->cbList = 4096;
+	eaop.fpGEA2List = pgealist;
+	eaop.fpFEA2List = pfealist;
+	eaop.oError = 0;
+	rc = DosQueryPathInfo(pci->pszFileName, FIL_QUERYEASFROMLIST,
+			      (PVOID) &eaop, (ULONG) sizeof(EAOP2));
+        if (rc) {
+          CHAR s[80];
+          sprintf(s, "%s %s",PCSZ_DOSQUERYPATHINFO, "%s");
+          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    s, pci->pszFileName);
+        }
+	  //DbgMsg(pszSrcFile, __LINE__, "DosQueryPathInfo %s failed with rc %u ", pci->pszFileName, rc);
+	else {
+	  PFEA2 pfea = eaop.fpFEA2List->list;
+	  while (pfea) {
+	    if (pfea->cbValue) {
+	      CHAR *achValue = pfea->szName + pfea->cbName + 1;
+              if (*(USHORT *)achValue != EAT_ASCII)
+                Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                          GetPString(IDS_ERROREATYPETEXT),
+                          achValue, pfea->cbName, pfea->szName);
+		//DbgMsg(pszSrcFile, __LINE__, "EA type 0x%x unexpected for %.*s", achValue, pfea->cbName, pfea->szName);
+	      else {
+		CHAR ch = achValue[pfea->cbValue];
+		PSZ pszValue;
+		achValue[pfea->cbValue] = 0;
+		pszValue = xstrdup(achValue + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
+		achValue[pfea->cbValue] = ch;
+		//DbgMsg(pszSrcFile, __LINE__, "pfea %p %.*s cbValue %u %s", pfea, pfea->cbName, pfea->szName, pfea->cbValue, pszValue);
+		if (strncmp(pfea->szName, LONGNAME, pfea->cbName) == 0)
+		  pci->pszLongName = pszValue;
+		else if (strncmp(pfea->szName, SUBJECT, pfea->cbName) == 0)
+		  pci->pszSubject = pszValue;
+                else
+                  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		            GetPString(IDS_ERROREATYPETEXT), pfea, pfea->cbName, pfea->szName);
+		  //DbgMsg(pszSrcFile, __LINE__, "pfea %p EA %.*s unexpected", pfea, pfea->cbName, pfea->szName);
+	      }
+	    }
+	    if (!pfea->oNextEntryOffset)
+	      break;
+	    pfea = (PFEA2)((PSZ)pfea + pfea->oNextEntryOffset);
+	  } // while
+	}
+	free(pfealist);
+      }
+      free(pgealist);
+    }
+  }
+} // FetchCommonEAs
+
 ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 			      PCNRITEM pci,
 			      const PSZ pszDirectory,
 			      const PFILEFINDBUF4L pffb,
-			      const BOOL partial,
+                              const BOOL partial,
 			      DIRCNRDATA *dcd)
 {
   // fill in a container record from a FILEFINDBUF4L structure
@@ -486,106 +576,15 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     p++;
     memcpy(p, pffb->achName, pffb->cchName + 1);
   }
-  flags = driveflags[toupper(*pci->pszFileName) - 'A'];
-  // load the object's Subject, if required
-  // pci->pszSubject = NullStr; dubplicate see below 12-05-08 GKY
-  if (pffb->cbList > 4L &&
-      dcd && fLoadSubject &&
-      (isalpha(*pci->pszFileName) &&
-       !(flags & DRIVE_NOLOADSUBJS)))
-  {
-    APIRET rc;
-    EAOP2 eaop;
-    PGEA2LIST pgealist;
-    PFEA2LIST pfealist;
-    PGEA2 pgea;
-    PFEA2 pfea;
-    CHAR *value;
 
-    pgealist = xmallocz(sizeof(GEA2LIST) + 32, pszSrcFile, __LINE__);
-    if (pgealist) {
-      pgea = &pgealist->list[0];
-      strcpy(pgea->szName, SUBJECT);
-      pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0;
-      pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = xmallocz(1532, pszSrcFile, __LINE__);
-      if (pfealist) {
-	pfealist->cbList = 1024;
-	eaop.fpGEA2List = pgealist;
-	eaop.fpFEA2List = pfealist;
-	eaop.oError = 0;
-	rc = DosQueryPathInfo(pci->pszFileName, FIL_QUERYEASFROMLIST,
-			      (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-	if (!rc) {
-	  pfea = &eaop.fpFEA2List->list[0];
-	  value = pfea->szName + pfea->cbName + 1;
-	  value[pfea->cbValue] = 0;
-	  if (*(USHORT *) value == EAT_ASCII)
-	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
-	}
-	free(pfealist);
-      }
-      free(pgealist);
-    }
-  }
+  // load Subject and/or Longname EAs, if required and have EAs
+  if (pffb->cbList > 4L && dcd)
+    FetchCommonEAs(pci);
+
   if (!pci->pszSubject)
     pci->pszSubject = NullStr;
 
   // load the object's longname
-  pci->pszLongName = NULL;
-  if (fLoadLongnames &&
-      dcd &&
-      pffb->cbList > 4L &&
-      isalpha(*pci->pszFileName) &&
-      ~flags & DRIVE_NOLONGNAMES &&
-      ~flags & DRIVE_NOLOADLONGS)
-  {
-    APIRET rc;
-    EAOP2 eaop;
-    PGEA2LIST pgealist;
-    PFEA2LIST pfealist;
-    PGEA2 pgea;
-    PFEA2 pfea;
-    CHAR *value;
-
-    pgealist = xmallocz(sizeof(GEA2LIST) + 32, pszSrcFile, __LINE__);
-    if (pgealist) {
-      pgea = &pgealist->list[0];
-      strcpy(pgea->szName, LONGNAME);
-      pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0;
-      pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = xmallocz(1532, pszSrcFile, __LINE__);
-      if (pfealist) {
-	pfealist->cbList = 1024;
-	eaop.fpGEA2List = pgealist;
-	eaop.fpFEA2List = pfealist;
-	eaop.oError = 0;
-	rc = DosQueryPathInfo(pci->pszFileName, FIL_QUERYEASFROMLIST,
-			      (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-	if (!rc) {
-	  pfea = &eaop.fpFEA2List->list[0];
-	  value = pfea->szName + pfea->cbName + 1;
-	  value[pfea->cbValue] = 0;
-	  if (*(USHORT *) value == EAT_ASCII) {
-	    pci->pszLongName = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
-#	    ifdef FORTIFY
-	    {
-	      unsigned tid = GetTidForWindow(hwndCnr);
-	      if (tid == 1)
-		Fortify_ChangeScope(pci->pszLongName, -1);
-	      else
-		Fortify_SetOwner(pci->pszLongName, 1);
-	    }
-#	    endif
-	  }
-	}
-	free(pfealist);
-      }
-      free(pgealist);
-    }
-  }
   if (!pci->pszLongName)
     pci->pszLongName = NullStr;
 
@@ -594,6 +593,8 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     strupr(pci->pszFileName);
   else if (fForceLower)
     strlwr(pci->pszFileName);
+
+  flags = driveflags[toupper(*pci->pszFileName) - 'A'];
 
   // get an icon to use with it
   if (pffb->attrFile & FILE_DIRECTORY) {
@@ -727,104 +728,20 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 			      DIRCNRDATA *dcd)	// Optional
 {
   HPOINTER hptr;
-  CHAR *p;
   ULONG flags;
+  CHAR *p;
   CHAR szBuf[80];
 
   // fill in a container record from a FILESTATUS4L structure
 
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
-  flags = driveflags[toupper(*pci->pszFileName) - 'A'];
-  if ((pfsa4->cbList > 4) &&
-      dcd &&
-      fLoadSubject &&
-      (!isalpha(*pci->pszFileName) ||
-       !(flags & DRIVE_NOLOADSUBJS)))
-  {
-    APIRET rc;
-    EAOP2 eaop;
-    PGEA2LIST pgealist;
-    PFEA2LIST pfealist;
-    PGEA2 pgea;
-    PFEA2 pfea;
-    CHAR *value;
 
-    pgealist = xmallocz(sizeof(GEA2LIST) + 32, pszSrcFile, __LINE__);
-    if (pgealist) {
-      pgea = &pgealist->list[0];
-      strcpy(pgea->szName, SUBJECT);
-      pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0;
-      pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = xmallocz(1532, pszSrcFile, __LINE__);
-      if (pfealist) {
-	pfealist->cbList = 1024;
-	eaop.fpGEA2List = pgealist;
-	eaop.fpFEA2List = pfealist;
-	eaop.oError = 0;
-	rc = DosQueryPathInfo(pci->pszFileName, FIL_QUERYEASFROMLIST,
-			      (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-	if (!rc) {
-	  pfea = &eaop.fpFEA2List->list[0];
-	  value = pfea->szName + pfea->cbName + 1;
-	  value[pfea->cbValue] = 0;
-	  if (*(USHORT *) value == EAT_ASCII)
-	    pci->pszSubject = xstrdup(value + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
-	}
-	free(pfealist);
-      }
-      free(pgealist);
-    }
-  }
+  if (pfsa4->cbList > 4L && dcd && *szFSType == 0)
+    FetchCommonEAs(pci);
+
   if (!pci->pszSubject)
     pci->pszSubject = NullStr;
-
-  pci->pszLongName = NULL;
-  if (fLoadLongnames &&
-      dcd &&
-      pfsa4->cbList > 4L &&
-      isalpha(*pci->pszFileName) &&
-      ~flags & DRIVE_NOLONGNAMES &&
-      ~flags & DRIVE_NOLOADLONGS)
-  {
-    APIRET rc;
-    EAOP2 eaop;
-    PGEA2LIST pgealist;
-    PFEA2LIST pfealist;
-    PGEA2 pgea;
-    PFEA2 pfea;
-    CHAR *value;
-
-    pgealist = xmallocz(sizeof(GEA2LIST) + 32, pszSrcFile, __LINE__);
-    if (pgealist) {
-      pgea = &pgealist->list[0];
-      strcpy(pgea->szName, LONGNAME);
-      pgea->cbName = strlen(pgea->szName);
-      pgea->oNextEntryOffset = 0;
-      pgealist->cbList = (sizeof(GEA2LIST) + pgea->cbName);
-      pfealist = xmallocz(1532, pszSrcFile, __LINE__);
-      if (pfealist) {
-	pfealist->cbList = 1024;
-	eaop.fpGEA2List = pgealist;
-	eaop.fpFEA2List = pfealist;
-	eaop.oError = 0;
-	rc = DosQueryPathInfo(pci->pszFileName, FIL_QUERYEASFROMLIST,
-			      (PVOID) & eaop, (ULONG) sizeof(EAOP2));
-	if (!rc) {
-	  pfea = &eaop.fpFEA2List->list[0];
-	  value = pfea->szName + pfea->cbName + 1;	// Point at EA value
-	  value[pfea->cbValue] = 0;	// Terminate
-	  if (*(USHORT *) value == EAT_ASCII) {
-	    p = value + sizeof(USHORT) * 2;	// Point at value string
-	    pci->pszLongName = xstrdup(p, pszSrcFile, __LINE__);
-	  }
-	}
-	free(pfealist);
-      }
-      free(pgealist);
-    }
-  }
   if (!pci->pszLongName)
     pci->pszLongName = NullStr;
 
@@ -832,6 +749,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
     strupr(pci->pszFileName);
   else if (fForceLower)
     strlwr(pci->pszFileName);
+
+  flags = driveflags[toupper(*pci->pszFileName) - 'A'];
 
   if (pfsa4->attrFile & FILE_DIRECTORY) {
     if (fNoIconsDirs ||
@@ -889,7 +808,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
     pci->pszDisplayName = p;
 
   //comma format the file size for large file support
-  {
+  if (*szFSType == 0) {
     CHAR szBuf[30];
     CommaFmtULL(szBuf, sizeof(szBuf), pfsa4->cbFile, ' ');
     pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
@@ -903,6 +822,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
     }
 #   endif
   }
+  else
+    pci->pszFmtFileSize = NullStr;
   pci->date.day = pfsa4->fdateLastWrite.day;
   pci->date.month = pfsa4->fdateLastWrite.month;
   pci->date.year = pfsa4->fdateLastWrite.year + 1980;
@@ -958,7 +879,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		      const BOOL filestoo,
 		      const BOOL recurse,
 		      const BOOL partial,
-		      CHAR *stopflag,
+                      CHAR *stopflag,
 		      DIRCNRDATA *dcd,	// Optional
 		      ULONG *pulTotalFiles,	// Optional
 		      PULONGLONG pullTotalBytes)	// Optional
@@ -1263,7 +1184,6 @@ Abort:
             DosSleep(50);
           Stubby(hwndCnr, pci);
         }
-        //Stubby(hwndCnr, pci);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
@@ -1287,9 +1207,9 @@ VOID FillDirCnr(HWND hwndCnr,
 		   pszDirectory,
 		   TRUE,		// filestoo
 		   FALSE,		// recurse
-		   TRUE,		// partial
-		   dcd ? &dcd->stopflag : NULL,
-		   dcd,
+                   TRUE,		// partial
+                   dcd ? &dcd->stopflag : NULL,
+                   dcd,
 		   NULL,		// total files
 		   pullTotalBytes);
   DosPostEventSem(CompactSem);
@@ -1319,7 +1239,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   APIRET rc;
   BOOL drivesbuilt = FALSE;
   ULONG startdrive = 3;
-  static BOOL didonce = FALSE;
+  static BOOL didonce;
 
   fDummy = TRUE;
   *suggest = 0;
@@ -1473,8 +1393,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    rc = DosQueryPathInfo(szDrive,
 				  FIL_QUERYEASIZEL,
 				  &fsa4, (ULONG) sizeof(FILESTATUS4L));
-	    // ERROR_BAD_NET_RSP = 58
-	    if (rc == 58) {
+	    if (rc == ERROR_BAD_NET_RESP) {
 	      DosError(FERR_DISABLEHARDERR);
 	      rc = DosQueryPathInfo(szDrive,
 				    FIL_STANDARDL,
@@ -1526,12 +1445,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 #	  endif
 	}
 	else {
+	  *szFSType = 0;
           pci->rc.hptrIcon = hptrDunno;
           pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
           if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-            strcat(szDrive, " [");
-            strcat(szDrive, szFSType);
-            strcat(szDrive, "]");
+            strcat(szDrive, " [?]");
           }
 	  pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
           szDrive[3] = 0;
@@ -1544,7 +1462,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  pci->pszDispAttr = FileAttrToString(pci->attrFile);
 	  driveserial[x] = -1;
 	}
-      }
+	}
       else {
 	// diskette drive (A or B)
         pci->rc.hptrIcon = hptrFloppy;
@@ -1718,10 +1636,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  ULONG flags = driveflags[drvNum];	// Speed up
 	  if (~flags & DRIVE_INVALID &&
 	      ~flags & DRIVE_NOPRESCAN &&
-	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) //&& !fDrivetoSkip[drvNum])
+	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE))
 	  {
-	    //if (DRIVE_RAMDISK)
-	    //  stubbyScan->RamDrive = TRUE;
 	    if (xbeginthread(StubbyScanThread,
 			     65536,
 			     stubbyScan,
@@ -1747,7 +1663,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		     MPFROMP(pci->pszFileName));
 	}
-	//fDrivetoSkip[drvNum] = FALSE;
       }
       pci = pciNext;
     } // while

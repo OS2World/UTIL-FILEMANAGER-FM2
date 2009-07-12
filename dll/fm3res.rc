@@ -47,6 +47,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   14 Mar 09 GKY Remove unused strings; remove trailing \32s replaced with spaces.
   06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
+  06 Jul 09 SHL Error message for Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
 
 ***********************************************************************/
 
@@ -3274,6 +3275,7 @@ STRINGTABLE
     IDS_STATEDATASAVEFAILED               "State data save failed"
     IDS_STATERESERVENAMETEXT              "\"%s\" is a reserved state name"
     IDS_DRAGDROPDIALOGTEXT                "Drag & Drop Dialog"
+    IDS_ERROREATYPETEXT                   "EA type 0x%x unexpected for %.*s"
 
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on what I've seen while scanning your drives, I would like to suggest the following Parameters for your FM/2 program object (explanation:  each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2"
