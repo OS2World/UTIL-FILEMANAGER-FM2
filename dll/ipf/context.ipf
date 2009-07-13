@@ -398,7 +398,7 @@ command will ensure that your display is current.
 :artwork runin name='bitmaps\drive.bmp'.
 :p.
 :hp6.Refresh removable media:ehp6. calls LVM.EXE to find new drives and then
-rescans all the drives in the tree container. This item will not appear if
+rescans all the drives in the Drive Tree container. This item will not appear if
 LVM.EXE isn't found in your PATH.
 :artwork runin name='bitmaps\drive.bmp'.
 :p.
@@ -554,13 +554,13 @@ display.
 :artwork name='..\..\bitmaps\rescan.bmp' align=center.
 :p.
 :hp6.Rescan:ehp6. rescans the directory associated with a directory container,
-or all the drives in the tree container. FM/2 tries
+or all the drives in the Drive Tree container. FM/2 tries
 very hard to keep all its windows up to date, but things outside FM/2
 can cause changes that FM/2 cannot know about automatically. This
 command will ensure that your display is current.
 :p.
 :hp6.Refresh removable media:ehp6. calls LVM.EXE to find new drives and then
-rescans all the drives in the tree container. This item will not appear if
+rescans all the drives in the Drive Tree container. This item will not appear if
 LVM.EXE isn't found in your PATH.
 :p.
 :hp6.Parent:ehp6. moves directory containers to the previous (parent)
@@ -582,7 +582,7 @@ and in the container menu of Directory Containers. It invokes the
 the files in the directory and all its subdirectories. (on submenu of miscellaneous)
 :p.
 :hp6.Find in drive tree:ehp6. hilites the directory the directory container is
-looking into on the drive tree. (on submenu of miscellaneous)
+looking into on the Drive Tree window. (on submenu of miscellaneous)
 :p.
 :artwork name='..\..\bitmaps\select.bmp' align=center.
 :p.

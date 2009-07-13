@@ -15,6 +15,7 @@
 .* 20 Jul 08 JBS Ticket 114: Support user-selectable env. strings in Tree container.
 .* 08 Mar 09 GKY Added option to turn alert and/or error beeps off
 .* 12 Mar 09 SHL Update container search description
+.* 13 Jul 09 SHL Rework scanning page help text
 .*
 .***********************************************************************
 .*
@@ -365,7 +366,7 @@ Note that the pseudo-variable LIBPATH is also supported.
 :p.
 :hp6.Show in tree beside drive letter (radiobuttons):ehp6. This
 setting allows you to list either the file system type, the drive label or nothing 
-beside the drive letter in the tree container. The status line at the bottom 
+beside the drive letter in the Drive Tree container. The status line at the bottom 
 left lists the information you choose not to list in the tree in addition
 to the drive's serial number and the amount of free space. When split status line
 is selected on the :link reftype=hd res=97000."Monolithic":elink. notebook page, 
@@ -826,17 +827,21 @@ at a time to between 1500-2000. The only advantage of a larger number is it
 reduces the number of times the find stops to insert records into the container
 The range is 256 to 4096, with 256 being the default.
 :p.
-The :hp6.Recurse scan at startup:ehp6. section allow you to choose the drive types
-want to have a full recurse scan when the tree container is started. This is the same
-scan that occurs when you press the plus sign by the drive for the first time. The
-advantage is the tree expand is quiker. The disadvantage is startup is slower. Local
-drives are on by default the others are off. Slow drives and nonwrite drives are only
-scanned for the drive type(s) you have selected (ie if you have a slow virtual drive
+The :hp6.Recurse scan at startup:ehp6. section allows you to choose the drive types
+that will have a full recursive scan when the Drive Tree container is opened at startup.
+This is the same
+scan that occurs when you press the plus sign by the drive for the first time.
+The advantage of enabling the scan is the tree expand is quicker.
+The disadvantage is that startup is slower.
+The installation default is to enable the scan only for local drives.
+Slow drives and nonwrite drives are only
+scanned if they match the drive type(s) you have selected (i.e. if you have a slow virtual drive
 you must select both virtual drives and slow drives for it to be scanned on startup).
 :p.
-The :hp6.Rescan tree on media eject:ehp6. section allow you to choose the drive types
-where a rescan of the tree container is initiated by ejecting the drive media. This keeps
-the container in better sync with reality. It is on for removables by default but off for
+The :hp6.Rescan tree on media eject:ehp6. section allows you to choose the drive types
+which trigger a rescan of the Drive Tree container when the drive media is ejected. This keeps
+the container in better sync with reality.
+The installation default enables the option for removables and disables it for
 CD/DVDs and floppies.
 :p.
 :h3 res=100070 name=PANEL_BUBBLEPAGE.Bubble help page

@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help - Window menu
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002, 2009 Steven H.Levine
+.*
+.* 13 Jul 09 SHL Document FM/2 Lite window menu items
+.*
+.***********************************************************************
+.*
 :h1 res=91100 name=PANEL_WINDOWMENU.Windows Menu
 :i1 id=aboutWindowMenu.Windows Menu
 :artwork name='..\..\bitmaps\window.bmp' align=center.
@@ -9,6 +22,10 @@ menu. Following is a discussion of the "permanent" commands on the menu.
 :hp1.Tile&colon.:ehp1.
 :p.
 Causes child windows to be tiled.
+:p.
+:hp1.Drive tree&colon.:ehp1.
+:p.
+Toggles the Drive Tree window display if you are running FM/2 Lite.
 :p.
 :hp1.Cascade&colon.:ehp1.
 :p.

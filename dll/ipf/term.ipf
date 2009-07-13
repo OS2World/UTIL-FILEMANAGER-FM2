@@ -206,7 +206,7 @@ editor. They can (and do) come in all sizes.
 without an object on it).
 :p.
 :hp1.Monolithic application:ehp1. = FM/2 as run from the FM/2 program
-object, with the big window containing a Drive tree and Directory
+object, with the big window containing a Drive Tree and Directory
 containers within it. You can also run parts of FM/2 separately.
 :p.
 See also these pictures&colon.

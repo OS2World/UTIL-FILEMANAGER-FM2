@@ -15,7 +15,7 @@ Want to open FM/2 with various different configurations see :link reftype=hd res
 for command line options.
 :p.
 Want to copy or move some files to a new directory?  Try dragging them
-onto an empty area (whitespace) of the Drive tree. FM/2 will pop up a
+onto an empty area (whitespace) of the Drive Tree window. FM/2 will pop up a
 dialog allowing you to specify a name for a new directory into which to
 place the files.
 :p.

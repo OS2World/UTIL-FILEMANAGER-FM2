@@ -347,7 +347,7 @@ The :hp1."Toolbars" quicklist:ehp1. only appears when the
 quicklists:elink. section).
 :p.
 Status line #1 can be clicked to shift the focus to FM/2 without
-activating any commands. In addition, if the Drive tree is the
+activating any commands. In addition, if the Drive Tree is the
 active window within FM/2's monolithic window, the Swapfile and
 memory available indicators in Status line #2 will be continuously
 updated (otherwise they update about every ten seconds).
