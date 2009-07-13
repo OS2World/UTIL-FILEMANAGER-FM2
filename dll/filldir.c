@@ -73,6 +73,7 @@
   06 Jul 09 SHL Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
   12 Jul 09 GKY Add szFSType to FillInRecordFromFSA use to bypass EA scan and size formatting
                 for tree container
+  13 Jul 09 SHL Avoid trap in FillInRecordFromFSA if pszFSType NULL
 
 ***********************************************************************/
 
@@ -724,7 +725,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 			      const PSZ pszFileName,
 			      const PFILESTATUS4L pfsa4,
                               const BOOL partial,
-                              CHAR *szFSType,
+                              CHAR *pszFSType,	// Optional
 			      DIRCNRDATA *dcd)	// Optional
 {
   HPOINTER hptr;
@@ -737,7 +738,9 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
 
-  if (pfsa4->cbList > 4L && dcd && *szFSType == 0)
+  // 13 Jul 09 SHL fixme to know if fetch can be bypassed if pszFSType already filled
+  // If FSType not supplied, assume don't need EAs either
+  if (pfsa4->cbList > 4L && dcd && pszFSType)
     FetchCommonEAs(pci);
 
   if (!pci->pszSubject)
@@ -797,18 +800,19 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   }
   else
     p = pci->pszFileName;
-  if (szFSType && (fShowFSTypeInTree || fShowDriveLabelInTree)) {
+  if (pszFSType && (fShowFSTypeInTree || fShowDriveLabelInTree)) {
     strcpy(szBuf, p);
     strcat(szBuf, " [");
-    strcat(szBuf, szFSType);
+    strcat(szBuf, pszFSType);
     strcat(szBuf, "]");
     pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
   }
   else
     pci->pszDisplayName = p;
 
-  //comma format the file size for large file support
-  if (*szFSType == 0) {
+  // 13 Jul 09 SHL fixme to know why pszFSType check needed
+  // comma format the file size for large file support
+  if (!pszFSType || *pszFSType == 0) {
     CHAR szBuf[30];
     CommaFmtULL(szBuf, sizeof(szBuf), pfsa4->cbFile, ' ');
     pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
@@ -957,7 +961,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       FIL_QUERYEASIZEL);
     priority_normal();
     pszFileSpec[strlen(pszFileSpec) - 1] = 0;     // Chop off wildcard
-    //*pchEndPath = 0;			
+    //*pchEndPath = 0;
     if (!rc) {
       do {
 	/*
@@ -1234,7 +1238,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   INT x, removable;
   CHAR suggest[32];
   CHAR szDrive[] = " :\\";
-  CHAR szFSType[CCHMAXPATH]; 
+  CHAR szFSType[CCHMAXPATH];
   FILESTATUS4L fsa4;
   APIRET rc;
   BOOL drivesbuilt = FALSE;
@@ -1246,8 +1250,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   for (x = 0; x < 26; x++) {
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-                      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
-                      DRIVE_WRITEVERIFYOFF);
+	              DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
+	              DRIVE_WRITEVERIFYOFF);
   }
   memset(driveserial, -1, sizeof(driveserial));
 
@@ -1267,7 +1271,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     Dos_Error(MB_CANCEL,
 	      rc,
 	      HWND_DESKTOP,
-              pszSrcFile, __LINE__, PCSZ_FILLDIRQCURERRTEXT);
+	      pszSrcFile, __LINE__, PCSZ_FILLDIRQCURERRTEXT);
     exit(0);
   }
 
@@ -1300,10 +1304,10 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       ULONG size = sizeof(ULONG);
       BOOL FSInfo = FALSE;
       struct {
-              ULONG serial;
-              CHAR volumelength;
-              CHAR volumelabel[CCHMAXPATH];
-             } volser;
+	      ULONG serial;
+	      CHAR volumelength;
+	      CHAR volumelabel[CCHMAXPATH];
+	     } volser;
 
       *szDrive = (CHAR)x + 'A';		// Build path spec
 
@@ -1319,13 +1323,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  ulDriveType = 0;
 	  removable = CheckDrive(*szDrive, szFSType, &ulDriveType);
 	  driveserial[x] = -1;
-          if (removable != -1) {
-            DosError(FERR_DISABLEHARDERR);
-            if (!DosQueryFSInfo((ULONG) x + 1,
-                                FSIL_VOLSER, &volser, sizeof(volser))) {
-              driveserial[x] = volser.serial;
-              FSInfo = TRUE;
-            }
+	  if (removable != -1) {
+	    DosError(FERR_DISABLEHARDERR);
+	    if (!DosQueryFSInfo((ULONG) x + 1,
+	                        FSIL_VOLSER, &volser, sizeof(volser))) {
+	      driveserial[x] = volser.serial;
+	      FSInfo = TRUE;
+	    }
 
 	  }
 	  else
@@ -1352,7 +1356,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      strcmp(szFSType, FAT32) &&
 	      strcmp(szFSType, NDFS32) &&
 	      strcmp(szFSType, RAMFS) &&
-              strcmp(szFSType, NTFS) &&
+	      strcmp(szFSType, NTFS) &&
 	      strcmp(szFSType, HPFS386)) {
 	    driveflags[x] |= DRIVE_NOLONGNAMES;
 	  }
@@ -1368,20 +1372,20 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      driveflags[x] |= DRIVE_REMOVABLE;
 	    if (!(ulDriveType & DRIVE_NOLONGNAMES))
 	      driveflags[x] &= ~DRIVE_NOLONGNAMES;
-          }
-          if (!fVerifyOffChecked[x]) {
-            if (driveflags[x] & DRIVE_REMOVABLE)
-              driveflags[x] |= DRIVE_WRITEVERIFYOFF;
-            if (!(driveflags[x] & DRIVE_INVALID)) {
-              CHAR Key[80];
+	  }
+	  if (!fVerifyOffChecked[x]) {
+	    if (driveflags[x] & DRIVE_REMOVABLE)
+	      driveflags[x] |= DRIVE_WRITEVERIFYOFF;
+	    if (!(driveflags[x] & DRIVE_INVALID)) {
+	      CHAR Key[80];
 
-              sprintf(Key, "%c.VerifyOffChecked", (CHAR) (x + 'A'));
-              fVerifyOffChecked[x] = TRUE;
-              PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
-            }
-          }
-          if (strcmp(volser.volumelabel, NullStr) != 0 && FSInfo && fShowDriveLabelInTree)
-            strcpy(szFSType, volser.volumelabel);
+	      sprintf(Key, "%c.VerifyOffChecked", (CHAR) (x + 'A'));
+	      fVerifyOffChecked[x] = TRUE;
+	      PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
+	    }
+	  }
+	  if (strcmp(volser.volumelabel, NullStr) != 0 && FSInfo && fShowDriveLabelInTree)
+	    strcpy(szFSType, volser.volumelabel);
 	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
 	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
@@ -1405,35 +1409,35 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      if (!*suggest) {
 		*suggest = '/';
 		suggest[1] = 0;
-              }
+	      }
 
-              sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
-              pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-              if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-                strcat(szDrive, " [");
-                strcat(szDrive, szFSType);
-                strcat(szDrive, "]");
-              }
+	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
+	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	      if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+	        strcat(szDrive, " [");
+	        strcat(szDrive, szFSType);
+	        strcat(szDrive, "]");
+	      }
 	      pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
-              szDrive[3] = 0;
+	      szDrive[3] = 0;
 	      pci->rc.pszIcon = pci->pszDisplayName;
 	      pci->attrFile = FILE_DIRECTORY;
 	      pci->pszDispAttr = FileAttrToString(pci->attrFile);
 	      driveserial[x] = -1;
 	    }
-            else
-              FillInRecordFromFSA(hwndCnr, pci, szDrive, &fsa4, TRUE, szFSType, NULL);
+	    else
+	      FillInRecordFromFSA(hwndCnr, pci, szDrive, &fsa4, TRUE, szFSType, NULL);
 	  }
 	  else {
-            // Removable volume
-            pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-            if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-              strcat(szDrive, " [");
-              strcat(szDrive, szFSType);
-              strcat(szDrive, "]");
-            }
+	    // Removable volume
+	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	    if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+	      strcat(szDrive, " [");
+	      strcat(szDrive, szFSType);
+	      strcat(szDrive, "]");
+	    }
 	    pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
-            szDrive[3] = 0;
+	    szDrive[3] = 0;
 	    pci->rc.pszIcon = pci->pszDisplayName;
 	    pci->attrFile = FILE_DIRECTORY;
 	    pci->pszDispAttr = FileAttrToString(pci->attrFile);
@@ -1446,13 +1450,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	}
 	else {
 	  *szFSType = 0;
-          pci->rc.hptrIcon = hptrDunno;
-          pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-          if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-            strcat(szDrive, " [?]");
-          }
+	  pci->rc.hptrIcon = hptrDunno;
+	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	  if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+	    strcat(szDrive, " [?]");
+	  }
 	  pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
-          szDrive[3] = 0;
+	  szDrive[3] = 0;
 #	  ifdef FORTIFY
 	  // Will be freed by TreeCnrWndProc WM_DESTROY
 	  Fortify_SetScope(pci->pszFileName, 2);
@@ -1465,12 +1469,12 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	}
       else {
 	// diskette drive (A or B)
-        pci->rc.hptrIcon = hptrFloppy;
-        pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-        if (fShowFSTypeInTree || fShowDriveLabelInTree)
-          strcat(szDrive, "  [Floppy]");
+	pci->rc.hptrIcon = hptrFloppy;
+	pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
+	if (fShowFSTypeInTree || fShowDriveLabelInTree)
+	  strcat(szDrive, "  [Floppy]");
 	pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
-        szDrive[3] = 0;
+	szDrive[3] = 0;
 	pci->rc.pszIcon = pci->pszDisplayName;
 	pci->attrFile = FILE_DIRECTORY;
 	pci->pszDispAttr = FileAttrToString(pci->attrFile);
@@ -1502,7 +1506,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 		    CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri)))
     {
       Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-	        GetPString(IDS_CMINSERTERRTEXT));
+		GetPString(IDS_CMINSERTERRTEXT));
     }
   }
 
@@ -1616,7 +1620,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
 				MPVOID,
-                                MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+	                        MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
     StubbyScanCount ++;
     while (pci && (INT)pci != -1) {
       stubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
