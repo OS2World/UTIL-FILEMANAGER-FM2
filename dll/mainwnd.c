@@ -90,6 +90,7 @@
                 letter windows; Use button ID to identify drive letter for processing.
   12 Jul 09 GKY Removed duplicate UM_SETUP2 message from RestoreDirCnrState caused dbl dir
                 listings in tree
+  13 Jul 09 GKY Fixed under allocation of memory in the paint code for the drivebar bitmap buttons
 
 ***********************************************************************/
 
@@ -1928,16 +1929,16 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (hps) {
         hbm = GpiLoadBitmap(hps, 0, iconid, 0, 0);
         if (hbm) {
-          pbmpData = xmallocz(sizeof(PBITMAPINFOHEADER), pszSrcFile, __LINE__);
+          pbmpData = xmallocz(sizeof(PBITMAPINFOHEADER) * 3, pszSrcFile, __LINE__);
           if (pbmpData) {
             GpiQueryBitmapParameters(hbm, pbmpData);
             aptl[1].x = pbmpData->cx;
             aptl[1].y = pbmpData->cy;
             aptl[3].x = pbmpData->cx;
             aptl[3].y = pbmpData->cy;
+            GpiWCBitBlt(hps, hbm, 4L, aptl, ROP_SRCCOPY, BBO_PAL_COLORS);
             free(pbmpData);
           }
-          GpiWCBitBlt(hps, hbm, 4L, aptl, ROP_SRCCOPY, BBO_PAL_COLORS);
         }
         memset(&fat, 0, sizeof(fat));
         fat.usRecordLength = sizeof(FATTRS);

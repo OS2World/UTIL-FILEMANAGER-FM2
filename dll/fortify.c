@@ -1570,7 +1570,7 @@ st_HexDump(unsigned char *ptr, size_t offset, size_t size, int title)
 			st_Output(st_Buffer);
 		}
 
-		sprintf(st_Buffer, "%02x%s", *ptr, ((column % 4) == 3) ? " " : NullStr);
+		sprintf(st_Buffer, "%02x%s", *ptr, ((column % 4) == 3) ? " " : "");
 		st_Output(st_Buffer);
 
 		ascii[ column ] = isprint( *ptr ) ? (char)(*ptr) : (char)('.');

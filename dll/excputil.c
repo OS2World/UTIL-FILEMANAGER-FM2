@@ -29,6 +29,7 @@
 #include "strutil.h"			// GetPString
 
 #include "excputil.h"
+#include "fortify.h"
 
 static PSZ pszSrcFile = __FILE__;
 

@@ -67,6 +67,7 @@
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   12 Jul 09 GKY Add szFSType to FillInRecordFromFSA use to bypass EA scan and size formatting
                 for tree container
+  13 Jul 09 GKY Fixed double free of memory buffer in UM_COLLECTFROMFILE
 
 ***********************************************************************/
 
@@ -869,8 +870,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	}				// while not eof
 	fclose(fp);
       }
+      free(mp1);
     }
-    xfree(mp1, pszSrcFile, __LINE__);
 #   ifdef FORTIFY
     Fortify_LeaveScope();
 #   endif
@@ -1579,14 +1580,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       Fortify_EnterScope();
       Fortify_BecomeOwner(mp1);
 #     endif
-      if (!dcd)
-	Runtime_Error(pszSrcFile, __LINE__, NULL);
+      if (!dcd) {
+        Runtime_Error(pszSrcFile, __LINE__, NULL);
+        free(mp1);
+      }
       else {
 	if (!PostMsg(dcd->hwndObject, UM_COLLECTFROMFILE, mp1, mp2)) {
-	  Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
+          Runtime_Error(pszSrcFile, __LINE__, PCSZ_POSTMSG);
+          free(mp1);
 	}
       }
-      free(mp1);
 #     ifdef FORTIFY
       DosSleep(1);			// Let receiver take ownership
       Fortify_LeaveScope();
