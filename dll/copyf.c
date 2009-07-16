@@ -6,7 +6,7 @@
   Copy functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H.Levine
+  Copyright (c) 2001, 2009 Steven H.Levine
 
   14 Sep 02 SHL Drop obsolete debug code
   14 Oct 02 SHL Drop obsolete debug code
@@ -22,6 +22,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  13 Jul 09 SHL Drop obsolete code
 
 ***********************************************************************/
 
@@ -76,7 +77,6 @@ char *MakeTempName(char *buffer, char *temproot, INT type)
   FILESTATUS3 fs3;
   APIRET rc;
   char *p, *o;
-
 
   if (strlen(buffer) > 3) // && buffer[strlen(buffer) - 1] != '\\')
     AddBackslashToPath(buffer);
@@ -378,62 +378,6 @@ BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname)
   }
   return ret;
 }
-
-#if 0   // JBS	11 Sep 08
-CHAR default_disk(VOID)
-{
-  ULONG ulDriveNum, ulDriveMap;
-
-  DosError(FERR_DISABLEHARDERR);
-  DosQCurDisk(&ulDriveNum, &ulDriveMap);
-  return (CHAR) toupper((INT) ulDriveNum) + '@';
-}
-#endif
-
-#ifdef NEVER
-
-APIRET docopyallf(INT type, CHAR * oldname, CHAR * newname, ...)
-{
-  FILEFINDBUF3 fb;
-  ULONG nm;
-  HDIR hdir;
-  APIRET rc = 0;
-  CHAR *enddir, fullname[CCHMAXPATH];
-
-  va_start(ap, newname);
-  vsprintf(fullname, newname, ap);
-  va_end(ap);
-
-  DosError(FERR_DISABLEHARDERR);
-  if (!DosFindFirst(oldname)) {
-    do {
-
-      /* build target name */
-
-      if (fb.attrFile & FILE_DIRECTORY) {
-        DosError(FERR_ENABLEHARDERR);
-        rc = DosCreateDir();
-        if (rc == ERROR_INVALID_NAME || rc == ERROR_FILENAME_EXCED_RANGE) {
-
-          /* truncate directory name */
-          /* create that directory */
-          /* update containers for name used */
-
-        }
-        rc = docopyallf(type,, "%s",);  /* recurse */
-      }
-      else
-       // docopyf changed this won't work rc = docopyf(type,, "%s",);     /* copy file */
-      DosError(FERR_DISABLEHARDERR);
-    } while (!rc && !DosFindNext());
-    DosFindClose(hdir);
-  }
-  else
-    rc = ERROR_FILE_NOT_FOUND;
-  return rc;
-}
-
-#endif
 
 APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 {
