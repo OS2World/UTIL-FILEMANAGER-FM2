@@ -17,6 +17,10 @@
   07 Feb 09 GKY Move repeated strings to PCSZs.
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
 
 ***********************************************************************/
 
@@ -171,7 +175,6 @@ extern BOOL fLogFile;
 extern BOOL fProtectOnly;
 extern BOOL fReminimize;
 extern BOOL fWantFirstTimeInit;
-// extern BOOL fDrivetoSkip[26];
 extern HPOINTER hptrApp;
 extern HPOINTER hptrArc;
 extern HPOINTER hptrArrow;
@@ -194,6 +197,7 @@ extern CHAR *pLibPathStrict;
 extern ULONGLONG ullTmpSpaceNeeded;
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
-//extern HEV  DriveScanStart;
+extern HMTX hmtFillingTreeCnr;
+extern HEV  hevInitialCnrScanComplete;
 
 #endif // INIT_H

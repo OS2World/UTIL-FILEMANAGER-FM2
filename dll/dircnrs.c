@@ -64,6 +64,8 @@
   29 Mar 09 SHL Keep more keys away from PM if extended search in progress
   29 Mar 09 SHL Increase extended search timeout to 3 seconds
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
+  22 Jul 09 SHL Cleanup of SETFOCUS code
 
 ***********************************************************************/
 
@@ -804,13 +806,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROMP(pci),
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
           if (!pciC) {
-            if (fInitialDriveScan)
-              Stubby(dcd->hwndCnr, pci);
-            else {
-              while (StubbyScanCount != 0)
-                DosSleep(50);
-              Stubby(dcd->hwndCnr, pci);
-            }
+            Stubby(dcd->hwndCnr, pci);
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
@@ -858,7 +854,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowText(WinWindowFromID(dcd->hwndFrame, FID_TITLEBAR), s);
       }
       RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
-      AdjustCnrColsForFSType(dcd->hwndCnr, dcd->directory, &dcd->ds);
+      AdjustCnrColsForFSType(dcd->hwndCnr, dcd->directory, &dcd->ds, FALSE);
       dcd->ullTotalBytes = dcd->totalfiles =
 	dcd->selectedfiles = dcd->selectedbytes = 0;
       WinSetDlgItemText(dcd->hwndClient, DIR_TOTALS, "0 / 0k");
@@ -1347,13 +1343,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_SETFOCUS:
-    /*
-     * put name of our window (directory name) on status line
-     */
-    if (dcd && hwndStatus && mp2) {
-
+    /* put name of our window (directory name) on status line */
+    if (mp2) {
+      // Getting focus
+      if (dcd && hwndStatus) {
+	/* put name of our window (directory name) on status line */
       PCNRITEM pci = NULL;
-
       if (fAutoView && hwndMain) {
 	pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
 			 MPFROMSHORT(CRA_CURSORED));
@@ -1373,15 +1368,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (hwndMain)
 	PostMsg(hwndMain, UM_ADVISEFOCUS, MPFROMLONG(dcd->hwndFrame), MPVOID);
     }
-    if (mp2) {
+
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
+
       if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-
 	if (pszTempDir) {
 	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-	    free(pszTempDir);
+	    free(pszTempDir);		// Failed
 	}
       }
     }
@@ -1450,7 +1445,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pci = WinSendMsg(hwnd,
 			   CM_QUERYRECORDEMPHASIS,
 			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-	  if (pci && (INT) pci != -1) {
+          if (pci && (INT) pci != -1) {
 	    if (fSplitStatus && hwndStatus2) {
 	      CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
 	      if (!fMoreButtons) {
@@ -1600,7 +1595,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosSleep(32); //05 Aug 07 GKY 64
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
-      PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
+      if (!fInitialDriveScan)
+        PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1617,7 +1613,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      DIR_SORT), dcd->sortFlags, FALSE);
       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
                               DIR_VIEW), dcd->flWindowAttr);
-      //DbgMsg(pszSrcFile, __LINE__, "UM_SETUP2 %p pci %p", hwnd, dcd);
     } else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     return 0;
@@ -2423,12 +2418,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_SWITCH:
-	if (mp2) {
+        if (mp2) {
 	  strcpy(dcd->previous, dcd->directory);
-	  strcpy(dcd->directory, (CHAR *)mp2);
+          strcpy(dcd->directory, (CHAR *)mp2);
 	  //DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-	  //DosExitCritSec();
+          //DosExitCritSec();
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
 	    //DosEnterCritSec(); // GKY 11-27-08
@@ -3483,6 +3478,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     break;
 
+  case WM_TIMER:
+    return ActionWMTimer(hwnd, mp1, mp2);
+
   case WM_CLOSE:
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     if (LastDir == hwnd)
@@ -3628,6 +3626,7 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (pci && (INT) pci != -1) {
       /* Got match make found item current item */
       USHORT attrib = CRA_CURSORED;
+      // 29 Mar 09 SHL fixme to clear other object select if not extended select
       if (!stricmp(pci->pszDisplayName, dcd->szCommonName))
 	attrib |= CRA_SELECTED;
       WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),

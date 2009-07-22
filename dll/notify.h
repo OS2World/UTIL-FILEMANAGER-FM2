@@ -16,7 +16,7 @@
 
 #define NOTIFY_H
 
-BOOL AddNote(PCSZ note);
+VOID AddNote(PCSZ note);		// 16 Jul 09 SHL
 HWND DoNotify(PCSZ text);
 VOID EndNote(VOID);
 VOID HideNote(VOID);

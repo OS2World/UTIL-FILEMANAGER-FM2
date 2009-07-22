@@ -25,6 +25,11 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
+
 
 ***********************************************************************/
 
@@ -259,8 +264,9 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     if (WinDlgBox(HWND_DESKTOP,
 		  hwnd,
 		  SetDrvProc,
-		  FM3ModHandle, DVS_FRAME, MPFROMP(dv)) && hwndTree)
-      PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
+                  FM3ModHandle, DVS_FRAME, MPFROMP(dv)) && hwndTree)
+      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(dv), MPVOID))
+        PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
     break;
   case IDM_SIZES:
     WinDlgBox(HWND_DESKTOP,
@@ -376,8 +382,45 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       if (cmd == IDM_EJECT &&
           (fEjectFlpyScan ? TRUE : parm[1] > 1) &&
           (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&
-          (fEjectRemovableScan ? TRUE : (parm[1] < 2 || driveflags[parm[1]] & DRIVE_CDROM)))
-        PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          (fEjectRemovableScan ? TRUE : (parm[1] < 2 || driveflags[parm[1]] & DRIVE_CDROM))) {
+        BOOL toggleTree = FALSE;
+  
+        if (!hwndTree) {
+          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+          toggleTree = TRUE;
+        }
+        WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+        if (toggleTree)
+          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+      }
+    }
+    break;
+
+  case IDM_RESCAN:
+    {
+      BOOL toggleTree = FALSE;
+
+      if (!hwndTree) {
+        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+        toggleTree = TRUE;
+      }
+      WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+      if (toggleTree)
+        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+    }
+    break;
+
+  case IDM_REFRESHREMOVABLES:
+    {
+      BOOL toggleTree = FALSE;
+
+      if (!hwndTree) {
+        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+        toggleTree = TRUE;
+      }
+      WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_REFRESHREMOVABLES, 0), MPVOID);
+      if (toggleTree)
+        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
     }
     break;
   }

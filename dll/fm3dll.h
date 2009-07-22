@@ -89,6 +89,10 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
                 to prevent duplicate directory names in tree following a copy before initial scan.
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
 
 ***********************************************************************/
 
@@ -150,6 +154,8 @@
 #define DRIVE_RAMDISK       0x00020000
 #define DRIVE_WRITEVERIFYOFF 0x00040000
 #define DRIVE_RSCANNED      0x00080000
+#define DRIVE_LOCALHD       0x00200000
+#define DRIVE_NOEASUPPORT   0x00400000
 
 #define SORT_FIRSTEXTENSION 0x00000001
 #define SORT_LASTEXTENSION  0x00000002

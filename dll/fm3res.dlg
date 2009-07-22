@@ -44,6 +44,8 @@
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  22 Jul 09 GKY Check if drives support EAs add driveflag for this
+  22 Jul 09 GKY Add LocalHD driveflag (enlarge draveflag dialog)
 
 ***********************************************************************/
 
@@ -2014,54 +2016,60 @@ END
 
 DLGTEMPLATE DVS_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "FM/2: Drive flags", DVS_FRAME, 12, 6, 218, 136, WS_VISIBLE,
+    DIALOG  "FM/2: Drive flags", DVS_FRAME, 12, 6, 218, 156, WS_VISIBLE,
             FCF_TITLEBAR
     BEGIN
-        CHECKBOX       "Virtual Drive", DVS_VIRTUAL, 4, 126, 94, 10,
+        CHECKBOX       "Local Hard Drive", DVS_LOCALHD, 4, 142, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Removable", DVS_REMOVABLE, 4, 114, 94, 10,
+        CHECKBOX       "Virtual Drive", DVS_VIRTUAL, 4, 130, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "RAMDISK", DVS_RAMDISK, 4, 102, 98, 10,
+        CHECKBOX        "Removable", DVS_REMOVABLE, 4, 118, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Remote Drive", DVS_REMOTE, 4, 90, 94, 10,
+        CHECKBOX        "RAMDISK", DVS_RAMDISK, 4, 106, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "CD-ROM", DVS_CDROM, 4, 78, 94, 10,
+        CHECKBOX        "Remote Drive", DVS_REMOTE, 4, 94, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Zipstream", DVS_ZIPSTREAM, 4, 66, 94, 10,
+        CHECKBOX        "CD-ROM", DVS_CDROM, 4, 82, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Ignore", DVS_IGNORE, 4, 54, 94, 10,
+        CHECKBOX        "Zipstream", DVS_ZIPSTREAM, 4, 70, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Boot drive", DVS_BOOT, 4, 42, 94, 10,
+        CHECKBOX        "Ignore", DVS_IGNORE, 4, 58, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Invalid", DVS_INVALID, 4, 30, 94, 10,
+        CHECKBOX        "Boot drive", DVS_BOOT, 4, 46, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Recursive scan done", DVS_RSCANNED, 4, 18, 94, 10,
+        CHECKBOX        "Invalid", DVS_INVALID, 4, 34, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Not writeable", DVS_NOTWRITEABLE, 106, 126, 94, 10,
+        CHECKBOX        "Recursive scan done", DVS_RSCANNED, 4, 22, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "~No longnames", DVS_NOLONGNAMES, 106, 114, 94, 10,
+        CHECKBOX       "No EA support", DVS_NOEASUPPORT, 106, 142, 94, 10,
+                        BS_NOPOINTERFOCUS | NOT WS_TABSTOP
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L                
+        CHECKBOX        "Not writeable", DVS_NOTWRITEABLE, 106, 130, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        AUTOCHECKBOX    "No ~Prescan", DVS_NOPRESCAN, 106, 102, 94, 10,
+        CHECKBOX        "~No longnames", DVS_NOLONGNAMES, 106, 118, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
-        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 90, 94,10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 78, 94,10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 66,106, 10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Slo~w drive", DVS_SLOW, 106, 54, 94, 10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 42,106, 10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~No drive stats", DVS_NOSTATS, 106, 30, 106, 10, BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "Write ~verify off", DVS_WRITEVERIFYOFF, 106, 18, 106, 10, BS_NOPOINTERFOCUS
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
+        AUTOCHECKBOX    "No ~Prescan", DVS_NOPRESCAN, 106, 106, 94, 10,
+                        BS_NOPOINTERFOCUS | NOT WS_TABSTOP
+        AUTOCHECKBOX    "~Don't load icons", DVS_NOLOADICONS, 106, 94, 94,10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~subjects", DVS_NOLOADSUBJS, 106, 82, 94,10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Don't load ~longnames", DVS_NOLOADLONGS, 106, 70,106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Slo~w drive", DVS_SLOW, 106, 58, 94, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Include ~files in tree", DVS_INCLUDEFILES, 106, 46,106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "~No drive stats", DVS_NOSTATS, 106, 34, 106, 10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Write ~verify off", DVS_WRITEVERIFYOFF, 106, 22, 106, 10, BS_NOPOINTERFOCUS
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 64, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "~Undo", IDM_UNDO, 118, 4, 40, 14, BS_NOPOINTERFOCUS

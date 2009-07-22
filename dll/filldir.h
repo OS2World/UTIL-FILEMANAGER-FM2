@@ -12,6 +12,7 @@
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   08 Mar 09 GKY Additional strings move to PCSZs
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
 
 ***********************************************************************/
 
@@ -60,8 +61,6 @@ extern HPOINTER hptrEnv;
 extern HPOINTER hptrHidden;
 extern HPOINTER hptrReadonly;
 extern HPOINTER hptrSystem;
-extern volatile INT StubbyScanCount;
-extern volatile INT ProcessDirCount;
 
 typedef struct {
 

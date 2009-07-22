@@ -37,6 +37,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  13 Jul 09 SHL Sync with renames
 
 ***********************************************************************/
 
@@ -1847,7 +1848,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			strlen(FNT_8HELVETICA) + 1,
 			(PVOID) FNT_8HELVETICA);
       }
-      WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER5, 1000L);
+      WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_NEWVIEW_TIMER, 1000L);
     }
     break;
 
@@ -4006,7 +4007,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       BOOL dontclose = FALSE;
       HWND hwndRestore = (HWND) 0;
 
-      WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER5);
+      WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_NEWVIEW_TIMER);
       if (ad) {
 	ad->stopflag = 1;
 	if (ad->ScanSem) {

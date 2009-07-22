@@ -11,6 +11,7 @@
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   08 Mar 09 GKY Additional strings move to PCSZs
+  22 Jul 09 GKY Consolidated driveflag setting code in DriveFlagsOne
 
 ***********************************************************************/
 
@@ -20,7 +21,7 @@
 
 VOID ArgDriveFlags(INT argc, CHAR ** argv);
 INT CheckDrive(CHAR Drive, CHAR * FileSystem, ULONG * type);
-VOID DriveFlagsOne(INT x);
+VOID DriveFlagsOne(INT x, CHAR *FileSystem, VOID *volser);
 VOID FillInDriveFlags(VOID * dummy);
 VOID GetDesktopName(CHAR * objectpath, ULONG size);
 BOOL IsBinary(CHAR * str, ULONG len);
@@ -53,6 +54,7 @@ extern PCSZ NTFS;
 extern PCSZ NDFS32;
 extern PCSZ RAMFS;
 extern PCSZ CBSIFS;
+extern PCSZ LAN;
 extern BOOL fVerifyOffChecked[26];
 
 #endif	// VALID_H

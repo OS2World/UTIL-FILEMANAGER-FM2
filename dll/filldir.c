@@ -74,6 +74,9 @@
   12 Jul 09 GKY Add szFSType to FillInRecordFromFSA use to bypass EA scan and size formatting
                 for tree container
   13 Jul 09 SHL Avoid trap in FillInRecordFromFSA if pszFSType NULL
+  22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
+  22 Jul 09 GKY Consolidated driveflag setting code in DriveFlagsOne
+  22 Jul 09 GKY Streamline scanning code for faster Tree rescans
 
 ***********************************************************************/
 
@@ -131,8 +134,6 @@ HPOINTER hptrSystem;
 #pragma data_seg(GLOBAL2)
 PCSZ FM3Tools   = "<FM3_Tools>";
 PCSZ WPProgram  = "WPProgram";
-volatile INT StubbyScanCount;
-volatile INT ProcessDirCount;
 
 typedef struct {
   PCNRITEM    pci;
@@ -219,43 +220,24 @@ VOID StubbyScanThread(VOID * arg)
     if (thab) {
       hmq = WinCreateMsgQueue(thab, 0);
       if (hmq) {
-        StubbyScanCount++;
 	IncrThreadUsage();
 	priority_normal();
         ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-	//DbgMsg(pszSrcFile, __LINE__, "Stubby %i ", ret);
         if (ret == 1) {
           if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
-	    WinSendMsg(StubbyScan->hwndCnr,
-		       CM_INVALIDATERECORD,
-		       MPFROMP(&StubbyScan->pci),
-                       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-            if ((fRScanLocal &&
-                (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                   ((DRIVE_REMOTE | DRIVE_VIRTUAL)))) ||
-                 (fRScanRemote &&
-                  (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                   DRIVE_REMOTE)) ||
-                 (fRScanVirtual &&
-                  (driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                   DRIVE_VIRTUAL))) && fInitialDriveScan) {
-              if (!(driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'] &
-                    ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
-                     (fRScanSlow ? 0 : DRIVE_SLOW)))) {
-                WinSendMsg(StubbyScan->hwndCnr, CM_EXPANDTREE, MPFROMP(StubbyScan->pci), MPVOID);
-                //DbgMsg(pszSrcFile, __LINE__, "expanded %x %p", StubbyScan->hwndCnr, StubbyScan->pci);
-                WinSendMsg(StubbyScan->hwndCnr, CM_COLLAPSETREE, MPFROMP(StubbyScan->pci), MPVOID);
+            ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
+
+            if (((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
+                 (fRScanRemote && flags & DRIVE_REMOTE) ||
+                 (fRScanVirtual && flags & DRIVE_VIRTUAL)) && fInitialDriveScan) {
+              if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
+                             (fRScanSlow ? 0 : DRIVE_SLOW)))) {
+                UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
+                Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
               }
             }
           }
         }
-	if (WinIsWindow((HAB)0, StubbyScan->hwndDrivesList)) {
-	  WinSendMsg(StubbyScan->hwndDrivesList,
-		     LM_INSERTITEM,
-		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		     MPFROMP(StubbyScan->pci->pszFileName));
-        }
-        StubbyScanCount--;
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -267,7 +249,6 @@ VOID StubbyScanThread(VOID * arg)
   Fortify_LeaveScope();
 #  endif
 
-  // _endthread();			// 10 Dec 08 SHL
 }
 
 VOID ProcessDirectoryThread(VOID * arg)
@@ -275,7 +256,6 @@ VOID ProcessDirectoryThread(VOID * arg)
   PROCESSDIR *ProcessDir;
   HAB thab;
   HMQ hmq = (HMQ) 0;
-  //BOOL ret;
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -289,7 +269,6 @@ VOID ProcessDirectoryThread(VOID * arg)
     if (thab) {
       hmq = WinCreateMsgQueue(thab, 0);
       if (hmq) {
-        ProcessDirCount ++;
 	IncrThreadUsage();
         priority_normal();
         ProcessDirectory(ProcessDir->hwndCnr,
@@ -302,7 +281,6 @@ VOID ProcessDirectoryThread(VOID * arg)
                          ProcessDir->dcd,	                // Optional
                          ProcessDir->pulTotalFiles,	// Optional
                          ProcessDir->pullTotalBytes);	// Optional
-        ProcessDirCount --;
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -314,7 +292,6 @@ VOID ProcessDirectoryThread(VOID * arg)
   Fortify_LeaveScope();
 #  endif
 
-  // _endthread();			// 10 Dec 08 SHL
 }
 
 static HPOINTER IDFile(PSZ p)
@@ -432,7 +409,7 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 {
   ULONG flags = driveflags[toupper(*pci->pszFileName) - 'A'];
   BOOL fLoadSubjectForDrive = fLoadSubject && ~flags & DRIVE_NOLOADSUBJS;
-  BOOL fLoadLongNameForDrive = fLoadLongnames &&  ~flags & DRIVE_NOLONGNAMES &&
+  BOOL fLoadLongNameForDrive = fLoadLongnames &&  //~flags & DRIVE_NOLONGNAMES &&
 			       ~flags & DRIVE_NOLOADLONGS;
   if (fLoadSubjectForDrive || fLoadLongNameForDrive) {
     // Allocate space to hold GEA2s and .SUBJECT and .LONGNAME strings
@@ -579,7 +556,8 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   }
 
   // load Subject and/or Longname EAs, if required and have EAs
-  if (pffb->cbList > 4L && dcd)
+  if (pffb->cbList > 4L && dcd &&
+      !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOEASUPPORT))
     FetchCommonEAs(pci);
 
   if (!pci->pszSubject)
@@ -740,7 +718,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 
   // 13 Jul 09 SHL fixme to know if fetch can be bypassed if pszFSType already filled
   // If FSType not supplied, assume don't need EAs either
-  if (pfsa4->cbList > 4L && dcd && pszFSType)
+  if (pfsa4->cbList > 4L && dcd &&
+      !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOEASUPPORT))
     FetchCommonEAs(pci);
 
   if (!pci->pszSubject)
@@ -826,8 +805,10 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
     }
 #   endif
   }
-  else
+  else {
     pci->pszFmtFileSize = NullStr;
+    //DbgMsg(pszSrcFile, __LINE__, "Bypassed Format size %s", pci->pszDisplayName);
+  }
   pci->date.day = pfsa4->fdateLastWrite.day;
   pci->date.month = pfsa4->fdateLastWrite.month;
   pci->date.year = pfsa4->fdateLastWrite.year + 1980;
@@ -1181,13 +1162,7 @@ Abort:
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     while (pci && (INT)pci != -1) {
       if ((pci->attrFile & FILE_DIRECTORY))
-        if (!fInitialDriveScan)
-          Stubby(hwndCnr, pci);
-        else {
-          while (StubbyScanCount != 0)
-            DosSleep(50);
-          Stubby(hwndCnr, pci);
-        }
+        Stubby(hwndCnr, pci);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
@@ -1235,7 +1210,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   ULONG ulCurDriveNum, ulDriveMap, numtoinsert = 0;
   ULONG ulDriveType;
   PCNRITEM pci, pciFirst = NULL, pciNext, pciParent = NULL;
-  INT x, removable;
+  INT x;// removable;
   CHAR suggest[32];
   CHAR szDrive[] = " :\\";
   CHAR szFSType[CCHMAXPATH];
@@ -1302,7 +1277,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       CHAR s[80];
       ULONG flags = 0;
       ULONG size = sizeof(ULONG);
-      BOOL FSInfo = FALSE;
       struct {
 	      ULONG serial;
 	      CHAR volumelength;
@@ -1320,59 +1294,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	// Hard drive (2..N)
 	if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
 	  *szFSType = 0;
-	  ulDriveType = 0;
-	  removable = CheckDrive(*szDrive, szFSType, &ulDriveType);
-	  driveserial[x] = -1;
-	  if (removable != -1) {
-	    DosError(FERR_DISABLEHARDERR);
-	    if (!DosQueryFSInfo((ULONG) x + 1,
-	                        FSIL_VOLSER, &volser, sizeof(volser))) {
-	      driveserial[x] = volser.serial;
-	      FSInfo = TRUE;
-	    }
-
-	  }
-	  else
-	    driveflags[x] |= DRIVE_INVALID;
-
+          ulDriveType = 0;
+          memset(&volser, 0, sizeof(volser));
+          DriveFlagsOne(x, szFSType, &volser);
+          driveserial[x] = volser.serial;
 	  memset(&fsa4, 0, sizeof(FILESTATUS4L));
-	  driveflags[x] |= removable == -1 || removable == 1 ? DRIVE_REMOVABLE : 0;
-	  if (ulDriveType & DRIVE_REMOTE)
-	    driveflags[x] |= DRIVE_REMOTE;
-	  if (!stricmp(szFSType,RAMFS)) {
-	    driveflags[x] |= DRIVE_RAMDISK;
-	    driveflags[x] &= ~DRIVE_REMOTE;
-	  }
-	  if (!stricmp(szFSType,NDFS32)) {
-	    driveflags[x] |= DRIVE_VIRTUAL;
-	    driveflags[x] &= ~DRIVE_REMOTE;
-	  }
-	  if (!stricmp(szFSType,NTFS))
-	    driveflags[x] |= DRIVE_NOTWRITEABLE;
-	  if (strcmp(szFSType, HPFS) &&
-	      strcmp(szFSType, JFS) &&
-	      strcmp(szFSType, ISOFS) &&
-	      strcmp(szFSType, CDFS) &&
-	      strcmp(szFSType, FAT32) &&
-	      strcmp(szFSType, NDFS32) &&
-	      strcmp(szFSType, RAMFS) &&
-	      strcmp(szFSType, NTFS) &&
-	      strcmp(szFSType, HPFS386)) {
-	    driveflags[x] |= DRIVE_NOLONGNAMES;
-	  }
-
-	  if (!strcmp(szFSType, CDFS) || !strcmp(szFSType,ISOFS)) {
-	    removable = 1;
-	    driveflags[x] |= DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE | DRIVE_CDROM;
-	  }
-	  if (!stricmp(szFSType, CBSIFS)) {
-	    driveflags[x] |= DRIVE_ZIPSTREAM;
-	    driveflags[x] &= ~DRIVE_REMOTE;
-	    if (ulDriveType & DRIVE_REMOVABLE)
-	      driveflags[x] |= DRIVE_REMOVABLE;
-	    if (!(ulDriveType & DRIVE_NOLONGNAMES))
-	      driveflags[x] &= ~DRIVE_NOLONGNAMES;
-	  }
 	  if (!fVerifyOffChecked[x]) {
 	    if (driveflags[x] & DRIVE_REMOVABLE)
 	      driveflags[x] |= DRIVE_WRITEVERIFYOFF;
@@ -1384,13 +1310,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
 	    }
 	  }
-	  if (strcmp(volser.volumelabel, NullStr) != 0 && FSInfo && fShowDriveLabelInTree)
+	  if (stricmp(volser.volumelabel, NullStr) != 0 && fShowDriveLabelInTree)
 	    strcpy(szFSType, volser.volumelabel);
 	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
 	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
 
-	  if (removable == 0) {
+	  if (!(driveflags[x] & DRIVE_REMOVABLE)) {
 	    // Fixed volume
 	    pci->attrFile |= FILE_DIRECTORY;
 	    DosError(FERR_DISABLEHARDERR);
@@ -1621,7 +1547,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				CM_QUERYRECORD,
 				MPVOID,
 	                        MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-    StubbyScanCount ++;
     while (pci && (INT)pci != -1) {
       stubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
       if (!stubbyScan)
@@ -1629,7 +1554,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       stubbyScan->pci = pci;
       stubbyScan->hwndCnr = hwndCnr;
       stubbyScan->hwndDrivesList = hwndDrivesList;
-      //stubbyScan->RamDrive = FALSE;
       pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				      CM_QUERYRECORD,
 				      MPFROMP(pci),
@@ -1649,7 +1573,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			     __LINE__) == -1)
 	    {
 	      xfree(stubbyScan, pszSrcFile, __LINE__);
-	    }
+            }
 	  } // if drive for scanning
 	  else
 	    WinSendMsg(hwndDrivesList,
@@ -1670,7 +1594,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
       pci = pciNext;
     } // while
-    StubbyScanCount--;
   }
   if (hwndParent)
     WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
@@ -1765,15 +1688,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     }
   }
   didonce = TRUE;
-  if (fInitialDriveScan) {
-    HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-					  MAIN_DRIVELIST);
-    while (StubbyScanCount != 0 || ProcessDirCount != 0)
-      DosSleep(50);
-    WinShowWindow(hwndCnr, TRUE);
-    WinShowWindow(hwndDrivesList, TRUE);
-    fInitialDriveScan = FALSE;
-  }
 } // FillTreeCnr
 
 

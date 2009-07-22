@@ -35,6 +35,10 @@
 		When these high codes were it text files they showed as hex in new view.
   08 Mar 09 GKY Additional strings move to PCSZs
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  22 Jul 09 GKY Consolidated driveflag setting code in DriveFlagsOne
+  22 Jul 09 GKY Check if drives support EAs add driveflag for this
+  22 Jul 09 GKY Add LocalHD driveflag
+  22 Jul 09 GKY Streamline scanning code for faster Tree rescans
 
 ***********************************************************************/
 
@@ -78,6 +82,7 @@ PCSZ CBSIFS = "CBSIFS";
 PCSZ NDFS32 = "NDFS32";
 PCSZ RAMFS = "RAMFS";
 PCSZ NTFS = "NTFS";
+PCSZ LAN = "LAN";
 BOOL fVerifyOffChecked[26];
 
 APIRET MakeFullName(char *pszFileName)
@@ -255,7 +260,7 @@ BOOL ParentIsDesktop(HWND hwnd, HWND hwndParent)
 
 INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 {
-  CHAR szPath[3];
+  CHAR szPath[4];
   VOID *pvBuffer = NULL;
   CHAR *pfsn;
   CHAR *pfsd;
@@ -265,6 +270,9 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   ULONG clParmBytes;
   ULONG clDataBytes;
   HFILE hDev;
+  EASIZEBUF easize = {0};
+  ULONG   ulDataLen        = sizeof(EASIZEBUF);  
+  ULONG   ulParmLen        = 0;
 
 # pragma pack(1)
   struct
@@ -321,14 +329,22 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   pfsq = (PFSQBUFFER2) pvBuffer;
   pfsn = (PCHAR)(pfsq->szName) + pfsq->cbName + 1;
   pfsd = pfsn + pfsq->cbFSDName + 1;
+  strupr(pfsn);
 
   if (pszFileSystem) {
     strncpy(pszFileSystem, pfsn, CCHMAXPATH);
     pszFileSystem[CCHMAXPATH - 1] = 0;
   }
-
+  szPath[2] = '\\';
+  szPath[3] = 0;
+  DosFSCtl(&easize, sizeof(EASIZEBUF), &ulDataLen, NULL, ulParmLen,
+           &ulParmLen, FSCTL_MAX_EASIZE, szPath, -1, FSCTL_PATHNAME);
+  //DbgMsg(pszSrcFile, __LINE__, "%i %i %s %s", easize.cbMaxEASize, easize.cbMaxEAListSize, szPath, pfsn);
+  szPath[2] = 0;
+  if (pulType && easize.cbMaxEASize == 0)
+    *pulType |= DRIVE_NOEASUPPORT;
   if (pulType && (!strcmp(pfsn, CDFS) || !strcmp(pfsn, ISOFS)))
-      *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
+    *pulType |= DRIVE_NOTWRITEABLE | DRIVE_CDROM | DRIVE_REMOVABLE;
   if (pulType && !strcmp(pfsn, NTFS))
     *pulType |= DRIVE_NOTWRITEABLE;
   if (pulType && !strcmp(pfsn, NDFS32)){
@@ -337,8 +353,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   if (pulType && !strcmp(pfsn, RAMFS)){
 	*pulType |= DRIVE_RAMDISK;
     }
-  if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV &&
-      (strcmp(pfsn, CDFS) || strcmp(pfsn, ISOFS))) {
+  if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV) { 
     if (pulType)
       *pulType |= DRIVE_REMOTE;
 
@@ -359,13 +374,9 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
       }
     }
     if (pulType &&
-	(!strcmp(pfsn, HPFS) ||
-	 !strcmp(pfsn, JFS) ||
-	 !strcmp(pfsn, FAT32) ||
+	(!strcmp(pfsn, LAN) ||
 	 !strcmp(pfsn, RAMFS) ||
-	 !strcmp(pfsn, NDFS32) ||
-	 !strcmp(pfsn, NTFS) ||
-	 !strcmp(pfsn, HPFS386))) {
+	 !strcmp(pfsn, NDFS32))) {
       *pulType &= ~DRIVE_NOLONGNAMES;
     }
 
@@ -375,18 +386,15 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 
   // Local drive
   if (strcmp(pfsn, HPFS) &&
-      strcmp(pfsn, JFS) &&
       strcmp(pfsn, CDFS) &&
       strcmp(pfsn, ISOFS) &&
-      strcmp(pfsn, RAMFS) &&
+      strcmp(pfsn, JFS) &&
       strcmp(pfsn, FAT32) &&
-      strcmp(pfsn, NDFS32) &&
       strcmp(pfsn, NTFS) &&
       strcmp(pfsn, HPFS386)) {
     if (pulType)
       (*pulType) |= DRIVE_NOLONGNAMES;	// Others can not have long names
   }
-
 
   DosError(FERR_DISABLEHARDERR);
   rc = DosOpen(szPath, &hDev, &ulAction, 0, 0, FILE_OPEN,
@@ -724,56 +732,67 @@ VOID ArgDriveFlags(INT argc, CHAR ** argv)
   }
 }
 
-VOID DriveFlagsOne(INT x)
+VOID DriveFlagsOne(INT x, CHAR *FileSystem, VOID *volser)
 {
   INT removable;
-  CHAR szDrive[] = " :\\", FileSystem[CCHMAXPATH];
+  CHAR szDrive[] = " :\\"; 
   ULONG drvtype;
 
   *szDrive = (CHAR) (x + 'A');
   *FileSystem = 0;
   drvtype = 0;
   removable = CheckDrive(*szDrive, FileSystem, &drvtype);
+  strupr(FileSystem);
   driveserial[x] = -1;
   driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		    DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
 		    DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
 		    DRIVE_WRITEVERIFYOFF);
   if (removable != -1) {
-    struct
-    {
-      ULONG serial;
-      CHAR volumelength;
-      CHAR volumelabel[CCHMAXPATH];
-    }
-    volser;
-
-    DosError(FERR_DISABLEHARDERR);
-    if (!DosQueryFSInfo((ULONG) x + 1, FSIL_VOLSER, &volser, sizeof(volser)))
-      driveserial[x] = volser.serial;
-    else
+    if (!volser) {
+      struct
+      {
+        ULONG serial;
+        CHAR volumelength;
+        CHAR volumelabel[CCHMAXPATH];
+      }
+      volserl;
+  
       DosError(FERR_DISABLEHARDERR);
+      if (!DosQueryFSInfo((ULONG) x + 1, FSIL_VOLSER, &volserl, sizeof(volserl)))
+        driveserial[x] = volserl.serial;
+      else
+        DosError(FERR_DISABLEHARDERR);
+    }
+    else {
+      DosError(FERR_DISABLEHARDERR);
+      if (DosQueryFSInfo((ULONG) x + 1, FSIL_VOLSER, volser,
+                         sizeof(ULONG) + sizeof(CHAR) + CCHMAXPATH))
+        DosError(FERR_DISABLEHARDERR);
+    }
   }
   else
     driveflags[x] |= DRIVE_INVALID;
-  driveflags[x] |= ((removable == -1 || removable == 1) ?
-		    DRIVE_REMOVABLE : 0);
+  driveflags[x] |= ((removable == -1 || removable == 1) ? DRIVE_REMOVABLE : 0);
   if (drvtype & DRIVE_REMOTE)
     driveflags[x] |= DRIVE_REMOTE;
-  if(!stricmp(FileSystem,NDFS32)){
+  if (drvtype & DRIVE_NOEASUPPORT)
+    driveflags[x] |= DRIVE_NOEASUPPORT;
+  if(!strcmp(FileSystem,NDFS32)){
     driveflags[x] |= DRIVE_VIRTUAL;
     driveflags[x] &= (~DRIVE_REMOTE);
   }
-  if(!stricmp(FileSystem,RAMFS)){
+  if(!strcmp(FileSystem,RAMFS)){
     driveflags[x] |= DRIVE_RAMDISK;
     driveflags[x] &= (~DRIVE_REMOTE);
   }
-  if(!stricmp(FileSystem,NTFS))
+  if(!strcmp(FileSystem,NTFS))
     driveflags[x] |= DRIVE_NOTWRITEABLE;
   if (strcmp(FileSystem, HPFS) &&
-      strcmp(FileSystem, JFS) &&
       strcmp(FileSystem, CDFS) &&
       strcmp(FileSystem, ISOFS) &&
+      strcmp(FileSystem, JFS) &&
+      strcmp(FileSystem, LAN) &&
       strcmp(FileSystem, RAMFS) &&
       strcmp(FileSystem, FAT32) &&
       strcmp(FileSystem, NTFS) &&
@@ -781,12 +800,17 @@ VOID DriveFlagsOne(INT x)
       strcmp(FileSystem, HPFS386)) {
     driveflags[x] |= DRIVE_NOLONGNAMES;
   }
-
+  if ((!strcmp(FileSystem, HPFS) ||
+       !strcmp(FileSystem, JFS) ||
+       !strcmp(FileSystem, FAT32) ||
+       !strcmp(FileSystem, NTFS) ||
+       !strcmp(FileSystem, HPFS386)) && ~driveflags[x] & DRIVE_REMOVABLE) {
+    driveflags[x] |= DRIVE_LOCALHD;
+  }
   if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS)) {
-    removable = 1;
     driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOTWRITEABLE | DRIVE_CDROM);
   }
-  if (!stricmp(FileSystem, CBSIFS)) {
+  if (!strcmp(FileSystem, CBSIFS)) {
     driveflags[x] |= DRIVE_ZIPSTREAM;
     driveflags[x] &= (~DRIVE_REMOTE);
     if (drvtype & DRIVE_REMOVABLE)
@@ -822,8 +846,10 @@ VOID FillInDriveFlags(VOID * dummy)
       }
 
       if (x > 1) {
-	if (!(driveflags[x] & DRIVE_NOPRESCAN))
-	  DriveFlagsOne(x);
+        if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
+          CHAR FileSystem[CCHMAXPATH];
+          DriveFlagsOne(x, FileSystem, NULL);
+        }
 	else
 	  driveserial[x] = -1;
       }

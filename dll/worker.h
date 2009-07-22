@@ -44,10 +44,13 @@ typedef struct
 }
 WORKER;
 
+// Data declarations
+extern FILE *LogFileHandle;
+
 VOID Action(VOID * args);
 VOID MassAction(VOID * args);
 
-// Data declarations
-extern FILE *LogFileHandle;
+MRESULT EXPENTRY ActionWMTimer(HWND hwnd, MPARAM mp1, MPARAM mp2);
+MRESULT EXPENTRY ActionUMWorkerState(HWND hwnd, MPARAM mp1, MPARAM mp2);
 
 #endif	// WORKER_H

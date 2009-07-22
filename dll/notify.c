@@ -2,7 +2,7 @@
 
   $Id$
 
-  Thread notes window and popup notification status line
+  Thread notes window and popup notifications over status line
 
   Copyright (c) 1993-98 M. Kimes
   Copyright (c) 2006, 2009 Steven H.Levine
@@ -17,6 +17,8 @@
   11 Jan 09 GKY Replace font names in the string file with global set at compile in init.c
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  13 Jul 09 SHL Sync with renames
+  16 Jul 09 SHL Stop leaking hptrIcon
 
 ***********************************************************************/
 
@@ -24,7 +26,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <stddef.h>                     // _threadid
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -54,15 +55,16 @@
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
 static volatile HWND hwndNotify;        // 16 Apr 08 SHL
+static volatile PCSZ pszCachedNote;	// 16 Jul 09 SHL
 
 #pragma data_seg(GLOBAL1)
 BOOL fThreadNotes;
 
-VOID StartNotes(CHAR * s);
+static VOID StartNotes(PCSZ pszNote);
 
 /**
- * Popup notification message window procedure
- * Display timed message over status line
+ * Notification message window procedure
+ * Displays timed message over status line
  */
 
 MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -75,7 +77,7 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       MRESULT rc = PFNWPStatic(hwnd, msg, mp1, mp2);
 
-      if (!WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER2, 5000)) {
+      if (!WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_NOTIFY_TIMER, 5000)) {
 	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinStartTimer");
 	WinDestroyWindow(hwnd);
       }
@@ -143,7 +145,7 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_BUTTON3DOWN:
   case WM_TIMER:
   case WM_CLOSE:
-    WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER2);
+    WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_NOTIFY_TIMER);
     WinDestroyWindow(hwnd);
     return 0;
 
@@ -161,7 +163,7 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 }
 
 /**
- * Display timed notification window over status line
+ * Process UM_NOTIFY message to display timed message over status line
  */
 
 HWND DoNotify(PCSZ str)
@@ -212,23 +214,23 @@ HWND DoNotify(PCSZ str)
 			   p,
 			   SS_TEXT | DT_LEFT | DT_VCENTER | WS_VISIBLE,
 			   x, y, cx, cy, hwndP, HWND_TOP, id++, NULL, NULL);
-    if (!hwndP)
+    if (!hwnd)
       Win_Error(hwndP, hwndP, pszSrcFile, __LINE__,
                 PCSZ_WINCREATEWINDOW);
 
     if (p != str)
       free(p);
     if (id > NOTE_MAX)
-      id = NOTE_FRAME;
+      id = NOTE_FRAME;			// Wrap
   }
 
-  AddNote(str);
+  AddNote(str);				// Add thread notes window
 
   return hwnd;
 }
 
 /**
- * Add message to thread notes window
+ * Display timed notification window over status line
  */
 
 HWND Notify(PCSZ str)
@@ -237,7 +239,8 @@ HWND Notify(PCSZ str)
 }
 
 /**
- * Add error message to thread notes window
+ * Notify on error
+ * Format message and pass to Notify
  */
 
 VOID NotifyError(PCSZ filename, APIRET status)
@@ -246,6 +249,7 @@ VOID NotifyError(PCSZ filename, APIRET status)
 
   if (!filename)
     return;
+
   sprintf(errortext, GetPString(IDS_ERRORACCESSTEXT), status, filename);
   if (toupper(*filename) > 'B') {
     if (status == 21)
@@ -280,47 +284,49 @@ VOID NotifyError(PCSZ filename, APIRET status)
 }
 
 /**
- * Thread notes dialog window dialog procedure
+ * Thread notes window dialog procedure
  */
 
 MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  static HPOINTER hptrIcon = (HPOINTER) 0;
+  static HPOINTER hptrIcon;
 
   switch (msg) {
   case WM_INITDLG:
     if (hwndNotify != (HWND)0) {
       // Already have notes dialog - pass message on
       if (mp2) {
-	WinSendDlgItemMsg(hwndNotify,
-			  NOTE_LISTBOX,
-			  LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
-	PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
-	free((CHAR *)mp2);
+	AddNote((PCSZ)mp2);		// 16 Jul 09 SHL was direct LM_INSERTITEM
+	xfree((PSZ)mp2, pszSrcFile, __LINE__);
       }
       WinDismissDlg(hwnd, 0);
       break;
     }
     hwndNotify = hwnd;
-    fThreadNotes = FALSE;
-    // Remember showing
-    {
-      BOOL dummy = TRUE;
+    // Remember showing for restart
+    fThreadNotes = TRUE;
       PrfWriteProfileData(fmprof,
-			  FM3Str, "ThreadNotes", &dummy, sizeof(BOOL));
-    }
-    if (mp2) {
-      WinSendDlgItemMsg(hwnd,
-			NOTE_LISTBOX,
-			LM_INSERTITEM, MPFROM2SHORT(LIT_END, 0), mp2);
-      free((CHAR *)mp2);
+			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
+    fThreadNotes = FALSE;		// Optimize
+
+    // 16 Jul 09 SHL Added
+    if (pszCachedNote) {
+      PCSZ p = pszCachedNote;
+      pszCachedNote = NULL;
+      AddNote(p);
+      xfree((PSZ)p, pszSrcFile, __LINE__);
     }
 
-    {
-      // Return focus
-      HWND hwndActive = WinQueryActiveWindow(HWND_DESKTOP);
-      PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(hwndActive), MPVOID);
+    if (mp2) {
+      AddNote((PCSZ)mp2);		// 16 Jul 09 SHL was direct LM_INSERTITEM
+      xfree((PSZ)mp2, pszSrcFile, __LINE__);
     }
+
+    // Grab focus
+    PostMsg(hwnd,
+	    UM_FOCUSME,
+	    MPFROMLONG(WinQueryActiveWindow(HWND_DESKTOP)),
+	    MPVOID);
 
     hptrIcon = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, NOTE_FRAME);
     if (hptrIcon)
@@ -428,18 +434,52 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CLOSE:
+    if (pszCachedNote)
+      DbgMsg(pszSrcFile, __LINE__, "pszCachedNote %p unexpected", pszCachedNote);	// 18 Jul 08 SHL fixme to be Runtime_Error
+    else {
+      // Cache last item for next open
+      SHORT ndx = (SHORT)WinSendDlgItemMsg(hwnd, NOTE_LISTBOX,
+					   LM_QUERYITEMCOUNT, MPVOID, MPVOID);
+      if (ndx != LIT_NONE) {
+	SHORT len;
+	ndx--;
+	len = (SHORT)WinSendDlgItemMsg(hwnd, NOTE_LISTBOX,
+				       LM_QUERYITEMTEXTLENGTH, 
+				       MPFROMSHORT(ndx), MPVOID);
+	if (len != LIT_ERROR) {
+	  PSZ p;
+	  len++;
+	  p = xmalloc(len, pszSrcFile, __LINE__);
+	  if (p) {
+	    SHORT len2 = (SHORT)WinSendDlgItemMsg(hwnd, NOTE_LISTBOX,
+					   LM_QUERYITEMTEXT,
+					   MPFROM2SHORT(ndx, len), MPFROMP(p));
+	    len--;
+	    if (len2 != len) {
+	      DbgMsg(pszSrcFile, __LINE__, "len %u unexpected - should be %u", len2, len);	// 18 Jul 08 SHL fixme to be Runtime_Error
+	      xfree((PSZ)p, pszSrcFile, __LINE__);
+	    }
+	    else
+	      pszCachedNote = p;
+	  }
+	}
+      }
+    }
     WinDismissDlg(hwnd, 0);
     return 0;
 
   case WM_DESTROY:
     if (hwndNotify == hwnd) {
+      // Remember not open
       fThreadNotes = FALSE;
       PrfWriteProfileData(fmprof,
 			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
       hwndNotify = (HWND) 0;
     }
-    if (hptrIcon)
+    if (hptrIcon) {
       WinDestroyPointer(hptrIcon);
+      hptrIcon = (HPOINTER)0;		// 16 Jul 09 SHL
+    }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
     break;
@@ -463,7 +503,7 @@ static VOID NoteThread(VOID * args)
       if (!hwndNotify)
 	WinDlgBox(HWND_DESKTOP,
 		  HWND_DESKTOP,
-		  NoteWndProc, FM3ModHandle, NOTE_FRAME, (CHAR *)args);
+		  NoteWndProc, FM3ModHandle, NOTE_FRAME, args);
       WinDestroyMsgQueue(hmq);
     }
     WinTerminate(hab);
@@ -477,12 +517,12 @@ static VOID NoteThread(VOID * args)
  * Start thread notes dialog window thread
  */
 
-VOID StartNotes(CHAR * note)
+static VOID StartNotes(PCSZ note)
 {
   if (!hwndNotify) {
     if (xbeginthread(NoteThread,
 		     65536,
-		     note,
+		     (VOID*)note,
 		     pszSrcFile,
 		     __LINE__) != -1)
     {
@@ -497,21 +537,40 @@ VOID StartNotes(CHAR * note)
 
 /**
  * Add note to thread notes window or popup status window
+ * Open window if was open and first messages after restart
+ * Cache last note until window opened
  */
 
-BOOL AddNote(PCSZ note)
+VOID AddNote(PCSZ note)
 {
   PSZ s;
   PCSZ p;
-  BOOL once = FALSE, ret = FALSE;
+  BOOL once = FALSE;
 
-  if ((fThreadNotes || hwndNotify) && note && *note) {
-    p = note;
-    while (*p == ' ')
-      p++;
+  // Cache last note until window opened
+  // 16 Jul 09 SHL fixme to avoid FORTIFY complaints
+  if (!fThreadNotes && !hwndNotify && note) {
+    p = note + strspn(note, " \t");	// Skip leading white
     if (*p) {
+      if (pszCachedNote)
+	xfree((PSZ)pszCachedNote, pszSrcFile, __LINE__);
+      pszCachedNote = xstrdup(p, pszSrcFile, __LINE__);
+    }
+    return;
+  }
+
+  if ((fThreadNotes || hwndNotify) && note) {
+    p = note + strspn(note, " \t");	// Skip leading white
+    if (*p) {
+      // If have cached note, output it first
+      if (pszCachedNote) {
+	PCSZ psz = pszCachedNote;
+	pszCachedNote = NULL;
+	AddNote(psz);
+	free((VOID*)psz);
+      }
       if (!hwndNotify) {
-	fThreadNotes = FALSE;
+	fThreadNotes = FALSE;		// 16 Jul 09 SHL fixme to be gone?
 	StartNotes(NULL);
       }
       if (hwndNotify) {
@@ -524,7 +583,6 @@ BOOL AddNote(PCSZ note)
 					  LM_INSERTITEM,
 					  MPFROM2SHORT(LIT_END, 0),
 					  MPFROMP(s)) >= 0) {
-	      ret = TRUE;
 	      PostMsg(hwndNotify, UM_NOTIFY, MPVOID, MPVOID);
 	      break;
 	    }
@@ -536,7 +594,6 @@ BOOL AddNote(PCSZ note)
       }
     }
   }
-  return ret;
 }
 
 /**

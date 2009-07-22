@@ -25,6 +25,7 @@
   27 Dec 08 GKY Add refresh removable media to tree container menus
   28 Dec 08 GKY Added Databar to utilities menu
   27 Jun 09 GKY Remove IDM_DRIVEATEXT (3950) Drivebar update
+  13 Jul 09 SHL Rename timer ids
 
   Align with spaces only - no tabs please
 
@@ -52,7 +53,6 @@
 #define MAIN_HELP           97
 #define MAIN_TRASHCAN       98
 
-#define ID_TIMER            4
 #define ID_STICK1           5
 #define ID_STICK2           6
 #define ID_STICK3           7
@@ -63,12 +63,17 @@
 #define ID_STICK32          12
 #define ID_STICK42          13
 #define ID_STICK52          14
-#define ID_TIMER2           15
-#define ID_TIMER3           16
 
-#define ID_TIMER4           19
-#define ID_TIMER5           20
-#define ID_TIMER6           21
+// 13 Jul 09 SHL fixme to know if timer ids unique to queue or window
+// WM_TIMER timer ids - assume ids can be shared
+#define ID_ABOUT_TIMER      4
+#define ID_COMP_TIMER       4
+#define ID_NOTIFY_TIMER     15
+// #define ID_TIMER3           16       // 13 Jul 09 SHL Dropped
+#define ID_ACTION_TIMER     16          // 13 Jul 09 SHL Added
+// #define ID_TIMER4           19       // 13 Jul 09 SHL Dropped
+#define ID_NEWVIEW_TIMER    20
+// #define ID_TIMER6           21       // 13 Jul 09 SHL Dropped
 
 #define MAIN_STATUS2        19
 
@@ -201,6 +206,7 @@
 #define ENV_ICON            924
 #define VIRTUAL_ICON        925
 #define RAMDISK_ICON        926
+#define DONNO_ICON          927
 
 #define IDM_HELPMOUSE       987
 #define IDM_HELPCONTEXT     988
@@ -559,6 +565,9 @@
 #define IDM_SAVETOOLS       6012
 #define IDM_LOADTOOLS       6013
 
+#define IDM_RESCANALL       7000
+#define IDM_REFRESHREMOVABLE 7001
+
 #define IDM_WINDOWSMENU     9000
 #define IDM_TILE            9001
 #define IDM_CASCADE         9002
@@ -691,7 +700,7 @@
 // #define UM_BUTTON2DOWN      (WM_USER + 32)		// Unused, 13 Sep 08 JBS
 // #define UM_BUTTON2UP        (WM_USER + 33)		// Unused, 13 Sep 08 JBS
 #define UM_COLLECTFROMFILE  (WM_USER + 34)
-#define UM_TIMER            (WM_USER + 35)
+#define UM_TIMER            (WM_USER + 35)              // 13 Jul 09 SHL fixme to have better name
 // #define UM_HELPON           (WM_USER + 36)		// Unused, 13 Sep 08 JBS
 #define UM_SETUP2           (WM_USER + 37)
 #define UM_SETUP3           (WM_USER + 38)

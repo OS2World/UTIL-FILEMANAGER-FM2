@@ -10,6 +10,8 @@
 
   17 Jul 08 SHL Baseline
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
+  22 Jul 09 GKY Check if drives support EAs add driveflag for this
+  22 Jul 09 GKY Allow .LONGNAME to be displayed for FAT drives.
 
 ***********************************************************************/
 
@@ -30,8 +32,8 @@ INT GetTidForWindow(HWND hwnd);
 SHORT AddToListboxBottom(HWND hwnd, PCSZ str);
 BOOL AdjustCnrColRO(HWND hwndCnr, PCSZ title, BOOL readonly, BOOL toggle);
 BOOL AdjustCnrColVis(HWND hwndCnr, PCSZ title, BOOL visible, BOOL toggle);
-VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds);
-VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds,
+VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds, BOOL compare);
+VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds,
 			  BOOL compare);
 VOID AdjustDetailsSwitches(HWND hwnd, HWND hwndMenu, USHORT cmd,
 			   PCSZ directory, PCSZ keyroot, DETAILS_SETTINGS * pds,

@@ -14,7 +14,11 @@
   16 Aug 07 SHL Document AUTHOR_PICTURE
   04 Jan 08 SHL Sync with fm3dll.h mods
   29 Aug 08 GKY Add bmps from David for the 7 predefined toolbars
-
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
+                
 ***********************************************************************/
 
 #include "dll\fm3dll2.h"
@@ -96,6 +100,9 @@ BITMAP CDROM_ICON           bitmaps\CDROM.BMP
 BITMAP REMOTE_ICON          bitmaps\REMOTE.BMP
 BITMAP VIRTUAL_ICON         bitmaps\VIRTUAL.BMP
 BITMAP RAMDISK_ICON         bitmaps\RAMDISK.BMP
+BITMAP DONNO_ICON           bitmaps\DONNO.BMP
+BITMAP IDM_RESCANALL        bitmaps\rescanhd2.bmp
+BITMAP IDM_REFRESHREMOVABLE bitmaps\refremov.bmp
 BITMAP 65534                bitmaps\EMPTY.BMP
 BITMAP LEDON_BMP            bitmaps\LEDON.BMP
 BITMAP LEDOFF_BMP           bitmaps\LEDOFF.BMP

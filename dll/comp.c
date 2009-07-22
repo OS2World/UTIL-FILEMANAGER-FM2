@@ -66,6 +66,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c & String Table
   15 Mar 09 GKY Use WriteDetailsSwitchs to save detail switch changes to the ini file.
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  13 Jul 09 SHL Sync with renames
 
 ***********************************************************************/
 
@@ -765,7 +766,7 @@ static VOID ActionCnrThread(VOID *args)
 
 	SleepIfNeeded(&itdSleep, 0);
       }	// while
-      WinPostMsg(cmp->hwnd, WM_TIMER, MPFROMLONG(ID_TIMER), 0);	// Force update
+      WinPostMsg(cmp->hwnd, WM_TIMER, MPFROMLONG(ID_COMP_TIMER), 0);	// Force update
     Abort:
       WinDestroyMsgQueue(hmq);
     }
@@ -821,6 +822,7 @@ static VOID SelectCnrsThread(VOID *args)
 	break;
 
       default:
+        // 08 Feb 09 SHL fixme to support Ctrl-click for ANDed select
 	// 13 Jan 08 SHL fixme to decide if cmp->reset can ever get set
 	// if not lots of code can disappear
 	if (cmp->reset)
@@ -1401,7 +1403,7 @@ Restart:
       WinCheckButton(hwnd, COMP_HIDENOTSELECTED, 2);
   }
 
-  WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_TIMER), 0);	// Force update
+  WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_COMP_TIMER), 0);	// Force update
   DosPostEventSem(CompactSem);
 }
 
@@ -1882,7 +1884,7 @@ static VOID FillCnrsThread(VOID *args)
 	    pcil->attrFile = filesl[l]->attrFile;
 	    pcil->pszDispAttr = FileAttrToString(pcil->attrFile);
 	    pcil->cbFile = filesl[l]->cbFile;
-	    // 12 Jan 08 SHL fixme to used cached size here too
+	    // 12 Jan 08 SHL fixme to use cached size here too
 	    CommaFmtULL(szBuf, sizeof(szBuf), pcil->cbFile, ' ');
 	    pcil->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
 	    pcil->easize = filesl[l]->easize;
@@ -2245,7 +2247,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			&RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
 	}
       }
-      WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER, 500);
+      WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_COMP_TIMER, 500);
     }
     break;
 
@@ -2456,7 +2458,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinEnableWindow(hwndRight, TRUE);
       WinEnableWindowUpdate(hwndLeft, TRUE);
       WinEnableWindowUpdate(hwndRight, TRUE);
-      WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_TIMER), 0);	// Force update
+      WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_COMP_TIMER), 0);	// Force update
       // 12 Jan 08 SHL fixme to have SetButtonEnables(COMPARE* pcmp, BOOL fEnable)
       // to replace duplicated code here and elsewhere
       WinEnableWindow(WinWindowFromID(hwnd, DID_OK), TRUE);
@@ -2883,6 +2885,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_COMMAND:
+    // 29 Apr 09 SHL  fixme to support more context menu items - IDM_EDIT, IDM_DELETE etc.
     switch (SHORT1FROMMP(mp1)) {
     case IDM_COMPARE:
       cmp = INSTDATA(hwnd);
@@ -3363,7 +3366,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     cmp = INSTDATA(hwnd);
     if (cmp) {
       // 17 Jan 08 SHL fixme to know if stop really needed?
-      WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_TIMER);
+      WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_COMP_TIMER);
       if (cmp->dcd.hwndLastMenu)
 	WinDestroyWindow(cmp->dcd.hwndLastMenu);
       if (cmp->dcd.hwndObject) {

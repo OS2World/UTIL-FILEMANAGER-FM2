@@ -91,6 +91,11 @@
   12 Jul 09 GKY Removed duplicate UM_SETUP2 message from RestoreDirCnrState caused dbl dir
                 listings in tree
   13 Jul 09 GKY Fixed under allocation of memory in the paint code for the drivebar bitmap buttons
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
+  22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
 
 ***********************************************************************/
 
@@ -170,7 +175,6 @@
 #include "dirs.h"                       // save_dir2
 #include "wrappers.h"                   // xfree
 #include "fortify.h"
-#include "filldir.h"                    // StubbyScanCount
 #include "excputil.h"			// xbeginthread
 
 #define DRIVEBAR_FONT_LCID 10
@@ -255,38 +259,50 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       char dv[3], d;
       HWND hwndB = (HWND) mp1;
       USHORT id;
+      CHAR s[90]= {0};
 
       id = WinQueryWindowUShort(hwndB, QWS_ID);
-      *dv = 0;
-      *dv = id - IDM_DRIVEA + 'A';
-      strcpy(dv + 1, ":");
-      d = toupper(*dv);
-      if (isalpha(d) && d > 'B' &&
-	  !(driveflags[d - 'A'] & (DRIVE_CDROM | DRIVE_INVALID |
-				   DRIVE_SLOW)) &&
-	  (!hwndBubble ||
-	   WinQueryWindowULong(hwndBubble, QWL_USER) != hwndB) &&
-	  !WinQueryCapture(HWND_DESKTOP)) {
+      switch (id) {
+      case IDM_RESCAN:
+        strcpy(s, GetPString(IDS_RESCANALLDRIVESTEXT));
+        break;
 
-	FSALLOCATE fsa;
-	CHAR s[90], szQty[38];
-	ULONG ulPctFree;
-	ULONGLONG ullFreeQty;
+      case IDM_REFRESHREMOVABLES:
+        strcpy(s, GetPString(IDS_REFRESHREMOVABLESTEXT));
+        break;
 
-	if (!DosQueryFSInfo((d - 'A') + 1,
-			    FSIL_ALLOC, &fsa, sizeof(FSALLOCATE))) {
-	  ullFreeQty = (ULONGLONG) fsa.cUnitAvail *
-	    (fsa.cSectorUnit * fsa.cbSector);
-	  ulPctFree = (fsa.cUnit && fsa.cUnitAvail) ?
-	    (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
-	  CommaFmtULL(szQty, sizeof(szQty), ullFreeQty, ' ');
-	  sprintf(s, "%s %s (%lu%%) %s", dv, szQty, ulPctFree, GetPString(IDS_FREETEXT));
-	}
-	if ((!hwndBubble ||
-	     WinQueryWindowULong(hwndBubble, QWL_USER) != hwndB) &&
-	    !WinQueryCapture(HWND_DESKTOP))
-	  WinSendMsg(hwndB, UM_SETUP6, MPFROMP(s), MPVOID);
+      default:
+        *dv = 0;
+        *dv = id - IDM_DRIVEA + 'A';
+        strcpy(dv + 1, ":");
+        d = toupper(*dv);
+        if (isalpha(d) && d > 'B' &&
+            !(driveflags[d - 'A'] & (DRIVE_CDROM | DRIVE_INVALID |
+                                     DRIVE_SLOW)) &&
+            (!hwndBubble ||
+             WinQueryWindowULong(hwndBubble, QWL_USER) != hwndB) &&
+            !WinQueryCapture(HWND_DESKTOP)) {
+  
+          FSALLOCATE fsa;
+          CHAR szQty[38];
+          ULONG ulPctFree;
+          ULONGLONG ullFreeQty;
+  
+          if (!DosQueryFSInfo((d - 'A') + 1,
+                              FSIL_ALLOC, &fsa, sizeof(FSALLOCATE))) {
+            ullFreeQty = (ULONGLONG) fsa.cUnitAvail *
+              (fsa.cSectorUnit * fsa.cbSector);
+            ulPctFree = (fsa.cUnit && fsa.cUnitAvail) ?
+              (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
+            CommaFmtULL(szQty, sizeof(szQty), ullFreeQty, ' ');
+            sprintf(s, "%s %s (%lu%%) %s", dv, szQty, ulPctFree, GetPString(IDS_FREETEXT));
+          }
+        }
       }
+      if ((!hwndBubble ||
+           WinQueryWindowULong(hwndBubble, QWL_USER) != hwndB) &&
+          !WinQueryCapture(HWND_DESKTOP))
+        WinSendMsg(hwndB, UM_SETUP6, MPFROMP(s), MPVOID);
     }
     return 0;
 
@@ -322,13 +338,15 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), FALSE);
       RestoreDirCnrState(hwndMain, (char *)mp1, FALSE);
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), TRUE);
-      fNoTileUpdate = FALSE;
-      //xfree((char *)mp1, pszSrcFile, __LINE__);
-//       if (fAutoTile)
-//         TileChildren(hwndMain, TRUE);
+      fNoTileUpdate = FALSE; ;
       break;
     default:
       Runtime_Error(pszSrcFile, __LINE__, "%u unexpected", mp2);
+    }
+    if (fInitialDriveScan) {
+      DosPostEventSem(hevInitialCnrScanComplete);
+      DosCloseEventSem(hevInitialCnrScanComplete);
+      fInitialDriveScan = FALSE;
     }
     return 0;
 
@@ -1834,22 +1852,53 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_COMMAND:
-    {
-      CHAR dv[4];
-
-      *dv = SHORT1FROMMP(mp1) - IDM_DRIVEA + 'A';
-      strcpy(dv + 1, ":\\");
-      if (isalpha(*dv)) {
-
-	HWND hwndActive;
-
-	dv[1] = ':';
-	dv[2] = '\\';
-	dv[3] = 0;
-	hwndActive = TopWindow(hwnd, (HWND) 0);
-	if (hwndActive)
-	  WinSendMsg(WinWindowFromID(hwndActive, FID_CLIENT),
-		     UM_DRIVECMD, MPFROMP(dv), MPVOID);
+    if (fInitialDriveScan)
+      DosWaitEventSem(hevInitialCnrScanComplete, SEM_INDEFINITE_WAIT);
+    switch(SHORT1FROMMP(mp1)) {
+    case IDM_RESCAN:
+      {
+        BOOL toggleTree = FALSE;
+  
+        if (!hwndTree) {
+          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+          toggleTree = TRUE;
+        }
+        WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+        if (toggleTree)
+          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+      }
+      break;
+    case IDM_REFRESHREMOVABLES:
+      {
+        BOOL toggleTree = FALSE;
+  
+        if (!hwndTree) {
+          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+          toggleTree = TRUE;
+        }
+        WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_REFRESHREMOVABLES, 0), MPVOID);
+        if (toggleTree)
+          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+      }
+      break;
+    default:
+      {
+        CHAR dv[4];
+  
+        *dv = SHORT1FROMMP(mp1) - IDM_DRIVEA + 'A';
+        strcpy(dv + 1, ":\\");
+        if (isalpha(*dv)) {
+  
+          HWND hwndActive;
+  
+          dv[1] = ':';
+          dv[2] = '\\';
+          dv[3] = 0;
+          hwndActive = TopWindow(hwnd, (HWND) 0);
+          if (hwndActive)
+            WinSendMsg(WinWindowFromID(hwndActive, FID_CLIENT),
+                       UM_DRIVECMD, MPFROMP(dv), MPVOID);
+        }
       }
     }
     return 0;
@@ -1876,13 +1925,12 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_MOUSEMOVE:
-    if (fDrivebarHelp &&
-	(!hwndBubble ||
+    if (fDrivebarHelp && (!hwndBubble ||
 	 WinQueryWindowULong(hwndBubble, QWL_USER) != hwnd) &&
 	!WinQueryCapture(HWND_DESKTOP)) {
       id = WinQueryWindowUShort(hwnd, QWS_ID);
       if (helpid != id) {
-	helpid = id;
+        helpid = id;
 	PostMsg(MainObjectHwnd, UM_SETUP6, MPFROMLONG((ULONG) hwnd), MPVOID);
       }
       else
@@ -1904,6 +1952,8 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SIZEF sizfCharBox;
 
       id = WinQueryWindowUShort(hwnd, QWS_ID);
+      if (id == IDM_REFRESHREMOVABLES || id == IDM_RESCAN)
+        break;
       *szDrv = 0;
       x = id - IDM_DRIVEA;
       *szDrv = x + 'A';
@@ -1921,7 +1971,9 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     (driveflags[x] & DRIVE_RAMDISK) ?
 		      RAMDISK_ICON :
 		     (driveflags[x] & DRIVE_ZIPSTREAM) ?
-		      ZIPSTREAM_ICON : DRIVE_ICON;
+                      ZIPSTREAM_ICON :
+                     (driveflags[x] & DRIVE_LOCALHD) ?
+                      DRIVE_ICON : DONNO_ICON;
 	}
 	else
           iconid = FLOPPY_ICON;
@@ -1999,20 +2051,24 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (isalpha(*szDrv)) {
       hwndMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, MAIN_DRIVES);
       if (hwndMenu) {
-	BOOL rdy;
+	BOOL rdy, local;
 	CHAR chDrv = *szDrv;
 	UINT iDrv;
 
         strcat(szDrv, PCSZ_BACKSLASH);
 	MakeValidDir(szDrv);
-	// Disable menus if MakeValidDir changes drive letter fixme this section doesn't do anything see treecnt.c
+        // Disable menus if MakeValidDir changes drive letter fixme this section doesn't do anything see treecnt.c
+        local = ~driveflags[iDrv] & DRIVE_REMOTE && ~driveflags[iDrv] & DRIVE_VIRTUAL &&
+                ~driveflags[iDrv] & DRIVE_RAMDISK;
 	rdy = toupper(*szDrv) == toupper(chDrv);
         iDrv = toupper(*szDrv) - 'A';
 	if (!rdy || ~driveflags[iDrv] & DRIVE_REMOTE)
-	  WinEnableMenuItem(hwndMenu, IDM_DETACH, FALSE);
+          WinEnableMenuItem(hwndMenu, IDM_DETACH, FALSE);
 
-	if (!rdy || driveflags[iDrv] & DRIVE_NOTWRITEABLE) {
-	  WinEnableMenuItem(hwndMenu, IDM_MKDIR, FALSE);
+        if (!rdy || driveflags[iDrv] & DRIVE_NOTWRITEABLE)
+          WinEnableMenuItem(hwndMenu, IDM_MKDIR, FALSE);
+
+	if (!rdy || driveflags[iDrv] & DRIVE_NOTWRITEABLE || !local) {
 	  WinEnableMenuItem(hwndMenu, IDM_FORMAT, FALSE);
 	  WinEnableMenuItem(hwndMenu, IDM_OPTIMIZE, FALSE);
 	  WinEnableMenuItem(hwndMenu, IDM_UNDELETE, FALSE);
@@ -2026,7 +2082,9 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableMenuItem(hwndMenu, IDM_INFO, FALSE);
 	  WinEnableMenuItem(hwndMenu, IDM_ARCHIVE, FALSE);
 	  WinEnableMenuItem(hwndMenu, IDM_SIZES, FALSE);
-	  WinEnableMenuItem(hwndMenu, IDM_SHOWALLFILES, FALSE);
+          WinEnableMenuItem(hwndMenu, IDM_SHOWALLFILES, FALSE);
+
+        if (!rdy || !local)
 	  WinEnableMenuItem(hwndMenu, IDM_CHKDSK, FALSE);
 	}
 	/* fixme to be gone?
@@ -2300,12 +2358,36 @@ VOID BuildDriveBarButtons(HWND hwndT)
 				hwndT, HWND_TOP, x + IDM_DRIVEA, NULL, NULL);
 	if (!hwndB)
 	  Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
-		    PCSZ_WINCREATEWINDOW);
+                    PCSZ_WINCREATEWINDOW);
         else {
 	  WinSetWindowPos(hwndB, HWND_BOTTOM, 0, 0, 0, 0, SWP_ZORDER);
 	}
       }
     }                                   // for
+    hwndB = WinCreateWindow(hwndT,
+                            WC_DRIVEBUTTONS,
+                            "#7001",
+                            BS_NOPOINTERFOCUS | BS_BITMAP | BS_PUSHBUTTON,
+                            0,
+                            0,
+                            DRIVE_BUTTON_WIDTH,
+                            DRIVE_BUTTON_HEIGHT,
+                            hwndT, HWND_TOP, IDM_REFRESHREMOVABLES, NULL, NULL);
+  if (!hwndB)
+    Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_WINCREATEWINDOW);
+  hwndB = WinCreateWindow(hwndT,
+                          WC_DRIVEBUTTONS,
+                          "#7000",
+                          BS_NOPOINTERFOCUS | BS_BITMAP | BS_PUSHBUTTON,
+                          0,
+                          0,
+                          DRIVE_BUTTON_WIDTH,
+                          DRIVE_BUTTON_HEIGHT,
+                          hwndT, HWND_TOP, IDM_RESCAN, NULL, NULL);
+  if (!hwndB)
+    Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_WINCREATEWINDOW);
   }                                     // if drivebar
   PostMsg(WinQueryWindow(hwndT, QW_PARENT),
 	  WM_UPDATEFRAME, MPFROMLONG(FCF_SIZEBORDER), MPVOID);
@@ -3327,8 +3409,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		    }
 		  }
 		}
-		//if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL)) //These were being called twice
-		//  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL); //causing dup dir names in tree
+		if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
+		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL); 
 	      }
 	    }
 	    fRestored = TRUE;
@@ -5725,9 +5807,14 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPVOID);
       if (!add_setup(pszStatename))
 	save_setups();
-    } else {
+    }
+    else {
       load_tools(NULL);
       PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
+      if (fInitialDriveScan) {
+        DosPostEventSem(hevInitialCnrScanComplete);
+        DosCloseEventSem(hevInitialCnrScanComplete);
+      }
     }
     PostMsg(MainObjectHwnd, UM_SETUP4, mp1, mp2);
     return 0;

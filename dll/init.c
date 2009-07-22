@@ -81,6 +81,8 @@
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
+  22 Jul 09 GKY Fix failure to restore the notebook setting for saving container states or not
 
 ***********************************************************************/
 
@@ -179,6 +181,8 @@ unsigned __MaxThreads = {48};
 #pragma data_seg(GLOBAL1)
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
+HMTX hmtFillingTreeCnr;
+HEV  hevInitialCnrScanComplete;
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
 PFNWP PFNWPMLE;
@@ -1087,7 +1091,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      PCSZ_DOSCREATEMUTEXSEM);
+              PCSZ_DOSCREATEMUTEXSEM);
+  if (DosCreateMutexSem(NULL, &hmtFillingTreeCnr, 0L, FALSE))
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              PCSZ_DOSCREATEMUTEXSEM);
+  if (DosCreateEventSem(NULL, &hevInitialCnrScanComplete, 0L, FALSE))
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              PCSZ_DOSCREATEMUTEXSEM);
 
   /*
    * set some defaults (note: everything else automatically initialized
@@ -1381,24 +1391,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "BlueLED", &fBlueLED, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ConfirmDelete", &fConfirmDelete, &size);
-  /*size = sizeof(BOOL);   Replaced by UM_SHOWME check 3/14/09 GKY
+  size = sizeof(BOOL);  
   PrfQueryProfileData(fmprof, FM3Str, "SaveState", &fSaveState, &size);
-  if (fSaveState && (fSwitchTreeOnFocus || fSwitchTree) &&
-      (!strcmp(realappname, FM3Str) || !strcmp(realappname, "FM/4"))) {
-    CHAR szKey[STATE_NAME_MAX_BYTES + 80];
-    CHAR szDir[CCHMAXPATH];
-    ULONG drvNum;
-
-    if (!strcmp(realappname, "FM/4"))
-      strcpy(szKey, "FM/4 Dir1");
-    else
-      sprintf(szKey, "%s.DirCnrDir.0", PCSZ_SHUTDOWNSTATE);
-    size = sizeof(szDir);
-    if (PrfQueryProfileData(fmprof, appname, szKey, szDir, &size)) {
-      drvNum = toupper(*szDir) - 'A';
-      fDrivetoSkip[drvNum] = TRUE;
-    }
-  } */
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SyncUpdates", &fSyncUpdates, &size);
   size = sizeof(BOOL);

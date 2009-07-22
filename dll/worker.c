@@ -53,12 +53,14 @@
 
 #define INCL_DOS
 #define INCL_DOSERRORS
-#define INCL_WINPROGRAMLIST
-#define INCL_WINHELP
+// #define INCL_WINPROGRAMLIST		// 13 Jul 09 SHL dropped
+// #define INCL_WINHELP			// 13 Jul 09 SHL dropped
 #define INCL_LONGLONG
-#define INCL_WINPOINTERS
-#define INCL_WINWORKPLACE
-#define INCL_WINSHELLDATA
+#define INCL_WINPOINTERS		// WinSetFileIcon
+// #define INCL_WINWORKPLACE		// 13 Jul 09 SHL dropped
+#define INCL_WINSHELLDATA		// PrfQueryProfileData
+#define INCL_WINTIMER			// WinStarTimer
+#define INCL_WININPUT			// WinQueryFocus
 
 #include "fm3dll.h"
 #include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
@@ -102,6 +104,7 @@
 #include "systemf.h"			// ExecOnList
 #include "avl.h"			// SBoxDlgProc
 #include "subj.h"			// Subject
+#include "grep.h"			// hwndStatus
 #include "stristr.h"			// stristr
 #include "wrappers.h"			// xfopen
 #include "fortify.h"
@@ -194,6 +197,10 @@ VOID Action(VOID * args)
   UINT numfiles = 0, numalloc = 0;
   INT plen = 0;
   CHAR *p, *pp;
+  ULONG idTimerStarted = 0;
+  BOOL fActionPosted = FALSE;
+  HAB habForActions;
+  HWND hwndForActions;
   CHAR szQuotedDirName[CCHMAXPATH];
   CHAR szQuotedFileName[CCHMAXPATH];
 
@@ -215,6 +222,7 @@ VOID Action(VOID * args)
 	  WinCancelShutdown(hmq2, TRUE);
 	  IncrThreadUsage();
 	  *wildname = 0;
+	  // Do action specific preprocessing
 	  switch (wk->li->type) {
 	  case IDM_MERGE:
 	    if (wk->li->type == IDM_MERGE) {
@@ -321,7 +329,35 @@ VOID Action(VOID * args)
 	    }
 	    break;
 	  }
+	  // Process each list item
 	  if (wk->li && wk->li->list && wk->li->list[0]) {
+	    // char ucClassname[8];
+	    if (hwndStatus) {
+	      // Send update request to source window or container
+	      // 13 Jul 09 SHL fixme to be sure we pick window that understand UM_ACTIONSTATE wk->dcd->hwndCnr?
+	      // 13 Jul 09 SHL fixme to ensure focus window is one that understands UM_ACTIONSTATE
+	      HWND hwndFocus = WinQueryFocus(HWND_DESKTOP);
+	      DbgMsg(pszSrcFile, __LINE__, "hwndFocus %lx", hwndFocus);	// 13 Jul 09 SHL fixme debug
+	      DbgMsg(pszSrcFile, __LINE__, "hwndCnr %lx", wk->hwndCnr);	// 13 Jul 09 SHL fixme debug
+	      // DbgMsg(pszSrcFile, __LINE__, "hwndS %lx", wk->li->hwndS);	// 13 Jul 09 SHL fixme debug
+	      DbgMsg(pszSrcFile, __LINE__, "hwnd %lx", wk->li->hwnd);	// 13 Jul 09 SHL fixme debug
+	      // DbgMsg(pszSrcFile, __LINE__, "hwndParent %lx", wk->hwndParent);	// 13 Jul 09 SHL fixme debug
+	      // DbgMsg(pszSrcFile, __LINE__, "hwndClient %lx", wk->hwndClient);	// 13 Jul 09 SHL fixme debug
+	      // DbgMsg(pszSrcFile, __LINE__, "hwndFrame %lx", wk->hwndFrame);	// 13 Jul 09 SHL fixme debug
+	      // hwndForActions = wk->li->hwnd == hwndFocus ? hwndFocus : wk->hwndCnr;
+	      hwndForActions = WinQueryFocus(HWND_DESKTOP);
+#if 0 // 14 Jul 09 SHL fixme
+	      hwndForActions = WinQueryFocus(HWND_DESKTOP);
+	      if (WinQueryClassName(hwndForActions, sizeof(ucClassname), ucClassname)) {
+		// If not a container fall back to worker
+		if (strcmp(ucClassname, "#25"));
+	      }
+#endif
+	      habForActions = WinQueryAnchorBlock(hwndForActions);
+	      DbgMsg(pszSrcFile, __LINE__, "habForActions %lx hwndForActions %lx", habForActions, hwndForActions);	// 13 Jul 09 SHL fixme debug
+	      // Ask container window to update status line every 5 seconds in case action is time intensive
+	      idTimerStarted = WinStartTimer(habForActions, hwndForActions, ID_ACTION_TIMER, 2000);	// 13 Jul 09 SHL fixme 5 sec
+	    }
 	    for (x = 0; wk->li->list[x]; x++) {
 	      switch (wk->li->type) {
 	      case IDM_COLLECTFROMFILE:
@@ -828,6 +864,7 @@ VOID Action(VOID * args)
 		    }
 		    if (fRealIdle)
 		      priority_idle();
+
 		    rc = docopyf(type, wk->li->list[x], newname);
 		    if (fResetVerify) {
 		      DosSetVerify(fVerify);
@@ -891,10 +928,11 @@ VOID Action(VOID * args)
 			  goto Abort;
 		      }
 		      else {
-			if (LogFileHandle)
+			if (LogFileHandle) {
 			  fprintf(LogFileHandle,
 				  GetPString(IDS_LOGTOFAILEDTEXT),
 				  move, wk->li->list[x], newname, rc);
+			}
 			rc = Dos_Error(MB_ENTERCANCEL,
 				       rc,
 				       wk->hwndFrame,
@@ -911,12 +949,13 @@ VOID Action(VOID * args)
 		      }
 		    }
 		    else {
-		      if (LogFileHandle)
+		      if (LogFileHandle) {
 			fprintf(LogFileHandle,
 				"%s \"%s\" %s\"%s\"\n",
 				moved,
 				wk->li->list[x],
 				GetPString(IDS_TOTEXT), newname);
+		      }
 		      if ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(wk->li->list[x],
 				    &files, &numfiles, &numalloc))
@@ -983,6 +1022,7 @@ VOID Action(VOID * args)
 	      DosSleep(0);
 	    } // for list
 
+	    // Do actio specific post-processing
 	    switch (wk->li->type) {
 	    case IDM_MOVE:
 	    case IDM_COPY:
@@ -1025,7 +1065,9 @@ VOID Action(VOID * args)
 	    default:
 	      break;
 	    }
-	  }
+	    if (idTimerStarted)
+	      WinStopTimer(habForActions, hwndForActions, ID_ACTION_TIMER);	// 13 Jul 09 SHL
+	  } // if have non-empty list
 
 	Abort:
 
@@ -1047,6 +1089,8 @@ VOID Action(VOID * args)
       }
     }
 
+    if (fActionPosted)
+      DosSleep(2000);			// Alloc container time to process queued UM_ACTIONSTATE messages 13 Jul 09 SHL
     if (wk->li)
       FreeListInfo(wk->li);
     free(wk);
@@ -1762,6 +1806,38 @@ VOID MassAction(VOID * args)
     DosPostEventSem(CompactSem);
   }
 }
+
+// We can use static buffer for all in progress actions because we have only 1 status line
+static WORKER *pCachedActionWorker;	// Sent from Action thread via UM_ACTIONSTATE
+static PSZ pszCachedActionListItem;	// Sent from Action thread via UM_ACTIONSTATE
+
+MRESULT EXPENTRY ActionWMTimer(HWND hwnd, MPARAM mp1, MPARAM mp2)
+{
+  if (pCachedActionWorker != NULL && pszCachedActionListItem != NULL) {
+    DbgMsg(pszSrcFile, __LINE__, "Using hWndStatus %lx pCachedActionWorker %p pszCachedActionListItem %s", hwndStatus, pCachedActionWorker, pszCachedActionListItem);	// 13 Jul 09 SHL fixme debug
+    if (hwndStatus && WinQueryFocus(HWND_DESKTOP) == hwnd) {
+      CHAR s[CCHMAXPATH + 64];
+      sprintf(s, "%s %s",
+	      pCachedActionWorker->li->type == IDM_MOVE ?
+		GetPString(IDS_MOVINGTEXT) :
+		GetPString(IDS_COPYINGTEXT),
+	      pszCachedActionListItem);
+      // sprintf(s, "Moving/copying %s", pszCachedActionListItem);	// 14 Jul 09 SHL fixme
+      WinSetWindowText(hwndStatus, s);
+    }
+  }
+  return 0;
+}
+
+MRESULT EXPENTRY ActionUMWorkerState(HWND hwnd, MPARAM mp1, MPARAM mp2) {
+  pCachedActionWorker = PVOIDFROMMP(mp1);
+  pszCachedActionListItem = PVOIDFROMMP(mp2);
+  DbgMsg(pszSrcFile, __LINE__, "Setting pCachedActionWorker %p pszCachedActionListItem %s", pCachedActionWorker, pszCachedActionListItem);	// 13 Jul 09 SHL fixme debug
+  if (hwndStatus && WinQueryFocus(HWND_DESKTOP) == hwnd)
+    WinPostMsg(hwnd, WM_SETFOCUS, MPFROMLONG(hwnd), MPFROMLONG(TRUE));	// 14 Jul 09 SHL Force status line update
+  return 0;
+}
+
 #pragma alloc_text(MASSACTION,MassAction)
 #pragma alloc_text(ACTION,Action)
 #pragma alloc_text(UNDO,FreeUndo,Undo)

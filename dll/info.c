@@ -33,6 +33,8 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
   12 Jul 09 GKY Remove code to update recursive scan setting which isn't user setable
+  22 Jul 09 GKY Check if drives support EAs add driveflag for this
+  22 Jul 09 GKY Add LocalHD driveflag
 
 ***********************************************************************/
 
@@ -928,20 +930,6 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowULong(hwnd, QWL_USER, (toupper(*(CHAR *)mp2) - 'A'));
       sprintf(s, GetPString(IDS_DRIVEFLAGSTITLETEXT), toupper(*(CHAR *)mp2));
       WinSetWindowText(hwnd, s);
-/*
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOVABLE),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_NOTWRITEABLE),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_IGNORE),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_CDROM),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_NOLONGNAMES),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_REMOTE),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_VIRTUAL),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_RAMDISK),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_BOOT),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_INVALID),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_ZIPSTREAM),FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd,DVS_NOSTATS),FALSE);
-*/
       PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
     }
     break;
@@ -988,7 +976,11 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd,DVS_WRITEVERIFYOFF,
                      ((driveflags[drive] & DRIVE_WRITEVERIFYOFF) != 0));
       WinCheckButton(hwnd,DVS_RSCANNED,
-		     ((driveflags[drive] & DRIVE_RSCANNED) != 0));
+                     ((driveflags[drive] & DRIVE_RSCANNED) != 0));
+      WinCheckButton(hwnd,DVS_LOCALHD,
+                     ((driveflags[drive] & DRIVE_LOCALHD) != 0));
+      WinCheckButton(hwnd,DVS_NOEASUPPORT,
+		     ((driveflags[drive] & DRIVE_NOEASUPPORT) != 0));
     }
     return 0;
 

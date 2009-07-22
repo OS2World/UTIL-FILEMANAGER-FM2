@@ -6,13 +6,13 @@
   About dialogs
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004 Steven H. Levine
+  Copyright (c) 2004, 2009 Steven H. Levine
 
   Revisions
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-
+  13 Jul 09 SHL Sync with renames
 
 ***********************************************************************/
 
@@ -50,8 +50,8 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   SWP swp;
   static HAB hab = 0;
   BOOL no = FALSE;
-  static BOOL pause = FALSE;
-  static INT width, direction, ticktock, counter = 0;
+  static BOOL noanimation;
+  static INT width, direction, ticktock, counter;
   static HPOINTER stick1, stick2, stick3, stick4, stick12, stick22, stick32,
     stick42, stick5, stick52;
 
@@ -62,9 +62,9 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     if (mp2)
-      pause = TRUE;
+      noanimation = TRUE;
     else
-      pause = FALSE;
+      noanimation = FALSE;
     AboutBox = hwnd;
     hab = WinQueryAnchorBlock(hwnd);
     WinQueryWindowPos(hwnd, &swp);
@@ -79,7 +79,7 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     if (!strcmp(realappname, "FM/4"))
       WinSetDlgItemText(hwnd, ABT_PROGNAME, GetPString(IDS_FM2LITETEXT));
-    if (!pause) {
+    if (!noanimation) {
       stick1 = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ID_STICK1);
       stick2 = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ID_STICK2);
       stick3 = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ID_STICK3);
@@ -92,7 +92,7 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       stick52 = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ID_STICK52);
       direction = 2;
       ticktock = 0;
-      WinStartTimer(hab, hwnd, ID_TIMER, 164);
+      WinStartTimer(hab, hwnd, ID_ABOUT_TIMER, 164);
       PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     }
     break;
@@ -298,8 +298,8 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     if (hab) {
-      if (!pause) {
-	WinStopTimer(hab, hwnd, ID_TIMER);
+      if (!noanimation) {
+	WinStopTimer(hab, hwnd, ID_ABOUT_TIMER);
 	WinDestroyPointer(stick1);
 	WinDestroyPointer(stick2);
 	WinDestroyPointer(stick3);

@@ -31,6 +31,8 @@
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  22 Jul 09 GKY Check if drives support EAs add driveflag for this
+  22 Jul 09 GKY Add LocalHD driveflag
 
 ***********************************************************************/
 
@@ -919,13 +921,15 @@
 #define DVS_NOLOADLONGS									27013
 #define DVS_SLOW											27014
 #define DVS_INCLUDEFILES								27015
-#define DVS_VIRTUAL										27016
-#define DVS_NOSTATS										27017
-#define DVS_RAMDISK										27018
-#define DVS_WRITEVERIFYOFF									27019
-#define DVS_RSCANNED										27020
+#define DVS_VIRTUAL									27016
+#define DVS_NOSTATS									27017
+#define DVS_RAMDISK									27018
+#define DVS_WRITEVERIFYOFF								27019
+#define DVS_RSCANNED									27020
+#define DVS_LOCALHD									27021
+#define DVS_NOEASUPPORT									27022
 
-#define MRG_FRAME											27100
+#define MRG_FRAME									27100
 #define MRG_LISTBOX										27101
 #define MRG_TOP											27102
 #define MRG_APPEND										27103

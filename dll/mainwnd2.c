@@ -30,6 +30,7 @@
                 Dos/Win programs from being inserted into the execute dialog with message why.
   21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
                 letter windows; Use button ID to identify drive letter for processing.
+  22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
 
 ***********************************************************************/
 
@@ -879,6 +880,11 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       else
 	save_dir(s);
       pd->hwndDir2 = StartDirCnr(hwnd, s, (HWND) 0, 3);
+      if (fInitialDriveScan) {
+        DosPostEventSem(hevInitialCnrScanComplete);
+        DosCloseEventSem(hevInitialCnrScanComplete);
+        fInitialDriveScan = FALSE;
+      }
       WinSetFocus(HWND_DESKTOP, pd->hwndCurr);
 
       hwndC = WinWindowFromID(pd->hwndDir1, FID_CLIENT);

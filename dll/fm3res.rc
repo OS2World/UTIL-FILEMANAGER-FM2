@@ -48,6 +48,10 @@
   14 Mar 09 GKY Remove unused strings; remove trailing \32s replaced with spaces.
   06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
   06 Jul 09 SHL Error message for Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
 
 ***********************************************************************/
 
@@ -388,7 +392,7 @@ MENU  MAIN2_FRAME
 	 MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
          MENUITEM "",                -1,       MIS_SEPARATOR
 	 MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
-         MENUITEM "~Refresh Removable Media",  IDM_REFRESHREMOVABLES
+         MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
 	 MENUITEM "",                  -1,                 MIS_SEPARATOR
 	 MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
 	 MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
@@ -1035,7 +1039,7 @@ MENU TREECNR_POPUP
   MENUITEM "~Toggle icons",     IDM_TEXT
   MENUITEM "",                -1,       MIS_SEPARATOR
   MENUITEM "~Rescan\tCtrl + R",   IDM_RESCAN
-  MENUITEM "~Refresh Removable Media",  IDM_REFRESHREMOVABLES
+  MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
   MENUITEM "",                -1,       MIS_SEPARATOR
   MENUITEM "~Filter...\tCtrl + f",IDM_FILTER
   MENUITEM "Res~ort",           IDM_RESORT
@@ -1339,7 +1343,7 @@ MENU TREE_POPUP
   MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
   MENUITEM "",                -1,       MIS_SEPARATOR
   MENUITEM "~Rescan",           IDM_UPDATE
-  MENUITEM "~Refresh Removable Media",  IDM_REFRESHREMOVABLES
+  MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
   MENUITEM "",                -1,       MIS_SEPARATOR
   SUBMENU  "E~xpand/Collapse",  IDM_EXPANDSUBMENU
   {
@@ -1394,6 +1398,9 @@ MENU MAIN_DRIVES
 #endif
   MENUITEM "~Lock",           IDM_LOCK
   MENUITEM "U~nlock",         IDM_UNLOCK
+  MENUITEM "",                -1,       MIS_SEPARATOR
+  MENUITEM "Re~scan all drives",           IDM_RESCAN
+  MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
 }
 
 
@@ -3276,6 +3283,8 @@ STRINGTABLE
     IDS_STATERESERVENAMETEXT              "\"%s\" is a reserved state name"
     IDS_DRAGDROPDIALOGTEXT                "Drag & Drop Dialog"
     IDS_ERROREATYPETEXT                   "EA type 0x%x unexpected for %.*s"
+    IDS_RESCANALLDRIVESTEXT               "Rescan all drives"
+    IDS_REFRESHREMOVABLESTEXT             "Refresh removable media"
 
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on what I've seen while scanning your drives, I would like to suggest the following Parameters for your FM/2 program object (explanation:  each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2"

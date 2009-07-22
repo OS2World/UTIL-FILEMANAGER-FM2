@@ -31,6 +31,10 @@
   14 Mar 09 GKY Remove variables that were transferred to PCSZs
   06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
   06 Jul 09 SHL Error message for Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
 
 ***********************************************************************/
 
@@ -1001,6 +1005,8 @@
 #define IDS_STATERESERVENAMETEXT                             1012
 #define IDS_DRAGDROPDIALOGTEXT                               1013
 #define IDS_ERROREATYPETEXT                                  1014
+#define IDS_RESCANALLDRIVESTEXT                              1015
+#define IDS_REFRESHREMOVABLESTEXT                            1016
 
 //The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 //This was done as part of the conversion to a StringTable where strings are limited to 255

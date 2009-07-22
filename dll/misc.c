@@ -60,6 +60,8 @@
   28 Mar 09 GKY Add RemoveOldCnrSwitches to remove pre 3.16 style ini keys;
                 add State.version key for check
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  22 Jul 09 GKY Check if drives support EAs add driveflag for this
+  22 Jul 09 GKY Allow .LONGNAME to be displayed for FAT drives.
 
 ***********************************************************************/
 
@@ -479,18 +481,20 @@ BOOL AdjustCnrColRO(HWND hwndCnr, PCSZ title, BOOL readonly, BOOL toggle)
   return FALSE;
 }
 
-VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds)
+VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds, BOOL compare)
 {
   CHAR FileSystem[CCHMAXPATH];
   INT x;
   BOOL hasCreateDT;
   BOOL hasAccessDT;
   BOOL hasLongNames;
+  BOOL hasSubjects;
 
   if (!directory || !*directory)
     return;
   x = CheckDrive(toupper(*directory), FileSystem, NULL);
   if (x != -1) {
+    x = toupper(*directory) - 'A';
     if (!stricmp(FileSystem, HPFS) ||
 	!stricmp(FileSystem, JFS) ||
 	!stricmp(FileSystem, FAT32) ||
@@ -500,25 +504,53 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds
 	!stricmp(FileSystem, HPFS386)) {
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
-      hasLongNames = TRUE;
+      if (driveflags[x] & DRIVE_NOEASUPPORT) {
+        hasSubjects  = FALSE;
+        hasLongNames = FALSE;
+      }
+      else {
+        hasSubjects  = TRUE;
+        hasLongNames = TRUE;
+      }
     }
     else if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS)) {
       hasCreateDT = TRUE;
       hasAccessDT = FALSE;
-      hasLongNames = FALSE;
+      if (driveflags[x] & DRIVE_NOEASUPPORT) {
+        hasSubjects  = FALSE;
+        hasLongNames = FALSE;
+      }
+      else {
+        hasSubjects  = TRUE;
+        hasLongNames = TRUE;
+      }
     }
     else {
       // Assume FAT
       hasCreateDT = FALSE;
       hasAccessDT = FALSE;
-      hasLongNames = FALSE;
+      if (driveflags[x] & DRIVE_NOEASUPPORT) {
+        hasSubjects  = FALSE;
+        hasLongNames = FALSE;
+      }
+      else {
+        hasSubjects  = TRUE;
+        hasLongNames = TRUE;
+      }
     }
   }
   else {
     // Assume FAT
     hasCreateDT = FALSE;
     hasAccessDT = FALSE;
-    hasLongNames = FALSE;
+    if (driveflags[x] & DRIVE_NOEASUPPORT) {
+      hasSubjects  = FALSE;
+      hasLongNames = FALSE;
+    }
+    else {
+      hasSubjects  = TRUE;
+      hasLongNames = TRUE;
+    }
   }
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_LADATE),
@@ -535,23 +567,33 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_CRTIME),
 		  pds->detailscrtime ? hasCreateDT : FALSE,
-		  FALSE);
+                  FALSE);
+  if (pds->detailslongname && !pds->detailssubject && hasSubjects) {
+    AdjustCnrColVis(hwndCnr,
+         	    compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+		    TRUE,
+                    FALSE);
+    AdjustCnrColVis(hwndCnr,
+                    GetPString(IDS_LNAME),
+                    pds->detailslongname ? hasLongNames : FALSE,
+                    FALSE);
+    WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
+  }
+  else
+    AdjustCnrColVis(hwndCnr,
+                    GetPString(IDS_LNAME),
+                    pds->detailslongname ? hasLongNames : FALSE,
+                    FALSE);
   AdjustCnrColVis(hwndCnr,
-		  GetPString(IDS_LNAME),
-		  pds->detailslongname ? hasLongNames : FALSE,
-		  FALSE);
+                  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+                  pds->detailssubject ? hasSubjects : FALSE,
+                  FALSE);
   WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
 }
 
-VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds,
+VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds,
 			  BOOL compare)
 {
-
-  AdjustCnrColVis(hwndCnr,
-		  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
-		  pds->detailssubject,
-		  FALSE);
-
   AdjustCnrColVis(hwndCnr, GetPString(IDS_ATTR), pds->detailsattr, FALSE);
   AdjustCnrColVis(hwndCnr, GetPString(IDS_ICON), pds->detailsicon, FALSE);
   AdjustCnrColVis(hwndCnr, GetPString(IDS_LWDATE), pds->detailslwdate, FALSE);
@@ -560,6 +602,10 @@ VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds,
   AdjustCnrColVis(hwndCnr, GetPString(IDS_SIZE), pds->detailssize, FALSE);
 
   if (!directory) {
+    AdjustCnrColVis(hwndCnr,
+                    compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+                    pds->detailssubject,
+                    FALSE);
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LADATE), pds->detailsladate, FALSE);
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LATIME), pds->detailslatime, FALSE);
     AdjustCnrColVis(hwndCnr, GetPString(IDS_CRDATE), pds->detailscrdate, FALSE);
@@ -567,8 +613,9 @@ VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS * pds,
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LNAME), pds->detailslongname, FALSE);
     WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
   }
-  else
-    AdjustCnrColsForFSType(hwndCnr, directory, pds);
+  else {
+    AdjustCnrColsForFSType(hwndCnr, directory, pds, compare);
+  }
 }
 
 BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
@@ -618,47 +665,31 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     // Fill in column information for the longname.
 
     pfi = pfi->pNextFieldInfo;
-    pfi->flData = CFA_STRING | CFA_LEFT;
+    pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
     pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
     pfi->pTitleData = (PSZ)GetPString(IDS_LNAME);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszLongName);
+    pfiLastLeftCol = pfi;
+
+    // Store the current pfi value as that will be used to indicate the
+    // last column in the lefthand container window (we have a splitbar)
+    if (!dsDirCnrDefault.fSubjectInLeftPane)
+      pfiLastLeftCol = pfi;
+    else 
+      pfiLastLeftCol = pfi->pNextFieldInfo;
 
     // Fill in column info for subjects
-
-    if (dsDirCnrDefault.fSubjectInLeftPane) {
-      pfi = pfi->pNextFieldInfo;
-      pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
-      if (isCompCnr)
-	pfi->flData |= CFA_FIREADONLY;
-      pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
-      pfi->pTitleData = isCompCnr ? (PSZ)GetPString(IDS_STATUS) :
-				    (PSZ)GetPString(IDS_SUBJ);
-      pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
-      pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
-
-      // Store the current pfi value as that will be used to indicate the
-      // last column in the lefthand container window (we have a splitbar)
-
-      pfiLastLeftCol = pfi;
-    }
-    else {
-      // Store the current pfi value as that will be used to indicate the
-      // last column in the lefthand container window (we have a splitbar)
-
-      pfiLastLeftCol = pfi;
-      pfi = pfi->pNextFieldInfo;
-      pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
-      if (isCompCnr)
-	pfi->flData |= CFA_FIREADONLY;
-      pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
-      pfi->pTitleData = isCompCnr ? (PSZ)GetPString(IDS_STATUS) :
-				    (PSZ)GetPString(IDS_SUBJ);
-      pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
-      pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
-    }
+    pfi = pfi->pNextFieldInfo;
+    pfi->flData = CFA_STRING | CFA_LEFT | CFA_SEPARATOR;
+    if (isCompCnr)
+      pfi->flData |= CFA_FIREADONLY;
+    pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
+    pfi->pTitleData = isCompCnr ? (PSZ)GetPString(IDS_STATUS) :
+                                  (PSZ)GetPString(IDS_SUBJ);
+    pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
+    pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
 
     // Fill in column information for the file size
-
 
     pfi = pfi->pNextFieldInfo;
     pfi->flData = CFA_STRING | CFA_RIGHT | CFA_SEPARATOR | CFA_FIREADONLY;

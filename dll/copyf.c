@@ -23,6 +23,7 @@
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
   13 Jul 09 SHL Drop obsolete code
+  22 Jul 09 GKY Delete .LONGNAME EA if it becomes the filename on a copy or move.
 
 ***********************************************************************/
 
@@ -421,10 +422,12 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
     }
   }
   /* If root name changed make sure longname EA goes away */
-  p = RootName(oldname);
-  pp = RootName(newname);
-  if (stricmp(p, pp)) {
-    zaplong = TRUE;
+  if (*longname) {
+    p = RootName(oldname);
+    pp = RootName(longname);
+    if (stricmp(p, pp)) {
+      zaplong = TRUE;
+    }
   }
 
   DosError(FERR_DISABLEHARDERR);
@@ -517,8 +520,9 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
             make_deleteable(dir);
             DosForceDelete(dir);
           }
-          if (zaplong)
-            ZapLongName(dir);
+          if (zaplong) {
+            ret = ZapLongName(dir);
+          }
           Broadcast((HAB) 0, hwndMain, UM_UPDATERECORD, MPFROMP(dir), MPVOID);
         }
       }
