@@ -1975,14 +1975,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
 	    if (!pciL)
 	      Flesh(hwnd, pciP);
-            if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-              strcpy(szBuf, pci->pszFileName);
+            if ((fShowFSTypeInTree || fShowDriveLabelInTree) &&
+                strlen(pciP->pszFileName) < 4) {
+              strcpy(szBuf, pciP->pszFileName);
               strcat(szBuf, " [");
               strcat(szBuf, fShowFSTypeInTree ? FileSystem : volser.volumelabel);
               strcat(szBuf, "]");
-              pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+              pciP->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+              pciP->rc.pszIcon = pciP->pszDisplayName;
             }
-            pciP->rc.pszIcon = pciP->pszDisplayName;
             WinSendMsg(hwnd,
                        CM_INVALIDATERECORD,
                        MPFROMP(&pciP),
@@ -2765,17 +2766,18 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		driveflag = driveflags[x];
 		if (driveflag & DRIVE_INVALID)
 		  pci->rc.hptrIcon = hptrDunno;
-		else {
+		else  if (strlen(pci->pszFileName) < 4) {
 		  SelectDriveIcon(pci);
                 }
-                if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+                if ((fShowFSTypeInTree || fShowDriveLabelInTree) &&
+                    strlen(pci->pszFileName) < 4) {
                   strcpy(szBuf, pci->pszFileName);
                   strcat(szBuf, " [");
                   strcat(szBuf, fShowFSTypeInTree ? FileSystem : volser.volumelabel);
                   strcat(szBuf, "]");
                   pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+                  pci->rc.pszIcon = pci->pszDisplayName;
                 }
-                pci->rc.pszIcon = pci->pszDisplayName;
 		WinSendMsg(hwnd,
 			   CM_INVALIDATERECORD,
 			   MPFROMP(&pci),

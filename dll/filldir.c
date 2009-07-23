@@ -1216,7 +1216,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   CHAR szFSType[CCHMAXPATH];
   FILESTATUS4L fsa4;
   APIRET rc;
-  BOOL drivesbuilt = FALSE;
+  //BOOL drivesbuilt = FALSE;
   ULONG startdrive = 3;
   static BOOL didonce;
 
@@ -1414,8 +1414,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       driveflags[x] |= DRIVE_INVALID;
   } // for drives
 
-  PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-  drivesbuilt = TRUE;
+  //PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
+  //drivesbuilt = TRUE;
 
   // insert the drives
   if (numtoinsert && pciFirst) {
@@ -1631,7 +1631,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
   }
 
-  if (!drivesbuilt && hwndMain)
+  if (hwndMain)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
   DosSleep(16);				// 05 Aug 07 GKY 33
   fDummy = FALSE;
