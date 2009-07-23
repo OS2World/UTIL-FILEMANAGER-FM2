@@ -1636,6 +1636,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   DosSleep(16);				// 05 Aug 07 GKY 33
   fDummy = FALSE;
   DosPostEventSem(CompactSem);
+  DosReleaseMutexSem(hmtFillingTreeCnr);
 
   {
     BYTE info;

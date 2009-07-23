@@ -32,6 +32,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Remove Dos_Error2 (unused) and Runtime_Error2 (no advantage over using Runtime_Error)
+  23 Jul 09 GKY Bypass DosGetMessage for HIMEM builds (it traps)
 
 ***********************************************************************/
 
@@ -119,9 +120,11 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
   ULONG Class;				// Error class
   ULONG action;				// Error action
   ULONG Locus;				// Error location
+#ifndef HIMEM
   ULONG ulMsgLen;
   CHAR *pszMsgStart;
   CHAR *psz;
+#endif
   va_list va;
 
   if (!ulRC)
@@ -152,11 +155,11 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	  ulRC,
 	  GetPString(IDS_ERRCLASS1TEXT + (Class - 1)),
 	  GetPString(IDS_ERRACTION1TEXT + (action - 1)),
-	  GetPString(IDS_ERRLOCUS1TEXT + (Locus - 1)));
+          GetPString(IDS_ERRLOCUS1TEXT + (Locus - 1)));
+#ifndef HIMEM
   pszMsgStart = szMsg + strlen(szMsg) + 1;
   // Get message leaving space for NL separator
-  if (!DosGetMessage
-      (NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, "OSO001.MSG", &ulMsgLen)
+  if (!DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, "OSO001.MSG", &ulMsgLen)
       || !DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC,
 			"OSO001H.MSG", &ulMsgLen)) {
     // Got message
@@ -184,6 +187,7 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	psz++;
     }
   }
+#endif
 
   return showMsg(mb_type | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_DOSERR2TEXT),
 		 szMsg, TRUE);

@@ -856,7 +856,6 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                  MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
       DosRequestMutexSem(hmtFillingTreeCnr, SEM_INDEFINITE_WAIT);
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
-      DosReleaseMutexSem(hmtFillingTreeCnr);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);
 	fOkayMinimize = FALSE;
@@ -1903,7 +1902,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!fAlertBeepOff)
 	    DosBeep(50, 100);
 	  if (hwndStatus)
-	    WinSetWindowText(hwndStatus, GetPString(IDS_RESCANSUGTEXT));
+            WinSetWindowText(hwndStatus, GetPString(IDS_RESCANSUGTEXT));
+          DosReleaseMutexSem(hmtFillingTreeCnr);
 	  return 0;
 	}
 	DosError(FERR_DISABLEHARDERR);
@@ -1922,7 +1922,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		break;
 	      }
 	    } // for
-	    RemoveCnrItems(hwnd, pciP, 1, CMA_FREE | CMA_INVALIDATE);
+            RemoveCnrItems(hwnd, pciP, 1, CMA_FREE | CMA_INVALIDATE);
+            DosReleaseMutexSem(hmtFillingTreeCnr);
 	    return 0;
 	  }
 	}
@@ -1993,7 +1994,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    driveserial[x] = -1;
 	    UnFlesh(hwnd, pci);
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-	    PostMsg(hwnd, UM_SETUP2, MPFROMP(pci), MPFROMLONG(status));
+            PostMsg(hwnd, UM_SETUP2, MPFROMP(pci), MPFROMLONG(status));
+            DosReleaseMutexSem(hmtFillingTreeCnr);
 	    return 0;
 	  }
 	}
@@ -2015,17 +2017,21 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (IsOk || (ffb.attrFile & FILE_DIRECTORY)) {
 	    if ((shiftstate & (KC_CTRL | KC_ALT)) == (KC_CTRL | KC_ALT)) {
 	      PostMsg(hwnd,
-		      WM_COMMAND, MPFROM2SHORT(IDM_SHOWALLFILES, 0), MPVOID);
+                      WM_COMMAND, MPFROM2SHORT(IDM_SHOWALLFILES, 0), MPVOID);
+              DosReleaseMutexSem(hmtFillingTreeCnr);
 	      return 0;
 	    }
 	    if ((shiftstate & (KC_CTRL | KC_SHIFT)) == (KC_CTRL | KC_SHIFT)) {
-	      OpenObject(pci->pszFileName, Settings, dcd->hwndFrame);
+              OpenObject(pci->pszFileName, Settings, dcd->hwndFrame);
+              DosReleaseMutexSem(hmtFillingTreeCnr);
 	      return 0;
 	    }
 	    if (!(shiftstate & (KC_CTRL | KC_SHIFT))) {
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent)) {
-		if (FindDirCnrByName(pci->pszFileName, TRUE))
-		  return 0;
+                if (FindDirCnrByName(pci->pszFileName, TRUE)) {
+                  DosReleaseMutexSem(hmtFillingTreeCnr);
+                  return 0;
+                }
 	      }
 	    }
 	    if ((shiftstate & KC_CTRL) ||
@@ -2047,6 +2053,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcpy(s, Details);
 	      }
 	      OpenObject(pci->pszFileName, s, dcd->hwndFrame);
+              DosReleaseMutexSem(hmtFillingTreeCnr);
 	      return 0;
 	    }
 	    if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
