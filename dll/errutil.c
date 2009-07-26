@@ -32,7 +32,8 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Remove Dos_Error2 (unused) and Runtime_Error2 (no advantage over using Runtime_Error)
-  23 Jul 09 GKY Bypass DosGetMessage for HIMEM builds (it traps)
+  23 Jul 09 GKY Add low mem buffers for the msg file name so DosGetMessage
+                works in HIMEM builds
 
 ***********************************************************************/
 
@@ -117,19 +118,23 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
+  CHAR *szMsgFile, *szMsgFileH;
   ULONG Class;				// Error class
   ULONG action;				// Error action
-  ULONG Locus;				// Error location
-#ifndef HIMEM
+  ULONG Locus;                          // Error location
   ULONG ulMsgLen;
   CHAR *pszMsgStart;
   CHAR *psz;
-#endif
   va_list va;
 
   if (!ulRC)
     return MBID_ENTER;			// Should not have been called
 
+  //Allocate low memory for DosGetMessage (16 bit)
+  DosAllocMem((PVOID) &szMsgFile, CCHMAXPATH,
+	       PAG_COMMIT | PAG_READ | PAG_WRITE);
+  DosAllocMem((PVOID) &szMsgFileH, CCHMAXPATH,
+	       PAG_COMMIT | PAG_READ | PAG_WRITE);
   // Format caller's message
   va_start(va, pszFmt);
   szMsg[sizeof(szMsg) - 1] = 0;
@@ -156,12 +161,15 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	  GetPString(IDS_ERRCLASS1TEXT + (Class - 1)),
 	  GetPString(IDS_ERRACTION1TEXT + (action - 1)),
           GetPString(IDS_ERRLOCUS1TEXT + (Locus - 1)));
-#ifndef HIMEM
   pszMsgStart = szMsg + strlen(szMsg) + 1;
+  strcpy(szMsgFile, "OSO001.MSG");
+  strcpy(szMsgFileH, "OSO001H.MSG");
   // Get message leaving space for NL separator
-  if (!DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, "OSO001.MSG", &ulMsgLen)
+  if (!DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, szMsgFile, &ulMsgLen)
       || !DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC,
-			"OSO001H.MSG", &ulMsgLen)) {
+                        szMsgFileH, &ulMsgLen)) {
+    DosFreeMem(szMsgFile);
+    DosFreeMem(szMsgFileH);
     // Got message
     pszMsgStart[ulMsgLen + 1] = 0;	// Terminate
     *(pszMsgStart - 1) = '\n';		// Stuff NL before message text
@@ -187,7 +195,6 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	psz++;
     }
   }
-#endif
 
   return showMsg(mb_type | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_DOSERR2TEXT),
 		 szMsg, TRUE);
