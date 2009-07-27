@@ -459,8 +459,10 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 	eaop.fpFEA2List = pfealist;
 	eaop.oError = 0;
 	rc = DosQueryPathInfo(pci->pszFileName, FIL_QUERYEASFROMLIST,
-			      (PVOID) &eaop, (ULONG) sizeof(EAOP2));
-        if (rc) {
+                              (PVOID) &eaop, (ULONG) sizeof(EAOP2));
+        // Prevent this error from occuring when scanning a directory
+        // that contains a locked data file
+        if (rc && rc != ERROR_SHARING_VIOLATION) {
           CHAR s[80];
           sprintf(s, "%s %s",PCSZ_DOSQUERYPATHINFO, "%s");
           Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,

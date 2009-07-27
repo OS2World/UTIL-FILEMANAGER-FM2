@@ -118,7 +118,7 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
-  CHAR *szMsgFile, *szMsgFileH;
+  CHAR szMsgFile[20], szMsgFileH[20];
   ULONG Class;				// Error class
   ULONG action;				// Error action
   ULONG Locus;                          // Error location
@@ -130,11 +130,6 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
   if (!ulRC)
     return MBID_ENTER;			// Should not have been called
 
-  //Allocate low memory for DosGetMessage (16 bit)
-  DosAllocMem((PVOID) &szMsgFile, CCHMAXPATH,
-	       PAG_COMMIT | PAG_READ | PAG_WRITE);
-  DosAllocMem((PVOID) &szMsgFileH, CCHMAXPATH,
-	       PAG_COMMIT | PAG_READ | PAG_WRITE);
   // Format caller's message
   va_start(va, pszFmt);
   szMsg[sizeof(szMsg) - 1] = 0;
@@ -168,8 +163,6 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
   if (!DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, szMsgFile, &ulMsgLen)
       || !DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC,
                         szMsgFileH, &ulMsgLen)) {
-    DosFreeMem(szMsgFile);
-    DosFreeMem(szMsgFileH);
     // Got message
     pszMsgStart[ulMsgLen + 1] = 0;	// Terminate
     *(pszMsgStart - 1) = '\n';		// Stuff NL before message text

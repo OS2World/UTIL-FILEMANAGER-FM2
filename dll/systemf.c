@@ -1096,7 +1096,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 		DosCloseQueue(hTermQ);
 		hTermQ = (HQUEUE)0;     // Try to survive
 		DosExitCritSec();
-		Dos_Error(MB_ENTER,rc,HWND_DESKTOP,pszSrcFile,__LINE__,"DoCreateEventSem");
+		Dos_Error(MB_ENTER,rc,HWND_DESKTOP,pszSrcFile,__LINE__, PCSZ_DOSCREATEEVENTSEM);
 	    }
 	    // if (!rc) fprintf(stderr,"%s %d qcreated ptib %x hTermQ %x\n",__FILE__, __LINE__,ptib,hTermQ);
 	  }

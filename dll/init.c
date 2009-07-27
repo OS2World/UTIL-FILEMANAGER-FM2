@@ -270,6 +270,7 @@ PCSZ LONGNAME             = ".LONGNAME";
 CHAR *NullStr             = "";
 PCSZ PCSZ_CM_ALLOCRECORD  = "CM_ALLOCRECORD";
 PCSZ PCSZ_DOSCREATEMUTEXSEM =  "DosCreateMutexSem";
+PCSZ PCSZ_DOSCREATEEVENTSEM =  "DosCreateEventSem";
 PCSZ PCSZ_DOSDUPHANDLE    =  "DosDupHandle";
 PCSZ PCSZ_DOSGETINFOBLOCKS = "DosGetInfoBlocks";
 PCSZ PCSZ_DOSQUERYPATHINFO = "DosQueryPathInfo";
@@ -1097,7 +1098,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
               PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateEventSem(NULL, &hevInitialCnrScanComplete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
+              PCSZ_DOSCREATEEVENTSEM);
 
   /*
    * set some defaults (note: everything else automatically initialized
