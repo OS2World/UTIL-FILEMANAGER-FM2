@@ -191,6 +191,7 @@ CHAR DateSeparator[2];
 CHAR TimeSeparator[2];
 ULONG ulTimeFmt;
 ULONG ulDateFmt;
+BOOL fDontSuggestAgain;
 BOOL fInitialDriveScan;
 BOOL fAmAV2;
 BOOL fChangeTarget;
@@ -1238,6 +1239,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   pszTreeEnvVarList = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!pszTreeEnvVarList)
     return 0; //already complained
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "DontSuggestAgain", &fDontSuggestAgain, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowTarget", &fShowTarget, &size);
   size = sizeof(BOOL);

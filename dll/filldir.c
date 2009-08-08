@@ -1645,7 +1645,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     BOOL includesyours = FALSE;
 
     // 10 Jan 08 SHL fixme to understand fFirstTime
-    if (*suggest || (!(driveflags[1] & DRIVE_IGNORE) && fFirstTime)) {
+    if (!fDontSuggestAgain &&(*suggest || (!(driveflags[1] & DRIVE_IGNORE) && fFirstTime))) {
       if (!DosDevConfig(&info, DEVINFO_FLOPPY) && info == 1) {
 	if (!*suggest) {
 	  *suggest = '/';
@@ -1664,12 +1664,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	}
       }
       strcat(suggest, " %*");
-      if (saymsg(MB_YESNO | MB_ICONEXCLAMATION,
-		 (hwndParent) ? hwndParent : hwndCnr,
-		 GetPString(IDS_SUGGESTTITLETEXT),
-		 GetPString(IDS_SUGGEST1TEXT),
-		 (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
-		 suggest) == MBID_YES) {
+      saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
+	     (hwndParent) ? hwndParent : hwndCnr,
+	     GetPString(IDS_SUGGESTTITLETEXT),
+	     GetPString(IDS_SUGGEST1TEXT),
+	     (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
+             suggest);
+      if (MBID_YES) {
 	char s[64];
 
 	sprintf(s, "PARAMETERS=%s", suggest);
@@ -1687,6 +1688,10 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	WinCreateObject(WPProgram,
 			"Global File Viewer", s, FM3Tools, CO_UPDATEIFEXISTS);
 	WinCreateObject(WPProgram, "Databar", s, FM3Tools, CO_UPDATEIFEXISTS);
+      }
+      else if (MBID_CANCEL) {
+        fDontSuggestAgain = TRUE;
+        PrfWriteProfileData(fmprof, appname, "DontSuggestAgain", &fDontSuggestAgain, sizeof(BOOL));
       }
     }
   }

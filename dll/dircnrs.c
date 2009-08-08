@@ -366,10 +366,12 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
       NOTIFYRECORDENTER nr;
 
-      memset(&nr, 0, sizeof(NOTIFYRECORDENTER));
-      nr.hwndCnr = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), DIR_CNR);
-      WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
-		 WM_CONTROL, MPFROM2SHORT(DIR_CNR, CN_ENTER), MPFROMP(&nr));
+      if (WinQueryWindowUShort(hwnd, QWS_ID) != DIR_FOLDERICON) {
+        memset(&nr, 0, sizeof(NOTIFYRECORDENTER));
+        nr.hwndCnr = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), DIR_CNR);
+        WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
+                   WM_CONTROL, MPFROM2SHORT(DIR_CNR, CN_ENTER), MPFROMP(&nr));
+      }
     }
     break;
 
