@@ -26,6 +26,7 @@
   28 Dec 08 GKY Added Databar to utilities menu
   27 Jun 09 GKY Remove IDM_DRIVEATEXT (3950) Drivebar update
   13 Jul 09 SHL Rename timer ids
+  12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
 
   Align with spaces only - no tabs please
 
@@ -403,6 +404,9 @@
 #define IDM_COMMANDLINESUBMENU  2013
 #define IDM_SYSTEMSUBMENU   2014
 #define IDM_BOOKSELFSUBMENU 2015
+#define IDM_INIVIEWERFM2    2016
+#define IDM_INIVIEWERSUBMENU 2017
+#define IDM_INIVIEWERSYS    2018
 
 #define IDM_CONFIGMENU      3000
 #define IDM_EDITASSOC       3001

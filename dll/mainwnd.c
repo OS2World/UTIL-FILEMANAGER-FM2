@@ -96,6 +96,7 @@
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
+  12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
 
 ***********************************************************************/
 
@@ -5342,6 +5343,14 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case IDM_INIVIEWER:
     StartIniEditor(hwnd, NULL, 4);
+    break;
+
+  case IDM_INIVIEWERSYS:
+    StartIniEditor(hwnd, "SYS", 4);
+    break;
+
+  case IDM_INIVIEWERFM2:
+    StartIniEditor(hwnd, profile, 4);
     break;
 
   case IDM_EDITASSOC:

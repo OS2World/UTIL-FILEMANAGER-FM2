@@ -34,6 +34,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   14 Mar 09 GKY Additional strings move to PCSZs
+  12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
 
 ***********************************************************************/
 
@@ -1511,7 +1512,7 @@ MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 static ULONG flFrameFlags = FCF_SYSMENU | FCF_SIZEBORDER | FCF_ICON |
   FCF_TITLEBAR | FCF_MINMAX | FCF_MENU | FCF_ACCELTABLE | FCF_NOBYTEALIGN;
 
-HWND StartIniEditor(HWND hwnd, CHAR * fname, INT flags)
+HWND StartIniEditor(HWND hwnd, CHAR *fname, INT flags)
 {
   /*
    * create an ini editor window
@@ -2090,10 +2091,17 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       Runtime_Error(pszSrcFile, __LINE__, NULL);
     else {
       if (mp1) {
-	strcpy(inidata->ininame, (CHAR *)mp1);
-	inidata->hini = PrfOpenProfile(WinQueryAnchorBlock(hwnd),
-				       inidata->ininame);
-	free(mp1);
+        if (!strcmp((CHAR *)mp1, "SYS")) {
+          inidata->hini = HINI_SYSTEMPROFILE;
+          free(mp1);
+        }
+        else
+        {
+          strcpy(inidata->ininame, (CHAR *)mp1);
+          inidata->hini = PrfOpenProfile(WinQueryAnchorBlock(hwnd),
+                                         inidata->ininame);
+          free(mp1);
+        }
       }
       else
 	inidata->hini = HINI_USERPROFILE;

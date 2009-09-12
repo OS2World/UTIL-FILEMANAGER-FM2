@@ -31,6 +31,7 @@
   21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
                 letter windows; Use button ID to identify drive letter for processing.
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
+  12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
 
 ***********************************************************************/
 
@@ -435,6 +436,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
   case IDM_WINFULLSCREEN:
   case IDM_DOSCOMMANDLINE:
   case IDM_INIVIEWER:
+  case IDM_INIVIEWERFM2:
+  case IDM_INIVIEWERSYS:
   case IDM_EDITASSOC:
   case IDM_COMMANDLINE:
   case IDM_KILLPROC:

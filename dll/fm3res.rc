@@ -52,6 +52,7 @@
                 loads drive root directory in directory container or expands drive tree
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
+  12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini              
 
 ***********************************************************************/
 
@@ -235,7 +236,12 @@ MENU  MAIN_FRAME
 	 MENUITEM "Compar~e directories...",IDM_COMPARE
          MENUITEM "DataBar",           IDM_DATABAR
 	 MENUITEM "",                  -1,               MIS_SEPARATOR
-	 MENUITEM "~INI viewer",       IDM_INIVIEWER
+	 SUBMENU "~INI viewer", IDM_INIVIEWERSUBMENU
+         {
+                MENUITEM "OS/2 ~User INI",    IDM_INIVIEWER
+                MENUITEM "OS/2 ~Sys INI",     IDM_INIVIEWERSYS
+                MENUITEM "~FM2 INI",          IDM_INIVIEWERFM2
+         }
 	 MENUITEM "~Kill processes",   IDM_KILLPROC
 	 MENUITEM "I~nstant CMD file", IDM_INSTANT
 	 SUBMENU  "~Bookshelf",        IDM_BOOKSELFSUBMENU
