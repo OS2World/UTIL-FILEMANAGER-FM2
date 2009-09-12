@@ -83,6 +83,9 @@
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   22 Jul 09 GKY Fix failure to restore the notebook setting for saving container states or not
+  12 Sep 09 GKY Change protectonly check to check for VKBD being loaded instead of starting
+                command.com. Prevents hang (at least until a Dos program is started) on a system
+                that has a broken MDOS install.
 
 ***********************************************************************/
 
@@ -1172,11 +1175,20 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
     // Check to see if we are running protect only
     if (!xDosQueryAppType(GetCmdSpec(TRUE), &ulAppType)) {
-      ret = runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED,
-		    (HWND) 0, pszSrcFile, __LINE__, NULL, NULL,
-		    "%s /C exit", GetCmdSpec(TRUE));
-      if (ret == ERROR_SMG_INVALID_PROGRAM_TYPE)
-	fProtectOnly = TRUE;
+      HMODULE hmod;
+      APIRET rc;
+
+      rc = DosQueryModuleHandle("VKBD", &hmod);
+      if (rc != NO_ERROR) {
+        fProtectOnly = TRUE;
+        DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VKBD returned %d fProtectOnly=%d", rc, fProtectOnly);
+      }
+      else {
+        rc = DosQueryModuleHandle("VMOUSE", &hmod);
+        if (rc != NO_ERROR)
+          fProtectOnly = TRUE;
+        DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VMOUSE returned %d fProtectOnly=%d", rc, fProtectOnly);
+      }
     }
     else
       fProtectOnly = TRUE;
