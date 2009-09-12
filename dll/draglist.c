@@ -22,6 +22,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xmallocz where appropriate
   08 Mar 09 GKY Additional strings move to PCSZs
+  12 Sep 09 GKY Fix (probably spurrious) error message generated on drag of
+                items from a pmmail mail message (PMERR_INVALID_PARAMETER)
 
 ***********************************************************************/
 
@@ -69,17 +71,18 @@ PCSZ DRMDRFLIST = "<DRM_OS2FILE,DRF_UNKNOWN>," "<DRM_DISCARD,DRF_UNKNOWN>," "<DR
 
 VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo)
 {
-  PDRAGITEM pDItem;
-  ULONG cDitem;
-  ULONG curitem;
-  APIRET ok;
 
-# ifdef USE_FAST_FREE
+# ifdef  USE_FAST_FREE
   if (!DrgDeleteDraginfoStrHandles(pDInfo)) {
     Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 	      "DrgDeleteDraginfoStrHandles");
   }
 # else // The slow way
+  PDRAGITEM pDItem;
+  ULONG cDitem;
+  ULONG curitem;
+  APIRET ok;
+
   cDitem = DrgQueryDragitemCount(pDInfo);
   for (curitem = 0; curitem < cDitem; curitem++) {
     pDItem = DrgQueryDragitemPtr(pDInfo, curitem);
@@ -90,18 +93,27 @@ VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo)
     else {
       ok = DrgDeleteStrHandle(pDItem->hstrType);
       if (!ok) {
-	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgDeleteStrHandle(0x%x) hstrType",pDItem->hstrType);
+        HAB hab = WinQueryAnchorBlock(hwnd);
+        PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
+        if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
+	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		    "DrgDeleteStrHandle(0x%x) hstrType",pDItem->hstrType);
       }
       ok = DrgDeleteStrHandle(pDItem->hstrRMF);
       if (!ok) {
-	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgDeleteStrHandle(0x%x) hstrRMF",pDItem->hstrRMF);
+        HAB hab = WinQueryAnchorBlock(hwnd);
+        PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
+        if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
+	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		    "DrgDeleteStrHandle(0x%x) hstrRMF",pDItem->hstrRMF);
       }
       ok = DrgDeleteStrHandle(pDItem->hstrContainerName);
       if (!ok) {
-	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgDeleteStrHandle(0x%x) hstrContainerName",pDItem->hstrContainerName);
+        HAB hab = WinQueryAnchorBlock(hwnd);
+        PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
+        if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
+	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		    "DrgDeleteStrHandle(0x%x) hstrContainerName",pDItem->hstrContainerName);
       }
       ok = DrgDeleteStrHandle(pDItem->hstrSourceName);
       if (!ok) {
