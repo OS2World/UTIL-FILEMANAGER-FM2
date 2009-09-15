@@ -740,7 +740,7 @@
 #define UM_CLICKED3         (WM_USER + 72)
 #define UM_HIDENOTSELECTED  (WM_USER + 73)
 #define UM_FIRSTTIME        (WM_USER + 74)
-// #define UM_ACTIONSTATE      (WM_USER + 75)   // 13 Sep 09 SHL unused SHL
+#define UM_GREP             (WM_USER + 75)   // 15 Sep 09 SHL
 #define UM_FILLUSERLIST     (WM_USER + 75)
 #define UM_CONTAINERDIR     (WM_USER + 76)
 #define UM_SETUP4           (WM_USER + 77)

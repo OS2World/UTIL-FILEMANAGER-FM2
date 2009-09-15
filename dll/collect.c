@@ -66,8 +66,9 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   12 Jul 09 GKY Add szFSType to FillInRecordFromFSA use to bypass EA scan and size formatting
-                for tree container
+		for tree container
   13 Jul 09 GKY Fixed double free of memory buffer in UM_COLLECTFROMFILE
+  15 Sep 09 SHL Use UM_GREP when passing pathname
 
 ***********************************************************************/
 
@@ -838,7 +839,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      if (pci) {
 		dcd->ullTotalBytes += FillInRecordFromFSA(dcd->hwndCnr, pci,
 							  fullname,
-							  &fs4, FALSE, 0, dcd);
+							  &fs4, FALSE, NULL, dcd);
 		memset(&ri, 0, sizeof(RECORDINSERT));
 		ri.cb = sizeof(RECORDINSERT);
 		ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -1340,8 +1341,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		p = pci->pszFileName;
 	    }
 	    CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
-            if (!fMoreButtons) {
-              DateFormat(szDate, pci->date);
+	    if (!fMoreButtons) {
+	      DateFormat(szDate, pci->date);
 	      sprintf(s, " %s  %s %02u%s%02u%s%02u  [%s]  %s",
 		      tb, szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
 		      TimeSeparator, pci->time.seconds, pci->pszDispAttr, p);
@@ -1358,8 +1359,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    fStatus2Used = TRUE;
 	  }
 	  if (fMoreButtons) {
-            WinSetWindowText(hwndName, pci->pszFileName);
-            DateFormat(szDate, pci->date);
+	    WinSetWindowText(hwndName, pci->pszFileName);
+	    DateFormat(szDate, pci->date);
 	    sprintf(s, "%s %02u%s%02u%s%02u",
 		    szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
 		    TimeSeparator, pci->time.seconds);
@@ -1943,6 +1944,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_GREP:
+      case UM_GREP:
 	if (dcd->amextracted) {
 	  saymsg(MB_OK | MB_ICONASTERISK,
 		 hwnd,
@@ -1955,7 +1957,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  GrepInfo = xmallocz(sizeof(GREPINFO), pszSrcFile, __LINE__);
 	  if (GrepInfo) {
 	    GrepInfo->hwnd = &hwnd;
-	    if (mp2)
+	    if (msg == UM_GREP && mp2)
 	      GrepInfo->szGrepPath = mp2;
 	    if (WinDlgBox(HWND_DESKTOP, hwnd, GrepDlgProc,
 			  FM3ModHandle, GREP_FRAME, (PVOID) GrepInfo)) {
@@ -2731,13 +2733,13 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		      p = pci->pszFileName;
 		  }
 		  CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
-                  if (!fMoreButtons) {
-                    DateFormat(szDate, pci->date);
+		  if (!fMoreButtons) {
+		    DateFormat(szDate, pci->date);
 		    sprintf(s, " %s  %s %02u%s%02u%s%02u  [%s]  %s",
 			    tb, szDate, pci->time.hours, TimeSeparator,
 			    pci->time.minutes, TimeSeparator, pci->time.seconds,
-                            pci->pszDispAttr, p);
-                  }
+			    pci->pszDispAttr, p);
+		  }
 		  else {
 		    if (pci->cbFile + pci->easize > 1024)
 		      CommaFmtULL(tf, sizeof(tf), pci->cbFile + pci->easize,
@@ -2751,8 +2753,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		  WinSetWindowText(hwndStatus2, s);
 		}
 		if (fMoreButtons) {
-                  WinSetWindowText(hwndName, pci->pszFileName);
-                  DateFormat(szDate, pci->date);
+		  WinSetWindowText(hwndName, pci->pszFileName);
+		  DateFormat(szDate, pci->date);
 		  sprintf(s, "%s %02u%s%02u%s%02u",
 			  szDate, pci->time.hours, TimeSeparator, pci->time.minutes,
 			  TimeSeparator, pci->time.seconds);

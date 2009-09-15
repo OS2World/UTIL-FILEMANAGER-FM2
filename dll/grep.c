@@ -527,7 +527,6 @@ static VOID DoAllSubdirs(GREP *grep,
             }
           }
           DoAllSubdirs(grep, searchPath, TRUE, fle, numfls, pitdSleep, pitdReport);
-          // DosSleep(0); //26 Aug 07 GKY 1     // 07 Feb 08 SHL
         }
       }
       ulFindCnt = 1;

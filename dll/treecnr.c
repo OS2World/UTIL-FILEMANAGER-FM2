@@ -75,6 +75,7 @@
   22 Jul 09 GKY Consolidated driveflag setting code in DriveFlagsOne
   22 Jul 09 GKY Streamline scanning code for faster Tree rescans
   14 Sep 09 SHL Drop experimental code
+  15 Sep 09 SHL Use UM_GREP when passing pathname
 
 ***********************************************************************/
 
@@ -2702,7 +2703,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
 	  if (pci && (INT) pci != -1)
 	    PostMsg(Collector, WM_COMMAND,
-		    MPFROM2SHORT(IDM_GREP, 0), MPFROMP(pci->pszFileName));
+		    MPFROM2SHORT(UM_GREP, 0), MPFROMP(pci->pszFileName));
 	  else
 	    PostMsg(Collector, WM_COMMAND,
 		    MPFROM2SHORT(IDM_GREP, 0), MPVOID);
