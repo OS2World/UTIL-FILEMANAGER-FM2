@@ -3,12 +3,13 @@
 
   $Id$
 
-  <<description here>>
+  Worker thread interface
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
+  14 Sep 09 SHL Drop experimental code
 
 ***********************************************************************/
 
@@ -49,8 +50,5 @@ extern FILE *LogFileHandle;
 
 VOID Action(VOID * args);
 VOID MassAction(VOID * args);
-
-MRESULT EXPENTRY ActionWMTimer(HWND hwnd, MPARAM mp1, MPARAM mp2);
-MRESULT EXPENTRY ActionUMWorkerState(HWND hwnd, MPARAM mp1, MPARAM mp2);
 
 #endif	// WORKER_H

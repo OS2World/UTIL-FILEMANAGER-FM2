@@ -66,6 +66,7 @@
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   22 Jul 09 SHL Cleanup of SETFOCUS code
+  14 Sep 09 SHL Drop experimental code
 
 ***********************************************************************/
 
@@ -143,7 +144,7 @@
 #include "wrappers.h"			// xfree
 #include "fortify.h"
 #include "excputil.h"			// 06 May 08 SHL added
-#include "pathutil.h"                   // AddBackslashToPath
+#include "pathutil.h"			// AddBackslashToPath
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -367,10 +368,10 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       NOTIFYRECORDENTER nr;
 
       if (WinQueryWindowUShort(hwnd, QWS_ID) != DIR_FOLDERICON) {
-        memset(&nr, 0, sizeof(NOTIFYRECORDENTER));
-        nr.hwndCnr = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), DIR_CNR);
-        WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
-                   WM_CONTROL, MPFROM2SHORT(DIR_CNR, CN_ENTER), MPFROMP(&nr));
+	memset(&nr, 0, sizeof(NOTIFYRECORDENTER));
+	nr.hwndCnr = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), DIR_CNR);
+	WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
+		   WM_CONTROL, MPFROM2SHORT(DIR_CNR, CN_ENTER), MPFROMP(&nr));
       }
     }
     break;
@@ -807,8 +808,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    CM_QUERYRECORD,
 			    MPFROMP(pci),
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-          if (!pciC) {
-            Stubby(dcd->hwndCnr, pci);
+	  if (!pciC) {
+	    Stubby(dcd->hwndCnr, pci);
 	  }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
@@ -1150,6 +1151,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  wk->hwndClient = dcd->hwndClient;
 	  wk->li = (LISTINFO *) mp1;
 	  strcpy(wk->directory, dcd->directory);
+
 	  if (xbeginthread(Action,
 			   122880,
 			   wk,
@@ -1350,23 +1352,24 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // Getting focus
       if (dcd && hwndStatus) {
 	/* put name of our window (directory name) on status line */
-      PCNRITEM pci = NULL;
-      if (fAutoView && hwndMain) {
-	pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
-			 MPFROMSHORT(CRA_CURSORED));
-	if (pci && (INT) pci != -1 &&
-	    (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_SLOW)))
-	  WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->pszFileName), MPVOID);
-	else
-	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
-      }
-      if (*dcd->directory) {
-	if (hwndMain)
-	  WinSendMsg(hwndMain,
-		     UM_SETUSERLISTNAME, MPFROMP(dcd->directory), MPVOID);
-	else
-	  add_udir(FALSE, dcd->directory);
-      }
+	PCNRITEM pci = NULL;
+	if (fAutoView && hwndMain) {
+	  pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
+			   MPFROMSHORT(CRA_CURSORED));
+	  if (pci && (INT) pci != -1 &&
+	      (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_SLOW)))
+	    WinSendMsg(hwndMain, UM_LOADFILE, MPFROMP(pci->pszFileName), MPVOID);
+	  else
+	    WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
+	}
+	if (*dcd->directory) {
+	  if (hwndMain)
+	    WinSendMsg(hwndMain,
+		       UM_SETUSERLISTNAME, MPFROMP(dcd->directory), MPVOID);
+	  else
+	    add_udir(FALSE, dcd->directory);
+	}
+
       if (hwndMain)
 	PostMsg(hwndMain, UM_ADVISEFOCUS, MPFROMLONG(dcd->hwndFrame), MPVOID);
     }
@@ -1447,7 +1450,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pci = WinSendMsg(hwnd,
 			   CM_QUERYRECORDEMPHASIS,
 			   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-          if (pci && (INT) pci != -1) {
+	  if (pci && (INT) pci != -1) {
 	    if (fSplitStatus && hwndStatus2) {
 	      CommaFmtULL(tb, sizeof(tb), pci->cbFile + pci->easize, ' ');
 	      if (!fMoreButtons) {
@@ -1598,7 +1601,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
       if (!fInitialDriveScan)
-        PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
+	PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1614,7 +1617,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 	      DIR_SORT), dcd->sortFlags, FALSE);
       SayView(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-                              DIR_VIEW), dcd->flWindowAttr);
+			      DIR_VIEW), dcd->flWindowAttr);
     } else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
     return 0;
@@ -1820,8 +1823,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      INT test;
 	      PCNRITEM pci;
 
-              strcpy(newfile, dcd->directory);
-              AddBackslashToPath(newfile);
+	      strcpy(newfile, dcd->directory);
+	      AddBackslashToPath(newfile);
 	      //if (newfile[strlen(newfile) - 1] != '\\')
 	      //  strcat(newfile, "\\");
 	      strcat(newfile, sip.ret);
@@ -2420,12 +2423,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_SWITCH:
-        if (mp2) {
+	if (mp2) {
 	  strcpy(dcd->previous, dcd->directory);
-          strcpy(dcd->directory, (CHAR *)mp2);
+	  strcpy(dcd->directory, (CHAR *)mp2);
 	  //DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-          //DosExitCritSec();
+	  //DosExitCritSec();
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
 	    //DosEnterCritSec(); // GKY 11-27-08
@@ -2446,8 +2449,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  CHAR tempname1[CCHMAXPATH], tempname2[CCHMAXPATH];
 
-          strcpy(tempname1, dcd->directory);
-          AddBackslashToPath(tempname1);
+	  strcpy(tempname1, dcd->directory);
+	  AddBackslashToPath(tempname1);
 	  //if (tempname1[strlen(tempname1) - 1] != '\\')
 	  //  strcat(tempname1, "\\");
 	  strcat(tempname1, "..");
@@ -2800,24 +2803,24 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     volser.serial)) {
 		  if (Flesh(hwnd, pci) &&
 		      SHORT2FROMMP(mp1) == CN_EXPANDTREE &&
-                      !dcd->suspendview && fTopDir) {
-                    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
-                    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
-                  }
+		      !dcd->suspendview && fTopDir) {
+		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+		    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+		  }
 		}
 		driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
 	      }
 	    }
 	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-              if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir) {
+	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir) {
 		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
-                //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
-              }
+		//DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+	      }
 	    }
-            if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview) {
+	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview) {
 	      WinSendMsg(hwnd, UM_FILTER, MPVOID, MPVOID);
-              //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
-            }
+	      //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+	    }
 	  }
 	}
 	break;
@@ -3479,9 +3482,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    appname, "VDirSizePos", &swp, sizeof(swp));
     }
     break;
-
-  case WM_TIMER:
-    return ActionWMTimer(hwnd, mp1, mp2);
 
   case WM_CLOSE:
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);

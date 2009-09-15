@@ -27,6 +27,7 @@
   27 Jun 09 GKY Remove IDM_DRIVEATEXT (3950) Drivebar update
   13 Jul 09 SHL Rename timer ids
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
+  14 Sep 09 SHL Drop experimental code
 
   Align with spaces only - no tabs please
 
@@ -75,7 +76,9 @@
 // #define ID_TIMER4           19       // 13 Jul 09 SHL Dropped
 #define ID_NEWVIEW_TIMER    20
 // #define ID_TIMER6           21       // 13 Jul 09 SHL Dropped
+#define ID_LED_TIMER        22
 
+// Window ids, etc.
 #define MAIN_STATUS2        19
 
 #define OBJ_FRAME           20
@@ -631,37 +634,37 @@
 #define IDM_SELECTSAMECONTENT 10038
 #define IDM_UNHIDEALL         10039
 
-// #define PP_MAX    PP_MENUDISABLEBGNDCOLORINDEX	// Unused, 13 Sep 08 JBS
-// #define PP_MAXBUF 384				// Unused, 13 Sep 08 JBS
+// #define PP_MAX    PP_MENUDISABLEBGNDCOLORINDEX       // Unused, 13 Sep 08 JBS
+// #define PP_MAXBUF 384                                // Unused, 13 Sep 08 JBS
 
 #ifndef MM_PORTHOLEINIT
 #define MM_PORTHOLEINIT   0x01fb
 #endif
-// #ifndef CCS_MINIICONS	defined in Open Watcom headers
+// #ifndef CCS_MINIICONS     defined in Open Watcom headers
 // #define CCS_MINIICONS     0x0800
 // #endif
-// #ifndef CRA_SOURCE			// defined in Open Watcom headers
+// #ifndef CRA_SOURCE                   // defined in Open Watcom headers
 // #define CRA_SOURCE        0x00004000
 // #endif
-// #ifndef CV_EXACTMATCH		// defined as CV_EXACTLENGTH in Open Watcom headers
+// #ifndef CV_EXACTMATCH                // defined as CV_EXACTLENGTH in Open Watcom headers
 // #define CV_EXACTMATCH     0x10000000
 // #endif
-// #ifndef CBN_SETFOCUS			// Unused, 13 Sep 08 JBS
+// #ifndef CBN_SETFOCUS                 // Unused, 13 Sep 08 JBS
 // #define CBN_SETFOCUS      20
 // #endif
-// #ifndef CBN_KILLFOCUS		// Unused, 13 Sep 08 JBS
+// #ifndef CBN_KILLFOCUS                // Unused, 13 Sep 08 JBS
 // #define CBN_KILLFOCUS     21
 // #endif
-// #ifndef CN_VERIFYEDIT		// defined in Open Watcom headers
+// #ifndef CN_VERIFYEDIT                // defined in Open Watcom headers
 // #define CN_VERIFYEDIT     134
 // #endif
-// #ifndef CN_PICKUP			// defined in Open Watcom headers
+// #ifndef CN_PICKUP                    // defined in Open Watcom headers
 // #define CN_PICKUP         135
 // #endif
-// #ifndef CN_DROPNOTIFY		// defined in Open Watcom headers
+// #ifndef CN_DROPNOTIFY                // defined in Open Watcom headers
 // #define CN_DROPNOTIFY     136
 // #endif
-// #ifndef CN_GRIDRESIZED		// defined in Open Watcom headers
+// #ifndef CN_GRIDRESIZED               // defined in Open Watcom headers
 // #define CN_GRIDRESIZED    137
 // #endif
 #ifndef BKS_MERLINSTYLE
@@ -701,11 +704,11 @@
 #define UM_REPLACEFOCUS     (WM_USER + 29)
 #define UM_UNDO             (WM_USER + 30)
 #define UM_RENDER           (WM_USER + 31)
-// #define UM_BUTTON2DOWN      (WM_USER + 32)		// Unused, 13 Sep 08 JBS
-// #define UM_BUTTON2UP        (WM_USER + 33)		// Unused, 13 Sep 08 JBS
+// #define UM_BUTTON2DOWN      (WM_USER + 32)           // Unused, 13 Sep 08 JBS
+// #define UM_BUTTON2UP        (WM_USER + 33)           // Unused, 13 Sep 08 JBS
 #define UM_COLLECTFROMFILE  (WM_USER + 34)
 #define UM_TIMER            (WM_USER + 35)              // 13 Jul 09 SHL fixme to have better name
-// #define UM_HELPON           (WM_USER + 36)		// Unused, 13 Sep 08 JBS
+// #define UM_HELPON           (WM_USER + 36)           // Unused, 13 Sep 08 JBS
 #define UM_SETUP2           (WM_USER + 37)
 #define UM_SETUP3           (WM_USER + 38)
 #define UM_CONTEXTMENU      (WM_USER + 39)
@@ -714,14 +717,14 @@
 #define UM_ARRANGEICONS     (WM_USER + 44)
 #define UM_SETUP5           (WM_USER + 45)
 #define UM_NOTIFY           (WM_USER + 46)
-// #define UM_INSERTRECORD     (WM_USER + 47)		// Unused, 13 Sep 08 JBS
+// #define UM_INSERTRECORD     (WM_USER + 47)           // Unused, 13 Sep 08 JBS
 #define UM_ADDTOMENU        (WM_USER + 48)
 #define UM_COLLECT          (WM_USER + 49)
 // WM_USER + 50-55 used in PMSTDDLG.h (IBM TOOLKIT and Open Watcom)
 #define UM_SETUSERLISTNAME  (WM_USER + 56)
 #define UM_FILTER           (WM_USER + 57)
 #define UM_SORTRECORD       (WM_USER + 58)
-// #define UM_SIZE2            (WM_USER + 59)		// Unused, 13 Sep 08 JBS
+// #define UM_SIZE2            (WM_USER + 59)           // Unused, 13 Sep 08 JBS
 #define UM_RESTORE          (WM_USER + 60)
 #define UM_TOPDIR           (WM_USER + 61)
 #define UM_SHOWME           (WM_USER + 62)
@@ -736,7 +739,8 @@
 #define UM_CLICKED          (WM_USER + 71)
 #define UM_CLICKED3         (WM_USER + 72)
 #define UM_HIDENOTSELECTED  (WM_USER + 73)
-#define UM_FIRSTTIME	    (WM_USER + 74)
+#define UM_FIRSTTIME        (WM_USER + 74)
+// #define UM_ACTIONSTATE      (WM_USER + 75)   // 13 Sep 09 SHL unused SHL
 #define UM_FILLUSERLIST     (WM_USER + 75)
 #define UM_CONTAINERDIR     (WM_USER + 76)
 #define UM_SETUP4           (WM_USER + 77)

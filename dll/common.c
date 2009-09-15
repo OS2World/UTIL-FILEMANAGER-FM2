@@ -26,10 +26,11 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
-                loads drive root directory in directory container or expands drive tree
-                and rescans drive in tree container depending on container focus, greyed out
-                inappropriate menu context choices
-
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+		loads drive root directory in directory container or expands drive tree
+		and rescans drive in tree container depending on container focus, greyed out
+		inappropriate menu context choices
+  14 Sep 09 SHL Blink thread LEDs while threads working
 
 ***********************************************************************/
 
@@ -237,7 +238,7 @@ void CommonCreateTextChildren(HWND hwnd, PCSZ class, USHORT * ids)
 			      HWND_TOP, ids[x], NULL, NULL);
     if (!hwndTmp)
       Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-                PCSZ_WINCREATEWINDOW);
+		PCSZ_WINCREATEWINDOW);
   } // for
 }
 
@@ -264,9 +265,9 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
     if (WinDlgBox(HWND_DESKTOP,
 		  hwnd,
 		  SetDrvProc,
-                  FM3ModHandle, DVS_FRAME, MPFROMP(dv)) && hwndTree)
+		  FM3ModHandle, DVS_FRAME, MPFROMP(dv)) && hwndTree)
       if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(dv), MPVOID))
-        PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
+	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
     break;
   case IDM_SIZES:
     WinDlgBox(HWND_DESKTOP,
@@ -282,15 +283,15 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
 
       hObject = WinQueryObject("<XWP_TRASHCAN>");
       if (hObject != NULLHANDLE && fTrashCan) {
-        hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
-        WinSetFocus(HWND_DESKTOP, hwndDesktop);
-        WinOpenObject(hObject, 0, TRUE);
+	hwndDesktop = WinQueryDesktopWindow((HAB) 0, NULLHANDLE);
+	WinSetFocus(HWND_DESKTOP, hwndDesktop);
+	WinOpenObject(hObject, 0, TRUE);
       }
     else
       WinDlgBox(HWND_DESKTOP,
-                hwnd,
-                UndeleteDlgProc,
-                FM3ModHandle, UNDEL_FRAME, MPFROMP(dv));
+		hwnd,
+		UndeleteDlgProc,
+		FM3ModHandle, UNDEL_FRAME, MPFROMP(dv));
     }
     break;
   case IDM_CHKDSK:
@@ -380,18 +381,18 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       DosError(FERR_DISABLEHARDERR);
       rc = DosDevIOCtl(-1L, 8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
       if (cmd == IDM_EJECT &&
-          (fEjectFlpyScan ? TRUE : parm[1] > 1) &&
-          (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&
-          (fEjectRemovableScan ? TRUE : (parm[1] < 2 || driveflags[parm[1]] & DRIVE_CDROM))) {
-        BOOL toggleTree = FALSE;
-  
-        if (!hwndTree) {
-          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
-          toggleTree = TRUE;
-        }
-        WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-        if (toggleTree)
-          WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+	  (fEjectFlpyScan ? TRUE : parm[1] > 1) &&
+	  (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&
+	  (fEjectRemovableScan ? TRUE : (parm[1] < 2 || driveflags[parm[1]] & DRIVE_CDROM))) {
+	BOOL toggleTree = FALSE;
+
+	if (!hwndTree) {
+	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+	  toggleTree = TRUE;
+	}
+	WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+	if (toggleTree)
+	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
       }
     }
     break;
@@ -401,12 +402,12 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       BOOL toggleTree = FALSE;
 
       if (!hwndTree) {
-        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
-        toggleTree = TRUE;
+	WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+	toggleTree = TRUE;
       }
       WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
       if (toggleTree)
-        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+	WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
     }
     break;
 
@@ -415,12 +416,12 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       BOOL toggleTree = FALSE;
 
       if (!hwndTree) {
-        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
-        toggleTree = TRUE;
+	WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+	toggleTree = TRUE;
       }
       WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_REFRESHREMOVABLES, 0), MPVOID);
       if (toggleTree)
-        WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+	WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
     }
     break;
   }
@@ -452,7 +453,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			       hwndFrame, HWND_TOP, MAIN_STATUS, NULL, NULL);
   if (!hwndStatus)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   // Right status window
   hwndStatus2 = WinCreateWindow(hwndFrame,
@@ -474,7 +475,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 				HWND_TOP, MAIN_STATUS2, NULL, NULL);
   if (!hwndStatus2)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndAttr = WinCreateWindow(hwndFrame,
 			     WC_STATUS,
@@ -493,7 +494,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			     20, hwndFrame, HWND_TOP, IDM_ATTRS, NULL, NULL);
   if (!hwndAttr)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndDate = WinCreateWindow(hwndFrame,
 			     WC_STATUS,
@@ -512,7 +513,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			     20, hwndFrame, HWND_TOP, IDM_INFO, NULL, NULL);
   if (!hwndDate)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndName = WinCreateWindow(hwndFrame,
 			     WC_STATUS,
@@ -531,7 +532,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			     20, hwndFrame, HWND_TOP, IDM_RENAME, NULL, NULL);
   if (!hwndName)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndTmp = WinCreateWindow(hwndFrame,
 			    WC_TOOLBACK,
@@ -549,7 +550,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			    30, hwndFrame, HWND_TOP, MAIN_TOOLS, NULL, NULL);
   if (!hwndTmp)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndBack = WinCreateWindow(hwndFrame,
 			     WC_DRIVEBACK,
@@ -560,8 +561,8 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 					      SV_CXSIZEBORDER),
 			     (swp->cy -
 			      WinQuerySysValue(HWND_DESKTOP,
-                                               SV_CYSIZEBORDER)) -
-                             (DRIVE_BUTTON_HEIGHT),
+					       SV_CYSIZEBORDER)) -
+			     (DRIVE_BUTTON_HEIGHT),
 			     swp->cx -
 			     (WinQuerySysValue(HWND_DESKTOP,
 					       SV_CXSIZEBORDER) * 2),
@@ -570,11 +571,11 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 
   if (!hwndBack)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndLED = WinCreateWindow(hwndFrame,
 			    WC_LED,
-			    "#920",
+			    "#920",	// LEDOFF_BMP
 			    WS_VISIBLE | SS_BITMAP,
 			    swp->cx - 58,
 			    swp->y,
@@ -582,7 +583,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			    12, hwndFrame, HWND_TOP, MAIN_LED, NULL, NULL);
   if (!hwndLED)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndLEDHdr = WinCreateWindow(hwndFrame,
 			       WC_LED,
@@ -596,7 +597,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 			       hwndFrame, HWND_TOP, MAIN_LEDHDR, NULL, NULL);
   if (!hwndLEDHdr)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndAutoview = WinCreateWindow(hwndFrame,
 				 WC_AUTOVIEW,
@@ -617,7 +618,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 				 HWND_TOP, MAIN_AUTOVIEW, NULL, NULL);
   if (!hwndAutoview)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   hwndAutoMLE = WinCreateWindow(hwndFrame,
 				// GetPString(IDS_WCAUTOVIEW),
@@ -639,39 +640,58 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 				HWND_TOP, MAIN_AUTOVIEWMLE, NULL, NULL);
   if (!hwndAutoMLE)
     Win_Error(hwndFrame, hwnd, pszSrcFile, __LINE__,
-              PCSZ_WINCREATEWINDOW);
+	      PCSZ_WINCREATEWINDOW);
 
   oldproc = WinSubclassWindow(hwndAutoMLE, AutoViewProc);
   WinSetWindowPtr(hwndAutoMLE, QWL_USER, (PVOID) oldproc);
   PostMsg(hwndAutoMLE, UM_SETUP, MPVOID, MPVOID);
 }
 
+/**
+ * Called by MainWndProc and MainWndProc2 to process messages
+ * common to both fm/2 and fm/2 lite main window
+ */
+
 MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
 {
+  static BOOL fLedOn;
+  static LONG cWorkerThreads;
+
   switch (msg) {
   case UM_THREADUSE:
     if (hbmLEDon && hbmLEDoff) {
-      static LONG threaduse;
-      CHAR ts[33];
-
+      CHAR sz[33];
       if (mp1) {
-	threaduse++;
-	if (threaduse == 1)
+	cWorkerThreads++;
+	// 13 Sep 09 SHL fixme to be SMP safe
+	if (cWorkerThreads == 1) {
+	  if (!WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_LED_TIMER, 500))
+	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinStartTimer");
+	  fLedOn = TRUE;
 	  WinSendMsg(hwndLED, SM_SETHANDLE, MPFROMLONG(hbmLEDon), MPVOID);
-      }
-      else {
-	threaduse--;
-	if (threaduse <= 0) {
-	  threaduse = 0;
-	  WinSendMsg(hwndLED, SM_SETHANDLE, MPFROMLONG(hbmLEDoff), MPVOID);
 	}
       }
-      ltoa(threaduse, ts, 10);
-      WinSetWindowText(hwndLEDHdr, ts);
+      else if (cWorkerThreads > 0)
+	cWorkerThreads--;
+
+      ltoa(cWorkerThreads, sz, 10);
+      WinSetWindowText(hwndLEDHdr, sz);
       DosSleep(0);
     }
     return 0;
+
+  case WM_TIMER:
+    fLedOn = !fLedOn;
+    WinSendMsg(hwndLED,
+	       SM_SETHANDLE,
+	       fLedOn ? MPFROMLONG(hbmLEDon) : MPFROMLONG(hbmLEDoff),
+	       MPVOID);
+    if (!fLedOn && cWorkerThreads == 0) {
+      if (!WinStopTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_LED_TIMER))
+	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinStartTimer");
+    }
+    break;
 
   case UM_LOADFILE:
     {

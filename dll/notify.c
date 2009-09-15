@@ -25,12 +25,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stddef.h>                     // _threadid
+#include <stddef.h>			// _threadid
 
 #define INCL_DOS
 #define INCL_WIN
 #define INCL_GPI
-#define INCL_LONGLONG                   // dircnrs.h
+#define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
 #include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
@@ -40,8 +40,8 @@
 #include "init.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "fm3str.h"
-#include "errutil.h"                    // Dos_Error...
-#include "strutil.h"                    // GetPString
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
 #include "notify.h"
 #include "presparm.h"			// SetPresParams
 #include "mainwnd.h"			// Data declaration(s)
@@ -54,7 +54,7 @@
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
-static volatile HWND hwndNotify;        // 16 Apr 08 SHL
+static volatile HWND hwndNotify;	// 16 Apr 08 SHL
 static volatile PCSZ pszCachedNote;	// 16 Jul 09 SHL
 
 #pragma data_seg(GLOBAL1)
@@ -169,7 +169,7 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 HWND DoNotify(PCSZ str)
 {
   char *p;
-  HWND hwnd = (HWND) 0, hwndP;
+  HWND hwnd = (HWND)0, hwndP;
   LONG x, y, cx, cy;
   SWP swp, swpS, swpS2;
   static USHORT id = NOTE_FRAME;
@@ -216,7 +216,7 @@ HWND DoNotify(PCSZ str)
 			   x, y, cx, cy, hwndP, HWND_TOP, id++, NULL, NULL);
     if (!hwnd)
       Win_Error(hwndP, hwndP, pszSrcFile, __LINE__,
-                PCSZ_WINCREATEWINDOW);
+		PCSZ_WINCREATEWINDOW);
 
     if (p != str)
       free(p);
@@ -305,9 +305,12 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hwndNotify = hwnd;
     // Remember showing for restart
     fThreadNotes = TRUE;
-      PrfWriteProfileData(fmprof,
-			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
-    fThreadNotes = FALSE;		// Optimize
+    PrfWriteProfileData(fmprof,
+			FM3Str,
+			"ThreadNotes",
+			&fThreadNotes,
+			sizeof(BOOL));
+    fThreadNotes = FALSE;		// Optimize shutdown
 
     // 16 Jul 09 SHL Added
     if (pszCachedNote) {
@@ -444,7 +447,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SHORT len;
 	ndx--;
 	len = (SHORT)WinSendDlgItemMsg(hwnd, NOTE_LISTBOX,
-				       LM_QUERYITEMTEXTLENGTH, 
+				       LM_QUERYITEMTEXTLENGTH,
 				       MPFROMSHORT(ndx), MPVOID);
 	if (len != LIT_ERROR) {
 	  PSZ p;
@@ -470,18 +473,17 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     if (hwndNotify == hwnd) {
-      // Remember not open
-      fThreadNotes = FALSE;
+      fThreadNotes = FALSE;		// Remember not open
       PrfWriteProfileData(fmprof,
 			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
-      hwndNotify = (HWND) 0;
+      hwndNotify = (HWND)0;
     }
     if (hptrIcon) {
       WinDestroyPointer(hptrIcon);
       hptrIcon = (HPOINTER)0;		// 16 Jul 09 SHL
     }
-    if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
-      WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+    if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
+      WinSendMsg((HWND)0, WM_QUIT, MPVOID, MPVOID);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -491,7 +493,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
  * Thread notes dialog window thread
  */
 
-static VOID NoteThread(VOID * args)
+static VOID NoteThread(VOID *args)
 {
   HAB hab = WinInitialize(0);
 # ifdef FORTIFY
