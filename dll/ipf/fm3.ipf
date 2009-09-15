@@ -346,19 +346,32 @@ The :hp1."Toolbars" quicklist:ehp1. only appears when the
 :link reftype=hd res=91800.Toolbar:elink. is visible (see :link reftype=hd res=99400.Using
 quicklists:elink. section).
 :p.
-Status line #1 can be clicked to shift the focus to FM/2 without
-activating any commands. In addition, if the Drive Tree is the
+:hp1.Status line #1:ehp1. can be clicked to shift the focus to FM/2 without
+activating any commands. In addition, if the :hp1.Drive Tree:ehp1. is the
 active window within FM/2's monolithic window, the Swapfile and
-memory available indicators in Status line #2 will be continuously
-updated (otherwise they update about every ten seconds).
+memory available indicators in :hp1.Status. line #2:ehp1. will be continuously
+updated.  Otherwise, they update about every ten seconds.
 :p.
-You can get information on most areas of the window just by moving the
+The :hp1.Thread LED:ehp1. button blinks to indicate background thread activity.
+The displayed count is number of active background threads.
+To monitor the activity of the background thread,
+click on the :hp1.Thread LED:ehp1. button to open the :hp1.Thread notes:ehp1. window.
+:p.
+The :hp1.Interface:ehp1. button allows toolbars and quicklists to be toggled
+on or off with a single click.
+:p.
+The :hp1.Walk:ehp1. button provides single click access to the 
+:link reftype=hd res=91500.Walk Directories:elink. dialog
+to change the directory displayed in a directory container
+or to open new directory container.
+:p.
+You can get information on most areas of the window by moving the
 mouse pointer over the area of interest (unless you've turned off
-bubble help in the internal Settings notebook). For help with the
+bubble help on the Bubbles page of the Settings notebook).
+For help with the
 quicklists, which don't have bubble help, see :link reftype=hd
 res=99400.Using quicklists:elink..
 :p.
-.br
 Here's a Directory Container window in more detail&colon. See
 :link reftype=hd res=98900.Opening a Directory Container:elink. and
 :link reftype=hd res=91900.Folder Button:elink. for more information
@@ -379,7 +392,6 @@ directory were double-clicked in the Tree is surrounded by a fine darker red
 border. This color coding gives you instant feedback as to what the
 commands you select will effect.
 :p.
-.br
 Here's a look at the default text file
 viewer built into FM/2. It is opened when you double-click a text file in
 a Directory container (you can configure a different one if you

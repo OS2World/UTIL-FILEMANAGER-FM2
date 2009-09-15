@@ -186,13 +186,17 @@ VOID Undo(HWND hwndCnr, HWND hwndFrame, HWND hwndClient, HWND hwndParent)
 
 #endif // defined(UNDO)
 
+/**
+ * Apply action to file list
+ * Action repeated for each item in list
+ */
+
 VOID Action(VOID * args)
 {
   WORKER *wk = (WORKER *)args;
   HAB hab2;
   HMQ hmq2;
   CHAR **files = NULL;
-  UINT numfiles = 0, numalloc = 0;
   INT plen = 0;
   CHAR *p, *pp;
   CHAR szQuotedDirName[CCHMAXPATH];
@@ -209,7 +213,7 @@ VOID Action(VOID * args)
 	hmq2 = WinCreateMsgQueue(hab2, 0);
 	if (hmq2) {
 	  CHAR message[(CCHMAXPATH * 2) + 80], wildname[CCHMAXPATH];
-	  INT x;
+	  UINT x;
 	  BOOL dontask = FALSE, wildcarding = FALSE, overold =
 	    FALSE, overnew = FALSE, usedtarget;
 
@@ -325,6 +329,10 @@ VOID Action(VOID * args)
 	  }
 	  // Process each list item
 	  if (wk->li && wk->li->list && wk->li->list[0]) {
+	    UINT cFilesModified = 0;	// Required for AddToList
+	    UINT cItemsAllocated = 0;	// Required for AddToList
+	    UINT cItemsInList;
+	    for (cItemsInList = 0; wk->li->list[cItemsInList]; cItemsInList++);	// Count
 	    for (x = 0; wk->li->list[x]; x++) {
 	      switch (wk->li->type) {
 	      case IDM_COLLECTFROMFILE:
@@ -427,7 +435,7 @@ VOID Action(VOID * args)
 			    wk->li->list[x]);
 		    AddNote(message);
 		    if (//fSyncUpdates ||
-			AddToList(outname, &files, &numfiles, &numalloc))
+			AddToList(outname, &files, &cFilesModified, &cItemsAllocated))
 		      Broadcast(hab2,
 				wk->hwndCnr,
 				UM_UPDATERECORD, MPFROMP(outname), MPVOID);
@@ -522,7 +530,7 @@ VOID Action(VOID * args)
 		  if (ret == 1) {
 		    if (//fSyncUpdates ||
 			AddToList(wk->li->list[x],
-				  &files, &numfiles, &numalloc))
+				  &files, &cFilesModified, &cItemsAllocated))
 		      Broadcast(hab2,
 				wk->hwndCnr,
 				UM_UPDATERECORD,
@@ -615,13 +623,13 @@ VOID Action(VOID * args)
 	      case IDM_RENAME:
 		{
 
+		  // Select target
 		  if (!*wk->li->targetpath && (wk->li->type == IDM_MOVE ||
 					       wk->li->type == IDM_COPY ||
 					       wk->li->type == IDM_WPSMOVE ||
 					       wk->li->type == IDM_WPSCOPY)) {
 
 		    APIRET rc = 1;
-
 		    usedtarget = FALSE;
 		    if (hwndMain) {
 		      if (!*targetdir)
@@ -647,6 +655,7 @@ VOID Action(VOID * args)
 		    if (fConfirmTarget ||
 			(!*targetdir && strcmp(realappname, "FM/4"))) {
 		    RetryPath:
+		      // Confirm target
 		      usedtarget = FALSE;
 		      if (wk->li->type == IDM_MOVE ||
 			  wk->li->type == IDM_WPSMOVE) {
@@ -673,6 +682,7 @@ VOID Action(VOID * args)
 		    }
 		    if (!rc || !*wk->li->targetpath)
 		      goto Abort;
+		    // Check target OK
 		    if (driveflags[toupper(*wk->li->targetpath) - 'A'] &
 			DRIVE_NOTWRITEABLE) {
 		      saymsg(MB_CANCEL,
@@ -684,37 +694,36 @@ VOID Action(VOID * args)
 		  }
 		Retry:
 		  {
+		    // Target OK so far
 		    CHAR newname[CCHMAXPATH];
-		    PCSZ moving, move, moved;
 		    APIRET rc;
-		    INT type;
 		    FILESTATUS4L fs4;
-		    BOOL isnewer, existed, fResetVerify = FALSE;
-
-		    type = (wk->li->type == IDM_RENAME) ? MOVE :
-		      (wk->li->type == IDM_MOVE) ? MOVE :
-		      (wk->li->type == IDM_WPSMOVE) ? WPSMOVE :
-		      (wk->li->type == IDM_WPSCOPY) ? WPSCOPY : COPY;
-		    moving = (wk->li->type == IDM_RENAME) ?
+		    BOOL isnewer;
+		    BOOL existed;
+		    BOOL fResetVerify = FALSE;
+		    INT type = wk->li->type == IDM_RENAME ?
+		      MOVE :
+		      wk->li->type == IDM_MOVE ?
+			MOVE : (wk->li->type == IDM_WPSMOVE) ?
+			  WPSMOVE : wk->li->type == IDM_WPSCOPY ?
+			    WPSCOPY : COPY;
+		    PCSZ moving = wk->li->type == IDM_RENAME ?
 		      GetPString(IDS_RENAMINGTEXT) :
-		      (wk->li->type == IDM_MOVE ||
-		       wk->li->type == IDM_WPSMOVE) ?
-		      GetPString(IDS_MOVINGTEXT) : GetPString(IDS_COPYINGTEXT);
-		    move = (wk->li->type == IDM_RENAME) ?
+		      wk->li->type == IDM_MOVE || wk->li->type == IDM_WPSMOVE ?
+			GetPString(IDS_MOVINGTEXT) : GetPString(IDS_COPYINGTEXT);
+		    PCSZ move = wk->li->type == IDM_RENAME ?
 		      GetPString(IDS_RENAMETEXT) :
-		      (wk->li->type == IDM_MOVE ||
-		       wk->li->type == IDM_WPSMOVE) ?
-		      GetPString(IDS_MOVETEXT) : GetPString(IDS_COPYTEXT);
-		    moved = (wk->li->type == IDM_RENAME) ?
+		      wk->li->type == IDM_MOVE ||
+		       wk->li->type == IDM_WPSMOVE ?
+			GetPString(IDS_MOVETEXT) : GetPString(IDS_COPYTEXT);
+		    PCSZ moved = wk->li->type == IDM_RENAME ?
 		      GetPString(IDS_RENAMEDTEXT) :
-		      (wk->li->type == IDM_MOVE ||
-		       wk->li->type == IDM_WPSMOVE) ?
-		      GetPString(IDS_MOVEDTEXT) : GetPString(IDS_COPIEDTEXT);
+		      wk->li->type == IDM_MOVE || wk->li->type == IDM_WPSMOVE ?
+			GetPString(IDS_MOVEDTEXT) : GetPString(IDS_COPIEDTEXT);
+
 		    if (*wk->li->targetpath) {
 		      strcpy(newname, wk->li->targetpath);
 		      AddBackslashToPath(newname);
-		      //if (newname[strlen(newname) - 1] != '\\')
-		      //  strcat(newname, "\\");
 		      if (plen)
 			p = wk->li->list[x] + plen;
 		      else {
@@ -729,15 +738,14 @@ VOID Action(VOID * args)
 		    else
 		      strcpy(newname, wk->li->list[x]);
 		    if ((wildcarding || wk->li->type == IDM_RENAME) &&
-			*wildname) {
-
+			*wildname)
+		    {
 		      CHAR testname[CCHMAXPATH];
-
 		      strcpy(testname, wildname);
 		      if (AdjustWildcardName(newname, testname))
 			strcpy(newname, testname);
 		    }
-		    existed = (IsFile(newname) != -1);
+		    existed = IsFile(newname) != -1;
 		    isnewer = IsNewer(wk->li->list[x], newname);
 		    if (existed && wk->li->type != IDM_RENAME && dontask) {
 		      if (!overold && !overnew)
@@ -747,14 +755,14 @@ VOID Action(VOID * args)
 		      if (!overnew && isnewer)
 			break;
 		    }
+		    // Confirm overwrite unless bypassed
 		    if ((wk->li->type == IDM_RENAME &&
 			 (!dontask || !*wildname)) ||
 			(!dontask && existed) ||
 			(!dontask && wildcarding) ||
-			(IsFile(newname) == 0 && IsFile(wk->li->list[x]) > 0)) {
-
+			(IsFile(newname) == 0 && IsFile(wk->li->list[x]) > 0))
+		    {
 		      MOVEIT mv;
-
 		      memset(&mv, 0, sizeof(MOVEIT));
 		      mv.rename = (wk->li->type == IDM_RENAME);
 		      mv.source = wk->li->list[x];
@@ -765,6 +773,7 @@ VOID Action(VOID * args)
 				     FM3ModHandle, REN_FRAME, (PVOID) & mv);
 		      if (!rc)
 			goto Abort;
+
 		      DosSleep(1);
 		      if (mv.skip || !*mv.target)
 			break;
@@ -802,13 +811,17 @@ VOID Action(VOID * args)
 			 !stricmp(wk->li->list[x], newname)))
 		      break;
 		    sprintf(message,
-			    " %s \"%s\" %s\"%s\"%s",
+			    " %s \"%s\" %s\"%s\"%s [%u %s%u]",
 			    moving,
 			    wk->li->list[x],
-			    GetPString(IDS_TOTEXT),
+			    GetPString(IDS_TOTEXT),	// Has trailing space
 			    newname,
-			    (usedtarget) ? GetPString(IDS_TOTARGETTEXT) :
-			    NullStr);
+			    usedtarget ?
+			      GetPString(IDS_TOTARGETTEXT) :
+			      NullStr,
+			    x + 1,
+			    GetPString(IDS_OFTEXT),	// Has trailing space
+			    cItemsInList);
 		    AddNote(message);
 		    if (fVerify && (driveflags[toupper(*wk->li->targetpath) - 'A'] & DRIVE_WRITEVERIFYOFF) |
 			(driveflags[toupper(*wk->li->list[x]) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
@@ -905,9 +918,9 @@ VOID Action(VOID * args)
 				       wk->hwndFrame,
 				       pszSrcFile,
 				       __LINE__,
-				       "%s %s \"%s\" %s\"%s\" %s.",
+				       "%s %s\"%s\" %s\"%s\" %s.",
 				       move,
-				       GetPString(IDS_OFTEXT),
+				       GetPString(IDS_OFTEXT),	// Has trailing space
 				       wk->li->list[x],
 				       GetPString(IDS_TOTEXT),
 				       newname, GetPString(IDS_FAILEDTEXT));
@@ -923,17 +936,17 @@ VOID Action(VOID * args)
 				wk->li->list[x],
 				GetPString(IDS_TOTEXT), newname);
 		      }
-                      if (!hwndTree ||
-                          ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
+		      if (!hwndTree ||
+			  ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(wk->li->list[x],
-				    &files, &numfiles, &numalloc)))
+				    &files, &cFilesModified, &cItemsAllocated)))
 			Broadcast(hab2,
 				  wk->hwndCnr,
 				  UM_UPDATERECORD,
 				  MPFROMP(wk->li->list[x]), MPVOID);
-                      if (!hwndTree ||
-                          (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
-			  AddToList(newname, &files, &numfiles, &numalloc))
+		      if (!hwndTree ||
+			  (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
+			  AddToList(newname, &files, &cFilesModified, &cItemsAllocated))
 			Broadcast(hab2,
 				  wk->hwndCnr,
 				  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
@@ -1000,30 +1013,27 @@ VOID Action(VOID * args)
 	    case IDM_RENAME:
 	      sprintf(message,
 		      GetPString(IDS_OPSCOMPLETETEXT),
-		      (wk->li->type == IDM_MOVE) ?
-		      GetPString(IDS_MOVETEXT) :
-		      (wk->li->type == IDM_COPY) ?
-		      GetPString(IDS_COPYTEXT) :
-		      (wk->li->type == IDM_WPSMOVE) ?
-		      GetPString(IDS_WPSMOVETEXT) :
-		      (wk->li->type == IDM_WPSCOPY) ?
-		      GetPString(IDS_WPSCOPYTEXT) :
-		      GetPString(IDS_RENAMETEXT),
-		      &"s"[x == 1],
+		      wk->li->type == IDM_MOVE ?
+			GetPString(IDS_MOVETEXT) :
+			wk->li->type == IDM_COPY ?
+			  GetPString(IDS_COPYTEXT) :
+			  wk->li->type == IDM_WPSMOVE ?
+			    GetPString(IDS_WPSMOVETEXT) :
+			    wk->li->type == IDM_WPSCOPY ?
+			      GetPString(IDS_WPSCOPYTEXT) :
+			      GetPString(IDS_RENAMETEXT),
+		      &"s"[x == 1],		/* s or nul */
 		      (wk->li->type == IDM_MOVE ||
 		       wk->li->type == IDM_COPY ||
 		       wk->li->type == IDM_WPSMOVE ||
 		       wk->li->type == IDM_WPSCOPY) ?
-		      GetPString(IDS_TOTEXT) :
-		      NullStr,
+			GetPString(IDS_TOTEXT) : NullStr,
 		      (wk->li->type == IDM_MOVE ||
 		       wk->li->type == IDM_COPY ||
 		       wk->li->type == IDM_WPSMOVE ||
 		       wk->li->type == IDM_WPSCOPY) ?
-		      wk->li->targetpath :
-		      NullStr,
-		      (x != 1) ?
-		      GetPString(IDS_ARETEXT) : GetPString(IDS_ISTEXT));
+			wk->li->targetpath : NullStr,
+		      GetPString(x != 1 ? IDS_ARETEXT : IDS_ISTEXT));
 	      Notify(message);
 	      if (toupper(*wk->li->targetpath) < 'C' && !fAlertBeepOff)
 		DosBeep(1000, 25);	// Wake up user
@@ -1050,11 +1060,11 @@ VOID Action(VOID * args)
 	    PostMsg(wk->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
 
 	  WinDestroyMsgQueue(hmq2);
-	}
+	} // if queue
 	DecrThreadUsage();
 	WinTerminate(hab2);
-      }
-    }
+      } // if hab2
+    } // if list not empty
 
     if (wk->li)
       FreeListInfo(wk->li);
@@ -1066,13 +1076,18 @@ VOID Action(VOID * args)
   }
 }
 
+/**
+ * Apply file list to action
+ * All items in list processed as a group, if possible
+ */
+
 VOID MassAction(VOID * args)
 {
   WORKER *wk = (WORKER *) args;
   HAB hab2;
   HMQ hmq2;
   CHAR **files = NULL;
-  register CHAR *p, *pp;
+  CHAR *p, *pp;
   UINT numfiles = 0, numalloc = 0;
 
 
@@ -1131,7 +1146,8 @@ VOID MassAction(VOID * args)
 
 	  case IDM_MCIPLAY:
 	    {
-	      INT x, MaxFM2playStrLen = 24;
+	      UINT x;
+	      UINT MaxFM2playStrLen = 24;
 	      ULONG total;
 	      CHAR fbuf[CCHMAXPATH];
 
@@ -1173,7 +1189,7 @@ VOID MassAction(VOID * args)
 
 	      CHAR szBuffer[1025];
 	      CHAR fbuf[CCHMAXPATH];
-	      register INT x;
+	      UINT x;
 
 	      if (wk->li->type == IDM_FAKEEXTRACT ||
 		  wk->li->type == IDM_FAKEEXTRACTM) {
@@ -1272,7 +1288,7 @@ VOID MassAction(VOID * args)
 	      CHAR szBuffer[1025];
 	      ARC_TYPE *info = NULL;
 	      char *pch;
-	      register INT x;
+	      UINT x;
 
 	      memset(&ad, 0, sizeof(DIRCNRDATA));
 	      strcpy(ad.arcname, wk->li->targetpath);
@@ -1400,7 +1416,7 @@ VOID MassAction(VOID * args)
 	    else {
 
 	      CHAR *temp;
-	      register INT x;
+	      UINT x;
 	      ULONG viewtype;
 
 	      viewtype = (wk->li->type == IDM_VIEWTEXT) ? 8 :
@@ -1445,7 +1461,7 @@ VOID MassAction(VOID * args)
 	    else {
 
 	      CHAR *temp;
-	      register INT x;
+	      UINT x;
 	      ULONG viewtype;
 
 	      viewtype = (wk->li->type == IDM_EDITTEXT) ? 8 :
@@ -1532,7 +1548,7 @@ VOID MassAction(VOID * args)
 	    {
 	      CHECKLIST cl;
 	      INT isdir = 0, sysdir = 0, ro = 0, hs = 0;
-	      register INT x;
+	      UINT x;
 	      FILESTATUS3 fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
 	      APIRET error = 0;

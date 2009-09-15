@@ -9,17 +9,6 @@
   Copyright (c) 2003, 2009 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
-  04 Nov 03 SHL Drop obsoletes
-  01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
-  07 Jun 05 SHL Comments
-  29 Jul 06 SHL Drop duplicate icons
-  31 Aug 06 GKY Add partitioning menu items
-  01 Sep 06 GKY Add partitioning to files > misc menu
-  01 Sep 06 GKY Add Make Directory to files menu in addition to files > misc
-  24 Sep 06 GKY Changed "Help" to F1 only
-  20 Oct 06 SHL Sync Seek and scan dialog title and menus
-  29 Dec 06 GKY Move all extract options to main menu for archiver
-  29 Dec 06 GKY Removed "Make directory" from all Misc subdirectories
   17 Feb 07 GKY Add Make direcroy to white space directory container menu
   17 Feb 07 GKY Additional drive type icons
   15 Jun 07 SHL Update for OpenWatcom
@@ -53,6 +42,7 @@
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini              
+  15 Sep 09 SHL Update for Thread notes text changes
 
 ***********************************************************************/
 
@@ -3096,7 +3086,7 @@ STRINGTABLE
     IDS_COULDNTFITTEXT                    "Couldn't fit..."
     IDS_DISKFULLTEXT                      "Disk is full"
     IDS_ANOTHERDISKTEXT                   "Please insert another disk."
-    IDS_OFTEXT                            "of"
+    IDS_OFTEXT                            "of "
     IDS_FAILEDTEXT                        "failed"
     IDS_WPSMOVETEXT                       "WPS Move"
     IDS_WPSCOPYTEXT                       "WPS Copy"
@@ -3266,7 +3256,7 @@ STRINGTABLE
     IDS_SUGGEST2TEXT                      " -- this includes one or more drives you had excluded, by the way"
     IDS_NOTEBUBBLE1TEXT                   "~Bubbles"
     IDS_NOTEBUBBLE2TEXT                   "Bubble help settings"
-    IDS_TOTARGETTEXT                      " (to Target directory)"
+    IDS_TOTARGETTEXT                      " (Target directory)"
     IDS_CANTADDCOMMANDTEXT                "Can't add %s to command list"
     IDS_CANTADDCOMMANDTEXTDUP             "Can't add %s to command list It has a duplicate title"
     IDS_CREATESEMFAILED                   "Create Semaphore failed"
