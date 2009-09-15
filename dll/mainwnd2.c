@@ -1120,6 +1120,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_THREADUSE:
   case UM_LOADFILE:
   case UM_BUILDDRIVEBAR:
+  case WM_TIMER:
     return CommonMainWndProc(hwnd, msg, mp1, mp2);
 
   case UM_SETUP2:
