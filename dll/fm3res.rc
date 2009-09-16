@@ -43,6 +43,7 @@
                 inappropriate menu context choices
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini              
   15 Sep 09 SHL Update for Thread notes text changes
+  15 Sep 09 SHL Add rescan progress messages
 
 ***********************************************************************/
 
@@ -3281,6 +3282,8 @@ STRINGTABLE
     IDS_ERROREATYPETEXT                   "EA type 0x%x unexpected for %.*s"
     IDS_RESCANALLDRIVESTEXT               "Rescan all drives"
     IDS_REFRESHREMOVABLESTEXT             "Refresh removable media"
+    IDS_PLEASEWAITSCANNINGTEXT            "Please wait -- scanning..."
+    IDS_PLEASEWAITCOUNTINGTEXT            "Please wait -- counting..."
 
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object (each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"

@@ -28,6 +28,7 @@
   13 Jul 09 SHL Rename timer ids
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   14 Sep 09 SHL Drop experimental code
+  15 Sep 09 SHL Add rescan progress timer
 
   Align with spaces only - no tabs please
 
@@ -71,12 +72,10 @@
 #define ID_ABOUT_TIMER      4
 #define ID_COMP_TIMER       4
 #define ID_NOTIFY_TIMER     15
-// #define ID_TIMER3           16       // 13 Jul 09 SHL Dropped
 #define ID_ACTION_TIMER     16          // 13 Jul 09 SHL Added
-// #define ID_TIMER4           19       // 13 Jul 09 SHL Dropped
+#define ID_DIRCNR_TIMER     17		// 15 Sep 09 SHL Added
 #define ID_NEWVIEW_TIMER    20
-// #define ID_TIMER6           21       // 13 Jul 09 SHL Dropped
-#define ID_LED_TIMER        22
+#define ID_LED_TIMER        21
 
 // Window ids, etc.
 #define MAIN_STATUS2        19

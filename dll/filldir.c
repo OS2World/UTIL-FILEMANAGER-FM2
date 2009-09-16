@@ -72,11 +72,12 @@
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   06 Jul 09 SHL Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
   12 Jul 09 GKY Add szFSType to FillInRecordFromFSA use to bypass EA scan and size formatting
-                for tree container
+		for tree container
   13 Jul 09 SHL Avoid trap in FillInRecordFromFSA if pszFSType NULL
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   22 Jul 09 GKY Consolidated driveflag setting code in DriveFlagsOne
   22 Jul 09 GKY Streamline scanning code for faster Tree rescans
+  15 Sep 09 SHL Show rescan progress while filling container
 
 ***********************************************************************/
 
@@ -109,6 +110,7 @@
 #include "valid.h"			// CheckDrive
 #include "filter.h"			// Filter
 #include "subj.h"			// Subject
+#include "grep.h"			// hwndStatus
 #include "copyf.h"			// unlinkf
 #include "literal.h"			// wildcard
 #include "i18nutil.h"			// CommaFmtULL
@@ -116,8 +118,8 @@
 #include "init.h"			// GetTidForWindow
 #include "common.h"			// IncrThreadUsage
 #include "excputil.h"			// xbeginthread
-#include "fm3dlg.h"                     // INFO_LABEL
-#include "pathutil.h"                   // AddBackslashToPath
+#include "fm3dlg.h"			// INFO_LABEL
+#include "pathutil.h"			// AddBackslashToPath
 
 VOID StubbyScanThread(VOID * arg);
 
@@ -132,14 +134,14 @@ HPOINTER hptrReadonly;
 HPOINTER hptrSystem;
 
 #pragma data_seg(GLOBAL2)
-PCSZ FM3Tools   = "<FM3_Tools>";
-PCSZ WPProgram  = "WPProgram";
+PCSZ FM3Tools = "<FM3_Tools>";
+PCSZ WPProgram = "WPProgram";
 
 typedef struct {
-  PCNRITEM    pci;
-  HWND        hwndCnr;			// hwnd you want the message posted to
-  HWND        hwndDrivesList;
-  //BOOL        RamDrive;
+  PCNRITEM	pci;
+  HWND		hwndCnr;		// hwnd you want the message posted to
+  HWND		hwndDrivesList;
+  //BOOL	RamDrive;
 }
 STUBBYSCAN;
 
@@ -222,22 +224,22 @@ VOID StubbyScanThread(VOID * arg)
       if (hmq) {
 	IncrThreadUsage();
 	priority_normal();
-        ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-        if (ret == 1) {
-          if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
-            ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
+	ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+	if (ret == 1) {
+	  if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
+	    ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
 
-            if (((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
-                 (fRScanRemote && flags & DRIVE_REMOTE) ||
-                 (fRScanVirtual && flags & DRIVE_VIRTUAL)) && fInitialDriveScan) {
-              if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
-                             (fRScanSlow ? 0 : DRIVE_SLOW)))) {
-                UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
-                Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
-              }
-            }
-          }
-        }
+	    if (((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
+		 (fRScanRemote && flags & DRIVE_REMOTE) ||
+		 (fRScanVirtual && flags & DRIVE_VIRTUAL)) && fInitialDriveScan) {
+	      if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
+			     (fRScanSlow ? 0 : DRIVE_SLOW)))) {
+		UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
+		Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
+	      }
+	    }
+	  }
+	}
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -270,17 +272,17 @@ VOID ProcessDirectoryThread(VOID * arg)
       hmq = WinCreateMsgQueue(thab, 0);
       if (hmq) {
 	IncrThreadUsage();
-        priority_normal();
-        ProcessDirectory(ProcessDir->hwndCnr,
-                         ProcessDir->pciParent,
-                         ProcessDir->szDirBase,
-                         ProcessDir->filestoo,
-                         ProcessDir->recurse,
-                         ProcessDir->partial,
-                         ProcessDir->stopflag,
-                         ProcessDir->dcd,	                // Optional
-                         ProcessDir->pulTotalFiles,	// Optional
-                         ProcessDir->pullTotalBytes);	// Optional
+	priority_normal();
+	ProcessDirectory(ProcessDir->hwndCnr,
+			 ProcessDir->pciParent,
+			 ProcessDir->szDirBase,
+			 ProcessDir->filestoo,
+			 ProcessDir->recurse,
+			 ProcessDir->partial,
+			 ProcessDir->stopflag,
+			 ProcessDir->dcd,	                // Optional
+			 ProcessDir->pulTotalFiles,	// Optional
+			 ProcessDir->pullTotalBytes);	// Optional
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -311,8 +313,8 @@ static HPOINTER IDFile(PSZ p)
     cmp = *(ULONG *) cmps;
 
     if (cmp == *(ULONG *) PCSZ_DOTEXE || cmp == *(ULONG *) PCSZ_DOTCMD ||
-        cmp == *(ULONG *) PCSZ_DOTBAT || cmp == *(ULONG *) PCSZ_DOTCOM ||
-        cmp == *(ULONG *) PCSZ_DOTBTM)
+	cmp == *(ULONG *) PCSZ_DOTBAT || cmp == *(ULONG *) PCSZ_DOTCOM ||
+	cmp == *(ULONG *) PCSZ_DOTBTM)
       hptr = hptrApp;
     else if (cmp == *(ULONG *) ".ZIP" || cmp == *(ULONG *) ".LZH" ||
 	     cmp == *(ULONG *) ".ARJ" || cmp == *(ULONG *) ".ARC" ||
@@ -322,11 +324,11 @@ static HPOINTER IDFile(PSZ p)
 	     cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2")
       hptr = hptrArc;
     else if (cmp == *(ULONG *) PCSZ_DOTBMP  ||
-             cmp == *(ULONG *) PCSZ_DOTICO  ||
-             cmp == *(ULONG *) PCSZ_DOTPTR  ||
-             cmp == *(ULONG *) PCSZ_DOTJPEG ||
-             cmp == *(ULONG *) PCSZ_DOTJPG  ||
-             cmp == *(ULONG *) ".GIF" ||
+	     cmp == *(ULONG *) PCSZ_DOTICO  ||
+	     cmp == *(ULONG *) PCSZ_DOTPTR  ||
+	     cmp == *(ULONG *) PCSZ_DOTJPEG ||
+	     cmp == *(ULONG *) PCSZ_DOTJPG  ||
+	     cmp == *(ULONG *) ".GIF" ||
 	     cmp == *(ULONG *) ".TIF" || cmp == *(ULONG *) ".PCX" ||
 	     cmp == *(ULONG *) ".TGA" || cmp == *(ULONG *) ".XBM" ||
 	     cmp == *(ULONG *) ".PNG" || cmp == *(ULONG *) ".PSD" ||
@@ -459,25 +461,25 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 	eaop.fpFEA2List = pfealist;
 	eaop.oError = 0;
 	rc = DosQueryPathInfo(pci->pszFileName, FIL_QUERYEASFROMLIST,
-                              (PVOID) &eaop, (ULONG) sizeof(EAOP2));
-        // Prevent this error from occuring when scanning a directory
-        // that contains a locked data file
-        if (rc && rc != ERROR_SHARING_VIOLATION) {
-          CHAR s[80];
-          sprintf(s, "%s %s",PCSZ_DOSQUERYPATHINFO, "%s");
-          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                    s, pci->pszFileName);
-        }
+			      (PVOID) &eaop, (ULONG) sizeof(EAOP2));
+	// Prevent this error from occuring when scanning a directory
+	// that contains a locked data file
+	if (rc && rc != ERROR_SHARING_VIOLATION) {
+	  CHAR s[80];
+	  sprintf(s, "%s %s",PCSZ_DOSQUERYPATHINFO, "%s");
+	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		    s, pci->pszFileName);
+	}
 	  //DbgMsg(pszSrcFile, __LINE__, "DosQueryPathInfo %s failed with rc %u ", pci->pszFileName, rc);
 	else {
 	  PFEA2 pfea = eaop.fpFEA2List->list;
 	  while (pfea) {
 	    if (pfea->cbValue) {
 	      CHAR *achValue = pfea->szName + pfea->cbName + 1;
-              if (*(USHORT *)achValue != EAT_ASCII)
-                Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                          GetPString(IDS_ERROREATYPETEXT),
-                          achValue, pfea->cbName, pfea->szName);
+	      if (*(USHORT *)achValue != EAT_ASCII)
+		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+			  GetPString(IDS_ERROREATYPETEXT),
+			  achValue, pfea->cbName, pfea->szName);
 		//DbgMsg(pszSrcFile, __LINE__, "EA type 0x%x unexpected for %.*s", achValue, pfea->cbName, pfea->szName);
 	      else {
 		CHAR ch = achValue[pfea->cbValue];
@@ -490,9 +492,9 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 		  pci->pszLongName = pszValue;
 		else if (strncmp(pfea->szName, SUBJECT, pfea->cbName) == 0)
 		  pci->pszSubject = pszValue;
-                else
-                  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		            GetPString(IDS_ERROREATYPETEXT), pfea, pfea->cbName, pfea->szName);
+		else
+		  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+			    GetPString(IDS_ERROREATYPETEXT), pfea, pfea->cbName, pfea->szName);
 		  //DbgMsg(pszSrcFile, __LINE__, "pfea %p EA %.*s unexpected", pfea, pfea->cbName, pfea->szName);
 	      }
 	    }
@@ -512,7 +514,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 			      PCNRITEM pci,
 			      const PSZ pszDirectory,
 			      const PFILEFINDBUF4L pffb,
-                              const BOOL partial,
+			      const BOOL partial,
 			      DIRCNRDATA *dcd)
 {
   // fill in a container record from a FILEFINDBUF4L structure
@@ -704,8 +706,8 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 			      PCNRITEM pci,
 			      const PSZ pszFileName,
 			      const PFILESTATUS4L pfsa4,
-                              const BOOL partial,
-                              CHAR *pszFSType,	// Optional
+			      const BOOL partial,
+			      CHAR *pszFSType,	// Optional
 			      DIRCNRDATA *dcd)	// Optional
 {
   HPOINTER hptr;
@@ -866,9 +868,9 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		      const BOOL filestoo,
 		      const BOOL recurse,
 		      const BOOL partial,
-                      CHAR *stopflag,
-		      DIRCNRDATA *dcd,	// Optional
-		      ULONG *pulTotalFiles,	// Optional
+		      CHAR *stopflag,
+		      DIRCNRDATA *dcd,			// Optional
+		      ULONG *pulTotalFiles,		// Optional
 		      PULONGLONG pullTotalBytes)	// Optional
 {
   /* put all the directories (and files if filestoo is TRUE) from a
@@ -887,7 +889,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
   ULONG ulFindCnt;
   ULONG ulFindMax;
   ULONG ulSelCnt;
-  ULONG ulTotal = 0;
+  ULONG cAffbTotal = 0;
   ULONGLONG ullBytes;
   ULONGLONG ullTotalBytes;
   ULONG ulReturnFiles = 0;
@@ -944,7 +946,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       FIL_QUERYEASIZEL);
     priority_normal();
     pszFileSpec[strlen(pszFileSpec) - 1] = 0;     // Chop off wildcard
-    //*pchEndPath = 0;
     if (!rc) {
       do {
 	/*
@@ -986,7 +987,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 				  MPFROMLONG(ulSelCnt));
 	    if (!pciFirst) {
 	      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-		        GetPString(IDS_CMALLOCRECERRTEXT));
+			GetPString(IDS_CMALLOCRECERRTEXT));
 	      ok = FALSE;
 	      ullTotalBytes = 0;
 	    }
@@ -994,7 +995,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
 	      pci = pciFirst;
 	      ullTotalBytes = 0;
-	      // Insert selected in container
+	      // Finish filling pci items
 	      for (x = 0; x < ulSelCnt; x++) {
 		pffbFile = papffbSelected[x];
 		ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
@@ -1002,6 +1003,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		pci = (PCNRITEM) pci->rc.preccNextRecord;
 		ullTotalBytes += ullBytes;
 	      } // for
+	      // Insert selected in container
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
 	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -1009,7 +1011,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      ri.zOrder = (ULONG) CMA_TOP;
 	      ri.cRecordsInsert = ulSelCnt;
 	      ri.fInvalidateRecord = TRUE;
-	       // !fSyncUpdates && dcd && dcd->type == DIR_FRAME ? FALSE : TRUE; //fSyncUpdates always TRUE 12-1-08 GKY
 	      if (!WinSendMsg(hwndCnr,
 			      CM_INSERTRECORD,
 			      MPFROMP(pciFirst), MPFROMP(&ri))) {
@@ -1025,25 +1026,36 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		  if (WinIsWindow((HAB) 0, hwndCnr))
 		    FreeCnrItemList(hwndCnr, pciFirst);
 		}
-	      // }
 	      }
 	    }
 	    if (ok) {
 	      ullReturnBytes += ullTotalBytes;
 	      ulReturnFiles += ulSelCnt;
+	      if (dcd) {
+		dcd->totalfiles += ulSelCnt;
+		dcd->ullTotalBytes += ullTotalBytes;
+	      }
 	    }
 	  } // if sync updates
 	  else {
 	    // Append newly selected entries to aggregate list
 	    paffbTemp = xrealloc(paffbTotal,
-				 sizeof(FILEFINDBUF4L) * (ulSelCnt + ulTotal),
+				 sizeof(FILEFINDBUF4L) * (ulSelCnt + cAffbTotal),
 				 pszSrcFile, __LINE__);
 	    if (paffbTemp) {
 	      // 13 Aug 07 SHL fixme to optimize copy
 	      paffbTotal = paffbTemp;
-	      for (x = 0; x < ulSelCnt; x++)
-		paffbTotal[x + ulTotal] = *papffbSelected[x];
-	      ulTotal += ulSelCnt;
+	      ullTotalBytes = 0;	// 15 Sep 09 SHL
+	      for (x = 0; x < ulSelCnt; x++) {
+		paffbTotal[x + cAffbTotal] = *papffbSelected[x];
+		ullTotalBytes += papffbSelected[x]->cbFile;	// 15 Sep 09 SHL
+	      }
+	      cAffbTotal += ulSelCnt;
+	      // 15 Sep 09 SHL allow timed updates to see
+	      if (dcd) {
+		dcd->totalfiles += ulSelCnt;
+		dcd->ullTotalBytes += ullTotalBytes;
+	      }
 	    }
 	    else {
 	      saymsg(MB_ENTER,
@@ -1069,13 +1081,14 @@ VOID ProcessDirectory(const HWND hwndCnr,
       xfree(papffbSelected, pszSrcFile, __LINE__);
       papffbSelected = NULL;
 
-      if (ulTotal && paffbTotal) {
-
+      if (cAffbTotal && paffbTotal) {
+	// Not fSyncUpdates and have work
 	if (stopflag && *stopflag)
 	  goto Abort;
 
 	pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
-			      MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulTotal));
+			      MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(cAffbTotal));
+
 	if (!pciFirst) {
 	  Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
 		    GetPString(IDS_CMALLOCRECERRTEXT));
@@ -1084,24 +1097,33 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	}
 	else {
 	  // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
+	  if (dcd && hwndStatus &&
+	      dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
+	    WinSetWindowText(hwndStatus, GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
+	  }
 	  pci = pciFirst;
 	  ullTotalBytes = 0;
 	  pffbFile = paffbTotal;
-	  for (x = 0; x < ulTotal; x++) {
+	  for (x = 0; x < cAffbTotal; x++) {
 	    ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
 					   pffbFile, partial, dcd);
 	    pci = (PCNRITEM) pci->rc.preccNextRecord;
 	    ullTotalBytes += ullBytes;
+	    // 15 Sep 09 SHL allow timed updates to see
+	    if (dcd) {
+	      dcd->totalfiles = x;
+	      dcd->ullTotalBytes = ullTotalBytes;
+	    }
 	    // Can not use offset since we have merged lists - this should be equivalent
 	    pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
 	  }
-	  if (ulTotal) {
+	  if (cAffbTotal) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
 	    ri.cb = sizeof(RECORDINSERT);
 	    ri.pRecordOrder = (PRECORDCORE) CMA_END;
 	    ri.pRecordParent = (PRECORDCORE) pciParent;
 	    ri.zOrder = (ULONG) CMA_TOP;
-	    ri.cRecordsInsert = ulTotal;
+	    ri.cRecordsInsert = cAffbTotal;
 	    ri.fInvalidateRecord = (!fSyncUpdates && dcd &&
 				    dcd->type == DIR_FRAME) ? FALSE : TRUE;
 	    if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
@@ -1164,12 +1186,13 @@ Abort:
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     while (pci && (INT)pci != -1) {
       if ((pci->attrFile & FILE_DIRECTORY))
-        Stubby(hwndCnr, pci);
+	Stubby(hwndCnr, pci);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
   }
 
+  // Reset counts in case errors occurred after initially counted
   if (pulTotalFiles)
     *pulTotalFiles = ulReturnFiles;
 
@@ -1188,9 +1211,9 @@ VOID FillDirCnr(HWND hwndCnr,
 		   pszDirectory,
 		   TRUE,		// filestoo
 		   FALSE,		// recurse
-                   TRUE,		// partial
-                   dcd ? &dcd->stopflag : NULL,
-                   dcd,
+		   TRUE,		// partial
+		   dcd ? &dcd->stopflag : NULL,
+		   dcd,
 		   NULL,		// total files
 		   pullTotalBytes);
   DosPostEventSem(CompactSem);
@@ -1227,8 +1250,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   for (x = 0; x < 26; x++) {
     driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
-	              DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
-	              DRIVE_WRITEVERIFYOFF);
+		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
+		      DRIVE_WRITEVERIFYOFF);
   }
   memset(driveserial, -1, sizeof(driveserial));
 
@@ -1296,10 +1319,10 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	// Hard drive (2..N)
 	if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
 	  *szFSType = 0;
-          ulDriveType = 0;
-          memset(&volser, 0, sizeof(volser));
-          DriveFlagsOne(x, szFSType, &volser);
-          driveserial[x] = volser.serial;
+	  ulDriveType = 0;
+	  memset(&volser, 0, sizeof(volser));
+	  DriveFlagsOne(x, szFSType, &volser);
+	  driveserial[x] = volser.serial;
 	  memset(&fsa4, 0, sizeof(FILESTATUS4L));
 	  if (!fVerifyOffChecked[x]) {
 	    if (driveflags[x] & DRIVE_REMOVABLE)
@@ -1342,9 +1365,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
 	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	      if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-	        strcat(szDrive, " [");
-	        strcat(szDrive, szFSType);
-	        strcat(szDrive, "]");
+		strcat(szDrive, " [");
+		strcat(szDrive, szFSType);
+		strcat(szDrive, "]");
 	      }
 	      pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	      szDrive[3] = 0;
@@ -1548,7 +1571,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
 				MPVOID,
-	                        MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
     while (pci && (INT)pci != -1) {
       stubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
       if (!stubbyScan)
@@ -1575,7 +1598,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 			     __LINE__) == -1)
 	    {
 	      xfree(stubbyScan, pszSrcFile, __LINE__);
-            }
+	    }
 	  } // if drive for scanning
 	  else
 	    WinSendMsg(hwndDrivesList,
@@ -1669,7 +1692,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	     GetPString(IDS_SUGGESTTITLETEXT),
 	     GetPString(IDS_SUGGEST1TEXT),
 	     (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
-             suggest);
+	     suggest);
       if (MBID_YES) {
 	char s[64];
 
@@ -1690,8 +1713,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	WinCreateObject(WPProgram, "Databar", s, FM3Tools, CO_UPDATEIFEXISTS);
       }
       else if (MBID_CANCEL) {
-        fDontSuggestAgain = TRUE;
-        PrfWriteProfileData(fmprof, appname, "DontSuggestAgain", &fDontSuggestAgain, sizeof(BOOL));
+	fDontSuggestAgain = TRUE;
+	PrfWriteProfileData(fmprof, appname, "DontSuggestAgain", &fDontSuggestAgain, sizeof(BOOL));
       }
     }
   }

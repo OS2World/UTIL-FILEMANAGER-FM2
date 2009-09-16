@@ -67,6 +67,7 @@
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   22 Jul 09 SHL Cleanup of SETFOCUS code
   14 Sep 09 SHL Drop experimental code
+  15 Sep 09 SHL Show rescan progress while filling container
 
 ***********************************************************************/
 
@@ -100,18 +101,18 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
-#include "worker.h"		// Action, MassAction
+#include "worker.h"			// Action, MassAction
 #include "misc.h"			// GetTidForThread, AdjustCnrColsForFSType, AdjustCnrColsForPref
 					// AdjustDetailsSwitches, CnrDirectEdit, OpenEdit, QuickPopup
 					// SayFilter, SaySort, SayView, SetCnrCols, SetDetailsSwitches
-				// SetSortChecks, SetViewMenu, SwitchCommand, CheckMenu
-				// CurrentRecord, DrawTargetEmphasis, IsFm2Window
+					// SetSortChecks, SetViewMenu, SwitchCommand, CheckMenu
+					// CurrentRecord, DrawTargetEmphasis, IsFm2Window
 #include "chklist.h"			// CenterOverWindow, DropListProc
 #include "common.h"			// CommonCnrProc, CommonCreateTextChildren, CommonFrameWndProc
-				// CommonTextPaint, CommonTextButton, CommonTextProc
+					// CommonTextPaint, CommonTextButton, CommonTextProc
 #include "mainwnd.h"			// CountDirCnrs, GetNextWindowPos, MakeBubble, TopWindow
 #include "select.h"			// DeselectAll, HideAll, InvertAll, SelectAll, SelectList
-				// SpecialSelect2
+					// SpecialSelect2
 #include "dirsize.h"			// DirSizeProc
 #include "flesh.h"			// Flesh, Stubby, UnFlesh
 #include "valid.h"			// IsValidDir
@@ -679,6 +680,9 @@ MRESULT EXPENTRY DirClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
+  CHAR tf[64];
+  CHAR tb[64];
+  CHAR s[CCHMAXPATH * 2];
 
   switch (msg) {
   case WM_CREATE:
@@ -753,13 +757,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_RESCAN2:
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-
       FSALLOCATE fsa;
-      CHAR s[CCHMAXPATH * 2];
-      CHAR tf[64];
-      CHAR tb[64];
       CHAR szFree[64];
-
       DosError(FERR_DISABLEHARDERR);
       if (!DosQueryFSInfo(toupper(*dcd->directory) - '@',
 			  FSIL_ALLOC, &fsa, sizeof(FSALLOCATE))) {
@@ -843,8 +842,6 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       MakeValidDir(dcd->directory);
       {
-	CHAR s[CCHMAXPATH + 8];
-
 	sprintf(s,
 		"%s%s%s",
 		(ParentIsDesktop(dcd->hwndFrame, (HWND) 0)) ?
@@ -864,13 +861,13 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, "0 / 0k");
       if (hwndStatus &&
 	  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-	WinSetWindowText(hwndStatus, GetPString(IDS_SCANNINGTEXT));
+	WinSetWindowText(hwndStatus, GetPString(IDS_PLEASEWAITSCANNINGTEXT));
 	if (hwndMain)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
       if (fSwitchTree && hwndTree) {
+	// Keep drive tree in sync with directory container
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-
 	if (hwndMain) {
 	  if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame && pszTempDir)
 	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
@@ -883,16 +880,15 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       dcd->firsttree = FALSE;
+      WinStartTimer(WinQueryAnchorBlock(hwnd), dcd->hwndCnr, ID_DIRCNR_TIMER, 500);
       // fixme to check errors
       FillDirCnr(dcd->hwndCnr, dcd->directory, dcd, &dcd->ullTotalBytes);
+      WinStopTimer(WinQueryAnchorBlock(hwnd), dcd->hwndCnr, ID_DIRCNR_TIMER);
       PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
       if (mp2 && !fLeaveTree && (dcd->flWindowAttr & CV_TREE)) {
-
 	ULONG flWindowAttr = dcd->flWindowAttr;
 	CNRINFO cnri;
-
-	flWindowAttr &=
-	  (~(CV_NAME | CV_TREE | CV_ICON | CV_DETAIL | CV_TEXT));
+	flWindowAttr &=	~(CV_NAME | CV_TREE | CV_ICON | CV_DETAIL | CV_TEXT);
 	if (dcd->lastattr) {
 	  if (dcd->lastattr & CV_TEXT)
 	    flWindowAttr |= CV_TEXT;
@@ -1210,6 +1206,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd = INSTDATA(hwnd);
+  CHAR tf[64];
+  CHAR tb[64];
+  CHAR s[CCHMAXPATH];
 
   switch (msg) {
   case WM_CREATE:
@@ -1250,7 +1249,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       case VK_HOME:
 	if ((shiftstate & KC_CTRL) == KC_CTRL && dcd) {
-	  CHAR s[CCHMAXPATH], *p;
+	  PSZ p;
 	  strcpy(s, dcd->directory);
 	  p = strchr(s, '\\');
 	  if (p) {
@@ -1419,11 +1418,23 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     break;
 
+  case WM_TIMER:
+    // Started/stopped by DirObjWndPro
+    // dcd = WinQueryWindowPtr(hwnd, QWL_USER);
+    if (dcd) {
+      commafmt(tb, sizeof(tb), dcd->totalfiles);
+      CommaFmtULL(tf, sizeof(tf), dcd->ullTotalBytes, 'K');
+      sprintf(s, "%s / %s", tb, tf);
+      // DbgMsg(pszSrcFile, __LINE__, "WM_TIMER %s", s);	// 15 Sep 09 SHL fixme debug
+      WinSetDlgItemText(dcd->hwndClient, DIR_TOTALS, s);
+    }
+    break; // WM_TIMER
+
   case UM_RESCAN:
     if (dcd) {
 
       CNRINFO cnri;
-      CHAR s[CCHMAXPATH * 2], tf[81], tb[81], szDate[DATE_BUF_BYTES];
+      CHAR szDate[DATE_BUF_BYTES];
       PCNRITEM pci;
 
       memset(&cnri, 0, sizeof(CNRINFO));
@@ -3204,16 +3215,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PFIELDINFO pfi = ((PCNREDITDATA) mp2)->pFieldInfo;
 	  PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 	  HWND hwndMLE;
-	  static CHAR szData[CCHMAXPATH];
 	  CHAR testname[CCHMAXPATH];
 
 	  if (!pci && !pfi) {
 	    hwndMLE = WinWindowFromID(hwnd, CID_MLE);
-	    WinQueryWindowText(hwndMLE, sizeof(szData), szData);
-	    chop_at_crnl(szData);
-	    bstrip(szData);
-	    if (*szData) {
-	      if (!DosQueryPathInfo(szData,
+	    WinQueryWindowText(hwndMLE, sizeof(s), s);
+	    chop_at_crnl(s);
+	    bstrip(s);
+	    if (*s) {
+	      if (!DosQueryPathInfo(s,
 				    FIL_QUERYFULLNAME,
 				    testname, sizeof(testname))) {
 		if (!SetDir(dcd->hwndParent, hwnd, testname, 1)) {
@@ -3239,7 +3249,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  PNOTIFYRECORDEMPHASIS pre = mp2;
 	  PCNRITEM pci;
-	  CHAR s[CCHMAXPATHCOMP + 91], tb[81], tf[81];
+	  CHAR s[CCHMAXPATHCOMP + 91];
 
 	  pci = (PCNRITEM) (pre ? pre->pRecord : NULL);
 	  if (!pci) {

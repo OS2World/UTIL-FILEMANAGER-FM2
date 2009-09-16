@@ -22,10 +22,10 @@
   24 Aug 08 GKY Add strings for limited/inadequate drive space checks
   26 Aug 08 GKY Error strings for require unique ID plus text and help strings for all tools
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
-		Dos/Win programs from being inserted into the execute dialog with message why.
+                Dos/Win programs from being inserted into the execute dialog with message why.
   10 Jan 09 GKY Removed rotating strings for font samples as part of StringTable conversion
   11 Jan 08 GKY Move strings that will need translating to stringtable from sting file cut to
-		255 where necessary
+                255 where necessary
   04 Feb 09 SHL Switch to STRINGTABLE
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   14 Mar 09 GKY Remove variables that were transferred to PCSZs
@@ -35,6 +35,7 @@
                 loads drive root directory in directory container or expands drive tree
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
+  15 Sep 09 SHL Add ids for rescan progress messages
 
 ***********************************************************************/
 
@@ -818,7 +819,7 @@
 #define IDS_DELETEFAILED2TEXT                                 818
 #define IDS_DELETEDTEXT                                       819
 #define IDS_OPSCOMPLETETEXT                                   820
-//Drive flag strings these must remain in order and be sequential to work
+// Drive flags strings must remain in order and be sequential to work
 #define IDS_FLREMOVABLETEXT                                   821
 #define IDS_FLNOTWRITEABLETEXT                                822
 #define IDS_FLIGNORETEXT                                      823
@@ -839,7 +840,7 @@
 #define IDS_FLRAMDISKTEXT                                     838
 #define IDS_FLWRITEVERIFYOFFTEXT                              839
 #define IDS_FLRECURSESCANDONETEXT                             840
-//End drive flag strings
+// End drive flag strings
 #define IDS_CANTQUERYVOLTEXT                                  841
 #define IDS_CANTQUERYALLOCTEXT                                842
 #define IDS_DRIVEINACCESSIBLETEXT                             843
@@ -852,14 +853,14 @@
 #define IDS_FM2TROUBLETEXT                                    850
 #define IDS_CANTLOADHELPTEXT                                  851
 #define IDS_NOHELPACCEPTTEXT                                  852
-//#define IDS_NOHELPABORTTEXT                                   851 //Not used
 #define IDS_MISMATCHTITLETEXT                                 853
 #define IDS_MISMATCHTEXT                                      854
 #define IDS_CHECKSYSTEMCLOCKTEXT                              856
 #define IDS_NOTICETITLETEXT                                   857
-#define IDS_UPGRADETEXT                                       858 //Not used
-#define IDS_PERNODETEXT                                       859 //Not used
-#define IDS_USUALDISCTEXT                                     860 //Not used
+#define IDS_PLEASEWAITSCANNINGTEXT                            858
+#define IDS_PLEASEWAITCOUNTINGTEXT                            859
+// #define IDS_USUALDISCTEXT                                     860 //Not used
+
 #define IDS_ARCCNRFILTERMENUHELP                              867
 #define IDS_ARCCNRWALKDIRMENUHELP                             868
 #define IDS_ARCCNRRESCANMENUHELP                              869
