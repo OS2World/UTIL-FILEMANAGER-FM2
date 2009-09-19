@@ -72,62 +72,66 @@ PCSZ DRMDRFLIST = "<DRM_OS2FILE,DRF_UNKNOWN>," "<DRM_DISCARD,DRF_UNKNOWN>," "<DR
 VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo)
 {
 
-# ifdef  USE_FAST_FREE
-  if (!DrgDeleteDraginfoStrHandles(pDInfo)) {
-    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-	      "DrgDeleteDraginfoStrHandles");
-  }
-# else // The slow way
-  PDRAGITEM pDItem;
-  ULONG cDitem;
-  ULONG curitem;
-  APIRET ok;
-
-  cDitem = DrgQueryDragitemCount(pDInfo);
-  for (curitem = 0; curitem < cDitem; curitem++) {
-    pDItem = DrgQueryDragitemPtr(pDInfo, curitem);
-    if (!pDItem) {
+//# ifdef  USE_FAST_FREE
+  if (IsFm2Window(pDInfo->hwndSource, FALSE)) {
+    if (!DrgDeleteDraginfoStrHandles(pDInfo)) {
       Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		"DrgQueryDragitemPtr(%u)", curitem);
+                "DrgDeleteDraginfoStrHandles");
     }
-    else {
-      ok = DrgDeleteStrHandle(pDItem->hstrType);
-      if (!ok) {
-        HAB hab = WinQueryAnchorBlock(hwnd);
-        PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
-        if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
-	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		    "DrgDeleteStrHandle(0x%x) hstrType",pDItem->hstrType);
+  }
+  //# else // The slow way
+  else {
+    PDRAGITEM pDItem;
+    ULONG cDitem;
+    ULONG curitem;
+    APIRET ok;
+  
+    cDitem = DrgQueryDragitemCount(pDInfo);
+    for (curitem = 0; curitem < cDitem; curitem++) {
+      pDItem = DrgQueryDragitemPtr(pDInfo, curitem);
+      if (!pDItem) {
+        Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                  "DrgQueryDragitemPtr(%u)", curitem);
       }
-      ok = DrgDeleteStrHandle(pDItem->hstrRMF);
-      if (!ok) {
-        HAB hab = WinQueryAnchorBlock(hwnd);
-        PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
-        if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
-	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		    "DrgDeleteStrHandle(0x%x) hstrRMF",pDItem->hstrRMF);
+      else {
+        ok = DrgDeleteStrHandle(pDItem->hstrType);
+        if (!ok) {
+          HAB hab = WinQueryAnchorBlock(hwnd);
+          PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
+          if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
+            Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                      "DrgDeleteStrHandle(0x%x) hstrType",pDItem->hstrType);
+        }
+        ok = DrgDeleteStrHandle(pDItem->hstrRMF);
+        if (!ok) {
+          HAB hab = WinQueryAnchorBlock(hwnd);
+          PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
+          if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
+            Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                      "DrgDeleteStrHandle(0x%x) hstrRMF",pDItem->hstrRMF);
+        }
+        ok = DrgDeleteStrHandle(pDItem->hstrContainerName);
+        if (!ok) {
+          HAB hab = WinQueryAnchorBlock(hwnd);
+          PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
+          if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
+            Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                      "DrgDeleteStrHandle(0x%x) hstrContainerName",pDItem->hstrContainerName);
+        }
+        ok = DrgDeleteStrHandle(pDItem->hstrSourceName);
+        if (!ok) {
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                        "DrgDeleteStrHandle(0x%x) hstrSourceName",pDItem->hstrSourceName);
+        }
+        ok = DrgDeleteStrHandle(pDItem->hstrTargetName);
+        if (!ok) {
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                        "DrgDeleteStrHandle(0x%x) hstrTargetName",pDItem->hstrTargetName);
+        }
       }
-      ok = DrgDeleteStrHandle(pDItem->hstrContainerName);
-      if (!ok) {
-        HAB hab = WinQueryAnchorBlock(hwnd);
-        PERRINFO pErrInfoBlk = WinGetErrorInfo(hab);
-        if (ERRORIDERROR(pErrInfoBlk->idError) != PMERR_INVALID_PARAMETER)
-	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		    "DrgDeleteStrHandle(0x%x) hstrContainerName",pDItem->hstrContainerName);
-      }
-      ok = DrgDeleteStrHandle(pDItem->hstrSourceName);
-      if (!ok) {
-	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgDeleteStrHandle(0x%x) hstrSourceName",pDItem->hstrSourceName);
-      }
-      ok = DrgDeleteStrHandle(pDItem->hstrTargetName);
-      if (!ok) {
-	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		      "DrgDeleteStrHandle(0x%x) hstrTargetName",pDItem->hstrTargetName);
-      }
-    }
-  } // for
-# endif
+    } // for
+  }
+//# endif
   if (!DrgFreeDraginfo(pDInfo)) {
     // PMERR_SOURCE_SAME_AS_TARGET is not an error if dragging within same fm/2 process
     if (!IsFm2Window(pDInfo->hwndSource, FALSE) ||
