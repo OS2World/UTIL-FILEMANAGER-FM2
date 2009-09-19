@@ -12,6 +12,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   05 Jan 08 SHL Rename from string.c to avoid string.h conflict
   03 Feb 09 SHL Switch to STRINGTABLE and const return
+  19 Sep 09 GKY Make GetPString more SMP safe
 
 ***********************************************************************/
 
@@ -96,9 +97,9 @@ PCSZ GetPString(ULONG id)
   #pragma aux SMPSafeDec = "lock dec cBusy" modify exact [];
   // SMPSafeInc();
   for (c = 0; ; c++) {
-    if (++cBusy == 1)
+    if (SMPSafeInc(), cBusy == 1)
       break;
-    cBusy--;
+    SMPSafeDec();
     // Hold off 1 cycle before reporting since some contention expected
     if (c == 1)
       DbgMsg(pszSrcFile, __LINE__, "GetPString(%lu) waiting for tid %lu GetPString(%lu), state=%u", id, ulDbgTid, ulDbgId, uDbgState);
