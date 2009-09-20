@@ -73,7 +73,7 @@ VOID FreeDragInfoData (HWND hwnd, PDRAGINFO pDInfo)
 {
 
 //# ifdef  USE_FAST_FREE
-  if (IsFm2Window(pDInfo->hwndSource, FALSE)) {
+  if (!IsFm2Window(pDInfo->hwndSource, FALSE)) {
     if (!DrgDeleteDraginfoStrHandles(pDInfo)) {
       Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
                 "DrgDeleteDraginfoStrHandles");
