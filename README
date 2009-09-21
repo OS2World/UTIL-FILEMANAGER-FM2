@@ -4,6 +4,35 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.17: This release provides for loading FM/2 partially in high memory
+since this won't work on older systems (pre fixpack 13?) or you might have 
+other reasons not to use it we provide a low memory version also. Some high 
+loaded programs hang in the exit handler (ie don't close). We didn't 
+experience this problem but if you do install the low memory version (3.17.0). 
+The high memory version is 3.17.1.
+
+This release makes changes that should speed the scanning and
+container filling in FM/2. We have added some visual clues to let you know
+FM/2 is still working. The LED in the lower right hand corner now blinks 
+while long operations are in progress or you can open the thread note
+window (click on the LED) for even more detailed information about an 
+operation in progress. We also added a better "scanning" message. 
+
+We have updated the look and functionality of the drivebar. It now has the 
+drive letters superimposed over the drive icons allowing for larger icons. 
+We have add a refresh removable media and rescan button to the beginning 
+of the bar to make it a more complete replacement for the tree container 
+in FM/2 lite. You can also show the file system type or drive label next 
+to the drive letter in the tree container. See the Tree settings notbook 
+page to try this option. 
+
+The INI viewer option on the utilities menu now lets you choose to open 
+the user INI, system INI or FM2's INI. We now allow LONGNAMES to be 
+displayed for FAT & LAN drives and we  delete .LONGNAME EA if it becomes 
+the filename on a copy or move. In addition to these we fixed 2 rare crashes
+and a hang associated with SMP. We also fixed a handful of interface problems.
+See the history file for more information.
+
 FM/2 3.16: This release makes changes that should allow FM/2 to be 
 translated into different languages. It also adds date and number 
 formatting based on the system locale settings. We now need to find 
