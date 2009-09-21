@@ -5,44 +5,44 @@
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
 FM/2 3.17: This release provides for loading FM/2 partially in high memory
-since this won't work on older systems (pre fixpack 13?) or you might have 
-other reasons not to use it we provide a low memory version also. Some high 
-loaded programs hang in the exit handler (ie don't close). We didn't 
-experience this problem but if you do install the low memory version (3.17.0). 
+since this won't work on older systems (pre fixpack 13?) or you might have
+other reasons not to use it we provide a low memory version also. Some high
+loaded programs hang in the exit handler (ie don't close). We didn't
+experience this problem but if you do install the low memory version (3.17.0).
 The high memory version is 3.17.1.
 
 This release makes changes that should speed the scanning and
 container filling in FM/2. We have added some visual clues to let you know
-FM/2 is still working. The LED in the lower right hand corner now blinks 
+FM/2 is still working. The LED in the lower right hand corner now blinks
 while long operations are in progress or you can open the thread note
-window (click on the LED) for even more detailed information about an 
-operation in progress. We also added a better "scanning" message. 
+window (click on the LED) for even more detailed information about an
+operation in progress. We also added a better "scanning" message.
 
-We have updated the look and functionality of the drivebar. It now has the 
-drive letters superimposed over the drive icons allowing for larger icons. 
-We have add a refresh removable media and rescan button to the beginning 
-of the bar to make it a more complete replacement for the tree container 
-in FM/2 lite. You can also show the file system type or drive label next 
-to the drive letter in the tree container. See the Tree settings notbook 
-page to try this option. 
+We have updated the look and functionality of the drivebar. It now has the
+drive letters superimposed over the drive icons allowing for larger icons.
+We have add a refresh removable media and rescan button to the beginning
+of the bar to make it a more complete replacement for the tree container
+in FM/2 lite. You can also show the file system type or drive label next
+to the drive letter in the tree container. See the Tree settings notebook
+page to try this option.
 
-The INI viewer option on the utilities menu now lets you choose to open 
-the user INI, system INI or FM2's INI. We now allow LONGNAMES to be 
-displayed for FAT & LAN drives and we  delete .LONGNAME EA if it becomes 
+The INI viewer option on the utilities menu now lets you choose to open
+the user INI, system INI or FM2's INI. We now allow LONGNAMES to be
+displayed for FAT & LAN drives and we  delete .LONGNAME EA if it becomes
 the filename on a copy or move. In addition to these we fixed 2 rare crashes
 and a hang associated with SMP. We also fixed a handful of interface problems.
 See the history file for more information.
 
-FM/2 3.16: This release makes changes that should allow FM/2 to be 
-translated into different languages. It also adds date and number 
-formatting based on the system locale settings. We now need to find 
-some individuals who are interested in doing the translations. 
+FM/2 3.16: This release makes changes that should allow FM/2 to be
+translated into different languages. It also adds date and number
+formatting based on the system locale settings. We now need to find
+some individuals who are interested in doing the translations.
 Currently, double bit character sets are not supported in FM/2.
 
 We have also fixed multiple minor annoyances such as improving
 detection of text verses binary files when opening viewers and
 filtering/(de)select mask now works for archives with pathnames.
-We added the ability to turn error/alert beeps on and off in the 
+We added the ability to turn error/alert beeps on and off in the
 settings notebook (General page) and changes to the details switches
 in compare directories are now saved. See the history for more details.
 
@@ -141,7 +141,7 @@ space to avoid data loss.
 
 We also fixed some additional bugs and provide some performance
 enhancements. If you have had trouble with "broken pipe" errors
-copying to a netdrives samba drive let me know if it now works
+copying to a netdrive samba drive let me know if it now works
 better. I have built in some retries for this error but can't test
 it since I don't see the problem. Also please report back to us anytime
 you see the Debug error report to author box with as much detail about
@@ -641,21 +641,21 @@ Support:
 There is a Yahoo group devoted to fm/2 at:
 
   http://groups.yahoo.com/group/fm2user/
-  
+
   This group is now closed but it still contains some useful information
-  
+
 There is a new mailing list at:
-  
+
   fm2-user@netlabs.org
-  
+
   To subscribe send an email to:
-  
+
   fm2-user-subscribe@netlabs.org
-  
+
   The subject and body can be empty.
-  
+
   This group is mirrored on Gmane at:
-  
+
   http://dir.gmane.org/gmane.org.netlabs.fm2.user
 
 You will find lots of friendly folks ready to help.
@@ -667,10 +667,10 @@ Check it out at
   http://svn.netlabs.org/fm2
 
 To create a ticket reporting a defect or requesting an enhancement.
-You must be logged into TRAC. Please login with your Netlabs login id. 
-If you do not have a login id, you can request one at 
-http://www.netlabs.org/en/site/member/member.xml. 
-If you have troubles acquiring a Netlabs login id send an e-mail to 
+You must be logged into TRAC. Please login with your Netlabs login id.
+If you do not have a login id, you can request one at
+http://www.netlabs.org/en/site/member/member.xml.
+If you have troubles acquiring a Netlabs login id send an e-mail to
 Netlabs Community Mailing List <community@netlabs.org>.
 
 You can also browse the source at this site.
@@ -680,8 +680,8 @@ To obtain the source from the SVN use something like the following to check out 
   mkdir fm2_workspace
   cd fm2_workspace
   svn checkout http://svn.netlabs.org/repos/fm2/trunk trunk
-  
-If you wish commit access please contact us directly.  
+
+If you wish commit access please contact us directly.
 
 You can reach us directly at:
 
@@ -694,8 +694,8 @@ You can reach us directly at:
   ygk@qwest.net
 
 We also monitor the comp.os.os2.apps newsgroup, several
-others in the comp.os.os2.* hierarchy and other groups where 
-release announcements are made. 
+others in the comp.os.os2.* hierarchy and other groups where
+release announcements are made.
 
 Thanks and enjoy.
 

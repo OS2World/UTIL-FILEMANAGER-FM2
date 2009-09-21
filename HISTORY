@@ -6,22 +6,22 @@ New stuff at the top.  This list is not necessarily complete.
  led also shows list including # of total in thread notes window Ticket 302 (Steven)
  o Place drive letters over bitmaps replace, enlarge bitmaps in drive bar and add a refresh
  removable media and rescan button to the drive bar. Tickets 13, 91, 378, 385 (Gregg, David)
- o Added Option to list drive label or file system name along side of the drive letter 
- in the drive tree. Tickets 47 339 (Gregg)     
+ o Added Option to list drive label or file system name along side of the drive letter
+ in the drive tree. Tickets 47 339 (Gregg)
  o Modified the directory container "Scanning" message to "Please wait ...scanning...
  Ticket 291 (Steven)
  o Toggling between split and full status bars no longer opens a databar window. Ticket 364
  (Gregg)
- o Shortened the status line 1 message for split status lines; Conditionally added 
+ o Shortened the status line 1 message for split status lines; Conditionally added
  file system type to message. Ticket 365 (Gregg)
  o Added option to open user INI, System INI or fm/2's INI files to a submenu on
  the Utilities menu Ticket 366 (Gregg)
  o FM/2 can now load in high memory. We have shipped both high (3.17.1) and low (3.17.0)
- versions. Ticket 368, 388. 389, 401 (Gregg) 
- o Streamlined container scanning/loading Ticket 369, 370, 380, 381, 382 (Gregg, Steven) 
- o Fixed crashes caused by collecting files from list file and by pressing Ctrl-g 
+ versions. Ticket 368, 388. 389, 401 (Gregg)
+ o Streamlined container scanning/loading Ticket 369, 370, 380, 381, 382 (Gregg, Steven)
+ o Fixed crashes caused by collecting files from list file and by pressing Ctrl-g
  in the collector. Ticket 376, 395 (Gregg, Steven)
- o Allow .LONGNAME to be displayed for FAT & LAN drives	and delete .LONGNAME EA 
+ o Allow .LONGNAME to be displayed for FAT & LAN drives	and delete .LONGNAME EA
  if it becomes the filename on a copy or move. Ticket 377. 379, 386 (Gregg)
  o Setting to turn off state save now work Ticket 383 (Gregg)
  o Fixed container update failure in FM2 lite Ticket 390 (Gregg)
@@ -30,11 +30,11 @@ New stuff at the top.  This list is not necessarily complete.
  o Update window layout help & fix labeling issues in fm2 main window help bmp Ticket 393
  (Steven, David)
  o Fixed a hang that occurred on SMP systems. Ticket 394 (Steven, Gregg)
- o Fixed odd behavior when double clicking on the diretory container directory icon. 
+ o Fixed odd behavior when double clicking on the directory container directory icon.
  Ticket 398 (Gregg)
  o Provided the option to turn off the "drive exclude" suggestion dialog on start up.
  Ticket 399 (Gregg)
- o Suppressed error messages when scanning a directory containing a locked text file 
+ o Suppressed error messages when scanning a directory containing a locked text file
  or when Drag&Dropping more then one file from PMMail Ticket 391 400 (Gregg)
 
 3.16

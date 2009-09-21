@@ -5,23 +5,6 @@
 # Copyright (c) 2002, 2009 Steven H. Levine
 
 # 22 May 03 SHL Correct icon dependencies
-# 21 Nov 03 SHL Correct ipf dependents
-# 26 Jul 04 SHL Correct CFLAGSR
-# 23 May 05 SHL Drop saymsg
-# 24 May 05 SHL Add clean and cleanobj targets
-# 06 Jun 05 SHL Add warnings enable (WARN)
-# 24 Jul 05 SHL Rework resource kit support
-# 16 Apr 06 SHL Add lxlite target
-# 28 Jun 06 SHL Add more .h dependencies
-# 22 Jul 06 SHL Add more .h dependencies
-# 29 Jul 06 SHL Reorganize icons
-# 31 Jul 06 SHL Tweak dependencies
-# 16 Aug 06 SHL Drop 4os2-ism
-# 18 Aug 06 SHL Drop rc -x2 compression - not reliable
-# 01 Sep 06 SHL fm3.hlp: add missing dependency on ..\bitmaps
-# 01 Sep 06 SHL Adjust fm3str.str case
-# 30 Sep 06 GKY Add del of Help file to clean
-# 19 Oct 06 SHL Move all .hlp logic build to ipf\makefile too
 # 12 May 07 SHL Drop obsolete macros
 # 02 Jun 07 SHL Convert to OpenWatcom
 # 27 Jun 07 SHL Allow DEBUG set from command line or environment
@@ -51,14 +34,15 @@
 # 18 Dec 08 SHL Avoid extra fm3res.str builds
 # 04 Feb 09 SHL Drop mkstr and fm3*.str now that we use STRINGTABLE
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
+# 30 Jul 09 SHL Avoid attempting to attach resources to fm3res.map
 
 # Environment: see makefile_pre.mk
 
-# DEBUG - not defined = release build, defined = debug build
-# WARNALL - add more warnings if defined
-# FORTIFY - build with FORTIFYed memory
-# USE_RC - build with rc.exe if defined, other build with wrc.exe
-# HIMEM - build with changes to allow loading in high memory
+# DEBUG - debug build if defined, release build if not defined
+# WARNALL - add more warnings if defined, standard warnings if not defined
+# FORTIFY - enable FORTIFY heap checking if defined, omit FORITY support if not defined
+# USE_RC - use rc.exe if defined, use wrc.exe if not defined
+# HIMEM - load code and data in in high memory if defined, use low memory only if not defined
 
 BASE = fm3dll
 BASERES = fm3res
@@ -268,9 +252,9 @@ $(BASERES).dll $(BASERES).lib $(BASERES).map: $(BASERES).res $(BASERES).obj $(BA
   @echo Linking $(BASERES).dll
   $(LINK) @$(BASERES).lrf @$(BASERES).def
   @echo.
-  @echo Compiling resource: $@
+  @echo Attaching resources to $(BASERES).dll
   @echo.
-  $(RC) $(RCFLAGS2) $(BASERES).res $@
+  $(RC) $(RCFLAGS2) $(BASERES).res $(BASERES).dll
 
 $(BASERES).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -296,7 +280,7 @@ $(BASERES).dll: $(BASERES).res
   lxlite $@ /c:minstub
 !endif
   @echo.
-  @echo Compiling resource: $@
+  @echo Ataching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $@
 !ifndef DEBUG

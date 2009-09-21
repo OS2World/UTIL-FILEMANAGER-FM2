@@ -1,6 +1,8 @@
 # makefile_post.mk - common makefile suffix settings for all makefiles
 # $Id$
 
+# Copyright (c) 2002, 2009 Steven H. Levine
+
 # 16 Aug 05 SHL Clean up
 # 16 Apr 06 SHL Add lxlite target
 # 02 Jun 07 SHL Convert to OpenWatcom
@@ -9,6 +11,7 @@
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 # 14 Dec 08 SHL Drop EXCEPTQ support - will not be used
+# 24 Jul 09 SHL Comments
 
 !ifndef MAKERES
 
@@ -20,7 +23,7 @@ $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   @echo Linking $(BASE).exe
   $(LINK) @$(BASE).lrf @$(BASE).def
   @echo.
-  @echo Compiling resource: $@
+  @echo Attaching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
 
@@ -45,7 +48,7 @@ $(BASE).exe: $(BASE).res .explicit
      lxlite $@ /c:minstub
 !endif
   @echo.
-  @echo Compiling resource: $@
+  @echo Attaching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
 !ifndef DEBUG
