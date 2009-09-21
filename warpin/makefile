@@ -22,9 +22,10 @@
 #               script needs to be built. This allows the version strings to be included
 #               in SED.IN which, in turn, means the SED command line is much simplified.
 #               Therefore SED.IN has now been removed from the SVN repository.
+# 20 Sep 09 SHL Set FM2_VER for v3.17
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
-FM2_VER=-3-16-0                  # default value
+FM2_VER=-3-17-0                  # default value
 !ifdef %FM2_VER                  # if defined via env. var.
 FM2_VER=$(%FM2_VER)              #     use the env. var.
 !endif
