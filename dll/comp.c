@@ -67,6 +67,11 @@
   15 Mar 09 GKY Use WriteDetailsSwitchs to save detail switch changes to the ini file.
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   13 Jul 09 SHL Sync with renames
+  26 Sep 09 SHL Don't hide if nothing selected
+  27 Sep 09 SHL Support AND'ed selections
+  27 Sep 09 SHL Rework CompSelect for size and speed
+  27 Sep 09 SHL Allow fast cancel
+  27 Sep 09 SHL Drop unused reset logic
 
 ***********************************************************************/
 
@@ -75,7 +80,6 @@
 #include <share.h>
 #include <io.h>
 #include <ctype.h>
-// #include <process.h>			// _endthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -124,7 +128,7 @@
 #include "i18nutil.h"			// CommaFmtULL
 #include "fortify.h"			// 06 May 08 SHL added
 #include "excputil.h"			// xbeginthread
-#include "info.h"                       // driveflags
+#include "info.h"			// driveflags
 
 typedef struct
 {
@@ -140,7 +144,9 @@ static PSZ pszSrcFile = __FILE__;
 #pragma data_seg(GLOBAL1)
 BOOL fSelectedAlways;
 
-//=== SnapShot() Write directory tree to file and recurse if requested ===
+/**
+ * Write directory tree to snapshot file; recurse if requested
+ */
 
 static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 {
@@ -148,7 +154,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
-  CHAR  szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
+  CHAR szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
 
   // 13 Aug 07 SHL fimxe to use FileToGet
   pffb = xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);
@@ -168,24 +174,24 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 			 pffb, sizeof(FILEFINDBUF4L), &ulFindCnt, FIL_QUERYEASIZEL)) {
 	do {
 	  strcpy(enddir, pffb->achName);
-          if (!(pffb->attrFile & FILE_DIRECTORY)) {
-            CommaFmtULL(szCmmaFmtFileSize,
-                        sizeof(szCmmaFmtFileSize), pffb->cbFile, ' ');
-            FDateFormat(szDate, pffb->fdateLastWrite);
+	  if (!(pffb->attrFile & FILE_DIRECTORY)) {
+	    CommaFmtULL(szCmmaFmtFileSize,
+			sizeof(szCmmaFmtFileSize), pffb->cbFile, ' ');
+	    FDateFormat(szDate, pffb->fdateLastWrite);
 	    fprintf(fp,
 		    "\"%s\",%u,%s,%s,%02u%s%02u%s%02u,%lu,%lu,N\n",
 		    mask,
 		    enddir - mask,
 		    szCmmaFmtFileSize,
 		    szDate,
-                    pffb->ftimeLastWrite.hours,
-                    TimeSeparator,
-                    pffb->ftimeLastWrite.minutes,
-                    TimeSeparator,
+		    pffb->ftimeLastWrite.hours,
+		    TimeSeparator,
+		    pffb->ftimeLastWrite.minutes,
+		    TimeSeparator,
 		    pffb->ftimeLastWrite.twosecs,
 		    pffb->attrFile,
-                    pffb->cbList > 4 ? pffb->cbList / 2 : 0);
-          }
+		    pffb->cbList > 4 ? pffb->cbList / 2 : 0);
+	  }
 	  // Skip . and ..
 	  else if (recurse &&
 		   (pffb->achName[0] != '.' ||
@@ -203,9 +209,12 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
   }
 }
 
-//=== StartSnap() Write directory tree to snapshot file ===
+/**
+ * Write snapshot file thread
+ * Write directory tree to snapshot file
+ */
 
-static VOID StartSnap(VOID *pargs)
+static VOID StartSnapThread(VOID *pargs)
 {
   SNAPSTUFF *sf = (SNAPSTUFF *)pargs;
   FILE *fp;
@@ -235,7 +244,10 @@ static VOID StartSnap(VOID *pargs)
   }
 }
 
-//=== CompareFilesThread() Compare files and update container select flags ===
+/**
+ * Compare files thread
+ * Scan files and update container select flags
+ */
 
 static VOID CompareFilesThread(VOID *args)
 {
@@ -373,7 +385,9 @@ static VOID CompareFilesThread(VOID *args)
   }
 }
 
-//=== CFileDlgProc() Select directories to compare dialog procedure ===
+/**
+ * Select directories to compare dialog procedure
+ */
 
 MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -440,7 +454,10 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
-//=== ActionCnrThread() Do requested action on container contents ===
+/**
+ * Action Thread
+ * Do requested action on container contents
+ */
 
 static VOID ActionCnrThread(VOID *args)
 {
@@ -514,6 +531,9 @@ static VOID ActionCnrThread(VOID *args)
       InitITimer(&itdSleep, 500);	// Sleep every 500 mSec
 
       while (pciS && (INT)pciS != -1 && pciD && (INT)pciD != -1) {
+
+	if (cmp->cmp->stop)
+	  break;			// 27 Sep 09 SHL
 
 	pciNextS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pciS),
 			  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
@@ -709,12 +729,11 @@ static VOID ActionCnrThread(VOID *args)
 		if (pciD->rc.flRecordAttr & CRA_SELECTED)
 		  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
 			     MPFROM2SHORT(FALSE, CRA_SELECTED));
-		// 12 Jan 08 SHL
-		if (pciD->pszFileName == NullStr) {
+		if (~pciD->flags & CNRITEM_EXISTS) {
 		  if (hwndCnrD == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
-		    cmp->totalleft++;
+		    cmp->cmp->totalleft++;
 		  else
-		    cmp->totalright++;
+		    cmp->cmp->totalright++;
 		}
 		FreeCnrItemData(pciD);
 		pciD->pszFileName = xstrdup(szNewName, pszSrcFile, __LINE__);
@@ -771,7 +790,6 @@ static VOID ActionCnrThread(VOID *args)
       WinDestroyMsgQueue(hmq);
     }
     PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1), MPVOID);
-    // PostMsg(cmp->hwnd, WM_COMMAND, MPFROM2SHORT(IDM_DESELECTALL, 0), MPVOID);	// 18 Jan 08 SHL we can count now
     DecrThreadUsage();
     free(cmp);
     WinTerminate(hab);
@@ -783,9 +801,11 @@ static VOID ActionCnrThread(VOID *args)
     xfree(cmp, pszSrcFile, __LINE__);
 }
 
-VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset);
+static VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, USHORT shiftstate, BOOL *stop);
 
-//=== SelectCnrsThread() Update container selection flags thread ===
+/**
+ * Update container selection flags thread
+ */
 
 static VOID SelectCnrsThread(VOID *args)
 {
@@ -822,16 +842,12 @@ static VOID SelectCnrsThread(VOID *args)
 	break;
 
       default:
-        // 08 Feb 09 SHL fixme to support Ctrl-click for ANDed select
-	// 13 Jan 08 SHL fixme to decide if cmp->reset can ever get set
-	// if not lots of code can disappear
-	if (cmp->reset)
-	  DbgMsg(pszSrcFile, __LINE__, "cmp->reset is TRUE");
 	CompSelect(WinWindowFromID(cmp->hwnd, COMP_LEFTDIR),
 		   WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR),
 		   cmp->hwnd,
 		   cmp->action,
-		   cmp->reset);
+		   cmp->shiftstate,
+		   &cmp->cmp->stop);
 	break;
       }
       if (!PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPFROMLONG(1L), MPVOID))
@@ -850,20 +866,77 @@ static VOID SelectCnrsThread(VOID *args)
 }
 
 /**
- * Do select actions for compare directories containers
- * @param action is select mode
- * @param reset requests flags by regenerated
+ * Set item selections for CompSelect
  */
 
-VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, BOOL reset)
+static VOID CompSelectSetSelects(PCNRITEM pciS, PCNRITEM pciD, BOOL matchS, BOOL matchD, BOOL wantAnd);
+
+static VOID CompSelectSetSelects(PCNRITEM pciS, PCNRITEM pciD, BOOL matchS, BOOL matchD, BOOL wantAnd)
 {
-  PCNRITEM pciS, pciD, *pciSa = NULL, *pciDa = NULL;
+  ULONG oldSel;
+  ULONG newSel;
+
+  oldSel = pciS->rc.flRecordAttr & CRA_SELECTED;
+  newSel = matchS ? (wantAnd ? oldSel : CRA_SELECTED) : (wantAnd ? 0 : oldSel);
+  if ((pciS->rc.flRecordAttr & CRA_SELECTED) != newSel)
+    WinSendMsg(pciS->hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
+	       MPFROM2SHORT(newSel ? TRUE : FALSE, CRA_SELECTED));
+
+  oldSel = pciD->rc.flRecordAttr & CRA_SELECTED;
+  newSel = matchD ? (wantAnd ? oldSel : CRA_SELECTED) : (wantAnd ? 0 : oldSel);
+  if ((pciD->rc.flRecordAttr & CRA_SELECTED) != newSel) {
+    WinSendMsg(pciD->hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
+	       MPFROM2SHORT(newSel ? TRUE : FALSE, CRA_SELECTED));
+  }
+}
+
+/**
+ * Clear item selections for CompSelect
+ */
+
+static BOOL CompSelectClearSelects(PCNRITEM pciS, PCNRITEM pciD, BOOL matchS, BOOL matchD);
+
+static BOOL CompSelectClearSelects(PCNRITEM pciS, PCNRITEM pciD, BOOL matchS, BOOL matchD)
+{
+  BOOL changed;
+
+  if ((pciS->rc.flRecordAttr & CRA_SELECTED) && matchS) {
+    WinSendMsg(pciS->hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
+	       MPFROM2SHORT(FALSE, CRA_SELECTED));
+    changed = TRUE;
+  }
+  else
+    changed = FALSE;
+
+  if ((pciD->rc.flRecordAttr & CRA_SELECTED) && matchD) {
+    WinSendMsg(pciD->hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
+	       MPFROM2SHORT(FALSE, CRA_SELECTED));
+    changed = TRUE;
+  }
+
+  return changed;
+}
+
+/**
+ * Do select actions for compare directories containers
+ * @param action is select mode
+ */
+
+static VOID CompSelect(HWND hwndCnrS, HWND hwndCnrD, HWND hwnd, INT action, USHORT shiftstate, BOOL *stop)
+{
+  PCNRITEM pciS;
+  PCNRITEM pciD;
+  PCNRITEM *pciSa = NULL;
+  PCNRITEM *pciDa = NULL;
   CNRINFO cnri;
   BOOL slow = FALSE;
-  UINT x, numD, numS;
-  INT ret = 0;
+  UINT x;
+  UINT numD;
+  UINT numS;
   ITIMER_DESC itdSleep = { 0 };
   BOOL fUpdateHideButton = FALSE;
+  BOOL wantAnd = (shiftstate & (KC_SHIFT | KC_ALT | KC_CTRL)) == KC_CTRL;
+  BOOL matched;
 
   if (!hwndCnrS || !hwndCnrD) {
     Runtime_Error(pszSrcFile, __LINE__, "hwndCnrS %p hwndCnrD %p", hwndCnrS, hwndCnrD);
@@ -903,11 +976,9 @@ Restart:
   memset(pciSa, 0, sizeof(PCNRITEM) * numS);
 
   pciD = (PCNRITEM)WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
-			       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
   x = 0;
   while (pciD && (INT)pciD != -1 && x < numD) {
-    if (reset)
-      pciD->flags = 0;
     pciDa[x] = pciD;
     x++;
     if (!slow)
@@ -919,7 +990,7 @@ Restart:
   } // while
 
   if (numD != x) {
-    // Something out of sync - fixme to document why
+    // Something out of sync - fixme to document why slow logic needed
     if (!slow) {
       slow = TRUE;
       goto Restart;
@@ -934,8 +1005,6 @@ Restart:
 			       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
   x = 0;
   while (pciS && (INT)pciS != -1 && x < numS) {
-    if (reset)
-      pciS->flags = 0;
     pciSa[x] = pciS;
     x++;
     if (!slow)
@@ -957,204 +1026,119 @@ Restart:
     return;
   }
 
-  if (reset) {
-    // Update flags for files that exist on both sides
-    for (x = 0; x < numS; x++) {
-
-      if (!*pciSa[x]->pszFileName || !*pciDa[x]->pszFileName) {
-	// 12 Jan 08 SHL clear flags
-	pciSa[x]->flags = 0;		// File exists on one side only
-	pciDa[x]->flags = 0;
-	continue;
-      }
-
-      pciSa[x]->flags |= CNRITEM_EXISTS;	// File exists on both sides
-      pciDa[x]->flags |= CNRITEM_EXISTS;
-      if (pciSa[x]->cbFile + pciSa[x]->easize >
-	  pciDa[x]->cbFile + pciDa[x]->easize) {
-	pciSa[x]->flags |= CNRITEM_LARGER;
-	pciDa[x]->flags |= CNRITEM_SMALLER;
-      }
-      else if (pciSa[x]->cbFile + pciSa[x]->easize <
-	       pciDa[x]->cbFile + pciDa[x]->easize) {
-	pciSa[x]->flags |= CNRITEM_SMALLER;
-	pciDa[x]->flags |= CNRITEM_LARGER;
-      }
-      ret = TestCDates(&pciDa[x]->date, &pciDa[x]->time,
-		       &pciSa[x]->date, &pciSa[x]->time);
-      if (ret == 1)
-	/* 13 Jan 08 SHL fixme to be gone?
-	  ((pciSa[x]->date.year > pciDa[x]->date.year) ? TRUE :
-	  (pciSa[x]->date.year < pciDa[x]->date.year) ? FALSE :
-	  (pciSa[x]->date.month > pciDa[x]->date.month) ? TRUE :
-	  (pciSa[x]->date.month < pciDa[x]->date.month) ? FALSE :
-	  (pciSa[x]->date.day > pciDa[x]->date.day) ? TRUE :
-	  (pciSa[x]->date.day < pciDa[x]->date.day) ? FALSE :
-	  (pciSa[x]->time.hours > pciDa[x]->time.hours) ? TRUE :
-	  (pciSa[x]->time.hours < pciDa[x]->time.hours) ? FALSE :
-	  (pciSa[x]->time.minutes > pciDa[x]->time.minutes) ? TRUE :
-	  (pciSa[x]->time.minutes < pciDa[x]->time.minutes) ? FALSE :
-	  (pciSa[x]->time.seconds > pciDa[x]->time.seconds) ? TRUE :
-	  (pciSa[x]->time.seconds < pciDa[x]->time.seconds) ? FALSE : FALSE)
-	*/
-      {
-	pciSa[x]->flags |= CNRITEM_NEWER;
-	pciDa[x]->flags |= CNRITEM_OLDER;
-      }
-      else if (ret == -1)
-	/* 13 Jan 08 SHL fixme to be gone?
-	  ((pciSa[x]->date.year < pciDa[x]->date.year) ? TRUE :
-	  (pciSa[x]->date.year > pciDa[x]->date.year) ? FALSE :
-	  (pciSa[x]->date.month < pciDa[x]->date.month) ? TRUE :
-	  (pciSa[x]->date.month > pciDa[x]->date.month) ? FALSE :
-	  (pciSa[x]->date.day < pciDa[x]->date.day) ? TRUE :
-	  (pciSa[x]->date.day > pciDa[x]->date.day) ? FALSE :
-	  (pciSa[x]->time.hours < pciDa[x]->time.hours) ? TRUE :
-	  (pciSa[x]->time.hours > pciDa[x]->time.hours) ? FALSE :
-	  (pciSa[x]->time.minutes < pciDa[x]->time.minutes) ? TRUE :
-	  (pciSa[x]->time.minutes > pciDa[x]->time.minutes) ? FALSE :
-	  (pciSa[x]->time.seconds < pciDa[x]->time.seconds) ? TRUE :
-	  (pciSa[x]->time.seconds > pciDa[x]->time.seconds) ? FALSE :
-	  FALSE)
-	*/
-      {
-	pciSa[x]->flags |= CNRITEM_OLDER;
-	pciDa[x]->flags |= CNRITEM_NEWER;
-      }
-      SleepIfNeeded(&itdSleep, 0);
-    } // for
-  } // if reset
-
   switch (action) {
   case IDM_SELECTIDENTICAL:
+    // Same Date/size
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
-	  pciSa[x]->flags & CNRITEM_EXISTS &&
-	  ~pciSa[x]->flags & CNRITEM_SMALLER &&
-	  ~pciSa[x]->flags & CNRITEM_LARGER &&
-	  ~pciSa[x]->flags & CNRITEM_NEWER &&
-	  ~pciSa[x]->flags & CNRITEM_OLDER) {
-	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		     MPFROM2SHORT(TRUE, CRA_SELECTED));
-	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	matched = pciS->flags & CNRITEM_EXISTS &&
+		  ~pciS->flags & CNRITEM_SMALLER &&
+		  ~pciS->flags & CNRITEM_LARGER &&
+		  ~pciS->flags & CNRITEM_NEWER &&
+		  ~pciS->flags & CNRITEM_OLDER;
+	CompSelectSetSelects(pciS, pciDa[x], matched, matched, wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
     break;
 
   case IDM_SELECTSAME:
+    // Same Size
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
-	  pciSa[x]->flags & CNRITEM_EXISTS &&
-	  ~pciSa[x]->flags & CNRITEM_SMALLER &&
-	  ~pciSa[x]->flags & CNRITEM_LARGER) {
-	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		     MPFROM2SHORT(TRUE, CRA_SELECTED));
-	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	matched = pciS->flags & CNRITEM_EXISTS &&
+		  ~pciS->flags & CNRITEM_SMALLER &&
+		  ~pciS->flags & CNRITEM_LARGER;
+	CompSelectSetSelects(pciS, pciDa[x], matched, matched, wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
     break;
 
   case IDM_SELECTSAMECONTENT:
-    for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
-	  pciSa[x]->flags & CNRITEM_EXISTS)
-      {
-	FILE *fp1 = NULL;
-	FILE *fp2 = NULL;
-	BOOL gotMatch = FALSE;
-	UINT errLineNo = 0;
-	UINT compErrno = 0;
-	CHAR buf1[1024];
-	CHAR buf2[1024];
-	HAB hab = WinQueryAnchorBlock(hwndCnrS);
+    for (x = 0; x < numS && !*stop; x++) {
 
-	if (!*pciSa[x]->pszFileName ||
-	    !*pciDa[x]->pszFileName) {
-	  Runtime_Error(pszSrcFile, __LINE__,
-			"CNRITEM_EXISTS set with null file name for index %u", x);
-	  break;
-	}
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	matched = FALSE;
+	pciD = pciDa[x];
+	if (pciS->flags & CNRITEM_EXISTS) {
+	  FILE *fp1 = NULL;
+	  FILE *fp2 = NULL;
+	  UINT errLineNo = 0;
+	  UINT compErrno = 0;
+	  CHAR buf1[1024];
+	  CHAR buf2[1024];
+	  HAB hab = WinQueryAnchorBlock(hwndCnrS);
 
-	fp1 = _fsopen(pciSa[x]->pszFileName, "rb", SH_DENYNO);
-	if (!fp1) {
-	  errLineNo = __LINE__;
-	  compErrno = errno;
-	}
-	else {
-	  fp2 = _fsopen(pciDa[x]->pszFileName, "rb", SH_DENYNO);
-	  if (!fp2) {
+	  if (!*pciS->pszFileName ||
+	      !*pciD->pszFileName) {
+	    Runtime_Error(pszSrcFile, __LINE__,
+			  "CNRITEM_EXISTS set with null file name for index %u", x);
+	    break;
+	  }
+
+	  fp1 = _fsopen(pciS->pszFileName, "rb", SH_DENYNO);
+	  if (!fp1) {
 	    errLineNo = __LINE__;
 	    compErrno = errno;
 	  }
 	  else {
-	    size_t len1 = filelength(fileno(fp1));
-	    size_t len2 = filelength(fileno(fp2));
+	    fp2 = _fsopen(pciD->pszFileName, "rb", SH_DENYNO);
+	    if (!fp2) {
+	      errLineNo = __LINE__;
+	      compErrno = errno;
+	    }
+	    else {
+	      size_t len1 = filelength(fileno(fp1));
+	      size_t len2 = filelength(fileno(fp2));
+	      if (len1 == len2) {
+		setbuf(fp1, NULL);
+		setbuf(fp2, NULL);
+		while (WinIsWindow(hab, hwndCnrS)) {
+		  size_t numread1 = fread(buf1, 1, 1024, fp1);
+		  size_t numread2 = fread(buf2, 1, 1024, fp2);
 
-	    if (len1 == len2) {
-	      setbuf(fp1, NULL);
-	      setbuf(fp2, NULL);
-	      while (WinIsWindow(hab, hwndCnrS)) {
-		size_t numread1 = fread(buf1, 1, 1024, fp1);
-		size_t numread2 = fread(buf2, 1, 1024, fp2);
-
-		if (!numread1 || !numread2 || numread1 != numread2) {
-		  if (ferror(fp1) || ferror(fp2)) {
-		    errLineNo = __LINE__;
-		    compErrno = errno;
+		  if (!numread1 || !numread2 || numread1 != numread2) {
+		    if (ferror(fp1) || ferror(fp2)) {
+		      errLineNo = __LINE__;
+		      compErrno = errno;
+		    }
+		    else if (feof(fp1) && feof(fp2))
+		      matched = TRUE;
+		    break;
 		  }
-		  else if (feof(fp1) && feof(fp2))
-		    gotMatch = TRUE;
-		  break;
-		}
-		else if (memcmp(buf1, buf2, numread1))
-		  break;
-	      }	// while
-	    } // same len
+		  else if (memcmp(buf1, buf2, numread1))
+		    break;
+		}	// while
+	      } // same len
+	    } // if open ok
+	  } // if open ok
+	  if (fp1)
+	    fclose(fp1);
+	  if (fp2)
+	    fclose(fp2);
+
+	  if (errLineNo) {
+	    Runtime_Error(pszSrcFile, errLineNo,
+			  "error %d while comparing", compErrno);
 	  }
-	}
-
-	if (fp1)
-	  fclose(fp1);
-
-	if (fp2)
-	  fclose(fp2);
-
-	if (errLineNo) {
-	  Runtime_Error(pszSrcFile, errLineNo,
-			"error %d while comparing", compErrno);
-	}
-
-	if (gotMatch) {
-	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
-      }
+	} // if exists
+	CompSelectSetSelects(pciS, pciD, matched, matched, wantAnd);
+      } // if not filtered
       SleepIfNeeded(&itdSleep, 0);
     } // for
     break;
 
   case IDM_SELECTBOTH:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
-	  pciSa[x]->flags & CNRITEM_EXISTS) {
-	if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		     MPFROM2SHORT(TRUE, CRA_SELECTED));
-	if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		     MPFROM2SHORT(TRUE, CRA_SELECTED));
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	matched = pciS->flags & CNRITEM_EXISTS;
+	CompSelectSetSelects(pciS, pciD, matched, matched, wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1162,18 +1146,14 @@ Restart:
 
   case IDM_SELECTONE:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
-	  ~pciSa[x]->flags & CNRITEM_EXISTS) {
-	if (*pciSa[x]->pszFileName) {
-	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	  }
-	}
-	else if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		     MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	CompSelectSetSelects(pciS,
+			     pciD,
+			     ~pciS->flags & CNRITEM_EXISTS && *pciS->pszFileName,
+			     ~pciD->flags & CNRITEM_EXISTS && *pciD->pszFileName,
+			     wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1181,17 +1161,14 @@ Restart:
 
   case IDM_SELECTBIGGER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_LARGER) {
-	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
-	else if (pciDa[x]->flags & CNRITEM_LARGER) {
-	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	CompSelectSetSelects(pciS,
+			     pciD,
+			     pciS->flags & CNRITEM_LARGER,
+			     pciD->flags & CNRITEM_LARGER,
+			     wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1199,17 +1176,14 @@ Restart:
 
   case IDM_SELECTSMALLER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_SMALLER) {
-	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
-	else if (pciDa[x]->flags & CNRITEM_SMALLER) {
-	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	CompSelectSetSelects(pciS,
+			     pciD,
+			     pciS->flags & CNRITEM_SMALLER,
+			     pciD->flags & CNRITEM_SMALLER,
+			     wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1217,17 +1191,14 @@ Restart:
 
   case IDM_SELECTNEWER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_NEWER) {
-	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
-	else if (pciDa[x]->flags & CNRITEM_NEWER) {
-	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	CompSelectSetSelects(pciS,
+			     pciD,
+			     pciS->flags & CNRITEM_NEWER,
+			     pciD->flags & CNRITEM_NEWER,
+			     wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1235,17 +1206,14 @@ Restart:
 
   case IDM_SELECTOLDER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_OLDER) {
-	  if (~pciSa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
-	else if (pciDa[x]->flags & CNRITEM_OLDER) {
-	  if (~pciDa[x]->rc.flRecordAttr & CRA_SELECTED)
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(TRUE, CRA_SELECTED));
-	}
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	CompSelectSetSelects(pciS,
+			     pciD,
+			     pciS->flags & CNRITEM_OLDER,
+			     pciD->flags & CNRITEM_OLDER,
+			     wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1253,18 +1221,11 @@ Restart:
 
   case IDM_DESELECTBOTH:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED &&
-	  pciSa[x]->flags & CNRITEM_EXISTS) {
-	if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	  WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		     MPFROM2SHORT(FALSE, CRA_SELECTED));
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	matched = pciS->flags & CNRITEM_EXISTS;
+	if (CompSelectClearSelects(pciS, pciDa[x], matched, matched))
 	  fUpdateHideButton = TRUE;
-	}
-	if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		     MPFROM2SHORT(FALSE, CRA_SELECTED));
-	  fUpdateHideButton = TRUE;
-	}
       }
       SleepIfNeeded(&itdSleep, 0);
     } // for
@@ -1272,20 +1233,14 @@ Restart:
 
   case IDM_DESELECTONE:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (~pciSa[x]->flags & CNRITEM_EXISTS) {
-	  if (*pciSa[x]->pszFileName) {
-	    if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-			 MPFROM2SHORT(FALSE, CRA_SELECTED));
-	      fUpdateHideButton = TRUE;
-	    }
-	  }
-	  else if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	if (CompSelectClearSelects(pciS,
+				   pciD,
+				   ~pciS->flags & CNRITEM_EXISTS && *pciS->pszFileName,
+				   ~pciD->flags & CNRITEM_EXISTS && *pciD->pszFileName)) {
+	  fUpdateHideButton = TRUE;
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1294,20 +1249,14 @@ Restart:
 
   case IDM_DESELECTBIGGER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_LARGER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
-	}
-	else if (pciDa[x]->flags & CNRITEM_LARGER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	if (CompSelectClearSelects(pciS,
+				   pciD,
+				   pciS->flags & CNRITEM_LARGER,
+				   pciD->flags & CNRITEM_LARGER)) {
+	  fUpdateHideButton = TRUE;
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1316,20 +1265,14 @@ Restart:
 
   case IDM_DESELECTSMALLER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_SMALLER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
-	}
-	else if (pciDa[x]->flags & CNRITEM_SMALLER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	if (CompSelectClearSelects(pciS,
+				   pciD,
+				   pciS->flags & CNRITEM_SMALLER,
+				   pciD->flags & CNRITEM_SMALLER)) {
+	  fUpdateHideButton = TRUE;
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1338,20 +1281,14 @@ Restart:
 
   case IDM_DESELECTNEWER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_NEWER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
-	}
-	else if (pciDa[x]->flags & CNRITEM_NEWER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	if (CompSelectClearSelects(pciS,
+				   pciD,
+				   pciS->flags & CNRITEM_NEWER,
+				   pciD->flags & CNRITEM_NEWER)) {
+	  fUpdateHideButton = TRUE;
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1360,20 +1297,14 @@ Restart:
 
   case IDM_DESELECTOLDER:
     for (x = 0; x < numS; x++) {
-      if (~pciSa[x]->rc.flRecordAttr & CRA_FILTERED) {
-	if (pciSa[x]->flags & CNRITEM_OLDER) {
-	  if (pciSa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciSa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
-	}
-	else if (pciDa[x]->flags & CNRITEM_OLDER) {
-	  if (pciDa[x]->rc.flRecordAttr & CRA_SELECTED) {
-	    WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciDa[x]),
-		       MPFROM2SHORT(FALSE, CRA_SELECTED));
-	    fUpdateHideButton = TRUE;
-	  }
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	if (CompSelectClearSelects(pciS,
+				   pciD,
+				   pciS->flags & CNRITEM_OLDER,
+				   pciD->flags & CNRITEM_OLDER)) {
+	  fUpdateHideButton = TRUE;
 	}
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1382,18 +1313,7 @@ Restart:
 
   default:
     break;
-  } // switch
-
-  if (reset) {
-    while (numS) {
-      WinSendMsg(hwndCnrS, CM_INVALIDATERECORD,
-		 MPFROMP(pciSa), MPFROM2SHORT((min(numS, 65535)), 0));
-      WinSendMsg(hwndCnrD, CM_INVALIDATERECORD,
-		 MPFROMP(pciDa), MPFROM2SHORT((min(numD, 65535)), 0));
-      numS -= min(numS, 65535);
-      SleepIfNeeded(&itdSleep, 0);	// 12 Jan 08 SHL
-    } // while
-  }
+  } // switch action
 
   free(pciSa);
   free(pciDa);
@@ -1429,8 +1349,6 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
     Runtime_Error(pszSrcFile, __LINE__, NULL);
     return;
   }
-
-  // DbgMsg(pszSrcFile, __LINE__, "FillDirList start %s", str);
 
   maskstr = xmalloc(CCHMAXPATH + 100, pszSrcFile, __LINE__);
   if (!maskstr)
@@ -1521,9 +1439,10 @@ Abort:
 
   xfree(maskstr, pszSrcFile, __LINE__);
   xfree(pffbArray, pszSrcFile, __LINE__);
-
-  // DbgMsg(pszSrcFile, __LINE__, "FillDirList finish %s", str);
 }
+
+#define GetHwndLeft(h)	(WinWindowFromID(h,COMP_LEFTDIR))
+#define GetHwndRight(h)	(WinWindowFromID(h,COMP_RIGHTDIR))
 
 /**
  * Compare names for qsort
@@ -1537,7 +1456,9 @@ static int CompNames(const void *n1, const void *n2)
   return stricmp(fl1->fname, fl2->fname);
 }
 
-//=== FillCnrsThread() Fill left and right containers ===
+/**
+ * Fill left and right containers
+ */
 
 static VOID FillCnrsThread(VOID *args)
 {
@@ -1547,7 +1468,6 @@ static VOID FillCnrsThread(VOID *args)
   BOOL notified = FALSE;
   ITIMER_DESC itdSleep = { 0 };
 
-  HWND hwndLeft, hwndRight;
   CHAR szBuf[CCHMAXPATH];
   CNRINFO cnri;
 
@@ -1564,8 +1484,6 @@ static VOID FillCnrsThread(VOID *args)
 #    endif
     return;				// 10 Dec 08 SHL was _endthread
   }
-
-  // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread enter");
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -1601,12 +1519,14 @@ static VOID FillCnrsThread(VOID *args)
       PCNRITEM pcir;
       RECORDINSERT ri;
       CHAR *pch;
+      HWND hwndLeft;
+      HWND hwndRight;
 
       WinCancelShutdown(hmq, TRUE);
       IncrThreadUsage();
 
-      hwndLeft = WinWindowFromID(cmp->hwnd, COMP_LEFTDIR);
-      hwndRight = WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR);
+      hwndLeft = GetHwndLeft(cmp->hwnd);
+      hwndRight = GetHwndRight(cmp->hwnd);
       lenl = strlen(cmp->leftdir);
       if (cmp->leftdir[strlen(cmp->leftdir) - 1] != '\\')
 	lenl++;
@@ -1630,8 +1550,6 @@ static VOID FillCnrsThread(VOID *args)
 
       if (filesl)
 	qsort(filesl, cmp->cmp->totalleft, sizeof(CHAR *), CompNames);
-
-      // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread sorted filesl");
 
       // Build list of all files in right directory
       if (!*cmp->rightlist) {
@@ -1779,13 +1697,14 @@ static VOID FillCnrsThread(VOID *args)
       if (filesr)
 	qsort(filesr, cmp->cmp->totalright, sizeof(CHAR *), CompNames);
 
-      // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread sorted filesr");
-
       // We now have two lists of files, both sorted.
       // Count total number of container entries required on each side
       l = r = 0;
       recsNeeded = 0;
       while ((filesl && filesl[l]) || (filesr && filesr[r])) {
+
+	if (cmp->stop)
+	  break;			// Cancel requested
 
 	if (filesl && filesl[l]) {
 	  if (filesr && filesr[r])
@@ -1805,11 +1724,17 @@ static VOID FillCnrsThread(VOID *args)
 
       }	// while
 
-      // Say building list - fixme to post?
-      WinSendMsg(cmp->hwnd, UM_CONTAINERHWND, MPVOID, MPVOID);
+      if (cmp->stop) {
+	recsNeeded = 0;
+      }
 
       // Now insert records into the containers
+
       if (recsNeeded) {
+
+	// Use send to get message on screen quickly
+	WinSendMsg(cmp->hwnd, UM_CONTAINERHWND, MPVOID, MPVOID);
+
 	pcilFirst = WinSendMsg(hwndLeft,
 			       CM_ALLOCRECORD,
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
@@ -1819,6 +1744,7 @@ static VOID FillCnrsThread(VOID *args)
 	  recsNeeded = 0;
 	}
       }
+
       if (recsNeeded) {
 	pcirFirst = WinSendMsg(hwndRight, CM_ALLOCRECORD,
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
@@ -1831,8 +1757,6 @@ static VOID FillCnrsThread(VOID *args)
       }
 
       if (recsNeeded) {
-
-	// DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread filling");
 
 	l = 0;
 	r = 0;
@@ -1847,16 +1771,17 @@ static VOID FillCnrsThread(VOID *args)
 
 	while ((filesl && filesl[l]) || (filesr && filesr[r])) {
 
-	  // 12 Jan 08 SHL fixme to have message in string table
+	  if (cmp->stop)
+	    break;
+
 	  if (!pcil) {
-	    Runtime_Error(pszSrcFile, __LINE__, "Insufficient memory or %u items (%u)",
+	    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_INSUFFICIENTMEMORY),
 			  recsNeeded, recsGotten);
 	    break;
 	  }
 
-	  // 12 Jan 08 SHL fixme to have message in string table
 	  if (!pcir) {
-	    Runtime_Error(pszSrcFile, __LINE__, "Insufficient memory or %u items (%u)",
+	    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_INSUFFICIENTMEMORY),
 			  recsNeeded, recsGotten);
 	    break;
 	  }
@@ -1978,22 +1903,7 @@ static VOID FillCnrsThread(VOID *args)
 	    }
 	    ret = TestCDates(&pcir->date, &pcir->time,
 			     &pcil->date, &pcil->time);
-	    if (ret == 1)
-	      /* 13 Jan 08 SHL fixme to be gone
-		((pcil->date.year > pcir->date.year) ? TRUE :
-		(pcil->date.year < pcir->date.year) ? FALSE :
-		(pcil->date.month > pcir->date.month) ? TRUE :
-		(pcil->date.month < pcir->date.month) ? FALSE :
-		(pcil->date.day > pcir->date.day) ? TRUE :
-		(pcil->date.day < pcir->date.day) ? FALSE :
-		(pcil->time.hours > pcir->time.hours) ? TRUE :
-		(pcil->time.hours < pcir->time.hours) ? FALSE :
-		(pcil->time.minutes > pcir->time.minutes) ? TRUE :
-		(pcil->time.minutes < pcir->time.minutes) ? FALSE :
-		(pcil->time.seconds > pcir->time.seconds) ? TRUE :
-		(pcil->time.seconds < pcir->time.seconds) ? FALSE : FALSE)
-	       */
-	    {
+	    if (ret == 1) {
 	      pcil->flags |= CNRITEM_NEWER;
 	      pcir->flags |= CNRITEM_OLDER;
 	      if (pch != szBuf) {
@@ -2003,23 +1913,7 @@ static VOID FillCnrsThread(VOID *args)
 	      strcpy(pch, GetPString(IDS_NEWERTEXT));
 	      pch += 5;
 	    }
-	    else if (ret == -1)
-	      /* 13 Jan 08 SHL fixme to be gone
-		((pcil->date.year < pcir->date.year) ? TRUE :
-		(pcil->date.year > pcir->date.year) ? FALSE :
-		(pcil->date.month < pcir->date.month) ? TRUE :
-		(pcil->date.month > pcir->date.month) ? FALSE :
-		(pcil->date.day < pcir->date.day) ? TRUE :
-		(pcil->date.day > pcir->date.day) ? FALSE :
-		(pcil->time.hours < pcir->time.hours) ? TRUE :
-		(pcil->time.hours > pcir->time.hours) ? FALSE :
-		(pcil->time.minutes < pcir->time.minutes) ? TRUE :
-		(pcil->time.minutes > pcir->time.minutes) ? FALSE :
-		(pcil->time.seconds < pcir->time.seconds) ? TRUE :
-		(pcil->time.seconds > pcir->time.seconds) ? FALSE :
-		FALSE)
-	      */
-	    {
+	    else if (ret == -1)	{
 	      pcil->flags |= CNRITEM_OLDER;
 	      pcir->flags |= CNRITEM_NEWER;
 	      if (pch != szBuf) {
@@ -2150,21 +2044,15 @@ static VOID FillCnrsThread(VOID *args)
 	  cmp->cmp->totalright = 0;
 	}
 
-	// DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread filled");
-
       }	// if recsNeeded
 
       Deselect(hwndLeft);
       Deselect(hwndRight);
 
-      // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread deselected");
-
       // Request window update
       if (!PostMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID))
 	WinSendMsg(cmp->hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
       notified = TRUE;
-
-      // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread FILLED posted");
 
       if (filesl)
 	FreeList((CHAR **)filesl);	// Must have failed to create container
@@ -2185,19 +2073,110 @@ static VOID FillCnrsThread(VOID *args)
   Fortify_LeaveScope();
 #  endif
 
-  // DbgMsg(pszSrcFile, __LINE__, "FillCnrsThread exit");
 }
 
-// fixme to be gone - use variable?
-#define hwndLeft	(WinWindowFromID(hwnd,COMP_LEFTDIR))
-#define hwndRight	(WinWindowFromID(hwnd,COMP_RIGHTDIR))
+/**
+ * Find matching item in other container
+ * @return PCNRITEM or NULL
+ */
 
-//=== CompareDlgProc() Compare directories dialog procedure ===
+static PCNRITEM FindMatchingItem(PCNRITEM pciFindS, HWND hwndCnrS, HWND hwndCnrD);
+
+static PCNRITEM FindMatchingItem(PCNRITEM pciFindS, HWND hwndCnrS, HWND hwndCnrD)
+{
+
+  PCNRITEM pciS;
+  PCNRITEM pciD;
+
+  pciS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPVOID,
+		   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  pciD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
+		    MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  while (pciS && (INT)pciS != -1 && pciD && (INT)pciD != -1) {
+
+    if (pciS == pciFindS)
+      break;
+
+    pciS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPFROMP(pciS),
+		      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+    pciD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPFROMP(pciD),
+		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+  } // while
+
+  if (pciS != pciFindS)
+    pciD = NULL;
+
+  return pciD;
+}
+
+/**
+ * Set button/window enables
+ */
+
+static VOID SetButtonEnables(COMPARE* cmp, BOOL fEnable);
+
+static VOID SetButtonEnables(COMPARE* cmp, BOOL fEnable)
+{
+  HWND hwnd = cmp->hwnd;
+  HWND hwndLeft = GetHwndLeft(hwnd);
+  HWND hwndRight = GetHwndRight(hwnd);
+
+  if (!fEnable) {
+    /* Disable before */
+    WinEnableWindowUpdate(hwndLeft, fEnable);
+    WinEnableWindowUpdate(hwndRight, fEnable);
+  }
+  WinEnableWindow(hwndLeft, fEnable);
+  WinEnableWindow(hwndRight, fEnable);
+  if (fEnable) {
+    /* Enable after */
+    WinEnableWindowUpdate(hwndLeft, fEnable);
+    WinEnableWindowUpdate(hwndRight, fEnable);
+  }
+
+  WinEnableWindow(WinWindowFromID(hwnd, DID_OK), fEnable);
+  // WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, COMP_COLLECT), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBOTH), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTONE), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTNEWER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTOLDER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBIGGER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSMALLER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBOTH), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTONE), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTNEWER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTOLDER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBIGGER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTSMALLER), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTALL), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAMECONTENT), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTIDENTICAL), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAME), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, IDM_INVERT), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, COMP_SETDIRS), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETELEFT), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, COMP_FILTER), fEnable);
+  if (!fEnable || !*cmp->rightlist ) {
+    WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYLEFT), fEnable);
+    WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVELEFT), fEnable);
+    WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETERIGHT), fEnable);
+    WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYRIGHT), fEnable);
+    WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVERIGHT), fEnable);
+  }
+  WinEnableWindow(WinWindowFromID(hwnd, COMP_INCLUDESUBDIRS), fEnable);
+  WinEnableWindow(WinWindowFromID(hwnd, COMP_HIDENOTSELECTED), fEnable);
+}
+
+/**
+ * Compare directories dialog procedure
+ */
 
 MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   COMPARE *cmp;
   BOOL temp;
+  CHAR szPathName[CCHMAXPATH];
   CHAR s[81];
 
   static HPOINTER hptr;
@@ -2229,8 +2208,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			swp.cy,
 			swp.fl);
       }
-      SetCnrCols(hwndLeft, TRUE);
-      SetCnrCols(hwndRight, TRUE);
+      SetCnrCols(GetHwndLeft(hwnd), TRUE);
+      SetCnrCols(GetHwndRight(hwnd), TRUE);
       WinSendMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
       WinSendMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
       PostMsg(hwnd, UM_STRETCH, MPVOID, MPVOID);
@@ -2319,10 +2298,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    (HPS)0, FALSE, FALSE);
 	PaintRecessedWindow(WinWindowFromID(hwnd, COMP_SELRIGHT),
 			    (HPS)0, FALSE, FALSE);
-	PaintRecessedWindow(hwndLeft, (HPS)0,
-			    (hwndActive == hwndLeft), TRUE);
-	PaintRecessedWindow(hwndRight, (HPS)0,
-			    (hwndActive == hwndRight), TRUE);
+	PaintRecessedWindow(GetHwndLeft(hwnd), (HPS)0,
+			    (hwndActive == GetHwndLeft(hwnd)), TRUE);
+	PaintRecessedWindow(GetHwndRight(hwnd), (HPS)0,
+			    (hwndActive == GetHwndRight(hwnd)), TRUE);
       }
     }
     return 0;
@@ -2366,22 +2345,22 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 54;
       WinSendDlgItemMsg(hwnd, COMP_RIGHTDIR, CM_SETCNRINFO, MPFROMP(&cnri),
 			MPFROMLONG(CMA_FLWINDOWATTR | CMA_XVERTSPLITBAR));
-      AdjustCnrColRO(hwndLeft, GetPString(IDS_FILENAMECOLTEXT), TRUE, FALSE);
-      AdjustCnrColRO(hwndLeft, GetPString(IDS_LONGNAMECOLTEXT), TRUE, FALSE);
-      AdjustCnrColRO(hwndRight, GetPString(IDS_FILENAMECOLTEXT), TRUE, FALSE);
-      AdjustCnrColRO(hwndRight, GetPString(IDS_LONGNAMECOLTEXT), TRUE, FALSE);
-      AdjustCnrColsForPref(hwndLeft, cmp->leftdir, &cmp->dcd.ds, TRUE);
+      AdjustCnrColRO(GetHwndLeft(hwnd), GetPString(IDS_FILENAMECOLTEXT), TRUE, FALSE);
+      AdjustCnrColRO(GetHwndLeft(hwnd), GetPString(IDS_LONGNAMECOLTEXT), TRUE, FALSE);
+      AdjustCnrColRO(GetHwndRight(hwnd), GetPString(IDS_FILENAMECOLTEXT), TRUE, FALSE);
+      AdjustCnrColRO(GetHwndRight(hwnd), GetPString(IDS_LONGNAMECOLTEXT), TRUE, FALSE);
+      AdjustCnrColsForPref(GetHwndLeft(hwnd), cmp->leftdir, &cmp->dcd.ds, TRUE);
       tempsubj = cmp->dcd.ds.detailssubject;
       cmp->dcd.ds.detailssubject = FALSE;
-      AdjustCnrColsForPref(hwndRight, cmp->rightdir, &cmp->dcd.ds, TRUE);
+      AdjustCnrColsForPref(GetHwndRight(hwnd), cmp->rightdir, &cmp->dcd.ds, TRUE);
       if (*cmp->rightlist) {
-	AdjustCnrColVis(hwndRight, GetPString(IDS_LADATECOLTEXT), FALSE,
+	AdjustCnrColVis(GetHwndRight(hwnd), GetPString(IDS_LADATECOLTEXT), FALSE,
 			FALSE);
-	AdjustCnrColVis(hwndRight, GetPString(IDS_LATIMECOLTEXT), FALSE,
+	AdjustCnrColVis(GetHwndRight(hwnd), GetPString(IDS_LATIMECOLTEXT), FALSE,
 			FALSE);
-	AdjustCnrColVis(hwndRight, GetPString(IDS_CRDATECOLTEXT), FALSE,
+	AdjustCnrColVis(GetHwndRight(hwnd), GetPString(IDS_CRDATECOLTEXT), FALSE,
 			FALSE);
-	AdjustCnrColVis(hwndRight, GetPString(IDS_CRTIMECOLTEXT), FALSE,
+	AdjustCnrColVis(GetHwndRight(hwnd), GetPString(IDS_CRTIMECOLTEXT), FALSE,
 			FALSE);
       }
       cmp->dcd.ds.detailssubject = tempsubj;
@@ -2452,51 +2431,16 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       Runtime_Error(pszSrcFile, __LINE__, "pCompare NULL");
       WinDismissDlg(hwnd, 0);
     }
+    else if (cmp->stop) {
+      // Delayed cancel
+      WinDismissDlg(hwnd, 1);
+    }
     else {
       cmp->filling = FALSE;
-      WinEnableWindow(hwndLeft, TRUE);
-      WinEnableWindow(hwndRight, TRUE);
-      WinEnableWindowUpdate(hwndLeft, TRUE);
-      WinEnableWindowUpdate(hwndRight, TRUE);
-      WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_COMP_TIMER), 0);	// Force update
-      // 12 Jan 08 SHL fixme to have SetButtonEnables(COMPARE* pcmp, BOOL fEnable)
-      // to replace duplicated code here and elsewhere
-      WinEnableWindow(WinWindowFromID(hwnd, DID_OK), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, COMP_COLLECT), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBOTH), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTONE), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTNEWER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTOLDER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBIGGER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSMALLER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBOTH), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTONE), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTNEWER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTOLDER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBIGGER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTSMALLER), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTALL), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAMECONTENT), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTIDENTICAL), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAME), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, IDM_INVERT), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, COMP_SETDIRS), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETELEFT), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, COMP_FILTER), TRUE);
-      if (!*cmp->rightlist) {
-	WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYLEFT), TRUE);
-	WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVELEFT), TRUE);
-	WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETERIGHT), TRUE);
-	WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYRIGHT), TRUE);
-	WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVERIGHT), TRUE);
-      }
-      WinEnableWindow(WinWindowFromID(hwnd, COMP_INCLUDESUBDIRS), TRUE);
-      WinEnableWindow(WinWindowFromID(hwnd, COMP_HIDENOTSELECTED), TRUE);
+      SetButtonEnables(cmp, TRUE);
+      WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_COMP_TIMER), 0);	// Force counts to update
       if (*cmp->dcd.mask.szMask) {
-	sprintf(s,
-		GetPString(IDS_COMPREADYFILTEREDTEXT),
-		cmp->dcd.mask.szMask);
+	sprintf(s, GetPString(IDS_COMPREADYFILTEREDTEXT), cmp->dcd.mask.szMask);
 	WinSetDlgItemText(hwnd, COMP_NOTE, s);
       }
       else
@@ -2519,8 +2463,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     cmp = INSTDATA(hwnd);
     if (cmp) {
       if ((HWND)mp2 == cmp->dcd.hwndLastMenu) {
-	MarkAll(hwndLeft, TRUE, FALSE, TRUE);
-	MarkAll(hwndRight, TRUE, FALSE, TRUE);
+	MarkAll(GetHwndLeft(hwnd), TRUE, FALSE, TRUE);
+	MarkAll(GetHwndRight(hwnd), TRUE, FALSE, TRUE);
 	WinDestroyWindow(cmp->dcd.hwndLastMenu);
 	cmp->dcd.hwndLastMenu = (HWND)0;
       }
@@ -2594,7 +2538,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	cmp = INSTDATA(hwnd);
 	if (cmp) {
 	  PCNRITEM pci = (PCNRITEM)mp2;
-	  USHORT id = COMP_CNRMENU;
+	  USHORT id = COMP_CNRMENU;		// Assume container menu
 
 	  if (cmp->dcd.hwndLastMenu)
 	    WinDestroyWindow(cmp->dcd.hwndLastMenu);
@@ -2603,13 +2547,14 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (pci) {
 	    if (!pci || !*pci->pszFileName || *cmp->rightlist)
 	      break;
-	    id = COMP_MENU;
+	    id = COMP_MENU;		// Want container item menu
 	    WinSendMsg(cmp->hwndCalling, CM_SETRECORDEMPHASIS,
 		       MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
 	  }
 	  cmp->dcd.hwndLastMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, id);
 	  if (cmp->dcd.hwndLastMenu) {
-	    if (id == COMP_CNRMENU) {
+	    switch (id) {
+	    case COMP_CNRMENU:
 	      if (SHORT1FROMMP(mp1) == COMP_RIGHTDIR)
 		WinSendMsg(cmp->dcd.hwndLastMenu, MM_DELETEITEM,
 			   MPFROM2SHORT(IDM_SHOWSUBJECT, FALSE), MPVOID);
@@ -2620,7 +2565,15 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      else if (*cmp->rightlist)
 		WinSendMsg(cmp->dcd.hwndLastMenu, MM_DELETEITEM,
 			   MPFROM2SHORT(IDM_SAVELISTFILE, 0), MPVOID);
-	    }
+	      break;
+	    case COMP_MENU:
+	      // Can't compare what's not there
+	      if (~pci->flags & CNRITEM_EXISTS) {
+		WinSendMsg(cmp->dcd.hwndLastMenu, MM_DELETEITEM,
+			   MPFROM2SHORT(IDM_COMPARE, 0), MPVOID);
+	      }
+	      break;
+	    } // switch
 	    PopupMenu(hwnd, hwnd, cmp->dcd.hwndLastMenu);
 	  }
 	}
@@ -2652,6 +2605,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (!*pci->pszFileName) {
 		// Slot empty
 		// 17 Jan 08 SHL fixme to know how can get here
+		Runtime_Error(pszSrcFile, __LINE__, NULL);
 		// 12 Jan 08 SHL fixme to know if select counts need update?
 		if (pci->rc.flRecordAttr & CRA_SELECTED)
 		  WinSendDlgItemMsg(hwnd, SHORT1FROMMP(mp1),
@@ -2756,43 +2710,11 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #	   endif
 	}
 	else {
-	  WinEnableWindowUpdate(hwndLeft, FALSE);
-	  WinEnableWindowUpdate(hwndRight, FALSE);
-	  cmp->selleft = cmp->selright = 0;
 	  WinSetDlgItemText(hwnd, COMP_NOTE,
 			    GetPString(IDS_COMPHOLDREADDISKTEXT));
-	  WinEnableWindow(hwndRight, FALSE);
-	  WinEnableWindow(hwndLeft, FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, DID_OK), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_COLLECT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBOTH), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTONE), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTNEWER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTOLDER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBIGGER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSMALLER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBOTH), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTONE), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTNEWER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTOLDER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBIGGER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTSMALLER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTALL), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_SETDIRS), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETELEFT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETERIGHT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYLEFT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVELEFT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYRIGHT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVERIGHT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAMECONTENT),	FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTIDENTICAL), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAME), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, IDM_INVERT), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_FILTER), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_INCLUDESUBDIRS), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, COMP_HIDENOTSELECTED), FALSE);
+	  SetButtonEnables(cmp, FALSE);
+	  cmp->selleft = 0;
+	  cmp->selright = 0;
 	}
       }
     }
@@ -2810,9 +2732,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			GetPString(IDS_COMPHOLDFILTERINGTEXT));
       // cmp->dcd.suspendview = 1;	// 12 Jan 08 SHL appears not to be used here
       priority_idle();			// Don't hog resources
-      WinSendMsg(hwndLeft, CM_FILTER, MPFROMP(Filter),
+      WinSendMsg(GetHwndLeft(hwnd), CM_FILTER, MPFROMP(Filter),
 		 MPFROMP(&cmp->dcd.mask));
-      WinSendMsg(hwndRight, CM_FILTER, MPFROMP(Filter),
+      WinSendMsg(GetHwndRight(hwnd), CM_FILTER, MPFROMP(Filter),
 		 MPFROMP(&cmp->dcd.mask));
       priority_normal();
       // cmp->dcd.suspendview = 0;	// 12 Jan 08 SHL appears not to be used here
@@ -2831,11 +2753,13 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     cmp = INSTDATA(hwnd);
     if (cmp) {
       ULONG wasHidden = WinQueryButtonCheckstate(hwnd,
-						  COMP_HIDENOTSELECTED);
+						 COMP_HIDENOTSELECTED);
+      ULONG nowHidden = wasHidden != 1 && (cmp->selleft || cmp->selright);
 
       // cmp->dcd.suspendview = 1;	// 12 Jan 08 SHL appears not to be used here
-      if (wasHidden != 1) {
-	// Hide if not selected on both sides
+      // 26 Sep 09 SHL Unhide if nothing selected
+      if (nowHidden) {
+	// Hide items not selected on both sides
 	BOOL needRefresh = FALSE;
 	HWND hwndl = WinWindowFromID(cmp->hwnd, COMP_LEFTDIR);
 	HWND hwndr = WinWindowFromID(cmp->hwnd, COMP_RIGHTDIR);
@@ -2847,10 +2771,14 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	while (pcil && (INT)pcil != -1 && pcir && (INT)pcir != -1) {
 	  if (~pcil->rc.flRecordAttr & CRA_SELECTED &&
 	      ~pcir->rc.flRecordAttr & CRA_SELECTED) {
-	    // 17 Jan 08 SHL fixme to optimize refresh
-	    pcil->rc.flRecordAttr |= CRA_FILTERED;
-	    pcir->rc.flRecordAttr |= CRA_FILTERED;
-	    needRefresh = TRUE;
+	    if (~pcil->rc.flRecordAttr & CRA_FILTERED) {
+	      needRefresh = TRUE;
+	      pcil->rc.flRecordAttr |= CRA_FILTERED;
+	    }
+	    if (~pcir->rc.flRecordAttr & CRA_FILTERED) {
+	      pcir->rc.flRecordAttr |= CRA_FILTERED;
+	      needRefresh = TRUE;
+	    }
 	  }
 	  pcil = WinSendMsg(hwndl, CM_QUERYRECORD, MPFROMP(pcil),
 			    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
@@ -2866,9 +2794,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else {
 	// Unhide
-	WinSendMsg(hwndLeft, CM_FILTER, MPFROMP(Filter),
+	WinSendMsg(GetHwndLeft(hwnd), CM_FILTER, MPFROMP(Filter),
 		   MPFROMP(&cmp->dcd.mask));
-	WinSendMsg(hwndRight, CM_FILTER, MPFROMP(Filter),
+	WinSendMsg(GetHwndRight(hwnd), CM_FILTER, MPFROMP(Filter),
 		   MPFROMP(&cmp->dcd.mask));
       }
       // cmp->dcd.suspendview = 0;	// 12 Jan 08 SHL appears not to be used here
@@ -2880,37 +2808,32 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else
 	WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPREADYTEXT));
-      WinCheckButton(hwnd, COMP_HIDENOTSELECTED, wasHidden != 1 ? 1 : 0);
+      WinCheckButton(hwnd, COMP_HIDENOTSELECTED, nowHidden);
     }
     return 0;
 
   case WM_COMMAND:
-    // 29 Apr 09 SHL  fixme to support more context menu items - IDM_EDIT, IDM_DELETE etc.
+    // 29 Apr 09 SHL fixme to support more context menu items - IDM_VIEW, IDM_EDIT etc.
     switch (SHORT1FROMMP(mp1)) {
     case IDM_COMPARE:
       cmp = INSTDATA(hwnd);
       if (cmp) {
 	PCNRITEM pci;
-	CHAR ofile[CCHMAXPATH];
-
 	pci = (PCNRITEM)WinSendMsg(cmp->hwndCalling,
 				   CM_QUERYRECORDEMPHASIS,
 				   MPFROMLONG(CMA_FIRST),
 				   MPFROMSHORT(CRA_CURSORED));
-	// 01 Aug 07 SHL
 	if (pci && *pci->pszFileName) {
-	  if (cmp->hwndCalling == hwndLeft)
-	    strcpy(ofile, cmp->rightdir);
+	  if (cmp->hwndCalling == GetHwndLeft(hwnd))
+	    strcpy(szPathName, cmp->rightdir);
 	  else
-            strcpy(ofile, cmp->leftdir);
-          AddBackslashToPath(ofile);
-	  //if (ofile[strlen(ofile) - 1] != '\\')
-	  //  strcat(ofile, "\\");
-	  strcat(ofile, pci->pszDisplayName);
+	    strcpy(szPathName, cmp->leftdir);
+	  AddBackslashToPath(szPathName);
+	  strcat(szPathName, pci->pszDisplayName);
 	  if (*compare) {
 	    CHAR *fakelist[3];
 	    fakelist[0] = pci->pszFileName;
-	    fakelist[1] = ofile;
+	    fakelist[1] = szPathName;
 	    fakelist[2] = NULL;
 	    ExecOnList(hwnd, compare,
 		       WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
@@ -2922,13 +2845,85 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fc.size = sizeof(fc);
 	    fc.hwndParent = hwnd;
 	    strcpy(fc.file1, pci->pszFileName);
-	    strcpy(fc.file2, ofile);
+	    strcpy(fc.file2, szPathName);
 	    WinDlgBox(HWND_DESKTOP, hwnd,
 		      CFileDlgProc, FM3ModHandle, FCMP_FRAME, (PVOID)&fc);
 	  }
 	}
       }
       break;
+
+    case IDM_DELETE:
+      cmp = INSTDATA(hwnd);
+      if (!cmp)
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
+      else {
+	PCNRITEM pciS;
+	PCNRITEM pciD;
+	HWND hwndCnrS;
+	HWND hwndCnrD;
+	pciS = (PCNRITEM)WinSendMsg(cmp->hwndCalling,
+				   CM_QUERYRECORDEMPHASIS,
+				   MPFROMLONG(CMA_FIRST),
+				   MPFROMSHORT(CRA_CURSORED));
+	if (!pciS)
+	  Runtime_Error(pszSrcFile, __LINE__, NULL);
+	else {
+	  // Find matching record
+	  if (cmp->hwndCalling == GetHwndLeft(hwnd)) {
+	    hwndCnrS = GetHwndLeft(hwnd);
+	    hwndCnrD = GetHwndRight(hwnd);
+	  }
+	  else {
+	    hwndCnrS = GetHwndRight(hwnd);
+	    hwndCnrD = GetHwndLeft(hwnd);
+	  }
+
+	  pciD = FindMatchingItem(pciS, hwndCnrS, hwndCnrD);
+
+	  if (!pciD)
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
+	  else if (!pciS->pszFileName)
+	    Runtime_Error(pszSrcFile, __LINE__, NULL);
+	  else {
+	    if (!unlinkf(pciS->pszFileName)) {
+	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
+			 MPFROM2SHORT(FALSE, CRA_SELECTED));
+
+	      if (!*pciD->pszFileName) {
+		// Other side is blank - remove from both sides
+		RemoveCnrItems(hwndCnrS, pciS, 1, CMA_FREE | CMA_INVALIDATE);
+		if (pciD->rc.flRecordAttr & CRA_SELECTED)
+		  WinSendMsg(hwndCnrD, CM_SETRECORDEMPHASIS, MPFROMP(pciD),
+			     MPFROM2SHORT(FALSE, CRA_SELECTED));
+		RemoveCnrItems(hwndCnrD, pciD, 1, CMA_FREE | CMA_INVALIDATE);
+	      }
+	      else {
+		// Other side is not blank - just blank this side
+		FreeCnrItemData(pciS);
+		pciS->pszFileName = NullStr;
+		pciS->pszDisplayName = pciS->pszFileName;
+		pciS->rc.pszIcon = pciS->pszFileName;
+		pciS->flags = 0;	// Just on one side
+		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
+			   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+		pciD->flags = 0;	// Just on one side
+		if (pciD->pszSubject != NullStr) {
+		  xfree(pciD->pszSubject, pszSrcFile, __LINE__);
+		  pciD->pszSubject = NullStr;
+		}
+	      }
+	      if (hwndCnrS == GetHwndLeft(hwnd))
+		cmp->totalleft--;
+	      else
+		cmp->totalright--;
+	      // Force displayed counts to update
+	      WinPostMsg(hwnd, WM_TIMER, MPFROMLONG(ID_COMP_TIMER), 0);
+	    }
+	  }
+	}
+      }
+      break; // IDM_DELETE
 
     case COMP_FILTER:
     case IDM_FILTER:
@@ -2987,17 +2982,17 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	BOOL tempsubj;
 
 	dcd1 = cmp->dcd;
-	AdjustDetailsSwitches(hwndLeft,
+	AdjustDetailsSwitches(GetHwndLeft(hwnd),
 			      (HWND)0, SHORT1FROMMP(mp1),
 			      cmp->leftdir, PCSZ_DIRCMP, &cmp->dcd.ds, TRUE);
 	tempsubj = cmp->dcd.ds.detailssubject;
 	cmp->dcd = dcd1;
 	cmp->dcd.ds.detailssubject = FALSE;
-	AdjustDetailsSwitches(hwndRight,
+	AdjustDetailsSwitches(GetHwndRight(hwnd),
 			      cmp->dcd.hwndLastMenu, SHORT1FROMMP(mp1),
 			      cmp->rightdir, PCSZ_DIRCMP, &cmp->dcd.ds, TRUE);
-        cmp->dcd.ds.detailssubject = tempsubj;
-        WriteDetailsSwitches(PCSZ_DIRCMP, &cmp->dcd.ds, TRUE);
+	cmp->dcd.ds.detailssubject = tempsubj;
+	WriteDetailsSwitches(PCSZ_DIRCMP, &cmp->dcd.ds, TRUE);
       }
       break;
 
@@ -3028,12 +3023,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  sf = xmallocz(sizeof(SNAPSTUFF), pszSrcFile, __LINE__);
 	  if (sf) {
 	    strcpy(sf->filename, fullname);
-	    if (hwndLeft == cmp->hwndCalling)
+	    if (GetHwndLeft(hwnd) == cmp->hwndCalling)
 	      strcpy(sf->dirname, cmp->leftdir);
 	    else
 	      strcpy(sf->dirname, cmp->rightdir);
 	    sf->recurse = cmp->includesubdirs;
-	    if (xbeginthread(StartSnap,
+	    if (xbeginthread(StartSnapThread,
 			     65536,
 			     sf,
 			     pszSrcFile,
@@ -3096,8 +3091,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    free(forthread);
 	  }
 	  else {
-	    WinEnableWindowUpdate(hwndLeft, FALSE);
-	    WinEnableWindowUpdate(hwndRight, FALSE);
+	    WinEnableWindowUpdate(GetHwndLeft(hwnd), FALSE);
+	    WinEnableWindowUpdate(GetHwndRight(hwnd), FALSE);
 	    switch (SHORT1FROMMP(mp1)) {
 	    case COMP_DELETELEFT:
 	    case COMP_DELETERIGHT:
@@ -3117,38 +3112,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    default:
 	      Runtime_Error(pszSrcFile, __LINE__, "mp1 %u unexpected", SHORT1FROMMP(mp1));
 	    }
-	    WinEnableWindow(hwndRight, FALSE);
-	    WinEnableWindow(hwndLeft, FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, DID_OK), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_COLLECT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBOTH), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTONE), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTNEWER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTOLDER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBIGGER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSMALLER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBOTH), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTONE), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTNEWER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTOLDER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBIGGER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTSMALLER),	FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTALL), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_SETDIRS), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETELEFT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETERIGHT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYLEFT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVELEFT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYRIGHT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVERIGHT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAMECONTENT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTIDENTICAL),	FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAME), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_INVERT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_FILTER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_INCLUDESUBDIRS),	FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_HIDENOTSELECTED), FALSE);
+	    SetButtonEnables(cmp, FALSE);
 	  }
 	}
       }
@@ -3166,10 +3130,17 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     case DID_CANCEL:
+      cmp = INSTDATA(hwnd);
+      if (!cmp)
+	Runtime_Error(pszSrcFile, __LINE__, NULL);
+      else {
+	cmp->stop = TRUE;			// In case thread running
+	if (cmp->filling)
+	  break;				// UM_CONTAINER_FILLED will dismiss
+      }
       {
 	SWP swp;
 	ULONG size = sizeof(SWP);
-
 	WinQueryWindowPos(hwnd, &swp);
 	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
 			    size);
@@ -3212,6 +3183,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  *forthread = *cmp;
 	  forthread->cmp = cmp;
 	  forthread->action = SHORT1FROMMP(mp1);
+	  SetShiftState();
+	  forthread->shiftstate = shiftstate;	// For and'ed actions
+
 	  if (xbeginthread(SelectCnrsThread,
 			   65536,
 			   forthread,
@@ -3221,8 +3195,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    free(forthread);
 	  }
 	  else {
-	    WinEnableWindowUpdate(hwndLeft, FALSE);
-	    WinEnableWindowUpdate(hwndRight, FALSE);
+	    WinEnableWindowUpdate(GetHwndLeft(hwnd), FALSE);
+	    WinEnableWindowUpdate(GetHwndRight(hwnd), FALSE);
 	    switch (SHORT1FROMMP(mp1)) {
 	    case IDM_DESELECTALL:
 	    case IDM_DESELECTNEWER:
@@ -3243,38 +3217,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				GetPString(IDS_COMPHOLDSELTEXT));
 	      break;
 	    }
-	    WinEnableWindow(hwndRight, FALSE);
-	    WinEnableWindow(hwndLeft, FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, DID_OK), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_COLLECT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBOTH), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTONE), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTNEWER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTOLDER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBIGGER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSMALLER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBOTH), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTONE), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTNEWER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTOLDER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTBIGGER), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTSMALLER),	FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_DESELECTALL), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_INCLUDESUBDIRS),	FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_HIDENOTSELECTED), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_SETDIRS), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETELEFT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETERIGHT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYLEFT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVELEFT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYRIGHT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVERIGHT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAMECONTENT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTIDENTICAL),	FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTSAME), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, IDM_INVERT), FALSE);
-	    WinEnableWindow(WinWindowFromID(hwnd, COMP_FILTER), FALSE);
+	    SetButtonEnables(cmp, FALSE);
 	  }
 	}
       }
@@ -3325,9 +3268,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	temp = fSelectedAlways;
 	fSelectedAlways = TRUE;
-	listl = BuildList(hwndLeft);
+	listl = BuildList(GetHwndLeft(hwnd));
 	if (!*cmp->rightlist)
-	  listr = BuildList(hwndRight);
+	  listr = BuildList(GetHwndRight(hwnd));
 	fSelectedAlways = temp;
 
 	if (listl || listr) {
@@ -3354,11 +3297,18 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
       }
       break;
-    }
+    } // switch mp1
     return 0;
 
   case WM_CLOSE:
-    // 18 Jan 08 SHL fixme to hold off if thread busy?
+    cmp = INSTDATA(hwnd);
+    if (!cmp)
+      Runtime_Error(pszSrcFile, __LINE__, NULL);
+    else {
+      cmp->stop = TRUE;			// In case thread running
+      if (cmp->filling)
+	break;				// UM_CONTAINER_FILLED will dismiss
+    }
     WinDismissDlg(hwnd, 0);
     return 0;
 
@@ -3376,18 +3326,21 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       free(cmp);
     }
-    EmptyCnr(hwndLeft);
-    EmptyCnr(hwndRight);
+    EmptyCnr(GetHwndLeft(hwnd));
+    EmptyCnr(GetHwndRight(hwnd));
     DosPostEventSem(CompactSem);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
+#undef GetHwndLeft
+#undef GetHwndRight
+
 #pragma alloc_text(COMPAREDIR,FillCnrsThread,FillDirList,CompNames,BldFullPathName)
 #pragma alloc_text(COMPAREDIR1,CompareDlgProc)
 #pragma alloc_text(COMPAREDIR2,SelectCnrsThread,ActionCnrThread)
 #pragma alloc_text(COMPAREFILE,CFileDlgProc,CompareFilesThread)
-#pragma alloc_text(SNAPSHOT,SnapShot,StartSnap)
-#pragma alloc_text(COMPSELECT,CompSelect)
+#pragma alloc_text(SNAPSHOT,SnapShot,StartSnapThread)
+#pragma alloc_text(COMPSELECT,CompSelect,CompSelectSetSelects,CompSelectClearSelects)
 

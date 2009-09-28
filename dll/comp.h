@@ -6,10 +6,11 @@
   compare interface
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   05 Jan 08 SHL Split from fm3dll.h
   18 Jan 08 SHL Sync with count update mods
+  27 Sep 09 SHL Support AND'ed selections
 
 ***********************************************************************/
 
@@ -43,16 +44,18 @@ FCOMPARE;
 
 typedef struct COMPARE
 {
-  USHORT size;
+  USHORT size;				// Structure size
+  USHORT shiftstate;			// For AND'ed selections
   HWND hwnd;
   HWND hwndParent;
   CHAR leftdir[CCHMAXPATH + 2];
   CHAR rightdir[CCHMAXPATH + 2];
   BOOL forcescroll;
-  BOOL filling;
+  BOOL filling;				// Set when thread working
+  BOOL stop;				// Requests thread stop
   BOOL includesubdirs;
-  INT action;
-  UINT selleft;
+  INT action;				// IDM_...
+  UINT selleft;				// # selected
   UINT selright;
   UINT totalleft;
   UINT totalright;
@@ -60,10 +63,9 @@ typedef struct COMPARE
   UINT uOldSelRight;
   UINT uOldTotalLeft;
   UINT uOldTotalRight;
-  CHAR rightlist[CCHMAXPATH];	// Snapshot file name
-  BOOL reset;
+  CHAR rightlist[CCHMAXPATH];		// Snapshot file name
   HWND hwndCalling;
-  struct COMPARE *cmp;		// callers compare defintion
+  struct COMPARE *cmp;			// Points to caller's compare structure
   struct DIRCNRDATA dcd;
 }
 COMPARE;

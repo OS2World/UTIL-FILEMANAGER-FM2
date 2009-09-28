@@ -850,6 +850,11 @@ INT unlink_allf(CHAR * string, ...)
 }
 #endif
 
+/**
+ * Delete file
+ * @return OS/2 API error code or 0 if OK
+ */
+
 INT unlinkf(CHAR *string)
 {
 

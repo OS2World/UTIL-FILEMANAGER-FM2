@@ -1,5 +1,9 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.18 (pre)
+ o Rework compare directories for speed; allow AND'ed selections;
+ allow fast cancel from long running operations; more content menu items
+
 3.17
 
  o Added progress indicators when copying or moving files and/or directories - flashing

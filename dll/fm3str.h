@@ -739,7 +739,7 @@
 #define IDS_DAYTEXT                                           738
 #define IDS_TREEFILTERTITLETEXT                               739
 #define IDS_SELECTTYPEERRORTEXT                               740
-#define IDS_SPARE_741                                         741
+#define IDS_INSUFFICIENTMEMORY                                741
 #define IDS_NOTEVIEWERS3TEXT                                  742
 #define IDS_NOTEVIEWERS4TEXT                                  743
 #define IDS_DEFDIRFILTERTITLETEXT                             744
@@ -859,7 +859,7 @@
 #define IDS_NOTICETITLETEXT                                   857
 #define IDS_PLEASEWAITSCANNINGTEXT                            858
 #define IDS_PLEASEWAITCOUNTINGTEXT                            859
-// #define IDS_USUALDISCTEXT                                     860 //Not used
+#define IDS_SPARE_860                                         860
 
 #define IDS_ARCCNRFILTERMENUHELP                              867
 #define IDS_ARCCNRWALKDIRMENUHELP                             868

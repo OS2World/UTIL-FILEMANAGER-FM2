@@ -5,10 +5,11 @@
 .* Compare directories help
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2008 Steven H.Levine
+.* Copyright (c) 2008, 2009 Steven H.Levine
 .*
 .* 18 Jan 08 SHL Update hide not selected documentation
 .* 29 Apr 09 SHL Update view usage
+.* 27 Sep 09 SHL Document AND'ed selections
 .*
 .***********************************************************************
 .*
@@ -63,7 +64,7 @@ Several selection/deselection techniques are available via pushbuttons
 to enable you to select files based on their comparison. The pushbuttons
 operate on both containers. You can also select and deselect files in
 the containers manually with the mouse or keyboard.
-:hp2.Hint&colon.:ehp2. mouse selection of multiple files works slightly differently 
+:hp2.Hint&colon.:ehp2. mouse selection of multiple files works slightly differently
 when you hold down &CtrlKey. while clicking.
 :p.
 :hp2.The selection and deselection buttons are&colon.:ehp2.
@@ -95,6 +96,12 @@ container and are the larger of the pair.
 :p.
 :hp6.Invert:ehp6. Inverts selection state of all items in both containers.
 :p.
+By default, the selection buttons combine the new selections with the existing selections.
+This is an OR selection.
+Hold down the &CtrlKey. while clicking the selection button to apply the selection criteria
+only to items that are already selected.  This is an AND selection.
+Selected items that do not match the selection criteria will be deselected.
+AND selections allow selections such as newer files that are the same size.
 :hp2.The other buttons in the dialog are&colon.:ehp2.
 :p.
 :hp6.Actions:ehp6. Provides directional copy and move along with directory specific delete.

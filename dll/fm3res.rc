@@ -44,6 +44,7 @@
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini              
   15 Sep 09 SHL Update for Thread notes text changes
   15 Sep 09 SHL Add rescan progress messages
+  27 Sep 09 SHL Add more items to COMP_MENU
 
 ***********************************************************************/
 
@@ -1422,6 +1423,7 @@ MENU COMP_CNRMENU
 
 MENU COMP_MENU {
   MENUITEM "~Compare...",     IDM_COMPARE
+  MENUITEM "~Delete...",      IDM_DELETE
 }
 
 MENU COLLECTORFILE_POPUP
@@ -3284,6 +3286,7 @@ STRINGTABLE
     IDS_REFRESHREMOVABLESTEXT             "Refresh removable media"
     IDS_PLEASEWAITSCANNINGTEXT            "Please wait -- scanning..."
     IDS_PLEASEWAITCOUNTINGTEXT            "Please wait -- counting..."
+    IDS_INSUFFICIENTMEMORY                "Insufficient memory or %u items (%u)"
 
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object (each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"
