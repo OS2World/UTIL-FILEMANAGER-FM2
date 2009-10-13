@@ -6,7 +6,7 @@
   grep tools
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   12 Feb 03 SHL InsertGrepFile: standardize EA math
   12 Feb 03 SHL doonefile: standardize EA math
@@ -561,7 +561,6 @@ static INT DoMatchingFiles(GREP *grep,
   CHAR szFindPath[CCHMAXPATH];
   PSZ p;
   APIRET rc;
-  // 06 Oct 07 SHL Correct size for xDosFindFirst
   ULONG ulBufBytes = FilesToGet * sizeof(FILEFINDBUF4L);
   static BOOL fDone;
 
@@ -696,7 +695,7 @@ static VOID freegreplist(GREP *grep)
 }
 
 /**
- * Insert record into container
+ * Insert one or more records into container
  */
 
 static BOOL DoInsertion(GREP *grep,
@@ -825,7 +824,8 @@ static BOOL InsertGrepFile(GREP *grep,
 
       grep->insertedbytes += pffb->cbFile + CBLIST_TO_EASIZE(pffb->cbList);
       grep->toinsert++;
-      if (grep->toinsert == FilesToGet)
+      // 07 Oct 09 SHL honor sync updates
+      if (grep->toinsert == FilesToGet || fSyncUpdates)
         return DoInsertion(grep, pitdSleep, pitdReport);
       return TRUE;
     }

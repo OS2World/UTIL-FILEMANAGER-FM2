@@ -34,6 +34,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  06 Oct 09 SHL Ctrl-select selects Walk Dialog listbox entry, but suppresses action
 
 ***********************************************************************/
 
@@ -1068,6 +1069,10 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	HDIR hDir;
 	APIRET rc;
 
+	// 06 Oct 09 SHL Ctrl-select selects, but suppresses action
+	SetShiftState();
+	if ((shiftstate & (KC_CTRL | KC_SHIFT | KC_ALT)) == KC_CTRL)
+	  break;
 	DosError(FERR_DISABLEHARDERR);
 	hDir = HDIR_CREATE;
 	ulSearchCount = 1;
@@ -1233,25 +1238,17 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case WALK_DELETE:
-      *szBuff = 0;
-      WinQueryDlgItemText(hwnd, WALK_PATH, CCHMAXPATH, szBuff);
-      bstrip(szBuff);
-      while ((p = strchr(szBuff, '/')) != NULL)
-	*p = '\\';
-      if (*szBuff && !IsFile(szBuff)) {
-	MakeFullName(szBuff);
-	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
-					    WALK_USERLIST,
-					    LM_SEARCHSTRING,
-					    MPFROM2SHORT(0, LIT_FIRST),
-					    MPFROMP(szBuff));
-	if (sSelect >= 0) {
-	  WinSendDlgItemMsg(hwnd,
-			    WALK_USERLIST,
-			    LM_DELETEITEM, MPFROM2SHORT(sSelect, 0), MPVOID);
-	  remove_udir(szBuff);
-	  wa->changed = 1;
-	}
+      // 07 Oct 09 SHL Delete current selection, like docs says
+      sSelect = (SHORT)WinSendDlgItemMsg(hwnd,
+					 WALK_USERLIST,
+					 LM_QUERYSELECTION,
+					 MPFROMSHORT(LIT_FIRST), MPVOID);
+      if (sSelect >= 0) {
+	WinSendDlgItemMsg(hwnd,
+			  WALK_USERLIST,
+			  LM_DELETEITEM, MPFROM2SHORT(sSelect, 0), MPVOID);
+	remove_udir(szBuff);
+	wa->changed = 1;
       }
       break;
 
@@ -1269,7 +1266,6 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	SWP swp;
 	ULONG size = sizeof(SWP);
-
 	WinQueryWindowPos(hwnd, &swp);
 	PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
 			    size);

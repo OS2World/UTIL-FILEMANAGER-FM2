@@ -5,7 +5,7 @@
 .* fm/2 help
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2006 Steven H.Levine
+.* Copyright (c) 2006, 2009 Steven H.Levine
 .*
 .* 24 Sep 06 GKY ADD Change to F1 help
 .* 06 Jul 08 GKY ADD FM2Shutdown state info
@@ -872,7 +872,7 @@ res=91500.Walk Directories dialog:elink.).
 You turn the quicklists on and off using the :hp1.Config->Toggle
 quicklists:ehp1. command ( :color fc=default bc=palegray.F8:color fc=default bc=default. accelerator).
 :p.
-The first list (starting from the left) contains drives. If you select a
+The first quicklist (starting from the left) contains drives. If you select a
 drive from the list, the Drive Tree scrolls to that drive and makes it the
 current object in the Drive Tree. This can be handy when you have the tree
 expanded and don't want to collapse it. This list is readonly.
@@ -880,15 +880,22 @@ expanded and don't want to collapse it. This list is readonly.
 :artwork name='bitmaps\userdriv.bmp' align=center.
 :p.
 .br
-The second list is the State list, containing the names of saved States of
+The second list is the States quicklist, containing the names of saved States of
 the FM/2 window (what directories are open, where the windows are located,
-etc.). You can add to this list by typing a name into the entry field,
-requesting a context menu on the entry field, then selecting :hp1.Save
-State as name:ehp1. from the context menu. FM/2 will save its current
-State under that name for later recall. FM/2 provides one state automatically.
-It is called FM2Shutdown and it will restore FM/2 to the state it was in
-when it was last shutdown. This is the same state that is opened on start up
-if you have "Save state of dir windows" selected.
+etc.). To add a State to this list, type the name into the entry field,
+and select :hp1.Save State as name:ehp1. from the context menu.
+FM/2 will save its current state under this name for later recall.
+:p.
+To delete a State, recall the State name from the States quicklist or type the State name
+into the entry field and and select :hp1.Delete state:ehp1. from the context menu.
+To recall a State name without switching to the State, hold down the
+&CtrlKey. while selecting the State name from the list.
+:p.
+FM/2 provides one built-in State.
+It is named FM2Shutdown and it can be used to restore FM/2 to the state it was in
+when FM/2 was last shutdown. This State is opened on start up
+if you have "Save dir window state" selected on the Monolithic tab of the
+Configuration menu.
 :p.
 :artwork name='bitmaps\useradds.bmp' align=center.
 :p.
@@ -904,16 +911,17 @@ State under an easy-to-recall name, you can quickly move from State to
 State using the State list. You'll find this :hp2.much:ehp2. faster and
 more flexible than the way DOS-think file managers do things.
 :p.
-To "edit" a State, first recall it, then change what you want, then
-delete the State name, then save it again.
+To edit a State, first recall it, then change what you want, then
+resave the State.
 :p.
-Holding down the  &ShiftKey.
- key while selecting a state name prevents FM/2 from closing windows that are already open.
+To add a saved State to the current state, hold down the &ShiftKey.
+key while selecting a State name from the list.
+The container windows defined by the selected State will be added to the current container windows.
 :p.
 :artwork name='bitmaps\userstat.bmp' align=center.
 :p.
 .br
-The third list is the user-defined commands list. User-defined commands
+The third list is the user-defined commands quicklist. User-defined commands
 allow you to extend FM/2 with commands of your own devising. You can
 add, change and delete commands with the :hp1.Config->Edit Commands:ehp1.
 menu item (or click :color fc=default bc=cyan.B2:color fc=default bc=default. on the list).
@@ -921,7 +929,7 @@ menu item (or click :color fc=default bc=cyan.B2:color fc=default bc=default. on
 :artwork name='bitmaps\cmdlist.bmp' align=center.
 :p.
 .br
-The fourth list is the commonly used directory list. You can add a
+The fourth list is the commonly used directory quicklist. You can add a
 directory to this list as above; type in the name and select :hp1.Add
 pathname:ehp1. from a context menu.
 :p.
@@ -949,7 +957,7 @@ Selecting the :hp1.<New directory>:ehp1. item from this list allows you
 to create a new directory (same as using the  &CtrlKey. +
 :color fc=default bc=palegray.M:color fc=default bc=default. accelerator key).
 :p.
-The commonly used directory list, in combination with the State list,
+The commonly used directory quicklist, in combination with the States quicklist,
 allows you to quickly place FM/2 into precisely the configuration you
 need to get real work done.
 :p.

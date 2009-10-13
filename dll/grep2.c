@@ -25,6 +25,7 @@
   01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  07 Oct 09 SHL Remember last search mask across runs
 
   fixme for more excess locals to be gone
 
@@ -35,12 +36,11 @@
 #include <ctype.h>
 #include <share.h>
 #include <time.h>
-// #include <process.h>                    // _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
-#define INCL_LONGLONG                   // dircnrs.h
-#define INCL_WINSTDCNR                  // makelist.h
+#define INCL_LONGLONG			// dircnrs.h
+#define INCL_WINSTDCNR			// makelist.h
 
 #include "fm3dll.h"
 #include "fm3dll2.h"			// #define's for UM_*, control id's, etc.
@@ -53,22 +53,24 @@
 #include "fm3str.h"
 #include "mle.h"
 #include "grep.h"
-#include "errutil.h"                    // Dos_Error...
-#include "strutil.h"                    // GetPString
-#include "pathutil.h"                   // BldFullPathName
-#include "walkem.h"                     // FillPathListBox
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "pathutil.h"			// BldFullPathName
+#include "walkem.h"			// FillPathListBox
 #include "grep2.h"
 #include "wrappers.h"			// xfgets
-#include "misc.h"                       // LoadLibPath
+#include "misc.h"			// LoadLibPath
 #include "strips.h"			// bstrip
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
-#include "valid.h"                      // IsFile
+#include "valid.h"			// IsFile
 
 #pragma data_seg(DATA1)
 
 static PSZ pszSrcFile = __FILE__;
+
+static PCSZ PSCZ_GREP_LASTMASK_SELECT = "Grep_LastMaskSelect";
 
 MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -158,7 +160,7 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, ENV_NAME, CCHMAXPATH, p);
 	bstrip(p);
 	if (!*p) {
-          if (!fAlertBeepOff)
+	  if (!fAlertBeepOff)
 	    DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, ENV_NAME));
 	}
@@ -189,27 +191,30 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   LONG lLen;
   SHORT sSelect;
   CHAR *p;
-  CHAR s[8192 + 14];
+  GREPINFO *GrepInfo;
+  ULONG size;
   CHAR simple[8192];
   CHAR path[CCHMAXPATH];
-  GREPINFO *GrepInfo;
+  CHAR s[8192 + 14];
 
-  static CHAR lastmask[8192] = "*";
-  static CHAR lasttext[4096] = "";
+  // 07 Oct 09 SHL fixme to not be static and save to profile?
+  static CHAR lastmask[8192];
+  static CHAR lasttext[4096];
   static BOOL recurse = TRUE;
-  static BOOL sensitive = FALSE;
-  static BOOL absolute = FALSE;
-  static BOOL sayfiles = TRUE;
+  static BOOL sensitive;
+  static BOOL absolute;
+  static BOOL sayfiles;
   static BOOL searchEAs = TRUE;
   static BOOL searchFiles = TRUE;
-  static BOOL changed = FALSE;
+  static BOOL changed;
+  static BOOL fInitDone;		// First time init done
   static BOOL findifany = TRUE;
-  static BOOL gRemember = FALSE;
-  ULONG size;
+  static BOOL gRemember;
   static UINT newer = 0;
   static UINT older = 0;
   static ULONG greater = 0;
   static ULONG lesser = 0;
+  static SHORT sLastMaskSelect = LIT_NONE;
 
   switch (msg) {
   case WM_INITDLG:
@@ -219,8 +224,21 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     GrepInfo = mp2;
     if (GrepInfo->szGrepPath && IsFile(GrepInfo->szGrepPath) == 0) {
-      BldFullPathName(lastmask, GrepInfo->szGrepPath, "*");
+      BldFullPathName(lastmask, GrepInfo->szGrepPath, "*");	// Directory passed
+      sLastMaskSelect = LIT_NONE;
+      fInitDone = TRUE;
     }
+    else if (sLastMaskSelect == LIT_NONE) {
+      size = sizeof(sLastMaskSelect);
+      PrfQueryProfileData(fmprof, appname, PSCZ_GREP_LASTMASK_SELECT, &sLastMaskSelect, &size);
+      if (sLastMaskSelect >= 0)
+      fInitDone = TRUE;
+    }
+    if (!fInitDone) {
+      lastmask[0] = '*';
+      lastmask[1] = 0;
+    }
+
     WinSetWindowULong(hwnd, QWL_USER, *(HWND *) GrepInfo->hwnd);
     WinSendDlgItemMsg(hwnd,
 		      GREP_MASK,
@@ -302,6 +320,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinEnableWindow(WinWindowFromID(hwnd, GREP_CRCDUPES), FALSE);
     WinEnableWindow(WinWindowFromID(hwnd, GREP_NOSIZEDUPES), FALSE);
 
+    // Fill mask listbox
     BldFullPathName(s, pFM2SaveDirectory, PCSZ_GREPMASKDAT);
     fp = _fsopen(s, "r", SH_DENYWR);
     if (fp) {
@@ -317,10 +336,15 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       fclose(fp);
     }
+    // 25 Sep 09 SHL Reselect last last used item
+    if (sLastMaskSelect >= 0)
+      WinSendDlgItemMsg(hwnd, GREP_LISTBOX, LM_SELECTITEM,
+			MPFROMSHORT(sLastMaskSelect), MPFROMSHORT(TRUE));
 
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, GREP_DRIVELIST),
 		    (HWND) 0, NULL, FALSE);
+    // 25 Sep 09 SHL fixme select drive matching current container?
     break;
 
   case WM_ADJUSTWINDOWPOS:
@@ -333,7 +357,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_FOCUSME:
-    /* set focus to window hwnd in mp1 */
+    // set focus to window hwnd in mp1
     if (mp1)
       WinSetFocus(HWND_DESKTOP, (HWND) mp1);
     return 0;
@@ -408,8 +432,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    MPFROMLONG(WinWindowFromID(hwnd, GREP_MASK)), MPVOID);
 	  }
 	}
-	break;                          // LN_ENTER
-      }                                 // switch
+	break; // LN_ENTER
+      } // switch
       break;
 
     case GREP_LISTBOX:
@@ -434,6 +458,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					      LM_QUERYSELECTION,
 					      MPFROMSHORT(LIT_FIRST), MPVOID);
 	  if (sSelect >= 0) {
+	    sLastMaskSelect = sSelect;
 	    *s = 0;
 	    if (WinQueryButtonCheckstate(hwnd, GREP_APPEND)) {
 	      WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
@@ -649,6 +674,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcat(s, PCSZ_BACKSLASH);
 	  }
 	  rstrip(s);
+	  // 25 Sep 09 SHL fixme to honor append
 	  if (*s) {
 	    strcat(s, simple);
 	    WinSetDlgItemText(hwnd, GREP_MASK, s);
@@ -691,6 +717,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendDlgItemMsg(hwnd,
 			  GREP_LISTBOX,
 			  LM_DELETEITEM, MPFROM2SHORT(sSelect, 0), MPVOID);
+	if (sSelect >= sLastMaskSelect)
+	  sLastMaskSelect--;
 	changed = TRUE;
       }
       break;
@@ -811,8 +839,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	// 07 Feb 08 SHL - fixme to malloc and free in thread
-	static GREP g;          // Passed to thread
-
+	static GREP g;			// Passed to thread
 	p = xmalloc(8192 + 512, pszSrcFile, __LINE__);
 	if (!p)
 	  break;
@@ -840,6 +867,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PrfWriteProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
 			      (PVOID) & searchEAs, sizeof(BOOL));
 	}
+	PrfWriteProfileData(fmprof, appname,
+			    PSCZ_GREP_LASTMASK_SELECT, &sLastMaskSelect, sizeof(sLastMaskSelect));
 	g.finddupes = WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES) != 0;
 	if (g.finddupes) {
 	  g.CRCdupes = WinQueryButtonCheckstate(hwnd, GREP_CRCDUPES) != 0;
@@ -853,7 +882,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, p);
 	bstrip(p);
 	if (!*p) {
-          if (!fAlertBeepOff)
+	  if (!fAlertBeepOff)
 	    DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
 	  free(p);
@@ -975,14 +1004,15 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #        endif
       }
       if (changed) {
-	// Grep mask list changed
+	// Save modified mask list
 	SHORT x;
 
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    GREP_LISTBOX,
 					    LM_QUERYITEMCOUNT,
 					    MPVOID, MPVOID);
-	if (sSelect > 0) {
+	// 07 Oct 09 SHL Rewrite if list empty
+	if (sSelect >= 0) {
 	  BldFullPathName(s, pFM2SaveDirectory, PCSZ_GREPMASKDAT);
 	  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
 	    break; //already gave error msg

@@ -2055,7 +2055,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (hwndMenu) {
 	BOOL rdy, local;
 	CHAR chDrv = *szDrv;
-	UINT iDrv;
+	UINT iDrv = chDrv - 'A';
 
 	strcat(szDrv, PCSZ_BACKSLASH);
 	MakeValidDir(szDrv);
@@ -4100,9 +4100,7 @@ static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  if (fUserComboBox) {
 	    if (!aheight) {
-
 	      SWP swpTemp;
-
 	      WinQueryWindowPos(WinWindowFromID(hwndDrivelist, CBID_EDIT),
 				&swpTemp);
 	      aheight = swpTemp.cy;
@@ -4317,9 +4315,7 @@ static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       sCount++;
       if (fUserComboBox) {
 	if (!aheight) {
-
 	  SWP swpTemp;
-
 	  WinQueryWindowPos(WinWindowFromID(hwndDrivelist, CBID_EDIT),
 			    &swpTemp);
 	  aheight = swpTemp.cy;
@@ -6280,6 +6276,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  bstrip(path);
 	  if (*path) {
 	    if (SHORT1FROMMP(mp1) == MAIN_USERLIST) {
+	      // 06 Oct 09 SHL Ctrl-select selects, but suppresses open
+		if ((shiftstate & (KC_CTRL | KC_SHIFT | KC_ALT)) == KC_CTRL)
+		  break;
 	      if (!strcmp(path, GetPString(IDS_NEWDIRECTORYTEXT))) {
 		if (!LastDir ||
 		    !WinSendMsg(WinQueryWindow(LastDir, QW_PARENT),
@@ -6322,10 +6321,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_SETUPLIST) {
 	      CHAR szKey[80];
-	      ULONG size, numsaves = 0;
-
-	      SetShiftState();
-	      size = sizeof(ULONG);
+	      ULONG numsaves = 0;
+	      ULONG size = sizeof(ULONG);
+	      // 06 Oct 09 SHL Ctrl-select selects, but suppresses open
+		if ((shiftstate & (KC_CTRL | KC_SHIFT | KC_ALT)) == KC_CTRL)
+		  break;
 	      sprintf(szKey, "%s.NumDirsLastTime", path);       // path is state name
 	      if (!PrfQueryProfileData(fmprof,
 				       FM3Str,
@@ -6368,11 +6368,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_CMDLIST) {
 
-	      SHORT sSelect;
-
-	      sSelect = (SHORT) WinSendMsg(hwndCmdlist,
-					   LM_QUERYSELECTION,
-					   MPFROMSHORT(LIT_FIRST), MPVOID);
+	      SHORT sSelect = (SHORT) WinSendMsg(hwndCmdlist,
+					         LM_QUERYSELECTION,
+						 MPFROMSHORT(LIT_FIRST), MPVOID);
 	      if (sSelect >= 0)
 		WinPostMsg(hwnd,
 			   WM_COMMAND,
@@ -6381,7 +6379,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetWindowText(hwndCmdlist, GetPString(IDS_COMMANDSTEXT));
 	    }
 	  }
-	}
+	} // CBN_ENTER
 	break;
 
       default:

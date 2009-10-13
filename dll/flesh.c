@@ -6,7 +6,7 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2008 Steven H. Levine
+  Copyright (c) 2005, 2009 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
@@ -22,7 +22,7 @@
   24 Nov 08 GKY remove redundant code and minor speed up of Stubby
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
-                to prevent duplicate directory names in tree following a copy before initial scan.
+		to prevent duplicate directory names in tree following a copy before initial scan.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
 
 ***********************************************************************/
@@ -199,7 +199,7 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 
       ProcessDir = xmallocz(sizeof(PROCESSDIR), pszSrcFile, __LINE__);
       if (!ProcessDir)
-        return FALSE;
+	return FALSE;
       ProcessDir->hwndCnr = hwndCnr;
       ProcessDir->pciParent = pciParent;
       ProcessDir->szDirBase = pciParent->pszFileName;
@@ -212,25 +212,25 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
       ProcessDir->pullTotalBytes = NULL;
 
       if (xbeginthread(ProcessDirectoryThread,
-                       65536,
-                       ProcessDir,
-                       pszSrcFile,
-                       __LINE__) == -1)
+		       65536,
+		       ProcessDir,
+		       pszSrcFile,
+		       __LINE__) == -1)
       {
-        xfree(ProcessDir, pszSrcFile, __LINE__);
+	xfree(ProcessDir, pszSrcFile, __LINE__);
       }
     }
-    else  {
+    else {
       ProcessDirectory(hwndCnr,
-                       pciParent,
-                       pciParent->pszFileName,
-                       includefiles,	// filestoo
-                       TRUE,		// recurse
-                       TRUE,		// partial
-                       NULL,		// stop flag
-                       dcd,
-                       NULL,		// total files
-                       NULL);		// total bytes
+		       pciParent,
+		       pciParent->pszFileName,
+		       includefiles,	// filestoo
+		       TRUE,		// recurse
+		       TRUE,		// partial
+		       NULL,		// stop flag
+		       dcd,
+		       NULL,		// total files
+		       NULL);		// total bytes
     }
   }
   driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
@@ -267,6 +267,11 @@ BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
 
 #define DDEPTH 16
 
+/**
+ * Fill in drive tree subtree
+ * @return TRUE if OK, else FALSE
+ */
+
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 {
   /**
@@ -275,7 +280,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
    * a black hole and make way for people who can get it right...
    */
 
-  BOOL ret = FALSE;
+  BOOL ok = FALSE;
   FILEFINDBUF3 ffb[DDEPTH];
   PFILEFINDBUF3 pffb;
   HDIR hDir = HDIR_CREATE;
@@ -307,17 +312,12 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   if (!isalpha(*str) ||
       str[1] != ':' ||
       str[2] != '\\' || ((flags & DRIVE_IGNORE)))
-    return FALSE;
+    return FALSE;			// Not a directory
 
   //if (isalpha(*str) &&  // redundant check GKY 11/24/08
   if (flags & DRIVE_INCLUDEFILES)
     includefiles = TRUE;
 
-#if 0
-  if (!isalpha(*str) ||   // redundant check GKY 11/24/08
-      str[1] != ':' ||
-      str[2] != '\\' ||
-#endif
   if (flags & DRIVE_REMOTE)
     isremote = TRUE;
 
@@ -397,6 +397,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 						     sizeof(FILEFINDBUF3),
 						     &nm))));
     DosFindClose(hDir);
+    // If drive B:
     if (toupper(*pciParent->pszFileName) > 'B' &&
 	(*(pciParent->pszFileName + 1)) == ':' &&
 	(*(pciParent->pszFileName + 2)) == '\\' && !(*(pciParent->pszFileName + 3))) {
@@ -428,9 +429,9 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 			   HWND_DESKTOP,
 			   GetPString(IDS_FSDERRORTITLETEXT),
 			   GetPString(IDS_FSDERRORTEXT),
-			   (isremote) ?
-			   GetPString(IDS_REMOTETEXT) :
-			   GetPString(IDS_LOCALTEXT), *str);
+			   isremote ? GetPString(IDS_REMOTETEXT) :
+				      GetPString(IDS_LOCALTEXT),
+			   *str);
 	      if (prc == MBID_NO) {
 		saymsg(MB_ENTER,
 		       HWND_DESKTOP,
@@ -468,49 +469,49 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 
       if (isadir) {
 
-        PCNRITEM pci;
+	PCNRITEM pci;
 
-        if (WinIsWindow((HAB)0, hwndCnr)) {
-          pci = WinSendMsg(hwndCnr,
-                           CM_ALLOCRECORD,
-                           MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1));
-          if (!pci) {
-            Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
-                      GetPString(IDS_RECORDALLOCFAILEDTEXT));
-          }
-          else {
-            RECORDINSERT ri;
-            pci->pszFileName = NullStr;
-            pci->pszDisplayName = pci->pszFileName;
-            pci->rc.pszIcon = pci->pszDisplayName;
-            memset(&ri, 0, sizeof(RECORDINSERT));
-            ri.cb = sizeof(RECORDINSERT);
-            ri.pRecordOrder = (PRECORDCORE) CMA_END;
-            ri.pRecordParent = (PRECORDCORE) pciParent;
-            ri.zOrder = (ULONG) CMA_TOP;
-            ri.cRecordsInsert = 1;
-            ri.fInvalidateRecord = TRUE;
-            //DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD \"%s\" %.255s", hwndCnr, pci->pszFileName, pffb->achName); // 18 Dec 08 SHL fixme debug
-            if (!WinSendMsg(hwndCnr,
-                            CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-              DosSleep(50); //05 Aug 07 GKY 100
-              WinSetFocus(HWND_DESKTOP, hwndCnr);
-              if (WinIsWindow((HAB)0, hwndCnr)) {
-                //DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD %s", hwndCnr, pci->pszFileName); // 18 Dec 08 SHL fixme debug
-                if (!WinSendMsg(hwndCnr,
-                                CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-                  Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
-                            GetPString(IDS_RECORDINSERTFAILEDTEXT));
-                  FreeCnrItem(hwndCnr, pci);
-                }
-                else
-                  ret = TRUE;
-              }
-            }
-            else
-              ret = TRUE;
-          }
-        }
+	if (WinIsWindow((HAB)0, hwndCnr)) {
+	  pci = WinSendMsg(hwndCnr,
+			   CM_ALLOCRECORD,
+			   MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(1));
+	  if (!pci) {
+	    Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
+		      GetPString(IDS_RECORDALLOCFAILEDTEXT));
+	  }
+	  else {
+	    RECORDINSERT ri;
+	    pci->pszFileName = NullStr;
+	    pci->pszDisplayName = pci->pszFileName;
+	    pci->rc.pszIcon = pci->pszDisplayName;
+	    memset(&ri, 0, sizeof(RECORDINSERT));
+	    ri.cb = sizeof(RECORDINSERT);
+	    ri.pRecordOrder = (PRECORDCORE) CMA_END;
+	    ri.pRecordParent = (PRECORDCORE) pciParent;
+	    ri.zOrder = (ULONG) CMA_TOP;
+	    ri.cRecordsInsert = 1;
+	    ri.fInvalidateRecord = TRUE;
+	    //DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD \"%s\" %.255s", hwndCnr, pci->pszFileName, pffb->achName); // 18 Dec 08 SHL fixme debug
+	    if (!WinSendMsg(hwndCnr,
+			    CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
+	      DosSleep(50); //05 Aug 07 GKY 100
+	      WinSetFocus(HWND_DESKTOP, hwndCnr);
+	      if (WinIsWindow((HAB)0, hwndCnr)) {
+		//DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD %s", hwndCnr, pci->pszFileName); // 18 Dec 08 SHL fixme debug
+		if (!WinSendMsg(hwndCnr,
+				CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
+		  Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
+			    GetPString(IDS_RECORDINSERTFAILEDTEXT));
+		  FreeCnrItem(hwndCnr, pci);
+		}
+		else
+		  ok = TRUE;
+	      }
+	    }
+	    else
+	      ok = TRUE;
+	  }
+	}
       }
       else if (toupper(*str) > 'B' && str[1] == ':' && str[2] == '\\' &&
 	       !str[3]) {
@@ -527,9 +528,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
     }
   }
   else if (toupper(*str) > 'B' && rc != ERROR_NO_MORE_FILES) {
-
     CHAR s[CCHMAXPATH + 80];
-
     sprintf(s, GetPString(IDS_SEARCHERRORTEXT), rc, str);
     Notify(s);
   }
@@ -537,7 +536,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 None:
 
   DosError(FERR_DISABLEHARDERR);
-  return ret;
+  return ok;
 }
 
 #pragma alloc_text(FLESH,Flesh,FleshEnv,UnFlesh,Stubby)

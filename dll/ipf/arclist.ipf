@@ -5,9 +5,10 @@
 .* Edit archiver definitions
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2004 Steven H.Levine
+.* Copyright (c) 2004, 2009 Steven H.Levine
 .*
-.* Revisions	31 Jul 04 SHL - Rework file name position description
+.* 31 Jul 04 SHL Rework file name position description
+.* 28 Sep 09 SHL Minor updates
 .*
 .***********************************************************************
 .*
@@ -118,7 +119,9 @@ extraction.
 :hp1.Extract All w/ Dirs:ehp1. does the same thing including any
 enclosed directories (i.e. files are extracted into the directories they
 were archived "with," if any, rather than all going into the extract
-directory). :hp1.Extract All w/ Dirs &amp. Exit:ehp1. does the same
+directory).
+:p.
+:hp1.Extract All w/ Dirs &amp. Exit:ehp1. does the same
 thing but closes the archive listing window after starting the
 extraction. (:hp2.Note:ehp2. that if all you want to do to an archive
 is extract from it, you can do so without ever opening a contents box;

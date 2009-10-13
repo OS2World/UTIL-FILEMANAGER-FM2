@@ -53,7 +53,7 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static BOOL noanimation;
   static INT width, direction, ticktock, counter;
   static HPOINTER stick1, stick2, stick3, stick4, stick12, stick22, stick32,
-    stick42, stick5, stick52;
+		  stick42, stick5, stick52;
 
   switch (msg) {
   case WM_INITDLG:

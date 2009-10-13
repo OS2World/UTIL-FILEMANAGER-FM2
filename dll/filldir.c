@@ -6,7 +6,7 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2009 Steven H. Levine
 
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
@@ -78,6 +78,9 @@
   22 Jul 09 GKY Consolidated driveflag setting code in DriveFlagsOne
   22 Jul 09 GKY Streamline scanning code for faster Tree rescans
   15 Sep 09 SHL Show rescan progress while filling container
+  26 Sep 09 SHL Add FreeCnrItemData debug code - do not let into the wild
+  13 Oct 09 SHL Avoid szDriver overflow in FillTreeCnr
+  13 Oct 09 SHL Restore missing drives in drive drop-down listbox; optimize updates
 
 ***********************************************************************/
 
@@ -98,6 +101,7 @@
 #include "treecnr.h"			// Data declaration(s)
 #include "info.h"			// Data declaration(s)
 #include "newview.h"			// Data declaration(s)
+#include "mainwnd.h"			// hwndDrivelist
 #include "fm3str.h"
 #include "filldir.h"
 #include "errutil.h"			// Dos_Error...
@@ -140,8 +144,6 @@ PCSZ WPProgram = "WPProgram";
 typedef struct {
   PCNRITEM	pci;
   HWND		hwndCnr;		// hwnd you want the message posted to
-  HWND		hwndDrivesList;
-  //BOOL	RamDrive;
 }
 STUBBYSCAN;
 
@@ -208,7 +210,7 @@ VOID StubbyScanThread(VOID * arg)
   STUBBYSCAN *StubbyScan;
   HAB thab;
   HMQ hmq = (HMQ) 0;
-  BOOL ret;
+  BOOL ok;
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -224,8 +226,8 @@ VOID StubbyScanThread(VOID * arg)
       if (hmq) {
 	IncrThreadUsage();
 	priority_normal();
-	ret = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-	if (ret == 1) {
+	ok = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+	if (ok) {
 	  if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
 	    ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
 
@@ -280,7 +282,7 @@ VOID ProcessDirectoryThread(VOID * arg)
 			 ProcessDir->recurse,
 			 ProcessDir->partial,
 			 ProcessDir->stopflag,
-			 ProcessDir->dcd,	                // Optional
+			 ProcessDir->dcd,		// Optional
 			 ProcessDir->pulTotalFiles,	// Optional
 			 ProcessDir->pullTotalBytes);	// Optional
 	WinDestroyMsgQueue(hmq);
@@ -531,7 +533,6 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
    */
   if (!*pffb->achName) {
     pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
-    //strcpy(pci->pszFileName, pszDirectory);
   }
   else {
     INT c = strlen(pszDirectory);
@@ -879,7 +880,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
    */
 
   PSZ pszFileSpec;
-  //INT t;
   PFILEFINDBUF4L paffbFound;
   PFILEFINDBUF4L *papffbSelected;
   PFILEFINDBUF4L pffbFile;
@@ -894,7 +894,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
   ULONGLONG ullTotalBytes;
   ULONG ulReturnFiles = 0;
   ULONGLONG ullReturnBytes = 0;
-  //PCH pchEndPath;
   APIRET rc;
   PCNRITEM pci;
   PCNRITEM pciFirst;
@@ -924,14 +923,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
   papffbSelected = xmalloc(sizeof(PFILEFINDBUF4L) * ulFindMax, pszSrcFile, __LINE__);
 
   if (paffbFound && papffbSelected && pszFileSpec) {
-    //t = strlen(szDirBase);
     strcpy(pszFileSpec, szDirBase);
     AddBackslashToPath(pszFileSpec);
-    //pchEndPath = pszFileSpec + t;
-    //if (*(pchEndPath - 1) != '\\') {
-    //  memcpy(pchEndPath, "\\", 2);
-    //  pchEndPath++;
-    //}
     strcat(pszFileSpec, "*");
     DosError(FERR_DISABLEHARDERR);
     ulFindCnt = ulFindMax;
@@ -945,7 +938,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       &ulFindCnt,
 		       FIL_QUERYEASIZEL);
     priority_normal();
-    pszFileSpec[strlen(pszFileSpec) - 1] = 0;     // Chop off wildcard
+    pszFileSpec[strlen(pszFileSpec) - 1] = 0;	// Chop off wildcard
     if (!rc) {
       do {
 	/*
@@ -1097,7 +1090,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	}
 	else {
 	  // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
-	  if (dcd && hwndStatus &&
+	  if (hwndStatus && dcd &&
 	      dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 	    WinSetWindowText(hwndStatus, GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
 	  }
@@ -1166,6 +1159,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	rc = ERROR_NO_MORE_FILES;
     }
 
+    // 13 Oct 09 SHL fixme to be saymsg if ERROR_NOT_READY and first try on volume
     if (rc && rc != ERROR_NO_MORE_FILES) {
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		GetPString(IDS_CANTFINDDIRTEXT), pszFileSpec);
@@ -1230,25 +1224,37 @@ VOID FillDirCnr(HWND hwndCnr,
 
 } // FillDirCnr
 
+/**
+ * Fill tree container and drives list
+ * Offer to update command line options if not already done and not suppressed
+ */
+
 VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 {
-  ULONG ulCurDriveNum, ulDriveMap, numtoinsert = 0;
+  ULONG ulCurDriveNum;
+  ULONG ulDriveMap;
+  ULONG numtoinsert = 0;
   ULONG ulDriveType;
-  PCNRITEM pci, pciFirst = NULL, pciNext, pciParent = NULL;
-  INT x;// removable;
-  CHAR suggest[32];
-  CHAR szDrive[] = " :\\";
+  PCNRITEM pci, pciFirst = NULL;
+  PCNRITEM  pciNext;
+  PCNRITEM  pciParent = NULL;
+  UINT iDrvNum;
+  ULONG ulDriveMapMask;
+  CHAR szSuggest[32];			// Suggested startup command line parameters
+  CHAR szDrive[CCHMAXPATH] = " :\\";	// 13 Oct 09 SHL
   CHAR szFSType[CCHMAXPATH];
   FILESTATUS4L fsa4;
   APIRET rc;
-  //BOOL drivesbuilt = FALSE;
   ULONG startdrive = 3;
+  HWND hwndDrivelist;
+
   static BOOL didonce;
+  static ULONG ulLastDriveMap;
 
   fDummy = TRUE;
-  *suggest = 0;
-  for (x = 0; x < 26; x++) {
-    driveflags[x] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
+  *szSuggest = 0;
+  for (iDrvNum = 0; iDrvNum < 26; iDrvNum++) {
+    driveflags[iDrvNum] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
 		      DRIVE_NOLOADSUBJS | DRIVE_NOLOADLONGS |
 		      DRIVE_INCLUDEFILES | DRIVE_SLOW | DRIVE_NOSTATS |
 		      DRIVE_WRITEVERIFYOFF);
@@ -1275,9 +1281,17 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     exit(0);
   }
 
-  // Calc number of drive items to create
-  for (x = 0; x < 26; x++) {
-    if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE))
+  // Find drive list combobox if it exists
+  if (hwndParent) {
+    hwndDrivelist = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
+				    MAIN_DRIVELIST);
+  }
+  else
+    hwndDrivelist = NULLHANDLE;
+
+  // Calc number of top level drive tree items to create
+  for (iDrvNum = 0; iDrvNum < 26; iDrvNum++) {
+    if ((ulDriveMap & (1L << iDrvNum)) && ~driveflags[iDrvNum] & DRIVE_IGNORE)
       numtoinsert++;
   }
 
@@ -1296,43 +1310,43 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
   pci = pciFirst;
-  for (x = 0; x < 26; x++) {
-    if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
-
+  for (iDrvNum = 0; iDrvNum < 26; iDrvNum++) {
+    ulDriveMapMask = 1L << iDrvNum;
+    if (ulDriveMap & ulDriveMapMask && ~driveflags[iDrvNum] & DRIVE_IGNORE) {
       CHAR s[80];
       ULONG flags = 0;
       ULONG size = sizeof(ULONG);
       struct {
-	      ULONG serial;
-	      CHAR volumelength;
-	      CHAR volumelabel[CCHMAXPATH];
-	     } volser;
+	ULONG serial;
+	CHAR volumelength;
+	CHAR volumelabel[CCHMAXPATH];
+      } volser;
 
-      *szDrive = (CHAR)x + 'A';		// Build path spec
+      *szDrive = (CHAR)iDrvNum + 'A';	// Stuff drive letter - assume already have rest of path
 
       sprintf(s, "%c.DriveFlags", toupper(*szDrive));
       if (PrfQueryProfileData(fmprof, appname, s, &flags, &size)) {
-	driveflags[toupper(*szDrive) - 'A'] |= flags;
+	driveflags[iDrvNum] |= flags;
       }
 
-      if (x > 1) {
+      if (iDrvNum > 1) {
 	// Hard drive (2..N)
-	if (!(driveflags[x] & DRIVE_NOPRESCAN)) {
+	if (~driveflags[iDrvNum] & DRIVE_NOPRESCAN) {
 	  *szFSType = 0;
 	  ulDriveType = 0;
 	  memset(&volser, 0, sizeof(volser));
-	  DriveFlagsOne(x, szFSType, &volser);
-	  driveserial[x] = volser.serial;
+	  DriveFlagsOne(iDrvNum, szFSType, &volser);
+	  driveserial[iDrvNum] = volser.serial;
 	  memset(&fsa4, 0, sizeof(FILESTATUS4L));
-	  if (!fVerifyOffChecked[x]) {
-	    if (driveflags[x] & DRIVE_REMOVABLE)
-	      driveflags[x] |= DRIVE_WRITEVERIFYOFF;
-	    if (!(driveflags[x] & DRIVE_INVALID)) {
+	  if (!fVerifyOffChecked[iDrvNum]) {
+	    if (driveflags[iDrvNum] & DRIVE_REMOVABLE)
+	      driveflags[iDrvNum] |= DRIVE_WRITEVERIFYOFF;
+	    if (~driveflags[iDrvNum] & DRIVE_INVALID) {
 	      CHAR Key[80];
 
-	      sprintf(Key, "%c.VerifyOffChecked", (CHAR) (x + 'A'));
-	      fVerifyOffChecked[x] = TRUE;
-	      PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[x], sizeof(BOOL));
+	      sprintf(Key, "%c.VerifyOffChecked", (CHAR) (iDrvNum + 'A'));
+	      fVerifyOffChecked[iDrvNum] = TRUE;
+	      PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[iDrvNum], sizeof(BOOL));
 	    }
 	  }
 	  if (stricmp(volser.volumelabel, NullStr) != 0 && fShowDriveLabelInTree)
@@ -1341,7 +1355,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
 	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
 
-	  if (!(driveflags[x] & DRIVE_REMOVABLE)) {
+	  if (~driveflags[iDrvNum] & DRIVE_REMOVABLE) {
 	    // Fixed volume
 	    pci->attrFile |= FILE_DIRECTORY;
 	    DosError(FERR_DISABLEHARDERR);
@@ -1357,24 +1371,21 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    }
 	    if (rc && !didonce) {
 	      // Guess drive letter
-	      if (!*suggest) {
-		*suggest = '/';
-		suggest[1] = 0;
+	      if (!*szSuggest) {
+		*szSuggest = '/';
+		szSuggest[1] = 0;
 	      }
 
-	      sprintf(suggest + strlen(suggest), "%c" , toupper(*szDrive));
+	      sprintf(szSuggest + strlen(szSuggest), "%c" , toupper(*szDrive));
 	      pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	      if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-		strcat(szDrive, " [");
-		strcat(szDrive, szFSType);
-		strcat(szDrive, "]");
-	      }
+	      if (fShowFSTypeInTree || fShowDriveLabelInTree)
+		sprintf(szDrive + strlen(szDrive), " [%s]", szFSType);
 	      pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	      szDrive[3] = 0;
+	      szDrive[3] = 0;		// Restore nul
 	      pci->rc.pszIcon = pci->pszDisplayName;
 	      pci->attrFile = FILE_DIRECTORY;
 	      pci->pszDispAttr = FileAttrToString(pci->attrFile);
-	      driveserial[x] = -1;
+	      driveserial[iDrvNum] = -1;
 	    }
 	    else
 	      FillInRecordFromFSA(hwndCnr, pci, szDrive, &fsa4, TRUE, szFSType, NULL);
@@ -1382,13 +1393,10 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  else {
 	    // Removable volume
 	    pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	    if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-	      strcat(szDrive, " [");
-	      strcat(szDrive, szFSType);
-	      strcat(szDrive, "]");
-	    }
+	    if (fShowFSTypeInTree || fShowDriveLabelInTree)
+	      sprintf(szDrive + strlen(szDrive), " [%s]", szFSType);
 	    pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	    szDrive[3] = 0;
+	    szDrive[3] = 0;		// Restore nul
 	    pci->rc.pszIcon = pci->pszDisplayName;
 	    pci->attrFile = FILE_DIRECTORY;
 	    pci->pszDispAttr = FileAttrToString(pci->attrFile);
@@ -1403,9 +1411,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  *szFSType = 0;
 	  pci->rc.hptrIcon = hptrDunno;
 	  pci->pszFileName = xstrdup(szDrive, pszSrcFile, __LINE__);
-	  if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+	  if (fShowFSTypeInTree || fShowDriveLabelInTree)
 	    strcat(szDrive, " [?]");
-	  }
 	  pci->pszDisplayName = xstrdup(szDrive, pszSrcFile, __LINE__);
 	  szDrive[3] = 0;
 #	  ifdef FORTIFY
@@ -1415,7 +1422,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  pci->rc.pszIcon = pci->pszDisplayName;
 	  pci->attrFile = FILE_DIRECTORY;
 	  pci->pszDispAttr = FileAttrToString(pci->attrFile);
-	  driveserial[x] = -1;
+	  driveserial[iDrvNum] = -1;
 	}
 	}
       else {
@@ -1429,18 +1436,37 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	pci->rc.pszIcon = pci->pszDisplayName;
 	pci->attrFile = FILE_DIRECTORY;
 	pci->pszDispAttr = FileAttrToString(pci->attrFile);
-	driveflags[x] |= (DRIVE_REMOVABLE | DRIVE_NOLONGNAMES);
-	driveserial[x] = -1;
+	driveflags[iDrvNum] |= (DRIVE_REMOVABLE | DRIVE_NOLONGNAMES);
+	driveserial[iDrvNum] = -1;
       }
       pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
       pci = (PCNRITEM) pci->rc.preccNextRecord;	// next rec
     }
-    else if (!(ulDriveMap & (1L << x)))
-      driveflags[x] |= DRIVE_INVALID;
+    else if (~ulDriveMap & ulDriveMapMask)
+      driveflags[iDrvNum] |= DRIVE_INVALID;
+
+    // 13 Oct 09 SHL
+    // Update drives list dropdown
+    if ((ulDriveMap ^ ulLastDriveMap) & ulDriveMapMask) {
+      if (ulDriveMap & ulDriveMapMask) {
+	WinSendMsg(hwndDrivelist,
+		   LM_INSERTITEM,
+		   MPFROM2SHORT(LIT_SORTASCENDING, 0),
+		   MPFROMP(szDrive));
+      }
+      else {
+	// Drive went away
+	SHORT sSelect = (SHORT)WinSendMsg(hwndDrivelist,
+					  LM_SEARCHSTRING,
+					  MPFROM2SHORT(0, LIT_FIRST),
+					  MPFROMP(szDrive));
+	if (sSelect >= 0)
+	  WinSendMsg(hwndDrivelist, LM_DELETEITEM, MPFROMSHORT(sSelect), MPVOID);
+      }
+    }
   } // for drives
 
-  //PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-  //drivesbuilt = TRUE;
+  ulLastDriveMap = ulDriveMap;		// 13 Oct 09 SHL
 
   // insert the drives
   if (numtoinsert && pciFirst) {
@@ -1479,12 +1505,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				  MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
-  }
-
-  if (hwndParent) {
-    WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-			       MAIN_DRIVELIST),
-	       LM_DELETEALL, MPVOID, MPVOID);
   }
 
   if (fShowEnv) {
@@ -1565,8 +1585,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   } // if show env
   {
     STUBBYSCAN *stubbyScan;
-    HWND hwndDrivesList = WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-					  MAIN_DRIVELIST);
 
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
@@ -1578,15 +1596,15 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	break;
       stubbyScan->pci = pci;
       stubbyScan->hwndCnr = hwndCnr;
-      stubbyScan->hwndDrivesList = hwndDrivesList;
       pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
 				      CM_QUERYRECORD,
 				      MPFROMP(pci),
 				      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
       if (~pci->flags & RECFLAGS_ENV) {
-	ULONG drvNum = toupper(*pci->pszFileName) - 'A';	// 0..25
-	if (drvNum == ulCurDriveNum || drvNum >= 2) {
-	  ULONG flags = driveflags[drvNum];	// Speed up
+	iDrvNum = toupper(*pci->pszFileName) - 'A';	// 0..25
+	if (iDrvNum == ulCurDriveNum || iDrvNum >= 2) {
+	  // Hard drive or current drive
+	  ULONG flags = driveflags[iDrvNum];	// Speed up
 	  if (~flags & DRIVE_INVALID &&
 	      ~flags & DRIVE_NOPRESCAN &&
 	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE))
@@ -1599,31 +1617,23 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    {
 	      xfree(stubbyScan, pszSrcFile, __LINE__);
 	    }
-	  } // if drive for scanning
-	  else
-	    WinSendMsg(hwndDrivesList,
-		       LM_INSERTITEM,
-		       MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		       MPFROMP(pci->pszFileName));
+	  } // if drive needs to be scanned
 	}
 	else {
+	  // Diskette and not current drive
 	  WinSendMsg(hwndCnr,
 		     CM_INVALIDATERECORD,
 		     MPFROMP(&pci),
 		     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	  WinSendMsg(hwndDrivesList,
-		     LM_INSERTITEM,
-		     MPFROM2SHORT(LIT_SORTASCENDING, 0),
-		     MPFROMP(pci->pszFileName));
 	}
       }
       pci = pciNext;
     } // while
   }
-  if (hwndParent)
-    WinSendMsg(WinWindowFromID(WinQueryWindow(hwndParent, QW_PARENT),
-			       MAIN_DRIVELIST), LM_SELECTITEM,
-	       MPFROM2SHORT(0, 0), MPFROMLONG(TRUE));
+
+  // 13 Oct 09 SHL
+  if (hwndDrivelist)
+    WinSendMsg(hwndDrivelist, LM_SELECTITEM, MPFROM2SHORT(0, 0), MPFROMLONG(TRUE));
 
   pci = (PCNRITEM) WinSendMsg(hwndCnr,
 			      CM_QUERYRECORD,
@@ -1667,36 +1677,35 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     BYTE info;
     BOOL includesyours = FALSE;
 
-    // 10 Jan 08 SHL fixme to understand fFirstTime
-    if (!fDontSuggestAgain &&(*suggest || (!(driveflags[1] & DRIVE_IGNORE) && fFirstTime))) {
+    // 10 Jan 08 SHL fixme to understand fFirstTime - looks obsolete to me - probably mean didonce?
+    if (!fDontSuggestAgain && (*szSuggest || ~driveflags[1] & DRIVE_IGNORE && fFirstTime)) {
       if (!DosDevConfig(&info, DEVINFO_FLOPPY) && info == 1) {
-	if (!*suggest) {
-	  *suggest = '/';
-	  suggest[1] = 0;
+	if (!*szSuggest) {
+	  *szSuggest = '/';
+	  szSuggest[1] = 0;
 	}
 	else
-	  memmove(suggest + 2, suggest + 1, strlen(suggest));
-	suggest[1] = 'B';
+	  memmove(szSuggest + 2, szSuggest + 1, strlen(szSuggest));
+	szSuggest[1] = 'B';
       }
     }
-    if (*suggest) {
-      for (x = 2; x < 26; x++) {
-	if (driveflags[x] & DRIVE_IGNORE) {
+    if (*szSuggest) {
+      for (iDrvNum = 2; iDrvNum < 26; iDrvNum++) {
+	if (driveflags[iDrvNum] & DRIVE_IGNORE) {
 	  includesyours = TRUE;
-	  sprintf(suggest + strlen(suggest), "%c", (char)(x + 'A'));
+	  sprintf(szSuggest + strlen(szSuggest), "%c", (char)(iDrvNum + 'A'));
 	}
       }
-      strcat(suggest, " %*");
+      strcat(szSuggest, " %*");
       saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
-	     (hwndParent) ? hwndParent : hwndCnr,
+	     hwndParent ? hwndParent : hwndCnr,
 	     GetPString(IDS_SUGGESTTITLETEXT),
 	     GetPString(IDS_SUGGEST1TEXT),
 	     (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
-	     suggest);
+	     szSuggest);
       if (MBID_YES) {
 	char s[64];
-
-	sprintf(s, "PARAMETERS=%s", suggest);
+	sprintf(s, "PARAMETERS=%s", szSuggest);
 	WinCreateObject(WPProgram, "FM/2", s, FM3Folder, CO_UPDATEIFEXISTS);
 	WinCreateObject(WPProgram,
 			"FM/2 Lite", s, FM3Folder, CO_UPDATEIFEXISTS);
@@ -1716,7 +1725,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	fDontSuggestAgain = TRUE;
 	PrfWriteProfileData(fmprof, appname, "DontSuggestAgain", &fDontSuggestAgain, sizeof(BOOL));
       }
-    }
+    } // if suggest
   }
   didonce = TRUE;
 } // FillTreeCnr
@@ -1785,13 +1794,65 @@ VOID FreeCnrItemData(PCNRITEM pci)
     pci->pszDisplayName = NULL;		// Catch illegal references
   }
 
+#if 0 // 26 Sep 09 SHL debug dup free complaints
   if (!pci->pszFileName)
-    Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting free %p data twice", pci);
+    Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice", pci);
   else {
     if (pci->pszFileName != NullStr)
       free(pci->pszFileName);
     pci->pszFileName = NULL;		// Catch illegal references
   }
+#else
+  {
+    #define HIST_COUNT 50
+    static struct {
+      PCNRITEM pci;
+      PSZ pszFileName;
+    } history[HIST_COUNT];
+    static volatile UINT iHistNdx;
+    UINT i;
+
+    if (!pci->pszFileName) {
+      // Looks like pci was already freed
+      // Try to locate original file name in history buffer
+      for (i = 0; i < HIST_COUNT && pci != history[i].pci; i++) { }	// Scan
+      if (i < HIST_COUNT) {
+	Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice, fileName was %.260s",
+		      pci, history[i].pszFileName);
+      }	else {
+	Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice", pci);
+      }
+    }
+    else {
+      PSZ psz;
+      PSZ *ppsz;
+      // Grab a history slot
+      // This should work well enoungh to prevent MT/SMP conflicts
+      for (;;) {
+	i = iHistNdx;
+	if (++i >= HIST_COUNT)
+	  i = 0;
+	if (++iHistNdx >= HIST_COUNT)
+	  iHistNdx = 0;
+	if (i == iHistNdx) break;
+      }
+      ppsz = &history[iHistNdx].pszFileName;
+      psz = *ppsz;
+      if (psz)
+	free(psz);
+      if (pci->pszFileName && pci->pszFileName != NullStr)
+	*ppsz = strdup(pci->pszFileName);
+      else
+	*ppsz = NULL;
+      history[iHistNdx].pci = pci;
+      if (pci->pszFileName != NullStr)
+	free(pci->pszFileName);
+      pci->pszFileName = NULL;		// Catch illegal references and dup free attempts
+    }
+  }
+
+
+#endif
 
   // 08 Sep 08 SHL Remove excess logic
   if (pci->pszLongName) {

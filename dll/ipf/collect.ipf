@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Collector
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2006, 2009 Steven H.Levine
+.*
+.* 29 Apr 09 SHL Expand say files usage help
+.*
+.***********************************************************************
+.*
 :h2 res=90100 name=PANEL_COLLECTOR.Collector
 :i1 id=aboutCollector.Collector
 :artwork name='..\..\bitmaps\collect.bmp' align=center.
@@ -107,8 +120,15 @@ The :hp6.Case Sensitive:ehp6. checkbox, if checked, makes text searches
 case sensitive. Otherwise they are not ('c' matches 'C' and 'c').
 :p.
 The :hp6.Say files as found:ehp6. checkbox tells FM/2 to display the
-filenames it finds based on the filemasks as it encounters them, if
-checked.
+filenames it finds based on the filemasks as it encounters them, if checked.
+This is the recommended setting if you expect the filemask to match a relatively small number
+of files.
+If the checkbox is unchecked, FM/2 will report progress by displaying
+the filename in process every couple of seconds.
+This is the recommended setting if you expect the filemask to match a large number
+of files and will speed up Seek and scan performance.
+If you expect to match a large number of files, it is probably best to toggle
+off :hp6.Immediate updates:ehp6. in the Config menu.
 :p.
 The :hp6.Search files:ehp6. checkbox, when checked, tells FM/2 to look
 inside files for the text in the Search text entry field. This has no

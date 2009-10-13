@@ -77,15 +77,15 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   14 Mar 09 GKY PCSZ strings moved to compile time initialization
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring replaces check for
-                saved drive containers.
+	        saved drive containers.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   22 Jul 09 GKY Fix failure to restore the notebook setting for saving container states or not
   12 Sep 09 GKY Change protectonly check to check for VKBD being loaded instead of starting
-                command.com. Prevents hang (at least until a Dos program is started) on a system
-                that has a broken MDOS install.
+	        command.com. Prevents hang (at least until a Dos program is started) on a system
+	        that has a broken MDOS install.
 
 ***********************************************************************/
 
@@ -116,23 +116,23 @@
 #include "comp.h"			// Data declaration(s)
 #include "cmdline.h"			// Data declaration(s)
 #include "fm2cmd.h"			// Data declaration(s)
-#include "printer.h"                    // Data declaration(s)
-#include "flesh.h"                      // Data declaration(s)
-#include "worker.h"                     // Data declaration(s)
-#include "filldir.h"                    // Data declaration(s)
-#include "defview.h"                    // Data declaration(s)
-#include "draglist.h"                   // Data declaration(s)
+#include "printer.h"			// Data declaration(s)
+#include "flesh.h"			// Data declaration(s)
+#include "worker.h"			// Data declaration(s)
+#include "filldir.h"			// Data declaration(s)
+#include "defview.h"			// Data declaration(s)
+#include "draglist.h"			// Data declaration(s)
 #include "fm3dlg.h"
 #include "datamin.h"
 #include "tools.h"
 #include "fm3str.h"
 #include "version.h"
-#include "pathutil.h"                   // BldFullPathName
-#include "arccnrs.h"                    // ArcClientWndProc
-#include "errutil.h"                    // Dos_Error...
-#include "strutil.h"                    // GetPString
-#include "valid.h"                      // ArgDriveFlags
-#include "autoview.h"                   // AutoViewProc
+#include "pathutil.h"			// BldFullPathName
+#include "arccnrs.h"			// ArcClientWndProc
+#include "errutil.h"			// Dos_Error...
+#include "strutil.h"			// GetPString
+#include "valid.h"			// ArgDriveFlags
+#include "autoview.h"			// AutoViewProc
 #include "mainwnd.h"                    // BubbleProc, ChildButtonProc, DriveBackProc,
 					// DriveProc, LEDProc, MainWndProc, StatusProc
 					// ToolBackProc
@@ -1096,13 +1096,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
+	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtFillingTreeCnr, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
+	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateEventSem(NULL, &hevInitialCnrScanComplete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEEVENTSEM);
+	      PCSZ_DOSCREATEEVENTSEM);
 
   /*
    * set some defaults (note: everything else automatically initialized
@@ -1180,14 +1180,15 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
       rc = DosQueryModuleHandle("VKBD", &hmod);
       if (rc != NO_ERROR) {
-        fProtectOnly = TRUE;
-        DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VKBD returned %d fProtectOnly=%d", rc, fProtectOnly);
+	fProtectOnly = TRUE;
+	DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VKBD returned %d fProtectOnly=%d", rc, fProtectOnly);
       }
       else {
-        rc = DosQueryModuleHandle("VMOUSE", &hmod);
-        if (rc != NO_ERROR)
-          fProtectOnly = TRUE;
-        DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VMOUSE returned %d fProtectOnly=%d", rc, fProtectOnly);
+	rc = DosQueryModuleHandle("VMOUSE", &hmod);
+	if (rc != NO_ERROR) {
+	  fProtectOnly = TRUE;
+	  DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VMOUSE returned %d fProtectOnly=%d", rc, fProtectOnly);
+	}
       }
     }
     else
@@ -1342,7 +1343,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowEnv", &fShowEnv, &size);
   PrfQueryProfileString(fmprof, appname, "TreeEnvVarList", "PATH;DPATH;LIBPATH;HELP;BOOKSHELF;",
-                        pszTreeEnvVarList, MaxComLineStrg);
+	                pszTreeEnvVarList, MaxComLineStrg);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "ShowDriveOnly", &fShowDriveOnly, &size);
   size = sizeof(BOOL);
@@ -1407,7 +1408,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "BlueLED", &fBlueLED, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ConfirmDelete", &fConfirmDelete, &size);
-  size = sizeof(BOOL);  
+  size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "SaveState", &fSaveState, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SyncUpdates", &fSyncUpdates, &size);

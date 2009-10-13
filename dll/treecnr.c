@@ -105,14 +105,14 @@
 #include "strutil.h"			// GetPString
 #include "notebook.h"			// CfgDlgProc
 #include "command.h"			// RunCommand
-#include "worker.h"		// Action, MassAction
+#include "worker.h"			// Action, MassAction
 #include "mainwnd.h"			// BubbleHelp, FindDirCnrByName, GetNextWindowPos
 #include "misc.h"			// CnrDirectEdit, EmphasizeButton, FindDirCnr
-				// FindDirCnr, FixSwitchList, OpenEdit, QuickPopup
-				// SetSortChecks, SwitchCommand, CheckMenu
-				// CurrentRecord, IsFm2Window
+					// FindDirCnr, FixSwitchList, OpenEdit, QuickPopup
+					// SetSortChecks, SwitchCommand, CheckMenu
+					// CurrentRecord, IsFm2Window
 #include "common.h"			// CommonCnrProc, CommonDriveCmd, CommonFrameWndProc
-				// CommonTextProc
+					// CommonTextProc
 #include "valid.h"			// CheckDrive, DriveFlagsOne, IsValidDrive
 #include "chklist.h"			// DropListProc
 #include "select.h"			// ExpandAll
@@ -837,6 +837,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	}
       }
+      // 21 Sep 09 SHL fixme to know why checking again - focus change?
       if (dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
 	WinSetWindowText(hwndStatus, s);
     }

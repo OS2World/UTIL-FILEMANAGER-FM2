@@ -1,3 +1,16 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* Walk dialog help
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002, 2009 Steven H.Levine
+.*
+.* 07 Oct 09 SHL Drop 100 file limit text
+.*
+.***********************************************************************
+.*
 :h1 res=91500 name=PANEL_WALKEM.Walk Directories
 :i1 id=aboutWalkem.Walk Directories
 
@@ -19,16 +32,21 @@ The listbox on the right of the window (:hp1.User List:ehp1.) contains
 only directories that you add to it. To add a directory, click
 :hp1.Add:ehp1. when the desired directory name is displayed in the
 entry field at the bottom of the window. To delete a directory,
-highlight it and click :hp1.Delete:ehp1.. To switch to one of these
+highlight it and click :hp1.Delete:ehp1..
+To switch to one of these
 user-defined directories, highlight it and click &OkayButton. or
-double-click the directory. You can add up to 100 directories.
+double-click the directory.
+To highlight the directory without switching, hold down the &CtrlKey.
+and click on the directory.
 :p.
 You can also select directories from the Recent directories drop-down
 list at the top right of the window. FM/2 adds to this list
 automatically as you traverse your drives. Just drop down the list
 and click the directory of choice.
+To exit the drop down list without making a selection, click the drop down arrow
+or Tab out of the drop down list with the Tab key.
 :p.
 When the desired directory is displayed in the bottom entry field of
-the dialog, click &OkayButton. to exit. Click &CancelButton. to
+the dialog, click &OkayButton. to exit. Click the &CancelButton. to
 exit without selecting a directory.
 
