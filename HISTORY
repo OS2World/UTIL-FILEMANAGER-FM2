@@ -3,6 +3,15 @@ New stuff at the top.  This list is not necessarily complete.
 3.18 (pre)
  o Rework compare directories for speed; allow AND'ed selections;
  allow fast cancel from long running operations; more content menu items
+ o Remember last filter mask selection
+ o Use Ctrl-click to select state or commonly used directory quicklist entry without activating.
+   Handy for deleting entries without changing window state.
+ o Use Ctrl-click to select walk dialog user list entry without activating.
+   Handy for deleting entries without changing entry field content.
+ o Avoid drivebar MB2 exception
+ o Remember last seek and scan mask selection across runs
+ o Avoid traps when changing tree container display style
+ o Restore missing drives to drive list dropdown
 
 3.17
 

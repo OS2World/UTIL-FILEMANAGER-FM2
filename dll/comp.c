@@ -2603,10 +2603,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    PCNRITEM pci = (PCNRITEM)pnre->pRecord;
 	    if (pci) {
 	      if (!*pci->pszFileName) {
-		// Slot empty
-		// 17 Jan 08 SHL fixme to know how can get here
-		Runtime_Error(pszSrcFile, __LINE__, NULL);
-		// 12 Jan 08 SHL fixme to know if select counts need update?
+		// User clicked on empty slot - just clear
 		if (pci->rc.flRecordAttr & CRA_SELECTED)
 		  WinSendDlgItemMsg(hwnd, SHORT1FROMMP(mp1),
 				    CM_SETRECORDEMPHASIS,
