@@ -12,6 +12,7 @@ New stuff at the top.  This list is not necessarily complete.
  o Remember last seek and scan mask selection across runs
  o Avoid traps when changing tree container display style
  o Restore missing drives to drive list dropdown
+ o Correct docopyf regression which caused move to same volume to fail with access denied
 
 3.17
 
