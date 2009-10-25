@@ -54,6 +54,8 @@ syms: fm3.sym exesyms dllsyms .symbolic
 
 dist: all syms lxlite wpi .symbolic
 
+disth: $(BASE) allexe highmem syms lxlite wpi .symbolic
+
 # Only update resources
 res: .symbolic
   @echo Updating resources only
@@ -116,7 +118,8 @@ lxliteexe: *.mak .symbolic
 lxlitedll: .symbolic
 !ifndef DEBUG
   cd dll
-  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
+  $(MAKE) -h lxlite
+#  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) lxlite
   cd ..
 !endif
 
