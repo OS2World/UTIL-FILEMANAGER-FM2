@@ -1104,9 +1104,9 @@ MENU ARCCNR_POPUP
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   MENUITEM "~Test",             IDM_TEST
 	 MENUITEM "Extract all",       IDM_ARCEXTRACT
-	 MENUITEM "Extract all & exit",IDM_ARCEXTRACTEXIT
+	 MENUITEM "Extract all & close",IDM_ARCEXTRACTEXIT
 	 MENUITEM "Extract all w/ dirs",IDM_ARCEXTRACTWDIRS
-	 MENUITEM "Extract all w/ dirs & exit",IDM_ARCEXTRACTWDIRSEXIT
+	 MENUITEM "Extract all w/ dirs & close",IDM_ARCEXTRACTWDIRSEXIT
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   MENUITEM "~Walk to extract dir...\tCtrl + w",IDM_WALKDIR
   MENUITEM "",                  -1,                   MIS_SEPARATOR
@@ -1764,9 +1764,9 @@ MENU ARC_POPUP
 	 MENUITEM "~Extract\tCtrl + x",      IDM_EXTRACT
 	 MENUITEM "Extract ~w/ Dirs\tCtrl + X",IDM_EXTRACTWDIRS
 	 MENUITEM "Extract all",       IDM_ARCEXTRACT
-	 MENUITEM "Extract all & exit",IDM_ARCEXTRACTEXIT
+	 MENUITEM "Extract all & close",IDM_ARCEXTRACTEXIT
 	 MENUITEM "Extract all w/ dirs",IDM_ARCEXTRACTWDIRS
-	 MENUITEM "Extract all w/ dirs & exit",IDM_ARCEXTRACTWDIRSEXIT
+	 MENUITEM "Extract all w/ dirs & close",IDM_ARCEXTRACTWDIRSEXIT
   MENUITEM "",                  -1,               MIS_SEPARATOR
   MENUITEM "~Walk to extract dir...\tCtrl + w",IDM_WALKDIR
   MENUITEM "Folder after extract",IDM_FOLDERAFTEREXTRACT
