@@ -1104,7 +1104,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEEVENTSEM);
 
-  /*
+  /**
    * set some defaults (note: everything else automatically initialized
    * to 0)
    */
@@ -1181,13 +1181,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       rc = DosQueryModuleHandle("VKBD", &hmod);
       if (rc != NO_ERROR) {
 	fProtectOnly = TRUE;
-	DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VKBD returned %d fProtectOnly=%d", rc, fProtectOnly);
+	//DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VKBD returned %d fProtectOnly=%d", rc, fProtectOnly);
       }
       else {
 	rc = DosQueryModuleHandle("VMOUSE", &hmod);
 	if (rc != NO_ERROR) {
 	  fProtectOnly = TRUE;
-	  DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VMOUSE returned %d fProtectOnly=%d", rc, fProtectOnly);
+	  //DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VMOUSE returned %d fProtectOnly=%d", rc, fProtectOnly);
 	}
       }
     }

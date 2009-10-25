@@ -1307,7 +1307,7 @@ HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
                 strcat(parameters, temp);
                 strcat(parameters, " ");
                 strcat(parameters, executable);
-                strcpy(executable, GetCmdSpec(TRUE));
+                strcpy(executable, GetCmdSpec(TRUE)); //DOS
               }
               else
                 saymsg(MB_OK,
