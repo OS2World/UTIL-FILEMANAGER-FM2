@@ -76,6 +76,8 @@
   22 Jul 09 GKY Streamline scanning code for faster Tree rescans
   14 Sep 09 SHL Drop experimental code
   15 Sep 09 SHL Use UM_GREP when passing pathname
+  15 Nov 09 GKY Add semaphore to fix double names in tree container caused by UM_SHOWME
+                before scan completes
 
 ***********************************************************************/
 
@@ -645,6 +647,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temptop = fTopDir;
 	  fTopDir = TRUE;
 	}
+    DosWaitEventSem(hevInitialCnrScanComplete, SEM_INDEFINITE_WAIT);
 	ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
 	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
 	dcd->suspendview = tempsusp;
