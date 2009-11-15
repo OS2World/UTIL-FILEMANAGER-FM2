@@ -49,6 +49,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  15 Nov 09 GKY Change rescan following label/type change to WinSendMsg to avoid trap on SMP
 
 ***********************************************************************/
 
@@ -1473,15 +1474,15 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           free(pszTemp);
         }
         if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged) ||
-                        fShowSysTypeLabelChanged)) {
+                         fShowSysTypeLabelChanged)) {
           PCNRITEM pci = WinSendMsg(WinWindowFromID
                                     (WinWindowFromID(hwndTree, FID_CLIENT),
-                                     TREE_CNR), CM_QUERYRECORDEMPHASIS,
+                                    TREE_CNR), CM_QUERYRECORDEMPHASIS,
                                     MPFROMLONG(CMA_FIRST),
                                     MPFROMSHORT(CRA_SELECTED));
-          PostMsg(WinWindowFromID(WinWindowFromID(hwndTree, FID_CLIENT),
-                                  TREE_CNR), WM_COMMAND,
-                                  MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          WinSendMsg(WinWindowFromID(WinWindowFromID(hwndTree, FID_CLIENT),
+                                     TREE_CNR), WM_COMMAND,
+                     MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
           pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
           if (pszTemp) {
             if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))

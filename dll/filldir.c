@@ -81,6 +81,8 @@
   26 Sep 09 SHL Add FreeCnrItemData debug code - do not let into the wild
   13 Oct 09 SHL Avoid szDriver overflow in FillTreeCnr
   13 Oct 09 SHL Restore missing drives in drive drop-down listbox; optimize updates
+  15 Nov 09 GKY Avoid szBuf overflow in FillTreeCnr
+  15 Nov 09 GKY Optimize some check code
 
 ***********************************************************************/
 
@@ -714,7 +716,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   HPOINTER hptr;
   ULONG flags;
   CHAR *p;
-  CHAR szBuf[80];
+  CHAR szBuf[CCHMAXPATH];
 
   // fill in a container record from a FILESTATUS4L structure
 
@@ -1349,7 +1351,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	      PrfWriteProfileData(fmprof, appname, Key, &fVerifyOffChecked[iDrvNum], sizeof(BOOL));
 	    }
 	  }
-	  if (stricmp(volser.volumelabel, NullStr) != 0 && fShowDriveLabelInTree)
+	  if (fShowDriveLabelInTree && stricmp(volser.volumelabel, NullStr) != 0)
 	    strcpy(szFSType, volser.volumelabel);
 	  pci->rc.flRecordAttr |= CRA_RECORDREADONLY;
 	  if ((ULONG)(toupper(*szDrive) - '@') == ulCurDriveNum)
