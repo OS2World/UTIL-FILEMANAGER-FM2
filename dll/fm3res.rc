@@ -45,6 +45,7 @@
   15 Sep 09 SHL Update for Thread notes text changes
   15 Sep 09 SHL Add rescan progress messages
   27 Sep 09 SHL Add more items to COMP_MENU
+  15 Nov 09 GKY Add ZEROBYTETEXT
 
 ***********************************************************************/
 
@@ -2417,6 +2418,7 @@ STRINGTABLE
     IDS_NOTPROTECTONLYEXE                 "The file %s is a Dos or Windows executible, however Dos and WinOS2 are not currently activated on this system."
     IDS_INIFAILURETEXT                    "Check INI header failed will attempt to replace with backup if backup fails or not found will open with new ini"
     IDS_HELPCMDTEXT                       "/HELP"
+    IDS_ZEROBYTETEXT                      "Zero byte file do you wish to open it in an editor (No cancels)"
     IDS_DETACHREQUESTTEXT                 "Detach Request"
     IDS_DIRCNRTOTALHELP                   "This window tells you how many objects\rand how many bytes are in the container.\rYou can drag me (this dir), or drag onto\rme (into this dir)."
     IDS_DIRCNRSELECTEDHELP                "This window tells you how many objects\rand how many bytes are selected.\rDrag me and you drag this directory.\rDrop on me and you drop into this\rdirectory (this is container whitespace).\rB1 = Select menu\rB2 = Compare select menu"

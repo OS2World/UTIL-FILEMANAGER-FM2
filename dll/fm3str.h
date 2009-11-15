@@ -36,6 +36,7 @@
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
   15 Sep 09 SHL Add ids for rescan progress messages
+  15 Nov 09 GKY Add ZEROBYTETEXT (58)
 
 ***********************************************************************/
 
@@ -97,6 +98,7 @@
 #define IDS_NOTPROTECTONLYEXE                                 50
 #define IDS_INIFAILURETEXT                                    51
 #define IDS_HELPCMDTEXT                                       56
+#define IDS_ZEROBYTETEXT                                      58
 #define IDS_DETACHREQUESTTEXT                                 59
 #define IDS_DIRCNRTOTALHELP                                   60
 #define IDS_DIRCNRSELECTEDHELP                                61

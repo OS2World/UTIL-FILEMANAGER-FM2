@@ -21,6 +21,9 @@
                 less than 10 KiB (It hangs and can't be closed)
   05 Jan 09 GKY Use TestBinary so that text veiwer isn't used for hex files by default
   08 Mar 09 GKY Additional strings move to PCSZs
+  15 Nov 09 GKY Add check for attempt to open zero byte file and reorder file type checks
+                to place exes before MMPM check (avoids MMPM trying to play them)
+  15 Nov 09 GKY Work around MMIO's falure to identify MPG files as media
 
 ***********************************************************************/
 
@@ -71,14 +74,14 @@ BOOL ShowMultimedia(CHAR * filename)
   CHAR loaderror[CCHMAXPATH];
   HMODULE MMIOModHandle = NULLHANDLE;
   PMMIOIDENTIFYFILE pMMIOIdentifyFile = NULL;
-  PMMIOGETINFO pMMIOGetInfo = NULL;
-  PMMIOCLOSE pMMIOClose = NULL;
-  PMMIOOPEN pMMIOOpen = NULL;
-  MMIOINFO mmioinfo;
-  HMMIO hmmio;
+  //PMMIOGETINFO pMMIOGetInfo = NULL;
+  //PMMIOCLOSE pMMIOClose = NULL;
+  //PMMIOOPEN pMMIOOpen = NULL;
+  //MMIOINFO mmioinfo;
+  //HMMIO hmmio;
   FOURCC fccStorageSystem = 0;
   MMFORMATINFO mmFormatInfo;
-  APIRET rc, rc1;
+  APIRET rc; // rc1;
   HWND hwnd = HWND_DESKTOP;
   char *p;
 
@@ -100,7 +103,8 @@ BOOL ShowMultimedia(CHAR * filename)
       no_mmos2 = TRUE;
       return played;
     }
-    if (DosQueryProcAddr(MMIOModHandle,
+    /* This code seems to serve no purpose GKY 11-15-09
+     if (DosQueryProcAddr(MMIOModHandle,
 			 0,
 			 "mmioGetInfo", (PFN *) & pMMIOGetInfo)) {
       DosFreeModule(MMIOModHandle);
@@ -120,13 +124,13 @@ BOOL ShowMultimedia(CHAR * filename)
       DosFreeModule(MMIOModHandle);
       no_mmos2 = TRUE;
       return played;
-    }
+    }*/
   }
 
   /* attempt to identify the file using MMPM/2 */
-  memset( &mmioinfo, '\0', sizeof(MMIOINFO) );
+  //memset( &mmioinfo, '\0', sizeof(MMIOINFO) );
   /*Eliminate non multimedia files*/
-  hmmio = pMMIOOpen(filename,
+  /*hmmio = pMMIOOpen(filename,
 	            &mmioinfo,
                     MMIO_READ);
   if (!hmmio) {
@@ -152,20 +156,24 @@ BOOL ShowMultimedia(CHAR * filename)
           DosFreeModule(MMIOModHandle);
           return played;
   }
-  rc1 = pMMIOGetInfo(hmmio, &mmioinfo, 0L);
+  rc1 = pMMIOGetInfo(hmmio, &mmioinfo, 0L);*/
   memset(&mmFormatInfo, 0, sizeof(MMFORMATINFO));
   mmFormatInfo.ulStructLen = sizeof(MMFORMATINFO);
   rc = pMMIOIdentifyFile(filename,
-			 &mmioinfo,
+			 0L, //&mmioinfo,
 			 &mmFormatInfo,
 	                 &fccStorageSystem, 0L,
 	                 MMIO_FORCE_IDENTIFY_FF);
   /* free module handle */
-  rc1 = pMMIOClose(hmmio, 0L);
+  //rc1 = pMMIOClose(hmmio, 0L);
   DosFreeModule(MMIOModHandle);
 
   /* if identified and not FOURCC_DOS */
-  if (!rc && mmFormatInfo.fccIOProc != FOURCC_DOS) {
+  p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
+  if (!p)
+    p = ".";
+  if (!rc && (mmFormatInfo.fccIOProc != FOURCC_DOS || !stricmp(p, PCSZ_DOTMPG) ||
+              !stricmp(p, PCSZ_DOTMPEG))) {  // MPG are identified as FOURCC_DOS
     if (mmFormatInfo.ulMediaType == MMIO_MEDIATYPE_IMAGE &&
 	(mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
       p = strrchr(filename, '.');
@@ -174,7 +182,7 @@ BOOL ShowMultimedia(CHAR * filename)
 	  if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
 	    OpenObject(filename, Default, hwnd);  //Image fails to display these
 	  else       // is an image that can be translated
-	    RunFM2Util("IMAGE.EXE", filename);
+	    RunFM2Util(PCSZ_IMAGEEXE, filename);
 	  played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
@@ -310,13 +318,13 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 			  HWND_DESKTOP :
 			  hwndParent, hwndFrame, filename, 4, NULL);
     if (!hwndArc) {
-      if (!fCheckMM || !ShowMultimedia(filename)) {
-	if (!IsExecutable(filename) || !ExecFile(hwnd, filename)) {
-	  p = strrchr(filename, '.');
-	  if (!p)
-	    p = ".";
-	  if (stricmp(p, ".INI") || !StartIniEditor(hwndParent, filename, 4)) {
-	    if (stricmp(p, PCSZ_DOTHLP) || !ViewHelp(filename)) {
+      if (!IsExecutable(filename) || !ExecFile(hwnd, filename)) {
+        p = strrchr(filename, '.');
+        if (!p)
+          p = ".";
+        if (stricmp(p, ".INI") || !StartIniEditor(hwndParent, filename, 4)) {
+          if (stricmp(p, PCSZ_DOTHLP) || !ViewHelp(filename)) {
+            if (!fCheckMM || !stricmp(p, ".DLL") || !ShowMultimedia(filename)) {
             ViewIt:
               if (TestBinary(filename)) {
                 if (*binview) {

@@ -19,6 +19,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
+  15 Nov 09 GKY Add check for attempt to open zero byte file (avoids MMPM trying to play them)
 
 **************************************************************************************/
 
@@ -392,9 +393,14 @@ BOOL kill_association(ASSOC * killme)
 
 INT ExecAssociation(HWND hwnd, CHAR * datafile)
 {
-  CHAR *file, sig[CCHMAXPATH], sigl[CCHMAXPATH], mask[CCHMAXPATH], *p;
+  CHAR *file;
+  CHAR sig[CCHMAXPATH];
+  CHAR sigl[CCHMAXPATH];
+  CHAR mask[CCHMAXPATH], *p;
   FILE *fp;
-  BOOL didmatch, exclude;
+  BOOL didmatch;
+  BOOL exclude;
+  BOOL checked = FALSE;
   ULONG offset;
   LINKASSOC *info;
 
@@ -425,28 +431,45 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 	didmatch = wildcard((strchr(p, '\\') ||
 			     strchr(p, ':')) ? datafile : file, p, FALSE);
       if (exclude && didmatch)
-	didmatch = FALSE;
-      if (didmatch) {
-	if (info->sig && *info->sig) {
-	  strcpy(sigl, info->sig);
-	  literal(sigl);
-	  fp = _fsopen(datafile, "rb", SH_DENYNO);
-	  if (fp) {
-	    if (info->offset < 0L) {
-	      fseek(fp, 0L, SEEK_END);
-	      offset = ftell(fp) + info->offset;
-	    }
-	    else
-	      offset = info->offset;
-	    fseek(fp, offset, SEEK_SET);
-	    if (fread(sig,
-		      1,
-		      strlen(sigl),
-		      fp) != strlen(sigl) || strncmp(sigl, sig, strlen(sigl)))
-	      didmatch = FALSE;
-	    fclose(fp);
-	  }
-	}
+        didmatch = FALSE;
+      fp = _fsopen(datafile, "rb", SH_DENYNO);
+      if (fp) {
+        if (!checked) {
+          APIRET temp;
+  
+          temp = fread(sig, 1, 2, fp);
+          if (temp != 2) {
+            temp = saymsg(MB_YESNO, hwnd, NullStr, GetPString(IDS_ZEROBYTETEXT));
+            if (temp == MBID_YES) {
+              DefaultView(hwnd, (HWND) 0, hwndMain, NULL, 8, datafile);
+            }
+            fclose(fp);
+            return 0;
+          }
+          else
+            checked = TRUE;
+        }
+        if (didmatch) {
+          if (info->sig && *info->sig) {
+            strcpy(sigl, info->sig);
+            literal(sigl);
+            
+              if (info->offset < 0L) {
+                fseek(fp, 0L, SEEK_END);
+                offset = ftell(fp) + info->offset;
+              }
+              else
+                offset = info->offset;
+              fseek(fp, offset, SEEK_SET);
+              if (fread(sig,
+                        1,
+                        strlen(sigl),
+                        fp) != strlen(sigl) || strncmp(sigl, sig, strlen(sigl)))
+                didmatch = FALSE;
+              
+          }
+        }
+        fclose(fp);
       }
       if (didmatch) {			/* got a match; do it... */
 

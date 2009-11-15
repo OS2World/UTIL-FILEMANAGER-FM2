@@ -86,6 +86,7 @@
   12 Sep 09 GKY Change protectonly check to check for VKBD being loaded instead of starting
 	        command.com. Prevents hang (at least until a Dos program is started) on a system
 	        that has a broken MDOS install.
+  15 Nov 09 GKY Add more PCSZs
 
 ***********************************************************************/
 
@@ -236,6 +237,7 @@ PCSZ PCSZ_QUICKTLSDAT = "QUICKTLS.DAT";
 PCSZ PCSZ_FM3TOOLSDAT = "FM3TOOLS.DAT";
 PCSZ PCSZ_USERDIRSDAT = "USERDIRS.DAT";
 PCSZ PCSZ_FM2PLAYEXE  = "FM2PLAY.EXE";
+PCSZ PCSZ_IMAGEEXE    = "IMAGE.EXE";
 PCSZ PCSZ_FM2PLAYTEMP = "$FM2PLAY.$$$";
 PCSZ PCSZ_LVMGUICMD   = "LVMGUI.CMD";
 PCSZ PCSZ_DFSOS2EXE   = "DFSOS2.EXE";
@@ -307,6 +309,8 @@ PCSZ PCSZ_DOTTLS   =  ".TLS";
 PCSZ PCSZ_DOTHLP   =  ".HLP";
 PCSZ PCSZ_DOTINF   =  ".INF";
 PCSZ PCSZ_DOTMP3   =  ".MP3";
+PCSZ PCSZ_DOTMPG   =  ".MPG";
+PCSZ PCSZ_DOTMPEG  =  ".MPEG";
 PCSZ PCSZ_DOTOGG   =  ".OGG";
 PCSZ PCSZ_DOTFLAC  =  ".FLAC";
 PCSZ PCSZ_DOTJPEG  =  ".JPEG";
@@ -1099,7 +1103,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtFillingTreeCnr, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      PCSZ_DOSCREATEMUTEXSEM);
+              PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateEventSem(NULL, &hevInitialCnrScanComplete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEEVENTSEM);

@@ -21,6 +21,7 @@
                 loads drive root directory in directory container or expands drive tree
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
+  15 Nov 09 GKY Add more PCSZs
 
 ***********************************************************************/
 
@@ -49,6 +50,7 @@ extern PCSZ PCSZ_LVMGUICMD;
 extern PCSZ PCSZ_DFSOS2EXE;
 extern PCSZ PCSZ_MINILVMEXE;
 extern PCSZ PCSZ_FDISKPMEXE;
+extern PCSZ PCSZ_IMAGEEXE;
 extern PCSZ PCSZ_LVMEXE;
 extern PCSZ PCSZ_ARCCNR;
 extern PCSZ PCSZ_COLLECTOR;
@@ -127,6 +129,8 @@ extern PCSZ PCSZ_DOTTLS;
 extern PCSZ PCSZ_DOTHLP;
 extern PCSZ PCSZ_DOTINF;
 extern PCSZ PCSZ_DOTMP3;
+extern PCSZ PCSZ_DOTMPG;
+extern PCSZ PCSZ_DOTMPEG;
 extern PCSZ PCSZ_DOTOGG;
 extern PCSZ PCSZ_DOTFLAC;
 extern PCSZ PCSZ_DOTJPEG;
