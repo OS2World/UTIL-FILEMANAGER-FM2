@@ -16,7 +16,8 @@
   05 May 08 SHL Add FORTIFY support
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   17 Jun 09 SHL Correct missing rc set
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  15 Nov 09 GKY Rework xDosQueryAppType to remove HIMEM ifdefs
 
 ***********************************************************************/
 
@@ -56,25 +57,11 @@ BOOL fNoLargeFileSupport;
 APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags)
 {
   APIRET rc;
-# ifdef HIMEM
-  char *pszPgm;
+  CHAR szPgm[CCHMAXPATH];
 
-  rc = DosAllocMem((PVOID)&pszPgm,
-		   MaxComLineStrg,
-		   PAG_COMMIT | PAG_READ | PAG_WRITE);
-  if (rc) {
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile,
-              __LINE__, GetPString(IDS_OUTOFMEMORY));
-    return -1;
-  }
-  strcpy(pszPgm, pszName);
-  rc = DosQueryAppType(pszPgm, pFlags);
-  DosFreeMem(pszPgm);
+  strcpy(szPgm, pszName);
+  rc = DosQueryAppType(szPgm, pFlags);
   return rc;
-# else
-  rc = DosQueryAppType(pszName, pFlags);
-  return rc;
-# endif
 }
 
 APIRET xDosAllocSharedMem(PPVOID ppb,
