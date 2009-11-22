@@ -78,6 +78,7 @@
   15 Sep 09 SHL Use UM_GREP when passing pathname
   15 Nov 09 GKY Add semaphore to fix double names in tree container caused by UM_SHOWME
                 before scan completes
+  22 Nov 09 GKY Add LVM.EXE to partition submenu
 
 ***********************************************************************/
 
@@ -2206,7 +2207,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONSMENU, local);
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
-	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVM, fLVM);
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 
 	    WinEnableMenuItem((HWND) mp2, IDM_DETACH, !local);
@@ -2236,7 +2238,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
 	WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
 	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
-	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVM, fLVM);
 	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 	break;
 
@@ -2582,6 +2585,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
 		NULL, NULL,
 		"%s", PCSZ_LVMGUICMD);
+        break;
+
+      case IDM_PARTITIONLVM:
+	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
+		NULL, NULL,
+		"%s", PCSZ_LVMEXE);
 	break;
 
       case IDM_PARTITIONFD:

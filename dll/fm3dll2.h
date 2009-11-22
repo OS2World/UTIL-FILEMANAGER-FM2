@@ -29,6 +29,7 @@
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   14 Sep 09 SHL Drop experimental code
   15 Sep 09 SHL Add rescan progress timer
+  22 Nov 09 GKY Add LVM.EXE to partition submenu
 
   Align with spaces only - no tabs please
 
@@ -389,6 +390,7 @@
 #define IDM_SAVETOCLIPFILENAME 1161
 #define IDM_APPENDTOCLIPFILENAME 1162
 #define IDM_DATABAR         1163
+#define IDM_PARTITIONLVM    1164
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001

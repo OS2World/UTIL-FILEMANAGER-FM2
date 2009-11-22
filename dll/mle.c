@@ -22,7 +22,7 @@
   06 Jul 08 GKY Rework LoadThread logic with Steven's help
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 

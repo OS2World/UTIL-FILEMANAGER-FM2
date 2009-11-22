@@ -80,13 +80,15 @@
 	        saved drive containers.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   22 Jul 09 GKY Fix failure to restore the notebook setting for saving container states or not
   12 Sep 09 GKY Change protectonly check to check for VKBD being loaded instead of starting
 	        command.com. Prevents hang (at least until a Dos program is started) on a system
 	        that has a broken MDOS install.
   15 Nov 09 GKY Add more PCSZs
+  22 Nov 09 GKY Fix FindSwapperDat so the check for large file support actually occurs if the
+                fall back to config.sys is used to find it; use bstripcr to streamline code.
 
 ***********************************************************************/
 
@@ -428,10 +430,7 @@ VOID FindSwapperDat(VOID)
 	    p++;
 	  if (*p == '=') {
 	    p++;
-	    stripcr(p);
-	    rstrip(p);
-	    while (*p == ' ')
-	      p++;
+	    bstripcr(p);
 	    if (*p == '\"') {
 	      p++;
 	      pp = p;
@@ -455,7 +454,7 @@ VOID FindSwapperDat(VOID)
 				&hdir,
 				FILE_NORMAL | FILE_ARCHIVED |
 				FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY,
-				&ffb, sizeof(ffb), &nm, FIL_STANDARD);
+				&ffb, sizeof(ffb), &nm, FIL_STANDARDL);
 	      if (rc){
 		FILEFINDBUF3 ffb;
 		rc = DosFindFirst(SwapperDat,

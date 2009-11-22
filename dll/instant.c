@@ -12,7 +12,7 @@
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 

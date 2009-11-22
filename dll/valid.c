@@ -34,7 +34,7 @@
   05 Jan 09 GKY Fix IsBinary to recognize values above \xc4 (maybe lower) as positive.
 		When these high codes were it text files they showed as hex in new view.
   08 Mar 09 GKY Additional strings move to PCSZs
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Consolidated driveflag setting code in DriveFlagsOne
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Add LocalHD driveflag
@@ -599,7 +599,7 @@ CHAR *MakeValidDir(CHAR * path)
   return path;
 }
 
-BOOL IsExecutable(CHAR * filename)
+BOOL IsExecutable(CHAR *filename)
 {
   register CHAR *p;
   APIRET ret;
@@ -609,14 +609,14 @@ BOOL IsExecutable(CHAR * filename)
     DosError(FERR_DISABLEHARDERR);
     p = strrchr(filename, '.');
     if (p)
-      ret = xDosQueryAppType(filename, &apptype);
+      ret = DosQueryAppType(filename, &apptype);
     else {
 
       char fname[CCHMAXPATH + 2];
 
       strcpy(fname, filename);
       strcat(fname, ".");
-      ret = xDosQueryAppType(fname, &apptype);
+      ret = DosQueryAppType(fname, &apptype);
     }
     if (apptype & (FAPPTYP_DLL |
 		   FAPPTYP_PHYSDRV |

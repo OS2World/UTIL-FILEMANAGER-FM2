@@ -29,6 +29,7 @@
   07 Feb 09 GKY Move repeated strings to PCSZs.
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 

@@ -21,7 +21,7 @@
   19 Jul 08 GKY Modify MakeTempName for use making temp directory names
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   13 Jul 09 SHL Drop obsolete code
   22 Jul 09 GKY Delete .LONGNAME EA if it becomes the filename on a copy or move.
   19 Oct 09 SHL Correct copyf regression when moving to save volume

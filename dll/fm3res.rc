@@ -46,6 +46,7 @@
   15 Sep 09 SHL Add rescan progress messages
   27 Sep 09 SHL Add more items to COMP_MENU
   15 Nov 09 GKY Add ZEROBYTETEXT
+  22 Nov 09 GKY Add LVM.EXE to partition submenu
 
 ***********************************************************************/
 
@@ -468,6 +469,7 @@ MENU  MAIN2_FRAME
 		  MENUITEM "~MiniLVM", IDM_PARTITION
 		  MENUITEM "~DFSee",   IDM_PARTITIONDF
 		  MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+                  MENUITEM "~LVMEXE", IDM_PARTITIONLVM
 		  MENUITEM "~FDisk", IDM_PARTITIONFD
 }
 	 MENUITEM "",                  -1,   MIS_SEPARATOR
@@ -1076,6 +1078,7 @@ MENU TREECNR_POPUP
 		  MENUITEM "~MiniLVM", IDM_PARTITION
 		  MENUITEM "~DFSee",   IDM_PARTITIONDF
 		  MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+                  MENUITEM "~LVMEXE", IDM_PARTITIONLVM
 		  MENUITEM "~FDisk", IDM_PARTITIONFD
 		}
   MENUITEM "",                  -1,                 MIS_SEPARATOR
@@ -1364,6 +1367,7 @@ MENU TREE_POPUP
 		MENUITEM "~MiniLVM", IDM_PARTITION
 		MENUITEM "~DFSee",   IDM_PARTITIONDF
 		MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+                MENUITEM "~LVMEXE", IDM_PARTITIONLVM
 		MENUITEM "~FDisk", IDM_PARTITIONFD
 	 }
 	 MENUITEM "",                -1,       MIS_SEPARATOR

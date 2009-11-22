@@ -28,7 +28,7 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates bassed on locale
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 

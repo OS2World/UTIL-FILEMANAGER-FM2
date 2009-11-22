@@ -15,7 +15,7 @@
 		use searchapath to check for existance of file types not checked by DosQAppType;
                 close DosFind.
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 

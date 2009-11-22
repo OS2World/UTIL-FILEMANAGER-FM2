@@ -687,6 +687,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   // Shared by all threads
 # define TERMQ_BASE_NAME "\\QUEUES\\FM3WAIT"
   static char szTermQName[30];
+  char szTermTemp[30];
   static HQUEUE hTermQ;
   static HEV hTermQSem;
 
@@ -1075,9 +1076,6 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       if (~type & WAIT)
 	useTermQ = FALSE;
       else {
-# ifdef HIMEM
-        useTermQ = FALSE;
-# else
 	rc = 0;
 	DosEnterCritSec();
 	if (!hTermQ) {
@@ -1104,7 +1102,6 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
         useTermQ = hTermQ && hTermQSem;
 	if (!rc)
           DosExitCritSec();
-# endif
       } // if wait
 
       memset(&sdata,0,sizeof(sdata));
@@ -1116,8 +1113,10 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       sdata.PgmName = pszPgm;
       if (*pszArgs)
 	sdata.PgmInputs = (PBYTE)pszArgs;
-      if (useTermQ)
-	sdata.TermQ = (PBYTE)szTermQName;
+      if (useTermQ) {
+        strcpy(szTermTemp, szTermQName);
+        sdata.TermQ = (PBYTE)szTermTemp;
+      }
       sdata.Environment = (PBYTE)pszEnvironment;
       sdata.InheritOpt = SSF_INHERTOPT_PARENT;
       sdata.SessionType = ulAppType;

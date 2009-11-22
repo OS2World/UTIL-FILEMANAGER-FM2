@@ -59,7 +59,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Mar 09 GKY Add RemoveOldCnrSwitches to remove pre 3.16 style ini keys;
                 add State.version key for check
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Allow .LONGNAME to be displayed for FAT drives.
 

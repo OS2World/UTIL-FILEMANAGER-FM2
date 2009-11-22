@@ -22,7 +22,7 @@
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   29 Feb 08 GKY Use xfree where appropriate
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
-  12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
 
 ***********************************************************************/
 
