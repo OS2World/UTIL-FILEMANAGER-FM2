@@ -33,6 +33,8 @@
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Add LocalHD driveflag
+  13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
+                option to Quick page.
 
 ***********************************************************************/
 
@@ -789,12 +791,13 @@
 #define CFG9_MAXINFOPRETTY								25903
 #define CFG9_MAXINFOPLAIN								25904
 #define CFG9_MAXFILENAMES								25905
-#define CFG9_DEFAULT										25906
+#define CFG9_DEFAULT									25906
 #define CFG9_MAXSPEED									25907
-#define CFG9_1X											25908
+#define CFG9_1X										25908
 #define CFG9_DOSTHINK									25909
-#define CFG9_HECTOR										25910
+#define CFG9_HECTOR									25910
 #define CFG9_WINDOZETHINK								25911
+#define CFG9_GREGG								        25912
 
 #define CINI_FRAME										26000
 #define CINI_FIRSTLIST									26001

@@ -46,6 +46,8 @@
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Add LocalHD driveflag (enlarge draveflag dialog)
+  13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
+                option to Quick page.
 
 ***********************************************************************/
 
@@ -1710,38 +1712,41 @@ BEGIN
     DIALOG  "", CFG9_FRAME, 0, 0, 258, 142, NOT FS_DLGBORDER | NOT
             WS_SAVEBITS
     BEGIN
-        LTEXT           "Default", -1, 19, 128, 108, 8, DT_VCENTER
-        PUSHBUTTON      "~1", CFG9_DEFAULT, 4, 128, 12, 10
-        LTEXT           "Max user interface", -1, 19, 116, 108, 8,
+        LTEXT           "Default", -1, 19, 140, 108, 8, DT_VCENTER
+        PUSHBUTTON      "~1", CFG9_DEFAULT, 4, 140, 12, 10
+        LTEXT           "Max user interface", -1, 19, 128, 108, 8,
                         DT_VCENTER | NOT WS_GROUP
-        PUSHBUTTON      "~2", CFG9_MAXIMUMUI, 4, 116, 12, 10
-        LTEXT           "Min user interface", -1, 19, 104, 108, 8,
+        PUSHBUTTON      "~2", CFG9_MAXIMUMUI, 4, 128, 12, 10
+        LTEXT           "Min user interface", -1, 19, 116, 108, 8,
                         DT_VCENTER | NOT WS_GROUP
-        PUSHBUTTON      "~3", CFG9_MINIMUMUI, 4, 104, 12, 10
-        LTEXT           "Max info, pretty", -1, 19, 92, 108, 8, DT_VCENTER |
+        PUSHBUTTON      "~3", CFG9_MINIMUMUI, 4, 116, 12, 10
+        LTEXT           "Max info, pretty", -1, 19, 104, 108, 8, DT_VCENTER |
                         NOT WS_GROUP
-        PUSHBUTTON      "~4", CFG9_MAXINFOPRETTY, 4, 92, 12, 10
-        LTEXT           "Max info, plain", -1, 19, 80, 108, 8, DT_VCENTER |
+        PUSHBUTTON      "~4", CFG9_MAXINFOPRETTY, 4, 104, 12, 10
+        LTEXT           "Max info, plain", -1, 19, 92, 108, 8, DT_VCENTER |
                         NOT WS_GROUP
-        PUSHBUTTON      "~5", CFG9_MAXINFOPLAIN, 4, 80, 12, 10
-        LTEXT           "Max filenames", -1, 19, 68, 108, 8, DT_VCENTER |
+        PUSHBUTTON      "~5", CFG9_MAXINFOPLAIN, 4, 92, 12, 10
+        LTEXT           "Max filenames", -1, 19, 80, 108, 8, DT_VCENTER |
                         NOT WS_GROUP
-        PUSHBUTTON      "~6", CFG9_MAXFILENAMES, 4, 68, 12, 10
-        LTEXT           "Max speed", -1, 19, 56, 108, 8, DT_VCENTER | NOT
+        PUSHBUTTON      "~6", CFG9_MAXFILENAMES, 4, 80, 12, 10
+        LTEXT           "Max speed", -1, 19, 68, 108, 8, DT_VCENTER | NOT
                         WS_GROUP
-        PUSHBUTTON      "~7", CFG9_MAXSPEED, 4, 56, 12, 10
-        LTEXT           "1.x emulation", -1, 19, 44, 108, 8, DT_VCENTER |
+        PUSHBUTTON      "~7", CFG9_MAXSPEED, 4, 68, 12, 10
+        LTEXT           "1.x emulation", -1, 19, 56, 108, 8, DT_VCENTER |
                         NOT WS_GROUP
-        PUSHBUTTON      "~8", CFG9_1X, 4, 44, 12, 10
-        LTEXT           "DOS-think", -1, 19, 32, 108, 8, DT_VCENTER | NOT
+        PUSHBUTTON      "~8", CFG9_1X, 4, 56, 12, 10
+        LTEXT           "DOS-think", -1, 19, 44, 108, 8, DT_VCENTER | NOT
                         WS_GROUP
-        PUSHBUTTON      "~9", CFG9_DOSTHINK, 4, 32, 12, 10
-        LTEXT           "Windoze-think", -1, 19, 20, 108, 8, DT_VCENTER |
+        PUSHBUTTON      "~9", CFG9_DOSTHINK, 4, 44, 12, 10
+        LTEXT           "Windoze-think", -1, 19, 32, 108, 8, DT_VCENTER |
                         NOT WS_GROUP
-        PUSHBUTTON      "~0", CFG9_WINDOZETHINK, 4, 20, 12, 10
-        LTEXT           "Hector's way", -1, 19, 8, 108, 8, DT_VCENTER | NOT
+        PUSHBUTTON      "~0", CFG9_WINDOZETHINK, 4, 32, 12, 10
+        LTEXT           "Hector's way", -1, 19, 20, 108, 8, DT_VCENTER | NOT
                         WS_GROUP
-        PUSHBUTTON      "~A", CFG9_HECTOR, 4, 8, 12, 10
+        PUSHBUTTON      "~A", CFG9_HECTOR, 4, 20, 12, 10
+        LTEXT           "Gregg's way", -1, 19, 8, 108, 8, DT_VCENTER | NOT
+                        WS_GROUP
+        PUSHBUTTON      "~B", CFG9_GREGG, 4, 8, 12, 10
         PUSHBUTTON      "~Help", IDM_HELP, 186, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
     END
@@ -1924,7 +1929,7 @@ BEGIN
     BEGIN
         AUTOCHECKBOX    "~Follow Drive Tree", CFGT_FOLLOWTREE, 4, 128, 112,
                         10, WS_GROUP
-        AUTOCHECKBOX    "~Double-click opens", CFGT_DCOPENS, 4, 116, 132, 10
+        AUTOCHECKBOX    "~Double-click opens new container", CFGT_DCOPENS, 4, 116, 132, 10
         AUTOCHECKBOX    "~Treetop on expand", CFGT_TOPDIR, 4, 104, 132, 10
         AUTOCHECKBOX    "~VTree->WPS folders", CFGT_VTREEOPENSWPS, 4, 92,
                         132, 10
@@ -2765,7 +2770,7 @@ BEGIN
                         10
         LTEXT           "Target directory:", -1, 4, 34, 102, 8
         ENTRYFIELD      "", CFGG_TARGETDIR, 6, 22, 246, 8, ES_MARGIN
-        AUTOCHECKBOX    "~Link sets icon", CFGG_LINKSETSICON, 122, 128, 106,
+        AUTOCHECKBOX    "~Link drag sets icon", CFGG_LINKSETSICON, 122, 128, 106,
                         10
         AUTOCHECKBOX    "~Verify disk writes (also check individual drive flags)",
                         CFGG_VERIFYWRITES, 122, 116, 162, 10

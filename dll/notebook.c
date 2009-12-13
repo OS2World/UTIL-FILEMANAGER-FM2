@@ -55,6 +55,8 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
+                option to Quick page.
 
 ***********************************************************************/
 

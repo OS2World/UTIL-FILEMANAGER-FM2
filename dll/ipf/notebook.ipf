@@ -16,7 +16,9 @@
 .* 08 Mar 09 GKY Added option to turn alert and/or error beeps off
 .* 12 Mar 09 SHL Update container search description
 .* 13 Jul 09 SHL Rework scanning page help text
-.* 13 Dec 09 GKY Fixed separate paramenters. 
+.* 13 Dec 09 GKY Fixed separate paramenters.
+.* 13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
+.*               option to Quick page. 
 .*
 .***********************************************************************
 .*
