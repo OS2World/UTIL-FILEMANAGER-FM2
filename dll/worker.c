@@ -945,7 +945,7 @@ VOID Action(VOID * args)
 				  wk->hwndCnr,
 				  UM_UPDATERECORD,
 				  MPFROMP(wk->li->list[x]), MPVOID);
-		      if (!strcmp(realappname, "FM/4")
+		      if (!strcmp(realappname, "FM/4") ||
 			  (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(newname, &files, &cFilesModified, &cItemsAllocated))
 			Broadcast(hab2,
