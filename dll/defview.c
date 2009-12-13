@@ -24,6 +24,9 @@
   15 Nov 09 GKY Add check for attempt to open zero byte file and reorder file type checks
                 to place exes before MMPM check (avoids MMPM trying to play them)
   15 Nov 09 GKY Work around MMIO's falure to identify MPG files as media
+  12 Dec 09 GKY Remove code that opened files to check if they were media types
+                It was redundant.
+  12 Dec 09 GKY Pass .WPI files to PM for default handling.
 
 ***********************************************************************/
 
@@ -66,6 +69,13 @@ static PSZ pszSrcFile = __FILE__;
 #pragma data_seg(GLOBAL2)
 PCSZ Default  = "DEFAULT";
 
+/**
+ * ShowMultimedia uses MMOS2 if available to check if files are media types
+ * It will play them as media if they are. There are several work arounds
+ * to handle newer media types which are misidentified or which don't play
+ * in our default player/viewer
+ */
+
 BOOL ShowMultimedia(CHAR * filename)
 {
 
@@ -74,21 +84,16 @@ BOOL ShowMultimedia(CHAR * filename)
   CHAR loaderror[CCHMAXPATH];
   HMODULE MMIOModHandle = NULLHANDLE;
   PMMIOIDENTIFYFILE pMMIOIdentifyFile = NULL;
-  //PMMIOGETINFO pMMIOGetInfo = NULL;
-  //PMMIOCLOSE pMMIOClose = NULL;
-  //PMMIOOPEN pMMIOOpen = NULL;
-  //MMIOINFO mmioinfo;
-  //HMMIO hmmio;
   FOURCC fccStorageSystem = 0;
   MMFORMATINFO mmFormatInfo;
-  APIRET rc; // rc1;
+  APIRET rc; 
   HWND hwnd = HWND_DESKTOP;
   char *p;
 
   if (no_mmos2 || !filename || !*filename)
     return played;
 
-  /* load MMPM/2, if available. */
+  //load MMPM/2, if available.
   *loaderror = 0;
   rc = DosLoadModule(loaderror, sizeof(loaderror), "MMIO", &MMIOModHandle);
   if (rc) {
@@ -98,103 +103,41 @@ BOOL ShowMultimedia(CHAR * filename)
   else {
     if (DosQueryProcAddr(MMIOModHandle,
 			 0,
-			 "mmioIdentifyFile", (PFN *) & pMMIOIdentifyFile)) {
+			 "mmioIdentifyFile", (PFN *) &pMMIOIdentifyFile)) {
       DosFreeModule(MMIOModHandle);
       no_mmos2 = TRUE;
       return played;
-    }
-    /* This code seems to serve no purpose GKY 11-15-09
-     if (DosQueryProcAddr(MMIOModHandle,
-			 0,
-			 "mmioGetInfo", (PFN *) & pMMIOGetInfo)) {
-      DosFreeModule(MMIOModHandle);
-      no_mmos2 = TRUE;
-      return played;
-    }
-    if (DosQueryProcAddr(MMIOModHandle,
-			 0,
-			 "mmioClose", (PFN *) & pMMIOClose)) {
-      DosFreeModule(MMIOModHandle);
-      no_mmos2 = TRUE;
-      return played;
-    }
-    if (DosQueryProcAddr(MMIOModHandle,
-			 0,
-			 "mmioOpen", (PFN *) & pMMIOOpen)) {
-      DosFreeModule(MMIOModHandle);
-      no_mmos2 = TRUE;
-      return played;
-    }*/
-  }
-
-  /* attempt to identify the file using MMPM/2 */
-  //memset( &mmioinfo, '\0', sizeof(MMIOINFO) );
-  /*Eliminate non multimedia files*/
-  /*hmmio = pMMIOOpen(filename,
-	            &mmioinfo,
-                    MMIO_READ);
-  if (!hmmio) {
-    p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
-    if (!p)
-      p = ".";
-    if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC) ||
-         !stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG)) {
-       hmmio = pMMIOOpen(filename,
-              &mmioinfo,
-              MMIO_READ | MMIO_NOIDENTIFY);
-       if (!hmmio){
-           DosFreeModule(MMIOModHandle);
-           return played;
-       }
-    }
-    else {
-       DosFreeModule(MMIOModHandle);
-           return played;
     }
   }
-  if (!hmmio) {
-          DosFreeModule(MMIOModHandle);
-          return played;
-  }
-  rc1 = pMMIOGetInfo(hmmio, &mmioinfo, 0L);*/
   memset(&mmFormatInfo, 0, sizeof(MMFORMATINFO));
   mmFormatInfo.ulStructLen = sizeof(MMFORMATINFO);
-  rc = pMMIOIdentifyFile(filename,
-			 0L, //&mmioinfo,
-			 &mmFormatInfo,
+  rc = pMMIOIdentifyFile(filename, 0L, &mmFormatInfo,
 	                 &fccStorageSystem, 0L,
 	                 MMIO_FORCE_IDENTIFY_FF);
-  /* free module handle */
-  //rc1 = pMMIOClose(hmmio, 0L);
   DosFreeModule(MMIOModHandle);
-
-  /* if identified and not FOURCC_DOS */
-  p = strrchr(filename, '.'); //Added to save mp3, ogg & flac which fail above test
+  p = strrchr(filename, '.');
   if (!p)
     p = ".";
-  if (!rc && (mmFormatInfo.fccIOProc != FOURCC_DOS || !stricmp(p, PCSZ_DOTMPG) ||
-              !stricmp(p, PCSZ_DOTMPEG))) {  // MPG are identified as FOURCC_DOS
+  /* if identified and not FOURCC_DOS  MPEGs are misidentified as DOS*/
+  //DbgMsg(pszSrcFile, __LINE__, "FOUCC %x %s %i", mmFormatInfo.fccIOProc,
+  //       mmFormatInfo.szDefaultFormatExt, mmFormatInfo.ulMediaType);
+  if (!rc && (mmFormatInfo.fccIOProc != FOURCC_DOS ||
+              !stricmp(p, PCSZ_DOTMPG) || !stricmp(p, PCSZ_DOTMPEG))) {
     if (mmFormatInfo.ulMediaType == MMIO_MEDIATYPE_IMAGE &&
 	(mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
-      p = strrchr(filename, '.');
-	  if (!p)
-	      p = ".";
-	  if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
-	    OpenObject(filename, Default, hwnd);  //Image fails to display these
-	  else       // is an image that can be translated
-	    RunFM2Util(PCSZ_IMAGEEXE, filename);
-	  played = TRUE;
+      if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
+        OpenObject(filename, Default, hwnd);  //Image fails to display these
+      else       // is an image that can be translated
+        RunFM2Util(PCSZ_IMAGEEXE, filename);
+      played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
 	/* is a multimedia file (WAV, MID, AVI, etc.) */
-	p = strrchr(filename, '.');
-	  if (!p)
-	      p = ".";
-	  if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC))
-	      OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
-	  else
-	    RunFM2Util(PCSZ_FM2PLAYEXE, filename);
-	  played = TRUE;
+      if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC))
+        OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
+      else
+        RunFM2Util(PCSZ_FM2PLAYEXE, filename);
+      played = TRUE;
     }
   }
 
@@ -213,6 +156,12 @@ VOID DefaultViewKeys(HWND hwnd, HWND hwndFrame, HWND hwndParent,
   else
     DefaultView(hwnd, hwndFrame, hwndParent, swp, 0, filename);
 }
+
+/**
+ * DefaultView runs multiple checks for opening files including checking
+ * for associations, archives, executables, help, ini, warpin, multimedia and
+ * viewing as binary or text.
+ */
 
 VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 		 ULONG flags, CHAR * filename)
@@ -322,9 +271,13 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
         p = strrchr(filename, '.');
         if (!p)
           p = ".";
+        if (!stricmp(p, ".WPI")) {
+          OpenObject(filename, Default, hwnd);
+          return;
+        }
         if (stricmp(p, ".INI") || !StartIniEditor(hwndParent, filename, 4)) {
           if (stricmp(p, PCSZ_DOTHLP) || !ViewHelp(filename)) {
-            if (!fCheckMM || !stricmp(p, ".DLL") || !ShowMultimedia(filename)) {
+            if (!fCheckMM || !ShowMultimedia(filename)) {
             ViewIt:
               if (TestBinary(filename)) {
                 if (*binview) {
