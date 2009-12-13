@@ -42,6 +42,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   26 Jul 09 GKY Fix failure of containers to update when Tree container isn't open in FM2 lite
+  13 Dec 09 GKY Attempt to fix container update issues with FM/2 lite
 
 ***********************************************************************/
 
@@ -936,7 +937,7 @@ VOID Action(VOID * args)
 				wk->li->list[x],
 				GetPString(IDS_TOTEXT), newname);
 		      }
-		      if (!hwndTree ||
+		      if (!strcmp(realappname, "FM/4") ||
 			  ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(wk->li->list[x],
 				    &files, &cFilesModified, &cItemsAllocated)))
@@ -944,7 +945,7 @@ VOID Action(VOID * args)
 				  wk->hwndCnr,
 				  UM_UPDATERECORD,
 				  MPFROMP(wk->li->list[x]), MPVOID);
-		      if (!hwndTree ||
+		      if (!strcmp(realappname, "FM/4")
 			  (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(newname, &files, &cFilesModified, &cItemsAllocated))
 			Broadcast(hab2,
@@ -1049,7 +1050,8 @@ VOID Action(VOID * args)
 	Abort:
 
 	  if (files) {
-	    if (!hwndTree || (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED))
+            if (!strcmp(realappname, "FM/4") || !hwndTree ||
+                (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED))
 	      Broadcast(hab2,
 			wk->hwndCnr,
 			UM_UPDATERECORDLIST, MPFROMP(files), MPVOID);

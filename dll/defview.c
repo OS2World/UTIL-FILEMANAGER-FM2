@@ -19,7 +19,7 @@
   29 Feb 08 GKY Refactor global command line variables to notebook.h
   25 Aug 08 GKY Check TMP directory space warn if lee than 5 MiB prevent archiver from opening if
                 less than 10 KiB (It hangs and can't be closed)
-  05 Jan 09 GKY Use TestBinary so that text veiwer isn't used for hex files by default
+  05 Jan 09 GKY Use TestBinary so that text viewer isn't used for hex files by default
   08 Mar 09 GKY Additional strings move to PCSZs
   15 Nov 09 GKY Add check for attempt to open zero byte file and reorder file type checks
                 to place exes before MMPM check (avoids MMPM trying to play them)
