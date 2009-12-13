@@ -21,6 +21,11 @@
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -382,9 +387,8 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1)) {
     case KILL_CHECKBOX:
       fUseQProcStat = WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX);
-      PrfWriteProfileData(fmprof,
-			  FM3Str,
-			  "UseQProcStat", &fUseQProcStat, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, FM3Str, "UseQProcStat",
+                          &fUseQProcStat, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
       if (WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX)) {
 	WinCheckButton(hwnd, KILL2_CHECKBOX, FALSE);
@@ -395,9 +399,8 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     case KILL2_CHECKBOX:
       fUseQSysState = WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX);
-      PrfWriteProfileData(fmprof,
-			  FM3Str,
-			  "UseQSysState", &fUseQSysState, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, FM3Str, "UseQSysState",
+                          &fUseQSysState, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
       if (WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX)) {
 	WinCheckButton(hwnd, KILL_CHECKBOX, FALSE);

@@ -75,6 +75,11 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   12 Mar 09 SHL Use common SearchContainer
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -174,7 +179,7 @@ BOOL fFileNameCnrPath;
 
 #pragma data_seg(GLOBAL2)
 CHAR lastextractpath[CCHMAXPATH];
-ULONGLONG ullDATFileSpaceNeeded;
+ULONGLONG ullDATFileSpaceNeeded = 10000;
 
 typedef struct {
 
@@ -3812,8 +3817,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	    LONG cxScreen, cyScreen;
 
 	    WinQueryTaskSizePos(WinQueryAnchorBlock(hwndFrame), 0, &swp);
-	    if (PrfQueryProfileData(fmprof,
-				    appname, "AV2SizePos", &swpD, &size)) {
+	    if (PrfQueryProfileData(fmprof, appname, "AV2SizePos", &swpD, &size)) {
 	      cxScreen = WinQuerySysValue(HWND_DESKTOP, SV_CXSCREEN);
 	      cyScreen = WinQuerySysValue(HWND_DESKTOP, SV_CYSCREEN);
 	      if (swp.x + swpD.cx > cxScreen)

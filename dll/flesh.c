@@ -24,6 +24,11 @@
   25 Dec 08 GKY Add DRIVE_RSCANNED flag to monitor for the first recursive drive scan per session
 		to prevent duplicate directory names in tree following a copy before initial scan.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -265,7 +270,7 @@ BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
   return ret;
 }
 
-#define DDEPTH 16
+#define DDEPTH 64
 
 /**
  * Fill in drive tree subtree
@@ -289,7 +294,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   register INT len;
   APIRET rc, prc;
   BOOL isadir = FALSE, isremote = FALSE, includefiles = fFilesInTree;
-  ULONG ddepth = 3;
+  ULONG ddepth = DDEPTH;
   ULONG drvNum;
   ULONG flags;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
@@ -314,7 +319,6 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
       str[2] != '\\' || ((flags & DRIVE_IGNORE)))
     return FALSE;			// Not a directory
 
-  //if (isalpha(*str) &&  // redundant check GKY 11/24/08
   if (flags & DRIVE_INCLUDEFILES)
     includefiles = TRUE;
 
@@ -322,7 +326,6 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
     isremote = TRUE;
 
   if (isremote) {
-    ddepth = 14;
     if (fRemoteBug) {
       if (brokenlan) {
 	ddepth = (ULONG) - 1;
@@ -334,8 +337,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   else if (isbroken)
     ddepth = 14;
 
-  if (!isremote || !fRemoteBug)
-    ulM = (ddepth < 16) ? ddepth : 1;
+  if (!fRemoteBug)
+    ulM = (ddepth <= DDEPTH) ? ddepth : 1;
 
   nm = ulM;
 
@@ -366,17 +369,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		   GetPString(IDS_LANERROR2TITLETEXT),
 		   GetPString(IDS_LANERROR2TEXT));
 	    NoBrokenNotify = 255;
-	    PrfWriteProfileData(fmprof,
-				FM3Str,
-				"NoBrokenNotify",
+	    PrfWriteProfileData(fmprof,	FM3Str,	"NoBrokenNotify",
 				&NoBrokenNotify, sizeof(ULONG));
 	  }
 	}
 	else {
 	  NoBrokenNotify--;
-	  PrfWriteProfileData(fmprof,
-			      FM3Str,
-			      "NoBrokenNotify",
+	  PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
 			      &NoBrokenNotify, sizeof(ULONG));
 	}
       }
@@ -392,11 +391,12 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
       }
       nm = 1;
       DosError(FERR_DISABLEHARDERR);
-    } while (++total < ddepth && !(rc = (DosFindNext(hDir,
-						     &ffb,
-						     sizeof(FILEFINDBUF3),
-						     &nm))));
-    DosFindClose(hDir);
+    }
+    while (++total < ddepth && !(rc = (DosFindNext(hDir,
+						   &ffb,
+						   sizeof(FILEFINDBUF3),
+						   &nm))));
+      DosFindClose(hDir);
     // If drive B:
     if (toupper(*pciParent->pszFileName) > 'B' &&
 	(*(pciParent->pszFileName + 1)) == ':' &&
@@ -438,17 +438,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		       GetPString(IDS_FSDERROR2TITLETEXT),
 		       GetPString(IDS_FSDERROR2TEXT));
 		NoBrokenNotify = 255;
-		PrfWriteProfileData(fmprof,
-				    FM3Str,
-				    "NoBrokenNotify",
+		PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
 				    &NoBrokenNotify, sizeof(ULONG));
 	      }
 	    }
 	    else {
 	      NoBrokenNotify--;
-	      PrfWriteProfileData(fmprof,
-				  FM3Str,
-				  "NoBrokenNotify",
+	      PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
 				  &NoBrokenNotify, sizeof(ULONG));
 	    }
 	  }

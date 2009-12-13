@@ -45,6 +45,11 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -899,7 +904,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    strcpy(s, PCSZ_ICON);
 	    PrfQueryProfileData(fmprof, appname, "DirflWindowAttr",
-				(PVOID) & flWindowAttr, &size);
+				(PVOID) &flWindowAttr, &size);
 	    if (flWindowAttr & CV_DETAIL) {
 	      if (IsRoot(szFileName))
 		strcpy(s, PCSZ_TREE);

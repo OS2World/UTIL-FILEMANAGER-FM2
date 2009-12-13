@@ -29,6 +29,11 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -769,9 +774,7 @@ MRESULT EXPENTRY AutoViewProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  track.fs = TF_TOP;
 	  if (WinTrackRect(hwnd, hps, &track)) {
 	    AutoviewHeight = track.rclTrack.yTop - track.rclTrack.yBottom;
-	    PrfWriteProfileData(fmprof,
-				FM3Str,
-				"AutoviewHeight",
+	    PrfWriteProfileData(fmprof,	appname, "AutoviewHeight",
 				&AutoviewHeight, sizeof(ULONG));
 	    WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
 		       WM_UPDATEFRAME, MPFROMLONG(FCF_SIZEBORDER), MPVOID);

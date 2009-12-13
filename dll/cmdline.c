@@ -20,6 +20,11 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -558,9 +563,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	fSaveBigCmds = (fSaveBigCmds) ? FALSE : TRUE;
 	WinCheckButton(hwnd, EXEC_SAVECMD, fSaveBigCmds);
-	PrfWriteProfileData(fmprof,
-			    appname,
-			    "SaveBigCmds", &fSaveBigCmds, sizeof(BOOL));
+	PrfWriteProfileData(fmprof, appname, "SaveBigCmds", &fSaveBigCmds, sizeof(BOOL));
       }
       break;
     case EXEC_CL:

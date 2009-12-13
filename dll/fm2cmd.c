@@ -10,6 +10,11 @@
 
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -126,7 +131,7 @@ BOOL FM2Command(CHAR * directory, CHAR * command)
 	fKeepCmdLine = FALSE;
       else
 	fKeepCmdLine = TRUE;
-      PrfWriteProfileData(fmprof, FM3Str, "KeepCmdLine", &fKeepCmdLine,
+      PrfWriteProfileData(fmprof, appname, "KeepCmdLine", &fKeepCmdLine,
 			  sizeof(BOOL));
       ret = TRUE;
     }
@@ -136,7 +141,7 @@ BOOL FM2Command(CHAR * directory, CHAR * command)
 	fSaveMiniCmds = FALSE;
       else
 	fSaveMiniCmds = TRUE;
-      PrfWriteProfileData(fmprof, FM3Str, "SaveMiniCmds", &fSaveMiniCmds,
+      PrfWriteProfileData(fmprof, appname, "SaveMiniCmds", &fSaveMiniCmds,
 			  sizeof(BOOL));
       ret = TRUE;
     }

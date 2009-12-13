@@ -28,6 +28,11 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -490,8 +495,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case MINI_BORING:
       fDullMin = (fDullMin) ? FALSE : TRUE;
-      PrfWriteProfileData(fmprof,
-			  FM3Str, "DullDatabar", &fDullMin, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, appname, "DullDatabar", &fDullMin, sizeof(BOOL));
       if (G_hevDataMin != NULLHANDLE) {
 	rc = DosPostEventSem(G_hevDataMin);
 	if (rc) {
@@ -506,15 +510,13 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case MINI_SHOW:
       if (SHORT1FROMMP(mp1) == MINI_SHOW) {
 	fDataShowDrives = (fDataShowDrives) ? FALSE : TRUE;
-	PrfWriteProfileData(fmprof,
-			    appname,
-			    "DataShowDrives", &fDataShowDrives, sizeof(BOOL));
+        PrfWriteProfileData(fmprof, appname, "DataShowDrives",
+                            &fDataShowDrives, sizeof(BOOL));
       }
       else {
 	fDataInclRemote = (fDataInclRemote) ? FALSE : TRUE;
-	PrfWriteProfileData(fmprof,
-			    appname,
-			    "DataInclRemote", &fDataInclRemote, sizeof(BOOL));
+        PrfWriteProfileData(fmprof, appname, "DataInclRemote",
+                            &fDataInclRemote, sizeof(BOOL));
       }
       {
 	HENUM henum;
@@ -534,8 +536,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case MINI_FLOAT:
       fDataToFore = (fDataToFore) ? FALSE : TRUE;
-      PrfWriteProfileData(fmprof,
-			  appname, "DataToFore", &fDataToFore, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, appname, "DataToFore", &fDataToFore, sizeof(BOOL));
       if (!hwndMain) {
 
 	SWCNTRL swcntrl;

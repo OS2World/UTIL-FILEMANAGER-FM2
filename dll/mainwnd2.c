@@ -32,6 +32,11 @@
                 letter windows; Use button ID to identify drive letter for processing.
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -850,26 +855,23 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       BOOL dummy = TRUE;
 
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof,
-			  realappname, "FM/4 TreeUp", (PVOID) & dummy, &size);
+      PrfQueryProfileData(fmprof, realappname, "FM/4 TreeUp",
+                          (PVOID) &dummy, &size);
       if (dummy) {
 	size = sizeof(ULONG);
 	hwndTree = StartTreeCnr(hwnd, 3);
-	PrfQueryProfileData(fmprof,
-			    realappname,
-			    "FM/4 TreeWidth", (PVOID) & TreeWidth, &size);
+        PrfQueryProfileData(fmprof, realappname, "FM/4 TreeWidth",
+                            (PVOID) &TreeWidth, &size);
 	TreeWidth = max(TreeWidth, 80);
       }
       size = sizeof(BOOL);
-      if (PrfQueryProfileData(fmprof,
-			      FM3Str,
-			      "Toolbar", &dummy, &size) && size && !dummy)
+      if (PrfQueryProfileData(fmprof, appname, "Toolbar", &dummy, &size) &&
+          size && !dummy)
 	WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
 
       size = sizeof(s);
       *s = 0;
-      if (PrfQueryProfileData(fmprof,
-			      realappname, "FM/4 Dir1", s, &size) && *s)
+      if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir1", s, &size) && *s)
 	MakeValidDir(s);
       else
 	save_dir(s);
@@ -877,8 +879,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	StartDirCnr(hwnd, s, (HWND) 0, 3);
       size = sizeof(s);
       *s = 0;
-      if (PrfQueryProfileData(fmprof,
-			      realappname, "FM/4 Dir2", s, &size) && *s)
+      if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir2", s, &size) && *s)
 	MakeValidDir(s);
       else
 	save_dir(s);
@@ -895,18 +896,14 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	if (dcd) {
 	  size = sizeof(INT);
-	  if (PrfQueryProfileData(fmprof,
-				  realappname,
-				  "FM/4 Dir1.Sort",
+	  if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir1.Sort",
 				  (PVOID) & dcd->sortFlags,
 				  &size) && size == sizeof(INT)) {
 	    if (!dcd->sortFlags)
 	      dcd->sortFlags = SORT_PATHNAME;
 	  }
 	  size = sizeof(MASK);
-	  if (PrfQueryProfileData(fmprof,
-				  realappname,
-				  "FM/4 Dir1.Filter",
+	  if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir1.Filter",
 				  (PVOID) & dcd->mask, &size) && size) {
 	    if (*dcd->mask.szMask)
 	      WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
@@ -914,9 +911,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  *(dcd->mask.prompt) = 0;
 	  size = sizeof(ULONG);
-	  if (PrfQueryProfileData(fmprof,
-				  realappname,
-				  "FM/4 Dir1.View",
+	  if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir1.View",
 				  (PVOID) & dcd->flWindowAttr,
 				  &size) && size == sizeof(ULONG)) {
 
@@ -941,18 +936,14 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	if (dcd) {
 	  size = sizeof(INT);
-	  if (PrfQueryProfileData(fmprof,
-				  realappname,
-				  "FM/4 Dir2.Sort",
+	  if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir2.Sort",
 				  (PVOID) & dcd->sortFlags,
 				  &size) && size == sizeof(INT)) {
 	    if (!dcd->sortFlags)
 	      dcd->sortFlags = SORT_PATHNAME;
 	  }
 	  size = sizeof(MASK);
-	  if (PrfQueryProfileData(fmprof,
-				  realappname,
-				  "FM/4 Dir2.Filter",
+	  if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir2.Filter",
 				  (PVOID) & dcd->mask, &size) && size) {
 	    if (*dcd->mask.szMask)
 	      WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
@@ -960,9 +951,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  *(dcd->mask.prompt) = 0;
 	  size = sizeof(ULONG);
-	  if (PrfQueryProfileData(fmprof,
-				  realappname,
-				  "FM/4 Dir2.View",
+	  if (PrfQueryProfileData(fmprof, realappname, "FM/4 Dir2.View",
 				  (PVOID) & dcd->flWindowAttr,
 				  &size) && size == sizeof(ULONG)) {
 
@@ -985,9 +974,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
     {
       ULONG which = 0, size = sizeof(ULONG);
 
-      if (PrfQueryProfileData(fmprof,
-			      realappname,
-			      "FM/4 Max",
+      if (PrfQueryProfileData(fmprof, realappname, "FM/4 Max",
 			      (PVOID) & which,
 			      &size) && size == sizeof(ULONG) && which) {
 	PostMsg(hwnd,
@@ -1052,17 +1039,11 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	    else
 	      flWindowAttr |= CV_NAME;
 	  }
-	  PrfWriteProfileData(fmprof,
-			      realappname,
-			      "FM/4 Dir1.Sort",
+	  PrfWriteProfileData(fmprof, realappname, "FM/4 Dir1.Sort",
 			      (PVOID) & dcd->sortFlags, sizeof(INT));
-	  PrfWriteProfileData(fmprof,
-			      realappname,
-			      "FM/4 Dir1.Filter",
+	  PrfWriteProfileData(fmprof, realappname, "FM/4 Dir1.Filter",
 			      (PVOID) & dcd->mask, sizeof(MASK));
-	  PrfWriteProfileData(fmprof,
-			      realappname,
-			      "FM/4 Dir1.View",
+	  PrfWriteProfileData(fmprof, realappname, "FM/4 Dir1.View",
 			      (PVOID) & flWindowAttr, sizeof(ULONG));
 	}
       }
@@ -1087,17 +1068,11 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	    else
 	      flWindowAttr |= CV_NAME;
 	  }
-	  PrfWriteProfileData(fmprof,
-			      realappname,
-			      "FM/4 Dir2.Sort",
+	  PrfWriteProfileData(fmprof, realappname, "FM/4 Dir2.Sort",
 			      (PVOID) & dcd->sortFlags, sizeof(INT));
-	  PrfWriteProfileData(fmprof,
-			      realappname,
-			      "FM/4 Dir2.Filter",
+	  PrfWriteProfileData(fmprof, realappname, "FM/4 Dir2.Filter",
 			      (PVOID) & dcd->mask, sizeof(MASK));
-	  PrfWriteProfileData(fmprof,
-			      realappname,
-			      "FM/4 Dir2.View",
+	  PrfWriteProfileData(fmprof, realappname, "FM/4 Dir2.View",
 			      (PVOID) & flWindowAttr, sizeof(ULONG));
 	}
       }

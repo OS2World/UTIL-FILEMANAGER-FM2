@@ -50,6 +50,11 @@
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   15 Nov 09 GKY Change rescan following label/type change to WinSendMsg to avoid trap on SMP
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -92,6 +97,7 @@
 #include "fortify.h"
 #include "info.h"                       // driveflags
 #include "init.h"                       // font strings
+#include "fm2cmd.h"                     // fKeepCmdLine
 
 static VOID SaveLastPageIndex(HWND hwnd);
 
@@ -352,22 +358,16 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_CLOSE:
     fQuickArcFind = WinQueryButtonCheckstate(hwnd, CFGA_QUICKARCFIND);
-    PrfWriteProfileData(fmprof,
-			appname,
-			"QuickArcFind", &fQuickArcFind, sizeof(BOOL));
+    PrfWriteProfileData(fmprof, appname, "QuickArcFind",
+                        &fQuickArcFind, sizeof(BOOL));
     fArcStuffVisible = WinQueryButtonCheckstate(hwnd, CFGA_ARCSTUFFVISIBLE);
-    PrfWriteProfileData(fmprof,
-			appname,
-			"ArcStuffVisible", &fArcStuffVisible, sizeof(BOOL));
+    PrfWriteProfileData(fmprof,	appname, "ArcStuffVisible",
+                        &fArcStuffVisible, sizeof(BOOL));
     fFileNameCnrPath = WinQueryButtonCheckstate(hwnd, CFGA_FILENAMEPATH);
-    PrfWriteProfileData(fmprof,
-			appname,
-			"FileNamePathCnr", &fFileNameCnrPath, sizeof(BOOL));
+    PrfWriteProfileData(fmprof,	appname, "FileNamePathCnr", &fFileNameCnrPath, sizeof(BOOL));
     fFolderAfterExtract = WinQueryButtonCheckstate(hwnd,
 						   CFGA_FOLDERAFTEREXTRACT);
-    PrfWriteProfileData(fmprof,
-			appname,
-			"FolderAfterExtract",
+    PrfWriteProfileData(fmprof,	appname, "FolderAfterExtract",
 			&fFolderAfterExtract, sizeof(BOOL));
     if (WinQueryButtonCheckstate(hwnd, CFGA_DEFARC)) {
 
@@ -1112,13 +1112,13 @@ MRESULT EXPENTRY CfgBDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     fToolbarHelp = WinQueryButtonCheckstate(hwnd, CFGB_TOOLBARHELP);
     PrfWriteProfileData(fmprof,
-			FM3Str, "ToolbarHelp", &fToolbarHelp, sizeof(BOOL));
+			appname, "ToolbarHelp", &fToolbarHelp, sizeof(BOOL));
     fDrivebarHelp = WinQueryButtonCheckstate(hwnd, CFGB_DRIVEBARHELP);
     PrfWriteProfileData(fmprof,
-			FM3Str, "DrivebarHelp", &fDrivebarHelp, sizeof(BOOL));
+			appname, "DrivebarHelp", &fDrivebarHelp, sizeof(BOOL));
     fOtherHelp = WinQueryButtonCheckstate(hwnd, CFGB_OTHERHELP);
     PrfWriteProfileData(fmprof,
-			FM3Str, "OtherHelp", &fOtherHelp, sizeof(BOOL));
+			appname, "OtherHelp", &fOtherHelp, sizeof(BOOL));
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
@@ -1427,10 +1427,10 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fShowFSTypeInTree = WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE);
       fShowDriveLabelInTree = WinQueryButtonCheckstate(hwnd, CFGT_LABEL);
       fShowDriveOnly = WinQueryButtonCheckstate(hwnd, CFGT_DRIVEONLY);
-      PrfWriteProfileData(fmprof, FM3Str, "ShowDriveOnly", &fShowDriveOnly, sizeof(BOOL));
-      PrfWriteProfileData(fmprof, FM3Str, "ShowFSTypeInTree",
+      PrfWriteProfileData(fmprof, appname, "ShowDriveOnly", &fShowDriveOnly, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, appname, "ShowFSTypeInTree",
                           &fShowFSTypeInTree, sizeof(BOOL));
-      PrfWriteProfileData(fmprof,	FM3Str, "ShowDriveLabelInTree",
+      PrfWriteProfileData(fmprof,	appname, "ShowDriveLabelInTree",
                           &fShowDriveLabelInTree, sizeof(BOOL));
       fVTreeOpensWPS = WinQueryButtonCheckstate(hwnd, CFGT_VTREEOPENSWPS);
       PrfWriteProfileData(fmprof, FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS,
@@ -1455,7 +1455,7 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PrfWriteProfileData(fmprof, appname, "TopDir", (PVOID) & fTopDir,
                           sizeof(BOOL));
       fDCOpens = WinQueryButtonCheckstate(hwnd, CFGT_DCOPENS);
-      PrfWriteProfileData(fmprof, FM3Str, "DoubleClickOpens", &fDCOpens,
+      PrfWriteProfileData(fmprof, appname, "DoubleClickOpens", &fDCOpens,
                           sizeof(BOOL));
       fShowEnvChanged = (fShowEnv != WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV));
       fShowEnv = WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV);
@@ -1609,9 +1609,9 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       test = WinQueryButtonCheckstate(hwnd, CFGG_NODEAD);
       fNoDead = (test == 1);
       fNoFinger = (test == 2);
-      PrfWriteProfileData(fmprof, FM3Str, "NoDead", &fNoDead, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, appname, "NoDead", &fNoDead, sizeof(BOOL));
       PrfWriteProfileData(fmprof,
-			  FM3Str, "NoFinger", &fNoFinger, sizeof(BOOL));
+			  appname, "NoFinger", &fNoFinger, sizeof(BOOL));
       WinDestroyPointer(hptrFinger);
       if (!fNoDead)
 	hptrFinger = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, FINGER_ICON);
@@ -1624,11 +1624,11 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			"LinkSetsIcon", &fLinkSetsIcon, sizeof(BOOL));
     fCustomFileDlg = WinQueryButtonCheckstate(hwnd, CFGG_CUSTOMFILEDLG);
     PrfWriteProfileData(fmprof,
-			FM3Str,
+			appname,
 			"CustomFileDlg", &fCustomFileDlg, sizeof(BOOL));
     fDullMin = WinQueryButtonCheckstate(hwnd, CFGG_BORING);
     PrfWriteProfileData(fmprof,
-			FM3Str, "DullDatabar", &fDullMin, sizeof(BOOL));
+			appname, "DullDatabar", &fDullMin, sizeof(BOOL));
     fConfirmDelete = WinQueryButtonCheckstate(hwnd, CFGG_CONFIRMDELETE);
     PrfWriteProfileData(fmprof,
 			appname,
@@ -1655,10 +1655,10 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "DefaultDeletePerm",
 			&fDefaultDeletePerm, sizeof(BOOL));
     fFM2Deletes = WinQueryButtonCheckstate(hwnd, CFGG_FM2DELETES);
-    PrfWriteProfileData(fmprof, FM3Str, "FM2Deletes",
+    PrfWriteProfileData(fmprof, appname, "FM2Deletes",
 			&fFM2Deletes, sizeof(BOOL));
     fTrashCan = WinQueryButtonCheckstate(hwnd, CFGG_TRASHCAN);
-    PrfWriteProfileData(fmprof, FM3Str, "TrashCan",
+    PrfWriteProfileData(fmprof, appname, "TrashCan",
 			&fTrashCan, sizeof(BOOL));
     fConfirmTarget = WinQueryButtonCheckstate(hwnd, CFGG_CONFIRMTARGET);
     PrfWriteProfileData(fmprof, appname, "ConfirmTarget",
@@ -1916,7 +1916,7 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "ContainerType",
 			(PVOID) & ulCnrType, sizeof(BOOL));
     fMinOnOpen = WinQueryButtonCheckstate(hwnd, CFGD_MINONOPEN);
-    PrfWriteProfileData(fmprof, FM3Str, "MinDirOnOpen", &fMinOnOpen,
+    PrfWriteProfileData(fmprof, appname, "MinDirOnOpen", &fMinOnOpen,
 			sizeof(BOOL));
     fLeaveTree = WinQueryButtonCheckstate(hwnd, CFGD_LEAVETREE);
     PrfWriteProfileData(fmprof, appname, "LeaveTree", &fLeaveTree,
@@ -1931,7 +1931,7 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     PrfWriteProfileData(fmprof, appname, "NoSearch", &fNoSearch,
 			sizeof(BOOL));
     fLookInDir = WinQueryButtonCheckstate(hwnd, CFGD_LOOKINDIR);
-    PrfWriteProfileData(fmprof, FM3Str, "LookInDir", (PVOID) & fLookInDir,
+    PrfWriteProfileData(fmprof, appname, "LookInDir", (PVOID) & fLookInDir,
 			sizeof(BOOL));
     fUnHilite = WinQueryButtonCheckstate(hwnd, CFGD_UNHILITE);
     PrfWriteProfileData(fmprof, appname, "UnHilite",
@@ -2160,7 +2160,7 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			(PVOID) & fStartMaximized, sizeof(BOOL));
     fDataMin = WinQueryButtonCheckstate(hwnd, CFGM_DATAMIN);
     PrfWriteProfileData(fmprof,
-			FM3Str, "DataMin", (PVOID) & fDataMin, sizeof(BOOL));
+			appname, "DataMin", (PVOID) & fDataMin, sizeof(BOOL));
     fTileBackwards = WinQueryButtonCheckstate(hwnd, CFGM_TILEBACKWARDS);
     PrfWriteProfileData(fmprof,
 			FM3Str,
@@ -2168,7 +2168,7 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			(PVOID) & fTileBackwards, sizeof(BOOL));
     fNoTreeGap = WinQueryButtonCheckstate(hwnd, CFGM_NOTREEGAP);
     PrfWriteProfileData(fmprof,
-			FM3Str,
+			appname,
 			"NoTreeGap", (PVOID) & fNoTreeGap, sizeof(BOOL));
     fBlueLED = WinQueryButtonCheckstate(hwnd, CFGM_BLUELED);
     PrfWriteProfileData(fmprof,
@@ -2192,7 +2192,7 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (dummy != fSeparateParms) {
 	fSeparateParms = dummy;
 	PrfWriteProfileData(fmprof,
-			    FM3Str,
+			    appname,
 			    "SeparateParms",
 			    (PVOID) & fSeparateParms, sizeof(BOOL));
 	WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),
@@ -3056,8 +3056,8 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    appname,
 			    "CollectorflWindowAttr",
 			    &flWindowAttr, sizeof(ULONG));
-	//fixme to allow user to change presparams 1-10-09 GKY
-	PrfWriteProfileData(fmprof,
+        //This is set to maximize the info seen in the container GKY
+        PrfWriteProfileData(fmprof,
 			    appname,
 			    "Collector.Fontnamesize",
 			    (PVOID) FNT_8HELVETICA,
@@ -3152,6 +3152,8 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fArcStuffVisible = FALSE;
       fForceUpper = FALSE;
       fForceLower = FALSE;
+      fEjectRemovableScan = FALSE;
+      fRScanLocal = FALSE;
       dsDirCnrDefault.detailslongname = FALSE;
       dsDirCnrDefault.detailssubject = FALSE;
       break;
@@ -3273,10 +3275,10 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case CFG9_DEFAULT:
-      fSwitchTree = FALSE;
+      fSwitchTree = TRUE;
       fSwitchTreeOnFocus = FALSE;
-      fSwitchTreeExpand = FALSE;
-      fCollapseFirst = FALSE;
+      fSwitchTreeExpand = TRUE;
+      fCollapseFirst = TRUE;
       fSelectedAlways = FALSE;
       fTileBackwards = FALSE;
       fExternalViewer = FALSE;
@@ -3298,14 +3300,14 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fNoIconsFiles = FALSE;
       fNoIconsDirs = FALSE;
       fFolderAfterExtract = FALSE;
-      fVerify = TRUE;
-      DosSetVerify(TRUE);
+      fVerify = FALSE;
+      DosSetVerify(fVerify);
       fNoSearch = TRUE;
       fForceUpper = FALSE;
-      fForceLower = TRUE;
+      fForceLower = FALSE;
       fArcStuffVisible = TRUE;
       fVTreeOpensWPS = FALSE;
-      fRemoteBug = TRUE;
+      fRemoteBug = FALSE;
       fDragndropDlg = TRUE;
       fMinOnOpen = FALSE;
       fQuickArcFind = TRUE;
@@ -3316,10 +3318,34 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fAutoTile = TRUE;
       fSaveState = TRUE;
       fStartMinimized = FALSE;
-      fStartMaximized = FALSE;
       fDataMin = TRUE;
       ulCnrType = CCS_EXTENDSEL;
       fNoTreeGap = FALSE;
+      MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
+      fGuessType = TRUE;
+      fUseNewViewer = TRUE;
+      fDataToFore = TRUE;
+      fDataShowDrives = TRUE;
+      fKeepCmdLine = TRUE;
+      fCustomFileDlg = TRUE;
+      fToolbarHelp = TRUE;
+      fOtherHelp = TRUE;
+      fDrivebarHelp = TRUE;
+      fShowTarget = TRUE;
+      fRScanLocal = TRUE;
+      fRScanRemote = FALSE;
+      fRScanVirtual = FALSE;
+      fRScanSlow = FALSE;
+      fRScanNoWrite = FALSE;
+      fEjectRemovableScan = TRUE;
+      fEjectCDScan = FALSE;
+      fEjectFlpyScan = FALSE;
+      fShowDriveOnly = TRUE;
+      fShowFSTypeInTree = FALSE;
+      fShowDriveLabelInTree = FALSE;
+      fAlertBeepOff = FALSE;
+      fErrorBeepOff = FALSE;
+      fTrashCan = FALSE;
       {
 	ULONG flWindowAttr;
 
@@ -3341,8 +3367,12 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dsDirCnrDefault.detailscrdate = FALSE;
       dsDirCnrDefault.detailscrtime = FALSE;
       dsDirCnrDefault.detailsattr = TRUE;
+      dsDirCnrDefault.fSubjectInLeftPane = FALSE;
+      dsDirCnrDefault.fSubjectLengthMax = TRUE;
+      dsDirCnrDefault.SubjectDisplayWidth = 0;
       sortFlags = SORT_FILENAME | SORT_DIRSFIRST;
       CollectorsortFlags = SORT_FILENAME | SORT_DIRSFIRST;
+      WriteDetailsSwitches(PCSZ_COLLECTOR, &dsDirCnrDefault, FALSE);
       if (hwndMain) {
 
 	SWP swp;
@@ -3353,7 +3383,27 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  swp.cy -
 			  (WinQuerySysValue(HWND_DESKTOP, SV_CYICON) * 2),
 			  SWP_MOVE | SWP_SIZE);
-	}
+        }
+        if (!fToolbar) {
+	  WinSendMsg(hwndMain, WM_COMMAND,
+                     MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
+          fToolbar = TRUE;
+        }
+        if (!fDrivebar) {
+	  WinSendMsg(hwndMain, WM_COMMAND,
+                     MPFROM2SHORT(IDM_DRIVEBAR, 0), MPVOID);
+          fDrivebar = TRUE;
+        }
+        if (!fMoreButtons) {
+	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_MOREBUTTONS, 0),
+                     MPVOID);
+          fMoreButtons = TRUE;
+        }
+        if (!fUserComboBox) {
+	  WinSendMsg(hwndMain, WM_COMMAND,
+                     MPFROM2SHORT(IDM_USERLIST, 0), MPVOID);
+          fUserComboBox = TRUE;
+        }
       }
       if (hwndTree) {
 
@@ -3539,6 +3589,156 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(MainObjectHwnd, UM_SETDIR, MPVOID, MPVOID);
       }
       return 0;
+
+    case CFG9_GREGG:
+      fSwitchTree = TRUE;
+      fSwitchTreeOnFocus = FALSE;
+      fSwitchTreeExpand = TRUE;
+      fCollapseFirst = TRUE;
+      fSelectedAlways = FALSE;
+      fTileBackwards = FALSE;
+      fExternalViewer = TRUE;
+      fExternalArcboxes = TRUE;
+      fExternalCollector = TRUE;
+      fExternalINIs = TRUE;
+      fCopyDefault = FALSE;
+      fFollowTree = FALSE;
+      fLoadSubject = TRUE;
+      fLoadLongnames = TRUE;
+      fDontMoveMouse = FALSE;
+      fUnHilite = TRUE;
+      fUserListSwitches = FALSE;
+      fDCOpens = FALSE;
+      fLinkSetsIcon = FALSE;
+      fConfirmDelete = TRUE;
+      fSyncUpdates = FALSE;
+      fRealIdle = TRUE;
+      fNoIconsFiles = FALSE;
+      fNoIconsDirs = FALSE;
+      fFolderAfterExtract = FALSE;
+      fVerify = FALSE;
+      DosSetVerify(fVerify);
+      fNoSearch = FALSE;
+      fForceUpper = FALSE;
+      fForceLower = FALSE;
+      fArcStuffVisible = TRUE;
+      fVTreeOpensWPS = FALSE;
+      fRemoteBug = FALSE;
+      fDragndropDlg = TRUE;
+      fMinOnOpen = FALSE;
+      fQuickArcFind = TRUE;
+      fNoRemovableScan = FALSE;
+      FilesToGet = FILESTOGET_MAX;
+      fFreeTree = FALSE;
+      fSplitStatus = TRUE;
+      fAutoTile = TRUE;
+      fSaveState = TRUE;
+      fStartMinimized = FALSE;
+      fDataMin = TRUE;
+      ulCnrType = CCS_EXTENDSEL;
+      fNoTreeGap = TRUE;
+      MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
+      fGuessType = TRUE;
+      fUseNewViewer = TRUE;
+      fDataToFore = TRUE;
+      fDataShowDrives = TRUE;
+      fKeepCmdLine = TRUE;
+      fCustomFileDlg = TRUE;
+      fToolbarHelp = TRUE;
+      fOtherHelp = TRUE;
+      fDrivebarHelp = TRUE;
+      fShowTarget = TRUE;
+      fRScanLocal = TRUE;
+      fRScanRemote = TRUE;
+      fRScanVirtual = FALSE;
+      fRScanSlow = FALSE;
+      fRScanNoWrite = FALSE;
+      fEjectRemovableScan = TRUE;
+      fEjectCDScan = TRUE;
+      fEjectFlpyScan = FALSE;
+      fShowDriveOnly = FALSE;
+      fShowFSTypeInTree = FALSE;
+      fShowDriveLabelInTree = TRUE;
+      fAlertBeepOff = TRUE;
+      fErrorBeepOff = FALSE;
+      fTrashCan = TRUE;
+      {
+	ULONG flWindowAttr;
+
+	flWindowAttr = (CV_DETAIL | CV_MINI | CA_DETAILSVIEWTITLES);
+	PrfWriteProfileData(fmprof, appname, "DirflWindowAttr",
+			    &flWindowAttr, sizeof(ULONG));
+	PrfWriteProfileData(fmprof, appname, "CollectorflWindowAttr",
+			    &flWindowAttr, sizeof(ULONG));
+      }
+      dsDirCnrDefault.detailslongname = FALSE;
+      dsDirCnrDefault.detailssubject = FALSE;
+      dsDirCnrDefault.detailsea = TRUE;
+      dsDirCnrDefault.detailssize = TRUE;
+      dsDirCnrDefault.detailsicon = TRUE;
+      dsDirCnrDefault.detailslwdate = TRUE;
+      dsDirCnrDefault.detailslwtime = TRUE;
+      dsDirCnrDefault.detailsladate = FALSE;
+      dsDirCnrDefault.detailslatime = FALSE;
+      dsDirCnrDefault.detailscrdate = FALSE;
+      dsDirCnrDefault.detailscrtime = FALSE;
+      dsDirCnrDefault.detailsattr = TRUE;
+      dsDirCnrDefault.fSubjectInLeftPane = TRUE;
+      dsDirCnrDefault.fSubjectLengthMax = TRUE;
+      dsDirCnrDefault.SubjectDisplayWidth = 0;
+      sortFlags = SORT_FILENAME | SORT_DIRSFIRST;
+      CollectorsortFlags = SORT_FILENAME | SORT_DIRSFIRST;
+      WriteDetailsSwitches(PCSZ_COLLECTOR, &dsDirCnrDefault, FALSE);
+      if (hwndMain) {
+
+	SWP swp;
+
+	if (WinQueryWindowPos(hwndMain, &swp)) {
+	  WinSetWindowPos(hwndTree, HWND_TOP, 0, 0,
+			  swp.cx / 5,
+			  swp.cy -
+			  (WinQuerySysValue(HWND_DESKTOP, SV_CYICON) * 2),
+			  SWP_MOVE | SWP_SIZE);
+        }
+        if (!fToolbar) {
+	  WinSendMsg(hwndMain, WM_COMMAND,
+                     MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
+          fToolbar = TRUE;
+        }
+        if (!fDrivebar) {
+	  WinSendMsg(hwndMain, WM_COMMAND,
+                     MPFROM2SHORT(IDM_DRIVEBAR, 0), MPVOID);
+          fDrivebar = TRUE;
+        }
+        if (!fMoreButtons) {
+	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_MOREBUTTONS, 0),
+                     MPVOID);
+          fMoreButtons = TRUE;
+        }
+        if (!fUserComboBox) {
+	  WinSendMsg(hwndMain, WM_COMMAND,
+                     MPFROM2SHORT(IDM_USERLIST, 0), MPVOID);
+          fUserComboBox = TRUE;
+        }
+      }
+      if (hwndTree) {
+
+	CNRINFO cnri;
+	ULONG flWindowAttr = (CV_TREE | CV_TEXT |
+			      CV_FLOW | CA_TREELINE | CV_MINI);
+
+	memset(&cnri, 0, sizeof(cnri));
+	cnri.cb = sizeof(cnri);
+	WinSendMsg(WinWindowFromID
+		   (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR),
+		   CM_QUERYCNRINFO, MPFROMP(&cnri), MPFROMLONG(sizeof(cnri)));
+	cnri.flWindowAttr = flWindowAttr;
+	WinSendMsg(WinWindowFromID
+		   (WinWindowFromID(hwndTree, FID_CLIENT), TREE_CNR),
+		   CM_SETCNRINFO, MPFROMP(&cnri),
+		   MPFROMLONG(CMA_FLWINDOWATTR));
+      }
+      break;
 
     case DID_CANCEL:
       WinSendMsg(hwnd, UM_UNDO, MPVOID, MPVOID);

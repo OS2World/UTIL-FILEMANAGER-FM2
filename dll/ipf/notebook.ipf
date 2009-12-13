@@ -16,6 +16,7 @@
 .* 08 Mar 09 GKY Added option to turn alert and/or error beeps off
 .* 12 Mar 09 SHL Update container search description
 .* 13 Jul 09 SHL Rework scanning page help text
+.* 13 Dec 09 GKY Fixed separate paramenters. 
 .*
 .***********************************************************************
 .*
@@ -109,13 +110,11 @@ from performing extended searching in containers -- instead, the
 standard OS/2 method is used, where the cursor moves to the nearest
 object starting with the depressed letter and the object is selected.
 Note that you override the configured value of this feature by
-pressing the &ShiftKey.
-key along with the letter.
+pressing the &ShiftKey.key along with the letter.
 Extended container searching allows you to enter multiple characters which
-are searched for at the	start of filenames.
-The record is made the current (cursored) object.
+are searched for at the start of filenames. The record is made the current (cursored) object.
 The leading backslash can be omitted from directory names where there is no ambiguity.
-If the record matches all the letters typed exactly, it is also	selected.
+If the record matches all the letters typed exactly, it is also selected.
 A pause of more than about two seconds in typing resets the search string. 
 The Escape key clears the search string.
 Backspace deletes the last character from the search string.
@@ -574,8 +573,10 @@ FM/2 also places temporary entries for any directory chosen using the
 :link reftype=hd res=91500.Walk Directories:elink. dialog.
 :p.
 The :hp6.Separate parameters:ehp6. toggle tells FM/2 whether to use
-separate parameters for many of the mini-apps (like VDIR and VTREE). If
-checked, you'll have to set up each application separately, but
+separate parameters for many of the mini-apps (like FM/2 lite, VDIR and VTREE). 
+If you select it with FM/2 running it applies to all the mini-apps. However,
+if you select it with a mini-app running it will only effect that app. If
+checked, you'll have to set up the effected applications separately, but
 configurations can be different than that in the monolithic FM/2
 application itself. If you don't understand that, let's try this&colon.
 if you run the Visual Tree program a lot, you'll probably want to check
@@ -630,7 +631,9 @@ the WPS System object, of course). Silly.
 The :hp6.Blue/yellow LEDs:ehp6. toggle, when checked, causes FM/2 to
 display the thread LED as blue (off) and yellow (on) LEDs rather than
 the default red (off) and green (on) LEDs. The change will not show up
-on the application window until you close and then reopen FM/2.
+on the application window until you close and then reopen FM/2. The LED
+blinks during background processing indicating that the background process
+is still active.
 :p.
 The :hp6.Show Target in Drivebar:ehp6. toggle, if on, tells FM/2 to
 display the Target directory name, if any, at the right side of the
@@ -874,7 +877,9 @@ FM/2. Pick something that looks close to what you want without worrying
 too much about it  -- you can always change it later. The idea is to
 give you some quick choices about the general way you'd like FM/2 to
 look and behave, and allow you to tweak specifics later as you get some
-experience with the program.
+experience with the program. Please note that none of these do anything to 
+strings (i.e. the viewer program paths, antivirus path, etc) you may have
+already entered.
 :p.
 :hp6.Default:ehp6. restores FM/2 to its default state, for the most
 part.
@@ -912,6 +917,11 @@ Windows file manager, with one Directory container.
 :p.
 :hp6.Hector's way:ehp6. sets FM/2 up the way the author likes it. Your
 mileage may vary.
+:p.
+:hp6.Gregg's way:ehp6. sets FM/2 up the way the one of the current maintainers 
+likes it. Your mileage may vary but it give you a starting point based on
+a long time user's settings. I only use FM/2 (except when testing) so you 
+may want to avoid this if you generally use the other miniapps (vtree, FM/2 lite, etc).
 :p.
 You might also want to take a look at the :link reftype=hd
 res=100000."FM/2 Lite":elink. object in the FM/2 folder.

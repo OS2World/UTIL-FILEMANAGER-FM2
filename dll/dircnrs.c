@@ -68,6 +68,11 @@
   22 Jul 09 SHL Cleanup of SETFOCUS code
   14 Sep 09 SHL Drop experimental code
   15 Sep 09 SHL Show rescan progress while filling container
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -1556,17 +1561,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	{
 	  ULONG size = sizeof(ULONG);
 
-	  PrfQueryProfileData(fmprof,
-			      appname,
-			      "DirflWindowAttr",
+	  PrfQueryProfileData(fmprof, appname, "DirflWindowAttr",
 			      (PVOID) & cnri.flWindowAttr, &size);
 	  size = sizeof(MASK);
 	  if (!*dcd->mask.szMask &&
 	      !dcd->mask.attrFile && !dcd->mask.antiattr) {
-	    if (PrfQueryProfileSize(fmprof,
-				    appname, "DirFilter", &size) && size) {
-	      PrfQueryProfileData(fmprof,
-				  appname, "DirFilter", &dcd->mask, &size);
+	    if (PrfQueryProfileSize(fmprof, appname, "DirFilter", &size) && size) {
+	      PrfQueryProfileData(fmprof, appname, "DirFilter", &dcd->mask, &size);
 	      SetMask(dcd->mask.szMask, &dcd->mask);
 	    }
 	    else
@@ -3488,8 +3489,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowPos(dcd->hwndFrame, &swp);
       if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE | SWP_MAXIMIZE)))
-	PrfWriteProfileData(fmprof,
-			    appname, "VDirSizePos", &swp, sizeof(swp));
+	PrfWriteProfileData(fmprof, appname, "VDirSizePos", &swp, sizeof(swp));
     }
     break;
 
@@ -3810,8 +3810,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	    LONG cxScreen, cyScreen;
 
 	    WinQueryTaskSizePos(WinQueryAnchorBlock(hwndFrame), 0, &swp);
-	    if (PrfQueryProfileData(fmprof,
-				    appname, "VDirSizePos", &swpD, &size)) {
+	    if (PrfQueryProfileData(fmprof, appname, "VDirSizePos", &swpD, &size)) {
 	      cxScreen = WinQuerySysValue(HWND_DESKTOP, SV_CXSCREEN);
 	      cyScreen = WinQuerySysValue(HWND_DESKTOP, SV_CYSCREEN);
 	      if (swp.x + swpD.cx > cxScreen)

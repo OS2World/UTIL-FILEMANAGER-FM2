@@ -89,6 +89,11 @@
   15 Nov 09 GKY Add more PCSZs
   22 Nov 09 GKY Fix FindSwapperDat so the check for large file support actually occurs if the
                 fall back to config.sys is used to find it; use bstripcr to streamline code.
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -361,7 +366,7 @@ PCSZ WC_ERRORWND        =  "WC_ERRORWND";
 PCSZ WC_MINITIME        =  "WC_MINITIME";
 PCSZ WC_DATABAR         =  "WC_DATABAR";
 CHAR profile[CCHMAXPATH];
-ULONGLONG ullTmpSpaceNeeded;
+ULONGLONG ullTmpSpaceNeeded = 5120000;
 
 BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset);
 
@@ -623,6 +628,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PSZ env;
   CHAR dllfile[CCHMAXPATH];
   ULONG size;
+  BOOL fSeparateParmsApp;
 
   strcpy(dllfile, "FM3RES");
   env = getenv("FM3INI");
@@ -765,7 +771,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
   // Check free space on TMP and FM2 Save drives
   {
-    ullTmpSpaceNeeded = 5120000;
+    //ullTmpSpaceNeeded = 5120000;
     if (pTmpDir && CheckDriveSpaceAvail(pTmpDir, ullTmpSpaceNeeded, 0) == 1) {
       if (CheckDriveSpaceAvail(pFM2SaveDirectory, ullTmpSpaceNeeded, 0) == 0){
 	ret = saymsg(MB_YESNO,
@@ -902,12 +908,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   FindSwapperDat();
 
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof,
-		      FM3Str,
-		      "SeparateParms",
-		      &fSeparateParms,
-		      &size);
-  if (!fSeparateParms)
+  PrfQueryProfileData(fmprof, FM3Str, "SeparateParms",
+                      &fSeparateParms, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "SeparateParms",
+		      &fSeparateParmsApp, &size);
+  if (!fSeparateParms && !fSeparateParmsApp)
     strcpy(appname, FM3Str);
 
   /* start help */
@@ -1115,7 +1121,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     dsDirCnrDefault.detailslwtime = dsDirCnrDefault.detailsattr = dsDirCnrDefault.detailsicon =
     fAutoTile = fConfirmDelete = fLoadSubject = fUnHilite =
     fLoadLongnames = fToolbar = fSaveState = fGuessType = fToolbarHelp =
-    fAutoAddDirs = fUseNewViewer = fDataToFore = fDataShowDrives =
+    fAutoAddDirs = fUseNewViewer = fDataToFore = fDataShowDrives = fDataMin =
     fSplitStatus = fDragndropDlg = fQuickArcFind = fKeepCmdLine =
     fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
@@ -1123,7 +1129,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
     fEjectRemovableScan = fRScanLocal = TRUE;
   ulCnrType = CCS_EXTENDSEL;
-  FilesToGet = FILESTOGET_MIN;
+  FilesToGet = FILESTOGET_MAX;
   MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
   AutoviewHeight = 48;
   //strcpy(printer, "PRN");
@@ -1135,8 +1141,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   prnrmargin = 3;
   prnspacing = 1;
   prntabspaces = 8;
-  CollectorsortFlags = sortFlags = SORT_DIRSFIRST;
-  ullDATFileSpaceNeeded = 10000;
+  CollectorsortFlags = sortFlags = SORT_FILENAME | SORT_DIRSFIRST;
+  //ullDATFileSpaceNeeded = 10000;
 
   //Get default Country info
   {
@@ -1199,6 +1205,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
 
   // load preferences from profile (INI) file
+  /**
+    * Separate paramenters -- Please note that appname should be used in
+    * profile calls for user settings that work and are setable in more than one
+    * miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+    * aren't user settable; realappname should be used for setting applicable to
+    * one or more miniapp but not to FM/2
+    */
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, appname, "MaxComLineStrg", &MaxComLineStrg, &size);
   // Give user one chance to reset the default command line length to 1024 (4os2's unexpanded max)
@@ -1266,15 +1279,15 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ConfirmTarget", &fConfirmTarget, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "CustomFileDlg", &fCustomFileDlg, &size);
+  PrfQueryProfileData(fmprof, appname, "CustomFileDlg", &fCustomFileDlg, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "SaveMiniCmds", &fSaveMiniCmds, &size);
+  PrfQueryProfileData(fmprof, appname, "SaveMiniCmds", &fSaveMiniCmds, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SaveBigCmds", &fSaveBigCmds, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoFoldMenu", &fNoFoldMenu, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ThreadNotes", &fThreadNotes, &size);
+  PrfQueryProfileData(fmprof, appname, "ThreadNotes", &fThreadNotes, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "Prnpagenums", &prnpagenums, &size);
   size = sizeof(BOOL);
@@ -1302,13 +1315,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, FM3Str, "Prnspacing", &prnspacing, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "NoDead", &fNoDead, &size);
+  PrfQueryProfileData(fmprof, appname, "NoDead", &fNoDead, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "NoFinger", &fNoFinger, &size);
+  PrfQueryProfileData(fmprof, appname, "NoFinger", &fNoFinger, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "AlertBeepOff", &fAlertBeepOff, &size);
+  PrfQueryProfileData(fmprof, appname, "AlertBeepOff", &fAlertBeepOff, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ErrorBeepOff", &fErrorBeepOff, &size);
+  PrfQueryProfileData(fmprof, appname, "ErrorBeepOff", &fErrorBeepOff, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SwitchTree", &fSwitchTree, &size);
   size = sizeof(BOOL);
@@ -1320,23 +1333,21 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FilesInTree", &fFilesInTree, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "TopDir", &fTopDir, &size);
+  PrfQueryProfileData(fmprof, appname, "TopDir", &fTopDir, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "LookInDir", &fLookInDir, &size);
+  PrfQueryProfileData(fmprof, appname, "LookInDir", &fLookInDir, &size);
   PrfQueryProfileString(fmprof, appname, "DefArc", NULL, szDefArc, sizeof(szDefArc));
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, FM3Str, "AutoviewHeight",
+  PrfQueryProfileData(fmprof, appname, "AutoviewHeight",
 		      &AutoviewHeight, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "KeepCmdLine", &fKeepCmdLine, &size);
+  PrfQueryProfileData(fmprof, appname, "KeepCmdLine", &fKeepCmdLine, &size);
   if (strcmp(realappname, "FM/4")) {
     size = sizeof(BOOL);
     PrfQueryProfileData(fmprof, FM3Str, "MoreButtons", &fMoreButtons, &size);
     size = sizeof(BOOL);
     PrfQueryProfileData(fmprof, FM3Str, "Drivebar", &fDrivebar, &size);
   }
-  else
-    fDrivebar = fMoreButtons = TRUE;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoSearch", &fNoSearch, &size);
   size = sizeof(BOOL);
@@ -1348,17 +1359,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileString(fmprof, appname, "TreeEnvVarList", "PATH;DPATH;LIBPATH;HELP;BOOKSHELF;",
 	                pszTreeEnvVarList, MaxComLineStrg);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ShowDriveOnly", &fShowDriveOnly, &size);
+  PrfQueryProfileData(fmprof, appname, "ShowDriveOnly", &fShowDriveOnly, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ShowFSTypeInTree", &fShowFSTypeInTree, &size);
+  PrfQueryProfileData(fmprof, appname, "ShowFSTypeInTree", &fShowFSTypeInTree, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ShowDriveLabelInTree", &fShowDriveLabelInTree, &size);
+  PrfQueryProfileData(fmprof, appname, "ShowDriveLabelInTree", &fShowDriveLabelInTree, &size);
   if (!fShowDriveOnly && !fShowFSTypeInTree && !fShowDriveLabelInTree)
     fShowDriveOnly = TRUE;
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LeaveTree", &fLeaveTree, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "Comments", &fComments, &size);
+  PrfQueryProfileData(fmprof, appname, "Comments", &fComments, &size);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, appname, "WS_ANIMATE", &fwsAnimate, &size);
   if (fwsAnimate)
@@ -1366,11 +1377,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SelectedAlways", &fSelectedAlways, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ToolbarHelp", &fToolbarHelp, &size);
+  PrfQueryProfileData(fmprof, appname, "ToolbarHelp", &fToolbarHelp, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "OtherHelp", &fOtherHelp, &size);
+  PrfQueryProfileData(fmprof, appname, "OtherHelp", &fOtherHelp, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "DrivebarHelp", &fDrivebarHelp, &size);
+  PrfQueryProfileData(fmprof, appname, "DrivebarHelp", &fDrivebarHelp, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "AutoAddDirs", &fAutoAddDirs, &size);
   size = sizeof(BOOL);
@@ -1394,7 +1405,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "UseQSysState", &fUseQSysState, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "DataMin", &fDataMin, &size);
+  PrfQueryProfileData(fmprof, appname, "DataMin", &fDataMin, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DataToFore", &fDataToFore, &size);
   size = sizeof(BOOL);
@@ -1406,7 +1417,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FolderAfterExtract", &fFolderAfterExtract, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "DullDatabar", &fDullMin, &size);
+  PrfQueryProfileData(fmprof, appname, "DullDatabar", &fDullMin, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "BlueLED", &fBlueLED, &size);
   size = sizeof(BOOL);
@@ -1437,9 +1448,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ForceLower", &fForceLower, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "TextTools", &fTextTools, &size);
+  PrfQueryProfileData(fmprof, appname, "TextTools", &fTextTools, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "ToolTitles", &fToolTitles, &size);
+  PrfQueryProfileData(fmprof, appname, "ToolTitles", &fToolTitles, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DoubleClickOpens", &fDCOpens, &size);
   size = sizeof(BOOL);
@@ -1455,7 +1466,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     *targetdir = 0;
   PrfQueryProfileString(fmprof, appname, "ExtractPath", NULL, extractpath, sizeof(extractpath));
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "FileNamePathCnr", &fFileNameCnrPath, &size);
+  PrfQueryProfileData(fmprof, appname, "FileNamePathCnr", &fFileNameCnrPath, &size);
   PrfQueryProfileString(fmprof, appname, "Printer", "PRN", printer, sizeof(printer));
   PrfQueryProfileString(fmprof, appname, "DirCompare", NULL, dircompare, MaxComLineStrg);
   PrfQueryProfileString(fmprof, appname, "Viewer", NULL, viewer, MaxComLineStrg);
@@ -1502,7 +1513,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ArcStuffVisible", &fArcStuffVisible, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "NoTreeGap", &fNoTreeGap, &size);
+  PrfQueryProfileData(fmprof, appname, "NoTreeGap", &fNoTreeGap, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS, &size);
   size = sizeof(BOOL);
@@ -1532,7 +1543,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "QuickArcFind", &fQuickArcFind, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "NoRemovableScan", &fNoRemovableScan, &size);
+  PrfQueryProfileData(fmprof, appname, "NoRemovableScan", &fNoRemovableScan, &size);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, FM3Str, "NoBrokenNotify", &NoBrokenNotify, &size);
   size = sizeof(ULONG);
@@ -1544,11 +1555,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   else if (FilesToGet > FILESTOGET_MAX)
     FilesToGet = FILESTOGET_MAX;
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "AutoView", &fAutoView, &size);
+  PrfQueryProfileData(fmprof, appname, "AutoView", &fAutoView, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "FM2Deletes", &fFM2Deletes, &size);
+  PrfQueryProfileData(fmprof, appname, "FM2Deletes", &fFM2Deletes, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "TrashCan", &fTrashCan, &size);
+  PrfQueryProfileData(fmprof, appname, "TrashCan", &fTrashCan, &size);
 
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 

@@ -98,6 +98,11 @@
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   14 Sep 09 SHL Blink thread LEDs when workers busy
+  13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
+                profile calls for user settings that work and are setable in more than one
+                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+                aren't user settable; realappname should be used for setting applicable to
+                one or more miniapp but not to FM/2
 
 ***********************************************************************/
 
@@ -3230,10 +3235,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   fIsShutDownState = strcmp(pszStateName, PCSZ_SHUTDOWNSTATE) == 0;
   // Delete saved state if internally saved state
   fDeleteState = strcmp(pszStateName, PCSZ_FM2TEMPTEXT) == 0;
-
-  //size = (ULONG)0;
   sprintf(szKey, "%sToolbar", szPrefix);
-  //if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
   {
     if (fToolsChanged)
       save_tools(NULL);
@@ -3242,9 +3244,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
     load_tools(NULL);
     PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
   }
-  //size = (ULONG)0;
   sprintf(szKey, "%sTargetDir", szPrefix);
-  //if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
   {
     PrfQueryProfileString(fmprof, FM3Str, szKey, NULL, targetdir, sizeof(targetdir));
     PrfWriteProfileString(fmprof, FM3Str, "TargetDir", targetdir);
@@ -3252,11 +3252,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   }
   size = sizeof(SWP);
   sprintf(szKey, "%sMySizeLastTime", szPrefix);
-  if (!PrfQueryProfileData(fmprof,
-			   FM3Str,
-			   szKey,
-			   (PVOID) &swpO,
-			   &size) ||
+  if (!PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swpO, &size) ||
       size != sizeof(SWP) || !swp.cx || !swp.cy)
   {
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpO);
@@ -3302,8 +3298,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   }
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   size = sizeof(ULONG);
-  if (PrfQueryProfileData(fmprof,
-			  FM3Str, szKey, (PVOID) &numsaves, &size)) {
+  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, &size)) {
     if (fDeleteState)
       PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
     for (x = numsaves - 1; x >= 0; x--) {
@@ -3367,20 +3362,14 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		dcd->ds.detailslwtime   = localdcd.ds.detailslwtime  ;
 		strcpy(eos, "Sort");
 		size = sizeof(INT);
-		if (PrfQueryProfileData(fmprof,
-					FM3Str,
-					szKey,
-					(PVOID) &dcd->sortFlags,
+		if (PrfQueryProfileData(fmprof,	FM3Str,	szKey, (PVOID) &dcd->sortFlags,
 					&size)) {
 		  if (!dcd->sortFlags)
 		    dcd->sortFlags = SORT_PATHNAME;
 		}
 		size = sizeof(MASK);
 		strcpy(eos, "Filter");
-		if (PrfQueryProfileData(fmprof,
-					FM3Str,
-					szKey,
-					(PVOID) &dcd->mask, &size)) {
+		if (PrfQueryProfileData(fmprof, FM3Str,	szKey, (PVOID) &dcd->mask, &size)) {
 		  if (*dcd->mask.szMask)
 		    WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
 			       UM_FILTER, MPFROMP(dcd->mask.szMask), MPVOID);
@@ -3389,10 +3378,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		strcpy(eos, "View");
 		if (!noview) {
 		  size = sizeof(ULONG);
-		  if (PrfQueryProfileData(fmprof,
-					  FM3Str,
-					  szKey,
-					  (PVOID) &dcd->flWindowAttr,
+		  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &dcd->flWindowAttr,
 					  &size)) {
 
 		    CNRINFO cnri;
@@ -4731,11 +4717,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      save_setups();
 	    sprintf(szKey, "%s.NumDirsLastTime", szStateName);
 	    size = sizeof(ULONG);
-	    if (!PrfQueryProfileData(fmprof,
-				     FM3Str,
-				     szKey,
-				     (PVOID)&numsaves,
-				     &size)) {
+	    if (!PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, &size)) {
 	      saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 		     GetPString(IDS_WARNINGTEXT),
 		     GetPString(IDS_DOESNTEXISTTEXT), szStateName);
@@ -5724,22 +5706,19 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     SetSysMenu(hwndSysMenu);
 
     size = sizeof(BOOL);
-    if (PrfQueryProfileData(fmprof,
-			    FM3Str,
-			    "MenuInvisible", &temp, &size) && size && temp)
+    if (PrfQueryProfileData(fmprof, FM3Str, "MenuInvisible", &temp, &size) &&
+        size && temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HIDEMENU, 0), MPVOID);
     size = sizeof(BOOL);
-    if (PrfQueryProfileData(fmprof,
-			    FM3Str, "FreeTree", &temp, &size) && size && temp)
+    if (PrfQueryProfileData(fmprof, FM3Str, "FreeTree", &temp, &size) &&
+        size && temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_FREETREE, 0), MPVOID);
     size = sizeof(BOOL);
-    if (PrfQueryProfileData(fmprof,
-			    FM3Str,
-			    "AutoTile", &temp, &size) && size && !temp)
+    if (PrfQueryProfileData(fmprof, FM3Str, "AutoTile", &temp, &size) &&
+        size && !temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_AUTOTILE, 0), MPVOID);
     size = sizeof(BOOL);
-    if (PrfQueryProfileData(fmprof,
-			    FM3Str, "Toolbar", &temp, &size) && size && !temp)
+    if (PrfQueryProfileData(fmprof, appname, "Toolbar", &temp, &size) && size && !temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
 
     WinSetWindowText(WinWindowFromID(hwndFrame, FID_TITLEBAR), "FM/2");
