@@ -1581,7 +1581,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
 				   32, hwndT, HWND_TOP, tool->id, NULL, NULL);
       }
       if (!hwndTool) {
-	HBITMAP hbm = LoadBitmapFromFileNum(tool->id);
+	HBITMAP hbm = LoadBitmapFromFileIdentifier(tool->id, tool->text);
 
 	if (hbm) {
 	  BTNCDATA btc;
@@ -5359,9 +5359,9 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  break;
 	}
-	x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
+	x = SHORT1FROMMP(mp1);// - IDM_COMMANDSTART;
 	if (x >= 0) {
-	  x++;
+	  //x++;
 	  RunCommand(hwndCnr, x);
 	  if (fUnHilite) {
 
@@ -6012,7 +6012,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_ADDTOMENU:
-    AddToMenu((CHAR *)mp1, WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+    AddToMenu((
+               CHAR *)mp1, WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					    FID_MENU));
     return 0;
 
@@ -6350,12 +6351,22 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      SHORT sSelect = (SHORT) WinSendMsg(hwndCmdlist,
 					         LM_QUERYSELECTION,
 						 MPFROMSHORT(LIT_FIRST), MPVOID);
-	      if (sSelect >= 0)
+              if (sSelect >= 0) {
+                CHAR s[CCHMAXPATH];
+                CHAR *p;
+
+                WinSendMsg(hwndCmdlist, LM_QUERYITEMTEXT,
+                           MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
+                p = strrchr(s, '}');
+                p = 0;
+                p = strrchr(s, '{');
+                p++;
 		WinPostMsg(hwnd,
 			   WM_COMMAND,
-			   MPFROM2SHORT(IDM_COMMANDSTART + sSelect, 0),
-			   MPVOID);
-	      WinSetWindowText(hwndCmdlist, GetPString(IDS_COMMANDSTEXT));
+			   MPFROM2SHORT(atol(p), 0), //IDM_COMMANDSTART + sSelect, 0),
+                           MPVOID);
+              }
+                WinSetWindowText(hwndCmdlist, GetPString(IDS_COMMANDSTEXT));
 	    }
 	  }
 	} // CBN_ENTER

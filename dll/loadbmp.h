@@ -15,7 +15,7 @@
 #if !defined(LOADBMP_H)
 #define LOADBMP_H
 
-HBITMAP LoadBitmapFromFileNum(USHORT id);
+HBITMAP LoadBitmapFromFileIdentifier(USHORT id, CHAR *text);
 
 
 #endif // LOADBMP_H

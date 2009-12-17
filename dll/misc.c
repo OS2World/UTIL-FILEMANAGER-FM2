@@ -1319,9 +1319,13 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
     numitems = (SHORT) WinSendMsg(mit.hwndSubMenu, MM_QUERYITEMCOUNT,
 				  MPVOID, MPVOID);
     WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM, MPFROMSHORT(-1), MPVOID);
-    for (x = 0; x < numitems; x++)
+    //for (x = 0; x < numitems; x++)
+    info = cmdhead;
+    while (info) {
       WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM,
-		 MPFROMSHORT((SHORT) (x + IDM_COMMANDSTART)), MPVOID);
+                 MPFROMSHORT((SHORT) (info->ID)), MPVOID);
+      info = info->next;
+    }
     if (hwndCnr && cmdhead) {
       x = 0;
       info = cmdhead;
@@ -1330,14 +1334,15 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
 	CHAR s[CCHMAXPATH + 24];
 
 	sprintf(s,
-		"%s%s%s",
-		info->title,
-		x < 20 ? "\tCtrl + " : NullStr,
-		x < 20 && x > 9 ? "Shift + " : NullStr);
-	if (x < 20)
+                "%s {%i} %s%s",
+		info->title, info->ID,
+		info->HotKeyID ? "\tCtrl + " : NullStr,
+		info->HotKeyID && info->HotKeyID > 4310 ? "Shift + " : NullStr);
+	if (info->HotKeyID)
 	  sprintf(&s[strlen(s)], "%d",
-		  ((x % 10) + 1) == 10 ? 0 : (x % 10) + 1);
-	mi.id = IDM_COMMANDSTART + x;
+                  (((info->HotKeyID - 4301) % 10) + 1) == 10 ? 0 :
+                  ((info->HotKeyID - 4301) % 10) + 1);
+	mi.id = info->ID; //IDM_COMMANDSTART + x;
 	mi.afAttribute = (info->flags & ONCE ? MIA_CHECKED : 0) |
 			 (info->flags & PROMPT ? MIA_FRAMED : 0);
 	mi.afStyle = MIS_TEXT;

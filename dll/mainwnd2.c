@@ -718,9 +718,9 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
 	break;
       }
-      x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
+      x = SHORT1FROMMP(mp1);// - IDM_COMMANDSTART;
       if (x >= 0) {
-	x++;
+	//x++;
 	RunCommand(hwndCnr, x);
 	if (fUnHilite) {
 

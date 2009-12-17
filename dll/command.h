@@ -31,6 +31,8 @@ typedef struct LINKCMDS
   PSZ pszCmdLine;
   CHAR *title;
   ULONG flags;
+  ULONG ID;
+  ULONG HotKeyID;
   struct LINKCMDS *next;
   struct LINKCMDS *prev;
 }

@@ -668,16 +668,18 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HPS hps;
       CHAR idstr[7];
       USHORT id;
+      CHAR text[CCHMAXPATH];
 
       *idstr = 0;
       WinQueryDlgItemText(hwnd, ADDBTN_ID, 6, idstr);
+      WinQueryDlgItemText(hwnd, ADDBTN_TEXT,CCHMAXPATH - 1, text);
       id = atoi(idstr);
       if (id) {
 	hps = WinGetPS(WinWindowFromID(hwnd, ADDBTN_BMP));
 	if (!WinQueryButtonCheckstate(hwnd, ADDBTN_MYICON))
 	  hbm = GpiLoadBitmap(hps, 0, id, 28, 28);
 	if (!hbm)
-	  hbm = LoadBitmapFromFileNum(id);
+	  hbm = LoadBitmapFromFileIdentifier(id, text);
 	if (hbm) {
 	  hbmd = (HBITMAP) WinSendDlgItemMsg(hwnd, ADDBTN_BMP, SM_QUERYHANDLE,
 					     MPVOID, MPVOID);

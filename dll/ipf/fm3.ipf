@@ -592,13 +592,14 @@ The :hp1.Visible:ehp1. checkbox determines if the tool is visible or not.
 If the :hp1.Separator:ehp1. checkbox is checked, FM/2 puts a bit of
 whitespace after the button (separates it from the next button).
 :p.
-If you check the :hp1. Don't user FM2 defined bmp:ehp1. checkbox, FM/2 will allow
+If you check the :hp1.Don't use FM2 defined bmp:ehp1. checkbox, FM/2 will 
 no longer load the button's bitmap. This will change the button to a text button.
-It will also allow you to use your own bitmap for this button Bitmaps are named
-after the :hp1.ID:ehp1. of the button -- for example, the bitmap file for ID 1005
-would be named "1005.bmp". Clicking the :hp1.Edit bmp:ehp1. button will cause ICONEDIT
-to be loaded with the bitmap, ready to edit. (Note that bitmaps should
-be 32 x 32.; if the bmp seems to big try resizing it to 28 x 28)
+It will also allow you to use your own bitmap for this button Bitmaps can be  named
+after the :hp1.ID:ehp1. or the :hp1.Text:ehp1. of the button -- for example, 
+the bitmap file for ID 1026 (MakeDir) could be named "1026.bmp" or "MakeDir.bmp". 
+Clicking the :hp1.Edit bmp:ehp1. button will cause ICONEDIT to be loaded with 
+the bitmap, ready to edit. (Note that bitmaps should be 32 x 32.; if the bmp 
+seems to big try resizing it to 28 x 28)
 :p.
 The :hp1.ID:ehp1. field identifies the command that is associated with
 this button. See the :link reftype=hd res=96401.Tool IDs:elink. topic.

@@ -39,13 +39,20 @@ static PSZ pszSrcFile = __FILE__;
 
 static HBITMAP LoadBitmapFromFile(CHAR * pszFileName);
 
-HBITMAP LoadBitmapFromFileNum(USHORT id)
+HBITMAP LoadBitmapFromFileIdentifier(USHORT id, CHAR *text)
 {
   char s[CCHMAXPATH];
+  HBITMAP hBmp = (HBITMAP) 0;
 
   strcpy(s, pFM2SaveDirectory);
   sprintf(s + strlen(s), "%s%u.BMP", PCSZ_BACKSLASH, id);
-  return LoadBitmapFromFile(s);
+  hBmp = LoadBitmapFromFile(s);
+  if (!hBmp) {
+    strcpy(s, pFM2SaveDirectory);
+    sprintf(s + strlen(s), "%s%s.BMP", PCSZ_BACKSLASH, text);
+    hBmp = LoadBitmapFromFile(s);
+  }
+  return hBmp;
 }
 
 HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
@@ -361,4 +368,4 @@ ExitLoadBMP:
   return hBmp;
 }
 
-#pragma alloc_text(LOADBITMAP,LoadBitmapFromFile,LoadBitmapFromFileNum)
+#pragma alloc_text(LOADBITMAP,LoadBitmapFromFile,LoadBitmapFromFileIdentifier)

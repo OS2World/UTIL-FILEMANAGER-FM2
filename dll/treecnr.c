@@ -3005,9 +3005,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  if (!cmdloaded)
 	    load_commands();
-	  x = SHORT1FROMMP(mp1) - IDM_COMMANDSTART;
+	  x = SHORT1FROMMP(mp1);// - IDM_COMMANDSTART;
 	  if (x >= 0) {
-	    x++;
+	    //x++;
 	    RunCommand(hwnd, x);
 	    if (fUnHilite)
 	      UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
