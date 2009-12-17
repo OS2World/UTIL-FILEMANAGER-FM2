@@ -511,6 +511,7 @@ LINKCMDS *add_command(COMMAND *addme)
     for (x = 0; x < 300; x++) {
       if (!UsedCommandIDs[x]) {
         info->ID = IDM_COMMANDSTART + x;
+        UsedCommandIDs[x] = TRUE;
         break;
       }
     }
