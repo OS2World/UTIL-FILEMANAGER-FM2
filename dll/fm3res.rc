@@ -47,6 +47,9 @@
   27 Sep 09 SHL Add more items to COMP_MENU
   15 Nov 09 GKY Add ZEROBYTETEXT
   22 Nov 09 GKY Add LVM.EXE to partition submenu
+  21 Dec 09 GKY Added 20 new hot keys for commands.
+  21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
+                Added load_inicommand to load the IDs from the ini file.(new error strings)
 
 ***********************************************************************/
 
@@ -613,6 +616,26 @@ ACCELTABLE  MAIN_FRAME
   "*",        IDM_COMMANDNUM17,       SHIFT,CONTROL
   "(",        IDM_COMMANDNUM18,       SHIFT,CONTROL
   ")",        IDM_COMMANDNUM19,       SHIFT,CONTROL
+  "1",        IDM_COMMANDNUM20,       ALT
+  "2",        IDM_COMMANDNUM21,       ALT
+  "3",        IDM_COMMANDNUM22,       ALT
+  "4",        IDM_COMMANDNUM23,       ALT
+  "5",        IDM_COMMANDNUM24,       ALT
+  "6",        IDM_COMMANDNUM25,       ALT
+  "7",        IDM_COMMANDNUM26,       ALT
+  "8",        IDM_COMMANDNUM27,       ALT
+  "9",        IDM_COMMANDNUM28,       ALT
+  "0",        IDM_COMMANDNUM29,       ALT
+  "!",        IDM_COMMANDNUM30,       SHIFT,ALT
+  "@",        IDM_COMMANDNUM31,       SHIFT,ALT
+  "#",        IDM_COMMANDNUM32,       SHIFT,ALT
+  "$",        IDM_COMMANDNUM33,       SHIFT,ALT
+  "%",        IDM_COMMANDNUM34,       SHIFT,ALT
+  94,         IDM_COMMANDNUM35,       CHAR,SHIFT,ALT
+  "&",        IDM_COMMANDNUM36,       SHIFT,ALT
+  "*",        IDM_COMMANDNUM37,       SHIFT,ALT
+  "(",        IDM_COMMANDNUM38,       SHIFT,ALT
+  ")",        IDM_COMMANDNUM39,       SHIFT,ALT
   "k",        IDM_HELPKEYS,           CONTROL
   "O",        IDM_OPENWALK,           CONTROL,SHIFT
   "T",        IDM_SETTARGET,          CONTROL,SHIFT
@@ -669,6 +692,26 @@ ACCELTABLE  MAIN2_FRAME
   "*",        IDM_COMMANDNUM17,       SHIFT,CONTROL
   "(",        IDM_COMMANDNUM18,       SHIFT,CONTROL
   ")",        IDM_COMMANDNUM19,       SHIFT,CONTROL
+  "1",        IDM_COMMANDNUM20,       ALT
+  "2",        IDM_COMMANDNUM21,       ALT
+  "3",        IDM_COMMANDNUM22,       ALT
+  "4",        IDM_COMMANDNUM23,       ALT
+  "5",        IDM_COMMANDNUM24,       ALT
+  "6",        IDM_COMMANDNUM25,       ALT
+  "7",        IDM_COMMANDNUM26,       ALT
+  "8",        IDM_COMMANDNUM27,       ALT
+  "9",        IDM_COMMANDNUM28,       ALT
+  "0",        IDM_COMMANDNUM29,       ALT
+  "!",        IDM_COMMANDNUM30,       SHIFT,ALT
+  "@",        IDM_COMMANDNUM31,       SHIFT,ALT
+  "#",        IDM_COMMANDNUM32,       SHIFT,ALT
+  "$",        IDM_COMMANDNUM33,       SHIFT,ALT
+  "%",        IDM_COMMANDNUM34,       SHIFT,ALT
+  94,         IDM_COMMANDNUM35,       CHAR,SHIFT,ALT
+  "&",        IDM_COMMANDNUM36,       SHIFT,ALT
+  "*",        IDM_COMMANDNUM37,       SHIFT,ALT
+  "(",        IDM_COMMANDNUM38,       SHIFT,ALT
+  ")",        IDM_COMMANDNUM39,       SHIFT,ALT
   "k",        IDM_HELPKEYS,           CONTROL
   "T",        IDM_SETTARGET,          CONTROL,SHIFT
   "W",        IDM_TWODIRS,            SHIFT,CONTROL
@@ -2467,6 +2510,8 @@ STRINGTABLE
     IDS_FM2CMDHELPHDRTEXT                 "FM/2 mini-command line help"
     IDS_MISSINGTEXT                       "Some text is missing"
     IDS_TOOLHELPTEXTBLANK                 "You need to provide both button text & help."
+    IDS_COMMANDSLIMITTITLETEXT            "Commands Limit Has Been Reached"
+    IDS_COMMANDSLIMITREACHEDTEXT          "You have used all the IDs (300) available for user added commands. You must delete an existing command before adding a new one."
     IDS_COLSELECTEDHELP                   "This window shows you how many objects\rand how many bytes are selected.\rDrop on me to collect objects.\rClick me for the select menu."
     IDS_COLTOTALSHELP                     "This window shows you how many objects\rand how many bytes are in the Collector.\rDrop on me to collect objects."
     IDS_COLLECTINGTEXT                    "Collecting..."

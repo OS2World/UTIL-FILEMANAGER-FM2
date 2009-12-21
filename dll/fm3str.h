@@ -37,6 +37,8 @@
                 inappropriate menu context choices
   15 Sep 09 SHL Add ids for rescan progress messages
   15 Nov 09 GKY Add ZEROBYTETEXT (58)
+  21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
+                Added load_inicommand to load the IDs from the ini file.(new error strings)
 
 ***********************************************************************/
 
@@ -148,6 +150,8 @@
 #define IDS_4SYSTEMVIOTEXT                                    105
 #define IDS_10SYSTEMVIOTEXT                                   106
 #define IDS_10SYSTEMMONOTEXT                                  107
+#define IDS_COMMANDSLIMITTITLETEXT                            108
+#define IDS_COMMANDSLIMITREACHEDTEXT                          109
 #define IDS_COLSELECTEDHELP                                   110
 #define IDS_COLTOTALSHELP                                     111
 #define IDS_COLLECTINGTEXT                                    112

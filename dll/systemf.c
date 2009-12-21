@@ -26,6 +26,7 @@
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
 		Dos/Win programs from being inserted into the execute dialog with message why.
   12 Jul 09 GKY Allow FM/2 to load in high memory
+  21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
 
 ***********************************************************************/
 
@@ -63,8 +64,54 @@
 
 static PSZ pszSrcFile = __FILE__;
 
+      
 //static HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 //          PROGTYPE * progt, ULONG fl, char *formatstring, ...);
+
+/**
+ * CheckExecutibleFlags checks the dialog controls and returns the appropriate
+ * flags to be passed the runemf
+ */
+
+ULONG CheckExecutibleFlags(HWND hwnd, INT caller)
+{
+  /**
+   * caller indicates the dialog calling the function:
+   * 1 = Associations (ASS_)
+   * 2 = CmdLine      (EXEC_)
+   * 3 = Commands     (CMD_)
+   **/
+
+  ULONG flags = 0;
+
+  if (caller != 2 &&
+      WinQueryButtonCheckstate(hwnd, caller == 3 ? CMD_DEFAULT : ASS_DEFAULT))
+    flags = 0;
+  else if (WinQueryButtonCheckstate(hwnd, caller == 3 ? CMD_FULLSCREEN :
+                                    caller == 1 ? ASS_FULLSCREEN : EXEC_FULLSCREEN))
+    flags = FULLSCREEN;
+  else if (WinQueryButtonCheckstate(hwnd, caller == 3 ? CMD_MINIMIZED :
+                                    caller == 1 ? ASS_MINIMIZED : EXEC_MINIMIZED))
+    flags = MINIMIZED;
+  else if (WinQueryButtonCheckstate(hwnd, caller == 3 ? CMD_MAXIMIZED :
+                                    caller == 1 ? ASS_MAXIMIZED : EXEC_MAXIMIZED))
+    flags = MAXIMIZED;
+  else if (WinQueryButtonCheckstate(hwnd, caller == 3 ? CMD_INVISIBLE :
+                                    caller == 1 ? ASS_INVISIBLE : EXEC_INVISIBLE))
+    flags = INVISIBLE;
+  if (WinQueryButtonCheckstate(hwnd, caller == 3 ? CMD_KEEP : caller == 1 ? ASS_KEEP :
+                               EXEC_KEEP))
+    flags |= caller == 2 ? SEPARATEKEEP : KEEP;
+  else if (caller == 2)
+    flags |= SEPARATE;
+  if (caller !=2 && WinQueryButtonCheckstate(hwnd, caller == 3 ? CMD_PROMPT : ASS_PROMPT))
+    flags |= PROMPT;
+  if (caller == 3 && WinQueryButtonCheckstate(hwnd, CMD_ONCE))
+    flags |= ONCE;
+  if (caller == 1 && WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
+    flags |= DIEAFTER;
+  return flags;
+}
 
 /**
  * Bring session foreground

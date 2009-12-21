@@ -62,6 +62,8 @@
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Allow .LONGNAME to be displayed for FAT drives.
+  21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
+                Added load_inicommand to load the IDs from the ini file.
 
 ***********************************************************************/
 
@@ -1319,34 +1321,43 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
     numitems = (SHORT) WinSendMsg(mit.hwndSubMenu, MM_QUERYITEMCOUNT,
 				  MPVOID, MPVOID);
     WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM, MPFROMSHORT(-1), MPVOID);
-    //for (x = 0; x < numitems; x++)
     info = cmdhead;
     while (info) {
       WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM,
                  MPFROMSHORT((SHORT) (info->ID)), MPVOID);
+      x++;
       info = info->next;
+    }
+    while (numitems != MIT_ERROR) { // Delete items that were deleted from commands since the ID is gone
+      numitems = (SHORT) WinSendMsg(mit.hwndSubMenu, MM_ITEMIDFROMPOSITION,
+                                    MPFROMSHORT((SHORT) 1), MPVOID);
+      WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM,
+                 MPFROMSHORT(numitems), MPVOID);
     }
     if (hwndCnr && cmdhead) {
       x = 0;
       info = cmdhead;
       while (info) {
 
-	CHAR s[CCHMAXPATH + 24];
+        CHAR s[CCHMAXPATH + 24];
 
 	sprintf(s,
-                "%s {%i} %s%s",
+                "%s {%i} %s%s%s",
 		info->title, info->ID,
-		info->HotKeyID ? "\tCtrl + " : NullStr,
-		info->HotKeyID && info->HotKeyID > 4310 ? "Shift + " : NullStr);
+		info->HotKeyID && info->HotKeyID < IDM_COMMANDNUM20 ? "\tCtrl + " : NullStr,
+                info->HotKeyID && info->HotKeyID > IDM_COMMANDNUM19 ? "\tAlt + " : NullStr,
+                info->HotKeyID && ((info->HotKeyID > IDM_COMMANDNUM9 &&
+                                   info->HotKeyID < IDM_COMMANDNUM20) ||
+                info->HotKeyID > IDM_COMMANDNUM29) ? "Shift + " : NullStr);
 	if (info->HotKeyID)
 	  sprintf(&s[strlen(s)], "%d",
-                  (((info->HotKeyID - 4301) % 10) + 1) == 10 ? 0 :
-                  ((info->HotKeyID - 4301) % 10) + 1);
-	mi.id = info->ID; //IDM_COMMANDSTART + x;
+                  (((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1) == 10 ? 0 :
+                   ((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1);
+	mi.id = info->ID; 
 	mi.afAttribute = (info->flags & ONCE ? MIA_CHECKED : 0) |
 			 (info->flags & PROMPT ? MIA_FRAMED : 0);
 	mi.afStyle = MIS_TEXT;
-	if (!(x % 24) && x && info->next)
+	if (!(x % 20) && x && info->next)
 	  mi.afStyle |= MIS_BREAK;
 	WinSendMsg(mit.hwndSubMenu, MM_INSERTITEM, MPFROMP(&mi), MPFROMP(s));
 	x++;

@@ -20,6 +20,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   15 Nov 09 GKY Add check for attempt to open zero byte file (avoids MMPM trying to play them)
+  21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
 
 **************************************************************************************/
 
@@ -754,8 +755,9 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temp.offset = atol(dummy);
 	}
 	bstrip(temp.mask);
-	bstrip(temp.pszCmdLine);
-	if (WinQueryButtonCheckstate(hwnd, ASS_DEFAULT))
+        bstrip(temp.pszCmdLine);
+        temp.flags = CheckExecutibleFlags(hwnd, 1);
+	/*if (WinQueryButtonCheckstate(hwnd, ASS_DEFAULT))
 	  temp.flags = 0;
 	else if (WinQueryButtonCheckstate(hwnd, ASS_FULLSCREEN))
 	  temp.flags = FULLSCREEN;
@@ -770,7 +772,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-	  temp.flags |= PROMPT;
+	  temp.flags |= PROMPT;*/
 	if (fCancelAction){
 	  fCancelAction = FALSE;
 	  free(temp.pszCmdLine);
@@ -829,8 +831,9 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temp.offset = atol(dummy);
 	}
 	bstrip(temp.mask);
-	bstrip(temp.pszCmdLine);
-	if (WinQueryButtonCheckstate(hwnd, ASS_DEFAULT))
+        bstrip(temp.pszCmdLine);
+        temp.flags = CheckExecutibleFlags(hwnd, 1);
+	/*if (WinQueryButtonCheckstate(hwnd, ASS_DEFAULT))
 	  temp.flags = 0;
 	else if (WinQueryButtonCheckstate(hwnd, ASS_FULLSCREEN))
 	  temp.flags = FULLSCREEN;
@@ -845,7 +848,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-	  temp.flags |= PROMPT;
+	  temp.flags |= PROMPT;*/
 	if (fCancelAction){
 	  fCancelAction = FALSE;
 	  free(temp.pszCmdLine);
@@ -933,8 +936,9 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temp.offset = atol(dummy);
 	}
 	bstrip(temp.mask);
-	bstrip(temp.pszCmdLine);
-	if (WinQueryButtonCheckstate(hwnd, ASS_DEFAULT))
+        bstrip(temp.pszCmdLine);
+        temp.flags = CheckExecutibleFlags(hwnd, 1);
+	/*if (WinQueryButtonCheckstate(hwnd, ASS_DEFAULT))
 	  temp.flags = 0;
 	else if (WinQueryButtonCheckstate(hwnd, ASS_FULLSCREEN))
 	  temp.flags = FULLSCREEN;
@@ -949,7 +953,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, ASS_DIEAFTER))
 	  temp.flags |= DIEAFTER;
 	if (WinQueryButtonCheckstate(hwnd, ASS_PROMPT))
-	  temp.flags |= PROMPT;
+	  temp.flags |= PROMPT;*/
 	if (fCancelAction){
 	  fCancelAction = FALSE;
 	  free(temp.pszCmdLine);

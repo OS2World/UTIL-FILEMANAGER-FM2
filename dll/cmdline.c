@@ -25,6 +25,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
 
 ***********************************************************************/
 
@@ -717,7 +718,8 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DID_OK:
       ex = INSTDATA(hwnd);
       WinQueryDlgItemText(hwnd, EXEC_CL, 1000, ex->commandline);
-      ex->flags = 0;
+      ex->flags = CheckExecutibleFlags(hwnd, 2);
+      /*ex->flags = 0;
       if (WinQueryButtonCheckstate(hwnd, EXEC_MINIMIZED))
 	ex->flags |= MINIMIZED;
       if (WinQueryButtonCheckstate(hwnd, EXEC_MAXIMIZED))
@@ -731,7 +733,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (WinQueryButtonCheckstate(hwnd, EXEC_KEEP))
 	ex->flags |= SEPARATEKEEP;
       else
-	ex->flags |= SEPARATE;
+	ex->flags |= SEPARATE;*/
       strset(ex->environment, 0);
       WinQueryDlgItemText(hwnd, EXEC_ENVIRON, 1000, ex->environment);
       if (add_cmdline(ex->commandline, TRUE) && fSaveBigCmds)

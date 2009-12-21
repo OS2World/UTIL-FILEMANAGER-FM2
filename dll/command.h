@@ -10,6 +10,7 @@
 
   01 Mar 08 GKY Move from fm3dll.h to here
   22 Jun 08 GKY Moved free_commands here for fortify checking
+  21 Dec 09 GKY Fix the environment so it can be saved, deleted and used consistently.
 
 ***********************************************************************/
 
@@ -30,6 +31,7 @@ typedef struct LINKCMDS
 {
   PSZ pszCmdLine;
   CHAR *title;
+  CHAR *env;
   ULONG flags;
   ULONG ID;
   ULONG HotKeyID;

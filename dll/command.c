@@ -27,6 +27,11 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   15 Oct 08 GKY Prevent asking to add %a on NormalizeCmdLine abort
+  21 Dec 09 GKY Fix the environment so it can be saved, deleted and used consistently.
+  21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
+                Added load_inicommand to load the IDs from the ini file.
+  21 Dec 09 GKY Added 20 new hot keys for commands.
+  21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
 
 ***********************************************************************/
 
@@ -61,10 +66,13 @@
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
 
+VOID load_inicommands(VOID);
+
 typedef struct
 {
   PSZ pszCmdLine;
   CHAR title[100];
+  CHAR env[1002];
   ULONG flags;
   ULONG ID;
   ULONG HotKeyID;
@@ -76,13 +84,12 @@ COMMAND;
 
 static PSZ pszSrcFile = __FILE__;
 static LINKCMDS *cmdtail;
-static INT CommandDatVersion = 0;
+static BOOL UsedCommandIDs[300];
+static BOOL UsedHotKeyIDs[40];
 
 #pragma data_seg(GLOBAL2)
 LINKCMDS *cmdhead;
 BOOL cmdloaded;
-BOOL UsedCommandIDs[300];
-BOOL UsedHotKeyIDs[20];
 
 MRESULT EXPENTRY CommandTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -337,6 +344,7 @@ VOID free_commands(VOID)
     next = info->next;
     xfree(info->title, pszSrcFile, __LINE__);
     xfree(info->pszCmdLine, pszSrcFile, __LINE__);
+    xfree(info->env, pszSrcFile, __LINE__);
     free(info);
     info = next;
   }
@@ -348,51 +356,34 @@ VOID load_commands(VOID)
   FILE *fp;
   LINKCMDS *info;
   PSZ pszCmdLine;
-  CHAR *p;
   CHAR title[100];
   CHAR flags[34];
-  CHAR ID[34];
-  CHAR HotKeyID[34];
+  ULONG size;
 
   if (cmdhead)
     free_commands();
+  PrfQueryProfileData(fmprof, FM3Str, "UsedCommandIDs", &UsedCommandIDs,
+                      &size);
+  PrfQueryProfileData(fmprof, FM3Str, "UsedHotKeyIDs", &UsedHotKeyIDs,
+                        &size); 
   cmdloaded = TRUE;
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (pszCmdLine) {
     BldFullPathName(pszCmdLine, pFM2SaveDirectory, PCSZ_COMMANDSDAT);
     fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
     if (fp) {
-      xfgets(title, sizeof(title), fp, pszSrcFile, __LINE__);
-      lstrip(title);
-      if (!strnicmp(title, "Version", 7) && !CommandDatVersion) {
-        p = title + 7;
-        while (*p == ' ')
-          p++;
-        bstripcr(p);
-        CommandDatVersion = atol(p);
-      }
       while (!feof(fp)) {
         if (!xfgets_bstripcr(title, sizeof(title), fp, pszSrcFile, __LINE__))
           break;
-        title[strlen(title)] = 0;			// Match size to entry file max
+        //title[strlen(title)] = 0;  // Match size to entry file max? Not needed as bstripcr does this? GKY 21 Dec 09
         if (!*title || *title == ';')
           continue;
         if (!xfgets_bstripcr(pszCmdLine, MaxComLineStrg, fp, pszSrcFile, __LINE__))
           break;				/* error! */
         if (!xfgets_bstripcr(flags, sizeof(flags), fp, pszSrcFile, __LINE__))
-          break;				/* error! */
-        if (CommandDatVersion) {
-          if (!xfgets_bstripcr(ID, sizeof(ID), fp, pszSrcFile, __LINE__))
-            break;				/* error! */
-          ID[34] = 0;
-          if (!xfgets_bstripcr(HotKeyID, sizeof(HotKeyID), fp, pszSrcFile, __LINE__))
-            break;				/* error! */
-          ID[34] = 0;
-        }
-        pszCmdLine[strlen(pszCmdLine)] = 0;			// fixme to know why chopped this way?
-        //bstripcr(pszCmdLine);
+          break;
+        //pszCmdLine[strlen(pszCmdLine)] = 0;	   // fixme to know why chopped this way? Not needed as bstripcr does this? GKY 21 Dec 09
         flags[34] = 0;
-        //bstripcr(flags);
         if (!pszCmdLine)
           continue;
         info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
@@ -404,10 +395,6 @@ VOID load_commands(VOID)
           info->pszCmdLine = xstrdup(pszCmdLine, pszSrcFile, __LINE__);
           info->title = xstrdup(title, pszSrcFile, __LINE__);
           info->flags = atol(flags);
-          if (CommandDatVersion) {
-            info->ID = atol(ID);
-            info->HotKeyID = atol(HotKeyID);
-          }
           if (!info->pszCmdLine || !info->title) {
             xfree(info->pszCmdLine, pszSrcFile, __LINE__);
             xfree(info->title, pszSrcFile, __LINE__);
@@ -431,7 +418,91 @@ VOID load_commands(VOID)
       }
       free(pszCmdLine);
       fclose(fp);
+      load_inicommands();
     }
+  }
+}
+
+/**
+ * load_inicommand loads the data from the ini file into an info struct
+ * after COMMANDS.DAT has been loaded; It generates new IDs where necessary
+ * it saves the environment from the old ini key and deletes it as needed
+ **/
+
+VOID load_inicommands(VOID)
+{
+  LINKCMDS *info;;
+  INT x = 0;
+  INT y = 0;
+  ULONG ID = 0;
+  ULONG HotKeyID = 0;
+  CHAR env[1002];
+  CHAR keyID[120];
+  CHAR keyHotKeyID[120];
+  CHAR keyenv[120];
+  ULONG size;
+
+  if (!cmdloaded || !cmdhead)
+    return;
+  info = cmdhead;
+  while (info) {
+    bstripcr(info->title);
+    sprintf(keyID, "COMMAND.%sID", info->title);
+    sprintf(keyHotKeyID, "COMMAND.%sHotKeyID", info->title);
+    sprintf(keyenv, "COMMAND.%senv", info->title);
+    size = sizeof(ULONG);
+    PrfQueryProfileData(fmprof, FM3Str, keyID, &ID, &size);
+    size = sizeof(ULONG);
+    PrfQueryProfileData(fmprof, FM3Str, keyHotKeyID, &HotKeyID, &size);
+    PrfQueryProfileString(fmprof, FM3Str, keyenv, NullStr, env, sizeof(env));
+    if (ID) {
+      if (env != NullStr)
+        info->env = xstrdup(env, pszSrcFile, __LINE__);
+      info->ID = ID;
+      info->HotKeyID = HotKeyID;
+    }
+    //This updates the old commands.dat file to the new format
+    //assigning the IDs based on file order or on next available ID if
+    //COMMAND.DAT is hand edited.
+    else {
+      for (x = 0; x < 300; x++) {
+        if (!UsedCommandIDs[x]) {
+          ID = info->ID = IDM_COMMANDSTART + x;
+          UsedCommandIDs[x] = TRUE;
+          for (y = 0; y < 40; y++) {
+            if (!UsedHotKeyIDs[y]) {
+              HotKeyID = info->HotKeyID = IDM_COMMANDNUM0 + y;
+              UsedHotKeyIDs[y] = TRUE;
+              break;
+            }
+          }
+          break;
+        }
+        if (x == 299)
+          saymsg(MB_OK | MB_ICONEXCLAMATION , HWND_DESKTOP,
+                 GetPString(IDS_COMMANDSLIMITTITLETEXT),
+                 GetPString(IDS_COMMANDSLIMITREACHEDTEXT ));
+      }
+      PrfQueryProfileString(fmprof, FM3Str, info->pszCmdLine, NullStr, env, sizeof(env));
+      info->env = env;
+      if (env != NullStr)
+        PrfWriteProfileString(fmprof, FM3Str, info->pszCmdLine, NULL);
+      if (info->env)
+        strcpy(env, info->env);
+      ID = info->ID;
+      HotKeyID = info->HotKeyID;
+      PrfWriteProfileData(fmprof, FM3Str, keyID, &ID, sizeof(INT));
+      PrfWriteProfileData(fmprof, FM3Str, keyHotKeyID, &HotKeyID, sizeof(INT));
+      if (env != NullStr)
+        PrfWriteProfileString(fmprof, FM3Str, keyenv, env);
+      PrfWriteProfileData(fmprof, FM3Str, "UsedCommandIDs", &UsedCommandIDs,
+                      sizeof(BOOL) * 300);
+      PrfWriteProfileData(fmprof, FM3Str, "UsedHotKeyIDs", &UsedHotKeyIDs,
+                        sizeof(BOOL) * 40);
+    }
+    ID = 0;
+    HotKeyID = 0;
+    info = info->next;
   }
 }
 
@@ -441,6 +512,12 @@ VOID save_commands(VOID)
   FILE *fp;
   CHAR s[CCHMAXPATH + 14];
   INT x = 0;
+  INT ID = 0;
+  INT HotKeyID = 0;
+  CHAR env[1002];
+  CHAR keyID[120];
+  CHAR keyHotKeyID[120];
+  CHAR keyenv[120];
 
   if (!cmdloaded || !cmdhead)
     return;
@@ -450,35 +527,29 @@ VOID save_commands(VOID)
     return; //already gave error msg
   fp = xfopen(s, "w", pszSrcFile, __LINE__);
   if (fp) {
-    //Adds line for version tracking
-    fprintf(fp,"Version 2\n");
-    fputs(GetPString(IDS_COMMANDFILETEXT), fp);
-    info = cmdhead;
     while (info) {
-      //This updates the old commands.dat file to the new format
-      //assigning the IDs based on file order
-      if (!info->ID) {
-        info->ID = IDM_COMMANDSTART + x;
-        UsedCommandIDs[x] = TRUE;
-        if (x < 20) {
-          info->HotKeyID = IDM_COMMANDNUM0 + x;
-          UsedHotKeyIDs[x] = TRUE;
-        }
-      }
-        fprintf(fp, ";\n%0.99s\n%0.*s\n%lu\n%lu\n%lu\n",
-                info->title, MaxComLineStrg, info->pszCmdLine,
-                info->flags, info->ID, info->HotKeyID);
-      //else
-      //  fprintf(fp,
-      //          ";\n%0.99s\n%0.*s\n%lu\n",
-      //          info->title, MaxComLineStrg, info->pszCmdLine, info->flags);
+      fprintf(fp, ";\n%0.99s\n%0.*s\n%lu\n",
+              info->title, MaxComLineStrg, info->pszCmdLine, info->flags);
+      
+      if (info->env)
+        strcpy(env, info->env);
+      ID = info->ID;
+      HotKeyID = info->HotKeyID;
+      bstripcr(info->title);
+      sprintf(keyID, "COMMAND.%sID", info->title);
+      sprintf(keyHotKeyID, "COMMAND.%sHotKeyID", info->title);
+      sprintf(keyenv, "COMMAND.%senv", info->title);
+      PrfWriteProfileData(fmprof, FM3Str, keyID, &ID, sizeof(INT));
+      PrfWriteProfileData(fmprof, FM3Str, keyHotKeyID, &HotKeyID, sizeof(INT));
+      if (env != NullStr)
+        PrfWriteProfileString(fmprof, FM3Str, keyenv, env);
       x++;
       info = info->next;
-    } // while
+    } // while info
     PrfWriteProfileData(fmprof, FM3Str, "UsedCommandIDs", &UsedCommandIDs,
                         sizeof(BOOL) * 300);
     PrfWriteProfileData(fmprof, FM3Str, "UsedHotKeyIDs", &UsedHotKeyIDs,
-                        sizeof(BOOL) * 20);
+                        sizeof(BOOL) * 40);
     fclose(fp);
   } // if (fp)
 }
@@ -488,8 +559,8 @@ VOID save_commands(VOID)
 LINKCMDS *add_command(COMMAND *addme)
 {
   LINKCMDS *info;
-  ULONG size;
   INT x;
+  INT y;
 
   if (!addme || !*addme->pszCmdLine || !*addme->title)
     return NULL;			// No data
@@ -497,6 +568,8 @@ LINKCMDS *add_command(COMMAND *addme)
   while (info) {
     if (!stricmp(info->title, addme->title))
       return NULL;			// Got a dup
+    if (addme->HotKeyID && info->HotKeyID && info->HotKeyID == addme->HotKeyID)
+      info->HotKeyID = 0;  //avoid assigning hot key to multiple commands
     info = info->next;
   }
   info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
@@ -505,21 +578,38 @@ LINKCMDS *add_command(COMMAND *addme)
   info->pszCmdLine = xstrdup(addme->pszCmdLine, pszSrcFile, __LINE__);
   info->title = xstrdup(addme->title, pszSrcFile, __LINE__);
   info->HotKeyID = addme->HotKeyID;
+  if (info->HotKeyID >= IDM_COMMANDNUM0 && info->HotKeyID <= IDM_COMMANDNUM19)
+    UsedHotKeyIDs[info->HotKeyID - IDM_COMMANDNUM0] = TRUE;
+  else
+    info->HotKeyID = 0;
   if (!info->ID) {
-    PrfQueryProfileData(fmprof, FM3Str, "UsedCommandIDs", &UsedCommandIDs,
-                        &size); //profile updated by save_commands
+    //profile updated by save_commands
     for (x = 0; x < 300; x++) {
       if (!UsedCommandIDs[x]) {
         info->ID = IDM_COMMANDSTART + x;
         UsedCommandIDs[x] = TRUE;
+        for (y = 0; y < 40; y++) {
+          if (!UsedHotKeyIDs[y]) {
+            info->HotKeyID = IDM_COMMANDNUM0 + y;
+            UsedHotKeyIDs[y] = TRUE;
+            break;
+            }
+          }
         break;
       }
+      if (x == 299)
+        saymsg(MB_OK | MB_ICONEXCLAMATION , HWND_DESKTOP,
+               GetPString(IDS_COMMANDSLIMITTITLETEXT),
+               GetPString(IDS_COMMANDSLIMITREACHEDTEXT ));
     }
   }
   if (addme->flags)
     info->flags = addme->flags;
+  if (addme->env)
+    info->env = xstrdup(addme->env, pszSrcFile, __LINE__);
   if (!info->pszCmdLine || !info->title || !info->ID) {
     xfree(info->pszCmdLine, pszSrcFile, __LINE__);
+    xfree(info->title, pszSrcFile, __LINE__);
     xfree(info->title, pszSrcFile, __LINE__);
     free(info);
     return NULL;
@@ -560,7 +650,8 @@ BOOL kill_command(CHAR * killme)
 	    cmdtail = info->prev;
 	}
 	xfree(info->pszCmdLine, pszSrcFile, __LINE__);
-	xfree(info->title, pszSrcFile, __LINE__);
+        xfree(info->title, pszSrcFile, __LINE__);
+        xfree(info->env, pszSrcFile, __LINE__);
 	free(info);
 	return TRUE;
       }
@@ -641,19 +732,11 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinCheckButton(hwnd, CMD_PROMPT, ((info->flags & PROMPT) != 0));
 	  WinCheckButton(hwnd, CMD_KEEP, ((info->flags & KEEP) != 0));
 	  WinCheckButton(hwnd, CMD_ONCE, ((info->flags & ONCE) != 0));
-	  WinSetDlgItemText(hwnd, CMD_TITLE, info->title);
-	  {
-	    CHAR env[1002];
-	    ULONG size;
-
-	    *env = 0;
-	    size = sizeof(env) - 1;
-	    if (PrfQueryProfileData(fmprof, FM3Str, info->pszCmdLine, env, &size) &&
-		*env)
-	      WinSetDlgItemText(hwnd, CMD_ENVIRON, env);
-	    else
-	      WinSetDlgItemText(hwnd, CMD_ENVIRON, NullStr);
-	  }
+          WinSetDlgItemText(hwnd, CMD_TITLE, info->title);
+          if (info->env)
+            WinSetDlgItemText(hwnd, CMD_ENVIRON, info->env);
+	  else
+	    WinSetDlgItemText(hwnd, CMD_ENVIRON, NullStr);
 	}
 	break;
       }
@@ -723,6 +806,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         COMMAND temp;
         PSZ pszWorkBuf;
         APIRET ret;
+        CHAR env[1002];
 
 	memset(&temp, 0, sizeof(COMMAND));
         temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
@@ -745,8 +829,10 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (ret == MBID_YES)
             strcat(temp.pszCmdLine, " %a");
         }
-	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
-	if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
+        WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
+        bstripcr(temp.title);
+        temp.flags = CheckExecutibleFlags(hwnd, 3);
+	/*if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
 	  temp.flags = 0;
 	else if (WinQueryButtonCheckstate(hwnd, CMD_FULLSCREEN))
 	  temp.flags = FULLSCREEN;
@@ -761,7 +847,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, CMD_PROMPT))
 	  temp.flags |= PROMPT;
 	if (WinQueryButtonCheckstate(hwnd, CMD_ONCE))
-          temp.flags |= ONCE;
+          temp.flags |= ONCE;*/
+        *env = 0;
+	WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
+	bstripcr(env);
+        if (*env) {
+          strcpy(temp.env, env);
+	  } 
         if (fCancelAction){
           fCancelAction = FALSE;
           free(temp.pszCmdLine);
@@ -770,22 +862,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         else
           info = add_command(&temp);
         if (!info)
-        {
-	  WinDismissDlg(hwnd, 0);
-          /*saymsg(MB_ENTER, hwnd,
-	   GetPString(IDS_ERRORTEXT),
-	         GetPString(IDS_CANTADDCOMMANDTEXT),
-	         temp.title);*/
-	 }
-	else {
-	  CHAR env[1002];
-
-	  *env = 0;
-	  WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
-	  bstripcr(env);
-	  if (*env) {
-	    PrfWriteProfileString(fmprof, FM3Str, temp.pszCmdLine, env);
-	  }
+          WinDismissDlg(hwnd, 0);
+        else {
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_INSERTITEM,
@@ -800,15 +878,17 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      CMD_LISTBOX,
 			      LM_SELECTITEM,
 			      MPFROMSHORT(x), MPFROMSHORT(TRUE));
-	    save_commands();
 	  }
         }
+        save_commands();
+        load_commands();
         free(temp.pszCmdLine);
       }
       x = (SHORT) WinSendDlgItemMsg(hwnd,
 				    CMD_LISTBOX,
 				    LM_QUERYSELECTION,
                                     MPFROMSHORT(LIT_FIRST), MPVOID);
+      save_commands();
       WinDismissDlg(hwnd, 0);
       break;
 
@@ -828,6 +908,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         COMMAND temp;
         PSZ pszWorkBuf;
         APIRET ret;
+        CHAR env[1002];
 
         memset(&temp, 0, sizeof(COMMAND));
         temp.pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
@@ -850,8 +931,10 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (ret == MBID_YES)
             strcat(temp.pszCmdLine, " %a");
         }
-	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
-	if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
+        WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
+        bstripcr(temp.title);
+        temp.flags = CheckExecutibleFlags(hwnd, 3);
+	/*if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
 	  temp.flags = 0;
 	else if (WinQueryButtonCheckstate(hwnd, CMD_FULLSCREEN))
 	  temp.flags = FULLSCREEN;
@@ -866,7 +949,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, CMD_PROMPT))
 	  temp.flags |= PROMPT;
 	if (WinQueryButtonCheckstate(hwnd, CMD_ONCE))
-          temp.flags |= ONCE;
+          temp.flags |= ONCE;*/
+        *env = 0;
+	WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
+	bstripcr(env);
+        if (*env) {
+          strcpy(temp.env, env);
+	  } 
         if (fCancelAction){
           fCancelAction = FALSE;
           free(temp.pszCmdLine);
@@ -879,14 +968,6 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                  GetPString(IDS_CANTADDCOMMANDTEXTDUP), temp.title);
 	}
 	else {
-	  CHAR env[1002];
-
-	  *env = 0;
-	  WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
-	  bstripcr(env);
-	  if (*env) {
-	    PrfWriteProfileString(fmprof, FM3Str, temp.title, env);
-	  }
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_INSERTITEM,
@@ -910,11 +991,19 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case CMD_DELETE:
       {
-	CHAR temp[100];
+        CHAR temp[100];
+        CHAR keyID[120];
+        CHAR keyHotKeyID[120];
+        CHAR keyenv[120];
 
 	WinQueryDlgItemText(hwnd, CMD_TITLE, 100, temp);
-        bstrip(temp);
-        PrfWriteProfileString(fmprof, FM3Str, temp, NULL);
+        bstripcr(temp);
+        sprintf(keyID, "COMMAND.%sID", temp);
+        sprintf(keyHotKeyID, "COMMAND.%sHotKeyID", temp);
+        sprintf(keyenv, "COMMAND.%senv", temp);
+        PrfWriteProfileData(fmprof, FM3Str, keyID, NULL, NULL);
+        PrfWriteProfileData(fmprof, FM3Str, keyHotKeyID, NULL, NULL);
+        PrfWriteProfileString(fmprof, FM3Str, keyenv, NULL);
 	if (!kill_command(temp))
 	  Runtime_Error(pszSrcFile, __LINE__, "kill_command");
 	else {
@@ -931,7 +1020,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      LM_SELECTITEM,
 			      MPFROMSHORT(LIT_NONE), MPFROMSHORT(FALSE));
 	  }
-	  save_commands();
+          save_commands();
 	}
       }
       break;
@@ -941,6 +1030,13 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         PSZ pszWorkBuf;
         COMMAND temp;
         APIRET ret;
+        CHAR keyID[120];
+        CHAR keyHotKeyID[120];
+        CHAR keyenv[120];
+        CHAR env[1002];
+        INT ID = 0;
+        INT HotKeyID = 0;
+        ULONG size;
 
         pszWorkBuf = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
         if (!pszWorkBuf) {
@@ -975,8 +1071,20 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      LM_QUERYSELECTION,
 				      MPFROMSHORT(LIT_CURSOR), MPVOID);
 	WinQueryDlgItemText(hwnd, CMD_TITLE, sizeof(temp.title), temp.title);
-        bstrip(temp.title);
-        PrfWriteProfileString(fmprof, FM3Str, temp.title, NULL);
+        bstripcr(temp.title);
+        sprintf(keyID, "COMMAND.%sID", temp.title);
+        sprintf(keyHotKeyID, "COMMAND.%sHotKeyID", temp.title);
+        sprintf(keyenv, "COMMAND.%senv", temp.title);
+        PrfQueryProfileData(fmprof, FM3Str, keyID, &ID, &size);
+        PrfQueryProfileData(fmprof, FM3Str, keyHotKeyID, &HotKeyID, &size);
+        PrfQueryProfileString(fmprof, FM3Str, keyenv, NullStr, env, sizeof(env));
+        temp.ID = ID;
+        temp.HotKeyID = HotKeyID;
+        if (env != NullStr)
+          strcpy(temp.env, env);
+        PrfWriteProfileData(fmprof, FM3Str, keyID, NULL, NULL);
+        PrfWriteProfileData(fmprof, FM3Str, keyHotKeyID, NULL, NULL);
+        PrfWriteProfileString(fmprof, FM3Str, keyenv, NULL);
 	if (kill_command(temp.title)){
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
@@ -992,7 +1100,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROMSHORT(LIT_NONE), MPFROMSHORT(FALSE));
 	  }
         } // then do an add
-        if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
+        temp.flags = CheckExecutibleFlags(hwnd, 3);
+        /*if (WinQueryButtonCheckstate(hwnd, CMD_DEFAULT))
           temp.flags = 0;
         else if (WinQueryButtonCheckstate(hwnd, CMD_FULLSCREEN))
           temp.flags = FULLSCREEN;
@@ -1007,7 +1116,14 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         if (WinQueryButtonCheckstate(hwnd, CMD_PROMPT))
           temp.flags |= PROMPT;
         if (WinQueryButtonCheckstate(hwnd, CMD_ONCE))
-          temp.flags |= ONCE;
+          temp.flags |= ONCE;*/
+        *env = 0;
+	WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
+	bstripcr(env);
+        if (*env)
+          strcpy(temp.env, env);
+        if (!*env && temp.env != NullStr)
+          strcpy(temp.env, NullStr);
         info = add_command(&temp);
         if (!info) {
 	  saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
@@ -1016,14 +1132,7 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           }
 
 	else {
-	  CHAR env[1002];
-
-	  *env = 0;
-	  WinQueryDlgItemText(hwnd, CMD_ENVIRON, 1000, env);
-	  bstripcr(env);
-	  if (*env) {
-	    PrfWriteProfileString(fmprof, FM3Str, temp.title, env);
-	  } //put item back in original place
+          //put item back in original place
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_INSERTITEM,
@@ -1088,12 +1197,10 @@ VOID RunCommand(HWND hwnd, INT cx)
   CHAR **list;
   LINKCMDS *info;
 
-  DbgMsg(pszSrcFile, __LINE__,"ID %i", cx);
   list = BuildList(hwnd);
   x = 0;
   info = cmdhead;
   while (info) {
-    //x++;
     if (cx < 4300) {
       if (info->ID == cx)
         break;
@@ -1107,7 +1214,6 @@ VOID RunCommand(HWND hwnd, INT cx)
   if (info) {
 
     INT flags;
-    CHAR env[1002];
 
     x--;
     flags = info->flags;
@@ -1118,7 +1224,6 @@ VOID RunCommand(HWND hwnd, INT cx)
     else
       flags |= SEPARATE;
     flags &= ~(KEEP | DIEAFTER);
-    PrfQueryProfileString(fmprof, FM3Str, info->title, NullStr, env, sizeof(env));
     if (!strchr(info->pszCmdLine, '%')) {
       CHAR *fakelist[2];
 
@@ -1126,7 +1231,8 @@ VOID RunCommand(HWND hwnd, INT cx)
       fakelist[1] = NULL;
       ExecOnList(hwnd,
          	 info->pszCmdLine,
-                 flags, env, fakelist, GetPString(IDS_EXECCMDTITLETEXT),
+                 flags, info->env != NullStr ? info->env : NULL,
+                 fakelist, GetPString(IDS_EXECCMDTITLETEXT),
                  pszSrcFile, __LINE__);
     }
     else if ((flags & ONCE) && list && list[0]) {
@@ -1140,14 +1246,16 @@ VOID RunCommand(HWND hwnd, INT cx)
 	fakelist[1] = NULL;
 	ExecOnList(hwnd,
 		   info->pszCmdLine,
-                   flags, env, fakelist, GetPString(IDS_EXECCMDTITLETEXT),
+                   flags, info->env != NullStr ? info->env : NULL,
+                   fakelist, GetPString(IDS_EXECCMDTITLETEXT),
                    pszSrcFile, __LINE__);
       }
     }
     else if (list && list[0])
       ExecOnList(hwnd,
 		 info->pszCmdLine,
-                 flags, env, list, GetPString(IDS_EXECCMDTITLETEXT),
+                 flags, info->env != NullStr ? info->env : NULL,
+                 list, GetPString(IDS_EXECCMDTITLETEXT),
                  pszSrcFile, __LINE__);
     else
       return;

@@ -30,6 +30,7 @@
   14 Sep 09 SHL Drop experimental code
   15 Sep 09 SHL Add rescan progress timer
   22 Nov 09 GKY Add LVM.EXE to partition submenu
+  21 Dec 09 GKY Added 20 new hot keys for commands.
 
   Align with spaces only - no tabs please
 
@@ -523,6 +524,26 @@
 #define IDM_COMMANDNUM17    4318
 #define IDM_COMMANDNUM18    4319
 #define IDM_COMMANDNUM19    4320
+#define IDM_COMMANDNUM20    4321
+#define IDM_COMMANDNUM21    4322
+#define IDM_COMMANDNUM22    4323
+#define IDM_COMMANDNUM23    4324
+#define IDM_COMMANDNUM24    4325
+#define IDM_COMMANDNUM25    4326
+#define IDM_COMMANDNUM26    4327
+#define IDM_COMMANDNUM27    4328
+#define IDM_COMMANDNUM28    4329
+#define IDM_COMMANDNUM29    4330
+#define IDM_COMMANDNUM30    4331
+#define IDM_COMMANDNUM31    4332
+#define IDM_COMMANDNUM32    4333
+#define IDM_COMMANDNUM33    4334
+#define IDM_COMMANDNUM34    4335
+#define IDM_COMMANDNUM35    4336
+#define IDM_COMMANDNUM36    4337
+#define IDM_COMMANDNUM37    4338
+#define IDM_COMMANDNUM38    4339
+#define IDM_COMMANDNUM39    4340
 
 #define IDM_QUICKTOOLSTART  4899
 #define IDM_CMDTOOLBAR      4900

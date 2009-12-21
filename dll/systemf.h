@@ -9,6 +9,7 @@
   Copyright (c) 2008, 2009 Steven H. Levine
 
   Change log
+  21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
 
 ***********************************************************************/
 
@@ -47,6 +48,7 @@ typedef struct
 }
 EXECARGS;
 
+ULONG CheckExecutibleFlags(HWND hwnd, INT caller);
 INT ExecOnList(HWND hwnd, PSZ command, INT flags, PSZ tpath,
 	       PSZ *list, PCSZ prompt, PCSZ pszCallingFile, UINT uiLineNumber);
 BOOL ShowSession(HWND hwnd, PID pid);
