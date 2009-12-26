@@ -50,6 +50,8 @@
   21 Dec 09 GKY Added 20 new hot keys for commands.
   21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
                 Added load_inicommand to load the IDs from the ini file.(new error strings)
+  26 Dec 09 GKY Fixed some missing or duplicate mnemonics on the "Save Lists to clipboard/file"
+                submenu.
 
 ***********************************************************************/
 
@@ -1246,9 +1248,9 @@ MENU FILE_POPUP
   SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
 	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
-	 MENUITEM "Append full path(s)to clipboard\tCtrl + {",IDM_APPENDTOCLIP
-         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s)to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -1321,9 +1323,9 @@ MENU DIR_POPUP
   SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
 	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
 	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
-         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Commands",           IDM_COMMANDSMENU
@@ -1373,9 +1375,9 @@ MENU TREE_POPUP
   SUBMENU "Save ~Lists to clipboard/file",        IDM_SAVESUBMENU
   {
 	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
 	 MENUITEM "~Append full paths to clipboard\tCtrl + {",IDM_APPENDTOCLIP
-         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -1535,9 +1537,9 @@ MENU COLLECTORFILE_POPUP
   SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
 	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
 	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
-         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -1596,9 +1598,9 @@ MENU COLLECTORDIR_POPUP
   SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
 	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
-         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
 	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
-         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
   }
   SUBMENU "Comma~nds",          IDM_COMMANDSMENU
@@ -2144,10 +2146,10 @@ MENU SEEALL_FRAME
 	 MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
 	 MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
 	 MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
-	 MENUITEM "Save full path(s) to clipboard\tCtrl + [",IDM_SAVETOCLIP
-         MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
-	 MENUITEM "Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
-         MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
 	 MENUITEM "Save selected to listfile\tCtrl + S",IDM_SAVETOLIST
 	 MENUITEM "Duplicates...",         IDM_DUPES
 	 SUBMENU  "~Open selected",        IDM_OPENSUBMENU
@@ -2224,10 +2226,10 @@ MENU SEEALL_POPUP
   MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
   MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
   MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
-  MENUITEM "Save full path(s) to clipboard\tCtrl + [",IDM_SAVETOCLIP
-  MENUITEM "Save filename(s) to ~clipboard\tAlt + [",IDM_SAVETOCLIPFILENAME
-  MENUITEM "Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
-  MENUITEM "Append filename(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+  MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+  MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+  MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+  MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
   MENUITEM "Save selected to listfile\tCtrl + S",IDM_SAVETOLIST
   MENUITEM "Duplicates...",         IDM_DUPES
   SUBMENU  "~Open selected",        IDM_OPENSUBMENU
@@ -3317,7 +3319,6 @@ STRINGTABLE
     IDS_POSTSEMFAILED                     "Post Semaphore failed"
     IDS_CANTFINDDRIVETEXT                 "Can't find drive %s"
     IDS_CANTDRAGROOTDIR                   "Can't drag root directory"
-    IDS_DOSQAPPTYPEFAILEDTEXT             "DosQAppType failed for %s\n called from %s %d."
     IDS_APPTYPEUNEXPECTEDTEXT             "apptype 0x%x unexpected for %s.\n called from %s %d."
     IDS_PATHTODESKTOP                     "%c:\\DESKTOP"
     IDS_DRIVEINFOTITLETEXT                "FM/2: Drive info ""%c:"""
@@ -3338,7 +3339,10 @@ STRINGTABLE
     IDS_PLEASEWAITSCANNINGTEXT            "Please wait -- scanning..."
     IDS_PLEASEWAITCOUNTINGTEXT            "Please wait -- counting..."
     IDS_INSUFFICIENTMEMORY                "Insufficient memory or %u items (%u)"
-
+    IDS_DOSQAPPTYPEFAILEDTEXT             "DosQAppType failed for %s\n called from %s %d."
+    IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executible file type."
+    IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is loked or invalid."
+   
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object (each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"
     IDS_SUGGEST1TEXT2                     " end enables drag-and-drop to the program object%s):\r\r""%s""\r\rWould you like me to automatically place this in the parameters field of the FM/2 program objects (note: existing Parameters will be replaced)? Cancel = don't show this message again."
