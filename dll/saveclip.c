@@ -169,7 +169,7 @@ VOID ListToClipboardHab(HAB hab, CHAR ** list, ULONG append)
 	len++;
       }
       if (WinOpenClipbrd(hab)) {
-	if (!xDosAllocSharedMem((PPVOID) &text, (PSZ) NULL, len, PAG_COMMIT |
+	if (!DosAllocSharedMem((PPVOID) &text, (PSZ) NULL, len, PAG_COMMIT |
 			        OBJ_GIVEABLE | PAG_READ | PAG_WRITE)) {
 	  *text = 0;
 	  if (clip && clip[0]) {
