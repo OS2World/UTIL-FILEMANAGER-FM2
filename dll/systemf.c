@@ -27,6 +27,8 @@
 		Dos/Win programs from being inserted into the execute dialog with message why.
   12 Jul 09 GKY Allow FM/2 to load in high memory
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
+  27 Dec 09 GKY Provide human readable error message when DosQueryAppType fails because it
+                couldn't find the exe (such as missing archivers).
 
 ***********************************************************************/
 
@@ -875,10 +877,18 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    pszDirectory &&
 	    *pszDirectory)
 	  switch_to(szSavedir);
-	if (rc) {
-	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
-		    GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
-		    pszPgm, pszCallingFile, uiLineNumber);      // 26 May 08 SHL
+        if (rc) {
+          if (rc == ERROR_FILE_NOT_FOUND || rc == ERROR_PATH_NOT_FOUND ||
+              rc == ERROR_INVALID_EXE_SIGNATURE || rc == ERROR_EXE_MARKED_INVALID)
+            saymsg(MB_OK, HWND_DESKTOP, NullStr,
+                   GetPString(IDS_DOSQAPPTYPEFAILEDTEXT2), pszPgm);
+          else if (rc == ERROR_INVALID_DRIVE || rc == ERROR_DRIVE_LOCKED)
+            saymsg(MB_OK, HWND_DESKTOP, NullStr,
+                   GetPString(IDS_DOSQAPPTYPEFAILEDTEXT3), pszPgm);
+          else
+            Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
+                      GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
+                      pszPgm, pszCallingFile, uiLineNumber);      // 26 May 08 SHL
 	  DosFreeMem(pszPgm);
 	  if (pszArgs)
 	    DosFreeMem(pszArgs);
@@ -1019,11 +1029,19 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  !strchr(pszPgm, ':') &&
 	  pszDirectory &&
 	  *pszDirectory)
-	switch_to(szSavedir);
+        switch_to(szSavedir);
       if (rc) {
-	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
-		  GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
-		  pszPgm, pszCallingFile, uiLineNumber);        // 26 May 08 SHL
+        if (rc == ERROR_FILE_NOT_FOUND || rc == ERROR_PATH_NOT_FOUND ||
+            rc == ERROR_INVALID_EXE_SIGNATURE || rc == ERROR_EXE_MARKED_INVALID)
+          saymsg(MB_OK, HWND_DESKTOP, NullStr,
+                 GetPString(IDS_DOSQAPPTYPEFAILEDTEXT2), pszPgm);
+        else if (rc == ERROR_INVALID_DRIVE || rc == ERROR_DRIVE_LOCKED)
+          saymsg(MB_OK, HWND_DESKTOP, NullStr,
+                 GetPString(IDS_DOSQAPPTYPEFAILEDTEXT3), pszPgm);
+        else
+	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,
+	            GetPString(IDS_DOSQAPPTYPEFAILEDTEXT),
+	            pszPgm, pszCallingFile, uiLineNumber);        // 26 May 08 SHL
 	DosFreeMem(pszPgm);
 	if (pszArgs)
 	  DosFreeMem(pszArgs);
