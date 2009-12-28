@@ -348,7 +348,9 @@ cascade menu, and is the default.
 :artwork name='..\..\bitmaps\permdel.bmp' align=left.
 :p.
 There are three styles of deleting under FM/2 -- a "regular" delete, that
-leaves the objects capable of being undeleted using OS/2's UNDELETE
+leaves the objects capable of being undeleted using OS/2's UNDELETE (you must
+have OS/2's del directories designated in config.sys -- this line is REMed 
+(not activated) when OS/2 or eComstation are installed)
 command or FM/2's Undelete Utility, or uses the Xworkplace/Eworkplace
 trashcan for file recovery, and a "permanent" delete that does
 not leave the object recoverable. "Permanent" deletions are usually

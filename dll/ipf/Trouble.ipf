@@ -54,3 +54,9 @@ does not add the FM/2 directory to the libpath.
 :p. &endash. Accessing a subdirectory on a vfat (fat) formatted USB removable drive may result
 in a SYS3175. If this occurs try accessing the directory using "open" from the context (popup)
 menu. Mounting it using netdrives' vfat plugin also solves the problem.
+:p. &endash. Move to trashcan is only active for local hard drive (this is a design limitation 
+of the xworkplace trashcan). The result will be a permanent delete for all other 
+drive types. Also be aware that deleted files are still retained on the drive 
+they were deleted from. The result can be full drive type errors. If you are 
+deleting to free up drive space you must either empty the trashscan or use 
+:hp6.Permanent Delete:ehp6. which deletes the files directly bypassing the trashcan.

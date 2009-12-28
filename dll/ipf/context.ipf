@@ -373,7 +373,13 @@ In that dialog you have a chance to remove some of the objects. If you
 have OS/2's Undelete enabled for the drive on which the objects reside, they
 may be recoverable. You also have the option of having the files moved to the
 Xworkplaces/Eworkplace trahshcan from which they may be restorable.:link reftype=hd
-res=99950.Delete = move to trashcan:elink.
+res=99950.Delete = move to trashcan:elink.Move to trashcan is only active for local 
+hard drive (this is a design limitation of the xworkplace trashcan). The result 
+will be a permanent delete for all other drive types. Also be aware that deleted 
+files are still retained on the drive they were deleted from. 
+The result can be full drive type errors. If you are deleting to free up drive space
+you must either empty the trashscan or use :hp6.Permanent Delete:ehp6. which deletes the
+files directly bypassing the trashcan.
 :artwork runin name='bitmaps\file.bmp'. :artwork runin name='bitmaps\fldr.bmp'.
 :p.
 :artwork name='..\..\bitmaps\permdel.bmp' align=center.

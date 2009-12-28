@@ -60,11 +60,11 @@ See also&colon.
 :h3 res=95800 name=PANEL_REORDERCOMMANDS.Reordering Commands
 :i1 id=aboutReorderingCommands.Reordering Commands
 This dialog, accessed from the Edit Commands dialog, allows you to
-rearrange the order of Commands. You take selected items from the left
-listbox and Add them to the end of the right listbox with the
-:hp1.Add>>:ehp1. button. When you've moved everything to the right
-listbox, click &OkayButton.. Click &CancelButton. if you change
-your mind.
+rearrange the order that the Commands will be listed in the "Commands" 
+submenu. You take selected items from the left listbox and Add them 
+to the end of the right listbox with the :hp1.Add>>:ehp1. button. 
+When you've moved everything to the right listbox, click &OkayButton.. 
+Click &CancelButton. if you change your mind.
 :p.
 In reality, you don't need to move everything to the right listbox. You
 can move only what you want moved to the top of the list, then click

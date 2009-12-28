@@ -715,7 +715,13 @@ FM/2 has always had. It will move the files to the OS/2 Deldir if it is
 specified in config.sys. Otherwise it will simply delete the files
 permanently. If this is selected and you have the trashcan from Xworkplace
 or Eworkplace installed the files will be moved to the trashcan for possible
-later restore.
+later restore. Move to trashcan is only active for local hard drive (this is 
+a design limitation of the xworkplace trashcan). The result will be a permanent 
+delete for all other drive types. Also be aware that deleted files are still 
+retained on the drive they were deleted from. The result can be full drive type 
+errors. If you are deleting to free up drive space you must either empty the 
+trashscan or use :hp6.Permanent Delete:ehp6. which deletes the files directly 
+bypassing the trashcan.
 :p.
 If the :hp6.Confirm target:ehp6. checkbox is checked, as it is by
 default, FM/2 allows you to confirm the target directory to be used when

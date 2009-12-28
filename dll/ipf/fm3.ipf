@@ -713,18 +713,20 @@ ID     Command                                              Droppable?
 10027  Reselect                                             N
 10031  Deselect Mask                                        N
 &period...
-4001   First Command                                        Y
-4002   Second Command                                       Y
+4001 - 4299  User Commands                                  User settable
 &period...
 4900   First Toolbar                                        N
 4901   Second Toolbar                                       N
 &period...
 :exmp.
-Note&colon. Other Commands can also be used; just add to 4000 as required
-to get the number of the command. For instance, Command 4 would be ID
-4004. Command buttons use the text field; others shown have bitmaps
-associated with them in FM/2's resources. Remember that if you change
-your Commands around, you need to resync the tools to the Commands...
+Note&colon. User commands can be used by entering the command's ID in the ID 
+text box; The command's ID is listed in braces following the command's title
+on the "Commands" submenu (It is on the "Files" menu); Command buttons use 
+the text field; others shown have bitmaps associated with them in FM/2's resources.
+If you wish to associate a bitmap with a command button name the bitmap using either
+the command's ID (ie 4001.bmp) or the command's title (what ever you entered in the
+"text" text box). The name isn't case sensitive (ie my command.bmp or My Command.bmp
+would both work). Note: Reordering the commands no longer effects the commands ID
 :p.
 Note&colon. Toolbar buttons on a toolbar cause the appropriate toolbar
 to be loaded from QUICKTLS.DAT (one filename per line, blank lines and
@@ -842,16 +844,14 @@ which define a button for the toolbar.
 :li.8 means a spacer follows this button
 :li.32 means there is a user-defined bitmap for the button.
 :ul compact.
-:li.The bitmap must be in a file named <id-number>.bmp where <id-number> is the id number specified by the fourth line of the button definition.
+:li.The bitmap must be in a file named <id-number>.bmp or <text>.bmp where <id-number> is the id number specified by the fourth line of the button definition or the text is the text specified in the second line.
 :li.The bitmap file must be in the FM/2 directory
-:li.The bitmap must be 32x32 in size.
+:li.The bitmap should be 32x32 in size. Occasionally, this will seem to large if so try the bitmap resized to 28x28. 
 :eul.
-:li.Add these numbers together to combine the attributes. For example 9 (i.e. 8 + 1) means droppable with a spacer following.
+:li.Add the flag numbers together to combine the attributes. For example 9 (i.e. 8 + 1) means droppable with a spacer following.
 :esl.
 :li.The fourth line is the ID number of the button. See
-:link reftype=hd res=96401.
-Tool ID's
-:elink. for more information.
+:link reftype=hd res=96401. Tool ID's :elink. for more information.
 :eul.
 
 :h2 res=99400 name=PANEL_USERLISTS.Using quicklists

@@ -523,16 +523,6 @@ in any given session without modifying CONFIG.SYS.
 Troubleshooting:
 ===============
 
-FM/2 seems much slower than previous versions.
-The Find Buffer in FM/2 has been reworked to make it user
-settable in more place and significantly enlarge it. This
-significantly increases the loading speed for large directories
-However, most users will need to reset the buffer by going
-to the settings notebook scanning page and setting FindBuf.
-The new default for clean installs is 10240. We recommend you
-change to this setting (or higher) unless you have very limited
-hardware (less than 32 meg of memory original Pentium or earlier).
-
 If FM/2 won't run, the probable culprit is CONFIG.SYS. Your
 LIBPATH statement should contain a ".;" entry. If yours
 doesn't, add it. It's standard for an OS/2 installation, but
@@ -550,8 +540,8 @@ rather huge pain in the, uh, neck.
 If things in FM/2 are suddenly acting strange after an
 upgrade, first check the integrity of the install using
 using WarpIN. If it shows a problem rerun the install
-package. If that fails try installing to a new directory
-or backup your existing directory so you can save any changes
+package. If that fails try uninstalling with WarpIN and reinstalling.
+Backup your existing directory so you can save any changes
 you made to the template files then uninstall and reinstall.
 Once you have FM/2 working migrate the *.ini, *.dat, *.tls,
 *.bb2 and *.cmd from your old install/backup to recover your
@@ -573,54 +563,21 @@ capture the information from STDERR with:
 
   FM3 2>STDERR.LOG
 
-This technique works for all the FM/2, FM/2 Lite and all the
+This technique works for FM/2, FM/2 Lite and all the
 standalone applets.
 
 If you are having trouble with Drag and Drop operations, try
 the + command line switch described above. The content of
 FM2.LOG may be helpful.
 
-
 Known problems/shortcomings:
 ===========================
 
-- FM/2 does not properly report sizes of some files with
-long name resident on Win95/NT drives.
-
-- File List Container fails to fill after drive change
-SYS0039 error.
-
-- Tree switching on Focus/Directory Change appears to be
-slower than expected.
-
-- Access to LS120 and FAT32 drives may be slower than expected
-
-- Icon display in Directory Container does not always match
-WPS icons
-
-- Spurious WPS Objects Handles may be created during some
-operations
-
-- Trying to run Global.exe from the command line in 4OS2
-(perhaps other shells) results in the execution of 4OS2's "Global"
-command. Global.exe can be run by placing it in quotes or
-prefixing it with *. See 4OS2's documentation for more information.
-
-- As with any OS/2 program significant changes (such as our
-change to OpenWatcom) will result in the incompatibility of
-older (VAC) exes with new dlls and vice versa. Attempting to run
-OpenWatcom exes with a VAC dll loaded in memory or in your
-libpath ahead of the new version will result in a SYS3175 in
-popuplog.os2. The reverse gives a SYS2070. If you experience these
-problems search your libpath for fm3dll.dll and remove or rename
-it. Your libpath should have "." (without the quotes) as your
-first entry to minimize the likelihood of this problem. FM/2's
-installer does not add the FM/2 directory to the libpath.
+- See the section of this name in the FM/2 help file (FM3.hlp). 
+It is installed to the same directory as FM/2.
 
 - See http://svn.netlabs.org/fm2/report/1 for a complete list of
 currently active bugs
-
-
 
 About FM/2:
 ==========
