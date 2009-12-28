@@ -39,6 +39,7 @@
   15 Nov 09 GKY Add ZEROBYTETEXT (58)
   21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
                 Added load_inicommand to load the IDs from the ini file.(new error strings)
+  27 Dec 09 GKY Added IDS_DUPLICATEHOTKEYTEXT for command.c changes
 
 ***********************************************************************/
 
@@ -99,6 +100,7 @@
 #define IDS_10SYSPROTEXT                                      49
 #define IDS_NOTPROTECTONLYEXE                                 50
 #define IDS_INIFAILURETEXT                                    51
+#define IDS_DUPLICATEHOTKEYTEXT                               52
 #define IDS_HELPCMDTEXT                                       56
 #define IDS_ZEROBYTETEXT                                      58
 #define IDS_DETACHREQUESTTEXT                                 59
@@ -994,7 +996,7 @@
 #define IDS_POSTSEMFAILED                                     994
 #define IDS_CANTFINDDRIVETEXT                                 995
 #define IDS_CANTDRAGROOTDIR                                   996
-#define IDS_DOSQAPPTYPEFAILEDTEXT                             997
+//#define IDS_DOSQAPPTYPEFAILEDTEXT   moved to 1017           997
 #define IDS_APPTYPEUNEXPECTEDTEXT                             998
 #define IDS_PATHTODESKTOP                                     999
 #define IDS_DRIVEINFOTITLETEXT                               1000
@@ -1014,6 +1016,9 @@
 #define IDS_ERROREATYPETEXT                                  1014
 #define IDS_RESCANALLDRIVESTEXT                              1015
 #define IDS_REFRESHREMOVABLESTEXT                            1016
+#define IDS_DOSQAPPTYPEFAILEDTEXT                            1017
+#define IDS_DOSQAPPTYPEFAILEDTEXT2                           1018
+#define IDS_DOSQAPPTYPEFAILEDTEXT3                           1019
 
 //The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 //This was done as part of the conversion to a StringTable where strings are limited to 255

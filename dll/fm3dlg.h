@@ -35,6 +35,7 @@
   22 Jul 09 GKY Add LocalHD driveflag
   13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
                 option to Quick page.
+  27 Dec 09 GKY Made command hotkeys user selectable.
 
 ***********************************************************************/
 
@@ -515,24 +516,25 @@
 #define PICKBTN_FRAME									22900
 #define PICKBTN_LISTBOX									22901
 
-#define CMD_FRAME											23000
-#define CMD_LISTBOX										23001
-#define CMD_CL												23002
-#define CMD_ADD											23003
-#define CMD_DELETE										23004
-#define CMD_KEEP											23005
+#define CMD_FRAME        							        23000
+#define CMD_LISTBOX									23001
+#define CMD_CL										23002
+#define CMD_ADD										23003
+#define CMD_DELETE									23004
+#define CMD_KEEP									23005
 #define CMD_FULLSCREEN									23006
 #define CMD_MINIMIZED									23007
 #define CMD_MAXIMIZED									23008
 #define CMD_INVISIBLE									23009
-#define CMD_ICON											23010
-#define CMD_DEFAULT										23011
-#define CMD_PROMPT										23012
-#define CMD_ONCE											23013
-#define CMD_TITLE											23014
-#define CMD_REORDER										23015
-#define CMD_FIND											23016
-#define CMD_ENVIRON										23017
+#define CMD_ICON									23010
+#define CMD_DEFAULT									23011
+#define CMD_PROMPT									23012
+#define CMD_ONCE									23013
+#define CMD_TITLE									23014
+#define CMD_REORDER									23015
+#define CMD_FIND									23016
+#define CMD_ENVIRON									23017
+#define CMD_HOTKEY                                                                      23018
 
 #define KILL_FRAME										23100
 #define KILL_LISTBOX										23101

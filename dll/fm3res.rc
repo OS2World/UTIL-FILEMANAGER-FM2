@@ -52,6 +52,7 @@
                 Added load_inicommand to load the IDs from the ini file.(new error strings)
   26 Dec 09 GKY Fixed some missing or duplicate mnemonics on the "Save Lists to clipboard/file"
                 submenu.
+  27 Dec 09 GKY Strings for command.c changes
 
 ***********************************************************************/
 
@@ -2466,6 +2467,7 @@ STRINGTABLE
     IDS_EDITTEXT                          "Edit"
     IDS_NOTPROTECTONLYEXE                 "The file %s is a Dos or Windows executible, however Dos and WinOS2 are not currently activated on this system."
     IDS_INIFAILURETEXT                    "Check INI header failed will attempt to replace with backup if backup fails or not found will open with new ini"
+    IDS_DUPLICATEHOTKEYTEXT               "The hotkey you selected is in use by another command.\n Yes assigns it to this command and sets the other's to None.\n No sets this command to the next unused hotkey.\n Cancel returns you to the dialog to select a different HotKey."
     IDS_HELPCMDTEXT                       "/HELP"
     IDS_ZEROBYTETEXT                      "Zero byte file do you wish to open it in an editor (No cancels)"
     IDS_DETACHREQUESTTEXT                 "Detach Request"
@@ -3314,7 +3316,7 @@ STRINGTABLE
     IDS_NOTEBUBBLE2TEXT                   "Bubble help settings"
     IDS_TOTARGETTEXT                      " (Target directory)"
     IDS_CANTADDCOMMANDTEXT                "Can't add %s to command list"
-    IDS_CANTADDCOMMANDTEXTDUP             "Can't add %s to command list It has a duplicate title"
+    IDS_CANTADDCOMMANDTEXTDUP             "Can't add %s to command list It has a duplicate title and/or hotkey"
     IDS_CREATESEMFAILED                   "Create Semaphore failed"
     IDS_POSTSEMFAILED                     "Post Semaphore failed"
     IDS_CANTFINDDRIVETEXT                 "Can't find drive %s"

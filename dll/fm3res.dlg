@@ -48,6 +48,7 @@
   22 Jul 09 GKY Add LocalHD driveflag (enlarge draveflag dialog)
   13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
                 option to Quick page.
+  27 Dec 09 GKY Made command hotkeys user selectable.
 
 ***********************************************************************/
 
@@ -874,8 +875,8 @@ BEGIN
     DIALOG  "FM/2: Commands", CMD_FRAME, 12, 6, 258, 224, WS_VISIBLE,
             FCF_TITLEBAR
     BEGIN
-        CTEXT           "Environment:", -1, 56, 57, 114, 8, DT_VCENTER | NOT
-                        WS_GROUP
+        CTEXT           "Environment:", -1, 0, 54, 49, 10,  NOT WS_GROUP
+        CTEXT           "Hotkey:", -1, 120, 62, 40, 10,  NOT WS_GROUP                
         LTEXT           "Command line:", -1, 4, 116, 82, 8, NOT WS_GROUP
         LTEXT           "Title:", -1, 4, 96, 24, 8, NOT WS_GROUP
         CTEXT           "If the title is changed replace will fail -- use add!",
@@ -889,25 +890,28 @@ BEGIN
         PUSHBUTTON      "Find", CMD_FIND, 222, 105, 30, 14,
                         BS_NOPOINTERFOCUS
         ENTRYFIELD      "", CMD_TITLE, 4, 86, 248, 8, ES_MARGIN | WS_GROUP
-        AUTORADIOBUTTON "~Default", CMD_DEFAULT, 2, 74, 49, 10,
+        AUTORADIOBUTTON "~Default", CMD_DEFAULT, 2, 74, 39, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP | WS_TABSTOP
-        AUTORADIOBUTTON "F~ullScreen", CMD_FULLSCREEN, 59, 74, 62, 10,
+        AUTORADIOBUTTON "F~ullScreen", CMD_FULLSCREEN, 45, 74, 45, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
-        AUTORADIOBUTTON "Mi~nimized", CMD_MINIMIZED, 127, 74, 60, 10,
+        AUTORADIOBUTTON "Mi~nimized", CMD_MINIMIZED, 145, 74, 45, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
-        AUTORADIOBUTTON "Ma~ximized", CMD_MAXIMIZED, 127, 64, 60, 10,
+        AUTORADIOBUTTON "Ma~ximized", CMD_MAXIMIZED, 95, 74, 45, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
-        AUTORADIOBUTTON "In~visible", CMD_INVISIBLE, 59, 64, 62, 10,
+        AUTORADIOBUTTON "In~visible", CMD_INVISIBLE, 195, 74, 42, 10,
                         BS_NOPOINTERFOCUS | WS_TABSTOP
         AUTOCHECKBOX    "~Prompt", CMD_PROMPT, 2, 64, 49, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
-        AUTOCHECKBOX    "~Each", CMD_ONCE, 194, 74, 37, 10,
+        AUTOCHECKBOX    "~Each", CMD_ONCE, 95, 64, 27, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
-        AUTOCHECKBOX    "~Keep", CMD_KEEP, 194, 64, 37, 10,
+        AUTOCHECKBOX    "~Keep", CMD_KEEP, 45, 64, 27, 10,
                         BS_NOPOINTERFOCUS | WS_GROUP
         CONTROL         "", CMD_ENVIRON, 4, 18, 247, 38, WC_MLE, MLS_HSCROLL |
                         MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP | WS_TABSTOP |
                         WS_VISIBLE
+        CONTROL         "", CMD_HOTKEY,160,12, 70, 60, WC_COMBOBOX,
+                        CBS_DROPDOWNLIST | WS_TABSTOP |
+                        WS_VISIBLE                
         DEFPUSHBUTTON   "~Okay", DID_OK, 2, 2, 34, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Add", CMD_ADD, 38, 2, 34, 14, BS_NOPOINTERFOCUS

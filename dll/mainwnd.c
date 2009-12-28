@@ -1611,8 +1611,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
 				 WC_TOOLBUTTONS,
 				 (!tool->text && tool->id >= IDM_COMMANDSTART
 				  && tool->id <
-				  IDM_QUICKTOOLSTART) ? command_title(tool->
-								      id -
+				  IDM_QUICKTOOLSTART) ? command_title(tool->id -
 								      IDM_COMMANDSTART)
 				 : tool->text,
 				 BS_NOPOINTERFOCUS | BS_PUSHBUTTON, ctrlxpos,
