@@ -34,6 +34,7 @@
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
   27 Dec 09 GKY Moved Commands to the INI file this makes commands.dat obsolete
   27 Dec 09 GKY Added QueryCommandSettings to streamline code
+  27 Dec 09 GKY Made command hotkeys user selectable.
 
 ***********************************************************************/
 
@@ -481,7 +482,7 @@ VOID load_inicommands(VOID)
       PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.SizeSortOrder",
                           &ulSizeCommandsList, &size);
       pszCommandsList = xmallocz(ulSizeCommandsList, pszSrcFile, __LINE__);
-      if (pszCommandsList)
+      if (pszCommandsList) {
         PrfQueryProfileString(fmprof, FM3Str, "COMMANDS.SortOrder",
                               NullStr, pszCommandsList, ulSizeCommandsList);
         p = pszCommandsList;
