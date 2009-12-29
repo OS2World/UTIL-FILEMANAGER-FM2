@@ -316,11 +316,13 @@ res=98900.Opening a Directory Container:elink., :link reftype=hd
 res=99400.Using quicklists:elink. and :link reftype=hd res=97600.Window
 layout:elink. sections.
 
-.im install.ipf
-
 .im mouse.ipf
 
 .im keys.ipf
+
+.im install.ipf
+
+.im start.ipf
 
 :h1 res=97600 name=PANEL_FM2WINDOWLAYOUT.FM/2 Window Layouts
 :i1 id=aboutFM2WINDOWLAYOUT.FM/2 Window Layouts
