@@ -7,7 +7,7 @@
 FM/2 3.17: This release provides for loading FM/2 partially in high memory
 since this won't work on older systems (pre fixpack 13?) or you might have
 other reasons not to use it we provide a low memory version also. Some high
-loaded programs hang in the exit handler (ie don't close). We didn't
+loaded programs hang in the exit handler (i.e. don't close). We didn't
 experience this problem but if you do install the low memory version (3.17.0).
 The high memory version is 3.17.1.
 
@@ -75,7 +75,7 @@ or inappropriate and un-grayed some items that were inappropriately
 turned off. We reorganized the internal editor menus as well.
 
 We made changes to the archiver code so that archivers that don't
-have specific start/end list strings will work (ie TAR.EXE). We
+have specific start/end list strings will work (i.e. TAR.EXE). We
 have included the commands for .tar .tar.gz and .tar.bz in archiver.tmp
 (gzip.exe and/or bzip.exe must be in the path) These only work with tar 1.15
 or higher. We included a separate entry for TAR 1.10 but versions of TAR prior
@@ -141,7 +141,7 @@ space to avoid data loss.
 
 We also fixed some additional bugs and provide some performance
 enhancements. If you have had trouble with "broken pipe" errors
-copying to a netdrive samba drive let me know if it now works
+copying to a Netdrive samba drive let me know if it now works
 better. I have built in some retries for this error but can't test
 it since I don't see the problem. Also please report back to us anytime
 you see the Debug error report to author box with as much detail about
@@ -154,7 +154,7 @@ Multimedia (using FM2play.exe) to the archive viewer. FM/2 now
 uses the system TMP/TEMP directory for it temporary files and
 cleans up after a crash on the next restart. FM/2 creates a
 subdirectory of the pattern $FM2*.*. The settings notebook can
-now be closed using esc, F3 or enter; the last 2 save any
+now be closed using Esc, F3 or Enter; the last 2 save any
 changes that have been made. You can now select which environment
 variables to show when using show the environment in the drive
 tree. Just add or remove from the list on the "Tree" page of
@@ -191,7 +191,7 @@ of multiple directory containers and in greater detail. This
 state can also be restored at anytime during a session by
 selecting it from the "States" drop down. We have provided better
 progress indicators to update the progress of long operations.
-We now provide both the SYM & MAP files in a separate warpin
+We now provide both the SYM & MAP files in a separate WarpIN
 package. This will allow interested individuals the tools needed
 to assist with analyzing any problem that may occur. This
 package is not needed to run FM/2. As always this update
@@ -214,29 +214,29 @@ If "stuff" contains an * or ? the old method of searching
 (character by character)is used.Large (>4GiB) file support
 has been added.
 
-FM/2 3.07 had changes made to its ini file structure.
-These changes mean that the ini file is not backward
+FM/2 3.07 had changes made to its INI file structure.
+These changes mean that the INI file is not backward
 compatible. Please backup you FM3.INI file before installing
 so you can revert to an earlier version without losing some
 of your customizations. Please note you need to leave a copy
 of the fm3.ini file in the install directory in order to keep your
 customizations in 3.07. The temp file fm3.!!! will not update
-the new ini as it is only used when fm2 is running.
+the new INI as it is only used when FM/2 is running.
 
 File Manager/2 (FM/2) starting with version 3.6 is being
 built with OpenWatcom. Changing compilers can introduce
 unexpected problem so you may want to backup your current
 install, or at minimum have a working copy of the FM/2
-version 3.5.9 warpin available for reinstall if problems arise.
+version 3.5.9 WarpIN package available for reinstall if problems arise.
 To backup your current install simple zip up your install
 directory with its subdirectories or copy them to a different
 location.To restore simply copy the old FM/2 back to the
 its original location. Remember you can't use the new FM/2
 to do this since if it is running some files will be locked
 and won't be replaced. If you didn't backup and need to go
-back just install the 3.5.9 warpin package over the new
+back just install the 3.5.9 WarpIN package over the new
 install. It will warn you that the install is newer but just
-tell it to install anyway. The warpin install process is
+tell it to install anyway. The WarpIN install process is
 designed to save all your customizations. Don't delete the
 new install if you don't have a backup since this will result
 in the loss of any custom changes you have made. If you need
@@ -340,14 +340,13 @@ folders if you wish.
 De-installing FM/2 and/or FM/2 Utilities:
 -----------------------------------------
 
-1. Run Warpin without parameters.
+1. Run WarpIN without parameters.
 
 2. Right click on a package you want to de-install and
 select "de-install all packages".
 
 3. Click on OK in the "De-install Packages" window that
 appears.
-
 
 
 =================
@@ -570,14 +569,16 @@ If you are having trouble with Drag and Drop operations, try
 the + command line switch described above. The content of
 FM2.LOG may be helpful.
 
+
 Known problems/shortcomings:
 ===========================
 
-- See the section of this name in the FM/2 help file (FM3.hlp). 
+- See the section of this name in the FM/2 help file (FM3.hlp).
 It is installed to the same directory as FM/2.
 
 - See http://svn.netlabs.org/fm2/report/1 for a complete list of
 currently active bugs
+
 
 About FM/2:
 ==========
@@ -591,6 +592,7 @@ He has kindly allowed me to take over maintenance and
 support of FM/2 and to release the program under the GNU GPL
 license. I'm sure he would appreciate a Thank You note for
 his generosity.
+
 
 Support:
 =======
