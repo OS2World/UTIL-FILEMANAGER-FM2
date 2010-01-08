@@ -1861,8 +1861,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  dummy[0] = newfile;
 		  dummy[1] = NULL;
 		  ExecOnList(hwnd,
-			     editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
-			     pszSrcFile, __LINE__);
+                             editor, WINDOWED | SEPARATE, NULL, NULL,
+                             dummy, NULL, pszSrcFile, __LINE__);
 		}
 		else
 		  StartMLEEditor(dcd->hwndParent, 4, newfile, dcd->hwndFrame);
@@ -3092,7 +3092,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    case DND_LAUNCH:
 	      strcat(li->targetpath, " %a");
 	      ExecOnList(dcd->hwndParent, li->targetpath,
-			 PROMPT | WINDOWED, NULL, li->list, NULL,
+			 PROMPT | WINDOWED, NULL, NULL, li->list, NULL,
 			 pszSrcFile, __LINE__);
 	      FreeList(li->list);
 	      li->list = NULL;

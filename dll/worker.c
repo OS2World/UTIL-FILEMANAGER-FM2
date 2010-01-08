@@ -983,7 +983,7 @@ VOID Action(VOID * args)
 		  fakelist[2] = NULL;
 		  ExecOnList(wk->hwndFrame,
 			     compare,
-			     WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
+			     WINDOWED | SEPARATEKEEP, NULL, NULL, fakelist, NULL,
 			     pszSrcFile, __LINE__);
 		}
 		else {
@@ -1141,7 +1141,7 @@ VOID MassAction(VOID * args)
 	  case IDM_DOITYOURSELF:
 	    ExecOnList(wk->hwndFrame,
 		       "%a",
-		       WINDOWED | SEPARATE | PROMPT,
+		       WINDOWED | SEPARATE | PROMPT, NULL,
 		       NULL, wk->li->list, GetPString(IDS_DOITYOURSELFTEXT),
 		       pszSrcFile, __LINE__);
 	    break;
@@ -1402,7 +1402,7 @@ VOID MassAction(VOID * args)
 	    if (*binview) {
 	      ExecOnList((HWND) 0,
 			 binview,
-			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+			 WINDOWED | SEPARATE, NULL, NULL, wk->li->list, NULL,
 			 pszSrcFile, __LINE__);
 	      break;
 	    }
@@ -1413,7 +1413,7 @@ VOID MassAction(VOID * args)
 	      ExecOnList((HWND) 0, viewer,
 			 WINDOWED | SEPARATE |
 			 ((fViewChild) ? CHILD : 0),
-			 NULL, wk->li->list, NULL,
+			 NULL, NULL, wk->li->list, NULL,
 			 pszSrcFile, __LINE__);
 	    else {
 
@@ -1448,7 +1448,7 @@ VOID MassAction(VOID * args)
 	    if (*bined) {
 	      ExecOnList((HWND) 0,
 			 bined,
-			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+			 WINDOWED | SEPARATE, NULL, NULL, wk->li->list, NULL,
 			 pszSrcFile, __LINE__);
 	      break;
 	    }
@@ -1458,7 +1458,7 @@ VOID MassAction(VOID * args)
 	    if (*editor)
 	      ExecOnList((HWND) 0,
 			 editor,
-			 WINDOWED | SEPARATE, NULL, wk->li->list, NULL,
+			 WINDOWED | SEPARATE, NULL,  NULL, wk->li->list, NULL,
 			 pszSrcFile, __LINE__);
 	    else {
 

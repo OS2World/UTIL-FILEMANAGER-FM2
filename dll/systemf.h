@@ -49,7 +49,7 @@ typedef struct
 EXECARGS;
 
 ULONG CheckExecutibleFlags(HWND hwnd, INT caller);
-INT ExecOnList(HWND hwnd, PSZ command, INT flags, PSZ tpath,
+INT ExecOnList(HWND hwnd, PSZ command, INT flags, PSZ tpath, PSZ environment,
 	       PSZ *list, PCSZ prompt, PCSZ pszCallingFile, UINT uiLineNumber);
 BOOL ShowSession(HWND hwnd, PID pid);
 INT runemf2(INT type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,

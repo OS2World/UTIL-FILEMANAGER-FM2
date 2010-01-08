@@ -1770,7 +1770,7 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		       cl,
 		       WINDOWED | ((fKeepCmdLine) ?
 				   SEPARATEKEEP : SEPARATE),
-		       directory, list, NULL, pszSrcFile, __LINE__);
+		       directory, NULL, list, NULL, pszSrcFile, __LINE__);
 	    xfree(list, pszSrcFile, __LINE__);
 	    WinDestroyWindow(hwnd);
 	    break;
@@ -2243,7 +2243,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case DND_LAUNCH:
 	  strcat(li->targetpath, " %a");
 	  ExecOnList(hwndMain,
-		     li->targetpath, PROMPT | WINDOWED, NULL, li->list, NULL,
+		     li->targetpath, PROMPT | WINDOWED, NULL, NULL, li->list, NULL,
 		     pszSrcFile, __LINE__);
 	  FreeList(li->list);
 	  li->list = NULL;

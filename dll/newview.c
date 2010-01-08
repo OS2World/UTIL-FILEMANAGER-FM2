@@ -3344,7 +3344,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	dummy[0] = ad->filename;
 	dummy[1] = NULL;
-	ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
+	ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, NULL, dummy, NULL,
 		   pszSrcFile, __LINE__);
       }
       else

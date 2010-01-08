@@ -1769,7 +1769,7 @@ VOID QuickView(HWND hwnd, PCSZ filename)
 
       list[0] = filename;
       list[1] = NULL;
-      ExecOnList(hwnd, binview, WINDOWED | SEPARATE, NULL, list, NULL,
+      ExecOnList(hwnd, binview, WINDOWED | SEPARATE, NULL, NULL, list, NULL,
 		 pszSrcFile, __LINE__);
       return;
     }
@@ -1781,7 +1781,7 @@ VOID QuickView(HWND hwnd, PCSZ filename)
       list[1] = NULL;
       ExecOnList(hwnd, viewer,
 		 WINDOWED | SEPARATE | (fViewChild ? CHILD : 0),
-		 NULL, list, NULL, pszSrcFile, __LINE__);
+		 NULL, NULL, list, NULL, pszSrcFile, __LINE__);
       return;
     }
     StartMLEEditor(HWND_DESKTOP, 5, filename, (HWND) 0);
@@ -1797,7 +1797,7 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
 
       list[0] = filename;
       list[1] = NULL;
-      ExecOnList(hwnd, bined, WINDOWED | SEPARATE, NULL, list, NULL,
+      ExecOnList(hwnd, bined, WINDOWED | SEPARATE, NULL, NULL, list, NULL,
 		 pszSrcFile, __LINE__);
       return;
     }
@@ -1807,7 +1807,7 @@ VOID QuickEdit(HWND hwnd, CHAR * filename)
 
       list[0] = filename;
       list[1] = NULL;
-      ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, list, NULL,
+      ExecOnList(hwnd, editor, WINDOWED | SEPARATE, NULL, NULL, list, NULL,
 		 pszSrcFile, __LINE__);
       return;
     }

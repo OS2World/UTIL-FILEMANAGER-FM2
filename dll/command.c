@@ -1289,7 +1289,7 @@ VOID RunCommand(HWND hwnd, INT cx)
       fakelist[1] = NULL;
       ExecOnList(hwnd,
          	 info->pszCmdLine,
-                 flags, info->env != NullStr ? info->env : NULL,
+                 flags, NULL, info->env != NullStr ? info->env : NULL,
                  fakelist, GetPString(IDS_EXECCMDTITLETEXT),
                  pszSrcFile, __LINE__);
     }
@@ -1304,7 +1304,7 @@ VOID RunCommand(HWND hwnd, INT cx)
 	fakelist[1] = NULL;
 	ExecOnList(hwnd,
 		   info->pszCmdLine,
-                   flags, info->env != NullStr ? info->env : NULL,
+                   flags, NULL, info->env != NullStr ? info->env : NULL,
                    fakelist, GetPString(IDS_EXECCMDTITLETEXT),
                    pszSrcFile, __LINE__);
       }
@@ -1312,7 +1312,7 @@ VOID RunCommand(HWND hwnd, INT cx)
     else if (list && list[0])
       ExecOnList(hwnd,
 		 info->pszCmdLine,
-                 flags, info->env != NullStr ? info->env : NULL,
+                 flags, NULL, info->env != NullStr ? info->env : NULL,
                  list, GetPString(IDS_EXECCMDTITLETEXT),
                  pszSrcFile, __LINE__);
     else

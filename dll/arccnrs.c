@@ -299,7 +299,7 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	list[1] = NULL;
 	if (TestBinary(ad->arcname)) {
 	  if (*binview)
-	    ExecOnList((HWND) 0, binview, WINDOWED | SEPARATE, NULL, list,
+	    ExecOnList((HWND) 0, binview, WINDOWED | SEPARATE, NULL, NULL, list,
 		       NULL, pszSrcFile, __LINE__);
 	  else
 	    StartMLEEditor(HWND_DESKTOP, 16 + 4 + 1, ad->arcname, hwnd);
@@ -307,7 +307,7 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	else {
 	  if (*viewer) {
 	    ExecOnList((HWND) 0, viewer, WINDOWED | SEPARATE |
-			    (fViewChild ? CHILD : 0),
+			    (fViewChild ? CHILD : 0), NULL,
 			     NULL, list, NULL, pszSrcFile, __LINE__);
 	  }
 	  else
@@ -1960,13 +1960,12 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else if (li->type == IDM_EXEC)
 	      ExecOnList(hwnd,
 			 li->runfile,
-			 WINDOWED | SEPARATEKEEP | PROMPT,
-			 li->targetpath,
-			 NULL, GetPString(IDS_EXECARCFILETITLETEXT),
+                         WINDOWED | SEPARATEKEEP | PROMPT,
+                         li->targetpath, NULL, NULL, GetPString(IDS_EXECARCFILETITLETEXT),
 			 pszSrcFile, __LINE__);
 	    else if (li->type == IDM_VIRUSSCAN)
 	      ExecOnList(hwnd, virus, PROMPT | WINDOWED | SEPARATEKEEP,
-			 li->targetpath, NULL,
+			 li->targetpath, NULL, NULL,
 			 GetPString(IDS_VIRUSSCANARCHIVETITLETEXT),
 			 pszSrcFile, __LINE__);
 	    else if (li->type == IDM_VIEW || li->type == IDM_VIEWTEXT ||
@@ -2076,7 +2075,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  (li->type == IDM_VIEWBINARY) ? binview :
 				  (li->type == IDM_EDITTEXT) ? editor :
 				  bined),
-			   WINDOWED | SEPARATE, li->targetpath, li->list,
+                           WINDOWED | SEPARATE, NULL, NULL, // li->targetpath,
+                           li->list,
 			   NULL, pszSrcFile, __LINE__);
 	      }
 	      else if (li->type == IDM_OPENDEFAULT ||

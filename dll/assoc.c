@@ -502,7 +502,7 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 	flags &= (~DIEAFTER);
 	rc = ExecOnList(hwnd,
 			info->pszCmdLine,
-			flags,
+			flags, NULL,
 			NULL, list, GetPString(IDS_EXECASSOCTITLETEXT),
 			pszSrcFile, __LINE__);
 	if (rc != -1 && dieafter)

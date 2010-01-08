@@ -2832,8 +2832,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fakelist[0] = pci->pszFileName;
 	    fakelist[1] = szPathName;
 	    fakelist[2] = NULL;
-	    ExecOnList(hwnd, compare,
-		       WINDOWED | SEPARATEKEEP, NULL, fakelist, NULL,
+            ExecOnList(hwnd, compare, WINDOWED | SEPARATEKEEP,
+                       NULL, NULL, fakelist, NULL,
 		       pszSrcFile, __LINE__);
 	  }
 	  else {

@@ -241,14 +241,14 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
     switch (type) {
     case IDM_EDITBINARY:
       if (*bined) {
-	ExecOnList((HWND) 0, bined, WINDOWED | SEPARATE, NULL, dummy, NULL,
+	ExecOnList((HWND) 0, bined, WINDOWED | SEPARATE, NULL, NULL, dummy, NULL,
 	           pszSrcFile, __LINE__);
 	break;
       }
       /* else intentional fallthru */
     case IDM_EDITTEXT:
       if (*editor)
-	ExecOnList((HWND) 0, editor, WINDOWED | SEPARATE, NULL, dummy, NULL,
+	ExecOnList((HWND) 0, editor, WINDOWED | SEPARATE, NULL, NULL, dummy, NULL,
 	           pszSrcFile, __LINE__);
       else {
 	type = (type == IDM_EDITTEXT) ? 8 : (type == IDM_EDITBINARY) ? 16 : 0;
@@ -286,7 +286,7 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
                   ExecOnList(hwnd,
                              binview,
                              WINDOWED | SEPARATE |
-                             ((fViewChild) ? CHILD : 0), NULL, dummy, NULL,
+                             ((fViewChild) ? CHILD : 0), NULL, NULL, dummy, NULL,
                              pszSrcFile, __LINE__);
                 }
                 else if (fUseNewViewer) {
@@ -304,7 +304,7 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
                   ExecOnList(hwnd,
                              viewer,
                              WINDOWED | SEPARATE |
-                             ((fViewChild) ? CHILD : 0), NULL, dummy, NULL,
+                             ((fViewChild) ? CHILD : 0), NULL, NULL, dummy, NULL,
                              pszSrcFile, __LINE__);
                 }
                 else if (fUseNewViewer) {

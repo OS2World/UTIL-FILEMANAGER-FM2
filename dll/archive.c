@@ -270,7 +270,7 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (p)
 	    *p = 0;
 	  ExecOnList(hwnd, s, WINDOWED | SEPARATEKEEP | MAXIMIZED | PROMPT,
-                     NULL, NULL, GetPString(IDS_ARCEXECHELPTEXT),
+                     NULL, NULL, NULL, GetPString(IDS_ARCEXECHELPTEXT),
                      pszSrcFile, __LINE__);
 	}
 	else if (!fErrorBeepOff)

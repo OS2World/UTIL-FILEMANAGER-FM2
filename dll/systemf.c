@@ -146,7 +146,7 @@ BOOL ShowSession(HWND hwnd, PID pid)
  *         -2 if user cancels command line edit dialog
  */
 
-int ExecOnList(HWND hwnd, char *command, int flags, char *tpath,
+int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	       PSZ *list, PCSZ prompt, PCSZ pszCallingFile, UINT uiLineNumber)
 {
   /* executes the command once for all files in list */
@@ -647,12 +647,12 @@ BreakOut:
 
   {
     EXECARGS ex;
-    ULONG size;
+    //ULONG size;
     int ret;
 
     memset(&ex, 0, sizeof(EXECARGS));
-    size = sizeof(ex.environment) - 1;
-    PrfQueryProfileData(fmprof, FM3Str, command, ex.environment, &size);
+    //size = sizeof(ex.environment) - 1;
+    //PrfQueryProfileData(fmprof, FM3Str, command, ex.environment, &size);
     if (flags & PROMPT) {
       /* allow editing command line */
       ex.flags = (flags & (~PROMPT));
@@ -670,8 +670,9 @@ BreakOut:
     else
       ex.flags = flags;
     ex.flags &= (~PROMPT);
+    //DbgMsg(pszSrcFile, __LINE__, "Inserted %s", environment);
     ret = runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
-		   (*ex.environment) ? ex.environment : NULL,
+		   environment ? environment : NULL,
 		   "%s", commandline);
     free(commandline);
     return ret;
